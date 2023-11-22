@@ -1,5 +1,5 @@
 import { HuginnErrorData, HuginnErrorGroupWrapper, JsonCode } from "$shared/errors";
-import { DefaultResponseInit } from "./constants";
+import { DefaultResponseInit } from "../constants";
 
 class ErrorFactory {
    public message?: string;

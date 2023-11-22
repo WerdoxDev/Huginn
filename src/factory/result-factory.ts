@@ -1,4 +1,4 @@
-import { DefaultResponseInit } from "./constants";
+import { DefaultResponseInit } from "../constants";
 
 // Temporary
 export function createResult(json: unknown, status: number) {

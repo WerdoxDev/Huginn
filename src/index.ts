@@ -1,4 +1,4 @@
-import { startServer } from "./server";
+import { startServer } from "./server.ts";
 import "./database/database-handler.ts";
 import { connectToMongoDB } from "./database/database-handler.ts";
 
