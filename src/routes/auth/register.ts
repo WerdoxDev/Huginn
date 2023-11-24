@@ -22,6 +22,7 @@ route.post("/register", ({ body }) => handleRegister(body), {
 async function handleRegister(body: APIPostRegisterJSONBody): Promise<Response> {
    const formError = createError(Error.invalidFormBody());
 
+   //TODO: change (tooShort) to something like (wrongLength)
    if (body.username.length < constants.USERNAME_MIN_LENGTH || body.username.length > constants.USERNAME_MAX_LENGTH) {
       formError.error("username", Field.tooShort(constants.USERNAME_MIN_LENGTH, constants.USERNAME_MAX_LENGTH));
    }
