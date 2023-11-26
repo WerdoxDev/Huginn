@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { generateUserAccessToken, verifyToken } from "../token-handler";
-import { ITokenUser } from "shared/lib/types";
+import { ITokenUser } from "@shared/lib/types";
 
 describe("jwt", async () => {
    test("invalid-token", async () => {

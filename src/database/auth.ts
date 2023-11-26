@@ -1,5 +1,5 @@
-import { APIPostLoginJSONBody, APIPostRegisterJSONBody } from "$shared/api-types";
-import { snowflake } from "$shared/snowflake";
+import { APIPostLoginJSONBody, APIPostRegisterJSONBody } from "@shared/api-types";
+import { snowflake } from "@shared/snowflake";
 import { DBUser } from "./database-handler";
 import { User } from "./user-schema";
 

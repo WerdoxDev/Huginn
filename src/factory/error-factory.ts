@@ -1,4 +1,4 @@
-import { HuginnErrorData, HuginnErrorGroupWrapper, JsonCode } from "$shared/errors";
+import { HuginnErrorData, HuginnErrorGroupWrapper, JsonCode } from "@shared/errors";
 import { DefaultResponseInit } from "../constants";
 
 class ErrorFactory {

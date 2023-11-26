@@ -1,5 +1,5 @@
-import { Error, Field, HttpCode } from "$shared/errors";
-import { APIPostLoginJSONBody, APIPostLoginResult } from "$shared/api-types";
+import { Error, Field, HttpCode } from "@shared/errors";
+import { APIPostLoginJSONBody, APIPostLoginResult } from "@shared/api-types";
 import { createError } from "../../factory/error-factory";
 import { userByCredentials } from "../../database/auth";
 import { createResult } from "../../factory/result-factory";

@@ -19,9 +19,9 @@
          "bun-types" // add Bun global
       ],
       "paths": {
-         "$shared/*": ["../shared/lib/*"]
+         "@shared/*": ["../huginn-shared/lib/*"]
       }
    },
    "include": ["**/*"],
-   "references": [{ "path": "../shared" }]
+   "references": [{ "path": "../huginn-shared" }]
 }

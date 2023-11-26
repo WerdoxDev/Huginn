@@ -1,7 +1,7 @@
 import Elysia from "elysia";
 import authRoutes from "./routes/auth/index";
 import uniqueUsernameRoute from "./routes/unique-username";
-import { Error, HttpCode } from "$shared/errors";
+import { Error, HttpCode } from "@shared/errors";
 import { createError } from "./factory/error-factory";
 import cors from "@elysiajs/cors";
 

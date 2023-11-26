@@ -1,4 +1,4 @@
-import { TokenPayload } from "$shared/types";
+import { TokenPayload } from "@shared/types";
 import * as jose from "jose";
 
 const ACCESS_TOKEN_SECRET = new TextEncoder().encode(process.env.ACCESS_TOKEN_SECRET || "");
