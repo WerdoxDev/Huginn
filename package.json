@@ -1,0 +1,11 @@
+{
+   "name": "huginn-shared",
+   "module": "index.ts",
+   "type": "module",
+   "dependencies": {
+      "@sapphire/snowflake": "^3.5.1"
+   },
+   "devDependencies": {
+      "bun-types": "^1.0.11"
+   }
+}
