@@ -1,7 +1,7 @@
 import { APIPostRegisterResult, APIPostRegisterJSONBody } from "$shared/api-types";
 import { HttpCode, Error, Field } from "$shared/errors";
 import Elysia, { t } from "elysia";
-import { constants } from "../../constants";
+import { constants } from "$shared/constants";
 import { registerNewUser } from "../../database/auth";
 import { existsInUsers } from "../../database/common";
 import { createError } from "../../factory/error-factory";
