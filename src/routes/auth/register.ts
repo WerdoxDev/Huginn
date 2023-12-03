@@ -55,7 +55,11 @@ async function handleRegister(body: APIPostRegisterJSONBody): Promise<Response> 
          return createError().toResponse(HttpCode.SERVER_ERROR);
       }
 
-      const [accessToken, refreshToken] = await createTokens({ id: user._id }, "30m", "7d");
+      const [accessToken, refreshToken] = await createTokens(
+         { id: user._id },
+         constants.ACCESS_TOKEN_EXPIRE_TIME,
+         constants.REFRESH_TOKEN_EXPIRE_TIME
+      );
       const result: APIPostRegisterResult = { ...user.toObject(), token: accessToken, refreshToken: refreshToken };
 
       return createResult(result, HttpCode.CREATED);

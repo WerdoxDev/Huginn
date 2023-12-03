@@ -5,6 +5,7 @@ import { userByCredentials } from "../../database/auth";
 import { createResult } from "../../factory/result-factory";
 import { createTokens } from "../../factory/token-factory";
 import Elysia, { t } from "elysia";
+import { constants } from "@shared/constants";
 
 const route = new Elysia();
 
@@ -27,7 +28,11 @@ async function handleLogin(body: APIPostLoginJSONBody): Promise<Response> {
             .toResponse(HttpCode.BAD_REQUEST);
       }
 
-      const [accessToken, refreshToken] = await createTokens({ id: user._id }, "30m", "7d");
+      const [accessToken, refreshToken] = await createTokens(
+         { id: user._id },
+         constants.ACCESS_TOKEN_EXPIRE_TIME,
+         constants.REFRESH_TOKEN_EXPIRE_TIME
+      );
       const result: APIPostLoginResult = { ...user.toObject(), token: accessToken, refreshToken: refreshToken };
 
       return createResult(result, HttpCode.OK);

@@ -1,5 +1,5 @@
 import * as mongoose from "mongoose";
-import { APIUser } from "$shared/api-types";
+import { APIUser } from "@shared/api-types";
 
 const userSchema = new mongoose.Schema<APIUser>({
    _id: { type: String, required: true },

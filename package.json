@@ -13,6 +13,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@elysiajs/bearer": "^0.7.0",
     "@elysiajs/cors": "^0.7.2",
     "elysia": "^0.7.29",
     "jose": "^5.0.2",

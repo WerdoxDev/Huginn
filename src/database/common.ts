@@ -1,3 +1,4 @@
+import { DBError } from "./database-error";
 import { User } from "./user-schema";
 
 export async function existsInUsers(fieldName: string, value: unknown) {
@@ -5,6 +6,6 @@ export async function existsInUsers(fieldName: string, value: unknown) {
       const exists = await User.exists({ [fieldName]: value });
       return exists !== null;
    } catch (e) {
-      throw new Error("Unhandled Error in existsInUsers! => " + e);
+      throw new DBError("existsInUsers", e);
    }
 }

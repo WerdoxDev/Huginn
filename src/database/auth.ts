@@ -2,6 +2,7 @@ import { APIPostLoginJSONBody, APIPostRegisterJSONBody } from "@shared/api-types
 import { snowflake } from "@shared/snowflake";
 import { DBUser } from "./database-handler";
 import { User } from "./user-schema";
+import { DBError } from "./database-error";
 
 export async function userByCredentials(credentials: APIPostLoginJSONBody): Promise<DBUser> {
    try {
@@ -14,7 +15,7 @@ export async function userByCredentials(credentials: APIPostLoginJSONBody): Prom
 
       return user;
    } catch (e) {
-      throw new Error("Unhandled Error in userByCredentials! => " + e);
+      throw new DBError("userByCredentials", e);
    }
 }
 
@@ -37,6 +38,6 @@ export async function registerNewUser(user: APIPostRegisterJSONBody): Promise<DB
 
       return newUser;
    } catch (e) {
-      throw new Error("Unhandled Error in createNewUser!");
+      throw new DBError("registerNewUser", e);
    }
 }
