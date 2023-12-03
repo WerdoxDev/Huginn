@@ -27,12 +27,12 @@ export const Routes = {
 
    /**
     * Route for:
-    * - GET   '/user/@me'
-    * - GET   '/user/{user.id}'
-    * - PATCH '/user/@me'
+    * - GET   '/users/@me'
+    * - GET   '/users/{user.id}'
+    * - PATCH '/users/@me'
     */
    user(id: Snowflake) {
-      return `/user/${id}` as const;
+      return `/users/${id}` as const;
    },
 };
 

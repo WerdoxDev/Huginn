@@ -47,6 +47,7 @@ export enum JsonCode {
    UNKNOWN_ACCOUNT = 10001,
    UNKNOWN_MESSAGE = 10002,
    UNKNOWN_MEMBER = 10003,
+   UNKNOWN_USER = 10004,
    INVALID_FORM_BODY = 20001,
 }
 
@@ -84,5 +85,8 @@ export const Field = {
 export const Error = {
    invalidFormBody(): [string, JsonCode] {
       return ["Invalid Form Body", JsonCode.INVALID_FORM_BODY];
+   },
+   unknownUser(): [string, JsonCode] {
+      return ["Unknown User", JsonCode.UNKNOWN_USER];
    },
 };

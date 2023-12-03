@@ -19,6 +19,7 @@ export interface IncludesToken {
 
 export type APIGetUserResult = APIUser;
 export type APIGetCurrentUserResult = APIUser;
+export type APIGetUserByIdResult = APIUser;
 
 export interface APIPostLoginJSONBody {
    email?: string;
