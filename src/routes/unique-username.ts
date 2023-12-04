@@ -16,7 +16,7 @@ route.post("/unique-username", ({ body }) => handleUniqueUsername(body), {
 async function handleUniqueUsername(body: APIPostUniqueUsernameJSONBody): Promise<Response> {
    try {
       const isUnique = await validateUsernameUnique(body.username);
-      const result: APIPostUniqueUsernameResult = { taken: isUnique };
+      const result: APIPostUniqueUsernameResult = { taken: !isUnique };
 
       return createResult(result, HttpCode.OK);
    } catch (e) {
