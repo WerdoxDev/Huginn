@@ -1,11 +1,11 @@
 import { Error, Field, HttpCode } from "@shared/errors";
 import { APIPostLoginJSONBody, APIPostLoginResult } from "@shared/api-types";
 import { createError } from "../../factory/error-factory";
-import { userByCredentials } from "../../database/auth";
 import { createResult } from "../../factory/result-factory";
 import { createTokens } from "../../factory/token-factory";
 import Elysia, { t } from "elysia";
 import { constants } from "@shared/constants";
+import { DatabaseAuth, DatabaseError, isDBError } from "../../database";
 
 const route = new Elysia();
 
@@ -19,14 +19,7 @@ route.post("/login", ({ body }) => handleLogin(body), {
 
 async function handleLogin(body: APIPostLoginJSONBody): Promise<Response> {
    try {
-      const user = await userByCredentials(body);
-
-      if (!user) {
-         return createError(Error.invalidFormBody())
-            .error("login", Field.invalidLogin())
-            .error("password", Field.invalidLogin())
-            .toResponse(HttpCode.BAD_REQUEST);
-      }
+      const user = await DatabaseAuth.userByCredentials(body);
 
       const [accessToken, refreshToken] = await createTokens(
          { id: user._id },
@@ -37,7 +30,13 @@ async function handleLogin(body: APIPostLoginJSONBody): Promise<Response> {
 
       return createResult(result, HttpCode.OK);
    } catch (e) {
-      console.error(e);
+      if (isDBError(e) && e.error.message === DatabaseError.NULL_USER) {
+         return createError(Error.invalidFormBody())
+            .error("login", Field.invalidLogin())
+            .error("password", Field.invalidLogin())
+            .toResponse(HttpCode.BAD_REQUEST);
+      }
+
       return createError().toResponse(HttpCode.SERVER_ERROR);
    }
 }

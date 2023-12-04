@@ -1,7 +1,7 @@
 import { HuginnErrorData, HuginnErrorGroupWrapper, JsonCode } from "@shared/errors";
 import { DefaultResponseInit } from "../constants";
 
-class ErrorFactory {
+export class ErrorFactory {
    public message?: string;
    public code?: JsonCode;
    public errors: Record<string, HuginnErrorGroupWrapper> = {};
