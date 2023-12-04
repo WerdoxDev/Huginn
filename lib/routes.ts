@@ -18,6 +18,14 @@ export const Routes = {
    },
 
    /**
+    * Route for:
+    * - POST '/auth/refresh-token'
+    */
+   refreshToken() {
+      return `/auth/refresh-token` as const;
+   },
+
+   /**
     * ROute for:
     * - POST '/unique-username'
     */

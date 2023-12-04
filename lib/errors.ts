@@ -52,14 +52,19 @@ export enum JsonCode {
 }
 
 export enum FieldCode {
+   REQUIRED = "REQUIRED",
    INVALID_LOGIN = "INVALID_LOGIN",
    TOO_SHORT = "BASE_TYPE_TOO_SHORT",
    USERNAME_TAKEN = "USERNAME_TAKEN",
    EMAIL_IN_USE = "EMAIL_IN_USE",
    EMAIL_INVALID = "EMAIL_INVALID",
+   PASSWORD_INCORRECT = "PASSWORD_INCORRECT",
 }
 
 export const Field = {
+   required(): [string, string] {
+      return ["This field is required", FieldCode.REQUIRED];
+   },
    invalidLogin(): [string, string] {
       return ["Login or password is invalid", FieldCode.INVALID_LOGIN];
    },
@@ -79,6 +84,9 @@ export const Field = {
    },
    usernameTaken(): [string, string] {
       return ["Username is already taken", FieldCode.USERNAME_TAKEN];
+   },
+   passwordIncorrect(): [string, string] {
+      return ["Password is incorrect", FieldCode.PASSWORD_INCORRECT];
    },
 };
 

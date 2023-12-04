@@ -21,6 +21,12 @@ export type APIGetUserResult = APIUser;
 export type APIGetCurrentUserResult = APIUser;
 export type APIGetUserByIdResult = APIUser;
 
+export interface APIPostRefreshTokenJSONBody {
+   refreshToken: string;
+}
+
+export type APIPostRefreshTokenResult = IncludesToken;
+
 export interface APIPostLoginJSONBody {
    email?: string;
    username?: string;
@@ -39,8 +45,11 @@ export type APIPostRegisterResult = APIUser & IncludesToken;
 
 export interface APIPatchCurrentUserJSONBody {
    email?: string;
+   displayName?: string;
    username?: string;
    avatar?: string;
+   password?: string;
+   newPassword?: string;
 }
 
 export type APIPatchCurrentUserResult = APIUser & IncludesToken;
