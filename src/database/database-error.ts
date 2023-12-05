@@ -1,11 +1,15 @@
+import { APIUser } from "@shared/api-types";
+
 export class DBError<T> extends Error {
    public constructor(public error: T, methodName: string) {
       super(`Unhandled error in ${methodName}! => ${error}`);
    }
 }
 
-export function throwUserNull(): never {
-   throw new Error(DatabaseError.NULL_USER);
+export function assertUserIsDefined(user: unknown): asserts user is APIUser {
+   if (typeof user !== "object") {
+      throw new Error(DBErrorType.NULL_USER);
+   }
 }
 
 export function isDBError(object: unknown): object is DBError<Error> {
@@ -16,6 +20,6 @@ export function isDBError(object: unknown): object is DBError<Error> {
    return false;
 }
 
-export enum DatabaseError {
+export enum DBErrorType {
    NULL_USER = "NULL_USER",
 }

@@ -6,7 +6,7 @@ import { Snowflake } from "@shared/types";
 import Elysia from "elysia";
 import { setup, hasToken } from "../../route-utils";
 import { DatabaseUser } from "../../database";
-import { DatabaseError, isDBError } from "../../database/database-error";
+import { DBErrorType, isDBError } from "../../database/database-error";
 
 const route = new Elysia().use(setup);
 
@@ -23,7 +23,7 @@ export async function handleGetUserById(id: Snowflake): Promise<Response> {
 
       return createResult(result, HttpCode.OK);
    } catch (e) {
-      if (isDBError(e) && e.error.message === DatabaseError.NULL_USER) {
+      if (isDBError(e) && e.error.message === DBErrorType.NULL_USER) {
          return createError(HError.unknownUser()).toResponse(HttpCode.NOT_FOUND);
       }
 

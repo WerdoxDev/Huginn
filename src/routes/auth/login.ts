@@ -5,7 +5,7 @@ import { createResult } from "../../factory/result-factory";
 import { createTokens } from "../../factory/token-factory";
 import Elysia, { t } from "elysia";
 import { constants } from "@shared/constants";
-import { DatabaseAuth, DatabaseError, isDBError } from "../../database";
+import { DatabaseAuth, DBErrorType, isDBError } from "../../database";
 
 const route = new Elysia();
 
@@ -30,7 +30,7 @@ async function handleLogin(body: APIPostLoginJSONBody): Promise<Response> {
 
       return createResult(result, HttpCode.OK);
    } catch (e) {
-      if (isDBError(e) && e.error.message === DatabaseError.NULL_USER) {
+      if (isDBError(e) && e.error.message === DBErrorType.NULL_USER) {
          return createError(Error.invalidFormBody())
             .error("login", Field.invalidLogin())
             .error("password", Field.invalidLogin())

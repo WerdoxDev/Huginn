@@ -1,6 +1,6 @@
 import { APIPostLoginJSONBody, APIPostRegisterJSONBody } from "@shared/api-types";
 import { snowflake } from "@shared/snowflake";
-import { DBError, DBUser, throwUserNull } from ".";
+import { DBError, DBUser, assertUserIsDefined } from ".";
 import { User } from "./user-schema";
 
 export class DatabaseAuth {
@@ -13,7 +13,8 @@ export class DatabaseAuth {
             ],
          });
 
-         return user || throwUserNull();
+         assertUserIsDefined(user);
+         return user;
       } catch (e) {
          throw new DBError(e, "userByCredentials");
       }
