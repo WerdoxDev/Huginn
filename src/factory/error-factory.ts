@@ -1,12 +1,11 @@
 import { HuginnErrorData, HuginnErrorGroupWrapper, JsonCode } from "@shared/errors";
-import { DefaultResponseInit } from "../constants";
 
-class ErrorFactory {
-   public message?: string;
-   public code?: JsonCode;
+export class ErrorFactory {
+   public message: string;
+   public code: JsonCode;
    public errors: Record<string, HuginnErrorGroupWrapper> = {};
 
-   public constructor(message?: string, code?: JsonCode) {
+   public constructor(message: string, code: JsonCode) {
       this.message = message;
       this.code = code;
    }
@@ -23,7 +22,7 @@ class ErrorFactory {
       return this.errorRaw(name, field[0], field[1]);
    }
 
-   public toObject(): Partial<HuginnErrorData> {
+   public toObject(): HuginnErrorData {
       return {
          message: this.message,
          code: this.code,
@@ -31,24 +30,18 @@ class ErrorFactory {
       };
    }
 
-   public toResponse(status: number): Response {
-      const object = this.toObject();
-
-      return new Response(object ? JSON.stringify(object) : undefined, { ...DefaultResponseInit, status });
-   }
-
    public hasErrors(): boolean {
       return Object.keys(this.errors).length !== 0;
    }
 }
 
-export function createErrorRaw(message?: string, code?: JsonCode) {
+export function createErrorRaw(message: string, code: JsonCode) {
    const factory = new ErrorFactory(message, code);
    return factory;
 }
 
-export function createError(error?: [string, JsonCode]) {
-   return createErrorRaw(error?.[0], error?.[1]);
+export function createError(error: [string, JsonCode]) {
+   return createErrorRaw(error[0], error[1]);
 }
 
 /**

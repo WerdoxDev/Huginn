@@ -1,8 +1,8 @@
 import { TokenPayload } from "@shared/types";
 import * as jose from "jose";
 
-const ACCESS_TOKEN_SECRET = new TextEncoder().encode(process.env.ACCESS_TOKEN_SECRET || "");
-const REFRESH_TOKEN_SECRET = new TextEncoder().encode(process.env.REFRESH_TOKEN_SECRET || "");
+export const ACCESS_TOKEN_SECRET = new TextEncoder().encode(process.env.ACCESS_TOKEN_SECRET || "");
+export const REFRESH_TOKEN_SECRET = new TextEncoder().encode(process.env.REFRESH_TOKEN_SECRET || "");
 
 export async function createTokens(
    payload: TokenPayload,
@@ -23,13 +23,16 @@ export async function createTokens(
    return [accessToken, refreshToken];
 }
 
-export async function verifyToken(token: string): Promise<[boolean, (TokenPayload & jose.JWTPayload) | null]> {
+export async function verifyToken(
+   token: string,
+   secret: Uint8Array = ACCESS_TOKEN_SECRET
+): Promise<[boolean, (TokenPayload & jose.JWTPayload) | null]> {
    // if (tokenInvalidator.getInvalidTokens().includes(token)) {
    //    return [false, null];
    // }
 
    try {
-      const jwt = await jose.jwtVerify<TokenPayload>(token, ACCESS_TOKEN_SECRET);
+      const jwt = await jose.jwtVerify<TokenPayload>(token, secret);
 
       return [true, jwt.payload];
    } catch (e) {
