@@ -1,38 +1,43 @@
 import { APIPostRefreshTokenJSONBody, APIPostRefreshTokenResult } from "@shared/api-types";
 import Elysia, { t } from "elysia";
 import { REFRESH_TOKEN_SECRET, createTokens, verifyToken } from "../../factory/token-factory";
-import { createError } from "../../factory/error-factory";
 import { HttpCode } from "@shared/errors";
 import { constants } from "@shared/constants";
-import { createResult } from "../../factory/result-factory";
+import { logServerError } from "../../log-utils";
+import { InferContext } from "../../..";
 
 const route = new Elysia();
 
-route.post("/refresh-token", ({ body }) => handleRefreshToken(body), {
+route.post("/refresh-token", (ctx) => handleRefreshToken(ctx), {
    body: t.Object({
       refreshToken: t.String(),
    }),
 });
 
-async function handleRefreshToken(body: APIPostRefreshTokenJSONBody): Promise<Response> {
+async function handleRefreshToken(ctx: InferContext<typeof route, APIPostRefreshTokenJSONBody>) {
    try {
-      const [isValid, payload] = await verifyToken(body.refreshToken, REFRESH_TOKEN_SECRET);
+      const [isValid, payload] = await verifyToken(ctx.body.refreshToken, REFRESH_TOKEN_SECRET);
 
       if (!isValid || !payload) {
-         return createError().toResponse(HttpCode.UNAUTHORIZED);
+         ctx.set.status = HttpCode.UNAUTHORIZED;
+         return undefined;
       }
 
       const [accessToken, refreshToken] = await createTokens(
          { id: payload.id },
          constants.ACCESS_TOKEN_EXPIRE_TIME,
-         constants.REFRESH_TOKEN_EXPIRE_TIME
+         constants.REFRESH_TOKEN_EXPIRE_TIME,
       );
 
       const result: APIPostRefreshTokenResult = { token: accessToken, refreshToken };
 
-      return createResult(result, HttpCode.OK);
+      ctx.set.status = HttpCode.OK;
+      return result;
    } catch (e) {
-      return createError().toResponse(HttpCode.SERVER_ERROR);
+      logServerError(ctx.path, e);
+
+      ctx.set.status = HttpCode.SERVER_ERROR;
+      return undefined;
    }
 }
 

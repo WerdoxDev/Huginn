@@ -3,7 +3,6 @@ import { HttpCode, Error } from "@shared/errors";
 import Elysia, { t } from "elysia";
 import { constants } from "@shared/constants";
 import { createError } from "../../factory/error-factory";
-import { createResult } from "../../factory/result-factory";
 import { createTokens } from "../../factory/token-factory";
 import { DatabaseAuth } from "../../database";
 import {
@@ -14,10 +13,12 @@ import {
    validateUsername,
    validateUsernameUnique,
 } from "../../validation";
+import { logServerError } from "../../log-utils";
+import { InferContext } from "../../..";
 
 const route = new Elysia();
 
-route.post("/register", ({ body }) => handleRegister(body), {
+route.post("/register", (ctx) => handleRegister(ctx), {
    body: t.Object({
       username: t.String(),
       displayName: t.String(),
@@ -26,40 +27,46 @@ route.post("/register", ({ body }) => handleRegister(body), {
    }),
 });
 
-async function handleRegister(body: APIPostRegisterJSONBody): Promise<Response> {
+async function handleRegister(ctx: InferContext<typeof route, APIPostRegisterJSONBody>) {
    const formError = createError(Error.invalidFormBody());
 
-   validateUsername(body.username, formError);
-   validateDisplayName(body.displayName, formError);
-   validatePassword(body.password, formError);
-   validateEmail(body.email, formError);
+   validateUsername(ctx.body.username, formError);
+   validateDisplayName(ctx.body.displayName, formError);
+   validatePassword(ctx.body.password, formError);
+   validateEmail(ctx.body.email, formError);
 
    if (formError.hasErrors()) {
-      return formError.toResponse(HttpCode.BAD_REQUEST);
+      ctx.set.status = HttpCode.BAD_REQUEST;
+      return formError.toObject();
    }
 
    try {
       const databaseError = createError(Error.invalidFormBody());
 
-      await validateUsernameUnique(body.username, databaseError);
-      await validateEmailUnique(body.email, databaseError);
+      await validateUsernameUnique(ctx.body.username, databaseError);
+      await validateEmailUnique(ctx.body.email, databaseError);
 
       if (databaseError.hasErrors()) {
-         return databaseError.toResponse(HttpCode.BAD_REQUEST);
+         ctx.set.status = HttpCode.BAD_REQUEST;
+         return databaseError.toObject();
       }
 
-      const user = await DatabaseAuth.registerNewUser(body);
+      const user = await DatabaseAuth.registerNewUser(ctx.body);
 
       const [accessToken, refreshToken] = await createTokens(
          { id: user._id },
          constants.ACCESS_TOKEN_EXPIRE_TIME,
-         constants.REFRESH_TOKEN_EXPIRE_TIME
+         constants.REFRESH_TOKEN_EXPIRE_TIME,
       );
       const result: APIPostRegisterResult = { ...user.toObject(), token: accessToken, refreshToken: refreshToken };
 
-      return createResult(result, HttpCode.CREATED);
+      ctx.set.status = HttpCode.CREATED;
+      return result;
    } catch (e) {
-      return createError().toResponse(HttpCode.SERVER_ERROR);
+      logServerError(ctx.path, e);
+
+      ctx.set.status = HttpCode.SERVER_ERROR;
+      return undefined;
    }
 }
 

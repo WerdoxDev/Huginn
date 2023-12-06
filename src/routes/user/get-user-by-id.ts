@@ -1,33 +1,39 @@
 import { createError } from "../../factory/error-factory";
 import { HttpCode, Error as HError } from "@shared/errors";
-import { createResult } from "../../factory/result-factory";
 import { APIGetUserByIdResult } from "@shared/api-types";
-import { Snowflake } from "@shared/types";
 import Elysia from "elysia";
 import { setup, hasToken } from "../../route-utils";
 import { DatabaseUser } from "../../database";
 import { DBErrorType, isDBError } from "../../database/database-error";
+import { logServerError } from "../../log-utils";
+import { InferContext } from "../../..";
 
 const route = new Elysia().use(setup);
 
-route.get("/:id", ({ params: { id } }) => handleGetUserById(id), { beforeHandle: hasToken });
+route.get("/:id", (ctx) => handleGetUserById(ctx), { beforeHandle: hasToken });
 
-export async function handleGetUserById(id: Snowflake): Promise<Response> {
-   if (!id) {
-      return createError().toResponse(HttpCode.UNAUTHORIZED);
+export async function handleGetUserById(ctx: InferContext<typeof route, unknown, "/:id">) {
+   if (!ctx.params.id) {
+      ctx.set.status = HttpCode.UNAUTHORIZED;
+      return undefined;
    }
 
    try {
-      const user = await DatabaseUser.getUserById(id, "-email");
+      const user = await DatabaseUser.getUserById(ctx.params.id, "-email");
       const result: APIGetUserByIdResult = user.toObject();
 
-      return createResult(result, HttpCode.OK);
+      ctx.set.status = HttpCode.OK;
+      return result;
    } catch (e) {
       if (isDBError(e) && e.error.message === DBErrorType.NULL_USER) {
-         return createError(HError.unknownUser()).toResponse(HttpCode.NOT_FOUND);
+         ctx.set.status = HttpCode.NOT_FOUND;
+         return createError(HError.unknownUser()).toObject();
       }
 
-      return createError().toResponse(HttpCode.SERVER_ERROR);
+      logServerError(ctx.path, e);
+
+      ctx.set.status = HttpCode.SERVER_ERROR;
+      return undefined;
    }
 }
 

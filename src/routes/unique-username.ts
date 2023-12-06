@@ -1,27 +1,30 @@
 import { APIPostUniqueUsernameJSONBody, APIPostUniqueUsernameResult } from "@shared/api-types";
 import Elysia, { t } from "elysia";
-import { createResult } from "../factory/result-factory";
 import { HttpCode } from "@shared/errors";
-import { createError } from "../factory/error-factory";
 import { validateUsernameUnique } from "../validation";
+import { InferContext } from "../..";
+import { logServerError } from "../log-utils";
 
 const route = new Elysia();
 
-route.post("/unique-username", ({ body }) => handleUniqueUsername(body), {
+route.post("/unique-username", (ctx) => handleUniqueUsername(ctx), {
    body: t.Object({
       username: t.String(),
    }),
 });
 
-async function handleUniqueUsername(body: APIPostUniqueUsernameJSONBody): Promise<Response> {
+async function handleUniqueUsername(ctx: InferContext<typeof route, APIPostUniqueUsernameJSONBody>) {
    try {
-      const isUnique = await validateUsernameUnique(body.username);
+      const isUnique = await validateUsernameUnique(ctx.body.username);
       const result: APIPostUniqueUsernameResult = { taken: !isUnique };
 
-      return createResult(result, HttpCode.OK);
+      ctx.set.status = HttpCode.OK;
+      return result;
    } catch (e) {
-      console.error(e);
-      return createError().toResponse(HttpCode.SERVER_ERROR);
+      logServerError(ctx.path, e);
+
+      ctx.set.status = HttpCode.SERVER_ERROR;
+      return undefined;
    }
 }
 

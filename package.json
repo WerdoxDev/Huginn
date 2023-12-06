@@ -2,6 +2,7 @@
   "name": "huginn-server",
   "module": "index.ts",
   "type": "module",
+  "version": "0.1.0-dev",
   "scripts": {
     "start": "bun --watch ./src/index.ts"
   },
@@ -15,6 +16,7 @@
   "dependencies": {
     "@elysiajs/bearer": "^0.7.0",
     "@elysiajs/cors": "^0.7.2",
+    "consola": "^3.2.3",
     "elysia": "^0.7.29",
     "jose": "^5.0.2",
     "mongoose": "^8.0.0"

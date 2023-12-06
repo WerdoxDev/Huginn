@@ -1,30 +1,35 @@
-import Elysia from "elysia";
-import { createError } from "../../factory/error-factory";
+import Elysia, { type Context } from "elysia";
 import { HttpCode } from "@shared/errors";
 import { verifyToken } from "../../factory/token-factory";
-import { createResult } from "../../factory/result-factory";
 import { APIGetCurrentUserResult } from "@shared/api-types";
 import { setup, hasToken } from "../../route-utils";
 import { DatabaseUser } from "../../database";
+import { logServerError } from "../../log-utils";
+import { InferContext } from "../../..";
 
 const route = new Elysia().use(setup);
 
-route.get("/@me", ({ bearer }) => handleGetCurrentUser(bearer || ""), { beforeHandle: hasToken });
+route.get("/@me", (ctx: Context) => handleGetCurrentUser(ctx), { beforeHandle: hasToken });
 
-async function handleGetCurrentUser(token: string): Promise<Response> {
+async function handleGetCurrentUser(ctx: InferContext<typeof route>) {
    try {
-      const [isValid, payload] = await verifyToken(token);
+      const [isValid, payload] = await verifyToken(ctx.bearer || "");
 
       if (!isValid || !payload) {
-         return createError().toResponse(HttpCode.UNAUTHORIZED);
+         ctx.set.status = HttpCode.UNAUTHORIZED;
+         return undefined;
       }
 
       const user = await DatabaseUser.getUserById(payload.id);
       const result: APIGetCurrentUserResult = user.toObject();
 
-      return createResult(result, HttpCode.OK);
+      ctx.set.status = HttpCode.OK;
+      return result;
    } catch (e) {
-      return createError().toResponse(HttpCode.SERVER_ERROR);
+      logServerError(ctx.path, e);
+
+      ctx.set.status = HttpCode.SERVER_ERROR;
+      return undefined;
    }
 }
 

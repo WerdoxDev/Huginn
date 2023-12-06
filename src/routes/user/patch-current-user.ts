@@ -6,7 +6,6 @@ import { createError } from "../../factory/error-factory";
 import { createTokens, verifyToken } from "../../factory/token-factory";
 import { constants } from "@shared/constants";
 import { DatabaseUser } from "../../database";
-import { createResult } from "../../factory/result-factory";
 import {
    validateDisplayName,
    validateEmail,
@@ -15,10 +14,12 @@ import {
    validateUsernameUnique,
    validateEmailUnique,
 } from "../../validation";
+import { logServerError } from "../../log-utils";
+import { InferContext } from "../../..";
 
 const route = new Elysia().use(setup);
 
-route.patch("/@me", ({ bearer, body }) => handlePatchCurrentUser(bearer || "", body), {
+route.patch("/@me", (ctx) => handlePatchCurrentUser(ctx), {
    beforeHandle: hasToken,
    body: t.Object({
       email: t.Optional(t.String()),
@@ -30,59 +31,66 @@ route.patch("/@me", ({ bearer, body }) => handlePatchCurrentUser(bearer || "", b
    }),
 });
 
-async function handlePatchCurrentUser(token: string, body: APIPatchCurrentUserJSONBody) {
+async function handlePatchCurrentUser(ctx: InferContext<typeof route, APIPatchCurrentUserJSONBody>) {
    try {
-      const [isValid, payload] = await verifyToken(token);
+      const [isValid, payload] = await verifyToken(ctx.bearer!);
 
       if (!isValid || !payload) {
-         return createError().toResponse(HttpCode.UNAUTHORIZED);
+         ctx.set.status = HttpCode.UNAUTHORIZED;
+         return undefined;
       }
 
       const formError = createError(Error.invalidFormBody());
 
-      validateUsername(body.username, formError);
-      validateDisplayName(body.displayName, formError);
-      validateEmail(body.email, formError);
+      validateUsername(ctx.body.username, formError);
+      validateDisplayName(ctx.body.displayName, formError);
+      validateEmail(ctx.body.email, formError);
 
-      if ((body.username || body.newPassword) && !body.password) {
+      if ((ctx.body.username || ctx.body.newPassword) && !ctx.body.password) {
          formError.error("password", Field.required());
       }
 
       if (formError.hasErrors()) {
-         return formError.toResponse(HttpCode.BAD_REQUEST);
+         ctx.set.status = HttpCode.BAD_REQUEST;
+         return formError.toObject();
       }
 
       const databaseError = createError(Error.invalidFormBody());
 
       const user = await DatabaseUser.getUserById(payload.id);
-      validateCorrectPassword(body.password, user.password || "", databaseError);
+      validateCorrectPassword(ctx.body.password, user.password || "", databaseError);
 
-      await validateUsernameUnique(body.username, databaseError);
-      await validateEmailUnique(body.email, databaseError);
+      await validateUsernameUnique(ctx.body.username, databaseError);
+      await validateEmailUnique(ctx.body.email, databaseError);
 
       if (databaseError.hasErrors()) {
-         return databaseError.toResponse(HttpCode.BAD_REQUEST);
+         ctx.set.status = HttpCode.BAD_REQUEST;
+         return databaseError.toObject();
       }
 
       const updatedUser = await DatabaseUser.updateUser(payload.id, {
-         email: body.email,
-         username: body.username,
-         displayName: body.displayName,
-         avatar: body.avatar,
-         password: body.newPassword,
+         email: ctx.body.email,
+         username: ctx.body.username,
+         displayName: ctx.body.displayName,
+         avatar: ctx.body.avatar,
+         password: ctx.body.newPassword,
       });
 
       const [accessToken, refreshToken] = await createTokens(
          { id: payload.id },
          constants.ACCESS_TOKEN_EXPIRE_TIME,
-         constants.REFRESH_TOKEN_EXPIRE_TIME
+         constants.REFRESH_TOKEN_EXPIRE_TIME,
       );
 
       const result: APIPatchCurrentUserResult = { ...updatedUser.toObject(), token: accessToken, refreshToken };
 
-      return createResult(result, HttpCode.OK);
+      ctx.set.status = HttpCode.OK;
+      return result;
    } catch (e) {
-      return createError().toResponse(HttpCode.SERVER_ERROR);
+      logServerError(ctx.path, e);
+
+      ctx.set.status = HttpCode.SERVER_ERROR;
+      return undefined;
    }
 }
 
