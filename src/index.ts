@@ -1,10 +1,25 @@
 import { startServer } from "./server.ts";
 import { Database } from "./database";
+import consola from "consola";
 
-const MONGODB_CONNECTION_STRING =
-   "mongodb+srv://huginn-root:LL3zR0QBOm9BNbUj@huginn.yzwj9ou.mongodb.net/?retryWrites=true&w=majority";
+async function main() {
+   const connectionString = process.env.MONGODB_CONNECTION_STRING;
+   const dbName = process.env.MONGODB_DB_NAME;
+   const serverHost = process.env.SERVER_HOST;
+   const serverPort = process.env.SERVER_PORT;
 
-const MONGODB_DB_NAME = "huginn";
+   if (!connectionString || !dbName) {
+      consola.error("Database config is not set correctly!");
+      return;
+   }
 
-await Database.initialize(MONGODB_CONNECTION_STRING, MONGODB_DB_NAME);
-startServer("localhost", 3000);
+   if (!serverHost || !serverPort) {
+      consola.error("Server config is not set correctly!");
+      return;
+   }
+
+   await Database.initialize(connectionString, dbName);
+   startServer(serverHost, parseInt(serverPort, 10));
+}
+
+await main();
