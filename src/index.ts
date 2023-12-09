@@ -1,6 +1,7 @@
 import { startServer } from "./server.ts";
 import { Database } from "./database";
 import consola from "consola";
+import { startListening } from "./commands";
 
 async function main() {
    const connectionString = process.env.MONGODB_CONNECTION_STRING;
@@ -23,3 +24,5 @@ async function main() {
 }
 
 await main();
+
+await startListening();

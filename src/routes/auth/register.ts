@@ -13,8 +13,8 @@ import {
    validateUsername,
    validateUsernameUnique,
 } from "../../validation";
-import { logServerError } from "../../log-utils";
 import { InferContext } from "../../..";
+import { logAndReturnError, returnError, returnResult } from "../../route-utils";
 
 const route = new Elysia();
 
@@ -36,8 +36,7 @@ async function handleRegister(ctx: InferContext<typeof route, APIPostRegisterJSO
    validateEmail(ctx.body.email, formError);
 
    if (formError.hasErrors()) {
-      ctx.set.status = HttpCode.BAD_REQUEST;
-      return formError.toObject();
+      return returnError(ctx, formError);
    }
 
    try {
@@ -47,8 +46,7 @@ async function handleRegister(ctx: InferContext<typeof route, APIPostRegisterJSO
       await validateEmailUnique(ctx.body.email, databaseError);
 
       if (databaseError.hasErrors()) {
-         ctx.set.status = HttpCode.BAD_REQUEST;
-         return databaseError.toObject();
+         return returnError(ctx, databaseError);
       }
 
       const user = await DatabaseAuth.registerNewUser(ctx.body);
@@ -60,13 +58,9 @@ async function handleRegister(ctx: InferContext<typeof route, APIPostRegisterJSO
       );
       const result: APIPostRegisterResult = { ...user.toObject(), token: accessToken, refreshToken: refreshToken };
 
-      ctx.set.status = HttpCode.CREATED;
-      return result;
+      return returnResult(ctx, result, HttpCode.CREATED);
    } catch (e) {
-      logServerError(ctx.path, e);
-
-      ctx.set.status = HttpCode.SERVER_ERROR;
-      return undefined;
+      return logAndReturnError(ctx, e);
    }
 }
 

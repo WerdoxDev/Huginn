@@ -1,10 +1,10 @@
 import { APIPostLoginJSONBody, APIPostRegisterJSONBody } from "@shared/api-types";
 import { snowflake } from "@shared/snowflake";
-import { DBError, DBUser, assertUserIsDefined } from ".";
+import { DBError, assertUserIsDefined } from ".";
 import { User } from "./user-schema";
 
 export class DatabaseAuth {
-   static async userByCredentials(credentials: APIPostLoginJSONBody): Promise<DBUser> {
+   static async userByCredentials(credentials: APIPostLoginJSONBody) {
       try {
          const user = await User.findOne({
             $or: [
@@ -20,7 +20,7 @@ export class DatabaseAuth {
       }
    }
 
-   static async registerNewUser(user: APIPostRegisterJSONBody): Promise<DBUser> {
+   static async registerNewUser(user: APIPostRegisterJSONBody) {
       try {
          const displayName = user.displayName || user.username;
 

@@ -1,12 +1,12 @@
-import { Error, Field, HttpCode } from "@shared/errors";
+import { Error, Field } from "@shared/errors";
 import { APIPostLoginJSONBody, APIPostLoginResult } from "@shared/api-types";
 import { createError } from "../../factory/error-factory";
 import { createTokens } from "../../factory/token-factory";
 import Elysia, { t } from "elysia";
 import { constants } from "@shared/constants";
 import { DatabaseAuth, DBErrorType, isDBError } from "../../database";
-import { logServerError } from "../../log-utils";
 import { InferContext } from "../../..";
+import { logAndReturnError, returnError, returnResult } from "../../route-utils";
 
 const route = new Elysia();
 
@@ -29,20 +29,16 @@ async function handleLogin(ctx: InferContext<typeof route, APIPostLoginJSONBody>
       );
       const result: APIPostLoginResult = { ...user.toObject(), token: accessToken, refreshToken: refreshToken };
 
-      ctx.set.status = HttpCode.OK;
-      return result;
+      return returnResult(ctx, result);
    } catch (e) {
       if (isDBError(e) && e.error.message === DBErrorType.NULL_USER) {
-         ctx.set.status = HttpCode.BAD_REQUEST;
-         return createError(Error.invalidFormBody())
-            .error("login", Field.invalidLogin())
-            .error("password", Field.invalidLogin())
-            .toObject();
+         return returnError(
+            ctx,
+            createError(Error.invalidFormBody()).error("login", Field.invalidLogin()).error("password", Field.invalidLogin()),
+         );
       }
 
-      logServerError(ctx.path, e);
-      ctx.set.status = HttpCode.SERVER_ERROR;
-      return undefined;
+      return logAndReturnError(ctx, e);
    }
 }
 

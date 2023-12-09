@@ -1,10 +1,11 @@
 import Elysia from "elysia";
-import authRoutes from "./routes/auth/index";
-import userRoutes from "./routes/user/index";
+import authRoutes from "./routes/auth";
+import userRoutes from "./routes/user";
+import channelRoutes from "./routes/channel";
 import uniqueUsernameRoute from "./routes/unique-username";
-import { Error, HttpCode, HuginnErrorData } from "@shared/errors";
+import { Error, HuginnErrorData } from "@shared/errors";
 import { createError } from "./factory/error-factory";
-import { setup } from "./route-utils";
+import { returnError, setup } from "./route-utils";
 import { consola } from "consola";
 import { colors } from "consola/utils";
 import { version } from "../package.json";
@@ -51,14 +52,13 @@ export function startServer(hostname: string, port: number) {
       logReject(ctx.path, ctx.code);
 
       if (ctx.code === "VALIDATION") {
-         ctx.set.status = HttpCode.BAD_REQUEST;
-         return createError(Error.invalidFormBody()).toObject();
+         return returnError(ctx, createError(Error.invalidFormBody()));
       }
 
       return ctx.error;
    });
 
-   app.use(setup).use(authRoutes).use(userRoutes).use(uniqueUsernameRoute);
+   app.use(setup).use(authRoutes).use(userRoutes).use(uniqueUsernameRoute).use(channelRoutes);
 
    app.listen({ hostname, port });
 

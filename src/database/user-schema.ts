@@ -1,7 +1,7 @@
 import * as mongoose from "mongoose";
-import { APIUser } from "@shared/api-types";
+import { APIChannelUser, APIUser } from "@shared/api-types";
 
-const userSchema = new mongoose.Schema<APIUser>({
+export const userSchema = new mongoose.Schema<APIUser>({
    _id: { type: String, required: true },
    username: { type: String, required: true },
    displayName: { type: String, required: true },
@@ -12,4 +12,11 @@ const userSchema = new mongoose.Schema<APIUser>({
    system: { type: Boolean, required: true },
 });
 
+export const channelUserSchema = new mongoose.Schema<APIChannelUser>({
+   _id: { type: String, required: true },
+   username: { type: String, required: true },
+   avatar: { type: String, required: true },
+});
+
 export const User = mongoose.model<APIUser>("User", userSchema);
+export const ChannelUser = mongoose.model<APIChannelUser>("ChannelUser", channelUserSchema);

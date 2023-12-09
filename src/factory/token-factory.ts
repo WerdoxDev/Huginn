@@ -7,7 +7,7 @@ export const REFRESH_TOKEN_SECRET = new TextEncoder().encode(process.env.REFRESH
 export async function createTokens(
    payload: TokenPayload,
    accessExpireTime: string,
-   refreshExpireTime: string
+   refreshExpireTime: string,
 ): Promise<[string, string]> {
    const accessToken = await new jose.SignJWT({ ...payload })
       .setProtectedHeader({ alg: "HS256" })
@@ -25,7 +25,7 @@ export async function createTokens(
 
 export async function verifyToken(
    token: string,
-   secret: Uint8Array = ACCESS_TOKEN_SECRET
+   secret: Uint8Array = ACCESS_TOKEN_SECRET,
 ): Promise<[boolean, (TokenPayload & jose.JWTPayload) | null]> {
    // if (tokenInvalidator.getInvalidTokens().includes(token)) {
    //    return [false, null];
@@ -33,6 +33,10 @@ export async function verifyToken(
 
    try {
       const jwt = await jose.jwtVerify<TokenPayload>(token, secret);
+
+      if (!("id" in jwt.payload)) {
+         return [false, null];
+      }
 
       return [true, jwt.payload];
    } catch (e) {

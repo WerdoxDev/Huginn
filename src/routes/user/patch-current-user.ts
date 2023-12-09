@@ -1,7 +1,7 @@
 import Elysia, { t } from "elysia";
-import { hasToken, setup } from "../../route-utils";
+import { hasToken, logAndReturnError, returnError, returnResult, setup } from "../../route-utils";
 import { APIPatchCurrentUserJSONBody, APIPatchCurrentUserResult } from "@shared/api-types";
-import { HttpCode, Error, Field } from "@shared/errors";
+import { Error, Field } from "@shared/errors";
 import { createError } from "../../factory/error-factory";
 import { createTokens, verifyToken } from "../../factory/token-factory";
 import { constants } from "@shared/constants";
@@ -14,7 +14,6 @@ import {
    validateUsernameUnique,
    validateEmailUnique,
 } from "../../validation";
-import { logServerError } from "../../log-utils";
 import { InferContext } from "../../..";
 
 const route = new Elysia().use(setup);
@@ -33,12 +32,7 @@ route.patch("/@me", (ctx) => handlePatchCurrentUser(ctx), {
 
 async function handlePatchCurrentUser(ctx: InferContext<typeof route, APIPatchCurrentUserJSONBody>) {
    try {
-      const [isValid, payload] = await verifyToken(ctx.bearer!);
-
-      if (!isValid || !payload) {
-         ctx.set.status = HttpCode.UNAUTHORIZED;
-         return undefined;
-      }
+      const [_isValid, payload] = await verifyToken(ctx.bearer!);
 
       const formError = createError(Error.invalidFormBody());
 
@@ -51,24 +45,22 @@ async function handlePatchCurrentUser(ctx: InferContext<typeof route, APIPatchCu
       }
 
       if (formError.hasErrors()) {
-         ctx.set.status = HttpCode.BAD_REQUEST;
-         return formError.toObject();
+         return returnError(ctx, formError);
       }
 
       const databaseError = createError(Error.invalidFormBody());
 
-      const user = await DatabaseUser.getUserById(payload.id);
+      const user = await DatabaseUser.getUserById(payload!.id);
       validateCorrectPassword(ctx.body.password, user.password || "", databaseError);
 
       await validateUsernameUnique(ctx.body.username, databaseError);
       await validateEmailUnique(ctx.body.email, databaseError);
 
       if (databaseError.hasErrors()) {
-         ctx.set.status = HttpCode.BAD_REQUEST;
-         return databaseError.toObject();
+         return returnError(ctx, databaseError);
       }
 
-      const updatedUser = await DatabaseUser.updateUser(payload.id, {
+      const updatedUser = await DatabaseUser.updateUser(payload!.id, {
          email: ctx.body.email,
          username: ctx.body.username,
          displayName: ctx.body.displayName,
@@ -77,20 +69,16 @@ async function handlePatchCurrentUser(ctx: InferContext<typeof route, APIPatchCu
       });
 
       const [accessToken, refreshToken] = await createTokens(
-         { id: payload.id },
+         { id: payload!.id },
          constants.ACCESS_TOKEN_EXPIRE_TIME,
          constants.REFRESH_TOKEN_EXPIRE_TIME,
       );
 
       const result: APIPatchCurrentUserResult = { ...updatedUser.toObject(), token: accessToken, refreshToken };
 
-      ctx.set.status = HttpCode.OK;
-      return result;
+      return returnResult(ctx, result);
    } catch (e) {
-      logServerError(ctx.path, e);
-
-      ctx.set.status = HttpCode.SERVER_ERROR;
-      return undefined;
+      return logAndReturnError(ctx, e);
    }
 }
 
