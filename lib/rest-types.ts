@@ -9,18 +9,17 @@ export enum RequestMethod {
    PUT = "PUT",
 }
 
-export interface RESTOptions {
+export type RESTOptions = {
    api: string;
    authPrefix: "Bearer";
    makeRequest(url: string, init: RequestInit): Promise<ResponseLike>;
-}
+};
 
-export interface ResponseLike
-   extends Pick<Response, "arrayBuffer" | "bodyUsed" | "headers" | "json" | "ok" | "status" | "statusText" | "text"> {
+export type ResponseLike = {
    body: Readable | ReadableStream | null;
-}
+} & Pick<Response, "arrayBuffer" | "bodyUsed" | "headers" | "json" | "ok" | "status" | "statusText" | "text">;
 
-export interface RequestData {
+export type RequestData = {
    /**
     * If this request needs 'Authorization' header
     * @defaultValue true
@@ -45,12 +44,12 @@ export interface RequestData {
     * Reason to show in log
     */
    reason?: string | undefined;
-}
+};
 
-export interface InternalRequest extends RequestData {
+export type InternalRequest = {
    fullRoute: RouteLike;
    method: RequestMethod;
-}
+} & RequestData;
 
 // TODO: add 'files'
 export type HandlerRequestData = Pick<InternalRequest, "auth" | "body">;
@@ -58,12 +57,12 @@ export type HandlerRequestData = Pick<InternalRequest, "auth" | "body">;
 /**
  * Possible headers for an API call
  */
-export interface RequestHeaders {
+export type RequestHeaders = {
    Authorization?: string;
    "X-Log-Reason"?: string;
-}
+};
 
-export interface ResolvedRequest {
+export type ResolvedRequest = {
    fetchOptions: RequestInit;
    url: string;
-}
+};

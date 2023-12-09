@@ -2,10 +2,10 @@ export type Snowflake = string;
 
 export type RouteLike = `/${string}`;
 
-export interface WebSocketData {
+export type WebSocketData = {
    id: Snowflake;
-}
+};
 
-export interface TokenPayload {
+export type TokenPayload = {
    id: Snowflake;
-}
+};

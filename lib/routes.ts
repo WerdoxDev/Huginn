@@ -42,6 +42,30 @@ export const Routes = {
    user(id: Snowflake) {
       return `/users/${id}` as const;
    },
+
+   /**
+    * Route for:
+    * - POST '/users/@me/channels'
+    */
+   userChannels() {
+      return `/users/@me/channels` as const;
+   },
+
+   /**
+    * Route for:
+    * - GET '/channels/{channel.id}'
+    */
+   channel(id: Snowflake) {
+      return `/channels/${id}` as const;
+   },
+
+   /**
+    * Route for:
+    * - POST '/channels/{channel.id}/typing'
+    */
+   channelTyping(channelId: Snowflake) {
+      return `/channels/${channelId}/typing` as const;
+   },
 };
 
 let a = Routes.user("asd");

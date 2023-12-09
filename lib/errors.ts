@@ -1,24 +1,24 @@
-export interface HuginnErrorFieldInformation {
+export type HuginnErrorFieldInformation = {
    code: string;
    message: string;
-}
+};
 
-export interface HuginnErrorGroupWrapper {
+export type HuginnErrorGroupWrapper = {
    _errors: HuginnErrorFieldInformation[];
-}
+};
 
 export type HuginnError = { [k: string]: HuginnErrorGroupWrapper };
 
-export interface HuginnErrorData {
+export type HuginnErrorData = {
    code: number;
    errors?: HuginnError;
    message: string;
-}
+};
 
-export interface RequestBody {
+export type RequestBody = {
    //files: RawFile[] | undefined;
    json: unknown | undefined;
-}
+};
 
 export function isErrorResponse(error: unknown): error is HuginnErrorFieldInformation {
    return typeof Reflect.get(error as Record<string, unknown>, "message") === "string";
@@ -44,10 +44,12 @@ export enum HttpCode {
 }
 
 export enum JsonCode {
+   NONE = 0,
    UNKNOWN_ACCOUNT = 10001,
    UNKNOWN_MESSAGE = 10002,
    UNKNOWN_MEMBER = 10003,
    UNKNOWN_USER = 10004,
+   UNKNOWN_CHANNEL = 10005,
    INVALID_FORM_BODY = 20001,
 }
 
@@ -59,6 +61,7 @@ export enum FieldCode {
    EMAIL_IN_USE = "EMAIL_IN_USE",
    EMAIL_INVALID = "EMAIL_INVALID",
    PASSWORD_INCORRECT = "PASSWORD_INCORRECT",
+   INVALID_USER_ID = "INVALID_USER_ID",
 }
 
 export const Field = {
@@ -88,13 +91,25 @@ export const Field = {
    passwordIncorrect(): [string, string] {
       return ["Password is incorrect", FieldCode.PASSWORD_INCORRECT];
    },
+   invalidUserId(): [string, string] {
+      return ["User id is invalid", FieldCode.INVALID_USER_ID];
+   },
 };
 
 export const Error = {
+   unauthorized(): [string, JsonCode] {
+      return ["Unauthorized", JsonCode.NONE];
+   },
+   serverError(): [string, JsonCode] {
+      return ["Server Error", JsonCode.NONE];
+   },
    invalidFormBody(): [string, JsonCode] {
       return ["Invalid Form Body", JsonCode.INVALID_FORM_BODY];
    },
    unknownUser(): [string, JsonCode] {
       return ["Unknown User", JsonCode.UNKNOWN_USER];
+   },
+   unknownChannel(): [string, JsonCode] {
+      return ["Unknown Channel", JsonCode.UNKNOWN_CHANNEL];
    },
 };
