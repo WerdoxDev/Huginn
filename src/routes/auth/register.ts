@@ -14,11 +14,9 @@ import {
    validateUsernameUnique,
 } from "../../validation";
 import { InferContext } from "../../..";
-import { logAndReturnError, returnError, returnResult } from "../../route-utils";
+import { logAndReturnError, returnError, returnResult, setup } from "../../route-utils";
 
-const route = new Elysia();
-
-route.post("/register", (ctx) => handleRegister(ctx), {
+const route = new Elysia().post("/register", (ctx) => handleRegister(ctx), {
    body: t.Object({
       username: t.String(),
       displayName: t.String(),
@@ -27,7 +25,7 @@ route.post("/register", (ctx) => handleRegister(ctx), {
    }),
 });
 
-async function handleRegister(ctx: InferContext<typeof route, APIPostRegisterJSONBody>) {
+async function handleRegister(ctx: InferContext<typeof setup, APIPostRegisterJSONBody>) {
    const formError = createError(Error.invalidFormBody());
 
    validateUsername(ctx.body.username, formError);

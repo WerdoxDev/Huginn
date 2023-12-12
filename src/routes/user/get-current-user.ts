@@ -4,11 +4,9 @@ import { setup, hasToken, logAndReturnError, returnResult } from "../../route-ut
 import { DatabaseUser } from "../../database";
 import { InferContext } from "../../..";
 
-const route = new Elysia().use(setup);
+const route = new Elysia().use(setup).get("/@me", (ctx) => handleGetCurrentUser(ctx), { beforeHandle: hasToken });
 
-route.get("/@me", (ctx) => handleGetCurrentUser(ctx), { beforeHandle: hasToken });
-
-async function handleGetCurrentUser(ctx: InferContext<typeof route>) {
+async function handleGetCurrentUser(ctx: InferContext<typeof setup>) {
    try {
       const [_isValid, payload] = await verifyToken(ctx.bearer || "");
 

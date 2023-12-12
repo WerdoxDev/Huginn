@@ -7,11 +7,9 @@ import { HttpCode, Error } from "@shared/errors";
 import { APIGetChannelByIdResult } from "@shared/api-types";
 import { DatabaseChannel } from "../../database/database-channel";
 
-const route = new Elysia().use(setup);
+const route = new Elysia().use(setup).get("/:id", (ctx) => handleGetChannelById(ctx), { beforeHandle: hasToken });
 
-route.get("/:id", (ctx) => handleGetChannelById(ctx), { beforeHandle: hasToken });
-
-export async function handleGetChannelById(ctx: InferContext<typeof route, unknown, "/:id">) {
+export async function handleGetChannelById(ctx: InferContext<typeof setup, unknown, "/:id">) {
    if (!ctx.params.id) {
       return returnUnauthorized(ctx);
    }

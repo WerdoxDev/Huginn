@@ -4,16 +4,15 @@ import { HttpCode } from "@shared/errors";
 import { validateUsernameUnique } from "../validation";
 import { InferContext } from "../..";
 import { logServerError } from "../log-utils";
+import { setup } from "../route-utils";
 
-const route = new Elysia();
-
-route.post("/unique-username", (ctx) => handleUniqueUsername(ctx), {
+const route = new Elysia().post("/unique-username", (ctx) => handleUniqueUsername(ctx), {
    body: t.Object({
       username: t.String(),
    }),
 });
 
-async function handleUniqueUsername(ctx: InferContext<typeof route, APIPostUniqueUsernameJSONBody>) {
+async function handleUniqueUsername(ctx: InferContext<typeof setup, APIPostUniqueUsernameJSONBody>) {
    try {
       const isUnique = await validateUsernameUnique(ctx.body.username);
       const result: APIPostUniqueUsernameResult = { taken: !isUnique };

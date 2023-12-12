@@ -19,4 +19,4 @@ export const channelUserSchema = new mongoose.Schema<APIChannelUser>({
 });
 
 export const User = mongoose.model<APIUser>("User", userSchema);
-export const ChannelUser = mongoose.model<APIChannelUser>("ChannelUser", channelUserSchema);
+export const ChannelUser = User.discriminator<APIChannelUser>("ChannelUser", channelUserSchema);

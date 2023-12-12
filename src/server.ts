@@ -3,29 +3,24 @@ import authRoutes from "./routes/auth";
 import userRoutes from "./routes/user";
 import channelRoutes from "./routes/channel";
 import uniqueUsernameRoute from "./routes/unique-username";
+import testRoute from "./routes/test";
 import { Error, HuginnErrorData } from "@shared/errors";
 import { createError } from "./factory/error-factory";
 import { returnError, setup } from "./route-utils";
 import { consola } from "consola";
 import { colors } from "consola/utils";
-import { version } from "../package.json";
 import { logReject, logRequest, logResponse, logServerError } from "./log-utils";
+import { serverHost, serverPort } from ".";
 
-let app: Elysia;
+consola.start("Starting server...");
 
-export function startServer(hostname: string, port: number) {
-   consola.info(`Using version ${version}`);
-   consola.start("Starting server...");
-
-   app = new Elysia();
-
-   app.onBeforeHandle(({ request, path, body }) => {
+const app = new Elysia()
+   .onBeforeHandle(({ request, path, body }) => {
       if (request.method !== "OPTIONS") {
          logRequest(path, request.method, body);
       }
-   });
-
-   app.onAfterHandle(({ request, path, response, set }) => {
+   })
+   .onAfterHandle(({ request, path, response, set }) => {
       if (request.method === "OPTIONS") {
          return;
       }
@@ -37,31 +32,37 @@ export function startServer(hostname: string, port: number) {
       if (set.status >= 200 && set.status < 300) {
          logResponse(path, set.status, response);
       } else if (set.status === 500) {
-         logReject(path, undefined, set.status);
+         logReject(path, request.method, undefined, set.status);
       } else {
-         logReject(path, response as HuginnErrorData, set.status);
+         logReject(path, request.method, response as HuginnErrorData, set.status);
       }
-   });
-
-   app.onError((ctx) => {
+   })
+   .onError((ctx) => {
       if (ctx.code === "UNKNOWN") {
          logServerError(ctx.path, ctx.error);
          return ctx.error;
       }
 
-      logReject(ctx.path, ctx.code);
+      logReject(ctx.path, ctx.request.method, ctx.code);
 
       if (ctx.code === "VALIDATION") {
          return returnError(ctx, createError(Error.invalidFormBody()));
       }
 
       return ctx.error;
-   });
+   })
+   .get("/test", () => {
+      return "HELLO";
+   })
+   .use(setup)
+   .use(authRoutes)
+   .use(userRoutes)
+   .use(uniqueUsernameRoute)
+   .use(channelRoutes)
+   .use(testRoute)
+   .listen({ hostname: serverHost, port: serverPort });
 
-   app.use(setup).use(authRoutes).use(userRoutes).use(uniqueUsernameRoute).use(channelRoutes);
+consola.success("Server started!");
+consola.box(`Listening on ${colors.green(`http://${app.server?.hostname}:${app.server?.port}`)}`);
 
-   app.listen({ hostname, port });
-
-   consola.success("Server started!");
-   consola.box(`Listening on ${colors.green(`http://${app.server?.hostname}:${app.server?.port}`)}`);
-}
+export type AppType = typeof app;

@@ -6,11 +6,9 @@ import Elysia, { t } from "elysia";
 import { constants } from "@shared/constants";
 import { DatabaseAuth, DBErrorType, isDBError } from "../../database";
 import { InferContext } from "../../..";
-import { logAndReturnError, returnError, returnResult } from "../../route-utils";
+import { logAndReturnError, returnError, returnResult, setup } from "../../route-utils";
 
-const route = new Elysia();
-
-route.post("/login", (ctx) => handleLogin(ctx), {
+const route = new Elysia().post("/login", (ctx) => handleLogin(ctx), {
    body: t.Object({
       username: t.Optional(t.String()),
       email: t.Optional(t.String()),
@@ -18,7 +16,7 @@ route.post("/login", (ctx) => handleLogin(ctx), {
    }),
 });
 
-async function handleLogin(ctx: InferContext<typeof route, APIPostLoginJSONBody>) {
+async function handleLogin(ctx: InferContext<typeof setup, APIPostLoginJSONBody>) {
    try {
       const user = await DatabaseAuth.userByCredentials(ctx.body);
 

@@ -17,14 +17,26 @@ export class DatabaseChannel {
       }
    }
 
-   static async createSingleDMChannel(recipientId: Snowflake) {
+   static async getUserChannels(userId: Snowflake) {
       try {
-         const recipientUser = await DatabaseUser.getUserById(recipientId, "_id username avatar");
+         const channels = await Channel.find({ recipients: { $elemMatch: { _id: userId } } }).exec();
+         assertChannelIsDefined(channels);
+         return channels;
+      } catch (e) {
+         throw new DBError(e, "getUserChannels");
+      }
+   }
+
+   static async createSingleDMChannel(firstUserId: Snowflake, secondUserId: Snowflake) {
+      try {
+         const firstUser = await DatabaseUser.getUserById(firstUserId, "_id username avatar");
+         const secondUser = await DatabaseUser.getUserById(secondUserId, "_id username avatar");
+
          const channel = await DMChannel.create({
             _id: snowflake.generate(),
             type: ChannelType.DM,
             lastMessageId: null,
-            recipients: [recipientUser.toObject()],
+            recipients: [firstUser.toObject(), secondUser.toObject()],
          });
 
          assertChannelIsDefined(channel);
@@ -38,6 +50,8 @@ export class DatabaseChannel {
       try {
          const recipients: APIUser[] = [];
          const finalName = Object.values(users).join(", ");
+
+         const ownerUser = await DatabaseUser.getUserById(ownerId, "_id username avatar");
 
          for (const recipientId in users) {
             if (Object.hasOwn(users, recipientId)) {
@@ -53,7 +67,7 @@ export class DatabaseChannel {
             ownerId: ownerId,
             icon: null,
             lastMessageId: null,
-            recipients: recipients,
+            recipients: [ownerUser, ...recipients],
          });
 
          assertChannelIsDefined(channel);

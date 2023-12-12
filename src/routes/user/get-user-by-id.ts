@@ -6,11 +6,9 @@ import { DatabaseUser } from "../../database";
 import { DBErrorType, isDBError } from "../../database/database-error";
 import { InferContext } from "../../..";
 
-const route = new Elysia().use(setup);
+const route = new Elysia().use(setup).get("/:id", (ctx) => handleGetUserById(ctx), { beforeHandle: hasToken });
 
-route.get("/:id", (ctx) => handleGetUserById(ctx), { beforeHandle: hasToken });
-
-export async function handleGetUserById(ctx: InferContext<typeof route, unknown, "/:id">) {
+export async function handleGetUserById(ctx: InferContext<typeof setup, unknown, "/:id">) {
    try {
       const user = await DatabaseUser.getUserById(ctx.params.id, "-email");
 

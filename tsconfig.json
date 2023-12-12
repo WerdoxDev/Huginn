@@ -5,8 +5,8 @@
       "target": "esnext",
       "moduleResolution": "bundler",
       "moduleDetection": "force",
-      "allowImportingTsExtensions": true,
-      "noEmit": true,
+      // "allowImportingTsExtensions": true,
+      // "noEmit": true,
       "composite": true,
       "strict": true,
       "downlevelIteration": true,
@@ -23,5 +23,6 @@
       }
    },
    "include": ["**/*", "./package.json", "./index.d.ts"],
+   "exclude": ["./ecosystem.config.cjs"],
    "references": [{ "path": "../huginn-shared" }]
 }

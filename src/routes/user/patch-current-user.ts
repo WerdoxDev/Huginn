@@ -16,9 +16,7 @@ import {
 } from "../../validation";
 import { InferContext } from "../../..";
 
-const route = new Elysia().use(setup);
-
-route.patch("/@me", (ctx) => handlePatchCurrentUser(ctx), {
+const route = new Elysia().use(setup).patch("/@me", (ctx) => handlePatchCurrentUser(ctx), {
    beforeHandle: hasToken,
    body: t.Object({
       email: t.Optional(t.String()),
@@ -30,7 +28,7 @@ route.patch("/@me", (ctx) => handlePatchCurrentUser(ctx), {
    }),
 });
 
-async function handlePatchCurrentUser(ctx: InferContext<typeof route, APIPatchCurrentUserJSONBody>) {
+async function handlePatchCurrentUser(ctx: InferContext<typeof setup, APIPatchCurrentUserJSONBody>) {
    try {
       const [_isValid, payload] = await verifyToken(ctx.bearer!);
 
