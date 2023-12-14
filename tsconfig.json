@@ -19,10 +19,12 @@
          "bun-types" // add Bun global
       ],
       "paths": {
-         "@shared/*": ["../huginn-shared/lib/*"]
+         "@shared/*": ["../huginn-shared/lib/*"],
+         "@/*": ["./*"],
+         "@src/*": ["./src/*"]
       }
    },
-   "include": ["**/*", "./package.json", "./index.d.ts"],
-   "exclude": ["./ecosystem.config.cjs"],
+   "include": ["**/*", "package.json", "index.d.ts"],
+   "exclude": ["ecosystem.config.cjs"],
    "references": [{ "path": "../huginn-shared" }]
 }

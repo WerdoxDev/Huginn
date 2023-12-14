@@ -1,24 +1,23 @@
-import { createError } from "../../factory/error-factory";
+import { InferContext } from "@/index";
+import { DatabaseUser, isDBError, DBErrorType } from "@/src/database";
+import { createError } from "@/src/factory/error-factory";
+import { setup, hasToken, result, error, serverError } from "@/src/route-utils";
 import { HttpCode, Error, Field } from "@shared/errors";
 import Elysia from "elysia";
-import { setup, hasToken, logAndReturnError, returnResult, returnError } from "../../route-utils";
-import { DatabaseUser } from "../../database";
-import { DBErrorType, isDBError } from "../../database/database-error";
-import { InferContext } from "../../..";
 
-const route = new Elysia().use(setup).get("/:id", (ctx) => handleGetUserById(ctx), { beforeHandle: hasToken });
+const route = new Elysia().use(setup).get("/users/:userId", (ctx) => handleGetUserById(ctx), { beforeHandle: hasToken });
 
-export async function handleGetUserById(ctx: InferContext<typeof setup, unknown, "/:id">) {
+export async function handleGetUserById(ctx: InferContext<typeof setup, unknown, "/:userId">) {
    try {
-      const user = await DatabaseUser.getUserById(ctx.params.id, "-email");
+      const user = await DatabaseUser.getUserById(ctx.params.userId, "-email");
 
-      return returnResult(ctx, user.toObject());
+      return result(ctx, user.toObject());
    } catch (e) {
-      if (isDBError(e) && e.error.message === DBErrorType.NULL_USER) {
-         return returnError(ctx, createError(Error.unknownUser()).error(e.error.cause, Field.invalidUserId()), HttpCode.NOT_FOUND);
+      if (isDBError(e, DBErrorType.NULL_USER)) {
+         return error(ctx, createError(Error.unknownUser()).error(e.error.cause, Field.invalidUserId()), HttpCode.NOT_FOUND);
       }
 
-      return logAndReturnError(ctx, e);
+      return serverError(ctx, e);
    }
 }
 

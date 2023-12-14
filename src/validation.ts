@@ -34,11 +34,7 @@ export function validateDisplayName(displayName: string | undefined, errorObject
    return false;
 }
 
-export function validateCorrectPassword(
-   password: string | undefined,
-   correctPassword: string,
-   errorObject: ErrorFactory
-) {
+export function validateCorrectPassword(password: string | undefined, correctPassword: string, errorObject: ErrorFactory) {
    if (password && password !== correctPassword) {
       errorObject.error("password", Field.passwordIncorrect());
       return false;

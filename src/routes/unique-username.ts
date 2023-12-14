@@ -1,10 +1,8 @@
+import { InferContext } from "@/index";
 import { APIPostUniqueUsernameJSONBody, APIPostUniqueUsernameResult } from "@shared/api-types";
 import Elysia, { t } from "elysia";
-import { HttpCode } from "@shared/errors";
+import { setup, result, serverError } from "../route-utils";
 import { validateUsernameUnique } from "../validation";
-import { InferContext } from "../..";
-import { logServerError } from "../log-utils";
-import { setup } from "../route-utils";
 
 const route = new Elysia().post("/unique-username", (ctx) => handleUniqueUsername(ctx), {
    body: t.Object({
@@ -15,15 +13,11 @@ const route = new Elysia().post("/unique-username", (ctx) => handleUniqueUsernam
 async function handleUniqueUsername(ctx: InferContext<typeof setup, APIPostUniqueUsernameJSONBody>) {
    try {
       const isUnique = await validateUsernameUnique(ctx.body.username);
-      const result: APIPostUniqueUsernameResult = { taken: !isUnique };
+      const json: APIPostUniqueUsernameResult = { taken: !isUnique };
 
-      ctx.set.status = HttpCode.OK;
-      return result;
+      return result(ctx, json);
    } catch (e) {
-      logServerError(ctx.path, e);
-
-      ctx.set.status = HttpCode.SERVER_ERROR;
-      return undefined;
+      return serverError(ctx, e);
    }
 }
 

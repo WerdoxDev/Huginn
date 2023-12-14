@@ -1,31 +1,24 @@
-import { createError } from "../../factory/error-factory";
 import Elysia from "elysia";
-import { setup, hasToken, logAndReturnError, returnUnauthorized, returnResult } from "../../route-utils";
-import { DBErrorType, isDBError } from "../../database/database-error";
-import { InferContext } from "../../..";
 import { HttpCode, Error } from "@shared/errors";
-import { APIGetChannelByIdResult } from "@shared/api-types";
-import { DatabaseChannel } from "../../database/database-channel";
+import { InferContext } from "@/index";
+import { isDBError, DBErrorType } from "@/src/database";
+import { DatabaseChannel } from "@/src/database/database-channel";
+import { createError } from "@/src/factory/error-factory";
+import { hasToken, setup, result, error, serverError } from "@/src/route-utils";
 
-const route = new Elysia().use(setup).get("/:id", (ctx) => handleGetChannelById(ctx), { beforeHandle: hasToken });
+const route = new Elysia().get("/channels/:channelId", (ctx) => handleGetChannelById(ctx), { beforeHandle: hasToken });
 
-export async function handleGetChannelById(ctx: InferContext<typeof setup, unknown, "/:id">) {
-   if (!ctx.params.id) {
-      return returnUnauthorized(ctx);
-   }
-
+async function handleGetChannelById(ctx: InferContext<typeof setup, unknown, "/:channelId">) {
    try {
-      const channel = await DatabaseChannel.getChannelById(ctx.params.id);
-      const result: APIGetChannelByIdResult = channel.toObject();
+      const channel = await DatabaseChannel.getChannelById(ctx.params.channelId);
 
-      return returnResult(ctx, result);
+      return result(ctx, channel.toObject());
    } catch (e) {
-      if (isDBError(e) && e.error.message === DBErrorType.NULL_CHANNEL) {
-         ctx.set.status = HttpCode.NOT_FOUND;
-         return createError(Error.unknownChannel()).toObject();
+      if (isDBError(e, DBErrorType.NULL_CHANNEL)) {
+         return error(ctx, createError(Error.unknownChannel()), HttpCode.NOT_FOUND);
       }
 
-      return logAndReturnError(ctx, e);
+      return serverError(ctx, e);
    }
 }
 

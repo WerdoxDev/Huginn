@@ -1,11 +1,11 @@
 import { APIPostRefreshTokenJSONBody, APIPostRefreshTokenResult } from "@shared/api-types";
 import Elysia, { t } from "elysia";
-import { REFRESH_TOKEN_SECRET, createTokens, verifyToken } from "../../factory/token-factory";
 import { constants } from "@shared/constants";
-import { InferContext } from "../../..";
-import { logAndReturnError, returnResult, setup } from "../../route-utils";
+import { InferContext } from "@/index";
+import { verifyToken, REFRESH_TOKEN_SECRET, createTokens } from "@/src/factory/token-factory";
+import { setup, result, serverError } from "@/src/route-utils";
 
-const route = new Elysia().post("/refresh-token", (ctx) => handleRefreshToken(ctx), {
+const route = new Elysia().post("/auth/refresh-token", (ctx) => handleRefreshToken(ctx), {
    body: t.Object({
       refreshToken: t.String(),
    }),
@@ -21,11 +21,11 @@ async function handleRefreshToken(ctx: InferContext<typeof setup, APIPostRefresh
          constants.REFRESH_TOKEN_EXPIRE_TIME,
       );
 
-      const result: APIPostRefreshTokenResult = { token: accessToken, refreshToken };
+      const json: APIPostRefreshTokenResult = { token: accessToken, refreshToken };
 
-      return returnResult(ctx, result);
+      return result(ctx, json);
    } catch (e) {
-      return logAndReturnError(ctx, e);
+      return serverError(ctx, e);
    }
 }
 

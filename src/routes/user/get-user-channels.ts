@@ -1,20 +1,22 @@
+import { InferContext } from "@/index";
+import { DatabaseChannel } from "@/src/database/database-channel";
+import { verifyToken } from "@/src/factory/token-factory";
+import { setup, hasToken, result, serverError } from "@/src/route-utils";
+import { APIGetUserChannelsResult } from "@shared/api-types";
 import Elysia from "elysia";
-import { InferContext } from "../../..";
-import { setup, hasToken, logAndReturnError, returnResult } from "../../route-utils";
-import { verifyToken } from "../../factory/token-factory";
-import { DatabaseChannel } from "../../database/database-channel";
 
-const route = new Elysia().use(setup).get("/@me/channels", (ctx) => handleGetUserChannels(ctx), { beforeHandle: hasToken });
+const route = new Elysia().use(setup).get("/users/@me/channels", (ctx) => handleGetUserChannels(ctx), { beforeHandle: hasToken });
 
 async function handleGetUserChannels(ctx: InferContext<typeof setup>) {
    try {
       const [_isValid, payload] = await verifyToken(ctx.bearer!);
 
       const channels = await DatabaseChannel.getUserChannels(payload!.id);
+      const json: APIGetUserChannelsResult = channels.map((x) => x.toObject());
 
-      return returnResult(ctx, channels);
+      return result(ctx, json);
    } catch (e) {
-      return logAndReturnError(ctx, e);
+      return serverError(ctx, e);
    }
 }
 

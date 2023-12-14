@@ -2,21 +2,21 @@ import { APIPostRegisterResult, APIPostRegisterJSONBody } from "@shared/api-type
 import { HttpCode, Error } from "@shared/errors";
 import Elysia, { t } from "elysia";
 import { constants } from "@shared/constants";
-import { createError } from "../../factory/error-factory";
-import { createTokens } from "../../factory/token-factory";
-import { DatabaseAuth } from "../../database";
+import { InferContext } from "@/index";
+import { DatabaseAuth } from "@/src/database";
+import { createError } from "@/src/factory/error-factory";
+import { createTokens } from "@/src/factory/token-factory";
+import { setup, error, result, serverError } from "@/src/route-utils";
 import {
-   validateDisplayName,
-   validateEmail,
-   validateEmailUnique,
-   validatePassword,
    validateUsername,
+   validateDisplayName,
+   validatePassword,
+   validateEmail,
    validateUsernameUnique,
-} from "../../validation";
-import { InferContext } from "../../..";
-import { logAndReturnError, returnError, returnResult, setup } from "../../route-utils";
+   validateEmailUnique,
+} from "@/src/validation";
 
-const route = new Elysia().post("/register", (ctx) => handleRegister(ctx), {
+const route = new Elysia().post("/auth/register", (ctx) => handleRegister(ctx), {
    body: t.Object({
       username: t.String(),
       displayName: t.String(),
@@ -34,7 +34,7 @@ async function handleRegister(ctx: InferContext<typeof setup, APIPostRegisterJSO
    validateEmail(ctx.body.email, formError);
 
    if (formError.hasErrors()) {
-      return returnError(ctx, formError);
+      return error(ctx, formError);
    }
 
    try {
@@ -44,7 +44,7 @@ async function handleRegister(ctx: InferContext<typeof setup, APIPostRegisterJSO
       await validateEmailUnique(ctx.body.email, databaseError);
 
       if (databaseError.hasErrors()) {
-         return returnError(ctx, databaseError);
+         return error(ctx, databaseError);
       }
 
       const user = await DatabaseAuth.registerNewUser(ctx.body);
@@ -54,11 +54,11 @@ async function handleRegister(ctx: InferContext<typeof setup, APIPostRegisterJSO
          constants.ACCESS_TOKEN_EXPIRE_TIME,
          constants.REFRESH_TOKEN_EXPIRE_TIME,
       );
-      const result: APIPostRegisterResult = { ...user.toObject(), token: accessToken, refreshToken: refreshToken };
+      const json: APIPostRegisterResult = { ...user.toObject(), token: accessToken, refreshToken: refreshToken };
 
-      return returnResult(ctx, result, HttpCode.CREATED);
+      return result(ctx, json, HttpCode.CREATED);
    } catch (e) {
-      return logAndReturnError(ctx, e);
+      return serverError(ctx, e);
    }
 }
 

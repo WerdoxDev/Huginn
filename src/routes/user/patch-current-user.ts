@@ -1,22 +1,22 @@
 import Elysia, { t } from "elysia";
-import { hasToken, logAndReturnError, returnError, returnResult, setup } from "../../route-utils";
 import { APIPatchCurrentUserJSONBody, APIPatchCurrentUserResult } from "@shared/api-types";
 import { Error, Field } from "@shared/errors";
-import { createError } from "../../factory/error-factory";
-import { createTokens, verifyToken } from "../../factory/token-factory";
 import { constants } from "@shared/constants";
-import { DatabaseUser } from "../../database";
+import { InferContext } from "@/index";
+import { DatabaseUser } from "@/src/database";
+import { createError } from "@/src/factory/error-factory";
+import { verifyToken, createTokens } from "@/src/factory/token-factory";
+import { setup, hasToken, error, result, serverError } from "@/src/route-utils";
 import {
+   validateUsername,
    validateDisplayName,
    validateEmail,
    validateCorrectPassword,
-   validateUsername,
    validateUsernameUnique,
    validateEmailUnique,
-} from "../../validation";
-import { InferContext } from "../../..";
+} from "@/src/validation";
 
-const route = new Elysia().use(setup).patch("/@me", (ctx) => handlePatchCurrentUser(ctx), {
+const route = new Elysia().use(setup).patch("/users/@me", (ctx) => handlePatchCurrentUser(ctx), {
    beforeHandle: hasToken,
    body: t.Object({
       email: t.Optional(t.String()),
@@ -43,7 +43,7 @@ async function handlePatchCurrentUser(ctx: InferContext<typeof setup, APIPatchCu
       }
 
       if (formError.hasErrors()) {
-         return returnError(ctx, formError);
+         return error(ctx, formError);
       }
 
       const databaseError = createError(Error.invalidFormBody());
@@ -55,7 +55,7 @@ async function handlePatchCurrentUser(ctx: InferContext<typeof setup, APIPatchCu
       await validateEmailUnique(ctx.body.email, databaseError);
 
       if (databaseError.hasErrors()) {
-         return returnError(ctx, databaseError);
+         return error(ctx, databaseError);
       }
 
       const updatedUser = await DatabaseUser.updateUser(payload!.id, {
@@ -72,11 +72,11 @@ async function handlePatchCurrentUser(ctx: InferContext<typeof setup, APIPatchCu
          constants.REFRESH_TOKEN_EXPIRE_TIME,
       );
 
-      const result: APIPatchCurrentUserResult = { ...updatedUser.toObject(), token: accessToken, refreshToken };
+      const json: APIPatchCurrentUserResult = { ...updatedUser.toObject(), token: accessToken, refreshToken };
 
-      return returnResult(ctx, result);
+      return result(ctx, json);
    } catch (e) {
-      return logAndReturnError(ctx, e);
+      return serverError(ctx, e);
    }
 }
 

@@ -1,4 +1,4 @@
-import { User } from "./database/user-schema";
+import { User } from "./database/schemas/user-schema";
 
 export async function startListening() {
    for await (const line of console) {

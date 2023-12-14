@@ -1,5 +1,5 @@
 import { Snowflake } from "@shared/types";
-import { Channel, DMChannel, GroupDMChannel } from "./channel-schema";
+import { Channel, DMChannel, GroupDMChannel } from "./schemas/channel-schema";
 import { DBError, assertChannelIsDefined } from "./database-error";
 import { snowflake } from "@shared/snowflake";
 import { ChannelType } from "@shared/api-types";

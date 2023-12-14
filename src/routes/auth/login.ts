@@ -1,14 +1,14 @@
 import { Error, Field } from "@shared/errors";
 import { APIPostLoginJSONBody, APIPostLoginResult } from "@shared/api-types";
-import { createError } from "../../factory/error-factory";
-import { createTokens } from "../../factory/token-factory";
-import Elysia, { t } from "elysia";
+import { t } from "elysia";
 import { constants } from "@shared/constants";
-import { DatabaseAuth, DBErrorType, isDBError } from "../../database";
-import { InferContext } from "../../..";
-import { logAndReturnError, returnError, returnResult, setup } from "../../route-utils";
+import { DatabaseAuth, isDBError, DBErrorType } from "@/src/database";
+import { createError } from "@/src/factory/error-factory";
+import { createTokens } from "@/src/factory/token-factory";
+import { result, error, serverError, createRequest, handleRequest, setup } from "@/src/route-utils";
+import { InferContext } from "@/index";
 
-const route = new Elysia().post("/login", (ctx) => handleLogin(ctx), {
+export default createRequest().post("/auth/login", (ctx) => handleRequest(ctx, handleLogin), {
    body: t.Object({
       username: t.Optional(t.String()),
       email: t.Optional(t.String()),
@@ -25,19 +25,17 @@ async function handleLogin(ctx: InferContext<typeof setup, APIPostLoginJSONBody>
          constants.ACCESS_TOKEN_EXPIRE_TIME,
          constants.REFRESH_TOKEN_EXPIRE_TIME,
       );
-      const result: APIPostLoginResult = { ...user.toObject(), token: accessToken, refreshToken: refreshToken };
+      const json: APIPostLoginResult = { ...user.toObject(), token: accessToken, refreshToken: refreshToken };
 
-      return returnResult(ctx, result);
+      return result(ctx, json);
    } catch (e) {
-      if (isDBError(e) && e.error.message === DBErrorType.NULL_USER) {
-         return returnError(
+      if (isDBError(e, DBErrorType.NULL_USER)) {
+         return error(
             ctx,
             createError(Error.invalidFormBody()).error("login", Field.invalidLogin()).error("password", Field.invalidLogin()),
          );
       }
 
-      return logAndReturnError(ctx, e);
+      return serverError(ctx, e);
    }
 }
-
-export default route;

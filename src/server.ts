@@ -1,16 +1,13 @@
 import Elysia from "elysia";
-import authRoutes from "./routes/auth";
-import userRoutes from "./routes/user";
-import channelRoutes from "./routes/channel";
-import uniqueUsernameRoute from "./routes/unique-username";
 import testRoute from "./routes/test";
 import { Error, HuginnErrorData } from "@shared/errors";
 import { createError } from "./factory/error-factory";
-import { returnError, setup } from "./route-utils";
+import { error, setup } from "./route-utils";
 import { consola } from "consola";
 import { colors } from "consola/utils";
 import { logReject, logRequest, logResponse, logServerError } from "./log-utils";
 import { serverHost, serverPort } from ".";
+import { routes } from "./routes/routes";
 
 consola.start("Starting server...");
 
@@ -46,7 +43,7 @@ const app = new Elysia()
       logReject(ctx.path, ctx.request.method, ctx.code);
 
       if (ctx.code === "VALIDATION") {
-         return returnError(ctx, createError(Error.invalidFormBody()));
+         return error(ctx, createError(Error.invalidFormBody()));
       }
 
       return ctx.error;
@@ -55,10 +52,7 @@ const app = new Elysia()
       return "HELLO";
    })
    .use(setup)
-   .use(authRoutes)
-   .use(userRoutes)
-   .use(uniqueUsernameRoute)
-   .use(channelRoutes)
+   .use(routes)
    .use(testRoute)
    .listen({ hostname: serverHost, port: serverPort });
 
