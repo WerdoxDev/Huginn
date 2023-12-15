@@ -1,19 +1,20 @@
+import { REFRESH_TOKEN_SECRET_ENCODED, createTokens, verifyToken } from "@/src/factory/token-factory";
+import { hValidator, handleRequest } from "@/src/route-utils";
 import { APIPostRefreshTokenJSONBody, APIPostRefreshTokenResult } from "@shared/api-types";
-import Elysia, { t } from "elysia";
 import { constants } from "@shared/constants";
-import { InferContext } from "@/index";
-import { verifyToken, REFRESH_TOKEN_SECRET, createTokens } from "@/src/factory/token-factory";
-import { setup, result, serverError } from "@/src/route-utils";
+import { HttpCode } from "@shared/errors";
+import { Hono } from "hono";
+import { z } from "zod";
 
-const route = new Elysia().post("/auth/refresh-token", (ctx) => handleRefreshToken(ctx), {
-   body: t.Object({
-      refreshToken: t.String(),
-   }),
-});
+const schema = z.object({ refreshToken: z.string() });
 
-async function handleRefreshToken(ctx: InferContext<typeof setup, APIPostRefreshTokenJSONBody>) {
-   try {
-      const [_isValid, payload] = await verifyToken(ctx.body.refreshToken, REFRESH_TOKEN_SECRET);
+const app = new Hono();
+
+app.post("/auth/refresh-token", hValidator("json", schema), c =>
+   handleRequest(c, async () => {
+      const body = (await c.req.json()) as APIPostRefreshTokenJSONBody;
+
+      const [_isValid, payload] = await verifyToken(body.refreshToken, REFRESH_TOKEN_SECRET_ENCODED);
 
       const [accessToken, refreshToken] = await createTokens(
          { id: payload!.id },
@@ -23,10 +24,8 @@ async function handleRefreshToken(ctx: InferContext<typeof setup, APIPostRefresh
 
       const json: APIPostRefreshTokenResult = { token: accessToken, refreshToken };
 
-      return result(ctx, json);
-   } catch (e) {
-      return serverError(ctx, e);
-   }
-}
+      return c.json(json, HttpCode.OK);
+   }),
+);
 
-export default route;
+export default app;

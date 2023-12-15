@@ -1,28 +1,26 @@
-import Elysia from "elysia";
 import { HttpCode, Error } from "@shared/errors";
-import { InferContext } from "@/index";
-import { isDBError, DBErrorType } from "@/src/database";
+import { DBErrorType } from "@/src/database";
 import { DatabaseMessage } from "@/src/database/database-message";
 import { createError } from "@/src/factory/error-factory";
-import { hasToken, setup, result, error, serverError } from "@/src/route-utils";
+import { error, verifyJwt, handleRequest } from "@/src/route-utils";
+import { Hono } from "hono";
 
-const route = new Elysia().get("/channels/:channelId/messages/:messageId", (ctx) => handleGetMessageById(ctx), {
-   beforeHandle: hasToken,
-});
+const app = new Hono();
 
-async function handleGetMessageById(ctx: InferContext<typeof setup, unknown, "/:channelId/:messageId">) {
-   try {
-      const message = await DatabaseMessage.getMessageById(ctx.params.channelId, ctx.params.messageId);
+app.get("/channels/:channelId/messages/:messageId", verifyJwt(), c =>
+   handleRequest(
+      c,
+      async () => {
+         const message = await DatabaseMessage.getMessageById(c.req.param("channelId"), c.req.param("messageId"));
 
-      return result(ctx, message.toObject());
-   } catch (e) {
-      console.log();
-      if (isDBError(e, DBErrorType.NULL_MESSAGE)) {
-         return error(ctx, createError(Error.unknownMessage()), HttpCode.NOT_FOUND);
-      }
+         return c.json(message.toObject(), HttpCode.OK);
+      },
+      e => {
+         if (e.isErrorType(DBErrorType.NULL_MESSAGE)) {
+            return error(c, createError(Error.unknownMessage()), HttpCode.NOT_FOUND);
+         }
+      },
+   ),
+);
 
-      return serverError(ctx, e);
-   }
-}
-
-export default route;
+export default app;

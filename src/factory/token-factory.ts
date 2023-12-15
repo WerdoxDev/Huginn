@@ -1,8 +1,10 @@
 import { TokenPayload } from "@shared/types";
 import * as jose from "jose";
 
-export const ACCESS_TOKEN_SECRET = new TextEncoder().encode(process.env.ACCESS_TOKEN_SECRET || "");
-export const REFRESH_TOKEN_SECRET = new TextEncoder().encode(process.env.REFRESH_TOKEN_SECRET || "");
+export const ACCESS_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.ACCESS_TOKEN_SECRET || "");
+export const REFRESH_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.REFRESH_TOKEN_SECRET || "");
+export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || "";
+export const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || "";
 
 export async function createTokens(
    payload: TokenPayload,
@@ -13,19 +15,19 @@ export async function createTokens(
       .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime(accessExpireTime)
       .setIssuedAt()
-      .sign(ACCESS_TOKEN_SECRET);
+      .sign(ACCESS_TOKEN_SECRET_ENCODED);
 
    const refreshToken = await new jose.SignJWT({ id: payload.id })
       .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime(refreshExpireTime)
-      .sign(REFRESH_TOKEN_SECRET);
+      .sign(REFRESH_TOKEN_SECRET_ENCODED);
 
    return [accessToken, refreshToken];
 }
 
 export async function verifyToken(
    token: string,
-   secret: Uint8Array = ACCESS_TOKEN_SECRET,
+   secret: Uint8Array = ACCESS_TOKEN_SECRET_ENCODED,
 ): Promise<[boolean, (TokenPayload & jose.JWTPayload) | null]> {
    // if (tokenInvalidator.getInvalidTokens().includes(token)) {
    //    return [false, null];

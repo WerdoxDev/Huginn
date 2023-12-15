@@ -1,25 +1,26 @@
-import Elysia from "elysia";
-import { HttpCode, Error } from "@shared/errors";
-import { InferContext } from "@/index";
-import { isDBError, DBErrorType } from "@/src/database";
+import { DBErrorType } from "@/src/database";
 import { DatabaseChannel } from "@/src/database/database-channel";
 import { createError } from "@/src/factory/error-factory";
-import { hasToken, setup, result, error, serverError } from "@/src/route-utils";
+import { error, handleRequest, verifyJwt } from "@/src/route-utils";
+import { Error, HttpCode } from "@shared/errors";
+import { Hono } from "hono";
 
-const route = new Elysia().get("/channels/:channelId", (ctx) => handleGetChannelById(ctx), { beforeHandle: hasToken });
+const app = new Hono();
 
-async function handleGetChannelById(ctx: InferContext<typeof setup, unknown, "/:channelId">) {
-   try {
-      const channel = await DatabaseChannel.getChannelById(ctx.params.channelId);
+app.get("/channels/:channelId", verifyJwt(), c =>
+   handleRequest(
+      c,
+      async () => {
+         const channel = await DatabaseChannel.getChannelById(c.req.param("channelId"));
 
-      return result(ctx, channel.toObject());
-   } catch (e) {
-      if (isDBError(e, DBErrorType.NULL_CHANNEL)) {
-         return error(ctx, createError(Error.unknownChannel()), HttpCode.NOT_FOUND);
-      }
+         return c.json(channel.toObject(), HttpCode.OK);
+      },
+      e => {
+         if (e.isErrorType(DBErrorType.NULL_CHANNEL)) {
+            return error(c, createError(Error.unknownChannel()), HttpCode.NOT_FOUND);
+         }
+      },
+   ),
+);
 
-      return serverError(ctx, e);
-   }
-}
-
-export default route;
+export default app;

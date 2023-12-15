@@ -1,7 +1,7 @@
 import { constants } from "@shared/constants";
-import { ErrorFactory } from "./factory/error-factory";
 import { Field } from "@shared/errors";
 import { DatabaseUser } from "./database";
+import { ErrorFactory } from "./factory/error-factory";
 
 export function validateEmail(email: string | undefined, errorObject: ErrorFactory) {
    if (email && !email.match(constants.EMAIL_REGEX)) {

@@ -1,69 +1,70 @@
-import Elysia, { t } from "elysia";
-import { APIPatchCurrentUserJSONBody, APIPatchCurrentUserResult } from "@shared/api-types";
-import { Error, Field } from "@shared/errors";
-import { constants } from "@shared/constants";
-import { InferContext } from "@/index";
 import { DatabaseUser } from "@/src/database";
 import { createError } from "@/src/factory/error-factory";
-import { verifyToken, createTokens } from "@/src/factory/token-factory";
-import { setup, hasToken, error, result, serverError } from "@/src/route-utils";
+import { createTokens } from "@/src/factory/token-factory";
+import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
 import {
-   validateUsername,
+   validateCorrectPassword,
    validateDisplayName,
    validateEmail,
-   validateCorrectPassword,
-   validateUsernameUnique,
    validateEmailUnique,
+   validateUsername,
+   validateUsernameUnique,
 } from "@/src/validation";
+import { APIPatchCurrentUserJSONBody, APIPatchCurrentUserResult } from "@shared/api-types";
+import { constants } from "@shared/constants";
+import { Error, Field, HttpCode } from "@shared/errors";
+import { Hono } from "hono";
+import { z } from "zod";
 
-const route = new Elysia().use(setup).patch("/users/@me", (ctx) => handlePatchCurrentUser(ctx), {
-   beforeHandle: hasToken,
-   body: t.Object({
-      email: t.Optional(t.String()),
-      username: t.Optional(t.String()),
-      displayName: t.Optional(t.String()),
-      avatar: t.Optional(t.String()),
-      password: t.Optional(t.String()),
-      newPassword: t.Optional(t.String()),
-   }),
+const schema = z.object({
+   email: z.optional(z.string()),
+   username: z.optional(z.string()),
+   displayName: z.optional(z.string()),
+   avatar: z.optional(z.string()),
+   password: z.optional(z.string()),
+   newPassword: z.optional(z.string()),
 });
 
-async function handlePatchCurrentUser(ctx: InferContext<typeof setup, APIPatchCurrentUserJSONBody>) {
-   try {
-      const [_isValid, payload] = await verifyToken(ctx.bearer!);
+const app = new Hono();
+
+app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
+   handleRequest(c, async () => {
+      const body = (await c.req.json()) as APIPatchCurrentUserJSONBody;
+
+      const payload = getJwt(c);
 
       const formError = createError(Error.invalidFormBody());
 
-      validateUsername(ctx.body.username, formError);
-      validateDisplayName(ctx.body.displayName, formError);
-      validateEmail(ctx.body.email, formError);
+      validateUsername(body.username, formError);
+      validateDisplayName(body.displayName, formError);
+      validateEmail(body.email, formError);
 
-      if ((ctx.body.username || ctx.body.newPassword) && !ctx.body.password) {
+      if ((body.username || body.newPassword) && !body.password) {
          formError.error("password", Field.required());
       }
 
       if (formError.hasErrors()) {
-         return error(ctx, formError);
+         return error(c, formError);
       }
 
       const databaseError = createError(Error.invalidFormBody());
 
       const user = await DatabaseUser.getUserById(payload!.id);
-      validateCorrectPassword(ctx.body.password, user.password || "", databaseError);
+      validateCorrectPassword(body.password, user.password || "", databaseError);
 
-      await validateUsernameUnique(ctx.body.username, databaseError);
-      await validateEmailUnique(ctx.body.email, databaseError);
+      await validateUsernameUnique(body.username, databaseError);
+      await validateEmailUnique(body.email, databaseError);
 
       if (databaseError.hasErrors()) {
-         return error(ctx, databaseError);
+         return error(c, databaseError);
       }
 
       const updatedUser = await DatabaseUser.updateUser(payload!.id, {
-         email: ctx.body.email,
-         username: ctx.body.username,
-         displayName: ctx.body.displayName,
-         avatar: ctx.body.avatar,
-         password: ctx.body.newPassword,
+         email: body.email,
+         username: body.username,
+         displayName: body.displayName,
+         avatar: body.avatar,
+         password: body.newPassword,
       });
 
       const [accessToken, refreshToken] = await createTokens(
@@ -74,10 +75,8 @@ async function handlePatchCurrentUser(ctx: InferContext<typeof setup, APIPatchCu
 
       const json: APIPatchCurrentUserResult = { ...updatedUser.toObject(), token: accessToken, refreshToken };
 
-      return result(ctx, json);
-   } catch (e) {
-      return serverError(ctx, e);
-   }
-}
+      return c.json(json, HttpCode.OK);
+   }),
+);
 
-export default route;
+export default app;

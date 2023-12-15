@@ -10,6 +10,12 @@ export class DBError<T> extends Error {
       this.flattenError(this.error);
    }
 
+   isErrorType(type: DBErrorType) {
+      if (this.error instanceof Error) {
+         return this.error.message === type;
+      }
+   }
+
    flattenError(error: unknown) {
       if (error instanceof DBError) {
          this.error = error.error;
@@ -36,9 +42,9 @@ export function assertMessageIsDefined(message: unknown): asserts message {
    }
 }
 
-export function isDBError(object: unknown, expectedError: string): object is DBError<Error & { cause: string }> {
+export function isDBError(object: unknown): object is DBError<Error & { cause: string }> {
    if (object !== null && typeof object === "object" && object instanceof DBError && object.error instanceof Error) {
-      return object.error.message === expectedError;
+      return true;
    }
 
    return false;

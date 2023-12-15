@@ -1,24 +1,33 @@
-import { InferContext } from "@/index";
+import { DBErrorType } from "@/src/database";
 import { DatabaseMessage } from "@/src/database/database-message";
-import { hasToken, result, serverError, setup } from "@/src/route-utils";
+import { createError } from "@/src/factory/error-factory";
+import { error, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
 import { APIGetChannelMessagesResult } from "@shared/api-types";
-import Elysia, { t } from "elysia";
+import { Error, HttpCode } from "@shared/errors";
+import { Hono } from "hono";
+import { z } from "zod";
 
-const route = new Elysia().get("/channels/:channelId/messages", (ctx) => handleGetChannelMessages(ctx), {
-   beforeHandle: hasToken,
-   query: t.Object({ limit: t.Optional(t.String()) }),
-});
+const schema = z.object({ limit: z.optional(z.string()) });
 
-async function handleGetChannelMessages(ctx: InferContext<typeof setup, unknown, "/:channelId", { limit?: string }>) {
-   try {
-      const limit = Number(ctx.query.limit) || 50;
+const app = new Hono();
 
-      const messages = await DatabaseMessage.getMessages(ctx.params.channelId, limit);
-      const json: APIGetChannelMessagesResult = messages.map((x) => x.toObject());
-      return result(ctx, json);
-   } catch (e) {
-      return serverError(ctx, e);
-   }
-}
+app.get("/channels/:channelId/messages", verifyJwt(), hValidator("query", schema), c =>
+   handleRequest(
+      c,
+      async () => {
+         const limit = Number(c.req.query("limit")) || 50;
 
-export default route;
+         const messages = await DatabaseMessage.getMessages(c.req.param("channelId"), limit);
+         const json: APIGetChannelMessagesResult = messages.map(x => x.toObject());
+
+         return c.json(json, HttpCode.OK);
+      },
+      e => {
+         if (e.isErrorType(DBErrorType.NULL_CHANNEL)) {
+            return error(c, createError(Error.unknownChannel()), HttpCode.NOT_FOUND);
+         }
+      },
+   ),
+);
+
+export default app;

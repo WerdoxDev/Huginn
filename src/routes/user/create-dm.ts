@@ -1,44 +1,45 @@
-import Elysia, { t } from "elysia";
-import { APIPostCreateDMJsonBody } from "@shared/api-types";
-import { Error, Field, HttpCode } from "@shared/errors";
-import { InferContext } from "@/index";
-import { isDBError, DBErrorType } from "@/src/database";
+import { DBErrorType } from "@/src/database";
 import { DatabaseChannel } from "@/src/database/database-channel";
 import { createError } from "@/src/factory/error-factory";
-import { verifyToken } from "@/src/factory/token-factory";
-import { setup, hasToken, result, error, serverError } from "@/src/route-utils";
+import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
+import { APIPostCreateDMJsonBody } from "@shared/api-types";
+import { Error, Field, HttpCode } from "@shared/errors";
+import { Hono } from "hono";
+import { z } from "zod";
 
-export const route = new Elysia().use(setup).post("/users/@me/channels", (ctx) => handleCreateDM(ctx), {
-   beforeHandle: hasToken,
-   body: t.Partial(t.Object({ recipientId: t.String(), users: t.Record(t.String(), t.String()) })),
-});
+const schema = z.object({ recipientId: z.optional(z.string()), users: z.optional(z.record(z.string(), z.string())) });
 
-export async function handleCreateDM(ctx: InferContext<typeof setup, APIPostCreateDMJsonBody>) {
-   try {
-      const [_isValid, payload] = await verifyToken(ctx.bearer!);
+const app = new Hono();
 
-      if (ctx.body.recipientId) {
-         const channel = await DatabaseChannel.createSingleDMChannel(payload!.id, ctx.body.recipientId);
-         return result(ctx, channel.toObject(), HttpCode.CREATED);
-      }
+app.post("/users/@me/channels", verifyJwt(), hValidator("json", schema), c =>
+   handleRequest(
+      c,
+      async () => {
+         const body = (await c.req.json()) as APIPostCreateDMJsonBody;
+         const payload = getJwt(c);
 
-      if (ctx.body.users) {
-         if (Object.entries(ctx.body.users).length === 0) {
-            return error(ctx, createError(Error.invalidFormBody()));
+         if (body.recipientId) {
+            const channel = await DatabaseChannel.createSingleDMChannel(payload!.id, body.recipientId);
+            return c.json(channel.toObject(), HttpCode.CREATED);
          }
 
-         const channel = await DatabaseChannel.createGroupDMChannel(payload!.id, ctx.body.users);
-         return result(ctx, channel.toObject(), HttpCode.CREATED);
-      }
+         if (body.users) {
+            if (Object.entries(body.users).length === 0) {
+               return error(c, createError(Error.invalidFormBody()));
+            }
 
-      return error(ctx, createError(Error.invalidFormBody()));
-   } catch (e) {
-      if (isDBError(e, DBErrorType.NULL_USER)) {
-         return error(ctx, createError(Error.unknownUser()).error(e.error.cause, Field.invalidUserId()), HttpCode.NOT_FOUND);
-      }
+            const channel = await DatabaseChannel.createGroupDMChannel(payload!.id, body.users);
+            return c.json(channel.toObject(), HttpCode.CREATED);
+         }
 
-      return serverError(ctx, e);
-   }
-}
+         return error(c, createError(Error.invalidFormBody()));
+      },
+      e => {
+         if (e.isErrorType(DBErrorType.NULL_USER)) {
+            return error(c, createError(Error.unknownUser()).error(e.error.cause, Field.invalidUserId()), HttpCode.NOT_FOUND);
+         }
+      },
+   ),
+);
 
-export default route;
+export default app;

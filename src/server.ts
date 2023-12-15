@@ -1,62 +1,49 @@
-import Elysia from "elysia";
-import testRoute from "./routes/test";
-import { Error, HuginnErrorData } from "@shared/errors";
-import { createError } from "./factory/error-factory";
-import { error, setup } from "./route-utils";
+import { HuginnErrorData } from "@shared/errors";
 import { consola } from "consola";
 import { colors } from "consola/utils";
-import { logReject, logRequest, logResponse, logServerError } from "./log-utils";
+import { Hono } from "hono";
 import { serverHost, serverPort } from ".";
-import { routes } from "./routes/routes";
+import { logReject, logRequest, logResponse, logServerError } from "./log-utils";
+import { tryGetBodyJson } from "./route-utils";
+import routes from "./routes/routes";
+import testRoute from "./routes/test";
 
 consola.start("Starting server...");
 
-const app = new Elysia()
-   .onBeforeHandle(({ request, path, body }) => {
-      if (request.method !== "OPTIONS") {
-         logRequest(path, request.method, body);
-      }
-   })
-   .onAfterHandle(({ request, path, response, set }) => {
-      if (request.method === "OPTIONS") {
-         return;
-      }
+const app = new Hono();
 
-      if (!set.status || typeof set.status === "string") {
-         return;
-      }
+app.use("*", async (c, next) => {
+   logRequest(c.req.path, c.req.method, await tryGetBodyJson(c.req));
 
-      if (set.status >= 200 && set.status < 300) {
-         logResponse(path, set.status, response);
-      } else if (set.status === 500) {
-         logReject(path, request.method, undefined, set.status);
-      } else {
-         logReject(path, request.method, response as HuginnErrorData, set.status);
-      }
-   })
-   .onError((ctx) => {
-      if (ctx.code === "UNKNOWN") {
-         logServerError(ctx.path, ctx.error);
-         return ctx.error;
-      }
+   await next();
 
-      logReject(ctx.path, ctx.request.method, ctx.code);
+   const response = c.res.clone();
 
-      if (ctx.code === "VALIDATION") {
-         return error(ctx, createError(Error.invalidFormBody()));
-      }
+   if (c.res.status >= 200 && c.res.status < 300) {
+      logResponse(c.req.path, c.res.status, await tryGetBodyJson(response));
+   } else if (c.res.status === 500) {
+      logReject(c.req.path, c.req.method, undefined, c.res.status);
+   } else {
+      logReject(c.req.path, c.req.method, (await tryGetBodyJson(response)) as HuginnErrorData, c.res.status);
+   }
+});
 
-      return ctx.error;
-   })
-   .get("/test", () => {
-      return "HELLO";
-   })
-   .use(setup)
-   .use(routes)
-   .use(testRoute)
-   .listen({ hostname: serverHost, port: serverPort });
+app.onError((e, c) => {
+   logServerError(c.req.path, e);
+
+   // if (e instanceof HTTPException) {
+   //    return e.getResponse();
+   // }
+
+   logReject(c.req.path, c.req.method, e.message);
+
+   return c.text("GOT FUCKED!");
+});
+
+app.route("/", routes);
+app.route("/", testRoute);
+
+const server = Bun.serve({ port: serverPort, hostname: serverHost, fetch: app.fetch });
 
 consola.success("Server started!");
-consola.box(`Listening on ${colors.green(`http://${app.server?.hostname}:${app.server?.port}`)}`);
-
-export type AppType = typeof app;
+consola.box(`Listening on ${colors.green(`http://${server.hostname}:${server.port}`)}`);

@@ -1,41 +1,45 @@
-import { Error, Field } from "@shared/errors";
-import { APIPostLoginJSONBody, APIPostLoginResult } from "@shared/api-types";
-import { t } from "elysia";
-import { constants } from "@shared/constants";
-import { DatabaseAuth, isDBError, DBErrorType } from "@/src/database";
+import { DBErrorType, DatabaseAuth } from "@/src/database";
 import { createError } from "@/src/factory/error-factory";
 import { createTokens } from "@/src/factory/token-factory";
-import { result, error, serverError, createRequest, handleRequest, setup } from "@/src/route-utils";
-import { InferContext } from "@/index";
+import { error, hValidator, handleRequest } from "@/src/route-utils";
+import { APIPostLoginResult } from "@shared/api-types";
+import { constants } from "@shared/constants";
+import { Error, Field, HttpCode } from "@shared/errors";
+import { Hono } from "hono";
+import { z } from "zod";
 
-export default createRequest().post("/auth/login", (ctx) => handleRequest(ctx, handleLogin), {
-   body: t.Object({
-      username: t.Optional(t.String()),
-      email: t.Optional(t.String()),
-      password: t.String(),
-   }),
+const schema = z.object({
+   username: z.optional(z.string()),
+   email: z.optional(z.string()),
+   password: z.string(),
 });
 
-async function handleLogin(ctx: InferContext<typeof setup, APIPostLoginJSONBody>) {
-   try {
-      const user = await DatabaseAuth.userByCredentials(ctx.body);
+const app = new Hono();
 
-      const [accessToken, refreshToken] = await createTokens(
-         { id: user._id },
-         constants.ACCESS_TOKEN_EXPIRE_TIME,
-         constants.REFRESH_TOKEN_EXPIRE_TIME,
-      );
-      const json: APIPostLoginResult = { ...user.toObject(), token: accessToken, refreshToken: refreshToken };
+app.post("/auth/login", hValidator("json", schema), c =>
+   handleRequest(
+      c,
+      async () => {
+         const user = await DatabaseAuth.userByCredentials(await c.req.json());
 
-      return result(ctx, json);
-   } catch (e) {
-      if (isDBError(e, DBErrorType.NULL_USER)) {
-         return error(
-            ctx,
-            createError(Error.invalidFormBody()).error("login", Field.invalidLogin()).error("password", Field.invalidLogin()),
+         const [accessToken, refreshToken] = await createTokens(
+            { id: user._id },
+            constants.ACCESS_TOKEN_EXPIRE_TIME,
+            constants.REFRESH_TOKEN_EXPIRE_TIME,
          );
-      }
+         const json: APIPostLoginResult = { ...user.toObject(), token: accessToken, refreshToken: refreshToken };
 
-      return serverError(ctx, e);
-   }
-}
+         return c.json(json, HttpCode.OK);
+      },
+      e => {
+         if (e.isErrorType(DBErrorType.NULL_USER)) {
+            return error(
+               c,
+               createError(Error.invalidFormBody()).error("login", Field.invalidLogin()).error("password", Field.invalidLogin()),
+            );
+         }
+      },
+   ),
+);
+
+export default app;

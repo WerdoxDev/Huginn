@@ -11,21 +11,22 @@ import getCurrentUserRoute from "./user/get-current-user";
 import getUserChannelsRoute from "./user/get-user-channels";
 import patchCurrentUserRoute from "./user/patch-current-user";
 import getChannelMessagesRoute from "./channel/get-channel-messages";
-import Elysia from "elysia";
-import { setup } from "../route-utils";
+import { Hono } from "hono";
 
-export const routes = new Elysia()
-   .use(setup)
-   .use(loginRoute)
-   .use(registerRoute)
-   .use(refreshTokenRoute)
-   .use(getMessageByIdRoute)
-   .use(getUserByIdRoute)
-   .use(getUserChannelsRoute)
-   .use(getCurrentUserRoute)
-   .use(getChannelByIdRoute)
-   .use(getChannelMessagesRoute)
-   .use(createMessageRoute)
-   .use(createDmRoute)
-   .use(patchCurrentUserRoute)
-   .use(uniqueUsernameRoute);
+export const app = new Hono();
+
+app.route("/", loginRoute);
+app.route("/", registerRoute);
+app.route("/", refreshTokenRoute);
+app.route("/", uniqueUsernameRoute);
+app.route("/", getMessageByIdRoute);
+app.route("/", getCurrentUserRoute);
+app.route("/", getUserByIdRoute);
+app.route("/", getUserChannelsRoute);
+app.route("/", getChannelByIdRoute);
+app.route("/", getChannelMessagesRoute);
+app.route("/", createMessageRoute);
+app.route("/", createDmRoute);
+app.route("/", patchCurrentUserRoute);
+
+export default app;

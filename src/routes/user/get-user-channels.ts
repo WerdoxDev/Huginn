@@ -1,23 +1,20 @@
-import { InferContext } from "@/index";
 import { DatabaseChannel } from "@/src/database/database-channel";
-import { verifyToken } from "@/src/factory/token-factory";
-import { setup, hasToken, result, serverError } from "@/src/route-utils";
+import { verifyJwt, handleRequest, getJwt } from "@/src/route-utils";
 import { APIGetUserChannelsResult } from "@shared/api-types";
-import Elysia from "elysia";
+import { HttpCode } from "@shared/errors";
+import { Hono } from "hono";
 
-const route = new Elysia().use(setup).get("/users/@me/channels", (ctx) => handleGetUserChannels(ctx), { beforeHandle: hasToken });
+const app = new Hono();
 
-async function handleGetUserChannels(ctx: InferContext<typeof setup>) {
-   try {
-      const [_isValid, payload] = await verifyToken(ctx.bearer!);
+app.get("/users/@me/channels", verifyJwt(), c =>
+   handleRequest(c, async () => {
+      const payload = getJwt(c);
 
       const channels = await DatabaseChannel.getUserChannels(payload!.id);
-      const json: APIGetUserChannelsResult = channels.map((x) => x.toObject());
+      const json: APIGetUserChannelsResult = channels.map(x => x.toObject());
 
-      return result(ctx, json);
-   } catch (e) {
-      return serverError(ctx, e);
-   }
-}
+      return c.json(json, HttpCode.OK);
+   }),
+);
 
-export default route;
+export default app;

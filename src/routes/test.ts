@@ -1,26 +1,25 @@
-import Elysia from "elysia";
 import { HttpCode } from "@shared/errors";
+import { Hono } from "hono";
 import { Channel } from "../database/schemas/channel-schema";
-import { User } from "../database/schemas/user-schema";
-import { setup } from "../route-utils";
 import { Message } from "../database/schemas/message-schema";
+import { User } from "../database/schemas/user-schema";
 
-const route = new Elysia().use(setup);
+const app = new Hono();
 
-route.post("/test/:job", async (ctx) => {
-   if (ctx.params.job === "test-users") {
+app.post("/test/:job", async c => {
+   if (c.req.param("job") === "test-users") {
       await User.deleteMany({ username: { $regex: "test" } }).exec();
    }
 
-   if (ctx.params.job === "test-channels") {
+   if (c.req.param("job") === "test-channels") {
       await Channel.deleteMany({}).exec();
    }
 
-   if (ctx.params.job === "test-messages") {
+   if (c.req.param("job") === "test-messages") {
       await Message.deleteMany({ content: { $regex: "test" } }).exec();
    }
 
-   ctx.set.status = HttpCode.OK;
+   return c.text("", HttpCode.OK);
 });
 
-export default route;
+export default app;

@@ -1,53 +1,55 @@
-import { APIPostRegisterResult, APIPostRegisterJSONBody } from "@shared/api-types";
-import { HttpCode, Error } from "@shared/errors";
-import Elysia, { t } from "elysia";
-import { constants } from "@shared/constants";
-import { InferContext } from "@/index";
 import { DatabaseAuth } from "@/src/database";
 import { createError } from "@/src/factory/error-factory";
 import { createTokens } from "@/src/factory/token-factory";
-import { setup, error, result, serverError } from "@/src/route-utils";
+import { error, hValidator, handleRequest } from "@/src/route-utils";
 import {
-   validateUsername,
    validateDisplayName,
-   validatePassword,
    validateEmail,
-   validateUsernameUnique,
    validateEmailUnique,
+   validatePassword,
+   validateUsername,
+   validateUsernameUnique,
 } from "@/src/validation";
+import { APIPostRegisterJSONBody, APIPostRegisterResult } from "@shared/api-types";
+import { constants } from "@shared/constants";
+import { Error, HttpCode } from "@shared/errors";
+import { Hono } from "hono";
+import { z } from "zod";
 
-const route = new Elysia().post("/auth/register", (ctx) => handleRegister(ctx), {
-   body: t.Object({
-      username: t.String(),
-      displayName: t.String(),
-      email: t.String(),
-      password: t.String(),
-   }),
+const schema = z.object({
+   username: z.string(),
+   displayName: z.string(),
+   email: z.string(),
+   password: z.string(),
 });
+const app = new Hono();
 
-async function handleRegister(ctx: InferContext<typeof setup, APIPostRegisterJSONBody>) {
-   const formError = createError(Error.invalidFormBody());
+app.post("/auth/register", hValidator("json", schema), async c =>
+   handleRequest(c, async () => {
+      const body = (await c.req.json()) as APIPostRegisterJSONBody;
+      body.username = body.username.toLowerCase();
 
-   validateUsername(ctx.body.username, formError);
-   validateDisplayName(ctx.body.displayName, formError);
-   validatePassword(ctx.body.password, formError);
-   validateEmail(ctx.body.email, formError);
+      const formError = createError(Error.invalidFormBody());
 
-   if (formError.hasErrors()) {
-      return error(ctx, formError);
-   }
+      validateUsername(body.username, formError);
+      validateDisplayName(body.displayName, formError);
+      validatePassword(body.password, formError);
+      validateEmail(body.email, formError);
 
-   try {
-      const databaseError = createError(Error.invalidFormBody());
-
-      await validateUsernameUnique(ctx.body.username, databaseError);
-      await validateEmailUnique(ctx.body.email, databaseError);
-
-      if (databaseError.hasErrors()) {
-         return error(ctx, databaseError);
+      if (formError.hasErrors()) {
+         return error(c, formError);
       }
 
-      const user = await DatabaseAuth.registerNewUser(ctx.body);
+      const databaseError = createError(Error.invalidFormBody());
+
+      await validateUsernameUnique(body.username, databaseError);
+      await validateEmailUnique(body.email, databaseError);
+
+      if (databaseError.hasErrors()) {
+         return error(c, databaseError);
+      }
+
+      const user = await DatabaseAuth.registerNewUser(body);
 
       const [accessToken, refreshToken] = await createTokens(
          { id: user._id },
@@ -56,10 +58,8 @@ async function handleRegister(ctx: InferContext<typeof setup, APIPostRegisterJSO
       );
       const json: APIPostRegisterResult = { ...user.toObject(), token: accessToken, refreshToken: refreshToken };
 
-      return result(ctx, json, HttpCode.CREATED);
-   } catch (e) {
-      return serverError(ctx, e);
-   }
-}
+      return c.json(json, HttpCode.CREATED);
+   }),
+);
 
-export default route;
+export default app;
