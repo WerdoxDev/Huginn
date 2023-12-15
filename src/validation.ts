@@ -1,7 +1,7 @@
 import { constants } from "@shared/constants";
-import { ErrorFactory } from "./factory/error-factory";
 import { Field } from "@shared/errors";
 import { DatabaseUser } from "./database";
+import { ErrorFactory } from "./factory/error-factory";
 
 export function validateEmail(email: string | undefined, errorObject: ErrorFactory) {
    if (email && !email.match(constants.EMAIL_REGEX)) {
@@ -34,11 +34,7 @@ export function validateDisplayName(displayName: string | undefined, errorObject
    return false;
 }
 
-export function validateCorrectPassword(
-   password: string | undefined,
-   correctPassword: string,
-   errorObject: ErrorFactory
-) {
+export function validateCorrectPassword(password: string | undefined, correctPassword: string, errorObject: ErrorFactory) {
    if (password && password !== correctPassword) {
       errorObject.error("password", Field.passwordIncorrect());
       return false;

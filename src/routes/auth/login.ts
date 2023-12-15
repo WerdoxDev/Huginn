@@ -1,43 +1,45 @@
-import { Error, Field } from "@shared/errors";
-import { APIPostLoginJSONBody, APIPostLoginResult } from "@shared/api-types";
-import { createError } from "../../factory/error-factory";
-import { createTokens } from "../../factory/token-factory";
-import Elysia, { t } from "elysia";
+import { DBErrorType, DatabaseAuth } from "@/src/database";
+import { createError } from "@/src/factory/error-factory";
+import { createTokens } from "@/src/factory/token-factory";
+import { error, hValidator, handleRequest } from "@/src/route-utils";
+import { APIPostLoginResult } from "@shared/api-types";
 import { constants } from "@shared/constants";
-import { DatabaseAuth, DBErrorType, isDBError } from "../../database";
-import { InferContext } from "../../..";
-import { logAndReturnError, returnError, returnResult, setup } from "../../route-utils";
+import { Error, Field, HttpCode } from "@shared/errors";
+import { Hono } from "hono";
+import { z } from "zod";
 
-const route = new Elysia().post("/login", (ctx) => handleLogin(ctx), {
-   body: t.Object({
-      username: t.Optional(t.String()),
-      email: t.Optional(t.String()),
-      password: t.String(),
-   }),
+const schema = z.object({
+   username: z.optional(z.string()),
+   email: z.optional(z.string()),
+   password: z.string(),
 });
 
-async function handleLogin(ctx: InferContext<typeof setup, APIPostLoginJSONBody>) {
-   try {
-      const user = await DatabaseAuth.userByCredentials(ctx.body);
+const app = new Hono();
 
-      const [accessToken, refreshToken] = await createTokens(
-         { id: user._id },
-         constants.ACCESS_TOKEN_EXPIRE_TIME,
-         constants.REFRESH_TOKEN_EXPIRE_TIME,
-      );
-      const result: APIPostLoginResult = { ...user.toObject(), token: accessToken, refreshToken: refreshToken };
+app.post("/auth/login", hValidator("json", schema), c =>
+   handleRequest(
+      c,
+      async () => {
+         const user = await DatabaseAuth.userByCredentials(await c.req.json());
 
-      return returnResult(ctx, result);
-   } catch (e) {
-      if (isDBError(e) && e.error.message === DBErrorType.NULL_USER) {
-         return returnError(
-            ctx,
-            createError(Error.invalidFormBody()).error("login", Field.invalidLogin()).error("password", Field.invalidLogin()),
+         const [accessToken, refreshToken] = await createTokens(
+            { id: user._id },
+            constants.ACCESS_TOKEN_EXPIRE_TIME,
+            constants.REFRESH_TOKEN_EXPIRE_TIME,
          );
-      }
+         const json: APIPostLoginResult = { ...user.toObject(), token: accessToken, refreshToken: refreshToken };
 
-      return logAndReturnError(ctx, e);
-   }
-}
+         return c.json(json, HttpCode.OK);
+      },
+      e => {
+         if (e.isErrorType(DBErrorType.NULL_USER)) {
+            return error(
+               c,
+               createError(Error.invalidFormBody()).error("login", Field.invalidLogin()).error("password", Field.invalidLogin()),
+            );
+         }
+      },
+   ),
+);
 
-export default route;
+export default app;

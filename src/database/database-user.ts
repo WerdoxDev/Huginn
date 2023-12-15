@@ -1,5 +1,5 @@
 import { Snowflake } from "@shared/types";
-import { User } from "./user-schema";
+import { User } from "./schemas/user-schema";
 import { DBError, assertUserIsDefined } from ".";
 import { APIPatchCurrentUserJSONBody } from "@shared/api-types";
 

@@ -1,7 +1,7 @@
-import { Database } from "./database";
 import consola from "consola";
-import { startListening } from "./commands";
 import { version } from "../package.json";
+import { startListening } from "./commands";
+import { Database } from "./database";
 
 const connectionString = process.env.MONGODB_CONNECTION_STRING;
 const dbName = process.env.MONGODB_DB_NAME;
@@ -23,7 +23,7 @@ async function main() {
    consola.start("Connecting to database...");
 
    await Database.initialize(connectionString, dbName);
-   await import("./server.ts");
+   await import("./server");
 }
 
 await main();

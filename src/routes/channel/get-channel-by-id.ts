@@ -1,32 +1,26 @@
-import { createError } from "../../factory/error-factory";
-import Elysia from "elysia";
-import { setup, hasToken, logAndReturnError, returnUnauthorized, returnResult } from "../../route-utils";
-import { DBErrorType, isDBError } from "../../database/database-error";
-import { InferContext } from "../../..";
-import { HttpCode, Error } from "@shared/errors";
-import { APIGetChannelByIdResult } from "@shared/api-types";
-import { DatabaseChannel } from "../../database/database-channel";
+import { DBErrorType } from "@/src/database";
+import { DatabaseChannel } from "@/src/database/database-channel";
+import { createError } from "@/src/factory/error-factory";
+import { error, handleRequest, verifyJwt } from "@/src/route-utils";
+import { Error, HttpCode } from "@shared/errors";
+import { Hono } from "hono";
 
-const route = new Elysia().use(setup).get("/:id", (ctx) => handleGetChannelById(ctx), { beforeHandle: hasToken });
+const app = new Hono();
 
-export async function handleGetChannelById(ctx: InferContext<typeof setup, unknown, "/:id">) {
-   if (!ctx.params.id) {
-      return returnUnauthorized(ctx);
-   }
+app.get("/channels/:channelId", verifyJwt(), c =>
+   handleRequest(
+      c,
+      async () => {
+         const channel = await DatabaseChannel.getChannelById(c.req.param("channelId"));
 
-   try {
-      const channel = await DatabaseChannel.getChannelById(ctx.params.id);
-      const result: APIGetChannelByIdResult = channel.toObject();
+         return c.json(channel.toObject(), HttpCode.OK);
+      },
+      e => {
+         if (e.isErrorType(DBErrorType.NULL_CHANNEL)) {
+            return error(c, createError(Error.unknownChannel()), HttpCode.NOT_FOUND);
+         }
+      },
+   ),
+);
 
-      return returnResult(ctx, result);
-   } catch (e) {
-      if (isDBError(e) && e.error.message === DBErrorType.NULL_CHANNEL) {
-         ctx.set.status = HttpCode.NOT_FOUND;
-         return createError(Error.unknownChannel()).toObject();
-      }
-
-      return logAndReturnError(ctx, e);
-   }
-}
-
-export default route;
+export default app;

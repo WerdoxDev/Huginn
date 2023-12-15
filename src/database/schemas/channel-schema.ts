@@ -21,5 +21,5 @@ const groupDmChannelSchema = new mongoose.Schema<APIGroupDMChannel>({
 });
 
 export const Channel = mongoose.model<APIChannel>("Channel", channelSchema);
-export const DMChannel = Channel.discriminator("DMChannel", dmChannelSchema);
-export const GroupDMChannel = Channel.discriminator("GroupDMChannel", groupDmChannelSchema);
+export const DMChannel = Channel.discriminator<APIDMChannel>("DMChannel", dmChannelSchema);
+export const GroupDMChannel = Channel.discriminator<APIGroupDMChannel>("GroupDMChannel", groupDmChannelSchema);

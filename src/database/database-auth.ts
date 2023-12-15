@@ -1,7 +1,7 @@
 import { APIPostLoginJSONBody, APIPostRegisterJSONBody } from "@shared/api-types";
 import { snowflake } from "@shared/snowflake";
 import { DBError, assertUserIsDefined } from ".";
-import { User } from "./user-schema";
+import { User } from "./schemas/user-schema";
 
 export class DatabaseAuth {
    static async userByCredentials(credentials: APIPostLoginJSONBody) {

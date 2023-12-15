@@ -1,21 +1,19 @@
-import Elysia from "elysia";
-import { verifyToken } from "../../factory/token-factory";
-import { setup, hasToken, logAndReturnError, returnResult } from "../../route-utils";
-import { DatabaseUser } from "../../database";
-import { InferContext } from "../../..";
+import { DatabaseUser } from "@/src/database";
+import { getJwt, handleRequest, verifyJwt } from "@/src/route-utils";
+import { HttpCode } from "@shared/errors";
+import { Hono } from "hono";
 
-const route = new Elysia().use(setup).get("/@me", (ctx) => handleGetCurrentUser(ctx), { beforeHandle: hasToken });
+const app = new Hono();
 
-async function handleGetCurrentUser(ctx: InferContext<typeof setup>) {
-   try {
-      const [_isValid, payload] = await verifyToken(ctx.bearer || "");
+app.get("/users/@me", verifyJwt(), c =>
+   handleRequest(c, async () => {
+      const payload = getJwt(c);
+      console.log(payload.id);
 
-      const user = await DatabaseUser.getUserById(payload!.id);
+      const user = await DatabaseUser.getUserById(payload.id);
 
-      return returnResult(ctx, user.toObject());
-   } catch (e) {
-      return logAndReturnError(ctx, e);
-   }
-}
+      return c.json(user.toObject(), HttpCode.OK);
+   }),
+);
 
-export default route;
+export default app;

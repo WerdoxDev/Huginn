@@ -1,13 +1,17 @@
 import { Elysia, type Context, type DecoratorBase } from "elysia";
 
-export type InferContext<T extends Elysia, Body = unknown, Params extends string = ""> = T extends Elysia<
+export type InferContext<T extends Elysia, Body = unknown, Params extends string = "", Query = unknown> = T extends Elysia<
    infer Path,
    infer Decorators,
    infer _Definitions,
    infer _ParentSchema,
    infer Routes
 >
-   ? Context<Routes & { body: Body; params: ParameterToRecord<FilterUrlPath<SplitUrlPath<Params>>> }, DecoratorBase, Path> &
+   ? Context<
+        Routes & { body: Body; query: Query; params: ParameterToRecord<FilterUrlPath<SplitUrlPath<Params>>> },
+        DecoratorBase,
+        Path
+     > &
         Partial<Decorators["request"]>
    : never;
 

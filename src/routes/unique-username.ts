@@ -1,30 +1,23 @@
 import { APIPostUniqueUsernameJSONBody, APIPostUniqueUsernameResult } from "@shared/api-types";
-import Elysia, { t } from "elysia";
 import { HttpCode } from "@shared/errors";
+import { Hono } from "hono";
+import { z } from "zod";
+import { hValidator, handleRequest } from "../route-utils";
 import { validateUsernameUnique } from "../validation";
-import { InferContext } from "../..";
-import { logServerError } from "../log-utils";
-import { setup } from "../route-utils";
 
-const route = new Elysia().post("/unique-username", (ctx) => handleUniqueUsername(ctx), {
-   body: t.Object({
-      username: t.String(),
+const schema = z.object({ username: z.string() });
+
+const app = new Hono();
+
+app.post("/unique-username", hValidator("json", schema), c =>
+   handleRequest(c, async () => {
+      const body = (await c.req.json()) as APIPostUniqueUsernameJSONBody;
+
+      const isUnique = await validateUsernameUnique(body.username.toLowerCase());
+      const json: APIPostUniqueUsernameResult = { taken: !isUnique };
+
+      return c.json(json, HttpCode.OK);
    }),
-});
+);
 
-async function handleUniqueUsername(ctx: InferContext<typeof setup, APIPostUniqueUsernameJSONBody>) {
-   try {
-      const isUnique = await validateUsernameUnique(ctx.body.username);
-      const result: APIPostUniqueUsernameResult = { taken: !isUnique };
-
-      ctx.set.status = HttpCode.OK;
-      return result;
-   } catch (e) {
-      logServerError(ctx.path, e);
-
-      ctx.set.status = HttpCode.SERVER_ERROR;
-      return undefined;
-   }
-}
-
-export default route;
+export default app;
