@@ -19,7 +19,11 @@ export class DatabaseChannel {
 
    static async getUserChannels(userId: Snowflake) {
       try {
-         const channels = await Channel.find({ recipients: { $elemMatch: { _id: userId } } }).exec();
+         const channels = await Channel.aggregate([
+            { $unwind: "$recipients" },
+            { $match: { "recipients._id": userId } },
+            { $group: { _id: "$_id", recipients: { $push: "$recipients" } } },
+         ]).exec();
          assertChannelIsDefined(channels);
          return channels;
       } catch (e) {

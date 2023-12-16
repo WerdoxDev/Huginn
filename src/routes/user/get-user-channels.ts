@@ -1,6 +1,5 @@
 import { DatabaseChannel } from "@/src/database/database-channel";
-import { verifyJwt, handleRequest, getJwt } from "@/src/route-utils";
-import { APIGetUserChannelsResult } from "@shared/api-types";
+import { getJwt, handleRequest, verifyJwt } from "@/src/route-utils";
 import { HttpCode } from "@shared/errors";
 import { Hono } from "hono";
 
@@ -11,9 +10,9 @@ app.get("/users/@me/channels", verifyJwt(), c =>
       const payload = getJwt(c);
 
       const channels = await DatabaseChannel.getUserChannels(payload!.id);
-      const json: APIGetUserChannelsResult = channels.map(x => x.toObject());
+      console.log(channels);
 
-      return c.json(json, HttpCode.OK);
+      return c.json(channels, HttpCode.OK);
    }),
 );
 

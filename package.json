@@ -14,10 +14,11 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@prisma/client": "^5.7.0",
     "consola": "^3.2.3",
     "hono": "^3.11.7",
     "jose": "^5.0.2",
-    "mongoose": "^8.0.0",
+    "prisma": "^5.7.0",
     "zod": "^3.22.4"
   }
 }

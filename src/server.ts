@@ -7,12 +7,19 @@ import { logReject, logRequest, logResponse, logServerError } from "./log-utils"
 import { tryGetBodyJson } from "./route-utils";
 import routes from "./routes/routes";
 import testRoute from "./routes/test";
+import { cors } from "hono/cors";
 
 consola.start("Starting server...");
 
 const app = new Hono();
 
+app.use("*", cors());
+
 app.use("*", async (c, next) => {
+   if (c.req.method === "OPTIONS") {
+      return;
+   }
+
    logRequest(c.req.path, c.req.method, await tryGetBodyJson(c.req));
 
    await next();

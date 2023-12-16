@@ -30,7 +30,6 @@ const app = new Hono();
 app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
    handleRequest(c, async () => {
       const body = (await c.req.json()) as APIPatchCurrentUserJSONBody;
-
       const payload = getJwt(c);
 
       const formError = createError(Error.invalidFormBody());

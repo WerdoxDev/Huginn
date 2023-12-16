@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = "mongodb+srv://huginn-root:LL3zR0QBOm9BNbUj@huginn.yzwj9ou.mongodb.net/huginn?retryWrites=true&w=majority"
+}
+
+model User {
+  id          String    @id @map("_id")
+  username    String    @unique
+  displayName String
+  email       String    @unique
+  avatar      String
+  password    String
+  flags       Int
+  system      Boolean
+  Message     Message[]
+}
+
+model Channel {
+  id            String              @id @map("_id")
+  icon          String?
+  lastMessageId String?
+  name          String?
+  ownerId       String?
+  recipients    ChannelRecipients[]
+  type          ChannelType
+}
+
+model Message {
+  id        String      @id @map("_id")
+  authorId  String
+  author    User        @relation(fields: [authorId], references: [id])
+  channelId String
+  content   String
+  createdAt DateTime
+  editedAt  DateTime
+  mentions  String?
+  pinned    Boolean
+  type      MessageType
+}
+
+type ChannelRecipients {
+  id       String @map("_id")
+  avatar   String
+  username String
+}
+
+type MessageAuthor {
+  id          String @map("_id")
+  avatar      String
+  username    String
+  displayName String
+}
+
+enum MessageType {
+  DEFAULT
+  RECIPIENT_ADD
+  RECIPIENT_REMOVE
+  CALL
+  CHANNEL_NAME_CHANGED
+  CHANNEL_ICON_CHANGED
+  CHANNEL_PINNED_MESSAGE
+  USER_JOIN
+  REPLY
+}
+
+enum ChannelType {
+  DM
+  GROUP_DM
+  GUILD_TEXT
+  GUILD_VOICE
+  GUILD_CATEGORY
+}
