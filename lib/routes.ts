@@ -46,6 +46,7 @@ export const Routes = {
    /**
     * Route for:
     * - POST '/users/@me/channels'
+    * - GET  '/users/@me/channels'
     */
    userChannels() {
       return `/users/@me/channels` as const;
@@ -61,11 +62,25 @@ export const Routes = {
 
    /**
     * Route for:
+    * - GET '/channels/{channel.id}/messages/{message.id}'
+    */
+   channelMessage(channelId: Snowflake, messageId: Snowflake) {
+      return `/channels/${channelId}/messages/${messageId}` as const;
+   },
+
+   /**
+    * Route for:
+    * - GET '/channels/{channel.id}/messages'
+    */
+   channelMessages(channelId: Snowflake) {
+      return `/channels/${channelId}/messages` as const;
+   },
+
+   /**
+    * Route for:
     * - POST '/channels/{channel.id}/typing'
     */
    channelTyping(channelId: Snowflake) {
       return `/channels/${channelId}/typing` as const;
    },
 };
-
-let a = Routes.user("asd");

@@ -1,8 +1,11 @@
 import { Snowflake } from "./types";
 
 //#region USER
+type APIBaseUser = {
+   id: Snowflake;
+};
+
 export type APIUser = {
-   _id: Snowflake;
    username: string;
    displayName: string;
    avatar: string;
@@ -10,14 +13,20 @@ export type APIUser = {
    email?: string;
    password?: string;
    // TODO: Actually implement flags
-   flags: unknown;
-};
+   flags: number;
+} & APIBaseUser;
 
 export type APIChannelUser = {
-   _id: Snowflake;
    username: string;
    avatar: string;
-};
+} & APIBaseUser;
+
+export type APIMessageUser = {
+   username: string;
+   displayName: string;
+   avatar: string;
+   flags: unknown;
+} & APIBaseUser;
 
 export type IncludesToken = {
    token: string;
@@ -71,24 +80,33 @@ export type APIPostUniqueUsernameResult = {
 //#endregion
 
 //#region CHANNEL
-export type APIChannel = APIDMChannel | APIGroupDMChannel;
+type APIBaseChannel = {
+   id: Snowflake;
+   type: ChannelType;
+};
+
+export type APIChannel = {
+   name?: string | null;
+   ownerId?: Snowflake | null;
+   icon?: string | null;
+   lastMessageId?: Snowflake | null;
+   recipients?: APIChannelUser[];
+} & APIBaseChannel;
 
 export type APIDMChannel = {
-   _id: Snowflake;
    type: ChannelType.DM;
-   lastMessageId?: Snowflake | undefined;
-   recipients: APIUser[];
-};
+   lastMessageId?: Snowflake | null;
+   recipients: APIChannelUser[];
+} & APIBaseChannel;
 
 export type APIGroupDMChannel = {
-   _id: Snowflake;
    type: ChannelType.GROUP_DM;
    name: string;
-   icon: string | undefined;
+   icon: string | null;
    ownerId: Snowflake;
-   lastMessageId?: Snowflake | undefined;
-   recipients: APIUser[];
-};
+   lastMessageId?: Snowflake | null;
+   recipients: APIChannelUser[];
+} & APIBaseChannel;
 
 export enum ChannelType {
    DM,
@@ -106,4 +124,55 @@ export type APIPostCreateDMJsonBody = {
 };
 
 export type APIPostCreateDMResult = APIDMChannel | APIGroupDMChannel;
+
+export type APIGetUserChannelsResult = Array<APIDMChannel | APIGroupDMChannel>;
+//#endregion
+
+//#region MESSAGE
+type APIBaseMessage = {
+   id: Snowflake;
+   type: MessageType;
+   channelId: Snowflake;
+   author: APIMessageUser;
+   content: string;
+   createdAt: Date;
+   editedAt: Date | null;
+   mentions: APIMessageUser[];
+};
+
+export type APIMessage = APIDefaultMessage;
+
+export type APIDefaultMessage = {
+   type: MessageType.DEFAULT;
+   attachments: string[];
+   pinned: boolean;
+   flags?: number | null;
+   nonce?: number | string;
+   reactions?: string[];
+} & APIBaseMessage;
+
+export type APIPostCreateDefaultMessageJSONBody = {
+   content?: string;
+   attachments?: string[];
+   flags?: number;
+   nonce?: number | string;
+};
+
+export type APIPostCreateDefaultMessageResult = APIDefaultMessage;
+
+export type APIGetMessageByIdResult = APIMessage;
+
+export type APIGetChannelMessagesResult = APIMessage[];
+
+export enum MessageType {
+   DEFAULT,
+   RECIPIENT_ADD,
+   RECIPIENT_REMOVE,
+   CALL,
+   CHANNEL_NAME_CHANGED,
+   CHANNEL_ICON_CHANGED,
+   CHANNEL_PINNED_MESSAGE,
+   USER_JOIN,
+   REPLY,
+}
 //#endregion

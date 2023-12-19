@@ -62,6 +62,7 @@ export enum FieldCode {
    EMAIL_INVALID = "EMAIL_INVALID",
    PASSWORD_INCORRECT = "PASSWORD_INCORRECT",
    INVALID_USER_ID = "INVALID_USER_ID",
+   INVALID_CHANNEL_ID = "INVALID_CHANNEL_ID",
 }
 
 export const Field = {
@@ -94,6 +95,9 @@ export const Field = {
    invalidUserId(): [string, string] {
       return ["User id is invalid", FieldCode.INVALID_USER_ID];
    },
+   invalidChannelId(): [string, string] {
+      return ["Channel id is invalid", FieldCode.INVALID_CHANNEL_ID];
+   },
 };
 
 export const Error = {
@@ -103,6 +107,9 @@ export const Error = {
    serverError(): [string, JsonCode] {
       return ["Server Error", JsonCode.NONE];
    },
+   malformedBody(): [string, JsonCode] {
+      return ["Malformed Body", JsonCode.NONE];
+   },
    invalidFormBody(): [string, JsonCode] {
       return ["Invalid Form Body", JsonCode.INVALID_FORM_BODY];
    },
@@ -111,5 +118,8 @@ export const Error = {
    },
    unknownChannel(): [string, JsonCode] {
       return ["Unknown Channel", JsonCode.UNKNOWN_CHANNEL];
+   },
+   unknownMessage(): [string, JsonCode] {
+      return ["Unknown Message", JsonCode.UNKNOWN_MESSAGE];
    },
 };
