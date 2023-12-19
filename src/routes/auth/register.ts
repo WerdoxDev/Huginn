@@ -1,4 +1,4 @@
-import { DatabaseAuth } from "@/src/database";
+import { prisma } from "@/src/database";
 import { createError } from "@/src/factory/error-factory";
 import { createTokens } from "@/src/factory/token-factory";
 import { error, hValidator, handleRequest } from "@/src/route-utils";
@@ -49,14 +49,14 @@ app.post("/auth/register", hValidator("json", schema), async c =>
          return error(c, databaseError);
       }
 
-      const user = await DatabaseAuth.registerNewUser(body);
+      const user = await prisma.user.registerNew(body);
 
       const [accessToken, refreshToken] = await createTokens(
-         { id: user._id },
+         { id: user.id },
          constants.ACCESS_TOKEN_EXPIRE_TIME,
          constants.REFRESH_TOKEN_EXPIRE_TIME,
       );
-      const json: APIPostRegisterResult = { ...user.toObject(), token: accessToken, refreshToken: refreshToken };
+      const json: APIPostRegisterResult = { ...user, token: accessToken, refreshToken: refreshToken };
 
       return c.json(json, HttpCode.CREATED);
    }),

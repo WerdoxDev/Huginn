@@ -1,83 +1,79 @@
-import { Snowflake } from "@shared/types";
-import { Channel, DMChannel, GroupDMChannel } from "./schemas/channel-schema";
-import { DBError, assertChannelIsDefined } from "./database-error";
-import { snowflake } from "@shared/snowflake";
+import { Prisma } from "@prisma/client";
 import { ChannelType } from "@shared/api-types";
-import { DatabaseUser } from ".";
-import { APIUser } from "@shared/api-types";
+import { snowflake } from "@shared/snowflake";
+import { Snowflake } from "@shared/types";
+import { prisma } from ".";
+import { ChannelInclude, ChannelPayload } from "./database-common";
+import { assertChannelIsDefined } from "./database-error";
 
-export class DatabaseChannel {
-   static async getChannelById(id: Snowflake) {
-      try {
-         const channel = await Channel.findById(id).exec();
-         assertChannelIsDefined(channel);
-         return channel;
-      } catch (e) {
-         throw new DBError(e, "getChannelById");
-      }
-   }
+const channelExtention = Prisma.defineExtension({
+   model: {
+      channel: {
+         async getById<Include extends ChannelInclude>(id: Snowflake, include?: Include) {
+            const channel = await prisma.channel.findUnique({ where: { id: id }, include: include });
 
-   static async getUserChannels(userId: Snowflake) {
-      try {
-         const channels = await Channel.aggregate([
-            { $unwind: "$recipients" },
-            { $match: { "recipients._id": userId } },
-            { $group: { _id: "$_id", recipients: { $push: "$recipients" } } },
-         ]).exec();
-         assertChannelIsDefined(channels);
-         return channels;
-      } catch (e) {
-         throw new DBError(e, "getUserChannels");
-      }
-   }
+            assertChannelIsDefined("getById", channel, id);
+            return channel as ChannelPayload<Include>;
+         },
+         async getUserChannels<Include extends ChannelInclude>(userId: Snowflake, include?: Include) {
+            await prisma.user.getById(userId);
 
-   static async createSingleDMChannel(firstUserId: Snowflake, secondUserId: Snowflake) {
-      try {
-         const firstUser = await DatabaseUser.getUserById(firstUserId, "_id username avatar");
-         const secondUser = await DatabaseUser.getUserById(secondUserId, "_id username avatar");
+            const channels = await prisma.channel.findMany({
+               where: { recipientIds: { has: userId } },
+               include: include,
+            });
 
-         const channel = await DMChannel.create({
-            _id: snowflake.generate(),
-            type: ChannelType.DM,
-            lastMessageId: null,
-            recipients: [firstUser.toObject(), secondUser.toObject()],
-         });
+            assertChannelIsDefined("getUserChannels", channels);
+            return channels as ChannelPayload<Include>[];
+         },
+         async createSingleDM<Include extends ChannelInclude>(firstUserId: Snowflake, secondUserId: Snowflake, include?: Include) {
+            await prisma.user.getById(firstUserId);
+            await prisma.user.getById(secondUserId);
+            // const firstUser = pick(await prisma.user.getById(firstUserId), ["id", "username", "avatar"]);
+            // const secondUser = pick(await prisma.user.getById(secondUserId), ["id", "username", "avatar"]);
 
-         assertChannelIsDefined(channel);
-         return channel;
-      } catch (e) {
-         throw new DBError(e, "createSingleDMChannel");
-      }
-   }
+            const channel = await prisma.channel.create({
+               data: {
+                  id: snowflake.generate(),
+                  type: ChannelType.DM,
+                  lastMessageId: null,
+                  recipientIds: [firstUserId, secondUserId],
+               },
+               include: include,
+            });
 
-   static async createGroupDMChannel(ownerId: Snowflake, users: Record<Snowflake, string>) {
-      try {
-         const recipients: APIUser[] = [];
-         const finalName = Object.values(users).join(", ");
+            assertChannelIsDefined("createSingleDM", channel);
+            return channel as ChannelPayload<Include>;
+         },
+         async createGroupDM<Include extends ChannelInclude>(ownerId: Snowflake, users: Record<Snowflake, string>, include?: Include) {
+            const finalName = Object.values(users).join(", ");
 
-         const ownerUser = await DatabaseUser.getUserById(ownerId, "_id username avatar");
+            await prisma.user.getById(ownerId);
 
-         for (const recipientId in users) {
-            if (Object.hasOwn(users, recipientId)) {
-               const user = await DatabaseUser.getUserById(recipientId, "_id username avatar");
-               recipients.push(user);
+            for (const recipientId in users) {
+               if (Object.hasOwn(users, recipientId)) {
+                  await prisma.user.getById(recipientId);
+               }
             }
-         }
 
-         const channel = await GroupDMChannel.create({
-            _id: snowflake.generate(),
-            name: finalName,
-            type: ChannelType.GROUP_DM,
-            ownerId: ownerId,
-            icon: null,
-            lastMessageId: null,
-            recipients: [ownerUser, ...recipients],
-         });
+            const channel = await prisma.channel.create({
+               data: {
+                  id: snowflake.generate(),
+                  name: finalName,
+                  type: ChannelType.GROUP_DM,
+                  ownerId: ownerId,
+                  icon: null,
+                  lastMessageId: null,
+                  recipientIds: [ownerId, ...Object.keys(users)],
+               },
+               include: include,
+            });
 
-         assertChannelIsDefined(channel);
-         return channel;
-      } catch (e) {
-         throw new DBError(e, "createGroupDMChannel");
-      }
-   }
-}
+            assertChannelIsDefined("createGroupDM", channel);
+            return channel as ChannelPayload<Include>;
+         },
+      },
+   },
+});
+
+export default channelExtention;

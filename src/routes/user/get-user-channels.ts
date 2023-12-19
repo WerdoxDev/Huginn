@@ -1,6 +1,9 @@
-import { DatabaseChannel } from "@/src/database/database-channel";
+import { prisma } from "@/src/database";
+import { excludeSelfChannelUser, includeChannelRecipients } from "@/src/database/database-common";
 import { getJwt, handleRequest, verifyJwt } from "@/src/route-utils";
+import { APIGetUserChannelsResult } from "@shared/api-types";
 import { HttpCode } from "@shared/errors";
+import { merge, omitArray } from "@shared/utility";
 import { Hono } from "hono";
 
 const app = new Hono();
@@ -9,8 +12,10 @@ app.get("/users/@me/channels", verifyJwt(), c =>
    handleRequest(c, async () => {
       const payload = getJwt(c);
 
-      const channels = await DatabaseChannel.getUserChannels(payload!.id);
-      console.log(channels);
+      const channels: APIGetUserChannelsResult = omitArray(
+         await prisma.channel.getUserChannels(payload.id, merge(excludeSelfChannelUser(payload.id), includeChannelRecipients)),
+         ["recipientIds"],
+      );
 
       return c.json(channels, HttpCode.OK);
    }),

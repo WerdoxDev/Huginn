@@ -1,9 +1,10 @@
-import { DBErrorType } from "@/src/database";
-import { DatabaseChannel } from "@/src/database/database-channel";
+import { DBErrorType, prisma } from "@/src/database";
+import { includeChannelRecipients } from "@/src/database/database-common";
 import { createError } from "@/src/factory/error-factory";
 import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
-import { APIPostCreateDMJsonBody } from "@shared/api-types";
+import { APIPostCreateDMJsonBody, APIPostCreateDMResult } from "@shared/api-types";
 import { Error, Field, HttpCode } from "@shared/errors";
+import { omit } from "@shared/utility";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -19,8 +20,11 @@ app.post("/users/@me/channels", verifyJwt(), hValidator("json", schema), c =>
          const payload = getJwt(c);
 
          if (body.recipientId) {
-            const channel = await DatabaseChannel.createSingleDMChannel(payload!.id, body.recipientId);
-            return c.json(channel.toObject(), HttpCode.CREATED);
+            const channel: APIPostCreateDMResult = omit(
+               await prisma.channel.createSingleDM(payload.id, body.recipientId, includeChannelRecipients),
+               ["recipientIds"],
+            );
+            return c.json(channel, HttpCode.CREATED);
          }
 
          if (body.users) {
@@ -28,8 +32,11 @@ app.post("/users/@me/channels", verifyJwt(), hValidator("json", schema), c =>
                return error(c, createError(Error.invalidFormBody()));
             }
 
-            const channel = await DatabaseChannel.createGroupDMChannel(payload!.id, body.users);
-            return c.json(channel.toObject(), HttpCode.CREATED);
+            const channel: APIPostCreateDMResult = omit(
+               await prisma.channel.createGroupDM(payload.id, body.users, includeChannelRecipients),
+               ["recipientIds"],
+            );
+            return c.json(channel, HttpCode.CREATED);
          }
 
          return error(c, createError(Error.invalidFormBody()));

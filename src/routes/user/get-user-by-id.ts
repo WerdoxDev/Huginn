@@ -1,7 +1,9 @@
-import { DBErrorType, DatabaseUser } from "@/src/database";
+import { DBErrorType, prisma } from "@/src/database";
 import { createError } from "@/src/factory/error-factory";
 import { error, handleRequest, verifyJwt } from "@/src/route-utils";
+import { APIGetUserByIdResult } from "@shared/api-types";
 import { Error, Field, HttpCode } from "@shared/errors";
+import { omit } from "@shared/utility";
 import { Hono } from "hono";
 
 const app = new Hono();
@@ -10,9 +12,14 @@ app.get("/users/:userId", verifyJwt(), c =>
    handleRequest(
       c,
       async () => {
-         const user = await DatabaseUser.getUserById(c.req.param("userId"), "-email");
+         const user: APIGetUserByIdResult = omit(await prisma.user.getById(c.req.param("userId")), [
+            "email",
+            "password",
+            "messageIds",
+            "channelIds",
+         ]);
 
-         return c.json(user.toObject(), HttpCode.OK);
+         return c.json(user, HttpCode.OK);
       },
       e => {
          if (e.isErrorType(DBErrorType.NULL_USER)) {

@@ -1,9 +1,9 @@
-import { DBErrorType } from "@/src/database";
-import { DatabaseMessage } from "@/src/database/database-message";
+import { DBErrorType, prisma } from "@/src/database";
 import { createError } from "@/src/factory/error-factory";
 import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
-import { APIPostCreateDefaultMessageJSONBody } from "@shared/api-types";
+import { APIPostCreateDefaultMessageJSONBody, APIPostCreateDefaultMessageResult } from "@shared/api-types";
 import { Error, Field, HttpCode } from "@shared/errors";
+import { omit } from "@shared/utility";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -27,15 +27,18 @@ app.post("/channels/:channelId/messages", verifyJwt(), hValidator("json", schema
             return error(c, createError(Error.invalidFormBody()));
          }
 
-         const message = await DatabaseMessage.createDefaultMessage(
-            payload!.id,
-            c.req.param("channelId"),
-            body.content,
-            body.attachments,
-            body.flags,
+         const message = omit(
+            await prisma.message.createDefaultMessage(
+               payload!.id,
+               c.req.param("channelId"),
+               body.content,
+               body.attachments,
+               body.flags,
+            ),
+            ["authorId", "mentionIds"],
          );
 
-         return c.json(message.toObject(), HttpCode.CREATED);
+         return c.json(message as APIPostCreateDefaultMessageResult, HttpCode.CREATED);
       },
       e => {
          if (e.isErrorType(DBErrorType.NULL_CHANNEL)) {

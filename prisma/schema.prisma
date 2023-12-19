@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "mongodb"
-  url      = "mongodb+srv://huginn-root:LL3zR0QBOm9BNbUj@huginn.yzwj9ou.mongodb.net/huginn?retryWrites=true&w=majority"
+  url      = env("MONGODB_CONNECTION_STRING")
 }
 
 model User {
@@ -14,63 +14,47 @@ model User {
   email       String    @unique
   avatar      String
   password    String
-  flags       Int
-  system      Boolean
-  Message     Message[]
+  flags       Int       @db.Int
+  system      Boolean   @default(false)
+  channelIds  String[]
+  channels    Channel[] @relation(fields: [channelIds], references: [id])
+  messageIds  String[]
+  mentions    Message[] @relation("mentions", fields: [messageIds], references: [id])
+  messages    Message[] @relation("author")
+
+  @@map("users")
 }
 
 model Channel {
-  id            String              @id @map("_id")
+  id            String    @id @map("_id")
   icon          String?
   lastMessageId String?
   name          String?
   ownerId       String?
-  recipients    ChannelRecipients[]
-  type          ChannelType
+  recipientIds  String[]
+  recipients    User[]    @relation(fields: [recipientIds], references: [id])
+  type          Int       @db.Int
+  messages      Message[]
+
+  @@map("channels")
 }
 
 model Message {
-  id        String      @id @map("_id")
-  authorId  String
-  author    User        @relation(fields: [authorId], references: [id])
-  channelId String
-  content   String
-  createdAt DateTime
-  editedAt  DateTime
-  mentions  String?
-  pinned    Boolean
-  type      MessageType
-}
+  id          String    @id @map("_id")
+  authorId    String
+  author      User      @relation("author", fields: [authorId], references: [id])
+  channelId   String
+  channel     Channel   @relation(fields: [channelId], references: [id])
+  content     String
+  createdAt   DateTime
+  editedAt    DateTime?
+  mentionIds  String[]
+  mentions    User[]    @relation("mentions", fields: [mentionIds], references: [id])
+  attachments String[]
+  reactions   String[]
+  pinned      Boolean
+  type        Int       @db.Int
+  flags       Int?      @db.Int
 
-type ChannelRecipients {
-  id       String @map("_id")
-  avatar   String
-  username String
-}
-
-type MessageAuthor {
-  id          String @map("_id")
-  avatar      String
-  username    String
-  displayName String
-}
-
-enum MessageType {
-  DEFAULT
-  RECIPIENT_ADD
-  RECIPIENT_REMOVE
-  CALL
-  CHANNEL_NAME_CHANGED
-  CHANNEL_ICON_CHANGED
-  CHANNEL_PINNED_MESSAGE
-  USER_JOIN
-  REPLY
-}
-
-enum ChannelType {
-  DM
-  GROUP_DM
-  GUILD_TEXT
-  GUILD_VOICE
-  GUILD_CATEGORY
+  @@map("messages")
 }

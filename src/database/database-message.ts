@@ -1,67 +1,63 @@
 import { Snowflake } from "@shared/types";
-import { DBError, DatabaseUser, assertMessageIsDefined } from ".";
-import { DefaultMessage, Message } from "./schemas/message-schema";
+import { assertMessageIsDefined, prisma } from ".";
 import { snowflake } from "@shared/snowflake";
 import { MessageType } from "@shared/api-types";
-import { DatabaseChannel } from "./database-channel";
+import { Prisma } from "@prisma/client";
+import { MessageInclude, MessagePayload } from "./database-common";
 
-export class DatabaseMessage {
-   static async getMessageById(channelId: Snowflake, messageId: Snowflake) {
-      try {
-         const message = await Message.findOne({ _id: messageId, channelId: channelId }).exec();
-         assertMessageIsDefined(message);
-         return message;
-      } catch (e) {
-         throw new DBError(e, "getMessageById");
-      }
-   }
+const messagesExtention = Prisma.defineExtension({
+   model: {
+      message: {
+         async getById<Include extends MessageInclude>(channelId: Snowflake, messageId: Snowflake, include?: Include) {
+            await prisma.channel.getById(channelId);
 
-   static async getMessages(channelId: Snowflake, limit: number) {
-      try {
-         await DatabaseChannel.getChannelById(channelId);
+            const message = await prisma.message.findUnique({ where: { channelId: channelId, id: messageId }, include: include });
 
-         const messages = await Message.find({ channelId: channelId }, undefined, { limit: limit }).exec();
-         assertMessageIsDefined(messages);
-         return messages;
-      } catch (e) {
-         throw new DBError(e, "getMessages");
-      }
-   }
+            assertMessageIsDefined("getById", message, messageId);
+            return message as MessagePayload<Include>;
+         },
+         async getMessages<Include extends MessageInclude>(channelId: Snowflake, limit: number, include?: Include) {
+            await prisma.channel.getById(channelId);
 
-   // TODO: implement attachments
-   // TODO: implement mentions, reactions...
-   // TODO: implement flags
-   static async createDefaultMessage(
-      authorId: Snowflake,
-      channelId: Snowflake,
-      content?: string,
-      attachments?: unknown,
-      flags?: number,
-   ) {
-      try {
-         const authorUser = await DatabaseUser.getUserById(authorId, "_id username displayName avatar flags");
-         const createdAt = new Date().toISOString();
+            const messages = await prisma.message.findMany({ where: { channelId: channelId }, include: include, take: limit });
 
-         await DatabaseChannel.getChannelById(channelId);
+            assertMessageIsDefined("getMessages", messages);
+            return messages as MessagePayload<Include>[];
+         },
+         async createDefaultMessage(
+            authorId: Snowflake,
+            channelId: Snowflake,
+            content?: string,
+            attachments?: string[],
+            flags?: number,
+         ) {
+            const createdAt = new Date().toISOString();
 
-         const message = await DefaultMessage.create({
-            _id: snowflake.generate(),
-            type: MessageType.DEFAULT,
-            channelId: channelId,
-            content: content,
-            attachments: attachments,
-            author: authorUser,
-            createdAt: createdAt,
-            editedAt: null,
-            pinned: false,
-            mentions: [],
-            flags: flags,
-         });
+            await prisma.user.getById(authorId);
+            await prisma.channel.getById(channelId);
 
-         assertMessageIsDefined(message);
-         return message;
-      } catch (e) {
-         throw new DBError(e, "createDefaultMessage");
-      }
-   }
-}
+            const message = prisma.message.create({
+               data: {
+                  id: snowflake.generate(),
+                  type: MessageType.DEFAULT,
+                  channelId: channelId,
+                  content: content || "",
+                  attachments: attachments,
+                  authorId: authorId,
+                  createdAt: createdAt,
+                  editedAt: null,
+                  pinned: false,
+                  mentionIds: [],
+                  reactions: [],
+                  flags: flags,
+               },
+            });
+
+            assertMessageIsDefined("createDefaultMessage", message);
+            return message;
+         },
+      },
+   },
+});
+
+export default messagesExtention;
