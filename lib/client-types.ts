@@ -1,4 +1,4 @@
-import { APIPostLoginJSONBody, APIPostRegisterJSONBody } from "./api-types";
+import { APIDMChannel, APIGroupDMChannel, APIPostLoginJSONBody, APIPostRegisterJSONBody } from "./api-types";
 import { RESTOptions } from "./rest-types";
 
 export type ClientOptions = {
@@ -9,3 +9,4 @@ export type ClientOptions = {
 
 export type LoginCredentials = APIPostLoginJSONBody;
 export type RegisterUser = APIPostRegisterJSONBody;
+export type DirectChannel = APIDMChannel | APIGroupDMChannel;

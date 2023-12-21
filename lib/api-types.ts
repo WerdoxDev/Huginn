@@ -28,7 +28,7 @@ export type APIMessageUser = {
    flags: unknown;
 } & APIBaseUser;
 
-export type IncludesToken = {
+export type Tokens = {
    token: string;
    refreshToken: string;
 };
@@ -41,7 +41,7 @@ export type APIPostRefreshTokenJSONBody = {
    refreshToken: string;
 };
 
-export type APIPostRefreshTokenResult = IncludesToken;
+export type APIPostRefreshTokenResult = Tokens;
 
 export type APIPostLoginJSONBody = {
    email?: string;
@@ -56,8 +56,8 @@ export type APIPostRegisterJSONBody = {
    password: string;
 };
 
-export type APIPostLoginResult = APIUser & IncludesToken;
-export type APIPostRegisterResult = APIUser & IncludesToken;
+export type APIPostLoginResult = APIUser & Tokens;
+export type APIPostRegisterResult = APIUser & Tokens;
 
 export type APIPatchCurrentUserJSONBody = {
    email?: string;
@@ -68,7 +68,7 @@ export type APIPatchCurrentUserJSONBody = {
    newPassword?: string;
 };
 
-export type APIPatchCurrentUserResult = APIUser & IncludesToken;
+export type APIPatchCurrentUserResult = APIUser & Tokens;
 
 export type APIPostUniqueUsernameJSONBody = {
    username: string;
