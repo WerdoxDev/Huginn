@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_CONNECTION_STRING")
+}
+
+model User {
+  id          String    @id @map("_id")
+  username    String    @unique
+  displayName String
+  email       String    @unique
+  avatar      String
+  password    String
+  flags       Int       @db.Int
+  system      Boolean   @default(false)
+  channelIds  String[]
+  channels    Channel[] @relation(fields: [channelIds], references: [id])
+  messageIds  String[]
+  mentions    Message[] @relation("mentions", fields: [messageIds], references: [id])
+  messages    Message[] @relation("author")
+
+  @@map("users")
+}
+
+model Channel {
+  id            String    @id @map("_id")
+  icon          String?
+  lastMessageId String?
+  name          String?
+  ownerId       String?
+  recipientIds  String[]
+  recipients    User[]    @relation(fields: [recipientIds], references: [id])
+  type          Int       @db.Int
+  messages      Message[]
+
+  @@map("channels")
+}
+
+model Message {
+  id          String    @id @map("_id")
+  authorId    String
+  author      User      @relation("author", fields: [authorId], references: [id])
+  channelId   String
+  channel     Channel   @relation(fields: [channelId], references: [id])
+  content     String
+  createdAt   DateTime
+  editedAt    DateTime?
+  mentionIds  String[]
+  mentions    User[]    @relation("mentions", fields: [mentionIds], references: [id])
+  attachments String[]
+  reactions   String[]
+  pinned      Boolean
+  type        Int       @db.Int
+  flags       Int?      @db.Int
+
+  @@map("messages")
+}

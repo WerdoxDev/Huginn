@@ -1,4 +1,4 @@
-import { DatabaseUser } from "@/src/database";
+import { prisma } from "@/src/database";
 import { createError } from "@/src/factory/error-factory";
 import { createTokens } from "@/src/factory/token-factory";
 import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
@@ -30,7 +30,6 @@ const app = new Hono();
 app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
    handleRequest(c, async () => {
       const body = (await c.req.json()) as APIPatchCurrentUserJSONBody;
-
       const payload = getJwt(c);
 
       const formError = createError(Error.invalidFormBody());
@@ -49,7 +48,7 @@ app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
 
       const databaseError = createError(Error.invalidFormBody());
 
-      const user = await DatabaseUser.getUserById(payload!.id);
+      const user = await prisma.user.getById(payload!.id);
       validateCorrectPassword(body.password, user.password || "", databaseError);
 
       await validateUsernameUnique(body.username, databaseError);
@@ -59,7 +58,7 @@ app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
          return error(c, databaseError);
       }
 
-      const updatedUser = await DatabaseUser.updateUser(payload!.id, {
+      const updatedUser = await prisma.user.edit(payload.id, {
          email: body.email,
          username: body.username,
          displayName: body.displayName,
@@ -73,7 +72,7 @@ app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
          constants.REFRESH_TOKEN_EXPIRE_TIME,
       );
 
-      const json: APIPatchCurrentUserResult = { ...updatedUser.toObject(), token: accessToken, refreshToken };
+      const json: APIPatchCurrentUserResult = { ...updatedUser, token: accessToken, refreshToken };
 
       return c.json(json, HttpCode.OK);
    }),

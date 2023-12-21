@@ -1,15 +1,13 @@
 import consola from "consola";
 import { version } from "../package.json";
 import { startListening } from "./commands";
-import { Database } from "./database";
 
 const connectionString = process.env.MONGODB_CONNECTION_STRING;
-const dbName = process.env.MONGODB_DB_NAME;
 export const serverHost = process.env.SERVER_HOST;
 export const serverPort = process.env.SERVER_PORT;
 
 async function main() {
-   if (!connectionString || !dbName) {
+   if (!connectionString) {
       consola.error("Database config is not set correctly!");
       return;
    }
@@ -20,9 +18,7 @@ async function main() {
    }
 
    consola.info(`Using version ${version}`);
-   consola.start("Connecting to database...");
 
-   await Database.initialize(connectionString, dbName);
    await import("./server");
 }
 

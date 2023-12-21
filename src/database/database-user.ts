@@ -1,33 +1,26 @@
-import { Snowflake } from "@shared/types";
-import { User } from "./schemas/user-schema";
-import { DBError, assertUserIsDefined } from ".";
+import { Prisma } from "@prisma/client";
 import { APIPatchCurrentUserJSONBody } from "@shared/api-types";
+import { Snowflake } from "@shared/types";
+import { assertUserIsDefined, prisma } from ".";
+import { UserInclude, UserPayload } from "./database-common";
 
-export class DatabaseUser {
-   static async getUserById(id: Snowflake, filter?: string) {
-      try {
-         const user = await User.findById(id, filter).exec();
-         assertUserIsDefined(user, id);
-         return user;
-      } catch (e) {
-         throw new DBError(e, "getUserById");
-      }
-   }
-   static async updateUser(id: Snowflake, updatedUser: APIPatchCurrentUserJSONBody) {
-      try {
-         const user = await User.findByIdAndUpdate(id, { ...updatedUser }, { new: true }).exec();
-         assertUserIsDefined(user, id);
-         return user;
-      } catch (e) {
-         throw new DBError(e, "updateUser");
-      }
-   }
-   static async existsInUsers(fieldName: string, value: unknown) {
-      try {
-         const exists = await User.exists({ [fieldName]: value }).exec();
-         return exists !== null;
-      } catch (e) {
-         throw new DBError(e, "existsInUsers");
-      }
-   }
-}
+const userExtention = Prisma.defineExtension({
+   model: {
+      user: {
+         async getById<I extends UserInclude>(id: Snowflake, include?: I) {
+            const user = await prisma.user.findUnique({ where: { id: id }, include: include });
+
+            assertUserIsDefined("getById", user, id);
+            return user as UserPayload<I>;
+         },
+         async edit(id: Snowflake, editedUser: APIPatchCurrentUserJSONBody) {
+            const updatedUser = await prisma.user.update({ where: { id: id }, data: { ...editedUser } });
+
+            assertUserIsDefined("edit", updatedUser, id);
+            return updatedUser;
+         },
+      },
+   },
+});
+
+export default userExtention;

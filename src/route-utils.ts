@@ -4,7 +4,7 @@ import { Context, MiddlewareHandler, ValidationTargets } from "hono";
 import { createFactory } from "hono/factory";
 import { jwt } from "hono/jwt";
 import { z } from "zod";
-import { DBError, isDBError } from "./database";
+import { DBError, isDBError, isPrismaError } from "./database";
 import { ErrorFactory, createError } from "./factory/error-factory";
 import { ACCESS_TOKEN_SECRET } from "./factory/token-factory";
 import { logServerError } from "./log-utils";
@@ -18,13 +18,23 @@ export async function handleRequest(
       const result = await onRequest();
       return result;
    } catch (e) {
-      if (isDBError(e) && onError !== undefined) {
-         const errorResult = onError(e);
+      if (onError !== undefined) {
+         let errorResult;
+         if (isDBError(e)) {
+            errorResult = onError(e);
+         }
+
          if (errorResult) {
             return errorResult;
          }
       }
-      return serverError(context, e);
+
+      let error = e;
+      if (isPrismaError(e)) {
+         error = new DBError(e, "PRISMA ERROR");
+      }
+
+      return serverError(context, error);
    }
 }
 
@@ -40,8 +50,10 @@ export function error(c: Context, e: ErrorFactory, code: HttpCode = HttpCode.BAD
    return c.json(e.toObject(), code);
 }
 
-export function serverError(c: Context, e: unknown) {
-   logServerError(c.req.path, e);
+export function serverError(c: Context, e: unknown, log: boolean = true) {
+   if (log) {
+      logServerError(c.req.path, e);
+   }
 
    return error(c, createError(HError.serverError()), HttpCode.SERVER_ERROR);
 }

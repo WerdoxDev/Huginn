@@ -1,10 +1,12 @@
-import { HuginnErrorData } from "@shared/errors";
+import { Error, HttpCode, HuginnErrorData } from "@shared/errors";
 import { consola } from "consola";
 import { colors } from "consola/utils";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { serverHost, serverPort } from ".";
+import { createError } from "./factory/error-factory";
 import { logReject, logRequest, logResponse, logServerError } from "./log-utils";
-import { tryGetBodyJson } from "./route-utils";
+import { error, serverError, tryGetBodyJson } from "./route-utils";
 import routes from "./routes/routes";
 import testRoute from "./routes/test";
 
@@ -12,7 +14,13 @@ consola.start("Starting server...");
 
 const app = new Hono();
 
+app.use("*", cors());
+
 app.use("*", async (c, next) => {
+   if (c.req.method === "OPTIONS") {
+      return;
+   }
+
    logRequest(c.req.path, c.req.method, await tryGetBodyJson(c.req));
 
    await next();
@@ -22,7 +30,7 @@ app.use("*", async (c, next) => {
    if (c.res.status >= 200 && c.res.status < 300) {
       logResponse(c.req.path, c.res.status, await tryGetBodyJson(response));
    } else if (c.res.status === 500) {
-      logReject(c.req.path, c.req.method, undefined, c.res.status);
+      logReject(c.req.path, c.req.method, "Server Error", c.res.status);
    } else {
       logReject(c.req.path, c.req.method, (await tryGetBodyJson(response)) as HuginnErrorData, c.res.status);
    }
@@ -31,13 +39,13 @@ app.use("*", async (c, next) => {
 app.onError((e, c) => {
    logServerError(c.req.path, e);
 
-   // if (e instanceof HTTPException) {
-   //    return e.getResponse();
-   // }
+   if (e instanceof SyntaxError) {
+      return error(c, createError(Error.malformedBody()), HttpCode.BAD_REQUEST);
+   }
 
-   logReject(c.req.path, c.req.method, e.message);
+   // logReject(c.req.path, c.req.method, e.message);
 
-   return c.text("GOT FUCKED!");
+   return serverError(c, e, false);
 });
 
 app.route("/", routes);

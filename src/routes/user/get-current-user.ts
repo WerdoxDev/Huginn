@@ -1,6 +1,8 @@
-import { DatabaseUser } from "@/src/database";
+import { prisma } from "@/src/database";
 import { getJwt, handleRequest, verifyJwt } from "@/src/route-utils";
+import { APIGetCurrentUserResult } from "@shared/api-types";
 import { HttpCode } from "@shared/errors";
+import { omit } from "@shared/utility";
 import { Hono } from "hono";
 
 const app = new Hono();
@@ -8,11 +10,10 @@ const app = new Hono();
 app.get("/users/@me", verifyJwt(), c =>
    handleRequest(c, async () => {
       const payload = getJwt(c);
-      console.log(payload.id);
 
-      const user = await DatabaseUser.getUserById(payload.id);
+      const user: APIGetCurrentUserResult = omit(await prisma.user.getById(payload.id), ["channelIds", "messageIds"]);
 
-      return c.json(user.toObject(), HttpCode.OK);
+      return c.json(user, HttpCode.OK);
    }),
 );
 

@@ -1,9 +1,10 @@
-import { DBErrorType } from "@/src/database";
-import { DatabaseMessage } from "@/src/database/database-message";
+import { DBErrorType, prisma } from "@/src/database";
+import { includeMessageAuthor, includeMessageMentions } from "@/src/database/database-common";
 import { createError } from "@/src/factory/error-factory";
 import { error, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
 import { APIGetChannelMessagesResult } from "@shared/api-types";
 import { Error, HttpCode } from "@shared/errors";
+import { merge, omitArray } from "@shared/utility";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -17,10 +18,12 @@ app.get("/channels/:channelId/messages", verifyJwt(), hValidator("query", schema
       async () => {
          const limit = Number(c.req.query("limit")) || 50;
 
-         const messages = await DatabaseMessage.getMessages(c.req.param("channelId"), limit);
-         const json: APIGetChannelMessagesResult = messages.map(x => x.toObject());
+         const messages: APIGetChannelMessagesResult = omitArray(
+            await prisma.message.getMessages(c.req.param("channelId"), limit, merge(includeMessageAuthor, includeMessageMentions)),
+            ["authorId", "mentionIds"],
+         );
 
-         return c.json(json, HttpCode.OK);
+         return c.json(messages, HttpCode.OK);
       },
       e => {
          if (e.isErrorType(DBErrorType.NULL_CHANNEL)) {

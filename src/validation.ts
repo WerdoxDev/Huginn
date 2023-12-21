@@ -1,7 +1,7 @@
 import { constants } from "@shared/constants";
 import { Field } from "@shared/errors";
-import { DatabaseUser } from "./database";
 import { ErrorFactory } from "./factory/error-factory";
+import { prisma } from "./database";
 
 export function validateEmail(email: string | undefined, errorObject: ErrorFactory) {
    if (email && !email.match(constants.EMAIL_REGEX)) {
@@ -57,7 +57,7 @@ export async function validateEmailUnique(email: string | undefined, errorObject
       return true;
    }
 
-   if (await DatabaseUser.existsInUsers("email", email)) {
+   if (await prisma.user.exists({ email: email })) {
       errorObject.error("email", Field.emailInUse());
       return false;
    }
@@ -70,7 +70,7 @@ export async function validateUsernameUnique(username: string | undefined, error
       return true;
    }
 
-   if (await DatabaseUser.existsInUsers("username", username)) {
+   if (await prisma.user.exists({ username: username })) {
       errorObject?.error("username", Field.usernameTaken());
       return false;
    }
