@@ -13,7 +13,7 @@ app.get("/users/@me/channels", verifyJwt(), c =>
       const payload = getJwt(c);
 
       const channels: APIGetUserChannelsResult = omitArray(
-         await prisma.channel.getUserChannels(payload.id, merge(excludeSelfChannelUser(payload.id), includeChannelRecipients)),
+         await prisma.channel.getUserChannels(payload.id, merge(includeChannelRecipients, excludeSelfChannelUser(payload.id))),
          ["recipientIds"],
       );
 

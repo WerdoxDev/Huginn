@@ -1,6 +1,6 @@
 import loginRoute from "./auth/login";
 import registerRoute from "./auth/register";
-import refreshTokenRoute from "./auth/login";
+import refreshTokenRoute from "./auth/refresh-token";
 import uniqueUsernameRoute from "./unique-username";
 import createMessageRoute from "./channel/create-message";
 import getChannelByIdRoute from "./channel/get-channel-by-id";
