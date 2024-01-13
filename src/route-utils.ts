@@ -2,11 +2,10 @@ import { Error as HError, HttpCode } from "@shared/errors";
 import { TokenPayload } from "@shared/types";
 import { Context, MiddlewareHandler, ValidationTargets } from "hono";
 import { createFactory } from "hono/factory";
-import { jwt } from "hono/jwt";
 import { z } from "zod";
-import { DBError, isDBError, isPrismaError } from "./database";
+import { DBError, isDBError, isPrismaError, prisma } from "./database";
 import { ErrorFactory, createError } from "./factory/error-factory";
-import { ACCESS_TOKEN_SECRET } from "./factory/token-factory";
+import { verifyToken } from "./factory/token-factory";
 import { logServerError } from "./log-utils";
 
 export async function handleRequest(
@@ -36,10 +35,6 @@ export async function handleRequest(
 
       return serverError(context, error);
    }
-}
-
-export function verifyJwt() {
-   return jwt({ secret: ACCESS_TOKEN_SECRET });
 }
 
 export function getJwt(c: Context) {
@@ -91,6 +86,31 @@ export function hValidator(target: keyof ValidationTargets, schema: z.ZodType<an
       if (!parsed.success) {
          return invalidFormBody(c);
       }
+
+      await next();
+   });
+}
+
+export function verifyJwt(): MiddlewareHandler {
+   return createFactory().createMiddleware(async (c, next) => {
+      const bearer = c.req.header("Authorization");
+      if (!bearer) {
+         return unauthorized(c);
+      }
+
+      const token = bearer.split(" ")[1];
+
+      const { valid, payload } = await verifyToken(token);
+
+      if (!valid || !payload) {
+         return unauthorized(c);
+      }
+
+      if (!(await prisma.user.exists({ id: payload.id }))) {
+         return unauthorized(c);
+      }
+
+      c.set("jwtPayload", payload);
 
       await next();
    });

@@ -26,6 +26,10 @@ app.post("/test/:job", async c => {
       await prisma.message.deleteMany({ where: { content: { startsWith: "test" } } });
    }
 
+   if (c.req.param("job") === "conversation-messages") {
+      await prisma.message.deleteMany();
+   }
+
    return c.text("", HttpCode.OK);
 });
 

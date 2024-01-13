@@ -19,7 +19,7 @@ const messagesExtention = Prisma.defineExtension({
          async getMessages<Include extends MessageInclude>(channelId: Snowflake, limit: number, include?: Include) {
             await prisma.channel.getById(channelId);
 
-            const messages = await prisma.message.findMany({ where: { channelId: channelId }, include: include, take: limit });
+            const messages = await prisma.message.findMany({ where: { channelId: channelId }, include: include, take: -limit });
 
             assertMessageIsDefined("getMessages", messages);
             return messages as MessagePayload<Include>[];
@@ -31,8 +31,6 @@ const messagesExtention = Prisma.defineExtension({
             attachments?: string[],
             flags?: number,
          ) {
-            const createdAt = new Date().toISOString();
-
             await prisma.user.getById(authorId);
             await prisma.channel.getById(channelId);
 
@@ -44,7 +42,7 @@ const messagesExtention = Prisma.defineExtension({
                   content: content || "",
                   attachments: attachments,
                   authorId: authorId,
-                  createdAt: createdAt,
+                  createdAt: new Date(),
                   editedAt: null,
                   pinned: false,
                   mentionIds: [],

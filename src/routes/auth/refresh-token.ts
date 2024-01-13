@@ -14,7 +14,7 @@ app.post("/auth/refresh-token", hValidator("json", schema), c =>
    handleRequest(c, async () => {
       const body = (await c.req.json()) as APIPostRefreshTokenJSONBody;
 
-      const [_isValid, payload] = await verifyToken(body.refreshToken, REFRESH_TOKEN_SECRET_ENCODED);
+      const { payload } = await verifyToken(body.refreshToken, REFRESH_TOKEN_SECRET_ENCODED);
 
       const [accessToken, refreshToken] = await createTokens(
          { id: payload!.id },

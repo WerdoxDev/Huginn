@@ -28,7 +28,7 @@ export async function createTokens(
 export async function verifyToken(
    token: string,
    secret: Uint8Array = ACCESS_TOKEN_SECRET_ENCODED,
-): Promise<[boolean, (TokenPayload & jose.JWTPayload) | null]> {
+): Promise<{ valid: boolean; payload: (TokenPayload & jose.JWTPayload) | null }> {
    // if (tokenInvalidator.getInvalidTokens().includes(token)) {
    //    return [false, null];
    // }
@@ -37,11 +37,11 @@ export async function verifyToken(
       const jwt = await jose.jwtVerify<TokenPayload>(token, secret);
 
       if (!("id" in jwt.payload)) {
-         return [false, null];
+         return { valid: false, payload: null };
       }
 
-      return [true, jwt.payload];
+      return { valid: true, payload: jwt.payload };
    } catch (e) {
-      return [false, null];
+      return { valid: false, payload: null };
    }
 }
