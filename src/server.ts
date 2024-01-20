@@ -9,6 +9,7 @@ import { logReject, logRequest, logResponse, logServerError } from "./log-utils"
 import { error, serverError, tryGetBodyJson } from "./route-utils";
 import routes from "./routes/routes";
 import testRoute from "./routes/test";
+import { gatewayMessage, gatewayOpen } from "./gateway";
 
 consola.start("Starting server...");
 
@@ -51,7 +52,25 @@ app.onError((e, c) => {
 app.route("/", routes);
 app.route("/", testRoute);
 
-const server = Bun.serve({ port: serverPort, hostname: serverHost, fetch: app.fetch });
+const server = Bun.serve({
+   port: serverPort,
+   hostname: serverHost,
+   fetch(req, server) {
+      const url = new URL(req.url);
+      if (url.pathname === "/gateway") {
+         if (server.upgrade(req)) {
+            return;
+         }
+         return new Response(JSON.stringify(createError(Error.websocketFail())), { status: HttpCode.BAD_REQUEST });
+      }
+
+      return app.fetch(req, server);
+   },
+   websocket: {
+      open: gatewayOpen,
+      message: gatewayMessage,
+   },
+});
 
 consola.success("Server started!");
 consola.box(`Listening on ${colors.green(`http://${server.hostname}:${server.port}`)}`);

@@ -1,4 +1,5 @@
 import { HuginnErrorData } from "@shared/errors";
+import { BasePayload, GatewayOperations } from "@shared/gateway-types";
 import { consola } from "consola";
 import { colors } from "consola/utils";
 
@@ -7,6 +8,8 @@ const startText = colors.bold(colors.gray("START"));
 const endText = colors.bold(colors.gray("END"));
 const requestDataText = colors.bold(colors.gray("REQUEST DATA"));
 const responseDataText = colors.bold(colors.gray("RESPONSE DATA"));
+const gatewayRecieve = colors.bold(colors.gray("GATEWAY RECIEVE"));
+const gatewaySend = colors.bold(colors.gray("GATEWAY SEND"));
 
 export function logServerError(path: string, e: unknown) {
    consola.box(`${colors.bold(colors.red("Server Error:"))} ${colors.green(path)}\n`, e);
@@ -55,7 +58,61 @@ export function logData(path: string, text: string, data?: unknown) {
    }
 
    const pathText = colors.green(path);
-   const dataText = dataString.length > 100 ? colors.gray("Data Too Long") : dataString;
+   let dataText = colors.gray(dataString);
+
+   // Check if it's a message
+   if (data !== null && typeof data === "object" && "content" in data) {
+      const content = (data.content as string).replaceAll("\n", " \\n ");
+      dataText = colors.gray(`${colors.underline("Formatted")} > ${content}`);
+   }
+   // Normal data
+   else if (dataString.length > 100) {
+      dataText = colors.gray("Data Too Long");
+   }
 
    consola.info(`${text} ${divider} ${pathText} ${divider} ${dataText}`);
+}
+
+export function logGatewayRecieve(data: BasePayload) {
+   const opcodeText = colors.yellow(opcodeToText(data.op));
+   const opcodeNumberText = colors.yellow(data.op);
+
+   let dataText = colors.gray(JSON.stringify(data.d));
+
+   if (dataText.length > 100) {
+      dataText = colors.gray("Data Too Long");
+   }
+
+   consola.info(`${gatewayRecieve} ${divider} ${opcodeText} (${opcodeNumberText}) ${divider} ${dataText}`);
+}
+
+export function logGatewaySend(data: BasePayload) {
+   const opcodeText = colors.blue(opcodeToText(data.op));
+   const opcodeNumberText = colors.blue(data.op);
+
+   let dataText = colors.gray(JSON.stringify(data.d) || "null");
+
+   if (dataText.length > 100) {
+      dataText = colors.gray("Data Too Long");
+   }
+
+   consola.info(`${gatewaySend} ${divider} ${opcodeText} (${opcodeNumberText}) ${divider} ${dataText}\n`);
+}
+
+function opcodeToText(opcode: number) {
+   switch (opcode) {
+      case GatewayOperations.DISPATCH:
+         return "Dispatch";
+      case GatewayOperations.HEARTBEAT:
+         return "Heartbeat";
+      case GatewayOperations.HEARTBEAT_ACK:
+         return "HeartbeatAck";
+      case GatewayOperations.HELLO:
+         return "Hello";
+      case GatewayOperations.IDENTIFY:
+         return "Identify";
+
+      default:
+         return "Unknown";
+   }
 }
