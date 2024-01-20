@@ -53,6 +53,11 @@ export enum JsonCode {
    INVALID_FORM_BODY = 20001,
 }
 
+export enum GatewayCode {
+   UNKNOWN = 4000,
+   AUTHENTICATION_FAILED = 4004,
+}
+
 export enum FieldCode {
    REQUIRED = "REQUIRED",
    INVALID_LOGIN = "INVALID_LOGIN",
@@ -109,6 +114,9 @@ export const Error = {
    },
    malformedBody(): [string, JsonCode] {
       return ["Malformed Body", JsonCode.NONE];
+   },
+   websocketFail(): [string, JsonCode] {
+      return ["Websocket Upgrade Failed", JsonCode.NONE];
    },
    invalidFormBody(): [string, JsonCode] {
       return ["Invalid Form Body", JsonCode.INVALID_FORM_BODY];
