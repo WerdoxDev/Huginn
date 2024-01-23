@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { APIPatchCurrentUserJSONBody } from "@shared/api-types";
-import { Snowflake } from "@shared/types";
+import { Snowflake } from "@shared/snowflake";
 import { assertUserIsDefined, prisma } from ".";
 import { UserInclude, UserPayload } from "./database-common";
 

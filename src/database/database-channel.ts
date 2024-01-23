@@ -1,7 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { ChannelType } from "@shared/api-types";
-import { snowflake } from "@shared/snowflake";
-import { Snowflake } from "@shared/types";
+import { snowflake, Snowflake } from "@shared/snowflake";
 import { prisma } from ".";
 import { ChannelInclude, ChannelPayload } from "./database-common";
 import { assertChannelIsDefined } from "./database-error";

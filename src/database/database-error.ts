@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { Snowflake } from "@shared/types";
+import { Snowflake } from "@shared/snowflake";
 
 export class DBError<T> extends Error {
    public constructor(

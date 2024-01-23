@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { Snowflake } from "@shared/types";
+import { Snowflake } from "@shared/snowflake";
 
 export type ChannelInclude = Prisma.ChannelInclude | undefined;
 export type ChannelPayload<T extends ChannelInclude> = Prisma.ChannelGetPayload<{

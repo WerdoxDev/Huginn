@@ -1,5 +1,5 @@
 import { Error as HError, HttpCode } from "@shared/errors";
-import { TokenPayload } from "@shared/types";
+import { TokenPayload } from "@shared/api-types";
 import { Context, MiddlewareHandler, ValidationTargets } from "hono";
 import { createFactory } from "hono/factory";
 import { z } from "zod";

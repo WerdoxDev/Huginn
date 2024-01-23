@@ -5,11 +5,11 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { serverHost, serverPort } from ".";
 import { createError } from "./factory/error-factory";
+import { ServerGateway } from "./gateway/server-gateway";
 import { logReject, logRequest, logResponse, logServerError } from "./log-utils";
 import { error, serverError, tryGetBodyJson } from "./route-utils";
 import routes from "./routes/routes";
 import testRoute from "./routes/test";
-import { gatewayMessage, gatewayOpen } from "./gateway";
 
 consola.start("Starting server...");
 
@@ -52,7 +52,9 @@ app.onError((e, c) => {
 app.route("/", routes);
 app.route("/", testRoute);
 
-const server = Bun.serve({
+export const gateway = new ServerGateway({ logHeartbeat: false });
+
+export const server = Bun.serve<string>({
    port: serverPort,
    hostname: serverHost,
    fetch(req, server) {
@@ -67,8 +69,9 @@ const server = Bun.serve({
       return app.fetch(req, server);
    },
    websocket: {
-      open: gatewayOpen,
-      message: gatewayMessage,
+      open: ws => gateway.onOpen(ws),
+      close: (ws, code, reason) => gateway.onClose(ws, code, reason),
+      message: (ws, message) => gateway.onMessage(ws, message),
    },
 });
 

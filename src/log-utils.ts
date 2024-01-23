@@ -8,6 +8,8 @@ const startText = colors.bold(colors.gray("START"));
 const endText = colors.bold(colors.gray("END"));
 const requestDataText = colors.bold(colors.gray("REQUEST DATA"));
 const responseDataText = colors.bold(colors.gray("RESPONSE DATA"));
+const gatewayOpen = colors.bold(colors.cyan("GATEWAY OPEN"));
+const gatewayClose = colors.bold(colors.red("GATEWAY CLOSE"));
 const gatewayRecieve = colors.bold(colors.gray("GATEWAY RECIEVE"));
 const gatewaySend = colors.bold(colors.gray("GATEWAY SEND"));
 
@@ -73,7 +75,22 @@ export function logData(path: string, text: string, data?: unknown) {
    consola.info(`${text} ${divider} ${pathText} ${divider} ${dataText}`);
 }
 
-export function logGatewayRecieve(data: BasePayload) {
+export function logGatewayOpen() {
+   consola.info(`${gatewayOpen}\n`);
+}
+
+export function logGatewayClose(code: number, reason: string) {
+   const codeText = colors.red(code);
+   const reasonText = colors.gray(reason === "" ? "No reason" : reason);
+
+   consola.info(`${gatewayClose} (${codeText}) ${divider} ${reasonText}\n`);
+}
+
+export function logGatewayRecieve(data: BasePayload, logHeartbeat: boolean) {
+   if (data.op === GatewayOperations.HEARTBEAT && !logHeartbeat) {
+      return;
+   }
+
    const opcodeText = colors.yellow(opcodeToText(data.op));
    const opcodeNumberText = colors.yellow(data.op);
 
@@ -86,8 +103,12 @@ export function logGatewayRecieve(data: BasePayload) {
    consola.info(`${gatewayRecieve} ${divider} ${opcodeText} (${opcodeNumberText}) ${divider} ${dataText}`);
 }
 
-export function logGatewaySend(data: BasePayload) {
-   const opcodeText = colors.blue(opcodeToText(data.op));
+export function logGatewaySend(data: BasePayload, logHeartbeat: boolean) {
+   if (data.op === GatewayOperations.HEARTBEAT_ACK && !logHeartbeat) {
+      return;
+   }
+
+   const opcodeText = colors.blue(data.t ? `${data.t} ${divider} ${opcodeToText(data.op)}` : opcodeToText(data.op));
    const opcodeNumberText = colors.blue(data.op);
 
    let dataText = colors.gray(JSON.stringify(data.d) || "null");

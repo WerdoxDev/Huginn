@@ -1,4 +1,4 @@
-import { Snowflake } from "@shared/types";
+import { Snowflake } from "@shared/snowflake";
 import { assertMessageIsDefined, prisma } from ".";
 import { snowflake } from "@shared/snowflake";
 import { MessageType } from "@shared/api-types";
@@ -24,17 +24,18 @@ const messagesExtention = Prisma.defineExtension({
             assertMessageIsDefined("getMessages", messages);
             return messages as MessagePayload<Include>[];
          },
-         async createDefaultMessage(
+         async createDefaultMessage<Include extends MessageInclude>(
             authorId: Snowflake,
             channelId: Snowflake,
             content?: string,
             attachments?: string[],
             flags?: number,
+            include?: Include,
          ) {
             await prisma.user.getById(authorId);
             await prisma.channel.getById(channelId);
 
-            const message = prisma.message.create({
+            const message = await prisma.message.create({
                data: {
                   id: snowflake.generate(),
                   type: MessageType.DEFAULT,
@@ -49,10 +50,11 @@ const messagesExtention = Prisma.defineExtension({
                   reactions: [],
                   flags: flags,
                },
+               include: include,
             });
 
             assertMessageIsDefined("createDefaultMessage", message);
-            return message;
+            return message as MessagePayload<Include>;
          },
       },
    },
