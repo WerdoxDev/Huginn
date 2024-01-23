@@ -1,3 +1,5 @@
+import { GatewayOperations } from "./gateway-types";
+
 export function pick<Data extends object, Keys extends keyof Data>(data: Data, keys: Keys[]): Pick<Data, Keys> {
    const result = {} as Pick<Data, Keys>;
 
@@ -54,3 +56,11 @@ type SpreadTwo<L, R> = Id<
 >;
 
 type Spread<A extends readonly [...any]> = A extends [infer L, ...infer R] ? SpreadTwo<L, Spread<R>> : unknown;
+
+export function checkOpcode(data: unknown, opcode: GatewayOperations) {
+   if (data && typeof data === "object") {
+      return "op" in data && data.op === opcode;
+   }
+
+   return false;
+}

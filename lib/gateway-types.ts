@@ -1,7 +1,5 @@
-export type GatewayOptions = {
-   url: string;
-   createSocket(url: string): WebSocket;
-};
+import { APIMessage, APIMessageUser, APIUser } from "./api-types";
+import { Snowflake } from "./snowflake";
 
 export enum GatewayOperations {
    DISPATCH = 0,
@@ -68,4 +66,26 @@ export type GatewayIdentifyProperties = {
    os: string;
    browser: string;
    device: string;
+};
+
+export type GatewayReadyDispatch = DataPayload<GatewayDispatchEvents.READY, GatewayReadyDispatchData>;
+
+export type GatewayReadyDispatchData = {
+   user: APIUser;
+   sessionId: Snowflake;
+};
+
+export type GatewayMessageCreateDispatch = DataPayload<
+   GatewayDispatchEvents.MESSAGE_CREATE,
+   GatewayMessageCreateDispatchData
+>;
+
+export type GatewayMessageCreateDispatchData = Omit<APIMessage, "mentions"> & GatewayMessageEventExtraFields;
+
+export type GatewayMessageEventExtraFields = {
+   guildId?: Snowflake;
+   // TODO: Implement Guild Member
+   // member?:
+   mentions: APIMessageUser[];
+   // mentions: (APIUser & {member: Omit<APIGuildMember, "user">})[];
 };

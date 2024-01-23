@@ -56,6 +56,8 @@ export enum JsonCode {
 export enum GatewayCode {
    UNKNOWN = 4000,
    AUTHENTICATION_FAILED = 4004,
+   SESSION_TIMEOUT = 4009,
+   INVALID_INTENTS = 4013,
 }
 
 export enum FieldCode {

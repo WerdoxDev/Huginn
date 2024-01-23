@@ -1,5 +1,5 @@
 import { Readable } from "stream";
-import { RouteLike } from "./types";
+import { RouteLike } from "./routes";
 
 export enum RequestMethod {
    DELETE = "DELETE",
@@ -8,12 +8,6 @@ export enum RequestMethod {
    POST = "POST",
    PUT = "PUT",
 }
-
-export type RESTOptions = {
-   api: string;
-   authPrefix: "Bearer";
-   makeRequest(url: string, init: RequestInit): Promise<ResponseLike>;
-};
 
 export type ResponseLike = {
    body: Readable | ReadableStream | null;

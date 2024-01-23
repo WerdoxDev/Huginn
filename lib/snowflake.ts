@@ -1,8 +1,10 @@
-import { Snowflake } from "@sapphire/snowflake";
+import { Snowflake as SnowflakeLibrary } from "@sapphire/snowflake";
+
+export type Snowflake = string;
 
 const epoch = new Date("2023-01-01T00:00:00.000Z");
 
-const globalSnowflake = new Snowflake(epoch);
+const globalSnowflake = new SnowflakeLibrary(epoch);
 
 export const snowflake = {
    generate() {

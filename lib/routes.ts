@@ -1,4 +1,6 @@
-import { Snowflake } from "./types";
+import { Snowflake } from "./snowflake";
+
+export type RouteLike = `/${string}`;
 
 export const Routes = {
    /**

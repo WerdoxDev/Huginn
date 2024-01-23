@@ -1,4 +1,8 @@
-import { Snowflake } from "./types";
+import { Snowflake } from "./snowflake";
+
+export type TokenPayload = {
+   id: Snowflake;
+};
 
 //#region USER
 type APIBaseUser = {
