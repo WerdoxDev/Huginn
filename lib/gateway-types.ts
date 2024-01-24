@@ -29,7 +29,12 @@ export type DataPayload<Event extends GatewayDispatchEvents, D = unknown> = {
    op: GatewayOperations.DISPATCH;
    t: Event;
    d: D;
-};
+} & BasePayload;
+
+export type GatewayDispatch = {
+   t: string;
+   d: unknown;
+} & BasePayload;
 
 export type GatewayHello = NonDispatchPayload & {
    op: GatewayOperations.HELLO;
