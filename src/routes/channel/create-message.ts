@@ -2,7 +2,7 @@ import { DBErrorType, prisma } from "@/src/database";
 import { createError } from "@/src/factory/error-factory";
 import { publishToTopic } from "@/src/gateway/gateway-utils";
 import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
-import { APIPostCreateDefaultMessageJSONBody, APIPostCreateDefaultMessageResult } from "@shared/api-types";
+import { APIMessage, APIPostCreateDefaultMessageJSONBody, APIPostCreateDefaultMessageResult } from "@shared/api-types";
 import { Error, Field, HttpCode } from "@shared/errors";
 import { GatewayDispatchEvents, GatewayMessageCreateDispatch, GatewayOperations } from "@shared/gateway-types";
 import { omit } from "@shared/utility";
@@ -31,7 +31,7 @@ app.post("/channels/:channelId/messages", verifyJwt(), hValidator("json", schema
 
          const channelId = c.req.param("channelId");
 
-         const message = omit(
+         const message: APIMessage = omit(
             await prisma.message.createDefaultMessage(payload!.id, channelId, body.content, body.attachments, body.flags, {
                author: true,
                mentions: true,
@@ -39,10 +39,13 @@ app.post("/channels/:channelId/messages", verifyJwt(), hValidator("json", schema
             ["authorId", "mentionIds"],
          );
 
+         message.nonce = body.nonce;
+
          const data: GatewayMessageCreateDispatch = {
             op: GatewayOperations.DISPATCH,
             t: GatewayDispatchEvents.MESSAGE_CREATE,
             d: message,
+            s: 0,
          };
 
          publishToTopic(channelId, data);
