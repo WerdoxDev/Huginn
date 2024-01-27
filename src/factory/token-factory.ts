@@ -1,5 +1,6 @@
-import { TokenPayload } from "@shared/types";
+import { TokenPayload } from "@shared/api-types";
 import * as jose from "jose";
+import { tokenInvalidator } from "../server";
 
 export const ACCESS_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.ACCESS_TOKEN_SECRET || "");
 export const REFRESH_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.REFRESH_TOKEN_SECRET || "");
@@ -34,6 +35,10 @@ export async function verifyToken(
    // }
 
    try {
+      if (tokenInvalidator.isInvalid(token)) {
+         return { valid: false, payload: null };
+      }
+
       const jwt = await jose.jwtVerify<TokenPayload>(token, secret);
 
       if (!("id" in jwt.payload)) {

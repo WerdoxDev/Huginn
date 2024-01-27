@@ -1,5 +1,6 @@
 import loginRoute from "./auth/login";
 import registerRoute from "./auth/register";
+import logoutRoute from "./auth/logout";
 import refreshTokenRoute from "./auth/refresh-token";
 import uniqueUsernameRoute from "./unique-username";
 import createMessageRoute from "./channel/create-message";
@@ -17,6 +18,7 @@ export const app = new Hono();
 
 app.route("/", loginRoute);
 app.route("/", registerRoute);
+app.route("/", logoutRoute);
 app.route("/", refreshTokenRoute);
 app.route("/", uniqueUsernameRoute);
 app.route("/", getMessageByIdRoute);

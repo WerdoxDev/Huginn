@@ -10,6 +10,7 @@ import { logReject, logRequest, logResponse, logServerError } from "./log-utils"
 import { error, serverError, tryGetBodyJson } from "./route-utils";
 import routes from "./routes/routes";
 import testRoute from "./routes/test";
+import { TokenInvalidator } from "./token-invalidator";
 
 consola.start("Starting server...");
 
@@ -53,6 +54,7 @@ app.route("/", routes);
 app.route("/", testRoute);
 
 export const gateway = new ServerGateway({ logHeartbeat: false });
+export const tokenInvalidator = new TokenInvalidator();
 
 export const server = Bun.serve<string>({
    port: serverPort,

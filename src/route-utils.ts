@@ -41,6 +41,10 @@ export function getJwt(c: Context) {
    return c.get("jwtPayload") as TokenPayload;
 }
 
+export function getRawToken(c: Context) {
+   return c.get("rawToken") as string;
+}
+
 export function error(c: Context, e: ErrorFactory, code: HttpCode = HttpCode.BAD_REQUEST) {
    return c.json(e.toObject(), code);
 }
@@ -111,6 +115,7 @@ export function verifyJwt(): MiddlewareHandler {
       }
 
       c.set("jwtPayload", payload);
+      c.set("rawToken", token);
 
       await next();
    });
