@@ -21,6 +21,14 @@ export const Routes = {
 
    /**
     * Route for:
+    * - POST '/auth/logout'
+    */
+   logout() {
+      return "/auth/logout" as const;
+   },
+
+   /**
+    * Route for:
     * - POST '/auth/refresh-token'
     */
    refreshToken() {

@@ -1,5 +1,9 @@
 import { Snowflake } from "./snowflake";
 
+export type LoginCredentials = APIPostLoginJSONBody;
+export type RegisterUser = APIPostRegisterJSONBody;
+export type DirectChannel = APIDMChannel | APIGroupDMChannel;
+
 export type TokenPayload = {
    id: Snowflake;
 };
