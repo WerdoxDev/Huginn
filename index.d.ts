@@ -8,3 +8,11 @@ type ClientSessionInfo = {
    sessionId: string;
    user: APIUser;
 };
+
+type AppVersionInfo = {
+   version: string;
+   pub_date: string;
+   url: string;
+   signature: string;
+   notes: string;
+};

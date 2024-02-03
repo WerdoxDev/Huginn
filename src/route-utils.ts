@@ -65,6 +65,10 @@ export function invalidFormBody(c: Context) {
    return error(c, createError(HError.invalidFormBody()));
 }
 
+export function fileNotFound(c: Context) {
+   return error(c, createError(HError.fileNotFound()));
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function hValidator(target: keyof ValidationTargets, schema: z.ZodType<any, z.ZodTypeDef, any>): MiddlewareHandler {
    return createFactory().createMiddleware(async (c, next) => {
