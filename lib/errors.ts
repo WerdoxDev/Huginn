@@ -114,6 +114,9 @@ export const Error = {
    serverError(): [string, JsonCode] {
       return ["Server Error", JsonCode.NONE];
    },
+   fileNotFound(): [string, JsonCode] {
+      return ["File Not Found", JsonCode.NONE];
+   },
    malformedBody(): [string, JsonCode] {
       return ["Malformed Body", JsonCode.NONE];
    },
