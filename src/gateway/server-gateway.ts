@@ -83,6 +83,7 @@ export class ServerGateway {
          op: GatewayOperations.DISPATCH,
          d: { user, sessionId },
          t: GatewayDispatchEvents.READY,
+         s: 0,
       };
 
       // eslint-disable-next-line no-param-reassign

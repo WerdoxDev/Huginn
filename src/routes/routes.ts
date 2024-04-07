@@ -12,7 +12,8 @@ import getCurrentUserRoute from "./user/get-current-user";
 import getUserChannelsRoute from "./user/get-user-channels";
 import patchCurrentUserRoute from "./user/patch-current-user";
 import getChannelMessagesRoute from "./channel/get-channel-messages";
-import releasesRoute from "./updater/releases";
+import checkUpdateRoute from "./updater/check-update";
+import buildsRoute from "./updater/builds";
 import { Hono } from "hono";
 
 export const app = new Hono();
@@ -31,6 +32,7 @@ app.route("/", getChannelMessagesRoute);
 app.route("/", createMessageRoute);
 app.route("/", createDmRoute);
 app.route("/", patchCurrentUserRoute);
-app.route("/", releasesRoute);
+app.route("/", checkUpdateRoute);
+app.route("/", buildsRoute);
 
 export default app;

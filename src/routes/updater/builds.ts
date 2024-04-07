@@ -3,6 +3,6 @@ import { serveStatic } from "hono/bun";
 
 const app = new Hono();
 
-app.get("/releases/*", serveStatic({ root: "./" }));
+app.get("/builds/*", serveStatic({ root: "./" }));
 
 export default app;
