@@ -36,6 +36,13 @@ export type APIMessageUser = {
    flags: unknown;
 } & APIBaseUser;
 
+export type APIRelationUser = {
+   username: string;
+   displayName: string;
+   avatar: string;
+   flags: unknown;
+} & APIBaseUser;
+
 export type Tokens = {
    token: string;
    refreshToken: string;
@@ -85,6 +92,26 @@ export type APIPostUniqueUsernameJSONBody = {
 export type APIPostUniqueUsernameResult = {
    taken: boolean;
 };
+
+export type APIGetUserRelationships = APIRelationship[];
+//#endregion
+
+//#region RELATIONSHIP
+export type APIRelationship = {
+   id: Snowflake;
+   type: RelationshipType;
+   nickname: string;
+   since: string;
+   user: APIRelationUser;
+};
+
+export enum RelationshipType {
+   NONE,
+   FRIEND,
+   BLOCKED,
+   PENDING_INCOMING,
+   PENDING_OUTGOING,
+}
 //#endregion
 
 //#region CHANNEL

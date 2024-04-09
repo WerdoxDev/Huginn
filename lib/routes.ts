@@ -64,6 +64,15 @@ export const Routes = {
 
    /**
     * Route for:
+    * - GET  '/users/@me/relationships'
+    * - POST '/users/@me/relationships'
+    */
+   userRelationships() {
+      return `/users/@me/relationships` as const;
+   },
+
+   /**
+    * Route for:
     * - GET '/channels/{channel.id}'
     */
    channel(id: Snowflake) {
