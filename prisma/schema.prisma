@@ -8,19 +8,21 @@ datasource db {
 }
 
 model User {
-  id          String    @id @map("_id")
-  username    String    @unique
-  displayName String
-  email       String    @unique
-  avatar      String
-  password    String
-  flags       Int       @db.Int
-  system      Boolean   @default(false)
-  channelIds  String[]
-  channels    Channel[] @relation(fields: [channelIds], references: [id])
-  messageIds  String[]
-  mentions    Message[] @relation("mentions", fields: [messageIds], references: [id])
-  messages    Message[] @relation("author")
+  id                   String         @id @map("_id")
+  username             String         @unique
+  displayName          String
+  email                String         @unique
+  avatar               String
+  password             String
+  flags                Int            @db.Int
+  system               Boolean        @default(false)
+  channelIds           String[]
+  channels             Channel[]      @relation(fields: [channelIds], references: [id])
+  messageIds           String[]
+  mentions             Message[]      @relation("message_mentions", fields: [messageIds], references: [id])
+  messages             Message[]      @relation("message_author")
+  relationships        Relationship[] @relation("relation_owner")
+  relatedRelationships Relationship[] @relation("relation_user")
 
   @@map("users")
 }
@@ -42,14 +44,14 @@ model Channel {
 model Message {
   id          String    @id @map("_id")
   authorId    String
-  author      User      @relation("author", fields: [authorId], references: [id])
+  author      User      @relation("message_author", fields: [authorId], references: [id])
   channelId   String
   channel     Channel   @relation(fields: [channelId], references: [id])
   content     String
   createdAt   DateTime
   editedAt    DateTime?
   mentionIds  String[]
-  mentions    User[]    @relation("mentions", fields: [mentionIds], references: [id])
+  mentions    User[]    @relation("message_mentions", fields: [mentionIds], references: [id])
   attachments String[]
   reactions   String[]
   pinned      Boolean
@@ -57,4 +59,17 @@ model Message {
   flags       Int?      @db.Int
 
   @@map("messages")
+}
+
+model Relationship {
+  id       String   @id @map("_id")
+  type     Int      @db.Int
+  nickname String
+  since    DateTime
+  owner    User     @relation("relation_owner", fields: [ownerId], references: [id])
+  user     User     @relation("relation_user", fields: [userId], references: [id])
+  userId   String
+  ownerId  String
+
+  @@map("relationships")
 }
