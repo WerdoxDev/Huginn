@@ -1,5 +1,5 @@
 import { Snowflake } from "@shared/snowflake";
-import { assertMessageIsDefined, prisma } from ".";
+import { DBErrorType, assertObjectWithCause, prisma } from ".";
 import { snowflake } from "@shared/snowflake";
 import { MessageType } from "@shared/api-types";
 import { Prisma } from "@prisma/client";
@@ -9,19 +9,19 @@ const messagesExtention = Prisma.defineExtension({
    model: {
       message: {
          async getById<Include extends MessageInclude>(channelId: Snowflake, messageId: Snowflake, include?: Include) {
-            await prisma.channel.getById(channelId);
+            await prisma.channel.assertChannelExists("getById", channelId);
 
             const message = await prisma.message.findUnique({ where: { channelId: channelId, id: messageId }, include: include });
 
-            assertMessageIsDefined("getById", message, messageId);
+            assertObjectWithCause("getById", message, DBErrorType.NULL_MESSAGE, messageId);
             return message as MessagePayload<Include>;
          },
          async getMessages<Include extends MessageInclude>(channelId: Snowflake, limit: number, include?: Include) {
-            await prisma.channel.getById(channelId);
+            await prisma.channel.assertChannelExists("getMessages", channelId);
 
             const messages = await prisma.message.findMany({ where: { channelId: channelId }, include: include, take: -limit });
 
-            assertMessageIsDefined("getMessages", messages);
+            assertObjectWithCause("getMessages", messages, DBErrorType.NULL_MESSAGE);
             return messages as MessagePayload<Include>[];
          },
          async createDefaultMessage<Include extends MessageInclude>(
@@ -30,10 +30,10 @@ const messagesExtention = Prisma.defineExtension({
             content?: string,
             attachments?: string[],
             flags?: number,
-            include?: Include,
+            include?: Include
          ) {
-            await prisma.user.getById(authorId);
-            await prisma.channel.getById(channelId);
+            await prisma.user.assertUserExists("createDefaultMessage", authorId);
+            await prisma.channel.assertChannelExists("createDefaultMessage", channelId);
 
             const message = await prisma.message.create({
                data: {
@@ -53,7 +53,7 @@ const messagesExtention = Prisma.defineExtension({
                include: include,
             });
 
-            assertMessageIsDefined("createDefaultMessage", message);
+            assertObjectWithCause("createDefaultMessage", message, DBErrorType.NULL_MESSAGE);
             return message as MessagePayload<Include>;
          },
       },

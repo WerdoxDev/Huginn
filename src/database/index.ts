@@ -3,6 +3,7 @@ import authExtention from "./database-auth";
 import userExtention from "./database-user";
 import channelExtention from "./database-channel";
 import messagesExtention from "./database-message";
+import relationshipExtention from "./database-relationship";
 
 export const prismaBase = new PrismaClient().$extends({
    model: {
@@ -22,6 +23,7 @@ export const prisma = prismaBase
    .$extends(authExtention)
    .$extends(userExtention)
    .$extends(channelExtention)
-   .$extends(messagesExtention);
+   .$extends(messagesExtention)
+   .$extends(relationshipExtention);
 
 export * from "./database-error";

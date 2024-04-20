@@ -11,6 +11,7 @@ import createDmRoute from "./user/create-dm";
 import getCurrentUserRoute from "./user/get-current-user";
 import getUserChannelsRoute from "./user/get-user-channels";
 import patchCurrentUserRoute from "./user/patch-current-user";
+import createRelationRoute from "./user/create-relationship";
 import getChannelMessagesRoute from "./channel/get-channel-messages";
 import checkUpdateRoute from "./updater/check-update";
 import buildsRoute from "./updater/builds";
@@ -18,20 +19,30 @@ import { Hono } from "hono";
 
 export const app = new Hono();
 
+// Common
+app.route("/", uniqueUsernameRoute);
+
+// Auth
 app.route("/", loginRoute);
 app.route("/", registerRoute);
 app.route("/", logoutRoute);
 app.route("/", refreshTokenRoute);
-app.route("/", uniqueUsernameRoute);
+
+// Channel
+app.route("/", createMessageRoute);
 app.route("/", getMessageByIdRoute);
+app.route("/", getChannelByIdRoute);
+app.route("/", getChannelMessagesRoute);
+
+// User
 app.route("/", getCurrentUserRoute);
 app.route("/", getUserByIdRoute);
 app.route("/", getUserChannelsRoute);
-app.route("/", getChannelByIdRoute);
-app.route("/", getChannelMessagesRoute);
-app.route("/", createMessageRoute);
 app.route("/", createDmRoute);
+app.route("/", createRelationRoute);
 app.route("/", patchCurrentUserRoute);
+
+// Updater
 app.route("/", checkUpdateRoute);
 app.route("/", buildsRoute);
 

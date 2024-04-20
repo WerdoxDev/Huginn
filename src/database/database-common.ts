@@ -16,6 +16,9 @@ export type UserPayload<I extends UserInclude = never, S extends UserSelect = ne
 export type MessageInclude = Prisma.MessageInclude | undefined;
 export type MessagePayload<T extends MessageInclude> = Prisma.MessageGetPayload<{ include: T }>;
 
+export type RelationshipInclude = Prisma.RelationshipInclude | undefined;
+export type RelationshipPayload<T extends RelationshipInclude> = Prisma.RelationshipGetPayload<{ include: T }>;
+
 export const includeChannelRecipients = Prisma.validator<Prisma.ChannelInclude>()({
    recipients: { select: { id: true, username: true, avatar: true } },
 });
