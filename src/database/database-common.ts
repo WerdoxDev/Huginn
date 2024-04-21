@@ -33,3 +33,7 @@ export const includeMessageAuthor = Prisma.validator<Prisma.MessageInclude>()({
 export const includeMessageMentions = Prisma.validator<Prisma.MessageInclude>()({
    mentions: { select: { id: true, username: true, displayName: true, avatar: true, flags: true } },
 });
+
+export const includeRelationshipUser = Prisma.validator<Prisma.RelationshipInclude>()({
+   user: { select: { id: true, username: true, displayName: true, avatar: true, flags: true } },
+});

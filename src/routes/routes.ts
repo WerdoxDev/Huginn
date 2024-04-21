@@ -12,7 +12,9 @@ import getCurrentUserRoute from "./user/get-current-user";
 import getUserChannelsRoute from "./user/get-user-channels";
 import patchCurrentUserRoute from "./user/patch-current-user";
 import createRelationRoute from "./user/create-relationship";
+import getRelationshipById from "./user/get-relationship-by-id";
 import getChannelMessagesRoute from "./channel/get-channel-messages";
+import getUserRelationships from "./user/get-user-relationships";
 import checkUpdateRoute from "./updater/check-update";
 import buildsRoute from "./updater/builds";
 import { Hono } from "hono";
@@ -41,6 +43,8 @@ app.route("/", getUserChannelsRoute);
 app.route("/", createDmRoute);
 app.route("/", createRelationRoute);
 app.route("/", patchCurrentUserRoute);
+app.route("/", getRelationshipById);
+app.route("/", getUserRelationships);
 
 // Updater
 app.route("/", checkUpdateRoute);

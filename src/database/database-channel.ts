@@ -72,7 +72,8 @@ const channelExtention = Prisma.defineExtension({
             return channel as ChannelPayload<Include>;
          },
          async assertChannelExists(methodName: string, id: Snowflake) {
-            assertBoolWithCause(methodName, !(await prisma.channel.exists({ id })), DBErrorType.NULL_CHANNEL, id);
+            const channelExists = await prisma.channel.exists({ id });
+            assertBoolWithCause(methodName, !channelExists, DBErrorType.NULL_CHANNEL, id);
          },
       },
    },

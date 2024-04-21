@@ -2,7 +2,7 @@ import { DBErrorType, prisma } from "@/src/database";
 import { includeChannelRecipients } from "@/src/database/database-common";
 import { createError } from "@/src/factory/error-factory";
 import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
-import { APIPostCreateDMJsonBody, APIPostCreateDMResult } from "@shared/api-types";
+import { APIPostCreateDMJSONBody, APIPostCreateDMResult } from "@shared/api-types";
 import { Error, Field, HttpCode } from "@shared/errors";
 import { omit } from "@shared/utility";
 import { Hono } from "hono";
@@ -16,13 +16,13 @@ app.post("/users/@me/channels", verifyJwt(), hValidator("json", schema), c =>
    handleRequest(
       c,
       async () => {
-         const body = (await c.req.json()) as APIPostCreateDMJsonBody;
+         const body = (await c.req.json()) as APIPostCreateDMJSONBody;
          const payload = getJwt(c);
 
          if (body.recipientId) {
             const channel: APIPostCreateDMResult = omit(
                await prisma.channel.createSingleDM(payload.id, body.recipientId, includeChannelRecipients),
-               ["recipientIds"],
+               ["recipientIds"]
             );
             return c.json(channel, HttpCode.CREATED);
          }
@@ -34,7 +34,7 @@ app.post("/users/@me/channels", verifyJwt(), hValidator("json", schema), c =>
 
             const channel: APIPostCreateDMResult = omit(
                await prisma.channel.createGroupDM(payload.id, body.users, includeChannelRecipients),
-               ["recipientIds"],
+               ["recipientIds"]
             );
             return c.json(channel, HttpCode.CREATED);
          }
@@ -45,8 +45,8 @@ app.post("/users/@me/channels", verifyJwt(), hValidator("json", schema), c =>
          if (e.isErrorType(DBErrorType.NULL_USER)) {
             return error(c, createError(Error.unknownUser()).error(e.error.cause, Field.invalidUserId()), HttpCode.NOT_FOUND);
          }
-      },
-   ),
+      }
+   )
 );
 
 export default app;
