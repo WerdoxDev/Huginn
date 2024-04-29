@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { RelationshipType } from "@shared/api-types";
 import { Snowflake, snowflake } from "@shared/snowflake";
-import { DBErrorType, assertObjectWithCause, prisma } from ".";
+import { DBErrorType, assertBoolWithCause, assertObjectWithCause, prisma } from ".";
 import { RelationshipInclude, RelationshipPayload } from "./database-common";
 
 const relationshipExtention = Prisma.defineExtension({
@@ -21,6 +21,17 @@ const relationshipExtention = Prisma.defineExtension({
             assertObjectWithCause("getUserRelationships", relationships, DBErrorType.NULL_RELATIONSHIP);
             return relationships as RelationshipPayload<Include>[];
          },
+         async deleteById(id: Snowflake) {
+            await prisma.relationship.assertRelationshipExists("deleteById", id);
+
+            const ownerId = (await prisma.relationship.getById(id)).ownerId;
+            const relatedRelation = await prisma.relationship.findFirst({ where: { userId: ownerId } });
+
+            assertObjectWithCause("deleteById", relatedRelation, DBErrorType.NULL_RELATIONSHIP);
+
+            await prisma.relationship.delete({ where: { id } });
+            await prisma.relationship.delete({ where: { id: relatedRelation.id } });
+         },
          async createRelationship<Include extends RelationshipInclude>(
             ownerId: string,
             userId: string,
@@ -37,6 +48,10 @@ const relationshipExtention = Prisma.defineExtension({
 
             assertObjectWithCause("createRelationship", relationship, DBErrorType.NULL_RELATIONSHIP);
             return relationship as RelationshipPayload<Include>;
+         },
+         async assertRelationshipExists(methodName: string, id: Snowflake) {
+            const relationshipExists = await prisma.relationship.exists({ id });
+            assertBoolWithCause(methodName, !relationshipExists, DBErrorType.NULL_RELATIONSHIP, id);
          },
       },
    },

@@ -15,6 +15,7 @@ import createRelationRoute from "./user/create-relationship";
 import getRelationshipById from "./user/get-relationship-by-id";
 import getChannelMessagesRoute from "./channel/get-channel-messages";
 import getUserRelationships from "./user/get-user-relationships";
+import deleteRelationshipById from "./user/delete-relationship-by-id";
 import checkUpdateRoute from "./updater/check-update";
 import buildsRoute from "./updater/builds";
 import { Hono } from "hono";
@@ -45,6 +46,7 @@ app.route("/", createRelationRoute);
 app.route("/", patchCurrentUserRoute);
 app.route("/", getRelationshipById);
 app.route("/", getUserRelationships);
+app.route("/", deleteRelationshipById);
 
 // Updater
 app.route("/", checkUpdateRoute);
