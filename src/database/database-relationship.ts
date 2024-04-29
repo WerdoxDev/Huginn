@@ -21,16 +21,17 @@ const relationshipExtention = Prisma.defineExtension({
             assertObjectWithCause("getUserRelationships", relationships, DBErrorType.NULL_RELATIONSHIP);
             return relationships as RelationshipPayload<Include>[];
          },
-         async deleteById(id: Snowflake) {
-            await prisma.relationship.assertRelationshipExists("deleteById", id);
+         async deleteByUserId(ownerId: Snowflake, userId: Snowflake) {
+            const relation = await prisma.relationship.findFirst({ where: { userId: userId, ownerId: ownerId } });
+            assertObjectWithCause("deleteByUserId", relation, DBErrorType.NULL_RELATIONSHIP);
 
-            const ownerId = (await prisma.relationship.getById(id)).ownerId;
-            const relatedRelation = await prisma.relationship.findFirst({ where: { userId: ownerId } });
+            const oppositeRelation = await prisma.relationship.findFirst({ where: { userId: ownerId, ownerId: userId } });
+            assertObjectWithCause("deleteByUserId", oppositeRelation, DBErrorType.NULL_RELATIONSHIP);
 
-            assertObjectWithCause("deleteById", relatedRelation, DBErrorType.NULL_RELATIONSHIP);
+            const deleteRelation = prisma.relationship.delete({ where: { id: relation.id } });
+            const deleteOppositeRelation = prisma.relationship.delete({ where: { id: oppositeRelation.id } });
 
-            await prisma.relationship.delete({ where: { id } });
-            await prisma.relationship.delete({ where: { id: relatedRelation.id } });
+            await prisma.$transaction([deleteRelation, deleteOppositeRelation]);
          },
          async createRelationship<Include extends RelationshipInclude>(
             ownerId: string,
