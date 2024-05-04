@@ -64,11 +64,21 @@ export const Routes = {
 
    /**
     * Route for:
-    * - GET  '/users/@me/relationships'
-    * - POST '/users/@me/relationships'
+    * - GET    '/users/@me/relationships'
+    * - POST   '/users/@me/relationships'
     */
    userRelationships() {
       return `/users/@me/relationships` as const;
+   },
+
+   /**
+    * Route for:
+    * - GET    '/users/@me/relationships/{user.id}'
+    * - DELETE '/users/@me/relationships/{user.id}'
+    * - PUT    '/users/@me/relationships/{user.id}'
+    */
+   userRelationship(id: string) {
+      return `/users/@me/relationships/${id}` as const;
    },
 
    /**

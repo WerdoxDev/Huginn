@@ -1,5 +1,6 @@
 import { Readable } from "stream";
 import { RouteLike } from "./routes";
+import { URLSearchParams } from "url";
 
 export enum RequestMethod {
    DELETE = "DELETE",

@@ -92,8 +92,6 @@ export type APIPostUniqueUsernameJSONBody = {
 export type APIPostUniqueUsernameResult = {
    taken: boolean;
 };
-
-export type APIGetUserRelationships = APIRelationship[];
 //#endregion
 
 //#region RELATIONSHIP
@@ -101,9 +99,12 @@ export type APIRelationship = {
    id: Snowflake;
    type: RelationshipType;
    nickname: string;
-   since: string;
+   since?: Date | null;
    user: APIRelationUser;
+   owner: APIRelationUser;
 };
+
+type APIRelationshipWithoutOwner = Omit<APIRelationship, "owner">;
 
 export enum RelationshipType {
    NONE,
@@ -112,6 +113,13 @@ export enum RelationshipType {
    PENDING_INCOMING,
    PENDING_OUTGOING,
 }
+
+export type APIGetUserRelationshipsResult = APIRelationshipWithoutOwner[];
+export type APIGetUserRelationshipByIdResult = APIRelationshipWithoutOwner;
+
+export type APIPostCreateRelationshipJSONBody = {
+   username: string;
+};
 //#endregion
 
 //#region CHANNEL
@@ -153,7 +161,7 @@ export enum ChannelType {
 
 export type APIGetChannelByIdResult = APIChannel;
 
-export type APIPostCreateDMJsonBody = {
+export type APIPostCreateDMJSONBody = {
    recipientId?: Snowflake;
    users?: Record<Snowflake, string>;
 };

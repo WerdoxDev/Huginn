@@ -50,7 +50,11 @@ export enum JsonCode {
    UNKNOWN_MEMBER = 10003,
    UNKNOWN_USER = 10004,
    UNKNOWN_CHANNEL = 10005,
+   UNKNOWN_RELATIONSHIP = 10006,
    INVALID_FORM_BODY = 20001,
+   USERNAME_NOT_FOUND = 30001,
+   RELATION_SELF_REQUEST = 30002,
+   RELATION_EXISTS = 30003,
 }
 
 export enum GatewayCode {
@@ -134,5 +138,17 @@ export const Error = {
    },
    unknownMessage(): [string, JsonCode] {
       return ["Unknown Message", JsonCode.UNKNOWN_MESSAGE];
+   },
+   unknownRelationship(): [string, JsonCode] {
+      return ["Unknown Relationship", JsonCode.UNKNOWN_RELATIONSHIP];
+   },
+   noUserWithUsername(): [string, JsonCode] {
+      return ["No user with specified username was found", JsonCode.USERNAME_NOT_FOUND];
+   },
+   relationshipSelfRequest(): [string, JsonCode] {
+      return ["Cannot send friend request to self", JsonCode.RELATION_SELF_REQUEST];
+   },
+   relationshipExists(): [string, JsonCode] {
+      return ["You are already friends with this user", JsonCode.RELATION_EXISTS];
    },
 };
