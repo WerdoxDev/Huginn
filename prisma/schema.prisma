@@ -62,12 +62,12 @@ model Message {
 }
 
 model Relationship {
-  id       String   @id @map("_id")
-  type     Int      @db.Int
+  id       String    @id @map("_id")
+  type     Int       @db.Int
   nickname String
-  since    DateTime
-  owner    User     @relation("relation_owner", fields: [ownerId], references: [id])
-  user     User     @relation("relation_user", fields: [userId], references: [id])
+  since    DateTime?
+  owner    User      @relation("relation_owner", fields: [ownerId], references: [id])
+  user     User      @relation("relation_user", fields: [userId], references: [id])
   userId   String
   ownerId  String
 

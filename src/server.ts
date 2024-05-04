@@ -8,8 +8,8 @@ import { createError } from "./factory/error-factory";
 import { ServerGateway } from "./gateway/server-gateway";
 import { logReject, logRequest, logResponse, logServerError } from "./log-utils";
 import { error, serverError, tryGetBodyJson } from "./route-utils";
-import routes from "./routes/routes";
-import testRoute from "./routes/test";
+import routes from "./routes/route-merger";
+import testRoute from "./routes/test-routes";
 import { TokenInvalidator } from "./token-invalidator";
 
 consola.start("Starting server...");

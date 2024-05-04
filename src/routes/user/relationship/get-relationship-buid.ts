@@ -1,7 +1,7 @@
 import { DBErrorType, prisma } from "@/src/database";
 import { includeRelationshipUser } from "@/src/database/database-common";
 import { createError } from "@/src/factory/error-factory";
-import { error, handleRequest, verifyJwt } from "@/src/route-utils";
+import { error, getJwt, handleRequest, verifyJwt } from "@/src/route-utils";
 import { APIGetUserRelationshipByIdResult } from "@shared/api-types";
 import { Error, HttpCode } from "@shared/errors";
 import { omit } from "@shared/utility";
@@ -13,8 +13,9 @@ app.get("/users/@me/relationships/:relationshipId", verifyJwt(), c =>
    handleRequest(
       c,
       async () => {
+         const payload = getJwt(c);
          const relationship: APIGetUserRelationshipByIdResult = omit(
-            await prisma.relationship.getById(c.req.param("relationshipId"), includeRelationshipUser),
+            await prisma.relationship.getByUserId(payload.id, c.req.param("relationshipId"), includeRelationshipUser),
             ["ownerId", "userId"]
          );
 

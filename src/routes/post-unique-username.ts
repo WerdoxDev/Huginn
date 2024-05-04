@@ -17,7 +17,7 @@ app.post("/unique-username", hValidator("json", schema), c =>
       const json: APIPostUniqueUsernameResult = { taken: !isUnique };
 
       return c.json(json, HttpCode.OK);
-   }),
+   })
 );
 
 export default app;

@@ -28,7 +28,7 @@ app.get("/check-update/:target/:arch/:currentVersion", c =>
          const zipFileName = releaseFiles.find(x => x.endsWith(".zip"))!;
          const zipFile = Bun.file(path.resolve(debugBuildsPath, latestVersion, zipFileName));
          const sigFileContent = await Bun.file(
-            path.resolve(debugBuildsPath, latestVersion, releaseFiles.find(x => x.endsWith(".sig"))!),
+            path.resolve(debugBuildsPath, latestVersion, releaseFiles.find(x => x.endsWith(".sig"))!)
          ).text();
 
          const result: AppVersionInfo = {
@@ -43,7 +43,7 @@ app.get("/check-update/:target/:arch/:currentVersion", c =>
       }
 
       return c.newResponse(null, HttpCode.NO_CONTENT);
-   }),
+   })
 );
 
 export default app;
