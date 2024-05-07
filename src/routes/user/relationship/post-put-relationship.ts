@@ -1,8 +1,11 @@
 import { DBErrorType, prisma } from "@/src/database";
 import { createError } from "@/src/factory/error-factory";
+import { publishToTopic } from "@/src/gateway/gateway-utils";
 import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
-import { APIPostCreateRelationshipJSONBody, RelationshipType } from "@shared/api-types";
+import { APIPostCreateRelationshipJSONBody, APIRelationshipWithoutOwner, RelationshipType } from "@shared/api-types";
 import { Error, HttpCode } from "@shared/errors";
+import { GatewayDispatchEvents, GatewayOperations, GatewayRelationshipCreateDispatch } from "@shared/gateway-types";
+import consola from "consola";
 import { Hono } from "hono";
 import { createFactory } from "hono/factory";
 import { z } from "zod";
@@ -36,7 +39,19 @@ const requestHandler = createFactory().createHandlers(c =>
             return error(c, createError(Error.relationshipExists()), HttpCode.BAD_REQUEST);
          }
 
-         await prisma.relationship.createRelationship(payload.id, userId);
+         const relationships = await prisma.relationship.createRelationship(payload.id, userId, { user: true });
+
+         consola.log(relationships);
+
+         const data: GatewayRelationshipCreateDispatch = {
+            op: GatewayOperations.DISPATCH,
+            t: GatewayDispatchEvents.RELATIONSHIP_CREATE,
+            d: {} as APIRelationshipWithoutOwner,
+            s: 0,
+         };
+
+         publishToTopic(payload.id, { ...data, d: relationships[0] });
+         publishToTopic(userId, { ...data, d: relationships[1] });
 
          return c.newResponse(null, HttpCode.NO_CONTENT);
       },
