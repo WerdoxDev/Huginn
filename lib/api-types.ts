@@ -104,7 +104,7 @@ export type APIRelationship = {
    owner: APIRelationUser;
 };
 
-type APIRelationshipWithoutOwner = Omit<APIRelationship, "owner">;
+export type APIRelationshipWithoutOwner = Omit<APIRelationship, "owner">;
 
 export enum RelationshipType {
    NONE,

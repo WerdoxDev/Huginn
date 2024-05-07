@@ -1,4 +1,4 @@
-import { APIMessage, APIMessageUser, APIUser } from "./api-types";
+import { APIMessage, APIMessageUser, APIRelationshipWithoutOwner, APIUser } from "./api-types";
 import { Snowflake } from "./snowflake";
 
 export enum GatewayOperations {
@@ -14,6 +14,8 @@ export enum GatewayDispatchEvents {
    MESSAGE_CREATE = "MESSAGE_CREATE",
    MESSAGE_DELETE = "MESSAGE_DELETE",
    TYPING_START = "TYPING_START",
+   RELATIONSHIP_CREATE = "RELATIONSHIP_CREATE",
+   RELATIONSHIP_DELETE = "RELATIONSHIP_DELETE",
 }
 
 export type BasePayload = {
@@ -86,6 +88,15 @@ export type GatewayMessageCreateDispatch = DataPayload<
 >;
 
 export type GatewayMessageCreateDispatchData = Omit<APIMessage, "mentions"> & GatewayMessageEventExtraFields;
+
+export type GatewayRelationshipCreateDispatch = DataPayload<
+   GatewayDispatchEvents.RELATIONSHIP_CREATE,
+   GatewayRelationshipCreateDispatchData
+>;
+
+export type GatewayRelationshipCreateDispatchData = APIRelationshipWithoutOwner;
+
+export type GatewayRelationshipDeleteDispatch = DataPayload<GatewayDispatchEvents.RELATIONSHIP_DELETE, Snowflake>;
 
 export type GatewayMessageEventExtraFields = {
    guildId?: Snowflake;
