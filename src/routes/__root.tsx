@@ -16,6 +16,7 @@ export const Route = createRootRoute({
          <Link to="/channel/$channelId" params={{ channelId: "177812771176452101" }}>
             Channels
          </Link>
+         <Link to="/login">Login</Link>
          <Outlet />
          <TanStackRouterDevtools />
       </>
