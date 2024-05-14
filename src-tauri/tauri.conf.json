@@ -1,0 +1,104 @@
+{
+   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+   "build": {
+      "beforeBuildCommand": "bun run build",
+      "beforeDevCommand": "bun run dev",
+      "devPath": "http://localhost:5173",
+      "distDir": "../dist"
+   },
+   "package": {
+      "productName": "Huginn"
+   },
+   "tauri": {
+      "allowlist": {
+         "all": false,
+         "window": {
+            "all": false,
+            "close": true,
+            "hide": true,
+            "show": true,
+            "maximize": true,
+            "minimize": true,
+            "unmaximize": true,
+            "unminimize": true,
+            "startDragging": true
+         },
+         "fs": {
+            "all": false,
+            "createDir": true,
+            "exists": true,
+            "readDir": true,
+            "readFile": true,
+            "removeDir": true,
+            "removeFile": true,
+            "renameFile": true,
+            "scope": ["$APPDATA/**", "$APPDATA/*", "$APPDATA"],
+            "writeFile": true
+         }
+      },
+      "bundle": {
+         "active": true,
+         "category": "DeveloperTool",
+         "copyright": "",
+         "deb": {
+            "depends": []
+         },
+         "externalBin": [],
+         "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+         "identifier": "com.huginn.dev",
+         "longDescription": "",
+         "macOS": {
+            "entitlements": null,
+            "exceptionDomain": "",
+            "frameworks": [],
+            "providerShortName": null,
+            "signingIdentity": null
+         },
+         "resources": [],
+         "shortDescription": "",
+         "targets": "all",
+         "windows": {
+            "certificateThumbprint": null,
+            "digestAlgorithm": "sha256",
+            "timestampUrl": ""
+         }
+      },
+      "security": {
+         "csp": null
+      },
+      "updater": {
+         "active": true,
+         "endpoints": ["https://gist.githubusercontent.com/WerdoxDev/ac95eb18cb91af0cc3992625c1c6eb18/raw/huginn-version.json?v=1"],
+         "dialog": false,
+         "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDYyODM3OTkzODA1RkNGRkUKUldUK3oxK0FrM21EWXRrTzdpSVVwWFF3Nld1alZlMHE5SnQxOS82S3ZNcVFGSkJVczlaTW01dnIK",
+         "windows": {
+            "installMode": "passive"
+         }
+      },
+      "windows": [
+         {
+            "title": "Huginn",
+            "width": 800,
+            "height": 600,
+            "minWidth": 1080,
+            "minHeight": 600,
+            "fullscreen": false,
+            "resizable": true,
+            "visible": false,
+            "label": "main",
+            "decorations": false,
+            "transparent": true
+         },
+         {
+            "width": 300,
+            "height": 300,
+            "resizable": false,
+            "decorations": false,
+            "url": "/splashscreen",
+            "label": "splashscreen",
+            "center": true,
+            "transparent": true
+         }
+      ]
+   }
+}
