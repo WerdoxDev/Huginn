@@ -6,7 +6,8 @@ module.exports = {
    parser: "@typescript-eslint/parser",
    plugins: ["react-refresh"],
    rules: {
-      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+      "react-refresh/only-export-components": ["warn", { allowConstantExport: false }],
+      "react-hooks/exhaustive-deps": "off",
       // "indent": ["off"],
       // enforces getter/setter pairs in objects
       // https://eslint.org/docs/rules/accessor-pairs

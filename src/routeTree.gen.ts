@@ -15,6 +15,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRoute } from './routes/__root'
 import { Route as LayoutAuthImport } from './routes/_layoutAuth'
 import { Route as ChannelChannelIdImport } from './routes/channel.$channelId'
+import { Route as LayoutAuthRegisterImport } from './routes/_layoutAuth/register'
 import { Route as LayoutAuthLoginImport } from './routes/_layoutAuth/login'
 
 // Create Virtual Routes
@@ -36,6 +37,11 @@ const IndexLazyRoute = IndexLazyImport.update({
 const ChannelChannelIdRoute = ChannelChannelIdImport.update({
   path: '/channel/$channelId',
   getParentRoute: () => rootRoute,
+} as any)
+
+const LayoutAuthRegisterRoute = LayoutAuthRegisterImport.update({
+  path: '/register',
+  getParentRoute: () => LayoutAuthRoute,
 } as any)
 
 const LayoutAuthLoginRoute = LayoutAuthLoginImport.update({
@@ -68,6 +74,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAuthLoginImport
       parentRoute: typeof LayoutAuthImport
     }
+    '/_layoutAuth/register': {
+      id: '/_layoutAuth/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof LayoutAuthRegisterImport
+      parentRoute: typeof LayoutAuthImport
+    }
     '/channel/$channelId': {
       id: '/channel/$channelId'
       path: '/channel/$channelId'
@@ -82,7 +95,10 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren({
   IndexLazyRoute,
-  LayoutAuthRoute: LayoutAuthRoute.addChildren({ LayoutAuthLoginRoute }),
+  LayoutAuthRoute: LayoutAuthRoute.addChildren({
+    LayoutAuthLoginRoute,
+    LayoutAuthRegisterRoute,
+  }),
   ChannelChannelIdRoute,
 })
 

@@ -1,32 +1,49 @@
 import { HuginnError } from "@shared/errors";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
    getInputCurrentStatus,
    getInputsValidatedStatuses,
    getEmptyStatuses,
    getInputsStatusesFromError,
-   doStatusesHaveErrors,
-} from "../utils";
+   checkStatusesHaveErrors,
+} from "../lib/utils";
 
 export function useInputs(inputsOptions: InputOptions[]) {
    const newValues: InputValues = {};
    const newStatuses: InputStatuses = {};
-   const inputProps: InputProps = {};
+   const newInputsProps: InputProps = {};
 
    for (const x of inputsOptions) {
       newValues[x.name] = { value: x.default || "", required: x.required };
       newStatuses[x.name] = { code: "none", text: "" };
 
-      inputProps[x.name] = {
+      newInputsProps[x.name] = {
          value: newValues[x.name].value,
          status: newStatuses[x.name],
+         required: x.required,
          onChange: (e) => onValueChanged(x.name, e.value),
       };
    }
 
    const [values, setValues] = useState<InputValues>(newValues);
    const [statuses, setStatuses] = useState<InputStatuses>(newStatuses);
+   const [inputsProps, setInputProps] = useState<InputProps>(newInputsProps);
    const [errorStatuses, setErrorStatuses] = useState<InputStatuses>({});
+
+   useEffect(() => {
+      const newInputsProps: InputProps = {};
+
+      for (const x of inputsOptions) {
+         newInputsProps[x.name] = {
+            value: values[x.name].value,
+            status: statuses[x.name],
+            required: x.required,
+            onChange: (e) => onValueChanged(x.name, e.value),
+         };
+      }
+
+      setInputProps(newInputsProps);
+   }, [values, statuses]);
 
    function onValueChanged(inputName: string, value: string) {
       const updatedValues = { ...values };
@@ -37,13 +54,12 @@ export function useInputs(inputsOptions: InputOptions[]) {
 
       setValues(updatedValues);
       setStatuses(updatedStatuses);
-
-      console.log(updatedValues[inputName]);
    }
 
    function validateValues() {
-      setStatuses(getInputsValidatedStatuses(values, statuses));
-      if (doStatusesHaveErrors(statuses, errorStatuses)) {
+      const validatedStatuses = getInputsValidatedStatuses(values, statuses);
+      setStatuses(validatedStatuses);
+      if (checkStatusesHaveErrors(validatedStatuses, errorStatuses)) {
          return false;
       }
 
@@ -62,5 +78,5 @@ export function useInputs(inputsOptions: InputOptions[]) {
       setErrorStatuses({ ...newStatuses });
    }
 
-   return { inputProps, values, statuses, onValueChanged, validateValues, resetStatuses, handleErrors };
+   return { inputsProps, values, statuses, onValueChanged, validateValues, resetStatuses, handleErrors };
 }

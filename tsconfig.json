@@ -4,7 +4,7 @@
       "useDefineForClassFields": true,
       "lib": ["ES2020", "DOM", "DOM.Iterable"],
       "module": "ESNext",
-      "skipLibCheck": true,
+      "skipLibCheck": false,
 
       /* Bundler mode */
       "moduleResolution": "bundler",
@@ -13,7 +13,7 @@
       "isolatedModules": true,
       "noEmit": true,
       "jsx": "react-jsx",
-
+      "types": ["unplugin-icons/types/react"],
       /* Linting */
       "strict": true,
       "noUnusedLocals": true,
@@ -26,6 +26,6 @@
          "@shared": ["../huginn-shared/lib"]
       }
    },
-   "include": ["src", "types.d.ts"],
+   "include": ["src", "types.d.ts", "auto-imports.d.ts"],
    "references": [{ "path": "./tsconfig.node.json" }, { "path": "../huginn-api" }, { "path": "../huginn-shared" }]
 }

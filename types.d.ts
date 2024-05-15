@@ -1,74 +1,86 @@
-type StatusCode = "none" | "default" | "error" | "success";
+import { HTMLInputTypeAttribute, ReactNode } from "react";
 
-type LoadingState = "none" | "loading" | "checking_update" | "updating";
+declare global {
+   type StatusCode = "none" | "default" | "error" | "success";
 
-type InputStatus = {
-   code: StatusCode;
-   text: string;
-};
+   type LoadingState = "none" | "loading" | "checking_update" | "updating";
 
-type InputValue = {
-   required: boolean;
-   value: string;
-};
+   type InputStatus = {
+      code: StatusCode;
+      text: string;
+   };
 
-type InputOptions = {
-   name: string;
-   required: boolean;
-   default?: string;
-};
+   type InputValue = {
+      required: boolean;
+      value: string;
+   };
 
-type InputProp = {
-   status: InputStatus;
-   value: string;
-   onChange: (e: HTMLInputElement) => void;
-};
+   type InputOptions = {
+      name: string;
+      required: boolean;
+      default?: string;
+   };
 
-type InputStatuses = Record<string, InputStatus>;
-type InputValues = Record<string, InputValue>;
-type InputProps = Record<string, InputProp>;
+   type InputProp = {
+      status: InputStatus;
+      value: string;
+      required: boolean;
+      onChange: (e: HTMLInputElement) => void;
+   };
 
-type MessageDetail = {
-   state: StatusCode;
-   text: string;
-   visible: boolean;
-};
+   type InputStatuses = Record<string, InputStatus>;
+   type InputValues = Record<string, InputValue>;
+   type InputProps = Record<string, InputProp>;
 
-type BaseInputProps = {
-   state: InputStatus;
-   label?: string;
-   type?: HTMLInputTypeAttribute;
-   required?: boolean;
-   defaultValue?: string;
-};
+   type MessageDetail = {
+      status: StatusCode;
+      text: string;
+      visible: boolean;
+   };
 
-type BaseButtonProps = {
-   type?: "submit" | "reset" | "button" | undefined;
-   contentClass?: string;
-};
+   type HuginnInputProps = {
+      children?: ReactNode;
+      className?: string;
+      status: InputStatus;
+      type?: HTMLInputTypeAttribute;
+      required?: boolean;
+      value?: string;
+      onChange?: (e: HTMLInputElement) => void;
+      onFocus?: (focused: boolean) => void;
+   };
 
-type ModalState = {
-   isOpen: boolean;
-};
+   type HuginnButtonProps = {
+      children?: ReactNode;
+      type?: "submit" | "reset" | "button" | undefined;
+      className?: string;
+      disabled?: boolean;
+      innerClassName?: string;
+      onClick?: () => void;
+   };
 
-type InfoModalState = {
-   state: StatusCode;
-   text: string;
-} & ModalState;
+   type ModalState = {
+      isOpen: boolean;
+   };
 
-type UpdaterProgress = {
-   chunkLength: number;
-   contentLength: number;
-};
+   type InfoModalState = {
+      state: StatusCode;
+      text: string;
+   } & ModalState;
 
-type AppSettings = {
-   serverAddress?: string;
-};
+   type UpdaterProgress = {
+      chunkLength: number;
+      contentLength: number;
+   };
 
-type SettingsTab = {
-   name: string;
-   text: string;
-   icon?: string;
-   // component?: Component;
-   isGroup: boolean;
-};
+   type AppSettings = {
+      serverAddress?: string;
+   };
+
+   type SettingsTab = {
+      name: string;
+      text: string;
+      icon?: string;
+      // component?: Component;
+      isGroup: boolean;
+   };
+}

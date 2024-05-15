@@ -1,4 +1,5 @@
 import type { HuginnError } from "@shared/errors";
+import React, { JSXElementConstructor, ReactNode } from "react";
 
 export const requiredFieldError: InputStatus = { code: "error", text: "Required" };
 
@@ -48,7 +49,14 @@ export function getEmptyStatuses(states: InputStatuses) {
    return newStatuses;
 }
 
-export function doStatusesHaveErrors(states: InputStatuses, exclude?: InputStatuses) {
+export function checkStatusesHaveErrors(statuses: InputStatuses, exclude?: InputStatuses) {
    const excludeValues = Object.values(exclude || {});
-   return Object.values(states).filter((x) => x.code === "error" && !excludeValues.includes(x)).length !== 0;
+   console.log(statuses);
+   return Object.values(statuses).filter((x) => x.code === "error" && !excludeValues.includes(x)).length !== 0;
+}
+
+export function filterChildrenOfType(children: ReactNode, type: JSXElementConstructor<never>) {
+   return React.Children.toArray(children).filter(
+      (child) => React.isValidElement(child) && typeof child.type === "function" && child.type.name === type.name,
+   );
 }
