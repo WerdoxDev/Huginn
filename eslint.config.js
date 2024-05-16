@@ -1,7 +1,6 @@
 import eslint from "@eslint/js";
 import reactCompiler from "eslint-plugin-react-compiler";
 import reactHook from "eslint-plugin-react-hooks";
-import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 import reactRecommended from "eslint-plugin-react/configs/jsx-runtime.js";
@@ -9,7 +8,6 @@ import reactRecommended from "eslint-plugin-react/configs/jsx-runtime.js";
 export default tseslint.config(
    eslint.configs.recommended,
    reactRecommended,
-   // reactCompiler.,
    ...tseslint.configs.recommendedTypeChecked,
    ...tseslint.configs.stylisticTypeChecked,
    {
@@ -17,7 +15,6 @@ export default tseslint.config(
       plugins: {
          "react-hooks": reactHook,
          "react-compiler": reactCompiler,
-         "react-refresh": reactRefresh,
       },
       languageOptions: { parserOptions: { project: "tsconfig.json" } },
 
