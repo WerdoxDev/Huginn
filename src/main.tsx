@@ -4,7 +4,7 @@ import "./index.css";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 
-const router = createRouter({ routeTree, defaultPreload: "intent", defaultPreloadDelay: 100 });
+export const router = createRouter({ routeTree, defaultPreload: "intent", defaultPreloadDelay: 100 });
 
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {

@@ -1,6 +1,6 @@
 import { createFileRoute, useMatch, useMatches } from "@tanstack/react-router";
 import { AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AnimatedOutlet from "../components/AnimaredOutlet";
 import AuthBackgroundSvg from "../components/AuthBackgroundSvg";
 import { AuthBackgroundContext } from "../contexts/authBackgroundContext";
@@ -14,6 +14,10 @@ function LayoutAuth() {
    const match = useMatch({ strict: false });
    const nextMatchIndex = matches.findIndex((d) => d.id === match.id) + 1;
    const nextMatch = matches[nextMatchIndex];
+
+   useEffect(() => {
+      console.log(nextMatch.id);
+   }, [nextMatch]);
 
    const [backgroundState, setBackgroundState] = useState(2);
    return (
@@ -35,7 +39,7 @@ function LayoutAuth() {
                   initial={{ y: -120, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: -120, opacity: 0 }}
-                  transition={{ ease: "circInOut" }}
+                  transition={{ duration: 2, ease: "circInOut" }}
                   key={nextMatch.id}
                />
             </AnimatePresence>

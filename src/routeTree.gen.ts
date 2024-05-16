@@ -14,7 +14,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as LayoutAuthImport } from './routes/_layoutAuth'
-import { Route as ChannelChannelIdImport } from './routes/channel.$channelId'
+import { Route as ChannelsChannelIdImport } from './routes/channels.$channelId'
 import { Route as LayoutAuthRegisterImport } from './routes/_layoutAuth/register'
 import { Route as LayoutAuthLoginImport } from './routes/_layoutAuth/login'
 
@@ -34,8 +34,8 @@ const IndexLazyRoute = IndexLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
 
-const ChannelChannelIdRoute = ChannelChannelIdImport.update({
-  path: '/channel/$channelId',
+const ChannelsChannelIdRoute = ChannelsChannelIdImport.update({
+  path: '/channels/$channelId',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -81,11 +81,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAuthRegisterImport
       parentRoute: typeof LayoutAuthImport
     }
-    '/channel/$channelId': {
-      id: '/channel/$channelId'
-      path: '/channel/$channelId'
-      fullPath: '/channel/$channelId'
-      preLoaderRoute: typeof ChannelChannelIdImport
+    '/channels/$channelId': {
+      id: '/channels/$channelId'
+      path: '/channels/$channelId'
+      fullPath: '/channels/$channelId'
+      preLoaderRoute: typeof ChannelsChannelIdImport
       parentRoute: typeof rootRoute
     }
   }
@@ -99,7 +99,7 @@ export const routeTree = rootRoute.addChildren({
     LayoutAuthLoginRoute,
     LayoutAuthRegisterRoute,
   }),
-  ChannelChannelIdRoute,
+  ChannelsChannelIdRoute,
 })
 
 /* prettier-ignore-end */

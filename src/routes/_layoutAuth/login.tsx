@@ -1,16 +1,20 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { HuginnAPIError } from "@api/index";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useContext, useEffect, useState } from "react";
 import AuthWrapper from "../../components/AuthWrapper";
-import HuginnInput from "../../components/input/HuginnInput";
-import PasswordInput from "../../components/input/PasswordInput";
-import { useInputs } from "../../hooks/useInputs";
 import LinkButton from "../../components/button/LinkButton";
 import LoadingButton from "../../components/button/LoadingButton";
-import { client } from "../../lib/api";
-import { HuginnAPIError } from "@api/index";
+import HuginnInput from "../../components/input/HuginnInput";
+import PasswordInput from "../../components/input/PasswordInput";
 import { AuthBackgroundContext } from "../../contexts/authBackgroundContext";
+import { useInputs } from "../../hooks/useInputs";
+import { client } from "../../lib/api";
+import { requireNotAuth } from "../../lib/middlewares";
 
 export const Route = createFileRoute("/_layoutAuth/login")({
+   async beforeLoad() {
+      await requireNotAuth();
+   },
    component: Login,
 });
 
@@ -22,10 +26,11 @@ function Login() {
 
    const [loading, setLoading] = useState(false);
    const [hidden, setHidden] = useState(false);
-   const { setState } = useContext(AuthBackgroundContext);
+   const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
+   const navigate = useNavigate({ from: "/login" });
 
    useEffect(() => {
-      setState(0);
+      setAuthBackgroundState(0);
    }, []);
 
    async function login() {
@@ -41,14 +46,13 @@ function Login() {
 
          client.gateway.connect();
 
-         localStorage.setItem("access-token", client.tokenHandler.token);
-         localStorage.setItem("refresh-token", client.tokenHandler.refreshToken);
+         localStorage.setItem("access-token", client.tokenHandler.token!);
+         localStorage.setItem("refresh-token", client.tokenHandler.refreshToken!);
 
-         setState(1);
-         // authBackgroundState.value = 1;
+         setAuthBackgroundState(1);
          setHidden(true);
 
-         // navigateTo("/channels/@me");
+         navigate({ to: "/channels/@me" });
       } catch (error) {
          if (error instanceof HuginnAPIError) {
             if (error.rawError.errors === undefined) return;

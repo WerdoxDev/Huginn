@@ -54,7 +54,7 @@ export default function AuthBackgroundSvg() {
       >
          <g transform="translate(960, 0)">
             <motion.path
-               transition={{ duration: 0.5, ease: "easeInOut" }}
+               transition={{ duration: 1, ease: "easeInOut" }}
                variants={path1}
                initial="initial"
                fill="#ADDC6C"
@@ -62,7 +62,7 @@ export default function AuthBackgroundSvg() {
          </g>
          <g transform="translate(0, 540)">
             <motion.path
-               transition={{ duration: 0.5, ease: "easeInOut" }}
+               transition={{ duration: 1, ease: "easeInOut" }}
                variants={path2}
                initial="initial"
                fill="#ADDC6C"

@@ -1,6 +1,7 @@
 import { HuginnAPIError } from "@api/index";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useContext, useEffect, useRef, useState } from "react";
+import AnimatedMessage from "../../components/AnimatedMessage";
 import AuthWrapper from "../../components/AuthWrapper";
 import LinkButton from "../../components/button/LinkButton";
 import LoadingButton from "../../components/button/LoadingButton";
@@ -8,11 +9,14 @@ import HuginnInput from "../../components/input/HuginnInput";
 import PasswordInput from "../../components/input/PasswordInput";
 import { AuthBackgroundContext } from "../../contexts/authBackgroundContext";
 import { useInputs } from "../../hooks/useInputs";
-import { client } from "../../lib/api";
 import useUniqueUsernameMessage from "../../hooks/useUniqueUsernameMessage";
-import AnimatedMessage from "../../components/AnimatedMessage";
+import { client } from "../../lib/api";
+import { requireNotAuth } from "../../lib/middlewares";
 
 export const Route = createFileRoute("/_layoutAuth/register")({
+   async beforeLoad() {
+      await requireNotAuth();
+   },
    component: Register,
 });
 
@@ -26,10 +30,11 @@ function Register() {
 
    const [loading, setLoading] = useState(false);
    const [hidden, setHidden] = useState(false);
-   const { setState } = useContext(AuthBackgroundContext);
+   const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
    const { message: usernameMessageDetail, onFocusChanged, onChanged } = useUniqueUsernameMessage();
-   const prevUsername = useRef(values.username.value);
+   const navigate = useNavigate({ from: "/register" });
 
+   const prevUsername = useRef(values.username.value);
    useEffect(() => {
       if (prevUsername.current === values.username.value) {
          return;
@@ -40,7 +45,7 @@ function Register() {
    }, [values]);
 
    useEffect(() => {
-      setState(0);
+      setAuthBackgroundState(0);
    }, []);
 
    async function register() {
@@ -61,10 +66,10 @@ function Register() {
 
          client.gateway.connect();
 
-         setState(1);
+         setAuthBackgroundState(1);
          setHidden(true);
 
-         // navigateTo("/channels/@me");
+         navigate({ to: "/channels/@me" });
       } catch (error) {
          if (error instanceof HuginnAPIError) {
             if (error.rawError.errors === undefined) return;
