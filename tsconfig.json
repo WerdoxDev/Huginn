@@ -26,6 +26,14 @@
          "@shared": ["../huginn-shared/lib"]
       }
    },
-   "include": ["src", "types.d.ts", "auto-imports.d.ts"],
+   "include": [
+      "src",
+      "types.d.ts",
+      "auto-imports.d.ts",
+      "eslint.config.js",
+      "vite.config.ts",
+      "tailwind.config.js",
+      "postcss.config.js"
+   ],
    "references": [{ "path": "./tsconfig.node.json" }, { "path": "../huginn-api" }, { "path": "../huginn-shared" }]
 }

@@ -41,7 +41,6 @@ export default function AuthBackgroundSvg() {
          animate("g:nth-of-type(1) path", path1.initial);
          animate("g:nth-of-type(2) path", path2.initial);
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [state]);
 
    return (

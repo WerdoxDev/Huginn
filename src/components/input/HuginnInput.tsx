@@ -1,5 +1,5 @@
 import { snowflake } from "@shared/snowflake";
-import { ReactNode, createContext, useContext, useEffect, useMemo, useRef } from "react";
+import { ReactNode, createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useInputBorder } from "../../hooks/useInputBorder";
 import { filterChildrenOfType } from "../../lib/utils";
 
@@ -13,7 +13,7 @@ export default function HuginnInput(props: HuginnInputProps) {
    const inputRef = useRef<HTMLInputElement>(null);
    // console.log(props.state);
    const { hasBorder, borderColor } = useInputBorder(props.status);
-   const id = snowflake.generate();
+   const [id, _setId] = useState(() => snowflake.generate());
 
    const filteredChildren = useMemo(() => {
       return {
@@ -25,7 +25,7 @@ export default function HuginnInput(props: HuginnInputProps) {
 
    useEffect(() => {
       if (inputRef.current) {
-         inputRef.current.value = props.value || "";
+         inputRef.current.value = props.value ?? "";
       }
    }, [props.value]);
 
@@ -38,7 +38,7 @@ export default function HuginnInput(props: HuginnInputProps) {
                   id={id}
                   ref={inputRef}
                   className="flex-grow bg-transparent p-2.5 text-white outline-none"
-                  type={props.type || "text"}
+                  type={props.type ?? "text"}
                   autoComplete="new-password"
                   placeholder=""
                   onChange={(e) => props.onChange && props.onChange(e.target)}

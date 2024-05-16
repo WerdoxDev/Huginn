@@ -14,7 +14,7 @@ export function useInputs(inputsOptions: InputOptions[]) {
    const newInputsProps: InputProps = {};
 
    for (const x of inputsOptions) {
-      newValues[x.name] = { value: x.default || "", required: x.required };
+      newValues[x.name] = { value: x.default ?? "", required: x.required };
       newStatuses[x.name] = { code: "none", text: "" };
 
       newInputsProps[x.name] = {

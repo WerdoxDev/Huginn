@@ -7,7 +7,7 @@ export default function useUniqueUsernameMessage() {
    const defaultMessage = "Please only use numbers, letters, _";
    const [message, setMessage] = useState<MessageDetail>({ text: defaultMessage, status: "default", visible: false });
 
-   const usernameTimeout = useRef<number>();
+   const usernameTimeout = useRef<NodeJS.Timeout>();
    const lastFocus = useRef<boolean>(false);
 
    function set(message: string, state: StatusCode, visible: boolean) {

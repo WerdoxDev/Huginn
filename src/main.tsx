@@ -8,9 +8,9 @@ const router = createRouter({ routeTree, defaultPreload: "intent", defaultPreloa
 
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {
-   interface Register {
+   type Register = {
       router: typeof router;
-   }
+   };
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

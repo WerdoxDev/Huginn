@@ -4,7 +4,7 @@ import { client } from "../lib/api";
 export const Route = createFileRoute("/channel/$channelId")({
    component: Channel,
    loader: async ({ params }) => {
-      return client.channels.get(params.channelId);
+      return await client.channels.get(params.channelId);
    },
    staleTime: 10000,
    preloadStaleTime: 10000,

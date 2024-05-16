@@ -26,7 +26,7 @@ export function getInputsStatusesFromError(statuses: InputStatuses, errors: Hugi
    const newStatuses = { ...statuses };
 
    Object.keys(newStatuses).forEach((x) => {
-      if (((field && x === field) || !field) && errors[x]) {
+      if (((field && x === field) ?? !field) && errors[x]) {
          newStatuses[x] = {
             code: "error",
             text: errors[x]._errors[0].message,
@@ -50,7 +50,7 @@ export function getEmptyStatuses(states: InputStatuses) {
 }
 
 export function checkStatusesHaveErrors(statuses: InputStatuses, exclude?: InputStatuses) {
-   const excludeValues = Object.values(exclude || {});
+   const excludeValues = Object.values(exclude ?? {});
    console.log(statuses);
    return Object.values(statuses).filter((x) => x.code === "error" && !excludeValues.includes(x)).length !== 0;
 }

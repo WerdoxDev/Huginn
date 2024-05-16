@@ -26,7 +26,6 @@ function Login() {
 
    useEffect(() => {
       setState(0);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
    }, []);
 
    async function login() {
@@ -42,8 +41,8 @@ function Login() {
 
          client.gateway.connect();
 
-         localStorage.setItem("access-token", client.tokenHandler.token!);
-         localStorage.setItem("refresh-token", client.tokenHandler.refreshToken!);
+         localStorage.setItem("access-token", client.tokenHandler.token);
+         localStorage.setItem("refresh-token", client.tokenHandler.refreshToken);
 
          setState(1);
          // authBackgroundState.value = 1;
