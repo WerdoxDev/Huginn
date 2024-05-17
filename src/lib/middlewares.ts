@@ -1,7 +1,7 @@
 import { redirect } from "@tanstack/react-router";
 import { router } from "../main";
 import { client, initializeClient } from "./api";
-import { settingsContent, readSettingsFile } from "./appData";
+import { readSettingsFile, settingsContent } from "./appData";
 
 export async function setup() {
    if (window.__TAURI__) {
@@ -39,16 +39,14 @@ export async function setup() {
    }
 }
 
-export async function requireAuth() {
+export function requireAuth() {
    if (!client.isLoggedIn) {
       throw redirect({ to: "/login" });
-      // return router.navigate({ to: "/login" });
    }
 }
 
-export async function requireNotAuth() {
+export function requireNotAuth() {
    if (client.isLoggedIn) {
       throw redirect({ to: "/channels/@me" });
-      return router.navigate({ to: "/channels/@me" });
    }
 }

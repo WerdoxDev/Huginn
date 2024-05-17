@@ -13,10 +13,12 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as LayoutAuthImport } from './routes/_layoutAuth'
-import { Route as ChannelsChannelIdImport } from './routes/channels.$channelId'
-import { Route as LayoutAuthRegisterImport } from './routes/_layoutAuth/register'
-import { Route as LayoutAuthLoginImport } from './routes/_layoutAuth/login'
+import { Route as LayoutAnimationImport } from './routes/_layoutAnimation'
+import { Route as LayoutAnimationLayoutMainImport } from './routes/_layoutAnimation/_layoutMain'
+import { Route as LayoutAnimationLayoutAuthImport } from './routes/_layoutAnimation/_layoutAuth'
+import { Route as LayoutAnimationLayoutAuthRegisterImport } from './routes/_layoutAnimation/_layoutAuth/register'
+import { Route as LayoutAnimationLayoutAuthLoginImport } from './routes/_layoutAnimation/_layoutAuth/login'
+import { Route as LayoutAnimationLayoutMainChannelsChannelIdImport } from './routes/_layoutAnimation/_layoutMain/channels.$channelId'
 
 // Create Virtual Routes
 
@@ -24,8 +26,8 @@ const IndexLazyImport = createFileRoute('/')()
 
 // Create/Update Routes
 
-const LayoutAuthRoute = LayoutAuthImport.update({
-  id: '/_layoutAuth',
+const LayoutAnimationRoute = LayoutAnimationImport.update({
+  id: '/_layoutAnimation',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -34,20 +36,33 @@ const IndexLazyRoute = IndexLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
 
-const ChannelsChannelIdRoute = ChannelsChannelIdImport.update({
-  path: '/channels/$channelId',
-  getParentRoute: () => rootRoute,
+const LayoutAnimationLayoutMainRoute = LayoutAnimationLayoutMainImport.update({
+  id: '/_layoutMain',
+  getParentRoute: () => LayoutAnimationRoute,
 } as any)
 
-const LayoutAuthRegisterRoute = LayoutAuthRegisterImport.update({
-  path: '/register',
-  getParentRoute: () => LayoutAuthRoute,
+const LayoutAnimationLayoutAuthRoute = LayoutAnimationLayoutAuthImport.update({
+  id: '/_layoutAuth',
+  getParentRoute: () => LayoutAnimationRoute,
 } as any)
 
-const LayoutAuthLoginRoute = LayoutAuthLoginImport.update({
-  path: '/login',
-  getParentRoute: () => LayoutAuthRoute,
-} as any)
+const LayoutAnimationLayoutAuthRegisterRoute =
+  LayoutAnimationLayoutAuthRegisterImport.update({
+    path: '/register',
+    getParentRoute: () => LayoutAnimationLayoutAuthRoute,
+  } as any)
+
+const LayoutAnimationLayoutAuthLoginRoute =
+  LayoutAnimationLayoutAuthLoginImport.update({
+    path: '/login',
+    getParentRoute: () => LayoutAnimationLayoutAuthRoute,
+  } as any)
+
+const LayoutAnimationLayoutMainChannelsChannelIdRoute =
+  LayoutAnimationLayoutMainChannelsChannelIdImport.update({
+    path: '/channels/$channelId',
+    getParentRoute: () => LayoutAnimationLayoutMainRoute,
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -60,33 +75,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexLazyImport
       parentRoute: typeof rootRoute
     }
-    '/_layoutAuth': {
-      id: '/_layoutAuth'
+    '/_layoutAnimation': {
+      id: '/_layoutAnimation'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof LayoutAuthImport
+      preLoaderRoute: typeof LayoutAnimationImport
       parentRoute: typeof rootRoute
     }
-    '/_layoutAuth/login': {
-      id: '/_layoutAuth/login'
+    '/_layoutAnimation/_layoutAuth': {
+      id: '/_layoutAnimation/_layoutAuth'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof LayoutAnimationLayoutAuthImport
+      parentRoute: typeof LayoutAnimationImport
+    }
+    '/_layoutAnimation/_layoutMain': {
+      id: '/_layoutAnimation/_layoutMain'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof LayoutAnimationLayoutMainImport
+      parentRoute: typeof LayoutAnimationImport
+    }
+    '/_layoutAnimation/_layoutAuth/login': {
+      id: '/_layoutAnimation/_layoutAuth/login'
       path: '/login'
       fullPath: '/login'
-      preLoaderRoute: typeof LayoutAuthLoginImport
-      parentRoute: typeof LayoutAuthImport
+      preLoaderRoute: typeof LayoutAnimationLayoutAuthLoginImport
+      parentRoute: typeof LayoutAnimationLayoutAuthImport
     }
-    '/_layoutAuth/register': {
-      id: '/_layoutAuth/register'
+    '/_layoutAnimation/_layoutAuth/register': {
+      id: '/_layoutAnimation/_layoutAuth/register'
       path: '/register'
       fullPath: '/register'
-      preLoaderRoute: typeof LayoutAuthRegisterImport
-      parentRoute: typeof LayoutAuthImport
+      preLoaderRoute: typeof LayoutAnimationLayoutAuthRegisterImport
+      parentRoute: typeof LayoutAnimationLayoutAuthImport
     }
-    '/channels/$channelId': {
-      id: '/channels/$channelId'
+    '/_layoutAnimation/_layoutMain/channels/$channelId': {
+      id: '/_layoutAnimation/_layoutMain/channels/$channelId'
       path: '/channels/$channelId'
       fullPath: '/channels/$channelId'
-      preLoaderRoute: typeof ChannelsChannelIdImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof LayoutAnimationLayoutMainChannelsChannelIdImport
+      parentRoute: typeof LayoutAnimationLayoutMainImport
     }
   }
 }
@@ -95,11 +124,15 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren({
   IndexLazyRoute,
-  LayoutAuthRoute: LayoutAuthRoute.addChildren({
-    LayoutAuthLoginRoute,
-    LayoutAuthRegisterRoute,
+  LayoutAnimationRoute: LayoutAnimationRoute.addChildren({
+    LayoutAnimationLayoutAuthRoute: LayoutAnimationLayoutAuthRoute.addChildren({
+      LayoutAnimationLayoutAuthLoginRoute,
+      LayoutAnimationLayoutAuthRegisterRoute,
+    }),
+    LayoutAnimationLayoutMainRoute: LayoutAnimationLayoutMainRoute.addChildren({
+      LayoutAnimationLayoutMainChannelsChannelIdRoute,
+    }),
   }),
-  ChannelsChannelIdRoute,
 })
 
 /* prettier-ignore-end */

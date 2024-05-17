@@ -1,21 +1,21 @@
 import { HuginnAPIError } from "@api/index";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useContext, useEffect, useRef, useState } from "react";
-import AnimatedMessage from "../../components/AnimatedMessage";
-import AuthWrapper from "../../components/AuthWrapper";
-import LinkButton from "../../components/button/LinkButton";
-import LoadingButton from "../../components/button/LoadingButton";
-import HuginnInput from "../../components/input/HuginnInput";
-import PasswordInput from "../../components/input/PasswordInput";
-import { AuthBackgroundContext } from "../../contexts/authBackgroundContext";
-import { useInputs } from "../../hooks/useInputs";
-import useUniqueUsernameMessage from "../../hooks/useUniqueUsernameMessage";
-import { client } from "../../lib/api";
-import { requireNotAuth } from "../../lib/middlewares";
+import AnimatedMessage from "../../../components/AnimatedMessage";
+import AuthWrapper from "../../../components/AuthWrapper";
+import LinkButton from "../../../components/button/LinkButton";
+import LoadingButton from "../../../components/button/LoadingButton";
+import HuginnInput from "../../../components/input/HuginnInput";
+import PasswordInput from "../../../components/input/PasswordInput";
+import { AuthBackgroundContext } from "../../../contexts/authBackgroundContext";
+import { useInputs } from "../../../hooks/useInputs";
+import useUniqueUsernameMessage from "../../../hooks/useUniqueUsernameMessage";
+import { client } from "../../../lib/api";
+import { requireNotAuth } from "../../../lib/middlewares";
 
-export const Route = createFileRoute("/_layoutAuth/register")({
-   async beforeLoad() {
-      await requireNotAuth();
+export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/register")({
+   beforeLoad() {
+      requireNotAuth();
    },
    component: Register,
 });

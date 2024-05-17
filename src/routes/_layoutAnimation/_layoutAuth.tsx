@@ -1,11 +1,11 @@
 import { createFileRoute, useMatch, useMatches } from "@tanstack/react-router";
 import { AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
-import AnimatedOutlet from "../components/AnimaredOutlet";
-import AuthBackgroundSvg from "../components/AuthBackgroundSvg";
-import { AuthBackgroundContext } from "../contexts/authBackgroundContext";
+import AnimatedOutlet from "../../components/AnimaredOutlet";
+import AuthBackgroundSvg from "../../components/AuthBackgroundSvg";
+import { AuthBackgroundContext } from "../../contexts/authBackgroundContext";
 
-export const Route = createFileRoute("/_layoutAuth")({
+export const Route = createFileRoute("/_layoutAnimation/_layoutAuth")({
    component: LayoutAuth,
 });
 
@@ -34,15 +34,16 @@ function LayoutAuth() {
                   <span className="loader__dot">.</span>
                </div>
             </div>
-            <AnimatePresence mode="sync">
+            <AnimatePresence mode="sync" initial>
                <AnimatedOutlet
                   initial={{ y: -120, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: -120, opacity: 0 }}
-                  transition={{ duration: 2, ease: "circInOut" }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
                   key={nextMatch.id}
                />
             </AnimatePresence>
+
             {/* <Transition appear name="fade">
             <button
                v-if="backgroundState !== 2"

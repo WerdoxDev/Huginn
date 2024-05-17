@@ -1,19 +1,19 @@
 import { HuginnAPIError } from "@api/index";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useContext, useEffect, useState } from "react";
-import AuthWrapper from "../../components/AuthWrapper";
-import LinkButton from "../../components/button/LinkButton";
-import LoadingButton from "../../components/button/LoadingButton";
-import HuginnInput from "../../components/input/HuginnInput";
-import PasswordInput from "../../components/input/PasswordInput";
-import { AuthBackgroundContext } from "../../contexts/authBackgroundContext";
-import { useInputs } from "../../hooks/useInputs";
-import { client } from "../../lib/api";
-import { requireNotAuth } from "../../lib/middlewares";
+import AuthWrapper from "../../../components/AuthWrapper";
+import LinkButton from "../../../components/button/LinkButton";
+import LoadingButton from "../../../components/button/LoadingButton";
+import HuginnInput from "../../../components/input/HuginnInput";
+import PasswordInput from "../../../components/input/PasswordInput";
+import { AuthBackgroundContext } from "../../../contexts/authBackgroundContext";
+import { useInputs } from "../../../hooks/useInputs";
+import { client } from "../../../lib/api";
+import { requireNotAuth } from "../../../lib/middlewares";
 
-export const Route = createFileRoute("/_layoutAuth/login")({
-   async beforeLoad() {
-      await requireNotAuth();
+export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/login")({
+   beforeLoad() {
+      requireNotAuth();
    },
    component: Login,
 });
@@ -47,7 +47,7 @@ function Login() {
          client.gateway.connect();
 
          localStorage.setItem("access-token", client.tokenHandler.token!);
-         localStorage.setItem("refresh-token", client.tokenHandler.refreshToken!);
+         // localStorage.setItem("refresh-token", client.tokenHandler.refreshToken!);
 
          setAuthBackgroundState(1);
          setHidden(true);
