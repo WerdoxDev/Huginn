@@ -13,7 +13,7 @@ import { requireNotAuth } from "../../../lib/middlewares";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/login")({
    beforeLoad() {
-      requireNotAuth();
+      // requireNotAuth();
    },
    component: Login,
 });
@@ -30,6 +30,7 @@ function Login() {
    const navigate = useNavigate({ from: "/login" });
 
    useEffect(() => {
+      console.log("mound");
       setAuthBackgroundState(0);
    }, []);
 
@@ -46,13 +47,19 @@ function Login() {
 
          client.gateway.connect();
 
+         await new Promise((resolve) => {
+            setTimeout(() => {
+               resolve(true);
+            }, 1000);
+         });
+
          localStorage.setItem("access-token", client.tokenHandler.token!);
          // localStorage.setItem("refresh-token", client.tokenHandler.refreshToken!);
 
          setAuthBackgroundState(1);
          setHidden(true);
 
-         navigate({ to: "/channels/@me" });
+         await navigate({ to: "/channels/@me" });
       } catch (error) {
          if (error instanceof HuginnAPIError) {
             if (error.rawError.errors === undefined) return;

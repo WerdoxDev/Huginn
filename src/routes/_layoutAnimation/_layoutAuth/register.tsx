@@ -15,7 +15,7 @@ import { requireNotAuth } from "../../../lib/middlewares";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/register")({
    beforeLoad() {
-      requireNotAuth();
+      // requireNotAuth();
    },
    component: Register,
 });

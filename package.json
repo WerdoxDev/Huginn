@@ -10,9 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-spring/web": "^9.7.3",
     "@tanstack/react-router": "^1.32.5",
     "@tauri-apps/api": "^1.5.5",
-    "framer-motion": "^11.2.2",
     "lodash.clonedeep": "^4.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

@@ -1,9 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { requireAuth } from "../../../lib/middlewares";
+import { useContext, useEffect } from "react";
+import { AuthBackgroundContext } from "../../../contexts/authBackgroundContext";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/channels/$channelId")({
-   beforeLoad() {
-      requireAuth();
+   async beforeLoad() {
+      // requireAuth();
+      await new Promise((resolve) => {
+         setTimeout(() => {
+            resolve(true);
+         }, 1000);
+      });
    },
    component: Channel,
    // loader: async ({ params }) => {
@@ -16,7 +23,11 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutMain/channels/$ch
 function Channel() {
    // const data = useLoaderData({ from: "/channel/$channelId" });
    // const { data, isLoading, error } = useSWR(`/channels/${channelId}`, (key) => fetcher(key, channelId));
+   const { setState: setBackgroundState } = useContext(AuthBackgroundContext);
 
+   useEffect(() => {
+      setBackgroundState(2);
+   }, []);
    // if (isLoading) return <div>LOADING...</div>;
    // if (error) {
    //    console.log(error);

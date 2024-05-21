@@ -1,10 +1,11 @@
-import { Link, Outlet, createRootRoute } from "@tanstack/react-router";
+import { Link, Outlet, createRootRoute, useRouter } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import "@tauri-apps/api";
 import { useEffect, useState } from "react";
 import { WindowContext } from "../contexts/windowContext";
 import useAppMaximized from "../hooks/useAppMaximized";
 import { setup } from "../lib/middlewares";
+import { AnimatedRouteContext } from "../contexts/AnimatedRouteContext";
 
 export const Route = createRootRoute({
    async beforeLoad() {
@@ -14,7 +15,9 @@ export const Route = createRootRoute({
 });
 
 function Root() {
+   const router = useRouter();
    const [isMaximized, setMaximized] = useState(false);
+   const [context, setContext] = useState(() => router);
 
    return (
       <WindowContext.Provider value={{ maximized: { isMaximized: isMaximized, setMaximized: setMaximized } }}>
@@ -23,7 +26,10 @@ function Root() {
             Channels
          </Link>
          <Link to="/login">Login</Link>
-         <Outlet />
+         <Link to="/register">Register</Link>
+         <AnimatedRouteContext.Provider value={{ context, setContext }}>
+            <Outlet />
+         </AnimatedRouteContext.Provider>
          <TanStackRouterDevtools />
          {window.__TAURI__ && <AppMaximizedEvent />}
       </WindowContext.Provider>
