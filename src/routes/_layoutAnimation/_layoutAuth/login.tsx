@@ -89,7 +89,7 @@ function Login() {
 
             <div className="mt-3 flex select-none items-center">
                <span className="text-sm text-text opacity-70"> Don't have an account? </span>
-               <LinkButton to="/register" className="ml-1">
+               <LinkButton to="/register" className="ml-1" preload={false}>
                   Register
                </LinkButton>
             </div>

@@ -1,10 +1,16 @@
 import { Link } from "@tanstack/react-router";
 import { ReactNode } from "react";
 
-export default function LinkButton(props: { className?: string; to?: string; children?: ReactNode; onClick?: () => void }) {
+export default function LinkButton(props: {
+   className?: string;
+   to?: string;
+   preload?: false | "intent";
+   children?: ReactNode;
+   onClick?: () => void;
+}) {
    return props.to ? (
       <div className={`w-max select-none text-sm text-link ${props.className}`}>
-         <Link className="hover:underline" to={props.to}>
+         <Link className="hover:underline" to={props.to} preload={props.preload}>
             {props.children}
          </Link>
       </div>
