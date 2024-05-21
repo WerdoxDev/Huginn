@@ -4,13 +4,13 @@ import { useContext, useEffect } from "react";
 import { AuthBackgroundContext } from "../../../contexts/authBackgroundContext";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/channels/$channelId")({
-   async beforeLoad() {
-      // requireAuth();
-      await new Promise((resolve) => {
-         setTimeout(() => {
-            resolve(true);
-         }, 1000);
-      });
+   beforeLoad() {
+      requireAuth();
+      // await new Promise((resolve) => {
+      //    setTimeout(() => {
+      //       resolve(true);
+      //    }, 1000);
+      // });
    },
    component: Channel,
    // loader: async ({ params }) => {

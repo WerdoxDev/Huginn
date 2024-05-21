@@ -2,7 +2,7 @@ import { HTMLInputTypeAttribute, useMemo, useState } from "react";
 import HuginnInput from "./HuginnInput";
 
 export default function PasswordInput(props: HuginnInputProps) {
-   const [type, setType] = useState<HTMLInputTypeAttribute>();
+   const [type, setType] = useState<HTMLInputTypeAttribute>(() => "password");
 
    const hidden = useMemo(() => type === "password", [type]);
 

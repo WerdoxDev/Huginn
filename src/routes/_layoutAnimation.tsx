@@ -1,6 +1,6 @@
 import { useTransition } from "@react-spring/web";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import AnimatedOutlet from "../components/AnimatedOutlet";
 import { AuthBackgroundContext } from "../contexts/authBackgroundContext";
 
@@ -17,7 +17,7 @@ function LayoutAnimation() {
       from: { dummy: 0 },
       enter: { dummy: 1 },
       leave: { dummy: 0 },
-      config: { duration: 2000 },
+      config: { duration: 500 },
    });
 
    function getState() {
@@ -29,7 +29,6 @@ function LayoutAnimation() {
 
    useEffect(() => {
       setId(getState());
-      console.log("Transition");
    }, [router.state.matches]);
 
    return (
