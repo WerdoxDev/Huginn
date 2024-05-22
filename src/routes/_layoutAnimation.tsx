@@ -1,5 +1,6 @@
 import { useTransition } from "@react-spring/web";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { invoke } from "@tauri-apps/api";
 import { useEffect, useState } from "react";
 import AnimatedOutlet from "../components/AnimatedOutlet";
 import { AuthBackgroundContext } from "../contexts/authBackgroundContext";
@@ -31,27 +32,23 @@ function LayoutAnimation() {
       setId(getState());
    }, [router.state.matches]);
 
-   return (
-      // <div>
-      <>
-         <AuthBackgroundContext.Provider value={{ state: backgroundState, setState: setBackgroundState }}>
-            {transitions((style) => (
-               // <animated.div style={style}>
-               <AnimatedOutlet
-                  updateFor={["/login", "/register"]}
-                  style={style}
-                  test="animation layout"
-                  className={`absolute inset-0 top-6`}
-               />
-               // <Outlet />
-               // </animated.div>
-            ))}
-            {/* <Outlet /> */}
-            {/* <AnimatedOutlet transition={transitions} test="animation layout" /> */}
-         </AuthBackgroundContext.Provider>
-      </>
-      // </div>
-   );
+   useEffect(() => {
+      if (window.__TAURI__) invoke("hide_splashscreen");
+   }, []);
 
-   //  return <Outlet />;
+   return (
+      <AuthBackgroundContext.Provider value={{ state: backgroundState, setState: setBackgroundState }}>
+         {transitions((style) => (
+            <AnimatedOutlet
+               updateFor={["/login", "/register"]}
+               style={style}
+               test="animation layout"
+               className={`absolute inset-0 top-6`}
+            />
+            // <div className="absolute inset-0 top-6">
+            //    <Outlet />
+            // </div>
+         ))}
+      </AuthBackgroundContext.Provider>
+   );
 }

@@ -1,4 +1,5 @@
-import { Link, Outlet, createRootRoute, useRouter } from "@tanstack/react-router";
+import { QueryClient } from "@tanstack/react-query";
+import { Link, Outlet, createRootRouteWithContext, useRouter } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import "@tauri-apps/api";
 import { useEffect, useRef, useState } from "react";
@@ -6,8 +7,13 @@ import { HistoryContext } from "../contexts/historyContext";
 import { WindowContext } from "../contexts/windowContext";
 import useAppMaximized from "../hooks/useAppMaximized";
 import { setup } from "../lib/middlewares";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-export const Route = createRootRoute({
+type RouterContext = {
+   queryClient: QueryClient;
+};
+
+export const Route = createRootRouteWithContext<RouterContext>()({
    async beforeLoad() {
       await setup();
    },
@@ -21,7 +27,6 @@ function Root() {
 
    useEffect(() => {
       router.subscribe("onBeforeLoad", (arg) => {
-         console.log("before");
          lastPathname.current = arg.fromLocation.pathname;
       });
    }, []);
@@ -33,9 +38,13 @@ function Root() {
             <Link to="/channels/$channelId" params={{ channelId: "177812771176452101" }}>
                Channels
             </Link>
+            <Link to="/channels/$channelId" params={{ channelId: "@me" }}>
+               ChannelsME
+            </Link>
             <Link to="/login">Login</Link>
             <Link to="/register">Register</Link>
             <Outlet />
+            <ReactQueryDevtools initialIsOpen={false} />
             <TanStackRouterDevtools />
             {window.__TAURI__ && <AppMaximizedEvent />}
          </HistoryContext.Provider>

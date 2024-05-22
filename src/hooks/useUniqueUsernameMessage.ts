@@ -1,14 +1,24 @@
 import { constants } from "@shared/constants";
 import { Field } from "@shared/errors";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { client } from "../lib/api";
 
-export default function useUniqueUsernameMessage() {
+export default function useUniqueUsernameMessage(values: InputValues, usernameField: string) {
    const defaultMessage = "Please only use numbers, letters, _";
    const [message, setMessage] = useState<MessageDetail>({ text: defaultMessage, status: "default", visible: false });
 
    const usernameTimeout = useRef<NodeJS.Timeout>();
    const lastFocus = useRef<boolean>(false);
+   const prevUsername = useRef(values[usernameField].value);
+
+   useEffect(() => {
+      if (prevUsername.current === values[usernameField].value) {
+         return;
+      }
+
+      onChanged(values[usernameField].value);
+      prevUsername.current = values[usernameField].value;
+   }, [values]);
 
    function set(message: string, state: StatusCode, visible: boolean) {
       setMessage({ text: message, status: state, visible });
@@ -57,5 +67,5 @@ export default function useUniqueUsernameMessage() {
       setMessage((prev) => ({ text: prev.text, status: prev.status, visible: prev.status === "error" ? true : isFocused }));
    }
 
-   return { message, onFocusChanged, onChanged };
+   return { message, onFocusChanged };
 }

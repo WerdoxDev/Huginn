@@ -10,15 +10,7 @@ function LayoutMain() {
          <div className="flex h-full w-full select-none bg-background">
             {/* <ChannelNavigation /> */}
             <div className="flex h-full w-full flex-col">
-               <div className="flex h-full">
-                  <div className="flex w-64 shrink-0 flex-col">
-                     {/* <HomeSidebar v-if="isSelfGuild" /> */}
-                     {/* <UserInfo /> */}
-                  </div>
-                  <div className="relative w-full bg-tertiary">
-                     <Outlet />
-                  </div>
-               </div>
+               <Outlet />
             </div>
          </div>
       </div>

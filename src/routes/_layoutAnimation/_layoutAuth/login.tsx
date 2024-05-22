@@ -1,4 +1,6 @@
 import { HuginnAPIError } from "@api/index";
+import { APIPostLoginJSONBody } from "@shared/api-types";
+import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useContext, useEffect, useState } from "react";
 import AuthWrapper from "../../../components/AuthWrapper";
@@ -25,45 +27,47 @@ function Login() {
       { name: "password", required: true, default: "test" },
    ]);
 
-   const [loading, setLoading] = useState(false);
    const [hidden, setHidden] = useState(false);
    const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
    const navigate = useNavigate({ from: "/login" });
 
-   useEffect(() => {
-      setAuthBackgroundState(0);
-   }, []);
-
-   async function login() {
-      setLoading(true);
-      resetStatuses();
-
-      try {
+   const mutation = useMutation({
+      async mutationFn(credentials: APIPostLoginJSONBody) {
          await client.login({
-            username: values.login.value,
-            email: values.login.value,
-            password: values.password.value,
+            username: credentials.username,
+            email: credentials.email,
+            password: credentials.password,
          });
 
          client.gateway.connect();
-
-         localStorage.setItem("access-token", client.tokenHandler.token!);
-         // localStorage.setItem("refresh-token", client.tokenHandler.refreshToken!);
-
-         setAuthBackgroundState(1);
-         setHidden(true);
-
-         await navigate({ to: "/channels/@me" });
-      } catch (error) {
+      },
+      onError(error) {
          if (error instanceof HuginnAPIError) {
             if (error.rawError.errors === undefined) return;
             handleErrors(error.rawError.errors);
          } else {
             // handleServerError(error);
          }
-      } finally {
-         setLoading(false);
-      }
+      },
+      async onSuccess() {
+         setAuthBackgroundState(1);
+         setHidden(true);
+
+         await navigate({ to: "/channels/@me" });
+
+         localStorage.setItem("access-token", client.tokenHandler.token!);
+         localStorage.setItem("refresh-token", client.tokenHandler.refreshToken!);
+      },
+   });
+
+   useEffect(() => {
+      setAuthBackgroundState(0);
+   }, []);
+
+   async function login() {
+      await mutation.mutateAsync({ username: values.login.value, email: values.login.value, password: values.password.value });
+
+      resetStatuses();
    }
 
    return (
@@ -83,7 +87,7 @@ function Login() {
 
             <LinkButton className="mb-5 mt-1">Forgot your password?</LinkButton>
 
-            <LoadingButton loading={loading} className="h-11 w-full bg-primary" type="submit">
+            <LoadingButton loading={!mutation.isIdle && mutation.isPending} className="h-11 w-full bg-primary" type="submit">
                Log In
             </LoadingButton>
 

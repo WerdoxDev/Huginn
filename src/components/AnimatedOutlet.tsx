@@ -24,6 +24,13 @@ export default function AnimatedOutlet(props: {
          (!history.lastPathname || props.updateFor?.includes(history.lastPathname))
       ) {
          renderedContext.current = cloneDeep(router);
+      } else if (
+         props.updateFor &&
+         !props.updateFor?.includes(router.state.location.pathname) &&
+         history.lastPathname &&
+         !props.updateFor?.includes(history.lastPathname)
+      ) {
+         renderedContext.current = cloneDeep(router);
       }
    }, [router.state.location.pathname]);
 

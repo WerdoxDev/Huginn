@@ -18,7 +18,8 @@ import { Route as LayoutAnimationLayoutMainImport } from './routes/_layoutAnimat
 import { Route as LayoutAnimationLayoutAuthImport } from './routes/_layoutAnimation/_layoutAuth'
 import { Route as LayoutAnimationLayoutAuthRegisterImport } from './routes/_layoutAnimation/_layoutAuth/register'
 import { Route as LayoutAnimationLayoutAuthLoginImport } from './routes/_layoutAnimation/_layoutAuth/login'
-import { Route as LayoutAnimationLayoutMainChannelsChannelIdImport } from './routes/_layoutAnimation/_layoutMain/channels.$channelId'
+import { Route as LayoutAnimationLayoutMainChannelsGuildIdImport } from './routes/_layoutAnimation/_layoutMain/channels.$guildId'
+import { Route as LayoutAnimationLayoutMainChannelsGuildIdChannelIdImport } from './routes/_layoutAnimation/_layoutMain/channels.$guildId.$channelId'
 
 // Create Virtual Routes
 
@@ -58,10 +59,16 @@ const LayoutAnimationLayoutAuthLoginRoute =
     getParentRoute: () => LayoutAnimationLayoutAuthRoute,
   } as any)
 
-const LayoutAnimationLayoutMainChannelsChannelIdRoute =
-  LayoutAnimationLayoutMainChannelsChannelIdImport.update({
-    path: '/channels/$channelId',
+const LayoutAnimationLayoutMainChannelsGuildIdRoute =
+  LayoutAnimationLayoutMainChannelsGuildIdImport.update({
+    path: '/channels/$guildId',
     getParentRoute: () => LayoutAnimationLayoutMainRoute,
+  } as any)
+
+const LayoutAnimationLayoutMainChannelsGuildIdChannelIdRoute =
+  LayoutAnimationLayoutMainChannelsGuildIdChannelIdImport.update({
+    path: '/$channelId',
+    getParentRoute: () => LayoutAnimationLayoutMainChannelsGuildIdRoute,
   } as any)
 
 // Populate the FileRoutesByPath interface
@@ -110,12 +117,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAnimationLayoutAuthRegisterImport
       parentRoute: typeof LayoutAnimationLayoutAuthImport
     }
-    '/_layoutAnimation/_layoutMain/channels/$channelId': {
-      id: '/_layoutAnimation/_layoutMain/channels/$channelId'
-      path: '/channels/$channelId'
-      fullPath: '/channels/$channelId'
-      preLoaderRoute: typeof LayoutAnimationLayoutMainChannelsChannelIdImport
+    '/_layoutAnimation/_layoutMain/channels/$guildId': {
+      id: '/_layoutAnimation/_layoutMain/channels/$guildId'
+      path: '/channels/$guildId'
+      fullPath: '/channels/$guildId'
+      preLoaderRoute: typeof LayoutAnimationLayoutMainChannelsGuildIdImport
       parentRoute: typeof LayoutAnimationLayoutMainImport
+    }
+    '/_layoutAnimation/_layoutMain/channels/$guildId/$channelId': {
+      id: '/_layoutAnimation/_layoutMain/channels/$guildId/$channelId'
+      path: '/$channelId'
+      fullPath: '/channels/$guildId/$channelId'
+      preLoaderRoute: typeof LayoutAnimationLayoutMainChannelsGuildIdChannelIdImport
+      parentRoute: typeof LayoutAnimationLayoutMainChannelsGuildIdImport
     }
   }
 }
@@ -130,7 +144,10 @@ export const routeTree = rootRoute.addChildren({
       LayoutAnimationLayoutAuthRegisterRoute,
     }),
     LayoutAnimationLayoutMainRoute: LayoutAnimationLayoutMainRoute.addChildren({
-      LayoutAnimationLayoutMainChannelsChannelIdRoute,
+      LayoutAnimationLayoutMainChannelsGuildIdRoute:
+        LayoutAnimationLayoutMainChannelsGuildIdRoute.addChildren({
+          LayoutAnimationLayoutMainChannelsGuildIdChannelIdRoute,
+        }),
     }),
   }),
 })

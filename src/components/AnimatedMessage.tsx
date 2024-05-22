@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-export default function AnimatedMessage(props: { className?: string; status: StatusCode; visible: boolean; message: string }) {
+export default function AnimatedMessage(props: { className?: string; status: StatusCode; visible: boolean; text: string }) {
    const text = useRef<HTMLDivElement>(null);
    const [scrollHeight, setScrollHeight] = useState<number | undefined>(text.current?.scrollHeight);
 
@@ -16,12 +16,12 @@ export default function AnimatedMessage(props: { className?: string; status: Sta
 
    useEffect(() => {
       setScrollHeight(text.current?.scrollHeight);
-   }, [props.message]);
+   }, [props.text]);
 
    return (
       <div className={`select-none transition-[height] ${props.className}`} style={{ height: props.visible ? maxHeight : "0px" }}>
          <div ref={text} className={`transition-opacity ${props.visible ? "opacity-90" : "opacity-0"} ${textColor}`}>
-            {props.message}
+            {props.text}
          </div>
       </div>
    );

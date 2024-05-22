@@ -28,7 +28,7 @@ export async function setup() {
       if (refreshToken) {
          await client.initializeWithToken({ refreshToken });
          client.gateway.connect();
-         throw redirect({ to: "/channels/@me" });
+         // throw redirect({ to: "/channels/@me" });
       }
       if (router.history.location.pathname === "/") {
          throw redirect({ to: "/login" });

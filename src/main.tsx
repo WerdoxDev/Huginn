@@ -3,8 +3,17 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import { routeTree } from "./routeTree.gen";
 import React from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-export const router = createRouter({ routeTree, defaultPreload: "intent", defaultPreloadDelay: 100 });
+const queryClient = new QueryClient();
+
+export const router = createRouter({
+   routeTree,
+   defaultPreload: "intent",
+   defaultPreloadDelay: 200,
+   defaultPreloadStaleTime: 0,
+   context: { queryClient },
+});
 
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {
@@ -18,7 +27,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
    <div className="flex h-full flex-col overflow-hidden">
       <div className="relative h-full w-full">
          <React.StrictMode>
-            <RouterProvider router={router} />
+            <QueryClientProvider client={queryClient}>
+               <RouterProvider router={router} />
+            </QueryClientProvider>
          </React.StrictMode>
       </div>
    </div>,
