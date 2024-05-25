@@ -79,8 +79,8 @@ declare global {
    type SettingsTab = {
       name: string;
       text: string;
-      icon?: string;
-      // component?: Component;
-      isGroup: boolean;
+      children?: SettingsTab[];
+      icon?: ReactNode;
+      component?: (props: { settings: AppSettings; onChange?: (value: AppSettings) => void }) => JSX.Element;
    };
 }

@@ -51,7 +51,6 @@ export function getEmptyStatuses(states: InputStatuses) {
 
 export function checkStatusesHaveErrors(statuses: InputStatuses, exclude?: InputStatuses) {
    const excludeValues = Object.values(exclude ?? {});
-   console.log(statuses);
    return Object.values(statuses).filter((x) => x.code === "error" && !excludeValues.includes(x)).length !== 0;
 }
 

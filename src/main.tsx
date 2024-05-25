@@ -23,14 +23,9 @@ declare module "@tanstack/react-router" {
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-   // <div className="flex h-full flex-col overflow-hidden" :class="isMaximized ? 'rounded-none' : 'rounded-lg'">
-   <div className="flex h-full flex-col overflow-hidden">
-      <div className="relative h-full w-full">
-         <React.StrictMode>
-            <QueryClientProvider client={queryClient}>
-               <RouterProvider router={router} />
-            </QueryClientProvider>
-         </React.StrictMode>
-      </div>
-   </div>,
+   <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+         <RouterProvider router={router} />
+      </QueryClientProvider>
+   </React.StrictMode>,
 );

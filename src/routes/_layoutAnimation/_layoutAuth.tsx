@@ -5,6 +5,7 @@ import AnimatedOutlet from "../../components/AnimatedOutlet";
 import AuthBackgroundSvg from "../../components/AuthBackgroundSvg";
 import { AuthBackgroundContext } from "../../contexts/authBackgroundContext";
 import { HistoryContext } from "../../contexts/historyContext";
+import { ModalContext } from "../../contexts/modalContext";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth")({
    component: LayoutAuth,
@@ -21,6 +22,7 @@ function LayoutAuth() {
    });
 
    const history = useContext(HistoryContext);
+   const settingsModal = useContext(ModalContext).settings;
 
    const style = useSpring({
       background: backgroundState === 2 ? "rgba(38,38,38,0)" : "rgba(38,38,38,1)",
@@ -48,6 +50,15 @@ function LayoutAuth() {
             // <Outlet />
             // </animated.div>
          ))}
+         {backgroundState !== 2 && (
+            <button
+               v-if="backgroundState !== 2"
+               className="absolute bottom-2.5 right-2.5 rounded-lg p-1 transition-all hover:bg-background"
+               onClick={() => settingsModal.setIsOpen(true)}
+            >
+               <IconMdiSettings className="h-6 w-6 text-white/80 transition-all hover:rotate-[60deg]" />
+            </button>
+         )}
          {/* <Transition appear name="fade">
             <button
                v-if="backgroundState !== 2"

@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as SplashscreenImport } from './routes/splashscreen'
 import { Route as LayoutAnimationImport } from './routes/_layoutAnimation'
 import { Route as LayoutAnimationLayoutMainImport } from './routes/_layoutAnimation/_layoutMain'
 import { Route as LayoutAnimationLayoutAuthImport } from './routes/_layoutAnimation/_layoutAuth'
@@ -26,6 +27,11 @@ import { Route as LayoutAnimationLayoutMainChannelsGuildIdChannelIdImport } from
 const IndexLazyImport = createFileRoute('/')()
 
 // Create/Update Routes
+
+const SplashscreenRoute = SplashscreenImport.update({
+  path: '/splashscreen',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const LayoutAnimationRoute = LayoutAnimationImport.update({
   id: '/_layoutAnimation',
@@ -89,6 +95,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAnimationImport
       parentRoute: typeof rootRoute
     }
+    '/splashscreen': {
+      id: '/splashscreen'
+      path: '/splashscreen'
+      fullPath: '/splashscreen'
+      preLoaderRoute: typeof SplashscreenImport
+      parentRoute: typeof rootRoute
+    }
     '/_layoutAnimation/_layoutAuth': {
       id: '/_layoutAnimation/_layoutAuth'
       path: ''
@@ -150,6 +163,7 @@ export const routeTree = rootRoute.addChildren({
         }),
     }),
   }),
+  SplashscreenRoute,
 })
 
 /* prettier-ignore-end */
