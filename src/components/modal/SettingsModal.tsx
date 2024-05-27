@@ -10,7 +10,7 @@ import {
    Transition,
    TransitionChild,
 } from "@headlessui/react";
-import { Fragment, useContext, useEffect, useRef, useState } from "react";
+import { Fragment, useContext, useEffect, useMemo, useRef, useState } from "react";
 import SettingsAdvancedTab from "./SettingsAdvanced";
 import { ModalContext } from "../../contexts/modalContext";
 import { readSettingsFile, writeSettingsFile } from "../../lib/appData";
@@ -62,10 +62,12 @@ export default function SettingsModal() {
       setCurrentTab(flatTabs[index].text);
    }
 
+   //TODO: CHECK IF () => IS REQUIRED ON CLICK EVENTS??????????????
    return (
       <Transition show={isOpen}>
-         <Dialog className="relative z-10" onClose={() => setIsOpen(false)}>
+         <Dialog as="div" className={`relative z-10 `} onClose={() => setIsOpen(false)}>
             <TransitionChild
+               as="div"
                enter="duration-150 ease-out"
                enterFrom="opacity-0"
                enterTo="opacity-100"
@@ -86,7 +88,7 @@ export default function SettingsModal() {
                      leaveTo="opacity-0 scale-95"
                   >
                      <DialogPanel className="w-full max-w-2xl transform overflow-hidden rounded-lg bg-background transition-all">
-                        <TabGroup className="flex" vertical defaultIndex={defaultTabIndex} onChange={(i) => onTabChanged(i)}>
+                        <TabGroup className="flex" vertical defaultIndex={defaultTabIndex} onChange={onTabChanged}>
                            <div className="bg-secondary/50">
                               <TabList className="flex w-48 flex-shrink-0 select-none flex-col items-start py-2">
                                  <DialogTitle className="mx-5 mb-3 mt-3 flex items-center justify-start gap-x-1.5">

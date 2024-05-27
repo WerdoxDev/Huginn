@@ -71,7 +71,7 @@ function Login() {
    }
 
    return (
-      <AuthWrapper hidden={hidden} onSubmit={() => login()}>
+      <AuthWrapper hidden={hidden} onSubmit={login}>
          <div className="flex w-full select-none flex-col items-center">
             <h1 className="mb-2 text-2xl font-medium text-text">Welcome back!</h1>
             <div className="text-text/70">It's very good to see you again!</div>
