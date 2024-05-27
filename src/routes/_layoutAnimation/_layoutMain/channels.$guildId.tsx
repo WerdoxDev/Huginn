@@ -4,6 +4,7 @@ import { client } from "../../../lib/api";
 import { useContext, useEffect, useMemo } from "react";
 import HomeSidebar from "../../../components/HomeSidebar";
 import { AuthBackgroundContext } from "../../../contexts/authBackgroundContext";
+import GuildsBar from "../../../components/GuildsBar";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/channels/$guildId")({
    beforeLoad() {
@@ -36,14 +37,19 @@ function Channels() {
    }, []);
 
    return (
-      <div className="flex h-full">
-         <div className="flex w-64 shrink-0 flex-col">
-            {isSelfGuild && <HomeSidebar channels={data} />}
-            {/* <UserInfo /> */}
+      <>
+         <GuildsBar />
+         <div className="flex h-full w-full flex-col">
+            <div className="flex h-full">
+               <div className="flex w-64 shrink-0 flex-col">
+                  {isSelfGuild && <HomeSidebar channels={data} />}
+                  {/* <UserInfo /> */}
+               </div>
+               <div className="relative w-full bg-tertiary">
+                  <Outlet />
+               </div>
+            </div>
          </div>
-         <div className="relative w-full bg-tertiary">
-            <Outlet />
-         </div>
-      </div>
+      </>
    );
 }

@@ -82,7 +82,7 @@ function Register() {
    }
 
    return (
-      <AuthWrapper hidden={hidden} onSubmit={() => register()}>
+      <AuthWrapper hidden={hidden} onSubmit={register}>
          <div className="flex w-full select-none flex-col items-center">
             <h1 className="mb-2 text-2xl font-medium text-text">Welcome to Huginn!</h1>
             <div className="text-text opacity-70">We are very happy to have you here!</div>

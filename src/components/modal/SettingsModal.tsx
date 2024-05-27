@@ -10,11 +10,11 @@ import {
    Transition,
    TransitionChild,
 } from "@headlessui/react";
-import { Fragment, useContext, useEffect, useMemo, useRef, useState } from "react";
-import SettingsAdvancedTab from "./SettingsAdvanced";
+import { Fragment, useContext, useEffect, useRef, useState } from "react";
 import { ModalContext } from "../../contexts/modalContext";
-import { readSettingsFile, writeSettingsFile } from "../../lib/appData";
 import { WindowContext } from "../../contexts/windowContext";
+import { readSettingsFile, writeSettingsFile } from "../../lib/appData";
+import SettingsAdvancedTab from "./SettingsAdvanced";
 
 const tabs: SettingsTab[] = [
    { name: "general", text: "General", children: [{ name: "audio", text: "Audio", icon: <IconMdiSpeakerphone /> }] },

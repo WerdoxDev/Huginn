@@ -16,7 +16,7 @@ export default function PasswordInput(props: HuginnInputProps) {
             <button
                className="flex h-full w-11 select-none items-center justify-center border-l-2 border-l-background text-sm text-text"
                type="button"
-               onClick={() => toggleType()}
+               onClick={toggleType}
             >
                {hidden ? <IconMdiShow className="h-6 w-6" /> : <IconMdiHide className="h-6 w-6" />}
             </button>

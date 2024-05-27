@@ -14,7 +14,7 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
    return (
       <li
          className={`group my-0.5 cursor-pointer rounded-md hover:bg-background active:bg-white active:bg-opacity-10 ${selected && "bg-white bg-opacity-10"}`}
-         onClick={() => props.onSelected && props.onSelected()}
+         onClick={props.onSelected}
       >
          <Link className="flex items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>
             <UserIconWithStatus className="mr-3 bg-tertiary" />

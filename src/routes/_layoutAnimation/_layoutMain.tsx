@@ -8,10 +8,7 @@ function LayoutMain() {
    return (
       <div className="absolute inset-0 overflow-hidden">
          <div className="flex h-full w-full select-none bg-background">
-            {/* <ChannelNavigation /> */}
-            <div className="flex h-full w-full flex-col">
-               <Outlet />
-            </div>
+            <Outlet />
          </div>
       </div>
    );

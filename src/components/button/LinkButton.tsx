@@ -15,11 +15,7 @@ export default function LinkButton(props: {
          </Link>
       </div>
    ) : (
-      <button
-         className="mb-5 mt-1 select-none text-sm text-link hover:underline"
-         type="button"
-         onClick={() => props.onClick && props.onClick()}
-      >
+      <button className="mb-5 mt-1 select-none text-sm text-link hover:underline" type="button" onClick={props.onClick}>
          {props.children}
       </button>
    );

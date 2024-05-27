@@ -32,7 +32,6 @@ function LayoutAuth() {
 
    return (
       <animated.div style={style} className={`absolute inset-0 z-10 ${backgroundState === 2 && "pointer-events-none"}`}>
-         <div className="absolute right-0 text-text">ASD</div>
          <AuthBackgroundSvg />
          <div
             className={`absolute inset-0 select-none transition-all duration-500 ${backgroundState === 1 ? "opacity-100" : "opacity-0"}`}
