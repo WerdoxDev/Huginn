@@ -5,6 +5,7 @@ import { useContext, useEffect, useMemo } from "react";
 import HomeSidebar from "../../../components/HomeSidebar";
 import { AuthBackgroundContext } from "../../../contexts/authBackgroundContext";
 import GuildsBar from "../../../components/GuildsBar";
+import UserInfo from "../../../components/UserInfo";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/channels/$guildId")({
    beforeLoad() {
@@ -43,7 +44,7 @@ function Channels() {
             <div className="flex h-full">
                <div className="flex w-64 shrink-0 flex-col">
                   {isSelfGuild && <HomeSidebar channels={data} />}
-                  {/* <UserInfo /> */}
+                  <UserInfo />
                </div>
                <div className="relative w-full bg-tertiary">
                   <Outlet />

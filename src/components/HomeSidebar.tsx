@@ -1,7 +1,5 @@
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { client } from "../lib/api";
-import DirectMessageChannel from "./DirectMessageChannel";
 import { APIGetUserChannelsResult } from "@shared/api-types";
+import DirectMessageChannel from "./DirectMessageChannel";
 import RingLinkButton from "./button/RingLinkButton";
 
 export default function HomeSidebar(props: { channels?: APIGetUserChannelsResult }) {
