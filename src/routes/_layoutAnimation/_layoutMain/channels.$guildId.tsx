@@ -44,7 +44,7 @@ function Channels() {
             <div className="flex h-full">
                <div className="flex w-64 shrink-0 flex-col">
                   {isSelfGuild && <HomeSidebar channels={data} />}
-                  <UserInfo />
+                  {client.user && <UserInfo user={client.user} />}
                </div>
                <div className="relative w-full bg-tertiary">
                   <Outlet />

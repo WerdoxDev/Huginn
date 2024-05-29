@@ -4,6 +4,7 @@ import "./index.css";
 import { routeTree } from "./routeTree.gen";
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { WindowProvider } from "./contexts/windowContext";
 
 const queryClient = new QueryClient();
 
@@ -25,7 +26,9 @@ declare module "@tanstack/react-router" {
 ReactDOM.createRoot(document.getElementById("root")!).render(
    <React.StrictMode>
       <QueryClientProvider client={queryClient}>
-         <RouterProvider router={router} />
+         <WindowProvider>
+            <RouterProvider router={router} />
+         </WindowProvider>
       </QueryClientProvider>
    </React.StrictMode>,
 );

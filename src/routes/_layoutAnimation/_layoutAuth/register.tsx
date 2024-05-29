@@ -14,6 +14,7 @@ import { useInputs } from "../../../hooks/useInputs";
 import useUniqueUsernameMessage from "../../../hooks/useUniqueUsernameMessage";
 import { client } from "../../../lib/api";
 import { requireNotAuth } from "../../../lib/middlewares";
+import { useServerErrorHandler } from "../../../hooks/useServerErrorHandler";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/register")({
    beforeLoad() {
@@ -33,6 +34,7 @@ function Register() {
    const [hidden, setHidden] = useState(false);
    const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
    const { message: usernameMessageDetail, onFocusChanged } = useUniqueUsernameMessage(values, "username");
+   const handleServerError = useServerErrorHandler();
    const navigate = useNavigate({ from: "/register" });
 
    const mutation = useMutation({
@@ -51,7 +53,7 @@ function Register() {
             if (error.rawError.errors === undefined) return;
             handleErrors(error.rawError.errors);
          } else {
-            // handleServerError(error);
+            handleServerError(error);
          }
       },
       async onSuccess() {

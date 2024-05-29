@@ -6,6 +6,7 @@
 export {}
 declare global {
   const IconFa6SolidCrow: typeof import('~icons/fa6-solid/crow.jsx')['default']
+  const IconLineMdAlert: typeof import('~icons/line-md/alert.jsx')['default']
   const IconMdiCamera: typeof import('~icons/mdi/camera.jsx')['default']
   const IconMdiClose: typeof import('~icons/mdi/close.jsx')['default']
   const IconMdiHide: typeof import('~icons/mdi/hide.jsx')['default']

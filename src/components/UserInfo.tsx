@@ -3,8 +3,9 @@ import { client } from "../lib/api";
 import UserIconWithStatus from "./UserIconWithStatus";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { APIUser } from "@shared/api-types";
 
-export default function UserInfo() {
+export default function UserInfo(props: { user: APIUser }) {
    const navigate = useNavigate();
 
    const mutation = useMutation({
@@ -24,7 +25,7 @@ export default function UserInfo() {
                <UserIconWithStatus className="mr-3 flex-shrink-0 bg-secondary" />
 
                <div className="flex w-full flex-col items-start">
-                  <div className="text-base text-text">{client.user?.displayName}</div>
+                  <div className="text-base text-text">{props.user?.displayName}</div>
                   <div className="text-xs text-text/70">Online</div>
                </div>
                <div className="flex flex-shrink-0 gap-x-1">

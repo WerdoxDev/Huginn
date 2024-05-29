@@ -1,10 +1,10 @@
-import { useContext } from "react";
-import { WindowContext } from "../contexts/windowContext";
 import { appWindow } from "@tauri-apps/api/window";
 import { createPortal } from "react-dom";
+import { useWindow } from "../hooks/useWindow";
 
 export default function TitleBar() {
-   const { isMaximized } = useContext(WindowContext).maximized;
+   const huginnWindow = useWindow();
+
    function minimize() {
       appWindow.minimize();
    }
@@ -18,7 +18,7 @@ export default function TitleBar() {
    }
    return createPortal(
       <div
-         className={`fixed left-0 right-0 top-0 flex h-6 shrink-0 select-none items-center overflow-hidden bg-background ${isMaximized ? "rounded-t-none" : "rounded-t-lg"}`}
+         className={`fixed left-0 right-0 top-0 flex h-6 shrink-0 select-none items-center overflow-hidden bg-background ${huginnWindow.maximized ? "rounded-t-none" : "rounded-t-lg"}`}
          data-tauri-drag-region
       >
          <div className="mx-3.5 flex-shrink-0 text-xs font-medium uppercase text-text">Huginn</div>

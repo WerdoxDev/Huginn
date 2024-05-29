@@ -12,6 +12,7 @@ import { AuthBackgroundContext } from "../../../contexts/authBackgroundContext";
 import { useInputs } from "../../../hooks/useInputs";
 import { client } from "../../../lib/api";
 import { requireNotAuth } from "../../../lib/middlewares";
+import { useServerErrorHandler } from "../../../hooks/useServerErrorHandler";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/login")({
    beforeLoad() {
@@ -29,6 +30,7 @@ function Login() {
 
    const [hidden, setHidden] = useState(false);
    const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
+   const handleServerError = useServerErrorHandler();
    const navigate = useNavigate({ from: "/login" });
 
    const mutation = useMutation({
@@ -46,7 +48,7 @@ function Login() {
             if (error.rawError.errors === undefined) return;
             handleErrors(error.rawError.errors);
          } else {
-            // handleServerError(error);
+            handleServerError(error);
          }
       },
       async onSuccess() {

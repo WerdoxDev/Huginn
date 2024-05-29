@@ -10,11 +10,11 @@ import {
    Transition,
    TransitionChild,
 } from "@headlessui/react";
-import { Fragment, useContext, useEffect, useRef, useState } from "react";
-import { ModalContext } from "../../contexts/modalContext";
-import { WindowContext } from "../../contexts/windowContext";
+import { Fragment, useEffect, useRef, useState } from "react";
+import { useModals, useModalsDispatch } from "../../hooks/useModals";
 import { readSettingsFile, writeSettingsFile } from "../../lib/appData";
 import SettingsAdvancedTab from "./SettingsAdvanced";
+import ModalBackground from "./ModalBackground";
 
 const tabs: SettingsTab[] = [
    { name: "general", text: "General", children: [{ name: "audio", text: "Audio", icon: <IconMdiSpeakerphone /> }] },
@@ -35,8 +35,8 @@ function useFlatTabs() {
 }
 
 export default function SettingsModal() {
-   const { isOpen, setIsOpen } = useContext(ModalContext).settings;
-   const { isMaximized } = useContext(WindowContext).maximized;
+   const { settings: modal } = useModals();
+   const dispatch = useModalsDispatch();
 
    const flatTabs = useFlatTabs();
    const [currentTab, setCurrentTab] = useState(() => flatTabs[defaultTabIndex].text);
@@ -47,7 +47,7 @@ export default function SettingsModal() {
       if (!window.__TAURI__) return;
 
       async function read() {
-         if (isOpen) {
+         if (modal.isOpen) {
             settings.current = await readSettingsFile();
          } else {
             console.log(settings.current?.serverAddress);
@@ -56,27 +56,16 @@ export default function SettingsModal() {
       }
 
       read();
-   }, [isOpen]);
+   }, [modal.isOpen]);
 
    function onTabChanged(index: number) {
       setCurrentTab(flatTabs[index].text);
    }
 
-   //TODO: CHECK IF () => IS REQUIRED ON CLICK EVENTS??????????????
    return (
-      <Transition show={isOpen}>
-         <Dialog as="div" className={`relative z-10 `} onClose={() => setIsOpen(false)}>
-            <TransitionChild
-               as="div"
-               enter="duration-150 ease-out"
-               enterFrom="opacity-0"
-               enterTo="opacity-100"
-               leave="duration-150 ease-in"
-               leaveFrom="opacity-100"
-               leaveTo="opacity-0"
-            >
-               <div className={`fixed inset-0 top-6 bg-black/50 ${isMaximized ? "rounded-b-none" : "rounded-b-lg"}`} />
-            </TransitionChild>
+      <Transition show={modal.isOpen}>
+         <Dialog as="div" className="relative z-10" onClose={() => dispatch({ settings: { isOpen: false } })}>
+            <ModalBackground />
             <div className="fixed inset-0 top-6">
                <div className="flex h-full items-center justify-center">
                   <TransitionChild
@@ -101,7 +90,7 @@ export default function SettingsModal() {
                         </TabGroup>
                         <button
                            className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-md bg-secondary hover:bg-tertiary"
-                           onClick={() => setIsOpen(false)}
+                           onClick={() => dispatch({ settings: { isOpen: false } })}
                         >
                            <IconMdiClose className="h-5 w-5 text-error" />
                         </button>

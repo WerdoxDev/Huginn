@@ -83,4 +83,6 @@ declare global {
       icon?: ReactNode;
       component?: (props: { settings: AppSettings; onChange?: (value: AppSettings) => void }) => JSX.Element;
    };
+
+   type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
 }

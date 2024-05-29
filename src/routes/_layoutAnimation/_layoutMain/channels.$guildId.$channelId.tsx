@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutMain/channels/$gu
 
 function ChannelMessages() {
    const data = Route.useLoaderData();
-   const { guildId, channelId } = Route.useParams();
+   // const { guildId, channelId } = Route.useParams();
 
    return (
       <div className="flex h-full flex-col">
