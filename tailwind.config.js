@@ -16,6 +16,7 @@ export default {
       },
       fontFamily: {
          changa: ["Changa", "sans-serif"],
+         chivo: ["Chivo Mono", "sans-serif"],
       },
    },
    plugins: [],
