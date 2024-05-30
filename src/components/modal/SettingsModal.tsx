@@ -81,7 +81,7 @@ export default function SettingsModal() {
                            <div className="bg-secondary/50">
                               <TabList className="flex w-48 flex-shrink-0 select-none flex-col items-start py-2">
                                  <DialogTitle className="mx-5 mb-3 mt-3 flex items-center justify-start gap-x-1.5">
-                                    <div className="text-2xl font-medium text-text">Settings</div>
+                                    <div className="text-xl font-medium text-text">Settings</div>
                                  </DialogTitle>
                                  <SettingsTabs />
                               </TabList>
@@ -89,7 +89,7 @@ export default function SettingsModal() {
                            <SettingsPanels currentTab={currentTab} settings={settings.current} />
                         </TabGroup>
                         <button
-                           className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-md bg-secondary hover:bg-tertiary"
+                           className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-md bg-secondary  hover:bg-tertiary"
                            onClick={() => dispatch({ settings: { isOpen: false } })}
                         >
                            <IconMdiClose className="h-5 w-5 text-error" />
@@ -116,12 +116,11 @@ function SettingsTabs() {
                      <Tab as={Fragment}>
                         {({ selected }) => (
                            <button
-                              className={`flex w-full items-center gap-x-2 rounded-md px-2 py-1 text-left text-text outline-none ${
+                              className={`flex w-full items-center gap-x-2 rounded-md px-2 py-1.5 text-left text-sm text-text outline-none ${
                                  selected ? "bg-white/20 text-opacity-100" : "text-opacity-70 hover:bg-white/10 hover:text-opacity-100"
                               }`}
                            >
                               {child.icon}
-                              {/* <Icon name="tab.icon || 'mdi:help-circle'" size="20"></Icon> */}
                               <span>{child.text}</span>
                            </button>
                         )}
@@ -139,7 +138,7 @@ function SettingsPanels(props: { settings: AppSettings; currentTab: string }) {
 
    return (
       <TabPanels className="w-full p-5">
-         <div className="mb-5 text-xl text-text">{props.currentTab}</div>
+         <div className="mb-5 text-lg text-text">{props.currentTab}</div>
          {flatTabs.map((tab) => (
             <TabPanel key={tab.name}>
                {tab.component ? (
@@ -148,7 +147,7 @@ function SettingsPanels(props: { settings: AppSettings; currentTab: string }) {
                      return <Component settings={props.settings}></Component>;
                   }
                ) : (
-                  <span className="italic text-text/50">{tab.name} (Soon...)</span>
+                  <span className="text-sm italic text-text/50">{tab.name} (Soon...)</span>
                )}
                {/* <component :is="{ ...tab.component }" v-else v-model="settings" /> */}
             </TabPanel>

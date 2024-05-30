@@ -109,7 +109,7 @@ type HeadingElement = {
 
 type CustomElement = ParagraphElement | HeadingElement | CodeElement;
 
-type TextFormats = { bold?: boolean; italic?: boolean; punctuation?: boolean };
+type TextFormats = { bold?: boolean; italic?: boolean; underline?: boolean; punctuation?: boolean };
 type FormattedText = { text: string } & TextFormats;
 
 type CustomText = FormattedText;

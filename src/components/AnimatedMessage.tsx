@@ -20,7 +20,7 @@ export default function AnimatedMessage(props: { className?: string; status: Sta
 
    return (
       <div className={`select-none transition-[height] ${props.className}`} style={{ height: props.visible ? maxHeight : "0px" }}>
-         <div ref={text} className={`transition-opacity ${props.visible ? "opacity-90" : "opacity-0"} ${textColor}`}>
+         <div ref={text} className={`text-sm transition-opacity ${props.visible ? "opacity-90" : "opacity-0"} ${textColor}`}>
             {props.text}
          </div>
       </div>

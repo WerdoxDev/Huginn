@@ -33,6 +33,14 @@ function Leaf(props: RenderLeafProps) {
       );
    }
 
+   if (props.leaf.underline) {
+      return (
+         <span className="underline" {...props.attributes}>
+            {props.children}
+         </span>
+      );
+   }
+
    if (props.leaf.punctuation) {
       return (
          <span className="text-white/50" {...props.attributes}>
@@ -94,11 +102,12 @@ export default function MessageBox() {
       function getPunctuationLength(type: string) {
          if (type === "bold") return 2;
          else if (type === "italic") return 1;
+         else if (type === "underline") return 2;
          return 0;
       }
 
       function isFormatSupported(type: string) {
-         return type === "bold" || type === "italic";
+         return type === "bold" || type === "italic" || type === "underline";
       }
 
       const tokens = Prism.tokenize(node.text, Prism.languages.markdown);

@@ -11,7 +11,7 @@ export default function RingLink(props: {
    return (
       <Link
          to={props.to}
-         className={`rounded-full uppercase ring-1 ring-primary ${props.active ? "bg-primary  text-secondary" : "text-text/70 hover:bg-primary hover:text-secondary"} ${props.className}`}
+         className={`rounded-full uppercase ring-[1.5px] ring-primary ${props.active ? "bg-primary  text-secondary" : "text-text/70 hover:bg-primary hover:text-secondary"} ${props.className}`}
       >
          {props.children}
       </Link>

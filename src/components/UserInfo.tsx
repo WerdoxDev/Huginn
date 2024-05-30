@@ -24,8 +24,8 @@ export default function UserInfo(props: { user: APIUser }) {
             >
                <UserIconWithStatus className="mr-3 flex-shrink-0 bg-secondary" />
 
-               <div className="flex w-full flex-col items-start">
-                  <div className="text-base text-text">{props.user?.displayName}</div>
+               <div className="flex w-full flex-col items-start gap-y-0.5">
+                  <div className="text-sm text-text">{props.user?.displayName}</div>
                   <div className="text-xs text-text/70">Online</div>
                </div>
                <div className="flex flex-shrink-0 gap-x-1">

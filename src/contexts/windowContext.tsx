@@ -5,7 +5,7 @@ import { Dispatch, createContext, useReducer } from "react";
 type WindowContextType = {
    maximized: boolean;
 };
-const defaultValue: WindowContextType = { maximized: await appWindow.isMaximized() };
+const defaultValue: WindowContextType = { maximized: window.__TAURI__ ? await appWindow.isMaximized() : true };
 
 export const WindowContext = createContext<WindowContextType>(defaultValue);
 export const WindowDispatchContext = createContext<Dispatch<Partial<WindowContextType>>>(() => {});

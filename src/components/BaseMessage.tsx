@@ -15,7 +15,7 @@ export default function BaseMessage(props: { content?: string; author: APIMessag
             </div>
             <div className="flex flex-col items-start gap-y-0.5">
                <div
-                  className={`min-w-0 rounded-bl-md rounded-br-md rounded-tr-md px-2 py-1 text-white ${isSelf ? "bg-primary bg-opacity-50" : "bg-background"}`}
+                  className={`min-w-0 rounded-bl-md rounded-br-md rounded-tr-md px-2 py-1 font-light text-white ${isSelf ? "bg-primary bg-opacity-50" : "bg-background"}`}
                >
                   {/* <LexicalComposer :initial-config="config">
                   <LexicalPlainTextPlugin>
