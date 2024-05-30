@@ -59,9 +59,8 @@ function ChannelMessages() {
       if (d.channelId !== channelId) {
          return;
       }
-      // console.log(d);
+
       queryClient.setQueryData(["messages", channelId], (data: APIGetChannelMessagesResult) => [...data, d]);
-      // data.push(d);
       scrollToBottom();
    }
 

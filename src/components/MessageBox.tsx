@@ -1,16 +1,12 @@
+import { snowflake } from "@shared/snowflake";
+import { useMutation } from "@tanstack/react-query";
+import { useParams } from "@tanstack/react-router";
 import Prism, { type Token } from "prismjs";
 import "prismjs/components/prism-markdown";
 import { KeyboardEvent, useCallback, useState } from "react";
-import { Descendant, Node, Path, Range, Text, createEditor } from "slate";
+import { Descendant, Editor, Node, Path, Range, Text, createEditor } from "slate";
 import { Editable, RenderElementProps, RenderLeafProps, Slate, withReact } from "slate-react";
-
-function CodeElement(props: RenderElementProps) {
-   return (
-      <pre {...props.attributes}>
-         <code>{props.children}</code>
-      </pre>
-   );
-}
+import { client } from "../lib/api";
 
 function DefaultElement(props: RenderElementProps) {
    return <div {...props.attributes}>{props.children}</div>;
@@ -56,28 +52,32 @@ const initialValue: Descendant[] = [
       type: "paragraph",
       children: [
          {
-            text: "Slate is flexible enough to add **decorations** that can format text based on its content. For example, this editor has **Markdown** preview decorations on it, to make it _dead_ simple to make an editor with built-in Markdown previewing.",
+            text: "",
          },
       ],
-   },
-   {
-      type: "paragraph",
-      children: [{ text: "## Try it out!" }],
-   },
-   {
-      type: "paragraph",
-      children: [{ text: "Try it out for yourself!" }],
    },
 ];
 
 export default function MessageBox() {
    const [editor] = useState(() => withReact(createEditor()));
+   const params = useParams({ strict: false });
+
+   const mutation = useMutation({
+      async mutationFn(content: string) {
+         const channelId = params.channelId as string;
+         const nonce = snowflake.generate();
+         console.log(nonce);
+         await client.channels.createMessage(channelId, { content: content, nonce: nonce });
+      },
+   });
 
    const renderLeaf = useCallback((props: RenderLeafProps) => {
       return <Leaf {...props} />;
    }, []);
 
-   function onKeyDown(event: KeyboardEvent) {}
+   const renderElement = useCallback((props: RenderElementProps) => {
+      return <DefaultElement {...props} />;
+   }, []);
 
    const decorate = useCallback(([node, path]: [Node, Path]) => {
       const ranges: Range[] = [];
@@ -139,10 +139,25 @@ export default function MessageBox() {
          start = end;
       }
 
-      console.log(ranges);
-
       return ranges;
    }, []);
+
+   function onKeyDown(event: KeyboardEvent) {
+      if (!event.shiftKey && event.code === "Enter") {
+         event.preventDefault();
+         mutation.mutateAsync(serialize(editor.children));
+         editor.delete({
+            at: {
+               anchor: Editor.start(editor, []),
+               focus: Editor.end(editor, []),
+            },
+         });
+      }
+   }
+
+   function serialize(nodes: Descendant[]) {
+      return nodes.map((n) => Node.string(n)).join("\n");
+   }
 
    return (
       <div className="relative mx-5 flex w-full flex-wrap-reverse py-2">
@@ -154,10 +169,12 @@ export default function MessageBox() {
                <div className="w-full grow-0 self-center py-1">
                   <Slate editor={editor} initialValue={initialValue}>
                      <Editable
+                        placeholder="Message @Emam"
                         className="font-light text-white outline-none"
-                        onKeyDown={onKeyDown}
                         renderLeaf={renderLeaf}
+                        renderElement={renderElement}
                         decorate={decorate}
+                        onKeyDown={onKeyDown}
                      />
                   </Slate>
                </div>

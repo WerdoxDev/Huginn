@@ -52,7 +52,7 @@ function Splashscreen() {
       <div className="flex h-full w-full select-none items-center justify-center rounded-xl bg-background" data-tauri-drag-region>
          <div className="flex w-full flex-col items-center" data-tauri-drag-region>
             <IconFa6SolidCrow className="h-20 w-20 text-text transition-all hover:-rotate-12 active:rotate-6" />
-            <div className="mb-5 text-2xl font-medium text-text">Huginn</div>
+            <div className="mb-5 text-xl font-medium text-text">Huginn</div>
             <div className="mb-2.5 text-text opacity-60">
                <span>{loadingText}</span>
                <span className="loader__dot">.</span>

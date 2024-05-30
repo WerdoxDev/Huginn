@@ -50,7 +50,6 @@ export default function SettingsModal() {
          if (modal.isOpen) {
             settings.current = await readSettingsFile();
          } else {
-            console.log(settings.current?.serverAddress);
             await writeSettingsFile({ ...settings.current });
          }
       }
