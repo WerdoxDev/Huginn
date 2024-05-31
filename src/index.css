@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-   font-family: "Changa";
+   font-family: "Chivo Mono";
    font-smooth: never;
    -webkit-font-smoothing: none;
    font-synthesis: none;
@@ -29,4 +29,16 @@ body,
 }
 .loader__dot:nth-child(3) {
    animation-delay: 500ms;
+}
+
+::-webkit-scrollbar {
+   @apply w-6;
+}
+
+::-webkit-scrollbar-track {
+   @apply rounded-full shadow-background [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
+}
+
+::-webkit-scrollbar-thumb {
+   @apply rounded-full shadow-secondary [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
 }

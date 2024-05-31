@@ -1,12 +1,23 @@
-import { Link, Outlet, createRootRoute } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+import { QueryClient } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { Outlet, createRootRouteWithContext, useRouter } from "@tanstack/react-router";
 import "@tauri-apps/api";
-import { useEffect, useState } from "react";
-import { WindowContext } from "../contexts/windowContext";
-import useAppMaximized from "../hooks/useAppMaximized";
+import { UnlistenFn } from "@tauri-apps/api/event";
+import { appWindow } from "@tauri-apps/api/window";
+import { useEffect, useRef } from "react";
+import TitleBar from "../components/TitleBar";
+import SettingsModal from "../components/modal/SettingsModal";
+import { HistoryContext } from "../contexts/historyContext";
+import { ModalProvider } from "../contexts/modalContext";
+import { useWindow, useWindowDispatch } from "../hooks/useWindow";
 import { setup } from "../lib/middlewares";
+import InfoModal from "../components/modal/InfoModal";
 
-export const Route = createRootRoute({
+type RouterContext = {
+   queryClient: QueryClient;
+};
+
+export const Route = createRootRouteWithContext<RouterContext>()({
    async beforeLoad() {
       await setup();
    },
@@ -14,30 +25,61 @@ export const Route = createRootRoute({
 });
 
 function Root() {
-   const [isMaximized, setMaximized] = useState(false);
+   const router = useRouter();
+
+   const lastPathname = useRef<string | null>(null);
+   const appWindow = useWindow();
+
+   useEffect(() => {
+      router.subscribe("onBeforeLoad", (arg) => {
+         lastPathname.current = arg.fromLocation.pathname;
+      });
+   }, []);
 
    return (
-      <WindowContext.Provider value={{ maximized: { isMaximized: isMaximized, setMaximized: setMaximized } }}>
-         <button onClick={() => localStorage.removeItem("refresh-token")}>Clear</button>
-         <Link to="/channels/$channelId" params={{ channelId: "177812771176452101" }}>
-            Channels
-         </Link>
-         <Link to="/login">Login</Link>
-         <Outlet />
-         <TanStackRouterDevtools />
-         {window.__TAURI__ && <AppMaximizedEvent />}
-      </WindowContext.Provider>
+      <HistoryContext.Provider value={{ lastPathname: lastPathname.current }}>
+         <ModalProvider>
+            <div className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
+               {router.state.location.pathname !== "/splashscreen" && <TitleBar />}
+               <div className="relative h-full w-full">
+                  <Outlet />
+                  <div className="absolute bottom-10 left-2 z-10">
+                     <button className="text-text" onClick={() => localStorage.removeItem("refresh-token")}>
+                        Clear
+                     </button>
+                  </div>
+                  <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" />
+                  {/* <TanStackRouterDevtools position="bottom-left" toggleButtonProps={{ className: "top-6" }} /> */}
+                  {window.__TAURI__ && <AppMaximizedEvent />}
+                  <SettingsModal />
+                  <InfoModal />
+               </div>
+            </div>
+         </ModalProvider>
+      </HistoryContext.Provider>
    );
 }
 
 function AppMaximizedEvent() {
-   const { unlistenEvent: unlistenAppMaximized } = useAppMaximized();
+   const dispatch = useWindowDispatch();
+   const unlistenFunction = useRef<UnlistenFn>();
 
    useEffect(() => {
-      return () => {
-         unlistenAppMaximized && unlistenAppMaximized();
-      };
-   });
+      async function listenToAppResize() {
+         const unlisten = await appWindow.onResized(async () => {
+            const appMaximized = await appWindow.isMaximized();
+            dispatch({ maximized: appMaximized });
+         });
 
-   return <></>;
+         unlistenFunction.current = unlisten;
+      }
+
+      listenToAppResize();
+
+      return () => {
+         unlistenFunction.current && unlistenFunction.current();
+      };
+   }, []);
+
+   return null;
 }

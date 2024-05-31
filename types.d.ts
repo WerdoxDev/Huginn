@@ -1,4 +1,6 @@
 import { HTMLInputTypeAttribute, ReactNode } from "react";
+import { BaseEditor, BaseRange } from "slate";
+import { ReactEditor } from "slate-react";
 
 declare global {
    type StatusCode = "none" | "default" | "error" | "success";
@@ -79,8 +81,46 @@ declare global {
    type SettingsTab = {
       name: string;
       text: string;
-      icon?: string;
-      // component?: Component;
-      isGroup: boolean;
+      children?: SettingsTab[];
+      icon?: ReactNode;
+      component?: (props: { settings: AppSettings; onChange?: (value: AppSettings) => void }) => JSX.Element;
    };
+
+   type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
+}
+
+type CustomEditor = BaseEditor & ReactEditor;
+
+type ParagraphElement = {
+   type: "paragraph";
+   children: CustomText[];
+};
+
+type CodeElement = {
+   type: "code";
+   children: CustomText[];
+};
+
+type HeadingElement = {
+   type: "heading";
+   level: number;
+   children: CustomText[];
+};
+
+type CustomElement = ParagraphElement | HeadingElement | CodeElement;
+
+type TextFormats = { bold?: boolean; italic?: boolean; underline?: boolean; punctuation?: boolean };
+type FormattedText = { text: string } & TextFormats;
+
+type CustomText = FormattedText;
+type CustomRange = BaseRange & TextFormats;
+
+declare module "slate" {
+   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+   interface CustomTypes {
+      Editor: CustomEditor;
+      Element: CustomElement;
+      Text: CustomText;
+      Range: CustomRange;
+   }
 }

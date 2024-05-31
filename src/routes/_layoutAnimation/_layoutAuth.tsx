@@ -1,50 +1,64 @@
-import { createFileRoute, useMatch, useMatches } from "@tanstack/react-router";
-import { AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
-import AnimatedOutlet from "../../components/AnimaredOutlet";
+import { animated, easings, useSpring, useTransition } from "@react-spring/web";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useContext } from "react";
+import AnimatedOutlet from "../../components/AnimatedOutlet";
 import AuthBackgroundSvg from "../../components/AuthBackgroundSvg";
 import { AuthBackgroundContext } from "../../contexts/authBackgroundContext";
+import { HistoryContext } from "../../contexts/historyContext";
+import { useModalsDispatch } from "../../hooks/useModals";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth")({
    component: LayoutAuth,
 });
 
 function LayoutAuth() {
-   const matches = useMatches();
-   const match = useMatch({ strict: false });
-   const nextMatchIndex = matches.findIndex((d) => d.id === match.id) + 1;
-   const nextMatch = matches[nextMatchIndex];
+   const router = useRouter();
+   const { state: backgroundState } = useContext(AuthBackgroundContext);
+   const transitions = useTransition(router.state.location.pathname, {
+      from: { opacity: 0, transform: "translateY(-120px)" },
+      enter: { opacity: 1, transform: "translateY(0px)" },
+      leave: { opacity: 0, transform: "translateY(-120px)" },
+      config: { duration: 250, easing: easings.easeInOutCirc },
+   });
 
-   useEffect(() => {
-      console.log(nextMatch.id);
-   }, [nextMatch]);
+   const history = useContext(HistoryContext);
+   const modalsDispatch = useModalsDispatch();
 
-   const [backgroundState, setBackgroundState] = useState(2);
+   const style = useSpring({
+      background: backgroundState === 2 ? "rgba(38,38,38,0)" : "rgba(38,38,38,1)",
+      config: { duration: 250 },
+      immediate: !history.lastPathname,
+   });
+
    return (
-      <AuthBackgroundContext.Provider value={{ state: backgroundState, setState: setBackgroundState }}>
-         <div className={`absolute inset-0 top-6 z-10 bg-secondary ${backgroundState === 2 && "pointer-events-none"}`}>
-            <AuthBackgroundSvg />
-            <div
-               className={`absolute inset-0 select-none transition-all duration-500 ${backgroundState === 1 ? "opacity-100" : "opacity-0"}`}
-            >
-               <div className="flex h-full items-center justify-center text-xl font-medium text-text opacity-60">
-                  <span>Loading</span>
-                  <span className="loader__dot">.</span>
-                  <span className="loader__dot">.</span>
-                  <span className="loader__dot">.</span>
-               </div>
+      <animated.div style={style} className={`absolute inset-0 z-10 ${backgroundState === 2 && "pointer-events-none"}`}>
+         <AuthBackgroundSvg />
+         <div
+            className={`absolute inset-0 select-none transition-all duration-500 ${backgroundState === 1 ? "opacity-100" : "opacity-0"}`}
+         >
+            <div className="flex h-full items-center justify-center text-xl font-medium text-text opacity-60">
+               <span>Loading</span>
+               <span className="loader__dot">.</span>
+               <span className="loader__dot">.</span>
+               <span className="loader__dot">.</span>
             </div>
-            <AnimatePresence mode="sync" initial>
-               <AnimatedOutlet
-                  initial={{ y: -120, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: -120, opacity: 0 }}
-                  transition={{ duration: 0.25, ease: "easeInOut" }}
-                  key={nextMatch.id}
-               />
-            </AnimatePresence>
-
-            {/* <Transition appear name="fade">
+         </div>
+         {transitions((style) => (
+            // <animated.div style={style} className="absolute flex h-full w-full items-center justify-center">
+            <AnimatedOutlet test="auth layout" style={style} className="absolute flex h-full w-full items-center justify-center" />
+            // <Outlet />
+            // </animated.div>
+         ))}
+         {backgroundState !== 2 && (
+            <button
+               v-if="backgroundState !== 2"
+               className="absolute bottom-2.5 right-2.5 rounded-lg p-1 transition-all hover:bg-background"
+               onClick={() => modalsDispatch({ settings: { isOpen: true } })}
+            >
+               <IconMdiSettings className="h-6 w-6 text-white/80 transition-all hover:rotate-[60deg]" />
+            </button>
+         )}
+         {/* <Transition appear name="fade">
             <button
                v-if="backgroundState !== 2"
                className="absolute bottom-2.5 right-2.5 rounded-lg p-1 transition-all hover:bg-background"
@@ -53,7 +67,6 @@ function LayoutAuth() {
                <Icon name="mdi:settings" className="text-white/80 transition-all hover:rotate-[60deg]" size="24" />
             </button>
          </Transition> */}
-         </div>
-      </AuthBackgroundContext.Provider>
+      </animated.div>
    );
 }
