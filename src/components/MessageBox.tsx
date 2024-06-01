@@ -1,12 +1,11 @@
 import { snowflake } from "@shared/snowflake";
 import { useMutation } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
-import Prism, { type Token } from "prismjs";
-import "prismjs/components/prism-markdown";
-import { KeyboardEvent, useCallback, useState } from "react";
+import { KeyboardEvent, useCallback, useMemo } from "react";
 import { Descendant, Editor, Node, Path, Range, Text, createEditor } from "slate";
 import { Editable, RenderElementProps, RenderLeafProps, Slate, withReact } from "slate-react";
 import { client } from "../lib/api";
+import { tokenize } from "../lib/huginn-tokenizer";
 
 function DefaultElement(props: RenderElementProps) {
    return <div {...props.attributes}>{props.children}</div>;
@@ -37,7 +36,15 @@ function Leaf(props: RenderLeafProps) {
       );
    }
 
-   if (props.leaf.punctuation) {
+   if (props.leaf.spoiler) {
+      return (
+         <span className="rounded-sm bg-white/20 px-0.5" {...props.attributes}>
+            {props.children}
+         </span>
+      );
+   }
+
+   if (props.leaf.mark) {
       return (
          <span className="text-white/50" {...props.attributes}>
             {props.children}
@@ -59,7 +66,7 @@ const initialValue: Descendant[] = [
 ];
 
 export default function MessageBox() {
-   const [editor] = useState(() => withReact(createEditor()));
+   const editor = useMemo(() => withReact(createEditor()), []);
    const params = useParams({ strict: false });
 
    const mutation = useMutation({
@@ -86,57 +93,27 @@ export default function MessageBox() {
          return ranges;
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-      function getLength(token: string | Token): number {
-         if (typeof token === "string") {
-            return token.length;
-         } else if (typeof token.content === "string") {
-            return token.content.length;
-         } else if (Array.isArray(token.content)) {
-            return token.content.reduce((l, t) => l + getLength(t), 0);
-         }
+      const tokens = tokenize(node.text);
 
-         return 0;
-      }
-
-      function getPunctuationLength(type: string) {
-         if (type === "bold") return 2;
-         else if (type === "italic") return 1;
-         else if (type === "underline") return 2;
-         return 0;
-      }
-
-      function isFormatSupported(type: string) {
-         return type === "bold" || type === "italic" || type === "underline";
-      }
-
-      const tokens = Prism.tokenize(node.text, Prism.languages.markdown);
-      let start = 0;
-
+      console.log(tokens);
       for (const token of tokens) {
-         const length = getLength(token);
-         const end = start + length;
-
-         if (typeof token !== "string" && isFormatSupported(token.type)) {
-            const punctuationLength = getPunctuationLength(token.type);
-            ranges.push({
-               punctuation: true,
-               anchor: { path, offset: start },
-               focus: { path, offset: start + punctuationLength },
-            });
-            ranges.push({
-               punctuation: true,
-               anchor: { path, offset: end - punctuationLength },
-               focus: { path, offset: end },
-            });
-            ranges.push({
-               [token.type]: true,
-               anchor: { path, offset: start + punctuationLength },
-               focus: { path, offset: end - punctuationLength },
-            });
-         }
-
-         start = end;
+         const markLength = token.mark!.length;
+         const end = token.end + 1;
+         ranges.push({
+            mark: true,
+            anchor: { path, offset: token.start },
+            focus: { path, offset: token.start + markLength },
+         });
+         ranges.push({
+            mark: true,
+            anchor: { path, offset: end - markLength },
+            focus: { path, offset: end },
+         });
+         ranges.push({
+            [token.type]: true,
+            anchor: { path, offset: token.start + markLength },
+            focus: { path, offset: end - markLength },
+         });
       }
 
       return ranges;

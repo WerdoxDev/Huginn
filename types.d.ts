@@ -96,24 +96,13 @@ type ParagraphElement = {
    children: CustomText[];
 };
 
-type CodeElement = {
-   type: "code";
-   children: CustomText[];
-};
+type CustomElement = ParagraphElement;
 
-type HeadingElement = {
-   type: "heading";
-   level: number;
-   children: CustomText[];
-};
-
-type CustomElement = ParagraphElement | HeadingElement | CodeElement;
-
-type TextFormats = { bold?: boolean; italic?: boolean; underline?: boolean; punctuation?: boolean };
+type TextFormats = { bold?: boolean; italic?: boolean; underline?: boolean; mark?: boolean; spoiler?: boolean };
 type FormattedText = { text: string } & TextFormats;
 
 type CustomText = FormattedText;
-type CustomRange = BaseRange & TextFormats;
+type CustomRange = BaseRange & TextFormats & { text?: string };
 
 declare module "slate" {
    // eslint-disable-next-line @typescript-eslint/consistent-type-definitions

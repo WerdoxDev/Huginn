@@ -21,7 +21,7 @@ export async function writeSettingsFile(settingsToOverride: AppSettings) {
    const fileSettings = await readSettingsFile();
    const finalSettings: AppSettings = { ...fileSettings, ...settingsToOverride };
 
-   console.log(finalSettings);
+   // console.log(finalSettings);
 
    settingsContent = finalSettings;
 
