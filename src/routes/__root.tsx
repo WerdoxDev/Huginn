@@ -9,7 +9,7 @@ import InfoModal from "../components/modal/InfoModal";
 import SettingsModal from "../components/modal/SettingsModal";
 import { HistoryContext } from "../contexts/historyContext";
 import { ModalProvider } from "../contexts/modalContext";
-import { ThemeProvier } from "../contexts/themeContent";
+import { ThemeProvier } from "../contexts/themeContext";
 import { setup } from "../lib/middlewares";
 import { useWindow, useWindowDispatch } from "../contexts/windowContext";
 

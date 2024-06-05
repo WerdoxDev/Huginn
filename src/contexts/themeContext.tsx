@@ -9,7 +9,7 @@ const ceruleanTheme: ColorTheme = {
    accent: ["0 180 245", "#00B4F5"],
    accent2: ["", ""],
    text: ["235 235 211", "#EBEBD3"],
-   error: ["248 113 113", "#F87171"],
+   error: ["255 99 71", "#FF6347"],
 };
 
 const tealTheme: ColorTheme = {
@@ -20,7 +20,7 @@ const tealTheme: ColorTheme = {
    accent: ["0 204 204", "#00CCCC"],
    accent2: ["", ""],
    text: ["235 235 211", "#EBEBD3"],
-   error: ["248 113 113", "#FE6F5E"],
+   error: ["255 99 71", "#FF6347"],
 };
 
 const pineGreenTheme: ColorTheme = {
@@ -31,7 +31,7 @@ const pineGreenTheme: ColorTheme = {
    accent: ["2 202 185", "#02CAB9"],
    accent2: ["", ""],
    text: ["235 235 211", "#EBEBD3"],
-   error: ["248 131 121", "#F87171"],
+   error: ["255 99 71", "#FF6347"],
 };
 
 const eggplantTheme: ColorTheme = {
@@ -42,7 +42,7 @@ const eggplantTheme: ColorTheme = {
    accent: ["165 120 144", "#A57890"],
    accent2: ["", ""],
    text: ["235 235 211", "#EBEBD3"],
-   error: ["248 113 113", "#F87171"],
+   error: ["255 99 71", "#FF6347"],
 };
 
 const defaultValue: ColorTheme = tealTheme;

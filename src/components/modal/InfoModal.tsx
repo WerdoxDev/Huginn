@@ -1,8 +1,9 @@
 import { useMemo } from "react";
 import { Description, Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from "@headlessui/react";
-import { useModals, useModalsDispatch } from "../../hooks/useModals";
 import HuginnButton from "../button/HuginnButton";
 import ModalBackground from "./ModalBackground";
+import { useModals, useModalsDispatch } from "../../contexts/modalContext";
+import ModalCloseButton from "../button/ModalCloseButton";
 
 export default function InfoModal() {
    const { info: modal } = useModals();
@@ -45,28 +46,31 @@ export default function InfoModal() {
                      leaveFrom="opacity-100 scale-100"
                      leaveTo="opacity-0 scale-95"
                   >
-                     <DialogPanel className="w-full max-w-md transform rounded-lg bg-background p-5 transition-all">
-                        <DialogTitle
+                     <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-lg bg-background p-2 transition-all">
+                        {/* <DialogTitle
                            as="div"
-                           className={`mb-2.5 flex items-center justify-center gap-x-2 text-center text-2xl font-medium ${textColor}`}
+                           className={`mb-5 flex h-11 items-center bg-error/20 px-5 text-lg font-medium ${textColor}`}
                         >
-                           {modal.status === "error" && <IconLineMdAlert name="line-md:alert" className="h-8 w-8" />}
                            {title}
-                        </DialogTitle>
-                        <Description className={`text-center ${textColor}`}>
-                           {formattedText}
-                           <span v-if="errorCode" className="italic opacity-90">
-                              {errorCode}
-                           </span>
+                        </DialogTitle> */}
+                        {/* <div className="mb-5 h-0.5 w-full bg-secondary" /> */}
+                        <Description className="mt-3 flex items-center justify-center gap-x-5 px-5">
+                           <div>
+                              {modal.status === "error" && <IconMaterialSymbolsErrorOutline className={`h-16 w-16 ${textColor}`} />}
+                           </div>
+                           <div className={`text-center text-white/70`}>
+                              {formattedText}
+                              <span v-if="errorCode" className={`italic opacity-90 ${textColor}`}>
+                                 {errorCode}
+                              </span>
+                           </div>
                         </Description>
-                        <div className="mt-5 flex justify-center">
-                           <HuginnButton
-                              className="primary w-full bg-primary py-2.5"
-                              onClick={() => dispatch({ info: { isOpen: false } })}
-                           >
-                              Continue
-                           </HuginnButton>
-                        </div>
+
+                        <HuginnButton className="mt-5 w-full bg-tertiary py-2.5" onClick={() => dispatch({ info: { isOpen: false } })}>
+                           Close
+                        </HuginnButton>
+
+                        {/* <ModalCloseButton onClick={() => dispatch({ info: { isOpen: false } })} /> */}
                      </DialogPanel>
                   </TransitionChild>
                </div>
