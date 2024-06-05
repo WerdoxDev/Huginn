@@ -40,13 +40,13 @@ function Channels() {
    return (
       <>
          <GuildsBar />
-         <div className="flex h-full w-full flex-col">
-            <div className="flex h-full">
+         <div className="flex h-full w-full flex-col overflow-hidden">
+            <div className="flex h-full ">
                <div className="flex w-64 shrink-0 flex-col">
                   {isSelfGuild && <HomeSidebar channels={data} />}
                   {client.user && <UserInfo user={client.user} />}
                </div>
-               <div className="relative w-full bg-tertiary">
+               <div className="relative w-full overflow-hidden bg-tertiary">
                   <Outlet />
                </div>
             </div>

@@ -1,6 +1,6 @@
 import { appWindow } from "@tauri-apps/api/window";
 import { createPortal } from "react-dom";
-import { useWindow } from "../hooks/useWindow";
+import { useWindow } from "../contexts/windowContext";
 
 export default function TitleBar() {
    const huginnWindow = useWindow();

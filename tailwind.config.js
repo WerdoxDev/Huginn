@@ -4,20 +4,29 @@ export default {
    theme: {
       extend: {
          colors: {
-            background: "#303030",
-            primary: "#ADDC6C",
-            secondary: "#262626",
-            tertiary: "#1d1d1d",
-            accent1: "#FFC25D",
-            text: "#FDF4D3",
-            link: "#ADDC6CE6",
-            error: "#F87171",
+            background: "rgb(var(--color-background) / <alpha-value>)",
+            secondary: "rgb(var(--color-secondary) / <alpha-value>)",
+            tertiary: "rgb(var(--color-tertiary) / <alpha-value>)",
+            primary: `rgb(var(--color-primary) / <alpha-value>)`,
+            accent: "rgb(var(--color-accent) / <alpha-value>)",
+            accent2: "rgb(var(--color-accent2) / <alpha-value>)",
+            text: "rgb(var(--color-text) / <alpha-value>)",
+            error: "rgb(var(--color-error) / <alpha-value>)",
          },
       },
       fontFamily: {
          changa: ["Changa", "sans-serif"],
          chivo: ["Chivo Mono", "sans-serif"],
+         kanit: ["Kanit", "sans-serif"],
+         noto: ["Noto Sans", "sans-serif"],
       },
    },
    plugins: [],
 };
+
+//#007BA7 ^^
+//#01796F ^^
+//#008080 ^^
+//#614051 ^^
+
+//#397367

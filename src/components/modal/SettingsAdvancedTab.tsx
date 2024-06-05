@@ -2,14 +2,14 @@ import { useEffect } from "react";
 import { useInputs } from "../../hooks/useInputs";
 import HuginnInput from "../input/HuginnInput";
 
-export default function SettingsAdvancedTab(props: { settings: AppSettings; onChange?: (value: AppSettings) => void }) {
+export default function SettingsAdvancedTab(props: SettingsTabProps) {
    const { values, validateValues, inputsProps } = useInputs([
       { name: "serverAddress", required: false, default: props.settings?.serverAddress },
    ]);
 
    useEffect(() => {
       if (validateValues() && props.onChange) {
-         props.onChange({ ...props.settings, serverAddress: values.serverAddress.value });
+         props.onChange({ serverAddress: values.serverAddress.value });
          console.log({ ...props.settings, serverAddress: values.serverAddress.value });
       }
    }, [values]);

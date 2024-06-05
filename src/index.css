@@ -2,8 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* @layer base {
+   :root {
+      --color-background: 48 48 48;
+      --color-secondary: 38 38 38;
+      --color-tertiary: 31 31 31;
+      --color-primary: 0 128 128;
+      --color-text: 235 235 211;
+      --color-link: 2 202 185;
+      --color-error: 248 113 113;
+   }
+} */
+
 :root {
-   font-family: "Chivo Mono";
+   font-family: "Noto Sans", "Noto Sans Arabic";
    font-smooth: never;
    -webkit-font-smoothing: none;
    font-synthesis: none;

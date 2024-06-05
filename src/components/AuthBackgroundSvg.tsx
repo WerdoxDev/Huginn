@@ -1,9 +1,13 @@
 import { animated, useSpring } from "@react-spring/web";
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import { AuthBackgroundContext } from "../contexts/authBackgroundContext";
+import { useTheme } from "../contexts/themeContent";
 
 export default function AuthBackgroundSvg() {
    const { state } = useContext(AuthBackgroundContext);
+
+   const colorTheme = useTheme();
+   const fillColor = useMemo(() => colorTheme.primary[1], [colorTheme]);
 
    const path1 = {
       close: "M0 540.8C-100.8 530.3 -201.6 519.7 -270.4 468.4C-339.2 417 -376 324.9 -415.7 240C-455.4 155.1 -498.1 77.6 -540.8 0L0 0Z",
@@ -29,10 +33,10 @@ export default function AuthBackgroundSvg() {
          preserveAspectRatio="xMidYMid slice"
       >
          <g transform="translate(960, 0)">
-            <animated.path d={d1} fill="#ADDC6C"></animated.path>
+            <animated.path d={d1} fill={fillColor}></animated.path>
          </g>
          <g transform="translate(0, 540)">
-            <animated.path d={d2} fill="#ADDC6C"></animated.path>
+            <animated.path d={d2} fill={fillColor}></animated.path>
          </g>
       </svg>
    );

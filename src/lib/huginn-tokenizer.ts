@@ -31,7 +31,7 @@ export function tokenize(text: string) {
    for (const { type, pattern } of patterns) {
       let match;
       while ((match = pattern.exec(text)) !== null) {
-         const [fullMatch, startMarkers, content, endMarkers] = match;
+         const [fullMatch, startMarkers, content, _endMarkers] = match;
          const start = match.index;
          const end = start + (fullMatch.length - 1);
 

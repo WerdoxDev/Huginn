@@ -1,5 +1,5 @@
 import { TransitionChild } from "@headlessui/react";
-import { useWindow } from "../../hooks/useWindow";
+import { useWindow } from "../../contexts/windowContext";
 
 export default function ModalBackground() {
    const appWindow = useWindow();

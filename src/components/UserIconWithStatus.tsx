@@ -2,7 +2,7 @@ export default function UserIconWithStatus(props: { size?: string; statusSize?: 
    const { size = "2.25rem", statusSize = "0.75rem", className } = props;
    return (
       <div className={`relative shrink-0 rounded-full ${className}`} style={{ width: size, height: size }}>
-         <div className="absolute bottom-0 right-0 rounded-full bg-accent1" style={{ width: statusSize, height: statusSize }} />
+         <div className="bg-accent absolute bottom-0 right-0 rounded-full" style={{ width: statusSize, height: statusSize }} />
       </div>
    );
 }

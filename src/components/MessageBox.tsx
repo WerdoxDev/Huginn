@@ -6,53 +6,8 @@ import { Descendant, Editor, Node, Path, Range, Text, createEditor } from "slate
 import { Editable, RenderElementProps, RenderLeafProps, Slate, withReact } from "slate-react";
 import { client } from "../lib/api";
 import { tokenize } from "../lib/huginn-tokenizer";
-
-function DefaultElement(props: RenderElementProps) {
-   return <div {...props.attributes}>{props.children}</div>;
-}
-
-function Leaf(props: RenderLeafProps) {
-   if (props.leaf.bold) {
-      return (
-         <span className="font-bold" {...props.attributes}>
-            {props.children}
-         </span>
-      );
-   }
-
-   if (props.leaf.italic) {
-      return (
-         <span className="italic" {...props.attributes}>
-            {props.children}
-         </span>
-      );
-   }
-
-   if (props.leaf.underline) {
-      return (
-         <span className="underline" {...props.attributes}>
-            {props.children}
-         </span>
-      );
-   }
-
-   if (props.leaf.spoiler) {
-      return (
-         <span className="rounded-sm bg-white/20 px-0.5" {...props.attributes}>
-            {props.children}
-         </span>
-      );
-   }
-
-   if (props.leaf.mark) {
-      return (
-         <span className="text-white/50" {...props.attributes}>
-            {props.children}
-         </span>
-      );
-   }
-   return <span {...props.attributes}>{props.children}</span>;
-}
+import EditorLeaf from "./editor/EditorLeaf";
+import DefaultElement from "./editor/DefaultElement";
 
 const initialValue: Descendant[] = [
    {
@@ -79,7 +34,7 @@ export default function MessageBox() {
    });
 
    const renderLeaf = useCallback((props: RenderLeafProps) => {
-      return <Leaf {...props} />;
+      return <EditorLeaf {...props} />;
    }, []);
 
    const renderElement = useCallback((props: RenderElementProps) => {
@@ -147,7 +102,7 @@ export default function MessageBox() {
                   <Slate editor={editor} initialValue={initialValue}>
                      <Editable
                         placeholder="Message @Emam"
-                        className="break-words font-light text-white outline-none"
+                        className="font-light leading-none text-white caret-white outline-none"
                         renderLeaf={renderLeaf}
                         renderElement={renderElement}
                         decorate={decorate}

@@ -76,6 +76,7 @@ declare global {
 
    type AppSettings = {
       serverAddress?: string;
+      theme: ThemeType;
    };
 
    type SettingsTab = {
@@ -83,10 +84,31 @@ declare global {
       text: string;
       children?: SettingsTab[];
       icon?: ReactNode;
-      component?: (props: { settings: AppSettings; onChange?: (value: AppSettings) => void }) => JSX.Element;
+      component?: (props: SettingsTabProps) => JSX.Element;
    };
 
+   type SettingsTabProps = { settings: Partial<AppSettings>; onChange?: (value: Partial<AppSettings>) => void };
+
    type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
+
+   type DropboxItem = {
+      id: number;
+      name: string;
+      value: string;
+   };
+
+   type ColorTheme = {
+      background: [string, string];
+      secondary: [string, string];
+      tertiary: [string, string];
+      primary: [string, string];
+      accent: [string, string];
+      accent2: [string, string];
+      text: [string, string];
+      error: [string, string];
+   };
+
+   type ThemeType = "teal" | "cerulean" | "pine green" | "eggplant";
 }
 
 type CustomEditor = BaseEditor & ReactEditor;

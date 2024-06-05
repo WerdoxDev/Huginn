@@ -6,7 +6,7 @@ export default function HuginnButton(props: HuginnButtonProps) {
          disabled={props.disabled}
          onClick={props.onClick}
       >
-         <div className={`text-background opacity-100 ${props.innerClassName}`}>{props.children}</div>
+         <div className={`text-text opacity-100 ${props.innerClassName}`}>{props.children}</div>
       </button>
    );
 }

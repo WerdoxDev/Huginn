@@ -57,7 +57,7 @@ function Label(props: { children?: ReactNode; skipRender?: boolean }) {
    const inputContext = useContext(InputContext);
    return !props.skipRender ? (
       <label
-         // htmlFor={inputContext.id}
+         htmlFor={inputContext.id}
          className={`mb-2 select-none text-xs font-medium uppercase opacity-90 ${inputContext.status.code === "none" ? "text-text" : "text-error"}`}
       >
          {props.children}

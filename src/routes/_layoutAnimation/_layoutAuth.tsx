@@ -5,7 +5,7 @@ import AnimatedOutlet from "../../components/AnimatedOutlet";
 import AuthBackgroundSvg from "../../components/AuthBackgroundSvg";
 import { AuthBackgroundContext } from "../../contexts/authBackgroundContext";
 import { HistoryContext } from "../../contexts/historyContext";
-import { useModalsDispatch } from "../../hooks/useModals";
+import { useModalsDispatch } from "../../contexts/modalContext";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth")({
    component: LayoutAuth,

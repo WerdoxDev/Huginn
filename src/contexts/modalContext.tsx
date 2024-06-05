@@ -1,5 +1,5 @@
 import { ReactNode } from "@tanstack/react-router";
-import { Dispatch, createContext, useReducer } from "react";
+import { Dispatch, createContext, useContext, useReducer } from "react";
 
 type DefaultModal = { isOpen: boolean };
 type ModalContextType = {
@@ -33,4 +33,12 @@ function modalsReducer(modals: ModalContextType, action: DeepPartial<ModalContex
       text: action.info?.text ?? modals.info.text,
    };
    return { settings, info };
+}
+
+export function useModals() {
+   return useContext(ModalContext);
+}
+
+export function useModalsDispatch() {
+   return useContext(ModalDispatchContext);
 }

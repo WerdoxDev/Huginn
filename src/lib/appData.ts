@@ -17,11 +17,11 @@ export async function readSettingsFile() {
 /**
  * Write the settings file and refreshes the settings
  */
-export async function writeSettingsFile(settingsToOverride: AppSettings) {
+export async function writeSettingsFile(settingsToOverride: Partial<AppSettings>) {
    const fileSettings = await readSettingsFile();
    const finalSettings: AppSettings = { ...fileSettings, ...settingsToOverride };
 
-   // console.log(finalSettings);
+   console.log(settingsToOverride);
 
    settingsContent = finalSettings;
 
@@ -50,5 +50,5 @@ async function createDataDir() {
 }
 
 function getDefaultSettings(): AppSettings {
-   return { serverAddress: "localhost:3000" };
+   return { serverAddress: "localhost:3000", theme: "teal" };
 }
