@@ -108,7 +108,7 @@ declare global {
       error: [string, string];
    };
 
-   type ThemeType = "teal" | "cerulean" | "pine green" | "eggplant";
+   type ThemeType = "cerulean" | "pine green" | "eggplant";
 }
 
 type CustomEditor = BaseEditor & ReactEditor;

@@ -2,10 +2,9 @@ import { useThemeDispather } from "../../contexts/themeContext";
 import HuginnDropbox from "../HuginnDropbox";
 
 const themes: DropboxItem[] = [
-   { id: 0, name: "Teal", value: "teal" },
-   { id: 1, name: "Pine Green", value: "pine green" },
-   { id: 2, name: "Cerulean", value: "cerulean" },
-   { id: 3, name: "Eggplant", value: "eggplant" },
+   { id: 0, name: "Pine Green", value: "pine green" },
+   { id: 1, name: "Cerulean", value: "cerulean" },
+   { id: 2, name: "Eggplant", value: "eggplant" },
 ];
 
 export default function SettingsThemeTab(props: SettingsTabProps) {

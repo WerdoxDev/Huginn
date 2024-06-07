@@ -9,19 +9,19 @@ const ceruleanTheme: ColorTheme = {
    accent: ["0 180 245", "#00B4F5"],
    accent2: ["", ""],
    text: ["235 235 211", "#EBEBD3"],
-   error: ["255 99 71", "#FF6347"],
+   error: ["250 128 114", "#FA8072"],
 };
 
-const tealTheme: ColorTheme = {
-   background: ["48 48 48", "#303030"],
-   secondary: ["38 38 38", "#262626"],
-   tertiary: ["31 31 31", "#1f1f1f"],
-   primary: ["0 128 128", "#008080"],
-   accent: ["0 204 204", "#00CCCC"],
-   accent2: ["", ""],
-   text: ["235 235 211", "#EBEBD3"],
-   error: ["255 99 71", "#FF6347"],
-};
+// const tealTheme: ColorTheme = {
+//    background: ["48 48 48", "#303030"],
+//    secondary: ["38 38 38", "#262626"],
+//    tertiary: ["31 31 31", "#1f1f1f"],
+//    primary: ["0 128 128", "#008080"],
+//    accent: ["0 204 204", "#00CCCC"],
+//    accent2: ["", ""],
+//    text: ["235 235 211", "#EBEBD3"],
+//    error: ["250 128 114", "#FA8072"],
+// };
 
 const pineGreenTheme: ColorTheme = {
    background: ["48 48 48", "#303030"],
@@ -31,7 +31,7 @@ const pineGreenTheme: ColorTheme = {
    accent: ["2 202 185", "#02CAB9"],
    accent2: ["", ""],
    text: ["235 235 211", "#EBEBD3"],
-   error: ["255 99 71", "#FF6347"],
+   error: ["250 128 114", "#FA8072"],
 };
 
 const eggplantTheme: ColorTheme = {
@@ -42,10 +42,10 @@ const eggplantTheme: ColorTheme = {
    accent: ["165 120 144", "#A57890"],
    accent2: ["", ""],
    text: ["235 235 211", "#EBEBD3"],
-   error: ["255 99 71", "#FF6347"],
+   error: ["250 128 114", "#FA8072"],
 };
 
-const defaultValue: ColorTheme = tealTheme;
+const defaultValue: ColorTheme = pineGreenTheme;
 const ThemeContext = createContext<ColorTheme>(defaultValue);
 const ThemeContextDispather = createContext<Dispatch<ThemeType>>(() => {});
 
@@ -64,9 +64,6 @@ export function ThemeProvier(props: { children?: ReactNode }) {
 
 function colorThemeReducer(_colorTheme: ColorTheme, action: ThemeType): ColorTheme {
    switch (action) {
-      case "teal":
-         setColorProperty(tealTheme);
-         return tealTheme;
       case "cerulean":
          setColorProperty(ceruleanTheme);
          return ceruleanTheme;
@@ -77,7 +74,7 @@ function colorThemeReducer(_colorTheme: ColorTheme, action: ThemeType): ColorThe
          setColorProperty(eggplantTheme);
          return eggplantTheme;
       default:
-         return tealTheme;
+         return pineGreenTheme;
    }
 }
 

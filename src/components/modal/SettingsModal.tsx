@@ -82,7 +82,7 @@ export default function SettingsModal() {
                      leaveFrom="opacity-100 scale-100"
                      leaveTo="opacity-0 scale-95"
                   >
-                     <DialogPanel className="w-full max-w-3xl transform overflow-hidden rounded-lg bg-background transition-all">
+                     <DialogPanel className="w-full max-w-3xl transform overflow-hidden rounded-lg border-2 border-primary/50 bg-background transition-[opacity_transform]">
                         <TabGroup className="flex" vertical defaultIndex={defaultTabIndex} onChange={onTabChanged}>
                            <div className="bg-secondary/50">
                               <TabList className="flex w-48 flex-shrink-0 select-none flex-col items-start py-2">
