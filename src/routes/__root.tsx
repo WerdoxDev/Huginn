@@ -45,13 +45,8 @@ function Root() {
                   {router.state.location.pathname !== "/splashscreen" && <TitleBar />}
                   <div className="relative h-full w-full">
                      <Outlet />
-                     <div className="absolute bottom-10 left-2 z-10">
-                        <button className="text-text" onClick={() => localStorage.removeItem("refresh-token")}>
-                           Clear
-                        </button>
-                     </div>
                      {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
-                     <TanStackRouterDevtools position="bottom-left" toggleButtonProps={{ className: "top-6" }} />
+                     {/* <TanStackRouterDevtools position="bottom-left" toggleButtonProps={{ className: "top-6" }} /> */}
                      {window.__TAURI__ && <AppMaximizedEvent />}
                      <SettingsModal />
                      <InfoModal />

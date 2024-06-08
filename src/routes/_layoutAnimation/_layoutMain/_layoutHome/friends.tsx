@@ -64,7 +64,7 @@ function Friends() {
 
    return (
       <div className="flex h-full flex-col">
-         <TabGroup as={Fragment}>
+         <TabGroup as={Fragment} defaultIndex={friends.length === 0 ? 3 : 0}>
             <div className="flex h-[4.75rem] flex-shrink-0 items-center bg-tertiary px-6">
                <TabList className="mr-5 flex justify-center gap-x-5">
                   <div className="flex items-center justify-center gap-x-2.5 text-text">
@@ -99,9 +99,7 @@ function Friends() {
                <AddFriendTab />
             </TabPanels>
          </TabGroup>
-         <div className="flex h-16 w-full flex-shrink-0 bg-background">
-            <div className="h-full w-64 flex-shrink-0" />
-         </div>
+         <div className="flex h-16 w-full flex-shrink-0 bg-background" />
       </div>
    );
 }

@@ -78,7 +78,7 @@ function Login() {
                <HuginnInput.Label>Password</HuginnInput.Label>
             </PasswordInput>
 
-            <LinkButton className="mb-5 mt-1">Forgot your password?</LinkButton>
+            <LinkButton className="mb-5 mt-1 text-sm">Forgot your password?</LinkButton>
 
             <LoadingButton loading={!mutation.isIdle && mutation.isPending} className="h-11 w-full bg-primary " type="submit">
                Log In
@@ -86,7 +86,7 @@ function Login() {
 
             <div className="mt-3 flex select-none items-center">
                <span className="text-sm text-text opacity-70"> Don't have an account? </span>
-               <LinkButton to="/register" className="ml-1" preload={false}>
+               <LinkButton to="/register" className="ml-1 text-sm" preload={false}>
                   Register
                </LinkButton>
             </div>

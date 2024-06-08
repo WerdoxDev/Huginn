@@ -107,7 +107,7 @@ function Register() {
 
             <div className="mt-3 flex select-none items-center">
                <span className="text-sm text-text opacity-70"> Already have an account? </span>
-               <LinkButton to="/login" className="ml-1" preload={false}>
+               <LinkButton to="/login" className="ml-1 text-sm" preload={false}>
                   Login
                </LinkButton>
             </div>

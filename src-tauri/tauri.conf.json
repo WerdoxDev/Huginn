@@ -34,6 +34,13 @@
             "renameFile": true,
             "scope": ["$APPDATA/**", "$APPDATA/*", "$APPDATA"],
             "writeFile": true
+         },
+         "shell": {
+            "all": false,
+            "execute": false,
+            "open": true,
+            "scope": [],
+            "sidecar": false
          }
       },
       "bundle": {

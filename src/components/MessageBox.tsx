@@ -97,7 +97,7 @@ export default function MessageBox() {
                <div className="mr-2 flex shrink-0 cursor-pointer items-center rounded-full bg-background p-1.5 transition-all hover:bg-white hover:bg-opacity-20 hover:shadow-xl">
                   <IconGravityUiPlus name="gravity-ui:plus" className="h-5 w-5 text-text" />
                </div>
-               <div className="w-full flex-grow-0 self-center overflow-hidden py-1">
+               <div className="h-full w-full flex-grow-0 self-center overflow-hidden py-2">
                   <Slate editor={editor} initialValue={initialValue}>
                      <Editable
                         placeholder="Message @Emam"

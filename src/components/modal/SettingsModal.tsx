@@ -12,11 +12,12 @@ import {
 } from "@headlessui/react";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { readSettingsFile, writeSettingsFile } from "../../lib/appData";
-import SettingsAdvancedTab from "./SettingsAdvancedTab";
+import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
 import ModalBackground from "./ModalBackground";
-import SettingsThemeTab from "./SettingsThemeTab";
+import SettingsThemeTab from "./settings/SettingsThemeTab";
 import { useModals, useModalsDispatch } from "../../contexts/modalContext";
 import ModalCloseButton from "../button/ModalCloseButton";
+import SettingsAboutTab from "./settings/SettingsAboutTab";
 
 const tabs: SettingsTab[] = [
    { name: "general", text: "General", children: [{ name: "audio", text: "Audio", icon: <IconMdiSpeakerphone /> }] },
@@ -28,6 +29,11 @@ const tabs: SettingsTab[] = [
          { name: "notification", text: "Notification", icon: <IconMdiNotifications /> },
          { name: "advanced", text: "Advanced", icon: <IconMdiServer />, component: SettingsAdvancedTab },
       ],
+   },
+   {
+      name: "miscellaneous",
+      text: "Miscellaneous",
+      children: [{ name: "about", text: "About", icon: <IconMdiAbout />, component: SettingsAboutTab }],
    },
 ];
 
@@ -142,10 +148,10 @@ function SettingsPanels(props: {
    const flatTabs = useFlatTabs();
 
    return (
-      <TabPanels className="w-full p-5">
-         <div className="mb-5 text-xl text-text">{props.currentTab}</div>
+      <TabPanels className="flex w-full flex-col p-5">
+         <div className="mb-5 shrink-0 text-xl text-text">{props.currentTab}</div>
          {flatTabs.map((tab) => (
-            <TabPanel key={tab.name}>
+            <TabPanel key={tab.name} className="h-full">
                {tab.component ? (
                   () => {
                      const Component = tab.component!;

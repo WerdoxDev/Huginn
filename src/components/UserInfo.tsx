@@ -1,12 +1,14 @@
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from "@headlessui/react";
-import { client } from "../lib/api";
-import UserIconWithStatus from "./UserIconWithStatus";
+import { APIUser } from "@shared/api-types";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { APIUser } from "@shared/api-types";
+import { useModalsDispatch } from "../contexts/modalContext";
+import { client } from "../lib/api";
+import UserIconWithStatus from "./UserIconWithStatus";
 
 export default function UserInfo(props: { user: APIUser }) {
    const navigate = useNavigate();
+   const modalsDispatch = useModalsDispatch();
 
    const mutation = useMutation({
       async mutationFn() {
@@ -15,6 +17,12 @@ export default function UserInfo(props: { user: APIUser }) {
          await navigate({ to: "/login" });
       },
    });
+
+   function openSettings(e: React.MouseEvent) {
+      e.stopPropagation();
+      modalsDispatch({ settings: { isOpen: true } });
+   }
+
    return (
       <section className=" flex h-16 w-64 flex-shrink-0 flex-grow-0 items-center justify-center">
          <Menu>
@@ -29,7 +37,7 @@ export default function UserInfo(props: { user: APIUser }) {
                   <div className="text-xs text-text/70">Online</div>
                </div>
                <div className="flex flex-shrink-0 gap-x-1">
-                  <button className="group/setting rounded-lg p-1 hover:bg-background">
+                  <button className="group/setting rounded-lg p-1 hover:bg-background" onClick={openSettings}>
                      <IconMdiSettings className="h-6 w-6 text-white/80 transition-all group-hover/setting:rotate-[60deg]" />
                   </button>
                </div>
@@ -44,13 +52,13 @@ export default function UserInfo(props: { user: APIUser }) {
                leaveTo="opacity-0 scale-95"
             >
                <MenuItems
-                  className="w-64 divide-y divide-secondary rounded-lg bg-background shadow-lg outline-none transition [--anchor-gap:0.5rem]"
+                  className="w-60 divide-y divide-secondary rounded-lg bg-background shadow-lg outline-none transition [--anchor-gap:0.5rem]"
                   anchor="top"
                >
-                  <div className="p-1">
+                  <div className="p-1.5">
                      <MenuItem>
                         <button
-                           className="flex w-full items-center gap-x-2.5 rounded-md px-2 py-1.5 text-error hover:bg-error/10"
+                           className="flex w-full items-center gap-x-2.5 rounded-md px-2 py-2 text-error hover:bg-error/10"
                            onClick={() => mutation.mutate()}
                         >
                            <IconMdiLogout className="h-5 w-5" />
@@ -58,9 +66,9 @@ export default function UserInfo(props: { user: APIUser }) {
                         </button>
                      </MenuItem>
                   </div>
-                  <div className="p-1">
+                  <div className="p-1.5">
                      <MenuItem>
-                        <button className="flex w-full items-center gap-x-2.5 rounded-md px-2 py-1.5 text-text hover:bg-secondary">
+                        <button className="flex w-full items-center gap-x-2.5 rounded-md px-2 py-2 text-text hover:bg-secondary">
                            <IconMdiIdentificationCard className="h-5 w-5" />
                            <span className="text-sm">Copy User ID</span>
                         </button>

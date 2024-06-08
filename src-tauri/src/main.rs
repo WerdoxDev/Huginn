@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use tauri::{utils::config::AppUrl, Manager, Window, WindowUrl};
+use window_shadows::set_shadow;
 
 #[tauri::command]
 async fn open_main(window: Window) {
@@ -33,6 +34,13 @@ fn main() {
     context.config_mut().build.dist_dir = AppUrl::Url(window_url.clone());
 
     tauri::Builder::default()
+        .setup(|app| {
+            let window = app.get_window("main").unwrap();
+            set_shadow(&window, true).expect("Unsupported platform!");
+            let splashscreen = app.get_window("splashscreen").unwrap();
+            set_shadow(&splashscreen, true).expect("Unsupported platform!");
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![open_main, hide_splashscreen])
         .plugin(tauri_plugin_localhost::Builder::new(port).build())
         .build(context)
