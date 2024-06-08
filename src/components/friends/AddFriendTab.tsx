@@ -1,12 +1,12 @@
 import { TabPanel } from "@headlessui/react";
 import { useEffect, useState } from "react";
+import { useHuginnMutation } from "../../hooks/useHuginnMutation";
 import { useInputs } from "../../hooks/useInputs";
 import { client } from "../../lib/api";
 import AddFriendInput from "../input/AddFriendInput";
-import { useHuginnMutation } from "../../hooks/useHuginnMutation";
 
 export default function AddFriendTab() {
-   const { inputsProps, values, handleErrors, setInputStatus, resetStatuses } = useInputs([{ name: "username", required: false }]);
+   const { inputsProps, values, handleErrors, setInputStatus } = useInputs([{ name: "username", required: false }]);
 
    const [disabled, setDisabled] = useState(false);
 
@@ -15,7 +15,7 @@ export default function AddFriendTab() {
          async mutationFn(username: string) {
             await client.users.createRelationship({ username: username });
          },
-         onSuccess(data, username) {
+         onSuccess(_, username) {
             setInputStatus("username", { code: "success", text: `Friend request sent to ${username}!` });
          },
       },
@@ -25,10 +25,6 @@ export default function AddFriendTab() {
    useEffect(() => {
       setDisabled(!values.username.value);
    }, [values]);
-
-   useEffect(() => {
-      console.log("MOUNT");
-   }, []);
 
    async function addFriend() {
       await mutation.mutateAsync(values.username.value);

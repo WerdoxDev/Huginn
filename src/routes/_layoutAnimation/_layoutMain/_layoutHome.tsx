@@ -5,6 +5,7 @@ import UserInfo from "../../../components/UserInfo";
 import { client } from "../../../lib/api";
 import { getChannelsOptions } from "../../../lib/queries";
 import { requireAuth } from "../../../lib/middlewares";
+import ModalErrorComponent from "../../../components/ModalErrorComponent";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome")({
    beforeLoad() {
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome"
    loader: ({ context: { queryClient } }) => {
       return queryClient.ensureQueryData(getChannelsOptions("@me"));
    },
+   errorComponent: ModalErrorComponent,
 });
 
 function LayoutHome() {

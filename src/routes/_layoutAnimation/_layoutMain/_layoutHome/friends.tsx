@@ -71,7 +71,6 @@ function Friends() {
                      <IconFaSolidUserFriends className="size-6" />
                      <span className="text-lg font-bold">Friends</span>
                   </div>
-                  <button onClick={() => console.log(friends)}>CLICKME</button>
 
                   {tabs.map((tab) => (
                      <FriendsTabItem key={tab}>{tab}</FriendsTabItem>
