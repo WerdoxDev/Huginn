@@ -17,7 +17,6 @@ export function getMessagesOptions(channelId: Snowflake) {
    return queryOptions({
       queryKey: ["messages", channelId],
       queryFn: () => client.channels.getMessages(channelId, 50),
-      // staleTime: 0,
-      gcTime: 0,
+      staleTime: 30000,
    });
 }
