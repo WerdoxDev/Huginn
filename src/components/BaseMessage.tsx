@@ -28,7 +28,6 @@ export default function BaseMessage(props: { content?: string; author: APIMessag
 
    const decorate = useCallback(([node, path]: [Node, Path]) => {
       const ranges: Range[] = [];
-      console.log("CALLED");
 
       if (!Text.isText(node)) {
          return ranges;
@@ -54,7 +53,7 @@ export default function BaseMessage(props: { content?: string; author: APIMessag
       <li className="group select-text rounded-lg p-2 hover:bg-secondary">
          <div className={`flex flex-col items-start gap-y-2 ${isSelf ? "ml-0" : "ml-2"}`}>
             <div className="flex items-center overflow-hidden rounded-xl">
-               <UserIconWithStatus status-size="0.5rem" size="1.75rem" className="mr-2 bg-background" />
+               <UserIconWithStatus statusSize="0.5rem" size="1.75rem" className="mr-2 bg-background" />
                <div className="text-sm text-text">{isSelf ? "You" : props.author.displayName}</div>
             </div>
             {/* <div className="flex flex-col items-start gap-y-0.5"> */}

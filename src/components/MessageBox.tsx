@@ -50,7 +50,6 @@ export default function MessageBox() {
 
       const tokens = tokenize(node.text);
 
-      console.log(tokens);
       for (const token of tokens) {
          const markLength = token.mark!.length;
          const end = token.end + 1;

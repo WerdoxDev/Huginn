@@ -12,12 +12,13 @@ import { ModalProvider } from "../contexts/modalContext";
 import { ThemeProvier } from "../contexts/themeContext";
 import { setup } from "../lib/middlewares";
 import { useWindow, useWindowDispatch } from "../contexts/windowContext";
+import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 
-type RouterContext = {
+export type HuginnRouterContext = {
    queryClient: QueryClient;
 };
 
-export const Route = createRootRouteWithContext<RouterContext>()({
+export const Route = createRootRouteWithContext<HuginnRouterContext>()({
    async beforeLoad() {
       await setup();
    },
@@ -50,7 +51,7 @@ function Root() {
                         </button>
                      </div>
                      {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
-                     {/* <TanStackRouterDevtools position="bottom-left" toggleButtonProps={{ className: "top-6" }} /> */}
+                     <TanStackRouterDevtools position="bottom-left" toggleButtonProps={{ className: "top-6" }} />
                      {window.__TAURI__ && <AppMaximizedEvent />}
                      <SettingsModal />
                      <InfoModal />

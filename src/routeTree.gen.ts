@@ -17,10 +17,12 @@ import { Route as SplashscreenImport } from './routes/splashscreen'
 import { Route as LayoutAnimationImport } from './routes/_layoutAnimation'
 import { Route as LayoutAnimationLayoutMainImport } from './routes/_layoutAnimation/_layoutMain'
 import { Route as LayoutAnimationLayoutAuthImport } from './routes/_layoutAnimation/_layoutAuth'
+import { Route as LayoutAnimationLayoutMainLayoutHomeImport } from './routes/_layoutAnimation/_layoutMain/_layoutHome'
 import { Route as LayoutAnimationLayoutAuthRegisterImport } from './routes/_layoutAnimation/_layoutAuth/register'
 import { Route as LayoutAnimationLayoutAuthLoginImport } from './routes/_layoutAnimation/_layoutAuth/login'
-import { Route as LayoutAnimationLayoutMainChannelsGuildIdImport } from './routes/_layoutAnimation/_layoutMain/channels.$guildId'
-import { Route as LayoutAnimationLayoutMainChannelsGuildIdChannelIdImport } from './routes/_layoutAnimation/_layoutMain/channels.$guildId.$channelId'
+import { Route as LayoutAnimationLayoutMainLayoutHomeFriendsImport } from './routes/_layoutAnimation/_layoutMain/_layoutHome/friends'
+import { Route as LayoutAnimationLayoutMainLayoutHomeChannelsmeImport } from './routes/_layoutAnimation/_layoutMain/_layoutHome/channels.@me'
+import { Route as LayoutAnimationLayoutMainLayoutHomeChannelsmeChannelIdImport } from './routes/_layoutAnimation/_layoutMain/_layoutHome/channels.@me.$channelId'
 
 // Create Virtual Routes
 
@@ -53,6 +55,12 @@ const LayoutAnimationLayoutAuthRoute = LayoutAnimationLayoutAuthImport.update({
   getParentRoute: () => LayoutAnimationRoute,
 } as any)
 
+const LayoutAnimationLayoutMainLayoutHomeRoute =
+  LayoutAnimationLayoutMainLayoutHomeImport.update({
+    id: '/_layoutHome',
+    getParentRoute: () => LayoutAnimationLayoutMainRoute,
+  } as any)
+
 const LayoutAnimationLayoutAuthRegisterRoute =
   LayoutAnimationLayoutAuthRegisterImport.update({
     path: '/register',
@@ -65,16 +73,22 @@ const LayoutAnimationLayoutAuthLoginRoute =
     getParentRoute: () => LayoutAnimationLayoutAuthRoute,
   } as any)
 
-const LayoutAnimationLayoutMainChannelsGuildIdRoute =
-  LayoutAnimationLayoutMainChannelsGuildIdImport.update({
-    path: '/channels/$guildId',
-    getParentRoute: () => LayoutAnimationLayoutMainRoute,
+const LayoutAnimationLayoutMainLayoutHomeFriendsRoute =
+  LayoutAnimationLayoutMainLayoutHomeFriendsImport.update({
+    path: '/friends',
+    getParentRoute: () => LayoutAnimationLayoutMainLayoutHomeRoute,
   } as any)
 
-const LayoutAnimationLayoutMainChannelsGuildIdChannelIdRoute =
-  LayoutAnimationLayoutMainChannelsGuildIdChannelIdImport.update({
+const LayoutAnimationLayoutMainLayoutHomeChannelsmeRoute =
+  LayoutAnimationLayoutMainLayoutHomeChannelsmeImport.update({
+    path: '/channels/@me',
+    getParentRoute: () => LayoutAnimationLayoutMainLayoutHomeRoute,
+  } as any)
+
+const LayoutAnimationLayoutMainLayoutHomeChannelsmeChannelIdRoute =
+  LayoutAnimationLayoutMainLayoutHomeChannelsmeChannelIdImport.update({
     path: '/$channelId',
-    getParentRoute: () => LayoutAnimationLayoutMainChannelsGuildIdRoute,
+    getParentRoute: () => LayoutAnimationLayoutMainLayoutHomeChannelsmeRoute,
   } as any)
 
 // Populate the FileRoutesByPath interface
@@ -130,19 +144,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAnimationLayoutAuthRegisterImport
       parentRoute: typeof LayoutAnimationLayoutAuthImport
     }
-    '/_layoutAnimation/_layoutMain/channels/$guildId': {
-      id: '/_layoutAnimation/_layoutMain/channels/$guildId'
-      path: '/channels/$guildId'
-      fullPath: '/channels/$guildId'
-      preLoaderRoute: typeof LayoutAnimationLayoutMainChannelsGuildIdImport
+    '/_layoutAnimation/_layoutMain/_layoutHome': {
+      id: '/_layoutAnimation/_layoutMain/_layoutHome'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof LayoutAnimationLayoutMainLayoutHomeImport
       parentRoute: typeof LayoutAnimationLayoutMainImport
     }
-    '/_layoutAnimation/_layoutMain/channels/$guildId/$channelId': {
-      id: '/_layoutAnimation/_layoutMain/channels/$guildId/$channelId'
+    '/_layoutAnimation/_layoutMain/_layoutHome/friends': {
+      id: '/_layoutAnimation/_layoutMain/_layoutHome/friends'
+      path: '/friends'
+      fullPath: '/friends'
+      preLoaderRoute: typeof LayoutAnimationLayoutMainLayoutHomeFriendsImport
+      parentRoute: typeof LayoutAnimationLayoutMainLayoutHomeImport
+    }
+    '/_layoutAnimation/_layoutMain/_layoutHome/channels/@me': {
+      id: '/_layoutAnimation/_layoutMain/_layoutHome/channels/@me'
+      path: '/channels/@me'
+      fullPath: '/channels/@me'
+      preLoaderRoute: typeof LayoutAnimationLayoutMainLayoutHomeChannelsmeImport
+      parentRoute: typeof LayoutAnimationLayoutMainLayoutHomeImport
+    }
+    '/_layoutAnimation/_layoutMain/_layoutHome/channels/@me/$channelId': {
+      id: '/_layoutAnimation/_layoutMain/_layoutHome/channels/@me/$channelId'
       path: '/$channelId'
-      fullPath: '/channels/$guildId/$channelId'
-      preLoaderRoute: typeof LayoutAnimationLayoutMainChannelsGuildIdChannelIdImport
-      parentRoute: typeof LayoutAnimationLayoutMainChannelsGuildIdImport
+      fullPath: '/channels/@me/$channelId'
+      preLoaderRoute: typeof LayoutAnimationLayoutMainLayoutHomeChannelsmeChannelIdImport
+      parentRoute: typeof LayoutAnimationLayoutMainLayoutHomeChannelsmeImport
     }
   }
 }
@@ -157,9 +185,13 @@ export const routeTree = rootRoute.addChildren({
       LayoutAnimationLayoutAuthRegisterRoute,
     }),
     LayoutAnimationLayoutMainRoute: LayoutAnimationLayoutMainRoute.addChildren({
-      LayoutAnimationLayoutMainChannelsGuildIdRoute:
-        LayoutAnimationLayoutMainChannelsGuildIdRoute.addChildren({
-          LayoutAnimationLayoutMainChannelsGuildIdChannelIdRoute,
+      LayoutAnimationLayoutMainLayoutHomeRoute:
+        LayoutAnimationLayoutMainLayoutHomeRoute.addChildren({
+          LayoutAnimationLayoutMainLayoutHomeFriendsRoute,
+          LayoutAnimationLayoutMainLayoutHomeChannelsmeRoute:
+            LayoutAnimationLayoutMainLayoutHomeChannelsmeRoute.addChildren({
+              LayoutAnimationLayoutMainLayoutHomeChannelsmeChannelIdRoute,
+            }),
         }),
     }),
   }),

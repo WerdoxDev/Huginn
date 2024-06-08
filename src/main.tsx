@@ -5,15 +5,19 @@ import { routeTree } from "./routeTree.gen";
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WindowProvider } from "./contexts/windowContext";
+import DefaultNotFound from "./components/DefaultNotFound";
+import DefaultError from "./components/DefaultError";
 
 const queryClient = new QueryClient();
 
 export const router = createRouter({
    routeTree,
-   defaultPreload: "intent",
-   defaultPreloadDelay: 200,
-   defaultPreloadStaleTime: 0,
+   // defaultPreload: "intent",
+   // defaultPreloadDelay: 200,
+   // defaultPreloadStaleTime: 0,
    context: { queryClient },
+   defaultNotFoundComponent: DefaultNotFound,
+   defaultErrorComponent: DefaultError,
 });
 
 // Register the router instance for type safety

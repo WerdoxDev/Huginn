@@ -7,7 +7,7 @@ export default function HomeSidebar(props: { channels?: APIGetUserChannelsResult
       <nav className="h-full rounded-l-xl bg-secondary">
          <div className="flex h-[4.75rem] items-center px-6">
             <div className="text-xl font-bold text-text">Home</div>
-            <RingLinkButton active={false} to="/friends" className="ml-6 px-2 py-1 text-xs font-medium">
+            <RingLinkButton to="/friends" className="ml-6 px-2 py-1 text-xs font-medium">
                Friends
             </RingLinkButton>
          </div>
