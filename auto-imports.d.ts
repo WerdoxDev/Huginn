@@ -6,6 +6,7 @@
 export {}
 declare global {
   const IconFa6SolidCrow: typeof import('~icons/fa6-solid/crow.jsx')['default']
+  const IconFaSolidUserFriends: typeof import('~icons/fa-solid/user-friends.jsx')['default']
   const IconGravityUiCaretDown: typeof import('~icons/gravity-ui/caret-down.jsx')['default']
   const IconGravityUiCheck: typeof import('~icons/gravity-ui/check.jsx')['default']
   const IconGravityUiPlus: typeof import('~icons/gravity-ui/plus.jsx')['default']
@@ -13,12 +14,15 @@ declare global {
   const IconLineMdAlert: typeof import('~icons/line-md/alert.jsx')['default']
   const IconMaterialSymbolsErrorOutline: typeof import('~icons/material-symbols/error-outline.jsx')['default']
   const IconMdiCamera: typeof import('~icons/mdi/camera.jsx')['default']
+  const IconMdiCheck: typeof import('~icons/mdi/check.jsx')['default']
   const IconMdiClose: typeof import('~icons/mdi/close.jsx')['default']
   const IconMdiHide: typeof import('~icons/mdi/hide.jsx')['default']
   const IconMdiIdentificationCard: typeof import('~icons/mdi/identification-card.jsx')['default']
   const IconMdiLogout: typeof import('~icons/mdi/logout.jsx')['default']
   const IconMdiMaximize: typeof import('~icons/mdi/maximize.jsx')['default']
+  const IconMdiMessage: typeof import('~icons/mdi/message.jsx')['default']
   const IconMdiMinimize: typeof import('~icons/mdi/minimize.jsx')['default']
+  const IconMdiMoreVert: typeof import('~icons/mdi/more-vert.jsx')['default']
   const IconMdiNotifications: typeof import('~icons/mdi/notifications.jsx')['default']
   const IconMdiServer: typeof import('~icons/mdi/server.jsx')['default']
   const IconMdiSettings: typeof import('~icons/mdi/settings.jsx')['default']

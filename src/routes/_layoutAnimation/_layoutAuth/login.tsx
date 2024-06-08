@@ -1,6 +1,4 @@
-import { HuginnAPIError } from "@api/index";
 import { APIPostLoginJSONBody } from "@shared/api-types";
-import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useContext, useEffect, useState } from "react";
 import AuthWrapper from "../../../components/AuthWrapper";
@@ -9,16 +7,15 @@ import LoadingButton from "../../../components/button/LoadingButton";
 import HuginnInput from "../../../components/input/HuginnInput";
 import PasswordInput from "../../../components/input/PasswordInput";
 import { AuthBackgroundContext } from "../../../contexts/authBackgroundContext";
+import { useHuginnMutation } from "../../../hooks/useHuginnMutation";
 import { useInputs } from "../../../hooks/useInputs";
 import { client } from "../../../lib/api";
 import { requireNotAuth } from "../../../lib/middlewares";
-import { useServerErrorHandler } from "../../../hooks/useServerErrorHandler";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/login")({
    beforeLoad() {
       requireNotAuth();
    },
-
    component: Login,
 });
 
@@ -30,37 +27,31 @@ function Login() {
 
    const [hidden, setHidden] = useState(false);
    const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
-   const handleServerError = useServerErrorHandler();
    const navigate = useNavigate({ from: "/login" });
 
-   const mutation = useMutation({
-      async mutationFn(credentials: APIPostLoginJSONBody) {
-         await client.login({
-            username: credentials.username,
-            email: credentials.email,
-            password: credentials.password,
-         });
+   const mutation = useHuginnMutation(
+      {
+         async mutationFn(credentials: APIPostLoginJSONBody) {
+            await client.login({
+               username: credentials.username,
+               email: credentials.email,
+               password: credentials.password,
+            });
 
-         client.gateway.connect();
-      },
-      onError(error) {
-         if (error instanceof HuginnAPIError) {
-            if (error.rawError.errors === undefined) return;
-            handleErrors(error.rawError.errors);
-         } else {
-            handleServerError(error);
-         }
-      },
-      async onSuccess() {
-         setAuthBackgroundState(1);
-         setHidden(true);
+            client.gateway.connect();
+         },
+         async onSuccess() {
+            setAuthBackgroundState(1);
+            setHidden(true);
 
-         await navigate({ to: "/channels/@me" });
+            await navigate({ to: "/channels/@me" });
 
-         localStorage.setItem("access-token", client.tokenHandler.token!);
-         localStorage.setItem("refresh-token", client.tokenHandler.refreshToken!);
+            localStorage.setItem("access-token", client.tokenHandler.token!);
+            localStorage.setItem("refresh-token", client.tokenHandler.refreshToken!);
+         },
       },
-   });
+      handleErrors,
+   );
 
    useEffect(() => {
       setAuthBackgroundState(0);

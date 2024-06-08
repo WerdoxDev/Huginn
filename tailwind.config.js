@@ -10,6 +10,7 @@ export default {
             primary: `rgb(var(--color-primary) / <alpha-value>)`,
             accent: "rgb(var(--color-accent) / <alpha-value>)",
             accent2: "rgb(var(--color-accent2) / <alpha-value>)",
+            success: "rgb(var(--color-success) / <alpha-value>)",
             text: "rgb(var(--color-text) / <alpha-value>)",
             error: "rgb(var(--color-error) / <alpha-value>)",
          },

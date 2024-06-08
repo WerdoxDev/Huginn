@@ -3,17 +3,21 @@ import { Outlet, createFileRoute } from "@tanstack/react-router";
 import HomeSidebar from "../../../components/HomeSidebar";
 import UserInfo from "../../../components/UserInfo";
 import { client } from "../../../lib/api";
-import { getChannelsOption } from "../../../lib/queries";
+import { getChannelsOptions } from "../../../lib/queries";
+import { requireAuth } from "../../../lib/middlewares";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome")({
+   beforeLoad() {
+      requireAuth();
+   },
    component: LayoutHome,
    loader: ({ context: { queryClient } }) => {
-      return queryClient.ensureQueryData(getChannelsOption("@me"));
+      return queryClient.ensureQueryData(getChannelsOptions("@me"));
    },
 });
 
 function LayoutHome() {
-   const { data } = useSuspenseQuery(getChannelsOption("@me"));
+   const { data } = useSuspenseQuery(getChannelsOptions("@me"));
 
    return (
       //TODO: Abstract the 2 (navigation & content) parts to a central component for later use

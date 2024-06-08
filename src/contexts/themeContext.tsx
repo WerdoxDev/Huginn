@@ -8,6 +8,7 @@ const ceruleanTheme: ColorTheme = {
    primary: ["0 123 167", "#007BA7"],
    accent: ["0 180 245", "#00B4F5"],
    accent2: ["", ""],
+   success: ["118 255 122", "#76FF7A"],
    text: ["235 235 211", "#EBEBD3"],
    error: ["250 128 114", "#FA8072"],
 };
@@ -30,6 +31,7 @@ const pineGreenTheme: ColorTheme = {
    primary: ["1 121 111", "#01796F"],
    accent: ["2 202 185", "#02CAB9"],
    accent2: ["", ""],
+   success: ["118 255 122", "#76FF7A"],
    text: ["235 235 211", "#EBEBD3"],
    error: ["250 128 114", "#FA8072"],
 };
@@ -41,6 +43,7 @@ const eggplantTheme: ColorTheme = {
    primary: ["97 64 81", "#614051"],
    accent: ["165 120 144", "#A57890"],
    accent2: ["", ""],
+   success: ["118 255 122", "#76FF7A"],
    text: ["235 235 211", "#EBEBD3"],
    error: ["250 128 114", "#FA8072"],
 };
@@ -94,6 +97,7 @@ function setColorProperty(theme: ColorTheme) {
    style.setProperty("--color-primary", theme.primary[0]);
    style.setProperty("--color-accent", theme.accent[0]);
    style.setProperty("--color-accent2", theme.accent2[0]);
+   style.setProperty("--color-success", theme.success[0]);
    style.setProperty("--color-text", theme.text[0]);
    style.setProperty("--color-error", theme.error[0]);
 }

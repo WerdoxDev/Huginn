@@ -1,5 +1,7 @@
-import type { HuginnError } from "@shared/errors";
+import { HuginnAPIError } from "@api/index";
+import type { HuginnError, HuginnErrorData } from "@shared/errors";
 import React, { JSXElementConstructor, ReactNode } from "react";
+import { APIMessages } from "./errorMessages";
 
 export const requiredFieldError: InputStatus = { code: "error", text: "Required" };
 
@@ -22,14 +24,17 @@ export function getInputsValidatedStatuses(fields: InputValues, statuses: InputS
    return newStatues;
 }
 
-export function getInputsStatusesFromError(statuses: InputStatuses, errors: HuginnError, field?: string) {
+export function getInputsStatusesFromError(statuses: InputStatuses, error: HuginnErrorData, field?: string) {
    const newStatuses = { ...statuses };
 
    Object.keys(newStatuses).forEach((x) => {
-      if (((field && x === field) ?? !field) && errors[x]) {
+      if (!error.errors) {
+         const apiMessage = Object.entries(APIMessages).find(([code]) => code === error.code.toString())?.[1];
+         newStatuses[x] = { code: "error", text: apiMessage ?? error.message };
+      } else if (((field && x === field) ?? !field) && error.errors?.[x]) {
          newStatuses[x] = {
             code: "error",
-            text: errors[x]._errors[0].message,
+            text: error.errors[x]._errors[0].message,
          };
       } else {
          newStatuses[x] = { code: "none", text: "" };
@@ -58,4 +63,18 @@ export function filterChildrenOfType(children: ReactNode, type: JSXElementConstr
    return React.Children.toArray(children).filter(
       (child) => React.isValidElement(child) && typeof child.type === "function" && child.type.name === type.name,
    );
+}
+
+export function isWorthyHuginnError(error: Error): error is HuginnAPIError {
+   if (error instanceof HuginnAPIError) {
+      return true;
+   }
+   return false;
+}
+
+export function createSingleEntryError(error: HuginnAPIError, name: string): HuginnError {
+   const apiMessage = Object.entries(APIMessages).find(([code]) => code === error.rawError.code.toString());
+   return {
+      [name]: { _errors: [{ code: error.rawError.code.toString(), message: apiMessage ? apiMessage[1] : error.rawError.message }] },
+   };
 }

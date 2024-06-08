@@ -1,6 +1,4 @@
-import { HuginnAPIError } from "@api/index";
 import { APIPostRegisterJSONBody } from "@shared/api-types";
-import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useContext, useEffect, useState } from "react";
 import AnimatedMessage from "../../../components/AnimatedMessage";
@@ -10,11 +8,11 @@ import LoadingButton from "../../../components/button/LoadingButton";
 import HuginnInput from "../../../components/input/HuginnInput";
 import PasswordInput from "../../../components/input/PasswordInput";
 import { AuthBackgroundContext } from "../../../contexts/authBackgroundContext";
+import { useHuginnMutation } from "../../../hooks/useHuginnMutation";
 import { useInputs } from "../../../hooks/useInputs";
 import useUniqueUsernameMessage from "../../../hooks/useUniqueUsernameMessage";
 import { client } from "../../../lib/api";
 import { requireNotAuth } from "../../../lib/middlewares";
-import { useServerErrorHandler } from "../../../hooks/useServerErrorHandler";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/register")({
    beforeLoad() {
@@ -34,35 +32,29 @@ function Register() {
    const [hidden, setHidden] = useState(false);
    const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
    const { message: usernameMessageDetail, onFocusChanged } = useUniqueUsernameMessage(values, "username");
-   const handleServerError = useServerErrorHandler();
    const navigate = useNavigate({ from: "/register" });
 
-   const mutation = useMutation({
-      async mutationFn(user: APIPostRegisterJSONBody) {
-         await client.register({
-            email: user.email,
-            displayName: user.displayName,
-            username: user.username,
-            password: user.password,
-         });
+   const mutation = useHuginnMutation(
+      {
+         async mutationFn(user: APIPostRegisterJSONBody) {
+            await client.register({
+               email: user.email,
+               displayName: user.displayName,
+               username: user.username,
+               password: user.password,
+            });
 
-         client.gateway.connect();
-      },
-      onError(error) {
-         if (error instanceof HuginnAPIError) {
-            if (error.rawError.errors === undefined) return;
-            handleErrors(error.rawError.errors);
-         } else {
-            handleServerError(error);
-         }
-      },
-      async onSuccess() {
-         setAuthBackgroundState(1);
-         setHidden(true);
+            client.gateway.connect();
+         },
+         async onSuccess() {
+            setAuthBackgroundState(1);
+            setHidden(true);
 
-         await navigate({ to: "/channels/@me" });
+            await navigate({ to: "/channels/@me" });
+         },
       },
-   });
+      handleErrors,
+   );
 
    useEffect(() => {
       setAuthBackgroundState(0);

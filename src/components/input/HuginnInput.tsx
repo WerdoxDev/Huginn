@@ -33,7 +33,9 @@ export default function HuginnInput(props: HuginnInputProps) {
       <InputContext.Provider value={{ id: id, required: props.required, status: props.status }}>
          <div className={`flex flex-col ${props.className}`}>
             {filteredChildren.label && <HuginnInput.Label skipRender>{filteredChildren.label}</HuginnInput.Label>}
-            <div className={`flex w-full items-center rounded-md bg-secondary ${hasBorder ? "border-l-4" : ""} ${borderColor}`}>
+            <div
+               className={`flex w-full items-center rounded-md bg-secondary ${hasBorder && !props.hideBorder ? "border-l-4" : ""} ${borderColor}`}
+            >
                <input
                   id={id}
                   ref={inputRef}

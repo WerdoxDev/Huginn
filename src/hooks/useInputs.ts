@@ -1,11 +1,11 @@
-import { HuginnError } from "@shared/errors";
+import { HuginnErrorData } from "@shared/errors";
 import { useEffect, useState } from "react";
 import {
-   getInputCurrentStatus,
-   getInputsValidatedStatuses,
-   getEmptyStatuses,
-   getInputsStatusesFromError,
    checkStatusesHaveErrors,
+   getEmptyStatuses,
+   getInputCurrentStatus,
+   getInputsStatusesFromError,
+   getInputsValidatedStatuses,
 } from "../lib/utils";
 
 export function useInputs(inputsOptions: InputOptions[]) {
@@ -71,12 +71,20 @@ export function useInputs(inputsOptions: InputOptions[]) {
       setErrorStatuses({});
    }
 
-   function handleErrors(errors: HuginnError) {
+   function handleErrors(errors: HuginnErrorData) {
       const newStatuses = getInputsStatusesFromError(statuses, errors);
+      console.log(newStatuses);
 
       setStatuses(newStatuses);
       setErrorStatuses({ ...newStatuses });
    }
 
-   return { inputsProps, values, statuses, onValueChanged, validateValues, resetStatuses, handleErrors };
+   function setInputStatus(inputName: string, status: InputStatus) {
+      const newStatuses = { ...statuses };
+      newStatuses[inputName] = status;
+
+      setStatuses(newStatuses);
+   }
+
+   return { inputsProps, values, statuses, onValueChanged, validateValues, resetStatuses, handleErrors, setInputStatus };
 }

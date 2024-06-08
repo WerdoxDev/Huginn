@@ -47,6 +47,7 @@ declare global {
       type?: HTMLInputTypeAttribute;
       required?: boolean;
       value?: string;
+      hideBorder?: boolean;
       onChange?: (e: HTMLInputElement) => void;
       onFocus?: (focused: boolean) => void;
    };
@@ -104,6 +105,7 @@ declare global {
       primary: [string, string];
       accent: [string, string];
       accent2: [string, string];
+      success: [string, string];
       text: [string, string];
       error: [string, string];
    };
