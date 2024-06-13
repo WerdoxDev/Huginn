@@ -8,20 +8,20 @@ import ModalErrorComponent from "../../../../components/ModalErrorComponent";
 import FriendsTabItem from "../../../../components/friends/FriendsTabItem";
 import OnlineFriendsTab from "../../../../components/friends/OnlineFriendsTab";
 import PendingFriendsTab from "../../../../components/friends/PendingFriendsTab";
-import { client } from "../../../../lib/api";
 import { requireAuth } from "../../../../lib/middlewares";
 import { getRelationshipsOptions } from "../../../../lib/queries";
 import AddFriendTab from "../../../../components/friends/AddFriendTab";
 import { APIRelationship } from "@shared/api-types";
 import { Snowflake } from "@shared/snowflake";
+import { useClient } from "../../../../contexts/apiContext";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/friends")({
-   beforeLoad() {
-      requireAuth();
+   beforeLoad({ context: { client } }) {
+      requireAuth(client);
    },
    component: Friends,
-   loader({ context: { queryClient } }) {
-      return queryClient.ensureQueryData(getRelationshipsOptions());
+   loader({ context: { queryClient, client } }) {
+      return queryClient.ensureQueryData(getRelationshipsOptions(client));
    },
    errorComponent: ModalErrorComponent,
 });
@@ -29,11 +29,17 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/
 const tabs = ["Online", "All", "Pending"];
 
 function Friends() {
-   const { data: friends } = useSuspenseQuery(getRelationshipsOptions());
+   const client = useClient();
+   const { data: friends } = useSuspenseQuery(getRelationshipsOptions(client));
    const queryClient = useQueryClient();
 
    function onRelationshipCreated(relationship: APIRelationship) {
       if (friends.some((x) => x.id === relationship.id)) {
+         const changedIndex = friends.findIndex((x) => x.id === relationship.id && x.type !== relationship.type);
+         if (changedIndex !== -1) {
+            const newRelationships = friends.toSpliced(changedIndex, 1, { ...friends[changedIndex], type: relationship.type });
+            queryClient.setQueryData(["relationships"], newRelationships);
+         }
          return;
       }
 

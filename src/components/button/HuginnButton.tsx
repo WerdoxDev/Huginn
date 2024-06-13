@@ -1,3 +1,5 @@
+import { HuginnButtonProps } from "../../types";
+
 export default function HuginnButton(props: HuginnButtonProps) {
    return (
       <button

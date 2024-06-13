@@ -1,3 +1,4 @@
+import { HuginnInputProps } from "../../types";
 import HuginnButton from "../button/HuginnButton";
 
 export default function AddFriendInput(props: HuginnInputProps & { onClick?: () => void; disabled?: boolean }) {

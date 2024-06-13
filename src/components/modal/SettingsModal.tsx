@@ -11,13 +11,14 @@ import {
    TransitionChild,
 } from "@headlessui/react";
 import { Fragment, useEffect, useRef, useState } from "react";
-import { readSettingsFile, writeSettingsFile } from "../../lib/appData";
-import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
-import ModalBackground from "./ModalBackground";
-import SettingsThemeTab from "./settings/SettingsThemeTab";
 import { useModals, useModalsDispatch } from "../../contexts/modalContext";
+import { SettingsContextType, useSettings, useSettingsDispatcher } from "../../contexts/settingsContext";
 import ModalCloseButton from "../button/ModalCloseButton";
+import ModalBackground from "./ModalBackground";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
+import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
+import SettingsThemeTab from "./settings/SettingsThemeTab";
+import { DeepPartial, SettingsTab } from "../../types";
 
 const tabs: SettingsTab[] = [
    { name: "general", text: "General", children: [{ name: "audio", text: "Audio", icon: <IconMdiSpeakerphone /> }] },
@@ -50,28 +51,26 @@ export default function SettingsModal() {
    const flatTabs = useFlatTabs();
    const [currentTab, setCurrentTab] = useState(() => flatTabs[defaultTabIndex].text);
 
-   const settings = useRef<Partial<AppSettings>>({});
+   const settings = useSettings();
+   const modifiedSettings = useRef<DeepPartial<SettingsContextType>>({});
+   const settingsDispatch = useSettingsDispatcher();
 
    useEffect(() => {
       if (!window.__TAURI__) return;
 
-      async function read() {
-         if (modal.isOpen) {
-            settings.current = await readSettingsFile();
-         } else {
-            await writeSettingsFile({ ...settings.current });
-         }
+      if (modal.isOpen) {
+         modifiedSettings.current = { ...settings };
+      } else {
+         settingsDispatch(modifiedSettings.current);
       }
-
-      read();
    }, [modal.isOpen]);
 
    function onTabChanged(index: number) {
       setCurrentTab(flatTabs[index].text);
    }
 
-   function onSettingsChanged(value: Partial<AppSettings>) {
-      settings.current = { ...settings.current, ...value };
+   function onSettingsChanged(value: DeepPartial<SettingsContextType>) {
+      modifiedSettings.current = { ...modifiedSettings.current, ...value };
    }
 
    return (
@@ -98,7 +97,7 @@ export default function SettingsModal() {
                                  <SettingsTabs />
                               </TabList>
                            </div>
-                           <SettingsPanels currentTab={currentTab} settings={settings.current} onChange={onSettingsChanged} />
+                           <SettingsPanels currentTab={currentTab} settings={modifiedSettings.current} onChange={onSettingsChanged} />
                         </TabGroup>
                         <ModalCloseButton onClick={() => dispatch({ settings: { isOpen: false } })} />
                      </DialogPanel>
@@ -141,9 +140,9 @@ function SettingsTabs() {
 }
 
 function SettingsPanels(props: {
-   settings: Partial<AppSettings>;
+   settings: DeepPartial<SettingsContextType>;
    currentTab: string;
-   onChange: (value: Partial<AppSettings>) => void;
+   onChange: (value: DeepPartial<SettingsContextType>) => void;
 }) {
    const flatTabs = useFlatTabs();
 

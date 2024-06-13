@@ -1,5 +1,6 @@
 import { ReactNode } from "@tanstack/react-router";
 import { Dispatch, createContext, useContext, useReducer } from "react";
+import { StatusCode, DeepPartial } from "../types";
 
 type DefaultModal = { isOpen: boolean };
 type ModalContextType = {
@@ -12,8 +13,8 @@ type ModalContextType = {
 
 const defautlValue: ModalContextType = { settings: { isOpen: false }, info: { isOpen: false, status: "none", text: "" } };
 
-export const ModalContext = createContext<ModalContextType>(defautlValue);
-export const ModalDispatchContext = createContext<Dispatch<DeepPartial<ModalContextType>>>(() => {});
+const ModalContext = createContext<ModalContextType>(defautlValue);
+const ModalDispatchContext = createContext<Dispatch<DeepPartial<ModalContextType>>>(() => {});
 
 export function ModalProvider(props: { children?: ReactNode }) {
    const [modals, dispatch] = useReducer(modalsReducer, defautlValue);

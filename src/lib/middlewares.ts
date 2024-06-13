@@ -1,20 +1,8 @@
+import { HuginnClient } from "@api/index";
 import { redirect } from "@tanstack/react-router";
 import { router } from "../main";
-import { client, initializeClient } from "./api";
-import { readSettingsFile, settingsContent } from "./appData";
 
-export async function setup() {
-   if (window.__TAURI__) {
-      if (!settingsContent) {
-         console.log("reading");
-         await readSettingsFile();
-      }
-   }
-
-   if (!client) {
-      initializeClient();
-   }
-
+export async function setup(client: HuginnClient) {
    if (router.history.location.pathname === "/splashscreen") {
       return;
    }
@@ -39,13 +27,13 @@ export async function setup() {
    }
 }
 
-export function requireAuth() {
+export function requireAuth(client: HuginnClient) {
    if (!client.isLoggedIn) {
       throw redirect({ to: "/login" });
    }
 }
 
-export function requireNotAuth() {
+export function requireNotAuth(client: HuginnClient) {
    if (client.isLoggedIn) {
       throw redirect({ to: "/channels/@me" });
    }

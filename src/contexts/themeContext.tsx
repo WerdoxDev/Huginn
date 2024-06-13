@@ -1,5 +1,6 @@
 import { Dispatch, ReactNode, createContext, useContext, useEffect, useReducer } from "react";
-import { settingsContent } from "../lib/appData";
+import { useSettings } from "./settingsContext";
+import { ColorTheme, ThemeType } from "../types";
 
 const ceruleanTheme: ColorTheme = {
    background: ["48 48 48", "#303030"],
@@ -49,14 +50,16 @@ const eggplantTheme: ColorTheme = {
 };
 
 const defaultValue: ColorTheme = pineGreenTheme;
+
 const ThemeContext = createContext<ColorTheme>(defaultValue);
 const ThemeContextDispather = createContext<Dispatch<ThemeType>>(() => {});
 
 export function ThemeProvier(props: { children?: ReactNode }) {
+   const settings = useSettings();
    const [colorTheme, dispatch] = useReducer(colorThemeReducer, defaultValue);
 
    useEffect(() => {
-      dispatch(settingsContent?.theme || "teal");
+      dispatch(settings.theme);
    }, []);
    return (
       <ThemeContext.Provider value={colorTheme}>
@@ -81,14 +84,6 @@ function colorThemeReducer(_colorTheme: ColorTheme, action: ThemeType): ColorThe
    }
 }
 
-export function useTheme() {
-   return useContext(ThemeContext);
-}
-
-export function useThemeDispather() {
-   return useContext(ThemeContextDispather);
-}
-
 function setColorProperty(theme: ColorTheme) {
    const style = document.documentElement.style;
    style.setProperty("--color-background", theme.background[0]);
@@ -100,4 +95,12 @@ function setColorProperty(theme: ColorTheme) {
    style.setProperty("--color-success", theme.success[0]);
    style.setProperty("--color-text", theme.text[0]);
    style.setProperty("--color-error", theme.error[0]);
+}
+
+export function useTheme() {
+   return useContext(ThemeContext);
+}
+
+export function useThemeDispather() {
+   return useContext(ThemeContextDispather);
 }

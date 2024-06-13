@@ -3,12 +3,14 @@ import { GatewayDispatchEvents, GatewayMessageCreateDispatchData } from "@shared
 import { Snowflake } from "@shared/snowflake";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
-import { client } from "../../lib/api";
+import { useClient } from "../../contexts/apiContext";
 import BaseMessage from "../BaseMessage";
 import MessageBox from "../MessageBox";
 
 export default function ChannelMessages(props: { channelId: Snowflake; messages: APIGetChannelMessagesResult }) {
+   const client = useClient();
    const queryClient = useQueryClient();
+
    const scroll = useRef<HTMLDivElement>(null);
 
    useEffect(() => {

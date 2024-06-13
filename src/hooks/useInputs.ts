@@ -7,6 +7,7 @@ import {
    getInputsStatusesFromError,
    getInputsValidatedStatuses,
 } from "../lib/utils";
+import { InputOptions, InputValues, InputStatuses, InputProps, InputStatus } from "../types";
 
 export function useInputs(inputsOptions: InputOptions[]) {
    const newValues: InputValues = {};

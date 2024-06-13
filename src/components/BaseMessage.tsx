@@ -2,13 +2,15 @@ import { APIMessageUser } from "@shared/api-types";
 import { useCallback, useMemo } from "react";
 import { Descendant, Node, Path, Range, Text, createEditor } from "slate";
 import { Editable, RenderElementProps, RenderLeafProps, Slate, withReact } from "slate-react";
-import { client } from "../lib/api";
 import { tokenize } from "../lib/huginn-tokenizer";
 import UserIconWithStatus from "./UserIconWithStatus";
 import MessageLeaf from "./editor/MessageLeaf";
 import DefaultElement from "./editor/DefaultElement";
+import { useClient } from "../contexts/apiContext";
 
 export default function BaseMessage(props: { content?: string; author: APIMessageUser }) {
+   const client = useClient();
+
    const isSelf = useMemo(() => props.author.id === client.user?.id, [props.author]);
    const editor = useMemo(() => withReact(createEditor()), []);
 

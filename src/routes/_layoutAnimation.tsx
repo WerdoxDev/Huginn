@@ -1,6 +1,5 @@
 import { useTransition } from "@react-spring/web";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { invoke } from "@tauri-apps/api";
 import { useEffect, useState } from "react";
 import AnimatedOutlet from "../components/AnimatedOutlet";
 import { AuthBackgroundContext } from "../contexts/authBackgroundContext";
@@ -31,10 +30,6 @@ function LayoutAnimation() {
    useEffect(() => {
       setId(getState());
    }, [router.state.matches]);
-
-   useEffect(() => {
-      if (window.__TAURI__) invoke("hide_splashscreen");
-   }, []);
 
    return (
       <AuthBackgroundContext.Provider value={{ state: backgroundState, setState: setBackgroundState }}>

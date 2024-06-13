@@ -2,10 +2,12 @@ import { TabPanel } from "@headlessui/react";
 import { useEffect, useState } from "react";
 import { useHuginnMutation } from "../../hooks/useHuginnMutation";
 import { useInputs } from "../../hooks/useInputs";
-import { client } from "../../lib/api";
 import AddFriendInput from "../input/AddFriendInput";
+import { useClient } from "../../contexts/apiContext";
 
 export default function AddFriendTab() {
+   const client = useClient();
+
    const { inputsProps, values, handleErrors, setInputStatus } = useInputs([{ name: "username", required: false }]);
 
    const [disabled, setDisabled] = useState(false);

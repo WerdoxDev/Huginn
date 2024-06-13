@@ -7,20 +7,22 @@ import { useEffect, useRef } from "react";
 import TitleBar from "../components/TitleBar";
 import InfoModal from "../components/modal/InfoModal";
 import SettingsModal from "../components/modal/SettingsModal";
+import { useClient } from "../contexts/apiContext";
 import { HistoryContext } from "../contexts/historyContext";
 import { ModalProvider } from "../contexts/modalContext";
 import { ThemeProvier } from "../contexts/themeContext";
-import { setup } from "../lib/middlewares";
 import { useWindow, useWindowDispatch } from "../contexts/windowContext";
-import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+import { setup } from "../lib/middlewares";
+// import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 
 export type HuginnRouterContext = {
    queryClient: QueryClient;
+   client: ReturnType<typeof useClient>;
 };
 
 export const Route = createRootRouteWithContext<HuginnRouterContext>()({
-   async beforeLoad() {
-      await setup();
+   async beforeLoad({ context: { client } }) {
+      await setup(client);
    },
    component: Root,
 });

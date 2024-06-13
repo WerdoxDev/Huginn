@@ -3,6 +3,7 @@ import useUpdater from "../hooks/useUpdater";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { UpdateManifest } from "@tauri-apps/api/updater";
 import { invoke } from "@tauri-apps/api";
+import { LoadingState } from "../types";
 
 export const Route = createFileRoute("/splashscreen")({
    component: Splashscreen,
@@ -17,11 +18,13 @@ function Splashscreen() {
    const loadingText = useMemo(() => {
       return loadingState === "loading"
          ? "Loading"
-         : loadingState === "checking_update"
-           ? "Checking for updates"
-           : loadingState === "updating"
-             ? `Updating to v${updateManifest.current?.version}`
-             : "Invalid State";
+         : loadingState === "test"
+           ? "Test state takes 5 seconds"
+           : loadingState === "checking_update"
+             ? "Checking for updates"
+             : loadingState === "updating"
+               ? `Updating to v${updateManifest.current?.version}`
+               : "Invalid State";
    }, [updateManifest.current, loadingState]);
 
    const updateProgressText = useMemo(() => {
@@ -29,9 +32,12 @@ function Splashscreen() {
    }, [currentLength.current, contentLength.current, progress]);
 
    useEffect(() => {
-      setLoadingState("checking_update");
-
       async function checkForUpdate() {
+         setLoadingState("test");
+         await new Promise((r) => setTimeout(r, 5000));
+
+         setLoadingState("checking_update");
+
          const { shouldUpdate, manifest } = await checkUpdate();
 
          if (shouldUpdate) {
@@ -41,7 +47,7 @@ function Splashscreen() {
             await installUpdate();
          } else {
             setLoadingState("loading");
-            await invoke("open_main");
+            await invoke("close_splashscreen");
          }
       }
 

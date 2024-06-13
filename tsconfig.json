@@ -1,10 +1,10 @@
 {
    "compilerOptions": {
-      "target": "ES2020",
+      "target": "ESNext",
       "useDefineForClassFields": true,
-      "lib": ["ES2020", "DOM", "DOM.Iterable"],
+      "lib": ["ESNext", "DOM", "DOM.Iterable"],
       "module": "ESNext",
-      "skipLibCheck": false,
+      "skipLibCheck": true,
 
       /* Bundler mode */
       "moduleResolution": "bundler",
@@ -28,7 +28,7 @@
    },
    "include": [
       "src",
-      "types.d.ts",
+      "index.d.ts",
       "auto-imports.d.ts",
       "eslint.config.js",
       "vite.config.ts",

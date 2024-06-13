@@ -9,17 +9,18 @@ import PasswordInput from "../../../components/input/PasswordInput";
 import { AuthBackgroundContext } from "../../../contexts/authBackgroundContext";
 import { useHuginnMutation } from "../../../hooks/useHuginnMutation";
 import { useInputs } from "../../../hooks/useInputs";
-import { client } from "../../../lib/api";
 import { requireNotAuth } from "../../../lib/middlewares";
+import { useClient } from "../../../contexts/apiContext";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/login")({
-   beforeLoad() {
-      requireNotAuth();
+   beforeLoad({ context: { client } }) {
+      requireNotAuth(client);
    },
    component: Login,
 });
 
 function Login() {
+   const client = useClient();
    const { inputsProps, values, resetStatuses, handleErrors } = useInputs([
       { name: "login", required: true, default: "test" },
       { name: "password", required: true, default: "test" },

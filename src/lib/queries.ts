@@ -1,8 +1,8 @@
 import { Snowflake } from "@shared/snowflake";
-import { client } from "./api";
 import { queryOptions } from "@tanstack/react-query";
+import { HuginnClient } from "@api/index";
 
-export function getChannelsOptions(guildId: Snowflake) {
+export function getChannelsOptions(client: HuginnClient, guildId: Snowflake) {
    return queryOptions({
       queryKey: ["channels", guildId],
       queryFn: () => {
@@ -14,7 +14,7 @@ export function getChannelsOptions(guildId: Snowflake) {
    });
 }
 
-export function getMessagesOptions(channelId: Snowflake) {
+export function getMessagesOptions(client: HuginnClient, channelId: Snowflake) {
    return queryOptions({
       queryKey: ["messages", channelId],
       queryFn: () => client.channels.getMessages(channelId, 50),
@@ -22,7 +22,7 @@ export function getMessagesOptions(channelId: Snowflake) {
    });
 }
 
-export function getRelationshipsOptions() {
+export function getRelationshipsOptions(client: HuginnClient) {
    return queryOptions({
       queryKey: ["relationships"],
       queryFn: () => client.users.getRelationships(),

@@ -2,6 +2,7 @@ import { Listbox, ListboxButton, ListboxOption, ListboxOptions, Transition } fro
 import { ReactNode } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { filterChildrenOfType } from "../lib/utils";
+import { DropboxItem } from "../types";
 
 export default function HuginnDropbox(props: {
    items: DropboxItem[];
@@ -29,7 +30,7 @@ export default function HuginnDropbox(props: {
             <Listbox value={selected} onChange={onChange}>
                <ListboxButton className="relative flex w-full items-center justify-between p-2.5 text-white">
                   {selected.name}
-                  <IconMingcuteDownFill className="text-accent h-6 w-6" />
+                  <IconMingcuteDownFill className="h-6 w-6 text-accent" />
                </ListboxButton>
                <Transition
                   enter="duration-150 ease-out"

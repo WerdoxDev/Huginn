@@ -1,9 +1,12 @@
 import { constants } from "@shared/constants";
 import { Field } from "@shared/errors";
 import { useEffect, useRef, useState } from "react";
-import { client } from "../lib/api";
+import { useClient } from "../contexts/apiContext";
+import { InputValues, MessageDetail, StatusCode } from "../types";
 
 export default function useUniqueUsernameMessage(values: InputValues, usernameField: string) {
+   const client = useClient();
+
    const defaultMessage = "Please only use numbers, letters, _";
    const [message, setMessage] = useState<MessageDetail>({ text: defaultMessage, status: "default", visible: false });
 

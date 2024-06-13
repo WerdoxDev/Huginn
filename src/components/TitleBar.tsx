@@ -25,13 +25,13 @@ export default function TitleBar() {
          <div className="w-full flex-shrink"></div>
          <div className="flex h-full gap-x-1">
             <button className="flex h-full w-8 items-center justify-center hover:bg-secondary" onClick={minimize}>
-               <IconMdiMinimize className="h-4 w-4 text-text opacity-80" />
+               <IconMdiMinimize className="h-4 w-4 text-white opacity-80" />
             </button>
             <button className="flex h-full w-8 items-center justify-center hover:bg-secondary" onClick={maximize}>
-               <IconMdiMaximize className="h-4 w-4 text-text opacity-80" />
+               <IconMdiMaximize className="h-4 w-4 text-white opacity-80" />
             </button>
             <button className="flex h-full w-8 items-center justify-center hover:bg-error" onClick={close}>
-               <IconMdiClose className="h-4 w-4 text-text opacity-80" />
+               <IconMdiClose className="h-4 w-4 text-white opacity-80" />
             </button>
          </div>
       </div>,

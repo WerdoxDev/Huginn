@@ -11,17 +11,18 @@ import { AuthBackgroundContext } from "../../../contexts/authBackgroundContext";
 import { useHuginnMutation } from "../../../hooks/useHuginnMutation";
 import { useInputs } from "../../../hooks/useInputs";
 import useUniqueUsernameMessage from "../../../hooks/useUniqueUsernameMessage";
-import { client } from "../../../lib/api";
 import { requireNotAuth } from "../../../lib/middlewares";
+import { useClient } from "../../../contexts/apiContext";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/register")({
-   beforeLoad() {
-      requireNotAuth();
+   beforeLoad({ context: { client } }) {
+      requireNotAuth(client);
    },
    component: Register,
 });
 
 function Register() {
+   const client = useClient();
    const { inputsProps, values, resetStatuses, handleErrors, validateValues } = useInputs([
       { name: "email", required: true },
       { name: "displayName", required: false },

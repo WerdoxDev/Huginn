@@ -3,10 +3,11 @@ import { APIUser } from "@shared/api-types";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useModalsDispatch } from "../contexts/modalContext";
-import { client } from "../lib/api";
 import UserIconWithStatus from "./UserIconWithStatus";
+import { useClient } from "../contexts/apiContext";
 
 export default function UserInfo(props: { user: APIUser }) {
+   const client = useClient();
    const navigate = useNavigate();
    const modalsDispatch = useModalsDispatch();
 

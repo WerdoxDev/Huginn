@@ -1,4 +1,5 @@
 import { useThemeDispather } from "../../../contexts/themeContext";
+import { DropboxItem, SettingsTabProps, ThemeType } from "../../../types";
 import HuginnDropbox from "../../HuginnDropbox";
 
 const themes: DropboxItem[] = [

@@ -1,11 +1,13 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { RouterProvider, createRouter } from "@tanstack/react-router";
-import React from "react";
+import { createRouter } from "@tanstack/react-router";
 import ReactDOM from "react-dom/client";
 import DefaultNotFound from "./components/DefaultNotFound";
 import { WindowProvider } from "./contexts/windowContext";
 import "./index.css";
 import { routeTree } from "./routeTree.gen";
+import { SettingsProvider } from "./contexts/settingsContext";
+import { APIProvider } from "./contexts/apiContext";
+import HuginnRouterProvider from "./HuginnRouterProvider";
 
 const queryClient = new QueryClient();
 
@@ -14,7 +16,7 @@ export const router = createRouter({
    defaultPreload: "intent",
    defaultPreloadDelay: 200,
    defaultPreloadStaleTime: 0,
-   context: { queryClient },
+   context: { queryClient, client: undefined! },
    defaultNotFoundComponent: DefaultNotFound,
    // defaultErrorComponent: DefaultError,
 });
@@ -26,12 +28,20 @@ declare module "@tanstack/react-router" {
    };
 }
 
+// function App() {
+//    return (
+
+//    );
+// }
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
-   // <React.StrictMode>
    <QueryClientProvider client={queryClient}>
-      <WindowProvider>
-         <RouterProvider router={router} />
-      </WindowProvider>
+      <SettingsProvider>
+         <APIProvider>
+            <WindowProvider>
+               <HuginnRouterProvider router={router} />
+            </WindowProvider>
+         </APIProvider>
+      </SettingsProvider>
    </QueryClientProvider>,
-   // </React.StrictMode>,
 );

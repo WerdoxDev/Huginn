@@ -4,10 +4,10 @@ import { useParams } from "@tanstack/react-router";
 import { KeyboardEvent, useCallback, useMemo } from "react";
 import { Descendant, Editor, Node, Path, Range, Text, createEditor } from "slate";
 import { Editable, RenderElementProps, RenderLeafProps, Slate, withReact } from "slate-react";
-import { client } from "../lib/api";
 import { tokenize } from "../lib/huginn-tokenizer";
 import EditorLeaf from "./editor/EditorLeaf";
 import DefaultElement from "./editor/DefaultElement";
+import { useClient } from "../contexts/apiContext";
 
 const initialValue: Descendant[] = [
    {
@@ -21,6 +21,8 @@ const initialValue: Descendant[] = [
 ];
 
 export default function MessageBox() {
+   const client = useClient();
+
    const editor = useMemo(() => withReact(createEditor()), []);
    const params = useParams({ strict: false });
 

@@ -20,7 +20,6 @@ import { Route as LayoutAnimationLayoutAuthImport } from './routes/_layoutAnimat
 import { Route as LayoutAnimationLayoutMainLayoutHomeImport } from './routes/_layoutAnimation/_layoutMain/_layoutHome'
 import { Route as LayoutAnimationLayoutAuthRegisterImport } from './routes/_layoutAnimation/_layoutAuth/register'
 import { Route as LayoutAnimationLayoutAuthLoginImport } from './routes/_layoutAnimation/_layoutAuth/login'
-import { Route as LayoutAnimationLayoutMainLayoutMainFriendsImport } from './routes/_layoutAnimation/_layoutMain/_layoutMain/friends'
 import { Route as LayoutAnimationLayoutMainLayoutHomeFriendsImport } from './routes/_layoutAnimation/_layoutMain/_layoutHome/friends'
 import { Route as LayoutAnimationLayoutMainLayoutHomeChannelsmeImport } from './routes/_layoutAnimation/_layoutMain/_layoutHome/channels.@me'
 import { Route as LayoutAnimationLayoutMainLayoutHomeChannelsmeChannelIdImport } from './routes/_layoutAnimation/_layoutMain/_layoutHome/channels.@me.$channelId'
@@ -72,12 +71,6 @@ const LayoutAnimationLayoutAuthLoginRoute =
   LayoutAnimationLayoutAuthLoginImport.update({
     path: '/login',
     getParentRoute: () => LayoutAnimationLayoutAuthRoute,
-  } as any)
-
-const LayoutAnimationLayoutMainLayoutMainFriendsRoute =
-  LayoutAnimationLayoutMainLayoutMainFriendsImport.update({
-    path: '/friends',
-    getParentRoute: () => LayoutAnimationLayoutMainRoute,
   } as any)
 
 const LayoutAnimationLayoutMainLayoutHomeFriendsRoute =
@@ -165,13 +158,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAnimationLayoutMainLayoutHomeFriendsImport
       parentRoute: typeof LayoutAnimationLayoutMainLayoutHomeImport
     }
-    '/_layoutAnimation/_layoutMain/_layoutMain/friends': {
-      id: '/_layoutAnimation/_layoutMain/_layoutMain/friends'
-      path: '/friends'
-      fullPath: '/friends'
-      preLoaderRoute: typeof LayoutAnimationLayoutMainLayoutMainFriendsImport
-      parentRoute: typeof LayoutAnimationLayoutMainImport
-    }
     '/_layoutAnimation/_layoutMain/_layoutHome/channels/@me': {
       id: '/_layoutAnimation/_layoutMain/_layoutHome/channels/@me'
       path: '/channels/@me'
@@ -207,10 +193,83 @@ export const routeTree = rootRoute.addChildren({
               LayoutAnimationLayoutMainLayoutHomeChannelsmeChannelIdRoute,
             }),
         }),
-      LayoutAnimationLayoutMainLayoutMainFriendsRoute,
     }),
   }),
   SplashscreenRoute,
 })
 
 /* prettier-ignore-end */
+
+/* ROUTE_MANIFEST_START
+{
+  "routes": {
+    "__root__": {
+      "filePath": "__root.tsx",
+      "children": [
+        "/",
+        "/_layoutAnimation",
+        "/splashscreen"
+      ]
+    },
+    "/": {
+      "filePath": "index.lazy.tsx"
+    },
+    "/_layoutAnimation": {
+      "filePath": "_layoutAnimation.tsx",
+      "children": [
+        "/_layoutAnimation/_layoutAuth",
+        "/_layoutAnimation/_layoutMain"
+      ]
+    },
+    "/splashscreen": {
+      "filePath": "splashscreen.tsx"
+    },
+    "/_layoutAnimation/_layoutAuth": {
+      "filePath": "_layoutAnimation/_layoutAuth.tsx",
+      "parent": "/_layoutAnimation",
+      "children": [
+        "/_layoutAnimation/_layoutAuth/login",
+        "/_layoutAnimation/_layoutAuth/register"
+      ]
+    },
+    "/_layoutAnimation/_layoutMain": {
+      "filePath": "_layoutAnimation/_layoutMain.tsx",
+      "parent": "/_layoutAnimation",
+      "children": [
+        "/_layoutAnimation/_layoutMain/_layoutHome"
+      ]
+    },
+    "/_layoutAnimation/_layoutAuth/login": {
+      "filePath": "_layoutAnimation/_layoutAuth/login.tsx",
+      "parent": "/_layoutAnimation/_layoutAuth"
+    },
+    "/_layoutAnimation/_layoutAuth/register": {
+      "filePath": "_layoutAnimation/_layoutAuth/register.tsx",
+      "parent": "/_layoutAnimation/_layoutAuth"
+    },
+    "/_layoutAnimation/_layoutMain/_layoutHome": {
+      "filePath": "_layoutAnimation/_layoutMain/_layoutHome.tsx",
+      "parent": "/_layoutAnimation/_layoutMain",
+      "children": [
+        "/_layoutAnimation/_layoutMain/_layoutHome/friends",
+        "/_layoutAnimation/_layoutMain/_layoutHome/channels/@me"
+      ]
+    },
+    "/_layoutAnimation/_layoutMain/_layoutHome/friends": {
+      "filePath": "_layoutAnimation/_layoutMain/_layoutHome/friends.tsx",
+      "parent": "/_layoutAnimation/_layoutMain/_layoutHome"
+    },
+    "/_layoutAnimation/_layoutMain/_layoutHome/channels/@me": {
+      "filePath": "_layoutAnimation/_layoutMain/_layoutHome/channels.@me.tsx",
+      "parent": "/_layoutAnimation/_layoutMain/_layoutHome",
+      "children": [
+        "/_layoutAnimation/_layoutMain/_layoutHome/channels/@me/$channelId"
+      ]
+    },
+    "/_layoutAnimation/_layoutMain/_layoutHome/channels/@me/$channelId": {
+      "filePath": "_layoutAnimation/_layoutMain/_layoutHome/channels.@me.$channelId.tsx",
+      "parent": "/_layoutAnimation/_layoutMain/_layoutHome/channels/@me"
+    }
+  }
+}
+ROUTE_MANIFEST_END */
