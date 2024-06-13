@@ -8,6 +8,7 @@ import { routeTree } from "./routeTree.gen";
 import { SettingsProvider } from "./contexts/settingsContext";
 import { APIProvider } from "./contexts/apiContext";
 import HuginnRouterProvider from "./HuginnRouterProvider";
+import React from "react";
 
 const queryClient = new QueryClient();
 
@@ -35,13 +36,15 @@ declare module "@tanstack/react-router" {
 // }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-   <QueryClientProvider client={queryClient}>
-      <SettingsProvider>
-         <APIProvider>
-            <WindowProvider>
-               <HuginnRouterProvider router={router} />
-            </WindowProvider>
-         </APIProvider>
-      </SettingsProvider>
-   </QueryClientProvider>,
+   <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+         <SettingsProvider>
+            <APIProvider>
+               <WindowProvider>
+                  <HuginnRouterProvider router={router} />
+               </WindowProvider>
+            </APIProvider>
+         </SettingsProvider>
+      </QueryClientProvider>
+   </React.StrictMode>,
 );

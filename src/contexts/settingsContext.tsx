@@ -8,10 +8,14 @@ export type SettingsContextType = {
    theme: ThemeType;
 };
 
-const defaultValue: SettingsContextType = { serverAddress: "localhost:3000", theme: "pine green" };
+// const defaultValue: SettingsContextType = { serverAddress: "localhost:3000", theme: "pine green" };
+const defaultValue: SettingsContextType = { serverAddress: "192.168.178.51:3000", theme: "pine green" };
 
-await tryCreateSettingsFile();
-const value = JSON.parse(await readTextFile("./data/settings.json", { dir: BaseDirectory.AppData }));
+let value = defaultValue;
+if (window.__TAURI__) {
+   await tryCreateSettingsFile();
+   value = JSON.parse(await readTextFile("./data/settings.json", { dir: BaseDirectory.AppData }));
+}
 
 const SettingsContext = createContext<SettingsContextType>(value);
 const SettingsDispatchContext = createContext<Dispatch<DeepPartial<SettingsContextType>>>(() => {});

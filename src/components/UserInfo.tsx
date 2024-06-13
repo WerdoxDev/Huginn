@@ -14,6 +14,7 @@ export default function UserInfo(props: { user: APIUser }) {
    const mutation = useMutation({
       async mutationFn() {
          localStorage.removeItem("refresh-token");
+         localStorage.removeItem("access-token");
          await client.logout();
          await navigate({ to: "/login" });
       },

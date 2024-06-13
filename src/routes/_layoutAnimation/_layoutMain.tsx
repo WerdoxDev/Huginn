@@ -3,6 +3,8 @@ import { useContext, useEffect } from "react";
 import GuildsBar from "../../components/GuildsBar";
 import { AuthBackgroundContext } from "../../contexts/authBackgroundContext";
 import { useServerErrorHandler } from "../../hooks/useServerErrorHandler";
+import MessageProvider from "../../components/MessageProvider";
+import FriendsProvider from "../../components/FriendsProvider";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain")({
    component: LayoutMain,
@@ -30,8 +32,12 @@ function LayoutMain() {
    return (
       <div className="absolute inset-0 overflow-hidden">
          <div className="flex h-full w-full select-none bg-background">
-            <GuildsBar />
-            <Outlet />
+            <MessageProvider>
+               <FriendsProvider>
+                  <GuildsBar />
+                  <Outlet />
+               </FriendsProvider>
+            </MessageProvider>
          </div>
       </div>
    );

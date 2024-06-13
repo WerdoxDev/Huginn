@@ -1,19 +1,15 @@
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import { GatewayDispatchEvents } from "@shared/gateway-types";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect } from "react";
 import { Fragment } from "react/jsx-runtime";
 import ModalErrorComponent from "../../../../components/ModalErrorComponent";
+import AddFriendTab from "../../../../components/friends/AddFriendTab";
 import FriendsTabItem from "../../../../components/friends/FriendsTabItem";
 import OnlineFriendsTab from "../../../../components/friends/OnlineFriendsTab";
 import PendingFriendsTab from "../../../../components/friends/PendingFriendsTab";
+import { useClient } from "../../../../contexts/apiContext";
 import { requireAuth } from "../../../../lib/middlewares";
 import { getRelationshipsOptions } from "../../../../lib/queries";
-import AddFriendTab from "../../../../components/friends/AddFriendTab";
-import { APIRelationship } from "@shared/api-types";
-import { Snowflake } from "@shared/snowflake";
-import { useClient } from "../../../../contexts/apiContext";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/friends")({
    beforeLoad({ context: { client } }) {
@@ -31,42 +27,6 @@ const tabs = ["Online", "All", "Pending"];
 function Friends() {
    const client = useClient();
    const { data: friends } = useSuspenseQuery(getRelationshipsOptions(client));
-   const queryClient = useQueryClient();
-
-   function onRelationshipCreated(relationship: APIRelationship) {
-      if (friends.some((x) => x.id === relationship.id)) {
-         const changedIndex = friends.findIndex((x) => x.id === relationship.id && x.type !== relationship.type);
-         if (changedIndex !== -1) {
-            const newRelationships = friends.toSpliced(changedIndex, 1, { ...friends[changedIndex], type: relationship.type });
-            queryClient.setQueryData(["relationships"], newRelationships);
-         }
-         return;
-      }
-
-      queryClient.setQueryData(["relationships"], [...friends, relationship]);
-   }
-
-   function onRelationshipDeleted(userId: Snowflake) {
-      if (!friends.some((x) => x.user.id === userId)) {
-         return;
-      }
-
-      const index = friends.findIndex((x) => x.user.id === userId);
-      const newFriends = friends.slice();
-      newFriends.splice(index, 1);
-
-      queryClient.setQueryData(["relationships"], newFriends);
-   }
-
-   useEffect(() => {
-      client.gateway.on(GatewayDispatchEvents.RELATIONSHIP_CREATE, onRelationshipCreated);
-      client.gateway.on(GatewayDispatchEvents.RELATIONSHIP_DELETE, onRelationshipDeleted);
-
-      return () => {
-         client.gateway.removeListener(GatewayDispatchEvents.RELATIONSHIP_CREATE, onRelationshipCreated);
-         client.gateway.removeListener(GatewayDispatchEvents.RELATIONSHIP_DELETE, onRelationshipDeleted);
-      };
-   }, [friends]);
 
    return (
       <div className="flex h-full flex-col">
