@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { StatusCode } from "../types";
+import { StatusCode } from "@/types";
 
 export default function AnimatedMessage(props: { className?: string; status: StatusCode; visible: boolean; text: string }) {
    const text = useRef<HTMLDivElement>(null);

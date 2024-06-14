@@ -1,6 +1,6 @@
 import { useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { useServerErrorHandler } from "../hooks/useServerErrorHandler";
+import { useServerErrorHandler } from "@hooks/useServerErrorHandler";
 
 export default function ModalErrorComponent(props: { error: unknown }) {
    const handleServerError = useServerErrorHandler();

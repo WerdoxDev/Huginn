@@ -1,6 +1,6 @@
 import { HTTPError } from "@api/errors/http-error";
-import { Messages } from "../lib/errorMessages";
-import { useModalsDispatch } from "../contexts/modalContext";
+import { Messages } from "@lib/errorMessages";
+import { useModalsDispatch } from "@contexts/modalContext";
 
 export function useServerErrorHandler() {
    const dispatch = useModalsDispatch();

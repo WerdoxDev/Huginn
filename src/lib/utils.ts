@@ -2,7 +2,7 @@ import { HuginnAPIError } from "@api/index";
 import type { HuginnError, HuginnErrorData } from "@shared/errors";
 import React, { JSXElementConstructor, ReactNode } from "react";
 import { APIMessages } from "./errorMessages";
-import { InputStatus, InputValue, InputStatuses, InputValues } from "../types";
+import { InputStatus, InputValue, InputStatuses, InputValues } from "@/types";
 
 export const requiredFieldError: InputStatus = { code: "error", text: "Required" };
 

@@ -1,21 +1,22 @@
+import HomeSidebar from "@components/HomeSidebar";
+import ModalErrorComponent from "@components/ModalErrorComponent";
+import UserInfo from "@components/UserInfo";
+import { useClient } from "@contexts/apiContext";
+import { requireAuth } from "@lib/middlewares";
+import { getChannelsOptions } from "@lib/queries";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Outlet, createFileRoute } from "@tanstack/react-router";
-import HomeSidebar from "../../../components/HomeSidebar";
-import ModalErrorComponent from "../../../components/ModalErrorComponent";
-import UserInfo from "../../../components/UserInfo";
-import { useClient } from "../../../contexts/apiContext";
-import { requireAuth } from "../../../lib/middlewares";
-import { getChannelsOptions } from "../../../lib/queries";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome")({
    beforeLoad({ context: { client } }) {
       requireAuth(client);
    },
    component: LayoutHome,
-   loader: ({ context: { queryClient, client } }) => {
+   loader: async ({ context: { queryClient, client } }) => {
       return queryClient.ensureQueryData(getChannelsOptions(client, "@me"));
    },
    errorComponent: ModalErrorComponent,
+   gcTime: 0,
 });
 
 function LayoutHome() {

@@ -1,5 +1,5 @@
 import { ReactNode, useEffect } from "react";
-import { useClient } from "../contexts/apiContext";
+import { useClient } from "@contexts/apiContext";
 import { GatewayDispatchEvents, GatewayMessageCreateDispatchData } from "@shared/gateway-types";
 import { useQueryClient } from "@tanstack/react-query";
 import { APIGetChannelMessagesResult } from "@shared/api-types";

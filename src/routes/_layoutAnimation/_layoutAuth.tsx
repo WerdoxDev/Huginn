@@ -1,11 +1,11 @@
+import AnimatedOutlet from "@components/AnimatedOutlet";
+import AuthBackgroundSvg from "@components/AuthBackgroundSvg";
+import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
+import { HistoryContext } from "@contexts/historyContext";
+import { useModalsDispatch } from "@contexts/modalContext";
 import { animated, easings, useSpring, useTransition } from "@react-spring/web";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { useContext } from "react";
-import AnimatedOutlet from "../../components/AnimatedOutlet";
-import AuthBackgroundSvg from "../../components/AuthBackgroundSvg";
-import { AuthBackgroundContext } from "../../contexts/authBackgroundContext";
-import { HistoryContext } from "../../contexts/historyContext";
-import { useModalsDispatch } from "../../contexts/modalContext";
+import { Outlet, createFileRoute, useRouter } from "@tanstack/react-router";
+import { useContext, useEffect } from "react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth")({
    component: LayoutAuth,
@@ -44,10 +44,7 @@ function LayoutAuth() {
             </div>
          </div>
          {transitions((style) => (
-            // <animated.div style={style} className="absolute flex h-full w-full items-center justify-center">
-            <AnimatedOutlet test="auth layout" style={style} className="absolute flex h-full w-full items-center justify-center" />
-            // <Outlet />
-            // </animated.div>
+            <AnimatedOutlet style={style} className="test absolute flex h-full w-full items-center justify-center" />
          ))}
          {backgroundState !== 2 && (
             <button

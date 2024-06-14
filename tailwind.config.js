@@ -16,18 +16,8 @@ export default {
          },
       },
       fontFamily: {
-         changa: ["Changa", "sans-serif"],
-         chivo: ["Chivo Mono", "sans-serif"],
-         kanit: ["Kanit", "sans-serif"],
          noto: ["Noto Sans", "sans-serif"],
       },
    },
    plugins: [],
 };
-
-//#007BA7 ^^
-//#01796F ^^
-//#008080 ^^
-//#614051 ^^
-
-//#397367

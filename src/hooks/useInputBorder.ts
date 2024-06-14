@@ -1,3 +1,4 @@
+import { InputStatus } from "@/types";
 import { useState, useEffect } from "react";
 
 export function useInputBorder(state: InputStatus) {

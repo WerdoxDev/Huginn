@@ -1,8 +1,8 @@
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions, Transition } from "@headlessui/react";
 import { ReactNode } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { filterChildrenOfType } from "../lib/utils";
-import { DropboxItem } from "../types";
+import { filterChildrenOfType } from "@lib/utils";
+import { DropboxItem } from "@/types";
 
 export default function HuginnDropbox(props: {
    items: DropboxItem[];

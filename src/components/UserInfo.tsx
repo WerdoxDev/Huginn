@@ -1,22 +1,17 @@
+import { useModalsDispatch } from "@contexts/modalContext";
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from "@headlessui/react";
+import { useLogout } from "@hooks/useLogout";
 import { APIUser } from "@shared/api-types";
 import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
-import { useModalsDispatch } from "../contexts/modalContext";
 import UserIconWithStatus from "./UserIconWithStatus";
-import { useClient } from "../contexts/apiContext";
 
 export default function UserInfo(props: { user: APIUser }) {
-   const client = useClient();
-   const navigate = useNavigate();
    const modalsDispatch = useModalsDispatch();
+   const logout = useLogout();
 
    const mutation = useMutation({
       async mutationFn() {
-         localStorage.removeItem("refresh-token");
-         localStorage.removeItem("access-token");
-         await client.logout();
-         await navigate({ to: "/login" });
+         await logout(true);
       },
    });
 

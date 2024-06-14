@@ -1,8 +1,8 @@
+import BaseMessage from "@components/BaseMessage";
+import MessageBox from "@components/MessageBox";
 import { APIGetChannelMessagesResult } from "@shared/api-types";
 import { Snowflake } from "@shared/snowflake";
 import { useEffect, useRef } from "react";
-import BaseMessage from "../BaseMessage";
-import MessageBox from "../MessageBox";
 
 export default function ChannelMessages(props: { channelId: Snowflake; messages: APIGetChannelMessagesResult }) {
    const scroll = useRef<HTMLDivElement>(null);

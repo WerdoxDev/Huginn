@@ -3,7 +3,7 @@ import { APIRelationshipWithoutOwner, RelationshipType } from "@shared/api-types
 import { Snowflake } from "@shared/snowflake";
 import { useMemo } from "react";
 import FriendItem from "./FriendItem";
-import { useClient } from "../../contexts/apiContext";
+import { useClient } from "@contexts/apiContext";
 
 export default function PendingFriendsTab(props: { friends: APIRelationshipWithoutOwner[] }) {
    const client = useClient();

@@ -1,6 +1,6 @@
 import { ReactNode } from "@tanstack/react-router";
 import { Dispatch, createContext, useContext, useReducer } from "react";
-import { StatusCode, DeepPartial } from "../types";
+import { StatusCode, DeepPartial } from "@/types";
 
 type DefaultModal = { isOpen: boolean };
 type ModalContextType = {

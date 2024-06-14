@@ -1,8 +1,8 @@
+import { HuginnInputProps, InputStatus } from "@/types";
+import { useInputBorder } from "@hooks/useInputBorder";
+import { filterChildrenOfType } from "@lib/utils";
 import { snowflake } from "@shared/snowflake";
 import { ReactNode, createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { useInputBorder } from "../../hooks/useInputBorder";
-import { filterChildrenOfType } from "../../lib/utils";
-import { InputStatus, HuginnInputProps } from "../../types";
 
 const InputContext = createContext<{ id: string; status: InputStatus; required?: boolean }>({
    id: "",

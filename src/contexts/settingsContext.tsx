@@ -1,7 +1,7 @@
 import { BaseDirectory, createDir, exists, readTextFile, writeFile } from "@tauri-apps/api/fs";
 import { appDataDir } from "@tauri-apps/api/path";
 import { Dispatch, ReactNode, createContext, useContext, useReducer } from "react";
-import { DeepPartial, ThemeType } from "../types";
+import { DeepPartial, ThemeType } from "@/types";
 
 export type SettingsContextType = {
    serverAddress: string;

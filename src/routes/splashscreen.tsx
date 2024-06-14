@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import useUpdater from "../hooks/useUpdater";
+import useUpdater from "@hooks/useUpdater";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { UpdateManifest } from "@tauri-apps/api/updater";
 import { invoke } from "@tauri-apps/api";
-import { LoadingState } from "../types";
+import { LoadingState } from "@/types";
 
 export const Route = createFileRoute("/splashscreen")({
    component: Splashscreen,

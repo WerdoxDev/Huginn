@@ -1,3 +1,7 @@
+import { SettingsTab, DeepPartial } from "@/types";
+import ModalCloseButton from "@components/button/ModalCloseButton";
+import { useModals, useModalsDispatch } from "@contexts/modalContext";
+import { useSettings, SettingsContextType, useSettingsDispatcher } from "@contexts/settingsContext";
 import {
    Dialog,
    DialogPanel,
@@ -11,14 +15,10 @@ import {
    TransitionChild,
 } from "@headlessui/react";
 import { Fragment, useEffect, useRef, useState } from "react";
-import { useModals, useModalsDispatch } from "../../contexts/modalContext";
-import { SettingsContextType, useSettings, useSettingsDispatcher } from "../../contexts/settingsContext";
-import ModalCloseButton from "../button/ModalCloseButton";
 import ModalBackground from "./ModalBackground";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
-import { DeepPartial, SettingsTab } from "../../types";
 
 const tabs: SettingsTab[] = [
    { name: "general", text: "General", children: [{ name: "audio", text: "Audio", icon: <IconMdiSpeakerphone /> }] },

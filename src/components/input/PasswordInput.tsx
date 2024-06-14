@@ -1,5 +1,6 @@
 import { HTMLInputTypeAttribute, useMemo, useState } from "react";
 import HuginnInput from "./HuginnInput";
+import { HuginnInputProps } from "@/types";
 
 export default function PasswordInput(props: HuginnInputProps) {
    const [type, setType] = useState<HTMLInputTypeAttribute>(() => "password");

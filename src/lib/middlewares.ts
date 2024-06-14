@@ -1,6 +1,6 @@
+import { router } from "@/main";
 import { HuginnClient } from "@api/index";
 import { redirect } from "@tanstack/react-router";
-import { router } from "../main";
 
 export async function setup(client: HuginnClient) {
    if (router.history.location.pathname === "/splashscreen") {

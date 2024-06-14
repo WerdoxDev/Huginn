@@ -1,10 +1,10 @@
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { ReactNode, useEffect } from "react";
-import { useClient } from "../contexts/apiContext";
+import { useClient } from "@contexts/apiContext";
 import { APIRelationship } from "@shared/api-types";
 import { GatewayDispatchEvents } from "@shared/gateway-types";
 import { Snowflake } from "@shared/snowflake";
-import { getRelationshipsOptions } from "../lib/queries";
+import { getRelationshipsOptions } from "@lib/queries";
 
 export default function FriendsProvider(props: { children?: ReactNode }) {
    const client = useClient();

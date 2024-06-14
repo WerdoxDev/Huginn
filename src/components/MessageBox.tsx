@@ -1,13 +1,12 @@
+import { useClient } from "@contexts/apiContext";
 import { snowflake } from "@shared/snowflake";
 import { useMutation } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { KeyboardEvent, useCallback, useMemo } from "react";
 import { Descendant, Editor, Node, Path, Range, Text, createEditor } from "slate";
-import { Editable, RenderElementProps, RenderLeafProps, Slate, withReact } from "slate-react";
-import { tokenize } from "../lib/huginn-tokenizer";
+import { DefaultElement, Editable, RenderElementProps, RenderLeafProps, Slate, withReact } from "slate-react";
 import EditorLeaf from "./editor/EditorLeaf";
-import DefaultElement from "./editor/DefaultElement";
-import { useClient } from "../contexts/apiContext";
+import { tokenize } from "@lib/huginn-tokenizer";
 
 const initialValue: Descendant[] = [
    {

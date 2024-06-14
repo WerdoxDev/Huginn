@@ -1,24 +1,25 @@
+import DefaultNotFound from "@components/DefaultNotFound";
+import { APIProvider } from "@contexts/apiContext";
+import { SettingsProvider } from "@contexts/settingsContext";
+import { WindowProvider } from "@contexts/windowContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
-import ReactDOM from "react-dom/client";
-import DefaultNotFound from "./components/DefaultNotFound";
-import { WindowProvider } from "./contexts/windowContext";
-import "./index.css";
-import { routeTree } from "./routeTree.gen";
-import { SettingsProvider } from "./contexts/settingsContext";
-import { APIProvider } from "./contexts/apiContext";
-import HuginnRouterProvider from "./HuginnRouterProvider";
 import React from "react";
+import HuginnRouterProvider from "./HuginnRouterProvider";
+import { routeTree } from "./routeTree.gen";
+import ReactDOM from "react-dom/client";
+import "./index.css";
 
 const queryClient = new QueryClient();
 
 export const router = createRouter({
    routeTree,
-   defaultPreload: "intent",
-   defaultPreloadDelay: 200,
+   // defaultPreload: "intent",
+   // defaultPreloadDelay: 200,
    defaultPreloadStaleTime: 0,
    context: { queryClient, client: undefined! },
    defaultNotFoundComponent: DefaultNotFound,
+   // defaultGcTime: 0,
    // defaultErrorComponent: DefaultError,
 });
 
@@ -29,22 +30,16 @@ declare module "@tanstack/react-router" {
    };
 }
 
-// function App() {
-//    return (
-
-//    );
-// }
-
 ReactDOM.createRoot(document.getElementById("root")!).render(
-   <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-         <SettingsProvider>
-            <APIProvider>
-               <WindowProvider>
-                  <HuginnRouterProvider router={router} />
-               </WindowProvider>
-            </APIProvider>
-         </SettingsProvider>
-      </QueryClientProvider>
-   </React.StrictMode>,
+   // <React.StrictMode>
+   <QueryClientProvider client={queryClient}>
+      <SettingsProvider>
+         <APIProvider>
+            <WindowProvider>
+               <HuginnRouterProvider router={router} />
+            </WindowProvider>
+         </APIProvider>
+      </SettingsProvider>
+   </QueryClientProvider>,
+   // </React.StrictMode>,
 );

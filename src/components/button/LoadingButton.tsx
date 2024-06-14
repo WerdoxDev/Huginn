@@ -1,4 +1,4 @@
-import { HuginnButtonProps } from "../../types";
+import { HuginnButtonProps } from "@/types";
 import HuginnButton from "./HuginnButton";
 
 export default function LoadingButton(props: HuginnButtonProps & { loading: boolean }) {

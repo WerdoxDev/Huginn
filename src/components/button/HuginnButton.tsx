@@ -1,4 +1,4 @@
-import { HuginnButtonProps } from "../../types";
+import { HuginnButtonProps } from "@/types";
 
 export default function HuginnButton(props: HuginnButtonProps) {
    return (

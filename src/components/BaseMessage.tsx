@@ -1,12 +1,11 @@
+import { useClient } from "@contexts/apiContext";
 import { APIMessageUser } from "@shared/api-types";
 import { useCallback, useMemo } from "react";
 import { Descendant, Node, Path, Range, Text, createEditor } from "slate";
-import { Editable, RenderElementProps, RenderLeafProps, Slate, withReact } from "slate-react";
-import { tokenize } from "../lib/huginn-tokenizer";
+import { DefaultElement, Editable, RenderElementProps, RenderLeafProps, Slate, withReact } from "slate-react";
 import UserIconWithStatus from "./UserIconWithStatus";
 import MessageLeaf from "./editor/MessageLeaf";
-import DefaultElement from "./editor/DefaultElement";
-import { useClient } from "../contexts/apiContext";
+import { tokenize } from "@lib/huginn-tokenizer";
 
 export default function BaseMessage(props: { content?: string; author: APIMessageUser }) {
    const client = useClient();

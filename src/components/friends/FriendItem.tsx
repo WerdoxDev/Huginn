@@ -1,6 +1,6 @@
+import UserIconWithStatus from "@components/UserIconWithStatus";
 import { APIRelationUser, RelationshipType } from "@shared/api-types";
 import { Snowflake } from "@shared/snowflake";
-import UserIconWithStatus from "../UserIconWithStatus";
 
 export default function FriendItem(props: {
    type: RelationshipType;

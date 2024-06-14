@@ -24,7 +24,12 @@
          "@api/*": ["../huginn-api/src/*"],
          "@api": ["../huginn-api/src"],
          "@shared/*": ["../huginn-shared/lib/*"],
-         "@shared": ["../huginn-shared/lib"]
+         "@shared": ["../huginn-shared/lib"],
+         "@components/*": ["./src/components/*"],
+         "@contexts/*": ["./src/contexts/*"],
+         "@hooks/*": ["./src/hooks/*"],
+         "@lib/*": ["./src/lib/*"],
+         "@/*": ["./src/*"]
       }
    },
    "include": [

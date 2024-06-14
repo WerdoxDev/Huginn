@@ -1,3 +1,4 @@
+import { UpdaterProgress } from "@/types";
 import { UnlistenFn, listen } from "@tauri-apps/api/event";
 import { checkUpdate as tauriCheckUpdate, installUpdate as tauriInstallUpdate } from "@tauri-apps/api/updater";
 import { useEffect, useRef, useState } from "react";

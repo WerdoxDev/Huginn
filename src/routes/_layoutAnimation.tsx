@@ -1,8 +1,8 @@
+import AnimatedOutlet from "@components/AnimatedOutlet";
+import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
 import { useTransition } from "@react-spring/web";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import AnimatedOutlet from "../components/AnimatedOutlet";
-import { AuthBackgroundContext } from "../contexts/authBackgroundContext";
 
 export const Route = createFileRoute("/_layoutAnimation")({
    component: LayoutAnimation,
@@ -34,12 +34,7 @@ function LayoutAnimation() {
    return (
       <AuthBackgroundContext.Provider value={{ state: backgroundState, setState: setBackgroundState }}>
          {transitions((style) => (
-            <AnimatedOutlet
-               updateFor={["/login", "/register"]}
-               style={style}
-               test="animation layout"
-               className={`absolute inset-0 top-6`}
-            />
+            <AnimatedOutlet updateFor={["/login", "/register"]} style={style} className={`test2 absolute inset-0 top-6`} />
             // <div className="absolute inset-0 top-6">
             //    <Outlet />
             // </div>

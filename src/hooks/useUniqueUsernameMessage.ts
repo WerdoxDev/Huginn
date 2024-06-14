@@ -1,8 +1,8 @@
 import { constants } from "@shared/constants";
 import { Field } from "@shared/errors";
 import { useEffect, useRef, useState } from "react";
-import { useClient } from "../contexts/apiContext";
-import { InputValues, MessageDetail, StatusCode } from "../types";
+import { useClient } from "@contexts/apiContext";
+import { InputValues, MessageDetail, StatusCode } from "@/types";
 
 export default function useUniqueUsernameMessage(values: InputValues, usernameField: string) {
    const client = useClient();

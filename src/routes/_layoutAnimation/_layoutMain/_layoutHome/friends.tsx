@@ -1,15 +1,15 @@
+import ModalErrorComponent from "@components/ModalErrorComponent";
+import AddFriendTab from "@components/friends/AddFriendTab";
+import FriendsTabItem from "@components/friends/FriendsTabItem";
+import OnlineFriendsTab from "@components/friends/OnlineFriendsTab";
+import PendingFriendsTab from "@components/friends/PendingFriendsTab";
+import { useClient } from "@contexts/apiContext";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import { requireAuth } from "@lib/middlewares";
+import { getRelationshipsOptions } from "@lib/queries";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Fragment } from "react/jsx-runtime";
-import ModalErrorComponent from "../../../../components/ModalErrorComponent";
-import AddFriendTab from "../../../../components/friends/AddFriendTab";
-import FriendsTabItem from "../../../../components/friends/FriendsTabItem";
-import OnlineFriendsTab from "../../../../components/friends/OnlineFriendsTab";
-import PendingFriendsTab from "../../../../components/friends/PendingFriendsTab";
-import { useClient } from "../../../../contexts/apiContext";
-import { requireAuth } from "../../../../lib/middlewares";
-import { getRelationshipsOptions } from "../../../../lib/queries";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/friends")({
    beforeLoad({ context: { client } }) {
