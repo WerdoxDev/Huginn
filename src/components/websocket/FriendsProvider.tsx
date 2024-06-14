@@ -1,17 +1,18 @@
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { ReactNode, useEffect } from "react";
 import { useClient } from "@contexts/apiContext";
-import { APIRelationship } from "@shared/api-types";
+import { APIGetUserRelationshipsResult, APIRelationship } from "@shared/api-types";
 import { GatewayDispatchEvents } from "@shared/gateway-types";
 import { Snowflake } from "@shared/snowflake";
-import { getRelationshipsOptions } from "@lib/queries";
+import { useQueryClient } from "@tanstack/react-query";
+import { ReactNode, useEffect } from "react";
 
 export default function FriendsProvider(props: { children?: ReactNode }) {
    const client = useClient();
    const queryClient = useQueryClient();
-   const { data: friends } = useSuspenseQuery(getRelationshipsOptions(client));
 
    function onRelationshipCreated(relationship: APIRelationship) {
+      const friends = queryClient.getQueryData<APIGetUserRelationshipsResult>(["relationships"]);
+      if (!friends) return;
+
       if (friends.some((x) => x.id === relationship.id)) {
          const changedIndex = friends.findIndex((x) => x.id === relationship.id && x.type !== relationship.type);
          if (changedIndex !== -1) {
@@ -25,6 +26,9 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
    }
 
    function onRelationshipDeleted(userId: Snowflake) {
+      const friends = queryClient.getQueryData<APIGetUserRelationshipsResult>(["relationships"]);
+      if (!friends) return;
+
       if (!friends.some((x) => x.user.id === userId)) {
          return;
       }
@@ -44,7 +48,7 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
          client.gateway.off(GatewayDispatchEvents.RELATIONSHIP_CREATE, onRelationshipCreated);
          client.gateway.off(GatewayDispatchEvents.RELATIONSHIP_DELETE, onRelationshipDeleted);
       };
-   }, [friends]);
+   }, []);
 
    return props.children;
 }

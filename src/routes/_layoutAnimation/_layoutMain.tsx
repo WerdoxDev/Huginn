@@ -7,11 +7,7 @@ import { useContext, useEffect } from "react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain")({
    component: LayoutMain,
-   async loader() {
-      await new Promise((r) => setTimeout(r, 1000));
-   },
    errorComponent: ErrorComponent,
-   gcTime: 0,
 });
 
 function ErrorComponent(props: { error: unknown }) {

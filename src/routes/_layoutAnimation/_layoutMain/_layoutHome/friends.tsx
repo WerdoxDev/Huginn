@@ -20,6 +20,7 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/
       return queryClient.ensureQueryData(getRelationshipsOptions(client));
    },
    errorComponent: ModalErrorComponent,
+   gcTime: 0,
 });
 
 const tabs = ["Online", "All", "Pending"];

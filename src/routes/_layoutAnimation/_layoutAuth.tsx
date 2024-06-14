@@ -4,8 +4,8 @@ import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
 import { HistoryContext } from "@contexts/historyContext";
 import { useModalsDispatch } from "@contexts/modalContext";
 import { animated, easings, useSpring, useTransition } from "@react-spring/web";
-import { Outlet, createFileRoute, useRouter } from "@tanstack/react-router";
-import { useContext, useEffect } from "react";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useContext } from "react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth")({
    component: LayoutAuth,

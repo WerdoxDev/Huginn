@@ -9,7 +9,6 @@ import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInputs } from "@hooks/useInputs";
 import { requireNotAuth } from "@lib/middlewares";
 import { APIPostLoginJSONBody } from "@shared/api-types";
-import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useContext, useEffect, useState } from "react";
 
@@ -22,7 +21,6 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/login")({
 
 function Login() {
    const client = useClient();
-   const queryClient = useQueryClient();
    const { inputsProps, values, resetStatuses, handleErrors } = useInputs([
       { name: "login", required: true, default: "test" },
       { name: "password", required: true, default: "test" },
@@ -35,7 +33,6 @@ function Login() {
    const mutation = useHuginnMutation(
       {
          async mutationFn(credentials: APIPostLoginJSONBody) {
-            // await queryClient.resetQueries({ queryKey: ["channels"] });
             await client.login({
                username: credentials.username,
                email: credentials.email,

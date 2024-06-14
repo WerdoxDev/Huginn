@@ -4,11 +4,10 @@ import { SettingsProvider } from "@contexts/settingsContext";
 import { WindowProvider } from "@contexts/windowContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
-import React from "react";
-import HuginnRouterProvider from "./HuginnRouterProvider";
-import { routeTree } from "./routeTree.gen";
 import ReactDOM from "react-dom/client";
+import HuginnRouterProvider from "./HuginnRouterProvider";
 import "./index.css";
+import { routeTree } from "./routeTree.gen";
 
 const queryClient = new QueryClient();
 
