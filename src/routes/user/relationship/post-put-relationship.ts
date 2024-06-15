@@ -1,10 +1,10 @@
 import { DBErrorType, prisma } from "@/src/database";
 import { createError } from "@/src/factory/error-factory";
-import { publishToTopic } from "@/src/gateway/gateway-utils";
+import { dispatchToTopic } from "@/src/gateway/gateway-utils";
 import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
-import { APIPostCreateRelationshipJSONBody, APIRelationshipWithoutOwner, RelationshipType } from "@shared/api-types";
+import { APIPostCreateRelationshipJSONBody, RelationshipType } from "@shared/api-types";
 import { Error, HttpCode } from "@shared/errors";
-import { GatewayDispatchEvents, GatewayOperations, GatewayRelationshipCreateDispatch } from "@shared/gateway-types";
+import { GatewayDispatchEvents } from "@shared/gateway-types";
 import consola from "consola";
 import { Hono } from "hono";
 import { createFactory } from "hono/factory";
@@ -39,19 +39,24 @@ const requestHandler = createFactory().createHandlers(c =>
             return error(c, createError(Error.relationshipExists()), HttpCode.BAD_REQUEST);
          }
 
-         const relationships = await prisma.relationship.createRelationship(payload.id, userId, { user: true });
+         if (!(await prisma.relationship.exists({ ownerId: payload.id, userId: userId, type: RelationshipType.PENDING_OUTGOING }))) {
+            const relationships = await prisma.relationship.createRelationship(payload.id, userId, { user: true });
 
-         consola.log(relationships);
+            consola.log(relationships);
 
-         const data: GatewayRelationshipCreateDispatch = {
-            op: GatewayOperations.DISPATCH,
-            t: GatewayDispatchEvents.RELATIONSHIP_CREATE,
-            d: {} as APIRelationshipWithoutOwner,
-            s: 0,
-         };
-
-         publishToTopic(payload.id, { ...data, d: relationships[0] });
-         publishToTopic(userId, { ...data, d: relationships[1] });
+            dispatchToTopic(
+               payload.id,
+               GatewayDispatchEvents.RELATIONSHIP_CREATE,
+               relationships.find(x => x.ownerId === payload.id),
+               0
+            );
+            dispatchToTopic(
+               userId,
+               GatewayDispatchEvents.RELATIONSHIP_CREATE,
+               relationships.find(x => x.ownerId === userId),
+               0
+            );
+         }
 
          return c.newResponse(null, HttpCode.NO_CONTENT);
       },

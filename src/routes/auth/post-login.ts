@@ -5,6 +5,7 @@ import { error, hValidator, handleRequest } from "@/src/route-utils";
 import { APIPostLoginResult } from "@shared/api-types";
 import { constants } from "@shared/constants";
 import { Error, Field, HttpCode } from "@shared/errors";
+import { omit } from "@shared/utility";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -20,12 +21,12 @@ app.post("/auth/login", hValidator("json", schema), c =>
    handleRequest(
       c,
       async () => {
-         const user = await prisma.user.findByCredentials(await c.req.json());
+         const user = omit(await prisma.user.findByCredentials(await c.req.json()), ["channelIds", "messageIds"]);
 
          const [accessToken, refreshToken] = await createTokens(
             { id: user.id },
             constants.ACCESS_TOKEN_EXPIRE_TIME,
-            constants.REFRESH_TOKEN_EXPIRE_TIME,
+            constants.REFRESH_TOKEN_EXPIRE_TIME
          );
          const json: APIPostLoginResult = { ...user, token: accessToken, refreshToken: refreshToken };
 
@@ -35,11 +36,11 @@ app.post("/auth/login", hValidator("json", schema), c =>
          if (e.isErrorType(DBErrorType.NULL_USER)) {
             return error(
                c,
-               createError(Error.invalidFormBody()).error("login", Field.invalidLogin()).error("password", Field.invalidLogin()),
+               createError(Error.invalidFormBody()).error("login", Field.invalidLogin()).error("password", Field.invalidLogin())
             );
          }
-      },
-   ),
+      }
+   )
 );
 
 export default app;

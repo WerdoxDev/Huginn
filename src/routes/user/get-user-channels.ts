@@ -14,11 +14,12 @@ app.get("/users/@me/channels", verifyJwt(), c =>
 
       const channels: APIGetUserChannelsResult = omitArray(
          await prisma.channel.getUserChannels(payload.id, merge(includeChannelRecipients, excludeSelfChannelUser(payload.id))),
-         ["recipientIds"],
+         ["recipientIds"]
       );
 
+      // await new Promise(r => setTimeout(r, 1000));
       return c.json(channels, HttpCode.OK);
-   }),
+   })
 );
 
 export default app;

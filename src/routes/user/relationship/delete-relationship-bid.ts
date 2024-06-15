@@ -1,9 +1,9 @@
 import { DBErrorType, prisma } from "@/src/database";
 import { createError } from "@/src/factory/error-factory";
-import { publishToTopic } from "@/src/gateway/gateway-utils";
+import { dispatchToTopic } from "@/src/gateway/gateway-utils";
 import { error, getJwt, handleRequest, verifyJwt } from "@/src/route-utils";
 import { Error, HttpCode } from "@shared/errors";
-import { GatewayDispatchEvents, GatewayOperations, GatewayRelationshipDeleteDispatch } from "@shared/gateway-types";
+import { GatewayDispatchEvents } from "@shared/gateway-types";
 import { Hono } from "hono";
 
 const app = new Hono();
@@ -14,17 +14,11 @@ app.delete("/users/@me/relationships/:userId", verifyJwt(), c =>
       async () => {
          const payload = getJwt(c);
          const userId = c.req.param("userId");
+
          await prisma.relationship.deleteByUserId(payload.id, userId);
 
-         const data: GatewayRelationshipDeleteDispatch = {
-            op: GatewayOperations.DISPATCH,
-            t: GatewayDispatchEvents.RELATIONSHIP_DELETE,
-            d: "",
-            s: 0,
-         };
-
-         publishToTopic(payload.id, { ...data, d: userId });
-         publishToTopic(userId, { ...data, d: payload.id });
+         dispatchToTopic(payload.id, GatewayDispatchEvents.RELATIONSHIP_DELETE, userId, 0);
+         dispatchToTopic(userId, GatewayDispatchEvents.RELATIONSHIP_DELETE, payload.id, 0);
 
          return c.newResponse(null, HttpCode.OK);
       },

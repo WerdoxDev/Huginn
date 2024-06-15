@@ -88,7 +88,6 @@ export class ServerGateway {
 
       // eslint-disable-next-line no-param-reassign
       ws.data = user.id;
-      ws.subscribe(user.id);
 
       const client = new ClientSession(ws, { user, sessionId });
       this.listenToSessionEvents(client);

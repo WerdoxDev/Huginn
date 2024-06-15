@@ -61,6 +61,7 @@ const relationshipExtention = Prisma.defineExtension({
                         { ownerId: recieverId, userId: senderId },
                      ],
                   },
+                  include: include,
                });
 
                return relationships as RelationshipPayload<Include>[];

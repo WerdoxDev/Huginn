@@ -20,17 +20,18 @@ app.get("/channels/:channelId/messages", verifyJwt(), hValidator("query", schema
 
          const messages: APIGetChannelMessagesResult = omitArray(
             await prisma.message.getMessages(c.req.param("channelId"), limit, merge(includeMessageAuthor, includeMessageMentions)),
-            ["authorId", "mentionIds"],
+            ["authorId", "mentionIds"]
          );
 
+         // return c.json({}, HttpCode.SERVER_ERROR);
          return c.json(messages, HttpCode.OK);
       },
       e => {
          if (e.isErrorType(DBErrorType.NULL_CHANNEL)) {
             return error(c, createError(Error.unknownChannel()), HttpCode.NOT_FOUND);
          }
-      },
-   ),
+      }
+   )
 );
 
 export default app;

@@ -19,13 +19,13 @@ app.post("/auth/refresh-token", hValidator("json", schema), c =>
       const [accessToken, refreshToken] = await createTokens(
          { id: payload!.id },
          constants.ACCESS_TOKEN_EXPIRE_TIME,
-         constants.REFRESH_TOKEN_EXPIRE_TIME,
+         constants.REFRESH_TOKEN_EXPIRE_TIME
       );
 
       const json: APIPostRefreshTokenResult = { token: accessToken, refreshToken };
 
       return c.json(json, HttpCode.OK);
-   }),
+   })
 );
 
 export default app;

@@ -1,10 +1,10 @@
 import { DBErrorType, prisma } from "@/src/database";
 import { createError } from "@/src/factory/error-factory";
-import { publishToTopic } from "@/src/gateway/gateway-utils";
+import { dispatchToTopic } from "@/src/gateway/gateway-utils";
 import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
 import { APIMessage, APIPostCreateDefaultMessageJSONBody, APIPostCreateDefaultMessageResult } from "@shared/api-types";
 import { Error, Field, HttpCode } from "@shared/errors";
-import { GatewayDispatchEvents, GatewayMessageCreateDispatch, GatewayOperations } from "@shared/gateway-types";
+import { GatewayDispatchEvents } from "@shared/gateway-types";
 import { omit } from "@shared/utility";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -36,19 +36,12 @@ app.post("/channels/:channelId/messages", verifyJwt(), hValidator("json", schema
                author: true,
                mentions: true,
             }),
-            ["authorId", "mentionIds"],
+            ["authorId", "mentionIds"]
          );
 
          message.nonce = body.nonce;
 
-         const data: GatewayMessageCreateDispatch = {
-            op: GatewayOperations.DISPATCH,
-            t: GatewayDispatchEvents.MESSAGE_CREATE,
-            d: message,
-            s: 0,
-         };
-
-         publishToTopic(channelId, data);
+         dispatchToTopic(channelId, GatewayDispatchEvents.MESSAGE_CREATE, message, 0);
 
          return c.json(message as APIPostCreateDefaultMessageResult, HttpCode.CREATED);
       },
@@ -56,8 +49,8 @@ app.post("/channels/:channelId/messages", verifyJwt(), hValidator("json", schema
          if (e.isErrorType(DBErrorType.NULL_CHANNEL)) {
             return error(c, createError(Error.unknownChannel()).error(e.error.cause, Field.invalidChannelId()), HttpCode.NOT_FOUND);
          }
-      },
-   ),
+      }
+   )
 );
 
 export default app;
