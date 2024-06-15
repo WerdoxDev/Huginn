@@ -1,13 +1,12 @@
+import { routeHistory } from "@contexts/historyContext";
 import { animated, useInView } from "@react-spring/web";
 import { Outlet, getRouterContext, useRouter } from "@tanstack/react-router";
 import cloneDeep from "lodash.clonedeep";
-import { useContext, useEffect, useRef } from "react";
-import { HistoryContext } from "@contexts/historyContext";
+import { useEffect, useRef } from "react";
 
 export default function AnimatedOutlet(props: { updateFor?: string[]; style: Record<string, unknown>; className?: string }) {
    const router = useRouter();
    const RouterContext = getRouterContext();
-   const history = useContext(HistoryContext);
 
    const renderedContext = useRef(router);
 
@@ -16,18 +15,18 @@ export default function AnimatedOutlet(props: { updateFor?: string[]; style: Rec
    useEffect(() => {
       if (
          props.updateFor?.includes(router.state.location.pathname) &&
-         (!history.lastPathname || props.updateFor?.includes(history.lastPathname))
+         (!routeHistory.lastPathname || props.updateFor?.includes(routeHistory.lastPathname))
       ) {
          renderedContext.current = cloneDeep(router);
       } else if (
          props.updateFor &&
          !props.updateFor?.includes(router.state.location.pathname) &&
-         history.lastPathname &&
-         !props.updateFor?.includes(history.lastPathname)
+         routeHistory.lastPathname &&
+         !props.updateFor?.includes(routeHistory.lastPathname)
       ) {
          renderedContext.current = cloneDeep(router);
       }
-   }, [history.lastPathname]);
+   }, [router.state.location.pathname]);
 
    useEffect(() => {
       if (inView) {

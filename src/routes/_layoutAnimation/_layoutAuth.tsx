@@ -1,7 +1,7 @@
 import AnimatedOutlet from "@components/AnimatedOutlet";
 import AuthBackgroundSvg from "@components/AuthBackgroundSvg";
 import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
-import { HistoryContext } from "@contexts/historyContext";
+import { routeHistory } from "@contexts/historyContext";
 import { useModalsDispatch } from "@contexts/modalContext";
 import { animated, easings, useSpring, useTransition } from "@react-spring/web";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
@@ -21,13 +21,12 @@ function LayoutAuth() {
       config: { duration: 250, easing: easings.easeInOutCirc },
    });
 
-   const history = useContext(HistoryContext);
    const modalsDispatch = useModalsDispatch();
 
    const style = useSpring({
       background: backgroundState === 2 ? "rgba(38,38,38,0)" : "rgba(38,38,38,1)",
       config: { duration: 250 },
-      immediate: !history.lastPathname,
+      immediate: !routeHistory.lastPathname,
    });
 
    return (

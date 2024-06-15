@@ -10,6 +10,7 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/
    loader: ({ params, context: { queryClient, client } }) => {
       return queryClient.ensureQueryData(getMessagesOptions(client, params.channelId));
    },
+   gcTime: 0,
    errorComponent: ModalErrorComponent,
 });
 

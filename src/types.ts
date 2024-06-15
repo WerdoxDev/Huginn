@@ -95,15 +95,15 @@ export type DropboxItem = {
 };
 
 export type ColorTheme = {
-   background: [string, string];
-   secondary: [string, string];
-   tertiary: [string, string];
-   primary: [string, string];
-   accent: [string, string];
-   accent2: [string, string];
-   success: [string, string];
-   text: [string, string];
-   error: [string, string];
+   background: string;
+   secondary: string;
+   tertiary: string;
+   primary: string;
+   accent: string;
+   accent2: string;
+   success: string;
+   text: string;
+   error: string;
 };
 
-export type ThemeType = "cerulean" | "pine green" | "eggplant";
+export type ThemeType = "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal";

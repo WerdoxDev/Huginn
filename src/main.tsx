@@ -13,8 +13,8 @@ const queryClient = new QueryClient();
 
 export const router = createRouter({
    routeTree,
-   // defaultPreload: "intent",
-   // defaultPreloadDelay: 200,
+   defaultPreload: "intent",
+   defaultPreloadDelay: 200,
    defaultPreloadStaleTime: 0,
    context: { queryClient, client: undefined! },
    defaultNotFoundComponent: DefaultNotFound,

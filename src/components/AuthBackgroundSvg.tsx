@@ -7,7 +7,7 @@ export default function AuthBackgroundSvg() {
    const { state } = useContext(AuthBackgroundContext);
 
    const colorTheme = useTheme();
-   const fillColor = useMemo(() => colorTheme.primary[1], [colorTheme]);
+   const fillColor = useMemo(() => colorTheme.accent2, [colorTheme]);
 
    const path1 = {
       close: "M0 540.8C-100.8 530.3 -201.6 519.7 -270.4 468.4C-339.2 417 -376 324.9 -415.7 240C-455.4 155.1 -498.1 77.6 -540.8 0L0 0Z",

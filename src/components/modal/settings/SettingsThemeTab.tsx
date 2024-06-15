@@ -6,6 +6,8 @@ const themes: DropboxItem[] = [
    { id: 0, name: "Pine Green", value: "pine green" },
    { id: 1, name: "Cerulean", value: "cerulean" },
    { id: 2, name: "Eggplant", value: "eggplant" },
+   { id: 3, name: "Coffee", value: "coffee" },
+   { id: 4, name: "Charcoal", value: "charcoal" },
 ];
 
 export default function SettingsThemeTab(props: SettingsTabProps) {

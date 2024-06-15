@@ -1,10 +1,9 @@
 import { useClient } from "@contexts/apiContext";
 import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useRouter } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 
 export function useLogout() {
    const queryClient = useQueryClient();
-   const router = useRouter();
    const client = useClient();
    const navigate = useNavigate();
 
