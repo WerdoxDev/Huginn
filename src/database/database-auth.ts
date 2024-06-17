@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { APIPostLoginJSONBody, APIPostRegisterJSONBody } from "@shared/api-types";
 import { snowflake } from "@shared/snowflake";
-import { DBErrorType, assertObjectWithCause, prisma } from ".";
+import { DBErrorType, assertObj, prisma } from ".";
 
 const authExtention = Prisma.defineExtension({
    name: "auth",
@@ -17,7 +17,7 @@ const authExtention = Prisma.defineExtension({
                },
             });
 
-            assertObjectWithCause("findByCredentials", user, DBErrorType.NULL_USER);
+            assertObj("findByCredentials", user, DBErrorType.NULL_USER);
             return user;
          },
          async registerNew(user: APIPostRegisterJSONBody) {
@@ -36,7 +36,7 @@ const authExtention = Prisma.defineExtension({
                },
             });
 
-            assertObjectWithCause("registerNew", newUser, DBErrorType.NULL_USER);
+            assertObj("registerNew", newUser, DBErrorType.NULL_USER);
             return newUser;
          },
       },

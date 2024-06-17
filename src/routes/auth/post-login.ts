@@ -5,7 +5,7 @@ import { error, hValidator, handleRequest } from "@/src/route-utils";
 import { APIPostLoginResult } from "@shared/api-types";
 import { constants } from "@shared/constants";
 import { Error, Field, HttpCode } from "@shared/errors";
-import { omit } from "@shared/utility";
+import { idFix } from "@shared/utility";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -21,7 +21,7 @@ app.post("/auth/login", hValidator("json", schema), c =>
    handleRequest(
       c,
       async () => {
-         const user = omit(await prisma.user.findByCredentials(await c.req.json()), ["channelIds", "messageIds"]);
+         const user = idFix(await prisma.user.findByCredentials(await c.req.json()));
 
          const [accessToken, refreshToken] = await createTokens(
             { id: user.id },

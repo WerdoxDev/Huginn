@@ -5,7 +5,7 @@ import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route
 import { APIMessage, APIPostCreateDefaultMessageJSONBody, APIPostCreateDefaultMessageResult } from "@shared/api-types";
 import { Error, Field, HttpCode } from "@shared/errors";
 import { GatewayDispatchEvents } from "@shared/gateway-types";
-import { omit } from "@shared/utility";
+import { idFix, omit } from "@shared/utility";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -32,11 +32,13 @@ app.post("/channels/:channelId/messages", verifyJwt(), hValidator("json", schema
          const channelId = c.req.param("channelId");
 
          const message: APIMessage = omit(
-            await prisma.message.createDefaultMessage(payload!.id, channelId, body.content, body.attachments, body.flags, {
-               author: true,
-               mentions: true,
-            }),
-            ["authorId", "mentionIds"]
+            idFix(
+               await prisma.message.createDefaultMessage(payload!.id, channelId, body.content, body.attachments, body.flags, {
+                  author: true,
+                  mentions: true,
+               })
+            ),
+            ["authorId"]
          );
 
          message.nonce = body.nonce;

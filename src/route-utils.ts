@@ -1,9 +1,9 @@
-import { Error as HError, HttpCode } from "@shared/errors";
 import { TokenPayload } from "@shared/api-types";
+import { Error, Error as HError, HttpCode } from "@shared/errors";
 import { Context, MiddlewareHandler, ValidationTargets } from "hono";
 import { createFactory } from "hono/factory";
 import { z } from "zod";
-import { DBError, isDBError, isPrismaError, prisma } from "./database";
+import { DBError, DBErrorType, isDBError, isPrismaError, prisma } from "./database";
 import { ErrorFactory, createError } from "./factory/error-factory";
 import { verifyToken } from "./factory/token-factory";
 import { logServerError } from "./log-utils";
@@ -11,7 +11,7 @@ import { logServerError } from "./log-utils";
 export async function handleRequest(
    context: Context,
    onRequest: () => Promise<Response>,
-   onError?: (error: DBError<Error & { cause: string }>) => Response | undefined,
+   onError?: (error: DBError<Error & { cause: string }>) => Response | undefined
 ) {
    try {
       const result = await onRequest();
@@ -20,6 +20,9 @@ export async function handleRequest(
       if (onError !== undefined) {
          let errorResult;
          if (isDBError(e)) {
+            if (e.isErrorType(DBErrorType.INVALID_ID)) {
+               return invalidFormBody(context);
+            }
             errorResult = onError(e);
          }
 
@@ -28,12 +31,12 @@ export async function handleRequest(
          }
       }
 
-      let error = e;
+      let otherError = e;
       if (isPrismaError(e)) {
-         error = new DBError(e, "PRISMA ERROR");
+         otherError = new DBError(e, "PRISMA ERROR");
       }
 
-      return serverError(context, error);
+      return serverError(context, otherError);
    }
 }
 
@@ -78,11 +81,14 @@ export function hValidator(target: keyof ValidationTargets, schema: z.ZodType<an
             value = Object.fromEntries(
                Object.entries(c.req.queries()).map(([k, v]) => {
                   return v.length === 1 ? [k, v[0]] : [k, v];
-               }),
+               })
             );
             break;
          case "json":
             value = await c.req.json();
+            break;
+         case "param":
+            value = c.req.param() as Record<string, string>;
             break;
 
          default:
@@ -114,7 +120,7 @@ export function verifyJwt(): MiddlewareHandler {
          return unauthorized(c);
       }
 
-      if (!(await prisma.user.exists({ id: payload.id }))) {
+      if (!(await prisma.user.exists({ id: BigInt(payload.id) }))) {
          return unauthorized(c);
       }
 

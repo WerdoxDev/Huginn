@@ -4,7 +4,7 @@ import { createError } from "@/src/factory/error-factory";
 import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
 import { APIPostCreateDMJSONBody, APIPostCreateDMResult } from "@shared/api-types";
 import { Error, Field, HttpCode } from "@shared/errors";
-import { omit } from "@shared/utility";
+import { idFix } from "@shared/utility";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -20,10 +20,10 @@ app.post("/users/@me/channels", verifyJwt(), hValidator("json", schema), c =>
          const payload = getJwt(c);
 
          if (body.recipientId) {
-            const channel: APIPostCreateDMResult = omit(
-               await prisma.channel.createSingleDM(payload.id, body.recipientId, includeChannelRecipients),
-               ["recipientIds"]
+            const channel: APIPostCreateDMResult = idFix(
+               await prisma.channel.createSingleDM(payload.id, body.recipientId, includeChannelRecipients)
             );
+
             return c.json(channel, HttpCode.CREATED);
          }
 
@@ -32,10 +32,10 @@ app.post("/users/@me/channels", verifyJwt(), hValidator("json", schema), c =>
                return error(c, createError(Error.invalidFormBody()));
             }
 
-            const channel: APIPostCreateDMResult = omit(
-               await prisma.channel.createGroupDM(payload.id, body.users, includeChannelRecipients),
-               ["recipientIds"]
+            const channel: APIPostCreateDMResult = idFix(
+               await prisma.channel.createGroupDM(payload.id, body.users, includeChannelRecipients)
             );
+
             return c.json(channel, HttpCode.CREATED);
          }
 

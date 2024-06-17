@@ -3,7 +3,7 @@ import { excludeSelfChannelUser, includeChannelRecipients } from "@/src/database
 import { getJwt, handleRequest, verifyJwt } from "@/src/route-utils";
 import { APIGetUserChannelsResult } from "@shared/api-types";
 import { HttpCode } from "@shared/errors";
-import { merge, omitArray } from "@shared/utility";
+import { idFix, merge } from "@shared/utility";
 import { Hono } from "hono";
 
 const app = new Hono();
@@ -12,12 +12,11 @@ app.get("/users/@me/channels", verifyJwt(), c =>
    handleRequest(c, async () => {
       const payload = getJwt(c);
 
-      const channels: APIGetUserChannelsResult = omitArray(
-         await prisma.channel.getUserChannels(payload.id, merge(includeChannelRecipients, excludeSelfChannelUser(payload.id))),
-         ["recipientIds"]
+      //TODO: TEST THIS
+      const channels: APIGetUserChannelsResult = idFix(
+         await prisma.channel.getUserChannels(payload.id, merge(includeChannelRecipients, excludeSelfChannelUser(payload.id)))
       );
 
-      // await new Promise(r => setTimeout(r, 1000));
       return c.json(channels, HttpCode.OK);
    })
 );

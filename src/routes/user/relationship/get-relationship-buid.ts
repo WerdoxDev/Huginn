@@ -4,7 +4,7 @@ import { createError } from "@/src/factory/error-factory";
 import { error, getJwt, handleRequest, verifyJwt } from "@/src/route-utils";
 import { APIGetUserRelationshipByIdResult } from "@shared/api-types";
 import { Error, HttpCode } from "@shared/errors";
-import { omit } from "@shared/utility";
+import { idFix, omit } from "@shared/utility";
 import { Hono } from "hono";
 
 const app = new Hono();
@@ -14,9 +14,11 @@ app.get("/users/@me/relationships/:relationshipId", verifyJwt(), c =>
       c,
       async () => {
          const payload = getJwt(c);
-         const relationship: APIGetUserRelationshipByIdResult = omit(
-            await prisma.relationship.getByUserId(payload.id, c.req.param("relationshipId"), includeRelationshipUser),
-            ["ownerId", "userId"]
+         const relationship: APIGetUserRelationshipByIdResult = idFix(
+            omit(await prisma.relationship.getByUserId(payload.id, c.req.param("relationshipId"), includeRelationshipUser), [
+               "ownerId",
+               "userId",
+            ])
          );
 
          return c.json(relationship, HttpCode.OK);

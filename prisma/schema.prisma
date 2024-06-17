@@ -3,73 +3,81 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
-  url      = env("MONGODB_CONNECTION_STRING")
+  provider = "postgresql"
+  url      = env("POSTGRESQL_URL")
 }
 
 model User {
-  id                   String         @id @map("_id")
+  id                   BigInt         @id
   username             String         @unique
   displayName          String
   email                String         @unique
   avatar               String
   password             String
-  flags                Int            @db.Int
+  flags                Int            @db.SmallInt
   system               Boolean        @default(false)
-  channelIds           String[]
-  channels             Channel[]      @relation(fields: [channelIds], references: [id])
-  messageIds           String[]
-  mentions             Message[]      @relation("message_mentions", fields: [messageIds], references: [id])
-  messages             Message[]      @relation("message_author")
+  includedChannels     Channel[]      @relation("channel_users")
+  ownedChannels        Channel[]      @relation("channel_owner")
+  messages             Message[]
+  mentionedMessages    Message[]      @relation("message_mentions")
   relationships        Relationship[] @relation("relation_owner")
   relatedRelationships Relationship[] @relation("relation_user")
-
-  @@map("users")
 }
 
 model Channel {
-  id            String    @id @map("_id")
+  id            BigInt    @id
   icon          String?
   lastMessageId String?
   name          String?
-  ownerId       String?
-  recipientIds  String[]
-  recipients    User[]    @relation(fields: [recipientIds], references: [id])
-  type          Int       @db.Int
+  owner         User?     @relation("channel_owner", fields: [ownerId], references: [id])
+  ownerId       BigInt?
+  recipients    User[]    @relation("channel_users")
   messages      Message[]
-
-  @@map("channels")
+  type          Int
 }
 
 model Message {
-  id          String    @id @map("_id")
-  authorId    String
-  author      User      @relation("message_author", fields: [authorId], references: [id])
-  channelId   String
+  id          BigInt    @id
+  author      User      @relation(fields: [authorId], references: [id])
+  authorId    BigInt
   channel     Channel   @relation(fields: [channelId], references: [id])
+  channelId   BigInt
   content     String
   createdAt   DateTime
   editedAt    DateTime?
-  mentionIds  String[]
-  mentions    User[]    @relation("message_mentions", fields: [mentionIds], references: [id])
+  mentions    User[]    @relation("message_mentions")
   attachments String[]
   reactions   String[]
   pinned      Boolean
-  type        Int       @db.Int
-  flags       Int?      @db.Int
-
-  @@map("messages")
+  type        Int
+  flags       Int?      @db.SmallInt
 }
 
+// model ChannelsOnUsers {
+//   user      User    @relation(fields: [userId], references: [id])
+//   userId    BigInt
+//   channel   Channel @relation(fields: [channelId], references: [id])
+//   channelId BigInt
+
+//   @@id([userId, channelId])
+// }
+
+// model UserMentionsOnMessages {
+//   user      User    @relation(fields: [userId], references: [id])
+//   userId    BigInt
+//   message   Message @relation(fields: [messageId], references: [id])
+//   messageId BigInt
+
+//   @@id([userId, messageId])
+// }
+
 model Relationship {
-  id       String    @id @map("_id")
-  type     Int       @db.Int
+  id       BigInt    @id
+  type     Int       @db.SmallInt
   nickname String
   since    DateTime?
   owner    User      @relation("relation_owner", fields: [ownerId], references: [id])
+  ownerId  BigInt
   user     User      @relation("relation_user", fields: [userId], references: [id])
-  userId   String
-  ownerId  String
-
-  @@map("relationships")
+  userId   BigInt
 }

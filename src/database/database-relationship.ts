@@ -1,32 +1,41 @@
 import { Prisma } from "@prisma/client";
 import { RelationshipType } from "@shared/api-types";
 import { Snowflake, snowflake } from "@shared/snowflake";
-import { DBErrorType, assertBoolWithCause, assertObjectWithCause, prisma } from ".";
+import { DBErrorType, assertCondition, assertId, assertObj, prisma } from ".";
 import { RelationshipInclude, RelationshipPayload } from "./database-common";
 
 const relationshipExtention = Prisma.defineExtension({
    model: {
       relationship: {
          async getByUserId<Include extends RelationshipInclude>(ownerId: Snowflake, userId: Snowflake, include?: Include) {
-            const relationship = await prisma.relationship.findFirst({ where: { ownerId, userId }, include: include });
+            assertId("getByUserId", [ownerId, userId]);
 
-            assertObjectWithCause("getById", relationship, DBErrorType.NULL_RELATIONSHIP, `${ownerId}-${userId}`);
+            const relationship = await prisma.relationship.findFirst({
+               where: { ownerId: BigInt(ownerId), userId: BigInt(userId) },
+               include: include,
+            });
+
+            assertObj("getById", relationship, DBErrorType.NULL_RELATIONSHIP, `${ownerId}-${userId}`);
             return relationship as RelationshipPayload<Include>;
          },
          async getUserRelationships<Include extends RelationshipInclude>(userId: Snowflake, include?: Include) {
             await prisma.user.assertUserExists("getUserRelationships", userId);
 
-            const relationships = await prisma.relationship.findMany({ where: { ownerId: userId }, include: include });
+            const relationships = await prisma.relationship.findMany({ where: { ownerId: BigInt(userId) }, include: include });
 
-            assertObjectWithCause("getUserRelationships", relationships, DBErrorType.NULL_RELATIONSHIP);
+            assertObj("getUserRelationships", relationships, DBErrorType.NULL_RELATIONSHIP);
             return relationships as RelationshipPayload<Include>[];
          },
          async deleteByUserId(ownerId: Snowflake, userId: Snowflake) {
-            const relation = await prisma.relationship.findFirst({ where: { userId: userId, ownerId: ownerId } });
-            assertObjectWithCause("deleteByUserId", relation, DBErrorType.NULL_RELATIONSHIP);
+            assertId("deleteByUserId", [ownerId, userId]);
 
-            const oppositeRelation = await prisma.relationship.findFirst({ where: { userId: ownerId, ownerId: userId } });
-            assertObjectWithCause("deleteByUserId", oppositeRelation, DBErrorType.NULL_RELATIONSHIP);
+            const relation = await prisma.relationship.findFirst({ where: { userId: BigInt(userId), ownerId: BigInt(ownerId) } });
+            assertObj("deleteByUserId", relation, DBErrorType.NULL_RELATIONSHIP);
+
+            const oppositeRelation = await prisma.relationship.findFirst({
+               where: { userId: BigInt(ownerId), ownerId: BigInt(userId) },
+            });
+            assertObj("deleteByUserId", oppositeRelation, DBErrorType.NULL_RELATIONSHIP);
 
             const deleteRelation = prisma.relationship.delete({ where: { id: relation.id } });
             const deleteOppositeRelation = prisma.relationship.delete({ where: { id: oppositeRelation.id } });
@@ -38,8 +47,8 @@ const relationshipExtention = Prisma.defineExtension({
             await prisma.user.assertUserExists("createRelationship", recieverId);
 
             const incomingExists = await prisma.relationship.exists({
-               ownerId: senderId,
-               userId: recieverId,
+               ownerId: BigInt(senderId),
+               userId: BigInt(recieverId),
                type: RelationshipType.PENDING_INCOMING,
             });
 
@@ -47,8 +56,8 @@ const relationshipExtention = Prisma.defineExtension({
                await prisma.relationship.updateMany({
                   where: {
                      OR: [
-                        { ownerId: senderId, userId: recieverId },
-                        { ownerId: recieverId, userId: senderId },
+                        { ownerId: BigInt(senderId), userId: BigInt(recieverId) },
+                        { ownerId: BigInt(recieverId), userId: BigInt(senderId) },
                      ],
                   },
                   data: { type: RelationshipType.FRIEND, since: new Date() },
@@ -57,8 +66,8 @@ const relationshipExtention = Prisma.defineExtension({
                const relationships = await prisma.relationship.findMany({
                   where: {
                      OR: [
-                        { ownerId: senderId, userId: recieverId },
-                        { ownerId: recieverId, userId: senderId },
+                        { ownerId: BigInt(senderId), userId: BigInt(recieverId) },
+                        { ownerId: BigInt(recieverId), userId: BigInt(senderId) },
                      ],
                   },
                   include: include,
@@ -72,8 +81,8 @@ const relationshipExtention = Prisma.defineExtension({
                   id: snowflake.generate(),
                   nickname: "",
                   type: RelationshipType.PENDING_OUTGOING,
-                  ownerId: senderId,
-                  userId: recieverId,
+                  ownerId: BigInt(senderId),
+                  userId: BigInt(recieverId),
                   since: null,
                },
                include: include,
@@ -84,8 +93,8 @@ const relationshipExtention = Prisma.defineExtension({
                   id: snowflake.generate(),
                   nickname: "",
                   type: RelationshipType.PENDING_INCOMING,
-                  ownerId: recieverId,
-                  userId: senderId,
+                  ownerId: BigInt(recieverId),
+                  userId: BigInt(senderId),
                   since: null,
                },
                include: include,
@@ -93,13 +102,14 @@ const relationshipExtention = Prisma.defineExtension({
 
             const relationships = await prisma.$transaction([createOutgoing, createIncoming]);
 
-            assertObjectWithCause("createRelationship", relationships, DBErrorType.NULL_RELATIONSHIP);
+            assertObj("createRelationship", relationships, DBErrorType.NULL_RELATIONSHIP);
 
             return relationships as RelationshipPayload<Include>[];
          },
          async assertRelationshipExists(methodName: string, id: Snowflake) {
-            const relationshipExists = await prisma.relationship.exists({ id });
-            assertBoolWithCause(methodName, !relationshipExists, DBErrorType.NULL_RELATIONSHIP, id);
+            assertId(methodName, id);
+            const relationshipExists = await prisma.relationship.exists({ id: BigInt(id) });
+            assertCondition(methodName, !relationshipExists, DBErrorType.NULL_RELATIONSHIP, id);
          },
       },
    },

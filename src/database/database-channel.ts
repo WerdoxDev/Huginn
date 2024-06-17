@@ -3,45 +3,44 @@ import { ChannelType } from "@shared/api-types";
 import { snowflake, Snowflake } from "@shared/snowflake";
 import { prisma } from ".";
 import { ChannelInclude, ChannelPayload } from "./database-common";
-import { assertBoolWithCause, assertObjectWithCause, DBErrorType } from "./database-error";
+import { assertCondition, assertId, assertObj, DBErrorType } from "./database-error";
 
 const channelExtention = Prisma.defineExtension({
    model: {
       channel: {
          async getById<Include extends ChannelInclude>(id: Snowflake, include?: Include) {
-            const channel = await prisma.channel.findUnique({ where: { id: id }, include: include });
+            assertId("getById", id);
+            const channel = await prisma.channel.findUnique({ where: { id: BigInt(id) }, include: include });
 
-            assertObjectWithCause("getById", channel, DBErrorType.NULL_CHANNEL, id);
+            assertObj("getById", channel, DBErrorType.NULL_CHANNEL, id);
             return channel as ChannelPayload<Include>;
          },
          async getUserChannels<Include extends ChannelInclude>(userId: Snowflake, include?: Include) {
             await prisma.user.assertUserExists("getUserChannels", userId);
 
             const channels = await prisma.channel.findMany({
-               where: { recipientIds: { has: userId } },
+               where: { recipients: { some: { id: BigInt(userId) } } },
                include: include,
             });
 
-            assertObjectWithCause("getUserChannels", channels, DBErrorType.NULL_CHANNEL);
+            assertObj("getUserChannels", channels, DBErrorType.NULL_CHANNEL);
             return channels as ChannelPayload<Include>[];
          },
          async createSingleDM<Include extends ChannelInclude>(firstUserId: Snowflake, secondUserId: Snowflake, include?: Include) {
             await prisma.user.assertUserExists("createSingleDM", firstUserId);
             await prisma.user.assertUserExists("createSingleDM", secondUserId);
-            // const firstUser = pick(await prisma.user.getById(firstUserId), ["id", "username", "avatar"]);
-            // const secondUser = pick(await prisma.user.getById(secondUserId), ["id", "username", "avatar"]);
 
             const channel = await prisma.channel.create({
                data: {
                   id: snowflake.generate(),
                   type: ChannelType.DM,
                   lastMessageId: null,
-                  recipientIds: [firstUserId, secondUserId],
+                  recipients: { connect: [{ id: BigInt(firstUserId) }, { id: BigInt(secondUserId) }] },
                },
                include: include,
             });
 
-            assertObjectWithCause("createSingleDM", channel, DBErrorType.NULL_CHANNEL);
+            assertObj("createSingleDM", channel, DBErrorType.NULL_CHANNEL);
             return channel as ChannelPayload<Include>;
          },
          async createGroupDM<Include extends ChannelInclude>(ownerId: Snowflake, users: Record<Snowflake, string>, include?: Include) {
@@ -60,20 +59,23 @@ const channelExtention = Prisma.defineExtension({
                   id: snowflake.generate(),
                   name: finalName,
                   type: ChannelType.GROUP_DM,
-                  ownerId: ownerId,
+                  ownerId: BigInt(ownerId),
                   icon: null,
                   lastMessageId: null,
-                  recipientIds: [ownerId, ...Object.keys(users)],
+                  recipients: {
+                     connect: [{ id: BigInt(ownerId) }, ...Object.keys(users).map(x => ({ id: BigInt(x) }))],
+                  },
                },
                include: include,
             });
 
-            assertObjectWithCause("createGroupDM", channel, DBErrorType.NULL_CHANNEL);
+            assertObj("createGroupDM", channel, DBErrorType.NULL_CHANNEL);
             return channel as ChannelPayload<Include>;
          },
          async assertChannelExists(methodName: string, id: Snowflake) {
-            const channelExists = await prisma.channel.exists({ id });
-            assertBoolWithCause(methodName, !channelExists, DBErrorType.NULL_CHANNEL, id);
+            assertId(methodName, id);
+            const channelExists = await prisma.channel.exists({ id: BigInt(id) });
+            assertCondition(methodName, !channelExists, DBErrorType.NULL_CHANNEL, id);
          },
       },
    },

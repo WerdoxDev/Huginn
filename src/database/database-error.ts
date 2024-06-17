@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { Snowflake } from "@shared/snowflake";
 
 export class DBError<T> extends Error {
    public constructor(public error: T, methodName: string, cause?: string) {
@@ -20,41 +21,29 @@ export class DBError<T> extends Error {
    }
 }
 
-export function assertObjectWithCause(methodName: string, obj: unknown, errorType: DBErrorType, cause?: string): asserts obj {
+export function assertId(methodName: string, ids: Snowflake | Snowflake[]): asserts ids {
+   try {
+      if (Array.isArray(ids)) {
+         for (const id of ids) assertId(methodName, id);
+      } else {
+         BigInt(ids);
+      }
+   } catch (e) {
+      throw new DBError(Error(DBErrorType.INVALID_ID, { cause: "Provided ID was not BigInt compatible" }), methodName);
+   }
+}
+
+export function assertObj(methodName: string, obj: unknown, errorType: DBErrorType, cause?: string): asserts obj {
    if (obj === null || typeof obj !== "object") {
       throw new DBError(Error(errorType, { cause: cause }), methodName);
    }
 }
 
-export function assertBoolWithCause(methodName: string, shouldAssert: boolean, errorType: DBErrorType, cause?: string) {
+export function assertCondition(methodName: string, shouldAssert: boolean, errorType: DBErrorType, cause?: string) {
    if (shouldAssert) {
       throw new DBError(Error(errorType, { cause: cause }), methodName);
    }
 }
-
-// export function assertUserIsDefined(methodName: string, user: unknown, id?: Snowflake): asserts user {
-//    if (user === null || typeof user !== "object") {
-//       throw new DBError(Error(DBErrorType.NULL_USER, { cause: id }), methodName);
-//    }
-// }
-
-// export function assertChannelIsDefined(methodName: string, channel: unknown, id?: Snowflake): asserts channel {
-//    if (channel === null || typeof channel !== "object") {
-//       throw new DBError(Error(DBErrorType.NULL_CHANNEL, { cause: id }), methodName);
-//    }
-// }
-
-// export function assertMessageIsDefined(methodName: string, message: unknown, id?: Snowflake): asserts message {
-//    if (message === null || typeof message !== "object") {
-//       throw new DBError(Error(DBErrorType.NULL_MESSAGE, { cause: id }), methodName);
-//    }
-// }
-
-// export function assertRelationshipIsDefined(methodName: string, relationship: unknown, id?: Snowflake): asserts relationship {
-//    if (relationship === null || typeof relationship !== "object") {
-//       throw new DBError(Error(DBErrorType.NULL_RELATIONSHIP, { cause: id }), methodName);
-//    }
-// }
 
 export function isDBError(object: unknown): object is DBError<Error & { cause: string }> {
    if (object !== null && typeof object === "object" && object instanceof DBError && object.error instanceof Error) {
@@ -85,6 +74,7 @@ export function isPrismaError(object: unknown): object is (
 }
 
 export enum DBErrorType {
+   INVALID_ID = "INVALID_ID",
    NULL_USER = "NULL_USER",
    NULL_CHANNEL = "NULL_CHANNEL",
    NULL_MESSAGE = "NULL_MESSAGE",

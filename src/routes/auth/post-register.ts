@@ -13,7 +13,7 @@ import {
 import { APIPostRegisterJSONBody, APIPostRegisterResult } from "@shared/api-types";
 import { constants } from "@shared/constants";
 import { Error, HttpCode } from "@shared/errors";
-import { omit } from "@shared/utility";
+import { idFix } from "@shared/utility";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -50,7 +50,7 @@ app.post("/auth/register", hValidator("json", schema), async c =>
          return error(c, databaseError);
       }
 
-      const user = omit(await prisma.user.registerNew(body), ["channelIds", "messageIds"]);
+      const user = idFix(await prisma.user.registerNew(body));
 
       const [accessToken, refreshToken] = await createTokens(
          { id: user.id },

@@ -4,7 +4,7 @@ import { createError } from "@/src/factory/error-factory";
 import { error, handleRequest, verifyJwt } from "@/src/route-utils";
 import { APIGetMessageByIdResult } from "@shared/api-types";
 import { Error, HttpCode } from "@shared/errors";
-import { merge, omit } from "@shared/utility";
+import { idFix, merge, omit } from "@shared/utility";
 import { Hono } from "hono";
 
 const app = new Hono();
@@ -14,12 +14,14 @@ app.get("/channels/:channelId/messages/:messageId", verifyJwt(), c =>
       c,
       async () => {
          const message: APIGetMessageByIdResult = omit(
-            await prisma.message.getById(
-               c.req.param("channelId"),
-               c.req.param("messageId"),
-               merge(includeMessageAuthor, includeMessageMentions),
+            idFix(
+               await prisma.message.getById(
+                  c.req.param("channelId"),
+                  c.req.param("messageId"),
+                  merge(includeMessageAuthor, includeMessageMentions)
+               )
             ),
-            ["authorId"],
+            ["authorId"]
          );
 
          return c.json(message, HttpCode.OK);
@@ -28,8 +30,8 @@ app.get("/channels/:channelId/messages/:messageId", verifyJwt(), c =>
          if (e.isErrorType(DBErrorType.NULL_MESSAGE)) {
             return error(c, createError(Error.unknownMessage()), HttpCode.NOT_FOUND);
          }
-      },
-   ),
+      }
+   )
 );
 
 export default app;

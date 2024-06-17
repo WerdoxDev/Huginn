@@ -5,6 +5,7 @@ import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route
 import { APIPostCreateRelationshipJSONBody, RelationshipType } from "@shared/api-types";
 import { Error, HttpCode } from "@shared/errors";
 import { GatewayDispatchEvents } from "@shared/gateway-types";
+import { idFix } from "@shared/utility";
 import consola from "consola";
 import { Hono } from "hono";
 import { createFactory } from "hono/factory";
@@ -28,19 +29,27 @@ const requestHandler = createFactory().createHandlers(c =>
                return error(c, createError(Error.invalidFormBody()));
             }
 
-            userId = (await prisma.user.getByUsername(potentialBody.username)).id;
+            userId = idFix(await prisma.user.getByUsername(potentialBody.username)).id;
          }
 
          if (userId === payload.id) {
             return error(c, createError(Error.relationshipSelfRequest()), HttpCode.BAD_REQUEST);
          }
 
-         if (await prisma.relationship.exists({ ownerId: payload.id, userId: userId, type: RelationshipType.FRIEND })) {
+         if (
+            await prisma.relationship.exists({ ownerId: BigInt(payload.id), userId: BigInt(userId), type: RelationshipType.FRIEND })
+         ) {
             return error(c, createError(Error.relationshipExists()), HttpCode.BAD_REQUEST);
          }
 
-         if (!(await prisma.relationship.exists({ ownerId: payload.id, userId: userId, type: RelationshipType.PENDING_OUTGOING }))) {
-            const relationships = await prisma.relationship.createRelationship(payload.id, userId, { user: true });
+         if (
+            !(await prisma.relationship.exists({
+               ownerId: BigInt(payload.id),
+               userId: BigInt(userId),
+               type: RelationshipType.PENDING_OUTGOING,
+            }))
+         ) {
+            const relationships = idFix(await prisma.relationship.createRelationship(payload.id, userId, { user: true }));
 
             consola.log(relationships);
 

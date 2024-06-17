@@ -24,7 +24,7 @@ export const includeChannelRecipients = Prisma.validator<Prisma.ChannelInclude>(
 });
 
 export const excludeSelfChannelUser = (id: Snowflake) =>
-   Prisma.validator<Prisma.ChannelInclude>()({ recipients: { where: { id: { not: id } } } });
+   Prisma.validator<Prisma.ChannelInclude>()({ recipients: { where: { id: { not: BigInt(id) } } } });
 
 export const includeMessageAuthor = Prisma.validator<Prisma.MessageInclude>()({
    author: { select: { id: true, username: true, displayName: true, avatar: true, flags: true } },

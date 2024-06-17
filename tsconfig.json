@@ -11,7 +11,7 @@
       "composite": true,
       "strict": true,
       "downlevelIteration": true,
-      "skipLibCheck": false,
+      "skipLibCheck": true,
       "jsx": "react-jsx",
       "allowSyntheticDefaultImports": true,
       "forceConsistentCasingInFileNames": true,
@@ -22,7 +22,7 @@
          "@src/*": ["./src/*"]
       }
    },
-   "include": ["**/*", "package.json", "index.d.ts"],
+   "include": ["**/*", "package.json"],
    "exclude": ["ecosystem.config.cjs"],
    "references": [{ "path": "../huginn-shared" }]
 }

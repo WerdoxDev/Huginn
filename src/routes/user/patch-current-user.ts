@@ -13,6 +13,7 @@ import {
 import { APIPatchCurrentUserJSONBody, APIPatchCurrentUserResult } from "@shared/api-types";
 import { constants } from "@shared/constants";
 import { Error, Field, HttpCode } from "@shared/errors";
+import { idFix } from "@shared/utility";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -58,24 +59,26 @@ app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
          return error(c, databaseError);
       }
 
-      const updatedUser = await prisma.user.edit(payload.id, {
-         email: body.email,
-         username: body.username,
-         displayName: body.displayName,
-         avatar: body.avatar,
-         password: body.newPassword,
-      });
+      const updatedUser = idFix(
+         await prisma.user.edit(payload.id, {
+            email: body.email,
+            username: body.username,
+            displayName: body.displayName,
+            avatar: body.avatar,
+            password: body.newPassword,
+         })
+      );
 
       const [accessToken, refreshToken] = await createTokens(
-         { id: payload!.id },
+         { id: payload.id },
          constants.ACCESS_TOKEN_EXPIRE_TIME,
-         constants.REFRESH_TOKEN_EXPIRE_TIME,
+         constants.REFRESH_TOKEN_EXPIRE_TIME
       );
 
       const json: APIPatchCurrentUserResult = { ...updatedUser, token: accessToken, refreshToken };
 
       return c.json(json, HttpCode.OK);
-   }),
+   })
 );
 
 export default app;

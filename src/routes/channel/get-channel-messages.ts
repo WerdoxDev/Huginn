@@ -4,7 +4,7 @@ import { createError } from "@/src/factory/error-factory";
 import { error, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
 import { APIGetChannelMessagesResult } from "@shared/api-types";
 import { Error, HttpCode } from "@shared/errors";
-import { merge, omitArray } from "@shared/utility";
+import { idFix, merge, omitArray } from "@shared/utility";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -19,8 +19,10 @@ app.get("/channels/:channelId/messages", verifyJwt(), hValidator("query", schema
          const limit = Number(c.req.query("limit")) || 50;
 
          const messages: APIGetChannelMessagesResult = omitArray(
-            await prisma.message.getMessages(c.req.param("channelId"), limit, merge(includeMessageAuthor, includeMessageMentions)),
-            ["authorId", "mentionIds"]
+            idFix(
+               await prisma.message.getMessages(c.req.param("channelId"), limit, merge(includeMessageAuthor, includeMessageMentions))
+            ),
+            ["authorId"]
          );
 
          // return c.json({}, HttpCode.SERVER_ERROR);

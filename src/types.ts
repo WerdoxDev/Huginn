@@ -1,15 +1,15 @@
 import { APIUser } from "@shared/api-types";
 
-type ServerGatewayOptions = {
+export type ServerGatewayOptions = {
    logHeartbeat: boolean;
 };
 
-type ClientSessionInfo = {
+export type ClientSessionInfo = {
    sessionId: string;
    user: APIUser;
 };
 
-type AppVersionInfo = {
+export type AppVersionInfo = {
    version: string;
    pub_date: string;
    url: string;
