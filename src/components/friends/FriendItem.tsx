@@ -7,6 +7,7 @@ export default function FriendItem(props: {
    user: APIRelationUser;
    onAccept?: (userId: Snowflake) => void;
    onDenyOrCancel?: (userId: Snowflake) => void;
+   onMessage?: (userId: Snowflake) => void;
 }) {
    return (
       <div className="group flex cursor-pointer items-center justify-between rounded-xl p-2.5 hover:bg-secondary">
@@ -37,7 +38,10 @@ export default function FriendItem(props: {
                </>
             ) : (
                <>
-                  <button className="rounded-full bg-background/50 p-2 text-text/75 hover:text-text group-hover:bg-background">
+                  <button
+                     onClick={() => props.onMessage && props.onMessage(props.user.id)}
+                     className="rounded-full bg-background/50 p-2 text-text/75 hover:text-text group-hover:bg-background"
+                  >
                      <IconMdiMessage className="size-5" />
                   </button>
                   <button className="rounded-full bg-background/50 p-2 text-text/75 hover:text-text group-hover:bg-background">

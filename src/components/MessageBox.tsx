@@ -28,7 +28,7 @@ export default function MessageBox() {
    const mutation = useMutation({
       async mutationFn(content: string) {
          const channelId = params.channelId as string;
-         const nonce = snowflake.generate();
+         const nonce = snowflake.generate().toString();
          console.log(nonce);
          await client.channels.createMessage(channelId, { content: content, nonce: nonce });
       },

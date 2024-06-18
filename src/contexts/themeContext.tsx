@@ -7,7 +7,7 @@ const ceruleanTheme: ColorTheme = {
    secondary: "#262626",
    tertiary: "#1f1f1f",
    primary: "#007BA7",
-   accent: "#00B4F5",
+   accent: "#00A7E3",
    accent2: "#007BA7",
    success: "#76FF7A",
    text: "#EBEBD3",
