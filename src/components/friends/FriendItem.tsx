@@ -1,4 +1,5 @@
 import UserIconWithStatus from "@components/UserIconWithStatus";
+import { Tooltip } from "@components/tooltip/Tooltip";
 import { APIRelationUser, RelationshipType } from "@shared/api-types";
 import { Snowflake } from "@shared/snowflake";
 
@@ -22,31 +23,43 @@ export default function FriendItem(props: {
             {props.type === RelationshipType.PENDING_INCOMING || props.type === RelationshipType.PENDING_OUTGOING ? (
                <>
                   {props.type === RelationshipType.PENDING_INCOMING && (
-                     <button
-                        className="rounded-full bg-background/50 p-2 text-text/75 hover:text-primary group-hover:bg-background"
-                        onClick={() => props.onAccept && props.onAccept(props.user.id)}
-                     >
-                        <IconMdiCheck className="size-5" />
-                     </button>
+                     <Tooltip>
+                        <Tooltip.Trigger
+                           className="rounded-full bg-background/50 p-2 text-text/75 hover:text-primary group-hover:bg-background"
+                           onClick={() => props.onAccept && props.onAccept(props.user.id)}
+                        >
+                           <IconMdiCheck className="size-5" />
+                        </Tooltip.Trigger>
+                        <Tooltip.Content>Accept</Tooltip.Content>
+                     </Tooltip>
                   )}
-                  <button
-                     className="rounded-full bg-background/50 p-2 text-text/75 hover:text-error group-hover:bg-background"
-                     onClick={() => props.onDenyOrCancel && props.onDenyOrCancel(props.user.id)}
-                  >
-                     <IconMdiClose className="size-5" />
-                  </button>
+                  <Tooltip>
+                     <Tooltip.Trigger
+                        className="rounded-full bg-background/50 p-2 text-text/75 hover:text-error group-hover:bg-background"
+                        onClick={() => props.onDenyOrCancel && props.onDenyOrCancel(props.user.id)}
+                     >
+                        <IconMdiClose className="size-5" />
+                     </Tooltip.Trigger>
+                     <Tooltip.Content>{props.type === RelationshipType.PENDING_INCOMING ? "Ignore" : "Cancel"} </Tooltip.Content>
+                  </Tooltip>
                </>
             ) : (
                <>
-                  <button
-                     onClick={() => props.onMessage && props.onMessage(props.user.id)}
-                     className="rounded-full bg-background/50 p-2 text-text/75 hover:text-text group-hover:bg-background"
-                  >
-                     <IconMdiMessage className="size-5" />
-                  </button>
-                  <button className="rounded-full bg-background/50 p-2 text-text/75 hover:text-text group-hover:bg-background">
-                     <IconMdiMoreVert className="size-5" />
-                  </button>
+                  <Tooltip>
+                     <Tooltip.Trigger
+                        onClick={() => props.onMessage && props.onMessage(props.user.id)}
+                        className="rounded-full bg-background/50 p-2 text-text/75 hover:text-text group-hover:bg-background"
+                     >
+                        <IconMdiMessage className="size-5" />
+                     </Tooltip.Trigger>
+                     <Tooltip.Content>Message</Tooltip.Content>
+                  </Tooltip>
+                  <Tooltip>
+                     <Tooltip.Trigger className="rounded-full bg-background/50 p-2 text-text/75 hover:text-text group-hover:bg-background">
+                        <IconMdiMoreVert className="size-5" />
+                     </Tooltip.Trigger>
+                     <Tooltip.Content>More</Tooltip.Content>
+                  </Tooltip>
                </>
             )}
          </div>

@@ -14,7 +14,7 @@ export default function HuginnInput(props: HuginnInputProps) {
    const inputRef = useRef<HTMLInputElement>(null);
    // console.log(props.state);
    const { hasBorder, borderColor } = useInputBorder(props.status);
-   const [id, _setId] = useState(() => snowflake.generate());
+   const [id, _setId] = useState(() => snowflake.generateString());
 
    const filteredChildren = useMemo(() => {
       return {

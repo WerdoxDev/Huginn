@@ -1,5 +1,6 @@
 import { ReactNode, HTMLInputTypeAttribute } from "react";
 import { SettingsContextType } from "./contexts/settingsContext";
+import { Placement } from "@floating-ui/react";
 
 export type StatusCode = "none" | "default" | "error" | "success";
 
@@ -107,3 +108,10 @@ export type ColorTheme = {
 };
 
 export type ThemeType = "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal";
+
+export type TooltipOptions = {
+   initialOpen?: boolean;
+   placement?: Placement;
+   open?: boolean;
+   onOpenChange?: (open: boolean) => void;
+};
