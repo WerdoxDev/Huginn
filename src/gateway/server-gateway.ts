@@ -12,12 +12,13 @@ import {
 import { snowflake } from "@shared/snowflake";
 import { ServerWebSocket } from "bun";
 import consola from "consola";
-import { ClientSessionInfo, ServerGatewayOptions } from "../..";
+import { ClientSessionInfo, ServerGatewayOptions } from "../types";
 import { ClientSession } from "./client-session";
 import { prisma } from "../database";
 import { verifyToken } from "../factory/token-factory";
 import { isHeartbeatOpcode, isIdentifyOpcode } from "./gateway-utils";
 import { logGatewayClose, logGatewayOpen, logGatewayRecieve, logGatewaySend } from "../log-utils";
+import { idFix } from "@shared/utility";
 
 export class ServerGateway {
    private readonly options: ServerGatewayOptions;
@@ -76,12 +77,12 @@ export class ServerGateway {
          ws.close(GatewayCode.AUTHENTICATION_FAILED, "AUTHENTICATION_FAILED");
       }
 
-      const user = await prisma.user.getById(payload!.id);
-      const sessionId = snowflake.generate();
+      const user = idFix(await prisma.user.getById(payload!.id));
+      const sessionId = snowflake.generateString();
 
       const readyData: GatewayReadyDispatch = {
          op: GatewayOperations.DISPATCH,
-         d: { user, sessionId },
+         d: { user, sessionId: sessionId },
          t: GatewayDispatchEvents.READY,
          s: 0,
       };
@@ -89,7 +90,7 @@ export class ServerGateway {
       // eslint-disable-next-line no-param-reassign
       ws.data = user.id;
 
-      const client = new ClientSession(ws, { user, sessionId });
+      const client = new ClientSession(ws, { user, sessionId: sessionId });
       this.listenToSessionEvents(client);
       this.clients.set(user.id, client);
 

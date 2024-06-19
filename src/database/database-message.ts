@@ -9,7 +9,7 @@ const messagesExtention = Prisma.defineExtension({
    model: {
       message: {
          async getById<Include extends MessageInclude>(channelId: Snowflake, messageId: Snowflake, include?: Include) {
-            assertId("getById", [channelId, messageId]);
+            assertId("getById", channelId, messageId);
             await prisma.channel.assertChannelExists("getById", channelId);
 
             const message = await prisma.message.findUnique({

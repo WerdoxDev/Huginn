@@ -1,10 +1,10 @@
 import { DBErrorType, prisma } from "@/src/database";
 import { createError } from "@/src/factory/error-factory";
 import { dispatchToTopic } from "@/src/gateway/gateway-utils";
-import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
+import { error, getJwt, hValidator, handleRequest, invalidFormBody, verifyJwt } from "@/src/route-utils";
 import { APIMessage, APIPostCreateDefaultMessageJSONBody, APIPostCreateDefaultMessageResult } from "@shared/api-types";
 import { Error, Field, HttpCode } from "@shared/errors";
-import { GatewayDispatchEvents } from "@shared/gateway-types";
+import { GatewayDispatchEvents, GatewayMessageCreateDispatch } from "@shared/gateway-types";
 import { idFix, omit } from "@shared/utility";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -26,7 +26,7 @@ app.post("/channels/:channelId/messages", verifyJwt(), hValidator("json", schema
          const payload = getJwt(c);
 
          if (!body.content && !body.attachments) {
-            return error(c, createError(Error.invalidFormBody()));
+            return invalidFormBody(c);
          }
 
          const channelId = c.req.param("channelId");
@@ -43,7 +43,7 @@ app.post("/channels/:channelId/messages", verifyJwt(), hValidator("json", schema
 
          message.nonce = body.nonce;
 
-         dispatchToTopic(channelId, GatewayDispatchEvents.MESSAGE_CREATE, message, 0);
+         dispatchToTopic<GatewayMessageCreateDispatch>(channelId, GatewayDispatchEvents.MESSAGE_CREATE, message, 0);
 
          return c.json(message as APIPostCreateDefaultMessageResult, HttpCode.CREATED);
       },

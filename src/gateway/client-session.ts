@@ -2,8 +2,9 @@ import { constants } from "@shared/constants";
 import { GatewayCode } from "@shared/errors";
 import { ServerWebSocket } from "bun";
 import { EventEmitter } from "node:events";
-import { ClientSessionInfo } from "../..";
+import { ClientSessionInfo } from "../types";
 import { prisma } from "../database";
+import { idFix } from "@shared/utility";
 
 export class ClientSession extends EventEmitter {
    public data: ClientSessionInfo;
@@ -31,10 +32,22 @@ export class ClientSession extends EventEmitter {
       this.removeAllListeners();
    }
 
+   public subscribe(topic: string) {
+      if (!this.ws.isSubscribed(topic)) {
+         this.ws.subscribe(topic);
+      }
+   }
+
+   public unsubscribe(topic: string) {
+      if (this.ws.isSubscribed(topic)) {
+         this.ws.unsubscribe(topic);
+      }
+   }
+
    private async subscribeClientEvents() {
       this.ws.subscribe(this.data.user.id);
 
-      const clientChannels = await prisma.channel.getUserChannels(this.data.user.id);
+      const clientChannels = idFix(await prisma.channel.getUserChannels(this.data.user.id));
 
       for (const channel of clientChannels) {
          this.ws.subscribe(channel.id);

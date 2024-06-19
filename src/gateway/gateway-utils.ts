@@ -1,4 +1,4 @@
-import { BasePayload, GatewayDispatchEvents, GatewayHeartbeat, GatewayIdentify, GatewayOperations } from "@shared/gateway-types";
+import { BasePayload, GatewayHeartbeat, GatewayIdentify, GatewayOperations } from "@shared/gateway-types";
 import { checkOpcode } from "@shared/utility";
 import { server } from "../server";
 import { logGatewaySend } from "../log-utils";
@@ -17,6 +17,6 @@ export function publishToTopic(topic: string, data: BasePayload) {
    server.publish(topic, JSON.stringify(data));
 }
 
-export function dispatchToTopic(topic: string, t: GatewayDispatchEvents, d: unknown, s: number) {
+export function dispatchToTopic<T extends BasePayload>(topic: string, t: T["t"], d: T["d"], s: T["s"]) {
    publishToTopic(topic, { op: GatewayOperations.DISPATCH, t, d, s });
 }

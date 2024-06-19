@@ -4,9 +4,8 @@ import { dispatchToTopic } from "@/src/gateway/gateway-utils";
 import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
 import { APIPostCreateRelationshipJSONBody, RelationshipType } from "@shared/api-types";
 import { Error, HttpCode } from "@shared/errors";
-import { GatewayDispatchEvents } from "@shared/gateway-types";
+import { GatewayDispatchEvents, GatewayRelationshipCreateDispatch } from "@shared/gateway-types";
 import { idFix } from "@shared/utility";
-import consola from "consola";
 import { Hono } from "hono";
 import { createFactory } from "hono/factory";
 import { z } from "zod";
@@ -51,18 +50,16 @@ const requestHandler = createFactory().createHandlers(c =>
          ) {
             const relationships = idFix(await prisma.relationship.createRelationship(payload.id, userId, { user: true }));
 
-            consola.log(relationships);
-
-            dispatchToTopic(
+            dispatchToTopic<GatewayRelationshipCreateDispatch>(
                payload.id,
                GatewayDispatchEvents.RELATIONSHIP_CREATE,
-               relationships.find(x => x.ownerId === payload.id),
+               relationships.find(x => x.ownerId === payload.id)!,
                0
             );
-            dispatchToTopic(
+            dispatchToTopic<GatewayRelationshipCreateDispatch>(
                userId,
                GatewayDispatchEvents.RELATIONSHIP_CREATE,
-               relationships.find(x => x.ownerId === userId),
+               relationships.find(x => x.ownerId === userId)!,
                0
             );
          }

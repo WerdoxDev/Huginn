@@ -20,7 +20,7 @@ export type RelationshipInclude = Prisma.RelationshipInclude | undefined;
 export type RelationshipPayload<T extends RelationshipInclude> = Prisma.RelationshipGetPayload<{ include: T }>;
 
 export const includeChannelRecipients = Prisma.validator<Prisma.ChannelInclude>()({
-   recipients: { select: { id: true, username: true, avatar: true } },
+   recipients: { select: { id: true, username: true, avatar: true, displayName: true } },
 });
 
 export const excludeSelfChannelUser = (id: Snowflake) =>

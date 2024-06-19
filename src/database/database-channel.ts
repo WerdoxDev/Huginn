@@ -18,58 +18,94 @@ const channelExtention = Prisma.defineExtension({
          async getUserChannels<Include extends ChannelInclude>(userId: Snowflake, include?: Include) {
             await prisma.user.assertUserExists("getUserChannels", userId);
 
-            const channels = await prisma.channel.findMany({
-               where: { recipients: { some: { id: BigInt(userId) } } },
+            const dmChannels = await prisma.channel.findMany({
+               where: { followers: { some: { id: BigInt(userId) } }, type: ChannelType.DM },
+               include: include,
+               omit: { icon: true, ownerId: true, name: true },
+            });
+
+            const groupChannels = await prisma.channel.findMany({
+               where: { followers: { some: { id: BigInt(userId) } }, type: ChannelType.GROUP_DM },
                include: include,
             });
+
+            const channels = [...groupChannels, ...dmChannels];
 
             assertObj("getUserChannels", channels, DBErrorType.NULL_CHANNEL);
             return channels as ChannelPayload<Include>[];
          },
-         async createSingleDM<Include extends ChannelInclude>(firstUserId: Snowflake, secondUserId: Snowflake, include?: Include) {
-            await prisma.user.assertUserExists("createSingleDM", firstUserId);
-            await prisma.user.assertUserExists("createSingleDM", secondUserId);
+         async createDM<Include extends ChannelInclude>(initiatorId: Snowflake, recipients: Snowflake[], include?: Include) {
+            await prisma.user.assertUserExists("createDM", initiatorId);
 
-            const channel = await prisma.channel.create({
-               data: {
-                  id: snowflake.generate(),
-                  type: ChannelType.DM,
-                  lastMessageId: null,
-                  recipients: { connect: [{ id: BigInt(firstUserId) }, { id: BigInt(secondUserId) }] },
-               },
-               include: include,
-            });
-
-            assertObj("createSingleDM", channel, DBErrorType.NULL_CHANNEL);
-            return channel as ChannelPayload<Include>;
-         },
-         async createGroupDM<Include extends ChannelInclude>(ownerId: Snowflake, users: Record<Snowflake, string>, include?: Include) {
-            const finalName = Object.values(users).join(", ");
-
-            await prisma.user.assertUserExists("createGroupDM", ownerId);
-
-            for (const recipientId in users) {
-               if (Object.hasOwn(users, recipientId)) {
-                  await prisma.user.assertUserExists("createGroupDM", recipientId);
-               }
+            for (const recipientId of recipients) {
+               await prisma.user.assertUserExists("createDM", recipientId);
             }
 
-            const channel = await prisma.channel.create({
-               data: {
-                  id: snowflake.generate(),
-                  name: finalName,
-                  type: ChannelType.GROUP_DM,
-                  ownerId: BigInt(ownerId),
-                  icon: null,
-                  lastMessageId: null,
-                  recipients: {
-                     connect: [{ id: BigInt(ownerId) }, ...Object.keys(users).map(x => ({ id: BigInt(x) }))],
+            let channel;
+            const isGroup = recipients.length > 1;
+            const recipientsConnect = [{ id: BigInt(initiatorId) }, ...recipients.map(x => ({ id: BigInt(x) }))];
+
+            // See if we got a channel where all recipients are either initiator or first recipient
+            const existingChannel = await prisma.channel.findFirst({
+               where: { recipients: { every: { OR: [{ id: BigInt(recipients[0]) }, { id: BigInt(initiatorId) }] } } },
+            });
+
+            if (!isGroup && existingChannel) {
+               channel = await prisma.channel.update({
+                  where: { id: existingChannel.id },
+                  data: { followers: { connect: { id: BigInt(initiatorId) } } },
+                  include: include,
+                  omit: { icon: true, name: true, ownerId: true },
+               });
+            } else if (!isGroup) {
+               channel = await prisma.channel.create({
+                  data: {
+                     id: snowflake.generate(),
+                     type: ChannelType.DM,
+                     lastMessageId: null,
+                     recipients: {
+                        connect: recipientsConnect,
+                     },
+                     followers: {
+                        connect: recipientsConnect,
+                     },
                   },
-               },
+                  include: include,
+                  omit: { icon: true, name: true, ownerId: true },
+               });
+            } else if (isGroup) {
+               channel = await prisma.channel.create({
+                  data: {
+                     id: snowflake.generate(),
+                     type: ChannelType.GROUP_DM,
+                     name: null,
+                     icon: null,
+                     lastMessageId: null,
+                     ownerId: BigInt(initiatorId),
+                     recipients: {
+                        connect: recipientsConnect,
+                     },
+                     followers: {
+                        connect: recipientsConnect,
+                     },
+                  },
+                  include: include,
+               });
+            }
+
+            assertObj("createDM", channel, DBErrorType.NULL_CHANNEL);
+            return channel as ChannelPayload<Include>;
+         },
+         async removeDM<Include extends ChannelInclude>(channelId: Snowflake, followerId: Snowflake, include?: Include) {
+            await prisma.channel.assertChannelExists("removeChannelFollower", channelId);
+            await prisma.user.assertUserExists("removeChannelFollower", followerId);
+
+            const channel = await prisma.channel.update({
+               where: { id: BigInt(channelId) },
+               data: { followers: { disconnect: { id: BigInt(followerId) } } },
                include: include,
             });
 
-            assertObj("createGroupDM", channel, DBErrorType.NULL_CHANNEL);
             return channel as ChannelPayload<Include>;
          },
          async assertChannelExists(methodName: string, id: Snowflake) {

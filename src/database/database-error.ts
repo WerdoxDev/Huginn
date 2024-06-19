@@ -21,13 +21,9 @@ export class DBError<T> extends Error {
    }
 }
 
-export function assertId(methodName: string, ids: Snowflake | Snowflake[]): asserts ids {
+export function assertId(methodName: string, ...ids: Snowflake[]) {
    try {
-      if (Array.isArray(ids)) {
-         for (const id of ids) assertId(methodName, id);
-      } else {
-         BigInt(ids);
-      }
+      for (const id of ids) BigInt(id);
    } catch (e) {
       throw new DBError(Error(DBErrorType.INVALID_ID, { cause: "Provided ID was not BigInt compatible" }), methodName);
    }

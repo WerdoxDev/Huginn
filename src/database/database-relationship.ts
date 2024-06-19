@@ -8,7 +8,7 @@ const relationshipExtention = Prisma.defineExtension({
    model: {
       relationship: {
          async getByUserId<Include extends RelationshipInclude>(ownerId: Snowflake, userId: Snowflake, include?: Include) {
-            assertId("getByUserId", [ownerId, userId]);
+            assertId("getByUserId", ownerId, userId);
 
             const relationship = await prisma.relationship.findFirst({
                where: { ownerId: BigInt(ownerId), userId: BigInt(userId) },
@@ -27,7 +27,7 @@ const relationshipExtention = Prisma.defineExtension({
             return relationships as RelationshipPayload<Include>[];
          },
          async deleteByUserId(ownerId: Snowflake, userId: Snowflake) {
-            assertId("deleteByUserId", [ownerId, userId]);
+            assertId("deleteByUserId", ownerId, userId);
 
             const relation = await prisma.relationship.findFirst({ where: { userId: BigInt(userId), ownerId: BigInt(ownerId) } });
             assertObj("deleteByUserId", relation, DBErrorType.NULL_RELATIONSHIP);
