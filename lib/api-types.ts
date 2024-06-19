@@ -26,6 +26,7 @@ export type APIUser = {
 
 export type APIChannelUser = {
    username: string;
+   displayName: string;
    avatar: string;
 } & APIBaseUser;
 
@@ -99,7 +100,7 @@ export type APIRelationship = {
    id: Snowflake;
    type: RelationshipType;
    nickname: string;
-   since?: Date | null;
+   since: Date | null;
    user: APIRelationUser;
    owner: APIRelationUser;
 };
@@ -162,11 +163,12 @@ export enum ChannelType {
 export type APIGetChannelByIdResult = APIChannel;
 
 export type APIPostCreateDMJSONBody = {
-   recipientId?: Snowflake;
-   users?: Record<Snowflake, string>;
+   recipients: Snowflake[];
 };
 
 export type APIPostCreateDMResult = APIDMChannel | APIGroupDMChannel;
+
+export type APIDeleteRemoveDMResult = APIDMChannel | APIGroupDMChannel;
 
 export type APIGetUserChannelsResult = Array<APIDMChannel | APIGroupDMChannel>;
 //#endregion
