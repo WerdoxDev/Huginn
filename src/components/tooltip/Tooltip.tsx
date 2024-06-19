@@ -1,6 +1,6 @@
 import { TooltipOptions } from "@/types";
 import { TooltipContext, useTooltip, useTooltipContext } from "@contexts/tooltipContext";
-import { FloatingArrow, useMergeRefs } from "@floating-ui/react";
+import { useMergeRefs } from "@floating-ui/react";
 import { Portal, Transition } from "@headlessui/react";
 import * as React from "react";
 
@@ -51,7 +51,7 @@ const Content = React.forwardRef<HTMLDivElement, React.HTMLProps<HTMLDivElement>
    const context = useTooltipContext();
    const ref = useMergeRefs([context.refs.setFloating, propRef]);
 
-   // if (!context.open) return null;
+   // if (!context.open) return null
 
    return (
       <Transition

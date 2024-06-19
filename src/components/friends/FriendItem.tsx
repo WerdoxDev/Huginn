@@ -15,7 +15,7 @@ export default function FriendItem(props: {
          <div className="flex">
             <UserIconWithStatus className="mr-3 bg-text" />
             <div className="flex flex-col items-start">
-               <span className="font-semibold text-text">{props.user.username}</span>
+               <span className="font-semibold text-text">{props.user.displayName}</span>
                <span className="text-sm text-text/50">Online (?)</span>
             </div>
          </div>
