@@ -115,3 +115,14 @@ export type TooltipOptions = {
    open?: boolean;
    onOpenChange?: (open: boolean) => void;
 };
+
+export type ContextMenuProps = {
+   label?: string;
+   children?: ReactNode;
+   state?: { open: number; e: MouseEvent };
+};
+
+export type ContextMenuItemProps = {
+   label: string;
+   disabled?: boolean;
+};
