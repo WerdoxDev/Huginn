@@ -16,7 +16,7 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
    }
 
    function onChannelDeleted(d: GatewayDMChannelCreateDispatchData) {
-      queryClient.setQueryData(["channels", "@me"], (data: APIGetUserChannelsResult) => data.filter((x) => x.id !== d.id));
+      queryClient.setQueryData(["channels", "@me"], (data: APIGetUserChannelsResult) => data && data.filter((x) => x.id !== d.id));
       console.log(d);
    }
 

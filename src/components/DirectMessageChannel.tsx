@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate, useParams, useRouter } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
 import UserIconWithStatus from "./UserIconWithStatus";
+import { useChannelName } from "@hooks/useChannelName";
 
 export default function DirectMessageChannel(props: { channel: DirectChannel; onSelected?: () => void }) {
    const client = useClient();
@@ -13,13 +14,8 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
    const { channelId } = useParams({ strict: false });
 
    const selected = useMemo(() => channelId == props.channel.id, [channelId, props.channel]);
-   const name = useMemo(
-      () =>
-         "name" in props.channel && props.channel.name
-            ? props.channel.name
-            : props.channel.recipients.map((x) => x.displayName).join(", "),
-      [props.channel],
-   );
+
+   const name = useChannelName(props.channel);
 
    const mutation = useMutation({
       async mutationFn() {

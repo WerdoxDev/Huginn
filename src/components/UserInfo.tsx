@@ -4,6 +4,7 @@ import { useLogout } from "@hooks/useLogout";
 import { APIUser } from "@shared/api-types";
 import { useMutation } from "@tanstack/react-query";
 import UserIconWithStatus from "./UserIconWithStatus";
+import { Tooltip } from "./tooltip/Tooltip";
 
 export default function UserInfo(props: { user: APIUser }) {
    const modalsDispatch = useModalsDispatch();
@@ -34,9 +35,12 @@ export default function UserInfo(props: { user: APIUser }) {
                   <div className="text-xs text-text/70">Online</div>
                </div>
                <div className="flex flex-shrink-0 gap-x-1">
-                  <button className="group/setting rounded-lg p-1 hover:bg-background" onClick={openSettings}>
-                     <IconMdiSettings className="h-6 w-6 text-white/80 transition-all group-hover/setting:rotate-[60deg]" />
-                  </button>
+                  <Tooltip>
+                     <Tooltip.Trigger className="group/setting rounded-lg p-1 hover:bg-background" onClick={openSettings}>
+                        <IconMdiSettings className="h-6 w-6 text-white/80 transition-all group-hover/setting:rotate-[60deg]" />
+                     </Tooltip.Trigger>
+                     <Tooltip.Content>User Settings</Tooltip.Content>
+                  </Tooltip>
                </div>
             </MenuButton>
 
