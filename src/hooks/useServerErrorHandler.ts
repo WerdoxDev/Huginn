@@ -10,8 +10,10 @@ export function useServerErrorHandler() {
          if (error.status === 500) {
             dispatch({ info: { isOpen: true, text: Messages.huginnMalfunctionError(), status: "error" } });
          }
-      } else if (error instanceof Error) {
+      } else if (error instanceof TypeError) {
          dispatch({ info: { isOpen: true, text: Messages.frostHoldError(), status: "error" } });
+      } else if (error instanceof Error) {
+         dispatch({ info: { isOpen: true, text: Messages.test(), status: "error" } });
       }
    }
 

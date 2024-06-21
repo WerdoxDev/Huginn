@@ -13,6 +13,7 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome"
    },
    component: LayoutHome,
    loader: async ({ context: { queryClient, client } }) => {
+      await new Promise((r) => setTimeout(r, 2000));
       return queryClient.ensureQueryData(getChannelsOptions(client, "@me"));
    },
    errorComponent: ModalErrorComponent,

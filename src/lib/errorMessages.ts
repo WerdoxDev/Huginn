@@ -7,6 +7,9 @@ export const Messages = {
    huginnMalfunctionError() {
       return "The server's thought processes falter; Huginn encounters a malfunction. (HuginnMalfunction)";
    },
+   test() {
+      return "Test Generic error";
+   },
 };
 
 export const APIMessages = {

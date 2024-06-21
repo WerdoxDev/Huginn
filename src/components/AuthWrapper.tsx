@@ -14,7 +14,7 @@ export default function AuthWrapper(props: { children?: ReactNode; hidden: boole
             e.preventDefault();
             props.onSubmit();
          }}
-         style={props.hidden ? style : {}}
+         style={style}
          className="flex w-96 flex-col items-start rounded-lg bg-background p-5 shadow-xl transition-shadow hover:shadow-2xl"
       >
          {props.children}

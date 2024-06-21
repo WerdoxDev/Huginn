@@ -52,7 +52,7 @@ export default function InfoModal() {
                            {title}
                         </DialogTitle>
                         {/* <div className="mb-5 h-0.5 w-full bg-secondary" /> */}
-                        <Description className="mt-3 flex items-center justify-center gap-x-5 px-5">
+                        <Description className="mt-3 flex items-center justify-center gap-x-5 px-5" as="div">
                            <div className={`text-center text-text`}>
                               {formattedText}
                               <span v-if="errorCode" className={`text-nowrap italic text-error opacity-90`}>

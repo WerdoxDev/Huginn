@@ -5,11 +5,13 @@ import HuginnInput from "@components/input/HuginnInput";
 import PasswordInput from "@components/input/PasswordInput";
 import { useClient } from "@contexts/apiContext";
 import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
+import { routeHistory } from "@contexts/historyContext";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInputs } from "@hooks/useInputs";
+import { useServerErrorHandler } from "@hooks/useServerErrorHandler";
 import { requireNotAuth } from "@lib/middlewares";
 import { APIPostLoginJSONBody } from "@shared/api-types";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useContext, useEffect, useState } from "react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/login")({
@@ -20,15 +22,18 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/login")({
 });
 
 function Login() {
+   const router = useRouter();
    const client = useClient();
    const { inputsProps, values, resetStatuses, handleErrors } = useInputs([
       { name: "login", required: true, default: "test" },
       { name: "password", required: true, default: "test" },
    ]);
 
-   const [hidden, setHidden] = useState(false);
+   const [hidden, setHidden] = useState(true);
    const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
    const navigate = useNavigate({ from: "/login" });
+
+   const handleServerError = useServerErrorHandler();
 
    const mutation = useHuginnMutation(
       {
@@ -55,7 +60,34 @@ function Login() {
    );
 
    useEffect(() => {
-      setAuthBackgroundState(0);
+      async function tryLogin() {
+         const refreshToken = localStorage.getItem("refresh-token");
+         try {
+            if (refreshToken && router.state.location.maskedLocation) {
+               setAuthBackgroundState(1);
+               setHidden(true);
+
+               await client.initializeWithToken({ refreshToken });
+               client.gateway.connect();
+
+               await navigate({ to: routeHistory.initialPathname });
+            } else {
+               unhide();
+            }
+         } catch (e) {
+            localStorage.removeItem("refresh-token");
+            await navigate({ to: "/login" });
+            handleServerError(e);
+            unhide();
+         }
+      }
+
+      function unhide() {
+         setHidden(false);
+         setAuthBackgroundState(0);
+      }
+
+      tryLogin();
    }, []);
 
    async function login() {

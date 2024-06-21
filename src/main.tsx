@@ -18,6 +18,7 @@ export const router = createRouter({
    defaultPreloadStaleTime: 0,
    context: { queryClient, client: undefined! },
    defaultNotFoundComponent: DefaultNotFound,
+   unmaskOnReload: true,
    // defaultGcTime: 0,
    // defaultErrorComponent: DefaultError,
 });
