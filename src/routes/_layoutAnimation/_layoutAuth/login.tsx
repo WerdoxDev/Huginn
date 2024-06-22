@@ -11,7 +11,7 @@ import { useInputs } from "@hooks/useInputs";
 import { useServerErrorHandler } from "@hooks/useServerErrorHandler";
 import { requireNotAuth } from "@lib/middlewares";
 import { APIPostLoginJSONBody } from "@shared/api-types";
-import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useContext, useEffect, useState } from "react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/login")({
@@ -22,7 +22,6 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/login")({
 });
 
 function Login() {
-   const router = useRouter();
    const client = useClient();
    const { inputsProps, values, resetStatuses, handleErrors } = useInputs([
       { name: "login", required: true, default: "test" },
@@ -63,7 +62,7 @@ function Login() {
       async function tryLogin() {
          const refreshToken = localStorage.getItem("refresh-token");
          try {
-            if (refreshToken && router.state.location.maskedLocation) {
+            if (refreshToken && routeHistory.lastPathname !== "/register") {
                setAuthBackgroundState(1);
                setHidden(true);
 

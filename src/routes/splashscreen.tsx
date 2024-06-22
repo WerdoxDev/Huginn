@@ -33,9 +33,6 @@ function Splashscreen() {
 
    useEffect(() => {
       async function checkForUpdate() {
-         setLoadingState("test");
-         await new Promise((r) => setTimeout(r, 5000));
-
          setLoadingState("checking_update");
 
          const { shouldUpdate, manifest } = await checkUpdate();

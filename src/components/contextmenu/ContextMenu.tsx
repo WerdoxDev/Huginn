@@ -40,7 +40,7 @@ const Context = createContext<{
 
 const Menu = forwardRef<HTMLButtonElement, ContextMenuProps & HTMLProps<HTMLButtonElement>>(
    ({ children, label, ...props }, forwardedRef) => {
-      const [isOpen, setIsOpen] = useState(false);
+      const [isOpen, _setIsOpen] = useState(false);
       const [hasFocusInside, setHasFocusInside] = useState(false);
       const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
@@ -80,9 +80,14 @@ const Menu = forwardRef<HTMLButtonElement, ContextMenuProps & HTMLProps<HTMLButt
 
       const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions([hover, role, dismiss, listNavigation]);
 
+      function setIsOpen(isOpen: boolean) {
+         _setIsOpen(isOpen);
+         if (!isOpen && props.close) props.close();
+      }
+
       useEffect(() => {
          if (isNested) return;
-         if (!props.state?.open || !props.state?.e) return;
+         if (!props.isOpen) return;
 
          setIsOpen(true);
 
@@ -91,16 +96,16 @@ const Menu = forwardRef<HTMLButtonElement, ContextMenuProps & HTMLProps<HTMLButt
                return {
                   width: 0,
                   height: 0,
-                  x: props.state!.e.clientX,
-                  y: props.state!.e.clientY,
-                  top: props.state!.e.clientY,
-                  right: props.state!.e.clientX,
-                  bottom: props.state!.e.clientY,
-                  left: props.state!.e.clientX,
+                  x: props.position![0],
+                  y: props.position![1],
+                  top: props.position![1],
+                  right: props.position![0],
+                  bottom: props.position![1],
+                  left: props.position![0],
                };
             },
          });
-      }, [props.state]);
+      }, [props.isOpen]);
 
       // Event emitter allows you to communicate across tree components.
       // This effect closes all menus when an item gets clicked anywhere
@@ -204,7 +209,7 @@ const Item = forwardRef<HTMLButtonElement, ContextMenuItemProps & React.ButtonHT
             ref={useMergeRefs([item.ref, forwardedRef])}
             type="button"
             role="menuitem"
-            className={`rounded-sm px-2 py-1 text-start text-sm text-white/90 outline-none focus:bg-primary`}
+            className={`flex items-center justify-between gap-x-5 rounded-sm px-2 py-1 text-start text-sm text-white/90 outline-none focus:bg-primary ${props.className}`}
             tabIndex={isActive ? 0 : -1}
             disabled={disabled}
             {...menu.getItemProps({
@@ -219,6 +224,7 @@ const Item = forwardRef<HTMLButtonElement, ContextMenuItemProps & React.ButtonHT
             })}
          >
             {label}
+            {props.children}
          </button>
       );
    },

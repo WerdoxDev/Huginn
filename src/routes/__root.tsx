@@ -1,5 +1,4 @@
 import TitleBar from "@components/TitleBar";
-import { ContextMenu } from "@components/contextmenu/ContextMenu";
 import InfoModal from "@components/modal/InfoModal";
 import SettingsModal from "@components/modal/SettingsModal";
 import { useClient } from "@contexts/apiContext";
@@ -13,9 +12,11 @@ import { Outlet, createRootRouteWithContext, useRouter } from "@tanstack/react-r
 import "@tauri-apps/api";
 import { UnlistenFn } from "@tauri-apps/api/event";
 import { appWindow } from "@tauri-apps/api/window";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 // import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+import { ContextMenuProvider } from "@contexts/contextMenuContext";
+import { ChannelsContextMenu } from "@components/contextmenu/ChannelsContextMenu";
 
 export type HuginnRouterContext = {
    queryClient: QueryClient;
@@ -34,16 +35,9 @@ function Root() {
 
    const appWindow = useWindow();
 
-   const [state, setState] = useState<{ open: number; e: MouseEvent }>({ open: 0, e: {} as MouseEvent });
-
    useEffect(() => {
       router.subscribe("onBeforeLoad", (arg) => {
          routeHistory.lastPathname = arg.fromLocation.pathname;
-      });
-
-      document.addEventListener("contextmenu", (e) => {
-         e.preventDefault();
-         setState((p) => ({ open: p.open + 1, e: e }));
       });
    }, []);
 
@@ -51,27 +45,20 @@ function Root() {
       // <HistoryContext.Provider value={{ lastPathname: null }}>
       <ThemeProvier>
          <ModalProvider>
-            <div className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
-               {router.state.location.pathname !== "/splashscreen" && <TitleBar />}
-               <div className="relative h-full w-full">
-                  <Outlet />
-                  {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
-                  <TanStackRouterDevtools position="bottom-left" />
-                  {window.__TAURI__ && <AppMaximizedEvent />}
-                  <SettingsModal />
-                  <InfoModal />
-                  <ContextMenu state={state}>
-                     <ContextMenu.Item label="Copy" className="text-error" />
-                     <ContextMenu.Divider />
-                     <ContextMenu label="HI">
-                        <ContextMenu.Item label="Copy2" />
-                        <ContextMenu label="HI">
-                           <ContextMenu.Item label="Copy2" />
-                        </ContextMenu>
-                     </ContextMenu>
-                  </ContextMenu>
+            <ContextMenuProvider>
+               <div className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
+                  {router.state.location.pathname !== "/splashscreen" && <TitleBar />}
+                  <div className="relative h-full w-full">
+                     <Outlet />
+                     {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
+                     <TanStackRouterDevtools position="bottom-left" />
+                     {window.__TAURI__ && <AppMaximizedEvent />}
+                     <SettingsModal />
+                     <InfoModal />
+                     <ChannelsContextMenu />
+                  </div>
                </div>
-            </div>
+            </ContextMenuProvider>
          </ModalProvider>
       </ThemeProvier>
       // </HistoryContext.Provider>

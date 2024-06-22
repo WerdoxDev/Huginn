@@ -1,36 +1,19 @@
-import { useClient } from "@contexts/apiContext";
+import { useChannelContextMenu } from "@contexts/contextMenuContext";
+import { useChannelName } from "@hooks/useChannelName";
+import { useRemoveChannel } from "@hooks/useDeleteChannel";
 import { DirectChannel } from "@shared/api-types";
-import { useMutation } from "@tanstack/react-query";
-import { Link, useNavigate, useParams, useRouter } from "@tanstack/react-router";
+import { Link, useParams } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
 import UserIconWithStatus from "./UserIconWithStatus";
-import { useChannelName } from "@hooks/useChannelName";
 
 export default function DirectMessageChannel(props: { channel: DirectChannel; onSelected?: () => void }) {
-   const client = useClient();
-   const navigate = useNavigate();
-   const router = useRouter();
+   const openContextMenu = useChannelContextMenu();
+
+   const removeChannel = useRemoveChannel();
 
    const { channelId } = useParams({ strict: false });
-
    const selected = useMemo(() => channelId == props.channel.id, [channelId, props.channel]);
-
    const name = useChannelName(props.channel);
-
-   const mutation = useMutation({
-      async mutationFn() {
-         await client.channels.removeDm(props.channel.id);
-      },
-      async onSuccess() {
-         if (router.state.location.pathname.includes(props.channel.id)) {
-            await navigate({ to: "/channels/@me" });
-         }
-      },
-   });
-
-   async function deleteChannel() {
-      await mutation.mutateAsync();
-   }
 
    useEffect(() => {
       console.log(props.channel);
@@ -38,6 +21,7 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
 
    return (
       <li
+         onContextMenu={(e) => openContextMenu(props.channel, e)}
          className={`group relative my-0.5 cursor-pointer rounded-md hover:bg-background active:bg-white active:bg-opacity-10 ${selected && "bg-white bg-opacity-10"}`}
          onClick={props.onSelected}
       >
@@ -50,7 +34,7 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
          </Link>
          <button
             className="group/close invisible absolute bottom-3.5 right-2 top-3.5 flex-shrink-0 group-hover:visible"
-            onClick={deleteChannel}
+            onClick={() => removeChannel(props.channel.id)}
          >
             <IconMdiClose className="text-text/50 group-hover/close:text-text/100" />
          </button>
