@@ -3,12 +3,16 @@ import ModalErrorComponent from "@components/ModalErrorComponent";
 import ChannelMessages from "@components/channels/ChannelMessages";
 import HomeTopbar from "@components/channels/HomeTopbar";
 import { useClient } from "@contexts/apiContext";
+import { ensureChannelExists } from "@lib/middlewares";
 import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/channels/@me/$channelId")({
    component: Component,
+   beforeLoad({ context: { queryClient }, params }) {
+      ensureChannelExists(params.channelId, queryClient);
+   },
    loader: ({ params, context: { queryClient, client } }) => {
       return queryClient.ensureQueryData(getMessagesOptions(client, params.channelId));
    },
@@ -21,6 +25,7 @@ function Component() {
    const { channelId } = Route.useParams();
    const { data: messages } = useSuspenseQuery(getMessagesOptions(client, channelId));
    const channel = useSuspenseQuery(getChannelsOptions(client, "@me")).data?.find((x) => x.id === channelId)!;
+
    return (
       <div className="flex h-full flex-col">
          <HomeTopbar channel={channel} />

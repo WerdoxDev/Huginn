@@ -23,7 +23,7 @@ export function ChannelsContextMenu() {
          <ContextMenu.Item
             label={data.type === ChannelType.DM ? "Close DM" : "Leave Group"}
             onClick={() => removeChannel(data.id)}
-            className="!text-error focus:bg-error/80 focus:!text-white"
+            className="!text-error focus:!bg-error/80 focus:!text-white"
          />
          <ContextMenu.Divider />
          <ContextMenu.Item label="Copy User ID">

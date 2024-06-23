@@ -24,8 +24,8 @@ export type HuginnRouterContext = {
 };
 
 export const Route = createRootRouteWithContext<HuginnRouterContext>()({
-   async beforeLoad({ context: { client } }) {
-      await setup(client);
+   beforeLoad({ context: { client } }) {
+      setup(client);
    },
    component: Root,
 });
@@ -39,6 +39,8 @@ function Root() {
       router.subscribe("onBeforeLoad", (arg) => {
          routeHistory.lastPathname = arg.fromLocation.pathname;
       });
+
+      document.addEventListener("contextmenu", (e) => e.preventDefault());
    }, []);
 
    return (

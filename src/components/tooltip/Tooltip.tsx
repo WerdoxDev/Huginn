@@ -65,7 +65,7 @@ const Content = React.forwardRef<HTMLDivElement, React.HTMLProps<HTMLDivElement>
       >
          <Portal>
             <div
-               className="z-10 rounded-md bg-zinc-900 px-2.5 py-1.5 text-base text-text/80 shadow-lg"
+               className="z-10 rounded-md bg-zinc-900 px-2.5 py-1.5 text-base text-white/80 shadow-lg"
                ref={ref}
                style={{
                   ...context.floatingStyles,

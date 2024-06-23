@@ -1,9 +1,13 @@
 import { router } from "@/main";
 import { HuginnClient } from "@api/index";
 import { routeHistory } from "@contexts/historyContext";
+import { APIDMChannel, APIGroupDMChannel } from "@shared/api-types";
+import { Snowflake } from "@shared/snowflake";
+import { QueryClient } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 
-export async function setup(client: HuginnClient) {
+export function setup(client: HuginnClient) {
+   console.log("change");
    const pathname = router.state.location.pathname;
    if (!routeHistory.initialPathname) routeHistory.initialPathname = pathname;
 
@@ -18,24 +22,16 @@ export async function setup(client: HuginnClient) {
          throw redirect({ to: "/login" });
       }
 
-      console.log(pathname);
       if (pathname !== "/login" && pathname !== "/register") throw redirect({ to: "/login", mask: pathname });
    }
+}
 
-   // const refreshToken = localStorage.getItem("refresh-token");
-   // try {
-   //    if (refreshToken) {
-   //       await client.initializeWithToken({ refreshToken });
-   //       client.gateway.connect();
-   //       // throw redirect({ to: "/channels/@me" });
-   //    }
-   //    if (router.history.location.pathname === "/") {
-   //       throw redirect({ to: "/login" });
-   //    }
-   // } catch (e) {
-   //    localStorage.removeItem("refresh-token");
-   //    throw redirect({ to: "/login" });
-   // }
+export function ensureChannelExists(channelId: Snowflake, queryClient: QueryClient) {
+   const channels: (APIDMChannel | APIGroupDMChannel)[] | undefined = queryClient.getQueryData(["channels", "@me"]);
+   if (!channels) return;
+
+   const safePathname = routeHistory.lastPathname?.includes(channelId) ? "/channels/@me" : routeHistory.lastPathname;
+   if (!channels.some((x) => x.id === channelId)) throw redirect({ to: safePathname });
 }
 
 export function requireAuth(client: HuginnClient) {

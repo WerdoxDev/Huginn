@@ -1,14 +1,14 @@
 import { JsonCode } from "@shared/errors";
 
 export const Messages = {
-   frostHoldError() {
+   connectionLostError() {
       return "The server rests in the grip of frost; connection lost to the icy domain. (FrostHold)";
    },
-   huginnMalfunctionError() {
+   serverError() {
       return "The server's thought processes falter; Huginn encounters a malfunction. (HuginnMalfunction)";
    },
-   test() {
-      return "Test Generic error";
+   appError() {
+      return "A raven brings ill news: our app has encountered a fearsome error. (OdinBeard)";
    },
 };
 

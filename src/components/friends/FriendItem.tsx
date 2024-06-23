@@ -25,7 +25,7 @@ export default function FriendItem(props: {
                   {props.type === RelationshipType.PENDING_INCOMING && (
                      <Tooltip>
                         <Tooltip.Trigger
-                           className="rounded-full bg-background/50 p-2 text-text/75 hover:text-primary group-hover:bg-background"
+                           className="rounded-full bg-background/50 p-2 text-text/80 hover:text-primary group-hover:bg-background"
                            onClick={() => props.onAccept && props.onAccept(props.user.id)}
                         >
                            <IconMdiCheck className="size-5" />
@@ -35,7 +35,7 @@ export default function FriendItem(props: {
                   )}
                   <Tooltip>
                      <Tooltip.Trigger
-                        className="rounded-full bg-background/50 p-2 text-text/75 hover:text-error group-hover:bg-background"
+                        className="rounded-full bg-background/50 p-2 text-text/80 hover:text-error group-hover:bg-background"
                         onClick={() => props.onDenyOrCancel && props.onDenyOrCancel(props.user.id)}
                      >
                         <IconMdiClose className="size-5" />
@@ -48,14 +48,14 @@ export default function FriendItem(props: {
                   <Tooltip>
                      <Tooltip.Trigger
                         onClick={() => props.onMessage && props.onMessage(props.user.id)}
-                        className="rounded-full bg-background/50 p-2 text-text/75 hover:text-text group-hover:bg-background"
+                        className="rounded-full bg-background/50 p-2 text-text/80 hover:text-text active:bg-white/20"
                      >
                         <IconMdiMessage className="size-5" />
                      </Tooltip.Trigger>
                      <Tooltip.Content>Message</Tooltip.Content>
                   </Tooltip>
                   <Tooltip>
-                     <Tooltip.Trigger className="rounded-full bg-background/50 p-2 text-text/75 hover:text-text group-hover:bg-background">
+                     <Tooltip.Trigger className="rounded-full bg-background/50 p-2 text-text/80 hover:text-text active:bg-white/20">
                         <IconMdiMoreVert className="size-5" />
                      </Tooltip.Trigger>
                      <Tooltip.Content>More</Tooltip.Content>

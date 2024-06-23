@@ -8,12 +8,14 @@ export function useServerErrorHandler() {
    function handleServerError(error: unknown) {
       if (error instanceof HTTPError) {
          if (error.status === 500) {
-            dispatch({ info: { isOpen: true, text: Messages.huginnMalfunctionError(), status: "error" } });
+            dispatch({ info: { isOpen: true, text: Messages.serverError(), status: "error" } });
          }
       } else if (error instanceof TypeError) {
-         dispatch({ info: { isOpen: true, text: Messages.frostHoldError(), status: "error" } });
+         if (error.message.toLowerCase() === "failed to fetch") {
+            dispatch({ info: { isOpen: true, text: Messages.connectionLostError(), status: "error" } });
+         } else dispatch({ info: { isOpen: true, text: Messages.appError(), status: "error" } });
       } else if (error instanceof Error) {
-         dispatch({ info: { isOpen: true, text: Messages.test(), status: "error" } });
+         dispatch({ info: { isOpen: true, text: Messages.appError(), status: "error" } });
       }
    }
 

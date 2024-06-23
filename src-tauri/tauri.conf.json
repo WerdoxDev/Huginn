@@ -88,10 +88,10 @@
       "windows": [
          {
             "title": "Huginn",
-            "width": 800,
-            "height": 600,
-            "minWidth": 1080,
-            "minHeight": 600,
+            "width": 1200,
+            "height": 670,
+            "minWidth": 1200,
+            "minHeight": 670,
             "fullscreen": false,
             "resizable": true,
             "visible": false,

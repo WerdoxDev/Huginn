@@ -53,7 +53,7 @@ export default function UserInfo(props: { user: APIUser }) {
                leaveTo="opacity-0 scale-95"
             >
                <MenuItems
-                  className="w-60 divide-y divide-secondary rounded-lg bg-background shadow-lg outline-none transition [--anchor-gap:0.5rem]"
+                  className="w-60 divide-y divide-secondary rounded-lg bg-zinc-900 shadow-lg outline-none transition [--anchor-gap:0.5rem]"
                   anchor="top"
                >
                   <div className="p-1.5">

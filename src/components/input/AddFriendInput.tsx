@@ -5,7 +5,7 @@ export default function AddFriendInput(props: HuginnInputProps & { onClick?: () 
    return (
       <>
          <div
-            className={`flex max-w-3xl gap-x-2.5 overflow-hidden rounded-lg bg-secondary py-2.5 pl-4 pr-2.5 ring-1 ${props.className} ${props.status.code === "error" ? "ring-error" : props.status.code === "success" ? "ring-success" : "ring-transparent has-[:focus]:ring-primary"}`}
+            className={`flex w-full gap-x-2.5 overflow-hidden rounded-lg bg-secondary py-2.5 pl-4 pr-2.5 ring-1 ${props.className} ${props.status.code === "error" ? "ring-error" : props.status.code === "success" ? "ring-success" : "ring-transparent has-[:focus]:ring-primary"}`}
          >
             <input
                className="w-full bg-secondary text-text placeholder-text/50 outline-none"
