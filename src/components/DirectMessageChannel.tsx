@@ -9,7 +9,7 @@ import UserIconWithStatus from "./UserIconWithStatus";
 export default function DirectMessageChannel(props: { channel: DirectChannel; onSelected?: () => void }) {
    const openContextMenu = useChannelContextMenu();
 
-   const removeChannel = useRemoveChannel();
+   const removeChannelMutation = useRemoveChannel();
 
    const { channelId } = useParams({ strict: false });
    const selected = useMemo(() => channelId == props.channel.id, [channelId, props.channel]);
@@ -34,7 +34,7 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
          </Link>
          <button
             className="group/close invisible absolute bottom-3.5 right-2 top-3.5 flex-shrink-0 group-hover:visible"
-            onClick={() => removeChannel(props.channel.id)}
+            onClick={() => removeChannelMutation(props.channel.id)}
          >
             <IconMdiClose className="text-text/50 group-hover/close:text-text/100" />
          </button>

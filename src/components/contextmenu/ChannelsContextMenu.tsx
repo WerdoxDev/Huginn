@@ -8,7 +8,7 @@ export function ChannelsContextMenu() {
    const contextMenu = useContextMenu();
    const dispatch = useContextMenuDispatch();
 
-   const removeChannel = useRemoveChannel();
+   const removeChannelMutation = useRemoveChannel();
 
    const data = useMemo(() => contextMenu.dmChannel!.data!, [contextMenu.dmChannel]);
 
@@ -22,7 +22,7 @@ export function ChannelsContextMenu() {
       >
          <ContextMenu.Item
             label={data.type === ChannelType.DM ? "Close DM" : "Leave Group"}
-            onClick={() => removeChannel(data.id)}
+            onClick={() => removeChannelMutation(data.id)}
             className="!text-error focus:!bg-error/80 focus:!text-white"
          />
          <ContextMenu.Divider />

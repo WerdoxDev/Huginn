@@ -1,12 +1,10 @@
-import { useClient } from "@contexts/apiContext";
-import { snowflake } from "@shared/snowflake";
-import { useMutation } from "@tanstack/react-query";
+import { useSendMessage } from "@hooks/useSendMessage";
+import { tokenize } from "@lib/huginn-tokenizer";
 import { useParams } from "@tanstack/react-router";
 import { KeyboardEvent, useCallback, useMemo } from "react";
 import { Descendant, Editor, Node, Path, Range, Text, createEditor } from "slate";
 import { DefaultElement, Editable, RenderElementProps, RenderLeafProps, Slate, withReact } from "slate-react";
 import EditorLeaf from "./editor/EditorLeaf";
-import { tokenize } from "@lib/huginn-tokenizer";
 
 const initialValue: Descendant[] = [
    {
@@ -20,19 +18,10 @@ const initialValue: Descendant[] = [
 ];
 
 export default function MessageBox() {
-   const client = useClient();
-
    const editor = useMemo(() => withReact(createEditor()), []);
    const params = useParams({ strict: false });
 
-   const mutation = useMutation({
-      async mutationFn(content: string) {
-         const channelId = params.channelId as string;
-         const nonce = snowflake.generate().toString();
-         console.log(nonce);
-         await client.channels.createMessage(channelId, { content: content, nonce: nonce });
-      },
-   });
+   const sendMessageMutation = useSendMessage();
 
    const renderLeaf = useCallback((props: RenderLeafProps) => {
       return <EditorLeaf {...props} />;
@@ -74,10 +63,10 @@ export default function MessageBox() {
       return ranges;
    }, []);
 
-   function onKeyDown(event: KeyboardEvent) {
+   async function onKeyDown(event: KeyboardEvent) {
       if (!event.shiftKey && event.code === "Enter") {
          event.preventDefault();
-         mutation.mutateAsync(serialize(editor.children));
+         await sendMessageMutation(params.channelId, serialize(editor.children));
          editor.delete({
             at: {
                anchor: Editor.start(editor, []),
