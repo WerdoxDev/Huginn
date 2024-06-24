@@ -2,18 +2,14 @@ import { useClient } from "@contexts/apiContext";
 import { Snowflake } from "@shared/snowflake";
 import { useMutation } from "@tanstack/react-query";
 
-export function useRemoveChannel() {
+export function useDeleteDMChannel() {
    const client = useClient();
 
    const mutation = useMutation({
       async mutationFn(channelId: Snowflake) {
-         await client.channels.removeDm(channelId);
+         return await client.channels.deleteDM(channelId);
       },
    });
 
-   async function removeChannel(channelId: Snowflake) {
-      await mutation.mutateAsync(channelId);
-   }
-
-   return removeChannel;
+   return mutation;
 }

@@ -1,5 +1,5 @@
 import { useContextMenu, useContextMenuDispatch } from "@contexts/contextMenuContext";
-import { useRemoveChannel } from "@hooks/useDeleteChannel";
+import { useDeleteDMChannel } from "@hooks/mutations/useDeleteDMChannel";
 import { ChannelType } from "@shared/api-types";
 import { useMemo } from "react";
 import { ContextMenu } from "./ContextMenu";
@@ -8,7 +8,7 @@ export function ChannelsContextMenu() {
    const contextMenu = useContextMenu();
    const dispatch = useContextMenuDispatch();
 
-   const removeChannelMutation = useRemoveChannel();
+   const deleteChannelMutation = useDeleteDMChannel();
 
    const data = useMemo(() => contextMenu.dmChannel!.data!, [contextMenu.dmChannel]);
 
@@ -22,7 +22,7 @@ export function ChannelsContextMenu() {
       >
          <ContextMenu.Item
             label={data.type === ChannelType.DM ? "Close DM" : "Leave Group"}
-            onClick={() => removeChannelMutation(data.id)}
+            onClick={() => deleteChannelMutation.mutate(data.id)}
             className="!text-error focus:!bg-error/80 focus:!text-white"
          />
          <ContextMenu.Divider />

@@ -1,4 +1,4 @@
-import { useSendMessage } from "@hooks/useSendMessage";
+import { useSendMessage } from "@hooks/mutations/useSendMessage";
 import { tokenize } from "@lib/huginn-tokenizer";
 import { useParams } from "@tanstack/react-router";
 import { KeyboardEvent, useCallback, useMemo } from "react";
@@ -21,7 +21,7 @@ export default function MessageBox() {
    const editor = useMemo(() => withReact(createEditor()), []);
    const params = useParams({ strict: false });
 
-   const sendMessageMutation = useSendMessage();
+   const mutation = useSendMessage();
 
    const renderLeaf = useCallback((props: RenderLeafProps) => {
       return <EditorLeaf {...props} />;
@@ -66,7 +66,7 @@ export default function MessageBox() {
    async function onKeyDown(event: KeyboardEvent) {
       if (!event.shiftKey && event.code === "Enter") {
          event.preventDefault();
-         await sendMessageMutation(params.channelId, serialize(editor.children));
+         mutation.mutate({ channelId: params.channelId, content: serialize(editor.children) });
          editor.delete({
             at: {
                anchor: Editor.start(editor, []),

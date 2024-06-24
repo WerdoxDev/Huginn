@@ -7,13 +7,9 @@ export function useSendMessage() {
 
    const mutation = useMutation({
       async mutationFn(data: { channelId: Snowflake; content: string }) {
-         await client.channels.createMessage(data.channelId, { content: data.content, nonce: client.generateNonce() });
+         return await client.channels.createMessage(data.channelId, { content: data.content, nonce: client.generateNonce() });
       },
    });
 
-   async function sendMessage(channelId: Snowflake, content: string) {
-      await mutation.mutateAsync({ channelId, content });
-   }
-
-   return sendMessage;
+   return mutation;
 }
