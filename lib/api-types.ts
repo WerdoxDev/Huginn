@@ -118,7 +118,7 @@ export enum RelationshipType {
 export type APIGetUserRelationshipsResult = APIRelationshipWithoutOwner[];
 export type APIGetUserRelationshipByIdResult = APIRelationshipWithoutOwner;
 
-export type APIPostCreateRelationshipJSONBody = {
+export type APIPostRelationshipJSONBody = {
    username: string;
 };
 //#endregion
@@ -162,13 +162,13 @@ export enum ChannelType {
 
 export type APIGetChannelByIdResult = APIChannel;
 
-export type APIPostCreateDMJSONBody = {
+export type APIPostDMChannelJSONBody = {
    recipients: Snowflake[];
 };
 
-export type APIPostCreateDMResult = APIDMChannel | APIGroupDMChannel;
+export type APIPostDMChannelResult = APIDMChannel | APIGroupDMChannel;
 
-export type APIDeleteRemoveDMResult = APIDMChannel | APIGroupDMChannel;
+export type APIDeleteDMChannelResult = APIDMChannel | APIGroupDMChannel;
 
 export type APIGetUserChannelsResult = Array<APIDMChannel | APIGroupDMChannel>;
 //#endregion
@@ -196,14 +196,14 @@ export type APIDefaultMessage = {
    reactions?: string[];
 } & APIBaseMessage;
 
-export type APIPostCreateDefaultMessageJSONBody = {
+export type APIPostDefaultMessageJSONBody = {
    content?: string;
    attachments?: string[];
    flags?: number;
    nonce?: number | string;
 };
 
-export type APIPostCreateDefaultMessageResult = APIDefaultMessage;
+export type APIPostDefaultMessageResult = APIDefaultMessage;
 
 export type APIGetMessageByIdResult = APIMessage;
 
