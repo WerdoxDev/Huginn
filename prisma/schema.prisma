@@ -19,7 +19,7 @@ model User {
   system               Boolean        @default(false)
   includedChannels     Channel[]      @relation("channel_recipients")
   ownedChannels        Channel[]      @relation("channel_owner")
-  followingChannels    Channel[]      @relation("channel_followers")
+  tempDeletedChannels  Channel[]      @relation("channel_temp_deleted")
   messages             Message[]
   mentionedMessages    Message[]      @relation("message_mentions")
   relationships        Relationship[] @relation("relation_owner")
@@ -27,16 +27,16 @@ model User {
 }
 
 model Channel {
-  id            BigInt    @id
-  icon          String?
-  lastMessageId String?
-  name          String?
-  owner         User?     @relation("channel_owner", fields: [ownerId], references: [id])
-  ownerId       BigInt?
-  recipients    User[]    @relation("channel_recipients")
-  messages      Message[]
-  followers     User[]    @relation("channel_followers")
-  type          Int
+  id                 BigInt    @id
+  icon               String?
+  lastMessageId      String?
+  name               String?
+  owner              User?     @relation("channel_owner", fields: [ownerId], references: [id])
+  ownerId            BigInt?
+  recipients         User[]    @relation("channel_recipients")
+  messages           Message[]
+  type               Int
+  tempDeletedByUsers User[]    @relation("channel_temp_deleted")
 }
 
 model Message {

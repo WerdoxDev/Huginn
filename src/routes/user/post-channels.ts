@@ -4,7 +4,7 @@ import { createError } from "@/src/factory/error-factory";
 import { dispatchToTopic } from "@/src/gateway/gateway-utils";
 import { error, getJwt, hValidator, handleRequest, invalidFormBody, verifyJwt } from "@/src/route-utils";
 import { gateway } from "@/src/server";
-import { APIPostCreateDMJSONBody, APIPostCreateDMResult } from "@shared/api-types";
+import { APIPostDMChannelJSONBody, APIPostDMChannelResult } from "@shared/api-types";
 import { Error, Field, HttpCode } from "@shared/errors";
 import { GatewayDMChannelCreateDispatch, GatewayDispatchEvents } from "@shared/gateway-types";
 import { idFix, merge } from "@shared/utility";
@@ -19,14 +19,14 @@ app.post("/users/@me/channels", verifyJwt(), hValidator("json", schema), c =>
    handleRequest(
       c,
       async () => {
-         const body = (await c.req.json()) as APIPostCreateDMJSONBody;
+         const body = (await c.req.json()) as APIPostDMChannelJSONBody;
          const payload = getJwt(c);
 
          if (body.recipients.length === 0) {
             return invalidFormBody(c);
          }
 
-         const channel: APIPostCreateDMResult = idFix(
+         const channel: APIPostDMChannelResult = idFix(
             await prisma.channel.createDM(
                payload.id,
                body.recipients,

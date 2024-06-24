@@ -15,17 +15,25 @@ const channelExtention = Prisma.defineExtension({
             assertObj("getById", channel, DBErrorType.NULL_CHANNEL, id);
             return channel as ChannelPayload<Include>;
          },
-         async getUserChannels<Include extends ChannelInclude>(userId: Snowflake, include?: Include) {
+         async getUserChannels<Include extends ChannelInclude>(userId: Snowflake, includeDeleted: boolean, include?: Include) {
             await prisma.user.assertUserExists("getUserChannels", userId);
 
             const dmChannels = await prisma.channel.findMany({
-               where: { followers: { some: { id: BigInt(userId) } }, type: ChannelType.DM },
+               where: {
+                  recipients: { some: { id: BigInt(userId) } },
+                  type: ChannelType.DM,
+                  tempDeletedByUsers: !includeDeleted ? { none: { id: BigInt(userId) } } : {},
+               },
                include: include,
                omit: { icon: true, ownerId: true, name: true },
             });
 
             const groupChannels = await prisma.channel.findMany({
-               where: { followers: { some: { id: BigInt(userId) } }, type: ChannelType.GROUP_DM },
+               where: {
+                  recipients: { some: { id: BigInt(userId) } },
+                  type: ChannelType.GROUP_DM,
+                  tempDeletedByUsers: !includeDeleted ? { none: { id: BigInt(userId) } } : {},
+               },
                include: include,
             });
 
@@ -53,7 +61,7 @@ const channelExtention = Prisma.defineExtension({
             if (!isGroup && existingChannel) {
                channel = await prisma.channel.update({
                   where: { id: existingChannel.id },
-                  data: { followers: { connect: { id: BigInt(initiatorId) } } },
+                  data: { tempDeletedByUsers: { disconnect: { id: BigInt(initiatorId) } } },
                   include: include,
                   omit: { icon: true, name: true, ownerId: true },
                });
@@ -64,9 +72,6 @@ const channelExtention = Prisma.defineExtension({
                      type: ChannelType.DM,
                      lastMessageId: null,
                      recipients: {
-                        connect: recipientsConnect,
-                     },
-                     followers: {
                         connect: recipientsConnect,
                      },
                   },
@@ -85,9 +90,6 @@ const channelExtention = Prisma.defineExtension({
                      recipients: {
                         connect: recipientsConnect,
                      },
-                     followers: {
-                        connect: recipientsConnect,
-                     },
                   },
                   include: include,
                });
@@ -96,13 +98,13 @@ const channelExtention = Prisma.defineExtension({
             assertObj("createDM", channel, DBErrorType.NULL_CHANNEL);
             return channel as ChannelPayload<Include>;
          },
-         async removeDM<Include extends ChannelInclude>(channelId: Snowflake, followerId: Snowflake, include?: Include) {
-            await prisma.channel.assertChannelExists("removeChannelFollower", channelId);
-            await prisma.user.assertUserExists("removeChannelFollower", followerId);
+         async deleteDM<Include extends ChannelInclude>(channelId: Snowflake, userId: Snowflake, include?: Include) {
+            await prisma.channel.assertChannelExists("deleteDM", channelId);
+            await prisma.user.assertUserExists("deleteDM", userId);
 
             const channel = await prisma.channel.update({
                where: { id: BigInt(channelId) },
-               data: { followers: { disconnect: { id: BigInt(followerId) } } },
+               data: { tempDeletedByUsers: { connect: { id: BigInt(userId) } } },
                include: include,
             });
 

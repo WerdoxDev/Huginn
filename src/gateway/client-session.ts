@@ -47,7 +47,7 @@ export class ClientSession extends EventEmitter {
    private async subscribeClientEvents() {
       this.ws.subscribe(this.data.user.id);
 
-      const clientChannels = idFix(await prisma.channel.getUserChannels(this.data.user.id));
+      const clientChannels = idFix(await prisma.channel.getUserChannels(this.data.user.id, true));
 
       for (const channel of clientChannels) {
          this.ws.subscribe(channel.id);

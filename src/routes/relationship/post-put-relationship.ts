@@ -2,7 +2,7 @@ import { DBErrorType, prisma } from "@/src/database";
 import { createError } from "@/src/factory/error-factory";
 import { dispatchToTopic } from "@/src/gateway/gateway-utils";
 import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
-import { APIPostCreateRelationshipJSONBody, RelationshipType } from "@shared/api-types";
+import { APIPostRelationshipJSONBody, RelationshipType } from "@shared/api-types";
 import { Error, HttpCode } from "@shared/errors";
 import { GatewayDispatchEvents, GatewayRelationshipCreateDispatch } from "@shared/gateway-types";
 import { idFix } from "@shared/utility";
@@ -18,7 +18,7 @@ const requestHandler = createFactory().createHandlers(c =>
    handleRequest(
       c,
       async () => {
-         const potentialBody = c.req.method === "POST" ? ((await c.req.json()) as APIPostCreateRelationshipJSONBody) : null;
+         const potentialBody = c.req.method === "POST" ? ((await c.req.json()) as APIPostRelationshipJSONBody) : null;
          const payload = getJwt(c);
 
          let userId = c.req.param("userId");
