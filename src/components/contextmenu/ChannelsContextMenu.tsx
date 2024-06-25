@@ -10,7 +10,7 @@ export function ChannelsContextMenu() {
 
    const deleteChannelMutation = useDeleteDMChannel();
 
-   const data = useMemo(() => contextMenu.dmChannel!.data!, [contextMenu.dmChannel]);
+   const data = useMemo(() => contextMenu.dmChannel?.data!, [contextMenu.dmChannel]);
 
    if (!contextMenu.dmChannel || !contextMenu.dmChannel.data) return;
 

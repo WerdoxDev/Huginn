@@ -17,6 +17,7 @@ import { useEffect, useRef } from "react";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { ContextMenuProvider } from "@contexts/contextMenuContext";
 import { ChannelsContextMenu } from "@components/contextmenu/ChannelsContextMenu";
+import RelationshipMoreContextMenu from "@components/contextmenu/RelationshipMoreContextMenu";
 
 export type HuginnRouterContext = {
    queryClient: QueryClient;
@@ -58,6 +59,7 @@ function Root() {
                      <SettingsModal />
                      <InfoModal />
                      <ChannelsContextMenu />
+                     <RelationshipMoreContextMenu />
                   </div>
                </div>
             </ContextMenuProvider>

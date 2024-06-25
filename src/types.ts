@@ -119,9 +119,12 @@ export type TooltipOptions = {
 export type ContextMenuProps = {
    label?: string;
    children?: ReactNode;
+   close?: () => void;
+} & ContextMenuStateProps;
+
+export type ContextMenuStateProps = {
    isOpen?: boolean;
    position?: [number, number];
-   close?: () => void;
 };
 
 export type ContextMenuItemProps = {

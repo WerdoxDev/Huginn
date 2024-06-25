@@ -1,21 +1,21 @@
-import { APIDMChannel, APIGroupDMChannel } from "@shared/api-types";
+import { ContextMenuStateProps } from "@/types";
+import { APIDMChannel, APIGroupDMChannel, APIRelationUser, APIRelationshipWithoutOwner, RelationshipType } from "@shared/api-types";
 import { Dispatch, MouseEvent, ReactNode, createContext, useContext, useReducer } from "react";
 
 type ContextMenuContextType = {
    dmChannel?: {
       data?: APIDMChannel | APIGroupDMChannel;
-      isOpen: boolean;
-      position?: [number, number];
-   };
+   } & ContextMenuStateProps;
+   relationshipMore?: {
+      data?: { user: APIRelationUser; type: RelationshipType };
+   } & ContextMenuStateProps;
 };
 
-const defaultValue: ContextMenuContextType = { dmChannel: { isOpen: false } };
-
-const ContextMenuContext = createContext<ContextMenuContextType>(defaultValue);
+const ContextMenuContext = createContext<ContextMenuContextType>({});
 const ContextMenuDispatchContext = createContext<Dispatch<ContextMenuContextType>>(() => {});
 
 export function ContextMenuProvider(props: { children?: ReactNode }) {
-   const [contextMenus, dispatch] = useReducer(contextMenusReducer, defaultValue);
+   const [contextMenus, dispatch] = useReducer(contextMenusReducer, {});
    return (
       <ContextMenuContext.Provider value={contextMenus}>
          <ContextMenuDispatchContext.Provider value={dispatch}>{props.children}</ContextMenuDispatchContext.Provider>
@@ -33,6 +33,17 @@ export function useChannelContextMenu() {
    function open(channel: APIDMChannel | APIGroupDMChannel, e: MouseEvent) {
       e.preventDefault();
       dispatch({ dmChannel: { isOpen: true, data: channel, position: [e.clientX, e.clientY] } });
+   }
+
+   return open;
+}
+
+export function useRelationshipMoreContextMenu() {
+   const dispatch = useContext(ContextMenuDispatchContext);
+
+   function open(user: APIRelationUser, type: RelationshipType, e: MouseEvent) {
+      e.preventDefault();
+      dispatch({ relationshipMore: { isOpen: true, data: { user, type }, position: [e.clientX, e.clientY] } });
    }
 
    return open;
