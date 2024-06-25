@@ -12,7 +12,7 @@ app.get("/users/:userId", verifyJwt(), c =>
    handleRequest(
       c,
       async () => {
-         const user: APIGetUserByIdResult = idFix(omit(await prisma.user.getById(c.req.param("userId")), ["email", "password"]));
+         const user: APIGetUserByIdResult = idFix(omit(await prisma.user.getById(c.req.param("userId")), ["email"]));
 
          return c.json(user, HttpCode.OK);
       },

@@ -5,7 +5,7 @@ import channelExtention from "./database-channel";
 import messagesExtention from "./database-message";
 import relationshipExtention from "./database-relationship";
 
-export const prismaBase = new PrismaClient().$extends({
+export const prismaBase = new PrismaClient({ omit: { user: { password: true } } }).$extends({
    model: {
       $allModels: {
          async exists<T>(this: T, where: Prisma.Args<T, "findFirst">["where"]) {

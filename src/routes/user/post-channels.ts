@@ -34,8 +34,11 @@ app.post("/users/@me/channels", verifyJwt(), hValidator("json", schema), c =>
             )
          );
 
+         for (const id of [payload.id, ...body.recipients]) {
+            gateway.getSession(id)?.subscribe(channel.id);
+         }
+
          dispatchToTopic<GatewayDMChannelCreateDispatch>(payload.id, GatewayDispatchEvents.DM_CHANNEL_CREATE, channel, 0);
-         gateway.getSession(payload.id)?.subscribe(channel.id);
 
          return c.json(channel, HttpCode.CREATED);
       },
