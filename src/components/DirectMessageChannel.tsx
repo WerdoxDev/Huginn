@@ -1,13 +1,14 @@
-import { useChannelContextMenu } from "@contexts/contextMenuContext";
-import { useChannelName } from "@hooks/useChannelName";
+import { ContextMenuDMChannel, ContextMenuType } from "@/types";
+import { useContextMenu } from "@contexts/contextMenuContext";
 import { useDeleteDMChannel } from "@hooks/mutations/useDeleteDMChannel";
+import { useChannelName } from "@hooks/useChannelName";
 import { DirectChannel } from "@shared/api-types";
 import { Link, useParams } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
 import UserIconWithStatus from "./UserIconWithStatus";
 
 export default function DirectMessageChannel(props: { channel: DirectChannel; onSelected?: () => void }) {
-   const openContextMenu = useChannelContextMenu();
+   const { open: openContextMenu } = useContextMenu<ContextMenuDMChannel>(ContextMenuType.DM_CHANNEL);
 
    const mutation = useDeleteDMChannel();
 
@@ -28,9 +29,6 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
          <Link className="flex items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>
             <UserIconWithStatus className="mr-3 bg-tertiary" />
             <div className={`w-full text-sm text-text group-hover:opacity-100 ${selected ? "opacity-100" : "opacity-70"}`}>{name}</div>
-            {/* <Transition name="slide-right-single">
-            <Icon v-if="state" class="flex-shrink-0 text-text" name="svg-spinners:3-dots-fade" size="30" />
-            </Transition> */}
          </Link>
          <button
             className="group/close invisible absolute bottom-3.5 right-2 top-3.5 flex-shrink-0 group-hover:visible"

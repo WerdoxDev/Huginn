@@ -1,6 +1,7 @@
+import { ContextMenuRelationship, ContextMenuType } from "@/types";
 import UserIconWithStatus from "@components/UserIconWithStatus";
 import { Tooltip } from "@components/tooltip/Tooltip";
-import { useRelationshipMoreContextMenu } from "@contexts/contextMenuContext";
+import { useContextMenu } from "@contexts/contextMenuContext";
 import { APIRelationUser, RelationshipType } from "@shared/api-types";
 import { Snowflake } from "@shared/snowflake";
 
@@ -11,9 +12,14 @@ export default function FriendItem(props: {
    onDenyOrCancel?: (userId: Snowflake) => void;
    onMessage?: (userId: Snowflake) => void;
 }) {
-   const openRelationshipMoreContextMenu = useRelationshipMoreContextMenu();
+   const { open: openRelationshipMore } = useContextMenu<ContextMenuRelationship>(ContextMenuType.RELATIONSHIP_MORE);
+   const { open: openRelationship } = useContextMenu<ContextMenuRelationship>(ContextMenuType.RELATIONSHIP);
+
    return (
-      <div className="group flex cursor-pointer items-center justify-between rounded-xl p-2.5 hover:bg-secondary">
+      <div
+         className="group flex cursor-pointer items-center justify-between rounded-xl p-2.5 hover:bg-secondary"
+         onContextMenu={(e) => openRelationship({ user: props.user, type: props.type }, e)}
+      >
          <div className="flex">
             <UserIconWithStatus className="mr-3 bg-text" />
             <div className="flex flex-col items-start">
@@ -58,7 +64,7 @@ export default function FriendItem(props: {
                   </Tooltip>
                   <Tooltip>
                      <Tooltip.Trigger
-                        onClick={(e) => openRelationshipMoreContextMenu(props.user, props.type, e)}
+                        onClick={(e) => openRelationshipMore({ user: props.user, type: props.type }, e)}
                         className="rounded-full bg-background/50 p-2 text-text/80 hover:text-text active:bg-white/20"
                      >
                         <IconMdiMoreVert className="size-5" />

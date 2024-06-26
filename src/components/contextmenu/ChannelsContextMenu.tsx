@@ -1,25 +1,19 @@
-import { useContextMenu, useContextMenuDispatch } from "@contexts/contextMenuContext";
+import { ContextMenuDMChannel, ContextMenuType } from "@/types";
+import { useContextMenu } from "@contexts/contextMenuContext";
 import { useDeleteDMChannel } from "@hooks/mutations/useDeleteDMChannel";
 import { ChannelType } from "@shared/api-types";
 import { useMemo } from "react";
 import { ContextMenu } from "./ContextMenu";
 
 export function ChannelsContextMenu() {
-   const contextMenu = useContextMenu();
-   const dispatch = useContextMenuDispatch();
-
+   const { context, close } = useContextMenu<ContextMenuDMChannel>(ContextMenuType.DM_CHANNEL);
    const deleteChannelMutation = useDeleteDMChannel();
 
-   const data = useMemo(() => contextMenu.dmChannel?.data!, [contextMenu.dmChannel]);
-
-   if (!contextMenu.dmChannel || !contextMenu.dmChannel.data) return;
+   const data = useMemo(() => context?.data!, [context]);
+   if (!context || !context.data) return;
 
    return (
-      <ContextMenu
-         close={() => dispatch({ dmChannel: { isOpen: false } })}
-         isOpen={contextMenu.dmChannel.isOpen}
-         position={contextMenu.dmChannel.position}
-      >
+      <ContextMenu close={close} isOpen={context.isOpen} position={context.position}>
          <ContextMenu.Item
             label={data.type === ChannelType.DM ? "Close DM" : "Leave Group"}
             onClick={() => deleteChannelMutation.mutate(data.id)}

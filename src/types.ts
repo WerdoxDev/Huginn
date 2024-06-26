@@ -1,6 +1,7 @@
 import { ReactNode, HTMLInputTypeAttribute } from "react";
 import { SettingsContextType } from "./contexts/settingsContext";
 import { Placement } from "@floating-ui/react";
+import { APIDMChannel, APIGroupDMChannel, APIRelationUser, RelationshipType } from "@shared/api-types";
 
 export type StatusCode = "none" | "default" | "error" | "success";
 
@@ -122,7 +123,8 @@ export type ContextMenuProps = {
    close?: () => void;
 } & ContextMenuStateProps;
 
-export type ContextMenuStateProps = {
+export type ContextMenuStateProps<T = unknown> = {
+   data?: T;
    isOpen?: boolean;
    position?: [number, number];
 };
@@ -131,3 +133,12 @@ export type ContextMenuItemProps = {
    label: string;
    disabled?: boolean;
 };
+
+export type ContextMenuRelationship = { user: APIRelationUser; type: RelationshipType };
+export type ContextMenuDMChannel = APIDMChannel | APIGroupDMChannel;
+
+export enum ContextMenuType {
+   DM_CHANNEL,
+   RELATIONSHIP_MORE,
+   RELATIONSHIP,
+}

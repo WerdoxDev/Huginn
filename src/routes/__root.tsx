@@ -18,6 +18,7 @@ import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { ContextMenuProvider } from "@contexts/contextMenuContext";
 import { ChannelsContextMenu } from "@components/contextmenu/ChannelsContextMenu";
 import RelationshipMoreContextMenu from "@components/contextmenu/RelationshipMoreContextMenu";
+import RelationshipContextMenu from "@components/contextmenu/RelationshipContextMenu";
 
 export type HuginnRouterContext = {
    queryClient: QueryClient;
@@ -60,6 +61,7 @@ function Root() {
                      <InfoModal />
                      <ChannelsContextMenu />
                      <RelationshipMoreContextMenu />
+                     <RelationshipContextMenu />
                   </div>
                </div>
             </ContextMenuProvider>
