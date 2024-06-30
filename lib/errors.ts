@@ -7,7 +7,7 @@ export type HuginnErrorGroupWrapper = {
    _errors: HuginnErrorFieldInformation[];
 };
 
-export type HuginnError = { [k: string]: HuginnErrorGroupWrapper };
+export type HuginnError = Record<string, HuginnErrorGroupWrapper>;
 
 export type HuginnErrorData = {
    code: number;

@@ -170,7 +170,7 @@ export type APIPostDMChannelResult = APIDMChannel | APIGroupDMChannel;
 
 export type APIDeleteDMChannelResult = APIDMChannel | APIGroupDMChannel;
 
-export type APIGetUserChannelsResult = Array<APIDMChannel | APIGroupDMChannel>;
+export type APIGetUserChannelsResult = (APIDMChannel | APIGroupDMChannel)[];
 //#endregion
 
 //#region MESSAGE

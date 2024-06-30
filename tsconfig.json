@@ -5,7 +5,17 @@
       "moduleResolution": "bundler",
       "declaration": true,
       "declarationMap": true,
-      "outDir": "./dist",
-      "composite": true
+      "composite": true,
+
+      "lib": ["ESNext", "DOM"],
+
+      "isolatedModules": true,
+      "strict": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+
+      "outDir": "./out/",
+      "rootDir": ".",
+      "skipLibCheck": true
    }
 }

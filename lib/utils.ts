@@ -1,4 +1,3 @@
-import { APIChannel } from "./api-types";
 import { GatewayOperations } from "./gateway-types";
 
 export function pick<Data extends object, Keys extends keyof Data>(data: Data, keys: Keys[]): Pick<Data, Keys> {
@@ -44,37 +43,47 @@ export function omitArray<Data extends object, Keys extends keyof Data>(
 // }
 
 type DeepMerge<T, U> = {
-   [K in keyof T | keyof U]: K extends keyof T & keyof U
-      ? DeepMerge<T[K], U[K]>
+   [K in keyof T | keyof U]: K extends keyof U
+      ? U[K] extends object
+         ? K extends keyof T
+            ? T[K] extends object
+               ? DeepMerge<T[K], U[K]>
+               : U[K]
+            : U[K]
+         : U[K]
       : K extends keyof T
       ? T[K]
-      : K extends keyof U
-      ? U[K]
       : never;
 };
 
-function isObject(item: any): item is Object {
-   return item && typeof item === "object" && !Array.isArray(item);
+function isObject(item: unknown): item is Record<string, unknown> {
+   return item !== null && typeof item === "object" && !Array.isArray(item);
 }
 
 function deepMerge<T extends object, U extends object>(target: T, source: U): DeepMerge<T, U> {
-   const output = { ...target } as any;
+   const output = { ...target } as DeepMerge<T, U>;
 
    if (isObject(target) && isObject(source)) {
       Object.keys(source).forEach((key) => {
-         if (isObject(source[key])) {
+         const sourceKey = key as keyof U;
+         const targetKey = key as keyof T;
+
+         if (isObject(source[sourceKey])) {
             if (!(key in target)) {
-               output[key] = source[key];
+               (output as Record<string, unknown>)[key] = source[sourceKey];
             } else {
-               output[key] = deepMerge((target as any)[key], source[key]);
+               (output as Record<string, unknown>)[key] = deepMerge(
+                  target[targetKey] as unknown as object,
+                  source[sourceKey] as unknown as object
+               );
             }
          } else {
-            output[key] = source[key];
+            (output as Record<string, unknown>)[key] = source[sourceKey];
          }
       });
    }
 
-   return output as DeepMerge<T, U>;
+   return output;
 }
 
 export function merge<T extends object[]>(...objects: T): DeepMerge<T[0], T[1]> {
@@ -85,8 +94,8 @@ type BigIntToString<T> = T extends bigint
    ? string
    : T extends Date
    ? Date
-   : T extends Array<infer U>
-   ? Array<BigIntToString<U>>
+   : T extends (infer U)[]
+   ? BigIntToString<U>[]
    : T extends object
    ? { [K in keyof T]: BigIntToString<T[K]> }
    : T;
@@ -97,10 +106,10 @@ export function idFix<T>(obj: T): BigIntToString<T> {
    } else if (obj instanceof Date) {
       return obj as unknown as BigIntToString<T>; // Do not convert Date objects
    } else if (typeof obj === "object" && obj !== null) {
-      const newObj: any = {};
+      const newObj: Record<string, unknown> = {};
       for (const key in obj) {
          if (typeof obj[key] === "bigint") {
-            newObj[key] = obj[key].toString();
+            newObj[key] = (obj[key] as unknown as string).toString();
          } else if (typeof obj[key] === "object") {
             newObj[key] = idFix(obj[key]);
          } else {
