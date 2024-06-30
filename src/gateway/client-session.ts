@@ -3,8 +3,8 @@ import { GatewayCode } from "@shared/errors";
 import { ServerWebSocket } from "bun";
 import { EventEmitter } from "node:events";
 import { ClientSessionInfo } from "../types";
-import { prisma } from "../database";
-import { idFix } from "@shared/utility";
+import { prisma } from "../db";
+import { idFix } from "@shared/utils";
 
 export class ClientSession extends EventEmitter {
    public data: ClientSessionInfo;

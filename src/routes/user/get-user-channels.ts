@@ -1,9 +1,9 @@
-import { prisma } from "@/src/database";
-import { excludeSelfChannelUser, includeChannelRecipients } from "@/src/database/database-common";
+import { prisma } from "@/src/db";
+import { excludeSelfChannelUser, includeChannelRecipients } from "@/src/db/common";
 import { getJwt, handleRequest, verifyJwt } from "@/src/route-utils";
 import { APIGetUserChannelsResult } from "@shared/api-types";
 import { HttpCode } from "@shared/errors";
-import { idFix, merge } from "@shared/utility";
+import { idFix, merge } from "@shared/utils";
 import { Hono } from "hono";
 
 const app = new Hono();

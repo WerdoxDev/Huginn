@@ -3,7 +3,7 @@ import { DBErrorType, assertId, assertObj, prisma } from ".";
 import { snowflake } from "@shared/snowflake";
 import { MessageType } from "@shared/api-types";
 import { Prisma } from "@prisma/client";
-import { MessageInclude, MessagePayload } from "./database-common";
+import { MessageInclude, MessagePayload } from "./common";
 
 const messagesExtention = Prisma.defineExtension({
    model: {
@@ -48,7 +48,7 @@ const messagesExtention = Prisma.defineExtension({
                   id: snowflake.generate(),
                   type: MessageType.DEFAULT,
                   channelId: BigInt(channelId),
-                  content: content || "",
+                  content: content ?? "",
                   attachments: attachments,
                   authorId: BigInt(authorId),
                   createdAt: new Date(),

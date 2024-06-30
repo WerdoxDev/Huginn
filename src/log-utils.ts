@@ -17,7 +17,8 @@ export function logServerError(path: string, e: unknown) {
    consola.box(`${colors.bold(colors.red("Server Error:"))} ${colors.green(path)}\n`, e);
 }
 
-export function logReject(path: string, method: string, error?: string | HuginnErrorData, status?: number) {
+ 
+export function logReject(path: string, method: string, error?: HuginnErrorData | string, status?: number) {
    const rejectText = colors.bold(colors.red("Rejected"));
    const methodText = colors.bold(colors.red(method));
    const pathText = colors.green(path);

@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { RelationshipType } from "@shared/api-types";
 import { Snowflake, snowflake } from "@shared/snowflake";
 import { DBErrorType, assertCondition, assertId, assertObj, prisma } from ".";
-import { RelationshipInclude, RelationshipPayload } from "./database-common";
+import { RelationshipInclude, RelationshipPayload } from "./common";
 
 const relationshipExtention = Prisma.defineExtension({
    model: {

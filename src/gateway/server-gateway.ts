@@ -14,11 +14,11 @@ import { ServerWebSocket } from "bun";
 import consola from "consola";
 import { ClientSessionInfo, ServerGatewayOptions } from "../types";
 import { ClientSession } from "./client-session";
-import { prisma } from "../database";
+import { prisma } from "../db";
 import { verifyToken } from "../factory/token-factory";
 import { isHeartbeatOpcode, isIdentifyOpcode } from "./gateway-utils";
 import { logGatewayClose, logGatewayOpen, logGatewayRecieve, logGatewaySend } from "../log-utils";
-import { idFix } from "@shared/utility";
+import { idFix } from "@shared/utils";
 
 export class ServerGateway {
    private readonly options: ServerGatewayOptions;
@@ -87,7 +87,7 @@ export class ServerGateway {
          s: 0,
       };
 
-      // eslint-disable-next-line no-param-reassign
+       
       ws.data = user.id;
 
       const client = new ClientSession(ws, { user, sessionId: sessionId });

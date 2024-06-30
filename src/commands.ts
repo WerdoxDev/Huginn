@@ -1,6 +1,6 @@
 // import { User } from "./database/schemas/user-schema";
 
-import { prisma } from "./database";
+import { prisma } from "./db";
 
 export async function startListening() {
    for await (const line of console) {

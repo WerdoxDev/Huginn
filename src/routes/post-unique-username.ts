@@ -1,4 +1,4 @@
-import { APIPostUniqueUsernameJSONBody, APIPostUniqueUsernameResult } from "@shared/api-types";
+import { APIPostUniqueUsernameResult } from "@shared/api-types";
 import { HttpCode } from "@shared/errors";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -11,7 +11,7 @@ const app = new Hono();
 
 app.post("/unique-username", hValidator("json", schema), c =>
    handleRequest(c, async () => {
-      const body = (await c.req.json()) as APIPostUniqueUsernameJSONBody;
+      const body = c.req.valid("json");
 
       const isUnique = await validateUsernameUnique(body.username.toLowerCase());
       const json: APIPostUniqueUsernameResult = { taken: !isUnique };

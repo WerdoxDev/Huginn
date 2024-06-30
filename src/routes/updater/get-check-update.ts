@@ -1,9 +1,9 @@
-import { AppVersionInfo } from "@/index";
 import { handleRequest } from "@/src/route-utils";
+import { AppVersionInfo } from "@/src/types";
+import { HttpCode } from "@shared/errors";
+import { semver } from "bun";
 import { Hono } from "hono";
 import { readdir } from "node:fs/promises";
-import { semver } from "bun";
-import { HttpCode } from "@shared/errors";
 import path from "path";
 
 const app = new Hono();
@@ -11,7 +11,7 @@ const app = new Hono();
 app.get("/check-update/:target/:arch/:currentVersion", c =>
    handleRequest(c, async () => {
       const debugBuildsPath = "/home/werdox-wsl/Huginn/packages/huginn-server/builds/debug/";
-      const versionFolders = (await readdir(debugBuildsPath)).sort(semver.order).reverse();
+      const versionFolders = (await readdir(debugBuildsPath)).sort(semver.order.bind(this)).reverse();
       const latestVersion = versionFolders[0];
 
       const target = c.req.param("target");

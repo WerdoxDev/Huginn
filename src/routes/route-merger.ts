@@ -1,25 +1,25 @@
+import { Hono } from "hono";
 import postLogin from "./auth/post-login";
-import postRegister from "./auth/post-register";
 import postLogout from "./auth/post-logout";
 import postRefreshToken from "./auth/post-refresh-token";
-import postUniqueUsername from "./post-unique-username";
-import postMessage from "./channel/post-message";
-import getChannelBID from "./channel/get-channel-bid";
+import postRegister from "./auth/post-register";
 import deleteChannelBID from "./channel/delete-channel-bid";
+import getChannelBID from "./channel/get-channel-bid";
+import getChannelMessages from "./channel/get-channel-messages";
 import getMessageBID from "./channel/get-message-bid";
-import getUserBID from "./user/get-user-bid";
-import postChannels from "./user/post-channels";
+import postMessage from "./channel/post-message";
+import postUniqueUsername from "./post-unique-username";
+import deleteRelationshipBID from "./relationship/delete-relationship-bid";
+import getRelationshipBID from "./relationship/get-relationship-buid";
+import getUserRelationships from "./relationship/get-user-relationships";
+import postPutRelationship from "./relationship/post-put-relationship";
+import getBuilds from "./updater/get-builds";
+import getCheckUpdate from "./updater/get-check-update";
 import getCurrentUser from "./user/get-current-user";
+import getUserBID from "./user/get-user-bid";
 import getUserChannels from "./user/get-user-channels";
 import patchCurrentUser from "./user/patch-current-user";
-import postPutRelationship from "./relationship/post-put-relationship";
-import getRelationshipBID from "./relationship/get-relationship-buid";
-import getChannelMessages from "./channel/get-channel-messages";
-import getUserRelationships from "./relationship/get-user-relationships";
-import deleteRelationshipBID from "./relationship/delete-relationship-bid";
-import getCheckUpdate from "./updater/get-check-update";
-import getBuilds from "./updater/get-builds";
-import { Hono } from "hono";
+import postChannels from "./user/post-channels";
 
 export const app = new Hono();
 
@@ -33,10 +33,10 @@ app.route("/", postLogout);
 app.route("/", postRefreshToken);
 
 // Channel
-app.route("/", postMessage);
 app.route("/", getMessageBID);
 app.route("/", getChannelBID);
 app.route("/", getChannelMessages);
+app.route("/", postMessage);
 app.route("/", deleteChannelBID);
 
 // User
@@ -44,10 +44,12 @@ app.route("/", getCurrentUser);
 app.route("/", getUserBID);
 app.route("/", getUserChannels);
 app.route("/", postChannels);
-app.route("/", postPutRelationship);
 app.route("/", patchCurrentUser);
+
+// Relationship
 app.route("/", getRelationshipBID);
 app.route("/", getUserRelationships);
+app.route("/", postPutRelationship);
 app.route("/", deleteRelationshipBID);
 
 // Updater

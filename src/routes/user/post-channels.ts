@@ -1,13 +1,13 @@
-import { DBErrorType, prisma } from "@/src/database";
-import { excludeSelfChannelUser, includeChannelRecipients } from "@/src/database/database-common";
+import { DBErrorType, prisma } from "@/src/db";
+import { excludeSelfChannelUser, includeChannelRecipients } from "@/src/db/common";
 import { createError } from "@/src/factory/error-factory";
 import { dispatchToTopic } from "@/src/gateway/gateway-utils";
 import { error, getJwt, hValidator, handleRequest, invalidFormBody, verifyJwt } from "@/src/route-utils";
 import { gateway } from "@/src/server";
-import { APIPostDMChannelJSONBody, APIPostDMChannelResult } from "@shared/api-types";
+import { APIPostDMChannelResult } from "@shared/api-types";
 import { Error, Field, HttpCode } from "@shared/errors";
 import { GatewayDMChannelCreateDispatch, GatewayDispatchEvents } from "@shared/gateway-types";
-import { idFix, merge } from "@shared/utility";
+import { idFix, merge } from "@shared/utils";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -19,7 +19,7 @@ app.post("/users/@me/channels", verifyJwt(), hValidator("json", schema), c =>
    handleRequest(
       c,
       async () => {
-         const body = (await c.req.json()) as APIPostDMChannelJSONBody;
+         const body = c.req.valid("json");
          const payload = getJwt(c);
 
          if (body.recipients.length === 0) {

@@ -1,6 +1,6 @@
 import { REFRESH_TOKEN_SECRET_ENCODED, createTokens, verifyToken } from "@/src/factory/token-factory";
 import { hValidator, handleRequest } from "@/src/route-utils";
-import { APIPostRefreshTokenJSONBody, APIPostRefreshTokenResult } from "@shared/api-types";
+import { APIPostRefreshTokenResult } from "@shared/api-types";
 import { constants } from "@shared/constants";
 import { HttpCode } from "@shared/errors";
 import { Hono } from "hono";
@@ -12,7 +12,7 @@ const app = new Hono();
 
 app.post("/auth/refresh-token", hValidator("json", schema), c =>
    handleRequest(c, async () => {
-      const body = (await c.req.json()) as APIPostRefreshTokenJSONBody;
+      const body = c.req.valid("json");
 
       const { payload } = await verifyToken(body.refreshToken, REFRESH_TOKEN_SECRET_ENCODED);
 

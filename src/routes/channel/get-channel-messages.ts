@@ -1,10 +1,10 @@
-import { DBErrorType, prisma } from "@/src/database";
-import { includeMessageAuthor, includeMessageMentions } from "@/src/database/database-common";
+import { DBErrorType, prisma } from "@/src/db";
+import { includeMessageAuthor, includeMessageMentions } from "@/src/db/common";
 import { createError } from "@/src/factory/error-factory";
 import { error, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
 import { APIGetChannelMessagesResult } from "@shared/api-types";
 import { Error, HttpCode } from "@shared/errors";
-import { idFix, merge, omitArray } from "@shared/utility";
+import { idFix, merge, omitArray } from "@shared/utils";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -16,7 +16,8 @@ app.get("/channels/:channelId/messages", verifyJwt(), hValidator("query", schema
    handleRequest(
       c,
       async () => {
-         const limit = Number(c.req.query("limit")) || 50;
+         const query = c.req.valid("query");
+         const limit = Number(query.limit) || 50;
 
          const messages: APIGetChannelMessagesResult = omitArray(
             idFix(

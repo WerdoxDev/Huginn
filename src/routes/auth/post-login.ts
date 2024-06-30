@@ -1,11 +1,11 @@
-import { DBErrorType, prisma } from "@/src/database";
+import { DBErrorType, prisma } from "@/src/db";
 import { createError } from "@/src/factory/error-factory";
 import { createTokens } from "@/src/factory/token-factory";
 import { error, hValidator, handleRequest } from "@/src/route-utils";
 import { APIPostLoginResult } from "@shared/api-types";
 import { constants } from "@shared/constants";
 import { Error, Field, HttpCode } from "@shared/errors";
-import { idFix } from "@shared/utility";
+import { idFix } from "@shared/utils";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -21,7 +21,8 @@ app.post("/auth/login", hValidator("json", schema), c =>
    handleRequest(
       c,
       async () => {
-         const user = idFix(await prisma.user.findByCredentials(await c.req.json()));
+         const body = c.req.valid("json");
+         const user = idFix(await prisma.user.findByCredentials(body));
 
          const [accessToken, refreshToken] = await createTokens(
             { id: user.id },

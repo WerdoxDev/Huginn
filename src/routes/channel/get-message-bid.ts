@@ -1,10 +1,10 @@
-import { DBErrorType, prisma } from "@/src/database";
-import { includeMessageAuthor, includeMessageMentions } from "@/src/database/database-common";
+import { DBErrorType, prisma } from "@/src/db";
+import { includeMessageAuthor, includeMessageMentions } from "@/src/db/common";
 import { createError } from "@/src/factory/error-factory";
 import { error, handleRequest, verifyJwt } from "@/src/route-utils";
 import { APIGetMessageByIdResult } from "@shared/api-types";
 import { Error, HttpCode } from "@shared/errors";
-import { idFix, merge, omit } from "@shared/utility";
+import { idFix, merge, omit } from "@shared/utils";
 import { Hono } from "hono";
 
 const app = new Hono();

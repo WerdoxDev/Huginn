@@ -1,9 +1,9 @@
-import { prisma } from "@/src/database";
-import { includeRelationshipUser } from "@/src/database/database-common";
+import { prisma } from "@/src/db";
+import { includeRelationshipUser } from "@/src/db/common";
 import { getJwt, handleRequest, verifyJwt } from "@/src/route-utils";
 import { APIGetUserRelationshipsResult } from "@shared/api-types";
 import { HttpCode } from "@shared/errors";
-import { idFix, omitArray } from "@shared/utility";
+import { idFix, omitArray } from "@shared/utils";
 import { Hono } from "hono";
 
 const app = new Hono();

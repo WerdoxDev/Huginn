@@ -1,4 +1,4 @@
-import { prisma } from "@/src/database";
+import { prisma } from "@/src/db";
 import { createError } from "@/src/factory/error-factory";
 import { createTokens } from "@/src/factory/token-factory";
 import { error, hValidator, handleRequest } from "@/src/route-utils";
@@ -10,10 +10,10 @@ import {
    validateUsername,
    validateUsernameUnique,
 } from "@/src/validation";
-import { APIPostRegisterJSONBody, APIPostRegisterResult } from "@shared/api-types";
+import { APIPostRegisterResult } from "@shared/api-types";
 import { constants } from "@shared/constants";
 import { Error, HttpCode } from "@shared/errors";
-import { idFix } from "@shared/utility";
+import { idFix } from "@shared/utils";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -27,7 +27,7 @@ const app = new Hono();
 
 app.post("/auth/register", hValidator("json", schema), async c =>
    handleRequest(c, async () => {
-      const body = (await c.req.json()) as APIPostRegisterJSONBody;
+      const body = c.req.valid("json");
       body.username = body.username.toLowerCase();
 
       const formError = createError(Error.invalidFormBody());

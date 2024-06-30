@@ -1,10 +1,10 @@
-import { DBErrorType, prisma } from "@/src/database";
-import { includeRelationshipUser } from "@/src/database/database-common";
+import { DBErrorType, prisma } from "@/src/db";
+import { includeRelationshipUser } from "@/src/db/common";
 import { createError } from "@/src/factory/error-factory";
 import { error, getJwt, handleRequest, verifyJwt } from "@/src/route-utils";
 import { APIGetUserRelationshipByIdResult } from "@shared/api-types";
 import { Error, HttpCode } from "@shared/errors";
-import { idFix, omit } from "@shared/utility";
+import { idFix, omit } from "@shared/utils";
 import { Hono } from "hono";
 
 const app = new Hono();
@@ -14,6 +14,7 @@ app.get("/users/@me/relationships/:relationshipId", verifyJwt(), c =>
       c,
       async () => {
          const payload = getJwt(c);
+
          const relationship: APIGetUserRelationshipByIdResult = idFix(
             omit(await prisma.relationship.getByUserId(payload.id, c.req.param("relationshipId"), includeRelationshipUser), [
                "ownerId",

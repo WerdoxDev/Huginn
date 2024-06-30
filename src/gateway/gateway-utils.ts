@@ -1,5 +1,5 @@
 import { BasePayload, GatewayHeartbeat, GatewayIdentify, GatewayOperations } from "@shared/gateway-types";
-import { checkOpcode } from "@shared/utility";
+import { checkOpcode } from "@shared/utils";
 import { server } from "../server";
 import { logGatewaySend } from "../log-utils";
 

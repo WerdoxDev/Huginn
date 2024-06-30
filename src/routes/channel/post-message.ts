@@ -1,17 +1,17 @@
-import { DBErrorType, prisma } from "@/src/database";
+import { DBErrorType, prisma } from "@/src/db";
 import { createError } from "@/src/factory/error-factory";
 import { dispatchToTopic } from "@/src/gateway/gateway-utils";
 import { error, getJwt, hValidator, handleRequest, invalidFormBody, verifyJwt } from "@/src/route-utils";
-import { APIMessage, APIPostDefaultMessageJSONBody, APIPostDefaultMessageResult } from "@shared/api-types";
+import { APIMessage, APIPostDefaultMessageResult } from "@shared/api-types";
 import { Error, Field, HttpCode } from "@shared/errors";
 import { GatewayDispatchEvents, GatewayMessageCreateDispatch } from "@shared/gateway-types";
-import { idFix, omit } from "@shared/utility";
+import { idFix, omit } from "@shared/utils";
 import { Hono } from "hono";
 import { z } from "zod";
 
 const schema = z.object({
    content: z.optional(z.string()),
-   attachment: z.optional(z.unknown()),
+   attachments: z.optional(z.array(z.string())),
    flags: z.optional(z.number()),
    nonce: z.optional(z.union([z.number(), z.string()])),
 });
@@ -22,7 +22,7 @@ app.post("/channels/:channelId/messages", verifyJwt(), hValidator("json", schema
    handleRequest(
       c,
       async () => {
-         const body = (await c.req.json()) as APIPostDefaultMessageJSONBody;
+         const body = c.req.valid("json");
          const payload = getJwt(c);
 
          if (!body.content && !body.attachments) {

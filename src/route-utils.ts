@@ -1,16 +1,17 @@
 import { TokenPayload } from "@shared/api-types";
-import { Error, Error as HError, HttpCode } from "@shared/errors";
-import { Context, MiddlewareHandler, ValidationTargets } from "hono";
+import { Error as HError, HttpCode } from "@shared/errors";
+import { Context, Env, Input, MiddlewareHandler, ValidationTargets } from "hono";
 import { createFactory } from "hono/factory";
-import { z } from "zod";
-import { DBError, DBErrorType, isDBError, isPrismaError, prisma } from "./database";
+import { validator } from "hono/validator";
+import { ZodSchema, z } from "zod";
+import { DBError, DBErrorType, isDBError, isPrismaError, prisma } from "./db";
 import { ErrorFactory, createError } from "./factory/error-factory";
 import { verifyToken } from "./factory/token-factory";
 import { logServerError } from "./log-utils";
 
 export async function handleRequest(
    context: Context,
-   onRequest: () => Promise<Response>,
+   onRequest: (() => Promise<Response>) | (() => Response),
    onError?: (error: DBError<Error & { cause: string }>) => Response | undefined
 ) {
    try {
@@ -52,7 +53,7 @@ export function error(c: Context, e: ErrorFactory, code: HttpCode = HttpCode.BAD
    return c.json(e.toObject(), code);
 }
 
-export function serverError(c: Context, e: unknown, log: boolean = true) {
+export function serverError(c: Context, e: unknown, log = true) {
    if (log) {
       logServerError(c.req.path, e);
    }
@@ -72,38 +73,48 @@ export function fileNotFound(c: Context) {
    return error(c, createError(HError.fileNotFound()));
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function hValidator(target: keyof ValidationTargets, schema: z.ZodType<any, z.ZodTypeDef, any>): MiddlewareHandler {
-   return createFactory().createMiddleware(async (c, next) => {
-      let value: unknown;
-      switch (target) {
-         case "query":
-            value = Object.fromEntries(
-               Object.entries(c.req.queries()).map(([k, v]) => {
-                  return v.length === 1 ? [k, v[0]] : [k, v];
-               })
-            );
-            break;
-         case "json":
-            value = await c.req.json();
-            break;
-         case "param":
-            value = c.req.param() as Record<string, string>;
-            break;
+type HasUndefined<T> = undefined extends T ? true : false;
 
-         default:
-            await next();
-            return;
-      }
+export const hValidator = <
+   T extends ZodSchema,
+   Target extends keyof ValidationTargets,
+   E extends Env,
+   P extends string,
+   In = z.input<T>,
+   Out = z.output<T>,
+   I extends Input = {
+      in: HasUndefined<In> extends true
+         ? {
+              [K in Target]?: K extends "json"
+                 ? In
+                 : HasUndefined<keyof ValidationTargets[K]> extends true
+                 ? { [K2 in keyof In]?: ValidationTargets[K][K2] }
+                 : { [K2 in keyof In]: ValidationTargets[K][K2] };
+           }
+         : {
+              [K in Target]: K extends "json"
+                 ? In
+                 : HasUndefined<keyof ValidationTargets[K]> extends true
+                 ? { [K2 in keyof In]?: ValidationTargets[K][K2] }
+                 : { [K2 in keyof In]: ValidationTargets[K][K2] };
+           };
+      out: { [K in Target]: Out };
+   },
+   V extends I = I
+>(
+   target: Target,
+   schema: T
+): MiddlewareHandler<E, P, V> =>
+   // @ts-expect-error not types well
+   validator(target, async (value, c) => {
+      const result = await schema.safeParseAsync(value);
 
-      const parsed = schema.safeParse(value);
-      if (!parsed.success) {
+      if (!result.success) {
          return invalidFormBody(c);
       }
 
-      await next();
+      return result.data as z.infer<T>;
    });
-}
 
 export function verifyJwt(): MiddlewareHandler {
    return createFactory().createMiddleware(async (c, next) => {

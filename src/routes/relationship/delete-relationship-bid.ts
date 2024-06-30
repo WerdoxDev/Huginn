@@ -1,4 +1,4 @@
-import { DBErrorType, prisma } from "@/src/database";
+import { DBErrorType, prisma } from "@/src/db";
 import { createError } from "@/src/factory/error-factory";
 import { dispatchToTopic } from "@/src/gateway/gateway-utils";
 import { error, getJwt, handleRequest, verifyJwt } from "@/src/route-utils";

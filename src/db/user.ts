@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { APIPatchCurrentUserJSONBody } from "@shared/api-types";
 import { Snowflake } from "@shared/snowflake";
 import { DBErrorType, assertCondition, assertId, assertObj, prisma } from ".";
-import { UserInclude, UserPayload } from "./database-common";
+import { UserInclude, UserPayload } from "./common";
 
 const userExtention = Prisma.defineExtension({
    model: {

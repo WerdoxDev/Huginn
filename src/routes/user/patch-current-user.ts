@@ -1,4 +1,4 @@
-import { prisma } from "@/src/database";
+import { prisma } from "@/src/db";
 import { createError } from "@/src/factory/error-factory";
 import { createTokens } from "@/src/factory/token-factory";
 import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
@@ -10,10 +10,10 @@ import {
    validateUsername,
    validateUsernameUnique,
 } from "@/src/validation";
-import { APIPatchCurrentUserJSONBody, APIPatchCurrentUserResult } from "@shared/api-types";
+import { APIPatchCurrentUserResult } from "@shared/api-types";
 import { constants } from "@shared/constants";
 import { Error, Field, HttpCode } from "@shared/errors";
-import { idFix } from "@shared/utility";
+import { idFix } from "@shared/utils";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -30,7 +30,7 @@ const app = new Hono();
 
 app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
    handleRequest(c, async () => {
-      const body = (await c.req.json()) as APIPatchCurrentUserJSONBody;
+      const body = c.req.valid("json");
       const payload = getJwt(c);
 
       const formError = createError(Error.invalidFormBody());
@@ -39,7 +39,7 @@ app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
       validateDisplayName(body.displayName, formError);
       validateEmail(body.email, formError);
 
-      if ((body.username || body.newPassword) && !body.password) {
+      if ((body.username ?? body.newPassword) && !body.password) {
          formError.error("password", Field.required());
       }
 

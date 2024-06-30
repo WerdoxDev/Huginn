@@ -22,7 +22,6 @@
          "@src/*": ["./src/*"]
       }
    },
-   "include": ["**/*", "package.json"],
-   "exclude": ["ecosystem.config.cjs"],
+   "include": ["**/*", "package.json", "ecosystem.config.cjs"],
    "references": [{ "path": "../huginn-shared" }]
 }

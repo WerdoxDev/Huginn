@@ -1,15 +1,15 @@
 import { Prisma } from "@prisma/client";
 import { Snowflake } from "@shared/snowflake";
 
-export class DBError<T> extends Error {
+export class DBError<T extends Error> extends Error {
    public constructor(public error: T, methodName: string, cause?: string) {
-      super(`Unhandeled Database Error => ${methodName} => ${error}`, { cause });
+      super(`Unhandeled Database Error => ${methodName} => ${error.name}: ${error.message}`, { cause });
       this.flattenError(this.error);
    }
 
    isErrorType(type: DBErrorType) {
       if (this.error instanceof Error) {
-         return this.error.message === type;
+         return (this.error.message as DBErrorType) === type;
       }
    }
 

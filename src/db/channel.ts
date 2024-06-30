@@ -2,8 +2,8 @@ import { Prisma } from "@prisma/client";
 import { ChannelType } from "@shared/api-types";
 import { snowflake, Snowflake } from "@shared/snowflake";
 import { prisma } from ".";
-import { ChannelInclude, ChannelPayload } from "./database-common";
-import { assertCondition, assertId, assertObj, DBErrorType } from "./database-error";
+import { ChannelInclude, ChannelPayload } from "./common";
+import { assertCondition, assertId, assertObj, DBErrorType } from "./error";
 
 const channelExtention = Prisma.defineExtension({
    model: {

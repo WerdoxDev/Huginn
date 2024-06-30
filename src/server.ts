@@ -11,6 +11,7 @@ import { error, serverError, tryGetBodyJson } from "./route-utils";
 import routes from "./routes/route-merger";
 import testRoute from "./routes/test-routes";
 import { TokenInvalidator } from "./token-invalidator";
+import "./db/index";
 
 consola.start("Starting server...");
 

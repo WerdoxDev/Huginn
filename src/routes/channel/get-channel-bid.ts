@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { DBErrorType, prisma } from "@/src/database";
-import { includeChannelRecipients } from "@/src/database/database-common";
+import { DBErrorType, prisma } from "@/src/db";
+import { includeChannelRecipients } from "@/src/db/common";
 import { createError } from "@/src/factory/error-factory";
 import { error, handleRequest, verifyJwt } from "@/src/route-utils";
 import { APIGetChannelByIdResult } from "@shared/api-types";
 import { Error, HttpCode } from "@shared/errors";
-import { idFix } from "@shared/utility";
+import { idFix } from "@shared/utils";
 import { Hono } from "hono";
 
 const app = new Hono();
