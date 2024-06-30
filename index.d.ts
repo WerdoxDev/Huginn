@@ -1,4 +1,3 @@
-import { HTMLInputTypeAttribute, ReactNode } from "react";
 import { BaseEditor, BaseRange } from "slate";
 import { ReactEditor } from "slate-react";
 

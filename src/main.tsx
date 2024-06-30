@@ -23,13 +23,6 @@ export const router = createRouter({
    // defaultErrorComponent: DefaultError,
 });
 
-// Register the router instance for type safety
-declare module "@tanstack/react-router" {
-   type Register = {
-      router: typeof router;
-   };
-}
-
 ReactDOM.createRoot(document.getElementById("root")!).render(
    // <React.StrictMode>
    <QueryClientProvider client={queryClient}>

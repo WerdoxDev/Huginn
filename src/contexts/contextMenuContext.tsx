@@ -68,9 +68,9 @@ export function useContextMenu<T = unknown>(type: ContextMenuType) {
          break;
    }
 
-   function open(data: ContextMenuStateProps<T>["data"], e: MouseEvent) {
+   function open(data: ContextMenuStateProps<T>["contextData"], e: MouseEvent) {
       e.preventDefault();
-      dispatch({ [keyName]: { isOpen: true, data, position: [e.clientX, e.clientY] } });
+      dispatch({ [keyName]: { isOpen: true, contextData: data, position: [e.clientX, e.clientY] } });
    }
 
    function close() {

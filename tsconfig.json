@@ -30,7 +30,9 @@
          "@hooks/*": ["./src/hooks/*"],
          "@lib/*": ["./src/lib/*"],
          "@/*": ["./src/*"]
-      }
+      },
+
+      "outDir": "./lib/"
    },
    "include": [
       "src",
@@ -41,5 +43,5 @@
       "tailwind.config.js",
       "postcss.config.js"
    ],
-   "references": [{ "path": "./tsconfig.node.json" }, { "path": "../huginn-api" }, { "path": "../huginn-shared" }]
+   "references": [{ "path": "../huginn-api" }, { "path": "../huginn-shared" }]
 }

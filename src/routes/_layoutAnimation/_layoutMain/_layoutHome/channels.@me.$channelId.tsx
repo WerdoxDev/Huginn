@@ -24,11 +24,11 @@ function Component() {
    const client = useClient();
    const { channelId } = Route.useParams();
    const { data: messages } = useSuspenseQuery(getMessagesOptions(client, channelId));
-   const channel = useSuspenseQuery(getChannelsOptions(client, "@me")).data?.find((x) => x.id === channelId)!;
+   const channel = useSuspenseQuery(getChannelsOptions(client, "@me")).data?.find((x) => x.id === channelId);
 
    return (
       <div className="flex h-full flex-col">
-         <HomeTopbar channel={channel} />
+         <HomeTopbar channel={channel!} />
          <div className="h-0.5 flex-shrink-0 bg-white/10" />
          <ChannelMessages channelId={channelId} messages={messages} />
          <div className="flex h-16 w-full flex-shrink-0 bg-background">

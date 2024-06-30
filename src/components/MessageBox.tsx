@@ -63,7 +63,7 @@ export default function MessageBox() {
       return ranges;
    }, []);
 
-   async function onKeyDown(event: KeyboardEvent) {
+   function onKeyDown(event: KeyboardEvent) {
       if (!event.shiftKey && event.code === "Enter") {
          event.preventDefault();
          mutation.mutate({ channelId: params.channelId, content: serialize(editor.children) });

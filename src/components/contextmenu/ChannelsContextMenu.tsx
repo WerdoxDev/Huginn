@@ -9,8 +9,8 @@ export function ChannelsContextMenu() {
    const { context, close } = useContextMenu<ContextMenuDMChannel>(ContextMenuType.DM_CHANNEL);
    const deleteChannelMutation = useDeleteDMChannel();
 
-   const data = useMemo(() => context?.data!, [context]);
-   if (!context || !context.data) return;
+   const data = useMemo(() => context?.contextData, [context]);
+   if (!data) return;
 
    return (
       <ContextMenu close={close} isOpen={context.isOpen} position={context.position}>

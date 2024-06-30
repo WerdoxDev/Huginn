@@ -23,7 +23,7 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
          navigate({ to: "/channels/@me", replace: true });
       }
 
-      queryClient.setQueryData(["channels", "@me"], (data: APIGetUserChannelsResult) => data && data.filter((x) => x.id !== d.id));
+      queryClient.setQueryData(["channels", "@me"], (data: APIGetUserChannelsResult) => data?.filter((x) => x.id !== d.id));
       console.log(d);
    }
 

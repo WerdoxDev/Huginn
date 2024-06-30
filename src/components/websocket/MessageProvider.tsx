@@ -24,7 +24,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
       queryClient.setQueryData<APIGetChannelMessagesResult>(["messages", d.channelId], (data) => (data ? [...data, d] : undefined));
 
       const channels: APIGetUserChannelsResult | undefined = queryClient.getQueryData(["channels", "@me"]);
-      if (channels && channels.some((x) => x.id === d.channelId)) return;
+      if (channels?.some((x) => x.id === d.channelId)) return;
 
       mutation.mutate({ userId: d.author.id, skipNavigation: true });
       // queryClient.setQueryData(["channels", "@me"], (previous: APIGetUserChannelsResult) => [newChannel, ...previous]);

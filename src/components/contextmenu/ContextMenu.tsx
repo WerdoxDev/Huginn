@@ -44,8 +44,8 @@ const Menu = forwardRef<HTMLButtonElement, ContextMenuProps & HTMLProps<HTMLButt
       const [hasFocusInside, setHasFocusInside] = useState(false);
       const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-      const elementsRef = useRef<Array<HTMLButtonElement | null>>([]);
-      const labelsRef = useRef<Array<string | null>>([]);
+      const elementsRef = useRef<(HTMLButtonElement | null)[]>([]);
+      const labelsRef = useRef<(string | null)[]>([]);
       const parent = useContext(Context);
 
       const tree = useFloatingTree();
@@ -77,6 +77,8 @@ const Menu = forwardRef<HTMLButtonElement, ContextMenuProps & HTMLProps<HTMLButt
          nested: isNested,
          onNavigate: setActiveIndex,
       });
+
+      const mergedRefs = useMergeRefs([refs.setReference, item.ref, forwardedRef]);
 
       const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions([hover, role, dismiss, listNavigation]);
 
@@ -142,7 +144,7 @@ const Menu = forwardRef<HTMLButtonElement, ContextMenuProps & HTMLProps<HTMLButt
          <FloatingNode id={nodeId}>
             {isNested && (
                <button
-                  ref={useMergeRefs([refs.setReference, item.ref, forwardedRef])}
+                  ref={mergedRefs}
                   tabIndex={parent.activeIndex === item.index ? 0 : -1}
                   role="menuitem"
                   data-open={isOpen ? "" : undefined}

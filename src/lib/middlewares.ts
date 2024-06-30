@@ -29,7 +29,7 @@ export function ensureChannelExists(channelId: Snowflake, queryClient: QueryClie
    const channels: (APIDMChannel | APIGroupDMChannel)[] | undefined = queryClient.getQueryData(["channels", "@me"]);
 
    const safePathname = routeHistory.lastPathname?.includes(channelId) ? "/channels/@me" : routeHistory.lastPathname;
-   if (!channels || !channels.some((x) => x.id === channelId)) throw redirect({ to: safePathname });
+   if (!channels?.some((x) => x.id === channelId)) throw redirect({ to: safePathname });
 }
 
 export function requireAuth(client: HuginnClient) {

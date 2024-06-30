@@ -1,22 +1,24 @@
-import eslint from "@eslint/js";
-import reactCompiler from "eslint-plugin-react-compiler";
-import reactHook from "eslint-plugin-react-hooks";
+import globals from "globals";
+import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
+import pluginReactConfig from "eslint-plugin-react/configs/jsx-runtime.js";
+import { fixupConfigRules } from "@eslint/compat";
+import reactHook from "eslint-plugin-react-hooks";
+import reactCompiler from "eslint-plugin-react-compiler";
 
-import reactRecommended from "eslint-plugin-react/configs/jsx-runtime.js";
-
-export default tseslint.config(
-   eslint.configs.recommended,
-   reactRecommended,
+export default [
+   { ignores: ["src-tauri/target/", "dist/"] },
+   { languageOptions: { parserOptions: { ecmaFeatures: { jsx: true }, project: "tsconfig.json" } } },
+   { languageOptions: { globals: globals.browser } },
+   pluginJs.configs.recommended,
    ...tseslint.configs.recommendedTypeChecked,
    ...tseslint.configs.stylisticTypeChecked,
+   ...fixupConfigRules(pluginReactConfig),
    {
-      files: ["**/*.{js,jsx,mjs,cjs,ts,tsx}"],
       plugins: {
          "react-hooks": reactHook,
          "react-compiler": reactCompiler,
       },
-      languageOptions: { parserOptions: { project: "tsconfig.json" } },
 
       rules: {
          "react-compiler/react-compiler": 2,
@@ -33,6 +35,7 @@ export default tseslint.config(
          "@typescript-eslint/no-unnecessary-type-assertion": "off",
          "@typescript-eslint/no-floating-promises": "off",
          "@typescript-eslint/no-empty-function": "off",
+         "@typescript-eslint/no-redundant-type-constituents": "off",
          "@typescript-eslint/no-unused-vars": [
             "error",
             {
@@ -42,4 +45,4 @@ export default tseslint.config(
          ],
       },
    },
-);
+];

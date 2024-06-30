@@ -2,6 +2,7 @@ import { TooltipOptions } from "@/types";
 import { TooltipContext, useTooltip, useTooltipContext } from "@contexts/tooltipContext";
 import { useMergeRefs } from "@floating-ui/react";
 import { Portal, Transition } from "@headlessui/react";
+import { ReactNode } from "@tanstack/react-router";
 import * as React from "react";
 
 export function Tooltip({ children, ...options }: { children: React.ReactNode } & TooltipOptions) {
@@ -16,7 +17,7 @@ const Trigger = React.forwardRef<HTMLElement, React.HTMLProps<HTMLElement> & { a
    propRef,
 ) {
    const context = useTooltipContext();
-   const childrenRef = (children as any).ref;
+   const childrenRef = (children as ReactNode).ref;
    const ref = useMergeRefs([context.refs.setReference, propRef, childrenRef]);
 
    // `asChild` allows the user to pass any element as the anchor

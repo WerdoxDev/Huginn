@@ -28,7 +28,7 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
    function onRelationshipDeleted(userId: Snowflake) {
       queryClient.setQueryData(
          ["relationships"],
-         (data: APIGetUserRelationshipsResult) => data && data.filter((x) => x.user.id !== userId),
+         (data: APIGetUserRelationshipsResult) => data?.filter((x) => x.user.id !== userId),
       );
    }
 

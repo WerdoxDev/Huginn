@@ -124,7 +124,7 @@ export type ContextMenuProps = {
 } & ContextMenuStateProps;
 
 export type ContextMenuStateProps<T = unknown> = {
-   data?: T;
+   contextData?: T;
    isOpen?: boolean;
    position?: [number, number];
 };

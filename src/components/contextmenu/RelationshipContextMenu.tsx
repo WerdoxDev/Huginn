@@ -10,8 +10,8 @@ export default function RelationshipContextMenu() {
    const removeFriendMutation = useRemoveFriend();
    const createDMMutation = useCreateDMChannel();
 
-   const data = useMemo(() => context?.data!, [context]);
-   if (!context || !context.data) return;
+   const data = useMemo(() => context?.contextData, [context]);
+   if (!data) return;
 
    return (
       <ContextMenu close={close} isOpen={context.isOpen} position={context.position}>
