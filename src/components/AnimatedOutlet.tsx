@@ -4,7 +4,12 @@ import { Outlet, getRouterContext, useRouter } from "@tanstack/react-router";
 import cloneDeep from "lodash.clonedeep";
 import { useEffect, useRef } from "react";
 
-export default function AnimatedOutlet(props: { updateFor?: string[]; style: Record<string, unknown>; className?: string }) {
+export default function AnimatedOutlet(props: {
+   updateFor?: string[];
+   style: Record<string, unknown>;
+   className?: string;
+   test: string;
+}) {
    const router = useRouter();
    const RouterContext = getRouterContext();
 
@@ -26,7 +31,7 @@ export default function AnimatedOutlet(props: { updateFor?: string[]; style: Rec
       ) {
          renderedContext.current = cloneDeep(router);
       }
-   }, [router.state.location.pathname]);
+   }, [router.state.matches]);
 
    useEffect(() => {
       if (inView) {

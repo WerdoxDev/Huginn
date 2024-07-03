@@ -43,7 +43,7 @@ function LayoutAuth() {
             </div>
          </div>
          {transitions((style) => (
-            <AnimatedOutlet style={style} className="test absolute flex h-full w-full items-center justify-center" />
+            <AnimatedOutlet style={style} className="absolute flex h-full w-full items-center justify-center" test="auth" />
          ))}
          {backgroundState !== 2 && (
             <button

@@ -8,13 +8,14 @@ import ReactDOM from "react-dom/client";
 import HuginnRouterProvider from "./HuginnRouterProvider";
 import "./index.css";
 import { routeTree } from "./routeTree.gen";
+import React from "react";
 
 const queryClient = new QueryClient();
 
 export const router = createRouter({
    routeTree,
-   defaultPreload: "intent",
-   defaultPreloadDelay: 200,
+   // defaultPreload: "intent",
+   // defaultPreloadDelay: 200,
    defaultPreloadStaleTime: 0,
    context: { queryClient, client: undefined! },
    defaultNotFoundComponent: DefaultNotFound,
@@ -24,15 +25,15 @@ export const router = createRouter({
 });
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-   // <React.StrictMode>
-   <QueryClientProvider client={queryClient}>
-      <SettingsProvider>
-         <APIProvider>
-            <WindowProvider>
-               <HuginnRouterProvider router={router} />
-            </WindowProvider>
-         </APIProvider>
-      </SettingsProvider>
-   </QueryClientProvider>,
-   // </React.StrictMode>,
+   <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+         <SettingsProvider>
+            <APIProvider>
+               <WindowProvider>
+                  <HuginnRouterProvider router={router} />
+               </WindowProvider>
+            </APIProvider>
+         </SettingsProvider>
+      </QueryClientProvider>
+   </React.StrictMode>,
 );
