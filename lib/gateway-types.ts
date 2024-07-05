@@ -18,16 +18,19 @@ export enum GatewayOperations {
    HEARTBEAT_ACK = 11,
 }
 
-export enum GatewayDispatchEvents {
-   READY = "READY",
-   MESSAGE_CREATE = "MESSAGE_CREATE",
-   MESSAGE_DELETE = "MESSAGE_DELETE",
-   TYPING_START = "TYPING_START",
-   RELATIONSHIP_CREATE = "RELATIONSHIP_CREATE",
-   RELATIONSHIP_DELETE = "RELATIONSHIP_DELETE",
-   DM_CHANNEL_CREATE = "CHANNEL_CREATE",
-   DM_CHANNEL_DELETE = "CHANNEL_DELETE",
-}
+export type GatewayEvents = {
+   close: number;
+   hello: GatewayHelloData;
+   identify: GatewayIdentifyData;
+   ready: GatewayReadyDispatchData;
+   message_create: GatewayMessageCreateDispatchData;
+   message_delete: Snowflake;
+   typying_start: GatewayMessageCreateDispatchData;
+   relationship_create: GatewayRelationshipCreateDispatchData;
+   relationship_delete: Snowflake;
+   channel_create: GatewayDMChannelCreateDispatchData;
+   channel_delete: GatewayDMChannelDeleteDispatchData;
+};
 
 export type BasePayload = {
    op: GatewayOperations;
@@ -38,15 +41,15 @@ export type BasePayload = {
 
 export type NonDispatchPayload = Omit<BasePayload, "s" | "t">;
 
-export type DataPayload<Event extends GatewayDispatchEvents, D = unknown> = {
+export type DataPayload<Event extends keyof GatewayEvents, D = unknown> = {
    op: GatewayOperations.DISPATCH;
    t: Event;
    d: D;
 } & BasePayload;
 
 export type GatewayDispatch = {
-   t: string;
-   d: unknown;
+   t: keyof GatewayEvents;
+   d: GatewayEvents[keyof GatewayEvents];
 } & BasePayload;
 
 export type GatewayHello = NonDispatchPayload & {
@@ -86,17 +89,14 @@ export type GatewayIdentifyProperties = {
    device: string;
 };
 
-export type GatewayReadyDispatch = DataPayload<GatewayDispatchEvents.READY, GatewayReadyDispatchData>;
+export type GatewayReadyDispatch = DataPayload<"ready", GatewayReadyDispatchData>;
 
 export type GatewayReadyDispatchData = {
    user: APIUser;
    sessionId: Snowflake;
 };
 
-export type GatewayMessageCreateDispatch = DataPayload<
-   GatewayDispatchEvents.MESSAGE_CREATE,
-   GatewayMessageCreateDispatchData
->;
+export type GatewayMessageCreateDispatch = DataPayload<"message_create", GatewayMessageCreateDispatchData>;
 
 export type GatewayMessageCreateDispatchData = Omit<APIMessage, "mentions"> & GatewayMessageEventExtraFields;
 
@@ -110,27 +110,21 @@ export type GatewayMessageEventExtraFields = {
 
 // RELATIONSHIP_CREATE
 export type GatewayRelationshipCreateDispatch = DataPayload<
-   GatewayDispatchEvents.RELATIONSHIP_CREATE,
+   "relationship_create",
    GatewayRelationshipCreateDispatchData
 >;
 
 export type GatewayRelationshipCreateDispatchData = APIRelationshipWithoutOwner;
 
 // RELATIONSHIP_DELETE
-export type GatewayRelationshipDeleteDispatch = DataPayload<GatewayDispatchEvents.RELATIONSHIP_DELETE, Snowflake>;
+export type GatewayRelationshipDeleteDispatch = DataPayload<"relationship_delete", Snowflake>;
 
 // DM_CHANNEL_CREATE
-export type GatewayDMChannelCreateDispatch = DataPayload<
-   GatewayDispatchEvents.DM_CHANNEL_CREATE,
-   GatewayDMChannelCreateDispatchData
->;
+export type GatewayDMChannelCreateDispatch = DataPayload<"channel_create", GatewayDMChannelCreateDispatchData>;
 
 export type GatewayDMChannelCreateDispatchData = APIDMChannel | APIGroupDMChannel;
 
 // DM_CHANNEL_DELETE
-export type GatewayDMChannelDeleteDispatch = DataPayload<
-   GatewayDispatchEvents.DM_CHANNEL_DELETE,
-   GatewayDMChannelDeleteDispatchData
->;
+export type GatewayDMChannelDeleteDispatch = DataPayload<"channel_delete", GatewayDMChannelDeleteDispatchData>;
 
 export type GatewayDMChannelDeleteDispatchData = APIDMChannel | APIGroupDMChannel;
