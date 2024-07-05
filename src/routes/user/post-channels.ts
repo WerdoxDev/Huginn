@@ -5,7 +5,7 @@ import { getJwt, hValidator, handleRequest, invalidFormBody, verifyJwt } from "@
 import { gateway } from "@/src/server";
 import { APIPostDMChannelResult } from "@shared/api-types";
 import { HttpCode } from "@shared/errors";
-import { GatewayDMChannelCreateDispatch, GatewayDispatchEvents } from "@shared/gateway-types";
+import { GatewayDMChannelCreateDispatch } from "@shared/gateway-types";
 import { idFix, merge } from "@shared/utils";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -35,7 +35,7 @@ app.post("/users/@me/channels", verifyJwt(), hValidator("json", schema), c =>
          gateway.getSession(id)?.subscribe(channel.id);
       }
 
-      dispatchToTopic<GatewayDMChannelCreateDispatch>(payload.id, GatewayDispatchEvents.DM_CHANNEL_CREATE, channel, 0);
+      dispatchToTopic<GatewayDMChannelCreateDispatch>(payload.id, "channel_create", channel, 0);
 
       return c.json(channel, HttpCode.CREATED);
    })

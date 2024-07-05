@@ -2,7 +2,6 @@ import { constants } from "@shared/constants";
 import { GatewayCode } from "@shared/errors";
 import {
    BasePayload,
-   GatewayDispatchEvents,
    GatewayHeartbeatAck,
    GatewayHello,
    GatewayIdentify,
@@ -16,8 +15,8 @@ import { ClientSessionInfo, ServerGatewayOptions } from "../types";
 import { ClientSession } from "./client-session";
 import { prisma } from "../db";
 import { verifyToken } from "../factory/token-factory";
-import { isHeartbeatOpcode, isIdentifyOpcode } from "./gateway-utils";
-import { logGatewayClose, logGatewayOpen, logGatewayRecieve, logGatewaySend } from "../log-utils";
+import { isHeartbeatOpcode, isIdentifyOpcode, validateGatewayData } from "./gateway-utils";
+import { logGatewayClose, logGatewayOpen, logGatewayRecieve, logGatewaySend, logServerError } from "../log-utils";
 import { idFix } from "@shared/utils";
 
 export class ServerGateway {
@@ -30,10 +29,14 @@ export class ServerGateway {
    }
 
    public onOpen(ws: ServerWebSocket<string>) {
-      logGatewayOpen();
+      try {
+         logGatewayOpen();
 
-      const helloData: GatewayHello = { op: GatewayOperations.HELLO, d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL } };
-      this.send(ws, helloData);
+         const helloData: GatewayHello = { op: GatewayOperations.HELLO, d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL } };
+         this.send(ws, helloData);
+      } catch (e) {
+         ws.close(GatewayCode.UNKNOWN, "UNKNOWN");
+      }
    }
 
    public onClose(ws: ServerWebSocket<string>, code: number, reason: string) {
@@ -43,20 +46,39 @@ export class ServerGateway {
    }
 
    public async onMessage(ws: ServerWebSocket<string>, message: string | Buffer) {
-      if (typeof message !== "string") {
-         consola.error("Non string message type is not supported yet");
-         return;
-      }
+      try {
+         if (typeof message !== "string") {
+            consola.error("Non string message type is not supported yet");
+            return;
+         }
 
-      const data = JSON.parse(message);
+         const data = JSON.parse(message);
 
-      logGatewayRecieve(data, this.options.logHeartbeat);
+         if (!validateGatewayData(data)) {
+            ws.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
+            return;
+         }
 
-      if (isHeartbeatOpcode(data)) {
-         this.handleHeartbeat(ws);
-      }
-      if (isIdentifyOpcode(data)) {
-         await this.handleIdentify(ws, data);
+         logGatewayRecieve(data, this.options.logHeartbeat);
+
+         if (isIdentifyOpcode(data)) {
+            await this.handleIdentify(ws, data);
+         } else if (!ws.data) {
+            ws.close(GatewayCode.NOT_AUTHENTICATED, "NOT_AUTHENTICATED");
+            return;
+         } else if (isHeartbeatOpcode(data)) {
+            this.handleHeartbeat(ws);
+         } else {
+            ws.close(GatewayCode.UNKNOWN_OPCODE, "UNKNOWN_OPCODE");
+         }
+      } catch (e) {
+         if (e instanceof SyntaxError) {
+            ws.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
+            return;
+         }
+
+         logServerError("/gateway", e);
+         ws.close(GatewayCode.UNKNOWN, "UNKNOWN");
       }
    }
 
@@ -75,6 +97,12 @@ export class ServerGateway {
 
       if (!valid || !payload) {
          ws.close(GatewayCode.AUTHENTICATION_FAILED, "AUTHENTICATION_FAILED");
+         return;
+      }
+
+      if (this.clients.has(payload.id)) {
+         ws.close(GatewayCode.ALREADY_AUTHENTICATED, "ALREADY_AUTHENTICATED");
+         return;
       }
 
       const user = idFix(await prisma.user.getById(payload!.id));
@@ -83,11 +111,10 @@ export class ServerGateway {
       const readyData: GatewayReadyDispatch = {
          op: GatewayOperations.DISPATCH,
          d: { user, sessionId: sessionId },
-         t: GatewayDispatchEvents.READY,
+         t: "ready",
          s: 0,
       };
 
-       
       ws.data = user.id;
 
       const client = new ClientSession(ws, { user, sessionId: sessionId });

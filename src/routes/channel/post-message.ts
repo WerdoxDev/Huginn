@@ -3,7 +3,7 @@ import { dispatchToTopic } from "@/src/gateway/gateway-utils";
 import { getJwt, hValidator, handleRequest, invalidFormBody, verifyJwt } from "@/src/route-utils";
 import { APIMessage, APIPostDefaultMessageResult } from "@shared/api-types";
 import { HttpCode } from "@shared/errors";
-import { GatewayDispatchEvents, GatewayMessageCreateDispatch } from "@shared/gateway-types";
+import { GatewayMessageCreateDispatch } from "@shared/gateway-types";
 import { idFix, omit } from "@shared/utils";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -40,7 +40,7 @@ app.post("/channels/:channelId/messages", verifyJwt(), hValidator("json", schema
 
       message.nonce = body.nonce;
 
-      dispatchToTopic<GatewayMessageCreateDispatch>(channelId, GatewayDispatchEvents.MESSAGE_CREATE, message, 0);
+      dispatchToTopic<GatewayMessageCreateDispatch>(channelId, "message_create", message, 0);
 
       return c.json(message as APIPostDefaultMessageResult, HttpCode.CREATED);
    })

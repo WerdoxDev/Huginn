@@ -4,7 +4,7 @@ import { dispatchToTopic } from "@/src/gateway/gateway-utils";
 import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
 import { RelationshipType } from "@shared/api-types";
 import { Error, HttpCode } from "@shared/errors";
-import { GatewayDispatchEvents, GatewayRelationshipCreateDispatch } from "@shared/gateway-types";
+import { GatewayRelationshipCreateDispatch } from "@shared/gateway-types";
 import { Snowflake } from "@shared/snowflake";
 import { idFix } from "@shared/utils";
 import { Context, Hono } from "hono";
@@ -36,13 +36,13 @@ async function requestRest(c: Context, userId: Snowflake) {
 
       dispatchToTopic<GatewayRelationshipCreateDispatch>(
          payload.id,
-         GatewayDispatchEvents.RELATIONSHIP_CREATE,
+         "relationship_create",
          relationships.find(x => x.ownerId === payload.id)!,
          0
       );
       dispatchToTopic<GatewayRelationshipCreateDispatch>(
          userId,
-         GatewayDispatchEvents.RELATIONSHIP_CREATE,
+         "relationship_create",
          relationships.find(x => x.ownerId === userId)!,
          0
       );

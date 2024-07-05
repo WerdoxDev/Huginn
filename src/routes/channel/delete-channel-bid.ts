@@ -2,10 +2,10 @@ import { prisma } from "@/src/db";
 import { includeChannelRecipients } from "@/src/db/common";
 import { createError } from "@/src/factory/error-factory";
 import { dispatchToTopic } from "@/src/gateway/gateway-utils";
-import { getJwt, handleRequest, notFound, unauthorized, verifyJwt } from "@/src/route-utils";
+import { getJwt, handleRequest, notFound, verifyJwt } from "@/src/route-utils";
 import { APIDeleteDMChannelResult } from "@shared/api-types";
 import { Error, HttpCode } from "@shared/errors";
-import { GatewayDMChannelDeleteDispatch, GatewayDispatchEvents } from "@shared/gateway-types";
+import { GatewayDMChannelDeleteDispatch } from "@shared/gateway-types";
 import { idFix } from "@shared/utils";
 import { Hono } from "hono";
 
@@ -22,7 +22,7 @@ app.delete("/channels/:channelId", verifyJwt(), c =>
 
       const channel: APIDeleteDMChannelResult = idFix(await prisma.channel.deleteDM(channelId, payload.id, includeChannelRecipients));
 
-      dispatchToTopic<GatewayDMChannelDeleteDispatch>(payload.id, GatewayDispatchEvents.DM_CHANNEL_DELETE, channel, 0);
+      dispatchToTopic<GatewayDMChannelDeleteDispatch>(payload.id, "channel_delete", channel, 0);
       // gateway.getSession(payload.id)?.unsubscribe(channel.id);
 
       return c.json(channel, HttpCode.OK);
