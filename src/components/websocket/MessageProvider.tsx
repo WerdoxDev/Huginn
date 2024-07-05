@@ -1,7 +1,7 @@
 import { useClient } from "@contexts/apiContext";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { APIGetChannelMessagesResult, APIGetUserChannelsResult } from "@shared/api-types";
-import { GatewayDispatchEvents, GatewayMessageCreateDispatchData } from "@shared/gateway-types";
+import { GatewayMessageCreateDispatchData } from "@shared/gateway-types";
 import { useQueryClient } from "@tanstack/react-query";
 import { ReactNode, useEffect } from "react";
 
@@ -11,10 +11,10 @@ export default function MessageProvider(props: { children?: ReactNode }) {
    const mutation = useCreateDMChannel();
 
    useEffect(() => {
-      client.gateway.on(GatewayDispatchEvents.MESSAGE_CREATE, onMessageCreated);
+      client.gateway.on("message_create", onMessageCreated);
 
       return () => {
-         client.gateway.off(GatewayDispatchEvents.MESSAGE_CREATE, onMessageCreated);
+         client.gateway.off("message_create", onMessageCreated);
       };
    }, []);
 

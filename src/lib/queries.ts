@@ -25,7 +25,7 @@ export function getMessagesOptions(client: HuginnClient, channelId: Snowflake) {
 export function getRelationshipsOptions(client: HuginnClient) {
    return queryOptions({
       queryKey: ["relationships"],
-      queryFn: () => client.users.getRelationships(),
+      queryFn: () => client.relationships.getAll(),
       staleTime: 30000,
    });
 }

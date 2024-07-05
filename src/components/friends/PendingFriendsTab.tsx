@@ -16,11 +16,11 @@ export default function PendingFriendsTab(props: { friends: APIRelationshipWitho
    const pendingAmount = useMemo(() => pendingFriends.length, [pendingFriends]);
 
    async function denyOrCancelRelationship(userId: Snowflake) {
-      await client.users.deleteRelationship(userId);
+      await client.relationships.delete(userId);
    }
 
    async function acceptRelationship(userId: Snowflake) {
-      await client.users.createRelationshipByUserId(userId);
+      await client.relationships.createRelationshipByUserId(userId);
    }
    return (
       <TabPanel>

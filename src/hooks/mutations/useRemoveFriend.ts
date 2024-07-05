@@ -6,7 +6,7 @@ export function useRemoveFriend() {
 
    const mutation = useMutation({
       async mutationFn(userId: string) {
-         await client.users.deleteRelationship(userId);
+         await client.relationships.delete(userId);
       },
    });
 

@@ -8,7 +8,7 @@ export function useAddFriend(onSuccess?: (username: string) => void, handleError
    const mutation = useHuginnMutation(
       {
          async mutationFn(username: string) {
-            await client.users.createRelationship({ username: username });
+            await client.relationships.createRelationship({ username: username });
          },
          onSuccess(_, username) {
             onSuccess?.(username);

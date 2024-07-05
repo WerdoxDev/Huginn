@@ -1,6 +1,6 @@
 import { useClient } from "@contexts/apiContext";
 import { APIGetUserChannelsResult } from "@shared/api-types";
-import { GatewayDMChannelCreateDispatchData, GatewayDispatchEvents } from "@shared/gateway-types";
+import { GatewayDMChannelCreateDispatchData } from "@shared/gateway-types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { ReactNode, useEffect } from "react";
@@ -28,12 +28,12 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
    }
 
    useEffect(() => {
-      client.gateway.on(GatewayDispatchEvents.DM_CHANNEL_CREATE, onChannelCreated);
-      client.gateway.on(GatewayDispatchEvents.DM_CHANNEL_DELETE, onChannelDeleted);
+      client.gateway.on("channel_create", onChannelCreated);
+      client.gateway.on("channel_delete", onChannelDeleted);
 
       return () => {
-         client.gateway.off(GatewayDispatchEvents.DM_CHANNEL_CREATE, onChannelCreated);
-         client.gateway.off(GatewayDispatchEvents.DM_CHANNEL_DELETE, onChannelDeleted);
+         client.gateway.off("channel_create", onChannelCreated);
+         client.gateway.off("channel_delete", onChannelDeleted);
       };
    }, []);
 

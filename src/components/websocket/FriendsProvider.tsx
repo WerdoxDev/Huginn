@@ -1,6 +1,6 @@
 import { useClient } from "@contexts/apiContext";
 import { APIGetUserRelationshipsResult } from "@shared/api-types";
-import { GatewayDispatchEvents, GatewayRelationshipCreateDispatchData } from "@shared/gateway-types";
+import { GatewayRelationshipCreateDispatchData } from "@shared/gateway-types";
 import { Snowflake } from "@shared/snowflake";
 import { useQueryClient } from "@tanstack/react-query";
 import { ReactNode, useEffect } from "react";
@@ -26,19 +26,16 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
    }
 
    function onRelationshipDeleted(userId: Snowflake) {
-      queryClient.setQueryData(
-         ["relationships"],
-         (data: APIGetUserRelationshipsResult) => data?.filter((x) => x.user.id !== userId),
-      );
+      queryClient.setQueryData(["relationships"], (data: APIGetUserRelationshipsResult) => data?.filter((x) => x.user.id !== userId));
    }
 
    useEffect(() => {
-      client.gateway.on(GatewayDispatchEvents.RELATIONSHIP_CREATE, onRelationshipCreated);
-      client.gateway.on(GatewayDispatchEvents.RELATIONSHIP_DELETE, onRelationshipDeleted);
+      client.gateway.on("relationship_create", onRelationshipCreated);
+      client.gateway.on("relationship_delete", onRelationshipDeleted);
 
       return () => {
-         client.gateway.off(GatewayDispatchEvents.RELATIONSHIP_CREATE, onRelationshipCreated);
-         client.gateway.off(GatewayDispatchEvents.RELATIONSHIP_DELETE, onRelationshipDeleted);
+         client.gateway.off("relationship_create", onRelationshipCreated);
+         client.gateway.off("relationship_delete", onRelationshipDeleted);
       };
    }, []);
 
