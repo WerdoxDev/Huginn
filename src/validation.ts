@@ -5,7 +5,7 @@ import { prisma } from "./db";
 
 export function validateEmail(email: string | undefined, errorObject: ErrorFactory) {
    if (email && !email.match(constants.EMAIL_REGEX)) {
-      errorObject.error("email", Field.emailInvalid());
+      errorObject.addError("email", Field.emailInvalid());
       return false;
    }
 
@@ -16,7 +16,7 @@ export function validateUsername(username: string | undefined, errorObject: Erro
    const [minLen, maxLen] = [constants.USERNAME_MIN_LENGTH, constants.USERNAME_MAX_LENGTH];
 
    if (username && (username.length < minLen || username.length > maxLen)) {
-      errorObject.error("username", Field.wrongLength(minLen, maxLen));
+      errorObject.addError("username", Field.wrongLength(minLen, maxLen));
       return false;
    }
 
@@ -27,7 +27,7 @@ export function validateDisplayName(displayName: string | undefined, errorObject
    const [minLen, maxLen] = [constants.DISPLAY_NAME_MIN_LENGTH, constants.DISPLAY_NAME_MAX_LENGTH];
 
    if (displayName && (displayName.length < minLen || displayName.length > maxLen)) {
-      errorObject.error("displayName", Field.wrongLength(minLen, maxLen));
+      errorObject.addError("displayName", Field.wrongLength(minLen, maxLen));
       return true;
    }
 
@@ -36,7 +36,7 @@ export function validateDisplayName(displayName: string | undefined, errorObject
 
 export function validateCorrectPassword(password: string | undefined, correctPassword: string, errorObject: ErrorFactory) {
    if (password && password !== correctPassword) {
-      errorObject.error("password", Field.passwordIncorrect());
+      errorObject.addError("password", Field.passwordIncorrect());
       return false;
    }
 
@@ -45,7 +45,7 @@ export function validateCorrectPassword(password: string | undefined, correctPas
 
 export function validatePassword(password: string | undefined, errorObject: ErrorFactory) {
    if (password && password.length < constants.PASSWORD_MIN_LENGTH) {
-      errorObject.error("password", Field.wrongLength(constants.PASSWORD_MIN_LENGTH));
+      errorObject.addError("password", Field.wrongLength(constants.PASSWORD_MIN_LENGTH));
       return false;
    }
 
@@ -58,7 +58,7 @@ export async function validateEmailUnique(email: string | undefined, errorObject
    }
 
    if (await prisma.user.exists({ email: email })) {
-      errorObject.error("email", Field.emailInUse());
+      errorObject.addError("email", Field.emailInUse());
       return false;
    }
 
@@ -71,7 +71,7 @@ export async function validateUsernameUnique(username: string | undefined, error
    }
 
    if (await prisma.user.exists({ username: username })) {
-      errorObject?.error("username", Field.usernameTaken());
+      errorObject?.addError("username", Field.usernameTaken());
       return false;
    }
 

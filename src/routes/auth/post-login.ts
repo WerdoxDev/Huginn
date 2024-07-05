@@ -37,7 +37,7 @@ app.post("/auth/login", hValidator("json", schema), c =>
          if (e.isErrorType(DBErrorType.NULL_USER)) {
             return error(
                c,
-               createError(Error.invalidFormBody()).error("login", Field.invalidLogin()).error("password", Field.invalidLogin())
+               createError(Error.invalidFormBody()).addError("login", Field.invalidLogin()).addError("password", Field.invalidLogin())
             );
          }
       }

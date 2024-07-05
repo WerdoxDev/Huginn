@@ -1,5 +1,6 @@
 import { TokenPayload } from "@shared/api-types";
 import { Error as HError, HttpCode } from "@shared/errors";
+import consola from "consola";
 import { Context, Env, Input, MiddlewareHandler, ValidationTargets } from "hono";
 import { createFactory } from "hono/factory";
 import { validator } from "hono/validator";
@@ -10,7 +11,7 @@ import { verifyToken } from "./factory/token-factory";
 import { logServerError } from "./log-utils";
 
 export async function handleRequest(
-   context: Context,
+   c: Context,
    onRequest: (() => Promise<Response>) | (() => Response),
    onError?: (error: DBError<Error & { cause: string }>) => Response | undefined
 ) {
@@ -18,18 +19,31 @@ export async function handleRequest(
       const result = await onRequest();
       return result;
    } catch (e) {
-      if (onError !== undefined) {
-         let errorResult;
-         if (isDBError(e)) {
-            if (e.isErrorType(DBErrorType.INVALID_ID)) {
-               return invalidFormBody(context);
-            }
-            errorResult = onError(e);
+      let errorResult;
+      if (isDBError(e)) {
+         // Common errors
+         if (e.isErrorType(DBErrorType.INVALID_ID)) {
+            return invalidFormBody(c);
+         }
+         if (e.isErrorType(DBErrorType.NULL_USER)) {
+            return notFound(c, createError(HError.unknownUser(e.error.cause)));
+         }
+         if (e.isErrorType(DBErrorType.NULL_RELATIONSHIP)) {
+            return notFound(c, createError(HError.unknownRelationship(e.error.cause)));
+         }
+         if (e.isErrorType(DBErrorType.NULL_CHANNEL)) {
+            return notFound(c, createError(HError.unknownChannel(e.error.cause)));
+         }
+         if (e.isErrorType(DBErrorType.NULL_MESSAGE)) {
+            return notFound(c, createError(HError.unknownMessage(e.error.cause)));
          }
 
-         if (errorResult) {
-            return errorResult;
-         }
+         // Custom error
+         errorResult = onError?.(e);
+      }
+
+      if (errorResult) {
+         return errorResult;
       }
 
       let otherError = e;
@@ -37,7 +51,8 @@ export async function handleRequest(
          otherError = new DBError(e, "PRISMA ERROR");
       }
 
-      return serverError(context, otherError);
+      consola.log("LOGGING ERROR");
+      return serverError(c, otherError);
    }
 }
 
@@ -71,6 +86,10 @@ export function invalidFormBody(c: Context) {
 
 export function fileNotFound(c: Context) {
    return error(c, createError(HError.fileNotFound()));
+}
+
+export function notFound(c: Context, factory: ErrorFactory) {
+   return error(c, factory, HttpCode.NOT_FOUND);
 }
 
 type HasUndefined<T> = undefined extends T ? true : false;

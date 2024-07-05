@@ -1,27 +1,27 @@
 {
-  "name": "huginn-server",
-  "module": "index.ts",
-  "type": "module",
-  "version": "0.3.0-dev",
-  "scripts": {
-    "start": "bun --watch ./src/index.ts"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.6.0",
-    "@types/bun": "^1.1.6",
-    "@typescript-eslint/eslint-plugin": "^7.14.1",
-    "@typescript-eslint/parser": "^7.14.1",
-    "eslint": "^9.6.0",
-    "globals": "^15.7.0",
-    "typescript": "^5.5.2",
-    "typescript-eslint": "^7.14.1"
-  },
-  "dependencies": {
-    "@prisma/client": "^5.16.1",
-    "consola": "^3.2.3",
-    "hono": "^4.4.10",
-    "jose": "^5.6.2",
-    "prisma": "^5.16.1",
-    "zod": "^3.23.8"
-  }
+   "name": "huginn-server",
+   "module": "index.ts",
+   "type": "module",
+   "version": "0.3.0-dev",
+   "scripts": {
+      "start": "bun --watch ./src/index.ts"
+   },
+   "devDependencies": {
+      "@eslint/js": "^9.6.0",
+      "@types/bun": "^1.1.6",
+      "@typescript-eslint/eslint-plugin": "^7.15.0",
+      "@typescript-eslint/parser": "^7.15.0",
+      "eslint": "^9.6.0",
+      "globals": "^15.7.0",
+      "typescript": "^5.5.3",
+      "typescript-eslint": "^7.15.0"
+   },
+   "dependencies": {
+      "@prisma/client": "^5.16.1",
+      "consola": "^3.2.3",
+      "hono": "^4.4.10",
+      "jose": "^5.6.2",
+      "prisma": "^5.16.1",
+      "zod": "^3.23.8"
+   }
 }

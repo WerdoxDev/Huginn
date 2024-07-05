@@ -32,6 +32,16 @@ const userExtention = Prisma.defineExtension({
             const userExists = await prisma.user.exists({ id: BigInt(id) });
             assertCondition(methodName, !userExists, DBErrorType.NULL_USER, id);
          },
+         async hasChannel(userId: Snowflake, channelId: Snowflake) {
+            assertId("hasChannel", userId, channelId);
+
+            const hasAccess = await prisma.user.exists({
+               id: BigInt(userId),
+               OR: [{ includedChannels: { some: { id: BigInt(channelId) } } }, { ownedChannels: { some: { id: BigInt(channelId) } } }],
+            });
+
+            return hasAccess;
+         },
       },
    },
 });

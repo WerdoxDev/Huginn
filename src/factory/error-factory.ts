@@ -18,7 +18,7 @@ export class ErrorFactory {
       return this;
    }
 
-   public error(name: string, field: [string, string]) {
+   public addError(name: string, field: [string, string]) {
       return this.errorRaw(name, field[0], field[1]);
    }
 

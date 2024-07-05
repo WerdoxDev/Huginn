@@ -3,7 +3,14 @@ import { Snowflake } from "@shared/snowflake";
 
 export class DBError<T extends Error> extends Error {
    public constructor(public error: T, methodName: string, cause?: string) {
-      super(`Unhandeled Database Error => ${methodName} => ${error.name}: ${error.message}`, { cause });
+      super(
+         `Unhandeled Database Error => ${methodName} => ${error.name}: ${error.message} ${
+            error.cause ? `(${error.cause as string})` : ""
+         }`,
+         {
+            cause,
+         }
+      );
       this.flattenError(this.error);
    }
 

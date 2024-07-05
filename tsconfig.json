@@ -15,7 +15,6 @@
       "jsx": "react-jsx",
       "allowSyntheticDefaultImports": true,
       "forceConsistentCasingInFileNames": true,
-      "allowJs": true,
       "paths": {
          "@shared/*": ["../huginn-shared/lib/*"],
          "@/*": ["./*"],

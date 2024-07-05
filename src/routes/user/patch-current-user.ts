@@ -40,7 +40,7 @@ app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
       validateEmail(body.email, formError);
 
       if ((body.username ?? body.newPassword) && !body.password) {
-         formError.error("password", Field.required());
+         formError.addError("password", Field.required());
       }
 
       if (formError.hasErrors()) {

@@ -9,8 +9,8 @@ import getChannelMessages from "./channel/get-channel-messages";
 import getMessageBID from "./channel/get-message-bid";
 import postMessage from "./channel/post-message";
 import postUniqueUsername from "./post-unique-username";
-import deleteRelationshipBID from "./relationship/delete-relationship-bid";
-import getRelationshipBID from "./relationship/get-relationship-buid";
+import deleteRelationshipBUID from "./relationship/delete-relationship-buid";
+import getRelationshipBUID from "./relationship/get-relationship-buid";
 import getUserRelationships from "./relationship/get-user-relationships";
 import postPutRelationship from "./relationship/post-put-relationship";
 import getBuilds from "./updater/get-builds";
@@ -47,10 +47,10 @@ app.route("/", postChannels);
 app.route("/", patchCurrentUser);
 
 // Relationship
-app.route("/", getRelationshipBID);
+app.route("/", getRelationshipBUID);
 app.route("/", getUserRelationships);
 app.route("/", postPutRelationship);
-app.route("/", deleteRelationshipBID);
+app.route("/", deleteRelationshipBUID);
 
 // Updater
 app.route("/", getCheckUpdate);

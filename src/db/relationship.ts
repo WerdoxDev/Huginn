@@ -15,7 +15,7 @@ const relationshipExtention = Prisma.defineExtension({
                include: include,
             });
 
-            assertObj("getById", relationship, DBErrorType.NULL_RELATIONSHIP, `${ownerId}-${userId}`);
+            assertObj("getById", relationship, DBErrorType.NULL_RELATIONSHIP, `${ownerId}, ${userId}`);
             return relationship as RelationshipPayload<Include>;
          },
          async getUserRelationships<Include extends RelationshipInclude>(userId: Snowflake, include?: Include) {
