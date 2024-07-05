@@ -1,3 +1,5 @@
+import { Snowflake } from "./snowflake";
+
 export type HuginnErrorFieldInformation = {
    code: string;
    message: string;
@@ -76,10 +78,9 @@ export enum FieldCode {
    EMAIL_IN_USE = "EMAIL_IN_USE",
    EMAIL_INVALID = "EMAIL_INVALID",
    PASSWORD_INCORRECT = "PASSWORD_INCORRECT",
-   INVALID_USER_ID = "INVALID_USER_ID",
-   INVALID_CHANNEL_ID = "INVALID_CHANNEL_ID",
 }
 
+// Detailed errors that happen to a normal user
 export const Field = {
    required(): [string, string] {
       return ["This field is required", FieldCode.REQUIRED];
@@ -107,14 +108,9 @@ export const Field = {
    passwordIncorrect(): [string, string] {
       return ["Password is incorrect", FieldCode.PASSWORD_INCORRECT];
    },
-   invalidUserId(): [string, string] {
-      return ["User id is invalid", FieldCode.INVALID_USER_ID];
-   },
-   invalidChannelId(): [string, string] {
-      return ["Channel id is invalid", FieldCode.INVALID_CHANNEL_ID];
-   },
 };
 
+// Mostly api related errors. Users will very rarely see these
 export const Error = {
    unauthorized(): [string, JsonCode] {
       return ["Unauthorized", JsonCode.NONE];
@@ -134,17 +130,17 @@ export const Error = {
    invalidFormBody(): [string, JsonCode] {
       return ["Invalid Form Body", JsonCode.INVALID_FORM_BODY];
    },
-   unknownUser(): [string, JsonCode] {
-      return ["Unknown User", JsonCode.UNKNOWN_USER];
+   unknownUser(userId: Snowflake): [string, JsonCode] {
+      return [`Unknown User (${userId})`, JsonCode.UNKNOWN_USER];
    },
-   unknownChannel(): [string, JsonCode] {
-      return ["Unknown Channel", JsonCode.UNKNOWN_CHANNEL];
+   unknownChannel(channelId: Snowflake): [string, JsonCode] {
+      return [`Unknown Channel (${channelId})`, JsonCode.UNKNOWN_CHANNEL];
    },
-   unknownMessage(): [string, JsonCode] {
-      return ["Unknown Message", JsonCode.UNKNOWN_MESSAGE];
+   unknownMessage(messageId: Snowflake): [string, JsonCode] {
+      return [`Unknown Message (${messageId})`, JsonCode.UNKNOWN_MESSAGE];
    },
-   unknownRelationship(): [string, JsonCode] {
-      return ["Unknown Relationship", JsonCode.UNKNOWN_RELATIONSHIP];
+   unknownRelationship(relationshipId: Snowflake): [string, JsonCode] {
+      return [`Unknown Relationship (${relationshipId})`, JsonCode.UNKNOWN_RELATIONSHIP];
    },
    noUserWithUsername(): [string, JsonCode] {
       return ["No user with specified username was found", JsonCode.USERNAME_NOT_FOUND];

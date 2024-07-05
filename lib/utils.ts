@@ -122,7 +122,7 @@ export function idFix<T>(obj: T): BigIntToString<T> {
    }
 }
 
-export function checkOpcode(data: unknown, opcode: GatewayOperations) {
+export function checkOpcode(data: unknown, opcode: GatewayOperations): boolean {
    if (data && typeof data === "object") {
       return "op" in data && data.op === opcode;
    }

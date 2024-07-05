@@ -49,7 +49,7 @@ export const Routes = {
     * - GET   '/users/{user.id}'
     * - PATCH '/users/@me'
     */
-   user(id: Snowflake) {
+   user(id: Snowflake): `/users/${string}` {
       return `/users/${id}` as const;
    },
 
@@ -77,7 +77,7 @@ export const Routes = {
     * - DELETE '/users/@me/relationships/{user.id}'
     * - PUT    '/users/@me/relationships/{user.id}'
     */
-   userRelationship(id: string) {
+   userRelationship(id: string): `/users/@me/relationships/${string}` {
       return `/users/@me/relationships/${id}` as const;
    },
 
@@ -85,7 +85,7 @@ export const Routes = {
     * Route for:
     * - GET '/channels/{channel.id}'
     */
-   channel(id: Snowflake) {
+   channel(id: Snowflake): `/channels/${string}` {
       return `/channels/${id}` as const;
    },
 
@@ -93,7 +93,7 @@ export const Routes = {
     * Route for:
     * - GET '/channels/{channel.id}/messages/{message.id}'
     */
-   channelMessage(channelId: Snowflake, messageId: Snowflake) {
+   channelMessage(channelId: Snowflake, messageId: Snowflake): `/channels/${string}/messages/${string}` {
       return `/channels/${channelId}/messages/${messageId}` as const;
    },
 
@@ -101,7 +101,7 @@ export const Routes = {
     * Route for:
     * - GET '/channels/{channel.id}/messages'
     */
-   channelMessages(channelId: Snowflake) {
+   channelMessages(channelId: Snowflake): `/channels/${string}/messages` {
       return `/channels/${channelId}/messages` as const;
    },
 
@@ -109,7 +109,7 @@ export const Routes = {
     * Route for:
     * - POST '/channels/{channel.id}/typing'
     */
-   channelTyping(channelId: Snowflake) {
+   channelTyping(channelId: Snowflake): `/channels/${string}/typing` {
       return `/channels/${channelId}/typing` as const;
    },
 };

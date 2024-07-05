@@ -10,6 +10,7 @@
       "lib": ["ESNext", "DOM"],
 
       "isolatedModules": true,
+      "isolatedDeclarations": true,
       "strict": true,
       "noUnusedLocals": true,
       "noUnusedParameters": true,

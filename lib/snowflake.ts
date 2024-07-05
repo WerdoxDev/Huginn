@@ -7,11 +7,11 @@ const epoch = new Date("2023-01-01T00:00:00.000Z");
 const globalSnowflake = new SnowflakeLibrary(epoch);
 
 export const snowflake = {
-   generateString() {
+   generateString(): string {
       const value = globalSnowflake.generate();
       return value.toString();
    },
-   generate() {
+   generate(): bigint {
       const value = globalSnowflake.generate();
       return value;
    },
