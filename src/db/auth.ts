@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { APIPostLoginJSONBody, APIPostRegisterJSONBody } from "@shared/api-types";
+import { APIPostLoginJSONBody, APIPostRegisterJSONBody, UserFlags } from "@shared/api-types";
 import { snowflake } from "@shared/snowflake";
 import { DBErrorType, assertObj, prisma } from ".";
 
@@ -31,7 +31,7 @@ const authExtention = Prisma.defineExtension({
                   password: user.password,
                   email: user.email,
                   avatar: "test-avatar",
-                  flags: 0,
+                  flags: UserFlags.NONE,
                   system: false,
                },
             });

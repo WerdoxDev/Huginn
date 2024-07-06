@@ -41,8 +41,9 @@ app.post("/channels/:channelId/messages", verifyJwt(), hValidator("json", schema
       message.nonce = body.nonce;
 
       dispatchToTopic<GatewayMessageCreateDispatch>(channelId, "message_create", message, 0);
+      // TODO: Don't send notification if message has SUPPRESS_NOTIFICATIONS
 
-      return c.json(message as APIPostDefaultMessageResult, HttpCode.CREATED);
+      return c.json(message, HttpCode.CREATED);
    })
 );
 
