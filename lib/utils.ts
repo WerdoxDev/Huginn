@@ -129,3 +129,7 @@ export function checkOpcode(data: unknown, opcode: GatewayOperations): boolean {
 
    return false;
 }
+
+export function hasFlag<T extends number>(flags: T, flag: T): boolean {
+   return (flags & flag) === flag;
+}

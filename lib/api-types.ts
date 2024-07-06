@@ -13,6 +13,13 @@ type APIBaseUser = {
    id: Snowflake;
 };
 
+export enum UserFlags {
+   NONE = 0,
+   STAFF = 1 << 0,
+   BUG_HUNTER = 1 << 1,
+   EARLY_HUGINN_SUPPORTER = 1 << 2,
+}
+
 export type APIUser = {
    username: string;
    displayName: string;
@@ -21,7 +28,7 @@ export type APIUser = {
    email?: string;
    password?: string;
    // TODO: Actually implement flags
-   flags: number;
+   flags: UserFlags;
 } & APIBaseUser;
 
 export type APIChannelUser = {
@@ -187,11 +194,20 @@ type APIBaseMessage = {
 
 export type APIMessage = APIDefaultMessage;
 
+export enum MessageFlags {
+   NONE = 0,
+   SUPPRESS_NOTIFICATIONS = 1 << 0,
+   SUPPRESS_EMBEDS = 1 << 1,
+   URGENT = 1 << 2,
+   EPHEMERAL = 1 << 3,
+   LOADING = 1 << 4,
+}
+
 export type APIDefaultMessage = {
    type: MessageType.DEFAULT;
    attachments: string[];
    pinned: boolean;
-   flags?: number | null;
+   flags?: MessageFlags | null;
    nonce?: number | string;
    reactions?: string[];
 } & APIBaseMessage;
@@ -199,7 +215,7 @@ export type APIDefaultMessage = {
 export type APIPostDefaultMessageJSONBody = {
    content?: string;
    attachments?: string[];
-   flags?: number;
+   flags?: MessageFlags;
    nonce?: number | string;
 };
 
