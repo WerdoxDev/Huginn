@@ -1,3 +1,4 @@
+import { ClientReadyState } from "@api/types";
 import AuthWrapper from "@components/AuthWrapper";
 import LinkButton from "@components/button/LinkButton";
 import LoadingButton from "@components/button/LoadingButton";
@@ -60,6 +61,8 @@ function Login() {
 
    useEffect(() => {
       async function tryLogin() {
+         if (client.readyState === ClientReadyState.INITIALIZING) return;
+
          const refreshToken = localStorage.getItem("refresh-token");
          try {
             if (refreshToken && routeHistory.lastPathname !== "/register") {

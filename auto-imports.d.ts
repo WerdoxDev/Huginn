@@ -25,6 +25,7 @@ declare global {
   const IconMdiMinimize: typeof import('~icons/mdi/minimize.jsx')['default']
   const IconMdiMoreVert: typeof import('~icons/mdi/more-vert.jsx')['default']
   const IconMdiNotifications: typeof import('~icons/mdi/notifications.jsx')['default']
+  const IconMdiNotificationsOff: typeof import('~icons/mdi/notifications-off.jsx')['default']
   const IconMdiServer: typeof import('~icons/mdi/server.jsx')['default']
   const IconMdiSettings: typeof import('~icons/mdi/settings.jsx')['default']
   const IconMdiShow: typeof import('~icons/mdi/show.jsx')['default']

@@ -5,6 +5,7 @@ import { KeyboardEvent, useCallback, useMemo } from "react";
 import { Descendant, Editor, Node, Path, Range, Text, createEditor } from "slate";
 import { DefaultElement, Editable, RenderElementProps, RenderLeafProps, Slate, withReact } from "slate-react";
 import EditorLeaf from "./editor/EditorLeaf";
+import { MessageFlags } from "@shared/api-types";
 
 const initialValue: Descendant[] = [
    {
@@ -66,7 +67,8 @@ export default function MessageBox() {
    function onKeyDown(event: KeyboardEvent) {
       if (!event.shiftKey && event.code === "Enter") {
          event.preventDefault();
-         mutation.mutate({ channelId: params.channelId, content: serialize(editor.children) });
+         const flags: MessageFlags = event.ctrlKey ? MessageFlags.SUPPRESS_NOTIFICATIONS : MessageFlags.NONE;
+         mutation.mutate({ channelId: params.channelId, content: serialize(editor.children), flags });
          editor.delete({
             at: {
                anchor: Editor.start(editor, []),

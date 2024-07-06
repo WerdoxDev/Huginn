@@ -18,7 +18,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       <div className="h-full flex-shrink overflow-x-hidden overflow-y-scroll" ref={scroll}>
          <ol className="flex min-h-full flex-col items-stretch justify-end gap-y-2 p-3 pr-0.5">
             {props.messages.map((message) => (
-               <BaseMessage key={message.id} content={message.content} author={message.author} />
+               <BaseMessage key={message.id} content={message.content} author={message.author} flags={message.flags} />
             ))}
          </ol>
       </div>
