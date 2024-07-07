@@ -21,6 +21,12 @@ export async function handleRequest(
    } catch (e) {
       let errorResult;
       if (isDBError(e)) {
+         errorResult = onError?.(e);
+
+         if (errorResult) {
+            return errorResult;
+         }
+
          // Common errors
          if (e.isErrorType(DBErrorType.INVALID_ID)) {
             return invalidFormBody(c);
@@ -39,11 +45,6 @@ export async function handleRequest(
          }
 
          // Custom error
-         errorResult = onError?.(e);
-      }
-
-      if (errorResult) {
-         return errorResult;
       }
 
       let otherError = e;

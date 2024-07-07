@@ -19,7 +19,8 @@
          "@shared/*": ["../huginn-shared/lib/*"],
          "@/*": ["./*"],
          "@src/*": ["./src/*"]
-      }
+      },
+      "outDir": "./out"
    },
    "include": ["**/*", "package.json", "ecosystem.config.cjs"],
    "references": [{ "path": "../huginn-shared" }]
