@@ -2,7 +2,7 @@
    "name": "huginn-server",
    "module": "index.ts",
    "type": "module",
-   "version": "0.3.0-dev",
+   "version": "0.3.0-release",
    "scripts": {
       "start": "bun --watch ./src/index.ts",
       "start-prod": "bun ./src/index.ts"
