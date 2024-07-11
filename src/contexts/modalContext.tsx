@@ -8,6 +8,16 @@ type ModalContextType = {
    info: DefaultModal & {
       status: StatusCode;
       text: string;
+      action?: {
+         closeButton?: {
+            text: string;
+            callback: () => void;
+         };
+         confirmButton?: {
+            text: string;
+            callback: () => void;
+         };
+      };
    };
 };
 
@@ -27,12 +37,14 @@ export function ModalProvider(props: { children?: ReactNode }) {
 }
 
 function modalsReducer(modals: ModalContextType, action: DeepPartial<ModalContextType>): ModalContextType {
-   const settings = { isOpen: action.settings?.isOpen ?? modals.settings.isOpen };
-   const info = {
-      isOpen: action.info?.isOpen ?? modals.info.isOpen,
-      status: action.info?.status ?? modals.info.status,
-      text: action.info?.text ?? modals.info.text,
-   };
+   const settings = { ...modals.settings, ...action.settings };
+   const info = Object.assign({}, modals.info, action.info);
+   // const info = {
+   //    isOpen: action.info?.isOpen ?? modals.info.isOpen,
+   //    status: action.info?.status ?? modals.info.status,
+   //    text: action.info?.text ?? modals.info.text,
+   //    action: action.info?.action ?? modals.info.action,
+   // };
    return { settings, info };
 }
 

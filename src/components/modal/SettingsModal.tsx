@@ -19,6 +19,7 @@ import ModalBackground from "./ModalBackground";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
+import { appWindow } from "@tauri-apps/api/window";
 
 const tabs: SettingsTab[] = [
    { name: "general", text: "General", children: [{ name: "audio", text: "Audio", icon: <IconMdiSpeakerphone /> }] },
@@ -61,7 +62,26 @@ export default function SettingsModal() {
       if (modal.isOpen) {
          modifiedSettings.current = { ...settings };
       } else {
-         settingsDispatch(modifiedSettings.current);
+         if (modifiedSettings.current.serverAddress && settings.serverAddress !== modifiedSettings.current.serverAddress) {
+            dispatch({
+               info: {
+                  isOpen: true,
+                  status: "default",
+                  text: "Server ip changed. The app should be restarted!",
+                  action: {
+                     confirmButton: {
+                        text: "Restart",
+                        callback: () => {
+                           console.log("RESTART");
+                           dispatch({ info: { isOpen: false } });
+                           location.reload();
+                        },
+                     },
+                  },
+               },
+            });
+         }
+         settingsDispatch(modifiedSettings.current!);
       }
    }, [modal.isOpen]);
 

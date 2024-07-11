@@ -49,6 +49,7 @@ export default function InfoModal() {
                      <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-lg border-2 border-error/50 bg-background p-2 transition-all">
                         <DialogTitle as="div" className={`mb-5 flex items-center gap-x-2 text-lg font-medium ${textColor}`}>
                            {modal.status === "error" && <IconMaterialSymbolsErrorOutline className={`h-8 w-8 ${textColor}`} />}
+                           {modal.status === "default" && <IconMaterialSymbolsInfoOutline className={`h-8 w-8 ${textColor}`} />}
                            {title}
                         </DialogTitle>
                         {/* <div className="mb-5 h-0.5 w-full bg-secondary" /> */}
@@ -61,9 +62,28 @@ export default function InfoModal() {
                            </div>
                         </Description>
 
-                        <HuginnButton className="mt-5 w-full bg-tertiary py-2.5" onClick={() => dispatch({ info: { isOpen: false } })}>
-                           Close
-                        </HuginnButton>
+                        <div className="flex items-center justify-center gap-x-2">
+                           <HuginnButton
+                              className="mt-5 w-full bg-tertiary py-2.5"
+                              onClick={() => {
+                                 dispatch({ info: { isOpen: false } });
+                                 modal.action?.closeButton?.callback?.();
+                              }}
+                           >
+                              {modal.action?.closeButton?.text ?? "Close"}
+                           </HuginnButton>
+
+                           {modal.action?.confirmButton && (
+                              <HuginnButton
+                                 className="mt-5 w-full bg-primary py-2.5 text-text"
+                                 onClick={() => {
+                                    modal.action?.confirmButton?.callback?.();
+                                 }}
+                              >
+                                 {modal.action.confirmButton.text}
+                              </HuginnButton>
+                           )}
+                        </div>
 
                         <ModalCloseButton onClick={() => dispatch({ info: { isOpen: false } })} />
                      </DialogPanel>
