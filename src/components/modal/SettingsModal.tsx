@@ -1,7 +1,7 @@
-import { SettingsTab, DeepPartial } from "@/types";
+import { DeepPartial, SettingsTab } from "@/types";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import { useModals, useModalsDispatch } from "@contexts/modalContext";
-import { useSettings, SettingsContextType, useSettingsDispatcher } from "@contexts/settingsContext";
+import { SettingsContextType, useSettings, useSettingsDispatcher } from "@contexts/settingsContext";
 import {
    Dialog,
    DialogPanel,
@@ -61,7 +61,35 @@ export default function SettingsModal() {
       if (modal.isOpen) {
          modifiedSettings.current = { ...settings };
       } else {
-         settingsDispatch(modifiedSettings.current);
+         if (modifiedSettings.current.serverAddress && settings.serverAddress !== modifiedSettings.current.serverAddress) {
+            dispatch({
+               info: {
+                  isOpen: true,
+                  status: "default",
+                  text: "Server ip changed. The app should be restarted!",
+                  action: {
+                     confirm: {
+                        text: "Restart",
+                        callback: () => {
+                           settingsDispatch(modifiedSettings.current!);
+                           dispatch({ info: { isOpen: false } });
+                           location.reload();
+                        },
+                     },
+                     cancel: {
+                        text: "Revert",
+                        callback: () => {
+                           modifiedSettings.current = { ...settings };
+                           dispatch({ info: { isOpen: false } });
+                        },
+                     },
+                  },
+                  closable: false,
+               },
+            });
+         } else {
+            settingsDispatch(modifiedSettings.current!);
+         }
       }
    }, [modal.isOpen]);
 
@@ -146,20 +174,25 @@ function SettingsPanels(props: {
 }) {
    const flatTabs = useFlatTabs();
 
+   function TabComponent(props: {
+      tab: SettingsTab;
+      onChange: (value: DeepPartial<SettingsContextType>) => void;
+      settings: DeepPartial<SettingsContextType>;
+   }) {
+      const Component = props.tab.component!;
+      return <Component settings={props.settings} onChange={props.onChange}></Component>;
+   }
+
    return (
       <TabPanels className="flex w-full flex-col p-5">
          <div className="mb-5 shrink-0 text-xl text-text">{props.currentTab}</div>
          {flatTabs.map((tab) => (
             <TabPanel key={tab.name} className="h-full">
                {tab.component ? (
-                  () => {
-                     const Component = tab.component!;
-                     return <Component settings={props.settings} onChange={props.onChange}></Component>;
-                  }
+                  <TabComponent onChange={props.onChange} settings={props.settings} tab={tab} />
                ) : (
                   <span className="text-base italic text-text/50">{tab.name} (Soon...)</span>
                )}
-               {/* <component :is="{ ...tab.component }" v-else v-model="settings" /> */}
             </TabPanel>
          ))}
       </TabPanels>

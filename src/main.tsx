@@ -10,7 +10,9 @@ import "./index.css";
 import { routeTree } from "./routeTree.gen";
 import React from "react";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+   defaultOptions: { queries: { refetchOnReconnect: false, refetchOnWindowFocus: false, refetchOnMount: false, staleTime: 60000 } },
+});
 
 export const router = createRouter({
    routeTree,

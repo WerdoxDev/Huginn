@@ -13,6 +13,7 @@ declare global {
   const IconIconParkSolidDownOne: typeof import('~icons/icon-park-solid/down-one.jsx')['default']
   const IconLineMdAlert: typeof import('~icons/line-md/alert.jsx')['default']
   const IconMaterialSymbolsErrorOutline: typeof import('~icons/material-symbols/error-outline.jsx')['default']
+  const IconMaterialSymbolsInfoOutline: typeof import('~icons/material-symbols/info-outline.jsx')['default']
   const IconMdiAbout: typeof import('~icons/mdi/about.jsx')['default']
   const IconMdiCamera: typeof import('~icons/mdi/camera.jsx')['default']
   const IconMdiCheck: typeof import('~icons/mdi/check.jsx')['default']

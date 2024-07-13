@@ -8,10 +8,24 @@ type ModalContextType = {
    info: DefaultModal & {
       status: StatusCode;
       text: string;
+      action?: {
+         cancel?: {
+            text: string;
+            callback: () => void;
+         };
+         confirm?: {
+            text: string;
+            callback: () => void;
+         };
+      };
+      closable: boolean;
    };
 };
 
-const defautlValue: ModalContextType = { settings: { isOpen: false }, info: { isOpen: false, status: "none", text: "" } };
+const defautlValue: ModalContextType = {
+   settings: { isOpen: false },
+   info: { isOpen: false, status: "none", text: "", closable: true },
+};
 
 const ModalContext = createContext<ModalContextType>(defautlValue);
 const ModalDispatchContext = createContext<Dispatch<DeepPartial<ModalContextType>>>(() => {});
@@ -27,12 +41,14 @@ export function ModalProvider(props: { children?: ReactNode }) {
 }
 
 function modalsReducer(modals: ModalContextType, action: DeepPartial<ModalContextType>): ModalContextType {
-   const settings = { isOpen: action.settings?.isOpen ?? modals.settings.isOpen };
-   const info = {
-      isOpen: action.info?.isOpen ?? modals.info.isOpen,
-      status: action.info?.status ?? modals.info.status,
-      text: action.info?.text ?? modals.info.text,
-   };
+   const settings = { ...modals.settings, ...action.settings };
+   const info = Object.assign({}, modals.info, action.info);
+   // const info = {
+   //    isOpen: action.info?.isOpen ?? modals.info.isOpen,
+   //    status: action.info?.status ?? modals.info.status,
+   //    text: action.info?.text ?? modals.info.text,
+   //    action: action.info?.action ?? modals.info.action,
+   // };
    return { settings, info };
 }
 
