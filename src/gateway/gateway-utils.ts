@@ -1,20 +1,11 @@
-import { BasePayload, GatewayHeartbeat, GatewayIdentify, GatewayOperations } from "@shared/gateway-types";
-import { checkOpcode } from "@shared/utils";
-import { server } from "../server";
+import { BasePayload, GatewayOperations } from "@shared/gateway-types";
 import { logGatewaySend } from "../log-utils";
-
-export function isHeartbeatOpcode(data: unknown): data is GatewayHeartbeat {
-   return checkOpcode(data, GatewayOperations.HEARTBEAT);
-}
-
-export function isIdentifyOpcode(data: unknown): data is GatewayIdentify {
-   return checkOpcode(data, GatewayOperations.IDENTIFY);
-}
+import { gateway } from "../server";
 
 export function publishToTopic(topic: string, data: BasePayload) {
    logGatewaySend(data, false);
 
-   server.publish(topic, JSON.stringify(data));
+   gateway.sendToTopic(topic, data);
 }
 
 export function dispatchToTopic<T extends BasePayload>(topic: string, t: T["t"], d: T["d"], s: T["s"]) {

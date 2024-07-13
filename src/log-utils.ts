@@ -17,7 +17,6 @@ export function logServerError(path: string, e: unknown) {
    consola.box(`${colors.bold(colors.red("Server Error:"))} ${colors.green(path)}\n`, e);
 }
 
- 
 export function logReject(path: string, method: string, error?: HuginnErrorData | string, status?: number) {
    const rejectText = colors.bold(colors.red("Rejected"));
    const methodText = colors.bold(colors.red(method));
@@ -121,7 +120,7 @@ export function logGatewaySend(data: BasePayload, logHeartbeat: boolean) {
    consola.info(`${gatewaySend} ${divider} ${opcodeText} (${opcodeNumberText}) ${divider} ${dataText}\n`);
 }
 
-function opcodeToText(opcode: number) {
+function opcodeToText(opcode: GatewayOperations) {
    switch (opcode) {
       case GatewayOperations.DISPATCH:
          return "Dispatch";
@@ -133,6 +132,8 @@ function opcodeToText(opcode: number) {
          return "Hello";
       case GatewayOperations.IDENTIFY:
          return "Identify";
+      case GatewayOperations.RESUME:
+         return "Resume";
 
       default:
          return "Unknown";
