@@ -75,6 +75,7 @@ export const server = Bun.serve<string>({
       open: ws => gateway.onOpen(ws),
       close: (ws, code, reason) => gateway.onClose(ws, code, reason),
       message: (ws, message) => gateway.onMessage(ws, message),
+      sendPings: false,
    },
 });
 

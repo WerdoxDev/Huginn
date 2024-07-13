@@ -1,23 +1,31 @@
 import { constants } from "@shared/constants";
 import { GatewayCode } from "@shared/errors";
+import { BasePayload } from "@shared/gateway-types";
+import { idFix } from "@shared/utils";
 import { ServerWebSocket } from "bun";
 import { EventEmitter } from "node:events";
-import { ClientSessionInfo } from "../types";
 import { prisma } from "../db";
-import { idFix } from "@shared/utils";
+import { ClientSessionInfo } from "../types";
 
 export class ClientSession extends EventEmitter {
    public data: ClientSessionInfo;
    public ws: ServerWebSocket<string>;
 
+   private sentMessages: Map<number, BasePayload>;
+   private subscribedTopics: Set<string>;
    private hearbeatTimeout?: Timer;
+   public sequence?: number;
 
    public constructor(ws: ServerWebSocket<string>, data: ClientSessionInfo) {
       super();
 
       this.ws = ws;
       this.data = data;
+      this.sentMessages = new Map();
+      this.subscribedTopics = new Set();
+   }
 
+   public initialize() {
       this.subscribeClientEvents();
       this.startHeartbeatTimeout();
    }
@@ -35,22 +43,41 @@ export class ClientSession extends EventEmitter {
    public subscribe(topic: string) {
       if (!this.ws.isSubscribed(topic)) {
          this.ws.subscribe(topic);
+         this.subscribedTopics.add(topic);
       }
    }
 
    public unsubscribe(topic: string) {
       if (this.ws.isSubscribed(topic)) {
          this.ws.unsubscribe(topic);
+         this.subscribedTopics.delete(topic);
       }
    }
 
+   public isSubscribed(topic: string) {
+      return this.subscribedTopics.has(topic);
+   }
+
+   public increaseSequence() {
+      this.sequence = this.sequence !== undefined ? this.sequence + 1 : 0;
+      return this.sequence;
+   }
+
+   public addMessage(data: BasePayload) {
+      this.sentMessages.set(data.s, data);
+   }
+
+   public getMessages() {
+      return this.sentMessages;
+   }
+
    private async subscribeClientEvents() {
-      this.ws.subscribe(this.data.user.id);
+      this.subscribe(this.data.user.id);
 
       const clientChannels = idFix(await prisma.channel.getUserChannels(this.data.user.id, true));
 
       for (const channel of clientChannels) {
-         this.ws.subscribe(channel.id);
+         this.subscribe(channel.id);
       }
    }
 
