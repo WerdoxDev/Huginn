@@ -23,8 +23,9 @@ export type GatewayEvents = {
    hello: GatewayHelloData;
    identify: GatewayIdentifyData;
    ready: GatewayReadyDispatchData;
+   resumed: undefined;
    message_create: GatewayMessageCreateDispatchData;
-   message_delete: Snowflake;
+   message_delete: GatewayMessageDeleteDispatchData;
    typying_start: GatewayMessageCreateDispatchData;
    relationship_create: GatewayRelationshipCreateDispatchData;
    relationship_delete: Snowflake;
@@ -96,9 +97,30 @@ export type GatewayReadyDispatchData = {
    sessionId: Snowflake;
 };
 
+export type GatewayResume = NonDispatchPayload & {
+   op: GatewayOperations.RESUME;
+   d: GatewayResumeData;
+};
+
+export type GatewayResumeData = {
+   token: string;
+   sessionId: Snowflake;
+   seq: number;
+};
+
+export type GatewayResumed = DataPayload<"resumed", undefined>;
+
 export type GatewayMessageCreateDispatch = DataPayload<"message_create", GatewayMessageCreateDispatchData>;
 
 export type GatewayMessageCreateDispatchData = Omit<APIMessage, "mentions"> & GatewayMessageEventExtraFields;
+
+export type GatewayMessageDeleteDispatch = DataPayload<"message_delete", GatewayMessageDeleteDispatchData>;
+
+export type GatewayMessageDeleteDispatchData = {
+   id: Snowflake;
+   channelId: Snowflake;
+   guildId?: Snowflake;
+};
 
 export type GatewayMessageEventExtraFields = {
    guildId?: Snowflake;

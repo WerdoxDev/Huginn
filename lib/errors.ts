@@ -69,6 +69,7 @@ export enum GatewayCode {
    INVALID_SEQ = 4006,
    SESSION_TIMEOUT = 4007,
    INVALID_INTENTS = 4008,
+   INVALID_SESSION = 4009,
 }
 
 export enum FieldCode {

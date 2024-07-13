@@ -1,4 +1,4 @@
-import { GatewayOperations } from "./gateway-types";
+import { BasePayload, GatewayOperations } from "./gateway-types";
 
 export function pick<Data extends object, Keys extends keyof Data>(data: Data, keys: Keys[]): Pick<Data, Keys> {
    const result = {} as Pick<Data, Keys>;
@@ -122,7 +122,7 @@ export function idFix<T>(obj: T): BigIntToString<T> {
    }
 }
 
-export function checkOpcode(data: unknown, opcode: GatewayOperations): boolean {
+export function isOpcode<D>(data: D, opcode: GatewayOperations): data is D {
    if (data && typeof data === "object") {
       return "op" in data && data.op === opcode;
    }
