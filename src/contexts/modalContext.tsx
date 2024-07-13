@@ -9,19 +9,23 @@ type ModalContextType = {
       status: StatusCode;
       text: string;
       action?: {
-         closeButton?: {
+         cancel?: {
             text: string;
             callback: () => void;
          };
-         confirmButton?: {
+         confirm?: {
             text: string;
             callback: () => void;
          };
       };
+      closable: boolean;
    };
 };
 
-const defautlValue: ModalContextType = { settings: { isOpen: false }, info: { isOpen: false, status: "none", text: "" } };
+const defautlValue: ModalContextType = {
+   settings: { isOpen: false },
+   info: { isOpen: false, status: "none", text: "", closable: true },
+};
 
 const ModalContext = createContext<ModalContextType>(defautlValue);
 const ModalDispatchContext = createContext<Dispatch<DeepPartial<ModalContextType>>>(() => {});
