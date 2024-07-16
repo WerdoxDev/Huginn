@@ -5,7 +5,7 @@ import HomeTopbar from "@components/channels/HomeTopbar";
 import { useClient } from "@contexts/apiContext";
 import { ensureChannelExists } from "@lib/middlewares";
 import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/channels/@me/$channelId")({
@@ -13,8 +13,11 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/
    beforeLoad({ context: { queryClient }, params }) {
       ensureChannelExists(params.channelId, queryClient);
    },
-   loader: ({ params, context: { queryClient, client } }) => {
-      return queryClient.ensureQueryData(getMessagesOptions(client, params.channelId));
+   loader: async ({ params, context: { queryClient, client } }) => {
+      return (
+         queryClient.getQueryData(getMessagesOptions(client, params.channelId).queryKey) ??
+         (await queryClient.fetchInfiniteQuery(getMessagesOptions(client, params.channelId)))
+      );
    },
    gcTime: 0,
    errorComponent: ModalErrorComponent,
@@ -23,14 +26,14 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/
 function Component() {
    const client = useClient();
    const { channelId } = Route.useParams();
-   const { data: messages } = useSuspenseQuery(getMessagesOptions(client, channelId));
+   const { data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(client, channelId));
    const channel = useSuspenseQuery(getChannelsOptions(client, "@me")).data?.find((x) => x.id === channelId);
 
    return (
       <div className="flex h-full flex-col">
          <HomeTopbar channel={channel!} />
          <div className="h-0.5 flex-shrink-0 bg-white/10" />
-         <ChannelMessages channelId={channelId} messages={messages} />
+         <ChannelMessages channelId={channelId} messages={messages.pages.flat()} />
          <div className="flex h-16 w-full flex-shrink-0 bg-background">
             <MessageBox />
             <div className="h-full w-64 flex-shrink-0" />
