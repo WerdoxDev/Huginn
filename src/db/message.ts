@@ -20,13 +20,24 @@ const messagesExtention = Prisma.defineExtension({
             assertObj("getById", message, DBErrorType.NULL_MESSAGE, messageId);
             return message as MessagePayload<Include>;
          },
-         async getMessages<Include extends MessageInclude>(channelId: Snowflake, limit: number, include?: Include) {
+         async getMessages<Include extends MessageInclude>(
+            channelId: Snowflake,
+            limit: number,
+            before?: Snowflake,
+            after?: Snowflake,
+            include?: Include
+         ) {
             await prisma.channel.assertChannelExists("getMessages", channelId);
+
+            const cursor = after ?? before;
+            const direction = after ? "forward" : before ? "backward" : "none";
 
             const messages = await prisma.message.findMany({
                where: { channelId: BigInt(channelId) },
                include: include,
-               take: -limit,
+               cursor: cursor ? { id: BigInt(cursor) } : undefined,
+               skip: direction === "none" ? undefined : 1,
+               take: (direction === "forward" ? 1 : -1) * limit,
             });
 
             assertObj("getMessages", messages, DBErrorType.NULL_MESSAGE);

@@ -4,7 +4,6 @@ import {
    BasePayload,
    GatewayHeartbeat,
    GatewayHeartbeatAck,
-   GatewayHeartbeatData,
    GatewayHello,
    GatewayIdentify,
    GatewayOperations,
@@ -105,7 +104,6 @@ export class ServerGateway {
 
    public sendToTopic(topic: string, data: BasePayload) {
       for (const client of this.clients.values()) {
-         console.log(client.data.user.username, client.data.sessionId, client.isSubscribed(topic));
          if (client.isSubscribed(topic)) {
             const newData = { ...data, s: client.increaseSequence() };
             client.addMessage(newData);
@@ -117,7 +115,6 @@ export class ServerGateway {
    private handleHeartbeat(ws: ServerWebSocket<string>, data: GatewayHeartbeat) {
       const client = this.clients.get(ws.data);
 
-      consola.log(client?.sequence, data.d);
       if (data.d !== client?.sequence) {
          ws.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
          return;
@@ -188,10 +185,7 @@ export class ServerGateway {
 
       const messageQueue = client.getMessages();
 
-      console.log(messageQueue.size);
-
       for (const [seq, _data] of messageQueue) {
-         console.log("data:", data.d.seq, "seq:", seq);
          if (seq <= data.d.seq) {
             continue;
          }
@@ -210,7 +204,6 @@ export class ServerGateway {
          }
 
          this.clients.delete(sessionId);
-         console.log("REMOVE", sessionId);
       }, 1000 * 30);
    }
 
