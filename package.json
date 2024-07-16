@@ -8,21 +8,21 @@
       "start-prod": "bun ./src/index.ts"
    },
    "devDependencies": {
-      "@eslint/js": "^9.6.0",
+      "@eslint/js": "^9.7.0",
       "@types/bun": "^1.1.6",
-      "@typescript-eslint/eslint-plugin": "^7.15.0",
-      "@typescript-eslint/parser": "^7.15.0",
-      "eslint": "^9.6.0",
-      "globals": "^15.7.0",
+      "@typescript-eslint/eslint-plugin": "^7.16.1",
+      "@typescript-eslint/parser": "^7.16.1",
+      "eslint": "^9.7.0",
+      "globals": "^15.8.0",
       "typescript": "^5.5.3",
-      "typescript-eslint": "^7.15.0"
+      "typescript-eslint": "^7.16.1"
    },
    "dependencies": {
-      "@prisma/client": "^5.16.1",
+      "@prisma/client": "^5.17.0",
       "consola": "^3.2.3",
-      "hono": "^4.4.10",
-      "jose": "^5.6.2",
-      "prisma": "^5.16.1",
+      "hono": "^4.5.0",
+      "jose": "^5.6.3",
+      "prisma": "^5.17.0",
       "zod": "^3.23.8"
    }
 }
