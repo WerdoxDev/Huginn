@@ -23,7 +23,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    }
 
    async function onScroll(e: React.UIEvent<HTMLOListElement>) {
-      if (scroll.current!.scrollTop <= 100 && !isFetchingPreviousPage && hasPreviousPage) {
+      if (scroll.current!.scrollTop <= 200 && !isFetchingPreviousPage && hasPreviousPage) {
          // Remove the old refs
          if (data.pages.length === 3) {
             data.pages[data.pages.length - 1].forEach((x) => {
@@ -34,7 +34,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
          await fetchPreviousPage();
          previousScrollTop.current = scroll.current!.scrollTop;
       } else if (
-         e.currentTarget.scrollHeight - e.currentTarget.clientHeight - e.currentTarget.scrollTop <= 100 &&
+         e.currentTarget.scrollHeight - e.currentTarget.clientHeight - e.currentTarget.scrollTop <= 200 &&
          !isFetchingNextPage &&
          hasNextPage
       ) {

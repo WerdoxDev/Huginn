@@ -2,7 +2,7 @@ import { routeHistory } from "@contexts/historyContext";
 import { animated, useInView } from "@react-spring/web";
 import { Outlet, getRouterContext, useRouter } from "@tanstack/react-router";
 import cloneDeep from "lodash.clonedeep";
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 
 export default function AnimatedOutlet(props: {
    updateFor?: string[];
@@ -12,36 +12,43 @@ export default function AnimatedOutlet(props: {
 }) {
    const router = useRouter();
    const RouterContext = getRouterContext();
-
-   const renderedContext = useRef(router);
+   const [renderedContext, setRenderedContext] = useState(() => router);
 
    const [ref, inView] = useInView();
 
    useEffect(() => {
-      if (
-         props.updateFor?.includes(router.state.location.pathname) &&
-         (!routeHistory.lastPathname || props.updateFor?.includes(routeHistory.lastPathname))
-      ) {
-         renderedContext.current = cloneDeep(router);
-      } else if (
-         props.updateFor &&
-         !props.updateFor?.includes(router.state.location.pathname) &&
-         routeHistory.lastPathname &&
-         !props.updateFor?.includes(routeHistory.lastPathname)
-      ) {
-         renderedContext.current = cloneDeep(router);
-      }
-   }, [router.state.matches]);
-
-   useEffect(() => {
       if (inView) {
-         renderedContext.current = cloneDeep(router);
+         setRenderedContext(cloneDeep(router));
       }
    }, [inView]);
 
+   useEffect(() => {
+      const unsubscribe = router.subscribe("onResolved", ({ pathChanged }) => {
+         if (!pathChanged) return;
+
+         if (
+            props.updateFor?.includes(router.state.location.pathname) &&
+            (!routeHistory.lastPathname || props.updateFor?.includes(routeHistory.lastPathname))
+         ) {
+            setRenderedContext(cloneDeep(router));
+         } else if (
+            props.updateFor &&
+            !props.updateFor?.includes(router.state.location.pathname) &&
+            routeHistory.lastPathname &&
+            !props.updateFor?.includes(routeHistory.lastPathname)
+         ) {
+            setRenderedContext(cloneDeep(router));
+         }
+      });
+
+      return () => {
+         unsubscribe();
+      };
+   }, []);
+
    return (
       <animated.div ref={ref} style={props.style} className={props.className}>
-         <RouterContext.Provider value={renderedContext.current}>
+         <RouterContext.Provider value={renderedContext}>
             <Outlet />
          </RouterContext.Provider>
       </animated.div>

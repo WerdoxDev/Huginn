@@ -27,15 +27,15 @@ export const router = createRouter({
 });
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-   <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-         <SettingsProvider>
-            <APIProvider>
-               <WindowProvider>
-                  <HuginnRouterProvider router={router} />
-               </WindowProvider>
-            </APIProvider>
-         </SettingsProvider>
-      </QueryClientProvider>
-   </React.StrictMode>,
+   // <React.StrictMode>
+   <QueryClientProvider client={queryClient}>
+      <SettingsProvider>
+         <APIProvider>
+            <WindowProvider>
+               <HuginnRouterProvider router={router} />
+            </WindowProvider>
+         </APIProvider>
+      </SettingsProvider>
+   </QueryClientProvider>,
+   // </React.StrictMode>,
 );
