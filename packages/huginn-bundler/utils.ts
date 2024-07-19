@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { semver } from "bun";
-import { mkdir, readdir } from "node:fs/promises";
+import { readdir } from "node:fs/promises";
 import path from "path";
-import { BuildType, type BuildFiles, type Version, type AppVersion } from "./types";
+import { BuildType, type AppVersion, type BuildFiles, type Version } from "./types";
 
 export const BUILDS_PATH: string = process.env.BUILDS_PATH!;
 
@@ -19,7 +20,7 @@ export const REPO: string = process.env.REPO_NAME!;
  */
 export async function getVersions(): Promise<AppVersion[]> {
    const folders = (await readdir(BUILDS_PATH)).sort((v1, v2) => semver.order(v1.split("_")[0], v2.split("_")[0])).reverse();
-   return folders.map((x) => ({ type: getFolderBuildType(x), version: stringToVersion(x) }));
+   return folders.map(x => ({ type: getFolderBuildType(x), version: stringToVersion(x) }));
 }
 
 /**
@@ -49,8 +50,8 @@ export function getPatchedVersion(version: string, orderedVersions: AppVersion[]
 export async function getBuildFiles(buildPath: string, version: string): Promise<BuildFiles> {
    const files = await readdir(buildPath);
 
-   const zipFileName = files.find((x) => x.endsWith(".zip") && x.includes(version));
-   const sigFileName = files.find((x) => x.endsWith(".sig") && x.includes(version));
+   const zipFileName = files.find(x => x.endsWith(".zip") && x.includes(version));
+   const sigFileName = files.find(x => x.endsWith(".sig") && x.includes(version));
 
    if (!zipFileName || !sigFileName) throw new Error(`.zip or .sig file not found in (${buildPath})`);
 
@@ -106,7 +107,7 @@ export async function writeCargoTomlVersion(path: string, version: string): Prom
    const text = await cargoToml.text();
    const modifiedText = text
       .split("\n")
-      .map((x) => {
+      .map(x => {
          if (x.startsWith("version = ")) {
             return `version = "${version}"`;
          }
@@ -127,7 +128,7 @@ export async function writePackageJsonVersion(path: string, version: string): Pr
    const text = await packageJson.text();
    const modifiedText = text
       .split("\n")
-      .map((x) => {
+      .map(x => {
          if (x.trim().startsWith('"version"')) {
             return `"version": "${version}",`;
          }

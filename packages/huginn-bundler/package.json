@@ -1,19 +1,19 @@
 {
-  "name": "huginn-bundler",
-  "module": "index.ts",
-  "type": "module",
-  "bin": {
-    "bundler": "./index.ts"
-  },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "typescript": "^5.5.3"
-  },
-  "dependencies": {
-    "@inquirer/prompts": "^5.1.2",
-    "@types/yargs": "^17.0.32",
-    "consola": "^3.2.3",
-    "octokit": "^3.2.1",
-    "yargs": "^17.7.2"
-  }
+   "name": "@huginn/bundler",
+   "module": "index.ts",
+   "type": "module",
+   "bin": {
+      "bundler": "./index.ts"
+   },
+   "devDependencies": {
+      "@types/bun": "latest",
+      "typescript": "^5.5.3"
+   },
+   "dependencies": {
+      "@inquirer/prompts": "^5.1.2",
+      "@types/yargs": "^17.0.32",
+      "consola": "^3.2.3",
+      "octokit": "^3.2.1",
+      "yargs": "^17.7.2"
+   }
 }

@@ -1,0 +1,38 @@
+{
+   "folders": [
+      {
+         "name": "ROOT",
+         "path": "./",
+      },
+      {
+         "name": "huginn-server",
+         "path": "./packages/huginn-server",
+      },
+      {
+         "name": "huginn-api",
+         "path": "./packages/huginn-api",
+      },
+      {
+         "name": "huginn-app",
+         "path": "./packages/huginn-app",
+      },
+      {
+         "name": "huginn-bundler",
+         "path": "./packages/huginn-bundler",
+      },
+      {
+         "name": "huginn-shared",
+         "path": "./packages/huginn-shared",
+      },
+   ],
+   "settings": {
+      "files.exclude": {
+         "packages/": true,
+      },
+      "workbench.editorAssociations": {
+         "*.md": "vscode.markdown.preview.editor",
+      },
+      "typescript.tsserver.experimental.enableProjectDiagnostics": true,
+      "deno.enable": false,
+   },
+}
