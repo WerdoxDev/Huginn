@@ -1,0 +1,22 @@
+{
+  "name": "huginn-api",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "bun --watch ./src/index.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.7.0",
+    "@types/bun": "^1.1.6",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^9.7.0",
+    "globals": "^15.8.0",
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^7.16.1"
+  },
+  "dependencies": {
+    "eventemitter3": "^5.0.1",
+    "jose": "^5.6.3"
+  }
+}

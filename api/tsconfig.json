@@ -1,0 +1,29 @@
+{
+   "compilerOptions": {
+      "lib": ["ESNext", "DOM", "DOM.Iterable"],
+      "module": "esnext",
+      "target": "esnext",
+      "moduleResolution": "bundler",
+      "moduleDetection": "force",
+      // "allowImportingTsExtensions": true,
+      // "noEmit": true,
+      "isolatedDeclarations": true,
+      "composite": true,
+      "strict": true,
+      "downlevelIteration": true,
+      "skipLibCheck": true,
+      "isolatedModules": true,
+      "jsx": "react-jsx",
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "allowSyntheticDefaultImports": true,
+      "forceConsistentCasingInFileNames": true,
+      "declaration": true,
+      "declarationMap": true,
+      "paths": {
+         "@shared/*": ["../huginn-shared/lib/*"]
+      }
+   },
+   "include": ["**/*", "index.d.ts"],
+   "references": [{ "path": "../huginn-shared" }]
+}
