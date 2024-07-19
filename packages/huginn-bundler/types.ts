@@ -23,5 +23,5 @@ export type UpdateFileInfo = {
    version: string;
    notes: string;
    pub_date: string;
-   platforms: { [k: string]: { signature: string; url: string } };
+   platforms: Record<string, { signature: string; url: string }>;
 };

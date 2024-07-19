@@ -1,0 +1,16 @@
+{
+   "extends": "../../tsconfig.json",
+   "compilerOptions": {
+      "types": ["unplugin-icons/types/react"],
+      "jsx": "react-jsx",
+
+      "paths": {
+         "@components/*": ["./src/components/*"],
+         "@contexts/*": ["./src/contexts/*"],
+         "@hooks/*": ["./src/hooks/*"],
+         "@lib/*": ["./src/lib/*"],
+         "@/*": ["./src/*"]
+      }
+   },
+   "include": ["src", "index.d.ts"]
+}

@@ -1,15 +1,17 @@
 #! /usr/bin/env bun
 
 import { input, select } from "@inquirer/prompts";
+import { $ } from "bun";
 import consola from "consola";
-import { Octokit } from "octokit";
-import { $, semver, type ShellOutput } from "bun";
 import { colors } from "consola/utils";
-import { mkdir, readdir, rm } from "node:fs/promises";
+import { mkdir, rm } from "node:fs/promises";
+import { Octokit } from "octokit";
 import path from "path";
+import { getVersionTypeText, logger } from "./logger";
+import { BuildType, type AppVersion, type UpdateFileInfo } from "./types";
 import {
-   CARGO_TOML_PATH,
    BUILDS_PATH,
+   CARGO_TOML_PATH,
    GIST_ID,
    PACKAGE_JSON_PATH,
    REPO,
@@ -17,15 +19,13 @@ import {
    TAURI_RELEASE_BUILD_PATH,
    getBuildFiles,
    getPatchedVersion,
+   getVersionSuffix,
    getVersions,
    stringToVersion,
    versionToString,
    writeCargoTomlVersion,
    writePackageJsonVersion,
-   getVersionSuffix,
 } from "./utils";
-import { BuildType, type AppVersion, type UpdateFileInfo } from "./types";
-import { getVersionTypeText, logger } from "./logger";
 
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
@@ -57,7 +57,7 @@ if (intent === 0) {
 
    const version = await select({
       message: "Select the version to publish:",
-      choices: versions.map((v) => ({
+      choices: versions.map(v => ({
          name: `${versionToString(v.version)} ${getVersionTypeText(v.type)}`,
          value: v,
       })),
@@ -73,7 +73,7 @@ if (intent === 0) {
 } else if (intent === 2) {
    const releases = await octokit.rest.repos.listReleases({ repo: REPO, owner: "WerdoxDev" });
 
-   const versions: (AppVersion & { id: number; tag: string })[] = releases.data.map((x) => ({
+   const versions: (AppVersion & { id: number; tag: string })[] = releases.data.map(x => ({
       type: x.tag_name.includes("-dev") ? BuildType.DEBUG : BuildType.RELEASE,
       version: stringToVersion(x.tag_name.slice(1, 6)),
       id: x.id,
@@ -82,7 +82,7 @@ if (intent === 0) {
 
    const release = await select({
       message: "Select a release to delete:",
-      choices: versions.map((v) => ({ name: `${versionToString(v.version)} ${getVersionTypeText(v.type)}`, value: v })),
+      choices: versions.map(v => ({ name: `${versionToString(v.version)} ${getVersionTypeText(v.type)}`, value: v })),
    });
 
    await octokit.rest.repos.deleteRelease({ owner: "WerdoxDev", repo: REPO, release_id: release.id });
@@ -94,7 +94,7 @@ if (intent === 0) {
 
    const version = await select({
       message: "Select the version to delete:",
-      choices: versions.map((v) => ({
+      choices: versions.map(v => ({
          name: `${versionToString(v.version)} ${getVersionTypeText(v.type)}`,
          value: v,
       })),
@@ -131,10 +131,8 @@ async function buildVersion(version: string, type: BuildType) {
       });
 
       // Run the build script and log the result
-      let result: ShellOutput;
-
-      if (type === BuildType.DEBUG) result = await $`cd ../huginn-app-react && bun tauri-build --debug`.quiet();
-      else result = await $`cd ../huginn-app-react && bun tauri-build`.quiet();
+      if (type === BuildType.DEBUG) await $`cd ../huginn-app-react && bun tauri-build --debug`.quiet();
+      else await $`cd ../huginn-app-react && bun tauri-build`.quiet();
 
       logger.copyingBuildFiles(newVersionPath);
 

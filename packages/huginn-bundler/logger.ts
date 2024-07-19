@@ -1,6 +1,6 @@
 import consola from "consola";
-import { BuildType, type Version } from "./types";
 import { colors } from "consola/utils";
+import { BuildType } from "./types";
 
 export const logger = {
    bundlerInfo(): void {

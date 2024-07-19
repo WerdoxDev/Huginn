@@ -1,47 +1,16 @@
 {
    "compilerOptions": {
       "target": "ESNext",
-      "useDefineForClassFields": true,
-      "lib": ["ESNext", "DOM", "DOM.Iterable"],
       "module": "ESNext",
-      "skipLibCheck": true,
-
-      /* Bundler mode */
-      "moduleResolution": "bundler",
-      "allowImportingTsExtensions": true,
-      "resolveJsonModule": true,
+      "moduleResolution": "Bundler",
+      "moduleDetection": "force",
+      "lib": ["ESNext", "DOM", "DOM.Iterable"],
+      "forceConsistentCasingInFileNames": true,
+      "declaration": true,
+      "declarationMap": true,
+      "composite": true,
       "isolatedModules": true,
-      "noEmit": true,
-      "jsx": "react-jsx",
-      "types": ["unplugin-icons/types/react"],
-
-      /* Linting */
       "strict": true,
-      "noUnusedLocals": true,
-      "noUnusedParameters": true,
-      "noFallthroughCasesInSwitch": true,
-      "paths": {
-         "@api/*": ["../huginn-api/src/*"],
-         "@api": ["../huginn-api/src"],
-         "@shared/*": ["../huginn-shared/lib/*"],
-         "@shared": ["../huginn-shared/lib"],
-         "@components/*": ["./src/components/*"],
-         "@contexts/*": ["./src/contexts/*"],
-         "@hooks/*": ["./src/hooks/*"],
-         "@lib/*": ["./src/lib/*"],
-         "@/*": ["./src/*"]
-      },
-
-      "outDir": "./lib/"
-   },
-   "include": [
-      "src",
-      "index.d.ts",
-      "auto-imports.d.ts",
-      "eslint.config.js",
-      "vite.config.ts",
-      "tailwind.config.js",
-      "postcss.config.js"
-   ],
-   "references": [{ "path": "../huginn-api" }, { "path": "../huginn-shared" }]
+      "skipLibCheck": true
+   }
 }
