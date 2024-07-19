@@ -1,0 +1,22 @@
+{
+   "compilerOptions": {
+      "target": "esnext", // Or whatever you want
+      "module": "esnext", // Or whatever you want
+      "moduleResolution": "bundler",
+      "declaration": true,
+      "declarationMap": true,
+      "composite": true,
+
+      "lib": ["ESNext", "DOM"],
+
+      "isolatedModules": true,
+      "isolatedDeclarations": true,
+      "strict": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+
+      "outDir": "./out/",
+      "rootDir": ".",
+      "skipLibCheck": true
+   }
+}
