@@ -2,7 +2,7 @@ import { useClient } from "@contexts/apiContext";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { APIGetChannelMessagesResult, APIGetUserChannelsResult } from "@shared/api-types";
 import { GatewayMessageCreateDispatchData } from "@shared/gateway-types";
-import { useQueryClient } from "@tanstack/react-query";
+import { InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { ReactNode, useEffect } from "react";
 
 export default function MessageProvider(props: { children?: ReactNode }) {
@@ -21,7 +21,9 @@ export default function MessageProvider(props: { children?: ReactNode }) {
    function onMessageCreated(d: GatewayMessageCreateDispatchData) {
       console.log(`HI ${d.channelId}`);
 
-      queryClient.setQueryData<APIGetChannelMessagesResult>(["messages", d.channelId], (data) => (data ? [...data, d] : undefined));
+      queryClient.setQueryData<InfiniteData<APIGetChannelMessagesResult, unknown>>(["messages", d.channelId], (data) =>
+         data ? { ...data } : undefined,
+      );
 
       const channels: APIGetUserChannelsResult | undefined = queryClient.getQueryData(["channels", "@me"]);
       if (channels?.some((x) => x.id === d.channelId)) return;

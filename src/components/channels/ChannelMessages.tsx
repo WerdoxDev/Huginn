@@ -4,11 +4,12 @@ import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { getMessagesOptions } from "@lib/queries";
 import { APIGetChannelMessagesResult } from "@shared/api-types";
 import { Snowflake } from "@shared/snowflake";
-import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 
 export default function ChannelMessages(props: { channelId: Snowflake; messages: APIGetChannelMessagesResult }) {
    const client = useClient();
+   const queryClient = useQueryClient();
    const { data, fetchNextPage, fetchPreviousPage, isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
       useSuspenseInfiniteQuery(getMessagesOptions(client, props.channelId));
    const scroll = useRef<HTMLOListElement>(null);
@@ -43,8 +44,9 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    }
 
    useEffect(() => {
-      scrollToBottom();
-   }, []);
+      console.log("HI");
+      // scrollToBottom();
+   }, [props.channelId]);
 
    useEffect(() => {
       // Set previous to -1 so fetching next page doesnt do anything but prev page does.
