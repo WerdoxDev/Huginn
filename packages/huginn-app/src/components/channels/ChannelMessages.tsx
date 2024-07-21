@@ -1,17 +1,21 @@
 import BaseMessage from "@components/BaseMessage";
 import { useClient } from "@contexts/apiContext";
+import { useChannelScroll, useChannelScrollDispatch } from "@contexts/channelScrollContext";
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { APIGetChannelMessagesResult, Snowflake } from "@huginn/shared";
 import { getMessagesOptions } from "@lib/queries";
-import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 
 export default function ChannelMessages(props: { channelId: Snowflake; messages: APIGetChannelMessagesResult }) {
    const client = useClient();
-   // const queryClient = useQueryClient();
+   const queryClient = useQueryClient();
    const { data, fetchNextPage, fetchPreviousPage, isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
-      useSuspenseInfiniteQuery(getMessagesOptions(client, props.channelId));
+      useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client, props.channelId));
    const scroll = useRef<HTMLOListElement>(null);
+
+   const channelScroll = useChannelScroll();
+   const channelScrollDispatch = useChannelScrollDispatch();
 
    const [getContent, setContent, removeContent] = useDynamicRefs<HTMLLIElement>();
 
@@ -25,12 +29,13 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
    async function onScroll(e: React.UIEvent<HTMLOListElement>) {
       if (!scroll.current) return;
+      channelScrollDispatch({ channelId: props.channelId, scroll: scroll.current.scrollTop ?? 0 });
 
       if (scroll.current.scrollTop <= 200 && !isFetchingPreviousPage && hasPreviousPage) {
          // Remove the old refs
          if (data.pages.length === 3) {
             data.pages[data.pages.length - 1].forEach(x => {
-               console.log(removeContent(x.id));
+               removeContent(x.id);
             });
          }
 
@@ -46,8 +51,10 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    }
 
    useEffect(() => {
-      console.log("HI");
-      // scrollToBottom();
+      if (channelScroll.has(props.channelId) && scroll.current) {
+         const newScroll = channelScroll.get(props.channelId) ?? 0;
+         scroll.current.scrollTop = newScroll;
+      }
    }, [props.channelId]);
 
    useEffect(() => {

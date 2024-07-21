@@ -71,6 +71,8 @@ const messagesExtention = Prisma.defineExtension({
                include: include,
             });
 
+            await prisma.channel.update({ where: { id: BigInt(channelId) }, data: { lastMessageId: message.id } });
+
             assertObj("createDefaultMessage", message, DBErrorType.NULL_MESSAGE);
             return message as MessagePayload<Include>;
          },

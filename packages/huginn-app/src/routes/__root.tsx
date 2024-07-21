@@ -13,7 +13,7 @@ import "@tauri-apps/api";
 import { UnlistenFn } from "@tauri-apps/api/event";
 import { appWindow } from "@tauri-apps/api/window";
 import { useEffect, useRef } from "react";
-// import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { ContextMenuProvider } from "@contexts/contextMenuContext";
 import { ChannelsContextMenu } from "@components/contextmenu/ChannelsContextMenu";
@@ -38,11 +38,11 @@ function Root() {
    const appWindow = useWindow();
 
    useEffect(() => {
-      router.subscribe("onBeforeLoad", (arg) => {
+      router.subscribe("onBeforeLoad", arg => {
          routeHistory.lastPathname = arg.fromLocation.pathname;
       });
 
-      document.addEventListener("contextmenu", (e) => e.preventDefault());
+      document.addEventListener("contextmenu", e => { e.preventDefault(); });
    }, []);
 
    return (
@@ -54,7 +54,7 @@ function Root() {
                   {router.state.location.pathname !== "/splashscreen" && <TitleBar />}
                   <div className="relative h-full w-full">
                      <Outlet />
-                     {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
+                     <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" />
                      <TanStackRouterDevtools position="bottom-left" />
                      {window.__TAURI__ && <AppMaximizedEvent />}
                      <SettingsModal />

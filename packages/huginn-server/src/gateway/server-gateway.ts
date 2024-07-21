@@ -138,7 +138,7 @@ export class ServerGateway {
          return;
       }
 
-      const user = idFix(await prisma.user.getById(payload?.id));
+      const user = idFix(await prisma.user.getById(payload.id));
       const sessionId = snowflake.generateString();
 
       ws.data = sessionId;

@@ -31,7 +31,7 @@ export default function UserInfo(props: { user: APIUser }) {
                <UserIconWithStatus className="mr-3 flex-shrink-0 bg-secondary" />
 
                <div className="flex w-full flex-col items-start gap-y-0.5">
-                  <div className="text-sm text-text">{props.user?.displayName}</div>
+                  <div className="text-sm text-text">{props.user.displayName}</div>
                   <div className="text-xs text-text/70">Online</div>
                </div>
                <div className="flex flex-shrink-0 gap-x-1">
@@ -60,7 +60,7 @@ export default function UserInfo(props: { user: APIUser }) {
                      <MenuItem>
                         <button
                            className="flex w-full items-center gap-x-2.5 rounded-md px-2 py-2 text-error hover:bg-error/10"
-                           onClick={() => mutation.mutate()}
+                           onClick={() => { mutation.mutate(); }}
                         >
                            <IconMdiLogout className="h-5 w-5" />
                            <span className="text-sm">Logout</span>

@@ -1,6 +1,6 @@
-import { prisma } from "@/src/db";
-import { dispatchToTopic } from "@/src/gateway/gateway-utils";
-import { getJwt, handleRequest, verifyJwt } from "@/src/route-utils";
+import { prisma } from "@/db";
+import { dispatchToTopic } from "@/gateway/gateway-utils";
+import { getJwt, handleRequest, verifyJwt } from "@/route-utils";
 import { HttpCode } from "@huginn/shared";
 import { GatewayRelationshipDeleteDispatch } from "@huginn/shared";
 import { Hono } from "hono";

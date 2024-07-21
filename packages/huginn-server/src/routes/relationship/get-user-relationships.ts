@@ -1,6 +1,6 @@
-import { prisma } from "@/src/db";
-import { includeRelationshipUser } from "@/src/db/common";
-import { getJwt, handleRequest, verifyJwt } from "@/src/route-utils";
+import { prisma } from "@/db";
+import { includeRelationshipUser } from "@/db/common";
+import { getJwt, handleRequest, verifyJwt } from "@/route-utils";
 import { APIGetUserRelationshipsResult } from "@huginn/shared";
 import { HttpCode } from "@huginn/shared";
 import { idFix, omitArray } from "@huginn/shared";

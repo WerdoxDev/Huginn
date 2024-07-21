@@ -1,5 +1,5 @@
-import { prisma } from "@/src/db";
-import { handleRequest, verifyJwt } from "@/src/route-utils";
+import { prisma } from "@/db";
+import { handleRequest, verifyJwt } from "@/route-utils";
 import { APIGetUserByIdResult } from "@huginn/shared";
 import { HttpCode } from "@huginn/shared";
 import { idFix, omit } from "@huginn/shared";

@@ -1,6 +1,6 @@
-import { prisma } from "@/src/db";
-import { excludeSelfChannelUser, includeChannelRecipients } from "@/src/db/common";
-import { getJwt, handleRequest, verifyJwt } from "@/src/route-utils";
+import { prisma } from "@/db";
+import { excludeSelfChannelUser, includeChannelRecipients } from "@/db/common";
+import { getJwt, handleRequest, verifyJwt } from "@/route-utils";
 import { APIGetUserChannelsResult } from "@huginn/shared";
 import { HttpCode } from "@huginn/shared";
 import { idFix, merge } from "@huginn/shared";

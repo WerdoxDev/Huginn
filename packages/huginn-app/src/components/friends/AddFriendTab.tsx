@@ -21,12 +21,12 @@ export default function AddFriendTab() {
       <TabPanel>
          <div className="text-lg font-medium uppercase text-text">Add Friend</div>
          <div className="mt-1 text-sm text-text/70">You can add your friends using their Huginn username</div>
-         <form onSubmit={(e) => e.preventDefault()}>
+         <form onSubmit={(e) => { e.preventDefault(); }}>
             <AddFriendInput
                className="mt-5"
                {...inputsProps.username}
                buttonProps={{ type: "submit" }}
-               onClick={() => mutation.mutate(values.username.value)}
+               onClick={() => { mutation.mutate(values.username.value); }}
                disabled={disabled}
             />
          </form>

@@ -42,7 +42,7 @@ export default function MessageBox() {
       const tokens = tokenize(node.text);
 
       for (const token of tokens) {
-         const markLength = token.mark?.length || 0;
+         const markLength = token.mark?.length ?? 0;
          const end = token.end + 1;
          ranges.push({
             mark: true,

@@ -4,6 +4,7 @@ import { TanStackRouterVite } from "@tanstack/router-vite-plugin";
 import Icons from "unplugin-icons/vite";
 import IconsResolver from "unplugin-icons/resolver";
 import AutoImport from "unplugin-auto-import/vite";
+import * as path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -20,6 +21,16 @@ export default defineConfig({
          ],
       }),
    ],
+
+   resolve: {
+      alias: {
+         "@": path.resolve(__dirname, "./src"),
+         "@lib": path.resolve(__dirname, "./src/lib"),
+         "@hooks": path.resolve(__dirname, "./src/hooks"),
+         "@contexts": path.resolve(__dirname, "./src/contexts"),
+         "@components": path.resolve(__dirname, "./src/components"),
+      },
+   },
    // prevent vite from obscuring rust errors
    clearScreen: false,
    // Tauri expects a fixed port, fail if that port is not available

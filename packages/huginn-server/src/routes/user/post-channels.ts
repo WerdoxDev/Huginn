@@ -1,8 +1,8 @@
-import { prisma } from "@/src/db";
-import { excludeSelfChannelUser, includeChannelRecipients } from "@/src/db/common";
-import { dispatchToTopic } from "@/src/gateway/gateway-utils";
-import { getJwt, hValidator, handleRequest, invalidFormBody, verifyJwt } from "@/src/route-utils";
-import { gateway } from "@/src/server";
+import { prisma } from "@/db";
+import { excludeSelfChannelUser, includeChannelRecipients } from "@/db/common";
+import { dispatchToTopic } from "@/gateway/gateway-utils";
+import { getJwt, hValidator, handleRequest, invalidFormBody, verifyJwt } from "@/route-utils";
+import { gateway } from "@/server";
 import { APIPostDMChannelResult } from "@huginn/shared";
 import { HttpCode } from "@huginn/shared";
 import { GatewayDMChannelCreateDispatch } from "@huginn/shared";

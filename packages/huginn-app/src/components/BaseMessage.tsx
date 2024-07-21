@@ -46,7 +46,7 @@ const BaseMessage = forwardRef<HTMLLIElement, { content?: string; author: APIMes
                text: token.content,
             });
 
-            skippedCharacters += (token.mark?.length || 0) * 2;
+            skippedCharacters += (token.mark?.length ?? 0) * 2;
          }
 
          return ranges;

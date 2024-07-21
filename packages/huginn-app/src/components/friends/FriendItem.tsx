@@ -18,7 +18,7 @@ export default function FriendItem(props: {
    return (
       <div
          className="group flex cursor-pointer items-center justify-between rounded-xl p-2.5 hover:bg-secondary"
-         onContextMenu={e => openRelationship({ user: props.user, type: props.type }, e)}
+         onContextMenu={e => { openRelationship({ user: props.user, type: props.type }, e); }}
       >
          <div className="flex">
             <UserIconWithStatus className="mr-3 bg-text" />
@@ -64,7 +64,7 @@ export default function FriendItem(props: {
                   </Tooltip>
                   <Tooltip>
                      <Tooltip.Trigger
-                        onClick={e => openRelationshipMore({ user: props.user, type: props.type }, e)}
+                        onClick={e => { openRelationshipMore({ user: props.user, type: props.type }, e); }}
                         className="rounded-full bg-background/50 p-2 text-text/80 hover:text-text active:bg-white/20"
                      >
                         <IconMdiMoreVert className="size-5" />

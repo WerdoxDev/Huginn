@@ -1,5 +1,5 @@
-import { getRawToken, handleRequest, verifyJwt } from "@/src/route-utils";
-import { tokenInvalidator } from "@/src/server";
+import { getRawToken, handleRequest, verifyJwt } from "@/route-utils";
+import { tokenInvalidator } from "@/server";
 import { HttpCode } from "@huginn/shared";
 import { Hono } from "hono";
 

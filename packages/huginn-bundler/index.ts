@@ -211,7 +211,7 @@ async function updateGistFile(type: BuildType, version: string, description: str
    }/Huginn_${version}_x64-setup.nsis.zip`;
 
    const content: UpdateFileInfo = {
-      version: `${version}`,
+      version: version,
       pub_date: publishDate,
       notes: description,
       platforms: {

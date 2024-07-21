@@ -1,7 +1,7 @@
-import { DBErrorType, prisma } from "@/src/db";
-import { createError } from "@/src/factory/error-factory";
-import { dispatchToTopic } from "@/src/gateway/gateway-utils";
-import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
+import { DBErrorType, prisma } from "@/db";
+import { createError } from "@/factory/error-factory";
+import { dispatchToTopic } from "@/gateway/gateway-utils";
+import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/route-utils";
 import { RelationshipType } from "@huginn/shared";
 import { Error, HttpCode } from "@huginn/shared";
 import { GatewayRelationshipCreateDispatch } from "@huginn/shared";

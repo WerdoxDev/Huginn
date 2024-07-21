@@ -81,7 +81,7 @@ export default function InfoModal() {
                               className="mt-5 w-full bg-tertiary py-2.5"
                               onClick={() => {
                                  if (!modal.action?.cancel?.callback) dispatch({ info: { isOpen: false } });
-                                 else modal.action?.cancel?.callback?.();
+                                 else modal.action.cancel.callback();
                               }}
                            >
                               {modal.action?.cancel?.text ?? "Close"}
@@ -91,7 +91,7 @@ export default function InfoModal() {
                               <HuginnButton
                                  className="mt-5 w-full bg-primary py-2.5 text-text"
                                  onClick={() => {
-                                    modal.action?.confirm?.callback?.();
+                                    modal.action?.confirm?.callback();
                                  }}
                               >
                                  {modal.action.confirm.text}
@@ -99,7 +99,13 @@ export default function InfoModal() {
                            )}
                         </div>
 
-                        {modal.closable && <ModalCloseButton onClick={() => dispatch({ info: { isOpen: false } })} />}
+                        {modal.closable && (
+                           <ModalCloseButton
+                              onClick={() => {
+                                 dispatch({ info: { isOpen: false } });
+                              }}
+                           />
+                        )}
                      </DialogPanel>
                   </TransitionChild>
                </div>

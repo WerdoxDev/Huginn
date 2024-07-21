@@ -10,7 +10,7 @@ describe("auth-logout", () => {
       await client.auth.logout();
 
       await new Promise((resolve) => {
-         setTimeout(() => resolve(true), 1200);
+         setTimeout(() => { resolve(true); }, 1200);
       });
 
       expect(() => client.initializeWithToken({ token })).toThrow();

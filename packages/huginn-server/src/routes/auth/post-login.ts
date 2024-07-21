@@ -1,7 +1,7 @@
-import { DBErrorType, prisma } from "@/src/db";
-import { createError } from "@/src/factory/error-factory";
-import { createTokens } from "@/src/factory/token-factory";
-import { error, hValidator, handleRequest } from "@/src/route-utils";
+import { DBErrorType, prisma } from "@/db";
+import { createError } from "@/factory/error-factory";
+import { createTokens } from "@/factory/token-factory";
+import { error, hValidator, handleRequest } from "@/route-utils";
 import { APIPostLoginResult } from "@huginn/shared";
 import { constants } from "@huginn/shared";
 import { Error, Field, HttpCode } from "@huginn/shared";

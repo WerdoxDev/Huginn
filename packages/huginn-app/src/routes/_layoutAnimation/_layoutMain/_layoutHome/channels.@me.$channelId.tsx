@@ -5,9 +5,8 @@ import HomeTopbar from "@components/channels/HomeTopbar";
 import { useClient } from "@contexts/apiContext";
 import { ensureChannelExists } from "@lib/middlewares";
 import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
-import { useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import React from "react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/channels/@me/$channelId")({
    component: Component,
@@ -16,8 +15,8 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/
    },
    loader: async ({ params, context: { queryClient, client } }) => {
       return (
-         queryClient.getQueryData(getMessagesOptions(client, params.channelId).queryKey) ??
-         (await queryClient.fetchInfiniteQuery(getMessagesOptions(client, params.channelId)))
+         queryClient.getQueryData(getMessagesOptions(queryClient, client, params.channelId).queryKey) ??
+         (await queryClient.fetchInfiniteQuery(getMessagesOptions(queryClient, client, params.channelId)))
       );
    },
    gcTime: 0,
@@ -26,9 +25,12 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/
 
 function Component() {
    const client = useClient();
+   const queryClient = useQueryClient();
    const { channelId } = Route.useParams();
-   const { data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(client, channelId));
+   const { data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client, channelId));
    const channel = useSuspenseQuery(getChannelsOptions(client, "@me")).data?.find((x: { id: string }) => x.id === channelId);
+
+   if (!channel) return;
 
    return (
       <div className="flex h-full flex-col">

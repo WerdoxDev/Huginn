@@ -29,7 +29,7 @@ model User {
 model Channel {
    id                 BigInt    @id
    icon               String?
-   lastMessageId      String?
+   lastMessageId      BigInt?
    name               String?
    owner              User?     @relation("channel_owner", fields: [ownerId], references: [id])
    ownerId            BigInt?

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { handleRequest } from "@/src/route-utils";
-import { AppVersionInfo } from "@/src/types";
+import { handleRequest } from "@/route-utils";
+import { AppVersionInfo } from "@/types";
 import { HttpCode } from "@huginn/shared";
 import { semver } from "bun";
 import { Hono } from "hono";

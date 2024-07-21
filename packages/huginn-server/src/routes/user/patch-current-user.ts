@@ -1,7 +1,7 @@
-import { prisma } from "@/src/db";
-import { createError } from "@/src/factory/error-factory";
-import { createTokens } from "@/src/factory/token-factory";
-import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
+import { prisma } from "@/db";
+import { createError } from "@/factory/error-factory";
+import { createTokens } from "@/factory/token-factory";
+import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/route-utils";
 import {
    validateCorrectPassword,
    validateDisplayName,
@@ -9,7 +9,7 @@ import {
    validateEmailUnique,
    validateUsername,
    validateUsernameUnique,
-} from "@/src/validation";
+} from "@/validation";
 import { APIPatchCurrentUserResult } from "@huginn/shared";
 import { constants } from "@huginn/shared";
 import { Error, Field, HttpCode } from "@huginn/shared";
@@ -49,7 +49,7 @@ app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
 
       const databaseError = createError(Error.invalidFormBody());
 
-      const user = await prisma.user.getById(payload?.id);
+      const user = await prisma.user.getById(payload.id);
       validateCorrectPassword(body.password, user.password || "", databaseError);
 
       await validateUsernameUnique(body.username, databaseError);

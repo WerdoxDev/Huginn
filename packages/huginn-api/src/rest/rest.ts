@@ -102,6 +102,7 @@ export class REST {
       let additionalHeaders: Record<string, string> = {};
 
       if (request.query) {
+         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
          query = `?${request.query}`;
       }
 

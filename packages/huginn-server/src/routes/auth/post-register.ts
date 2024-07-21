@@ -1,7 +1,7 @@
-import { prisma } from "@/src/db";
-import { createError } from "@/src/factory/error-factory";
-import { createTokens } from "@/src/factory/token-factory";
-import { error, hValidator, handleRequest } from "@/src/route-utils";
+import { prisma } from "@/db";
+import { createError } from "@/factory/error-factory";
+import { createTokens } from "@/factory/token-factory";
+import { error, hValidator, handleRequest } from "@/route-utils";
 import {
    validateDisplayName,
    validateEmail,
@@ -9,7 +9,7 @@ import {
    validatePassword,
    validateUsername,
    validateUsernameUnique,
-} from "@/src/validation";
+} from "@/validation";
 import { APIPostRegisterResult } from "@huginn/shared";
 import { constants } from "@huginn/shared";
 import { Error, HttpCode } from "@huginn/shared";

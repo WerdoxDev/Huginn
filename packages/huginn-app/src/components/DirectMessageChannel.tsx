@@ -22,7 +22,7 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
 
    return (
       <li
-         onContextMenu={e => openContextMenu(props.channel, e)}
+         onContextMenu={e => { openContextMenu(props.channel, e); }}
          className={`group relative my-0.5 cursor-pointer rounded-md hover:bg-background active:bg-white active:bg-opacity-10 ${selected && "bg-white bg-opacity-10"}`}
          onClick={props.onSelected}
       >
@@ -32,7 +32,7 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
          </Link>
          <button
             className="group/close invisible absolute bottom-3.5 right-2 top-3.5 flex-shrink-0 group-hover:visible"
-            onClick={() => mutation.mutate(props.channel.id)}
+            onClick={() => { mutation.mutate(props.channel.id); }}
          >
             <IconMdiClose className="text-text/50 group-hover/close:text-text/100" />
          </button>

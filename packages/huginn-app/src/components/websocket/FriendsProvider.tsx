@@ -17,7 +17,7 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
          const changedIndex = friends.findIndex(x => x.id === d.id && x.type !== d.type);
          if (changedIndex !== -1) {
             const newRelationships = friends.toSpliced(changedIndex, 1, { ...friends[changedIndex], type: d.type });
-            queryClient.setQueryData(["relationships"], newRelationships);
+            queryClient.setQueryData<APIGetUserRelationshipsResult>(["relationships"], newRelationships);
          }
          return;
       }
@@ -26,7 +26,7 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
    }
 
    function onRelationshipDeleted(userId: Snowflake) {
-      queryClient.setQueryData(["relationships"], (data: APIGetUserRelationshipsResult) => data?.filter(x => x.user.id !== userId));
+      queryClient.setQueryData<APIGetUserRelationshipsResult>(["relationships"], data => data?.filter(x => x.user.id !== userId));
    }
 
    useEffect(() => {

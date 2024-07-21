@@ -26,7 +26,7 @@ describe("channel-create-dm", () => {
       const result = await client.channels.createDM({ recipients: [secondClient.user.id] });
 
       expect(result).toBeDefined();
-      expect(containsId(result.recipients, secondClient.user?.id)).toBe(true);
+      expect(containsId(result.recipients, secondClient.user.id)).toBe(true);
    });
    test("channel-create-group-dm-successful", async () => {
       const client = await getLoggedClient();
@@ -39,7 +39,7 @@ describe("channel-create-dm", () => {
       if (!secondClient.user || !thirdClient.user || !client.user) return;
 
       const result = (await client.channels.createDM({
-         recipients: [secondClient.user?.id, thirdClient.user?.id],
+         recipients: [secondClient.user.id, thirdClient.user.id],
       })) as APIGroupDMChannel;
 
       expect(result).toBeDefined();

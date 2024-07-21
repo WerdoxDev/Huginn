@@ -1,6 +1,6 @@
-import { prisma } from "@/src/db";
-import { includeMessageAuthor, includeMessageMentions } from "@/src/db/common";
-import { hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
+import { prisma } from "@/db";
+import { includeMessageAuthor, includeMessageMentions } from "@/db/common";
+import { hValidator, handleRequest, verifyJwt } from "@/route-utils";
 import { APIGetChannelMessagesResult } from "@huginn/shared";
 import { HttpCode } from "@huginn/shared";
 import { idFix, merge, omitArray } from "@huginn/shared";

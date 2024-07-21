@@ -45,7 +45,7 @@ export class HuginnAPIError extends Error {
 
    private static *flattenHuginnError(obj: HuginnError | HuginnErrorGroupWrapper, key = ""): IterableIterator<string> {
       if (isErrorResponse(obj)) {
-         return yield `${key.length ? `${key}[${obj.code}]` : `${obj.code}`}: ${obj.message}`.trim();
+         return yield `${key.length ? `${key}[${obj.code}]` : obj.code}: ${obj.message}`.trim();
       }
 
       for (const [otherKey, val] of Object.entries(obj)) {

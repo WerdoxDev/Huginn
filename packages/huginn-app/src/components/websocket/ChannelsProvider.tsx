@@ -12,8 +12,8 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
    const router = useRouter();
 
    function onChannelCreated(d: GatewayDMChannelCreateDispatchData) {
-      queryClient.setQueryData(["channels", "@me"], (data: APIGetUserChannelsResult) =>
-         !data.some(x => x.id === d.id) ? [d, ...data] : data,
+      queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], data =>
+         data && !data.some(x => x.id === d.id) ? [d, ...data] : data,
       );
       console.log(d);
    }
@@ -23,7 +23,7 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
          navigate({ to: "/channels/@me", replace: true });
       }
 
-      queryClient.setQueryData(["channels", "@me"], (data: APIGetUserChannelsResult) => data?.filter(x => x.id !== d.id));
+      queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], data => data?.filter(x => x.id !== d.id));
       console.log(d);
    }
 

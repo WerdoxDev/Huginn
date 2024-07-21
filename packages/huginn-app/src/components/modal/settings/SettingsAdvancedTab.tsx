@@ -5,7 +5,7 @@ import { useEffect } from "react";
 
 export default function SettingsAdvancedTab(props: SettingsTabProps) {
    const { values, validateValues, inputsProps } = useInputs([
-      { name: "serverAddress", required: false, default: props.settings?.serverAddress },
+      { name: "serverAddress", required: false, default: props.settings.serverAddress },
    ]);
 
    useEffect(() => {

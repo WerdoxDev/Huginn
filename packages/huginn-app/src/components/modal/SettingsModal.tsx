@@ -103,7 +103,7 @@ export default function SettingsModal() {
 
    return (
       <Transition show={modal.isOpen}>
-         <Dialog as="div" className="relative z-10" onClose={() => dispatch({ settings: { isOpen: false } })}>
+         <Dialog as="div" className="relative z-10" onClose={() => { dispatch({ settings: { isOpen: false } }); }}>
             <ModalBackground />
             <div className="fixed inset-0 top-6">
                <div className="flex h-full items-center justify-center">
@@ -127,7 +127,7 @@ export default function SettingsModal() {
                            </div>
                            <SettingsPanels currentTab={currentTab} settings={modifiedSettings.current} onChange={onSettingsChanged} />
                         </TabGroup>
-                        <ModalCloseButton onClick={() => dispatch({ settings: { isOpen: false } })} />
+                        <ModalCloseButton onClick={() => { dispatch({ settings: { isOpen: false } }); }} />
                      </DialogPanel>
                   </TransitionChild>
                </div>

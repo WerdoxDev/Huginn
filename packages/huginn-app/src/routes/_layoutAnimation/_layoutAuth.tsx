@@ -49,7 +49,7 @@ function LayoutAuth() {
             <button
                v-if="backgroundState !== 2"
                className="absolute bottom-2.5 right-2.5 rounded-lg p-1 transition-all hover:bg-background"
-               onClick={() => modalsDispatch({ settings: { isOpen: true } })}
+               onClick={() => { modalsDispatch({ settings: { isOpen: true } }); }}
             >
                <IconMdiSettings className="h-6 w-6 text-white/80 transition-all hover:rotate-[60deg]" />
             </button>

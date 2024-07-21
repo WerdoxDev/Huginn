@@ -98,12 +98,12 @@ const Menu = forwardRef<HTMLButtonElement, ContextMenuProps & HTMLProps<HTMLButt
                return {
                   width: 0,
                   height: 0,
-                  x: props.position?.[0] || 0,
-                  y: props.position?.[1] || 0,
-                  top: props.position?.[1] || 0,
-                  right: props.position?.[0] || 0,
-                  bottom: props.position?.[1] || 0,
-                  left: props.position?.[0] || 0,
+                  x: props.position?.[0] ?? 0,
+                  y: props.position?.[1] ?? 0,
+                  top: props.position?.[1] ?? 0,
+                  right: props.position?.[0] ?? 0,
+                  bottom: props.position?.[1] ?? 0,
+                  left: props.position?.[0] ?? 0,
                };
             },
          });
@@ -211,7 +211,7 @@ const Item = forwardRef<HTMLButtonElement, ContextMenuItemProps & React.ButtonHT
             ref={useMergeRefs([item.ref, forwardedRef])}
             type="button"
             role="menuitem"
-            className={`flex items-center justify-between gap-x-5 rounded-sm px-2 py-1 text-start text-sm text-white/90 outline-none focus:bg-primary ${props.className}`}
+            className={`flex items-center justify-between gap-x-5 rounded-sm px-2 py-1 text-start text-sm text-white/90 outline-none focus:bg-primary ${props.className ?? ""}`}
             tabIndex={isActive ? 0 : -1}
             disabled={disabled}
             {...menu.getItemProps({

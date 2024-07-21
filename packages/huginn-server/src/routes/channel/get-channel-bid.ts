@@ -1,7 +1,7 @@
-import { prisma } from "@/src/db";
-import { includeChannelRecipients } from "@/src/db/common";
-import { createError } from "@/src/factory/error-factory";
-import { getJwt, handleRequest, notFound, verifyJwt } from "@/src/route-utils";
+import { prisma } from "@/db";
+import { includeChannelRecipients } from "@/db/common";
+import { createError } from "@/factory/error-factory";
+import { getJwt, handleRequest, notFound, verifyJwt } from "@/route-utils";
 import { APIGetChannelByIdResult } from "@huginn/shared";
 import { Error, HttpCode } from "@huginn/shared";
 import { idFix } from "@huginn/shared";

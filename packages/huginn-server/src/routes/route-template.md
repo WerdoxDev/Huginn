@@ -1,9 +1,9 @@
 ## Simple Route
 
 ```ts
-import { DBErrorType, prisma } from "@/src/database";
-import { createError } from "@/src/factory/error-factory";
-import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
+import { DBErrorType, prisma } from "@/database";
+import { createError } from "@/factory/error-factory";
+import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/route-utils";
 import { Error, HttpCode } from "@huginn/shared";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -20,9 +20,9 @@ export default app;
 ## Route Without Schema
 
 ```ts
-import { DBErrorType, prisma } from "@/src/database";
-import { createError } from "@/src/factory/error-factory";
-import { error, getJwt, handleRequest, verifyJwt } from "@/src/route-utils";
+import { DBErrorType, prisma } from "@/database";
+import { createError } from "@/factory/error-factory";
+import { error, getJwt, handleRequest, verifyJwt } from "@/route-utils";
 import { Error, HttpCode } from "@huginn/shared";
 import { Hono } from "hono";
 
@@ -36,9 +36,9 @@ export default app;
 ## Route With Error Handling
 
 ```ts
-import { DBErrorType, prisma } from "@/src/database";
-import { createError } from "@/src/factory/error-factory";
-import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/src/route-utils";
+import { DBErrorType, prisma } from "@/database";
+import { createError } from "@/factory/error-factory";
+import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/route-utils";
 import { Error, HttpCode } from "@huginn/shared";
 import { Hono } from "hono";
 import { z } from "zod";

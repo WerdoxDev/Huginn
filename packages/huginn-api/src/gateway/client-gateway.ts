@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import {
    GatewayDispatch,
    GatewayEvents,
@@ -123,7 +124,7 @@ export class Gateway {
          const identifyData: GatewayIdentify = {
             op: GatewayOperations.IDENTIFY,
             d: {
-               token: this.client.tokenHandler.token || "",
+               token: this.client.tokenHandler.token ?? "",
                intents: this.client.options.intents,
                properties: { os: "windows", browser: "idk", device: "idk" },
             },
@@ -134,9 +135,9 @@ export class Gateway {
          const resumeData: GatewayResume = {
             op: GatewayOperations.RESUME,
             d: {
-               token: this.client.tokenHandler.token || "",
+               token: this.client.tokenHandler.token ?? "",
                seq: this.sequence,
-               sessionId: this.sessionId || "",
+               sessionId: this.sessionId ?? "",
             },
          };
 
