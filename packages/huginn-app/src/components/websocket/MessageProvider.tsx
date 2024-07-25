@@ -1,4 +1,5 @@
 import { useClient } from "@contexts/apiContext";
+import { useEvent } from "@contexts/event";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { APIGetChannelMessagesResult, APIGetUserChannelsResult } from "@huginn/shared";
 import { GatewayMessageCreateDispatchData } from "@huginn/shared";
@@ -9,6 +10,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
    const client = useClient();
    const queryClient = useQueryClient();
    const mutation = useCreateDMChannel();
+   const { dispatchEvent } = useEvent();
 
    useEffect(() => {
       client.gateway.on("message_create", onMessageCreated);
@@ -19,15 +21,18 @@ export default function MessageProvider(props: { children?: ReactNode }) {
    }, []);
 
    function onMessageCreated(d: GatewayMessageCreateDispatchData) {
-      console.log(`HI ${d.channelId}`);
-
-      const channels: APIGetUserChannelsResult | undefined = queryClient.getQueryData(["channels", "@me"]);
+      const channels = queryClient.getQueryData<APIGetUserChannelsResult>(["channels", "@me"]);
       const thisChannelIndex = channels?.findIndex(x => x.id === d.channelId) ?? -1;
       const thisChannel = channels?.find(x => x.id === d.channelId);
+
+      //TODO: Notification stuff goes here
+
       if (!thisChannel) {
          mutation.mutate({ userId: d.author.id, skipNavigation: true });
          return;
       }
+
+      let messageVisible = false;
 
       queryClient.setQueryData<InfiniteData<APIGetChannelMessagesResult, { before: string; after: string }>>(
          ["messages", d.channelId],
@@ -36,8 +41,9 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 
             const lastPage = data.pages[data.pages.length - 1];
             const lastParams = data.pageParams[data.pageParams.length - 1];
+            // See if the message can be appended to the current page
             if (!lastParams.before && (!lastParams.after || lastPage.some(x => x.id === thisChannel.lastMessageId))) {
-               console.log("HI?");
+               messageVisible = true;
                return {
                   ...data,
                   pages: [...data.pages.toSpliced(data.pages.length - 1, 1, [...lastPage, d])],
@@ -49,11 +55,12 @@ export default function MessageProvider(props: { children?: ReactNode }) {
       );
 
       queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], data => {
-         console.log(thisChannelIndex);
          if (!data || thisChannelIndex === -1) return undefined;
-         console.log(...data.toSpliced(thisChannelIndex, 1, { ...thisChannel, lastMessageId: d.id }));
+
          return [...data.toSpliced(thisChannelIndex, 1, { ...thisChannel, lastMessageId: d.id })];
       });
+
+      dispatchEvent("message_added", { message: d, visible: messageVisible, self: d.author.id === client.user?.id });
 
       // queryClient.setQueryData(["channels", "@me"], (previous: APIGetUserChannelsResult) => [newChannel, ...previous]);
    }
