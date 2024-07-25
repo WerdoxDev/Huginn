@@ -54,6 +54,10 @@ app.onError((e, c) => {
 app.route("/", routes);
 app.route("/", testRoute);
 
+app.get("/", c => {
+   return c.redirect("https://huginn.dev");
+});
+
 export const gateway = new ServerGateway({ logHeartbeat: false });
 export const tokenInvalidator = new TokenInvalidator();
 
@@ -72,8 +76,12 @@ export const server = Bun.serve<string>({
       return app.fetch(req, server);
    },
    websocket: {
-      open: ws => { gateway.onOpen(ws); },
-      close: (ws, code, reason) => { gateway.onClose(ws, code, reason); },
+      open: ws => {
+         gateway.onOpen(ws);
+      },
+      close: (ws, code, reason) => {
+         gateway.onClose(ws, code, reason);
+      },
       message: (ws, message) => gateway.onMessage(ws, message),
       sendPings: false,
    },
