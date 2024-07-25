@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable */
 import url from "url";
 
 import reactCompiler from "eslint-plugin-react-compiler";
@@ -58,6 +56,7 @@ export default tseslint.config(
          "@typescript-eslint/no-confusing-void-expression": "off",
          "@typescript-eslint/no-unsafe-enum-comparison": "off",
          "@typescript-eslint/only-throw-error": "off",
+         "@typescript-eslint/unbound-method": "off",
          "@typescript-eslint/restrict-plus-operands": ["error", { allowNumberAndString: true }],
          "@typescript-eslint/restrict-template-expressions": [
             "error",

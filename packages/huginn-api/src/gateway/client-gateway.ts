@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import {
+   GatewayCode,
    GatewayDispatch,
    GatewayEvents,
    GatewayHeartbeat,
@@ -80,6 +80,10 @@ export class Gateway {
       }
 
       setTimeout(() => {
+         if (e.code === GatewayCode.INVALID_SESSION) {
+            this.sequence = undefined;
+            this.sessionId = undefined;
+         }
          this.connect();
       }, 1000);
    }
