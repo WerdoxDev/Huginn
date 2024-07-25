@@ -1,12 +1,15 @@
 import BaseMessage from "@components/BaseMessage";
+import ChannelMessageLoadingIndicator from "@components/ChannelMessageLoadingIndicator";
 import { useClient } from "@contexts/apiContext";
 import { useChannelScroll, useChannelScrollDispatch } from "@contexts/channelScrollContext";
 import { useEvent } from "@contexts/event";
+import { Transition } from "@headlessui/react";
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { APIGetChannelMessagesResult, Snowflake } from "@huginn/shared";
 import { getMessagesOptions } from "@lib/queries";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import clsx from "clsx";
+import { useEffect, useRef, useState } from "react";
 
 const topScrollOffset = 200;
 const bottomScrollOffset = 200;
@@ -14,21 +17,20 @@ const bottomScrollOffset = 200;
 export default function ChannelMessages(props: { channelId: Snowflake; messages: APIGetChannelMessagesResult }) {
    const client = useClient();
    const queryClient = useQueryClient();
-   const { listenEvent } = useEvent();
 
    const { data, fetchNextPage, fetchPreviousPage, isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
       useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client, props.channelId));
 
-   const scroll = useRef<HTMLOListElement>(null);
-
    const channelScroll = useChannelScroll();
    const channelScrollDispatch = useChannelScrollDispatch();
-
    const [getContent, setContent, removeContent] = useDynamicRefs<HTMLLIElement>();
+   const { listenEvent } = useEvent();
 
+   const scroll = useRef<HTMLOListElement>(null);
    const previousScrollTop = useRef(0);
    const newItemsHeight = useRef(0);
    const listHasUpdated = useRef(false);
+   const shouldScrollOnNextRender = useRef(false);
 
    async function onScroll() {
       if (!scroll.current) return;
@@ -45,9 +47,6 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
          listHasUpdated.current = false;
          await fetchPreviousPage();
          previousScrollTop.current = scroll.current.scrollTop;
-         setTimeout(() => {
-            console.log(data.pages);
-         }, 1000);
       } else if (
          scroll.current.scrollHeight - scroll.current.clientHeight - scroll.current.scrollTop <= bottomScrollOffset &&
          !isFetchingNextPage &&
@@ -69,9 +68,9 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
          if (!scroll.current || !d.visible) return;
          const scrollOffset = scroll.current.scrollHeight - scroll.current.clientHeight - scroll.current.scrollTop;
 
-         // if (d.self || scrollOffset <= 50) {
-         //    scroll.current.scrollTop = scroll.current.scrollHeight - scroll.current.clientHeight;
-         // }
+         if (d.self || scrollOffset <= 50) {
+            shouldScrollOnNextRender.current = true;
+         }
       });
 
       return () => {
@@ -92,32 +91,17 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
          previousScrollTop.current = -1;
       }
 
-      const unlisten = listenEvent("message_added", d => {
-         if (!scroll.current || !d.visible) return;
-         console.log("HII? I GUESS...");
-
-         // if (d.self) {
-         // }
-      });
-
-      console.log("top");
-      scroll.current.scrollTop = scroll.current.scrollHeight - scroll.current.clientHeight;
+      if (shouldScrollOnNextRender.current) {
+         scroll.current.scrollTop = scroll.current.scrollHeight - scroll.current.clientHeight;
+         shouldScrollOnNextRender.current = false;
+      }
 
       listHasUpdated.current = true;
-
-      return () => {
-         console.log("gooooone");
-         unlisten();
-      };
    }, [props.messages]);
 
    return (
       <div className="relative flex flex-col overflow-hidden">
-         <div
-            className={`pointer-events-none absolute inset-x-0 z-10 py-2 text-center text-text ${isFetchingPreviousPage ? "top-0" : isFetchingNextPage ? "bottom-0" : "hidden"}`}
-         >
-            Loading...
-         </div>
+         <ChannelMessageLoadingIndicator isFetchingNextPage={isFetchingNextPage} isFetchingPreviousPage={isFetchingPreviousPage} />
          <ol className="flex flex-col overflow-y-scroll p-2 pr-0.5" ref={scroll} onScroll={onScroll}>
             {props.messages.map(message => (
                <BaseMessage

@@ -1,5 +1,5 @@
 import { GatewayMessageCreateDispatchData } from "@huginn/shared";
-import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useRef } from "react";
 
 type EventTypes = {
    message_added: { message: GatewayMessageCreateDispatchData; visible: boolean; self: boolean };
@@ -18,44 +18,52 @@ const EventContext = createContext<EventContextType>({
 });
 
 export function EventProvider(props: { children?: ReactNode }) {
-   const [events, setEvents] = useState<EventType[]>([]);
-   const [listeners, setListeners] = useState<Record<string, ((data: unknown) => void)[]>>({});
+   const events = useRef<EventType[]>([]);
+   const listeners = useRef<Record<string, ((data: unknown) => void)[]>>({});
 
    const dispatchEvent = useCallback<EventContextType["dispatchEvent"]>((type, data) => {
-      setEvents(prevEvents => [...prevEvents, { type, data }]);
+      events.current.push({ type, data });
+      events.current.forEach(event => {
+         const eventType = event.type;
+         if (listeners.current[eventType]) {
+            listeners.current[eventType].forEach(listener => listener(event.data));
+         }
+      });
+      events.current = [];
+      // setEvents(prevEvents => [...prevEvents, { type, data }]);
    }, []);
 
    function listenEvent<K extends keyof EventTypes>(type: K, callback: (data: EventTypes[K]) => void) {
-      setListeners(prevListeners => {
-         const newListeners = { ...prevListeners };
-         if (!newListeners[type]) {
-            newListeners[type] = [];
-         }
-         newListeners[type].push(callback as (data: unknown) => void);
-         return newListeners;
-      });
+      // setListeners(prevListeners => {
+      const newListeners = { ...listeners.current };
+      if (!newListeners[type]) {
+         newListeners[type] = [];
+      }
+      newListeners[type].push(callback as (data: unknown) => void);
+
+      listeners.current = newListeners;
+      // return newListeners;
+      // });
 
       return () => {
-         setListeners(prevListeners => {
-            const newListeners = { ...prevListeners };
-            if (newListeners[type]) {
-               newListeners[type] = newListeners[type].filter(listener => listener !== callback);
-            }
-            return newListeners;
-         });
+         // setListeners(prevListeners => {
+         const newListeners = { ...listeners.current };
+         if (newListeners[type]) {
+            newListeners[type] = newListeners[type].filter(listener => listener !== callback);
+         }
+
+         listeners.current = newListeners;
+         // return newListeners;
+         // });
       };
    }
 
    useEffect(() => {
-      events.forEach(event => {
-         const eventType = event.type;
-         if (listeners[eventType]) {
-            listeners[eventType].forEach(listener => listener(event.data));
-         }
-      });
-      if (events.length !== 0) {
-         setEvents([]);
-      }
+      // console.log("HI?");
+      // if (events.current.length !== 0) {
+      //    events.current = [];
+      //    // setEvents([]);
+      // }
    }, [events, listeners]);
 
    return <EventContext.Provider value={{ dispatchEvent, listenEvent }}>{props.children}</EventContext.Provider>;

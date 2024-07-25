@@ -61,8 +61,6 @@ export default function MessageProvider(props: { children?: ReactNode }) {
       });
 
       dispatchEvent("message_added", { message: d, visible: messageVisible, self: d.author.id === client.user?.id });
-
-      // queryClient.setQueryData(["channels", "@me"], (previous: APIGetUserChannelsResult) => [newChannel, ...previous]);
    }
 
    return props.children;
