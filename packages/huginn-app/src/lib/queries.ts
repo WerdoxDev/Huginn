@@ -12,27 +12,25 @@ export function getChannelsOptions(client: HuginnClient, guildId: Snowflake) {
       },
    });
 }
-
 export function getMessagesOptions(queryClient: QueryClient, client: HuginnClient, channelId: Snowflake) {
    return infiniteQueryOptions({
       queryKey: ["messages", channelId],
       initialPageParam: { before: "", after: "" },
       queryFn: ({ pageParam }) =>
-         client.channels.getMessages(channelId, 10, pageParam.before.toString() || undefined, pageParam.after.toString() || undefined),
-      getPreviousPageParam: (last, all) => {
-         const earliestMessage = all[0]?.[0];
-         return { before: earliestMessage.id, after: "" };
+         client.channels.getMessages(channelId, 20, pageParam.before.toString() || undefined, pageParam.after.toString() || undefined),
+      getPreviousPageParam(first) {
+         const earliestMessage = first[0];
+         return earliestMessage && first.length >= 20 ? { before: earliestMessage.id, after: "" } : undefined;
       },
-      getNextPageParam: (_last, all) => {
+      getNextPageParam(last) {
          const channels: APIGetUserChannelsResult | undefined = queryClient.getQueryData(["channels", "@me"]);
          const thisChannel = channels?.find(x => x.id === channelId);
 
-         const latestMessages = all[all.length - 1];
-         const latestMessage = latestMessages[latestMessages.length - 1];
+         const latestMessage = last[last.length - 1];
 
          return !thisChannel || thisChannel.lastMessageId !== latestMessage.id ? { after: latestMessage.id, before: "" } : undefined;
       },
-      maxPages: 3,
+      maxPages: 2,
    });
 }
 

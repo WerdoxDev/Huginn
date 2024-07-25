@@ -12,9 +12,9 @@ export function APIProvider(props: { children?: ReactNode }) {
 
    const [client] = useState<APIContextType>(
       new HuginnClient({
-         rest: { api: `http://${settings.serverAddress}` },
+         rest: { api: settings.serverAddress },
          gateway: {
-            url: `ws://${settings.serverAddress}/gateway`,
+            url: `${settings.serverAddress}/gateway`,
             createSocket(url) {
                return new WebSocket(url);
             },

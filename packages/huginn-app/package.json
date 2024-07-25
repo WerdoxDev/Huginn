@@ -15,21 +15,22 @@
    "dependencies": {
       "@floating-ui/react": "^0.26.19",
       "@headlessui/react": "^2.1.2",
+      "@huginn/api": "workspace:*",
+      "@huginn/shared": "workspace:*",
       "@react-spring/web": "^9.7.3",
       "@tanstack/react-query": "^5.51.11",
       "@tanstack/react-query-devtools": "^5.51.11",
       "@tanstack/react-router": "^1.45.6",
       "@tauri-apps/api": "^1.6.0",
       "@types/prismjs": "^1.26.4",
+      "clsx": "^2.1.1",
       "lodash.clonedeep": "^4.5.0",
       "react": "^18.3.1",
       "react-dom": "^18.3.1",
       "slate": "^0.103.0",
       "slate-react": "^0.104.0",
       "swr": "^2.2.5",
-      "vite-tsconfig-paths": "^4.3.2",
-      "@huginn/api": "workspace:*",
-      "@huginn/shared": "workspace:*"
+      "vite-tsconfig-paths": "^4.3.2"
    },
    "devDependencies": {
       "@eslint/compat": "^1.1.1",
