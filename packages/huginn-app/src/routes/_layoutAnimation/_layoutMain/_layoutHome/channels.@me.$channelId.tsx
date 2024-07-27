@@ -3,10 +3,12 @@ import ModalErrorComponent from "@components/ModalErrorComponent";
 import ChannelMessages from "@components/channels/ChannelMessages";
 import HomeTopbar from "@components/channels/HomeTopbar";
 import { useClient } from "@contexts/apiContext";
+import { useServerErrorHandler } from "@hooks/useServerErrorHandler";
 import { ensureChannelExists } from "@lib/middlewares";
 import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/channels/@me/$channelId")({
    component: Component,
@@ -27,8 +29,16 @@ function Component() {
    const client = useClient();
    const queryClient = useQueryClient();
    const { channelId } = Route.useParams();
-   const { data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client, channelId));
+   const { error, data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client, channelId));
    const channel = useSuspenseQuery(getChannelsOptions(client, "@me")).data?.find((x: { id: string }) => x.id === channelId);
+
+   const handleServerError = useServerErrorHandler();
+
+   useEffect(() => {
+      if (error) {
+         handleServerError(error);
+      }
+   }, [error]);
 
    if (!channel) return;
 

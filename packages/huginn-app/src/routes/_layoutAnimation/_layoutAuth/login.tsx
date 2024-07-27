@@ -52,8 +52,8 @@ function Login() {
 
             await navigate({ to: "/channels/@me" });
 
-            localStorage.setItem("access-token", client.tokenHandler.token);
-            localStorage.setItem("refresh-token", client.tokenHandler.refreshToken);
+            localStorage.setItem("access-token", client.tokenHandler.token ?? "");
+            localStorage.setItem("refresh-token", client.tokenHandler.refreshToken ?? "");
          },
       },
       handleErrors,

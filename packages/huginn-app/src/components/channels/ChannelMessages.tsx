@@ -3,13 +3,11 @@ import ChannelMessageLoadingIndicator from "@components/ChannelMessageLoadingInd
 import { useClient } from "@contexts/apiContext";
 import { useChannelScroll, useChannelScrollDispatch } from "@contexts/channelScrollContext";
 import { useEvent } from "@contexts/event";
-import { Transition } from "@headlessui/react";
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { APIGetChannelMessagesResult, Snowflake } from "@huginn/shared";
 import { getMessagesOptions } from "@lib/queries";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
-import clsx from "clsx";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 const topScrollOffset = 200;
 const bottomScrollOffset = 200;

@@ -31,6 +31,7 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
          return !thisChannel || thisChannel.lastMessageId !== latestMessage.id ? { after: latestMessage.id, before: "" } : undefined;
       },
       maxPages: 2,
+      retry: false,
    });
 }
 
