@@ -55,13 +55,17 @@ app.route("/", routes);
 app.route("/", testRoute);
 
 app.get("/", c => {
-   return c.redirect("https://huginn.dev");
+   return c.html(
+      '<div style="height:100%; display: flex; align-items:center; justify-content:center;"><div style="font-size: 2rem;">Huginn API Homepage</div></div>',
+   );
 });
 
 export const gateway = new ServerGateway({ logHeartbeat: false });
 export const tokenInvalidator = new TokenInvalidator();
 
 export const server = Bun.serve<string>({
+   cert: process.env.CERTIFICATE_PATH && Bun.file(process.env.CERTIFICATE_PATH),
+   key: process.env.PRIVATE_KEY_PATH && Bun.file(process.env.PRIVATE_KEY_PATH),
    port: serverPort,
    hostname: serverHost,
    fetch(req, server) {
@@ -88,4 +92,4 @@ export const server = Bun.serve<string>({
 });
 
 consola.success("Server started!");
-consola.box(`Listening on ${colors.green(`http://${server.hostname}:${server.port}`)}`);
+consola.box(`Listening on ${colors.green(server.url.href)}`);
