@@ -42,7 +42,9 @@ function Root() {
          routeHistory.lastPathname = arg.fromLocation.pathname;
       });
 
-      document.addEventListener("contextmenu", e => { e.preventDefault(); });
+      document.addEventListener("contextmenu", e => {
+         e.preventDefault();
+      });
    }, []);
 
    return (
@@ -54,8 +56,8 @@ function Root() {
                   {router.state.location.pathname !== "/splashscreen" && <TitleBar />}
                   <div className="relative h-full w-full">
                      <Outlet />
-                     <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" />
-                     <TanStackRouterDevtools position="bottom-left" />
+                     {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
+                     {/* <TanStackRouterDevtools position="bottom-left" /> */}
                      {window.__TAURI__ && <AppMaximizedEvent />}
                      <SettingsModal />
                      <InfoModal />

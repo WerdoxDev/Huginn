@@ -24,7 +24,7 @@ app.get("/channels/:channelId/messages", verifyJwt(), hValidator("query", schema
          ["authorId"],
       );
 
-      // await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 1000));
       return c.json(messages, HttpCode.OK);
    }),
 );

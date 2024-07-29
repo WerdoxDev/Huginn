@@ -4,8 +4,8 @@
    "type": "module",
    "version": "0.3-dev",
    "scripts": {
-      "start": "bun --watch ./src/index.ts",
-      "start-prod": "bun ./src/index.ts"
+      "start": "bun run --hot src/index.ts",
+      "start-prod": "bun src/index.ts"
    },
    "devDependencies": {
       "@eslint/js": "^9.7.0",

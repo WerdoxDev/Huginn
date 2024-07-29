@@ -3,7 +3,7 @@ import { consola } from "consola";
 import { colors } from "consola/utils";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { serverHost, serverPort } from ".";
+import { certFile, keyFile, serverHost, serverPort } from ".";
 import { createError } from "./factory/error-factory";
 import { ServerGateway } from "./gateway/server-gateway";
 import { logReject, logRequest, logResponse, logServerError } from "./log-utils";
@@ -64,8 +64,8 @@ export const gateway = new ServerGateway({ logHeartbeat: false });
 export const tokenInvalidator = new TokenInvalidator();
 
 export const server = Bun.serve<string>({
-   cert: process.env.CERTIFICATE_PATH && Bun.file(process.env.CERTIFICATE_PATH),
-   key: process.env.PRIVATE_KEY_PATH && Bun.file(process.env.PRIVATE_KEY_PATH),
+   cert: certFile,
+   key: keyFile,
    port: serverPort,
    hostname: serverHost,
    fetch(req, server) {

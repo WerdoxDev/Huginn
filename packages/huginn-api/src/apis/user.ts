@@ -2,6 +2,7 @@ import { APIGetCurrentUserResult, APIGetUserResult, APIPatchCurrentUserJSONBody,
 import { Routes } from "@huginn/shared";
 import { Snowflake } from "@huginn/shared";
 import { REST } from "../rest/rest";
+import { resolveImage } from "../file";
 
 export class UserAPI {
    private readonly rest: REST;
@@ -19,6 +20,7 @@ export class UserAPI {
    }
 
    public async edit(body: APIPatchCurrentUserJSONBody): Promise<APIPatchCurrentUserResult> {
-      return this.rest.patch(Routes.user("@me"), { body, auth: true }) as Promise<APIPatchCurrentUserResult>;
+      const resolvedBody: APIPatchCurrentUserJSONBody = { ...body, avatar: body.avatar && (await resolveImage(body.avatar)) };
+      return this.rest.patch(Routes.user("@me"), { body: resolvedBody, auth: true }) as Promise<APIPatchCurrentUserResult>;
    }
 }

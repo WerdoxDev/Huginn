@@ -15,6 +15,8 @@ import { HTTPError } from "../errors/http-error";
 import { HuginnAPIError } from "../errors/huginn-error";
 import { parseResponse } from "../utils";
 import { DefaultRestOptions } from "./rest-utils";
+import { filetypeinfo } from "magic-bytes.js";
+import { isBufferLike } from "../file";
 
 export class REST {
    public readonly options: RESTOptions;
@@ -123,8 +125,38 @@ export class REST {
 
       const url = `${this.options.api}${request.fullRoute}${query}`;
 
-      // TODO: Implement form data
-      if (request.body) {
+      if (request.files?.length) {
+         const formData = new FormData();
+
+         for (const [index, file] of request.files.entries()) {
+            const fileKey = file.key ?? `files[${index}]`;
+
+            if (isBufferLike(file.data)) {
+               let contentType = file.contentType;
+               if (!contentType) {
+                  const [parsedType] = filetypeinfo(file.data);
+
+                  if (parsedType) {
+                     contentType = parsedType.mime ?? "application/octet-stream";
+                  }
+               }
+
+               formData.append(fileKey, new Blob([file.data], { type: contentType }), file.name);
+            } else {
+               formData.append(fileKey, new Blob([`${file.data}`], { type: file.contentType }), file.name);
+            }
+         }
+
+         if (request.body) {
+            if (request.appendToFormData) {
+               for (const [key, value] of Object.entries(request.body)) {
+                  formData.append(key, value);
+               }
+            } else {
+               formData.append("payload_json", JSON.stringify(request.body));
+            }
+         }
+      } else if (request.body) {
          finalBody = JSON.stringify(request.body);
          additionalHeaders = { "Content-Type": "application/json" };
       }
