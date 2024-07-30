@@ -13,10 +13,9 @@ import { HuginnClient } from "../..";
 import { RESTOptions } from "../types";
 import { HTTPError } from "../errors/http-error";
 import { HuginnAPIError } from "../errors/huginn-error";
-import { parseResponse } from "../utils";
+import { isBufferLike, parseResponse } from "../utils";
 import { DefaultRestOptions } from "./rest-utils";
 import { filetypeinfo } from "magic-bytes.js";
-import { isBufferLike } from "../file";
 
 export class REST {
    public readonly options: RESTOptions;

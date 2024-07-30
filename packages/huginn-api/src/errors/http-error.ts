@@ -18,11 +18,9 @@ export class HTTPError extends Error {
       statusText: string,
       public method: string,
       public url: string,
-      // TODO: add 'files' here
-      bodyData: Pick<InternalRequest, "body">,
+      bodyData: Pick<InternalRequest, "body" | "files">,
    ) {
       super(statusText);
-      // TODO: add 'files: bodyData.files'
-      this.requestBody = { json: bodyData.body };
+      this.requestBody = { files: bodyData.files, json: bodyData.body };
    }
 }

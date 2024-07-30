@@ -2,10 +2,6 @@ import path from "path";
 import fs from "fs/promises";
 import { Base64Resolvable, BufferResolvable, ResolvedFile } from "@huginn/shared";
 
-export function isBufferLike(value: unknown): value is ArrayBuffer | Buffer | Uint8Array | Uint8ClampedArray {
-   return value instanceof ArrayBuffer || value instanceof Uint8Array || value instanceof Uint8ClampedArray;
-}
-
 export async function resolveImage(image: Base64Resolvable): Promise<string | undefined> {
    if (!image) return undefined;
    if (typeof image === "string" && image.startsWith("data:")) {
@@ -16,7 +12,7 @@ export async function resolveImage(image: Base64Resolvable): Promise<string | un
 }
 
 export function resolveBase64(data: Base64Resolvable): string | undefined {
-   if (Buffer.isBuffer(data)) return `data:image/jpg;base64,${data.toString("base64")}`;
+   if (Buffer.isBuffer(data)) return `data:image/png;base64,${data.toString("base64")}`;
    return data;
 }
 

@@ -82,4 +82,9 @@ describe("user-patch-current", () => {
 
       expect(result).toBeDefined();
    });
+
+   // test("user-patch-current-avatar", async () => {
+   //    const client = await getLoggedClient();
+
+   // });
 });
