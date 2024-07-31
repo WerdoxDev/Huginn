@@ -10,6 +10,13 @@ export enum RequestMethod {
    PUT = "PUT",
 }
 
+export enum ImageType {
+   PNG = "png",
+   JPG = "jpg",
+   JPEG = "jpeg",
+   GIF = "gif",
+}
+
 export type ResponseLike = {
    body: Readable | ReadableStream | null;
 } & Pick<Response, "arrayBuffer" | "bodyUsed" | "headers" | "json" | "ok" | "status" | "statusText" | "text">;
@@ -72,11 +79,12 @@ export type RequestData = {
 };
 
 export type InternalRequest = {
+   root: string;
    fullRoute: RouteLike;
    method: RequestMethod;
+   token?: string;
 } & RequestData;
 
-// TODO: add 'files'
 export type HandlerRequestData = Pick<InternalRequest, "auth" | "body" | "files">;
 
 /**

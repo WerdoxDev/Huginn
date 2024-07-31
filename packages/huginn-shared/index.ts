@@ -6,3 +6,6 @@ export * from "./lib/routes";
 export * from "./lib/snowflake";
 export * from "./lib/utils";
 export * from "./lib/errors";
+export * from "./lib/rest-utils";
+export * from "./lib/http-error";
+export * from "./lib/file-resolver";

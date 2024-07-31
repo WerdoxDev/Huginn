@@ -2,7 +2,8 @@
    "name": "@huginn/shared",
    "module": "index.ts",
    "dependencies": {
-      "@sapphire/snowflake": "^3.5.3"
+      "@sapphire/snowflake": "^3.5.3",
+      "magic-bytes.js": "^1.10.0"
    },
    "type": "module",
    "devDependencies": {

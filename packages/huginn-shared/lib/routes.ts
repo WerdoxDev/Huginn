@@ -1,3 +1,4 @@
+import { ImageType } from "./rest-types";
 import { Snowflake } from "./snowflake";
 
 export type RouteLike = `/${string}`;
@@ -111,5 +112,23 @@ export const Routes = {
     */
    channelTyping(channelId: Snowflake): `/channels/${string}/typing` {
       return `/channels/${channelId}/typing` as const;
+   },
+};
+
+export const CDNRoutes = {
+   /**
+    * Route for:
+    * - POST '/avatars/{user.id}'
+    */
+   uploadAvatar(userId: Snowflake): `/avatars/${string}` {
+      return `/avatars/${userId}`;
+   },
+
+   /**
+    * Route for:
+    * - GET '/avatars/{user.id}/{avatar.hash}.{type}'
+    */
+   avatar(userId: Snowflake, hash: string, type: ImageType): `/avatars/${string}/${string}.${ImageType}` {
+      return `/avatars/${userId}/${hash}.${type}`;
    },
 };
