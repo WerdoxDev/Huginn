@@ -5,14 +5,6 @@ import { DefaultGatewayOptions } from "./gateway/constants";
 import { DefaultRestOptions } from "./rest/rest-utils";
 import { ClientOptions } from "./types";
 
-export function parseResponse(response: ResponseLike): Promise<unknown> {
-   if (response.headers.get("Content-Type")?.startsWith("application/json")) {
-      return response.json();
-   }
-
-   return response.arrayBuffer();
-}
-
 export function decodeToken(token: string): [boolean, (TokenPayload & jose.JWTPayload) | null] {
    try {
       const jwt = jose.decodeJwt<TokenPayload>(token);
@@ -29,8 +21,4 @@ export function createDefaultClientOptions(): ClientOptions {
       gateway: { ...DefaultGatewayOptions },
       intents: 0,
    };
-}
-
-export function isBufferLike(value: unknown): value is ArrayBuffer | Buffer | Uint8Array | Uint8ClampedArray {
-   return value instanceof ArrayBuffer || value instanceof Uint8Array || value instanceof Uint8ClampedArray;
 }

@@ -3,6 +3,7 @@ import { RESTOptions } from "../types";
 
 export const DefaultRestOptions: Required<RESTOptions> = {
    api: "http://localhost:3000",
+   cdn: "http://localhost:3002",
    authPrefix: "Bearer",
    async makeRequest(...args): Promise<ResponseLike> {
       return defaultMakeRequest(...args);

@@ -2,7 +2,7 @@ import { APIGetCurrentUserResult, APIGetUserResult, APIPatchCurrentUserJSONBody,
 import { Routes } from "@huginn/shared";
 import { Snowflake } from "@huginn/shared";
 import { REST } from "../rest/rest";
-import { resolveImage } from "../file-resolver";
+import { resolveImage } from "@huginn/shared/lib/file-resolver";
 
 export class UserAPI {
    private readonly rest: REST;
