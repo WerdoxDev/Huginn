@@ -3,6 +3,7 @@ import { version } from "../package.json";
 import { startListening } from "./commands";
 
 const connectionString = process.env.MONGODB_CONNECTION_STRING;
+export const cdnRoot = process.env.CDN_ROOT;
 export const serverHost = process.env.SERVER_HOST;
 export const serverPort = process.env.SERVER_PORT;
 export const certFile = process.env.CERTIFICATE_PATH && Bun.file(process.env.CERTIFICATE_PATH);

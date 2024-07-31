@@ -1,7 +1,8 @@
 import { prisma } from "@/db";
 import { createError } from "@/factory/error-factory";
 import { createTokens } from "@/factory/token-factory";
-import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/route-utils";
+import { error, getFileHash, getJwt, hValidator, handleRequest, verifyJwt } from "@/route-utils";
+import { cdnUpload } from "@/server-request";
 import {
    validateCorrectPassword,
    validateDisplayName,
@@ -10,10 +11,7 @@ import {
    validateUsername,
    validateUsernameUnique,
 } from "@/validation";
-import { APIPatchCurrentUserResult } from "@huginn/shared";
-import { constants } from "@huginn/shared";
-import { Error, Field, HttpCode } from "@huginn/shared";
-import { idFix } from "@huginn/shared";
+import { APIPatchCurrentUserResult, CDNRoutes, Error, Field, HttpCode, constants, idFix, resolveBuffer } from "@huginn/shared";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -49,7 +47,7 @@ app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
 
       const databaseError = createError(Error.invalidFormBody());
 
-      const user = await prisma.user.getById(payload.id);
+      const user = idFix(await prisma.user.getById(payload.id));
       validateCorrectPassword(body.password, user.password || "", databaseError);
 
       await validateUsernameUnique(body.username, databaseError);
@@ -59,12 +57,22 @@ app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
          return error(c, databaseError);
       }
 
+      let avatarHash: string | undefined;
+      if (body.avatar) {
+         const data = resolveBuffer(body.avatar);
+         avatarHash = getFileHash(data);
+
+         await cdnUpload(CDNRoutes.uploadAvatar(user.id), {
+            files: [{ data: resolveBuffer(body.avatar), name: avatarHash }],
+         });
+      }
+
       const updatedUser = idFix(
          await prisma.user.edit(payload.id, {
             email: body.email,
             username: body.username,
             displayName: body.displayName,
-            avatar: body.avatar,
+            avatar: avatarHash,
             password: body.newPassword,
          }),
       );

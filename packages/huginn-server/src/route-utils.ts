@@ -1,6 +1,4 @@
-import { TokenPayload } from "@huginn/shared";
-import { Error as HError, HttpCode } from "@huginn/shared";
-import consola from "consola";
+import { Error as HError, HttpCode, TokenPayload } from "@huginn/shared";
 import { Context, Env, Input, MiddlewareHandler, ValidationTargets } from "hono";
 import { createFactory } from "hono/factory";
 import { validator } from "hono/validator";
@@ -52,7 +50,6 @@ export async function handleRequest(
          otherError = new DBError(e, "PRISMA ERROR");
       }
 
-      consola.log("LOGGING ERROR");
       return serverError(c, otherError);
    }
 }
@@ -168,4 +165,9 @@ export async function tryGetBodyJson(reqOrRes: Context["req"] | Context["res"]):
    } catch (e) {
       return undefined;
    }
+}
+
+export function getFileHash(file: Buffer) {
+   const hash = new Bun.CryptoHasher("md5").update(file, "hex").digest("hex");
+   return hash;
 }
