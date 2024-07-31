@@ -1,16 +1,21 @@
+import { HttpCode } from "@huginn/shared";
 import { Hono } from "hono";
 
 const app = new Hono();
 
-app.post("/avatars", async c => {
+app.post("/avatars/:userId", async c => {
    const body = await c.req.parseBody();
-   if ("file" in body && body.file instanceof File) {
-      const hasher = new Bun.CryptoHasher("md5");
-      hasher.update(body.file.name, "hex");
-      const filename = hasher.digest("hex");
-      console.log(body.file.type);
-      await Bun.write(`./uploads/${filename}.png`, body.file);
+
+   if (!("files[0]" in body) || !(body["files[0]"] instanceof File)) {
+      return c.text("Provided data was not correct", HttpCode.BAD_REQUEST);
    }
+
+   const file = body["files[0]"];
+
+   const type = file.type.split("/")[1];
+   await Bun.write(`./uploads/avatars/${file.name}.${type}`, file);
+
+   return c.newResponse(null, HttpCode.CREATED);
 });
 
 export const serverHost = process.env.SERVER_HOST;
