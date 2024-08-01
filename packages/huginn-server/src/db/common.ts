@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client/edge";
 import { Snowflake } from "@huginn/shared";
 
 export type ChannelInclude = Prisma.ChannelInclude | undefined;

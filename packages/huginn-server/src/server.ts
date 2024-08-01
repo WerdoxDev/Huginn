@@ -1,20 +1,33 @@
-import { Error, HttpCode, HuginnErrorData } from "@huginn/shared";
-import { consola } from "consola";
-import { colors } from "consola/utils";
+import { Error, HttpCode, HuginnErrorData, idFix } from "@huginn/shared";
+// import { colors } from "consola/utils";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { certFile, keyFile, serverHost, serverPort } from ".";
+import { env } from "node:process";
+import { version } from "../package.json";
+import "./db/index";
 import { createError } from "./factory/error-factory";
 import { ServerGateway } from "./gateway/server-gateway";
-import { logReject, logRequest, logResponse, logServerError } from "./log-utils";
+import { hconsole, logReject, logRequest, logResponse, logServerError } from "./log-utils";
 import { error, serverError, tryGetBodyJson } from "./route-utils";
 import routes from "./routes/route-merger";
 import testRoute from "./routes/test-routes";
 import { TokenInvalidator } from "./token-invalidator";
-import "./db/index";
+import { prisma } from "./db/index";
+import { createBunWebSocket } from "hono/bun";
 
 export function startServer() {
-   consola.start("Starting server...");
+   const { upgradeWebSocket, websocket } = createBunWebSocket();
+   // const serverHost = env.SERVER_HOST;
+   // const serverPort = env.SERVER_PORT;
+
+   // if (!serverHost || !serverPort) {
+   //    hconsole.error("Server config is not set correctly!");
+   //    return;
+   //    // process.exit();
+   // }
+   hconsole.info(`Using version ${version}`);
+
+   hconsole.start("Starting server...");
 
    const app = new Hono();
 
@@ -55,11 +68,25 @@ export function startServer() {
    app.route("/", routes);
    app.route("/", testRoute);
 
-   app.get("/", c => {
-      return c.html(
-         '<div style="height:100%; display: flex; align-items:center; justify-content:center;"><div style="font-size: 2rem;">Huginn API Homepage</div></div>',
-      );
+   app.get("/", async c => {
+      const users = idFix(await prisma.user.findMany());
+
+      return c.json(users[0].avatar);
+      // return c.html(
+      //    '<div style="height:100%; display: flex; align-items:center; justify-content:center;"><div style="font-size: 2rem;">Huginn API Homepage</div></div>',
+      // );
    });
+
+   app.get(
+      "/gateway",
+      upgradeWebSocket(c => {
+         return {
+            onOpen: (evt, ws) => gateway.onOpen(ws),
+            onClose: (evt, ws) => gateway.onClose(ws, evt),
+            onMessage: (evt, ws) => gateway.onMessage(ws, message),
+         };
+      }),
+   );
 
    // const server = Bun.serve<string>({
    //    cert: certFile,
@@ -91,9 +118,9 @@ export function startServer() {
 
    // const server = { port: serverPort, hostname: serverHost, fetch: app.fetch };
 
-   consola.success("Server started!");
+   hconsole.success("Server started!");
    // consola.box(`Listening on ${colors.green(server.url.href)}`);
-   consola.box(`Listening on ${colors.green("/* todo */")}`);
+   hconsole.box(`Listening on ${hconsole.green("/* todo */")}`);
 
    return app;
 }

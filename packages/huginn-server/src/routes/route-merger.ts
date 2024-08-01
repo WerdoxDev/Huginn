@@ -13,8 +13,6 @@ import deleteRelationshipBUID from "./relationship/delete-relationship-buid";
 import getRelationshipBUID from "./relationship/get-relationship-buid";
 import getUserRelationships from "./relationship/get-user-relationships";
 import postPutRelationship from "./relationship/post-put-relationship";
-import getBuilds from "./updater/get-builds";
-import getCheckUpdate from "./updater/get-check-update";
 import getCurrentUser from "./user/get-current-user";
 import getUserBID from "./user/get-user-bid";
 import getUserChannels from "./user/get-user-channels";
@@ -51,9 +49,5 @@ app.route("/", getRelationshipBUID);
 app.route("/", getUserRelationships);
 app.route("/", postPutRelationship);
 app.route("/", deleteRelationshipBUID);
-
-// Updater
-app.route("/", getCheckUpdate);
-app.route("/", getBuilds);
 
 export default app;

@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client/edge";
 import { APIPatchCurrentUserJSONBody } from "@huginn/shared";
 import { Snowflake } from "@huginn/shared";
 import { DBErrorType, assertCondition, assertId, assertObj, prisma } from ".";

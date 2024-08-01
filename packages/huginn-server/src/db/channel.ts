@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client/edge";
 import { ChannelType } from "@huginn/shared";
 import { snowflake, Snowflake } from "@huginn/shared";
 import { prisma } from ".";

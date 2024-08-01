@@ -2,7 +2,7 @@ import { Snowflake } from "@huginn/shared";
 import { DBErrorType, assertId, assertObj, prisma } from ".";
 import { snowflake } from "@huginn/shared";
 import { MessageType } from "@huginn/shared";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client/edge";
 import { MessageInclude, MessagePayload } from "./common";
 
 const messagesExtention = Prisma.defineExtension({

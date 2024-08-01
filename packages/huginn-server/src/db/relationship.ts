@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client/edge";
 import { RelationshipType } from "@huginn/shared";
 import { Snowflake, snowflake } from "@huginn/shared";
 import { DBErrorType, assertCondition, assertId, assertObj, prisma } from ".";

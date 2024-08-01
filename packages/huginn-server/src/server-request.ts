@@ -1,5 +1,7 @@
 import { HTTPError, InternalRequest, parseResponse, RequestData, RequestMethod, resolveRequest, RouteLike } from "@huginn/shared";
-import { cdnRoot } from ".";
+import { env } from "node:process";
+
+const cdnRoot = env.CDN_ROOT;
 
 export async function cdnUpload(fullRoute: RouteLike, options: RequestData = {}) {
    if (!cdnRoot) {

@@ -3,8 +3,9 @@
    "compilerOptions": {
       "lib": ["ESNext"],
       "paths": {
-         "@/*": ["./api/*"]
-      }
+         "@/*": ["./src/*"]
+      },
+      "types": ["@cloudflare/workers-types"]
    },
-   "include": ["api", "package.json"]
+   "include": ["src", "package.json"]
 }

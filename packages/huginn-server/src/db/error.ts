@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client/edge";
 import { Snowflake } from "@huginn/shared";
 
 export class DBError<T extends Error> extends Error {
