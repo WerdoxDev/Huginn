@@ -1,6 +1,6 @@
 {
    "name": "@huginn/shared",
-   "module": "index.ts",
+   "module": "src/index.ts",
    "dependencies": {
       "@sapphire/snowflake": "^3.5.3",
       "magic-bytes.js": "^1.10.0"

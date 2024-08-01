@@ -1,4 +1,4 @@
-import { HTTPError } from "@huginn/api";
+import { HTTPError } from "@huginn/shared";
 import { Messages } from "@lib/errorMessages";
 import { useModalsDispatch } from "@contexts/modalContext";
 

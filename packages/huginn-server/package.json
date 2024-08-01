@@ -1,10 +1,10 @@
 {
    "name": "huginn-server",
-   "module": "index.ts",
+   "module": "src/index.ts",
    "type": "module",
    "version": "0.3-dev",
    "scripts": {
-      "start": "echo hi && bun --watch app.ts",
+      "start": "bun --watch src/index.ts",
       "start-prod": "bun src/index.ts"
    },
    "devDependencies": {
@@ -13,7 +13,6 @@
       "typescript": "^5.5.3"
    },
    "dependencies": {
-      "@hono/node-server": "^1.12.0",
       "@huginn/shared": "workspace:*",
       "@prisma/client": "^5.17.0",
       "consola": "^3.2.3",

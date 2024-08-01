@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { resolveBase64, resolveFile, resolveImage } from "@huginn/shared/lib/file-resolver";
+import { resolveBase64, resolveFile, resolveImage } from "@huginn/shared";
 import path from "path";
 
 describe("file", () => {

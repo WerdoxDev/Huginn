@@ -1,5 +1,4 @@
 import consola from "consola";
-// import { version } from "../package.json";
 import { startListening } from "./commands";
 import { startServer } from "./server";
 import { handle } from "hono/vercel";
@@ -22,26 +21,6 @@ if (!serverHost || !serverPort) {
    process.exit();
 }
 
-// consola.info(`Using version ${version}`);
-
 // await startListening();
 
-// const server = startServer();
-
-const app = new Hono().basePath("/api");
-
-app.get("/", c => {
-   return c.json({
-      message: "Hello Hono!",
-   });
-});
-
-const handler = handle(app);
-
-export const GET = handler;
-export const POST = handler;
-export const PATCH = handler;
-export const PUT = handler;
-export const OPTIONS = handler;
-
-// export default handle(app);
+startServer();

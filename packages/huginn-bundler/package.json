@@ -1,6 +1,6 @@
 {
    "name": "@huginn/bundler",
-   "module": "index.ts",
+   "module": "src/index.ts",
    "type": "module",
    "bin": {
       "bundler": "./index.ts"

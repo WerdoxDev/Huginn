@@ -1,8 +1,13 @@
-import { APIGetCurrentUserResult, APIGetUserResult, APIPatchCurrentUserJSONBody, APIPatchCurrentUserResult } from "@huginn/shared";
-import { Routes } from "@huginn/shared";
-import { Snowflake } from "@huginn/shared";
+import {
+   APIGetCurrentUserResult,
+   APIGetUserResult,
+   APIPatchCurrentUserJSONBody,
+   APIPatchCurrentUserResult,
+   resolveImage,
+   Routes,
+   Snowflake,
+} from "@huginn/shared";
 import { REST } from "../rest/rest";
-import { resolveImage } from "@huginn/shared/lib/file-resolver";
 
 export class UserAPI {
    private readonly rest: REST;

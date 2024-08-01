@@ -3,6 +3,5 @@
    "compilerOptions": {
       "isolatedDeclarations": true
    },
-   "include": ["**/*", "../huginn-shared/lib/file-resolver.ts"]
-   // "references": [{ "path": "../huginn-shared" }]
+   "include": ["src"]
 }
