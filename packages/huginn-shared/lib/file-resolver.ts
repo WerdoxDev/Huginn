@@ -1,5 +1,5 @@
-import path from "path";
-import fs from "fs/promises";
+import path from "node:path";
+import fs from "node:fs/promises";
 import { Base64Resolvable, BufferResolvable, ResolvedFile } from "@huginn/shared";
 
 /**
@@ -56,11 +56,11 @@ export async function resolveFile(resource: BufferResolvable): Promise<ResolvedF
          return { data: Buffer.from(await res.arrayBuffer()), contentType: res.headers.get("content-type") ?? undefined };
       }
 
-      const file = path.resolve(resource);
+      // const file = path.resolve(resource);
 
-      const stats = await fs.stat(file);
-      if (!stats.isFile()) throw new Error(`File was not found: ${file}`);
-      return { data: await fs.readFile(file) };
+      // const stats = await fs.stat(file);
+      // if (!stats.isFile()) throw new Error(`File was not found: ${file}`);
+      // return { data: await fs.readFile(file) };
    }
 
    throw new Error("The provided resource type was not valid");
