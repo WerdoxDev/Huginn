@@ -1,7 +1,9 @@
 import consola from "consola";
-import { version } from "../package.json";
+// import { version } from "../package.json";
 import { startListening } from "./commands";
 import { startServer } from "./server";
+import { handle } from "hono/vercel";
+import { Hono } from "hono";
 
 const connectionString = process.env.MONGODB_CONNECTION_STRING;
 export const cdnRoot = process.env.CDN_ROOT;
@@ -20,9 +22,26 @@ if (!serverHost || !serverPort) {
    process.exit();
 }
 
-consola.info(`Using version ${version}`);
+// consola.info(`Using version ${version}`);
 
 // await startListening();
 
-const server = startServer();
-export default server;
+// const server = startServer();
+
+const app = new Hono().basePath("/api");
+
+app.get("/", c => {
+   return c.json({
+      message: "Hello Hono!",
+   });
+});
+
+const handler = handle(app);
+
+export const GET = handler;
+export const POST = handler;
+export const PATCH = handler;
+export const PUT = handler;
+export const OPTIONS = handler;
+
+// export default handle(app);

@@ -3,8 +3,8 @@
    "compilerOptions": {
       "lib": ["ESNext"],
       "paths": {
-         "@/*": ["./src/*"]
+         "@/*": ["./api/*"]
       }
    },
-   "include": ["src", "package.json"]
+   "include": ["api", "package.json"]
 }

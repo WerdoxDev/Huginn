@@ -89,13 +89,13 @@ export function startServer() {
    //    },
    // });
 
-   const server = { port: serverPort, hostname: serverHost, fetch: app.fetch };
+   // const server = { port: serverPort, hostname: serverHost, fetch: app.fetch };
 
    consola.success("Server started!");
    // consola.box(`Listening on ${colors.green(server.url.href)}`);
    consola.box(`Listening on ${colors.green("/* todo */")}`);
 
-   return server;
+   return app;
 }
 
 export const gateway = new ServerGateway({ logHeartbeat: false });

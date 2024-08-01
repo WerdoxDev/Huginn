@@ -1,5 +1,9 @@
 {
-   "version": 2,
-   "rewrites": [{ "source": "/(.*)", "destination": "/src" }],
-   "buildCommand": ""
+   "rewrites": [
+      {
+         "source": "/api/(.*)",
+         "destination": "/api"
+      }
+   ],
+   "redirects": [{ "source": "/", "destination": "/api", "permanent": false }]
 }
