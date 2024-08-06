@@ -24,11 +24,11 @@ export default defineConfig({
 
    resolve: {
       alias: {
-         "@": path.resolve(__dirname, "./src"),
-         "@lib": path.resolve(__dirname, "./src/lib"),
-         "@hooks": path.resolve(__dirname, "./src/hooks"),
-         "@contexts": path.resolve(__dirname, "./src/contexts"),
-         "@components": path.resolve(__dirname, "./src/components"),
+         "@": path.join(__dirname, "./src"),
+         "@lib": path.join(__dirname, "./src/lib"),
+         "@hooks": path.join(__dirname, "./src/hooks"),
+         "@contexts": path.join(__dirname, "./src/contexts"),
+         "@components": path.join(__dirname, "./src/components"),
       },
    },
    // prevent vite from obscuring rust errors

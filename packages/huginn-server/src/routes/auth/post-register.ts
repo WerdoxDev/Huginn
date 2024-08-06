@@ -1,7 +1,6 @@
 import { prisma } from "@/db";
-import { createError } from "@/factory/error-factory";
 import { createTokens } from "@/factory/token-factory";
-import { error, hValidator, handleRequest } from "@/route-utils";
+import { hValidator, handleRequest } from "@/route-utils";
 import {
    validateDisplayName,
    validateEmail,
@@ -10,10 +9,8 @@ import {
    validateUsername,
    validateUsernameUnique,
 } from "@/validation";
-import { APIPostRegisterResult } from "@huginn/shared";
-import { constants } from "@huginn/shared";
-import { Error, HttpCode } from "@huginn/shared";
-import { idFix } from "@huginn/shared";
+import { createError, errorResponse } from "@huginn/backend-shared";
+import { APIPostRegisterResult, Error, HttpCode, constants, idFix } from "@huginn/shared";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -38,7 +35,7 @@ app.post("/auth/register", hValidator("json", schema), async c =>
       validateEmail(body.email, formError);
 
       if (formError.hasErrors()) {
-         return error(c, formError);
+         return errorResponse(c, formError);
       }
 
       const databaseError = createError(Error.invalidFormBody());
@@ -47,7 +44,7 @@ app.post("/auth/register", hValidator("json", schema), async c =>
       await validateEmailUnique(body.email, databaseError);
 
       if (databaseError.hasErrors()) {
-         return error(c, databaseError);
+         return errorResponse(c, databaseError);
       }
 
       const user = idFix(await prisma.user.registerNew(body));

@@ -73,23 +73,33 @@ export class HuginnClient {
    }
 
    public async login(credentials: LoginCredentials): Promise<void> {
-      this.readyState = ClientReadyState.INITIALIZING;
-      const result = await this.auth.login(credentials);
+      try {
+         this.readyState = ClientReadyState.INITIALIZING;
+         const result = await this.auth.login(credentials);
 
-      this.user = { ...result };
-      this.tokenHandler.token = result.token;
-      this.tokenHandler.refreshToken = result.refreshToken;
-      this.readyState = ClientReadyState.READY;
+         this.user = { ...result };
+         this.tokenHandler.token = result.token;
+         this.tokenHandler.refreshToken = result.refreshToken;
+         this.readyState = ClientReadyState.READY;
+      } catch (e) {
+         this.readyState = ClientReadyState.NONE;
+         throw e;
+      }
    }
 
    public async register(user: RegisterUser): Promise<void> {
-      this.readyState = ClientReadyState.INITIALIZING;
-      const result = await this.auth.register(user);
+      try {
+         this.readyState = ClientReadyState.INITIALIZING;
+         const result = await this.auth.register(user);
 
-      this.user = { ...result };
-      this.tokenHandler.token = result.token;
-      this.tokenHandler.refreshToken = result.refreshToken;
-      this.readyState = ClientReadyState.INITIALIZING;
+         this.user = { ...result };
+         this.tokenHandler.token = result.token;
+         this.tokenHandler.refreshToken = result.refreshToken;
+         this.readyState = ClientReadyState.INITIALIZING;
+      } catch (e) {
+         this.readyState = ClientReadyState.NONE;
+         throw e;
+      }
    }
 
    public async logout(): Promise<void> {

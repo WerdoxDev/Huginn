@@ -124,6 +124,9 @@ export const Error = {
    fileNotFound(): [string, JsonCode] {
       return ["File Not Found", JsonCode.NONE];
    },
+   invalidFileFormat(): [string, JsonCode] {
+      return ["Invalid File Format", JsonCode.NONE];
+   },
    malformedBody(): [string, JsonCode] {
       return ["Malformed Body", JsonCode.NONE];
    },

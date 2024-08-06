@@ -9,7 +9,7 @@ export type SettingsContextType = {
 };
 
 // const defaultValue: SettingsContextType = { serverAddress: "localhost:3000", theme: "pine green" };
-const defaultValue: SettingsContextType = { serverAddress: "http://192.168.178.51:3000", theme: "pine green" };
+const defaultValue: SettingsContextType = { serverAddress: "https://huginn-b4yw.onrender.com", theme: "pine green" };
 
 let value = defaultValue;
 if (window.__TAURI__) {

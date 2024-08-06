@@ -1,6 +1,6 @@
 import { BasePayload, GatewayOperations } from "@huginn/shared";
-import { logGatewaySend } from "../log-utils";
 import { gateway } from "../server";
+import { logGatewaySend } from "@huginn/backend-shared";
 
 export function publishToTopic(topic: string, data: BasePayload) {
    logGatewaySend(data, false);

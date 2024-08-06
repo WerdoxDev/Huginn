@@ -6,13 +6,13 @@ import { cors } from "hono/cors";
 import { certFile, keyFile, serverHost, serverPort } from ".";
 import { version } from "../package.json";
 import "./db/index";
-import { createError } from "./factory/error-factory";
+import { createError } from "@huginn/backend-shared/src/error-factory";
 import { ServerGateway } from "./gateway/server-gateway";
-import { logReject, logRequest, logResponse, logServerError } from "./log-utils";
-import { error, serverError, tryGetBodyJson } from "./route-utils";
+import { tryGetBodyJson } from "./route-utils";
 import routes from "./routes/route-merger";
 import testRoute from "./routes/test-routes";
 import { TokenInvalidator } from "./token-invalidator";
+import { logRequest, logResponse, logReject, logServerError, errorResponse, serverError } from "@huginn/backend-shared";
 
 export function startServer() {
    consola.info(`Using version ${version}`);
@@ -46,7 +46,7 @@ export function startServer() {
       logServerError(c.req.path, e);
 
       if (e instanceof SyntaxError) {
-         return error(c, createError(Error.malformedBody()), HttpCode.BAD_REQUEST);
+         return errorResponse(c, createError(Error.malformedBody()), HttpCode.BAD_REQUEST);
       }
 
       // logReject(c.req.path, c.req.method, e.message);

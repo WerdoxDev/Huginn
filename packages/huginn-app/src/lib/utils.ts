@@ -1,4 +1,4 @@
-import { HuginnAPIError } from "@huginn/api/index";
+import { HuginnAPIError } from "@huginn/api";
 import type { HuginnError, HuginnErrorData } from "@huginn/shared";
 import React, { JSXElementConstructor, ReactNode } from "react";
 import { APIMessages } from "./errorMessages";

@@ -90,7 +90,13 @@ function Register() {
                <HuginnInput.Label>Display Name</HuginnInput.Label>
             </HuginnInput>
 
-            <HuginnInput className="mb-5 [&_input]:lowercase" onFocus={focused => { onFocusChanged(focused); }} {...inputsProps.username}>
+            <HuginnInput
+               className="mb-5 [&_input]:lowercase"
+               onFocus={focused => {
+                  onFocusChanged(focused);
+               }}
+               {...inputsProps.username}
+            >
                <HuginnInput.Label>Username</HuginnInput.Label>
                <HuginnInput.After>
                   <AnimatedMessage className="mt-1" {...usernameMessageDetail} />

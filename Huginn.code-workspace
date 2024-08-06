@@ -28,6 +28,10 @@
          "name": "huginn-shared",
          "path": "./packages/huginn-shared",
       },
+      {
+         "name": "huginn-backend-shared",
+         "path": "./packages/huginn-backend-shared",
+      },
    ],
    "settings": {
       "files.exclude": {

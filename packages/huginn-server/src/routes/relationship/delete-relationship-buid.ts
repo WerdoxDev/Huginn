@@ -1,8 +1,7 @@
 import { prisma } from "@/db";
 import { dispatchToTopic } from "@/gateway/gateway-utils";
 import { getJwt, handleRequest, verifyJwt } from "@/route-utils";
-import { HttpCode } from "@huginn/shared";
-import { GatewayRelationshipDeleteDispatch } from "@huginn/shared";
+import { GatewayRelationshipDeleteDispatch, HttpCode } from "@huginn/shared";
 import { Hono } from "hono";
 
 const app = new Hono();

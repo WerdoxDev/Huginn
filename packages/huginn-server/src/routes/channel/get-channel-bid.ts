@@ -1,10 +1,8 @@
 import { prisma } from "@/db";
 import { includeChannelRecipients } from "@/db/common";
-import { createError } from "@/factory/error-factory";
-import { getJwt, handleRequest, notFound, verifyJwt } from "@/route-utils";
-import { APIGetChannelByIdResult } from "@huginn/shared";
-import { Error, HttpCode } from "@huginn/shared";
-import { idFix } from "@huginn/shared";
+import { getJwt, handleRequest, verifyJwt } from "@/route-utils";
+import { createError, notFound } from "@huginn/backend-shared";
+import { APIGetChannelByIdResult, Error, HttpCode, idFix } from "@huginn/shared";
 import { Hono } from "hono";
 
 const app = new Hono();

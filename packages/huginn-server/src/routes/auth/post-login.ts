@@ -1,11 +1,8 @@
 import { DBErrorType, prisma } from "@/db";
-import { createError } from "@/factory/error-factory";
 import { createTokens } from "@/factory/token-factory";
-import { error, hValidator, handleRequest } from "@/route-utils";
-import { APIPostLoginResult } from "@huginn/shared";
-import { constants } from "@huginn/shared";
-import { Error, Field, HttpCode } from "@huginn/shared";
-import { idFix } from "@huginn/shared";
+import { hValidator, handleRequest } from "@/route-utils";
+import { createError, errorResponse } from "@huginn/backend-shared";
+import { APIPostLoginResult, Error, Field, HttpCode, constants, idFix } from "@huginn/shared";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -35,7 +32,7 @@ app.post("/auth/login", hValidator("json", schema), c =>
       },
       e => {
          if (e.isErrorType(DBErrorType.NULL_USER)) {
-            return error(
+            return errorResponse(
                c,
                createError(Error.invalidFormBody()).addError("login", Field.invalidLogin()).addError("password", Field.invalidLogin()),
             );

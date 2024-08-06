@@ -1,6 +1,7 @@
 import { prisma } from "@/db";
 import { dispatchToTopic } from "@/gateway/gateway-utils";
-import { getJwt, hValidator, handleRequest, invalidFormBody, verifyJwt } from "@/route-utils";
+import { getJwt, hValidator, handleRequest, verifyJwt } from "@/route-utils";
+import { invalidFormBody } from "@huginn/backend-shared";
 import { APIMessage, GatewayMessageCreateDispatch, HttpCode, idFix, omit } from "@huginn/shared";
 import { Hono } from "hono";
 import { z } from "zod";

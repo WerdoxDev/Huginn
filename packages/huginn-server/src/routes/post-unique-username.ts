@@ -1,5 +1,4 @@
-import { APIPostUniqueUsernameResult } from "@huginn/shared";
-import { HttpCode } from "@huginn/shared";
+import { APIPostUniqueUsernameResult, HttpCode } from "@huginn/shared";
 import { Hono } from "hono";
 import { z } from "zod";
 import { hValidator, handleRequest } from "../route-utils";

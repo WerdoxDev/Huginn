@@ -1,11 +1,16 @@
 {
+   "version": "0.1.0",
    "name": "huginn-cdn",
    "scripts": {
       "start": "bun --watch src/index.ts"
    },
    "dependencies": {
+      "@huginn/backend-shared": "workspace:*",
+      "@huginn/shared": "workspace:*",
+      "consola": "^3.2.3",
       "hono": "^4.5.2",
-      "@huginn/shared": "workspace:*"
+      "magic-bytes.js": "^1.10.0",
+      "sharp": "^0.33.4"
    },
    "devDependencies": {
       "@types/bun": "latest"

@@ -1,7 +1,6 @@
 import { prisma } from "@/db";
-import { createError } from "@/factory/error-factory";
 import { createTokens } from "@/factory/token-factory";
-import { error, getFileHash, getJwt, hValidator, handleRequest, verifyJwt } from "@/route-utils";
+import { getFileHash, getJwt, hValidator, handleRequest, verifyJwt } from "@/route-utils";
 import { cdnUpload } from "@/server-request";
 import {
    validateCorrectPassword,
@@ -11,6 +10,7 @@ import {
    validateUsername,
    validateUsernameUnique,
 } from "@/validation";
+import { createError, errorResponse } from "@huginn/backend-shared";
 import { APIPatchCurrentUserResult, CDNRoutes, Error, Field, HttpCode, constants, idFix, resolveBuffer } from "@huginn/shared";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -42,7 +42,7 @@ app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
       }
 
       if (formError.hasErrors()) {
-         return error(c, formError);
+         return errorResponse(c, formError);
       }
 
       const databaseError = createError(Error.invalidFormBody());
@@ -54,7 +54,7 @@ app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
       await validateEmailUnique(body.email, databaseError);
 
       if (databaseError.hasErrors()) {
-         return error(c, databaseError);
+         return errorResponse(c, databaseError);
       }
 
       let avatarHash: string | undefined;

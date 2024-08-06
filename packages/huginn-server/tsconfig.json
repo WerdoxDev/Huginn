@@ -6,5 +6,5 @@
          "@/*": ["./src/*"]
       }
    },
-   "include": ["src", "package.json"]
+   "include": ["src", "package.json", "../huginn-backend-shared/src/error-factory.ts"]
 }

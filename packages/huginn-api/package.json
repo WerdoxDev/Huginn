@@ -1,6 +1,6 @@
 {
    "name": "@huginn/api",
-   "module": "src/index.ts",
+   "main": "./src/index.ts",
    "type": "module",
    "scripts": {
       "start": "bun --watch ./src/index.ts"

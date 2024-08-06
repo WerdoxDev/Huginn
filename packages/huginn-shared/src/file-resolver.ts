@@ -56,7 +56,7 @@ export async function resolveFile(resource: BufferResolvable): Promise<ResolvedF
          return { data: Buffer.from(await res.arrayBuffer()), contentType: res.headers.get("content-type") ?? undefined };
       }
 
-      const file = path.resolve(resource);
+      const file = path.join(__dirname, resource);
 
       const stats = await fs.stat(file);
       if (!stats.isFile()) throw new Error(`File was not found: ${file}`);

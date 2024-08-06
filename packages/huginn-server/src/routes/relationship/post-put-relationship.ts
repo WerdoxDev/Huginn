@@ -1,8 +1,8 @@
 import { DBErrorType, prisma } from "@/db";
-import { createError } from "@/factory/error-factory";
 import { dispatchToTopic } from "@/gateway/gateway-utils";
-import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/route-utils";
-import { RelationshipType } from "@huginn/shared";
+import { getJwt, hValidator, handleRequest, verifyJwt } from "@/route-utils";
+import { createError, errorResponse } from "@huginn/backend-shared";
+import { omit, omitArray, RelationshipType } from "@huginn/shared";
 import { Error, HttpCode } from "@huginn/shared";
 import { GatewayRelationshipCreateDispatch } from "@huginn/shared";
 import { Snowflake } from "@huginn/shared";
@@ -18,11 +18,11 @@ async function requestRest(c: Context, userId: Snowflake) {
    const payload = getJwt(c);
 
    if (userId === payload.id) {
-      return error(c, createError(Error.relationshipSelfRequest()), HttpCode.BAD_REQUEST);
+      return errorResponse(c, createError(Error.relationshipSelfRequest()), HttpCode.BAD_REQUEST);
    }
 
    if (await prisma.relationship.exists({ ownerId: BigInt(payload.id), userId: BigInt(userId), type: RelationshipType.FRIEND })) {
-      return error(c, createError(Error.relationshipExists()), HttpCode.BAD_REQUEST);
+      return errorResponse(c, createError(Error.relationshipExists()), HttpCode.BAD_REQUEST);
    }
 
    if (
@@ -32,20 +32,15 @@ async function requestRest(c: Context, userId: Snowflake) {
          type: RelationshipType.PENDING_OUTGOING,
       }))
    ) {
-      const relationships = idFix(await prisma.relationship.createRelationship(payload.id, userId, { user: true }));
+      const relationships = omitArray(idFix(await prisma.relationship.createRelationship(payload.id, userId, { user: true })), [
+         "userId",
+      ]);
 
-      dispatchToTopic<GatewayRelationshipCreateDispatch>(
-         payload.id,
-         "relationship_create",
-         relationships.find(x => x.ownerId === payload.id),
-         0,
-      );
-      dispatchToTopic<GatewayRelationshipCreateDispatch>(
-         userId,
-         "relationship_create",
-         relationships.find(x => x.ownerId === userId),
-         0,
-      );
+      const relationshipOwner = relationships.find(x => x.ownerId === payload.id)!;
+      const relationshipUser = relationships.find(x => x.ownerId === userId)!;
+
+      dispatchToTopic<GatewayRelationshipCreateDispatch>(payload.id, "relationship_create", relationshipOwner, 0);
+      dispatchToTopic<GatewayRelationshipCreateDispatch>(userId, "relationship_create", relationshipUser, 0);
    }
 
    return c.newResponse(null, HttpCode.NO_CONTENT);
@@ -58,7 +53,7 @@ app.post("/users/@me/relationships", verifyJwt(), hValidator("json", schema), c 
          const body = c.req.valid("json");
 
          if (!body.username) {
-            return error(c, createError(Error.invalidFormBody()));
+            return errorResponse(c, createError(Error.invalidFormBody()));
          }
 
          const userId = idFix(await prisma.user.getByUsername(body.username)).id;
@@ -67,7 +62,7 @@ app.post("/users/@me/relationships", verifyJwt(), hValidator("json", schema), c 
       },
       e => {
          if (e.isErrorType(DBErrorType.NULL_USER)) {
-            return error(c, createError(Error.noUserWithUsername()), HttpCode.NOT_FOUND);
+            return errorResponse(c, createError(Error.noUserWithUsername()), HttpCode.NOT_FOUND);
          }
       },
    ),
@@ -82,7 +77,7 @@ app.put("/users/@me/relationships/:userId", verifyJwt(), c =>
       },
       e => {
          if (e.isErrorType(DBErrorType.NULL_USER)) {
-            return error(c, createError(Error.noUserWithUsername()), HttpCode.NOT_FOUND);
+            return errorResponse(c, createError(Error.noUserWithUsername()), HttpCode.NOT_FOUND);
          }
       },
    ),

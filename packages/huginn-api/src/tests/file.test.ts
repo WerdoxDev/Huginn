@@ -4,14 +4,14 @@ import path from "path";
 
 describe("file", () => {
    test("file-resolve-path", async () => {
-      const result = resolveBase64((await resolveFile(path.resolve(__dirname, "./pixel.png"))).data);
+      const result = resolveBase64((await resolveFile(path.join(__dirname, "pixel.png"))).data);
 
       expect(result).toBe(
          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAANSURBVBhXY2BgYPgPAAEEAQBwIGULAAAAAElFTkSuQmCC",
       );
    });
    test("image-resolve-path", async () => {
-      const result = await resolveImage(path.resolve(__dirname, "./pixel.png"));
+      const result = await resolveImage(path.join(__dirname, "pixel.png"));
 
       expect(result).toBe(
          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAANSURBVBhXY2BgYPgPAAEEAQBwIGULAAAAAElFTkSuQmCC",

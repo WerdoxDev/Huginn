@@ -10,12 +10,7 @@ export enum RequestMethod {
    PUT = "PUT",
 }
 
-export enum ImageType {
-   PNG = "png",
-   JPG = "jpg",
-   JPEG = "jpeg",
-   GIF = "gif",
-}
+export type ImageType = "png" | "jpeg" | "jpg" | "gif";
 
 export type ResponseLike = {
    body: Readable | ReadableStream | null;

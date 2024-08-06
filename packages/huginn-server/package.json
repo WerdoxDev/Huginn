@@ -14,6 +14,7 @@
    },
    "dependencies": {
       "@huginn/shared": "workspace:*",
+      "@huginn/backend-shared": "workspace:*",
       "@prisma/client": "^5.17.0",
       "consola": "^3.2.3",
       "hono": "^4.5.0",

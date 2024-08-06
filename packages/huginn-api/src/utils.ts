@@ -1,4 +1,3 @@
-import { ResponseLike } from "@huginn/shared";
 import { TokenPayload } from "@huginn/shared";
 import * as jose from "jose";
 import { DefaultGatewayOptions } from "./gateway/constants";

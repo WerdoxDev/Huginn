@@ -17,10 +17,10 @@ import { ServerWebSocket } from "bun";
 import consola from "consola";
 import { prisma } from "../db";
 import { verifyToken } from "../factory/token-factory";
-import { logGatewayClose, logGatewayOpen, logGatewayRecieve, logGatewaySend, logServerError } from "../log-utils";
 import { ServerGatewayOptions } from "../types";
 import { ClientSession } from "./client-session";
 import { validateGatewayData } from "./gateway-utils";
+import { logGatewayOpen, logGatewayClose, logGatewayRecieve, logServerError, logGatewaySend } from "@huginn/backend-shared";
 
 export class ServerGateway {
    private readonly options: ServerGatewayOptions;
