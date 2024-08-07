@@ -21,13 +21,14 @@ import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
 
 const tabs: SettingsTab[] = [
-   { name: "general", text: "General", children: [{ name: "audio", text: "Audio", icon: <IconMdiSpeakerphone /> }] },
+   { name: "profile", text: "Profile", children: [{ name: "my-account", text: "My Account", icon: <IconMdiAccount /> }] },
    {
       name: "app-settings",
       text: "App Settings",
       children: [
          { name: "theme", text: "Theme", icon: <IconMdiTheme />, component: SettingsThemeTab },
          { name: "notification", text: "Notification", icon: <IconMdiNotifications /> },
+         { name: "audio", text: "Audio", icon: <IconMdiSpeakerphone /> },
          { name: "advanced", text: "Advanced", icon: <IconMdiServer />, component: SettingsAdvancedTab },
       ],
    },
@@ -103,7 +104,13 @@ export default function SettingsModal() {
 
    return (
       <Transition show={modal.isOpen}>
-         <Dialog as="div" className="relative z-10" onClose={() => { dispatch({ settings: { isOpen: false } }); }}>
+         <Dialog
+            as="div"
+            className="relative z-10"
+            onClose={() => {
+               dispatch({ settings: { isOpen: false } });
+            }}
+         >
             <ModalBackground />
             <div className="fixed inset-0 top-6">
                <div className="flex h-full items-center justify-center">
@@ -127,7 +134,11 @@ export default function SettingsModal() {
                            </div>
                            <SettingsPanels currentTab={currentTab} settings={modifiedSettings.current} onChange={onSettingsChanged} />
                         </TabGroup>
-                        <ModalCloseButton onClick={() => { dispatch({ settings: { isOpen: false } }); }} />
+                        <ModalCloseButton
+                           onClick={() => {
+                              dispatch({ settings: { isOpen: false } });
+                           }}
+                        />
                      </DialogPanel>
                   </TransitionChild>
                </div>

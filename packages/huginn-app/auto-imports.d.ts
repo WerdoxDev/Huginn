@@ -15,6 +15,7 @@ declare global {
   const IconMaterialSymbolsErrorOutline: typeof import('~icons/material-symbols/error-outline.jsx')['default']
   const IconMaterialSymbolsInfoOutline: typeof import('~icons/material-symbols/info-outline.jsx')['default']
   const IconMdiAbout: typeof import('~icons/mdi/about.jsx')['default']
+  const IconMdiAccount: typeof import('~icons/mdi/account.jsx')['default']
   const IconMdiCamera: typeof import('~icons/mdi/camera.jsx')['default']
   const IconMdiCheck: typeof import('~icons/mdi/check.jsx')['default']
   const IconMdiClose: typeof import('~icons/mdi/close.jsx')['default']

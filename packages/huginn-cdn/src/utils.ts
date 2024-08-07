@@ -1,9 +1,8 @@
-import { ImageType } from "@huginn/shared";
-import { FileContentTypes, FileFormats, FileInfo, FileTypes } from "./types";
-import path from "path";
 import { BunFile } from "bun";
+import path from "path";
 import sharp from "sharp";
 import { CDNError, CDNErrorType } from "./error";
+import { FileContentTypes, FileFormats, FileInfo, FileTypes } from "./types";
 
 export function extractFileInfo(filename: string): FileInfo {
    const split = filename.split(".");

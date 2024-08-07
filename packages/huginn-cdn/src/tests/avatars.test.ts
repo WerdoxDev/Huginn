@@ -1,10 +1,12 @@
 import { test, expect, beforeAll, afterAll } from "bun:test";
 import { app } from "..";
 import path from "path";
+import { HuginnError, HuginnErrorFieldInformation } from "@huginn/shared";
+import { CDNError, CDNErrorType } from "@/error";
 
 test("POST /avatars/123 is ok", async () => {
    const formData = new FormData();
-   formData.append("files[0]", Bun.file(__dirname + "/pixel.png"), "pixel.png");
+   formData.append("files[0]", Bun.file(path.join(__dirname, "pixel.png")), "pixel.png");
 
    const result = await app.request("/avatars/123", { method: "POST", body: formData });
 
@@ -36,4 +38,18 @@ test("GET /avatars/123/pixel.jpeg exists", async () => {
       const file = Bun.file(path.join(__dirname, "..", "..", "uploads", "avatars", `pixel.${format}`));
       expect(await file.exists()).toBeTrue();
    }
+});
+
+test("GET /avatars/123/invalid.png does not exist", async () => {
+   const result = await app.request("/avatars/123/invalid.png", { method: "GET" });
+   const json = (await result.json()) as HuginnErrorFieldInformation;
+
+   expect(json.message.toLowerCase()).toContain("file not found");
+});
+
+test("GET /avatars/123/pixel.gif to be invalid format", async () => {
+   const result = await app.request("/avatars/123/pixel.gif", { method: "GET" });
+   const json = (await result.json()) as HuginnErrorFieldInformation;
+
+   expect(json.message.toLowerCase()).toContain("invalid file format");
 });

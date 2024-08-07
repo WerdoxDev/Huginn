@@ -59,6 +59,7 @@ export class HuginnAPIError extends Error {
          if (typeof val === "string") {
             yield val;
          }
+         // TODO: IF YOU EVER RUN INTO ERROR PROBLEMS LATER, MAYBE CHECK THIS
          //  else if (isErrorGroupWrapper(val)) {
          //    for (const error of val._errors) {
          //       yield* this.flattenHuginnError(error, nextKey);

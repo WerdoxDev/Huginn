@@ -1,4 +1,3 @@
-import { ImageType } from "./rest-types";
 import { Snowflake } from "./snowflake";
 
 export type RouteLike = `/${string}`;
@@ -122,13 +121,5 @@ export const CDNRoutes = {
     */
    uploadAvatar(userId: Snowflake): `/avatars/${string}` {
       return `/avatars/${userId}`;
-   },
-
-   /**
-    * Route for:
-    * - GET '/avatars/{user.id}/{avatar.hash}.{type}'
-    */
-   avatar(userId: Snowflake, hash: string, type: ImageType): `/avatars/${string}/${string}.${ImageType}` {
-      return `/avatars/${userId}/${hash}.${type}`;
    },
 };

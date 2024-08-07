@@ -1,6 +1,7 @@
 export * from "./api-types";
 export * from "./gateway-types";
 export * from "./rest-types";
+export * from "./cdn-types";
 export * from "./constants";
 export * from "./routes";
 export * from "./snowflake";
