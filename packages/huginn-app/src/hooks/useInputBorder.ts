@@ -2,8 +2,8 @@ import { InputStatus } from "@/types";
 import { useState, useEffect } from "react";
 
 export function useInputBorder(state: InputStatus) {
-   const defaultColor = "border-l-primary";
-   const errorColor = "border-l-error";
+   const defaultColor = "border-primary";
+   const errorColor = "border-error";
 
    const [hasBorder, setHasBorder] = useState(false);
    const [borderColor, setBorderColor] = useState("");

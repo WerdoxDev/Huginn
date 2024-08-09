@@ -22,7 +22,6 @@ export function setup(client: HuginnClient) {
       return;
    } else {
       if (pathname !== "/login" && pathname !== "/register") {
-         console.log("redirect");
          throw redirect({ to: "/login", mask: pathname });
       }
    }

@@ -19,9 +19,14 @@ import ModalBackground from "./ModalBackground";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
+import SettingsProfileTab from "./settings/SettingsProfileTab";
 
 const tabs: SettingsTab[] = [
-   { name: "profile", text: "Profile", children: [{ name: "my-account", text: "My Account", icon: <IconMdiAccount /> }] },
+   {
+      name: "profile",
+      text: "Profile",
+      children: [{ name: "my-account", text: "My Account", icon: <IconMdiAccount />, component: SettingsProfileTab }],
+   },
    {
       name: "app-settings",
       text: "App Settings",
