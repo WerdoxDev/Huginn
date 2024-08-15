@@ -78,7 +78,7 @@ function Register() {
    return (
       <AuthWrapper hidden={hidden} onSubmit={register}>
          <div className="flex w-full select-none flex-col items-center">
-            <h1 className="mb-2 text-2xl font-medium text-text">Welcome to Huginn!</h1>
+            <h1 className="text-text mb-2 text-2xl font-medium">Welcome to Huginn!</h1>
             <div className="text-text opacity-70">We are very happy to have you here!</div>
          </div>
          <div className="mt-5 w-full">
@@ -107,12 +107,12 @@ function Register() {
                <HuginnInput.Label>Password</HuginnInput.Label>
             </PasswordInput>
 
-            <LoadingButton loading={!mutation.isIdle && mutation.isPending} className="h-11 w-full bg-primary" type="submit">
+            <LoadingButton loading={!mutation.isIdle && mutation.isPending} className="bg-primary h-11 w-full" type="submit">
                Register
             </LoadingButton>
 
             <div className="mt-3 flex select-none items-center">
-               <span className="text-sm text-text opacity-70"> Already have an account? </span>
+               <span className="text-text text-sm opacity-70"> Already have an account? </span>
                <LinkButton to="/login" className="ml-1 text-sm" preload={false}>
                   Login
                </LinkButton>

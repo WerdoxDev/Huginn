@@ -21,12 +21,12 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
          onContextMenu={e => {
             openContextMenu(props.channel, e);
          }}
-         className={`group relative my-0.5 cursor-pointer rounded-md hover:bg-background active:bg-white active:bg-opacity-10 ${selected && "bg-white bg-opacity-10"}`}
+         className={`hover:bg-background group relative my-0.5 cursor-pointer rounded-md active:bg-white active:bg-opacity-10 ${selected && "bg-white bg-opacity-10"}`}
          onClick={props.onSelected}
       >
          <Link className="flex items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>
-            <UserIconWithStatus className="mr-3 bg-tertiary" />
-            <div className={`w-full text-sm text-text group-hover:opacity-100 ${selected ? "opacity-100" : "opacity-70"}`}>{name}</div>
+            <UserIconWithStatus className="bg-tertiary mr-3" />
+            <div className={`text-text w-full text-sm group-hover:opacity-100 ${selected ? "opacity-100" : "opacity-70"}`}>{name}</div>
          </Link>
          <button
             className="group/close invisible absolute bottom-3.5 right-2 top-3.5 flex-shrink-0 group-hover:visible"

@@ -10,8 +10,6 @@ export enum RequestMethod {
    PUT = "PUT",
 }
 
-export type ImageType = "png" | "jpeg" | "jpg" | "gif";
-
 export type ResponseLike = {
    body: Readable | ReadableStream | null;
 } & Pick<Response, "arrayBuffer" | "bodyUsed" | "headers" | "json" | "ok" | "status" | "statusText" | "text">;

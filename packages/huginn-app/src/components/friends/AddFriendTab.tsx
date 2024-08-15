@@ -9,7 +9,7 @@ export default function AddFriendTab() {
 
    const [disabled, setDisabled] = useState(false);
 
-   const mutation = useAddFriend((username) => {
+   const mutation = useAddFriend(username => {
       setInputStatus("username", { code: "success", text: `Friend request sent to ${username}!` });
    }, handleErrors);
 
@@ -19,14 +19,20 @@ export default function AddFriendTab() {
 
    return (
       <TabPanel>
-         <div className="text-lg font-medium uppercase text-text">Add Friend</div>
-         <div className="mt-1 text-sm text-text/70">You can add your friends using their Huginn username</div>
-         <form onSubmit={(e) => { e.preventDefault(); }}>
+         <div className="text-text text-lg font-medium uppercase">Add Friend</div>
+         <div className="text-text/70 mt-1 text-sm">You can add your friends using their Huginn username</div>
+         <form
+            onSubmit={e => {
+               e.preventDefault();
+            }}
+         >
             <AddFriendInput
                className="mt-5"
                {...inputsProps.username}
                buttonProps={{ type: "submit" }}
-               onClick={() => { mutation.mutate(values.username.value); }}
+               onClick={() => {
+                  mutation.mutate(values.username.value);
+               }}
                disabled={disabled}
             />
          </form>

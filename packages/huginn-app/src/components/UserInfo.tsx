@@ -28,15 +28,15 @@ export default function UserInfo(props: { user: APIUser }) {
                as="div"
                className="group flex w-full cursor-pointer items-center rounded-xl px-2 py-1 hover:bg-white hover:bg-opacity-5"
             >
-               <UserIconWithStatus className="mr-3 flex-shrink-0 bg-secondary" />
+               <UserIconWithStatus className="bg-secondary mr-3 flex-shrink-0" />
 
                <div className="flex w-full flex-col items-start gap-y-0.5">
-                  <div className="text-sm text-text">{props.user.displayName}</div>
-                  <div className="text-xs text-text/70">Online</div>
+                  <div className="text-text text-sm">{props.user.displayName}</div>
+                  <div className="text-text/70 text-xs">Online</div>
                </div>
                <div className="flex flex-shrink-0 gap-x-1">
                   <Tooltip>
-                     <Tooltip.Trigger className="group/setting rounded-lg p-1 hover:bg-background" onClick={openSettings}>
+                     <Tooltip.Trigger className="group/setting hover:bg-background rounded-lg p-1" onClick={openSettings}>
                         <IconMdiSettings className="h-6 w-6 text-white/80 transition-all group-hover/setting:rotate-[60deg]" />
                      </Tooltip.Trigger>
                      <Tooltip.Content>User Settings</Tooltip.Content>
@@ -53,14 +53,16 @@ export default function UserInfo(props: { user: APIUser }) {
                leaveTo="opacity-0 scale-95"
             >
                <MenuItems
-                  className="w-60 divide-y divide-secondary rounded-lg bg-zinc-900 shadow-lg outline-none transition [--anchor-gap:0.5rem]"
+                  className="divide-secondary w-60 divide-y rounded-lg bg-zinc-900 shadow-lg outline-none transition [--anchor-gap:0.5rem]"
                   anchor="top"
                >
                   <div className="p-1.5">
                      <MenuItem>
                         <button
-                           className="flex w-full items-center gap-x-2.5 rounded-md px-2 py-2 text-error hover:bg-error/10"
-                           onClick={() => { mutation.mutate(); }}
+                           className="text-error hover:bg-error/10 flex w-full items-center gap-x-2.5 rounded-md px-2 py-2"
+                           onClick={() => {
+                              mutation.mutate();
+                           }}
                         >
                            <IconMdiLogout className="h-5 w-5" />
                            <span className="text-sm">Logout</span>
@@ -69,7 +71,7 @@ export default function UserInfo(props: { user: APIUser }) {
                   </div>
                   <div className="p-1.5">
                      <MenuItem>
-                        <button className="flex w-full items-center gap-x-2.5 rounded-md px-2 py-2 text-text hover:bg-secondary">
+                        <button className="text-text hover:bg-secondary flex w-full items-center gap-x-2.5 rounded-md px-2 py-2">
                            <IconMdiIdentificationCard className="h-5 w-5" />
                            <span className="text-sm">Copy User ID</span>
                         </button>

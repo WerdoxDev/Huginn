@@ -43,9 +43,9 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
    }
 
    function onChanged(value: string) {
-      console.log("hi");
-      if (!value) {
+      if (!value || value === client.user?.username) {
          set(defaultMessage, "default", true);
+         clearTimeout(usernameTimeout.current);
          return;
       }
 

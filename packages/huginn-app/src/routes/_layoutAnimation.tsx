@@ -22,7 +22,7 @@ function LayoutAnimation() {
 
    return (
       <AuthBackgroundContext.Provider value={{ state: backgroundState, setState: setBackgroundState }}>
-         {transitions((style) => (
+         {transitions(style => (
             <AnimatedOutlet updateFor={updateFor} style={style} className="absolute inset-0 top-6" test="animation" />
             // <div className="absolute inset-0 top-6">
             //    <Outlet />

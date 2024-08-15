@@ -24,7 +24,7 @@ export default function PendingFriendsTab(props: { friends: APIRelationshipWitho
    }
    return (
       <TabPanel>
-         <div className="ml-2.5 text-xs font-medium uppercase text-text/70">Pending - {pendingAmount}</div>
+         <div className="text-text/70 ml-2.5 text-xs font-medium uppercase">Pending - {pendingAmount}</div>
          <div className="mt-5 flex flex-col justify-center gap-y-1">
             {pendingFriends.map(friend => (
                <FriendItem

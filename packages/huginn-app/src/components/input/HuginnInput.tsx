@@ -54,7 +54,7 @@ export default function HuginnInput(props: HuginnInputProps) {
             <div
                className={clsx(
                   props.inputProps?.className,
-                  "flex w-full items-center rounded-md bg-secondary",
+                  "bg-secondary flex w-full items-center rounded-md",
                   hasBorder && border,
                   borderColor,
                )}
@@ -92,7 +92,7 @@ function Label(props: { children?: ReactNode; skipRender?: boolean }) {
                {inputContext.status.text}
             </span>
          ) : (
-            inputContext.required && <span className="pl-0.5 text-error">*</span>
+            inputContext.required && <span className="text-error pl-0.5">*</span>
          )}
       </label>
    ) : (

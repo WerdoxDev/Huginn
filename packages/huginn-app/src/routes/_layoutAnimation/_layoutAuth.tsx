@@ -35,21 +35,23 @@ function LayoutAuth() {
          <div
             className={`absolute inset-0 select-none transition-all duration-500 ${backgroundState === 1 ? "opacity-100" : "opacity-0"}`}
          >
-            <div className="flex h-full items-center justify-center text-xl font-medium text-text opacity-60">
+            <div className="text-text flex h-full items-center justify-center text-xl font-medium opacity-60">
                <span>Loading</span>
                <span className="loader__dot">.</span>
                <span className="loader__dot">.</span>
                <span className="loader__dot">.</span>
             </div>
          </div>
-         {transitions((style) => (
+         {transitions(style => (
             <AnimatedOutlet style={style} className="absolute flex h-full w-full items-center justify-center" test="auth" />
          ))}
          {backgroundState !== 2 && (
             <button
                v-if="backgroundState !== 2"
-               className="absolute bottom-2.5 right-2.5 rounded-lg p-1 transition-all hover:bg-background"
-               onClick={() => { modalsDispatch({ settings: { isOpen: true } }); }}
+               className="hover:bg-background absolute bottom-2.5 right-2.5 rounded-lg p-1 transition-all"
+               onClick={() => {
+                  modalsDispatch({ settings: { isOpen: true } });
+               }}
             >
                <IconMdiSettings className="h-6 w-6 text-white/80 transition-all hover:rotate-[60deg]" />
             </button>

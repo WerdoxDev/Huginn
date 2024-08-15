@@ -7,7 +7,7 @@ export default function FriendsTabItem(props: { children?: ReactNode }) {
       <Tab as={Fragment}>
          {({ selected }) => (
             <button
-               className={`rounded-md px-2 py-0.5 outline-none ${selected ? "pointer-events-none bg-white/10 text-text" : "text-text/50 hover:bg-white/5 hover:text-text/100"}`}
+               className={`rounded-md px-2 py-0.5 outline-none ${selected ? "text-text pointer-events-none bg-white/10" : "text-text/50 hover:text-text/100 hover:bg-white/5"}`}
             >
                {props.children}
             </button>

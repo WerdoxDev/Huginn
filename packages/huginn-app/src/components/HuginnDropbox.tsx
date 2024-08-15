@@ -26,11 +26,11 @@ export default function HuginnDropbox(props: {
    return (
       <div className="flex flex-col">
          {filteredChildren.label && <HuginnDropbox.Label skipRender>{filteredChildren.label}</HuginnDropbox.Label>}
-         <div className="w-52 rounded-lg bg-secondary">
+         <div className="bg-secondary w-52 rounded-lg">
             <Listbox value={selected} onChange={onChange}>
                <ListboxButton className="relative flex w-full items-center justify-between p-2.5 text-white">
                   {selected.name}
-                  <IconMingcuteDownFill className="h-6 w-6 text-accent" />
+                  <IconMingcuteDownFill className="text-accent h-6 w-6" />
                </ListboxButton>
                <Transition
                   enter="duration-150 ease-out"
@@ -42,13 +42,13 @@ export default function HuginnDropbox(props: {
                >
                   <ListboxOptions
                      anchor="bottom"
-                     className="flex w-52 cursor-pointer flex-col rounded-lg bg-secondary p-1.5 transition [--anchor-gap:0.25rem]"
+                     className="bg-secondary flex w-52 cursor-pointer flex-col rounded-lg p-1.5 transition [--anchor-gap:0.25rem]"
                   >
-                     {props.items.map((item) => (
+                     {props.items.map(item => (
                         <ListboxOption
                            key={item.id}
                            value={item}
-                           className="group flex items-center gap-x-1.5 rounded-md p-1.5 text-white hover:bg-background"
+                           className="hover:bg-background group flex items-center gap-x-1.5 rounded-md p-1.5 text-white"
                         >
                            <IconMingcuteCheckFill className="invisible size-5 group-data-[selected]:visible" />
                            {item.name}
@@ -64,7 +64,7 @@ export default function HuginnDropbox(props: {
 
 function Label(props: { children?: ReactNode; skipRender?: boolean }) {
    return !props.skipRender ? (
-      <label className={`mb-2 select-none text-xs font-medium uppercase text-text opacity-90`}>{props.children}</label>
+      <label className={`text-text mb-2 select-none text-xs font-medium uppercase opacity-90`}>{props.children}</label>
    ) : (
       props.children
    );

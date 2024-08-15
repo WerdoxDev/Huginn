@@ -4,6 +4,7 @@ import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { SettingsContextType, useSettings, useSettingsDispatcher } from "@contexts/settingsContext";
 import {
    Dialog,
+   DialogBackdrop,
    DialogPanel,
    DialogTitle,
    Tab,
@@ -108,48 +109,40 @@ export default function SettingsModal() {
    }
 
    return (
-      <Transition show={modal.isOpen}>
-         <Dialog
-            as="div"
-            className="relative z-10"
-            onClose={() => {
-               dispatch({ settings: { isOpen: false } });
-            }}
-         >
-            <ModalBackground />
-            <div className="fixed inset-0 top-6">
-               <div className="flex h-full items-center justify-center">
-                  <TransitionChild
-                     enter="duration-150 ease-out"
-                     enterFrom="opacity-0 scale-95"
-                     enterTo="opacity-100 scale-100"
-                     leave="duration-150 ease-in"
-                     leaveFrom="opacity-100 scale-100"
-                     leaveTo="opacity-0 scale-95"
-                  >
-                     <DialogPanel className="w-full max-w-3xl transform overflow-hidden rounded-lg border-2 border-primary/50 bg-background transition-[opacity_transform]">
-                        <TabGroup className="flex" vertical defaultIndex={defaultTabIndex} onChange={onTabChanged}>
-                           <div className="bg-secondary/50">
-                              <TabList className="flex w-48 flex-shrink-0 select-none flex-col items-start py-2">
-                                 <DialogTitle className="mx-5 mb-3 mt-3 flex items-center justify-start gap-x-1.5">
-                                    <div className="text-2xl font-medium text-text">Settings</div>
-                                 </DialogTitle>
-                                 <SettingsTabs />
-                              </TabList>
-                           </div>
-                           <SettingsPanels currentTab={currentTab} settings={modifiedSettings.current} onChange={onSettingsChanged} />
-                        </TabGroup>
-                        <ModalCloseButton
-                           onClick={() => {
-                              dispatch({ settings: { isOpen: false } });
-                           }}
-                        />
-                     </DialogPanel>
-                  </TransitionChild>
-               </div>
+      <Dialog
+         open={modal.isOpen}
+         className="relative z-10 transition data-[closed]:opacity-0"
+         transition
+         onClose={() => {
+            dispatch({ settings: { isOpen: false } });
+         }}
+      >
+         <ModalBackground />
+         <div className="fixed inset-0 top-6">
+            <div className="flex h-full items-center justify-center">
+               <TransitionChild>
+                  <DialogPanel className="border-primary/50 bg-background w-full max-w-3xl transform overflow-hidden rounded-lg border-2 transition-[opacity_transform] data-[closed]:scale-95">
+                     <TabGroup className="flex" vertical defaultIndex={defaultTabIndex} onChange={onTabChanged}>
+                        <div className="bg-secondary/50">
+                           <TabList className="flex w-48 flex-shrink-0 select-none flex-col items-start py-2">
+                              <DialogTitle className="mx-5 mb-3 mt-3 flex items-center justify-start gap-x-1.5">
+                                 <div className="text-text text-2xl font-medium">Settings</div>
+                              </DialogTitle>
+                              <SettingsTabs />
+                           </TabList>
+                        </div>
+                        <SettingsPanels currentTab={currentTab} settings={modifiedSettings.current} onChange={onSettingsChanged} />
+                     </TabGroup>
+                     <ModalCloseButton
+                        onClick={() => {
+                           dispatch({ settings: { isOpen: false } });
+                        }}
+                     />
+                  </DialogPanel>
+               </TransitionChild>
             </div>
-         </Dialog>
-      </Transition>
+         </div>
+      </Dialog>
    );
 }
 
@@ -158,7 +151,7 @@ function SettingsTabs() {
       <div className="flex w-full flex-col items-center justify-center gap-y-1">
          {tabs.map((tab, i) => (
             <Fragment key={tab.name}>
-               <div className={`mb-1 w-full px-2.5 text-left text-xs uppercase text-text/50 ${i === 0 ? "mt-2" : "mt-4"}`}>
+               <div className={`text-text/50 mb-1 w-full px-2.5 text-left text-xs uppercase ${i === 0 ? "mt-2" : "mt-4"}`}>
                   {tab.text}
                </div>
                {tab.children?.map(child => (
@@ -166,7 +159,7 @@ function SettingsTabs() {
                      <Tab as={Fragment}>
                         {({ selected }) => (
                            <button
-                              className={`flex w-full items-center gap-x-2 rounded-md px-2 py-1.5 text-left text-base text-text outline-none ${
+                              className={`text-text flex w-full items-center gap-x-2 rounded-md px-2 py-1.5 text-left text-base outline-none ${
                                  selected ? "bg-white/20 text-opacity-100" : "text-opacity-70 hover:bg-white/10 hover:text-opacity-100"
                               }`}
                            >
@@ -203,13 +196,13 @@ function SettingsPanels(props: {
 
    return (
       <TabPanels className="flex w-full flex-col p-5">
-         <div className="mb-5 shrink-0 text-xl text-text">{props.currentTab}</div>
+         <div className="text-text mb-5 shrink-0 text-xl">{props.currentTab}</div>
          {flatTabs.map(tab => (
             <TabPanel key={tab?.name} className="h-full">
                {tab?.component ? (
                   <TabComponent onChange={props.onChange} settings={props.settings} tab={tab} />
                ) : (
-                  <span className="text-base italic text-text/50">{tab?.name} (Soon...)</span>
+                  <span className="text-text/50 text-base italic">{tab?.name} (Soon...)</span>
                )}
             </TabPanel>
          ))}

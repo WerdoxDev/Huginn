@@ -2,5 +2,7 @@
    "tabWidth": 3,
    "useTabs": false,
    "printWidth": 135,
-   "arrowParens": "avoid"
+   "arrowParens": "avoid",
+   "endOfLine": "crlf",
+   "plugins": ["prettier-plugin-tailwindcss"]
 }

@@ -14,7 +14,7 @@ export default function SettingsAboutTab() {
       },
    });
    return (
-      <div className="mt-5 h-full w-full text-text">
+      <div className="text-text mt-5 h-full w-full">
          <div className="mb-2 flex gap-x-2 text-2xl font-bold">
             <IconFa6SolidCrow className="text-accent" />
             Huginn
@@ -22,7 +22,7 @@ export default function SettingsAboutTab() {
          <div>
             A simple, yet playful chat application to make chatting, <span className="text-text/70">well... </span>
             <span className="font-bold">FUN!</span> Inspired by <span className="text-success/90">Norse mythology</span>, it captures
-            the spirit of <span className="font-bold text-accent">Huginn</span>, one of <span className="text-error">Odin's</span>{" "}
+            the spirit of <span className="text-accent font-bold">Huginn</span>, one of <span className="text-error">Odin's</span>{" "}
             ravens, symbolizing thought and memory.
          </div>
          <div className="mt-10">

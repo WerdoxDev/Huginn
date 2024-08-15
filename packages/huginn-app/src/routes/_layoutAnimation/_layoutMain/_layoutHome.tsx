@@ -31,7 +31,7 @@ function LayoutHome() {
                <HomeSidebar channels={data} />
                {client.user && <UserInfo user={client.user} />}
             </div>
-            <div className="relative w-full overflow-hidden bg-tertiary">
+            <div className="bg-tertiary relative w-full overflow-hidden">
                <Outlet />
             </div>
          </div>

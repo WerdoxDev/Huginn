@@ -37,7 +37,7 @@ export function tokenize(text: string) {
 
          // console.log(fullMatch);
          //end > start, start >
-         if (tokens.filter((x) => x.start === start || x.end === start || x.end === end).length === 0) {
+         if (tokens.filter(x => x.start === start || x.end === start || x.end === end).length === 0) {
             tokens.push({
                type: type,
                fullText: text.slice(start, end + 1),
@@ -52,7 +52,7 @@ export function tokenize(text: string) {
 
    for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
-      if (tokens.filter((x) => x.end > token.start && token.start > x.start).length > 0) {
+      if (tokens.filter(x => x.end > token.start && token.start > x.start).length > 0) {
          tokens.splice(i, 1);
       }
    }

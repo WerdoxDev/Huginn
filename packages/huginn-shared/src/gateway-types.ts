@@ -1,11 +1,4 @@
-import {
-   APIDMChannel,
-   APIGroupDMChannel,
-   APIMessage,
-   APIMessageUser,
-   APIRelationshipWithoutOwner,
-   APIUser,
-} from "./api-types";
+import { APIDMChannel, APIGroupDMChannel, APIMessage, APIMessageUser, APIRelationshipWithoutOwner, APIUser } from "./api-types";
 import { Snowflake } from "./snowflake";
 
 export enum GatewayOperations {
@@ -131,10 +124,7 @@ export type GatewayMessageEventExtraFields = {
 };
 
 // RELATIONSHIP_CREATE
-export type GatewayRelationshipCreateDispatch = DataPayload<
-   "relationship_create",
-   GatewayRelationshipCreateDispatchData
->;
+export type GatewayRelationshipCreateDispatch = DataPayload<"relationship_create", GatewayRelationshipCreateDispatchData>;
 
 export type GatewayRelationshipCreateDispatchData = APIRelationshipWithoutOwner;
 

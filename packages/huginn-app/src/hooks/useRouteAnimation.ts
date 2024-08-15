@@ -21,7 +21,7 @@ export default function useRouteAnimation(...updateFor: string[]) {
 
    function findAndSetId() {
       setId(
-         router.state.matches.find((x) => x.id === "/_layoutAnimation/_layoutAuth" || x.id === "/_layoutAnimation/_layoutMain")?.id ??
+         router.state.matches.find(x => x.id === "/_layoutAnimation/_layoutAuth" || x.id === "/_layoutAnimation/_layoutMain")?.id ??
             "",
       );
    }

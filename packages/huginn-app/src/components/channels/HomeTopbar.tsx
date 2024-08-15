@@ -6,12 +6,12 @@ export default function HomeTopbar(props: { channel: APIDMChannel | APIGroupDMCh
    const name = useChannelName(props.channel);
 
    return (
-      <div className="flex h-[4.75rem] flex-shrink-0 items-center bg-tertiary px-6">
+      <div className="bg-tertiary flex h-[4.75rem] flex-shrink-0 items-center px-6">
          <div className="flex items-center">
             {props.channel.type === ChannelType.DM ? (
-               <UserIconWithStatus className="mr-3 bg-background" />
+               <UserIconWithStatus className="bg-background mr-3" />
             ) : (
-               <div className="mr-3 size-[2.25rem] rounded-full bg-background"></div>
+               <div className="bg-background mr-3 size-[2.25rem] rounded-full"></div>
             )}
             <div className="text-text">{name}</div>
          </div>
