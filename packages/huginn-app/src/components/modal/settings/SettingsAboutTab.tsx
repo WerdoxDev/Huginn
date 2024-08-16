@@ -14,7 +14,7 @@ export default function SettingsAboutTab() {
       },
    });
    return (
-      <div className="text-text mt-5 h-full w-full">
+      <div className="text-text mt-5  w-full">
          <div className="mb-2 flex gap-x-2 text-2xl font-bold">
             <IconFa6SolidCrow className="text-accent" />
             Huginn

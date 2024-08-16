@@ -107,6 +107,7 @@ export type ColorTheme = {
    success: string;
    text: string;
    error: string;
+   warning: string;
 };
 
 export type ThemeType = "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal";

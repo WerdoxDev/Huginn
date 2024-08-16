@@ -69,3 +69,11 @@ body,
 ::-webkit-scrollbar-thumb {
    @apply shadow-secondary rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
 }
+
+.scroll-alternative::-webkit-scrollbar-track {
+   @apply shadow-secondary/70 rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
+}
+
+.scroll-alternative::-webkit-scrollbar-thumb {
+   @apply shadow-tertiary rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
+}

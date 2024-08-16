@@ -74,6 +74,7 @@ export default function SettingsModal() {
                   isOpen: true,
                   status: "default",
                   text: "Server ip changed. The app should be restarted!",
+                  title: "Hang on!",
                   action: {
                      confirm: {
                         text: "Restart",
@@ -121,11 +122,11 @@ export default function SettingsModal() {
          <div className="fixed inset-0 top-6">
             <div className="flex h-full items-center justify-center">
                <TransitionChild>
-                  <DialogPanel className="border-primary/50 bg-background w-full max-w-3xl transform overflow-hidden rounded-lg border-2 transition-[opacity_transform] data-[closed]:scale-95">
-                     <TabGroup className="flex" vertical defaultIndex={defaultTabIndex} onChange={onTabChanged}>
-                        <div className="bg-secondary/50">
-                           <TabList className="flex w-48 flex-shrink-0 select-none flex-col items-start py-2">
-                              <DialogTitle className="mx-5 mb-3 mt-3 flex items-center justify-start gap-x-1.5">
+                  <DialogPanel className="border-primary/50 bg-background flex h-[30rem] w-full max-w-3xl transform rounded-xl border-2 transition-[opacity_transform] data-[closed]:scale-95">
+                     <TabGroup className="flex w-full" vertical defaultIndex={defaultTabIndex} onChange={onTabChanged}>
+                        <div className="bg-secondary/50 h-full rounded-l-xl">
+                           <TabList className="flex h-full w-48 select-none flex-col py-2">
+                              <DialogTitle className="mx-5 my-3 flex items-center justify-start gap-x-1.5">
                                  <div className="text-text text-2xl font-medium">Settings</div>
                               </DialogTitle>
                               <SettingsTabs />
@@ -148,7 +149,7 @@ export default function SettingsModal() {
 
 function SettingsTabs() {
    return (
-      <div className="flex w-full flex-col items-center justify-center gap-y-1">
+      <div className="flex h-full w-full flex-col gap-y-1 overflow-y-auto">
          {tabs.map((tab, i) => (
             <Fragment key={tab.name}>
                <div className={`text-text/50 mb-1 w-full px-2.5 text-left text-xs uppercase ${i === 0 ? "mt-2" : "mt-4"}`}>
@@ -195,10 +196,10 @@ function SettingsPanels(props: {
    }
 
    return (
-      <TabPanels className="flex w-full flex-col p-5">
+      <TabPanels className="flex w-full flex-col p-5 pr-0">
          <div className="text-text mb-5 shrink-0 text-xl">{props.currentTab}</div>
          {flatTabs.map(tab => (
-            <TabPanel key={tab?.name} className="h-full">
+            <TabPanel key={tab?.name} className="scroll-alternative h-full overflow-y-scroll pr-3">
                {tab?.component ? (
                   <TabComponent onChange={props.onChange} settings={props.settings} tab={tab} />
                ) : (

@@ -8,6 +8,7 @@ type ModalContextType = {
    info: DefaultModal & {
       status: StatusCode;
       text: string;
+      title: string;
       action?: {
          cancel?: {
             text: string;
@@ -24,7 +25,7 @@ type ModalContextType = {
 
 const defautlValue: ModalContextType = {
    settings: { isOpen: false },
-   info: { isOpen: false, status: "none", text: "", closable: true },
+   info: { isOpen: false, status: "none", title: "", text: "", closable: true },
 };
 
 const ModalContext = createContext<ModalContextType>(defautlValue);
