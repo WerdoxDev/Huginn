@@ -8,7 +8,7 @@ import { ThemeProvier } from "@contexts/themeContext";
 import { useWindow, useWindowDispatch } from "@contexts/windowContext";
 import { setup } from "@lib/middlewares";
 import { QueryClient } from "@tanstack/react-query";
-import { Outlet, createRootRouteWithContext, useRouter } from "@tanstack/react-router";
+import { CatchBoundary, Outlet, createRootRouteWithContext, useRouter } from "@tanstack/react-router";
 import "@tauri-apps/api";
 import { UnlistenFn } from "@tauri-apps/api/event";
 import { appWindow } from "@tauri-apps/api/window";
@@ -19,6 +19,10 @@ import { ContextMenuProvider } from "@contexts/contextMenuContext";
 import { ChannelsContextMenu } from "@components/contextmenu/ChannelsContextMenu";
 import RelationshipMoreContextMenu from "@components/contextmenu/RelationshipMoreContextMenu";
 import RelationshipContextMenu from "@components/contextmenu/RelationshipContextMenu";
+import RouteErrorComponent from "@components/RouteErrorComponent";
+import { ErrorBoundary } from "react-error-boundary";
+import { useErrorHandler } from "@hooks/useServerErrorHandler";
+import ModalErrorComponent from "@components/ModalErrorComponent";
 
 export type HuginnRouterContext = {
    queryClient: QueryClient;
@@ -34,6 +38,7 @@ export const Route = createRootRouteWithContext<HuginnRouterContext>()({
 
 function Root() {
    const router = useRouter();
+   const handleError = useErrorHandler();
 
    const appWindow = useWindow();
 
@@ -59,11 +64,13 @@ function Root() {
                      {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
                      {/* <TanStackRouterDevtools position="bottom-left" /> */}
                      {window.__TAURI__ && <AppMaximizedEvent />}
-                     <SettingsModal />
+                     <ErrorBoundary FallbackComponent={ModalErrorComponent}>
+                        <SettingsModal />
+                        <ChannelsContextMenu />
+                        <RelationshipMoreContextMenu />
+                        <RelationshipContextMenu />
+                     </ErrorBoundary>
                      <InfoModal />
-                     <ChannelsContextMenu />
-                     <RelationshipMoreContextMenu />
-                     <RelationshipContextMenu />
                   </div>
                </div>
             </ContextMenuProvider>

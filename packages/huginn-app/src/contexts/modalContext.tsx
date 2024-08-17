@@ -3,7 +3,7 @@ import { Dispatch, createContext, useContext, useReducer } from "react";
 import { StatusCode, DeepPartial } from "@/types";
 
 type DefaultModal = { isOpen: boolean };
-type ModalContextType = {
+export type ModalContextType = {
    settings: DefaultModal;
    info: DefaultModal & {
       status: StatusCode;
@@ -11,7 +11,7 @@ type ModalContextType = {
       title: string;
       action?: {
          cancel?: {
-            text: string;
+            text?: string;
             callback: () => void;
          };
          confirm?: {
@@ -42,6 +42,7 @@ export function ModalProvider(props: { children?: ReactNode }) {
 }
 
 function modalsReducer(modals: ModalContextType, action: DeepPartial<ModalContextType>): ModalContextType {
+   console.log(action.info);
    const settings = { ...modals.settings, ...action.settings };
    const info = Object.assign({}, modals.info, action.info);
    // const info = {

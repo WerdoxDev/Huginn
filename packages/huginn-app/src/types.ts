@@ -79,6 +79,7 @@ export type UpdaterProgress = {
 export type SettingsTab = {
    name: string;
    text: string;
+   auth?: boolean;
    children?: Omit<SettingsTab, "children">[];
    icon?: ReactNode;
    component?: (props: SettingsTabProps) => JSX.Element;

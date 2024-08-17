@@ -1,5 +1,5 @@
 import HomeSidebar from "@components/HomeSidebar";
-import ModalErrorComponent from "@components/ModalErrorComponent";
+import RouteErrorComponent from "@components/RouteErrorComponent";
 import UserInfo from "@components/UserInfo";
 import { useClient } from "@contexts/apiContext";
 import { requireAuth } from "@lib/middlewares";
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome"
    loader: async ({ context: { queryClient, client } }) => {
       return queryClient.ensureQueryData(getChannelsOptions(client, "@me"));
    },
-   errorComponent: ModalErrorComponent,
+   errorComponent: RouteErrorComponent,
    gcTime: 0,
 });
 

@@ -9,17 +9,19 @@ import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
 import { routeHistory } from "@contexts/historyContext";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInputs } from "@hooks/useInputs";
-import { useServerErrorHandler } from "@hooks/useServerErrorHandler";
+import { useErrorHandler } from "@hooks/useServerErrorHandler";
 import { requireNotAuth } from "@lib/middlewares";
 import { APIPostLoginJSONBody } from "@huginn/shared";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useContext, useEffect, useState } from "react";
+import RouteErrorComponent from "@components/RouteErrorComponent";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/login")({
    beforeLoad({ context: { client } }) {
       requireNotAuth(client);
    },
    component: Login,
+   errorComponent: RouteErrorComponent,
 });
 
 function Login() {
@@ -33,7 +35,7 @@ function Login() {
    const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
    const navigate = useNavigate({ from: "/login" });
 
-   const handleServerError = useServerErrorHandler();
+   const handleServerError = useErrorHandler();
 
    const mutation = useHuginnMutation(
       {

@@ -10,6 +10,13 @@ export default function InfoModal() {
    const { info: modal } = useModals();
    const dispatch = useModalsDispatch();
 
+   useEffect(() => {
+      console.log("mount");
+      return () => {
+         console.log("unmount");
+      };
+   }, []);
+
    const textColor = useMemo(
       () =>
          modal.status === "default"
@@ -62,7 +69,9 @@ export default function InfoModal() {
          open={modal.isOpen}
          transition
          className="relative z-10 transition data-[closed]:opacity-0"
-         onClose={() => modal.closable && dispatch({ info: { isOpen: false } })}
+         onClose={() =>
+            !modal.action?.cancel ? modal.closable && dispatch({ info: { isOpen: false } }) : modal.action.cancel.callback()
+         }
       >
          <ModalBackground />
          <div className="fixed inset-0 top-6">

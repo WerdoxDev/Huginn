@@ -21,12 +21,14 @@ import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
+import { useClient } from "@contexts/apiContext";
 
 const tabs: SettingsTab[] = [
    {
       name: "profile",
       text: "Profile",
-      children: [{ name: "my-account", text: "My Account", icon: <IconMdiAccount />, component: SettingsProfileTab }],
+      auth: true,
+      children: [{ name: "my-account", text: "My Account", auth: true, icon: <IconMdiAccount />, component: SettingsProfileTab }],
    },
    {
       name: "app-settings",
@@ -148,31 +150,38 @@ export default function SettingsModal() {
 }
 
 function SettingsTabs() {
+   const client = useClient();
+
    return (
       <div className="flex h-full w-full flex-col gap-y-1 overflow-y-auto">
-         {tabs.map((tab, i) => (
-            <Fragment key={tab.name}>
-               <div className={`text-text/50 mb-1 w-full px-2.5 text-left text-xs uppercase ${i === 0 ? "mt-2" : "mt-4"}`}>
-                  {tab.text}
-               </div>
-               {tab.children?.map(child => (
-                  <div className="w-full px-2" key={child.name}>
-                     <Tab as={Fragment}>
-                        {({ selected }) => (
-                           <button
-                              className={`text-text flex w-full items-center gap-x-2 rounded-md px-2 py-1.5 text-left text-base outline-none ${
-                                 selected ? "bg-white/20 text-opacity-100" : "text-opacity-70 hover:bg-white/10 hover:text-opacity-100"
-                              }`}
-                           >
-                              {child.icon}
-                              <span>{child.text}</span>
-                           </button>
-                        )}
-                     </Tab>
-                  </div>
-               ))}
-            </Fragment>
-         ))}
+         {tabs.map(
+            (tab, i) =>
+               (client.isLoggedIn || !tab.auth) && (
+                  <Fragment key={tab.name}>
+                     <div className={`text-text/50 mb-1 w-full px-2.5 text-left text-xs uppercase ${i === 0 ? "mt-2" : "mt-4"}`}>
+                        {tab.text}
+                     </div>
+                     {tab.children?.map(child => (
+                        <div className="w-full px-2" key={child.name}>
+                           <Tab as={Fragment}>
+                              {({ selected }) => (
+                                 <button
+                                    className={`text-text flex w-full items-center gap-x-2 rounded-md px-2 py-1.5 text-left text-base outline-none ${
+                                       selected
+                                          ? "bg-white/20 text-opacity-100"
+                                          : "text-opacity-70 hover:bg-white/10 hover:text-opacity-100"
+                                    }`}
+                                 >
+                                    {child.icon}
+                                    <span>{child.text}</span>
+                                 </button>
+                              )}
+                           </Tab>
+                        </div>
+                     ))}
+                  </Fragment>
+               ),
+         )}
       </div>
    );
 }
@@ -182,6 +191,7 @@ function SettingsPanels(props: {
    currentTab: string;
    onChange: (value: DeepPartial<SettingsContextType>) => void;
 }) {
+   const client = useClient();
    const flatTabs = useFlatTabs();
 
    function TabComponent(props: {
@@ -198,15 +208,18 @@ function SettingsPanels(props: {
    return (
       <TabPanels className="flex w-full flex-col p-5 pr-0">
          <div className="text-text mb-5 shrink-0 text-xl">{props.currentTab}</div>
-         {flatTabs.map(tab => (
-            <TabPanel key={tab?.name} className="scroll-alternative h-full overflow-y-scroll pr-3">
-               {tab?.component ? (
-                  <TabComponent onChange={props.onChange} settings={props.settings} tab={tab} />
-               ) : (
-                  <span className="text-text/50 text-base italic">{tab?.name} (Soon...)</span>
-               )}
-            </TabPanel>
-         ))}
+         {flatTabs.map(
+            tab =>
+               (client.isLoggedIn || !tab?.auth) && (
+                  <TabPanel key={tab?.name} className="scroll-alternative h-full overflow-y-scroll pr-3">
+                     {tab?.component ? (
+                        <TabComponent onChange={props.onChange} settings={props.settings} tab={tab} />
+                     ) : (
+                        <span className="text-text/50 text-base italic">{tab?.name} (Soon...)</span>
+                     )}
+                  </TabPanel>
+               ),
+         )}
       </TabPanels>
    );
 }

@@ -1,4 +1,4 @@
-import ModalErrorComponent from "@components/ModalErrorComponent";
+import RouteErrorComponent from "@components/RouteErrorComponent";
 import AddFriendTab from "@components/friends/AddFriendTab";
 import FriendsTabItem from "@components/friends/FriendsTabItem";
 import OnlineFriendsTab from "@components/friends/OnlineFriendsTab";
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/
    loader({ context: { queryClient, client } }) {
       return queryClient.ensureQueryData(getRelationshipsOptions(client));
    },
-   errorComponent: ModalErrorComponent,
+   errorComponent: RouteErrorComponent,
    gcTime: 0,
 });
 
