@@ -43,7 +43,7 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
 
    return (
       <div className="">
-         <div className="flex h-full flex-col items-start gap-5">
+         <div className="flex h-full  items-start gap-5">
             <div className="bg-secondary flex-shrink-0 rounded-lg p-4">
                <div className="bg-primary h-24 w-24 rounded-full"></div>
             </div>

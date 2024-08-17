@@ -1,27 +1,15 @@
 import { DeepPartial, SettingsTab } from "@/types";
 import ModalCloseButton from "@components/button/ModalCloseButton";
+import { useClient } from "@contexts/apiContext";
 import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { SettingsContextType, useSettings, useSettingsDispatcher } from "@contexts/settingsContext";
-import {
-   Dialog,
-   DialogBackdrop,
-   DialogPanel,
-   DialogTitle,
-   Tab,
-   TabGroup,
-   TabList,
-   TabPanel,
-   TabPanels,
-   Transition,
-   TransitionChild,
-} from "@headlessui/react";
+import { Dialog, DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels, TransitionChild } from "@headlessui/react";
 import { Fragment, useEffect, useRef, useState } from "react";
 import ModalBackground from "./ModalBackground";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
-import SettingsThemeTab from "./settings/SettingsThemeTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
-import { useClient } from "@contexts/apiContext";
+import SettingsThemeTab from "./settings/SettingsThemeTab";
 
 const tabs: SettingsTab[] = [
    {
@@ -50,7 +38,9 @@ const tabs: SettingsTab[] = [
 const defaultTabIndex = 0;
 
 function useFlatTabs() {
-   return tabs.filter(x => x.children).flatMap(x => x.children);
+   const client = useClient();
+
+   return tabs.filter(x => x.children && (client.isLoggedIn || !x?.auth)).flatMap(x => x.children);
 }
 
 export default function SettingsModal() {
@@ -61,7 +51,8 @@ export default function SettingsModal() {
    const [currentTab, setCurrentTab] = useState(() => flatTabs[defaultTabIndex]?.text ?? "");
 
    const settings = useSettings();
-   const modifiedSettings = useRef<DeepPartial<SettingsContextType>>({});
+   const [settingsValid, setSettingsValid] = useState(false);
+   const modifiedSettings = useRef<DeepPartial<SettingsContextType>>();
    const settingsDispatch = useSettingsDispatcher();
 
    useEffect(() => {
@@ -69,8 +60,10 @@ export default function SettingsModal() {
 
       if (modal.isOpen) {
          modifiedSettings.current = { ...settings };
+         setCurrentTab(flatTabs[defaultTabIndex]?.text ?? "");
+         setSettingsValid(true);
       } else {
-         if (modifiedSettings.current.serverAddress && settings.serverAddress !== modifiedSettings.current.serverAddress) {
+         if (modifiedSettings.current?.serverAddress && settings.serverAddress !== modifiedSettings.current.serverAddress) {
             dispatch({
                info: {
                   isOpen: true,
@@ -81,7 +74,7 @@ export default function SettingsModal() {
                      confirm: {
                         text: "Restart",
                         callback: () => {
-                           settingsDispatch(modifiedSettings.current);
+                           settingsDispatch(modifiedSettings.current ?? {});
                            dispatch({ info: { isOpen: false } });
                            location.reload();
                         },
@@ -98,7 +91,7 @@ export default function SettingsModal() {
                },
             });
          } else {
-            settingsDispatch(modifiedSettings.current);
+            settingsDispatch(modifiedSettings.current ?? {});
          }
       }
    }, [modal.isOpen]);
@@ -134,7 +127,9 @@ export default function SettingsModal() {
                               <SettingsTabs />
                            </TabList>
                         </div>
-                        <SettingsPanels currentTab={currentTab} settings={modifiedSettings.current} onChange={onSettingsChanged} />
+                        {settingsValid && (
+                           <SettingsPanels currentTab={currentTab} settings={modifiedSettings.current!} onChange={onSettingsChanged} />
+                        )}
                      </TabGroup>
                      <ModalCloseButton
                         onClick={() => {
@@ -208,18 +203,15 @@ function SettingsPanels(props: {
    return (
       <TabPanels className="flex w-full flex-col p-5 pr-0">
          <div className="text-text mb-5 shrink-0 text-xl">{props.currentTab}</div>
-         {flatTabs.map(
-            tab =>
-               (client.isLoggedIn || !tab?.auth) && (
-                  <TabPanel key={tab?.name} className="scroll-alternative h-full overflow-y-scroll pr-3">
-                     {tab?.component ? (
-                        <TabComponent onChange={props.onChange} settings={props.settings} tab={tab} />
-                     ) : (
-                        <span className="text-text/50 text-base italic">{tab?.name} (Soon...)</span>
-                     )}
-                  </TabPanel>
-               ),
-         )}
+         {flatTabs.map(tab => (
+            <TabPanel key={tab?.name} className="scroll-alternative h-full overflow-y-scroll pr-3">
+               {tab?.component ? (
+                  <TabComponent onChange={props.onChange} settings={props.settings} tab={tab} />
+               ) : (
+                  <span className="text-text/50 text-base italic">{tab?.name} (Soon...)</span>
+               )}
+            </TabPanel>
+         ))}
       </TabPanels>
    );
 }

@@ -1,33 +1,14 @@
 import HuginnButton from "@components/button/HuginnButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import { useModals, useModalsDispatch } from "@contexts/modalContext";
-import { Description, Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from "@headlessui/react";
-import { useEffect, useMemo } from "react";
-import ModalBackground from "./ModalBackground";
+import { Description, Dialog, DialogPanel, DialogTitle, TransitionChild } from "@headlessui/react";
 import clsx from "clsx";
+import { useMemo } from "react";
+import ModalBackground from "./ModalBackground";
 
 export default function InfoModal() {
    const { info: modal } = useModals();
    const dispatch = useModalsDispatch();
-
-   useEffect(() => {
-      console.log("mount");
-      return () => {
-         console.log("unmount");
-      };
-   }, []);
-
-   const textColor = useMemo(
-      () =>
-         modal.status === "default"
-            ? "text-text/80"
-            : modal.status === "error"
-              ? "text-error"
-              : modal.status === "success"
-                ? "text-primary"
-                : "",
-      [modal],
-   );
 
    const backgroundColor = useMemo(
       () =>
@@ -53,17 +34,12 @@ export default function InfoModal() {
       [modal],
    );
 
-   // const title = useMemo(
-   //    () =>
-   //       modal.status === "default" ? "Information" : modal.status === "error" ? "Error" : modal.status === "success" ? "Success" : "",
-   //    [modal.status],
-   // );
-
    const errorCode = useMemo(() => modal.text.match(/\([A-Za-z0-9]+\)/g)?.[0] ?? "", [modal.text]);
 
    const formattedText = useMemo(() => {
       return modal.text.replace(/\([A-Za-z0-9]+\)/g, "");
    }, [modal.text]);
+
    return (
       <Dialog
          open={modal.isOpen}

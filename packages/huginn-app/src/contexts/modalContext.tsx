@@ -1,6 +1,6 @@
+import { DeepPartial, StatusCode } from "@/types";
 import { ReactNode } from "@tanstack/react-router";
 import { Dispatch, createContext, useContext, useReducer } from "react";
-import { StatusCode, DeepPartial } from "@/types";
 
 type DefaultModal = { isOpen: boolean };
 export type ModalContextType = {
@@ -42,15 +42,9 @@ export function ModalProvider(props: { children?: ReactNode }) {
 }
 
 function modalsReducer(modals: ModalContextType, action: DeepPartial<ModalContextType>): ModalContextType {
-   console.log(action.info);
    const settings = { ...modals.settings, ...action.settings };
    const info = Object.assign({}, modals.info, action.info);
-   // const info = {
-   //    isOpen: action.info?.isOpen ?? modals.info.isOpen,
-   //    status: action.info?.status ?? modals.info.status,
-   //    text: action.info?.text ?? modals.info.text,
-   //    action: action.info?.action ?? modals.info.action,
-   // };
+
    return { settings, info };
 }
 

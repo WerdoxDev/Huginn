@@ -1,6 +1,6 @@
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions, Transition } from "@headlessui/react";
 import { ReactNode } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { filterChildrenOfType } from "@lib/utils";
 import { DropboxItem } from "@/types";
 

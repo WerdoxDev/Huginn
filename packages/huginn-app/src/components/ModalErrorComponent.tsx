@@ -16,11 +16,11 @@ export default function ModalErrorComponent(props: { error: unknown }) {
       },
    });
 
-   const router = useRouter();
+   // const router = useRouter();
 
    useEffect(() => {
       handleError(props.error);
-      router.history.go(-1);
+      // router.history.go(-1);
    }, []);
 
    return null;

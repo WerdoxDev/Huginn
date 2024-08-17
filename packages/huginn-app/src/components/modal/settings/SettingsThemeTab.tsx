@@ -1,7 +1,6 @@
 import { DropboxItem, SettingsTabProps, ThemeType } from "@/types";
 import HuginnDropbox from "@components/HuginnDropbox";
 import { useThemeDispather } from "@contexts/themeContext";
-import { useEffect } from "react";
 
 const themes: DropboxItem[] = [
    { id: 0, name: "Pine Green", value: "pine green" },
@@ -19,15 +18,9 @@ export default function SettingsThemeTab(props: SettingsTabProps) {
       props.onChange && props.onChange({ theme: item.value as ThemeType });
    }
 
-   useEffect(() => {
-      console.log(props.settings.theme);
-   }, []);
-
    return (
-      <>
-         <HuginnDropbox items={themes} onChange={onChange} defaultIndex={themes.findIndex(x => x.value === props.settings.theme)}>
-            <HuginnDropbox.Label>Color Theme</HuginnDropbox.Label>
-         </HuginnDropbox>
-      </>
+      <HuginnDropbox items={themes} onChange={onChange} defaultIndex={themes.findIndex(x => x.value === props.settings.theme)}>
+         <HuginnDropbox.Label>Color Theme</HuginnDropbox.Label>
+      </HuginnDropbox>
    );
 }
