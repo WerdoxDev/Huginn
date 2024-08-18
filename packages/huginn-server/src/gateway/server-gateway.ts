@@ -9,7 +9,7 @@ import {
    GatewayOperations,
    GatewayReadyDispatch,
    GatewayResume,
-   GatewayResumed,
+   GatewayResumedData,
 } from "@huginn/shared";
 import { Snowflake, snowflake } from "@huginn/shared";
 import { idFix, isOpcode } from "@huginn/shared";
@@ -195,7 +195,12 @@ export class ServerGateway {
          this.send(client.ws, _data);
       }
 
-      const resumedData: GatewayResumed = { t: "resumed", op: GatewayOperations.DISPATCH, d: undefined, s: client.increaseSequence() };
+      const resumedData: GatewayResumedData = {
+         t: "resumed",
+         op: GatewayOperations.DISPATCH,
+         d: undefined,
+         s: client.increaseSequence(),
+      };
       this.send(client.ws, resumedData);
    }
 

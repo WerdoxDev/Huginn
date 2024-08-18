@@ -1,7 +1,7 @@
 import { prisma } from "@/db";
 import { dispatchToTopic } from "@/gateway/gateway-utils";
 import { getJwt, handleRequest, verifyJwt } from "@/route-utils";
-import { GatewayRelationshipDeleteDispatch, HttpCode } from "@huginn/shared";
+import { HttpCode } from "@huginn/shared";
 import { Hono } from "hono";
 
 const app = new Hono();
@@ -13,8 +13,8 @@ app.delete("/users/@me/relationships/:userId", verifyJwt(), c =>
 
       await prisma.relationship.deleteByUserId(payload.id, userId);
 
-      dispatchToTopic<GatewayRelationshipDeleteDispatch>(payload.id, "relationship_delete", userId, 0);
-      dispatchToTopic<GatewayRelationshipDeleteDispatch>(userId, "relationship_delete", payload.id, 0);
+      dispatchToTopic(payload.id, "relationship_delete", userId);
+      dispatchToTopic(userId, "relationship_delete", payload.id);
 
       return c.newResponse(null, HttpCode.OK);
    }),

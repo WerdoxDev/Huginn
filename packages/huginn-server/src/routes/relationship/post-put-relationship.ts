@@ -1,12 +1,8 @@
 import { DBErrorType, prisma } from "@/db";
 import { dispatchToTopic } from "@/gateway/gateway-utils";
-import { getJwt, hValidator, handleRequest, verifyJwt } from "@/route-utils";
+import { getJwt, handleRequest, hValidator, verifyJwt } from "@/route-utils";
 import { createError, errorResponse } from "@huginn/backend-shared";
-import { omit, omitArray, RelationshipType } from "@huginn/shared";
-import { Error, HttpCode } from "@huginn/shared";
-import { GatewayRelationshipCreateDispatch } from "@huginn/shared";
-import { Snowflake } from "@huginn/shared";
-import { idFix } from "@huginn/shared";
+import { Error, HttpCode, idFix, omitArray, RelationshipType, Snowflake } from "@huginn/shared";
 import { Context, Hono } from "hono";
 import { z } from "zod";
 
@@ -39,8 +35,8 @@ async function requestRest(c: Context, userId: Snowflake) {
       const relationshipOwner = relationships.find(x => x.ownerId === payload.id)!;
       const relationshipUser = relationships.find(x => x.ownerId === userId)!;
 
-      dispatchToTopic<GatewayRelationshipCreateDispatch>(payload.id, "relationship_create", relationshipOwner, 0);
-      dispatchToTopic<GatewayRelationshipCreateDispatch>(userId, "relationship_create", relationshipUser, 0);
+      dispatchToTopic(payload.id, "relationship_create", relationshipOwner);
+      dispatchToTopic(userId, "relationship_create", relationshipUser);
    }
 
    return c.newResponse(null, HttpCode.NO_CONTENT);

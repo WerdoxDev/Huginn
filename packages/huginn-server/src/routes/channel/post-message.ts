@@ -2,7 +2,7 @@ import { prisma } from "@/db";
 import { dispatchToTopic } from "@/gateway/gateway-utils";
 import { getJwt, hValidator, handleRequest, verifyJwt } from "@/route-utils";
 import { invalidFormBody } from "@huginn/backend-shared";
-import { APIMessage, GatewayMessageCreateDispatch, HttpCode, idFix, omit } from "@huginn/shared";
+import { APIMessage, HttpCode, idFix, omit } from "@huginn/shared";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -38,7 +38,7 @@ app.post("/channels/:channelId/messages", verifyJwt(), hValidator("json", schema
 
       message.nonce = body.nonce;
 
-      dispatchToTopic<GatewayMessageCreateDispatch>(channelId, "message_create", message, 0);
+      dispatchToTopic(channelId, "message_create", message, 0);
       // TODO: Don't send notification if message has SUPPRESS_NOTIFICATIONS
 
       return c.json(message, HttpCode.CREATED);

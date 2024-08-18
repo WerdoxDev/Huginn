@@ -2,10 +2,12 @@ import HomeSidebar from "@components/HomeSidebar";
 import RouteErrorComponent from "@components/RouteErrorComponent";
 import UserInfo from "@components/UserInfo";
 import { useClient } from "@contexts/apiContext";
+import { useEvent } from "@contexts/event";
 import { requireAuth } from "@lib/middlewares";
 import { getChannelsOptions } from "@lib/queries";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Outlet, createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome")({
    beforeLoad({ context: { client } }) {
@@ -23,13 +25,29 @@ function LayoutHome() {
    const client = useClient();
    const { data } = useSuspenseQuery(getChannelsOptions(client, "@me"));
 
+   const { listenEvent } = useEvent();
+
+   const [user, setUser] = useState(() => client.user);
+
+   useEffect(() => {
+      const unlisten = listenEvent("user_updated", e => {
+         if (e.self) {
+            setUser(e.user);
+         }
+      });
+
+      return () => {
+         unlisten();
+      };
+   }, []);
+
    return (
       //TODO: Abstract the 2 (navigation & content) parts to a central component for later use
       <div className="flex h-full w-full flex-col overflow-hidden">
          <div className="flex h-full ">
             <div className="flex w-64 shrink-0 flex-col">
                <HomeSidebar channels={data} />
-               {client.user && <UserInfo user={client.user} />}
+               {user && <UserInfo user={user} />}
             </div>
             <div className="bg-tertiary relative w-full overflow-hidden">
                <Outlet />

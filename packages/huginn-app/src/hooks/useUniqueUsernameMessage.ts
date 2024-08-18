@@ -70,5 +70,5 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
       setMessage(prev => ({ text: prev.text, status: prev.status, visible: prev.status === "error" ? true : isFocused }));
    }
 
-   return { message, onFocusChanged };
+   return { message, onFocusChanged, onChanged };
 }

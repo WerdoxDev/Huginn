@@ -1,6 +1,6 @@
 import { useClient } from "@contexts/apiContext";
 import { APIGetUserChannelsResult } from "@huginn/shared";
-import { GatewayDMChannelCreateDispatchData } from "@huginn/shared";
+import { GatewayDMChannelCreateData } from "@huginn/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { ReactNode, useEffect } from "react";
@@ -11,14 +11,14 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
    const navigate = useNavigate();
    const router = useRouter();
 
-   function onChannelCreated(d: GatewayDMChannelCreateDispatchData) {
+   function onChannelCreated(d: GatewayDMChannelCreateData) {
       queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], data =>
          data && !data.some(x => x.id === d.id) ? [d, ...data] : data,
       );
       console.log(d);
    }
 
-   function onChannelDeleted(d: GatewayDMChannelCreateDispatchData) {
+   function onChannelDeleted(d: GatewayDMChannelCreateData) {
       if (router.state.location.pathname.includes(d.id)) {
          navigate({ to: "/channels/@me", replace: true });
       }

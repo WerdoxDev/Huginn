@@ -1,5 +1,6 @@
 import { prisma } from "@/db";
 import { createTokens } from "@/factory/token-factory";
+import { dispatchToTopic, publishToTopic } from "@/gateway/gateway-utils";
 import { getFileHash, getJwt, hValidator, handleRequest, verifyJwt } from "@/route-utils";
 import { cdnUpload } from "@/server-request";
 import {
@@ -82,6 +83,9 @@ app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
          constants.ACCESS_TOKEN_EXPIRE_TIME,
          constants.REFRESH_TOKEN_EXPIRE_TIME,
       );
+
+      // TODO: When guilds are a thing, this should send an update to users that are viewing that guild
+      dispatchToTopic(payload.id, "user_update", { ...updatedUser, token: accessToken, refreshToken });
 
       const json: APIPatchCurrentUserResult = { ...updatedUser, token: accessToken, refreshToken };
 

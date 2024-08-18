@@ -9,22 +9,31 @@ import { Transition } from "@headlessui/react";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useInputs } from "@hooks/useInputs";
 import useUniqueUsernameMessage from "@hooks/useUniqueUsernameMessage";
+import { omit } from "@huginn/shared";
 import { useMemo, useRef, useState } from "react";
 
 export default function SettingsProfileTab(props: SettingsTabProps) {
    const client = useClient();
    const user = useRef(client.user);
 
-   const { inputsProps, values, handleErrors } = useInputs([
+   const { inputsProps, values, handleErrors, resetStatuses } = useInputs([
       { name: "username", required: true, default: user.current?.username },
       { name: "displayName", required: true, default: user.current?.displayName },
       { name: "password", required: false },
    ]);
 
-   const { message: usernameMessageDetail, onFocusChanged } = useUniqueUsernameMessage(values, "username");
+   const { message: usernameMessageDetail, onFocusChanged, onChanged } = useUniqueUsernameMessage(values, "username");
 
    const mutation = usePatchUser(result => {
-      client.user = result;
+      client.tokenHandler.token = result.token;
+      client.tokenHandler.refreshToken = result.refreshToken;
+      client.user = omit(result, ["refreshToken", "token"]);
+
+      resetStatuses();
+
+      values["password"].value = "";
+      onChanged(values["username"].value);
+      onFocusChanged(false);
    }, handleErrors);
 
    const [modified, setModified] = useState(false);

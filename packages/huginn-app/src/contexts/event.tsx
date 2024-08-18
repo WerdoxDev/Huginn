@@ -1,8 +1,9 @@
-import { GatewayMessageCreateDispatchData } from "@huginn/shared";
+import { APIUser, GatewayMessageCreateData } from "@huginn/shared";
 import { createContext, ReactNode, useCallback, useContext, useEffect, useRef } from "react";
 
 type EventTypes = {
-   message_added: { message: GatewayMessageCreateDispatchData; visible: boolean; self: boolean };
+   message_added: { message: GatewayMessageCreateData; visible: boolean; self: boolean };
+   user_updated: { user: APIUser; self: boolean };
 };
 
 type EventType = { type: keyof EventTypes; data: EventTypes[keyof EventTypes] };

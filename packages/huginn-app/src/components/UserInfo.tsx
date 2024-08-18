@@ -1,14 +1,18 @@
+import { useClient } from "@contexts/apiContext";
 import { useModalsDispatch } from "@contexts/modalContext";
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from "@headlessui/react";
 import { useLogout } from "@hooks/useLogout";
 import { APIUser } from "@huginn/shared";
 import { useMutation } from "@tanstack/react-query";
+import { useEffect } from "react";
 import UserIconWithStatus from "./UserIconWithStatus";
 import { Tooltip } from "./tooltip/Tooltip";
 
 export default function UserInfo(props: { user: APIUser }) {
    const modalsDispatch = useModalsDispatch();
    const logout = useLogout();
+
+   const client = useClient();
 
    const mutation = useMutation({
       async mutationFn() {
@@ -20,6 +24,10 @@ export default function UserInfo(props: { user: APIUser }) {
       e.stopPropagation();
       modalsDispatch({ settings: { isOpen: true } });
    }
+
+   useEffect(() => {
+      console.log("HI?");
+   }, [client.user]);
 
    return (
       <section className=" flex h-16 w-64 flex-shrink-0 flex-grow-0 items-center justify-center">
