@@ -1,7 +1,6 @@
+import { ModalContextType, useModalsDispatch } from "@contexts/modalContext";
 import { HTTPError } from "@huginn/shared";
 import { Messages } from "@lib/error-messages";
-import { ModalContextType, useModalsDispatch } from "@contexts/modalContext";
-import { useErrorBoundary } from "react-error-boundary";
 
 export function useErrorHandler(action?: ModalContextType["info"]["action"]) {
    const dispatch = useModalsDispatch();

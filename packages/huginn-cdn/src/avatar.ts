@@ -24,10 +24,10 @@ app.post("/avatars/:userId", c =>
 app.get("/avatars/:userId/:avatarHash{.+(.png|.jpeg|.jpg|.webp|.gif)$}", c =>
    handleRequest(c, async () => {
       const avatashHash = c.req.param("avatarHash");
-      let { name, format, mimeType } = extractFileInfo(avatashHash);
+      const { name, format, mimeType } = extractFileInfo(avatashHash);
 
       // Best scenario, file already exists and ready to serve
-      let file = Bun.file(path.join(__dirname, `../uploads/avatars/${name}.${format}`));
+      const file = Bun.file(path.join(__dirname, `../uploads/avatars/${name}.${format}`));
 
       if (await file.exists()) {
          return c.body(await file.arrayBuffer(), HttpCode.OK, { "Content-Type": mimeType });

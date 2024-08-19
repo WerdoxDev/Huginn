@@ -25,17 +25,7 @@ export function resolveBase64(data: Base64Resolvable): string {
  * Resolves a base64 data url string to a Buffer
  */
 export function resolveBuffer(data: string): Buffer {
-   const regex = /^data:.+\/(.+);base64,(.*)$/;
-
-   const matches = data.match(regex);
-
-   if (matches) {
-      const data = matches[2];
-
-      return Buffer.from(data, "base64");
-   }
-
-   return Buffer.from("", "base64");
+   return Buffer.from(data.split(",")[1], "base64");
 }
 
 /**

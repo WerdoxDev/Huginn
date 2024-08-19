@@ -5,7 +5,7 @@ import { useLogout } from "@hooks/useLogout";
 import { APIUser } from "@huginn/shared";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
-import UserIconWithStatus from "./UserIconWithStatus";
+import UserAvatarWithStatus from "./UserAvatarWithStatus";
 import { Tooltip } from "./tooltip/Tooltip";
 
 export default function UserInfo(props: { user: APIUser }) {
@@ -29,6 +29,10 @@ export default function UserInfo(props: { user: APIUser }) {
       console.log("HI?");
    }, [client.user]);
 
+   if (!client.user) {
+      return;
+   }
+
    return (
       <section className=" flex h-16 w-64 flex-shrink-0 flex-grow-0 items-center justify-center">
          <Menu>
@@ -36,7 +40,11 @@ export default function UserInfo(props: { user: APIUser }) {
                as="div"
                className="group flex w-full cursor-pointer items-center rounded-xl px-2 py-1 hover:bg-white hover:bg-opacity-5"
             >
-               <UserIconWithStatus className="bg-secondary mr-3 flex-shrink-0" />
+               <UserAvatarWithStatus
+                  userId={client.user.id}
+                  avatarHash={client.user.avatar}
+                  className="bg-secondary mr-3 flex-shrink-0"
+               />
 
                <div className="flex w-full flex-col items-start gap-y-0.5">
                   <div className="text-text text-sm">{props.user.displayName}</div>

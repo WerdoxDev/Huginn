@@ -7,7 +7,7 @@ import { useErrorHandler } from "@hooks/useServerErrorHandler";
 import { ensureChannelExists } from "@lib/middlewares";
 import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/channels/@me/$channelId")({

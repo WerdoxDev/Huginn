@@ -1,6 +1,6 @@
 import { prisma } from "@/db";
 import { createTokens } from "@/factory/token-factory";
-import { dispatchToTopic, publishToTopic } from "@/gateway/gateway-utils";
+import { dispatchToTopic } from "@/gateway/gateway-utils";
 import { getFileHash, getJwt, hValidator, handleRequest, verifyJwt } from "@/route-utils";
 import { cdnUpload } from "@/server-request";
 import {
@@ -58,15 +58,19 @@ app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
          return errorResponse(c, databaseError);
       }
 
-      let avatarHash: string | undefined;
-      if (body.avatar) {
-         const data = resolveBuffer(body.avatar);
-         avatarHash = getFileHash(data);
+      // let avatarHash: string | undefined;
 
-         await cdnUpload(CDNRoutes.uploadAvatar(user.id), {
-            files: [{ data: resolveBuffer(body.avatar), name: avatarHash }],
-         });
-      }
+      const avatarHash: string | undefined = await new Promise(resolve => {
+         let avatarHash: string | undefined;
+         if (body.avatar) {
+            const data = resolveBuffer(body.avatar);
+            avatarHash = getFileHash(data);
+
+            cdnUpload(CDNRoutes.uploadAvatar(user.id), {
+               files: [{ data: resolveBuffer(body.avatar), name: avatarHash }],
+            }).then(() => resolve(avatarHash));
+         }
+      });
 
       const updatedUser = idFix(
          await prisma.user.edit(payload.id, {

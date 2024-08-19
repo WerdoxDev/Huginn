@@ -55,15 +55,22 @@ export function resolveRequest(request: InternalRequest): ResolvedRequest {
 
          if (isBufferLike(file.data)) {
             let contentType = file.contentType;
-            if (!contentType) {
-               const [parsedType] = filetypeinfo(file.data);
+            let name = file.name;
 
+            const [parsedType] = filetypeinfo(file.data);
+
+            if (!contentType) {
                if (parsedType) {
                   contentType = parsedType.mime ?? "application/octet-stream";
                }
             }
 
-            formData.append(fileKey, new Blob([file.data], { type: contentType }), file.name);
+            if (!name.includes(".") && parsedType.extension) {
+               name = `${name}.${parsedType.extension}`;
+            }
+
+            console.log(contentType, name);
+            formData.append(fileKey, new Blob([file.data], { type: contentType }), name);
          } else {
             formData.append(fileKey, new Blob([`${file.data}`], { type: file.contentType }), file.name);
          }

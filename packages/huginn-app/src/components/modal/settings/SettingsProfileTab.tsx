@@ -12,7 +12,7 @@ import useUniqueUsernameMessage from "@hooks/useUniqueUsernameMessage";
 import { omit } from "@huginn/shared";
 import { useMemo, useRef, useState } from "react";
 
-export default function SettingsProfileTab(props: SettingsTabProps) {
+export default function SettingsProfileTab(_props: SettingsTabProps) {
    const client = useClient();
    const user = useRef(client.user);
 
@@ -21,6 +21,8 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
       { name: "displayName", required: true, default: user.current?.displayName },
       { name: "password", required: false },
    ]);
+
+   const [avatarData, setAvatarData] = useState("");
 
    const { message: usernameMessageDetail, onFocusChanged, onChanged } = useUniqueUsernameMessage(values, "username");
 
@@ -31,22 +33,52 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
 
       resetStatuses();
 
-      values["password"].value = "";
-      onChanged(values["username"].value);
+      values.password.value = "";
+      onChanged(values.username.value);
       onFocusChanged(false);
    }, handleErrors);
 
    const [modified, setModified] = useState(false);
 
    useMemo(() => {
-      setModified(values.username.value !== client.user?.username || values.displayName.value !== client.user.displayName);
-   }, [values, client.user]);
+      setModified(
+         values.username.value !== client.user?.username || values.displayName.value !== client.user.displayName || avatarData !== "",
+      );
+   }, [values, client.user, avatarData]);
+
+   function openFileDialog() {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.multiple = false;
+      input.accept = "image/png,image/jpeg,image/webp,image/gif";
+
+      input.onchange = e => {
+         const file = (e.target as HTMLInputElement).files?.[0];
+
+         if (!file) {
+            return;
+         }
+
+         const reader = new FileReader();
+         reader.readAsDataURL(file);
+
+         reader.onload = readerEvent => {
+            const content = readerEvent.target?.result;
+            if (typeof content === "string") {
+               setAvatarData(content);
+            }
+         };
+      };
+
+      input.click();
+   }
 
    async function edit() {
       await mutation.mutateAsync({
          displayName: values.displayName.value,
          username: values.username.value === user.current?.username ? undefined : values.username.value,
          password: values.password.value,
+         avatar: avatarData,
       });
    }
 
@@ -54,7 +86,13 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
       <div className="">
          <div className="flex h-full  items-start gap-5">
             <div className="bg-secondary flex-shrink-0 rounded-lg p-4">
-               <div className="bg-primary h-24 w-24 rounded-full"></div>
+               <button onClick={openFileDialog} className="h-24 w-24 overflow-hidden rounded-full bg-black">
+                  {avatarData !== "" ? (
+                     <img src={avatarData}></img>
+                  ) : (
+                     <div className="bg-primary h-full w-full hover:bg-opacity-70"></div>
+                  )}
+               </button>
             </div>
             <div className="bg-secondary mb-20 flex w-full flex-col gap-y-5 rounded-lg p-4">
                <HuginnInput

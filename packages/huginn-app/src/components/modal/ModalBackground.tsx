@@ -1,5 +1,5 @@
 import { useWindow } from "@contexts/windowContext";
-import { DialogBackdrop, TransitionChild } from "@headlessui/react";
+import { DialogBackdrop } from "@headlessui/react";
 import clsx from "clsx";
 
 export default function ModalBackground() {

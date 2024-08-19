@@ -3,7 +3,7 @@ import { APIMessageUser, MessageFlags } from "@huginn/shared";
 import { forwardRef, useCallback, useMemo } from "react";
 import { Descendant, Node, Path, Range, Text, createEditor } from "slate";
 import { DefaultElement, Editable, RenderElementProps, RenderLeafProps, Slate, withReact } from "slate-react";
-import UserIconWithStatus from "./UserIconWithStatus";
+import UserAvatarWithStatus from "./UserAvatarWithStatus";
 import MessageLeaf from "./editor/MessageLeaf";
 import { tokenize } from "@lib/huginn-tokenizer";
 import { hasFlag } from "@huginn/shared";
@@ -56,7 +56,13 @@ const BaseMessage = forwardRef<HTMLLIElement, { content?: string; author: APIMes
          <li ref={ref} className="hover:bg-secondary group select-text rounded-lg p-2">
             <div className={`flex flex-col items-start gap-y-2 ${isSelf ? "ml-0" : "ml-2"}`}>
                <div className="flex items-center gap-x-2 overflow-hidden rounded-xl">
-                  <UserIconWithStatus statusSize="0.5rem" size="1.75rem" className="bg-background" />
+                  <UserAvatarWithStatus
+                     userId={props.author.id}
+                     avatarHash={props.author.avatar}
+                     statusSize="0.5rem"
+                     size="1.75rem"
+                     className="bg-background"
+                  />
                   <div className="text-text text-sm">{isSelf ? "You" : props.author.displayName}</div>
                   {props.flags && hasFlag(props.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
                      <IconMdiNotificationsOff className="text-text size-4" />

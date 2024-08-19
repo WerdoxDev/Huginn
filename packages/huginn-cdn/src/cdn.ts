@@ -1,9 +1,8 @@
 import consola from "consola";
-import { version } from "../package.json";
-import { certFile, keyFile, cdnHost, cdnPort } from ".";
-import { Hono } from "hono";
-import { HttpCode } from "@huginn/shared";
 import { colors } from "consola/utils";
+import { Hono } from "hono";
+import { cdnHost, cdnPort, certFile, keyFile } from ".";
+import { version } from "../package.json";
 import avatar from "./avatar";
 
 export function startCdn() {
