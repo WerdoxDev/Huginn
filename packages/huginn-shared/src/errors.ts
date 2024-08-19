@@ -1,3 +1,4 @@
+import { RawFile } from "./rest-types";
 import { Snowflake } from "./snowflake";
 
 export type HuginnErrorFieldInformation = {
@@ -18,7 +19,7 @@ export type HuginnErrorData = {
 };
 
 export type RequestBody = {
-   //files: RawFile[] | undefined;
+   files: RawFile[] | undefined;
    json: unknown | undefined;
 };
 
@@ -122,6 +123,9 @@ export const Error = {
    },
    fileNotFound(): [string, JsonCode] {
       return ["File Not Found", JsonCode.NONE];
+   },
+   invalidFileFormat(): [string, JsonCode] {
+      return ["Invalid File Format", JsonCode.NONE];
    },
    malformedBody(): [string, JsonCode] {
       return ["Malformed Body", JsonCode.NONE];

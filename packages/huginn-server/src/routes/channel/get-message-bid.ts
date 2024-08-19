@@ -1,9 +1,8 @@
 import { prisma } from "@/db";
 import { includeMessageAuthor, includeMessageMentions } from "@/db/common";
-import { getJwt, handleRequest, unauthorized, verifyJwt } from "@/route-utils";
-import { APIGetMessageByIdResult } from "@huginn/shared";
-import { HttpCode } from "@huginn/shared";
-import { idFix, merge, omit } from "@huginn/shared";
+import { getJwt, handleRequest, verifyJwt } from "@/route-utils";
+import { unauthorized } from "@huginn/backend-shared";
+import { APIGetMessageByIdResult, HttpCode, idFix, merge, omit } from "@huginn/shared";
 import { Hono } from "hono";
 
 const app = new Hono();

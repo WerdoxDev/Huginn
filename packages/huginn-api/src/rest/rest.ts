@@ -1,19 +1,9 @@
-import { HuginnErrorData } from "@huginn/shared";
-import {
-   HandlerRequestData,
-   InternalRequest,
-   RequestData,
-   RequestHeaders,
-   RequestMethod,
-   ResolvedRequest,
-   ResponseLike,
-} from "@huginn/shared";
+import { HTTPError, HuginnErrorData, resolveRequest } from "@huginn/shared";
+import { HandlerRequestData, InternalRequest, RequestData, RequestMethod, ResponseLike, parseResponse } from "@huginn/shared";
 import { RouteLike } from "@huginn/shared";
 import { HuginnClient } from "../..";
 import { RESTOptions } from "../types";
-import { HTTPError } from "../errors/http-error";
 import { HuginnAPIError } from "../errors/huginn-error";
-import { parseResponse } from "../utils";
 import { DefaultRestOptions } from "./rest-utils";
 
 export class REST {
@@ -81,64 +71,19 @@ export class REST {
     *
     * @param options - Request options
     */
-   public async request(options: InternalRequest): Promise<unknown> {
-      const { url, fetchOptions } = this.resolveRequest(options);
+   public async request(options: Omit<InternalRequest, "root">): Promise<unknown> {
+      const { url, fetchOptions } = resolveRequest({
+         ...options,
+         token: this.client.tokenHandler.token,
+         root: this.options.api,
+         authPrefix: this.options.authPrefix,
+      });
 
       const response = await this.options.makeRequest(url, fetchOptions);
 
       if (response.ok) return parseResponse(response);
 
       return this.handleErrors(response, options.method, url, fetchOptions);
-   }
-
-   /**
-    * Format the request to use in a fetch
-    *
-    * @param request - The request data
-    */
-   public resolveRequest(request: InternalRequest): ResolvedRequest {
-      let query = "";
-      let finalBody: RequestInit["body"];
-      let additionalHeaders: Record<string, string> = {};
-
-      if (request.query) {
-         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-         query = `?${request.query}`;
-      }
-
-      // Required headers
-      const headers: RequestHeaders = {};
-
-      if (request.auth) {
-         if (!this.client.tokenHandler.token) {
-            throw new Error("Expected token for a request, but wasn't present " + request.fullRoute);
-         }
-
-         headers.Authorization = `${request.authPrefix ?? this.options.authPrefix} ${this.client.tokenHandler.token}`;
-      }
-
-      if (request.reason?.length) {
-         headers["X-Log-Reason"] = encodeURIComponent(request.reason);
-      }
-
-      const url = `${this.options.api}${request.fullRoute}${query}`;
-
-      // TODO: Implement form data
-      if (request.body) {
-         finalBody = JSON.stringify(request.body);
-         additionalHeaders = { "Content-Type": "application/json" };
-      }
-
-      const method = request.method.toUpperCase();
-
-      const fetchOptions: RequestInit = {
-         // If for some reason we pass a body to a GET or HEAD request, remove the body
-         body: ["GET", "HEAD"].includes(method) ? null : finalBody,
-         headers: { ...request.headers, ...headers, ...additionalHeaders },
-         method,
-      };
-
-      return { url, fetchOptions };
    }
 
    public async handleErrors(

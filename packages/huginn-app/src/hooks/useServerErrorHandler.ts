@@ -1,23 +1,26 @@
-import { HTTPError } from "@huginn/api";
-import { Messages } from "@lib/errorMessages";
-import { useModalsDispatch } from "@contexts/modalContext";
+import { HTTPError } from "@huginn/shared";
+import { Messages } from "@lib/error-messages";
+import { ModalContextType, useModalsDispatch } from "@contexts/modalContext";
+import { useErrorBoundary } from "react-error-boundary";
 
-export function useServerErrorHandler() {
+export function useErrorHandler(action?: ModalContextType["info"]["action"]) {
    const dispatch = useModalsDispatch();
 
-   function handleServerError(error: unknown) {
+   function handleError(error: unknown) {
       if (error instanceof HTTPError) {
          if (error.status === 500) {
-            dispatch({ info: { isOpen: true, text: Messages.serverError(), status: "error", action: undefined } });
+            dispatch({ info: { isOpen: true, ...Messages.serverError(), status: "error", action: action } });
          }
       } else if (error instanceof TypeError) {
          if (error.message.toLowerCase() === "failed to fetch") {
-            dispatch({ info: { isOpen: true, text: Messages.connectionLostError(), status: "error", action: undefined } });
-         } else dispatch({ info: { isOpen: true, text: Messages.appError(), status: "error", action: undefined } });
+            dispatch({ info: { isOpen: true, ...Messages.connectionLostError(), status: "error", action: action } });
+         } else {
+            dispatch({ info: { isOpen: true, ...Messages.appError(), status: "error", action: action } });
+         }
       } else if (error instanceof Error) {
-         dispatch({ info: { isOpen: true, text: Messages.appError(), status: "error", action: undefined } });
+         dispatch({ info: { isOpen: true, ...Messages.appError(), status: "error", action: action } });
       }
    }
 
-   return handleServerError;
+   return handleError;
 }

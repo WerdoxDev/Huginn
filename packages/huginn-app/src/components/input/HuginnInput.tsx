@@ -3,6 +3,7 @@ import { useInputBorder } from "@hooks/useInputBorder";
 import { filterChildrenOfType } from "@lib/utils";
 import { snowflake } from "@huginn/shared";
 import { ReactNode, createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import clsx from "clsx";
 
 const InputContext = createContext<{ id: string; status: InputStatus; required?: boolean }>({
    id: "",
@@ -24,6 +25,22 @@ export default function HuginnInput(props: HuginnInputProps) {
       };
    }, [props.children]);
 
+   const border = useMemo(
+      () =>
+         props.border === "top"
+            ? "border-t-4"
+            : props.border === "right"
+              ? "border-r-4"
+              : props.border === "bottom"
+                ? "border-b-4"
+                : props.border === "left"
+                  ? "border-l-4"
+                  : props.border === "none"
+                    ? "border-none "
+                    : "border-l-4",
+      [props.border],
+   );
+
    useEffect(() => {
       if (inputRef.current) {
          inputRef.current.value = props.value ?? "";
@@ -32,15 +49,20 @@ export default function HuginnInput(props: HuginnInputProps) {
 
    return (
       <InputContext.Provider value={{ id: id, required: props.required, status: props.status }}>
-         <div className={`flex flex-col ${props.className}`}>
+         <div className={clsx("flex flex-col", props.className)}>
             {filteredChildren.label && <HuginnInput.Label skipRender>{filteredChildren.label}</HuginnInput.Label>}
             <div
-               className={`flex w-full items-center rounded-md bg-secondary ${hasBorder && !props.hideBorder ? "border-l-4" : ""} ${borderColor}`}
+               className={clsx(
+                  props.inputProps?.className,
+                  "bg-secondary flex w-full items-center rounded-md",
+                  hasBorder && border,
+                  borderColor,
+               )}
             >
                <input
                   id={id}
                   ref={inputRef}
-                  className="flex-grow bg-transparent p-2.5 text-white outline-none"
+                  className="flex-grow bg-transparent p-2 text-white outline-none"
                   type={props.type ?? "text"}
                   autoComplete="new-password"
                   placeholder=""
@@ -70,7 +92,7 @@ function Label(props: { children?: ReactNode; skipRender?: boolean }) {
                {inputContext.status.text}
             </span>
          ) : (
-            inputContext.required && <span className="pl-0.5 text-error">*</span>
+            inputContext.required && <span className="text-error pl-0.5">*</span>
          )}
       </label>
    ) : (

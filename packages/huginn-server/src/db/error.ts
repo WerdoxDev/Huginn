@@ -40,7 +40,7 @@ export function assertId(methodName: string, ...ids: Snowflake[]) {
    }
 }
 
-export function assertObj(methodName: string, obj: unknown, errorType: DBErrorType, cause?: string): asserts obj {
+export function assertObj(methodName: string, obj: unknown, errorType: DBErrorType, cause?: string) {
    if (obj === null || typeof obj !== "object") {
       throw new DBError(Error(errorType, { cause: cause }), methodName);
    }

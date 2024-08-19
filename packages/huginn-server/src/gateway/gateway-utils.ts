@@ -1,6 +1,6 @@
-import { BasePayload, GatewayOperations } from "@huginn/shared";
-import { logGatewaySend } from "../log-utils";
+import { BasePayload, GatewayEvents, GatewayOperations } from "@huginn/shared";
 import { gateway } from "../server";
+import { logGatewaySend } from "@huginn/backend-shared";
 
 export function publishToTopic(topic: string, data: BasePayload) {
    logGatewaySend(data, false);
@@ -8,8 +8,8 @@ export function publishToTopic(topic: string, data: BasePayload) {
    gateway.sendToTopic(topic, data);
 }
 
-export function dispatchToTopic<T extends BasePayload>(topic: string, t: T["t"], d: T["d"], s: T["s"]) {
-   publishToTopic(topic, { op: GatewayOperations.DISPATCH, t, d, s });
+export function dispatchToTopic<K extends keyof GatewayEvents>(topic: string, t: K, d: GatewayEvents[K]) {
+   publishToTopic(topic, { op: GatewayOperations.DISPATCH, t, d, s: 0 });
 }
 
 export function validateGatewayData(data: unknown): boolean {

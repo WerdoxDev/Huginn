@@ -29,11 +29,13 @@ export default tseslint.config(
       name: "huginn/global",
       files: [
          "packages/huginn-server/src/**/*.ts",
-         "packages/huginn-api/**/*.ts",
+         "packages/huginn-cdn/src/**/*.ts",
+         "packages/huginn-api/src/**/*.ts",
          "packages/huginn-app/src/**/*.{ts,tsx}",
          "packages/huginn-app/**/*.d.ts",
-         "packages/huginn-bundler/**/*.ts",
-         "packages/huginn-shared/**/*.ts",
+         "packages/huginn-bundler/src/**/*.ts",
+         "packages/huginn-shared/src/**/*.ts",
+         "packages/huginn-backend-shared/src/**/*.ts",
       ],
 
       rules: {
@@ -72,22 +74,27 @@ export default tseslint.config(
       },
    },
    {
-      name: "huginn/server",
-      files: ["packages/huginn-server/src/**/*.ts", "packages/huginn-bundler/**/*.ts"],
+      name: "huginn/backend",
+      files: [
+         "packages/huginn-server/src/**/*.ts",
+         "packages/huginn-bundler/**/*.ts",
+         "packages/huginn-cdn/src/**/*.ts",
+         "packages/huginn-backend-shared/src/**/*.ts",
+      ],
       languageOptions: {
          globals: globals.node,
       },
    },
    {
       name: "huginn/api",
-      files: ["packages/huginn-api/**/*.ts"],
+      files: ["packages/huginn-api/src/**/*.ts"],
       languageOptions: {
          globals: globals.browser,
       },
    },
    {
       name: "huginn/shared",
-      files: ["packages/huginn-shared/**/*.ts"],
+      files: ["packages/huginn-shared/src/**/*.ts"],
       languageOptions: {
          globals: { ...globals.browser, ...globals.node },
       },

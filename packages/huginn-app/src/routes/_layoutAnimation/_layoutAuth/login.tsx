@@ -9,17 +9,19 @@ import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
 import { routeHistory } from "@contexts/historyContext";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInputs } from "@hooks/useInputs";
-import { useServerErrorHandler } from "@hooks/useServerErrorHandler";
+import { useErrorHandler } from "@hooks/useServerErrorHandler";
 import { requireNotAuth } from "@lib/middlewares";
 import { APIPostLoginJSONBody } from "@huginn/shared";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useContext, useEffect, useState } from "react";
+import RouteErrorComponent from "@components/RouteErrorComponent";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/login")({
    beforeLoad({ context: { client } }) {
       requireNotAuth(client);
    },
    component: Login,
+   errorComponent: RouteErrorComponent,
 });
 
 function Login() {
@@ -33,7 +35,7 @@ function Login() {
    const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
    const navigate = useNavigate({ from: "/login" });
 
-   const handleServerError = useServerErrorHandler();
+   const handleServerError = useErrorHandler();
 
    const mutation = useHuginnMutation(
       {
@@ -101,7 +103,7 @@ function Login() {
    return (
       <AuthWrapper hidden={hidden} onSubmit={login}>
          <div className="flex w-full select-none flex-col items-center">
-            <h1 className="mb-2 text-2xl font-medium text-text">Welcome back!</h1>
+            <h1 className="text-text mb-2 text-2xl font-medium">Welcome back!</h1>
             <div className=" text-text/70">It's very good to see you again!</div>
          </div>
          <div className="mt-5 w-full">
@@ -115,12 +117,12 @@ function Login() {
 
             <LinkButton className="mb-5 mt-1 text-sm">Forgot your password?</LinkButton>
 
-            <LoadingButton loading={!mutation.isIdle && mutation.isPending} className="h-11 w-full bg-primary " type="submit">
+            <LoadingButton loading={!mutation.isIdle && mutation.isPending} className="bg-primary h-11 w-full " type="submit">
                Log In
             </LoadingButton>
 
             <div className="mt-3 flex select-none items-center">
-               <span className="text-sm text-text opacity-70"> Don't have an account? </span>
+               <span className="text-text text-sm opacity-70"> Don't have an account? </span>
                <LinkButton to="/register" className="ml-1 text-sm" preload={false}>
                   Register
                </LinkButton>

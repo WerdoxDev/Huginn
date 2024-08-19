@@ -63,9 +63,17 @@ body,
 }
 
 ::-webkit-scrollbar-track {
-   @apply rounded-full shadow-background [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
+   @apply shadow-background rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
 }
 
 ::-webkit-scrollbar-thumb {
-   @apply rounded-full shadow-secondary [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
+   @apply shadow-secondary rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
+}
+
+.scroll-alternative::-webkit-scrollbar-track {
+   @apply shadow-secondary/70 rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
+}
+
+.scroll-alternative::-webkit-scrollbar-thumb {
+   @apply shadow-tertiary rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
 }

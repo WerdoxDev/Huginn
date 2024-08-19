@@ -1,14 +1,12 @@
-import { TokenPayload } from "@huginn/shared";
-import { Error as HError, HttpCode } from "@huginn/shared";
-import consola from "consola";
+import { invalidFormBody, notFound, serverError, unauthorized } from "@huginn/backend-shared";
+import { Error as HError, TokenPayload } from "@huginn/shared";
 import { Context, Env, Input, MiddlewareHandler, ValidationTargets } from "hono";
 import { createFactory } from "hono/factory";
 import { validator } from "hono/validator";
 import { ZodSchema, z } from "zod";
 import { DBError, DBErrorType, isDBError, isPrismaError, prisma } from "./db";
-import { ErrorFactory, createError } from "./factory/error-factory";
+import { createError } from "@huginn/backend-shared";
 import { verifyToken } from "./factory/token-factory";
-import { logServerError } from "./log-utils";
 
 export async function handleRequest(
    c: Context,
@@ -52,7 +50,6 @@ export async function handleRequest(
          otherError = new DBError(e, "PRISMA ERROR");
       }
 
-      consola.log("LOGGING ERROR");
       return serverError(c, otherError);
    }
 }
@@ -63,34 +60,6 @@ export function getJwt(c: Context) {
 
 export function getRawToken(c: Context) {
    return c.get("rawToken") as string;
-}
-
-export function error(c: Context, e: ErrorFactory, code: HttpCode = HttpCode.BAD_REQUEST) {
-   return c.json(e.toObject(), code);
-}
-
-export function serverError(c: Context, e: unknown, log = true) {
-   if (log) {
-      logServerError(c.req.path, e);
-   }
-
-   return error(c, createError(HError.serverError()), HttpCode.SERVER_ERROR);
-}
-
-export function unauthorized(c: Context) {
-   return error(c, createError(HError.unauthorized()), HttpCode.UNAUTHORIZED);
-}
-
-export function invalidFormBody(c: Context) {
-   return error(c, createError(HError.invalidFormBody()));
-}
-
-export function fileNotFound(c: Context) {
-   return error(c, createError(HError.fileNotFound()));
-}
-
-export function notFound(c: Context, factory: ErrorFactory) {
-   return error(c, factory, HttpCode.NOT_FOUND);
 }
 
 type HasUndefined<T> = undefined extends T ? true : false;
@@ -168,4 +137,9 @@ export async function tryGetBodyJson(reqOrRes: Context["req"] | Context["res"]):
    } catch (e) {
       return undefined;
    }
+}
+
+export function getFileHash(file: Buffer) {
+   const hash = new Bun.CryptoHasher("md5").update(file, "hex").digest("hex");
+   return hash;
 }

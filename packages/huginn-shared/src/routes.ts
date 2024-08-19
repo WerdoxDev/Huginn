@@ -113,3 +113,13 @@ export const Routes = {
       return `/channels/${channelId}/typing` as const;
    },
 };
+
+export const CDNRoutes = {
+   /**
+    * Route for:
+    * - POST '/avatars/{user.id}'
+    */
+   uploadAvatar(userId: Snowflake): `/avatars/${string}` {
+      return `/avatars/${userId}`;
+   },
+};

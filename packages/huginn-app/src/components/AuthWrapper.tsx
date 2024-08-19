@@ -10,12 +10,12 @@ export default function AuthWrapper(props: { children?: ReactNode; hidden: boole
 
    return (
       <animated.form
-         onSubmit={(e) => {
+         onSubmit={e => {
             e.preventDefault();
             props.onSubmit();
          }}
          style={style}
-         className="flex w-96 flex-col items-start rounded-lg bg-background p-5 shadow-xl transition-shadow hover:shadow-2xl"
+         className="bg-background flex w-96 flex-col items-start rounded-lg p-5 shadow-xl transition-shadow hover:shadow-2xl"
       >
          {props.children}
       </animated.form>

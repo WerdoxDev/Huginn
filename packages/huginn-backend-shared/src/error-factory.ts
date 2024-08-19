@@ -10,7 +10,7 @@ export class ErrorFactory {
       this.code = code;
    }
 
-   public errorRaw(name: string, message: string, code: string) {
+   public errorRaw(name: string, message: string, code: string): ErrorFactory {
       if (!this.errors[name]) {
          this.errors[name] = { _errors: [] };
       }
@@ -18,7 +18,7 @@ export class ErrorFactory {
       return this;
    }
 
-   public addError(name: string, field: [string, string]) {
+   public addError(name: string, field: [string, string]): ErrorFactory {
       return this.errorRaw(name, field[0], field[1]);
    }
 
@@ -35,12 +35,12 @@ export class ErrorFactory {
    }
 }
 
-export function createErrorRaw(message: string, code: JsonCode) {
+export function createErrorRaw(message: string, code: JsonCode): ErrorFactory {
    const factory = new ErrorFactory(message, code);
    return factory;
 }
 
-export function createError(error: [string, JsonCode]) {
+export function createError(error: [string, JsonCode]): ErrorFactory {
    return createErrorRaw(error[0], error[1]);
 }
 

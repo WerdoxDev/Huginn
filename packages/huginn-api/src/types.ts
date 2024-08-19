@@ -9,6 +9,7 @@ export type ClientOptions = {
 
 export type RESTOptions = {
    api: string;
+   cdn: string;
    authPrefix: "Bearer";
    makeRequest(url: string, init: RequestInit): Promise<ResponseLike>;
 };

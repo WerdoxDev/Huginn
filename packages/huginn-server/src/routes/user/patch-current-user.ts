@@ -1,7 +1,8 @@
 import { prisma } from "@/db";
-import { createError } from "@/factory/error-factory";
 import { createTokens } from "@/factory/token-factory";
-import { error, getJwt, hValidator, handleRequest, verifyJwt } from "@/route-utils";
+import { dispatchToTopic, publishToTopic } from "@/gateway/gateway-utils";
+import { getFileHash, getJwt, hValidator, handleRequest, verifyJwt } from "@/route-utils";
+import { cdnUpload } from "@/server-request";
 import {
    validateCorrectPassword,
    validateDisplayName,
@@ -10,10 +11,8 @@ import {
    validateUsername,
    validateUsernameUnique,
 } from "@/validation";
-import { APIPatchCurrentUserResult } from "@huginn/shared";
-import { constants } from "@huginn/shared";
-import { Error, Field, HttpCode } from "@huginn/shared";
-import { idFix } from "@huginn/shared";
+import { createError, errorResponse } from "@huginn/backend-shared";
+import { APIPatchCurrentUserResult, CDNRoutes, Error, Field, HttpCode, constants, idFix, resolveBuffer } from "@huginn/shared";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -44,19 +43,29 @@ app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
       }
 
       if (formError.hasErrors()) {
-         return error(c, formError);
+         return errorResponse(c, formError);
       }
 
       const databaseError = createError(Error.invalidFormBody());
 
-      const user = await prisma.user.getById(payload.id);
+      const user = idFix(await prisma.user.getById(payload.id));
       validateCorrectPassword(body.password, user.password || "", databaseError);
 
       await validateUsernameUnique(body.username, databaseError);
       await validateEmailUnique(body.email, databaseError);
 
       if (databaseError.hasErrors()) {
-         return error(c, databaseError);
+         return errorResponse(c, databaseError);
+      }
+
+      let avatarHash: string | undefined;
+      if (body.avatar) {
+         const data = resolveBuffer(body.avatar);
+         avatarHash = getFileHash(data);
+
+         await cdnUpload(CDNRoutes.uploadAvatar(user.id), {
+            files: [{ data: resolveBuffer(body.avatar), name: avatarHash }],
+         });
       }
 
       const updatedUser = idFix(
@@ -64,7 +73,7 @@ app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
             email: body.email,
             username: body.username,
             displayName: body.displayName,
-            avatar: body.avatar,
+            avatar: avatarHash,
             password: body.newPassword,
          }),
       );
@@ -74,6 +83,9 @@ app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
          constants.ACCESS_TOKEN_EXPIRE_TIME,
          constants.REFRESH_TOKEN_EXPIRE_TIME,
       );
+
+      // TODO: When guilds are a thing, this should send an update to users that are viewing that guild
+      dispatchToTopic(payload.id, "user_update", { ...updatedUser, token: accessToken, refreshToken });
 
       const json: APIPatchCurrentUserResult = { ...updatedUser, token: accessToken, refreshToken };
 

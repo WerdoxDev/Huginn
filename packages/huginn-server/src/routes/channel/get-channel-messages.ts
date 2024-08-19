@@ -1,9 +1,7 @@
 import { prisma } from "@/db";
 import { includeMessageAuthor, includeMessageMentions } from "@/db/common";
 import { hValidator, handleRequest, verifyJwt } from "@/route-utils";
-import { APIGetChannelMessagesResult } from "@huginn/shared";
-import { HttpCode } from "@huginn/shared";
-import { idFix, merge, omitArray } from "@huginn/shared";
+import { APIGetChannelMessagesResult, HttpCode, idFix, merge, omitArray } from "@huginn/shared";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -24,7 +22,7 @@ app.get("/channels/:channelId/messages", verifyJwt(), hValidator("query", schema
          ["authorId"],
       );
 
-      // await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 1000));
       return c.json(messages, HttpCode.OK);
    }),
 );

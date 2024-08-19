@@ -7,8 +7,8 @@ import { colors } from "consola/utils";
 import { mkdir, rm } from "node:fs/promises";
 import { Octokit } from "octokit";
 import path from "path";
-import { getVersionTypeText, logger } from "./logger";
-import { BuildType, type AppVersion, type UpdateFileInfo } from "./types";
+import { getVersionTypeText, logger } from "../logger";
+import { BuildType, type AppVersion, type UpdateFileInfo } from "../types";
 import {
    BUILDS_PATH,
    CARGO_TOML_PATH,
@@ -25,7 +25,7 @@ import {
    versionToString,
    writeCargoTomlVersion,
    writePackageJsonVersion,
-} from "./utils";
+} from "../utils";
 
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 

@@ -1,5 +1,6 @@
 import { REFRESH_TOKEN_SECRET_ENCODED, createTokens, verifyToken } from "@/factory/token-factory";
 import { hValidator, handleRequest } from "@/route-utils";
+import { unauthorized } from "@huginn/backend-shared";
 import { APIPostRefreshTokenResult } from "@huginn/shared";
 import { constants } from "@huginn/shared";
 import { HttpCode } from "@huginn/shared";
@@ -14,7 +15,11 @@ app.post("/auth/refresh-token", hValidator("json", schema), c =>
    handleRequest(c, async () => {
       const body = c.req.valid("json");
 
-      const { payload } = await verifyToken(body.refreshToken, REFRESH_TOKEN_SECRET_ENCODED);
+      const { valid, payload } = await verifyToken(body.refreshToken, REFRESH_TOKEN_SECRET_ENCODED);
+
+      if (!valid || !payload) {
+         return unauthorized(c);
+      }
 
       const [accessToken, refreshToken] = await createTokens(
          { id: payload?.id },

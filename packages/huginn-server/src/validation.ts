@@ -1,6 +1,6 @@
 import { constants } from "@huginn/shared";
 import { Field } from "@huginn/shared";
-import { ErrorFactory } from "./factory/error-factory";
+import { ErrorFactory } from "@huginn/backend-shared/src/error-factory";
 import { prisma } from "./db";
 
 export function validateEmail(email: string | undefined, errorObject: ErrorFactory) {

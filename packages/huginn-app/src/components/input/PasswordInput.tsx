@@ -15,7 +15,7 @@ export default function PasswordInput(props: HuginnInputProps) {
       <HuginnInput type={type} {...props}>
          <HuginnInput.Action>
             <button
-               className="flex h-full w-11 select-none items-center justify-center border-l-2 border-l-background text-sm text-text"
+               className="border-l-background text-text flex h-full w-11 select-none items-center justify-center border-l-2 text-sm"
                type="button"
                onClick={toggleType}
             >

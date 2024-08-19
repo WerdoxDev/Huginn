@@ -9,7 +9,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
    ]);
 
    useEffect(() => {
-      if (validateValues() && props.onChange) {
+      if (validateValues() && props.onChange && props.settings.serverAddress !== values["serverAddress"].value) {
          props.onChange({ serverAddress: values.serverAddress.value });
          console.log({ ...props.settings, serverAddress: values.serverAddress.value });
       }
@@ -20,7 +20,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
          <HuginnInput className="w-72" type="text" {...inputsProps.serverAddress}>
             <HuginnInput.Label>Server Address</HuginnInput.Label>
          </HuginnInput>
-         <div className="mt-1 text-sm italic text-text/50">*changing server ip requires a reload.</div>
+         <div className="text-text/50 mt-1 text-sm italic">*changing server ip requires a reload.</div>
       </>
    );
 }

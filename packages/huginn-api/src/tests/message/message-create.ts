@@ -41,7 +41,7 @@ describe("message-create", () => {
 
          expect(createMessages).not.toThrow();
       },
-      { timeout: 15000 }
+      { timeout: 15000 },
    );
    test("message-create-10-another-channel-successful", async () => {
       const client = await getLoggedClient();

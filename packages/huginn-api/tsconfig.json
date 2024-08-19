@@ -3,6 +3,5 @@
    "compilerOptions": {
       "isolatedDeclarations": true
    },
-   "include": ["**/*"]
-   // "references": [{ "path": "../huginn-shared" }]
+   "include": ["src"]
 }

@@ -5,6 +5,7 @@ import {
    APIMessageUser,
    APIRelationshipWithoutOwner,
    APIUser,
+   Tokens,
 } from "./api-types";
 import { Snowflake } from "./snowflake";
 
@@ -24,13 +25,14 @@ export type GatewayEvents = {
    identify: GatewayIdentifyData;
    ready: GatewayReadyDispatchData;
    resumed: undefined;
-   message_create: GatewayMessageCreateDispatchData;
-   message_delete: GatewayMessageDeleteDispatchData;
-   typying_start: GatewayMessageCreateDispatchData;
-   relationship_create: GatewayRelationshipCreateDispatchData;
+   message_create: GatewayMessageCreateData;
+   message_delete: GatewayMessageDeleteData;
+   typying_start: GatewayMessageCreateData;
+   relationship_create: GatewayRelationshipCreateData;
    relationship_delete: Snowflake;
-   channel_create: GatewayDMChannelCreateDispatchData;
-   channel_delete: GatewayDMChannelDeleteDispatchData;
+   channel_create: GatewayDMChannelCreateData;
+   channel_delete: GatewayDMChannelDeleteData;
+   user_update: GatewayUserUpdateData;
 };
 
 export type BasePayload = {
@@ -108,21 +110,15 @@ export type GatewayResumeData = {
    seq: number;
 };
 
-export type GatewayResumed = DataPayload<"resumed", undefined>;
-
-export type GatewayMessageCreateDispatch = DataPayload<"message_create", GatewayMessageCreateDispatchData>;
-
-export type GatewayMessageCreateDispatchData = Omit<APIMessage, "mentions"> & GatewayMessageEventExtraFields;
-
-export type GatewayMessageDeleteDispatch = DataPayload<"message_delete", GatewayMessageDeleteDispatchData>;
-
-export type GatewayMessageDeleteDispatchData = {
+export type GatewayResumedData = DataPayload<"resumed", undefined>;
+export type GatewayMessageCreateData = Omit<APIMessage, "mentions"> & GatewayMessageEventExtraFields;
+export type GatewayMessageDeleteData = {
    id: Snowflake;
    channelId: Snowflake;
    guildId?: Snowflake;
 };
 
-export type GatewayMessageEventExtraFields = {
+type GatewayMessageEventExtraFields = {
    guildId?: Snowflake;
    // TODO: Implement Guild Member
    // member?:
@@ -130,23 +126,7 @@ export type GatewayMessageEventExtraFields = {
    // mentions: (APIUser & {member: Omit<APIGuildMember, "user">})[];
 };
 
-// RELATIONSHIP_CREATE
-export type GatewayRelationshipCreateDispatch = DataPayload<
-   "relationship_create",
-   GatewayRelationshipCreateDispatchData
->;
-
-export type GatewayRelationshipCreateDispatchData = APIRelationshipWithoutOwner;
-
-// RELATIONSHIP_DELETE
-export type GatewayRelationshipDeleteDispatch = DataPayload<"relationship_delete", Snowflake>;
-
-// DM_CHANNEL_CREATE
-export type GatewayDMChannelCreateDispatch = DataPayload<"channel_create", GatewayDMChannelCreateDispatchData>;
-
-export type GatewayDMChannelCreateDispatchData = APIDMChannel | APIGroupDMChannel;
-
-// DM_CHANNEL_DELETE
-export type GatewayDMChannelDeleteDispatch = DataPayload<"channel_delete", GatewayDMChannelDeleteDispatchData>;
-
-export type GatewayDMChannelDeleteDispatchData = APIDMChannel | APIGroupDMChannel;
+export type GatewayRelationshipCreateData = APIRelationshipWithoutOwner;
+export type GatewayDMChannelCreateData = APIDMChannel | APIGroupDMChannel;
+export type GatewayDMChannelDeleteData = APIDMChannel | APIGroupDMChannel;
+export type GatewayUserUpdateData = APIUser & Tokens;

@@ -43,9 +43,9 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
    }
 
    function onChanged(value: string) {
-      console.log("hi");
-      if (!value) {
+      if (!value || value === client.user?.username) {
          set(defaultMessage, "default", true);
+         clearTimeout(usernameTimeout.current);
          return;
       }
 
@@ -70,5 +70,5 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
       setMessage(prev => ({ text: prev.text, status: prev.status, visible: prev.status === "error" ? true : isFocused }));
    }
 
-   return { message, onFocusChanged };
+   return { message, onFocusChanged, onChanged };
 }

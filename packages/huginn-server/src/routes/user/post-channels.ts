@@ -1,12 +1,10 @@
 import { prisma } from "@/db";
 import { excludeSelfChannelUser, includeChannelRecipients } from "@/db/common";
 import { dispatchToTopic } from "@/gateway/gateway-utils";
-import { getJwt, hValidator, handleRequest, invalidFormBody, verifyJwt } from "@/route-utils";
+import { getJwt, hValidator, handleRequest, verifyJwt } from "@/route-utils";
 import { gateway } from "@/server";
-import { APIPostDMChannelResult } from "@huginn/shared";
-import { HttpCode } from "@huginn/shared";
-import { GatewayDMChannelCreateDispatch } from "@huginn/shared";
-import { idFix, merge } from "@huginn/shared";
+import { invalidFormBody } from "@huginn/backend-shared";
+import { APIPostDMChannelResult, HttpCode, idFix, merge } from "@huginn/shared";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -35,7 +33,7 @@ app.post("/users/@me/channels", verifyJwt(), hValidator("json", schema), c =>
          gateway.getSession(id)?.subscribe(channel.id);
       }
 
-      dispatchToTopic<GatewayDMChannelCreateDispatch>(payload.id, "channel_create", channel, 0);
+      dispatchToTopic(payload.id, "channel_create", channel);
 
       return c.json(channel, HttpCode.CREATED);
    }),

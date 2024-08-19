@@ -1,5 +1,6 @@
 import BaseMessage from "@components/BaseMessage";
 import ChannelMessageLoadingIndicator from "@components/ChannelMessageLoadingIndicator";
+import { Tooltip } from "@components/tooltip/Tooltip";
 import { useClient } from "@contexts/apiContext";
 import { useChannelScroll, useChannelScrollDispatch } from "@contexts/channelScrollContext";
 import { useEvent } from "@contexts/event";
@@ -98,9 +99,14 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    }, [props.messages]);
 
    return (
-      <div className="relative flex flex-col overflow-hidden">
+      <div className="relative flex h-full flex-col overflow-hidden">
          <ChannelMessageLoadingIndicator isFetchingNextPage={isFetchingNextPage} isFetchingPreviousPage={isFetchingPreviousPage} />
-         <ol className="flex flex-col overflow-y-scroll p-2 pr-0.5" ref={scroll} onScroll={onScroll}>
+         <ol className="flex h-full flex-col overflow-y-scroll p-2 pr-0.5" ref={scroll} onScroll={onScroll}>
+            {props.messages.length === 0 && (
+               <div className="flex h-full w-full items-center justify-center">
+                  <div className="bg-background text-text rounded-lg p-2 italic">Empty...</div>
+               </div>
+            )}
             {props.messages.map(message => (
                <BaseMessage
                   ref={setContent(message.id)}

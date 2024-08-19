@@ -1,10 +1,11 @@
 {
    "name": "@huginn/shared",
-   "module": "index.ts",
-   "dependencies": {
-      "@sapphire/snowflake": "^3.5.3"
-   },
+   "main": "./src/index.ts",
    "type": "module",
+   "dependencies": {
+      "@sapphire/snowflake": "^3.5.3",
+      "magic-bytes.js": "^1.10.0"
+   },
    "devDependencies": {
       "@eslint/js": "^9.7.0",
       "@types/bun": "latest",

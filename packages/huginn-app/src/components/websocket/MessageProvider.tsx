@@ -2,7 +2,7 @@ import { useClient } from "@contexts/apiContext";
 import { useEvent } from "@contexts/event";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { APIGetChannelMessagesResult, APIGetUserChannelsResult } from "@huginn/shared";
-import { GatewayMessageCreateDispatchData } from "@huginn/shared";
+import { GatewayMessageCreateData } from "@huginn/shared";
 import { InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { ReactNode, useEffect } from "react";
 
@@ -20,7 +20,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
       };
    }, []);
 
-   function onMessageCreated(d: GatewayMessageCreateDispatchData) {
+   function onMessageCreated(d: GatewayMessageCreateData) {
       const channels = queryClient.getQueryData<APIGetUserChannelsResult>(["channels", "@me"]);
       const thisChannelIndex = channels?.findIndex(x => x.id === d.channelId) ?? -1;
       const thisChannel = channels?.find(x => x.id === d.channelId);

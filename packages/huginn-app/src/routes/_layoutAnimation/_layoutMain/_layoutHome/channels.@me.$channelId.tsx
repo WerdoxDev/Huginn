@@ -1,9 +1,9 @@
 import MessageBox from "@components/MessageBox";
-import ModalErrorComponent from "@components/ModalErrorComponent";
+import RouteErrorComponent from "@components/RouteErrorComponent";
 import ChannelMessages from "@components/channels/ChannelMessages";
 import HomeTopbar from "@components/channels/HomeTopbar";
 import { useClient } from "@contexts/apiContext";
-import { useServerErrorHandler } from "@hooks/useServerErrorHandler";
+import { useErrorHandler } from "@hooks/useServerErrorHandler";
 import { ensureChannelExists } from "@lib/middlewares";
 import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/
       );
    },
    gcTime: 0,
-   errorComponent: ModalErrorComponent,
+   errorComponent: RouteErrorComponent,
 });
 
 function Component() {
@@ -32,7 +32,7 @@ function Component() {
    const { error, data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client, channelId));
    const channel = useSuspenseQuery(getChannelsOptions(client, "@me")).data?.find((x: { id: string }) => x.id === channelId);
 
-   const handleServerError = useServerErrorHandler();
+   const handleServerError = useErrorHandler();
 
    useEffect(() => {
       if (error) {
@@ -47,7 +47,7 @@ function Component() {
          <HomeTopbar channel={channel} />
          <div className="h-0.5 flex-shrink-0 bg-white/10" />
          <ChannelMessages channelId={channelId} messages={messages.pages.flat()} />
-         <div className="flex h-16 w-full flex-shrink-0 bg-background">
+         <div className="bg-background flex h-16 w-full flex-shrink-0">
             <MessageBox />
             <div className="h-full w-64 flex-shrink-0" />
          </div>

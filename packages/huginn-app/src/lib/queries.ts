@@ -1,6 +1,6 @@
 import { APIGetUserChannelsResult, Snowflake } from "@huginn/shared";
 import { infiniteQueryOptions, QueryClient, queryOptions } from "@tanstack/react-query";
-import { HuginnClient } from "@huginn/api/index";
+import { HuginnClient } from "@huginn/api";
 
 export function getChannelsOptions(client: HuginnClient, guildId: Snowflake) {
    return queryOptions({
@@ -28,7 +28,9 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
 
          const latestMessage = last[last.length - 1];
 
-         return !thisChannel || thisChannel.lastMessageId !== latestMessage.id ? { after: latestMessage.id, before: "" } : undefined;
+         return latestMessage && (!thisChannel || thisChannel.lastMessageId !== latestMessage.id)
+            ? { after: latestMessage.id, before: "" }
+            : undefined;
       },
       maxPages: 2,
       retry: false,

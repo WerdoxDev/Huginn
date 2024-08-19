@@ -1,4 +1,4 @@
-import { HuginnClient } from "@huginn/api/index";
+import { HuginnClient } from "@huginn/api";
 import { ReactNode, createContext, useContext, useState } from "react";
 import { useSettings } from "./settingsContext";
 

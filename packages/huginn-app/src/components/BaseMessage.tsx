@@ -53,13 +53,13 @@ const BaseMessage = forwardRef<HTMLLIElement, { content?: string; author: APIMes
       }, []);
 
       return (
-         <li ref={ref} className="group select-text rounded-lg p-2 hover:bg-secondary">
+         <li ref={ref} className="hover:bg-secondary group select-text rounded-lg p-2">
             <div className={`flex flex-col items-start gap-y-2 ${isSelf ? "ml-0" : "ml-2"}`}>
                <div className="flex items-center gap-x-2 overflow-hidden rounded-xl">
                   <UserIconWithStatus statusSize="0.5rem" size="1.75rem" className="bg-background" />
-                  <div className="text-sm text-text">{isSelf ? "You" : props.author.displayName}</div>
+                  <div className="text-text text-sm">{isSelf ? "You" : props.author.displayName}</div>
                   {props.flags && hasFlag(props.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
-                     <IconMdiNotificationsOff className="size-4 text-text" />
+                     <IconMdiNotificationsOff className="text-text size-4" />
                   ) : null}
                </div>
                {/* <div className="flex flex-col items-start gap-y-0.5"> */}

@@ -1,33 +1,30 @@
 import { DeepPartial, SettingsTab } from "@/types";
 import ModalCloseButton from "@components/button/ModalCloseButton";
+import { useClient } from "@contexts/apiContext";
 import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { SettingsContextType, useSettings, useSettingsDispatcher } from "@contexts/settingsContext";
-import {
-   Dialog,
-   DialogPanel,
-   DialogTitle,
-   Tab,
-   TabGroup,
-   TabList,
-   TabPanel,
-   TabPanels,
-   Transition,
-   TransitionChild,
-} from "@headlessui/react";
+import { Dialog, DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels, TransitionChild } from "@headlessui/react";
 import { Fragment, useEffect, useRef, useState } from "react";
 import ModalBackground from "./ModalBackground";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
+import SettingsProfileTab from "./settings/SettingsProfileTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
 
 const tabs: SettingsTab[] = [
-   { name: "general", text: "General", children: [{ name: "audio", text: "Audio", icon: <IconMdiSpeakerphone /> }] },
+   {
+      name: "profile",
+      text: "Profile",
+      auth: true,
+      children: [{ name: "my-account", text: "My Account", auth: true, icon: <IconMdiAccount />, component: SettingsProfileTab }],
+   },
    {
       name: "app-settings",
       text: "App Settings",
       children: [
          { name: "theme", text: "Theme", icon: <IconMdiTheme />, component: SettingsThemeTab },
          { name: "notification", text: "Notification", icon: <IconMdiNotifications /> },
+         { name: "audio", text: "Audio", icon: <IconMdiSpeakerphone /> },
          { name: "advanced", text: "Advanced", icon: <IconMdiServer />, component: SettingsAdvancedTab },
       ],
    },
@@ -41,7 +38,9 @@ const tabs: SettingsTab[] = [
 const defaultTabIndex = 0;
 
 function useFlatTabs() {
-   return tabs.filter(x => x.children).flatMap(x => x.children);
+   const client = useClient();
+
+   return tabs.filter(x => x.children && (client.isLoggedIn || !x?.auth)).flatMap(x => x.children);
 }
 
 export default function SettingsModal() {
@@ -52,7 +51,8 @@ export default function SettingsModal() {
    const [currentTab, setCurrentTab] = useState(() => flatTabs[defaultTabIndex]?.text ?? "");
 
    const settings = useSettings();
-   const modifiedSettings = useRef<DeepPartial<SettingsContextType>>({});
+   const [settingsValid, setSettingsValid] = useState(false);
+   const modifiedSettings = useRef<DeepPartial<SettingsContextType>>();
    const settingsDispatch = useSettingsDispatcher();
 
    useEffect(() => {
@@ -60,18 +60,21 @@ export default function SettingsModal() {
 
       if (modal.isOpen) {
          modifiedSettings.current = { ...settings };
+         setCurrentTab(flatTabs[defaultTabIndex]?.text ?? "");
+         setSettingsValid(true);
       } else {
-         if (modifiedSettings.current.serverAddress && settings.serverAddress !== modifiedSettings.current.serverAddress) {
+         if (modifiedSettings.current?.serverAddress && settings.serverAddress !== modifiedSettings.current.serverAddress) {
             dispatch({
                info: {
                   isOpen: true,
                   status: "default",
                   text: "Server ip changed. The app should be restarted!",
+                  title: "Hang on!",
                   action: {
                      confirm: {
                         text: "Restart",
                         callback: () => {
-                           settingsDispatch(modifiedSettings.current);
+                           settingsDispatch(modifiedSettings.current ?? {});
                            dispatch({ info: { isOpen: false } });
                            location.reload();
                         },
@@ -88,7 +91,7 @@ export default function SettingsModal() {
                },
             });
          } else {
-            settingsDispatch(modifiedSettings.current);
+            settingsDispatch(modifiedSettings.current ?? {});
          }
       }
    }, [modal.isOpen]);
@@ -102,67 +105,78 @@ export default function SettingsModal() {
    }
 
    return (
-      <Transition show={modal.isOpen}>
-         <Dialog as="div" className="relative z-10" onClose={() => { dispatch({ settings: { isOpen: false } }); }}>
-            <ModalBackground />
-            <div className="fixed inset-0 top-6">
-               <div className="flex h-full items-center justify-center">
-                  <TransitionChild
-                     enter="duration-150 ease-out"
-                     enterFrom="opacity-0 scale-95"
-                     enterTo="opacity-100 scale-100"
-                     leave="duration-150 ease-in"
-                     leaveFrom="opacity-100 scale-100"
-                     leaveTo="opacity-0 scale-95"
-                  >
-                     <DialogPanel className="w-full max-w-3xl transform overflow-hidden rounded-lg border-2 border-primary/50 bg-background transition-[opacity_transform]">
-                        <TabGroup className="flex" vertical defaultIndex={defaultTabIndex} onChange={onTabChanged}>
-                           <div className="bg-secondary/50">
-                              <TabList className="flex w-48 flex-shrink-0 select-none flex-col items-start py-2">
-                                 <DialogTitle className="mx-5 mb-3 mt-3 flex items-center justify-start gap-x-1.5">
-                                    <div className="text-2xl font-medium text-text">Settings</div>
-                                 </DialogTitle>
-                                 <SettingsTabs />
-                              </TabList>
-                           </div>
-                           <SettingsPanels currentTab={currentTab} settings={modifiedSettings.current} onChange={onSettingsChanged} />
-                        </TabGroup>
-                        <ModalCloseButton onClick={() => { dispatch({ settings: { isOpen: false } }); }} />
-                     </DialogPanel>
-                  </TransitionChild>
-               </div>
+      <Dialog
+         open={modal.isOpen}
+         className="relative z-10 transition data-[closed]:opacity-0"
+         transition
+         onClose={() => {
+            dispatch({ settings: { isOpen: false } });
+         }}
+      >
+         <ModalBackground />
+         <div className="fixed inset-0 top-6">
+            <div className="flex h-full items-center justify-center">
+               <TransitionChild>
+                  <DialogPanel className="border-primary/50 bg-background flex h-[30rem] w-full max-w-3xl transform rounded-xl border-2 transition-[opacity_transform] data-[closed]:scale-95">
+                     <TabGroup className="flex w-full" vertical defaultIndex={defaultTabIndex} onChange={onTabChanged}>
+                        <div className="bg-secondary/50 h-full rounded-l-xl">
+                           <TabList className="flex h-full w-48 select-none flex-col py-2">
+                              <DialogTitle className="mx-5 my-3 flex items-center justify-start gap-x-1.5">
+                                 <div className="text-text text-2xl font-medium">Settings</div>
+                              </DialogTitle>
+                              <SettingsTabs />
+                           </TabList>
+                        </div>
+                        {settingsValid && (
+                           <SettingsPanels currentTab={currentTab} settings={modifiedSettings.current!} onChange={onSettingsChanged} />
+                        )}
+                     </TabGroup>
+                     <ModalCloseButton
+                        onClick={() => {
+                           dispatch({ settings: { isOpen: false } });
+                        }}
+                     />
+                  </DialogPanel>
+               </TransitionChild>
             </div>
-         </Dialog>
-      </Transition>
+         </div>
+      </Dialog>
    );
 }
 
 function SettingsTabs() {
+   const client = useClient();
+
    return (
-      <div className="flex w-full flex-col items-center justify-center gap-y-1">
-         {tabs.map((tab, i) => (
-            <Fragment key={tab.name}>
-               <div className={`mb-1 w-full px-2.5 text-left text-xs uppercase text-text/50 ${i === 0 ? "mt-2" : "mt-4"}`}>
-                  {tab.text}
-               </div>
-               {tab.children?.map(child => (
-                  <div className="w-full px-2" key={child.name}>
-                     <Tab as={Fragment}>
-                        {({ selected }) => (
-                           <button
-                              className={`flex w-full items-center gap-x-2 rounded-md px-2 py-1.5 text-left text-base text-text outline-none ${
-                                 selected ? "bg-white/20 text-opacity-100" : "text-opacity-70 hover:bg-white/10 hover:text-opacity-100"
-                              }`}
-                           >
-                              {child.icon}
-                              <span>{child.text}</span>
-                           </button>
-                        )}
-                     </Tab>
-                  </div>
-               ))}
-            </Fragment>
-         ))}
+      <div className="flex h-full w-full flex-col gap-y-1 overflow-y-auto">
+         {tabs.map(
+            (tab, i) =>
+               (client.isLoggedIn || !tab.auth) && (
+                  <Fragment key={tab.name}>
+                     <div className={`text-text/50 mb-1 w-full px-2.5 text-left text-xs uppercase ${i === 0 ? "mt-2" : "mt-4"}`}>
+                        {tab.text}
+                     </div>
+                     {tab.children?.map(child => (
+                        <div className="w-full px-2" key={child.name}>
+                           <Tab as={Fragment}>
+                              {({ selected }) => (
+                                 <button
+                                    className={`text-text flex w-full items-center gap-x-2 rounded-md px-2 py-1.5 text-left text-base outline-none ${
+                                       selected
+                                          ? "bg-white/20 text-opacity-100"
+                                          : "text-opacity-70 hover:bg-white/10 hover:text-opacity-100"
+                                    }`}
+                                 >
+                                    {child.icon}
+                                    <span>{child.text}</span>
+                                 </button>
+                              )}
+                           </Tab>
+                        </div>
+                     ))}
+                  </Fragment>
+               ),
+         )}
       </div>
    );
 }
@@ -172,6 +186,7 @@ function SettingsPanels(props: {
    currentTab: string;
    onChange: (value: DeepPartial<SettingsContextType>) => void;
 }) {
+   const client = useClient();
    const flatTabs = useFlatTabs();
 
    function TabComponent(props: {
@@ -186,14 +201,14 @@ function SettingsPanels(props: {
    }
 
    return (
-      <TabPanels className="flex w-full flex-col p-5">
-         <div className="mb-5 shrink-0 text-xl text-text">{props.currentTab}</div>
+      <TabPanels className="flex w-full flex-col p-5 pr-0">
+         <div className="text-text mb-5 shrink-0 text-xl">{props.currentTab}</div>
          {flatTabs.map(tab => (
-            <TabPanel key={tab?.name} className="h-full">
+            <TabPanel key={tab?.name} className="scroll-alternative h-full overflow-y-scroll pr-3">
                {tab?.component ? (
                   <TabComponent onChange={props.onChange} settings={props.settings} tab={tab} />
                ) : (
-                  <span className="text-base italic text-text/50">{tab?.name} (Soon...)</span>
+                  <span className="text-text/50 text-base italic">{tab?.name} (Soon...)</span>
                )}
             </TabPanel>
          ))}
