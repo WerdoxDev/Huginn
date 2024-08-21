@@ -17,7 +17,6 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
    const prevUsername = useRef(values[usernameField].value);
 
    useEffect(() => {
-      console.log(values[usernameField], user?.username);
       if (prevUsername.current === values[usernameField].value) {
          return;
       }
@@ -28,6 +27,7 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
 
    function set(message: string, state: StatusCode, visible: boolean) {
       setMessage({ text: message, status: state, visible });
+      console.log(visible);
    }
 
    async function checkForUniqueUsername(value: string) {
@@ -46,9 +46,8 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
    }
 
    function onChanged(value: string, username?: string) {
-      console.log(value, username);
       if (!value || value === username) {
-         set(defaultMessage, "default", true);
+         set(defaultMessage, "default", lastFocus.current);
          clearTimeout(usernameTimeout.current);
          return;
       }

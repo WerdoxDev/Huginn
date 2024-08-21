@@ -24,7 +24,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 
    const { data: originalAvatar } = useQuery(getUserAvatar(user?.id, user?.avatar, client));
 
-   const { inputsProps, values, handleErrors, resetStatuses } = useInputs([
+   const { inputsProps, values, handleErrors, resetStatuses, onValueChanged } = useInputs([
       { name: "username", required: true, default: user?.username },
       { name: "displayName", required: true, default: user?.displayName },
       { name: "password", required: false },
@@ -41,20 +41,17 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 
       resetStatuses();
 
-      values.password.value = "";
+      onValueChanged("password", "");
       onChanged(values.username.value, result.username);
       onFocusChanged(false);
    }, handleErrors);
 
+   const [avatarModified, setAvatarModified] = useState(false);
    const [modified, setModified] = useState(false);
 
    useMemo(() => {
-      setModified(
-         values.username.value !== user?.username ||
-            values.displayName.value !== user?.displayName ||
-            (user.avatar ? avatarData !== originalAvatar : !!avatarData),
-      );
-   }, [values, avatarData, user]);
+      setModified(values.username.value !== user?.username || values.displayName.value !== user?.displayName);
+   }, [values, user]);
 
    useEffect(() => {
       if (originalAvatar) {
@@ -65,7 +62,8 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
    useEffect(() => {
       const unlisten = listenEvent("user_updated", e => {
          if (e.self) {
-            // setModified(false);
+            setModified(false);
+            setAvatarModified(false);
          }
       });
 
@@ -94,6 +92,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
             const content = readerEvent.target?.result;
             if (typeof content === "string") {
                setAvatarData(content);
+               setAvatarModified(true);
             }
          };
       };
@@ -102,13 +101,28 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
    }
 
    async function edit() {
-      console.log(originalAvatar, avatarData);
       await mutation.mutateAsync({
          displayName: values.displayName.value,
          username: values.username.value === user?.username ? undefined : values.username.value,
          password: values.password.value,
          avatar: originalAvatar && !avatarData ? null : originalAvatar === avatarData ? undefined : avatarData,
       });
+   }
+
+   function revert() {
+      if (!user) {
+         return;
+      }
+
+      setAvatarData(originalAvatar);
+      onValueChanged("username", user.username);
+      onValueChanged("displayName", user.displayName);
+      onValueChanged("password", "");
+
+      onFocusChanged(false);
+
+      setAvatarModified(false);
+      setModified(false);
    }
 
    return (
@@ -135,6 +149,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
                               onClick={e => {
                                  e.stopPropagation();
                                  setAvatarData(null);
+                                 setAvatarModified(true);
                               }}
                               className="text-error invisible size-7 group-hover:visible"
                            />
@@ -168,13 +183,15 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
                </PasswordInput>
             </div>
          </div>
-         <Transition show={modified}>
+         <Transition show={modified || avatarModified}>
             <div className="border-primary/50 bg-secondary absolute bottom-5 left-[13.25rem] right-9 flex transform justify-end gap-x-2 rounded-xl border-2 p-2 shadow-sm transition data-[closed]:translate-y-10 data-[closed]:opacity-0">
                <div className="text-text ml-2 w-full self-center ">You have unsaved changes!</div>
-               <HuginnButton className="w-20 shrink-0 py-2 decoration-white hover:underline">Revert</HuginnButton>
+               <HuginnButton onClick={revert} className="w-20 shrink-0 py-2 decoration-white hover:underline">
+                  Revert
+               </HuginnButton>
                <LoadingButton
                   loading={mutation.isPending}
-                  disabled={!modified}
+                  disabled={!modified && !avatarModified}
                   onClick={edit}
                   className="bg-primary disabled:bg-primary/50 w-36 shrink-0 !rounded-lg py-2"
                >
