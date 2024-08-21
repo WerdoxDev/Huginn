@@ -3,9 +3,11 @@ import { Field } from "@huginn/shared";
 import { useEffect, useRef, useState } from "react";
 import { useClient } from "@contexts/apiContext";
 import { InputValues, MessageDetail, StatusCode } from "@/types";
+import { useUser } from "@contexts/userContext";
 
 export default function useUniqueUsernameMessage(values: InputValues, usernameField: string) {
    const client = useClient();
+   const { user } = useUser();
 
    const defaultMessage = "Please only use numbers, letters, _";
    const [message, setMessage] = useState<MessageDetail>({ text: defaultMessage, status: "default", visible: false });
@@ -43,7 +45,7 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
    }
 
    function onChanged(value: string) {
-      if (!value || value === client.user?.username) {
+      if (!value || value === user?.username) {
          set(defaultMessage, "default", true);
          clearTimeout(usernameTimeout.current);
          return;

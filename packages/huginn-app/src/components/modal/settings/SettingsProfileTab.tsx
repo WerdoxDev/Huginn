@@ -4,47 +4,65 @@ import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import HuginnInput from "@components/input/HuginnInput";
 import PasswordInput from "@components/input/PasswordInput";
+import { Tooltip } from "@components/tooltip/Tooltip";
 import { useClient } from "@contexts/apiContext";
+import { useUser } from "@contexts/userContext";
 import { Transition } from "@headlessui/react";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useInputs } from "@hooks/useInputs";
 import useUniqueUsernameMessage from "@hooks/useUniqueUsernameMessage";
-import { omit } from "@huginn/shared";
-import { useMemo, useRef, useState } from "react";
+import { APIUser, omit, resolveBase64, resolveBuffer, resolveFile } from "@huginn/shared";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export default function SettingsProfileTab(_props: SettingsTabProps) {
    const client = useClient();
-   const user = useRef(client.user);
+   const { user, setUser } = useUser();
 
    const { inputsProps, values, handleErrors, resetStatuses } = useInputs([
-      { name: "username", required: true, default: user.current?.username },
-      { name: "displayName", required: true, default: user.current?.displayName },
+      { name: "username", required: true, default: user?.username },
+      { name: "displayName", required: true, default: user?.displayName },
       { name: "password", required: false },
    ]);
 
-   const [avatarData, setAvatarData] = useState("");
+   const initialAvatarData = useRef<string | null | undefined>(null);
+   const [avatarData, setAvatarData] = useState<string | null | undefined>(null);
 
    const { message: usernameMessageDetail, onFocusChanged, onChanged } = useUniqueUsernameMessage(values, "username");
 
    const mutation = usePatchUser(result => {
       client.tokenHandler.token = result.token;
       client.tokenHandler.refreshToken = result.refreshToken;
-      client.user = omit(result, ["refreshToken", "token"]);
+      setUser(omit(result, ["refreshToken", "token"]));
 
       resetStatuses();
 
       values.password.value = "";
       onChanged(values.username.value);
       onFocusChanged(false);
+
+      initializeAvatarData(result);
    }, handleErrors);
 
    const [modified, setModified] = useState(false);
 
    useMemo(() => {
       setModified(
-         values.username.value !== client.user?.username || values.displayName.value !== client.user.displayName || avatarData !== "",
+         values.username.value !== user?.username ||
+            values.displayName.value !== user?.displayName ||
+            (user.avatar ? avatarData !== initialAvatarData.current : !!avatarData),
       );
-   }, [values, client.user, avatarData]);
+   }, [values, user, avatarData]);
+
+   async function initializeAvatarData(user?: APIUser) {
+      initialAvatarData.current =
+         user && user.avatar && resolveBase64((await resolveFile(client.cdn.avatar(user.id, user.avatar))).data);
+
+      setAvatarData(initialAvatarData.current);
+   }
+
+   useEffect(() => {
+      initializeAvatarData(user);
+   }, []);
 
    function openFileDialog() {
       const input = document.createElement("input");
@@ -76,23 +94,42 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
    async function edit() {
       await mutation.mutateAsync({
          displayName: values.displayName.value,
-         username: values.username.value === user.current?.username ? undefined : values.username.value,
+         username: values.username.value === user?.username ? undefined : values.username.value,
          password: values.password.value,
          avatar: avatarData,
       });
    }
 
    return (
-      <div className="">
-         <div className="flex h-full  items-start gap-5">
-            <div className="bg-secondary flex-shrink-0 rounded-lg p-4">
-               <button onClick={openFileDialog} className="h-24 w-24 overflow-hidden rounded-full bg-black">
-                  {avatarData !== "" ? (
-                     <img src={avatarData}></img>
-                  ) : (
-                     <div className="bg-primary h-full w-full hover:bg-opacity-70"></div>
-                  )}
-               </button>
+      <>
+         <div className="flex h-full items-start gap-x-5">
+            <div className="bg-secondary flex rounded-lg p-4">
+               <div onClick={openFileDialog} className="group relative h-24 w-24 cursor-pointer overflow-hidden rounded-full bg-black">
+                  {avatarData ? <img src={avatarData}></img> : <div className="bg-primary h-full w-full"></div>}
+
+                  <div className="absolute inset-0 flex h-full w-full items-center justify-center gap-x-1 rounded-full group-hover:bg-black/30">
+                     <Tooltip>
+                        <Tooltip.Trigger>
+                           <IconMdiEdit className="invisible size-7 text-white group-hover:visible" />
+                        </Tooltip.Trigger>
+                        <Tooltip.Content>Edit</Tooltip.Content>
+                     </Tooltip>
+                     <Tooltip>
+                        <Tooltip.Trigger>
+                           <IconMdiDelete
+                              onClick={e => {
+                                 e.stopPropagation();
+                                 setAvatarData("");
+                              }}
+                              className="text-error invisible size-7 group-hover:visible"
+                           />
+                        </Tooltip.Trigger>
+                        <Tooltip.Content>
+                           <div className="text-error">Delete</div>
+                        </Tooltip.Content>
+                     </Tooltip>
+                  </div>
+               </div>
             </div>
             <div className="bg-secondary mb-20 flex w-full flex-col gap-y-5 rounded-lg p-4">
                <HuginnInput
@@ -130,6 +167,6 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
                </LoadingButton>
             </div>
          </Transition>
-      </div>
+      </>
    );
 }

@@ -1,14 +1,14 @@
 import UserAvatarWithStatus from "@components/UserAvatarWithStatus";
-import { useClient } from "@contexts/apiContext";
+import { useUser } from "@contexts/userContext";
 import { useChannelName } from "@hooks/useChannelName";
 import { APIDMChannel, APIGroupDMChannel, ChannelType } from "@huginn/shared";
 import { useMemo } from "react";
 
 export default function HomeTopbar(props: { channel: APIDMChannel | APIGroupDMChannel }) {
-   const client = useClient();
+   const { user } = useUser();
    const name = useChannelName(props.channel);
 
-   const otherUsers = useMemo(() => props.channel.recipients.filter(x => x.id !== client.user?.id), [props.channel]);
+   const otherUsers = useMemo(() => props.channel.recipients.filter(x => x.id !== user?.id), [props.channel]);
 
    return (
       <div className="bg-tertiary flex h-[4.75rem] flex-shrink-0 items-center px-6">

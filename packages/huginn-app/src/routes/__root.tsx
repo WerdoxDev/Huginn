@@ -10,6 +10,7 @@ import { ContextMenuProvider } from "@contexts/contextMenuContext";
 import { routeHistory } from "@contexts/historyContext";
 import { ModalProvider } from "@contexts/modalContext";
 import { ThemeProvier } from "@contexts/themeContext";
+import { UserProvider } from "@contexts/userContext";
 import { useWindow, useWindowDispatch } from "@contexts/windowContext";
 import { setup } from "@lib/middlewares";
 import { QueryClient } from "@tanstack/react-query";
@@ -52,22 +53,24 @@ function Root() {
       <ThemeProvier>
          <ModalProvider>
             <ContextMenuProvider>
-               <div className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
-                  {router.state.location.pathname !== "/splashscreen" && <TitleBar />}
-                  <div className="relative h-full w-full">
-                     <Outlet />
-                     {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
-                     {/* <TanStackRouterDevtools position="bottom-left" /> */}
-                     {window.__TAURI__ && <AppMaximizedEvent />}
-                     <ErrorBoundary FallbackComponent={ModalErrorComponent}>
-                        <SettingsModal />
-                        <ChannelsContextMenu />
-                        <RelationshipMoreContextMenu />
-                        <RelationshipContextMenu />
-                     </ErrorBoundary>
-                     <InfoModal />
+               <UserProvider>
+                  <div className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
+                     {router.state.location.pathname !== "/splashscreen" && <TitleBar />}
+                     <div className="relative h-full w-full">
+                        <Outlet />
+                        {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
+                        {/* <TanStackRouterDevtools position="bottom-left" /> */}
+                        {window.__TAURI__ && <AppMaximizedEvent />}
+                        <ErrorBoundary FallbackComponent={ModalErrorComponent}>
+                           <SettingsModal />
+                           <ChannelsContextMenu />
+                           <RelationshipMoreContextMenu />
+                           <RelationshipContextMenu />
+                        </ErrorBoundary>
+                        <InfoModal />
+                     </div>
                   </div>
-               </div>
+               </UserProvider>
             </ContextMenuProvider>
          </ModalProvider>
       </ThemeProvier>

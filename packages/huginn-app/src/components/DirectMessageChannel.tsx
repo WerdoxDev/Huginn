@@ -1,15 +1,15 @@
 import { ContextMenuDMChannel, ContextMenuType } from "@/types";
 import { useContextMenu } from "@contexts/contextMenuContext";
+import { useUser } from "@contexts/userContext";
 import { useDeleteDMChannel } from "@hooks/mutations/useDeleteDMChannel";
 import { useChannelName } from "@hooks/useChannelName";
 import { DirectChannel } from "@huginn/shared";
 import { Link, useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 import UserAvatarWithStatus from "./UserAvatarWithStatus";
-import { useClient } from "@contexts/apiContext";
 
 export default function DirectMessageChannel(props: { channel: DirectChannel; onSelected?: () => void }) {
-   const client = useClient();
+   const { user } = useUser();
 
    const { open: openContextMenu } = useContextMenu<ContextMenuDMChannel>(ContextMenuType.DM_CHANNEL);
 
@@ -17,7 +17,7 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
 
    const { channelId } = useParams({ strict: false });
    const selected = useMemo(() => channelId == props.channel.id, [channelId, props.channel]);
-   const otherUsers = useMemo(() => props.channel.recipients.filter(x => x.id !== client.user?.id), [props.channel]);
+   const otherUsers = useMemo(() => props.channel.recipients.filter(x => x.id !== user?.id), [props.channel]);
    const name = useChannelName(props.channel);
 
    return (

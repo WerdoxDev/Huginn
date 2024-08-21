@@ -1,5 +1,6 @@
 import filetypeinfo from "magic-bytes.js";
 import { InternalRequest, RequestHeaders, ResolvedRequest, ResponseLike } from "./rest-types";
+import { Buffer } from "buffer";
 
 export function isBufferLike(value: unknown): value is ArrayBuffer | Buffer | Uint8Array | Uint8ClampedArray {
    return value instanceof ArrayBuffer || value instanceof Uint8Array || value instanceof Uint8ClampedArray;

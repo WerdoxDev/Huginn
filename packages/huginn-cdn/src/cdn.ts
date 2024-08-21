@@ -4,12 +4,15 @@ import { Hono } from "hono";
 import { cdnHost, cdnPort, certFile, keyFile } from ".";
 import { version } from "../package.json";
 import avatar from "./avatar";
+import { cors } from "hono/cors";
 
 export function startCdn() {
    consola.info(`Using version ${version}`);
    consola.start("Starting server...");
 
    const app = new Hono();
+
+   app.use("*", cors());
 
    app.route("/", avatar);
 

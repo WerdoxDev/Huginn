@@ -4,7 +4,7 @@ import clsx from "clsx";
 
 export default function UserAvatarWithStatus(props: {
    userId: Snowflake;
-   avatarHash?: string;
+   avatarHash?: string | null;
    size?: string;
    statusSize?: string;
    className?: string;

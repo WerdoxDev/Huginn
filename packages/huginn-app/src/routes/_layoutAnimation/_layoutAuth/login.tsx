@@ -15,6 +15,7 @@ import { APIPostLoginJSONBody } from "@huginn/shared";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useContext, useEffect, useState } from "react";
 import RouteErrorComponent from "@components/RouteErrorComponent";
+import { useUser } from "@contexts/userContext";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/login")({
    beforeLoad({ context: { client } }) {
@@ -30,6 +31,8 @@ function Login() {
       { name: "login", required: true, default: "test" },
       { name: "password", required: true, default: "test" },
    ]);
+
+   const { setUser } = useUser();
 
    const [hidden, setHidden] = useState(true);
    const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);

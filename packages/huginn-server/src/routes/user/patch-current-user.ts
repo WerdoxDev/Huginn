@@ -58,26 +58,22 @@ app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
          return errorResponse(c, databaseError);
       }
 
-      // let avatarHash: string | undefined;
+      let avatarHash: string | undefined = undefined;
+      if (body.avatar && body.avatar !== "") {
+         const data = resolveBuffer(body.avatar);
+         avatarHash = getFileHash(data);
 
-      const avatarHash: string | undefined = await new Promise(resolve => {
-         let avatarHash: string | undefined;
-         if (body.avatar) {
-            const data = resolveBuffer(body.avatar);
-            avatarHash = getFileHash(data);
-
-            cdnUpload(CDNRoutes.uploadAvatar(user.id), {
-               files: [{ data: resolveBuffer(body.avatar), name: avatarHash }],
-            }).then(() => resolve(avatarHash));
-         }
-      });
+         await cdnUpload(CDNRoutes.uploadAvatar(user.id), {
+            files: [{ data: resolveBuffer(body.avatar), name: avatarHash }],
+         });
+      }
 
       const updatedUser = idFix(
          await prisma.user.edit(payload.id, {
             email: body.email,
             username: body.username,
             displayName: body.displayName,
-            avatar: avatarHash,
+            avatar: avatarHash ? avatarHash : "",
             password: body.newPassword,
          }),
       );

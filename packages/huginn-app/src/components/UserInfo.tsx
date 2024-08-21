@@ -1,18 +1,14 @@
-import { useClient } from "@contexts/apiContext";
 import { useModalsDispatch } from "@contexts/modalContext";
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from "@headlessui/react";
 import { useLogout } from "@hooks/useLogout";
 import { APIUser } from "@huginn/shared";
 import { useMutation } from "@tanstack/react-query";
-import { useEffect } from "react";
 import UserAvatarWithStatus from "./UserAvatarWithStatus";
 import { Tooltip } from "./tooltip/Tooltip";
 
 export default function UserInfo(props: { user: APIUser }) {
    const modalsDispatch = useModalsDispatch();
    const logout = useLogout();
-
-   const client = useClient();
 
    const mutation = useMutation({
       async mutationFn() {
@@ -25,14 +21,6 @@ export default function UserInfo(props: { user: APIUser }) {
       modalsDispatch({ settings: { isOpen: true } });
    }
 
-   useEffect(() => {
-      console.log("HI?");
-   }, [client.user]);
-
-   if (!client.user) {
-      return;
-   }
-
    return (
       <section className=" flex h-16 w-64 flex-shrink-0 flex-grow-0 items-center justify-center">
          <Menu>
@@ -41,8 +29,8 @@ export default function UserInfo(props: { user: APIUser }) {
                className="group flex w-full cursor-pointer items-center rounded-xl px-2 py-1 hover:bg-white hover:bg-opacity-5"
             >
                <UserAvatarWithStatus
-                  userId={client.user.id}
-                  avatarHash={client.user.avatar}
+                  userId={props.user.id}
+                  avatarHash={props.user.avatar}
                   className="bg-secondary mr-3 flex-shrink-0"
                />
 
@@ -60,16 +48,9 @@ export default function UserInfo(props: { user: APIUser }) {
                </div>
             </MenuButton>
 
-            <Transition
-               enter="duration-150 ease-out"
-               enterFrom="opacity-0 scale-95"
-               enterTo="opacity-100 scale-100"
-               leave="duration-150 ease-in"
-               leaveFrom="opacity-100 scale-100"
-               leaveTo="opacity-0 scale-95"
-            >
+            <Transition>
                <MenuItems
-                  className="divide-secondary w-60 divide-y rounded-lg bg-zinc-900 shadow-lg outline-none transition [--anchor-gap:0.5rem]"
+                  className="divide-secondary w-60 divide-y rounded-lg bg-zinc-900 shadow-lg outline-none transition [--anchor-gap:0.5rem] data-[closed]:scale-95 data-[closed]:opacity-0"
                   anchor="top"
                >
                   <div className="p-1.5">

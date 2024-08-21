@@ -1,6 +1,6 @@
-import path from "path";
-import fs from "fs/promises";
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Base64Resolvable, BufferResolvable, ResolvedFile } from "@huginn/shared";
+import { Buffer } from "buffer";
 
 /**
  * Resolves a base64 data url string, URL, file path, or Buffer to a base64 data url string
@@ -46,11 +46,19 @@ export async function resolveFile(resource: BufferResolvable): Promise<ResolvedF
          return { data: Buffer.from(await res.arrayBuffer()), contentType: res.headers.get("content-type") ?? undefined };
       }
 
-      const file = path.join(__dirname, resource);
+      if (typeof window === "undefined") {
+         // @ts-ignore: non browser packages
+         const fs = await import("fs/promises");
+         // @ts-ignore: non browser packages
+         const path = await import("path");
 
-      const stats = await fs.stat(file);
-      if (!stats.isFile()) throw new Error(`File was not found: ${file}`);
-      return { data: await fs.readFile(file) };
+         // @ts-ignore: non browser packages
+         const file = path.join(__dirname, resource);
+
+         const stats = await fs.stat(file);
+         if (!stats.isFile()) throw new Error(`File was not found: ${file}`);
+         return { data: await fs.readFile(file) };
+      }
    }
 
    throw new Error("The provided resource type was not valid");

@@ -1,18 +1,17 @@
-import { useClient } from "@contexts/apiContext";
-import { APIMessageUser, MessageFlags } from "@huginn/shared";
+import { useUser } from "@contexts/userContext";
+import { APIMessageUser, MessageFlags, hasFlag } from "@huginn/shared";
+import { tokenize } from "@lib/huginn-tokenizer";
 import { forwardRef, useCallback, useMemo } from "react";
 import { Descendant, Node, Path, Range, Text, createEditor } from "slate";
 import { DefaultElement, Editable, RenderElementProps, RenderLeafProps, Slate, withReact } from "slate-react";
 import UserAvatarWithStatus from "./UserAvatarWithStatus";
 import MessageLeaf from "./editor/MessageLeaf";
-import { tokenize } from "@lib/huginn-tokenizer";
-import { hasFlag } from "@huginn/shared";
 
 const BaseMessage = forwardRef<HTMLLIElement, { content?: string; author: APIMessageUser; flags?: MessageFlags | null }>(
    function (props, ref) {
-      const client = useClient();
+      const { user } = useUser();
 
-      const isSelf = useMemo(() => props.author.id === client.user?.id, [props.author]);
+      const isSelf = useMemo(() => props.author.id === user?.id, [props.author]);
       const editor = useMemo(() => withReact(createEditor()), []);
 
       const initialValue = useMemo(() => deserialize(props.content ?? ""), []);

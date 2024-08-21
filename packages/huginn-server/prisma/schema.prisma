@@ -13,7 +13,7 @@ model User {
    username             String         @unique
    displayName          String
    email                String         @unique
-   avatar               String
+   avatar               String?
    password             String
    flags                Int            @db.SmallInt
    system               Boolean        @default(false)

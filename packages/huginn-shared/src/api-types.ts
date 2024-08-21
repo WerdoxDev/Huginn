@@ -23,7 +23,7 @@ export enum UserFlags {
 export type APIUser = {
    username: string;
    displayName: string;
-   avatar: string;
+   avatar: string | null;
    system?: boolean;
    email?: string;
    password?: string;
@@ -34,20 +34,20 @@ export type APIUser = {
 export type APIChannelUser = {
    username: string;
    displayName: string;
-   avatar: string;
+   avatar: string | null;
 } & APIBaseUser;
 
 export type APIMessageUser = {
    username: string;
    displayName: string;
-   avatar: string;
+   avatar: string | null;
    flags: unknown;
 } & APIBaseUser;
 
 export type APIRelationUser = {
    username: string;
    displayName: string;
-   avatar: string;
+   avatar: string | null;
    flags: unknown;
 } & APIBaseUser;
 
@@ -86,7 +86,7 @@ export type APIPatchCurrentUserJSONBody = {
    email?: string;
    displayName?: string;
    username?: string;
-   avatar?: string;
+   avatar?: string | null;
    password?: string;
    newPassword?: string;
 };
