@@ -6,17 +6,23 @@ import HuginnInput from "@components/input/HuginnInput";
 import PasswordInput from "@components/input/PasswordInput";
 import { Tooltip } from "@components/tooltip/Tooltip";
 import { useClient } from "@contexts/apiContext";
+import { useEvent } from "@contexts/event";
 import { useUser } from "@contexts/userContext";
 import { Transition } from "@headlessui/react";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useInputs } from "@hooks/useInputs";
 import useUniqueUsernameMessage from "@hooks/useUniqueUsernameMessage";
-import { APIUser, omit, resolveBase64, resolveBuffer, resolveFile } from "@huginn/shared";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { omit } from "@huginn/shared";
+import { getUserAvatar } from "@lib/queries";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
 
 export default function SettingsProfileTab(_props: SettingsTabProps) {
    const client = useClient();
    const { user, setUser } = useUser();
+   const { listenEvent } = useEvent();
+
+   const { data: originalAvatar } = useQuery(getUserAvatar(user?.id, user?.avatar, client));
 
    const { inputsProps, values, handleErrors, resetStatuses } = useInputs([
       { name: "username", required: true, default: user?.username },
@@ -24,8 +30,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
       { name: "password", required: false },
    ]);
 
-   const initialAvatarData = useRef<string | null | undefined>(null);
-   const [avatarData, setAvatarData] = useState<string | null | undefined>(null);
+   const [avatarData, setAvatarData] = useState<string | null | undefined>(() => originalAvatar);
 
    const { message: usernameMessageDetail, onFocusChanged, onChanged } = useUniqueUsernameMessage(values, "username");
 
@@ -37,10 +42,8 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
       resetStatuses();
 
       values.password.value = "";
-      onChanged(values.username.value);
+      onChanged(values.username.value, result.username);
       onFocusChanged(false);
-
-      initializeAvatarData(result);
    }, handleErrors);
 
    const [modified, setModified] = useState(false);
@@ -49,19 +52,26 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
       setModified(
          values.username.value !== user?.username ||
             values.displayName.value !== user?.displayName ||
-            (user.avatar ? avatarData !== initialAvatarData.current : !!avatarData),
+            (user.avatar ? avatarData !== originalAvatar : !!avatarData),
       );
-   }, [values, user, avatarData]);
-
-   async function initializeAvatarData(user?: APIUser) {
-      initialAvatarData.current =
-         user && user.avatar && resolveBase64((await resolveFile(client.cdn.avatar(user.id, user.avatar))).data);
-
-      setAvatarData(initialAvatarData.current);
-   }
+   }, [values, avatarData, user]);
 
    useEffect(() => {
-      initializeAvatarData(user);
+      if (originalAvatar) {
+         setAvatarData(originalAvatar);
+      }
+   }, [originalAvatar]);
+
+   useEffect(() => {
+      const unlisten = listenEvent("user_updated", e => {
+         if (e.self) {
+            // setModified(false);
+         }
+      });
+
+      return () => {
+         unlisten();
+      };
    }, []);
 
    function openFileDialog() {
@@ -92,11 +102,12 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
    }
 
    async function edit() {
+      console.log(originalAvatar, avatarData);
       await mutation.mutateAsync({
          displayName: values.displayName.value,
          username: values.username.value === user?.username ? undefined : values.username.value,
          password: values.password.value,
-         avatar: avatarData,
+         avatar: originalAvatar && !avatarData ? null : originalAvatar === avatarData ? undefined : avatarData,
       });
    }
 
@@ -105,7 +116,11 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
          <div className="flex h-full items-start gap-x-5">
             <div className="bg-secondary flex rounded-lg p-4">
                <div onClick={openFileDialog} className="group relative h-24 w-24 cursor-pointer overflow-hidden rounded-full bg-black">
-                  {avatarData ? <img src={avatarData}></img> : <div className="bg-primary h-full w-full"></div>}
+                  {avatarData ? (
+                     <img className="h-full w-full object-cover" src={avatarData}></img>
+                  ) : (
+                     <div className="bg-primary h-full w-full"></div>
+                  )}
 
                   <div className="absolute inset-0 flex h-full w-full items-center justify-center gap-x-1 rounded-full group-hover:bg-black/30">
                      <Tooltip>
@@ -119,7 +134,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
                            <IconMdiDelete
                               onClick={e => {
                                  e.stopPropagation();
-                                 setAvatarData("");
+                                 setAvatarData(null);
                               }}
                               className="text-error invisible size-7 group-hover:visible"
                            />

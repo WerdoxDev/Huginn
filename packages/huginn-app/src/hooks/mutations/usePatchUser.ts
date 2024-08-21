@@ -1,5 +1,6 @@
 import { useClient } from "@contexts/apiContext";
 import { useEvent } from "@contexts/event";
+import { useUser } from "@contexts/userContext";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { APIPatchCurrentUserJSONBody, APIPatchCurrentUserResult, HuginnErrorData, omit } from "@huginn/shared";
 
@@ -9,6 +10,7 @@ export function usePatchUser(
 ) {
    const client = useClient();
    const { dispatchEvent } = useEvent();
+   const { setUser } = useUser();
 
    const mutation = useHuginnMutation(
       {
@@ -17,7 +19,10 @@ export function usePatchUser(
          },
          onSuccess(result) {
             onSuccess?.(result);
-            dispatchEvent("user_updated", { user: omit(result, ["token", "refreshToken"]), self: true });
+            const data = omit(result, ["token", "refreshToken"]);
+
+            setUser(data);
+            dispatchEvent("user_updated", { user: data, self: true });
          },
       },
       handleErrors,

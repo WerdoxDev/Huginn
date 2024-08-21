@@ -1,5 +1,7 @@
 import { useClient } from "@contexts/apiContext";
 import { Snowflake } from "@huginn/shared";
+import { getUserAvatar } from "@lib/queries";
+import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 
 export default function UserAvatarWithStatus(props: {
@@ -11,14 +13,12 @@ export default function UserAvatarWithStatus(props: {
 }) {
    const client = useClient();
 
+   const { data: avatar } = useQuery(getUserAvatar(props.userId, props.avatarHash, client));
+
    const { size = "2.25rem", statusSize = "0.75rem", className } = props;
    return (
       <div className={clsx("bg-background relative shrink-0 rounded-full", className)} style={{ width: size, height: size }}>
-         {props.avatarHash ? (
-            <img src={client.cdn.avatar(props.userId, props.avatarHash)} className="rounded-full"></img>
-         ) : (
-            <div></div>
-         )}
+         {avatar ? <img src={avatar} className="h-full w-full rounded-full object-cover"></img> : <div></div>}
          <div className="absolute bottom-0 right-0 rounded-full bg-[#FFA000]" style={{ width: statusSize, height: statusSize }} />
       </div>
    );

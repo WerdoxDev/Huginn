@@ -17,13 +17,14 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
    const prevUsername = useRef(values[usernameField].value);
 
    useEffect(() => {
+      console.log(values[usernameField], user?.username);
       if (prevUsername.current === values[usernameField].value) {
          return;
       }
 
-      onChanged(values[usernameField].value);
+      onChanged(values[usernameField].value, user?.username);
       prevUsername.current = values[usernameField].value;
-   }, [values]);
+   }, [values, user]);
 
    function set(message: string, state: StatusCode, visible: boolean) {
       setMessage({ text: message, status: state, visible });
@@ -44,8 +45,9 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
       return isValid;
    }
 
-   function onChanged(value: string) {
-      if (!value || value === user?.username) {
+   function onChanged(value: string, username?: string) {
+      console.log(value, username);
+      if (!value || value === username) {
          set(defaultMessage, "default", true);
          clearTimeout(usernameTimeout.current);
          return;
@@ -57,7 +59,6 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
       }
 
       if (usernameTimeout.current) {
-         console.log("clear");
          clearTimeout(usernameTimeout.current);
       }
 

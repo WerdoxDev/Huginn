@@ -13,21 +13,9 @@ export const UserContext = createContext<UserContextType>({ user: undefined, set
 
 export function UserProvider(props: { children?: ReactNode }) {
    const client = useClient();
-   const { listenEvent } = useEvent();
+   // const { listenEvent } = useEvent();
 
    const [user, setUser] = useState(() => client.user);
-
-   useEffect(() => {
-      const unlisten = listenEvent("user_updated", e => {
-         if (e.self) {
-            setUser(e.user);
-         }
-      });
-
-      return () => {
-         unlisten();
-      };
-   }, []);
 
    useEffect(() => {
       if (client.isLoggedIn) {
