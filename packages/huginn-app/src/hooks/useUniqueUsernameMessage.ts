@@ -3,9 +3,11 @@ import { Field } from "@huginn/shared";
 import { useEffect, useRef, useState } from "react";
 import { useClient } from "@contexts/apiContext";
 import { InputValues, MessageDetail, StatusCode } from "@/types";
+import { useUser } from "@contexts/userContext";
 
 export default function useUniqueUsernameMessage(values: InputValues, usernameField: string) {
    const client = useClient();
+   const { user } = useUser();
 
    const defaultMessage = "Please only use numbers, letters, _";
    const [message, setMessage] = useState<MessageDetail>({ text: defaultMessage, status: "default", visible: false });
@@ -19,12 +21,13 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
          return;
       }
 
-      onChanged(values[usernameField].value);
+      onChanged(values[usernameField].value, user?.username);
       prevUsername.current = values[usernameField].value;
-   }, [values]);
+   }, [values, user]);
 
    function set(message: string, state: StatusCode, visible: boolean) {
       setMessage({ text: message, status: state, visible });
+      console.log(visible);
    }
 
    async function checkForUniqueUsername(value: string) {
@@ -42,9 +45,9 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
       return isValid;
    }
 
-   function onChanged(value: string) {
-      if (!value || value === client.user?.username) {
-         set(defaultMessage, "default", true);
+   function onChanged(value: string, username?: string) {
+      if (!value || value === username) {
+         set(defaultMessage, "default", lastFocus.current);
          clearTimeout(usernameTimeout.current);
          return;
       }
@@ -55,7 +58,6 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
       }
 
       if (usernameTimeout.current) {
-         console.log("clear");
          clearTimeout(usernameTimeout.current);
       }
 

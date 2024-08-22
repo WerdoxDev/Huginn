@@ -1,28 +1,25 @@
-import TitleBar from "@components/TitleBar";
+import { ChannelsContextMenu } from "@components/contextmenu/ChannelsContextMenu";
+import RelationshipContextMenu from "@components/contextmenu/RelationshipContextMenu";
+import RelationshipMoreContextMenu from "@components/contextmenu/RelationshipMoreContextMenu";
 import InfoModal from "@components/modal/InfoModal";
 import SettingsModal from "@components/modal/SettingsModal";
+import ModalErrorComponent from "@components/ModalErrorComponent";
+import TitleBar from "@components/TitleBar";
 import { useClient } from "@contexts/apiContext";
+import { ContextMenuProvider } from "@contexts/contextMenuContext";
 import { routeHistory } from "@contexts/historyContext";
 import { ModalProvider } from "@contexts/modalContext";
 import { ThemeProvier } from "@contexts/themeContext";
+import { UserProvider } from "@contexts/userContext";
 import { useWindow, useWindowDispatch } from "@contexts/windowContext";
 import { setup } from "@lib/middlewares";
 import { QueryClient } from "@tanstack/react-query";
-import { CatchBoundary, Outlet, createRootRouteWithContext, useRouter } from "@tanstack/react-router";
+import { Outlet, createRootRouteWithContext, useRouter } from "@tanstack/react-router";
 import "@tauri-apps/api";
 import { UnlistenFn } from "@tauri-apps/api/event";
 import { appWindow } from "@tauri-apps/api/window";
 import { useEffect, useRef } from "react";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { TanStackRouterDevtools } from "@tanstack/router-devtools";
-import { ContextMenuProvider } from "@contexts/contextMenuContext";
-import { ChannelsContextMenu } from "@components/contextmenu/ChannelsContextMenu";
-import RelationshipMoreContextMenu from "@components/contextmenu/RelationshipMoreContextMenu";
-import RelationshipContextMenu from "@components/contextmenu/RelationshipContextMenu";
-import RouteErrorComponent from "@components/RouteErrorComponent";
 import { ErrorBoundary } from "react-error-boundary";
-import { useErrorHandler } from "@hooks/useServerErrorHandler";
-import ModalErrorComponent from "@components/ModalErrorComponent";
 
 export type HuginnRouterContext = {
    queryClient: QueryClient;
@@ -38,7 +35,6 @@ export const Route = createRootRouteWithContext<HuginnRouterContext>()({
 
 function Root() {
    const router = useRouter();
-   const handleError = useErrorHandler();
 
    const appWindow = useWindow();
 
@@ -57,22 +53,24 @@ function Root() {
       <ThemeProvier>
          <ModalProvider>
             <ContextMenuProvider>
-               <div className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
-                  {router.state.location.pathname !== "/splashscreen" && <TitleBar />}
-                  <div className="relative h-full w-full">
-                     <Outlet />
-                     {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
-                     {/* <TanStackRouterDevtools position="bottom-left" /> */}
-                     {window.__TAURI__ && <AppMaximizedEvent />}
-                     <ErrorBoundary FallbackComponent={ModalErrorComponent}>
-                        <SettingsModal />
-                        <ChannelsContextMenu />
-                        <RelationshipMoreContextMenu />
-                        <RelationshipContextMenu />
-                     </ErrorBoundary>
-                     <InfoModal />
+               <UserProvider>
+                  <div className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
+                     {router.state.location.pathname !== "/splashscreen" && <TitleBar />}
+                     <div className="relative h-full w-full">
+                        <Outlet />
+                        {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
+                        {/* <TanStackRouterDevtools position="bottom-left" /> */}
+                        {window.__TAURI__ && <AppMaximizedEvent />}
+                        <ErrorBoundary FallbackComponent={ModalErrorComponent}>
+                           <SettingsModal />
+                           <ChannelsContextMenu />
+                           <RelationshipMoreContextMenu />
+                           <RelationshipContextMenu />
+                        </ErrorBoundary>
+                        <InfoModal />
+                     </div>
                   </div>
-               </div>
+               </UserProvider>
             </ContextMenuProvider>
          </ModalProvider>
       </ThemeProvier>

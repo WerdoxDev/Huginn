@@ -1,10 +1,7 @@
 import consola from "consola";
-import { startListening } from "./commands";
 import { startServer } from "./server";
-import { handle } from "hono/vercel";
-import { Hono } from "hono";
 
-const connectionString = process.env.MONGODB_CONNECTION_STRING;
+const connectionString = process.env.POSTGRESQL_URL;
 export const cdnRoot = process.env.CDN_ROOT;
 export const serverHost = process.env.SERVER_HOST;
 export const serverPort = process.env.SERVER_PORT;

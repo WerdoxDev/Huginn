@@ -7,6 +7,7 @@ export function useLogout() {
    const queryClient = useQueryClient();
    const client = useClient();
    const navigate = useNavigate();
+
    const mutation = useHuginnMutation({
       async mutationFn() {
          await client.logout();
@@ -20,7 +21,7 @@ export function useLogout() {
 
       if (!shouldNavigate) return;
 
-      await navigate({ to: "/login" });
+      await navigate({ to: "/login", replace: true });
       queryClient.removeQueries({ queryKey: ["channels"] });
       queryClient.removeQueries({ queryKey: ["messages"] });
       queryClient.removeQueries({ queryKey: ["relationships"] });

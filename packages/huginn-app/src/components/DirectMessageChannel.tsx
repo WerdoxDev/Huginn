@@ -1,19 +1,23 @@
 import { ContextMenuDMChannel, ContextMenuType } from "@/types";
 import { useContextMenu } from "@contexts/contextMenuContext";
+import { useUser } from "@contexts/userContext";
 import { useDeleteDMChannel } from "@hooks/mutations/useDeleteDMChannel";
 import { useChannelName } from "@hooks/useChannelName";
 import { DirectChannel } from "@huginn/shared";
 import { Link, useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
-import UserIconWithStatus from "./UserIconWithStatus";
+import UserAvatarWithStatus from "./UserAvatarWithStatus";
 
 export default function DirectMessageChannel(props: { channel: DirectChannel; onSelected?: () => void }) {
+   const { user } = useUser();
+
    const { open: openContextMenu } = useContextMenu<ContextMenuDMChannel>(ContextMenuType.DM_CHANNEL);
 
    const mutation = useDeleteDMChannel();
 
    const { channelId } = useParams({ strict: false });
    const selected = useMemo(() => channelId == props.channel.id, [channelId, props.channel]);
+   const otherUsers = useMemo(() => props.channel.recipients.filter(x => x.id !== user?.id), [props.channel]);
    const name = useChannelName(props.channel);
 
    return (
@@ -25,7 +29,7 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
          onClick={props.onSelected}
       >
          <Link className="flex items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>
-            <UserIconWithStatus className="bg-tertiary mr-3" />
+            <UserAvatarWithStatus userId={otherUsers[0].id} avatarHash={otherUsers[0].avatar} className="bg-tertiary mr-3" />
             <div className={`text-text w-full text-sm group-hover:opacity-100 ${selected ? "opacity-100" : "opacity-70"}`}>{name}</div>
          </Link>
          <button

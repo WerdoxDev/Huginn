@@ -1,5 +1,6 @@
 import { useClient } from "@contexts/apiContext";
 import { useEvent } from "@contexts/event";
+import { useUser } from "@contexts/userContext";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { APIGetChannelMessagesResult, APIGetUserChannelsResult } from "@huginn/shared";
 import { GatewayMessageCreateData } from "@huginn/shared";
@@ -8,6 +9,7 @@ import { ReactNode, useEffect } from "react";
 
 export default function MessageProvider(props: { children?: ReactNode }) {
    const client = useClient();
+   const { user } = useUser();
    const queryClient = useQueryClient();
    const mutation = useCreateDMChannel();
    const { dispatchEvent } = useEvent();
@@ -60,7 +62,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
          return [...data.toSpliced(thisChannelIndex, 1, { ...thisChannel, lastMessageId: d.id })];
       });
 
-      dispatchEvent("message_added", { message: d, visible: messageVisible, self: d.author.id === client.user?.id });
+      dispatchEvent("message_added", { message: d, visible: messageVisible, self: d.author.id === user?.id });
    }
 
    return props.children;

@@ -19,6 +19,8 @@ declare global {
   const IconMdiCamera: (typeof import("~icons/mdi/camera.jsx"))["default"]
   const IconMdiCheck: typeof import('~icons/mdi/check.jsx')['default']
   const IconMdiClose: typeof import('~icons/mdi/close.jsx')['default']
+  const IconMdiDelete: typeof import('~icons/mdi/delete.jsx')['default']
+  const IconMdiEdit: typeof import('~icons/mdi/edit.jsx')['default']
   const IconMdiHide: typeof import('~icons/mdi/hide.jsx')['default']
   const IconMdiIdentificationCard: typeof import('~icons/mdi/identification-card.jsx')['default']
   const IconMdiLogout: typeof import('~icons/mdi/logout.jsx')['default']

@@ -11,6 +11,6 @@ if (!cdnHost || !cdnPort) {
    process.exit();
 }
 
-const { app, cdn } = startCdn();
+const { app, cdn: _cdn } = startCdn();
 
 export { app };

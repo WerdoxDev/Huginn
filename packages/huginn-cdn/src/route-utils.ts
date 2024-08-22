@@ -12,7 +12,7 @@ export async function handleRequest(
       return result;
    } catch (e) {
       if (isCDNError(e)) {
-         let errorResult = onError?.(e);
+         const errorResult = onError?.(e);
 
          if (errorResult) {
             return errorResult;

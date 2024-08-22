@@ -1,6 +1,6 @@
-import { APIGetUserChannelsResult, Snowflake } from "@huginn/shared";
-import { infiniteQueryOptions, QueryClient, queryOptions } from "@tanstack/react-query";
 import { HuginnClient } from "@huginn/api";
+import { APIGetUserChannelsResult, resolveBase64, resolveImage, Snowflake } from "@huginn/shared";
+import { infiniteQueryOptions, QueryClient, queryOptions } from "@tanstack/react-query";
 
 export function getChannelsOptions(client: HuginnClient, guildId: Snowflake) {
    return queryOptions({
@@ -41,5 +41,14 @@ export function getRelationshipsOptions(client: HuginnClient) {
    return queryOptions({
       queryKey: ["relationships"],
       queryFn: () => client.relationships.getAll(),
+   });
+}
+
+export function getUserAvatar(userId: Snowflake | undefined, userAvatar: string | null | undefined, client: HuginnClient) {
+   return queryOptions({
+      queryKey: ["avatar", userId, userAvatar],
+      async queryFn() {
+         return userId && userAvatar && resolveBase64(await resolveImage(client.cdn.avatar(userId, userAvatar)));
+      },
    });
 }

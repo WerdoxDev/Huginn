@@ -1,7 +1,7 @@
 /* eslint-disable */
 import url from "url";
 
-import reactCompiler from "eslint-plugin-react-compiler";
+// import reactCompiler from "eslint-plugin-react-compiler";
 import reactHook from "eslint-plugin-react-hooks";
 import reactPlugin from "eslint-plugin-react";
 import eslint from "@eslint/js";
@@ -107,11 +107,11 @@ export default tseslint.config(
       languageOptions: {
          globals: globals.browser,
       },
-      plugins: {
-         "react-compiler": reactCompiler,
-      },
+      // plugins: {
+      // "react-compiler": reactCompiler,
+      // },
       rules: {
-         "react-compiler/react-compiler": 2,
+         // "react-compiler/react-compiler": 2,
          "react-hooks/exhaustive-deps": "off",
          "react-hooks/rules-of-hooks": "error",
       },

@@ -1,6 +1,5 @@
 import { useModalsDispatch } from "@contexts/modalContext";
 import { useErrorHandler } from "@hooks/useServerErrorHandler";
-import { useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useErrorBoundary } from "react-error-boundary";
 

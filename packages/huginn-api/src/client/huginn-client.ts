@@ -15,7 +15,7 @@ import { CDN } from "../rest/cdn";
 export class HuginnClient {
    public readonly options: ClientOptions;
    private rest: REST;
-   private cdn: CDN;
+   public cdn: CDN;
    public tokenHandler: TokenHandler;
    public users: UserAPI;
    public relationships: RelationshipAPI;
@@ -38,7 +38,7 @@ export class HuginnClient {
 
       this.tokenHandler = new TokenHandler(this);
       this.rest = new REST(this, this.options.rest);
-      this.cdn = new CDN(this.options.rest!.cdn!);
+      this.cdn = new CDN(this.options.rest?.cdn);
 
       this.auth = new AuthAPI(this.rest);
       this.users = new UserAPI(this.rest);

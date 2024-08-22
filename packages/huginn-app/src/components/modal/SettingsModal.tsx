@@ -127,8 +127,8 @@ export default function SettingsModal() {
                               <SettingsTabs />
                            </TabList>
                         </div>
-                        {settingsValid && (
-                           <SettingsPanels currentTab={currentTab} settings={modifiedSettings.current!} onChange={onSettingsChanged} />
+                        {settingsValid && modifiedSettings.current && (
+                           <SettingsPanels currentTab={currentTab} settings={modifiedSettings.current} onChange={onSettingsChanged} />
                         )}
                      </TabGroup>
                      <ModalCloseButton
@@ -186,7 +186,6 @@ function SettingsPanels(props: {
    currentTab: string;
    onChange: (value: DeepPartial<SettingsContextType>) => void;
 }) {
-   const client = useClient();
    const flatTabs = useFlatTabs();
 
    function TabComponent(props: {

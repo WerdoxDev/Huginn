@@ -1,6 +1,5 @@
 import BaseMessage from "@components/BaseMessage";
 import ChannelMessageLoadingIndicator from "@components/ChannelMessageLoadingIndicator";
-import { Tooltip } from "@components/tooltip/Tooltip";
 import { useClient } from "@contexts/apiContext";
 import { useChannelScroll, useChannelScrollDispatch } from "@contexts/channelScrollContext";
 import { useEvent } from "@contexts/event";

@@ -1,9 +1,9 @@
 import { constants, ImageFormats, ImageURLOptions, Snowflake } from "@huginn/shared";
 
 export class CDN {
-   private readonly cdn: string;
+   private readonly cdn?: string;
 
-   public constructor(cdn: string) {
+   public constructor(cdn?: string) {
       this.cdn = cdn;
    }
 
@@ -29,7 +29,6 @@ export class CDN {
     * @param options - The format/size options for the link
     */
    private makeURL(route: string, { format = "webp", size }: Readonly<ImageURLOptions> = {}): string {
-      // eslint-disable-next-line no-param-reassign
       format = String(format).toLowerCase() as ImageFormats;
 
       if (!constants.ALLOWED_IMAGE_FORMATS.includes(format)) {

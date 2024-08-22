@@ -4,6 +4,7 @@
    "type": "module",
    "dependencies": {
       "@sapphire/snowflake": "^3.5.3",
+      "buffer": "^6.0.3",
       "magic-bytes.js": "^1.10.0"
    },
    "devDependencies": {

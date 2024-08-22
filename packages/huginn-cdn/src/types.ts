@@ -8,6 +8,7 @@ export const FileTypes = {
    other: "application/octet-stream",
 } as const;
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 export type FileFormats = keyof typeof FileTypes | (string & {});
 export type FileContentTypes = (typeof FileTypes)[keyof typeof FileTypes];
 

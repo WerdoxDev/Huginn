@@ -1,6 +1,6 @@
 import { prisma } from "@/db";
 import { createTokens } from "@/factory/token-factory";
-import { dispatchToTopic, publishToTopic } from "@/gateway/gateway-utils";
+import { dispatchToTopic } from "@/gateway/gateway-utils";
 import { getFileHash, getJwt, hValidator, handleRequest, verifyJwt } from "@/route-utils";
 import { cdnUpload } from "@/server-request";
 import {
@@ -20,7 +20,7 @@ const schema = z.object({
    email: z.optional(z.string()),
    username: z.optional(z.string()),
    displayName: z.optional(z.string()),
-   avatar: z.optional(z.string()),
+   avatar: z.optional(z.nullable(z.string())),
    password: z.optional(z.string()),
    newPassword: z.optional(z.string()),
 });
@@ -58,14 +58,16 @@ app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
          return errorResponse(c, databaseError);
       }
 
-      let avatarHash: string | undefined;
-      if (body.avatar) {
+      let avatarHash: string | undefined | null = undefined;
+      if (body.avatar !== null && body.avatar !== undefined) {
          const data = resolveBuffer(body.avatar);
          avatarHash = getFileHash(data);
 
          await cdnUpload(CDNRoutes.uploadAvatar(user.id), {
             files: [{ data: resolveBuffer(body.avatar), name: avatarHash }],
          });
+      } else if (body.avatar === null) {
+         avatarHash = null;
       }
 
       const updatedUser = idFix(

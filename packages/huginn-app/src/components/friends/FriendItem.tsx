@@ -1,5 +1,5 @@
 import { ContextMenuRelationship, ContextMenuType } from "@/types";
-import UserIconWithStatus from "@components/UserIconWithStatus";
+import UserAvatarWithStatus from "@components/UserAvatarWithStatus";
 import { Tooltip } from "@components/tooltip/Tooltip";
 import { useContextMenu } from "@contexts/contextMenuContext";
 import { APIRelationUser, RelationshipType } from "@huginn/shared";
@@ -23,7 +23,7 @@ export default function FriendItem(props: {
          }}
       >
          <div className="flex">
-            <UserIconWithStatus className="bg-text mr-3" />
+            <UserAvatarWithStatus userId={props.user.id} avatarHash={props.user.avatar} className="bg-text mr-3" />
             <div className="flex flex-col items-start">
                <span className="text-text font-semibold">{props.user.displayName}</span>
                <span className="text-text/50 text-sm">Online (?)</span>

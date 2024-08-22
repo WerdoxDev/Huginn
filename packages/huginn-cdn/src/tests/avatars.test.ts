@@ -1,8 +1,7 @@
-import { test, expect, beforeAll, afterAll } from "bun:test";
-import { app } from "..";
+import { HuginnErrorFieldInformation } from "@huginn/shared";
+import { expect, test } from "bun:test";
 import path from "path";
-import { HuginnError, HuginnErrorFieldInformation } from "@huginn/shared";
-import { CDNError, CDNErrorType } from "@/error";
+import { app } from "..";
 
 test("POST /avatars/123 is ok", async () => {
    const formData = new FormData();

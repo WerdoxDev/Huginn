@@ -1,6 +1,5 @@
-import { Readable } from "stream";
 import { RouteLike } from "./routes";
-import { URLSearchParams } from "url";
+import { Buffer } from "buffer";
 
 export enum RequestMethod {
    DELETE = "DELETE",
@@ -11,7 +10,7 @@ export enum RequestMethod {
 }
 
 export type ResponseLike = {
-   body: Readable | ReadableStream | null;
+   body: ReadableStream | null;
 } & Pick<Response, "arrayBuffer" | "bodyUsed" | "headers" | "json" | "ok" | "status" | "statusText" | "text">;
 
 export type RawFile = {

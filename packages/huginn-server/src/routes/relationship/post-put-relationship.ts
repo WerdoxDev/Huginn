@@ -32,11 +32,13 @@ async function requestRest(c: Context, userId: Snowflake) {
          "userId",
       ]);
 
-      const relationshipOwner = relationships.find(x => x.ownerId === payload.id)!;
-      const relationshipUser = relationships.find(x => x.ownerId === userId)!;
+      const relationshipOwner = relationships.find(x => x.ownerId === payload.id);
+      const relationshipUser = relationships.find(x => x.ownerId === userId);
 
-      dispatchToTopic(payload.id, "relationship_create", relationshipOwner);
-      dispatchToTopic(userId, "relationship_create", relationshipUser);
+      if (relationshipOwner && relationshipUser) {
+         dispatchToTopic(payload.id, "relationship_create", relationshipOwner);
+         dispatchToTopic(userId, "relationship_create", relationshipUser);
+      }
    }
 
    return c.newResponse(null, HttpCode.NO_CONTENT);
