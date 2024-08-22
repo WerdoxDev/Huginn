@@ -8,7 +8,7 @@ import { cors } from "hono/cors";
 
 export function startCdn() {
    consola.info(`Using version ${version}`);
-   consola.start("Starting server...");
+   consola.start("Starting cdn...");
 
    const app = new Hono();
 
