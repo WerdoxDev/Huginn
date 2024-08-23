@@ -7,7 +7,7 @@ export function getChannelsOptions(client: HuginnClient, guildId: Snowflake) {
       queryKey: ["channels", guildId],
       queryFn: () => {
          // FIXME: This needs to change for when guilds are actually a thing
-         if (guildId !== "@me") return undefined;
+         // if (guildId !== "@me") return undefined;
          return client.channels.getAll();
       },
    });

@@ -10,6 +10,7 @@ import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
+import BaseModal from "./BaseModal";
 
 const tabs: SettingsTab[] = [
    {
@@ -105,42 +106,33 @@ export default function SettingsModal() {
    }
 
    return (
-      <Dialog
-         open={modal.isOpen}
-         className="relative z-10 transition data-[closed]:opacity-0"
-         transition
+      <BaseModal
+         modal={modal}
          onClose={() => {
             dispatch({ settings: { isOpen: false } });
          }}
       >
-         <ModalBackground />
-         <div className="fixed inset-0 top-6">
-            <div className="flex h-full items-center justify-center">
-               <TransitionChild>
-                  <DialogPanel className="border-primary/50 bg-background flex h-[30rem] w-full max-w-3xl transform rounded-xl border-2 transition-[opacity_transform] data-[closed]:scale-95">
-                     <TabGroup className="flex w-full" vertical defaultIndex={defaultTabIndex} onChange={onTabChanged}>
-                        <div className="bg-secondary/50 h-full rounded-l-xl">
-                           <TabList className="flex h-full w-48 select-none flex-col py-2">
-                              <DialogTitle className="mx-5 my-3 flex items-center justify-start gap-x-1.5">
-                                 <div className="text-text text-2xl font-medium">Settings</div>
-                              </DialogTitle>
-                              <SettingsTabs />
-                           </TabList>
-                        </div>
-                        {settingsValid && modifiedSettings.current && (
-                           <SettingsPanels currentTab={currentTab} settings={modifiedSettings.current} onChange={onSettingsChanged} />
-                        )}
-                     </TabGroup>
-                     <ModalCloseButton
-                        onClick={() => {
-                           dispatch({ settings: { isOpen: false } });
-                        }}
-                     />
-                  </DialogPanel>
-               </TransitionChild>
-            </div>
-         </div>
-      </Dialog>
+         <DialogPanel className="border-primary/50 bg-background flex h-[30rem] w-full max-w-3xl transform rounded-xl border-2 transition-[opacity_transform] data-[closed]:scale-95">
+            <TabGroup className="flex w-full" vertical defaultIndex={defaultTabIndex} onChange={onTabChanged}>
+               <div className="bg-secondary/50 h-full rounded-l-xl">
+                  <TabList className="flex h-full w-48 select-none flex-col py-2">
+                     <DialogTitle className="mx-5 my-3 flex items-center justify-start gap-x-1.5">
+                        <div className="text-text text-2xl font-medium">Settings</div>
+                     </DialogTitle>
+                     <SettingsTabs />
+                  </TabList>
+               </div>
+               {settingsValid && modifiedSettings.current && (
+                  <SettingsPanels currentTab={currentTab} settings={modifiedSettings.current} onChange={onSettingsChanged} />
+               )}
+            </TabGroup>
+            <ModalCloseButton
+               onClick={() => {
+                  dispatch({ settings: { isOpen: false } });
+               }}
+            />
+         </DialogPanel>
+      </BaseModal>
    );
 }
 

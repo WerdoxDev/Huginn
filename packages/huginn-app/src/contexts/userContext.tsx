@@ -1,8 +1,7 @@
 import { APIUser } from "@huginn/shared";
-import { createContext, useContext, useEffect, useState } from "react";
-import { useEvent } from "./event";
-import { useClient } from "./apiContext";
 import { ReactNode } from "@tanstack/react-router";
+import { createContext, useContext, useState } from "react";
+import { useClient } from "./apiContext";
 
 type UserContextType = {
    user?: APIUser;
@@ -17,11 +16,12 @@ export function UserProvider(props: { children?: ReactNode }) {
 
    const [user, setUser] = useState(() => client.user);
 
-   useEffect(() => {
-      if (client.isLoggedIn) {
-         setUser(client.user);
-      }
-   }, [client.isLoggedIn]);
+   // useEffect(() => {
+   //    console.log("HI?", client.readyState);
+   //    if (client.isLoggedIn) {
+   //       setUser(client.user);
+   //    }
+   // }, [client.readyState]);
 
    return <UserContext.Provider value={{ user, setUser }}>{props.children}</UserContext.Provider>;
 }

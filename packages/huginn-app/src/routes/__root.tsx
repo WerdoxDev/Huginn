@@ -1,6 +1,7 @@
 import { ChannelsContextMenu } from "@components/contextmenu/ChannelsContextMenu";
 import RelationshipContextMenu from "@components/contextmenu/RelationshipContextMenu";
 import RelationshipMoreContextMenu from "@components/contextmenu/RelationshipMoreContextMenu";
+import ImageCropModal from "@components/modal/ImageCropModal";
 import InfoModal from "@components/modal/InfoModal";
 import SettingsModal from "@components/modal/SettingsModal";
 import ModalErrorComponent from "@components/ModalErrorComponent";
@@ -63,6 +64,7 @@ function Root() {
                         {window.__TAURI__ && <AppMaximizedEvent />}
                         <ErrorBoundary FallbackComponent={ModalErrorComponent}>
                            <SettingsModal />
+                           <ImageCropModal />
                            <ChannelsContextMenu />
                            <RelationshipMoreContextMenu />
                            <RelationshipContextMenu />

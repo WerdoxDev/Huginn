@@ -2,7 +2,7 @@ import BaseMessage from "@components/BaseMessage";
 import ChannelMessageLoadingIndicator from "@components/ChannelMessageLoadingIndicator";
 import { useClient } from "@contexts/apiContext";
 import { useChannelScroll, useChannelScrollDispatch } from "@contexts/channelScrollContext";
-import { useEvent } from "@contexts/event";
+import { useEvent } from "@contexts/eventContext";
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { APIGetChannelMessagesResult, Snowflake } from "@huginn/shared";
 import { getMessagesOptions } from "@lib/queries";

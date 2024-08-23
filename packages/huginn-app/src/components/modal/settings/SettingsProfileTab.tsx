@@ -6,7 +6,8 @@ import HuginnInput from "@components/input/HuginnInput";
 import PasswordInput from "@components/input/PasswordInput";
 import { Tooltip } from "@components/tooltip/Tooltip";
 import { useClient } from "@contexts/apiContext";
-import { useEvent } from "@contexts/event";
+import { useEvent } from "@contexts/eventContext";
+import { useModalsDispatch } from "@contexts/modalContext";
 import { useUser } from "@contexts/userContext";
 import { Transition } from "@headlessui/react";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
@@ -21,6 +22,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
    const client = useClient();
    const { user, setUser } = useUser();
    const { listenEvent } = useEvent();
+   const modalsDispatch = useModalsDispatch();
 
    const { data: originalAvatar } = useQuery(getUserAvatar(user?.id, user?.avatar, client));
 
@@ -91,8 +93,9 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
          reader.onload = readerEvent => {
             const content = readerEvent.target?.result;
             if (typeof content === "string") {
-               setAvatarData(content);
-               setAvatarModified(true);
+               modalsDispatch({ imageCrop: { isOpen: true, originalImageData: content } });
+               // setAvatarData(content);
+               // setAvatarModified(true);
             }
          };
       };

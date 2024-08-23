@@ -1,5 +1,5 @@
 import { useClient } from "@contexts/apiContext";
-import { useEvent } from "@contexts/event";
+import { useEvent } from "@contexts/eventContext";
 import { useUser } from "@contexts/userContext";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { APIGetChannelMessagesResult, APIGetUserChannelsResult } from "@huginn/shared";
