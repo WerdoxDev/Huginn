@@ -53,7 +53,7 @@ export async function resolveFile(resource: BufferResolvable): Promise<ResolvedF
          const path = await import("path");
 
          // @ts-ignore: non browser packages
-         const file = path.join(__dirname, resource);
+         const file = path.join(resource);
 
          const stats = await fs.stat(file);
          if (!stats.isFile()) throw new Error(`File was not found: ${file}`);
