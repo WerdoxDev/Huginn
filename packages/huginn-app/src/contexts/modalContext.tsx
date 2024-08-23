@@ -46,9 +46,21 @@ export function ModalProvider(props: { children?: ReactNode }) {
 }
 
 function modalsReducer(modals: ModalContextType, action: DeepPartial<ModalContextType>): ModalContextType {
-   const settings = Object.assign({}, modals.settings, action.settings);
-   const info = Object.assign({}, modals.info, action.info);
-   const imageCrop = Object.assign({}, modals.imageCrop, action.imageCrop);
+   let settings = modals.settings;
+   let info = modals.info;
+   let imageCrop = modals.imageCrop;
+
+   console.log(action);
+
+   if (action.settings) {
+      settings = Object.assign({}, modals.settings, action.settings);
+   }
+   if (action.info) {
+      info = Object.assign({}, modals.info, action.info);
+   }
+   if (action.imageCrop) {
+      imageCrop = Object.assign({}, modals.imageCrop, action.imageCrop);
+   }
 
    return { settings, info, imageCrop };
 }

@@ -1,16 +1,15 @@
-import { DeepPartial, SettingsTab } from "@/types";
+import { DeepPartial, SettingsTab, SettingsTabProps } from "@/types";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import { useClient } from "@contexts/apiContext";
 import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { SettingsContextType, useSettings, useSettingsDispatcher } from "@contexts/settingsContext";
-import { Dialog, DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels, TransitionChild } from "@headlessui/react";
-import { Fragment, useEffect, useRef, useState } from "react";
-import ModalBackground from "./ModalBackground";
+import { DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import React, { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import BaseModal from "./BaseModal";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
-import BaseModal from "./BaseModal";
 
 const tabs: SettingsTab[] = [
    {
@@ -46,6 +45,7 @@ function useFlatTabs() {
 
 export default function SettingsModal() {
    const { settings: modal } = useModals();
+
    const dispatch = useModalsDispatch();
 
    const flatTabs = useFlatTabs();
@@ -173,6 +173,19 @@ function SettingsTabs() {
    );
 }
 
+const TabComponent = memo(
+   (props: {
+      component: (props: SettingsTabProps) => React.JSX.Element;
+      onChange: (value: DeepPartial<SettingsContextType>) => void;
+      settings: DeepPartial<SettingsContextType>;
+   }) => {
+      const Component = props.component;
+
+      if (!Component) return;
+      return <Component settings={props.settings} onChange={props.onChange}></Component>;
+   },
+);
+
 function SettingsPanels(props: {
    settings: DeepPartial<SettingsContextType>;
    currentTab: string;
@@ -180,24 +193,13 @@ function SettingsPanels(props: {
 }) {
    const flatTabs = useFlatTabs();
 
-   function TabComponent(props: {
-      tab: SettingsTab;
-      onChange: (value: DeepPartial<SettingsContextType>) => void;
-      settings: DeepPartial<SettingsContextType>;
-   }) {
-      const Component = props.tab.component;
-
-      if (!Component) return;
-      return <Component settings={props.settings} onChange={props.onChange}></Component>;
-   }
-
    return (
       <TabPanels className="flex w-full flex-col p-5 pr-0">
          <div className="text-text mb-5 shrink-0 text-xl">{props.currentTab}</div>
          {flatTabs.map(tab => (
             <TabPanel key={tab?.name} className="scroll-alternative h-full overflow-y-scroll pr-3">
                {tab?.component ? (
-                  <TabComponent onChange={props.onChange} settings={props.settings} tab={tab} />
+                  <TabComponent onChange={props.onChange} settings={props.settings} component={tab.component} />
                ) : (
                   <span className="text-text/50 text-base italic">{tab?.name} (Soon...)</span>
                )}

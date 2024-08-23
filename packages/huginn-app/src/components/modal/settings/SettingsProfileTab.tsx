@@ -69,8 +69,14 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
          }
       });
 
+      const unlisten2 = listenEvent("image_cropper_done", e => {
+         setAvatarData(e.croppedImageData);
+         setAvatarModified(true);
+      });
+
       return () => {
          unlisten();
+         unlisten2();
       };
    }, []);
 
@@ -94,8 +100,6 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
             const content = readerEvent.target?.result;
             if (typeof content === "string") {
                modalsDispatch({ imageCrop: { isOpen: true, originalImageData: content } });
-               // setAvatarData(content);
-               // setAvatarModified(true);
             }
          };
       };
@@ -151,8 +155,10 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
                            <IconMdiDelete
                               onClick={e => {
                                  e.stopPropagation();
-                                 setAvatarData(null);
-                                 setAvatarModified(true);
+                                 if (avatarData) {
+                                    setAvatarData(null);
+                                    setAvatarModified(true);
+                                 }
                               }}
                               className="text-error invisible size-7 group-hover:visible"
                            />

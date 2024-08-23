@@ -5,7 +5,7 @@ import { createContext, ReactNode, useCallback, useContext, useEffect, useRef } 
 type EventTypes = {
    message_added: { message: GatewayMessageCreateData; visible: boolean; self: boolean };
    user_updated: { user: APIUser; self: boolean };
-   client_state_updated: { state: ClientReadyState };
+   image_cropper_done: { croppedImageData: string };
 };
 
 type EventType = { type: keyof EventTypes; data: EventTypes[keyof EventTypes] };

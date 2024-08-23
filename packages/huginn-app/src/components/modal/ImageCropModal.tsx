@@ -1,40 +1,60 @@
 import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { DialogPanel } from "@headlessui/react";
-import { SyntheticEvent, useState } from "react";
-import ReactCrop, { centerCrop, Crop, makeAspectCrop } from "react-image-crop";
-import "react-image-crop/dist/ReactCrop.css";
-import BaseModal from "./BaseModal";
+import { useRef } from "react";
 import HuginnButton from "@components/button/HuginnButton";
+import { useEvent } from "@contexts/eventContext";
+import "cropperjs/dist/cropper.css";
+import Cropper, { ReactCropperElement } from "react-cropper";
+import BaseModal from "./BaseModal";
 
 export default function ImageCropModal() {
    const { imageCrop: modal } = useModals();
-   const dispatch = useModalsDispatch();
-   const [crop, setCrop] = useState<Crop>();
+   const modalsDispatch = useModalsDispatch();
+   const cropperRef = useRef<ReactCropperElement>(null);
+   const { dispatchEvent } = useEvent();
 
-   function onImageLoad(e: SyntheticEvent<HTMLImageElement>) {
-      const { naturalWidth: width, naturalHeight: height } = e.currentTarget;
-
-      const crop = centerCrop(makeAspectCrop({ unit: "%", width: 100 }, 1, width, height), width, height);
-      if (width > height) {
-         e.currentTarget.style.width = "464px";
-      } else {
-         e.currentTarget.style.height = "464px";
+   function confirm() {
+      if (cropperRef.current) {
+         console.log("hi?");
+         const data = cropperRef.current?.cropper.getCroppedCanvas({ width: 512, height: 512 }).toDataURL();
+         dispatchEvent("image_cropper_done", {
+            croppedImageData: data,
+         });
+         modalsDispatch({ imageCrop: { isOpen: false } });
       }
-
-      setCrop(crop);
    }
 
    return (
-      <BaseModal modal={modal} onClose={() => dispatch({ imageCrop: { isOpen: false } })}>
-         <DialogPanel className="border-primary/50 bg-background flex transform flex-col gap-y-5 rounded-xl border-2 p-5 transition-[opacity_transform] data-[closed]:scale-95">
-            <div className="flex h-[30rem] w-[30rem] items-center justify-center overflow-hidden rounded-lg bg-black/50 p-2">
-               <ReactCrop crop={crop} onChange={c => setCrop(c)} aspect={1} keepSelection className="">
-                  <img src={modal.originalImageData} onLoad={onImageLoad} className="!max-h-[30rem] !max-w-[30rem]" />
-               </ReactCrop>
+      <BaseModal modal={modal} onClose={() => modalsDispatch({ imageCrop: { isOpen: false } })}>
+         <DialogPanel className="border-primary/50 bg-background flex transform flex-col overflow-hidden rounded-xl border-2 transition-[opacity_transform] data-[closed]:scale-95">
+            <div className="m-5 mb-0 flex h-[30rem] w-[30rem] items-center justify-center rounded-lg bg-black/50">
+               <Cropper
+                  ref={cropperRef}
+                  src={modal.originalImageData}
+                  initialAspectRatio={1}
+                  className="h-[30rem] w-[30rem]"
+                  aspectRatio={1}
+                  movable={true}
+                  unselectable="off"
+                  zoomable={true}
+                  viewMode={1}
+                  dragMode="move"
+                  guides={false}
+                  background={false}
+                  modal={false}
+                  scalable={false}
+                  autoCropArea={1}
+                  cropBoxResizable={false}
+                  cropBoxMovable={false}
+                  toggleDragModeOnDblclick={false}
+               ></Cropper>
             </div>
-            <div className="flex w-full justify-end">
+            <div className="text-text/60 mx-5 my-1 italic">NOTE: zoom with scroll wheel</div>
+            <div className="bg-secondary flex w-full justify-end gap-x-2 p-5">
                <HuginnButton className="w-20 shrink-0 py-2 decoration-white hover:underline">Cancel</HuginnButton>
-               <HuginnButton className="bg-primary text-text w-20 py-2">Confirm</HuginnButton>
+               <HuginnButton onClick={confirm} className="bg-primary text-text w-20 py-2">
+                  Confirm
+               </HuginnButton>
             </div>
          </DialogPanel>
       </BaseModal>
