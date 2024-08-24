@@ -56,12 +56,12 @@ function Root() {
             <ContextMenuProvider>
                <UserProvider>
                   <div className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
-                     {router.state.location.pathname !== "/splashscreen" && <TitleBar />}
+                     {router.state.location.pathname !== "/splashscreen" && appWindow.environment === "desktop" && <TitleBar />}
                      <div className="relative h-full w-full">
                         <Outlet />
                         {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
                         {/* <TanStackRouterDevtools position="bottom-left" /> */}
-                        {window.__TAURI__ && <AppMaximizedEvent />}
+                        {appWindow.environment === "desktop" && <AppMaximizedEvent />}
                         <ErrorBoundary FallbackComponent={ModalErrorComponent}>
                            <SettingsModal />
                            <ImageCropModal />

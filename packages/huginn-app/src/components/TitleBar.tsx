@@ -16,6 +16,7 @@ export default function TitleBar() {
    function close() {
       appWindow.close();
    }
+
    return createPortal(
       <div
          className={`bg-background fixed left-0 right-0 top-0 flex h-6 shrink-0 select-none items-center overflow-hidden ${huginnWindow.maximized ? "rounded-t-none" : "rounded-t-lg"}`}

@@ -15,7 +15,6 @@ export default function ImageCropModal() {
 
    function confirm() {
       if (cropperRef.current) {
-         console.log("hi?");
          const data = cropperRef.current?.cropper.getCroppedCanvas({ width: 512, height: 512 }).toDataURL();
          dispatchEvent("image_cropper_done", {
             croppedImageData: data,

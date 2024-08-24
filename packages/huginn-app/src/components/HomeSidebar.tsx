@@ -1,10 +1,13 @@
 import { APIGetUserChannelsResult } from "@huginn/shared";
 import DirectMessageChannel from "./DirectMessageChannel";
 import RingLinkButton from "./button/RingLinkButton";
+import { useWindow } from "@contexts/windowContext";
+import clsx from "clsx";
 
 export default function HomeSidebar(props: { channels?: APIGetUserChannelsResult }) {
+   const appWindow = useWindow();
    return (
-      <nav className="bg-secondary h-full rounded-l-xl">
+      <nav className={clsx("bg-secondary h-full rounded-l-xl", appWindow.environment === "browser" && "rounded-tl-none")}>
          <div className="flex h-[4.75rem] items-center px-6">
             <div className="text-text text-xl font-bold">Home</div>
             <RingLinkButton to="/friends" className="ml-6 px-2 py-1 text-xs font-medium">

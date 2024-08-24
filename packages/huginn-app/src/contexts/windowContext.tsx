@@ -4,8 +4,13 @@ import { Dispatch, createContext, useContext, useReducer } from "react";
 
 type WindowContextType = {
    maximized: boolean;
+   environment: "browser" | "desktop";
 };
-const defaultValue: WindowContextType = { maximized: window.__TAURI__ ? await appWindow.isMaximized() : true };
+
+const defaultValue: WindowContextType = {
+   maximized: window.__TAURI__ ? await appWindow.isMaximized() : true,
+   environment: window.__TAURI__ ? "desktop" : "browser",
+};
 
 const WindowContext = createContext<WindowContextType>(defaultValue);
 const WindowDispatchContext = createContext<Dispatch<Partial<WindowContextType>>>(() => {});
@@ -21,8 +26,8 @@ export function WindowProvider(props: { children?: ReactNode }) {
 }
 
 function windowReducer(window: WindowContextType, action: Partial<WindowContextType>): WindowContextType {
-   const maximized = action.maximized ?? window.maximized;
-   return { maximized };
+   const newWindow = Object.assign({}, window, action);
+   return newWindow;
 }
 
 export function useWindow() {

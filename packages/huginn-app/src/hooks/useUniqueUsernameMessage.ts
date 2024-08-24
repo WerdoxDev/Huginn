@@ -27,7 +27,6 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
 
    function set(message: string, state: StatusCode, visible: boolean) {
       setMessage({ text: message, status: state, visible });
-      console.log(visible);
    }
 
    async function checkForUniqueUsername(value: string) {

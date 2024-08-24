@@ -4,7 +4,7 @@ import { useClient } from "@contexts/apiContext";
 import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { SettingsContextType, useSettings, useSettingsDispatcher } from "@contexts/settingsContext";
 import { DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import React, { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { Fragment, memo, useEffect, useRef, useState } from "react";
 import BaseModal from "./BaseModal";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
@@ -57,8 +57,6 @@ export default function SettingsModal() {
    const settingsDispatch = useSettingsDispatcher();
 
    useEffect(() => {
-      if (!window.__TAURI__) return;
-
       if (modal.isOpen) {
          modifiedSettings.current = { ...settings };
          setCurrentTab(flatTabs[defaultTabIndex]?.text ?? "");
