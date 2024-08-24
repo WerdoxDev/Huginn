@@ -1,6 +1,5 @@
 import { useClient } from "@contexts/apiContext";
-import { APIGetUserChannelsResult } from "@huginn/shared";
-import { GatewayDMChannelCreateData } from "@huginn/shared";
+import { APIGetUserChannelsResult, GatewayDMChannelCreateData, GatewayPublicUserUpdateData, omit } from "@huginn/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { ReactNode, useEffect } from "react";
@@ -27,13 +26,26 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
       console.log(d);
    }
 
+   function onUserUpdated(newUser: GatewayPublicUserUpdateData) {
+      queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], old =>
+         old?.map(channel => ({
+            ...channel,
+            recipients: channel.recipients.map(recipient =>
+               recipient.id === newUser.id ? omit(newUser, ["flags", "system"]) : recipient,
+            ),
+         })),
+      );
+   }
+
    useEffect(() => {
       client.gateway.on("channel_create", onChannelCreated);
       client.gateway.on("channel_delete", onChannelDeleted);
+      client.gateway.on("public_user_update", onUserUpdated);
 
       return () => {
          client.gateway.off("channel_create", onChannelCreated);
          client.gateway.off("channel_delete", onChannelDeleted);
+         client.gateway.off("public_user_update", onUserUpdated);
       };
    }, []);
 

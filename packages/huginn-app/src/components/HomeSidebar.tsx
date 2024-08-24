@@ -6,6 +6,7 @@ import clsx from "clsx";
 
 export default function HomeSidebar(props: { channels?: APIGetUserChannelsResult }) {
    const appWindow = useWindow();
+
    return (
       <nav className={clsx("bg-secondary h-full rounded-l-xl", appWindow.environment === "browser" && "rounded-tl-none")}>
          <div className="flex h-[4.75rem] items-center px-6">

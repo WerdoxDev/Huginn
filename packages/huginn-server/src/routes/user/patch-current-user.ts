@@ -88,6 +88,7 @@ app.patch("/users/@me", verifyJwt(), hValidator("json", schema), c =>
 
       // TODO: When guilds are a thing, this should send an update to users that are viewing that guild
       dispatchToTopic(payload.id, "user_update", { ...updatedUser, token: accessToken, refreshToken });
+      dispatchToTopic(payload.id + "_public", "public_user_update", { ...updatedUser });
 
       const json: APIPatchCurrentUserResult = { ...updatedUser, token: accessToken, refreshToken };
 

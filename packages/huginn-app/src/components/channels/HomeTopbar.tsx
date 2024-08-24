@@ -14,7 +14,7 @@ export default function HomeTopbar(props: { channel: APIDMChannel | APIGroupDMCh
       <div className="bg-tertiary flex h-[4.75rem] flex-shrink-0 items-center px-6">
          <div className="flex items-center">
             {props.channel.type === ChannelType.DM ? (
-               <UserAvatarWithStatus userId={otherUsers[0].id} avatarHash={otherUsers[0].avatar} className="bg-background mr-3" />
+               <UserAvatarWithStatus userId={otherUsers[0].id} avatarHash={otherUsers[0].avatar} className="mr-3" />
             ) : (
                <div className="bg-background mr-3 size-[2.25rem] rounded-full"></div>
             )}
