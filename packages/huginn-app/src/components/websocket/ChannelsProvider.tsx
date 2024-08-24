@@ -26,13 +26,11 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
       console.log(d);
    }
 
-   function onUserUpdated(newUser: GatewayPublicUserUpdateData) {
+   function onPublicUserUpdated(newUser: GatewayPublicUserUpdateData) {
       queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], old =>
          old?.map(channel => ({
             ...channel,
-            recipients: channel.recipients.map(recipient =>
-               recipient.id === newUser.id ? omit(newUser, ["flags", "system"]) : recipient,
-            ),
+            recipients: channel.recipients.map(recipient => (recipient.id === newUser.id ? omit(newUser, ["system"]) : recipient)),
          })),
       );
    }
@@ -40,12 +38,12 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
    useEffect(() => {
       client.gateway.on("channel_create", onChannelCreated);
       client.gateway.on("channel_delete", onChannelDeleted);
-      client.gateway.on("public_user_update", onUserUpdated);
+      client.gateway.on("public_user_update", onPublicUserUpdated);
 
       return () => {
          client.gateway.off("channel_create", onChannelCreated);
          client.gateway.off("channel_delete", onChannelDeleted);
-         client.gateway.off("public_user_update", onUserUpdated);
+         client.gateway.off("public_user_update", onPublicUserUpdated);
       };
    }, []);
 

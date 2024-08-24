@@ -35,20 +35,21 @@ export type APIChannelUser = {
    username: string;
    displayName: string | null;
    avatar: string | null;
+   flags: UserFlags;
 } & APIBaseUser;
 
 export type APIMessageUser = {
    username: string;
    displayName: string | null;
    avatar: string | null;
-   flags: unknown;
+   flags: UserFlags;
 } & APIBaseUser;
 
 export type APIRelationUser = {
    username: string;
    displayName: string | null;
    avatar: string | null;
-   flags: unknown;
+   flags: UserFlags;
 } & APIBaseUser;
 
 export type Tokens = {
