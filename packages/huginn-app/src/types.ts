@@ -1,7 +1,7 @@
-import React, { ReactNode, HTMLInputTypeAttribute } from "react";
-import { SettingsContextType } from "./contexts/settingsContext";
 import { Placement } from "@floating-ui/react";
 import { APIDMChannel, APIGroupDMChannel, APIRelationUser, RelationshipType } from "@huginn/shared";
+import React, { HTMLInputTypeAttribute, ReactNode } from "react";
+import { SettingsContextType } from "./contexts/settingsContext";
 
 export type StatusCode = "none" | "default" | "error" | "success";
 
@@ -82,7 +82,7 @@ export type SettingsTab = {
    auth?: boolean;
    children?: Omit<SettingsTab, "children">[];
    icon?: ReactNode;
-   component?: (props: SettingsTabProps) => JSX.Element;
+   component?: (props: SettingsTabProps) => React.JSX.Element;
 };
 
 export type SettingsTabProps = {

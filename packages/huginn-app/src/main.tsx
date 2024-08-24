@@ -1,5 +1,6 @@
 import DefaultNotFound from "@components/DefaultNotFound";
 import { APIProvider } from "@contexts/apiContext";
+import { EventProvider } from "@contexts/eventContext";
 import { SettingsProvider } from "@contexts/settingsContext";
 import { WindowProvider } from "@contexts/windowContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -8,7 +9,6 @@ import ReactDOM from "react-dom/client";
 import HuginnRouterProvider from "./HuginnRouterProvider";
 import "./index.css";
 import { routeTree } from "./routeTree.gen";
-import { EventProvider } from "@contexts/event";
 
 const queryClient = new QueryClient({
    defaultOptions: { queries: { refetchOnReconnect: false, refetchOnWindowFocus: false, refetchOnMount: false, staleTime: 60000 } },

@@ -1,9 +1,11 @@
+import { ClientReadyState } from "@huginn/api";
 import { APIUser, GatewayMessageCreateData } from "@huginn/shared";
 import { createContext, ReactNode, useCallback, useContext, useEffect, useRef } from "react";
 
 type EventTypes = {
    message_added: { message: GatewayMessageCreateData; visible: boolean; self: boolean };
    user_updated: { user: APIUser; self: boolean };
+   image_cropper_done: { croppedImageData: string };
 };
 
 type EventType = { type: keyof EventTypes; data: EventTypes[keyof EventTypes] };

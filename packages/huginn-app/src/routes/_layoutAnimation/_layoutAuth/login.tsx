@@ -50,6 +50,8 @@ function Login() {
             });
 
             client.gateway.connect();
+
+            setUser(client.user);
          },
          async onSuccess() {
             setAuthBackgroundState(1);
@@ -76,6 +78,8 @@ function Login() {
 
                await client.initializeWithToken({ refreshToken });
                client.gateway.connect();
+
+               setUser(client.user);
 
                await navigate({ to: routeHistory.initialPathname });
             } else {
