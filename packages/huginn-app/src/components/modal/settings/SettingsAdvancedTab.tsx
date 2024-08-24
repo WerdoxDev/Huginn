@@ -11,7 +11,6 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
    useEffect(() => {
       if (validateValues() && props.onChange && props.settings.serverAddress !== values.serverAddress.value) {
          props.onChange({ serverAddress: values.serverAddress.value });
-         console.log({ ...props.settings, serverAddress: values.serverAddress.value });
       }
    }, [values]);
 

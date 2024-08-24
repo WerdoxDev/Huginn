@@ -50,8 +50,6 @@ function modalsReducer(modals: ModalContextType, action: DeepPartial<ModalContex
    let info = modals.info;
    let imageCrop = modals.imageCrop;
 
-   console.log(action);
-
    if (action.settings) {
       settings = Object.assign({}, modals.settings, action.settings);
    }
