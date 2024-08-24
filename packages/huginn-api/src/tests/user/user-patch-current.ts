@@ -28,7 +28,16 @@ describe("user-patch-current", () => {
          password: "test",
       };
 
+      const edit2: APIPatchCurrentUserJSONBody = {
+         displayName: "",
+         email: "test.edited@gmail.com",
+         username: "",
+         newPassword: "test-edited",
+         password: "test",
+      };
+
       expect(() => client.users.edit(edit)).toThrow("Invalid Form Body");
+      expect(() => client.users.edit(edit2)).toThrow("Invalid Form Body");
    });
    test("user-patch-current-invalid-email", async () => {
       const client = await getLoggedClient();

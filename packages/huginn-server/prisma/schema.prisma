@@ -11,7 +11,7 @@ datasource db {
 model User {
    id                   BigInt         @id
    username             String         @unique
-   displayName          String
+   displayName          String?
    email                String         @unique
    avatar               String?
    password             String

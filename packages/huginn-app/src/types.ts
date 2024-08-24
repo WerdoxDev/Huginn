@@ -20,7 +20,7 @@ export type InputValue = {
 export type InputOptions = {
    name: string;
    required: boolean;
-   default?: string;
+   default?: string | null;
 };
 
 export type InputProp = {
@@ -49,6 +49,7 @@ export type HuginnInputProps = {
    required?: boolean;
    value?: string;
    border?: "none" | "left" | "right" | "top" | "bottom";
+   placeholder?: string;
    onChange?: (e: HTMLInputElement) => void;
    onFocus?: (focused: boolean) => void;
 };

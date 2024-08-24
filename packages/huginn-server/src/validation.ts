@@ -7,6 +7,8 @@ export function validateEmail(email: string | undefined, errorObject: ErrorFacto
    if (email && !email.match(constants.EMAIL_REGEX)) {
       errorObject.addError("email", Field.emailInvalid());
       return false;
+   } else if (email === null || email === "") {
+      errorObject.addError("email", Field.required());
    }
 
    return true;
@@ -18,12 +20,14 @@ export function validateUsername(username: string | undefined, errorObject: Erro
    if (username && (username.length < minLen || username.length > maxLen)) {
       errorObject.addError("username", Field.wrongLength(minLen, maxLen));
       return false;
+   } else if (username === null || username === "") {
+      errorObject.addError("username", Field.required());
    }
 
    return true;
 }
 
-export function validateDisplayName(displayName: string | undefined, errorObject: ErrorFactory) {
+export function validateDisplayName(displayName: string | undefined | null, errorObject: ErrorFactory) {
    const [minLen, maxLen] = [constants.DISPLAY_NAME_MIN_LENGTH, constants.DISPLAY_NAME_MAX_LENGTH];
 
    if (displayName && (displayName.length < minLen || displayName.length > maxLen)) {

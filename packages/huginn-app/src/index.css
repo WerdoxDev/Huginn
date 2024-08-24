@@ -78,6 +78,11 @@ body,
    @apply shadow-tertiary rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
 }
 
+input::-ms-reveal,
+input::-ms-clear {
+   display: none;
+}
+
 .cropper-view-box {
    border-radius: 100%;
    outline: none !important;

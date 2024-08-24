@@ -16,7 +16,7 @@ import { z } from "zod";
 
 const schema = z.object({
    username: z.string(),
-   displayName: z.string(),
+   displayName: z.nullable(z.string()),
    email: z.string(),
    password: z.string(),
 });

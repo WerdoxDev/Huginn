@@ -62,10 +62,10 @@ export default function HuginnInput(props: HuginnInputProps) {
                <input
                   id={id}
                   ref={inputRef}
-                  className="flex-grow bg-transparent p-2 text-white outline-none"
+                  className="placeholder-text/60 flex-grow bg-transparent p-2 text-white outline-none"
                   type={props.type ?? "text"}
                   autoComplete="new-password"
-                  placeholder=""
+                  placeholder={props.placeholder}
                   onChange={e => props.onChange && props.onChange(e.target)}
                   onFocus={() => props.onFocus && props.onFocus(true)}
                   onBlur={() => props.onFocus && props.onFocus(false)}

@@ -50,11 +50,11 @@ export function useInputs(inputsOptions: InputOptions[]) {
       setInputProps(newInputsProps);
    }, [values, statuses]);
 
-   function onValueChanged(inputName: string, value: string) {
+   function onValueChanged(inputName: string, value: string | null) {
       const updatedValues = { ...values };
       const updatedStatuses = { ...statuses };
 
-      updatedValues[inputName].value = value;
+      updatedValues[inputName].value = value ?? "";
       updatedStatuses[inputName] = getInputCurrentStatus(values[inputName], inputName, errorStatuses);
 
       setValues(updatedValues);

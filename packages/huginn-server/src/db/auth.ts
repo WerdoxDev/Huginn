@@ -21,13 +21,11 @@ const authExtention = Prisma.defineExtension({
             return user;
          },
          async registerNew(user: APIPostRegisterJSONBody) {
-            const displayName = user.displayName || user.username;
-
             const newUser = await prisma.user.create({
                data: {
                   id: snowflake.generate(),
                   username: user.username,
-                  displayName,
+                  displayName: !user.displayName ? null : user.displayName,
                   password: user.password,
                   avatar: null,
                   email: user.email,

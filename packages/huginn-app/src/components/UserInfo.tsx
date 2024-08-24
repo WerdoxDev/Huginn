@@ -35,7 +35,7 @@ export default function UserInfo(props: { user: APIUser }) {
                />
 
                <div className="flex w-full flex-col items-start gap-y-0.5">
-                  <div className="text-text text-sm">{props.user.displayName}</div>
+                  <div className="text-text text-sm">{props.user.displayName ?? props.user.username}</div>
                   <div className="text-text/70 text-xs">Online</div>
                </div>
                <div className="flex flex-shrink-0 gap-x-1">

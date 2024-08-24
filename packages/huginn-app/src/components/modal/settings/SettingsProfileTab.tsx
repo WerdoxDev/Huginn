@@ -28,7 +28,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 
    const { inputsProps, values, handleErrors, resetStatuses, onValueChanged } = useInputs([
       { name: "username", required: true, default: user?.username },
-      { name: "displayName", required: true, default: user?.displayName },
+      { name: "displayName", required: false, default: user?.displayName },
       { name: "password", required: false },
    ]);
 
@@ -41,9 +41,9 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
       client.tokenHandler.refreshToken = result.refreshToken;
       setUser(omit(result, ["refreshToken", "token"]));
 
+      onValueChanged("password", "");
       resetStatuses();
 
-      onValueChanged("password", "");
       onChanged(values.username.value, result.username);
       onFocusChanged(false);
    }, handleErrors);
@@ -52,7 +52,8 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
    const [modified, setModified] = useState(false);
 
    useMemo(() => {
-      setModified(values.username.value !== user?.username || values.displayName.value !== user?.displayName);
+      const displayName = !user?.displayName ? "" : user.displayName;
+      setModified(values.username.value !== user?.username || values.displayName.value !== displayName);
    }, [values, user]);
 
    useEffect(() => {
@@ -184,11 +185,11 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
                      <AnimatedMessage className="mt-1" {...usernameMessageDetail} />
                   </HuginnInput.After>
                </HuginnInput>
-               <HuginnInput {...inputsProps.displayName} inputProps={{ className: "!bg-background" }}>
+               <HuginnInput placeholder={user?.username} {...inputsProps.displayName} inputProps={{ className: "!bg-background" }}>
                   <HuginnInput.Label>Display name</HuginnInput.Label>
                </HuginnInput>
-               <PasswordInput {...inputsProps.password} inputProps={{ className: "!bg-background" }}>
-                  <HuginnInput.Label>Password</HuginnInput.Label>
+               <PasswordInput {...inputsProps.password} inputProps={{ className: "!bg-background" }} hideButton>
+                  <HuginnInput.Label>Current Password</HuginnInput.Label>
                </PasswordInput>
             </div>
          </div>

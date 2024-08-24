@@ -22,7 +22,7 @@ export enum UserFlags {
 
 export type APIUser = {
    username: string;
-   displayName: string;
+   displayName: string | null;
    avatar: string | null;
    system?: boolean;
    email?: string;
@@ -33,20 +33,20 @@ export type APIUser = {
 
 export type APIChannelUser = {
    username: string;
-   displayName: string;
+   displayName: string | null;
    avatar: string | null;
 } & APIBaseUser;
 
 export type APIMessageUser = {
    username: string;
-   displayName: string;
+   displayName: string | null;
    avatar: string | null;
    flags: unknown;
 } & APIBaseUser;
 
 export type APIRelationUser = {
    username: string;
-   displayName: string;
+   displayName: string | null;
    avatar: string | null;
    flags: unknown;
 } & APIBaseUser;
@@ -74,7 +74,7 @@ export type APIPostLoginJSONBody = {
 
 export type APIPostRegisterJSONBody = {
    username: string;
-   displayName: string;
+   displayName: string | null;
    email: string;
    password: string;
 };
@@ -84,7 +84,7 @@ export type APIPostRegisterResult = APIUser & Tokens;
 
 export type APIPatchCurrentUserJSONBody = {
    email?: string;
-   displayName?: string;
+   displayName?: string | null;
    username?: string;
    avatar?: string | null;
    password?: string;
