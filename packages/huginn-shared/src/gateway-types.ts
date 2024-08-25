@@ -33,6 +33,7 @@ export type GatewayEvents = {
    channel_create: GatewayDMChannelCreateData;
    channel_delete: GatewayDMChannelDeleteData;
    user_update: GatewayUserUpdateData;
+   public_user_update: GatewayPublicUserUpdateData;
 };
 
 export type BasePayload = {
@@ -130,3 +131,4 @@ export type GatewayRelationshipCreateData = APIRelationshipWithoutOwner;
 export type GatewayDMChannelCreateData = APIDMChannel | APIGroupDMChannel;
 export type GatewayDMChannelDeleteData = APIDMChannel | APIGroupDMChannel;
 export type GatewayUserUpdateData = APIUser & Tokens;
+export type GatewayPublicUserUpdateData = Omit<APIUser, "email" | "password">;

@@ -1,5 +1,5 @@
 import { useClient } from "@contexts/apiContext";
-import { APIGetUserRelationshipsResult } from "@huginn/shared";
+import { APIGetUserRelationshipsResult, GatewayPublicUserUpdateData, omit } from "@huginn/shared";
 import { GatewayRelationshipCreateData } from "@huginn/shared";
 import { Snowflake } from "@huginn/shared";
 import { useQueryClient } from "@tanstack/react-query";
@@ -29,13 +29,24 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
       queryClient.setQueryData<APIGetUserRelationshipsResult>(["relationships"], data => data?.filter(x => x.user.id !== userId));
    }
 
+   function onPublicUserUpdated(newUser: GatewayPublicUserUpdateData) {
+      queryClient.setQueryData<APIGetUserRelationshipsResult>(["relationships"], old =>
+         old?.map(relationship => ({
+            ...relationship,
+            user: omit(newUser, ["system"]),
+         })),
+      );
+   }
+
    useEffect(() => {
       client.gateway.on("relationship_create", onRelationshipCreated);
       client.gateway.on("relationship_delete", onRelationshipDeleted);
+      client.gateway.on("public_user_update", onPublicUserUpdated);
 
       return () => {
          client.gateway.off("relationship_create", onRelationshipCreated);
          client.gateway.off("relationship_delete", onRelationshipDeleted);
+         client.gateway.off("public_user_update", onPublicUserUpdated);
       };
    }, []);
 

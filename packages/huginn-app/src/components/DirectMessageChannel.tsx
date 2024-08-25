@@ -29,7 +29,7 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
          onClick={props.onSelected}
       >
          <Link className="flex items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>
-            <UserAvatarWithStatus userId={otherUsers[0].id} avatarHash={otherUsers[0].avatar} className="bg-tertiary mr-3" />
+            <UserAvatarWithStatus userId={otherUsers[0].id} avatarHash={otherUsers[0].avatar} className="mr-3" />
             <div className={`text-text w-full text-sm group-hover:opacity-100 ${selected ? "opacity-100" : "opacity-70"}`}>{name}</div>
          </Link>
          <button

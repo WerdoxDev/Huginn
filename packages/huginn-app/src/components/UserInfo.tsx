@@ -28,11 +28,7 @@ export default function UserInfo(props: { user: APIUser }) {
                as="div"
                className="group flex w-full cursor-pointer items-center rounded-xl px-2 py-1 hover:bg-white hover:bg-opacity-5"
             >
-               <UserAvatarWithStatus
-                  userId={props.user.id}
-                  avatarHash={props.user.avatar}
-                  className="bg-secondary mr-3 flex-shrink-0"
-               />
+               <UserAvatarWithStatus userId={props.user.id} avatarHash={props.user.avatar} className="mr-3 flex-shrink-0" />
 
                <div className="flex w-full flex-col items-start gap-y-0.5">
                   <div className="text-text text-sm">{props.user.displayName ?? props.user.username}</div>

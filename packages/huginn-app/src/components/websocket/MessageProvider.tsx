@@ -2,7 +2,7 @@ import { useClient } from "@contexts/apiContext";
 import { useEvent } from "@contexts/eventContext";
 import { useUser } from "@contexts/userContext";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
-import { APIGetChannelMessagesResult, APIGetUserChannelsResult } from "@huginn/shared";
+import { APIGetChannelMessagesResult, APIGetUserChannelsResult, GatewayPublicUserUpdateData, omit } from "@huginn/shared";
 import { GatewayMessageCreateData } from "@huginn/shared";
 import { InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { ReactNode, useEffect } from "react";
@@ -13,14 +13,6 @@ export default function MessageProvider(props: { children?: ReactNode }) {
    const queryClient = useQueryClient();
    const mutation = useCreateDMChannel();
    const { dispatchEvent } = useEvent();
-
-   useEffect(() => {
-      client.gateway.on("message_create", onMessageCreated);
-
-      return () => {
-         client.gateway.off("message_create", onMessageCreated);
-      };
-   }, []);
 
    function onMessageCreated(d: GatewayMessageCreateData) {
       const channels = queryClient.getQueryData<APIGetUserChannelsResult>(["channels", "@me"]);
@@ -64,6 +56,31 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 
       dispatchEvent("message_added", { message: d, visible: messageVisible, self: d.author.id === user?.id });
    }
+
+   function onPublicUserUpdated(newUser: GatewayPublicUserUpdateData) {
+      queryClient.setQueriesData<InfiniteData<APIGetChannelMessagesResult, { before: string; after: string }>>(
+         { queryKey: ["messages"] },
+         old =>
+            old && {
+               pageParams: old.pageParams,
+               pages: old.pages.map(messages =>
+                  messages.map(message =>
+                     message.author.id === newUser.id ? { ...message, author: omit(newUser, ["system"]) } : message,
+                  ),
+               ),
+            },
+      );
+   }
+
+   useEffect(() => {
+      client.gateway.on("message_create", onMessageCreated);
+      client.gateway.on("public_user_update", onPublicUserUpdated);
+
+      return () => {
+         client.gateway.off("message_create", onMessageCreated);
+         client.gateway.off("public_user_update", onPublicUserUpdated);
+      };
+   }, []);
 
    return props.children;
 }

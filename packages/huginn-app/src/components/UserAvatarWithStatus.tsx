@@ -17,8 +17,12 @@ export default function UserAvatarWithStatus(props: {
 
    const { size = "2.25rem", statusSize = "0.75rem", className } = props;
    return (
-      <div className={clsx("bg-background relative shrink-0 rounded-full", className)} style={{ width: size, height: size }}>
-         {avatar ? <img src={avatar} className="h-full w-full rounded-full object-cover"></img> : <div></div>}
+      <div className={clsx("relative shrink-0", className)} style={{ width: size, height: size }}>
+         {avatar ? (
+            <img src={avatar} className="h-full w-full rounded-full object-cover"></img>
+         ) : (
+            <div className="bg-primary/50 h-full w-full rounded-full"></div>
+         )}
          <div className="absolute bottom-0 right-0 rounded-full bg-[#FFA000]" style={{ width: statusSize, height: statusSize }} />
       </div>
    );

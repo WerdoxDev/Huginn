@@ -23,9 +23,9 @@ export default function FriendItem(props: {
          }}
       >
          <div className="flex">
-            <UserAvatarWithStatus userId={props.user.id} avatarHash={props.user.avatar} className="bg-text mr-3" />
+            <UserAvatarWithStatus userId={props.user.id} avatarHash={props.user.avatar} className="mr-3" />
             <div className="flex flex-col items-start">
-               <span className="text-text font-semibold">{props.user.displayName}</span>
+               <span className="text-text font-semibold">{props.user.displayName ?? props.user.username}</span>
                <span className="text-text/50 text-sm">Online (?)</span>
             </div>
          </div>
