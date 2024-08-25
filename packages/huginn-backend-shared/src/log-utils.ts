@@ -13,8 +13,8 @@ const gatewayClose = colors.bold(colors.red("GATEWAY CLOSE"));
 const gatewayRecieve = colors.bold(colors.gray("GATEWAY RECIEVE"));
 const gatewaySend = colors.bold(colors.gray("GATEWAY SEND"));
 
-export function logServerError(path: string, e: unknown): void {
-   consola.box(`${colors.bold(colors.red("Server Error:"))} ${colors.green(path)}\n`, e);
+export function logServerError(path: string, e: Error): void {
+   consola.box(`${colors.bold(colors.red("Server Error:"))} ${colors.green(path)}\n`, e.stack ?? e.cause ?? e.message);
 }
 
 export function logReject(path: string, method: string, error?: HuginnErrorData | string, status?: number): void {
@@ -47,7 +47,6 @@ export function logRequest(path: string, method: string, data?: unknown): void {
    const pathText = colors.green(path);
    const methodText = colors.bold(colors.cyan(method));
    const requestText = colors.bold(colors.cyan("Request"));
-
    consola.info(`${startText} ${divider} ${requestText} (${methodText}) ${divider} ${pathText}`);
    logData(path, requestDataText, data);
 }
