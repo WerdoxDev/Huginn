@@ -9,6 +9,10 @@
          "path": "./packages/huginn-server",
       },
       {
+         "name": "huginn-server-h3",
+         "path": "./packages/huginn-server-h3",
+      },
+      {
          "name": "huginn-cdn",
          "path": "./packages/huginn-cdn",
       },
