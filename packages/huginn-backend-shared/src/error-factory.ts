@@ -40,7 +40,7 @@ export function createErrorRaw(message: string, code: JsonCode): ErrorFactory {
    return factory;
 }
 
-export function createError(error: [string, JsonCode]): ErrorFactory {
+export function createErrorFactory(error: [string, JsonCode]): ErrorFactory {
    return createErrorRaw(error[0], error[1]);
 }
 
