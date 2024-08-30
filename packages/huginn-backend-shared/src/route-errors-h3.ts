@@ -7,7 +7,6 @@ export function createHuginnError(
    errorFactory: ErrorFactory,
    status: HttpCode = HttpCode.BAD_REQUEST,
 ): HuginnErrorData {
-   event.context.forcedStatus = status;
    setResponseStatus(event, status);
    return errorFactory.toObject();
 }
