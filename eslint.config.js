@@ -29,6 +29,7 @@ export default tseslint.config(
       name: "huginn/global",
       files: [
          "packages/huginn-server/src/**/*.ts",
+         "packages/huginn-server-h3/src/**/*.ts",
          "packages/huginn-cdn/src/**/*.ts",
          "packages/huginn-api/src/**/*.ts",
          "packages/huginn-app/src/**/*.{ts,tsx}",
@@ -77,6 +78,7 @@ export default tseslint.config(
       name: "huginn/backend",
       files: [
          "packages/huginn-server/src/**/*.ts",
+         "packages/huginn-server-h3/src/**/*.ts",
          "packages/huginn-bundler/**/*.ts",
          "packages/huginn-cdn/src/**/*.ts",
          "packages/huginn-backend-shared/src/**/*.ts",

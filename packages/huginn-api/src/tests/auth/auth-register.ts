@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, test } from "bun:test";
 import { getNewClient, url } from "../test-utils";
 
 beforeAll(async () => {
-   await fetch(`http://${url}/test/test-users`, { method: "POST" });
+   await fetch(`http://${url}/api/test/test-users`, { method: "POST" });
 });
 
 describe("auth-register", () => {

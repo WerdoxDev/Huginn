@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, test } from "bun:test";
 import { getLoggedClient, url } from "../test-utils";
 
 beforeAll(async () => {
-   await fetch(`http://${url}/test/test-messages`, { method: "POST" });
+   await fetch(`http://${url}/api/test/test-messages`, { method: "POST" });
 });
 
 describe("message-create", () => {

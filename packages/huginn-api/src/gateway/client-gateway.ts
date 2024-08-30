@@ -21,7 +21,7 @@ export class Gateway {
    private readonly client: HuginnClient;
    private emitter = new EventEmitter();
 
-   private socket?: WebSocket;
+   public socket?: WebSocket;
    private heartbeatInterval?: ReturnType<typeof setTimeout>;
    private sequence?: number;
    private sessionId?: Snowflake;
@@ -66,6 +66,8 @@ export class Gateway {
       if (this.options.log) {
          console.log("Gateway Connected!");
       }
+
+      this.emit("open", undefined);
    }
 
    private onClose(e: CloseEvent) {

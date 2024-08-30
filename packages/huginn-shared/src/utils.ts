@@ -133,3 +133,13 @@ export function isOpcode<D>(data: D, opcode: GatewayOperations): data is D {
 export function hasFlag<T extends number>(flags: T, flag: T): boolean {
    return (flags & flag) === flag;
 }
+
+export function generateRandomString(n: number): string {
+   const characters = "abcdefghijklmnopqrstuvwxyz0123456789";
+   let result = "";
+   for (let i = 0; i < n; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      result += characters.charAt(randomIndex);
+   }
+   return result;
+}

@@ -4,7 +4,7 @@ import { Snowflake } from "@huginn/shared";
 import { APIChannelUser, APIGroupDMChannel, APIPostDMChannelJSONBody } from "@huginn/shared";
 
 beforeAll(async () => {
-   await fetch(`http://${url}/test/test-channels`, { method: "POST" });
+   await fetch(`http://${url}/api/test/test-channels`, { method: "POST" });
 });
 
 describe("channel-create-dm", () => {

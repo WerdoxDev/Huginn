@@ -13,15 +13,16 @@ const gatewayClose = colors.bold(colors.red("GATEWAY CLOSE"));
 const gatewayRecieve = colors.bold(colors.gray("GATEWAY RECIEVE"));
 const gatewaySend = colors.bold(colors.gray("GATEWAY SEND"));
 
-export function logServerError(path: string, e: unknown): void {
-   consola.box(`${colors.bold(colors.red("Server Error:"))} ${colors.green(path)}\n`, e);
+export function logServerError(path: string, e: Error): void {
+   consola.box(`${colors.bold(colors.red("Server Error:"))} ${colors.green(path)}\n`, e.stack ?? e.cause ?? e.message ?? e);
 }
 
-export function logReject(path: string, method: string, error?: HuginnErrorData | string, status?: number): void {
+export function logReject(path: string, method: string, ip?: string, error?: HuginnErrorData | string, status?: number): void {
    const rejectText = colors.bold(colors.red("Rejected"));
    const methodText = colors.bold(colors.red(method));
    const pathText = colors.green(path);
    const statusText = status ? colors.bold(colors.red(` ${status} `)) : " ";
+   const ipText = colors.yellow(ip ?? "unknown");
    let errorText: string = colors.red("Unknown Error");
 
    if (typeof error === "string") {
@@ -30,29 +31,36 @@ export function logReject(path: string, method: string, error?: HuginnErrorData 
       errorText = colors.red(`${error.message} (${colors.bold(error.code)})`);
    }
 
-   consola.info(`${endText} ${divider} ${rejectText} (${methodText}) ${divider} ${pathText} ${divider}${statusText}${errorText}\n`);
+   consola.info(
+      `${ipText} ${divider} ${endText} ${divider} ${rejectText} (${methodText}) ${divider} ${pathText} ${divider}${statusText}${errorText}\n`,
+   );
 }
 
-export function logResponse(path: string, status: number, data?: unknown): void {
-   logData(path, responseDataText, data);
+export function logResponse(path: string, status: number, ip?: string, data?: unknown): void {
+   logData(path, responseDataText, ip, data);
 
    const responseText = colors.bold(colors.magenta("Response"));
    const statusText = colors.bold(colors.magenta(status));
    const pathText = colors.green(path);
+   const ipText = colors.yellow(ip ?? "unknown");
 
-   consola.info(`${endText} ${divider} ${responseText} (${statusText}) ${divider} ${pathText}\n`);
+   consola.info(`${ipText} ${divider} ${endText} ${divider} ${responseText} (${statusText}) ${divider} ${pathText}\n`);
 }
 
-export function logRequest(path: string, method: string, data?: unknown): void {
+export function logRequest(path: string, method: string, ip?: string, data?: unknown): void {
    const pathText = colors.green(path);
    const methodText = colors.bold(colors.cyan(method));
    const requestText = colors.bold(colors.cyan("Request"));
-
-   consola.info(`${startText} ${divider} ${requestText} (${methodText}) ${divider} ${pathText}`);
-   logData(path, requestDataText, data);
+   const ipText = colors.yellow(ip ?? "unknown");
+   consola.info(`${ipText} ${divider} ${startText} ${divider} ${requestText} (${methodText}) ${divider} ${pathText}`);
+   logData(path, requestDataText, ip, data);
 }
 
-export function logData(path: string, text: string, data?: unknown): void {
+export function logData(path: string, text: string, ip?: string, data?: unknown): void {
+   if (!data) {
+      return;
+   }
+
    const dataString = JSON.stringify(data);
 
    if (!dataString) {
@@ -60,6 +68,7 @@ export function logData(path: string, text: string, data?: unknown): void {
    }
 
    const pathText = colors.green(path);
+   const ipText = colors.yellow(ip ?? "unknown");
    let dataText = colors.gray(dataString);
 
    // Check if it's a message
@@ -72,7 +81,7 @@ export function logData(path: string, text: string, data?: unknown): void {
       dataText = colors.gray("Data Too Long");
    }
 
-   consola.info(`${text} ${divider} ${pathText} ${divider} ${dataText}`);
+   consola.info(`${ipText} ${divider} ${text} ${divider} ${pathText} ${divider} ${dataText}`);
 }
 
 export function logGatewayOpen(): void {

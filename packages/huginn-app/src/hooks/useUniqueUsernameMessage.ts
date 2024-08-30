@@ -1,5 +1,5 @@
 import { constants } from "@huginn/shared";
-import { Field } from "@huginn/shared";
+import { Fields } from "@huginn/shared";
 import { useEffect, useRef, useState } from "react";
 import { useClient } from "@contexts/apiContext";
 import { InputValues, MessageDetail, StatusCode } from "@/types";
@@ -52,7 +52,7 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
       }
 
       if (!validateLength(value)) {
-         set(Field.wrongLength(constants.USERNAME_MIN_LENGTH, constants.USERNAME_MAX_LENGTH)[0], "error", true);
+         set(Fields.wrongLength(constants.USERNAME_MIN_LENGTH, constants.USERNAME_MAX_LENGTH)[0], "error", true);
          return;
       }
 

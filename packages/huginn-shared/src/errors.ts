@@ -84,7 +84,7 @@ export enum FieldCode {
 }
 
 // Detailed errors that happen to a normal user
-export const Field = {
+export const Fields = {
    required(): [string, string] {
       return ["This field is required", FieldCode.REQUIRED];
    },
@@ -114,7 +114,7 @@ export const Field = {
 };
 
 // Mostly api related errors. Users will very rarely see these
-export const Error = {
+export const Errors = {
    unauthorized(): [string, JsonCode] {
       return ["Unauthorized", JsonCode.NONE];
    },
@@ -136,16 +136,16 @@ export const Error = {
    invalidFormBody(): [string, JsonCode] {
       return ["Invalid Form Body", JsonCode.INVALID_FORM_BODY];
    },
-   unknownUser(userId: Snowflake): [string, JsonCode] {
+   unknownUser(userId?: Snowflake): [string, JsonCode] {
       return [`Unknown User (${userId})`, JsonCode.UNKNOWN_USER];
    },
-   unknownChannel(channelId: Snowflake): [string, JsonCode] {
+   unknownChannel(channelId?: Snowflake): [string, JsonCode] {
       return [`Unknown Channel (${channelId})`, JsonCode.UNKNOWN_CHANNEL];
    },
-   unknownMessage(messageId: Snowflake): [string, JsonCode] {
+   unknownMessage(messageId?: Snowflake): [string, JsonCode] {
       return [`Unknown Message (${messageId})`, JsonCode.UNKNOWN_MESSAGE];
    },
-   unknownRelationship(relationshipId: Snowflake): [string, JsonCode] {
+   unknownRelationship(relationshipId?: Snowflake): [string, JsonCode] {
       return [`Unknown Relationship (${relationshipId})`, JsonCode.UNKNOWN_RELATIONSHIP];
    },
    noUserWithUsername(): [string, JsonCode] {

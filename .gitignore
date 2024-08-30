@@ -10,6 +10,10 @@ lerna-debug.log*
 uploads
 
 .env
+.data
+.nitro
+.cache
+.output
 
 *.code-workspace
 
