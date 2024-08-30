@@ -37,8 +37,8 @@ const relationshipExtention = Prisma.defineExtension({
             });
             assertObj("deleteByUserId", oppositeRelation, DBErrorType.NULL_RELATIONSHIP);
 
-            const deleteRelation = prisma.relationship.delete({ where: { id: relation.id } });
-            const deleteOppositeRelation = prisma.relationship.delete({ where: { id: oppositeRelation.id } });
+            const deleteRelation = prisma.relationship.delete({ where: { id: relation?.id } });
+            const deleteOppositeRelation = prisma.relationship.delete({ where: { id: oppositeRelation?.id } });
 
             await prisma.$transaction([deleteRelation, deleteOppositeRelation]);
          },

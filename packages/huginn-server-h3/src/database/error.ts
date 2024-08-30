@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { Snowflake } from "@huginn/shared";
+import { createError, H3Error } from "h3";
 
 export class DBError extends Error {
    public constructor(
@@ -15,6 +16,15 @@ export class DBError extends Error {
    isErrorType(type: DBErrorType) {
       return this.type === type;
    }
+}
+
+export function assertError(error: Error | null, type: DBErrorType) {
+   let actualError = error;
+   if (error instanceof H3Error) {
+      actualError = error.cause as DBError;
+   }
+
+   return actualError && isDBError(actualError) && actualError.isErrorType(type);
 }
 
 export function assertId(methodName: string, ...ids: Snowflake[]) {

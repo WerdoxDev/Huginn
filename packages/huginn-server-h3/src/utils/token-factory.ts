@@ -1,3 +1,4 @@
+import { tokenInvalidator } from "@/server";
 import { TokenPayload } from "@huginn/shared";
 import * as jose from "jose";
 
@@ -5,20 +6,6 @@ export const ACCESS_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.
 export const REFRESH_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.REFRESH_TOKEN_SECRET ?? "");
 export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET ?? "";
 export const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET ?? "";
-
-export class TokenInvalidator {
-   private readonly invalidTokens: string[] = [];
-
-   public invalidate(token: string) {
-      if (!this.invalidTokens.includes(token)) {
-         this.invalidTokens.push(token);
-      }
-   }
-
-   public isInvalid(token: string) {
-      return this.invalidTokens.includes(token);
-   }
-}
 
 export async function createTokens(
    payload: TokenPayload,
@@ -59,5 +46,3 @@ export async function verifyToken(
       return { valid: false, payload: null };
    }
 }
-
-export const tokenInvalidator = new TokenInvalidator();

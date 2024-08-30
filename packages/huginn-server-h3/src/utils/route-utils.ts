@@ -1,22 +1,35 @@
+import { prisma } from "@/database";
 import { invalidFormBody, unauthorized } from "@huginn/backend-shared";
+import { createError, getHeader, getQuery, getRouterParams, H3Event, readBody } from "h3";
 import { sha256 } from "ohash";
 import { z } from "zod";
+import { verifyToken } from "./token-factory";
 
-export async function useValidatedBody<T extends z.Schema>(schema: T): Promise<z.infer<T>> {
+export async function useValidatedBody<T extends z.Schema>(event: H3Event, schema: T): Promise<z.infer<T>> {
    try {
-      const body = await readBody(useEvent());
+      const body = await readBody(event);
       const parsedBody = await schema.parse(body);
       return parsedBody;
    } catch (e) {
-      throw invalidFormBody(useEvent());
+      throw invalidFormBody(event);
    }
 }
 
-export async function useValidatedParams<T extends z.Schema>(schema: T): Promise<z.infer<T>> {
+export async function useValidatedParams<T extends z.Schema>(event: H3Event, schema: T): Promise<z.infer<T>> {
    try {
-      const params = getRouterParams(useEvent());
-      const parsedBody = await schema.parse(params);
-      return parsedBody;
+      const params = getRouterParams(event);
+      const parsedParams = await schema.parse(params);
+      return parsedParams;
+   } catch (e) {
+      throw createError({ statusCode: 404 });
+   }
+}
+
+export async function useValidatedQuery<T extends z.Schema>(event: H3Event, schema: T): Promise<z.infer<T>> {
+   try {
+      const query = getQuery(event);
+      const parsedQuery = await schema.parse(query);
+      return parsedQuery;
    } catch (e) {
       throw createError({ statusCode: 404 });
    }
@@ -26,12 +39,11 @@ export async function catchError<T>(fn: (() => Promise<T>) | (() => T)): Promise
    try {
       return [null, await fn()];
    } catch (e) {
-      return [e, null];
+      return [e as Error, null];
    }
 }
 
-export async function useVerifiedJwt() {
-   const event = useEvent();
+export async function useVerifiedJwt(event: H3Event) {
    const bearer = getHeader(event, "Authorization");
 
    if (!bearer) {
@@ -54,6 +66,6 @@ export async function useVerifiedJwt() {
 }
 
 export function getFileHash(file: Buffer) {
-   const hash = sha256(file.toString());
+   const hash = sha256(file.toString()).substring(0, 32);
    return hash;
 }
