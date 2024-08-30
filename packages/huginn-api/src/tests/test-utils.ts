@@ -1,7 +1,7 @@
 import { LoginCredentials } from "@huginn/shared";
 import { HuginnClient } from "../..";
 
-export const url = "192.168.178.51:3000";
+export const url = "192.168.178.51:3004";
 
 export const testCredentials: LoginCredentials = {
    username: "test",
@@ -38,7 +38,7 @@ export async function getLoggedClient(
    identifyGateway?: boolean,
 ): Promise<HuginnClient> {
    const client = new HuginnClient({
-      rest: { api: `http://${url}` },
+      rest: { api: `http://${url}/api` },
       gateway: { url: `ws://${url}/gateway`, createSocket: url => new WebSocket(url), log: false, identify: identifyGateway },
    });
 
@@ -49,7 +49,7 @@ export async function getLoggedClient(
 
 export function getNewClient(): HuginnClient {
    const client = new HuginnClient({
-      rest: { api: `http://${url}` },
+      rest: { api: `http://${url}/api` },
       gateway: { url: `ws://${url}/gateway`, createSocket: url => new WebSocket(url), log: false, identify: false },
    });
    return client;
