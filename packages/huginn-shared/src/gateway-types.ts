@@ -20,6 +20,7 @@ export enum GatewayOperations {
 }
 
 export type GatewayEvents = {
+   open: undefined;
    close: number;
    hello: GatewayHelloData;
    identify: GatewayIdentifyData;
