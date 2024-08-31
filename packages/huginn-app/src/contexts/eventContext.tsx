@@ -1,4 +1,3 @@
-import { ClientReadyState } from "@huginn/api";
 import { APIUser, GatewayMessageCreateData } from "@huginn/shared";
 import { createContext, ReactNode, useCallback, useContext, useEffect, useRef } from "react";
 

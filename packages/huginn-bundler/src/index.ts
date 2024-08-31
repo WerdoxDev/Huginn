@@ -7,9 +7,10 @@ import { colors } from "consola/utils";
 import { mkdir, rm } from "node:fs/promises";
 import { Octokit } from "octokit";
 import path from "path";
-import { getVersionTypeText, logger } from "../logger";
-import { BuildType, type AppVersion, type UpdateFileInfo } from "../types";
+import { getVersionTypeText, logger } from "./logger";
+import { BuildType, type AppVersion, type UpdateFileInfo } from "./types";
 import {
+   APP_PATH,
    BUILDS_PATH,
    CARGO_TOML_PATH,
    GIST_ID,
@@ -25,7 +26,7 @@ import {
    versionToString,
    writeCargoTomlVersion,
    writePackageJsonVersion,
-} from "../utils";
+} from "./utils";
 
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
@@ -131,8 +132,8 @@ async function buildVersion(version: string, type: BuildType) {
       });
 
       // Run the build script and log the result
-      if (type === BuildType.DEBUG) await $`cd ../huginn-app-react && bun tauri-build --debug`.quiet();
-      else await $`cd ../huginn-app-react && bun tauri-build`.quiet();
+      if (type === BuildType.DEBUG) await $`cd ${APP_PATH} && bun tauri-build --debug`.quiet();
+      else await $`cd ${APP_PATH} && bun tauri-build`.quiet();
 
       logger.copyingBuildFiles(newVersionPath);
 

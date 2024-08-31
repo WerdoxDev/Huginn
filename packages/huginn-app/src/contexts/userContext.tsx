@@ -1,7 +1,8 @@
-import { APIUser } from "@huginn/shared";
+import { APIUser, GatewayUserUpdateData } from "@huginn/shared";
 import { ReactNode } from "@tanstack/react-router";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useClient } from "./apiContext";
+import { useEvent } from "./eventContext";
 
 type UserContextType = {
    user?: APIUser;
@@ -12,10 +13,22 @@ export const UserContext = createContext<UserContextType>({ user: undefined, set
 
 export function UserProvider(props: { children?: ReactNode }) {
    const client = useClient();
-   // const { listenEvent } = useEvent();
+   const { dispatchEvent } = useEvent();
 
    const [user, setUser] = useState(() => client.user);
 
+   function userUpdated(user: GatewayUserUpdateData) {
+      setUser(user);
+      dispatchEvent("user_updated", { user, self: true });
+   }
+
+   useEffect(() => {
+      client.gateway.on("user_update", userUpdated);
+
+      return () => {
+         client.gateway.off("user_update", userUpdated);
+      };
+   }, []);
    // useEffect(() => {
    //    console.log("HI?", client.readyState);
    //    if (client.isLoggedIn) {

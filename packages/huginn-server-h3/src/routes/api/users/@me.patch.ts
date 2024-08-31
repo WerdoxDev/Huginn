@@ -1,7 +1,8 @@
 import { router } from "@/server";
 import { prisma } from "@database";
 import { createErrorFactory, createHuginnError, useValidatedBody } from "@huginn/backend-shared";
-import { APIPatchCurrentUserResult, CDNRoutes, constants, Errors, Fields, HttpCode, idFix, resolveBuffer } from "@huginn/shared";
+import { APIPatchCurrentUserResult, CDNRoutes, constants, Errors, Fields, HttpCode, idFix, omit, resolveBuffer } from "@huginn/shared";
+import { dispatchToTopic } from "@utils/gateway-utils";
 import { useVerifiedJwt, getFileHash } from "@utils/route-utils";
 import { cdnUpload } from "@utils/server-request";
 import { createTokens } from "@utils/token-factory";
@@ -86,8 +87,8 @@ router.patch(
       );
 
       // TODO: When guilds are a thing, this should send an update to users that are viewing that guild
-      // dispatchToTopic(payload.id, "user_update", { ...updatedUser, token: accessToken, refreshToken });
-      // dispatchToTopic(payload.id + "_public", "public_user_update", { ...updatedUser });
+      dispatchToTopic(payload.id, "user_update", { ...updatedUser, token: accessToken, refreshToken });
+      dispatchToTopic(payload.id + "_public", "public_user_update", omit({ ...updatedUser }, ["email", "password"]));
 
       const json: APIPatchCurrentUserResult = { ...updatedUser, token: accessToken, refreshToken };
       setResponseStatus(event, HttpCode.OK);
