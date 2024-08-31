@@ -4,6 +4,7 @@ import { readdir } from "node:fs/promises";
 import path from "path";
 import { BuildType, type AppVersion, type BuildFiles, type Version } from "./types";
 
+export const APP_PATH: string = process.env.APP_PATH!;
 export const BUILDS_PATH: string = process.env.BUILDS_PATH!;
 
 export const TAURI_DEBUG_BUILD_PATH: string = process.env.TAURI_DEBUG_BUILD_PATH!;
@@ -19,6 +20,7 @@ export const REPO: string = process.env.REPO_NAME!;
  * @returns all version in either debug or release folders
  */
 export async function getVersions(): Promise<AppVersion[]> {
+   console.log(BUILDS_PATH, "NULL");
    const folders = (await readdir(BUILDS_PATH)).sort((v1, v2) => semver.order(v1.split("_")[0], v2.split("_")[0])).reverse();
    return folders.map(x => ({ type: getFolderBuildType(x), version: stringToVersion(x) }));
 }
