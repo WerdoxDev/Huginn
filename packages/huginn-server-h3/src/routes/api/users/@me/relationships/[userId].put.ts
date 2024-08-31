@@ -1,8 +1,8 @@
 import { router } from "@/server";
-import { useValidatedParams } from "@utils/route-utils";
 import { defineEventHandler } from "h3";
 import { z } from "zod";
 import { relationshipPost } from "../relationships.post";
+import { useValidatedParams } from "@huginn/backend-shared";
 
 const paramsSchema = z.object({ userId: z.string() });
 

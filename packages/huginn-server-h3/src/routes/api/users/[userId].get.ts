@@ -1,7 +1,8 @@
 import { router } from "@/server";
 import { prisma } from "@database";
+import { useValidatedParams } from "@huginn/backend-shared";
 import { APIGetUserByIdResult, HttpCode, idFix, omit } from "@huginn/shared";
-import { useVerifiedJwt, useValidatedParams } from "@utils/route-utils";
+import { useVerifiedJwt } from "@utils/route-utils";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 

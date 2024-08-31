@@ -1,8 +1,10 @@
 import { BunFile } from "bun";
 import path from "path";
 import sharp from "sharp";
-import { CDNError, CDNErrorType } from "./error";
-import { FileContentTypes, FileFormats, FileInfo, FileTypes } from "./types";
+import { CDNError, CDNErrorType } from "../error";
+import { FileContentTypes, FileFormats, FileInfo, FileTypes } from "../types";
+import { uploadsDir } from "..";
+import { createError } from "h3";
 
 export function extractFileInfo(filename: string): FileInfo {
    const split = filename.split(".");
@@ -23,13 +25,13 @@ export async function findImageByName(directory: string, name: string) {
 
    for (const format of formats) {
       const filename = `${name}.${format}`;
-      const file = Bun.file(path.join(__dirname, directory, filename));
+      const file = Bun.file(path.resolve(uploadsDir, directory, filename));
       if (await file.exists()) {
          return { file, info: extractFileInfo(filename) };
       }
    }
 
-   throw new CDNError(Error(CDNErrorType.FILE_NOT_FOUND), "findImageByName");
+   throw createError({ cause: new CDNError("findImageByName", CDNErrorType.FILE_NOT_FOUND) });
 }
 
 export async function transformImage(file: BunFile, format: FileFormats, quality: number) {
@@ -53,5 +55,5 @@ export async function transformImage(file: BunFile, format: FileFormats, quality
       ).buffer as ArrayBuffer;
    }
 
-   throw new CDNError(Error(CDNErrorType.INVALID_FILE_FORMAT), "transformImage");
+   throw createError({ cause: new CDNError("transformImage", CDNErrorType.INVALID_FILE_FORMAT) });
 }

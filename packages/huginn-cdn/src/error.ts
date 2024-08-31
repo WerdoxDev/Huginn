@@ -1,34 +1,21 @@
-export class CDNError<T extends Error> extends Error {
+export class CDNError extends Error {
    public constructor(
-      public error: T,
-      methodName: string,
-      cause?: string,
+      public callerName: string,
+      public type: CDNErrorType,
+      public cause?: string,
    ) {
-      super(
-         `Unhandeled CDN Error => ${methodName} => ${error.name}: ${error.message} ${error.cause ? `(${error.cause as string})` : ""}`,
-         {
-            cause,
-         },
-      );
-      this.flattenError(this.error);
+      super(`Unhandeled CDN Error => ${callerName} => ${type}: ${cause ? `(${cause})` : ""}`, {
+         cause: cause,
+      });
    }
 
    isErrorType(type: CDNErrorType) {
-      if (this.error instanceof Error) {
-         return (this.error.message as CDNErrorType) === type;
-      }
-   }
-
-   flattenError(error: unknown) {
-      if (error instanceof CDNError) {
-         this.error = error.error;
-         this.flattenError(error.error);
-      }
+      return this.type === type;
    }
 }
 
-export function isCDNError(object: unknown): object is CDNError<Error> {
-   if (object !== null && typeof object === "object" && object instanceof CDNError && object.error instanceof Error) {
+export function isCDNError(object: unknown): object is CDNError {
+   if (object !== null && typeof object === "object" && object instanceof CDNError) {
       return true;
    }
 

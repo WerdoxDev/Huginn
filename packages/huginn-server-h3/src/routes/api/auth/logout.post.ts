@@ -1,6 +1,6 @@
 import { router, tokenInvalidator } from "@/server";
-import { useVerifiedJwt } from "@/utils/route-utils";
 import { HttpCode } from "@huginn/shared";
+import { useVerifiedJwt } from "@utils/route-utils";
 import { defineEventHandler, setResponseStatus } from "h3";
 
 router.post(
