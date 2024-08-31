@@ -4,8 +4,8 @@ import { BasePayload } from "@huginn/shared";
 import { idFix } from "@huginn/shared";
 import { ServerWebSocket } from "bun";
 import { EventEmitter } from "node:events";
-import { prisma } from "../db";
-import { ClientSessionInfo } from "../types";
+import { prisma } from "@/database";
+import { ClientSessionInfo } from "@/utils/types";
 
 export class ClientSession extends EventEmitter {
    public data: ClientSessionInfo;

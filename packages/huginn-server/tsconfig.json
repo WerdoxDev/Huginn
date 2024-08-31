@@ -3,8 +3,10 @@
    "compilerOptions": {
       "lib": ["ESNext"],
       "paths": {
+         "@database": ["./src/database"],
+         "@utils/*": ["./src/utils/*"],
          "@/*": ["./src/*"]
       }
    },
-   "include": ["src", "package.json", "../huginn-backend-shared/src/error-factory.ts"]
+   "include": ["src", "package.json", "../huginn-backend-shared/src/error-factory.ts", "../huginn-server-h3/src/routes/_ws.ts"]
 }

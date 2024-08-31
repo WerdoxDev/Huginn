@@ -18,6 +18,4 @@ if (!serverHost || !serverPort) {
    process.exit();
 }
 
-// await startListening();
-
-startServer();
+await startServer();
