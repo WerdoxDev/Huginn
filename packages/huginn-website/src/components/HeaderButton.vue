@@ -8,5 +8,5 @@ const buttonProps = defineProps<{
 </script>
 
 <template>
-    <a :href="buttonProps.link" class="font-bold transition-all hover:text-[#00A7E3]">{{ buttonProps.text }}</a>
+    <a :href="buttonProps.link" class="font-bold transition-all hover:text-[#D99A6C]">{{ buttonProps.text }}</a>
 </template>

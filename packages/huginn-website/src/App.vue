@@ -36,7 +36,8 @@ import Feature from './components/Feature.vue';
       <div class="w-96">
 
         <div class="flex items-center">
-          <img src="/huginn-logo-blue.svg" class="size-20 object-contain" />
+          <img src="/huginn-logo-blue.svg"
+            class="size-20 object-contain transition-all hover:-rotate-12 active:rotate-6" />
           <p class="text-5xl text-[#EBEBD3] font-extrabold ml-4">Huginn</p>
         </div>
 
@@ -77,7 +78,7 @@ import Feature from './components/Feature.vue';
     <div class="grid grid-cols-2 grid-rows-2 gap-16">
       <Feature icon="raphael:opensource" header="Open Source"
         text="Huginn is made to be open-source. Everything you see is available to use under the  GNU GPLv3 license. Contribution is always welcome and encouraged" />
-      <Feature icon="mdi:api" header="Extensive API"
+      <Feature icon="eos-icons:api" header="Extensive API"
         text="Huginn's API is so simple to use that anyone with basic node knowledge can do cool stuff with it!" />
       <Feature icon="" header="" text="" />
       <Feature icon="" header="" text="" />
