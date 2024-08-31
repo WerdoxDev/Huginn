@@ -19,7 +19,6 @@ router.get(
       const file = Bun.file(path.resolve(uploadsDir, `avatars/${name}.${format}`));
 
       if (await file.exists()) {
-         console.log(await file.arrayBuffer());
          setResponseStatus(event, HttpCode.OK);
          setResponseHeader(event, "Content-Type", mimeType);
          return file.stream();
@@ -33,6 +32,6 @@ router.get(
 
       setResponseStatus(event, HttpCode.OK);
       setResponseHeader(event, "Content-Type", mimeType);
-      return result;
+      return new Blob([result]).stream();
    }),
 );

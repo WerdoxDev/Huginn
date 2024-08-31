@@ -11,7 +11,17 @@ import {
 import { Errors, generateRandomString, HttpCode, HuginnErrorData } from "@huginn/shared";
 import consola from "consola";
 import { colors } from "consola/utils";
-import { createApp, createRouter, getResponseStatus, Router, send, setResponseHeader, setResponseStatus, toWebHandler } from "h3";
+import {
+   createApp,
+   createRouter,
+   getResponseStatus,
+   handleCors,
+   Router,
+   send,
+   setResponseHeader,
+   setResponseStatus,
+   toWebHandler,
+} from "h3";
 import { cdnHost, cdnPort, certFile, keyFile } from ".";
 import { version } from "../package.json";
 import { CDNErrorType, isCDNError } from "./error";
@@ -79,6 +89,9 @@ export async function startCdn() {
          }
       },
       onRequest(event) {
+         if (handleCors(event, { origin: "*", preflight: { statusCode: 204 }, methods: "*" })) {
+            return;
+         }
          event.context.id = generateRandomString(6);
          const id = event.context.id;
          logRequest(event.path, event.method, id, undefined);
