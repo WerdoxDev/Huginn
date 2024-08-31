@@ -1,9 +1,9 @@
 import { router } from "@/server";
 import { assertError, DBErrorType, prisma } from "@database";
-import { createErrorFactory, createHuginnError } from "@huginn/backend-shared";
+import { catchError, createErrorFactory, createHuginnError, useValidatedBody } from "@huginn/backend-shared";
 import { Errors, HttpCode, idFix, omitArray, RelationshipType, Snowflake } from "@huginn/shared";
 import { dispatchToTopic } from "@utils/gateway-utils";
-import { catchError, useValidatedBody, useVerifiedJwt } from "@utils/route-utils";
+import { useVerifiedJwt } from "@utils/route-utils";
 import { defineEventHandler, H3Event, setResponseStatus } from "h3";
 import { z } from "zod";
 

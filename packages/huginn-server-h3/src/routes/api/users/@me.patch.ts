@@ -1,8 +1,8 @@
 import { router } from "@/server";
 import { prisma } from "@database";
-import { createErrorFactory, createHuginnError } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, useValidatedBody } from "@huginn/backend-shared";
 import { APIPatchCurrentUserResult, CDNRoutes, constants, Errors, Fields, HttpCode, idFix, resolveBuffer } from "@huginn/shared";
-import { useValidatedBody, useVerifiedJwt, getFileHash } from "@utils/route-utils";
+import { useVerifiedJwt, getFileHash } from "@utils/route-utils";
 import { cdnUpload } from "@utils/server-request";
 import { createTokens } from "@utils/token-factory";
 import {

@@ -2,11 +2,12 @@ import { prisma } from "@/database";
 import { includeChannelRecipients, excludeSelfChannelUser } from "@/database/common";
 import { dispatchToTopic } from "@utils/gateway-utils";
 import { gateway, router } from "@/server";
-import { useValidatedBody, useVerifiedJwt } from "@/utils/route-utils";
+import { useValidatedBody } from "@huginn/backend-shared";
 import { invalidFormBody } from "@huginn/backend-shared";
 import { APIPostDMChannelResult, HttpCode, idFix, merge } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
+import { useVerifiedJwt } from "@utils/route-utils";
 
 const schema = z.object({ recipients: z.array(z.string()) });
 

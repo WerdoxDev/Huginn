@@ -9,6 +9,7 @@ import {
    createRouter,
    defineEventHandler,
    getResponseStatus,
+   handleCors,
    readBody,
    Router,
    send,
@@ -43,31 +44,32 @@ export async function startServer() {
          if (isDBError(error.cause)) {
             // Common errors
             const dbError = error.cause;
-            setResponseHeader(event, "content-type", "application/json");
             let errorFactory: ErrorFactory | undefined;
-            if (error.cause.isErrorType(DBErrorType.INVALID_ID)) {
+            if (dbError.isErrorType(DBErrorType.INVALID_ID)) {
                setResponseStatus(event, HttpCode.BAD_REQUEST);
                errorFactory = createErrorFactory(Errors.invalidFormBody());
             }
-            if (error.cause.isErrorType(DBErrorType.NULL_USER)) {
+            if (dbError.isErrorType(DBErrorType.NULL_USER)) {
                setResponseStatus(event, HttpCode.NOT_FOUND);
                errorFactory = createErrorFactory(Errors.unknownUser(dbError.cause));
             }
-            if (error.cause.isErrorType(DBErrorType.NULL_RELATIONSHIP)) {
+            if (dbError.isErrorType(DBErrorType.NULL_RELATIONSHIP)) {
                setResponseStatus(event, HttpCode.NOT_FOUND);
                errorFactory = createErrorFactory(Errors.unknownRelationship(dbError.cause));
             }
-            if (error.cause.isErrorType(DBErrorType.NULL_CHANNEL)) {
+            if (dbError.isErrorType(DBErrorType.NULL_CHANNEL)) {
                setResponseStatus(event, HttpCode.NOT_FOUND);
                errorFactory = createErrorFactory(Errors.unknownChannel(dbError.cause));
             }
-            if (error.cause.isErrorType(DBErrorType.NULL_MESSAGE)) {
+            if (dbError.isErrorType(DBErrorType.NULL_MESSAGE)) {
                setResponseStatus(event, HttpCode.NOT_FOUND);
                errorFactory = createErrorFactory(Errors.unknownMessage(dbError.cause));
             }
             if (errorFactory) {
                const status = getResponseStatus(event);
                logReject(event.path, event.method, id, errorFactory.toObject(), status);
+
+               setResponseHeader(event, "content-type", "application/json");
                return send(event, JSON.stringify(errorFactory.toObject()));
             }
          }
@@ -93,6 +95,9 @@ export async function startServer() {
          }
       },
       async onRequest(event) {
+         if (handleCors(event, { origin: "*", preflight: { statusCode: 204 }, methods: "*" })) {
+            return;
+         }
          event.context.id = generateRandomString(6);
          const id = event.context.id;
          logRequest(event.path, event.method, id, event.method !== "GET" ? await readBody(event) : undefined);

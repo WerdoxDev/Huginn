@@ -1,6 +1,6 @@
 import { prisma } from "@/database";
 import { router } from "@/server";
-import { useValidatedBody } from "@/utils/route-utils";
+import { useValidatedBody } from "@huginn/backend-shared";
 import { createTokens } from "@/utils/token-factory";
 import {
    validateUsername,

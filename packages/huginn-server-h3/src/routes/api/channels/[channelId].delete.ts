@@ -1,10 +1,10 @@
 import { includeChannelRecipients } from "@/database/common";
 import { router } from "@/server";
 import { prisma } from "@database";
-import { notFound, createErrorFactory } from "@huginn/backend-shared";
+import { notFound, createErrorFactory, useValidatedParams } from "@huginn/backend-shared";
 import { Errors, APIDeleteDMChannelResult, idFix, HttpCode } from "@huginn/shared";
 import { dispatchToTopic } from "@utils/gateway-utils";
-import { useValidatedParams, useVerifiedJwt } from "@utils/route-utils";
+import { useVerifiedJwt } from "@utils/route-utils";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 

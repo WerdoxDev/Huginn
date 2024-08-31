@@ -1,6 +1,6 @@
 import { assertError, DBErrorType, prisma } from "@/database";
 import { router } from "@/server";
-import { catchError, useValidatedBody } from "@/utils/route-utils";
+import { catchError, useValidatedBody } from "@huginn/backend-shared";
 import { createTokens } from "@/utils/token-factory";
 import { createErrorFactory, createHuginnError } from "@huginn/backend-shared";
 import { APIPostLoginResult, constants, Errors, Fields, HttpCode, idFix } from "@huginn/shared";

@@ -1,5 +1,5 @@
 import { router } from "@/server";
-import { useValidatedBody } from "@/utils/route-utils";
+import { useValidatedBody } from "@huginn/backend-shared";
 import { verifyToken, REFRESH_TOKEN_SECRET_ENCODED, createTokens } from "@/utils/token-factory";
 import { unauthorized } from "@huginn/backend-shared";
 import { APIPostRefreshTokenResult, constants, HttpCode } from "@huginn/shared";

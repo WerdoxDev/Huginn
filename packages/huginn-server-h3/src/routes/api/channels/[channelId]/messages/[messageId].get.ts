@@ -1,9 +1,9 @@
 import { includeMessageAuthor, includeMessageMentions } from "@/database/common";
 import { router } from "@/server";
 import { prisma } from "@database";
-import { unauthorized } from "@huginn/backend-shared";
+import { unauthorized, useValidatedParams } from "@huginn/backend-shared";
 import { APIGetMessageByIdResult, HttpCode, idFix, merge, omit } from "@huginn/shared";
-import { useValidatedParams, useVerifiedJwt } from "@utils/route-utils";
+import { useVerifiedJwt } from "@utils/route-utils";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 
