@@ -9,7 +9,7 @@ import Feature from './components/Feature.vue';
 <template>
   <!-- Header -->
   <div
-    class="w-full py-4 px-20 top-0 flex justify-center items-center sticky bg-black/30 backdrop-blur-md border-b border-slate-500">
+    class="w-full py-4 px-20 top-0 flex justify-center items-center sticky bg-black/30 backdrop-blur-md border-b border-[#EBEBD3]">
     <div class="flex items-center">
       <a href="https://Huginn.dev/"><img src="/huginn-logo.png" class="size-10" /></a>
       <a href="https://Huginn.dev/" class="text-2xl font-bold pl-3">HUGINN</a>
@@ -21,7 +21,7 @@ import Feature from './components/Feature.vue';
       <HeaderButton link="https://discord.gg/" text="About" />
       <HeaderButton link="https://discord.gg/" text="Download" />
 
-      <div class="w-0.5 bg-slate-500" />
+      <div class="w-0.5 bg-[#EBEBD3]/30" />
 
       <a href="https://github.com/WerdoxDev/Huginn" target="_blank">
         <Icon icon="bi:github" class="size-5" />
@@ -36,11 +36,11 @@ import Feature from './components/Feature.vue';
       <div class="w-96">
 
         <div class="flex items-center">
-          <img src="/huginn-logo-blue.svg" class="size-16 object-contain" />
-          <p class="text-5xl text-[#00A7E3] font-bold pl-4">HUGINN</p>
+          <img src="/huginn-logo-blue.svg" class="size-20 object-contain" />
+          <p class="text-5xl text-[#EBEBD3] font-extrabold ml-4">Huginn</p>
         </div>
 
-        <p class="mt-4 text-2xl">Step through Bifröst and enjoy chatting with your friends using Huginn in Asgard.</p>
+        <p class="mt-6 text-2xl">Step through Bifröst and enjoy chatting with your friends using Huginn in Asgard.</p>
 
         <div class="flex flex-row items-center mt-6 space-x-2">
           <div class="rounded-full bg-green-400 size-2" />
@@ -53,7 +53,7 @@ import Feature from './components/Feature.vue';
 
         <div class="flex flex-row pt-10 w-full space-x-2">
           <a href="http://huginn.dev/"
-            class="flex justify-center items-center text-xl bg-[#00A7E3] rounded-md px-5 w-full h-12 space-x-2 transition-all hover:bg-[#007BA7]">
+            class="flex justify-center items-center text-xl bg-[#7B563C] rounded-md px-5 w-full h-12 space-x-2 transition-all hover:bg-[#7b563c92]">
             <div class="font-bold">DOWNLOAD HUGINN</div>
             <Icon icon="mingcute:windows-fill" class="size-6" />
           </a>
@@ -87,9 +87,9 @@ import Feature from './components/Feature.vue';
   <!-- Footer -->
   <div class="py-3 px-12 bg-gradient-to-t bg-[#262626] border-t border-[#1f1f1f] flex flex-row">
     <div class="ml-7">Huginn made by <a href="https://github.com/WerdoxDev" target="_blank"
-        class="underline text-[#00A7E3]">Matin
+        class="underline text-[#D99A6C]">Matin
         Tat</a>
-      / Website made by <a href="https://github.com/VoiD-ev" target="_blank" class="underline text-[#00A7E3]">Mahziyar
+      / Website made by <a href="https://github.com/VoiD-ev" target="_blank" class="underline text-[#D99A6C]">Mahziyar
         Farahmandian</a>
     </div>
 
