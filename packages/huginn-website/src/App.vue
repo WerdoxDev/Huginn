@@ -85,7 +85,7 @@ import Feature from './components/Feature.vue';
     </div>
   </div>
 
-  <!-- Footer -->
+  <!-- Footer Section -->
   <div class="py-3 px-12 bg-gradient-to-t bg-[#262626] border-t border-[#1f1f1f] flex flex-row">
     <div class="ml-7">Huginn made by <a href="https://github.com/WerdoxDev" target="_blank"
         class="underline text-[#D99A6C]">Matin
