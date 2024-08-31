@@ -13,7 +13,7 @@ const featureProps = defineProps<{
 
         <div class="space-y-4">
             <div class="flex flex-row items-center space-x-2">
-                <Icon :icon="featureProps.icon" class="size-8" />
+                <Icon :icon="featureProps.icon" class="size-8 text-[#D99A6C]" />
                 <div class="text-2xl font-bold">{{ featureProps.header }}</div>
             </div>
 
