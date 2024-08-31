@@ -22,7 +22,7 @@ export function usePatchUser(
             const data = omit(result, ["token", "refreshToken"]);
 
             setUser(data);
-            dispatchEvent("user_updated", { user: data, self: true });
+            // dispatchEvent("user_updated", { user: data, self: true });
          },
       },
       handleErrors,

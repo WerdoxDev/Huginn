@@ -56,7 +56,7 @@ const BaseMessage = forwardRef<HTMLLIElement, { content?: string; author: APIMes
             <div className={`flex flex-col items-start gap-y-2 ${isSelf ? "ml-0" : "ml-2"}`}>
                <div className="flex items-center gap-x-2 overflow-hidden rounded-xl">
                   <UserAvatarWithStatus userId={props.author.id} avatarHash={props.author.avatar} statusSize="0.5rem" size="1.75rem" />
-                  <div className="text-text text-sm">{isSelf ? "You" : props.author.displayName}</div>
+                  <div className="text-text text-sm">{isSelf ? "You" : (props.author.displayName ?? props.author.username)}</div>
                   {props.flags && hasFlag(props.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
                      <IconMdiNotificationsOff className="text-text size-4" />
                   ) : null}

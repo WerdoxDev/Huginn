@@ -75,10 +75,12 @@ export default function MessageProvider(props: { children?: ReactNode }) {
    useEffect(() => {
       client.gateway.on("message_create", onMessageCreated);
       client.gateway.on("public_user_update", onPublicUserUpdated);
+      client.gateway.on("user_update", onPublicUserUpdated);
 
       return () => {
          client.gateway.off("message_create", onMessageCreated);
          client.gateway.off("public_user_update", onPublicUserUpdated);
+         client.gateway.off("user_update", onPublicUserUpdated);
       };
    }, []);
 
