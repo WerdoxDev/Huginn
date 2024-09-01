@@ -1,9 +1,9 @@
-import { includeChannelRecipients } from "@/database/common";
-import { router } from "@/server";
-import { prisma } from "@database";
+import { includeChannelRecipients } from "#database/common";
+import { router } from "#server";
+import { prisma } from "#database";
 import { createErrorFactory, notFound, useValidatedParams } from "@huginn/backend-shared";
 import { APIGetChannelByIdResult, Errors, HttpCode, idFix } from "@huginn/shared";
-import { useVerifiedJwt } from "@utils/route-utils";
+import { useVerifiedJwt } from "#utils/route-utils";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 

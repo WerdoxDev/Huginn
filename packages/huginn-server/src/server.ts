@@ -1,10 +1,15 @@
-import { DBErrorType, isDBError } from "@database";
+import { DBErrorType, isDBError } from "#database/error";
+import { ServerGateway } from "#gateway/server-gateway";
+import { importRoutes } from "#routes";
+import { certFile, keyFile, serverHost, serverPort } from "#setup";
+import { TokenInvalidator } from "#utils/token-invalidator";
 import { createErrorFactory, ErrorFactory, logReject, logRequest, logResponse, logServerError } from "@huginn/backend-shared";
 import { Errors, generateRandomString, HttpCode, HuginnErrorData } from "@huginn/shared";
-import { TokenInvalidator } from "@utils/token-invalidator";
+import { Server } from "bun";
 import consola from "consola";
 import { colors } from "consola/utils";
 import {
+   App,
    createApp,
    createRouter,
    defineEventHandler,
@@ -18,90 +23,76 @@ import {
    toWebHandler,
    useBase,
 } from "h3";
-import { certFile, keyFile, serverHost, serverPort } from ".";
 import { version } from "../package.json";
-import { ServerGateway } from "./gateway/server-gateway";
-import { importRoutes } from "./routes";
+import { handleCommonDBErrors } from "#utils/route-utils";
 
-export async function startServer() {
+export async function startServer(options?: { serve: boolean }): Promise<{ server?: Server; app: App; router: Router }> {
    consola.info(`Using version ${version}`);
    consola.start("Starting server...");
 
    const app = createApp({
-      onError(error, event) {
-         const id = event.context.id;
+      onError: options?.serve
+         ? (error, event) => {
+              const id = event.context.id;
 
-         if (error.cause && !(error.cause instanceof Error) && typeof error.cause === "object" && "errors" in error.cause) {
-            const status = getResponseStatus(event);
-            logReject(event.path, event.method, id, error.cause as HuginnErrorData, status);
-            return send(event, JSON.stringify(error.cause), "application/json");
-         }
-         if (error.statusCode === HttpCode.NOT_FOUND) {
-            setResponseStatus(event, HttpCode.NOT_FOUND, "Not Found");
-            logReject(event.path, event.method, id, undefined, HttpCode.NOT_FOUND);
-            return send(event, `${event.path} Not Found`);
-         }
-         if (isDBError(error.cause)) {
-            // Common errors
-            const dbError = error.cause;
-            let errorFactory: ErrorFactory | undefined;
-            if (dbError.isErrorType(DBErrorType.INVALID_ID)) {
-               setResponseStatus(event, HttpCode.BAD_REQUEST);
-               errorFactory = createErrorFactory(Errors.invalidFormBody());
-            }
-            if (dbError.isErrorType(DBErrorType.NULL_USER)) {
-               setResponseStatus(event, HttpCode.NOT_FOUND);
-               errorFactory = createErrorFactory(Errors.unknownUser(dbError.cause));
-            }
-            if (dbError.isErrorType(DBErrorType.NULL_RELATIONSHIP)) {
-               setResponseStatus(event, HttpCode.NOT_FOUND);
-               errorFactory = createErrorFactory(Errors.unknownRelationship(dbError.cause));
-            }
-            if (dbError.isErrorType(DBErrorType.NULL_CHANNEL)) {
-               setResponseStatus(event, HttpCode.NOT_FOUND);
-               errorFactory = createErrorFactory(Errors.unknownChannel(dbError.cause));
-            }
-            if (dbError.isErrorType(DBErrorType.NULL_MESSAGE)) {
-               setResponseStatus(event, HttpCode.NOT_FOUND);
-               errorFactory = createErrorFactory(Errors.unknownMessage(dbError.cause));
-            }
-            if (errorFactory) {
-               const status = getResponseStatus(event);
-               logReject(event.path, event.method, id, errorFactory.toObject(), status);
+              if (error.cause && !(error.cause instanceof Error) && typeof error.cause === "object" && "errors" in error.cause) {
+                 const status = getResponseStatus(event);
+                 logReject(event.path, event.method, id, error.cause as HuginnErrorData, status);
+                 return send(event, JSON.stringify(error.cause), "application/json");
+              }
+              if (error.statusCode === HttpCode.NOT_FOUND) {
+                 setResponseStatus(event, HttpCode.NOT_FOUND, "Not Found");
+                 logReject(event.path, event.method, id, undefined, HttpCode.NOT_FOUND);
+                 return send(event, `${event.path} Not Found`);
+              }
 
-               setResponseHeader(event, "content-type", "application/json");
-               return send(event, JSON.stringify(errorFactory.toObject()));
-            }
-         }
+              // Common errors
+              let errorFactory: ErrorFactory | undefined;
+              if (isDBError(error.cause)) {
+                 errorFactory = handleCommonDBErrors(event, error.cause);
+              }
 
-         logServerError(event.path, error.cause as Error);
-         logReject(event.path, event.method, id, "Server Error", HttpCode.SERVER_ERROR);
+              if (errorFactory) {
+                 const status = getResponseStatus(event);
+                 logReject(event.path, event.method, id, errorFactory.toObject(), status);
 
-         setResponseStatus(event, HttpCode.SERVER_ERROR);
-         return send(event, JSON.stringify(createErrorFactory(Errors.serverError()).toObject()));
-      },
-      onBeforeResponse(event, response) {
-         if (event.method === "OPTIONS") {
-            return;
-         }
+                 setResponseHeader(event, "content-type", "application/json");
+                 return send(event, JSON.stringify(errorFactory.toObject()));
+              }
 
-         const id = event.context.id;
-         const status = getResponseStatus(event);
+              logServerError(event.path, error.cause as Error);
+              logReject(event.path, event.method, id, "Server Error", HttpCode.SERVER_ERROR);
 
-         if (status >= 200 && status < 300) {
-            logResponse(event.path, status, id, response.body);
-         } else {
-            logReject(event.path, event.method, id, response.body as HuginnErrorData, status);
-         }
-      },
-      async onRequest(event) {
-         if (handleCors(event, { origin: "*", preflight: { statusCode: 204 }, methods: "*" })) {
-            return;
-         }
-         event.context.id = generateRandomString(6);
-         const id = event.context.id;
-         logRequest(event.path, event.method, id, event.method !== "GET" ? await readBody(event) : undefined);
-      },
+              setResponseStatus(event, HttpCode.SERVER_ERROR);
+              return send(event, JSON.stringify(createErrorFactory(Errors.serverError()).toObject()));
+           }
+         : undefined,
+      onBeforeResponse: options?.serve
+         ? (event, response) => {
+              if (event.method === "OPTIONS") {
+                 return;
+              }
+
+              const id = event.context.id;
+              const status = getResponseStatus(event);
+
+              if (status >= 200 && status < 300) {
+                 logResponse(event.path, status, id, response.body);
+              } else {
+                 logReject(event.path, event.method, id, response.body as HuginnErrorData, status);
+              }
+           }
+         : undefined,
+      onRequest: options?.serve
+         ? async event => {
+              if (handleCors(event, { origin: "*", preflight: { statusCode: 204 }, methods: "*" })) {
+                 return;
+              }
+              event.context.id = generateRandomString(6);
+              const id = event.context.id;
+              logRequest(event.path, event.method, id, event.method !== "GET" ? await readBody(event) : undefined);
+           }
+         : undefined,
    });
 
    const mainRouter = createRouter();
@@ -117,9 +108,13 @@ export async function startServer() {
    );
 
    mainRouter.use("/api/**", useBase("/api", router.handler));
-   app.use(mainRouter);
+
+   if (!options?.serve) {
+      return { app, router: mainRouter };
+   }
 
    const handler = toWebHandler(app);
+   app.use(mainRouter);
 
    const server = Bun.serve<string>({
       cert: certFile,
@@ -152,7 +147,7 @@ export async function startServer() {
    consola.success("Server started!");
    consola.box(`Listening on ${colors.green(server.url.href)}`);
 
-   return server;
+   return { server, app, router: mainRouter };
 }
 
 export const gateway = new ServerGateway({ logHeartbeat: false });

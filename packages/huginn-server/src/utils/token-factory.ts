@@ -1,4 +1,4 @@
-import { tokenInvalidator } from "@/server";
+import { tokenInvalidator } from "#server";
 import { TokenPayload } from "@huginn/shared";
 import * as jose from "jose";
 

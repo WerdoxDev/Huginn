@@ -1,6 +1,5 @@
+import { RelationshipType, Snowflake, snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
-import { RelationshipType } from "@huginn/shared";
-import { Snowflake, snowflake } from "@huginn/shared";
 import { DBErrorType, assertCondition, assertId, assertObj, prisma } from ".";
 import { RelationshipInclude, RelationshipPayload } from "./common";
 

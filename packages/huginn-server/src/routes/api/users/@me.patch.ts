@@ -1,11 +1,11 @@
-import { router } from "@/server";
-import { prisma } from "@database";
+import { router } from "#server";
+import { prisma } from "#database";
 import { createErrorFactory, createHuginnError, useValidatedBody } from "@huginn/backend-shared";
 import { APIPatchCurrentUserResult, CDNRoutes, constants, Errors, Fields, HttpCode, idFix, omit, resolveBuffer } from "@huginn/shared";
-import { dispatchToTopic } from "@utils/gateway-utils";
-import { useVerifiedJwt, getFileHash } from "@utils/route-utils";
-import { cdnUpload } from "@utils/server-request";
-import { createTokens } from "@utils/token-factory";
+import { dispatchToTopic } from "#utils/gateway-utils";
+import { useVerifiedJwt, getFileHash } from "#utils/route-utils";
+import { cdnUpload } from "#utils/server-request";
+import { createTokens } from "#utils/token-factory";
 import {
    validateUsername,
    validateDisplayName,
@@ -13,7 +13,7 @@ import {
    validateCorrectPassword,
    validateUsernameUnique,
    validateEmailUnique,
-} from "@utils/validation";
+} from "#utils/validation";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 

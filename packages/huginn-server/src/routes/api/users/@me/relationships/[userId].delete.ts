@@ -1,9 +1,9 @@
-import { router } from "@/server";
-import { prisma } from "@database";
+import { router } from "#server";
+import { prisma } from "#database";
 import { useValidatedParams } from "@huginn/backend-shared";
 import { HttpCode } from "@huginn/shared";
-import { dispatchToTopic } from "@utils/gateway-utils";
-import { useVerifiedJwt } from "@utils/route-utils";
+import { dispatchToTopic } from "#utils/gateway-utils";
+import { useVerifiedJwt } from "#utils/route-utils";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 

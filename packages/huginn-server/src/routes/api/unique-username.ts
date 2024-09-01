@@ -1,7 +1,7 @@
-import { router } from "@/server";
+import { router } from "#server";
 import { useValidatedBody } from "@huginn/backend-shared";
 import { APIPostUniqueUsernameResult, HttpCode } from "@huginn/shared";
-import { validateUsernameUnique } from "@utils/validation";
+import { validateUsernameUnique } from "#utils/validation";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 

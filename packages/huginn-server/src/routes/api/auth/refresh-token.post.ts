@@ -1,6 +1,6 @@
-import { router } from "@/server";
+import { router } from "#server";
 import { useValidatedBody } from "@huginn/backend-shared";
-import { verifyToken, REFRESH_TOKEN_SECRET_ENCODED, createTokens } from "@/utils/token-factory";
+import { verifyToken, REFRESH_TOKEN_SECRET_ENCODED, createTokens } from "#utils/token-factory";
 import { unauthorized } from "@huginn/backend-shared";
 import { APIPostRefreshTokenResult, constants, HttpCode } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";

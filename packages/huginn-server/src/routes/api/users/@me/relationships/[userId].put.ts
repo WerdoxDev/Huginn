@@ -1,4 +1,4 @@
-import { router } from "@/server";
+import { router } from "#server";
 import { defineEventHandler } from "h3";
 import { z } from "zod";
 import { relationshipPost } from "../relationships.post";

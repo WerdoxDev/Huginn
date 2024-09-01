@@ -1,7 +1,7 @@
 import { HttpCode } from "@huginn/shared";
 import { defineEventHandler, getRouterParam, sendNoContent } from "h3";
-import { router } from "@/server";
-import { prisma } from "@database";
+import { router } from "#server";
+import { prisma } from "#database";
 
 router.post(
    "/test/:job",

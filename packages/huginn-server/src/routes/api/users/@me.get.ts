@@ -1,7 +1,7 @@
-import { router } from "@/server";
-import { prisma } from "@database";
+import { router } from "#server";
+import { prisma } from "#database";
 import { APIGetCurrentUserResult, HttpCode, idFix } from "@huginn/shared";
-import { useVerifiedJwt } from "@utils/route-utils";
+import { useVerifiedJwt } from "#utils/route-utils";
 import { defineEventHandler, setResponseStatus } from "h3";
 
 router.get(

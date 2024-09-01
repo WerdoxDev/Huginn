@@ -1,8 +1,8 @@
-import { includeRelationshipUser } from "@/database/common";
-import { router } from "@/server";
-import { prisma } from "@database";
+import { includeRelationshipUser } from "#database/common";
+import { router } from "#server";
+import { prisma } from "#database";
 import { APIGetUserRelationshipsResult, omitArray, idFix, HttpCode } from "@huginn/shared";
-import { useVerifiedJwt } from "@utils/route-utils";
+import { useVerifiedJwt } from "#utils/route-utils";
 import { defineEventHandler, setResponseStatus } from "h3";
 
 router.get(

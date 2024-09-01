@@ -1,11 +1,11 @@
+import { prisma } from "#database/index";
+import { ClientSessionInfo } from "#utils/types";
 import { constants } from "@huginn/shared";
 import { GatewayCode } from "@huginn/shared";
 import { BasePayload } from "@huginn/shared";
 import { idFix } from "@huginn/shared";
 import { ServerWebSocket } from "bun";
 import { EventEmitter } from "node:events";
-import { prisma } from "@/database";
-import { ClientSessionInfo } from "@/utils/types";
 
 export class ClientSession extends EventEmitter {
    public data: ClientSessionInfo;

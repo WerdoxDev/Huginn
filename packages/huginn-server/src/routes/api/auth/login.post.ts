@@ -1,7 +1,8 @@
-import { assertError, DBErrorType, prisma } from "@/database";
-import { router } from "@/server";
+import { assertError, DBErrorType } from "#database/error";
+import { prisma } from "#database/index";
+import { router } from "#server";
+import { createTokens } from "#utils/token-factory";
 import { catchError, useValidatedBody } from "@huginn/backend-shared";
-import { createTokens } from "@/utils/token-factory";
 import { createErrorFactory, createHuginnError } from "@huginn/backend-shared";
 import { APIPostLoginResult, constants, Errors, Fields, HttpCode, idFix } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";

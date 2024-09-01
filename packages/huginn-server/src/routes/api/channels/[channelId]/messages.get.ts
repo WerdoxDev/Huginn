@@ -1,6 +1,6 @@
-import { includeMessageAuthor, includeMessageMentions } from "@/database/common";
-import { router } from "@/server";
-import { prisma } from "@database";
+import { includeMessageAuthor, includeMessageMentions } from "#database/common";
+import { router } from "#server";
+import { prisma } from "#database";
 import { useValidatedQuery, useValidatedParams } from "@huginn/backend-shared";
 import { APIGetChannelMessagesResult, omitArray, idFix, merge, HttpCode } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";

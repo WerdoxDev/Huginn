@@ -1,10 +1,10 @@
-import { includeChannelRecipients } from "@/database/common";
-import { router } from "@/server";
-import { prisma } from "@database";
+import { includeChannelRecipients } from "#database/common";
+import { router } from "#server";
+import { prisma } from "#database";
 import { notFound, createErrorFactory, useValidatedParams } from "@huginn/backend-shared";
 import { Errors, APIDeleteDMChannelResult, idFix, HttpCode } from "@huginn/shared";
-import { dispatchToTopic } from "@utils/gateway-utils";
-import { useVerifiedJwt } from "@utils/route-utils";
+import { dispatchToTopic } from "#utils/gateway-utils";
+import { useVerifiedJwt } from "#utils/route-utils";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 

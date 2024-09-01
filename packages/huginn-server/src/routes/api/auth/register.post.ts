@@ -1,7 +1,6 @@
-import { prisma } from "@/database";
-import { router } from "@/server";
+import { router } from "#server";
 import { useValidatedBody } from "@huginn/backend-shared";
-import { createTokens } from "@/utils/token-factory";
+import { createTokens } from "#utils/token-factory";
 import {
    validateUsername,
    validateDisplayName,
@@ -9,11 +8,12 @@ import {
    validateEmail,
    validateUsernameUnique,
    validateEmailUnique,
-} from "@/utils/validation";
+} from "#utils/validation";
 import { createErrorFactory, createHuginnError } from "@huginn/backend-shared";
 import { APIPostRegisterResult, constants, Errors, HttpCode, idFix } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
+import { prisma } from "#database";
 
 const schema = z.object({
    username: z.string(),

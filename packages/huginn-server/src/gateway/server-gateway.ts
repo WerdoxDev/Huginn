@@ -18,9 +18,9 @@ import consola from "consola";
 import { ClientSession } from "./client-session";
 import { validateGatewayData } from "../utils/gateway-utils";
 import { logGatewayOpen, logGatewayClose, logGatewayRecieve, logServerError, logGatewaySend } from "@huginn/backend-shared";
-import { prisma } from "@/database";
-import { verifyToken } from "@/utils/token-factory";
-import { ServerGatewayOptions } from "@/utils/types";
+import { prisma } from "#database/index";
+import { verifyToken } from "#utils/token-factory";
+import { ServerGatewayOptions } from "#utils/types";
 
 export class ServerGateway {
    private readonly options: ServerGatewayOptions;
