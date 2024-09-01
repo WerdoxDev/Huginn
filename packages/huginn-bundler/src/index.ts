@@ -16,8 +16,8 @@ import {
    GIST_ID,
    PACKAGE_JSON_PATH,
    REPO,
-   TAURI_DEBUG_BUILD_PATH,
-   TAURI_RELEASE_BUILD_PATH,
+   TAURI_DEBUG_NSIS_PATH,
+   TAURI_RELEASE_NSIS_PATH,
    getBuildFiles,
    getPatchedVersion,
    getVersionSuffix,
@@ -140,7 +140,7 @@ async function buildVersion(version: string, type: BuildType) {
       // Create a directory for the new version
       await mkdir(newVersionPath);
 
-      const files = await getBuildFiles(type === BuildType.DEBUG ? TAURI_DEBUG_BUILD_PATH : TAURI_RELEASE_BUILD_PATH, newVersion);
+      const files = await getBuildFiles(type === BuildType.DEBUG ? TAURI_DEBUG_NSIS_PATH : TAURI_RELEASE_NSIS_PATH, newVersion);
 
       // Get blob for both .zip and .sig files
       const zipFile = Bun.file(files.zipFile.path);
