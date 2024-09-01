@@ -109,9 +109,12 @@ app.use(router);
 
 const handler = toWebHandler(app);
 
+const HOST = process.env.HOST;
+const PORT = process.env.PORT;
+
 Bun.serve<string>({
-   port: 3003,
-   hostname: "192.168.178.51",
+   port: PORT,
+   hostname: HOST,
    fetch(req, server) {
       const url = new URL(req.url);
       if (url.pathname === "/gateway") {
