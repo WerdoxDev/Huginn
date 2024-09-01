@@ -31,3 +31,30 @@ export function getFileHash(file: Buffer) {
    const hash = sha256(file.toString()).substring(0, 32);
    return hash;
 }
+
+export function handleCommonDBErrors(event: H3Event, error: DBError) {
+   let errorFactory: ErrorFactory | undefined;
+
+   if (error.isErrorType(DBErrorType.INVALID_ID)) {
+      setResponseStatus(event, HttpCode.BAD_REQUEST);
+      errorFactory = createErrorFactory(Errors.invalidFormBody());
+   }
+   if (error.isErrorType(DBErrorType.NULL_USER)) {
+      setResponseStatus(event, HttpCode.NOT_FOUND);
+      errorFactory = createErrorFactory(Errors.unknownUser(error.cause));
+   }
+   if (error.isErrorType(DBErrorType.NULL_RELATIONSHIP)) {
+      setResponseStatus(event, HttpCode.NOT_FOUND);
+      errorFactory = createErrorFactory(Errors.unknownRelationship(error.cause));
+   }
+   if (error.isErrorType(DBErrorType.NULL_CHANNEL)) {
+      setResponseStatus(event, HttpCode.NOT_FOUND);
+      errorFactory = createErrorFactory(Errors.unknownChannel(error.cause));
+   }
+   if (error.isErrorType(DBErrorType.NULL_MESSAGE)) {
+      setResponseStatus(event, HttpCode.NOT_FOUND);
+      errorFactory = createErrorFactory(Errors.unknownMessage(error.cause));
+   }
+
+   return errorFactory;
+}

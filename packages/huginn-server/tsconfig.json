@@ -1,12 +1,7 @@
 {
    "extends": "../../tsconfig.base.json",
    "compilerOptions": {
-      "lib": ["ESNext"],
-      "paths": {
-         "@database": ["./src/database"],
-         "@utils/*": ["./src/utils/*"],
-         "@/*": ["./src/*"]
-      }
+      "lib": ["ESNext", "DOM"]
    },
-   "include": ["src", "package.json", "../huginn-backend-shared/src/error-factory.ts", "../huginn-server-h3/src/routes/_ws.ts"]
+   "include": ["src", "package.json"]
 }
