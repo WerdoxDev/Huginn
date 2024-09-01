@@ -9,10 +9,6 @@
          "path": "./packages/huginn-server",
       },
       {
-         "name": "huginn-server-h3",
-         "path": "./packages/huginn-server-h3",
-      },
-      {
          "name": "huginn-cdn",
          "path": "./packages/huginn-cdn",
       },
@@ -35,6 +31,10 @@
       {
          "name": "huginn-backend-shared",
          "path": "./packages/huginn-backend-shared",
+      },
+      {
+         "name": "huginn-bifrost",
+         "path": "./packages/huginn-bifrost",
       },
    ],
    "settings": {
