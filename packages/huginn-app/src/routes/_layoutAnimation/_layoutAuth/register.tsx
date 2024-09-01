@@ -7,6 +7,7 @@ import PasswordInput from "@components/input/PasswordInput";
 import RouteErrorComponent from "@components/RouteErrorComponent";
 import { useClient } from "@contexts/apiContext";
 import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
+import { useUser } from "@contexts/userContext";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInputs } from "@hooks/useInputs";
 import useUniqueUsernameMessage from "@hooks/useUniqueUsernameMessage";
@@ -32,6 +33,8 @@ function Register() {
       { name: "password", required: true },
    ]);
 
+   const { setUser } = useUser();
+
    const [hidden, setHidden] = useState(false);
    const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
    const { message: usernameMessageDetail, onFocusChanged } = useUniqueUsernameMessage(values, "username");
@@ -48,6 +51,8 @@ function Register() {
             });
 
             client.gateway.connect();
+
+            setUser(client.user);
          },
          async onSuccess() {
             setAuthBackgroundState(1);

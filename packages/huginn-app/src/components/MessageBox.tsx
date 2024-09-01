@@ -68,14 +68,18 @@ export default function MessageBox() {
       if (!event.shiftKey && event.code === "Enter") {
          event.preventDefault();
          const flags: MessageFlags = event.ctrlKey ? MessageFlags.SUPPRESS_NOTIFICATIONS : MessageFlags.NONE;
-         mutation.mutate({ channelId: params.channelId, content: serialize(editor.children), flags });
-         editor.delete({
-            at: {
-               anchor: Editor.start(editor, []),
-               focus: Editor.end(editor, []),
-            },
-         });
+         sendMessage(flags);
       }
+   }
+
+   function sendMessage(flags: MessageFlags) {
+      mutation.mutate({ channelId: params.channelId, content: serialize(editor.children), flags });
+      editor.delete({
+         at: {
+            anchor: Editor.start(editor, []),
+            focus: Editor.end(editor, []),
+         },
+      });
    }
 
    function serialize(nodes: Descendant[]) {
@@ -104,7 +108,13 @@ export default function MessageBox() {
                <div className="ml-2 flex gap-x-2">
                   <div className="bg-background h-8 w-8 rounded-full" />
                   <div className="bg-background h-8 w-8 rounded-full" />
-                  <div className="bg-background h-8 w-8 rounded-full" />
+                  <button
+                     className="bg-primary h-8 w-8 rounded-full p-0.5"
+                     type="button"
+                     onClick={() => sendMessage(MessageFlags.NONE)}
+                  >
+                     <IconLetsIconsSendHorFill className="text-text size-full" />
+                  </button>
                </div>
             </div>
          </form>
