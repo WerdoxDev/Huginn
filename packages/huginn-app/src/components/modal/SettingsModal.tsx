@@ -62,12 +62,16 @@ export default function SettingsModal() {
          setCurrentTab(flatTabs[defaultTabIndex]?.text ?? "");
          setSettingsValid(true);
       } else {
-         if (modifiedSettings.current?.serverAddress && settings.serverAddress !== modifiedSettings.current.serverAddress) {
+         if (
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+            (modifiedSettings.current?.serverAddress && settings.serverAddress !== modifiedSettings.current.serverAddress) ||
+            (modifiedSettings.current?.cdnAddress && settings.cdnAddress !== modifiedSettings.current.cdnAddress)
+         ) {
             dispatch({
                info: {
                   isOpen: true,
                   status: "default",
-                  text: "Server ip changed. The app should be restarted!",
+                  text: "Server or CDN address changed. The app should be restarted!",
                   title: "Hang on!",
                   action: {
                      confirm: {
