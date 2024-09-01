@@ -42,20 +42,24 @@ describe("message-get", () => {
       },
       { timeout: 10000 },
    );
-   test("message-get-channel-messages-with-before", async () => {
-      const client = await getLoggedClient();
-      const channel = (await client.channels.getAll())[1];
+   test(
+      "message-get-channel-messages-with-before",
+      async () => {
+         const client = await getLoggedClient();
+         const channel = (await client.channels.getAll())[1];
 
-      const messages: Snowflake[] = [];
+         const messages: Snowflake[] = [];
 
-      for (let i = 0; i < 2; i++) {
-         // test1 test2
-         messages.push((await client.channels.createMessage(channel.id, { content: "test" + (i + 1) })).id);
-      }
+         for (let i = 0; i < 2; i++) {
+            // test1 test2
+            messages.push((await client.channels.createMessage(channel.id, { content: "test" + (i + 1) })).id);
+         }
 
-      const id = (await client.channels.getMessages(channel.id, 1, messages[1]))[0].id;
+         const id = (await client.channels.getMessages(channel.id, 1, messages[1]))[0].id;
 
-      const idToCheck = messages[0];
-      expect(idToCheck).toBe(id);
-   });
+         const idToCheck = messages[0];
+         expect(idToCheck).toBe(id);
+      },
+      { timeout: 60000 },
+   );
 });

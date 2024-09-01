@@ -22,7 +22,7 @@ export default function useUpdater() {
 
    useEffect(() => {
       async function listenToUpdateProgress() {
-         unlistenFunction.current = await listen("tauri://update-download-progress", (e) => {
+         unlistenFunction.current = await listen("tauri://update-download-progress", e => {
             const payload = e.payload as UpdaterProgress;
 
             currentLength.current += payload.chunkLength / 2;

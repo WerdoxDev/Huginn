@@ -1,4 +1,5 @@
 import {
+   GatewayCode,
    GatewayDispatch,
    GatewayEvents,
    GatewayHeartbeat,
@@ -20,7 +21,7 @@ export class Gateway {
    private readonly client: HuginnClient;
    private emitter = new EventEmitter();
 
-   private socket?: WebSocket;
+   public socket?: WebSocket;
    private heartbeatInterval?: ReturnType<typeof setTimeout>;
    private sequence?: number;
    private sessionId?: Snowflake;
@@ -65,6 +66,8 @@ export class Gateway {
       if (this.options.log) {
          console.log("Gateway Connected!");
       }
+
+      this.emit("open", undefined);
    }
 
    private onClose(e: CloseEvent) {
@@ -79,6 +82,10 @@ export class Gateway {
       }
 
       setTimeout(() => {
+         if (e.code === GatewayCode.INVALID_SESSION) {
+            this.sequence = undefined;
+            this.sessionId = undefined;
+         }
          this.connect();
       }, 1000);
    }
@@ -123,7 +130,7 @@ export class Gateway {
          const identifyData: GatewayIdentify = {
             op: GatewayOperations.IDENTIFY,
             d: {
-               token: this.client.tokenHandler.token || "",
+               token: this.client.tokenHandler.token ?? "",
                intents: this.client.options.intents,
                properties: { os: "windows", browser: "idk", device: "idk" },
             },
@@ -134,9 +141,9 @@ export class Gateway {
          const resumeData: GatewayResume = {
             op: GatewayOperations.RESUME,
             d: {
-               token: this.client.tokenHandler.token || "",
+               token: this.client.tokenHandler.token ?? "",
                seq: this.sequence,
-               sessionId: this.sessionId || "",
+               sessionId: this.sessionId ?? "",
             },
          };
 

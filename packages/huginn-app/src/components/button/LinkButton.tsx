@@ -10,17 +10,17 @@ export default function LinkButton(props: {
    onClick?: () => void;
 }) {
    return props.to ? (
-      <div className={`w-max select-none text-accent ${props.className}`}>
+      <div className={`text-accent w-max select-none ${props.className}`}>
          <Link className="hover:underline" to={props.to} preload={props.preload}>
             {props.children}
          </Link>
       </div>
    ) : props.href ? (
-      <a className={`${props.className} select-none text-accent hover:underline`} href={props.href} target="_blank">
+      <a className={`${props.className} text-accent select-none hover:underline`} href={props.href} target="_blank">
          {props.children}
       </a>
    ) : (
-      <button className={`${props.className} select-none text-accent hover:underline `} type="button" onClick={props.onClick}>
+      <button className={`${props.className} text-accent select-none hover:underline `} type="button" onClick={props.onClick}>
          {props.children}
       </button>
    );

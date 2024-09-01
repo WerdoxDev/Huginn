@@ -1,7 +1,7 @@
-import { HuginnAPIError } from "@huginn/api/index";
+import { HuginnAPIError } from "@huginn/api";
 import type { HuginnError, HuginnErrorData } from "@huginn/shared";
 import React, { JSXElementConstructor, ReactNode } from "react";
-import { APIMessages } from "./errorMessages";
+import { APIMessages } from "./error-messages";
 import { InputStatus, InputValue, InputStatuses, InputValues } from "@/types";
 
 export const requiredFieldError: InputStatus = { code: "error", text: "Required" };
@@ -32,7 +32,7 @@ export function getInputsStatusesFromError(statuses: InputStatuses, error: Hugin
       if (!error.errors) {
          const apiMessage = Object.entries(APIMessages).find(([code]) => code === error.code.toString())?.[1];
          newStatuses[x] = { code: "error", text: apiMessage ?? error.message };
-      } else if (((field && x === field) ?? !field) && error.errors?.[x]) {
+      } else if (((field && x === field) ?? !field) && error.errors[x]) {
          newStatuses[x] = {
             code: "error",
             text: error.errors[x]._errors[0].message,

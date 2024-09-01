@@ -1,7 +1,7 @@
-import { ReactNode, HTMLInputTypeAttribute } from "react";
-import { SettingsContextType } from "./contexts/settingsContext";
 import { Placement } from "@floating-ui/react";
 import { APIDMChannel, APIGroupDMChannel, APIRelationUser, RelationshipType } from "@huginn/shared";
+import React, { HTMLInputTypeAttribute, ReactNode } from "react";
+import { SettingsContextType } from "./contexts/settingsContext";
 
 export type StatusCode = "none" | "default" | "error" | "success";
 
@@ -20,7 +20,7 @@ export type InputValue = {
 export type InputOptions = {
    name: string;
    required: boolean;
-   default?: string;
+   default?: string | null;
 };
 
 export type InputProp = {
@@ -43,11 +43,13 @@ export type MessageDetail = {
 export type HuginnInputProps = {
    children?: ReactNode;
    className?: string;
+   inputProps?: React.HTMLProps<HTMLDivElement>;
    status: InputStatus;
    type?: HTMLInputTypeAttribute;
    required?: boolean;
    value?: string;
-   hideBorder?: boolean;
+   border?: "none" | "left" | "right" | "top" | "bottom";
+   placeholder?: string;
    onChange?: (e: HTMLInputElement) => void;
    onFocus?: (focused: boolean) => void;
 };
@@ -78,9 +80,10 @@ export type UpdaterProgress = {
 export type SettingsTab = {
    name: string;
    text: string;
+   auth?: boolean;
    children?: Omit<SettingsTab, "children">[];
    icon?: ReactNode;
-   component?: (props: SettingsTabProps) => JSX.Element;
+   component?: (props: SettingsTabProps) => React.JSX.Element;
 };
 
 export type SettingsTabProps = {
@@ -106,6 +109,7 @@ export type ColorTheme = {
    success: string;
    text: string;
    error: string;
+   warning: string;
 };
 
 export type ThemeType = "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal";

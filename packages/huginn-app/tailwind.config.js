@@ -13,6 +13,7 @@ export default {
             success: "rgb(var(--color-success) / <alpha-value>)",
             text: "rgb(var(--color-text) / <alpha-value>)",
             error: "rgb(var(--color-error) / <alpha-value>)",
+            warning: "rgb(var(--color-warning) / <alpha-value>)",
          },
       },
       fontFamily: {

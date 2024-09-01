@@ -1,6 +1,5 @@
 import { useClient } from "@contexts/apiContext";
-import { APIGetUserChannelsResult } from "@huginn/shared";
-import { GatewayDMChannelCreateDispatchData } from "@huginn/shared";
+import { APIGetUserChannelsResult, GatewayDMChannelCreateData, GatewayPublicUserUpdateData, omit } from "@huginn/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { ReactNode, useEffect } from "react";
@@ -11,29 +10,40 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
    const navigate = useNavigate();
    const router = useRouter();
 
-   function onChannelCreated(d: GatewayDMChannelCreateDispatchData) {
-      queryClient.setQueryData(["channels", "@me"], (data: APIGetUserChannelsResult) =>
-         !data.some(x => x.id === d.id) ? [d, ...data] : data,
+   function onChannelCreated(d: GatewayDMChannelCreateData) {
+      queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], data =>
+         data && !data.some(x => x.id === d.id) ? [d, ...data] : data,
       );
       console.log(d);
    }
 
-   function onChannelDeleted(d: GatewayDMChannelCreateDispatchData) {
+   function onChannelDeleted(d: GatewayDMChannelCreateData) {
       if (router.state.location.pathname.includes(d.id)) {
          navigate({ to: "/channels/@me", replace: true });
       }
 
-      queryClient.setQueryData(["channels", "@me"], (data: APIGetUserChannelsResult) => data?.filter(x => x.id !== d.id));
+      queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], data => data?.filter(x => x.id !== d.id));
       console.log(d);
+   }
+
+   function onPublicUserUpdated(newUser: GatewayPublicUserUpdateData) {
+      queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], old =>
+         old?.map(channel => ({
+            ...channel,
+            recipients: channel.recipients.map(recipient => (recipient.id === newUser.id ? omit(newUser, ["system"]) : recipient)),
+         })),
+      );
    }
 
    useEffect(() => {
       client.gateway.on("channel_create", onChannelCreated);
       client.gateway.on("channel_delete", onChannelDeleted);
+      client.gateway.on("public_user_update", onPublicUserUpdated);
 
       return () => {
          client.gateway.off("channel_create", onChannelCreated);
          client.gateway.off("channel_delete", onChannelDeleted);
+         client.gateway.off("public_user_update", onPublicUserUpdated);
       };
    }, []);
 

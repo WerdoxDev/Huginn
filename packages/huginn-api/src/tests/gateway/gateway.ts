@@ -27,7 +27,7 @@ describe("gateway", () => {
          const identifyData: GatewayIdentify = {
             op: GatewayOperations.IDENTIFY,
             d: {
-               token: client.tokenHandler.token || "",
+               token: client.tokenHandler.token ?? "",
                intents: client.options.intents,
                properties: { os: "windows", browser: "idk", device: "idk" },
             },

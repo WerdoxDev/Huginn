@@ -1,9 +1,9 @@
 {
    "name": "@huginn/bundler",
-   "module": "index.ts",
+   "main": "./src/index.ts",
    "type": "module",
    "bin": {
-      "bundler": "./index.ts"
+      "bundler": "./src/index.ts"
    },
    "devDependencies": {
       "@types/bun": "latest",

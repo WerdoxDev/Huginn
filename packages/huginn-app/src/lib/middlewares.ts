@@ -1,5 +1,5 @@
 import { router } from "@/main";
-import { HuginnClient } from "@huginn/api/index";
+import { HuginnClient } from "@huginn/api";
 import { routeHistory } from "@contexts/historyContext";
 import { APIDMChannel, APIGroupDMChannel } from "@huginn/shared";
 import { Snowflake } from "@huginn/shared";
@@ -22,7 +22,6 @@ export function setup(client: HuginnClient) {
       return;
    } else {
       if (pathname !== "/login" && pathname !== "/register") {
-         console.log("redirect");
          throw redirect({ to: "/login", mask: pathname });
       }
    }

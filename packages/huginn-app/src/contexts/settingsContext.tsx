@@ -1,20 +1,32 @@
+import { DeepPartial, ThemeType } from "@/types";
 import { BaseDirectory, createDir, exists, readTextFile, writeFile } from "@tauri-apps/api/fs";
 import { appDataDir } from "@tauri-apps/api/path";
 import { Dispatch, ReactNode, createContext, useContext, useReducer } from "react";
-import { DeepPartial, ThemeType } from "@/types";
 
 export type SettingsContextType = {
    serverAddress: string;
+   cdnAddress: string;
    theme: ThemeType;
 };
 
-// const defaultValue: SettingsContextType = { serverAddress: "localhost:3000", theme: "pine green" };
-const defaultValue: SettingsContextType = { serverAddress: "192.168.178.51:3000", theme: "pine green" };
+const defaultValue: SettingsContextType = {
+   serverAddress: "https://asgard.huginn.dev",
+   cdnAddress: "https://asgard.huginn.dev",
+   theme: "pine green",
+};
+// const defaultValue: SettingsContextType = { serverAddress: "https://huginn-b4yw.onrender.com", theme: "pine green" };
 
 let value = defaultValue;
 if (window.__TAURI__) {
    await tryCreateSettingsFile();
-   value = JSON.parse(await readTextFile("./data/settings.json", { dir: BaseDirectory.AppData }));
+   value = { ...defaultValue, ...JSON.parse(await readTextFile("./data/settings.json", { dir: BaseDirectory.AppData })) };
+} else {
+   if (!localStorage.getItem("settings")) {
+      localStorage.setItem("settings", JSON.stringify(defaultValue));
+   }
+
+   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+   value = { ...defaultValue, ...JSON.parse(localStorage.getItem("settings")!) };
 }
 
 const SettingsContext = createContext<SettingsContextType>(value);
@@ -33,7 +45,11 @@ export function SettingsProvider(props: { children?: ReactNode }) {
 function settingsReducer(settings: SettingsContextType, action: DeepPartial<SettingsContextType>) {
    if (!action) return { ...settings };
 
-   writeSettingsFile({ ...settings, ...action });
+   if (window.__TAURI__) {
+      writeSettingsFile({ ...settings, ...action });
+   } else {
+      localStorage.setItem("settings", JSON.stringify({ ...settings, ...action }));
+   }
 
    return { ...settings, ...action };
 }

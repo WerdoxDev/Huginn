@@ -1,10 +1,17 @@
-import TitleBar from "@components/TitleBar";
+import { ChannelsContextMenu } from "@components/contextmenu/ChannelsContextMenu";
+import RelationshipContextMenu from "@components/contextmenu/RelationshipContextMenu";
+import RelationshipMoreContextMenu from "@components/contextmenu/RelationshipMoreContextMenu";
+import ImageCropModal from "@components/modal/ImageCropModal";
 import InfoModal from "@components/modal/InfoModal";
 import SettingsModal from "@components/modal/SettingsModal";
+import ModalErrorComponent from "@components/ModalErrorComponent";
+import TitleBar from "@components/TitleBar";
 import { useClient } from "@contexts/apiContext";
+import { ContextMenuProvider } from "@contexts/contextMenuContext";
 import { routeHistory } from "@contexts/historyContext";
 import { ModalProvider } from "@contexts/modalContext";
 import { ThemeProvier } from "@contexts/themeContext";
+import { UserProvider } from "@contexts/userContext";
 import { useWindow, useWindowDispatch } from "@contexts/windowContext";
 import { setup } from "@lib/middlewares";
 import { QueryClient } from "@tanstack/react-query";
@@ -13,12 +20,7 @@ import "@tauri-apps/api";
 import { UnlistenFn } from "@tauri-apps/api/event";
 import { appWindow } from "@tauri-apps/api/window";
 import { useEffect, useRef } from "react";
-// import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { TanStackRouterDevtools } from "@tanstack/router-devtools";
-import { ContextMenuProvider } from "@contexts/contextMenuContext";
-import { ChannelsContextMenu } from "@components/contextmenu/ChannelsContextMenu";
-import RelationshipMoreContextMenu from "@components/contextmenu/RelationshipMoreContextMenu";
-import RelationshipContextMenu from "@components/contextmenu/RelationshipContextMenu";
+import { ErrorBoundary } from "react-error-boundary";
 
 export type HuginnRouterContext = {
    queryClient: QueryClient;
@@ -38,11 +40,13 @@ function Root() {
    const appWindow = useWindow();
 
    useEffect(() => {
-      router.subscribe("onBeforeLoad", (arg) => {
+      router.subscribe("onBeforeLoad", arg => {
          routeHistory.lastPathname = arg.fromLocation.pathname;
       });
 
-      document.addEventListener("contextmenu", (e) => e.preventDefault());
+      document.addEventListener("contextmenu", e => {
+         e.preventDefault();
+      });
    }, []);
 
    return (
@@ -50,20 +54,25 @@ function Root() {
       <ThemeProvier>
          <ModalProvider>
             <ContextMenuProvider>
-               <div className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
-                  {router.state.location.pathname !== "/splashscreen" && <TitleBar />}
-                  <div className="relative h-full w-full">
-                     <Outlet />
-                     {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
-                     <TanStackRouterDevtools position="bottom-left" />
-                     {window.__TAURI__ && <AppMaximizedEvent />}
-                     <SettingsModal />
-                     <InfoModal />
-                     <ChannelsContextMenu />
-                     <RelationshipMoreContextMenu />
-                     <RelationshipContextMenu />
+               <UserProvider>
+                  <div className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
+                     {router.state.location.pathname !== "/splashscreen" && appWindow.environment === "desktop" && <TitleBar />}
+                     <div className="relative h-full w-full">
+                        <Outlet />
+                        {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
+                        {/* <TanStackRouterDevtools position="bottom-left" /> */}
+                        {appWindow.environment === "desktop" && <AppMaximizedEvent />}
+                        <ErrorBoundary FallbackComponent={ModalErrorComponent}>
+                           <SettingsModal />
+                           <ImageCropModal />
+                           <ChannelsContextMenu />
+                           <RelationshipMoreContextMenu />
+                           <RelationshipContextMenu />
+                        </ErrorBoundary>
+                        <InfoModal />
+                     </div>
                   </div>
-               </div>
+               </UserProvider>
             </ContextMenuProvider>
          </ModalProvider>
       </ThemeProvier>

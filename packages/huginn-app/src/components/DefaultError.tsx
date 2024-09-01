@@ -4,7 +4,7 @@ export default function DefaultError(props: ErrorComponentProps) {
    const router = useRouter();
 
    return (
-      <div className="flex h-full w-full flex-col items-center justify-center gap-y-1 bg-secondary text-xl text-error">
+      <div className="bg-secondary text-error flex h-full w-full flex-col items-center justify-center gap-y-1 text-xl">
          Ooops, There was a problem rendering this page!
          <span>{router.state.location.pathname}</span>
          <span>{props.info?.componentStack}</span>

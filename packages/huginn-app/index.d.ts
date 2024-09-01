@@ -17,7 +17,6 @@ type CustomText = FormattedText;
 type CustomRange = BaseRange & TextFormats & { text?: string };
 
 declare module "slate" {
-   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
    interface CustomTypes {
       Editor: CustomEditor;
       Element: CustomElement;

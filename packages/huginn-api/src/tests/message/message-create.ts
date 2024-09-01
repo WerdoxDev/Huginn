@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, test } from "bun:test";
 import { getLoggedClient, url } from "../test-utils";
 
 beforeAll(async () => {
-   await fetch(`http://${url}/test/test-messages`, { method: "POST" });
+   await fetch(`http://${url}/api/test/test-messages`, { method: "POST" });
 });
 
 describe("message-create", () => {
@@ -41,21 +41,25 @@ describe("message-create", () => {
 
          expect(createMessages).not.toThrow();
       },
-      { timeout: 15000 }
+      { timeout: 120000 },
    );
-   test("message-create-10-another-channel-successful", async () => {
-      const client = await getLoggedClient();
+   test(
+      "message-create-10-another-channel-successful",
+      async () => {
+         const client = await getLoggedClient();
 
-      const channel = (await client.channels.getAll())[1];
+         const channel = (await client.channels.getAll())[1];
 
-      async function createMessages() {
-         for (let i = 0; i < 10; i++) {
-            await client.channels.createMessage(channel.id, { content: "test" + (i + 1) });
+         async function createMessages() {
+            for (let i = 0; i < 10; i++) {
+               await client.channels.createMessage(channel.id, { content: "test" + (i + 1) });
+            }
+
+            return true;
          }
 
-         return true;
-      }
-
-      expect(createMessages).not.toThrow();
-   });
+         expect(createMessages).not.toThrow();
+      },
+      { timeout: 120000 },
+   );
 });

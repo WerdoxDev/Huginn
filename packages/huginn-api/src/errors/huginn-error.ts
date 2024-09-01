@@ -18,13 +18,12 @@ export class HuginnAPIError extends Error {
       public status: number,
       public method: string,
       public url: string,
-      // TODO: add 'files' here
-      bodyData: Pick<InternalRequest, "body">,
+
+      bodyData: Pick<InternalRequest, "body" | "files">,
    ) {
       super(HuginnAPIError.getMessage(rawError, status));
 
-      // TODO: add 'files: bodyData.files'
-      this.requestBody = { json: bodyData.body };
+      this.requestBody = { files: bodyData.files, json: bodyData.body };
    }
 
    private static getMessage(error: HuginnErrorData, status: number) {
@@ -45,7 +44,7 @@ export class HuginnAPIError extends Error {
 
    private static *flattenHuginnError(obj: HuginnError | HuginnErrorGroupWrapper, key = ""): IterableIterator<string> {
       if (isErrorResponse(obj)) {
-         return yield `${key.length ? `${key}[${obj.code}]` : `${obj.code}`}: ${obj.message}`.trim();
+         return yield `${key.length ? `${key}[${obj.code}]` : obj.code}: ${obj.message}`.trim();
       }
 
       for (const [otherKey, val] of Object.entries(obj)) {
@@ -60,6 +59,7 @@ export class HuginnAPIError extends Error {
          if (typeof val === "string") {
             yield val;
          }
+         // TODO: IF YOU EVER RUN INTO ERROR PROBLEMS LATER, MAYBE CHECK THIS
          //  else if (isErrorGroupWrapper(val)) {
          //    for (const error of val._errors) {
          //       yield* this.flattenHuginnError(error, nextKey);

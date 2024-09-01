@@ -1,8 +1,8 @@
 {
-   "extends": "../../tsconfig.json",
+   "extends": "../../tsconfig.base.json",
    "compilerOptions": {
+      "lib": ["DOM"],
       "isolatedDeclarations": true
    },
-   "include": ["**/*", "index.d.ts"]
-   // "references": [{ "path": "../huginn-shared" }]
+   "include": ["src"]
 }

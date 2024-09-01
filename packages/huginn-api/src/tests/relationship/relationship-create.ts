@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, test } from "bun:test";
 import { getLoggedClient, test2Credentials, test3Credentials, test4Credentials, url } from "../test-utils";
 
 beforeAll(async () => {
-   await fetch(`http://${url}/test/test-relationships`, { method: "POST" });
+   await fetch(`http://${url}/api/test/test-relationships`, { method: "POST" });
 });
 
 describe("relationship-create", () => {

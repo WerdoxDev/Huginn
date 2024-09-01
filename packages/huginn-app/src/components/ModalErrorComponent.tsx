@@ -1,13 +1,26 @@
-import { useRouter } from "@tanstack/react-router";
+import { useModalsDispatch } from "@contexts/modalContext";
+import { useErrorHandler } from "@hooks/useServerErrorHandler";
 import { useEffect } from "react";
-import { useServerErrorHandler } from "@hooks/useServerErrorHandler";
+import { useErrorBoundary } from "react-error-boundary";
 
 export default function ModalErrorComponent(props: { error: unknown }) {
-   const handleServerError = useServerErrorHandler();
-   const router = useRouter();
+   const { resetBoundary } = useErrorBoundary();
+   const dispatch = useModalsDispatch();
+   const handleError = useErrorHandler({
+      cancel: {
+         callback: () => {
+            dispatch({ settings: { isOpen: false }, info: { isOpen: false } });
+            resetBoundary();
+         },
+      },
+   });
+
+   // const router = useRouter();
 
    useEffect(() => {
-      handleServerError(props.error);
-      router.history.back();
+      handleError(props.error);
+      // router.history.go(-1);
    }, []);
+
+   return null;
 }
