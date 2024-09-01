@@ -32,7 +32,7 @@ import Feature from './components/Feature.vue';
                 </div>
 
                 <div class="flex flex-row pt-10 w-full space-x-2">
-                    <a href="http://huginn.dev/"
+                    <a href="/download"
                         class="flex justify-center items-center text-xl bg-[#7B563C] rounded-md px-5 w-full h-12 space-x-2 transition-all hover:bg-[#7b563c]/50">
                         <div class="font-bold">DOWNLOAD HUGINN</div>
                         <Icon icon="mingcute:windows-fill" class="size-6" />
