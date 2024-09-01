@@ -1,6 +1,6 @@
-import { router } from "@/cdn";
-import { uploadsDir } from "@/index";
-import { extractFileInfo, findImageByName, transformImage } from "@/utils/file-utils";
+import { router } from "#cdn";
+import { uploadsDir } from "#setup";
+import { extractFileInfo, findImageByName, transformImage } from "#utils/file-utils";
 import { useValidatedParams } from "@huginn/backend-shared";
 import { HttpCode } from "@huginn/shared";
 import { defineEventHandler, setResponseHeader, setResponseStatus } from "h3";

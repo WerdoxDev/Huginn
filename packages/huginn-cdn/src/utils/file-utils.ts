@@ -3,7 +3,7 @@ import path from "path";
 import sharp from "sharp";
 import { CDNError, CDNErrorType } from "../error";
 import { FileContentTypes, FileFormats, FileInfo, FileTypes } from "../types";
-import { uploadsDir } from "..";
+import { uploadsDir } from "../setup";
 import { createError } from "h3";
 
 export function extractFileInfo(filename: string): FileInfo {

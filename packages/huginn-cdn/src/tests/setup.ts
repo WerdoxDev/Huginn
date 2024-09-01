@@ -1,7 +1,7 @@
 import { afterAll, beforeAll } from "bun:test";
 import { unlink } from "node:fs/promises";
 import path from "path";
-import { uploadsDir } from "..";
+import { uploadsDir } from "../setup";
 
 async function deleteTestFiles() {
    for (const format of ["png", "jpeg", "jpg", "webp"]) {

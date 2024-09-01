@@ -1,6 +1,8 @@
 {
+   "name": "@huginn/cdn",
+   "main": "./src/index-no-serve.ts",
    "version": "0.1-dev",
-   "name": "huginn-cdn",
+   "type": "module",
    "scripts": {
       "dev": "bun --watch src/index.ts"
    },
@@ -15,5 +17,8 @@
    },
    "devDependencies": {
       "@types/bun": "latest"
+   },
+   "imports": {
+      "#*": "./src/*.ts"
    }
 }

@@ -1,5 +1,5 @@
-import { router } from "@/cdn";
-import { uploadsDir } from "@/index";
+import { router } from "#cdn";
+import { uploadsDir } from "#setup";
 import { catchError, invalidFormBody } from "@huginn/backend-shared";
 import { HttpCode } from "@huginn/shared";
 import { defineEventHandler, readFormData, setResponseStatus } from "h3";

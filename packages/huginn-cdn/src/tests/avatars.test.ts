@@ -1,7 +1,7 @@
 import { HuginnErrorFieldInformation } from "@huginn/shared";
 import { expect, test } from "bun:test";
 import path from "path";
-import { cdnHost, cdnPort, uploadsDir } from "..";
+import { cdnHost, cdnPort, uploadsDir } from "../setup";
 
 const url = `http://${cdnHost}:${cdnPort}`;
 
