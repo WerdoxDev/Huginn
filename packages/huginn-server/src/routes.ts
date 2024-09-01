@@ -5,7 +5,6 @@ export async function importRoutes() {
 
    for (const route of routes) {
       const fixedRoute = `./routes/${route.replace(".ts", "")}`;
-      console.log(fixedRoute);
       await import(fixedRoute);
    }
 }
