@@ -7,8 +7,8 @@ import { BuildType, type AppVersion, type BuildFiles, type Version } from "./typ
 export const APP_PATH: string = process.env.APP_PATH!;
 export const BUILDS_PATH: string = process.env.BUILDS_PATH!;
 
-export const TAURI_DEBUG_BUILD_PATH: string = process.env.TAURI_DEBUG_BUILD_PATH!;
-export const TAURI_RELEASE_BUILD_PATH: string = process.env.TAURI_RELEASE_BUILD_PATH!;
+export const TAURI_DEBUG_NSIS_PATH: string = process.env.TAURI_DEBUG_NSIS_PATH!;
+export const TAURI_RELEASE_NSIS_PATH: string = process.env.TAURI_RELEASE_NSIS_PATH!;
 
 export const CARGO_TOML_PATH: string = process.env.CARGO_TOML_PATH!;
 export const PACKAGE_JSON_PATH: string = process.env.PACKAGE_JSON_PATH!;
@@ -54,6 +54,7 @@ export async function getBuildFiles(buildPath: string, version: string): Promise
 
    const zipFileName = files.find(x => x.endsWith(".zip") && x.includes(version));
    const sigFileName = files.find(x => x.endsWith(".sig") && x.includes(version));
+   const msiFileName = files.find(x => )
 
    if (!zipFileName || !sigFileName) throw new Error(`.zip or .sig file not found in (${buildPath})`);
 

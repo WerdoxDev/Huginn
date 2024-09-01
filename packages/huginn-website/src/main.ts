@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import './style.css'
 
 import { createApp, createRenderer } from 'vue'
@@ -31,3 +32,10 @@ export const router = createRouter({
 })
 
 createApp(App).use(router).mount('#app')
+=======
+import { createApp } from 'vue'
+import './style.css'
+import App from './App.vue'
+
+createApp(App).mount('#app')
+>>>>>>> master
