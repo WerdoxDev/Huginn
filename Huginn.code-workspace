@@ -36,6 +36,10 @@
          "name": "huginn-bifrost",
          "path": "./packages/huginn-bifrost",
       },
+      {
+         "name": "huginn-website",
+         "path": "./packages/huginn-website",
+      },
    ],
    "settings": {
       "files.exclude": {
