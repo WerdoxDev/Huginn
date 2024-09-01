@@ -11,7 +11,10 @@ declare global {
   const IconGravityUiCheck: (typeof import("~icons/gravity-ui/check.jsx"))["default"]
   const IconGravityUiPlus: typeof import('~icons/gravity-ui/plus.jsx')['default']
   const IconIconParkSolidDownOne: (typeof import("~icons/icon-park-solid/down-one.jsx"))["default"]
+<<<<<<< HEAD
+=======
   const IconLetsIconsSendHorFill: typeof import('~icons/lets-icons/send-hor-fill.jsx')['default']
+>>>>>>> master
   const IconLineMdAlert: (typeof import("~icons/line-md/alert.jsx"))["default"]
   const IconMaterialSymbolsErrorOutline: typeof import('~icons/material-symbols/error-outline.jsx')['default']
   const IconMaterialSymbolsInfoOutline: typeof import('~icons/material-symbols/info-outline.jsx')['default']
