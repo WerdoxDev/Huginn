@@ -15,7 +15,13 @@ export default function ModalBackground() {
       //    leaveFrom="opacity-100"
       //    leaveTo="opacity-0"
       // >
-      <DialogBackdrop className={clsx("fixed inset-0 top-6 bg-black/50", !appWindow.maximized && "rounded-b-lg")} />
+      <DialogBackdrop
+         className={clsx(
+            "fixed inset-0 bg-black/50",
+            !appWindow.maximized && "rounded-b-lg",
+            appWindow.environment === "desktop" && "top-6",
+         )}
+      />
       // </TransitionChild>
    );
 }
