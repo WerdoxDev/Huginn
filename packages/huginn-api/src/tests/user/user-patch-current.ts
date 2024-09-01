@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { editCredentials, getLoggedClient } from "../test-utils";
 import { APIPatchCurrentUserJSONBody } from "@huginn/shared";
+import path from "path";
 
 describe("user-patch-current", () => {
    test("user-patch-current-password-incorrect", async () => {
@@ -10,7 +11,6 @@ describe("user-patch-current", () => {
          displayName: "test-edited",
          email: "test.edited@gmail.com",
          username: "test-edited",
-         avatar: "test-edited-avatar",
          newPassword: "test-edited",
          password: "test-incorrect",
       };
@@ -24,12 +24,20 @@ describe("user-patch-current", () => {
          displayName: "t",
          email: "test.edited@gmail.com",
          username: "t",
-         avatar: "test-edited-avatar",
+         newPassword: "test-edited",
+         password: "test",
+      };
+
+      const edit2: APIPatchCurrentUserJSONBody = {
+         displayName: "",
+         email: "test.edited@gmail.com",
+         username: "",
          newPassword: "test-edited",
          password: "test",
       };
 
       expect(() => client.users.edit(edit)).toThrow("Invalid Form Body");
+      expect(() => client.users.edit(edit2)).toThrow("Invalid Form Body");
    });
    test("user-patch-current-invalid-email", async () => {
       const client = await getLoggedClient();
@@ -38,7 +46,6 @@ describe("user-patch-current", () => {
          displayName: "test-edited",
          email: "invalid",
          username: "test-edited",
-         avatar: "test-edited-avatar",
          newPassword: "test-edited",
          password: "test",
       };
@@ -52,7 +59,6 @@ describe("user-patch-current", () => {
          displayName: "test-edited",
          email: "test-edited@gmail.com",
          username: "test-edited",
-         avatar: "test-edited-avatar",
          newPassword: "test-edited",
          password: "test",
       });
@@ -75,11 +81,19 @@ describe("user-patch-current", () => {
          displayName: "test",
          email: "test@gmail.com",
          username: "test",
-         avatar: "test-avatar",
          newPassword: "test",
          password: "test-edited",
       });
 
       expect(result).toBeDefined();
+   });
+
+   test("user-patch-current-avatar", async () => {
+      const client = await getLoggedClient();
+
+      const result = await client.users.edit({ avatar: path.resolve(__dirname, "../pixel.png") });
+
+      expect(result.avatar).toBeDefined();
+      expect(result.avatar).toHaveLength(32);
    });
 });

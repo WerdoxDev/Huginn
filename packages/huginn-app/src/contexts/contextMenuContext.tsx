@@ -20,7 +20,6 @@ export function ContextMenuProvider(props: { children?: ReactNode }) {
 }
 
 function contextMenusReducer(contextMenus: ContextMenuContextType, action: ContextMenuContextType): ContextMenuContextType {
-   console.log(action);
    return { ...contextMenus, ...action };
 }
 

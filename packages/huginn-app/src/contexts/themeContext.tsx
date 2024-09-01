@@ -12,6 +12,7 @@ const ceruleanTheme: ColorTheme = {
    success: "#76FF7A",
    text: "#EBEBD3",
    error: "#FA8072",
+   warning: "#ED9121",
 };
 
 const pineGreenTheme: ColorTheme = {
@@ -24,6 +25,7 @@ const pineGreenTheme: ColorTheme = {
    success: "#76FF7A",
    text: "#EBEBD3",
    error: "#FA8072",
+   warning: "#ED9121",
 };
 
 const eggplantTheme: ColorTheme = {
@@ -36,6 +38,7 @@ const eggplantTheme: ColorTheme = {
    success: "#76FF7A",
    text: "#EBEBD3",
    error: "#FA8072",
+   warning: "#ED9121",
 };
 
 const coffeeTheme: ColorTheme = {
@@ -48,6 +51,7 @@ const coffeeTheme: ColorTheme = {
    success: "#76FF7A",
    text: "#EBEBD3",
    error: "#FA8072",
+   warning: "#ED9121",
 };
 
 const charcoalTheme: ColorTheme = {
@@ -60,6 +64,7 @@ const charcoalTheme: ColorTheme = {
    success: "#76FF7A",
    text: "#EBEBD3",
    error: "#FA8072",
+   warning: "#ED9121",
 };
 
 const defaultValue: ColorTheme = pineGreenTheme;
@@ -114,6 +119,7 @@ function setColorProperty(theme: ColorTheme) {
    style.setProperty("--color-success", hexToRgb(theme.success));
    style.setProperty("--color-text", hexToRgb(theme.text));
    style.setProperty("--color-error", hexToRgb(theme.error));
+   style.setProperty("--color-warning", hexToRgb(theme.warning));
 }
 
 function hexToRgb(hex: string) {

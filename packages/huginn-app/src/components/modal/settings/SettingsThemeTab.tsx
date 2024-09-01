@@ -19,10 +19,8 @@ export default function SettingsThemeTab(props: SettingsTabProps) {
    }
 
    return (
-      <>
-         <HuginnDropbox items={themes} onChange={onChange} defaultIndex={themes.findIndex((x) => x.value === props.settings.theme)}>
-            <HuginnDropbox.Label>Color Theme</HuginnDropbox.Label>
-         </HuginnDropbox>
-      </>
+      <HuginnDropbox items={themes} onChange={onChange} defaultIndex={themes.findIndex(x => x.value === props.settings.theme)}>
+         <HuginnDropbox.Label>Color Theme</HuginnDropbox.Label>
+      </HuginnDropbox>
    );
 }

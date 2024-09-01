@@ -1,4 +1,4 @@
-import { HuginnClient } from "@huginn/api/index";
+import { HuginnClient } from "@huginn/api";
 import { ReactNode, createContext, useContext, useState } from "react";
 import { useSettings } from "./settingsContext";
 
@@ -12,9 +12,9 @@ export function APIProvider(props: { children?: ReactNode }) {
 
    const [client] = useState<APIContextType>(
       new HuginnClient({
-         rest: { api: `http://${settings.serverAddress}` },
+         rest: { api: `${settings.serverAddress}/api`, cdn: settings.cdnAddress },
          gateway: {
-            url: `ws://${settings.serverAddress}/gateway`,
+            url: `${settings.serverAddress}/gateway`,
             createSocket(url) {
                return new WebSocket(url);
             },

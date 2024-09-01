@@ -15,7 +15,9 @@ export default function RelationshipMoreContextMenu() {
       <ContextMenu close={close} isOpen={context.isOpen} position={context.position}>
          <ContextMenu.Item
             label="Remove friend"
-            onClick={() => removeFriendMutation.mutate(data.user.id)}
+            onClick={() => {
+               removeFriendMutation.mutate(data.user.id);
+            }}
             className="!text-error focus:!bg-error/80 focus:!text-white"
          />
       </ContextMenu>

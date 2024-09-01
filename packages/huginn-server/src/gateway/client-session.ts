@@ -1,11 +1,11 @@
+import { prisma } from "#database/index";
+import { ClientSessionInfo } from "#utils/types";
 import { constants } from "@huginn/shared";
 import { GatewayCode } from "@huginn/shared";
 import { BasePayload } from "@huginn/shared";
 import { idFix } from "@huginn/shared";
 import { ServerWebSocket } from "bun";
 import { EventEmitter } from "node:events";
-import { prisma } from "../db";
-import { ClientSessionInfo } from "../types";
 
 export class ClientSession extends EventEmitter {
    public data: ClientSessionInfo;
@@ -72,12 +72,35 @@ export class ClientSession extends EventEmitter {
    }
 
    private async subscribeClientEvents() {
-      this.subscribe(this.data.user.id);
+      const userId = this.data.user.id;
+      this.subscribe(userId);
 
-      const clientChannels = idFix(await prisma.channel.getUserChannels(this.data.user.id, true));
+      const clientChannels = idFix(await prisma.channel.getUserChannels(userId, true));
 
       for (const channel of clientChannels) {
          this.subscribe(channel.id);
+      }
+
+      const relationshipUserIds = idFix(
+         await prisma.relationship.findMany({
+            where: { ownerId: BigInt(userId) },
+            select: { user: { select: { id: true } } },
+         }),
+      ).map(x => x.user.id);
+
+      const channelUserIds = idFix(
+         await prisma.channel.findMany({
+            where: { recipients: { some: { id: BigInt(userId) } } },
+            select: { recipients: { where: { id: { not: BigInt(userId) } }, select: { id: true } } },
+         }),
+      )
+         .flatMap(x => x.recipients)
+         .map(x => x.id);
+
+      const clientUserIds = [...new Set([...relationshipUserIds, ...channelUserIds])];
+
+      for (const userId of clientUserIds) {
+         this.subscribe(userId + "_public");
       }
    }
 

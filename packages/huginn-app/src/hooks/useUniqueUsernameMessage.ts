@@ -1,16 +1,18 @@
 import { constants } from "@huginn/shared";
-import { Field } from "@huginn/shared";
+import { Fields } from "@huginn/shared";
 import { useEffect, useRef, useState } from "react";
 import { useClient } from "@contexts/apiContext";
 import { InputValues, MessageDetail, StatusCode } from "@/types";
+import { useUser } from "@contexts/userContext";
 
 export default function useUniqueUsernameMessage(values: InputValues, usernameField: string) {
    const client = useClient();
+   const { user } = useUser();
 
    const defaultMessage = "Please only use numbers, letters, _";
    const [message, setMessage] = useState<MessageDetail>({ text: defaultMessage, status: "default", visible: false });
 
-   const usernameTimeout = useRef<NodeJS.Timeout>();
+   const usernameTimeout = useRef<number>();
    const lastFocus = useRef<boolean>(false);
    const prevUsername = useRef(values[usernameField].value);
 
@@ -19,9 +21,9 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
          return;
       }
 
-      onChanged(values[usernameField].value);
+      onChanged(values[usernameField].value, user?.username);
       prevUsername.current = values[usernameField].value;
-   }, [values]);
+   }, [values, user]);
 
    function set(message: string, state: StatusCode, visible: boolean) {
       setMessage({ text: message, status: state, visible });
@@ -42,20 +44,19 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
       return isValid;
    }
 
-   function onChanged(value: string) {
-      console.log("hi");
-      if (!value) {
-         set(defaultMessage, "default", true);
+   function onChanged(value: string, username?: string) {
+      if (!value || value === username) {
+         set(defaultMessage, "default", lastFocus.current);
+         clearTimeout(usernameTimeout.current);
          return;
       }
 
       if (!validateLength(value)) {
-         set(Field.wrongLength(constants.USERNAME_MIN_LENGTH, constants.USERNAME_MAX_LENGTH)[0], "error", true);
+         set(Fields.wrongLength(constants.USERNAME_MIN_LENGTH, constants.USERNAME_MAX_LENGTH)[0], "error", true);
          return;
       }
 
       if (usernameTimeout.current) {
-         console.log("clear");
          clearTimeout(usernameTimeout.current);
       }
 
@@ -70,5 +71,5 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
       setMessage(prev => ({ text: prev.text, status: prev.status, visible: prev.status === "error" ? true : isFocused }));
    }
 
-   return { message, onFocusChanged };
+   return { message, onFocusChanged, onChanged };
 }

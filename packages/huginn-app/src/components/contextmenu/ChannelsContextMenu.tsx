@@ -16,7 +16,9 @@ export function ChannelsContextMenu() {
       <ContextMenu close={close} isOpen={context.isOpen} position={context.position}>
          <ContextMenu.Item
             label={data.type === ChannelType.DM ? "Close DM" : "Leave Group"}
-            onClick={() => deleteChannelMutation.mutate(data.id)}
+            onClick={() => {
+               deleteChannelMutation.mutate(data.id);
+            }}
             className="!text-error focus:!bg-error/80 focus:!text-white"
          />
          <ContextMenu.Divider />

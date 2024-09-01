@@ -28,14 +28,14 @@ export default function AnimatedOutlet(props: {
 
          if (
             props.updateFor?.includes(router.state.location.pathname) &&
-            (!routeHistory.lastPathname || props.updateFor?.includes(routeHistory.lastPathname))
+            (!routeHistory.lastPathname || props.updateFor.includes(routeHistory.lastPathname))
          ) {
             setRenderedContext(cloneDeep(router));
          } else if (
             props.updateFor &&
-            !props.updateFor?.includes(router.state.location.pathname) &&
+            !props.updateFor.includes(router.state.location.pathname) &&
             routeHistory.lastPathname &&
-            !props.updateFor?.includes(routeHistory.lastPathname)
+            !props.updateFor.includes(routeHistory.lastPathname)
          ) {
             setRenderedContext(cloneDeep(router));
          }

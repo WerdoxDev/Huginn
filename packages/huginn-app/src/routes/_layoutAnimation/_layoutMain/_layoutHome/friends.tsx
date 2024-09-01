@@ -1,4 +1,4 @@
-import ModalErrorComponent from "@components/ModalErrorComponent";
+import RouteErrorComponent from "@components/RouteErrorComponent";
 import AddFriendTab from "@components/friends/AddFriendTab";
 import FriendsTabItem from "@components/friends/FriendsTabItem";
 import OnlineFriendsTab from "@components/friends/OnlineFriendsTab";
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/
    loader({ context: { queryClient, client } }) {
       return queryClient.ensureQueryData(getRelationshipsOptions(client));
    },
-   errorComponent: ModalErrorComponent,
+   errorComponent: RouteErrorComponent,
    gcTime: 0,
 });
 
@@ -32,14 +32,14 @@ function Friends() {
    return (
       <div className="flex h-full flex-col">
          <TabGroup as={Fragment} defaultIndex={friends.length === 0 ? 3 : 0}>
-            <div className="flex h-[4.75rem] flex-shrink-0 items-center bg-tertiary px-6">
+            <div className="bg-tertiary flex h-[4.75rem] flex-shrink-0 items-center px-6">
                <TabList className="mr-5 flex justify-center gap-x-5">
-                  <div className="flex items-center justify-center gap-x-2.5 text-text">
+                  <div className="text-text flex items-center justify-center gap-x-2.5">
                      <IconFaSolidUserFriends className="size-6" />
                      <span className="text-lg font-bold">Friends</span>
                   </div>
 
-                  {tabs.map((tab) => (
+                  {tabs.map(tab => (
                      <FriendsTabItem key={tab}>{tab}</FriendsTabItem>
                   ))}
 
@@ -48,8 +48,8 @@ function Friends() {
                         <button
                            className={`rounded-md px-2 outline-none ${
                               selected
-                                 ? "pointer-events-none bg-primary text-text"
-                                 : "text-text ring-1 ring-primary hover:bg-primary hover:text-text hover:ring-0"
+                                 ? "bg-primary text-text pointer-events-none"
+                                 : "text-text ring-primary hover:bg-primary hover:text-text ring-1 hover:ring-0"
                            }`}
                         >
                            Add Friend
@@ -66,7 +66,7 @@ function Friends() {
                <AddFriendTab />
             </TabPanels>
          </TabGroup>
-         <div className="flex h-16 w-full flex-shrink-0 bg-background" />
+         <div className="bg-background flex h-16 w-full flex-shrink-0" />
       </div>
    );
 }

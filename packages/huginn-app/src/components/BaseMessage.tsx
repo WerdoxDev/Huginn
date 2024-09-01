@@ -1,18 +1,17 @@
-import { useClient } from "@contexts/apiContext";
-import { APIMessageUser, MessageFlags } from "@huginn/shared";
+import { useUser } from "@contexts/userContext";
+import { APIMessageUser, MessageFlags, hasFlag } from "@huginn/shared";
+import { tokenize } from "@lib/huginn-tokenizer";
 import { forwardRef, useCallback, useMemo } from "react";
 import { Descendant, Node, Path, Range, Text, createEditor } from "slate";
 import { DefaultElement, Editable, RenderElementProps, RenderLeafProps, Slate, withReact } from "slate-react";
-import UserIconWithStatus from "./UserIconWithStatus";
+import UserAvatarWithStatus from "./UserAvatarWithStatus";
 import MessageLeaf from "./editor/MessageLeaf";
-import { tokenize } from "@lib/huginn-tokenizer";
-import { hasFlag } from "@huginn/shared";
 
 const BaseMessage = forwardRef<HTMLLIElement, { content?: string; author: APIMessageUser; flags?: MessageFlags | null }>(
    function (props, ref) {
-      const client = useClient();
+      const { user } = useUser();
 
-      const isSelf = useMemo(() => props.author.id === client.user?.id, [props.author]);
+      const isSelf = useMemo(() => props.author.id === user?.id, [props.author]);
       const editor = useMemo(() => withReact(createEditor()), []);
 
       const initialValue = useMemo(() => deserialize(props.content ?? ""), []);
@@ -46,20 +45,20 @@ const BaseMessage = forwardRef<HTMLLIElement, { content?: string; author: APIMes
                text: token.content,
             });
 
-            skippedCharacters += (token.mark?.length || 0) * 2;
+            skippedCharacters += (token.mark?.length ?? 0) * 2;
          }
 
          return ranges;
       }, []);
 
       return (
-         <li ref={ref} className="group select-text rounded-lg p-2 hover:bg-secondary">
+         <li ref={ref} className="hover:bg-secondary group select-text rounded-lg p-2">
             <div className={`flex flex-col items-start gap-y-2 ${isSelf ? "ml-0" : "ml-2"}`}>
                <div className="flex items-center gap-x-2 overflow-hidden rounded-xl">
-                  <UserIconWithStatus statusSize="0.5rem" size="1.75rem" className="bg-background" />
-                  <div className="text-sm text-text">{isSelf ? "You" : props.author.displayName}</div>
+                  <UserAvatarWithStatus userId={props.author.id} avatarHash={props.author.avatar} statusSize="0.5rem" size="1.75rem" />
+                  <div className="text-text text-sm">{isSelf ? "You" : (props.author.displayName ?? props.author.username)}</div>
                   {props.flags && hasFlag(props.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
-                     <IconMdiNotificationsOff className="size-4 text-text" />
+                     <IconMdiNotificationsOff className="text-text size-4" />
                   ) : null}
                </div>
                {/* <div className="flex flex-col items-start gap-y-0.5"> */}

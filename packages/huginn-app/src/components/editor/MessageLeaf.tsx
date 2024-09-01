@@ -45,9 +45,11 @@ function SpoilerLeaf(props: RenderLeafProps) {
 
    return (
       <span
-         className={`inline-block rounded-sm px-0.5 transition-colors ${hidden ? "cursor-pointer bg-tertiary text-tertiary" : "bg-white/20"}`}
+         className={`inline-block rounded-sm px-0.5 transition-colors ${hidden ? "bg-tertiary text-tertiary cursor-pointer" : "bg-white/20"}`}
          {...props.attributes}
-         onClick={() => setHidden(false)}
+         onClick={() => {
+            setHidden(false);
+         }}
       >
          {props.children}
       </span>

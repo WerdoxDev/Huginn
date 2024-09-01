@@ -10,7 +10,7 @@ export default function LoadingButton(props: HuginnButtonProps & { loading: bool
          {...props}
       >
          {props.loading ? (
-            <IconSvgSpinners3DotsFade className="absolute h-8 w-8 text-text" />
+            <IconSvgSpinners3DotsFade className="text-text absolute h-8 w-8" />
          ) : (
             <div className="absolute">{props.children}</div>
          )}

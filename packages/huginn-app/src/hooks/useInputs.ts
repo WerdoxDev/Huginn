@@ -22,7 +22,9 @@ export function useInputs(inputsOptions: InputOptions[]) {
          value: newValues[x.name].value,
          status: newStatuses[x.name],
          required: x.required,
-         onChange: e => onValueChanged(x.name, e.value),
+         onChange: e => {
+            onValueChanged(x.name, e.value);
+         },
       };
    }
 
@@ -39,18 +41,20 @@ export function useInputs(inputsOptions: InputOptions[]) {
             value: values[x.name].value,
             status: statuses[x.name],
             required: x.required,
-            onChange: e => onValueChanged(x.name, e.value),
+            onChange: e => {
+               onValueChanged(x.name, e.value);
+            },
          };
       }
 
       setInputProps(newInputsProps);
    }, [values, statuses]);
 
-   function onValueChanged(inputName: string, value: string) {
+   function onValueChanged(inputName: string, value: string | null) {
       const updatedValues = { ...values };
       const updatedStatuses = { ...statuses };
 
-      updatedValues[inputName].value = value;
+      updatedValues[inputName].value = value ?? "";
       updatedStatuses[inputName] = getInputCurrentStatus(values[inputName], inputName, errorStatuses);
 
       setValues(updatedValues);

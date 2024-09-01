@@ -9,6 +9,10 @@
          "path": "./packages/huginn-server",
       },
       {
+         "name": "huginn-cdn",
+         "path": "./packages/huginn-cdn",
+      },
+      {
          "name": "huginn-api",
          "path": "./packages/huginn-api",
       },
@@ -24,6 +28,14 @@
          "name": "huginn-shared",
          "path": "./packages/huginn-shared",
       },
+      {
+         "name": "huginn-backend-shared",
+         "path": "./packages/huginn-backend-shared",
+      },
+      {
+         "name": "huginn-bifrost",
+         "path": "./packages/huginn-bifrost",
+      },
    ],
    "settings": {
       "files.exclude": {
@@ -32,7 +44,7 @@
       "workbench.editorAssociations": {
          "*.md": "vscode.markdown.preview.editor",
       },
-      "typescript.tsserver.experimental.enableProjectDiagnostics": true,
       "deno.enable": false,
+      "typescript.tsdk": "ROOT\\node_modules\\typescript\\lib",
    },
 }

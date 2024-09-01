@@ -9,18 +9,18 @@ import {
    GatewayOperations,
    GatewayReadyDispatch,
    GatewayResume,
-   GatewayResumed,
+   GatewayResumedData,
 } from "@huginn/shared";
 import { Snowflake, snowflake } from "@huginn/shared";
 import { idFix, isOpcode } from "@huginn/shared";
 import { ServerWebSocket } from "bun";
 import consola from "consola";
-import { prisma } from "../db";
-import { verifyToken } from "../factory/token-factory";
-import { logGatewayClose, logGatewayOpen, logGatewayRecieve, logGatewaySend, logServerError } from "../log-utils";
-import { ServerGatewayOptions } from "../types";
 import { ClientSession } from "./client-session";
-import { validateGatewayData } from "./gateway-utils";
+import { validateGatewayData } from "../utils/gateway-utils";
+import { logGatewayOpen, logGatewayClose, logGatewayRecieve, logServerError, logGatewaySend } from "@huginn/backend-shared";
+import { prisma } from "#database/index";
+import { verifyToken } from "#utils/token-factory";
+import { ServerGatewayOptions } from "#utils/types";
 
 export class ServerGateway {
    private readonly options: ServerGatewayOptions;
@@ -93,7 +93,7 @@ export class ServerGateway {
             return;
          }
 
-         logServerError("/gateway", e);
+         logServerError("/gateway", e as Error);
          ws.close(GatewayCode.UNKNOWN, "UNKNOWN");
       }
    }
@@ -138,7 +138,7 @@ export class ServerGateway {
          return;
       }
 
-      const user = idFix(await prisma.user.getById(payload?.id));
+      const user = idFix(await prisma.user.getById(payload.id));
       const sessionId = snowflake.generateString();
 
       ws.data = sessionId;
@@ -195,7 +195,12 @@ export class ServerGateway {
          this.send(client.ws, _data);
       }
 
-      const resumedData: GatewayResumed = { t: "resumed", op: GatewayOperations.DISPATCH, d: undefined, s: client.increaseSequence() };
+      const resumedData: GatewayResumedData = {
+         t: "resumed",
+         op: GatewayOperations.DISPATCH,
+         d: undefined,
+         s: client.increaseSequence(),
+      };
       this.send(client.ws, resumedData);
    }
 
