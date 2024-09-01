@@ -108,9 +108,6 @@ export default function MessageBox() {
                <div className="ml-2 flex gap-x-2">
                   <div className="bg-background h-8 w-8 rounded-full" />
                   <div className="bg-background h-8 w-8 rounded-full" />
-<<<<<<< HEAD
-                  <div className="bg-background h-8 w-8 rounded-full" />
-=======
                   <button
                      className="bg-primary h-8 w-8 rounded-full p-0.5"
                      type="button"
@@ -118,7 +115,6 @@ export default function MessageBox() {
                   >
                      <IconLetsIconsSendHorFill className="text-text size-full" />
                   </button>
->>>>>>> master
                </div>
             </div>
          </form>
