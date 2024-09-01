@@ -10,8 +10,8 @@ export type SettingsContextType = {
 };
 
 const defaultValue: SettingsContextType = {
-   serverAddress: "http://localhost:3000",
-   cdnAddress: "http://localhost:3000",
+   serverAddress: "https://asgard.huginn.dev",
+   cdnAddress: "https://asgard.huginn.dev",
    theme: "pine green",
 };
 // const defaultValue: SettingsContextType = { serverAddress: "https://huginn-b4yw.onrender.com", theme: "pine green" };
