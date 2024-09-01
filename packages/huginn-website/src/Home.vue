@@ -2,6 +2,7 @@
 
 import { Icon } from '@iconify/vue/dist/iconify.js';
 import Feature from './components/Feature.vue';
+import { RouterLink } from 'vue-router';
 
 </script>
 
@@ -32,11 +33,11 @@ import Feature from './components/Feature.vue';
                 </div>
 
                 <div class="flex flex-row pt-10 w-full space-x-2">
-                    <a href="/download"
+                    <RouterLink to="/download"
                         class="flex justify-center items-center text-xl bg-[#7B563C] rounded-md px-5 w-full h-12 space-x-2 transition-all hover:bg-[#7b563c]/50">
                         <div class="font-bold">DOWNLOAD HUGINN</div>
                         <Icon icon="mingcute:windows-fill" class="size-6" />
-                    </a>
+                    </RouterLink>
 
                     <a href="https://app.Huginn.dev/"
                         class="bg-[#262626] border-2 border-[#464646] size-12 rounded-md flex flex-shrink-0 justify-center items-center transition-all hover:bg-[#1f1f1f]">
