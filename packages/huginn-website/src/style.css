@@ -20,3 +20,7 @@
 ::selection{
   background: #D99A6C5f;
 }
+
+#app, html, body{
+  height: 100%;
+}
