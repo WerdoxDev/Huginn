@@ -42,7 +42,7 @@
 
             <h3 class="text-lg"><span class="text-[#EBEBD3]/70">Instagram:</span> <a
                     class="text-[#D99A6C] hover:underline" href="https://www.instagram.com/werdox.dev/"
-                    target="_blank">https://www.instagram.com/werdox.dev/</a>
+                    target="_blank">https://www.instagram.com/werdox.dev</a>
             </h3>
         </div>
     </div>

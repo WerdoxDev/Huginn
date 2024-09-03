@@ -32,7 +32,8 @@ watch(selectedOption, () => { console.log(selectedOption.value) })
                 <Icon icon="gridicons:dropdown" class="ml-auto" />
             </ListboxButton>
 
-            <ListboxOptions class="ui-open:bg-[#262626] ui-open:rounded-md absolute w-full mt-1 overflow-hidden">
+            <ListboxOptions
+                class="ui-open:bg-[#262626] ui-open:rounded-md ui-open:shadow-lg absolute w-full mt-1 overflow-hidden">
 
                 <ListboxOption v-for="option in optionsProp.options" :key="option.id" :value="option"
                     :disabled="option.disabled"
