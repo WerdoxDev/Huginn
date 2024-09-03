@@ -1,6 +1,8 @@
 <script setup lang="ts">
+
 import { Icon } from '@iconify/vue/dist/iconify.js';
 import { ref } from 'vue';
+import CustomList from "./components/CustomList.vue";
 
 const platformSelect = ref<HTMLSelectElement | null>(null)
 const versionSelect = ref<HTMLSelectElement | null>(null)
@@ -28,20 +30,25 @@ function download() {
         <div class="my-10 h-0.5 w-[30rem] bg-[#EBEBD3]/50" />
 
         <div class="text-lg">
-            <p>
-                Download <span class="font-bold">Huginn</span> for
 
-                <select class="mx-1" ref="platformSelect">
-                    <option value="windows">Windows</option>
-                </select>
+            <div class="flex flex-row">
+
+                <span>Download <span class="font-bold">Huginn</span> for</span>
+
+                <CustomList class="w-36" :options="[
+                    { id: 0, text: 'Windows', icon: 'mingcute:windows-fill', disabled: false },
+                    { id: 1, text: 'Mac', icon: 'ic:baseline-apple', disabled: true },
+                    { id: 2, text: 'Linux', icon: 'mdi:linux', disabled: true },
+                ]" />
 
                 running
 
-                <select class="ml-1" ref="versionSelect">
-                    <option value="release">Release</option>
-                    <option value="dev">Dev</option>
-                </select>
-            </p>
+                <CustomList class="w-32" :options="[
+                    { id: 0, text: 'Release', icon: 'material-symbols:new-releases', disabled: false },
+                    { id: 1, text: 'Dev', icon: 'fluent:window-dev-tools-16-filled', disabled: false },
+                ]" />
+
+            </div>
 
             <button @click="download"
                 class="flex flex-row items-center rounded-md w-max mt-6 px-4 py-2 gap-x-2 bg-[#7b563c] transition-all hover:bg-[#7b563c]/50">

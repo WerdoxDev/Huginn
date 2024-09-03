@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Icon } from "@iconify/vue/dist/iconify.js";
 import HeaderButton from "./components/HeaderButton.vue";
-import Feature from "./components/Feature.vue";
 </script>
 
 <template>
