@@ -17,8 +17,6 @@ defineOptions({
 
 const selectedOption = ref(optionsProp.options[0])
 
-watch(selectedOption, () => { console.log(selectedOption.value) })
-
 </script>
 
 <template>
@@ -36,7 +34,7 @@ watch(selectedOption, () => { console.log(selectedOption.value) })
                 class="ui-open:bg-[#262626] ui-open:rounded-md ui-open:shadow-lg absolute w-full mt-1 overflow-hidden">
 
                 <ListboxOption v-for="option in optionsProp.options" :key="option.id" :value="option"
-                    :disabled="option.disabled"
+                    :disabled="option.disabled" @click="$emit('changed', option.id)"
                     class="flex items-center py-1 px-2 pr-9 ui-disabled:cursor-not-allowed ui-disabled:text-[#EBEBD3]/50 hover:ui-disabled:bg-black/30 hover:bg-black/50 cursor-pointer">
                     <Icon :icon="option.icon" class="mr-1" />
                     {{ option.text }}

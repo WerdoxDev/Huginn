@@ -4,16 +4,16 @@ import { Icon } from '@iconify/vue/dist/iconify.js';
 import { ref } from 'vue';
 import CustomList from "./components/CustomList.vue";
 
-const platformSelect = ref<HTMLSelectElement | null>(null)
-const versionSelect = ref<HTMLSelectElement | null>(null)
+const versionId: number = 0
+const platformId: number = 0
 
-function download() {
-    if (platformSelect.value?.value === "windows") {
+function download(platform: number, version: number) {
+    if (platform === 0) {
 
-        if (versionSelect.value?.value === "release") {
+        if (version === 0) {
             window.open("https://github.com/WerdoxDev/Huginn/releases/download/v0.3.1/Huginn_0.3.1_x64_en-US.msi")
         }
-        else if (versionSelect.value?.value === "dev") {
+        else if (version === 1) {
             window.open("https://github.com/WerdoxDev/Huginn/releases/download/v0.3.2-dev/Huginn_0.3.2_x64_en-US.msi")
         }
     }
@@ -35,7 +35,7 @@ function download() {
 
                 <span>Download <span class="font-bold">Huginn</span> for</span>
 
-                <CustomList class="w-36" :options="[
+                <CustomList class="w-36" @changed="(id) => { platformId = id }" :options="[
                     { id: 0, text: 'Windows', icon: 'mingcute:windows-fill', disabled: false },
                     { id: 1, text: 'Mac', icon: 'ic:baseline-apple', disabled: true },
                     { id: 2, text: 'Linux', icon: 'mdi:linux', disabled: true },
@@ -43,14 +43,14 @@ function download() {
 
                 running
 
-                <CustomList class="w-32" :options="[
+                <CustomList class="w-32" @changed="(id) => { versionId = id }" :options="[
                     { id: 0, text: 'Release', icon: 'material-symbols:new-releases', disabled: false },
                     { id: 1, text: 'Dev', icon: 'fluent:window-dev-tools-16-filled', disabled: false },
                 ]" />
 
             </div>
 
-            <button @click="download"
+            <button @click="download(platformId, versionId)"
                 class="flex flex-row items-center rounded-md w-max mt-6 px-4 py-2 gap-x-2 bg-[#7b563c] transition-all hover:bg-[#7b563c]/50">
                 <Icon icon="mingcute:download-3-fill" />
                 Download Huginn 0.3.2
