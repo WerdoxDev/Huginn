@@ -4,8 +4,8 @@ import { Icon } from '@iconify/vue/dist/iconify.js';
 import { ref } from 'vue';
 import CustomList from "./components/CustomList.vue";
 
-const versionId: number = 0
-const platformId: number = 0
+let versionId: number = 0
+let platformId: number = 0
 
 function download(platform: number, version: number) {
     if (platform === 0) {
