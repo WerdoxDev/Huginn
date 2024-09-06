@@ -6,7 +6,8 @@ import Feature from "./components/Feature.vue";
 
 <template>
    <!-- Header -->
-   <div class="fixed top-0 flex w-full items-center justify-center border-b border-[#EBEBD3] bg-black/30 px-20 py-4 backdrop-blur-md">
+   <div
+      class="fixed top-0 flex w-full items-center justify-center border-b border-[#EBEBD3] bg-black/30 px-20 py-4 backdrop-blur-md">
       <RouterLink to="/" class="flex items-center">
          <img src="/huginn-logo.png" class="size-10" />
          <div class="pl-3 text-2xl font-bold">HUGINN</div>
@@ -32,9 +33,11 @@ import Feature from "./components/Feature.vue";
       <!-- Footer -->
       <div class="flex shrink-0 flex-row border-t border-[#1f1f1f] bg-[#262626] bg-gradient-to-t px-12 py-3">
          <div class="ml-7">
-            Huginn made by <a href="https://github.com/WerdoxDev" target="_blank" class="text-[#D99A6C] underline">Matin Tat</a> /
+            Huginn made by <a href="https://github.com/WerdoxDev" target="_blank" class="text-[#D99A6C] underline">Matin
+               Tat</a> /
             Website made by
-            <a href="https://github.com/VoiD-ev" target="_blank" class="text-[#D99A6C] underline">Mahziyar Farahmandian</a>
+            <a href="https://github.com/VoiD-ev" target="_blank" class="text-[#D99A6C] underline">Mahziyar
+               Farahmandian</a>
          </div>
 
          <div class="ml-auto mr-7 flex items-center space-x-5">
