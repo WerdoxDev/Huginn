@@ -10,7 +10,7 @@ import { onMounted } from 'vue';
 
 onMounted(() => {
     const rive = new Rive({
-        src: "/public/huginn-website-intro.riv",
+        src: "/huginn-website-intro.riv",
         canvas: document.getElementById("intro") as HTMLCanvasElement,
         autoplay: true,
         stateMachines: "State Machine 1",
