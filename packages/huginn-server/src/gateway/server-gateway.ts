@@ -102,6 +102,10 @@ export class ServerGateway {
       return this.clients.get(userId);
    }
 
+   public getSessionsCount() {
+      return this.clients.size;
+   }
+
    public sendToTopic(topic: string, data: BasePayload) {
       for (const client of this.clients.values()) {
          if (client.isSubscribed(topic)) {
