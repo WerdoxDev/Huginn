@@ -8,8 +8,12 @@ import Feature from "./components/Feature.vue";
 const onlineCount = ref("");
 
 onMounted(async () => {
-   const countData = await fetch("http://87.170.239.147:61184/api/online-users");
-   onlineCount.value = (await countData.json()).count.toLocaleString();
+   try {
+      const countData = await fetch("https://asgard.huginn.dev/api/online-users");
+      onlineCount.value = (await countData.json()).count.toLocaleString();
+   } catch (e) {
+      console.error("Something went wrong fetching user count!");
+   }
 
    const rive = new Rive({
       src: "/huginn-website-intro.riv",
