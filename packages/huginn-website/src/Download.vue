@@ -2,18 +2,49 @@
 
 import { Icon } from '@iconify/vue/dist/iconify.js';
 import CustomList from "./components/CustomList.vue";
+import { computed, onMounted, ref } from 'vue';
 
-let versionId: number = 0
-let platformId: number = 0
+const versionId = ref(0)
+const platformId = ref(0)
+
+const buttonVersionText = computed(() => {
+    if (platformId.value === 0) {
+
+        if (versionId.value === 0) {
+            return latestInfo.value?.release.version
+        }
+        else if (versionId.value === 1) {
+            return latestInfo.value?.dev.version
+        }
+    }
+})
+
+const latestInfo = ref<{
+    release: {
+        version: string,
+        windowsMsiUrl: string
+    },
+    dev: {
+        version: string,
+        windowsMsiUrl: string
+    }
+} | undefined>()
+
+onMounted(async () => {
+
+    const data = await fetch("http://87.170.239.147:61184/api/releases")
+    latestInfo.value = await data.json()
+
+})
 
 function download(platform: number, version: number) {
     if (platform === 0) {
 
         if (version === 0) {
-            window.open("https://github.com/WerdoxDev/Huginn/releases/download/v0.3.1/Huginn_0.3.1_x64_en-US.msi")
+            window.open(latestInfo.value?.release.windowsMsiUrl)
         }
         else if (version === 1) {
-            window.open("https://github.com/WerdoxDev/Huginn/releases/download/v0.3.2-dev/Huginn_0.3.2_x64_en-US.msi")
+            window.open(latestInfo.value?.dev.windowsMsiUrl)
         }
     }
 }
@@ -53,7 +84,7 @@ function download(platform: number, version: number) {
                 <button @click="download(platformId, versionId)"
                     class="flex flex-row items-center rounded-md w-max mt-6 px-4 py-2 gap-x-2 bg-[#7b563c] transition-all hover:bg-[#7b563c]/50">
                     <Icon icon="mingcute:download-3-fill" />
-                    Download Huginn 0.3.2
+                    Download Huginn {{ buttonVersionText }}
                 </button>
 
             </div>

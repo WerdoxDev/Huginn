@@ -1,14 +1,17 @@
 <script setup lang="ts">
 
-import { Icon } from '@iconify/vue/dist/iconify.js';
-import Feature from './components/Feature.vue';
+import { onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
+import { Icon } from '@iconify/vue/dist/iconify.js';
 import { Rive } from '@rive-app/canvas';
-import { onMounted } from 'vue';
+import Feature from './components/Feature.vue';
 
+const onlineCount = ref("")
 
+onMounted(async () => {
+    const countData = await fetch("http://87.170.239.147:61184/api/online-users")
+    onlineCount.value = (await countData.json()).count.toLocaleString()
 
-onMounted(() => {
     const rive = new Rive({
         src: "/huginn-website-intro.riv",
         canvas: document.getElementById("intro") as HTMLCanvasElement,
@@ -48,7 +51,7 @@ onMounted(() => {
                 </div>
 
                 <div>
-                    <p class="text-2xl">6,985,420</p>
+                    <p class="text-2xl">{{ onlineCount }}</p>
                 </div>
 
                 <div class="flex flex-row pt-10 w-full space-x-2">
