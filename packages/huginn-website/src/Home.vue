@@ -3,6 +3,25 @@
 import { Icon } from '@iconify/vue/dist/iconify.js';
 import Feature from './components/Feature.vue';
 import { RouterLink } from 'vue-router';
+import { Rive } from '@rive-app/canvas';
+import { onMounted } from 'vue';
+
+
+
+onMounted(() => {
+    const rive = new Rive({
+        src: "/public/huginn-website-intro.riv",
+        canvas: document.getElementById("intro") as HTMLCanvasElement,
+        autoplay: true,
+        stateMachines: "State Machine 1",
+        onLoad: () => { rive.resizeDrawingSurfaceToCanvas() }
+
+    })
+
+    window.addEventListener("resize", () => {
+        rive.resizeDrawingSurfaceToCanvas()
+    })
+})
 
 </script>
 
@@ -47,7 +66,8 @@ import { RouterLink } from 'vue-router';
 
             </div>
 
-            <div class="w-[35rem] h-96 bg-[#1f1f1f]">
+            <div class="bg-[#262626] p-1 rounded-2xl">
+                <canvas class="w-[35rem]" width="500" height="320" id="intro"></canvas>
             </div>
 
         </div>
@@ -60,8 +80,8 @@ import { RouterLink } from 'vue-router';
                 text="Huginn is made to be open-source. Everything you see is available to use under the  GNU GPLv3 license. Contribution is always welcome and encouraged" />
             <Feature icon="eos-icons:api" header="Extensive API"
                 text="Huginn's API is so simple to use that anyone with basic node knowledge can do cool stuff with it!" />
-            <Feature icon="" header="" text="" />
-            <Feature icon="" header="" text="" />
+            <Feature icon="mdi:clock" header="Soon..." text="" />
+            <Feature icon="mdi:clock" header="Soon..." text="" />
         </div>
     </div>
 
