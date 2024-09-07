@@ -81,16 +81,24 @@ onMounted(async () => {
       <div class="grid grid-cols-2 grid-rows-2 gap-16">
          <Feature
             icon="raphael:opensource"
-            header="Open Source"
+            header="Open Source and Free"
             text="Huginn is made to be open-source. Everything you see is available to use under the  GNU GPLv3 license. Contribution is always welcome and encouraged"
+         />
+         <Feature
+            icon="mingcute:lightning-fill"
+            header="Fast, Secure, and Lightweight"
+            text="Huginn leverages the latest technologies to provide a fast, lightweight and secure app all with a very tiny bundle size!"
+         />
+         <Feature
+            icon="mingcute:paint-2-fill"
+            header="Customizable and Fun"
+            text="Make Huginn your own with easy customization options, designed for both simplicity and a fun, engaging chat experience."
          />
          <Feature
             icon="eos-icons:api"
             header="Extensive API"
             text="Huginn's API is so simple to use that anyone with basic node knowledge can do cool stuff with it!"
          />
-         <Feature icon="mdi:clock" header="Soon..." text="" />
-         <Feature icon="mdi:clock" header="Soon..." text="" />
       </div>
    </div>
 </template>
