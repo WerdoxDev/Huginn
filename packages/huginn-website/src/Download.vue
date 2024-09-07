@@ -4,8 +4,8 @@ import { Icon } from '@iconify/vue/dist/iconify.js';
 import CustomList from "./components/CustomList.vue";
 import { computed, onMounted, ref } from 'vue';
 
-const versionId = ref(0)
-const platformId = ref(0)
+const versionId = ref(0) // 0 = Release, 1 = Dev
+const platformId = ref(0) // 0 = Windows, 1 = Mac, 2 = Linux
 
 const buttonVersionText = computed(() => {
     if (platformId.value === 0) {
@@ -38,12 +38,12 @@ onMounted(async () => {
 })
 
 function download(platform: number, version: number) {
-    if (platform === 0) {
+    if (platform === 0) { // Selected Windows
 
-        if (version === 0) {
+        if (version === 0) { // Selected Release version
             window.open(latestInfo.value?.release.windowsMsiUrl)
         }
-        else if (version === 1) {
+        else if (version === 1) { // Selected Dev version
             window.open(latestInfo.value?.dev.windowsMsiUrl)
         }
     }
