@@ -41,7 +41,7 @@ onMounted(async () => {
                <p class="ml-4 text-5xl font-extrabold text-[#EBEBD3]">Huginn</p>
             </div>
 
-            <p class="mt-6 text-2xl">Step through Bifröst and enjoy chatting with your friends using Huginn in Asgard.</p>
+            <p class="mt-6 text-2xl">A fast, customizable chat app with a touch of Norse mythology.</p>
 
             <div class="mt-6 flex flex-row items-center space-x-2">
                <div class="size-2 rounded-full bg-green-400" />
