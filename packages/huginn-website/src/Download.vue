@@ -32,8 +32,13 @@ const latestInfo = ref<{
 
 onMounted(async () => {
 
-    const data = await fetch("http://87.170.239.147:61184/api/releases")
-    latestInfo.value = await data.json()
+    try {
+        const data = await fetch("http://87.170.239.147:61184/api/releases")
+        latestInfo.value = await data.json()
+    }
+    catch {
+        console.error("Something went wrong fetching releases.")
+    }
 
 })
 
@@ -52,8 +57,8 @@ function download(platform: number, version: number) {
 </script>
 
 <template>
-    <div class="flex justify-center items-center h-full mt-16">
-        <div class="flex flex-col max-w-5xl w-full">
+    <div class="flex justify-center items-center h-full mt-16 w-full">
+        <div class="hidden md:flex flex-col max-w-5xl w-full">
             <h1 class="text-4xl font-bold mb-6">Download Huginn</h1>
             <h3 class="text-lg">Thank you for downloading Huginn</h3>
             <h3 class="text-lg">Please choose your version</h3>
@@ -88,6 +93,15 @@ function download(platform: number, version: number) {
                 </button>
 
             </div>
+        </div>
+
+        <div class="flex flex-col justify-center items-center gap-12 px-6 md:hidden">
+            <Icon icon="clarity:sad-face-solid" class="size-20" />
+            <div class="text-center text-2xl">Unfortunately <span class="font-bold">Huginn</span> is not available for
+                your device.</div>
+            <RouterLink to="/" class="text-[#D99A6C] underline items-center flex">
+                <Icon icon="lets-icons:back" class="mr-1" />Back to Homepage
+            </RouterLink>
         </div>
     </div>
 </template>
