@@ -2,7 +2,7 @@
 </script>
 
 <template>
-    <div class="flex justify-center items-center h-full mt-32 md:mt-44">
+    <div class="flex justify-center items-center h-full mt-32 md:mt-20">
         <div class="flex flex-col w-full px-4 md:max-w-5xl">
 
             <div class="flex items-center justify-center md:justify-start">
