@@ -19,6 +19,7 @@ onMounted(async () => {
       src: "/huginn-website-intro.riv",
       canvas: document.getElementById("intro") as HTMLCanvasElement,
       autoplay: true,
+      isTouchScrollEnabled: true,
       stateMachines: "Main",
       onLoad: () => {
          rive.resizeDrawingSurfaceToCanvas();
