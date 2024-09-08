@@ -76,7 +76,7 @@ onMounted(async () => {
    </div>
 
    <!-- Features -->
-   <div class="mb-12 md:mb-40 mt-24 md:mt-52 px-6 md:px-0 flex items-center justify-center">
+   <div class="mb-12 md:mb-40 mt-24 md:mt-52 px-4 md:px-0 flex items-center justify-center">
       <div class="flex flex-col md:grid md:grid-cols-2 md:grid-rows-2 gap-10 md:gap-16">
          <Feature icon="raphael:opensource" header="Open Source and Free"
             text="Huginn is made to be open-source. Everything you see is available to use under the  GNU GPLv3 license. Contribution is always welcome and encouraged" />
