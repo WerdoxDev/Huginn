@@ -15,8 +15,9 @@ export type AppVersion = {
 };
 
 export type BuildFiles = {
-   zipFile: { path: string; name: string };
-   sigFile: { path: string; name: string };
+   nsisZipFile: { path: string; name: string };
+   nsisSigFile: { path: string; name: string };
+   nsisSetupFile: { path: string; name: string };
 };
 
 export type UpdateFileInfo = {

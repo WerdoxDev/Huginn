@@ -14,10 +14,11 @@ import {
    BUILDS_PATH,
    CARGO_TOML_PATH,
    GIST_ID,
+   NSIS_RELATIVE_PATH,
    PACKAGE_JSON_PATH,
    REPO,
-   TAURI_DEBUG_NSIS_PATH,
-   TAURI_RELEASE_NSIS_PATH,
+   TAURI_DEBUG_PATH,
+   TAURI_RELEASE_PATH,
    getBuildFiles,
    getPatchedVersion,
    getVersionSuffix,
@@ -101,7 +102,7 @@ if (intent === 0) {
       })),
    });
 
-   await rm(path.resolve(BUILDS_PATH, versionToString(version.version) + getVersionSuffix(version.type)), {
+   await rm(path.join(BUILDS_PATH, versionToString(version.version) + getVersionSuffix(version.type)), {
       force: true,
       recursive: true,
    });
@@ -113,7 +114,7 @@ async function buildVersion(version: string, type: BuildType) {
    try {
       const versions = await getVersions();
       const newVersion = getPatchedVersion(version, versions);
-      const newVersionPath = path.resolve(BUILDS_PATH, newVersion + getVersionSuffix(type));
+      const newVersionPath = path.join(BUILDS_PATH, newVersion + getVersionSuffix(type));
 
       logger.startingBuild(newVersion, type);
 
@@ -140,15 +141,21 @@ async function buildVersion(version: string, type: BuildType) {
       // Create a directory for the new version
       await mkdir(newVersionPath);
 
-      const files = await getBuildFiles(type === BuildType.DEBUG ? TAURI_DEBUG_NSIS_PATH : TAURI_RELEASE_NSIS_PATH, newVersion);
+      const files = await getBuildFiles(
+         path.join(type === BuildType.DEBUG ? TAURI_DEBUG_PATH : TAURI_RELEASE_PATH, NSIS_RELATIVE_PATH),
+         newVersion,
+      );
 
-      // Get blob for both .zip and .sig files
-      const zipFile = Bun.file(files.zipFile.path);
-      const sigFile = Bun.file(files.sigFile.path);
+      console.log(files);
+      // Get blob for both .zip, .sig and .exe files
+      const zipFile = Bun.file(files.nsisZipFile.path);
+      const sigFile = Bun.file(files.nsisSigFile.path);
+      const setupFile = Bun.file(files.nsisSetupFile.path);
 
-      // Copy .zip and .sig files to our new version's folder
-      await Bun.write(path.resolve(newVersionPath, files.zipFile.name), zipFile);
-      await Bun.write(path.resolve(newVersionPath, files.sigFile.name), sigFile);
+      // Copy .zip, .sig and .exe files to our new version's folder
+      await Bun.write(path.join(newVersionPath, files.nsisZipFile.name), zipFile);
+      await Bun.write(path.join(newVersionPath, files.nsisSigFile.name), sigFile);
+      await Bun.write(path.join(newVersionPath, files.nsisSetupFile.name), setupFile);
 
       logger.buildCompleted(newVersion, type);
    } catch (e) {
@@ -173,16 +180,17 @@ async function createGithubRelease(version: string, type: BuildType, description
    });
 
    // Get build files from debug or release folders
-   const files = await getBuildFiles(path.resolve(BUILDS_PATH, version + getVersionSuffix(type)), version);
+   const files = await getBuildFiles(path.join(BUILDS_PATH, version + getVersionSuffix(type)), version);
 
    logger.uploadingReleaseFiles();
    // Convert build files to strings
-   const zipFileString = await Bun.file(files.zipFile.path).arrayBuffer();
-   const sigFileString = await Bun.file(files.sigFile.path).text();
+   const zipFileString = await Bun.file(files.nsisZipFile.path).arrayBuffer();
+   const sigFileString = await Bun.file(files.nsisSigFile.path).text();
+   const setupFileString = await Bun.file(files.nsisSetupFile.path).arrayBuffer();
 
-   // Upload both .zip and .sig files to the release
+   // Upload .zip, .sig and .exe files to the release
    await octokit.rest.repos.uploadReleaseAsset({
-      name: files.zipFile.name,
+      name: files.nsisZipFile.name,
       release_id: release.data.id,
       owner: "WerdoxDev",
       repo: REPO,
@@ -191,21 +199,29 @@ async function createGithubRelease(version: string, type: BuildType, description
    });
 
    await octokit.rest.repos.uploadReleaseAsset({
-      name: files.sigFile.name,
+      name: files.nsisSigFile.name,
       release_id: release.data.id,
       owner: "WerdoxDev",
       repo: REPO,
       data: sigFileString,
    });
 
+   await octokit.rest.repos.uploadReleaseAsset({
+      name: files.nsisSetupFile.name,
+      release_id: release.data.id,
+      owner: "WerdoxDev",
+      repo: REPO,
+      data: setupFileString as unknown as string,
+   });
+
    logger.releaseCreated(version, type);
 }
 
 async function updateGistFile(type: BuildType, version: string, description: string) {
-   const files = await getBuildFiles(path.resolve(BUILDS_PATH, version + getVersionSuffix(type)), version);
+   const files = await getBuildFiles(path.join(BUILDS_PATH, version + getVersionSuffix(type)), version);
 
-   const sigFileString = await Bun.file(files.sigFile.path).text();
-   const publishDate = new Date(Bun.file(files.zipFile.path).lastModified).toISOString();
+   const sigFileString = await Bun.file(files.nsisSigFile.path).text();
+   const publishDate = new Date(Bun.file(files.nsisZipFile.path).lastModified).toISOString();
 
    const url = `https://github.com/WerdoxDev/${REPO}/releases/download/v${
       version + (type === BuildType.DEBUG ? "-dev" : "")

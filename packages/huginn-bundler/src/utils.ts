@@ -7,8 +7,11 @@ import { BuildType, type AppVersion, type BuildFiles, type Version } from "./typ
 export const APP_PATH: string = process.env.APP_PATH!;
 export const BUILDS_PATH: string = process.env.BUILDS_PATH!;
 
-export const TAURI_DEBUG_NSIS_PATH: string = process.env.TAURI_DEBUG_NSIS_PATH!;
-export const TAURI_RELEASE_NSIS_PATH: string = process.env.TAURI_RELEASE_NSIS_PATH!;
+export const TAURI_DEBUG_PATH: string = process.env.TAURI_DEBUG_PATH!;
+export const TAURI_RELEASE_PATH: string = process.env.TAURI_RELEASE_PATH!;
+
+export const MSI_RELATIVE_PATH = "/msi";
+export const NSIS_RELATIVE_PATH = "/nsis";
 
 export const CARGO_TOML_PATH: string = process.env.CARGO_TOML_PATH!;
 export const PACKAGE_JSON_PATH: string = process.env.PACKAGE_JSON_PATH!;
@@ -20,7 +23,6 @@ export const REPO: string = process.env.REPO_NAME!;
  * @returns all version in either debug or release folders
  */
 export async function getVersions(): Promise<AppVersion[]> {
-   console.log(BUILDS_PATH, "NULL");
    const folders = (await readdir(BUILDS_PATH)).sort((v1, v2) => semver.order(v1.split("_")[0], v2.split("_")[0])).reverse();
    return folders.map(x => ({ type: getFolderBuildType(x), version: stringToVersion(x) }));
 }
@@ -47,21 +49,28 @@ export function getPatchedVersion(version: string, orderedVersions: AppVersion[]
 }
 
 /**
- * @returns a BuildFiles object that contains both .zip and .sig files from the tauri debug/release build folder
+ * @returns a BuildFiles object that contains .zip, .sig and .exe files from the tauri debug/release build folder
  */
 export async function getBuildFiles(buildPath: string, version: string): Promise<BuildFiles> {
-   const files = await readdir(buildPath);
+   const nsisFiles = await readdir(buildPath);
 
-   const zipFileName = files.find(x => x.endsWith(".zip") && x.includes(version));
-   const sigFileName = files.find(x => x.endsWith(".sig") && x.includes(version));
-   const msiFileName = files.find(x => )
+   const nsisZipFileName = nsisFiles.find(x => x.endsWith(".zip") && x.includes(version));
+   const nsisSigFileName = nsisFiles.find(x => x.endsWith(".sig") && x.includes(version));
+   const nsisSetupFileName = nsisFiles.find(x => x.endsWith(".exe") && x.includes(version));
 
-   if (!zipFileName || !sigFileName) throw new Error(`.zip or .sig file not found in (${buildPath})`);
+   if (!nsisZipFileName || !nsisSigFileName || !nsisSetupFileName) {
+      throw new Error(`.zip, .sig or .exe file not found in (${path.join(buildPath, NSIS_RELATIVE_PATH)})`);
+   }
 
-   const zipFilePath = path.resolve(buildPath, zipFileName);
-   const sigFilePath = path.resolve(buildPath, sigFileName);
+   const nsisZipFilePath = path.join(buildPath, nsisZipFileName);
+   const nsisSigFilePath = path.join(buildPath, nsisSigFileName);
+   const nsisSetupFilePath = path.join(buildPath, nsisSetupFileName);
 
-   return { zipFile: { name: zipFileName, path: zipFilePath }, sigFile: { name: sigFileName, path: sigFilePath } };
+   return {
+      nsisZipFile: { name: nsisZipFileName, path: nsisZipFilePath },
+      nsisSigFile: { name: nsisSigFileName, path: nsisSigFilePath },
+      nsisSetupFile: { name: nsisSetupFileName, path: nsisSetupFilePath },
+   };
 }
 
 /**
