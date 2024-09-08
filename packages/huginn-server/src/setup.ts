@@ -4,6 +4,7 @@ const connectionString = process.env.POSTGRESQL_URL;
 export const cdnRoot = process.env.CDN_ROOT;
 export const serverHost = process.env.SERVER_HOST;
 export const serverPort = process.env.SERVER_PORT;
+export const githubToken = process.env.GITHUB_TOKEN;
 export const certFile = process.env.CERTIFICATE_PATH && Bun.file(process.env.CERTIFICATE_PATH);
 export const keyFile = process.env.PRIVATE_KEY_PATH && Bun.file(process.env.PRIVATE_KEY_PATH);
 
