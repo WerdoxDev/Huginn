@@ -78,12 +78,12 @@ function closeMenu(event: MouseEvent) {
             Huginn made by <a href="https://github.com/WerdoxDev" target="_blank" class="text-[#D99A6C] underline">Matin
                Tat</a>
          </div>
-         <div class="md:hidden text-sm">Website made by
+         <div class="md:hidden text-sm mt-1">Website made by
             <a href="https://github.com/VoiD-ev" target="_blank" class="text-[#D99A6C] underline">Mahziyar
                Farahmandian</a>
          </div>
 
-         <div class="md:ml-auto md:mr-7 mt-5 md:mt-0 flex items-center space-x-7 md:space-x-5">
+         <div class="md:ml-auto md:mr-7 mt-4 md:mt-0 flex items-center space-x-7 md:space-x-5">
             <a href="https://www.instagram.com/werdox.dev/" target="_blank">
                <Icon icon="ri:instagram-fill" class="size-6" />
             </a>
