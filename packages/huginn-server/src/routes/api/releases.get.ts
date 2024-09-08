@@ -10,6 +10,8 @@ router.get(
          assets: { browser_download_url: string; name: string }[];
       }[];
 
+      console.log(versions);
+
       function getWindowsAssetUrl(version?: { assets: { browser_download_url: string; name: string }[] }) {
          return version?.assets.find(x => x.name.endsWith(".exe"))?.browser_download_url;
       }
