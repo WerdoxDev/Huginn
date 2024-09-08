@@ -47,7 +47,7 @@ function closeMenu(event: MouseEvent) {
          <div class="pl-3 text-2xl font-bold">HUGINN</div>
       </RouterLink>
 
-      <div class="flex flex-col gap-5 text-3xl mt-20 ml-10">
+      <div class="flex flex-col gap-2.5 text-lg mt-10 ml-10">
          <HeaderButton link="/" text="Home" @click="closeMenu" />
          <HeaderButton link="/docs" text="Docs" @click="closeMenu" />
          <HeaderButton link="/about" text="About" @click="closeMenu" />

@@ -2,7 +2,7 @@
 </script>
 
 <template>
-    <div class="flex justify-center items-center h-full mt-16">
+    <div class="flex justify-center items-center h-full mt-32 md:mt-44">
         <div class="flex flex-col w-full px-4 md:max-w-5xl">
 
             <div class="flex items-center justify-center md:justify-start">
@@ -13,7 +13,7 @@
 
             <div class="my-6 h-0.5 w-auto bg-[#EBEBD3]/50" />
 
-            <h3 class="text-xl text-center md:text-left">
+            <h3 class="text-lg md:text-xl">
                 <span class="font-bold">Huginn</span> is a chat app with a <span class="text-[#82ccdd]">Norse</span>
                 twist!
                 Inspired by one of <span class="text-[#b8e994]">Odin</span>'s ravens, <span
@@ -28,7 +28,7 @@
                     class="text-[#82ccdd]">unique</span> way to <span class="text-[#00a7e3]">connect</span> with others.
             </h3>
 
-            <div class="mt-10 md:mt-14 space-y-2 md:space-y-0">
+            <div class="mt-10 md:mt-14 space-y-2 md:space-y-0 mb-24 md:mb-0">
                 <h3 class="md:text-lg"><span class="text-[#EBEBD3]/70">Author:</span> Matin Tat (Werdox)</h3>
 
                 <h3 class="md:text-lg"><span class="text-[#EBEBD3]/70">GitHub:</span> <a
