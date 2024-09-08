@@ -40,7 +40,7 @@ onMounted(async () => {
             <div class="flex items-center justify-center md:justify-start flex-col md:flex-row">
                <img src="/huginn-logo.svg"
                   class="size-20 object-contain transition-all hover:-rotate-12 active:rotate-6" />
-               <p class="ml-4 text-5xl font-extrabold text-[#EBEBD3]">Huginn</p>
+               <p class="md:ml-4 text-5xl font-extrabold text-[#EBEBD3]">Huginn</p>
             </div>
 
             <p class="mt-6 mx-2 md:mx-0 text-center md:text-left text-2xl">A fast, customizable chat app with a touch of
