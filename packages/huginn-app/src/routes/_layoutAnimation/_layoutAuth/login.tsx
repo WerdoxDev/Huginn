@@ -81,7 +81,9 @@ function Login() {
 
                setUser(client.user);
 
-               await navigate({ to: routeHistory.initialPathname });
+               console.log("navigating to", routeHistory.initialPathname);
+
+               await navigate({ to: routeHistory.initialPathname === "/login" ? "/channels/@me" : routeHistory.initialPathname });
             } else {
                unhide();
             }
