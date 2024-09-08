@@ -1,5 +1,14 @@
-import { router as serverRouter } from "@huginn/server";
+import { createErrorFactory, ErrorFactory, logReject, logRequest, logResponse, logServerError } from "@huginn/backend-shared";
 import { router as cdnRouter } from "@huginn/cdn";
+import { isCDNError } from "@huginn/cdn/src/error";
+import { handleCommonCDNErrors } from "@huginn/cdn/src/utils/route-utils";
+import { router as serverRouter } from "@huginn/server";
+import { isDBError } from "@huginn/server/src/database";
+import { gateway } from "@huginn/server/src/server";
+import { handleCommonDBErrors } from "@huginn/server/src/utils/route-utils";
+import { Errors, generateRandomString, HttpCode, HuginnErrorData } from "@huginn/shared";
+import consola from "consola";
+import { colors } from "consola/utils";
 import {
    createApp,
    createRouter,
@@ -12,15 +21,7 @@ import {
    setResponseHeader,
    setResponseStatus,
    toWebHandler,
-   useBase,
 } from "h3";
-import { logReject, logServerError, createErrorFactory, logResponse, logRequest, ErrorFactory } from "@huginn/backend-shared";
-import { HuginnErrorData, HttpCode, Errors, generateRandomString } from "@huginn/shared";
-import { isDBError } from "@huginn/server/src/database";
-import { handleCommonDBErrors } from "@huginn/server/src/utils/route-utils";
-import { isCDNError } from "@huginn/cdn/src/error";
-import { handleCommonCDNErrors } from "@huginn/cdn/src/utils/route-utils";
-import { gateway } from "@huginn/server/src/server";
 
 const app = createApp({
    onError(error, event) {
@@ -112,7 +113,7 @@ const handler = toWebHandler(app);
 const HOST = process.env.HOST;
 const PORT = process.env.PORT;
 
-Bun.serve<string>({
+const server = Bun.serve<string>({
    port: PORT,
    hostname: HOST,
    fetch(req, server) {
@@ -137,3 +138,6 @@ Bun.serve<string>({
       sendPings: false,
    },
 });
+
+consola.success("Bifrost started!");
+consola.box(`Listening on ${colors.magenta(server.url.href)}`);
