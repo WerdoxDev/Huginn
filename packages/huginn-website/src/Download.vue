@@ -33,7 +33,7 @@ const latestInfo = ref<{
 onMounted(async () => {
 
     try {
-        const data = await fetch("http://87.170.239.147:61184/api/releases")
+        const data = await fetch("https://asgard.huginn.dev/api/releases")
         latestInfo.value = await data.json()
     }
     catch {
