@@ -1,6 +1,5 @@
 import { router } from "#server";
 import { githubToken } from "#setup";
-import { request } from "#utils/server-request";
 import { HttpCode } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 
@@ -24,13 +23,13 @@ router.get(
       const latestRelease = versions.find(x => !x.name.includes("dev"));
       const latestDev = versions.find(x => x.name.includes("dev"));
 
-      const releaseWindowsExeUrl = getWindowsAssetUrl(latestRelease);
-      const devWindowsExeUrl = getWindowsAssetUrl(latestDev);
+      const releaseWindowsSetupUrl = getWindowsAssetUrl(latestRelease);
+      const devWindowsSetupUrl = getWindowsAssetUrl(latestDev);
 
       setResponseStatus(event, HttpCode.OK);
       return {
-         release: latestRelease ? { version: latestRelease.name, windowsExeUrl: releaseWindowsExeUrl } : undefined,
-         dev: latestDev ? { version: latestDev.name, windowsExeUrl: devWindowsExeUrl } : undefined,
+         release: latestRelease ? { version: latestRelease.name, windowsSetupUrl: releaseWindowsSetupUrl } : undefined,
+         dev: latestDev ? { version: latestDev.name, windowsSetupUrl: devWindowsSetupUrl } : undefined,
       };
    }),
 );
