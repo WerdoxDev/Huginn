@@ -111,7 +111,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
                   ref={setContent(message.id)}
                   key={message.id}
                   content={message.content}
-                  createdAt={message.createdAt}
+                  createdAt={message.createdAt as string}
                   author={message.author}
                   flags={message.flags}
                />

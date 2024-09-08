@@ -1,6 +1,6 @@
 [package]
 name = "huginn"
-version = "0.3.2"
+version = "0.3.3"
 description = "Huginn's desktop application"
 authors = ["Matin"]
 repository = ""
