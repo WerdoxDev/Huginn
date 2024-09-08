@@ -22,11 +22,11 @@ const buttonVersionText = computed(() => {
 const latestInfo = ref<{
     release: {
         version: string,
-        windowsMsiUrl: string
+        windowsSetupUrl: string
     },
     dev: {
         version: string,
-        windowsMsiUrl: string
+        windowsSetupUrl: string
     }
 } | undefined>()
 
@@ -46,10 +46,10 @@ function download(platform: number, version: number) {
     if (platform === 0) { // Selected Windows
 
         if (version === 0) { // Selected Release version
-            window.open(latestInfo.value?.release.windowsMsiUrl)
+            window.open(latestInfo.value?.release.windowsSetupUrl)
         }
         else if (version === 1) { // Selected Dev version
-            window.open(latestInfo.value?.dev.windowsMsiUrl)
+            window.open(latestInfo.value?.dev.windowsSetupUrl)
         }
     }
 }
