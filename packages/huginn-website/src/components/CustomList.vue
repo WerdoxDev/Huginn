@@ -8,14 +8,15 @@ import {
 } from '@headlessui/vue'
 import { Icon } from '@iconify/vue/dist/iconify.js';
 
-const optionsProp = defineProps<{
-    options: { id: number, text: string, icon: string, disabled: boolean }[]
+const optionsProps = defineProps<{
+    options: { id: number, text: string, icon: string, disabled: boolean, hidden: boolean }[]
+    defaultId: number
 }>()
 defineOptions({
     inheritAttrs: false
 })
 
-const selectedOption = ref(optionsProp.options[0])
+const selectedOption = ref(optionsProps.options[optionsProps.defaultId])
 
 </script>
 
@@ -33,9 +34,10 @@ const selectedOption = ref(optionsProp.options[0])
             <ListboxOptions
                 class="ui-open:bg-[#262626] ui-open:rounded-md ui-open:shadow-lg absolute w-full mt-1 overflow-hidden">
 
-                <ListboxOption v-for="option in optionsProp.options" :key="option.id" :value="option"
-                    :disabled="option.disabled" @click="$emit('changed', option.id)"
-                    class="flex items-center py-1 px-2 pr-9 ui-disabled:cursor-not-allowed ui-disabled:text-[#EBEBD3]/50 hover:ui-disabled:bg-black/30 hover:bg-black/50 cursor-pointer">
+                <ListboxOption v-for="option in optionsProps.options" :key="option.id" :value="option"
+                    :disabled="option.disabled" @click="!option.disabled && $emit('changed', option.id)"
+                    class="flex items-center py-1 px-2 pr-9 ui-disabled:cursor-not-allowed ui-disabled:text-[#EBEBD3]/50 hover:ui-disabled:bg-black/30 hover:bg-black/50 cursor-pointer"
+                    :class="{ 'hidden': option.hidden }">
                     <Icon :icon="option.icon" class="mr-1" />
                     {{ option.text }}
                 </ListboxOption>
