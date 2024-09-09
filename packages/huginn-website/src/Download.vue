@@ -4,7 +4,7 @@ import { Icon } from '@iconify/vue/dist/iconify.js';
 import CustomList from "./components/CustomList.vue";
 import { computed, onMounted, ref } from 'vue';
 
-const versionId = ref(0) // 0 = Release, 1 = Dev
+const versionId = ref(0) // 1 = Release, 2 = Dev
 const platformId = ref(0) // 0 = Windows, 1 = Mac, 2 = Linux
 const isAnyVersionAvailable = ref(false)
 
@@ -107,7 +107,7 @@ function getVersionAvailability(isDev: boolean): boolean {
                     <CustomList class="w-32" @changed="(id) => { versionId = id }" :default-id="versionId" :options="[
                         { id: 0, text: 'None', icon: 'nimbus:forbidden', disabled: false, hidden: isAnyVersionAvailable },
                         { id: 1, text: 'Release', icon: 'material-symbols:new-releases', disabled: getVersionAvailability(true), hidden: false },
-                        { id: 2, text: 'Dev', icon: 'fluent:window-dev-tools-16-filled', disabled: getVersionAvailability(false), hidden: false },
+                        { id: 2, text: 'Nightly', icon: 'ph:moon-fill', disabled: getVersionAvailability(false), hidden: false },
                     ]" />
 
                 </div>
