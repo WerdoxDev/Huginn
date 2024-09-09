@@ -188,8 +188,8 @@ type APIBaseMessage = {
    channelId: Snowflake;
    author: APIMessageUser;
    content: string;
-   createdAt: Date;
-   editedAt: Date | null;
+   createdAt: Date | string;
+   editedAt: Date | string | null;
    mentions: APIMessageUser[];
 };
 
