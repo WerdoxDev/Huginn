@@ -60,12 +60,12 @@ const latestInfo = ref<{
         version: string,
         windowsSetupUrl: string,
         date: string
-    },
+    } | undefined,
     nightly: {
         version: string,
         windowsSetupUrl: string,
         date: string
-    }
+    } | undefined
 } | undefined>()
 
 
@@ -73,34 +73,40 @@ const latestInfo = ref<{
 onMounted(async () => {
 
     try {
-        const data = await fetch("https://asgard.huginn.dev/api/releases")
-        latestInfo.value = await data.json()
+        // const data = await fetch("https://asgard.huginn.dev/api/releases")
+        // latestInfo.value = await data.json()
 
-        // latestInfo.value = {
-        //     release: {
-        //         version: "v0.3.1",
-        //         windowsSetupUrl: "https://github.com/WerdoxDev/Huginn/releases/download/nightly-20240908-e366086/huginn-0.3.3-nightly-20240908a-setup.exe",
-        //         date: "2024-09-01T13:04:10.000Z"
-        //     },
-        //     nightly: {
-        //         version: "v0.3.3-nightly-20240908a",
-        //         windowsSetupUrl: "https://github.com/WerdoxDev/Huginn/releases/download/nightly-20240908-e366086/huginn-0.3.3-nightly-20240908a-setup.exe",
-        //         date: "2024-10-07T22:00:00.000Z"
-        //     }
-        // }
-
-        const proccessedNightlyVersion = latestInfo.value?.nightly.version.split('-')
-
-        if (versionTexts.value && proccessedNightlyVersion && latestInfo.value) {
-            const nightlyDate = new Date(latestInfo.value.nightly.date)
-            proccessedNightlyVersion[0] = proccessedNightlyVersion[0].slice(1)
-            proccessedNightlyVersion[1] = proccessedNightlyVersion[1].charAt(0).toUpperCase() + proccessedNightlyVersion[1].slice(1)
-            versionTexts.value.nightly.version = `${proccessedNightlyVersion[0]} ${proccessedNightlyVersion[1]}`
-            versionTexts.value.nightly.date = `${nightlyDate.getDate().toString().padStart(2, "0")}.${nightlyDate.getMonth().toString().padStart(2, "0")}.${nightlyDate.getFullYear()}`
-            versionTexts.value.nightly.buildId = latestInfo.value.nightly.version[latestInfo.value.nightly.version.length - 1]
+        latestInfo.value = {
+            release: {
+                version: "v0.3.1",
+                windowsSetupUrl: "https://github.com/WerdoxDev/Huginn/releases/download/nightly-20240908-e366086/huginn-0.3.3-nightly-20240908a-setup.exe",
+                date: "2024-09-01T13:04:10.000Z"
+            },
+            // release: undefined,
+            nightly: undefined
+            // nightly: {
+            //     version: "v0.3.3-nightly-20240908a",
+            //     // windowsSetupUrl: "https://github.com/WerdoxDev/Huginn/releases/download/nightly-20240908-e366086/huginn-0.3.3-nightly-20240908a-setup.exe",
+            //     windowsSetupUrl: "",
+            //     date: "2024-10-07T22:00:00.000Z"
+            // }
         }
 
-        if (versionTexts.value && latestInfo.value) {
+        if (latestInfo.value.nightly) {
+            const proccessedNightlyVersion = latestInfo.value?.nightly.version.split('-')
+
+
+            if (versionTexts.value && proccessedNightlyVersion && latestInfo.value) {
+                const nightlyDate = new Date(latestInfo.value.nightly.date)
+                proccessedNightlyVersion[0] = proccessedNightlyVersion[0].slice(1)
+                proccessedNightlyVersion[1] = proccessedNightlyVersion[1].charAt(0).toUpperCase() + proccessedNightlyVersion[1].slice(1)
+                versionTexts.value.nightly.version = `${proccessedNightlyVersion[0]} ${proccessedNightlyVersion[1]}`
+                versionTexts.value.nightly.date = `${nightlyDate.getDate().toString().padStart(2, "0")}.${nightlyDate.getMonth().toString().padStart(2, "0")}.${nightlyDate.getFullYear()}`
+                versionTexts.value.nightly.buildId = latestInfo.value.nightly.version[latestInfo.value.nightly.version.length - 1]
+            }
+        }
+
+        if (versionTexts.value && latestInfo.value && latestInfo.value.release) {
             const releaseDate = new Date(latestInfo.value.release.date)
             versionTexts.value.release.version = latestInfo.value.release.version.slice(1)
             versionTexts.value.release.date = `${releaseDate.getDate().toString().padStart(2, "0")}.${releaseDate.getMonth().toString().padStart(2, "0")}.${releaseDate.getFullYear()}`
@@ -125,22 +131,24 @@ function getDownloadLink(platform: number, version: number): string | undefined 
     if (platform === 0) { // Selected Windows
 
         if (version === 1) { // Selected Release version
-            return latestInfo.value?.release.windowsSetupUrl
+            return latestInfo.value?.release?.windowsSetupUrl
         }
         else if (version === 2) { // Selected Dev version
-            return latestInfo.value?.nightly.windowsSetupUrl
+            return latestInfo.value?.nightly?.windowsSetupUrl
         }
     }
+
+    return undefined
 }
 
-function getVersionAvailability(isDev: boolean): boolean {
-    if (isDev) {
+function getVersionAvailability(isNightly: boolean): boolean {
+    if (isNightly) {
         const downloadLink = getDownloadLink(platformId.value, 2)
-        return downloadLink !== undefined && downloadLink !== ""
+        return downloadLink !== undefined && downloadLink !== "" && latestInfo.value?.nightly !== undefined
     }
     else {
         const downloadLink = getDownloadLink(platformId.value, 1)
-        return downloadLink !== undefined && downloadLink !== ""
+        return downloadLink !== undefined && downloadLink !== "" && latestInfo.value?.release !== undefined
     }
 }
 
