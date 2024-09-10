@@ -7,6 +7,7 @@ import App from './App.vue'
 import Home from './Home.vue'
 import Download from './Download.vue'
 import About from './About.vue'
+import Docs from './Docs.vue'
 
 export const router = createRouter({
     history: createWebHistory(),
@@ -25,7 +26,7 @@ export const router = createRouter({
         },
         {
             path: "/docs",
-            component: Home
+            component: Docs
         },
     ]
 })
