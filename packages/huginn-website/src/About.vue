@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Icon } from '@iconify/vue/dist/iconify.js';
+
 </script>
 
 <template>
@@ -28,28 +30,48 @@
                     class="text-[#82ccdd]">unique</span> way to <span class="text-[#00a7e3]">connect</span> with others.
             </h3>
 
-            <div class="mt-10 md:mt-14 space-y-2 md:space-y-0 mb-24 md:mb-0">
-                <h3 class="md:text-lg"><span class="text-[#EBEBD3]/70">Author:</span> Matin Tat (Werdox)</h3>
+            <div class="flex flex-col md:flex-row gap-2.5 md:gap-5 mt-6">
+                <a href="https://github.com/WerdoxDev" target="_blank"
+                    class="p-2 pr-4 rounded-lg bg-[#1f1f1f] transition-all hover:bg-[#1f1f1f]/50 flex gap-x-3 items-center">
+                    <img src="https://github.com/werdoxdev.png" class="size-14 rounded-md shadow-lg hover:shadow-2xl" />
+                    <div>
+                        Matin Tat
+                        <br />
+                        (Werdox)
+                    </div>
+                </a>
+                <a href="https://github.com/VoiD-ev" target="_blank"
+                    class="p-2 pr-4 rounded-lg bg-[#1f1f1f] transition-all hover:bg-[#1f1f1f]/50 flex gap-x-3 items-center">
+                    <img src="https://github.com/void-ev.png" class="size-14 rounded-md shadow-lg hover:shadow-2xl" />
+                    <div>
+                        Mahziyar Farahmandian
+                        <br />
+                        (Void)
+                    </div>
+                </a>
+            </div>
 
-                <h3 class="md:text-lg"><span class="text-[#EBEBD3]/70">GitHub:</span> <a
-                        class="text-[#D99A6C] hover:underline" href="https://github.com/werdoxdev/huginn"
-                        target="_blank">https://GitHub.com/WerdoxDev/Huginn</a>
-                </h3>
 
-                <h3 class="md:text-lg"><span class="text-[#EBEBD3]/70">Discord:</span> <a
-                        class="text-[#D99A6C] hover:underline" href="https://discord.gg/cad9P5dm3y"
-                        target="_blank">https://Discord.gg/cad9P5dm3y</a>
-                </h3>
+            <div class="flex justify-around md:justify-start md:gap-5 mt-6 mb-6 md:mb-0">
+                <a href="https://www.instagram.com/werdox.dev/" target="_blank"
+                    class="p-2.5 bg-[#7b563c] transition-all hover:bg-[#7b563c]/50 rounded-md">
+                    <Icon icon="ri:instagram-fill" class="size-7" />
+                </a>
 
-                <h3 class="md:text-lg"><span class="text-[#EBEBD3]/70">Twitter (X):</span> <a
-                        class="text-[#D99A6C] hover:underline" href="https://x.com/Matin90365857"
-                        target="_blank">https://x.com/Matin90365857</a>
-                </h3>
+                <a href="https://x.com/Matin90365857" target="_blank"
+                    class="p-2.5 bg-[#7b563c] transition-all hover:bg-[#7b563c]/50 rounded-md">
+                    <Icon icon="mdi:twitter" class="size-7" />
+                </a>
 
-                <h3 class="md:text-lg"><span class="text-[#EBEBD3]/70">Instagram:</span> <a
-                        class="text-[#D99A6C] hover:underline" href="https://www.instagram.com/werdox.dev/"
-                        target="_blank">https://www.instagram.com/werdox.dev</a>
-                </h3>
+                <a href="https://discord.gg/cad9P5dm3y" target="_blank"
+                    class="p-2.5 bg-[#7b563c] transition-all hover:bg-[#7b563c]/50 rounded-md">
+                    <Icon icon="ic:baseline-discord" class="size-7" />
+                </a>
+
+                <a href="https://github.com/WerdoxDev/Huginn" target="_blank"
+                    class="p-2.5 bg-[#7b563c] transition-all hover:bg-[#7b563c]/50 rounded-md">
+                    <Icon icon="bi:github" class="size-7" />
+                </a>
             </div>
         </div>
     </div>
