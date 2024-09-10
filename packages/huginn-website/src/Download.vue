@@ -92,11 +92,10 @@ onMounted(async () => {
         //     // }
         // }
 
-        if (latestInfo.value.nightly) {
+        if (latestInfo.value && latestInfo.value.nightly) {
             const proccessedNightlyVersion = latestInfo.value?.nightly.version.split('-')
 
-
-            if (versionTexts.value && proccessedNightlyVersion && latestInfo.value) {
+            if (versionTexts.value && proccessedNightlyVersion) {
                 const nightlyDate = new Date(latestInfo.value.nightly.date)
                 proccessedNightlyVersion[0] = proccessedNightlyVersion[0].slice(1)
                 proccessedNightlyVersion[1] = proccessedNightlyVersion[1].charAt(0).toUpperCase() + proccessedNightlyVersion[1].slice(1)
