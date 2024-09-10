@@ -73,24 +73,24 @@ const latestInfo = ref<{
 onMounted(async () => {
 
     try {
-        // const data = await fetch("https://asgard.huginn.dev/api/releases")
-        // latestInfo.value = await data.json()
+        const data = await fetch("https://asgard.huginn.dev/api/releases")
+        latestInfo.value = await data.json()
 
-        latestInfo.value = {
-            release: {
-                version: "v0.3.1",
-                windowsSetupUrl: "https://github.com/WerdoxDev/Huginn/releases/download/nightly-20240908-e366086/huginn-0.3.3-nightly-20240908a-setup.exe",
-                date: "2024-09-01T13:04:10.000Z"
-            },
-            // release: undefined,
-            nightly: undefined
-            // nightly: {
-            //     version: "v0.3.3-nightly-20240908a",
-            //     // windowsSetupUrl: "https://github.com/WerdoxDev/Huginn/releases/download/nightly-20240908-e366086/huginn-0.3.3-nightly-20240908a-setup.exe",
-            //     windowsSetupUrl: "",
-            //     date: "2024-10-07T22:00:00.000Z"
-            // }
-        }
+        // latestInfo.value = {
+        //     release: {
+        //         version: "v0.3.1",
+        //         windowsSetupUrl: "https://github.com/WerdoxDev/Huginn/releases/download/nightly-20240908-e366086/huginn-0.3.3-nightly-20240908a-setup.exe",
+        //         date: "2024-09-01T13:04:10.000Z"
+        //     },
+        //     // release: undefined,
+        //     nightly: undefined
+        //     // nightly: {
+        //     //     version: "v0.3.3-nightly-20240908a",
+        //     //     // windowsSetupUrl: "https://github.com/WerdoxDev/Huginn/releases/download/nightly-20240908-e366086/huginn-0.3.3-nightly-20240908a-setup.exe",
+        //     //     windowsSetupUrl: "",
+        //     //     date: "2024-10-07T22:00:00.000Z"
+        //     // }
+        // }
 
         if (latestInfo.value.nightly) {
             const proccessedNightlyVersion = latestInfo.value?.nightly.version.split('-')
