@@ -146,7 +146,6 @@ async function buildVersion(version: string, type: BuildType) {
          newVersion,
       );
 
-      console.log(files);
       // Get blob for both .zip, .sig and .exe files
       const zipFile = Bun.file(files.nsisZipFile.path);
       const sigFile = Bun.file(files.nsisSigFile.path);
