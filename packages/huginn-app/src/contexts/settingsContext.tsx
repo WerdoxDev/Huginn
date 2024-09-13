@@ -1,5 +1,5 @@
 import { DeepPartial, ThemeType } from "@/types";
-import { BaseDirectory, createDir, exists, readTextFile, writeFile } from "@tauri-apps/api/fs";
+import { BaseDirectory, create, exists, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { appDataDir } from "@tauri-apps/api/path";
 import { Dispatch, ReactNode, createContext, useContext, useReducer } from "react";
 
@@ -17,9 +17,9 @@ const defaultValue: SettingsContextType = {
 // const defaultValue: SettingsContextType = { serverAddress: "https://huginn-b4yw.onrender.com", theme: "pine green" };
 
 let value = defaultValue;
-if (window.__TAURI__) {
+if (window.__TAURI_INTERNALS__) {
    await tryCreateSettingsFile();
-   value = { ...defaultValue, ...JSON.parse(await readTextFile("./data/settings.json", { dir: BaseDirectory.AppData })) };
+   value = { ...defaultValue, ...JSON.parse(await readTextFile("./data/settings.json", { baseDir: BaseDirectory.AppData })) };
 } else {
    if (!localStorage.getItem("settings")) {
       localStorage.setItem("settings", JSON.stringify(defaultValue));
@@ -45,7 +45,7 @@ export function SettingsProvider(props: { children?: ReactNode }) {
 function settingsReducer(settings: SettingsContextType, action: DeepPartial<SettingsContextType>) {
    if (!action) return { ...settings };
 
-   if (window.__TAURI__) {
+   if (window.__TAURI_INTERNALS__) {
       writeSettingsFile({ ...settings, ...action });
    } else {
       localStorage.setItem("settings", JSON.stringify({ ...settings, ...action }));
@@ -56,7 +56,7 @@ function settingsReducer(settings: SettingsContextType, action: DeepPartial<Sett
 
 async function writeSettingsFile(settings: SettingsContextType) {
    try {
-      await writeFile({ path: "./data/settings.json", contents: JSON.stringify(settings, null, 2) }, { dir: BaseDirectory.AppData });
+      await writeTextFile("./data/settings.json", JSON.stringify(settings, null, 2), { baseDir: BaseDirectory.AppData });
    } catch (e) {
       console.error(e);
    }
@@ -66,14 +66,14 @@ async function tryCreateSettingsFile() {
    try {
       const directory = await appDataDir();
       if (!(await exists(directory))) {
-         await createDir(directory);
+         await create(directory);
       }
 
-      if (!(await exists("data", { dir: BaseDirectory.AppData }))) {
-         await createDir("data", { dir: BaseDirectory.AppData });
+      if (!(await exists("data", { baseDir: BaseDirectory.AppData }))) {
+         await create("data", { baseDir: BaseDirectory.AppData });
       }
 
-      if (!(await exists("data/settings.json", { dir: BaseDirectory.AppData }))) {
+      if (!(await exists("data/settings.json", { baseDir: BaseDirectory.AppData }))) {
          await writeSettingsFile(defaultValue);
       }
    } catch (e) {

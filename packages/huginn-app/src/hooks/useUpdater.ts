@@ -1,42 +1,29 @@
-import { UpdaterProgress } from "@/types";
-import { UnlistenFn, listen } from "@tauri-apps/api/event";
-import { checkUpdate as tauriCheckUpdate, installUpdate as tauriInstallUpdate } from "@tauri-apps/api/updater";
-import { useEffect, useRef, useState } from "react";
+import { check as tauriCheck } from "@tauri-apps/plugin-updater";
+import { useRef, useState } from "react";
 
 export default function useUpdater() {
    const [progress, setProgress] = useState(0);
    const contentLength = useRef(0);
-   const currentLength = useRef(0);
+   const downloaded = useRef(0);
 
-   const unlistenFunction = useRef<UnlistenFn>();
-
-   async function checkUpdate() {
-      return tauriCheckUpdate();
+   async function check() {
+      return await tauriCheck();
    }
 
-   async function installUpdate() {
-      if ((await checkUpdate()).shouldUpdate) {
-         await tauriInstallUpdate();
-      }
-   }
+   async function downloadAndInstall() {
+      const update = await check();
 
-   useEffect(() => {
-      async function listenToUpdateProgress() {
-         unlistenFunction.current = await listen("tauri://update-download-progress", e => {
-            const payload = e.payload as UpdaterProgress;
-
-            currentLength.current += payload.chunkLength / 2;
-            contentLength.current = payload.contentLength;
-            setProgress((currentLength.current / payload.contentLength) * 100);
+      if (update?.available) {
+         await update.downloadAndInstall(event => {
+            if (event.event === "Started") {
+               contentLength.current = event.data.contentLength || 0;
+            } else if (event.event === "Progress") {
+               downloaded.current += event.data.chunkLength;
+               setProgress((downloaded.current / contentLength.current) * 100);
+            }
          });
       }
+   }
 
-      listenToUpdateProgress();
-
-      return () => {
-         unlistenFunction.current && unlistenFunction.current();
-      };
-   }, []);
-
-   return { checkUpdate, installUpdate, progress, contentLength, currentLength };
+   return { check, downloadAndInstall, progress, contentLength, downloaded };
 }

@@ -1,6 +1,7 @@
-import { appWindow } from "@tauri-apps/api/window";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { createPortal } from "react-dom";
 import { useWindow } from "@contexts/windowContext";
+const appWindow = getCurrentWebviewWindow();
 
 export default function TitleBar() {
    const huginnWindow = useWindow();

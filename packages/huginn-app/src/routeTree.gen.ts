@@ -159,25 +159,166 @@ declare module '@tanstack/react-router' {
 
 // Create and export the route tree
 
-export const routeTree = rootRoute.addChildren({
-  LayoutAnimationRoute: LayoutAnimationRoute.addChildren({
-    LayoutAnimationLayoutAuthRoute: LayoutAnimationLayoutAuthRoute.addChildren({
-      LayoutAnimationLayoutAuthLoginRoute,
+interface LayoutAnimationLayoutAuthRouteChildren {
+  LayoutAnimationLayoutAuthLoginRoute: typeof LayoutAnimationLayoutAuthLoginRoute
+  LayoutAnimationLayoutAuthRegisterRoute: typeof LayoutAnimationLayoutAuthRegisterRoute
+}
+
+const LayoutAnimationLayoutAuthRouteChildren: LayoutAnimationLayoutAuthRouteChildren =
+  {
+    LayoutAnimationLayoutAuthLoginRoute: LayoutAnimationLayoutAuthLoginRoute,
+    LayoutAnimationLayoutAuthRegisterRoute:
       LayoutAnimationLayoutAuthRegisterRoute,
-    }),
-    LayoutAnimationLayoutMainRoute: LayoutAnimationLayoutMainRoute.addChildren({
-      LayoutAnimationLayoutMainLayoutHomeRoute:
-        LayoutAnimationLayoutMainLayoutHomeRoute.addChildren({
-          LayoutAnimationLayoutMainLayoutHomeFriendsRoute,
-          LayoutAnimationLayoutMainLayoutHomeChannelsmeRoute:
-            LayoutAnimationLayoutMainLayoutHomeChannelsmeRoute.addChildren({
-              LayoutAnimationLayoutMainLayoutHomeChannelsmeChannelIdRoute,
-            }),
-        }),
-    }),
-  }),
-  SplashscreenRoute,
-})
+  }
+
+const LayoutAnimationLayoutAuthRouteWithChildren =
+  LayoutAnimationLayoutAuthRoute._addFileChildren(
+    LayoutAnimationLayoutAuthRouteChildren,
+  )
+
+interface LayoutAnimationLayoutMainLayoutHomeChannelsmeRouteChildren {
+  LayoutAnimationLayoutMainLayoutHomeChannelsmeChannelIdRoute: typeof LayoutAnimationLayoutMainLayoutHomeChannelsmeChannelIdRoute
+}
+
+const LayoutAnimationLayoutMainLayoutHomeChannelsmeRouteChildren: LayoutAnimationLayoutMainLayoutHomeChannelsmeRouteChildren =
+  {
+    LayoutAnimationLayoutMainLayoutHomeChannelsmeChannelIdRoute:
+      LayoutAnimationLayoutMainLayoutHomeChannelsmeChannelIdRoute,
+  }
+
+const LayoutAnimationLayoutMainLayoutHomeChannelsmeRouteWithChildren =
+  LayoutAnimationLayoutMainLayoutHomeChannelsmeRoute._addFileChildren(
+    LayoutAnimationLayoutMainLayoutHomeChannelsmeRouteChildren,
+  )
+
+interface LayoutAnimationLayoutMainLayoutHomeRouteChildren {
+  LayoutAnimationLayoutMainLayoutHomeFriendsRoute: typeof LayoutAnimationLayoutMainLayoutHomeFriendsRoute
+  LayoutAnimationLayoutMainLayoutHomeChannelsmeRoute: typeof LayoutAnimationLayoutMainLayoutHomeChannelsmeRouteWithChildren
+}
+
+const LayoutAnimationLayoutMainLayoutHomeRouteChildren: LayoutAnimationLayoutMainLayoutHomeRouteChildren =
+  {
+    LayoutAnimationLayoutMainLayoutHomeFriendsRoute:
+      LayoutAnimationLayoutMainLayoutHomeFriendsRoute,
+    LayoutAnimationLayoutMainLayoutHomeChannelsmeRoute:
+      LayoutAnimationLayoutMainLayoutHomeChannelsmeRouteWithChildren,
+  }
+
+const LayoutAnimationLayoutMainLayoutHomeRouteWithChildren =
+  LayoutAnimationLayoutMainLayoutHomeRoute._addFileChildren(
+    LayoutAnimationLayoutMainLayoutHomeRouteChildren,
+  )
+
+interface LayoutAnimationLayoutMainRouteChildren {
+  LayoutAnimationLayoutMainLayoutHomeRoute: typeof LayoutAnimationLayoutMainLayoutHomeRouteWithChildren
+}
+
+const LayoutAnimationLayoutMainRouteChildren: LayoutAnimationLayoutMainRouteChildren =
+  {
+    LayoutAnimationLayoutMainLayoutHomeRoute:
+      LayoutAnimationLayoutMainLayoutHomeRouteWithChildren,
+  }
+
+const LayoutAnimationLayoutMainRouteWithChildren =
+  LayoutAnimationLayoutMainRoute._addFileChildren(
+    LayoutAnimationLayoutMainRouteChildren,
+  )
+
+interface LayoutAnimationRouteChildren {
+  LayoutAnimationLayoutAuthRoute: typeof LayoutAnimationLayoutAuthRouteWithChildren
+  LayoutAnimationLayoutMainRoute: typeof LayoutAnimationLayoutMainRouteWithChildren
+}
+
+const LayoutAnimationRouteChildren: LayoutAnimationRouteChildren = {
+  LayoutAnimationLayoutAuthRoute: LayoutAnimationLayoutAuthRouteWithChildren,
+  LayoutAnimationLayoutMainRoute: LayoutAnimationLayoutMainRouteWithChildren,
+}
+
+const LayoutAnimationRouteWithChildren = LayoutAnimationRoute._addFileChildren(
+  LayoutAnimationRouteChildren,
+)
+
+export interface FileRoutesByFullPath {
+  '': typeof LayoutAnimationLayoutMainLayoutHomeRouteWithChildren
+  '/splashscreen': typeof SplashscreenRoute
+  '/login': typeof LayoutAnimationLayoutAuthLoginRoute
+  '/register': typeof LayoutAnimationLayoutAuthRegisterRoute
+  '/friends': typeof LayoutAnimationLayoutMainLayoutHomeFriendsRoute
+  '/channels/@me': typeof LayoutAnimationLayoutMainLayoutHomeChannelsmeRouteWithChildren
+  '/channels/@me/$channelId': typeof LayoutAnimationLayoutMainLayoutHomeChannelsmeChannelIdRoute
+}
+
+export interface FileRoutesByTo {
+  '': typeof LayoutAnimationLayoutMainLayoutHomeRouteWithChildren
+  '/splashscreen': typeof SplashscreenRoute
+  '/login': typeof LayoutAnimationLayoutAuthLoginRoute
+  '/register': typeof LayoutAnimationLayoutAuthRegisterRoute
+  '/friends': typeof LayoutAnimationLayoutMainLayoutHomeFriendsRoute
+  '/channels/@me': typeof LayoutAnimationLayoutMainLayoutHomeChannelsmeRouteWithChildren
+  '/channels/@me/$channelId': typeof LayoutAnimationLayoutMainLayoutHomeChannelsmeChannelIdRoute
+}
+
+export interface FileRoutesById {
+  __root__: typeof rootRoute
+  '/_layoutAnimation': typeof LayoutAnimationRouteWithChildren
+  '/splashscreen': typeof SplashscreenRoute
+  '/_layoutAnimation/_layoutAuth': typeof LayoutAnimationLayoutAuthRouteWithChildren
+  '/_layoutAnimation/_layoutMain': typeof LayoutAnimationLayoutMainRouteWithChildren
+  '/_layoutAnimation/_layoutAuth/login': typeof LayoutAnimationLayoutAuthLoginRoute
+  '/_layoutAnimation/_layoutAuth/register': typeof LayoutAnimationLayoutAuthRegisterRoute
+  '/_layoutAnimation/_layoutMain/_layoutHome': typeof LayoutAnimationLayoutMainLayoutHomeRouteWithChildren
+  '/_layoutAnimation/_layoutMain/_layoutHome/friends': typeof LayoutAnimationLayoutMainLayoutHomeFriendsRoute
+  '/_layoutAnimation/_layoutMain/_layoutHome/channels/@me': typeof LayoutAnimationLayoutMainLayoutHomeChannelsmeRouteWithChildren
+  '/_layoutAnimation/_layoutMain/_layoutHome/channels/@me/$channelId': typeof LayoutAnimationLayoutMainLayoutHomeChannelsmeChannelIdRoute
+}
+
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths:
+    | ''
+    | '/splashscreen'
+    | '/login'
+    | '/register'
+    | '/friends'
+    | '/channels/@me'
+    | '/channels/@me/$channelId'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | ''
+    | '/splashscreen'
+    | '/login'
+    | '/register'
+    | '/friends'
+    | '/channels/@me'
+    | '/channels/@me/$channelId'
+  id:
+    | '__root__'
+    | '/_layoutAnimation'
+    | '/splashscreen'
+    | '/_layoutAnimation/_layoutAuth'
+    | '/_layoutAnimation/_layoutMain'
+    | '/_layoutAnimation/_layoutAuth/login'
+    | '/_layoutAnimation/_layoutAuth/register'
+    | '/_layoutAnimation/_layoutMain/_layoutHome'
+    | '/_layoutAnimation/_layoutMain/_layoutHome/friends'
+    | '/_layoutAnimation/_layoutMain/_layoutHome/channels/@me'
+    | '/_layoutAnimation/_layoutMain/_layoutHome/channels/@me/$channelId'
+  fileRoutesById: FileRoutesById
+}
+
+export interface RootRouteChildren {
+  LayoutAnimationRoute: typeof LayoutAnimationRouteWithChildren
+  SplashscreenRoute: typeof SplashscreenRoute
+}
+
+const rootRouteChildren: RootRouteChildren = {
+  LayoutAnimationRoute: LayoutAnimationRouteWithChildren,
+  SplashscreenRoute: SplashscreenRoute,
+}
+
+export const routeTree = rootRoute
+  ._addFileChildren(rootRouteChildren)
+  ._addFileTypes<FileRouteTypes>()
 
 /* prettier-ignore-end */
 

@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import useUpdater from "@hooks/useUpdater";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { UpdateManifest } from "@tauri-apps/api/updater";
-import { invoke } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core";
 import { LoadingState } from "@/types";
 
 export const Route = createFileRoute("/splashscreen")({
@@ -10,10 +9,10 @@ export const Route = createFileRoute("/splashscreen")({
 });
 
 function Splashscreen() {
-   const { checkUpdate, installUpdate, progress, contentLength, currentLength } = useUpdater();
+   const { check, downloadAndInstall, progress, contentLength, downloaded } = useUpdater();
 
    const [loadingState, setLoadingState] = useState<LoadingState>("none");
-   const updateManifest = useRef<UpdateManifest>();
+   const newVersion = useRef<string>();
 
    const loadingText = useMemo(() => {
       return loadingState === "loading"
@@ -23,25 +22,25 @@ function Splashscreen() {
            : loadingState === "checking_update"
              ? "Checking for updates"
              : loadingState === "updating"
-               ? `Updating to v${updateManifest.current?.version}`
+               ? `Updating to v${newVersion.current}`
                : "Invalid State";
-   }, [updateManifest.current, loadingState]);
+   }, [newVersion.current, loadingState]);
 
    const updateProgressText = useMemo(() => {
-      return `${(currentLength.current / 1024 / 1024).toFixed(2)}MB / ${(contentLength.current / 1024 / 1024).toFixed(2)}MB (${Math.ceil(progress)}%)`;
-   }, [currentLength.current, contentLength.current, progress]);
+      return `${(downloaded.current / 1024 / 1024).toFixed(2)}MB / ${(contentLength.current / 1024 / 1024).toFixed(2)}MB (${Math.ceil(progress)}%)`;
+   }, [downloaded.current, contentLength.current, progress]);
 
    useEffect(() => {
       async function checkForUpdate() {
          setLoadingState("checking_update");
 
-         const { shouldUpdate, manifest } = await checkUpdate();
+         const update = await check();
 
-         if (shouldUpdate) {
-            updateManifest.current = manifest;
+         if (update) {
+            newVersion.current = update.version;
             setLoadingState("updating");
 
-            await installUpdate();
+            await downloadAndInstall();
          } else {
             setLoadingState("loading");
             await invoke("close_splashscreen");

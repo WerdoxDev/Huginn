@@ -18,9 +18,10 @@ import { QueryClient } from "@tanstack/react-query";
 import { Outlet, createRootRouteWithContext, useRouter } from "@tanstack/react-router";
 import "@tauri-apps/api";
 import { UnlistenFn } from "@tauri-apps/api/event";
-import { appWindow } from "@tauri-apps/api/window";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { useEffect, useRef } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+const appWindow = getCurrentWebviewWindow();
 
 export type HuginnRouterContext = {
    queryClient: QueryClient;

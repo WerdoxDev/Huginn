@@ -1,7 +1,7 @@
 import LinkButton from "@components/button/LinkButton";
 import { useQuery } from "@tanstack/react-query";
 import { getTauriVersion, getVersion } from "@tauri-apps/api/app";
-import { open } from "@tauri-apps/api/shell";
+import { open } from "@tauri-apps/plugin-shell";
 
 export default function SettingsAboutTab() {
    const { data: appData } = useQuery({

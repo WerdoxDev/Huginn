@@ -3,6 +3,7 @@
    "compilerOptions": {
       "types": ["unplugin-icons/types/react"],
       "jsx": "react-jsx",
+      "preserveSymlinks": true,
 
       "paths": {
          "@components/*": ["./src/components/*"],

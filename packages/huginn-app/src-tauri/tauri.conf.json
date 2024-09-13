@@ -1,90 +1,39 @@
 {
-   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
    "build": {
       "beforeBuildCommand": "bun run build",
       "beforeDevCommand": "bun run dev",
-      "devPath": "http://localhost:5173",
-      "distDir": "../dist"
+      "frontendDist": "../dist",
+      "devUrl": "http://localhost:5173"
    },
-   "package": {
-      "productName": "Huginn"
+   "bundle": {
+      "active": true,
+      "category": "DeveloperTool",
+      "copyright": "",
+      "targets": "all",
+      "externalBin": [],
+      "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+      "windows": {
+         "certificateThumbprint": null,
+         "digestAlgorithm": "sha256",
+         "timestampUrl": ""
+      },
+      "longDescription": "",
+      "shortDescription": "",
+      "resources": [],
+      "createUpdaterArtifacts": true
    },
-   "tauri": {
-      "allowlist": {
-         "all": false,
-         "window": {
-            "all": false,
-            "close": true,
-            "hide": true,
-            "show": true,
-            "maximize": true,
-            "minimize": true,
-            "unmaximize": true,
-            "unminimize": true,
-            "startDragging": true
-         },
-         "path": {
-            "all": true
-         },
-         "fs": {
-            "all": false,
-            "createDir": true,
-            "exists": true,
-            "readDir": true,
-            "readFile": true,
-            "removeDir": true,
-            "removeFile": true,
-            "renameFile": true,
-            "scope": ["$APPDATA/**", "$APPDATA/*", "$APPDATA"],
-            "writeFile": true
-         },
-         "shell": {
-            "all": false,
-            "execute": false,
-            "open": true,
-            "scope": [],
-            "sidecar": false
-         }
-      },
-      "bundle": {
-         "active": true,
-         "category": "DeveloperTool",
-         "copyright": "",
-         "deb": {
-            "depends": []
-         },
-         "externalBin": [],
-         "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
-         "identifier": "com.huginn.dev",
-         "longDescription": "",
-         "macOS": {
-            "entitlements": null,
-            "exceptionDomain": "",
-            "frameworks": [],
-            "providerShortName": null,
-            "signingIdentity": null
-         },
-         "resources": [],
-         "shortDescription": "",
-         "targets": "all",
-         "windows": {
-            "certificateThumbprint": null,
-            "digestAlgorithm": "sha256",
-            "timestampUrl": ""
-         }
-      },
-      "security": {
-         "csp": null
-      },
+   "productName": "Huginn",
+   "identifier": "com.huginn.dev",
+   "plugins": {
       "updater": {
-         "active": true,
-         "endpoints": ["https://gist.githubusercontent.com/WerdoxDev/ac95eb18cb91af0cc3992625c1c6eb18/raw/huginn-version.json?v=1"],
-         "dialog": false,
          "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEZBQzhCNUZDMEVFMDlCMkYKUldRdm0rQU8vTFhJK3JnS1NCRzIzUS9NM21tbHdBYlo1UzkyNDZYNTd6OEE1TFJpNkd4ekdVKzAK",
+         "endpoints": ["https://gist.githubusercontent.com/WerdoxDev/ac95eb18cb91af0cc3992625c1c6eb18/raw/huginn-version.json?v=1"],
          "windows": {
             "installMode": "passive"
          }
-      },
+      }
+   },
+   "app": {
       "windows": [
          {
             "title": "Huginn",
@@ -109,6 +58,9 @@
             "center": true,
             "transparent": true
          }
-      ]
+      ],
+      "security": {
+         "csp": null
+      }
    }
 }

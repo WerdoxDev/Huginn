@@ -24,3 +24,9 @@ declare module "slate" {
       Range: CustomRange;
    }
 }
+
+declare global {
+   interface Window {
+      __TAURI_INTERNALS__: unknown;
+   }
+}
