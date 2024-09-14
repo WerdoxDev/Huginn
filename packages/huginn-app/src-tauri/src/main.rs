@@ -19,8 +19,6 @@ async fn close_splashscreen(app: AppHandle) {
 }
 
 fn main() {
-    let port = 3002;
-
     tauri::Builder::default()
         .setup(|app| {
             #[cfg(desktop)]
