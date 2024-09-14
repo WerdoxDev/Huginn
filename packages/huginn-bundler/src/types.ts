@@ -4,18 +4,14 @@ export type Version = {
    major: number;
 };
 
-export enum BuildType {
-   RELEASE = "RELEASE",
-   DEBUG = "DEBUG",
-}
+export type BuildFlavour = "release" | "nightly";
 
 export type AppVersion = {
-   type: BuildType;
+   type: BuildFlavour;
    version: Version;
 };
 
 export type BuildFiles = {
-   nsisZipFile: { path: string; name: string };
    nsisSigFile: { path: string; name: string };
    nsisSetupFile: { path: string; name: string };
 };
@@ -25,4 +21,23 @@ export type UpdateFileInfo = {
    notes: string;
    pub_date: string;
    platforms: Record<string, { signature: string; url: string }>;
+};
+
+export type CargoContent = {
+   package: { version: string };
+};
+
+export type PackageContent = {
+   version: string;
+};
+
+export type Suggestions = {
+   latest?: string | null;
+   latestNightly?: string | null;
+   localLatest?: string | null;
+   localLatestNightly?: string | null;
+   nextPatch?: string | null;
+   nextMinor?: string | null;
+   nextMajor?: string | null;
+   nextNightly?: string | null;
 };

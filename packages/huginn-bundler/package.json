@@ -11,9 +11,11 @@
    },
    "dependencies": {
       "@inquirer/prompts": "^5.1.2",
-      "@types/yargs": "^17.0.32",
+      "@types/semver": "^7.5.8",
+      "citty": "^0.1.6",
+      "confbox": "^0.1.7",
       "consola": "^3.2.3",
       "octokit": "^3.2.1",
-      "yargs": "^17.7.2"
+      "semver": "^7.6.3"
    }
 }

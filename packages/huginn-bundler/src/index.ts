@@ -1,265 +1,345 @@
 #! /usr/bin/env bun
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { input, select } from "@inquirer/prompts";
-import { $ } from "bun";
+import { $, version } from "bun";
+import { defineCommand, runMain, showUsage } from "citty";
 import consola from "consola";
-import { colors } from "consola/utils";
-import { mkdir, rm } from "node:fs/promises";
+import { mkdir, rm, readdir } from "node:fs/promises";
 import { Octokit } from "octokit";
 import path from "path";
-import { getVersionTypeText, logger } from "./logger";
-import { BuildType, type AppVersion, type UpdateFileInfo } from "./types";
-import {
-   APP_PATH,
-   BUILDS_PATH,
-   CARGO_TOML_PATH,
-   GIST_ID,
-   NSIS_RELATIVE_PATH,
-   PACKAGE_JSON_PATH,
-   REPO,
-   TAURI_DEBUG_PATH,
-   TAURI_RELEASE_PATH,
-   getBuildFiles,
-   getPatchedVersion,
-   getVersionSuffix,
-   getVersions,
-   stringToVersion,
-   versionToString,
-   writeCargoTomlVersion,
-   writePackageJsonVersion,
-} from "./utils";
+import * as semver from "semver";
+import { logger } from "./logger";
+import { BuildFlavour, Suggestions } from "./types";
+import { directoryExists, getBuildFiles, getBuildFlavour, getReleaseIdByTag, writeCargoTomlVersion } from "./utils";
+import { colors } from "consola/utils";
 
-const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+export const APP_PATH: string = process.env.APP_PATH!;
+export const BUILDS_PATH: string = process.env.BUILDS_PATH!;
 
-logger.bundlerInfo();
+export const TAURI_BUILD_PATH: string = process.env.TAURI_BUILD_PATH!;
 
-const intent = await select({
-   message: "Select an action:",
-   choices: [
-      { name: "Build", value: 0 },
-      { name: "Create Release", value: 1 },
-      { name: "Delete Release", value: 2 },
-      { name: "Delete Build", value: 3 },
-   ],
+export const NSIS_RELATIVE_PATH = "/nsis";
+
+export const CARGO_TOML_PATH: string = process.env.CARGO_TOML_PATH!;
+
+export const GIST_ID: string = process.env.GIST_ID!;
+export const REPO: string = process.env.REPO_NAME!;
+
+export const octokit: Octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+
+const main = defineCommand({
+   meta: {
+      name: "huginn-bundler",
+      version: "0.0.1",
+      description: "Very simple bundler that builds the Huginn App and uploads it to github!",
+   },
+   args: {
+      version: {
+         type: "string",
+         alias: "v",
+         required: false,
+         description: "A SemVer string for the build or upload",
+         valueHint: "SEMVER",
+      },
+      delete: {
+         type: "string",
+         alias: "x",
+         description: "Deletes the provided SemVer version both locally and on GitHub if it exists",
+         valueHint: "SEMVER",
+         required: false,
+      },
+      upload: {
+         type: "boolean",
+         alias: "u",
+         description: "Uploads the build to GitHub as a release. If build already exists, it skips building it again",
+         required: false,
+         default: false,
+      },
+      draft: {
+         type: "boolean",
+         alias: "d",
+         description: "Whether or not the GitHub release should be a draft",
+         default: false,
+         required: false,
+      },
+      suggest: {
+         type: "boolean",
+         alias: "s",
+         description: "Suggests what the next SemVer number should be based on already published versions",
+         required: false,
+         default: false,
+      },
+      force: {
+         type: "boolean",
+         alias: "f",
+         description: "Force build a version although it's not recommended by the suggestion",
+         required: false,
+         default: false,
+      },
+   },
+   async run({ args }) {
+      if (args.suggest) {
+         const suggestions = await getSuggestions();
+         logSuggestions(suggestions);
+         return;
+      }
+
+      if (args.version) {
+         await build(args.version, args.force);
+
+         if (args.upload) {
+            if (args.draft) {
+               const confirmation = await consola.prompt(
+                  "A draft release cannot later be edited in the cli. Do you want to continue?",
+                  {
+                     type: "confirm",
+                  },
+               );
+               if (!confirmation) {
+                  return;
+               }
+            }
+
+            const description = await consola.prompt("Enter a description:", { type: "text" });
+            await createRelease(args.version, description, args.draft);
+            return;
+         }
+
+         return;
+      } else if (args.delete) {
+         await deleteVersion(args.delete);
+         return;
+      }
+
+      showUsage(main);
+   },
 });
 
-if (intent === 0) {
-   const version = await input({ message: `Enter the desired version ${colors.red("without patch number")}:` });
-   const debugOrRelease = await select({
-      message: "Select a build mode:",
-      choices: [
-         { name: "Release", value: BuildType.RELEASE },
-         { name: "Debug", value: BuildType.DEBUG },
-      ],
-   });
+runMain(main);
 
-   await buildVersion(version, debugOrRelease);
-} else if (intent === 1) {
-   const versions = await getVersions();
+async function getSuggestions(): Promise<Suggestions> {
+   const releases = await octokit.rest.repos.listReleases({ owner: "WerdoxDev", repo: REPO });
+   const localBuilds = (await readdir(BUILDS_PATH))
+      .map(x => semver.valid(x))
+      .filter(x => x !== null)
+      .sort(semver.rcompare);
 
-   const version = await select({
-      message: "Select the version to publish:",
-      choices: versions.map(v => ({
-         name: `${versionToString(v.version)} ${getVersionTypeText(v.type)}`,
-         value: v,
-      })),
-   });
+   const latest = releases.data.find(x => !x.prerelease);
+   const latestNightly = releases.data.find(x => x.prerelease);
 
-   const description = await input({
-      message: "Enter a description:",
-   });
+   const localLatest = "v" + localBuilds.find(x => !semver.prerelease(x));
+   const localLatestNightly = "v" + localBuilds.find(x => semver.prerelease(x)?.[0]);
 
-   await createGithubRelease(versionToString(version.version), version.type, description);
-   await updateGistFile(version.type, versionToString(version.version), description);
-   // await logVersions();
-} else if (intent === 2) {
-   const releases = await octokit.rest.repos.listReleases({ repo: REPO, owner: "WerdoxDev" });
+   const nextPatch = semver.inc(localLatest ?? "", "patch");
+   const nextMinor = semver.inc(localLatest ?? "", "minor");
+   const nextMajor = semver.inc(localLatest ?? "", "major");
+   const nextNightly = semver.inc(
+      semver.compare(localLatest, localLatestNightly) === 1 ? localLatest : (localLatestNightly ?? ""),
+      "prerelease",
+      "nightly",
+   );
 
-   const versions: (AppVersion & { id: number; tag: string })[] = releases.data.map(x => ({
-      type: x.tag_name.includes("-dev") ? BuildType.DEBUG : BuildType.RELEASE,
-      version: stringToVersion(x.tag_name.slice(1, 6)),
-      id: x.id,
-      tag: x.tag_name,
-   }));
-
-   const release = await select({
-      message: "Select a release to delete:",
-      choices: versions.map(v => ({ name: `${versionToString(v.version)} ${getVersionTypeText(v.type)}`, value: v })),
-   });
-
-   await octokit.rest.repos.deleteRelease({ owner: "WerdoxDev", repo: REPO, release_id: release.id });
-   await octokit.rest.git.deleteRef({ owner: "WerdoxDev", repo: REPO, ref: `tags/${release.tag}` });
-
-   logger.releaseDeleted(versionToString(release.version), release.type);
-} else if (intent === 3) {
-   const versions = await getVersions();
-
-   const version = await select({
-      message: "Select the version to delete:",
-      choices: versions.map(v => ({
-         name: `${versionToString(v.version)} ${getVersionTypeText(v.type)}`,
-         value: v,
-      })),
-   });
-
-   await rm(path.join(BUILDS_PATH, versionToString(version.version) + getVersionSuffix(version.type)), {
-      force: true,
-      recursive: true,
-   });
-
-   logger.versionDeleted(versionToString(version.version), version.type);
+   return {
+      latest: latest?.name,
+      latestNightly: latestNightly?.name,
+      localLatest,
+      localLatestNightly,
+      nextPatch,
+      nextMinor,
+      nextMajor,
+      nextNightly,
+   };
 }
 
-async function buildVersion(version: string, type: BuildType) {
+function logSuggestions(suggestions: Suggestions) {
+   consola.log("");
+   consola.log(`${colors.gray("---")} ${colors.magenta("Next version suggestions")}`);
+   consola.log(`  ${colors.gray("--")} ${colors.green(colors.bold("nightly"))}: ${colors.green(suggestions.nextNightly ?? "none")}`);
+   consola.log(`  ${colors.gray("--")} ${colors.green(colors.bold("patch"))}: ${colors.green(suggestions.nextPatch ?? "none")}`);
+   consola.log(`  ${colors.gray("--")} ${colors.green(colors.bold("minor"))}: ${colors.green(suggestions.nextMinor ?? "none")}`);
+   consola.log(`  ${colors.gray("--")} ${colors.green(colors.bold("major"))}: ${colors.green(suggestions.nextMajor ?? "none")}`);
+   consola.log("");
+
+   consola.log(`${colors.gray("---")} ${colors.yellow("Current versions")}`);
+   consola.log(`  ${colors.gray("--")} ${colors.blue("local")}: ${colors.cyan(suggestions.localLatest ?? "none")}`);
+   consola.log(
+      `  ${colors.gray("--")} ${colors.blue("local")} ${colors.red("nightly")}: ${colors.cyan(suggestions.localLatestNightly ?? "none")}`,
+   );
+   consola.log(`  ${colors.gray("--")} ${colors.blue("GitHub")}: ${colors.cyan(suggestions.latest ?? "none")}`);
+   consola.log(
+      `  ${colors.gray("--")} ${colors.blue("GitHub")} ${colors.red("nightly")}: ${colors.cyan(suggestions.latestNightly ?? "none")}`,
+   );
+}
+
+async function build(version: string, force?: boolean) {
    try {
-      const versions = await getVersions();
-      const newVersion = getPatchedVersion(version, versions);
-      const newVersionPath = path.join(BUILDS_PATH, newVersion + getVersionSuffix(type));
+      const versionDir = path.join(BUILDS_PATH, version);
+      const buildPath = path.join(TAURI_BUILD_PATH, NSIS_RELATIVE_PATH);
 
-      logger.startingBuild(newVersion, type);
+      if (await directoryExists(versionDir)) {
+         logger.versionExists(version);
+         return;
+      }
 
-      logger.versionFieldsUpdated(newVersion);
-      // Update the version numbers in cargo.toml and package.json
-      await writeCargoTomlVersion(CARGO_TOML_PATH, newVersion);
-      await writePackageJsonVersion(PACKAGE_JSON_PATH, newVersion);
+      const suggestions = await getSuggestions();
+      const suggestedVersions = [suggestions.nextNightly, suggestions.nextPatch, suggestions.nextMinor, suggestions.nextMajor];
 
-      logger.buildingApp(newVersion);
+      if (!suggestedVersions.includes(version) && !force) {
+         logger.versionNotSuggested(version);
+         return;
+      }
 
-      // Set environment variables for tauri
-      $.env({
-         ...process.env,
-         TAURI_PRIVATE_KEY: process.env.TAURI_PRIVATE_KEY,
-         TAURI_KEY_PASSWORD: process.env.TAURI_KEY_PASSWORD,
-      });
+      const flavour = getBuildFlavour(version);
 
-      // Run the build script and log the result
-      if (type === BuildType.DEBUG) await $`cd ${APP_PATH} && bun tauri-build --debug`.quiet();
-      else await $`cd ${APP_PATH} && bun tauri-build`.quiet();
+      // Update the version number in cargo.toml
+      await writeCargoTomlVersion(CARGO_TOML_PATH, version);
 
-      logger.copyingBuildFiles(newVersionPath);
+      logger.versionFieldsUpdated(version);
+
+      logger.buildingApp(version, flavour);
+
+      let files = await getBuildFiles(buildPath, version);
+
+      if (files) {
+         logger.buildExists(version);
+      } else {
+         // Set environment variables for tauri
+         $.env({
+            ...process.env,
+            TAURI_SIGNING_PRIVATE_KEY: process.env.TAURI_PRIVATE_KEY,
+            TAURI_SIGNING_PRIVATE_KEY_PASSWORD: process.env.TAURI_KEY_PASSWORD,
+         });
+
+         // Run the build script and log the result
+         await $`cd ${APP_PATH} && bun tauri-build`.quiet();
+      }
+
+      logger.copyingBuildFiles(versionDir);
 
       // Create a directory for the new version
-      await mkdir(newVersionPath);
+      await mkdir(versionDir);
 
-      const files = await getBuildFiles(
-         path.join(type === BuildType.DEBUG ? TAURI_DEBUG_PATH : TAURI_RELEASE_PATH, NSIS_RELATIVE_PATH),
-         newVersion,
-      );
+      files = await getBuildFiles(buildPath, version, true);
 
-      // Get blob for both .zip, .sig and .exe files
-      const zipFile = Bun.file(files.nsisZipFile.path);
+      // Get blob for both .exe and .sig files
       const sigFile = Bun.file(files.nsisSigFile.path);
       const setupFile = Bun.file(files.nsisSetupFile.path);
 
-      // Copy .zip, .sig and .exe files to our new version's folder
-      await Bun.write(path.join(newVersionPath, files.nsisZipFile.name), zipFile);
-      await Bun.write(path.join(newVersionPath, files.nsisSigFile.name), sigFile);
-      await Bun.write(path.join(newVersionPath, files.nsisSetupFile.name), setupFile);
+      // Copy .exe and .sig files to our new version's folder
+      await Bun.write(path.join(versionDir, files.nsisSigFile.name), sigFile);
+      await Bun.write(path.join(versionDir, files.nsisSetupFile.name), setupFile);
 
-      logger.buildCompleted(newVersion, type);
+      logger.buildCompleted(version, flavour);
    } catch (e) {
       consola.error("Something went wrong... ");
       throw e;
    }
 }
 
-async function createGithubRelease(version: string, type: BuildType, description: string) {
-   logger.creatingRelease(version, type);
+async function createRelease(version: string, description: string, draft: boolean) {
+   const flavour = getBuildFlavour(version);
+   const owner = "WerdoxDev";
 
    // Create the release with a description
-   const releaseName = type === BuildType.DEBUG ? `v${version}-dev` : `v${version}`;
+   const releaseName = `v${version}`;
 
-   const release = await octokit.rest.repos.createRelease({
-      owner: "WerdoxDev",
-      repo: REPO,
-      name: releaseName,
-      tag_name: releaseName,
-      target_commitish: "master",
-      body: description,
-   });
+   let releaseId = await getReleaseIdByTag(releaseName, owner, REPO);
+   const releaseExists = !!releaseId;
+
+   if (releaseId) {
+      logger.releaseExists(version);
+
+      await octokit.rest.repos.updateRelease({
+         release_id: releaseId,
+         owner,
+         repo: REPO,
+         body: description,
+         name: releaseName,
+         tag_name: releaseName,
+         target_commitish: "master",
+         draft,
+      });
+   } else {
+      logger.creatingRelease(version, flavour, draft);
+
+      releaseId = (
+         await octokit.rest.repos.createRelease({
+            owner,
+            repo: REPO,
+            name: releaseName,
+            tag_name: releaseName,
+            target_commitish: "master",
+            body: description,
+            prerelease: flavour === "nightly",
+            draft,
+         })
+      ).data.id;
+   }
 
    // Get build files from debug or release folders
-   const files = await getBuildFiles(path.join(BUILDS_PATH, version + getVersionSuffix(type)), version);
+   const files = await getBuildFiles(path.join(BUILDS_PATH, version), version, true);
 
-   logger.uploadingReleaseFiles();
    // Convert build files to strings
-   const zipFileString = await Bun.file(files.nsisZipFile.path).arrayBuffer();
    const sigFileString = await Bun.file(files.nsisSigFile.path).text();
    const setupFileString = await Bun.file(files.nsisSetupFile.path).arrayBuffer();
 
-   // Upload .zip, .sig and .exe files to the release
-   await octokit.rest.repos.uploadReleaseAsset({
-      name: files.nsisZipFile.name,
-      release_id: release.data.id,
-      owner: "WerdoxDev",
-      repo: REPO,
-      data: zipFileString as unknown as string,
-      headers: { "content-type": "application/zip" },
-   });
+   const releaseAssets = await octokit.rest.repos.listReleaseAssets({ release_id: releaseId, owner, repo: REPO });
 
+   if (releaseAssets.data.length > 0) {
+      logger.deletingExistingAssets(version);
+
+      for (const asset of releaseAssets.data) {
+         await octokit.rest.repos.deleteReleaseAsset({ asset_id: asset.id, owner, repo: REPO });
+      }
+   }
+
+   logger.uploadingReleaseFiles();
+
+   // Upload .exe and .sig and files to the release
    await octokit.rest.repos.uploadReleaseAsset({
       name: files.nsisSigFile.name,
-      release_id: release.data.id,
-      owner: "WerdoxDev",
+      release_id: releaseId,
+      owner,
       repo: REPO,
       data: sigFileString,
    });
 
    await octokit.rest.repos.uploadReleaseAsset({
       name: files.nsisSetupFile.name,
-      release_id: release.data.id,
-      owner: "WerdoxDev",
+      release_id: releaseId,
+      owner,
       repo: REPO,
       data: setupFileString as unknown as string,
    });
 
-   logger.releaseCreated(version, type);
+   if (releaseExists) {
+      logger.releaseUpdated(version, flavour);
+   } else {
+      logger.releaseCreated(version, flavour, draft);
+   }
 }
 
-async function updateGistFile(type: BuildType, version: string, description: string) {
-   const files = await getBuildFiles(path.join(BUILDS_PATH, version + getVersionSuffix(type)), version);
+async function deleteVersion(version: string) {
+   const versionDir = path.join(BUILDS_PATH, version);
 
-   const sigFileString = await Bun.file(files.nsisSigFile.path).text();
-   const publishDate = new Date(Bun.file(files.nsisZipFile.path).lastModified).toISOString();
+   if (await directoryExists(versionDir)) {
+      await rm(path.join(BUILDS_PATH, version), {
+         force: true,
+         recursive: true,
+      });
 
-   const url = `https://github.com/WerdoxDev/${REPO}/releases/download/v${
-      version + (type === BuildType.DEBUG ? "-dev" : "")
-   }/Huginn_${version}_x64-setup.nsis.zip`;
+      logger.versionDeleted(version);
+   } else {
+      logger.versionDoesNotExist(version);
+   }
 
-   const content: UpdateFileInfo = {
-      version: version,
-      pub_date: publishDate,
-      notes: description,
-      platforms: {
-         "windows-x86_64": { signature: sigFileString, url: url },
-      },
-   };
+   const releaseId = await getReleaseIdByTag(`v${version}`, "WerdoxDev", REPO);
 
-   logger.updatingGistFile();
+   if (releaseId) {
+      await octokit.rest.repos.deleteRelease({ owner: "WerdoxDev", release_id: releaseId, repo: REPO });
 
-   await octokit.rest.gists.update({
-      gist_id: GIST_ID,
-      description: description,
-      files: { "huginn-version.json": { filename: "huginn-version.json", content: JSON.stringify(content, null, 2) } },
-   });
-
-   logger.gistFileUpdated(version, type);
+      logger.releaseDeleted(version);
+   } else {
+      logger.releaseDoesNotExist(version);
+   }
 }
-
-// async function logVersions() {
-//    consola.start("Reading versions...\n");
-//    const folders = await getVersions(BuildType.RELEASE);
-
-//    if (folders.length === 0) {
-//       consola.fail("No versions are currently available!");
-//       return;
-//    }
-
-//    for (let i = 0; i < folders.length; i++) {
-//       const folder = folders[i];
-//       const versionText = colors.cyan(folder);
-//       const isLatestText = i === 0 ? colors.bold(colors.green("Latest")) : "";
-
-//       consola.info(`Version ${versionText} ${isLatestText}`);
-//    }
-// }

@@ -1,73 +1,61 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { semver } from "bun";
+import { parseTOML, stringifyTOML } from "confbox";
 import { readdir } from "node:fs/promises";
 import path from "path";
-import { BuildType, type AppVersion, type BuildFiles, type Version } from "./types";
+import * as semver from "semver";
+import { NSIS_RELATIVE_PATH, octokit, REPO } from ".";
+import { BuildFlavour, CargoContent, type BuildFiles, type Version } from "./types";
 
-export const APP_PATH: string = process.env.APP_PATH!;
-export const BUILDS_PATH: string = process.env.BUILDS_PATH!;
+// /**
+//  * @returns all version in either debug or release folders
+//  */
+// export async function getVersions(): Promise<AppVersion[]> {
+//    const folders = (await readdir(BUILDS_PATH)).sort((v1, v2) => semver.order(v1.split("_")[0], v2.split("_")[0])).reverse();
+//    return folders.map(x => ({ type: getFolderBuildType(x), version: stringToVersion(x) }));
+// }
 
-export const TAURI_DEBUG_PATH: string = process.env.TAURI_DEBUG_PATH!;
-export const TAURI_RELEASE_PATH: string = process.env.TAURI_RELEASE_PATH!;
+// /**
+//  * @returns the given version with an increased patch number so 0.3.0 becomes 0.3.1
+//  */
+// export function getPatchedVersion(version: string, orderedVersions: AppVersion[]): string {
+//    const latestVersion = orderedVersions[0]?.version ?? { major: 0, minor: 0, patch: 0 };
+//    const versionToPatch = stringToVersion(version);
 
-export const MSI_RELATIVE_PATH = "/msi";
-export const NSIS_RELATIVE_PATH = "/nsis";
+//    if (versionToPatch.patch !== undefined) throw new Error("Input version cannot have a patch number");
+//    if (versionToPatch.major < latestVersion.major || versionToPatch.minor < latestVersion.minor)
+//       throw new Error("Input version cannot be less than latest available version");
 
-export const CARGO_TOML_PATH: string = process.env.CARGO_TOML_PATH!;
-export const PACKAGE_JSON_PATH: string = process.env.PACKAGE_JSON_PATH!;
+//    // If we have the same major and minor, just add 1 to the patch otherwise just a 0
+//    if (versionToPatch.major === latestVersion.major && versionToPatch.minor === latestVersion.minor) {
+//       versionToPatch.patch = latestVersion.patch! + 1;
+//    } else {
+//       versionToPatch.patch = 0;
+//    }
 
-export const GIST_ID: string = process.env.GIST_ID!;
-export const REPO: string = process.env.REPO_NAME!;
-
-/**
- * @returns all version in either debug or release folders
- */
-export async function getVersions(): Promise<AppVersion[]> {
-   const folders = (await readdir(BUILDS_PATH)).sort((v1, v2) => semver.order(v1.split("_")[0], v2.split("_")[0])).reverse();
-   return folders.map(x => ({ type: getFolderBuildType(x), version: stringToVersion(x) }));
-}
-
-/**
- * @returns the given version with an increased patch number so 0.3.0 becomes 0.3.1
- */
-export function getPatchedVersion(version: string, orderedVersions: AppVersion[]): string {
-   const latestVersion = orderedVersions[0]?.version ?? { major: 0, minor: 0, patch: 0 };
-   const versionToPatch = stringToVersion(version);
-
-   if (versionToPatch.patch !== undefined) throw new Error("Input version cannot have a patch number");
-   if (versionToPatch.major < latestVersion.major || versionToPatch.minor < latestVersion.minor)
-      throw new Error("Input version cannot be less than latest available version");
-
-   // If we have the same major and minor, just add 1 to the patch otherwise just a 0
-   if (versionToPatch.major === latestVersion.major && versionToPatch.minor === latestVersion.minor) {
-      versionToPatch.patch = latestVersion.patch! + 1;
-   } else {
-      versionToPatch.patch = 0;
-   }
-
-   return versionToString(versionToPatch);
-}
+//    return versionToString(versionToPatch);
+// }
 
 /**
- * @returns a BuildFiles object that contains .zip, .sig and .exe files from the tauri debug/release build folder
+ * @returns a BuildFiles object that contains .exe and .sig files from the tauri debug/release build folder
  */
-export async function getBuildFiles(buildPath: string, version: string): Promise<BuildFiles> {
+export async function getBuildFiles<Throw extends boolean>(
+   buildPath: string,
+   version: string,
+   throwOnNotFound?: Throw,
+): Promise<Throw extends true ? BuildFiles : BuildFiles | null> {
    const nsisFiles = await readdir(buildPath);
 
-   const nsisZipFileName = nsisFiles.find(x => x.endsWith(".zip") && x.includes(version));
    const nsisSigFileName = nsisFiles.find(x => x.endsWith(".sig") && x.includes(version));
    const nsisSetupFileName = nsisFiles.find(x => x.endsWith(".exe") && x.includes(version));
 
-   if (!nsisZipFileName || !nsisSigFileName || !nsisSetupFileName) {
-      throw new Error(`.zip, .sig or .exe file not found in (${path.join(buildPath, NSIS_RELATIVE_PATH)})`);
+   if (!nsisSigFileName || !nsisSetupFileName) {
+      if (!throwOnNotFound) return null as never;
+      throw new Error(`.exe or .sig file not found in (${path.join(buildPath, NSIS_RELATIVE_PATH)})`);
    }
 
-   const nsisZipFilePath = path.join(buildPath, nsisZipFileName);
    const nsisSigFilePath = path.join(buildPath, nsisSigFileName);
    const nsisSetupFilePath = path.join(buildPath, nsisSetupFileName);
 
    return {
-      nsisZipFile: { name: nsisZipFileName, path: nsisZipFilePath },
       nsisSigFile: { name: nsisSigFileName, path: nsisSigFilePath },
       nsisSetupFile: { name: nsisSetupFileName, path: nsisSetupFilePath },
    };
@@ -95,59 +83,58 @@ export function versionToString(version: Version): string {
 }
 
 /**
- * @returns returns either _debug or _release
+ * @returns a string of either 'nightly' or 'release' depending on the version
  */
-export function getVersionSuffix(type: BuildType): string {
-   return type === BuildType.DEBUG ? "_debug" : "_release";
+export function getBuildFlavour(version: string): BuildFlavour {
+   return semver.prerelease(version)?.includes("nightly") ? "nightly" : "release";
 }
 
-/**
- * @returns a folder name's build type indicated by _release or _debug
- */
-export function getFolderBuildType(folderName: string): BuildType {
-   if (folderName.endsWith("_debug")) return BuildType.DEBUG;
-   else if (folderName.endsWith("_release")) return BuildType.RELEASE;
-   return BuildType.DEBUG;
+export async function getReleaseIdByTag(tag: string, owner: string, repo: string): Promise<number | null> {
+   try {
+      const release = await octokit.rest.repos.getReleaseByTag({ owner, repo, tag });
+      return release.data.id;
+   } catch {
+      return null;
+   }
 }
+
+// /**
+//  * @returns returns either _debug or _release
+//  */
+// export function getVersionSuffix(type: BuildFlavour): string {
+//    return type === BuildFlavour.DEBUG ? "_debug" : "_release";
+// }
+
+// /**
+//  * @returns a folder name's build type indicated by _release or _debug
+//  */
+// export function getFolderBuildType(folderName: string): BuildFlavour {
+//    if (folderName.endsWith("_debug")) return BuildFlavour.DEBUG;
+//    else if (folderName.endsWith("_release")) return BuildFlavour.RELEASE;
+//    return BuildFlavour.DEBUG;
+// }
 
 /**
  * Writes the specified version to Cargo.toml file
  */
 export async function writeCargoTomlVersion(path: string, version: string): Promise<void> {
-   const cargoToml = Bun.file(path);
+   const cargoTomlFile = Bun.file(path);
 
-   const text = await cargoToml.text();
-   const modifiedText = text
-      .split("\n")
-      .map(x => {
-         if (x.startsWith("version = ")) {
-            return `version = "${version}"`;
-         }
+   const content: CargoContent = parseTOML(await cargoTomlFile.text());
+   content.package.version = version;
 
-         return x;
-      })
-      .join("\n");
-
-   await Bun.write(path, modifiedText);
+   const stringlified = stringifyTOML(content);
+   await Bun.write(path, stringlified);
 }
 
 /**
- * Writes the specified version to a package.json file
+ * @returns a bool indicating whether or not the directory exists
  */
-export async function writePackageJsonVersion(path: string, version: string): Promise<void> {
-   const packageJson = Bun.file(path);
-
-   const text = await packageJson.text();
-   const modifiedText = text
-      .split("\n")
-      .map(x => {
-         if (x.trim().startsWith('"version"')) {
-            return `"version": "${version}",`;
-         }
-
-         return x;
-      })
-      .join("\n");
-
-   await Bun.write(path, modifiedText);
+export async function directoryExists(path: string): Promise<boolean> {
+   try {
+      await readdir(path);
+      return true;
+   } catch {
+      return false;
+   }
 }

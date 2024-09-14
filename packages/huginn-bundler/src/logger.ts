@@ -1,60 +1,85 @@
 import consola from "consola";
 import { colors } from "consola/utils";
-import { BuildType } from "./types";
+import { BuildFlavour } from "./types";
+
+const draftText = ` (${colors.yellow("draft")}) `;
 
 export const logger = {
    bundlerInfo(): void {
       consola.log(colors.green(colors.bold("HUGINN BUNDLER\n")));
    },
-
-   startingBuild(version: string, type: BuildType): void {
-      consola.log("");
-      consola.info(`Started build for version ${colors.cyan(version)} ${getVersionTypeText(type)}`);
-   },
    versionFieldsUpdated(version: string): void {
-      consola.info(`Updating version fields to ${colors.cyan(version)}`);
+      consola.info(`Updated cargo version field to ${colors.cyan(version)}`);
    },
-   buildingApp(version: string): void {
-      consola.info(`Building Huginn ${colors.cyan(version)}`);
+   buildingApp(version: string, flavour: BuildFlavour): void {
+      consola.info(`Building Huginn ${colors.cyan(version)} (${getVersionTypeText(flavour)})`);
    },
    copyingBuildFiles(path: string): void {
       consola.info(`Copying build files to ${colors.cyan(path)}`);
    },
-   buildCompleted(version: string, type: BuildType): void {
+   versionExists(version: string): void {
+      consola.warn(`Version ${colors.cyan(version)} already exists. Skipping build...`);
+   },
+   buildCompleted(version: string, flavour: BuildFlavour): void {
       consola.log("");
-      consola.success(`Build completed for version ${colors.cyan(version)} ${getVersionTypeText(type)}`);
+      consola.success(`Build completed for version ${colors.cyan(version)} (${getVersionTypeText(flavour)})`);
+   },
+   buildExists(version: string): void {
+      consola.warn(`Tauri build for ${version} exists. Skipping build...`);
+   },
+   versionNotSuggested(version: string): void {
+      consola.warn(
+         `Version ${colors.cyan(version)} is not part of the suggested versions. See suggestions with ${colors.gray("--suggest")} or ${colors.gray("-s")} or force this with ${colors.gray("--force")}, ${colors.gray("-f")}`,
+      );
    },
 
-   creatingRelease(version: string, type: BuildType): void {
-      consola.info(`Creating release for version ${colors.cyan(version)} ${getVersionTypeText(type)}`);
+   creatingRelease(version: string, flavour: BuildFlavour, draft: boolean): void {
+      consola.log("");
+      consola.info(`Creating release${draft ? draftText : " "}for version ${colors.cyan(version)} (${getVersionTypeText(flavour)})`);
+   },
+   releaseExists(version: string): void {
+      consola.log("");
+      consola.warn(`Release for ${colors.cyan(version)} already exists. Updating instead...`);
+   },
+   deletingExistingAssets(version: string): void {
+      consola.info(`Deleting existing assets for version ${colors.cyan(version)}`);
    },
    uploadingReleaseFiles(): void {
-      consola.log("");
-      consola.info("Uploading release files to Github...");
+      consola.info("Uploading release files to GitHub...");
    },
-   releaseCreated(version: string, type: BuildType): void {
-      consola.success(`Created github release for version ${colors.cyan(version)} ${getVersionTypeText(type)}`);
+   releaseCreated(version: string, flavour: BuildFlavour, draft: boolean): void {
+      consola.log("");
+      consola.success(
+         `Created GitHub release${draft ? draftText : " "}for version ${colors.cyan(version)} (${getVersionTypeText(flavour)})`,
+      );
+   },
+   releaseUpdated(version: string, flavour: BuildFlavour): void {
+      consola.log("");
+      consola.success(`Updated GitHub release for version ${colors.cyan(version)} (${getVersionTypeText(flavour)})`);
    },
 
-   updatingGistFile(): void {
-      consola.log("");
-      consola.info("Updating gist file...");
-   },
-   gistFileUpdated(version: string, type: BuildType): void {
-      consola.success(`Updated gist file for version ${colors.cyan(version)} ${getVersionTypeText(type)}`);
-   },
+   // updatingGistFile(): void {
+   //    consola.log("");
+   //    consola.info("Updating gist file...");
+   // },
+   // gistFileUpdated(version: string, flavour: BuildFlavour): void {
+   //    consola.success(`Updated gist file for version ${colors.cyan(version)} (${getVersionTypeText(flavour)})`);
+   // },
 
-   releaseDeleted(version: string, type: BuildType): void {
-      consola.log("");
-      consola.success(`Successfuly deleted release for version ${colors.cyan(version)} ${getVersionTypeText(type)}`);
+   versionDoesNotExist(version: string): void {
+      consola.warn(`Version ${version} does not exist locally`);
    },
-
-   versionDeleted(version: string, type: BuildType): void {
-      consola.log("");
-      consola.success(`Successfuly deleted version ${colors.cyan(version)} ${getVersionTypeText(type)}`);
+   releaseDoesNotExist(version: string): void {
+      consola.warn(`Release ${version} does not exist on GitHub`);
+   },
+   versionDeleted(version: string): void {
+      consola.success(`Successfuly deleted version ${colors.cyan(version)}`);
+   },
+   releaseDeleted(version: string): void {
+      consola.success(`Successfuly deleted GitHub release ${colors.cyan(version)}`);
    },
 };
 
-export function getVersionTypeText(type: BuildType): string {
-   return type === BuildType.DEBUG ? colors.red("debug") : colors.green("release");
+export function getVersionTypeText(flavour: BuildFlavour): string {
+   return flavour === "nightly" ? colors.bold(colors.red("nightly")) : colors.bold(colors.green("release"));
 }
