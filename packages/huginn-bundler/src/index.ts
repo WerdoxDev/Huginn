@@ -1,17 +1,17 @@
 #! /usr/bin/env bun
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { $, version } from "bun";
+import { $ } from "bun";
 import { defineCommand, runMain, showUsage } from "citty";
 import consola from "consola";
-import { mkdir, rm, readdir } from "node:fs/promises";
+import { colors } from "consola/utils";
+import { mkdir, readdir, rm } from "node:fs/promises";
 import { Octokit } from "octokit";
 import path from "path";
 import * as semver from "semver";
 import { logger } from "./logger";
-import { BuildFlavour, Suggestions } from "./types";
+import { Suggestions } from "./types";
 import { directoryExists, getBuildFiles, getBuildFlavour, getReleaseIdByTag, writeCargoTomlVersion } from "./utils";
-import { colors } from "consola/utils";
 
 export const APP_PATH: string = process.env.APP_PATH!;
 export const BUILDS_PATH: string = process.env.BUILDS_PATH!;
