@@ -3,7 +3,7 @@ import { readdir } from "node:fs/promises";
 import path from "path";
 import * as semver from "semver";
 import { NSIS_RELATIVE_PATH, octokit } from ".";
-import { BuildFlavour, CargoContent, type BuildFiles } from "./types";
+import { BuildFlavour, CargoContent, GitHubRelease, type BuildFiles } from "./types";
 
 /**
  * @returns a BuildFiles object that contains .exe and .sig files from the tauri debug/release build folder
@@ -16,7 +16,7 @@ export async function getBuildFiles<Throw extends boolean>(
    const nsisFiles = await readdir(buildPath);
 
    const nsisSigFileName = nsisFiles.find(x => x.endsWith(".sig") && x.includes(version));
-   const nsisSetupFileName = nsisFiles.find(x => x.endsWith(".exe") && x.includes(version));
+   const nsisSetupFileName = nsisFiles.find(x => x.endsWith("setup.exe") && x.includes(version));
 
    if (!nsisSigFileName || !nsisSetupFileName) {
       if (!throwOnNotFound) return null as never;
@@ -42,10 +42,10 @@ export function getBuildFlavour(version: string): BuildFlavour {
 /**
  * @returns a github release id if it exists, otherwise null
  */
-export async function getReleaseIdByTag(tag: string, owner: string, repo: string): Promise<number | null> {
+export async function getReleaseByTag(tag: string, owner: string, repo: string): Promise<GitHubRelease | null> {
    try {
       const release = await octokit.rest.repos.getReleaseByTag({ owner, repo, tag });
-      return release.data.id;
+      return release;
    } catch {
       return null;
    }

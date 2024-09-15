@@ -1,3 +1,5 @@
+import { Endpoints } from "@octokit/types";
+
 export type BuildFlavour = "release" | "nightly";
 
 export type BuildFiles = {
@@ -19,3 +21,7 @@ export type Suggestions = {
    nextMajor?: string | null;
    nextNightly?: string | null;
 };
+
+export type GitHubRelease =
+   | Endpoints["GET /repos/{owner}/{repo}/releases/tags/{tag}"]["response"]
+   | Endpoints["POST /repos/{owner}/{repo}/releases"]["response"];

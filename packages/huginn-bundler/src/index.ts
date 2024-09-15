@@ -11,14 +11,14 @@ import path from "path";
 import * as semver from "semver";
 import { logger } from "./logger";
 import { Suggestions } from "./types";
-import { directoryExists, getBuildFiles, getBuildFlavour, getReleaseIdByTag, writeCargoTomlVersion } from "./utils";
+import { directoryExists, getBuildFiles, getBuildFlavour, getReleaseByTag, writeCargoTomlVersion } from "./utils";
 
 export const APP_PATH: string = process.env.APP_PATH!;
 export const BUILDS_PATH: string = process.env.BUILDS_PATH!;
 
 export const TAURI_BUILD_PATH: string = process.env.TAURI_BUILD_PATH!;
 
-export const NSIS_RELATIVE_PATH = "/nsis";
+export const NSIS_RELATIVE_PATH = "/bundle/nsis";
 
 export const CARGO_TOML_PATH: string = process.env.CARGO_TOML_PATH!;
 
@@ -45,6 +45,13 @@ const main = defineCommand({
          type: "string",
          alias: "x",
          description: "Deletes the provided SemVer version both locally and on GitHub if it exists",
+         valueHint: "SEMVER",
+         required: false,
+      },
+      deleteGithub: {
+         type: "string",
+         alias: "g",
+         description: "Deletes the provided SemVer from GitHub and keeps the local version",
          valueHint: "SEMVER",
          required: false,
       },
@@ -106,8 +113,8 @@ const main = defineCommand({
          }
 
          return;
-      } else if (args.delete) {
-         await deleteVersion(args.delete);
+      } else if (args.delete || args.deleteGithub) {
+         await deleteVersion(args.delete ?? args.deleteGithub, !!args.deleteGithub);
          return;
       }
 
@@ -127,17 +134,23 @@ async function getSuggestions(): Promise<Suggestions> {
    const latest = releases.data.find(x => !x.prerelease);
    const latestNightly = releases.data.find(x => x.prerelease);
 
-   const localLatest = "v" + localBuilds.find(x => !semver.prerelease(x));
-   const localLatestNightly = "v" + localBuilds.find(x => semver.prerelease(x)?.[0]);
+   const localLatest = localBuilds.find(x => !semver.prerelease(x));
+   const localLatestNightly = localBuilds.find(x => semver.prerelease(x)?.[0]);
 
    const nextPatch = semver.inc(localLatest ?? "", "patch");
    const nextMinor = semver.inc(localLatest ?? "", "minor");
    const nextMajor = semver.inc(localLatest ?? "", "major");
-   const nextNightly = semver.inc(
-      semver.compare(localLatest, localLatestNightly) === 1 ? localLatest : (localLatestNightly ?? ""),
-      "prerelease",
-      "nightly",
-   );
+   const nextNightly =
+      localLatest &&
+      semver.inc(
+         localLatestNightly
+            ? semver.compare(localLatest, localLatestNightly) === 1
+               ? localLatest
+               : (localLatestNightly ?? "")
+            : localLatest,
+         "prerelease",
+         "nightly",
+      );
 
    return {
       latest: latest?.name,
@@ -221,13 +234,15 @@ async function build(version: string, force?: boolean) {
 
       files = await getBuildFiles(buildPath, version, true);
 
-      // Get blob for both .exe and .sig files
+      // Get blob for setup.exe, .exe and .sig files
       const sigFile = Bun.file(files.nsisSigFile.path);
       const setupFile = Bun.file(files.nsisSetupFile.path);
+      const exeFile = Bun.file(path.join(TAURI_BUILD_PATH, "huginn.exe"));
 
-      // Copy .exe and .sig files to our new version's folder
+      // Copy setup.exe, .exe and .sig files to our new version's folder
       await Bun.write(path.join(versionDir, files.nsisSigFile.name), sigFile);
       await Bun.write(path.join(versionDir, files.nsisSetupFile.name), setupFile);
+      await Bun.write(path.join(versionDir, `Huginn_${version}.exe`), exeFile);
 
       logger.buildCompleted(version, flavour);
    } catch (e) {
@@ -243,17 +258,17 @@ async function createRelease(version: string, description: string, draft: boolea
    // Create the release with a description
    const releaseName = `v${version}`;
 
-   let releaseId = await getReleaseIdByTag(releaseName, owner, REPO);
-   const releaseExists = !!releaseId;
+   let release = await getReleaseByTag(releaseName, owner, REPO);
+   const releaseExists = !!release;
 
-   if (releaseId) {
+   if (release) {
       logger.releaseExists(version);
 
       await octokit.rest.repos.updateRelease({
-         release_id: releaseId,
+         release_id: release.data.id,
          owner,
          repo: REPO,
-         body: description,
+         body: description ? description : undefined,
          name: releaseName,
          tag_name: releaseName,
          target_commitish: "master",
@@ -262,18 +277,16 @@ async function createRelease(version: string, description: string, draft: boolea
    } else {
       logger.creatingRelease(version, flavour, draft);
 
-      releaseId = (
-         await octokit.rest.repos.createRelease({
-            owner,
-            repo: REPO,
-            name: releaseName,
-            tag_name: releaseName,
-            target_commitish: "master",
-            body: description,
-            prerelease: flavour === "nightly",
-            draft,
-         })
-      ).data.id;
+      release = await octokit.rest.repos.createRelease({
+         owner,
+         repo: REPO,
+         name: releaseName,
+         tag_name: releaseName,
+         target_commitish: "master",
+         body: description,
+         prerelease: flavour === "nightly",
+         draft,
+      });
    }
 
    // Get build files from debug or release folders
@@ -283,7 +296,7 @@ async function createRelease(version: string, description: string, draft: boolea
    const sigFileString = await Bun.file(files.nsisSigFile.path).text();
    const setupFileString = await Bun.file(files.nsisSetupFile.path).arrayBuffer();
 
-   const releaseAssets = await octokit.rest.repos.listReleaseAssets({ release_id: releaseId, owner, repo: REPO });
+   const releaseAssets = await octokit.rest.repos.listReleaseAssets({ release_id: release.data.id, owner, repo: REPO });
 
    if (releaseAssets.data.length > 0) {
       logger.deletingExistingAssets(version);
@@ -298,7 +311,7 @@ async function createRelease(version: string, description: string, draft: boolea
    // Upload .exe and .sig and files to the release
    await octokit.rest.repos.uploadReleaseAsset({
       name: files.nsisSigFile.name,
-      release_id: releaseId,
+      release_id: release.data.id,
       owner,
       repo: REPO,
       data: sigFileString,
@@ -306,7 +319,7 @@ async function createRelease(version: string, description: string, draft: boolea
 
    await octokit.rest.repos.uploadReleaseAsset({
       name: files.nsisSetupFile.name,
-      release_id: releaseId,
+      release_id: release.data.id,
       owner,
       repo: REPO,
       data: setupFileString as unknown as string,
@@ -317,26 +330,32 @@ async function createRelease(version: string, description: string, draft: boolea
    } else {
       logger.releaseCreated(version, flavour, draft);
    }
+
+   logger.releaseLink(release.data.html_url);
 }
 
-async function deleteVersion(version: string) {
+async function deleteVersion(version: string, onlyGithub: boolean) {
+   const owner = "WerdoxDev";
    const versionDir = path.join(BUILDS_PATH, version);
 
-   if (await directoryExists(versionDir)) {
-      await rm(path.join(BUILDS_PATH, version), {
-         force: true,
-         recursive: true,
-      });
+   if (!onlyGithub) {
+      if (await directoryExists(versionDir)) {
+         await rm(path.join(BUILDS_PATH, version), {
+            force: true,
+            recursive: true,
+         });
 
-      logger.versionDeleted(version);
-   } else {
-      logger.versionDoesNotExist(version);
+         logger.versionDeleted(version);
+      } else {
+         logger.versionDoesNotExist(version);
+      }
    }
 
-   const releaseId = await getReleaseIdByTag(`v${version}`, "WerdoxDev", REPO);
+   const release = await getReleaseByTag(`v${version}`, owner, REPO);
 
-   if (releaseId) {
-      await octokit.rest.repos.deleteRelease({ owner: "WerdoxDev", release_id: releaseId, repo: REPO });
+   if (release) {
+      await octokit.rest.repos.deleteRelease({ owner, release_id: release.data.id, repo: REPO });
+      await octokit.rest.git.deleteRef({ owner, repo: REPO, ref: "tags/v" + version });
 
       logger.releaseDeleted(version);
    } else {

@@ -9,6 +9,7 @@ export const logger = {
       consola.log(colors.green(colors.bold("HUGINN BUNDLER\n")));
    },
    versionFieldsUpdated(version: string): void {
+      consola.log("");
       consola.info(`Updated cargo version field to ${colors.cyan(version)}`);
    },
    buildingApp(version: string, flavour: BuildFlavour): void {
@@ -56,6 +57,9 @@ export const logger = {
    releaseUpdated(version: string, flavour: BuildFlavour): void {
       consola.log("");
       consola.success(`Updated GitHub release for version ${colors.cyan(version)} (${getVersionTypeText(flavour)})`);
+   },
+   releaseLink(link: string): void {
+      consola.info(`Release link: ${colors.cyan(link)}`);
    },
 
    // updatingGistFile(): void {
