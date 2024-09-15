@@ -1,7 +1,7 @@
 import { isDBError } from "#database/error";
 import { ServerGateway } from "#gateway/server-gateway";
 import { importRoutes } from "#routes";
-import { CERT_FILE, GITHUB_TOKEN, KEY_FILE, SERVER_HOST, SERVER_PORT } from "#setup";
+import { AWS_KEY_ID, AWS_REGION, AWS_SECRET_KEY, CERT_FILE, GITHUB_TOKEN, KEY_FILE, SERVER_HOST, SERVER_PORT } from "#setup";
 import { handleCommonDBErrors } from "#utils/route-utils";
 import { TokenInvalidator } from "#utils/token-invalidator";
 import { createErrorFactory, ErrorFactory, logReject, logRequest, logResponse, logServerError } from "@huginn/backend-shared";
@@ -26,6 +26,7 @@ import {
 } from "h3";
 import { Octokit } from "octokit";
 import { version } from "../package.json";
+import { S3Client } from "@aws-sdk/client-s3";
 
 export async function startServer(options?: { serve: boolean }): Promise<{ server?: Server; app: App; router: Router }> {
    consola.info(`Using version ${version}`);
@@ -154,4 +155,8 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 export const gateway = new ServerGateway({ logHeartbeat: false });
 export const tokenInvalidator = new TokenInvalidator();
 export const octokit = new Octokit({ auth: GITHUB_TOKEN });
+export const s3 = new S3Client({
+   region: AWS_REGION,
+   credentials: { accessKeyId: AWS_KEY_ID ?? "", secretAccessKey: AWS_SECRET_KEY ?? "" },
+});
 export let router: Readonly<Router>;

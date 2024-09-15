@@ -25,13 +25,13 @@ router.get(
       const json: APIGetReleasesResult = {
          release: latestRelease && {
             version: latestRelease.name ?? latestRelease.tag_name,
-            date: latestRelease.created_at,
+            date: latestRelease.published_at ?? "",
             windowsSetupUrl: releaseWindowsSetupUrl,
          },
          nightly: latestNightly && {
             version: latestNightly.name ?? latestNightly.tag_name,
             windowsSetupUrl: nightlyWindowsSetupUrl,
-            date: latestNightly.created_at,
+            date: latestNightly.published_at ?? "",
          },
       };
 
