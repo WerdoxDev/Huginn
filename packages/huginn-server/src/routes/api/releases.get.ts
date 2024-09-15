@@ -1,81 +1,38 @@
-import { router } from "#server";
-import { githubToken } from "#setup";
-import { HttpCode } from "@huginn/shared";
+import { octokit, router } from "#server";
+import { REPO, REPO_OWNER } from "#setup";
+import { APIGetReleasesResult, HttpCode, Unpacked } from "@huginn/shared";
+import { Endpoints } from "@octokit/types";
 import { defineEventHandler, setResponseStatus } from "h3";
 
 // Release: huginn-0.3.3
-// Nightly: huginn-0.3.3-nightly-20240909
-type ReleaseInfo = {
-   release?: {
-      version: string;
-      date: string;
-      windowsSetupUrl?: string;
-   };
-   nightly?: {
-      version: string;
-      date: string;
-      windowsSetupUrl?: string;
-   };
-};
+// Nightly: huginn-0.3.3-nightly.0
 
-type GithubRelease = {
-   name: string;
-   assets: { browser_download_url: string; name: string }[];
-   created_at: string;
-};
+function getWindowsAssetUrl(release?: Unpacked<Endpoints["GET /repos/{owner}/{repo}/releases"]["response"]["data"]>) {
+   return release?.assets.find(x => x.name.endsWith("setup.exe"))?.browser_download_url;
+}
 
 router.get(
    "/releases",
    defineEventHandler(async event => {
-      console.log(githubToken);
-      const response = await fetch("https://api.github.com/repos/WerdoxDev/Huginn/releases", {
-         headers: {
-            Authorization: "Bearer " + githubToken,
-            "X-GitHub-Api-Version": "2022-11-28",
-            Accept: "application/vnd.github+json",
-         },
-      });
+      const releases = (await octokit.rest.repos.listReleases({ owner: REPO_OWNER, repo: REPO })).data;
 
-      const versions = (await response.json()) as GithubRelease[];
-
-      console.log(response);
-
-      function getWindowsAssetUrl(release?: GithubRelease) {
-         return release?.assets.find(x => x.name.endsWith(".exe"))?.browser_download_url;
-      }
-
-      const latestRelease = versions.find(x => !x.name.includes("nightly"));
-      const latestNightly = versions.find(x => x.name.includes("nightly"));
+      const latestRelease = releases.find(x => !(x.name ?? x.tag_name)?.includes("nightly"));
+      const latestNightly = releases.find(x => (x.name ?? x.tag_name)?.includes("nightly"));
 
       const releaseWindowsSetupUrl = getWindowsAssetUrl(latestRelease);
       const nightlyWindowsSetupUrl = getWindowsAssetUrl(latestNightly);
 
-      const nameSplit = latestNightly?.name.split("-");
-      const dateSplit = nameSplit?.[2] ?? "0000";
-
-      console.log(dateSplit);
-
-      const nightlyDate = new Date(
-         parseInt(dateSplit?.substring(0, 4)),
-         parseInt(dateSplit?.substring(4, 6)),
-         parseInt(dateSplit?.substring(6, 8)),
-      );
-
-      const json: ReleaseInfo = {
-         release: latestRelease
-            ? {
-                 version: latestRelease.name,
-                 date: latestRelease.created_at,
-                 windowsSetupUrl: releaseWindowsSetupUrl,
-              }
-            : undefined,
-         nightly: latestNightly
-            ? {
-                 version: latestNightly.name,
-                 windowsSetupUrl: nightlyWindowsSetupUrl,
-                 date: nightlyDate.toISOString(),
-              }
-            : undefined,
+      const json: APIGetReleasesResult = {
+         release: latestRelease && {
+            version: latestRelease.name ?? latestRelease.tag_name,
+            date: latestRelease.created_at,
+            windowsSetupUrl: releaseWindowsSetupUrl,
+         },
+         nightly: latestNightly && {
+            version: latestNightly.name ?? latestNightly.tag_name,
+            windowsSetupUrl: nightlyWindowsSetupUrl,
+            date: latestNightly.created_at,
+         },
       };
 
       setResponseStatus(event, HttpCode.OK);

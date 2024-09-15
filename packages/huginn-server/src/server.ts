@@ -1,7 +1,8 @@
-import { DBErrorType, isDBError } from "#database/error";
+import { isDBError } from "#database/error";
 import { ServerGateway } from "#gateway/server-gateway";
 import { importRoutes } from "#routes";
-import { certFile, keyFile, serverHost, serverPort } from "#setup";
+import { CERT_FILE, GITHUB_TOKEN, KEY_FILE, SERVER_HOST, SERVER_PORT } from "#setup";
+import { handleCommonDBErrors } from "#utils/route-utils";
 import { TokenInvalidator } from "#utils/token-invalidator";
 import { createErrorFactory, ErrorFactory, logReject, logRequest, logResponse, logServerError } from "@huginn/backend-shared";
 import { Errors, generateRandomString, HttpCode, HuginnErrorData } from "@huginn/shared";
@@ -23,8 +24,8 @@ import {
    toWebHandler,
    useBase,
 } from "h3";
+import { Octokit } from "octokit";
 import { version } from "../package.json";
-import { handleCommonDBErrors } from "#utils/route-utils";
 
 export async function startServer(options?: { serve: boolean }): Promise<{ server?: Server; app: App; router: Router }> {
    consola.info(`Using version ${version}`);
@@ -117,10 +118,10 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
    app.use(mainRouter);
 
    const server = Bun.serve<string>({
-      cert: certFile,
-      key: keyFile,
-      port: serverPort,
-      hostname: serverHost,
+      cert: CERT_FILE,
+      key: KEY_FILE,
+      port: SERVER_PORT,
+      hostname: SERVER_HOST,
       fetch(req, server) {
          const url = new URL(req.url);
          if (url.pathname === "/gateway") {
@@ -152,4 +153,5 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 
 export const gateway = new ServerGateway({ logHeartbeat: false });
 export const tokenInvalidator = new TokenInvalidator();
+export const octokit = new Octokit({ auth: GITHUB_TOKEN });
 export let router: Readonly<Router>;
