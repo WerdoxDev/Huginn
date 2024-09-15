@@ -27,8 +27,6 @@ router.get(
       const latest = sortedVersions.find(x => !semver.prerelease(x));
       const latestNightly = sortedVersions.find(x => semver.prerelease(x)?.[0]);
 
-      console.log(latest, latestNightly);
-
       if ((target === "windows-latest" && !latest) || (target === "windows-nightly" && !latestNightly)) {
          setResponseStatus(event, HttpCode.NO_CONTENT);
          return null;
