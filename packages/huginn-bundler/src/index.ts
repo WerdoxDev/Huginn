@@ -24,8 +24,9 @@ export const CARGO_TOML_PATH: string = process.env.CARGO_TOML_PATH!;
 
 export const GIST_ID: string = process.env.GIST_ID!;
 export const REPO: string = process.env.REPO_NAME!;
+export const GITHUB_TOKEN: string = process.env.GITHUB_TOKEN!;
 
-export const octokit: Octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+export const octokit: Octokit = new Octokit({ auth: GITHUB_TOKEN });
 
 const main = defineCommand({
    meta: {
