@@ -228,6 +228,14 @@ export type APIGetChannelMessagesResult = APIMessage[];
 
 export type APIGetReleasesResult = Record<string, { version: string; date: string; windowsSetupUrl?: string } | undefined>;
 
+export type APICheckUpdateResult = {
+   version: string;
+   pub_date: string;
+   url: string;
+   signature: string;
+   notes: string;
+};
+
 export enum MessageType {
    DEFAULT,
    RECIPIENT_ADD,
