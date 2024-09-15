@@ -1,7 +1,7 @@
 #! /usr/bin/env bun
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { $ } from "bun";
+import { $, version } from "bun";
 import { defineCommand, runMain, showUsage } from "citty";
 import consola from "consola";
 import { colors } from "consola/utils";
@@ -11,7 +11,9 @@ import path from "path";
 import * as semver from "semver";
 import { logger } from "./logger";
 import { Suggestions } from "./types";
-import { directoryExists, getBuildFiles, getBuildFlavour, getReleaseByTag, writeCargoTomlVersion } from "./utils";
+import { directoryExists, getBuildFiles, getBuildFlavour, getDownloadInfo, getReleaseByTag, writeCargoTomlVersion } from "./utils";
+import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { VersionsObject } from "@huginn/shared";
 
 export const APP_PATH: string = process.env.APP_PATH!;
 export const BUILDS_PATH: string = process.env.BUILDS_PATH!;
@@ -26,7 +28,17 @@ export const GIST_ID: string = process.env.GIST_ID!;
 export const REPO: string = process.env.REPO_NAME!;
 export const GITHUB_TOKEN: string = process.env.GITHUB_TOKEN!;
 
+export const AWS_REGION: string = process.env.AWS_REGION!;
+export const AWS_KEY_ID: string = process.env.AWS_KEY_ID!;
+export const AWS_SECRET_KEY: string = process.env.AWS_SECRET_KEY!;
+export const AWS_BUCKET: string = process.env.AWS_BUCKET!;
+export const AWS_VERSIONS_OBJECT_KEY: string = process.env.AWS_VERSIONS_OBJECT_KEY!;
+
 export const octokit: Octokit = new Octokit({ auth: GITHUB_TOKEN });
+export const s3: S3Client = new S3Client({
+   region: AWS_REGION,
+   credentials: { accessKeyId: AWS_KEY_ID, secretAccessKey: AWS_SECRET_KEY },
+});
 
 const main = defineCommand({
    meta: {
@@ -39,27 +51,44 @@ const main = defineCommand({
          type: "string",
          alias: "v",
          required: false,
-         description: "A SemVer string for the build or upload",
+         description: "A SemVer string for the build or upload or deleting",
          valueHint: "SEMVER",
       },
-      delete: {
-         type: "string",
-         alias: "x",
-         description: "Deletes the provided SemVer version both locally and on GitHub if it exists",
-         valueHint: "SEMVER",
+      deleteLocal: {
+         type: "boolean",
+         alias: "l",
+         description: "Deletes the provided SemVer version from local",
          required: false,
+         default: false,
       },
       deleteGithub: {
-         type: "string",
+         type: "boolean",
          alias: "g",
-         description: "Deletes the provided SemVer from GitHub and keeps the local version",
+         description: "Deletes the provided SemVer from GitHub",
          valueHint: "SEMVER",
          required: false,
+         default: false,
+      },
+      deleteAmazon: {
+         type: "boolean",
+         alias: "x",
+         description: "Deletes the provided SemVer from AWS S3 bucket",
+         valueHint: "SEMVER",
+         required: false,
+         default: false,
       },
       upload: {
          type: "boolean",
          alias: "u",
          description: "Uploads the build to GitHub as a release. If build already exists, it skips building it again",
+         required: false,
+         default: false,
+      },
+      amazon: {
+         type: "boolean",
+         alias: "a",
+         description:
+            "Adds the version to the AWS S3 bucket. If it exists, it gets updated. This won't work without uploading to GitHub",
          required: false,
          default: false,
       },
@@ -80,7 +109,7 @@ const main = defineCommand({
       force: {
          type: "boolean",
          alias: "f",
-         description: "Force build a version although it's not recommended by the suggestion",
+         description: "Force build a version even though it's not recommended by the suggestion",
          required: false,
          default: false,
       },
@@ -93,10 +122,15 @@ const main = defineCommand({
       }
 
       if (args.version) {
+         if (args.deleteLocal || args.deleteGithub || args.deleteAmazon) {
+            await deleteVersion(args.version, args.deleteLocal, args.deleteGithub, args.deleteAmazon);
+            return;
+         }
+
          await build(args.version, args.force);
 
-         if (args.upload) {
-            if (args.draft) {
+         if (args.upload || args.amazon) {
+            if (args.draft && args.upload) {
                const confirmation = await consola.prompt(
                   "A draft release cannot later be edited in the cli. Do you want to continue?",
                   {
@@ -108,14 +142,16 @@ const main = defineCommand({
                }
             }
 
-            const description = await consola.prompt("Enter a description:", { type: "text" });
-            await createRelease(args.version, description, args.draft);
+            if (args.upload) {
+               const description = await consola.prompt("Enter a description:", { type: "text" });
+               await createRelease(args.version, description, args.draft);
+            }
+            if (args.amazon) {
+               await addToAmazon(args.version);
+            }
             return;
          }
 
-         return;
-      } else if (args.delete || args.deleteGithub) {
-         await deleteVersion(args.delete ?? args.deleteGithub, !!args.deleteGithub);
          return;
       }
 
@@ -335,11 +371,57 @@ async function createRelease(version: string, description: string, draft: boolea
    logger.releaseLink(release.data.html_url);
 }
 
-async function deleteVersion(version: string, onlyGithub: boolean) {
+async function addToAmazon(version: string) {
+   const flavour = getBuildFlavour(version);
+
+   const release = await getReleaseByTag("v" + version, "WerdoxDev", REPO);
+
+   if (!release) {
+      logger.releaseDoesNotExist(version);
+      return;
+   }
+
+   const publishDate = release?.data.published_at ?? "";
+   const description = release?.data.body ?? "";
+
+   const windowsDownloadInfo = await getDownloadInfo(release, "setup.exe", "setup.exe.sig");
+
+   let versions: VersionsObject = {};
+   try {
+      const getCommand = new GetObjectCommand({ Bucket: AWS_BUCKET, Key: AWS_VERSIONS_OBJECT_KEY });
+      versions = JSON.parse((await (await s3.send(getCommand)).Body?.transformToString()) ?? "");
+   } catch {
+      logger.creatingAmazonObject();
+   }
+
+   if (version in versions) {
+      logger.amazonExists(version);
+
+      versions[version].description = description;
+      versions[version].downloads = { windows: windowsDownloadInfo };
+   } else {
+      logger.updatingAmazonObject(version);
+
+      versions[version] = { description, publishDate, flavour, downloads: { windows: windowsDownloadInfo } };
+   }
+
+   const putCommand = new PutObjectCommand({
+      Bucket: AWS_BUCKET,
+      Key: AWS_VERSIONS_OBJECT_KEY,
+      ACL: "public-read",
+      Body: JSON.stringify(versions),
+      ContentType: "application/json",
+   });
+   await s3.send(putCommand);
+
+   logger.amazonObjectUpdated(version);
+}
+
+async function deleteVersion(version: string, deleteLocal: boolean, deleteGitHub: boolean, deleteAmazon: boolean) {
    const owner = "WerdoxDev";
    const versionDir = path.join(BUILDS_PATH, version);
 
-   if (!onlyGithub) {
+   if (deleteLocal) {
       if (await directoryExists(versionDir)) {
          await rm(path.join(BUILDS_PATH, version), {
             force: true,
@@ -352,14 +434,43 @@ async function deleteVersion(version: string, onlyGithub: boolean) {
       }
    }
 
-   const release = await getReleaseByTag(`v${version}`, owner, REPO);
+   if (deleteGitHub) {
+      const release = await getReleaseByTag(`v${version}`, owner, REPO);
 
-   if (release) {
-      await octokit.rest.repos.deleteRelease({ owner, release_id: release.data.id, repo: REPO });
-      await octokit.rest.git.deleteRef({ owner, repo: REPO, ref: "tags/v" + version });
+      if (release) {
+         await octokit.rest.repos.deleteRelease({ owner, release_id: release.data.id, repo: REPO });
+         await octokit.rest.git.deleteRef({ owner, repo: REPO, ref: "tags/v" + version });
 
-      logger.releaseDeleted(version);
-   } else {
-      logger.releaseDoesNotExist(version);
+         logger.releaseDeleted(version);
+      } else {
+         logger.releaseDoesNotExist(version);
+      }
+   }
+
+   if (deleteAmazon) {
+      try {
+         const getCommand = new GetObjectCommand({ Bucket: AWS_BUCKET, Key: AWS_VERSIONS_OBJECT_KEY });
+         const versions: VersionsObject = JSON.parse((await (await s3.send(getCommand)).Body?.transformToString()) ?? "");
+
+         if (!(version in versions)) {
+            logger.amazonDoesNotExist(version);
+            return;
+         }
+
+         delete versions[version];
+
+         const putCommand = new PutObjectCommand({
+            Bucket: AWS_BUCKET,
+            Key: AWS_VERSIONS_OBJECT_KEY,
+            ACL: "public-read",
+            Body: JSON.stringify(versions),
+            ContentType: "application/json",
+         });
+
+         await s3.send(putCommand);
+         logger.amazonDeleted(version);
+      } catch {
+         logger.amazonDoesNotExist(version);
+      }
    }
 }

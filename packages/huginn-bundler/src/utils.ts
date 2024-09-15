@@ -75,3 +75,23 @@ export async function directoryExists(path: string): Promise<boolean> {
       return false;
    }
 }
+
+/**
+ * @returns an object with 'url' and 'signature' of the specified file namings. Used to get each platform's update info
+ */
+export async function getDownloadInfo(
+   release: GitHubRelease,
+   runFileEnding: string,
+   sigFileEnding: string,
+): Promise<{ url: string; signature: string } | undefined> {
+   const runFileAsset = release?.data.assets.find(x => x.name.endsWith(runFileEnding));
+   const sigFileAsset = release?.data.assets.find(x => x.name.endsWith(sigFileEnding));
+
+   if (!runFileAsset || !sigFileAsset) {
+      return undefined;
+   }
+
+   const sigFileContent = await (await fetch(sigFileAsset.browser_download_url)).text();
+
+   return { url: runFileAsset.browser_download_url, signature: sigFileContent };
+}

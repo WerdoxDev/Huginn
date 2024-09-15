@@ -62,25 +62,37 @@ export const logger = {
       consola.info(`Release link: ${colors.cyan(link)}`);
    },
 
-   // updatingGistFile(): void {
-   //    consola.log("");
-   //    consola.info("Updating gist file...");
-   // },
-   // gistFileUpdated(version: string, flavour: BuildFlavour): void {
-   //    consola.success(`Updated gist file for version ${colors.cyan(version)} (${getVersionTypeText(flavour)})`);
-   // },
+   creatingAmazonObject(): void {
+      consola.info("Amazon S3 Object does not exist. Creating one...");
+   },
+   amazonExists(version: string): void {
+      consola.info(`Version ${colors.cyan(version)} exists in Amazon S3. Updating instead...`);
+   },
+   updatingAmazonObject(version: string): void {
+      consola.info(`Adding version ${colors.cyan(version)} to Amazon S3...`);
+   },
+   amazonObjectUpdated(version: string): void {
+      consola.log("");
+      consola.success(`Successfuly added/updated version ${colors.cyan(version)} in Amazon S3`);
+   },
 
    versionDoesNotExist(version: string): void {
-      consola.warn(`Version ${version} does not exist locally`);
+      consola.warn(`Version ${colors.cyan(version)} does not exist locally`);
    },
    releaseDoesNotExist(version: string): void {
-      consola.warn(`Release ${version} does not exist on GitHub`);
+      consola.warn(`Release ${colors.cyan(version)} does not exist on GitHub`);
+   },
+   amazonDoesNotExist(version: string): void {
+      consola.warn(`Release ${colors.cyan(version)} does not exist on Amazon S3`);
    },
    versionDeleted(version: string): void {
       consola.success(`Successfuly deleted version ${colors.cyan(version)}`);
    },
    releaseDeleted(version: string): void {
       consola.success(`Successfuly deleted GitHub release ${colors.cyan(version)}`);
+   },
+   amazonDeleted(version: string): void {
+      consola.success(`Successfuly deleted version ${colors.cyan(version)} from Amazon S3`);
    },
 };
 
