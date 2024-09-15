@@ -1,233 +1,218 @@
 <script setup lang="ts">
-
-import { Icon } from '@iconify/vue/dist/iconify.js';
+import { Icon } from "@iconify/vue";
 import CustomList from "./components/CustomList.vue";
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from "vue";
+import { APIGetReleasesResult } from "@huginn/shared";
 
-const versionId = ref(0) // 1 = Release, 2 = Dev
-const platformId = ref(0) // 0 = Windows, 1 = Mac, 2 = Linux
-const isAnyVersionAvailable = ref(false)
+type VersionKind = "none" | "release" | "nightly";
+type PlatformKind = "windows" | "mac" | "linux";
 
+const versionKind = ref<VersionKind>(); // 1 = Release, 2 = Dev
+const platformKind = ref<PlatformKind>("windows"); // 0 = Windows, 1 = Mac, 2 = Linux
+const isAnyVersionAvailable = ref(false);
 
-
-const versionTexts = ref<{
-    release: {
-        version: string,
-        date: string,
-    },
-    nightly: {
-        version: string,
-        date: string,
-        buildId: string,
-    }
-}>({
-    release: {
-        version: "",
-        date: "",
-    },
-    nightly: {
-        version: "",
-        date: "",
-        buildId: "",
-    }
-})
+const versionTexts = ref<Record<string, { version: string; date: string; prerelease?: string; buildId?: string }>>({});
 
 const buttonVersionText = computed(() => {
-    if (platformId.value === 0) {
-
-        if (versionId.value === 1) {
-            return versionTexts.value?.release.version
-        }
-        else if (versionId.value === 2) {
-            return versionTexts.value?.nightly.version
-        }
-    }
-})
+   if (platformKind.value === "windows") {
+      if (versionKind.value === "release") {
+         return versionTexts.value?.release.version;
+      } else if (versionKind.value === "nightly") {
+         return `${versionTexts.value?.nightly?.version} ${versionTexts.value?.nightly?.prerelease}`;
+      }
+   }
+});
 const dateText = computed(() => {
-    if (platformId.value === 0) {
+   if (platformKind.value === "windows") {
+      if (versionKind.value === "release") {
+         return versionTexts.value?.release.date;
+      } else if (versionKind.value === "nightly") {
+         return versionTexts.value?.nightly.date;
+      }
+   }
+});
 
-        if (versionId.value === 1) {
-            return versionTexts.value?.release.date
-        }
-        else if (versionId.value === 2) {
-            return versionTexts.value?.nightly.date
-        }
-    }
-})
-
-const latestInfo = ref<{
-    release: {
-        version: string,
-        windowsSetupUrl: string,
-        date: string
-    } | undefined,
-    nightly: {
-        version: string,
-        windowsSetupUrl: string,
-        date: string
-    } | undefined
-} | undefined>()
-
-
+const latestInfo = ref<APIGetReleasesResult>();
 
 onMounted(async () => {
+   console.log(import.meta.env.VITE_SERVER_ADDRESS, "hi");
+   try {
+      const data = await fetch(`${import.meta.env.VITE_SERVER_ADDRESS}/api/releases`);
+      latestInfo.value = await data.json();
+   } catch {
+      console.error("Something went wrong fetching releases.");
+   }
 
-    try {
-        const data = await fetch("https://asgard.huginn.dev/api/releases")
-        latestInfo.value = await data.json()
+   if (latestInfo.value && latestInfo.value.nightly) {
+      const nightlySplit = latestInfo.value?.nightly.version.split("-");
 
-        // latestInfo.value = {
-        //     release: {
-        //         version: "v0.3.1",
-        //         windowsSetupUrl: "https://github.com/WerdoxDev/Huginn/releases/download/nightly-20240908-e366086/huginn-0.3.3-nightly-20240908a-setup.exe",
-        //         date: "2024-09-01T13:04:10.000Z"
-        //     },
-        //     // release: undefined,
-        //     nightly: undefined
-        //     // nightly: {
-        //     //     version: "v0.3.3-nightly-20240908a",
-        //     //     // windowsSetupUrl: "https://github.com/WerdoxDev/Huginn/releases/download/nightly-20240908-e366086/huginn-0.3.3-nightly-20240908a-setup.exe",
-        //     //     windowsSetupUrl: "",
-        //     //     date: "2024-10-07T22:00:00.000Z"
-        //     // }
-        // }
+      if (nightlySplit) {
+         const nightlyDate = new Date(latestInfo.value.nightly.date);
 
-        if (latestInfo.value && latestInfo.value.nightly) {
-            const proccessedNightlyVersion = latestInfo.value?.nightly.version.split('-')
+         // Pure version number without 'v' at the beginning
+         const version = nightlySplit[0].slice(1);
 
-            if (versionTexts.value && proccessedNightlyVersion) {
-                const nightlyDate = new Date(latestInfo.value.nightly.date)
-                proccessedNightlyVersion[0] = proccessedNightlyVersion[0].slice(1)
-                proccessedNightlyVersion[1] = proccessedNightlyVersion[1].charAt(0).toUpperCase() + proccessedNightlyVersion[1].slice(1)
-                versionTexts.value.nightly.version = `${proccessedNightlyVersion[0]} ${proccessedNightlyVersion[1]}`
-                versionTexts.value.nightly.date = `${nightlyDate.getDate().toString().padStart(2, "0")}.${nightlyDate.getMonth().toString().padStart(2, "0")}.${nightlyDate.getFullYear()}`
-                versionTexts.value.nightly.buildId = latestInfo.value.nightly.version[latestInfo.value.nightly.version.length - 1]
-            }
-        }
+         const nightlyPrereleaseSplit = nightlySplit[1].split(".");
 
-        if (versionTexts.value && latestInfo.value && latestInfo.value.release) {
-            const releaseDate = new Date(latestInfo.value.release.date)
-            versionTexts.value.release.version = latestInfo.value.release.version.slice(1)
-            versionTexts.value.release.date = `${releaseDate.getDate().toString().padStart(2, "0")}.${releaseDate.getMonth().toString().padStart(2, "0")}.${releaseDate.getFullYear()}`
-        }
+         // Prerelease identifier with first character in uppercase
+         const prerelease = nightlyPrereleaseSplit[0].charAt(0).toUpperCase() + nightlyPrereleaseSplit[0].slice(1);
 
-        updateVersionAvailabilities()
-    }
-    catch {
-        console.error("Something went wrong fetching releases.")
-    }
+         // Prerelease build identifier
+         const buildId = nightlyPrereleaseSplit[1];
 
-})
+         const date = getFormattedDate(nightlyDate);
 
+         versionTexts.value.nightly = { version, prerelease, buildId, date };
+      }
+   }
 
+   if (latestInfo.value && latestInfo.value.release) {
+      const releaseDate = new Date(latestInfo.value.release.date);
+      const version = latestInfo.value.release.version.slice(1);
+      const date = getFormattedDate(releaseDate);
 
-function download(platform: number, version: number) {
-    let downloadLink = getDownloadLink(platform, version)
-    window.open(downloadLink)
+      versionTexts.value.release = { version, date };
+   }
+
+   updateVersionAvailabilities();
+});
+
+function getFormattedDate(date: Date) {
+   return `${date.getDate().toString().padStart(2, "0")}.${(date.getMonth() + 1).toString().padStart(2, "0")}.${date.getFullYear()}`;
 }
 
-function getDownloadLink(platform: number, version: number): string | undefined {
-    if (platform === 0) { // Selected Windows
-
-        if (version === 1) { // Selected Release version
-            return latestInfo.value?.release?.windowsSetupUrl
-        }
-        else if (version === 2) { // Selected Dev version
-            return latestInfo.value?.nightly?.windowsSetupUrl
-        }
-    }
-
-    return undefined
+function download(platform: PlatformKind, version: VersionKind) {
+   let downloadLink = getDownloadLink(platform, version);
+   window.open(downloadLink);
 }
 
-function getVersionAvailability(isNightly: boolean): boolean {
-    if (isNightly) {
-        const downloadLink = getDownloadLink(platformId.value, 2)
-        return downloadLink !== undefined && downloadLink !== "" && latestInfo.value?.nightly !== undefined
-    }
-    else {
-        const downloadLink = getDownloadLink(platformId.value, 1)
-        return downloadLink !== undefined && downloadLink !== "" && latestInfo.value?.release !== undefined
-    }
+function getDownloadLink(platform: PlatformKind, version: VersionKind): string | undefined {
+   if (platform === "windows") {
+      // Selected Windows
+
+      if (version === "release") {
+         // Selected Release version
+         return latestInfo.value?.release?.windowsSetupUrl;
+      } else if (version === "nightly") {
+         // Selected Dev version
+         return latestInfo.value?.nightly?.windowsSetupUrl;
+      }
+   }
+
+   return undefined;
+}
+
+function isVersionAvailable(version: VersionKind): boolean {
+   if (!platformKind.value) {
+      return false;
+   }
+
+   const downloadLink = getDownloadLink(platformKind.value, version);
+   return !!downloadLink;
 }
 
 function updateVersionAvailabilities() {
-    for (let i: number = 0; i < 2; i++) {
-        let isVersionAvailable: boolean = getVersionAvailability(i === 1)
+   for (let i: number = 0; i < 2; i++) {
+      const version = i + 1 === 1 ? "release" : "nightly";
+      let versionAvailable: boolean = isVersionAvailable(version);
 
-        if (isVersionAvailable) {
-            versionId.value = i + 1
-            isAnyVersionAvailable.value = true
-            break
-        }
-    }
+      if (versionAvailable) {
+         versionKind.value = version;
+         isAnyVersionAvailable.value = true;
+         break;
+      }
+   }
 }
-
 </script>
 
 <template>
-    <div class="flex justify-center items-center h-full mt-16 w-full">
-        <div class="hidden md:flex flex-col max-w-5xl w-full">
-            <h1 class="text-4xl font-bold mb-6">Download Huginn</h1>
-            <h3 class="text-lg">Thank you for downloading Huginn</h3>
-            <h3 class="text-lg">Please choose your version</h3>
+   <div class="mt-16 flex h-full w-full items-center justify-center">
+      <div class="hidden w-full max-w-5xl flex-col md:flex">
+         <h1 class="mb-6 text-4xl font-bold">Download Huginn</h1>
+         <h3 class="text-lg">Thank you for downloading Huginn</h3>
+         <h3 class="text-lg">Please choose your version</h3>
 
-            <div class="my-10 h-0.5 w-[30rem] bg-[#EBEBD3]/50" />
+         <div class="my-10 h-0.5 w-[30rem] bg-[#EBEBD3]/50" />
 
-            <div class="text-lg">
+         <div class="text-lg">
+            <div class="flex flex-row" v-if="latestInfo && platformKind && versionKind">
+               <span>Download <span class="font-bold">Huginn</span> for</span>
 
-                <div class="flex flex-row" v-if="latestInfo">
+               <CustomList
+                  class="w-36"
+                  @changed="
+                     selected => {
+                        platformKind = selected;
+                        updateVersionAvailabilities();
+                     }
+                  "
+                  :default="platformKind"
+                  :options="[
+                     { text: 'Windows', icon: 'mingcute:windows-fill', disabled: false, hidden: false },
+                     { text: 'Mac', icon: 'ic:baseline-apple', disabled: true, hidden: false },
+                     { text: 'Linux', icon: 'mdi:linux', disabled: true, hidden: false },
+                  ]"
+               />
 
-                    <span>Download <span class="font-bold">Huginn</span> for</span>
+               running
 
-                    <CustomList class="w-36" @changed="(id) => { platformId = id; updateVersionAvailabilities(); }"
-                        :default-id="platformId" :options="[
-                            { id: 0, text: 'Windows', icon: 'mingcute:windows-fill', disabled: false, hidden: false },
-                            { id: 1, text: 'Mac', icon: 'ic:baseline-apple', disabled: true, hidden: false },
-                            { id: 2, text: 'Linux', icon: 'mdi:linux', disabled: true, hidden: false },
-                        ]" />
-
-                    running
-
-                    <CustomList class="w-32" @changed="(id) => { versionId = id }" :default-id="versionId" :options="[
-                        { id: 0, text: 'None', icon: 'nimbus:forbidden', disabled: false, hidden: isAnyVersionAvailable },
-                        { id: 1, text: 'Release', icon: 'material-symbols:new-releases', disabled: !getVersionAvailability(false), hidden: false },
-                        { id: 2, text: 'Nightly', icon: 'ph:moon-fill', disabled: !getVersionAvailability(true), hidden: false },
-                    ]" />
-
-                </div>
-
-                <div class="flex items-center mt-6">
-
-                    <button @click="download(platformId, versionId)"
-                        class="flex flex-row items-center rounded-md w-max px-4 py-2 gap-x-2 bg-[#7b563c] transition-all hover:bg-[#7b563c]/50"
-                        :class="{ 'bg-[#7b563c]/50': versionId === 0 }" :disabled="versionId === 0">
-                        <Icon icon="mingcute:download-3-fill" />
-                        {{ versionId !== 0 ? "Download Huginn " + buttonVersionText : "Select a Version" }}
-                    </button>
-
-                    <div class="flex bg-[#76FF7A]/30 rounded-md w-fit h-full px-4 py-2 ml-4 items-center"
-                        :class="{ 'hidden': versionId === 0 }">
-                        <Icon icon="clarity:date-solid" class="mr-2" />
-                        {{ dateText }}
-                    </div>
-
-                    <div class="flex bg-[#00A7E0]/30 rounded-md w-fit h-full px-4 py-2 ml-4 items-center"
-                        :class="{ 'hidden': versionId !== 2 }">
-                        <Icon icon="mdi:wrench" class="mr-2" />
-                        Build {{ versionTexts?.nightly.buildId.toUpperCase() }}
-                    </div>
-                </div>
+               <CustomList
+                  class="w-32"
+                  @changed="
+                     selected => {
+                        versionKind = selected;
+                     }
+                  "
+                  :default="versionKind"
+                  :options="[
+                     { text: 'None', icon: 'nimbus:forbidden', disabled: false, hidden: isAnyVersionAvailable },
+                     {
+                        text: 'Release',
+                        icon: 'material-symbols:new-releases',
+                        disabled: !isVersionAvailable('release'),
+                        hidden: false,
+                     },
+                     { text: 'Nightly', icon: 'ph:moon-fill', disabled: !isVersionAvailable('nightly'), hidden: false },
+                  ]"
+               />
             </div>
-        </div>
 
-        <div class="flex flex-col justify-center items-center gap-12 px-6 md:hidden">
-            <Icon icon="clarity:sad-face-solid" class="size-20" />
-            <div class="text-center text-2xl">Unfortunately <span class="font-bold">Huginn</span> is not available for
-                your device.</div>
-            <RouterLink to="/" class="text-[#D99A6C] underline items-center flex">
-                <Icon icon="lets-icons:back" class="mr-1" />Back to Homepage
-            </RouterLink>
-        </div>
-    </div>
+            <div class="mt-6 flex items-center" v-if="latestInfo && platformKind && versionKind">
+               <button
+                  @click="download(platformKind!, versionKind!)"
+                  class="flex w-max flex-row items-center gap-x-2 rounded-md bg-[#7b563c] px-4 py-2 transition-all hover:bg-[#7b563c]/50"
+                  :class="{ 'bg-[#7b563c]/50': versionKind === 'none' }"
+                  :disabled="versionKind === 'none'"
+               >
+                  <Icon icon="mingcute:download-3-fill" />
+                  {{ versionKind !== "none" ? "Download Huginn " + buttonVersionText : "Select a Version" }}
+               </button>
+
+               <div
+                  class="ml-4 flex h-full w-fit items-center rounded-md bg-[#76FF7A]/30 px-4 py-2"
+                  :class="{ hidden: versionKind === 'none' }"
+               >
+                  <Icon icon="clarity:date-solid" class="mr-2" />
+                  {{ dateText }}
+               </div>
+
+               <div
+                  class="ml-4 flex h-full w-fit items-center rounded-md bg-[#00A7E0]/30 px-4 py-2"
+                  :class="{ hidden: versionKind !== 'nightly' }"
+               >
+                  <Icon icon="mdi:wrench" class="mr-2" />
+                  Build {{ versionTexts?.nightly?.buildId?.toUpperCase() }}
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <div class="flex flex-col items-center justify-center gap-12 px-6 md:hidden">
+         <Icon icon="clarity:sad-face-solid" class="size-20" />
+         <div class="text-center text-2xl">Unfortunately <span class="font-bold">Huginn</span> is not available for your device.</div>
+         <RouterLink to="/" class="flex items-center text-[#D99A6C] underline">
+            <Icon icon="lets-icons:back" class="mr-1" />Back to Homepage
+         </RouterLink>
+      </div>
+   </div>
 </template>
