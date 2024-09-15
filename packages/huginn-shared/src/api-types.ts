@@ -226,6 +226,8 @@ export type APIGetMessageByIdResult = APIMessage;
 
 export type APIGetChannelMessagesResult = APIMessage[];
 
+export type APIGetReleasesResult = Record<string, { version: string; date: string; windowsSetupUrl?: string } | undefined>;
+
 export enum MessageType {
    DEFAULT,
    RECIPIENT_ADD,
