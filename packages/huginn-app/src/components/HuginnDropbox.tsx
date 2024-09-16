@@ -3,15 +3,17 @@ import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headless
 import { filterChildrenOfType } from "@lib/utils";
 import { ReactNode } from "@tanstack/react-router";
 import clsx from "clsx";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function HuginnDropbox(props: {
    items: DropboxItem[];
    defaultIndex?: number;
    children?: ReactNode;
+   className?: string;
    onChange?: (value: DropboxItem) => void;
+   selected?: DropboxItem;
 }) {
-   const [selected, setSelected] = useState(props.items[props.defaultIndex ?? 0]);
+   const [selected, setSelected] = useState(props.selected ?? props.items[props.defaultIndex ?? 0]);
 
    const filteredChildren = useMemo(() => {
       return {
@@ -20,12 +22,20 @@ export default function HuginnDropbox(props: {
    }, [props.children]);
 
    function onChange(value: DropboxItem) {
-      setSelected(value);
+      if (!props.selected) {
+         setSelected(value);
+      }
       props.onChange && props.onChange(value);
    }
 
+   useEffect(() => {
+      if (props.selected) {
+         setSelected(props.selected);
+      }
+   }, [props.selected]);
+
    return (
-      <div className="flex flex-col">
+      <div className={clsx("flex flex-col", props.className)}>
          {filteredChildren.label && <HuginnDropbox.Label skipRender>{filteredChildren.label}</HuginnDropbox.Label>}
          <div className="bg-secondary w-52 rounded-lg">
             <Listbox value={selected} onChange={onChange}>

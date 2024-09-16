@@ -2,15 +2,11 @@ import { useWindow } from "@contexts/windowContext";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { ReactPortal } from "react";
 import { createPortal } from "react-dom";
+
 const appWindow = getCurrentWebviewWindow();
-console.log(appWindow);
 
 export default function TitleBar(): ReactPortal {
    const huginnWindow = useWindow();
-
-   // useEffect(() => {
-   //    mainWindow.current = getAllWebviews().find(x => x.label === "main");
-   // }, []);
 
    async function minimize() {
       await appWindow?.minimize();

@@ -76,8 +76,8 @@ export default function SettingsModal() {
                   action: {
                      confirm: {
                         text: "Restart",
-                        callback: () => {
-                           settingsDispatch(modifiedSettings.current ?? {});
+                        callback: async () => {
+                           await onSave();
                            dispatch({ info: { isOpen: false } });
                            location.reload();
                         },
@@ -94,10 +94,14 @@ export default function SettingsModal() {
                },
             });
          } else {
-            settingsDispatch(modifiedSettings.current ?? {});
+            onSave();
          }
       }
    }, [modal.isOpen]);
+
+   async function onSave() {
+      await settingsDispatch(modifiedSettings.current ?? {});
+   }
 
    function onTabChanged(index: number) {
       setCurrentTab(flatTabs[index]?.text ?? "");
@@ -125,7 +129,12 @@ export default function SettingsModal() {
                   </TabList>
                </div>
                {settingsValid && modifiedSettings.current && (
-                  <SettingsPanels currentTab={currentTab} settings={modifiedSettings.current} onChange={onSettingsChanged} />
+                  <SettingsPanels
+                     currentTab={currentTab}
+                     settings={modifiedSettings.current}
+                     onChange={onSettingsChanged}
+                     onSave={onSave}
+                  />
                )}
             </TabGroup>
             <ModalCloseButton
@@ -179,12 +188,13 @@ const TabComponent = memo(
    (props: {
       component: (props: SettingsTabProps) => React.JSX.Element;
       onChange: (value: DeepPartial<SettingsContextType>) => void;
+      onSave: () => Promise<void>;
       settings: DeepPartial<SettingsContextType>;
    }) => {
       const Component = props.component;
 
       if (!Component) return;
-      return <Component settings={props.settings} onChange={props.onChange}></Component>;
+      return <Component settings={props.settings} onChange={props.onChange} onSave={props.onSave}></Component>;
    },
 );
 
@@ -192,6 +202,7 @@ function SettingsPanels(props: {
    settings: DeepPartial<SettingsContextType>;
    currentTab: string;
    onChange: (value: DeepPartial<SettingsContextType>) => void;
+   onSave: () => Promise<void>;
 }) {
    const flatTabs = useFlatTabs();
 
@@ -201,7 +212,7 @@ function SettingsPanels(props: {
          {flatTabs.map(tab => (
             <TabPanel key={tab?.name} className="scroll-alternative h-full overflow-y-scroll pr-3">
                {tab?.component ? (
-                  <TabComponent onChange={props.onChange} settings={props.settings} component={tab.component} />
+                  <TabComponent onChange={props.onChange} onSave={props.onSave} settings={props.settings} component={tab.component} />
                ) : (
                   <span className="text-text/50 text-base italic">{tab?.name} (Soon...)</span>
                )}

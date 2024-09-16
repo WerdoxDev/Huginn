@@ -89,6 +89,7 @@ export type SettingsTab = {
 export type SettingsTabProps = {
    settings: DeepPartial<SettingsContextType>;
    onChange?: (value: DeepPartial<SettingsContextType>) => void;
+   onSave?: () => Promise<void>;
 };
 
 export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;

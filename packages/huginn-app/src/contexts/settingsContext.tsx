@@ -1,7 +1,7 @@
 import { DeepPartial, ThemeType } from "@/types";
 import { BaseDirectory, create, exists, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { appDataDir } from "@tauri-apps/api/path";
-import { Dispatch, ReactNode, createContext, useContext, useReducer } from "react";
+import { Dispatch, ReactNode, act, createContext, useContext, useReducer } from "react";
 
 export type SettingsContextType = {
    serverAddress: string;
@@ -32,14 +32,26 @@ if (window.__TAURI_INTERNALS__) {
 }
 
 const SettingsContext = createContext<SettingsContextType>(value);
-const SettingsDispatchContext = createContext<Dispatch<DeepPartial<SettingsContextType>>>(() => {});
+const SettingsDispatchContext = createContext<(action: DeepPartial<SettingsContextType>) => Promise<void>>(
+   () => new Promise(() => {}),
+);
 
 export function SettingsProvider(props: { children?: ReactNode }) {
    const [settings, dispatch] = useReducer(settingsReducer, value);
 
+   async function dispatchSaveSettings(action: DeepPartial<SettingsContextType>) {
+      if (window.__TAURI_INTERNALS__) {
+         await writeSettingsFile({ ...settings, ...action });
+      } else {
+         localStorage.setItem("settings", JSON.stringify({ ...settings, ...action }));
+      }
+
+      dispatch(action);
+   }
+
    return (
       <SettingsContext.Provider value={settings}>
-         <SettingsDispatchContext.Provider value={dispatch}>{props.children}</SettingsDispatchContext.Provider>
+         <SettingsDispatchContext.Provider value={dispatchSaveSettings}>{props.children}</SettingsDispatchContext.Provider>
       </SettingsContext.Provider>
    );
 }
