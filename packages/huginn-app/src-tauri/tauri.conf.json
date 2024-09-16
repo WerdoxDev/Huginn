@@ -15,7 +15,8 @@
       "windows": {
          "certificateThumbprint": null,
          "digestAlgorithm": "sha256",
-         "timestampUrl": ""
+         "timestampUrl": "",
+         "allowDowngrades": true
       },
       "longDescription": "",
       "shortDescription": "",
@@ -27,7 +28,7 @@
    "plugins": {
       "updater": {
          "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEZBQzhCNUZDMEVFMDlCMkYKUldRdm0rQU8vTFhJK3JnS1NCRzIzUS9NM21tbHdBYlo1UzkyNDZYNTd6OEE1TFJpNkd4ekdVKzAK",
-         "endpoints": ["https://gist.githubusercontent.com/WerdoxDev/ac95eb18cb91af0cc3992625c1c6eb18/raw/huginn-version.json?v=1"],
+         "endpoints": ["https://asgard.huginn.dev/api/check-update/{{target}}/{{current_version}}"],
          "windows": {
             "installMode": "passive"
          }

@@ -1,10 +1,14 @@
 [package]
 name = "huginn"
-version = "0.3.3"
+version = "0.3.3-nightly.0"
 description = "Huginn's desktop application"
 authors = ["Matin"]
 repository = ""
 edition = "2021"
+
+[lib]
+name = "tauri_app_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
 
 [build-dependencies]
 [build-dependencies.tauri-build]
@@ -15,6 +19,7 @@ features = []
 serde_json = "1.0"
 tauri-plugin-shell = "2.0.0-rc"
 tauri-plugin-fs = "2.0.0-rc"
+tokio = "1.40.0"
 
 [dependencies.serde]
 version = "1.0"
@@ -23,9 +28,6 @@ features = ["derive"]
 [dependencies.tauri]
 version = "2.0.0-rc"
 features = []
-
-[features]
-custom-protocol = ["tauri/custom-protocol"]
 
 [target]
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))"]
