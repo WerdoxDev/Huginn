@@ -1,13 +1,18 @@
 import { DropboxItem, SettingsTabProps, ThemeType } from "@/types";
 import HuginnDropbox from "@components/HuginnDropbox";
-import { useThemeDispather } from "@contexts/themeContext";
+import { ceruleanTheme, charcoalTheme, coffeeTheme, eggplantTheme, pineGreenTheme, useThemeDispather } from "@contexts/themeContext";
+import clsx from "clsx";
+
+function ThemeIcon(props: { color: string }) {
+   return <div className="h-6 w-6 rounded-md" style={{ background: props.color }}></div>;
+}
 
 const themes: DropboxItem[] = [
-   { id: 0, name: "Pine Green", value: "pine green" },
-   { id: 1, name: "Cerulean", value: "cerulean" },
-   { id: 2, name: "Eggplant", value: "eggplant" },
-   { id: 3, name: "Coffee", value: "coffee" },
-   { id: 4, name: "Charcoal", value: "charcoal" },
+   { id: 0, name: "Pine Green", value: "pine green", icon: <ThemeIcon color={pineGreenTheme.primary} /> },
+   { id: 1, name: "Cerulean", value: "cerulean", icon: <ThemeIcon color={ceruleanTheme.primary} /> },
+   { id: 2, name: "Eggplant", value: "eggplant", icon: <ThemeIcon color={eggplantTheme.primary} /> },
+   { id: 3, name: "Coffee", value: "coffee", icon: <ThemeIcon color={coffeeTheme.primary} /> },
+   { id: 4, name: "Charcoal", value: "charcoal", icon: <ThemeIcon color={charcoalTheme.primary} /> },
 ];
 
 export default function SettingsThemeTab(props: SettingsTabProps) {

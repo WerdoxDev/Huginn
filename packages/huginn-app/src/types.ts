@@ -96,6 +96,7 @@ export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T
 export type DropboxItem = {
    id: number;
    name: string;
+   icon?: ReactNode;
    value: string;
 };
 

@@ -2,7 +2,7 @@ import { Dispatch, ReactNode, createContext, useContext, useEffect, useReducer }
 import { useSettings } from "./settingsContext";
 import { ColorTheme, ThemeType } from "@/types";
 
-const ceruleanTheme: ColorTheme = {
+export const ceruleanTheme: ColorTheme = {
    background: "#303030",
    secondary: "#262626",
    tertiary: "#1f1f1f",
@@ -15,7 +15,7 @@ const ceruleanTheme: ColorTheme = {
    warning: "#ED9121",
 };
 
-const pineGreenTheme: ColorTheme = {
+export const pineGreenTheme: ColorTheme = {
    background: "#303030",
    secondary: "#262626",
    tertiary: "#1f1f1f",
@@ -28,7 +28,7 @@ const pineGreenTheme: ColorTheme = {
    warning: "#ED9121",
 };
 
-const eggplantTheme: ColorTheme = {
+export const eggplantTheme: ColorTheme = {
    background: "#303030",
    secondary: "#262626",
    tertiary: "#1f1f1f",
@@ -41,7 +41,7 @@ const eggplantTheme: ColorTheme = {
    warning: "#ED9121",
 };
 
-const coffeeTheme: ColorTheme = {
+export const coffeeTheme: ColorTheme = {
    background: "#303030",
    secondary: "#262626",
    tertiary: "#1f1f1f",
@@ -54,7 +54,7 @@ const coffeeTheme: ColorTheme = {
    warning: "#ED9121",
 };
 
-const charcoalTheme: ColorTheme = {
+export const charcoalTheme: ColorTheme = {
    background: "#303030",
    secondary: "#262626",
    tertiary: "#1f1f1f",
