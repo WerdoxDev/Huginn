@@ -7,7 +7,7 @@ export default function useUpdater() {
    const downloaded = useRef(0);
 
    async function check() {
-      return await tauriCheck();
+      return await tauriCheck({ target: "windows-nightly" });
    }
 
    async function downloadAndInstall() {
@@ -16,7 +16,7 @@ export default function useUpdater() {
       if (update?.available) {
          await update.downloadAndInstall(event => {
             if (event.event === "Started") {
-               contentLength.current = event.data.contentLength || 0;
+               contentLength.current = event.data.contentLength ?? 0;
             } else if (event.event === "Progress") {
                downloaded.current += event.data.chunkLength;
                setProgress((downloaded.current / contentLength.current) * 100);

@@ -7,12 +7,14 @@ export type SettingsContextType = {
    serverAddress: string;
    cdnAddress: string;
    theme: ThemeType;
+   flavour: "release" | "nightly";
 };
 
 const defaultValue: SettingsContextType = {
    serverAddress: "https://asgard.huginn.dev",
    cdnAddress: "https://asgard.huginn.dev",
    theme: "pine green",
+   flavour: "release",
 };
 // const defaultValue: SettingsContextType = { serverAddress: "https://huginn-b4yw.onrender.com", theme: "pine green" };
 
