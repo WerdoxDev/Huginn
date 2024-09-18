@@ -21,7 +21,6 @@ import { UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { useEffect, useRef } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-const appWindow = getCurrentWebviewWindow();
 
 export type HuginnRouterContext = {
    queryClient: QueryClient;
@@ -87,6 +86,7 @@ function AppMaximizedEvent() {
 
    useEffect(() => {
       async function listenToAppResize() {
+         const appWindow = getCurrentWebviewWindow();
          const unlisten = await appWindow.onResized(async () => {
             const appMaximized = await appWindow.isMaximized();
             dispatch({ maximized: appMaximized });
@@ -95,7 +95,9 @@ function AppMaximizedEvent() {
          unlistenFunction.current = unlisten;
       }
 
-      listenToAppResize();
+      if (window.__TAURI_INTERNALS__) {
+         listenToAppResize();
+      }
 
       return () => {
          unlistenFunction.current && unlistenFunction.current();

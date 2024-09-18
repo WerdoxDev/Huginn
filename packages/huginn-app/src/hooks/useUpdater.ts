@@ -1,31 +1,64 @@
 import { useSettings } from "@contexts/settingsContext";
-import { check as tauriCheck } from "@tauri-apps/plugin-updater";
-import { useRef, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
+import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { check } from "@tauri-apps/plugin-updater";
+import { useEffect, useRef, useState } from "react";
 
-export default function useUpdater() {
+type UpdateProgress = {
+   downloaded: number;
+   contentLength: number;
+};
+
+type UpdateInfo = {
+   body: string;
+   currentVersion: string;
+   version: string;
+};
+
+export default function useUpdater(onFinished?: (wasAvailable: boolean) => void) {
    const [progress, setProgress] = useState(0);
+   const [info, setInfo] = useState<UpdateInfo>();
    const contentLength = useRef(0);
    const downloaded = useRef(0);
    const settings = useSettings();
 
-   async function check() {
-      return await tauriCheck({ target: `windows-${settings.flavour}` });
-   }
+   useEffect(() => {
+      let unlistenProgress: UnlistenFn;
+      let unlistenFinished: UnlistenFn;
+      let unlistenInfo: UnlistenFn;
+      let unlistenNotAvailable: UnlistenFn;
 
-   async function downloadAndInstall() {
-      const update = await check();
-
-      if (update?.available) {
-         await update.downloadAndInstall(event => {
-            if (event.event === "Started") {
-               contentLength.current = event.data.contentLength ?? 0;
-            } else if (event.event === "Progress") {
-               downloaded.current += event.data.chunkLength;
-               setProgress((downloaded.current / contentLength.current) * 100);
-            }
+      async function listenToEvents() {
+         unlistenNotAvailable = await listen("update-not-available", () => {
+            onFinished?.(false);
+         });
+         unlistenInfo = await listen<UpdateInfo>("update-info", event => {
+            setInfo(event.payload);
+         });
+         unlistenProgress = await listen<UpdateProgress>("update-progress", event => {
+            downloaded.current = event.payload.downloaded;
+            contentLength.current = event.payload.contentLength;
+            setProgress((downloaded.current / contentLength.current) * 100);
+         });
+         unlistenFinished = await listen("update-finished", () => {
+            console.log("Update finished!");
+            onFinished?.(true);
          });
       }
+
+      listenToEvents();
+
+      return () => {
+         unlistenProgress?.();
+         unlistenFinished?.();
+         unlistenInfo?.();
+         unlistenNotAvailable?.();
+      };
+   }, []);
+
+   async function checkAndDownload() {
+      await invoke("check_update", { target: `windows-${settings.flavour}` });
    }
 
-   return { check, downloadAndInstall, progress, contentLength, downloaded };
+   return { checkAndDownload, info, progress, contentLength, downloaded };
 }

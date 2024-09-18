@@ -1,24 +1,30 @@
 import { useWindow } from "@contexts/windowContext";
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { ReactPortal } from "react";
+import { getCurrentWebviewWindow, WebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { ReactPortal, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-
-const appWindow = getCurrentWebviewWindow();
 
 export default function TitleBar(): ReactPortal {
    const huginnWindow = useWindow();
+   const appWindow = useRef<WebviewWindow>();
 
    async function minimize() {
-      await appWindow?.minimize();
+      await appWindow.current?.minimize();
    }
 
    async function maximize() {
-      await appWindow?.toggleMaximize();
+      await appWindow.current?.toggleMaximize();
    }
 
    async function close() {
-      await appWindow?.close();
+      await appWindow.current?.close();
    }
+
+   useEffect(() => {
+      if (window.__TAURI_INTERNALS__) {
+         console.log("JA");
+         appWindow.current = getCurrentWebviewWindow();
+      }
+   }, []);
 
    return createPortal(
       <div

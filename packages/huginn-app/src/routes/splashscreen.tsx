@@ -1,18 +1,22 @@
-import { createFileRoute } from "@tanstack/react-router";
-import useUpdater from "@hooks/useUpdater";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
 import { LoadingState } from "@/types";
+import useUpdater from "@hooks/useUpdater";
+import { createFileRoute } from "@tanstack/react-router";
+import { invoke } from "@tauri-apps/api/core";
+import { useEffect, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/splashscreen")({
    component: Splashscreen,
 });
 
 function Splashscreen() {
-   const { check, downloadAndInstall, progress, contentLength, downloaded } = useUpdater();
+   const { checkAndDownload, info, progress, contentLength, downloaded } = useUpdater(async wasAvailable => {
+      setLoadingState("loading");
+      if (!wasAvailable) {
+         await invoke("close_splashscreen");
+      }
+   });
 
    const [loadingState, setLoadingState] = useState<LoadingState>("none");
-   const newVersion = useRef<string>();
 
    const loadingText = useMemo(() => {
       return loadingState === "loading"
@@ -22,29 +26,24 @@ function Splashscreen() {
            : loadingState === "checking_update"
              ? "Checking for updates"
              : loadingState === "updating"
-               ? `Updating to v${newVersion.current}`
+               ? `Updating to v${info?.version}`
                : "Invalid State";
-   }, [newVersion.current, loadingState]);
+   }, [info, loadingState]);
 
    const updateProgressText = useMemo(() => {
       return `${(downloaded.current / 1024 / 1024).toFixed(2)}MB / ${(contentLength.current / 1024 / 1024).toFixed(2)}MB (${Math.ceil(progress)}%)`;
    }, [downloaded.current, contentLength.current, progress]);
 
    useEffect(() => {
+      if (info) {
+         setLoadingState("updating");
+      }
+   }, [info]);
+
+   useEffect(() => {
       async function checkForUpdate() {
          setLoadingState("checking_update");
-
-         const update = await check();
-
-         if (update) {
-            newVersion.current = update.version;
-            setLoadingState("updating");
-
-            await downloadAndInstall();
-         } else {
-            setLoadingState("loading");
-            await invoke("close_splashscreen");
-         }
+         await checkAndDownload();
       }
 
       checkForUpdate();

@@ -1,7 +1,6 @@
 import { ReactNode } from "@tanstack/react-router";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { Dispatch, createContext, useContext, useReducer } from "react";
-const appWindow = getCurrentWebviewWindow();
 
 type WindowContextType = {
    maximized: boolean;
@@ -9,7 +8,7 @@ type WindowContextType = {
 };
 
 const defaultValue: WindowContextType = {
-   maximized: window.__TAURI_INTERNALS__ ? await appWindow.isMaximized() : true,
+   maximized: window.__TAURI_INTERNALS__ ? await getCurrentWebviewWindow().isMaximized() : true,
    environment: window.__TAURI_INTERNALS__ ? "desktop" : "browser",
 };
 
