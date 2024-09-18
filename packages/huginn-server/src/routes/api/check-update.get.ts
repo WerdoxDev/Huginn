@@ -5,7 +5,7 @@ import { APICheckUpdateResult, HttpCode, VersionsObject } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import * as semver from "semver";
 
-type TargetKind = "none" | "windows-latest" | "windows-nightly";
+type TargetKind = "none" | "windows-release" | "windows-nightly";
 
 router.get(
    "/check-update/:target/:currentVersion",
@@ -27,20 +27,20 @@ router.get(
       const latest = sortedVersions.find(x => !semver.prerelease(x));
       const latestNightly = sortedVersions.find(x => semver.prerelease(x)?.[0]);
 
-      if ((target === "windows-latest" && !latest) || (target === "windows-nightly" && !latestNightly)) {
+      if ((target === "windows-release" && !latest) || (target === "windows-nightly" && !latestNightly)) {
          setResponseStatus(event, HttpCode.NO_CONTENT);
          return null;
       }
 
       if (
-         (target === "windows-latest" && currentVersion === latest) ||
+         (target === "windows-release" && currentVersion === latest) ||
          (target === "windows-nightly" && currentVersion === latestNightly)
       ) {
          setResponseStatus(event, HttpCode.NO_CONTENT);
          return null;
       }
 
-      if (target === "windows-latest" && latest) {
+      if (target === "windows-release" && latest) {
          const version = versions[latest];
 
          setResponseStatus(event, HttpCode.OK);
