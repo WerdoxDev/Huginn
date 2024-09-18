@@ -1,3 +1,4 @@
+import { useSettings } from "@contexts/settingsContext";
 import { check as tauriCheck } from "@tauri-apps/plugin-updater";
 import { useRef, useState } from "react";
 
@@ -5,9 +6,10 @@ export default function useUpdater() {
    const [progress, setProgress] = useState(0);
    const contentLength = useRef(0);
    const downloaded = useRef(0);
+   const settings = useSettings();
 
    async function check() {
-      return await tauriCheck({ target: "windows-nightly" });
+      return await tauriCheck({ target: `windows-${settings.flavour}` });
    }
 
    async function downloadAndInstall() {
