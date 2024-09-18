@@ -19,8 +19,8 @@ export async function getBuildFiles<Throw extends boolean>(
    }
    const nsisFiles = await readdir(buildPath);
 
-   const nsisSigFileName = nsisFiles.find(x => x.endsWith(".sig") && x.includes(version));
-   const nsisSetupFileName = nsisFiles.find(x => x.endsWith("setup.exe") && x.includes(version));
+   const nsisSigFileName = nsisFiles.find(x => x.endsWith(".sig") && x.includes(version + "_x64"));
+   const nsisSetupFileName = nsisFiles.find(x => x.endsWith("setup.exe") && x.includes(version + "_x64"));
 
    if (!nsisSigFileName || !nsisSetupFileName) {
       if (!throwOnNotFound) return null as never;

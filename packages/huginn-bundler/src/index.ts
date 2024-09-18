@@ -1,7 +1,9 @@
 #! /usr/bin/env bun
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { $, version } from "bun";
+import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { VersionsObject } from "@huginn/shared";
+import { $ } from "bun";
 import { defineCommand, runMain, showUsage } from "citty";
 import consola from "consola";
 import { colors } from "consola/utils";
@@ -12,8 +14,6 @@ import * as semver from "semver";
 import { logger } from "./logger";
 import { Suggestions } from "./types";
 import { directoryExists, getBuildFiles, getBuildFlavour, getDownloadInfo, getReleaseByTag, writeCargoTomlVersion } from "./utils";
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { VersionsObject } from "@huginn/shared";
 
 export const APP_PATH: string = process.env.APP_PATH!;
 export const BUILDS_PATH: string = process.env.BUILDS_PATH!;
@@ -325,6 +325,7 @@ async function createRelease(version: string, description: string, draft: boolea
          body: description,
          prerelease: flavour === "nightly",
          draft,
+         generate_release_notes: flavour === "nightly",
       });
    }
 
