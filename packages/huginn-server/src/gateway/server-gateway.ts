@@ -102,6 +102,24 @@ export class ServerGateway {
       return this.clients.get(userId);
    }
 
+   public subscribeSessionsToTopic(userId: Snowflake, topic: string) {
+      const sessions = Array.from(this.clients.entries())
+         .filter(x => x[1].data.user.id === userId)
+         .map(x => x[1]);
+      for (const session of sessions) {
+         session.subscribe(topic);
+      }
+   }
+
+   public unsubscribeSessionsToTopic(userId: Snowflake, topic: string) {
+      const sessions = Array.from(this.clients.entries())
+         .filter(x => x[1].data.user.id === userId)
+         .map(x => x[1]);
+      for (const session of sessions) {
+         session.unsubscribe(topic);
+      }
+   }
+
    public getSessionsCount() {
       return this.clients.size;
    }

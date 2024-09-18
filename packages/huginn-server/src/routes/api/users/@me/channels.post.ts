@@ -30,7 +30,7 @@ router.post(
       );
 
       for (const id of [payload.id, ...body.recipients]) {
-         gateway.getSession(id)?.subscribe(channel.id);
+         gateway.subscribeSessionsToTopic(id, channel.id);
       }
 
       dispatchToTopic(payload.id, "channel_create", channel);

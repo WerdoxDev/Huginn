@@ -41,14 +41,14 @@ export class ClientSession extends EventEmitter {
    }
 
    public subscribe(topic: string) {
-      if (!this.ws.isSubscribed(topic)) {
+      if (!this.isSubscribed(topic)) {
          this.ws.subscribe(topic);
          this.subscribedTopics.add(topic);
       }
    }
 
    public unsubscribe(topic: string) {
-      if (this.ws.isSubscribed(topic)) {
+      if (this.isSubscribed(topic)) {
          this.ws.unsubscribe(topic);
          this.subscribedTopics.delete(topic);
       }
