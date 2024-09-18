@@ -43,7 +43,7 @@ export const s3: S3Client = new S3Client({
 const main = defineCommand({
    meta: {
       name: "huginn-bundler",
-      version: "0.0.1",
+      version: "0.1.0",
       description: "Very simple bundler that builds the Huginn App and uploads it to github!",
    },
    args: {
@@ -127,9 +127,9 @@ const main = defineCommand({
             return;
          }
 
-         await build(args.version, args.force);
+         const result = await build(args.version, args.force);
 
-         if (args.upload || args.amazon) {
+         if ((args.upload || args.amazon) && result) {
             if (args.draft && args.upload) {
                const confirmation = await consola.prompt(
                   "A draft release cannot later be edited in the cli. Do you want to continue?",
@@ -221,14 +221,14 @@ function logSuggestions(suggestions: Suggestions) {
    );
 }
 
-async function build(version: string, force?: boolean) {
+async function build(version: string, force?: boolean): Promise<boolean> {
    try {
       const versionDir = path.join(BUILDS_PATH, version);
       const buildPath = path.join(TAURI_BUILD_PATH, NSIS_RELATIVE_PATH);
 
       if (await directoryExists(versionDir)) {
          logger.versionExists(version);
-         return;
+         return true;
       }
 
       const suggestions = await getSuggestions();
@@ -236,7 +236,7 @@ async function build(version: string, force?: boolean) {
 
       if (!suggestedVersions.includes(version) && !force) {
          logger.versionNotSuggested(version);
-         return;
+         return false;
       }
 
       const flavour = getBuildFlavour(version);
@@ -282,6 +282,8 @@ async function build(version: string, force?: boolean) {
       await Bun.write(path.join(versionDir, `Huginn_${version}.exe`), exeFile);
 
       logger.buildCompleted(version, flavour);
+
+      return true;
    } catch (e) {
       consola.error("Something went wrong... ");
       throw e;

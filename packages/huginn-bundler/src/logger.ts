@@ -9,7 +9,6 @@ export const logger = {
       consola.log(colors.green(colors.bold("HUGINN BUNDLER\n")));
    },
    versionFieldsUpdated(version: string): void {
-      consola.log("");
       consola.info(`Updated cargo version field to ${colors.cyan(version)}`);
    },
    buildingApp(version: string, flavour: BuildFlavour): void {
@@ -22,7 +21,6 @@ export const logger = {
       consola.warn(`Version ${colors.cyan(version)} already exists. Skipping build...`);
    },
    buildCompleted(version: string, flavour: BuildFlavour): void {
-      consola.log("");
       consola.success(`Build completed for version ${colors.cyan(version)} (${getVersionTypeText(flavour)})`);
    },
    buildExists(version: string): void {
@@ -35,11 +33,9 @@ export const logger = {
    },
 
    creatingRelease(version: string, flavour: BuildFlavour, draft: boolean): void {
-      consola.log("");
       consola.info(`Creating release${draft ? draftText : " "}for version ${colors.cyan(version)} (${getVersionTypeText(flavour)})`);
    },
    releaseExists(version: string): void {
-      consola.log("");
       consola.warn(`Release for ${colors.cyan(version)} already exists. Updating instead...`);
    },
    deletingExistingAssets(version: string): void {
@@ -49,13 +45,11 @@ export const logger = {
       consola.info("Uploading release files to GitHub...");
    },
    releaseCreated(version: string, flavour: BuildFlavour, draft: boolean): void {
-      consola.log("");
       consola.success(
          `Created GitHub release${draft ? draftText : " "}for version ${colors.cyan(version)} (${getVersionTypeText(flavour)})`,
       );
    },
    releaseUpdated(version: string, flavour: BuildFlavour): void {
-      consola.log("");
       consola.success(`Updated GitHub release for version ${colors.cyan(version)} (${getVersionTypeText(flavour)})`);
    },
    releaseLink(link: string): void {
@@ -72,7 +66,6 @@ export const logger = {
       consola.info(`Adding version ${colors.cyan(version)} to Amazon S3...`);
    },
    amazonObjectUpdated(version: string): void {
-      consola.log("");
       consola.success(`Successfuly added/updated version ${colors.cyan(version)} in Amazon S3`);
    },
 

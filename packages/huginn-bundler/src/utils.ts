@@ -13,6 +13,10 @@ export async function getBuildFiles<Throw extends boolean>(
    version: string,
    throwOnNotFound?: Throw,
 ): Promise<Throw extends true ? BuildFiles : BuildFiles | null> {
+   if (!(await directoryExists(buildPath))) {
+      if (!throwOnNotFound) return null as never;
+      throw new Error(`Directory ${buildPath} does not exist`);
+   }
    const nsisFiles = await readdir(buildPath);
 
    const nsisSigFileName = nsisFiles.find(x => x.endsWith(".sig") && x.includes(version));
