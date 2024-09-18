@@ -39,7 +39,6 @@ router.post(
 
       message.nonce = body.nonce;
 
-      console.log("post to", channelId);
       dispatchToTopic(channelId, "message_create", message);
       // TODO: Don't send notification if message has SUPPRESS_NOTIFICATIONS
 
