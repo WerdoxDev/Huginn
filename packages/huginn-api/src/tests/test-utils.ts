@@ -1,7 +1,7 @@
 import { LoginCredentials } from "@huginn/shared";
 import { HuginnClient } from "../..";
 
-export const url = "192.168.178.51:3004";
+export const url = "192.168.178.51:3001";
 
 export const testCredentials: LoginCredentials = {
    username: "test",
