@@ -1,6 +1,8 @@
 import { useUser } from "@contexts/userContext";
 import { APIMessageUser, MessageFlags, hasFlag } from "@huginn/shared";
 import { tokenize } from "@lib/huginn-tokenizer";
+import clsx from "clsx";
+import moment from "moment";
 import { forwardRef, useCallback, useMemo } from "react";
 import { Descendant, Node, Path, Range, Text, createEditor } from "slate";
 import { DefaultElement, Editable, RenderElementProps, RenderLeafProps, Slate, withReact } from "slate-react";
@@ -9,7 +11,16 @@ import MessageLeaf from "./editor/MessageLeaf";
 
 const BaseMessage = forwardRef<
    HTMLLIElement,
-   { content?: string; author: APIMessageUser; createdAt: string; flags?: MessageFlags | null }
+   {
+      content?: string;
+      author: APIMessageUser;
+      createdAt: string;
+      flags?: MessageFlags | null;
+      newMinute?: boolean;
+      lastNewMinute?: boolean;
+      nextNewMinute?: boolean;
+      newDate?: boolean;
+   }
 >(function (props, ref) {
    const { user } = useUser();
 
@@ -18,18 +29,20 @@ const BaseMessage = forwardRef<
 
    const initialValue = useMemo(() => deserialize(props.content ?? ""), []);
 
-   const formattedTime = useMemo(() => {
-      const date = new Date(props.createdAt);
+   // const formattedTime = useMemo(() => {
+   //    const date = new Date(props.createdAt);
 
-      const day = String(date.getDate()).padStart(2, "0");
-      const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-indexed
-      const year = date.getFullYear();
+   //    const day = String(date.getDate()).padStart(2, "0");
+   //    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-indexed
+   //    const year = date.getFullYear();
 
-      const hours = String(date.getHours()).padStart(2, "0");
-      const minutes = String(date.getMinutes()).padStart(2, "0");
+   //    const hours = String(date.getHours()).padStart(2, "0");
+   //    const minutes = String(date.getMinutes()).padStart(2, "0");
 
-      return `${day}.${month}.${year} ${hours}:${minutes}`;
-   }, [props.createdAt]);
+   //    return `${day}.${month}.${year} ${hours}:${minutes}`;
+   // }, [props.createdAt]);
+
+   const formattedTime = useMemo(() => moment(props.createdAt).format("DD.MM.YYYY HH:mm"), [props.createdAt]);
 
    function deserialize(content: string): Descendant[] {
       return content.split("\n").map(line => ({ type: "paragraph", children: [{ text: line }] }));
@@ -67,16 +80,28 @@ const BaseMessage = forwardRef<
    }, []);
 
    return (
-      <li ref={ref} className="hover:bg-secondary group select-text rounded-lg p-2">
-         <div className={`flex flex-col items-start gap-y-2 ${isSelf ? "ml-0" : "ml-2"}`}>
-            <div className="flex items-center gap-x-2 overflow-hidden rounded-xl">
-               <UserAvatarWithStatus userId={props.author.id} avatarHash={props.author.avatar} statusSize="0.5rem" size="1.75rem" />
-               <div className="text-text text-sm">{isSelf ? "You" : (props.author.displayName ?? props.author.username)}</div>
-               {props.flags && hasFlag(props.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
-                  <IconMdiNotificationsOff className="text-text size-4" />
-               ) : null}
-               <div className="text-text/50 text-xs">{formattedTime}</div>
-            </div>
+      <li
+         ref={ref}
+         className={clsx(
+            "hover:bg-secondary group select-text p-2",
+            props.newMinute && !props.nextNewMinute && "pb-0.5",
+            (props.newMinute || props.newDate) && "rounded-t-lg",
+            !props.newMinute && "py-0.5",
+            (props.nextNewMinute || props.nextNewMinute === undefined) && "rounded-b-lg",
+            props.newMinute && !props.lastNewMinute && !props.newDate && "mt-1.5",
+         )}
+      >
+         <div className={clsx("flex flex-col items-start gap-y-2 ", !isSelf && "ml-2")}>
+            {props.newMinute && (
+               <div className="flex items-center gap-x-2 overflow-hidden">
+                  <UserAvatarWithStatus userId={props.author.id} avatarHash={props.author.avatar} statusSize="0.5rem" size="1.75rem" />
+                  <div className="text-text text-sm">{isSelf ? "You" : (props.author.displayName ?? props.author.username)}</div>
+                  {props.flags && hasFlag(props.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
+                     <IconMdiNotificationsOff className="text-text size-4" />
+                  ) : null}
+                  <div className="text-text/50 text-xs">{formattedTime}</div>
+               </div>
+            )}
             {/* <div className="flex flex-col items-start gap-y-0.5"> */}
             <div className={`overflow-hidden font-light text-white`}>
                <Slate editor={editor} initialValue={initialValue}>
@@ -87,7 +112,12 @@ const BaseMessage = forwardRef<
                      decorate={param => decorate(param)}
                      renderLeaf={renderLeaf}
                      renderElement={renderElement}
-                     className={`rounded-bl-md rounded-br-md rounded-tr-md px-2 py-1 font-normal text-white [overflow-wrap:anywhere] ${isSelf ? "bg-primary" : "bg-background"}`}
+                     className={clsx(
+                        "px-2 py-1 font-normal text-white [overflow-wrap:anywhere]",
+                        isSelf ? "bg-primary" : "bg-background",
+                        props.newMinute && "rounded-tr-md",
+                        (props.nextNewMinute ?? props.nextNewMinute === undefined) && "rounded-bl-md rounded-br-md ",
+                     )}
                      disableDefaultStyles
                      // className=""
                   />

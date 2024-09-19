@@ -1,13 +1,15 @@
+import { MessageRenderInfo } from "@/types";
 import BaseMessage from "@components/BaseMessage";
 import ChannelMessageLoadingIndicator from "@components/ChannelMessageLoadingIndicator";
 import { useClient } from "@contexts/apiContext";
 import { useChannelScroll, useChannelScrollDispatch } from "@contexts/channelScrollContext";
 import { useEvent } from "@contexts/eventContext";
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
-import { APIGetChannelMessagesResult, Snowflake } from "@huginn/shared";
+import { APIDefaultMessage, APIGetChannelMessagesResult, Snowflake } from "@huginn/shared";
 import { getMessagesOptions } from "@lib/queries";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import moment from "moment";
+import { RefObject, useEffect, useMemo, useRef, useState } from "react";
 
 const topScrollOffset = 200;
 const bottomScrollOffset = 200;
@@ -24,6 +26,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    const [getContent, setContent, removeContent] = useDynamicRefs<HTMLLIElement>();
    const { listenEvent } = useEvent();
 
+   const messageRenderInfos = useMemo<MessageRenderInfo[]>(() => calculateMessageRenderInfos(), [props.messages, props.channelId]);
    const scroll = useRef<HTMLOListElement>(null);
    const previousScrollTop = useRef(0);
    const newItemsHeight = useRef(0);
@@ -56,6 +59,20 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       }
    }
 
+   function calculateMessageRenderInfos() {
+      // setMessageRenderInfos(
+      return props.messages.map((message, i) => {
+         const lastMessage = props.messages[i - 1];
+
+         const differentDate = !moment(message.createdAt).isSame(lastMessage?.createdAt, "date");
+
+         const differentMinute = !moment(message.createdAt).isSame(lastMessage?.createdAt, "minute");
+
+         return { message, newMinute: differentMinute, newDate: differentDate };
+      });
+      // );
+   }
+
    useEffect(() => {
       if (channelScroll.has(props.channelId) && scroll.current) {
          const newScroll = channelScroll.get(props.channelId) ?? 0;
@@ -77,9 +94,9 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    }, [props.channelId]);
 
    useEffect(() => {
-      // Set previous to -1 so fetching next page doesnt do anything but prev page does.
       if (!scroll.current) return;
 
+      // Set previous to -1 so fetching next page doesnt do anything but prev page does.
       if (previousScrollTop.current !== -1) {
          let height = 0;
          data.pages[0].forEach(x => (height += getContent(x.id)?.current?.offsetHeight ?? 0));
@@ -106,17 +123,52 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
                   <div className="bg-background text-text rounded-lg p-2 italic">Empty...</div>
                </div>
             )}
-            {props.messages.map(message => (
-               <BaseMessage
-                  ref={setContent(message.id)}
+            {props.messages.map((message, i) => (
+               <MessageRenderer
                   key={message.id}
-                  content={message.content}
-                  createdAt={message.createdAt as unknown as string}
-                  author={message.author}
-                  flags={message.flags}
+                  message={message}
+                  renderInfo={messageRenderInfos[i]}
+                  nextRenderInfo={messageRenderInfos[i + 1]}
+                  lastRenderInfo={messageRenderInfos[i - 1]}
+                  setContent={setContent}
                />
             ))}
          </ol>
       </div>
+   );
+}
+
+function MessageRenderer(props: {
+   message: APIDefaultMessage;
+   renderInfo: MessageRenderInfo;
+   nextRenderInfo?: MessageRenderInfo;
+   lastRenderInfo?: MessageRenderInfo;
+   setContent: (ket: string) => RefObject<HTMLLIElement>;
+}) {
+   useEffect(() => {
+      console.log("RENDER");
+   }, []);
+   return (
+      <>
+         {props.renderInfo.newDate && (
+            <li
+               className="text-text/70 mx-2 my-5 flex h-0 items-center justify-center text-center text-xs font-semibold [border-top:thin_solid_rgb(var(--color-text)/0.25)]"
+               ref={props.setContent(props.message.id + "_separator")}
+            >
+               <span className="bg-tertiary px-2">{moment(props.message.createdAt).format("DD. MMMM YYYY")}</span>
+            </li>
+         )}
+         <BaseMessage
+            newDate={props.renderInfo.newDate}
+            newMinute={props.renderInfo.newMinute}
+            lastNewMinute={props.lastRenderInfo?.newMinute}
+            nextNewMinute={props.nextRenderInfo?.newMinute}
+            ref={props.setContent(props.message.id)}
+            content={props.message.content}
+            createdAt={props.message.createdAt as unknown as string}
+            author={props.message.author}
+            flags={props.message.flags}
+         />
+      </>
    );
 }

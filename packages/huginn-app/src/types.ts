@@ -1,5 +1,5 @@
 import { Placement } from "@floating-ui/react";
-import { APIDMChannel, APIGroupDMChannel, APIRelationUser, RelationshipType } from "@huginn/shared";
+import { APIDefaultMessage, APIDMChannel, APIGroupDMChannel, APIRelationUser, RelationshipType } from "@huginn/shared";
 import React, { HTMLInputTypeAttribute, ReactNode } from "react";
 import { SettingsContextType } from "./contexts/settingsContext";
 
@@ -148,3 +148,9 @@ export enum ContextMenuType {
    RELATIONSHIP_MORE,
    RELATIONSHIP,
 }
+
+export type MessageRenderInfo = {
+   message: APIDefaultMessage;
+   barebone: boolean;
+   newDate: boolean;
+};
