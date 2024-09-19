@@ -41,6 +41,7 @@ export default tseslint.config(
 
       rules: {
          "no-throw-literal": "off",
+         "@typescript-eslint/prefer-nullish-coalescing": ["error", { ignoreMixedLogicalExpressions: true }],
          "@typescript-eslint/prefer-literal-enum-member": ["error", { allowBitwiseExpressions: true }],
          "@typescript-eslint/await-thenable": "off",
          "@typescript-eslint/consistent-type-definitions": ["off", "type"],
