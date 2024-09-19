@@ -9,10 +9,10 @@ import { APIDefaultMessage, APIGetChannelMessagesResult, Snowflake } from "@hugi
 import { getMessagesOptions } from "@lib/queries";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import moment from "moment";
-import { RefObject, useEffect, useMemo, useRef, useState } from "react";
+import { RefObject, useEffect, useMemo, useRef } from "react";
 
-const topScrollOffset = 200;
-const bottomScrollOffset = 200;
+const topScrollOffset = 100;
+const bottomScrollOffset = 100;
 
 export default function ChannelMessages(props: { channelId: Snowflake; messages: APIGetChannelMessagesResult }) {
    const client = useClient();
@@ -29,7 +29,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    const messageRenderInfos = useMemo<MessageRenderInfo[]>(() => calculateMessageRenderInfos(), [props.messages, props.channelId]);
    const scroll = useRef<HTMLOListElement>(null);
    const previousScrollTop = useRef(0);
-   const newItemsHeight = useRef(0);
+   const itemsHeight = useRef(0);
    const listHasUpdated = useRef(false);
    const shouldScrollOnNextRender = useRef(false);
 
@@ -37,6 +37,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       if (!scroll.current) return;
       channelScrollDispatch({ channelId: props.channelId, scroll: scroll.current.scrollTop ?? 0 });
 
+      // Scrolling up
       if (scroll.current.scrollTop <= topScrollOffset && !isFetchingPreviousPage && hasPreviousPage && listHasUpdated.current) {
          // Remove the old refs
          if (data.pages.length === 3) {
@@ -48,6 +49,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
          listHasUpdated.current = false;
          await fetchPreviousPage();
          previousScrollTop.current = scroll.current.scrollTop;
+         // Scrolling down
       } else if (
          scroll.current.scrollHeight - scroll.current.clientHeight - scroll.current.scrollTop <= bottomScrollOffset &&
          !isFetchingNextPage &&
@@ -59,9 +61,8 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       }
    }
 
-   function calculateMessageRenderInfos() {
-      // setMessageRenderInfos(
-      return props.messages.map((message, i) => {
+   function calculateMessageRenderInfos(): MessageRenderInfo[] {
+      const value = props.messages.map((message, i) => {
          const lastMessage = props.messages[i - 1];
 
          const differentDate = !moment(message.createdAt).isSame(lastMessage?.createdAt, "date");
@@ -70,7 +71,19 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
          return { message, newMinute: differentMinute, newDate: differentDate };
       });
-      // );
+
+      return value;
+   }
+
+   function getFullHeight(element?: HTMLLIElement | null) {
+      if (!element) {
+         return 0;
+      }
+
+      const styles = getComputedStyle(element);
+      const margin = parseFloat(styles.marginTop) + parseFloat(styles.marginBottom);
+
+      return Math.ceil(element.offsetHeight + margin);
    }
 
    useEffect(() => {
@@ -96,13 +109,28 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    useEffect(() => {
       if (!scroll.current) return;
 
+      let height = 0;
+      data.pages[0].forEach(x => {
+         const elementHeight = getFullHeight(getContent(x.id)?.current) + getFullHeight(getContent(x.id + "_separator")?.current);
+         height += elementHeight;
+      });
+
       // Set previous to -1 so fetching next page doesnt do anything but prev page does.
       if (previousScrollTop.current !== -1) {
-         let height = 0;
-         data.pages[0].forEach(x => (height += getContent(x.id)?.current?.offsetHeight ?? 0));
-         newItemsHeight.current = height;
+         let previousHeight = 0;
+         let previousHeightDiff = 0;
 
-         scroll.current.scrollTop = previousScrollTop.current + newItemsHeight.current;
+         data.pages.slice(1)?.forEach(x =>
+            x.forEach(y => {
+               const elementHeight =
+                  getFullHeight(getContent(y.id)?.current) + getFullHeight(getContent(y.id + "_separator")?.current);
+               previousHeight += elementHeight;
+            }),
+         );
+
+         previousHeightDiff = itemsHeight.current - previousHeight;
+
+         scroll.current.scrollTop = previousScrollTop.current + (height - previousHeightDiff);
          previousScrollTop.current = -1;
       }
 
@@ -110,6 +138,8 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
          scroll.current.scrollTop = scroll.current.scrollHeight - scroll.current.clientHeight;
          shouldScrollOnNextRender.current = false;
       }
+
+      itemsHeight.current = height;
 
       listHasUpdated.current = true;
    }, [props.messages]);
