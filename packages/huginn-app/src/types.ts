@@ -151,6 +151,6 @@ export enum ContextMenuType {
 
 export type MessageRenderInfo = {
    message: APIDefaultMessage;
-   barebone: boolean;
+   newMinute: boolean;
    newDate: boolean;
 };
