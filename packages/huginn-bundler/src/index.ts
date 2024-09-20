@@ -54,6 +54,12 @@ const main = defineCommand({
          description: "A SemVer string for the build or upload or deleting",
          valueHint: "SEMVER",
       },
+      skip: {
+         type: "boolean",
+         description: "Skips prompting for a description. Useful for nightly builds.",
+         default: false,
+         required: false,
+      },
       deleteLocal: {
          type: "boolean",
          alias: "l",
@@ -143,7 +149,7 @@ const main = defineCommand({
             }
 
             if (args.upload) {
-               const description = await consola.prompt("Enter a description:", { type: "text" });
+               const description = args.skip ? "" : await consola.prompt("Enter a description:", { type: "text" });
                await createRelease(args.version, description, args.draft);
             }
             if (args.amazon) {
