@@ -28,7 +28,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
    const messageRenderInfos = useMemo<MessageRenderInfo[]>(() => calculateMessageRenderInfos(), [props.messages, props.channelId]);
    const scroll = useRef<HTMLOListElement>(null);
-   const previousScrollTop = useRef(0);
+   const previousScrollTop = useRef(-1);
    const itemsHeight = useRef(0);
    const listHasUpdated = useRef(false);
    const shouldScrollOnNextRender = useRef(false);
@@ -76,6 +76,14 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       return value;
    }
 
+   function scrollDown() {
+      if (!scroll.current) {
+         return;
+      }
+
+      scroll.current.scrollTop = scroll.current.scrollHeight - scroll.current.clientHeight;
+   }
+
    function getFullHeight(element?: HTMLLIElement | null) {
       if (!element) {
          return 0;
@@ -91,6 +99,8 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       if (channelScroll.has(props.channelId) && scroll.current) {
          const newScroll = channelScroll.get(props.channelId) ?? 0;
          scroll.current.scrollTop = newScroll;
+      } else {
+         scrollDown();
       }
 
       const unlisten = listenEvent("message_added", d => {
@@ -130,13 +140,12 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
          );
 
          previousHeightDiff = itemsHeight.current - previousHeight;
-
          scroll.current.scrollTop = previousScrollTop.current + (height - previousHeightDiff);
          previousScrollTop.current = -1;
       }
 
       if (shouldScrollOnNextRender.current) {
-         scroll.current.scrollTop = scroll.current.scrollHeight - scroll.current.clientHeight;
+         scrollDown();
          shouldScrollOnNextRender.current = false;
       }
 

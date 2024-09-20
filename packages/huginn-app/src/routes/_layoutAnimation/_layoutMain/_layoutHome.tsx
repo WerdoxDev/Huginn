@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome"
    },
    component: LayoutHome,
    loader: async ({ context: { queryClient, client } }) => {
-      return queryClient.ensureQueryData(getChannelsOptions(client, "@me"));
+      return await queryClient.ensureQueryData(getChannelsOptions(client, "@me"));
    },
    errorComponent: RouteErrorComponent,
    gcTime: 0,

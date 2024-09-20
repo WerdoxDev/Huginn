@@ -23,6 +23,8 @@ router.get(
          ["authorId"],
       );
 
+      // setResponseStatus(event, HttpCode.SERVER_ERROR);
+      // return null;
       setResponseStatus(event, HttpCode.OK);
       return messages;
    }),
