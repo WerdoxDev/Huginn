@@ -88,7 +88,7 @@ const BaseMessage = forwardRef<
             (props.newMinute || props.newDate) && "rounded-t-lg",
             !props.newMinute && "py-0.5",
             (props.nextNewMinute || props.nextNewMinute === undefined) && "rounded-b-lg",
-            props.newMinute && !props.lastNewMinute && !props.newDate && "mt-1.5",
+            props.newMinute && props.lastNewMinute === false && !props.newDate && "mt-1.5",
          )}
       >
          <div className={clsx("flex flex-col items-start gap-y-2 ", !isSelf && "ml-2")}>

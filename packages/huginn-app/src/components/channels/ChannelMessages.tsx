@@ -43,6 +43,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
          if (data.pages.length === 3) {
             data.pages[data.pages.length - 1].forEach(x => {
                removeContent(x.id);
+               removeContent(x.id + "_separator");
             });
          }
 
@@ -65,7 +66,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       const value = props.messages.map((message, i) => {
          const lastMessage = props.messages[i - 1];
 
-         const differentDate = !moment(message.createdAt).isSame(lastMessage?.createdAt, "date");
+         const differentDate = !moment(message.createdAt).isSame(lastMessage?.createdAt, "date") && !!lastMessage;
 
          const differentMinute = !moment(message.createdAt).isSame(lastMessage?.createdAt, "minute");
 
@@ -175,9 +176,6 @@ function MessageRenderer(props: {
    lastRenderInfo?: MessageRenderInfo;
    setContent: (ket: string) => RefObject<HTMLLIElement>;
 }) {
-   useEffect(() => {
-      console.log("RENDER");
-   }, []);
    return (
       <>
          {props.renderInfo.newDate && (
