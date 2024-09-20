@@ -68,7 +68,6 @@ function Login() {
 
    useEffect(() => {
       async function tryLogin() {
-         console.log("TRY LOGIN");
          if (client.readyState === ClientReadyState.INITIALIZING) return;
 
          const refreshToken = localStorage.getItem("refresh-token");
@@ -82,7 +81,6 @@ function Login() {
 
                setUser(client.user);
 
-               console.log("Everything good!");
                await navigate({ to: routeHistory.initialPathname === "/login" ? "/channels/@me" : routeHistory.initialPathname });
             } else {
                unhide();

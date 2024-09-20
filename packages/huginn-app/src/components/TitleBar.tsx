@@ -21,7 +21,6 @@ export default function TitleBar(): ReactPortal {
 
    useEffect(() => {
       if (window.__TAURI_INTERNALS__) {
-         console.log("JA");
          appWindow.current = getCurrentWebviewWindow();
       }
    }, []);

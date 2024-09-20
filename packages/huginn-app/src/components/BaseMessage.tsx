@@ -3,7 +3,7 @@ import { APIMessageUser, MessageFlags, hasFlag } from "@huginn/shared";
 import { tokenize } from "@lib/huginn-tokenizer";
 import clsx from "clsx";
 import moment from "moment";
-import { forwardRef, useCallback, useMemo } from "react";
+import { forwardRef, useCallback, useMemo, useRef } from "react";
 import { Descendant, Node, Path, Range, Text, createEditor } from "slate";
 import { DefaultElement, Editable, RenderElementProps, RenderLeafProps, Slate, withReact } from "slate-react";
 import UserAvatarWithStatus from "./UserAvatarWithStatus";
@@ -28,6 +28,8 @@ const BaseMessage = forwardRef<
    const editor = useMemo(() => withReact(createEditor()), []);
 
    const initialValue = useMemo(() => deserialize(props.content ?? ""), []);
+
+   const lastRanges = useRef<Range[]>();
 
    // const formattedTime = useMemo(() => {
    //    const date = new Date(props.createdAt);
@@ -56,7 +58,11 @@ const BaseMessage = forwardRef<
       return <DefaultElement {...props} />;
    }, []);
 
-   const decorate = useCallback(([node, path]: [Node, Path]) => {
+   function decorate([node, path]: [Node, Path]) {
+      if (lastRanges.current) {
+         return [...lastRanges.current];
+      }
+
       const ranges: Range[] = [];
 
       if (!Text.isText(node)) {
@@ -76,15 +82,17 @@ const BaseMessage = forwardRef<
          skippedCharacters += (token.mark?.length ?? 0) * 2;
       }
 
+      lastRanges.current = ranges;
+
       return ranges;
-   }, []);
+   }
 
    return (
       <li
          ref={ref}
          className={clsx(
             "hover:bg-secondary group select-text p-2",
-            props.newMinute && !props.nextNewMinute && "pb-0.5",
+            props.newMinute && props.nextNewMinute === false && "pb-0.5",
             (props.newMinute || props.newDate) && "rounded-t-lg",
             !props.newMinute && "py-0.5",
             (props.nextNewMinute || props.nextNewMinute === undefined) && "rounded-b-lg",
@@ -109,7 +117,7 @@ const BaseMessage = forwardRef<
                      // onMouseDown={(e) => e.preventDefault()}
                      // onClick={(e) => e.preventDefault()}
                      readOnly
-                     decorate={param => decorate(param)}
+                     decorate={decorate}
                      renderLeaf={renderLeaf}
                      renderElement={renderElement}
                      className={clsx(
@@ -122,6 +130,16 @@ const BaseMessage = forwardRef<
                      // className=""
                   />
                </Slate>
+               {/* <div
+                  className={clsx(
+                     "px-2 py-1 font-normal text-white [overflow-wrap:anywhere]",
+                     isSelf ? "bg-primary" : "bg-background",
+                     props.newMinute && "rounded-tr-md",
+                     (props.nextNewMinute ?? props.nextNewMinute === undefined) && "rounded-bl-md rounded-br-md ",
+                  )}
+               >
+                  {props.content}
+               </div> */}
                {/* {props.content} */}
             </div>
          </div>

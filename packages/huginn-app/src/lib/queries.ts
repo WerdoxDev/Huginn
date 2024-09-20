@@ -17,10 +17,10 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
       queryKey: ["messages", channelId],
       initialPageParam: { before: "", after: "" },
       queryFn: ({ pageParam }) =>
-         client.channels.getMessages(channelId, 20, pageParam.before.toString() || undefined, pageParam.after.toString() || undefined),
+         client.channels.getMessages(channelId, 50, pageParam.before.toString() || undefined, pageParam.after.toString() || undefined),
       getPreviousPageParam(first) {
          const earliestMessage = first[0];
-         return earliestMessage && first.length >= 20 ? { before: earliestMessage.id, after: "" } : undefined;
+         return earliestMessage && first.length >= 50 ? { before: earliestMessage.id, after: "" } : undefined;
       },
       getNextPageParam(last) {
          const channels: APIGetUserChannelsResult | undefined = queryClient.getQueryData(["channels", "@me"]);

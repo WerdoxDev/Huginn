@@ -47,9 +47,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
             });
          }
 
-         listHasUpdated.current = false;
-         await fetchPreviousPage();
-         previousScrollTop.current = scroll.current.scrollTop;
+         await fetchPrevious();
          // Scrolling down
       } else if (
          scroll.current.scrollHeight - scroll.current.clientHeight - scroll.current.scrollTop <= bottomScrollOffset &&
@@ -60,6 +58,16 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
          listHasUpdated.current = false;
          await fetchNextPage();
       }
+   }
+
+   async function fetchPrevious() {
+      if (!scroll.current) {
+         return;
+      }
+
+      listHasUpdated.current = false;
+      await fetchPreviousPage();
+      previousScrollTop.current = scroll.current.scrollTop;
    }
 
    function calculateMessageRenderInfos(): MessageRenderInfo[] {
@@ -92,10 +100,22 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       const styles = getComputedStyle(element);
       const margin = parseFloat(styles.marginTop) + parseFloat(styles.marginBottom);
 
-      return Math.ceil(element.offsetHeight + margin);
+      return element.offsetHeight + margin;
+   }
+
+   async function checkForExtraSpace() {
+      if (!scroll.current) {
+         return;
+      }
+
+      if (scroll.current.scrollHeight === scroll.current.clientHeight && !isFetchingPreviousPage) {
+         await fetchPrevious();
+      }
    }
 
    useEffect(() => {
+      checkForExtraSpace();
+
       if (channelScroll.has(props.channelId) && scroll.current) {
          const newScroll = channelScroll.get(props.channelId) ?? 0;
          scroll.current.scrollTop = newScroll;
@@ -131,13 +151,10 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
          let previousHeight = 0;
          let previousHeightDiff = 0;
 
-         data.pages.slice(1)?.forEach(x =>
-            x.forEach(y => {
-               const elementHeight =
-                  getFullHeight(getContent(y.id)?.current) + getFullHeight(getContent(y.id + "_separator")?.current);
-               previousHeight += elementHeight;
-            }),
-         );
+         data.pages[1].forEach(x => {
+            const elementHeight = getFullHeight(getContent(x.id)?.current) + getFullHeight(getContent(x.id + "_separator")?.current);
+            previousHeight += elementHeight;
+         });
 
          previousHeightDiff = itemsHeight.current - previousHeight;
          scroll.current.scrollTop = previousScrollTop.current + (height - previousHeightDiff);
