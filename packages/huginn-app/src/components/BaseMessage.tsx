@@ -8,26 +8,30 @@ import { Descendant, Node, Path, Range, Text, createEditor } from "slate";
 import { DefaultElement, Editable, RenderElementProps, RenderLeafProps, Slate, withReact } from "slate-react";
 import UserAvatarWithStatus from "./UserAvatarWithStatus";
 import MessageLeaf from "./editor/MessageLeaf";
+import { MessageRenderInfo } from "@/types";
 
 const BaseMessage = forwardRef<
    HTMLLIElement,
    {
-      content?: string;
-      author: APIMessageUser;
-      createdAt: string;
-      flags?: MessageFlags | null;
-      newMinute?: boolean;
-      lastNewMinute?: boolean;
-      nextNewMinute?: boolean;
-      newDate?: boolean;
+      renderInfo: MessageRenderInfo;
+      nextRenderInfo?: MessageRenderInfo;
+      lastRenderInfo?: MessageRenderInfo;
    }
 >(function (props, ref) {
    const { user } = useUser();
 
-   const isSelf = useMemo(() => props.author.id === user?.id, [props.author]);
+   const isSelf = useMemo(() => props.renderInfo.message.author.id === user?.id, [props.renderInfo.message.author]);
    const editor = useMemo(() => withReact(createEditor()), []);
 
-   const initialValue = useMemo(() => deserialize(props.content ?? ""), []);
+   const initialValue = useMemo(() => deserialize(props.renderInfo.message.content ?? ""), []);
+   const newAuthor = useMemo(
+      () => props.renderInfo.message.author.id !== props.lastRenderInfo?.message.author.id,
+      [props.renderInfo, props.lastRenderInfo],
+   );
+   const nextNewAuthor = useMemo(
+      () => props.renderInfo.message.author.id !== props.nextRenderInfo?.message.author.id,
+      [props.renderInfo, props.nextRenderInfo],
+   );
 
    const lastRanges = useRef<Range[]>();
 
@@ -44,7 +48,10 @@ const BaseMessage = forwardRef<
    //    return `${day}.${month}.${year} ${hours}:${minutes}`;
    // }, [props.createdAt]);
 
-   const formattedTime = useMemo(() => moment(props.createdAt).format("DD.MM.YYYY HH:mm"), [props.createdAt]);
+   const formattedTime = useMemo(
+      () => moment(props.renderInfo.message.createdAt).format("DD.MM.YYYY HH:mm"),
+      [props.renderInfo.message.createdAt],
+   );
 
    function deserialize(content: string): Descendant[] {
       return content.split("\n").map(line => ({ type: "paragraph", children: [{ text: line }] }));
@@ -92,19 +99,28 @@ const BaseMessage = forwardRef<
          ref={ref}
          className={clsx(
             "hover:bg-secondary group select-text p-2",
-            props.newMinute && props.nextNewMinute === false && "pb-0.5",
-            (props.newMinute || props.newDate) && "rounded-t-lg",
-            !props.newMinute && "py-0.5",
-            (props.nextNewMinute || props.nextNewMinute === undefined) && "rounded-b-lg",
-            props.newMinute && props.lastNewMinute === false && !props.newDate && "mt-1.5",
+            (!nextNewAuthor || props.renderInfo.newMinute) && props.nextRenderInfo?.newMinute === false && "pb-0.5",
+            (newAuthor || props.renderInfo.newMinute || props.renderInfo.newDate) && "rounded-t-lg",
+            !newAuthor && !props.renderInfo.newMinute && "py-0.5",
+            (nextNewAuthor || props.nextRenderInfo?.newMinute || props.nextRenderInfo?.newMinute === undefined) && "rounded-b-lg",
+            ((newAuthor && props.lastRenderInfo !== undefined) ||
+               (props.renderInfo.newMinute && props.lastRenderInfo?.newMinute === false && !props.renderInfo.newDate)) &&
+               "mt-1.5",
          )}
       >
          <div className={clsx("flex flex-col items-start gap-y-2 ", !isSelf && "ml-2")}>
-            {props.newMinute && (
+            {(props.renderInfo.newMinute || newAuthor) && (
                <div className="flex items-center gap-x-2 overflow-hidden">
-                  <UserAvatarWithStatus userId={props.author.id} avatarHash={props.author.avatar} statusSize="0.5rem" size="1.75rem" />
-                  <div className="text-text text-sm">{isSelf ? "You" : (props.author.displayName ?? props.author.username)}</div>
-                  {props.flags && hasFlag(props.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
+                  <UserAvatarWithStatus
+                     userId={props.renderInfo.message.author.id}
+                     avatarHash={props.renderInfo.message.author.avatar}
+                     statusSize="0.5rem"
+                     size="1.75rem"
+                  />
+                  <div className="text-text text-sm">
+                     {isSelf ? "You" : (props.renderInfo.message.author.displayName ?? props.renderInfo.message.author.username)}
+                  </div>
+                  {props.renderInfo.message.flags && hasFlag(props.renderInfo.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
                      <IconMdiNotificationsOff className="text-text size-4" />
                   ) : null}
                   <div className="text-text/50 text-xs">{formattedTime}</div>
@@ -123,8 +139,9 @@ const BaseMessage = forwardRef<
                      className={clsx(
                         "px-2 py-1 font-normal text-white [overflow-wrap:anywhere]",
                         isSelf ? "bg-primary" : "bg-background",
-                        props.newMinute && "rounded-tr-md",
-                        (props.nextNewMinute ?? props.nextNewMinute === undefined) && "rounded-bl-md rounded-br-md ",
+                        (newAuthor || props.renderInfo.newMinute) && "rounded-tr-md",
+                        (nextNewAuthor || props.nextRenderInfo?.newMinute || props.nextRenderInfo?.newMinute === undefined) &&
+                           "rounded-bl-md rounded-br-md ",
                      )}
                      disableDefaultStyles
                      // className=""

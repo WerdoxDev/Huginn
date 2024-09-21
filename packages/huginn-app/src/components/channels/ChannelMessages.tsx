@@ -151,7 +151,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
          let previousHeight = 0;
          let previousHeightDiff = 0;
 
-         data.pages[1].forEach(x => {
+         data.pages[1]?.forEach(x => {
             const elementHeight = getFullHeight(getContent(x.id)?.current) + getFullHeight(getContent(x.id + "_separator")?.current);
             previousHeight += elementHeight;
          });
@@ -213,15 +213,10 @@ function MessageRenderer(props: {
             </li>
          )}
          <BaseMessage
-            newDate={props.renderInfo.newDate}
-            newMinute={props.renderInfo.newMinute}
-            lastNewMinute={props.lastRenderInfo?.newMinute}
-            nextNewMinute={props.nextRenderInfo?.newMinute}
+            renderInfo={props.renderInfo}
+            nextRenderInfo={props.nextRenderInfo}
+            lastRenderInfo={props.lastRenderInfo}
             ref={props.setContent(props.message.id)}
-            content={props.message.content}
-            createdAt={props.message.createdAt as unknown as string}
-            author={props.message.author}
-            flags={props.message.flags}
          />
       </>
    );
