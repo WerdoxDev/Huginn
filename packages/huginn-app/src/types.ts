@@ -43,7 +43,8 @@ export type MessageDetail = {
 export type HuginnInputProps = {
    children?: ReactNode;
    className?: string;
-   inputProps?: React.HTMLProps<HTMLDivElement>;
+   wrapperClassName?: string;
+   inputClassName?: string;
    status: InputStatus;
    type?: HTMLInputTypeAttribute;
    required?: boolean;

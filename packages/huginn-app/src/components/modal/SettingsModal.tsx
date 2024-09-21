@@ -63,7 +63,6 @@ export default function SettingsModal() {
          setSettingsValid(true);
       } else {
          if (
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
             (modifiedSettings.current?.serverAddress && settings.serverAddress !== modifiedSettings.current.serverAddress) ||
             (modifiedSettings.current?.cdnAddress && settings.cdnAddress !== modifiedSettings.current.cdnAddress)
          ) {

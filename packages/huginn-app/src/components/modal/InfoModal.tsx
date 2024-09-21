@@ -1,10 +1,9 @@
 import HuginnButton from "@components/button/HuginnButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import { useModals, useModalsDispatch } from "@contexts/modalContext";
-import { Description, Dialog, DialogPanel, DialogTitle, TransitionChild } from "@headlessui/react";
+import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
 import clsx from "clsx";
 import { useMemo } from "react";
-import ModalBackground from "./ModalBackground";
 import BaseModal from "./BaseModal";
 
 export default function InfoModal() {

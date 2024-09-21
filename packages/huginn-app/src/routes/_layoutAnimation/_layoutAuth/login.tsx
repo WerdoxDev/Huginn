@@ -111,7 +111,7 @@ function Login() {
       <AuthWrapper hidden={hidden} onSubmit={login}>
          <div className="flex w-full select-none flex-col items-center">
             <h1 className="text-text mb-2 text-2xl font-medium">Welcome back!</h1>
-            <div className=" text-text/70">It's very good to see you again!</div>
+            <div className="text-text/70">It's very good to see you again!</div>
          </div>
          <div className="mt-5 w-full">
             <HuginnInput className="mb-5 [&_input]:lowercase" {...inputsProps.login}>

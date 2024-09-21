@@ -33,7 +33,6 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
    }, [values]);
 
    function onFlavourChange(value: DropboxItem) {
-      console.log(props.settings.flavour, "PROPS");
       if (props.settings.flavour !== value.value) {
          dispatch({
             info: {
@@ -55,7 +54,6 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
                   cancel: {
                      text: "Cancel",
                      callback: () => {
-                        console.log(props.settings.flavour);
                         setSelectedFlavour(flavourItems.find(x => x.value === props.settings.flavour) ?? flavourItems[0]);
                         dispatch({ info: { isOpen: false } });
                      },

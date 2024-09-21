@@ -9,6 +9,7 @@ import ReactDOM from "react-dom/client";
 import HuginnRouterProvider from "./HuginnRouterProvider";
 import "./index.css";
 import { routeTree } from "./routeTree.gen";
+import React from "react";
 
 const queryClient = new QueryClient({
    defaultOptions: { queries: { refetchOnReconnect: false, refetchOnWindowFocus: false, refetchOnMount: false, staleTime: 60000 } },
@@ -29,17 +30,18 @@ export const router = createRouter({
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 ReactDOM.createRoot(document.getElementById("root")!).render(
-   // <React.StrictMode>
-   <QueryClientProvider client={queryClient}>
-      <EventProvider>
-         <SettingsProvider>
-            <APIProvider>
-               <WindowProvider>
-                  <HuginnRouterProvider router={router} />
-               </WindowProvider>
-            </APIProvider>
-         </SettingsProvider>
-      </EventProvider>
-   </QueryClientProvider>,
-   // </React.StrictMode>,
+   <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+         <EventProvider>
+            <SettingsProvider>
+               <APIProvider>
+                  <WindowProvider>
+                     <HuginnRouterProvider router={router} />
+                  </WindowProvider>
+               </APIProvider>
+            </SettingsProvider>
+         </EventProvider>
+      </QueryClientProvider>
+      ,
+   </React.StrictMode>,
 );

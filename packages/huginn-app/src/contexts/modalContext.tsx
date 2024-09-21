@@ -24,12 +24,14 @@ export type ModalContextType = {
    imageCrop: DefaultModal & {
       originalImageData: string;
    };
+   createDM: DefaultModal;
 };
 
 const defautlValue: ModalContextType = {
    settings: { isOpen: false },
    info: { isOpen: false, status: "none", title: "", text: "", closable: true },
    imageCrop: { isOpen: false, originalImageData: "" },
+   createDM: { isOpen: false },
 };
 
 const ModalContext = createContext<ModalContextType>(defautlValue);
@@ -46,21 +48,12 @@ export function ModalProvider(props: { children?: ReactNode }) {
 }
 
 function modalsReducer(modals: ModalContextType, action: DeepPartial<ModalContextType>): ModalContextType {
-   let settings = modals.settings;
-   let info = modals.info;
-   let imageCrop = modals.imageCrop;
+   const settings = action.settings ? Object.assign({}, modals.settings, action.settings) : modals.settings;
+   const info = action.info ? Object.assign({}, modals.info, action.info) : modals.info;
+   const imageCrop = action.imageCrop ? Object.assign({}, modals.imageCrop, action.imageCrop) : modals.imageCrop;
+   const createDM = action.createDM ? Object.assign({}, modals.createDM, action.createDM) : modals.createDM;
 
-   if (action.settings) {
-      settings = Object.assign({}, modals.settings, action.settings);
-   }
-   if (action.info) {
-      info = Object.assign({}, modals.info, action.info);
-   }
-   if (action.imageCrop) {
-      imageCrop = Object.assign({}, modals.imageCrop, action.imageCrop);
-   }
-
-   return { settings, info, imageCrop };
+   return { settings, info, imageCrop, createDM };
 }
 
 export function useModals() {

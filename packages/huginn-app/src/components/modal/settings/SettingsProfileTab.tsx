@@ -178,17 +178,17 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
                   onFocus={focused => {
                      onFocusChanged(focused);
                   }}
-                  inputProps={{ className: "!bg-background" }}
+                  wrapperClassName="!bg-background"
                >
                   <HuginnInput.Label>Username</HuginnInput.Label>
                   <HuginnInput.After>
                      <AnimatedMessage className="mt-1" {...usernameMessageDetail} />
                   </HuginnInput.After>
                </HuginnInput>
-               <HuginnInput placeholder={user?.username} {...inputsProps.displayName} inputProps={{ className: "!bg-background" }}>
+               <HuginnInput placeholder={user?.username} {...inputsProps.displayName} wrapperClassName="!bg-background">
                   <HuginnInput.Label>Display name</HuginnInput.Label>
                </HuginnInput>
-               <PasswordInput {...inputsProps.password} inputProps={{ className: "!bg-background" }} hideButton>
+               <PasswordInput {...inputsProps.password} wrapperClassName="!bg-background" hideButton>
                   <HuginnInput.Label>Current Password</HuginnInput.Label>
                </PasswordInput>
             </div>
