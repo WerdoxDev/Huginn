@@ -1,7 +1,7 @@
 import { ChannelsContextMenu } from "@components/contextmenu/ChannelsContextMenu";
 import RelationshipContextMenu from "@components/contextmenu/RelationshipContextMenu";
 import RelationshipMoreContextMenu from "@components/contextmenu/RelationshipMoreContextMenu";
-import { CreateDMModal } from "@components/modal/CreateDMModal";
+import { CreateGroupModal } from "@components/modal/CreateGroupModal";
 import ImageCropModal from "@components/modal/ImageCropModal";
 import InfoModal from "@components/modal/InfoModal";
 import SettingsModal from "@components/modal/SettingsModal";
@@ -20,17 +20,19 @@ import { Outlet, createRootRouteWithContext, useRouter } from "@tanstack/react-r
 import "@tauri-apps/api";
 import { UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { PostHog } from "posthog-js";
 import { useEffect, useRef } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
 export type HuginnRouterContext = {
    queryClient: QueryClient;
    client: ReturnType<typeof useClient>;
+   posthog: PostHog;
 };
 
 export const Route = createRootRouteWithContext<HuginnRouterContext>()({
-   beforeLoad({ context: { client } }) {
-      setup(client);
+   beforeLoad({ context: { client, posthog } }) {
+      setup(client, posthog);
    },
    component: Root,
 });
@@ -65,7 +67,7 @@ function Root() {
                         {appWindow.environment === "desktop" && <AppMaximizedEvent />}
                         <ErrorBoundary FallbackComponent={ModalErrorComponent}>
                            <SettingsModal />
-                           <CreateDMModal />
+                           <CreateGroupModal />
                            <ImageCropModal />
                            <ChannelsContextMenu />
                            <RelationshipMoreContextMenu />

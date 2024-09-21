@@ -3,7 +3,7 @@ import { Snowflake } from "@huginn/shared";
 import { getUserAvatar } from "@lib/queries";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function UserAvatarWithStatus(props: {
    userId: Snowflake;
@@ -17,6 +17,10 @@ export default function UserAvatarWithStatus(props: {
    const { data: avatar } = useQuery(getUserAvatar(props.userId, props.avatarHash, client));
 
    const [hasErrors, setHasErrors] = useState(false);
+
+   useEffect(() => {
+      setHasErrors(false);
+   }, [avatar]);
 
    const { size = "2.25rem", statusSize = "0.75rem", className } = props;
    return (

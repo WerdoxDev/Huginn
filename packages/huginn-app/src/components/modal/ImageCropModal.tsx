@@ -1,14 +1,16 @@
 import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { DialogPanel } from "@headlessui/react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import HuginnButton from "@components/button/HuginnButton";
 import { useEvent } from "@contexts/eventContext";
 import "cropperjs/dist/cropper.css";
 import Cropper, { ReactCropperElement } from "react-cropper";
 import BaseModal from "./BaseModal";
+import { usePostHog } from "posthog-js/react";
 
 export default function ImageCropModal() {
    const { imageCrop: modal } = useModals();
+   const posthog = usePostHog();
    const modalsDispatch = useModalsDispatch();
    const cropperRef = useRef<ReactCropperElement>(null);
    const { dispatchEvent } = useEvent();
@@ -22,6 +24,14 @@ export default function ImageCropModal() {
          modalsDispatch({ imageCrop: { isOpen: false } });
       }
    }
+
+   useEffect(() => {
+      if (modal.isOpen) {
+         posthog.capture("image_crop_modal_opened");
+      } else {
+         posthog.capture("image_crop_modal_closed");
+      }
+   }, [modal.isOpen]);
 
    return (
       <BaseModal modal={modal} onClose={() => modalsDispatch({ imageCrop: { isOpen: false } })}>

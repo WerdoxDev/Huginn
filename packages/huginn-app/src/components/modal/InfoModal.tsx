@@ -3,12 +3,14 @@ import ModalCloseButton from "@components/button/ModalCloseButton";
 import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
 import clsx from "clsx";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import BaseModal from "./BaseModal";
+import { usePostHog } from "posthog-js/react";
 
 export default function InfoModal() {
    const { info: modal } = useModals();
    const dispatch = useModalsDispatch();
+   const posthog = usePostHog();
 
    const backgroundColor = useMemo(
       () =>
@@ -39,6 +41,14 @@ export default function InfoModal() {
    const formattedText = useMemo(() => {
       return modal.text.replace(/\([A-Za-z0-9]+\)/g, "");
    }, [modal.text]);
+
+   useEffect(() => {
+      if (modal.isOpen) {
+         posthog.capture("info_modal_opened", { title: modal.title, text: modal.text, status: modal.status });
+      } else {
+         posthog.capture("info_modal_closed");
+      }
+   }, [modal.isOpen]);
 
    return (
       <BaseModal

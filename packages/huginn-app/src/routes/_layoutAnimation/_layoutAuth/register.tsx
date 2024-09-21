@@ -14,6 +14,7 @@ import useUniqueUsernameMessage from "@hooks/useUniqueUsernameMessage";
 import { APIPostRegisterJSONBody } from "@huginn/shared";
 import { requireNotAuth } from "@lib/middlewares";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { usePostHog } from "posthog-js/react";
 import { useContext, useEffect, useState } from "react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/register")({
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/register")({
 
 function Register() {
    const client = useClient();
+   const posthog = usePostHog();
    const { inputsProps, values, resetStatuses, handleErrors, validateValues } = useInputs([
       { name: "email", required: true },
       { name: "displayName", required: false },
@@ -53,6 +55,9 @@ function Register() {
             client.gateway.connect();
 
             setUser(client.user);
+
+            posthog.identify(client.user?.id, { username: client.user?.username, displayName: client.user?.displayName });
+            posthog.capture("registered");
          },
          async onSuccess() {
             setAuthBackgroundState(1);

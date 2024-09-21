@@ -10,6 +10,7 @@ import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
+import { usePostHog } from "posthog-js/react";
 
 const tabs: SettingsTab[] = [
    {
@@ -45,6 +46,7 @@ function useFlatTabs() {
 
 export default function SettingsModal() {
    const { settings: modal } = useModals();
+   const posthog = usePostHog();
 
    const dispatch = useModalsDispatch();
 
@@ -61,6 +63,7 @@ export default function SettingsModal() {
          modifiedSettings.current = { ...settings };
          setCurrentTab(flatTabs[defaultTabIndex]?.text ?? "");
          setSettingsValid(true);
+         posthog.capture("settings_modal_opened");
       } else {
          if (
             (modifiedSettings.current?.serverAddress && settings.serverAddress !== modifiedSettings.current.serverAddress) ||
@@ -95,6 +98,8 @@ export default function SettingsModal() {
          } else {
             onSave();
          }
+
+         posthog.capture("settings_modal_closed");
       }
    }, [modal.isOpen]);
 

@@ -27,7 +27,7 @@ function Component() {
                </div>
             </div>
             <div className="flex gap-2">
-               <QuickActionButton onClick={() => dispatch({ createDM: { isOpen: true } })}>Create a Group</QuickActionButton>
+               <QuickActionButton onClick={() => dispatch({ createGroup: { isOpen: true } })}>Create a Group</QuickActionButton>
                <QuickActionButton>Add a Friend</QuickActionButton>
             </div>
          </div>

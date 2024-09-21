@@ -5,10 +5,12 @@ import { APIDMChannel, APIGroupDMChannel } from "@huginn/shared";
 import { Snowflake } from "@huginn/shared";
 import { QueryClient } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
+import { PostHog } from "posthog-js";
 
-export function setup(client: HuginnClient) {
+export function setup(client: HuginnClient, posthog: PostHog) {
    const pathname = router.state.location.pathname;
    if (!routeHistory.initialPathname) routeHistory.initialPathname = pathname;
+   posthog.capture("$pageview", { $current_url: window.origin + pathname });
 
    if (pathname === "/splashscreen") {
       return;

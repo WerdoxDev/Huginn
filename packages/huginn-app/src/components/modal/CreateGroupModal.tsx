@@ -7,13 +7,15 @@ import { Checkbox, Description, DialogPanel, DialogTitle } from "@headlessui/rea
 import { RelationshipType, Snowflake } from "@huginn/shared";
 import { getRelationshipsOptions } from "@lib/queries";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BaseModal from "./BaseModal";
+import { usePostHog } from "posthog-js/react";
 
-export function CreateDMModal() {
-   const modal = useModals().createDM;
+export function CreateGroupModal() {
+   const { createGroup: modal } = useModals();
    const dispatch = useModalsDispatch();
    const client = useClient();
+   const posthog = usePostHog();
    const { data } = useQuery(getRelationshipsOptions(client));
 
    const [selectedUsers, setSelectedUsers] = useState<Snowflake[]>([]);
@@ -32,8 +34,16 @@ export function CreateDMModal() {
 
    function close() {
       setSelectedUsers([]);
-      dispatch({ createDM: { isOpen: false } });
+      dispatch({ createGroup: { isOpen: false } });
    }
+
+   useEffect(() => {
+      if (modal.isOpen) {
+         posthog.capture("create_group_modal_opened");
+      } else {
+         posthog.capture("create_group_modal_closed");
+      }
+   }, [modal.isOpen]);
 
    if (!data) {
       return;

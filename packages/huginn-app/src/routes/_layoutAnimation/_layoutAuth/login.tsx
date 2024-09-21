@@ -16,6 +16,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useContext, useEffect, useState } from "react";
 import RouteErrorComponent from "@components/RouteErrorComponent";
 import { useUser } from "@contexts/userContext";
+import { usePostHog } from "posthog-js/react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/login")({
    beforeLoad({ context: { client } }) {
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/login")({
 });
 
 function Login() {
+   const posthog = usePostHog();
    const client = useClient();
    const { inputsProps, values, resetStatuses, handleErrors } = useInputs([
       { name: "login", required: true, default: "test" },
@@ -52,6 +54,9 @@ function Login() {
             client.gateway.connect();
 
             setUser(client.user);
+
+            posthog.identify(client.user?.id, { username: client.user?.username, displayName: client.user?.displayName });
+            posthog?.capture("logged_in", null);
          },
          async onSuccess() {
             setAuthBackgroundState(1);
@@ -80,6 +85,9 @@ function Login() {
                client.gateway.connect();
 
                setUser(client.user);
+
+               posthog.identify(client.user?.id, { username: client.user?.username, displayName: client.user?.displayName });
+               posthog?.capture("logged_in_with_token");
 
                await navigate({ to: routeHistory.initialPathname === "/login" ? "/channels/@me" : routeHistory.initialPathname });
             } else {
