@@ -31,10 +31,13 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
 
    function onPublicUserUpdated(newUser: GatewayPublicUserUpdateData) {
       queryClient.setQueryData<APIGetUserRelationshipsResult>(["relationships"], old =>
-         old?.map(relationship => ({
-            ...relationship,
-            user: omit(newUser, ["system"]),
-         })),
+         old?.map(relationship =>
+            relationship.user.id === newUser.id
+               ? { ...relationship, user: omit(newUser, ["system"]) }
+               : {
+                    ...relationship,
+                 },
+         ),
       );
    }
 

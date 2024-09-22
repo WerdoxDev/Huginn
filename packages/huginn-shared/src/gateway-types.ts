@@ -1,3 +1,4 @@
+import { DirectChannel } from "./api-types";
 import {
    APIDMChannel,
    APIGroupDMChannel,
@@ -129,7 +130,7 @@ type GatewayMessageEventExtraFields = {
 };
 
 export type GatewayRelationshipCreateData = APIRelationshipWithoutOwner;
-export type GatewayDMChannelCreateData = APIDMChannel | APIGroupDMChannel;
-export type GatewayDMChannelDeleteData = APIDMChannel | APIGroupDMChannel;
+export type GatewayDMChannelCreateData = DirectChannel;
+export type GatewayDMChannelDeleteData =DirectChannel;
 export type GatewayUserUpdateData = APIUser & Tokens;
 export type GatewayPublicUserUpdateData = Omit<APIUser, "email" | "password">;

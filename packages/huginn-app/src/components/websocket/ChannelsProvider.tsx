@@ -1,5 +1,5 @@
 import { useClient } from "@contexts/apiContext";
-import { APIGetUserChannelsResult, GatewayDMChannelCreateData, GatewayPublicUserUpdateData, omit } from "@huginn/shared";
+import { APIGetUserChannelsResult, ChannelType, GatewayDMChannelCreateData, GatewayPublicUserUpdateData, omit } from "@huginn/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { ReactNode, useEffect } from "react";
@@ -28,7 +28,9 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
       queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], old =>
          old?.map(channel => ({
             ...channel,
-            recipients: channel.recipients.map(recipient => (recipient.id === newUser.id ? omit(newUser, ["system"]) : recipient)),
+            recipients: channel.recipients.map(recipient =>
+               recipient.id === newUser.id && channel.type === ChannelType.DM ? omit(newUser, ["system"]) : recipient,
+            ),
          })),
       );
    }

@@ -181,7 +181,7 @@ export type APIPostDMChannelResult = DirectChannel;
 
 export type APIDeleteDMChannelResult = DirectChannel;
 
-export type APIGetUserChannelsResult = (DirectChannel)[];
+export type APIGetUserChannelsResult = DirectChannel[];
 //#endregion
 
 //#region MESSAGE
