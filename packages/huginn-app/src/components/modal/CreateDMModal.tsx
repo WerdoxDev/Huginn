@@ -1,27 +1,32 @@
 import HuginnButton from "@components/button/HuginnButton";
+import { ComboboxInput } from "@components/input/ComboboxInput";
 import HuginnInput from "@components/input/HuginnInput";
 import UserAvatarWithStatus from "@components/UserAvatarWithStatus";
 import { useClient } from "@contexts/apiContext";
 import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { Checkbox, Description, DialogPanel, DialogTitle } from "@headlessui/react";
+import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
+import { useChannelName } from "@hooks/useChannelName";
+import { useInputs } from "@hooks/useInputs";
 import { RelationshipType, Snowflake } from "@huginn/shared";
 import { getRelationshipsOptions } from "@lib/queries";
 import { useQuery } from "@tanstack/react-query";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useState } from "react";
 import BaseModal from "./BaseModal";
-import { ComboboxInput } from "@components/input/ComboboxInput";
 
-export function CreateGroupModal() {
-   const { createGroup: modal } = useModals();
+export function CreateDMModal() {
+   const { createDM: modal } = useModals();
    const dispatch = useModalsDispatch();
    const client = useClient();
+   const mutation = useCreateDMChannel();
 
    const posthog = usePostHog();
    const { data } = useQuery(getRelationshipsOptions(client));
 
    const [selectedUsers, setSelectedUsers] = useState<Snowflake[]>([]);
    const [query, setQuery] = useState("");
+   const { inputsProps, setInputValue, values } = useInputs([{ name: "groupName", required: false }]);
 
    const filteredUsers = useMemo(
       () =>
@@ -39,10 +44,7 @@ export function CreateGroupModal() {
       [data, selectedUsers],
    );
 
-   function close() {
-      setSelectedUsers([]);
-      dispatch({ createGroup: { isOpen: false } });
-   }
+   const placeholderName = useChannelName(selectedUsersDisplay, null);
 
    useEffect(() => {
       if (modal.isOpen) {
@@ -52,15 +54,41 @@ export function CreateGroupModal() {
       }
    }, [modal.isOpen]);
 
+   useEffect(() => {
+      if (selectedUsers.length < 2) {
+         setInputValue("groupName", "");
+      }
+   }, [selectedUsers]);
+
+   function close() {
+      dispatch({ createDM: { isOpen: false } });
+      setSelectedUsers([]);
+      setQuery("");
+   }
+
+   async function findOrCreate() {
+      await mutation.mutateAsync({ recipients: selectedUsers, name: values.groupName.value });
+      dispatch({ createDM: { isOpen: false } });
+      setSelectedUsers([]);
+      setQuery("");
+   }
+
    return (
       <BaseModal modal={modal} onClose={close}>
          <DialogPanel className="bg-background border-primary w-full max-w-sm transform overflow-hidden rounded-xl border-2 p-5 transition-[opacity_transform] data-[closed]:scale-95">
             <DialogTitle className="flex items-center justify-center gap-x-1.5">
-               <div className="text-text text-2xl font-medium">Create Group</div>
+               <div className="text-text text-2xl font-medium">Create Direct Message</div>
             </DialogTitle>
-            <Description className="text-text/70 mx-5 mt-1 text-center">Select your fellow warriors to share a tale with!</Description>
+            <Description className="text-text/70 mx-5 mt-1 text-center">
+               Select your fellow warrior(s) to share a tale with!
+            </Description>
             <div className="mt-5 flex flex-col gap-y-5">
-               <HuginnInput status={{ code: "none", text: "" }}>
+               <HuginnInput
+                  {...inputsProps.groupName}
+                  status={{ code: "none", text: "" }}
+                  placeholder={selectedUsers.length > 1 ? placeholderName : "Select 2 or more members"}
+                  disabled={selectedUsers.length < 2}
+               >
                   <HuginnInput.Label className="mb-2" text="Group Name" />
                   <HuginnInput.Wrapper>
                      <HuginnInput.Input />
@@ -150,7 +178,9 @@ export function CreateGroupModal() {
                      </div>
                   </ComboboxOptions>
                </Combobox> */}
-               <HuginnButton className="bg-primary py-2">Find or Create</HuginnButton>
+               <HuginnButton className="bg-primary py-2" onClick={findOrCreate}>
+                  Find or Create
+               </HuginnButton>
             </div>
          </DialogPanel>
       </BaseModal>

@@ -145,3 +145,14 @@ export function generateRandomString(n: number): string {
 }
 
 export type Unpacked<T> = T extends (infer U)[] ? U : T;
+
+export type Merge<A, B> = {
+   // Shared properties between A and B (retain their types)
+   [K in keyof A & keyof B]: A[K];
+} & {
+   // Unique properties in A (nullable or undefined)
+   [K in Exclude<keyof A, keyof B>]?: A[K] | null;
+} & {
+   // Unique properties in B (nullable or undefined)
+   [K in Exclude<keyof B, keyof A>]?: B[K] | null;
+};

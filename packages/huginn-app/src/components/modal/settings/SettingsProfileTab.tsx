@@ -26,7 +26,13 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 
    const { data: originalAvatar } = useQuery(getUserAvatar(user?.id, user?.avatar, client));
 
-   const { inputsProps, values, handleErrors, resetStatuses, onValueChanged } = useInputs([
+   const {
+      inputsProps,
+      values,
+      handleErrors,
+      resetStatuses,
+      setInputValue: onValueChanged,
+   } = useInputs([
       { name: "username", required: true, default: user?.username },
       { name: "displayName", required: false, default: user?.displayName },
       { name: "password", required: false },

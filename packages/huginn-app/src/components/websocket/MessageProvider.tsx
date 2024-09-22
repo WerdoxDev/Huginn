@@ -22,7 +22,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
       //TODO: Notification stuff goes here
 
       if (!thisChannel) {
-         mutation.mutate({ userId: d.author.id, skipNavigation: true });
+         mutation.mutate({ recipients: [d.author.id], skipNavigation: true });
          return;
       }
 

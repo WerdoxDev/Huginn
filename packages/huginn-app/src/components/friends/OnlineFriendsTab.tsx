@@ -16,7 +16,7 @@ export default function OnlineFriendsTab(props: { friends: APIRelationshipWithou
          <div className="mt-5 flex flex-col justify-center gap-y-1">
             {onlineFriends?.map(friend => (
                <FriendItem
-                  onMessage={userId => mutation.mutateAsync({ userId })}
+                  onMessage={userId => mutation.mutateAsync({ recipients: [userId] })}
                   key={friend.id}
                   user={friend.user}
                   type={friend.type}

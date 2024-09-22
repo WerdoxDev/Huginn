@@ -42,7 +42,12 @@ const channelExtention = Prisma.defineExtension({
             assertObj("getUserChannels", channels, DBErrorType.NULL_CHANNEL);
             return channels as ChannelPayload<Include>[];
          },
-         async createDM<Include extends ChannelInclude>(initiatorId: Snowflake, recipients: Snowflake[], include?: Include) {
+         async createDM<Include extends ChannelInclude>(
+            initiatorId: Snowflake,
+            recipients: Snowflake[],
+            name?: string,
+            include?: Include,
+         ) {
             await prisma.user.assertUserExists("createDM", initiatorId);
 
             for (const recipientId of recipients) {
@@ -83,7 +88,7 @@ const channelExtention = Prisma.defineExtension({
                   data: {
                      id: snowflake.generate(),
                      type: ChannelType.GROUP_DM,
-                     name: null,
+                     name: name ? name : null,
                      icon: null,
                      lastMessageId: null,
                      ownerId: BigInt(initiatorId),

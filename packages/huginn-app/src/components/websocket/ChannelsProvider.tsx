@@ -14,7 +14,6 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
       queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], data =>
          data && !data.some(x => x.id === d.id) ? [d, ...data] : data,
       );
-      console.log(d);
    }
 
    function onChannelDeleted(d: GatewayDMChannelCreateData) {
@@ -23,7 +22,6 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
       }
 
       queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], data => data?.filter(x => x.id !== d.id));
-      console.log(d);
    }
 
    function onPublicUserUpdated(newUser: GatewayPublicUserUpdateData) {

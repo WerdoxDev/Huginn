@@ -24,14 +24,14 @@ export type ModalContextType = {
    imageCrop: DefaultModal & {
       originalImageData: string;
    };
-   createGroup: DefaultModal;
+   createDM: DefaultModal;
 };
 
 const defautlValue: ModalContextType = {
    settings: { isOpen: false },
    info: { isOpen: false, status: "none", title: "", text: "", closable: true },
    imageCrop: { isOpen: false, originalImageData: "" },
-   createGroup: { isOpen: false },
+   createDM: { isOpen: false },
 };
 
 const ModalContext = createContext<ModalContextType>(defautlValue);
@@ -51,9 +51,9 @@ function modalsReducer(modals: ModalContextType, action: DeepPartial<ModalContex
    const settings = action.settings ? Object.assign({}, modals.settings, action.settings) : modals.settings;
    const info = action.info ? Object.assign({}, modals.info, action.info) : modals.info;
    const imageCrop = action.imageCrop ? Object.assign({}, modals.imageCrop, action.imageCrop) : modals.imageCrop;
-   const createGroup = action.createGroup ? Object.assign({}, modals.createGroup, action.createGroup) : modals.createGroup;
+   const createDM = action.createDM ? Object.assign({}, modals.createDM, action.createDM) : modals.createDM;
 
-   return { settings, info, imageCrop, createGroup };
+   return { settings, info, imageCrop, createDM: createDM };
 }
 
 export function useModals() {

@@ -1,11 +1,12 @@
-import { APIDMChannel, APIGroupDMChannel } from "@huginn/shared";
+import { APIChannelUser, constants } from "@huginn/shared";
 import { useMemo } from "react";
 
-export function useChannelName(channel: APIDMChannel | APIGroupDMChannel) {
-   const name = useMemo(
-      () => ("name" in channel && channel.name ? channel.name : channel.recipients.map(x => x.displayName ?? x.username).join(", ")),
-      [channel],
-   );
+export function useChannelName(
+   recipients?: APIChannelUser[],
+   name?: string | null,
+   maxLength: number = constants.CHANNEL_NAME_MAX_LENGTH,
+) {
+   const channelName = useMemo(() => (name ? name : recipients?.map(x => x.displayName ?? x.username).join(", ")), [name, recipients]);
 
-   return name;
+   return channelName ? (channelName.length > maxLength ? channelName.slice(0, maxLength - 3) + "..." : channelName) : "";
 }

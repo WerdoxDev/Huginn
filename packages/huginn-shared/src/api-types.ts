@@ -1,8 +1,10 @@
+import { Merge } from "@huginn/shared";
 import { Snowflake } from "./snowflake";
 
 export type LoginCredentials = APIPostLoginJSONBody;
 export type RegisterUser = APIPostRegisterJSONBody;
-export type DirectChannel = APIDMChannel | APIGroupDMChannel;
+
+export type DirectChannel = Merge<APIDMChannel, APIGroupDMChannel>;
 
 export type TokenPayload = {
    id: Snowflake;
@@ -171,14 +173,15 @@ export enum ChannelType {
 export type APIGetChannelByIdResult = APIChannel;
 
 export type APIPostDMChannelJSONBody = {
+   name?: string;
    recipients: Snowflake[];
 };
 
-export type APIPostDMChannelResult = APIDMChannel | APIGroupDMChannel;
+export type APIPostDMChannelResult = DirectChannel;
 
-export type APIDeleteDMChannelResult = APIDMChannel | APIGroupDMChannel;
+export type APIDeleteDMChannelResult = DirectChannel;
 
-export type APIGetUserChannelsResult = (APIDMChannel | APIGroupDMChannel)[];
+export type APIGetUserChannelsResult = (DirectChannel)[];
 //#endregion
 
 //#region MESSAGE

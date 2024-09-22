@@ -23,7 +23,7 @@ export function useInputs(inputsOptions: InputOptions[]) {
          status: newStatuses[x.name],
          required: x.required,
          onChange: e => {
-            onValueChanged(x.name, e.value);
+            setInputValue(x.name, e.value);
          },
       };
    }
@@ -42,7 +42,7 @@ export function useInputs(inputsOptions: InputOptions[]) {
             status: statuses[x.name],
             required: x.required,
             onChange: e => {
-               onValueChanged(x.name, e.value);
+               setInputValue(x.name, e.value);
             },
          };
       }
@@ -50,7 +50,7 @@ export function useInputs(inputsOptions: InputOptions[]) {
       setInputProps(newInputsProps);
    }, [values, statuses]);
 
-   function onValueChanged(inputName: string, value: string | null) {
+   function setInputValue(inputName: string, value: string | null) {
       const updatedValues = { ...values };
       const updatedStatuses = { ...statuses };
 
@@ -91,5 +91,14 @@ export function useInputs(inputsOptions: InputOptions[]) {
       setStatuses(newStatuses);
    }
 
-   return { inputsProps, values, statuses, onValueChanged, validateValues, resetStatuses, handleErrors, setInputStatus };
+   return {
+      inputsProps,
+      values,
+      statuses,
+      setInputValue,
+      validateValues,
+      resetStatuses,
+      handleErrors,
+      setInputStatus,
+   };
 }

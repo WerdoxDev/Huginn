@@ -18,7 +18,7 @@ export default function RelationshipContextMenu() {
          <ContextMenu.Item
             label="Message"
             onClick={() => {
-               createDMMutation.mutate({ userId: data.user.id });
+               createDMMutation.mutate({ recipients: [data.user.id] });
             }}
          />
          <ContextMenu.Item

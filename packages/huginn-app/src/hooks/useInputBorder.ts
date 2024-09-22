@@ -10,7 +10,6 @@ export function useInputBorder(status: InputStatus) {
 
    useEffect(() => {
       setHasBorder(status.code !== "none");
-      console.log(status.code);
 
       if (status.code === "default") {
          setBorderColor(defaultColor);

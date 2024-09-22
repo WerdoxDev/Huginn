@@ -1,12 +1,12 @@
 import UserAvatarWithStatus from "@components/UserAvatarWithStatus";
 import { useUser } from "@contexts/userContext";
 import { useChannelName } from "@hooks/useChannelName";
-import { APIDMChannel, APIGroupDMChannel, ChannelType } from "@huginn/shared";
+import { ChannelType, DirectChannel } from "@huginn/shared";
 import { useMemo } from "react";
 
-export default function HomeTopbar(props: { channel: APIDMChannel | APIGroupDMChannel }) {
+export default function HomeTopbar(props: { channel: DirectChannel }) {
    const { user } = useUser();
-   const name = useChannelName(props.channel);
+   const name = useChannelName(props.channel.recipients, props.channel.name, 40);
 
    const otherUsers = useMemo(() => props.channel.recipients.filter(x => x.id !== user?.id), [props.channel]);
 

@@ -18,14 +18,14 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
    const { channelId } = useParams({ strict: false });
    const selected = useMemo(() => channelId == props.channel.id, [channelId, props.channel]);
    const otherUsers = useMemo(() => props.channel.recipients.filter(x => x.id !== user?.id), [props.channel]);
-   const name = useChannelName(props.channel);
+   const name = useChannelName(props.channel.recipients, props.channel.name);
 
    return (
       <li
          onContextMenu={e => {
             openContextMenu(props.channel, e);
          }}
-         className={`hover:bg-background group relative my-0.5 cursor-pointer rounded-md active:bg-white active:bg-opacity-10 ${selected && "bg-white bg-opacity-10"}`}
+         className={`hover:bg-background group relative -mr-2 cursor-pointer rounded-md active:bg-white active:bg-opacity-10 ${selected && "bg-white bg-opacity-10"}`}
          onClick={props.onSelected}
       >
          <Link className="flex items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>

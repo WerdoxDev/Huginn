@@ -8,8 +8,8 @@ export function useCreateDMChannel() {
    const navigate = useNavigate();
 
    const mutation = useMutation({
-      async mutationFn(data: { userId: Snowflake; skipNavigation?: boolean }) {
-         return await client.channels.createDM({ recipients: [data.userId] });
+      async mutationFn(data: { recipients: Snowflake[]; name?: string; skipNavigation?: boolean }) {
+         return await client.channels.createDM({ recipients: data.recipients, name: data.name });
       },
       async onSuccess(data, variables) {
          if (!variables.skipNavigation) await navigate({ to: "/channels/@me/" + data.id });

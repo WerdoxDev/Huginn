@@ -12,6 +12,7 @@ const InputContext = createContext<{
    placeholder?: string;
    type?: HTMLInputTypeAttribute;
    inputRef?: MutableRefObject<HTMLInputElement | null>;
+   disabled?: boolean;
    onChange?: (e: HTMLInputElement) => void;
    onFocusChange?: (focused: boolean) => void;
 }>({
@@ -33,6 +34,7 @@ export default function HuginnInput(props: HuginnInputProps) {
             placeholder: props.placeholder,
             type: props.type,
             inputRef: inputRef,
+            disabled: props.disabled,
             onChange: props.onChange,
             onFocusChange: props.onFocusChanged,
          }}
@@ -51,9 +53,10 @@ function Input(props: { headless?: boolean; className?: string }) {
          value={inputContext.value}
          ref={inputContext.inputRef}
          className={clsx(
-            !props.headless && "placeholder-text/60 flex-grow bg-transparent p-2 text-white outline-none",
+            !props.headless && "placeholder-text/60 flex-grow bg-transparent p-2 text-white outline-none disabled:cursor-not-allowed",
             props.className,
          )}
+         disabled={inputContext.disabled}
          type={inputContext.type ?? "text"}
          autoComplete="new-password"
          placeholder={inputContext.placeholder}

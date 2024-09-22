@@ -1,7 +1,7 @@
 import { ChannelsContextMenu } from "@components/contextmenu/ChannelsContextMenu";
 import RelationshipContextMenu from "@components/contextmenu/RelationshipContextMenu";
 import RelationshipMoreContextMenu from "@components/contextmenu/RelationshipMoreContextMenu";
-import { CreateGroupModal } from "@components/modal/CreateGroupModal";
+import { CreateDMModal } from "@components/modal/CreateDMModal";
 import ImageCropModal from "@components/modal/ImageCropModal";
 import InfoModal from "@components/modal/InfoModal";
 import SettingsModal from "@components/modal/SettingsModal";
@@ -67,7 +67,7 @@ function Root() {
                         {appWindow.environment === "desktop" && <AppMaximizedEvent />}
                         <ErrorBoundary FallbackComponent={ModalErrorComponent}>
                            <SettingsModal />
-                           <CreateGroupModal />
+                           <CreateDMModal />
                            <ImageCropModal />
                            <ChannelsContextMenu />
                            <RelationshipMoreContextMenu />

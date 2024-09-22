@@ -46,6 +46,7 @@ export type HuginnInputProps = {
    className?: string;
    status: InputStatus;
    required?: boolean;
+   disabled?: boolean;
    value?: string;
    placeholder?: string;
    type?: HTMLInputTypeAttribute;

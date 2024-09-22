@@ -9,7 +9,7 @@ import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { useVerifiedJwt } from "#utils/route-utils";
 
-const schema = z.object({ recipients: z.array(z.string()) });
+const schema = z.object({ name: z.optional(z.string()), recipients: z.array(z.string()) });
 
 router.post(
    "/users/@me/channels",
@@ -25,6 +25,7 @@ router.post(
          await prisma.channel.createDM(
             payload.id,
             body.recipients,
+            body.name,
             merge(includeChannelRecipients, excludeSelfChannelUser(payload.id)),
          ),
       );
