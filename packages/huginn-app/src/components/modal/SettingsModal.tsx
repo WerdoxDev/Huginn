@@ -4,13 +4,13 @@ import { useClient } from "@contexts/apiContext";
 import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { SettingsContextType, useSettings, useSettingsDispatcher } from "@contexts/settingsContext";
 import { DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import { usePostHog } from "posthog-js/react";
 import React, { Fragment, memo, useEffect, useRef, useState } from "react";
 import BaseModal from "./BaseModal";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
-import { usePostHog } from "posthog-js/react";
 
 const tabs: SettingsTab[] = [
    {

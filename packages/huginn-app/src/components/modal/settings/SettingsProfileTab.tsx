@@ -174,7 +174,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
             <div className="bg-secondary mb-20 flex w-full flex-col gap-y-5 rounded-lg p-4">
                <HuginnInput {...inputsProps.username} onFocusChanged={onFocusChanged}>
                   <HuginnInput.Label text="Username" className="mb-2" />
-                  <HuginnInput.Wrapper className="!bg-background">
+                  <HuginnInput.Wrapper className="!bg-background" border="left">
                      <HuginnInput.Input className="lowercase" />
                   </HuginnInput.Wrapper>
                   <AnimatedMessage className="mt-1" {...usernameMessageDetail} />
@@ -182,14 +182,14 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 
                <HuginnInput placeholder={user?.username} {...inputsProps.displayName}>
                   <HuginnInput.Label text="Display Name" className="mb-2" />
-                  <HuginnInput.Wrapper className="!bg-background">
+                  <HuginnInput.Wrapper className="!bg-background" border="left">
                      <HuginnInput.Input />
                   </HuginnInput.Wrapper>
                </HuginnInput>
 
                <HuginnInput {...inputsProps.password} type="password">
                   <HuginnInput.Label text="Current Password" className="mb-2" />
-                  <HuginnInput.Wrapper className="!bg-background">
+                  <HuginnInput.Wrapper className="!bg-background" border="left">
                      <HuginnInput.Input />
                   </HuginnInput.Wrapper>
                </HuginnInput>

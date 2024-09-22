@@ -80,9 +80,9 @@ function Wrapper(props: {
             !props.headless && "bg-secondary flex w-full items-center rounded-md",
             hasBorder &&
                ((props.border === "top" && "border-t-4") ||
-                  (props.border === "bottom" && "borde-b-4") ||
-                  (props.border === "left" && "borde-l-4") ||
-                  (props.border === "right" && "borde-r-4")),
+                  (props.border === "bottom" && "border-b-4") ||
+                  (props.border === "left" && "border-l-4") ||
+                  (props.border === "right" && "border-r-4")),
             hasBorder && props.border && borderColor,
          )}
       >

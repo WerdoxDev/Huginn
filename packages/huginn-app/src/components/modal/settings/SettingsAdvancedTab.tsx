@@ -76,13 +76,19 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
          <div className="flex flex-col gap-y-5">
             <div>
                <HuginnInput className="w-72" type="text" {...inputsProps.serverAddress}>
-                  <HuginnInput.Label>Server Address</HuginnInput.Label>
+                  <HuginnInput.Label text="Server Address" className="mb-2" />
+                  <HuginnInput.Wrapper>
+                     <HuginnInput.Input />
+                  </HuginnInput.Wrapper>
                </HuginnInput>
                <div className="text-text/50 mt-1 text-sm italic">*changing server address requires a reload.</div>
             </div>
             <div>
                <HuginnInput className="w-72" type="text" {...inputsProps.cdnAddress}>
-                  <HuginnInput.Label>CDN Address</HuginnInput.Label>
+                  <HuginnInput.Label text="CDN Address" className="mb-2" />
+                  <HuginnInput.Wrapper>
+                     <HuginnInput.Input />
+                  </HuginnInput.Wrapper>
                </HuginnInput>
                <div className="text-text/50 mt-1 text-sm italic">*changing cdn address requires a reload.</div>
             </div>
