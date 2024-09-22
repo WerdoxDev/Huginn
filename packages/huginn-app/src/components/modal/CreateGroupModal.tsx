@@ -7,30 +7,37 @@ import { Checkbox, Description, DialogPanel, DialogTitle } from "@headlessui/rea
 import { RelationshipType, Snowflake } from "@huginn/shared";
 import { getRelationshipsOptions } from "@lib/queries";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import BaseModal from "./BaseModal";
 import { usePostHog } from "posthog-js/react";
+import { useEffect, useMemo, useState } from "react";
+import BaseModal from "./BaseModal";
+import { ComboboxInput } from "@components/input/ComboboxInput";
 
 export function CreateGroupModal() {
    const { createGroup: modal } = useModals();
    const dispatch = useModalsDispatch();
    const client = useClient();
+
    const posthog = usePostHog();
    const { data } = useQuery(getRelationshipsOptions(client));
 
    const [selectedUsers, setSelectedUsers] = useState<Snowflake[]>([]);
+   const [query, setQuery] = useState("");
 
-   function selectUser(userId: Snowflake) {
-      let newSelectedUsers = [...selectedUsers];
+   const filteredUsers = useMemo(
+      () =>
+         data?.filter(
+            x =>
+               x.type === RelationshipType.FRIEND &&
+               // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+               (query ? x.user.displayName?.includes(query) || x.user.username.includes(query) : true),
+         ),
+      [query, data],
+   );
 
-      if (newSelectedUsers.includes(userId)) {
-         newSelectedUsers = newSelectedUsers.filter(x => x !== userId);
-      } else {
-         newSelectedUsers.push(userId);
-      }
-
-      setSelectedUsers(newSelectedUsers);
-   }
+   const selectedUsersDisplay = useMemo(
+      () => data?.filter(x => selectedUsers.includes(x.user.id)).map(x => x.user),
+      [data, selectedUsers],
+   );
 
    function close() {
       setSelectedUsers([]);
@@ -45,10 +52,6 @@ export function CreateGroupModal() {
       }
    }, [modal.isOpen]);
 
-   if (!data) {
-      return;
-   }
-
    return (
       <BaseModal modal={modal} onClose={close}>
          <DialogPanel className="bg-background border-primary w-full max-w-sm transform overflow-hidden rounded-xl border-2 p-5 transition-[opacity_transform] data-[closed]:scale-95">
@@ -58,20 +61,57 @@ export function CreateGroupModal() {
             <Description className="text-text/70 mx-5 mt-1 text-center">Select your fellow warriors to share a tale with!</Description>
             <div className="mt-5 flex flex-col gap-y-5">
                <HuginnInput status={{ code: "none", text: "" }}>
-                  <HuginnInput.Label>Group Name</HuginnInput.Label>
+                  <HuginnInput.Label className="mb-2" text="Group Name" />
+                  <HuginnInput.Wrapper>
+                     <HuginnInput.Input />
+                  </HuginnInput.Wrapper>
                </HuginnInput>
-               <HuginnInput
+
+               <ComboboxInput
+                  onSelectionChange={setSelectedUsers}
+                  selection={selectedUsers}
                   status={{ code: "none", text: "" }}
-                  placeholder="Name of a friend"
-                  wrapperClassName="!items-start flex-col"
-                  inputClassName="w-full"
+                  onChange={e => setQuery(e.value)}
                >
-                  <HuginnInput.Label>Members</HuginnInput.Label>
-                  {selectedUsers.length > 0 && (
-                     <HuginnInput.Before>
+                  <HuginnInput.Label className="mb-2" text="Members" />
+                  <HuginnInput.Wrapper border="left" className="flex-col !items-start">
+                     <ComboboxInput.SelectionDisplay>
+                        {({ toggleSelection }) => (
+                           <div className="mx-2 mt-2 flex select-none flex-wrap gap-1">
+                              {selectedUsersDisplay?.map(user => (
+                                 <button
+                                    onClick={() => toggleSelection(user.id)}
+                                    key={user.id}
+                                    className="text-text bg-primary rounded-sm px-2"
+                                 >
+                                    {user.displayName ?? user.username}
+                                 </button>
+                              ))}
+                           </div>
+                        )}
+                     </ComboboxInput.SelectionDisplay>
+                     <HuginnInput.Input className="w-full" />
+                  </HuginnInput.Wrapper>
+                  <ComboboxInput.OptionWrapper>
+                     {filteredUsers?.map(x => (
+                        <ComboboxInput.Option value={x.user.id} key={x.user.id}>
+                           <UserAvatarWithStatus userId={x.user.id} avatarHash={x.user.avatar} />
+                           <div className="text-text">{x.user.displayName ?? x.user.username}</div>
+                           <div className="text-text/70 text-sm">{x.user.username}</div>
+                           <Checkbox
+                              checked={selectedUsers?.includes(x.user.id) ?? false}
+                              className="border-accent data-[checked]:bg-accent ml-auto size-6 rounded-md border "
+                           ></Checkbox>
+                        </ComboboxInput.Option>
+                     ))}
+                  </ComboboxInput.OptionWrapper>
+               </ComboboxInput>
+               {/* <Combobox multiple value={selectedUsers} onChange={setSelectedUsers} as="div" className="flex flex-col">
+                  <div className="bg-secondary flex w-full flex-col items-start rounded-md">
+                     {selectedUsers.length > 0 && (
                         <div className="mx-2 mt-2 flex select-none flex-wrap gap-1">
                            {data
-                              .filter(x => selectedUsers.includes(x.user.id))
+                              ?.filter(x => selectedUsers.includes(x.user.id))
                               .map(x => x.user)
                               .map(user => (
                                  <button
@@ -83,32 +123,34 @@ export function CreateGroupModal() {
                                  </button>
                               ))}
                         </div>
-                     </HuginnInput.Before>
-                  )}
-                  <HuginnInput.After>
-                     <div className="bg-secondary scroll-alternative2 mt-2 h-40 overflow-y-scroll rounded-md p-2">
-                        {data
-                           .filter(x => x.type === RelationshipType.FRIEND)
-                           .map(relationship => (
-                              <div className="hover:bg-background -mr-2 rounded-sm" key={relationship.user.id}>
-                                 <button
-                                    className="flex w-full items-center gap-x-2 px-2 py-1 outline-none"
-                                    onClick={() => selectUser(relationship.user.id)}
-                                 >
-                                    <UserAvatarWithStatus userId={relationship.user.id} avatarHash={relationship.user.avatar} />
-                                    <div className="text-text">{relationship.user.displayName ?? relationship.user.username}</div>
-                                    <div className="text-text/70 text-sm">{relationship.user.username}</div>
-                                    <Checkbox
-                                       checked={selectedUsers?.includes(relationship.user.id) ?? false}
-                                       className="border-accent data-[checked]:bg-accent ml-auto size-6 rounded-md border "
-                                    ></Checkbox>
-                                 </button>
-                              </div>
-                           ))}
+                     )}
+                     <ComboboxInput
+                        placeholder="Search for a friend"
+                        className="placeholder-text/60 w-full flex-grow bg-transparent p-2 text-white outline-none"
+                        onChange={e => setQuery(e.target.value)}
+                     ></ComboboxInput>
+                  </div>
+                  <ComboboxOptions static>
+                     <div className="bg-secondary scroll-alternative2 mt-2 h-40 -scroll-mt-9 overflow-y-scroll rounded-md p-2">
+                        {filteredUsers?.map(x => (
+                           <ComboboxOption
+                              key={x.user.id}
+                              value={x.user.id}
+                              className="data-[focus]:bg-background -mr-2 flex cursor-pointer items-center gap-x-2 rounded-sm px-2 py-1 outline-none"
+                           >
+                              <UserAvatarWithStatus userId={x.user.id} avatarHash={x.user.avatar} />
+                              <div className="text-text">{x.user.displayName ?? x.user.username}</div>
+                              <div className="text-text/70 text-sm">{x.user.username}</div>
+                              <Checkbox
+                                 checked={selectedUsers?.includes(x.user.id) ?? false}
+                                 className="border-accent data-[checked]:bg-accent ml-auto size-6 rounded-md border "
+                              ></Checkbox>
+                           </ComboboxOption>
+                        ))}
                      </div>
-                  </HuginnInput.After>
-               </HuginnInput>
-               <HuginnButton className="bg-primary py-2">Create</HuginnButton>
+                  </ComboboxOptions>
+               </Combobox> */}
+               <HuginnButton className="bg-primary py-2">Find or Create</HuginnButton>
             </div>
          </DialogPanel>
       </BaseModal>

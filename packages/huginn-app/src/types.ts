@@ -42,17 +42,15 @@ export type MessageDetail = {
 
 export type HuginnInputProps = {
    children?: ReactNode;
+   headless?: boolean;
    className?: string;
-   wrapperClassName?: string;
-   inputClassName?: string;
    status: InputStatus;
-   type?: HTMLInputTypeAttribute;
    required?: boolean;
    value?: string;
-   border?: "none" | "left" | "right" | "top" | "bottom";
    placeholder?: string;
+   type?: HTMLInputTypeAttribute;
    onChange?: (e: HTMLInputElement) => void;
-   onFocus?: (focused: boolean) => void;
+   onFocusChanged?: (focused: boolean) => void;
 };
 
 export type HuginnButtonProps = {

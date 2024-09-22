@@ -96,28 +96,33 @@ function Register() {
          </div>
          <div className="mt-5 w-full">
             <HuginnInput className="mb-5" {...inputsProps.email}>
-               <HuginnInput.Label>Email</HuginnInput.Label>
+               <HuginnInput.Label text="Email" className="mb-2" />
+               <HuginnInput.Wrapper border="left">
+                  <HuginnInput.Input />
+               </HuginnInput.Wrapper>
             </HuginnInput>
 
             <HuginnInput className="mb-5" {...inputsProps.displayName}>
-               <HuginnInput.Label>Display Name</HuginnInput.Label>
+               <HuginnInput.Label text="Display Name" className="mb-2" />
+               <HuginnInput.Wrapper border="left">
+                  <HuginnInput.Input className="lowercase" />
+               </HuginnInput.Wrapper>
             </HuginnInput>
 
-            <HuginnInput
-               className="mb-5 [&_input]:lowercase"
-               onFocus={focused => {
-                  onFocusChanged(focused);
-               }}
-               {...inputsProps.username}
-            >
-               <HuginnInput.Label>Username</HuginnInput.Label>
-               <HuginnInput.After>
-                  <AnimatedMessage className="mt-1" {...usernameMessageDetail} />
-               </HuginnInput.After>
+            <HuginnInput className="mb-5 [&_input]:lowercase" onFocusChanged={onFocusChanged} {...inputsProps.username}>
+               <HuginnInput.Label text="Username" className="mb-2" />
+               <HuginnInput.Wrapper border="left">
+                  <HuginnInput.Input />
+               </HuginnInput.Wrapper>
+               <AnimatedMessage className="mt-1" {...usernameMessageDetail} />
             </HuginnInput>
 
             <PasswordInput className="mb-5" {...inputsProps.password}>
-               <HuginnInput.Label>Password</HuginnInput.Label>
+               <HuginnInput.Label text="Password" className="mb-2" />
+               <HuginnInput.Wrapper border="left">
+                  <HuginnInput.Input />
+                  <PasswordInput.ToggleButton />
+               </HuginnInput.Wrapper>
             </PasswordInput>
 
             <LoadingButton loading={!mutation.isIdle && mutation.isPending} className="bg-primary h-11 w-full" type="submit">

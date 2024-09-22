@@ -172,25 +172,27 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
                </div>
             </div>
             <div className="bg-secondary mb-20 flex w-full flex-col gap-y-5 rounded-lg p-4">
-               <HuginnInput
-                  {...inputsProps.username}
-                  className="[&_input]:lowercase"
-                  onFocus={focused => {
-                     onFocusChanged(focused);
-                  }}
-                  wrapperClassName="!bg-background"
-               >
-                  <HuginnInput.Label>Username</HuginnInput.Label>
-                  <HuginnInput.After>
-                     <AnimatedMessage className="mt-1" {...usernameMessageDetail} />
-                  </HuginnInput.After>
+               <HuginnInput {...inputsProps.username} onFocusChanged={onFocusChanged}>
+                  <HuginnInput.Label text="Username" className="mb-2" />
+                  <HuginnInput.Wrapper className="!bg-background">
+                     <HuginnInput.Input className="lowercase" />
+                  </HuginnInput.Wrapper>
+                  <AnimatedMessage className="mt-1" {...usernameMessageDetail} />
                </HuginnInput>
-               <HuginnInput placeholder={user?.username} {...inputsProps.displayName} wrapperClassName="!bg-background">
-                  <HuginnInput.Label>Display name</HuginnInput.Label>
+
+               <HuginnInput placeholder={user?.username} {...inputsProps.displayName}>
+                  <HuginnInput.Label text="Display Name" className="mb-2" />
+                  <HuginnInput.Wrapper className="!bg-background">
+                     <HuginnInput.Input />
+                  </HuginnInput.Wrapper>
                </HuginnInput>
-               <PasswordInput {...inputsProps.password} wrapperClassName="!bg-background" hideButton>
-                  <HuginnInput.Label>Current Password</HuginnInput.Label>
-               </PasswordInput>
+
+               <HuginnInput {...inputsProps.password} type="password">
+                  <HuginnInput.Label text="Current Password" className="mb-2" />
+                  <HuginnInput.Wrapper className="!bg-background">
+                     <HuginnInput.Input />
+                  </HuginnInput.Wrapper>
+               </HuginnInput>
             </div>
          </div>
          <Transition show={modified || avatarModified}>

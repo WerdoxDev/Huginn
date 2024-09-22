@@ -1,7 +1,7 @@
 import { InputStatus } from "@/types";
 import { useState, useEffect } from "react";
 
-export function useInputBorder(state: InputStatus) {
+export function useInputBorder(status: InputStatus) {
    const defaultColor = "border-primary";
    const errorColor = "border-error";
 
@@ -9,16 +9,16 @@ export function useInputBorder(state: InputStatus) {
    const [borderColor, setBorderColor] = useState("");
 
    useEffect(() => {
-      setHasBorder(state.code !== "none");
+      setHasBorder(status.code !== "none");
 
-      if (state.code === "default") {
+      if (status.code === "default") {
          setBorderColor(defaultColor);
-      } else if (state.code === "error") {
+      } else if (status.code === "error") {
          setBorderColor(errorColor);
       } else {
          setBorderColor("");
       }
-   }, [state.code]);
+   }, [status.code]);
 
    return { hasBorder, borderColor };
 }

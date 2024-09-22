@@ -122,12 +122,19 @@ function Login() {
             <div className="text-text/70">It's very good to see you again!</div>
          </div>
          <div className="mt-5 w-full">
-            <HuginnInput className="mb-5 [&_input]:lowercase" {...inputsProps.login}>
-               <HuginnInput.Label>Email or Username</HuginnInput.Label>
+            <HuginnInput className="mb-5" {...inputsProps.login}>
+               <HuginnInput.Label className="mb-2" text="Email or Username" />
+               <HuginnInput.Wrapper border="left">
+                  <HuginnInput.Input className="lowercase" />
+               </HuginnInput.Wrapper>
             </HuginnInput>
 
             <PasswordInput {...inputsProps.password}>
-               <HuginnInput.Label>Password</HuginnInput.Label>
+               <HuginnInput.Label className="mb-2" text="Password" />
+               <HuginnInput.Wrapper border="left">
+                  <HuginnInput.Input />
+                  <PasswordInput.ToggleButton />
+               </HuginnInput.Wrapper>
             </PasswordInput>
 
             <LinkButton className="mb-5 mt-1 text-sm">Forgot your password?</LinkButton>

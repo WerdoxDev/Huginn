@@ -1,123 +1,123 @@
 import { HuginnInputProps, InputStatus } from "@/types";
 import { useInputBorder } from "@hooks/useInputBorder";
-import { filterChildrenOfType } from "@lib/utils";
 import { snowflake } from "@huginn/shared";
-import { ReactNode, createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
+import { HTMLInputTypeAttribute, MutableRefObject, ReactNode, createContext, useContext, useRef, useState } from "react";
 
-const InputContext = createContext<{ id: string; status: InputStatus; required?: boolean }>({
+const InputContext = createContext<{
+   id: string;
+   status: InputStatus;
+   value?: string;
+   required?: boolean;
+   placeholder?: string;
+   type?: HTMLInputTypeAttribute;
+   inputRef?: MutableRefObject<HTMLInputElement | null>;
+   onChange?: (e: HTMLInputElement) => void;
+   onFocusChange?: (focused: boolean) => void;
+}>({
    id: "",
    status: { code: "none", text: "" },
-   required: false,
 });
 
 export default function HuginnInput(props: HuginnInputProps) {
-   const inputRef = useRef<HTMLInputElement>(null);
-   // console.log(props.state);
-   const { hasBorder, borderColor } = useInputBorder(props.status);
    const [id, _setId] = useState(() => snowflake.generateString());
-
-   const filteredChildren = useMemo(() => {
-      return {
-         label: filterChildrenOfType(props.children, Label),
-         action: filterChildrenOfType(props.children, Action),
-         after: filterChildrenOfType(props.children, After),
-         before: filterChildrenOfType(props.children, Before),
-      };
-   }, [props.children]);
-
-   const border = useMemo(
-      () =>
-         props.border === "top"
-            ? "border-t-4"
-            : props.border === "right"
-              ? "border-r-4"
-              : props.border === "bottom"
-                ? "border-b-4"
-                : props.border === "left"
-                  ? "border-l-4"
-                  : props.border === "none"
-                    ? "border-none "
-                    : "border-l-4",
-      [props.border],
-   );
-
-   useEffect(() => {
-      if (inputRef.current) {
-         inputRef.current.value = props.value ?? "";
-      }
-   }, [props.value]);
+   const inputRef = useRef<HTMLInputElement>(null);
 
    return (
-      <InputContext.Provider value={{ id: id, required: props.required, status: props.status }}>
-         <div className={clsx("flex flex-col", props.className)}>
-            {filteredChildren.label && <HuginnInput.Label skipRender>{filteredChildren.label}</HuginnInput.Label>}
-            <div
-               className={clsx(
-                  props.wrapperClassName,
-                  "bg-secondary flex w-full items-center rounded-md",
-                  hasBorder && border,
-                  borderColor,
-               )}
-            >
-               {filteredChildren.before && <HuginnInput.Before>{filteredChildren.before}</HuginnInput.Before>}
-               <input
-                  id={id}
-                  ref={inputRef}
-                  className={clsx("placeholder-text/60 flex-grow bg-transparent p-2 text-white outline-none", props.inputClassName)}
-                  type={props.type ?? "text"}
-                  autoComplete="new-password"
-                  placeholder={props.placeholder}
-                  onChange={e => props.onChange && props.onChange(e.target)}
-                  onFocus={() => props.onFocus && props.onFocus(true)}
-                  onBlur={() => props.onFocus && props.onFocus(false)}
-               />
-               {filteredChildren.action && <HuginnInput.Action>{filteredChildren.action}</HuginnInput.Action>}
-            </div>
-            {filteredChildren.after && <HuginnInput.After>{filteredChildren.after}</HuginnInput.After>}
-         </div>
+      <InputContext.Provider
+         value={{
+            id: id,
+            value: props.value,
+            required: props.required,
+            status: props.status,
+            placeholder: props.placeholder,
+            type: props.type,
+            inputRef: inputRef,
+            onChange: props.onChange,
+            onFocusChange: props.onFocusChanged,
+         }}
+      >
+         <div className={clsx(!props.headless && "flex flex-col", props.className)}>{props.children}</div>
       </InputContext.Provider>
    );
 }
 
-function Label(props: { children?: ReactNode; skipRender?: boolean }) {
+function Input(props: { headless?: boolean; className?: string }) {
    const inputContext = useContext(InputContext);
-   return !props.skipRender ? (
-      <label
-         htmlFor={inputContext.id}
+
+   return (
+      <input
+         id={inputContext.id}
+         value={inputContext.value}
+         ref={inputContext.inputRef}
          className={clsx(
-            "mb-2 select-none text-xs font-medium uppercase opacity-90",
-            inputContext.status.code === "none" ? "text-text" : "text-error",
+            !props.headless && "placeholder-text/60 flex-grow bg-transparent p-2 text-white outline-none",
+            props.className,
          )}
-      >
-         {props.children}
-         {inputContext.status.text ? (
-            <span className={clsx("text-error", inputContext.status.text && "font-normal normal-case italic")}>
-               <span className="px-0.5">-</span>
-               {inputContext.status.text}
-            </span>
-         ) : (
-            inputContext.required && <span className="text-error pl-0.5">*</span>
-         )}
-      </label>
-   ) : (
-      props.children
+         type={inputContext.type ?? "text"}
+         autoComplete="new-password"
+         placeholder={inputContext.placeholder}
+         onChange={e => inputContext.onChange?.(e.target)}
+         onFocus={() => inputContext.onFocusChange?.(true)}
+         onBlur={() => inputContext.onFocusChange?.(false)}
+      />
    );
 }
 
-function Action(props: { children?: ReactNode }) {
-   return props.children;
+function Wrapper(props: {
+   className?: string;
+   headless?: boolean;
+   border?: "left" | "right" | "top" | "bottom";
+   children?: ReactNode;
+}) {
+   const inputContext = useContext(InputContext);
+   const { hasBorder, borderColor } = useInputBorder(inputContext.status);
+
+   return (
+      <div
+         className={clsx(
+            props.className,
+            !props.headless && "bg-secondary flex w-full items-center rounded-md",
+            hasBorder &&
+               ((props.border === "top" && "border-t-4") ||
+                  (props.border === "bottom" && "borde-b-4") ||
+                  (props.border === "left" && "borde-l-4") ||
+                  (props.border === "right" && "borde-r-4")),
+            hasBorder && props.border && borderColor,
+         )}
+      >
+         {props.children}
+      </div>
+   );
 }
 
-function After(props: { children?: ReactNode }) {
-   return props.children;
-}
+function Label(props: { children?: ReactNode; headless?: boolean; className?: string; text: string; hideAdditional?: boolean }) {
+   const inputContext = useContext(InputContext);
 
-function Before(props: { children?: ReactNode }) {
-   return props.children;
+   return (
+      <label
+         htmlFor={inputContext.id}
+         className={clsx(
+            !props.headless && "select-none text-xs font-medium uppercase opacity-90",
+            inputContext.status.code === "none" ? "text-text" : "text-error",
+            props.className,
+         )}
+      >
+         {props.text}
+         {!props.hideAdditional &&
+            (inputContext.status.text ? (
+               <span className={clsx("text-error", inputContext.status.text && "font-normal normal-case italic")}>
+                  <span className="px-0.5">-</span>
+                  {inputContext.status.text}
+               </span>
+            ) : (
+               inputContext.required && <span className="text-error pl-0.5">*</span>
+            ))}
+      </label>
+   );
 }
 
 HuginnInput.Label = Label;
-HuginnInput.Action = Action;
-HuginnInput.After = After;
-HuginnInput.Before = Before;
+HuginnInput.Wrapper = Wrapper;
+HuginnInput.Input = Input;
+HuginnInput.InputContext = InputContext;
