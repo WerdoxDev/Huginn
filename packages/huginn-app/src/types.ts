@@ -1,5 +1,5 @@
 import { Placement } from "@floating-ui/react";
-import { APIDefaultMessage, APIDMChannel, APIGroupDMChannel, APIRelationUser, RelationshipType } from "@huginn/shared";
+import { APIDefaultMessage, APIDMChannel, APIGroupDMChannel, APIRelationUser, DirectChannel, RelationshipType } from "@huginn/shared";
 import React, { HTMLInputTypeAttribute, ReactNode } from "react";
 import { SettingsContextType } from "./contexts/settingsContext";
 
@@ -141,7 +141,7 @@ export type ContextMenuItemProps = {
 };
 
 export type ContextMenuRelationship = { user: APIRelationUser; type: RelationshipType };
-export type ContextMenuDMChannel = APIDMChannel | APIGroupDMChannel;
+export type ContextMenuDMChannel = DirectChannel;
 
 export enum ContextMenuType {
    DM_CHANNEL,
