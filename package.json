@@ -1,23 +1,17 @@
 {
-   "name": "monorepo",
-   "devDependencies": {
-      "@types/bun": "latest",
-      "typescript": "^5.5.4",
-      "eslint": "^9.9.0",
-      "globals": "^15.9.0",
-      "eslint-plugin-react": "^7.35.0",
-      "eslint-plugin-react-compiler": "^0.0.0",
-      "eslint-plugin-react-hooks": "^5.1.0-rc-fb9a90fa48-20240614",
-      "typescript-eslint": "^7.18.0"
-   },
-   "private": "true",
-   "scripts": {
-      "server": "cd packages/huginn-server && bun start",
-      "cdn": "cd packages/huginn-cdn && bun start",
-      "tauri": " cd packages/huginn-app && bun run tauri-dev"
-   },
-   "type": "module",
-   "workspaces": [
-      "packages/*"
-   ]
+	"name": "monorepo",
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.2",
+		"@types/bun": "latest",
+		"globals": "^15.9.0",
+		"typescript": "^5.5.4"
+	},
+	"private": "true",
+	"scripts": {
+		"server": "cd packages/huginn-server && bun start",
+		"cdn": "cd packages/huginn-cdn && bun start",
+		"tauri": " cd packages/huginn-app && bun run tauri-dev"
+	},
+	"type": "module",
+	"workspaces": ["packages/*"]
 }

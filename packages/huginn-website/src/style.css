@@ -3,24 +3,26 @@
 @tailwind utilities;
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+	line-height: 1.5;
+	font-weight: 400;
 
-  color-scheme: dark;
-  background-color: #303030;
-  color: #EBEBD3;
+	color-scheme: dark;
+	background-color: #303030;
+	color: #ebebd3;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
-::selection{
-  background: #D99A6C5f;
+::selection {
+	background: #d99a6c5f;
 }
 
-#app, html, body{
-  height: 100%;
+#app,
+html,
+body {
+	height: 100%;
 }

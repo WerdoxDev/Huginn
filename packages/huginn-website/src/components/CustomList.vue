@@ -4,23 +4,23 @@ import { Icon } from "@iconify/vue";
 import { ref } from "vue";
 
 const optionsProps = defineProps<{
-   options: { text: string; icon: string; disabled: boolean; hidden: boolean }[];
-   default: string;
+	options: { text: string; icon: string; disabled: boolean; hidden: boolean }[];
+	default: string;
 }>();
 
 defineOptions({
-   inheritAttrs: false,
+	inheritAttrs: false,
 });
 
-const selectedOption = ref(optionsProps.options.find(x => x.text.trim().toLowerCase() === optionsProps.default)!);
+const selectedOption = ref(optionsProps.options.find((x) => x.text.trim().toLowerCase() === optionsProps.default));
 </script>
 
 <template>
    <Listbox v-model="selectedOption">
       <div class="relative mx-2 select-none">
          <ListboxButton class="flex items-center rounded-md bg-[#262626] px-2 py-1" :class="$attrs.class">
-            <Icon :icon="selectedOption.icon" class="mr-1" />
-            {{ selectedOption.text }}
+            <Icon :icon="selectedOption?.icon ?? 'mdi:cross'" class="mr-1" />
+            {{ selectedOption?.text }}
             <Icon icon="gridicons:dropdown" class="ml-auto" />
          </ListboxButton>
 

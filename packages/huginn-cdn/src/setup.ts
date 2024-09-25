@@ -1,5 +1,5 @@
+import path from "node:path";
 import consola from "consola";
-import path from "path";
 
 export const cdnHost = process.env.CDN_HOST;
 export const cdnPort = process.env.CDN_PORT;

@@ -1,22 +1,21 @@
 <script setup lang="ts">
-import { Icon } from '@iconify/vue/dist/iconify.js';
-import { vElementVisibility } from '@vueuse/components'
-import { ref } from 'vue';
+import { Icon } from "@iconify/vue/dist/iconify.js";
+import { vElementVisibility } from "@vueuse/components";
+import { ref } from "vue";
 
-const isVisible = ref(false)
+const isVisible = ref(false);
 
 const featureProps = defineProps<{
-    header: string,
-    text: string,
-    icon: string,
-}>()
+	header: string;
+	text: string;
+	icon: string;
+}>();
 
 function onElementVisible(state: boolean) {
-    if (!state) return
+	if (!state) return;
 
-    isVisible.value = true
+	isVisible.value = true;
 }
-
 </script>
 
 <template>

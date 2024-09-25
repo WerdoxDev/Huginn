@@ -3,16 +3,15 @@ import { Icon } from "@iconify/vue/dist/iconify.js";
 import HeaderButton from "./components/HeaderButton.vue";
 import { ref } from "vue";
 
-const isMenuOpen = ref(false)
+const isMenuOpen = ref(false);
 
 function toggleMenu(event: MouseEvent) {
-   isMenuOpen.value = !isMenuOpen.value
+	isMenuOpen.value = !isMenuOpen.value;
 }
 function closeMenu(event: MouseEvent) {
-   event.stopPropagation()
-   isMenuOpen.value = false
+	event.stopPropagation();
+	isMenuOpen.value = false;
 }
-
 </script>
 
 <template>

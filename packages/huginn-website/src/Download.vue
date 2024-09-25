@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import type { APIGetReleasesResult } from "@huginn/shared";
 import { Icon } from "@iconify/vue";
-import CustomList from "./components/CustomList.vue";
 import { computed, onMounted, ref } from "vue";
-import { APIGetReleasesResult } from "@huginn/shared";
+import CustomList from "./components/CustomList.vue";
 
 type VersionKind = "none" | "release" | "nightly";
 type PlatformKind = "windows" | "mac" | "linux";
@@ -14,114 +14,114 @@ const isAnyVersionAvailable = ref(false);
 const versionTexts = ref<Record<string, { version: string; date: string; prerelease?: string; buildId?: string }>>({});
 
 const buttonVersionText = computed(() => {
-   if (platformKind.value === "windows") {
-      if (versionKind.value === "release") {
-         return versionTexts.value?.release.version;
-      } else if (versionKind.value === "nightly") {
-         return `${versionTexts.value?.nightly?.version} ${versionTexts.value?.nightly?.prerelease}`;
-      }
-   }
+	if (platformKind.value === "windows") {
+		if (versionKind.value === "release") {
+			return versionTexts.value?.release.version;
+		}if (versionKind.value === "nightly") {
+			return `${versionTexts.value?.nightly?.version} ${versionTexts.value?.nightly?.prerelease}`;
+		}
+	}
 });
 const dateText = computed(() => {
-   if (platformKind.value === "windows") {
-      if (versionKind.value === "release") {
-         return versionTexts.value?.release.date;
-      } else if (versionKind.value === "nightly") {
-         return versionTexts.value?.nightly.date;
-      }
-   }
+	if (platformKind.value === "windows") {
+		if (versionKind.value === "release") {
+			return versionTexts.value?.release.date;
+		}if (versionKind.value === "nightly") {
+			return versionTexts.value?.nightly.date;
+		}
+	}
 });
 
 const latestInfo = ref<APIGetReleasesResult>();
 
 onMounted(async () => {
-   console.log(import.meta.env.VITE_SERVER_ADDRESS, "hi");
-   try {
-      const data = await fetch(`${import.meta.env.VITE_SERVER_ADDRESS}/api/releases`);
-      latestInfo.value = await data.json();
-   } catch {
-      console.error("Something went wrong fetching releases.");
-   }
+	console.log(import.meta.env.VITE_SERVER_ADDRESS, "hi");
+	try {
+		const data = await fetch(`${import.meta.env.VITE_SERVER_ADDRESS}/api/releases`);
+		latestInfo.value = await data.json();
+	} catch {
+		console.error("Something went wrong fetching releases.");
+	}
 
-   if (latestInfo.value && latestInfo.value.nightly) {
-      const nightlySplit = latestInfo.value?.nightly.version.split("-");
+	if (latestInfo.value?.nightly) {
+		const nightlySplit = latestInfo.value?.nightly.version.split("-");
 
-      if (nightlySplit) {
-         const nightlyDate = new Date(latestInfo.value.nightly.date);
+		if (nightlySplit) {
+			const nightlyDate = new Date(latestInfo.value.nightly.date);
 
-         // Pure version number without 'v' at the beginning
-         const version = nightlySplit[0].slice(1);
+			// Pure version number without 'v' at the beginning
+			const version = nightlySplit[0].slice(1);
 
-         const nightlyPrereleaseSplit = nightlySplit[1].split(".");
+			const nightlyPrereleaseSplit = nightlySplit[1].split(".");
 
-         // Prerelease identifier with first character in uppercase
-         const prerelease = nightlyPrereleaseSplit[0].charAt(0).toUpperCase() + nightlyPrereleaseSplit[0].slice(1);
+			// Prerelease identifier with first character in uppercase
+			const prerelease = nightlyPrereleaseSplit[0].charAt(0).toUpperCase() + nightlyPrereleaseSplit[0].slice(1);
 
-         // Prerelease build identifier
-         const buildId = nightlyPrereleaseSplit[1];
+			// Prerelease build identifier
+			const buildId = nightlyPrereleaseSplit[1];
 
-         const date = getFormattedDate(nightlyDate);
+			const date = getFormattedDate(nightlyDate);
 
-         versionTexts.value.nightly = { version, prerelease, buildId, date };
-      }
-   }
+			versionTexts.value.nightly = { version, prerelease, buildId, date };
+		}
+	}
 
-   if (latestInfo.value && latestInfo.value.release) {
-      const releaseDate = new Date(latestInfo.value.release.date);
-      const version = latestInfo.value.release.version.slice(1);
-      const date = getFormattedDate(releaseDate);
+	if (latestInfo.value?.release) {
+		const releaseDate = new Date(latestInfo.value.release.date);
+		const version = latestInfo.value.release.version.slice(1);
+		const date = getFormattedDate(releaseDate);
 
-      versionTexts.value.release = { version, date };
-   }
+		versionTexts.value.release = { version, date };
+	}
 
-   updateVersionAvailabilities();
+	updateVersionAvailabilities();
 });
 
 function getFormattedDate(date: Date) {
-   return `${date.getDate().toString().padStart(2, "0")}.${(date.getMonth() + 1).toString().padStart(2, "0")}.${date.getFullYear()}`;
+	return `${date.getDate().toString().padStart(2, "0")}.${(date.getMonth() + 1).toString().padStart(2, "0")}.${date.getFullYear()}`;
 }
 
 function download(platform: PlatformKind, version: VersionKind) {
-   let downloadLink = getDownloadLink(platform, version);
-   window.open(downloadLink);
+	const downloadLink = getDownloadLink(platform, version);
+	window.open(downloadLink);
 }
 
 function getDownloadLink(platform: PlatformKind, version: VersionKind): string | undefined {
-   if (platform === "windows") {
-      // Selected Windows
+	if (platform === "windows") {
+		// Selected Windows
 
-      if (version === "release") {
-         // Selected Release version
-         return latestInfo.value?.release?.windowsSetupUrl;
-      } else if (version === "nightly") {
-         // Selected Dev version
-         return latestInfo.value?.nightly?.windowsSetupUrl;
-      }
-   }
+		if (version === "release") {
+			// Selected Release version
+			return latestInfo.value?.release?.windowsSetupUrl;
+		}if (version === "nightly") {
+			// Selected Dev version
+			return latestInfo.value?.nightly?.windowsSetupUrl;
+		}
+	}
 
-   return undefined;
+	return undefined;
 }
 
 function isVersionAvailable(version: VersionKind): boolean {
-   if (!platformKind.value) {
-      return false;
-   }
+	if (!platformKind.value) {
+		return false;
+	}
 
-   const downloadLink = getDownloadLink(platformKind.value, version);
-   return !!downloadLink;
+	const downloadLink = getDownloadLink(platformKind.value, version);
+	return !!downloadLink;
 }
 
 function updateVersionAvailabilities() {
-   for (let i: number = 0; i < 2; i++) {
-      const version = i + 1 === 1 ? "release" : "nightly";
-      let versionAvailable: boolean = isVersionAvailable(version);
+	for (let i = 0; i < 2; i++) {
+		const version = i + 1 === 1 ? "release" : "nightly";
+		const versionAvailable: boolean = isVersionAvailable(version);
 
-      if (versionAvailable) {
-         versionKind.value = version;
-         isAnyVersionAvailable.value = true;
-         break;
-      }
-   }
+		if (versionAvailable) {
+			versionKind.value = version;
+			isAnyVersionAvailable.value = true;
+			break;
+		}
+	}
 }
 </script>
 

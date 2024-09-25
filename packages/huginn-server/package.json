@@ -1,30 +1,30 @@
 {
-   "name": "@huginn/server",
-   "main": "./src/index-no-serve.ts",
-   "version": "0.4-dev",
-   "type": "module",
-   "scripts": {
-      "dev": "bun --watch src/index.ts"
-   },
-   "dependencies": {
-      "@aws-sdk/client-s3": "^3.654.0",
-      "@huginn/backend-shared": "workspace:*",
-      "@huginn/shared": "workspace:*",
-      "@octokit/types": "^13.5.0",
-      "@prisma/client": "^5.19.1",
-      "consola": "^3.2.3",
-      "crossws": "^0.2.4",
-      "h3": "^1.12.0",
-      "jose": "^5.9.2",
-      "octokit": "^4.0.2",
-      "ohash": "^1.1.4",
-      "prisma": "^5.19.1",
-      "semver": "^7.6.3",
-      "unimport": "^3.12.0",
-      "zod": "^3.23.8"
-   },
-   "imports": {
-      "#database": "./src/database/index.ts",
-      "#*": "./src/*.ts"
-   }
+	"name": "@huginn/server",
+	"main": "./src/index-no-serve.ts",
+	"version": "0.4-dev",
+	"type": "module",
+	"scripts": {
+		"dev": "bun --watch src/index.ts"
+	},
+	"dependencies": {
+		"@aws-sdk/client-s3": "^3.654.0",
+		"@huginn/backend-shared": "workspace:*",
+		"@huginn/shared": "workspace:*",
+		"@octokit/types": "^13.5.0",
+		"@prisma/client": "^5.19.1",
+		"consola": "^3.2.3",
+		"crossws": "^0.2.4",
+		"h3": "^1.12.0",
+		"jose": "^5.9.2",
+		"octokit": "^4.0.2",
+		"ohash": "^1.1.4",
+		"prisma": "^5.19.1",
+		"semver": "^7.6.3",
+		"unimport": "^3.12.0",
+		"zod": "^3.23.8"
+	},
+	"imports": {
+		"#database": "./src/database/index.ts",
+		"#*": "./src/*.ts"
+	}
 }

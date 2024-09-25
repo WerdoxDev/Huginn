@@ -1,65 +1,65 @@
-import { DeepPartial, StatusCode } from "@/types";
-import { ReactNode } from "@tanstack/react-router";
-import { Dispatch, createContext, useContext, useReducer } from "react";
+import type { DeepPartial, StatusCode } from "@/types";
+import type { ReactNode } from "@tanstack/react-router";
+import { type Dispatch, createContext, useContext, useReducer } from "react";
 
 type DefaultModal = { isOpen: boolean };
 export type ModalContextType = {
-   settings: DefaultModal;
-   info: DefaultModal & {
-      status: StatusCode;
-      text: string;
-      title: string;
-      action?: {
-         cancel?: {
-            text?: string;
-            callback: () => void;
-         };
-         confirm?: {
-            text: string;
-            callback: () => void;
-         };
-      };
-      closable: boolean;
-   };
-   imageCrop: DefaultModal & {
-      originalImageData: string;
-   };
-   createDM: DefaultModal;
+	settings: DefaultModal;
+	info: DefaultModal & {
+		status: StatusCode;
+		text: string;
+		title: string;
+		action?: {
+			cancel?: {
+				text?: string;
+				callback: () => void;
+			};
+			confirm?: {
+				text: string;
+				callback: () => void;
+			};
+		};
+		closable: boolean;
+	};
+	imageCrop: DefaultModal & {
+		originalImageData: string;
+	};
+	createDM: DefaultModal;
 };
 
 const defautlValue: ModalContextType = {
-   settings: { isOpen: false },
-   info: { isOpen: false, status: "none", title: "", text: "", closable: true },
-   imageCrop: { isOpen: false, originalImageData: "" },
-   createDM: { isOpen: false },
+	settings: { isOpen: false },
+	info: { isOpen: false, status: "none", title: "", text: "", closable: true },
+	imageCrop: { isOpen: false, originalImageData: "" },
+	createDM: { isOpen: false },
 };
 
 const ModalContext = createContext<ModalContextType>(defautlValue);
 const ModalDispatchContext = createContext<Dispatch<DeepPartial<ModalContextType>>>(() => {});
 
 export function ModalProvider(props: { children?: ReactNode }) {
-   const [modals, dispatch] = useReducer(modalsReducer, defautlValue);
+	const [modals, dispatch] = useReducer(modalsReducer, defautlValue);
 
-   return (
-      <ModalContext.Provider value={modals}>
-         <ModalDispatchContext.Provider value={dispatch}>{props.children}</ModalDispatchContext.Provider>
-      </ModalContext.Provider>
-   );
+	return (
+		<ModalContext.Provider value={modals}>
+			<ModalDispatchContext.Provider value={dispatch}>{props.children}</ModalDispatchContext.Provider>
+		</ModalContext.Provider>
+	);
 }
 
 function modalsReducer(modals: ModalContextType, action: DeepPartial<ModalContextType>): ModalContextType {
-   const settings = action.settings ? Object.assign({}, modals.settings, action.settings) : modals.settings;
-   const info = action.info ? Object.assign({}, modals.info, action.info) : modals.info;
-   const imageCrop = action.imageCrop ? Object.assign({}, modals.imageCrop, action.imageCrop) : modals.imageCrop;
-   const createDM = action.createDM ? Object.assign({}, modals.createDM, action.createDM) : modals.createDM;
+	const settings = action.settings ? Object.assign({}, modals.settings, action.settings) : modals.settings;
+	const info = action.info ? Object.assign({}, modals.info, action.info) : modals.info;
+	const imageCrop = action.imageCrop ? Object.assign({}, modals.imageCrop, action.imageCrop) : modals.imageCrop;
+	const createDM = action.createDM ? Object.assign({}, modals.createDM, action.createDM) : modals.createDM;
 
-   return { settings, info, imageCrop, createDM: createDM };
+	return { settings, info, imageCrop, createDM: createDM };
 }
 
 export function useModals() {
-   return useContext(ModalContext);
+	return useContext(ModalContext);
 }
 
 export function useModalsDispatch() {
-   return useContext(ModalDispatchContext);
+	return useContext(ModalDispatchContext);
 }

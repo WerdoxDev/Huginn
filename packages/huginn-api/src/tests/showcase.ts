@@ -14,8 +14,8 @@ await client.channels.createMessage("1234", { content: "HELLO!" });
 await client.relationships.createRelationship({ username: "other_test" });
 
 // Listening for sent messages
-client.gateway.on("message_create", event => {
-   console.log(event.channelId, event.content, event.author.id);
+client.gateway.on("message_create", (event) => {
+	console.log(event.channelId, event.content, event.author.id);
 });
 
 await client.logout();

@@ -1,39 +1,47 @@
-import { ReactNode } from "@tanstack/react-router";
+import type { ReactNode } from "@tanstack/react-router";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { Dispatch, createContext, useContext, useReducer } from "react";
+import { type Dispatch, createContext, useContext, useEffect, useReducer } from "react";
 
 type WindowContextType = {
-   maximized: boolean;
-   environment: "browser" | "desktop";
+	maximized: boolean;
+	environment: "browser" | "desktop";
 };
 
 const defaultValue: WindowContextType = {
-   maximized: window.__TAURI_INTERNALS__ ? await getCurrentWebviewWindow().isMaximized() : true,
-   environment: window.__TAURI_INTERNALS__ ? "desktop" : "browser",
+	maximized: false,
+	environment: window.__TAURI_INTERNALS__ ? "desktop" : "browser",
 };
 
 const WindowContext = createContext<WindowContextType>(defaultValue);
 const WindowDispatchContext = createContext<Dispatch<Partial<WindowContextType>>>(() => {});
 
 export function WindowProvider(props: { children?: ReactNode }) {
-   const [window, dispatch] = useReducer(windowReducer, defaultValue);
+	const [appWindow, dispatch] = useReducer(windowReducer, defaultValue);
 
-   return (
-      <WindowContext.Provider value={window}>
-         <WindowDispatchContext.Provider value={dispatch}>{props.children}</WindowDispatchContext.Provider>
-      </WindowContext.Provider>
-   );
+	useEffect(() => {
+		async function initialize() {
+			dispatch({ maximized: window.__TAURI_INTERNALS__ ? await getCurrentWebviewWindow().isMaximized() : true });
+		}
+
+		initialize();
+	}, []);
+
+	return (
+		<WindowContext.Provider value={appWindow}>
+			<WindowDispatchContext.Provider value={dispatch}>{props.children}</WindowDispatchContext.Provider>
+		</WindowContext.Provider>
+	);
 }
 
 function windowReducer(window: WindowContextType, action: Partial<WindowContextType>): WindowContextType {
-   const newWindow = Object.assign({}, window, action);
-   return newWindow;
+	const newWindow = Object.assign({}, window, action);
+	return newWindow;
 }
 
 export function useWindow() {
-   return useContext(WindowContext);
+	return useContext(WindowContext);
 }
 
 export function useWindowDispatch() {
-   return useContext(WindowDispatchContext);
+	return useContext(WindowDispatchContext);
 }

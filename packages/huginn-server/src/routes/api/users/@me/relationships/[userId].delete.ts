@@ -10,17 +10,17 @@ import { z } from "zod";
 const schema = z.object({ userId: z.string() });
 
 router.delete(
-   "/users/@me/relationships/:userId",
-   defineEventHandler(async event => {
-      const { payload } = await useVerifiedJwt(event);
-      const userId = (await useValidatedParams(event, schema)).userId;
+	"/users/@me/relationships/:userId",
+	defineEventHandler(async (event) => {
+		const { payload } = await useVerifiedJwt(event);
+		const userId = (await useValidatedParams(event, schema)).userId;
 
-      await prisma.relationship.deleteByUserId(payload.id, userId);
+		await prisma.relationship.deleteByUserId(payload.id, userId);
 
-      dispatchToTopic(payload.id, "relationship_delete", userId);
-      dispatchToTopic(userId, "relationship_delete", payload.id);
+		dispatchToTopic(payload.id, "relationship_delete", userId);
+		dispatchToTopic(userId, "relationship_delete", payload.id);
 
-      setResponseStatus(event, HttpCode.OK);
-      return null;
-   }),
+		setResponseStatus(event, HttpCode.OK);
+		return null;
+	}),
 );

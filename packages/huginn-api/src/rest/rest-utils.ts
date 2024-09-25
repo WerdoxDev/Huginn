@@ -1,35 +1,35 @@
-import { ResponseLike } from "@huginn/shared";
-import { RESTOptions } from "../types";
+import type { ResponseLike } from "@huginn/shared";
+import type { RESTOptions } from "../types";
 
 export const DefaultRestOptions: Required<RESTOptions> = {
-   api: "http://localhost:3000",
-   cdn: "http://localhost:3002",
-   authPrefix: "Bearer",
-   async makeRequest(...args): Promise<ResponseLike> {
-      return defaultMakeRequest(...args);
-   },
+	api: "http://localhost:3000",
+	cdn: "http://localhost:3002",
+	authPrefix: "Bearer",
+	async makeRequest(...args): Promise<ResponseLike> {
+		return defaultMakeRequest(...args);
+	},
 } as const;
 
 export async function defaultMakeRequest(url: string, init: RequestInit): Promise<ResponseLike> {
-   const response = await fetch(url, init);
+	const response = await fetch(url, init);
 
-   return {
-      body: response.body,
-      async arrayBuffer() {
-         return response.arrayBuffer();
-      },
-      async json() {
-         return response.json();
-      },
-      async text() {
-         return response.text();
-      },
-      get bodyUsed() {
-         return response.bodyUsed;
-      },
-      headers: response.headers,
-      status: response.status,
-      statusText: response.statusText,
-      ok: response.status >= 200 && response.status < 300,
-   };
+	return {
+		body: response.body,
+		async arrayBuffer() {
+			return response.arrayBuffer();
+		},
+		async json() {
+			return response.json();
+		},
+		async text() {
+			return response.text();
+		},
+		get bodyUsed() {
+			return response.bodyUsed;
+		},
+		headers: response.headers,
+		status: response.status,
+		statusText: response.statusText,
+		ok: response.status >= 200 && response.status < 300,
+	};
 }

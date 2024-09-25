@@ -8,27 +8,27 @@ import Feature from "./components/Feature.vue";
 const onlineCount = ref("");
 
 onMounted(async () => {
-   try {
-      const countData = await fetch(`${import.meta.env.VITE_SERVER_ADDRESS}/api/online-users`);
-      onlineCount.value = (await countData.json()).count.toLocaleString();
-   } catch (e) {
-      console.error("Something went wrong fetching user count!");
-   }
+	try {
+		const countData = await fetch(`${import.meta.env.VITE_SERVER_ADDRESS}/api/online-users`);
+		onlineCount.value = (await countData.json()).count.toLocaleString();
+	} catch (e) {
+		console.error("Something went wrong fetching user count!");
+	}
 
-   const rive = new Rive({
-      src: "/huginn-website-intro.riv",
-      canvas: document.getElementById("intro") as HTMLCanvasElement,
-      autoplay: true,
-      isTouchScrollEnabled: true,
-      stateMachines: "Main",
-      onLoad: () => {
-         rive.resizeDrawingSurfaceToCanvas();
-      },
-   });
+	const rive = new Rive({
+		src: "/huginn-website-intro.riv",
+		canvas: document.getElementById("intro") as HTMLCanvasElement,
+		autoplay: true,
+		isTouchScrollEnabled: true,
+		stateMachines: "Main",
+		onLoad: () => {
+			rive.resizeDrawingSurfaceToCanvas();
+		},
+	});
 
-   window.addEventListener("resize", () => {
-      rive.resizeDrawingSurfaceToCanvas();
-   });
+	window.addEventListener("resize", () => {
+		rive.resizeDrawingSurfaceToCanvas();
+	});
 });
 </script>
 
