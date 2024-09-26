@@ -106,7 +106,9 @@ export default function SettingsModal() {
 	}, [modal.isOpen]);
 
 	async function onSave() {
-		await settingsDispatch(modifiedSettings.current ?? {});
+		if (modifiedSettings.current && modifiedSettings.current !== settings) {
+			await settingsDispatch(modifiedSettings.current);
+		}
 	}
 
 	function onTabChanged(index: number) {

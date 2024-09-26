@@ -1,4 +1,5 @@
 import type { DeepPartial, ThemeType } from "@/types";
+import { getVersion } from "@tauri-apps/api/app";
 import { appDataDir } from "@tauri-apps/api/path";
 import { BaseDirectory, create, exists, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { type ReactNode, createContext, useContext, useReducer } from "react";
@@ -31,6 +32,15 @@ export async function initializeSettings() {
 		// biome-ignore lint/style/noNonNullAssertion: <explanation>
 		value = { ...defaultValue, ...JSON.parse(localStorage.getItem("settings")!) };
 	}
+
+	const version = await getVersion();
+	if (value.flavour === "nightly" && !version.includes("nightly")) {
+		value.flavour = "release";
+		settingsReducer(value, value);
+	} else if (value.flavour === "release" && version.includes("nightly")) {
+		value.flavour = "nightly";
+		settingsReducer(value, value);
+	}
 }
 
 const SettingsContext = createContext<SettingsContextType>(value);
@@ -58,6 +68,8 @@ export function SettingsProvider(props: { children?: ReactNode }) {
 
 function settingsReducer(settings: SettingsContextType, action: DeepPartial<SettingsContextType>) {
 	if (!action) return { ...settings };
+
+	console.log("CHANGE");
 
 	if (window.__TAURI_INTERNALS__) {
 		writeSettingsFile({ ...settings, ...action });

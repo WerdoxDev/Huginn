@@ -5,7 +5,6 @@ import { WindowProvider } from "@contexts/windowContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import DefaultNotFound from "@components/DefaultNotFound";
@@ -42,19 +41,19 @@ await initializeSettings();
 
 // biome-ignore lint/style/noNonNullAssertion: <explanation>
 createRoot(document.getElementById("root")!).render(
-	<StrictMode>
-		<PostHogProvider client={posthogClient}>
-			<QueryClientProvider client={queryClient}>
-				<EventProvider>
-					<SettingsProvider>
-						<APIProvider>
-							<WindowProvider>
-								<HuginnRouterProvider router={router} />
-							</WindowProvider>
-						</APIProvider>
-					</SettingsProvider>
-				</EventProvider>
-			</QueryClientProvider>
-		</PostHogProvider>
-	</StrictMode>,
+	// <StrictMode>
+	<PostHogProvider client={posthogClient}>
+		<QueryClientProvider client={queryClient}>
+			<EventProvider>
+				<SettingsProvider>
+					<APIProvider>
+						<WindowProvider>
+							<HuginnRouterProvider router={router} />
+						</WindowProvider>
+					</APIProvider>
+				</SettingsProvider>
+			</EventProvider>
+		</QueryClientProvider>
+	</PostHogProvider>,
+	// </StrictMode>,
 );

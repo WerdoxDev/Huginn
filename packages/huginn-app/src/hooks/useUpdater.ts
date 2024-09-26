@@ -1,7 +1,6 @@
 import { useSettings } from "@contexts/settingsContext";
 import { invoke } from "@tauri-apps/api/core";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import { check } from "@tauri-apps/plugin-updater";
+import { type UnlistenFn, listen } from "@tauri-apps/api/event";
 import { useEffect, useRef, useState } from "react";
 
 type UpdateProgress = {
@@ -27,6 +26,11 @@ export default function useUpdater(onFinished?: (wasAvailable: boolean) => void)
 		let unlistenFinished: UnlistenFn;
 		let unlistenInfo: UnlistenFn;
 		let unlistenNotAvailable: UnlistenFn;
+
+		if (import.meta.env.DEV) {
+			onFinished?.(false);
+			return;
+		}
 
 		async function listenToEvents() {
 			unlistenNotAvailable = await listen("update-not-available", () => {

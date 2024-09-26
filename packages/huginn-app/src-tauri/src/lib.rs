@@ -43,6 +43,7 @@ async fn check_update(app: tauri::AppHandle, target: String) -> tauri::Result<()
 }
 
 async fn update(app: AppHandle, target: String) -> Result<(), tauri_plugin_updater::Error> {
+    println!("Checking update...");
     if let Some(update) = app
         .updater_builder()
         .version_comparator(|current, update| update.version != current)
@@ -53,6 +54,8 @@ async fn update(app: AppHandle, target: String) -> Result<(), tauri_plugin_updat
     {
         let mut downloaded = 0;
 
+        println!("Sending update info...");
+
         app.emit(
             "update-info",
             UpdateInfo {
@@ -62,6 +65,8 @@ async fn update(app: AppHandle, target: String) -> Result<(), tauri_plugin_updat
             },
         )
         .unwrap();
+
+        println!("Downloading update...");
 
         update
             .download_and_install(
@@ -78,17 +83,19 @@ async fn update(app: AppHandle, target: String) -> Result<(), tauri_plugin_updat
                     .unwrap();
                 },
                 || {
-                    println!("download finished");
+                    println!("Download finished!");
                     app.emit("update-finished", ()).unwrap();
                 },
             )
             .await?;
 
-        println!("update installed");
+        println!("Update installed!");
         app.restart();
     }
 
     app.emit("update-not-available", ()).unwrap();
+
+    println!("No update!");
 
     Ok(())
 }
