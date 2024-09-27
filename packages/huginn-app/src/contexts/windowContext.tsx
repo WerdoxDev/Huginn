@@ -1,3 +1,5 @@
+import type { VersionFlavour } from "@/types";
+import { getVersionFlavour } from "@lib/utils";
 import type { ReactNode } from "@tanstack/react-router";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { type Dispatch, createContext, useContext, useEffect, useReducer } from "react";
@@ -5,6 +7,7 @@ import { type Dispatch, createContext, useContext, useEffect, useReducer } from 
 type WindowContextType = {
 	maximized: boolean;
 	environment: "browser" | "desktop";
+	versionFlavour?: VersionFlavour;
 };
 
 const defaultValue: WindowContextType = {
@@ -20,7 +23,10 @@ export function WindowProvider(props: { children?: ReactNode }) {
 
 	useEffect(() => {
 		async function initialize() {
-			dispatch({ maximized: window.__TAURI_INTERNALS__ ? await getCurrentWebviewWindow().isMaximized() : true });
+			dispatch({
+				maximized: window.__TAURI_INTERNALS__ ? await getCurrentWebviewWindow().isMaximized() : true,
+				versionFlavour: await getVersionFlavour(),
+			});
 		}
 
 		initialize();

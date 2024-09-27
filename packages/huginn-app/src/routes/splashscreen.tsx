@@ -1,7 +1,9 @@
-import type { LoadingState } from "@/types";
+import type { LoadingState, VersionFlavour } from "@/types";
+import { useWindowDispatch } from "@contexts/windowContext";
 import useUpdater from "@hooks/useUpdater";
 import { createFileRoute } from "@tanstack/react-router";
 import { invoke } from "@tauri-apps/api/core";
+import { type UnlistenFn, listen } from "@tauri-apps/api/event";
 import { useEffect, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/splashscreen")({
@@ -15,6 +17,8 @@ function Splashscreen() {
 			await invoke("close_splashscreen");
 		}
 	});
+
+	const appWindowDispatch = useWindowDispatch();
 
 	const [loadingState, setLoadingState] = useState<LoadingState>("none");
 
@@ -41,12 +45,26 @@ function Splashscreen() {
 	}, [info]);
 
 	useEffect(() => {
+		const bc = new BroadcastChannel("huginn");
+		bc.onmessage = (event) => {
+			if (event.data.name === "restart_splashscreen" && event.data.target) {
+				appWindowDispatch({ versionFlavour: event.data.target });
+
+				setLoadingState("checking_update");
+				checkAndDownload(event.data.target);
+			}
+		};
+
 		async function checkForUpdate() {
 			setLoadingState("checking_update");
 			await checkAndDownload();
 		}
 
 		checkForUpdate();
+
+		return () => {
+			bc.close();
+		};
 	}, []);
 
 	return (

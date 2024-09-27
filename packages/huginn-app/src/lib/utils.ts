@@ -1,6 +1,7 @@
-import type { InputStatus, InputStatuses, InputValue, InputValues } from "@/types";
+import type { InputStatus, InputStatuses, InputValue, InputValues, VersionFlavour } from "@/types";
 import { HuginnAPIError } from "@huginn/api";
 import type { HuginnError, HuginnErrorData } from "@huginn/shared";
+import { getVersion } from "@tauri-apps/api/app";
 import React, { type JSXElementConstructor, type ReactNode } from "react";
 import { APIMessages } from "./error-messages";
 
@@ -77,4 +78,9 @@ export function createSingleEntryError(error: HuginnAPIError, name: string): Hug
 	return {
 		[name]: { _errors: [{ code: error.rawError.code.toString(), message: apiMessage ? apiMessage[1] : error.rawError.message }] },
 	};
+}
+
+export async function getVersionFlavour(): Promise<VersionFlavour> {
+	const version = await getVersion();
+	return version.includes("nightly") ? "nightly" : "release";
 }

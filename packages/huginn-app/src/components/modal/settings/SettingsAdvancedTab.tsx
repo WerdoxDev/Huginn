@@ -1,10 +1,13 @@
-import type { DropboxItem, SettingsTabProps } from "@/types";
+import type { DropboxItem, SettingsTabProps, VersionFlavour } from "@/types";
 import HuginnDropbox from "@components/HuginnDropbox";
 import HuginnInput from "@components/input/HuginnInput";
 import { useModalsDispatch } from "@contexts/modalContext";
+import { useWindow, useWindowDispatch } from "@contexts/windowContext";
 import { useInputs } from "@hooks/useInputs";
-import { useEffect, useState } from "react";
+import { getVersionFlavour } from "@lib/utils";
+import { invoke } from "@tauri-apps/api/core";
 import { relaunch } from "@tauri-apps/plugin-process";
+import { useEffect, useState } from "react";
 
 const flavourItems: DropboxItem[] = [
 	{ id: 0, name: "Release", value: "release" },
@@ -12,12 +15,15 @@ const flavourItems: DropboxItem[] = [
 ];
 
 export default function SettingsAdvancedTab(props: SettingsTabProps) {
+	const appWindow = useWindow();
+	const appWindowDispatch = useWindowDispatch();
+
 	const { values, validateValues, inputsProps } = useInputs([
 		{ name: "serverAddress", required: false, default: props.settings.serverAddress },
 		{ name: "cdnAddress", required: false, default: props.settings.cdnAddress },
 	]);
 
-	const [selectedFlavour, setSelectedFlavour] = useState(flavourItems.find((x) => x.value === props.settings.flavour));
+	const [selectedFlavour, setSelectedFlavour] = useState(flavourItems.find((x) => x.value === appWindow.versionFlavour));
 
 	const dispatch = useModalsDispatch();
 
@@ -33,36 +39,40 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 	}, [values]);
 
 	function onFlavourChange(value: DropboxItem) {
-		if (props.settings.flavour !== value.value) {
-			dispatch({
-				info: {
-					isOpen: true,
-					status: "default",
-					text: "Changing App flavour requires a restart to download the new version.",
-					title: "Hang on!",
-					action: {
-						confirm: {
-							text: "Restart",
-							callback: async () => {
-								setSelectedFlavour(value);
-								props.onChange?.({ flavour: (value.value as "release" | "nightly") ?? "release" });
-								await props.onSave?.();
-								dispatch({ info: { isOpen: false } });
-								await relaunch();
-							},
-						},
-						cancel: {
-							text: "Cancel",
-							callback: () => {
-								setSelectedFlavour(flavourItems.find((x) => x.value === props.settings.flavour) ?? flavourItems[0]);
-								dispatch({ info: { isOpen: false } });
-							},
+		if (selectedFlavour?.id === value.id) {
+			return;
+		}
+
+		dispatch({
+			info: {
+				isOpen: true,
+				status: "default",
+				text: "Changing App flavour requires a restart to download the new version.",
+				title: "Hang on!",
+				action: {
+					confirm: {
+						text: "Restart",
+						callback: async () => {
+							setSelectedFlavour(value);
+							dispatch({ info: { isOpen: false } });
+
+							const bc = new BroadcastChannel("huginn");
+							bc.postMessage({ name: "restart_splashscreen", target: value.value });
+
+							await invoke("open_splashscreen");
 						},
 					},
-					closable: false,
+					cancel: {
+						text: "Cancel",
+						callback: () => {
+							setSelectedFlavour(flavourItems.find((x) => x.value === appWindow.versionFlavour));
+							dispatch({ info: { isOpen: false } });
+						},
+					},
 				},
-			});
-		}
+				closable: false,
+			},
+		});
 	}
 
 	return (

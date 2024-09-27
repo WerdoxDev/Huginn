@@ -1,4 +1,6 @@
+import { VersionFlavour } from "@/types";
 import { useSettings } from "@contexts/settingsContext";
+import { useWindow } from "@contexts/windowContext";
 import { invoke } from "@tauri-apps/api/core";
 import { type UnlistenFn, listen } from "@tauri-apps/api/event";
 import { useEffect, useRef, useState } from "react";
@@ -19,18 +21,13 @@ export default function useUpdater(onFinished?: (wasAvailable: boolean) => void)
 	const [info, setInfo] = useState<UpdateInfo>();
 	const contentLength = useRef(0);
 	const downloaded = useRef(0);
-	const settings = useSettings();
+	const appWindow = useWindow();
 
 	useEffect(() => {
 		let unlistenProgress: UnlistenFn;
 		let unlistenFinished: UnlistenFn;
 		let unlistenInfo: UnlistenFn;
 		let unlistenNotAvailable: UnlistenFn;
-
-		if (import.meta.env.DEV) {
-			onFinished?.(false);
-			return;
-		}
 
 		async function listenToEvents() {
 			unlistenNotAvailable = await listen("update-not-available", () => {
@@ -58,10 +55,15 @@ export default function useUpdater(onFinished?: (wasAvailable: boolean) => void)
 			unlistenInfo?.();
 			unlistenNotAvailable?.();
 		};
-	}, []);
+	}, [appWindow.versionFlavour]);
 
-	async function checkAndDownload() {
-		await invoke("check_update", { target: `windows-${settings.flavour}` });
+	async function checkAndDownload(overrideTarget?: VersionFlavour) {
+		if (import.meta.env.DEV) {
+			onFinished?.(false);
+			return;
+		}
+
+		await invoke("check_update", { target: `windows-${overrideTarget ?? appWindow.versionFlavour}` });
 	}
 
 	return { checkAndDownload, info, progress, contentLength, downloaded };

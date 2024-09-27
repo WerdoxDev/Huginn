@@ -155,3 +155,5 @@ export type MessageRenderInfo = {
 	newMinute: boolean;
 	newDate: boolean;
 };
+
+export type VersionFlavour = "nightly" | "release";
