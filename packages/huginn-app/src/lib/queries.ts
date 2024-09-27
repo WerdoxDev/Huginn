@@ -1,6 +1,6 @@
 import type { HuginnClient } from "@huginn/api";
-import { type APIGetUserChannelsResult, resolveBase64, resolveImage, type Snowflake } from "@huginn/shared";
-import { infiniteQueryOptions, type QueryClient, queryOptions } from "@tanstack/react-query";
+import { type APIGetUserChannelsResult, type Snowflake, resolveBase64, resolveImage } from "@huginn/shared";
+import { type QueryClient, infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 export function getChannelsOptions(client: HuginnClient, guildId: Snowflake) {
 	return queryOptions({
@@ -12,7 +12,7 @@ export function getChannelsOptions(client: HuginnClient, guildId: Snowflake) {
 		},
 	});
 }
-export function getMessagesOptions(queryClient: QueryClient, client: HuginnClient, channelId: Snowflake) {
+export function getMessagesOptions(queryClient: QueryClient, client: HuginnClient, channelId: Snowflake, enabled = true) {
 	return infiniteQueryOptions({
 		queryKey: ["messages", channelId],
 		initialPageParam: { before: "", after: "" },
@@ -34,6 +34,7 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
 		},
 		maxPages: 2,
 		retry: false,
+		enabled,
 	});
 }
 

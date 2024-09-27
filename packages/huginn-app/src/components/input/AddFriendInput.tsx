@@ -1,7 +1,10 @@
 import type { HuginnButtonProps, HuginnInputProps } from "@/types";
 import HuginnButton from "@components/button/HuginnButton";
+import LoadingButton from "@components/button/LoadingButton";
 
-export default function AddFriendInput(props: HuginnInputProps & { onClick?: () => void; disabled?: boolean; buttonProps?: HuginnButtonProps }) {
+export default function AddFriendInput(
+	props: HuginnInputProps & { onClick?: () => void; disabled?: boolean; buttonProps?: HuginnButtonProps; loading: boolean },
+) {
 	return (
 		<>
 			<div
@@ -12,13 +15,14 @@ export default function AddFriendInput(props: HuginnInputProps & { onClick?: () 
 					placeholder="e.g: Werdox"
 					onChange={(e) => props.onChange?.(e.target)}
 				/>
-				<HuginnButton
-					className="bg-primary whitespace-nowrap rounded-md px-5 py-1.5 text-sm font-medium"
+				<LoadingButton
+					loading={props.loading}
+					className="bg-primary whitespace-nowrap rounded-md h-8 w-64 text-sm font-medium"
 					disabled={props.disabled}
 					onClick={() => props.onClick?.()}
 				>
 					Send Friend Request
-				</HuginnButton>
+				</LoadingButton>
 			</div>
 			{props.status.text && (
 				<div className={`mt-2 text-sm ${props.status.code === "error" ? "text-error" : "text-success"}`}>{props.status.text}</div>

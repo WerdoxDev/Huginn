@@ -1,10 +1,13 @@
+import { useClient } from "@contexts/apiContext";
+import { useModalsDispatch } from "@contexts/modalContext";
+import { useWindow } from "@contexts/windowContext";
 import type { APIGetUserChannelsResult } from "@huginn/shared";
+import { getMessagesOptions } from "@lib/queries";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import clsx from "clsx";
 import DirectMessageChannel from "./DirectMessageChannel";
 import RingLinkButton from "./button/RingLinkButton";
-import { useWindow } from "@contexts/windowContext";
-import clsx from "clsx";
 import { Tooltip } from "./tooltip/Tooltip";
-import { useModalsDispatch } from "@contexts/modalContext";
 
 export default function HomeSidebar(props: { channels?: APIGetUserChannelsResult }) {
 	const appWindow = useWindow();

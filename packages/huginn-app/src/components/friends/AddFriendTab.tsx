@@ -27,6 +27,7 @@ export default function AddFriendTab() {
 				}}
 			>
 				<AddFriendInput
+					loading={mutation.isPending}
 					className="mt-5"
 					{...inputsProps.username}
 					buttonProps={{ type: "submit" }}
