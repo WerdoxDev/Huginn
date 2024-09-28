@@ -1,6 +1,6 @@
 import type { HuginnButtonProps, HuginnInputProps } from "@/types";
-import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
+import clsx from "clsx";
 
 export default function AddFriendInput(
 	props: HuginnInputProps & { onClick?: () => void; disabled?: boolean; buttonProps?: HuginnButtonProps; loading: boolean },
@@ -8,16 +8,24 @@ export default function AddFriendInput(
 	return (
 		<>
 			<div
-				className={`bg-secondary flex w-full gap-x-2.5 overflow-hidden rounded-lg py-2.5 pl-4 pr-2.5 ring-1 ${props.className} ${props.status.code === "error" ? "ring-error" : props.status.code === "success" ? "ring-success" : "has-[:focus]:ring-primary ring-transparent"}`}
+				className={clsx(
+					"flex w-full gap-x-2.5 overflow-hidden rounded-lg bg-secondary py-2.5 pr-2.5 pl-4 ring-1",
+					props.className,
+					props.status.code === "error"
+						? "ring-error"
+						: props.status.code === "success"
+							? "ring-success"
+							: "ring-transparent has-[:focus]:ring-primary",
+				)}
 			>
 				<input
-					className="bg-secondary text-text placeholder-text/50 w-full outline-none"
+					className="w-full bg-secondary text-text placeholder-text/50 outline-none"
 					placeholder="e.g: Werdox"
 					onChange={(e) => props.onChange?.(e.target)}
 				/>
 				<LoadingButton
 					loading={props.loading}
-					className="bg-primary whitespace-nowrap rounded-md h-8 w-64 text-sm font-medium"
+					className="h-8 w-64 whitespace-nowrap rounded-md bg-primary font-medium text-sm"
 					disabled={props.disabled}
 					onClick={() => props.onClick?.()}
 				>

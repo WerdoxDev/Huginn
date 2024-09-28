@@ -1,6 +1,6 @@
 import { QuickActionButton } from "@components/button/QuickActionButton";
 import { useModalsDispatch } from "@contexts/modalContext";
-import { Link, Outlet, createFileRoute, useParams } from "@tanstack/react-router";
+import { Link, Outlet, createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/channels/@me")({
 	component: Component,
@@ -9,6 +9,7 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/
 function Component() {
 	const params = useParams({ strict: false });
 	const dispatch = useModalsDispatch();
+	const navigate = useNavigate();
 
 	return params.channelId ? (
 		<Outlet />
@@ -28,7 +29,7 @@ function Component() {
 				</div>
 				<div className="flex gap-2">
 					<QuickActionButton onClick={() => dispatch({ createDM: { isOpen: true } })}>Create Direct Message</QuickActionButton>
-					<QuickActionButton>Add a Friend</QuickActionButton>
+					<QuickActionButton onClick={() => navigate({ to: "/friends" })}>Add a Friend</QuickActionButton>
 				</div>
 			</div>
 			<div className="bg-background flex h-16 w-full flex-shrink-0" />

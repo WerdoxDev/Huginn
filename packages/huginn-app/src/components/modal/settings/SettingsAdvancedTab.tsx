@@ -47,7 +47,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 			info: {
 				isOpen: true,
 				status: "default",
-				text: "Changing App flavour requires a restart to download the new version.",
+				text: "Changing App flavour requires a reload to download the new version.",
 				title: "Hang on!",
 				action: {
 					confirm: {

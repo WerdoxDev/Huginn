@@ -25,7 +25,8 @@
 		"rules": {
 			"recommended": true,
 			"correctness": { "useExhaustiveDependencies": "off" },
-			"a11y": { "useKeyWithClickEvents": "off" }
+			"a11y": { "useKeyWithClickEvents": "off" },
+			"nursery": { "useSortedClasses": "info" }
 		},
 		"ignore": ["packages/huginn-app/src-tauri/**/*", "packages/huginn-app/dist/**/*", "routeTree.gen.ts"]
 	},

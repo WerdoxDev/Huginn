@@ -19,8 +19,8 @@ export default function AddFriendTab() {
 
 	return (
 		<TabPanel>
-			<div className="text-text text-lg font-medium uppercase">Add Friend</div>
-			<div className="text-text/70 mt-1 text-sm">You can add your friends using their Huginn username</div>
+			<div className="font-medium text-lg text-text uppercase">Add Friend</div>
+			<div className="mt-1 text-sm text-text/70">You can add your friends using their Huginn username</div>
 			<form
 				onSubmit={(e) => {
 					e.preventDefault();
@@ -28,7 +28,7 @@ export default function AddFriendTab() {
 			>
 				<AddFriendInput
 					loading={mutation.isPending}
-					className="mt-5"
+					className="mt-5 "
 					{...inputsProps.username}
 					buttonProps={{ type: "submit" }}
 					onClick={() => {
