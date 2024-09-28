@@ -1,5 +1,5 @@
+// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
 import { Buffer } from "buffer";
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import type { Base64Resolvable, BufferResolvable, ResolvedFile } from "@huginn/shared";
 
 /**
