@@ -28,11 +28,11 @@ export default function UserAvatarWithStatus(props: {
 			{avatar && !hasErrors ? (
 				<img alt="user-avatar" src={avatar} onError={() => setHasErrors(true)} className="h-full w-full rounded-full object-cover" />
 			) : !hasErrors && !avatar ? (
-				<div className="bg-primary/50 h-full w-full rounded-full" />
+				<div className="h-full w-full rounded-full bg-primary/50" />
 			) : (
-				<div className="bg-error/50 text-text flex h-full w-full items-center justify-center rounded-full font-bold">!</div>
+				<div className="flex h-full w-full items-center justify-center rounded-full bg-error/50 font-bold text-text">!</div>
 			)}
-			<div className="absolute bottom-0 right-0 rounded-full bg-[#FFA000]" style={{ width: statusSize, height: statusSize }} />
+			<div className="absolute right-0 bottom-0 rounded-full bg-[#FFA000]" style={{ width: statusSize, height: statusSize }} />
 		</div>
 	);
 }
