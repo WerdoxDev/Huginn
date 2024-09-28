@@ -71,7 +71,6 @@ export function resolveRequest(request: InternalRequest): ResolvedRequest {
 					name = `${name}.${parsedType.extension}`;
 				}
 
-				console.log(contentType, name);
 				formData.append(fileKey, new Blob([file.data], { type: contentType }), name);
 			} else {
 				formData.append(fileKey, new Blob([`${file.data}`], { type: file.contentType }), file.name);
