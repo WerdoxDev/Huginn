@@ -1,9 +1,9 @@
 import { expect, test } from "bun:test";
 import path from "node:path";
 import type { HuginnErrorFieldInformation } from "@huginn/shared";
-import { cdnHost, cdnPort, uploadsDir } from "../setup";
+import { CDN_HOST, CDN_PORT, UPLOADS_DIR } from "../setup";
 
-const url = `http://${cdnHost}:${cdnPort}`;
+const url = `http://${CDN_HOST}:${CDN_PORT}`;
 
 test("POST /avatars/123 empty is ok", async () => {
 	const result = await fetch(`${url}/avatars/123`, { method: "POST" });
@@ -42,7 +42,7 @@ test("GET /avatars/123/pixel.jpeg exists", async () => {
 	expect(results.every((x) => x.ok)).toBeTrue();
 
 	for (const format of ["jpeg", "jpg", "webp"]) {
-		const file = Bun.file(path.resolve(uploadsDir, `avatars/pixel.${format}`));
+		const file = Bun.file(path.resolve(UPLOADS_DIR, `avatars/pixel.${format}`));
 		expect(await file.exists()).toBeTrue();
 	}
 });

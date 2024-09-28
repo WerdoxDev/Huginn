@@ -1,10 +1,8 @@
-import path from "node:path";
-import type { BunFile } from "bun";
 import { createError } from "h3";
 import sharp from "sharp";
+import { storage } from "#cdn";
 import { CDNError, CDNErrorType } from "../error";
-import { uploadsDir } from "../setup";
-import { type FileContentTypes, type FileFormats, type FileInfo, FileTypes } from "../types";
+import { type FileCategory, type FileContentTypes, type FileFormats, type FileInfo, FileTypes } from "../types";
 
 export function extractFileInfo(filename: string): FileInfo {
 	const split = filename.split(".");
@@ -20,38 +18,40 @@ export function extractFileInfo(filename: string): FileInfo {
 	return { name, format, mimeType };
 }
 
-export async function findImageByName(directory: string, name: string) {
+export async function findImageByName(category: FileCategory, name: string) {
 	const formats = ["png", "jpeg", "jpg", "webp"];
 
 	for (const format of formats) {
 		const filename = `${name}.${format}`;
-		const file = Bun.file(path.resolve(uploadsDir, directory, filename));
-		if (await file.exists()) {
-			return { file, info: extractFileInfo(filename) };
+
+		const exists = await storage.exists(category, filename);
+
+		if (exists) {
+			return { file: (await storage.getFile(category, filename)) as ReadableStream, info: extractFileInfo(filename) };
 		}
 	}
 
 	throw createError({ cause: new CDNError("findImageByName", CDNErrorType.FILE_NOT_FOUND) });
 }
 
-export async function transformImage(file: BunFile, format: FileFormats, quality: number) {
+export async function transformImage(stream: ReadableStream, format: FileFormats, quality: number): Promise<ArrayBuffer> {
 	if (format === "jpg" || format === "jpeg") {
 		return (
-			await sharp(await file.arrayBuffer())
+			await sharp(await Bun.readableStreamToArrayBuffer(stream))
 				.jpeg({ quality })
 				.toBuffer()
 		).buffer as ArrayBuffer;
 	}
 	if (format === "webp") {
 		return (
-			await sharp(await file.arrayBuffer())
+			await sharp(await Bun.readableStreamToArrayBuffer(stream))
 				.webp({ quality })
 				.toBuffer()
 		).buffer as ArrayBuffer;
 	}
 	if (format === "png") {
 		return (
-			await sharp(await file.arrayBuffer())
+			await sharp(await Bun.readableStreamToArrayBuffer(stream))
 				.png({ quality })
 				.toBuffer()
 		).buffer as ArrayBuffer;

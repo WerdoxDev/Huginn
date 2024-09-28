@@ -1,17 +1,32 @@
-import { handleCommonCDNErrors } from "#utils/route-utils";
-import { createErrorFactory, type ErrorFactory, logReject, logRequest, logResponse, logServerError } from "@huginn/backend-shared";
-import { Errors, generateRandomString, HttpCode, type HuginnErrorData } from "@huginn/shared";
+import { type ErrorFactory, createErrorFactory, logReject, logRequest, logResponse, logServerError } from "@huginn/backend-shared";
+import { Errors, HttpCode, type HuginnErrorData, generateRandomString } from "@huginn/shared";
 import type { Server } from "bun";
 import consola from "consola";
 import { colors } from "consola/utils";
-import { type App, createApp, createRouter, getResponseStatus, handleCors, type Router, send, setResponseHeader, setResponseStatus, toWebHandler } from "h3";
+import {
+	type App,
+	type Router,
+	createApp,
+	createRouter,
+	getResponseStatus,
+	handleCors,
+	send,
+	setResponseHeader,
+	setResponseStatus,
+	toWebHandler,
+} from "h3";
+import { FileStorage } from "#storage/file-storage";
+import { S3Storage } from "#storage/s3-storage";
+import type { Storage } from "#storage/storage";
+import { handleCommonCDNErrors } from "#utils/route-utils";
 import { version } from "../package.json";
 import { isCDNError } from "./error";
 import { importRoutes } from "./routes";
-import { cdnHost, cdnPort, certFile, keyFile } from "./setup";
+import { CDN_HOST, CDN_PORT, CERT_FILE, KEY_FILE } from "./setup";
 
-export async function startCdn(options?: { serve: boolean }): Promise<{ cdn?: Server; app: App; router: Router }> {
+export async function startCdn(options?: { serve: boolean; storage: "aws" | "local" }): Promise<{ cdn?: Server; app: App; router: Router }> {
 	consola.info(`Using version ${version}`);
+	consola.info(`Using ${colors.yellow(options?.storage ?? "")} storage`);
 	consola.start("Starting cdn...");
 
 	const app = createApp({
@@ -80,6 +95,7 @@ export async function startCdn(options?: { serve: boolean }): Promise<{ cdn?: Se
 	});
 
 	router = createRouter();
+	storage = options?.storage === "aws" ? new S3Storage() : new FileStorage();
 
 	await importRoutes();
 
@@ -91,10 +107,10 @@ export async function startCdn(options?: { serve: boolean }): Promise<{ cdn?: Se
 	app.use(router);
 
 	const cdn = Bun.serve<string>({
-		cert: certFile,
-		key: keyFile,
-		port: cdnPort,
-		hostname: cdnHost,
+		cert: CERT_FILE,
+		key: KEY_FILE,
+		port: CDN_PORT,
+		hostname: CDN_HOST,
 		fetch(req) {
 			return handler(req);
 		},
@@ -107,3 +123,4 @@ export async function startCdn(options?: { serve: boolean }): Promise<{ cdn?: Se
 }
 
 export let router: Readonly<Router>;
+export let storage: Storage;

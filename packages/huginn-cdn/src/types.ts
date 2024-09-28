@@ -17,3 +17,5 @@ export type FileInfo = {
 	format: FileFormats;
 	mimeType: FileContentTypes;
 };
+
+export type FileCategory = "avatars";
