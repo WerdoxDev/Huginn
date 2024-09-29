@@ -160,14 +160,16 @@ const main = defineCommand({
 runMain(main);
 
 async function getSuggestions(): Promise<Suggestions> {
-	const releases = await octokit.rest.repos.listReleases({ owner: "WerdoxDev", repo: REPO });
+	const releases = (await octokit.rest.repos.listReleases({ owner: "WerdoxDev", repo: REPO })).data.sort((v1, v2) =>
+		semver.rcompare(v1.name ?? v1.tag_name, v2.name ?? v2.tag_name),
+	);
 	const localBuilds = (await readdir(BUILDS_PATH))
 		.map((x) => semver.valid(x))
 		.filter((x) => x !== null)
 		.sort(semver.rcompare);
 
-	const latest = releases.data.find((x) => !x.prerelease);
-	const latestNightly = releases.data.find((x) => x.prerelease);
+	const latest = releases.find((x) => !x.prerelease);
+	const latestNightly = releases.find((x) => x.prerelease);
 
 	const localLatest = localBuilds.find((x) => !semver.prerelease(x));
 	const localLatestNightly = localBuilds.find((x) => semver.prerelease(x)?.[0]);
