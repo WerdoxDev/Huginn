@@ -1,4 +1,4 @@
-import { RelationshipType, type Snowflake, snowflake } from "@huginn/shared";
+import { RelationshipType, type Snowflake, WorkerID, snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 import { DBErrorType, assertCondition, assertId, assertObj, prisma } from ".";
 import type { RelationshipInclude, RelationshipPayload } from "./common";
@@ -77,7 +77,7 @@ const relationshipExtention = Prisma.defineExtension({
 
 				const createOutgoing = prisma.relationship.create({
 					data: {
-						id: snowflake.generate(),
+						id: snowflake.generate(WorkerID.RELATIONSHIP),
 						nickname: "",
 						type: RelationshipType.PENDING_OUTGOING,
 						ownerId: BigInt(senderId),
@@ -89,7 +89,7 @@ const relationshipExtention = Prisma.defineExtension({
 
 				const createIncoming = prisma.relationship.create({
 					data: {
-						id: snowflake.generate(),
+						id: snowflake.generate(WorkerID.RELATIONSHIP),
 						nickname: "",
 						type: RelationshipType.PENDING_INCOMING,
 						ownerId: BigInt(recieverId),

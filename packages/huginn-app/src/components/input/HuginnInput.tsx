@@ -1,6 +1,6 @@
 import type { HuginnInputProps, InputStatus } from "@/types";
 import { useInputBorder } from "@hooks/useInputBorder";
-import { snowflake } from "@huginn/shared";
+import { WorkerID, snowflake } from "@huginn/shared";
 import clsx from "clsx";
 import { type HTMLInputTypeAttribute, type MutableRefObject, type ReactNode, createContext, useContext, useRef, useState } from "react";
 
@@ -21,7 +21,7 @@ const InputContext = createContext<{
 });
 
 export default function HuginnInput(props: HuginnInputProps) {
-	const [id, _setId] = useState(() => snowflake.generateString());
+	const [id, _setId] = useState(() => snowflake.generateString(WorkerID.APP));
 	const inputRef = useRef<HTMLInputElement>(null);
 
 	return (
@@ -53,7 +53,7 @@ function Input(props: { headless?: boolean; className?: string }) {
 			value={inputContext.value}
 			ref={inputContext.inputRef}
 			className={clsx(
-				!props.headless && "placeholder-text/60 flex-grow bg-transparent p-2 text-white outline-none disabled:cursor-not-allowed",
+				!props.headless && "flex-grow bg-transparent p-2 text-white placeholder-text/60 outline-none disabled:cursor-not-allowed",
 				props.className,
 			)}
 			disabled={inputContext.disabled}
@@ -80,7 +80,7 @@ function Wrapper(props: {
 		<div
 			className={clsx(
 				props.className,
-				!props.headless && "bg-secondary flex w-full items-center rounded-md",
+				!props.headless && "flex w-full items-center rounded-md bg-secondary",
 				hasBorder &&
 					((props.border === "top" && "border-t-4") ||
 						(props.border === "bottom" && "border-b-4") ||
@@ -101,7 +101,7 @@ function Label(props: { children?: ReactNode; headless?: boolean; className?: st
 		<label
 			htmlFor={inputContext.id}
 			className={clsx(
-				!props.headless && "select-none text-xs font-medium uppercase opacity-90",
+				!props.headless && "select-none font-medium text-xs uppercase opacity-90",
 				inputContext.status.code === "none" ? "text-text" : "text-error",
 				props.className,
 			)}
@@ -114,7 +114,7 @@ function Label(props: { children?: ReactNode; headless?: boolean; className?: st
 						{inputContext.status.text}
 					</span>
 				) : (
-					inputContext.required && <span className="text-error pl-0.5">*</span>
+					inputContext.required && <span className="pl-0.5 text-error">*</span>
 				))}
 		</label>
 	);

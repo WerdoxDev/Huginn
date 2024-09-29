@@ -1,16 +1,16 @@
 import type { APIUser, LoginCredentials, RegisterUser, Tokens } from "@huginn/shared";
-import { type ClientOptions, ClientReadyState } from "../types";
+import { type Snowflake, WorkerID, snowflake } from "@huginn/shared";
 import { AuthAPI } from "../apis/auth";
 import { ChannelAPI } from "../apis/channel";
 import { CommonAPI } from "../apis/common";
+import { RelationshipAPI } from "../apis/relationship";
 import { UserAPI } from "../apis/user";
 import { Gateway } from "../gateway/client-gateway";
+import { CDN } from "../rest/cdn";
 import { REST } from "../rest/rest";
 import { TokenHandler } from "../rest/token-handler";
+import { type ClientOptions, ClientReadyState } from "../types";
 import { createDefaultClientOptions } from "../utils";
-import { type Snowflake, snowflake } from "@huginn/shared";
-import { RelationshipAPI } from "../apis/relationship";
-import { CDN } from "../rest/cdn";
 
 export class HuginnClient {
 	public readonly options: ClientOptions;
@@ -118,7 +118,7 @@ export class HuginnClient {
 	}
 
 	public generateNonce(): Snowflake {
-		const nonce = snowflake.generateString();
+		const nonce = snowflake.generateString(WorkerID.API);
 		return nonce;
 	}
 }

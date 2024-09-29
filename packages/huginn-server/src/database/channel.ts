@@ -1,4 +1,4 @@
-import { APIDMChannel, APIGroupDMChannel, ChannelType, type Snowflake, snowflake } from "@huginn/shared";
+import { APIDMChannel, APIGroupDMChannel, ChannelType, type Snowflake, WorkerID, snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 import { prisma } from ".";
 import type { ChannelInclude, ChannelPayload } from "./common";
@@ -67,7 +67,7 @@ const channelExtention = Prisma.defineExtension({
 				} else if (!isGroup) {
 					channel = (await prisma.channel.create({
 						data: {
-							id: snowflake.generate(),
+							id: snowflake.generate(WorkerID.CHANNEL),
 							type: ChannelType.DM,
 							lastMessageId: null,
 							recipients: {
@@ -80,7 +80,7 @@ const channelExtention = Prisma.defineExtension({
 				} else if (isGroup) {
 					channel = (await prisma.channel.create({
 						data: {
-							id: snowflake.generate(),
+							id: snowflake.generate(WorkerID.CHANNEL),
 							type: ChannelType.GROUP_DM,
 							name: name ? name : null,
 							icon: null,

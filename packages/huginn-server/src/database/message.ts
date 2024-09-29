@@ -1,8 +1,8 @@
 import type { Snowflake } from "@huginn/shared";
-import { DBErrorType, assertId, assertObj, prisma } from ".";
-import { snowflake } from "@huginn/shared";
+import { WorkerID, snowflake } from "@huginn/shared";
 import { MessageType } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
+import { DBErrorType, assertId, assertObj, prisma } from ".";
 import type { MessageInclude, MessagePayload } from "./common";
 
 const messagesExtention = Prisma.defineExtension({
@@ -56,7 +56,7 @@ const messagesExtention = Prisma.defineExtension({
 
 				const message = await prisma.message.create({
 					data: {
-						id: snowflake.generate(),
+						id: snowflake.generate(WorkerID.MESSAGE),
 						type: MessageType.DEFAULT,
 						channelId: BigInt(channelId),
 						content: content ?? "",

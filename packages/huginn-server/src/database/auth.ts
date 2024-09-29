@@ -1,4 +1,4 @@
-import { type APIPostLoginJSONBody, type APIPostRegisterJSONBody, UserFlags, snowflake } from "@huginn/shared";
+import { type APIPostLoginJSONBody, type APIPostRegisterJSONBody, UserFlags, WorkerID, snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 import { DBErrorType, assertObj, prisma } from ".";
 
@@ -24,7 +24,7 @@ const authExtention = Prisma.defineExtension({
 			async registerNew(user: APIPostRegisterJSONBody) {
 				const newUser = await prisma.user.create({
 					data: {
-						id: snowflake.generate(),
+						id: snowflake.generate(WorkerID.AUTH),
 						username: user.username,
 						displayName: !user.displayName ? null : user.displayName,
 						password: user.password,

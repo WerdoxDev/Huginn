@@ -1,4 +1,5 @@
-import { constants } from "@huginn/shared";
+import { logGatewayClose, logGatewayOpen, logGatewayRecieve, logGatewaySend, logServerError } from "@huginn/backend-shared";
+import { constants, WorkerID } from "@huginn/shared";
 import { GatewayCode } from "@huginn/shared";
 import {
 	type BasePayload,
@@ -15,12 +16,11 @@ import { type Snowflake, snowflake } from "@huginn/shared";
 import { idFix, isOpcode } from "@huginn/shared";
 import type { ServerWebSocket } from "bun";
 import consola from "consola";
-import { ClientSession } from "./client-session";
-import { validateGatewayData } from "../utils/gateway-utils";
-import { logGatewayOpen, logGatewayClose, logGatewayRecieve, logServerError, logGatewaySend } from "@huginn/backend-shared";
 import { prisma } from "#database/index";
 import { verifyToken } from "#utils/token-factory";
 import type { ServerGatewayOptions } from "#utils/types";
+import { validateGatewayData } from "../utils/gateway-utils";
+import { ClientSession } from "./client-session";
 
 export class ServerGateway {
 	private readonly options: ServerGatewayOptions;
@@ -161,7 +161,7 @@ export class ServerGateway {
 		}
 
 		const user = idFix(await prisma.user.getById(payload.id));
-		const sessionId = snowflake.generateString();
+		const sessionId = snowflake.generateString(WorkerID.GATEWAY);
 
 		ws.data = sessionId;
 
