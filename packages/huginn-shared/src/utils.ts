@@ -119,7 +119,7 @@ export function idFix<T>(obj: T): BigIntToString<T> {
 	return obj as BigIntToString<T>;
 }
 
-export function isOpcode<D>(data: D, opcode: GatewayOperations): data is D {
+export function isOpcode<D>(data: unknown, opcode: GatewayOperations): data is D {
 	if (data && typeof data === "object") {
 		return "op" in data && data.op === opcode;
 	}

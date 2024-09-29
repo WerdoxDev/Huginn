@@ -1,4 +1,4 @@
-import { createErrorFactory, type ErrorFactory, logReject, logRequest, logResponse, logServerError } from "@huginn/backend-shared";
+import { type ErrorFactory, createErrorFactory, logReject, logRequest, logResponse, logServerError } from "@huginn/backend-shared";
 import { router as cdnRouter } from "@huginn/cdn";
 import { isCDNError } from "@huginn/cdn/src/error";
 import { handleCommonCDNErrors } from "@huginn/cdn/src/utils/route-utils";
@@ -6,7 +6,7 @@ import { router as serverRouter } from "@huginn/server";
 import { isDBError } from "@huginn/server/src/database";
 import { gateway } from "@huginn/server/src/server";
 import { handleCommonDBErrors } from "@huginn/server/src/utils/route-utils";
-import { Errors, generateRandomString, HttpCode, type HuginnErrorData } from "@huginn/shared";
+import { Errors, HttpCode, type HuginnErrorData, generateRandomString } from "@huginn/shared";
 import consola from "consola";
 import { colors } from "consola/utils";
 import {
@@ -113,30 +113,24 @@ const handler = toWebHandler(app);
 const HOST = process.env.HOST;
 const PORT = process.env.PORT;
 
-const server = Bun.serve<string>({
+const server = Bun.serve({
 	port: PORT,
 	hostname: HOST,
-	fetch(req, server) {
+	async fetch(req, server) {
 		const url = new URL(req.url);
 		if (url.pathname === "/gateway") {
-			if (server.upgrade(req)) {
-				return;
+			const response = await gateway.ws.handleUpgrade(req, server);
+
+			if (response) {
+				return response;
 			}
+
 			return new Response(JSON.stringify(createErrorFactory(Errors.websocketFail())), { status: HttpCode.BAD_REQUEST });
 		}
 
 		return handler(req);
 	},
-	websocket: {
-		open: (ws) => {
-			gateway.onOpen(ws);
-		},
-		close: (ws, code, reason) => {
-			gateway.onClose(ws, code, reason);
-		},
-		message: (ws, message) => gateway.onMessage(ws, message),
-		sendPings: false,
-	},
+	websocket: gateway.ws.websocket,
 });
 
 consola.success("Bifrost started!");

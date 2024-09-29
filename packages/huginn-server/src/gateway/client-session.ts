@@ -4,22 +4,23 @@ import { GatewayCode } from "@huginn/shared";
 import type { BasePayload } from "@huginn/shared";
 import { idFix } from "@huginn/shared";
 import type { ServerWebSocket } from "bun";
+import type { Peer } from "crossws";
 import { prisma } from "#database/index";
 import type { ClientSessionInfo } from "#utils/types";
 
 export class ClientSession extends EventEmitter {
 	public data: ClientSessionInfo;
-	public ws: ServerWebSocket<string>;
+	public peer: Peer;
 
 	private sentMessages: Map<number, BasePayload>;
 	private subscribedTopics: Set<string>;
 	private hearbeatTimeout?: Timer;
 	public sequence?: number;
 
-	public constructor(ws: ServerWebSocket<string>, data: ClientSessionInfo) {
+	public constructor(peer: Peer, data: ClientSessionInfo) {
 		super();
 
-		this.ws = ws;
+		this.peer = peer;
 		this.data = data;
 		this.sentMessages = new Map();
 		this.subscribedTopics = new Set();
@@ -42,14 +43,12 @@ export class ClientSession extends EventEmitter {
 
 	public subscribe(topic: string) {
 		if (!this.isSubscribed(topic)) {
-			this.ws.subscribe(topic);
 			this.subscribedTopics.add(topic);
 		}
 	}
 
 	public unsubscribe(topic: string) {
 		if (this.isSubscribed(topic)) {
-			this.ws.unsubscribe(topic);
 			this.subscribedTopics.delete(topic);
 		}
 	}
@@ -110,7 +109,7 @@ export class ClientSession extends EventEmitter {
 		this.hearbeatTimeout = setTimeout(() => {
 			this.emit("timeout", this.data);
 			this.dispose();
-			this.ws.close(GatewayCode.SESSION_TIMEOUT, "SESSION_TIMEOUT");
+			this.peer.close(GatewayCode.SESSION_TIMEOUT, "SESSION_TIMEOUT");
 		}, constants.HEARTBEAT_INTERVAL + tolerance);
 	}
 }

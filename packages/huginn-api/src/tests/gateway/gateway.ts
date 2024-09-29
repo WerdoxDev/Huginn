@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { getLoggedClient, testCredentials } from "../test-utils";
 import { type GatewayIdentify, GatewayOperations } from "@huginn/shared";
 import { GatewayCode } from "@huginn/shared";
+import { getLoggedClient, testCredentials } from "../test-utils";
 
 describe("gateway", () => {
 	test("gateway-not-authenticated", async () => {
@@ -32,13 +32,14 @@ describe("gateway", () => {
 					properties: { os: "windows", browser: "idk", device: "idk" },
 				},
 			};
-
+			console.log("IDENTIFY");
 			client.gateway.send(identifyData);
 		}
 
 		await new Promise((r) => {
+			let interval: Timer;
 			client.gateway.on("hello", () => {
-				setInterval(() => {
+				interval = setInterval(() => {
 					authenticate();
 				}, 100);
 				// authenticate();
@@ -46,6 +47,7 @@ describe("gateway", () => {
 
 			client.gateway.on("close", (code) => {
 				expect(code).toBe(GatewayCode.ALREADY_AUTHENTICATED);
+				clearInterval(interval);
 				r(true);
 			});
 		});
@@ -80,7 +82,7 @@ describe("gateway", () => {
 			});
 		});
 	});
-	test("gateway-authentication_failed", async () => {
+	test("gateway-authentication-failed", async () => {
 		const client = await getLoggedClient(testCredentials, false);
 		client.gateway.connect();
 

@@ -16,6 +16,8 @@ import { type Snowflake, snowflake } from "@huginn/shared";
 import { idFix, isOpcode } from "@huginn/shared";
 import type { ServerWebSocket } from "bun";
 import consola from "consola";
+import type { Message, Peer } from "crossws";
+import crossws, { type BunAdapter } from "crossws/adapters/bun";
 import { prisma } from "#database/index";
 import { verifyToken } from "#utils/token-factory";
 import type { ServerGatewayOptions } from "#utils/types";
@@ -26,46 +28,52 @@ export class ServerGateway {
 	private readonly options: ServerGatewayOptions;
 	private clients: Map<string, ClientSession>;
 	private cancelledClientDisconnects: string[];
+	public ws: BunAdapter;
 
 	public constructor(options: ServerGatewayOptions) {
 		this.options = options;
 		this.clients = new Map<string, ClientSession>();
 		this.cancelledClientDisconnects = [];
+
+		this.ws = crossws({ hooks: { open: this.open.bind(this), close: this.close.bind(this), message: this.message.bind(this) } });
 	}
 
-	public onOpen(ws: ServerWebSocket<string>) {
+	private open(peer: Peer) {
 		try {
 			logGatewayOpen();
 
 			const helloData: GatewayHello = { op: GatewayOperations.HELLO, d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL } };
-			this.send(ws, helloData);
+			this.send(peer, helloData);
 		} catch (e) {
-			ws.close(GatewayCode.UNKNOWN, "UNKNOWN");
+			peer.close(GatewayCode.UNKNOWN, "UNKNOWN");
 		}
 	}
 
-	public onClose(ws: ServerWebSocket<string>, code: number, reason: string) {
-		this.clients.get(ws.data)?.dispose();
+	private close(peer: Peer, details: { code?: number; reason?: string }) {
+		const client = this.getSessionByPeerId(peer.id);
 
-		if (code === GatewayCode.INVALID_SESSION) {
-			this.clients.delete(ws.data);
-		} else {
-			this.queueClientDisconnect(ws.data);
+		client?.dispose();
+
+		if (client && details.code === GatewayCode.INVALID_SESSION) {
+			this.clients.delete(client.data.sessionId);
+		} else if (client) {
+			this.queueClientDisconnect(client.data.sessionId);
 		}
-		logGatewayClose(code, reason);
+
+		logGatewayClose(details.code || 0, details.reason || "");
 	}
 
-	public async onMessage(ws: ServerWebSocket<string>, message: string | Buffer) {
+	private async message(peer: Peer, message: Message) {
 		try {
-			if (typeof message !== "string") {
-				consola.error("Non string message type is not supported yet");
-				return;
-			}
+			// if (typeof message !== "string") {
+			// 	consola.error("Non string message type is not supported yet");
+			// 	return;
+			// }
 
-			const data = JSON.parse(message);
+			const data: BasePayload = message.json();
 
 			if (!validateGatewayData(data)) {
-				ws.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
+				peer.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
 				return;
 			}
 
@@ -73,33 +81,29 @@ export class ServerGateway {
 
 			// Identify
 			if (isOpcode<GatewayIdentify>(data, GatewayOperations.IDENTIFY)) {
-				await this.handleIdentify(ws, data);
+				await this.handleIdentify(peer, data);
 				// Resume
 			} else if (isOpcode<GatewayResume>(data, GatewayOperations.RESUME)) {
-				this.handleResume(ws, data);
+				this.handleResume(peer, data);
 				// Not authenticated
-			} else if (!ws.data) {
-				ws.close(GatewayCode.NOT_AUTHENTICATED, "NOT_AUTHENTICATED");
+			} else if (!this.getSessionByPeerId(peer.id)) {
+				peer.close(GatewayCode.NOT_AUTHENTICATED, "NOT_AUTHENTICATED");
 				return;
 				// Heartbeat
 			} else if (isOpcode<GatewayHeartbeat>(data, GatewayOperations.HEARTBEAT)) {
-				this.handleHeartbeat(ws, data);
+				this.handleHeartbeat(peer, data);
 			} else {
-				ws.close(GatewayCode.UNKNOWN_OPCODE, "UNKNOWN_OPCODE");
+				peer.close(GatewayCode.UNKNOWN_OPCODE, "UNKNOWN_OPCODE");
 			}
 		} catch (e) {
 			if (e instanceof SyntaxError) {
-				ws.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
+				peer.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
 				return;
 			}
 
 			logServerError("/gateway", e as Error);
-			ws.close(GatewayCode.UNKNOWN, "UNKNOWN");
+			peer.close(GatewayCode.UNKNOWN, "UNKNOWN");
 		}
-	}
-
-	public getSession(userId: string) {
-		return this.clients.get(userId);
 	}
 
 	public subscribeSessionsToTopic(userId: Snowflake, topic: string) {
@@ -124,48 +128,54 @@ export class ServerGateway {
 		return this.clients.size;
 	}
 
+	public getSessionByPeerId(peerId: string) {
+		for (const [_sessionId, client] of this.clients) {
+			if (client.peer.id === peerId) {
+				return client;
+			}
+		}
+	}
+
 	public sendToTopic(topic: string, data: BasePayload) {
 		for (const client of this.clients.values()) {
 			if (client.isSubscribed(topic)) {
 				const newData = { ...data, s: client.increaseSequence() };
 				client.addMessage(newData);
-				client.ws.send(JSON.stringify(newData));
+				client.peer.send(JSON.stringify(newData));
 			}
 		}
 	}
 
-	private handleHeartbeat(ws: ServerWebSocket<string>, data: GatewayHeartbeat) {
-		const client = this.clients.get(ws.data);
+	private handleHeartbeat(peer: Peer, data: GatewayHeartbeat) {
+		const client = this.getSessionByPeerId(peer.id);
 
 		if (data.d !== client?.sequence) {
-			ws.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
+			peer.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
 			return;
 		}
 
-		this.clients.get(ws.data)?.resetTimeout();
+		client?.resetTimeout();
 		const hearbeatAckData: GatewayHeartbeatAck = { op: GatewayOperations.HEARTBEAT_ACK };
-		this.send(ws, hearbeatAckData);
+		this.send(peer, hearbeatAckData);
 	}
 
-	private async handleIdentify(ws: ServerWebSocket<string>, data: GatewayIdentify) {
+	private async handleIdentify(peer: Peer, data: GatewayIdentify) {
 		const { valid, payload } = await verifyToken(data.d.token);
 
 		if (!valid || !payload) {
-			ws.close(GatewayCode.AUTHENTICATION_FAILED, "AUTHENTICATION_FAILED");
+			peer.close(GatewayCode.AUTHENTICATION_FAILED, "AUTHENTICATION_FAILED");
 			return;
 		}
 
-		if (this.clients.has(ws.data)) {
-			ws.close(GatewayCode.ALREADY_AUTHENTICATED, "ALREADY_AUTHENTICATED");
+		if (this.getSessionByPeerId(peer.id)) {
+			peer.close(GatewayCode.ALREADY_AUTHENTICATED, "ALREADY_AUTHENTICATED");
 			return;
 		}
 
 		const user = idFix(await prisma.user.getById(payload.id));
 		const sessionId = snowflake.generateString(WorkerID.GATEWAY);
 
-		ws.data = sessionId;
-
-		const client = new ClientSession(ws, { user, sessionId });
+		const client = new ClientSession(peer, { user, sessionId });
 		client.initialize();
 		this.clients.set(sessionId, client);
 
@@ -176,19 +186,19 @@ export class ServerGateway {
 			s: client.increaseSequence(),
 		};
 
-		this.send(ws, readyData);
+		this.send(peer, readyData);
 	}
 
-	private async handleResume(ws: ServerWebSocket<string>, data: GatewayResume) {
+	private async handleResume(peer: Peer, data: GatewayResume) {
 		const { valid, payload } = await verifyToken(data.d.token);
 
 		if (!valid || !payload) {
-			ws.close(GatewayCode.AUTHENTICATION_FAILED, "AUTHENTICATION_FAILED");
+			peer.close(GatewayCode.AUTHENTICATION_FAILED, "AUTHENTICATION_FAILED");
 			return;
 		}
 
 		if (!this.clients.has(data.d.sessionId)) {
-			ws.close(GatewayCode.INVALID_SESSION, "INVALID_SESSION");
+			peer.close(GatewayCode.INVALID_SESSION, "INVALID_SESSION");
 			return;
 		}
 
@@ -197,12 +207,11 @@ export class ServerGateway {
 		if (!client) throw new Error("client was null in handleIdentify");
 
 		if (!client.sequence || data.d.seq > client.sequence) {
-			ws.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
+			peer.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
 			return;
 		}
 
-		ws.data = data.d.sessionId;
-		client.ws = ws;
+		client.peer = peer;
 		client.initialize();
 
 		this.cancelledClientDisconnects.push(data.d.sessionId);
@@ -214,7 +223,7 @@ export class ServerGateway {
 				continue;
 			}
 
-			this.send(client.ws, _data);
+			this.send(peer, _data);
 		}
 
 		const resumedData: GatewayResumedData = {
@@ -223,7 +232,7 @@ export class ServerGateway {
 			d: undefined,
 			s: client.increaseSequence(),
 		};
-		this.send(client.ws, resumedData);
+		this.send(peer, resumedData);
 	}
 
 	private queueClientDisconnect(sessionId: Snowflake) {
@@ -236,9 +245,9 @@ export class ServerGateway {
 		}, 1000 * 30);
 	}
 
-	private send(ws: ServerWebSocket<string>, data: unknown) {
+	private send(peer: Peer, data: unknown) {
 		logGatewaySend(data as BasePayload, this.options.logHeartbeat);
 
-		ws.send(JSON.stringify(data));
+		peer.send(JSON.stringify(data));
 	}
 }
