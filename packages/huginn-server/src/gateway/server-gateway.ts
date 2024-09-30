@@ -14,25 +14,26 @@ import {
 } from "@huginn/shared";
 import { type Snowflake, snowflake } from "@huginn/shared";
 import { idFix, isOpcode } from "@huginn/shared";
-import type { ServerWebSocket } from "bun";
-import consola from "consola";
 import type { Message, Peer } from "crossws";
 import crossws, { type BunAdapter } from "crossws/adapters/bun";
 import { prisma } from "#database/index";
 import { verifyToken } from "#utils/token-factory";
 import type { ServerGatewayOptions } from "#utils/types";
-import { validateGatewayData } from "../utils/gateway-utils";
+import { dispatchToTopic, validateGatewayData } from "../utils/gateway-utils";
 import { ClientSession } from "./client-session";
+import { PresenceManager } from "./presence-manager";
 
 export class ServerGateway {
 	private readonly options: ServerGatewayOptions;
 	private clients: Map<string, ClientSession>;
 	private cancelledClientDisconnects: string[];
+	private presenceManeger: PresenceManager;
 	public ws: BunAdapter;
 
 	public constructor(options: ServerGatewayOptions) {
 		this.options = options;
 		this.clients = new Map<string, ClientSession>();
+		this.presenceManeger = new PresenceManager();
 		this.cancelledClientDisconnects = [];
 
 		this.ws = crossws({ hooks: { open: this.open.bind(this), close: this.close.bind(this), message: this.message.bind(this) } });
@@ -49,8 +50,12 @@ export class ServerGateway {
 		}
 	}
 
-	private close(peer: Peer, details: { code?: number; reason?: string }) {
+	private async close(peer: Peer, details: { code?: number; reason?: string }) {
 		const client = this.getSessionByPeerId(peer.id);
+
+		if (client) {
+			await this.presenceManeger.removeClient(client.data.user.id);
+		}
 
 		client?.dispose();
 
@@ -187,6 +192,8 @@ export class ServerGateway {
 		};
 
 		this.send(peer, readyData);
+
+		await this.presenceManeger.addClient(user.id);
 	}
 
 	private async handleResume(peer: Peer, data: GatewayResume) {

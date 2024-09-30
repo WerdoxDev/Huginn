@@ -1,5 +1,13 @@
 import type { DirectChannel } from "./api-types";
-import { APIDMChannel, APIGroupDMChannel, type APIMessage, type APIMessageUser, type APIRelationshipWithoutOwner, type APIUser, type Tokens } from "./api-types";
+import {
+	APIDMChannel,
+	APIGroupDMChannel,
+	type APIMessage,
+	type APIMessageUser,
+	type APIRelationshipWithoutOwner,
+	type APIUser,
+	type Tokens,
+} from "./api-types";
 import type { Snowflake } from "./snowflake";
 
 export enum GatewayOperations {
@@ -28,6 +36,8 @@ export type GatewayEvents = {
 	channel_delete: GatewayDMChannelDeleteData;
 	user_update: GatewayUserUpdateData;
 	public_user_update: GatewayPublicUserUpdateData;
+	presence_update: GatewayPresenceUpdateData;
+	batch_presence_update: GatewayBatchPresenceUpdateData;
 };
 
 export type BasePayload = {
@@ -126,3 +136,5 @@ export type GatewayDMChannelCreateData = DirectChannel;
 export type GatewayDMChannelDeleteData = DirectChannel;
 export type GatewayUserUpdateData = APIUser & Tokens;
 export type GatewayPublicUserUpdateData = Omit<APIUser, "email" | "password">;
+export type GatewayPresenceUpdateData = { user: { id: Snowflake }; status: "offline" | "online" | "idle" | "dnd" };
+export type GatewayBatchPresenceUpdateData = GatewayPresenceUpdateData[];

@@ -1,4 +1,5 @@
 import { useClient } from "@contexts/apiContext";
+import { usePresence } from "@contexts/presenceContext";
 import type { Snowflake } from "@huginn/shared";
 import { getUserAvatar } from "@lib/queries";
 import { useQuery } from "@tanstack/react-query";
@@ -15,6 +16,7 @@ export default function UserAvatarWithStatus(props: {
 	const client = useClient();
 
 	const { data: avatar } = useQuery(getUserAvatar(props.userId, props.avatarHash, client));
+	const presence = usePresence(props.userId);
 
 	const [hasErrors, setHasErrors] = useState(false);
 
@@ -32,7 +34,13 @@ export default function UserAvatarWithStatus(props: {
 			) : (
 				<div className="flex h-full w-full items-center justify-center rounded-full bg-error/50 font-bold text-text">!</div>
 			)}
-			<div className="absolute right-0 bottom-0 rounded-full bg-[#FFA000]" style={{ width: statusSize, height: statusSize }} />
+			<div
+				className={clsx(
+					"absolute right-0 bottom-0 rounded-full",
+					presence ? (presence.status === "online" ? "bg-success" : "bg-white/50") : "bg-white/50",
+				)}
+				style={{ width: statusSize, height: statusSize }}
+			/>
 		</div>
 	);
 }

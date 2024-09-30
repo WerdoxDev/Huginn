@@ -13,13 +13,14 @@ import type { Snowflake } from "@huginn/shared";
 import { isOpcode } from "@huginn/shared";
 import EventEmitter from "eventemitter3";
 import type { HuginnClient } from "../../";
+import { EventEmitterWithHistory } from "../client/event-emitter";
 import type { GatewayOptions } from "../types";
 import { DefaultGatewayOptions } from "./constants";
 
 export class Gateway {
 	public readonly options: GatewayOptions;
 	private readonly client: HuginnClient;
-	private emitter = new EventEmitter();
+	private emitter = new EventEmitterWithHistory();
 
 	public socket?: WebSocket;
 	private heartbeatInterval?: ReturnType<typeof setTimeout>;

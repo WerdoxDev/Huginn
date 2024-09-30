@@ -27,18 +27,18 @@ export type ModalContextType = {
 	createDM: DefaultModal;
 };
 
-const defautlValue: ModalContextType = {
+const defaultValue: ModalContextType = {
 	settings: { isOpen: false },
 	info: { isOpen: false, status: "none", title: "", text: "", closable: true },
 	imageCrop: { isOpen: false, originalImageData: "" },
 	createDM: { isOpen: false },
 };
 
-const ModalContext = createContext<ModalContextType>(defautlValue);
+const ModalContext = createContext<ModalContextType>(defaultValue);
 const ModalDispatchContext = createContext<Dispatch<DeepPartial<ModalContextType>>>(() => {});
 
 export function ModalProvider(props: { children?: ReactNode }) {
-	const [modals, dispatch] = useReducer(modalsReducer, defautlValue);
+	const [modals, dispatch] = useReducer(modalsReducer, defaultValue);
 
 	return (
 		<ModalContext.Provider value={modals}>
