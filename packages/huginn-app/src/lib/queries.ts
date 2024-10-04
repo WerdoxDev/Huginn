@@ -10,6 +10,7 @@ export function getChannelsOptions(client: HuginnClient, guildId: Snowflake) {
 			// if (guildId !== "@me") return undefined;
 			return client.channels.getAll();
 		},
+		initialData: () => client.gateway.readyData?.privateChannels,
 	});
 }
 export function getMessagesOptions(queryClient: QueryClient, client: HuginnClient, channelId: Snowflake, enabled = true) {
@@ -42,6 +43,7 @@ export function getRelationshipsOptions(client: HuginnClient) {
 	return queryOptions({
 		queryKey: ["relationships"],
 		queryFn: () => client.relationships.getAll(),
+		initialData: () => client.gateway.readyData?.relationships,
 	});
 }
 

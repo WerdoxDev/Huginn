@@ -1,4 +1,4 @@
-import { VersionFlavour } from "@/types";
+import type { VersionFlavour } from "@/types";
 import { useSettings } from "@contexts/settingsContext";
 import { useWindow } from "@contexts/windowContext";
 import { invoke } from "@tauri-apps/api/core";

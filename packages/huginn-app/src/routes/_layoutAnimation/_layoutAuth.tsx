@@ -5,6 +5,7 @@ import { routeHistory } from "@contexts/historyContext";
 import { useModalsDispatch } from "@contexts/modalContext";
 import { animated, easings, useSpring, useTransition } from "@react-spring/web";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
+import clsx from "clsx";
 import { useContext } from "react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth")({
@@ -30,10 +31,10 @@ function LayoutAuth() {
 	});
 
 	return (
-		<animated.div style={style} className={`absolute inset-0 z-10 ${backgroundState === 2 && "pointer-events-none"}`}>
+		<animated.div style={style} className={clsx("absolute inset-0 z-10", backgroundState === 2 && "pointer-events-none")}>
 			<AuthBackgroundSvg />
-			<div className={`absolute inset-0 select-none transition-all duration-500 ${backgroundState === 1 ? "opacity-100" : "opacity-0"}`}>
-				<div className="text-text flex h-full items-center justify-center text-xl font-medium opacity-60">
+			<div className={clsx("absolute inset-0 select-none transition-all duration-500", backgroundState === 1 ? "opacity-100" : "opacity-0")}>
+				<div className="flex h-full items-center justify-center font-medium text-text text-xl opacity-60">
 					<span>Loading</span>
 					<span className="loader__dot">.</span>
 					<span className="loader__dot">.</span>
@@ -47,7 +48,7 @@ function LayoutAuth() {
 				<button
 					type="button"
 					v-if="backgroundState !== 2"
-					className="hover:bg-background absolute bottom-2.5 right-2.5 rounded-lg p-1 transition-all"
+					className="absolute right-2.5 bottom-2.5 rounded-lg p-1 transition-all hover:bg-background"
 					onClick={() => {
 						modalsDispatch({ settings: { isOpen: true } });
 					}}

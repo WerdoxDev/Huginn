@@ -2,8 +2,8 @@ import { useClient } from "@contexts/apiContext";
 import { useEvent } from "@contexts/eventContext";
 import { useUser } from "@contexts/userContext";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
-import { type APIGetChannelMessagesResult, type APIGetUserChannelsResult, type GatewayPublicUserUpdateData, omit } from "@huginn/shared";
-import type { GatewayMessageCreateData } from "@huginn/shared";
+import { type APIGetChannelMessagesResult, type APIGetUserChannelsResult, type GatewayUserUpdateData, omit } from "@huginn/shared";
+import type { APIMessageUser, GatewayMessageCreateData, GatewayPresenceUpdateData } from "@huginn/shared";
 import { type InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useEffect } from "react";
 
@@ -54,14 +54,19 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 		dispatchEvent("message_added", { message: d, visible: messageVisible, self: d.author.id === user?.id });
 	}
 
-	function onPublicUserUpdated(newUser: GatewayPublicUserUpdateData) {
+	function onUserUpdated(data: GatewayUserUpdateData | GatewayPresenceUpdateData) {
+		const user = ("id" in data ? omit(data, ["system"]) : data.user) as APIMessageUser;
+		if ("status" in data && data.status === "offline") {
+			return;
+		}
+
 		queryClient.setQueriesData<InfiniteData<APIGetChannelMessagesResult, { before: string; after: string }>>(
 			{ queryKey: ["messages"] },
 			(old) =>
 				old && {
 					pageParams: old.pageParams,
 					pages: old.pages.map((messages) =>
-						messages.map((message) => (message.author.id === newUser.id ? { ...message, author: omit(newUser, ["system"]) } : message)),
+						messages.map((message) => (message.author.id === user.id ? { ...message, author: user } : message)),
 					),
 				},
 		);
@@ -69,13 +74,13 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 
 	useEffect(() => {
 		client.gateway.on("message_create", onMessageCreated);
-		client.gateway.on("public_user_update", onPublicUserUpdated);
-		client.gateway.on("user_update", onPublicUserUpdated);
+		client.gateway.on("user_update", onUserUpdated);
+		client.gateway.on("presence_update", onUserUpdated);
 
 		return () => {
 			client.gateway.off("message_create", onMessageCreated);
-			client.gateway.off("public_user_update", onPublicUserUpdated);
-			client.gateway.off("user_update", onPublicUserUpdated);
+			client.gateway.off("user_update", onUserUpdated);
+			client.gateway.off("presence_update", onUserUpdated);
 		};
 	}, []);
 

@@ -1,10 +1,11 @@
 import { EventEmitter } from "node:events";
-import { constants } from "@huginn/shared";
+import { constants, RelationshipType, merge } from "@huginn/shared";
 import { GatewayCode } from "@huginn/shared";
 import type { BasePayload } from "@huginn/shared";
 import { idFix } from "@huginn/shared";
 import type { ServerWebSocket } from "bun";
 import type { Peer } from "crossws";
+import { excludeSelfChannelUser, includeChannelRecipients, includeRelationshipUser } from "#database/common";
 import { prisma } from "#database/index";
 import type { ClientSessionInfo } from "#utils/types";
 
@@ -26,8 +27,8 @@ export class ClientSession extends EventEmitter {
 		this.subscribedTopics = new Set();
 	}
 
-	public initialize() {
-		this.subscribeClientEvents();
+	public async initialize() {
+		await this.subscribeClientEvents();
 		this.startHeartbeatTimeout();
 	}
 
@@ -70,36 +71,31 @@ export class ClientSession extends EventEmitter {
 		return this.sentMessages;
 	}
 
+	public getSubscriptions() {
+		return this.subscribedTopics;
+	}
+
 	private async subscribeClientEvents() {
 		const userId = this.data.user.id;
 		this.subscribe(userId);
 
-		const clientChannels = idFix(await prisma.channel.getUserChannels(userId, true));
+		const relationships = idFix(await prisma.relationship.getUserRelationships(userId, includeRelationshipUser));
+		const channels = idFix(await prisma.channel.getUserChannels(userId, true, merge(includeChannelRecipients, excludeSelfChannelUser(userId))));
 
-		for (const channel of clientChannels) {
+		const publicUserIds = [...new Set([...relationships.map((x) => x.user.id), ...channels.flatMap((x) => x.recipients).map((x) => x.id)])];
+		const presenceUserIds = [...new Set([...relationships.filter((x) => x.type === RelationshipType.FRIEND).map((x) => x.user.id)])];
+
+		for (const channel of channels) {
 			this.subscribe(channel.id);
 		}
 
-		const relationshipUserIds = idFix(
-			await prisma.relationship.findMany({
-				where: { ownerId: BigInt(userId) },
-				select: { user: { select: { id: true } } },
-			}),
-		).map((x) => x.user.id);
-
-		const channelUserIds = idFix(
-			await prisma.channel.findMany({
-				where: { recipients: { some: { id: BigInt(userId) } } },
-				select: { recipients: { where: { id: { not: BigInt(userId) } }, select: { id: true } } },
-			}),
-		)
-			.flatMap((x) => x.recipients)
-			.map((x) => x.id);
-
-		const clientUserIds = [...new Set([...relationshipUserIds, ...channelUserIds])];
-
-		for (const userId of clientUserIds) {
+		// Users from Relationships
+		for (const userId of publicUserIds) {
 			this.subscribe(`${userId}_public`);
+		}
+
+		for (const userId of presenceUserIds) {
+			this.subscribe(`${userId}_presence`);
 		}
 	}
 

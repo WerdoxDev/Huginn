@@ -1,5 +1,11 @@
 import { useClient } from "@contexts/apiContext";
-import { type APIGetUserChannelsResult, ChannelType, type GatewayDMChannelCreateData, type GatewayPublicUserUpdateData, omit } from "@huginn/shared";
+import {
+	type APIChannelUser,
+	type APIGetUserChannelsResult,
+	ChannelType,
+	type GatewayDMChannelCreateData,
+	type GatewayPresenceUpdateData,
+} from "@huginn/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { type ReactNode, useEffect } from "react";
@@ -24,13 +30,16 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
 		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (data) => data?.filter((x) => x.id !== d.id));
 	}
 
-	function onPublicUserUpdated(newUser: GatewayPublicUserUpdateData) {
+	function onPresenceUpdated(presence: GatewayPresenceUpdateData) {
+		const user = presence.user as APIChannelUser;
+		if (presence.status === "offline") {
+			return;
+		}
+
 		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (old) =>
 			old?.map((channel) => ({
 				...channel,
-				recipients: channel.recipients.map((recipient) =>
-					recipient.id === newUser.id && channel.type === ChannelType.DM ? omit(newUser, ["system"]) : recipient,
-				),
+				recipients: channel.recipients.map((recipient) => (recipient.id === user.id && channel.type === ChannelType.DM ? user : recipient)),
 			})),
 		);
 	}
@@ -38,12 +47,12 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
 	useEffect(() => {
 		client.gateway.on("channel_create", onChannelCreated);
 		client.gateway.on("channel_delete", onChannelDeleted);
-		client.gateway.on("public_user_update", onPublicUserUpdated);
+		client.gateway.on("presence_update", onPresenceUpdated);
 
 		return () => {
 			client.gateway.off("channel_create", onChannelCreated);
 			client.gateway.off("channel_delete", onChannelDeleted);
-			client.gateway.off("public_user_update", onPublicUserUpdated);
+			client.gateway.off("presence_update", onPresenceUpdated);
 		};
 	}, []);
 

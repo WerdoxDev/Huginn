@@ -1,13 +1,5 @@
-import type { DirectChannel } from "./api-types";
-import {
-	APIDMChannel,
-	APIGroupDMChannel,
-	type APIMessage,
-	type APIMessageUser,
-	type APIRelationshipWithoutOwner,
-	type APIUser,
-	type Tokens,
-} from "./api-types";
+import type { DirectChannel, UserPresence, UserSettings } from "./api-types";
+import type { APIMessage, APIMessageUser, APIRelationshipWithoutOwner, APIUser, Tokens } from "./api-types";
 import type { Snowflake } from "./snowflake";
 
 export enum GatewayOperations {
@@ -30,14 +22,12 @@ export type GatewayEvents = {
 	message_create: GatewayMessageCreateData;
 	message_delete: GatewayMessageDeleteData;
 	typying_start: GatewayMessageCreateData;
-	relationship_create: GatewayRelationshipCreateData;
-	relationship_delete: Snowflake;
+	relationship_add: GatewayRelationshipCreateData;
+	relationship_remove: Snowflake;
 	channel_create: GatewayDMChannelCreateData;
 	channel_delete: GatewayDMChannelDeleteData;
 	user_update: GatewayUserUpdateData;
-	public_user_update: GatewayPublicUserUpdateData;
 	presence_update: GatewayPresenceUpdateData;
-	batch_presence_update: GatewayBatchPresenceUpdateData;
 };
 
 export type BasePayload = {
@@ -102,6 +92,10 @@ export type GatewayReadyDispatch = DataPayload<"ready", GatewayReadyDispatchData
 export type GatewayReadyDispatchData = {
 	user: APIUser;
 	sessionId: Snowflake;
+	relationships: APIRelationshipWithoutOwner[];
+	privateChannels: DirectChannel[];
+	presences: UserPresence[];
+	userSettings: UserSettings;
 };
 
 export type GatewayResume = NonDispatchPayload & {
@@ -135,6 +129,4 @@ export type GatewayRelationshipCreateData = APIRelationshipWithoutOwner;
 export type GatewayDMChannelCreateData = DirectChannel;
 export type GatewayDMChannelDeleteData = DirectChannel;
 export type GatewayUserUpdateData = APIUser & Tokens;
-export type GatewayPublicUserUpdateData = Omit<APIUser, "email" | "password">;
-export type GatewayPresenceUpdateData = { user: { id: Snowflake }; status: "offline" | "online" | "idle" | "dnd" };
-export type GatewayBatchPresenceUpdateData = GatewayPresenceUpdateData[];
+export type GatewayPresenceUpdateData = UserPresence;

@@ -3,7 +3,7 @@ import { constants, type APIPatchCurrentUserResult, CDNRoutes, Errors, Fields, H
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { router } from "#server";
+import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { getFileHash, useVerifiedJwt } from "#utils/route-utils";
 import { cdnUpload } from "#utils/server-request";
@@ -88,7 +88,11 @@ router.patch(
 
 		// TODO: When guilds are a thing, this should send an update to users that are viewing that guild
 		dispatchToTopic(payload.id, "user_update", { ...updatedUser, token: accessToken, refreshToken });
-		dispatchToTopic(`${payload.id}_public`, "public_user_update", omit({ ...updatedUser }, ["email", "password"]));
+
+		const presence = gateway.presenceManeger.getClient(payload.id);
+		if (presence) {
+			dispatchToTopic(`${payload.id}_presence`, "presence_update", { ...presence, user: omit({ ...updatedUser }, ["email", "password"]) });
+		}
 
 		const json: APIPatchCurrentUserResult = { ...updatedUser, token: accessToken, refreshToken };
 		setResponseStatus(event, HttpCode.OK);

@@ -12,7 +12,7 @@ import { ContextMenuProvider } from "@contexts/contextMenuContext";
 import { routeHistory } from "@contexts/historyContext";
 import { ModalProvider } from "@contexts/modalContext";
 import { ThemeProvier } from "@contexts/themeContext";
-import { UserProvider } from "@contexts/userContext";
+import { UserProvider, useUser } from "@contexts/userContext";
 import { useWindow, useWindowDispatch } from "@contexts/windowContext";
 import { setup } from "@lib/middlewares";
 import type { QueryClient } from "@tanstack/react-query";
@@ -65,15 +65,7 @@ function Root() {
 								{/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
 								{/* <TanStackRouterDevtools position="bottom-left" /> */}
 								{appWindow.environment === "desktop" && <AppMaximizedEvent />}
-								<ErrorBoundary FallbackComponent={ModalErrorComponent}>
-									<SettingsModal />
-									<CreateDMModal />
-									<ImageCropModal />
-									<ChannelsContextMenu />
-									<RelationshipMoreContextMenu />
-									<RelationshipContextMenu />
-								</ErrorBoundary>
-								<InfoModal />
+								<ModalsRenderer />
 							</div>
 						</div>
 					</UserProvider>
@@ -81,6 +73,28 @@ function Root() {
 			</ModalProvider>
 		</ThemeProvier>
 		// </HistoryContext.Provider>
+	);
+}
+
+function ModalsRenderer() {
+	const { user } = useUser();
+
+	if (!user) {
+		return;
+	}
+
+	return (
+		<>
+			<ErrorBoundary FallbackComponent={ModalErrorComponent}>
+				<SettingsModal />
+				<CreateDMModal />
+				<ImageCropModal />
+				<ChannelsContextMenu />
+				<RelationshipMoreContextMenu />
+				<RelationshipContextMenu />
+			</ErrorBoundary>
+			<InfoModal />
+		</>
 	);
 }
 

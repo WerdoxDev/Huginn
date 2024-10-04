@@ -1,6 +1,6 @@
-import { RelationshipType } from "@huginn/shared";
 import { beforeAll, describe, expect, test } from "bun:test";
-import { getLoggedClient, test2Credentials, test3Credentials, test4Credentials, url } from "../test-utils";
+import { RelationshipType } from "@huginn/shared";
+import { url, getLoggedClient, test2Credentials, test3Credentials, test4Credentials } from "../test-utils";
 
 beforeAll(async () => {
 	await fetch(`http://${url}/api/test/test-relationships`, { method: "POST" });
@@ -32,7 +32,7 @@ describe("relationship-create", () => {
 		const client2 = await getLoggedClient(test3Credentials);
 
 		expect(client2.user).toBeDefined();
-		if (!client2.user) return;
+		if (client2.user) return;
 
 		expect(() => client.relationships.createRelationshipByUserId(client2.user.id)).not.toThrow();
 	});

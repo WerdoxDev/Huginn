@@ -3,7 +3,7 @@ import { Errors, HttpCode, RelationshipType, type Snowflake, idFix, omitArray } 
 import { type H3Event, defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { DBErrorType, assertError, prisma } from "#database";
-import { router } from "#server";
+import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { useVerifiedJwt } from "#utils/route-utils";
 
@@ -53,8 +53,19 @@ export async function relationshipPost(event: H3Event, userId: Snowflake) {
 		const relationshipUser = relationships.find((x) => x.ownerId === userId);
 
 		if (relationshipOwner && relationshipUser) {
-			dispatchToTopic(payload.id, "relationship_create", relationshipOwner);
-			dispatchToTopic(userId, "relationship_create", relationshipUser);
+			dispatchToTopic(payload.id, "relationship_add", relationshipOwner);
+			dispatchToTopic(userId, "relationship_add", relationshipUser);
+
+			gateway.subscribeSessionsToTopic(payload.id, `${userId}_public`);
+			gateway.subscribeSessionsToTopic(userId, `${payload.id}_public`);
+
+			if (relationshipOwner.type === RelationshipType.FRIEND && relationshipUser.type === RelationshipType.FRIEND) {
+				gateway.subscribeSessionsToTopic(payload.id, `${userId}_presence`);
+				gateway.subscribeSessionsToTopic(userId, `${payload.id}_presence`);
+
+				gateway.presenceManeger.addToUser(payload.id, userId);
+				gateway.presenceManeger.addToUser(userId, payload.id);
+			}
 		}
 	}
 

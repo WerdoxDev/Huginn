@@ -70,10 +70,8 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 
 	useEffect(() => {
 		const unlisten = listenEvent("user_updated", (e) => {
-			if (e.self) {
-				setModified(false);
-				setAvatarModified(false);
-			}
+			setModified(false);
+			setAvatarModified(false);
 		});
 
 		const unlisten2 = listenEvent("image_cropper_done", (e) => {

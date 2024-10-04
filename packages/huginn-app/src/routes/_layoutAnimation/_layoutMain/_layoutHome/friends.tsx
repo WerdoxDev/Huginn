@@ -32,11 +32,11 @@ function Friends() {
 	return (
 		<div className="flex h-full flex-col">
 			<TabGroup as={Fragment} defaultIndex={friends.length === 0 ? 3 : 0}>
-				<div className="bg-tertiary flex h-[4.75rem] flex-shrink-0 items-center px-6">
+				<div className="flex h-[4.75rem] flex-shrink-0 items-center bg-tertiary px-6">
 					<TabList className="mr-5 flex justify-center gap-x-5">
-						<div className="text-text flex items-center justify-center gap-x-2.5">
+						<div className="flex items-center justify-center gap-x-2.5 text-text">
 							<IconFaSolidUserFriends className="size-6" />
-							<span className="text-lg font-bold">Friends</span>
+							<span className="font-bold text-lg">Friends</span>
 						</div>
 
 						{tabs.map((tab) => (
@@ -49,8 +49,8 @@ function Friends() {
 									type="button"
 									className={`rounded-md px-2 outline-none ${
 										selected
-											? "bg-primary text-text pointer-events-none"
-											: "text-text ring-primary hover:bg-primary hover:text-text ring-1 hover:ring-0"
+											? "pointer-events-none bg-primary text-text"
+											: "text-text ring-1 ring-primary hover:bg-primary hover:text-text hover:ring-0"
 									}`}
 								>
 									Add Friend
@@ -67,7 +67,7 @@ function Friends() {
 					<AddFriendTab />
 				</TabPanels>
 			</TabGroup>
-			<div className="bg-background flex h-16 w-full flex-shrink-0" />
+			<div className="flex h-16 w-full flex-shrink-0 bg-background" />
 		</div>
 	);
 }

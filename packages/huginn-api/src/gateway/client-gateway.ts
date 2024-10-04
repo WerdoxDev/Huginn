@@ -9,20 +9,22 @@ import {
 	type GatewayReadyDispatchData,
 	type GatewayResume,
 } from "@huginn/shared";
-import type { Snowflake } from "@huginn/shared";
+import type { BasePayload, Snowflake } from "@huginn/shared";
 import { isOpcode } from "@huginn/shared";
 import EventEmitter from "eventemitter3";
 import type { HuginnClient } from "../../";
 import { EventEmitterWithHistory } from "../client/event-emitter";
-import type { GatewayOptions } from "../types";
+import { ClientReadyState, type GatewayOptions } from "../types";
 import { DefaultGatewayOptions } from "./constants";
 
 export class Gateway {
 	public readonly options: GatewayOptions;
 	private readonly client: HuginnClient;
-	private emitter = new EventEmitterWithHistory();
+	private readonly emitter = new EventEmitterWithHistory();
 
 	public socket?: WebSocket;
+	public readyData?: GatewayReadyDispatchData;
+
 	private heartbeatInterval?: ReturnType<typeof setTimeout>;
 	private sequence?: number;
 	private sessionId?: Snowflake;
@@ -45,12 +47,34 @@ export class Gateway {
 	}
 
 	public connect(): void {
-		if (!this.client.isLoggedIn) {
+		if (!this.client.tokenHandler.token) {
 			throw new Error("Trying to connect gateway before client initialization!");
 		}
 
 		this.socket = this.options.createSocket(this.options.url);
 		this.startListening();
+	}
+
+	public async connectAndWaitForReady(): Promise<void> {
+		let onMessage: ((e: MessageEvent) => void) | undefined = undefined;
+
+		await new Promise((r) => {
+			this.connect();
+			if (this.client.user) {
+				r(true);
+			} else {
+				onMessage = (e: MessageEvent) => {
+					const t = (JSON.parse(e.data) as BasePayload).t;
+					if (t === "ready") {
+						r(true);
+					}
+				};
+				this.socket?.addEventListener("message", onMessage);
+			}
+		});
+		if (onMessage) {
+			this.socket?.removeEventListener("message", onMessage);
+		}
 	}
 
 	private startListening() {
@@ -75,8 +99,11 @@ export class Gateway {
 		if (this.options.log) {
 			console.log(`Gateway Closed with code: ${e.code}`);
 		}
+
 		this.stopHeartbeat();
 		this.emit("close", e.code);
+
+		this.readyData = undefined;
 
 		if (e.code === 1000) {
 			return;
@@ -111,7 +138,7 @@ export class Gateway {
 			this.sequence = data.s;
 
 			if (data.t === "ready") {
-				this.sessionId = (data.d as GatewayReadyDispatchData).sessionId;
+				this.handleReady(data.d as GatewayReadyDispatchData);
 			}
 
 			this.emit(data.t, data.d);
@@ -150,6 +177,15 @@ export class Gateway {
 
 			this.send(resumeData);
 		}
+	}
+
+	private handleReady(data: GatewayReadyDispatchData) {
+		this.sessionId = data.sessionId;
+		this.client.user = data.user;
+
+		this.readyData = data;
+
+		this.client.readyState = ClientReadyState.READY;
 	}
 
 	private startHeartbeat(interval: number) {

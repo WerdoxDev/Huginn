@@ -41,7 +41,7 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
 		>
 			<Link className="flex items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>
 				{props.channel.type === ChannelType.DM ? (
-					<UserAvatarWithStatus userId={otherUsers[0].id} avatarHash={otherUsers[0].avatar} className="mr-3" />
+					<UserAvatarWithStatus userId={props.channel.recipients[0].id} avatarHash={props.channel.recipients[0].avatar} className="mr-3" />
 				) : (
 					<div className="mr-3 size-9 shrink-0 rounded-full bg-primary" />
 				)}

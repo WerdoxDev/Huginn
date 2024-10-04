@@ -1,5 +1,5 @@
 import { logGatewayClose, logGatewayOpen, logGatewayRecieve, logGatewaySend, logServerError } from "@huginn/backend-shared";
-import { constants, WorkerID } from "@huginn/shared";
+import { constants, type UserSettings, WorkerID, merge } from "@huginn/shared";
 import { GatewayCode } from "@huginn/shared";
 import {
 	type BasePayload,
@@ -16,10 +16,11 @@ import { type Snowflake, snowflake } from "@huginn/shared";
 import { idFix, isOpcode } from "@huginn/shared";
 import type { Message, Peer } from "crossws";
 import crossws, { type BunAdapter } from "crossws/adapters/bun";
+import { excludeSelfChannelUser, includeChannelRecipients, includeRelationshipUser } from "#database/common";
 import { prisma } from "#database/index";
 import { verifyToken } from "#utils/token-factory";
 import type { ServerGatewayOptions } from "#utils/types";
-import { dispatchToTopic, validateGatewayData } from "../utils/gateway-utils";
+import { validateGatewayData } from "../utils/gateway-utils";
 import { ClientSession } from "./client-session";
 import { PresenceManager } from "./presence-manager";
 
@@ -27,7 +28,7 @@ export class ServerGateway {
 	private readonly options: ServerGatewayOptions;
 	private clients: Map<string, ClientSession>;
 	private cancelledClientDisconnects: string[];
-	private presenceManeger: PresenceManager;
+	public presenceManeger: PresenceManager;
 	public ws: BunAdapter;
 
 	public constructor(options: ServerGatewayOptions) {
@@ -120,7 +121,7 @@ export class ServerGateway {
 		}
 	}
 
-	public unsubscribeSessionsToTopic(userId: Snowflake, topic: string) {
+	public unsubscribeSessionsFromTopic(userId: Snowflake, topic: string) {
 		const sessions = Array.from(this.clients.entries())
 			.filter((x) => x[1].data.user.id === userId)
 			.map((x) => x[1]);
@@ -180,20 +181,30 @@ export class ServerGateway {
 		const user = idFix(await prisma.user.getById(payload.id));
 		const sessionId = snowflake.generateString(WorkerID.GATEWAY);
 
-		const client = new ClientSession(peer, { user, sessionId });
-		client.initialize();
+		const client = new ClientSession(peer, { user, sessionId, ...data.d.properties });
+		await client.initialize();
 		this.clients.set(sessionId, client);
+
+		const userRelationships = idFix(await prisma.relationship.getUserRelationships(user.id, includeRelationshipUser));
+		const userChannels = idFix(
+			await prisma.channel.getUserChannels(user.id, false, merge(includeChannelRecipients, excludeSelfChannelUser(user.id))),
+		);
+
+		const presences = this.presenceManeger.getUserPresences(client);
+
+		//TODO: ADD ACTUAL PROPER SETTINGS
+		const settings: UserSettings = { status: "online" };
 
 		const readyData: GatewayReadyDispatch = {
 			op: GatewayOperations.DISPATCH,
-			d: { user, sessionId: sessionId },
+			d: { user, sessionId: sessionId, privateChannels: userChannels, relationships: userRelationships, userSettings: settings, presences },
 			t: "ready",
 			s: client.increaseSequence(),
 		};
 
 		this.send(peer, readyData);
 
-		await this.presenceManeger.addClient(user.id);
+		this.presenceManeger.setClient(user, client, settings);
 	}
 
 	private async handleResume(peer: Peer, data: GatewayResume) {

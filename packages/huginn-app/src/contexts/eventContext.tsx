@@ -3,7 +3,7 @@ import { type ReactNode, createContext, useCallback, useContext, useEffect, useR
 
 type EventTypes = {
 	message_added: { message: GatewayMessageCreateData; visible: boolean; self: boolean };
-	user_updated: { user: APIUser; self: boolean };
+	user_updated: APIUser;
 	image_cropper_done: { croppedImageData: string };
 };
 
@@ -34,11 +34,9 @@ export function EventProvider(props: { children?: ReactNode }) {
 			}
 		}
 		events.current = [];
-		// setEvents(prevEvents => [...prevEvents, { type, data }]);
 	}, []);
 
 	function listenEvent<K extends keyof EventTypes>(type: K, callback: (data: EventTypes[K]) => void) {
-		// setListeners(prevListeners => {
 		const newListeners = { ...listeners.current };
 		if (!newListeners[type]) {
 			newListeners[type] = [];
@@ -46,29 +44,16 @@ export function EventProvider(props: { children?: ReactNode }) {
 		newListeners[type].push(callback as (data: unknown) => void);
 
 		listeners.current = newListeners;
-		// return newListeners;
-		// });
 
 		return () => {
-			// setListeners(prevListeners => {
 			const newListeners = { ...listeners.current };
 			if (newListeners[type]) {
 				newListeners[type] = newListeners[type].filter((listener) => listener !== callback);
 			}
 
 			listeners.current = newListeners;
-			// return newListeners;
-			// });
 		};
 	}
-
-	useEffect(() => {
-		// console.log("HI?");
-		// if (events.current.length !== 0) {
-		//    events.current = [];
-		//    // setEvents([]);
-		// }
-	}, [events, listeners]);
 
 	return <EventContext.Provider value={{ dispatchEvent, listenEvent }}>{props.children}</EventContext.Provider>;
 }

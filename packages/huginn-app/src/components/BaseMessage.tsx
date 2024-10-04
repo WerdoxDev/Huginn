@@ -1,6 +1,6 @@
 import type { MessageRenderInfo } from "@/types";
 import { useUser } from "@contexts/userContext";
-import { APIMessageUser, MessageFlags, hasFlag } from "@huginn/shared";
+import { MessageFlags, hasFlag } from "@huginn/shared";
 import { tokenize } from "@lib/huginn-tokenizer";
 import clsx from "clsx";
 import moment from "moment";

@@ -1,6 +1,5 @@
-import type { GatewayBatchPresenceUpdateData, GatewayPresenceUpdateData, Snowflake } from "@huginn/shared";
-import { useQueryClient } from "@tanstack/react-query";
-import { type Dispatch, type ReactNode, act, createContext, useContext, useEffect, useMemo, useReducer } from "react";
+import type { GatewayPresenceUpdateData, GatewayReadyDispatchData, Snowflake } from "@huginn/shared";
+import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useClient } from "./apiContext";
 
 type PresenceContextType = GatewayPresenceUpdateData[];
@@ -8,48 +7,58 @@ type PresenceContextType = GatewayPresenceUpdateData[];
 const defaultValue: PresenceContextType = [];
 
 const PresenceContext = createContext<PresenceContextType>(defaultValue);
-const PresenceDispatchContext = createContext<Dispatch<PresenceContextType>>(() => {});
 
 export function PresenceProvider(props: { children?: ReactNode }) {
-	const [presences, dispatch] = useReducer(presencesReducer, defaultValue);
+	const [presences, setPresences] = useState<PresenceContextType>(defaultValue);
 	const client = useClient();
 
-	function onPresenceUpdated(d: GatewayPresenceUpdateData | GatewayBatchPresenceUpdateData) {
-		dispatch(d);
+	function onPresenceUpdated(d: GatewayPresenceUpdateData) {
+		console.log(presences.length, d.user.username);
+		if (d.status === "offline") {
+			setPresences((prev) => prev.filter((x) => x.user.id !== d.user.id));
+			return;
+		}
+
+		setPresences((prev) => {
+			const existingIndex = prev.findIndex((x) => x.user.id === d.user.id);
+			return existingIndex !== -1
+				? prev.map((x, i) => {
+						if (i === existingIndex) {
+							return { ...x, ...d };
+						}
+
+						return x;
+					})
+				: [...prev, d];
+		});
 	}
 
-	useEffect(() => {
-		client.gateway.on("presence_update", onPresenceUpdated);
-		client.gateway.on("batch_presence_update", onPresenceUpdated);
+	function onReady(d: GatewayReadyDispatchData) {
+		setPresences([]);
+		onPresenceUpdated({ user: d.user, status: client.gateway.readyData?.userSettings?.status || "offline" });
 
-		return () => {
-			client.gateway.off("presence_update", onPresenceUpdated);
-			client.gateway.off("batch_presence_update", onPresenceUpdated);
-		};
-	}, []);
-
-	return (
-		<PresenceContext.Provider value={presences}>
-			<PresenceDispatchContext.Provider value={dispatch}>{props.children}</PresenceDispatchContext.Provider>
-		</PresenceContext.Provider>
-	);
-}
-
-function presencesReducer(presences: PresenceContextType, action: GatewayPresenceUpdateData | GatewayBatchPresenceUpdateData): PresenceContextType {
-	const copy = structuredClone(presences);
-	const actions = Array.isArray(action) ? action : [action];
-
-	for (const presence of actions) {
-		console.log(presence);
-		const index = copy.findIndex((x) => x.user.id === presence.user.id);
-		if (index === -1) {
-			copy.push(presence);
-		} else {
-			copy[index] = presence;
+		if (d.presences) {
+			for (const presence of d.presences) {
+				onPresenceUpdated(presence);
+			}
 		}
 	}
 
-	return copy;
+	useEffect(() => {
+		client.gateway.on("ready", onReady);
+		client.gateway.on("presence_update", onPresenceUpdated);
+
+		return () => {
+			client.gateway.off("ready", onReady);
+			client.gateway.off("presence_update", onPresenceUpdated);
+		};
+	}, []);
+
+	useEffect(() => {
+		console.log(presences.length, presences);
+	}, [presences]);
+
+	return <PresenceContext.Provider value={presences}>{props.children}</PresenceContext.Provider>;
 }
 
 export function usePresence(userId: Snowflake) {

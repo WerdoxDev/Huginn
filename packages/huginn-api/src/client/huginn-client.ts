@@ -53,16 +53,10 @@ export class HuginnClient {
 			this.readyState = ClientReadyState.INITIALIZING;
 			if (tokens.token) {
 				this.tokenHandler.token = tokens.token;
-
-				this.user = await this.users.getCurrent();
-				this.readyState = ClientReadyState.READY;
 			} else if (tokens.refreshToken) {
 				const newTokens = await this.auth.refreshToken({ refreshToken: tokens.refreshToken });
 				this.tokenHandler.refreshToken = newTokens.refreshToken;
 				this.tokenHandler.token = newTokens.token;
-
-				this.user = await this.users.getCurrent();
-				this.readyState = ClientReadyState.READY;
 			}
 		} catch (e) {
 			this.user = undefined;
@@ -80,10 +74,8 @@ export class HuginnClient {
 			this.readyState = ClientReadyState.INITIALIZING;
 			const result = await this.auth.login(credentials);
 
-			this.user = { ...result };
 			this.tokenHandler.token = result.token;
 			this.tokenHandler.refreshToken = result.refreshToken;
-			this.readyState = ClientReadyState.READY;
 		} catch (e) {
 			this.readyState = ClientReadyState.NONE;
 			throw e;
@@ -95,10 +87,8 @@ export class HuginnClient {
 			this.readyState = ClientReadyState.INITIALIZING;
 			const result = await this.auth.register(user);
 
-			this.user = { ...result };
 			this.tokenHandler.token = result.token;
 			this.tokenHandler.refreshToken = result.refreshToken;
-			this.readyState = ClientReadyState.INITIALIZING;
 		} catch (e) {
 			this.readyState = ClientReadyState.NONE;
 			throw e;
@@ -111,10 +101,12 @@ export class HuginnClient {
 		this.tokenHandler.token = undefined;
 		this.user = undefined;
 		this.gateway.close();
+
+		this.readyState = ClientReadyState.NONE;
 	}
 
 	public get isLoggedIn(): boolean {
-		return this.user !== undefined;
+		return this.readyState === ClientReadyState.READY;
 	}
 
 	public generateNonce(): Snowflake {

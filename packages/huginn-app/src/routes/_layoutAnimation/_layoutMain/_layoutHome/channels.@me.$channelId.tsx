@@ -48,7 +48,7 @@ function Component() {
 			<HomeTopbar channel={channel} />
 			<div className="h-0.5 flex-shrink-0 bg-white/10" />
 			<ChannelMessages channelId={channelId} messages={messages.pages.flat()} />
-			<div className="bg-background flex h-16 w-full flex-shrink-0">
+			<div className="flex h-16 w-full flex-shrink-0 bg-background">
 				<MessageBox />
 				<div className="h-full w-64 flex-shrink-0" />
 			</div>

@@ -1,4 +1,4 @@
-import { APIDMChannel, APIGroupDMChannel, ChannelType, type Snowflake, WorkerID, snowflake } from "@huginn/shared";
+import { ChannelType, type Snowflake, WorkerID, snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 import { prisma } from ".";
 import type { ChannelInclude, ChannelPayload } from "./common";
@@ -21,7 +21,7 @@ const channelExtention = Prisma.defineExtension({
 					where: {
 						recipients: { some: { id: BigInt(userId) } },
 						type: ChannelType.DM,
-						tempDeletedByUsers: !includeDeleted ? { none: { id: BigInt(userId) } } : {},
+						tempDeletedByUsers: !includeDeleted ? { none: { id: BigInt(userId) } } : undefined,
 					},
 					include: include,
 					omit: { icon: true, ownerId: true, name: true },
@@ -31,7 +31,7 @@ const channelExtention = Prisma.defineExtension({
 					where: {
 						recipients: { some: { id: BigInt(userId) } },
 						type: ChannelType.GROUP_DM,
-						tempDeletedByUsers: !includeDeleted ? { none: { id: BigInt(userId) } } : {},
+						tempDeletedByUsers: !includeDeleted ? { none: { id: BigInt(userId) } } : undefined,
 					},
 					include: include,
 				});
@@ -54,7 +54,7 @@ const channelExtention = Prisma.defineExtension({
 
 				// See if we got a channel where all recipients are either initiator or first recipient
 				const existingChannel = await prisma.channel.findFirst({
-					where: { recipients: { every: { OR: [{ id: BigInt(recipients[0]) }, { id: BigInt(initiatorId) }] } } },
+					where: { recipients: { every: { OR: [{ id: BigInt(recipients[0]) }, { id: BigInt(initiatorId) }] } }, type: ChannelType.DM },
 				});
 
 				if (!isGroup && existingChannel) {
@@ -101,13 +101,25 @@ const channelExtention = Prisma.defineExtension({
 				await prisma.channel.assertChannelExists("deleteDM", channelId);
 				await prisma.user.assertUserExists("deleteDM", userId);
 
-				const channel = await prisma.channel.update({
-					where: { id: BigInt(channelId) },
-					data: { tempDeletedByUsers: { connect: { id: BigInt(userId) } } },
-					include: include,
-				});
+				const channel = await prisma.channel.getById(channelId);
 
-				return channel as ChannelPayload<Include>;
+				let editedChannel: ChannelPayload<Include> | undefined;
+
+				if (channel.type === ChannelType.GROUP_DM) {
+					editedChannel = (await prisma.channel.update({
+						where: { id: BigInt(channelId) },
+						data: { recipients: { disconnect: { id: BigInt(userId) } } },
+						include: include,
+					})) as ChannelPayload<Include>;
+				} else if (channel.type === ChannelType.DM) {
+					editedChannel = (await prisma.channel.update({
+						where: { id: BigInt(channelId) },
+						data: { tempDeletedByUsers: { connect: { id: BigInt(userId) } } },
+						include: include,
+					})) as ChannelPayload<Include>;
+				}
+
+				return editedChannel as ChannelPayload<Include>;
 			},
 			async assertChannelExists(methodName: string, id: Snowflake) {
 				assertId(methodName, id);

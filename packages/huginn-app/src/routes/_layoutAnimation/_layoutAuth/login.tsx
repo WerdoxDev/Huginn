@@ -1,5 +1,5 @@
-import { ClientReadyState } from "@huginn/api";
 import AuthWrapper from "@components/AuthWrapper";
+import RouteErrorComponent from "@components/RouteErrorComponent";
 import LinkButton from "@components/button/LinkButton";
 import LoadingButton from "@components/button/LoadingButton";
 import HuginnInput from "@components/input/HuginnInput";
@@ -7,16 +7,16 @@ import PasswordInput from "@components/input/PasswordInput";
 import { useClient } from "@contexts/apiContext";
 import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
 import { routeHistory } from "@contexts/historyContext";
+import { useUser } from "@contexts/userContext";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInputs } from "@hooks/useInputs";
 import { useErrorHandler } from "@hooks/useServerErrorHandler";
-import { requireNotAuth } from "@lib/middlewares";
+import { ClientReadyState } from "@huginn/api";
 import type { APIPostLoginJSONBody } from "@huginn/shared";
+import { requireNotAuth } from "@lib/middlewares";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useContext, useEffect, useState } from "react";
-import RouteErrorComponent from "@components/RouteErrorComponent";
-import { useUser } from "@contexts/userContext";
 import { usePostHog } from "posthog-js/react";
+import { useContext, useEffect, useState } from "react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/login")({
 	beforeLoad({ context: { client } }) {
@@ -51,16 +51,15 @@ function Login() {
 					password: credentials.password,
 				});
 
-				client.gateway.connect();
-
-				setUser(client.user);
-
 				posthog.identify(client.user?.id, { username: client.user?.username, displayName: client.user?.displayName });
 				posthog?.capture("logged_in", null);
 			},
 			async onSuccess() {
 				setAuthBackgroundState(1);
 				setHidden(true);
+
+				await client.gateway.connectAndWaitForReady();
+				setUser(client.user);
 
 				await navigate({ to: "/channels/@me" });
 
@@ -82,7 +81,7 @@ function Login() {
 					setHidden(true);
 
 					await client.initializeWithToken({ refreshToken });
-					client.gateway.connect();
+					await client.gateway.connectAndWaitForReady();
 
 					setUser(client.user);
 
@@ -118,7 +117,7 @@ function Login() {
 	return (
 		<AuthWrapper hidden={hidden} onSubmit={login}>
 			<div className="flex w-full select-none flex-col items-center">
-				<h1 className="text-text mb-2 text-2xl font-medium">Welcome back!</h1>
+				<h1 className="mb-2 font-medium text-2xl text-text">Welcome back!</h1>
 				<div className="text-text/70">It's very good to see you again!</div>
 			</div>
 			<div className="mt-5 w-full">
@@ -137,14 +136,14 @@ function Login() {
 					</HuginnInput.Wrapper>
 				</PasswordInput>
 
-				<LinkButton className="mb-5 mt-1 text-sm">Forgot your password?</LinkButton>
+				<LinkButton className="mt-1 mb-5 text-sm">Forgot your password?</LinkButton>
 
-				<LoadingButton loading={!mutation.isIdle && mutation.isPending} className="bg-primary h-11 w-full " type="submit">
+				<LoadingButton loading={!mutation.isIdle && mutation.isPending} className="h-11 w-full bg-primary " type="submit">
 					Log In
 				</LoadingButton>
 
 				<div className="mt-3 flex select-none items-center">
-					<span className="text-text text-sm opacity-70"> Don't have an account? </span>
+					<span className="text-sm text-text opacity-70"> Don't have an account? </span>
 					<LinkButton to="/register" className="ml-1 text-sm" preload={false}>
 						Register
 					</LinkButton>

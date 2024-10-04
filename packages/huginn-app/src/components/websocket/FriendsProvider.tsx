@@ -1,6 +1,6 @@
 import { useClient } from "@contexts/apiContext";
-import { type APIGetUserRelationshipsResult, type GatewayPublicUserUpdateData, omit } from "@huginn/shared";
-import type { GatewayRelationshipCreateData } from "@huginn/shared";
+import type { APIGetUserRelationshipsResult } from "@huginn/shared";
+import type { APIRelationUser, GatewayPresenceUpdateData, GatewayRelationshipCreateData } from "@huginn/shared";
 import type { Snowflake } from "@huginn/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useEffect } from "react";
@@ -29,11 +29,16 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
 		queryClient.setQueryData<APIGetUserRelationshipsResult>(["relationships"], (data) => data?.filter((x) => x.user.id !== userId));
 	}
 
-	function onPublicUserUpdated(newUser: GatewayPublicUserUpdateData) {
+	function onPresenceUpdated(presence: GatewayPresenceUpdateData) {
+		const user = presence.user as APIRelationUser;
+		if (presence.status === "offline") {
+			return;
+		}
+
 		queryClient.setQueryData<APIGetUserRelationshipsResult>(["relationships"], (old) =>
 			old?.map((relationship) =>
-				relationship.user.id === newUser.id
-					? { ...relationship, user: omit(newUser, ["system"]) }
+				relationship.user.id === user.id
+					? { ...relationship, user: user }
 					: {
 							...relationship,
 						},
@@ -44,12 +49,12 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
 	useEffect(() => {
 		client.gateway.on("relationship_create", onRelationshipCreated);
 		client.gateway.on("relationship_delete", onRelationshipDeleted);
-		client.gateway.on("public_user_update", onPublicUserUpdated);
+		client.gateway.on("presence_update", onPresenceUpdated);
 
 		return () => {
 			client.gateway.off("relationship_create", onRelationshipCreated);
 			client.gateway.off("relationship_delete", onRelationshipDeleted);
-			client.gateway.off("public_user_update", onPublicUserUpdated);
+			client.gateway.off("presence_update", onPresenceUpdated);
 		};
 	}, []);
 

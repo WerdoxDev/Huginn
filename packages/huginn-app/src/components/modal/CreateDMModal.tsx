@@ -4,6 +4,7 @@ import { ComboboxInput } from "@components/input/ComboboxInput";
 import HuginnInput from "@components/input/HuginnInput";
 import { useClient } from "@contexts/apiContext";
 import { useModals, useModalsDispatch } from "@contexts/modalContext";
+import { useUser } from "@contexts/userContext";
 import { Checkbox, Description, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useChannelName } from "@hooks/useChannelName";
@@ -19,6 +20,7 @@ export function CreateDMModal() {
 	const { createDM: modal } = useModals();
 	const dispatch = useModalsDispatch();
 	const client = useClient();
+	const { user } = useUser();
 	const mutation = useCreateDMChannel();
 
 	const posthog = usePostHog();
@@ -72,11 +74,11 @@ export function CreateDMModal() {
 
 	return (
 		<BaseModal modal={modal} onClose={close}>
-			<DialogPanel className="bg-background border-primary w-full max-w-sm transform overflow-hidden rounded-xl border-2 p-5 transition-[opacity_transform] data-[closed]:scale-95">
+			<DialogPanel className="w-full max-w-sm transform overflow-hidden rounded-xl border-2 border-primary bg-background p-5 transition-[opacity_transform] data-[closed]:scale-95">
 				<DialogTitle className="flex items-center justify-center gap-x-1.5">
-					<div className="text-text text-2xl font-medium">Create Direct Message</div>
+					<div className="font-medium text-2xl text-text">Create Direct Message</div>
 				</DialogTitle>
-				<Description className="text-text/70 mx-5 mt-1 text-center">Select your fellow warrior(s) to share a tale with!</Description>
+				<Description className="mx-5 mt-1 text-center text-text/70">Select your fellow warrior(s) to share a tale with!</Description>
 				<div className="mt-5 flex flex-col gap-y-5">
 					<HuginnInput
 						{...inputsProps.groupName}

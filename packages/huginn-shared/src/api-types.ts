@@ -251,3 +251,17 @@ export enum MessageType {
 	REPLY = 8,
 }
 //#endregion
+
+export type PresenceStatus = "offline" | "online" | "dnd" | "idle";
+export type UserPresence = {
+	user: Partial<APIUser> & { id: Snowflake };
+	status: PresenceStatus;
+	clientStatus?: {
+		web?: PresenceStatus;
+		desktop?: PresenceStatus;
+	};
+};
+
+export type UserSettings = {
+	status: PresenceStatus;
+};

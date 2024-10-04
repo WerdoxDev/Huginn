@@ -19,7 +19,7 @@ export function UserProvider(props: { children?: ReactNode }) {
 
 	function userUpdated(user: GatewayUserUpdateData) {
 		setUser(user);
-		dispatchEvent("user_updated", { user, self: true });
+		dispatchEvent("user_updated", user);
 	}
 
 	useEffect(() => {
@@ -29,12 +29,6 @@ export function UserProvider(props: { children?: ReactNode }) {
 			client.gateway.off("user_update", userUpdated);
 		};
 	}, []);
-	// useEffect(() => {
-	//    console.log("HI?", client.readyState);
-	//    if (client.isLoggedIn) {
-	//       setUser(client.user);
-	//    }
-	// }, [client.readyState]);
 
 	return <UserContext.Provider value={{ user, setUser }}>{props.children}</UserContext.Provider>;
 }

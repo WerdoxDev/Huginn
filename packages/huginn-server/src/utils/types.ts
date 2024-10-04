@@ -1,4 +1,4 @@
-import type { APIUser } from "@huginn/shared";
+import type { APIUser, GatewayIdentifyProperties } from "@huginn/shared";
 
 export type ServerGatewayOptions = {
 	logHeartbeat: boolean;
@@ -7,7 +7,7 @@ export type ServerGatewayOptions = {
 export type ClientSessionInfo = {
 	sessionId: string;
 	user: APIUser;
-};
+} & GatewayIdentifyProperties;
 
 export type AppVersionInfo = {
 	version: string;

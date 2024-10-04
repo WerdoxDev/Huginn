@@ -1,9 +1,9 @@
 import { type ContextMenuRelationship, ContextMenuType } from "@/types";
 import { useContextMenu } from "@contexts/contextMenuContext";
+import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useRemoveFriend } from "@hooks/mutations/useRemoveFriend";
 import { useMemo } from "react";
 import { ContextMenu } from "./ContextMenu";
-import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 
 export default function RelationshipContextMenu() {
 	const { context, close } = useContextMenu<ContextMenuRelationship>(ContextMenuType.RELATIONSHIP);
@@ -29,7 +29,7 @@ export default function RelationshipContextMenu() {
 				className="!text-error focus:!bg-error/80 focus:!text-white"
 			/>
 			<ContextMenu.Divider />
-			<ContextMenu.Item label="Copy User ID">
+			<ContextMenu.Item label="Copy User ID" onClick={() => navigator.clipboard.writeText(data.user.id)}>
 				<IconMdiIdentificationCard />
 			</ContextMenu.Item>
 		</ContextMenu>

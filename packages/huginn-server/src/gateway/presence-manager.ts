@@ -1,33 +1,69 @@
-import type { GatewayPresenceUpdateData, Snowflake } from "@huginn/shared";
+import type {
+	APIRelationshipWithoutOwner,
+	APIUser,
+	GatewayPresenceUpdateData,
+	PresenceStatus,
+	Snowflake,
+	UserPresence,
+	UserSettings,
+} from "@huginn/shared";
+import { preprocess } from "zod";
 import { dispatchToTopic } from "#utils/gateway-utils";
+import type { ClientSession } from "./client-session";
 
 export class PresenceManager {
-	private presences: Map<Snowflake, GatewayPresenceUpdateData>;
+	private presences: Map<Snowflake, UserPresence>;
 
 	public constructor() {
 		this.presences = new Map();
 	}
 
-	public async addClient(userId: Snowflake) {
-		const presence: GatewayPresenceUpdateData = { user: { id: userId }, status: "online" };
-		this.presences.set(userId, presence);
+	public setClient(user: Partial<APIUser> & { id: Snowflake }, session: ClientSession, settings: UserSettings) {
+		const isOfficialClient = session.data.browser === "Huginn Client";
+		const presence: UserPresence = {
+			user,
+			status: settings.status,
+			clientStatus: { desktop: isOfficialClient ? settings.status : undefined, web: !isOfficialClient ? settings.status : undefined },
+		};
 
-		dispatchToTopic([`${userId}_public`, userId], "presence_update", presence);
-		this.sendBatchUpdate(userId);
+		const existing = this.presences.get(user.id);
+
+		this.presences.set(user.id, existing ? { ...presence, clientStatus: { ...existing.clientStatus, ...presence.clientStatus } } : presence);
+
+		dispatchToTopic(`${user.id}_presence`, "presence_update", presence);
 	}
 
-	public async removeClient(userId: Snowflake) {
-		dispatchToTopic(`${userId}_public`, "presence_update", { user: { id: userId }, status: "offline" });
+	public removeClient(userId: Snowflake) {
+		dispatchToTopic(`${userId}_presence`, "presence_update", { user: { id: userId }, status: "offline" });
 		this.presences.delete(userId);
 	}
 
-	public async sendBatchUpdate(userId: Snowflake) {
-		const presences = Array.from(this.presences)
-			.filter((x) => x[0] !== userId)
-			.map((x) => x[1]);
+	public getUserPresences(session: ClientSession) {
+		const subscriptions = session.getSubscriptions();
 
-		if (presences.length > 0) {
-			dispatchToTopic(userId, "batch_presence_update", presences);
+		const presences: UserPresence[] = [];
+		for (const [id, presence] of this.presences) {
+			if (subscriptions.has(`${id}_presence`)) {
+				presences.push(presence);
+			}
 		}
+
+		return presences;
+	}
+
+	public getClient(userId: Snowflake) {
+		return this.presences.get(userId);
+	}
+
+	public addToUser(userId: Snowflake, userIdToAdd: Snowflake) {
+		const presence = this.presences.get(userIdToAdd);
+		if (presence) {
+			dispatchToTopic(userId, "presence_update", presence);
+		}
+	}
+
+	public removeFromUser(userId: Snowflake, userIdToRemove: Snowflake) {
+		const presence: GatewayPresenceUpdateData = { user: { id: userIdToRemove }, status: "offline" };
+		dispatchToTopic(userId, "presence_update", presence);
 	}
 }

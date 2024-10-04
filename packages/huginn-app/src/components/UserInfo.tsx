@@ -62,7 +62,11 @@ export default function UserInfo(props: { user: APIUser }) {
 					</div>
 					<div className="p-1.5">
 						<MenuItem>
-							<button className="flex w-full items-center gap-x-2.5 rounded-md px-2 py-2 text-text hover:bg-secondary" type="button">
+							<button
+								onClick={() => navigator.clipboard.writeText(props.user.id)}
+								className="flex w-full items-center gap-x-2.5 rounded-md px-2 py-2 text-text hover:bg-secondary"
+								type="button"
+							>
 								<IconMdiIdentificationCard className="h-5 w-5" />
 								<span className="text-sm">Copy User ID</span>
 							</button>

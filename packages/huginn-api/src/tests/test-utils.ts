@@ -40,6 +40,7 @@ export async function getLoggedClient(credentials: LoginCredentials = testCreden
 	});
 
 	await client.login(credentials);
+	await client.gateway.connectAndWaitForReady();
 
 	return client;
 }

@@ -1,10 +1,10 @@
 import AnimatedMessage from "@components/AnimatedMessage";
 import AuthWrapper from "@components/AuthWrapper";
+import RouteErrorComponent from "@components/RouteErrorComponent";
 import LinkButton from "@components/button/LinkButton";
 import LoadingButton from "@components/button/LoadingButton";
 import HuginnInput from "@components/input/HuginnInput";
 import PasswordInput from "@components/input/PasswordInput";
-import RouteErrorComponent from "@components/RouteErrorComponent";
 import { useClient } from "@contexts/apiContext";
 import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
 import { useUser } from "@contexts/userContext";
@@ -52,16 +52,16 @@ function Register() {
 					password: user.password,
 				});
 
-				client.gateway.connect();
-
-				setUser(client.user);
-
 				posthog.identify(client.user?.id, { username: client.user?.username, displayName: client.user?.displayName });
 				posthog.capture("registered");
 			},
 			async onSuccess() {
 				setAuthBackgroundState(1);
 				setHidden(true);
+
+				await client.gateway.connectAndWaitForReady();
+
+				setUser(client.user);
 
 				await navigate({ to: "/channels/@me" });
 			},
@@ -91,7 +91,7 @@ function Register() {
 	return (
 		<AuthWrapper hidden={hidden} onSubmit={register}>
 			<div className="flex w-full select-none flex-col items-center">
-				<h1 className="text-text mb-2 text-2xl font-medium">Welcome to Huginn!</h1>
+				<h1 className="mb-2 font-medium text-2xl text-text">Welcome to Huginn!</h1>
 				<div className="text-text opacity-70">We are very happy to have you here!</div>
 			</div>
 			<div className="mt-5 w-full">
@@ -125,12 +125,12 @@ function Register() {
 					</HuginnInput.Wrapper>
 				</PasswordInput>
 
-				<LoadingButton loading={!mutation.isIdle && mutation.isPending} className="bg-primary h-11 w-full" type="submit">
+				<LoadingButton loading={!mutation.isIdle && mutation.isPending} className="h-11 w-full bg-primary" type="submit">
 					Register
 				</LoadingButton>
 
 				<div className="mt-3 flex select-none items-center">
-					<span className="text-text text-sm opacity-70"> Already have an account? </span>
+					<span className="text-sm text-text opacity-70"> Already have an account? </span>
 					<LinkButton to="/login" className="ml-1 text-sm" preload={false}>
 						Login
 					</LinkButton>
