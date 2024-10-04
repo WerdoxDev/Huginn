@@ -47,13 +47,13 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
 	}
 
 	useEffect(() => {
-		client.gateway.on("relationship_create", onRelationshipCreated);
-		client.gateway.on("relationship_delete", onRelationshipDeleted);
+		client.gateway.on("relationship_add", onRelationshipCreated);
+		client.gateway.on("relationship_remove", onRelationshipDeleted);
 		client.gateway.on("presence_update", onPresenceUpdated);
 
 		return () => {
-			client.gateway.off("relationship_create", onRelationshipCreated);
-			client.gateway.off("relationship_delete", onRelationshipDeleted);
+			client.gateway.off("relationship_add", onRelationshipCreated);
+			client.gateway.off("relationship_remove", onRelationshipDeleted);
 			client.gateway.off("presence_update", onPresenceUpdated);
 		};
 	}, []);
