@@ -45,7 +45,14 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
 				) : (
 					<div className="mr-3 size-9 shrink-0 rounded-full bg-primary" />
 				)}
-				<div className={clsx("w-full text-sm text-text group-hover:opacity-100", selected ? "opacity-100" : "opacity-70")}>{name}</div>
+				<div className="flex w-full flex-col justify-center">
+					<div className={clsx("text-sm text-text group-hover:opacity-100", selected ? "opacity-100" : "opacity-70")}>{name}</div>
+					{props.channel.type === ChannelType.GROUP_DM && (
+						<div className={clsx("text-text text-xs group-hover:opacity-70", selected ? "opacity-70" : "opacity-50")}>
+							{props.channel.recipients.length} Members
+						</div>
+					)}
+				</div>
 			</Link>
 			{!isLoading ? (
 				<button
