@@ -55,15 +55,10 @@ export class PresenceManager {
 		return this.presences.get(userId);
 	}
 
-	public addToUser(userId: Snowflake, userIdToAdd: Snowflake) {
-		const presence = this.presences.get(userIdToAdd);
+	public sendToUser(userId: Snowflake, userIdToSend: Snowflake, offlineStatus?: boolean) {
+		const presence: UserPresence | undefined = offlineStatus ? { user: { id: userIdToSend }, status: "offline" } : this.presences.get(userIdToSend);
 		if (presence) {
 			dispatchToTopic(userId, "presence_update", presence);
 		}
-	}
-
-	public removeFromUser(userId: Snowflake, userIdToRemove: Snowflake) {
-		const presence: GatewayPresenceUpdateData = { user: { id: userIdToRemove }, status: "offline" };
-		dispatchToTopic(userId, "presence_update", presence);
 	}
 }

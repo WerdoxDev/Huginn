@@ -229,6 +229,8 @@ export class ServerGateway {
 			return;
 		}
 
+		const user = idFix(await prisma.user.getById(payload.id));
+
 		client.peer = peer;
 		client.initialize();
 
@@ -250,7 +252,9 @@ export class ServerGateway {
 			d: undefined,
 			s: client.increaseSequence(),
 		};
+
 		this.send(peer, resumedData);
+		this.presenceManeger.setClient(user, client, { status: "online" });
 	}
 
 	private queueClientDisconnect(sessionId: Snowflake) {

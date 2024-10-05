@@ -20,8 +20,8 @@ router.delete(
 		dispatchToTopic(payload.id, "relationship_remove", userId);
 		dispatchToTopic(userId, "relationship_remove", payload.id);
 
-		gateway.presenceManeger.removeFromUser(payload.id, userId);
-		gateway.presenceManeger.removeFromUser(userId, payload.id);
+		gateway.presenceManeger.sendToUser(payload.id, userId, true);
+		gateway.presenceManeger.sendToUser(userId, payload.id, true);
 
 		gateway.unsubscribeSessionsFromTopic(payload.id, `${userId}_public`);
 		gateway.unsubscribeSessionsFromTopic(userId, `${payload.id}_public`);

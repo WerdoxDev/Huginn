@@ -63,8 +63,8 @@ export async function relationshipPost(event: H3Event, userId: Snowflake) {
 				gateway.subscribeSessionsToTopic(payload.id, `${userId}_presence`);
 				gateway.subscribeSessionsToTopic(userId, `${payload.id}_presence`);
 
-				gateway.presenceManeger.addToUser(payload.id, userId);
-				gateway.presenceManeger.addToUser(userId, payload.id);
+				gateway.presenceManeger.sendToUser(payload.id, userId);
+				gateway.presenceManeger.sendToUser(userId, payload.id);
 			}
 		}
 	}
