@@ -8,6 +8,7 @@ import { PostHogProvider } from "posthog-js/react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import DefaultNotFound from "@components/DefaultNotFound";
+import { PresenceProvider } from "@contexts/presenceContext";
 import { createRouter } from "@tanstack/react-router";
 import HuginnRouterProvider from "./HuginnRouterProvider";
 import { routeTree } from "./routeTree.gen";

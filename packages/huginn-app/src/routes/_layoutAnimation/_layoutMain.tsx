@@ -22,10 +22,8 @@ function LayoutMain() {
 			<div className="flex h-full w-full select-none bg-background">
 				<WebsocketProviders>
 					<ChannelScrollProvider>
-						<PresenceProvider>
-							<GuildsBar />
-							<Outlet />
-						</PresenceProvider>
+						<GuildsBar />
+						<Outlet />
 					</ChannelScrollProvider>
 				</WebsocketProviders>
 			</div>

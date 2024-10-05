@@ -2,14 +2,15 @@ import { type ContextMenuRelationship, ContextMenuType } from "@/types";
 import UserAvatarWithStatus from "@components/UserAvatarWithStatus";
 import { Tooltip } from "@components/tooltip/Tooltip";
 import { useContextMenu } from "@contexts/contextMenuContext";
-import { usePresence } from "@contexts/presenceContext";
 import { type APIRelationUser, RelationshipType } from "@huginn/shared";
-import type { Snowflake } from "@huginn/shared";
+import type { Snowflake, UserPresence } from "@huginn/shared";
 import { useMemo } from "react";
 
 export default function FriendItem(props: {
 	type: RelationshipType;
 	user: APIRelationUser;
+	presence?: UserPresence;
+	loading?: boolean;
 	onAccept?: (userId: Snowflake) => void;
 	onDenyOrCancel?: (userId: Snowflake) => void;
 	onMessage?: (userId: Snowflake) => void;
@@ -17,27 +18,27 @@ export default function FriendItem(props: {
 	const { open: openRelationshipMore } = useContextMenu<ContextMenuRelationship>(ContextMenuType.RELATIONSHIP_MORE);
 	const { open: openRelationship } = useContextMenu<ContextMenuRelationship>(ContextMenuType.RELATIONSHIP);
 
-	const presence = usePresence(props.user.id);
 	const presenceText = useMemo(
 		() =>
-			!presence
+			!props.presence
 				? "Offline"
-				: presence?.status === "online"
+				: props.presence?.status === "online"
 					? "Online"
-					: presence?.status === "offline"
+					: props.presence?.status === "offline"
 						? "Offline"
-						: presence?.status === "idle"
+						: props.presence?.status === "idle"
 							? "Idle"
 							: "Do not disturb",
-		[presence],
+		[props.presence],
 	);
 
 	return (
 		<div
-			className="group flex cursor-pointer items-center justify-between rounded-xl p-2.5 hover:bg-secondary"
+			className="group relative flex cursor-pointer items-center justify-between overflow-hidden rounded-xl p-2.5 hover:bg-secondary"
 			onContextMenu={(e) => {
 				openRelationship({ user: props.user, type: props.type }, e);
 			}}
+			onClick={() => props.onMessage?.(props.user.id)}
 		>
 			<div className="flex">
 				<UserAvatarWithStatus userId={props.user.id} avatarHash={props.user.avatar} className="mr-3" />
@@ -46,7 +47,12 @@ export default function FriendItem(props: {
 					<span className="text-sm text-text/50">{presenceText}</span>
 				</div>
 			</div>
-			<div className="flex flex-shrink-0 gap-x-2.5">
+			{props.loading && (
+				<div className="absolute inset-0 flex items-center justify-center bg-black/40">
+					<IconSvgSpinners3DotsFade className="size-10 text-text" />
+				</div>
+			)}
+			<div className="flex flex-shrink-0 items-center gap-x-2.5">
 				{props.type === RelationshipType.PENDING_INCOMING || props.type === RelationshipType.PENDING_OUTGOING ? (
 					<>
 						{props.type === RelationshipType.PENDING_INCOMING && (

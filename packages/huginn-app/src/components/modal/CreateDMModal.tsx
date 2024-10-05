@@ -1,9 +1,11 @@
 import UserAvatarWithStatus from "@components/UserAvatarWithStatus";
 import LoadingButton from "@components/button/LoadingButton";
+import ModalCloseButton from "@components/button/ModalCloseButton";
 import { ComboboxInput } from "@components/input/ComboboxInput";
 import HuginnInput from "@components/input/HuginnInput";
 import { useClient } from "@contexts/apiContext";
 import { useModals, useModalsDispatch } from "@contexts/modalContext";
+import { usePresences } from "@contexts/presenceContext";
 import { useUser } from "@contexts/userContext";
 import { Checkbox, Description, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
@@ -20,7 +22,6 @@ export function CreateDMModal() {
 	const { createDM: modal } = useModals();
 	const dispatch = useModalsDispatch();
 	const client = useClient();
-	const { user } = useUser();
 	const mutation = useCreateDMChannel();
 
 	const posthog = usePostHog();
@@ -99,7 +100,7 @@ export function CreateDMModal() {
 						onChange={(e) => setQuery(e.value)}
 					>
 						<HuginnInput.Label className="mb-2" text="Members" />
-						<HuginnInput.Wrapper border="left" className="flex-col !items-start">
+						<HuginnInput.Wrapper border="left" className="!items-start flex-col">
 							<ComboboxInput.SelectionDisplay>
 								{({ toggleSelection }) => (
 									<div className="mx-2 mt-2 flex select-none flex-wrap gap-1">
@@ -108,7 +109,7 @@ export function CreateDMModal() {
 												type="button"
 												onClick={() => toggleSelection(user.id)}
 												key={user.id}
-												className="text-text bg-primary rounded-sm px-2"
+												className="rounded-sm bg-primary px-2 text-text"
 											>
 												{user.displayName ?? user.username}
 											</button>
@@ -123,19 +124,24 @@ export function CreateDMModal() {
 								<ComboboxInput.Option value={x.user.id} key={x.user.id}>
 									<UserAvatarWithStatus userId={x.user.id} avatarHash={x.user.avatar} />
 									<div className="text-text">{x.user.displayName ?? x.user.username}</div>
-									<div className="text-text/70 text-sm">{x.user.username}</div>
+									<div className="text-sm text-text/70">{x.user.username}</div>
 									<Checkbox
 										checked={selectedUsers?.includes(x.user.id) ?? false}
-										className="border-accent data-[checked]:bg-accent ml-auto size-6 rounded-md border "
+										className="ml-auto size-6 rounded-md border border-accent data-[checked]:bg-accent "
 									/>
 								</ComboboxInput.Option>
 							))}
 						</ComboboxInput.OptionWrapper>
 					</ComboboxInput>
-					<LoadingButton loading={mutation.isPending} className="bg-primary h-10" onClick={findOrCreate} disabled={selectedUsers.length === 0}>
+					<LoadingButton loading={mutation.isPending} className="h-10 bg-primary" onClick={findOrCreate} disabled={selectedUsers.length === 0}>
 						Find or Create
 					</LoadingButton>
 				</div>
+				<ModalCloseButton
+					onClick={() => {
+						dispatch({ createDM: { isOpen: false } });
+					}}
+				/>
 			</DialogPanel>
 		</BaseModal>
 	);

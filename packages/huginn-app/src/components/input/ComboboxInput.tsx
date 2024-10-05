@@ -23,8 +23,6 @@ export function ComboboxInput<Value extends unknown[]>(
 		props.onSelectionChange(newSelectedUsers);
 	}
 
-	// return props.children({ value: "123" });
-
 	return (
 		<ComboboxContext.Provider value={{ selection: props.selection, toggleSelection: toggleSelection }}>
 			<HuginnInput {...props} placeholder="Search a friend">
@@ -45,7 +43,7 @@ function SelectionDisplay(props: { children: ((props: { toggleSelection(value: u
 }
 
 function OptionWrapper(props: { children?: ReactNode }) {
-	return <div className="bg-secondary scroll-alternative2 mt-2 h-40 overflow-y-scroll rounded-md p-2">{props.children}</div>;
+	return <div className="scroll-alternative2 mt-2 h-40 overflow-y-scroll rounded-md bg-secondary p-2">{props.children}</div>;
 }
 
 function Item(props: { value: unknown; children?: ReactNode }) {
@@ -53,7 +51,7 @@ function Item(props: { value: unknown; children?: ReactNode }) {
 	const inputContext = useContext(HuginnInput.InputContext);
 	return (
 		<div
-			className="hover:bg-background -mr-2 flex select-none items-center gap-x-2 rounded-sm px-2 py-1 outline-none"
+			className="-mr-2 flex select-none items-center gap-x-2 rounded-sm px-2 py-1 outline-none hover:bg-background"
 			onClick={() => {
 				comboboxContext?.toggleSelection(props.value);
 				inputContext.inputRef?.current?.focus();

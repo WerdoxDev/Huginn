@@ -37,7 +37,7 @@ export default function UserAvatarWithStatus(props: {
 			<div
 				className={clsx(
 					"absolute right-0 bottom-0 rounded-full",
-					presence ? (presence.status === "online" ? "bg-success" : "bg-white/50") : "bg-white/50",
+					presence ? (presence.status === "online" ? "bg-success" : "bg-transparent") : "bg-transparent",
 				)}
 				style={{ width: statusSize, height: statusSize }}
 			/>

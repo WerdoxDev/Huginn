@@ -11,6 +11,7 @@ export function usePatchUser(onSuccess?: (result: APIPatchCurrentUserResult) => 
 
 	const mutation = useHuginnMutation(
 		{
+			mutationKey: ["patch-user"],
 			async mutationFn(data: APIPatchCurrentUserJSONBody) {
 				return await client.users.edit(data);
 			},

@@ -6,6 +6,7 @@ export function useDeleteDMChannel() {
 	const client = useClient();
 
 	const mutation = useMutation({
+		mutationKey: ["delete-dm-channel"],
 		async mutationFn(channelId: Snowflake) {
 			return await client.channels.deleteDM(channelId);
 		},

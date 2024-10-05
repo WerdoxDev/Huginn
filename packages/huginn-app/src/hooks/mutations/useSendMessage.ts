@@ -7,6 +7,7 @@ export function useSendMessage() {
 	const client = useClient();
 
 	const mutation = useMutation({
+		mutationKey: ["send-message"],
 		async mutationFn(data: { channelId: Snowflake; content: string; flags: MessageFlags }) {
 			return await client.channels.createMessage(data.channelId, {
 				content: data.content,

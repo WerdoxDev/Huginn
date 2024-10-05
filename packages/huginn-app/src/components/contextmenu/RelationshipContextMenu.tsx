@@ -2,7 +2,8 @@ import { type ContextMenuRelationship, ContextMenuType } from "@/types";
 import { useContextMenu } from "@contexts/contextMenuContext";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useRemoveFriend } from "@hooks/mutations/useRemoveFriend";
-import { useMemo } from "react";
+import { useMutationState } from "@tanstack/react-query";
+import { useEffect, useMemo } from "react";
 import { ContextMenu } from "./ContextMenu";
 
 export default function RelationshipContextMenu() {

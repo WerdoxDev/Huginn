@@ -1,9 +1,9 @@
+import { useClient } from "@contexts/apiContext";
 import { TabPanel } from "@headlessui/react";
 import { type APIRelationshipWithoutOwner, RelationshipType } from "@huginn/shared";
 import type { Snowflake } from "@huginn/shared";
 import { useMemo } from "react";
 import FriendItem from "./FriendItem";
-import { useClient } from "@contexts/apiContext";
 
 export default function PendingFriendsTab(props: { friends: APIRelationshipWithoutOwner[] }) {
 	const client = useClient();
@@ -24,7 +24,7 @@ export default function PendingFriendsTab(props: { friends: APIRelationshipWitho
 	}
 	return (
 		<TabPanel>
-			<div className="text-text/70 ml-2.5 text-xs font-medium uppercase">Pending - {pendingAmount}</div>
+			<div className="ml-2.5 font-medium text-text/70 text-xs uppercase">Pending - {pendingAmount}</div>
 			<div className="mt-5 flex flex-col justify-center gap-y-1">
 				{pendingFriends.map((friend) => (
 					<FriendItem

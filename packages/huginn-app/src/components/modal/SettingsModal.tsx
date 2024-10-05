@@ -126,12 +126,12 @@ export default function SettingsModal() {
 				dispatch({ settings: { isOpen: false } });
 			}}
 		>
-			<DialogPanel className="border-primary/50 bg-background flex h-[30rem] w-full max-w-3xl transform rounded-xl border-2 transition-[opacity_transform] data-[closed]:scale-95">
+			<DialogPanel className="flex h-[30rem] w-full max-w-3xl transform rounded-xl border-2 border-primary/50 bg-background transition-[opacity_transform] data-[closed]:scale-95">
 				<TabGroup className="flex w-full" vertical defaultIndex={defaultTabIndex} onChange={onTabChanged}>
-					<div className="bg-secondary/50 h-full rounded-l-xl">
+					<div className="h-full rounded-l-xl bg-secondary/50">
 						<TabList className="flex h-full w-48 select-none flex-col py-2">
 							<DialogTitle className="mx-5 my-3 flex items-center justify-start gap-x-1.5">
-								<div className="text-text text-2xl font-medium">Settings</div>
+								<div className="font-medium text-2xl text-text">Settings</div>
 							</DialogTitle>
 							<SettingsTabs />
 						</TabList>
@@ -159,7 +159,7 @@ function SettingsTabs() {
 				(tab, i) =>
 					(client.isLoggedIn || !tab.auth) && (
 						<Fragment key={tab.name}>
-							<div className={`text-text/50 mb-1 w-full px-2.5 text-left text-xs uppercase ${i === 0 ? "mt-2" : "mt-4"}`}>{tab.text}</div>
+							<div className={clsx("mb-1 w-full px-2.5 text-left text-text/50 text-xs uppercase", i === 0 ? "mt-2" : "mt-4")}>{tab.text}</div>
 							{tab.children?.map((child) => (
 								<div className="w-full px-2" key={child.name}>
 									<Tab as={Fragment}>
@@ -167,7 +167,7 @@ function SettingsTabs() {
 											<button
 												type="button"
 												className={clsx(
-													"text-text flex w-full items-center gap-x-2 rounded-md px-2 py-1.5 text-left text-base outline-none",
+													"flex w-full items-center gap-x-2 rounded-md px-2 py-1.5 text-left text-base text-text outline-none",
 													selected ? "bg-white/20 text-opacity-100" : "text-opacity-70 hover:bg-white/10 hover:text-opacity-100",
 												)}
 											>

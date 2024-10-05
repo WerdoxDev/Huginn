@@ -11,6 +11,7 @@ import type { useClient } from "@contexts/apiContext";
 import { ContextMenuProvider } from "@contexts/contextMenuContext";
 import { routeHistory } from "@contexts/historyContext";
 import { ModalProvider } from "@contexts/modalContext";
+import { PresenceProvider } from "@contexts/presenceContext";
 import { ThemeProvier } from "@contexts/themeContext";
 import { UserProvider, useUser } from "@contexts/userContext";
 import { useWindow, useWindowDispatch } from "@contexts/windowContext";
@@ -58,16 +59,18 @@ function Root() {
 			<ModalProvider>
 				<ContextMenuProvider>
 					<UserProvider>
-						<div className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
-							{router.state.location.pathname !== "/splashscreen" && appWindow.environment === "desktop" && <TitleBar />}
-							<div className="relative h-full w-full">
-								<Outlet />
-								{/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
-								{/* <TanStackRouterDevtools position="bottom-left" /> */}
-								{appWindow.environment === "desktop" && <AppMaximizedEvent />}
-								<ModalsRenderer />
+						<PresenceProvider>
+							<div className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
+								{router.state.location.pathname !== "/splashscreen" && appWindow.environment === "desktop" && <TitleBar />}
+								<div className="relative h-full w-full">
+									<Outlet />
+									{/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
+									{/* <TanStackRouterDevtools position="bottom-left" /> */}
+									{appWindow.environment === "desktop" && <AppMaximizedEvent />}
+									<ModalsRenderer />
+								</div>
 							</div>
-						</div>
+						</PresenceProvider>
 					</UserProvider>
 				</ContextMenuProvider>
 			</ModalProvider>
@@ -79,19 +82,19 @@ function Root() {
 function ModalsRenderer() {
 	const { user } = useUser();
 
-	if (!user) {
-		return;
-	}
-
 	return (
 		<>
 			<ErrorBoundary FallbackComponent={ModalErrorComponent}>
 				<SettingsModal />
-				<CreateDMModal />
-				<ImageCropModal />
-				<ChannelsContextMenu />
-				<RelationshipMoreContextMenu />
-				<RelationshipContextMenu />
+				{user && (
+					<>
+						<CreateDMModal />
+						<ImageCropModal />
+						<ChannelsContextMenu />
+						<RelationshipMoreContextMenu />
+						<RelationshipContextMenu />
+					</>
+				)}
 			</ErrorBoundary>
 			<InfoModal />
 		</>

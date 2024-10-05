@@ -13,7 +13,6 @@ export function PresenceProvider(props: { children?: ReactNode }) {
 	const client = useClient();
 
 	function onPresenceUpdated(d: GatewayPresenceUpdateData) {
-		console.log(presences.length, d.user.username);
 		if (d.status === "offline") {
 			setPresences((prev) => prev.filter((x) => x.user.id !== d.user.id));
 			return;
@@ -54,15 +53,21 @@ export function PresenceProvider(props: { children?: ReactNode }) {
 		};
 	}, []);
 
-	useEffect(() => {
-		console.log(presences.length, presences);
-	}, [presences]);
-
 	return <PresenceContext.Provider value={presences}>{props.children}</PresenceContext.Provider>;
 }
 
 export function usePresence(userId: Snowflake) {
 	const context = useContext(PresenceContext);
 
+	useEffect(() => {
+		console.log(context);
+	}, []);
+
 	return useMemo(() => context.find((x) => x.user.id === userId), [context]);
+}
+
+export function usePresences(userIds: Snowflake[]) {
+	const context = useContext(PresenceContext);
+
+	return useMemo(() => context.filter((x) => userIds.includes(x.user.id)), [context]);
 }

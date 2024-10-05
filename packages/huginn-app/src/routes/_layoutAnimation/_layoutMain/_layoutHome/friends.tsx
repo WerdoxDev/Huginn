@@ -1,14 +1,18 @@
 import RouteErrorComponent from "@components/RouteErrorComponent";
 import AddFriendTab from "@components/friends/AddFriendTab";
+import FriendsTab from "@components/friends/FriendsTab";
 import FriendsTabItem from "@components/friends/FriendsTabItem";
 import OnlineFriendsTab from "@components/friends/OnlineFriendsTab";
 import PendingFriendsTab from "@components/friends/PendingFriendsTab";
 import { useClient } from "@contexts/apiContext";
+import { usePresences } from "@contexts/presenceContext";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import { RelationshipType } from "@huginn/shared";
 import { requireAuth } from "@lib/middlewares";
 import { getRelationshipsOptions } from "@lib/queries";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { Fragment } from "react/jsx-runtime";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/friends")({
@@ -28,6 +32,13 @@ const tabs = ["Online", "All", "Pending"];
 function Friends() {
 	const client = useClient();
 	const { data: friends } = useSuspenseQuery(getRelationshipsOptions(client));
+
+	const allFriends = useMemo(() => friends?.filter((x) => x.type === RelationshipType.FRIEND), [friends]);
+	const presences = usePresences(allFriends?.map((x) => x.user.id) ?? []);
+	const onlineFriends = useMemo(
+		() => friends?.filter((x) => x.type === RelationshipType.FRIEND && presences.some((y) => y.user.id === x.user.id && y.status === "online")),
+		[allFriends, presences],
+	);
 
 	return (
 		<div className="flex h-full flex-col">
@@ -61,8 +72,8 @@ function Friends() {
 				</div>
 				<div className="h-0.5 flex-shrink-0 bg-white/10" />
 				<TabPanels className="h-full p-5">
-					<OnlineFriendsTab friends={friends} />
-					<TabPanel />
+					<FriendsTab friends={onlineFriends} presences={presences} text="Online" />
+					<FriendsTab friends={allFriends} presences={presences} text="All Friends" />
 					<PendingFriendsTab friends={friends} />
 					<AddFriendTab />
 				</TabPanels>

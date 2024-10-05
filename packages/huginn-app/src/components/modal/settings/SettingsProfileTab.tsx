@@ -112,8 +112,8 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 		input.click();
 	}
 
-	async function edit() {
-		await mutation.mutateAsync({
+	function edit() {
+		mutation.mutate({
 			displayName: values.displayName.value,
 			username: values.username.value === user?.username ? undefined : values.username.value,
 			password: values.password.value,
@@ -140,12 +140,12 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 	return (
 		<>
 			<div className="flex h-full items-start gap-x-5">
-				<div className="bg-secondary flex rounded-lg p-4">
+				<div className="flex rounded-lg bg-secondary p-4">
 					<div onClick={openFileDialog} className="group relative h-24 w-24 cursor-pointer overflow-hidden rounded-full bg-black">
 						{avatarData ? (
 							<img alt="editing-user-avatar" className="h-full w-full object-cover" src={avatarData} />
 						) : (
-							<div className="bg-primary h-full w-full" />
+							<div className="h-full w-full bg-primary" />
 						)}
 
 						<div className="absolute inset-0 flex h-full w-full items-center justify-center gap-x-1 rounded-full group-hover:bg-black/30">
@@ -165,7 +165,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 												setAvatarModified(true);
 											}
 										}}
-										className="text-error invisible size-7 group-hover:visible"
+										className="invisible size-7 text-error group-hover:visible"
 									/>
 								</Tooltip.Trigger>
 								<Tooltip.Content>
@@ -175,7 +175,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 						</div>
 					</div>
 				</div>
-				<div className="bg-secondary mb-20 flex w-full flex-col gap-y-5 rounded-lg p-4">
+				<div className="mb-20 flex w-full flex-col gap-y-5 rounded-lg bg-secondary p-4">
 					<HuginnInput {...inputsProps.username} onFocusChanged={onFocusChanged}>
 						<HuginnInput.Label text="Username" className="mb-2" />
 						<HuginnInput.Wrapper className="!bg-background" border="left">
@@ -200,8 +200,8 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 				</div>
 			</div>
 			<Transition show={modified || avatarModified}>
-				<div className="border-primary/50 bg-secondary absolute bottom-5 left-[13.25rem] right-9 flex transform justify-end gap-x-2 rounded-xl border-2 p-2 shadow-sm transition data-[closed]:translate-y-10 data-[closed]:opacity-0">
-					<div className="text-text ml-2 w-full self-center ">You have unsaved changes!</div>
+				<div className="absolute right-9 bottom-5 left-[13.25rem] flex transform justify-end gap-x-2 rounded-xl border-2 border-primary/50 bg-secondary p-2 shadow-sm transition data-[closed]:translate-y-10 data-[closed]:opacity-0">
+					<div className="ml-2 w-full self-center text-text ">You have unsaved changes!</div>
 					<HuginnButton onClick={revert} className="w-20 shrink-0 py-2 decoration-white hover:underline">
 						Revert
 					</HuginnButton>
@@ -209,7 +209,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 						loading={mutation.isPending}
 						disabled={!modified && !avatarModified}
 						onClick={edit}
-						className="bg-primary disabled:bg-primary/50 w-36 shrink-0 !rounded-lg py-2"
+						className="!rounded-lg w-36 shrink-0 bg-primary py-2 disabled:bg-primary/50"
 					>
 						Save changes
 					</LoadingButton>
