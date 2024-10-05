@@ -55,7 +55,7 @@ export class ServerGateway {
 		const client = this.getSessionByPeerId(peer.id);
 
 		if (client) {
-			await this.presenceManeger.removeClient(client.data.user.id);
+			this.presenceManeger.removeClient(client.data.user.id);
 		}
 
 		client?.dispose();
