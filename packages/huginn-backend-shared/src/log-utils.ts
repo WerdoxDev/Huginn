@@ -2,6 +2,7 @@ import type { HuginnErrorData } from "@huginn/shared";
 import { type BasePayload, GatewayOperations } from "@huginn/shared";
 import { consola } from "consola";
 import { colors } from "consola/utils";
+import type { H3Error } from "h3";
 
 const divider = colors.gray(">");
 const startText = colors.bold(colors.gray("START"));
@@ -18,7 +19,7 @@ const notFoundFile = colors.bold(colors.red("FILE NOT FOUND"));
 const cdn = colors.bold(colors.gray("CDN REQUEST"));
 
 export function logServerError(path: string, e: Error): void {
-	consola.box(`${colors.bold(colors.red("Server Error:"))} ${colors.green(path)}\n`, e.stack ?? e.cause ?? e.message ?? e);
+	consola.box(`${colors.bold(colors.red("Server Error:"))} ${colors.green(path)}\n`, e.cause ?? e.stack ?? e.message ?? e);
 }
 
 export function logReject(path: string, method: string, id?: string, error?: HuginnErrorData | string, status?: number): void {

@@ -33,14 +33,22 @@ export const editCredentials: LoginCredentials = {
 	password: "test-edited",
 };
 
-export async function getLoggedClient(credentials: LoginCredentials = testCredentials, identifyGateway?: boolean): Promise<HuginnClient> {
+export async function getLoggedClient(
+	credentials: LoginCredentials = testCredentials,
+	skipIdentify?: boolean,
+	// skipWaitForReady?: boolean,
+): Promise<HuginnClient> {
 	const client = new HuginnClient({
 		rest: { api: `http://${url}/api` },
-		gateway: { url: `ws://${url}/gateway`, createSocket: (url) => new WebSocket(url), log: false, identify: identifyGateway },
+		gateway: { url: `ws://${url}/gateway`, createSocket: (url) => new WebSocket(url), log: false, identify: !skipIdentify },
 	});
 
-	await client.login(credentials);
-	await client.gateway.connectAndWaitForReady();
+	const result = await client.login(credentials);
+
+	client.user = result;
+	// if (!skipWaitForReady) {
+	// 	await client.gateway.connectAndWaitForReady();
+	// }
 
 	return client;
 }
@@ -48,7 +56,7 @@ export async function getLoggedClient(credentials: LoginCredentials = testCreden
 export function getNewClient(): HuginnClient {
 	const client = new HuginnClient({
 		rest: { api: `http://${url}/api` },
-		gateway: { url: `ws://${url}/gateway`, createSocket: (url) => new WebSocket(url), log: false, identify: false },
+		gateway: { url: `ws://${url}/gateway`, createSocket: (url) => new WebSocket(url), log: false, identify: true },
 	});
 	return client;
 }

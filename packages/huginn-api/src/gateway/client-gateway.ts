@@ -57,8 +57,9 @@ export class Gateway {
 
 	public async connectAndWaitForReady(): Promise<void> {
 		let onMessage: ((e: MessageEvent) => void) | undefined = undefined;
+		let onClose: (() => void) | undefined = undefined;
 
-		await new Promise((r) => {
+		const result = await new Promise((r) => {
 			this.connect();
 			if (this.client.user) {
 				r(true);
@@ -69,11 +70,22 @@ export class Gateway {
 						r(true);
 					}
 				};
+				onClose = () => {
+					r(false);
+				};
 				this.socket?.addEventListener("message", onMessage);
+				this.socket?.addEventListener("close", onClose);
 			}
 		});
 		if (onMessage) {
 			this.socket?.removeEventListener("message", onMessage);
+		}
+		if (onClose) {
+			this.socket?.removeEventListener("close", onClose);
+		}
+
+		if (!result) {
+			throw new Error("Gateway closed before being ready. This is probably because of wrong credentials");
 		}
 	}
 

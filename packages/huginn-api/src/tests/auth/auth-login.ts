@@ -18,6 +18,7 @@ describe("auth-login", () => {
 		};
 
 		await client.login(user);
+		await client.gateway.connectAndWaitForReady();
 
 		expect(client.user).toBeDefined();
 	});
@@ -31,6 +32,7 @@ describe("auth-login", () => {
 		};
 
 		await client.login(user);
+		await client.gateway.connectAndWaitForReady();
 
 		expect(client.user).toBeDefined();
 	});
@@ -39,6 +41,7 @@ describe("auth-login", () => {
 		const client = getNewClient();
 
 		await client.login(testCredentials);
+		await client.gateway.connectAndWaitForReady();
 
 		expect(client.user).toBeDefined();
 	});

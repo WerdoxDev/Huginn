@@ -7,7 +7,7 @@ describe("auth-logout", () => {
 
 		const token = client.tokenHandler.token;
 
-		await client.auth.logout();
+		await client.logout();
 
 		await new Promise((resolve) => {
 			setTimeout(() => {
@@ -15,6 +15,8 @@ describe("auth-logout", () => {
 			}, 1200);
 		});
 
-		expect(() => client.initializeWithToken({ token })).toThrow();
+		client.initializeWithToken({ token });
+
+		expect(() => client.gateway.connectAndWaitForReady()).toThrow();
 	});
 });

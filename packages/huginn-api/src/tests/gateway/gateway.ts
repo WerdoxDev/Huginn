@@ -5,7 +5,7 @@ import { getLoggedClient, testCredentials } from "../test-utils";
 
 describe("gateway", () => {
 	test("gateway-not-authenticated", async () => {
-		const client = await getLoggedClient(testCredentials, false);
+		const client = await getLoggedClient(testCredentials, true);
 		client.gateway.connect();
 
 		await new Promise((r) => {
@@ -20,7 +20,7 @@ describe("gateway", () => {
 		});
 	});
 	test("gateway-already-authenticated", async () => {
-		const client = await getLoggedClient(testCredentials, false);
+		const client = await getLoggedClient(testCredentials, true);
 		client.gateway.connect();
 
 		function authenticate() {
@@ -32,7 +32,6 @@ describe("gateway", () => {
 					properties: { os: "windows", browser: "idk", device: "idk" },
 				},
 			};
-			console.log("IDENTIFY");
 			client.gateway.send(identifyData);
 		}
 
@@ -42,7 +41,6 @@ describe("gateway", () => {
 				interval = setInterval(() => {
 					authenticate();
 				}, 100);
-				// authenticate();
 			});
 
 			client.gateway.on("close", (code) => {
@@ -53,7 +51,7 @@ describe("gateway", () => {
 		});
 	});
 	test("gateway-unknown-opcode", async () => {
-		const client = await getLoggedClient(testCredentials, true);
+		const client = await getLoggedClient(testCredentials, false);
 		client.gateway.connect();
 
 		await new Promise((r) => {
@@ -68,7 +66,7 @@ describe("gateway", () => {
 		});
 	});
 	test("gateway-decode-error", async () => {
-		const client = await getLoggedClient(testCredentials, true);
+		const client = await getLoggedClient(testCredentials, false);
 		client.gateway.connect();
 
 		await new Promise((r) => {
@@ -83,7 +81,7 @@ describe("gateway", () => {
 		});
 	});
 	test("gateway-authentication-failed", async () => {
-		const client = await getLoggedClient(testCredentials, false);
+		const client = await getLoggedClient(testCredentials, true);
 		client.gateway.connect();
 
 		await new Promise((r) => {

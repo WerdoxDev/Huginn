@@ -16,7 +16,10 @@ describe("message-get", () => {
 		async () => {
 			const client = await getLoggedClient();
 
-			const channel = (await client.channels.getAll())[0];
+			const channel = (await client.channels.getAll()).find((x) => x.name === "test_group");
+			expect(channel).toBeDefined();
+
+			if (!channel) return;
 
 			const messages = await client.channels.getMessages(channel.id);
 
@@ -31,7 +34,10 @@ describe("message-get", () => {
 		async () => {
 			const client = await getLoggedClient();
 
-			const channel = (await client.channels.getAll())[0];
+			const channel = (await client.channels.getAll()).find((x) => x.name === "test_group");
+			expect(channel).toBeDefined();
+
+			if (!channel) return;
 
 			const limit = 20;
 			const messages = await client.channels.getMessages(channel.id, limit);

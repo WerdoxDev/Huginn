@@ -1,6 +1,6 @@
-import type { RegisterUser } from "@huginn/shared";
 import { beforeAll, describe, expect, test } from "bun:test";
-import { getNewClient, url } from "../test-utils";
+import type { RegisterUser } from "@huginn/shared";
+import { url, getNewClient } from "../test-utils";
 
 beforeAll(async () => {
 	await fetch(`http://${url}/api/test/test-users`, { method: "POST" });
@@ -36,6 +36,7 @@ describe("auth-register", () => {
 		};
 
 		await client.register(user);
+		await client.gateway.connectAndWaitForReady();
 
 		expect(client.user).toBeDefined();
 	});
@@ -64,6 +65,7 @@ describe("auth-register", () => {
 		};
 
 		await client.register(user);
+		await client.gateway.connectAndWaitForReady();
 
 		expect(client.user).toBeDefined();
 	});
@@ -79,6 +81,7 @@ describe("auth-register", () => {
 		};
 
 		await client.register(user);
+		await client.gateway.connectAndWaitForReady();
 
 		expect(client.user).toBeDefined();
 	});
@@ -93,6 +96,7 @@ describe("auth-register", () => {
 		};
 
 		await client.register(user);
+		await client.gateway.connectAndWaitForReady();
 
 		expect(client.user).toBeDefined();
 	});

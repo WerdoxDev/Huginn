@@ -7,6 +7,7 @@ import { colors } from "consola/utils";
 import crossws from "crossws/adapters/bun";
 import {
 	type App,
+	H3Error,
 	type Router,
 	createApp,
 	createRouter,
@@ -52,6 +53,7 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 					// Common errors
 					let errorFactory: ErrorFactory | undefined;
 					if (isDBError(error.cause)) {
+						consola.log("IS DB ERROR");
 						errorFactory = handleCommonDBErrors(event, error.cause);
 					}
 
@@ -63,7 +65,7 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 						return send(event, JSON.stringify(errorFactory.toObject()));
 					}
 
-					logServerError(event.path, error.cause as Error);
+					logServerError(event.path, error.cause as H3Error);
 					logReject(event.path, event.method, id, "Server Error", HttpCode.SERVER_ERROR);
 
 					setResponseStatus(event, HttpCode.SERVER_ERROR);

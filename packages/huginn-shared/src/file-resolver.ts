@@ -5,11 +5,14 @@ import type { Base64Resolvable, BufferResolvable, ResolvedFile } from "@huginn/s
 /**
  * Resolves a base64 data url string, URL, file path, or Buffer to a base64 data url string
  */
-export async function resolveImage(image: Base64Resolvable): Promise<string> {
+export async function resolveImage(image: Base64Resolvable): Promise<string | undefined> {
 	if (typeof image === "string" && image.startsWith("data:")) {
 		return image;
 	}
 	const file = await resolveFile(image);
+	if (!file) {
+		return undefined;
+	}
 	return resolveBase64(file.data);
 }
 
@@ -31,7 +34,7 @@ export function resolveBuffer(data: string): Buffer {
 /**
  * Resolves a Buffer, URL, file path to a Buffer
  */
-export async function resolveFile(resource: BufferResolvable): Promise<ResolvedFile> {
+export async function resolveFile(resource: BufferResolvable): Promise<ResolvedFile | undefined> {
 	if (Buffer.isBuffer(resource)) return { data: resource };
 
 	if (typeof resource[Symbol.asyncIterator as unknown as number] === "function") {
@@ -43,6 +46,9 @@ export async function resolveFile(resource: BufferResolvable): Promise<ResolvedF
 	if (typeof resource === "string") {
 		if (/^https?:\/\//.test(resource)) {
 			const res = await fetch(resource);
+			if (res.status !== 200) {
+				return undefined;
+			}
 			return { data: Buffer.from(await res.arrayBuffer()), contentType: res.headers.get("content-type") ?? undefined };
 		}
 

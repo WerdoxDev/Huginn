@@ -22,7 +22,6 @@ router.post(
 		const [error, user] = await catchError(async () => idFix(await prisma.user.findByCredentials(body)));
 
 		if (assertError(error, DBErrorType.NULL_USER)) {
-			console.log("WHAT");
 			return createHuginnError(
 				event,
 				createErrorFactory(Errors.invalidFormBody()).addError("login", Fields.invalidLogin()).addError("password", Fields.invalidLogin()),

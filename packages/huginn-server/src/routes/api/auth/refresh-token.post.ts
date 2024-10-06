@@ -1,10 +1,11 @@
-import { router } from "#server";
 import { useValidatedBody } from "@huginn/backend-shared";
-import { verifyToken, REFRESH_TOKEN_SECRET_ENCODED, createTokens } from "#utils/token-factory";
 import { unauthorized } from "@huginn/backend-shared";
-import { type APIPostRefreshTokenResult, constants, HttpCode } from "@huginn/shared";
+import { constants, type APIPostRefreshTokenResult, HttpCode, idFix } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
+import { prisma } from "#database";
+import { router } from "#server";
+import { REFRESH_TOKEN_SECRET_ENCODED, createTokens, verifyToken } from "#utils/token-factory";
 
 const schema = z.object({ refreshToken: z.string() });
 
@@ -19,8 +20,10 @@ router.post(
 			throw unauthorized(event);
 		}
 
+		const user = idFix(await prisma.user.getById(payload.id));
+
 		const [accessToken, refreshToken] = await createTokens(
-			{ id: payload?.id },
+			{ id: user.id },
 			constants.ACCESS_TOKEN_EXPIRE_TIME,
 			constants.REFRESH_TOKEN_EXPIRE_TIME,
 		);

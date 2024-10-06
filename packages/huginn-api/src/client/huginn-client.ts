@@ -1,4 +1,4 @@
-import type { APIUser, LoginCredentials, RegisterUser, Tokens } from "@huginn/shared";
+import type { APIPostLoginResult, APIPostRegisterResult, APIUser, LoginCredentials, RegisterUser, Tokens } from "@huginn/shared";
 import { type Snowflake, WorkerID, snowflake } from "@huginn/shared";
 import { AuthAPI } from "../apis/auth";
 import { ChannelAPI } from "../apis/channel";
@@ -69,26 +69,30 @@ export class HuginnClient {
 		}
 	}
 
-	public async login(credentials: LoginCredentials): Promise<void> {
+	public async login(credentials: LoginCredentials): Promise<APIPostLoginResult> {
 		try {
 			this.readyState = ClientReadyState.INITIALIZING;
 			const result = await this.auth.login(credentials);
 
 			this.tokenHandler.token = result.token;
 			this.tokenHandler.refreshToken = result.refreshToken;
+
+			return result;
 		} catch (e) {
 			this.readyState = ClientReadyState.NONE;
 			throw e;
 		}
 	}
 
-	public async register(user: RegisterUser): Promise<void> {
+	public async register(user: RegisterUser): Promise<APIPostRegisterResult> {
 		try {
 			this.readyState = ClientReadyState.INITIALIZING;
 			const result = await this.auth.register(user);
 
 			this.tokenHandler.token = result.token;
 			this.tokenHandler.refreshToken = result.refreshToken;
+
+			return result;
 		} catch (e) {
 			this.readyState = ClientReadyState.NONE;
 			throw e;
