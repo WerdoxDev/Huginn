@@ -104,7 +104,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 			reader.onload = (readerEvent) => {
 				const content = readerEvent.target?.result;
 				if (typeof content === "string") {
-					modalsDispatch({ imageCrop: { isOpen: true, originalImageData: content } });
+					modalsDispatch({ imageCrop: { isOpen: true, originalImageData: content, mimeType: file.type } });
 				}
 			};
 		};

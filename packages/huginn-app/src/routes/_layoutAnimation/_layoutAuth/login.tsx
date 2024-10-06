@@ -11,7 +11,7 @@ import { useUser } from "@contexts/userContext";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInputs } from "@hooks/useInputs";
 import { useErrorHandler } from "@hooks/useServerErrorHandler";
-import { ClientReadyState } from "@huginn/api";
+import { ClientReadyState, HuginnAPIError } from "@huginn/api";
 import type { APIPostLoginJSONBody } from "@huginn/shared";
 import { requireNotAuth } from "@lib/middlewares";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -94,8 +94,10 @@ function Login() {
 				}
 			} catch (e) {
 				localStorage.removeItem("refresh-token");
+				if (e instanceof HuginnAPIError && e.status >= 500) {
+					handleServerError(e);
+				}
 				await navigate({ to: "/login" });
-				handleServerError(e);
 				unhide();
 			}
 		}

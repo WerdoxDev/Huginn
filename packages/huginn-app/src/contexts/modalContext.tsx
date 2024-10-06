@@ -23,6 +23,7 @@ export type ModalContextType = {
 	};
 	imageCrop: DefaultModal & {
 		originalImageData: string;
+		mimeType: string;
 	};
 	createDM: DefaultModal;
 };
@@ -30,7 +31,7 @@ export type ModalContextType = {
 const defaultValue: ModalContextType = {
 	settings: { isOpen: false },
 	info: { isOpen: false, status: "none", title: "", text: "", closable: true },
-	imageCrop: { isOpen: false, originalImageData: "" },
+	imageCrop: { isOpen: false, originalImageData: "", mimeType: "" },
 	createDM: { isOpen: false },
 };
 

@@ -2,7 +2,7 @@ import type { HuginnInputProps, InputStatus } from "@/types";
 import { useInputBorder } from "@hooks/useInputBorder";
 import { WorkerID, snowflake } from "@huginn/shared";
 import clsx from "clsx";
-import { type HTMLInputTypeAttribute, type MutableRefObject, type ReactNode, createContext, useContext, useRef, useState } from "react";
+import { type HTMLInputTypeAttribute, type MutableRefObject, type ReactNode, createContext, useContext, useEffect, useRef, useState } from "react";
 
 const InputContext = createContext<{
 	id: string;
@@ -47,10 +47,18 @@ export default function HuginnInput(props: HuginnInputProps) {
 function Input(props: { headless?: boolean; className?: string }) {
 	const inputContext = useContext(InputContext);
 
+	useEffect(() => {
+		setTimeout(() => {
+			if (inputContext.value !== undefined && inputContext.inputRef?.current && inputContext.inputRef?.current?.value !== inputContext.value) {
+				inputContext.inputRef.current.value = inputContext.value;
+			}
+		});
+	}, [inputContext.value]);
+
 	return (
 		<input
 			id={inputContext.id}
-			value={inputContext.value}
+			// value={inputContext.value}
 			ref={inputContext.inputRef}
 			className={clsx(
 				!props.headless && "flex-grow bg-transparent p-2 text-white placeholder-text/60 outline-none disabled:cursor-not-allowed",

@@ -51,7 +51,22 @@ export function getUserAvatar(userId: Snowflake | undefined, userAvatar: string 
 	return queryOptions({
 		queryKey: ["avatar", userId, userAvatar],
 		async queryFn() {
-			return userId && userAvatar && resolveBase64(await resolveImage(client.cdn.avatar(userId, userAvatar)));
+			if (!userId || !userAvatar) {
+				return null;
+			}
+			const webp = await resolveImage(client.cdn.avatar(userId, userAvatar));
+
+			if (webp) {
+				return resolveBase64(webp);
+			}
+			const gif = await resolveImage(client.cdn.avatar(userId, userAvatar, { format: "gif" }));
+			if (gif) {
+				return resolveBase64(gif);
+			}
+
+			// const m = userId && userAvatar && resolveBase64(await resolveImage(client.cdn.avatar(userId, userAvatar!)));
+
+			return null;
 		},
 	});
 }
