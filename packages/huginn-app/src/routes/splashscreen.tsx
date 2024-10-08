@@ -1,9 +1,8 @@
-import type { LoadingState, VersionFlavour } from "@/types";
+import type { LoadingState } from "@/types";
 import { useWindowDispatch } from "@contexts/windowContext";
 import useUpdater from "@hooks/useUpdater";
 import { createFileRoute } from "@tanstack/react-router";
 import { invoke } from "@tauri-apps/api/core";
-import { type UnlistenFn, listen } from "@tauri-apps/api/event";
 import { useEffect, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/splashscreen")({
@@ -68,11 +67,11 @@ function Splashscreen() {
 	}, []);
 
 	return (
-		<div className="bg-background flex h-full w-full select-none items-center justify-center rounded-xl" data-tauri-drag-region>
+		<div className="flex h-full w-full select-none items-center justify-center rounded-xl bg-background" data-tauri-drag-region>
 			<div className="flex w-full flex-col items-center" data-tauri-drag-region>
-				<IconFa6SolidCrow className="text-accent mb-2.5 size-20 transition-all hover:-rotate-12 active:rotate-6" />
-				<div className="text-text mb-5 text-xl font-bold">Huginn</div>
-				<div className="text-text mb-2.5 opacity-60">
+				<IconFa6SolidCrow className="hover:-rotate-12 mb-2.5 size-20 text-accent transition-all active:rotate-6" />
+				<div className="mb-5 font-bold text-text text-xl">Huginn</div>
+				<div className="mb-2.5 text-text opacity-60">
 					<span>{loadingText}</span>
 					<span className="loader__dot">.</span>
 					<span className="loader__dot">.</span>
@@ -80,12 +79,10 @@ function Splashscreen() {
 				</div>
 				{loadingState === "updating" && (
 					<>
-						<div v-if="loadingState === 'updating'" className="bg-secondary h-4 w-2/3 overflow-hidden rounded-md">
-							<div className="bg-primary h-full" style={{ width: `${progress}%` }} />
+						<div className="h-4 w-2/3 overflow-hidden rounded-md bg-secondary">
+							<div className="h-full bg-primary" style={{ width: `${progress}%` }} />
 						</div>
-						<div v-if="loadingState === 'updating'" className="text-text mt-1 text-xs opacity-60">
-							{updateProgressText}
-						</div>
+						<div className="mt-1 text-text text-xs opacity-60">{updateProgressText}</div>
 					</>
 				)}
 			</div>

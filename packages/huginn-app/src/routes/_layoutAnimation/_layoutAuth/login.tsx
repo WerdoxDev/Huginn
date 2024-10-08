@@ -29,9 +29,9 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/login")({
 function Login() {
 	const posthog = usePostHog();
 	const client = useClient();
-	const { inputsProps, values, resetStatuses, handleErrors } = useInputs([
-		{ name: "login", required: true, default: "test" },
-		{ name: "password", required: true, default: "test" },
+	const { inputsProps, values, resetStatuses, handleErrors, validateValues } = useInputs([
+		{ name: "login", required: true, default: import.meta.env.DEV ? "test" : undefined },
+		{ name: "password", required: true, default: import.meta.env.DEV ? "test" : undefined },
 	]);
 
 	const { setUser } = useUser();
@@ -111,6 +111,10 @@ function Login() {
 	}, []);
 
 	async function login() {
+		if (!validateValues()) {
+			return;
+		}
+
 		await mutation.mutateAsync({ username: values.login.value, email: values.login.value, password: values.password.value });
 
 		resetStatuses();

@@ -1,5 +1,4 @@
 import type { VersionFlavour } from "@/types";
-import { useSettings } from "@contexts/settingsContext";
 import { useWindow } from "@contexts/windowContext";
 import { invoke } from "@tauri-apps/api/core";
 import { type UnlistenFn, listen } from "@tauri-apps/api/event";

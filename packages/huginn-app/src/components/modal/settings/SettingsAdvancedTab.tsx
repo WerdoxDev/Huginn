@@ -1,12 +1,10 @@
-import type { DropboxItem, SettingsTabProps, VersionFlavour } from "@/types";
+import type { DropboxItem, SettingsTabProps } from "@/types";
 import HuginnDropbox from "@components/HuginnDropbox";
 import HuginnInput from "@components/input/HuginnInput";
 import { useModalsDispatch } from "@contexts/modalContext";
-import { useWindow, useWindowDispatch } from "@contexts/windowContext";
+import { useWindow } from "@contexts/windowContext";
 import { useInputs } from "@hooks/useInputs";
-import { getVersionFlavour } from "@lib/utils";
 import { invoke } from "@tauri-apps/api/core";
-import { relaunch } from "@tauri-apps/plugin-process";
 import { useEffect, useState } from "react";
 
 const flavourItems: DropboxItem[] = [
@@ -16,7 +14,6 @@ const flavourItems: DropboxItem[] = [
 
 export default function SettingsAdvancedTab(props: SettingsTabProps) {
 	const appWindow = useWindow();
-	const appWindowDispatch = useWindowDispatch();
 
 	const { values, validateValues, inputsProps } = useInputs([
 		{ name: "serverAddress", required: false, default: props.settings.serverAddress },
@@ -77,12 +74,14 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 
 	return (
 		<div className="flex flex-col gap-y-10">
-			<div>
-				<HuginnDropbox selected={selectedFlavour} onChange={onFlavourChange} items={flavourItems}>
-					<HuginnDropbox.Label>App Flavour</HuginnDropbox.Label>
-				</HuginnDropbox>
-				<div className="text-text/50 mt-1 text-sm italic">*changing app flavour requires a reload.</div>
-			</div>
+			{appWindow.environment === "desktop" && (
+				<div>
+					<HuginnDropbox selected={selectedFlavour} onChange={onFlavourChange} items={flavourItems}>
+						<HuginnDropbox.Label>App Flavour</HuginnDropbox.Label>
+					</HuginnDropbox>
+					<div className="mt-1 text-sm text-text/50 italic">*changing app flavour requires a reload.</div>
+				</div>
+			)}
 			<div className="flex flex-col gap-y-5">
 				<div>
 					<HuginnInput className="w-72" type="text" {...inputsProps.serverAddress}>
@@ -91,7 +90,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 							<HuginnInput.Input />
 						</HuginnInput.Wrapper>
 					</HuginnInput>
-					<div className="text-text/50 mt-1 text-sm italic">*changing server address requires a reload.</div>
+					<div className="mt-1 text-sm text-text/50 italic">*changing server address requires a reload.</div>
 				</div>
 				<div>
 					<HuginnInput className="w-72" type="text" {...inputsProps.cdnAddress}>
@@ -100,7 +99,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 							<HuginnInput.Input />
 						</HuginnInput.Wrapper>
 					</HuginnInput>
-					<div className="text-text/50 mt-1 text-sm italic">*changing cdn address requires a reload.</div>
+					<div className="mt-1 text-sm text-text/50 italic">*changing cdn address requires a reload.</div>
 				</div>
 			</div>
 		</div>
