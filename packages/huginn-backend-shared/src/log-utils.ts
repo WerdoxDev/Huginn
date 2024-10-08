@@ -100,10 +100,12 @@ export function logGatewayClose(code: number, reason: string): void {
 	consola.info(`${gatewayClose} (${codeText}) ${divider} ${reasonText}\n`);
 }
 
-export function logGatewayRecieve(data: BasePayload, logHeartbeat: boolean): void {
+export function logGatewayRecieve(id: string, data: BasePayload, logHeartbeat: boolean): void {
 	if (data.op === GatewayOperations.HEARTBEAT && !logHeartbeat) {
 		return;
 	}
+
+	const idText = colors.yellow(id);
 
 	const opcodeText = colors.yellow(opcodeToText(data.op));
 	const opcodeNumberText = colors.yellow(data.op);
@@ -114,13 +116,15 @@ export function logGatewayRecieve(data: BasePayload, logHeartbeat: boolean): voi
 		dataText = colors.gray("Data Too Long");
 	}
 
-	consola.info(`${gatewayRecieve} ${divider} ${opcodeText} (${opcodeNumberText}) ${divider} ${dataText}`);
+	consola.info(`${gatewayRecieve} ${divider} ${idText} ${divider} ${opcodeText} (${opcodeNumberText}) ${divider} ${dataText}`);
 }
 
-export function logGatewaySend(data: BasePayload, logHeartbeat: boolean): void {
+export function logGatewaySend(topics: string | string[], data: BasePayload, logHeartbeat: boolean): void {
 	if (data.op === GatewayOperations.HEARTBEAT_ACK && !logHeartbeat) {
 		return;
 	}
+
+	const topicText = colors.green(Array.isArray(topics) ? topics.join(", ") : topics);
 
 	const opcodeText = colors.blue(data.t ? `${data.t} ${divider} ${opcodeToText(data.op)}` : opcodeToText(data.op));
 	const opcodeNumberText = colors.blue(data.op);
@@ -131,7 +135,7 @@ export function logGatewaySend(data: BasePayload, logHeartbeat: boolean): void {
 		dataText = colors.gray("Data Too Long");
 	}
 
-	consola.info(`${gatewaySend} ${divider} ${opcodeText} (${opcodeNumberText}) ${divider} ${dataText}\n`);
+	consola.info(`${gatewaySend} ${divider} ${topicText} ${divider} ${opcodeText} (${opcodeNumberText}) ${divider} ${dataText}\n`);
 }
 
 export function logGetFile(category: string, name: string): void {

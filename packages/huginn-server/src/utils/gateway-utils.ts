@@ -5,7 +5,7 @@ import { gateway } from "../server";
 export function dispatchToTopic<K extends keyof GatewayEvents>(topics: string | string[], t: K, d: GatewayEvents[K]) {
 	const data = { op: GatewayOperations.DISPATCH, t, d, s: 0 };
 
-	logGatewaySend(data, false);
+	logGatewaySend(topics, data, false);
 
 	if (Array.isArray(topics)) {
 		for (const topic of topics) {

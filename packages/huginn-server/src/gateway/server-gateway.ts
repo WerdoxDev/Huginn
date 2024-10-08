@@ -83,7 +83,8 @@ export class ServerGateway {
 				return;
 			}
 
-			logGatewayRecieve(data, this.options.logHeartbeat);
+			const session = this.getSessionByPeerId(peer.id);
+			logGatewayRecieve(session?.data.sessionId ?? peer.id, data, this.options.logHeartbeat);
 
 			// Identify
 			if (isOpcode<GatewayIdentify>(data, GatewayOperations.IDENTIFY)) {
@@ -92,7 +93,7 @@ export class ServerGateway {
 			} else if (isOpcode<GatewayResume>(data, GatewayOperations.RESUME)) {
 				this.handleResume(peer, data);
 				// Not authenticated
-			} else if (!this.getSessionByPeerId(peer.id)) {
+			} else if (!session) {
 				peer.close(GatewayCode.NOT_AUTHENTICATED, "NOT_AUTHENTICATED");
 				return;
 				// Heartbeat
@@ -268,7 +269,7 @@ export class ServerGateway {
 	}
 
 	private send(peer: Peer, data: unknown) {
-		logGatewaySend(data as BasePayload, this.options.logHeartbeat);
+		logGatewaySend(peer.id, data as BasePayload, this.options.logHeartbeat);
 
 		peer.send(JSON.stringify(data));
 	}
