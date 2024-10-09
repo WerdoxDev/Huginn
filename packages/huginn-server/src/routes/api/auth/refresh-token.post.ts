@@ -1,32 +1,35 @@
-import { router } from "#server";
 import { useValidatedBody } from "@huginn/backend-shared";
-import { verifyToken, REFRESH_TOKEN_SECRET_ENCODED, createTokens } from "#utils/token-factory";
 import { unauthorized } from "@huginn/backend-shared";
-import { APIPostRefreshTokenResult, constants, HttpCode } from "@huginn/shared";
+import { constants, type APIPostRefreshTokenResult, HttpCode, idFix } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
+import { prisma } from "#database";
+import { router } from "#server";
+import { REFRESH_TOKEN_SECRET_ENCODED, createTokens, verifyToken } from "#utils/token-factory";
 
 const schema = z.object({ refreshToken: z.string() });
 
 router.post(
-   "/auth/refresh-token",
-   defineEventHandler(async event => {
-      const body = await useValidatedBody(event, schema);
+	"/auth/refresh-token",
+	defineEventHandler(async (event) => {
+		const body = await useValidatedBody(event, schema);
 
-      const { valid, payload } = await verifyToken(body.refreshToken, REFRESH_TOKEN_SECRET_ENCODED);
+		const { valid, payload } = await verifyToken(body.refreshToken, REFRESH_TOKEN_SECRET_ENCODED);
 
-      if (!valid || !payload) {
-         throw unauthorized(event);
-      }
+		if (!valid || !payload) {
+			throw unauthorized(event);
+		}
 
-      const [accessToken, refreshToken] = await createTokens(
-         { id: payload?.id },
-         constants.ACCESS_TOKEN_EXPIRE_TIME,
-         constants.REFRESH_TOKEN_EXPIRE_TIME,
-      );
+		const user = idFix(await prisma.user.getById(payload.id));
 
-      const json: APIPostRefreshTokenResult = { token: accessToken, refreshToken };
-      setResponseStatus(event, HttpCode.OK);
-      return json;
-   }),
+		const [accessToken, refreshToken] = await createTokens(
+			{ id: user.id },
+			constants.ACCESS_TOKEN_EXPIRE_TIME,
+			constants.REFRESH_TOKEN_EXPIRE_TIME,
+		);
+
+		const json: APIPostRefreshTokenResult = { token: accessToken, refreshToken };
+		setResponseStatus(event, HttpCode.OK);
+		return json;
+	}),
 );

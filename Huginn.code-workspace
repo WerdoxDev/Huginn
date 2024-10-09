@@ -1,54 +1,54 @@
 {
-   "folders": [
-      {
-         "name": "ROOT",
-         "path": "./",
-      },
-      {
-         "name": "huginn-server",
-         "path": "./packages/huginn-server",
-      },
-      {
-         "name": "huginn-cdn",
-         "path": "./packages/huginn-cdn",
-      },
-      {
-         "name": "huginn-api",
-         "path": "./packages/huginn-api",
-      },
-      {
-         "name": "huginn-app",
-         "path": "./packages/huginn-app",
-      },
-      {
-         "name": "huginn-bundler",
-         "path": "./packages/huginn-bundler",
-      },
-      {
-         "name": "huginn-shared",
-         "path": "./packages/huginn-shared",
-      },
-      {
-         "name": "huginn-backend-shared",
-         "path": "./packages/huginn-backend-shared",
-      },
-      {
-         "name": "huginn-bifrost",
-         "path": "./packages/huginn-bifrost",
-      },
-      {
-         "name": "huginn-website",
-         "path": "./packages/huginn-website",
-      },
-   ],
-   "settings": {
-      "files.exclude": {
-         "packages/": true,
-      },
-      "workbench.editorAssociations": {
-         "*.md": "vscode.markdown.preview.editor",
-      },
-      "deno.enable": false,
-      "typescript.tsdk": "ROOT\\node_modules\\typescript\\lib",
-   },
+	"folders": [
+		{
+			"name": "ROOT",
+			"path": "./"
+		},
+		{
+			"name": "huginn-server",
+			"path": "./packages/huginn-server"
+		},
+		{
+			"name": "huginn-cdn",
+			"path": "./packages/huginn-cdn"
+		},
+		{
+			"name": "huginn-api",
+			"path": "./packages/huginn-api"
+		},
+		{
+			"name": "huginn-app",
+			"path": "./packages/huginn-app"
+		},
+		{
+			"name": "huginn-bundler",
+			"path": "./packages/huginn-bundler"
+		},
+		{
+			"name": "huginn-shared",
+			"path": "./packages/huginn-shared"
+		},
+		{
+			"name": "huginn-backend-shared",
+			"path": "./packages/huginn-backend-shared"
+		},
+		{
+			"name": "huginn-bifrost",
+			"path": "./packages/huginn-bifrost"
+		},
+		{
+			"name": "huginn-website",
+			"path": "./packages/huginn-website"
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"packages/": true
+		},
+		"workbench.editorAssociations": {
+			"*.md": "vscode.markdown.preview.editor"
+		},
+		"deno.enable": false,
+		"typescript.tsdk": "ROOT\\node_modules\\typescript\\lib"
+	}
 }

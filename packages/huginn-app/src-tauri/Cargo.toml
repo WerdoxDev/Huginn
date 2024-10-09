@@ -1,6 +1,6 @@
 [package]
 name = "huginn"
-version = "0.3.4-nightly.4"
+version = "0.3.4"
 description = "Huginn's desktop application"
 authors = [ "Matin" ]
 repository = ""
@@ -12,14 +12,14 @@ crate-type = [ "lib", "cdylib", "staticlib" ]
 
 [build-dependencies]
 [build-dependencies.tauri-build]
-version = "2.0.0-rc"
+version = "2.0.1"
 features = []
 
 [dependencies]
 serde_json = "1.0"
-tauri-plugin-shell = "2.0.0-rc"
-tauri-plugin-process = "2.0.0-rc"
-tauri-plugin-fs = "2.0.0-rc"
+tauri-plugin-shell = "2.0.1"
+tauri-plugin-process = "2.0.1"
+tauri-plugin-fs = "2.0.1"
 tokio = "1.40.0"
 
 [dependencies.serde]
@@ -33,4 +33,15 @@ features = [ "devtools" ]
 [target]
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))"]
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
-tauri-plugin-updater = "2.0.0-rc"
+tauri-plugin-updater = "2.0.2"
+
+[profile]
+[profile.dev]
+incremental = true
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

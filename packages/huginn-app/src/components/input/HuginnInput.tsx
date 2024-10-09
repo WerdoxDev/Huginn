@@ -1,113 +1,134 @@
-import { HuginnInputProps, InputStatus } from "@/types";
+import type { HuginnInputProps, InputStatus } from "@/types";
 import { useInputBorder } from "@hooks/useInputBorder";
-import { filterChildrenOfType } from "@lib/utils";
-import { snowflake } from "@huginn/shared";
-import { ReactNode, createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { WorkerID, snowflake } from "@huginn/shared";
 import clsx from "clsx";
+import { type HTMLInputTypeAttribute, type MutableRefObject, type ReactNode, createContext, useContext, useEffect, useRef, useState } from "react";
 
-const InputContext = createContext<{ id: string; status: InputStatus; required?: boolean }>({
-   id: "",
-   status: { code: "none", text: "" },
-   required: false,
+const InputContext = createContext<{
+	id: string;
+	status: InputStatus;
+	value?: string;
+	required?: boolean;
+	placeholder?: string;
+	type?: HTMLInputTypeAttribute;
+	inputRef?: MutableRefObject<HTMLInputElement | null>;
+	disabled?: boolean;
+	onChange?: (e: HTMLInputElement) => void;
+	onFocusChange?: (focused: boolean) => void;
+}>({
+	id: "",
+	status: { code: "none", text: "" },
 });
 
 export default function HuginnInput(props: HuginnInputProps) {
-   const inputRef = useRef<HTMLInputElement>(null);
-   // console.log(props.state);
-   const { hasBorder, borderColor } = useInputBorder(props.status);
-   const [id, _setId] = useState(() => snowflake.generateString());
+	const [id, _setId] = useState(() => snowflake.generateString(WorkerID.APP));
+	const inputRef = useRef<HTMLInputElement>(null);
 
-   const filteredChildren = useMemo(() => {
-      return {
-         label: filterChildrenOfType(props.children, Label),
-         action: filterChildrenOfType(props.children, Action),
-         after: filterChildrenOfType(props.children, After),
-      };
-   }, [props.children]);
-
-   const border = useMemo(
-      () =>
-         props.border === "top"
-            ? "border-t-4"
-            : props.border === "right"
-              ? "border-r-4"
-              : props.border === "bottom"
-                ? "border-b-4"
-                : props.border === "left"
-                  ? "border-l-4"
-                  : props.border === "none"
-                    ? "border-none "
-                    : "border-l-4",
-      [props.border],
-   );
-
-   useEffect(() => {
-      if (inputRef.current) {
-         inputRef.current.value = props.value ?? "";
-      }
-   }, [props.value]);
-
-   return (
-      <InputContext.Provider value={{ id: id, required: props.required, status: props.status }}>
-         <div className={clsx("flex flex-col", props.className)}>
-            {filteredChildren.label && <HuginnInput.Label skipRender>{filteredChildren.label}</HuginnInput.Label>}
-            <div
-               className={clsx(
-                  props.inputProps?.className,
-                  "bg-secondary flex w-full items-center rounded-md",
-                  hasBorder && border,
-                  borderColor,
-               )}
-            >
-               <input
-                  id={id}
-                  ref={inputRef}
-                  className="placeholder-text/60 flex-grow bg-transparent p-2 text-white outline-none"
-                  type={props.type ?? "text"}
-                  autoComplete="new-password"
-                  placeholder={props.placeholder}
-                  onChange={e => props.onChange && props.onChange(e.target)}
-                  onFocus={() => props.onFocus && props.onFocus(true)}
-                  onBlur={() => props.onFocus && props.onFocus(false)}
-               />
-               {filteredChildren.action && <HuginnInput.Action>{filteredChildren.action}</HuginnInput.Action>}
-            </div>
-            {filteredChildren.after && <HuginnInput.After>{filteredChildren.after}</HuginnInput.After>}
-         </div>
-      </InputContext.Provider>
-   );
+	return (
+		<InputContext.Provider
+			value={{
+				id: id,
+				value: props.value,
+				required: props.required,
+				status: props.status,
+				placeholder: props.placeholder,
+				type: props.type,
+				inputRef: inputRef,
+				disabled: props.disabled,
+				onChange: props.onChange,
+				onFocusChange: props.onFocusChanged,
+			}}
+		>
+			<div className={clsx(!props.headless && "flex flex-col", props.className)}>{props.children}</div>
+		</InputContext.Provider>
+	);
 }
 
-function Label(props: { children?: ReactNode; skipRender?: boolean }) {
-   const inputContext = useContext(InputContext);
-   return !props.skipRender ? (
-      <label
-         htmlFor={inputContext.id}
-         className={`mb-2 select-none text-xs font-medium uppercase opacity-90 ${inputContext.status.code === "none" ? "text-text" : "text-error"}`}
-      >
-         {props.children}
-         {inputContext.status.text ? (
-            <span className={`text-error ${inputContext.status.text && "font-normal normal-case italic"}`}>
-               <span className="px-0.5">-</span>
-               {inputContext.status.text}
-            </span>
-         ) : (
-            inputContext.required && <span className="text-error pl-0.5">*</span>
-         )}
-      </label>
-   ) : (
-      props.children
-   );
+function Input(props: { headless?: boolean; className?: string }) {
+	const inputContext = useContext(InputContext);
+
+	useEffect(() => {
+		setTimeout(() => {
+			if (inputContext.value !== undefined && inputContext.inputRef?.current && inputContext.inputRef?.current?.value !== inputContext.value) {
+				inputContext.inputRef.current.value = inputContext.value;
+			}
+		});
+	}, [inputContext.value]);
+
+	return (
+		<input
+			id={inputContext.id}
+			// value={inputContext.value}
+			ref={inputContext.inputRef}
+			className={clsx(
+				!props.headless && "flex-grow bg-transparent p-2 text-white placeholder-text/60 outline-none disabled:cursor-not-allowed",
+				props.className,
+			)}
+			disabled={inputContext.disabled}
+			type={inputContext.type ?? "text"}
+			autoComplete="new-password"
+			placeholder={inputContext.placeholder}
+			onChange={(e) => inputContext.onChange?.(e.target)}
+			onFocus={() => inputContext.onFocusChange?.(true)}
+			onBlur={() => inputContext.onFocusChange?.(false)}
+		/>
+	);
 }
 
-function Action(props: { children?: ReactNode }) {
-   return props.children;
+function Wrapper(props: {
+	className?: string;
+	headless?: boolean;
+	border?: "left" | "right" | "top" | "bottom";
+	children?: ReactNode;
+}) {
+	const inputContext = useContext(InputContext);
+	const { hasBorder, borderColor } = useInputBorder(inputContext.status);
+
+	return (
+		<div
+			className={clsx(
+				props.className,
+				!props.headless && "flex w-full items-center rounded-md bg-secondary",
+				hasBorder &&
+					((props.border === "top" && "border-t-4") ||
+						(props.border === "bottom" && "border-b-4") ||
+						(props.border === "left" && "border-l-4") ||
+						(props.border === "right" && "border-r-4")),
+				hasBorder && props.border && borderColor,
+			)}
+		>
+			{props.children}
+		</div>
+	);
 }
 
-function After(props: { children?: ReactNode }) {
-   return props.children;
+function Label(props: { children?: ReactNode; headless?: boolean; className?: string; text: string; hideAdditional?: boolean }) {
+	const inputContext = useContext(InputContext);
+
+	return (
+		<label
+			htmlFor={inputContext.id}
+			className={clsx(
+				!props.headless && "select-none font-medium text-xs uppercase opacity-90",
+				inputContext.status.code === "none" ? "text-text" : "text-error",
+				props.className,
+			)}
+		>
+			{props.text}
+			{!props.hideAdditional &&
+				(inputContext.status.text ? (
+					<span className={clsx("text-error", inputContext.status.text && "font-normal normal-case italic")}>
+						<span className="px-0.5">-</span>
+						{inputContext.status.text}
+					</span>
+				) : (
+					inputContext.required && <span className="pl-0.5 text-error">*</span>
+				))}
+		</label>
+	);
 }
 
 HuginnInput.Label = Label;
-HuginnInput.Action = Action;
-HuginnInput.After = After;
+HuginnInput.Wrapper = Wrapper;
+HuginnInput.Input = Input;
+HuginnInput.InputContext = InputContext;

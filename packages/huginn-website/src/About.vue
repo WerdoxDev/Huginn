@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { Icon } from '@iconify/vue/dist/iconify.js';
-
+import { Icon } from "@iconify/vue/dist/iconify.js";
 </script>
 
 <template>

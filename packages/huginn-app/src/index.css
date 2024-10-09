@@ -15,102 +15,109 @@
 } */
 
 @font-face {
-   font-family: "Noto Sans";
-   src: url("assets/NotoSans.ttf") format("TrueType");
-   font-style: normal;
+	font-family: "Noto Sans";
+	src: url("assets/NotoSans.ttf") format("TrueType");
+	font-style: normal;
 }
 @font-face {
-   font-family: "Noto Sans";
-   src: url("assets/NotoSansItalic.ttf") format("TrueType");
-   font-style: italic;
+	font-family: "Noto Sans";
+	src: url("assets/NotoSansItalic.ttf") format("TrueType");
+	font-style: italic;
 }
 @font-face {
-   font-family: "Noto Sans Arabic";
-   src: url("assets/NotoSansArabic.ttf") format("TrueType");
+	font-family: "Noto Sans Arabic";
+	src: url("assets/NotoSansArabic.ttf") format("TrueType");
 }
 
 :root {
-   font-family: "Noto Sans", "Noto Sans Arabic";
-   font-smooth: never;
-   -webkit-font-smoothing: none;
-   font-synthesis: none;
-   text-rendering: optimizeLegibility;
+	font-family: "Noto Sans", "Noto Sans Arabic", sans-serif;
+	-webkit-font-smoothing: none;
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
 }
 
 html,
 body,
 #root {
-   @apply h-full;
+	@apply h-full;
 }
 
 @keyframes blink {
-   50% {
-      color: transparent;
-   }
+	50% {
+		color: transparent;
+	}
 }
 .loader__dot {
-   animation: 1s blink infinite;
+	animation: 1s blink infinite;
 }
 .loader__dot:nth-child(2) {
-   animation-delay: 250ms;
+	animation-delay: 250ms;
 }
 .loader__dot:nth-child(3) {
-   animation-delay: 500ms;
+	animation-delay: 500ms;
 }
 
 ::-webkit-scrollbar {
-   @apply w-6;
+	@apply w-6;
 }
 
 ::-webkit-scrollbar-track {
-   @apply shadow-background rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
+	@apply shadow-background rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
 }
 
 ::-webkit-scrollbar-thumb {
-   @apply shadow-secondary rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
+	@apply shadow-secondary rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
 }
 
 .scroll-alternative::-webkit-scrollbar-track {
-   @apply shadow-secondary/70 rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
+	@apply shadow-secondary/70 rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
 }
 
 .scroll-alternative::-webkit-scrollbar-thumb {
-   @apply shadow-tertiary rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
+	@apply shadow-tertiary rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
+}
+
+.scroll-alternative2::-webkit-scrollbar-track {
+	@apply shadow-background/70 rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
+}
+
+.scroll-alternative2::-webkit-scrollbar-thumb {
+	@apply shadow-tertiary rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
 }
 
 input::-ms-reveal,
 input::-ms-clear {
-   display: none;
+	display: none;
 }
 
 .cropper-view-box {
-   border-radius: 100%;
-   outline: none !important;
-   border: 4px solid white;
-   pointer-events: none;
+	border-radius: 100%;
+	outline: none !important;
+	border: 4px solid white;
+	pointer-events: none;
 }
 
 .cropper-crop-box {
-   border-radius: 100%;
+	border-radius: 100%;
 }
 
 .cropper-face {
-   border-radius: 100%;
+	border-radius: 100%;
 }
 
 .cropper-move {
-   cursor: grab !important;
+	cursor: grab !important;
 }
 
 .cropper-line {
-   visibility: hidden;
+	visibility: hidden;
 }
 
 .cropper-point {
-   z-index: 100;
+	z-index: 100;
 }
 
 .cropper-wrap-box {
-   /* rounded-lg */
-   border-radius: 0.5rem;
+	/* rounded-lg */
+	border-radius: 0.5rem;
 }

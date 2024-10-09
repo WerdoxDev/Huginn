@@ -1,17 +1,16 @@
 {
-   "extends": "../../tsconfig.base.json",
-   "compilerOptions": {
-      "types": ["unplugin-icons/types/react"],
-      "jsx": "react-jsx",
-      "preserveSymlinks": true,
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"types": ["unplugin-icons/types/react"],
+		"jsx": "react-jsx",
 
-      "paths": {
-         "@components/*": ["./src/components/*"],
-         "@contexts/*": ["./src/contexts/*"],
-         "@hooks/*": ["./src/hooks/*"],
-         "@lib/*": ["./src/lib/*"],
-         "@/*": ["./src/*"]
-      }
-   },
-   "include": ["src", "src-tauri", "auto-imports.d.ts", "index.d.ts"]
+		"paths": {
+			"@components/*": ["./src/components/*"],
+			"@contexts/*": ["./src/contexts/*"],
+			"@hooks/*": ["./src/hooks/*"],
+			"@lib/*": ["./src/lib/*"],
+			"@/*": ["./src/*"]
+		}
+	},
+	"include": ["src", "src-tauri", "auto-imports.d.ts", "index.d.ts"]
 }
