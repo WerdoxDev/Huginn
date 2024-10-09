@@ -2,13 +2,14 @@ import MessageBox from "@components/MessageBox";
 import RouteErrorComponent from "@components/RouteErrorComponent";
 import ChannelMessages from "@components/channels/ChannelMessages";
 import HomeTopbar from "@components/channels/HomeTopbar";
+import RecipientsSidebar from "@components/channels/RecipientsSidebar";
 import { useClient } from "@contexts/apiContext";
 import { useSafePathname } from "@hooks/useLastSafePathname";
 import { useErrorHandler } from "@hooks/useServerErrorHandler";
 import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/channels/@me/$channelId")({
 	component: Component,
@@ -32,6 +33,8 @@ function Component() {
 
 	const handleServerError = useErrorHandler();
 
+	const [recipientsVisible, setRecipientsVisible] = useState(false);
+
 	useEffect(() => {
 		if (error) {
 			handleServerError(error);
@@ -43,14 +46,21 @@ function Component() {
 		return;
 	}
 
+	function onRecipientsClick() {
+		setRecipientsVisible((prev) => !prev);
+	}
+
 	return (
 		<div className="flex h-full flex-col">
-			<HomeTopbar channel={channel} />
+			<HomeTopbar channel={channel} onRecipientsClick={onRecipientsClick} />
 			<div className="h-0.5 flex-shrink-0 bg-white/10" />
-			<ChannelMessages channelId={channelId} messages={messages.pages.flat()} />
+			<div className="flex h-full w-full overflow-hidden">
+				<ChannelMessages channelId={channelId} messages={messages.pages.flat()} />
+				<RecipientsSidebar recipients={channel.recipients} visible={recipientsVisible} />
+			</div>
 			<div className="flex h-16 w-full flex-shrink-0 bg-background">
 				<MessageBox />
-				<div className="h-full w-64 flex-shrink-0" />
+				{/* <div className="h-full w-64 flex-shrink-0" /> */}
 			</div>
 		</div>
 	);

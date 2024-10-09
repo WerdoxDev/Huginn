@@ -3,16 +3,16 @@ import { TooltipContext, useTooltip, useTooltipContext } from "@contexts/tooltip
 import { useMergeRefs } from "@floating-ui/react";
 import { Portal, Transition } from "@headlessui/react";
 import type { ReactNode } from "@tanstack/react-router";
-import * as React from "react";
+import { type HTMLProps, cloneElement, forwardRef, isValidElement, useMemo } from "react";
 
-export function Tooltip({ children, ...options }: { children: React.ReactNode } & TooltipOptions) {
+export function Tooltip({ children, ...options }: { children: ReactNode } & TooltipOptions) {
 	// This can accept any props as options, e.g. `placement`,
 	// or other positioning options.
 	const tooltip = useTooltip(options);
 	return <TooltipContext.Provider value={tooltip}>{children}</TooltipContext.Provider>;
 }
 
-const Trigger = React.forwardRef<HTMLElement, React.HTMLProps<HTMLElement> & { asChild?: boolean }>(function TooltipTrigger(
+const Trigger = forwardRef<HTMLElement, HTMLProps<HTMLElement> & { asChild?: boolean }>(function TooltipTrigger(
 	{ children, asChild = false, ...props },
 	propRef,
 ) {
@@ -21,8 +21,8 @@ const Trigger = React.forwardRef<HTMLElement, React.HTMLProps<HTMLElement> & { a
 	const ref = useMergeRefs([context.refs.setReference, propRef, childrenRef]);
 
 	// `asChild` allows the user to pass any element as the anchor
-	if (asChild && React.isValidElement(children)) {
-		return React.cloneElement(
+	if (asChild && isValidElement(children)) {
+		return cloneElement(
 			children,
 			context.getReferenceProps({
 				ref,
@@ -45,11 +45,20 @@ const Trigger = React.forwardRef<HTMLElement, React.HTMLProps<HTMLElement> & { a
 	);
 });
 
-const Content = React.forwardRef<HTMLDivElement, React.HTMLProps<HTMLDivElement>>(function TooltipContent({ style, ...props }, propRef) {
+const Content = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElement>>(function TooltipContent({ style, ...props }, propRef) {
 	const context = useTooltipContext();
 	const ref = useMergeRefs([context.refs.setFloating, propRef]);
 
-	// if (!context.open) return null
+	const staticSide = useMemo(
+		() =>
+			({
+				top: "bottom",
+				right: "left",
+				bottom: "top",
+				left: "right",
+			})[context.placement.split("-")[0]] ?? "",
+		[context.placement],
+	);
 
 	return (
 		<Transition
@@ -71,11 +80,11 @@ const Content = React.forwardRef<HTMLDivElement, React.HTMLProps<HTMLDivElement>
 					}}
 					{...context.getFloatingProps(props)}
 				>
-					{context.getFloatingProps(props).children as React.ReactNode}
+					{context.getFloatingProps(props).children as ReactNode}
 					<div
-						style={{ left: context.middlewareData.arrow?.x, top: context.middlewareData.arrow?.y }}
+						style={{ left: context.middlewareData.arrow?.x, top: context.middlewareData.arrow?.y, [staticSide]: "-5px" }}
 						ref={context.arrowRef}
-						className="absolute -z-10 h-2.5 w-2.5 rotate-45 bg-zinc-900"
+						className="-z-10 absolute h-2.5 w-2.5 rotate-45 bg-zinc-900"
 					/>
 				</div>
 			</Portal>

@@ -174,12 +174,12 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	}, [props.messages]);
 
 	return (
-		<div className="relative flex h-full flex-col overflow-hidden">
+		<div className="relative flex w-full flex-col">
 			<ChannelMessageLoadingIndicator isFetchingNextPage={isFetchingNextPage} isFetchingPreviousPage={isFetchingPreviousPage} />
 			<ol className="flex h-full flex-col overflow-y-scroll p-2 pr-0.5" ref={scroll} onScroll={onScroll}>
 				{props.messages.length === 0 && (
 					<div className="flex h-full w-full items-center justify-center">
-						<div className="bg-background text-text rounded-lg p-2 italic">Empty...</div>
+						<div className="rounded-lg bg-background p-2 text-text italic">Empty...</div>
 					</div>
 				)}
 				{props.messages.map((message, i) => (
@@ -208,7 +208,7 @@ function MessageRenderer(props: {
 		<>
 			{props.renderInfo.newDate && (
 				<li
-					className="text-text/70 mx-2 my-5 flex h-0 items-center justify-center text-center text-xs font-semibold [border-top:thin_solid_rgb(var(--color-text)/0.25)]"
+					className="mx-2 my-5 flex h-0 items-center justify-center text-center font-semibold text-text/70 text-xs [border-top:thin_solid_rgb(var(--color-text)/0.25)]"
 					ref={props.setContent(`${props.message.id}_separator`)}
 				>
 					<span className="bg-tertiary px-2">{moment(props.message.createdAt).format("DD. MMMM YYYY")}</span>
