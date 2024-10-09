@@ -59,10 +59,6 @@ export function PresenceProvider(props: { children?: ReactNode }) {
 export function usePresence(userId: Snowflake) {
 	const context = useContext(PresenceContext);
 
-	useEffect(() => {
-		console.log(context);
-	}, []);
-
 	return useMemo(() => context.find((x) => x.user.id === userId), [context]);
 }
 

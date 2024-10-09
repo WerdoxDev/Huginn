@@ -9,11 +9,8 @@ export default function SettingsAboutTab() {
 	const { data: appData } = useQuery({
 		queryKey: ["app-data"],
 		queryFn: async () => {
-			console.log(appWindow.environment);
 			const version = appWindow.environment === "desktop" ? await getVersion() : __APP_VERSION__;
 			const tauriVersion = appWindow.environment === "desktop" && (await getTauriVersion());
-
-			console.log(appWindow.environment, "HI");
 
 			return { version, tauriVersion };
 		},

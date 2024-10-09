@@ -105,14 +105,14 @@ function Register() {
 				<HuginnInput className="mb-5" {...inputsProps.displayName}>
 					<HuginnInput.Label text="Display Name" className="mb-2" />
 					<HuginnInput.Wrapper border="left">
-						<HuginnInput.Input className="lowercase" />
+						<HuginnInput.Input />
 					</HuginnInput.Wrapper>
 				</HuginnInput>
 
-				<HuginnInput className="mb-5 [&_input]:lowercase" onFocusChanged={onFocusChanged} {...inputsProps.username}>
+				<HuginnInput className="mb-5" onFocusChanged={onFocusChanged} {...inputsProps.username}>
 					<HuginnInput.Label text="Username" className="mb-2" />
 					<HuginnInput.Wrapper border="left">
-						<HuginnInput.Input />
+						<HuginnInput.Input className="lowercase" />
 					</HuginnInput.Wrapper>
 					<AnimatedMessage className="mt-1" {...usernameMessageDetail} />
 				</HuginnInput>
