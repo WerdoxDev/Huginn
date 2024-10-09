@@ -1,25 +1,28 @@
-import { HTTPError, InternalRequest, parseResponse, RequestData, RequestMethod, resolveRequest, RouteLike } from "@huginn/shared";
+import { logCDNRequest } from "@huginn/backend-shared";
+import { HTTPError, type InternalRequest, type RequestData, RequestMethod, type RouteLike, parseResponse, resolveRequest } from "@huginn/shared";
 
 export const cdnRoot = process.env.CDN_ROOT;
 
 export async function cdnUpload(fullRoute: RouteLike, options: RequestData = {}) {
-   if (!cdnRoot) {
-      throw new Error("CDN Root was not configured");
-   }
+	if (!cdnRoot) {
+		throw new Error("CDN Root was not configured");
+	}
 
-   return await request({ ...options, root: cdnRoot, method: RequestMethod.POST, fullRoute });
+	return await request({ ...options, root: cdnRoot, method: RequestMethod.POST, fullRoute });
 }
 
 export async function request(options: InternalRequest): Promise<unknown> {
-   const { url, fetchOptions } = resolveRequest(options);
+	logCDNRequest(options.fullRoute, options.method);
 
-   const response = await fetch(url, fetchOptions);
+	const { url, fetchOptions } = resolveRequest(options);
 
-   if (response.ok) return parseResponse(response);
+	const response = await fetch(url, fetchOptions);
 
-   if (response.status >= 500 && response.status < 600) {
-      throw new HTTPError(response.status, response.statusText, options.method, url, fetchOptions);
-   }
+	if (response.ok) return parseResponse(response);
 
-   return response;
+	if (response.status >= 500 && response.status < 600) {
+		throw new HTTPError(response.status, response.statusText, options.method, url, fetchOptions);
+	}
+
+	return response;
 }

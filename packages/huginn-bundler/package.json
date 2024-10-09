@@ -1,24 +1,24 @@
 {
-   "name": "@huginn/bundler",
-   "main": "./src/index.ts",
-   "type": "module",
-   "bin": {
-      "bundler": "./src/index.ts"
-   },
-   "devDependencies": {
-      "@types/bun": "latest",
-      "typescript": "^5.5.3"
-   },
-   "dependencies": {
-      "@aws-sdk/client-s3": "^3.651.1",
-      "@inquirer/prompts": "^5.1.2",
-      "@octokit/types": "^13.5.0",
-      "@types/semver": "^7.5.8",
-      "@huginn/shared": "workspace:*",
-      "citty": "^0.1.6",
-      "confbox": "^0.1.7",
-      "consola": "^3.2.3",
-      "octokit": "^3.2.1",
-      "semver": "^7.6.3"
-   }
+	"name": "@huginn/bundler",
+	"main": "./src/index.ts",
+	"type": "module",
+	"bin": {
+		"bundler": "./src/index.ts"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"typescript": "^5.5.3"
+	},
+	"dependencies": {
+		"@aws-sdk/client-s3": "^3.651.1",
+		"@inquirer/prompts": "^5.1.2",
+		"@octokit/types": "^13.5.0",
+		"@types/semver": "^7.5.8",
+		"@huginn/shared": "workspace:*",
+		"citty": "^0.1.6",
+		"confbox": "^0.1.7",
+		"consola": "^3.2.3",
+		"octokit": "^3.2.1",
+		"semver": "^7.6.3"
+	}
 }

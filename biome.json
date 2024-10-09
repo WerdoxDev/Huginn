@@ -1,0 +1,38 @@
+{
+	"$schema": "https://biomejs.dev/schemas/1.9.2/schema.json",
+	"vcs": {
+		"enabled": false,
+		"clientKind": "git",
+		"useIgnoreFile": false
+	},
+	"files": {
+		"ignoreUnknown": false,
+		"ignore": []
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"lineWidth": 150,
+		"indentWidth": 3,
+		"lineEnding": "crlf",
+		"ignore": ["packages/huginn-app/src-tauri/**/*", "packages/huginn-app/dist/**/*"]
+	},
+	"organizeImports": {
+		"enabled": true
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"correctness": { "useExhaustiveDependencies": "off" },
+			"a11y": { "useKeyWithClickEvents": "off" },
+			"nursery": { "useSortedClasses": "info" }
+		},
+		"ignore": ["packages/huginn-app/src-tauri/**/*", "packages/huginn-app/dist/**/*", "routeTree.gen.ts"]
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double"
+		}
+	}
+}

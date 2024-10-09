@@ -1,19 +1,21 @@
+// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
+import type { Buffer } from "buffer";
 import filetypeinfo from "magic-bytes.js";
-import { InternalRequest, RequestHeaders, ResolvedRequest, ResponseLike } from "./rest-types";
-import { Buffer } from "buffer";
+import type { InternalRequest, RequestHeaders, ResolvedRequest, ResponseLike } from "./rest-types";
 
 export function isBufferLike(value: unknown): value is ArrayBuffer | Buffer | Uint8Array | Uint8ClampedArray {
-   return value instanceof ArrayBuffer || value instanceof Uint8Array || value instanceof Uint8ClampedArray;
+	return value instanceof ArrayBuffer || value instanceof Uint8Array || value instanceof Uint8ClampedArray;
 }
 
 export function parseResponse(response: ResponseLike): Promise<unknown> {
-   if (response.headers.get("Content-Type")?.startsWith("application/json")) {
-      return response.json();
-   } else if (response.headers.get("Content-Type")?.startsWith("text/plain")) {
-      return response.text();
-   }
+	if (response.headers.get("Content-Type")?.startsWith("application/json")) {
+		return response.json();
+	}
+	if (response.headers.get("Content-Type")?.startsWith("text/plain")) {
+		return response.text();
+	}
 
-   return response.arrayBuffer();
+	return response.arrayBuffer();
 }
 
 /**
@@ -22,85 +24,83 @@ export function parseResponse(response: ResponseLike): Promise<unknown> {
  * @param request - The request data
  */
 export function resolveRequest(request: InternalRequest): ResolvedRequest {
-   let query = "";
-   let finalBody: RequestInit["body"];
-   let additionalHeaders: Record<string, string> = {};
+	let query = "";
+	let finalBody: RequestInit["body"];
+	let additionalHeaders: Record<string, string> = {};
 
-   if (request.query) {
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      query = `?${request.query}`;
-   }
+	if (request.query) {
+		query = `?${request.query}`;
+	}
 
-   // Required headers
-   const headers: RequestHeaders = {};
+	// Required headers
+	const headers: RequestHeaders = {};
 
-   if (request.auth) {
-      if (!request.token) {
-         throw new Error("Expected token for a request, but wasn't present " + request.fullRoute);
-      }
+	if (request.auth) {
+		if (!request.token) {
+			throw new Error(`Expected token for a request, but wasn't present ${request.fullRoute}`);
+		}
 
-      headers.Authorization = `${request.authPrefix} ${request.token}`;
-   }
+		headers.Authorization = `${request.authPrefix} ${request.token}`;
+	}
 
-   if (request.reason?.length) {
-      headers["X-Log-Reason"] = encodeURIComponent(request.reason);
-   }
+	if (request.reason?.length) {
+		headers["X-Log-Reason"] = encodeURIComponent(request.reason);
+	}
 
-   const url = `${request.root}${request.fullRoute}${query}`;
+	const url = `${request.root}${request.fullRoute}${query}`;
 
-   if (request.files?.length) {
-      const formData = new FormData();
+	if (request.files?.length) {
+		const formData = new FormData();
 
-      for (const [index, file] of request.files.entries()) {
-         const fileKey = file.key ?? `files[${index}]`;
+		for (const [index, file] of request.files.entries()) {
+			const fileKey = file.key ?? `files[${index}]`;
 
-         if (isBufferLike(file.data)) {
-            let contentType = file.contentType;
-            let name = file.name;
+			if (isBufferLike(file.data)) {
+				let contentType = file.contentType;
+				let name = file.name;
 
-            const [parsedType] = filetypeinfo(file.data);
+				const [parsedType] = filetypeinfo(file.data);
 
-            if (!contentType) {
-               if (parsedType) {
-                  contentType = parsedType.mime ?? "application/octet-stream";
-               }
-            }
+				if (!contentType) {
+					if (parsedType) {
+						contentType = parsedType.mime ?? "application/octet-stream";
+					}
+				}
 
-            if (!name.includes(".") && parsedType.extension) {
-               name = `${name}.${parsedType.extension}`;
-            }
+				if (!name.includes(".") && parsedType.extension) {
+					name = `${name}.${parsedType.extension}`;
+				}
 
-            console.log(contentType, name);
-            formData.append(fileKey, new Blob([file.data], { type: contentType }), name);
-         } else {
-            formData.append(fileKey, new Blob([`${file.data}`], { type: file.contentType }), file.name);
-         }
-      }
+				formData.append(fileKey, new Blob([file.data], { type: contentType }), name);
+			} else {
+				formData.append(fileKey, new Blob([`${file.data}`], { type: file.contentType }), file.name);
+			}
+		}
 
-      if (request.body) {
-         if (request.appendToFormData) {
-            for (const [key, value] of Object.entries(request.body)) {
-               formData.append(key, value);
-            }
-         } else {
-            formData.append("payload_json", JSON.stringify(request.body));
-         }
-      }
+		if (request.body) {
+			if (request.appendToFormData) {
+				for (const [key, value] of Object.entries(request.body)) {
+					formData.append(key, value);
+				}
+			} else {
+				formData.append("payload_json", JSON.stringify(request.body));
+			}
+		}
 
-      finalBody = formData;
-   } else if (request.body) {
-      finalBody = JSON.stringify(request.body);
-      additionalHeaders = { "Content-Type": "application/json" };
-   }
+		finalBody = formData;
+	} else if (request.body) {
+		finalBody = JSON.stringify(request.body);
+		additionalHeaders = { "Content-Type": "application/json" };
+	}
 
-   const method = request.method.toUpperCase();
+	const method = request.method.toUpperCase();
 
-   const fetchOptions: RequestInit = {
-      // If for some reason we pass a body to a GET or HEAD request, remove the body
-      body: ["GET", "HEAD"].includes(method) ? null : finalBody,
-      headers: { ...request.headers, ...headers, ...additionalHeaders },
-      method,
-   };
+	const fetchOptions: RequestInit = {
+		// If for some reason we pass a body to a GET or HEAD request, remove the body
+		body: ["GET", "HEAD"].includes(method) ? null : finalBody,
+		headers: { ...request.headers, ...headers, ...additionalHeaders },
+		method,
+	};
 
-   return { url, fetchOptions };
+	return { url, fetchOptions };
 }

@@ -5,37 +5,38 @@ import { useInputs } from "@hooks/useInputs";
 import { useEffect, useState } from "react";
 
 export default function AddFriendTab() {
-   const { inputsProps, values, handleErrors, setInputStatus } = useInputs([{ name: "username", required: false }]);
+	const { inputsProps, values, handleErrors, setInputStatus } = useInputs([{ name: "username", required: false }]);
 
-   const [disabled, setDisabled] = useState(false);
+	const [disabled, setDisabled] = useState(false);
 
-   const mutation = useAddFriend(username => {
-      setInputStatus("username", { code: "success", text: `Friend request sent to ${username}!` });
-   }, handleErrors);
+	const mutation = useAddFriend((username) => {
+		setInputStatus("username", { code: "success", text: `Friend request sent to ${username}!` });
+	}, handleErrors);
 
-   useEffect(() => {
-      setDisabled(!values.username.value);
-   }, [values]);
+	useEffect(() => {
+		setDisabled(!values.username.value);
+	}, [values]);
 
-   return (
-      <TabPanel>
-         <div className="text-text text-lg font-medium uppercase">Add Friend</div>
-         <div className="text-text/70 mt-1 text-sm">You can add your friends using their Huginn username</div>
-         <form
-            onSubmit={e => {
-               e.preventDefault();
-            }}
-         >
-            <AddFriendInput
-               className="mt-5"
-               {...inputsProps.username}
-               buttonProps={{ type: "submit" }}
-               onClick={() => {
-                  mutation.mutate(values.username.value);
-               }}
-               disabled={disabled}
-            />
-         </form>
-      </TabPanel>
-   );
+	return (
+		<TabPanel>
+			<div className="font-medium text-lg text-text uppercase">Add Friend</div>
+			<div className="mt-1 text-sm text-text/70">You can add your friends using their Huginn username</div>
+			<form
+				onSubmit={(e) => {
+					e.preventDefault();
+				}}
+			>
+				<AddFriendInput
+					loading={mutation.isPending}
+					className="mt-5 "
+					{...inputsProps.username}
+					buttonProps={{ type: "submit" }}
+					onClick={() => {
+						mutation.mutate(values.username.value);
+					}}
+					disabled={disabled}
+				/>
+			</form>
+		</TabPanel>
+	);
 }

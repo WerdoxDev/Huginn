@@ -1,244 +1,276 @@
-import { constants } from "@huginn/shared";
+import { logGatewayClose, logGatewayOpen, logGatewayRecieve, logGatewaySend, logServerError } from "@huginn/backend-shared";
+import { constants, type UserSettings, WorkerID, merge } from "@huginn/shared";
 import { GatewayCode } from "@huginn/shared";
 import {
-   BasePayload,
-   GatewayHeartbeat,
-   GatewayHeartbeatAck,
-   GatewayHello,
-   GatewayIdentify,
-   GatewayOperations,
-   GatewayReadyDispatch,
-   GatewayResume,
-   GatewayResumedData,
+	type BasePayload,
+	type GatewayHeartbeat,
+	type GatewayHeartbeatAck,
+	type GatewayHello,
+	type GatewayIdentify,
+	GatewayOperations,
+	type GatewayReadyDispatch,
+	type GatewayResume,
+	type GatewayResumedData,
 } from "@huginn/shared";
-import { Snowflake, snowflake } from "@huginn/shared";
+import { type Snowflake, snowflake } from "@huginn/shared";
 import { idFix, isOpcode } from "@huginn/shared";
-import { ServerWebSocket } from "bun";
-import consola from "consola";
-import { ClientSession } from "./client-session";
-import { validateGatewayData } from "../utils/gateway-utils";
-import { logGatewayOpen, logGatewayClose, logGatewayRecieve, logServerError, logGatewaySend } from "@huginn/backend-shared";
+import type { Message, Peer } from "crossws";
+import crossws, { type BunAdapter } from "crossws/adapters/bun";
+import { excludeSelfChannelUser, includeChannelRecipients, includeRelationshipUser } from "#database/common";
 import { prisma } from "#database/index";
 import { verifyToken } from "#utils/token-factory";
-import { ServerGatewayOptions } from "#utils/types";
+import type { ServerGatewayOptions } from "#utils/types";
+import { validateGatewayData } from "../utils/gateway-utils";
+import { ClientSession } from "./client-session";
+import { PresenceManager } from "./presence-manager";
 
 export class ServerGateway {
-   private readonly options: ServerGatewayOptions;
-   private clients: Map<string, ClientSession>;
-   private cancelledClientDisconnects: string[];
+	private readonly options: ServerGatewayOptions;
+	private clients: Map<string, ClientSession>;
+	private cancelledClientDisconnects: string[];
+	public presenceManeger: PresenceManager;
+	public ws: BunAdapter;
 
-   public constructor(options: ServerGatewayOptions) {
-      this.options = options;
-      this.clients = new Map<string, ClientSession>();
-      this.cancelledClientDisconnects = [];
-   }
+	public constructor(options: ServerGatewayOptions) {
+		this.options = options;
+		this.clients = new Map<string, ClientSession>();
+		this.presenceManeger = new PresenceManager();
+		this.cancelledClientDisconnects = [];
 
-   public onOpen(ws: ServerWebSocket<string>) {
-      try {
-         logGatewayOpen();
+		this.ws = crossws({ hooks: { open: this.open.bind(this), close: this.close.bind(this), message: this.message.bind(this) } });
+	}
 
-         const helloData: GatewayHello = { op: GatewayOperations.HELLO, d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL } };
-         this.send(ws, helloData);
-      } catch (e) {
-         ws.close(GatewayCode.UNKNOWN, "UNKNOWN");
-      }
-   }
+	private open(peer: Peer) {
+		try {
+			logGatewayOpen();
 
-   public onClose(ws: ServerWebSocket<string>, code: number, reason: string) {
-      this.clients.get(ws.data)?.dispose();
+			const helloData: GatewayHello = { op: GatewayOperations.HELLO, d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL } };
+			this.send(peer, helloData);
+		} catch (e) {
+			peer.close(GatewayCode.UNKNOWN, "UNKNOWN");
+		}
+	}
 
-      if (code === GatewayCode.INVALID_SESSION) {
-         this.clients.delete(ws.data);
-      } else {
-         this.queueClientDisconnect(ws.data);
-      }
-      logGatewayClose(code, reason);
-   }
+	private async close(peer: Peer, details: { code?: number; reason?: string }) {
+		const client = this.getSessionByPeerId(peer.id);
 
-   public async onMessage(ws: ServerWebSocket<string>, message: string | Buffer) {
-      try {
-         if (typeof message !== "string") {
-            consola.error("Non string message type is not supported yet");
-            return;
-         }
+		if (client) {
+			this.presenceManeger.removeClient(client.data.user.id);
+		}
 
-         const data = JSON.parse(message);
+		client?.dispose();
 
-         if (!validateGatewayData(data)) {
-            ws.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
-            return;
-         }
+		if (client && details.code === GatewayCode.INVALID_SESSION) {
+			this.clients.delete(client.data.sessionId);
+		} else if (client) {
+			this.queueClientDisconnect(client.data.sessionId);
+		}
 
-         logGatewayRecieve(data, this.options.logHeartbeat);
+		logGatewayClose(details.code || 0, details.reason || "");
+	}
 
-         // Identify
-         if (isOpcode<GatewayIdentify>(data, GatewayOperations.IDENTIFY)) {
-            await this.handleIdentify(ws, data);
-            // Resume
-         } else if (isOpcode<GatewayResume>(data, GatewayOperations.RESUME)) {
-            this.handleResume(ws, data);
-            // Not authenticated
-         } else if (!ws.data) {
-            ws.close(GatewayCode.NOT_AUTHENTICATED, "NOT_AUTHENTICATED");
-            return;
-            // Heartbeat
-         } else if (isOpcode<GatewayHeartbeat>(data, GatewayOperations.HEARTBEAT)) {
-            this.handleHeartbeat(ws, data);
-         } else {
-            ws.close(GatewayCode.UNKNOWN_OPCODE, "UNKNOWN_OPCODE");
-         }
-      } catch (e) {
-         if (e instanceof SyntaxError) {
-            ws.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
-            return;
-         }
+	private async message(peer: Peer, message: Message) {
+		try {
+			// if (typeof message !== "string") {
+			// 	consola.error("Non string message type is not supported yet");
+			// 	return;
+			// }
 
-         logServerError("/gateway", e as Error);
-         ws.close(GatewayCode.UNKNOWN, "UNKNOWN");
-      }
-   }
+			const data: BasePayload = message.json();
 
-   public getSession(userId: string) {
-      return this.clients.get(userId);
-   }
+			if (!validateGatewayData(data)) {
+				peer.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
+				return;
+			}
 
-   public subscribeSessionsToTopic(userId: Snowflake, topic: string) {
-      const sessions = Array.from(this.clients.entries())
-         .filter(x => x[1].data.user.id === userId)
-         .map(x => x[1]);
-      for (const session of sessions) {
-         session.subscribe(topic);
-      }
-   }
+			const session = this.getSessionByPeerId(peer.id);
+			logGatewayRecieve(session?.data.sessionId ?? peer.id, data, this.options.logHeartbeat);
 
-   public unsubscribeSessionsToTopic(userId: Snowflake, topic: string) {
-      const sessions = Array.from(this.clients.entries())
-         .filter(x => x[1].data.user.id === userId)
-         .map(x => x[1]);
-      for (const session of sessions) {
-         session.unsubscribe(topic);
-      }
-   }
+			// Identify
+			if (isOpcode<GatewayIdentify>(data, GatewayOperations.IDENTIFY)) {
+				await this.handleIdentify(peer, data);
+				// Resume
+			} else if (isOpcode<GatewayResume>(data, GatewayOperations.RESUME)) {
+				this.handleResume(peer, data);
+				// Not authenticated
+			} else if (!session) {
+				peer.close(GatewayCode.NOT_AUTHENTICATED, "NOT_AUTHENTICATED");
+				return;
+				// Heartbeat
+			} else if (isOpcode<GatewayHeartbeat>(data, GatewayOperations.HEARTBEAT)) {
+				this.handleHeartbeat(peer, data);
+			} else {
+				peer.close(GatewayCode.UNKNOWN_OPCODE, "UNKNOWN_OPCODE");
+			}
+		} catch (e) {
+			if (e instanceof SyntaxError) {
+				peer.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
+				return;
+			}
 
-   public getSessionsCount() {
-      return this.clients.size;
-   }
+			logServerError("/gateway", e as Error);
+			peer.close(GatewayCode.UNKNOWN, "UNKNOWN");
+		}
+	}
 
-   public sendToTopic(topic: string, data: BasePayload) {
-      for (const client of this.clients.values()) {
-         if (client.isSubscribed(topic)) {
-            const newData = { ...data, s: client.increaseSequence() };
-            client.addMessage(newData);
-            client.ws.send(JSON.stringify(newData));
-         }
-      }
-   }
+	public subscribeSessionsToTopic(userId: Snowflake, topic: string) {
+		const sessions = Array.from(this.clients.entries())
+			.filter((x) => x[1].data.user.id === userId)
+			.map((x) => x[1]);
+		for (const session of sessions) {
+			session.subscribe(topic);
+		}
+	}
 
-   private handleHeartbeat(ws: ServerWebSocket<string>, data: GatewayHeartbeat) {
-      const client = this.clients.get(ws.data);
+	public unsubscribeSessionsFromTopic(userId: Snowflake, topic: string) {
+		const sessions = Array.from(this.clients.entries())
+			.filter((x) => x[1].data.user.id === userId)
+			.map((x) => x[1]);
+		for (const session of sessions) {
+			session.unsubscribe(topic);
+		}
+	}
 
-      if (data.d !== client?.sequence) {
-         ws.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
-         return;
-      }
+	public getSessionsCount() {
+		return this.clients.size;
+	}
 
-      this.clients.get(ws.data)?.resetTimeout();
-      const hearbeatAckData: GatewayHeartbeatAck = { op: GatewayOperations.HEARTBEAT_ACK };
-      this.send(ws, hearbeatAckData);
-   }
+	public getSessionByPeerId(peerId: string) {
+		for (const [_sessionId, client] of this.clients) {
+			if (client.peer.id === peerId) {
+				return client;
+			}
+		}
+	}
 
-   private async handleIdentify(ws: ServerWebSocket<string>, data: GatewayIdentify) {
-      const { valid, payload } = await verifyToken(data.d.token);
+	public sendToTopic(topic: string, data: BasePayload) {
+		for (const client of this.clients.values()) {
+			if (client.isSubscribed(topic)) {
+				const newData = { ...data, s: client.increaseSequence() };
+				client.addMessage(newData);
+				client.peer.send(JSON.stringify(newData));
+			}
+		}
+	}
 
-      if (!valid || !payload) {
-         ws.close(GatewayCode.AUTHENTICATION_FAILED, "AUTHENTICATION_FAILED");
-         return;
-      }
+	private handleHeartbeat(peer: Peer, data: GatewayHeartbeat) {
+		const client = this.getSessionByPeerId(peer.id);
 
-      if (this.clients.has(ws.data)) {
-         ws.close(GatewayCode.ALREADY_AUTHENTICATED, "ALREADY_AUTHENTICATED");
-         return;
-      }
+		if (data.d !== client?.sequence) {
+			peer.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
+			return;
+		}
 
-      const user = idFix(await prisma.user.getById(payload.id));
-      const sessionId = snowflake.generateString();
+		client?.resetTimeout();
+		const hearbeatAckData: GatewayHeartbeatAck = { op: GatewayOperations.HEARTBEAT_ACK };
+		this.send(peer, hearbeatAckData);
+	}
 
-      ws.data = sessionId;
+	private async handleIdentify(peer: Peer, data: GatewayIdentify) {
+		const { valid, payload } = await verifyToken(data.d.token);
 
-      const client = new ClientSession(ws, { user, sessionId });
-      client.initialize();
-      this.clients.set(sessionId, client);
+		if (!valid || !payload) {
+			peer.close(GatewayCode.AUTHENTICATION_FAILED, "AUTHENTICATION_FAILED");
+			return;
+		}
 
-      const readyData: GatewayReadyDispatch = {
-         op: GatewayOperations.DISPATCH,
-         d: { user, sessionId: sessionId },
-         t: "ready",
-         s: client.increaseSequence(),
-      };
+		if (this.getSessionByPeerId(peer.id)) {
+			peer.close(GatewayCode.ALREADY_AUTHENTICATED, "ALREADY_AUTHENTICATED");
+			return;
+		}
 
-      this.send(ws, readyData);
-   }
+		const user = idFix(await prisma.user.getById(payload.id));
+		const sessionId = snowflake.generateString(WorkerID.GATEWAY);
 
-   private async handleResume(ws: ServerWebSocket<string>, data: GatewayResume) {
-      const { valid, payload } = await verifyToken(data.d.token);
+		const client = new ClientSession(peer, { user, sessionId, ...data.d.properties });
+		await client.initialize();
+		this.clients.set(sessionId, client);
 
-      if (!valid || !payload) {
-         ws.close(GatewayCode.AUTHENTICATION_FAILED, "AUTHENTICATION_FAILED");
-         return;
-      }
+		const userRelationships = idFix(await prisma.relationship.getUserRelationships(user.id, includeRelationshipUser));
+		const userChannels = idFix(
+			await prisma.channel.getUserChannels(user.id, false, merge(includeChannelRecipients, excludeSelfChannelUser(user.id))),
+		);
 
-      if (!this.clients.has(data.d.sessionId)) {
-         ws.close(GatewayCode.INVALID_SESSION, "INVALID_SESSION");
-         return;
-      }
+		const presences = this.presenceManeger.getUserPresences(client);
 
-      const client = this.clients.get(data.d.sessionId);
+		//TODO: ADD ACTUAL PROPER SETTINGS
+		const settings: UserSettings = { status: "online" };
 
-      if (!client) throw new Error("client was null in handleIdentify");
+		const readyData: GatewayReadyDispatch = {
+			op: GatewayOperations.DISPATCH,
+			d: { user, sessionId: sessionId, privateChannels: userChannels, relationships: userRelationships, userSettings: settings, presences },
+			t: "ready",
+			s: client.increaseSequence(),
+		};
 
-      if (!client.sequence || data.d.seq > client.sequence) {
-         ws.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
-         return;
-      }
+		this.send(peer, readyData);
 
-      ws.data = data.d.sessionId;
-      client.ws = ws;
-      client.initialize();
+		this.presenceManeger.setClient(user, client, settings);
+	}
 
-      this.cancelledClientDisconnects.push(data.d.sessionId);
+	private async handleResume(peer: Peer, data: GatewayResume) {
+		const { valid, payload } = await verifyToken(data.d.token);
 
-      const messageQueue = client.getMessages();
+		if (!valid || !payload) {
+			peer.close(GatewayCode.AUTHENTICATION_FAILED, "AUTHENTICATION_FAILED");
+			return;
+		}
 
-      for (const [seq, _data] of messageQueue) {
-         if (seq <= data.d.seq) {
-            continue;
-         }
+		if (!this.clients.has(data.d.sessionId)) {
+			peer.close(GatewayCode.INVALID_SESSION, "INVALID_SESSION");
+			return;
+		}
 
-         this.send(client.ws, _data);
-      }
+		const client = this.clients.get(data.d.sessionId);
 
-      const resumedData: GatewayResumedData = {
-         t: "resumed",
-         op: GatewayOperations.DISPATCH,
-         d: undefined,
-         s: client.increaseSequence(),
-      };
-      this.send(client.ws, resumedData);
-   }
+		if (!client) throw new Error("client was null in handleIdentify");
 
-   private queueClientDisconnect(sessionId: Snowflake) {
-      setTimeout(() => {
-         if (this.cancelledClientDisconnects.includes(sessionId)) {
-            return;
-         }
+		if (!client.sequence || data.d.seq > client.sequence) {
+			peer.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
+			return;
+		}
 
-         this.clients.delete(sessionId);
-      }, 1000 * 30);
-   }
+		const user = idFix(await prisma.user.getById(payload.id));
 
-   private send(ws: ServerWebSocket<string>, data: unknown) {
-      logGatewaySend(data as BasePayload, this.options.logHeartbeat);
+		client.peer = peer;
+		client.initialize();
 
-      ws.send(JSON.stringify(data));
-   }
+		this.cancelledClientDisconnects.push(data.d.sessionId);
+
+		const messageQueue = client.getMessages();
+
+		for (const [seq, _data] of messageQueue) {
+			if (seq <= data.d.seq) {
+				continue;
+			}
+
+			this.send(peer, _data);
+		}
+
+		const resumedData: GatewayResumedData = {
+			t: "resumed",
+			op: GatewayOperations.DISPATCH,
+			d: undefined,
+			s: client.increaseSequence(),
+		};
+
+		this.send(peer, resumedData);
+		this.presenceManeger.setClient(user, client, { status: "online" });
+	}
+
+	private queueClientDisconnect(sessionId: Snowflake) {
+		setTimeout(() => {
+			if (this.cancelledClientDisconnects.includes(sessionId)) {
+				return;
+			}
+
+			this.clients.delete(sessionId);
+		}, 1000 * 30);
+	}
+
+	private send(peer: Peer, data: unknown) {
+		logGatewaySend(peer.id, data as BasePayload, this.options.logHeartbeat);
+
+		peer.send(JSON.stringify(data));
+	}
 }

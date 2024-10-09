@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { router } from '../main';
+import { router } from "../main";
 
 const buttonProps = defineProps<{
-    link: string,
-    text: string,
-}>()
-
+	link: string;
+	text: string;
+}>();
 </script>
 
 <template>

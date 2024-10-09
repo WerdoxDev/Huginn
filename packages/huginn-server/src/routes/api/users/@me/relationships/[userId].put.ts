@@ -7,10 +7,10 @@ import { useValidatedParams } from "@huginn/backend-shared";
 const paramsSchema = z.object({ userId: z.string() });
 
 router.put(
-   "/users/@me/relationships/:userId",
-   defineEventHandler(async event => {
-      const userId = (await useValidatedParams(event, paramsSchema)).userId;
+	"/users/@me/relationships/:userId",
+	defineEventHandler(async (event) => {
+		const userId = (await useValidatedParams(event, paramsSchema)).userId;
 
-      return relationshipPost(event, userId);
-   }),
+		return relationshipPost(event, userId);
+	}),
 );
