@@ -36,6 +36,8 @@ declare global {
   const IconMingcuteCheckFill: typeof import('~icons/mingcute/check-fill.jsx')['default']
   const IconMingcuteDownFill: typeof import('~icons/mingcute/down-fill.jsx')['default']
   const IconMingcuteGroupFill: typeof import('~icons/mingcute/group-fill.jsx')['default']
+  const IconMingcuteShieldShapeFill: typeof import('~icons/mingcute/shield-shape-fill.jsx')['default']
+  const IconMingcuteShieldShapeLine: typeof import('~icons/mingcute/shield-shape-line.jsx')['default']
   const IconSubwayIdCard: typeof import('~icons/subway/id-card.jsx')['default']
   const IconSvgSpinners3DotsFade: typeof import('~icons/svg-spinners/3-dots-fade.jsx')['default']
 }

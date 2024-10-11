@@ -26,7 +26,7 @@ export default function HomeTopbar(props: { channel: DirectChannel; onRecipients
 							<Tooltip.Trigger className="text-text hover:text-text/80" onClick={props.onRecipientsClick}>
 								<IconMingcuteGroupFill className="size-6" />
 							</Tooltip.Trigger>
-							<Tooltip.Content>Toggle recipients</Tooltip.Content>
+							<Tooltip.Content>Toggle Members</Tooltip.Content>
 						</Tooltip>
 					)}
 				</div>

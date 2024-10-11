@@ -33,7 +33,7 @@ function Friends() {
 	const { data: friends } = useSuspenseQuery(getRelationshipsOptions(client));
 
 	const allFriends = useMemo(() => friends?.filter((x) => x.type === RelationshipType.FRIEND), [friends]);
-	const presences = usePresences(allFriends?.map((x) => x.user.id) ?? []);
+	const { presences } = usePresences(allFriends?.map((x) => x.user.id) ?? []);
 	const onlineFriends = useMemo(
 		() => friends?.filter((x) => x.type === RelationshipType.FRIEND && presences.some((y) => y.user.id === x.user.id && y.status === "online")),
 		[allFriends, presences],

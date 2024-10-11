@@ -30,7 +30,7 @@ export default function UserAvatarWithStatus(props: {
 			{avatar && !hasErrors ? (
 				<img alt="user-avatar" src={avatar} onError={() => setHasErrors(true)} className="h-full w-full rounded-full object-cover" />
 			) : !hasErrors && !avatar ? (
-				<div className="h-full w-full rounded-full bg-primary/50" />
+				<div className="h-full w-full rounded-full bg-primary" />
 			) : (
 				<div className="flex h-full w-full items-center justify-center rounded-full bg-error/50 font-bold text-text">!</div>
 			)}
