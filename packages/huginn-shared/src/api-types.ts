@@ -170,17 +170,21 @@ export enum ChannelType {
 	GUILD_CATEGORY = 4,
 }
 
-export type APIGetChannelByIdResult = APIChannel;
-
 export type APIPostDMChannelJSONBody = {
 	name?: string;
 	recipients: Snowflake[];
 };
 
+export type APIPatchDMChannelJSONBody = {
+	name?: string | null;
+	icon?: string | null;
+	recipients?: Snowflake[];
+};
+
+export type APIGetChannelByIdResult = APIChannel;
 export type APIPostDMChannelResult = DirectChannel;
-
+export type APIPatchDMChannelResult = DirectChannel;
 export type APIDeleteDMChannelResult = DirectChannel;
-
 export type APIGetUserChannelsResult = DirectChannel[];
 //#endregion
 

@@ -83,3 +83,16 @@ export async function validateUsernameUnique(username: string | undefined, error
 
 	return true;
 }
+
+export async function validateChannelName(channelName: string | undefined | null, errorObject?: ErrorFactory) {
+	if (!channelName) {
+		return true;
+	}
+
+	if (channelName.length > constants.CHANNEL_NAME_MAX_LENGTH) {
+		errorObject?.addError("name", Fields.wrongLength(undefined, constants.CHANNEL_NAME_MAX_LENGTH));
+		return false;
+	}
+
+	return false;
+}

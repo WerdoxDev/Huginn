@@ -120,6 +120,14 @@ export const CDNRoutes = {
 	 * - POST '/avatars/{user.id}'
 	 */
 	uploadAvatar(userId: Snowflake): `/avatars/${string}` {
-		return `/avatars/${userId}`;
+		return `/avatars/${userId}` as const;
+	},
+
+	/**
+	 * Route for:
+	 * - POST '/channel-icons/{channel.id}'
+	 */
+	uploadChannelIcon(channelId: Snowflake): `/channel-icons/${string}` {
+		return `/channel-icons/${channelId}` as const;
 	},
 };

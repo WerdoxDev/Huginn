@@ -1,6 +1,6 @@
 // biome-ignore lint/style/useNodejsImportProtocol: <explanation>
-import type { Buffer } from "buffer";
-import filetypeinfo from "magic-bytes.js";
+import { Buffer } from "buffer";
+import { fileTypeFromBuffer } from "file-type";
 import type { InternalRequest, RequestHeaders, ResolvedRequest, ResponseLike } from "./rest-types";
 
 export function isBufferLike(value: unknown): value is ArrayBuffer | Buffer | Uint8Array | Uint8ClampedArray {
@@ -14,6 +14,9 @@ export function parseResponse(response: ResponseLike): Promise<unknown> {
 	if (response.headers.get("Content-Type")?.startsWith("text/plain")) {
 		return response.text();
 	}
+	if (response.headers.get("Content-Type")?.startsWith("text/html")) {
+		return response.text();
+	}
 
 	return response.arrayBuffer();
 }
@@ -23,7 +26,7 @@ export function parseResponse(response: ResponseLike): Promise<unknown> {
  *
  * @param request - The request data
  */
-export function resolveRequest(request: InternalRequest): ResolvedRequest {
+export async function resolveRequest(request: InternalRequest): Promise<ResolvedRequest> {
 	let query = "";
 	let finalBody: RequestInit["body"];
 	let additionalHeaders: Record<string, string> = {};
@@ -59,7 +62,7 @@ export function resolveRequest(request: InternalRequest): ResolvedRequest {
 				let contentType = file.contentType;
 				let name = file.name;
 
-				const [parsedType] = filetypeinfo(file.data);
+				const parsedType = await fileTypeFromBuffer(Buffer.isBuffer(file.data) ? (file.data.buffer as ArrayBuffer) : file.data);
 
 				if (!contentType) {
 					if (parsedType) {
@@ -67,8 +70,12 @@ export function resolveRequest(request: InternalRequest): ResolvedRequest {
 					}
 				}
 
-				if (!name.includes(".") && parsedType.extension) {
-					name = `${name}.${parsedType.extension}`;
+				if (!name.includes(".") && parsedType?.ext) {
+					if (parsedType.mime === "image/gif") {
+						name = `a_${name}.${parsedType.ext}`;
+					} else {
+						name = `${name}.${parsedType.ext}`;
+					}
 				}
 
 				formData.append(fileKey, new Blob([file.data], { type: contentType }), name);

@@ -5,7 +5,7 @@
 	"dependencies": {
 		"@sapphire/snowflake": "^3.5.3",
 		"buffer": "^6.0.3",
-		"magic-bytes.js": "^1.10.0"
+		"file-type": "^19.5.0"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.9.0",

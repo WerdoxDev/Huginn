@@ -4,10 +4,9 @@ import { Errors, HttpCode, type HuginnErrorData, generateRandomString } from "@h
 import type { Server } from "bun";
 import consola from "consola";
 import { colors } from "consola/utils";
-import crossws from "crossws/adapters/bun";
 import {
 	type App,
-	H3Error,
+	type H3Error,
 	type Router,
 	createApp,
 	createRouter,

@@ -13,7 +13,6 @@ router.post(
 		const [error, body] = await catchError(async () => await readFormData(event));
 
 		if (error) {
-			console.log(error);
 			return invalidFormBody(event);
 		}
 

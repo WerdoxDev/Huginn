@@ -25,6 +25,7 @@ export type GatewayEvents = {
 	relationship_add: GatewayRelationshipCreateData;
 	relationship_remove: Snowflake;
 	channel_create: GatewayDMChannelCreateData;
+	channel_update: GatewayDMChannelUpdateData;
 	channel_delete: GatewayDMChannelDeleteData;
 	user_update: GatewayUserUpdateData;
 	presence_update: GatewayPresenceUpdateData;
@@ -128,5 +129,6 @@ type GatewayMessageEventExtraFields = {
 export type GatewayRelationshipCreateData = APIRelationshipWithoutOwner;
 export type GatewayDMChannelCreateData = DirectChannel;
 export type GatewayDMChannelDeleteData = DirectChannel;
+export type GatewayDMChannelUpdateData = DirectChannel;
 export type GatewayUserUpdateData = APIUser & Tokens;
 export type GatewayPresenceUpdateData = UserPresence;

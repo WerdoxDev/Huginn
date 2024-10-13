@@ -11,5 +11,5 @@ export const constants = {
 	HEARTBEAT_INTERVAL: 10000,
 	ALLOWED_IMAGE_SIZES: [16, 32, 64, 128, 256, 512, 1_024, 2_048, 4_096] as const,
 	ALLOWED_IMAGE_FORMATS: ["webp", "png", "jpg", "jpeg", "gif"] as const,
-	CHANNEL_NAME_MAX_LENGTH: 20,
+	CHANNEL_NAME_MAX_LENGTH: 100,
 };

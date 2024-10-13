@@ -76,7 +76,7 @@ export enum GatewayCode {
 export enum FieldCode {
 	REQUIRED = "REQUIRED",
 	INVALID_LOGIN = "INVALID_LOGIN",
-	TOO_SHORT = "BASE_TYPE_TOO_SHORT",
+	WRONG_LENGHTH = "INCORRECT_LENGTH",
 	USERNAME_TAKEN = "USERNAME_TAKEN",
 	EMAIL_IN_USE = "EMAIL_IN_USE",
 	EMAIL_INVALID = "EMAIL_INVALID",
@@ -97,7 +97,7 @@ export const Fields = {
 		else if (min) text = text = `This must be atleast ${min} characters long`;
 		else if (max) text = `This must be at most ${max} characters long`;
 		else text = "This is invalid";
-		return [text, FieldCode.TOO_SHORT];
+		return [text, FieldCode.WRONG_LENGHTH];
 	},
 	emailInvalid(): [string, string] {
 		return ["Email is invalid", FieldCode.EMAIL_INVALID];

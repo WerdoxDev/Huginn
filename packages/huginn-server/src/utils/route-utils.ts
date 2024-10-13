@@ -1,9 +1,9 @@
-import { type DBError, DBErrorType, prisma } from "#database";
-import { createErrorFactory, type ErrorFactory, unauthorized } from "@huginn/backend-shared";
-import { getHeader, type H3Event, setResponseStatus } from "h3";
+import { type ErrorFactory, createErrorFactory, unauthorized } from "@huginn/backend-shared";
+import { Errors, HttpCode } from "@huginn/shared";
+import { type H3Event, getHeader, setResponseStatus } from "h3";
 import { sha256 } from "ohash";
+import { type DBError, DBErrorType, prisma } from "#database";
 import { verifyToken } from "./token-factory";
-import { HttpCode, Errors } from "@huginn/shared";
 
 export async function useVerifiedJwt(event: H3Event) {
 	const bearer = getHeader(event, "Authorization");

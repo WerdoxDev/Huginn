@@ -58,14 +58,17 @@ router.patch(
 			return createHuginnError(event, databaseError);
 		}
 
+		// Undefined means no change, null means delete, other values are set
 		let avatarHash: string | undefined | null = undefined;
 		if (body.avatar !== null && body.avatar !== undefined) {
 			const data = resolveBuffer(body.avatar);
 			avatarHash = getFileHash(data);
 
-			await cdnUpload(CDNRoutes.uploadAvatar(user.id), {
-				files: [{ data: resolveBuffer(body.avatar), name: avatarHash }],
-			});
+			avatarHash = (
+				await cdnUpload<string>(CDNRoutes.uploadAvatar(user.id), {
+					files: [{ data: data, name: avatarHash }],
+				})
+			).split(".")[0];
 		} else if (body.avatar === null) {
 			avatarHash = null;
 		}
