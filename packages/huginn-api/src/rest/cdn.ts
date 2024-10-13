@@ -11,6 +11,10 @@ export class CDN {
 		return this.dynamicMakeURL(`/avatars/${id}/${hash}`, hash, options);
 	}
 
+	public channelIcon(id: Snowflake, hash: string, options?: Readonly<ImageURLOptions>): string {
+		return this.dynamicMakeURL(`/channel-icons/${id}/${hash}`, hash, options);
+	}
+
 	/**
 	 * Constructs the URL for the resource, checking whether or not `hash` starts with `a_` if `dynamic` is set to `true`.
 	 *

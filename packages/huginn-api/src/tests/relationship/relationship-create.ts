@@ -32,7 +32,7 @@ describe("relationship-create", () => {
 		const client2 = await getLoggedClient(test3Credentials);
 
 		expect(client2.user).toBeDefined();
-		if (client2.user) return;
+		if (!client2.user) return;
 
 		expect(() => client.relationships.createRelationshipByUserId(client2.user.id)).not.toThrow();
 	});

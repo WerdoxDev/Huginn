@@ -4,12 +4,14 @@ import type {
 	APIGetChannelMessagesResult,
 	APIGetMessageByIdResult,
 	APIGetUserChannelsResult,
+	APIPatchDMChannelJSONBody,
+	APIPatchDMChannelResult,
 	APIPostDMChannelJSONBody,
 	APIPostDMChannelResult,
 	APIPostDefaultMessageJSONBody,
 	APIPostDefaultMessageResult,
 } from "@huginn/shared";
-import { Routes } from "@huginn/shared";
+import { Routes, resolveImage } from "@huginn/shared";
 import type { Snowflake } from "@huginn/shared";
 import type { REST } from "../rest/rest";
 
@@ -45,6 +47,11 @@ export class ChannelAPI {
 
 	public async createDM(body: APIPostDMChannelJSONBody): Promise<APIPostDMChannelResult> {
 		return this.rest.post(Routes.userChannels(), { body, auth: true }) as Promise<APIPostDMChannelResult>;
+	}
+
+	public async editDM(channelId: Snowflake, body: APIPatchDMChannelJSONBody): Promise<APIPatchDMChannelResult> {
+		const resolvedBody: APIPatchDMChannelJSONBody = { ...body, icon: body.icon && (await resolveImage(body.icon)) };
+		return this.rest.patch(Routes.channel(channelId), { body: resolvedBody, auth: true }) as Promise<APIPatchDMChannelResult>;
 	}
 
 	public async deleteDM(channelId: Snowflake): Promise<APIDeleteDMChannelResult> {

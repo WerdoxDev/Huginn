@@ -88,7 +88,7 @@ describe("user-patch-current", () => {
 		expect(result).toBeDefined();
 	});
 
-	test("user-patch-current-avatar", async () => {
+	test("user-patch-current-avatar-successful", async () => {
 		const client = await getLoggedClient();
 
 		const result = await client.users.edit({ avatar: path.resolve(__dirname, "../pixel.png") });
