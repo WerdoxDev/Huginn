@@ -4,12 +4,12 @@ import { defineEventHandler, readFormData, setResponseStatus } from "h3";
 import { z } from "zod";
 import { router, storage } from "#cdn";
 
-const schema = z.object({ userId: z.string() });
+const schema = z.object({ channelId: z.string() });
 
 router.post(
-	"/avatars/:userId",
+	"/channel-icons/:channelId",
 	defineEventHandler(async (event) => {
-		const { userId } = await useValidatedParams(event, schema);
+		const { channelId } = await useValidatedParams(event, schema);
 		const [error, body] = await catchError(async () => await readFormData(event));
 
 		if (error) {
@@ -23,7 +23,7 @@ router.post(
 			return invalidFormBody(event);
 		}
 
-		await storage.writeFile("avatars", userId, file.name, await file.arrayBuffer());
+		await storage.writeFile("channel-icons", channelId, file.name, await file.arrayBuffer());
 
 		setResponseStatus(event, HttpCode.CREATED);
 		return file.name;

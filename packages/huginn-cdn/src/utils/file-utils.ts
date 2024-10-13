@@ -18,16 +18,16 @@ export function extractFileInfo(filename: string): FileInfo {
 	return { name, format, mimeType };
 }
 
-export async function findImageByName(category: FileCategory, name: string) {
+export async function findImageByName(category: FileCategory, subDirectory: string, name: string) {
 	const formats = ["png", "jpeg", "jpg", "webp"];
 
 	for (const format of formats) {
 		const filename = `${name}.${format}`;
 
-		const exists = await storage.exists(category, filename);
+		const exists = await storage.exists(category, subDirectory, filename);
 
 		if (exists) {
-			return { file: (await storage.getFile(category, filename)) as ReadableStream, info: extractFileInfo(filename) };
+			return { file: (await storage.getFile(category, subDirectory, filename)) as ReadableStream, info: extractFileInfo(filename) };
 		}
 	}
 
