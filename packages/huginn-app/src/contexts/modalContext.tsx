@@ -1,4 +1,5 @@
 import type { DeepPartial, StatusCode } from "@/types";
+import type { APIChannel, Snowflake } from "@huginn/shared";
 import type { ReactNode } from "@tanstack/react-router";
 import { type Dispatch, createContext, useContext, useReducer } from "react";
 
@@ -26,6 +27,8 @@ export type ModalContextType = {
 		mimeType: string;
 	};
 	createDM: DefaultModal;
+	editGroup: DefaultModal & { channel?: APIChannel };
+	addRecipient: DefaultModal & { channelId: Snowflake };
 };
 
 const defaultValue: ModalContextType = {
@@ -33,6 +36,8 @@ const defaultValue: ModalContextType = {
 	info: { isOpen: false, status: "none", title: "", text: "", closable: true },
 	imageCrop: { isOpen: false, originalImageData: "", mimeType: "" },
 	createDM: { isOpen: false },
+	editGroup: { isOpen: false },
+	addRecipient: { isOpen: false, channelId: "" },
 };
 
 const ModalContext = createContext<ModalContextType>(defaultValue);
@@ -53,8 +58,10 @@ function modalsReducer(modals: ModalContextType, action: DeepPartial<ModalContex
 	const info = action.info ? Object.assign({}, modals.info, action.info) : modals.info;
 	const imageCrop = action.imageCrop ? Object.assign({}, modals.imageCrop, action.imageCrop) : modals.imageCrop;
 	const createDM = action.createDM ? Object.assign({}, modals.createDM, action.createDM) : modals.createDM;
+	const editGroup = action.editGroup ? Object.assign({}, modals.editGroup, action.editGroup) : modals.editGroup;
+	const addRecipient = action.addRecipient ? Object.assign({}, modals.addRecipient, action.addRecipient) : modals.addRecipient;
 
-	return { settings, info, imageCrop, createDM: createDM };
+	return { settings, info, imageCrop, createDM, editGroup, addRecipient };
 }
 
 export function useModals() {

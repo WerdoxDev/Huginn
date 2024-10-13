@@ -1,7 +1,5 @@
-import { type ContextMenuDMChannel, ContextMenuType } from "@/types";
 import { useClient } from "@contexts/apiContext";
 import { useContextMenu } from "@contexts/contextMenuContext";
-import { useUser } from "@contexts/userContext";
 import { useDeleteDMChannel } from "@hooks/mutations/useDeleteDMChannel";
 import { useChannelName } from "@hooks/useChannelName";
 import { ChannelType, type DirectChannel } from "@huginn/shared";
@@ -10,22 +8,20 @@ import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
 import clsx from "clsx";
 import { useMemo } from "react";
+import ChannelIcon from "./ChannelIcon";
 import UserAvatarWithStatus from "./UserAvatarWithStatus";
 
 export default function DirectMessageChannel(props: { channel: DirectChannel; onSelected?: () => void }) {
-	const { user } = useUser();
-
 	const queryClient = useQueryClient();
 	const client = useClient();
 	const { isLoading } = useInfiniteQuery(getMessagesOptions(queryClient, client, props.channel.id, false));
 
-	const { open: openContextMenu } = useContextMenu<ContextMenuDMChannel>(ContextMenuType.DM_CHANNEL);
+	const { open: openContextMenu } = useContextMenu("dm_channel");
 
 	const mutation = useDeleteDMChannel();
 
 	const { channelId } = useParams({ strict: false });
 	const selected = useMemo(() => channelId === props.channel.id, [channelId, props.channel]);
-	const otherUsers = useMemo(() => props.channel.recipients.filter((x) => x.id !== user?.id), [props.channel]);
 	const name = useChannelName(props.channel.recipients, props.channel.name);
 
 	return (
@@ -43,13 +39,20 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
 				{props.channel.type === ChannelType.DM ? (
 					<UserAvatarWithStatus userId={props.channel.recipients[0].id} avatarHash={props.channel.recipients[0].avatar} className="mr-3" />
 				) : (
-					<div className="mr-3 size-9 shrink-0 rounded-full bg-primary" />
+					<ChannelIcon channelId={props.channel.id} iconHash={props.channel.icon} className="mr-3" />
 				)}
-				<div className="flex w-full flex-col justify-center">
-					<div className={clsx("text-sm text-text group-hover:opacity-100", selected ? "opacity-100" : "opacity-70")}>{name}</div>
+				<div className="flex w-full flex-col justify-center overflow-hidden">
+					<div
+						className={clsx(
+							"mr-8 overflow-hidden text-ellipsis text-nowrap text-sm text-text group-hover:opacity-100",
+							selected ? "opacity-100" : "opacity-70",
+						)}
+					>
+						{name}
+					</div>
 					{props.channel.type === ChannelType.GROUP_DM && (
 						<div className={clsx("text-text text-xs group-hover:opacity-70", selected ? "opacity-70" : "opacity-50")}>
-							{props.channel.recipients.length} Members
+							{props.channel.recipients.length + 1} Members
 						</div>
 					)}
 				</div>

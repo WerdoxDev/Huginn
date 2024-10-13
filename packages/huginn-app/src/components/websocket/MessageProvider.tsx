@@ -28,21 +28,21 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 
 		let messageVisible = false;
 
-		queryClient.setQueryData<InfiniteData<APIGetChannelMessagesResult, { before: string; after: string }>>(["messages", d.channelId], (data) => {
-			if (!data) return undefined;
+		queryClient.setQueryData<InfiniteData<APIGetChannelMessagesResult, { before: string; after: string }>>(["messages", d.channelId], (old) => {
+			if (!old) return undefined;
 
-			const lastPage = data.pages[data.pages.length - 1];
-			const lastParams = data.pageParams[data.pageParams.length - 1];
+			const lastPage = old.pages[old.pages.length - 1];
+			const lastParams = old.pageParams[old.pageParams.length - 1];
 			// See if the message can be appended to the current page
 			if (!lastParams.before && (!lastParams.after || lastPage.some((x) => x.id === thisChannel.lastMessageId))) {
 				messageVisible = true;
 				return {
-					...data,
-					pages: [...data.pages.toSpliced(data.pages.length - 1, 1, [...lastPage, d])],
+					...old,
+					pages: [...old.pages.toSpliced(old.pages.length - 1, 1, [...lastPage, d])],
 				};
 			}
 
-			return data;
+			return old;
 		});
 
 		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (data) => {

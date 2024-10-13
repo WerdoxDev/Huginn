@@ -1,9 +1,12 @@
 import ModalErrorComponent from "@components/ModalErrorComponent";
 import TitleBar from "@components/TitleBar";
+import { ChannelRecipientContextMenu } from "@components/contextmenu/ChannelRecipientContextMenu";
 import { ChannelsContextMenu } from "@components/contextmenu/ChannelsContextMenu";
 import RelationshipContextMenu from "@components/contextmenu/RelationshipContextMenu";
 import RelationshipMoreContextMenu from "@components/contextmenu/RelationshipMoreContextMenu";
+import { AddRecipientModal } from "@components/modal/AddRecipientModal";
 import { CreateDMModal } from "@components/modal/CreateDMModal";
+import EditGroupModal from "@components/modal/EditDMModal";
 import ImageCropModal from "@components/modal/ImageCropModal";
 import InfoModal from "@components/modal/InfoModal";
 import SettingsModal from "@components/modal/SettingsModal";
@@ -89,7 +92,10 @@ function ModalsRenderer() {
 				{user && (
 					<>
 						<CreateDMModal />
+						<EditGroupModal />
 						<ImageCropModal />
+						<AddRecipientModal />
+						<ChannelRecipientContextMenu />
 						<ChannelsContextMenu />
 						<RelationshipMoreContextMenu />
 						<RelationshipContextMenu />

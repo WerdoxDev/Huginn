@@ -1,7 +1,9 @@
-import { type ContextMenuRelationship, ContextMenuType } from "@/types";
 import UserAvatarWithStatus from "@components/UserAvatarWithStatus";
 import { Tooltip } from "@components/tooltip/Tooltip";
 import { useContextMenu } from "@contexts/contextMenuContext";
+import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMChannel";
+import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
+import { useLatestMutationState } from "@hooks/useLatestMutationStatus";
 import { type APIRelationUser, RelationshipType } from "@huginn/shared";
 import type { Snowflake, UserPresence } from "@huginn/shared";
 import { useMemo } from "react";
@@ -10,13 +12,23 @@ export default function FriendItem(props: {
 	type: RelationshipType;
 	user: APIRelationUser;
 	presence?: UserPresence;
-	loading?: boolean;
 	onAccept?: (userId: Snowflake) => void;
 	onDenyOrCancel?: (userId: Snowflake) => void;
 	onMessage?: (userId: Snowflake) => void;
 }) {
-	const { open: openRelationshipMore } = useContextMenu<ContextMenuRelationship>(ContextMenuType.RELATIONSHIP_MORE);
-	const { open: openRelationship } = useContextMenu<ContextMenuRelationship>(ContextMenuType.RELATIONSHIP);
+	const { open: openRelationshipMore } = useContextMenu("relationship_more");
+	const { open: openRelationship } = useContextMenu("relationship");
+	const createChannelState = useLatestMutationState<CreateDMChannelMutationVars>("create-dm-channel");
+	const createRelationshipState = useLatestMutationState<CreateRelationshipMutationVars>("create-relationship");
+	const removeRelationshipState = useLatestMutationState<Snowflake>("remove-relationship");
+
+	const loading = useMemo(
+		() =>
+			(createRelationshipState?.status === "pending" && createRelationshipState.variables?.userId === props.user.id) ||
+			(removeRelationshipState?.status === "pending" && removeRelationshipState.variables === props.user.id) ||
+			(createChannelState?.status === "pending" && createChannelState?.variables?.recipients.some((x) => x === props.user.id)),
+		[createChannelState, createRelationshipState, removeRelationshipState],
+	);
 
 	const presenceText = useMemo(
 		() =>
@@ -38,7 +50,10 @@ export default function FriendItem(props: {
 			onContextMenu={(e) => {
 				openRelationship({ user: props.user, type: props.type }, e);
 			}}
-			onClick={() => props.onMessage?.(props.user.id)}
+			onClick={(e) => {
+				e.stopPropagation();
+				props.onMessage?.(props.user.id);
+			}}
 		>
 			<div className="flex">
 				<UserAvatarWithStatus userId={props.user.id} avatarHash={props.user.avatar} className="mr-3" />
@@ -47,7 +62,7 @@ export default function FriendItem(props: {
 					<span className="text-sm text-text/50">{presenceText}</span>
 				</div>
 			</div>
-			{props.loading && (
+			{loading && (
 				<div className="absolute inset-0 flex items-center justify-center bg-black/40">
 					<IconSvgSpinners3DotsFade className="size-10 text-text" />
 				</div>
@@ -59,7 +74,10 @@ export default function FriendItem(props: {
 							<Tooltip>
 								<Tooltip.Trigger
 									className="rounded-full bg-background/50 p-2 text-text/80 hover:text-primary group-hover:bg-background"
-									onClick={() => props.onAccept?.(props.user.id)}
+									onClick={(e) => {
+										e.stopPropagation();
+										props.onAccept?.(props.user.id);
+									}}
 								>
 									<IconMdiCheck className="size-5" />
 								</Tooltip.Trigger>
@@ -80,7 +98,10 @@ export default function FriendItem(props: {
 					<>
 						<Tooltip>
 							<Tooltip.Trigger
-								onClick={() => props.onMessage?.(props.user.id)}
+								onClick={(e) => {
+									e.stopPropagation();
+									props.onMessage?.(props.user.id);
+								}}
 								className="rounded-full bg-background/50 p-2 text-text/80 hover:text-text active:bg-white/20"
 							>
 								<IconMdiMessage className="size-5" />
@@ -90,6 +111,7 @@ export default function FriendItem(props: {
 						<Tooltip>
 							<Tooltip.Trigger
 								onClick={(e) => {
+									e.stopPropagation();
 									openRelationshipMore({ user: props.user, type: props.type }, e);
 								}}
 								className="rounded-full bg-background/50 p-2 text-text/80 hover:text-text active:bg-white/20"

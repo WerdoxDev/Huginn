@@ -26,7 +26,7 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
 	}
 
 	function onRelationshipDeleted(userId: Snowflake) {
-		queryClient.setQueryData<APIGetUserRelationshipsResult>(["relationships"], (data) => data?.filter((x) => x.user.id !== userId));
+		queryClient.setQueryData<APIGetUserRelationshipsResult>(["relationships"], (old) => old?.filter((x) => x.user.id !== userId));
 	}
 
 	function onPresenceUpdated(presence: GatewayPresenceUpdateData) {

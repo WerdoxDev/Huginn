@@ -22,6 +22,7 @@ import {
 	useMergeRefs,
 	useRole,
 } from "@floating-ui/react";
+import clsx from "clsx";
 import { type HTMLProps, createContext, forwardRef, useContext, useEffect, useRef, useState } from "react";
 
 const Context = createContext<{
@@ -148,7 +149,7 @@ const Menu = forwardRef<HTMLButtonElement, ContextMenuProps & HTMLProps<HTMLButt
 					role="menuitem"
 					data-open={isOpen ? "" : undefined}
 					data-focus-inside={hasFocusInside ? "" : undefined}
-					className="focus:bg-primary rounded-sm px-2 py-1 text-start text-sm text-white/90 outline-none"
+					className="rounded-sm px-2 py-1 text-start text-sm text-white/90 outline-none focus:bg-primary"
 					{...getReferenceProps(
 						parent.getItemProps({
 							...props,
@@ -209,7 +210,10 @@ const Item = forwardRef<HTMLButtonElement, ContextMenuItemProps & React.ButtonHT
 				ref={useMergeRefs([item.ref, forwardedRef])}
 				type="button"
 				role="menuitem"
-				className={`focus:bg-primary flex items-center justify-between gap-x-5 rounded-sm px-2 py-1 text-start text-sm text-white/90 outline-none ${props.className ?? ""}`}
+				className={clsx(
+					"flex items-center justify-between gap-x-5 rounded-sm px-2 py-1 text-start text-sm text-white/90 outline-none focus:bg-primary",
+					props.className,
+				)}
 				tabIndex={isActive ? 0 : -1}
 				disabled={disabled}
 				{...menu.getItemProps({
@@ -245,7 +249,7 @@ export function ContextMenu(props: ContextMenuProps) {
 }
 
 function Divider() {
-	return <div className="bg-background mx-1 my-0.5 h-0.5" />;
+	return <div className="mx-1 my-0.5 h-0.5 bg-background" />;
 }
 
 ContextMenu.Item = Item;

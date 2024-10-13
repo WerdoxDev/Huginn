@@ -75,11 +75,11 @@ export default function ImageCropModal() {
 				<div className="flex w-full justify-end gap-x-2 bg-secondary p-5">
 					<HuginnButton
 						onClick={() => modalsDispatch({ imageCrop: { isOpen: false } })}
-						className="w-20 shrink-0 py-2 decoration-white hover:underline"
+						className="h-10 w-20 shrink-0 decoration-white hover:underline"
 					>
 						Cancel
 					</HuginnButton>
-					<HuginnButton onClick={confirm} className="w-20 bg-primary py-2 text-text">
+					<HuginnButton onClick={confirm} className="h-10 w-36 bg-primary text-text">
 						Confirm
 					</HuginnButton>
 				</div>

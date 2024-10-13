@@ -1,3 +1,4 @@
+import ChannelIcon from "@components/ChannelIcon";
 import UserAvatarWithStatus from "@components/UserAvatarWithStatus";
 import { Tooltip } from "@components/tooltip/Tooltip";
 import { useUser } from "@contexts/userContext";
@@ -7,7 +8,7 @@ import { useMemo } from "react";
 
 export default function HomeTopbar(props: { channel: DirectChannel; onRecipientsClick?: () => void }) {
 	const { user } = useUser();
-	const name = useChannelName(props.channel.recipients, props.channel.name, 999);
+	const name = useChannelName(props.channel.recipients, props.channel.name);
 
 	const otherUsers = useMemo(() => props.channel.recipients.filter((x) => x.id !== user?.id), [props.channel]);
 
@@ -17,7 +18,7 @@ export default function HomeTopbar(props: { channel: DirectChannel; onRecipients
 				{props.channel.type === ChannelType.DM ? (
 					<UserAvatarWithStatus userId={otherUsers[0].id} avatarHash={otherUsers[0].avatar} className="mr-3" />
 				) : (
-					<div className="mr-3 size-[2.25rem] rounded-full bg-background" />
+					<ChannelIcon channelId={props.channel.id} iconHash={props.channel.icon} className="mr-3" />
 				)}
 				<div className="text-text">{name}</div>
 				<div className="ml-auto flex">

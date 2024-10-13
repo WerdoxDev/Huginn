@@ -9,7 +9,7 @@ import { useErrorHandler } from "@hooks/useServerErrorHandler";
 import { ChannelType } from "@huginn/shared";
 import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useLinkProps } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/channels/@me/$channelId")({
@@ -34,7 +34,7 @@ function Component() {
 
 	const handleServerError = useErrorHandler();
 
-	const [recipientsVisible, setRecipientsVisible] = useState(false);
+	const [recipientsVisible, setRecipientsVisible] = useState(true);
 
 	useEffect(() => {
 		if (error) {
@@ -58,7 +58,7 @@ function Component() {
 			<div className="flex h-full w-full overflow-hidden">
 				<ChannelMessages channelId={channelId} messages={messages.pages.flat()} />
 				{channel.type === ChannelType.GROUP_DM && channel.ownerId && (
-					<RecipientsSidebar recipients={channel.recipients} ownerId={channel.ownerId} visible={recipientsVisible} />
+					<RecipientsSidebar channelId={channel.id} recipients={channel.recipients} ownerId={channel.ownerId} visible={recipientsVisible} />
 				)}
 			</div>
 			<div className="flex h-16 w-full flex-shrink-0 bg-background">

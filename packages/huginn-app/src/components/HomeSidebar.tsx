@@ -1,9 +1,6 @@
-import { useClient } from "@contexts/apiContext";
 import { useModalsDispatch } from "@contexts/modalContext";
 import { useWindow } from "@contexts/windowContext";
 import type { APIGetUserChannelsResult } from "@huginn/shared";
-import { getMessagesOptions } from "@lib/queries";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import DirectMessageChannel from "./DirectMessageChannel";
 import RingLinkButton from "./button/RingLinkButton";
@@ -15,20 +12,20 @@ export default function HomeSidebar(props: { channels?: APIGetUserChannelsResult
 
 	return (
 		<nav
-			className={clsx("bg-secondary flex h-full flex-col overflow-hidden rounded-l-xl ", appWindow.environment === "browser" && "rounded-tl-none")}
+			className={clsx("flex h-full flex-col overflow-hidden rounded-l-xl bg-secondary ", appWindow.environment === "browser" && "rounded-tl-none")}
 		>
 			<div className="flex h-[4.75rem] shrink-0 items-center px-6">
-				<div className="text-text text-xl font-bold">Home</div>
-				<RingLinkButton to="/friends" className="ml-6 px-2 py-1 text-xs font-medium">
+				<div className="font-bold text-text text-xl">Home</div>
+				<RingLinkButton to="/friends" className="ml-6 px-2 py-1 font-medium text-xs">
 					Friends
 				</RingLinkButton>
 			</div>
-			<div className="h-0.5 shrink-0  bg-white/10" />
-			<div className="mx-3.5 mb-3.5 mt-6 flex shrink-0 items-center justify-between  text-xs">
-				<div className="text-text/70 hover:text-text/100 font-medium uppercase">Direct Messages</div>
+			<div className="h-0.5 shrink-0 bg-white/10" />
+			<div className="mx-3.5 mt-6 mb-3.5 flex shrink-0 items-center justify-between text-xs">
+				<div className="font-medium text-text/70 uppercase hover:text-text/100">Direct Messages</div>
 				<Tooltip>
 					<Tooltip.Trigger onClick={() => dispatch({ createDM: { isOpen: true } })}>
-						<IconMdiPlus className="text-text size-4" />
+						<IconMdiPlus className="size-4 text-text" />
 					</Tooltip.Trigger>
 					<Tooltip.Content>Create DM</Tooltip.Content>
 				</Tooltip>

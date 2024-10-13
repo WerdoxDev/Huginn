@@ -1,5 +1,5 @@
 import type { Placement } from "@floating-ui/react";
-import type { APIDefaultMessage, APIRelationUser, DirectChannel, RelationshipType } from "@huginn/shared";
+import type { APIChannelUser, APIDefaultMessage, APIRelationUser, DirectChannel, RelationshipType, Snowflake } from "@huginn/shared";
 import type React from "react";
 import type { HTMLInputTypeAttribute, ReactNode } from "react";
 import type { SettingsContextType } from "./contexts/settingsContext";
@@ -143,12 +143,7 @@ export type ContextMenuItemProps = {
 
 export type ContextMenuRelationship = { user: APIRelationUser; type: RelationshipType };
 export type ContextMenuDMChannel = DirectChannel;
-
-export enum ContextMenuType {
-	DM_CHANNEL = 0,
-	RELATIONSHIP_MORE = 1,
-	RELATIONSHIP = 2,
-}
+export type ContextMenuDMChannelRecipient = { channelId: Snowflake; recipient: APIChannelUser };
 
 export type MessageRenderInfo = {
 	message: APIDefaultMessage;

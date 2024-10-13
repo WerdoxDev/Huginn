@@ -1,5 +1,6 @@
 import type { SettingsTabProps } from "@/types";
 import AnimatedMessage from "@components/AnimatedMessage";
+import ImageSelector from "@components/ImageSelector";
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import HuginnInput from "@components/input/HuginnInput";
@@ -85,31 +86,15 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 		};
 	}, []);
 
-	function openFileDialog() {
-		const input = document.createElement("input");
-		input.type = "file";
-		input.multiple = false;
-		input.accept = "image/png,image/jpeg,image/webp,image/gif";
+	function onDelete() {
+		if (avatarData) {
+			setAvatarData(null);
+			setAvatarModified(true);
+		}
+	}
 
-		input.onchange = (e) => {
-			const file = (e.target as HTMLInputElement).files?.[0];
-
-			if (!file) {
-				return;
-			}
-
-			const reader = new FileReader();
-			reader.readAsDataURL(file);
-
-			reader.onload = (readerEvent) => {
-				const content = readerEvent.target?.result;
-				if (typeof content === "string") {
-					modalsDispatch({ imageCrop: { isOpen: true, originalImageData: content, mimeType: file.type } });
-				}
-			};
-		};
-
-		input.click();
+	function onSelected(data: string, mimeType: string) {
+		modalsDispatch({ imageCrop: { isOpen: true, originalImageData: data, mimeType: mimeType } });
 	}
 
 	function edit() {
@@ -140,41 +125,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 	return (
 		<>
 			<div className="flex h-full items-start gap-x-5">
-				<div className="flex rounded-lg bg-secondary p-4">
-					<div onClick={openFileDialog} className="group relative h-24 w-24 cursor-pointer overflow-hidden rounded-full bg-black">
-						{avatarData ? (
-							<img alt="editing-user-avatar" className="h-full w-full object-cover" src={avatarData} />
-						) : (
-							<div className="h-full w-full bg-primary" />
-						)}
-
-						<div className="absolute inset-0 flex h-full w-full items-center justify-center gap-x-1 rounded-full group-hover:bg-black/30">
-							<Tooltip>
-								<Tooltip.Trigger>
-									<IconMdiEdit className="invisible size-7 text-white group-hover:visible" />
-								</Tooltip.Trigger>
-								<Tooltip.Content>Edit</Tooltip.Content>
-							</Tooltip>
-							<Tooltip>
-								<Tooltip.Trigger>
-									<IconMdiDelete
-										onClick={(e) => {
-											e.stopPropagation();
-											if (avatarData) {
-												setAvatarData(null);
-												setAvatarModified(true);
-											}
-										}}
-										className="invisible size-7 text-error group-hover:visible"
-									/>
-								</Tooltip.Trigger>
-								<Tooltip.Content>
-									<div className="text-error">Delete</div>
-								</Tooltip.Content>
-							</Tooltip>
-						</div>
-					</div>
-				</div>
+				<ImageSelector data={avatarData} onDelete={onDelete} onSelected={onSelected} />
 				<div className="mb-20 flex w-full flex-col gap-y-5 rounded-lg bg-secondary p-4">
 					<HuginnInput {...inputsProps.username} onFocusChanged={onFocusChanged}>
 						<HuginnInput.Label text="Username" className="mb-2" />

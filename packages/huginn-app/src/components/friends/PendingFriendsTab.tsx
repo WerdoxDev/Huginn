@@ -1,12 +1,14 @@
-import { useClient } from "@contexts/apiContext";
 import { TabPanel } from "@headlessui/react";
+import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
+import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship";
 import { type APIRelationshipWithoutOwner, RelationshipType } from "@huginn/shared";
 import type { Snowflake } from "@huginn/shared";
 import { useMemo } from "react";
 import FriendItem from "./FriendItem";
 
 export default function PendingFriendsTab(props: { friends: APIRelationshipWithoutOwner[] }) {
-	const client = useClient();
+	const createMutation = useCreateRelationship();
+	const removeMutation = useRemoveRelationship();
 
 	const pendingFriends = useMemo(
 		() => props.friends.filter((x) => x.type === RelationshipType.PENDING_INCOMING || x.type === RelationshipType.PENDING_OUTGOING),
@@ -15,12 +17,12 @@ export default function PendingFriendsTab(props: { friends: APIRelationshipWitho
 
 	const pendingAmount = useMemo(() => pendingFriends.length, [pendingFriends]);
 
-	async function denyOrCancelRelationship(userId: Snowflake) {
-		await client.relationships.delete(userId);
+	function denyOrCancelRelationship(userId: Snowflake) {
+		removeMutation.mutate(userId);
 	}
 
-	async function acceptRelationship(userId: Snowflake) {
-		await client.relationships.createRelationshipByUserId(userId);
+	function acceptRelationship(userId: Snowflake) {
+		createMutation.mutate({ userId });
 	}
 	return (
 		<TabPanel>

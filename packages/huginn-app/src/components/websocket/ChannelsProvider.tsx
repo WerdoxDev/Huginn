@@ -4,6 +4,7 @@ import {
 	type APIGetUserChannelsResult,
 	ChannelType,
 	type GatewayDMChannelCreateData,
+	type GatewayDMChannelUpdateData,
 	type GatewayPresenceUpdateData,
 } from "@huginn/shared";
 import { useQueryClient } from "@tanstack/react-query";
@@ -17,9 +18,7 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
 	const router = useRouter();
 
 	function onChannelCreated(d: GatewayDMChannelCreateData) {
-		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (data) =>
-			data && !data.some((x) => x.id === d.id) ? [d, ...data] : data,
-		);
+		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (old) => (old && !old.some((x) => x.id === d.id) ? [d, ...old] : old));
 	}
 
 	function onChannelDeleted(d: GatewayDMChannelCreateData) {
@@ -27,7 +26,11 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
 			navigate({ to: "/channels/@me", replace: true });
 		}
 
-		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (data) => data?.filter((x) => x.id !== d.id));
+		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (old) => old?.filter((x) => x.id !== d.id));
+	}
+
+	function onChannelUpdated(d: GatewayDMChannelUpdateData) {
+		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (old) => old?.map((channel) => (channel.id === d.id ? d : channel)));
 	}
 
 	function onPresenceUpdated(presence: GatewayPresenceUpdateData) {
@@ -46,11 +49,13 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
 
 	useEffect(() => {
 		client.gateway.on("channel_create", onChannelCreated);
+		client.gateway.on("channel_update", onChannelUpdated);
 		client.gateway.on("channel_delete", onChannelDeleted);
 		client.gateway.on("presence_update", onPresenceUpdated);
 
 		return () => {
 			client.gateway.off("channel_create", onChannelCreated);
+			client.gateway.off("channel_update", onChannelUpdated);
 			client.gateway.off("channel_delete", onChannelDeleted);
 			client.gateway.off("presence_update", onPresenceUpdated);
 		};

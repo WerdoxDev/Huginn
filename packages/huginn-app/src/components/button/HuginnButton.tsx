@@ -1,6 +1,5 @@
 import type { HuginnButtonProps } from "@/types";
 import clsx from "clsx";
-import { useEffect } from "react";
 
 export default function HuginnButton(props: HuginnButtonProps) {
 	return (
