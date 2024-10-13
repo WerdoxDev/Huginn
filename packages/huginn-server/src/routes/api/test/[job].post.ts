@@ -1,7 +1,7 @@
 import { HttpCode } from "@huginn/shared";
 import { defineEventHandler, getRouterParam, sendNoContent } from "h3";
-import { router } from "#server";
 import { prisma } from "#database";
+import { router } from "#server";
 
 router.post(
 	"/test/:job",
@@ -13,7 +13,7 @@ router.post(
 			where: { OR: [{ author: { username: { startsWith: "test" } } }, { content: { startsWith: "test" } }] },
 		});
 		const deleteUsers = prisma.user.deleteMany({ where: { username: { startsWith: "test" } } });
-		const deleteChannels = prisma.channel.deleteMany();
+		const deleteChannels = prisma.channel.deleteMany({ where: { recipients: { every: { username: { startsWith: "test" } } } } });
 
 		if (job === "test-users") {
 			await prisma.$transaction([deleteMessages, deleteRelationships, deleteUsers]);

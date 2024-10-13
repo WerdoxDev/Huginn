@@ -8,5 +8,8 @@ export function useChannelRecipients(channelId?: Snowflake, guildId?: Snowflake)
 	const client = useClient();
 	const { data } = useQuery(getChannelsOptions(client, guildId ?? "@me"));
 
-	return useMemo(() => data?.find((x) => x.id === channelId)?.recipients, [data, channelId]);
+	const channel = useMemo(() => data?.find((x) => x.id === channelId), [data, channelId]);
+	const recipients = useMemo(() => channel?.recipients, [data, channelId]);
+
+	return { recipients, ownerId: channel?.ownerId };
 }

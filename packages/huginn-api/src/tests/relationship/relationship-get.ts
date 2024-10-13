@@ -20,6 +20,9 @@ describe("relationship-get", () => {
 		const client = await getLoggedClient();
 		const client2 = await getLoggedClient(test2Credentials);
 
+		expect(client2.user).toBeDefined();
+		if (!client2.user) return;
+
 		const relationship = await client.relationships.get(client2.user.id);
 		expect(relationship).toBeDefined();
 	});

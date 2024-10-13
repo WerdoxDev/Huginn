@@ -25,10 +25,6 @@ router.patch(
 		const { channelId } = await useValidatedParams(event, paramsSchema);
 		const body = await useValidatedBody(event, schema);
 
-		if (!(await prisma.channel.exists({ ownerId: BigInt(payload.id) }))) {
-			return unauthorized(event);
-		}
-
 		const formError = createErrorFactory(Errors.invalidFormBody());
 
 		validateChannelName(body.name, formError);
@@ -39,6 +35,18 @@ router.patch(
 
 		if (body.recipients?.length === 0) {
 			return invalidFormBody(event);
+		}
+
+		const channel = idFix(await prisma.channel.getById(channelId, includeChannelRecipients));
+
+		//1,2,3
+		//1,2,3,4
+		if (
+			body.recipients &&
+			channel.ownerId !== payload.id &&
+			!channel.recipients.every((x) => x.id === payload.id || body.recipients?.includes(x.id))
+		) {
+			return unauthorized(event);
 		}
 
 		let channelIconHash: string | undefined | null = undefined;

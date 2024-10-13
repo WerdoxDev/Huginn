@@ -21,7 +21,7 @@ export function AddRecipientModal() {
 	const posthog = usePostHog();
 	const { data } = useQuery(getRelationshipsOptions(client));
 
-	const recipients = useChannelRecipients(modal.channelId, "@me");
+	const { recipients } = useChannelRecipients(modal.channelId, "@me");
 	const relationships = useMemo(() => data?.filter((x) => !recipients?.map((y) => y.id).includes(x.user.id)), [recipients, data]);
 
 	const [selectedUsers, setSelectedUsers] = useState<APIRelationUser[]>([]);

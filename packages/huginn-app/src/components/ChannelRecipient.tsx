@@ -25,18 +25,19 @@ export default function ChannelRecipient(props: { channelId: Snowflake; isOwner:
 			<div className={clsx(presence?.status === "online" ? "text-text/70" : "text-text/30", "group-hover/recipient:text-text/100")}>
 				{props.recipient.displayName ?? props.recipient.username}
 			</div>
-			{state?.status === "pending" && state?.variables?.recipients.some((x) => x === props.recipient.id) && (
+			{state?.status === "pending" && state?.variables?.recipients.some((x) => x === props.recipient.id) ? (
 				<div className="absolute top-3.5 right-2 bottom-3.5 flex flex-shrink-0 items-center justify-center">
 					<IconSvgSpinners3DotsFade className="size-7 text-text" />
 				</div>
-			)}
-			{props.isOwner && (
-				<Tooltip>
-					<Tooltip.Trigger className="mr-2 ml-auto text-success">
-						<IconMingcuteShieldShapeLine />
-					</Tooltip.Trigger>
-					<Tooltip.Content>Channel Owner</Tooltip.Content>
-				</Tooltip>
+			) : (
+				props.isOwner && (
+					<Tooltip>
+						<Tooltip.Trigger className="mr-2 ml-auto text-success">
+							<IconMingcuteShieldShapeLine />
+						</Tooltip.Trigger>
+						<Tooltip.Content>Channel Owner</Tooltip.Content>
+					</Tooltip>
+				)
 			)}
 		</div>
 	);
