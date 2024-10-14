@@ -4,14 +4,24 @@ import { useModalsDispatch } from "@contexts/modalContext";
 import { useUser } from "@contexts/userContext";
 import { Transition } from "@headlessui/react";
 import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePathDMChannel";
-import { useLatestMutationState } from "@hooks/useLatestMutationStatus";
+import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import type { APIChannelUser, Snowflake } from "@huginn/shared";
 import { useMemo } from "react";
 
 export default function RecipientsSidebar(props: { channelId: Snowflake; recipients: APIChannelUser[]; ownerId: Snowflake; visible: boolean }) {
 	const { user } = useUser();
 	const dispatch = useModalsDispatch();
-	const state = useLatestMutationState<PatchDMChannelMutationVars>("patch-dm-channel");
+	const patchState = useMutationLatestState("patch-dm-channel");
+	const addState = useMutationLatestState("add-channel-recipient");
+	const removeState = useMutationLatestState("remove-channel-recipient");
+
+	const loading = useMemo(
+		() =>
+			(patchState?.variables?.channelId === props.channelId && patchState.status === "pending") ||
+			(addState?.variables?.channelId === props.channelId && addState.status === "pending") ||
+			(removeState?.variables?.channelId === props.channelId && removeState.status === "pending"),
+		[patchState, addState, removeState],
+	);
 
 	const recipients = useMemo<APIChannelUser[]>(
 		() => [user as APIChannelUser, ...props.recipients].toSorted((a, b) => (a.username > b.username ? 1 : -1)),
@@ -34,7 +44,7 @@ export default function RecipientsSidebar(props: { channelId: Snowflake; recipie
 					>
 						<IconMdiPlus className="opacity-70 transition-opacity group-hover/add:opacity-100" />
 					</HuginnButton>
-					{state?.status === "pending" && (
+					{loading && (
 						<div className="absolute inset-0 flex items-center justify-center bg-black/40">
 							<IconSvgSpinners3DotsFade className="size-10 text-text" />
 						</div>

@@ -1,4 +1,9 @@
 import type { Placement } from "@floating-ui/react";
+import type { AddChannelRecipientMutationVars } from "@hooks/mutations/useAddChannelRecipient";
+import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMChannel";
+import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
+import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePathDMChannel";
+import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRemoveChannelRecipient";
 import type { APIChannelUser, APIDefaultMessage, APIRelationUser, DirectChannel, RelationshipType, Snowflake } from "@huginn/shared";
 import type React from "react";
 import type { HTMLInputTypeAttribute, ReactNode } from "react";
@@ -149,6 +154,23 @@ export type MessageRenderInfo = {
 	message: APIDefaultMessage;
 	newMinute: boolean;
 	newDate: boolean;
+	newAuthor: boolean;
+	newType: boolean;
 };
 
 export type VersionFlavour = "nightly" | "release";
+
+export type MessageRendererProps = {
+	renderInfo: MessageRenderInfo;
+	nextRenderInfo?: MessageRenderInfo;
+	lastRenderInfo?: MessageRenderInfo;
+};
+
+export type MutationVariables = {
+	"create-dm-channel": CreateDMChannelMutationVars;
+	"patch-dm-channel": PatchDMChannelMutationVars;
+	"remove-channel-recipient": RemoveChannelRecipientMutationVars;
+	"add-channel-recipient": AddChannelRecipientMutationVars;
+	"create-relationship": CreateRelationshipMutationVars;
+	"remove-relationship": Snowflake;
+};

@@ -1,5 +1,6 @@
 import type { Snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
+import type { SystemError } from "bun";
 import { H3Error, createError } from "h3";
 
 export class DBError extends Error {
@@ -28,10 +29,14 @@ export function assertError(error: Error | null, type: DBErrorType) {
 }
 
 export function assertId(methodName: string, ...ids: Snowflake[]) {
+	let lastValidIndex = -1;
 	try {
-		for (const id of ids) BigInt(id);
+		for (const [i, id] of ids.entries()) {
+			BigInt(id);
+			lastValidIndex = i;
+		}
 	} catch (e) {
-		throw createError({ cause: new DBError(methodName, DBErrorType.INVALID_ID, "Provided ID was not BigInt compatible") });
+		throw createError({ cause: new DBError(methodName, DBErrorType.INVALID_ID, ids[lastValidIndex + 1]) });
 	}
 }
 

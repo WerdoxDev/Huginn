@@ -1,7 +1,7 @@
 import { useContextMenu } from "@contexts/contextMenuContext";
 import { usePresence } from "@contexts/presenceContext";
 import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMChannel";
-import { useLatestMutationState } from "@hooks/useLatestMutationStatus";
+import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import type { APIChannelUser, Snowflake } from "@huginn/shared";
 import clsx from "clsx";
 import UserAvatarWithStatus from "./UserAvatarWithStatus";
@@ -10,7 +10,7 @@ import { Tooltip } from "./tooltip/Tooltip";
 export default function ChannelRecipient(props: { channelId: Snowflake; isOwner: boolean; recipient: APIChannelUser }) {
 	const presence = usePresence(props.recipient.id);
 	const { open: openContextMenu } = useContextMenu("dm_channel_recipient");
-	const state = useLatestMutationState<CreateDMChannelMutationVars>("create-dm-channel");
+	const state = useMutationLatestState("create-dm-channel");
 
 	return (
 		<div

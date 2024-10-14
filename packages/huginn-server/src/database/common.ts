@@ -1,4 +1,4 @@
-import type { Snowflake } from "@huginn/shared";
+import { type Snowflake, merge } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 
 export type ChannelInclude = Prisma.ChannelInclude | undefined;
@@ -23,7 +23,7 @@ export const includeChannelRecipients = Prisma.validator<Prisma.ChannelInclude>(
 	recipients: { select: { id: true, username: true, displayName: true, avatar: true, flags: true } },
 });
 
-export const excludeSelfChannelUser = (id: Snowflake) =>
+export const excludeChannelRecipient = (id: Snowflake) =>
 	Prisma.validator<Prisma.ChannelInclude>()({ recipients: { where: { id: { not: BigInt(id) } } } });
 
 export const includeMessageAuthor = Prisma.validator<Prisma.MessageInclude>()({
@@ -33,6 +33,8 @@ export const includeMessageAuthor = Prisma.validator<Prisma.MessageInclude>()({
 export const includeMessageMentions = Prisma.validator<Prisma.MessageInclude>()({
 	mentions: { select: { id: true, username: true, displayName: true, avatar: true, flags: true } },
 });
+
+export const includeMessageAuthorAndMentions = merge(includeMessageAuthor, includeMessageMentions);
 
 export const includeRelationshipUser = Prisma.validator<Prisma.RelationshipInclude>()({
 	user: { select: { id: true, username: true, displayName: true, avatar: true, flags: true } },

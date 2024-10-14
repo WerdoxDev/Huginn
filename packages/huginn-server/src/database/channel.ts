@@ -107,21 +107,47 @@ const channelExtention = Prisma.defineExtension({
 
 				const recipientsConnect = [{ id: BigInt(ownerId) }];
 
-				if (editedDM.recipients) {
-					for (const recipientId of editedDM.recipients) {
-						await prisma.user.assertUserExists("createDM", recipientId);
-					}
+				// if (editedDM.recipients) {
+				// 	for (const recipientId of editedDM.recipients) {
+				// 		await prisma.user.assertUserExists("createDM", recipientId);
+				// 	}
 
-					recipientsConnect.push(...editedDM.recipients.filter((x) => x !== ownerId).map((x) => ({ id: BigInt(x) })));
-				}
+				// 	recipientsConnect.push(...editedDM.recipients.filter((x) => x !== ownerId).map((x) => ({ id: BigInt(x) })));
+				// }
 
 				const updatedChannel = await prisma.channel.update({
 					where: { id: BigInt(channelId), type: ChannelType.GROUP_DM },
-					data: { ...editedDM, recipients: editedDM.recipients ? { set: recipientsConnect } : undefined },
+					data: { ...editedDM },
 					include: include,
 				});
 
 				assertObj("editDM", updatedChannel, DBErrorType.NULL_CHANNEL);
+				return updatedChannel as ChannelPayload<Include>;
+			},
+			async addRecipient<Include extends ChannelInclude>(channelId: Snowflake, recipientId: Snowflake, include?: Include) {
+				await prisma.channel.assertChannelExists("addRecipient", channelId);
+				await prisma.user.assertUserExists("addRecipient", recipientId);
+
+				const updatedChannel = await prisma.channel.update({
+					where: { id: BigInt(channelId), type: ChannelType.GROUP_DM },
+					data: { recipients: { connect: { id: BigInt(recipientId) } } },
+					include: include,
+				});
+
+				assertObj("addRecipient", updatedChannel, DBErrorType.NULL_CHANNEL);
+				return updatedChannel as ChannelPayload<Include>;
+			},
+			async removeRecipient<Include extends ChannelInclude>(channelId: Snowflake, recipientId: Snowflake, include?: Include) {
+				await prisma.channel.assertChannelExists("removeRecipient", channelId);
+				await prisma.user.assertUserExists("removeRecipient", recipientId);
+
+				const updatedChannel = await prisma.channel.update({
+					where: { id: BigInt(channelId), type: ChannelType.GROUP_DM },
+					data: { recipients: { disconnect: { id: BigInt(recipientId) } } },
+					include: include,
+				});
+
+				assertObj("removeRecipient", updatedChannel, DBErrorType.NULL_CHANNEL);
 				return updatedChannel as ChannelPayload<Include>;
 			},
 			async deleteDM<Include extends ChannelInclude>(channelId: Snowflake, userId: Snowflake, include?: Include) {

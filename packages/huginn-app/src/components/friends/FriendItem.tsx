@@ -3,7 +3,7 @@ import { Tooltip } from "@components/tooltip/Tooltip";
 import { useContextMenu } from "@contexts/contextMenuContext";
 import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMChannel";
 import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
-import { useLatestMutationState } from "@hooks/useLatestMutationStatus";
+import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import { type APIRelationUser, RelationshipType } from "@huginn/shared";
 import type { Snowflake, UserPresence } from "@huginn/shared";
 import { useMemo } from "react";
@@ -18,9 +18,9 @@ export default function FriendItem(props: {
 }) {
 	const { open: openRelationshipMore } = useContextMenu("relationship_more");
 	const { open: openRelationship } = useContextMenu("relationship");
-	const createChannelState = useLatestMutationState<CreateDMChannelMutationVars>("create-dm-channel");
-	const createRelationshipState = useLatestMutationState<CreateRelationshipMutationVars>("create-relationship");
-	const removeRelationshipState = useLatestMutationState<Snowflake>("remove-relationship");
+	const createChannelState = useMutationLatestState("create-dm-channel");
+	const createRelationshipState = useMutationLatestState("create-relationship");
+	const removeRelationshipState = useMutationLatestState("remove-relationship");
 
 	const loading = useMemo(
 		() =>

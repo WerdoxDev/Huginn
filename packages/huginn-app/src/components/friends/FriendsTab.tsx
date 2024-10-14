@@ -1,6 +1,5 @@
 import { TabPanel } from "@headlessui/react";
-import { type CreateDMChannelMutationVars, useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
-import { useLatestMutationState } from "@hooks/useLatestMutationStatus";
+import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import type { APIRelationshipWithoutOwner, Snowflake, UserPresence } from "@huginn/shared";
 import { useMemo } from "react";
 import FriendItem from "./FriendItem";

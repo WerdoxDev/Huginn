@@ -7,7 +7,7 @@ export function useRemoveRelationship() {
 	const mutation = useMutation({
 		mutationKey: ["remove-relationship"],
 		async mutationFn(userId: string) {
-			await client.relationships.delete(userId);
+			await client.relationships.remove(userId);
 		},
 	});
 

@@ -33,6 +33,8 @@ declare global {
   const IconMdiShow: typeof import('~icons/mdi/show.jsx')['default']
   const IconMdiSpeakerphone: typeof import('~icons/mdi/speakerphone.jsx')['default']
   const IconMdiTheme: typeof import('~icons/mdi/theme.jsx')['default']
+  const IconMingcuteArrowLeftLine: typeof import('~icons/mingcute/arrow-left-line.jsx')['default']
+  const IconMingcuteArrowRightLine: typeof import('~icons/mingcute/arrow-right-line.jsx')['default']
   const IconMingcuteCheckFill: typeof import('~icons/mingcute/check-fill.jsx')['default']
   const IconMingcuteDownFill: typeof import('~icons/mingcute/down-fill.jsx')['default']
   const IconMingcuteGroupFill: typeof import('~icons/mingcute/group-fill.jsx')['default']

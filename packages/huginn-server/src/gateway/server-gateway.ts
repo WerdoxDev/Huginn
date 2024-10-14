@@ -16,7 +16,7 @@ import { type Snowflake, snowflake } from "@huginn/shared";
 import { idFix, isOpcode } from "@huginn/shared";
 import type { Message, Peer } from "crossws";
 import crossws, { type BunAdapter } from "crossws/adapters/bun";
-import { excludeSelfChannelUser, includeChannelRecipients, includeRelationshipUser } from "#database/common";
+import { excludeChannelRecipient, includeChannelRecipients, includeRelationshipUser } from "#database/common";
 import { prisma } from "#database/index";
 import { verifyToken } from "#utils/token-factory";
 import type { ServerGatewayOptions } from "#utils/types";
@@ -188,7 +188,7 @@ export class ServerGateway {
 
 		const userRelationships = idFix(await prisma.relationship.getUserRelationships(user.id, includeRelationshipUser));
 		const userChannels = idFix(
-			await prisma.channel.getUserChannels(user.id, false, merge(includeChannelRecipients, excludeSelfChannelUser(user.id))),
+			await prisma.channel.getUserChannels(user.id, false, merge(includeChannelRecipients, excludeChannelRecipient(user.id))),
 		);
 
 		const presences = this.presenceManeger.getUserPresences(client);

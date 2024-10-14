@@ -64,11 +64,11 @@ export default function AddRecipientInput(props: {
 				{filteredUsers?.map((x) => (
 					<ComboboxInput.Option value={x.user.id} key={x.user.id}>
 						<UserAvatarWithStatus userId={x.user.id} avatarHash={x.user.avatar} />
-						<div className="text-text">{x.user.displayName ?? x.user.username}</div>
+						<div className="text-text text-nowrap text-ellipsis overflow-hidden">{x.user.displayName ?? x.user.username}</div>
 						<div className="text-sm text-text/70">{x.user.username}</div>
 						<Checkbox
 							checked={selectedUsers?.includes(x.user.id) ?? false}
-							className="ml-auto size-6 rounded-md border border-accent data-[checked]:bg-accent "
+							className="ml-auto size-6 shrink-0 rounded-md border border-accent data-[checked]:bg-accent "
 						/>
 					</ComboboxInput.Option>
 				))}

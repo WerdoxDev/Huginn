@@ -1,6 +1,6 @@
 import type { Snowflake } from "@huginn/shared";
 import { WorkerID, snowflake } from "@huginn/shared";
-import { MessageType } from "@huginn/shared";
+import type { MessageType } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 import { DBErrorType, assertId, assertObj, prisma } from ".";
 import type { MessageInclude, MessagePayload } from "./common";
@@ -46,8 +46,10 @@ const messagesExtention = Prisma.defineExtension({
 			async createDefaultMessage<Include extends MessageInclude>(
 				authorId: Snowflake,
 				channelId: Snowflake,
+				type: MessageType,
 				content?: string,
 				attachments?: string[],
+				mentions?: Snowflake[],
 				flags?: number,
 				include?: Include,
 			) {
@@ -57,10 +59,11 @@ const messagesExtention = Prisma.defineExtension({
 				const message = await prisma.message.create({
 					data: {
 						id: snowflake.generate(WorkerID.MESSAGE),
-						type: MessageType.DEFAULT,
+						type: type,
 						channelId: BigInt(channelId),
 						content: content ?? "",
 						attachments: attachments,
+						mentions: { connect: mentions?.map((x) => ({ id: BigInt(x) })) },
 						authorId: BigInt(authorId),
 						createdAt: new Date(),
 						editedAt: null,

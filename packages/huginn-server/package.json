@@ -12,6 +12,7 @@
 		"@huginn/shared": "workspace:*",
 		"@octokit/types": "^13.6.0",
 		"@prisma/client": "^5.20.0",
+		"@std/collections": "npm:@jsr/std__collections",
 		"consola": "^3.2.3",
 		"crossws": "^0.3.1",
 		"h3": "^1.12.0",

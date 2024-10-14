@@ -54,6 +54,14 @@ export class ChannelAPI {
 		return this.rest.patch(Routes.channel(channelId), { body: resolvedBody, auth: true }) as Promise<APIPatchDMChannelResult>;
 	}
 
+	public async addRecipient(channelId: Snowflake, recipientId: Snowflake): Promise<unknown> {
+		return this.rest.put(Routes.channelRecipient(channelId, recipientId), { auth: true });
+	}
+
+	public async removeRecipient(channelId: Snowflake, recipientId: Snowflake): Promise<unknown> {
+		return this.rest.delete(Routes.channelRecipient(channelId, recipientId), { auth: true });
+	}
+
 	public async deleteDM(channelId: Snowflake): Promise<APIDeleteDMChannelResult> {
 		return this.rest.delete(Routes.channel(channelId), { auth: true }) as Promise<APIDeleteDMChannelResult>;
 	}

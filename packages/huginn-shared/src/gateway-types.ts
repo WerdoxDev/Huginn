@@ -1,4 +1,4 @@
-import type { DirectChannel, UserPresence, UserSettings } from "./api-types";
+import type { APIChannelUser, DirectChannel, UserPresence, UserSettings } from "./api-types";
 import type { APIMessage, APIMessageUser, APIRelationshipWithoutOwner, APIUser, Tokens } from "./api-types";
 import type { Snowflake } from "./snowflake";
 
@@ -27,6 +27,8 @@ export type GatewayEvents = {
 	channel_create: GatewayDMChannelCreateData;
 	channel_update: GatewayDMChannelUpdateData;
 	channel_delete: GatewayDMChannelDeleteData;
+	channel_recipient_add: GatewayDMCHannelRecipientAddData;
+	channel_recipient_remove: GatewayDMCHannelRecipientRemoveData;
 	user_update: GatewayUserUpdateData;
 	presence_update: GatewayPresenceUpdateData;
 };
@@ -128,7 +130,9 @@ type GatewayMessageEventExtraFields = {
 
 export type GatewayRelationshipCreateData = APIRelationshipWithoutOwner;
 export type GatewayDMChannelCreateData = DirectChannel;
-export type GatewayDMChannelDeleteData = DirectChannel;
+export type GatewayDMChannelDeleteData = Omit<DirectChannel, "recipients"> & { recipients?: APIChannelUser[] };
 export type GatewayDMChannelUpdateData = DirectChannel;
+export type GatewayDMCHannelRecipientAddData = { user: APIChannelUser; channelId: Snowflake };
+export type GatewayDMCHannelRecipientRemoveData = { user: APIChannelUser; channelId: Snowflake };
 export type GatewayUserUpdateData = APIUser & Tokens;
 export type GatewayPresenceUpdateData = UserPresence;

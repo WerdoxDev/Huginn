@@ -46,18 +46,26 @@ export enum HttpCode {
 	SERVER_ERROR = 500,
 }
 
+// 1001 - 1999 > Unknown Things
+// 2000 - 2999 > Permission & Validation Things
+// 3000 - 3999 > Request Related
 export enum JsonCode {
 	NONE = 0,
-	UNKNOWN_ACCOUNT = 10001,
-	UNKNOWN_MESSAGE = 10002,
-	UNKNOWN_MEMBER = 10003,
-	UNKNOWN_USER = 10004,
-	UNKNOWN_CHANNEL = 10005,
-	UNKNOWN_RELATIONSHIP = 10006,
-	INVALID_FORM_BODY = 20001,
-	USERNAME_NOT_FOUND = 30001,
-	RELATION_SELF_REQUEST = 30002,
-	RELATION_EXISTS = 30003,
+	UNKNOWN_ACCOUNT = 1001,
+	UNKNOWN_MESSAGE = 1002,
+	UNKNOWN_MEMBER = 1003,
+	UNKNOWN_USER = 1004,
+	UNKNOWN_CHANNEL = 1005,
+	UNKNOWN_RELATIONSHIP = 1006,
+	INVALID_FORM_BODY = 2001,
+	MISSING_ACCESS = 2002,
+	MISSING_PERMISSION = 2003,
+	INVALID_CHANNEL_TYPE = 2004,
+	INVALID_RECIPIENT = 2005,
+	INVALID_ID = 2006,
+	USERNAME_NOT_FOUND = 3001,
+	RELATION_SELF_REQUEST = 3002,
+	RELATION_EXISTS = 3003,
 }
 
 export enum GatewayCode {
@@ -156,5 +164,20 @@ export const Errors = {
 	},
 	relationshipExists(): [string, JsonCode] {
 		return ["You are already friends with this user", JsonCode.RELATION_EXISTS];
+	},
+	missingPermission(): [string, JsonCode] {
+		return ["Missing Permissions", JsonCode.MISSING_PERMISSION];
+	},
+	missingAccess(): [string, JsonCode] {
+		return ["Missing Access", JsonCode.MISSING_ACCESS];
+	},
+	invalidChannelType(): [string, JsonCode] {
+		return ["Invalid Channel Type", JsonCode.INVALID_CHANNEL_TYPE];
+	},
+	invalidRecipient(recipientId: Snowflake): [string, JsonCode] {
+		return [`Invalid Recipient (${recipientId})`, JsonCode.INVALID_RECIPIENT];
+	},
+	invalidId(id?: string): [string, JsonCode] {
+		return [`"${id}" is not a valid Snowflake`, JsonCode.INVALID_ID];
 	},
 };

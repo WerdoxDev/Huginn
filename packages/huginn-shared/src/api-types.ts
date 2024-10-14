@@ -178,7 +178,6 @@ export type APIPostDMChannelJSONBody = {
 export type APIPatchDMChannelJSONBody = {
 	name?: string | null;
 	icon?: string | null;
-	recipients?: Snowflake[];
 };
 
 export type APIGetChannelByIdResult = APIChannel;
@@ -197,6 +196,8 @@ type APIBaseMessage = {
 	content: string;
 	createdAt: Date | string;
 	editedAt: Date | string | null;
+	attachments: string[];
+	pinned: boolean;
 	mentions: APIMessageUser[];
 };
 
@@ -212,9 +213,12 @@ export enum MessageFlags {
 }
 
 export type APIDefaultMessage = {
-	type: MessageType.DEFAULT;
-	attachments: string[];
-	pinned: boolean;
+	type:
+		| MessageType.DEFAULT
+		| MessageType.RECIPIENT_ADD
+		| MessageType.RECIPIENT_REMOVE
+		| MessageType.CHANNEL_ICON_CHANGED
+		| MessageType.CHANNEL_NAME_CHANGED;
 	flags?: MessageFlags | null;
 	nonce?: number | string;
 	reactions?: string[];

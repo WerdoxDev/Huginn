@@ -17,52 +17,35 @@ describe("channel-create-dm", () => {
 	});
 	test("channel-create-single-dm-successful", async () => {
 		const client = await getLoggedClient();
-		const secondClient = await getLoggedClient(test2Credentials);
+		const client2 = await getLoggedClient(test2Credentials);
 
-		expect(client.user).toBeDefined();
-		expect(secondClient.user).toBeDefined();
-		if (!client.user || !secondClient.user) return;
+		const result = await client.channels.createDM({ recipients: [client2.user!.id] });
 
-		const result = await client.channels.createDM({ recipients: [secondClient.user.id] });
-
-		expect(result).toBeDefined();
-		expect(containsId(result.recipients, secondClient.user.id)).toBe(true);
+		expect(containsId(result.recipients, client2.user!.id)).toBe(true);
 	});
 	test("channel-create-group-dm-successful", async () => {
 		const client = await getLoggedClient();
-		const secondClient = await getLoggedClient(test2Credentials);
-		const thirdClient = await getLoggedClient(test3Credentials);
-
-		expect(client.user).toBeDefined();
-		expect(secondClient.user).toBeDefined();
-		expect(thirdClient.user).toBeDefined();
-		if (!secondClient.user || !thirdClient.user || !client.user) return;
+		const client2 = await getLoggedClient(test2Credentials);
+		const client3 = await getLoggedClient(test3Credentials);
 
 		const result = (await client.channels.createDM({
-			recipients: [secondClient.user.id, thirdClient.user.id],
+			recipients: [client2.user!.id, client3.user!.id],
 		})) as APIGroupDMChannel;
 
-		expect(result).toBeDefined();
-		expect(result.ownerId).toBe(client.user.id);
-		expect(containsId(result.recipients, secondClient.user.id)).toBe(true);
-		expect(containsId(result.recipients, thirdClient.user.id)).toBe(true);
+		expect(result.ownerId).toBe(client.user!.id);
+		expect(containsId(result.recipients, client2.user!.id)).toBe(true);
+		expect(containsId(result.recipients, client3.user!.id)).toBe(true);
 	});
 	test("channel-create-group-dm-with-name-successful", async () => {
 		const client = await getLoggedClient();
-		const secondClient = await getLoggedClient(test2Credentials);
-		const thirdClient = await getLoggedClient(test3Credentials);
+		const client2 = await getLoggedClient(test2Credentials);
+		const client3 = await getLoggedClient(test3Credentials);
 
-		expect(client.user).toBeDefined();
-		expect(secondClient.user).toBeDefined();
-		expect(thirdClient.user).toBeDefined();
-		if (!secondClient.user || !thirdClient.user || !client.user) return;
+		const result = await client.channels.createDM({ recipients: [client2.user!.id, client3.user!.id], name: "test_group" });
 
-		const result = await client.channels.createDM({ recipients: [secondClient.user.id, thirdClient.user.id], name: "test_group" });
-
-		expect(result).toBeDefined();
-		expect(result.ownerId).toBe(client.user.id);
-		expect(containsId(result.recipients, secondClient.user.id)).toBe(true);
-		expect(containsId(result.recipients, thirdClient.user.id)).toBe(true);
+		expect(containsId(result.recipients, client2.user!.id)).toBe(true);
+		expect(containsId(result.recipients, client3.user!.id)).toBe(true);
+		expect(result.ownerId).toBe(client.user!.id);
 		expect(result.name).toBe("test_group");
 	});
 });

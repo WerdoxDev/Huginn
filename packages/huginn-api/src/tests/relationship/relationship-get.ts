@@ -5,7 +5,7 @@ describe("relationship-get", () => {
 	test("relationship-get-by-id-invalid", async () => {
 		const client = await getLoggedClient();
 
-		expect(() => client.relationships.get("invalid")).toThrow("Invalid Form Body"); // Invalid id
+		expect(() => client.relationships.get("invalid")).toThrow("Snowflake"); // Invalid id
 		expect(() => client.relationships.get("000000000000000000")).toThrow("Unknown Relationship"); // Unknown id
 	});
 	test("relationships-get-all-user", async () => {
@@ -20,10 +20,7 @@ describe("relationship-get", () => {
 		const client = await getLoggedClient();
 		const client2 = await getLoggedClient(test2Credentials);
 
-		expect(client2.user).toBeDefined();
-		if (!client2.user) return;
-
-		const relationship = await client.relationships.get(client2.user.id);
+		const relationship = await client.relationships.get(client2.user!.id);
 		expect(relationship).toBeDefined();
 	});
 });

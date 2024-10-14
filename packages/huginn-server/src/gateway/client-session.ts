@@ -5,7 +5,7 @@ import type { BasePayload } from "@huginn/shared";
 import { idFix } from "@huginn/shared";
 import type { ServerWebSocket } from "bun";
 import type { Peer } from "crossws";
-import { excludeSelfChannelUser, includeChannelRecipients, includeRelationshipUser } from "#database/common";
+import { excludeChannelRecipient, includeChannelRecipients, includeRelationshipUser } from "#database/common";
 import { prisma } from "#database/index";
 import type { ClientSessionInfo } from "#utils/types";
 
@@ -80,7 +80,7 @@ export class ClientSession extends EventEmitter {
 		this.subscribe(userId);
 
 		const relationships = idFix(await prisma.relationship.getUserRelationships(userId, includeRelationshipUser));
-		const channels = idFix(await prisma.channel.getUserChannels(userId, true, merge(includeChannelRecipients, excludeSelfChannelUser(userId))));
+		const channels = idFix(await prisma.channel.getUserChannels(userId, true, merge(includeChannelRecipients, excludeChannelRecipient(userId))));
 
 		const publicUserIds = [...new Set([...relationships.map((x) => x.user.id), ...channels.flatMap((x) => x.recipients).map((x) => x.id)])];
 		const presenceUserIds = [...new Set([...relationships.filter((x) => x.type === RelationshipType.FRIEND).map((x) => x.user.id)])];

@@ -4,6 +4,7 @@ import AddRecipientInput from "@components/input/AddRecipientInput";
 import { useClient } from "@contexts/apiContext";
 import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
+import { useAddChannelRecipient } from "@hooks/mutations/useAddChannelRecipient";
 import { usePatchDMChannel } from "@hooks/mutations/usePathDMChannel";
 import { useChannelRecipients } from "@hooks/useChannelRecipients";
 import type { APIRelationUser } from "@huginn/shared";
@@ -26,7 +27,7 @@ export function AddRecipientModal() {
 
 	const [selectedUsers, setSelectedUsers] = useState<APIRelationUser[]>([]);
 
-	const mutation = usePatchDMChannel();
+	const mutation = useAddChannelRecipient();
 
 	useEffect(() => {
 		if (modal.isOpen) {
@@ -46,16 +47,18 @@ export function AddRecipientModal() {
 	}
 
 	async function add() {
-		await mutation.mutateAsync({
-			channelId: modal.channelId,
-			recipients: [...(recipients?.map((x) => x.id) ?? []), ...selectedUsers.map((x) => x.id)],
-		});
+		for (const user of selectedUsers) {
+			mutation.mutate({
+				channelId: modal.channelId,
+				recipientId: user.id,
+			});
+		}
 		close();
 	}
 
 	return (
 		<BaseModal modal={modal} onClose={close}>
-			<DialogPanel className="w-full max-w-sm transform overflow-hidden rounded-xl border-2 border-primary bg-background transition-[opacity_transform] data-[closed]:scale-95">
+			<DialogPanel className="w-full max-w-md transform overflow-hidden rounded-xl border-2 border-primary bg-background transition-[opacity_transform] data-[closed]:scale-95">
 				<DialogTitle className="flex items-center justify-center gap-x-1.5">
 					<div className="mt-5 font-medium text-2xl text-text">Add Member</div>
 				</DialogTitle>

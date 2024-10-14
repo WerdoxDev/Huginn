@@ -4,7 +4,7 @@ import { type APIPostDMChannelResult, ChannelType, Errors, HttpCode, idFix, merg
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { excludeSelfChannelUser, includeChannelRecipients } from "#database/common";
+import { excludeChannelRecipient, includeChannelRecipients } from "#database/common";
 import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { useVerifiedJwt } from "#utils/route-utils";
@@ -31,7 +31,7 @@ router.post(
 		}
 
 		const channel: APIPostDMChannelResult = idFix(
-			await prisma.channel.createDM(payload.id, body.recipients, body.name, merge(includeChannelRecipients, excludeSelfChannelUser(payload.id))),
+			await prisma.channel.createDM(payload.id, body.recipients, body.name, merge(includeChannelRecipients, excludeChannelRecipient(payload.id))),
 		);
 
 		for (const id of [payload.id, ...body.recipients]) {

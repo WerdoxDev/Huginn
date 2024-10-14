@@ -37,7 +37,7 @@ export function handleCommonDBErrors(event: H3Event, error: DBError) {
 
 	if (error.isErrorType(DBErrorType.INVALID_ID)) {
 		setResponseStatus(event, HttpCode.BAD_REQUEST);
-		errorFactory = createErrorFactory(Errors.invalidFormBody());
+		errorFactory = createErrorFactory(Errors.invalidId(error.cause));
 	}
 	if (error.isErrorType(DBErrorType.NULL_USER)) {
 		setResponseStatus(event, HttpCode.NOT_FOUND);

@@ -1,11 +1,11 @@
 import type { MessageRenderInfo } from "@/types";
-import BaseMessage from "@components/BaseMessage";
 import ChannelMessageLoadingIndicator from "@components/ChannelMessageLoadingIndicator";
+import MessageRenderer from "@components/message/MessageRenderer";
 import { useClient } from "@contexts/apiContext";
 import { useChannelScroll, useChannelScrollDispatch } from "@contexts/channelScrollContext";
 import { useEvent } from "@contexts/eventContext";
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
-import type { APIDefaultMessage, APIGetChannelMessagesResult, Snowflake } from "@huginn/shared";
+import { type APIDefaultMessage, type APIGetChannelMessagesResult, MessageType, type Snowflake } from "@huginn/shared";
 import { getMessagesOptions } from "@lib/queries";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import moment from "moment";
@@ -74,11 +74,12 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		const value = props.messages.map((message, i) => {
 			const lastMessage = props.messages[i - 1];
 
-			const differentDate = !moment(message.createdAt).isSame(lastMessage?.createdAt, "date") && !!lastMessage;
+			const newDate = !moment(message.createdAt).isSame(lastMessage?.createdAt, "date") && !!lastMessage;
+			const newMinute = !moment(message.createdAt).isSame(lastMessage?.createdAt, "minute");
+			const newAuthor = message.author.id !== lastMessage?.author.id;
+			const newType = message.type !== lastMessage?.type;
 
-			const differentMinute = !moment(message.createdAt).isSame(lastMessage?.createdAt, "minute");
-
-			return { message, newMinute: differentMinute, newDate: differentDate };
+			return { message, newMinute, newDate, newAuthor, newType };
 		});
 
 		return value;
@@ -183,7 +184,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 					</div>
 				)}
 				{props.messages.map((message, i) => (
-					<MessageRenderer
+					<MessageWrapper
 						key={message.id}
 						message={message}
 						renderInfo={messageRenderInfos[i]}
@@ -197,7 +198,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	);
 }
 
-function MessageRenderer(props: {
+function MessageWrapper(props: {
 	message: APIDefaultMessage;
 	renderInfo: MessageRenderInfo;
 	nextRenderInfo?: MessageRenderInfo;
@@ -214,7 +215,7 @@ function MessageRenderer(props: {
 					<span className="bg-tertiary px-2">{moment(props.message.createdAt).format("DD. MMMM YYYY")}</span>
 				</li>
 			)}
-			<BaseMessage
+			<MessageRenderer
 				renderInfo={props.renderInfo}
 				nextRenderInfo={props.nextRenderInfo}
 				lastRenderInfo={props.lastRenderInfo}

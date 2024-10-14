@@ -52,7 +52,6 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 					// Common errors
 					let errorFactory: ErrorFactory | undefined;
 					if (isDBError(error.cause)) {
-						consola.log("IS DB ERROR");
 						errorFactory = handleCommonDBErrors(event, error.cause);
 					}
 

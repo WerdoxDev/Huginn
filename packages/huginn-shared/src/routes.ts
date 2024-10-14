@@ -107,6 +107,15 @@ export const Routes = {
 
 	/**
 	 * Route for:
+	 * - PUT    '/channels/{channel.id}/recipients/{recipient.id}'
+	 * - DELETE '/channels/{channel.id}/recipients/{recipient.id}'
+	 */
+	channelRecipient(channelId: Snowflake, recipientId: Snowflake): `/channels/${string}/recipients/${string}` {
+		return `/channels/${channelId}/recipients/${recipientId}` as const;
+	},
+
+	/**
+	 * Route for:
 	 * - POST '/channels/{channel.id}/typing'
 	 */
 	channelTyping(channelId: Snowflake): `/channels/${string}/typing` {

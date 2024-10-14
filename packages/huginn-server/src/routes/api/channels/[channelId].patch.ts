@@ -1,9 +1,10 @@
 import { createErrorFactory, createHuginnError, invalidFormBody, unauthorized, useValidatedBody, useValidatedParams } from "@huginn/backend-shared";
-import { CDNRoutes, Errors, HttpCode, idFix, merge, resolveBuffer } from "@huginn/shared";
+import { CDNRoutes, Errors, HttpCode, MessageType, idFix, merge, omit, resolveBuffer } from "@huginn/shared";
+import { intersect } from "@std/collections";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { excludeSelfChannelUser, includeChannelRecipients } from "#database/common";
+import { excludeChannelRecipient, includeChannelRecipients, includeMessageAuthorAndMentions } from "#database/common";
 import { router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { getFileHash, useVerifiedJwt } from "#utils/route-utils";
@@ -13,7 +14,6 @@ import { validateChannelName } from "#utils/validation";
 const schema = z.object({
 	name: z.optional(z.nullable(z.string())),
 	icon: z.optional(z.nullable(z.string())),
-	recipients: z.optional(z.array(z.string())),
 });
 
 const paramsSchema = z.object({ channelId: z.string() });
@@ -31,22 +31,6 @@ router.patch(
 
 		if (formError.hasErrors()) {
 			return createHuginnError(event, formError);
-		}
-
-		if (body.recipients?.length === 0) {
-			return invalidFormBody(event);
-		}
-
-		const channel = idFix(await prisma.channel.getById(channelId, includeChannelRecipients));
-
-		//1,2,3
-		//1,2,3,4
-		if (
-			body.recipients &&
-			channel.ownerId !== payload.id &&
-			!channel.recipients.every((x) => x.id === payload.id || body.recipients?.includes(x.id))
-		) {
-			return unauthorized(event);
 		}
 
 		let channelIconHash: string | undefined | null = undefined;
@@ -67,8 +51,8 @@ router.patch(
 			await prisma.channel.editDM(
 				payload.id,
 				channelId,
-				{ name: body.name, icon: channelIconHash, recipients: body.recipients },
-				merge(includeChannelRecipients, excludeSelfChannelUser(payload.id)),
+				{ name: body.name, icon: channelIconHash },
+				merge(includeChannelRecipients, excludeChannelRecipient(payload.id)),
 			),
 		);
 

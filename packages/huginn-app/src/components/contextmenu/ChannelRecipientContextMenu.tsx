@@ -3,15 +3,16 @@ import { useContextMenu } from "@contexts/contextMenuContext";
 import { useUser } from "@contexts/userContext";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { usePatchDMChannel } from "@hooks/mutations/usePathDMChannel";
+import { useRemoveChannelRecipient } from "@hooks/mutations/useRemoveChannelRecipient";
 import { useChannelRecipients } from "@hooks/useChannelRecipients";
 import { ContextMenu } from "./ContextMenu";
 
 export function ChannelRecipientContextMenu() {
 	const { context, data, close } = useContextMenu("dm_channel_recipient");
 	const { user } = useUser();
-	const patchMutation = usePatchDMChannel();
+	const deleteMutation = useRemoveChannelRecipient();
 	const createMutation = useCreateDMChannel();
-	const { recipients, ownerId } = useChannelRecipients(data?.channelId, "@me");
+	const { ownerId } = useChannelRecipients(data?.channelId, "@me");
 
 	if (!data || !user) return;
 
@@ -23,9 +24,9 @@ export function ChannelRecipientContextMenu() {
 						<ContextMenu.Item
 							label="Remove Member"
 							onClick={() => {
-								patchMutation.mutate({
+								deleteMutation.mutate({
 									channelId: data.channelId,
-									recipients: [user?.id, ...(recipients?.map((x) => x.id).filter((x) => x !== data.recipient.id) ?? [])],
+									recipientId: data.recipient.id,
 								});
 							}}
 							className="!text-error focus:!bg-error/80 focus:!text-white"
