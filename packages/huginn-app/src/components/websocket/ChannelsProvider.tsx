@@ -58,7 +58,7 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
 		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (old) =>
 			old?.map((channel) => ({
 				...channel,
-				recipients: channel.recipients.map((recipient) => (recipient.id === user.id && channel.type === ChannelType.DM ? user : recipient)),
+				recipients: channel.recipients.map((recipient) => (recipient.id === user.id ? user : recipient)),
 			})),
 		);
 	}

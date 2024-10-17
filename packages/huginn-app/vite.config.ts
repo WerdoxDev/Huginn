@@ -18,11 +18,8 @@ export default defineConfig({
 		AutoImport({
 			imports: ["react"],
 			resolvers: [IconsResolver({ prefix: "Icon", extension: "jsx" })],
-			include: [
-				/\.[tj]sx?$/, // .ts, .tsx, .js, .jsx
-			],
 			dirs: ["./src/**", "!src/routes/**"],
-			defaultExportByFilename: true,
+			dts: "./src/auto-imports.d.ts",
 		}),
 	],
 
