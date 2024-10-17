@@ -10,7 +10,6 @@
 		"@aws-sdk/client-s3": "^3.658.1",
 		"@huginn/backend-shared": "workspace:*",
 		"@huginn/shared": "workspace:*",
-		"@octokit/types": "^13.6.0",
 		"@prisma/client": "^5.20.0",
 		"@std/collections": "npm:@jsr/std__collections",
 		"consola": "^3.2.3",
@@ -21,8 +20,10 @@
 		"ohash": "^1.1.4",
 		"prisma": "^5.20.0",
 		"semver": "^7.6.3",
-		"unimport": "^3.13.1",
 		"zod": "^3.23.8"
+	},
+	"devDependencies": {
+		"@octokit/types": "^13.6.0"
 	},
 	"imports": {
 		"#database": "./src/database/index.ts",

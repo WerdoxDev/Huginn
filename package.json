@@ -3,7 +3,6 @@
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.2",
 		"@types/bun": "latest",
-		"globals": "^15.9.0",
 		"typescript": "^5.5.4"
 	},
 	"private": "true",

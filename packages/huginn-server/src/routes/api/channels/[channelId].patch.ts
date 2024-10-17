@@ -1,13 +1,12 @@
-import { createErrorFactory, createHuginnError, invalidFormBody, unauthorized, useValidatedBody, useValidatedParams } from "@huginn/backend-shared";
-import { CDNRoutes, Errors, HttpCode, MessageType, idFix, merge, omit, resolveBuffer } from "@huginn/shared";
-import { intersect } from "@std/collections";
+import { createErrorFactory, createHuginnError, useValidatedBody, useValidatedParams } from "@huginn/backend-shared";
+import { CDNRoutes, Errors, HttpCode, getFileHash, idFix, merge, toArrayBuffer } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { excludeChannelRecipient, includeChannelRecipients, includeMessageAuthorAndMentions } from "#database/common";
+import { excludeChannelRecipient, includeChannelRecipients } from "#database/common";
 import { router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { getFileHash, useVerifiedJwt } from "#utils/route-utils";
+import { useVerifiedJwt } from "#utils/route-utils";
 import { cdnUpload } from "#utils/server-request";
 import { validateChannelName } from "#utils/validation";
 
@@ -35,7 +34,7 @@ router.patch(
 
 		let channelIconHash: string | undefined | null = undefined;
 		if (body.icon !== null && body.icon !== undefined) {
-			const data = resolveBuffer(body.icon);
+			const data = toArrayBuffer(body.icon);
 			channelIconHash = getFileHash(data);
 
 			channelIconHash = (

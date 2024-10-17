@@ -1,11 +1,22 @@
 import { createErrorFactory, createHuginnError, useValidatedBody } from "@huginn/backend-shared";
-import { constants, type APIPatchCurrentUserResult, CDNRoutes, Errors, Fields, HttpCode, idFix, omit, resolveBuffer } from "@huginn/shared";
+import {
+	constants,
+	type APIPatchCurrentUserResult,
+	CDNRoutes,
+	Errors,
+	Fields,
+	HttpCode,
+	getFileHash,
+	idFix,
+	omit,
+	toArrayBuffer,
+} from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
 import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { getFileHash, useVerifiedJwt } from "#utils/route-utils";
+import { useVerifiedJwt } from "#utils/route-utils";
 import { cdnUpload } from "#utils/server-request";
 import { createTokens } from "#utils/token-factory";
 import {
@@ -61,7 +72,7 @@ router.patch(
 		// Undefined means no change, null means delete, other values are set
 		let avatarHash: string | undefined | null = undefined;
 		if (body.avatar !== null && body.avatar !== undefined) {
-			const data = resolveBuffer(body.avatar);
+			const data = toArrayBuffer(body.avatar);
 			avatarHash = getFileHash(data);
 
 			avatarHash = (

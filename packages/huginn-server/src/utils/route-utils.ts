@@ -1,7 +1,6 @@
 import { type ErrorFactory, createErrorFactory, unauthorized } from "@huginn/backend-shared";
 import { Errors, HttpCode } from "@huginn/shared";
 import { type H3Event, getHeader, setResponseStatus } from "h3";
-import { sha256 } from "ohash";
 import { type DBError, DBErrorType, prisma } from "#database";
 import { verifyToken } from "./token-factory";
 
@@ -25,11 +24,6 @@ export async function useVerifiedJwt(event: H3Event) {
 	}
 
 	return { payload, token };
-}
-
-export function getFileHash(file: Buffer) {
-	const hash = sha256(file.toString()).substring(0, 32);
-	return hash;
 }
 
 export function handleCommonDBErrors(event: H3Event, error: DBError) {

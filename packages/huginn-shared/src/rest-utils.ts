@@ -1,11 +1,5 @@
-// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
-import { Buffer } from "buffer";
 import { fileTypeFromBuffer } from "file-type";
 import type { InternalRequest, RequestHeaders, ResolvedRequest, ResponseLike } from "./rest-types";
-
-export function isBufferLike(value: unknown): value is ArrayBuffer | Buffer | Uint8Array | Uint8ClampedArray {
-	return value instanceof ArrayBuffer || value instanceof Uint8Array || value instanceof Uint8ClampedArray;
-}
 
 export function parseResponse(response: ResponseLike): Promise<unknown> {
 	if (response.headers.get("Content-Type")?.startsWith("application/json")) {
@@ -58,11 +52,11 @@ export async function resolveRequest(request: InternalRequest): Promise<Resolved
 		for (const [index, file] of request.files.entries()) {
 			const fileKey = file.key ?? `files[${index}]`;
 
-			if (isBufferLike(file.data)) {
+			if (file.data instanceof ArrayBuffer) {
 				let contentType = file.contentType;
 				let name = file.name;
 
-				const parsedType = await fileTypeFromBuffer(Buffer.isBuffer(file.data) ? (file.data.buffer as ArrayBuffer) : file.data);
+				const parsedType = await fileTypeFromBuffer(file.data);
 
 				if (!contentType) {
 					if (parsedType) {

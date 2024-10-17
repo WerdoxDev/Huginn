@@ -27,34 +27,22 @@ export async function findImageByName(category: FileCategory, subDirectory: stri
 		const exists = await storage.exists(category, subDirectory, filename);
 
 		if (exists) {
-			return { file: (await storage.getFile(category, subDirectory, filename)) as ReadableStream, info: extractFileInfo(filename) };
+			return { file: (await storage.getFile(category, subDirectory, filename)) as ArrayBuffer, info: extractFileInfo(filename) };
 		}
 	}
 
 	throw createError({ cause: new CDNError("findImageByName", CDNErrorType.FILE_NOT_FOUND) });
 }
 
-export async function transformImage(stream: ReadableStream, format: FileFormats, quality: number): Promise<ArrayBuffer> {
+export async function transformImage(data: ArrayBuffer, format: FileFormats, quality: number): Promise<ArrayBuffer> {
 	if (format === "jpg" || format === "jpeg") {
-		return (
-			await sharp(await Bun.readableStreamToArrayBuffer(stream))
-				.jpeg({ quality })
-				.toBuffer()
-		).buffer as ArrayBuffer;
+		return (await sharp(data).jpeg({ quality }).toBuffer()).buffer as ArrayBuffer;
 	}
 	if (format === "webp") {
-		return (
-			await sharp(await Bun.readableStreamToArrayBuffer(stream))
-				.webp({ quality })
-				.toBuffer()
-		).buffer as ArrayBuffer;
+		return (await sharp(data).webp({ quality }).toBuffer()).buffer as ArrayBuffer;
 	}
 	if (format === "png") {
-		return (
-			await sharp(await Bun.readableStreamToArrayBuffer(stream))
-				.png({ quality })
-				.toBuffer()
-		).buffer as ArrayBuffer;
+		return (await sharp(data).png({ quality }).toBuffer()).buffer as ArrayBuffer;
 	}
 
 	throw createError({ cause: new CDNError("transformImage", CDNErrorType.INVALID_FILE_FORMAT) });

@@ -5,10 +5,12 @@ import { UPLOADS_DIR } from "../setup";
 
 async function deleteTestFiles() {
 	for (const format of ["png", "jpeg", "jpg", "webp"]) {
-		const file = Bun.file(path.resolve(UPLOADS_DIR, `/avatars/pixel.${format}`));
-		if (await file.exists()) {
-			// biome-ignore lint/style/noNonNullAssertion: <explanation>
-			await unlink(file.name!);
+		for (const category of ["avatars", "channel-icons"]) {
+			const file = Bun.file(path.resolve(UPLOADS_DIR, `/${category}/123/pixel.${format}`));
+			if (await file.exists()) {
+				// biome-ignore lint/style/noNonNullAssertion: <explanation>
+				await unlink(file.name!);
+			}
 		}
 	}
 }

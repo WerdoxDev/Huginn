@@ -1,3 +1,4 @@
+import { sha256 } from "ohash";
 import type { GatewayOperations } from "./gateway-types";
 
 export function pick<Data extends object, Keys extends keyof Data>(data: Data, keys: Keys[]): Pick<Data, Keys> {
@@ -153,3 +154,28 @@ export type Merge<A, B> = {
 	// Unique properties in B (nullable or undefined)
 	[K in Exclude<keyof B, keyof A>]?: B[K] | null;
 };
+
+export function getFileHash(data: ArrayBuffer): string {
+	const hash = sha256(new TextDecoder().decode(data)).substring(0, 32);
+	return hash;
+}
+
+export function compareArrayBuffers(...arrayBuffers: ReadonlyArray<ArrayBuffer>): boolean {
+	const bufferCount = arrayBuffers.length;
+	if (bufferCount < 2) return true;
+
+	const { byteLength } = arrayBuffers[0];
+
+	for (let i = 1; i < bufferCount; ++i) if (arrayBuffers[i].byteLength !== byteLength) return false;
+
+	const dataViews = arrayBuffers.map((entry) => {
+		if ("buffer" in entry && entry.buffer instanceof ArrayBuffer) return new DataView(entry.buffer);
+		return new DataView(entry);
+	});
+
+	for (let i = 0; i < byteLength; i++) {
+		const value = dataViews[0].getInt8(i);
+		for (let j = 1; j < dataViews.length; j++) if (value !== dataViews[j].getInt8(i)) return false;
+	}
+	return true;
+}

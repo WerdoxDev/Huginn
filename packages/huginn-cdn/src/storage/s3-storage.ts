@@ -1,6 +1,5 @@
 import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { logFileNotFound, logGetFile, logWriteFile } from "@huginn/backend-shared";
-import consola from "consola";
 import pathe from "pathe";
 import { AWS_BUCKET, AWS_KEY_ID, AWS_REGION, AWS_SECRET_KEY } from "#setup";
 import { Storage } from "#storage/storage";
@@ -8,8 +7,9 @@ import type { FileCategory } from "#types";
 
 export class S3Storage extends Storage {
 	private s3: S3Client;
+
 	public constructor() {
-		super();
+		super("s3");
 
 		this.s3 = new S3Client({
 			region: AWS_REGION,
@@ -17,31 +17,26 @@ export class S3Storage extends Storage {
 		});
 	}
 
-	public async getFile(category: FileCategory, subDirectory: string, name: string): Promise<ReadableStream | undefined> {
+	public async getFile(category: FileCategory, subDirectory: string, name: string): Promise<ArrayBuffer | undefined> {
 		try {
 			const cmd = new GetObjectCommand({ Bucket: AWS_BUCKET, Key: pathe.join(category, subDirectory, name) });
 			const result = await this.s3.send(cmd);
 
 			logGetFile(category, name);
-			return result.Body?.transformToWebStream();
+			return (await result.Body?.transformToByteArray())?.buffer as ArrayBuffer;
 		} catch (e) {
 			logFileNotFound(category, name);
 			return undefined;
 		}
 	}
 
-	public async writeFile(
-		category: FileCategory,
-		subDirectory: string,
-		name: string,
-		data: Blob | Uint8Array | string | ArrayBuffer,
-	): Promise<boolean> {
+	public async writeFile(category: FileCategory, subDirectory: string, name: string, data: string | ArrayBuffer): Promise<boolean> {
 		logWriteFile(category, name);
 		try {
 			const cmd = new PutObjectCommand({
 				Bucket: AWS_BUCKET,
 				Key: pathe.join(category, subDirectory, name),
-				Body: data instanceof ArrayBuffer ? Buffer.from(data) : data,
+				Body: data instanceof ArrayBuffer ? new Uint8Array(data) : data,
 			});
 			const result = await this.s3.send(cmd);
 			return true;

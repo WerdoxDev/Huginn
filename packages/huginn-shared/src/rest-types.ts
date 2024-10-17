@@ -1,5 +1,3 @@
-// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
-import type { Buffer } from "buffer";
 import type { RouteLike } from "./routes";
 
 export enum RequestMethod {
@@ -22,7 +20,7 @@ export type RawFile = {
 	/**
 	 * The actual data for the file
 	 */
-	data: Buffer | Uint8Array | boolean | number | string;
+	data: ArrayBuffer | boolean | number | string;
 	/**
 	 * An explicit key to use for key of the formdata field for this file.
 	 * When not provided, the index of the file in the files array is used in the form `files[${index}]`.
@@ -93,10 +91,7 @@ export type ResolvedRequest = {
 	url: string;
 };
 
-export type Base64Resolvable = Buffer | string;
-export type BufferResolvable = Buffer | string;
-
 export type ResolvedFile = {
-	data: Buffer;
+	data: ArrayBuffer;
 	contentType?: string;
 };

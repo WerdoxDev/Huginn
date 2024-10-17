@@ -5,7 +5,11 @@ import { Storage } from "#storage/storage";
 import type { FileCategory } from "#types";
 
 export class FileStorage extends Storage {
-	public async getFile(category: FileCategory, subDirectory: string, name: string): Promise<ReadableStream | undefined> {
+	public constructor() {
+		super("local");
+	}
+
+	public async getFile(category: FileCategory, subDirectory: string, name: string): Promise<ArrayBuffer | undefined> {
 		try {
 			const file = Bun.file(pathe.join(UPLOADS_DIR, category, subDirectory, name));
 
@@ -15,19 +19,14 @@ export class FileStorage extends Storage {
 			}
 
 			logGetFile(category, name);
-			return file.stream();
+			return await file.arrayBuffer();
 		} catch (e) {
 			logFileNotFound(category, name);
 			return undefined;
 		}
 	}
 
-	public async writeFile(
-		category: FileCategory,
-		subDirectory: string,
-		name: string,
-		data: Blob | Uint8Array | string | ArrayBuffer,
-	): Promise<boolean> {
+	public async writeFile(category: FileCategory, subDirectory: string, name: string, data: string | ArrayBuffer): Promise<boolean> {
 		logWriteFile(category, name);
 		try {
 			await Bun.write(pathe.join(UPLOADS_DIR, category, subDirectory, name), data);
