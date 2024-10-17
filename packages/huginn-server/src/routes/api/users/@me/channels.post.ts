@@ -30,21 +30,22 @@ router.post(
 			return createHuginnError(event, formError);
 		}
 
-		const channel: APIPostDMChannelResult = idFix(
-			await prisma.channel.createDM(payload.id, body.recipients, body.name, merge(includeChannelRecipients, excludeChannelRecipient(payload.id))),
+		const createdChannel: APIPostDMChannelResult = idFix(
+			await prisma.channel.createDM(payload.id, body.recipients, body.name, includeChannelRecipients),
 		);
 
 		for (const id of [payload.id, ...body.recipients]) {
-			gateway.subscribeSessionsToTopic(id, channel.id);
+			const channel: APIPostDMChannelResult = { ...createdChannel, recipients: createdChannel.recipients.filter((x) => x.id !== id) };
+			gateway.subscribeSessionsToTopic(id, createdChannel.id);
 
-			if (channel.type === ChannelType.GROUP_DM && id !== payload.id) {
+			if (channel.type === ChannelType.GROUP_DM || id === payload.id) {
 				dispatchToTopic(id, "channel_create", channel);
 			}
 		}
 
-		dispatchToTopic(payload.id, "channel_create", channel);
+		// dispatchToTopic(payload.id, "channel_create", channel);
 
 		setResponseStatus(event, HttpCode.CREATED);
-		return channel;
+		return { ...createdChannel, recipients: createdChannel.recipients.filter((x) => x.id !== payload.id) } as APIPostDMChannelResult;
 	}),
 );
