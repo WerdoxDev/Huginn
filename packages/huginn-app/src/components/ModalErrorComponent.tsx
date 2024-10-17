@@ -1,5 +1,5 @@
-import { useModalsDispatch } from "@contexts/modalContext";
-import { useErrorHandler } from "@hooks/useServerErrorHandler";
+import { useModalsDispatch } from "@contexts/modalContext.tsx";
+import { useErrorHandler } from "@hooks/useServerErrorHandler.ts";
 import { useEffect } from "react";
 import { useErrorBoundary } from "react-error-boundary";
 

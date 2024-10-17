@@ -1,0 +1,9 @@
+{
+  "name": "@huginn/shared",
+  "exports": "./src/index.ts",
+  "imports": {
+    "@sapphire/snowflake": "npm:@sapphire/snowflake@^3.5.3",
+    "@std/streams": "jsr:@std/streams@^1.0.7",
+    "file-type": "npm:file-type@^19.5.0"
+  }
+}

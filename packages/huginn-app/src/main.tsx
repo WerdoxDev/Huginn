@@ -1,17 +1,17 @@
-import { APIProvider } from "@contexts/apiContext";
-import { EventProvider } from "@contexts/eventContext";
-import { SettingsProvider, initializeSettings } from "@contexts/settingsContext";
-import { WindowProvider } from "@contexts/windowContext";
+import { APIProvider } from "@contexts/apiContext.tsx";
+import { EventProvider } from "@contexts/eventContext.tsx";
+import { SettingsProvider, initializeSettings } from "@contexts/settingsContext.tsx";
+import { WindowProvider } from "@contexts/windowContext.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import posthog from "posthog-js";
+import { posthog } from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
-import DefaultNotFound from "@components/DefaultNotFound";
-import { PresenceProvider } from "@contexts/presenceContext";
+import "@/index.css";
+import HuginnRouterProvider from "@/HuginnRouterProvider.tsx";
+import { routeTree } from "@/routeTree.gen.ts";
+import DefaultNotFound from "@components/DefaultNotFound.tsx";
 import { createRouter } from "@tanstack/react-router";
-import HuginnRouterProvider from "./HuginnRouterProvider";
-import { routeTree } from "./routeTree.gen";
+import { StrictMode } from "react";
 
 const queryClient = new QueryClient({
 	defaultOptions: { queries: { refetchOnReconnect: false, refetchOnWindowFocus: false, refetchOnMount: false, staleTime: 60000 } },
@@ -30,7 +30,7 @@ export const router = createRouter({
 	// defaultPreloadDelay: 200,
 	defaultPreloadStaleTime: 0,
 
-	// biome-ignore lint/style/noNonNullAssertion: <explanation>
+	// biome-ignore lint/style/noNonNullAssertion: <explanation
 	context: { queryClient, client: undefined!, posthog: posthogClient! },
 	defaultNotFoundComponent: DefaultNotFound,
 	unmaskOnReload: true,
@@ -40,21 +40,20 @@ export const router = createRouter({
 
 await initializeSettings();
 
-// biome-ignore lint/style/noNonNullAssertion: <explanation>
-createRoot(document.getElementById("root")!).render(
-	// <StrictMode>
-	<PostHogProvider client={posthogClient}>
-		<QueryClientProvider client={queryClient}>
-			<EventProvider>
-				<SettingsProvider>
-					<APIProvider>
-						<WindowProvider>
-							<HuginnRouterProvider router={router} />
-						</WindowProvider>
-					</APIProvider>
-				</SettingsProvider>
-			</EventProvider>
-		</QueryClientProvider>
-	</PostHogProvider>,
-	// </StrictMode>,
+createRoot(document.getElementById("root") as HTMLElement).render(
+	<StrictMode>
+		<PostHogProvider client={posthogClient}>
+			<QueryClientProvider client={queryClient}>
+				<EventProvider>
+					<SettingsProvider>
+						<APIProvider>
+							<WindowProvider>
+								<HuginnRouterProvider router={router} />
+							</WindowProvider>
+						</APIProvider>
+					</SettingsProvider>
+				</EventProvider>
+			</QueryClientProvider>
+		</PostHogProvider>
+	</StrictMode>,
 );

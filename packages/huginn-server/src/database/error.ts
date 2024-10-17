@@ -1,13 +1,12 @@
 import type { Snowflake } from "@huginn/shared";
-import { Prisma } from "@prisma/client";
-import type { SystemError } from "bun";
 import { H3Error, createError } from "h3";
+import { Prisma } from "../../generated/client/deno/edge.ts";
 
 export class DBError extends Error {
 	public constructor(
 		public callerName: string,
 		public type: DBErrorType,
-		public cause?: string,
+		public override cause?: string,
 	) {
 		super(`Unhandeled Database Error => ${callerName} => ${type}: ${cause ? `(${cause})` : ""}`, {
 			cause: cause,

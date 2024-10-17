@@ -1,6 +1,6 @@
-import { tokenInvalidator } from "#server";
 import type { TokenPayload } from "@huginn/shared";
 import * as jose from "jose";
+import { tokenInvalidator } from "../server.ts";
 
 export const ACCESS_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.ACCESS_TOKEN_SECRET ?? "");
 export const REFRESH_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.REFRESH_TOKEN_SECRET ?? "");

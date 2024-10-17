@@ -1,4 +1,4 @@
-import type { TooltipOptions } from "@/types";
+import type { TooltipOptions } from "@/types.ts";
 import { arrow, autoUpdate, flip, offset, shift, useDismiss, useFloating, useFocus, useHover, useInteractions, useRole } from "@floating-ui/react";
 import React, { createContext, useRef } from "react";
 

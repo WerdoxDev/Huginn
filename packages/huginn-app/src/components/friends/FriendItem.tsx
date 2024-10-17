@@ -1,9 +1,7 @@
-import UserAvatarWithStatus from "@components/UserAvatarWithStatus";
-import { Tooltip } from "@components/tooltip/Tooltip";
-import { useContextMenu } from "@contexts/contextMenuContext";
-import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMChannel";
-import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
-import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
+import UserAvatarWithStatus from "@components/UserAvatarWithStatus.tsx";
+import { Tooltip } from "@components/tooltip/Tooltip.tsx";
+import { useContextMenu } from "@contexts/contextMenuContext.tsx";
+import { useMutationLatestState } from "@hooks/useLatestMutationStatus.ts";
 import { type APIRelationUser, RelationshipType } from "@huginn/shared";
 import type { Snowflake, UserPresence } from "@huginn/shared";
 import { useMemo } from "react";

@@ -1,4 +1,4 @@
-import { useClient } from "@contexts/apiContext";
+import { useClient } from "@contexts/apiContext.tsx";
 import type { APIGetUserRelationshipsResult } from "@huginn/shared";
 import type { APIRelationUser, GatewayPresenceUpdateData, GatewayRelationshipCreateData } from "@huginn/shared";
 import type { Snowflake } from "@huginn/shared";

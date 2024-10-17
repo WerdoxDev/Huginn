@@ -1,4 +1,4 @@
-import type { GatewayOptions } from "../types";
+import type { GatewayOptions } from "../types.ts";
 
 export const DefaultGatewayOptions: Required<GatewayOptions> = {
 	url: "ws://localhost:3000/gateway",

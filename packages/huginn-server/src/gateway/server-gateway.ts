@@ -15,21 +15,21 @@ import {
 import { type Snowflake, snowflake } from "@huginn/shared";
 import { idFix, isOpcode } from "@huginn/shared";
 import type { Message, Peer } from "crossws";
-import crossws, { type BunAdapter } from "crossws/adapters/bun";
-import { excludeChannelRecipient, includeChannelRecipients, includeRelationshipUser } from "#database/common";
-import { prisma } from "#database/index";
-import { verifyToken } from "#utils/token-factory";
-import type { ServerGatewayOptions } from "#utils/types";
-import { validateGatewayData } from "../utils/gateway-utils";
-import { ClientSession } from "./client-session";
-import { PresenceManager } from "./presence-manager";
+import crossws, { type DenoAdapter } from "crossws/adapters/deno";
+import { excludeChannelRecipient, includeChannelRecipients, includeRelationshipUser } from "../database/common.ts";
+import { prisma } from "../database/index.ts";
+import { validateGatewayData } from "../utils/gateway-utils.ts";
+import { verifyToken } from "../utils/token-factory.ts";
+import type { ServerGatewayOptions } from "../utils/types.ts";
+import { ClientSession } from "./client-session.ts";
+import { PresenceManager } from "./presence-manager.ts";
 
 export class ServerGateway {
 	private readonly options: ServerGatewayOptions;
 	private clients: Map<string, ClientSession>;
 	private cancelledClientDisconnects: string[];
 	public presenceManeger: PresenceManager;
-	public ws: BunAdapter;
+	public ws: DenoAdapter;
 
 	public constructor(options: ServerGatewayOptions) {
 		this.options = options;

@@ -1,14 +1,15 @@
-import { describe, expect, test } from "bun:test";
-import { getLoggedClient } from "../test-utils";
+import { expect } from "@std/expect";
+import { describe, it } from "@std/testing/bdd";
+import { getLoggedClient } from "../test-utils.ts";
 
 describe("relationship-delete", () => {
-	test("relationship-delete-invalid", async () => {
+	it("relationship-delete-invalid", async () => {
 		const client = await getLoggedClient();
 
 		expect(() => client.relationships.remove("invalid")).toThrow("Snowflake"); // Invalid id
 		expect(() => client.relationships.remove("000000000000000000")).toThrow("Unknown Relationship"); // Unknown id
 	});
-	test("relationship-delete-success", async () => {
+	it("relationship-delete-success", async () => {
 		const client = await getLoggedClient();
 
 		const relationships = await client.relationships.getAll();

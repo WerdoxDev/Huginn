@@ -1,9 +1,9 @@
-import { Prisma, PrismaClient } from "@prisma/client";
-import authExtention from "./auth";
-import channelExtention from "./channel";
-import messagesExtention from "./message";
-import relationshipExtention from "./relationship";
-import userExtention from "./user";
+import { Prisma, PrismaClient } from "../../generated/client/deno/edge.ts";
+import authExtention from "./auth.ts";
+import channelExtention from "./channel.ts";
+import messagesExtention from "./message.ts";
+import relationshipExtention from "./relationship.ts";
+import userExtention from "./user.ts";
 
 // export const prismaBase = new PrismaClient({ omit: { user: { password: true } } }).$extends({
 export const prismaBase = new PrismaClient().$extends({
@@ -27,4 +27,4 @@ export const prisma = prismaBase
 	.$extends(messagesExtention)
 	.$extends(relationshipExtention);
 
-export * from "./error";
+export * from "./error.ts";

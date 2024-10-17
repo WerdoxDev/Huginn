@@ -1,6 +1,6 @@
-import { useClient } from "@contexts/apiContext";
+import { useClient } from "@contexts/apiContext.tsx";
 import type { Snowflake } from "@huginn/shared";
-import { getChannelsOptions } from "@lib/queries";
+import { getChannelsOptions } from "@lib/queries.ts";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 

@@ -1,6 +1,6 @@
-import type { HuginnButtonProps } from "@/types";
+import type { HuginnButtonProps } from "@/types.ts";
+import HuginnButton from "@components/button/HuginnButton.tsx";
 import { omit } from "@huginn/shared";
-import HuginnButton from "./HuginnButton";
 
 export default function LoadingButton(props: HuginnButtonProps & { loading: boolean }) {
 	return (

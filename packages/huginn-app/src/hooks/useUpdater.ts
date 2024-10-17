@@ -1,5 +1,5 @@
-import type { VersionFlavour } from "@/types";
-import { useWindow } from "@contexts/windowContext";
+import type { VersionFlavour } from "@/types.ts";
+import { useWindow } from "@contexts/windowContext.tsx";
 import { invoke } from "@tauri-apps/api/core";
 import { type UnlistenFn, listen } from "@tauri-apps/api/event";
 import { useEffect, useRef, useState } from "react";

@@ -1,7 +1,7 @@
-import AddFriendInput from "@components/input/AddFriendInput";
+import AddFriendInput from "@components/input/AddFriendInput.tsx";
 import { TabPanel } from "@headlessui/react";
-import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
-import { useInputs } from "@hooks/useInputs";
+import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship.ts";
+import { useInputs } from "@hooks/useInputs.ts";
 import { useEffect, useState } from "react";
 
 export default function AddFriendTab() {

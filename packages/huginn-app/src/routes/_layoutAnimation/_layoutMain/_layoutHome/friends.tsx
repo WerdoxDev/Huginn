@@ -1,18 +1,18 @@
-import RouteErrorComponent from "@components/RouteErrorComponent";
-import AddFriendTab from "@components/friends/AddFriendTab";
-import FriendsTab from "@components/friends/FriendsTab";
-import FriendsTabItem from "@components/friends/FriendsTabItem";
-import PendingFriendsTab from "@components/friends/PendingFriendsTab";
-import { useClient } from "@contexts/apiContext";
-import { usePresences } from "@contexts/presenceContext";
+import RouteErrorComponent from "@components/RouteErrorComponent.tsx";
+import AddFriendTab from "@components/friends/AddFriendTab.tsx";
+import FriendsTab from "@components/friends/FriendsTab.tsx";
+import FriendsTabItem from "@components/friends/FriendsTabItem.tsx";
+import PendingFriendsTab from "@components/friends/PendingFriendsTab.tsx";
+import { useClient } from "@contexts/apiContext.tsx";
+import { usePresences } from "@contexts/presenceContext.tsx";
 import { Tab, TabGroup, TabList, TabPanels } from "@headlessui/react";
 import { RelationshipType } from "@huginn/shared";
-import { requireAuth } from "@lib/middlewares";
-import { getRelationshipsOptions } from "@lib/queries";
+import { requireAuth } from "@lib/middlewares.ts";
+import { getRelationshipsOptions } from "@lib/queries.ts";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { Fragment } from "react/jsx-runtime";
+import { Fragment } from "react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/friends")({
 	beforeLoad({ context: { client } }) {

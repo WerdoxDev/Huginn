@@ -1,3 +1,3 @@
-import "./relationship/relationship-create";
-import "./relationship/relationship-get";
-import "./relationship/relationship-delete";
+import "./relationship/relationship-create.ts";
+import "./relationship/relationship-get.ts";
+import "./relationship/relationship-delete.ts";

@@ -1,5 +1,5 @@
+import HuginnButton from "@components/button/HuginnButton.tsx";
 import type { ReactNode } from "@tanstack/react-router";
-import HuginnButton from "./HuginnButton";
 
 export function QuickActionButton(props: { children?: ReactNode; onClick?: () => void }) {
 	return (

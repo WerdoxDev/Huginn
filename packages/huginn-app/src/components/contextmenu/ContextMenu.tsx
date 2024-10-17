@@ -1,4 +1,4 @@
-import type { ContextMenuItemProps, ContextMenuProps } from "@/types";
+import type { ContextMenuItemProps, ContextMenuProps } from "@/types.ts";
 import {
 	FloatingFocusManager,
 	FloatingList,
@@ -22,7 +22,8 @@ import {
 	useMergeRefs,
 	useRole,
 } from "@floating-ui/react";
-import clsx from "clsx";
+import { clsx } from "@nick/clsx";
+
 import { type HTMLProps, createContext, forwardRef, useContext, useEffect, useRef, useState } from "react";
 
 const Context = createContext<{

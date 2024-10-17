@@ -1,4 +1,4 @@
-import "./channel/channel-create-dm";
-import "./channel/channel-patch";
-import "./channel/channel-remove-dm";
-import "./channel/channel-get";
+import "./channel/channel-create-dm.ts";
+import "./channel/channel-patch.ts";
+import "./channel/channel-remove-dm.ts";
+import "./channel/channel-get.ts";

@@ -1,4 +1,4 @@
-import type { Snowflake } from "./snowflake";
+import type { Snowflake } from "./snowflake.ts";
 
 export type RouteLike = `/${string}`;
 

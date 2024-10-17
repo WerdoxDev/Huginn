@@ -1,10 +1,11 @@
-import { describe, expect, test } from "bun:test";
 import path from "node:path";
 import type { APIPatchCurrentUserJSONBody } from "@huginn/shared";
-import { editCredentials, getLoggedClient } from "../test-utils";
+import { expect } from "@std/expect";
+import { describe, it } from "@std/testing/bdd";
+import { editCredentials, getLoggedClient } from "../test-utils.ts";
 
 describe("user-patch-current", () => {
-	test("user-patch-current-password-incorrect", async () => {
+	it("user-patch-current-password-incorrect", async () => {
 		const client = await getLoggedClient();
 
 		const edit: APIPatchCurrentUserJSONBody = {
@@ -17,7 +18,7 @@ describe("user-patch-current", () => {
 
 		expect(() => client.users.edit(edit)).toThrow("Invalid Form Body");
 	});
-	test("user-patch-current-invalid-username-displayName", async () => {
+	it("user-patch-current-invalid-username-displayName", async () => {
 		const client = await getLoggedClient();
 
 		const edit: APIPatchCurrentUserJSONBody = {
@@ -39,7 +40,7 @@ describe("user-patch-current", () => {
 		expect(() => client.users.edit(edit)).toThrow("Invalid Form Body");
 		expect(() => client.users.edit(edit2)).toThrow("Invalid Form Body");
 	});
-	test("user-patch-current-invalid-email", async () => {
+	it("user-patch-current-invalid-email", async () => {
 		const client = await getLoggedClient();
 
 		const edit: APIPatchCurrentUserJSONBody = {
@@ -52,7 +53,7 @@ describe("user-patch-current", () => {
 
 		expect(() => client.users.edit(edit)).toThrow("Invalid Form Body");
 	});
-	test("user-patch-current-successful", async () => {
+	it("user-patch-current-successful", async () => {
 		const client = await getLoggedClient();
 
 		const result = await client.users.edit({
@@ -65,7 +66,7 @@ describe("user-patch-current", () => {
 
 		expect(result).toBeDefined();
 	});
-	test("user-patch-current-single-field-successful", async () => {
+	it("user-patch-current-single-field-successful", async () => {
 		const client = await getLoggedClient(editCredentials);
 
 		const result = await client.users.edit({
@@ -74,7 +75,7 @@ describe("user-patch-current", () => {
 
 		expect(result.email).toBe("test-edited-single@gmail.com");
 	});
-	test("user-patch-current-revert-successful", async () => {
+	it("user-patch-current-revert-successful", async () => {
 		const client = await getLoggedClient(editCredentials);
 
 		const result = await client.users.edit({
@@ -88,7 +89,7 @@ describe("user-patch-current", () => {
 		expect(result).toBeDefined();
 	});
 
-	test("user-patch-current-avatar-successful", async () => {
+	it("user-patch-current-avatar-successful", async () => {
 		const client = await getLoggedClient();
 
 		const result = await client.users.edit({ avatar: path.resolve(__dirname, "../pixel.png") });

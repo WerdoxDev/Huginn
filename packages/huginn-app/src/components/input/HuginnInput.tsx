@@ -1,7 +1,7 @@
-import type { HuginnInputProps, InputStatus } from "@/types";
-import { useInputBorder } from "@hooks/useInputBorder";
+import type { HuginnInputProps, InputStatus } from "@/types.ts";
+import { useInputBorder } from "@hooks/useInputBorder.ts";
 import { WorkerID, snowflake } from "@huginn/shared";
-import clsx from "clsx";
+import { clsx } from "@nick/clsx";
 import { type HTMLInputTypeAttribute, type MutableRefObject, type ReactNode, createContext, useContext, useEffect, useRef, useState } from "react";
 
 const InputContext = createContext<{

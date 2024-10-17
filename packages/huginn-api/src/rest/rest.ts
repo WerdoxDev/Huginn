@@ -1,10 +1,10 @@
 import { HTTPError, type HuginnErrorData, resolveRequest } from "@huginn/shared";
 import { type HandlerRequestData, type InternalRequest, type RequestData, RequestMethod, type ResponseLike, parseResponse } from "@huginn/shared";
 import type { RouteLike } from "@huginn/shared";
-import type { HuginnClient } from "../..";
-import { HuginnAPIError } from "../errors/huginn-error";
-import type { RESTOptions } from "../types";
-import { DefaultRestOptions } from "./rest-utils";
+import type { HuginnClient } from "../client/huginn-client.ts";
+import { HuginnAPIError } from "../errors/huginn-error.ts";
+import type { RESTOptions } from "../types.ts";
+import { DefaultRestOptions } from "./rest-utils.ts";
 
 export class REST {
 	public readonly options: RESTOptions;

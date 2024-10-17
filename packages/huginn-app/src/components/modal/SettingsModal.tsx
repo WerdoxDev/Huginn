@@ -1,18 +1,18 @@
-import type { DeepPartial, SettingsTab, SettingsTabProps } from "@/types";
-import ModalCloseButton from "@components/button/ModalCloseButton";
-import { useClient } from "@contexts/apiContext";
-import { useModals, useModalsDispatch } from "@contexts/modalContext";
-import { type SettingsContextType, useSettings, useSettingsDispatcher } from "@contexts/settingsContext";
+import type { DeepPartial, SettingsTab, SettingsTabProps } from "@/types.ts";
+import ModalCloseButton from "@components/button/ModalCloseButton.tsx";
+import BaseModal from "@components/modal/BaseModal.tsx";
+import SettingsAboutTab from "@components/modal/settings/SettingsAboutTab.tsx";
+import SettingsAdvancedTab from "@components/modal/settings/SettingsAdvancedTab.tsx";
+import SettingsProfileTab from "@components/modal/settings/SettingsProfileTab.tsx";
+import SettingsThemeTab from "@components/modal/settings/SettingsThemeTab.tsx";
+import { useClient } from "@contexts/apiContext.tsx";
+import { useModals, useModalsDispatch } from "@contexts/modalContext.tsx";
+import { type SettingsContextType, useSettings, useSettingsDispatcher } from "@contexts/settingsContext.tsx";
 import { DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import clsx from "clsx";
+import { clsx } from "@nick/clsx";
 import { usePostHog } from "posthog-js/react";
 import type React from "react";
 import { Fragment, memo, useEffect, useRef, useState } from "react";
-import BaseModal from "./BaseModal";
-import SettingsAboutTab from "./settings/SettingsAboutTab";
-import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
-import SettingsProfileTab from "./settings/SettingsProfileTab";
-import SettingsThemeTab from "./settings/SettingsThemeTab";
 
 const tabs: SettingsTab[] = [
 	{

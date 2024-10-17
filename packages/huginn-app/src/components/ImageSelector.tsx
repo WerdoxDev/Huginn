@@ -1,4 +1,4 @@
-import { Tooltip } from "./tooltip/Tooltip";
+import { Tooltip } from "@components/tooltip/Tooltip.tsx";
 
 export default function ImageSelector(props: { data?: string | null; onDelete?: () => void; onSelected?: (data: string, mimeType: string) => void }) {
 	function openFileDialog() {

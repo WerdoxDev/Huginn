@@ -1,7 +1,7 @@
-import AnimatedOutlet from "@components/AnimatedOutlet";
-import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
-import { useWindow } from "@contexts/windowContext";
-import useRouteAnimation from "@hooks/useRouteAnimation";
+import AnimatedOutlet from "@components/AnimatedOutlet.tsx";
+import { AuthBackgroundContext } from "@contexts/authBackgroundContext.ts";
+import { useWindow } from "@contexts/windowContext.tsx";
+import useRouteAnimation from "@hooks/useRouteAnimation.ts";
 import { useTransition } from "@react-spring/web";
 import { createFileRoute } from "@tanstack/react-router";
 import clsx from "clsx";

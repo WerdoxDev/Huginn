@@ -1,5 +1,5 @@
-import { useClient } from "@contexts/apiContext";
-import { useHuginnMutation } from "@hooks/useHuginnMutation";
+import { useClient } from "@contexts/apiContext.tsx";
+import { useHuginnMutation } from "@hooks/useHuginnMutation.ts";
 import type { HuginnErrorData, Snowflake } from "@huginn/shared";
 import { useNavigate } from "@tanstack/react-router";
 

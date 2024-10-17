@@ -1,4 +1,4 @@
-import { useWindow } from "@contexts/windowContext";
+import { useWindow } from "@contexts/windowContext.tsx";
 import { type WebviewWindow, getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { type ReactPortal, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
@@ -20,7 +20,7 @@ export default function TitleBar(): ReactPortal {
 	}
 
 	useEffect(() => {
-		if (window.__TAURI_INTERNALS__) {
+		if (globalThis.__TAURI_INTERNALS__) {
 			appWindow.current = getCurrentWebviewWindow();
 		}
 	}, []);

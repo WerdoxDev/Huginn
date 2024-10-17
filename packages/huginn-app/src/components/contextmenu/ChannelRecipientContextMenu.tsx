@@ -1,11 +1,11 @@
-import { useClient } from "@contexts/apiContext";
-import { useContextMenu } from "@contexts/contextMenuContext";
-import { useUser } from "@contexts/userContext";
-import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
-import { usePatchDMChannel } from "@hooks/mutations/usePathDMChannel";
-import { useRemoveChannelRecipient } from "@hooks/mutations/useRemoveChannelRecipient";
-import { useChannelRecipients } from "@hooks/useChannelRecipients";
-import { ContextMenu } from "./ContextMenu";
+import { ContextMenu } from "@components/contextmenu/ContextMenu.tsx";
+import { useClient } from "@contexts/apiContext.tsx";
+import { useContextMenu } from "@contexts/contextMenuContext.tsx";
+import { useUser } from "@contexts/userContext.tsx";
+import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel.ts";
+import { usePatchDMChannel } from "@hooks/mutations/usePathDMChannel.ts";
+import { useRemoveChannelRecipient } from "@hooks/mutations/useRemoveChannelRecipient.ts";
+import { useChannelRecipients } from "@hooks/useChannelRecipients.ts";
 
 export function ChannelRecipientContextMenu() {
 	const { context, data, close } = useContextMenu("dm_channel_recipient");

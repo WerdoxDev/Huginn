@@ -1,9 +1,9 @@
-import type { DropboxItem, SettingsTabProps } from "@/types";
-import HuginnDropbox from "@components/HuginnDropbox";
-import HuginnInput from "@components/input/HuginnInput";
-import { useModalsDispatch } from "@contexts/modalContext";
-import { useWindow } from "@contexts/windowContext";
-import { useInputs } from "@hooks/useInputs";
+import type { DropboxItem, SettingsTabProps } from "@/types.ts";
+import HuginnDropbox from "@components/HuginnDropbox.tsx";
+import HuginnInput from "@components/input/HuginnInput.tsx";
+import { useModalsDispatch } from "@contexts/modalContext.tsx";
+import { useWindow } from "@contexts/windowContext.tsx";
+import { useInputs } from "@hooks/useInputs.ts";
 import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
 

@@ -3,9 +3,9 @@ import { unauthorized } from "@huginn/backend-shared";
 import { constants, type APIPostRefreshTokenResult, HttpCode, idFix } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
-import { prisma } from "#database";
-import { router } from "#server";
-import { REFRESH_TOKEN_SECRET_ENCODED, createTokens, verifyToken } from "#utils/token-factory";
+import { prisma } from "../../../database/index.ts";
+import { router } from "../../../server.ts";
+import { REFRESH_TOKEN_SECRET_ENCODED, createTokens, verifyToken } from "../../../utils/token-factory.ts";
 
 const schema = z.object({ refreshToken: z.string() });
 

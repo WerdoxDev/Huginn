@@ -1,9 +1,9 @@
-import type { MessageRendererProps } from "@/types";
-import UserAvatarWithStatus from "@components/UserAvatarWithStatus";
-import { useUser } from "@contexts/userContext";
+import type { MessageRendererProps } from "@/types.ts";
+import UserAvatarWithStatus from "@components/UserAvatarWithStatus.tsx";
+import { useUser } from "@contexts/userContext.tsx";
 import { MessageFlags, hasFlag } from "@huginn/shared";
-import clsx from "clsx";
-import moment from "moment";
+import { clsx } from "@nick/clsx";
+import { format } from "@std/datetime";
 import { useMemo } from "react";
 import type { BaseEditor, Descendant, NodeEntry, Range } from "slate";
 import { Editable, type ReactEditor, type RenderElementProps, type RenderLeafProps, Slate } from "slate-react";
@@ -20,7 +20,10 @@ export default function DefaultMessage(
 ) {
 	const { user } = useUser();
 
-	const formattedTime = useMemo(() => moment(props.renderInfo.message.createdAt).format("DD.MM.YYYY HH:mm"), [props.renderInfo.message.createdAt]);
+	const formattedTime = useMemo(
+		() => format(new Date(props.renderInfo.message.createdAt), "dd.MM.yyyy HH:mm"),
+		[props.renderInfo.message.createdAt],
+	);
 	const isSelf = useMemo(() => props.renderInfo.message.author.id === user?.id, [props.renderInfo.message.author]);
 
 	const initialValue = useMemo(() => deserialize(props.renderInfo.message.content ?? ""), []);

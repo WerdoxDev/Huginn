@@ -1,7 +1,7 @@
-import { useClient } from "@contexts/apiContext";
-import { useEvent } from "@contexts/eventContext";
-import { useUser } from "@contexts/userContext";
-import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
+import { useClient } from "@contexts/apiContext.tsx";
+import { useEvent } from "@contexts/eventContext.tsx";
+import { useUser } from "@contexts/userContext.tsx";
+import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel.ts";
 import { type APIGetChannelMessagesResult, type APIGetUserChannelsResult, type GatewayUserUpdateData, omit } from "@huginn/shared";
 import type { APIMessageUser, GatewayMessageCreateData, GatewayPresenceUpdateData } from "@huginn/shared";
 import { type InfiniteData, useQueryClient } from "@tanstack/react-query";

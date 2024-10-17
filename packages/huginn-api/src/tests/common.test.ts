@@ -1,1 +1,1 @@
-import "./common/common-unique-username";
+import "./common/common-unique-username.ts";

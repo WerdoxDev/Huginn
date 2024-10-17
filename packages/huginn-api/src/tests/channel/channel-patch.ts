@@ -1,10 +1,11 @@
-import { describe, expect, test } from "bun:test";
 import path from "node:path";
 import { ChannelType } from "@huginn/shared";
-import { getLoggedClient, test2Credentials, test3Credentials, test4Credentials } from "../test-utils";
+import { expect } from "@std/expect";
+import { describe, it } from "@std/testing/bdd";
+import { getLoggedClient, test2Credentials, test3Credentials, test4Credentials } from "../test-utils.ts";
 
 describe("channel-patch", () => {
-	test("channel-patch-invalid", async () => {
+	it("channel-patch-invalid", async () => {
 		const client = await getLoggedClient();
 		const client4 = await getLoggedClient(test4Credentials);
 
@@ -19,7 +20,7 @@ describe("channel-patch", () => {
 		expect(() => client.channels.removeRecipient(channel.id, client4.user!.id)).toThrow("Invalid Channel Type");
 	});
 
-	test("channel-patch-unauthorized", async () => {
+	it("channel-patch-unauthorized", async () => {
 		const client = await getLoggedClient();
 		const client2 = await getLoggedClient(test2Credentials);
 		const client3 = await getLoggedClient(test3Credentials);
@@ -32,7 +33,7 @@ describe("channel-patch", () => {
 		expect(() => client2.channels.removeRecipient(channel.id, client3.user!.id)).toThrow("Missing Permission"); // Is not the owner
 	});
 
-	test("channel-patch-not-owner-successful", async () => {
+	it("channel-patch-not-owner-successful", async () => {
 		const client2 = await getLoggedClient(test2Credentials);
 		const client4 = await getLoggedClient(test4Credentials);
 
@@ -41,7 +42,7 @@ describe("channel-patch", () => {
 		expect(() => client2.channels.addRecipient(channel.id, client4.user!.id)).not.toThrow();
 	});
 
-	test("channel-patch-successful", async () => {
+	it("channel-patch-successful", async () => {
 		const client = await getLoggedClient();
 		const client4 = await getLoggedClient(test4Credentials);
 
@@ -53,7 +54,7 @@ describe("channel-patch", () => {
 		expect(result.name).toBe("test_group_edited");
 	});
 
-	test("channel-patch-revert-successful", async () => {
+	it("channel-patch-revert-successful", async () => {
 		const client = await getLoggedClient();
 		const client4 = await getLoggedClient(test4Credentials);
 
@@ -65,7 +66,7 @@ describe("channel-patch", () => {
 		expect(result.name).toBe("test_group");
 	});
 
-	test("channel-patch-icon-successful", async () => {
+	it("channel-patch-icon-successful", async () => {
 		const client = await getLoggedClient();
 
 		const channel = (await client.channels.getAll()).find((x) => x.name === "test_group")!;

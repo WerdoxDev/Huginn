@@ -1,9 +1,10 @@
-import { describe, expect, test } from "bun:test";
 import { ChannelType } from "@huginn/shared";
-import { getLoggedClient, test2Credentials, test3Credentials } from "../test-utils";
+import { expect } from "@std/expect";
+import { describe, it } from "@std/testing/bdd";
+import { getLoggedClient, test2Credentials, test3Credentials } from "../test-utils.ts";
 
 describe("channel-remove-dm", () => {
-	test("channel-remove-dm-invalid", async () => {
+	it("channel-remove-dm-invalid", async () => {
 		const client = await getLoggedClient();
 		const client3 = await getLoggedClient(test3Credentials);
 
@@ -14,7 +15,7 @@ describe("channel-remove-dm", () => {
 		expect(() => client.channels.deleteDM("000000000000000000")).toThrow("Unknown Channel"); // Unknown id
 		expect(() => client3.channels.get(channel.id)).toThrow("Missing Access"); // Not part of channel
 	});
-	test("channel-remove-dm-successful", async () => {
+	it("channel-remove-dm-successful", async () => {
 		const client = await getLoggedClient();
 		const client2 = await getLoggedClient(test2Credentials);
 
@@ -23,14 +24,13 @@ describe("channel-remove-dm", () => {
 
 		const result = await client.channels.deleteDM(channel.id);
 
-		expect(result).toBeDefined();
 		expect(result.id).toBe(channel.id);
 
 		const newChannels = await client.channels.getAll();
 
 		expect(newChannels.some((x) => x.id === channel.id)).toBeFalse();
 	});
-	test("channel-remove-dm-restore-successful", async () => {
+	it("channel-remove-dm-restore-successful", async () => {
 		const client = await getLoggedClient();
 		const client2 = await getLoggedClient(test2Credentials);
 

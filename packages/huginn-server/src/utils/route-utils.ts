@@ -2,8 +2,8 @@ import { type ErrorFactory, createErrorFactory, unauthorized } from "@huginn/bac
 import { Errors, HttpCode } from "@huginn/shared";
 import { type H3Event, getHeader, setResponseStatus } from "h3";
 import { sha256 } from "ohash";
-import { type DBError, DBErrorType, prisma } from "#database";
-import { verifyToken } from "./token-factory";
+import { type DBError, DBErrorType, prisma } from "../database/index.ts";
+import { verifyToken } from "./token-factory.ts";
 
 export async function useVerifiedJwt(event: H3Event) {
 	const bearer = getHeader(event, "Authorization");

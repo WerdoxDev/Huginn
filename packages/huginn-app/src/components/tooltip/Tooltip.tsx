@@ -1,5 +1,5 @@
-import type { TooltipOptions } from "@/types";
-import { TooltipContext, useTooltip, useTooltipContext } from "@contexts/tooltipContext";
+import type { TooltipOptions } from "@/types.ts";
+import { TooltipContext, useTooltip, useTooltipContext } from "@contexts/tooltipContext.tsx";
 import { useMergeRefs } from "@floating-ui/react";
 import { Portal, Transition } from "@headlessui/react";
 import type { ReactNode } from "@tanstack/react-router";

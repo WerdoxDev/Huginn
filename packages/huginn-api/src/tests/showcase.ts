@@ -1,4 +1,4 @@
-import { HuginnClient } from "../client/huginn-client";
+import { HuginnClient } from "../client/huginn-client.ts";
 
 const client = new HuginnClient();
 

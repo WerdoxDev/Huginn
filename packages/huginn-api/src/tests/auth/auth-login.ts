@@ -1,15 +1,16 @@
-import { describe, expect, test } from "bun:test";
 import type { LoginCredentials } from "@huginn/shared";
-import { getNewClient, testCredentials } from "../test-utils";
+import { expect } from "@std/expect";
+import { describe, it } from "@std/testing/bdd";
+import { getNewClient, testCredentials } from "../test-utils.ts";
 
 describe("auth-login", () => {
-	test("auth-login-invalid", () => {
+	it("auth-login-invalid", () => {
 		const client = getNewClient();
 
 		expect(() => client.login({} as LoginCredentials)).toThrow("Invalid Form Body");
 	});
 
-	test("auth-login-with-username", async () => {
+	it("auth-login-with-username", async () => {
 		const client = getNewClient();
 
 		const user: LoginCredentials = {
@@ -23,7 +24,7 @@ describe("auth-login", () => {
 		expect(client.user).toBeDefined();
 	});
 
-	test("auth-login-with-email", async () => {
+	it("auth-login-with-email", async () => {
 		const client = getNewClient();
 
 		const user: LoginCredentials = {
@@ -37,7 +38,7 @@ describe("auth-login", () => {
 		expect(client.user).toBeDefined();
 	});
 
-	test("auth-login-successful", async () => {
+	it("auth-login-successful", async () => {
 		const client = getNewClient();
 
 		await client.login(testCredentials);

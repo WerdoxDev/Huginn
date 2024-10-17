@@ -1,5 +1,4 @@
-// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
-import { Buffer } from "buffer";
+import { Buffer } from "node:buffer";
 import type { Base64Resolvable, BufferResolvable, ResolvedFile } from "@huginn/shared";
 
 /**

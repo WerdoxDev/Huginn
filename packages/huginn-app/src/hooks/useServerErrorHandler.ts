@@ -1,6 +1,6 @@
-import { type ModalContextType, useModalsDispatch } from "@contexts/modalContext";
+import { type ModalContextType, useModalsDispatch } from "@contexts/modalContext.tsx";
 import { HTTPError } from "@huginn/shared";
-import { Messages } from "@lib/error-messages";
+import { Messages } from "@lib/error-messages.ts";
 
 export function useErrorHandler(action?: ModalContextType["info"]["action"]) {
 	const dispatch = useModalsDispatch();

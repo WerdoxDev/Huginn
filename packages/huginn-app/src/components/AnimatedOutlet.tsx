@@ -1,7 +1,6 @@
-import { routeHistory } from "@contexts/historyContext";
+import { routeHistory } from "@contexts/historyContext.ts";
 import { animated, useInView } from "@react-spring/web";
 import { Outlet, getRouterContext, useRouter } from "@tanstack/react-router";
-import cloneDeep from "lodash.clonedeep";
 import { useEffect, useState } from "react";
 
 export default function AnimatedOutlet(props: {
@@ -18,7 +17,7 @@ export default function AnimatedOutlet(props: {
 
 	useEffect(() => {
 		if (inView) {
-			setRenderedContext(cloneDeep(router));
+			setRenderedContext(structuredClone(router));
 		}
 	}, [inView]);
 
@@ -30,14 +29,14 @@ export default function AnimatedOutlet(props: {
 				props.updateFor?.includes(router.state.location.pathname) &&
 				(!routeHistory.lastPathname || props.updateFor.includes(routeHistory.lastPathname))
 			) {
-				setRenderedContext(cloneDeep(router));
+				setRenderedContext(structuredClone(router));
 			} else if (
 				props.updateFor &&
 				!props.updateFor.includes(router.state.location.pathname) &&
 				routeHistory.lastPathname &&
 				!props.updateFor.includes(routeHistory.lastPathname)
 			) {
-				setRenderedContext(cloneDeep(router));
+				setRenderedContext(structuredClone(router));
 			}
 		});
 

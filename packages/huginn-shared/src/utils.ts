@@ -1,4 +1,4 @@
-import type { GatewayOperations } from "./gateway-types";
+import type { GatewayOperations } from "./gateway-types.ts";
 
 export function pick<Data extends object, Keys extends keyof Data>(data: Data, keys: Keys[]): Pick<Data, Keys> {
 	const result = {} as Pick<Data, Keys>;

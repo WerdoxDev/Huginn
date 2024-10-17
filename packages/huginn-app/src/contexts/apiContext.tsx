@@ -1,6 +1,6 @@
+import { useSettings } from "@contexts/settingsContext.tsx";
 import { HuginnClient } from "@huginn/api";
 import { type ReactNode, createContext, useContext, useState } from "react";
-import { useSettings } from "./settingsContext";
 
 type APIContextType = HuginnClient;
 

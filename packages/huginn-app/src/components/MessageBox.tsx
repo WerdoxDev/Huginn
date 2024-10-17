@@ -1,11 +1,11 @@
-import { useSendMessage } from "@hooks/mutations/useSendMessage";
+import EditorLeaf from "@components/editor/EditorLeaf.tsx";
+import { useSendMessage } from "@hooks/mutations/useSendMessage.ts";
 import { MessageFlags } from "@huginn/shared";
-import { tokenize } from "@lib/huginn-tokenizer";
+import { tokenize } from "@lib/huginn-tokenizer.ts";
 import { useParams } from "@tanstack/react-router";
 import { type KeyboardEvent, useCallback, useMemo } from "react";
 import { type Descendant, Editor, Node, type Path, type Range, Text, createEditor } from "slate";
 import { DefaultElement, Editable, type RenderElementProps, type RenderLeafProps, Slate, withReact } from "slate-react";
-import EditorLeaf from "./editor/EditorLeaf";
 
 const initialValue: Descendant[] = [
 	{

@@ -1,7 +1,7 @@
-import { router, tokenInvalidator } from "#server";
 import { HttpCode } from "@huginn/shared";
-import { useVerifiedJwt } from "#utils/route-utils";
 import { defineEventHandler, setResponseStatus } from "h3";
+import { router, tokenInvalidator } from "../../../server.ts";
+import { useVerifiedJwt } from "../../../utils/route-utils.ts";
 
 router.post(
 	"/auth/logout",

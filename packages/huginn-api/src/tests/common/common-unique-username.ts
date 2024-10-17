@@ -1,8 +1,9 @@
-import { describe, expect, test } from "bun:test";
-import { getLoggedClient } from "../test-utils";
+import { expect } from "@std/expect";
+import { describe, it } from "@std/testing/bdd";
+import { getLoggedClient } from "../test-utils.ts";
 
 describe("common-unique-username", () => {
-	test("common-unique-username-taken", async () => {
+	it("common-unique-username-taken", async () => {
 		const client = await getLoggedClient();
 
 		const result = await client.common.uniqueUsername({ username: "test" });
@@ -10,7 +11,7 @@ describe("common-unique-username", () => {
 		expect(result.taken).toBeTrue();
 	});
 
-	test("common-unique-username-free", async () => {
+	it("common-unique-username-free", async () => {
 		const client = await getLoggedClient();
 
 		const result = await client.common.uniqueUsername({ username: "a-free-username" });

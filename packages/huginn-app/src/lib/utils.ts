@@ -1,9 +1,9 @@
-import type { InputStatus, InputStatuses, InputValue, InputValues, VersionFlavour } from "@/types";
+import type { InputStatus, InputStatuses, InputValue, InputValues, VersionFlavour } from "@/types.ts";
 import { HuginnAPIError } from "@huginn/api";
 import type { HuginnError, HuginnErrorData } from "@huginn/shared";
+import { APIMessages } from "@lib/error-messages.ts";
 import { getVersion } from "@tauri-apps/api/app";
 import React, { type JSXElementConstructor, type ReactNode } from "react";
-import { APIMessages } from "./error-messages";
 
 export const requiredFieldError: InputStatus = { code: "error", text: "Required" };
 

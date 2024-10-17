@@ -1,8 +1,8 @@
-import "./file.test";
-import "./auth.test";
-import "./user.test";
-import "./channel.test";
-import "./message.test";
-import "./relationship.test";
-import "./common.test";
-import "./gateway.test";
+import "./file.test.ts";
+import "./auth.test.ts";
+import "./user.test.ts";
+import "./channel.test.ts";
+import "./message.test.ts";
+import "./relationship.test.ts";
+import "./common.test.ts";
+import "./gateway.test.ts";

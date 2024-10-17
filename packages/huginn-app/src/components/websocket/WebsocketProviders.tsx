@@ -1,7 +1,7 @@
+import ChannelsProvider from "@components/websocket/ChannelsProvider.tsx";
+import FriendsProvider from "@components/websocket/FriendsProvider.tsx";
+import MessageProvider from "@components/websocket/MessageProvider.tsx";
 import type { ReactNode } from "react";
-import ChannelsProvider from "./ChannelsProvider";
-import FriendsProvider from "./FriendsProvider";
-import MessageProvider from "./MessageProvider";
 
 export default function WebsocketProviders(props: { children?: ReactNode }) {
 	return (

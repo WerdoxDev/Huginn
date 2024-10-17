@@ -1,10 +1,11 @@
-import { describe, expect, test } from "bun:test";
 import { type GatewayIdentify, GatewayOperations } from "@huginn/shared";
 import { GatewayCode } from "@huginn/shared";
-import { getLoggedClient, testCredentials } from "../test-utils";
+import { expect } from "@std/expect";
+import { describe, it } from "@std/testing/bdd";
+import { getLoggedClient, testCredentials } from "../test-utils.ts";
 
 describe("gateway", () => {
-	test("gateway-not-authenticated", async () => {
+	it("gateway-not-authenticated", async () => {
 		const client = await getLoggedClient(testCredentials, true);
 		client.gateway.connect();
 
@@ -19,7 +20,7 @@ describe("gateway", () => {
 			});
 		});
 	});
-	test("gateway-already-authenticated", async () => {
+	it("gateway-already-authenticated", async () => {
 		const client = await getLoggedClient(testCredentials, true);
 		client.gateway.connect();
 
@@ -50,7 +51,7 @@ describe("gateway", () => {
 			});
 		});
 	});
-	test("gateway-unknown-opcode", async () => {
+	it("gateway-unknown-opcode", async () => {
 		const client = await getLoggedClient(testCredentials, false);
 		client.gateway.connect();
 
@@ -65,7 +66,7 @@ describe("gateway", () => {
 			});
 		});
 	});
-	test("gateway-decode-error", async () => {
+	it("gateway-decode-error", async () => {
 		const client = await getLoggedClient(testCredentials, false);
 		client.gateway.connect();
 
@@ -80,7 +81,7 @@ describe("gateway", () => {
 			});
 		});
 	});
-	test("gateway-authentication-failed", async () => {
+	it("gateway-authentication-failed", async () => {
 		const client = await getLoggedClient(testCredentials, true);
 		client.gateway.connect();
 

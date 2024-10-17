@@ -1,4 +1,4 @@
-import { startServer } from "./server";
-import "./setup";
+import { startServer } from "./server.ts";
+import "./setup.ts";
 
 await startServer({ serve: true });

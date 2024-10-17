@@ -1,2 +1,2 @@
-import "./message/message-create";
-import "./message/message-get";
+import "./message/message-create.ts";
+import "./message/message-get.ts";

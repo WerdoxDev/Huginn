@@ -1,18 +1,19 @@
-import { beforeAll, describe, expect, test } from "bun:test";
 import type { RegisterUser } from "@huginn/shared";
-import { url, getNewClient } from "../test-utils";
+import { expect } from "@std/expect";
+import { beforeAll, describe, it } from "@std/testing/bdd";
+import { url, getNewClient } from "../test-utils.ts";
 
 beforeAll(async () => {
 	await fetch(`http://${url}/api/test/test-users`, { method: "POST" });
 });
 
 describe("auth-register", () => {
-	test("auth-register-invalid", () => {
+	it("auth-register-invalid", () => {
 		const client = getNewClient();
 		expect(() => client.register({} as RegisterUser)).toThrow("Invalid Form Body");
 	});
 
-	test("auth-register-short-username-password", () => {
+	it("auth-register-short-username-password", () => {
 		const client = getNewClient();
 
 		const user: RegisterUser = {
@@ -25,7 +26,7 @@ describe("auth-register", () => {
 		expect(() => client.register(user)).toThrow("Invalid Form Body");
 	});
 
-	test("auth-register-successful", async () => {
+	it("auth-register-successful", async () => {
 		const client = getNewClient();
 
 		const user: RegisterUser = {
@@ -41,7 +42,7 @@ describe("auth-register", () => {
 		expect(client.user).toBeDefined();
 	});
 
-	test("auth-register-repeated-invalid", () => {
+	it("auth-register-repeated-invalid", () => {
 		const client = getNewClient();
 
 		const user: RegisterUser = {
@@ -54,7 +55,7 @@ describe("auth-register", () => {
 		expect(() => client.register(user)).toThrow("Invalid Form Body");
 	});
 
-	test("auth-register-second-successful", async () => {
+	it("auth-register-second-successful", async () => {
 		const client = getNewClient();
 
 		const user: RegisterUser = {
@@ -70,7 +71,7 @@ describe("auth-register", () => {
 		expect(client.user).toBeDefined();
 	});
 
-	test("auth-register-third-successful", async () => {
+	it("auth-register-third-successful", async () => {
 		const client = getNewClient();
 
 		const user: RegisterUser = {
@@ -85,7 +86,7 @@ describe("auth-register", () => {
 
 		expect(client.user).toBeDefined();
 	});
-	test("auth-register-fourth-successful", async () => {
+	it("auth-register-fourth-successful", async () => {
 		const client = getNewClient();
 
 		const user: RegisterUser = {

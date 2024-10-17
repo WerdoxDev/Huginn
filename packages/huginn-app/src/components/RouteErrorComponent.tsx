@@ -1,4 +1,4 @@
-import { useErrorHandler } from "@hooks/useServerErrorHandler";
+import { useErrorHandler } from "@hooks/useServerErrorHandler.ts";
 import { Outlet, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
 

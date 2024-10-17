@@ -1,6 +1,6 @@
 import { type APIPostLoginJSONBody, type APIPostRegisterJSONBody, UserFlags, WorkerID, snowflake } from "@huginn/shared";
-import { Prisma } from "@prisma/client";
-import { DBErrorType, assertObj, prisma } from ".";
+import { Prisma } from "../../generated/client/deno/edge.ts";
+import { DBErrorType, assertObj, prisma } from "./index.ts";
 
 const authExtention = Prisma.defineExtension({
 	name: "auth",

@@ -26,7 +26,5 @@ declare module "slate" {
 }
 
 declare global {
-	interface Window {
-		__TAURI_INTERNALS__: unknown;
-	}
+	var __TAURI_INTERNALS__: unknown;
 }

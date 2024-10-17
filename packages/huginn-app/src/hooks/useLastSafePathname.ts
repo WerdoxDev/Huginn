@@ -1,4 +1,4 @@
-import { routeHistory } from "@contexts/historyContext";
+import { routeHistory } from "@contexts/historyContext.ts";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 
 export function useSafePathname() {

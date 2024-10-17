@@ -1,15 +1,6 @@
-import type {
-	APIRelationshipWithoutOwner,
-	APIUser,
-	GatewayPresenceUpdateData,
-	PresenceStatus,
-	Snowflake,
-	UserPresence,
-	UserSettings,
-} from "@huginn/shared";
-import { preprocess } from "zod";
-import { dispatchToTopic } from "#utils/gateway-utils";
-import type { ClientSession } from "./client-session";
+import type { APIUser, Snowflake, UserPresence, UserSettings } from "@huginn/shared";
+import { dispatchToTopic } from "../utils/gateway-utils.ts";
+import type { ClientSession } from "./client-session.ts";
 
 export class PresenceManager {
 	private presences: Map<Snowflake, UserPresence>;

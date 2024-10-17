@@ -1,14 +1,14 @@
-import type { MessageRenderInfo } from "@/types";
-import ChannelMessageLoadingIndicator from "@components/ChannelMessageLoadingIndicator";
-import MessageRenderer from "@components/message/MessageRenderer";
-import { useClient } from "@contexts/apiContext";
-import { useChannelScroll, useChannelScrollDispatch } from "@contexts/channelScrollContext";
-import { useEvent } from "@contexts/eventContext";
-import { useDynamicRefs } from "@hooks/useDynamicRefs";
-import { type APIDefaultMessage, type APIGetChannelMessagesResult, MessageType, type Snowflake } from "@huginn/shared";
-import { getMessagesOptions } from "@lib/queries";
+import type { MessageRenderInfo } from "@/types.ts";
+import ChannelMessageLoadingIndicator from "@components/ChannelMessageLoadingIndicator.tsx";
+import MessageRenderer from "@components/message/MessageRenderer.tsx";
+import { useClient } from "@contexts/apiContext.tsx";
+import { useChannelScroll, useChannelScrollDispatch } from "@contexts/channelScrollContext.tsx";
+import { useEvent } from "@contexts/eventContext.tsx";
+import { useDynamicRefs } from "@hooks/useDynamicRefs.ts";
+import type { APIDefaultMessage, APIGetChannelMessagesResult, Snowflake } from "@huginn/shared";
+import { getMessagesOptions } from "@lib/queries.ts";
+import { difference, format } from "@std/datetime";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
-import moment from "moment";
 import { type RefObject, useEffect, useMemo, useRef } from "react";
 
 const topScrollOffset = 100;
@@ -74,8 +74,8 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		const value = props.messages.map((message, i) => {
 			const lastMessage = props.messages[i - 1];
 
-			const newDate = !moment(message.createdAt).isSame(lastMessage?.createdAt, "date") && !!lastMessage;
-			const newMinute = !moment(message.createdAt).isSame(lastMessage?.createdAt, "minute");
+			const newDate = !!lastMessage && (difference(new Date(message.createdAt), new Date(lastMessage.createdAt)).days ?? 0) > 0;
+			const newMinute = (difference(new Date(message.createdAt), new Date(lastMessage.createdAt)).minutes ?? 0) > 0;
 			const newAuthor = message.author.id !== lastMessage?.author.id;
 			const newType = message.type !== lastMessage?.type;
 
@@ -212,7 +212,7 @@ function MessageWrapper(props: {
 					className="mx-2 my-5 flex h-0 items-center justify-center text-center font-semibold text-text/70 text-xs [border-top:thin_solid_rgb(var(--color-text)/0.25)]"
 					ref={props.setContent(`${props.message.id}_separator`)}
 				>
-					<span className="bg-tertiary px-2">{moment(props.message.createdAt).format("DD. MMMM YYYY")}</span>
+					<span className="bg-tertiary px-2">{format(new Date(props.message.createdAt), "dd. MM YYYY")}</span>
 				</li>
 			)}
 			<MessageRenderer

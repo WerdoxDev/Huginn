@@ -1,10 +1,9 @@
-import ChannelRecipient from "@components/ChannelRecipient";
-import HuginnButton from "@components/button/HuginnButton";
-import { useModalsDispatch } from "@contexts/modalContext";
-import { useUser } from "@contexts/userContext";
+import ChannelRecipient from "@components/ChannelRecipient.tsx";
+import HuginnButton from "@components/button/HuginnButton.tsx";
+import { useModalsDispatch } from "@contexts/modalContext.tsx";
+import { useUser } from "@contexts/userContext.tsx";
 import { Transition } from "@headlessui/react";
-import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePathDMChannel";
-import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
+import { useMutationLatestState } from "@hooks/useLatestMutationStatus.ts";
 import type { APIChannelUser, Snowflake } from "@huginn/shared";
 import { useMemo } from "react";
 

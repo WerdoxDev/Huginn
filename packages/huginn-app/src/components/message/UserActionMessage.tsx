@@ -1,4 +1,4 @@
-import type { MessageRendererProps } from "@/types";
+import type { MessageRendererProps } from "@/types.ts";
 import { MessageType } from "@huginn/shared";
 import { useMemo } from "react";
 

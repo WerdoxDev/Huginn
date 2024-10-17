@@ -1,7 +1,7 @@
 import { S3Client } from "@aws-sdk/client-s3";
 import { type ErrorFactory, createErrorFactory, logReject, logRequest, logResponse, logServerError } from "@huginn/backend-shared";
 import { Errors, HttpCode, type HuginnErrorData, generateRandomString } from "@huginn/shared";
-import type { Server } from "bun";
+import { join } from "@std/path";
 import consola from "consola";
 import { colors } from "consola/utils";
 import {
@@ -21,15 +21,16 @@ import {
 	useBase,
 } from "h3";
 import { Octokit } from "octokit";
-import { isDBError } from "#database/error";
-import { ServerGateway } from "#gateway/server-gateway";
-import { importRoutes } from "#routes";
-import { AWS_KEY_ID, AWS_REGION, AWS_SECRET_KEY, CERT_FILE, GITHUB_TOKEN, KEY_FILE, SERVER_HOST, SERVER_PORT } from "#setup";
-import { handleCommonDBErrors } from "#utils/route-utils";
-import { TokenInvalidator } from "#utils/token-invalidator";
-import { version } from "../package.json";
+import { isDBError } from "./database/error.ts";
+import { ServerGateway } from "./gateway/server-gateway.ts";
+import { importRoutes } from "./routes.ts";
+import { AWS_KEY_ID, AWS_REGION, AWS_SECRET_KEY, CERT_FILE_PATH, GITHUB_TOKEN, KEY_FILE_PATH, SERVER_HOST, SERVER_PORT } from "./setup.ts";
+import { handleCommonDBErrors } from "./utils/route-utils.ts";
+import { TokenInvalidator } from "./utils/token-invalidator.ts";
 
-export async function startServer(options?: { serve: boolean }): Promise<{ server?: Server; app: App; router: Router }> {
+const version = JSON.parse(Deno.readTextFileSync(join(Deno.cwd(), "deno.json"))).version as string;
+
+export async function startServer(options?: { serve: boolean }): Promise<{ server?: Deno.HttpServer; app: App; router: Router }> {
 	consola.info(`Using version ${version}`);
 	consola.start("Starting server...");
 
@@ -119,12 +120,17 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 	const handler = toWebHandler(app);
 	app.use(mainRouter);
 
-	const server = Bun.serve({
-		cert: CERT_FILE,
-		key: KEY_FILE,
-		port: SERVER_PORT,
-		hostname: SERVER_HOST,
-		async fetch(req, server) {
+	const server = Deno.serve(
+		{
+			...(CERT_FILE_PATH &&
+				KEY_FILE_PATH && {
+					cert: CERT_FILE_PATH ? Deno.readTextFileSync(CERT_FILE_PATH) : undefined,
+					key: KEY_FILE_PATH ? Deno.readTextFileSync(KEY_FILE_PATH) : undefined,
+				}),
+			hostname: SERVER_HOST,
+			port: SERVER_PORT,
+		},
+		async (req, server) => {
 			const url = new URL(req.url);
 			if (url.pathname === "/gateway") {
 				const response = await gateway.ws.handleUpgrade(req, server);
@@ -138,12 +144,11 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 
 			return handler(req);
 		},
-		websocket: gateway.ws.websocket,
-	});
+	);
 
 	consola.success("Server started!");
-	consola.box(`Listening on ${colors.green(server.url.href)}`);
-
+	consola.box(`Listening on ${colors.green(`${server.addr.hostname}:${server.addr.port}`)}`);
+	// one year theve been watching me, so many pills they fed me (6), when a loud hour comes (2), i tremble everytime the light falls (watch it go dark, every second 2 blinks)
 	return { server, app, router: mainRouter };
 }
 

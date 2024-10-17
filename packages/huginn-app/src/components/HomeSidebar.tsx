@@ -1,10 +1,10 @@
-import { useModalsDispatch } from "@contexts/modalContext";
-import { useWindow } from "@contexts/windowContext";
+import DirectMessageChannel from "@components/DirectMessageChannel.tsx";
+import RingLinkButton from "@components/button/RingLinkButton.tsx";
+import { Tooltip } from "@components/tooltip/Tooltip.tsx";
+import { useModalsDispatch } from "@contexts/modalContext.tsx";
+import { useWindow } from "@contexts/windowContext.tsx";
 import type { APIGetUserChannelsResult } from "@huginn/shared";
-import clsx from "clsx";
-import DirectMessageChannel from "./DirectMessageChannel";
-import RingLinkButton from "./button/RingLinkButton";
-import { Tooltip } from "./tooltip/Tooltip";
+import { clsx } from "@nick/clsx";
 
 export default function HomeSidebar(props: { channels?: APIGetUserChannelsResult }) {
 	const appWindow = useWindow();

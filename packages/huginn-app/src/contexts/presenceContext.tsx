@@ -1,6 +1,6 @@
+import { useClient } from "@contexts/apiContext.tsx";
 import type { GatewayPresenceUpdateData, GatewayReadyDispatchData, Snowflake } from "@huginn/shared";
 import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
-import { useClient } from "./apiContext";
 
 type PresenceContextType = GatewayPresenceUpdateData[];
 

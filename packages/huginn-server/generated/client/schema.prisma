@@ -1,0 +1,70 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["omitApi", "deno"]
+  output          = "../generated/client"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRESQL_URL")
+  directUrl = env("POSTGRESQL_DIRECT_URL")
+}
+
+model User {
+  id                   BigInt         @id
+  username             String         @unique
+  displayName          String?
+  email                String         @unique
+  avatar               String?
+  password             String
+  flags                Int            @db.SmallInt
+  system               Boolean        @default(false)
+  includedChannels     Channel[]      @relation("channel_recipients")
+  ownedChannels        Channel[]      @relation("channel_owner")
+  tempDeletedChannels  Channel[]      @relation("channel_temp_deleted")
+  messages             Message[]
+  mentionedMessages    Message[]      @relation("message_mentions")
+  relationships        Relationship[] @relation("relation_owner")
+  relatedRelationships Relationship[] @relation("relation_user")
+}
+
+model Channel {
+  id                 BigInt    @id
+  icon               String?
+  lastMessageId      BigInt?
+  name               String?
+  owner              User?     @relation("channel_owner", fields: [ownerId], references: [id])
+  ownerId            BigInt?
+  recipients         User[]    @relation("channel_recipients")
+  messages           Message[]
+  type               Int
+  tempDeletedByUsers User[]    @relation("channel_temp_deleted")
+}
+
+model Message {
+  id          BigInt    @id
+  author      User      @relation(fields: [authorId], references: [id])
+  authorId    BigInt
+  channel     Channel   @relation(fields: [channelId], references: [id])
+  channelId   BigInt
+  content     String
+  createdAt   DateTime
+  editedAt    DateTime?
+  mentions    User[]    @relation("message_mentions")
+  attachments String[]
+  reactions   String[]
+  pinned      Boolean
+  type        Int
+  flags       Int?      @db.SmallInt
+}
+
+model Relationship {
+  id       BigInt    @id
+  type     Int       @db.SmallInt
+  nickname String
+  since    DateTime?
+  owner    User      @relation("relation_owner", fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId  BigInt
+  user     User      @relation("relation_user", fields: [userId], references: [id], onDelete: Cascade)
+  userId   BigInt
+}

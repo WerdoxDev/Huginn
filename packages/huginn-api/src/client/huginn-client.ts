@@ -1,16 +1,16 @@
 import type { APIPostLoginResult, APIPostRegisterResult, APIUser, LoginCredentials, RegisterUser, Tokens } from "@huginn/shared";
 import { type Snowflake, WorkerID, snowflake } from "@huginn/shared";
-import { AuthAPI } from "../apis/auth";
-import { ChannelAPI } from "../apis/channel";
-import { CommonAPI } from "../apis/common";
-import { RelationshipAPI } from "../apis/relationship";
-import { UserAPI } from "../apis/user";
-import { Gateway } from "../gateway/client-gateway";
-import { CDN } from "../rest/cdn";
-import { REST } from "../rest/rest";
-import { TokenHandler } from "../rest/token-handler";
-import { type ClientOptions, ClientReadyState } from "../types";
-import { createDefaultClientOptions } from "../utils";
+import { AuthAPI } from "../apis/auth.ts";
+import { ChannelAPI } from "../apis/channel.ts";
+import { CommonAPI } from "../apis/common.ts";
+import { RelationshipAPI } from "../apis/relationship.ts";
+import { UserAPI } from "../apis/user.ts";
+import { Gateway } from "../gateway/client-gateway.ts";
+import { CDN } from "../rest/cdn.ts";
+import { REST } from "../rest/rest.ts";
+import { TokenHandler } from "../rest/token-handler.ts";
+import { type ClientOptions, ClientReadyState } from "../types.ts";
+import { createDefaultClientOptions } from "../utils.ts";
 
 export class HuginnClient {
 	public readonly options: ClientOptions;

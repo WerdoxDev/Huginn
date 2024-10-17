@@ -3,10 +3,10 @@ import { createErrorFactory, createHuginnError } from "@huginn/backend-shared";
 import { constants, type APIPostLoginResult, Errors, Fields, HttpCode, idFix } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
-import { DBErrorType, assertError } from "#database/error";
-import { prisma } from "#database/index";
-import { router } from "#server";
-import { createTokens } from "#utils/token-factory";
+import { DBErrorType, assertError } from "../../../database/error.ts";
+import { prisma } from "../../../database/index.ts";
+import { router } from "../../../server.ts";
+import { createTokens } from "../../../utils/token-factory.ts";
 
 const schema = z.object({
 	username: z.optional(z.string()),

@@ -1,8 +1,8 @@
-import ChannelIcon from "@components/ChannelIcon";
-import UserAvatarWithStatus from "@components/UserAvatarWithStatus";
-import { Tooltip } from "@components/tooltip/Tooltip";
-import { useUser } from "@contexts/userContext";
-import { useChannelName } from "@hooks/useChannelName";
+import ChannelIcon from "@components/ChannelIcon.tsx";
+import UserAvatarWithStatus from "@components/UserAvatarWithStatus.tsx";
+import { Tooltip } from "@components/tooltip/Tooltip.tsx";
+import { useUser } from "@contexts/userContext.tsx";
+import { useChannelName } from "@hooks/useChannelName.ts";
 import { ChannelType, type DirectChannel } from "@huginn/shared";
 import { useMemo } from "react";
 

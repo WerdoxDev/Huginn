@@ -1,8 +1,9 @@
-import { describe, expect, test } from "bun:test";
-import { getLoggedClient, getNewClient } from "../test-utils";
+import { expect } from "@std/expect";
+import { describe, it } from "@std/testing/bdd";
+import { getLoggedClient, getNewClient } from "../test-utils.ts";
 
 describe("auth-init-with-token", () => {
-	test("auth-init-with-token-successful", async () => {
+	it("auth-init-with-token-successful", async () => {
 		const client = await getLoggedClient();
 
 		const accessToken = client.tokenHandler.token;
@@ -14,7 +15,7 @@ describe("auth-init-with-token", () => {
 		expect(newClient.user).toBeDefined();
 	});
 
-	test("auth-init-with-refresh-token-successful", async () => {
+	it("auth-init-with-refresh-token-successful", async () => {
 		const client = await getLoggedClient();
 
 		const refreshToken = client.tokenHandler.refreshToken;

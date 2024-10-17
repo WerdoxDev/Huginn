@@ -1,6 +1,6 @@
 import type { APIPostUniqueUsernameJSONBody, APIPostUniqueUsernameResult } from "@huginn/shared";
 import { Routes } from "@huginn/shared";
-import type { REST } from "../rest/rest";
+import type { REST } from "../rest/rest.ts";
 
 export class CommonAPI {
 	private readonly rest: REST;

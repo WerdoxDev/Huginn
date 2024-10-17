@@ -1,8 +1,8 @@
 import { type APIPatchDMChannelJSONBody, ChannelType, type Snowflake, WorkerID, snowflake } from "@huginn/shared";
-import { Prisma } from "@prisma/client";
-import { prisma } from ".";
-import type { ChannelInclude, ChannelPayload } from "./common";
-import { DBErrorType, assertCondition, assertId, assertObj } from "./error";
+import { Prisma } from "../../generated/client/deno/edge.ts";
+import type { ChannelInclude, ChannelPayload } from "./common.ts";
+import { DBErrorType, assertCondition, assertId, assertObj } from "./error.ts";
+import { prisma } from "./index.ts";
 
 const channelExtention = Prisma.defineExtension({
 	model: {

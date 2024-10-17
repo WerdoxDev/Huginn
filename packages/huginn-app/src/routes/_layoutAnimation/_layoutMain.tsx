@@ -1,8 +1,8 @@
-import GuildsBar from "@components/GuildsBar";
-import WebsocketProviders from "@components/websocket/WebsocketProviders";
-import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
-import { ChannelScrollProvider } from "@contexts/channelScrollContext";
-import { PresenceProvider } from "@contexts/presenceContext";
+import GuildsBar from "@components/GuildsBar.tsx";
+import WebsocketProviders from "@components/websocket/WebsocketProviders.tsx";
+import { AuthBackgroundContext } from "@contexts/authBackgroundContext.ts";
+import { ChannelScrollProvider } from "@contexts/channelScrollContext.tsx";
+import { PresenceProvider } from "@contexts/presenceContext.tsx";
 import { Outlet, createFileRoute } from "@tanstack/react-router";
 import { useContext, useEffect } from "react";
 

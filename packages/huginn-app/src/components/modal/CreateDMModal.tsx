@@ -1,19 +1,19 @@
-import LoadingButton from "@components/button/LoadingButton";
-import ModalCloseButton from "@components/button/ModalCloseButton";
-import AddRecipientInput from "@components/input/AddRecipientInput";
-import HuginnInput from "@components/input/HuginnInput";
-import { useClient } from "@contexts/apiContext";
-import { useModals, useModalsDispatch } from "@contexts/modalContext";
+import LoadingButton from "@components/button/LoadingButton.tsx";
+import ModalCloseButton from "@components/button/ModalCloseButton.tsx";
+import AddRecipientInput from "@components/input/AddRecipientInput.tsx";
+import HuginnInput from "@components/input/HuginnInput.tsx";
+import BaseModal from "@components/modal/BaseModal.tsx";
+import { useClient } from "@contexts/apiContext.tsx";
+import { useModals, useModalsDispatch } from "@contexts/modalContext.tsx";
 import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
-import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
-import { useChannelName } from "@hooks/useChannelName";
-import { useInputs } from "@hooks/useInputs";
+import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel.ts";
+import { useChannelName } from "@hooks/useChannelName.ts";
+import { useInputs } from "@hooks/useInputs.ts";
 import type { APIRelationUser } from "@huginn/shared";
-import { getRelationshipsOptions } from "@lib/queries";
+import { getRelationshipsOptions } from "@lib/queries.ts";
 import { useQuery } from "@tanstack/react-query";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useState } from "react";
-import BaseModal from "./BaseModal";
 
 export function CreateDMModal() {
 	const { createDM: modal } = useModals();

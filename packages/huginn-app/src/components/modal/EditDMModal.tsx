@@ -1,19 +1,19 @@
-import ImageSelector from "@components/ImageSelector";
-import HuginnButton from "@components/button/HuginnButton";
-import LoadingButton from "@components/button/LoadingButton";
-import ModalCloseButton from "@components/button/ModalCloseButton";
-import HuginnInput from "@components/input/HuginnInput";
-import { useClient } from "@contexts/apiContext";
-import { useEvent } from "@contexts/eventContext";
-import { useModals, useModalsDispatch } from "@contexts/modalContext";
+import ImageSelector from "@components/ImageSelector.tsx";
+import HuginnButton from "@components/button/HuginnButton.tsx";
+import LoadingButton from "@components/button/LoadingButton.tsx";
+import ModalCloseButton from "@components/button/ModalCloseButton.tsx";
+import HuginnInput from "@components/input/HuginnInput.tsx";
+import BaseModal from "@components/modal/BaseModal.tsx";
+import { useClient } from "@contexts/apiContext.tsx";
+import { useEvent } from "@contexts/eventContext.tsx";
+import { useModals, useModalsDispatch } from "@contexts/modalContext.tsx";
 import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
-import { usePatchDMChannel } from "@hooks/mutations/usePathDMChannel";
-import { useChannelName } from "@hooks/useChannelName";
-import { useInputs } from "@hooks/useInputs";
-import { getChannelIcon } from "@lib/queries";
+import { usePatchDMChannel } from "@hooks/mutations/usePathDMChannel.ts";
+import { useChannelName } from "@hooks/useChannelName.ts";
+import { useInputs } from "@hooks/useInputs.ts";
+import { getChannelIcon } from "@lib/queries.ts";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import BaseModal from "./BaseModal";
 
 export default function EditGroupModal() {
 	const client = useClient();

@@ -1,7 +1,7 @@
-import type { ErrorFactory } from "@huginn/backend-shared/src/error-factory";
+import type { ErrorFactory } from "@huginn/backend-shared";
 import { constants } from "@huginn/shared";
 import { Fields } from "@huginn/shared";
-import { prisma } from "#database";
+import { prisma } from "../database/index.ts";
 
 export function validateEmail(email: string | undefined, errorObject: ErrorFactory) {
 	if (email && !email.match(constants.EMAIL_REGEX)) {

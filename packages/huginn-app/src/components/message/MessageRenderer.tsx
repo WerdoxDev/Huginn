@@ -1,13 +1,13 @@
-import type { MessageRendererProps } from "@/types";
+import type { MessageRendererProps } from "@/types.ts";
+import MessageLeaf from "@components/editor/MessageLeaf.tsx";
+import DefaultMessage from "@components/message/DefaultMessage.tsx";
+import UserActionMessage from "@components/message/UserActionMessage.tsx";
 import { MessageType } from "@huginn/shared";
-import { tokenize } from "@lib/huginn-tokenizer";
-import clsx from "clsx";
+import { tokenize } from "@lib/huginn-tokenizer.ts";
+import { clsx } from "@nick/clsx";
 import { forwardRef, useCallback, useMemo, useRef } from "react";
 import { type Node, type Path, type Range, Text, createEditor } from "slate";
 import { DefaultElement, type RenderElementProps, type RenderLeafProps, withReact } from "slate-react";
-import MessageLeaf from "../editor/MessageLeaf";
-import DefaultMessage from "./DefaultMessage";
-import UserActionMessage from "./UserActionMessage";
 
 const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, ref) => {
 	const editor = useMemo(() => withReact(createEditor()), []);

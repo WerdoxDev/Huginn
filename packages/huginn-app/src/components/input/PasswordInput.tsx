@@ -1,6 +1,6 @@
-import { createContext, type HTMLInputTypeAttribute, useContext, useMemo, useState } from "react";
-import HuginnInput from "./HuginnInput";
-import type { HuginnInputProps } from "@/types";
+import type { HuginnInputProps } from "@/types.ts";
+import HuginnInput from "@components/input/HuginnInput.tsx";
+import { type HTMLInputTypeAttribute, createContext, useContext, useMemo, useState } from "react";
 
 const PasswordContext = createContext({ toggleType: () => {}, hidden: true });
 
@@ -26,7 +26,7 @@ function ToggleButton() {
 	const context = useContext(PasswordContext);
 	return (
 		<button
-			className="border-l-background text-text flex h-full w-11 select-none items-center justify-center border-l-2 text-sm"
+			className="flex h-full w-11 select-none items-center justify-center border-l-2 border-l-background text-sm text-text"
 			type="button"
 			onClick={context.toggleType}
 		>

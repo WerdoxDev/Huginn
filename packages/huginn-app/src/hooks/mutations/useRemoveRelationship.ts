@@ -1,4 +1,4 @@
-import { useClient } from "@contexts/apiContext";
+import { useClient } from "@contexts/apiContext.tsx";
 import { useMutation } from "@tanstack/react-query";
 
 export function useRemoveRelationship() {

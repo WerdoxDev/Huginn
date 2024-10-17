@@ -1,9 +1,9 @@
 import type { Snowflake } from "@huginn/shared";
 import { WorkerID, snowflake } from "@huginn/shared";
 import type { MessageType } from "@huginn/shared";
-import { Prisma } from "@prisma/client";
-import { DBErrorType, assertId, assertObj, prisma } from ".";
-import type { MessageInclude, MessagePayload } from "./common";
+import { Prisma } from "../../generated/client/deno/edge.ts";
+import type { MessageInclude, MessagePayload } from "./common.ts";
+import { DBErrorType, assertId, assertObj, prisma } from "./index.ts";
 
 const messagesExtention = Prisma.defineExtension({
 	model: {

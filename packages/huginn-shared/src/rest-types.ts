@@ -1,6 +1,5 @@
-// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
-import type { Buffer } from "buffer";
-import type { RouteLike } from "./routes";
+import type { Buffer } from "node:buffer";
+import type { RouteLike } from "./routes.ts";
 
 export enum RequestMethod {
 	DELETE = "DELETE",

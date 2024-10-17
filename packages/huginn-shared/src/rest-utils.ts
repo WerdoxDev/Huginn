@@ -1,7 +1,6 @@
-// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
-import { Buffer } from "buffer";
+import { Buffer } from "node:buffer";
 import { fileTypeFromBuffer } from "file-type";
-import type { InternalRequest, RequestHeaders, ResolvedRequest, ResponseLike } from "./rest-types";
+import type { InternalRequest, RequestHeaders, ResolvedRequest, ResponseLike } from "./rest-types.ts";
 
 export function isBufferLike(value: unknown): value is ArrayBuffer | Buffer | Uint8Array | Uint8ClampedArray {
 	return value instanceof ArrayBuffer || value instanceof Uint8Array || value instanceof Uint8ClampedArray;

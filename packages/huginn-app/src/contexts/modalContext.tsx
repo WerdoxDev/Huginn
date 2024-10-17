@@ -1,4 +1,4 @@
-import type { DeepPartial, StatusCode } from "@/types";
+import type { DeepPartial, StatusCode } from "@/types.ts";
 import type { APIChannel, Snowflake } from "@huginn/shared";
 import type { ReactNode } from "@tanstack/react-router";
 import { type Dispatch, createContext, useContext, useReducer } from "react";

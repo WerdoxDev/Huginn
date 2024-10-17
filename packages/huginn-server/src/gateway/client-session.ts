@@ -3,11 +3,10 @@ import { constants, RelationshipType, merge } from "@huginn/shared";
 import { GatewayCode } from "@huginn/shared";
 import type { BasePayload } from "@huginn/shared";
 import { idFix } from "@huginn/shared";
-import type { ServerWebSocket } from "bun";
 import type { Peer } from "crossws";
-import { excludeChannelRecipient, includeChannelRecipients, includeRelationshipUser } from "#database/common";
-import { prisma } from "#database/index";
-import type { ClientSessionInfo } from "#utils/types";
+import { excludeChannelRecipient, includeChannelRecipients, includeRelationshipUser } from "../database/common.ts";
+import { prisma } from "../database/index.ts";
+import type { ClientSessionInfo } from "../utils/types.ts";
 
 export class ClientSession extends EventEmitter {
 	public data: ClientSessionInfo;
@@ -15,7 +14,7 @@ export class ClientSession extends EventEmitter {
 
 	private sentMessages: Map<number, BasePayload>;
 	private subscribedTopics: Set<string>;
-	private hearbeatTimeout?: Timer;
+	private hearbeatTimeout?: number;
 	public sequence?: number;
 
 	public constructor(peer: Peer, data: ClientSessionInfo) {

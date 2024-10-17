@@ -1,8 +1,8 @@
-import { Prisma } from "@prisma/client";
 import type { APIPatchCurrentUserJSONBody } from "@huginn/shared";
 import type { Snowflake } from "@huginn/shared";
-import { DBErrorType, assertCondition, assertId, assertObj, prisma } from ".";
-import type { UserInclude, UserPayload } from "./common";
+import { Prisma } from "../../generated/client/deno/edge.ts";
+import type { UserInclude, UserPayload } from "./common.ts";
+import { DBErrorType, assertCondition, assertId, assertObj, prisma } from "./index.ts";
 
 const userExtention = Prisma.defineExtension({
 	model: {

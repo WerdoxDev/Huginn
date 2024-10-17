@@ -1,21 +1,19 @@
-import type { SettingsTabProps } from "@/types";
-import AnimatedMessage from "@components/AnimatedMessage";
-import ImageSelector from "@components/ImageSelector";
-import HuginnButton from "@components/button/HuginnButton";
-import LoadingButton from "@components/button/LoadingButton";
-import HuginnInput from "@components/input/HuginnInput";
-import PasswordInput from "@components/input/PasswordInput";
-import { Tooltip } from "@components/tooltip/Tooltip";
-import { useClient } from "@contexts/apiContext";
-import { useEvent } from "@contexts/eventContext";
-import { useModalsDispatch } from "@contexts/modalContext";
-import { useUser } from "@contexts/userContext";
+import type { SettingsTabProps } from "@/types.ts";
+import AnimatedMessage from "@components/AnimatedMessage.tsx";
+import ImageSelector from "@components/ImageSelector.tsx";
+import HuginnButton from "@components/button/HuginnButton.tsx";
+import LoadingButton from "@components/button/LoadingButton.tsx";
+import HuginnInput from "@components/input/HuginnInput.tsx";
+import { useClient } from "@contexts/apiContext.tsx";
+import { useEvent } from "@contexts/eventContext.tsx";
+import { useModalsDispatch } from "@contexts/modalContext.tsx";
+import { useUser } from "@contexts/userContext.tsx";
 import { Transition } from "@headlessui/react";
-import { usePatchUser } from "@hooks/mutations/usePatchUser";
-import { useInputs } from "@hooks/useInputs";
-import useUniqueUsernameMessage from "@hooks/useUniqueUsernameMessage";
+import { usePatchUser } from "@hooks/mutations/usePatchUser.ts";
+import { useInputs } from "@hooks/useInputs.ts";
+import useUniqueUsernameMessage from "@hooks/useUniqueUsernameMessage.ts";
 import { omit } from "@huginn/shared";
-import { getUserAvatar } from "@lib/queries";
+import { getUserAvatar } from "@lib/queries.ts";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 
@@ -70,7 +68,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 	}, [originalAvatar]);
 
 	useEffect(() => {
-		const unlisten = listenEvent("user_updated", (e) => {
+		const unlisten = listenEvent("user_updated", (_e) => {
 			setModified(false);
 			setAvatarModified(false);
 		});

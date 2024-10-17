@@ -1,5 +1,5 @@
 import { type Snowflake, merge } from "@huginn/shared";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../generated/client/deno/edge.ts";
 
 export type ChannelInclude = Prisma.ChannelInclude | undefined;
 export type ChannelPayload<T extends ChannelInclude> = Prisma.ChannelGetPayload<{

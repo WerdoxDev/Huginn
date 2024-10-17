@@ -1,21 +1,22 @@
-import { beforeAll, describe, expect, test } from "bun:test";
 import type { Snowflake } from "@huginn/shared";
 import type { APIChannelUser, APIGroupDMChannel, APIPostDMChannelJSONBody } from "@huginn/shared";
-import { url, getLoggedClient, test2Credentials, test3Credentials } from "../test-utils";
+import { expect } from "@std/expect";
+import { beforeAll, describe, it } from "@std/testing/bdd";
+import { url, getLoggedClient, test2Credentials, test3Credentials } from "../test-utils.ts";
 
 beforeAll(async () => {
 	await fetch(`http://${url}/api/test/test-channels`, { method: "POST" });
 });
 
 describe("channel-create-dm", () => {
-	test("channel-create-dm-invalid", async () => {
+	it("hannel-create-dm-invalid", async () => {
 		const client = await getLoggedClient();
 
 		expect(() => client.channels.createDM({} as APIPostDMChannelJSONBody)).toThrow("Invalid Form Body"); // Invalid
 		expect(() => client.channels.createDM({ recipients: [] } as APIPostDMChannelJSONBody)).toThrow("Invalid Form Body"); // Invalid id
 		expect(() => client.channels.createDM({ recipients: ["000000000000000000"] })).toThrow("Unknown User"); // Unknown id
 	});
-	test("channel-create-single-dm-successful", async () => {
+	it("channel-create-single-dm-successful", async () => {
 		const client = await getLoggedClient();
 		const client2 = await getLoggedClient(test2Credentials);
 
@@ -23,7 +24,7 @@ describe("channel-create-dm", () => {
 
 		expect(containsId(result.recipients, client2.user!.id)).toBe(true);
 	});
-	test("channel-create-group-dm-successful", async () => {
+	it("channel-create-group-dm-successful", async () => {
 		const client = await getLoggedClient();
 		const client2 = await getLoggedClient(test2Credentials);
 		const client3 = await getLoggedClient(test3Credentials);
@@ -36,7 +37,7 @@ describe("channel-create-dm", () => {
 		expect(containsId(result.recipients, client2.user!.id)).toBe(true);
 		expect(containsId(result.recipients, client3.user!.id)).toBe(true);
 	});
-	test("channel-create-group-dm-with-name-successful", async () => {
+	it("channel-create-group-dm-with-name-successful", async () => {
 		const client = await getLoggedClient();
 		const client2 = await getLoggedClient(test2Credentials);
 		const client3 = await getLoggedClient(test3Credentials);

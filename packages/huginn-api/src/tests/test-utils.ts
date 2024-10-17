@@ -1,7 +1,7 @@
 import type { LoginCredentials } from "@huginn/shared";
-import { HuginnClient } from "../..";
+import { HuginnClient } from "../client/huginn-client.ts";
 
-export const url = "192.168.178.51:3001";
+export const url = "192.168.178.51:3004";
 
 export const testCredentials: LoginCredentials = {
 	username: "test",

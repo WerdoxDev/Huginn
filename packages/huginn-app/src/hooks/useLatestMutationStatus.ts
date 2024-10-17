@@ -1,4 +1,4 @@
-import type { MutationVariables } from "@/types";
+import type { MutationVariables } from "@/types.ts";
 import { type MutationState, type MutationStatus, useMutationState } from "@tanstack/react-query";
 
 export function useMutationLatestState<Key extends keyof MutationVariables>(mutationKey: Key) {

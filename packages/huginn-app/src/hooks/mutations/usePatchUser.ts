@@ -1,6 +1,6 @@
-import { useClient } from "@contexts/apiContext";
-import { useUser } from "@contexts/userContext";
-import { useHuginnMutation } from "@hooks/useHuginnMutation";
+import { useClient } from "@contexts/apiContext.tsx";
+import { useUser } from "@contexts/userContext.tsx";
+import { useHuginnMutation } from "@hooks/useHuginnMutation.ts";
 import { type APIPatchCurrentUserJSONBody, type APIPatchCurrentUserResult, type HuginnErrorData, omit } from "@huginn/shared";
 
 export function usePatchUser(onSuccess?: (result: APIPatchCurrentUserResult) => void, handleErrors?: (errors: HuginnErrorData) => void) {

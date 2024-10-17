@@ -1,8 +1,8 @@
 import type { TokenPayload } from "@huginn/shared";
 import * as jose from "jose";
-import { DefaultGatewayOptions } from "./gateway/constants";
-import { DefaultRestOptions } from "./rest/rest-utils";
-import type { ClientOptions } from "./types";
+import { DefaultGatewayOptions } from "./gateway/constants.ts";
+import { DefaultRestOptions } from "./rest/rest-utils.ts";
+import type { ClientOptions } from "./types.ts";
 
 export function decodeToken(token: string): [boolean, (TokenPayload & jose.JWTPayload) | null] {
 	try {

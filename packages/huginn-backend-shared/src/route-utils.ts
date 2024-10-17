@@ -1,6 +1,6 @@
 import { type H3Event, createError, getQuery, getRouterParams, readBody } from "h3";
 import type { z } from "zod";
-import { invalidFormBody } from "./route-errors-h3";
+import { invalidFormBody } from "./route-errors.ts";
 
 export async function useValidatedBody<T extends z.Schema>(event: H3Event, schema: T): Promise<z.infer<T>> {
 	try {

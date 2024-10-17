@@ -1,11 +1,11 @@
-import AnimatedOutlet from "@components/AnimatedOutlet";
-import AuthBackgroundSvg from "@components/AuthBackgroundSvg";
-import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
-import { routeHistory } from "@contexts/historyContext";
-import { useModalsDispatch } from "@contexts/modalContext";
+import AnimatedOutlet from "@components/AnimatedOutlet.tsx";
+import AuthBackgroundSvg from "@components/AuthBackgroundSvg.tsx";
+import { AuthBackgroundContext } from "@contexts/authBackgroundContext.tsx";
+import { routeHistory } from "@contexts/historyContext.tsx";
+import { useModalsDispatch } from "@contexts/modalContext.tsx";
+import { clsx } from "@nick/clsx";
 import { animated, easings, useSpring, useTransition } from "@react-spring/web";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import clsx from "clsx";
 import { useContext } from "react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth")({

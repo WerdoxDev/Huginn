@@ -1,1 +1,1 @@
-import "./gateway/gateway";
+import "./gateway/gateway.ts";

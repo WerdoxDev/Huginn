@@ -1,8 +1,9 @@
-import { describe, expect, test } from "bun:test";
-import { getNewClient, testCredentials } from "./test-utils";
+import { expect } from "@std/expect";
+import { describe, it } from "@std/testing/bdd";
+import { getNewClient, testCredentials } from "./test-utils.ts";
 
 describe("auth-token", () => {
-	test("auth-refresh-token", async () => {
+	it("auth-refresh-token", async () => {
 		const client = getNewClient();
 
 		expect(await client.tokenHandler.waitForTokenRefresh()).toBe(false);

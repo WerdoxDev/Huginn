@@ -1,0 +1,25 @@
+{
+   "name": "@huginn/server",
+   "version": "0.4-dev",
+   "tasks": {
+      "dev": "deno run --watch --env --allow-env --allow-read --allow-net src/index.ts",
+      "esm:add": "deno run -A https://esm.sh/v135 add",
+      "esm:update": "deno run -A https://esm.sh/v135 update",
+      "esm:remove": "deno run -A https://esm.sh/v135 remove"
+   },
+   "imports": {
+      "@aws-sdk/client-s3": "npm:@aws-sdk/client-s3@^3.658.1",
+      "@prisma/client": "npm:@prisma/client@^5.20.0",
+      "@std/collections": "jsr:@std/collections@^1.0.8",
+      "@std/path": "jsr:@std/path@^1.0.6",
+      "consola": "npm:consola@^3.2.3",
+      "crossws": "npm:crossws@^0.3.1",
+      "h3": "npm:h3@^1.12.0",
+      "jose": "npm:jose@^5.9.3",
+      "octokit": "https://esm.sh/v135/octokit@4.0.2",
+      "ohash": "npm:ohash@^1.1.4",
+      "prisma": "npm:prisma@^5.20.0",
+      "semver": "npm:semver@^7.6.3",
+      "zod": "npm:zod@^3.23.8"
+   }
+}

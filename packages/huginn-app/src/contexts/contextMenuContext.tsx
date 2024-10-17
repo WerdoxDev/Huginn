@@ -1,4 +1,4 @@
-import type { ContextMenuDMChannel, ContextMenuDMChannelRecipient, ContextMenuRelationship, ContextMenuStateProps } from "@/types";
+import type { ContextMenuDMChannel, ContextMenuDMChannelRecipient, ContextMenuRelationship, ContextMenuStateProps } from "@/types.ts";
 import { type Dispatch, type MouseEvent, type ReactNode, createContext, useContext, useMemo, useReducer } from "react";
 
 type ContextMenuContextType = {

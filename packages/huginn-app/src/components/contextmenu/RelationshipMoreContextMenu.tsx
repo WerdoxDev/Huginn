@@ -1,6 +1,6 @@
-import { useContextMenu } from "@contexts/contextMenuContext";
-import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship";
-import { ContextMenu } from "./ContextMenu";
+import { ContextMenu } from "@components/contextmenu/ContextMenu.tsx";
+import { useContextMenu } from "@contexts/contextMenuContext.tsx";
+import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship.ts";
 
 export default function RelationshipMoreContextMenu() {
 	const { context, data, close } = useContextMenu("relationship_more");

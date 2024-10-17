@@ -1,7 +1,7 @@
-import { useClient } from "@contexts/apiContext";
+import { useClient } from "@contexts/apiContext.tsx";
+import { useHuginnMutation } from "@hooks/useHuginnMutation.ts";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useHuginnMutation } from "./useHuginnMutation";
 
 export function useLogout() {
 	const queryClient = useQueryClient();

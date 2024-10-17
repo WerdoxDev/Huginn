@@ -1,0 +1,37 @@
+{
+   "workspace": [
+      "packages/huginn-app",
+      "packages/huginn-shared",
+      "packages/huginn-api",
+      "packages/huginn-backend-shared",
+      "packages/huginn-server"
+   ],
+   "imports": { "@biomejs/biome": "npm:@biomejs/biome@^1.9.3" },
+   "scopes": {
+      "https://esm.sh/v135/": {
+         "@react-aria/focus": "https://esm.sh/v135/@react-aria/focus@3.18.4",
+         "@react-aria/interactions": "https://esm.sh/v135/@react-aria/interactions@3.22.4",
+         "@tanstack/react-virtual": "https://esm.sh/v135/@tanstack/react-virtual@3.10.8",
+         "loose-envify": "https://esm.sh/v135/loose-envify@1.4.0",
+         "scheduler": "https://esm.sh/v135/scheduler@0.23.2",
+         "@octokit/app": "https://esm.sh/v135/@octokit/app@15.1.0",
+         "@octokit/core": "https://esm.sh/v135/@octokit/core@6.1.2",
+         "@octokit/oauth-app": "https://esm.sh/v135/@octokit/oauth-app@7.1.3",
+         "@octokit/plugin-paginate-graphql": "https://esm.sh/v135/@octokit/plugin-paginate-graphql@5.2.4",
+         "@octokit/plugin-paginate-rest": "https://esm.sh/v135/@octokit/plugin-paginate-rest@11.3.5",
+         "@octokit/plugin-rest-endpoint-methods": "https://esm.sh/v135/@octokit/plugin-rest-endpoint-methods@13.2.6",
+         "@octokit/plugin-retry": "https://esm.sh/v135/@octokit/plugin-retry@7.1.2",
+         "@octokit/plugin-throttling": "https://esm.sh/v135/@octokit/plugin-throttling@9.3.2",
+         "@octokit/request-error": "https://esm.sh/v135/@octokit/request-error@6.1.5",
+         "@octokit/types": "https://esm.sh/v135/@octokit/types@13.6.1"
+
+      }
+   },
+   "nodeModulesDir": "auto",
+   "compilerOptions": {
+      "lib": ["esnext", "DOM", "DOM.Iterable", "deno.ns"],
+      "jsx": "react-jsx",
+      "jsxImportSource": "react",
+      "jsxImportSourceTypes": "@types/react"
+   }
+}

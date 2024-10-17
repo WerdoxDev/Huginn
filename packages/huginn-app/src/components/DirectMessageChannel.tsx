@@ -1,15 +1,15 @@
-import { useClient } from "@contexts/apiContext";
-import { useContextMenu } from "@contexts/contextMenuContext";
-import { useDeleteDMChannel } from "@hooks/mutations/useDeleteDMChannel";
-import { useChannelName } from "@hooks/useChannelName";
+import ChannelIcon from "@components/ChannelIcon.tsx";
+import UserAvatarWithStatus from "@components/UserAvatarWithStatus.tsx";
+import { useClient } from "@contexts/apiContext.tsx";
+import { useContextMenu } from "@contexts/contextMenuContext.tsx";
+import { useDeleteDMChannel } from "@hooks/mutations/useDeleteDMChannel.ts";
+import { useChannelName } from "@hooks/useChannelName.ts";
 import { ChannelType, type DirectChannel } from "@huginn/shared";
-import { getMessagesOptions } from "@lib/queries";
+import { getMessagesOptions } from "@lib/queries.ts";
+import { clsx } from "@nick/clsx";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
-import clsx from "clsx";
 import { useMemo } from "react";
-import ChannelIcon from "./ChannelIcon";
-import UserAvatarWithStatus from "./UserAvatarWithStatus";
 
 export default function DirectMessageChannel(props: { channel: DirectChannel; onSelected?: () => void }) {
 	const queryClient = useQueryClient();

@@ -11,11 +11,10 @@ import {
 } from "@huginn/shared";
 import type { BasePayload, Snowflake } from "@huginn/shared";
 import { isOpcode } from "@huginn/shared";
-import EventEmitter from "eventemitter3";
-import type { HuginnClient } from "../../";
-import { EventEmitterWithHistory } from "../client/event-emitter";
-import { ClientReadyState, type GatewayOptions } from "../types";
-import { DefaultGatewayOptions } from "./constants";
+import { EventEmitterWithHistory } from "../client/event-emitter.ts";
+import type { HuginnClient } from "../client/huginn-client.ts";
+import { ClientReadyState, type GatewayOptions } from "../types.ts";
+import { DefaultGatewayOptions } from "./constants.ts";
 
 export class Gateway {
 	public readonly options: GatewayOptions;

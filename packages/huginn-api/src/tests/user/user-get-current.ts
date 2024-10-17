@@ -1,8 +1,9 @@
-import { describe, expect, test } from "bun:test";
-import { getLoggedClient } from "../test-utils";
+import { expect } from "@std/expect";
+import { describe, it } from "@std/testing/bdd";
+import { getLoggedClient } from "../test-utils.ts";
 
 describe("user-get-current", () => {
-	test("user-get-current-successful", async () => {
+	it("user-get-current-successful", async () => {
 		const client = await getLoggedClient();
 
 		const result = await client.users.getCurrent();

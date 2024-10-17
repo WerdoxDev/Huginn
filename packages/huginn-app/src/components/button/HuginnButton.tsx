@@ -1,5 +1,5 @@
-import type { HuginnButtonProps } from "@/types";
-import clsx from "clsx";
+import type { HuginnButtonProps } from "@/types.ts";
+import { clsx } from "@nick/clsx";
 
 export default function HuginnButton(props: HuginnButtonProps) {
 	return (

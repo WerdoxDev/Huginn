@@ -1,0 +1,9 @@
+{
+   "name": "@huginn/api",
+   "exports": "./src/index.ts",
+   "imports": {
+      "@std/expect": "jsr:@std/expect@^1.0.5",
+      "@std/testing": "jsr:@std/testing@^1.0.3",
+      "jose": "npm:jose@^5.7.0"
+   }
+}

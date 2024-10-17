@@ -1,6 +1,6 @@
-import type { LoadingState } from "@/types";
-import { useWindowDispatch } from "@contexts/windowContext";
-import useUpdater from "@hooks/useUpdater";
+import type { LoadingState } from "@/types.ts";
+import { useWindowDispatch } from "@contexts/windowContext.tsx";
+import useUpdater from "@hooks/useUpdater.ts";
 import { createFileRoute } from "@tanstack/react-router";
 import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useMemo, useState } from "react";

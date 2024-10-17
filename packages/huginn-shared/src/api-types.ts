@@ -1,5 +1,5 @@
 import type { Merge } from "@huginn/shared";
-import type { Snowflake } from "./snowflake";
+import type { Snowflake } from "./snowflake.ts";
 
 export type LoginCredentials = APIPostLoginJSONBody;
 export type RegisterUser = APIPostRegisterJSONBody;

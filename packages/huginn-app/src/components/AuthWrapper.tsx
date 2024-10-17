@@ -10,7 +10,7 @@ export default function AuthWrapper(props: { children?: ReactNode; hidden: boole
 
 	return (
 		<animated.form
-			onSubmit={(e) => {
+			onSubmit={(e: SubmitEvent) => {
 				e.preventDefault();
 				props.onSubmit();
 			}}

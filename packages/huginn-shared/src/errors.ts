@@ -1,5 +1,5 @@
-import type { RawFile } from "./rest-types";
-import type { Snowflake } from "./snowflake";
+import type { RawFile } from "./rest-types.ts";
+import type { Snowflake } from "./snowflake.ts";
 
 export type HuginnErrorFieldInformation = {
 	code: string;

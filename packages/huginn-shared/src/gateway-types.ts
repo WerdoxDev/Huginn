@@ -1,6 +1,6 @@
-import type { APIChannelUser, DirectChannel, UserPresence, UserSettings } from "./api-types";
-import type { APIMessage, APIMessageUser, APIRelationshipWithoutOwner, APIUser, Tokens } from "./api-types";
-import type { Snowflake } from "./snowflake";
+import type { APIChannelUser, DirectChannel, UserPresence, UserSettings } from "./api-types.ts";
+import type { APIMessage, APIMessageUser, APIRelationshipWithoutOwner, APIUser, Tokens } from "./api-types.ts";
+import type { Snowflake } from "./snowflake.ts";
 
 export enum GatewayOperations {
 	DISPATCH = 0,

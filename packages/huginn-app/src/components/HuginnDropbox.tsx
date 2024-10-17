@@ -1,8 +1,8 @@
-import type { DropboxItem } from "@/types";
+import type { DropboxItem } from "@/types.ts";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
-import { filterChildrenOfType } from "@lib/utils";
+import { filterChildrenOfType } from "@lib/utils.ts";
+import { clsx } from "@nick/clsx";
 import type { ReactNode } from "@tanstack/react-router";
-import clsx from "clsx";
 import { useEffect, useMemo, useState } from "react";
 
 export default function HuginnDropbox(props: {
@@ -72,7 +72,7 @@ export default function HuginnDropbox(props: {
 
 function Label(props: { children?: ReactNode; skipRender?: boolean }) {
 	return !props.skipRender ? (
-		<label className="text-text mb-2 select-none text-xs font-medium uppercase opacity-90">{props.children}</label>
+		<label className="mb-2 select-none font-medium text-text text-xs uppercase opacity-90">{props.children}</label>
 	) : (
 		props.children
 	);

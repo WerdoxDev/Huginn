@@ -1,11 +1,12 @@
 ## Default test
 
 ```ts
-import { describe, expect, test } from "bun:test";
-import { getLoggedClient } from "../test-utils";
+import { expect } from "@std/expect";
+import { describe, it} from "@std/testing/bdd";
+import { getLoggedClient } from "../test-utils.ts";
 
 describe("category-name", () => {
-   test("test-description", async () => {
+   it(t-description", async () => {
       const client = await getLoggedClient();
    });
 });
@@ -14,11 +15,12 @@ describe("category-name", () => {
 ## Http result test
 
 ```ts
-import { describe, expect, test } from "bun:test";
-import { getLoggedClient } from "../test-utils";
+import { expect } from "@std/expect";
+import { describe, it } from "@std/testing/bdd";
+import { getLoggedClient } from "../test-utils.ts";
 
 describe("category-name", () => {
-   test("test-description", async () => {
+   it("test-description", async () => {
       const client = await getLoggedClient();
 
       expect(() => test).toThrow("expected");

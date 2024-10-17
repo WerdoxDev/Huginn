@@ -1,8 +1,9 @@
-import { describe, expect, test } from "bun:test";
-import { getLoggedClient } from "../test-utils";
+import { expect } from "@std/expect";
+import { describe, it } from "@std/testing/bdd";
+import { getLoggedClient } from "../test-utils.ts";
 
 describe("auth-logout", () => {
-	test("auth-logout-success", async () => {
+	it("auth-logout-success", async () => {
 		const client = await getLoggedClient();
 
 		const token = client.tokenHandler.token;

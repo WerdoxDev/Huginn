@@ -1,6 +1,6 @@
-import type { ColorTheme, ThemeType } from "@/types";
+import type { ColorTheme, ThemeType } from "@/types.ts";
+import { useSettings } from "@contexts/settingsContext.tsx";
 import { type Dispatch, type ReactNode, createContext, useContext, useEffect, useReducer } from "react";
-import { useSettings } from "./settingsContext";
 
 export const ceruleanTheme: ColorTheme = {
 	background: "#303030",

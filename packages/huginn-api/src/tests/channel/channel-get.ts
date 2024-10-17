@@ -1,9 +1,10 @@
-import { describe, expect, test } from "bun:test";
 import { ChannelType } from "@huginn/shared";
-import { getLoggedClient, test3Credentials } from "../test-utils";
+import { expect } from "@std/expect";
+import { describe, it } from "@std/testing/bdd";
+import { getLoggedClient, test3Credentials } from "../test-utils.ts";
 
 describe("channel-get", () => {
-	test("channel-get-by-id-invalid", async () => {
+	it("hannel-get-by-id-invalid", async () => {
 		const client = await getLoggedClient();
 		const client3 = await getLoggedClient(test3Credentials);
 
@@ -14,7 +15,7 @@ describe("channel-get", () => {
 		expect(() => client.channels.get("000000000000000000")).toThrow("Unknown Channel"); // Unknown id
 		expect(() => client3.channels.get(channel.id)).toThrow("Missing Access"); // Not part of channel
 	});
-	test("channel-get-all-successful", async () => {
+	it("channel-get-all-successful", async () => {
 		const client = await getLoggedClient();
 
 		const channels = await client.channels.getAll();
@@ -22,7 +23,7 @@ describe("channel-get", () => {
 		expect(channels).toBeDefined();
 		expect(channels.length).toBeGreaterThan(0);
 	});
-	test("channel-get-by-id-successful", async () => {
+	it("channel-get-by-id-successful", async () => {
 		const client = await getLoggedClient();
 
 		const channels = await client.channels.getAll();

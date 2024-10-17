@@ -1,7 +1,7 @@
 import { RelationshipType, type Snowflake, WorkerID, snowflake } from "@huginn/shared";
-import { Prisma } from "@prisma/client";
-import { DBErrorType, assertCondition, assertId, assertObj, prisma } from ".";
-import type { RelationshipInclude, RelationshipPayload } from "./common";
+import { Prisma } from "../../generated/client/deno/edge.ts";
+import type { RelationshipInclude, RelationshipPayload } from "./common.ts";
+import { DBErrorType, assertCondition, assertId, assertObj, prisma } from "./index.ts";
 
 const relationshipExtention = Prisma.defineExtension({
 	model: {

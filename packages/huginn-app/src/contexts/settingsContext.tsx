@@ -1,5 +1,5 @@
-import type { DeepPartial, ThemeType, VersionFlavour } from "@/types";
-import { getVersionFlavour } from "@lib/utils";
+import type { DeepPartial, ThemeType, VersionFlavour } from "@/types.ts";
+import { getVersionFlavour } from "@lib/utils.ts";
 import { appDataDir } from "@tauri-apps/api/path";
 import { BaseDirectory, create, exists, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { type ReactNode, createContext, useContext, useReducer } from "react";

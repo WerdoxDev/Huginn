@@ -1,5 +1,5 @@
-import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
-import { useTheme } from "@contexts/themeContext";
+import { AuthBackgroundContext } from "@contexts/authBackgroundContext.ts";
+import { useTheme } from "@contexts/themeContext.tsx";
 import { animated, useSpring } from "@react-spring/web";
 import { useContext, useMemo } from "react";
 

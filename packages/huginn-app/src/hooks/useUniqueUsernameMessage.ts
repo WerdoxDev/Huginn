@@ -1,9 +1,9 @@
+import type { InputValues, MessageDetail, StatusCode } from "@/types.ts";
+import { useClient } from "@contexts/apiContext.tsx";
+import { useUser } from "@contexts/userContext.tsx";
 import { constants } from "@huginn/shared";
 import { Fields } from "@huginn/shared";
 import { useEffect, useRef, useState } from "react";
-import { useClient } from "@contexts/apiContext";
-import type { InputValues, MessageDetail, StatusCode } from "@/types";
-import { useUser } from "@contexts/userContext";
 
 export default function useUniqueUsernameMessage(values: InputValues, usernameField: string) {
 	const client = useClient();

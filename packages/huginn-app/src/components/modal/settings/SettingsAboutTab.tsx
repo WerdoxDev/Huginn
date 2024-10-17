@@ -1,5 +1,5 @@
-import LinkButton from "@components/button/LinkButton";
-import { useWindow } from "@contexts/windowContext";
+import LinkButton from "@components/button/LinkButton.tsx";
+import { useWindow } from "@contexts/windowContext.tsx";
 import { useQuery } from "@tanstack/react-query";
 import { getTauriVersion, getVersion } from "@tauri-apps/api/app";
 import { open } from "@tauri-apps/plugin-shell";

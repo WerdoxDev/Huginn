@@ -1,6 +1,6 @@
-import { useWindow } from "@contexts/windowContext";
+import { useWindow } from "@contexts/windowContext.tsx";
 import { DialogBackdrop } from "@headlessui/react";
-import clsx from "clsx";
+import { clsx } from "@nick/clsx";
 
 export default function ModalBackground() {
 	const appWindow = useWindow();
