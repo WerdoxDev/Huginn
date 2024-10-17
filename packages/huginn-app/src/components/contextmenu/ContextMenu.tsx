@@ -23,7 +23,7 @@ import {
 	useRole,
 } from "@floating-ui/react";
 import clsx from "clsx";
-import { type HTMLProps, createContext, forwardRef, useContext, useEffect, useRef, useState } from "react";
+import { type HTMLProps, createContext } from "react";
 
 const Context = createContext<{
 	getItemProps: (userProps?: React.HTMLProps<HTMLElement>) => Record<string, unknown>;
@@ -234,7 +234,7 @@ const Item = forwardRef<HTMLButtonElement, ContextMenuItemProps & React.ButtonHT
 	},
 );
 
-export function ContextMenu(props: ContextMenuProps) {
+export default function ContextMenu(props: ContextMenuProps) {
 	const parentId = useFloatingParentNodeId();
 
 	if (parentId === null) {

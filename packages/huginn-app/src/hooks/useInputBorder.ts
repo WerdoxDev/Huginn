@@ -1,5 +1,4 @@
 import type { InputStatus } from "@/types";
-import { useState, useEffect } from "react";
 
 export function useInputBorder(status: InputStatus) {
 	const defaultColor = "border-primary";

@@ -1,6 +1,3 @@
-import GuildButton from "./button/GuildButton";
-import HomeButton from "./button/HomeButton";
-
 export default function GuildsBar() {
 	return (
 		<nav className="bg-background flex h-full w-[4.75rem] shrink-0 flex-col">

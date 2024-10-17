@@ -1,9 +1,6 @@
 import type { LoadingState } from "@/types";
-import { useWindowDispatch } from "@contexts/windowContext";
-import useUpdater from "@hooks/useUpdater";
 import { createFileRoute } from "@tanstack/react-router";
 import { invoke } from "@tauri-apps/api/core";
-import { useEffect, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/splashscreen")({
 	component: Splashscreen,

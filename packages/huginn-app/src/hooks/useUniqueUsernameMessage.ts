@@ -1,18 +1,15 @@
+import type { InputValues, MessageDetail, StatusCode } from "@/types";
 import { constants } from "@huginn/shared";
 import { Fields } from "@huginn/shared";
-import { useEffect, useRef, useState } from "react";
-import { useClient } from "@contexts/apiContext";
-import type { InputValues, MessageDetail, StatusCode } from "@/types";
-import { useUser } from "@contexts/userContext";
 
-export default function useUniqueUsernameMessage(values: InputValues, usernameField: string) {
+export function useUniqueUsernameMessage(values: InputValues, usernameField: string) {
 	const client = useClient();
 	const { user } = useUser();
 
 	const defaultMessage = "Please only use numbers, letters, _";
 	const [message, setMessage] = useState<MessageDetail>({ text: defaultMessage, status: "default", visible: false });
 
-	const usernameTimeout = useRef<number>();
+	const usernameTimeout = useRef<Timer>();
 	const lastFocus = useRef<boolean>(false);
 	const prevUsername = useRef(values[usernameField].value);
 

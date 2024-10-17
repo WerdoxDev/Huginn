@@ -1,6 +1,5 @@
 import type { MessageRendererProps } from "@/types";
 import { MessageType } from "@huginn/shared";
-import { useMemo } from "react";
 
 export default function UserActionMessage(props: MessageRendererProps) {
 	const name = useMemo(() => props.renderInfo.message.author.displayName ?? props.renderInfo.message.author.username, [props.renderInfo]);

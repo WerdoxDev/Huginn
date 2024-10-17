@@ -1,11 +1,5 @@
-import { useContextMenu } from "@contexts/contextMenuContext";
-import { usePresence } from "@contexts/presenceContext";
-import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMChannel";
-import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import type { APIChannelUser, Snowflake } from "@huginn/shared";
 import clsx from "clsx";
-import UserAvatarWithStatus from "./UserAvatarWithStatus";
-import { Tooltip } from "./tooltip/Tooltip";
 
 export default function ChannelRecipient(props: { channelId: Snowflake; isOwner: boolean; recipient: APIChannelUser }) {
 	const presence = usePresence(props.recipient.id);

@@ -1,12 +1,6 @@
-import UserAvatarWithStatus from "@components/UserAvatarWithStatus";
-import { Tooltip } from "@components/tooltip/Tooltip";
-import { useContextMenu } from "@contexts/contextMenuContext";
-import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMChannel";
-import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
-import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import { type APIRelationUser, RelationshipType } from "@huginn/shared";
 import type { Snowflake, UserPresence } from "@huginn/shared";
-import { useMemo } from "react";
+import type { MouseEvent } from "react";
 
 export default function FriendItem(props: {
 	type: RelationshipType;
@@ -47,7 +41,7 @@ export default function FriendItem(props: {
 	return (
 		<div
 			className="group relative flex cursor-pointer items-center justify-between overflow-hidden rounded-xl p-2.5 hover:bg-secondary"
-			onContextMenu={(e) => {
+			onContextMenu={(e: MouseEvent<HTMLDivElement>) => {
 				openRelationship({ user: props.user, type: props.type }, e);
 			}}
 			onClick={(e) => {
@@ -110,7 +104,7 @@ export default function FriendItem(props: {
 						</Tooltip>
 						<Tooltip>
 							<Tooltip.Trigger
-								onClick={(e) => {
+								onClick={(e: MouseEvent<HTMLButtonElement>) => {
 									e.stopPropagation();
 									openRelationshipMore({ user: props.user, type: props.type }, e);
 								}}

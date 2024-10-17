@@ -1,10 +1,6 @@
-import { useContextMenu } from "@contexts/contextMenuContext";
-import { useModalsDispatch } from "@contexts/modalContext";
-import { useDeleteDMChannel } from "@hooks/mutations/useDeleteDMChannel";
 import { ChannelType } from "@huginn/shared";
-import { ContextMenu } from "./ContextMenu";
 
-export function ChannelsContextMenu() {
+export default function ChannelsContextMenu() {
 	const { context, data, close } = useContextMenu("dm_channel");
 	const mutation = useDeleteDMChannel();
 	const dispatch = useModalsDispatch();

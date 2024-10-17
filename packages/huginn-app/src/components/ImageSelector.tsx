@@ -1,5 +1,3 @@
-import { Tooltip } from "./tooltip/Tooltip";
-
 export default function ImageSelector(props: { data?: string | null; onDelete?: () => void; onSelected?: (data: string, mimeType: string) => void }) {
 	function openFileDialog() {
 		const input = document.createElement("input");

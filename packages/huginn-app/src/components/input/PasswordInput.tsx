@@ -1,6 +1,5 @@
-import { createContext, type HTMLInputTypeAttribute, useContext, useMemo, useState } from "react";
-import HuginnInput from "./HuginnInput";
 import type { HuginnInputProps } from "@/types";
+import { type HTMLInputTypeAttribute, createContext } from "react";
 
 const PasswordContext = createContext({ toggleType: () => {}, hidden: true });
 

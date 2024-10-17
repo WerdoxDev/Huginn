@@ -1,5 +1,5 @@
 import type { APIUser, GatewayMessageCreateData } from "@huginn/shared";
-import { type ReactNode, createContext, useCallback, useContext, useEffect, useRef } from "react";
+import { type ReactNode, createContext } from "react";
 
 type EventTypes = {
 	message_added: { message: GatewayMessageCreateData; visible: boolean; self: boolean };

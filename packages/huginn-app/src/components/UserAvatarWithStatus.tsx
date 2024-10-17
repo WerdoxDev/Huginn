@@ -1,10 +1,6 @@
-import { useClient } from "@contexts/apiContext";
-import { usePresence } from "@contexts/presenceContext";
 import type { Snowflake } from "@huginn/shared";
-import { getUserAvatar } from "@lib/queries";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
 
 export default function UserAvatarWithStatus(props: {
 	userId: Snowflake;

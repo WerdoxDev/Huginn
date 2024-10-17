@@ -1,13 +1,5 @@
+import type { InputOptions, InputProps, InputStatus, InputStatuses, InputValues } from "@/types";
 import type { HuginnErrorData } from "@huginn/shared";
-import { useEffect, useState } from "react";
-import {
-	checkStatusesHaveErrors,
-	getEmptyStatuses,
-	getInputCurrentStatus,
-	getInputsStatusesFromError,
-	getInputsValidatedStatuses,
-} from "../lib/utils";
-import type { InputOptions, InputProps, InputStatus, InputStatuses, InputValues } from "../types";
 
 export function useInputs(inputsOptions: InputOptions[]) {
 	const newValues: InputValues = {};

@@ -1,18 +1,17 @@
 import type { TooltipOptions } from "@/types";
-import { TooltipContext, useTooltip, useTooltipContext } from "@contexts/tooltipContext";
 import { useMergeRefs } from "@floating-ui/react";
 import { Portal, Transition } from "@headlessui/react";
 import type { ReactNode } from "@tanstack/react-router";
-import { type HTMLProps, cloneElement, forwardRef, isValidElement, useMemo } from "react";
+import { type HTMLProps, cloneElement, isValidElement } from "react";
 
-export function Tooltip({ children, ...options }: { children: ReactNode } & TooltipOptions) {
+export default function Tooltip({ children, ...options }: { children: ReactNode } & TooltipOptions) {
 	// This can accept any props as options, e.g. `placement`,
 	// or other positioning options.
 	const tooltip = useTooltip(options);
 	return <TooltipContext.Provider value={tooltip}>{children}</TooltipContext.Provider>;
 }
 
-const Trigger = forwardRef<HTMLElement, HTMLProps<HTMLElement> & { asChild?: boolean }>(function TooltipTrigger(
+const Trigger = forwardRef<HTMLButtonElement, HTMLProps<HTMLButtonElement> & { asChild?: boolean }>(function TooltipTrigger(
 	{ children, asChild = false, ...props },
 	propRef,
 ) {

@@ -1,10 +1,4 @@
-import ChannelIcon from "@components/ChannelIcon";
-import UserAvatarWithStatus from "@components/UserAvatarWithStatus";
-import { Tooltip } from "@components/tooltip/Tooltip";
-import { useUser } from "@contexts/userContext";
-import { useChannelName } from "@hooks/useChannelName";
 import { ChannelType, type DirectChannel } from "@huginn/shared";
-import { useMemo } from "react";
 
 export default function HomeTopbar(props: { channel: DirectChannel; onRecipientsClick?: () => void }) {
 	const { user } = useUser();

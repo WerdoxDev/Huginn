@@ -1,9 +1,5 @@
-import UserAvatarWithStatus from "@components/UserAvatarWithStatus";
 import { Checkbox } from "@headlessui/react";
 import { type APIRelationUser, type APIRelationshipWithoutOwner, RelationshipType, type Snowflake } from "@huginn/shared";
-import { useMemo, useState } from "react";
-import { ComboboxInput } from "./ComboboxInput";
-import HuginnInput from "./HuginnInput";
 
 export default function AddRecipientInput(props: {
 	label?: string;

@@ -1,11 +1,7 @@
-import { useClient } from "@contexts/apiContext";
-import { useEvent } from "@contexts/eventContext";
-import { useUser } from "@contexts/userContext";
-import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { type APIGetChannelMessagesResult, type APIGetUserChannelsResult, type GatewayUserUpdateData, omit } from "@huginn/shared";
 import type { APIMessageUser, GatewayMessageCreateData, GatewayPresenceUpdateData } from "@huginn/shared";
 import { type InfiniteData, useQueryClient } from "@tanstack/react-query";
-import { type ReactNode, useEffect } from "react";
+import type { ReactNode } from "react";
 
 export default function MessageProvider(props: { children?: ReactNode }) {
 	const client = useClient();

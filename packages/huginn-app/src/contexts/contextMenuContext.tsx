@@ -1,5 +1,5 @@
 import type { ContextMenuDMChannel, ContextMenuDMChannelRecipient, ContextMenuRelationship, ContextMenuStateProps } from "@/types";
-import { type Dispatch, type MouseEvent, type ReactNode, createContext, useContext, useMemo, useReducer } from "react";
+import { type Dispatch, type MouseEvent, type ReactNode, createContext } from "react";
 
 type ContextMenuContextType = {
 	dm_channel?: ContextMenuStateProps<ContextMenuDMChannel>;
@@ -30,7 +30,7 @@ export function useContextMenu<T extends keyof ContextMenuContextType>(type: T) 
 
 	const data = useMemo(() => context[type]?.contextData, [context[type]]);
 
-	function open(data: Required<ContextMenuContextType>[T]["contextData"], e: MouseEvent) {
+	function open(data: Required<ContextMenuContextType>[T]["contextData"], e: MouseEvent<HTMLElement>) {
 		e.preventDefault();
 		dispatch({ [type]: { isOpen: true, contextData: data, position: [e.clientX, e.clientY] } });
 	}

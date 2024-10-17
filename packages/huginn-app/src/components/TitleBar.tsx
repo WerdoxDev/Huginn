@@ -1,6 +1,5 @@
-import { useWindow } from "@contexts/windowContext";
 import { type WebviewWindow, getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { type ReactPortal, useEffect, useRef } from "react";
+import type { ReactPortal } from "react";
 import { createPortal } from "react-dom";
 
 export default function TitleBar(): ReactPortal {

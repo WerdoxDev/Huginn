@@ -1,13 +1,4 @@
-import { useClient } from "@contexts/apiContext";
-import { useContextMenu } from "@contexts/contextMenuContext";
-import { useUser } from "@contexts/userContext";
-import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
-import { usePatchDMChannel } from "@hooks/mutations/usePathDMChannel";
-import { useRemoveChannelRecipient } from "@hooks/mutations/useRemoveChannelRecipient";
-import { useChannelRecipients } from "@hooks/useChannelRecipients";
-import { ContextMenu } from "./ContextMenu";
-
-export function ChannelRecipientContextMenu() {
+export default function ChannelRecipientContextMenu() {
 	const { context, data, close } = useContextMenu("dm_channel_recipient");
 	const { user } = useUser();
 	const deleteMutation = useRemoveChannelRecipient();

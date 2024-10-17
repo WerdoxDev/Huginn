@@ -1,6 +1,5 @@
 import type { ColorTheme, ThemeType } from "@/types";
-import { type Dispatch, type ReactNode, createContext, useContext, useEffect, useReducer } from "react";
-import { useSettings } from "./settingsContext";
+import { type Dispatch, type ReactNode, createContext } from "react";
 
 export const ceruleanTheme: ColorTheme = {
 	background: "#303030",

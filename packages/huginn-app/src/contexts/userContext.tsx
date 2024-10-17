@@ -1,8 +1,6 @@
 import type { APIUser, GatewayUserUpdateData } from "@huginn/shared";
 import type { ReactNode } from "@tanstack/react-router";
-import { createContext, useContext, useEffect, useState } from "react";
-import { useClient } from "./apiContext";
-import { useEvent } from "./eventContext";
+import { createContext } from "react";
 
 type UserContextType = {
 	user?: APIUser;

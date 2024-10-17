@@ -1,31 +1,9 @@
-import ModalErrorComponent from "@components/ModalErrorComponent";
-import TitleBar from "@components/TitleBar";
-import { ChannelRecipientContextMenu } from "@components/contextmenu/ChannelRecipientContextMenu";
-import { ChannelsContextMenu } from "@components/contextmenu/ChannelsContextMenu";
-import RelationshipContextMenu from "@components/contextmenu/RelationshipContextMenu";
-import RelationshipMoreContextMenu from "@components/contextmenu/RelationshipMoreContextMenu";
-import { AddRecipientModal } from "@components/modal/AddRecipientModal";
-import { CreateDMModal } from "@components/modal/CreateDMModal";
-import EditGroupModal from "@components/modal/EditDMModal";
-import ImageCropModal from "@components/modal/ImageCropModal";
-import InfoModal from "@components/modal/InfoModal";
-import SettingsModal from "@components/modal/SettingsModal";
-import type { useClient } from "@contexts/apiContext";
-import { ContextMenuProvider } from "@contexts/contextMenuContext";
-import { routeHistory } from "@contexts/historyContext";
-import { ModalProvider } from "@contexts/modalContext";
-import { PresenceProvider } from "@contexts/presenceContext";
-import { ThemeProvier } from "@contexts/themeContext";
-import { UserProvider, useUser } from "@contexts/userContext";
-import { useWindow, useWindowDispatch } from "@contexts/windowContext";
-import { setup } from "@lib/middlewares";
 import type { QueryClient } from "@tanstack/react-query";
 import { Outlet, createRootRouteWithContext, useRouter } from "@tanstack/react-router";
 import "@tauri-apps/api";
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import type { PostHog } from "posthog-js";
-import { useEffect, useRef } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
 export type HuginnRouterContext = {

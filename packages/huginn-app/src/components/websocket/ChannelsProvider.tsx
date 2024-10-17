@@ -1,4 +1,3 @@
-import { useClient } from "@contexts/apiContext";
 import {
 	type APIChannelUser,
 	type APIGetUserChannelsResult,
@@ -12,7 +11,7 @@ import {
 } from "@huginn/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
-import { type ReactNode, useEffect } from "react";
+import type { ReactNode } from "react";
 
 export default function ChannelsProvider(props: { children?: ReactNode }) {
 	const client = useClient();

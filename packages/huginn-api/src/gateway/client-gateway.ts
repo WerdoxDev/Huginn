@@ -11,7 +11,6 @@ import {
 } from "@huginn/shared";
 import type { BasePayload, Snowflake } from "@huginn/shared";
 import { isOpcode } from "@huginn/shared";
-import EventEmitter from "eventemitter3";
 import type { HuginnClient } from "../../";
 import { EventEmitterWithHistory } from "../client/event-emitter";
 import { ClientReadyState, type GatewayOptions } from "../types";

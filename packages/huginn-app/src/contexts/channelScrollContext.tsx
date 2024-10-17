@@ -1,4 +1,4 @@
-import { createContext, type Dispatch, type ReactNode, useContext, useReducer } from "react";
+import { type Dispatch, type ReactNode, createContext } from "react";
 
 type ChannelScrollContextType = Map<string, number>;
 type ChannelScrollDispatchType = { channelId: string; scroll: number };

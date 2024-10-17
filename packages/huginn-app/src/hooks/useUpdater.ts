@@ -1,8 +1,6 @@
 import type { VersionFlavour } from "@/types";
-import { useWindow } from "@contexts/windowContext";
 import { invoke } from "@tauri-apps/api/core";
 import { type UnlistenFn, listen } from "@tauri-apps/api/event";
-import { useEffect, useRef, useState } from "react";
 
 type UpdateProgress = {
 	downloaded: number;
@@ -15,7 +13,7 @@ type UpdateInfo = {
 	version: string;
 };
 
-export default function useUpdater(onFinished?: (wasAvailable: boolean) => void) {
+export function useUpdater(onFinished?: (wasAvailable: boolean) => void) {
 	const [progress, setProgress] = useState(0);
 	const [info, setInfo] = useState<UpdateInfo>();
 	const contentLength = useRef(0);

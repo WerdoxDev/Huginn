@@ -1,11 +1,6 @@
-import AnimatedOutlet from "@components/AnimatedOutlet";
-import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
-import { useWindow } from "@contexts/windowContext";
-import useRouteAnimation from "@hooks/useRouteAnimation";
 import { useTransition } from "@react-spring/web";
 import { createFileRoute } from "@tanstack/react-router";
 import clsx from "clsx";
-import { useState } from "react";
 
 export const Route = createFileRoute("/_layoutAnimation")({
 	component: LayoutAnimation,

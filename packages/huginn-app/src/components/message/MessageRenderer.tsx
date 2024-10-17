@@ -1,34 +1,31 @@
 import type { MessageRendererProps } from "@/types";
 import { MessageType } from "@huginn/shared";
-import { tokenize } from "@lib/huginn-tokenizer";
 import clsx from "clsx";
-import { forwardRef, useCallback, useMemo, useRef } from "react";
 import { type Node, type Path, type Range, Text, createEditor } from "slate";
 import { DefaultElement, type RenderElementProps, type RenderLeafProps, withReact } from "slate-react";
-import MessageLeaf from "../editor/MessageLeaf";
-import DefaultMessage from "./DefaultMessage";
-import UserActionMessage from "./UserActionMessage";
 
 const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, ref) => {
 	const editor = useMemo(() => withReact(createEditor()), []);
 
-	const currentDefaultType = useMemo(() => props.renderInfo.message.type === MessageType.DEFAULT, [props.renderInfo]);
+	const currentExotic = useMemo(() => props.renderInfo.exoticType, [props.renderInfo]);
 
-	const nextNew = useMemo(
+	const nextConnectable = useMemo(
 		() =>
-			props.nextRenderInfo?.newAuthor ||
-			props.nextRenderInfo?.newMinute ||
-			!props.nextRenderInfo ||
-			props.nextRenderInfo.newType ||
-			!currentDefaultType,
-		[props.nextRenderInfo, currentDefaultType],
+			(props.renderInfo.exoticType === false && props.nextRenderInfo?.exoticType === false) ||
+			(props.renderInfo.exoticType === true && props.nextRenderInfo?.exoticType === true),
+		[props.renderInfo, props.nextRenderInfo],
 	);
 
-	const currentNew = useMemo(
-		() => props.renderInfo.newAuthor || props.renderInfo.newMinute || props.renderInfo.newDate || props.renderInfo.newType || !currentDefaultType,
-		[props.renderInfo, currentDefaultType],
+	const lastConnectable = useMemo(
+		() =>
+			(props.renderInfo.exoticType === false && props.lastRenderInfo?.exoticType === false) ||
+			(props.renderInfo.exoticType === true && props.lastRenderInfo?.exoticType === true),
+		[props.renderInfo, props.lastRenderInfo],
 	);
-	const currentNewDate = useMemo(() => props.renderInfo.newDate || !props.lastRenderInfo, [props.renderInfo.newDate, props.lastRenderInfo]);
+
+	const nextNew = useMemo(() => props.nextRenderInfo?.newAuthor || props.nextRenderInfo?.newMinute || !props.nextRenderInfo, [props.nextRenderInfo]);
+	const currentNew = useMemo(() => props.renderInfo.newAuthor || props.renderInfo.newMinute || props.renderInfo.newDate, [props.renderInfo]);
+	const currentNewDate = useMemo(() => props.renderInfo.newDate || !props.lastRenderInfo || props.renderInfo.newDate, [props.lastRenderInfo]);
 
 	const lastRanges = useRef<Range[]>();
 
@@ -73,19 +70,20 @@ const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, 
 		<li
 			ref={ref}
 			className={clsx(
-				"group select-text p-2 hover:bg-secondary",
+				"group select-text hover:bg-secondary",
+				currentExotic ? "p-1 pl-2" : "p-2",
 				!nextNew && "pb-0.5",
-				nextNew && "rounded-b-lg",
 				!currentNew && "py-0.5",
-				currentNew && "rounded-t-lg",
-				currentNew && !currentNewDate && "mt-1.5",
+				(nextNew || !nextConnectable || currentExotic) && "rounded-b-lg",
+				(currentNew || !lastConnectable || currentExotic) && "rounded-t-lg",
+				((currentNew && !currentExotic) || !lastConnectable) && !currentNewDate && "mt-1.5",
 			)}
 		>
 			{[MessageType.DEFAULT].includes(props.renderInfo.message.type) && (
 				<DefaultMessage
 					{...props}
-					nextNew={nextNew}
-					currentNew={currentNew}
+					nextNew={nextNew || !nextConnectable || currentExotic}
+					currentNew={currentNew || !lastConnectable || currentExotic}
 					editor={editor}
 					decorate={decorate}
 					renderElement={renderElement}

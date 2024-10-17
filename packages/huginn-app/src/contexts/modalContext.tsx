@@ -1,7 +1,7 @@
 import type { DeepPartial, StatusCode } from "@/types";
 import type { APIChannel, Snowflake } from "@huginn/shared";
 import type { ReactNode } from "@tanstack/react-router";
-import { type Dispatch, createContext, useContext, useReducer } from "react";
+import { type Dispatch, createContext } from "react";
 
 type DefaultModal = { isOpen: boolean };
 export type ModalContextType = {

@@ -1,7 +1,6 @@
 import { useRouter } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 
-export default function useRouteAnimation(...updateFor: string[]) {
+export function useRouteAnimation(...updateFor: string[]) {
 	const router = useRouter();
 	const [id, setId] = useState<string>();
 

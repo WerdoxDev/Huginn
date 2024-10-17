@@ -1,5 +1,3 @@
-import { router } from "@/main";
-import { routeHistory } from "@contexts/historyContext";
 import type { HuginnClient } from "@huginn/api";
 import type { APIDMChannel, APIGroupDMChannel } from "@huginn/shared";
 import type { Snowflake } from "@huginn/shared";

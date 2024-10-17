@@ -1,8 +1,6 @@
-import { useWindow } from "@contexts/windowContext";
 import { Dialog, TransitionChild } from "@headlessui/react";
 import clsx from "clsx";
 import type { ReactNode } from "react";
-import ModalBackground from "./ModalBackground";
 
 export default function BaseModal(props: { modal: { isOpen: boolean }; onClose: () => void; children?: ReactNode }) {
 	const appWindow = useWindow();

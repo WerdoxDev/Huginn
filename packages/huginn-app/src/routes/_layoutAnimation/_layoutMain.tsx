@@ -1,10 +1,4 @@
-import GuildsBar from "@components/GuildsBar";
-import WebsocketProviders from "@components/websocket/WebsocketProviders";
-import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
-import { ChannelScrollProvider } from "@contexts/channelScrollContext";
-import { PresenceProvider } from "@contexts/presenceContext";
 import { Outlet, createFileRoute } from "@tanstack/react-router";
-import { useContext, useEffect } from "react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain")({
 	component: LayoutMain,

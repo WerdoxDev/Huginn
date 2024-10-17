@@ -1,10 +1,3 @@
-import HomeSidebar from "@components/HomeSidebar";
-import RouteErrorComponent from "@components/RouteErrorComponent";
-import UserInfo from "@components/UserInfo";
-import { useClient } from "@contexts/apiContext";
-import { useUser } from "@contexts/userContext";
-import { requireAuth } from "@lib/middlewares";
-import { getChannelsOptions } from "@lib/queries";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Outlet, createFileRoute } from "@tanstack/react-router";
 

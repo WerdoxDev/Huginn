@@ -1,17 +1,9 @@
-import { APIProvider } from "@contexts/apiContext";
-import { EventProvider } from "@contexts/eventContext";
-import { SettingsProvider, initializeSettings } from "@contexts/settingsContext";
-import { WindowProvider } from "@contexts/windowContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import DefaultNotFound from "@components/DefaultNotFound";
-import { PresenceProvider } from "@contexts/presenceContext";
 import { createRouter } from "@tanstack/react-router";
-import HuginnRouterProvider from "./HuginnRouterProvider";
-import { routeTree } from "./routeTree.gen";
 
 const queryClient = new QueryClient({
 	defaultOptions: { queries: { refetchOnReconnect: false, refetchOnWindowFocus: false, refetchOnMount: false, staleTime: 60000 } },

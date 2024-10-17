@@ -1,5 +1,3 @@
-import { QuickActionButton } from "@components/button/QuickActionButton";
-import { useModalsDispatch } from "@contexts/modalContext";
 import { Link, Outlet, createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/channels/@me")({

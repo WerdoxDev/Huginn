@@ -1,21 +1,6 @@
-import AnimatedMessage from "@components/AnimatedMessage";
-import AuthWrapper from "@components/AuthWrapper";
-import RouteErrorComponent from "@components/RouteErrorComponent";
-import LinkButton from "@components/button/LinkButton";
-import LoadingButton from "@components/button/LoadingButton";
-import HuginnInput from "@components/input/HuginnInput";
-import PasswordInput from "@components/input/PasswordInput";
-import { useClient } from "@contexts/apiContext";
-import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
-import { useUser } from "@contexts/userContext";
-import { useHuginnMutation } from "@hooks/useHuginnMutation";
-import { useInputs } from "@hooks/useInputs";
-import useUniqueUsernameMessage from "@hooks/useUniqueUsernameMessage";
 import type { APIPostRegisterJSONBody } from "@huginn/shared";
-import { requireNotAuth } from "@lib/middlewares";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { usePostHog } from "posthog-js/react";
-import { useContext, useEffect, useState } from "react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/register")({
 	beforeLoad({ context: { client } }) {

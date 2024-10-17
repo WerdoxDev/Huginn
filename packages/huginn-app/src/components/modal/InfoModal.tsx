@@ -1,11 +1,6 @@
-import HuginnButton from "@components/button/HuginnButton";
-import ModalCloseButton from "@components/button/ModalCloseButton";
-import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
-import { useEffect, useMemo } from "react";
-import BaseModal from "./BaseModal";
 
 export default function InfoModal() {
 	const { info: modal } = useModals();

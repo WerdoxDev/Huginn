@@ -1,3 +1,4 @@
+import type { SettingsContextType } from "@contexts/settingsContext";
 import type { Placement } from "@floating-ui/react";
 import type { AddChannelRecipientMutationVars } from "@hooks/mutations/useAddChannelRecipient";
 import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMChannel";
@@ -5,9 +6,7 @@ import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateR
 import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePathDMChannel";
 import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRemoveChannelRecipient";
 import type { APIChannelUser, APIDefaultMessage, APIRelationUser, DirectChannel, RelationshipType, Snowflake } from "@huginn/shared";
-import type React from "react";
 import type { HTMLInputTypeAttribute, ReactNode } from "react";
-import type { SettingsContextType } from "./contexts/settingsContext";
 
 export type StatusCode = "none" | "default" | "error" | "success";
 
@@ -155,7 +154,7 @@ export type MessageRenderInfo = {
 	newMinute: boolean;
 	newDate: boolean;
 	newAuthor: boolean;
-	newType: boolean;
+	exoticType: boolean;
 };
 
 export type VersionFlavour = "nightly" | "release";

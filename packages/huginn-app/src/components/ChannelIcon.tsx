@@ -1,9 +1,6 @@
-import { useClient } from "@contexts/apiContext";
 import type { Snowflake } from "@huginn/shared";
-import { getChannelIcon, getUserAvatar } from "@lib/queries";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
 
 export default function ChannelIcon(props: {
 	channelId: Snowflake;

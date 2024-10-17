@@ -1,16 +1,6 @@
-import MessageBox from "@components/MessageBox";
-import RouteErrorComponent from "@components/RouteErrorComponent";
-import ChannelMessages from "@components/channels/ChannelMessages";
-import HomeTopbar from "@components/channels/HomeTopbar";
-import RecipientsSidebar from "@components/channels/RecipientsSidebar";
-import { useClient } from "@contexts/apiContext";
-import { useSafePathname } from "@hooks/useLastSafePathname";
-import { useErrorHandler } from "@hooks/useServerErrorHandler";
 import { ChannelType } from "@huginn/shared";
-import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, useLinkProps } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/channels/@me/$channelId")({
 	component: Component,

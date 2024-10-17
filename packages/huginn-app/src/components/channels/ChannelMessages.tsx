@@ -1,15 +1,8 @@
 import type { MessageRenderInfo } from "@/types";
-import ChannelMessageLoadingIndicator from "@components/ChannelMessageLoadingIndicator";
-import MessageRenderer from "@components/message/MessageRenderer";
-import { useClient } from "@contexts/apiContext";
-import { useChannelScroll, useChannelScrollDispatch } from "@contexts/channelScrollContext";
-import { useEvent } from "@contexts/eventContext";
-import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { type APIDefaultMessage, type APIGetChannelMessagesResult, MessageType, type Snowflake } from "@huginn/shared";
-import { getMessagesOptions } from "@lib/queries";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import moment from "moment";
-import { type RefObject, useEffect, useMemo, useRef } from "react";
+import type { RefObject } from "react";
 
 const topScrollOffset = 100;
 const bottomScrollOffset = 100;
@@ -77,9 +70,9 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			const newDate = !moment(message.createdAt).isSame(lastMessage?.createdAt, "date") && !!lastMessage;
 			const newMinute = !moment(message.createdAt).isSame(lastMessage?.createdAt, "minute");
 			const newAuthor = message.author.id !== lastMessage?.author.id;
-			const newType = message.type !== lastMessage?.type;
+			const exoticType = message.type !== MessageType.DEFAULT;
 
-			return { message, newMinute, newDate, newAuthor, newType };
+			return { message, newMinute, newDate, newAuthor, exoticType };
 		});
 
 		return value;

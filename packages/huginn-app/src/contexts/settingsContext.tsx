@@ -1,8 +1,7 @@
 import type { DeepPartial, ThemeType, VersionFlavour } from "@/types";
-import { getVersionFlavour } from "@lib/utils";
 import { appDataDir } from "@tauri-apps/api/path";
 import { BaseDirectory, create, exists, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
-import { type ReactNode, createContext, useContext, useReducer } from "react";
+import { type ReactNode, createContext } from "react";
 
 const RELEASE_SETTINGS = "./data/settings.json";
 const NIGHTLY_SETTINGS = "./data/settings-nightly.json";

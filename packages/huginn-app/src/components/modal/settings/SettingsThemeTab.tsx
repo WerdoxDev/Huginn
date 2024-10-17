@@ -1,6 +1,4 @@
 import type { DropboxItem, SettingsTabProps, ThemeType } from "@/types";
-import HuginnDropbox from "@components/HuginnDropbox";
-import { ceruleanTheme, charcoalTheme, coffeeTheme, eggplantTheme, pineGreenTheme, useThemeDispather } from "@contexts/themeContext";
 
 function ThemeIcon(props: { color: string }) {
 	return <div className="h-6 w-6 rounded-md" style={{ background: props.color }} />;

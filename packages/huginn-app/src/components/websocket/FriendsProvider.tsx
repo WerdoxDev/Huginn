@@ -1,9 +1,8 @@
-import { useClient } from "@contexts/apiContext";
 import type { APIGetUserRelationshipsResult } from "@huginn/shared";
 import type { APIRelationUser, GatewayPresenceUpdateData, GatewayRelationshipCreateData } from "@huginn/shared";
 import type { Snowflake } from "@huginn/shared";
 import { useQueryClient } from "@tanstack/react-query";
-import { type ReactNode, useEffect } from "react";
+import type { ReactNode } from "react";
 
 export default function FriendsProvider(props: { children?: ReactNode }) {
 	const client = useClient();

@@ -1,8 +1,4 @@
-import AddFriendInput from "@components/input/AddFriendInput";
 import { TabPanel } from "@headlessui/react";
-import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
-import { useInputs } from "@hooks/useInputs";
-import { useEffect, useState } from "react";
 
 export default function AddFriendTab() {
 	const { inputsProps, values, handleErrors, setInputStatus } = useInputs([{ name: "username", required: false }]);

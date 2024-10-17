@@ -2,8 +2,8 @@ import type { InputStatus, InputStatuses, InputValue, InputValues, VersionFlavou
 import { HuginnAPIError } from "@huginn/api";
 import type { HuginnError, HuginnErrorData } from "@huginn/shared";
 import { getVersion } from "@tauri-apps/api/app";
-import React, { type JSXElementConstructor, type ReactNode } from "react";
-import { APIMessages } from "./error-messages";
+import type { JSXElementConstructor, ReactNode } from "react";
+import { Children, isValidElement } from "react";
 
 export const requiredFieldError: InputStatus = { code: "error", text: "Required" };
 
@@ -61,9 +61,7 @@ export function checkStatusesHaveErrors(statuses: InputStatuses, exclude?: Input
 }
 
 export function filterChildrenOfType(children: ReactNode, type: JSXElementConstructor<never>) {
-	return React.Children.toArray(children).filter(
-		(child) => React.isValidElement(child) && typeof child.type === "function" && child.type.name === type.name,
-	);
+	return Children.toArray(children).filter((child) => isValidElement(child) && typeof child.type === "function" && child.type.name === type.name);
 }
 
 export function isWorthyHuginnError(error: Error): error is HuginnAPIError {

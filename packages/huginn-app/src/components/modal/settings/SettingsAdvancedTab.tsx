@@ -1,11 +1,5 @@
 import type { DropboxItem, SettingsTabProps } from "@/types";
-import HuginnDropbox from "@components/HuginnDropbox";
-import HuginnInput from "@components/input/HuginnInput";
-import { useModalsDispatch } from "@contexts/modalContext";
-import { useWindow } from "@contexts/windowContext";
-import { useInputs } from "@hooks/useInputs";
 import { invoke } from "@tauri-apps/api/core";
-import { useEffect, useState } from "react";
 
 const flavourItems: DropboxItem[] = [
 	{ id: 0, name: "Release", value: "release" },

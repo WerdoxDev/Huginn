@@ -1,12 +1,5 @@
-import ChannelRecipient from "@components/ChannelRecipient";
-import HuginnButton from "@components/button/HuginnButton";
-import { useModalsDispatch } from "@contexts/modalContext";
-import { useUser } from "@contexts/userContext";
 import { Transition } from "@headlessui/react";
-import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePathDMChannel";
-import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import type { APIChannelUser, Snowflake } from "@huginn/shared";
-import { useMemo } from "react";
 
 export default function RecipientsSidebar(props: { channelId: Snowflake; recipients: APIChannelUser[]; ownerId: Snowflake; visible: boolean }) {
 	const { user } = useUser();

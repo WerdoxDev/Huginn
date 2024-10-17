@@ -1,8 +1,3 @@
-import { useContextMenu } from "@contexts/contextMenuContext";
-import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
-import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship";
-import { ContextMenu } from "./ContextMenu";
-
 export default function RelationshipContextMenu() {
 	const { context, data, close } = useContextMenu("relationship");
 	const removeMutation = useRemoveRelationship();

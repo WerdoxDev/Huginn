@@ -1,5 +1,5 @@
 import type { HuginnClient } from "@huginn/api";
-import { type APIGetUserChannelsResult, type Snowflake, resolveBase64, resolveImage } from "@huginn/shared";
+import { type APIGetUserChannelsResult, type Snowflake, resolveImage } from "@huginn/shared";
 import { type QueryClient, infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 export function getChannelsOptions(client: HuginnClient, guildId: Snowflake) {
@@ -56,11 +56,7 @@ export function getUserAvatar(userId: Snowflake | undefined, avatarHash: string 
 			}
 
 			const data = await resolveImage(client.cdn.avatar(userId, avatarHash));
-			if (data) {
-				return resolveBase64(data);
-			}
-
-			return null;
+			return data ? data : null;
 		},
 	});
 }
@@ -74,11 +70,7 @@ export function getChannelIcon(channelId: Snowflake | undefined, iconHash: strin
 			}
 
 			const data = await resolveImage(client.cdn.channelIcon(channelId, iconHash));
-			if (data) {
-				return resolveBase64(data);
-			}
-
-			return null;
+			return data ? data : null;
 		},
 	});
 }

@@ -14,14 +14,15 @@ export default defineConfig({
 	plugins: [
 		react({ devTarget: "esnext" }),
 		TanStackRouterVite(),
-		Icons({ compiler: "jsx" }),
+		Icons({ compiler: "jsx", jsx: "react" }),
 		AutoImport({
-			resolvers: [
-				IconsResolver({
-					prefix: "Icon",
-					extension: "jsx",
-				}),
+			imports: ["react"],
+			resolvers: [IconsResolver({ prefix: "Icon", extension: "jsx" })],
+			include: [
+				/\.[tj]sx?$/, // .ts, .tsx, .js, .jsx
 			],
+			dirs: ["./src/**", "!src/routes/**"],
+			defaultExportByFilename: true,
 		}),
 	],
 

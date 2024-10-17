@@ -1,7 +1,4 @@
-import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
-import { useTheme } from "@contexts/themeContext";
 import { animated, useSpring } from "@react-spring/web";
-import { useContext, useMemo } from "react";
 
 export default function AuthBackgroundSvg() {
 	const { state } = useContext(AuthBackgroundContext);

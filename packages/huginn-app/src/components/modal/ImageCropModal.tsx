@@ -1,13 +1,8 @@
-import HuginnButton from "@components/button/HuginnButton";
-import { useEvent } from "@contexts/eventContext";
-import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { DialogPanel } from "@headlessui/react";
-import { useEffect, useRef } from "react";
 import "cropperjs/dist/cropper.css";
 import { usePostHog } from "posthog-js/react";
 import Cropper, { type ReactCropperElement } from "react-cropper";
 import { SuperImageCropper } from "super-image-cropper";
-import BaseModal from "./BaseModal";
 
 export default function ImageCropModal() {
 	const { imageCrop: modal } = useModals();
