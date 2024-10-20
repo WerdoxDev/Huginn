@@ -127,7 +127,7 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 		async fetch(req, server) {
 			const url = new URL(req.url);
 			if (url.pathname === "/gateway") {
-				const response = await gateway.ws.handleUpgrade(req, server);
+				const response = await gateway.internalWS.handleUpgrade(req, server);
 
 				if (response) {
 					return response;
@@ -138,7 +138,7 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 
 			return handler(req);
 		},
-		websocket: gateway.ws.websocket,
+		websocket: gateway.internalWS.websocket,
 	});
 
 	consola.success("Server started!");

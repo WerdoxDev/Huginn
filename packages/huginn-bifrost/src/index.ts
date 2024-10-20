@@ -7,6 +7,7 @@ import { isDBError } from "@huginn/server/src/database";
 import { gateway } from "@huginn/server/src/server";
 import { handleCommonDBErrors } from "@huginn/server/src/utils/route-utils";
 import { Errors, HttpCode, type HuginnErrorData, generateRandomString } from "@huginn/shared";
+import type { Serve, Server } from "bun";
 import consola from "consola";
 import { colors } from "consola/utils";
 import {
@@ -113,13 +114,13 @@ const handler = toWebHandler(app);
 const HOST = process.env.HOST;
 const PORT = process.env.PORT;
 
-const server = Bun.serve({
+let server: Server;
+const options: Serve = {
 	port: PORT,
-	hostname: HOST,
 	async fetch(req, server) {
 		const url = new URL(req.url);
 		if (url.pathname === "/gateway") {
-			const response = await gateway.ws.handleUpgrade(req, server);
+			const response = await gateway.internalWS.handleUpgrade(req, server);
 
 			if (response) {
 				return response;
@@ -130,8 +131,17 @@ const server = Bun.serve({
 
 		return handler(req);
 	},
-	websocket: gateway.ws.websocket,
-});
+};
+
+try {
+	server = Bun.serve({
+		...options,
+		hostname: HOST,
+		websocket: gateway.internalWS.websocket,
+	});
+} catch {
+	server = Bun.serve({ ...options, hostname: "localhost", websocket: gateway.internalWS.websocket });
+}
 
 consola.success("Bifrost started!");
 consola.box(`Listening on ${colors.magenta(server.url.href)}`);

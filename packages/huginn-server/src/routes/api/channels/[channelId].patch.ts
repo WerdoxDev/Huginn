@@ -47,17 +47,15 @@ router.patch(
 		}
 
 		const updatedChannel = idFix(
-			await prisma.channel.editDM(
-				payload.id,
-				channelId,
-				{ name: body.name, icon: channelIconHash },
-				merge(includeChannelRecipients, excludeChannelRecipient(payload.id)),
-			),
+			await prisma.channel.editDM(payload.id, channelId, { name: body.name, icon: channelIconHash }, includeChannelRecipients),
 		);
 
-		dispatchToTopic(channelId, "channel_update", updatedChannel);
+		for (const recipient of updatedChannel.recipients) {
+			const channel = { ...updatedChannel, recipients: updatedChannel.recipients.filter((x) => x.id !== recipient.id) };
+			dispatchToTopic(recipient.id, "channel_update", channel);
+		}
 
 		setResponseStatus(event, HttpCode.OK);
-		return updatedChannel;
+		return { ...updatedChannel, recipients: updatedChannel.recipients.filter((x) => x.id !== payload.id) };
 	}),
 );

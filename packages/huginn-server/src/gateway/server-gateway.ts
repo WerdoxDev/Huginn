@@ -29,7 +29,7 @@ export class ServerGateway {
 	private clients: Map<string, ClientSession>;
 	private cancelledClientDisconnects: string[];
 	public presenceManeger: PresenceManager;
-	public ws: BunAdapter;
+	public internalWS: BunAdapter;
 
 	public constructor(options: ServerGatewayOptions) {
 		this.options = options;
@@ -37,7 +37,7 @@ export class ServerGateway {
 		this.presenceManeger = new PresenceManager();
 		this.cancelledClientDisconnects = [];
 
-		this.ws = crossws({ hooks: { open: this.open.bind(this), close: this.close.bind(this), message: this.message.bind(this) } });
+		this.internalWS = crossws({ hooks: { open: this.open.bind(this), close: this.close.bind(this), message: this.message.bind(this) } });
 	}
 
 	private open(peer: Peer) {
