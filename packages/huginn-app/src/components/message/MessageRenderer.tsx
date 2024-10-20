@@ -70,25 +70,17 @@ const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, 
 		<li
 			ref={ref}
 			className={clsx(
-				"group select-text hover:bg-secondary",
-				currentExotic ? "p-1 pl-2" : "p-2",
-				!nextNew && "pb-0.5",
-				!currentNew && "py-0.5",
-				(nextNew || !nextConnectable || currentExotic) && "rounded-b-lg",
-				(currentNew || !lastConnectable || currentExotic) && "rounded-t-lg",
-				((currentNew && !currentExotic) || !lastConnectable) && !currentNewDate && "mt-1.5",
+				"group select-text",
+				// currentExotic ? "p-1 pl-2" : "p-2",
+				// !nextNew && "pb-0.5",
+				// !currentNew && "py-0.5",
+				// (nextNew || !nextConnectable || currentExotic) && "rounded-b-lg",
+				// (currentNew || !lastConnectable || currentExotic) && "rounded-t-lg",
+				// ((currentNew && !currentExotic) || !lastConnectable) && !currentNewDate && "mt-1.5",
 			)}
 		>
 			{[MessageType.DEFAULT].includes(props.renderInfo.message.type) && (
-				<DefaultMessage
-					{...props}
-					nextNew={nextNew || !nextConnectable || currentExotic}
-					currentNew={currentNew || !lastConnectable || currentExotic}
-					editor={editor}
-					decorate={decorate}
-					renderElement={renderElement}
-					renderLeaf={renderLeaf}
-				/>
+				<DefaultMessage {...props} editor={editor} decorate={decorate} renderElement={renderElement} renderLeaf={renderLeaf} />
 			)}
 			{[MessageType.RECIPIENT_ADD, MessageType.RECIPIENT_REMOVE].includes(props.renderInfo.message.type) && <UserActionMessage {...props} />}
 		</li>

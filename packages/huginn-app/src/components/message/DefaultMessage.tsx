@@ -7,8 +7,6 @@ import { Editable, type ReactEditor, type RenderElementProps, type RenderLeafPro
 
 export default function DefaultMessage(
 	props: MessageRendererProps & {
-		nextNew: boolean;
-		currentNew: boolean;
 		editor: BaseEditor & ReactEditor;
 		decorate(entry: NodeEntry): Range[];
 		renderLeaf(props: RenderLeafProps): React.JSX.Element;
@@ -22,13 +20,35 @@ export default function DefaultMessage(
 
 	const initialValue = useMemo(() => deserialize(props.renderInfo.message.content ?? ""), []);
 
+	const isLastExotic = useMemo(() => props.lastRenderInfo?.exoticType === true, [props.lastRenderInfo]);
+	const isSeparate = useMemo(() => props.renderInfo.newAuthor || props.renderInfo.newMinute || props.renderInfo.newDate, [props.renderInfo]);
+	const isNextSeparate = useMemo(
+		() => props.nextRenderInfo?.newAuthor || props.nextRenderInfo?.newMinute || !props.nextRenderInfo || props.nextRenderInfo.exoticType,
+		[props.nextRenderInfo],
+	);
+
+	const isNewDate = useMemo(
+		() => props.renderInfo.newDate || !props.lastRenderInfo || props.renderInfo.newDate,
+		[props.renderInfo, props.lastRenderInfo],
+	);
+
 	function deserialize(content: string): Descendant[] {
 		return content.split("\n").map((line) => ({ type: "paragraph", children: [{ text: line }] }));
 	}
 
 	return (
-		<div className={clsx("flex flex-col items-start gap-y-2 ", !isSelf && "ml-2")}>
-			{props.currentNew && (
+		<div
+			className={clsx(
+				"flex flex-col items-start gap-y-2 p-2 ml-2 hover:bg-secondary",
+				!isSelf && "ml-4",
+				(isSeparate || isLastExotic) && "rounded-t-lg",
+				isNextSeparate && "rounded-b-lg",
+				!isSeparate && !isLastExotic && "py-0.5",
+				!isNextSeparate && "pb-0.5",
+				isSeparate && !isNewDate && "mt-1.5",
+			)}
+		>
+			{(isSeparate || isLastExotic) && (
 				<div className="flex items-center gap-x-2 overflow-hidden">
 					<UserAvatarWithStatus
 						userId={props.renderInfo.message.author.id}
@@ -55,8 +75,8 @@ export default function DefaultMessage(
 						className={clsx(
 							"px-2 py-1 font-normal text-white [overflow-wrap:anywhere]",
 							isSelf ? "bg-primary" : "bg-background",
-							props.currentNew && "rounded-tr-md",
-							props.nextNew && "rounded-br-md rounded-bl-md ",
+							isSeparate && "rounded-tr-md",
+							isNextSeparate && "rounded-br-md rounded-bl-md ",
 						)}
 						disableDefaultStyles
 					/>
