@@ -6,14 +6,14 @@ import clsx from "clsx";
 export default function DirectMessageChannel(props: { channel: DirectChannel; onSelected?: () => void }) {
 	const queryClient = useQueryClient();
 	const client = useClient();
-	const { isLoading } = useInfiniteQuery(getMessagesOptions(queryClient, client, props.channel.id, false));
+	const { isLoading } = useInfiniteQuery(getMessagesOptions(queryClient, client, props.channel?.id, false));
 
 	const { open: openContextMenu } = useContextMenu("dm_channel");
 
 	const mutation = useDeleteDMChannel();
 
 	const { channelId } = useParams({ strict: false });
-	const selected = useMemo(() => channelId === props.channel.id, [channelId, props.channel]);
+	const selected = useMemo(() => channelId === props.channel?.id, [channelId, props.channel]);
 	const name = useChannelName(props.channel.recipients, props.channel.name);
 
 	return (
@@ -29,9 +29,9 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
 		>
 			<Link className="flex items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>
 				{props.channel.type === ChannelType.DM ? (
-					<UserAvatarWithStatus userId={props.channel.recipients[0].id} avatarHash={props.channel.recipients[0].avatar} className="mr-3" />
+					<UserAvatarWithStatus userId={props.channel.recipients[0]?.id} avatarHash={props.channel.recipients[0]?.avatar} className="mr-3" />
 				) : (
-					<ChannelIcon channelId={props.channel.id} iconHash={props.channel.icon} className="mr-3" />
+					<ChannelIcon channelId={props.channel?.id} iconHash={props.channel?.icon} className="mr-3" />
 				)}
 				<div className="flex w-full flex-col justify-center overflow-hidden">
 					<div

@@ -35,7 +35,7 @@ function Friends() {
 				<div className="flex h-[4.75rem] flex-shrink-0 items-center bg-tertiary px-6">
 					<TabList className="mr-5 flex justify-center gap-x-5">
 						<div className="flex items-center justify-center gap-x-2.5 text-text">
-							<IconFaSolidUserFriends className="size-6" />
+							<IconMingcuteGroup2Fill className="size-6" />
 							<span className="font-bold text-lg">Friends</span>
 						</div>
 

@@ -10,16 +10,16 @@ export default function HomeTopbar(props: { channel: DirectChannel; onRecipients
 		<div className="flex h-[4.75rem] flex-shrink-0 items-center bg-tertiary px-6">
 			<div className="flex w-full items-center">
 				{props.channel.type === ChannelType.DM ? (
-					<UserAvatarWithStatus userId={otherUsers[0].id} avatarHash={otherUsers[0].avatar} className="mr-3" />
+					<UserAvatarWithStatus userId={otherUsers[0]?.id} avatarHash={otherUsers[0]?.avatar} className="mr-3" />
 				) : (
-					<ChannelIcon channelId={props.channel.id} iconHash={props.channel.icon} className="mr-3" />
+					<ChannelIcon channelId={props.channel?.id} iconHash={props.channel?.icon} className="mr-3" />
 				)}
 				<div className="text-text">{name}</div>
 				<div className="ml-auto flex">
 					{props.channel.type === ChannelType.GROUP_DM && (
 						<Tooltip placement="top">
 							<Tooltip.Trigger className="text-text hover:text-text/80" onClick={props.onRecipientsClick}>
-								<IconMingcuteGroupFill className="size-6" />
+								<IconMingcuteGroup2Fill className="size-6" />
 							</Tooltip.Trigger>
 							<Tooltip.Content>Toggle Members</Tooltip.Content>
 						</Tooltip>

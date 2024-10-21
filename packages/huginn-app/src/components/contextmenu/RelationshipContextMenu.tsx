@@ -22,7 +22,7 @@ export default function RelationshipContextMenu() {
 			/>
 			<ContextMenu.Divider />
 			<ContextMenu.Item label="Copy User ID" onClick={() => navigator.clipboard.writeText(data.user.id)}>
-				<IconMdiIdentificationCard />
+				<IconMingcuteIdcardFill />
 			</ContextMenu.Item>
 		</ContextMenu>
 	);

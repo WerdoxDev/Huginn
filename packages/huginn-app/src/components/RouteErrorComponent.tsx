@@ -6,7 +6,7 @@ export default function RouteErrorComponent(props: { error: unknown }) {
 
 	useEffect(() => {
 		handleError(props.error);
-		router.history.go(-1);
+		router.history.back();
 	}, []);
 
 	return <Outlet />;

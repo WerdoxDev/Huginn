@@ -39,7 +39,7 @@ export default function ImageSelector(props: { data?: string | null; onDelete?: 
 				<div className="absolute inset-0 flex h-full w-full items-center justify-center gap-x-1.5 rounded-full opacity-0 transition-all duration-100 group-hover:bg-black/30 group-hover:opacity-100">
 					<Tooltip>
 						<Tooltip.Trigger className="rounded-md p-1 hover:bg-white/10">
-							<IconMdiEdit className="size-7 text-white" />
+							<IconMingcuteEdit2Fill className="size-7 text-white" />
 						</Tooltip.Trigger>
 						<Tooltip.Content>Edit</Tooltip.Content>
 					</Tooltip>

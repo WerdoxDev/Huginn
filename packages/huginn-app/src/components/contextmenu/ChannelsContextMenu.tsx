@@ -18,17 +18,17 @@ export default function ChannelsContextMenu() {
 			/>
 			{data.type === ChannelType.GROUP_DM && (
 				<ContextMenu.Item label="Edit Channel" onClick={() => dispatch({ editGroup: { isOpen: true, channel: data } })}>
-					<IconMdiEdit />
+					<IconMingcuteEdit2Fill />
 				</ContextMenu.Item>
 			)}
 			<ContextMenu.Divider />
 			{data.type === ChannelType.DM && (
 				<ContextMenu.Item label="Copy User ID" onClick={() => navigator.clipboard.writeText(data.recipients[0].id)}>
-					<IconMdiIdentificationCard />
+					<IconMingcuteIdcardFill />
 				</ContextMenu.Item>
 			)}
 			<ContextMenu.Item label="Copy Channel ID" onClick={() => navigator.clipboard.writeText(data.id)}>
-				<IconMdiIdentificationCard />
+				<IconMingcuteIdcardFill />
 			</ContextMenu.Item>
 		</ContextMenu>
 	);

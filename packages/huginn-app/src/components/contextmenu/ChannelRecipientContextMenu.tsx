@@ -33,7 +33,7 @@ export default function ChannelRecipientContextMenu() {
 				</>
 			)}
 			<ContextMenu.Item label="Copy User ID" onClick={() => navigator.clipboard.writeText(data.recipient.id)}>
-				<IconMdiIdentificationCard />
+				<IconMingcuteIdcardFill />
 			</ContextMenu.Item>
 		</ContextMenu>
 	);

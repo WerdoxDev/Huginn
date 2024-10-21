@@ -47,7 +47,7 @@ function LayoutAuth() {
 						modalsDispatch({ settings: { isOpen: true } });
 					}}
 				>
-					<IconMdiSettings className="h-6 w-6 text-white/80 transition-all hover:rotate-[60deg]" />
+					<IconMingcuteSettings3Fill className="h-6 w-6 text-white/80 transition-all hover:rotate-[60deg]" />
 				</button>
 			)}
 			{/* <Transition appear name="fade">

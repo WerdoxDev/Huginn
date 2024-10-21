@@ -10,22 +10,22 @@ const tabs: SettingsTab[] = [
 		name: "profile",
 		text: "Profile",
 		auth: true,
-		children: [{ name: "my-account", text: "My Account", auth: true, icon: <IconMdiAccount />, component: SettingsProfileTab }],
+		children: [{ name: "my-account", text: "My Account", auth: true, icon: <IconMingcuteUser3Fill />, component: SettingsProfileTab }],
 	},
 	{
 		name: "app-settings",
 		text: "App Settings",
 		children: [
-			{ name: "theme", text: "Theme", icon: <IconMdiTheme />, component: SettingsThemeTab },
-			{ name: "notification", text: "Notification", icon: <IconMdiNotifications /> },
-			{ name: "audio", text: "Audio", icon: <IconMdiSpeakerphone /> },
-			{ name: "advanced", text: "Advanced", icon: <IconMdiServer />, component: SettingsAdvancedTab },
+			{ name: "theme", text: "Theme", icon: <IconMingcuteColorPickerFill />, component: SettingsThemeTab },
+			{ name: "notification", text: "Notification", icon: <IconMingcuteNotificationFill /> },
+			{ name: "audio", text: "Audio", icon: <IconMingcuteSpeakerFill /> },
+			{ name: "advanced", text: "Advanced", icon: <IconMingcuteServerFill />, component: SettingsAdvancedTab },
 		],
 	},
 	{
 		name: "miscellaneous",
 		text: "Miscellaneous",
-		children: [{ name: "about", text: "About", icon: <IconMdiAbout />, component: SettingsAboutTab }],
+		children: [{ name: "about", text: "About", icon: <IconMingcuteBook2Fill />, component: SettingsAboutTab }],
 	},
 ];
 

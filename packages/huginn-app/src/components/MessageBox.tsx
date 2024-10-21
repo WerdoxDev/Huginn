@@ -93,7 +93,7 @@ export default function MessageBox() {
 			<form className="absolute w-full">
 				<div className="flex h-full items-start justify-center rounded-3xl bg-tertiary p-2 ring-2 ring-background">
 					<div className="mr-2 flex shrink-0 cursor-pointer items-center rounded-full bg-background p-1.5 transition-all hover:bg-white hover:bg-opacity-20 hover:shadow-xl">
-						<IconGravityUiPlus name="gravity-ui:plus" className="h-5 w-5 text-text" />
+						<IconMingcutePlusFill name="gravity-ui:plus" className="h-5 w-5 text-text" />
 					</div>
 					<div className="h-full w-full self-center overflow-hidden py-2">
 						<Slate editor={editor} initialValue={initialValue}>

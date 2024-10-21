@@ -39,7 +39,7 @@ export default function DefaultMessage(
 	return (
 		<div
 			className={clsx(
-				"flex flex-col items-start gap-y-2 p-2 ml-2 hover:bg-secondary",
+				"ml-2 flex flex-col items-start gap-y-2 p-2 hover:bg-secondary",
 				!isSelf && "ml-4",
 				(isSeparate || isLastExotic) && "rounded-t-lg",
 				isNextSeparate && "rounded-b-lg",
