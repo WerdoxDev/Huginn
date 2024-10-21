@@ -3,7 +3,7 @@ import { ChannelType, Errors, HttpCode, MessageFlags, MessageType, idFix, omit }
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { includeChannelRecipients, includeMessageAuthorAndMentions } from "#database/common";
+import { includeChannelRecipients, includeMessageAuthorAndMentions, omitMessageAuthorId } from "#database/common";
 import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { useVerifiedJwt } from "#utils/route-utils";
@@ -48,20 +48,18 @@ router.delete(
 			});
 		}
 
-		const message = omit(
-			idFix(
-				await prisma.message.createDefaultMessage(
-					payload.id,
-					channelId,
-					MessageType.RECIPIENT_REMOVE,
-					"",
-					undefined,
-					[recipientId],
-					MessageFlags.NONE,
-					includeMessageAuthorAndMentions,
-				),
+		const message = idFix(
+			await prisma.message.createDefaultMessage(
+				payload.id,
+				channelId,
+				MessageType.RECIPIENT_REMOVE,
+				"",
+				undefined,
+				[recipientId],
+				MessageFlags.NONE,
+				includeMessageAuthorAndMentions,
+				omitMessageAuthorId,
 			),
-			["authorId"],
 		);
 
 		dispatchToTopic(channelId, "message_create", message);

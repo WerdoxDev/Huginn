@@ -3,7 +3,7 @@ import { type APIGetChannelMessagesResult, HttpCode, idFix, omitArray } from "@h
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { includeMessageAuthorAndMentions } from "#database/common";
+import { includeMessageAuthorAndMentions, omitMessageAuthorId } from "#database/common";
 import { router } from "#server";
 
 const querySchema = z.object({ limit: z.optional(z.string()), before: z.optional(z.string()), after: z.optional(z.string()) });
@@ -18,9 +18,8 @@ router.get(
 		const before = query.before;
 		const after = query.after;
 
-		const messages: APIGetChannelMessagesResult = omitArray(
-			idFix(await prisma.message.getMessages(channelId, limit, before, after, includeMessageAuthorAndMentions)),
-			["authorId"],
+		const messages: APIGetChannelMessagesResult = idFix(
+			await prisma.message.getMessages(channelId, limit, before, after, includeMessageAuthorAndMentions, omitMessageAuthorId),
 		);
 
 		setResponseStatus(event, HttpCode.OK);

@@ -9,6 +9,7 @@ import {
 	getFileHash,
 	idFix,
 	omit,
+	pick,
 	toArrayBuffer,
 } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
@@ -105,7 +106,10 @@ router.patch(
 
 		const presence = gateway.presenceManeger.getClient(payload.id);
 		if (presence) {
-			dispatchToTopic(`${payload.id}_presence`, "presence_update", { ...presence, user: omit({ ...updatedUser }, ["email", "password"]) });
+			dispatchToTopic(`${payload.id}_presence`, "presence_update", {
+				...presence,
+				user: pick(updatedUser, ["id", "avatar", "displayName", "flags", "username"]),
+			});
 		}
 
 		const json: APIPatchCurrentUserResult = { ...updatedUser, token: accessToken, refreshToken };

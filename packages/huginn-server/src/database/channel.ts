@@ -52,12 +52,15 @@ const channelExtention = Prisma.defineExtension({
 				const isGroup = recipients.length > 1;
 				const recipientsConnect = [{ id: BigInt(initiatorId) }, ...recipients.map((x) => ({ id: BigInt(x) }))];
 
+				console.log(recipientsConnect);
+
 				// See if we got a channel where all recipients are either initiator or first recipient
 				const existingChannel = await prisma.channel.findFirst({
 					where: { recipients: { every: { OR: [{ id: BigInt(recipients[0]) }, { id: BigInt(initiatorId) }] } }, type: ChannelType.DM },
 				});
 
 				if (!isGroup && existingChannel) {
+					console.log("WHY HERE");
 					channel = (await prisma.channel.update({
 						where: { id: existingChannel.id },
 						data: { tempDeletedByUsers: { disconnect: { id: BigInt(initiatorId) } } },
@@ -97,27 +100,16 @@ const channelExtention = Prisma.defineExtension({
 				assertObj("createDM", channel, DBErrorType.NULL_CHANNEL);
 				return channel as ChannelPayload<Include>;
 			},
-			async editDM<Include extends ChannelInclude>(
-				ownerId: Snowflake,
-				channelId: Snowflake,
-				editedDM: APIPatchDMChannelJSONBody,
-				include?: Include,
-			) {
+			async editDM<Include extends ChannelInclude>(channelId: Snowflake, editedDM: APIPatchDMChannelJSONBody, include?: Include) {
 				await prisma.channel.assertChannelExists("editDM", channelId);
 
-				const recipientsConnect = [{ id: BigInt(ownerId) }];
-
-				// if (editedDM.recipients) {
-				// 	for (const recipientId of editedDM.recipients) {
-				// 		await prisma.user.assertUserExists("createDM", recipientId);
-				// 	}
-
-				// 	recipientsConnect.push(...editedDM.recipients.filter((x) => x !== ownerId).map((x) => ({ id: BigInt(x) })));
-				// }
+				if (editedDM.owner) {
+					await prisma.user.assertUserExists("editDM", editedDM.owner);
+				}
 
 				const updatedChannel = await prisma.channel.update({
 					where: { id: BigInt(channelId), type: ChannelType.GROUP_DM },
-					data: { ...editedDM },
+					data: { icon: editedDM.icon, name: editedDM.name, owner: editedDM.owner ? { update: { id: BigInt(editedDM.owner) } } : undefined },
 					include: include,
 				});
 

@@ -11,21 +11,21 @@ export function pick<Data extends object, Keys extends keyof Data>(data: Data, k
 	return result;
 }
 
-export function omit<Data extends object, Keys extends keyof Data>(data: Data, keys: Keys[]): Omit<Data, Keys> {
-	const result = { ...data };
+export function omit<Obj extends object, Keys extends keyof Obj>(obj: Obj, keys: Keys[]): Omit<Obj, Keys> {
+	const result = { ...obj };
 
 	for (const key of keys) {
 		delete result[key];
 	}
 
-	return result as Omit<Data, Keys>;
+	return result as Omit<Obj, Keys>;
 }
 
-export function omitArray<Data extends object, Keys extends keyof Data>(data: Data[], keys: Keys[]): Omit<Data, (typeof keys)[number]>[] {
+export function omitArray<Obj extends object, Keys extends keyof Obj>(obj: Obj[], keys: Keys[]): Omit<Obj, (typeof keys)[number]>[] {
 	const result = [];
 
-	for (const obj of [...data]) {
-		const modifiedObj = { ...obj };
+	for (const copyObj of [...obj]) {
+		const modifiedObj = { ...copyObj };
 		for (const key of keys) {
 			delete modifiedObj[key];
 		}

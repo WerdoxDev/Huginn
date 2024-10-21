@@ -1,9 +1,9 @@
-import { missingAccess, singleError, unauthorized, useValidatedParams } from "@huginn/backend-shared";
-import { ChannelType, Errors, HttpCode, MessageFlags, MessageType, idFix, omit } from "@huginn/shared";
+import { missingAccess, singleError, useValidatedParams } from "@huginn/backend-shared";
+import { ChannelType, Errors, HttpCode, MessageFlags, MessageType, idFix } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { includeChannelRecipients, includeMessageAuthorAndMentions } from "#database/common";
+import { includeChannelRecipients, includeMessageAuthorAndMentions, omitMessageAuthorId } from "#database/common";
 import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { useVerifiedJwt } from "#utils/route-utils";
@@ -43,20 +43,18 @@ router.put(
 			recipients: updatedChannel.recipients.filter((x) => x.id !== recipientId),
 		});
 
-		const message = omit(
-			idFix(
-				await prisma.message.createDefaultMessage(
-					payload.id,
-					channelId,
-					MessageType.RECIPIENT_ADD,
-					"",
-					undefined,
-					[recipientId],
-					MessageFlags.NONE,
-					includeMessageAuthorAndMentions,
-				),
+		const message = idFix(
+			await prisma.message.createDefaultMessage(
+				payload.id,
+				channelId,
+				MessageType.RECIPIENT_ADD,
+				"",
+				undefined,
+				[recipientId],
+				MessageFlags.NONE,
+				includeMessageAuthorAndMentions,
+				omitMessageAuthorId,
 			),
-			["authorId"],
 		);
 
 		dispatchToTopic(channelId, "message_create", message);

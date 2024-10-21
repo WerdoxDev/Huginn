@@ -43,8 +43,6 @@ router.post(
 			}
 		}
 
-		// dispatchToTopic(payload.id, "channel_create", channel);
-
 		setResponseStatus(event, HttpCode.CREATED);
 		return { ...createdChannel, recipients: createdChannel.recipients.filter((x) => x.id !== payload.id) } as APIPostDMChannelResult;
 	}),

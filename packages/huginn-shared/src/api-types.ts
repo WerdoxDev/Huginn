@@ -33,26 +33,16 @@ export type APIUser = {
 	flags: UserFlags;
 } & APIBaseUser;
 
-export type APIChannelUser = {
+export type APIPublicUser = {
 	username: string;
 	displayName: string | null;
 	avatar: string | null;
 	flags: UserFlags;
 } & APIBaseUser;
 
-export type APIMessageUser = {
-	username: string;
-	displayName: string | null;
-	avatar: string | null;
-	flags: UserFlags;
-} & APIBaseUser;
-
-export type APIRelationUser = {
-	username: string;
-	displayName: string | null;
-	avatar: string | null;
-	flags: UserFlags;
-} & APIBaseUser;
+export type APIChannelUser = APIPublicUser;
+export type APIMessageUser = APIPublicUser;
+export type APIRelationUser = APIPublicUser;
 
 export type Tokens = {
 	token: string;
@@ -178,6 +168,7 @@ export type APIPostDMChannelJSONBody = {
 export type APIPatchDMChannelJSONBody = {
 	name?: string | null;
 	icon?: string | null;
+	owner?: string;
 };
 
 export type APIGetChannelByIdResult = APIChannel;
@@ -232,11 +223,8 @@ export type APIPostDefaultMessageJSONBody = {
 };
 
 export type APIPostDefaultMessageResult = APIDefaultMessage;
-
 export type APIGetMessageByIdResult = APIMessage;
-
 export type APIGetChannelMessagesResult = APIMessage[];
-
 export type APIGetReleasesResult = Record<string, { version: string; date: string; windowsSetupUrl?: string } | undefined>;
 
 export type APICheckUpdateResult = {

@@ -24,8 +24,9 @@ router.delete(
 		gateway.presenceManeger.sendToUser(userId, payload.id, true);
 
 		gateway.unsubscribeSessionsFromTopic(payload.id, `${userId}_public`);
-		gateway.unsubscribeSessionsFromTopic(userId, `${payload.id}_public`);
 		gateway.unsubscribeSessionsFromTopic(payload.id, `${userId}_presence`);
+
+		gateway.unsubscribeSessionsFromTopic(userId, `${payload.id}_public`);
 		gateway.unsubscribeSessionsFromTopic(userId, `${payload.id}_presence`);
 
 		setResponseStatus(event, HttpCode.OK);

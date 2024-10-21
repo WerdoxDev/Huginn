@@ -3,7 +3,7 @@ import { type APIDeleteDMChannelResult, ChannelType, HttpCode, MessageFlags, Mes
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { includeChannelRecipients, includeMessageAuthorAndMentions } from "#database/common";
+import { includeChannelRecipients, includeMessageAuthorAndMentions, omitMessageAuthorId } from "#database/common";
 import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { useVerifiedJwt } from "#utils/route-utils";
@@ -22,6 +22,13 @@ router.delete(
 			return missingAccess(event);
 		}
 
+		// Transfer the old owner to a new one alphabetically
+		if (channel.ownerId === payload.id) {
+			await prisma.channel.editDM(channelId, {
+				owner: channel.recipients.filter((x) => x.id !== payload.id).sort((a, b) => (a.username > b.username ? 1 : -1))[0].id,
+			});
+		}
+
 		const deletedChannel: APIDeleteDMChannelResult = idFix(await prisma.channel.deleteDM(channelId, payload.id, includeChannelRecipients));
 
 		dispatchToTopic(payload.id, "channel_delete", channel);
@@ -32,8 +39,8 @@ router.delete(
 			gateway.unsubscribeSessionsFromTopic(payload.id, channelId);
 		}
 
-		const message = omit(
-			idFix(
+		if (channel.type === ChannelType.GROUP_DM) {
+			const message = idFix(
 				await prisma.message.createDefaultMessage(
 					payload.id,
 					channelId,
@@ -43,12 +50,12 @@ router.delete(
 					undefined,
 					MessageFlags.NONE,
 					includeMessageAuthorAndMentions,
+					omitMessageAuthorId,
 				),
-			),
-			["authorId"],
-		);
+			);
 
-		dispatchToTopic(channelId, "message_create", message);
+			dispatchToTopic(channelId, "message_create", message);
+		}
 
 		setResponseStatus(event, HttpCode.OK);
 		return deletedChannel;

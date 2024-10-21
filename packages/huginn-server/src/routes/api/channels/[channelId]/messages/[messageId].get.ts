@@ -1,11 +1,11 @@
-import { includeMessageAuthor, includeMessageMentions } from "#database/common";
-import { router } from "#server";
-import { prisma } from "#database";
 import { unauthorized, useValidatedParams } from "@huginn/backend-shared";
 import { type APIGetMessageByIdResult, HttpCode, idFix, merge, omit } from "@huginn/shared";
-import { useVerifiedJwt } from "#utils/route-utils";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
+import { prisma } from "#database";
+import { includeMessageAuthor, includeMessageMentions, omitMessageAuthorId } from "#database/common";
+import { router } from "#server";
+import { useVerifiedJwt } from "#utils/route-utils";
 
 const schema = z.object({ channelId: z.string(), messageId: z.string() });
 
@@ -19,9 +19,8 @@ router.get(
 			return unauthorized(event);
 		}
 
-		const message: APIGetMessageByIdResult = omit(
-			idFix(await prisma.message.getById(channelId, messageId, merge(includeMessageAuthor, includeMessageMentions))),
-			["authorId"],
+		const message: APIGetMessageByIdResult = idFix(
+			await prisma.message.getById(channelId, messageId, merge(includeMessageAuthor, includeMessageMentions, omitMessageAuthorId)),
 		);
 
 		setResponseStatus(event, HttpCode.OK);
