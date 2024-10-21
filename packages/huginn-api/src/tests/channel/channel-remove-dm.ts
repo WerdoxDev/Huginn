@@ -10,7 +10,7 @@ describe("channel-remove-dm", () => {
 		const channels = (await client.channels.getAll()).filter((x) => x.type === ChannelType.DM);
 		const channel = channels.find((x) => x.recipients.some((y) => y.id !== client3.user!.id))!;
 
-		expect(() => client.channels.deleteDM("invalid")).toThrow("Invalid Form Body"); // Invalid id
+		expect(() => client.channels.deleteDM("invalid")).toThrow("Snowflake"); // Invalid id
 		expect(() => client.channels.deleteDM("000000000000000000")).toThrow("Unknown Channel"); // Unknown id
 		expect(() => client3.channels.get(channel.id)).toThrow("Missing Access"); // Not part of channel
 	});
