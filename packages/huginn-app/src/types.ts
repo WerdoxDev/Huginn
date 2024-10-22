@@ -100,8 +100,7 @@ export type SettingsTabProps = {
 export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
 
 export type DropboxItem = {
-	id: number;
-	name: string;
+	text: string;
 	icon?: ReactNode;
 	value: string;
 };

@@ -21,7 +21,7 @@ export default function ChannelRecipient(props: { channelId: Snowflake; isOwner:
 			</div>
 			{state?.status === "pending" && state?.variables?.recipients.some((x) => x === props.recipient.id) ? (
 				<div className="absolute top-3.5 right-2 bottom-3.5 flex flex-shrink-0 items-center justify-center">
-					<IconSvgSpinners3DotsFade className="size-7 text-text" />
+					<LoadingIcon className="size-7" />
 				</div>
 			) : (
 				props.isOwner && (

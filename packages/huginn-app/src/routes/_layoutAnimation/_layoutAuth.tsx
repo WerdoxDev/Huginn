@@ -26,13 +26,14 @@ function LayoutAuth() {
 
 	return (
 		<animated.div style={style} className={clsx("absolute inset-0 z-10", backgroundState === 2 && "pointer-events-none")}>
-			<AuthBackgroundSvg />
+			<AuthBackgroundSvg state={backgroundState} />
 			<div className={clsx("absolute inset-0 select-none transition-all duration-500", backgroundState === 1 ? "opacity-100" : "opacity-0")}>
-				<div className="flex h-full items-center justify-center font-medium text-text text-xl opacity-60">
-					<span>Loading</span>
-					<span className="loader__dot">.</span>
-					<span className="loader__dot">.</span>
-					<span className="loader__dot">.</span>
+				<div className="flex h-full flex-col items-center justify-center">
+					<IconFa6SolidCrow className="size-20 animate-loading text-text" />
+					<div className="mt-2 flex items-center justify-center gap-x-2 text-text/80 text-xl">
+						Loading
+						<LoadingIcon />
+					</div>
 				</div>
 			</div>
 			{transitions((style) => (
@@ -41,24 +42,14 @@ function LayoutAuth() {
 			{backgroundState !== 2 && (
 				<button
 					type="button"
-					v-if="backgroundState !== 2"
 					className="absolute right-2.5 bottom-2.5 rounded-lg p-1 transition-all hover:bg-background"
 					onClick={() => {
 						modalsDispatch({ settings: { isOpen: true } });
 					}}
 				>
-					<IconMingcuteSettings3Fill className="h-6 w-6 text-white/80 transition-all hover:rotate-[60deg]" />
+					<IconMingcuteSettings5Fill className="h-6 w-6 text-white/80 transition-all hover:rotate-[60deg]" />
 				</button>
 			)}
-			{/* <Transition appear name="fade">
-            <button
-               v-if="backgroundState !== 2"
-               className="absolute bottom-2.5 right-2.5 rounded-lg p-1 transition-all hover:bg-background"
-               @click="openModal"
-            >
-               <Icon name="mdi:settings" className="text-white/80 transition-all hover:rotate-[60deg]" size="24" />
-            </button>
-         </Transition> */}
 		</animated.div>
 	);
 }

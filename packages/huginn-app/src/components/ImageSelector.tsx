@@ -45,7 +45,7 @@ export default function ImageSelector(props: { data?: string | null; onDelete?: 
 					</Tooltip>
 					<Tooltip>
 						<Tooltip.Trigger className="rounded-md p-1 hover:bg-white/10">
-							<IconMdiDelete
+							<IconMingcuteDelete3Fill
 								onClick={(e) => {
 									e.stopPropagation();
 									props.onDelete?.();

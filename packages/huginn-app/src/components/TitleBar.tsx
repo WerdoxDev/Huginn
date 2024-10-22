@@ -33,13 +33,17 @@ export default function TitleBar(): ReactPortal {
 			<div className="w-full flex-shrink" />
 			<div className="flex h-full gap-x-1">
 				<button type="button" className="hover:bg-secondary flex h-full w-8 items-center justify-center" onClick={minimize}>
-					<IconMdiMinimize className="h-4 w-4 text-white opacity-80" />
+					<IconMingcuteMinimizeFill className="h-4 w-4 text-white opacity-80" />
 				</button>
 				<button type="button" className="hover:bg-secondary flex h-full w-8 items-center justify-center" onClick={maximize}>
-					<IconMdiMaximize className="h-4 w-4 text-white opacity-80" />
+					{huginnWindow.maximized ? (
+						<IconMingcuteFullscreenExitFill className="h-4 w-4 text-white opacity-80" />
+					) : (
+						<IconMingcuteFullscreenFill className="h-4 w-4 text-white opacity-80" />
+					)}
 				</button>
 				<button type="button" className="hover:bg-error flex h-full w-8 items-center justify-center" onClick={close}>
-					<IconMdiClose className="h-4 w-4 text-white opacity-80" />
+					<IconMingcuteCloseFill className="h-4 w-4 text-white opacity-80" />
 				</button>
 			</div>
 		</div>,

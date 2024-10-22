@@ -40,7 +40,7 @@ export default function FriendItem(props: {
 
 	return (
 		<div
-			className="group relative flex cursor-pointer items-center justify-between overflow-hidden rounded-xl p-2.5 hover:bg-secondary"
+			className="group relative flex cursor-pointer items-center justify-between overflow-hidden rounded-xl p-3 hover:bg-secondary"
 			onContextMenu={(e: MouseEvent<HTMLDivElement>) => {
 				openRelationship({ user: props.user, type: props.type }, e);
 			}}
@@ -58,7 +58,7 @@ export default function FriendItem(props: {
 			</div>
 			{loading && (
 				<div className="absolute inset-0 flex items-center justify-center bg-black/40">
-					<IconSvgSpinners3DotsFade className="size-10 text-text" />
+					<LoadingIcon className="size-10" />
 				</div>
 			)}
 			<div className="flex flex-shrink-0 items-center gap-x-2.5">
@@ -73,7 +73,7 @@ export default function FriendItem(props: {
 										props.onAccept?.(props.user.id);
 									}}
 								>
-									<IconMdiCheck className="size-5" />
+									<IconMingcuteCheckFill className="size-5" />
 								</Tooltip.Trigger>
 								<Tooltip.Content>Accept</Tooltip.Content>
 							</Tooltip>
@@ -83,7 +83,7 @@ export default function FriendItem(props: {
 								className="rounded-full bg-background/50 p-2 text-text/80 hover:text-error group-hover:bg-background"
 								onClick={() => props.onDenyOrCancel?.(props.user.id)}
 							>
-								<IconMdiClose className="size-5" />
+								<IconMingcuteCloseFill className="size-5" />
 							</Tooltip.Trigger>
 							<Tooltip.Content>{props.type === RelationshipType.PENDING_INCOMING ? "Ignore" : "Cancel"} </Tooltip.Content>
 						</Tooltip>
@@ -98,7 +98,7 @@ export default function FriendItem(props: {
 								}}
 								className="rounded-full bg-background/50 p-2 text-text/80 hover:text-text active:bg-white/20"
 							>
-								<IconMdiMessage className="size-5" />
+								<IconMingcuteMessage1Fill className="size-5" />
 							</Tooltip.Trigger>
 							<Tooltip.Content>Message</Tooltip.Content>
 						</Tooltip>
@@ -110,7 +110,7 @@ export default function FriendItem(props: {
 								}}
 								className="rounded-full bg-background/50 p-2 text-text/80 hover:text-text active:bg-white/20"
 							>
-								<IconMdiMoreVert className="size-5" />
+								<IconMingcuteMore2Fill className="size-5" />
 							</Tooltip.Trigger>
 							<Tooltip.Content>More</Tooltip.Content>
 						</Tooltip>

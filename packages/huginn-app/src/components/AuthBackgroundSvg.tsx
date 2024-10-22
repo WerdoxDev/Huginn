@@ -1,8 +1,6 @@
-import { animated, useSpring } from "@react-spring/web";
+import { animated, easings, useSpring } from "@react-spring/web";
 
-export default function AuthBackgroundSvg() {
-	const { state } = useContext(AuthBackgroundContext);
-
+export default function AuthBackgroundSvg(props: { state: number }) {
 	const colorTheme = useTheme();
 	const fillColor = useMemo(() => colorTheme.accent2, [colorTheme]);
 
@@ -18,8 +16,12 @@ export default function AuthBackgroundSvg() {
 		initial: "M0 0C0 0 0 0 0 0C0 0 0 0 0 0C0 0 0 0 0 0L0 0Z",
 	};
 
-	const { d: d1 } = useSpring({ d: state === 0 ? path1.open : state === 1 ? path1.close : path1.initial });
-	const { d: d2 } = useSpring({ d: state === 0 ? path2.open : state === 1 ? path2.close : path2.initial });
+	const { d: d1 } = useSpring({
+		d: props.state === 0 ? path1.open : props.state === 1 ? path1.close : path1.initial,
+	});
+	const { d: d2 } = useSpring({
+		d: props.state === 0 ? path2.open : props.state === 1 ? path2.close : path2.initial,
+	});
 
 	return (
 		<svg

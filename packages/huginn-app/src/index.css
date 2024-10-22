@@ -57,6 +57,25 @@ body,
 	animation-delay: 500ms;
 }
 
+@keyframes loading {
+	25% {
+		transform: translate(-10px, -10px) rotateY(180deg);
+	}
+	50% {
+		transform: translate(0, 0) rotateY(180deg);
+	}
+	75% {
+		transform: translate(10px, -10px);
+	}
+	100% {
+		transform: translate(0, 0);
+	}
+}
+
+.animate-loading {
+	animation: loading 1s infinite linear;
+}
+
 ::-webkit-scrollbar {
 	@apply w-6;
 }

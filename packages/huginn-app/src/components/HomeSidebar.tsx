@@ -20,7 +20,7 @@ export default function HomeSidebar(props: { channels?: APIGetUserChannelsResult
 				<div className="font-medium text-text/70 uppercase hover:text-text/100">Direct Messages</div>
 				<Tooltip>
 					<Tooltip.Trigger onClick={() => dispatch({ createDM: { isOpen: true } })}>
-						<IconMingcutePlusFill className="size-4 text-text" />
+						<IconMingcuteAddFill className="size-4 text-text/80 hover:text-text/100" />
 					</Tooltip.Trigger>
 					<Tooltip.Content>Create DM</Tooltip.Content>
 				</Tooltip>

@@ -60,7 +60,7 @@ export default function DefaultMessage(
 						{isSelf ? "You" : (props.renderInfo.message.author.displayName ?? props.renderInfo.message.author.username)}
 					</div>
 					{props.renderInfo.message.flags && hasFlag(props.renderInfo.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
-						<IconMdiNotificationsOff className="size-4 text-text" />
+						<IconMingcuteNotificationOffFill className="size-4 text-text" />
 					) : null}
 					<div className="text-text/50 text-xs">{formattedTime}</div>
 				</div>

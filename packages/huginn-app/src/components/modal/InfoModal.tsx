@@ -52,8 +52,8 @@ export default function InfoModal() {
 				<DialogTitle as="div" className="flex w-full flex-col items-center justify-center gap-y-5">
 					<div className={clsx("rounded-full bg-opacity-20 p-3", backgroundColor)}>
 						<div className={clsx("rounded-full bg-opacity-80 p-3", backgroundColor)}>
-							{modal.status === "error" && <IconMaterialSymbolsErrorOutline className="h-8 w-8 text-white" />}
-							{modal.status === "default" && <IconMaterialSymbolsInfoOutline className="h-8 w-8 text-white" />}
+							{modal.status === "error" && <IconMingcuteAlertLine className="h-8 w-8 text-white" />}
+							{modal.status === "default" && <IconMingcuteInformationLine className="h-8 w-8 text-white" />}
 						</div>
 					</div>
 					<div className="text-lg font-medium text-white">{modal.title}</div>

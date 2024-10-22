@@ -35,11 +35,11 @@ export default function RecipientsSidebar(props: { channelId: Snowflake; recipie
 						onClick={() => dispatch({ addRecipient: { isOpen: true, channelId: props.channelId } })}
 						className="group/add flex h-12 w-full items-center justify-center border-2 border-success/50 border-dashed hover:border-success hover:bg-success/5"
 					>
-						<IconMingcutePlusFill className="opacity-70 transition-opacity group-hover/add:opacity-100" />
+						<IconMingcuteAddFill className="opacity-70 transition-opacity group-hover/add:opacity-100" />
 					</HuginnButton>
 					{loading && (
 						<div className="absolute inset-0 flex items-center justify-center bg-black/40">
-							<IconSvgSpinners3DotsFade className="size-10 text-text" />
+							<LoadingIcon className="size-10" />
 						</div>
 					)}
 				</div>

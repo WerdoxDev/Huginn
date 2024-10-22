@@ -57,11 +57,11 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
 						mutation.mutate(props.channel.id);
 					}}
 				>
-					<IconMdiClose className="text-text/50 group-hover/close:text-text/100" />
+					<IconMingcuteCloseFill className="text-text/50 group-hover/close:text-text/100" />
 				</button>
 			) : (
 				<div className="absolute top-3.5 right-2 bottom-3.5 flex flex-shrink-0 items-center justify-center">
-					<IconSvgSpinners3DotsFade className="size-7 text-text" />
+					<LoadingIcon className="size-7" />
 				</div>
 			)}
 		</li>

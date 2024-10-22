@@ -7,7 +7,7 @@ export default function ModalCloseButton(props: { children?: ReactNode; onClick:
 			onClick={props.onClick}
 			type="button"
 		>
-			<IconMdiClose className="text-error h-5 w-5" />
+			<IconMingcuteCloseFill className="text-error h-5 w-5" />
 			{props.children}
 		</button>
 	);
