@@ -24,9 +24,20 @@ router.delete(
 
 		// Transfer the old owner to a new one alphabetically
 		if (channel.ownerId === payload.id) {
-			await prisma.channel.editDM(channelId, {
-				owner: channel.recipients.filter((x) => x.id !== payload.id).sort((a, b) => (a.username > b.username ? 1 : -1))[0].id,
-			});
+			const updatedChannel = idFix(
+				await prisma.channel.editDM(
+					channelId,
+					{ owner: channel.recipients.filter((x) => x.id !== payload.id).toSorted((a, b) => (a.username > b.username ? 1 : -1))[0].id },
+					includeChannelRecipients,
+				),
+			);
+
+			for (const recipient of updatedChannel.recipients) {
+				dispatchToTopic(recipient.id, "channel_update", {
+					...updatedChannel,
+					recipients: updatedChannel.recipients.filter((x) => x.id !== recipient.id),
+				});
+			}
 		}
 
 		const deletedChannel: APIDeleteDMChannelResult = idFix(await prisma.channel.deleteDM(channelId, payload.id, includeChannelRecipients));

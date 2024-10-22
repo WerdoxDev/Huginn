@@ -109,7 +109,7 @@ const channelExtention = Prisma.defineExtension({
 
 				const updatedChannel = await prisma.channel.update({
 					where: { id: BigInt(channelId), type: ChannelType.GROUP_DM },
-					data: { icon: editedDM.icon, name: editedDM.name, owner: editedDM.owner ? { update: { id: BigInt(editedDM.owner) } } : undefined },
+					data: { icon: editedDM.icon, name: editedDM.name, owner: editedDM.owner ? { connect: { id: BigInt(editedDM.owner) } } : undefined },
 					include: include,
 				});
 

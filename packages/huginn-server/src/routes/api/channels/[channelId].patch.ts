@@ -1,4 +1,4 @@
-import { createErrorFactory, createHuginnError, useValidatedBody, useValidatedParams } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, missingPermission, useValidatedBody, useValidatedParams } from "@huginn/backend-shared";
 import { CDNRoutes, Errors, HttpCode, MessageFlags, MessageType, getFileHash, idFix, merge, toArrayBuffer } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
@@ -33,7 +33,11 @@ router.patch(
 			return createHuginnError(event, formError);
 		}
 
-		const channel = await prisma.channel.getById(channelId);
+		const channel = idFix(await prisma.channel.getById(channelId));
+
+		if (body.owner && channel.ownerId !== payload.id) {
+			return missingPermission(event);
+		}
 
 		let channelIconHash: string | undefined | null = undefined;
 		if (body.icon !== null && body.icon !== undefined) {
