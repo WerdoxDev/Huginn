@@ -64,23 +64,23 @@ function Splashscreen() {
 	}, []);
 
 	return (
-		<div className="flex h-full w-full select-none items-center justify-center rounded-xl bg-background" data-tauri-drag-region>
-			<div className="flex w-full flex-col items-center" data-tauri-drag-region>
-				<IconFa6SolidCrow className="hover:-rotate-12 mb-2.5 size-20 text-accent transition-all active:rotate-6" />
-				<div className="mb-5 font-bold text-text text-xl">Huginn</div>
-				<div className="mb-2.5 text-text opacity-60">
-					<span>{loadingText}</span>
-					<span className="loader__dot">.</span>
-					<span className="loader__dot">.</span>
-					<span className="loader__dot">.</span>
+		<div className="flex h-full w-full select-none rounded-xl bg-background" data-tauri-drag-region>
+			<div className="mt-16 flex w-full flex-col items-center" data-tauri-drag-region>
+				<IconFa6SolidCrow className="hover:-rotate-12 size-20 animate-pulse text-accent drop-shadow-[0px_0px_25px_rgb(var(--color-primary))] transition-all hover:scale-105 active:rotate-6" />
+				<div className="mt-3 font-bold text-text text-xl">Huginn</div>
+				<div className="mt-3 text-text/80">
+					<div className="flex items-center justify-center gap-x-2">
+						{loadingText}
+						<LoadingIcon className="size-6" />
+					</div>
 				</div>
 				{loadingState === "updating" && (
-					<>
-						<div className="h-4 w-2/3 overflow-hidden rounded-md bg-secondary">
-							<div className="h-full bg-primary" style={{ width: `${progress}%` }} />
+					<div className="relative mt-3 h-6 w-56 rounded-md bg-secondary">
+						<div className="h-full rounded-md bg-accent" style={{ width: `${progress}%` }} />
+						<div className="absolute right-0 left-0 flex items-center justify-center">
+							<div className="rounded-b-md bg-secondary px-2 py-1 text-text/50 text-xs">{updateProgressText}</div>
 						</div>
-						<div className="mt-1 text-text text-xs opacity-60">{updateProgressText}</div>
-					</>
+					</div>
 				)}
 			</div>
 		</div>

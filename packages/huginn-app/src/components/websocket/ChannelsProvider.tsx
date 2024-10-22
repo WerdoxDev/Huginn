@@ -24,6 +24,8 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
 	}
 
 	function onChannelDeleted(d: GatewayDMChannelDeleteData) {
+		queryClient.removeQueries({ queryKey: ["messages", d.id] });
+
 		if (router.state.location.pathname.includes(d.id)) {
 			navigate({ to: "/channels/@me", replace: true });
 		}

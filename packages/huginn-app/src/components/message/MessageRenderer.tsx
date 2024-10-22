@@ -82,9 +82,9 @@ const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, 
 			{[MessageType.DEFAULT].includes(props.renderInfo.message.type) && (
 				<DefaultMessage {...props} editor={editor} decorate={decorate} renderElement={renderElement} renderLeaf={renderLeaf} />
 			)}
-			{[MessageType.RECIPIENT_ADD, MessageType.RECIPIENT_REMOVE, MessageType.CHANNEL_NAME_CHANGED].includes(props.renderInfo.message.type) && (
-				<UserActionMessage {...props} />
-			)}
+			{[MessageType.RECIPIENT_ADD, MessageType.RECIPIENT_REMOVE, MessageType.CHANNEL_NAME_CHANGED, MessageType.CHANNEL_ICON_CHANGED].includes(
+				props.renderInfo.message.type,
+			) && <UserActionMessage {...props} />}
 		</li>
 	);
 });

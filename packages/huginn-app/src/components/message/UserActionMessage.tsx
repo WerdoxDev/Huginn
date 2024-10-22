@@ -24,8 +24,10 @@ export default function UserActionMessage(props: MessageRendererProps) {
 			{type === MessageType.RECIPIENT_REMOVE && <IconMingcuteArrowLeftFill className="mr-4 size-5 text-error" />}
 			{type === MessageType.RECIPIENT_ADD && <IconMingcuteArrowRightFill className="mr-4 size-5 text-success" />}
 			{type === MessageType.CHANNEL_NAME_CHANGED && <IconMingcuteEdit2Fill className="mr-4 size-5 text-text/80" />}
+			{type === MessageType.CHANNEL_ICON_CHANGED && <IconMingcutePic2Fill className="mr-4 size-5 text-text/80" />}
 			<div>
 				<span className="font-bold">{author}</span>
+				{type === MessageType.CHANNEL_ICON_CHANGED && <span className="text-text"> changed the channel icon</span>}
 				{type === MessageType.CHANNEL_NAME_CHANGED &&
 					(!props.renderInfo.message.content ? (
 						<span className="text-text"> removed the channel name</span>

@@ -111,6 +111,7 @@ declare global {
   const IconMingcuteMore2Fill: typeof import('~icons/mingcute/more2-fill.jsx')['default']
   const IconMingcuteNotificationFill: typeof import('~icons/mingcute/notification-fill.jsx')['default']
   const IconMingcuteNotificationOffFill: typeof import('~icons/mingcute/notification-off-fill.jsx')['default']
+  const IconMingcutePic2Fill: typeof import('~icons/mingcute/pic2-fill.jsx')['default']
   const IconMingcutePlusFill: typeof import('~icons/mingcute/plus-fill.jsx')['default']
   const IconMingcuteServerFill: typeof import('~icons/mingcute/server-fill.jsx')['default']
   const IconMingcuteSettings3Fill: typeof import('~icons/mingcute/settings3-fill.jsx')['default']
