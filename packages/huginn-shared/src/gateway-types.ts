@@ -130,7 +130,7 @@ type GatewayMessageEventExtraFields = {
 
 export type GatewayRelationshipCreateData = APIRelationshipWithoutOwner;
 export type GatewayDMChannelCreateData = DirectChannel;
-export type GatewayDMChannelDeleteData = Omit<DirectChannel, "recipients"> & { recipients?: APIChannelUser[] };
+export type GatewayDMChannelDeleteData = Omit<DirectChannel, "recipients">;
 export type GatewayDMChannelUpdateData = DirectChannel;
 export type GatewayDMCHannelRecipientAddData = { user: APIChannelUser; channelId: Snowflake };
 export type GatewayDMCHannelRecipientRemoveData = { user: APIChannelUser; channelId: Snowflake };

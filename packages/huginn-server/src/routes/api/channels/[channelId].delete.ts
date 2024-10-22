@@ -3,9 +3,10 @@ import { type APIDeleteDMChannelResult, ChannelType, HttpCode, MessageFlags, Mes
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { includeChannelRecipients, includeMessageAuthorAndMentions, omitMessageAuthorId } from "#database/common";
+import { includeChannelRecipients } from "#database/common";
 import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
+import { dispatchChannel, dispatchMessage } from "#utils/helpers";
 import { useVerifiedJwt } from "#utils/route-utils";
 
 const schema = z.object({ channelId: z.string() });
@@ -33,16 +34,13 @@ router.delete(
 			);
 
 			for (const recipient of updatedChannel.recipients) {
-				dispatchToTopic(recipient.id, "channel_update", {
-					...updatedChannel,
-					recipients: updatedChannel.recipients.filter((x) => x.id !== recipient.id),
-				});
+				dispatchChannel(updatedChannel, "channel_update", recipient.id);
 			}
 		}
 
 		const deletedChannel: APIDeleteDMChannelResult = idFix(await prisma.channel.deleteDM(channelId, payload.id, includeChannelRecipients));
 
-		dispatchToTopic(payload.id, "channel_delete", channel);
+		dispatchToTopic(payload.id, "channel_delete", omit(channel, ["recipients"]));
 
 		const removedRecipient = channel.recipients.find((x) => x.id === payload.id);
 		if (channel.type === ChannelType.GROUP_DM && removedRecipient) {
@@ -51,21 +49,7 @@ router.delete(
 		}
 
 		if (channel.type === ChannelType.GROUP_DM) {
-			const message = idFix(
-				await prisma.message.createDefaultMessage(
-					payload.id,
-					channelId,
-					MessageType.RECIPIENT_REMOVE,
-					"",
-					undefined,
-					undefined,
-					MessageFlags.NONE,
-					includeMessageAuthorAndMentions,
-					omitMessageAuthorId,
-				),
-			);
-
-			dispatchToTopic(channelId, "message_create", message);
+			await dispatchMessage(payload.id, channelId, MessageType.RECIPIENT_REMOVE, "", undefined, undefined, MessageFlags.NONE);
 		}
 
 		setResponseStatus(event, HttpCode.OK);

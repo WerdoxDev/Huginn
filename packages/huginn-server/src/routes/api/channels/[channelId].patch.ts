@@ -6,6 +6,7 @@ import { prisma } from "#database";
 import { excludeChannelRecipient, includeChannelRecipients, includeMessageAuthorAndMentions, omitMessageAuthorId } from "#database/common";
 import { router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
+import { channelWithoutRecipient, dispatchChannel, dispatchMessage } from "#utils/helpers";
 import { useVerifiedJwt } from "#utils/route-utils";
 import { cdnUpload } from "#utils/server-request";
 import { validateChannelName } from "#utils/validation";
@@ -56,29 +57,34 @@ router.patch(
 		const updatedChannel = idFix(await prisma.channel.editDM(channelId, { name: body.name, icon: channelIconHash }, includeChannelRecipients));
 
 		for (const recipient of updatedChannel.recipients) {
-			const channel = { ...updatedChannel, recipients: updatedChannel.recipients.filter((x) => x.id !== recipient.id) };
-			dispatchToTopic(recipient.id, "channel_update", channel);
+			dispatchChannel(updatedChannel, "channel_update", recipient.id);
 		}
 
 		if (channel.name !== updatedChannel.name) {
-			const message = idFix(
-				await prisma.message.createDefaultMessage(
-					payload.id,
-					channelId,
-					MessageType.CHANNEL_NAME_CHANGED,
-					updatedChannel.name ?? "",
-					undefined,
-					undefined,
-					MessageFlags.NONE,
-					includeMessageAuthorAndMentions,
-					omitMessageAuthorId,
-				),
+			await dispatchMessage(
+				payload.id,
+				channelId,
+				MessageType.CHANNEL_NAME_CHANGED,
+				updatedChannel.name ?? "",
+				undefined,
+				undefined,
+				MessageFlags.NONE,
 			);
+		}
 
-			dispatchToTopic(channelId, "message_create", message);
+		if (channel.icon !== updatedChannel.icon) {
+			await dispatchMessage(
+				payload.id,
+				channelId,
+				MessageType.CHANNEL_ICON_CHANGED,
+				updatedChannel.name ?? "",
+				undefined,
+				undefined,
+				MessageFlags.NONE,
+			);
 		}
 
 		setResponseStatus(event, HttpCode.OK);
-		return { ...updatedChannel, recipients: updatedChannel.recipients.filter((x) => x.id !== payload.id) };
+		return channelWithoutRecipient(updatedChannel, payload.id);
 	}),
 );

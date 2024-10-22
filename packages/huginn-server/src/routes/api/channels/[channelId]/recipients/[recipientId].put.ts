@@ -6,6 +6,7 @@ import { prisma } from "#database";
 import { includeChannelRecipients, includeMessageAuthorAndMentions, omitMessageAuthorId } from "#database/common";
 import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
+import { dispatchChannel, dispatchMessage } from "#utils/helpers";
 import { useVerifiedJwt } from "#utils/route-utils";
 
 const paramsSchema = z.object({ channelId: z.string(), recipientId: z.string() });
@@ -38,26 +39,9 @@ router.put(
 		}
 
 		gateway.subscribeSessionsToTopic(recipientId, channelId);
-		dispatchToTopic(recipientId, "channel_create", {
-			...updatedChannel,
-			recipients: updatedChannel.recipients.filter((x) => x.id !== recipientId),
-		});
+		dispatchChannel(updatedChannel, "channel_create", recipientId);
 
-		const message = idFix(
-			await prisma.message.createDefaultMessage(
-				payload.id,
-				channelId,
-				MessageType.RECIPIENT_ADD,
-				"",
-				undefined,
-				[recipientId],
-				MessageFlags.NONE,
-				includeMessageAuthorAndMentions,
-				omitMessageAuthorId,
-			),
-		);
-
-		dispatchToTopic(channelId, "message_create", message);
+		await dispatchMessage(payload.id, channelId, MessageType.RECIPIENT_ADD, "", undefined, [recipientId], MessageFlags.NONE);
 
 		setResponseStatus(event, HttpCode.NO_CONTENT);
 		return null;
