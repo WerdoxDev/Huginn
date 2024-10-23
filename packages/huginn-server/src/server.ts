@@ -120,8 +120,10 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 	app.use(mainRouter);
 
 	const server = Bun.serve({
-		cert: CERT_FILE,
-		key: KEY_FILE,
+		tls: {
+			cert: CERT_FILE,
+			key: KEY_FILE,
+		},
 		port: SERVER_PORT,
 		hostname: SERVER_HOST,
 		async fetch(req, server) {

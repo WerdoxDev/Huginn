@@ -107,8 +107,10 @@ export async function startCdn(options?: { serve: boolean; storage: "aws" | "loc
 	app.use(router);
 
 	const cdn = Bun.serve<string>({
-		cert: CERT_FILE,
-		key: KEY_FILE,
+		tls: {
+			cert: CERT_FILE,
+			key: KEY_FILE,
+		},
 		port: CDN_PORT,
 		hostname: CDN_HOST,
 		fetch(req) {

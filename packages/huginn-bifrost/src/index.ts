@@ -114,6 +114,9 @@ const handler = toWebHandler(app);
 const HOST = process.env.HOST;
 const PORT = process.env.PORT;
 
+const CERT_FILE = process.env.CERTIFICATE_PATH && Bun.file(process.env.CERTIFICATE_PATH);
+const KEY_FILE = process.env.PRIVATE_KEY_PATH && Bun.file(process.env.PRIVATE_KEY_PATH);
+
 let server: Server;
 const options: Serve = {
 	port: PORT,
@@ -130,6 +133,10 @@ const options: Serve = {
 		}
 
 		return handler(req);
+	},
+	tls: {
+		cert: CERT_FILE,
+		key: KEY_FILE,
 	},
 };
 
