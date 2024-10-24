@@ -116,6 +116,7 @@ const PORT = process.env.PORT;
 
 const CERT_FILE = process.env.CERTIFICATE_PATH && Bun.file(process.env.CERTIFICATE_PATH);
 const KEY_FILE = process.env.PRIVATE_KEY_PATH && Bun.file(process.env.PRIVATE_KEY_PATH);
+const PASSPHRASE = process.env.PASSPHRASE;
 
 let server: Server;
 const options: Serve = {
@@ -137,6 +138,7 @@ const options: Serve = {
 	tls: {
 		cert: CERT_FILE,
 		key: KEY_FILE,
+		passphrase: PASSPHRASE,
 	},
 };
 

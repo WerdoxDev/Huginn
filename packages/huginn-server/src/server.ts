@@ -24,7 +24,7 @@ import { Octokit } from "octokit";
 import { isDBError } from "#database/error";
 import { ServerGateway } from "#gateway/server-gateway";
 import { importRoutes } from "#routes";
-import { AWS_KEY_ID, AWS_REGION, AWS_SECRET_KEY, CERT_FILE, GITHUB_TOKEN, KEY_FILE, SERVER_HOST, SERVER_PORT } from "#setup";
+import { AWS_KEY_ID, AWS_REGION, AWS_SECRET_KEY, CERT_FILE, GITHUB_TOKEN, KEY_FILE, PASSPHRASE, SERVER_HOST, SERVER_PORT } from "#setup";
 import { handleCommonDBErrors } from "#utils/route-utils";
 import { TokenInvalidator } from "#utils/token-invalidator";
 import { version } from "../package.json";
@@ -123,6 +123,7 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 		tls: {
 			cert: CERT_FILE,
 			key: KEY_FILE,
+			passphrase: PASSPHRASE,
 		},
 		port: SERVER_PORT,
 		hostname: SERVER_HOST,

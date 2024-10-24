@@ -18,6 +18,7 @@ export const AWS_VERSIONS_OBJECT_KEY = process.env.AWS_VERSIONS_OBJECT_KEY;
 
 export const CERT_FILE = process.env.CERTIFICATE_PATH && Bun.file(process.env.CERTIFICATE_PATH);
 export const KEY_FILE = process.env.PRIVATE_KEY_PATH && Bun.file(process.env.PRIVATE_KEY_PATH);
+export const PASSPHRASE = process.env.PASSPHRASE;
 
 if (!CONNECTION_STRING) {
 	consola.error("Database config is not set correctly!");

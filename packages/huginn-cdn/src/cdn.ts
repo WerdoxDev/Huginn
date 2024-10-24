@@ -22,7 +22,7 @@ import { handleCommonCDNErrors } from "#utils/route-utils";
 import { version } from "../package.json";
 import { isCDNError } from "./error";
 import { importRoutes } from "./routes";
-import { CDN_HOST, CDN_PORT, CERT_FILE, KEY_FILE } from "./setup";
+import { CDN_HOST, CDN_PORT, CERT_FILE, KEY_FILE, PASSPHRASE } from "./setup";
 
 export async function startCdn(options?: { serve: boolean; storage: "aws" | "local" }): Promise<{ cdn?: Server; app: App; router: Router }> {
 	consola.info(`Using version ${version}`);
@@ -110,6 +110,7 @@ export async function startCdn(options?: { serve: boolean; storage: "aws" | "loc
 		tls: {
 			cert: CERT_FILE,
 			key: KEY_FILE,
+			passphrase: PASSPHRASE,
 		},
 		port: CDN_PORT,
 		hostname: CDN_HOST,
