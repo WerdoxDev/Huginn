@@ -6,6 +6,7 @@ import { Fragment } from "react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/friends")({
 	beforeLoad({ context: { client } }) {
+		// console.log("hi");
 		requireAuth(client);
 	},
 	component: Friends,

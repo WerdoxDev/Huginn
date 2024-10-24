@@ -1,5 +1,5 @@
 import type { InputOptions, InputProps, InputStatus, InputStatuses, InputValues } from "@/types";
-import type { HuginnErrorData } from "@huginn/shared";
+import { type HuginnErrorData, omit } from "@huginn/shared";
 
 export function useInputs(inputsOptions: InputOptions[]) {
 	const newValues: InputValues = {};
@@ -83,6 +83,15 @@ export function useInputs(inputsOptions: InputOptions[]) {
 		setStatuses(newStatuses);
 	}
 
+	function resetInput(inputName: string) {
+		const newStatuses = { ...statuses };
+		newStatuses[inputName] = { code: "none", text: "" };
+		const newErrors = omit({ ...errorStatuses }, [inputName]);
+
+		setStatuses(newStatuses);
+		setErrorStatuses(newErrors);
+	}
+
 	return {
 		inputsProps,
 		values,
@@ -92,5 +101,6 @@ export function useInputs(inputsOptions: InputOptions[]) {
 		resetStatuses,
 		handleErrors,
 		setInputStatus,
+		resetInput,
 	};
 }

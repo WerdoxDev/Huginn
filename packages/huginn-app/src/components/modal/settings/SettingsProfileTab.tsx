@@ -15,8 +15,10 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 	const {
 		inputsProps,
 		values,
+		statuses,
 		handleErrors,
 		resetStatuses,
+		resetInput,
 		setInputValue: onValueChanged,
 	} = useInputs([
 		{ name: "username", required: true, default: user?.username },
@@ -26,7 +28,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 
 	const [avatarData, setAvatarData] = useState<string | null | undefined>(() => originalAvatar);
 
-	const { message: usernameMessageDetail, onFocusChanged, onChanged } = useUniqueUsernameMessage(values, "username");
+	const { message: usernameMessageDetail, onFocusChanged, onChanged } = useUniqueUsernameMessage(values, resetInput, "username");
 
 	const mutation = usePatchUser((result) => {
 		client.tokenHandler.token = result.token;
@@ -145,7 +147,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 						loading={mutation.isPending}
 						disabled={!modified && !avatarModified}
 						onClick={edit}
-						className="!rounded-lg w-36 shrink-0 bg-primary py-2 disabled:bg-primary/50"
+						className="!rounded-lg w-36 shrink-0 bg-primary disabled:bg-primary/50"
 					>
 						Save changes
 					</LoadingButton>

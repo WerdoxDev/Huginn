@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/register")({
 function Register() {
 	const client = useClient();
 	const posthog = usePostHog();
-	const { inputsProps, values, resetStatuses, handleErrors, validateValues } = useInputs([
+	const { inputsProps, values, resetStatuses, handleErrors, validateValues, resetInput } = useInputs([
 		{ name: "email", required: true },
 		{ name: "displayName", required: false },
 		{ name: "username", required: true },
@@ -24,7 +24,7 @@ function Register() {
 
 	const [hidden, setHidden] = useState(false);
 	const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
-	const { message: usernameMessageDetail, onFocusChanged } = useUniqueUsernameMessage(values, "username");
+	const { message: usernameMessageDetail, onFocusChanged } = useUniqueUsernameMessage(values, resetInput, "username");
 	const navigate = useNavigate({ from: "/register" });
 
 	const mutation = useHuginnMutation(
@@ -73,11 +73,34 @@ function Register() {
 		resetStatuses();
 	}
 
+	function google() {
+		const url = new URL("/api/auth/google", client.options.rest?.api);
+		url.searchParams.set("redirect_url", window.location.href);
+		window.open(url.toString(), "_self");
+	}
+
 	return (
 		<AuthWrapper hidden={hidden} onSubmit={register}>
 			<div className="flex w-full select-none flex-col items-center">
 				<h1 className="mb-2 font-medium text-2xl text-text">Welcome to Huginn!</h1>
 				<div className="text-text opacity-70">We are very happy to have you here!</div>
+			</div>
+			<div className="mt-5 flex gap-x-2">
+				<button
+					onClick={google}
+					type="button"
+					className="flex items-center justify-center gap-x-2 rounded-lg bg-tertiary p-2 text-text transition-all hover:scale-105 hover:shadow-lg"
+				>
+					<IconLogosGoogleIcon className="size-6" />
+					Google
+				</button>
+				<button
+					type="button"
+					className="flex items-center justify-center gap-x-2 rounded-lg bg-tertiary p-2 text-text transition-all hover:scale-105 hover:shadow-lg"
+				>
+					<IconLogosGithubIcon className="size-6 text-white [&>path]:fill-white" />
+					GitHub
+				</button>
 			</div>
 			<div className="mt-5 w-full">
 				<HuginnInput className="mb-5" {...inputsProps.email}>
