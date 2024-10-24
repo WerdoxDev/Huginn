@@ -3,7 +3,7 @@ import type { Endpoints } from "@octokit/types";
 import { defineEventHandler, setResponseStatus } from "h3";
 import * as semver from "semver";
 import { octokit, router } from "#server";
-import { REPO, REPO_OWNER } from "#setup";
+import { envs } from "#setup";
 
 // Release: huginn-0.3.3
 // Nightly: huginn-0.3.3-nightly.0
@@ -15,7 +15,7 @@ function getWindowsAssetUrl(release?: Unpacked<Endpoints["GET /repos/{owner}/{re
 router.get(
 	"/releases",
 	defineEventHandler(async (event) => {
-		const releases = (await octokit.rest.repos.listReleases({ owner: REPO_OWNER, repo: REPO })).data.sort((v1, v2) =>
+		const releases = (await octokit.rest.repos.listReleases({ owner: envs.REPO_OWNER, repo: envs.REPO })).data.sort((v1, v2) =>
 			semver.rcompare(v1.name ?? v1.tag_name, v2.name ?? v2.tag_name),
 		);
 

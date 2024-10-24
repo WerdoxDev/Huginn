@@ -88,7 +88,7 @@ router.patch(
 		const updatedUser = idFix(
 			await prisma.user.edit(payload.id, {
 				email: body.email,
-				username: body.username,
+				username: body.username?.toLowerCase(),
 				displayName: !body.displayName ? null : body.displayName,
 				avatar: avatarHash,
 				password: body.newPassword,

@@ -12,7 +12,7 @@ const authExtention = Prisma.defineExtension({
 						AND: [
 							{ password: credentials.password },
 							{
-								OR: [{ email: credentials.email }, { username: credentials.username }],
+								OR: [{ email: credentials.email }, { username: credentials.username?.toLowerCase() }],
 							},
 						],
 					},
@@ -25,7 +25,7 @@ const authExtention = Prisma.defineExtension({
 				const newUser = await prisma.user.create({
 					data: {
 						id: snowflake.generate(WorkerID.AUTH),
-						username: user.username,
+						username: user.username.toLowerCase(),
 						displayName: !user.displayName ? null : user.displayName,
 						password: user.password,
 						avatar: null,

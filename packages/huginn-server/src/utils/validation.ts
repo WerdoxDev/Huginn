@@ -1,6 +1,8 @@
 import type { ErrorFactory } from "@huginn/backend-shared/src/error-factory";
 import { constants } from "@huginn/shared";
 import { Fields } from "@huginn/shared";
+import { anyOf, char, charIn, charNotIn, createRegExp, digit, exactly, letter, not, oneOrMore } from "magic-regexp";
+import { convert } from "magic-regexp/converter";
 import { prisma } from "#database";
 
 export function validateEmail(email: string | undefined, errorObject: ErrorFactory) {
@@ -20,6 +22,10 @@ export function validateUsername(username: string | undefined, errorObject: Erro
 
 	if (username && (username.length < minLen || username.length > maxLen)) {
 		errorObject.addError("username", Fields.wrongLength(minLen, maxLen));
+		return false;
+	}
+	if (username && !username?.match(constants.USERNAME_REGEX)) {
+		errorObject.addError("username", Fields.usernameInvalid());
 		return false;
 	}
 	if (username === null || username === "") {

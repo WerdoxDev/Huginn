@@ -24,7 +24,7 @@ import { Octokit } from "octokit";
 import { isDBError } from "#database/error";
 import { ServerGateway } from "#gateway/server-gateway";
 import { importRoutes } from "#routes";
-import { AWS_KEY_ID, AWS_REGION, AWS_SECRET_KEY, CERT_FILE, GITHUB_TOKEN, KEY_FILE, PASSPHRASE, SERVER_HOST, SERVER_PORT } from "#setup";
+import { CERT_FILE, KEY_FILE, envs } from "#setup";
 import { handleCommonDBErrors } from "#utils/route-utils";
 import { TokenInvalidator } from "#utils/token-invalidator";
 import { version } from "../package.json";
@@ -70,7 +70,7 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 					return send(event, JSON.stringify(createErrorFactory(Errors.serverError()).toObject()));
 				}
 			: undefined,
-		onBeforeResponse: options?.serve
+		onAfterResponse: options?.serve
 			? (event, response) => {
 					if (event.method === "OPTIONS") {
 						return;
@@ -79,10 +79,10 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 					const id = event.context.id;
 					const status = getResponseStatus(event);
 
-					if (status >= 200 && status < 300) {
-						logResponse(event.path, status, id, response.body);
+					if (status >= 200 && status < 500) {
+						logResponse(event.path, status, id, response?.body);
 					} else {
-						logReject(event.path, event.method, id, response.body as HuginnErrorData, status);
+						logReject(event.path, event.method, id, response?.body as HuginnErrorData, status);
 					}
 				}
 			: undefined,
@@ -123,10 +123,10 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 		tls: {
 			cert: CERT_FILE,
 			key: KEY_FILE,
-			passphrase: PASSPHRASE,
+			passphrase: envs.PASSPHRASE,
 		},
-		port: SERVER_PORT,
-		hostname: SERVER_HOST,
+		port: envs.SERVER_PORT,
+		hostname: envs.SERVER_HOST,
 		async fetch(req, server) {
 			const url = new URL(req.url);
 			if (url.pathname === "/gateway") {
@@ -152,9 +152,9 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 
 export const gateway = new ServerGateway({ logHeartbeat: false });
 export const tokenInvalidator = new TokenInvalidator();
-export const octokit: Octokit = new Octokit({ auth: GITHUB_TOKEN });
+export const octokit: Octokit = new Octokit({ auth: envs.GITHUB_TOKEN });
 export const s3 = new S3Client({
-	region: AWS_REGION,
-	credentials: { accessKeyId: AWS_KEY_ID ?? "", secretAccessKey: AWS_SECRET_KEY ?? "" },
+	region: envs.AWS_REGION,
+	credentials: { accessKeyId: envs.AWS_KEY_ID ?? "", secretAccessKey: envs.AWS_SECRET_KEY ?? "" },
 });
 export let router: Readonly<Router>;

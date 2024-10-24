@@ -73,15 +73,7 @@ router.patch(
 		}
 
 		if (channel.icon !== updatedChannel.icon) {
-			await dispatchMessage(
-				payload.id,
-				channelId,
-				MessageType.CHANNEL_ICON_CHANGED,
-				updatedChannel.name ?? "",
-				undefined,
-				undefined,
-				MessageFlags.NONE,
-			);
+			await dispatchMessage(payload.id, channelId, MessageType.CHANNEL_ICON_CHANGED, "", undefined, undefined, MessageFlags.NONE);
 		}
 
 		setResponseStatus(event, HttpCode.OK);

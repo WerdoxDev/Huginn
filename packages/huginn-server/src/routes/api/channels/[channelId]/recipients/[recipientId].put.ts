@@ -1,6 +1,6 @@
 import { missingAccess, singleError, useValidatedParams } from "@huginn/backend-shared";
 import { ChannelType, Errors, HttpCode, MessageFlags, MessageType, idFix } from "@huginn/shared";
-import { defineEventHandler, setResponseStatus } from "h3";
+import { defineEventHandler, sendNoContent, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
 import { includeChannelRecipients, includeMessageAuthorAndMentions, omitMessageAuthorId } from "#database/common";
@@ -27,8 +27,7 @@ router.put(
 		}
 
 		if (channel.recipients.find((x) => x.id === recipientId)) {
-			setResponseStatus(event, HttpCode.NO_CONTENT);
-			return null;
+			return sendNoContent(event, HttpCode.NO_CONTENT);
 		}
 
 		const updatedChannel = idFix(await prisma.channel.addRecipient(channelId, recipientId, includeChannelRecipients));
@@ -43,7 +42,6 @@ router.put(
 
 		await dispatchMessage(payload.id, channelId, MessageType.RECIPIENT_ADD, "", undefined, [recipientId], MessageFlags.NONE);
 
-		setResponseStatus(event, HttpCode.NO_CONTENT);
-		return null;
+		return sendNoContent(event, HttpCode.NO_CONTENT);
 	}),
 );

@@ -1,6 +1,6 @@
 import { missingAccess, missingPermission, singleError, useValidatedParams } from "@huginn/backend-shared";
 import { ChannelType, Errors, HttpCode, MessageFlags, MessageType, idFix, omit } from "@huginn/shared";
-import { defineEventHandler, setResponseStatus } from "h3";
+import { defineEventHandler, sendNoContent, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
 import { includeChannelRecipients, includeMessageAuthorAndMentions, omitMessageAuthorId } from "#database/common";
@@ -51,7 +51,6 @@ router.delete(
 
 		await dispatchMessage(payload.id, channelId, MessageType.RECIPIENT_REMOVE, "", undefined, [recipientId], MessageFlags.NONE);
 
-		setResponseStatus(event, HttpCode.NO_CONTENT);
-		return null;
+		return sendNoContent(event, HttpCode.NO_CONTENT);
 	}),
 );

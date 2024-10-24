@@ -1,6 +1,6 @@
 import { catchError, createErrorFactory, createHuginnError, useValidatedBody } from "@huginn/backend-shared";
 import { Errors, HttpCode, RelationshipType, type Snowflake, idFix, omit } from "@huginn/shared";
-import { type H3Event, defineEventHandler, setResponseStatus } from "h3";
+import { type H3Event, defineEventHandler, sendNoContent, setResponseStatus } from "h3";
 import { z } from "zod";
 import { DBErrorType, assertError, prisma } from "#database";
 import { omitRelationshipUserIds } from "#database/common";
@@ -70,6 +70,5 @@ export async function relationshipPost(event: H3Event, userId: Snowflake) {
 		}
 	}
 
-	setResponseStatus(event, HttpCode.NO_CONTENT);
-	return null;
+	return sendNoContent(event, HttpCode.NO_CONTENT);
 }

@@ -1,26 +1,31 @@
+import { readEnv } from "@huginn/backend-shared";
 import consola from "consola";
 
-const CONNECTION_STRING = process.env.POSTGRESQL_URL;
+export const envs = readEnv([
+	"POSTGRESQL_URL",
+	"CDN_ROOT",
+	"SERVER_HOST",
+	"SERVER_PORT",
+	"GITHUB_TOKEN",
+	{ key: "REPO_OWNER", default: "WerdoxDev" },
+	{ key: "REPO", default: "Huginn" },
+	"AWS_REGION",
+	"AWS_KEY_ID",
+	"AWS_SECRET_KEY",
+	"AWS_BUCKET",
+	"AWS_VERSIONS_OBJECT_KEY",
+	"PASSPHRASE",
+	"CERTIFICATE_PATH",
+	"PRIVATE_KEY_PATH",
+	"GOOGLE_CLIENT_ID",
+	"GOOGLE_CLIENT_SECRET",
+	"SESSION_PASSWORD",
+] as const);
 
-export const CDN_ROOT = process.env.CDN_ROOT;
-export const SERVER_HOST = process.env.SERVER_HOST;
-export const SERVER_PORT = process.env.SERVER_PORT;
+export const CERT_FILE = envs.CERTIFICATE_PATH && Bun.file(envs.CERTIFICATE_PATH);
+export const KEY_FILE = envs.PRIVATE_KEY_PATH && Bun.file(envs.PRIVATE_KEY_PATH);
 
-export const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-export const REPO_OWNER = "WerdoxDev";
-export const REPO = "Huginn";
-
-export const AWS_REGION = process.env.AWS_REGION;
-export const AWS_KEY_ID = process.env.AWS_KEY_ID;
-export const AWS_SECRET_KEY = process.env.AWS_SECRET_KEY;
-export const AWS_BUCKET = process.env.AWS_BUCKET;
-export const AWS_VERSIONS_OBJECT_KEY = process.env.AWS_VERSIONS_OBJECT_KEY;
-
-export const CERT_FILE = process.env.CERTIFICATE_PATH && Bun.file(process.env.CERTIFICATE_PATH);
-export const KEY_FILE = process.env.PRIVATE_KEY_PATH && Bun.file(process.env.PRIVATE_KEY_PATH);
-export const PASSPHRASE = process.env.PASSPHRASE;
-
-if (!CONNECTION_STRING) {
+if (!envs.POSTGRESQL_URL) {
 	consola.error("Database config is not set correctly!");
 	process.exit();
 }
