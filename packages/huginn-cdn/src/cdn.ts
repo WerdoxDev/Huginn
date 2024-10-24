@@ -22,7 +22,7 @@ import { handleCommonCDNErrors } from "#utils/route-utils";
 import { version } from "../package.json";
 import { isCDNError } from "./error";
 import { importRoutes } from "./routes";
-import { CDN_HOST, CDN_PORT, CERT_FILE, KEY_FILE, PASSPHRASE } from "./setup";
+import { CERT_FILE, KEY_FILE, envs } from "./setup";
 
 export async function startCdn(options?: { serve: boolean; storage: "aws" | "local" }): Promise<{ cdn?: Server; app: App; router: Router }> {
 	consola.info(`Using version ${version}`);
@@ -66,7 +66,7 @@ export async function startCdn(options?: { serve: boolean; storage: "aws" | "loc
 					return send(event, JSON.stringify(createErrorFactory(Errors.serverError()).toObject()));
 				}
 			: undefined,
-		onBeforeResponse: options?.serve
+		onAfterResponse: options?.serve
 			? (event, response) => {
 					if (event.method === "OPTIONS") {
 						return;
@@ -75,10 +75,10 @@ export async function startCdn(options?: { serve: boolean; storage: "aws" | "loc
 					const id = event.context.id;
 					const status = getResponseStatus(event);
 
-					if (status >= 200 && status < 300) {
-						logResponse(event.path, status, id, response.body);
+					if (status >= 200 && status < 500) {
+						logResponse(event.path, status, id, response?.body);
 					} else {
-						logReject(event.path, event.method, id, response.body as HuginnErrorData, status);
+						logReject(event.path, event.method, id, response?.body as HuginnErrorData, status);
 					}
 				}
 			: undefined,
@@ -110,10 +110,10 @@ export async function startCdn(options?: { serve: boolean; storage: "aws" | "loc
 		tls: {
 			cert: CERT_FILE,
 			key: KEY_FILE,
-			passphrase: PASSPHRASE,
+			passphrase: envs.PASSPHRASE,
 		},
-		port: CDN_PORT,
-		hostname: CDN_HOST,
+		port: envs.CDN_PORT,
+		hostname: envs.CDN_HOST,
 		fetch(req) {
 			return handler(req);
 		},

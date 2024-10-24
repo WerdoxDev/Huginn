@@ -1,7 +1,7 @@
 import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { logFileNotFound, logGetFile, logWriteFile } from "@huginn/backend-shared";
 import pathe from "pathe";
-import { AWS_BUCKET, AWS_KEY_ID, AWS_REGION, AWS_SECRET_KEY } from "#setup";
+import { envs } from "#setup";
 import { Storage } from "#storage/storage";
 import type { FileCategory } from "#types";
 
@@ -12,14 +12,14 @@ export class S3Storage extends Storage {
 		super("s3");
 
 		this.s3 = new S3Client({
-			region: AWS_REGION,
-			credentials: { accessKeyId: AWS_KEY_ID ?? "", secretAccessKey: AWS_SECRET_KEY ?? "" },
+			region: envs.AWS_REGION,
+			credentials: { accessKeyId: envs.AWS_KEY_ID ?? "", secretAccessKey: envs.AWS_SECRET_KEY ?? "" },
 		});
 	}
 
 	public async getFile(category: FileCategory, subDirectory: string, name: string): Promise<ArrayBuffer | undefined> {
 		try {
-			const cmd = new GetObjectCommand({ Bucket: AWS_BUCKET, Key: pathe.join(category, subDirectory, name) });
+			const cmd = new GetObjectCommand({ Bucket: envs.AWS_BUCKET, Key: pathe.join(category, subDirectory, name) });
 			const result = await this.s3.send(cmd);
 
 			logGetFile(category, name);
@@ -34,7 +34,7 @@ export class S3Storage extends Storage {
 		logWriteFile(category, name);
 		try {
 			const cmd = new PutObjectCommand({
-				Bucket: AWS_BUCKET,
+				Bucket: envs.AWS_BUCKET,
 				Key: pathe.join(category, subDirectory, name),
 				Body: data instanceof ArrayBuffer ? new Uint8Array(data) : data,
 			});
@@ -48,7 +48,7 @@ export class S3Storage extends Storage {
 
 	public async exists(category: FileCategory, subDirectory: string, name: string): Promise<boolean> {
 		try {
-			const cmd = new HeadObjectCommand({ Bucket: AWS_BUCKET, Key: pathe.join(category, subDirectory, name) });
+			const cmd = new HeadObjectCommand({ Bucket: envs.AWS_BUCKET, Key: pathe.join(category, subDirectory, name) });
 			const result = await this.s3.send(cmd);
 			return true;
 		} catch (e) {
