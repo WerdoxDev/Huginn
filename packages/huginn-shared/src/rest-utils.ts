@@ -89,9 +89,11 @@ export async function resolveRequest(request: InternalRequest): Promise<Resolved
 		}
 
 		finalBody = formData;
-	} else if (request.body) {
+	} else if (request.body && typeof request.body === "object") {
 		finalBody = JSON.stringify(request.body);
 		additionalHeaders = { "Content-Type": "application/json" };
+	} else if (typeof request.body === "string") {
+		finalBody = request.body;
 	}
 
 	const method = request.method.toUpperCase();

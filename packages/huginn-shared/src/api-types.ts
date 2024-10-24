@@ -28,7 +28,7 @@ export type APIUser = {
 	avatar: string | null;
 	system?: boolean;
 	email?: string;
-	password?: string;
+	password?: string | null;
 	// TODO: Actually implement flags
 	flags: UserFlags;
 } & APIBaseUser;
@@ -261,3 +261,8 @@ export type UserPresence = {
 export type UserSettings = {
 	status: PresenceStatus;
 };
+
+export enum IdentityProviderType {
+	GOOGLE = "google",
+	GITHUB = "github",
+}

@@ -36,6 +36,7 @@ export enum HttpCode {
 	CREATED = 201,
 	NO_CONTENT = 204,
 	NOT_MODIFIED = 304,
+	FOUND = 302,
 	BAD_REQUEST = 400,
 	UNAUTHORIZED = 401,
 	FORBIDDEN = 403,
@@ -43,6 +44,7 @@ export enum HttpCode {
 	METHOD_NOT_ALLOWED = 405,
 	TOO_MANY_REQUESTS = 429,
 	GATEWAY_UNAVAILABLE = 502,
+	NOT_IMPLEMENTED = 501,
 	SERVER_ERROR = 500,
 }
 
@@ -88,6 +90,7 @@ export enum FieldCode {
 	USERNAME_TAKEN = "USERNAME_TAKEN",
 	EMAIL_IN_USE = "EMAIL_IN_USE",
 	EMAIL_INVALID = "EMAIL_INVALID",
+	USERNAME_INVLIAD = "INVALID_USERNAME",
 	PASSWORD_INCORRECT = "PASSWORD_INCORRECT",
 }
 
@@ -112,6 +115,9 @@ export const Fields = {
 	},
 	emailInUse(): [string, string] {
 		return ["Email is already registered", FieldCode.EMAIL_IN_USE];
+	},
+	usernameInvalid(): [string, string] {
+		return ["Username can only include numbers, letters, underlines _ and fullstops .", FieldCode.USERNAME_INVLIAD];
 	},
 	usernameTaken(): [string, string] {
 		return ["Username is already taken", FieldCode.USERNAME_TAKEN];

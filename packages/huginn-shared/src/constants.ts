@@ -7,7 +7,8 @@ export const constants = {
 	ACCESS_TOKEN_EXPIRE_TIME: "1d",
 	REFRESH_TOKEN_EXPIRE_TIME: "7d",
 	EMAIL_REGEX:
-		/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/ satisfies RegExp as RegExp,
+		/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/ as RegExp,
+	USERNAME_REGEX: /^[a-zA-Z0-9_.]*$/ as RegExp,
 	HEARTBEAT_INTERVAL: 10000,
 	ALLOWED_IMAGE_SIZES: [16, 32, 64, 128, 256, 512, 1_024, 2_048, 4_096] as const,
 	ALLOWED_IMAGE_FORMATS: ["webp", "png", "jpg", "jpeg", "gif"] as const,
