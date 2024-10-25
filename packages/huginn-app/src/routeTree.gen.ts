@@ -12,11 +12,13 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as SplashscreenImport } from './routes/splashscreen'
+import { Route as RedirectImport } from './routes/redirect'
 import { Route as LayoutAnimationImport } from './routes/_layoutAnimation'
 import { Route as LayoutAnimationLayoutMainImport } from './routes/_layoutAnimation/_layoutMain'
 import { Route as LayoutAnimationLayoutAuthImport } from './routes/_layoutAnimation/_layoutAuth'
 import { Route as LayoutAnimationLayoutMainLayoutHomeImport } from './routes/_layoutAnimation/_layoutMain/_layoutHome'
 import { Route as LayoutAnimationLayoutAuthRegisterImport } from './routes/_layoutAnimation/_layoutAuth/register'
+import { Route as LayoutAnimationLayoutAuthOauthConfirmImport } from './routes/_layoutAnimation/_layoutAuth/oauth-confirm'
 import { Route as LayoutAnimationLayoutAuthLoginImport } from './routes/_layoutAnimation/_layoutAuth/login'
 import { Route as LayoutAnimationLayoutMainLayoutHomeFriendsImport } from './routes/_layoutAnimation/_layoutMain/_layoutHome/friends'
 import { Route as LayoutAnimationLayoutMainLayoutHomeChannelsmeImport } from './routes/_layoutAnimation/_layoutMain/_layoutHome/channels.@me'
@@ -27,6 +29,12 @@ import { Route as LayoutAnimationLayoutMainLayoutHomeChannelsmeChannelIdImport }
 const SplashscreenRoute = SplashscreenImport.update({
   id: '/splashscreen',
   path: '/splashscreen',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const RedirectRoute = RedirectImport.update({
+  id: '/redirect',
+  path: '/redirect',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -55,6 +63,13 @@ const LayoutAnimationLayoutAuthRegisterRoute =
   LayoutAnimationLayoutAuthRegisterImport.update({
     id: '/register',
     path: '/register',
+    getParentRoute: () => LayoutAnimationLayoutAuthRoute,
+  } as any)
+
+const LayoutAnimationLayoutAuthOauthConfirmRoute =
+  LayoutAnimationLayoutAuthOauthConfirmImport.update({
+    id: '/oauth-confirm',
+    path: '/oauth-confirm',
     getParentRoute: () => LayoutAnimationLayoutAuthRoute,
   } as any)
 
@@ -97,6 +112,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAnimationImport
       parentRoute: typeof rootRoute
     }
+    '/redirect': {
+      id: '/redirect'
+      path: '/redirect'
+      fullPath: '/redirect'
+      preLoaderRoute: typeof RedirectImport
+      parentRoute: typeof rootRoute
+    }
     '/splashscreen': {
       id: '/splashscreen'
       path: '/splashscreen'
@@ -123,6 +145,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LayoutAnimationLayoutAuthLoginImport
+      parentRoute: typeof LayoutAnimationLayoutAuthImport
+    }
+    '/_layoutAnimation/_layoutAuth/oauth-confirm': {
+      id: '/_layoutAnimation/_layoutAuth/oauth-confirm'
+      path: '/oauth-confirm'
+      fullPath: '/oauth-confirm'
+      preLoaderRoute: typeof LayoutAnimationLayoutAuthOauthConfirmImport
       parentRoute: typeof LayoutAnimationLayoutAuthImport
     }
     '/_layoutAnimation/_layoutAuth/register': {
@@ -167,12 +196,15 @@ declare module '@tanstack/react-router' {
 
 interface LayoutAnimationLayoutAuthRouteChildren {
   LayoutAnimationLayoutAuthLoginRoute: typeof LayoutAnimationLayoutAuthLoginRoute
+  LayoutAnimationLayoutAuthOauthConfirmRoute: typeof LayoutAnimationLayoutAuthOauthConfirmRoute
   LayoutAnimationLayoutAuthRegisterRoute: typeof LayoutAnimationLayoutAuthRegisterRoute
 }
 
 const LayoutAnimationLayoutAuthRouteChildren: LayoutAnimationLayoutAuthRouteChildren =
   {
     LayoutAnimationLayoutAuthLoginRoute: LayoutAnimationLayoutAuthLoginRoute,
+    LayoutAnimationLayoutAuthOauthConfirmRoute:
+      LayoutAnimationLayoutAuthOauthConfirmRoute,
     LayoutAnimationLayoutAuthRegisterRoute:
       LayoutAnimationLayoutAuthRegisterRoute,
   }
@@ -246,8 +278,10 @@ const LayoutAnimationRouteWithChildren = LayoutAnimationRoute._addFileChildren(
 
 export interface FileRoutesByFullPath {
   '': typeof LayoutAnimationLayoutMainLayoutHomeRouteWithChildren
+  '/redirect': typeof RedirectRoute
   '/splashscreen': typeof SplashscreenRoute
   '/login': typeof LayoutAnimationLayoutAuthLoginRoute
+  '/oauth-confirm': typeof LayoutAnimationLayoutAuthOauthConfirmRoute
   '/register': typeof LayoutAnimationLayoutAuthRegisterRoute
   '/friends': typeof LayoutAnimationLayoutMainLayoutHomeFriendsRoute
   '/channels/@me': typeof LayoutAnimationLayoutMainLayoutHomeChannelsmeRouteWithChildren
@@ -256,8 +290,10 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '': typeof LayoutAnimationLayoutMainLayoutHomeRouteWithChildren
+  '/redirect': typeof RedirectRoute
   '/splashscreen': typeof SplashscreenRoute
   '/login': typeof LayoutAnimationLayoutAuthLoginRoute
+  '/oauth-confirm': typeof LayoutAnimationLayoutAuthOauthConfirmRoute
   '/register': typeof LayoutAnimationLayoutAuthRegisterRoute
   '/friends': typeof LayoutAnimationLayoutMainLayoutHomeFriendsRoute
   '/channels/@me': typeof LayoutAnimationLayoutMainLayoutHomeChannelsmeRouteWithChildren
@@ -267,10 +303,12 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_layoutAnimation': typeof LayoutAnimationRouteWithChildren
+  '/redirect': typeof RedirectRoute
   '/splashscreen': typeof SplashscreenRoute
   '/_layoutAnimation/_layoutAuth': typeof LayoutAnimationLayoutAuthRouteWithChildren
   '/_layoutAnimation/_layoutMain': typeof LayoutAnimationLayoutMainRouteWithChildren
   '/_layoutAnimation/_layoutAuth/login': typeof LayoutAnimationLayoutAuthLoginRoute
+  '/_layoutAnimation/_layoutAuth/oauth-confirm': typeof LayoutAnimationLayoutAuthOauthConfirmRoute
   '/_layoutAnimation/_layoutAuth/register': typeof LayoutAnimationLayoutAuthRegisterRoute
   '/_layoutAnimation/_layoutMain/_layoutHome': typeof LayoutAnimationLayoutMainLayoutHomeRouteWithChildren
   '/_layoutAnimation/_layoutMain/_layoutHome/friends': typeof LayoutAnimationLayoutMainLayoutHomeFriendsRoute
@@ -282,8 +320,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | ''
+    | '/redirect'
     | '/splashscreen'
     | '/login'
+    | '/oauth-confirm'
     | '/register'
     | '/friends'
     | '/channels/@me'
@@ -291,8 +331,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | ''
+    | '/redirect'
     | '/splashscreen'
     | '/login'
+    | '/oauth-confirm'
     | '/register'
     | '/friends'
     | '/channels/@me'
@@ -300,10 +342,12 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_layoutAnimation'
+    | '/redirect'
     | '/splashscreen'
     | '/_layoutAnimation/_layoutAuth'
     | '/_layoutAnimation/_layoutMain'
     | '/_layoutAnimation/_layoutAuth/login'
+    | '/_layoutAnimation/_layoutAuth/oauth-confirm'
     | '/_layoutAnimation/_layoutAuth/register'
     | '/_layoutAnimation/_layoutMain/_layoutHome'
     | '/_layoutAnimation/_layoutMain/_layoutHome/friends'
@@ -314,11 +358,13 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   LayoutAnimationRoute: typeof LayoutAnimationRouteWithChildren
+  RedirectRoute: typeof RedirectRoute
   SplashscreenRoute: typeof SplashscreenRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   LayoutAnimationRoute: LayoutAnimationRouteWithChildren,
+  RedirectRoute: RedirectRoute,
   SplashscreenRoute: SplashscreenRoute,
 }
 
@@ -335,6 +381,7 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/_layoutAnimation",
+        "/redirect",
         "/splashscreen"
       ]
     },
@@ -345,6 +392,9 @@ export const routeTree = rootRoute
         "/_layoutAnimation/_layoutMain"
       ]
     },
+    "/redirect": {
+      "filePath": "redirect.tsx"
+    },
     "/splashscreen": {
       "filePath": "splashscreen.tsx"
     },
@@ -353,6 +403,7 @@ export const routeTree = rootRoute
       "parent": "/_layoutAnimation",
       "children": [
         "/_layoutAnimation/_layoutAuth/login",
+        "/_layoutAnimation/_layoutAuth/oauth-confirm",
         "/_layoutAnimation/_layoutAuth/register"
       ]
     },
@@ -365,6 +416,10 @@ export const routeTree = rootRoute
     },
     "/_layoutAnimation/_layoutAuth/login": {
       "filePath": "_layoutAnimation/_layoutAuth/login.tsx",
+      "parent": "/_layoutAnimation/_layoutAuth"
+    },
+    "/_layoutAnimation/_layoutAuth/oauth-confirm": {
+      "filePath": "_layoutAnimation/_layoutAuth/oauth-confirm.tsx",
       "parent": "/_layoutAnimation/_layoutAuth"
     },
     "/_layoutAnimation/_layoutAuth/register": {

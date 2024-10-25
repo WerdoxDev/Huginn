@@ -7,7 +7,7 @@ export function setup(client: HuginnClient, posthog: PostHog) {
 	if (!routeHistory.initialPathname) routeHistory.initialPathname = pathname;
 	posthog.capture("$pageview", { $current_url: window.origin + pathname });
 
-	if (pathname === "/splashscreen") {
+	if (pathname === "/splashscreen" || pathname === "/redirect") {
 		return;
 	}
 
@@ -18,7 +18,7 @@ export function setup(client: HuginnClient, posthog: PostHog) {
 	if (client.isLoggedIn) {
 		return;
 	}
-	if (pathname !== "/login" && pathname !== "/register") {
+	if (pathname !== "/login" && pathname !== "/register" && pathname !== "/oauth-confirm") {
 		throw redirect({ to: "/login", mask: pathname });
 	}
 }

@@ -6,7 +6,6 @@ export default function AnimatedOutlet(props: {
 	updateFor?: string[];
 	style: Record<string, unknown>;
 	className?: string;
-	test: string;
 }) {
 	const router = useRouter();
 	const RouterContext = getRouterContext();

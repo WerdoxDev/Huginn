@@ -32,7 +32,12 @@
 			"windows": {
 				"installMode": "passive"
 			}
-		}
+		},
+      "deep-link":{
+         "desktop":{
+            "schemes": ["huginn"]
+         }
+      }
 	},
 	"app": {
 		"windows": [
@@ -50,6 +55,7 @@
 				"transparent": true
 			},
 			{
+            "title": "Huginn",
 				"width": 300,
 				"height": 300,
 				"resizable": false,

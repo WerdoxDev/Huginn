@@ -7,7 +7,7 @@ export const Route = createFileRoute("/_layoutAnimation")({
 });
 
 function LayoutAnimation() {
-	const { id, updateFor } = useRouteAnimation("/login", "/register");
+	const { id, updateFor } = useRouteAnimation("/login", "/register", "/oauth-confirm");
 	const [backgroundState, setBackgroundState] = useState(2);
 
 	const appWindow = useWindow();
@@ -26,7 +26,6 @@ function LayoutAnimation() {
 					updateFor={updateFor}
 					style={style}
 					className={clsx("absolute inset-0", appWindow.environment === "desktop" && "top-6")}
-					test="animation"
 				/>
 				// <div className="absolute inset-0 top-6">
 				//    <Outlet />

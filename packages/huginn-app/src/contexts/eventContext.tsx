@@ -5,6 +5,7 @@ type EventTypes = {
 	message_added: { message: GatewayMessageCreateData; visible: boolean; self: boolean };
 	user_updated: APIUser;
 	image_cropper_done: { croppedImageData: string };
+	open_url: string[];
 };
 
 type EventType = { type: keyof EventTypes; data: EventTypes[keyof EventTypes] };

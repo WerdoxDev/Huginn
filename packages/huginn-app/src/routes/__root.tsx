@@ -1,8 +1,9 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { Outlet, createRootRouteWithContext, useRouter } from "@tanstack/react-router";
 import "@tauri-apps/api";
-import type { UnlistenFn } from "@tauri-apps/api/event";
+import { type UnlistenFn, listen } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
 import type { PostHog } from "posthog-js";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -47,7 +48,12 @@ function Root() {
 									<Outlet />
 									{/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
 									{/* <TanStackRouterDevtools position="bottom-left" /> */}
-									{appWindow.environment === "desktop" && <AppMaximizedEvent />}
+									{appWindow.environment === "desktop" && (
+										<>
+											<AppMaximizedEvent />
+											<AppOpenUrlEvent />
+										</>
+									)}
 									<ModalsRenderer />
 								</div>
 							</div>
@@ -87,26 +93,38 @@ function ModalsRenderer() {
 
 function AppMaximizedEvent() {
 	const dispatch = useWindowDispatch();
-	const unlistenFunction = useRef<UnlistenFn>();
-
+	const huginnWindow = useWindow();
 	useEffect(() => {
-		async function listenToAppResize() {
+		if (huginnWindow.environment === "desktop") {
 			const appWindow = getCurrentWebviewWindow();
-			const unlisten = await appWindow.onResized(async () => {
+			const unlisten = appWindow.onResized(async () => {
 				const appMaximized = await appWindow.isMaximized();
 				dispatch({ maximized: appMaximized });
 			});
 
-			unlistenFunction.current = unlisten;
+			return () => {
+				console.log("CALLED");
+				unlisten.then((f) => f());
+			};
 		}
+	}, []);
 
-		if (window.__TAURI_INTERNALS__) {
-			listenToAppResize();
+	return null;
+}
+
+function AppOpenUrlEvent() {
+	const { dispatchEvent } = useEvent();
+	const huginnWindow = useWindow();
+	useEffect(() => {
+		if (huginnWindow.environment === "desktop") {
+			const unlisten = listen("deep-link://new-url", (event) => {
+				dispatchEvent("open_url", event.payload as string[]);
+			});
+
+			return () => {
+				unlisten.then((f) => f());
+			};
 		}
-
-		return () => {
-			unlistenFunction.current?.();
-		};
 	}, []);
 
 	return null;

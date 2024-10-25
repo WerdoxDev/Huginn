@@ -1,5 +1,7 @@
-import type { APIPostRegisterJSONBody } from "@huginn/shared";
+import { type APIPostRegisterJSONBody, generateRandomString } from "@huginn/shared";
+import { encodeBase64 } from "@std/encoding";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { open } from "@tauri-apps/plugin-shell";
 import { usePostHog } from "posthog-js/react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/register")({
@@ -13,6 +15,8 @@ export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/register")({
 function Register() {
 	const client = useClient();
 	const posthog = usePostHog();
+	const appWindow = useWindow();
+	const { listenEvent } = useEvent();
 	const { inputsProps, values, resetStatuses, handleErrors, validateValues, resetInput } = useInputs([
 		{ name: "email", required: true },
 		{ name: "displayName", required: false },
@@ -56,6 +60,14 @@ function Register() {
 
 	useEffect(() => {
 		setAuthBackgroundState(0);
+
+		const unlisten = listenEvent("open_url", async (urls) => {
+			await navigate({ to: "/oauth-confirm" });
+		});
+
+		return () => {
+			unlisten();
+		};
 	}, []);
 
 	async function register() {
@@ -75,8 +87,17 @@ function Register() {
 
 	function google() {
 		const url = new URL("/api/auth/google", client.options.rest?.api);
-		url.searchParams.set("redirect_url", window.location.href);
-		window.open(url.toString(), "_self");
+
+		const token = encodeBase64(`${Date.now()}:${generateRandomString(16)}`);
+		url.searchParams.set("redirect_url", "http://localhost:5173/redirect");
+		url.searchParams.set("state", token);
+		url.searchParams.set("origin", appWindow.environment);
+
+		if (appWindow.environment === "browser") {
+			window.open(url.toString(), "_self");
+		} else {
+			open(url.toString());
+		}
 	}
 
 	return (
