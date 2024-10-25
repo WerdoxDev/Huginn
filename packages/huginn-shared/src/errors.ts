@@ -132,6 +132,9 @@ export const Errors = {
 	unauthorized(): [string, JsonCode] {
 		return ["Unauthorized", JsonCode.NONE];
 	},
+	forbidden(): [string, JsonCode] {
+		return ["Forbidden", JsonCode.NONE];
+	},
 	serverError(): [string, JsonCode] {
 		return ["Server Error", JsonCode.NONE];
 	},

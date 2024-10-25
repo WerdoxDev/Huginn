@@ -133,13 +133,16 @@ export function hasFlag<T extends number>(flags: T, flag: T): boolean {
 }
 
 export function generateRandomString(n: number): string {
-	const characters = "abcdefghijklmnopqrstuvwxyz0123456789";
-	let result = "";
-	for (let i = 0; i < n; i++) {
-		const randomIndex = Math.floor(Math.random() * characters.length);
-		result += characters.charAt(randomIndex);
+	if (n % 2 === 1) {
+		throw new Error("Only even sizes are supported");
 	}
-	return result;
+	const buf = new Uint8Array(n / 2);
+	crypto.getRandomValues(buf);
+	let ret = "";
+	for (let i = 0; i < buf.length; ++i) {
+		ret += `0${buf[i].toString(16)}`.slice(-2);
+	}
+	return ret;
 }
 
 export type Unpacked<T> = T extends (infer U)[] ? U : T;
