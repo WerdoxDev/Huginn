@@ -11,6 +11,10 @@ export function unauthorized(event: H3Event): HuginnErrorData {
 	return createHuginnError(event, createErrorFactory(Errors.unauthorized()), HttpCode.UNAUTHORIZED);
 }
 
+export function forbidden(event: H3Event): HuginnErrorData {
+	return createHuginnError(event, createErrorFactory(Errors.forbidden()), HttpCode.FORBIDDEN);
+}
+
 export function invalidFormBody(event: H3Event): HuginnErrorData {
 	return createHuginnError(event, createErrorFactory(Errors.invalidFormBody()));
 }
