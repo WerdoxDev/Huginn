@@ -1,4 +1,4 @@
-import { unauthorized, useValidatedQuery } from "@huginn/backend-shared";
+import { forbidden, unauthorized, useValidatedQuery } from "@huginn/backend-shared";
 import { HttpCode, IdentityProviderType, RequestMethod, WorkerID, snowflake } from "@huginn/shared";
 import { toSnakeCase } from "@std/text";
 import { defineEventHandler, sendNoContent, sendRedirect, useSession } from "h3";
@@ -35,7 +35,7 @@ router.get(
 
 		const session = await useSession(event, { password: envs.SESSION_PASSWORD });
 		if (session.data.state !== state || !state) {
-			return unauthorized(event);
+			return forbidden(event);
 		}
 
 		if (code) {
@@ -53,7 +53,7 @@ router.get(
 			});
 
 			if ("error" in response) {
-				return unauthorized(event);
+				return forbidden(event);
 			}
 
 			const user: GoogleUserReponse = await serverFetch("https://www.googleapis.com/userinfo/v2/me", RequestMethod.GET, {
@@ -72,11 +72,12 @@ router.get(
 			const redirectUrl = new URL(session.data.redirect_url);
 			redirectUrl.searchParams.set("email", user.email);
 			redirectUrl.searchParams.set("username", toSnakeCase(user.name));
+			redirectUrl.searchParams.set("origin", session.data.origin);
 
 			return sendRedirect(event, redirectUrl.toString(), HttpCode.FOUND);
 		}
 		if (error || !state) {
-			return unauthorized(event);
+			return forbidden(event);
 		}
 	}),
 );

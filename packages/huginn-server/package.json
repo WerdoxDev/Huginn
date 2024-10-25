@@ -12,6 +12,7 @@
 		"@huginn/shared": "workspace:*",
 		"@prisma/client": "^5.20.0",
 		"@std/collections": "npm:@jsr/std__collections",
+		"@std/encoding": "npm:@jsr/std__encoding",
 		"@std/text": "npm:@jsr/std__text",
 		"consola": "^3.2.3",
 		"crossws": "^0.3.1",
