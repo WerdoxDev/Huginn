@@ -46,6 +46,9 @@ export type RequestData = {
 
 	authPrefix?: "Bearer";
 
+	/** A custom token if you don't want to use the client's token */
+	token?: string;
+
 	body?: BodyInit | unknown;
 
 	/**
@@ -73,7 +76,6 @@ export type InternalRequest = {
 	root: string;
 	fullRoute: RouteLike;
 	method: RequestMethod;
-	token?: string;
 } & RequestData;
 
 export type HandlerRequestData = Pick<InternalRequest, "auth" | "body" | "files">;

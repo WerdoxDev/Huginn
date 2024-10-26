@@ -29,6 +29,14 @@ export const Routes = {
 
 	/**
 	 * Route for:
+	 * - POST '/auth/confirm-oauth'
+	 */
+	confirmOAuth() {
+		return "/auth/oauth-confirm" as const;
+	},
+
+	/**
+	 * Route for:
 	 * - POST '/auth/refresh-token'
 	 */
 	refreshToken() {

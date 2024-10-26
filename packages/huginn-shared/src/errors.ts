@@ -147,6 +147,9 @@ export const Errors = {
 	malformedBody(): [string, JsonCode] {
 		return ["Malformed Body", JsonCode.NONE];
 	},
+	cancelled(): [string, JsonCode] {
+		return ["Cancelled", JsonCode.NONE];
+	},
 	websocketFail(): [string, JsonCode] {
 		return ["Websocket Upgrade Failed", JsonCode.NONE];
 	},

@@ -10,6 +10,15 @@ export type TokenPayload = {
 	id: Snowflake;
 };
 
+export type IdentityTokenPayload = {
+	providerId: Snowflake;
+	providerUserId: Snowflake;
+	username: string;
+	email: string;
+	fullName: string;
+	avatarHash: string | null;
+};
+
 //#region USER
 type APIBaseUser = {
 	id: Snowflake;
@@ -72,9 +81,6 @@ export type APIPostRegisterJSONBody = {
 	password: string;
 };
 
-export type APIPostLoginResult = APIUser & Tokens;
-export type APIPostRegisterResult = APIUser & Tokens;
-
 export type APIPatchCurrentUserJSONBody = {
 	email?: string;
 	displayName?: string | null;
@@ -84,7 +90,16 @@ export type APIPatchCurrentUserJSONBody = {
 	newPassword?: string;
 };
 
+export type APIPostOAuthConfirmJSONBody = {
+	username: string;
+	displayName: string | null;
+	avatar: string | null;
+};
+
+export type APIPostLoginResult = APIUser & Tokens;
+export type APIPostRegisterResult = APIUser & Tokens;
 export type APIPatchCurrentUserResult = APIUser & Tokens;
+export type APIPostOAuthConfirmResult = APIUser & Tokens;
 
 export type APIPostUniqueUsernameJSONBody = {
 	username: string;
