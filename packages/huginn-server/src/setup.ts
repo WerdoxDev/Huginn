@@ -2,6 +2,8 @@ import { readEnv } from "@huginn/backend-shared";
 import consola from "consola";
 
 export const envs = readEnv([
+	"ACCESS_TOKEN_SECRET",
+	"REFRESH_TOKEN_SECRET",
 	"POSTGRESQL_URL",
 	"CDN_ROOT",
 	"SERVER_HOST",

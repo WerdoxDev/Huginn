@@ -1,6 +1,7 @@
 import { type APIPostLoginJSONBody, type APIPostRegisterJSONBody, UserFlags, WorkerID, snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 import { DBErrorType, assertObj, prisma } from ".";
+import { selectPrivateUser } from "./common";
 
 const authExtention = Prisma.defineExtension({
 	name: "auth",
@@ -16,10 +17,11 @@ const authExtention = Prisma.defineExtension({
 							},
 						],
 					},
+					select: selectPrivateUser,
 				});
 
 				assertObj("findByCredentials", user, DBErrorType.NULL_USER);
-				return user as Required<Prisma.UserGetPayload<{ include: never; select: never }>>;
+				return user as NonNullable<typeof user>;
 			},
 			async registerNew(user: APIPostRegisterJSONBody) {
 				const newUser = await prisma.user.create({
@@ -33,6 +35,7 @@ const authExtention = Prisma.defineExtension({
 						flags: UserFlags.NONE,
 						system: false,
 					},
+					select: selectPrivateUser,
 				});
 
 				assertObj("registerNew", newUser, DBErrorType.NULL_USER);

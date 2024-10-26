@@ -21,7 +21,7 @@ export async function cdnUpload<T>(fullRoute: RouteLike, options: RequestData = 
 	return (await request({ ...options, root: envs.CDN_ROOT, method: RequestMethod.POST, fullRoute, throw: true })) as Promise<T>;
 }
 
-export async function serverFetch<T>(url: string, method: RequestMethod, options: RequestData & { throw?: boolean; token?: string }) {
+export async function serverFetch<T>(url: string, method: RequestMethod, options: RequestData & { throw?: boolean }) {
 	const fullUrl = new URL(url);
 	return (await request({
 		...options,

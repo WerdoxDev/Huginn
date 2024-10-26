@@ -27,8 +27,8 @@ router.get(
 			return forbidden(event);
 		}
 
+		// If timestamp is not within a 5 minute window
 		if (Date.now() - Number(timestamp) > 5 * 60 * 1000) {
-			// If timestamp is not within a 5 minute window
 			return forbidden(event);
 		}
 

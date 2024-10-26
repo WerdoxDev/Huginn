@@ -1,12 +1,25 @@
-import { forbidden, unauthorized, useValidatedQuery } from "@huginn/backend-shared";
-import { HttpCode, IdentityProviderType, RequestMethod, WorkerID, snowflake } from "@huginn/shared";
+import { forbidden, singleError, unauthorized, useValidatedQuery } from "@huginn/backend-shared";
+import {
+	constants,
+	CDNRoutes,
+	Errors,
+	FieldCode,
+	Fields,
+	HttpCode,
+	IdentityProviderType,
+	RequestMethod,
+	WorkerID,
+	getFileHash,
+	snowflake,
+} from "@huginn/shared";
 import { toSnakeCase } from "@std/text";
-import { defineEventHandler, sendNoContent, sendRedirect, useSession } from "h3";
+import { defineEventHandler, send, sendNoContent, sendRedirect, setResponseStatus, useSession } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
 import { router } from "#server";
 import { envs } from "#setup";
-import { serverFetch } from "#utils/server-request";
+import { cdnUpload, serverFetch } from "#utils/server-request";
+import { createTokens } from "#utils/token-factory";
 
 const querySchema = z.object({ code: z.optional(z.string()), error: z.optional(z.string()), state: z.optional(z.string()) });
 
@@ -60,21 +73,58 @@ router.get(
 				token: response.access_token,
 			});
 
-			prisma.identityProvider.create({
-				data: {
+			if (await prisma.user.exists({ email: user.email })) {
+				const redirectUrl = new URL(session.data.redirect_url);
+				redirectUrl.searchParams.set("origin", session.data.origin);
+				redirectUrl.searchParams.set("error", FieldCode.EMAIL_IN_USE);
+
+				return sendRedirect(event, redirectUrl.toString(), HttpCode.FOUND);
+			}
+
+			const identityProvider = await prisma.identityProvider.upsert({
+				where: { providerUserId: user.id },
+				create: {
 					id: snowflake.generate(WorkerID.IDENTITY_PROVIDER),
 					providerType: IdentityProviderType.GOOGLE,
 					providerUserId: user.id,
+					refreshToken: response.refresh_token,
 					completed: false,
 				},
+				update: { refreshToken: response.refresh_token },
 			});
 
+			console.log(user.picture);
+
+			let avatarHash: null | string = null;
+			if (user.picture) {
+				const avatarData = await (await fetch(user.picture.replace("s96-c", "s256-c"))).arrayBuffer();
+				avatarHash = getFileHash(avatarData);
+				avatarHash = (await cdnUpload<string>(CDNRoutes.uploadAvatar(user.id), { files: [{ data: avatarData, name: avatarHash }] })).split(
+					".",
+				)[0];
+			}
+
+			const [token] = await createTokens(
+				{
+					providerId: identityProvider.id.toString(),
+					providerUserId: identityProvider.providerUserId,
+					email: user.email,
+					username: toSnakeCase(user.name),
+					fullName: user.name,
+					avatarHash: avatarHash,
+				},
+				constants.IDENTITY_TOKEN_EXPIRE_TIME,
+				"",
+			);
+
 			const redirectUrl = new URL(session.data.redirect_url);
-			redirectUrl.searchParams.set("email", user.email);
-			redirectUrl.searchParams.set("username", toSnakeCase(user.name));
 			redirectUrl.searchParams.set("origin", session.data.origin);
+			redirectUrl.searchParams.set("token", token);
 
 			return sendRedirect(event, redirectUrl.toString(), HttpCode.FOUND);
+		}
+		if (error === "access_denied") {
+			return singleError(event, Errors.cancelled(), HttpCode.BAD_REQUEST);
 		}
 		if (error || !state) {
 			return forbidden(event);

@@ -1,31 +1,39 @@
-import { tokenInvalidator } from "#server";
-import type { TokenPayload } from "@huginn/shared";
+import type { IdentityTokenPayload, Snowflake, TokenPayload } from "@huginn/shared";
 import * as jose from "jose";
+import { tokenInvalidator } from "#server";
+import { envs } from "#setup";
 
-export const ACCESS_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.ACCESS_TOKEN_SECRET ?? "");
-export const REFRESH_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.REFRESH_TOKEN_SECRET ?? "");
-export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET ?? "";
-export const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET ?? "";
+export const ACCESS_TOKEN_SECRET_ENCODED = new TextEncoder().encode(envs.ACCESS_TOKEN_SECRET ?? "");
+export const REFRESH_TOKEN_SECRET_ENCODED = new TextEncoder().encode(envs.REFRESH_TOKEN_SECRET ?? "");
 
-export async function createTokens(payload: TokenPayload, accessExpireTime: string, refreshExpireTime: string): Promise<[string, string]> {
+type TokenResult<Payload extends TokenPayload | IdentityTokenPayload> = Payload extends { id: Snowflake } ? [string, string] : [string];
+
+export async function createTokens<Payload extends TokenPayload | IdentityTokenPayload>(
+	payload: Payload,
+	accessExpireTime: string,
+	refreshExpireTime: string,
+): Promise<TokenResult<Payload>> {
 	const accessToken = await new jose.SignJWT({ ...payload })
 		.setProtectedHeader({ alg: "HS256" })
 		.setExpirationTime(accessExpireTime)
 		.setIssuedAt()
 		.sign(ACCESS_TOKEN_SECRET_ENCODED);
 
-	const refreshToken = await new jose.SignJWT({ id: payload.id })
-		.setProtectedHeader({ alg: "HS256" })
-		.setExpirationTime(refreshExpireTime)
-		.sign(REFRESH_TOKEN_SECRET_ENCODED);
+	let refreshToken: string | undefined;
+	if ("id" in payload) {
+		refreshToken = await new jose.SignJWT({ id: payload.id })
+			.setProtectedHeader({ alg: "HS256" })
+			.setExpirationTime(refreshExpireTime)
+			.sign(REFRESH_TOKEN_SECRET_ENCODED);
+	}
 
-	return [accessToken, refreshToken];
+	return [accessToken, refreshToken] as TokenResult<Payload>;
 }
 
 export async function verifyToken(
 	token: string,
 	secret: Uint8Array = ACCESS_TOKEN_SECRET_ENCODED,
-): Promise<{ valid: boolean; payload: (TokenPayload & jose.JWTPayload) | null }> {
+): Promise<{ valid: boolean; payload: ((TokenPayload | IdentityTokenPayload) & jose.JWTPayload) | null }> {
 	try {
 		if (tokenInvalidator.isInvalid(token)) {
 			return { valid: false, payload: null };
@@ -33,7 +41,7 @@ export async function verifyToken(
 
 		const jwt = await jose.jwtVerify<TokenPayload>(token, secret);
 
-		if (!("id" in jwt.payload)) {
+		if (!("id" in jwt.payload) && !("providerId" in jwt.payload)) {
 			return { valid: false, payload: null };
 		}
 

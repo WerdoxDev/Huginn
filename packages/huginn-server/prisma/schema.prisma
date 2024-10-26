@@ -70,8 +70,9 @@ model Relationship {
 
 model IdentityProvider {
    id             BigInt  @id
-   providerUserId String
+   providerUserId String  @unique
    userId         BigInt?
    completed      Boolean
    providerType   String
+   refreshToken   String
 }

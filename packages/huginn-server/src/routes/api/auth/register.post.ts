@@ -1,19 +1,19 @@
-import { router } from "#server";
 import { useValidatedBody } from "@huginn/backend-shared";
-import { createTokens } from "#utils/token-factory";
-import {
-	validateUsername,
-	validateDisplayName,
-	validatePassword,
-	validateEmail,
-	validateUsernameUnique,
-	validateEmailUnique,
-} from "#utils/validation";
 import { createErrorFactory, createHuginnError } from "@huginn/backend-shared";
-import { type APIPostRegisterResult, constants, Errors, HttpCode, idFix } from "@huginn/shared";
+import { constants, type APIPostRegisterResult, Errors, HttpCode, idFix } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
+import { router } from "#server";
+import { createTokens } from "#utils/token-factory";
+import {
+	validateDisplayName,
+	validateEmail,
+	validateEmailUnique,
+	validatePassword,
+	validateUsername,
+	validateUsernameUnique,
+} from "#utils/validation";
 
 const schema = z.object({
 	username: z.string(),
