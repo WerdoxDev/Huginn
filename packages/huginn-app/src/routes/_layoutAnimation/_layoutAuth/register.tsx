@@ -62,7 +62,8 @@ function Register() {
 		setAuthBackgroundState(0);
 
 		const unlisten = listenEvent("open_url", async (urls) => {
-			await navigate({ to: "/oauth-confirm" });
+			const url = new URL(urls[0]);
+			await navigate({ to: `/oauth-confirm?${url.searchParams.toString()}` });
 		});
 
 		return () => {
@@ -103,7 +104,7 @@ function Register() {
 	return (
 		<AuthWrapper hidden={hidden} onSubmit={register}>
 			<div className="flex w-full select-none flex-col items-center">
-				<h1 className="mb-2 font-medium text-2xl text-text">Welcome to Huginn!</h1>
+				<div className="mb-2 font-medium text-2xl text-text">Welcome to Huginn!</div>
 				<div className="text-text opacity-70">We are very happy to have you here!</div>
 			</div>
 			<div className="mt-5 flex gap-x-2">
@@ -154,7 +155,7 @@ function Register() {
 					</HuginnInput.Wrapper>
 				</PasswordInput>
 
-				<LoadingButton loading={!mutation.isIdle && mutation.isPending} className="h-11 w-full bg-primary" type="submit">
+				<LoadingButton loading={!mutation.isIdle && mutation.isPending} className="h-10 w-full bg-primary" type="submit">
 					Register
 				</LoadingButton>
 

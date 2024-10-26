@@ -108,7 +108,7 @@ function Login() {
 	return (
 		<AuthWrapper hidden={hidden} onSubmit={login}>
 			<div className="flex w-full select-none flex-col items-center">
-				<h1 className="mb-2 font-medium text-2xl text-text">Welcome back!</h1>
+				<div className="mb-2 font-medium text-2xl text-text">Welcome back!</div>
 				<div className="text-text/70">It's very good to see you again!</div>
 			</div>
 			<div className="mt-5 w-full">
@@ -129,7 +129,7 @@ function Login() {
 
 				<LinkButton className="mt-1 mb-5 text-sm">Forgot your password?</LinkButton>
 
-				<LoadingButton loading={!mutation.isIdle && mutation.isPending} className="h-11 w-full bg-primary " type="submit">
+				<LoadingButton loading={!mutation.isIdle && mutation.isPending} className="h-10 w-full bg-primary " type="submit">
 					Log In
 				</LoadingButton>
 

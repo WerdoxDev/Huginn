@@ -73,11 +73,11 @@ function ModalsRenderer() {
 		<>
 			<ErrorBoundary FallbackComponent={ModalErrorComponent}>
 				<SettingsModal />
+				<ImageCropModal />
 				{user && (
 					<>
 						<CreateDMModal />
 						<EditGroupModal />
-						<ImageCropModal />
 						<AddRecipientModal />
 						<ChannelRecipientContextMenu />
 						<ChannelsContextMenu />

@@ -10,8 +10,6 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 	const { listenEvent } = useEvent();
 	const modalsDispatch = useModalsDispatch();
 
-	const { data: originalAvatar } = useQuery(getUserAvatar(user?.id, user?.avatar, client));
-
 	const {
 		inputsProps,
 		values,
@@ -26,6 +24,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 		{ name: "password", required: false },
 	]);
 
+	const { data: originalAvatar } = useQuery(getUserAvatar(user?.id, user?.avatar, client));
 	const [avatarData, setAvatarData] = useState<string | null | undefined>(() => originalAvatar);
 
 	const { message: usernameMessageDetail, onFocusChanged, onChanged } = useUniqueUsernameMessage(values, resetInput, "username");

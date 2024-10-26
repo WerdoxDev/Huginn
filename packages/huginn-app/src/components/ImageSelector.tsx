@@ -1,4 +1,14 @@
-export default function ImageSelector(props: { data?: string | null; onDelete?: () => void; onSelected?: (data: string, mimeType: string) => void }) {
+import clsx from "clsx";
+
+export default function ImageSelector(props: {
+	className?: string;
+	data?: string | null;
+	size?: string;
+	onDelete?: () => void;
+	onSelected?: (data: string, mimeType: string) => void;
+}) {
+	const { size = "7rem" } = props;
+
 	function openFileDialog() {
 		const input = document.createElement("input");
 		input.type = "file";
@@ -28,12 +38,12 @@ export default function ImageSelector(props: { data?: string | null; onDelete?: 
 	}
 
 	return (
-		<div className="flex shrink-0 rounded-lg bg-secondary p-3">
+		<div className={clsx("flex w-max shrink-0 rounded-lg bg-secondary p-3", props.className)}>
 			<div onClick={openFileDialog} className="group relative cursor-pointer overflow-hidden rounded-full bg-black">
 				{props.data ? (
-					<img alt="editing-user-avatar" className="h-28 w-28 object-cover" src={props.data} />
+					<img alt="editing-user-avatar" className="object-cover" style={{ width: size, height: size }} src={props.data} />
 				) : (
-					<div className="h-28 w-28 bg-primary" />
+					<div className="bg-primary" style={{ width: size, height: size }} />
 				)}
 
 				<div className="absolute inset-0 flex h-full w-full items-center justify-center gap-x-1.5 rounded-full opacity-0 transition-all duration-100 group-hover:bg-black/30 group-hover:opacity-100">

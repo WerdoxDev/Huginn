@@ -45,7 +45,7 @@ export default function InfoModal() {
 		>
 			<DialogPanel
 				className={clsx(
-					"bg-background w-full max-w-xs transform overflow-hidden rounded-xl border-2 p-5 transition-[opacity_transform] data-[closed]:scale-95",
+					"w-full max-w-xs transform overflow-hidden rounded-xl border-2 bg-background p-5 transition-[opacity_transform] data-[closed]:scale-95",
 					borderColor,
 				)}
 			>
@@ -56,18 +56,18 @@ export default function InfoModal() {
 							{modal.status === "default" && <IconMingcuteInformationLine className="h-8 w-8 text-white" />}
 						</div>
 					</div>
-					<div className="text-lg font-medium text-white">{modal.title}</div>
+					<div className="font-medium text-lg text-white">{modal.title}</div>
 				</DialogTitle>
 				<Description className="mt-1 flex items-center justify-center" as="div">
-					<div className="text-text/90 text-center">
+					<div className="text-center text-text/90">
 						{formattedText}
-						{errorCode && <span className="text-error text-nowrap italic opacity-90">{errorCode}</span>}
+						{errorCode && <span className="text-nowrap text-error italic opacity-90">{errorCode}</span>}
 					</div>
 				</Description>
 
 				<div className="mt-5 flex items-center justify-end gap-x-2">
 					<HuginnButton
-						className="bg-secondary w-full !rounded-lg py-2.5"
+						className="!rounded-lg w-full bg-secondary py-2.5"
 						onClick={() => {
 							if (!modal.action?.cancel?.callback) dispatch({ info: { isOpen: false } });
 							else modal.action.cancel.callback();
@@ -78,7 +78,7 @@ export default function InfoModal() {
 
 					{modal.action?.confirm && (
 						<HuginnButton
-							className="bg-primary text-text w-full !rounded-lg py-2.5"
+							className="!rounded-lg w-full bg-primary py-2.5 text-text"
 							onClick={() => {
 								modal.action?.confirm?.callback();
 							}}
