@@ -74,7 +74,7 @@ export class REST {
 	public async request(options: Omit<InternalRequest, "root">): Promise<unknown> {
 		const { url, fetchOptions } = await resolveRequest({
 			...options,
-			token: this.client.tokenHandler.token,
+			token: options.token ?? this.client.tokenHandler.token,
 			root: this.options.api,
 			authPrefix: this.options.authPrefix,
 		});
