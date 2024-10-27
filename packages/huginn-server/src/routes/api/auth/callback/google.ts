@@ -16,8 +16,9 @@ import { toSnakeCase } from "@std/text";
 import { defineEventHandler, send, sendNoContent, sendRedirect, setResponseStatus, useSession } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { router } from "#server";
+import { gateway, router } from "#server";
 import { envs } from "#setup";
+import { dispatchToTopic } from "#utils/gateway-utils";
 import { cdnUpload, serverFetch } from "#utils/server-request";
 import { createTokens } from "#utils/token-factory";
 
@@ -46,8 +47,8 @@ router.get(
 
 		const { code, error, state } = await useValidatedQuery(event, querySchema);
 
-		const session = await useSession(event, { password: envs.SESSION_PASSWORD });
-		if (session.data.state !== state || !state) {
+		const { redirect_url, state: sessionState, flow, peer_id } = (await useSession(event, { password: envs.SESSION_PASSWORD })).data;
+		if (sessionState !== state || !state) {
 			return forbidden(event);
 		}
 
@@ -74,8 +75,10 @@ router.get(
 			});
 
 			if (await prisma.user.exists({ email: user.email })) {
-				const redirectUrl = new URL(session.data.redirect_url);
-				redirectUrl.searchParams.set("origin", session.data.origin);
+				dispatchToTopic(state, "oauth_redirect", { error: FieldCode.EMAIL_IN_USE });
+
+				const redirectUrl = new URL(flow === "browser" ? redirect_url : "http://localhost:3001/api/auth/redirect");
+				redirectUrl.searchParams.set("flow", flow);
 				redirectUrl.searchParams.set("error", FieldCode.EMAIL_IN_USE);
 
 				return sendRedirect(event, redirectUrl.toString(), HttpCode.FOUND);
@@ -92,8 +95,6 @@ router.get(
 				},
 				update: { refreshToken: response.refresh_token },
 			});
-
-			console.log(user.picture);
 
 			let avatarHash: null | string = null;
 			if (user.picture) {
@@ -117,8 +118,11 @@ router.get(
 				"",
 			);
 
-			const redirectUrl = new URL(session.data.redirect_url);
-			redirectUrl.searchParams.set("origin", session.data.origin);
+			dispatchToTopic(state, "oauth_redirect", { token: token });
+			gateway.getSessionByKey(peer_id)?.unsubscribe(state);
+
+			const redirectUrl = new URL(flow === "browser" ? redirect_url : "http://localhost:3001/api/auth/redirect");
+			redirectUrl.searchParams.set("flow", flow);
 			redirectUrl.searchParams.set("token", token);
 
 			return sendRedirect(event, redirectUrl.toString(), HttpCode.FOUND);

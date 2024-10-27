@@ -10,7 +10,7 @@ import { prisma } from "#database/index";
 import type { ClientSessionInfo } from "#utils/types";
 
 export class ClientSession extends EventEmitter {
-	public data: ClientSessionInfo;
+	public data?: ClientSessionInfo;
 	public peer: Peer;
 
 	private sentMessages: Map<number, BasePayload>;
@@ -18,18 +18,23 @@ export class ClientSession extends EventEmitter {
 	private hearbeatTimeout?: Timer;
 	public sequence?: number;
 
-	public constructor(peer: Peer, data: ClientSessionInfo) {
+	public constructor(peer: Peer) {
 		super();
 
 		this.peer = peer;
-		this.data = data;
 		this.sentMessages = new Map();
 		this.subscribedTopics = new Set();
+
+		this.startHeartbeatTimeout();
 	}
 
-	public async initialize() {
+	public async initialize(data?: ClientSessionInfo) {
+		this.data = data;
 		await this.subscribeClientEvents();
-		this.startHeartbeatTimeout();
+
+		if (!this.hearbeatTimeout) {
+			this.startHeartbeatTimeout();
+		}
 	}
 
 	public resetTimeout() {
@@ -76,6 +81,10 @@ export class ClientSession extends EventEmitter {
 	}
 
 	private async subscribeClientEvents() {
+		if (!this.data) {
+			throw new Error("Client session was not initialized");
+		}
+
 		const userId = this.data.user.id;
 		this.subscribe(userId);
 

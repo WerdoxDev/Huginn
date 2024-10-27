@@ -19,7 +19,7 @@ export class PresenceManager {
 	}
 
 	public setClient(user: Partial<APIUser> & { id: Snowflake }, session: ClientSession, settings: UserSettings) {
-		const isOfficialClient = session.data.browser === "Huginn Client";
+		const isOfficialClient = session.data?.browser === "Huginn Client";
 		const presence: UserPresence = {
 			user,
 			status: settings.status,

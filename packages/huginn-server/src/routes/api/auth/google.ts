@@ -3,10 +3,10 @@ import { HttpCode } from "@huginn/shared";
 import { decodeBase64 } from "@std/encoding";
 import { defineEventHandler, sendNoContent, sendRedirect, useSession } from "h3";
 import { z } from "zod";
-import { router } from "#server";
+import { gateway, router } from "#server";
 import { envs } from "#setup";
 
-const querySchema = z.object({ redirect_url: z.string(), state: z.string(), origin: z.string() });
+const querySchema = z.object({ redirect_url: z.optional(z.string()), state: z.string(), flow: z.string(), peer_id: z.optional(z.string()) });
 
 router.get(
 	"/auth/google",
@@ -15,7 +15,7 @@ router.get(
 			return sendNoContent(event, HttpCode.NOT_IMPLEMENTED);
 		}
 
-		const { redirect_url, state, origin } = await useValidatedQuery(event, querySchema);
+		const { redirect_url, state, flow, peer_id } = await useValidatedQuery(event, querySchema);
 
 		const [error, decodedToken] = await catchError(() => new TextDecoder().decode(decodeBase64(state)).split(":"));
 		if (error) {
@@ -33,12 +33,16 @@ router.get(
 		}
 
 		const allowedOrigins = envs.ALLOWED_ORIGINS?.split(",");
-		if (!allowedOrigins?.some((x) => redirect_url.includes(x))) {
+		if (redirect_url && !allowedOrigins?.some((x) => redirect_url.includes(x))) {
 			return forbidden(event);
 		}
 
 		const session = await useSession(event, { password: envs.SESSION_PASSWORD });
-		await session.update({ state, redirect_url, origin });
+		await session.update({ state, redirect_url, flow, peer_id });
+
+		if (flow === "websocket" && peer_id) {
+			gateway.getSessionByKey(peer_id)?.subscribe(state);
+		}
 
 		const authEndpoint = new URL("https://accounts.google.com/o/oauth2/v2/auth");
 		authEndpoint.searchParams.set("client_id", envs.GOOGLE_CLIENT_ID);

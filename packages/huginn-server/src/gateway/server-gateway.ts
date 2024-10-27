@@ -44,7 +44,11 @@ export class ServerGateway {
 		try {
 			logGatewayOpen();
 
-			const helloData: GatewayHello = { op: GatewayOperations.HELLO, d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL } };
+			// We create an uninitialized client only for oauth and keeping an eye for it's heartbeat
+			const client = new ClientSession(peer);
+			this.clients.set(peer.id, client);
+
+			const helloData: GatewayHello = { op: GatewayOperations.HELLO, d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL, peerId: peer.id } };
 			this.send(peer, helloData);
 		} catch (e) {
 			peer.close(GatewayCode.UNKNOWN, "UNKNOWN");
@@ -52,17 +56,19 @@ export class ServerGateway {
 	}
 
 	private async close(peer: Peer, details: { code?: number; reason?: string }) {
+		this.deleteUninitializedClient(peer.id);
+
 		const client = this.getSessionByPeerId(peer.id);
 
-		if (client) {
+		if (client?.data) {
 			this.presenceManeger.removeClient(client.data.user.id);
 		}
 
 		client?.dispose();
 
-		if (client && details.code === GatewayCode.INVALID_SESSION) {
+		if (client?.data && details.code === GatewayCode.INVALID_SESSION) {
 			this.clients.delete(client.data.sessionId);
-		} else if (client) {
+		} else if (client?.data) {
 			this.queueClientDisconnect(client.data.sessionId);
 		}
 
@@ -71,11 +77,6 @@ export class ServerGateway {
 
 	private async message(peer: Peer, message: Message) {
 		try {
-			// if (typeof message !== "string") {
-			// 	consola.error("Non string message type is not supported yet");
-			// 	return;
-			// }
-
 			const data: BasePayload = message.json();
 
 			if (!validateGatewayData(data)) {
@@ -84,7 +85,7 @@ export class ServerGateway {
 			}
 
 			const session = this.getSessionByPeerId(peer.id);
-			logGatewayRecieve(session?.data.sessionId ?? peer.id, data, this.options.logHeartbeat);
+			logGatewayRecieve(session?.data?.sessionId ?? peer.id, data, this.options.logHeartbeat);
 
 			// Identify
 			if (isOpcode<GatewayIdentify>(data, GatewayOperations.IDENTIFY)) {
@@ -92,13 +93,13 @@ export class ServerGateway {
 				// Resume
 			} else if (isOpcode<GatewayResume>(data, GatewayOperations.RESUME)) {
 				this.handleResume(peer, data);
-				// Not authenticated
-			} else if (!session) {
-				peer.close(GatewayCode.NOT_AUTHENTICATED, "NOT_AUTHENTICATED");
-				return;
 				// Heartbeat
 			} else if (isOpcode<GatewayHeartbeat>(data, GatewayOperations.HEARTBEAT)) {
 				this.handleHeartbeat(peer, data);
+				// -- Not authenticated --
+			} else if (!session?.data) {
+				peer.close(GatewayCode.NOT_AUTHENTICATED, "NOT_AUTHENTICATED");
+				return;
 			} else {
 				peer.close(GatewayCode.UNKNOWN_OPCODE, "UNKNOWN_OPCODE");
 			}
@@ -115,7 +116,7 @@ export class ServerGateway {
 
 	public subscribeSessionsToTopic(userId: Snowflake, topic: string) {
 		const sessions = Array.from(this.clients.entries())
-			.filter((x) => x[1].data.user.id === userId)
+			.filter((x) => x[1].data?.user.id === userId)
 			.map((x) => x[1]);
 		for (const session of sessions) {
 			session.subscribe(topic);
@@ -124,7 +125,7 @@ export class ServerGateway {
 
 	public unsubscribeSessionsFromTopic(userId: Snowflake, topic: string) {
 		const sessions = Array.from(this.clients.entries())
-			.filter((x) => x[1].data.user.id === userId)
+			.filter((x) => x[1].data?.user.id === userId)
 			.map((x) => x[1]);
 		for (const session of sessions) {
 			session.unsubscribe(topic);
@@ -143,6 +144,10 @@ export class ServerGateway {
 		}
 	}
 
+	public getSessionByKey(key: string) {
+		return this.clients.get(key);
+	}
+
 	public sendToTopic(topic: string, data: BasePayload) {
 		for (const client of this.clients.values()) {
 			if (client.isSubscribed(topic)) {
@@ -156,11 +161,12 @@ export class ServerGateway {
 	private handleHeartbeat(peer: Peer, data: GatewayHeartbeat) {
 		const client = this.getSessionByPeerId(peer.id);
 
-		if (data.d !== client?.sequence) {
+		if (client && data.d !== client?.sequence) {
 			peer.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
 			return;
 		}
 
+		console.log(client?.data?.user.username, "m");
 		client?.resetTimeout();
 		const hearbeatAckData: GatewayHeartbeatAck = { op: GatewayOperations.HEARTBEAT_ACK };
 		this.send(peer, hearbeatAckData);
@@ -174,7 +180,7 @@ export class ServerGateway {
 			return;
 		}
 
-		if (this.getSessionByPeerId(peer.id)) {
+		if (this.getSessionByPeerId(peer.id) && !this.clients.get(peer.id)) {
 			peer.close(GatewayCode.ALREADY_AUTHENTICATED, "ALREADY_AUTHENTICATED");
 			return;
 		}
@@ -182,8 +188,12 @@ export class ServerGateway {
 		const user = idFix(await prisma.user.getById(payload.id));
 		const sessionId = snowflake.generateString(WorkerID.GATEWAY);
 
-		const client = new ClientSession(peer, { user, sessionId, ...data.d.properties });
-		await client.initialize();
+		// The uninitialized client is stored using it's peer_id instead of session_id
+		// We will delete this client and initialize a new one with proper session id
+		this.deleteUninitializedClient(peer.id);
+
+		const client = new ClientSession(peer);
+		await client.initialize({ user, sessionId, ...data.d.properties });
 		this.clients.set(sessionId, client);
 
 		const userRelationships = idFix(await prisma.relationship.getUserRelationships(user.id, includeRelationshipUser));
@@ -223,7 +233,9 @@ export class ServerGateway {
 
 		const client = this.clients.get(data.d.sessionId);
 
-		if (!client) throw new Error("client was null in handleIdentify");
+		if (!client) {
+			throw new Error("client was null in handleResume");
+		}
 
 		if (!client.sequence || data.d.seq > client.sequence) {
 			peer.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
@@ -232,8 +244,12 @@ export class ServerGateway {
 
 		const user = idFix(await prisma.user.getById(payload.id));
 
+		// The uninitialized client is stored using it's peer_id instead of session_id
+		// We will delete this client and initialize a new one with proper session id
+		this.deleteUninitializedClient(peer.id);
+
 		client.peer = peer;
-		client.initialize();
+		client.initialize(client.data);
 
 		this.cancelledClientDisconnects.push(data.d.sessionId);
 
@@ -258,14 +274,21 @@ export class ServerGateway {
 		this.presenceManeger.setClient(user, client, { status: "online" });
 	}
 
+	private deleteUninitializedClient(peerId: string) {
+		const uninitializedClient = this.clients.get(peerId);
+		uninitializedClient?.dispose();
+		this.clients.delete(peerId);
+	}
+
 	private queueClientDisconnect(sessionId: Snowflake) {
 		setTimeout(() => {
 			if (this.cancelledClientDisconnects.includes(sessionId)) {
+				this.cancelledClientDisconnects = this.cancelledClientDisconnects.filter((x) => x === sessionId);
 				return;
 			}
 
 			this.clients.delete(sessionId);
-		}, 1000 * 30);
+		}, 1000 * 60);
 	}
 
 	private send(peer: Peer, data: unknown) {

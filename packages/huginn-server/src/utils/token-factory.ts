@@ -30,10 +30,11 @@ export async function createTokens<Payload extends TokenPayload | IdentityTokenP
 	return [accessToken, refreshToken] as TokenResult<Payload>;
 }
 
-export async function verifyToken(
+export async function verifyToken<IdentityToken extends boolean = false>(
 	token: string,
 	secret: Uint8Array = ACCESS_TOKEN_SECRET_ENCODED,
-): Promise<{ valid: boolean; payload: ((TokenPayload | IdentityTokenPayload) & jose.JWTPayload) | null }> {
+	identity?: IdentityToken,
+) {
 	try {
 		if (tokenInvalidator.isInvalid(token)) {
 			return { valid: false, payload: null };
@@ -45,7 +46,7 @@ export async function verifyToken(
 			return { valid: false, payload: null };
 		}
 
-		return { valid: true, payload: jwt.payload };
+		return { valid: true, payload: jwt.payload as IdentityToken extends false ? TokenPayload : IdentityTokenPayload };
 	} catch (e) {
 		return { valid: false, payload: null };
 	}
