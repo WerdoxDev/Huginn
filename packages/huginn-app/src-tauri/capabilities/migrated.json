@@ -64,6 +64,7 @@
     "core:window:allow-hide",
     "core:window:allow-close",
     "core:window:allow-start-dragging",
+    "core:window:allow-request-user-attention",
     "shell:allow-open",
     "process:allow-restart",
     "process:default",

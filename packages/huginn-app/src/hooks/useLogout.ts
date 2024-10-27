@@ -9,6 +9,7 @@ export function useLogout() {
 	const mutation = useHuginnMutation({
 		async mutationFn() {
 			await client.logout();
+			client.gateway.connect();
 		},
 	});
 

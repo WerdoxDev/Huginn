@@ -29,7 +29,7 @@ function ToggleButton() {
 			type="button"
 			onClick={context.toggleType}
 		>
-			{context.hidden ? <IconMingcuteEye2Fill className="h-6 w-6" /> : <IconMingcuteEyeCloseFill className="h-6 w-6" />}
+			{context.hidden ? <IconMingcuteEyeCloseFill className="h-6 w-6" /> : <IconMingcuteEye2Fill className="h-6 w-6" />}
 		</button>
 	);
 }

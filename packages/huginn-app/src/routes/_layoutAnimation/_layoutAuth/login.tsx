@@ -43,7 +43,8 @@ function Login() {
 				setAuthBackgroundState(1);
 				setHidden(true);
 
-				await client.gateway.connectAndWaitForReady();
+				await client.gateway.identify();
+				await client.gateway.waitForReady();
 				setUser(client.user);
 
 				await navigate({ to: "/channels/@me" });
@@ -66,8 +67,8 @@ function Login() {
 					setHidden(true);
 
 					await client.initializeWithToken({ refreshToken });
-					await client.gateway.connectAndWaitForReady();
-
+					await client.gateway.identify();
+					await client.gateway.waitForReady();
 					setUser(client.user);
 
 					posthog.identify(client.user?.id, { username: client.user?.username, displayName: client.user?.displayName });

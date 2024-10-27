@@ -1,6 +1,7 @@
-import { type APIPostRegisterJSONBody, generateRandomString } from "@huginn/shared";
+import { type APIPostRegisterJSONBody, type GatewayOAuthRedirectData, IdentityProviderType, generateRandomString } from "@huginn/shared";
 import { encodeBase64 } from "@std/encoding";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { UserAttentionType, getCurrentWindow } from "@tauri-apps/api/window";
 import { open } from "@tauri-apps/plugin-shell";
 import { usePostHog } from "posthog-js/react";
 
@@ -48,7 +49,8 @@ function Register() {
 				setAuthBackgroundState(1);
 				setHidden(true);
 
-				await client.gateway.connectAndWaitForReady();
+				await client.gateway.identify();
+				await client.gateway.waitForReady();
 
 				setUser(client.user);
 
@@ -58,8 +60,15 @@ function Register() {
 		handleErrors,
 	);
 
+	async function test(d: GatewayOAuthRedirectData) {
+		await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
+		await navigate({ to: `/oauth-confirm?${new URLSearchParams({ ...d }).toString()}` });
+	}
+
 	useEffect(() => {
 		setAuthBackgroundState(0);
+
+		client.gateway.on("oauth_redirect", test);
 
 		const unlisten = listenEvent("open_url", async (urls) => {
 			const url = new URL(urls[0]);
@@ -68,6 +77,7 @@ function Register() {
 
 		return () => {
 			unlisten();
+			client.gateway.off("oauth_redirect", test);
 		};
 	}, []);
 
@@ -87,17 +97,16 @@ function Register() {
 	}
 
 	function google() {
-		const url = new URL("/api/auth/google", client.options.rest?.api);
-
-		const token = encodeBase64(`${Date.now()}:${generateRandomString(16)}`);
-		url.searchParams.set("redirect_url", "http://localhost:5173/redirect");
-		url.searchParams.set("state", token);
-		url.searchParams.set("origin", appWindow.environment);
+		const url = client.oauth.getOAuthURL(
+			IdentityProviderType.GOOGLE,
+			appWindow.environment === "browser" ? "browser" : "websocket",
+			"http://localhost:5173/oauth-confirm",
+		);
 
 		if (appWindow.environment === "browser") {
-			window.open(url.toString(), "_self");
+			window.open(url, "_self");
 		} else {
-			open(url.toString());
+			open(url);
 		}
 	}
 

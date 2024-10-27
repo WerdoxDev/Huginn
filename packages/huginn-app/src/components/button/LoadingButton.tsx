@@ -6,7 +6,7 @@ export default function LoadingButton(props: HuginnButtonProps & { loading: bool
 	return (
 		<HuginnButton innerClassName="flex items-center justify-center" disabled={props.loading || props.disabled} {...omit(props, ["disabled"])}>
 			{props.loading ? (
-				<IconMingcuteLoading3Fill className={clsx("size-8 animate-spin text-text", props.iconClassName)} />
+				<IconMingcuteLoading3Fill className={clsx("size-7 animate-spin text-text", props.iconClassName)} />
 			) : (
 				<div>{props.children}</div>
 			)}
