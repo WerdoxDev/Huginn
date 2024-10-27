@@ -31,6 +31,7 @@ export type GatewayEvents = {
 	channel_recipient_remove: GatewayDMCHannelRecipientRemoveData;
 	user_update: GatewayUserUpdateData;
 	presence_update: GatewayPresenceUpdateData;
+	oauth_redirect: GatewayOAuthRedirectData;
 };
 
 export type BasePayload = {
@@ -60,6 +61,7 @@ export type GatewayHello = NonDispatchPayload & {
 
 export type GatewayHelloData = {
 	heartbeatInterval: number;
+	peerId: string;
 };
 
 export type GatewayHeartbeat = NonDispatchPayload & {
@@ -67,7 +69,7 @@ export type GatewayHeartbeat = NonDispatchPayload & {
 	d: GatewayHeartbeatData;
 };
 
-export type GatewayHeartbeatData = number | null;
+export type GatewayHeartbeatData = number | undefined;
 
 export type GatewayHeartbeatAck = NonDispatchPayload & {
 	op: GatewayOperations.HEARTBEAT_ACK;
@@ -136,3 +138,8 @@ export type GatewayDMCHannelRecipientAddData = { user: APIChannelUser; channelId
 export type GatewayDMCHannelRecipientRemoveData = { user: APIChannelUser; channelId: Snowflake };
 export type GatewayUserUpdateData = APIUser & Tokens;
 export type GatewayPresenceUpdateData = UserPresence;
+
+export type GatewayOAuthRedirectData = {
+	token?: string;
+	error?: string;
+};
