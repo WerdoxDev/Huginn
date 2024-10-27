@@ -16,7 +16,6 @@ export type RESTOptions = {
 
 export type GatewayOptions = {
 	url: string;
-	identify: boolean;
 	log: boolean;
 	createSocket(url: string): WebSocket;
 };

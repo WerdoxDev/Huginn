@@ -9,7 +9,7 @@ describe("auth-init-with-token", () => {
 
 		const newClient = getNewClient();
 		await newClient.initializeWithToken({ token: accessToken });
-		await newClient.gateway.connectAndWaitForReady();
+		await newClient.gateway.waitForReady();
 
 		expect(newClient.user).toBeDefined();
 	});
@@ -21,7 +21,7 @@ describe("auth-init-with-token", () => {
 
 		const newClient = getNewClient();
 		await newClient.initializeWithToken({ refreshToken: refreshToken });
-		await newClient.gateway.connectAndWaitForReady();
+		await newClient.gateway.waitForReady();
 
 		expect(newClient.user).toBeDefined();
 	});
