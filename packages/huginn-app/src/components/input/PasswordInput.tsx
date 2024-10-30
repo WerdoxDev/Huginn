@@ -25,7 +25,7 @@ function ToggleButton() {
 	const context = useContext(PasswordContext);
 	return (
 		<button
-			className="border-l-background text-text flex h-full w-11 select-none items-center justify-center border-l-2 text-sm"
+			className="flex h-full w-11 shrink-0 select-none items-center justify-center border-l-2 border-l-background text-sm text-text"
 			type="button"
 			onClick={context.toggleType}
 		>

@@ -7,26 +7,6 @@ import { DefaultElement, type RenderElementProps, type RenderLeafProps, withReac
 const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, ref) => {
 	const editor = useMemo(() => withReact(createEditor()), []);
 
-	const currentExotic = useMemo(() => props.renderInfo.exoticType, [props.renderInfo]);
-
-	const nextConnectable = useMemo(
-		() =>
-			(props.renderInfo.exoticType === false && props.nextRenderInfo?.exoticType === false) ||
-			(props.renderInfo.exoticType === true && props.nextRenderInfo?.exoticType === true),
-		[props.renderInfo, props.nextRenderInfo],
-	);
-
-	const lastConnectable = useMemo(
-		() =>
-			(props.renderInfo.exoticType === false && props.lastRenderInfo?.exoticType === false) ||
-			(props.renderInfo.exoticType === true && props.lastRenderInfo?.exoticType === true),
-		[props.renderInfo, props.lastRenderInfo],
-	);
-
-	const nextNew = useMemo(() => props.nextRenderInfo?.newAuthor || props.nextRenderInfo?.newMinute || !props.nextRenderInfo, [props.nextRenderInfo]);
-	const currentNew = useMemo(() => props.renderInfo.newAuthor || props.renderInfo.newMinute || props.renderInfo.newDate, [props.renderInfo]);
-	const currentNewDate = useMemo(() => props.renderInfo.newDate || !props.lastRenderInfo || props.renderInfo.newDate, [props.lastRenderInfo]);
-
 	const lastRanges = useRef<Range[]>();
 
 	const renderLeaf = useCallback((props: RenderLeafProps) => {
@@ -67,18 +47,7 @@ const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, 
 	}
 
 	return (
-		<li
-			ref={ref}
-			className={clsx(
-				"group select-text",
-				// currentExotic ? "p-1 pl-2" : "p-2",
-				// !nextNew && "pb-0.5",
-				// !currentNew && "py-0.5",
-				// (nextNew || !nextConnectable || currentExotic) && "rounded-b-lg",
-				// (currentNew || !lastConnectable || currentExotic) && "rounded-t-lg",
-				// ((currentNew && !currentExotic) || !lastConnectable) && !currentNewDate && "mt-1.5",
-			)}
-		>
+		<li ref={ref} className="group select-text">
 			{[MessageType.DEFAULT].includes(props.renderInfo.message.type) && (
 				<DefaultMessage {...props} editor={editor} decorate={decorate} renderElement={renderElement} renderLeaf={renderLeaf} />
 			)}

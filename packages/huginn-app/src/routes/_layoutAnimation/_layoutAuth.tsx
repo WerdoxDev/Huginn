@@ -10,10 +10,10 @@ function LayoutAuth() {
 	const router = useRouter();
 	const { state: backgroundState } = useContext(AuthBackgroundContext);
 	const transitions = useTransition(router.state.location.pathname, {
-		from: { opacity: 0, transform: "translateY(-60px)" },
-		enter: { opacity: 1, transform: "translateY(0px)" },
-		leave: { opacity: 0, transform: "translateY(60px)" },
-		config: { duration: 250, easing: easings.easeInOutQuad },
+		from: { opacity: 0, transform: "scale(0.75,0.75)" },
+		enter: { opacity: 1, transform: "scale(1,1)" },
+		leave: { opacity: 0, transform: "scale(0.75,0.75)" },
+		config: { duration: 250, easing: easings.easeInOutSine },
 	});
 
 	const modalsDispatch = useModalsDispatch();

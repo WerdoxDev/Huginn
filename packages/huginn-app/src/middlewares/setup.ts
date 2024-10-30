@@ -18,7 +18,7 @@ export function setup(client: HuginnClient, posthog: PostHog) {
 	if (client.isLoggedIn) {
 		return;
 	}
-	if (pathname !== "/login" && pathname !== "/register" && pathname !== "/oauth-confirm") {
+	if (pathname !== "/login" && pathname !== "/register" && pathname !== "/oauth-redirect") {
 		throw redirect({ to: "/login", mask: pathname });
 	}
 }

@@ -2,6 +2,8 @@ import clsx from "clsx";
 
 export default function ImageSelector(props: {
 	className?: string;
+	editButtonClassName?: string;
+	deleteButtonClassName?: string;
 	data?: string | null;
 	size?: string;
 	onDelete?: () => void;
@@ -37,37 +39,43 @@ export default function ImageSelector(props: {
 		input.click();
 	}
 
+	function remove(e: React.MouseEvent) {
+		e.stopPropagation();
+		props.onDelete?.();
+	}
+
 	return (
-		<div className={clsx("flex w-max shrink-0 rounded-lg bg-secondary p-3", props.className)}>
+		<div className={clsx("flex w-max shrink-0 flex-col rounded-lg bg-secondary p-3", props.className)}>
 			<div onClick={openFileDialog} className="group relative cursor-pointer overflow-hidden rounded-full bg-black">
 				{props.data ? (
 					<img alt="editing-user-avatar" className="object-cover" style={{ width: size, height: size }} src={props.data} />
 				) : (
 					<div className="bg-primary" style={{ width: size, height: size }} />
 				)}
-
-				<div className="absolute inset-0 flex h-full w-full items-center justify-center gap-x-1.5 rounded-full opacity-0 transition-all duration-100 group-hover:bg-black/30 group-hover:opacity-100">
-					<Tooltip>
-						<Tooltip.Trigger className="rounded-md p-1 hover:bg-white/10">
-							<IconMingcuteEdit2Fill className="size-7 text-white" />
-						</Tooltip.Trigger>
-						<Tooltip.Content>Edit</Tooltip.Content>
-					</Tooltip>
-					<Tooltip>
-						<Tooltip.Trigger className="rounded-md p-1 hover:bg-white/10">
-							<IconMingcuteDelete3Fill
-								onClick={(e) => {
-									e.stopPropagation();
-									props.onDelete?.();
-								}}
-								className="size-7 text-error"
-							/>
-						</Tooltip.Trigger>
-						<Tooltip.Content>
-							<div className="text-error">Delete</div>
-						</Tooltip.Content>
-					</Tooltip>
-				</div>
+			</div>
+			<div className="mt-3 flex w-full items-center justify-center gap-x-0.5">
+				<Tooltip>
+					<Tooltip.Trigger
+						onClick={openFileDialog}
+						type="button"
+						className={clsx("flex w-full justify-center rounded-l-md bg-background py-1.5 hover:bg-primary", props.editButtonClassName)}
+					>
+						<IconMingcuteEdit2Fill className="size-5 text-white" />
+					</Tooltip.Trigger>
+					<Tooltip.Content>Edit</Tooltip.Content>
+				</Tooltip>
+				<Tooltip>
+					<Tooltip.Trigger
+						onClick={remove}
+						type="button"
+						className={clsx("group flex w-full justify-center rounded-r-md bg-error/10 py-1.5 hover:bg-error/100", props.deleteButtonClassName)}
+					>
+						<IconMingcuteDelete3Fill className="size-5 text-error group-hover:text-white" />
+					</Tooltip.Trigger>
+					<Tooltip.Content>
+						<span className="text-error">Delete</span>
+					</Tooltip.Content>
+				</Tooltip>
 			</div>
 		</div>
 	);

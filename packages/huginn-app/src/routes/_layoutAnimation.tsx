@@ -7,7 +7,7 @@ export const Route = createFileRoute("/_layoutAnimation")({
 });
 
 function LayoutAnimation() {
-	const { id, updateFor } = useRouteAnimation("/login", "/register", "/oauth-confirm");
+	const { id, updateFor } = useRouteAnimation("/login", "/register", "/oauth-redirect");
 	const [backgroundState, setBackgroundState] = useState(2);
 
 	const appWindow = useWindow();

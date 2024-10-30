@@ -55,6 +55,9 @@ function Register() {
 				setUser(client.user);
 
 				await navigate({ to: "/channels/@me" });
+
+				localStorage.setItem("access-token", client.tokenHandler.token ?? "");
+				localStorage.setItem("refresh-token", client.tokenHandler.refreshToken ?? "");
 			},
 		},
 		handleErrors,
@@ -62,7 +65,7 @@ function Register() {
 
 	async function onOAuthConfirm(d: GatewayOAuthRedirectData) {
 		await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
-		await navigate({ to: `/oauth-confirm?${new URLSearchParams({ ...d }).toString()}` });
+		await navigate({ to: `/oauth-redirect?${new URLSearchParams({ ...d }).toString()}` });
 	}
 
 	useEffect(() => {
@@ -73,7 +76,7 @@ function Register() {
 		const unlisten = listenEvent("open_url", async (urls) => {
 			const url = new URL(urls[0]);
 			await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
-			await navigate({ to: `/oauth-confirm?${url.searchParams.toString()}` });
+			await navigate({ to: `/oauth-redirect?${url.searchParams.toString()}` });
 		});
 
 		return () => {
@@ -101,7 +104,8 @@ function Register() {
 		const url = client.oauth.getOAuthURL(
 			IdentityProviderType.GOOGLE,
 			appWindow.environment === "browser" ? "browser" : "websocket",
-			"http://localhost:5173/oauth-confirm",
+			"register",
+			"http://localhost:5173/oauth-redirect",
 		);
 
 		if (appWindow.environment === "browser") {
@@ -114,47 +118,53 @@ function Register() {
 	return (
 		<AuthWrapper hidden={hidden} onSubmit={register}>
 			<div className="flex w-full select-none flex-col items-center">
-				<div className="mb-2 font-medium text-2xl text-text">Welcome to Huginn!</div>
+				<div className="mb-1 font-medium text-2xl text-text">Welcome to Huginn!</div>
 				<div className="text-text opacity-70">We are very happy to have you here!</div>
 			</div>
-			<div className="mt-5 flex gap-x-2">
-				<button
+			<div className="mt-5 flex w-full gap-x-2">
+				<HuginnButton
 					onClick={google}
 					type="button"
-					className="flex items-center justify-center gap-x-2 rounded-lg bg-tertiary p-2 text-text transition-all hover:scale-105 hover:shadow-lg"
+					innerClassName="flex items-center justify-center gap-x-2"
+					className="w-full rounded-lg border-2 border-accent2 bg-secondary py-2 text-text transition-all hover:shadow-lg"
 				>
-					<IconLogosGoogleIcon className="size-6" />
-					Google
-				</button>
-				<button
+					<IconLogosGoogleIcon className="size-5" />
+					<span>Google</span>
+				</HuginnButton>
+				<HuginnButton
 					type="button"
-					className="flex items-center justify-center gap-x-2 rounded-lg bg-tertiary p-2 text-text transition-all hover:scale-105 hover:shadow-lg"
+					innerClassName="flex items-center justify-center gap-x-2"
+					className="w-full rounded-lg border-2 border-accent2 bg-secondary py-2 text-text transition-all hover:shadow-lg"
 				>
-					<IconLogosGithubIcon className="size-6 text-white [&>path]:fill-white" />
-					GitHub
-				</button>
+					<IconLogosGithubIcon className="size-5 text-white [&>path]:fill-white" />
+					<span>GitHub</span>
+				</HuginnButton>
 			</div>
-			<div className="mt-5 w-full">
+			<div className="my-7 flex h-0 w-full select-none items-center justify-center text-center font-semibold text-text/70 text-xs [border-top:thin_solid_rgb(var(--color-text)/0.25)]">
+				<span className="bg-background px-2">or</span>
+			</div>
+			<div className="w-full">
+				<div className="flex items-center justify-center gap-x-2">
+					<HuginnInput onFocusChanged={onFocusChanged} {...inputsProps.username}>
+						<HuginnInput.Label text="Username" className="mb-2" />
+						<HuginnInput.Wrapper border="left">
+							<HuginnInput.Input className="lowercase" />
+						</HuginnInput.Wrapper>
+					</HuginnInput>
+					<HuginnInput {...inputsProps.displayName}>
+						<HuginnInput.Label text="Display Name" className="mb-2" />
+						<HuginnInput.Wrapper border="left">
+							<HuginnInput.Input />
+						</HuginnInput.Wrapper>
+					</HuginnInput>
+				</div>
+				<AnimatedMessage className="mt-1 mb-5" {...usernameMessageDetail} />
+
 				<HuginnInput className="mb-5" {...inputsProps.email}>
 					<HuginnInput.Label text="Email" className="mb-2" />
 					<HuginnInput.Wrapper border="left">
 						<HuginnInput.Input />
 					</HuginnInput.Wrapper>
-				</HuginnInput>
-
-				<HuginnInput className="mb-5" {...inputsProps.displayName}>
-					<HuginnInput.Label text="Display Name" className="mb-2" />
-					<HuginnInput.Wrapper border="left">
-						<HuginnInput.Input />
-					</HuginnInput.Wrapper>
-				</HuginnInput>
-
-				<HuginnInput className="mb-5" onFocusChanged={onFocusChanged} {...inputsProps.username}>
-					<HuginnInput.Label text="Username" className="mb-2" />
-					<HuginnInput.Wrapper border="left">
-						<HuginnInput.Input className="lowercase" />
-					</HuginnInput.Wrapper>
-					<AnimatedMessage className="mt-1" {...usernameMessageDetail} />
 				</HuginnInput>
 
 				<PasswordInput className="mb-5" {...inputsProps.password}>
@@ -170,7 +180,7 @@ function Register() {
 				</LoadingButton>
 
 				<div className="mt-3 flex select-none items-center">
-					<span className="text-sm text-text opacity-70"> Already have an account? </span>
+					<span className="text-sm text-text opacity-70">Already have an account? </span>
 					<LinkButton to="/login" className="ml-1 text-sm" preload={false}>
 						Login
 					</LinkButton>

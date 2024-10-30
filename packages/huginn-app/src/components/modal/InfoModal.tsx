@@ -67,7 +67,7 @@ export default function InfoModal() {
 
 				<div className="mt-5 flex items-center justify-end gap-x-2">
 					<HuginnButton
-						className="!rounded-lg w-full bg-secondary py-2.5"
+						className="h-10 w-full bg-secondary"
 						onClick={() => {
 							if (!modal.action?.cancel?.callback) dispatch({ info: { isOpen: false } });
 							else modal.action.cancel.callback();
@@ -78,7 +78,7 @@ export default function InfoModal() {
 
 					{modal.action?.confirm && (
 						<HuginnButton
-							className="!rounded-lg w-full bg-primary py-2.5 text-text"
+							className="h-10 w-full bg-primary text-text"
 							onClick={() => {
 								modal.action?.confirm?.callback();
 							}}
