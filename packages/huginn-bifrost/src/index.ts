@@ -95,10 +95,6 @@ router.use(
 	defineEventHandler(async (event) => {
 		let result = await serverRouter.handler(event);
 
-		if (result === null) {
-			return result;
-		}
-
 		if (!result) {
 			result = await cdnRouter.handler(event);
 		}
