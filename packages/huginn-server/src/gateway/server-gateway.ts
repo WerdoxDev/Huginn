@@ -166,7 +166,6 @@ export class ServerGateway {
 			return;
 		}
 
-		console.log(client?.data?.user.username, "m");
 		client?.resetTimeout();
 		const hearbeatAckData: GatewayHeartbeatAck = { op: GatewayOperations.HEARTBEAT_ACK };
 		this.send(peer, hearbeatAckData);
@@ -244,8 +243,6 @@ export class ServerGateway {
 
 		const user = idFix(await prisma.user.getById(payload.id));
 
-		// The uninitialized client is stored using it's peer_id instead of session_id
-		// We will delete this client and initialize a new one with proper session id
 		this.deleteUninitializedClient(peer.id);
 
 		client.peer = peer;

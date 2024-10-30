@@ -13,6 +13,7 @@
 		"@prisma/client": "^5.21.1",
 		"@std/collections": "npm:@jsr/std__collections",
 		"@std/encoding": "npm:@jsr/std__encoding",
+		"@std/media-types": "npm:@jsr/std__media-types",
 		"@std/text": "npm:@jsr/std__text",
 		"consola": "^3.2.3",
 		"crossws": "^0.3.1",
@@ -21,6 +22,7 @@
 		"magic-regexp": "^0.8.0",
 		"octokit": "^4.0.2",
 		"ohash": "^1.1.4",
+		"pathe": "^1.1.2",
 		"prisma": "^5.21.1",
 		"semver": "^7.6.3",
 		"zod": "^3.23.8"

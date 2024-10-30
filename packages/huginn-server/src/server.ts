@@ -1,3 +1,4 @@
+import { stat } from "node:fs/promises";
 import { S3Client } from "@aws-sdk/client-s3";
 import { type ErrorFactory, createErrorFactory, logReject, logRequest, logResponse, logServerError } from "@huginn/backend-shared";
 import { Errors, HttpCode, type HuginnErrorData, generateRandomString } from "@huginn/shared";
@@ -15,12 +16,14 @@ import {
 	handleCors,
 	readBody,
 	send,
+	serveStatic,
 	setResponseHeader,
 	setResponseStatus,
 	toWebHandler,
 	useBase,
 } from "h3";
 import { Octokit } from "octokit";
+import { join } from "pathe";
 import { isDBError } from "#database/error";
 import { ServerGateway } from "#gateway/server-gateway";
 import { importRoutes } from "#routes";
@@ -98,7 +101,7 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 			: undefined,
 	});
 
-	const mainRouter = createRouter();
+	mainRouter = createRouter();
 	router = createRouter();
 
 	await importRoutes();
@@ -158,3 +161,4 @@ export const s3 = new S3Client({
 	credentials: { accessKeyId: envs.AWS_KEY_ID ?? "", secretAccessKey: envs.AWS_SECRET_KEY ?? "" },
 });
 export let router: Readonly<Router>;
+export let mainRouter: Readonly<Router>;

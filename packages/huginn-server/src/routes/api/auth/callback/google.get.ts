@@ -77,7 +77,7 @@ router.get(
 			if (await prisma.user.exists({ email: user.email })) {
 				dispatchToTopic(state, "oauth_redirect", { error: FieldCode.EMAIL_IN_USE });
 
-				const redirectUrl = new URL(flow === "browser" ? redirect_url : "http://localhost:3001/api/auth/redirect");
+				const redirectUrl = new URL(flow === "browser" ? redirect_url : "http://localhost:3001/static/redirect.html");
 				redirectUrl.searchParams.set("flow", flow);
 				redirectUrl.searchParams.set("error", FieldCode.EMAIL_IN_USE);
 
@@ -121,7 +121,7 @@ router.get(
 			dispatchToTopic(state, "oauth_redirect", { token: token });
 			gateway.getSessionByKey(peer_id)?.unsubscribe(state);
 
-			const redirectUrl = new URL(flow === "browser" ? redirect_url : "http://localhost:3001/api/auth/redirect");
+			const redirectUrl = new URL(flow === "browser" ? redirect_url : "http://localhost:3001/static/redirect.html");
 			redirectUrl.searchParams.set("flow", flow);
 			redirectUrl.searchParams.set("token", token);
 
