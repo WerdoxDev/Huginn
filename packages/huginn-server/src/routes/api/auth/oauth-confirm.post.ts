@@ -85,6 +85,8 @@ router.post(
 			}),
 		);
 
+		await prisma.identityProvider.update({ where: { providerUserId: payload.providerUserId }, data: { userId: BigInt(user.id), completed: true } });
+
 		const [accessToken, refreshToken] = await createTokens(
 			{ id: user.id },
 			constants.ACCESS_TOKEN_EXPIRE_TIME,

@@ -3,13 +3,14 @@ import {
 	constants,
 	CDNRoutes,
 	Errors,
-	FieldCode,
 	Fields,
 	HttpCode,
 	IdentityProviderType,
+	OAuthCode,
 	RequestMethod,
 	WorkerID,
 	getFileHash,
+	idFix,
 	snowflake,
 } from "@huginn/shared";
 import { toSnakeCase } from "@std/text";
@@ -47,7 +48,7 @@ router.get(
 
 		const { code, error, state } = await useValidatedQuery(event, querySchema);
 
-		const { redirect_url, state: sessionState, flow, peer_id } = (await useSession(event, { password: envs.SESSION_PASSWORD })).data;
+		const { redirect_url, state: sessionState, flow, peer_id, action } = (await useSession(event, { password: envs.SESSION_PASSWORD })).data;
 		if (sessionState !== state || !state) {
 			return forbidden(event);
 		}
@@ -70,60 +71,101 @@ router.get(
 				return forbidden(event);
 			}
 
-			const user: GoogleUserReponse = await serverFetch("https://www.googleapis.com/userinfo/v2/me", RequestMethod.GET, {
+			const googleUser: GoogleUserReponse = await serverFetch("https://www.googleapis.com/userinfo/v2/me", RequestMethod.GET, {
 				token: response.access_token,
 			});
 
-			if (await prisma.user.exists({ email: user.email })) {
-				dispatchToTopic(state, "oauth_redirect", { error: FieldCode.EMAIL_IN_USE });
+			if (action === "login") {
+				const identityProvider = idFix(await prisma.identityProvider.findUnique({ where: { providerUserId: googleUser.id } }));
+
+				// Identity provider is not completed or does not exist
+				if (!identityProvider || !identityProvider.userId || !identityProvider.completed) {
+					dispatchToTopic(state, "oauth_redirect", { error: OAuthCode.NOT_FOUND });
+
+					const redirectUrl = new URL(flow === "browser" ? redirect_url : "http://localhost:3001/static/redirect.html");
+					redirectUrl.searchParams.set("flow", flow);
+					redirectUrl.searchParams.set("error", OAuthCode.NOT_FOUND);
+
+					return sendRedirect(event, redirectUrl.toString(), HttpCode.FOUND);
+				}
+
+				const [accessToken, refreshToken] = await createTokens(
+					{ id: identityProvider.userId },
+					constants.ACCESS_TOKEN_EXPIRE_TIME,
+					constants.REFRESH_TOKEN_EXPIRE_TIME,
+				);
+
+				dispatchToTopic(state, "oauth_redirect", { access_token: accessToken, refresh_token: refreshToken });
 
 				const redirectUrl = new URL(flow === "browser" ? redirect_url : "http://localhost:3001/static/redirect.html");
 				redirectUrl.searchParams.set("flow", flow);
-				redirectUrl.searchParams.set("error", FieldCode.EMAIL_IN_USE);
+				redirectUrl.searchParams.set("access_token", accessToken);
+				redirectUrl.searchParams.set("refresh_token", refreshToken);
+
+				return sendRedirect(event, redirectUrl.toString(), HttpCode.FOUND);
+			}
+			if (action === "register") {
+				// A user already exists with that email
+				if (await prisma.user.exists({ email: googleUser.email })) {
+					dispatchToTopic(state, "oauth_redirect", { error: OAuthCode.EMAIL_EXISTS });
+
+					const redirectUrl = new URL(flow === "browser" ? redirect_url : "http://localhost:3001/static/redirect.html");
+					redirectUrl.searchParams.set("flow", flow);
+					redirectUrl.searchParams.set("error", OAuthCode.EMAIL_EXISTS);
+
+					return sendRedirect(event, redirectUrl.toString(), HttpCode.FOUND);
+				}
+
+				const identityProvider = await prisma.identityProvider.upsert({
+					where: { providerUserId: googleUser.id },
+					create: {
+						id: snowflake.generate(WorkerID.IDENTITY_PROVIDER),
+						providerType: IdentityProviderType.GOOGLE,
+						providerUserId: googleUser.id,
+						refreshToken: response.refresh_token,
+						completed: false,
+					},
+					update: { refreshToken: response.refresh_token },
+				});
+
+				let avatarHash: null | string = null;
+				if (googleUser.picture) {
+					const avatarData = await (await fetch(googleUser.picture.replace("s96-c", "s256-c"))).arrayBuffer();
+					avatarHash = getFileHash(avatarData);
+					avatarHash = (
+						await cdnUpload<string>(CDNRoutes.uploadAvatar(googleUser.id), { files: [{ data: avatarData, name: avatarHash }] })
+					).split(".")[0];
+				}
+
+				const [token] = await createTokens(
+					{
+						providerId: identityProvider.id.toString(),
+						providerUserId: identityProvider.providerUserId,
+						email: googleUser.email,
+						username: toSnakeCase(googleUser.name),
+						fullName: googleUser.name,
+						avatarHash: avatarHash,
+					},
+					constants.IDENTITY_TOKEN_EXPIRE_TIME,
+					"",
+				);
+
+				dispatchToTopic(state, "oauth_redirect", { token: token });
+				gateway.getSessionByKey(peer_id)?.unsubscribe(state);
+
+				const redirectUrl = new URL(flow === "browser" ? redirect_url : "http://localhost:3001/static/redirect.html");
+				redirectUrl.searchParams.set("flow", flow);
+				redirectUrl.searchParams.set("token", token);
 
 				return sendRedirect(event, redirectUrl.toString(), HttpCode.FOUND);
 			}
 
-			const identityProvider = await prisma.identityProvider.upsert({
-				where: { providerUserId: user.id },
-				create: {
-					id: snowflake.generate(WorkerID.IDENTITY_PROVIDER),
-					providerType: IdentityProviderType.GOOGLE,
-					providerUserId: user.id,
-					refreshToken: response.refresh_token,
-					completed: false,
-				},
-				update: { refreshToken: response.refresh_token },
-			});
-
-			let avatarHash: null | string = null;
-			if (user.picture) {
-				const avatarData = await (await fetch(user.picture.replace("s96-c", "s256-c"))).arrayBuffer();
-				avatarHash = getFileHash(avatarData);
-				avatarHash = (await cdnUpload<string>(CDNRoutes.uploadAvatar(user.id), { files: [{ data: avatarData, name: avatarHash }] })).split(
-					".",
-				)[0];
-			}
-
-			const [token] = await createTokens(
-				{
-					providerId: identityProvider.id.toString(),
-					providerUserId: identityProvider.providerUserId,
-					email: user.email,
-					username: toSnakeCase(user.name),
-					fullName: user.name,
-					avatarHash: avatarHash,
-				},
-				constants.IDENTITY_TOKEN_EXPIRE_TIME,
-				"",
-			);
-
-			dispatchToTopic(state, "oauth_redirect", { token: token });
-			gateway.getSessionByKey(peer_id)?.unsubscribe(state);
+			// Action is invalid
+			dispatchToTopic(state, "oauth_redirect", { error: OAuthCode.INVALID });
 
 			const redirectUrl = new URL(flow === "browser" ? redirect_url : "http://localhost:3001/static/redirect.html");
 			redirectUrl.searchParams.set("flow", flow);
-			redirectUrl.searchParams.set("token", token);
+			redirectUrl.searchParams.set("error", OAuthCode.INVALID);
 
 			return sendRedirect(event, redirectUrl.toString(), HttpCode.FOUND);
 		}
