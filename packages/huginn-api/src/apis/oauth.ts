@@ -1,4 +1,4 @@
-import { type APIPostOAuthConfirmJSONBody, IdentityProviderType, Routes, generateRandomString } from "@huginn/shared";
+import { type APIPostOAuthConfirmJSONBody, type APIPostOAuthConfirmResult, IdentityProviderType, Routes, generateRandomString } from "@huginn/shared";
 import { encodeBase64 } from "@std/encoding";
 import type { Gateway } from "../gateway/client-gateway";
 import type { REST } from "../rest/rest";
@@ -12,17 +12,18 @@ export class OAuthAPI {
 		this.gateway = gateway;
 	}
 
-	public async confirmOAuth(body: APIPostOAuthConfirmJSONBody, identityToken: string): Promise<unknown> {
-		return this.rest.post(Routes.confirmOAuth(), { body, auth: true, token: identityToken }) as Promise<unknown>;
+	public async confirmOAuth(body: APIPostOAuthConfirmJSONBody, identityToken: string): Promise<APIPostOAuthConfirmResult> {
+		return this.rest.post(Routes.confirmOAuth(), { body, auth: true, token: identityToken }) as Promise<APIPostOAuthConfirmResult>;
 	}
 
-	public getOAuthURL(provider: IdentityProviderType, flow: "browser" | "websocket", redirectUrl: string): string {
+	public getOAuthURL(provider: IdentityProviderType, flow: "browser" | "websocket", action: "register" | "login", redirectUrl: string): string {
 		if (provider === IdentityProviderType.GOOGLE) {
 			const url = new URL("/api/auth/google", this.rest.options?.api);
 
 			const state = encodeBase64(`${Date.now()}:${generateRandomString(16)}`);
 			url.searchParams.set("state", state);
 			url.searchParams.set("flow", flow);
+			url.searchParams.set("action", action);
 			if (flow === "browser" && redirectUrl) {
 				url.searchParams.set("redirect_url", redirectUrl);
 			}

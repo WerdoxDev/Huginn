@@ -61,6 +61,7 @@ export class HuginnClient {
 				this.tokenHandler.refreshToken = newTokens.refreshToken;
 				this.tokenHandler.token = newTokens.token;
 			}
+			console.log();
 		} catch (e) {
 			this.user = undefined;
 			this.tokenHandler.token = undefined;

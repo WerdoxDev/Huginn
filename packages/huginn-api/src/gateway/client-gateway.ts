@@ -57,7 +57,7 @@ export class Gateway {
 		let onClose: (() => void) | undefined = undefined;
 
 		const result = await new Promise((r) => {
-			if (!this.sequence) {
+			if (!this.sequence || !this.sessionId) {
 				if (this.receivedHello) {
 					this.sendIdentify();
 					r(true);
