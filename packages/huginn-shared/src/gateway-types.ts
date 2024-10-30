@@ -140,6 +140,8 @@ export type GatewayUserUpdateData = APIUser & Tokens;
 export type GatewayPresenceUpdateData = UserPresence;
 
 export type GatewayOAuthRedirectData = {
+	access_token?: string;
+	refresh_token?: string;
 	token?: string;
 	error?: string;
 };

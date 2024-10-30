@@ -94,6 +94,12 @@ export enum FieldCode {
 	PASSWORD_INCORRECT = "PASSWORD_INCORRECT",
 }
 
+export enum OAuthCode {
+	EMAIL_EXISTS = "EMAIL_EXISTS",
+	NOT_FOUND = "NOT_FOUND",
+	INVALID = "INVALID",
+}
+
 // Detailed errors that happen to a normal user
 export const Fields = {
 	required(): [string, string] {
