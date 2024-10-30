@@ -96,7 +96,7 @@ function OAuthConfirm() {
 	}
 
 	return (
-		<AuthWrapper hidden={false} className="!w-auto max-w-[30rem]">
+		<AuthWrapper hidden={false} className="!w-auto max-w-[30rem] border border-success">
 			{search.error && (
 				<div className="flex flex-col items-center">
 					<IconMingcuteAlertLine className="size-20 animate-pulse text-error drop-shadow-[0px_0px_50px_rgb(var(--color-error))]" />

@@ -21,7 +21,8 @@ function Login() {
 
 	const { setUser } = useUser();
 
-	const [hidden, setHidden] = useState(true);
+	const [hidden, setHidden] = useState(false);
+	const [showInitial, setShowInitial] = useState(false);
 	const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
 	const navigate = useNavigate({ from: "/login" });
 
@@ -89,7 +90,7 @@ function Login() {
 		}
 
 		function unhide() {
-			setHidden(false);
+			setShowInitial(true);
 			setAuthBackgroundState(0);
 		}
 
@@ -107,40 +108,42 @@ function Login() {
 	}
 
 	return (
-		<AuthWrapper hidden={hidden} onSubmit={login}>
-			<div className="flex w-full select-none flex-col items-center">
-				<div className="mb-2 font-medium text-2xl text-text">Welcome back!</div>
-				<div className="text-text/70">It's very good to see you again!</div>
-			</div>
-			<div className="mt-5 w-full">
-				<HuginnInput className="mb-5" {...inputsProps.login}>
-					<HuginnInput.Label className="mb-2" text="Email or Username" />
-					<HuginnInput.Wrapper border="left">
-						<HuginnInput.Input className="lowercase" />
-					</HuginnInput.Wrapper>
-				</HuginnInput>
-
-				<PasswordInput {...inputsProps.password}>
-					<HuginnInput.Label className="mb-2" text="Password" />
-					<HuginnInput.Wrapper border="left">
-						<HuginnInput.Input />
-						<PasswordInput.ToggleButton />
-					</HuginnInput.Wrapper>
-				</PasswordInput>
-
-				<LinkButton className="mt-1 mb-5 text-sm">Forgot your password?</LinkButton>
-
-				<LoadingButton loading={!mutation.isIdle && mutation.isPending} className="h-10 w-full bg-primary " type="submit">
-					Log In
-				</LoadingButton>
-
-				<div className="mt-3 flex select-none items-center">
-					<span className="text-sm text-text opacity-70"> Don't have an account? </span>
-					<LinkButton to="/register" className="ml-1 text-sm" preload={false}>
-						Register
-					</LinkButton>
+		showInitial && (
+			<AuthWrapper hidden={hidden} onSubmit={login}>
+				<div className="flex w-full select-none flex-col items-center">
+					<div className="mb-2 font-medium text-2xl text-text">Welcome back!</div>
+					<div className="text-text/70">It's very good to see you again!</div>
 				</div>
-			</div>
-		</AuthWrapper>
+				<div className="mt-5 w-full">
+					<HuginnInput className="mb-5" {...inputsProps.login}>
+						<HuginnInput.Label className="mb-2" text="Email or Username" />
+						<HuginnInput.Wrapper border="left">
+							<HuginnInput.Input className="lowercase" />
+						</HuginnInput.Wrapper>
+					</HuginnInput>
+
+					<PasswordInput {...inputsProps.password}>
+						<HuginnInput.Label className="mb-2" text="Password" />
+						<HuginnInput.Wrapper border="left">
+							<HuginnInput.Input />
+							<PasswordInput.ToggleButton />
+						</HuginnInput.Wrapper>
+					</PasswordInput>
+
+					<LinkButton className="mt-1 mb-5 text-sm">Forgot your password?</LinkButton>
+
+					<LoadingButton loading={!mutation.isIdle && mutation.isPending} className="h-10 w-full bg-primary " type="submit">
+						Log In
+					</LoadingButton>
+
+					<div className="mt-3 flex select-none items-center">
+						<span className="text-sm text-text opacity-70"> Don't have an account? </span>
+						<LinkButton to="/register" className="ml-1 text-sm" preload={false}>
+							Register
+						</LinkButton>
+					</div>
+				</div>
+			</AuthWrapper>
+		)
 	);
 }

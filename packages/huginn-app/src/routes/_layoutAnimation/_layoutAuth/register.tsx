@@ -60,7 +60,7 @@ function Register() {
 		handleErrors,
 	);
 
-	async function test(d: GatewayOAuthRedirectData) {
+	async function onOAuthConfirm(d: GatewayOAuthRedirectData) {
 		await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
 		await navigate({ to: `/oauth-confirm?${new URLSearchParams({ ...d }).toString()}` });
 	}
@@ -68,16 +68,17 @@ function Register() {
 	useEffect(() => {
 		setAuthBackgroundState(0);
 
-		client.gateway.on("oauth_redirect", test);
+		client.gateway.on("oauth_redirect", onOAuthConfirm);
 
 		const unlisten = listenEvent("open_url", async (urls) => {
 			const url = new URL(urls[0]);
+			await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
 			await navigate({ to: `/oauth-confirm?${url.searchParams.toString()}` });
 		});
 
 		return () => {
 			unlisten();
-			client.gateway.off("oauth_redirect", test);
+			client.gateway.off("oauth_redirect", onOAuthConfirm);
 		};
 	}, []);
 

@@ -1,4 +1,5 @@
 import { animated, easings, useSpring } from "@react-spring/web";
+import clsx from "clsx";
 
 export default function AuthBackgroundSvg(props: { state: number }) {
 	const colorTheme = useTheme();
@@ -25,7 +26,7 @@ export default function AuthBackgroundSvg(props: { state: number }) {
 
 	return (
 		<svg
-			className="pointer-events-none absolute z-10 h-full w-full"
+			className={clsx("pointer-events-none absolute h-full w-full", props.state === 1 && "z-10")}
 			viewBox="0 0 960 540"
 			xmlns="http://www.w3.org/2000/svg"
 			version="1.1"

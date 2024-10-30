@@ -12,7 +12,6 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as SplashscreenImport } from './routes/splashscreen'
-import { Route as RedirectImport } from './routes/redirect'
 import { Route as LayoutAnimationImport } from './routes/_layoutAnimation'
 import { Route as LayoutAnimationLayoutMainImport } from './routes/_layoutAnimation/_layoutMain'
 import { Route as LayoutAnimationLayoutAuthImport } from './routes/_layoutAnimation/_layoutAuth'
@@ -29,12 +28,6 @@ import { Route as LayoutAnimationLayoutMainLayoutHomeChannelsmeChannelIdImport }
 const SplashscreenRoute = SplashscreenImport.update({
   id: '/splashscreen',
   path: '/splashscreen',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const RedirectRoute = RedirectImport.update({
-  id: '/redirect',
-  path: '/redirect',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -110,13 +103,6 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: ''
       preLoaderRoute: typeof LayoutAnimationImport
-      parentRoute: typeof rootRoute
-    }
-    '/redirect': {
-      id: '/redirect'
-      path: '/redirect'
-      fullPath: '/redirect'
-      preLoaderRoute: typeof RedirectImport
       parentRoute: typeof rootRoute
     }
     '/splashscreen': {
@@ -278,7 +264,6 @@ const LayoutAnimationRouteWithChildren = LayoutAnimationRoute._addFileChildren(
 
 export interface FileRoutesByFullPath {
   '': typeof LayoutAnimationLayoutMainLayoutHomeRouteWithChildren
-  '/redirect': typeof RedirectRoute
   '/splashscreen': typeof SplashscreenRoute
   '/login': typeof LayoutAnimationLayoutAuthLoginRoute
   '/oauth-confirm': typeof LayoutAnimationLayoutAuthOauthConfirmRoute
@@ -290,7 +275,6 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '': typeof LayoutAnimationLayoutMainLayoutHomeRouteWithChildren
-  '/redirect': typeof RedirectRoute
   '/splashscreen': typeof SplashscreenRoute
   '/login': typeof LayoutAnimationLayoutAuthLoginRoute
   '/oauth-confirm': typeof LayoutAnimationLayoutAuthOauthConfirmRoute
@@ -303,7 +287,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_layoutAnimation': typeof LayoutAnimationRouteWithChildren
-  '/redirect': typeof RedirectRoute
   '/splashscreen': typeof SplashscreenRoute
   '/_layoutAnimation/_layoutAuth': typeof LayoutAnimationLayoutAuthRouteWithChildren
   '/_layoutAnimation/_layoutMain': typeof LayoutAnimationLayoutMainRouteWithChildren
@@ -320,7 +303,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | ''
-    | '/redirect'
     | '/splashscreen'
     | '/login'
     | '/oauth-confirm'
@@ -331,7 +313,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | ''
-    | '/redirect'
     | '/splashscreen'
     | '/login'
     | '/oauth-confirm'
@@ -342,7 +323,6 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_layoutAnimation'
-    | '/redirect'
     | '/splashscreen'
     | '/_layoutAnimation/_layoutAuth'
     | '/_layoutAnimation/_layoutMain'
@@ -358,13 +338,11 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   LayoutAnimationRoute: typeof LayoutAnimationRouteWithChildren
-  RedirectRoute: typeof RedirectRoute
   SplashscreenRoute: typeof SplashscreenRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   LayoutAnimationRoute: LayoutAnimationRouteWithChildren,
-  RedirectRoute: RedirectRoute,
   SplashscreenRoute: SplashscreenRoute,
 }
 
@@ -381,7 +359,6 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/_layoutAnimation",
-        "/redirect",
         "/splashscreen"
       ]
     },
@@ -391,9 +368,6 @@ export const routeTree = rootRoute
         "/_layoutAnimation/_layoutAuth",
         "/_layoutAnimation/_layoutMain"
       ]
-    },
-    "/redirect": {
-      "filePath": "redirect.tsx"
     },
     "/splashscreen": {
       "filePath": "splashscreen.tsx"

@@ -5,9 +5,13 @@ import type { ReactNode } from "react";
 export default function AuthWrapper(props: { className?: string; children?: ReactNode; hidden: boolean; onSubmit?: () => void }) {
 	const style = useSpring({
 		opacity: props.hidden ? 0 : 1,
-		transform: props.hidden ? "translateY(-120px)" : "translateY(0px)",
-		config: { duration: 250, easing: easings.easeInOutCirc },
+		transform: props.hidden ? "translateY(60px)" : "translateY(0px)",
+		config: { duration: 250, easing: easings.easeInOutQuad },
 	});
+
+	useEffect(() => {
+		console.log(style);
+	}, [style]);
 
 	return (
 		<animated.form
