@@ -1,7 +1,5 @@
-import { type APIPostRegisterJSONBody, type GatewayOAuthRedirectData, IdentityProviderType, generateRandomString } from "@huginn/shared";
-import { encodeBase64 } from "@std/encoding";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { UserAttentionType, getCurrentWindow } from "@tauri-apps/api/window";
+import type { APIPostRegisterJSONBody } from "@huginn/shared";
+import { createFileRoute } from "@tanstack/react-router";
 import { open } from "@tauri-apps/plugin-shell";
 import { usePostHog } from "posthog-js/react";
 
@@ -17,7 +15,10 @@ function Register() {
 	const client = useClient();
 	const posthog = usePostHog();
 	const appWindow = useWindow();
-	const { listenEvent } = useEvent();
+	const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
+	const initializeClient = useInitializeClient();
+	const startOAuth = useOAuth();
+
 	const { inputsProps, values, resetStatuses, handleErrors, validateValues, resetInput } = useInputs([
 		{ name: "email", required: true },
 		{ name: "displayName", required: false },
@@ -25,12 +26,8 @@ function Register() {
 		{ name: "password", required: true },
 	]);
 
-	const { setUser } = useUser();
-
 	const [hidden, setHidden] = useState(false);
-	const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
 	const { message: usernameMessageDetail, onFocusChanged } = useUniqueUsernameMessage(values, resetInput, "username");
-	const navigate = useNavigate({ from: "/register" });
 
 	const mutation = useHuginnMutation(
 		{
@@ -41,48 +38,20 @@ function Register() {
 					username: user.username,
 					password: user.password,
 				});
-
-				posthog.identify(client.user?.id, { username: client.user?.username, displayName: client.user?.displayName });
-				posthog.capture("registered");
 			},
 			async onSuccess() {
 				setAuthBackgroundState(1);
 				setHidden(true);
 
-				await client.gateway.identify();
-				await client.gateway.waitForReady();
-
-				setUser(client.user);
-
-				await navigate({ to: "/channels/@me" });
-
-				localStorage.setItem("access-token", client.tokenHandler.token ?? "");
-				localStorage.setItem("refresh-token", client.tokenHandler.refreshToken ?? "");
+				await initializeClient(undefined, undefined, "/channels/@me");
+				posthog.capture("registered");
 			},
 		},
 		handleErrors,
 	);
 
-	async function onOAuthConfirm(d: GatewayOAuthRedirectData) {
-		await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
-		await navigate({ to: `/oauth-redirect?${new URLSearchParams({ ...d }).toString()}` });
-	}
-
 	useEffect(() => {
 		setAuthBackgroundState(0);
-
-		client.gateway.on("oauth_redirect", onOAuthConfirm);
-
-		const unlisten = listenEvent("open_url", async (urls) => {
-			const url = new URL(urls[0]);
-			await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
-			await navigate({ to: `/oauth-redirect?${url.searchParams.toString()}` });
-		});
-
-		return () => {
-			unlisten();
-			client.gateway.off("oauth_redirect", onOAuthConfirm);
-		};
 	}, []);
 
 	async function register() {
@@ -100,21 +69,6 @@ function Register() {
 		resetStatuses();
 	}
 
-	function google() {
-		const url = client.oauth.getOAuthURL(
-			IdentityProviderType.GOOGLE,
-			appWindow.environment === "browser" ? "browser" : "websocket",
-			"register",
-			"http://localhost:5173/oauth-redirect",
-		);
-
-		if (appWindow.environment === "browser") {
-			window.open(url, "_self");
-		} else {
-			open(url);
-		}
-	}
-
 	return (
 		<AuthWrapper hidden={hidden} onSubmit={register}>
 			<div className="flex w-full select-none flex-col items-center">
@@ -123,7 +77,7 @@ function Register() {
 			</div>
 			<div className="mt-5 flex w-full gap-x-2">
 				<HuginnButton
-					onClick={google}
+					onClick={() => startOAuth("google", "register")}
 					type="button"
 					innerClassName="flex items-center justify-center gap-x-2"
 					className="w-full rounded-lg border-2 border-accent2 bg-secondary py-2 text-text transition-all hover:shadow-lg"
@@ -144,14 +98,14 @@ function Register() {
 				<span className="bg-background px-2">or</span>
 			</div>
 			<div className="w-full">
-				<div className="flex items-center justify-center gap-x-2">
-					<HuginnInput onFocusChanged={onFocusChanged} {...inputsProps.username}>
+				<div className="flex items-end justify-center gap-x-2">
+					<HuginnInput onFocusChanged={onFocusChanged} {...inputsProps.username} className="w-1/2">
 						<HuginnInput.Label text="Username" className="mb-2" />
 						<HuginnInput.Wrapper border="left">
 							<HuginnInput.Input className="lowercase" />
 						</HuginnInput.Wrapper>
 					</HuginnInput>
-					<HuginnInput {...inputsProps.displayName}>
+					<HuginnInput {...inputsProps.displayName} className="w-1/2">
 						<HuginnInput.Label text="Display Name" className="mb-2" />
 						<HuginnInput.Wrapper border="left">
 							<HuginnInput.Input />

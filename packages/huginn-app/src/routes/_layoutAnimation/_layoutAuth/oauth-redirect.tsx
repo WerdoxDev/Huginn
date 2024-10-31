@@ -24,8 +24,20 @@ function OAuthConfirm() {
 	const navigate = useNavigate();
 	const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
 	const modalsDispatch = useModalsDispatch();
+	const initializeClient = useInitializeClient();
 
 	const decodedToken = useMemo(() => (search.token ? (jose.decodeJwt(search.token) as IdentityTokenPayload) : undefined), [search]);
+
+	const { inputsProps, values, handleErrors, resetInput } = useInputs([
+		{ name: "username", required: true, default: decodedToken?.username },
+		{ name: "displayName", required: false, default: decodedToken?.fullName },
+	]);
+
+	const [hidden, setHidden] = useState(false);
+	const [shouldRender, setShouldRender] = useState(false);
+	const { data: originalAvatar } = useQuery(getUserAvatar(decodedToken?.providerUserId, decodedToken?.avatarHash, client));
+	const [avatarData, setAvatarData] = useState<string | null>(null);
+	const { message: usernameMessageDetail, onFocusChanged } = useUniqueUsernameMessage(values, resetInput, "username");
 
 	const errorText = useMemo(
 		() =>
@@ -36,19 +48,6 @@ function OAuthConfirm() {
 					: "Unknown Error",
 		[search],
 	);
-
-	const { inputsProps, values, handleErrors, resetInput } = useInputs([
-		{ name: "username", required: true, default: decodedToken?.username },
-		{ name: "displayName", required: false, default: decodedToken?.fullName },
-	]);
-
-	const [hidden, setHidden] = useState(false);
-	const [showInitial, setShowInitial] = useState(false);
-	const { data: originalAvatar } = useQuery(getUserAvatar(decodedToken?.providerUserId, decodedToken?.avatarHash, client));
-	const [avatarData, setAvatarData] = useState<string | null>(null);
-	const { message: usernameMessageDetail, onFocusChanged, onChanged } = useUniqueUsernameMessage(values, resetInput, "username");
-
-	const { setUser } = useUser();
 
 	const mutation = useHuginnMutation(
 		{
@@ -61,18 +60,7 @@ function OAuthConfirm() {
 				setAuthBackgroundState(1);
 				setHidden(true);
 
-				await client.initializeWithToken({
-					token: data?.token,
-					refreshToken: data?.refreshToken,
-				});
-				await client.gateway.identify();
-				await client.gateway.waitForReady();
-				setUser(client.user);
-
-				await navigate({ to: "/channels/@me" });
-
-				localStorage.setItem("access-token", client.tokenHandler.token ?? "");
-				localStorage.setItem("refresh-token", client.tokenHandler.refreshToken ?? "");
+				await initializeClient(data?.token, data?.refreshToken, "/channels/@me");
 			},
 		},
 		handleErrors,
@@ -84,21 +72,13 @@ function OAuthConfirm() {
 				try {
 					setAuthBackgroundState(1);
 
-					await client.initializeWithToken({ token: search.access_token, refreshToken: search.refresh_token });
-					await client.gateway.identify();
-					await client.gateway.waitForReady();
-					setUser(client.user);
-
-					await navigate({ to: "/channels/@me" });
-
-					localStorage.setItem("access-token", client.tokenHandler.token ?? "");
-					localStorage.setItem("refresh-token", client.tokenHandler.refreshToken ?? "");
+					await initializeClient(search.access_token, search.refresh_token, "/channels/@me");
 				} catch (e) {
 					console.log(e);
-					await navigate({ to: "/login" });
+					await navigate({ to: "/" });
 				}
 			} else {
-				setShowInitial(true);
+				setShouldRender(true);
 				setAuthBackgroundState(0);
 			}
 		}
@@ -107,6 +87,7 @@ function OAuthConfirm() {
 			setAvatarData(e.croppedImageData);
 		});
 
+		modalsDispatch({ info: { isOpen: false } });
 		tryAuthorize();
 
 		return () => {
@@ -145,7 +126,7 @@ function OAuthConfirm() {
 	}
 
 	return (
-		showInitial && (
+		shouldRender && (
 			<AuthWrapper hidden={hidden}>
 				{search.error && (
 					<div className="flex w-full flex-col items-center justify-center">

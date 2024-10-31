@@ -1,8 +1,6 @@
 import { ClientReadyState, HuginnAPIError } from "@huginn/api";
-import { type APIPostLoginJSONBody, type GatewayOAuthRedirectData, IdentityProviderType } from "@huginn/shared";
+import type { APIPostLoginJSONBody } from "@huginn/shared";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { UserAttentionType, getCurrentWindow } from "@tauri-apps/api/window";
-import { open } from "@tauri-apps/plugin-shell";
 import { usePostHog } from "posthog-js/react";
 
 export const Route = createFileRoute("/_layoutAnimation/_layoutAuth/login")({
@@ -17,20 +15,19 @@ function Login() {
 	const posthog = usePostHog();
 	const client = useClient();
 	const appWindow = useWindow();
-	const { listenEvent } = useEvent();
+	const handleServerError = useErrorHandler();
+	const initializeClient = useInitializeClient();
+	const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
+	const navigate = useNavigate();
+	const startOAuth = useOAuth();
+
 	const { inputsProps, values, resetStatuses, handleErrors, validateValues } = useInputs([
 		{ name: "login", required: true, default: import.meta.env.DEV ? "test" : undefined },
 		{ name: "password", required: true, default: import.meta.env.DEV ? "test" : undefined },
 	]);
 
-	const { setUser } = useUser();
-
 	const [hidden, setHidden] = useState(false);
-	const [showInitial, setShowInitial] = useState(false);
-	const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
-	const navigate = useNavigate({ from: "/login" });
-
-	const handleServerError = useErrorHandler();
+	const [shouldRender, setShouldRender] = useState(false);
 
 	const mutation = useHuginnMutation(
 		{
@@ -40,22 +37,13 @@ function Login() {
 					email: credentials.email,
 					password: credentials.password,
 				});
-
-				posthog.identify(client.user?.id, { username: client.user?.username, displayName: client.user?.displayName });
-				posthog?.capture("logged_in", null);
 			},
 			async onSuccess() {
 				setAuthBackgroundState(1);
 				setHidden(true);
 
-				await client.gateway.identify();
-				await client.gateway.waitForReady();
-				setUser(client.user);
-
-				await navigate({ to: "/channels/@me" });
-
-				localStorage.setItem("access-token", client.tokenHandler.token ?? "");
-				localStorage.setItem("refresh-token", client.tokenHandler.refreshToken ?? "");
+				await initializeClient(undefined, undefined, "/channels/@me");
+				posthog?.capture("logged_in", null);
 			},
 		},
 		handleErrors,
@@ -70,15 +58,13 @@ function Login() {
 				if (refreshToken && routeHistory.lastPathname !== "/register") {
 					setAuthBackgroundState(1);
 
-					await client.initializeWithToken({ refreshToken });
-					await client.gateway.identify();
-					await client.gateway.waitForReady();
-					setUser(client.user);
+					await initializeClient(
+						undefined,
+						refreshToken,
+						routeHistory.initialPathname === "/login" ? "/channels/@me" : routeHistory.initialPathname,
+					);
 
-					posthog.identify(client.user?.id, { username: client.user?.username, displayName: client.user?.displayName });
 					posthog?.capture("logged_in_with_token");
-
-					await navigate({ to: routeHistory.initialPathname === "/login" ? "/channels/@me" : routeHistory.initialPathname });
 				} else {
 					unhide();
 				}
@@ -93,30 +79,12 @@ function Login() {
 		}
 
 		function unhide() {
-			setShowInitial(true);
+			setShouldRender(true);
 			setAuthBackgroundState(0);
 		}
 
-		client.gateway.on("oauth_redirect", onOAuthConfirm);
-
-		const unlisten = listenEvent("open_url", async (urls) => {
-			const url = new URL(urls[0]);
-			await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
-			await navigate({ to: `/oauth-redirect?${url.searchParams.toString()}` });
-		});
-
 		tryLogin();
-
-		return () => {
-			unlisten();
-			client.gateway.off("oauth_redirect", onOAuthConfirm);
-		};
 	}, []);
-
-	async function onOAuthConfirm(d: GatewayOAuthRedirectData) {
-		await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
-		await navigate({ to: `/oauth-redirect?${new URLSearchParams({ ...d }).toString()}` });
-	}
 
 	async function login() {
 		if (!validateValues()) {
@@ -128,24 +96,8 @@ function Login() {
 		resetStatuses();
 	}
 
-	function google() {
-		console.log(appWindow.environment);
-		const url = client.oauth.getOAuthURL(
-			IdentityProviderType.GOOGLE,
-			appWindow.environment === "browser" ? "browser" : "websocket",
-			"login",
-			"http://localhost:5173/oauth-redirect",
-		);
-
-		if (appWindow.environment === "browser") {
-			window.open(url, "_self");
-		} else {
-			open(url);
-		}
-	}
-
 	return (
-		showInitial && (
+		shouldRender && (
 			<AuthWrapper hidden={hidden} onSubmit={login}>
 				<div className="flex w-full select-none flex-col items-center">
 					<div className="mb-1 font-medium text-2xl text-text">Welcome back!</div>
@@ -153,7 +105,7 @@ function Login() {
 				</div>
 				<div className="mt-5 flex w-full gap-x-2">
 					<HuginnButton
-						onClick={google}
+						onClick={() => startOAuth("google", "login")}
 						type="button"
 						innerClassName="flex items-center justify-center gap-x-2"
 						className="w-full rounded-lg border-2 border-accent2 bg-secondary py-2 text-text transition-all hover:shadow-lg"
@@ -191,7 +143,7 @@ function Login() {
 
 					{/* <LinkButton className="mt-1 mb-5 text-sm">Forgot your password?</LinkButton> */}
 
-					<LoadingButton loading={!mutation.isIdle && mutation.isPending} className="h-10 w-full bg-primary mt-5" type="submit">
+					<LoadingButton loading={!mutation.isIdle && mutation.isPending} className="mt-5 h-10 w-full bg-primary" type="submit">
 						Login
 					</LoadingButton>
 
