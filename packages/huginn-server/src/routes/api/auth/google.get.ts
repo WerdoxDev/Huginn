@@ -56,6 +56,7 @@ router.get(
 		authEndpoint.searchParams.set("redirect_uri", `${host}/api/auth/callback/google`);
 		authEndpoint.searchParams.set("access_type", "offline");
 		authEndpoint.searchParams.set("response_type", "code");
+		// authEndpoint.searchParams.set("prompt", "consent");
 		authEndpoint.searchParams.set("state", state);
 		authEndpoint.searchParams.set(
 			"scope",
