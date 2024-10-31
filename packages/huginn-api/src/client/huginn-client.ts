@@ -56,6 +56,9 @@ export class HuginnClient {
 			this.readyState = ClientReadyState.INITIALIZING;
 			if (tokens.token) {
 				this.tokenHandler.token = tokens.token;
+				if (tokens.refreshToken) {
+					this.tokenHandler.refreshToken = tokens.refreshToken;
+				}
 			} else if (tokens.refreshToken) {
 				const newTokens = await this.auth.refreshToken({ refreshToken: tokens.refreshToken });
 				this.tokenHandler.refreshToken = newTokens.refreshToken;

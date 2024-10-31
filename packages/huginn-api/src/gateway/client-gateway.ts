@@ -34,8 +34,8 @@ export class Gateway {
 		this.emitter.emit(eventName, eventArg);
 	}
 
-	on<EventName extends keyof GatewayEvents>(eventName: EventName, handler: (eventArg: GatewayEvents[EventName]) => void): void {
-		this.emitter.on(eventName, handler);
+	on<EventName extends keyof GatewayEvents>(eventName: EventName, handler: (eventArg: GatewayEvents[EventName]) => void, skipQueue?: boolean): void {
+		this.emitter.on(eventName, handler, skipQueue);
 	}
 
 	off<EventName extends keyof GatewayEvents>(eventName: EventName, handler: (eventArg: GatewayEvents[EventName]) => void): void {
