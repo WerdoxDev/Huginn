@@ -1,20 +1,7 @@
-import { forbidden, singleError, unauthorized, useValidatedQuery } from "@huginn/backend-shared";
-import {
-	constants,
-	CDNRoutes,
-	Errors,
-	Fields,
-	HttpCode,
-	IdentityProviderType,
-	OAuthCode,
-	RequestMethod,
-	WorkerID,
-	getFileHash,
-	idFix,
-	snowflake,
-} from "@huginn/shared";
+import { forbidden, singleError, useValidatedQuery } from "@huginn/backend-shared";
+import { constants, CDNRoutes, Errors, HttpCode, OAuthCode, RequestMethod, WorkerID, getFileHash, idFix, snowflake } from "@huginn/shared";
 import { toSnakeCase } from "@std/text";
-import { defineEventHandler, send, sendNoContent, sendRedirect, setResponseStatus, useSession } from "h3";
+import { defineEventHandler, getHeader, getRequestProtocol, sendNoContent, sendRedirect, useSession } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
 import { gateway, router } from "#server";
@@ -53,13 +40,15 @@ router.get(
 			return forbidden(event);
 		}
 
+		const host = `${getRequestProtocol(event)}://${getHeader(event, "host")}`;
+
 		if (code) {
 			const query = new URLSearchParams({
 				client_id: envs.GOOGLE_CLIENT_ID,
 				client_secret: envs.GOOGLE_CLIENT_SECRET,
 				code: code,
 				grant_type: "authorization_code",
-				redirect_uri: "http://localhost:3001/api/auth/callback/google",
+				redirect_uri: `${host}/api/auth/callback/google`,
 			});
 
 			const response: GoogleOAuth2Response = await serverFetch("https://accounts.google.com/o/oauth2/token", RequestMethod.POST, {
@@ -82,7 +71,7 @@ router.get(
 				if (!identityProvider || !identityProvider.userId || !identityProvider.completed) {
 					dispatchToTopic(state, "oauth_redirect", { error: OAuthCode.NOT_FOUND });
 
-					const redirectUrl = new URL(flow === "browser" ? redirect_url : "http://localhost:3001/static/redirect.html");
+					const redirectUrl = new URL(flow === "browser" ? redirect_url : `${host}/static/redirect.html`);
 					redirectUrl.searchParams.set("flow", flow);
 					redirectUrl.searchParams.set("error", OAuthCode.NOT_FOUND);
 
@@ -97,7 +86,7 @@ router.get(
 
 				dispatchToTopic(state, "oauth_redirect", { access_token: accessToken, refresh_token: refreshToken });
 
-				const redirectUrl = new URL(flow === "browser" ? redirect_url : "http://localhost:3001/static/redirect.html");
+				const redirectUrl = new URL(flow === "browser" ? redirect_url : `${host}/static/redirect.html`);
 				redirectUrl.searchParams.set("flow", flow);
 				redirectUrl.searchParams.set("access_token", accessToken);
 				redirectUrl.searchParams.set("refresh_token", refreshToken);
@@ -109,7 +98,7 @@ router.get(
 				if (await prisma.user.exists({ email: googleUser.email })) {
 					dispatchToTopic(state, "oauth_redirect", { error: OAuthCode.EMAIL_EXISTS });
 
-					const redirectUrl = new URL(flow === "browser" ? redirect_url : "http://localhost:3001/static/redirect.html");
+					const redirectUrl = new URL(flow === "browser" ? redirect_url : `${host}/static/redirect.html`);
 					redirectUrl.searchParams.set("flow", flow);
 					redirectUrl.searchParams.set("error", OAuthCode.EMAIL_EXISTS);
 
@@ -120,7 +109,7 @@ router.get(
 					where: { providerUserId: googleUser.id },
 					create: {
 						id: snowflake.generate(WorkerID.IDENTITY_PROVIDER),
-						providerType: IdentityProviderType.GOOGLE,
+						providerType: "google",
 						providerUserId: googleUser.id,
 						refreshToken: response.refresh_token,
 						completed: false,
@@ -153,7 +142,7 @@ router.get(
 				dispatchToTopic(state, "oauth_redirect", { token: token });
 				gateway.getSessionByKey(peer_id)?.unsubscribe(state);
 
-				const redirectUrl = new URL(flow === "browser" ? redirect_url : "http://localhost:3001/static/redirect.html");
+				const redirectUrl = new URL(flow === "browser" ? redirect_url : `${host}/static/redirect.html`);
 				redirectUrl.searchParams.set("flow", flow);
 				redirectUrl.searchParams.set("token", token);
 
@@ -163,7 +152,7 @@ router.get(
 			// Action is invalid
 			dispatchToTopic(state, "oauth_redirect", { error: OAuthCode.INVALID });
 
-			const redirectUrl = new URL(flow === "browser" ? redirect_url : "http://localhost:3001/static/redirect.html");
+			const redirectUrl = new URL(flow === "browser" ? redirect_url : `${host}/static/redirect.html`);
 			redirectUrl.searchParams.set("flow", flow);
 			redirectUrl.searchParams.set("error", OAuthCode.INVALID);
 

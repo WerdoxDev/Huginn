@@ -1,7 +1,7 @@
 import { catchError, forbidden, useValidatedQuery } from "@huginn/backend-shared";
 import { HttpCode } from "@huginn/shared";
 import { decodeBase64 } from "@std/encoding";
-import { defineEventHandler, sendNoContent, sendRedirect, useSession } from "h3";
+import { defineEventHandler, getHeader, getRequestProtocol, sendNoContent, sendRedirect, useSession } from "h3";
 import { z } from "zod";
 import { gateway, router } from "#server";
 import { envs } from "#setup";
@@ -50,9 +50,10 @@ router.get(
 			gateway.getSessionByKey(peer_id)?.subscribe(state);
 		}
 
+		const host = `${getRequestProtocol(event)}://${getHeader(event, "host")}`;
 		const authEndpoint = new URL("https://accounts.google.com/o/oauth2/v2/auth");
 		authEndpoint.searchParams.set("client_id", envs.GOOGLE_CLIENT_ID);
-		authEndpoint.searchParams.set("redirect_uri", "http://localhost:3001/api/auth/callback/google");
+		authEndpoint.searchParams.set("redirect_uri", `${host}/api/auth/callback/google`);
 		authEndpoint.searchParams.set("access_type", "offline");
 		authEndpoint.searchParams.set("response_type", "code");
 		authEndpoint.searchParams.set("state", state);
