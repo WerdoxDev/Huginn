@@ -9,10 +9,6 @@ export default function AuthWrapper(props: { className?: string; children?: Reac
 		config: { duration: 250, easing: easings.easeInOutQuad },
 	});
 
-	useEffect(() => {
-		console.log(style);
-	}, [style]);
-
 	return (
 		<animated.form
 			onSubmit={(e) => {

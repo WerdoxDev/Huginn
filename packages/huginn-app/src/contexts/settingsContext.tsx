@@ -1,10 +1,10 @@
 import type { DeepPartial, ThemeType, VersionFlavour } from "@/types";
-import { appDataDir } from "@tauri-apps/api/path";
-import { BaseDirectory, create, exists, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import { appConfigDir } from "@tauri-apps/api/path";
+import { BaseDirectory, exists, mkdir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { type ReactNode, createContext } from "react";
 
-const RELEASE_SETTINGS = "./data/settings.json";
-const NIGHTLY_SETTINGS = "./data/settings-nightly.json";
+const RELEASE_SETTINGS = "settings.json";
+const NIGHTLY_SETTINGS = "settings-nightly.json";
 
 export type SettingsContextType = {
 	serverAddress: string;
@@ -29,7 +29,7 @@ export async function initializeSettings() {
 	localStorageItem = currentFlavour === "nightly" ? "settings-nightly" : "settings";
 	if (window.__TAURI_INTERNALS__) {
 		await tryCreateSettingsFile();
-		value = { ...defaultValue, ...JSON.parse(await readTextFile(filePath, { baseDir: BaseDirectory.AppData })) };
+		value = { ...defaultValue, ...JSON.parse(await readTextFile(filePath, { baseDir: BaseDirectory.AppConfig })) };
 	} else {
 		if (!localStorage.getItem(localStorageItem)) {
 			localStorage.setItem(localStorageItem, JSON.stringify(defaultValue));
@@ -71,7 +71,7 @@ function settingsReducer(settings: SettingsContextType, action: DeepPartial<Sett
 
 async function writeSettingsFile(settings: SettingsContextType) {
 	try {
-		await writeTextFile(filePath, JSON.stringify(settings, null, 2), { baseDir: BaseDirectory.AppData });
+		await writeTextFile(filePath, JSON.stringify(settings, null, 2), { baseDir: BaseDirectory.AppConfig });
 	} catch (e) {
 		console.error(e);
 	}
@@ -79,16 +79,13 @@ async function writeSettingsFile(settings: SettingsContextType) {
 
 async function tryCreateSettingsFile() {
 	try {
-		const directory = await appDataDir();
+		const directory = await appConfigDir();
+
 		if (!(await exists(directory))) {
-			await create(directory);
+			await mkdir(directory);
 		}
 
-		if (!(await exists("data", { baseDir: BaseDirectory.AppData }))) {
-			await create("data", { baseDir: BaseDirectory.AppData });
-		}
-
-		if (!(await exists(filePath, { baseDir: BaseDirectory.AppData }))) {
+		if (!(await exists(filePath, { baseDir: BaseDirectory.AppConfig }))) {
 			await writeSettingsFile(defaultValue);
 		}
 	} catch (e) {

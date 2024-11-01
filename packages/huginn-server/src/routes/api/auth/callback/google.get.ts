@@ -14,7 +14,7 @@ const querySchema = z.object({ code: z.optional(z.string()), error: z.optional(z
 
 type GoogleOAuth2Response =
 	| { error: string }
-	| { access_token: string; expires_in: number; refresh_token: string; scope: string; token_type: string; id_token: string };
+	| { access_token: string; expires_in: number; refresh_token?: string; scope: string; token_type: string; id_token: string };
 
 type GoogleUserReponse = {
 	id: string;
