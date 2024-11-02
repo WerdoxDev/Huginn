@@ -23,7 +23,7 @@ import {
 	useRole,
 } from "@floating-ui/react";
 import clsx from "clsx";
-import { type HTMLProps, createContext } from "react";
+import { type HTMLProps, Suspense, createContext } from "react";
 
 const Context = createContext<{
 	getItemProps: (userProps?: React.HTMLProps<HTMLElement>) => Record<string, unknown>;
@@ -186,7 +186,7 @@ const Menu = forwardRef<HTMLButtonElement, ContextMenuProps & HTMLProps<HTMLButt
 									style={floatingStyles}
 									{...getFloatingProps()}
 								>
-									{children}
+									{props.renderChildren}
 								</div>
 							</FloatingFocusManager>
 						</FloatingPortal>
@@ -240,12 +240,18 @@ export default function ContextMenu(props: ContextMenuProps) {
 	if (parentId === null) {
 		return (
 			<FloatingTree>
-				<Menu {...props} />
+				<Suspense>
+					<Menu {...props} />
+				</Suspense>
 			</FloatingTree>
 		);
 	}
 
-	return <Menu {...props} />;
+	return (
+		<Suspense>
+			<Menu {...props} />
+		</Suspense>
+	);
 }
 
 function Divider() {

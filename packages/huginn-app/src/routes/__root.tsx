@@ -55,6 +55,7 @@ function Root() {
 										</>
 									)}
 									<ModalsRenderer />
+									<ContextMenusRenderer />
 								</div>
 							</div>
 						</PresenceProvider>
@@ -63,31 +64,6 @@ function Root() {
 			</ModalProvider>
 		</ThemeProvier>
 		// </HistoryContext.Provider>
-	);
-}
-
-function ModalsRenderer() {
-	const { user } = useUser();
-
-	return (
-		<>
-			<ErrorBoundary FallbackComponent={ModalErrorComponent}>
-				<SettingsModal />
-				<ImageCropModal />
-				{user && (
-					<>
-						<CreateDMModal />
-						<EditGroupModal />
-						<AddRecipientModal />
-						<ChannelRecipientContextMenu />
-						<ChannelsContextMenu />
-						<RelationshipMoreContextMenu />
-						<RelationshipContextMenu />
-					</>
-				)}
-			</ErrorBoundary>
-			<InfoModal />
-		</>
 	);
 }
 

@@ -1,14 +1,14 @@
 import { ChannelType } from "@huginn/shared";
 
 export default function ChannelsContextMenu() {
-	const { context, data, close } = useContextMenu("dm_channel");
+	const { data } = useContextMenu("dm_channel");
 	const mutation = useDeleteDMChannel();
 	const dispatch = useModalsDispatch();
 
 	if (!data) return;
 
 	return (
-		<ContextMenu close={close} isOpen={context?.isOpen} position={context?.position}>
+		<>
 			<ContextMenu.Item
 				label={data.type === ChannelType.DM ? "Close DM" : "Leave Group"}
 				onClick={() => {
@@ -30,6 +30,6 @@ export default function ChannelsContextMenu() {
 			<ContextMenu.Item label="Copy Channel ID" onClick={() => navigator.clipboard.writeText(data.id)}>
 				<IconMingcuteIdcardFill />
 			</ContextMenu.Item>
-		</ContextMenu>
+		</>
 	);
 }

@@ -129,7 +129,7 @@ export type TooltipOptions = {
 
 export type ContextMenuProps = {
 	label?: string;
-	children?: ReactNode;
+	renderChildren: ReactNode;
 	close?: () => void;
 } & ContextMenuStateProps;
 

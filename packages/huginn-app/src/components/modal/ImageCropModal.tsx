@@ -42,43 +42,41 @@ export default function ImageCropModal() {
 	}, [modal.isOpen]);
 
 	return (
-		<BaseModal modal={modal} onClose={() => modalsDispatch({ imageCrop: { isOpen: false } })}>
-			<DialogPanel className="flex transform flex-col overflow-hidden rounded-xl border-2 border-primary/50 bg-background transition-[opacity_transform] data-[closed]:scale-95">
-				<div className="m-5 mb-0 flex h-[30rem] w-[30rem] items-center justify-center rounded-lg bg-black/50">
-					<Cropper
-						ref={cropperRef}
-						src={modal.originalImageData}
-						initialAspectRatio={1}
-						className="h-[30rem] w-[30rem]"
-						aspectRatio={1}
-						movable={true}
-						unselectable="off"
-						zoomable={true}
-						viewMode={1}
-						dragMode="move"
-						guides={false}
-						background={false}
-						modal={false}
-						scalable={false}
-						autoCropArea={1}
-						cropBoxResizable={false}
-						cropBoxMovable={false}
-						toggleDragModeOnDblclick={false}
-					/>
-				</div>
-				<div className="mx-5 my-1 text-text/60 italic">NOTE: zoom with scroll wheel</div>
-				<div className="flex w-full justify-end gap-x-2 bg-secondary p-5">
-					<HuginnButton
-						onClick={() => modalsDispatch({ imageCrop: { isOpen: false } })}
-						className="h-10 w-20 shrink-0 decoration-white hover:underline"
-					>
-						Cancel
-					</HuginnButton>
-					<HuginnButton onClick={confirm} className="h-10 w-36 bg-primary text-text">
-						Confirm
-					</HuginnButton>
-				</div>
-			</DialogPanel>
-		</BaseModal>
+		<DialogPanel className="flex transform flex-col overflow-hidden rounded-xl border-2 border-primary/50 bg-background transition-[opacity_transform] data-[closed]:scale-95">
+			<div className="m-5 mb-0 flex h-[30rem] w-[30rem] items-center justify-center rounded-lg bg-black/50">
+				<Cropper
+					ref={cropperRef}
+					src={modal.originalImageData}
+					initialAspectRatio={1}
+					className="h-[30rem] w-[30rem]"
+					aspectRatio={1}
+					movable={true}
+					unselectable="off"
+					zoomable={true}
+					viewMode={1}
+					dragMode="move"
+					guides={false}
+					background={false}
+					modal={false}
+					scalable={false}
+					autoCropArea={1}
+					cropBoxResizable={false}
+					cropBoxMovable={false}
+					toggleDragModeOnDblclick={false}
+				/>
+			</div>
+			<div className="mx-5 my-1 text-text/60 italic">NOTE: zoom with scroll wheel</div>
+			<div className="flex w-full justify-end gap-x-2 bg-secondary p-5">
+				<HuginnButton
+					onClick={() => modalsDispatch({ imageCrop: { isOpen: false } })}
+					className="h-10 w-20 shrink-0 decoration-white hover:underline"
+				>
+					Cancel
+				</HuginnButton>
+				<HuginnButton onClick={confirm} className="h-10 w-36 bg-primary text-text">
+					Confirm
+				</HuginnButton>
+			</div>
+		</DialogPanel>
 	);
 }

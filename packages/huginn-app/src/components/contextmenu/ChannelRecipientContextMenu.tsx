@@ -1,5 +1,5 @@
 export default function ChannelRecipientContextMenu() {
-	const { context, data, close } = useContextMenu("dm_channel_recipient");
+	const { data } = useContextMenu("dm_channel_recipient");
 	const { user } = useUser();
 	const deleteMutation = useRemoveChannelRecipient();
 	const createMutation = useCreateDMChannel();
@@ -8,7 +8,7 @@ export default function ChannelRecipientContextMenu() {
 	if (!data || !user) return;
 
 	return (
-		<ContextMenu close={close} isOpen={context?.isOpen} position={context?.position}>
+		<>
 			{data.recipient.id !== user.id && (
 				<>
 					{user.id === ownerId && (
@@ -35,6 +35,6 @@ export default function ChannelRecipientContextMenu() {
 			<ContextMenu.Item label="Copy User ID" onClick={() => navigator.clipboard.writeText(data.recipient.id)}>
 				<IconMingcuteIdcardFill />
 			</ContextMenu.Item>
-		</ContextMenu>
+		</>
 	);
 }

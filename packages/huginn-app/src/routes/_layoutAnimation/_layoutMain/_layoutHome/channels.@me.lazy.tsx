@@ -1,6 +1,6 @@
-import { Link, Outlet, createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
+import { Link, Outlet, createLazyFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/channels/@me")({
+export const Route = createLazyFileRoute("/_layoutAnimation/_layoutMain/_layoutHome/channels/@me")({
 	component: Component,
 });
 

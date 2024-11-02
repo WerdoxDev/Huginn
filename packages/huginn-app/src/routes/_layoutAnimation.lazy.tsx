@@ -1,8 +1,8 @@
 import { useTransition } from "@react-spring/web";
-import { createFileRoute } from "@tanstack/react-router";
+import { createLazyFileRoute } from "@tanstack/react-router";
 import clsx from "clsx";
 
-export const Route = createFileRoute("/_layoutAnimation")({
+export const Route = createLazyFileRoute("/_layoutAnimation")({
 	component: LayoutAnimation,
 });
 

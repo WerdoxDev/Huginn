@@ -1,8 +1,8 @@
 import type { LoadingState } from "@/types";
-import { createFileRoute } from "@tanstack/react-router";
+import { createLazyFileRoute } from "@tanstack/react-router";
 import { invoke } from "@tauri-apps/api/core";
 
-export const Route = createFileRoute("/splashscreen")({
+export const Route = createLazyFileRoute("/splashscreen")({
 	component: Splashscreen,
 });
 

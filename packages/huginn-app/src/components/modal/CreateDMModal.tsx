@@ -6,8 +6,8 @@ import { usePostHog } from "posthog-js/react";
 export default function CreateDMModal() {
 	const { createDM: modal } = useModals();
 	const dispatch = useModalsDispatch();
-	const client = useClient();
 
+	const client = useClient();
 	const posthog = usePostHog();
 	const { data } = useQuery(getRelationshipsOptions(client));
 
@@ -33,12 +33,12 @@ export default function CreateDMModal() {
 		}
 	}, [selectedUsers]);
 
-	function close() {
-		dispatch({ createDM: { isOpen: false } });
-	}
-
 	function onSelectionChanged(values: APIRelationUser[]) {
 		setSelectedUsers(values);
+	}
+
+	function close() {
+		dispatch({ createDM: { isOpen: false } });
 	}
 
 	async function findOrCreate() {
@@ -49,10 +49,12 @@ export default function CreateDMModal() {
 		await mutation.mutateAsync({ recipients: selectedUsers?.map((x) => x.id), name: values.name.value });
 		close();
 	}
-
 	return (
-		<BaseModal modal={modal} onClose={close}>
-			<DialogPanel className="w-full max-w-md transform overflow-hidden rounded-xl border-2 border-primary bg-background transition-[opacity_transform] data-[closed]:scale-95">
+		<>
+			<DialogPanel
+				transition
+				className="w-full max-w-md transform overflow-hidden rounded-xl border-2 border-primary bg-background transition-[opacity_transform] data-[closed]:scale-95"
+			>
 				<DialogTitle className="flex items-center justify-center gap-x-1.5">
 					<div className="mt-5 font-medium text-2xl text-text">Create Direct Message</div>
 				</DialogTitle>
@@ -83,6 +85,6 @@ export default function CreateDMModal() {
 				</div>
 				<ModalCloseButton onClick={close} />
 			</DialogPanel>
-		</BaseModal>
+		</>
 	);
 }

@@ -75,7 +75,7 @@ export function ThemeProvier(props: { children?: ReactNode }) {
 	const settings = useSettings();
 	const [colorTheme, dispatch] = useReducer(colorThemeReducer, defaultValue);
 
-	useEffect(() => {
+	useLayoutEffect(() => {
 		dispatch(settings.theme);
 	}, []);
 	return (

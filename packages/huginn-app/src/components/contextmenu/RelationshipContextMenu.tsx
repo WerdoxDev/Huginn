@@ -1,12 +1,12 @@
 export default function RelationshipContextMenu() {
-	const { context, data, close } = useContextMenu("relationship");
+	const { data } = useContextMenu("relationship");
 	const removeMutation = useRemoveRelationship();
 	const createMutation = useCreateDMChannel();
 
 	if (!data) return;
 
 	return (
-		<ContextMenu close={close} isOpen={context?.isOpen} position={context?.position}>
+		<>
 			<ContextMenu.Item
 				label="Message"
 				onClick={() => {
@@ -24,6 +24,6 @@ export default function RelationshipContextMenu() {
 			<ContextMenu.Item label="Copy User ID" onClick={() => navigator.clipboard.writeText(data.user.id)}>
 				<IconMingcuteIdcardFill />
 			</ContextMenu.Item>
-		</ContextMenu>
+		</>
 	);
 }
