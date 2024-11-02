@@ -52,7 +52,8 @@
 				"visible": false,
 				"label": "main",
 				"decorations": false,
-				"transparent": true
+				"transparent": false,
+            "windowEffects":{"effects": [], "color":[38,38,38,1]}
 			},
 			{
             "title": "Huginn",
@@ -60,10 +61,12 @@
 				"height": 300,
 				"resizable": false,
 				"decorations": false,
+            "visible": false,
 				"url": "/splashscreen",
 				"label": "splashscreen",
 				"center": true,
-				"transparent": true
+				"transparent": false,
+            "windowEffects":{"effects": [], "color":[38,38,38,1]}
 			}
 		],
 		"security": {

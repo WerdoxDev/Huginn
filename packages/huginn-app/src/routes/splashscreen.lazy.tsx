@@ -56,6 +56,7 @@ function Splashscreen() {
 			await checkAndDownload();
 		}
 
+		invoke("open_splashscreen");
 		checkForUpdate();
 
 		return () => {
