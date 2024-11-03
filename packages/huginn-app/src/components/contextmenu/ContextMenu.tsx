@@ -179,16 +179,18 @@ const Menu = forwardRef<HTMLButtonElement, ContextMenuProps & HTMLProps<HTMLButt
 				<FloatingList elementsRef={elementsRef} labelsRef={labelsRef}>
 					{isOpen && (
 						<FloatingPortal>
-							<FloatingFocusManager context={context} modal={false} initialFocus={isNested ? -1 : 0} returnFocus={!isNested}>
-								<div
-									ref={refs.setFloating}
-									className="flex min-w-28 flex-col gap-y-0.5 rounded-md bg-zinc-900 p-2 shadow-lg outline-none"
-									style={floatingStyles}
-									{...getFloatingProps()}
-								>
-									{props.renderChildren}
-								</div>
-							</FloatingFocusManager>
+							<Suspense>
+								<FloatingFocusManager context={context} modal={false} initialFocus={isNested ? -1 : 0} returnFocus={!isNested}>
+									<div
+										ref={refs.setFloating}
+										className="flex min-w-28 flex-col gap-y-0.5 rounded-md bg-zinc-900 p-2 shadow-lg outline-none"
+										style={floatingStyles}
+										{...getFloatingProps()}
+									>
+										{props.renderChildren}
+									</div>
+								</FloatingFocusManager>
+							</Suspense>
 						</FloatingPortal>
 					)}
 				</FloatingList>
@@ -240,18 +242,12 @@ export default function ContextMenu(props: ContextMenuProps) {
 	if (parentId === null) {
 		return (
 			<FloatingTree>
-				<Suspense>
-					<Menu {...props} />
-				</Suspense>
+				<Menu {...props} />
 			</FloatingTree>
 		);
 	}
 
-	return (
-		<Suspense>
-			<Menu {...props} />
-		</Suspense>
-	);
+	return <Menu {...props} />;
 }
 
 function Divider() {

@@ -192,14 +192,14 @@ function SettingsPanels(props: {
 	const flatTabs = useFlatTabs();
 
 	return (
-		<TabPanels className="flex w-full flex-col p-5 pr-0">
-			<div className="text-text mb-5 shrink-0 text-xl">{props.currentTab}</div>
+		<TabPanels className="flex w-full flex-col p-5 pr-0 pb-0">
+			<div className="mb-5 shrink-0 text-text text-xl">{props.currentTab}</div>
 			{flatTabs.map((tab) => (
 				<TabPanel key={tab?.name} className="scroll-alternative h-full overflow-y-scroll pr-3">
 					{tab?.component ? (
 						<TabComponent onChange={props.onChange} onSave={props.onSave} settings={props.settings} component={tab.component} />
 					) : (
-						<span className="text-text/50 text-base italic">{tab?.name} (Soon...)</span>
+						<span className="text-base text-text/50 italic">{tab?.name} (Soon...)</span>
 					)}
 				</TabPanel>
 			))}

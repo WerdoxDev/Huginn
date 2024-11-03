@@ -6,14 +6,13 @@ import { useQuery } from "@tanstack/react-query";
 
 export default function SettingsProfileTab(_props: SettingsTabProps) {
 	const client = useClient();
-	const { user, setUser } = useUser();
+	const { user, setUser, tokenPayload } = useUser();
 	const { listenEvent } = useEvent();
 	const modalsDispatch = useModalsDispatch();
 
 	const {
 		inputsProps,
 		values,
-		statuses,
 		handleErrors,
 		resetStatuses,
 		resetInput,
@@ -22,6 +21,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 		{ name: "username", required: true, default: user?.username },
 		{ name: "displayName", required: false, default: user?.displayName },
 		{ name: "password", required: false },
+		{ name: "newPassword", required: false },
 	]);
 
 	const { data: originalAvatar } = useQuery(getUserAvatar(user?.id, user?.avatar, client));
@@ -35,6 +35,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 		setUser(omit(result, ["refreshToken", "token"]));
 
 		onValueChanged("password", "");
+		onValueChanged("newPassword", "");
 		resetStatuses();
 
 		onChanged(values.username.value, result.username);
@@ -46,7 +47,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 
 	useMemo(() => {
 		const displayName = !user?.displayName ? "" : user.displayName;
-		setModified(values.username.value !== user?.username || values.displayName.value !== displayName);
+		setModified(values.username.value !== user?.username || values.displayName.value !== displayName || values.newPassword.value !== "");
 	}, [values, user]);
 
 	useEffect(() => {
@@ -88,6 +89,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 			displayName: values.displayName.value,
 			username: values.username.value === user?.username ? undefined : values.username.value,
 			password: values.password.value,
+			newPassword: values.newPassword.value,
 			avatar: originalAvatar && !avatarData ? null : originalAvatar === avatarData ? undefined : avatarData,
 		});
 	}
@@ -101,6 +103,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 		onValueChanged("username", user.username);
 		onValueChanged("displayName", user.displayName);
 		onValueChanged("password", "");
+		onValueChanged("newPassword", "");
 
 		onFocusChanged(false);
 
@@ -110,9 +113,9 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 
 	return (
 		<>
-			<div className="flex h-full items-start gap-x-5">
-				<ImageSelector data={avatarData} onDelete={onDelete} onSelected={onSelected} />
-				<div className="mb-20 flex w-full flex-col gap-y-5 rounded-lg bg-secondary p-4">
+			<div className="flex items-start gap-x-5">
+				<ImageSelector data={avatarData} onDelete={onDelete} onSelected={onSelected} className="p-4" buttonsClassName="mt-4" />
+				<div className="mb-24 flex w-full flex-col gap-y-5 rounded-lg bg-secondary p-4">
 					<HuginnInput {...inputsProps.username} onFocusChanged={onFocusChanged}>
 						<HuginnInput.Label text="Username" className="mb-2" />
 						<HuginnInput.Wrapper className="!bg-background" border="left">
@@ -128,12 +131,28 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 						</HuginnInput.Wrapper>
 					</HuginnInput>
 
-					<HuginnInput {...inputsProps.password} type="password">
-						<HuginnInput.Label text="Current Password" className="mb-2" />
-						<HuginnInput.Wrapper className="!bg-background" border="left">
-							<HuginnInput.Input />
-						</HuginnInput.Wrapper>
-					</HuginnInput>
+					{!tokenPayload?.isOAuth && (
+						<>
+							<div className="my-5 flex h-0 w-full select-none items-center justify-center text-center font-semibold text-accent text-sm [border-top:thin_solid_rgb(var(--color-text)/0.25)]">
+								<span className="bg-secondary px-2 uppercase">change password</span>
+							</div>
+
+							<PasswordInput {...inputsProps.password} type="password">
+								<HuginnInput.Label text="Current Password" className="mb-2" />
+								<HuginnInput.Wrapper className="!bg-background" border="left">
+									<HuginnInput.Input />
+									<PasswordInput.ToggleButton />
+								</HuginnInput.Wrapper>
+							</PasswordInput>
+							<PasswordInput {...inputsProps.newPassword} type="password">
+								<HuginnInput.Label text="New Password" className="mb-2" />
+								<HuginnInput.Wrapper className="!bg-background" border="left">
+									<HuginnInput.Input />
+									<PasswordInput.ToggleButton />
+								</HuginnInput.Wrapper>
+							</PasswordInput>
+						</>
+					)}
 				</div>
 			</div>
 			<Transition show={modified || avatarModified}>

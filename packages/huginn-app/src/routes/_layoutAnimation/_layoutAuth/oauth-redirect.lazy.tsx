@@ -31,15 +31,15 @@ function OAuthConfirm() {
 	const [avatarData, setAvatarData] = useState<string | null>(null);
 	const { message: usernameMessageDetail, onFocusChanged } = useUniqueUsernameMessage(values, resetInput, "username");
 
-	const errorText = useMemo(
-		() =>
-			search.error === OAuthCode.EMAIL_EXISTS
-				? "An account with that email address already exists!"
-				: search.error === OAuthCode.NOT_FOUND
-					? "No user was found!"
-					: "Unknown Error",
-		[search],
-	);
+	// const errorText = useMemo(
+	// 	() =>
+	// 		search.error === OAuthCode.EMAIL_EXISTS
+	// 			? "An account with that email address already exists!"
+	// 			: search.error === OAuthCode.NOT_FOUND
+	// 				? "No user was found!"
+	// 				: "Unknown Error",
+	// 	[search],
+	// );
 
 	const mutation = useHuginnMutation(
 		{
@@ -106,7 +106,7 @@ function OAuthConfirm() {
 	}
 
 	async function abort() {
-		await navigate({ to: "/register" });
+		await navigate({ to: routeHistory.lastPathname ?? "/" });
 	}
 
 	async function confirm() {
@@ -120,7 +120,7 @@ function OAuthConfirm() {
 	return (
 		shouldRender && (
 			<AuthWrapper hidden={hidden}>
-				{search.error && (
+				{/* {search.error && (
 					<div className="flex w-full flex-col items-center justify-center">
 						<IconMingcuteAlertLine className="size-20 text-error drop-shadow-[0px_0px_50px_rgb(var(--color-error))]" />
 						<div className="mt-5 w-full text-center">
@@ -133,7 +133,7 @@ function OAuthConfirm() {
 							</div>
 						</div>
 					</div>
-				)}
+				)} */}
 				{search.token && (
 					<>
 						<div className="flex w-full select-none flex-col items-center">

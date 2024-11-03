@@ -43,8 +43,8 @@ export default function DefaultMessage(
 				!isSelf && "ml-4",
 				(isSeparate || isLastExotic) && "rounded-t-lg",
 				isNextSeparate && "rounded-b-lg",
-				!isSeparate && !isLastExotic && "py-0.5",
-				!isNextSeparate && "pb-0.5",
+				!isSeparate && !isLastExotic && "mt-0.5 py-0",
+				!isNextSeparate && "pb-0",
 				isSeparate && !isNewDate && "mt-1.5",
 			)}
 		>
@@ -73,10 +73,10 @@ export default function DefaultMessage(
 						renderLeaf={props.renderLeaf}
 						renderElement={props.renderElement}
 						className={clsx(
-							"px-2 py-1 font-normal text-white [overflow-wrap:anywhere]",
+							"px-2.5 py-1.5 font-normal text-white [overflow-wrap:anywhere]",
 							isSelf ? "bg-primary" : "bg-background",
-							isSeparate && "rounded-tr-md",
-							isNextSeparate && "rounded-br-md rounded-bl-md ",
+							isSeparate && "rounded-t-xl",
+							isNextSeparate && "rounded-br-xl rounded-bl-xl ",
 						)}
 						disableDefaultStyles
 					/>

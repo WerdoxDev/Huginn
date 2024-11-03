@@ -1,9 +1,11 @@
-import type { APIUser, GatewayUserUpdateData } from "@huginn/shared";
+import type { APIUser, GatewayUserUpdateData, TokenPayload } from "@huginn/shared";
 import type { ReactNode } from "@tanstack/react-router";
+import * as jose from "jose";
 import { createContext } from "react";
 
 type UserContextType = {
 	user?: APIUser;
+	tokenPayload?: TokenPayload;
 	setUser: (user?: APIUser) => void;
 };
 
@@ -14,6 +16,7 @@ export function UserProvider(props: { children?: ReactNode }) {
 	const { dispatchEvent } = useEvent();
 
 	const [user, setUser] = useState(() => client.user);
+	const tokenPayload = useMemo(() => (client.tokenHandler.token ? (jose.decodeJwt(client.tokenHandler.token) as TokenPayload) : undefined), [user]);
 
 	function userUpdated(user: GatewayUserUpdateData) {
 		setUser(user);
@@ -28,7 +31,7 @@ export function UserProvider(props: { children?: ReactNode }) {
 		};
 	}, []);
 
-	return <UserContext.Provider value={{ user, setUser }}>{props.children}</UserContext.Provider>;
+	return <UserContext.Provider value={{ user, setUser, tokenPayload }}>{props.children}</UserContext.Provider>;
 }
 
 export function useUser() {

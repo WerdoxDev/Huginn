@@ -4,6 +4,7 @@ export default function ImageSelector(props: {
 	className?: string;
 	editButtonClassName?: string;
 	deleteButtonClassName?: string;
+	buttonsClassName?: string;
 	data?: string | null;
 	size?: string;
 	onDelete?: () => void;
@@ -53,7 +54,7 @@ export default function ImageSelector(props: {
 					<div className="bg-primary" style={{ width: size, height: size }} />
 				)}
 			</div>
-			<div className="mt-3 flex w-full items-center justify-center gap-x-0.5">
+			<div className={clsx("mt-3 flex w-full items-center justify-center gap-x-0.5", props.buttonsClassName)}>
 				<Tooltip>
 					<Tooltip.Trigger
 						onClick={openFileDialog}
