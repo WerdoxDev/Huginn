@@ -8,6 +8,7 @@ export type DirectChannel = Merge<APIDMChannel, APIGroupDMChannel>;
 
 export type TokenPayload = {
 	id: Snowflake;
+	isOAuth: boolean;
 };
 
 export type IdentityTokenPayload = {

@@ -95,9 +95,7 @@ export enum FieldCode {
 }
 
 export enum OAuthCode {
-	EMAIL_EXISTS = "EMAIL_EXISTS",
-	NOT_FOUND = "NOT_FOUND",
-	INVALID = "INVALID",
+	CANCELLED = "CANCELLED",
 }
 
 // Detailed errors that happen to a normal user
@@ -152,9 +150,6 @@ export const Errors = {
 	},
 	malformedBody(): [string, JsonCode] {
 		return ["Malformed Body", JsonCode.NONE];
-	},
-	cancelled(): [string, JsonCode] {
-		return ["Cancelled", JsonCode.NONE];
 	},
 	websocketFail(): [string, JsonCode] {
 		return ["Websocket Upgrade Failed", JsonCode.NONE];

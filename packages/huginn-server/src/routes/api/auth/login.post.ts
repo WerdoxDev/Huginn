@@ -30,7 +30,7 @@ router.post(
 		if (error) throw error;
 
 		const [accessToken, refreshToken] = await createTokens(
-			{ id: user.id },
+			{ id: user.id, isOAuth: false },
 			constants.ACCESS_TOKEN_EXPIRE_TIME,
 			constants.REFRESH_TOKEN_EXPIRE_TIME,
 		);

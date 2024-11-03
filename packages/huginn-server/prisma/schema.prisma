@@ -74,5 +74,5 @@ model IdentityProvider {
    userId         BigInt?
    completed      Boolean
    providerType   String
-   refreshToken   String?
+   refreshToken   String
 }

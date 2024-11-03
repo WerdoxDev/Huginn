@@ -46,8 +46,8 @@ export function validateDisplayName(displayName: string | undefined | null, erro
 	return false;
 }
 
-export function validateCorrectPassword(password: string | undefined, correctPassword: string, errorObject: ErrorFactory) {
-	if (password && password !== correctPassword) {
+export function validateCorrectPassword(password: string | undefined, correctPassword: string | null, errorObject: ErrorFactory) {
+	if (password && correctPassword && password !== correctPassword) {
 		errorObject.addError("password", Fields.passwordIncorrect());
 		return false;
 	}
@@ -55,9 +55,9 @@ export function validateCorrectPassword(password: string | undefined, correctPas
 	return true;
 }
 
-export function validatePassword(password: string | undefined, errorObject: ErrorFactory) {
+export function validatePassword(password: string | undefined, errorObject: ErrorFactory, fieldName = "password") {
 	if (password && password.length < constants.PASSWORD_MIN_LENGTH) {
-		errorObject.addError("password", Fields.wrongLength(constants.PASSWORD_MIN_LENGTH));
+		errorObject.addError(fieldName, Fields.wrongLength(constants.PASSWORD_MIN_LENGTH));
 		return false;
 	}
 

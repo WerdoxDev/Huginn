@@ -1,5 +1,5 @@
-import { forbidden, singleError, useValidatedQuery } from "@huginn/backend-shared";
-import { constants, CDNRoutes, Errors, HttpCode, OAuthCode, RequestMethod, WorkerID, getFileHash, idFix, snowflake } from "@huginn/shared";
+import { forbidden, useValidatedQuery } from "@huginn/backend-shared";
+import { constants, CDNRoutes, HttpCode, OAuthCode, RequestMethod, WorkerID, getFileHash, idFix, snowflake } from "@huginn/shared";
 import { toSnakeCase } from "@std/text";
 import { defineEventHandler, getHeader, getRequestProtocol, sendNoContent, sendRedirect, useSession } from "h3";
 import { z } from "zod";
@@ -64,22 +64,12 @@ router.get(
 				token: response.access_token,
 			});
 
-			if (action === "login") {
-				const identityProvider = idFix(await prisma.identityProvider.findUnique({ where: { providerUserId: googleUser.id } }));
+			const identityProvider = idFix(await prisma.identityProvider.findUnique({ where: { providerUserId: googleUser.id } }));
 
-				// Identity provider is not completed or does not exist
-				if (!identityProvider || !identityProvider.userId || !identityProvider.completed) {
-					dispatchToTopic(state, "oauth_redirect", { error: OAuthCode.NOT_FOUND });
-
-					const redirectUrl = new URL(flow === "browser" ? redirect_url : `${host}/static/redirect.html`);
-					redirectUrl.searchParams.set("flow", flow);
-					redirectUrl.searchParams.set("error", OAuthCode.NOT_FOUND);
-
-					return sendRedirect(event, redirectUrl.toString(), HttpCode.FOUND);
-				}
-
+			// Identity provider exists and is completed
+			if (identityProvider?.completed && identityProvider?.userId) {
 				const [accessToken, refreshToken] = await createTokens(
-					{ id: identityProvider.userId },
+					{ id: identityProvider.userId, isOAuth: true },
 					constants.ACCESS_TOKEN_EXPIRE_TIME,
 					constants.REFRESH_TOKEN_EXPIRE_TIME,
 				);
@@ -93,73 +83,60 @@ router.get(
 
 				return sendRedirect(event, redirectUrl.toString(), HttpCode.FOUND);
 			}
-			if (action === "register") {
-				// A user already exists with that email
-				if (await prisma.user.exists({ email: googleUser.email })) {
-					dispatchToTopic(state, "oauth_redirect", { error: OAuthCode.EMAIL_EXISTS });
 
-					const redirectUrl = new URL(flow === "browser" ? redirect_url : `${host}/static/redirect.html`);
-					redirectUrl.searchParams.set("flow", flow);
-					redirectUrl.searchParams.set("error", OAuthCode.EMAIL_EXISTS);
+			// Does not exist or is not completed
+			const upsertedIdentityProvider = await prisma.identityProvider.upsert({
+				where: { providerUserId: googleUser.id },
+				create: {
+					id: snowflake.generate(WorkerID.IDENTITY_PROVIDER),
+					providerType: "google",
+					providerUserId: googleUser.id,
+					refreshToken: response.refresh_token,
+					completed: false,
+				},
+				update: {},
+			});
 
-					return sendRedirect(event, redirectUrl.toString(), HttpCode.FOUND);
-				}
-
-				const identityProvider = await prisma.identityProvider.upsert({
-					where: { providerUserId: googleUser.id },
-					create: {
-						id: snowflake.generate(WorkerID.IDENTITY_PROVIDER),
-						providerType: "google",
-						providerUserId: googleUser.id,
-						refreshToken: response.refresh_token,
-						completed: false,
-					},
-					update: { refreshToken: response.refresh_token },
-				});
-
-				let avatarHash: null | string = null;
-				if (googleUser.picture) {
-					const avatarData = await (await fetch(googleUser.picture.replace("s96-c", "s256-c"))).arrayBuffer();
-					avatarHash = getFileHash(avatarData);
-					avatarHash = (
-						await cdnUpload<string>(CDNRoutes.uploadAvatar(googleUser.id), { files: [{ data: avatarData, name: avatarHash }] })
-					).split(".")[0];
-				}
-
-				const [token] = await createTokens(
-					{
-						providerId: identityProvider.id.toString(),
-						providerUserId: identityProvider.providerUserId,
-						email: googleUser.email,
-						username: toSnakeCase(googleUser.name),
-						fullName: googleUser.name,
-						avatarHash: avatarHash,
-					},
-					constants.IDENTITY_TOKEN_EXPIRE_TIME,
-					"",
-				);
-
-				dispatchToTopic(state, "oauth_redirect", { token: token });
-				gateway.getSessionByKey(peer_id)?.unsubscribe(state);
-
-				const redirectUrl = new URL(flow === "browser" ? redirect_url : `${host}/static/redirect.html`);
-				redirectUrl.searchParams.set("flow", flow);
-				redirectUrl.searchParams.set("token", token);
-
-				return sendRedirect(event, redirectUrl.toString(), HttpCode.FOUND);
+			let avatarHash: null | string = null;
+			if (googleUser.picture) {
+				const avatarData = await (await fetch(googleUser.picture.replace("s96-c", "s256-c"))).arrayBuffer();
+				avatarHash = getFileHash(avatarData);
+				console.log(avatarHash);
+				avatarHash = (await cdnUpload<string>(CDNRoutes.uploadAvatar(googleUser.id), { files: [{ data: avatarData, name: avatarHash }] })).split(
+					".",
+				)[0];
 			}
 
-			// Action is invalid
-			dispatchToTopic(state, "oauth_redirect", { error: OAuthCode.INVALID });
+			const [token] = await createTokens(
+				{
+					providerId: upsertedIdentityProvider.id.toString(),
+					providerUserId: upsertedIdentityProvider.providerUserId,
+					email: googleUser.email,
+					username: toSnakeCase(googleUser.name),
+					fullName: googleUser.name,
+					avatarHash: avatarHash,
+				},
+				constants.IDENTITY_TOKEN_EXPIRE_TIME,
+				"",
+			);
+
+			dispatchToTopic(state, "oauth_redirect", { token: token });
+			gateway.getSessionByKey(peer_id)?.unsubscribe(state);
 
 			const redirectUrl = new URL(flow === "browser" ? redirect_url : `${host}/static/redirect.html`);
 			redirectUrl.searchParams.set("flow", flow);
-			redirectUrl.searchParams.set("error", OAuthCode.INVALID);
+			redirectUrl.searchParams.set("token", token);
 
 			return sendRedirect(event, redirectUrl.toString(), HttpCode.FOUND);
 		}
+
+		// User clicked "Cancel"
 		if (error === "access_denied") {
-			return singleError(event, Errors.cancelled(), HttpCode.BAD_REQUEST);
+			const redirectUrl = new URL(flow === "browser" ? new URL(redirect_url).origin : `${host}/static/redirect.html`);
+			redirectUrl.searchParams.set("flow", flow);
+			redirectUrl.searchParams.set("error", OAuthCode.CANCELLED);
+
+			return sendRedirect(event, redirectUrl.toString(), HttpCode.FOUND);
 		}
 		if (error || !state) {
 			return forbidden(event);

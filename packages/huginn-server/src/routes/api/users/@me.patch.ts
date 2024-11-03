@@ -25,6 +25,7 @@ import {
 	validateDisplayName,
 	validateEmail,
 	validateEmailUnique,
+	validatePassword,
 	validateUsername,
 	validateUsernameUnique,
 } from "#utils/validation";
@@ -49,8 +50,9 @@ router.patch(
 		validateUsername(body.username, formError);
 		validateDisplayName(body.displayName, formError);
 		validateEmail(body.email, formError);
+		validatePassword(body.newPassword, formError, "newPassword");
 
-		if ((body.username ?? body.newPassword) && !body.password) {
+		if (body.newPassword && !body.password) {
 			formError.addError("password", Fields.required());
 		}
 
@@ -61,7 +63,7 @@ router.patch(
 		const databaseError = createErrorFactory(Errors.invalidFormBody());
 
 		const user = idFix(await prisma.user.getById(payload.id));
-		validateCorrectPassword(body.password, user.password || "", databaseError);
+		validateCorrectPassword(body.password, user.password, databaseError);
 
 		await validateUsernameUnique(body.username, databaseError);
 		await validateEmailUnique(body.email, databaseError);
@@ -96,7 +98,7 @@ router.patch(
 		);
 
 		const [accessToken, refreshToken] = await createTokens(
-			{ id: payload.id },
+			{ id: payload.id, isOAuth: payload.isOAuth },
 			constants.ACCESS_TOKEN_EXPIRE_TIME,
 			constants.REFRESH_TOKEN_EXPIRE_TIME,
 		);
