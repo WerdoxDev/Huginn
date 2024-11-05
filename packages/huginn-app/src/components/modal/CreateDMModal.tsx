@@ -53,7 +53,7 @@ export default function CreateDMModal() {
 		<>
 			<DialogPanel
 				transition
-				className="w-full max-w-md transform overflow-hidden rounded-xl border-2 border-primary bg-background transition-[opacity_transform] data-[closed]:scale-95"
+				className="w-full max-w-md transform overflow-hidden rounded-xl border-2 border-primary bg-background transition-[opacity_transform] duration-200 data-[closed]:scale-90"
 			>
 				<DialogTitle className="flex items-center justify-center gap-x-1.5">
 					<div className="mt-5 font-medium text-2xl text-text">Create Direct Message</div>

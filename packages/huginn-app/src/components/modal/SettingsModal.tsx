@@ -111,26 +111,31 @@ export default function SettingsModal() {
 	}
 
 	return (
-		<DialogPanel className="flex h-[30rem] w-full max-w-3xl transform rounded-xl border-2 border-primary/50 bg-background transition-[opacity_transform] data-[closed]:scale-95">
-			<TabGroup className="flex w-full" vertical defaultIndex={defaultTabIndex} onChange={onTabChanged}>
-				<div className="h-full rounded-l-xl bg-secondary/50">
-					<TabList className="flex h-full w-48 select-none flex-col py-2">
-						<DialogTitle className="mx-5 my-3 flex items-center justify-start gap-x-1.5">
-							<div className="font-medium text-2xl text-text">Settings</div>
-						</DialogTitle>
-						<SettingsTabs />
-					</TabList>
-				</div>
-				{settingsValid && modifiedSettings.current && (
-					<SettingsPanels currentTab={currentTab} settings={modifiedSettings.current} onChange={onSettingsChanged} onSave={onSave} />
-				)}
-			</TabGroup>
-			<ModalCloseButton
-				onClick={() => {
-					dispatch({ settings: { isOpen: false } });
-				}}
-			/>
-		</DialogPanel>
+		<div className="h-full w-full p-10">
+			<DialogPanel
+				transition
+				className="h-full transform rounded-xl border-2 border-primary/50 bg-background transition-[opacity_transform] duration-200 data-[closed]:scale-90"
+			>
+				<TabGroup className="flex h-full w-full" vertical defaultIndex={defaultTabIndex} onChange={onTabChanged}>
+					<div className="h-full rounded-l-xl bg-secondary/50">
+						<TabList className="flex h-full w-48 select-none flex-col py-2">
+							<DialogTitle className="mx-5 my-3 flex items-center justify-start gap-x-1.5">
+								<div className="font-medium text-2xl text-text">Settings</div>
+							</DialogTitle>
+							<SettingsTabs />
+						</TabList>
+					</div>
+					{settingsValid && modifiedSettings.current && (
+						<SettingsPanels currentTab={currentTab} settings={modifiedSettings.current} onChange={onSettingsChanged} onSave={onSave} />
+					)}
+				</TabGroup>
+				<ModalCloseButton
+					onClick={() => {
+						dispatch({ settings: { isOpen: false } });
+					}}
+				/>
+			</DialogPanel>
+		</div>
 	);
 }
 

@@ -114,46 +114,53 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 	return (
 		<>
 			<div className="flex items-start gap-x-5">
-				<ImageSelector data={avatarData} onDelete={onDelete} onSelected={onSelected} className="p-4" buttonsClassName="mt-4" />
-				<div className="mb-24 flex w-full flex-col gap-y-5 rounded-lg bg-secondary p-4">
-					<HuginnInput {...inputsProps.username} onFocusChanged={onFocusChanged}>
-						<HuginnInput.Label text="Username" className="mb-2" />
-						<HuginnInput.Wrapper className="!bg-background" border="left">
-							<HuginnInput.Input className="lowercase" />
-						</HuginnInput.Wrapper>
-						<AnimatedMessage className="mt-1" {...usernameMessageDetail} />
-					</HuginnInput>
+				<ImageSelector data={avatarData} onDelete={onDelete} onSelected={onSelected} className="p-4" buttonsClassName="mt-4">
+					<div className="mb-4 font-semibold text-text">Profile Picture</div>
+				</ImageSelector>
+				<div className="flex w-full max-w-xs flex-col gap-y-2">
+					<div className="rounded-lg bg-secondary p-4">
+						<div className="mb-4 font-semibold text-text">Personal Information</div>
+						<div className="flex flex-col gap-y-5">
+							<HuginnInput {...inputsProps.username} onFocusChanged={onFocusChanged}>
+								<HuginnInput.Label text="Username" className="mb-2" />
+								<HuginnInput.Wrapper className="!bg-background" border="left">
+									<HuginnInput.Input className="lowercase" />
+								</HuginnInput.Wrapper>
+								<AnimatedMessage className="mt-1" {...usernameMessageDetail} />
+							</HuginnInput>
 
-					<HuginnInput placeholder={user?.username} {...inputsProps.displayName}>
-						<HuginnInput.Label text="Display Name" className="mb-2" />
-						<HuginnInput.Wrapper className="!bg-background" border="left">
-							<HuginnInput.Input />
-						</HuginnInput.Wrapper>
-					</HuginnInput>
-
-					{!tokenPayload?.isOAuth && (
-						<>
-							<div className="my-5 flex h-0 w-full select-none items-center justify-center text-center font-semibold text-accent text-sm [border-top:thin_solid_rgb(var(--color-text)/0.25)]">
-								<span className="bg-secondary px-2 uppercase">change password</span>
-							</div>
-
-							<PasswordInput {...inputsProps.password} type="password">
-								<HuginnInput.Label text="Current Password" className="mb-2" />
+							<HuginnInput placeholder={user?.username} {...inputsProps.displayName}>
+								<HuginnInput.Label text="Display Name" className="mb-2" />
 								<HuginnInput.Wrapper className="!bg-background" border="left">
 									<HuginnInput.Input />
-									<PasswordInput.ToggleButton />
 								</HuginnInput.Wrapper>
-							</PasswordInput>
-							<PasswordInput {...inputsProps.newPassword} type="password">
-								<HuginnInput.Label text="New Password" className="mb-2" />
-								<HuginnInput.Wrapper className="!bg-background" border="left">
-									<HuginnInput.Input />
-									<PasswordInput.ToggleButton />
-								</HuginnInput.Wrapper>
-							</PasswordInput>
-						</>
-					)}
+							</HuginnInput>
+						</div>
+					</div>
 				</div>
+				{!tokenPayload?.isOAuth && (
+					<div className="flex w-full max-w-xs flex-col gap-y-2">
+						<div className="rounded-lg bg-secondary p-4">
+							<div className="mb-4 font-semibold text-text">Security</div>
+							<div className="flex flex-col gap-y-5 ">
+								<PasswordInput {...inputsProps.password} type="password">
+									<HuginnInput.Label text="Current Password" className="mb-2" />
+									<HuginnInput.Wrapper className="!bg-background" border="left">
+										<HuginnInput.Input />
+										<PasswordInput.ToggleButton className="border-l-secondary" />
+									</HuginnInput.Wrapper>
+								</PasswordInput>
+								<PasswordInput {...inputsProps.newPassword} type="password">
+									<HuginnInput.Label text="New Password" className="mb-2" />
+									<HuginnInput.Wrapper className="!bg-background" border="left">
+										<HuginnInput.Input />
+										<PasswordInput.ToggleButton className="border-l-secondary" />
+									</HuginnInput.Wrapper>
+								</PasswordInput>
+							</div>
+						</div>
+					</div>
+				)}
 			</div>
 			<Transition show={modified || avatarModified}>
 				<div className="absolute right-9 bottom-5 left-[13.25rem] flex transform justify-end gap-x-2 rounded-xl border-2 border-primary/50 bg-secondary p-2 shadow-sm transition data-[closed]:translate-y-10 data-[closed]:opacity-0">

@@ -7,6 +7,7 @@ export default function ImageSelector(props: {
 	buttonsClassName?: string;
 	data?: string | null;
 	size?: string;
+	children?: ReactNode;
 	onDelete?: () => void;
 	onSelected?: (data: string, mimeType: string) => void;
 }) {
@@ -47,6 +48,7 @@ export default function ImageSelector(props: {
 
 	return (
 		<div className={clsx("flex w-max shrink-0 flex-col rounded-lg bg-secondary p-3", props.className)}>
+			{props.children}
 			<div onClick={openFileDialog} className="group relative cursor-pointer overflow-hidden rounded-full bg-black">
 				{props.data ? (
 					<img alt="editing-user-avatar" className="object-cover" style={{ width: size, height: size }} src={props.data} />

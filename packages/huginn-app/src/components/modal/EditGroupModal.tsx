@@ -62,7 +62,10 @@ export default function EditGroupModal() {
 	}
 
 	return (
-		<DialogPanel className="w-full max-w-lg transform overflow-hidden rounded-xl border-2 border-primary bg-background transition-[opacity_transform] data-[closed]:scale-95">
+		<DialogPanel
+			transition
+			className="w-full max-w-lg transform overflow-hidden rounded-xl border-2 border-primary bg-background transition-[opacity_transform] duration-200 data-[closed]:scale-90"
+		>
 			<DialogTitle className="mt-5 flex items-center justify-center gap-x-1.5">
 				<div className="font-medium text-2xl text-text">Edit Group</div>
 			</DialogTitle>

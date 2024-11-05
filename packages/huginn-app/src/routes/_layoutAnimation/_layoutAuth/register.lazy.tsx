@@ -108,9 +108,9 @@ function Register() {
 						</HuginnInput.Wrapper>
 					</HuginnInput>
 				</div>
-				<AnimatedMessage className="mt-1 mb-5" {...usernameMessageDetail} />
+				<AnimatedMessage className="mt-1" {...usernameMessageDetail} />
 
-				<HuginnInput className="mb-5" {...inputsProps.email}>
+				<HuginnInput className="mt-5 mb-5" {...inputsProps.email}>
 					<HuginnInput.Label text="Email" className="mb-2" />
 					<HuginnInput.Wrapper border="left">
 						<HuginnInput.Input />

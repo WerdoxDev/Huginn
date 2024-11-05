@@ -1,3 +1,5 @@
+import { convert } from "magic-regexp/converter";
+
 type TokenType = "bold" | "italic" | "underline" | "spoiler";
 
 type Token = {
@@ -26,7 +28,9 @@ export function tokenize(text: string) {
 		{ type: "italic", pattern: /(?<!_)(_)([^ ].*?)(_)(?!_)/g },
 		{ type: "spoiler", pattern: /(\|\|)(.+?)(\|\|)/g },
 	];
-	// console.log(text);
+
+	const test = convert(/(?<!\*)(\*\*)(.+)(\*\*)(?!\*)/g);
+	console.log(test);
 
 	for (const { type, pattern } of patterns) {
 		let match: RegExpExecArray | null;

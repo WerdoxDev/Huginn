@@ -6,10 +6,15 @@ export default function BaseModal(props: { modal: { isOpen: boolean }; onClose: 
 	const appWindow = useWindow();
 	return (
 		<Suspense>
-			<Dialog open={props.modal.isOpen} transition onClose={props.onClose} className="relative z-10 transition data-[closed]:opacity-0">
+			<Dialog
+				open={props.modal.isOpen}
+				transition
+				onClose={props.onClose}
+				className="relative z-10 transition data-[closed]:opacity-0 duration-200"
+			>
 				<ModalBackground />
 				<div className={clsx("fixed inset-0", appWindow.environment === "desktop" && "top-6")}>
-					<div className="flex h-full items-center justify-center">{props.renderChildren}</div>
+					<div className="flex h-full w-full items-center justify-center">{props.renderChildren}</div>
 				</div>
 			</Dialog>
 		</Suspense>

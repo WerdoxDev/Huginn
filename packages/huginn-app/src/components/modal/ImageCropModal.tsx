@@ -42,7 +42,10 @@ export default function ImageCropModal() {
 	}, [modal.isOpen]);
 
 	return (
-		<DialogPanel className="flex transform flex-col overflow-hidden rounded-xl border-2 border-primary/50 bg-background transition-[opacity_transform] data-[closed]:scale-95">
+		<DialogPanel
+			transition
+			className="flex transform flex-col overflow-hidden rounded-xl border-2 border-primary/50 bg-background transition-[opacity_transform] duration-200 data-[closed]:scale-90"
+		>
 			<div className="m-5 mb-0 flex h-[30rem] w-[30rem] items-center justify-center rounded-lg bg-black/50">
 				<Cropper
 					ref={cropperRef}

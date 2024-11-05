@@ -1,4 +1,5 @@
 import type { StatusCode } from "@/types";
+import clsx from "clsx";
 
 export default function AnimatedMessage(props: { className?: string; status: StatusCode; visible: boolean; text: string }) {
 	const text = useRef<HTMLDivElement>(null);
@@ -19,8 +20,8 @@ export default function AnimatedMessage(props: { className?: string; status: Sta
 	}, [props.text]);
 
 	return (
-		<div className={`select-none transition-[height] ${props.className}`} style={{ height: props.visible ? maxHeight : "0px" }}>
-			<div ref={text} className={`text-sm transition-opacity ${props.visible ? "opacity-90" : "opacity-0"} ${textColor}`}>
+		<div className="select-none transition-[height]" style={{ height: props.visible ? maxHeight : "0px" }}>
+			<div ref={text} className={clsx("text-sm transition-opacity", props.className, props.visible ? "opacity-90" : "opacity-0", textColor)}>
 				{props.text}
 			</div>
 		</div>
