@@ -1,5 +1,6 @@
 import type { MessageRendererProps } from "@/types";
 import { MessageType } from "@huginn/shared";
+import { intersect } from "@std/collections/intersect";
 import clsx from "clsx";
 import { type Node, type Path, type Range, Text, createEditor } from "slate";
 import { DefaultElement, type RenderElementProps, type RenderLeafProps, withReact } from "slate-react";
@@ -7,7 +8,7 @@ import { DefaultElement, type RenderElementProps, type RenderLeafProps, withReac
 const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, ref) => {
 	const editor = useMemo(() => withReact(createEditor()), []);
 
-	const lastRanges = useRef<Range[]>();
+	const lastRanges = useRef<Range[]>([]);
 
 	const renderLeaf = useCallback((props: RenderLeafProps) => {
 		return <MessageLeaf {...props} />;
@@ -18,14 +19,14 @@ const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, 
 	}, []);
 
 	function decorate([node, path]: [Node, Path]) {
-		if (lastRanges.current) {
-			return [...lastRanges.current];
-		}
-
 		const ranges: Range[] = [];
 
 		if (!Text.isText(node)) {
 			return ranges;
+		}
+
+		if (lastRanges.current?.some((x) => x.anchor.path[0] === path[0] && x.anchor.path[1] === path[1])) {
+			return [...lastRanges.current.filter((x) => x.anchor.path[0] === path[0] && x.anchor.path[1] === path[1])];
 		}
 
 		const tokens = tokenize(node.text).sort((a, b) => a.start - b.start);
@@ -41,9 +42,9 @@ const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, 
 			skippedCharacters += (token.mark?.length ?? 0) * 2;
 		}
 
-		lastRanges.current = ranges;
+		lastRanges.current.push(...ranges);
 
-		return ranges;
+		return [...lastRanges.current.filter((x) => x.anchor.path[0] === path[0] && x.anchor.path[1] === path[1])];
 	}
 
 	return (

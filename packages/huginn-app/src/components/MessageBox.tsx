@@ -36,6 +36,7 @@ export default function MessageBox() {
 			return ranges;
 		}
 
+		console.log(node.text, "TEXT");
 		const tokens = tokenize(node.text);
 
 		for (const token of tokens) {

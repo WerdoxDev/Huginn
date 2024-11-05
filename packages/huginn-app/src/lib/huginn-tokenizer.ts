@@ -1,5 +1,3 @@
-import { convert } from "magic-regexp/converter";
-
 type TokenType = "bold" | "italic" | "underline" | "spoiler";
 
 type Token = {
@@ -16,41 +14,48 @@ type Pattern = {
 	pattern: RegExp;
 };
 
+type Group = { type: TokenType; groups: { startMark: string; content: string; endMark: string } };
+
+const groups: Group[] = [
+	{ type: "bold", groups: { startMark: "msb", content: "cb", endMark: "meb" } },
+	{ type: "italic", groups: { startMark: "msi", content: "ci", endMark: "mei" } },
+	{ type: "underline", groups: { startMark: "msu", content: "cu", endMark: "meu" } },
+];
+
 export function tokenize(text: string) {
 	const tokens: Token[] = [];
 
 	// console.log(text);
 
-	const patterns: Pattern[] = [
-		{ type: "bold", pattern: /(?<!\*)(\*\*)(.+?)(\*\*)(?!\*)/g },
-		{ type: "underline", pattern: /(?<!_)(__)(.+?)(__)(?!_)/g },
-		{ type: "italic", pattern: /(?<!\*)(\*)([^ ].*?)(\*)(?!\*)/g },
-		{ type: "italic", pattern: /(?<!_)(_)([^ ].*?)(_)(?!_)/g },
-		{ type: "spoiler", pattern: /(\|\|)(.+?)(\|\|)/g },
+	const patterns: RegExp[] = [
+		/(?<msi>\_(?!\_))(?<ci>[a-zA-Z0-9]*[^\_])(?<mei>\_(?!\_))|(?<msu>\_\_)(?<cu>.+?)(?<meu>\_\_)/g,
+		/(?<msi>\*(?!\*))(?<ci>[a-zA-Z0-9]*[^\*])(?<mei>\*(?!\*))|(?<msb>\*\*)(?<cb>.+?)(?<meb>\*\*)/g,
 	];
+	// console.log(text);
 
-	const test = convert(/(?<!\*)(\*\*)(.+)(\*\*)(?!\*)/g);
-	console.log(test);
-
-	for (const { type, pattern } of patterns) {
+	for (const pattern of patterns) {
 		let match: RegExpExecArray | null;
 		// biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
 		while ((match = pattern.exec(text)) !== null) {
-			const [fullMatch, startMarkers, content, _endMarkers] = match;
-			const start = match.index;
-			const end = start + (fullMatch.length - 1);
+			const groupKeys = Object.keys(match.groups || {}).filter((x) => match?.groups?.[x]);
+			for (const group of groups.filter((x) => Object.values(x.groups).some((y) => groupKeys.includes(y)))) {
+				const fullMatch = match[0];
+				const start = match.index;
+				const end = start + (fullMatch.length - 1);
+				const content = match.groups?.[group.groups.content];
+				const startMarkers = match.groups?.[group.groups.startMark];
 
-			// console.log(fullMatch);
-			//end > start, start >
-			if (tokens.filter((x) => x.start === start || x.end === start || x.end === end).length === 0) {
-				tokens.push({
-					type: type,
-					fullText: text.slice(start, end + 1),
-					content: content,
-					start: start,
-					end: end,
-					mark: startMarkers,
-				});
+				//end > start, start >
+				if (tokens.filter((x) => x.start === start || x.end === start || x.end === end).length === 0) {
+					tokens.push({
+						type: group.type,
+						fullText: text.slice(start, end + 1),
+						content: content || "",
+						start: start,
+						end: end,
+						mark: startMarkers,
+					});
+				}
 			}
 		}
 	}
