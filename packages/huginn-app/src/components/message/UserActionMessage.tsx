@@ -25,6 +25,7 @@ export default function UserActionMessage(props: MessageRendererProps) {
 			{type === MessageType.RECIPIENT_ADD && <IconMingcuteArrowRightFill className="mr-4 size-5 text-success" />}
 			{type === MessageType.CHANNEL_NAME_CHANGED && <IconMingcuteEdit2Fill className="mr-4 size-5 text-text/80" />}
 			{type === MessageType.CHANNEL_ICON_CHANGED && <IconMingcutePic2Fill className="mr-4 size-5 text-text/80" />}
+			{type === MessageType.CHANNEL_OWNER_CHANGED && <IconMingcuteTransfer3Fill className="mr-4 size-5 text-accent" />}
 			<div>
 				<span className="font-bold">{author}</span>
 				{type === MessageType.CHANNEL_ICON_CHANGED && <span className="text-text"> changed the channel icon</span>}
@@ -41,7 +42,14 @@ export default function UserActionMessage(props: MessageRendererProps) {
 					<>
 						{type === MessageType.RECIPIENT_ADD && <span className="text-text/50"> added </span>}
 						{type === MessageType.RECIPIENT_REMOVE && <span className="text-text/50"> removed </span>}
+						{type === MessageType.CHANNEL_OWNER_CHANGED && <span className="text-text/50"> promoted </span>}
 						<span className="font-bold">{mention}</span>
+						{type === MessageType.CHANNEL_OWNER_CHANGED && (
+							<span className="text-text/50">
+								{" "}
+								to <span className="text-accent">Channel Owner</span>
+							</span>
+						)}
 					</>
 				) : (
 					type === MessageType.RECIPIENT_REMOVE && <span className="text-text/50"> left the group</span>

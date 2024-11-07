@@ -3,6 +3,7 @@ export default function ChannelRecipientContextMenu() {
 	const { user } = useUser();
 	const deleteMutation = useRemoveChannelRecipient();
 	const createMutation = useCreateDMChannel();
+	const editMutation = usePatchDMChannel();
 	const { ownerId } = useChannelRecipients(data?.channelId, "@me");
 
 	if (!data || !user) return;
@@ -11,6 +12,24 @@ export default function ChannelRecipientContextMenu() {
 		<>
 			{data.recipient.id !== user.id && (
 				<>
+					<ContextMenu.Item
+						label="Message"
+						onClick={() => {
+							createMutation.mutate({ recipients: [data.recipient.id] });
+						}}
+					/>
+					{user.id === ownerId && (
+						<ContextMenu.Item
+							label="Promote to Owner"
+							onClick={() => {
+								editMutation.mutate({
+									channelId: data.channelId,
+									owner: data.recipient.id,
+								});
+							}}
+							className="!text-error focus:!bg-error/80 focus:!text-white"
+						/>
+					)}
 					{user.id === ownerId && (
 						<ContextMenu.Item
 							label="Remove Member"
@@ -23,12 +42,6 @@ export default function ChannelRecipientContextMenu() {
 							className="!text-error focus:!bg-error/80 focus:!text-white"
 						/>
 					)}
-					<ContextMenu.Item
-						label="Message"
-						onClick={() => {
-							createMutation.mutate({ recipients: [data.recipient.id] });
-						}}
-					/>
 					<ContextMenu.Divider />
 				</>
 			)}

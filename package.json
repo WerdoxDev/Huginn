@@ -12,5 +12,6 @@
 		"tauri": " cd packages/huginn-app && bun run tauri-dev"
 	},
 	"type": "module",
-	"workspaces": ["packages/*"]
+	"workspaces": ["packages/*"],
+	"packageManager": "bun@latest"
 }

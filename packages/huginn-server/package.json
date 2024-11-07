@@ -34,5 +34,6 @@
 	"imports": {
 		"#database": "./src/database/index.ts",
 		"#*": "./src/*.ts"
-	}
+	},
+	"packageManager": "bun@latest"
 }

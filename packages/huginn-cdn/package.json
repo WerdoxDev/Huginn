@@ -22,5 +22,6 @@
 	},
 	"imports": {
 		"#*": "./src/*.ts"
-	}
+	},
+	"packageManager": "bun@latest"
 }

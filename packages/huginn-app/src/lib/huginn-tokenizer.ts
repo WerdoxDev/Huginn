@@ -9,29 +9,23 @@ type Token = {
 	mark?: string;
 };
 
-type Pattern = {
-	type: TokenType;
-	pattern: RegExp;
-};
-
 type Group = { type: TokenType; groups: { startMark: string; content: string; endMark: string } };
 
 const groups: Group[] = [
 	{ type: "bold", groups: { startMark: "msb", content: "cb", endMark: "meb" } },
 	{ type: "italic", groups: { startMark: "msi", content: "ci", endMark: "mei" } },
 	{ type: "underline", groups: { startMark: "msu", content: "cu", endMark: "meu" } },
+	{ type: "spoiler", groups: { startMark: "mss", content: "cs", endMark: "mes" } },
 ];
 
 export function tokenize(text: string) {
 	const tokens: Token[] = [];
 
-	// console.log(text);
-
 	const patterns: RegExp[] = [
 		/(?<msi>\_(?!\_))(?<ci>[a-zA-Z0-9]*[^\_])(?<mei>\_(?!\_))|(?<msu>\_\_)(?<cu>.+?)(?<meu>\_\_)/g,
 		/(?<msi>\*(?!\*))(?<ci>[a-zA-Z0-9]*[^\*])(?<mei>\*(?!\*))|(?<msb>\*\*)(?<cb>.+?)(?<meb>\*\*)/g,
+		/(?<mss>\|\|)(?<cs>.+?)(?<mes>\|\|)/g,
 	];
-	// console.log(text);
 
 	for (const pattern of patterns) {
 		let match: RegExpExecArray | null;

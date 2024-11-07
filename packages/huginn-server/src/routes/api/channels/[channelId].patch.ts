@@ -54,7 +54,9 @@ router.patch(
 			channelIconHash = null;
 		}
 
-		const updatedChannel = idFix(await prisma.channel.editDM(channelId, { name: body.name, icon: channelIconHash }, includeChannelRecipients));
+		const updatedChannel = idFix(
+			await prisma.channel.editDM(channelId, { name: body.name, icon: channelIconHash, owner: body.owner }, includeChannelRecipients),
+		);
 
 		for (const recipient of updatedChannel.recipients) {
 			dispatchChannel(updatedChannel, "channel_update", recipient.id);
@@ -74,6 +76,18 @@ router.patch(
 
 		if (channel.icon !== updatedChannel.icon) {
 			await dispatchMessage(payload.id, channelId, MessageType.CHANNEL_ICON_CHANGED, "", undefined, undefined, MessageFlags.NONE);
+		}
+
+		if (channel.ownerId !== updatedChannel.ownerId) {
+			await dispatchMessage(
+				payload.id,
+				channelId,
+				MessageType.CHANNEL_OWNER_CHANGED,
+				"",
+				undefined,
+				[updatedChannel.ownerId || ""],
+				MessageFlags.NONE,
+			);
 		}
 
 		setResponseStatus(event, HttpCode.OK);
