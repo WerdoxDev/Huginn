@@ -3,7 +3,9 @@
 	"module": "index.ts",
 	"type": "module",
 	"scripts": {
-		"dev": "bun --watch src/index.ts"
+		"dev": "bun --watch src/index.ts",
+		"prepare": "cd ../huginn-server && bunx prisma generate",
+		"start": "bun run prepare && bun run src/index.ts"
 	},
 	"dependencies": {
 		"@huginn/cdn": "workspace:*",

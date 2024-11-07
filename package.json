@@ -7,6 +7,7 @@
 	},
 	"private": "true",
 	"scripts": {
+		"bifrost": "cd packages/huginn-bifrost && bun start",
 		"server": "cd packages/huginn-server && bun start",
 		"cdn": "cd packages/huginn-cdn && bun start",
 		"tauri": " cd packages/huginn-app && bun run tauri-dev"
