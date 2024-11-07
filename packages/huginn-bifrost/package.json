@@ -14,5 +14,5 @@
 	"devDependencies": {
 		"@types/bun": "latest"
 	},
-	"packageManager": "bun@latest"
+	"packageManager": "bun@1.1.29"
 }

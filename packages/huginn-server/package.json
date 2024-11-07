@@ -35,5 +35,5 @@
 		"#database": "./src/database/index.ts",
 		"#*": "./src/*.ts"
 	},
-	"packageManager": "bun@latest"
+	"packageManager": "bun@1.1.29"
 }
