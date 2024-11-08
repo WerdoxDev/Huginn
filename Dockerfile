@@ -19,9 +19,10 @@ COPY . .
 RUN bun install
 
 # run the app
-RUN chown -R bun:bun packages/huginn-cdn/uploads
+# RUN mkdir -p packages/huginn-cdn/uploads
+# RUN chown -R bun:bun packages/huginn-cdn/uploads
 RUN chown -R bun:bun packages/huginn-server/package.json
-RUN chmod 755 packages/huginn-cdn/uploads
+# RUN chmod 755 packages/huginn-cdn/uploads
 RUN chmod 755 packages/huginn-server/package.json
 USER bun
 EXPOSE 3000/tcp
