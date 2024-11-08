@@ -15,5 +15,5 @@
 	},
 	"type": "module",
 	"workspaces": ["packages/*"],
-	"trustedDependencies": ["prisma"]
+	"trustedDependencies": ["prisma", "sharp"]
 }
