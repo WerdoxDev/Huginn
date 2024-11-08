@@ -4,8 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "bun --watch src/index.ts",
-		"prepare": "cd ../huginn-server && bunx prisma generate",
-		"start": "bun run prepare && bun run src/index.ts"
+		"start": "bun run src/index.ts"
 	},
 	"dependencies": {
 		"@huginn/cdn": "workspace:*",
@@ -15,6 +14,5 @@
 	},
 	"devDependencies": {
 		"@types/bun": "latest"
-	},
-	"packageManager": "bun@1.1.29"
+	}
 }
