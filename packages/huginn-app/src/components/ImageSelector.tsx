@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import type { ReactNode } from "react";
 
 export default function ImageSelector(props: {
 	className?: string;

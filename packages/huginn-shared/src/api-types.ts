@@ -225,7 +225,8 @@ export type APIDefaultMessage = {
 		| MessageType.RECIPIENT_ADD
 		| MessageType.RECIPIENT_REMOVE
 		| MessageType.CHANNEL_ICON_CHANGED
-		| MessageType.CHANNEL_NAME_CHANGED;
+		| MessageType.CHANNEL_NAME_CHANGED
+		| MessageType.CHANNEL_OWNER_CHANGED;
 	flags?: MessageFlags | null;
 	nonce?: number | string;
 	reactions?: string[];
