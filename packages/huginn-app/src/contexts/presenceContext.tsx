@@ -2,9 +2,7 @@ import type { GatewayPresenceUpdateData, GatewayReadyDispatchData, Snowflake } f
 import { type ReactNode, createContext } from "react";
 
 type PresenceContextType = GatewayPresenceUpdateData[];
-
 const defaultValue: PresenceContextType = [];
-
 const PresenceContext = createContext<PresenceContextType>(defaultValue);
 
 export function PresenceProvider(props: { children?: ReactNode }) {

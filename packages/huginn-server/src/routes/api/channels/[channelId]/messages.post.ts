@@ -22,7 +22,7 @@ router.post(
 	defineEventHandler(async (event) => {
 		const { payload } = await useVerifiedJwt(event);
 		const body = await useValidatedBody(event, bodySchema);
-		const channelId = (await useValidatedParams(event, paramsSchema)).channelId;
+		const { channelId } = await useValidatedParams(event, paramsSchema);
 
 		if (!body.content && !body.attachments) {
 			return invalidFormBody(event);

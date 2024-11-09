@@ -70,7 +70,7 @@ export class ChannelAPI {
 		return this.rest.post(Routes.channelMessages(channelId), { body, auth: true }) as Promise<APIPostDefaultMessageResult>;
 	}
 
-	// public async typing(channelId: Snowflake) {
-	//    return this.rest.post(Routes.channelTyping(channelId), { auth: true });
-	// }
+	public async typing(channelId: Snowflake): Promise<unknown> {
+		return this.rest.post(Routes.channelTyping(channelId), { auth: true });
+	}
 }

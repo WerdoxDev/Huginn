@@ -21,7 +21,7 @@ export type GatewayEvents = {
 	resumed: undefined;
 	message_create: GatewayMessageCreateData;
 	message_delete: GatewayMessageDeleteData;
-	typying_start: GatewayMessageCreateData;
+	typying_start: GatewayTypingStartData;
 	relationship_add: GatewayRelationshipCreateData;
 	relationship_remove: Snowflake;
 	channel_create: GatewayDMChannelCreateData;
@@ -144,4 +144,10 @@ export type GatewayOAuthRedirectData = {
 	refresh_token?: string;
 	token?: string;
 	error?: string;
+};
+
+export type GatewayTypingStartData = {
+	channelId: Snowflake;
+	userId: Snowflake;
+	timestamp: number;
 };

@@ -1,9 +1,9 @@
 import { missingAccess, singleError, useValidatedParams } from "@huginn/backend-shared";
 import { ChannelType, Errors, HttpCode, MessageFlags, MessageType, idFix } from "@huginn/shared";
-import { defineEventHandler, sendNoContent, setResponseStatus } from "h3";
+import { defineEventHandler, sendNoContent } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { includeChannelRecipients, includeMessageAuthorAndMentions, omitMessageAuthorId } from "#database/common";
+import { includeChannelRecipients } from "#database/common";
 import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { dispatchChannel, dispatchMessage } from "#utils/helpers";

@@ -9,6 +9,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 	const queryClient = useQueryClient();
 	const mutation = useCreateDMChannel();
 	const { dispatchEvent } = useEvent();
+	const { removeTyping: removeTimeout } = useTypings();
 
 	function onMessageCreated(d: GatewayMessageCreateData) {
 		const channels = queryClient.getQueryData<APIGetUserChannelsResult>(["channels", "@me"]);
@@ -47,6 +48,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 			return [...data.toSpliced(thisChannelIndex, 1, { ...thisChannel, lastMessageId: d.id })];
 		});
 
+		removeTimeout(d.author.id, d.channelId);
 		dispatchEvent("message_added", { message: d, visible: messageVisible, self: d.author.id === user?.id });
 	}
 

@@ -1,8 +1,0 @@
-[phases.setup]
-nixpkgsArchive = "74f38d71ddbad5744618b1e10c871213fb241266"
-
-[start]
-cmd = "bun run bifrost"
-
-[install]
-cmd = "bun install"

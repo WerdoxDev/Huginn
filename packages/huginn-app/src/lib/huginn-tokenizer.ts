@@ -22,9 +22,9 @@ export function tokenize(text: string) {
 	const tokens: Token[] = [];
 
 	const patterns: RegExp[] = [
-		/(?<msi>\_(?!\_))(?<ci>[a-zA-Z0-9]*[^\_])(?<mei>\_(?!\_))|(?<msu>\_\_)(?<cu>.+?)(?<meu>\_\_)/g,
-		/(?<msi>\*(?!\*))(?<ci>[a-zA-Z0-9]*[^\*])(?<mei>\*(?!\*))|(?<msb>\*\*)(?<cb>.+?)(?<meb>\*\*)/g,
-		/(?<mss>\|\|)(?<cs>.+?)(?<mes>\|\|)/g,
+		/(?<msi>_(?!_))(?<ci>[\p{L}]*[^_])(?<mei>_(?!_))|(?<msu>__)(?<cu>[\p{L}]+?)(?<meu>__)/gu,
+		/(?<msi>\*(?!\*))(?<ci>[\p{L}]*[^\*])(?<mei>\*(?!\*))|(?<msb>\*\*)(?<cb>[\p{L}]+?)(?<meb>\*\*)/gu,
+		/(?<mss>\|\|)(?<cs>[\p{L}]+?)(?<mes>\|\|)/gu,
 	];
 
 	for (const pattern of patterns) {

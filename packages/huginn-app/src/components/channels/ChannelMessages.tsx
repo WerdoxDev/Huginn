@@ -170,7 +170,8 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	return (
 		<div className="relative flex w-full flex-col">
 			<ChannelMessageLoadingIndicator isFetchingNextPage={isFetchingNextPage} isFetchingPreviousPage={isFetchingPreviousPage} />
-			<ol className="flex h-full flex-col overflow-y-scroll py-2 pr-0" ref={scroll} onScroll={onScroll}>
+			<ChannelTypingIndicator channelId={props.channelId} />
+			<ol className="flex h-full flex-col overflow-y-scroll py-2 pr-0 pb-7" ref={scroll} onScroll={onScroll}>
 				{props.messages.length === 0 && (
 					<div className="flex h-full w-full items-center justify-center">
 						<div className="flex items-center justify-center gap-x-2 rounded-lg bg-background p-2 pr-3 text-text italic underline">

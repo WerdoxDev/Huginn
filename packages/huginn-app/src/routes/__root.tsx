@@ -1,3 +1,4 @@
+import { TypyingProvider } from "@contexts/typingContext";
 import type { QueryClient } from "@tanstack/react-query";
 import { Outlet, createRootRouteWithContext, useRouter } from "@tanstack/react-router";
 import "@tauri-apps/api";
@@ -42,22 +43,24 @@ function Root() {
 				<ContextMenuProvider>
 					<UserProvider>
 						<PresenceProvider>
-							<div className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
-								{router.state.location.pathname !== "/splashscreen" && appWindow.environment === "desktop" && <TitleBar />}
-								<div className="relative h-full w-full">
-									<Outlet />
-									{/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
-									{/* <TanStackRouterDevtools position="bottom-left" /> */}
-									{appWindow.environment === "desktop" && (
-										<>
-											<AppMaximizedEvent />
-											<AppOpenUrlEvent />
-										</>
-									)}
-									<ModalsRenderer />
-									<ContextMenusRenderer />
+							<TypyingProvider>
+								<div className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
+									{router.state.location.pathname !== "/splashscreen" && appWindow.environment === "desktop" && <TitleBar />}
+									<div className="relative h-full w-full">
+										<Outlet />
+										{/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
+										{/* <TanStackRouterDevtools position="bottom-left" /> */}
+										{appWindow.environment === "desktop" && (
+											<>
+												<AppMaximizedEvent />
+												<AppOpenUrlEvent />
+											</>
+										)}
+										<ModalsRenderer />
+										<ContextMenusRenderer />
+									</div>
 								</div>
-							</div>
+							</TypyingProvider>
 						</PresenceProvider>
 					</UserProvider>
 				</ContextMenuProvider>
