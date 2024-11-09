@@ -106,12 +106,10 @@ router.patch(
 		// TODO: When guilds are a thing, this should send an update to users that are viewing that guild
 		dispatchToTopic(payload.id, "user_update", { ...updatedUser, token: accessToken, refreshToken });
 
+		gateway.presenceManeger.updateClientUser(updatedUser);
 		const presence = gateway.presenceManeger.getClient(payload.id);
 		if (presence) {
-			dispatchToTopic(`${payload.id}_presence`, "presence_update", {
-				...presence,
-				user: pick(updatedUser, ["id", "avatar", "displayName", "flags", "username"]),
-			});
+			dispatchToTopic(`${payload.id}_presence`, "presence_update", presence);
 		}
 
 		const json: APIPatchCurrentUserResult = { ...updatedUser, token: accessToken, refreshToken };

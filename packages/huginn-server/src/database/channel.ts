@@ -52,15 +52,12 @@ const channelExtention = Prisma.defineExtension({
 				const isGroup = recipients.length > 1;
 				const recipientsConnect = [{ id: BigInt(initiatorId) }, ...recipients.map((x) => ({ id: BigInt(x) }))];
 
-				console.log(recipientsConnect);
-
 				// See if we got a channel where all recipients are either initiator or first recipient
 				const existingChannel = await prisma.channel.findFirst({
 					where: { recipients: { every: { OR: [{ id: BigInt(recipients[0]) }, { id: BigInt(initiatorId) }] } }, type: ChannelType.DM },
 				});
 
 				if (!isGroup && existingChannel) {
-					console.log("WHY HERE");
 					channel = (await prisma.channel.update({
 						where: { id: existingChannel.id },
 						data: { tempDeletedByUsers: { disconnect: { id: BigInt(initiatorId) } } },
