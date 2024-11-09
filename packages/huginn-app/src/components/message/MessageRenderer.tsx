@@ -1,7 +1,5 @@
 import type { MessageRendererProps } from "@/types";
 import { MessageType } from "@huginn/shared";
-import { intersect } from "@std/collections/intersect";
-import clsx from "clsx";
 import { type Node, type Path, type Range, Text, createEditor } from "slate";
 import { DefaultElement, type RenderElementProps, type RenderLeafProps, withReact } from "slate-react";
 

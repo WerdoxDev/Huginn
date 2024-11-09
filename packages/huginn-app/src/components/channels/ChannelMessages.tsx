@@ -20,6 +20,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	const { listenEvent } = useEvent();
 
 	const messageRenderInfos = useMemo<MessageRenderInfo[]>(() => calculateMessageRenderInfos(), [props.messages, props.channelId]);
+	const [messageWidths, setMessageWidths] = useState<{ id: Snowflake; width: number }[]>([]);
 	const scroll = useRef<HTMLOListElement>(null);
 	const previousScrollTop = useRef(-1);
 	const itemsHeight = useRef(0);
@@ -167,6 +168,12 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		listHasUpdated.current = true;
 	}, [props.messages]);
 
+	// useLayoutEffect(() => {
+	// 	const widths = data.pages.flat().map((x) => ({ id: x.id, width: document.getElementById(`${x.id}_inner`)?.clientWidth || 0 }));
+	// 	setMessageWidths(widths);
+	// 	console.log("SET");
+	// }, [props.messages, props.channelId]);
+
 	return (
 		<div className="relative flex w-full flex-col">
 			<ChannelMessageLoadingIndicator isFetchingNextPage={isFetchingNextPage} isFetchingPreviousPage={isFetchingPreviousPage} />
@@ -176,7 +183,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 					<div className="flex h-full w-full items-center justify-center">
 						<div className="flex items-center justify-center gap-x-2 rounded-lg bg-background p-2 pr-3 text-text italic underline">
 							<IconMingcuteLookDownFill className="size-10" />
-							Empty
+							<span>Empty</span>
 						</div>
 					</div>
 				)}
@@ -200,7 +207,7 @@ function MessageWrapper(props: {
 	renderInfo: MessageRenderInfo;
 	nextRenderInfo?: MessageRenderInfo;
 	lastRenderInfo?: MessageRenderInfo;
-	setContent: (ket: string) => RefObject<HTMLLIElement>;
+	setContent: (key: string) => RefObject<HTMLLIElement>;
 }) {
 	return (
 		<>

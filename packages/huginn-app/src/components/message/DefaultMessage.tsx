@@ -32,6 +32,16 @@ export default function DefaultMessage(
 		[props.renderInfo, props.lastRenderInfo],
 	);
 
+	const [widths, setWidths] = useState<{ width: number; lastWidth: number; nextWidth: number }>({ width: 0, lastWidth: 0, nextWidth: 0 });
+
+	useLayoutEffect(() => {
+		const width = document.getElementById(`${props.renderInfo.message.id}_inner`)?.clientWidth || 0;
+		const lastWidth = document.getElementById(`${props.lastRenderInfo?.message.id}_inner`)?.clientWidth || 0;
+		const nextWidth = document.getElementById(`${props.nextRenderInfo?.message.id}_inner`)?.clientWidth || 0;
+
+		setWidths({ width, lastWidth, nextWidth });
+	}, [props.renderInfo, props.lastRenderInfo, props.nextRenderInfo]);
+
 	function deserialize(content: string): Descendant[] {
 		return content.split("\n").map((line) => ({ type: "paragraph", children: [{ text: line }] }));
 	}
@@ -68,6 +78,7 @@ export default function DefaultMessage(
 			<div className="overflow-hidden font-light text-white">
 				<Slate editor={props.editor} initialValue={initialValue}>
 					<Editable
+						id={`${props.renderInfo.message.id}_inner`}
 						readOnly
 						decorate={props.decorate}
 						renderLeaf={props.renderLeaf}
@@ -76,7 +87,9 @@ export default function DefaultMessage(
 							"px-2.5 py-1.5 font-normal text-white [overflow-wrap:anywhere]",
 							isSelf ? "bg-primary" : "bg-background",
 							isSeparate && "rounded-t-xl",
-							isNextSeparate && "rounded-br-xl rounded-bl-xl ",
+							isNextSeparate && "rounded-b-xl",
+							widths.width - widths.lastWidth > 5 && "rounded-tr-xl",
+							widths.width - widths.nextWidth > 5 && "rounded-br-xl",
 						)}
 						disableDefaultStyles
 					/>
