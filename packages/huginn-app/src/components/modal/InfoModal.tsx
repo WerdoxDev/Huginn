@@ -1,11 +1,6 @@
-import HuginnButton from "@components/button/HuginnButton";
-import ModalCloseButton from "@components/button/ModalCloseButton";
-import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
-import { useEffect, useMemo } from "react";
-import BaseModal from "./BaseModal";
 
 export default function InfoModal() {
 	const { info: modal } = useModals();
@@ -44,63 +39,59 @@ export default function InfoModal() {
 	}, [modal.isOpen]);
 
 	return (
-		<BaseModal
-			modal={modal}
-			onClose={() => (!modal.action?.cancel ? modal.closable && dispatch({ info: { isOpen: false } }) : modal.action.cancel.callback())}
+		<DialogPanel
+			transition
+			className={clsx(
+				"w-full max-w-xs transform overflow-hidden rounded-xl border-2 bg-background p-5 transition-[opacity_transform] duration-200 data-[closed]:scale-90",
+				borderColor,
+			)}
 		>
-			<DialogPanel
-				className={clsx(
-					"bg-background w-full max-w-xs transform overflow-hidden rounded-xl border-2 p-5 transition-[opacity_transform] data-[closed]:scale-95",
-					borderColor,
-				)}
-			>
-				<DialogTitle as="div" className="flex w-full flex-col items-center justify-center gap-y-5">
-					<div className={clsx("rounded-full bg-opacity-20 p-3", backgroundColor)}>
-						<div className={clsx("rounded-full bg-opacity-80 p-3", backgroundColor)}>
-							{modal.status === "error" && <IconMaterialSymbolsErrorOutline className="h-8 w-8 text-white" />}
-							{modal.status === "default" && <IconMaterialSymbolsInfoOutline className="h-8 w-8 text-white" />}
-						</div>
+			<DialogTitle as="div" className="flex w-full flex-col items-center justify-center gap-y-5">
+				<div className={clsx("rounded-full bg-opacity-20 p-3", backgroundColor)}>
+					<div className={clsx("rounded-full bg-opacity-80 p-3", backgroundColor)}>
+						{modal.status === "error" && <IconMingcuteAlertLine className="h-8 w-8 text-white" />}
+						{modal.status === "default" && <IconMingcuteInformationLine className="h-8 w-8 text-white" />}
 					</div>
-					<div className="text-lg font-medium text-white">{modal.title}</div>
-				</DialogTitle>
-				<Description className="mt-1 flex items-center justify-center" as="div">
-					<div className="text-text/90 text-center">
-						{formattedText}
-						{errorCode && <span className="text-error text-nowrap italic opacity-90">{errorCode}</span>}
-					</div>
-				</Description>
+				</div>
+				<div className="font-medium text-lg text-white">{modal.title}</div>
+			</DialogTitle>
+			<Description className="mt-1 flex items-center justify-center" as="div">
+				<div className="text-center text-text/90">
+					{formattedText}
+					{errorCode && <span className="text-nowrap text-error italic opacity-90">{errorCode}</span>}
+				</div>
+			</Description>
 
-				<div className="mt-5 flex items-center justify-end gap-x-2">
+			<div className="mt-5 flex items-center justify-end gap-x-2">
+				<HuginnButton
+					className="h-10 w-full bg-secondary"
+					onClick={() => {
+						if (!modal.action?.cancel?.callback) dispatch({ info: { isOpen: false } });
+						else modal.action.cancel.callback();
+					}}
+				>
+					{modal.action?.cancel?.text ?? "Close"}
+				</HuginnButton>
+
+				{modal.action?.confirm && (
 					<HuginnButton
-						className="bg-secondary w-full !rounded-lg py-2.5"
+						className="h-10 w-full bg-primary text-text"
 						onClick={() => {
-							if (!modal.action?.cancel?.callback) dispatch({ info: { isOpen: false } });
-							else modal.action.cancel.callback();
+							modal.action?.confirm?.callback();
 						}}
 					>
-						{modal.action?.cancel?.text ?? "Close"}
+						{modal.action.confirm.text}
 					</HuginnButton>
-
-					{modal.action?.confirm && (
-						<HuginnButton
-							className="bg-primary text-text w-full !rounded-lg py-2.5"
-							onClick={() => {
-								modal.action?.confirm?.callback();
-							}}
-						>
-							{modal.action.confirm.text}
-						</HuginnButton>
-					)}
-				</div>
-
-				{modal.closable && (
-					<ModalCloseButton
-						onClick={() => {
-							dispatch({ info: { isOpen: false } });
-						}}
-					/>
 				)}
-			</DialogPanel>
-		</BaseModal>
+			</div>
+
+			{modal.closable && (
+				<ModalCloseButton
+					onClick={() => {
+						dispatch({ info: { isOpen: false } });
+					}}
+				/>
+			)}
+		</DialogPanel>
 	);
 }

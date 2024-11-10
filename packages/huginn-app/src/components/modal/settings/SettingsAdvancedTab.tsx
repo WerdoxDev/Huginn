@@ -1,15 +1,9 @@
 import type { DropboxItem, SettingsTabProps } from "@/types";
-import HuginnDropbox from "@components/HuginnDropbox";
-import HuginnInput from "@components/input/HuginnInput";
-import { useModalsDispatch } from "@contexts/modalContext";
-import { useWindow } from "@contexts/windowContext";
-import { useInputs } from "@hooks/useInputs";
 import { invoke } from "@tauri-apps/api/core";
-import { useEffect, useState } from "react";
 
 const flavourItems: DropboxItem[] = [
-	{ id: 0, name: "Release", value: "release" },
-	{ id: 1, name: "Nightly", value: "nightly" },
+	{ text: "Release", value: "release" },
+	{ text: "Nightly", value: "nightly" },
 ];
 
 export default function SettingsAdvancedTab(props: SettingsTabProps) {
@@ -35,8 +29,8 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 		}
 	}, [values]);
 
-	function onFlavourChange(value: DropboxItem) {
-		if (selectedFlavour?.id === value.id) {
+	function onFlavourChange(item: DropboxItem) {
+		if (selectedFlavour?.value === item.value) {
 			return;
 		}
 
@@ -50,11 +44,11 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 					confirm: {
 						text: "Restart",
 						callback: async () => {
-							setSelectedFlavour(value);
+							setSelectedFlavour(item);
 							dispatch({ info: { isOpen: false } });
 
 							const bc = new BroadcastChannel("huginn");
-							bc.postMessage({ name: "restart_splashscreen", target: value.value });
+							bc.postMessage({ name: "restart_splashscreen", target: item.value });
 
 							await invoke("open_splashscreen");
 						},
@@ -76,9 +70,16 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 		<div className="flex flex-col gap-y-10">
 			{appWindow.environment === "desktop" && (
 				<div>
-					<HuginnDropbox selected={selectedFlavour} onChange={onFlavourChange} items={flavourItems}>
-						<HuginnDropbox.Label>App Flavour</HuginnDropbox.Label>
-					</HuginnDropbox>
+					<HuginnDropdown forceSelected={selectedFlavour} onChange={onFlavourChange}>
+						<HuginnDropdown.Label>App Flavour</HuginnDropdown.Label>
+						<HuginnDropdown.List className="w-52">
+							<HuginnDropdown.ItemsWrapper className="w-52">
+								{flavourItems.map((x) => (
+									<HuginnDropdown.Item item={x} key={x.value} />
+								))}
+							</HuginnDropdown.ItemsWrapper>
+						</HuginnDropdown.List>
+					</HuginnDropdown>
 					<div className="mt-1 text-sm text-text/50 italic">*changing app flavour requires a reload.</div>
 				</div>
 			)}

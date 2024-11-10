@@ -1,10 +1,10 @@
-import { includeMessageAuthor, includeMessageMentions } from "#database/common";
-import { router } from "#server";
-import { prisma } from "#database";
-import { useValidatedQuery, useValidatedParams } from "@huginn/backend-shared";
-import { type APIGetChannelMessagesResult, omitArray, idFix, merge, HttpCode } from "@huginn/shared";
+import { useValidatedParams, useValidatedQuery } from "@huginn/backend-shared";
+import { type APIGetChannelMessagesResult, HttpCode, idFix, omitArray } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
+import { prisma } from "#database";
+import { includeMessageAuthorAndMentions, omitMessageAuthorId } from "#database/common";
+import { router } from "#server";
 
 const querySchema = z.object({ limit: z.optional(z.string()), before: z.optional(z.string()), after: z.optional(z.string()) });
 const paramsSchema = z.object({ channelId: z.string() });
@@ -18,13 +18,10 @@ router.get(
 		const before = query.before;
 		const after = query.after;
 
-		const messages: APIGetChannelMessagesResult = omitArray(
-			idFix(await prisma.message.getMessages(channelId, limit, before, after, merge(includeMessageAuthor, includeMessageMentions))),
-			["authorId"],
+		const messages: APIGetChannelMessagesResult = idFix(
+			await prisma.message.getMessages(channelId, limit, before, after, includeMessageAuthorAndMentions, omitMessageAuthorId),
 		);
 
-		// setResponseStatus(event, HttpCode.SERVER_ERROR);
-		// return null;
 		setResponseStatus(event, HttpCode.OK);
 		return messages;
 	}),

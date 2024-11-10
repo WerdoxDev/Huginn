@@ -1,5 +1,4 @@
 import type { HuginnButtonProps, HuginnInputProps } from "@/types";
-import LoadingButton from "@components/button/LoadingButton";
 import clsx from "clsx";
 
 export default function AddFriendInput(
@@ -24,6 +23,7 @@ export default function AddFriendInput(
 					onChange={(e) => props.onChange?.(e.target)}
 				/>
 				<LoadingButton
+					iconClassName="!size-6"
 					loading={props.loading}
 					className="h-8 w-64 whitespace-nowrap rounded-md bg-primary font-medium text-sm"
 					disabled={props.disabled}

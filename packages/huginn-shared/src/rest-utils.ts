@@ -1,17 +1,14 @@
-// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
-import type { Buffer } from "buffer";
-import filetypeinfo from "magic-bytes.js";
+import { fileTypeFromBuffer } from "file-type";
 import type { InternalRequest, RequestHeaders, ResolvedRequest, ResponseLike } from "./rest-types";
-
-export function isBufferLike(value: unknown): value is ArrayBuffer | Buffer | Uint8Array | Uint8ClampedArray {
-	return value instanceof ArrayBuffer || value instanceof Uint8Array || value instanceof Uint8ClampedArray;
-}
 
 export function parseResponse(response: ResponseLike): Promise<unknown> {
 	if (response.headers.get("Content-Type")?.startsWith("application/json")) {
 		return response.json();
 	}
 	if (response.headers.get("Content-Type")?.startsWith("text/plain")) {
+		return response.text();
+	}
+	if (response.headers.get("Content-Type")?.startsWith("text/html")) {
 		return response.text();
 	}
 
@@ -23,7 +20,7 @@ export function parseResponse(response: ResponseLike): Promise<unknown> {
  *
  * @param request - The request data
  */
-export function resolveRequest(request: InternalRequest): ResolvedRequest {
+export async function resolveRequest(request: InternalRequest): Promise<ResolvedRequest> {
 	let query = "";
 	let finalBody: RequestInit["body"];
 	let additionalHeaders: Record<string, string> = {};
@@ -55,11 +52,11 @@ export function resolveRequest(request: InternalRequest): ResolvedRequest {
 		for (const [index, file] of request.files.entries()) {
 			const fileKey = file.key ?? `files[${index}]`;
 
-			if (isBufferLike(file.data)) {
+			if (file.data instanceof ArrayBuffer) {
 				let contentType = file.contentType;
 				let name = file.name;
 
-				const [parsedType] = filetypeinfo(file.data);
+				const parsedType = await fileTypeFromBuffer(file.data);
 
 				if (!contentType) {
 					if (parsedType) {
@@ -67,8 +64,12 @@ export function resolveRequest(request: InternalRequest): ResolvedRequest {
 					}
 				}
 
-				if (!name.includes(".") && parsedType.extension) {
-					name = `${name}.${parsedType.extension}`;
+				if (!name.includes(".") && parsedType?.ext) {
+					if (parsedType.mime === "image/gif") {
+						name = `a_${name}.${parsedType.ext}`;
+					} else {
+						name = `${name}.${parsedType.ext}`;
+					}
 				}
 
 				formData.append(fileKey, new Blob([file.data], { type: contentType }), name);
@@ -88,9 +89,11 @@ export function resolveRequest(request: InternalRequest): ResolvedRequest {
 		}
 
 		finalBody = formData;
-	} else if (request.body) {
+	} else if (request.body && typeof request.body === "object") {
 		finalBody = JSON.stringify(request.body);
 		additionalHeaders = { "Content-Type": "application/json" };
+	} else if (typeof request.body === "string") {
+		finalBody = request.body;
 	}
 
 	const method = request.method.toUpperCase();

@@ -30,6 +30,7 @@
 		},
 		"ignore": ["packages/huginn-app/src-tauri/**/*", "packages/huginn-app/dist/**/*", "routeTree.gen.ts"]
 	},
+	"overrides": [{ "include": ["packages/huginn-api/src/tests/**/*"], "linter": { "rules": { "style": { "noNonNullAssertion": "off" } } } }],
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"

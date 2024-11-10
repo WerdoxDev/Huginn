@@ -1,9 +1,8 @@
-import { useClient } from "@contexts/apiContext";
 import type { APIGetUserRelationshipsResult } from "@huginn/shared";
 import type { APIRelationUser, GatewayPresenceUpdateData, GatewayRelationshipCreateData } from "@huginn/shared";
 import type { Snowflake } from "@huginn/shared";
 import { useQueryClient } from "@tanstack/react-query";
-import { type ReactNode, useEffect } from "react";
+import type { ReactNode } from "react";
 
 export default function FriendsProvider(props: { children?: ReactNode }) {
 	const client = useClient();
@@ -26,7 +25,7 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
 	}
 
 	function onRelationshipDeleted(userId: Snowflake) {
-		queryClient.setQueryData<APIGetUserRelationshipsResult>(["relationships"], (data) => data?.filter((x) => x.user.id !== userId));
+		queryClient.setQueryData<APIGetUserRelationshipsResult>(["relationships"], (old) => old?.filter((x) => x.user.id !== userId));
 	}
 
 	function onPresenceUpdated(presence: GatewayPresenceUpdateData) {

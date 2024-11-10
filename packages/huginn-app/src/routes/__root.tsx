@@ -1,28 +1,11 @@
-import ModalErrorComponent from "@components/ModalErrorComponent";
-import TitleBar from "@components/TitleBar";
-import { ChannelsContextMenu } from "@components/contextmenu/ChannelsContextMenu";
-import RelationshipContextMenu from "@components/contextmenu/RelationshipContextMenu";
-import RelationshipMoreContextMenu from "@components/contextmenu/RelationshipMoreContextMenu";
-import { CreateDMModal } from "@components/modal/CreateDMModal";
-import ImageCropModal from "@components/modal/ImageCropModal";
-import InfoModal from "@components/modal/InfoModal";
-import SettingsModal from "@components/modal/SettingsModal";
-import type { useClient } from "@contexts/apiContext";
-import { ContextMenuProvider } from "@contexts/contextMenuContext";
-import { routeHistory } from "@contexts/historyContext";
-import { ModalProvider } from "@contexts/modalContext";
-import { PresenceProvider } from "@contexts/presenceContext";
-import { ThemeProvier } from "@contexts/themeContext";
-import { UserProvider, useUser } from "@contexts/userContext";
-import { useWindow, useWindowDispatch } from "@contexts/windowContext";
-import { setup } from "@lib/middlewares";
+import { TypyingProvider } from "@contexts/typingContext";
 import type { QueryClient } from "@tanstack/react-query";
 import { Outlet, createRootRouteWithContext, useRouter } from "@tanstack/react-router";
 import "@tauri-apps/api";
-import type { UnlistenFn } from "@tauri-apps/api/event";
+import { type UnlistenFn, listen } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
 import type { PostHog } from "posthog-js";
-import { useEffect, useRef } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
 export type HuginnRouterContext = {
@@ -60,16 +43,24 @@ function Root() {
 				<ContextMenuProvider>
 					<UserProvider>
 						<PresenceProvider>
-							<div className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
-								{router.state.location.pathname !== "/splashscreen" && appWindow.environment === "desktop" && <TitleBar />}
-								<div className="relative h-full w-full">
-									<Outlet />
-									{/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
-									{/* <TanStackRouterDevtools position="bottom-left" /> */}
-									{appWindow.environment === "desktop" && <AppMaximizedEvent />}
-									<ModalsRenderer />
+							<TypyingProvider>
+								<div className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
+									{router.state.location.pathname !== "/splashscreen" && appWindow.environment === "desktop" && <TitleBar />}
+									<div className="relative h-full w-full">
+										<Outlet />
+										{/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
+										{/* <TanStackRouterDevtools position="bottom-left" /> */}
+										{appWindow.environment === "desktop" && (
+											<>
+												<AppMaximizedEvent />
+												<AppOpenUrlEvent />
+											</>
+										)}
+										<ModalsRenderer />
+										<ContextMenusRenderer />
+									</div>
 								</div>
-							</div>
+							</TypyingProvider>
 						</PresenceProvider>
 					</UserProvider>
 				</ContextMenuProvider>
@@ -79,50 +70,40 @@ function Root() {
 	);
 }
 
-function ModalsRenderer() {
-	const { user } = useUser();
-
-	return (
-		<>
-			<ErrorBoundary FallbackComponent={ModalErrorComponent}>
-				<SettingsModal />
-				{user && (
-					<>
-						<CreateDMModal />
-						<ImageCropModal />
-						<ChannelsContextMenu />
-						<RelationshipMoreContextMenu />
-						<RelationshipContextMenu />
-					</>
-				)}
-			</ErrorBoundary>
-			<InfoModal />
-		</>
-	);
-}
-
 function AppMaximizedEvent() {
 	const dispatch = useWindowDispatch();
-	const unlistenFunction = useRef<UnlistenFn>();
-
+	const huginnWindow = useWindow();
 	useEffect(() => {
-		async function listenToAppResize() {
+		if (huginnWindow.environment === "desktop") {
 			const appWindow = getCurrentWebviewWindow();
-			const unlisten = await appWindow.onResized(async () => {
+			const unlisten = appWindow.onResized(async () => {
 				const appMaximized = await appWindow.isMaximized();
 				dispatch({ maximized: appMaximized });
 			});
 
-			unlistenFunction.current = unlisten;
+			return () => {
+				console.log("CALLED");
+				unlisten.then((f) => f());
+			};
 		}
+	}, []);
 
-		if (window.__TAURI_INTERNALS__) {
-			listenToAppResize();
+	return null;
+}
+
+function AppOpenUrlEvent() {
+	const { dispatchEvent } = useEvent();
+	const huginnWindow = useWindow();
+	useEffect(() => {
+		if (huginnWindow.environment === "desktop") {
+			const unlisten = listen("deep-link://new-url", (event) => {
+				dispatchEvent("open_url", event.payload as string[]);
+			});
+
+			return () => {
+				unlisten.then((f) => f());
+			};
 		}
-
-		return () => {
-			unlistenFunction.current?.();
-		};
 	}, []);
 
 	return null;

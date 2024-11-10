@@ -1,15 +1,11 @@
-import AddFriendInput from "@components/input/AddFriendInput";
 import { TabPanel } from "@headlessui/react";
-import { useAddFriend } from "@hooks/mutations/useAddFriend";
-import { useInputs } from "@hooks/useInputs";
-import { useEffect, useState } from "react";
 
 export default function AddFriendTab() {
 	const { inputsProps, values, handleErrors, setInputStatus } = useInputs([{ name: "username", required: false }]);
 
 	const [disabled, setDisabled] = useState(false);
 
-	const mutation = useAddFriend((username) => {
+	const mutation = useCreateRelationship(({ username }) => {
 		setInputStatus("username", { code: "success", text: `Friend request sent to ${username}!` });
 	}, handleErrors);
 
@@ -32,7 +28,7 @@ export default function AddFriendTab() {
 					{...inputsProps.username}
 					buttonProps={{ type: "submit" }}
 					onClick={() => {
-						mutation.mutate(values.username.value);
+						mutation.mutate({ username: values.username.value });
 					}}
 					disabled={disabled}
 				/>

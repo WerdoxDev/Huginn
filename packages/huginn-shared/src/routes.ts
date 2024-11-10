@@ -29,6 +29,14 @@ export const Routes = {
 
 	/**
 	 * Route for:
+	 * - POST '/auth/confirm-oauth'
+	 */
+	confirmOAuth() {
+		return "/auth/oauth-confirm" as const;
+	},
+
+	/**
+	 * Route for:
 	 * - POST '/auth/refresh-token'
 	 */
 	refreshToken() {
@@ -107,6 +115,15 @@ export const Routes = {
 
 	/**
 	 * Route for:
+	 * - PUT    '/channels/{channel.id}/recipients/{recipient.id}'
+	 * - DELETE '/channels/{channel.id}/recipients/{recipient.id}'
+	 */
+	channelRecipient(channelId: Snowflake, recipientId: Snowflake): `/channels/${string}/recipients/${string}` {
+		return `/channels/${channelId}/recipients/${recipientId}` as const;
+	},
+
+	/**
+	 * Route for:
 	 * - POST '/channels/{channel.id}/typing'
 	 */
 	channelTyping(channelId: Snowflake): `/channels/${string}/typing` {
@@ -120,6 +137,14 @@ export const CDNRoutes = {
 	 * - POST '/avatars/{user.id}'
 	 */
 	uploadAvatar(userId: Snowflake): `/avatars/${string}` {
-		return `/avatars/${userId}`;
+		return `/avatars/${userId}` as const;
+	},
+
+	/**
+	 * Route for:
+	 * - POST '/channel-icons/{channel.id}'
+	 */
+	uploadChannelIcon(channelId: Snowflake): `/channel-icons/${string}` {
+		return `/channel-icons/${channelId}` as const;
 	},
 };

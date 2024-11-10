@@ -1,11 +1,12 @@
-import { type MutationState, type MutationStatus, useMutationState } from "@tanstack/react-query";
+import type { MutationVariables } from "@/types";
+import { type MutationState, useMutationState } from "@tanstack/react-query";
 
-export function useLatestMutationState<TVariables = unknown>(mutationKey: string) {
-	const mutationStates = useMutationState<MutationState<unknown, unknown, TVariables, unknown>>({
+export function useMutationLatestState<Key extends keyof MutationVariables>(mutationKey: Key) {
+	const mutationStates = useMutationState<MutationState<unknown, unknown, MutationVariables[Key], unknown>>({
 		filters: { mutationKey: [mutationKey] },
 	});
 
 	if (mutationStates && mutationStates.length > 0) {
-		return mutationStates[mutationStates.length - 1];
+		return mutationStates[mutationStates.length - 1] as MutationState<unknown, unknown, MutationVariables[Key], unknown>;
 	}
 }

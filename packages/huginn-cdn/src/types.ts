@@ -18,4 +18,4 @@ export type FileInfo = {
 	mimeType: FileContentTypes;
 };
 
-export type FileCategory = "avatars";
+export type FileCategory = "avatars" | "channel-icons";

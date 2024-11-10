@@ -1,10 +1,11 @@
 import type { APIUser, GatewayMessageCreateData } from "@huginn/shared";
-import { type ReactNode, createContext, useCallback, useContext, useEffect, useRef } from "react";
+import { type ReactNode, createContext } from "react";
 
 type EventTypes = {
 	message_added: { message: GatewayMessageCreateData; visible: boolean; self: boolean };
 	user_updated: APIUser;
 	image_cropper_done: { croppedImageData: string };
+	open_url: string[];
 };
 
 type EventType = { type: keyof EventTypes; data: EventTypes[keyof EventTypes] };

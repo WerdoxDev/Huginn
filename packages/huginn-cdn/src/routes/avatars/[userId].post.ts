@@ -1,17 +1,18 @@
-import path from "node:path";
-import { catchError, invalidFormBody } from "@huginn/backend-shared";
+import { catchError, invalidFormBody, useValidatedParams } from "@huginn/backend-shared";
 import { HttpCode } from "@huginn/shared";
 import { defineEventHandler, readFormData, setResponseStatus } from "h3";
+import { z } from "zod";
 import { router, storage } from "#cdn";
-import { UPLOADS_DIR } from "#setup";
+
+const schema = z.object({ userId: z.string() });
 
 router.post(
 	"/avatars/:userId",
 	defineEventHandler(async (event) => {
+		const { userId } = await useValidatedParams(event, schema);
 		const [error, body] = await catchError(async () => await readFormData(event));
 
 		if (error) {
-			console.log(error);
 			return invalidFormBody(event);
 		}
 
@@ -21,8 +22,7 @@ router.post(
 			return invalidFormBody(event);
 		}
 
-		await storage.writeFile("avatars", file.name, await file.arrayBuffer());
-		// await Bun.write(path.resolve(UPLOADS_DIR, `avatars/${file.name}`), await file.arrayBuffer());
+		await storage.writeFile("avatars", userId, file.name, await file.arrayBuffer());
 
 		setResponseStatus(event, HttpCode.CREATED);
 		return file.name;

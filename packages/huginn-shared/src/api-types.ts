@@ -8,6 +8,16 @@ export type DirectChannel = Merge<APIDMChannel, APIGroupDMChannel>;
 
 export type TokenPayload = {
 	id: Snowflake;
+	isOAuth: boolean;
+};
+
+export type IdentityTokenPayload = {
+	providerId: Snowflake;
+	providerUserId: Snowflake;
+	username: string;
+	email: string;
+	fullName: string;
+	avatarHash: string | null;
 };
 
 //#region USER
@@ -28,31 +38,21 @@ export type APIUser = {
 	avatar: string | null;
 	system?: boolean;
 	email?: string;
-	password?: string;
+	password?: string | null;
 	// TODO: Actually implement flags
 	flags: UserFlags;
 } & APIBaseUser;
 
-export type APIChannelUser = {
+export type APIPublicUser = {
 	username: string;
 	displayName: string | null;
 	avatar: string | null;
 	flags: UserFlags;
 } & APIBaseUser;
 
-export type APIMessageUser = {
-	username: string;
-	displayName: string | null;
-	avatar: string | null;
-	flags: UserFlags;
-} & APIBaseUser;
-
-export type APIRelationUser = {
-	username: string;
-	displayName: string | null;
-	avatar: string | null;
-	flags: UserFlags;
-} & APIBaseUser;
+export type APIChannelUser = APIPublicUser;
+export type APIMessageUser = APIPublicUser;
+export type APIRelationUser = APIPublicUser;
 
 export type Tokens = {
 	token: string;
@@ -82,9 +82,6 @@ export type APIPostRegisterJSONBody = {
 	password: string;
 };
 
-export type APIPostLoginResult = APIUser & Tokens;
-export type APIPostRegisterResult = APIUser & Tokens;
-
 export type APIPatchCurrentUserJSONBody = {
 	email?: string;
 	displayName?: string | null;
@@ -94,7 +91,16 @@ export type APIPatchCurrentUserJSONBody = {
 	newPassword?: string;
 };
 
+export type APIPostOAuthConfirmJSONBody = {
+	username: string;
+	displayName: string | null;
+	avatar: string | null;
+};
+
+export type APIPostLoginResult = APIUser & Tokens;
+export type APIPostRegisterResult = APIUser & Tokens;
 export type APIPatchCurrentUserResult = APIUser & Tokens;
+export type APIPostOAuthConfirmResult = APIUser & Tokens;
 
 export type APIPostUniqueUsernameJSONBody = {
 	username: string;
@@ -170,17 +176,21 @@ export enum ChannelType {
 	GUILD_CATEGORY = 4,
 }
 
-export type APIGetChannelByIdResult = APIChannel;
-
 export type APIPostDMChannelJSONBody = {
 	name?: string;
 	recipients: Snowflake[];
 };
 
+export type APIPatchDMChannelJSONBody = {
+	name?: string | null;
+	icon?: string | null;
+	owner?: string;
+};
+
+export type APIGetChannelByIdResult = APIChannel;
 export type APIPostDMChannelResult = DirectChannel;
-
+export type APIPatchDMChannelResult = DirectChannel;
 export type APIDeleteDMChannelResult = DirectChannel;
-
 export type APIGetUserChannelsResult = DirectChannel[];
 //#endregion
 
@@ -193,6 +203,8 @@ type APIBaseMessage = {
 	content: string;
 	createdAt: Date | string;
 	editedAt: Date | string | null;
+	attachments: string[];
+	pinned: boolean;
 	mentions: APIMessageUser[];
 };
 
@@ -208,9 +220,13 @@ export enum MessageFlags {
 }
 
 export type APIDefaultMessage = {
-	type: MessageType.DEFAULT;
-	attachments: string[];
-	pinned: boolean;
+	type:
+		| MessageType.DEFAULT
+		| MessageType.RECIPIENT_ADD
+		| MessageType.RECIPIENT_REMOVE
+		| MessageType.CHANNEL_ICON_CHANGED
+		| MessageType.CHANNEL_NAME_CHANGED
+		| MessageType.CHANNEL_OWNER_CHANGED;
 	flags?: MessageFlags | null;
 	nonce?: number | string;
 	reactions?: string[];
@@ -224,11 +240,8 @@ export type APIPostDefaultMessageJSONBody = {
 };
 
 export type APIPostDefaultMessageResult = APIDefaultMessage;
-
 export type APIGetMessageByIdResult = APIMessage;
-
 export type APIGetChannelMessagesResult = APIMessage[];
-
 export type APIGetReleasesResult = Record<string, { version: string; date: string; windowsSetupUrl?: string } | undefined>;
 
 export type APICheckUpdateResult = {
@@ -247,6 +260,7 @@ export enum MessageType {
 	CHANNEL_NAME_CHANGED = 4,
 	CHANNEL_ICON_CHANGED = 5,
 	CHANNEL_PINNED_MESSAGE = 6,
+	CHANNEL_OWNER_CHANGED = 7,
 	USER_JOIN = 7,
 	REPLY = 8,
 }
@@ -265,3 +279,7 @@ export type UserPresence = {
 export type UserSettings = {
 	status: PresenceStatus;
 };
+
+export type OAuthType = "google" | "github";
+export type OAuthFlow = "browser" | "websocket";
+export type OAuthAction = "register" | "login";

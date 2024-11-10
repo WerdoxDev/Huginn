@@ -23,7 +23,7 @@ router.post(
 		const user = idFix(await prisma.user.getById(payload.id));
 
 		const [accessToken, refreshToken] = await createTokens(
-			{ id: user.id },
+			{ id: user.id, isOAuth: await prisma.identityProvider.exists({ userId: BigInt(user.id) }) },
 			constants.ACCESS_TOKEN_EXPIRE_TIME,
 			constants.REFRESH_TOKEN_EXPIRE_TIME,
 		);

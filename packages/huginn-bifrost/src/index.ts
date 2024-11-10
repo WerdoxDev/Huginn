@@ -1,4 +1,4 @@
-import { type ErrorFactory, createErrorFactory, logReject, logRequest, logResponse, logServerError } from "@huginn/backend-shared";
+import { type ErrorFactory, createErrorFactory, logReject, logRequest, logResponse, logServerError, readEnv } from "@huginn/backend-shared";
 import { router as cdnRouter } from "@huginn/cdn";
 import { isCDNError } from "@huginn/cdn/src/error";
 import { handleCommonCDNErrors } from "@huginn/cdn/src/utils/route-utils";
@@ -7,6 +7,7 @@ import { isDBError } from "@huginn/server/src/database";
 import { gateway } from "@huginn/server/src/server";
 import { handleCommonDBErrors } from "@huginn/server/src/utils/route-utils";
 import { Errors, HttpCode, type HuginnErrorData, generateRandomString } from "@huginn/shared";
+import type { Serve, Server } from "bun";
 import consola from "consola";
 import { colors } from "consola/utils";
 import {
@@ -62,7 +63,7 @@ const app = createApp({
 		setResponseStatus(event, HttpCode.SERVER_ERROR);
 		return send(event, JSON.stringify(createErrorFactory(Errors.serverError()).toObject()));
 	},
-	onBeforeResponse(event, response) {
+	onAfterResponse(event, response) {
 		if (event.method === "OPTIONS") {
 			return;
 		}
@@ -70,10 +71,10 @@ const app = createApp({
 		const id = event.context.id;
 		const status = getResponseStatus(event);
 
-		if (status >= 200 && status < 300) {
-			logResponse(event.path, status, id, response.body);
+		if (status >= 200 && status < 500) {
+			logResponse(event.path, status, id, response?.body);
 		} else {
-			logReject(event.path, event.method, id, response.body as HuginnErrorData, status);
+			logReject(event.path, event.method, id, response?.body as HuginnErrorData, status);
 		}
 	},
 	async onRequest(event) {
@@ -94,10 +95,6 @@ router.use(
 	defineEventHandler(async (event) => {
 		let result = await serverRouter.handler(event);
 
-		if (result === null) {
-			return result;
-		}
-
 		if (!result) {
 			result = await cdnRouter.handler(event);
 		}
@@ -110,16 +107,19 @@ app.use(router);
 
 const handler = toWebHandler(app);
 
-const HOST = process.env.HOST;
-const PORT = process.env.PORT;
+const envs = readEnv(["HOST", "PORT", "PASSPHRASE", "CERTIFICATE_PATH", "PRIVATE_KEY_PATH"] as const);
 
-const server = Bun.serve({
-	port: PORT,
-	hostname: HOST,
+const CERT_FILE = envs.CERTIFICATE_PATH && Bun.file(envs.CERTIFICATE_PATH);
+const KEY_FILE = envs.PRIVATE_KEY_PATH && Bun.file(envs.PRIVATE_KEY_PATH);
+const PASSPHRASE = process.env.PASSPHRASE;
+
+let server: Server;
+const options: Serve = {
+	port: envs.PORT,
 	async fetch(req, server) {
 		const url = new URL(req.url);
 		if (url.pathname === "/gateway") {
-			const response = await gateway.ws.handleUpgrade(req, server);
+			const response = await gateway.internalWS.handleUpgrade(req, server);
 
 			if (response) {
 				return response;
@@ -130,8 +130,22 @@ const server = Bun.serve({
 
 		return handler(req);
 	},
-	websocket: gateway.ws.websocket,
-});
+	tls: {
+		cert: CERT_FILE,
+		key: KEY_FILE,
+		passphrase: PASSPHRASE,
+	},
+};
+
+try {
+	server = Bun.serve({
+		...options,
+		hostname: envs.HOST,
+		websocket: gateway.internalWS.websocket,
+	});
+} catch {
+	server = Bun.serve({ ...options, hostname: "localhost", websocket: gateway.internalWS.websocket });
+}
 
 consola.success("Bifrost started!");
 consola.box(`Listening on ${colors.magenta(server.url.href)}`);

@@ -1,9 +1,10 @@
-import { type ContextMenuDMChannel, type ContextMenuRelationship, type ContextMenuStateProps, ContextMenuType } from "@/types";
-import { type Dispatch, type MouseEvent, type ReactNode, createContext, useContext, useReducer } from "react";
+import type { ContextMenuDMChannel, ContextMenuDMChannelRecipient, ContextMenuRelationship, ContextMenuStateProps } from "@/types";
+import { type Dispatch, type MouseEvent, type ReactNode, createContext } from "react";
 
 type ContextMenuContextType = {
-	dmChannel?: ContextMenuStateProps<ContextMenuDMChannel>;
-	relationshipMore?: ContextMenuStateProps<ContextMenuRelationship>;
+	dm_channel?: ContextMenuStateProps<ContextMenuDMChannel>;
+	dm_channel_recipient?: ContextMenuStateProps<ContextMenuDMChannelRecipient>;
+	relationship_more?: ContextMenuStateProps<ContextMenuRelationship>;
 	relationship?: ContextMenuStateProps<ContextMenuRelationship>;
 };
 
@@ -23,60 +24,27 @@ function contextMenusReducer(contextMenus: ContextMenuContextType, action: Conte
 	return { ...contextMenus, ...action };
 }
 
-// export function useChannelContextMenu() {
-//    const dispatch = useContext(ContextMenuDispatchContext);
-
-//    function open(channel: APIDMChannel | APIGroupDMChannel, e: MouseEvent) {
-//       e.preventDefault();
-//       dispatch({ dmChannel: { isOpen: true, data: channel, position: [e.clientX, e.clientY] } });
-//    }
-
-//    return open;
-// }
-
-// export function useRelationshipMoreContextMenu() {
-//    const dispatch = useContext(ContextMenuDispatchContext);
-
-//    function open(user: APIRelationUser, type: RelationshipType, e: MouseEvent) {
-//       e.preventDefault();
-//       dispatch({ relationshipMore: { isOpen: true, data: { user, type }, position: [e.clientX, e.clientY] } });
-//    }
-
-//    return open;
-// }
-
-//const onContextMenu = useContextMenu("channels");
-
-//
-
-export function useContextMenu<T = unknown>(type: ContextMenuType) {
+export function useContextMenu<T extends keyof ContextMenuContextType>(type: T) {
 	const context = useContext(ContextMenuContext);
 	const dispatch = useContext(ContextMenuDispatchContext);
 
-	let keyName: keyof ContextMenuContextType;
+	const data = useMemo(() => context[type]?.contextData, [context[type]]);
 
-	switch (type) {
-		case ContextMenuType.DM_CHANNEL:
-			keyName = "dmChannel";
-			break;
-		case ContextMenuType.RELATIONSHIP_MORE:
-			keyName = "relationshipMore";
-			break;
-		case ContextMenuType.RELATIONSHIP:
-			keyName = "relationship";
-			break;
-	}
-
-	function open(data: ContextMenuStateProps<T>["contextData"], e: MouseEvent) {
+	function open(data: Required<ContextMenuContextType>[T]["contextData"], e: MouseEvent<HTMLElement>) {
 		e.preventDefault();
-		dispatch({ [keyName]: { isOpen: true, contextData: data, position: [e.clientX, e.clientY] } });
+		dispatch({ [type]: { isOpen: true, contextData: data, position: [e.clientX, e.clientY] } });
 	}
 
 	function close() {
-		dispatch({ [keyName]: { isOpen: false } });
+		dispatch({ [type]: { isOpen: false } });
 	}
 
-	return { open, close, context: context[keyName] as ContextMenuStateProps<T> };
+	return {
+		open,
+		close,
+		context: context[type] as ContextMenuContextType[T],
+		data: data as Required<ContextMenuContextType>[T]["contextData"],
+	};
 }
 
 export function useContextMenuDispatch() {

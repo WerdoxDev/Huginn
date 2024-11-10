@@ -31,10 +31,7 @@ describe("relationship-create", () => {
 		const client = await getLoggedClient(test2Credentials);
 		const client2 = await getLoggedClient(test3Credentials);
 
-		expect(client2.user).toBeDefined();
-		if (client2.user) return;
-
-		expect(() => client.relationships.createRelationshipByUserId(client2.user.id)).not.toThrow();
+		expect(() => client.relationships.createRelationshipByUserId(client2.user!.id)).not.toThrow();
 	});
 	test("relationship-accept-successful", async () => {
 		const client = await getLoggedClient(test2Credentials);
@@ -45,15 +42,11 @@ describe("relationship-create", () => {
 		const client = await getLoggedClient(test3Credentials);
 		const client2 = await getLoggedClient(test4Credentials);
 
-		expect(client.user).toBeDefined();
-		expect(client2.user).toBeDefined();
-		if (!client.user || !client2.user) return;
-
-		await client.relationships.createRelationship({ username: client2.user.username });
-		await client2.relationships.createRelationship({ username: client.user.username });
+		await client.relationships.createRelationship({ username: client2.user!.username });
+		await client2.relationships.createRelationship({ username: client.user!.username });
 
 		const relationship = (await client.relationships.getAll()).find(
-			(x) => x.user.id === client2.user.id && x.type === RelationshipType.FRIEND && x.since !== null,
+			(x) => x.user.id === client2.user!.id && x.type === RelationshipType.FRIEND && x.since !== null,
 		);
 		expect(relationship).toBeDefined();
 	});
@@ -62,4 +55,30 @@ describe("relationship-create", () => {
 
 		expect(() => client.relationships.createRelationship({ username: "test2" })).toThrow();
 	});
+	test(
+		"relationship-create-all",
+		async () => {
+			const client = await getLoggedClient();
+			const client2 = await getLoggedClient(test2Credentials);
+			const client3 = await getLoggedClient(test3Credentials);
+			const client4 = await getLoggedClient(test4Credentials);
+
+			//expect(() => client.relationships.createRelationship({ username: "test2" })).not.toThrow(); Already done
+			expect(() => client.relationships.createRelationship({ username: "test3" })).not.toThrow();
+			expect(() => client.relationships.createRelationship({ username: "test4" })).not.toThrow();
+
+			// expect(() => client2.relationships.createRelationship({ username: "test" })).not.toThrow(); Already done
+			expect(() => client2.relationships.createRelationship({ username: "test3" })).not.toThrow();
+			expect(() => client2.relationships.createRelationship({ username: "test4" })).not.toThrow();
+
+			expect(() => client3.relationships.createRelationship({ username: "test" })).not.toThrow();
+			expect(() => client3.relationships.createRelationship({ username: "test2" })).not.toThrow();
+			// expect(() => client3.relationships.createRelationship({ username: "test4" })).not.toThrow(); Already done
+
+			expect(() => client4.relationships.createRelationship({ username: "test" })).not.toThrow();
+			expect(() => client4.relationships.createRelationship({ username: "test2" })).not.toThrow();
+			// expect(() => client4.relationships.createRelationship({ username: "test3" })).not.toThrow(); Already done
+		},
+		{ timeout: 30000 },
+	);
 });

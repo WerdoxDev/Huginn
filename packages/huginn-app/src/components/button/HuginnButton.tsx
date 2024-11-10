@@ -1,12 +1,11 @@
 import type { HuginnButtonProps } from "@/types";
 import clsx from "clsx";
-import { useEffect } from "react";
 
 export default function HuginnButton(props: HuginnButtonProps) {
 	return (
 		<button
 			className={clsx(
-				"select-none rounded-md outline-none transition-colors hover:bg-opacity-80 enabled:active:bg-opacity-50 disabled:cursor-not-allowed disabled:bg-opacity-50",
+				"select-none rounded-md outline-none transition-colors hover:bg-opacity-80 focus:bg-opacity-80 enabled:active:bg-opacity-50 disabled:cursor-not-allowed disabled:bg-opacity-50",
 				props.className,
 			)}
 			type={props.type}

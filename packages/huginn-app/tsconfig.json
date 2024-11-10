@@ -12,5 +12,5 @@
 			"@/*": ["./src/*"]
 		}
 	},
-	"include": ["src", "src-tauri", "auto-imports.d.ts", "index.d.ts"]
+	"include": ["src", "src-tauri"]
 }

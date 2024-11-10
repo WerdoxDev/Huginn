@@ -4,12 +4,14 @@ import type {
 	APIGetChannelMessagesResult,
 	APIGetMessageByIdResult,
 	APIGetUserChannelsResult,
+	APIPatchDMChannelJSONBody,
+	APIPatchDMChannelResult,
 	APIPostDMChannelJSONBody,
 	APIPostDMChannelResult,
 	APIPostDefaultMessageJSONBody,
 	APIPostDefaultMessageResult,
 } from "@huginn/shared";
-import { Routes } from "@huginn/shared";
+import { Routes, resolveImage } from "@huginn/shared";
 import type { Snowflake } from "@huginn/shared";
 import type { REST } from "../rest/rest";
 
@@ -47,6 +49,19 @@ export class ChannelAPI {
 		return this.rest.post(Routes.userChannels(), { body, auth: true }) as Promise<APIPostDMChannelResult>;
 	}
 
+	public async editDM(channelId: Snowflake, body: APIPatchDMChannelJSONBody): Promise<APIPatchDMChannelResult> {
+		const resolvedBody: APIPatchDMChannelJSONBody = { ...body, icon: body.icon && (await resolveImage(body.icon)) };
+		return this.rest.patch(Routes.channel(channelId), { body: resolvedBody, auth: true }) as Promise<APIPatchDMChannelResult>;
+	}
+
+	public async addRecipient(channelId: Snowflake, recipientId: Snowflake): Promise<unknown> {
+		return this.rest.put(Routes.channelRecipient(channelId, recipientId), { auth: true });
+	}
+
+	public async removeRecipient(channelId: Snowflake, recipientId: Snowflake): Promise<unknown> {
+		return this.rest.delete(Routes.channelRecipient(channelId, recipientId), { auth: true });
+	}
+
 	public async deleteDM(channelId: Snowflake): Promise<APIDeleteDMChannelResult> {
 		return this.rest.delete(Routes.channel(channelId), { auth: true }) as Promise<APIDeleteDMChannelResult>;
 	}
@@ -55,7 +70,7 @@ export class ChannelAPI {
 		return this.rest.post(Routes.channelMessages(channelId), { body, auth: true }) as Promise<APIPostDefaultMessageResult>;
 	}
 
-	// public async typing(channelId: Snowflake) {
-	//    return this.rest.post(Routes.channelTyping(channelId), { auth: true });
-	// }
+	public async typing(channelId: Snowflake): Promise<unknown> {
+		return this.rest.post(Routes.channelTyping(channelId), { auth: true });
+	}
 }

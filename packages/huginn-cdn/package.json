@@ -4,7 +4,8 @@
 	"version": "0.1-dev",
 	"type": "module",
 	"scripts": {
-		"dev": "bun --watch src/index.ts"
+		"dev": "bun --watch src/index.ts",
+		"test": "bun test --preload ./src/tests/setup.ts"
 	},
 	"dependencies": {
 		"@aws-sdk/client-s3": "^3.658.1",
@@ -12,7 +13,6 @@
 		"@huginn/shared": "workspace:*",
 		"consola": "^3.2.3",
 		"h3": "^1.12.0",
-		"magic-bytes.js": "^1.10.0",
 		"pathe": "^1.1.2",
 		"sharp": "^0.33.5",
 		"zod": "^3.23.8"

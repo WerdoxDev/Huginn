@@ -1,48 +1,41 @@
 {
-	"$schema": "../gen/schemas/capabilities.json",
-	"identifier": "migrated",
-	"description": "permissions that were migrated from v1",
-	"local": true,
-	"windows": ["main", "splashscreen"],
-	"permissions": [
-		"core:default",
-		"fs:allow-read-dir",
-		"fs:allow-mkdir",
-		"fs:allow-remove",
-		"fs:allow-rename",
-		"fs:allow-exists",
-		{
-			"identifier": "fs:scope",
-			"allow": ["$APPDATA/**", "$APPDATA/*", "$APPDATA"]
-		},
-		{
-			"identifier": "fs:allow-read-file",
-			"allow": ["$APPDATA/**", "$APPDATA/*", "$APPDATA"]
-		},
-		{
-			"identifier": "fs:allow-read-text-file",
-			"allow": ["$APPDATA/**", "$APPDATA/*", "$APPDATA"]
-		},
-		{
-			"identifier": "fs:allow-write-file",
-			"allow": ["$APPDATA/**", "$APPDATA/*", "$APPDATA"]
-		},
-		{
-			"identifier": "fs:allow-write-text-file",
-			"allow": ["$APPDATA/**", "$APPDATA/*", "$APPDATA"]
-		},
-		"updater:allow-check",
-		"updater:default",
-		"core:window:allow-maximize",
-		"core:window:allow-minimize",
-		"core:window:allow-toggle-maximize",
-		"core:window:allow-unmaximize",
-		"core:window:allow-show",
-		"core:window:allow-hide",
-		"core:window:allow-close",
-		"core:window:allow-start-dragging",
-		"shell:allow-open",
-		"process:allow-restart",
-		"process:default"
-	]
+  "$schema": "../gen/schemas/capabilities.json",
+  "identifier": "migrated",
+  "description": "permissions that were migrated from v1",
+  "local": true,
+  "windows": [
+    "main",
+    "splashscreen"
+  ],
+  "permissions": [
+     "core:default",
+     {
+       "identifier": "fs:scope",
+       "allow": [{"path": "$APPCONFIG"}, {"path": "$APPCONFIG/**"}]
+     },
+    "fs:allow-read-dir",
+    "fs:allow-mkdir",
+    "fs:allow-remove",
+    "fs:allow-rename",
+    "fs:allow-exists",
+    "fs:allow-write-file",
+    "fs:allow-read-file",
+    "fs:allow-write-text-file",
+    "fs:allow-read-text-file",
+    "updater:allow-check",
+    "updater:default",
+    "core:window:allow-maximize",
+    "core:window:allow-minimize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-unmaximize",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-close",
+    "core:window:allow-start-dragging",
+    "core:window:allow-request-user-attention",
+    "shell:allow-open",
+    "process:allow-restart",
+    "process:default",
+    "deep-link:default"
+  ]
 }

@@ -1,6 +1,6 @@
 import { useValidatedParams } from "@huginn/backend-shared";
 import { HttpCode } from "@huginn/shared";
-import { defineEventHandler, setResponseStatus } from "h3";
+import { defineEventHandler, sendNoContent, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
 import { gateway, router } from "#server";
@@ -24,11 +24,11 @@ router.delete(
 		gateway.presenceManeger.sendToUser(userId, payload.id, true);
 
 		gateway.unsubscribeSessionsFromTopic(payload.id, `${userId}_public`);
-		gateway.unsubscribeSessionsFromTopic(userId, `${payload.id}_public`);
 		gateway.unsubscribeSessionsFromTopic(payload.id, `${userId}_presence`);
+
+		gateway.unsubscribeSessionsFromTopic(userId, `${payload.id}_public`);
 		gateway.unsubscribeSessionsFromTopic(userId, `${payload.id}_presence`);
 
-		setResponseStatus(event, HttpCode.OK);
-		return null;
+		return sendNoContent(event, HttpCode.NO_CONTENT);
 	}),
 );

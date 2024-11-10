@@ -1,10 +1,6 @@
-import { useClient } from "@contexts/apiContext";
-import { usePresence } from "@contexts/presenceContext";
 import type { Snowflake } from "@huginn/shared";
-import { getUserAvatar } from "@lib/queries";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
 
 export default function UserAvatarWithStatus(props: {
 	userId: Snowflake;
@@ -14,10 +10,9 @@ export default function UserAvatarWithStatus(props: {
 	className?: string;
 }) {
 	const client = useClient();
+	const { data: avatar, isLoading } = useQuery(getUserAvatar(props.userId, props.avatarHash, client));
 
-	const { data: avatar } = useQuery(getUserAvatar(props.userId, props.avatarHash, client));
 	const presence = usePresence(props.userId);
-
 	const [hasErrors, setHasErrors] = useState(false);
 
 	useEffect(() => {
@@ -27,12 +22,17 @@ export default function UserAvatarWithStatus(props: {
 	const { size = "2.25rem", statusSize = "0.75rem", className } = props;
 	return (
 		<div className={clsx("relative shrink-0", className)} style={{ width: size, height: size }}>
+			{isLoading && (
+				<div className="absolute inset-0 flex items-center justify-center rounded-full bg-primary/20">
+					<LoadingIcon className="size-5" />
+				</div>
+			)}
 			{avatar && !hasErrors ? (
 				<img alt="user-avatar" src={avatar} onError={() => setHasErrors(true)} className="h-full w-full rounded-full object-cover" />
-			) : !hasErrors && !avatar ? (
-				<div className="h-full w-full rounded-full bg-primary/50" />
+			) : !hasErrors && !avatar && !isLoading ? (
+				<div className="h-full w-full rounded-full bg-primary" />
 			) : (
-				<div className="flex h-full w-full items-center justify-center rounded-full bg-error/50 font-bold text-text">!</div>
+				hasErrors && <div className="flex h-full w-full items-center justify-center rounded-full bg-error/50 font-bold text-text">!</div>
 			)}
 			<div
 				className={clsx(

@@ -1,9 +1,14 @@
 import type { FileCategory } from "#types";
 
 export abstract class Storage {
-	public abstract getFile(category: FileCategory, name: string): Promise<ReadableStream | undefined>;
+	public name: string;
+	public constructor(name: string) {
+		this.name = name;
+	}
 
-	public abstract writeFile(category: FileCategory, name: string, data: Blob | Uint8Array | ArrayBuffer): Promise<boolean> | boolean;
+	public abstract getFile(category: FileCategory, subDirectory: string, name: string): Promise<ArrayBuffer | undefined>;
 
-	public abstract exists(category: FileCategory, name: string): Promise<boolean>;
+	public abstract writeFile(category: FileCategory, subDirectory: string, name: string, data: ArrayBuffer | string): Promise<boolean> | boolean;
+
+	public abstract exists(category: FileCategory, subDirectory: string, name: string): Promise<boolean>;
 }

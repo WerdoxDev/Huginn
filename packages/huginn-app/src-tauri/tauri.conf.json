@@ -24,7 +24,7 @@
 		"createUpdaterArtifacts": true
 	},
 	"productName": "Huginn",
-	"identifier": "com.huginn.dev",
+	"identifier": "dev.huginn.desktop",
 	"plugins": {
 		"updater": {
 			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEZBQzhCNUZDMEVFMDlCMkYKUldRdm0rQU8vTFhJK3JnS1NCRzIzUS9NM21tbHdBYlo1UzkyNDZYNTd6OEE1TFJpNkd4ekdVKzAK",
@@ -32,7 +32,12 @@
 			"windows": {
 				"installMode": "passive"
 			}
-		}
+		},
+      "deep-link":{
+         "desktop":{
+            "schemes": ["huginn"]
+         }
+      }
 	},
 	"app": {
 		"windows": [
@@ -47,17 +52,21 @@
 				"visible": false,
 				"label": "main",
 				"decorations": false,
-				"transparent": true
+				"transparent": false,
+            "windowEffects":{"effects": [], "color":[38,38,38,1]}
 			},
 			{
+            "title": "Huginn",
 				"width": 300,
 				"height": 300,
 				"resizable": false,
 				"decorations": false,
+            "visible": false,
 				"url": "/splashscreen",
 				"label": "splashscreen",
 				"center": true,
-				"transparent": true
+				"transparent": false,
+            "windowEffects":{"effects": [], "color":[38,38,38,1]}
 			}
 		],
 		"security": {

@@ -1,11 +1,15 @@
 import type { HuginnButtonProps } from "@/types";
 import { omit } from "@huginn/shared";
-import HuginnButton from "./HuginnButton";
+import clsx from "clsx";
 
-export default function LoadingButton(props: HuginnButtonProps & { loading: boolean }) {
+export default function LoadingButton(props: HuginnButtonProps & { loading: boolean; iconClassName?: string }) {
 	return (
 		<HuginnButton innerClassName="flex items-center justify-center" disabled={props.loading || props.disabled} {...omit(props, ["disabled"])}>
-			{props.loading ? <IconSvgSpinners3DotsFade className="absolute h-8 w-8 text-text" /> : <div className="absolute">{props.children}</div>}
+			{props.loading ? (
+				<IconMingcuteLoading3Fill className={clsx("size-7 animate-spin text-text", props.iconClassName)} />
+			) : (
+				<div>{props.children}</div>
+			)}
 		</HuginnButton>
 	);
 }

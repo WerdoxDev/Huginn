@@ -1,11 +1,10 @@
+import { type ErrorFactory, createErrorFactory, unauthorized } from "@huginn/backend-shared";
+import { Errors, HttpCode, type IdentityTokenPayload, type TokenPayload } from "@huginn/shared";
+import { type H3Event, getHeader, setResponseStatus } from "h3";
 import { type DBError, DBErrorType, prisma } from "#database";
-import { createErrorFactory, type ErrorFactory, unauthorized } from "@huginn/backend-shared";
-import { getHeader, type H3Event, setResponseStatus } from "h3";
-import { sha256 } from "ohash";
 import { verifyToken } from "./token-factory";
-import { HttpCode, Errors } from "@huginn/shared";
 
-export async function useVerifiedJwt(event: H3Event) {
+export async function useVerifiedJwt<IdentityToken extends boolean = false>(event: H3Event, identity?: IdentityToken) {
 	const bearer = getHeader(event, "Authorization");
 
 	if (!bearer) {
@@ -20,16 +19,15 @@ export async function useVerifiedJwt(event: H3Event) {
 		throw unauthorized(event);
 	}
 
-	if (!(await prisma.user.exists({ id: BigInt(payload.id) }))) {
+	if (!identity && !(await prisma.user.exists({ id: BigInt((payload as TokenPayload).id) }))) {
 		throw unauthorized(event);
 	}
 
-	return { payload, token };
-}
+	// if (identity && !(await prisma.identityProvider.exists({ id: BigInt((payload as IdentityTokenPayload).providerId) }))) {
+	// 	throw unauthorized(event);
+	// }
 
-export function getFileHash(file: Buffer) {
-	const hash = sha256(file.toString()).substring(0, 32);
-	return hash;
+	return { payload: payload as IdentityToken extends true ? IdentityTokenPayload : TokenPayload, token };
 }
 
 export function handleCommonDBErrors(event: H3Event, error: DBError) {
@@ -37,7 +35,7 @@ export function handleCommonDBErrors(event: H3Event, error: DBError) {
 
 	if (error.isErrorType(DBErrorType.INVALID_ID)) {
 		setResponseStatus(event, HttpCode.BAD_REQUEST);
-		errorFactory = createErrorFactory(Errors.invalidFormBody());
+		errorFactory = createErrorFactory(Errors.invalidId(error.cause));
 	}
 	if (error.isErrorType(DBErrorType.NULL_USER)) {
 		setResponseStatus(event, HttpCode.NOT_FOUND);

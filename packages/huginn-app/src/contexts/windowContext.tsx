@@ -1,8 +1,7 @@
 import type { VersionFlavour } from "@/types";
-import { getVersionFlavour } from "@lib/utils";
 import type { ReactNode } from "@tanstack/react-router";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { type Dispatch, createContext, useContext, useEffect, useReducer } from "react";
+import { type Dispatch, createContext } from "react";
 
 type WindowContextType = {
 	maximized: boolean;

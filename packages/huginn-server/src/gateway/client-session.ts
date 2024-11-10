@@ -5,12 +5,12 @@ import type { BasePayload } from "@huginn/shared";
 import { idFix } from "@huginn/shared";
 import type { ServerWebSocket } from "bun";
 import type { Peer } from "crossws";
-import { excludeSelfChannelUser, includeChannelRecipients, includeRelationshipUser } from "#database/common";
+import { excludeChannelRecipient, includeChannelRecipients, includeRelationshipUser } from "#database/common";
 import { prisma } from "#database/index";
 import type { ClientSessionInfo } from "#utils/types";
 
 export class ClientSession extends EventEmitter {
-	public data: ClientSessionInfo;
+	public data?: ClientSessionInfo;
 	public peer: Peer;
 
 	private sentMessages: Map<number, BasePayload>;
@@ -18,18 +18,23 @@ export class ClientSession extends EventEmitter {
 	private hearbeatTimeout?: Timer;
 	public sequence?: number;
 
-	public constructor(peer: Peer, data: ClientSessionInfo) {
+	public constructor(peer: Peer) {
 		super();
 
 		this.peer = peer;
-		this.data = data;
 		this.sentMessages = new Map();
 		this.subscribedTopics = new Set();
+
+		this.startHeartbeatTimeout();
 	}
 
-	public async initialize() {
+	public async initialize(data?: ClientSessionInfo) {
+		this.data = data;
 		await this.subscribeClientEvents();
-		this.startHeartbeatTimeout();
+
+		if (!this.hearbeatTimeout) {
+			this.startHeartbeatTimeout();
+		}
 	}
 
 	public resetTimeout() {
@@ -76,11 +81,15 @@ export class ClientSession extends EventEmitter {
 	}
 
 	private async subscribeClientEvents() {
+		if (!this.data) {
+			throw new Error("Client session was not initialized");
+		}
+
 		const userId = this.data.user.id;
 		this.subscribe(userId);
 
 		const relationships = idFix(await prisma.relationship.getUserRelationships(userId, includeRelationshipUser));
-		const channels = idFix(await prisma.channel.getUserChannels(userId, true, merge(includeChannelRecipients, excludeSelfChannelUser(userId))));
+		const channels = idFix(await prisma.channel.getUserChannels(userId, true, merge(includeChannelRecipients, excludeChannelRecipient(userId))));
 
 		const publicUserIds = [...new Set([...relationships.map((x) => x.user.id), ...channels.flatMap((x) => x.recipients).map((x) => x.id)])];
 		const presenceUserIds = [...new Set([...relationships.filter((x) => x.type === RelationshipType.FRIEND).map((x) => x.user.id)])];

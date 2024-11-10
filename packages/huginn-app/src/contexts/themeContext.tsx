@@ -1,6 +1,5 @@
 import type { ColorTheme, ThemeType } from "@/types";
-import { type Dispatch, type ReactNode, createContext, useContext, useEffect, useReducer } from "react";
-import { useSettings } from "./settingsContext";
+import { type Dispatch, type ReactNode, createContext } from "react";
 
 export const ceruleanTheme: ColorTheme = {
 	background: "#303030",
@@ -76,7 +75,7 @@ export function ThemeProvier(props: { children?: ReactNode }) {
 	const settings = useSettings();
 	const [colorTheme, dispatch] = useReducer(colorThemeReducer, defaultValue);
 
-	useEffect(() => {
+	useLayoutEffect(() => {
 		dispatch(settings.theme);
 	}, []);
 	return (

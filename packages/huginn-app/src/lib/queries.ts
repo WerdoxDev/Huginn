@@ -1,5 +1,5 @@
 import type { HuginnClient } from "@huginn/api";
-import { type APIGetUserChannelsResult, type Snowflake, resolveBase64, resolveImage } from "@huginn/shared";
+import { type APIGetUserChannelsResult, type Snowflake, resolveImage } from "@huginn/shared";
 import { type QueryClient, infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 export function getChannelsOptions(client: HuginnClient, guildId: Snowflake) {
@@ -47,26 +47,30 @@ export function getRelationshipsOptions(client: HuginnClient) {
 	});
 }
 
-export function getUserAvatar(userId: Snowflake | undefined, userAvatar: string | null | undefined, client: HuginnClient) {
+export function getUserAvatar(userId: Snowflake | undefined, avatarHash: string | null | undefined, client: HuginnClient) {
 	return queryOptions({
-		queryKey: ["avatar", userId, userAvatar],
+		queryKey: ["avatar", userId, avatarHash],
 		async queryFn() {
-			if (!userId || !userAvatar) {
+			if (!userId || !avatarHash) {
 				return null;
 			}
-			const webp = await resolveImage(client.cdn.avatar(userId, userAvatar));
 
-			if (webp) {
-				return resolveBase64(webp);
+			const data = await resolveImage(client.cdn.avatar(userId, avatarHash));
+			return data ? data : null;
+		},
+	});
+}
+
+export function getChannelIcon(channelId: Snowflake | undefined, iconHash: string | null | undefined, client: HuginnClient) {
+	return queryOptions({
+		queryKey: ["channel-icon", channelId, iconHash],
+		async queryFn() {
+			if (!channelId || !iconHash) {
+				return null;
 			}
-			const gif = await resolveImage(client.cdn.avatar(userId, userAvatar, { format: "gif" }));
-			if (gif) {
-				return resolveBase64(gif);
-			}
 
-			// const m = userId && userAvatar && resolveBase64(await resolveImage(client.cdn.avatar(userId, userAvatar!)));
-
-			return null;
+			const data = await resolveImage(client.cdn.channelIcon(channelId, iconHash));
+			return data ? data : null;
 		},
 	});
 }

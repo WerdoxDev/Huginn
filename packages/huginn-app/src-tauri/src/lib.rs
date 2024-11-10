@@ -121,7 +121,17 @@ async fn update(app: AppHandle, target: String) -> Result<(), tauri_plugin_updat
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default();
+
+    #[cfg(desktop)]
+    {
+        builder = builder.plugin(tauri_plugin_single_instance::init(|_app, argv, _cwd| {
+            println!("a new app instance was opened with {argv:?} {_cwd:?} and the deep link event was already triggered");
+         }));
+    }
+
+    builder = builder
+        .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_process::init())
@@ -134,7 +144,6 @@ pub fn run() {
         .on_window_event(|window, event| match event {
             WindowEvent::Destroyed => {
                 let windows = window.app_handle().webview_windows();
-                //  window.app_handle().exit(0);
 
                 for (_name, window) in windows.iter() {
                     window.close().unwrap();
@@ -142,10 +151,16 @@ pub fn run() {
             }
             _ => {}
         })
+        .setup(|app| {
+            #[cfg(any(windows, target_os = "linux"))]
+            {
+                use tauri_plugin_deep_link::DeepLinkExt;
+                app.deep_link().register_all()?;
+            }
+            Ok(())
+        });
+
+    builder
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-
-// fn setup(app: AppHandle) -> Result<(), Error> {
-//     Ok(())
-// }

@@ -1,6 +1,5 @@
 import { HuginnClient } from "@huginn/api";
-import { type ReactNode, createContext, useContext, useState } from "react";
-import { useSettings } from "./settingsContext";
+import { type ReactNode, createContext } from "react";
 
 type APIContextType = HuginnClient;
 
@@ -10,7 +9,7 @@ const APIContext = createContext<APIContextType>(undefined!);
 export function APIProvider(props: { children?: ReactNode }) {
 	const settings = useSettings();
 
-	const [client] = useState<APIContextType>(
+	const client = useMemo(
 		() =>
 			new HuginnClient({
 				rest: { api: `${settings.serverAddress}/api`, cdn: settings.cdnAddress },
@@ -21,7 +20,14 @@ export function APIProvider(props: { children?: ReactNode }) {
 					},
 				},
 			}),
+		[],
 	);
+
+	useEffect(() => {
+		if (!window.location.pathname.includes("splashscreen")) {
+			client.gateway.connect();
+		}
+	}, []);
 
 	return <APIContext.Provider value={client}>{props.children}</APIContext.Provider>;
 }

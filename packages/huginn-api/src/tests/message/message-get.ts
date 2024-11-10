@@ -8,7 +8,7 @@ describe("message-get", () => {
 
 		const channel = (await client.channels.getAll())[0];
 
-		expect(() => client.channels.getMessage(channel.id, "invalid")).toThrow("Invalid Form Body"); // Invalid id
+		expect(() => client.channels.getMessage(channel.id, "invalid")).toThrow("Snowflake"); // Invalid id
 		expect(() => client.channels.getMessage(channel.id, "000000000000000000")).toThrow("Unknown Message"); // Unknown id
 	});
 	test(
@@ -16,10 +16,7 @@ describe("message-get", () => {
 		async () => {
 			const client = await getLoggedClient();
 
-			const channel = (await client.channels.getAll()).find((x) => x.name === "test_group");
-			expect(channel).toBeDefined();
-
-			if (!channel) return;
+			const channel = (await client.channels.getAll()).find((x) => x.name === "test_group")!;
 
 			const messages = await client.channels.getMessages(channel.id);
 
@@ -34,10 +31,7 @@ describe("message-get", () => {
 		async () => {
 			const client = await getLoggedClient();
 
-			const channel = (await client.channels.getAll()).find((x) => x.name === "test_group");
-			expect(channel).toBeDefined();
-
-			if (!channel) return;
+			const channel = (await client.channels.getAll()).find((x) => x.name === "test_group")!;
 
 			const limit = 20;
 			const messages = await client.channels.getMessages(channel.id, limit);

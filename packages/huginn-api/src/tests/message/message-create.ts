@@ -9,7 +9,7 @@ describe("message-create", () => {
 	test("message-create-invalid", async () => {
 		const client = await getLoggedClient();
 
-		expect(() => client.channels.createMessage("invalid", { content: "test" })).toThrow("Invalid Form Body"); // Invalid id
+		expect(() => client.channels.createMessage("invalid", { content: "test" })).toThrow("Snowflake"); // Invalid id
 		expect(() => client.channels.createMessage("000000000000000000", { content: "test" })).toThrow("Unknown Channel"); // Unknown id
 
 		const channel = (await client.channels.getAll())[0];

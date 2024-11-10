@@ -36,6 +36,7 @@ export enum HttpCode {
 	CREATED = 201,
 	NO_CONTENT = 204,
 	NOT_MODIFIED = 304,
+	FOUND = 302,
 	BAD_REQUEST = 400,
 	UNAUTHORIZED = 401,
 	FORBIDDEN = 403,
@@ -43,21 +44,30 @@ export enum HttpCode {
 	METHOD_NOT_ALLOWED = 405,
 	TOO_MANY_REQUESTS = 429,
 	GATEWAY_UNAVAILABLE = 502,
+	NOT_IMPLEMENTED = 501,
 	SERVER_ERROR = 500,
 }
 
+// 1001 - 1999 > Unknown Things
+// 2000 - 2999 > Permission & Validation Things
+// 3000 - 3999 > Request Related
 export enum JsonCode {
 	NONE = 0,
-	UNKNOWN_ACCOUNT = 10001,
-	UNKNOWN_MESSAGE = 10002,
-	UNKNOWN_MEMBER = 10003,
-	UNKNOWN_USER = 10004,
-	UNKNOWN_CHANNEL = 10005,
-	UNKNOWN_RELATIONSHIP = 10006,
-	INVALID_FORM_BODY = 20001,
-	USERNAME_NOT_FOUND = 30001,
-	RELATION_SELF_REQUEST = 30002,
-	RELATION_EXISTS = 30003,
+	UNKNOWN_ACCOUNT = 1001,
+	UNKNOWN_MESSAGE = 1002,
+	UNKNOWN_MEMBER = 1003,
+	UNKNOWN_USER = 1004,
+	UNKNOWN_CHANNEL = 1005,
+	UNKNOWN_RELATIONSHIP = 1006,
+	INVALID_FORM_BODY = 2001,
+	MISSING_ACCESS = 2002,
+	MISSING_PERMISSION = 2003,
+	INVALID_CHANNEL_TYPE = 2004,
+	INVALID_RECIPIENT = 2005,
+	INVALID_ID = 2006,
+	USERNAME_NOT_FOUND = 3001,
+	RELATION_SELF_REQUEST = 3002,
+	RELATION_EXISTS = 3003,
 }
 
 export enum GatewayCode {
@@ -76,11 +86,16 @@ export enum GatewayCode {
 export enum FieldCode {
 	REQUIRED = "REQUIRED",
 	INVALID_LOGIN = "INVALID_LOGIN",
-	TOO_SHORT = "BASE_TYPE_TOO_SHORT",
+	WRONG_LENGHTH = "INCORRECT_LENGTH",
 	USERNAME_TAKEN = "USERNAME_TAKEN",
 	EMAIL_IN_USE = "EMAIL_IN_USE",
 	EMAIL_INVALID = "EMAIL_INVALID",
+	USERNAME_INVLIAD = "INVALID_USERNAME",
 	PASSWORD_INCORRECT = "PASSWORD_INCORRECT",
+}
+
+export enum OAuthCode {
+	CANCELLED = "CANCELLED",
 }
 
 // Detailed errors that happen to a normal user
@@ -97,13 +112,16 @@ export const Fields = {
 		else if (min) text = text = `This must be atleast ${min} characters long`;
 		else if (max) text = `This must be at most ${max} characters long`;
 		else text = "This is invalid";
-		return [text, FieldCode.TOO_SHORT];
+		return [text, FieldCode.WRONG_LENGHTH];
 	},
 	emailInvalid(): [string, string] {
 		return ["Email is invalid", FieldCode.EMAIL_INVALID];
 	},
 	emailInUse(): [string, string] {
 		return ["Email is already registered", FieldCode.EMAIL_IN_USE];
+	},
+	usernameInvalid(): [string, string] {
+		return ["Username can only include numbers, letters, underlines _ and fullstops .", FieldCode.USERNAME_INVLIAD];
 	},
 	usernameTaken(): [string, string] {
 		return ["Username is already taken", FieldCode.USERNAME_TAKEN];
@@ -117,6 +135,9 @@ export const Fields = {
 export const Errors = {
 	unauthorized(): [string, JsonCode] {
 		return ["Unauthorized", JsonCode.NONE];
+	},
+	forbidden(): [string, JsonCode] {
+		return ["Forbidden", JsonCode.NONE];
 	},
 	serverError(): [string, JsonCode] {
 		return ["Server Error", JsonCode.NONE];
@@ -156,5 +177,20 @@ export const Errors = {
 	},
 	relationshipExists(): [string, JsonCode] {
 		return ["You are already friends with this user", JsonCode.RELATION_EXISTS];
+	},
+	missingPermission(): [string, JsonCode] {
+		return ["Missing Permissions", JsonCode.MISSING_PERMISSION];
+	},
+	missingAccess(): [string, JsonCode] {
+		return ["Missing Access", JsonCode.MISSING_ACCESS];
+	},
+	invalidChannelType(): [string, JsonCode] {
+		return ["Invalid Channel Type", JsonCode.INVALID_CHANNEL_TYPE];
+	},
+	invalidRecipient(recipientId: Snowflake): [string, JsonCode] {
+		return [`Invalid Recipient (${recipientId})`, JsonCode.INVALID_RECIPIENT];
+	},
+	invalidId(id?: string): [string, JsonCode] {
+		return [`"${id}" is not a valid Snowflake`, JsonCode.INVALID_ID];
 	},
 };

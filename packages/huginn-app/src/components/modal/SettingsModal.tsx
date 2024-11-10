@@ -1,40 +1,31 @@
 import type { DeepPartial, SettingsTab, SettingsTabProps } from "@/types";
-import ModalCloseButton from "@components/button/ModalCloseButton";
-import { useClient } from "@contexts/apiContext";
-import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { type SettingsContextType, useSettings, useSettingsDispatcher } from "@contexts/settingsContext";
 import { DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
-import type React from "react";
-import { Fragment, memo, useEffect, useRef, useState } from "react";
-import BaseModal from "./BaseModal";
-import SettingsAboutTab from "./settings/SettingsAboutTab";
-import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
-import SettingsProfileTab from "./settings/SettingsProfileTab";
-import SettingsThemeTab from "./settings/SettingsThemeTab";
+import { Fragment } from "react";
 
 const tabs: SettingsTab[] = [
 	{
 		name: "profile",
 		text: "Profile",
 		auth: true,
-		children: [{ name: "my-account", text: "My Account", auth: true, icon: <IconMdiAccount />, component: SettingsProfileTab }],
+		children: [{ name: "my-account", text: "My Account", auth: true, icon: <IconMingcuteUser3Fill />, component: SettingsProfileTab }],
 	},
 	{
 		name: "app-settings",
 		text: "App Settings",
 		children: [
-			{ name: "theme", text: "Theme", icon: <IconMdiTheme />, component: SettingsThemeTab },
-			{ name: "notification", text: "Notification", icon: <IconMdiNotifications /> },
-			{ name: "audio", text: "Audio", icon: <IconMdiSpeakerphone /> },
-			{ name: "advanced", text: "Advanced", icon: <IconMdiServer />, component: SettingsAdvancedTab },
+			{ name: "theme", text: "Theme", icon: <IconMingcuteColorPickerFill />, component: SettingsThemeTab },
+			{ name: "notification", text: "Notification", icon: <IconMingcuteNotificationFill /> },
+			{ name: "audio", text: "Audio", icon: <IconMingcuteSpeakerFill /> },
+			{ name: "advanced", text: "Advanced", icon: <IconMingcuteServerFill />, component: SettingsAdvancedTab },
 		],
 	},
 	{
 		name: "miscellaneous",
 		text: "Miscellaneous",
-		children: [{ name: "about", text: "About", icon: <IconMdiAbout />, component: SettingsAboutTab }],
+		children: [{ name: "about", text: "About", icon: <IconMingcuteBook2Fill />, component: SettingsAboutTab }],
 	},
 ];
 
@@ -120,14 +111,12 @@ export default function SettingsModal() {
 	}
 
 	return (
-		<BaseModal
-			modal={modal}
-			onClose={() => {
-				dispatch({ settings: { isOpen: false } });
-			}}
-		>
-			<DialogPanel className="flex h-[30rem] w-full max-w-3xl transform rounded-xl border-2 border-primary/50 bg-background transition-[opacity_transform] data-[closed]:scale-95">
-				<TabGroup className="flex w-full" vertical defaultIndex={defaultTabIndex} onChange={onTabChanged}>
+		<div className="h-full w-full p-10">
+			<DialogPanel
+				transition
+				className="h-full transform rounded-xl border-2 border-primary/50 bg-background transition-[opacity_transform] duration-200 data-[closed]:scale-90"
+			>
+				<TabGroup className="flex h-full w-full" vertical defaultIndex={defaultTabIndex} onChange={onTabChanged}>
 					<div className="h-full rounded-l-xl bg-secondary/50">
 						<TabList className="flex h-full w-48 select-none flex-col py-2">
 							<DialogTitle className="mx-5 my-3 flex items-center justify-start gap-x-1.5">
@@ -146,7 +135,7 @@ export default function SettingsModal() {
 					}}
 				/>
 			</DialogPanel>
-		</BaseModal>
+		</div>
 	);
 }
 
@@ -208,14 +197,14 @@ function SettingsPanels(props: {
 	const flatTabs = useFlatTabs();
 
 	return (
-		<TabPanels className="flex w-full flex-col p-5 pr-0">
-			<div className="text-text mb-5 shrink-0 text-xl">{props.currentTab}</div>
+		<TabPanels className="flex w-full flex-col p-5 pr-0 pb-0">
+			<div className="mb-5 shrink-0 text-text text-xl">{props.currentTab}</div>
 			{flatTabs.map((tab) => (
 				<TabPanel key={tab?.name} className="scroll-alternative h-full overflow-y-scroll pr-3">
 					{tab?.component ? (
 						<TabComponent onChange={props.onChange} onSave={props.onSave} settings={props.settings} component={tab.component} />
 					) : (
-						<span className="text-text/50 text-base italic">{tab?.name} (Soon...)</span>
+						<span className="text-base text-text/50 italic">{tab?.name} (Soon...)</span>
 					)}
 				</TabPanel>
 			))}

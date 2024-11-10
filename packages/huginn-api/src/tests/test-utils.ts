@@ -1,7 +1,7 @@
 import type { LoginCredentials } from "@huginn/shared";
 import { HuginnClient } from "../..";
 
-export const url = "192.168.178.51:3001";
+export const url = "localhost:3001";
 
 export const testCredentials: LoginCredentials = {
 	username: "test",
@@ -35,12 +35,11 @@ export const editCredentials: LoginCredentials = {
 
 export async function getLoggedClient(
 	credentials: LoginCredentials = testCredentials,
-	skipIdentify?: boolean,
 	// skipWaitForReady?: boolean,
 ): Promise<HuginnClient> {
 	const client = new HuginnClient({
 		rest: { api: `http://${url}/api` },
-		gateway: { url: `ws://${url}/gateway`, createSocket: (url) => new WebSocket(url), log: false, identify: !skipIdentify },
+		gateway: { url: `ws://${url}/gateway`, createSocket: (url) => new WebSocket(url), log: false },
 	});
 
 	const result = await client.login(credentials);
@@ -56,7 +55,7 @@ export async function getLoggedClient(
 export function getNewClient(): HuginnClient {
 	const client = new HuginnClient({
 		rest: { api: `http://${url}/api` },
-		gateway: { url: `ws://${url}/gateway`, createSocket: (url) => new WebSocket(url), log: false, identify: true },
+		gateway: { url: `ws://${url}/gateway`, createSocket: (url) => new WebSocket(url), log: false },
 	});
 	return client;
 }

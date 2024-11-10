@@ -2,8 +2,8 @@ import { HTTPError, type HuginnErrorData, resolveRequest } from "@huginn/shared"
 import { type HandlerRequestData, type InternalRequest, type RequestData, RequestMethod, type ResponseLike, parseResponse } from "@huginn/shared";
 import type { RouteLike } from "@huginn/shared";
 import type { HuginnClient } from "../..";
-import type { RESTOptions } from "../types";
 import { HuginnAPIError } from "../errors/huginn-error";
+import type { RESTOptions } from "../types";
 import { DefaultRestOptions } from "./rest-utils";
 
 export class REST {
@@ -72,9 +72,9 @@ export class REST {
 	 * @param options - Request options
 	 */
 	public async request(options: Omit<InternalRequest, "root">): Promise<unknown> {
-		const { url, fetchOptions } = resolveRequest({
+		const { url, fetchOptions } = await resolveRequest({
 			...options,
-			token: this.client.tokenHandler.token,
+			token: options.token ?? this.client.tokenHandler.token,
 			root: this.options.api,
 			authPrefix: this.options.authPrefix,
 		});

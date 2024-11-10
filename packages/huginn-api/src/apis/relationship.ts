@@ -26,7 +26,7 @@ export class RelationshipAPI {
 		return this.rest.put(Routes.userRelationship(userId), { auth: true });
 	}
 
-	public async delete(userId: Snowflake): Promise<unknown> {
+	public async remove(userId: Snowflake): Promise<unknown> {
 		return this.rest.delete(Routes.userRelationship(userId), { auth: true });
 	}
 }

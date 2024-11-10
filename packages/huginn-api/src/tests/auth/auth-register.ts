@@ -36,7 +36,7 @@ describe("auth-register", () => {
 		};
 
 		await client.register(user);
-		await client.gateway.connectAndWaitForReady();
+		await client.gateway.waitForReady();
 
 		expect(client.user).toBeDefined();
 	});
@@ -65,7 +65,7 @@ describe("auth-register", () => {
 		};
 
 		await client.register(user);
-		await client.gateway.connectAndWaitForReady();
+		await client.gateway.waitForReady();
 
 		expect(client.user).toBeDefined();
 	});
@@ -81,7 +81,7 @@ describe("auth-register", () => {
 		};
 
 		await client.register(user);
-		await client.gateway.connectAndWaitForReady();
+		await client.gateway.waitForReady();
 
 		expect(client.user).toBeDefined();
 	});
@@ -96,7 +96,7 @@ describe("auth-register", () => {
 		};
 
 		await client.register(user);
-		await client.gateway.connectAndWaitForReady();
+		await client.gateway.waitForReady();
 
 		expect(client.user).toBeDefined();
 	});

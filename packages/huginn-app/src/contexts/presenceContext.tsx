@@ -1,11 +1,8 @@
 import type { GatewayPresenceUpdateData, GatewayReadyDispatchData, Snowflake } from "@huginn/shared";
-import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
-import { useClient } from "./apiContext";
+import { type ReactNode, createContext } from "react";
 
 type PresenceContextType = GatewayPresenceUpdateData[];
-
 const defaultValue: PresenceContextType = [];
-
 const PresenceContext = createContext<PresenceContextType>(defaultValue);
 
 export function PresenceProvider(props: { children?: ReactNode }) {
@@ -64,6 +61,11 @@ export function usePresence(userId: Snowflake) {
 
 export function usePresences(userIds: Snowflake[]) {
 	const context = useContext(PresenceContext);
+	const presences = useMemo(() => context.filter((x) => userIds.includes(x.user.id)), [context]);
 
-	return useMemo(() => context.filter((x) => userIds.includes(x.user.id)), [context]);
+	function getPresence(userId: Snowflake) {
+		return presences.find((x) => x.user.id === userId);
+	}
+
+	return { presences, getPresence };
 }

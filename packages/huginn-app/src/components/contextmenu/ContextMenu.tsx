@@ -22,7 +22,8 @@ import {
 	useMergeRefs,
 	useRole,
 } from "@floating-ui/react";
-import { type HTMLProps, createContext, forwardRef, useContext, useEffect, useRef, useState } from "react";
+import clsx from "clsx";
+import { type HTMLProps, Suspense, createContext } from "react";
 
 const Context = createContext<{
 	getItemProps: (userProps?: React.HTMLProps<HTMLElement>) => Record<string, unknown>;
@@ -148,7 +149,7 @@ const Menu = forwardRef<HTMLButtonElement, ContextMenuProps & HTMLProps<HTMLButt
 					role="menuitem"
 					data-open={isOpen ? "" : undefined}
 					data-focus-inside={hasFocusInside ? "" : undefined}
-					className="focus:bg-primary rounded-sm px-2 py-1 text-start text-sm text-white/90 outline-none"
+					className="rounded-sm px-2 py-1 text-start text-sm text-white/90 outline-none focus:bg-primary"
 					{...getReferenceProps(
 						parent.getItemProps({
 							...props,
@@ -178,16 +179,18 @@ const Menu = forwardRef<HTMLButtonElement, ContextMenuProps & HTMLProps<HTMLButt
 				<FloatingList elementsRef={elementsRef} labelsRef={labelsRef}>
 					{isOpen && (
 						<FloatingPortal>
-							<FloatingFocusManager context={context} modal={false} initialFocus={isNested ? -1 : 0} returnFocus={!isNested}>
-								<div
-									ref={refs.setFloating}
-									className="flex min-w-28 flex-col gap-y-0.5 rounded-md bg-zinc-900 p-2 shadow-lg outline-none"
-									style={floatingStyles}
-									{...getFloatingProps()}
-								>
-									{children}
-								</div>
-							</FloatingFocusManager>
+							<Suspense>
+								<FloatingFocusManager context={context} modal={false} initialFocus={isNested ? -1 : 0} returnFocus={!isNested}>
+									<div
+										ref={refs.setFloating}
+										className="flex min-w-28 flex-col gap-y-0.5 rounded-md bg-zinc-900 p-2 shadow-lg outline-none"
+										style={floatingStyles}
+										{...getFloatingProps()}
+									>
+										{props.renderChildren}
+									</div>
+								</FloatingFocusManager>
+							</Suspense>
 						</FloatingPortal>
 					)}
 				</FloatingList>
@@ -209,7 +212,10 @@ const Item = forwardRef<HTMLButtonElement, ContextMenuItemProps & React.ButtonHT
 				ref={useMergeRefs([item.ref, forwardedRef])}
 				type="button"
 				role="menuitem"
-				className={`focus:bg-primary flex items-center justify-between gap-x-5 rounded-sm px-2 py-1 text-start text-sm text-white/90 outline-none ${props.className ?? ""}`}
+				className={clsx(
+					"flex items-center justify-between gap-x-5 rounded-sm px-2 py-1 text-start text-sm text-white/90 outline-none focus:bg-primary",
+					props.className,
+				)}
 				tabIndex={isActive ? 0 : -1}
 				disabled={disabled}
 				{...menu.getItemProps({
@@ -230,7 +236,7 @@ const Item = forwardRef<HTMLButtonElement, ContextMenuItemProps & React.ButtonHT
 	},
 );
 
-export function ContextMenu(props: ContextMenuProps) {
+export default function ContextMenu(props: ContextMenuProps) {
 	const parentId = useFloatingParentNodeId();
 
 	if (parentId === null) {
@@ -245,7 +251,7 @@ export function ContextMenu(props: ContextMenuProps) {
 }
 
 function Divider() {
-	return <div className="bg-background mx-1 my-0.5 h-0.5" />;
+	return <div className="mx-1 my-0.5 h-0.5 bg-background" />;
 }
 
 ContextMenu.Item = Item;

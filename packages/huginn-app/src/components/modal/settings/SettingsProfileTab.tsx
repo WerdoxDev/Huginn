@@ -1,46 +1,33 @@
 import type { SettingsTabProps } from "@/types";
-import AnimatedMessage from "@components/AnimatedMessage";
-import HuginnButton from "@components/button/HuginnButton";
-import LoadingButton from "@components/button/LoadingButton";
-import HuginnInput from "@components/input/HuginnInput";
-import PasswordInput from "@components/input/PasswordInput";
-import { Tooltip } from "@components/tooltip/Tooltip";
-import { useClient } from "@contexts/apiContext";
-import { useEvent } from "@contexts/eventContext";
-import { useModalsDispatch } from "@contexts/modalContext";
-import { useUser } from "@contexts/userContext";
 import { Transition } from "@headlessui/react";
-import { usePatchUser } from "@hooks/mutations/usePatchUser";
-import { useInputs } from "@hooks/useInputs";
-import useUniqueUsernameMessage from "@hooks/useUniqueUsernameMessage";
 import { omit } from "@huginn/shared";
 import { getUserAvatar } from "@lib/queries";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
 
 export default function SettingsProfileTab(_props: SettingsTabProps) {
 	const client = useClient();
-	const { user, setUser } = useUser();
+	const { user, setUser, tokenPayload } = useUser();
 	const { listenEvent } = useEvent();
 	const modalsDispatch = useModalsDispatch();
-
-	const { data: originalAvatar } = useQuery(getUserAvatar(user?.id, user?.avatar, client));
 
 	const {
 		inputsProps,
 		values,
 		handleErrors,
 		resetStatuses,
+		resetInput,
 		setInputValue: onValueChanged,
 	} = useInputs([
 		{ name: "username", required: true, default: user?.username },
 		{ name: "displayName", required: false, default: user?.displayName },
 		{ name: "password", required: false },
+		{ name: "newPassword", required: false },
 	]);
 
+	const { data: originalAvatar } = useQuery(getUserAvatar(user?.id, user?.avatar, client));
 	const [avatarData, setAvatarData] = useState<string | null | undefined>(() => originalAvatar);
 
-	const { message: usernameMessageDetail, onFocusChanged, onChanged } = useUniqueUsernameMessage(values, "username");
+	const { message: usernameMessageDetail, onFocusChanged, onChanged } = useUniqueUsernameMessage(values, resetInput, "username");
 
 	const mutation = usePatchUser((result) => {
 		client.tokenHandler.token = result.token;
@@ -48,6 +35,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 		setUser(omit(result, ["refreshToken", "token"]));
 
 		onValueChanged("password", "");
+		onValueChanged("newPassword", "");
 		resetStatuses();
 
 		onChanged(values.username.value, result.username);
@@ -59,7 +47,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 
 	useMemo(() => {
 		const displayName = !user?.displayName ? "" : user.displayName;
-		setModified(values.username.value !== user?.username || values.displayName.value !== displayName);
+		setModified(values.username.value !== user?.username || values.displayName.value !== displayName || values.newPassword.value !== "");
 	}, [values, user]);
 
 	useEffect(() => {
@@ -85,31 +73,15 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 		};
 	}, []);
 
-	function openFileDialog() {
-		const input = document.createElement("input");
-		input.type = "file";
-		input.multiple = false;
-		input.accept = "image/png,image/jpeg,image/webp,image/gif";
+	function onDelete() {
+		if (avatarData) {
+			setAvatarData(null);
+			setAvatarModified(true);
+		}
+	}
 
-		input.onchange = (e) => {
-			const file = (e.target as HTMLInputElement).files?.[0];
-
-			if (!file) {
-				return;
-			}
-
-			const reader = new FileReader();
-			reader.readAsDataURL(file);
-
-			reader.onload = (readerEvent) => {
-				const content = readerEvent.target?.result;
-				if (typeof content === "string") {
-					modalsDispatch({ imageCrop: { isOpen: true, originalImageData: content, mimeType: file.type } });
-				}
-			};
-		};
-
-		input.click();
+	function onSelected(data: string, mimeType: string) {
+		modalsDispatch({ imageCrop: { isOpen: true, originalImageData: data, mimeType: mimeType } });
 	}
 
 	function edit() {
@@ -117,6 +89,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 			displayName: values.displayName.value,
 			username: values.username.value === user?.username ? undefined : values.username.value,
 			password: values.password.value,
+			newPassword: values.newPassword.value,
 			avatar: originalAvatar && !avatarData ? null : originalAvatar === avatarData ? undefined : avatarData,
 		});
 	}
@@ -130,6 +103,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 		onValueChanged("username", user.username);
 		onValueChanged("displayName", user.displayName);
 		onValueChanged("password", "");
+		onValueChanged("newPassword", "");
 
 		onFocusChanged(false);
 
@@ -139,65 +113,54 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 
 	return (
 		<>
-			<div className="flex h-full items-start gap-x-5">
-				<div className="flex rounded-lg bg-secondary p-4">
-					<div onClick={openFileDialog} className="group relative h-24 w-24 cursor-pointer overflow-hidden rounded-full bg-black">
-						{avatarData ? (
-							<img alt="editing-user-avatar" className="h-full w-full object-cover" src={avatarData} />
-						) : (
-							<div className="h-full w-full bg-primary" />
-						)}
+			<div className="flex items-start gap-x-5">
+				<ImageSelector data={avatarData} onDelete={onDelete} onSelected={onSelected} className="p-4" buttonsClassName="mt-4">
+					<div className="mb-4 font-semibold text-text">Profile Picture</div>
+				</ImageSelector>
+				<div className="flex w-full max-w-xs flex-col gap-y-2">
+					<div className="rounded-lg bg-secondary p-4">
+						<div className="mb-4 font-semibold text-text">Personal Information</div>
+						<div className="flex flex-col gap-y-5">
+							<HuginnInput {...inputsProps.username} onFocusChanged={onFocusChanged}>
+								<HuginnInput.Label text="Username" className="mb-2" />
+								<HuginnInput.Wrapper className="!bg-background" border="left">
+									<HuginnInput.Input className="lowercase" />
+								</HuginnInput.Wrapper>
+								<AnimatedMessage className="mt-1" {...usernameMessageDetail} />
+							</HuginnInput>
 
-						<div className="absolute inset-0 flex h-full w-full items-center justify-center gap-x-1 rounded-full group-hover:bg-black/30">
-							<Tooltip>
-								<Tooltip.Trigger>
-									<IconMdiEdit className="invisible size-7 text-white group-hover:visible" />
-								</Tooltip.Trigger>
-								<Tooltip.Content>Edit</Tooltip.Content>
-							</Tooltip>
-							<Tooltip>
-								<Tooltip.Trigger>
-									<IconMdiDelete
-										onClick={(e) => {
-											e.stopPropagation();
-											if (avatarData) {
-												setAvatarData(null);
-												setAvatarModified(true);
-											}
-										}}
-										className="invisible size-7 text-error group-hover:visible"
-									/>
-								</Tooltip.Trigger>
-								<Tooltip.Content>
-									<div className="text-error">Delete</div>
-								</Tooltip.Content>
-							</Tooltip>
+							<HuginnInput placeholder={user?.username} {...inputsProps.displayName}>
+								<HuginnInput.Label text="Display Name" className="mb-2" />
+								<HuginnInput.Wrapper className="!bg-background" border="left">
+									<HuginnInput.Input />
+								</HuginnInput.Wrapper>
+							</HuginnInput>
 						</div>
 					</div>
 				</div>
-				<div className="mb-20 flex w-full flex-col gap-y-5 rounded-lg bg-secondary p-4">
-					<HuginnInput {...inputsProps.username} onFocusChanged={onFocusChanged}>
-						<HuginnInput.Label text="Username" className="mb-2" />
-						<HuginnInput.Wrapper className="!bg-background" border="left">
-							<HuginnInput.Input className="lowercase" />
-						</HuginnInput.Wrapper>
-						<AnimatedMessage className="mt-1" {...usernameMessageDetail} />
-					</HuginnInput>
-
-					<HuginnInput placeholder={user?.username} {...inputsProps.displayName}>
-						<HuginnInput.Label text="Display Name" className="mb-2" />
-						<HuginnInput.Wrapper className="!bg-background" border="left">
-							<HuginnInput.Input />
-						</HuginnInput.Wrapper>
-					</HuginnInput>
-
-					<HuginnInput {...inputsProps.password} type="password">
-						<HuginnInput.Label text="Current Password" className="mb-2" />
-						<HuginnInput.Wrapper className="!bg-background" border="left">
-							<HuginnInput.Input />
-						</HuginnInput.Wrapper>
-					</HuginnInput>
-				</div>
+				{!tokenPayload?.isOAuth && (
+					<div className="flex w-full max-w-xs flex-col gap-y-2">
+						<div className="rounded-lg bg-secondary p-4">
+							<div className="mb-4 font-semibold text-text">Security</div>
+							<div className="flex flex-col gap-y-5 ">
+								<PasswordInput {...inputsProps.password} type="password">
+									<HuginnInput.Label text="Current Password" className="mb-2" />
+									<HuginnInput.Wrapper className="!bg-background" border="left">
+										<HuginnInput.Input />
+										<PasswordInput.ToggleButton className="border-l-secondary" />
+									</HuginnInput.Wrapper>
+								</PasswordInput>
+								<PasswordInput {...inputsProps.newPassword} type="password">
+									<HuginnInput.Label text="New Password" className="mb-2" />
+									<HuginnInput.Wrapper className="!bg-background" border="left">
+										<HuginnInput.Input />
+										<PasswordInput.ToggleButton className="border-l-secondary" />
+									</HuginnInput.Wrapper>
+								</PasswordInput>
+							</div>
+						</div>
+					</div>
+				)}
 			</div>
 			<Transition show={modified || avatarModified}>
 				<div className="absolute right-9 bottom-5 left-[13.25rem] flex transform justify-end gap-x-2 rounded-xl border-2 border-primary/50 bg-secondary p-2 shadow-sm transition data-[closed]:translate-y-10 data-[closed]:opacity-0">
@@ -209,7 +172,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 						loading={mutation.isPending}
 						disabled={!modified && !avatarModified}
 						onClick={edit}
-						className="!rounded-lg w-36 shrink-0 bg-primary py-2 disabled:bg-primary/50"
+						className="!rounded-lg w-36 shrink-0 bg-primary disabled:bg-primary/50"
 					>
 						Save changes
 					</LoadingButton>

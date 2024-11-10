@@ -1,8 +1,9 @@
 import { catchError, createErrorFactory, createHuginnError, useValidatedBody } from "@huginn/backend-shared";
-import { Errors, HttpCode, RelationshipType, type Snowflake, idFix, omitArray } from "@huginn/shared";
-import { type H3Event, defineEventHandler, setResponseStatus } from "h3";
+import { Errors, HttpCode, RelationshipType, type Snowflake, idFix, omit } from "@huginn/shared";
+import { type H3Event, defineEventHandler, sendNoContent, setResponseStatus } from "h3";
 import { z } from "zod";
 import { DBErrorType, assertError, prisma } from "#database";
+import { omitRelationshipUserIds } from "#database/common";
 import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { useVerifiedJwt } from "#utils/route-utils";
@@ -47,14 +48,14 @@ export async function relationshipPost(event: H3Event, userId: Snowflake) {
 			type: RelationshipType.PENDING_OUTGOING,
 		}))
 	) {
-		const relationships = omitArray(idFix(await prisma.relationship.createRelationship(payload.id, userId, { user: true })), ["userId"]);
+		const relationships = idFix(await prisma.relationship.createRelationship(payload.id, userId, { user: true }, { userId: true }));
 
 		const relationshipOwner = relationships.find((x) => x.ownerId === payload.id);
 		const relationshipUser = relationships.find((x) => x.ownerId === userId);
 
 		if (relationshipOwner && relationshipUser) {
-			dispatchToTopic(payload.id, "relationship_add", relationshipOwner);
-			dispatchToTopic(userId, "relationship_add", relationshipUser);
+			dispatchToTopic(payload.id, "relationship_add", omit(relationshipOwner, ["ownerId"]));
+			dispatchToTopic(userId, "relationship_add", omit(relationshipUser, ["ownerId"]));
 
 			gateway.subscribeSessionsToTopic(payload.id, `${userId}_public`);
 			gateway.subscribeSessionsToTopic(userId, `${payload.id}_public`);
@@ -69,6 +70,5 @@ export async function relationshipPost(event: H3Event, userId: Snowflake) {
 		}
 	}
 
-	setResponseStatus(event, HttpCode.NO_CONTENT);
-	return null;
+	return sendNoContent(event, HttpCode.NO_CONTENT);
 }

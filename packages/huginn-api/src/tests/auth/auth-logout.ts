@@ -17,6 +17,6 @@ describe("auth-logout", () => {
 
 		client.initializeWithToken({ token });
 
-		expect(() => client.gateway.connectAndWaitForReady()).toThrow();
+		expect(() => client.gateway.waitForReady()).toThrow();
 	});
 });

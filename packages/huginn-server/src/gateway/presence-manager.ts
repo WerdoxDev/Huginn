@@ -1,11 +1,12 @@
-import type {
-	APIRelationshipWithoutOwner,
-	APIUser,
-	GatewayPresenceUpdateData,
-	PresenceStatus,
-	Snowflake,
-	UserPresence,
-	UserSettings,
+import {
+	type APIRelationshipWithoutOwner,
+	type APIUser,
+	type GatewayPresenceUpdateData,
+	type PresenceStatus,
+	type Snowflake,
+	type UserPresence,
+	type UserSettings,
+	pick,
 } from "@huginn/shared";
 import { preprocess } from "zod";
 import { dispatchToTopic } from "#utils/gateway-utils";
@@ -19,7 +20,7 @@ export class PresenceManager {
 	}
 
 	public setClient(user: Partial<APIUser> & { id: Snowflake }, session: ClientSession, settings: UserSettings) {
-		const isOfficialClient = session.data.browser === "Huginn Client";
+		const isOfficialClient = session.data?.browser === "Huginn Client";
 		const presence: UserPresence = {
 			user,
 			status: settings.status,
@@ -31,6 +32,13 @@ export class PresenceManager {
 		this.presences.set(user.id, existing ? { ...presence, clientStatus: { ...existing.clientStatus, ...presence.clientStatus } } : presence);
 
 		dispatchToTopic(`${user.id}_presence`, "presence_update", presence);
+	}
+
+	public updateClientUser(user: Partial<APIUser> & { id: Snowflake }) {
+		const existing = this.presences.get(user.id);
+		if (existing) {
+			this.presences.set(user.id, { ...existing, user: pick(user, ["id", "avatar", "displayName", "flags", "username"]) });
+		}
 	}
 
 	public removeClient(userId: Snowflake) {

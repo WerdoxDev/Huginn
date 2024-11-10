@@ -1,18 +1,15 @@
+import type { InputStatus, InputValues, MessageDetail, StatusCode } from "@/types";
 import { constants } from "@huginn/shared";
 import { Fields } from "@huginn/shared";
-import { useEffect, useRef, useState } from "react";
-import { useClient } from "@contexts/apiContext";
-import type { InputValues, MessageDetail, StatusCode } from "@/types";
-import { useUser } from "@contexts/userContext";
 
-export default function useUniqueUsernameMessage(values: InputValues, usernameField: string) {
+export function useUniqueUsernameMessage(values: InputValues, resetInput: (inputName: string) => void, usernameField: string) {
 	const client = useClient();
 	const { user } = useUser();
 
-	const defaultMessage = "Please only use numbers, letters, _";
+	const defaultMessage = "Please only use numbers, letters, _ or .";
 	const [message, setMessage] = useState<MessageDetail>({ text: defaultMessage, status: "default", visible: false });
 
-	const usernameTimeout = useRef<number>();
+	const usernameTimeout = useRef<Timer>();
 	const lastFocus = useRef<boolean>(false);
 	const prevUsername = useRef(values[usernameField].value);
 
@@ -25,34 +22,47 @@ export default function useUniqueUsernameMessage(values: InputValues, usernameFi
 		prevUsername.current = values[usernameField].value;
 	}, [values, user]);
 
-	function set(message: string, state: StatusCode, visible: boolean) {
-		setMessage({ text: message, status: state, visible });
+	function set(message: string, status: StatusCode, visible: boolean) {
+		setMessage({ text: message, status: status, visible });
+		if (status === "success") {
+			resetInput(usernameField);
+		}
 	}
 
 	async function checkForUniqueUsername(value: string) {
 		const result = await client.common.uniqueUsername({ username: value });
 
 		if (result.taken) {
-			set("Username is taken. Try adding numbers, letters, underlines _ and...", "error", true);
+			set("Username is taken. Try adding numbers, letters, underlines _ or fullstops .", "error", true);
 		} else {
 			set("Username is available!", "success", true);
 		}
 	}
 
 	function validateLength(value: string) {
-		const isValid = value.length >= constants.USERNAME_MIN_LENGTH && value.length <= constants.USERNAME_MAX_LENGTH;
-		return isValid;
+		return value.length >= constants.USERNAME_MIN_LENGTH && value.length <= constants.USERNAME_MAX_LENGTH;
+	}
+
+	function validateRegex(value: string) {
+		return value.match(constants.USERNAME_REGEX);
 	}
 
 	function onChanged(value: string, username?: string) {
+		clearTimeout(usernameTimeout.current);
+
 		if (!value || value === username) {
 			set(defaultMessage, "default", lastFocus.current);
-			clearTimeout(usernameTimeout.current);
+			// clearTimeout(usernameTimeout.current);
 			return;
 		}
 
 		if (!validateLength(value)) {
 			set(Fields.wrongLength(constants.USERNAME_MIN_LENGTH, constants.USERNAME_MAX_LENGTH)[0], "error", true);
+			return;
+		}
+
+		if (!validateRegex(value)) {
+			set(Fields.usernameInvalid()[0], "error", true);
 			return;
 		}
 

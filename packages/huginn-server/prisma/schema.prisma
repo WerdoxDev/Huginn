@@ -15,7 +15,7 @@ model User {
    displayName          String?
    email                String         @unique
    avatar               String?
-   password             String
+   password             String?
    flags                Int            @db.SmallInt
    system               Boolean        @default(false)
    includedChannels     Channel[]      @relation("channel_recipients")
@@ -66,4 +66,13 @@ model Relationship {
    ownerId  BigInt
    user     User      @relation("relation_user", fields: [userId], references: [id], onDelete: Cascade)
    userId   BigInt
+}
+
+model IdentityProvider {
+   id             BigInt  @id
+   providerUserId String  @unique
+   userId         BigInt?
+   completed      Boolean
+   providerType   String
+   refreshToken   String
 }

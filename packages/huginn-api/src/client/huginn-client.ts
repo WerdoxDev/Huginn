@@ -3,6 +3,7 @@ import { type Snowflake, WorkerID, snowflake } from "@huginn/shared";
 import { AuthAPI } from "../apis/auth";
 import { ChannelAPI } from "../apis/channel";
 import { CommonAPI } from "../apis/common";
+import { OAuthAPI } from "../apis/oauth";
 import { RelationshipAPI } from "../apis/relationship";
 import { UserAPI } from "../apis/user";
 import { Gateway } from "../gateway/client-gateway";
@@ -21,6 +22,7 @@ export class HuginnClient {
 	public relationships: RelationshipAPI;
 	public auth: AuthAPI;
 	public channels: ChannelAPI;
+	public oauth: OAuthAPI;
 	public common: CommonAPI;
 	public gateway: Gateway;
 
@@ -46,6 +48,7 @@ export class HuginnClient {
 		this.relationships = new RelationshipAPI(this.rest);
 		this.common = new CommonAPI(this.rest);
 		this.gateway = new Gateway(this, this.options.gateway);
+		this.oauth = new OAuthAPI(this.rest, this.gateway);
 	}
 
 	async initializeWithToken(tokens: Partial<Tokens>): Promise<void> {
@@ -53,11 +56,15 @@ export class HuginnClient {
 			this.readyState = ClientReadyState.INITIALIZING;
 			if (tokens.token) {
 				this.tokenHandler.token = tokens.token;
+				if (tokens.refreshToken) {
+					this.tokenHandler.refreshToken = tokens.refreshToken;
+				}
 			} else if (tokens.refreshToken) {
 				const newTokens = await this.auth.refreshToken({ refreshToken: tokens.refreshToken });
 				this.tokenHandler.refreshToken = newTokens.refreshToken;
 				this.tokenHandler.token = newTokens.token;
 			}
+			console.log();
 		} catch (e) {
 			this.user = undefined;
 			this.tokenHandler.token = undefined;

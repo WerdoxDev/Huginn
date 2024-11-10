@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { RenderLeafProps } from "slate-react";
 
 export default function MessageLeaf(props: RenderLeafProps) {

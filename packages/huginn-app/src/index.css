@@ -39,22 +39,42 @@
 html,
 body,
 #root {
-	@apply h-full;
+	background-color: #262626;
+	@apply h-full overscroll-none;
 }
 
 @keyframes blink {
 	50% {
-		color: transparent;
+		background-color: transparent;
 	}
 }
-.loader__dot {
+.loading-dot {
 	animation: 1s blink infinite;
 }
-.loader__dot:nth-child(2) {
+.loading-dot:nth-child(2) {
 	animation-delay: 250ms;
 }
-.loader__dot:nth-child(3) {
+.loading-dot:nth-child(3) {
 	animation-delay: 500ms;
+}
+
+@keyframes loading {
+	25% {
+		transform: translate(-10px, -10px) rotateY(180deg);
+	}
+	50% {
+		transform: translate(0, 0) rotateY(180deg);
+	}
+	75% {
+		transform: translate(10px, -10px);
+	}
+	100% {
+		transform: translate(0, 0);
+	}
+}
+
+.animate-loading {
+	animation: loading 1s infinite linear;
 }
 
 ::-webkit-scrollbar {

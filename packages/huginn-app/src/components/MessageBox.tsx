@@ -1,11 +1,8 @@
-import { useSendMessage } from "@hooks/mutations/useSendMessage";
 import { MessageFlags } from "@huginn/shared";
-import { tokenize } from "@lib/huginn-tokenizer";
 import { useParams } from "@tanstack/react-router";
-import { type KeyboardEvent, useCallback, useMemo } from "react";
+import type { KeyboardEvent } from "react";
 import { type Descendant, Editor, Node, type Path, type Range, Text, createEditor } from "slate";
 import { DefaultElement, Editable, type RenderElementProps, type RenderLeafProps, Slate, withReact } from "slate-react";
-import EditorLeaf from "./editor/EditorLeaf";
 
 const initialValue: Descendant[] = [
 	{
@@ -22,7 +19,8 @@ export default function MessageBox() {
 	const editor = useMemo(() => withReact(createEditor()), []);
 	const params = useParams({ strict: false });
 
-	const mutation = useSendMessage();
+	const sendMessageMutation = useSendMessage();
+	const { reset: resetTyping, mutation: sendTypingMutation } = useSendTyping();
 
 	const renderLeaf = useCallback((props: RenderLeafProps) => {
 		return <EditorLeaf {...props} />;
@@ -70,6 +68,10 @@ export default function MessageBox() {
 			const flags: MessageFlags = event.ctrlKey ? MessageFlags.SUPPRESS_NOTIFICATIONS : MessageFlags.NONE;
 			sendMessage(flags);
 		}
+
+		if (event.code === `Key${event.key.toUpperCase()}` && !event.ctrlKey && !event.altKey && !event.shiftKey) {
+			sendTypingMutation.mutate({ channelId: params.channelId });
+		}
 	}
 
 	function sendMessage(flags: MessageFlags) {
@@ -78,7 +80,8 @@ export default function MessageBox() {
 			return;
 		}
 
-		mutation.mutate({ channelId: params.channelId, content, flags });
+		sendMessageMutation.mutate({ channelId: params.channelId, content, flags });
+		resetTyping();
 		editor.delete({
 			at: {
 				anchor: Editor.start(editor, []),
@@ -92,11 +95,11 @@ export default function MessageBox() {
 	}
 
 	return (
-		<div className="relative mx-5 flex w-full flex-wrap-reverse py-2">
+		<div className="relative mx-5 mr-64 flex w-full flex-wrap-reverse py-2">
 			<form className="absolute w-full">
 				<div className="flex h-full items-start justify-center rounded-3xl bg-tertiary p-2 ring-2 ring-background">
 					<div className="mr-2 flex shrink-0 cursor-pointer items-center rounded-full bg-background p-1.5 transition-all hover:bg-white hover:bg-opacity-20 hover:shadow-xl">
-						<IconGravityUiPlus name="gravity-ui:plus" className="h-5 w-5 text-text" />
+						<IconMingcuteAddFill name="gravity-ui:plus" className="h-5 w-5 text-text" />
 					</div>
 					<div className="h-full w-full self-center overflow-hidden py-2">
 						<Slate editor={editor} initialValue={initialValue}>

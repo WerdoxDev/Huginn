@@ -1,4 +1,4 @@
-import type { DirectChannel, UserPresence, UserSettings } from "./api-types";
+import type { APIChannelUser, DirectChannel, UserPresence, UserSettings } from "./api-types";
 import type { APIMessage, APIMessageUser, APIRelationshipWithoutOwner, APIUser, Tokens } from "./api-types";
 import type { Snowflake } from "./snowflake";
 
@@ -21,13 +21,17 @@ export type GatewayEvents = {
 	resumed: undefined;
 	message_create: GatewayMessageCreateData;
 	message_delete: GatewayMessageDeleteData;
-	typying_start: GatewayMessageCreateData;
+	typying_start: GatewayTypingStartData;
 	relationship_add: GatewayRelationshipCreateData;
 	relationship_remove: Snowflake;
 	channel_create: GatewayDMChannelCreateData;
+	channel_update: GatewayDMChannelUpdateData;
 	channel_delete: GatewayDMChannelDeleteData;
+	channel_recipient_add: GatewayDMCHannelRecipientAddData;
+	channel_recipient_remove: GatewayDMCHannelRecipientRemoveData;
 	user_update: GatewayUserUpdateData;
 	presence_update: GatewayPresenceUpdateData;
+	oauth_redirect: GatewayOAuthRedirectData;
 };
 
 export type BasePayload = {
@@ -57,6 +61,7 @@ export type GatewayHello = NonDispatchPayload & {
 
 export type GatewayHelloData = {
 	heartbeatInterval: number;
+	peerId: string;
 };
 
 export type GatewayHeartbeat = NonDispatchPayload & {
@@ -64,7 +69,7 @@ export type GatewayHeartbeat = NonDispatchPayload & {
 	d: GatewayHeartbeatData;
 };
 
-export type GatewayHeartbeatData = number | null;
+export type GatewayHeartbeatData = number | undefined;
 
 export type GatewayHeartbeatAck = NonDispatchPayload & {
 	op: GatewayOperations.HEARTBEAT_ACK;
@@ -127,6 +132,22 @@ type GatewayMessageEventExtraFields = {
 
 export type GatewayRelationshipCreateData = APIRelationshipWithoutOwner;
 export type GatewayDMChannelCreateData = DirectChannel;
-export type GatewayDMChannelDeleteData = DirectChannel;
+export type GatewayDMChannelDeleteData = Omit<DirectChannel, "recipients">;
+export type GatewayDMChannelUpdateData = DirectChannel;
+export type GatewayDMCHannelRecipientAddData = { user: APIChannelUser; channelId: Snowflake };
+export type GatewayDMCHannelRecipientRemoveData = { user: APIChannelUser; channelId: Snowflake };
 export type GatewayUserUpdateData = APIUser & Tokens;
 export type GatewayPresenceUpdateData = UserPresence;
+
+export type GatewayOAuthRedirectData = {
+	access_token?: string;
+	refresh_token?: string;
+	token?: string;
+	error?: string;
+};
+
+export type GatewayTypingStartData = {
+	channelId: Snowflake;
+	userId: Snowflake;
+	timestamp: number;
+};

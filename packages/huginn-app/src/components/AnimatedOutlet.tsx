@@ -1,14 +1,11 @@
-import { routeHistory } from "@contexts/historyContext";
 import { animated, useInView } from "@react-spring/web";
 import { Outlet, getRouterContext, useRouter } from "@tanstack/react-router";
 import cloneDeep from "lodash.clonedeep";
-import { useEffect, useState } from "react";
 
 export default function AnimatedOutlet(props: {
 	updateFor?: string[];
 	style: Record<string, unknown>;
 	className?: string;
-	test: string;
 }) {
 	const router = useRouter();
 	const RouterContext = getRouterContext();

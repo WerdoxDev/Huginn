@@ -1,4 +1,3 @@
-import { useWindow } from "@contexts/windowContext";
 import { DialogBackdrop } from "@headlessui/react";
 import clsx from "clsx";
 

@@ -11,7 +11,6 @@ import {
 } from "@huginn/shared";
 import type { BasePayload, Snowflake } from "@huginn/shared";
 import { isOpcode } from "@huginn/shared";
-import EventEmitter from "eventemitter3";
 import type { HuginnClient } from "../../";
 import { EventEmitterWithHistory } from "../client/event-emitter";
 import { ClientReadyState, type GatewayOptions } from "../types";
@@ -24,7 +23,9 @@ export class Gateway {
 
 	public socket?: WebSocket;
 	public readyData?: GatewayReadyDispatchData;
+	public peerId?: string;
 
+	private receivedHello = false;
 	private heartbeatInterval?: ReturnType<typeof setTimeout>;
 	private sequence?: number;
 	private sessionId?: Snowflake;
@@ -33,8 +34,8 @@ export class Gateway {
 		this.emitter.emit(eventName, eventArg);
 	}
 
-	on<EventName extends keyof GatewayEvents>(eventName: EventName, handler: (eventArg: GatewayEvents[EventName]) => void): void {
-		this.emitter.on(eventName, handler);
+	on<EventName extends keyof GatewayEvents>(eventName: EventName, handler: (eventArg: GatewayEvents[EventName]) => void, skipQueue?: boolean): void {
+		this.emitter.on(eventName, handler, skipQueue);
 	}
 
 	off<EventName extends keyof GatewayEvents>(eventName: EventName, handler: (eventArg: GatewayEvents[EventName]) => void): void {
@@ -47,20 +48,56 @@ export class Gateway {
 	}
 
 	public connect(): void {
-		if (!this.client.tokenHandler.token) {
-			throw new Error("Trying to connect gateway before client initialization!");
-		}
-
 		this.socket = this.options.createSocket(this.options.url);
 		this.startListening();
 	}
 
-	public async connectAndWaitForReady(): Promise<void> {
+	public async identify(): Promise<void> {
 		let onMessage: ((e: MessageEvent) => void) | undefined = undefined;
 		let onClose: (() => void) | undefined = undefined;
 
 		const result = await new Promise((r) => {
-			this.connect();
+			if (!this.sequence || !this.sessionId) {
+				if (this.receivedHello) {
+					this.sendIdentify();
+					r(true);
+				} else {
+					onMessage = (e: MessageEvent) => {
+						const op = (JSON.parse(e.data) as BasePayload).op;
+						if (op === GatewayOperations.HELLO) {
+							this.sendIdentify();
+							r(true);
+						}
+					};
+					onClose = () => {
+						r(false);
+					};
+
+					this.socket?.addEventListener("message", onMessage);
+					this.socket?.addEventListener("close", onClose);
+				}
+			}
+		});
+
+		if (onMessage && onClose) {
+			this.socket?.removeEventListener("message", onMessage);
+			this.socket?.removeEventListener("close", onClose);
+		}
+
+		if (!result) {
+			throw new Error("Gateway closed before identifying.");
+		}
+	}
+
+	public async waitForReady(): Promise<void> {
+		if (this.socket?.readyState !== WebSocket.OPEN) {
+			throw new Error("WebSocket is not connected");
+		}
+
+		let onMessage: ((e: MessageEvent) => void) | undefined = undefined;
+		let onClose: (() => void) | undefined = undefined;
+
+		const result = await new Promise((r) => {
 			if (this.client.user) {
 				r(true);
 			} else {
@@ -73,19 +110,19 @@ export class Gateway {
 				onClose = () => {
 					r(false);
 				};
+
 				this.socket?.addEventListener("message", onMessage);
 				this.socket?.addEventListener("close", onClose);
 			}
 		});
-		if (onMessage) {
+
+		if (onMessage && onClose) {
 			this.socket?.removeEventListener("message", onMessage);
-		}
-		if (onClose) {
 			this.socket?.removeEventListener("close", onClose);
 		}
 
 		if (!result) {
-			throw new Error("Gateway closed before being ready. This is probably because of wrong credentials");
+			throw new Error("Gateway closed before being ready.");
 		}
 	}
 
@@ -116,17 +153,23 @@ export class Gateway {
 		this.emit("close", e.code);
 
 		this.readyData = undefined;
+		this.receivedHello = false;
 
 		if (e.code === 1000) {
 			return;
 		}
 
-		setTimeout(() => {
+		setTimeout(async () => {
 			if (e.code === GatewayCode.INVALID_SESSION) {
 				this.sequence = undefined;
 				this.sessionId = undefined;
 			}
+
 			this.connect();
+
+			if (this.client.readyState === ClientReadyState.READY) {
+				await this.identify();
+			}
 		}, 1000);
 	}
 
@@ -140,11 +183,8 @@ export class Gateway {
 
 		// Hello
 		if (isOpcode<GatewayHello>(data, GatewayOperations.HELLO)) {
-			if (this.options.identify) {
-				this.handleHello(data);
-			} else {
-				this.emit("hello", data.d);
-			}
+			this.handleHello(data);
+			this.emit("hello", data.d);
 			// Dispatch
 		} else if (isOpcode<GatewayDispatch>(data, GatewayOperations.DISPATCH)) {
 			this.sequence = data.s;
@@ -161,23 +201,15 @@ export class Gateway {
 		this.socket?.close(1000);
 		this.sequence = undefined;
 		this.sessionId = undefined;
+		this.receivedHello = false;
 	}
 
 	private handleHello(data: GatewayHello) {
+		this.receivedHello = true;
+		this.peerId = data.d.peerId;
 		this.startHeartbeat(data.d.heartbeatInterval);
 
-		if (!this.sequence) {
-			const identifyData: GatewayIdentify = {
-				op: GatewayOperations.IDENTIFY,
-				d: {
-					token: this.client.tokenHandler.token ?? "",
-					intents: this.client.options.intents,
-					properties: { os: "windows", browser: "idk", device: "idk" },
-				},
-			};
-
-			this.send(identifyData);
-		} else {
+		if (this.sequence && this.sessionId) {
 			const resumeData: GatewayResume = {
 				op: GatewayOperations.RESUME,
 				d: {
@@ -200,9 +232,22 @@ export class Gateway {
 		this.client.readyState = ClientReadyState.READY;
 	}
 
+	private sendIdentify() {
+		const identifyData: GatewayIdentify = {
+			op: GatewayOperations.IDENTIFY,
+			d: {
+				token: this.client.tokenHandler.token ?? "",
+				intents: this.client.options.intents,
+				properties: { os: "windows", browser: "idk", device: "idk" },
+			},
+		};
+
+		this.send(identifyData);
+	}
+
 	private startHeartbeat(interval: number) {
 		this.heartbeatInterval = setInterval(() => {
-			const data: GatewayHeartbeat = { op: GatewayOperations.HEARTBEAT, d: this.sequence ?? null };
+			const data: GatewayHeartbeat = { op: GatewayOperations.HEARTBEAT, d: this.sequence };
 			if (this.options.log) {
 				console.log("Sending Heartbeat");
 			}

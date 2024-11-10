@@ -1,46 +1,28 @@
 import { expect, test } from "bun:test";
-import path from "node:path";
+import pathe from "pathe";
 import { FileStorage } from "#storage/file-storage";
 import { S3Storage } from "#storage/s3-storage";
 
-test("File Storage write is OK", async () => {
-	const storage = new FileStorage();
+const storages = [new FileStorage(), new S3Storage()];
 
-	const result = await storage.writeFile("avatars", "pixel.png", await Bun.file(path.join(__dirname, "pixel.png")).arrayBuffer());
-	expect(result).toBeTrue();
-});
+for (const storage of storages) {
+	test(`${storage.name} storage write is OK`, async () => {
+		const result = await storage.writeFile(
+			"avatars",
+			"storage-test",
+			"pixel.png",
+			await Bun.file(pathe.join(__dirname, "pixel.png")).arrayBuffer(),
+		);
+		expect(result).toBeTrue();
+	});
 
-test("File Storage get is OK", async () => {
-	const storage = new FileStorage();
+	test(`${storage.name} storage get is OK`, async () => {
+		const result = await storage.getFile("avatars", "storage-test", "pixel.png");
+		expect(result).toBeDefined();
+	});
 
-	const result = storage.getFile("avatars", "pixel.png");
-	expect(result).toBeDefined();
-});
-
-test("File Storage exist is OK", async () => {
-	const storage = new FileStorage();
-
-	const result = await storage.exists("avatars", "pixel.png");
-	expect(result).toBeTrue();
-});
-
-test("S3 Storage write is OK", async () => {
-	const storage = new S3Storage();
-
-	const result = await storage.writeFile("avatars", "pixel.png", await Bun.file(path.join(__dirname, "pixel.png")).arrayBuffer());
-	expect(result).toBeTrue();
-});
-
-test("S3 Storage exist is OK", async () => {
-	const storage = new S3Storage();
-
-	const result = await storage.exists("avatars", "pixel.png");
-	expect(result).toBeTrue();
-});
-
-test("S3 Storage get is OK", async () => {
-	const storage = new S3Storage();
-
-	const result = await storage.getFile("avatars", "pixel.png");
-	expect(result).toBeDefined();
-});
+	test(`${storage.name} storage exist is OK`, async () => {
+		const result = await storage.exists("avatars", "storage-test", "pixel.png");
+		expect(result).toBeTrue();
+	});
+}

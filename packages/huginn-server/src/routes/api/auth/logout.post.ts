@@ -1,7 +1,7 @@
-import { router, tokenInvalidator } from "#server";
 import { HttpCode } from "@huginn/shared";
+import { defineEventHandler, sendNoContent, setResponseStatus } from "h3";
+import { router, tokenInvalidator } from "#server";
 import { useVerifiedJwt } from "#utils/route-utils";
-import { defineEventHandler, setResponseStatus } from "h3";
 
 router.post(
 	"/auth/logout",
@@ -10,7 +10,6 @@ router.post(
 
 		tokenInvalidator.invalidate(token);
 
-		setResponseStatus(event, HttpCode.NO_CONTENT);
-		return null;
+		return sendNoContent(event, HttpCode.NO_CONTENT);
 	}),
 );

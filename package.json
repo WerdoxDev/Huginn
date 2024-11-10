@@ -3,15 +3,17 @@
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.2",
 		"@types/bun": "latest",
-		"globals": "^15.9.0",
 		"typescript": "^5.5.4"
 	},
 	"private": "true",
 	"scripts": {
+		"bifrost": "cd packages/huginn-bifrost && bun start",
 		"server": "cd packages/huginn-server && bun start",
 		"cdn": "cd packages/huginn-cdn && bun start",
-		"tauri": " cd packages/huginn-app && bun run tauri-dev"
+		"tauri": " cd packages/huginn-app && bun run tauri-dev",
+		"postinstall": "bunx prisma generate --schema=./packages/huginn-server/prisma/schema.prisma"
 	},
 	"type": "module",
-	"workspaces": ["packages/*"]
+	"workspaces": ["packages/*"],
+	"trustedDependencies": ["prisma", "sharp"]
 }

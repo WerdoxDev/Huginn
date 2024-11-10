@@ -1,9 +1,9 @@
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { type APICheckUpdateResult, HttpCode, type VersionsObject } from "@huginn/shared";
-import { defineEventHandler, setResponseStatus } from "h3";
+import { defineEventHandler, sendNoContent, setResponseStatus } from "h3";
 import * as semver from "semver";
 import { router, s3 } from "#server";
-import { AWS_BUCKET, AWS_VERSIONS_OBJECT_KEY } from "#setup";
+import { envs } from "#setup";
 
 type TargetKind = "none" | "windows-release" | "windows-nightly";
 
@@ -15,11 +15,10 @@ router.get(
 		const currentVersion = event.context.params?.currentVersion ?? "";
 
 		if (target === "none") {
-			setResponseStatus(event, HttpCode.NO_CONTENT);
-			return null;
+			return sendNoContent(event, HttpCode.NO_CONTENT);
 		}
 
-		const getCommand = new GetObjectCommand({ Bucket: AWS_BUCKET, Key: AWS_VERSIONS_OBJECT_KEY });
+		const getCommand = new GetObjectCommand({ Bucket: envs.AWS_BUCKET, Key: envs.AWS_VERSIONS_OBJECT_KEY });
 		const versions: VersionsObject = JSON.parse((await (await s3.send(getCommand)).Body?.transformToString()) ?? "");
 
 		const sortedVersions = Object.keys(versions).sort(semver.rcompare);
@@ -28,13 +27,11 @@ router.get(
 		const latestNightly = sortedVersions.find((x) => semver.prerelease(x)?.[0]);
 
 		if ((target === "windows-release" && !latest) || (target === "windows-nightly" && !latestNightly)) {
-			setResponseStatus(event, HttpCode.NO_CONTENT);
-			return null;
+			return sendNoContent(event, HttpCode.NO_CONTENT);
 		}
 
 		if ((target === "windows-release" && currentVersion === latest) || (target === "windows-nightly" && currentVersion === latestNightly)) {
-			setResponseStatus(event, HttpCode.NO_CONTENT);
-			return null;
+			return sendNoContent(event, HttpCode.NO_CONTENT);
 		}
 
 		if (target === "windows-release" && latest) {

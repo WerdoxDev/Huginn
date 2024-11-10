@@ -1,10 +1,6 @@
-import { useModalsDispatch } from "@contexts/modalContext";
-import { Menu, MenuButton, MenuItem, MenuItems, Transition } from "@headlessui/react";
-import { useLogout } from "@hooks/useLogout";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import type { APIUser } from "@huginn/shared";
 import { useMutation } from "@tanstack/react-query";
-import UserAvatarWithStatus from "./UserAvatarWithStatus";
-import { Tooltip } from "./tooltip/Tooltip";
 
 export default function UserInfo(props: { user: APIUser }) {
 	const modalsDispatch = useModalsDispatch();
@@ -34,7 +30,7 @@ export default function UserInfo(props: { user: APIUser }) {
 					<div className="flex flex-shrink-0 gap-x-1">
 						<Tooltip>
 							<Tooltip.Trigger className="group/setting rounded-lg p-1 hover:bg-background" onClick={openSettings}>
-								<IconMdiSettings className="h-6 w-6 text-white/80 transition-all group-hover/setting:rotate-[60deg]" />
+								<IconMingcuteSettings5Fill className="h-6 w-6 text-white/80 transition-all group-hover/setting:rotate-[60deg]" />
 							</Tooltip.Trigger>
 							<Tooltip.Content>User Settings</Tooltip.Content>
 						</Tooltip>
@@ -55,7 +51,7 @@ export default function UserInfo(props: { user: APIUser }) {
 									mutation.mutate();
 								}}
 							>
-								<IconMdiLogout className="h-5 w-5" />
+								<IconMingcuteExitFill className="h-5 w-5" />
 								<span className="text-sm">Logout</span>
 							</button>
 						</MenuItem>
@@ -67,7 +63,7 @@ export default function UserInfo(props: { user: APIUser }) {
 								className="flex w-full items-center gap-x-2.5 rounded-md px-2 py-2 text-text hover:bg-secondary"
 								type="button"
 							>
-								<IconMdiIdentificationCard className="h-5 w-5" />
+								<IconMingcuteIdcardFill className="h-5 w-5" />
 								<span className="text-sm">Copy User ID</span>
 							</button>
 						</MenuItem>

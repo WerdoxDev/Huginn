@@ -1,14 +1,17 @@
-import { useClient } from "@contexts/apiContext";
 import {
 	type APIChannelUser,
 	type APIGetUserChannelsResult,
 	ChannelType,
+	type GatewayDMCHannelRecipientAddData,
+	type GatewayDMCHannelRecipientRemoveData,
 	type GatewayDMChannelCreateData,
+	type GatewayDMChannelDeleteData,
+	type GatewayDMChannelUpdateData,
 	type GatewayPresenceUpdateData,
 } from "@huginn/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
-import { type ReactNode, useEffect } from "react";
+import type { ReactNode } from "react";
 
 export default function ChannelsProvider(props: { children?: ReactNode }) {
 	const client = useClient();
@@ -17,17 +20,35 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
 	const router = useRouter();
 
 	function onChannelCreated(d: GatewayDMChannelCreateData) {
-		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (data) =>
-			data && !data.some((x) => x.id === d.id) ? [d, ...data] : data,
-		);
+		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (old) => (old && !old.some((x) => x.id === d.id) ? [d, ...old] : old));
 	}
 
-	function onChannelDeleted(d: GatewayDMChannelCreateData) {
+	function onChannelDeleted(d: GatewayDMChannelDeleteData) {
+		queryClient.removeQueries({ queryKey: ["messages", d.id] });
+
 		if (router.state.location.pathname.includes(d.id)) {
 			navigate({ to: "/channels/@me", replace: true });
 		}
 
-		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (data) => data?.filter((x) => x.id !== d.id));
+		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (old) => old?.filter((x) => x.id !== d.id));
+	}
+
+	function onChannelUpdated(d: GatewayDMChannelUpdateData) {
+		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (old) => old?.map((channel) => (channel.id === d.id ? d : channel)));
+	}
+
+	function onChannelRecipientAdded(d: GatewayDMCHannelRecipientAddData) {
+		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (old) =>
+			old?.map((channel) => (channel.id === d.channelId ? { ...channel, recipients: [...channel.recipients, d.user] } : channel)),
+		);
+	}
+
+	function onChannelRecipientRemoved(d: GatewayDMCHannelRecipientRemoveData) {
+		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (old) =>
+			old?.map((channel) =>
+				channel.id === d.channelId ? { ...channel, recipients: channel.recipients.filter((x) => x.id !== d.user.id) } : channel,
+			),
+		);
 	}
 
 	function onPresenceUpdated(presence: GatewayPresenceUpdateData) {
@@ -39,19 +60,25 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
 		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (old) =>
 			old?.map((channel) => ({
 				...channel,
-				recipients: channel.recipients.map((recipient) => (recipient.id === user.id && channel.type === ChannelType.DM ? user : recipient)),
+				recipients: channel.recipients.map((recipient) => (recipient.id === user.id ? user : recipient)),
 			})),
 		);
 	}
 
 	useEffect(() => {
 		client.gateway.on("channel_create", onChannelCreated);
+		client.gateway.on("channel_update", onChannelUpdated);
 		client.gateway.on("channel_delete", onChannelDeleted);
+		client.gateway.on("channel_recipient_add", onChannelRecipientAdded);
+		client.gateway.on("channel_recipient_remove", onChannelRecipientRemoved);
 		client.gateway.on("presence_update", onPresenceUpdated);
 
 		return () => {
 			client.gateway.off("channel_create", onChannelCreated);
+			client.gateway.off("channel_update", onChannelUpdated);
 			client.gateway.off("channel_delete", onChannelDeleted);
+			client.gateway.off("channel_recipient_add", onChannelRecipientAdded);
+			client.gateway.off("channel_recipient_remove", onChannelRecipientRemoved);
 			client.gateway.off("presence_update", onPresenceUpdated);
 		};
 	}, []);

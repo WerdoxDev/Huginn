@@ -1,8 +1,12 @@
+import type { SettingsContextType } from "@contexts/settingsContext";
 import type { Placement } from "@floating-ui/react";
-import type { APIDefaultMessage, APIRelationUser, DirectChannel, RelationshipType } from "@huginn/shared";
-import type React from "react";
+import type { AddChannelRecipientMutationVars } from "@hooks/mutations/useAddChannelRecipient";
+import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMChannel";
+import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
+import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePatchDMChannel";
+import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRemoveChannelRecipient";
+import type { APIChannelUser, APIDefaultMessage, APIRelationUser, DirectChannel, RelationshipType, Snowflake } from "@huginn/shared";
 import type { HTMLInputTypeAttribute, ReactNode } from "react";
-import type { SettingsContextType } from "./contexts/settingsContext";
 
 export type StatusCode = "none" | "default" | "error" | "success";
 
@@ -96,8 +100,7 @@ export type SettingsTabProps = {
 export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
 
 export type DropboxItem = {
-	id: number;
-	name: string;
+	text: string;
 	icon?: ReactNode;
 	value: string;
 };
@@ -126,7 +129,7 @@ export type TooltipOptions = {
 
 export type ContextMenuProps = {
 	label?: string;
-	children?: ReactNode;
+	renderChildren: ReactNode;
 	close?: () => void;
 } & ContextMenuStateProps;
 
@@ -143,17 +146,29 @@ export type ContextMenuItemProps = {
 
 export type ContextMenuRelationship = { user: APIRelationUser; type: RelationshipType };
 export type ContextMenuDMChannel = DirectChannel;
-
-export enum ContextMenuType {
-	DM_CHANNEL = 0,
-	RELATIONSHIP_MORE = 1,
-	RELATIONSHIP = 2,
-}
+export type ContextMenuDMChannelRecipient = { channelId: Snowflake; recipient: APIChannelUser };
 
 export type MessageRenderInfo = {
 	message: APIDefaultMessage;
 	newMinute: boolean;
 	newDate: boolean;
+	newAuthor: boolean;
+	exoticType: boolean;
 };
 
 export type VersionFlavour = "nightly" | "release";
+
+export type MessageRendererProps = {
+	renderInfo: MessageRenderInfo;
+	nextRenderInfo?: MessageRenderInfo;
+	lastRenderInfo?: MessageRenderInfo;
+};
+
+export type MutationVariables = {
+	"create-dm-channel": CreateDMChannelMutationVars;
+	"patch-dm-channel": PatchDMChannelMutationVars;
+	"remove-channel-recipient": RemoveChannelRecipientMutationVars;
+	"add-channel-recipient": AddChannelRecipientMutationVars;
+	"create-relationship": CreateRelationshipMutationVars;
+	"remove-relationship": Snowflake;
+};

@@ -1,6 +1,8 @@
 import type { ErrorFactory } from "@huginn/backend-shared/src/error-factory";
 import { constants } from "@huginn/shared";
 import { Fields } from "@huginn/shared";
+import { anyOf, char, charIn, charNotIn, createRegExp, digit, exactly, letter, not, oneOrMore } from "magic-regexp";
+import { convert } from "magic-regexp/converter";
 import { prisma } from "#database";
 
 export function validateEmail(email: string | undefined, errorObject: ErrorFactory) {
@@ -22,6 +24,10 @@ export function validateUsername(username: string | undefined, errorObject: Erro
 		errorObject.addError("username", Fields.wrongLength(minLen, maxLen));
 		return false;
 	}
+	if (username && !username?.match(constants.USERNAME_REGEX)) {
+		errorObject.addError("username", Fields.usernameInvalid());
+		return false;
+	}
 	if (username === null || username === "") {
 		errorObject.addError("username", Fields.required());
 	}
@@ -40,8 +46,8 @@ export function validateDisplayName(displayName: string | undefined | null, erro
 	return false;
 }
 
-export function validateCorrectPassword(password: string | undefined, correctPassword: string, errorObject: ErrorFactory) {
-	if (password && password !== correctPassword) {
+export function validateCorrectPassword(password: string | undefined, correctPassword: string | null, errorObject: ErrorFactory) {
+	if (password && correctPassword && password !== correctPassword) {
 		errorObject.addError("password", Fields.passwordIncorrect());
 		return false;
 	}
@@ -49,9 +55,9 @@ export function validateCorrectPassword(password: string | undefined, correctPas
 	return true;
 }
 
-export function validatePassword(password: string | undefined, errorObject: ErrorFactory) {
+export function validatePassword(password: string | undefined, errorObject: ErrorFactory, fieldName = "password") {
 	if (password && password.length < constants.PASSWORD_MIN_LENGTH) {
-		errorObject.addError("password", Fields.wrongLength(constants.PASSWORD_MIN_LENGTH));
+		errorObject.addError(fieldName, Fields.wrongLength(constants.PASSWORD_MIN_LENGTH));
 		return false;
 	}
 
@@ -82,4 +88,17 @@ export async function validateUsernameUnique(username: string | undefined, error
 	}
 
 	return true;
+}
+
+export async function validateChannelName(channelName: string | undefined | null, errorObject?: ErrorFactory) {
+	if (!channelName) {
+		return true;
+	}
+
+	if (channelName.length > constants.CHANNEL_NAME_MAX_LENGTH) {
+		errorObject?.addError("name", Fields.wrongLength(undefined, constants.CHANNEL_NAME_MAX_LENGTH));
+		return false;
+	}
+
+	return false;
 }

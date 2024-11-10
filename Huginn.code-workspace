@@ -2,43 +2,43 @@
 	"folders": [
 		{
 			"name": "ROOT",
-			"path": "./"
+			"path": "."
 		},
 		{
 			"name": "huginn-server",
-			"path": "./packages/huginn-server"
+			"path": "packages/huginn-server"
 		},
 		{
 			"name": "huginn-cdn",
-			"path": "./packages/huginn-cdn"
+			"path": "packages/huginn-cdn"
 		},
 		{
 			"name": "huginn-api",
-			"path": "./packages/huginn-api"
+			"path": "packages/huginn-api"
 		},
 		{
 			"name": "huginn-app",
-			"path": "./packages/huginn-app"
+			"path": "packages/huginn-app"
 		},
 		{
 			"name": "huginn-bundler",
-			"path": "./packages/huginn-bundler"
+			"path": "packages/huginn-bundler"
 		},
 		{
 			"name": "huginn-shared",
-			"path": "./packages/huginn-shared"
+			"path": "packages/huginn-shared"
 		},
 		{
 			"name": "huginn-backend-shared",
-			"path": "./packages/huginn-backend-shared"
+			"path": "packages/huginn-backend-shared"
 		},
 		{
 			"name": "huginn-bifrost",
-			"path": "./packages/huginn-bifrost"
+			"path": "packages/huginn-bifrost"
 		},
 		{
 			"name": "huginn-website",
-			"path": "./packages/huginn-website"
+			"path": "packages/huginn-website"
 		}
 	],
 	"settings": {

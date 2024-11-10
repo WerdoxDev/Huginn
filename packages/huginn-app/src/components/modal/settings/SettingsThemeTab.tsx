@@ -1,17 +1,15 @@
 import type { DropboxItem, SettingsTabProps, ThemeType } from "@/types";
-import HuginnDropbox from "@components/HuginnDropbox";
-import { ceruleanTheme, charcoalTheme, coffeeTheme, eggplantTheme, pineGreenTheme, useThemeDispather } from "@contexts/themeContext";
 
 function ThemeIcon(props: { color: string }) {
 	return <div className="h-6 w-6 rounded-md" style={{ background: props.color }} />;
 }
 
 const themes: DropboxItem[] = [
-	{ id: 0, name: "Pine Green", value: "pine green", icon: <ThemeIcon color={pineGreenTheme.primary} /> },
-	{ id: 1, name: "Cerulean", value: "cerulean", icon: <ThemeIcon color={ceruleanTheme.primary} /> },
-	{ id: 2, name: "Eggplant", value: "eggplant", icon: <ThemeIcon color={eggplantTheme.primary} /> },
-	{ id: 3, name: "Coffee", value: "coffee", icon: <ThemeIcon color={coffeeTheme.primary} /> },
-	{ id: 4, name: "Charcoal", value: "charcoal", icon: <ThemeIcon color={charcoalTheme.primary} /> },
+	{ text: "Pine Green", value: "pine green", icon: <ThemeIcon color={pineGreenTheme.primary} /> },
+	{ text: "Cerulean", value: "cerulean", icon: <ThemeIcon color={ceruleanTheme.primary} /> },
+	{ text: "Eggplant", value: "eggplant", icon: <ThemeIcon color={eggplantTheme.primary} /> },
+	{ text: "Coffee", value: "coffee", icon: <ThemeIcon color={coffeeTheme.primary} /> },
+	{ text: "Charcoal", value: "charcoal", icon: <ThemeIcon color={charcoalTheme.primary} /> },
 ];
 
 export default function SettingsThemeTab(props: SettingsTabProps) {
@@ -23,8 +21,15 @@ export default function SettingsThemeTab(props: SettingsTabProps) {
 	}
 
 	return (
-		<HuginnDropbox items={themes} onChange={onChange} defaultIndex={themes.findIndex((x) => x.value === props.settings.theme)}>
-			<HuginnDropbox.Label>Color Theme</HuginnDropbox.Label>
-		</HuginnDropbox>
+		<HuginnDropdown onChange={onChange} defaultValue={themes.find((x) => x.value === props.settings.theme)}>
+			<HuginnDropdown.Label>Color Theme</HuginnDropdown.Label>
+			<HuginnDropdown.List className="w-52">
+				<HuginnDropdown.ItemsWrapper className="w-52">
+					{themes.map((x) => (
+						<HuginnDropdown.Item key={x.value} item={x} />
+					))}
+				</HuginnDropdown.ItemsWrapper>
+			</HuginnDropdown.List>
+		</HuginnDropdown>
 	);
 }

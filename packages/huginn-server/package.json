@@ -4,24 +4,32 @@
 	"version": "0.4-dev",
 	"type": "module",
 	"scripts": {
-		"dev": "bun --watch src/index.ts"
+		"dev": "bun --watch src/index.ts",
+		"tailwind": "bunx tailwindcss -i ./src/routes/static/input.css -o ./src/routes/static/output.css --watch"
 	},
 	"dependencies": {
-		"@aws-sdk/client-s3": "^3.658.1",
+		"@aws-sdk/client-s3": "^3.679.0",
 		"@huginn/backend-shared": "workspace:*",
 		"@huginn/shared": "workspace:*",
-		"@octokit/types": "^13.6.0",
-		"@prisma/client": "^5.20.0",
+		"@prisma/client": "^5.21.1",
+		"@std/collections": "npm:@jsr/std__collections",
+		"@std/encoding": "npm:@jsr/std__encoding",
+		"@std/media-types": "npm:@jsr/std__media-types",
+		"@std/text": "npm:@jsr/std__text",
 		"consola": "^3.2.3",
 		"crossws": "^0.3.1",
-		"h3": "^1.12.0",
-		"jose": "^5.9.3",
+		"h3": "^1.13.0",
+		"jose": "^5.9.6",
+		"magic-regexp": "^0.8.0",
 		"octokit": "^4.0.2",
 		"ohash": "^1.1.4",
-		"prisma": "^5.20.0",
+		"pathe": "^1.1.2",
+		"prisma": "^5.21.1",
 		"semver": "^7.6.3",
-		"unimport": "^3.13.1",
 		"zod": "^3.23.8"
+	},
+	"devDependencies": {
+		"@octokit/types": "^13.6.1"
 	},
 	"imports": {
 		"#database": "./src/database/index.ts",

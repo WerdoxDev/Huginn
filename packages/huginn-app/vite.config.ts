@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { TanStackRouterVite } from "@tanstack/router-vite-plugin";
+import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react-swc";
 import { parseTOML } from "confbox";
 import AutoImport from "unplugin-auto-import/vite";
@@ -14,14 +14,12 @@ export default defineConfig({
 	plugins: [
 		react({ devTarget: "esnext" }),
 		TanStackRouterVite(),
-		Icons({ compiler: "jsx" }),
+		Icons({ compiler: "jsx", jsx: "react" }),
 		AutoImport({
-			resolvers: [
-				IconsResolver({
-					prefix: "Icon",
-					extension: "jsx",
-				}),
-			],
+			imports: ["react"],
+			resolvers: [IconsResolver({ prefix: "Icon", extension: "jsx" })],
+			dirs: ["./src/**", "!src/routes/**"],
+			dts: "./src/auto-imports.d.ts",
 		}),
 	],
 
@@ -45,7 +43,7 @@ export default defineConfig({
 		strictPort: true,
 	},
 	// to access the Tauri environment variables set by the CLI with information about the current target
-	envPrefix: ["VITE_", "TAURI_PLATFORM", "TAURI_ARCH", "TAURI_FAMILY", "TAURI_PLATFORM_VERSION", "TAURI_PLATFORM_TYPE", "TAURI_DEBUG"],
+	envPrefix: ["VITE_", "TAURI_ENV_*"],
 	build: {
 		// Tauri uses Chromium on Windows and WebKit on macOS and Linux
 		target: "esnext",

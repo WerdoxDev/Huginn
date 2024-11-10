@@ -25,4 +25,5 @@ export enum WorkerID {
 	GATEWAY = 4,
 	API = 5,
 	APP = 6,
+	IDENTITY_PROVIDER = 7,
 }
