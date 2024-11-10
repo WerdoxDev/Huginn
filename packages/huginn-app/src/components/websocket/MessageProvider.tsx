@@ -10,6 +10,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 	const mutation = useCreateDMChannel();
 	const { dispatchEvent } = useEvent();
 	const { removeTyping: removeTimeout } = useTypings();
+	const [x, y] = useState(0);
 
 	function onMessageCreated(d: GatewayMessageCreateData) {
 		const channels = queryClient.getQueryData<APIGetUserChannelsResult>(["channels", "@me"]);
@@ -50,6 +51,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 
 		removeTimeout(d.author.id, d.channelId);
 		dispatchEvent("message_added", { message: d, visible: messageVisible, self: d.author.id === user?.id });
+		console.log(x);
 	}
 
 	function onUserUpdated(data: GatewayUserUpdateData | GatewayPresenceUpdateData) {
@@ -74,6 +76,10 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 		client.gateway.on("message_create", onMessageCreated);
 		client.gateway.on("user_update", onUserUpdated);
 		client.gateway.on("presence_update", onUserUpdated);
+		setTimeout(() => {
+			console.log(x);
+		}, 1000);
+		y(1);
 
 		return () => {
 			client.gateway.off("message_create", onMessageCreated);
