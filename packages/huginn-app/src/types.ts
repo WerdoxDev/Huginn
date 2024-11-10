@@ -172,5 +172,3 @@ export type MutationVariables = {
 	"create-relationship": CreateRelationshipMutationVars;
 	"remove-relationship": Snowflake;
 };
-
-export type VersionFlavour = "nightly" | "release";
