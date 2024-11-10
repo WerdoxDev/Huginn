@@ -276,10 +276,9 @@ const LayoutAnimationLayoutMainLayoutHomeRouteChildren: LayoutAnimationLayoutMai
       LayoutAnimationLayoutMainLayoutHomeChannelsmeLazyRouteWithChildren,
   }
 
-const LayoutAnimationLayoutMainLayoutHomeRouteWithChildren =
-  LayoutAnimationLayoutMainLayoutHomeRoute._addFileChildren(
-    LayoutAnimationLayoutMainLayoutHomeRouteChildren,
-  )
+const LayoutAnimationLayoutMainLayoutHomeRouteWithChildren = LayoutAnimationLayoutMainLayoutHomeRoute._addFileChildren(
+	LayoutAnimationLayoutMainLayoutHomeRouteChildren,
+);
 
 interface LayoutAnimationLayoutMainLazyRouteChildren {
   LayoutAnimationLayoutMainLayoutHomeRoute: typeof LayoutAnimationLayoutMainLayoutHomeRouteWithChildren
@@ -395,9 +394,7 @@ const rootRouteChildren: RootRouteChildren = {
   SplashscreenLazyRoute: SplashscreenLazyRoute,
 }
 
-export const routeTree = rootRoute
-  ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+export const routeTree = rootRoute._addFileChildren(rootRouteChildren)._addFileTypes<FileRouteTypes>();
 
 /* prettier-ignore-end */
 

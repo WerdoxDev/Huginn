@@ -2,6 +2,7 @@ import type { HuginnErrorData } from "@huginn/shared";
 import { type BasePayload, GatewayOperations } from "@huginn/shared";
 import { consola } from "consola";
 import { colors } from "consola/utils";
+import type { H3Error } from "h3";
 
 const divider = colors.gray(">");
 const startText = colors.bold(colors.gray("START"));

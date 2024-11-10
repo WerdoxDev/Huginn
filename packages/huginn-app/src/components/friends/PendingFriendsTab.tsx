@@ -1,3 +1,4 @@
+import { useClient } from "@contexts/apiContext";
 import { TabPanel } from "@headlessui/react";
 import { type APIRelationshipWithoutOwner, RelationshipType } from "@huginn/shared";
 import type { Snowflake } from "@huginn/shared";
