@@ -128,8 +128,8 @@ export function isOpcode<D>(data: unknown, opcode: GatewayOperations): data is D
 	return false;
 }
 
-export function hasFlag<T extends number>(flags: T, flag: T): boolean {
-	return (flags & flag) === flag;
+export function hasFlag<T extends number>(flags: T | undefined, flag: T): boolean {
+	return ((flags || 0) & flag) === flag;
 }
 
 export function generateRandomString(n: number): string {

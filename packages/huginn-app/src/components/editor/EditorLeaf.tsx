@@ -1,25 +1,23 @@
+import { hasFlag } from "@huginn/shared";
+import { TokenTypeFlag } from "@lib/huginn-tokenizer";
+import clsx from "clsx";
 import type { RenderLeafProps } from "slate-react";
 
 export default function EditorLeaf(props: RenderLeafProps) {
-	if (props.leaf.bold) {
+	if (props.leaf.mark) {
 		return (
-			<span className="font-bold" {...props.attributes}>
+			<span className="text-white/50" {...props.attributes}>
 				{props.children}
 			</span>
 		);
 	}
 
-	if (props.leaf.italic) {
+	if (props.leaf.bold || props.leaf.italic || props.leaf.underline) {
 		return (
-			<span className="italic" {...props.attributes}>
-				{props.children}
-			</span>
-		);
-	}
-
-	if (props.leaf.underline) {
-		return (
-			<span className="underline" {...props.attributes}>
+			<span
+				className={clsx(props.leaf.bold && "font-bold", props.leaf.italic && "italic", props.leaf.underline && "underline")}
+				{...props.attributes}
+			>
 				{props.children}
 			</span>
 		);
@@ -28,14 +26,6 @@ export default function EditorLeaf(props: RenderLeafProps) {
 	if (props.leaf.spoiler) {
 		return (
 			<span className="rounded-sm bg-white/20 px-0.5" {...props.attributes}>
-				{props.children}
-			</span>
-		);
-	}
-
-	if (props.leaf.mark) {
-		return (
-			<span className="text-white/50" {...props.attributes}>
 				{props.children}
 			</span>
 		);
