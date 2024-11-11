@@ -1,4 +1,5 @@
 import { MessageFlags } from "@huginn/shared";
+import { TokenTypeFlag } from "@lib/huginn-tokenizer";
 import { useParams } from "@tanstack/react-router";
 import type { KeyboardEvent } from "react";
 import { type Descendant, Editor, Node, type Path, type Range, Text, createEditor } from "slate";
@@ -42,6 +43,7 @@ export default function MessageBox() {
 		for (const token of tokens) {
 			const markLength = token.mark?.length ?? 0;
 			const end = token.end + 1;
+
 			ranges.push({
 				mark: true,
 				anchor: { path, offset: token.start },
@@ -52,11 +54,14 @@ export default function MessageBox() {
 				anchor: { path, offset: end - markLength },
 				focus: { path, offset: end },
 			});
-			ranges.push({
-				[token.type]: true,
-				anchor: { path, offset: token.start + markLength },
-				focus: { path, offset: end - markLength },
-			});
+
+			for (const tokenType of token.type) {
+				ranges.push({
+					[tokenType]: true,
+					anchor: { path, offset: token.start + markLength },
+					focus: { path, offset: end - markLength },
+				});
+			}
 		}
 
 		return ranges;
