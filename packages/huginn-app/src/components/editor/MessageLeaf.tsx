@@ -21,25 +21,5 @@ export default function MessageLeaf(props: RenderLeafProps) {
 		);
 	}
 
-	if (props.leaf.spoiler) {
-		return <SpoilerLeaf {...props} />;
-	}
-
 	return <span {...props.attributes}>{props.children}</span>;
-}
-
-function SpoilerLeaf(props: RenderLeafProps) {
-	const [hidden, setHidden] = useState(true);
-
-	return (
-		<span
-			className={clsx("inline-block rounded-sm px-0.5 transition-colors", hidden ? "cursor-pointer bg-tertiary text-tertiary" : "bg-white/20")}
-			{...props.attributes}
-			onClick={() => {
-				setHidden(false);
-			}}
-		>
-			{props.children}
-		</span>
-	);
 }

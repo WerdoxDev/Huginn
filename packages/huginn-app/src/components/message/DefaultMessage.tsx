@@ -91,7 +91,6 @@ export default function DefaultMessage(
 							widths.width - widths.lastWidth > 5 && "rounded-tr-xl",
 							widths.width - widths.nextWidth > 5 && "rounded-br-xl",
 						)}
-						disableDefaultStyles
 					/>
 				</Slate>
 			</div>

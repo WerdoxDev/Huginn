@@ -8,7 +8,12 @@ type ParagraphElement = {
 	children: CustomText[];
 };
 
-type CustomElement = ParagraphElement;
+type SpoilerElement = {
+	type: "spoiler";
+	children: CustomText[];
+};
+
+type CustomElement = ParagraphElement | SpoilerElement;
 
 type TextFormats = { bold?: boolean; italic?: boolean; underline?: boolean; mark?: boolean; spoiler?: boolean };
 type FormattedText = { text: string } & TextFormats;
