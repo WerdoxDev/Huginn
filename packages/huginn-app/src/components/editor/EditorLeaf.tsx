@@ -12,20 +12,19 @@ export default function EditorLeaf(props: RenderLeafProps) {
 		);
 	}
 
-	if (props.leaf.bold || props.leaf.italic || props.leaf.underline) {
+	if (props.leaf.bold || props.leaf.italic || props.leaf.underline || props.leaf.spoiler) {
 		return (
 			<span
-				className={clsx(props.leaf.bold && "font-bold", props.leaf.italic && "italic", props.leaf.underline && "underline")}
+				className={clsx(
+					props.leaf.bold && "font-bold",
+					props.leaf.italic && "italic",
+					props.leaf.underline && "underline",
+					props.leaf.spoiler && "rounded-sm px-0.5",
+					// biome-ignore lint/nursery/useSortedClasses: <explanation>
+					props.leaf.spoiler && props.leaf.text !== " " && "bg-white/20",
+				)}
 				{...props.attributes}
 			>
-				{props.children}
-			</span>
-		);
-	}
-
-	if (props.leaf.spoiler) {
-		return (
-			<span className="rounded-sm bg-white/20 px-0.5" {...props.attributes}>
 				{props.children}
 			</span>
 		);
