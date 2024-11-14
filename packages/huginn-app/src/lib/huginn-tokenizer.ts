@@ -28,8 +28,13 @@ const tokenTypes: Record<string, TokenTypeFlag> = {
 	twol: TokenTypeFlag.SPOILER,
 };
 
+const cache = new Map<string, FinishedToken[]>();
+
 export function tokenize(text: string) {
-	// newTokenize(text);
+	if (cache.has(text)) {
+		return cache.get(text);
+	}
+
 	const tokens: FinishedToken[] = [];
 
 	let match: RegExpExecArray | null;
@@ -64,6 +69,8 @@ export function tokenize(text: string) {
 			}
 		}
 	}
+
+	cache.set(text, tokens);
 
 	return tokens;
 }

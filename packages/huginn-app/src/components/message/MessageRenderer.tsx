@@ -1,6 +1,6 @@
 import type { MessageRendererProps } from "@/types";
 import { MessageType } from "@huginn/shared";
-import { type BasePoint, type Editor, Element, Node, type Path, type Range, Text, Transforms, createEditor } from "slate";
+import { type BasePoint, type Editor, Element, type Node, type Path, type Range, Text, createEditor } from "slate";
 import { DefaultElement, type RenderElementProps, type RenderLeafProps, withReact } from "slate-react";
 
 const withHuginn = (editor: Editor) => {
@@ -27,17 +27,17 @@ const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, 
 		return <DefaultElement {...props} />;
 	}, []);
 
-	function decorate([node, path]: [Node, Path]) {
+	const decorate = useCallback(([node, path]: [Node, Path]) => {
 		const ranges: Range[] = [];
 
 		if (!Text.isText(node)) {
 			return ranges;
 		}
 
-		const tokens = tokenize(node.text).sort((a, b) => a.start - b.start);
+		const tokens = tokenize(node.text)?.sort((a, b) => a.start - b.start);
 		const offsets: { from: number; offset: number }[] = [];
 
-		for (const token of tokens) {
+		for (const token of tokens ?? []) {
 			const offset = offsets
 				.filter((x) => x.from < token.start)
 				.map((x) => x.offset)
@@ -64,7 +64,7 @@ const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, 
 		}
 
 		return ranges;
-	}
+	}, []);
 
 	useEffect(() => {
 		for (const [i, spoiler] of spoilers.current.entries()) {
