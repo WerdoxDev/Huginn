@@ -1,5 +1,5 @@
-import type { MessageRenderInfo } from "@/types";
-import { type APIDefaultMessage, type APIGetChannelMessagesResult, MessageType, type Snowflake } from "@huginn/shared";
+import type { AppChannelMessage, MessageRenderInfo } from "@/types";
+import { MessageType, type Snowflake } from "@huginn/shared";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import moment from "moment";
 import type { RefObject } from "react";
@@ -7,9 +7,10 @@ import type { RefObject } from "react";
 const topScrollOffset = 100;
 const bottomScrollOffset = 100;
 
-export default function ChannelMessages(props: { channelId: Snowflake; messages: APIGetChannelMessagesResult }) {
+export default function ChannelMessages(props: { channelId: Snowflake; messages: AppChannelMessage[] }) {
 	const client = useClient();
 	const queryClient = useQueryClient();
+	const [sortedMessages, setSortedMessages] = useState<AppChannelMessage[]>([]);
 
 	const { data, fetchNextPage, fetchPreviousPage, isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
 		useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client, props.channelId));
@@ -19,13 +20,23 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	const [getContent, setContent, removeContent] = useDynamicRefs<HTMLLIElement>();
 	const { listenEvent } = useEvent();
 
-	const messageRenderInfos = useMemo<MessageRenderInfo[]>(() => calculateMessageRenderInfos(), [props.messages, props.channelId]);
-	const [messageWidths, setMessageWidths] = useState<{ id: Snowflake; width: number }[]>([]);
+	const messageRenderInfos = useMemo<MessageRenderInfo[]>(() => calculateMessageRenderInfos(), [sortedMessages, props.channelId]);
 	const scroll = useRef<HTMLOListElement>(null);
 	const previousScrollTop = useRef(-1);
 	const itemsHeight = useRef(0);
 	const listHasUpdated = useRef(false);
 	const shouldScrollOnNextRender = useRef(false);
+
+	useEffect(() => {
+		setSortedMessages(
+			props.messages.toSorted((a, b) => {
+				if (a.preview !== b.preview) {
+					return a.preview ? 1 : -1; // Move true to the end
+				}
+				return moment(a.createdAt).unix() - moment(b.createdAt).unix();
+			}),
+		);
+	}, [props.messages]);
 
 	async function onScroll() {
 		if (!scroll.current) return;
@@ -65,13 +76,13 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	}
 
 	function calculateMessageRenderInfos(): MessageRenderInfo[] {
-		const value = props.messages.map((message, i) => {
-			const lastMessage = props.messages[i - 1];
+		const value = sortedMessages.map((message, i) => {
+			const lastMessage: AppChannelMessage | undefined = sortedMessages[i - 1];
 
 			const newDate = !moment(message.createdAt).isSame(lastMessage?.createdAt, "date") && !!lastMessage;
 			const newMinute = !moment(message.createdAt).isSame(lastMessage?.createdAt, "minute");
 			const newAuthor = message.author.id !== lastMessage?.author.id;
-			const exoticType = message.type !== MessageType.DEFAULT;
+			const exoticType = message.preview ? false : message.type !== MessageType.DEFAULT;
 
 			return { message, newMinute, newDate, newAuthor, exoticType };
 		});
@@ -166,13 +177,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		itemsHeight.current = height;
 
 		listHasUpdated.current = true;
-	}, [props.messages]);
-
-	// useLayoutEffect(() => {
-	// 	const widths = data.pages.flat().map((x) => ({ id: x.id, width: document.getElementById(`${x.id}_inner`)?.clientWidth || 0 }));
-	// 	setMessageWidths(widths);
-	// 	console.log("SET");
-	// }, [props.messages, props.channelId]);
+	}, [sortedMessages]);
 
 	return (
 		<div className="relative flex w-full flex-col">
@@ -187,7 +192,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 						</div>
 					</div>
 				)}
-				{props.messages.map((message, i) => (
+				{sortedMessages.map((message, i) => (
 					<MessageWrapper
 						key={message.id}
 						message={message}
@@ -203,7 +208,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 }
 
 function MessageWrapper(props: {
-	message: APIDefaultMessage;
+	message: AppChannelMessage;
 	renderInfo: MessageRenderInfo;
 	nextRenderInfo?: MessageRenderInfo;
 	lastRenderInfo?: MessageRenderInfo;
@@ -211,7 +216,7 @@ function MessageWrapper(props: {
 }) {
 	return (
 		<>
-			{props.renderInfo.newDate && (
+			{!props.message.preview && props.renderInfo.newDate && (
 				<li
 					className="mx-2 my-5 flex h-0 items-center justify-center text-center font-semibold text-text/70 text-xs [border-top:thin_solid_rgb(var(--color-text)/0.25)]"
 					ref={props.setContent(`${props.message.id}_separator`)}

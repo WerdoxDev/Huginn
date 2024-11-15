@@ -5,7 +5,7 @@ import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMCh
 import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
 import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePatchDMChannel";
 import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRemoveChannelRecipient";
-import type { APIChannelUser, APIDefaultMessage, APIRelationUser, DirectChannel, RelationshipType, Snowflake } from "@huginn/shared";
+import type { APIChannelUser, APIDefaultMessage, APIMessageUser, APIRelationUser, DirectChannel, RelationshipType, Snowflake } from "@huginn/shared";
 import type { HTMLInputTypeAttribute, ReactNode } from "react";
 
 export type StatusCode = "none" | "default" | "error" | "success";
@@ -149,7 +149,7 @@ export type ContextMenuDMChannel = DirectChannel;
 export type ContextMenuDMChannelRecipient = { channelId: Snowflake; recipient: APIChannelUser };
 
 export type MessageRenderInfo = {
-	message: APIDefaultMessage;
+	message: AppChannelMessage;
 	newMinute: boolean;
 	newDate: boolean;
 	newAuthor: boolean;
@@ -172,3 +172,7 @@ export type MutationVariables = {
 	"create-relationship": CreateRelationshipMutationVars;
 	"remove-relationship": Snowflake;
 };
+
+export type AppChannelMessage =
+	| { preview: true; id: Snowflake; createdAt: string; author: APIMessageUser; nonce?: number | string; content: string }
+	| ({ preview: false } & APIDefaultMessage);

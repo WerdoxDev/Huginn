@@ -1,17 +1,45 @@
-import type { MessageFlags } from "@huginn/shared";
-import type { Snowflake } from "@huginn/shared";
-import { useMutation } from "@tanstack/react-query";
+import type { AppChannelMessage } from "@/types";
+import { type MessageFlags, pick, snowflake } from "@huginn/shared";
+import { type Snowflake, WorkerID } from "@huginn/shared";
+import { type InfiniteData, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useSendMessage() {
 	const client = useClient();
+	const { user } = useUser();
+	const queryClient = useQueryClient();
+	const { dispatchEvent } = useEvent();
 
 	const mutation = useMutation({
 		mutationKey: ["send-message"],
 		async mutationFn(data: { channelId: Snowflake; content: string; flags: MessageFlags }) {
+			const nonce = client.generateNonce();
+
+			let previewMessage: AppChannelMessage | undefined;
+			queryClient.setQueryData<InfiniteData<AppChannelMessage[], { before: string; after: string }>>(["messages", data.channelId], (old) => {
+				if (!old) return undefined;
+				if (!user) return old;
+
+				const lastPage = old.pages[old.pages.length - 1];
+				previewMessage = {
+					preview: true,
+					id: snowflake.generateString(WorkerID.MESSAGE),
+					createdAt: new Date(Date.now()).toISOString(),
+					content: data.content,
+					author: pick(user, ["id", "avatar", "displayName", "username", "flags"]),
+					nonce: nonce,
+				};
+				dispatchEvent("message_added", { message: previewMessage, visible: true, self: true });
+
+				return {
+					...old,
+					pages: [...old.pages.toSpliced(old.pages.length - 1, 1, [...lastPage, previewMessage])],
+				};
+			});
+
 			return await client.channels.createMessage(data.channelId, {
 				content: data.content,
 				flags: data.flags,
-				nonce: client.generateNonce(),
+				nonce: nonce,
 			});
 		},
 	});
