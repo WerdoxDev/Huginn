@@ -18,7 +18,6 @@ export function TypyingProvider(props: { children?: ReactNode }) {
 			return existingIndex !== -1
 				? _typings.current.map((x, i) => {
 						if (i === existingIndex) {
-							console.log("deleting", x.timeout);
 							window.clearTimeout(x.timeout);
 							const newTimeout = startTimeout(d.userId, d.channelId);
 							return { ...x, ...d, timeout: newTimeout };
@@ -39,7 +38,6 @@ export function TypyingProvider(props: { children?: ReactNode }) {
 
 	function removeTyping(userId: Snowflake, channelId: Snowflake) {
 		const foundId = _typings.current.find((x) => x.userId === userId && x.channelId === channelId)?.timeout;
-		console.log("found and deleting", foundId, _typings.current, userId, channelId);
 		window.clearTimeout(foundId);
 		setTypings(() => _typings.current.filter((x) => x.userId !== userId && x.channelId !== channelId));
 	}

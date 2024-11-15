@@ -74,7 +74,7 @@ export default function MessageBox() {
 			sendMessage(flags);
 		}
 
-		if (event.code === `Key${event.key.toUpperCase()}` && !event.ctrlKey && !event.altKey && !event.shiftKey) {
+		if (event.code === `Key${event.key.toUpperCase()}` && !event.ctrlKey && !event.altKey) {
 			sendTypingMutation.mutate({ channelId: params.channelId });
 		}
 	}
