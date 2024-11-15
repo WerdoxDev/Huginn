@@ -37,7 +37,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 				const newMessage: AppChannelMessage = { ...d, preview: false };
 				return {
 					...old,
-					pages: [...old.pages.toSpliced(old.pages.length - 1, 1, [...lastPage.filter((x) => x.nonce !== d.nonce), newMessage])],
+					pages: [...old.pages.toSpliced(old.pages.length - 1, 1, [...lastPage.filter((x) => !x.nonce || x.nonce !== d.nonce), newMessage])],
 				};
 			}
 
