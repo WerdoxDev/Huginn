@@ -1,4 +1,5 @@
-import { type APIGetChannelMessagesResult, type APIGetUserChannelsResult, type GatewayUserUpdateData, omit } from "@huginn/shared";
+import type { AppChannelMessage } from "@/types";
+import { type APIGetUserChannelsResult, type GatewayUserUpdateData, omit } from "@huginn/shared";
 import type { APIMessageUser, GatewayMessageCreateData, GatewayPresenceUpdateData } from "@huginn/shared";
 import { type InfiniteData, useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
@@ -10,7 +11,6 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 	const mutation = useCreateDMChannel();
 	const { dispatchEvent } = useEvent();
 	const { removeTyping: removeTimeout } = useTypings();
-	const [x, y] = useState(0);
 
 	function onMessageCreated(d: GatewayMessageCreateData) {
 		const channels = queryClient.getQueryData<APIGetUserChannelsResult>(["channels", "@me"]);
@@ -26,7 +26,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 
 		let messageVisible = false;
 
-		queryClient.setQueryData<InfiniteData<APIGetChannelMessagesResult, { before: string; after: string }>>(["messages", d.channelId], (old) => {
+		queryClient.setQueryData<InfiniteData<AppChannelMessage[], { before: string; after: string }>>(["messages", d.channelId], (old) => {
 			if (!old) return undefined;
 
 			const lastPage = old.pages[old.pages.length - 1];
@@ -34,9 +34,10 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 			// See if the message can be appended to the current page
 			if (!lastParams.before && (!lastParams.after || lastPage.some((x) => x.id === thisChannel.lastMessageId))) {
 				messageVisible = true;
+				const newMessage: AppChannelMessage = { ...d, preview: false };
 				return {
 					...old,
-					pages: [...old.pages.toSpliced(old.pages.length - 1, 1, [...lastPage, d])],
+					pages: [...old.pages.toSpliced(old.pages.length - 1, 1, [...lastPage.filter((x) => x.nonce !== d.nonce), newMessage])],
 				};
 			}
 
@@ -50,8 +51,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 		});
 
 		removeTimeout(d.author.id, d.channelId);
-		dispatchEvent("message_added", { message: d, visible: messageVisible, self: d.author.id === user?.id });
-		console.log(x);
+		dispatchEvent("message_added", { message: { ...d, preview: false }, visible: messageVisible, self: d.author.id === user?.id });
 	}
 
 	function onUserUpdated(data: GatewayUserUpdateData | GatewayPresenceUpdateData) {
@@ -60,7 +60,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 			return;
 		}
 
-		queryClient.setQueriesData<InfiniteData<APIGetChannelMessagesResult, { before: string; after: string }>>(
+		queryClient.setQueriesData<InfiniteData<AppChannelMessage[], { before: string; after: string }>>(
 			{ queryKey: ["messages"] },
 			(old) =>
 				old && {
@@ -76,10 +76,6 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 		client.gateway.on("message_create", onMessageCreated);
 		client.gateway.on("user_update", onUserUpdated);
 		client.gateway.on("presence_update", onUserUpdated);
-		setTimeout(() => {
-			console.log(x);
-		}, 1000);
-		y(1);
 
 		return () => {
 			client.gateway.off("message_create", onMessageCreated);

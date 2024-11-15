@@ -5,14 +5,16 @@ import clsx from "clsx";
 export default function UserActionMessage(props: MessageRendererProps) {
 	const author = useMemo(() => props.renderInfo.message.author.displayName ?? props.renderInfo.message.author.username, [props.renderInfo]);
 	const mention = useMemo(
-		() => props.renderInfo.message.mentions[0]?.displayName ?? props.renderInfo.message.mentions[0]?.username,
+		() =>
+			!props.renderInfo.message.preview &&
+			(props.renderInfo.message.mentions?.[0]?.displayName ?? props.renderInfo.message.mentions?.[0]?.username),
 		[props.renderInfo],
 	);
 
 	const isLastExotic = useMemo(() => props.lastRenderInfo?.exoticType || !props.lastRenderInfo, [props.lastRenderInfo]);
 	const isNextExotic = useMemo(() => props.nextRenderInfo?.exoticType || !props.nextRenderInfo, [props.nextRenderInfo]);
 
-	const type = useMemo(() => props.renderInfo.message.type, [props.renderInfo]);
+	const type = useMemo(() => !props.renderInfo.message.preview && props.renderInfo.message.type, [props.renderInfo]);
 	return (
 		<div
 			className={clsx(

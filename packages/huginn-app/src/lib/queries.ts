@@ -1,3 +1,4 @@
+import type { AppChannelMessage } from "@/types";
 import type { HuginnClient } from "@huginn/api";
 import { type APIGetUserChannelsResult, type Snowflake, resolveImage } from "@huginn/shared";
 import { type QueryClient, infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
@@ -17,8 +18,15 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
 	return infiniteQueryOptions({
 		queryKey: ["messages", channelId],
 		initialPageParam: { before: "", after: "" },
-		queryFn: ({ pageParam }) =>
-			client.channels.getMessages(channelId, 50, pageParam.before.toString() || undefined, pageParam.after.toString() || undefined),
+		queryFn: async ({ pageParam }) => {
+			const messages = await client.channels.getMessages(
+				channelId,
+				50,
+				pageParam.before.toString() || undefined,
+				pageParam.after.toString() || undefined,
+			);
+			return messages.map((x) => ({ ...x, preview: false })) as AppChannelMessage[];
+		},
 		getPreviousPageParam(first) {
 			const earliestMessage = first[0];
 			return earliestMessage && first.length >= 50 ? { before: earliestMessage.id, after: "" } : undefined;
@@ -29,7 +37,7 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
 
 			const latestMessage = last[last.length - 1];
 
-			return latestMessage && (!thisChannel || thisChannel.lastMessageId !== latestMessage.id)
+			return !latestMessage?.preview && latestMessage && (!thisChannel || thisChannel.lastMessageId !== latestMessage.id)
 				? { after: latestMessage.id, before: "" }
 				: undefined;
 		},

@@ -15,7 +15,7 @@ export default function DefaultMessage(
 ) {
 	const { user } = useUser();
 
-	const formattedTime = useMemo(() => moment(props.renderInfo.message.createdAt).format("DD.MM.YYYY HH:mm"), [props.renderInfo.message.createdAt]);
+	const formattedTime = useMemo(() => moment(props.renderInfo.message?.createdAt).format("DD.MM.YYYY HH:mm"), [props.renderInfo.message]);
 	const isSelf = useMemo(() => props.renderInfo.message.author.id === user?.id, [props.renderInfo.message.author]);
 
 	const initialValue = useMemo(() => deserialize(props.renderInfo.message.content ?? ""), []);
@@ -69,7 +69,9 @@ export default function DefaultMessage(
 					<div className="text-sm text-text">
 						{isSelf ? "You" : (props.renderInfo.message.author.displayName ?? props.renderInfo.message.author.username)}
 					</div>
-					{props.renderInfo.message.flags && hasFlag(props.renderInfo.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
+					{!props.renderInfo.message.preview &&
+					props.renderInfo.message.flags &&
+					hasFlag(props.renderInfo.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
 						<IconMingcuteNotificationOffFill className="size-4 text-text" />
 					) : null}
 					<div className="text-text/50 text-xs">{formattedTime}</div>
@@ -85,12 +87,14 @@ export default function DefaultMessage(
 						renderElement={props.renderElement}
 						className={clsx(
 							"px-2.5 py-1.5 font-normal text-white [overflow-wrap:anywhere]",
+							props.renderInfo.message.preview && "bg-primary/50 text-white/50",
 							isSelf ? "bg-primary" : "bg-background",
 							isSeparate && "rounded-t-xl",
 							isNextSeparate && "rounded-b-xl",
 							widths.width - widths.lastWidth > 5 && "rounded-tr-xl",
 							widths.width - widths.nextWidth > 5 && "rounded-br-xl",
 						)}
+						disableDefaultStyles
 					/>
 				</Slate>
 			</div>

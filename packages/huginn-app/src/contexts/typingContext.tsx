@@ -34,7 +34,6 @@ export function TypyingProvider(props: { children?: ReactNode }) {
 		const id = window.setTimeout(() => {
 			removeTyping(userId, channelId);
 		}, 10000);
-		console.log("ID:", id);
 		return id;
 	}
 
@@ -47,10 +46,6 @@ export function TypyingProvider(props: { children?: ReactNode }) {
 
 	useEffect(() => {
 		client.gateway.on("typying_start", onTypingStart);
-
-		setTimeout(() => {
-			console.log(typings[0]);
-		}, 5000);
 
 		return () => {
 			client.gateway.off("typying_start", onTypingStart);

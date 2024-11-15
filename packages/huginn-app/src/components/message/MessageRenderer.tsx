@@ -11,9 +11,11 @@ const withHuginn = (editor: Editor) => {
 	return editor;
 };
 
+type SpoilerLocation = { anchor: BasePoint; focus: BasePoint };
+
 const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, ref) => {
 	const editor = useMemo(() => withReact(withHuginn(createEditor())), []);
-	const spoilers = useRef<{ anchor: BasePoint; focus: BasePoint }[]>([]);
+	const spoilerLocations = useRef<SpoilerLocation[]>([]);
 
 	const renderLeaf = useCallback((props: RenderLeafProps) => {
 		return <MessageLeaf {...props} />;
@@ -46,7 +48,7 @@ const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, 
 			for (const tokenType of token.type) {
 				const location = { anchor: { path, offset: token.start - offset }, focus: { path, offset: token.end - offset + 1 } };
 				if (tokenType === "spoiler") {
-					spoilers.current.push({ anchor: { path, offset: token.start }, focus: { path, offset: token.end + 1 } });
+					spoilerLocations.current.push({ anchor: { path, offset: token.start }, focus: { path, offset: token.end + 1 } });
 					ranges.push({
 						...location,
 						text: token.content,
@@ -67,16 +69,37 @@ const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, 
 	}, []);
 
 	useEffect(() => {
-		for (const [i, spoiler] of spoilers.current.entries()) {
-			const location = spoiler;
-			location.anchor.path = [location.anchor.path[0], i * 2];
-			location.focus.path = [location.focus.path[0], i * 2];
+		if (spoilerLocations.current.length === 0) return;
 
+		// Group each line of spoilers into an array resulting in an array of arrays
+		const groupedSpoilers = spoilerLocations.current.reduce(
+			(acc, item) => {
+				const key = String(item.anchor.path[0]);
+				if (!acc[key]) {
+					acc[key] = [];
+				}
+
+				acc[key].push(item);
+
+				return acc;
+			},
+			{} as { [key: string]: SpoilerLocation[] },
+		);
+
+		for (const lineIndex of Object.keys(groupedSpoilers)) {
 			let skipped = 0;
-			console.log(i);
-			if (i !== 0) {
-				for (let j = 0; j < i * 2; j++) {
-					const node = editor.node({ path: [location.anchor.path[0], j], offset: 0 })[0];
+			for (const [i, spoiler] of groupedSpoilers[lineIndex].entries()) {
+				const location = spoiler;
+				location.anchor.path = [Number(lineIndex), i * 2];
+				location.focus.path = [Number(lineIndex), i * 2];
+
+				location.anchor.offset -= skipped;
+				location.focus.offset -= skipped;
+
+				editor.wrapNodes({ type: "spoiler", children: [{ text: "" }] }, { at: location, split: true });
+
+				for (let j = i === 0 ? 0 : i * 2; j < (i === 0 ? 2 : i * 2 + 2); j++) {
+					const node = editor.node({ path: [Number(lineIndex), j], offset: 0 })[0];
 					if (Text.isText(node)) {
 						skipped += node.text.length;
 					} else if (Element.isElement(node)) {
@@ -84,11 +107,6 @@ const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, 
 					}
 				}
 			}
-
-			location.anchor.offset -= skipped;
-			location.focus.offset -= skipped;
-
-			editor.wrapNodes({ type: "spoiler", children: [{ text: "" }] }, { at: location, split: true });
 		}
 	}, []);
 
@@ -100,16 +118,17 @@ const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, 
 				console.log(e.code);
 			}}
 		>
-			{[MessageType.DEFAULT].includes(props.renderInfo.message.type) && (
+			{(props.renderInfo.message.preview || [MessageType.DEFAULT].includes(props.renderInfo.message.type)) && (
 				<DefaultMessage {...props} editor={editor} decorate={decorate} renderElement={renderElement} renderLeaf={renderLeaf} />
 			)}
-			{[
-				MessageType.RECIPIENT_ADD,
-				MessageType.RECIPIENT_REMOVE,
-				MessageType.CHANNEL_NAME_CHANGED,
-				MessageType.CHANNEL_ICON_CHANGED,
-				MessageType.CHANNEL_OWNER_CHANGED,
-			].includes(props.renderInfo.message.type) && <UserActionMessage {...props} />}
+			{!props.renderInfo.message.preview &&
+				[
+					MessageType.RECIPIENT_ADD,
+					MessageType.RECIPIENT_REMOVE,
+					MessageType.CHANNEL_NAME_CHANGED,
+					MessageType.CHANNEL_ICON_CHANGED,
+					MessageType.CHANNEL_OWNER_CHANGED,
+				].includes(props.renderInfo.message.type) && <UserActionMessage {...props} />}
 		</li>
 	);
 });
