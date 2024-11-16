@@ -42,7 +42,6 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	async function onScroll() {
 		if (!scroll.current || sortedMessages.length === 0) return;
 		channelScrollDispatch({ channelId: props.channelId, scroll: scroll.current.scrollTop ?? 0 });
-		console.log("SCROLL", scroll.current.scrollTop);
 
 		// Scrolling up
 		if (scroll.current.scrollTop <= topScrollOffset && !isFetchingPreviousPage && hasPreviousPage && listHasUpdated.current) {
@@ -128,7 +127,6 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			if (!scroll.current || !d.visible) return;
 			const scrollOffset = scroll.current.scrollHeight - scroll.current.clientHeight - scroll.current.scrollTop;
 
-			console.log(scrollOffset);
 			if (d.self || scrollOffset <= 50) {
 				// scrollDown();
 				shouldScrollOnNextRender.current = true;

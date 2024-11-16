@@ -130,7 +130,7 @@ const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, 
 					MessageType.CHANNEL_NAME_CHANGED,
 					MessageType.CHANNEL_ICON_CHANGED,
 					MessageType.CHANNEL_OWNER_CHANGED,
-				].includes(props.renderInfo.message.type) && <UserActionMessage {...props} />}
+				].includes(props.renderInfo.message.type) && <ActionMessage {...props} />}
 		</li>
 	);
 });
