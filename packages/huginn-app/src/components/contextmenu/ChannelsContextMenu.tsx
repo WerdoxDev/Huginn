@@ -2,8 +2,10 @@ import { ChannelType } from "@huginn/shared";
 
 export default function ChannelsContextMenu() {
 	const { data } = useContextMenu("dm_channel");
-	const mutation = useDeleteDMChannel();
 	const dispatch = useModalsDispatch();
+
+	const name = useChannelName(data?.recipients, data?.name);
+	const { tryMutate } = useSafeDeleteDMChannel(data?.id, data?.type, name);
 
 	if (!data) return;
 
@@ -11,9 +13,7 @@ export default function ChannelsContextMenu() {
 		<>
 			<ContextMenu.Item
 				label={data.type === ChannelType.DM ? "Close DM" : "Leave Group"}
-				onClick={() => {
-					mutation.mutate(data.id);
-				}}
+				onClick={tryMutate}
 				className="!text-error focus:!bg-error/80 focus:!text-white"
 			/>
 			{data.type === ChannelType.GROUP_DM && (

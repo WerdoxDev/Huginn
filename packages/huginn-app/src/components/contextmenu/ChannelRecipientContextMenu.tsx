@@ -2,7 +2,7 @@ export default function ChannelRecipientContextMenu() {
 	const { data } = useContextMenu("dm_channel_recipient");
 	const { user } = useUser();
 	const deleteMutation = useRemoveChannelRecipient();
-	const createMutation = useCreateDMChannel();
+	const createMutation = useCreateDMChannel("create-dm-channel_recipient");
 	const editMutation = usePatchDMChannel();
 	const { ownerId } = useChannelRecipients(data?.channelId, "@me");
 

@@ -1,7 +1,7 @@
 export default function RelationshipContextMenu() {
 	const { data } = useContextMenu("relationship");
 	const removeMutation = useRemoveRelationship();
-	const createMutation = useCreateDMChannel();
+	const createMutation = useCreateDMChannel("create-dm-channel_other");
 
 	if (!data) return;
 

@@ -4,8 +4,7 @@ import clsx from "clsx";
 export default function ChannelRecipient(props: { channelId: Snowflake; isOwner: boolean; recipient: APIChannelUser }) {
 	const presence = usePresence(props.recipient.id);
 	const { open: openContextMenu } = useContextMenu("dm_channel_recipient");
-	const state = useMutationLatestState("create-dm-channel");
-
+	const state = useMutationLatestState("create-dm-channel_recipient");
 	return (
 		<div
 			onContextMenu={(e) => openContextMenu({ channelId: props.channelId, recipient: props.recipient }, e)}

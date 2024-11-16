@@ -23,6 +23,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	const messageRenderInfos = useMemo<MessageRenderInfo[]>(() => calculateMessageRenderInfos(), [sortedMessages, props.channelId]);
 	const scroll = useRef<HTMLOListElement>(null);
 	const previousScrollTop = useRef(-1);
+	const previousChannelId = useRef<Snowflake>();
 	const itemsHeight = useRef(0);
 	const listHasUpdated = useRef(false);
 	const shouldScrollOnNextRender = useRef(false);
@@ -39,8 +40,9 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	}, [props.messages]);
 
 	async function onScroll() {
-		if (!scroll.current) return;
+		if (!scroll.current || sortedMessages.length === 0) return;
 		channelScrollDispatch({ channelId: props.channelId, scroll: scroll.current.scrollTop ?? 0 });
+		console.log("SCROLL", scroll.current.scrollTop);
 
 		// Scrolling up
 		if (scroll.current.scrollTop <= topScrollOffset && !isFetchingPreviousPage && hasPreviousPage && listHasUpdated.current) {
@@ -52,9 +54,10 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 				}
 			}
 
-			await fetchPrevious();
-			// Scrolling down
-		} else if (
+			await fetchPreviousPageExtra();
+		}
+		// Scrolling down
+		else if (
 			scroll.current.scrollHeight - scroll.current.clientHeight - scroll.current.scrollTop <= bottomScrollOffset &&
 			!isFetchingNextPage &&
 			hasNextPage &&
@@ -65,7 +68,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		}
 	}
 
-	async function fetchPrevious() {
+	async function fetchPreviousPageExtra() {
 		if (!scroll.current) {
 			return;
 		}
@@ -109,31 +112,25 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		return element.offsetHeight + margin;
 	}
 
-	async function checkForExtraSpace() {
-		if (!scroll.current) {
-			return;
-		}
+	// TODO: I DON'T KNOW WHAT THIS DOES
+	// async function checkForExtraSpace() {
+	// 	if (!scroll.current) {
+	// 		return;
+	// 	}
 
-		if (scroll.current.scrollHeight === scroll.current.clientHeight && !isFetchingPreviousPage) {
-			await fetchPrevious();
-		}
-	}
+	// 	if (scroll.current.scrollHeight === scroll.current.clientHeight && !isFetchingPreviousPage) {
+	// 		// await fetchPrevious();
+	// 	}
+	// }
 
 	useEffect(() => {
-		checkForExtraSpace();
-
-		if (channelScroll.has(props.channelId) && scroll.current) {
-			const newScroll = channelScroll.get(props.channelId) ?? 0;
-			scroll.current.scrollTop = newScroll;
-		} else {
-			scrollDown();
-		}
-
 		const unlisten = listenEvent("message_added", (d) => {
 			if (!scroll.current || !d.visible) return;
 			const scrollOffset = scroll.current.scrollHeight - scroll.current.clientHeight - scroll.current.scrollTop;
 
+			console.log(scrollOffset);
 			if (d.self || scrollOffset <= 50) {
+				// scrollDown();
 				shouldScrollOnNextRender.current = true;
 			}
 		});
@@ -142,6 +139,22 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			unlisten();
 		};
 	}, [props.channelId]);
+
+	useEffect(() => {
+		if (sortedMessages.length === 0) return;
+
+		// checkForExtraSpace();
+		// Scrolling to saved scroll
+		if (previousChannelId.current !== props.channelId) {
+			if (channelScroll.has(props.channelId) && scroll.current) {
+				const newScroll = channelScroll.get(props.channelId) ?? 0;
+				scroll.current.scrollTop = newScroll;
+			} else {
+				scrollDown();
+			}
+			previousChannelId.current = props.channelId;
+		}
+	}, [sortedMessages]);
 
 	useEffect(() => {
 		if (!scroll.current) return;
@@ -169,14 +182,18 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			previousScrollTop.current = -1;
 		}
 
+		itemsHeight.current = height;
+
+		listHasUpdated.current = true;
+	}, [sortedMessages]);
+
+	useEffect(() => {
+		if (!scroll.current || sortedMessages.length === 0) return;
+
 		if (shouldScrollOnNextRender.current) {
 			scrollDown();
 			shouldScrollOnNextRender.current = false;
 		}
-
-		itemsHeight.current = height;
-
-		listHasUpdated.current = true;
 	}, [sortedMessages]);
 
 	return (

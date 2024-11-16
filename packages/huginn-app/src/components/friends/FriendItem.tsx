@@ -12,7 +12,7 @@ export default function FriendItem(props: {
 }) {
 	const { open: openRelationshipMore } = useContextMenu("relationship_more");
 	const { open: openRelationship } = useContextMenu("relationship");
-	const createChannelState = useMutationLatestState("create-dm-channel");
+	const createChannelState = useMutationLatestState("create-dm-channel_other");
 	const createRelationshipState = useMutationLatestState("create-relationship");
 	const removeRelationshipState = useMutationLatestState("remove-relationship");
 

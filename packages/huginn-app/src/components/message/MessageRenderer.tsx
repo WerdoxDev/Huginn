@@ -71,6 +71,7 @@ const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, 
 	useEffect(() => {
 		if (spoilerLocations.current.length === 0) return;
 
+		//TODO: This can become a generic thing to use for later with more kinds of element replacing markdown
 		// Group each line of spoilers into an array resulting in an array of arrays
 		const groupedSpoilers = spoilerLocations.current.reduce(
 			(acc, item) => {
@@ -86,6 +87,7 @@ const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, 
 			{} as { [key: string]: SpoilerLocation[] },
 		);
 
+		// Wrap and split nodes where ever a spoiler is seen
 		for (const lineIndex of Object.keys(groupedSpoilers)) {
 			let skipped = 0;
 			for (const [i, spoiler] of groupedSpoilers[lineIndex].entries()) {

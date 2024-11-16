@@ -14,7 +14,7 @@ export default function CreateDMModal() {
 	const [selectedUsers, setSelectedUsers] = useState<APIRelationUser[]>([]);
 	const { inputsProps, setInputValue, values, validateValues, handleErrors } = useInputs([{ name: "name", required: false }]);
 
-	const mutation = useCreateDMChannel(handleErrors);
+	const mutation = useCreateDMChannel("create-dm-channel_other", handleErrors);
 
 	const placeholderName = useChannelName(selectedUsers, null);
 

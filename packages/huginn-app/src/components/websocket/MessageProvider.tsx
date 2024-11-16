@@ -8,7 +8,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 	const client = useClient();
 	const { user } = useUser();
 	const queryClient = useQueryClient();
-	const mutation = useCreateDMChannel();
+	const mutation = useCreateDMChannel("create-dm-channel_other");
 	const { dispatchEvent } = useEvent();
 	const { removeTyping: removeTimeout } = useTypings();
 

@@ -164,9 +164,11 @@ export type MessageRendererProps = {
 	lastRenderInfo?: MessageRenderInfo;
 };
 
-export type MutationVariables = {
-	"create-dm-channel": CreateDMChannelMutationVars;
+export type MutationKinds = {
+	"create-dm-channel_recipient": CreateDMChannelMutationVars;
+	"create-dm-channel_other": CreateDMChannelMutationVars;
 	"patch-dm-channel": PatchDMChannelMutationVars;
+	"delete-dm-channel": Snowflake;
 	"remove-channel-recipient": RemoveChannelRecipientMutationVars;
 	"add-channel-recipient": AddChannelRecipientMutationVars;
 	"create-relationship": CreateRelationshipMutationVars;
