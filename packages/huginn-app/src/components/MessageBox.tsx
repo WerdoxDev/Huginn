@@ -1,6 +1,6 @@
 import { MessageFlags } from "@huginn/shared";
 import { TokenTypeFlag } from "@lib/huginn-tokenizer";
-import { useParams } from "@tanstack/react-router";
+import { useLinkProps, useParams } from "@tanstack/react-router";
 import type { KeyboardEvent } from "react";
 import { type Descendant, Editor, Node, type Path, type Range, Text, createEditor } from "slate";
 import { DefaultElement, Editable, type RenderElementProps, type RenderLeafProps, Slate, withReact } from "slate-react";
@@ -21,7 +21,7 @@ export default function MessageBox() {
 	const params = useParams({ strict: false });
 
 	const sendMessageMutation = useSendMessage();
-	const { reset: resetTyping, mutation: sendTypingMutation } = useSendTyping();
+	const { reset: resetTyping, mutate: sendTypingMutate } = useSendTyping();
 
 	const renderLeaf = useCallback((props: RenderLeafProps) => {
 		return <EditorLeaf {...props} />;
@@ -74,9 +74,7 @@ export default function MessageBox() {
 			sendMessage(flags);
 		}
 
-		if (event.code === `Key${event.key.toUpperCase()}` && !event.ctrlKey && !event.altKey) {
-			sendTypingMutation.mutate({ channelId: params.channelId });
-		}
+		sendTypingMutate(event, { channelId: params.channelId });
 	}
 
 	function sendMessage(flags: MessageFlags) {

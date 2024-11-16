@@ -10,11 +10,11 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
 
 	const { open: openContextMenu } = useContextMenu("dm_channel");
 
-	const mutation = useDeleteDMChannel();
-
 	const { channelId } = useParams({ strict: false });
 	const selected = useMemo(() => channelId === props.channel?.id, [channelId, props.channel]);
 	const name = useChannelName(props.channel.recipients, props.channel.name);
+
+	const { tryMutate } = useSafeDeleteDMChannel(props.channel.id, props.channel.type, name);
 
 	return (
 		<li
@@ -53,9 +53,7 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
 				<button
 					type="button"
 					className="group/close invisible absolute top-3.5 right-2 bottom-3.5 flex-shrink-0 group-hover:visible"
-					onClick={() => {
-						mutation.mutate(props.channel.id);
-					}}
+					onClick={tryMutate}
 				>
 					<IconMingcuteCloseFill className="text-text/50 group-hover/close:text-text/100" />
 				</button>

@@ -256,6 +256,7 @@ declare global {
   const useRemoveChannelRecipient: typeof import('./hooks/mutations/useRemoveChannelRecipient')['useRemoveChannelRecipient']
   const useRemoveRelationship: typeof import('./hooks/mutations/useRemoveRelationship')['useRemoveRelationship']
   const useRouteAnimation: typeof import('./hooks/useRouteAnimation')['useRouteAnimation']
+  const useSafeDeleteDMChannel: typeof import('./hooks/useWarnDMChannelDelete')['useSafeDeleteDMChannel']
   const useSafePathname: typeof import('./hooks/useLastSafePathname')['useSafePathname']
   const useSendMessage: typeof import('./hooks/mutations/useSendMessage')['useSendMessage']
   const useSendTyping: typeof import('./hooks/mutations/useSendTyping')['useSendTyping']
@@ -273,6 +274,7 @@ declare global {
   const useUniqueUsernameMessage: typeof import('./hooks/useUniqueUsernameMessage')['useUniqueUsernameMessage']
   const useUpdater: typeof import('./hooks/useUpdater')['useUpdater']
   const useUser: typeof import('./contexts/userContext')['useUser']
+  const useWarnDMChannelDelete: typeof import('./hooks/useWarnDMChannelDelete')['useWarnDMChannelDelete']
   const useWindow: typeof import('./contexts/windowContext')['useWindow']
   const useWindowDispatch: typeof import('./contexts/windowContext')['useWindowDispatch']
 }

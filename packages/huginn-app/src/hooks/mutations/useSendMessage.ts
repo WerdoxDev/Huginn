@@ -12,23 +12,26 @@ export function useSendMessage() {
 	const mutation = useMutation({
 		mutationKey: ["send-message"],
 		async mutationFn(data: { channelId: Snowflake; content: string; flags: MessageFlags }) {
+			if (!user) return;
+
 			const nonce = client.generateNonce();
 
-			let previewMessage: AppChannelMessage | undefined;
+			const previewMessage: AppChannelMessage = {
+				preview: true,
+				id: snowflake.generateString(WorkerID.APP),
+				createdAt: new Date(Date.now()).toISOString(),
+				content: data.content,
+				author: pick(user, ["id", "avatar", "displayName", "username", "flags"]),
+				nonce: nonce,
+			};
+
+			dispatchEvent("message_added", { message: previewMessage, visible: true, self: true });
+
+			// Add Preview Message
 			queryClient.setQueryData<InfiniteData<AppChannelMessage[], { before: string; after: string }>>(["messages", data.channelId], (old) => {
 				if (!old) return undefined;
-				if (!user) return old;
 
 				const lastPage = old.pages[old.pages.length - 1];
-				previewMessage = {
-					preview: true,
-					id: snowflake.generateString(WorkerID.MESSAGE),
-					createdAt: new Date(Date.now()).toISOString(),
-					content: data.content,
-					author: pick(user, ["id", "avatar", "displayName", "username", "flags"]),
-					nonce: nonce,
-				};
-				dispatchEvent("message_added", { message: previewMessage, visible: true, self: true });
 
 				return {
 					...old,

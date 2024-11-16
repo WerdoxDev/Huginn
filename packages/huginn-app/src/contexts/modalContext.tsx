@@ -1,4 +1,4 @@
-import type { DeepPartial, StatusCode } from "@/types";
+import type { DeepPartial, MutationKinds, StatusCode } from "@/types";
 import type { APIChannel, Snowflake } from "@huginn/shared";
 import type { ReactNode } from "@tanstack/react-router";
 import { type Dispatch, createContext } from "react";
@@ -17,6 +17,7 @@ export type ModalContextType = {
 			};
 			confirm?: {
 				text: string;
+				mutationKey?: keyof MutationKinds;
 				callback: () => void;
 			};
 		};

@@ -7,6 +7,8 @@ export default function InfoModal() {
 	const dispatch = useModalsDispatch();
 	const posthog = usePostHog();
 
+	const mutationState = useMutationLatestState(modal.action?.confirm?.mutationKey);
+
 	const backgroundColor = useMemo(
 		() => (modal.status === "default" ? "bg-warning" : modal.status === "error" ? "bg-error" : modal.status === "success" ? "bg-primary" : ""),
 		[modal],
@@ -74,14 +76,15 @@ export default function InfoModal() {
 				</HuginnButton>
 
 				{modal.action?.confirm && (
-					<HuginnButton
+					<LoadingButton
+						loading={mutationState?.status === "pending"}
 						className="h-10 w-full bg-primary text-text"
 						onClick={() => {
 							modal.action?.confirm?.callback();
 						}}
 					>
 						{modal.action.confirm.text}
-					</HuginnButton>
+					</LoadingButton>
 				)}
 			</div>
 
