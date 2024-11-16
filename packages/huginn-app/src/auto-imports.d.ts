@@ -8,6 +8,7 @@ export {}
 declare global {
   const APIMessages: typeof import('./lib/error-messages')['APIMessages']
   const APIProvider: typeof import('./contexts/apiContext')['APIProvider']
+  const ActionMessage: typeof import('./components/message/ActionMessage')['default']
   const AddFriendInput: typeof import('./components/input/AddFriendInput')['default']
   const AddFriendTab: typeof import('./components/friends/AddFriendTab')['default']
   const AddRecipientInput: typeof import('./components/input/AddRecipientInput')['default']

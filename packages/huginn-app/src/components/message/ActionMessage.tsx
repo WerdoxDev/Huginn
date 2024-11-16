@@ -2,7 +2,7 @@ import type { MessageRendererProps } from "@/types";
 import { MessageType } from "@huginn/shared";
 import clsx from "clsx";
 
-export default function UserActionMessage(props: MessageRendererProps) {
+export default function ActionMessage(props: MessageRendererProps) {
 	const author = useMemo(() => props.renderInfo.message.author.displayName ?? props.renderInfo.message.author.username, [props.renderInfo]);
 	const mention = useMemo(
 		() =>

@@ -1,5 +1,5 @@
 import type { MessageRendererProps } from "@/types";
-import { MessageFlags, hasFlag } from "@huginn/shared";
+import { MessageFlags, clamp, hasFlag } from "@huginn/shared";
 import clsx from "clsx";
 import moment from "moment";
 import type { BaseEditor, Descendant, NodeEntry, Range } from "slate";
@@ -91,9 +91,11 @@ export default function DefaultMessage(
 							isSelf ? "bg-primary" : "bg-background",
 							isSeparate && "rounded-t-xl",
 							isNextSeparate && "rounded-b-xl",
-							widths.width - widths.lastWidth > 5 && "rounded-tr-xl",
-							widths.width - widths.nextWidth > 5 && "rounded-br-xl",
 						)}
+						style={{
+							borderBottomRightRadius: `${clamp(widths.width - widths.nextWidth, 0, 12)}px`,
+							borderTopRightRadius: `${clamp(widths.width - widths.lastWidth, 0, 12)}px`,
+						}}
 						disableDefaultStyles
 					/>
 				</Slate>
