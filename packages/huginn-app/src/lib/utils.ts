@@ -79,7 +79,7 @@ export function createSingleEntryError(error: HuginnAPIError, name: string): Hug
 }
 
 export async function getVersionFlavour(): Promise<VersionFlavour> {
-	if (!window.__TAURI_INTERNALS__) {
+	if (!globalThis.__TAURI_INTERNALS__) {
 		return "release";
 	}
 	const version = await getVersion();

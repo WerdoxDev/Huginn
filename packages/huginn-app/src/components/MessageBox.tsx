@@ -1,7 +1,7 @@
 import { MessageFlags } from "@huginn/shared";
 import { TokenTypeFlag } from "@lib/huginn-tokenizer";
-import { useLinkProps, useParams } from "@tanstack/react-router";
 import type { KeyboardEvent } from "react";
+import { useParams } from "react-router";
 import { type Descendant, Editor, Node, type Path, type Range, Text, createEditor } from "slate";
 import { DefaultElement, Editable, type RenderElementProps, type RenderLeafProps, Slate, withReact } from "slate-react";
 
@@ -18,7 +18,7 @@ const initialValue: Descendant[] = [
 
 export default function MessageBox() {
 	const editor = useMemo(() => withReact(createEditor()), []);
-	const params = useParams({ strict: false });
+	const params = useParams();
 
 	const sendMessageMutation = useSendMessage();
 	const { reset: resetTyping, mutate: sendTypingMutate } = useSendTyping();
@@ -74,7 +74,7 @@ export default function MessageBox() {
 			sendMessage(flags);
 		}
 
-		sendTypingMutate(event, { channelId: params.channelId });
+		sendTypingMutate(event, { channelId: params.channelId ?? "" });
 	}
 
 	function sendMessage(flags: MessageFlags) {
@@ -83,7 +83,7 @@ export default function MessageBox() {
 			return;
 		}
 
-		sendMessageMutation.mutate({ channelId: params.channelId, content, flags });
+		sendMessageMutation.mutate({ channelId: params.channelId ?? "", content, flags });
 		resetTyping();
 		editor.delete({
 			at: {

@@ -186,3 +186,17 @@ export function compareArrayBuffers(...arrayBuffers: ReadonlyArray<ArrayBuffer>)
 export function clamp(current: number, min: number, max: number): number {
 	return Math.min(Math.max(current, min), max);
 }
+
+export function arrayEqual(array1: unknown[], array2: unknown[]): boolean {
+	if (array1.length !== array2.length) {
+		return false;
+	}
+
+	for (let i = 0; i < array1.length; i++) {
+		if (array1[i] !== array2[i]) {
+			return false;
+		}
+	}
+
+	return true;
+}
