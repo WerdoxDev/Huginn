@@ -20,7 +20,7 @@ export default function TitleBar(): ReactPortal {
 	}
 
 	useEffect(() => {
-		if (window.__TAURI_INTERNALS__) {
+		if (globalThis.__TAURI_INTERNALS__) {
 			appWindow.current = getCurrentWebviewWindow();
 		}
 	}, []);

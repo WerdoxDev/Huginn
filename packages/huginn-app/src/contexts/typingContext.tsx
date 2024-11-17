@@ -5,7 +5,7 @@ type TypingContextType = { removeTyping: (userId: Snowflake, channelId: Snowflak
 const defaultValue: TypingContextType = { removeTyping: (_) => {}, typings: [] };
 const TypingContext = createContext<TypingContextType>(defaultValue);
 
-export function TypyingProvider(props: { children?: ReactNode }) {
+export function TypingProvider(props: { children?: ReactNode }) {
 	const client = useClient();
 	const [typings, setTypings] = useState<(GatewayTypingStartData & { timeout: number })[]>([]);
 	// React state does not work in setTimeout. So this is a replica of the state

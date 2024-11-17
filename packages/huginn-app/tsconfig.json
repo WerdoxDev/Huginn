@@ -1,7 +1,7 @@
 {
 	"extends": "../../tsconfig.base.json",
 	"compilerOptions": {
-		"types": ["unplugin-icons/types/react"],
+		"types": ["unplugin-icons/types/react", "@react-router/node", "vite/client"],
 		"jsx": "react-jsx",
 
 		"paths": {
@@ -10,7 +10,8 @@
 			"@hooks/*": ["./src/hooks/*"],
 			"@lib/*": ["./src/lib/*"],
 			"@/*": ["./src/*"]
-		}
+		},
+		"rootDirs": [".", "./.react-router/types"]
 	},
-	"include": ["src", "src-tauri"]
+	"include": ["src", "src-tauri", ".react-router/types/**/*"]
 }

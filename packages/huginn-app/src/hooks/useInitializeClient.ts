@@ -1,5 +1,5 @@
-import { useNavigate } from "@tanstack/react-router";
 import { usePostHog } from "posthog-js/react";
+import { useNavigate } from "react-router";
 
 export function useInitializeClient() {
 	const client = useClient();
@@ -23,7 +23,7 @@ export function useInitializeClient() {
 		posthog.identify(client.user?.id, { username: client.user?.username, displayName: client.user?.displayName, email: client.user?.email });
 
 		if (navigatePath) {
-			await navigate({ to: navigatePath });
+			await navigate(navigatePath);
 		}
 	}
 

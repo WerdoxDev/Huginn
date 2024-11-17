@@ -1,7 +1,7 @@
 import { ChannelType, type DirectChannel } from "@huginn/shared";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useParams } from "@tanstack/react-router";
 import clsx from "clsx";
+import { NavLink, useParams } from "react-router";
 
 export default function DirectMessageChannel(props: { channel: DirectChannel; onSelected?: () => void }) {
 	const queryClient = useQueryClient();
@@ -10,7 +10,7 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
 
 	const { open: openContextMenu } = useContextMenu("dm_channel");
 
-	const { channelId } = useParams({ strict: false });
+	const { channelId } = useParams();
 	const selected = useMemo(() => channelId === props.channel?.id, [channelId, props.channel]);
 	const name = useChannelName(props.channel.recipients, props.channel.name);
 
@@ -27,7 +27,7 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
 			)}
 			onClick={props.onSelected}
 		>
-			<Link className="flex items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>
+			<NavLink className="flex items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>
 				{props.channel.type === ChannelType.DM ? (
 					<UserAvatarWithStatus userId={props.channel.recipients[0]?.id} avatarHash={props.channel.recipients[0]?.avatar} className="mr-3" />
 				) : (
@@ -48,7 +48,7 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
 						</div>
 					)}
 				</div>
-			</Link>
+			</NavLink>
 			{!isLoading ? (
 				<button
 					type="button"

@@ -11,7 +11,7 @@ type WindowContextType = {
 
 const defaultValue: WindowContextType = {
 	maximized: false,
-	environment: window.__TAURI_INTERNALS__ ? "desktop" : "browser",
+	environment: globalThis.__TAURI_INTERNALS__ ? "desktop" : "browser",
 };
 
 const WindowContext = createContext<WindowContextType>(defaultValue);
@@ -23,7 +23,7 @@ export function WindowProvider(props: { children?: ReactNode }) {
 	useEffect(() => {
 		async function initialize() {
 			dispatch({
-				maximized: window.__TAURI_INTERNALS__ ? await getCurrentWebviewWindow().isMaximized() : true,
+				maximized: globalThis.__TAURI_INTERNALS__ ? await getCurrentWebviewWindow().isMaximized() : true,
 				versionFlavour: await getVersionFlavour(),
 			});
 		}

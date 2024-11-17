@@ -46,24 +46,24 @@ export async function resolveFile(resource: ArrayBuffer | string): Promise<Resol
 		return { data: await res.arrayBuffer(), contentType: res.headers.get("content-type") ?? undefined };
 	}
 
-	if (typeof window === "undefined") {
-		// @ts-ignore: non browser packages
-		const fs = await import("node:fs/promises");
-		// @ts-ignore: non browser packages
-		const bun = await import("bun");
-		// @ts-ignore: non browser packages
-		const path = await import("node:path");
+	// if (typeof window === "undefined") {
+	// 	// @ts-ignore: non browser packages
+	// 	const fs = await import("node:fs/promises");
+	// 	// @ts-ignore: non browser packages
+	// 	const bun = await import("bun");
+	// 	// @ts-ignore: non browser packages
+	// 	const path = await import("node:path");
 
-		// @ts-ignore: non browser packages
-		const file = path.join(resource);
+	// 	// @ts-ignore: non browser packages
+	// 	const file = path.join(resource);
 
-		const stats = await fs.stat(file);
-		if (!stats.isFile()) {
-			throw new Error(`File was not found: ${file}`);
-		}
+	// 	const stats = await fs.stat(file);
+	// 	if (!stats.isFile()) {
+	// 		throw new Error(`File was not found: ${file}`);
+	// 	}
 
-		return { data: await bun.file(file).arrayBuffer() };
-	}
+	// 	return { data: await bun.file(file).arrayBuffer() };
+	// }
 
 	throw new Error("The provided resource type was not valid");
 }

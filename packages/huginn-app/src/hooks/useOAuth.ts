@@ -1,8 +1,8 @@
 import type { GatewayOAuthRedirectData, OAuthAction, OAuthType } from "@huginn/shared";
-import { useNavigate } from "@tanstack/react-router";
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import { UserAttentionType, getCurrentWindow } from "@tauri-apps/api/window";
 import { open } from "@tauri-apps/plugin-shell";
+import { useNavigate } from "react-router";
 
 export function useOAuth() {
 	const client = useClient();
@@ -51,7 +51,7 @@ export function useOAuth() {
 
 	async function onOAuthRedirect(d: GatewayOAuthRedirectData) {
 		await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
-		await navigate({ to: `/oauth-redirect?${new URLSearchParams({ ...d }).toString()}` });
+		await navigate(`/oauth-redirect?${new URLSearchParams({ ...d }).toString()}`);
 		unlistenOAuth();
 	}
 
@@ -63,7 +63,7 @@ export function useOAuth() {
 		unlisten = listenEvent("open_url", async (urls) => {
 			const url = new URL(urls[0]);
 			await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
-			await navigate({ to: `/oauth-redirect?${url.searchParams.toString()}` });
+			await navigate(`/oauth-redirect?${url.searchParams.toString()}`);
 			unlistenOAuth();
 		});
 	}

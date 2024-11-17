@@ -1,5 +1,6 @@
-import { Link } from "@tanstack/react-router";
+import clsx from "clsx";
 import type { ReactNode } from "react";
+import { Link, NavLink } from "react-router";
 
 export default function LinkButton(props: {
 	className?: string;
@@ -10,17 +11,17 @@ export default function LinkButton(props: {
 	onClick?: () => void;
 }) {
 	return props.to ? (
-		<div className={`text-accent w-max select-none ${props.className}`}>
-			<Link className="hover:underline" to={props.to} preload={props.preload}>
+		<div className={clsx("w-max select-none text-accent", props.className)}>
+			<NavLink className="hover:underline" to={props.to}>
 				{props.children}
-			</Link>
+			</NavLink>
 		</div>
 	) : props.href ? (
-		<a className={`${props.className} text-accent select-none hover:underline`} href={props.href} target="_blank" rel="noreferrer">
+		<a className={clsx("select-none text-accent hover:underline", props.className)} href={props.href} target="_blank" rel="noreferrer">
 			{props.children}
 		</a>
 	) : (
-		<button className={`${props.className} text-accent select-none hover:underline `} type="button" onClick={props.onClick}>
+		<button className={clsx("select-none text-accent hover:underline", props.className)} type="button" onClick={props.onClick}>
 			{props.children}
 		</button>
 	);

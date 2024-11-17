@@ -27,16 +27,16 @@ export async function initializeSettings() {
 	currentFlavour = await getVersionFlavour();
 	filePath = currentFlavour === "nightly" ? NIGHTLY_SETTINGS : RELEASE_SETTINGS;
 	localStorageItem = currentFlavour === "nightly" ? "settings-nightly" : "settings";
-	if (window.__TAURI_INTERNALS__) {
+	if (globalThis.__TAURI_INTERNALS__) {
 		await tryCreateSettingsFile();
 		value = { ...defaultValue, ...JSON.parse(await readTextFile(filePath, { baseDir: BaseDirectory.AppConfig })) };
 	} else {
-		if (!localStorage.getItem(localStorageItem)) {
-			localStorage.setItem(localStorageItem, JSON.stringify(defaultValue));
+		if (!globalThis.localStorage.getItem(localStorageItem)) {
+			globalThis.localStorage.setItem(localStorageItem, JSON.stringify(defaultValue));
 		}
 
 		// biome-ignore lint/style/noNonNullAssertion: <explanation>
-		value = { ...defaultValue, ...JSON.parse(localStorage.getItem(localStorageItem)!) };
+		value = { ...defaultValue, ...JSON.parse(globalThis.localStorage.getItem(localStorageItem)!) };
 	}
 }
 
@@ -47,10 +47,10 @@ export function SettingsProvider(props: { children?: ReactNode }) {
 	const [settings, dispatch] = useReducer(settingsReducer, value);
 
 	async function dispatchSaveSettings(action: DeepPartial<SettingsContextType>) {
-		if (window.__TAURI_INTERNALS__) {
+		if (globalThis.__TAURI_INTERNALS__) {
 			await writeSettingsFile({ ...settings, ...action });
 		} else {
-			localStorage.setItem(localStorageItem, JSON.stringify({ ...settings, ...action }));
+			globalThis.localStorage.setItem(localStorageItem, JSON.stringify({ ...settings, ...action }));
 		}
 
 		dispatch(action);

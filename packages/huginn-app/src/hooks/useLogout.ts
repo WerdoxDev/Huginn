@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "react-router";
 
 export function useLogout() {
 	const queryClient = useQueryClient();
@@ -20,7 +20,7 @@ export function useLogout() {
 
 		if (!shouldNavigate) return;
 
-		await navigate({ to: "/login", replace: true });
+		await navigate("/login", { replace: true });
 		queryClient.removeQueries({ queryKey: ["channels"] });
 		queryClient.removeQueries({ queryKey: ["messages"] });
 		queryClient.removeQueries({ queryKey: ["relationships"] });
