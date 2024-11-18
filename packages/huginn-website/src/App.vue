@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Icon } from "@iconify/vue/dist/iconify.js";
-import HeaderButton from "./components/HeaderButton.vue";
+import { Analytics } from "@vercel/analytics/vue";
 import { ref } from "vue";
+import HeaderButton from "./components/HeaderButton.vue";
 
 const isMenuOpen = ref(false);
 
@@ -15,6 +16,7 @@ function closeMenu(event: MouseEvent) {
 </script>
 
 <template>
+   <Analytics/>
    <!-- Header -->
    <div
       class="fixed top-0 flex w-full items-center md:justify-center border-b border-[#EBEBD3] bg-black/30 px-5 md:px-20 py-4 backdrop-blur-md">
