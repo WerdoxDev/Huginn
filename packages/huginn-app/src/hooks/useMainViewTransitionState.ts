@@ -1,7 +1,7 @@
-import type { RouteConfigEntry } from "@react-router/dev/routes";
-import { useRoutes, useViewTransitionState } from "react-router";
+import { useViewTransitionState } from "react-router";
 
-const routes = ["/friends/*", "/channels/*"];
+// const routes = ["/friends/*", "/channels/*"];
+const routes = ["/login", "/register", "/oauth-redirect"];
 
 export function useMainViewTransitionState() {
 	const allStates = routes.map((x) => useViewTransitionState(x));

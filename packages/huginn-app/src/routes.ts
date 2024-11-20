@@ -9,7 +9,6 @@ export const routes: RouteConfig = [
 			route("login", "routes/app/auth/login.tsx"),
 			route("register", "routes/app/auth/register.tsx"),
 			route("oauth-redirect", "routes/app/auth/oauth-redirect.tsx"),
-			// route("channels/@me", "routes/app/main/home/test.tsx"),
 		]),
 		layout("routes/app/main/main-layout.tsx", [
 			layout("routes/app/main/home/home-layout.tsx", [
