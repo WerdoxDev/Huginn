@@ -23,7 +23,7 @@ export function useInitializeClient() {
 		posthog.identify(client.user?.id, { username: client.user?.username, displayName: client.user?.displayName, email: client.user?.email });
 
 		if (navigatePath) {
-			await navigate(navigatePath);
+			await navigate(navigatePath, { viewTransition: true });
 		}
 	}
 

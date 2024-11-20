@@ -60,7 +60,7 @@ export default function Register() {
 	}
 
 	return (
-		<AuthWrapper hidden={hidden} onSubmit={register}>
+		<AuthWrapper hidden={hidden} onSubmit={register} transitionName="auth-register">
 			<div className="flex w-full select-none flex-col items-center">
 				<div className="mb-1 font-medium text-2xl text-text">Welcome to Huginn!</div>
 				<div className="text-text opacity-70">We are very happy to have you here!</div>
@@ -125,7 +125,7 @@ export default function Register() {
 
 				<div className="mt-3 flex select-none items-center">
 					<span className="text-sm text-text opacity-70">Already have an account? </span>
-					<LinkButton to="/login" className="ml-1 text-sm" preload={false}>
+					<LinkButton viewTransition to="/login" className="ml-1 text-sm">
 						Login
 					</LinkButton>
 				</div>

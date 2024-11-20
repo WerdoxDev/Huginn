@@ -89,8 +89,8 @@ export default function DefaultMessage(
 							"px-2.5 py-1.5 font-normal text-white [overflow-wrap:anywhere]",
 							props.renderInfo.message.preview && "bg-primary/50 text-white/50",
 							isSelf ? "bg-primary" : "bg-background",
-							isSeparate && "rounded-t-xl",
-							isNextSeparate && "rounded-b-xl",
+							isSeparate && "!rounded-t-xl",
+							isNextSeparate && "!rounded-b-xl",
 						)}
 						style={{
 							borderBottomRightRadius: `${clamp(widths.width - widths.nextWidth, 0, 12)}px`,

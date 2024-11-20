@@ -205,6 +205,7 @@ declare global {
   const useInsertionEffect: typeof import('react')['useInsertionEffect']
   const useLayoutEffect: typeof import('react')['useLayoutEffect']
   const useLogout: typeof import('./hooks/useLogout')['useLogout']
+  const useMainViewTransitionState: typeof import('./hooks/useMainViewTransitionState')['useMainViewTransitionState']
   const useMemo: typeof import('react')['useMemo']
   const useModals: typeof import('./contexts/modalContext')['useModals']
   const useModalsDispatch: typeof import('./contexts/modalContext')['useModalsDispatch']

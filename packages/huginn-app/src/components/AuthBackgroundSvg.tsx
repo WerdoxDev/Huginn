@@ -1,9 +1,10 @@
-import { animated, easings, useSpring } from "@react-spring/web";
 import clsx from "clsx";
+import { useViewTransitionState } from "react-router";
 
 export default function AuthBackgroundSvg(props: { state: number }) {
 	const colorTheme = useTheme();
 	const fillColor = useMemo(() => colorTheme.accent2, [colorTheme]);
+	const isTransitioning = useMainViewTransitionState();
 
 	const path1 = {
 		close: "M0 540.8C-100.8 530.3 -201.6 519.7 -270.4 468.4C-339.2 417 -376 324.9 -415.7 240C-455.4 155.1 -498.1 77.6 -540.8 0L0 0Z",
@@ -17,28 +18,67 @@ export default function AuthBackgroundSvg(props: { state: number }) {
 		initial: "M0 0C0 0 0 0 0 0C0 0 0 0 0 0C0 0 0 0 0 0L0 0Z",
 	};
 
-	const { d: d1 } = useSpring({
-		d: props.state === 0 ? path1.open : props.state === 1 ? path1.close : path1.initial,
-	});
-	const { d: d2 } = useSpring({
-		d: props.state === 0 ? path2.open : props.state === 1 ? path2.close : path2.initial,
-	});
+	useEffect(() => {
+		console.log(props.state);
+	}, []);
+
+	// const { d: d1 } = useSpring({
+	// 	d: props.state === 0 ? path1.open : props.state === 1 ? path1.close : path1.initial,
+	// });
+	// const { d: d2 } = useSpring({
+	// 	d: props.state === 0 ? path2.open : props.state === 1 ? path2.close : path2.initial,
+	// });
 
 	return (
-		<svg
-			className={clsx("pointer-events-none absolute h-full w-full", props.state === 1 && "z-10")}
-			viewBox="0 0 960 540"
-			xmlns="http://www.w3.org/2000/svg"
-			version="1.1"
-			preserveAspectRatio="xMidYMid slice"
-		>
-			<title>animated-background</title>
-			<g transform="translate(960, 0)">
-				<animated.path d={d1} fill={fillColor} />
-			</g>
-			<g transform="translate(0, 540)">
-				<animated.path d={d2} fill={fillColor} />
-			</g>
-		</svg>
+		<>
+			<svg
+				className={clsx("pointer-events-none absolute h-full w-full", props.state === 1 && "z-10")}
+				viewBox="0 0 960 540"
+				xmlns="http://www.w3.org/2000/svg"
+				version="1.1"
+				preserveAspectRatio="xMidYMid slice"
+				style={isTransitioning ? { viewTransitionName: "auth-background" } : undefined}
+			>
+				<title>animated-background</title>
+				<g transform="translate(960, 0)">
+					<path
+						fill={fillColor}
+						className="transition-all duration-500"
+						d={props.state === 0 ? path1.open : props.state === 1 ? path1.close : path1.initial}
+					/>
+				</g>
+				<g transform="translate(0, 540)">
+					<path
+						fill={fillColor}
+						className="transition-all duration-500"
+						d={props.state === 0 ? path2.open : props.state === 1 ? path2.close : path2.initial}
+					/>
+				</g>
+			</svg>
+			{/* <svg
+				className={clsx("pointer-events-none absolute h-full w-full", props.state === 1 && "z-10")}
+				viewBox="0 0 960 540"
+				xmlns="http://www.w3.org/2000/svg"
+				version="1.1"
+				preserveAspectRatio="xMidYMid slice"
+				style={isTransitioning ? { viewTransitionName: "auth-background2" } : undefined}
+			>
+				<title>animated-background</title>
+				<g transform="translate(960, 0)">
+					<path
+						fill={fillColor}
+						className="transition-all duration-500"
+						d={props.state === 0 ? path1.open : props.state === 1 ? path1.close : path1.initial}
+					/>
+				</g>
+				<g transform="translate(0, 540)">
+					<path
+						fill={fillColor}
+						className="transition-all duration-500"
+						d={props.state === 0 ? path2.open : props.state === 1 ? path2.close : path2.initial}
+					/>
+				</g>
+			</svg> */}
+		</>
 	);
 }

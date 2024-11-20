@@ -94,7 +94,7 @@ export default function Component() {
 	}
 
 	async function abort() {
-		await navigate(history.lastPathname ?? "/");
+		await navigate(history.lastPathname ?? "/", { viewTransition: true });
 	}
 
 	async function confirm() {
@@ -107,7 +107,7 @@ export default function Component() {
 
 	return (
 		shouldRender && (
-			<AuthWrapper hidden={hidden}>
+			<AuthWrapper hidden={hidden} transitionName="auth-oauth-redirect">
 				{search.has("token") && (
 					<>
 						<div className="flex w-full select-none flex-col items-center">

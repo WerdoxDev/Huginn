@@ -4,8 +4,8 @@ import "./index.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+// import { PostHogProvider } from "posthog-js/react";
 import posthog from "posthog-js";
-import { PostHogProvider } from "posthog-js/react";
 import type { ReactNode } from "react";
 import type { Route } from "./+types.root";
 
@@ -13,6 +13,7 @@ export const queryClient = new QueryClient({
 	defaultOptions: { queries: { refetchOnReconnect: false, refetchOnWindowFocus: false, refetchOnMount: false, staleTime: 60000 } },
 });
 
+// FIXME: Posthog seems to note work with react router just yet
 // const posthogClient = posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_KEY, {
 // 	api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
 // 	person_profiles: "always",
@@ -60,11 +61,10 @@ export function Layout(props: { children: ReactNode }) {
 }
 
 export default function Root() {
-	const [ready, setReady] = useState(false);
-	const appWindow = useWindow();
+	const [settingsLoaded, setSettingsLoaded] = useState(false);
 
 	useEffect(() => {
-		initializeSettings().then((x) => setReady(true));
+		initializeSettings().then((x) => setSettingsLoaded(true));
 	}, []);
 
 	return (
@@ -72,7 +72,7 @@ export default function Root() {
 		<QueryClientProvider client={queryClient}>
 			<EventProvider>
 				<HistoryProvider>
-					{ready && (
+					{settingsLoaded && (
 						<SettingsProvider>
 							<APIProvider>
 								<WindowProvider>
@@ -82,23 +82,9 @@ export default function Root() {
 												<UserProvider>
 													<PresenceProvider>
 														<TypingProvider>
-															<div
-																className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}
-															>
-																{window.location.pathname !== "/splashscreen" && appWindow.environment === "desktop" && <TitleBar />}
-																<div className="relative h-full w-full">
-																	<Outlet />
-																	{/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
-																	{appWindow.environment === "desktop" && (
-																		<>
-																			<AppMaximizedEvent />
-																			<AppOpenUrlEvent />
-																		</>
-																	)}
-																	<ModalsRenderer />
-																	<ContextMenusRenderer />
-																</div>
-															</div>
+															<MainRenderer>
+																<Outlet />
+															</MainRenderer>
 														</TypingProvider>
 													</PresenceProvider>
 												</UserProvider>
@@ -112,7 +98,28 @@ export default function Root() {
 				</HistoryProvider>
 			</EventProvider>
 		</QueryClientProvider>
-		//</PostHogProvider>
+		// </PostHogProvider>
+	);
+}
+
+function MainRenderer(props: { children: ReactNode }) {
+	const appWindow = useWindow();
+	return (
+		<div className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
+			{window.location.pathname !== "/splashscreen" && appWindow.environment === "desktop" && <TitleBar />}
+			<div className="relative h-full w-full">
+				{props.children}
+				{/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
+				{appWindow.environment === "desktop" && (
+					<>
+						<AppMaximizedEvent />
+						<AppOpenUrlEvent />
+					</>
+				)}
+				<ModalsRenderer />
+				<ContextMenusRenderer />
+			</div>
+		</div>
 	);
 }
 
@@ -125,6 +132,7 @@ function AppMaximizedEvent() {
 			const appWindow = getCurrentWebviewWindow();
 			const unlisten = appWindow.onResized(async () => {
 				const appMaximized = await appWindow.isMaximized();
+				console.log("CHANGED", appMaximized);
 				dispatch({ maximized: appMaximized });
 			});
 

@@ -28,7 +28,7 @@ export default function TitleBar(): ReactPortal {
 	return createPortal(
 		<div
 			className={clsx(
-				"fixed top-0 right-0 left-0 flex h-6 shrink-0 select-none items-center overflow-hidden bg-background",
+				"fixed top-0 right-0 left-0 z-10 flex h-6 shrink-0 select-none items-center overflow-hidden bg-background",
 				// huginnWindow.maximized ? "rounded-t-none" : "rounded-t-lg",
 			)}
 			data-tauri-drag-region
