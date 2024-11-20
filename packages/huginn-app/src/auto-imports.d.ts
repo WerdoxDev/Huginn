@@ -40,6 +40,7 @@ declare global {
   const DirectMessageChannel: typeof import('./components/DirectMessageChannel')['default']
   const EditGroupModal: typeof import('./components/modal/EditGroupModal')['default']
   const EditorLeaf: typeof import('./components/editor/EditorLeaf')['default']
+  const ErrorBoundary: typeof import('./root')['ErrorBoundary']
   const ErrorPage: typeof import('./ErrorPage')['default']
   const EventProvider: typeof import('./contexts/eventContext')['EventProvider']
   const FriendItem: typeof import('./components/friends/FriendItem')['default']

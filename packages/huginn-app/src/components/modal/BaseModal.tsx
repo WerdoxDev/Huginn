@@ -10,7 +10,7 @@ export default function BaseModal(props: { modal: { isOpen: boolean }; onClose: 
 				open={props.modal.isOpen}
 				transition
 				onClose={props.onClose}
-				className="relative z-10 transition data-[closed]:opacity-0 duration-200"
+				className="relative z-10 transition duration-200 data-[closed]:opacity-0"
 			>
 				<ModalBackground />
 				<div className={clsx("fixed inset-0", appWindow.environment === "desktop" && "top-6")}>

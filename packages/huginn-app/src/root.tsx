@@ -21,6 +21,8 @@ export const queryClient = new QueryClient({
 // 	capture_pageview: false,
 // });
 
+export const ErrorBoundary = RouteErrorComponent;
+
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
 	const pathname = new URL(request.url).pathname;
 	posthog.capture("$pageview", { $current_url: window.origin + pathname });

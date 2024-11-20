@@ -55,7 +55,7 @@ export default function InfoModal() {
 						{modal.status === "default" && <IconMingcuteInformationLine className="h-8 w-8 text-white" />}
 					</div>
 				</div>
-				<div className="font-medium text-lg text-white">{modal.title}</div>
+				<div className="text-center font-medium text-lg text-white">{modal.title}</div>
 			</DialogTitle>
 			<Description className="mt-1 flex items-center justify-center" as="div">
 				<div className="text-center text-text/90">

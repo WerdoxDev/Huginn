@@ -3,32 +3,6 @@ import type { APIPostLoginJSONBody } from "@huginn/shared";
 import { usePostHog } from "posthog-js/react";
 import { isRouteErrorResponse, redirect, useNavigate, useRouteError, useSearchParams } from "react-router";
 
-// export function ErrorBoundary() {
-// 	const error = useRouteError();
-
-// 	if (isRouteErrorResponse(error)) {
-// 		return (
-// 			<div>
-// 				<h1>
-// 					{error.status} {error.statusText}
-// 				</h1>
-// 				<p>{error.data}</p>
-// 			</div>
-// 		);
-// 	}
-// 	if (error instanceof Error) {
-// 		return (
-// 			<div>
-// 				<h1>Error</h1>
-// 				<p>{error.message}</p>
-// 				<p>The stack trace is:</p>
-// 				<pre>{error.stack}</pre>
-// 			</div>
-// 		);
-// 	}
-// 	return <h1>Unknown Error</h1>;
-// }
-
 export async function clientLoader() {
 	if (client?.isLoggedIn) {
 		throw redirect("/channels/@me");

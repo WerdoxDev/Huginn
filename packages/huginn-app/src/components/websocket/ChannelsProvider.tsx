@@ -18,18 +18,24 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
 	const navigate = useNavigate();
 	const location = useLocation();
 
+	const locationRef = useRef(location);
+
+	useEffect(() => {
+		locationRef.current = location;
+	});
+
 	function onChannelCreated(d: GatewayDMChannelCreateData) {
 		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (old) => (old && !old.some((x) => x.id === d.id) ? [d, ...old] : old));
 	}
 
 	function onChannelDeleted(d: GatewayDMChannelDeleteData) {
-		queryClient.removeQueries({ queryKey: ["messages", d.id] });
+		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (old) => old?.filter((x) => x.id !== d.id));
 
-		if (location.pathname.includes(d.id)) {
-			navigate("/channels/@me", { replace: true });
+		if (locationRef.current.pathname.includes(d.id)) {
+			navigate("/channels/@me", { replace: true, flushSync: true });
 		}
 
-		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (old) => old?.filter((x) => x.id !== d.id));
+		queryClient.removeQueries({ queryKey: ["messages", d.id] });
 	}
 
 	function onChannelUpdated(d: GatewayDMChannelUpdateData) {

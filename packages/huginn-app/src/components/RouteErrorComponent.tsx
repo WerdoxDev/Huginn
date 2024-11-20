@@ -1,12 +1,13 @@
-import { Outlet, useRouter } from "@tanstack/react-router";
+import { Outlet, useNavigate, useRouteError } from "react-router";
 
-export default function RouteErrorComponent(props: { error: unknown }) {
+export default function RouteErrorComponent() {
+	const error = useRouteError();
 	const handleError = useErrorHandler();
-	const router = useRouter();
+	const navigate = useNavigate();
 
 	useEffect(() => {
-		handleError(props.error);
-		router.history.back();
+		handleError(error);
+		navigate(-1);
 	}, []);
 
 	return <Outlet />;

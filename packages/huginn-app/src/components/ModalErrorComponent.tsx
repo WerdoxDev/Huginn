@@ -6,17 +6,14 @@ export default function ModalErrorComponent(props: { error: unknown }) {
 	const handleError = useErrorHandler({
 		cancel: {
 			callback: () => {
-				dispatch({ settings: { isOpen: false }, info: { isOpen: false } });
+				dispatch({ info: { isOpen: false } });
 				resetBoundary();
 			},
 		},
 	});
 
-	// const router = useRouter();
-
 	useEffect(() => {
 		handleError(props.error);
-		// router.history.go(-1);
 	}, []);
 
 	return null;
