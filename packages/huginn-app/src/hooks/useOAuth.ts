@@ -51,7 +51,7 @@ export function useOAuth() {
 
 	async function onOAuthRedirect(d: GatewayOAuthRedirectData) {
 		await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
-		await navigate(`/oauth-redirect?${new URLSearchParams({ ...d }).toString()}`);
+		await navigate(`/oauth-redirect?${new URLSearchParams({ ...d }).toString()}`, { viewTransition: true });
 		unlistenOAuth();
 	}
 
@@ -63,7 +63,7 @@ export function useOAuth() {
 		unlisten = listenEvent("open_url", async (urls) => {
 			const url = new URL(urls[0]);
 			await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
-			await navigate(`/oauth-redirect?${url.searchParams.toString()}`);
+			await navigate(`/oauth-redirect?${url.searchParams.toString()}`, { viewTransition: true });
 			unlistenOAuth();
 		});
 	}

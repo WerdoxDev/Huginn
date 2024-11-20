@@ -141,3 +141,115 @@ input::-ms-clear {
 	/* rounded-lg */
 	border-radius: 0.5rem;
 }
+
+@keyframes fade-in {
+   from {opacity: 0;}
+}
+
+@keyframes fade-out{
+   to {opacity: 0;}
+}
+
+@keyframes fade-in-bg {
+   from {@apply opacity-0}
+}
+
+@keyframes fade-out{
+   to {opacity: 0;}
+}
+
+
+@keyframes scale-down{
+   to {transform: scale(0.75, 0.75);}
+}
+
+@keyframes scale-up{
+   from {transform: scale(0.75, 0.75);}
+}
+
+@keyframes slide-to-right{
+   /* from {transform: translate(50%, 0);} */
+   to {transform: translateX(100%);}
+}
+
+@keyframes slide-to-left{
+   to {transform: translateX(-100%);}
+}
+
+@keyframes scale-up-large{
+   to {transform: scale(10,10);}
+}
+
+@keyframes scale-down-large{
+   from {transform: scale(10,10);}
+}
+
+::view-transition-old(auth) {
+   animation: fade-out 500ms both;
+   mix-blend-mode: plus-lighter;
+}
+
+::view-transition-new(auth) {
+   animation: fade-in 500ms both;
+   mix-blend-mode: plus-lighter;
+}
+
+::view-transition-old(auth-background){
+   display: none;
+   /* animation: none; */
+}
+
+::view-transition-new(auth-background){
+   animation: none;
+}
+/*
+::view-transition-old(auth-loading-spinner){
+   animation: fa 1s both;
+} */
+
+/* ::view-transition-old(auth-background){
+   animation: scale-up-large 500ms both cubic-bezier(0.87, 0, 0.13, 1), fade-out 500ms both;
+   mix-blend-mode: plus-lighter;
+}
+
+::view-transition-new(auth-background){
+   animation: scale-down-large 500ms both cubic-bezier(0.87, 0, 0.13, 1), fade-out 500ms both;
+   z-index: 100;
+   mix-blend-mode: plus-lighter;
+} */
+
+/* ::view-transition-old(auth-background2){
+   animation: slide-to-left 10s both;
+} */
+
+/* svg.transitioning g path {
+   d: "M0 324.5C-55.6 314.6 -111.2 304.7 -161 278.9C-210.8 253.1 -254.7 211.4 -281 162.2C-307.3 113.1 -315.9 56.6 -324.5 0L0 0Z";
+} */
+
+#auth-form{
+   animation: fade-in 350ms both, scale-up 350ms both;
+}
+
+#auth-form-hidden{
+   animation: fade-out 250ms both, scale-down 250ms both;
+}
+
+html::view-transition-group(root),html::view-transition-new(root), html::view-transition-old(root){
+   animation: none;
+}
+
+/* ::view-transition-old(auth){
+   animation: fade-out 10s both;
+} */
+
+::view-transition-new(auth-login),
+::view-transition-new(auth-register),
+::view-transition-new(auth-oauth-redirect) {
+   animation: fade-in 350ms both, scale-up 350ms both;
+}
+
+::view-transition-old(auth-login),
+::view-transition-old(auth-register),
+::view-transition-old(auth-oauth-redirect) {
+   animation: fade-out 250ms both, scale-down 250ms both;
+}

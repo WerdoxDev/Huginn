@@ -19,8 +19,8 @@ export function useLogout() {
 		await mutation.mutateAsync();
 
 		if (!shouldNavigate) return;
+		await navigate("/login", { replace: true, viewTransition: true });
 
-		await navigate("/login", { replace: true });
 		queryClient.removeQueries({ queryKey: ["channels"] });
 		queryClient.removeQueries({ queryKey: ["messages"] });
 		queryClient.removeQueries({ queryKey: ["relationships"] });

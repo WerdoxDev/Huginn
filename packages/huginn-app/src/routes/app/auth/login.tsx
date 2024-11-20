@@ -102,7 +102,7 @@ export default function Login() {
 				if (e instanceof HuginnAPIError && e.status >= 500) {
 					handleServerError(e);
 				}
-				await navigate("/login");
+				await navigate("/login", { viewTransition: true });
 				unhide();
 			}
 		}
@@ -131,7 +131,7 @@ export default function Login() {
 
 	return (
 		shouldRender && (
-			<AuthWrapper hidden={hidden} onSubmit={login}>
+			<AuthWrapper hidden={hidden} onSubmit={login} transitionName="auth-login">
 				<div className="flex w-full select-none flex-col items-center">
 					<div className="mb-1 font-medium text-2xl text-text">Welcome back!</div>
 					<div className="text-text/70">It's very good to see you again!</div>
@@ -182,7 +182,7 @@ export default function Login() {
 
 					<div className="mt-3 flex select-none items-center">
 						<span className="text-sm text-text opacity-70"> Don't have an account? </span>
-						<LinkButton to="/register" className="ml-1 text-sm" preload={false}>
+						<LinkButton to="/register" className="ml-1 text-sm" viewTransition>
 							Register
 						</LinkButton>
 					</div>

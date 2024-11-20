@@ -1,12 +1,7 @@
 import type { LoadingState } from "@/types";
-import { createLazyFileRoute } from "@tanstack/react-router";
 import { invoke } from "@tauri-apps/api/core";
 
-export const Route = createLazyFileRoute("/splashscreen")({
-	component: Splashscreen,
-});
-
-function Splashscreen() {
+export default function Component() {
 	const { checkAndDownload, info, progress, contentLength, downloaded } = useUpdater(async (wasAvailable) => {
 		setLoadingState("loading");
 		if (!wasAvailable) {

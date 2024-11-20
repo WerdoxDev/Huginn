@@ -11,7 +11,7 @@ export default function HomeSidebar(props: { channels?: APIGetUserChannelsResult
 		>
 			<div className="flex h-[4.75rem] shrink-0 items-center px-6">
 				<div className="font-bold text-text text-xl">Home</div>
-				<RingLinkButton to="/friends" className="ml-6 px-2 py-1 font-medium text-xs">
+				<RingLinkButton prefetch="intent" to="/friends" className="ml-6 px-2 py-1 font-medium text-xs">
 					Friends
 				</RingLinkButton>
 			</div>

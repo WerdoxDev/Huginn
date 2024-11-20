@@ -1,15 +1,15 @@
 import clsx from "clsx";
 import type { ReactNode } from "react";
-import { NavLink } from "react-router";
+import { type LinkProps, NavLink } from "react-router";
 import { useLocation } from "react-router";
 
-export default function RingLink(props: { children?: ReactNode; to: string; className?: string }) {
+export default function RingLink(props: LinkProps & { to: string }) {
 	const location = useLocation();
 	const isActive = useMemo(() => location.pathname.includes(props.to), [location.pathname]);
 
 	return (
 		<NavLink
-			to={props.to}
+			{...props}
 			className={clsx(
 				"rounded-full uppercase ring-[1.5px] ring-primary",
 				props.className,

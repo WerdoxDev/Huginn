@@ -27,7 +27,7 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
 			)}
 			onClick={props.onSelected}
 		>
-			<NavLink className="flex items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>
+			<NavLink prefetch="intent" className="flex items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>
 				{props.channel.type === ChannelType.DM ? (
 					<UserAvatarWithStatus userId={props.channel.recipients[0]?.id} avatarHash={props.channel.recipients[0]?.avatar} className="mr-3" />
 				) : (
