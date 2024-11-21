@@ -1,13 +1,7 @@
 import { ClientReadyState, HuginnAPIError } from "@huginn/api";
 import type { APIPostLoginJSONBody } from "@huginn/shared";
 import { usePostHog } from "posthog-js/react";
-import { isRouteErrorResponse, redirect, useNavigate, useRouteError, useSearchParams } from "react-router";
-
-export async function clientLoader() {
-	if (client?.isLoggedIn) {
-		throw redirect("/channels/@me");
-	}
-}
+import { redirect, useNavigate, useSearchParams } from "react-router";
 
 export default function Login() {
 	const posthog = usePostHog();

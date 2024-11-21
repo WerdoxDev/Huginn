@@ -1,5 +1,4 @@
 import clsx from "clsx";
-import { useViewTransitionState } from "react-router";
 
 export default function AuthBackgroundSvg(props: { state: number }) {
 	const colorTheme = useTheme();
@@ -17,17 +16,6 @@ export default function AuthBackgroundSvg(props: { state: number }) {
 		open: "M0 -324.5C57 -316.2 114 -307.8 162.2 -281C210.4 -254.2 249.8 -208.9 275.4 -159C301 -109.1 312.7 -54.5 324.5 0L0 0Z",
 		initial: "M0 0C0 0 0 0 0 0C0 0 0 0 0 0C0 0 0 0 0 0L0 0Z",
 	};
-
-	useEffect(() => {
-		console.log(props.state);
-	}, []);
-
-	// const { d: d1 } = useSpring({
-	// 	d: props.state === 0 ? path1.open : props.state === 1 ? path1.close : path1.initial,
-	// });
-	// const { d: d2 } = useSpring({
-	// 	d: props.state === 0 ? path2.open : props.state === 1 ? path2.close : path2.initial,
-	// });
 
 	return (
 		<>
@@ -55,30 +43,6 @@ export default function AuthBackgroundSvg(props: { state: number }) {
 					/>
 				</g>
 			</svg>
-			{/* <svg
-				className={clsx("pointer-events-none absolute h-full w-full", props.state === 1 && "z-10")}
-				viewBox="0 0 960 540"
-				xmlns="http://www.w3.org/2000/svg"
-				version="1.1"
-				preserveAspectRatio="xMidYMid slice"
-				style={isTransitioning ? { viewTransitionName: "auth-background2" } : undefined}
-			>
-				<title>animated-background</title>
-				<g transform="translate(960, 0)">
-					<path
-						fill={fillColor}
-						className="transition-all duration-500"
-						d={props.state === 0 ? path1.open : props.state === 1 ? path1.close : path1.initial}
-					/>
-				</g>
-				<g transform="translate(0, 540)">
-					<path
-						fill={fillColor}
-						className="transition-all duration-500"
-						d={props.state === 0 ? path2.open : props.state === 1 ? path2.close : path2.initial}
-					/>
-				</g>
-			</svg> */}
 		</>
 	);
 }

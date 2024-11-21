@@ -2,7 +2,7 @@ import clsx from "clsx";
 import type { MouseEventHandler } from "react";
 import { type LinkProps, NavLink } from "react-router";
 
-export default function LinkButton(props: LinkProps & { to?: string; href?: string; onClick?: MouseEventHandler<HTMLButtonElement> }) {
+export default function LinkButton(props: Omit<LinkProps, "to"> & { to?: string; href?: string; onClick?: MouseEventHandler<HTMLButtonElement> }) {
 	return props.to ? (
 		<div className={clsx("w-max select-none text-accent", props.className)}>
 			<NavLink viewTransition={props.viewTransition} className="hover:underline" to={props.to}>

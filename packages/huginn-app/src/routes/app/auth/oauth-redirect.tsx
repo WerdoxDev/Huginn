@@ -1,7 +1,7 @@
 import type { APIPostOAuthConfirmJSONBody, IdentityTokenPayload } from "@huginn/shared";
 import { useQuery } from "@tanstack/react-query";
 import * as jose from "jose";
-import { useNavigate, useSearchParams } from "react-router";
+import { redirect, useNavigate, useSearchParams } from "react-router";
 
 export default function Component() {
 	const client = useClient();

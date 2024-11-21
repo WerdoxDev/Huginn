@@ -26,11 +26,6 @@ export function HistoryProvider(props: { children: ReactNode }) {
 		}
 	}, [location.pathname]);
 
-	useEffect(() => {
-		console.log(initialPathname);
-		// setInitialPathname(window.location.pathname);
-	}, []);
-
 	return <HistoryContext.Provider value={{ initialPathname, lastPathname }}>{props.children}</HistoryContext.Provider>;
 }
 

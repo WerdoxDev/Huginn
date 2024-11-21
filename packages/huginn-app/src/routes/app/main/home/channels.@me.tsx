@@ -1,7 +1,6 @@
-import { NavLink, Outlet, useNavigate, useParams } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 
 export default function Component() {
-	// const params = useParams();
 	const dispatch = useModalsDispatch();
 	const navigate = useNavigate();
 

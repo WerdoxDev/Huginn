@@ -28,7 +28,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	const listHasUpdated = useRef(false);
 	const shouldScrollOnNextRender = useRef(false);
 
-	useEffect(() => {
+	useLayoutEffect(() => {
 		setSortedMessages(
 			props.messages.toSorted((a, b) => {
 				if (a.preview !== b.preview) {

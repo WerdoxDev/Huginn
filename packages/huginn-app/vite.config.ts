@@ -1,7 +1,7 @@
+import { readFile } from "node:fs/promises";
 import * as path from "node:path";
 import { reactRouter } from "@react-router/dev/vite";
 // import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
-// import react from "@vitejs/plugin-react-swc";
 import { parseTOML } from "confbox";
 import AutoImport from "unplugin-auto-import/vite";
 import IconsResolver from "unplugin-icons/resolver";
@@ -13,7 +13,6 @@ type CargoToml = { package: { version: string } };
 // https://vitejs.dev/config/
 export default defineConfig({
 	plugins: [
-		// react({ devTarget: "esnext" }),
 		reactRouter({
 			appDirectory: "src",
 			// Server-side render by default, to enable SPA mode set this to `false`
@@ -28,9 +27,10 @@ export default defineConfig({
 		}),
 	],
 
-	// define: {
-	// 	__APP_VERSION__: JSON.stringify((parseTOML(await Bun.file("src-tauri/Cargo.toml").text()) as CargoToml).package.version),
-	// },
+	define: {
+		__APP_VERSION__: JSON.stringify((parseTOML(await readFile("src-tauri/Cargo.toml", "utf8")) as CargoToml).package.version),
+		// __APP_VERSION__: JSON.stringify((parseTOML(await Bun.file("src-tauri/Cargo.toml").text()) as CargoToml).package.version),
+	},
 
 	resolve: {
 		alias: {

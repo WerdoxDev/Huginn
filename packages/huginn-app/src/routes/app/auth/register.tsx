@@ -1,5 +1,6 @@
 import type { APIPostRegisterJSONBody } from "@huginn/shared";
 import { usePostHog } from "posthog-js/react";
+import { redirect } from "react-router";
 
 export default function Register() {
 	const client = useClient();

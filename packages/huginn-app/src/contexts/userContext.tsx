@@ -1,7 +1,6 @@
 import type { APIUser, GatewayUserUpdateData, TokenPayload } from "@huginn/shared";
-import type { ReactNode } from "@tanstack/react-router";
 import * as jose from "jose";
-import { createContext } from "react";
+import { type ReactNode, createContext } from "react";
 
 type UserContextType = {
 	user?: APIUser;
