@@ -1,7 +1,6 @@
 import { Tab } from "@headlessui/react";
-import type { ReactNode } from "@tanstack/react-router";
 import clsx from "clsx";
-import { Fragment } from "react";
+import { Fragment, type ReactNode } from "react";
 
 export default function FriendsTabItem(props: { children?: ReactNode }) {
 	return (

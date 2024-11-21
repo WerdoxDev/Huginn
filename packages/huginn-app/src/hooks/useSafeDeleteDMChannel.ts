@@ -27,7 +27,12 @@ export function useSafeDeleteDMChannel(channelId?: Snowflake, channelType?: Dire
 								modalsDispatch({ info: { isOpen: false } });
 							},
 						},
-						cancel: { text: "Cancel" },
+						cancel: {
+							text: "Cancel",
+							callback: () => {
+								modalsDispatch({ info: { isOpen: false } });
+							},
+						},
 					},
 				},
 			});

@@ -1,4 +1,4 @@
-import type { InputStatus, InputValues, MessageDetail, StatusCode } from "@/types";
+import type { InputValues, MessageDetail, StatusCode } from "@/types";
 import { constants } from "@huginn/shared";
 import { Fields } from "@huginn/shared";
 
@@ -9,7 +9,7 @@ export function useUniqueUsernameMessage(values: InputValues, resetInput: (input
 	const defaultMessage = "Please only use numbers, letters, _ or .";
 	const [message, setMessage] = useState<MessageDetail>({ text: defaultMessage, status: "default", visible: false });
 
-	const usernameTimeout = useRef<Timer>();
+	const usernameTimeout = useRef<number>();
 	const lastFocus = useRef<boolean>(false);
 	const prevUsername = useRef(values[usernameField].value);
 
@@ -48,7 +48,7 @@ export function useUniqueUsernameMessage(values: InputValues, resetInput: (input
 	}
 
 	function onChanged(value: string, username?: string) {
-		clearTimeout(usernameTimeout.current);
+		window.clearTimeout(usernameTimeout.current);
 
 		if (!value || value === username) {
 			set(defaultMessage, "default", lastFocus.current);
@@ -67,10 +67,10 @@ export function useUniqueUsernameMessage(values: InputValues, resetInput: (input
 		}
 
 		if (usernameTimeout.current) {
-			clearTimeout(usernameTimeout.current);
+			window.clearTimeout(usernameTimeout.current);
 		}
 
-		usernameTimeout.current = setTimeout(async () => {
+		usernameTimeout.current = window.setTimeout(async () => {
 			await checkForUniqueUsername(value);
 			onFocusChanged(lastFocus.current);
 		}, 1000);

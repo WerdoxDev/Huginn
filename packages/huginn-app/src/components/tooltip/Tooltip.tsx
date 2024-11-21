@@ -1,8 +1,7 @@
 import type { TooltipOptions } from "@/types";
 import { useMergeRefs } from "@floating-ui/react";
 import { Portal, Transition } from "@headlessui/react";
-import type { ReactNode } from "@tanstack/react-router";
-import { type HTMLProps, cloneElement, isValidElement } from "react";
+import { type HTMLProps, type ReactNode, cloneElement, isValidElement } from "react";
 
 export default function Tooltip({ children, ...options }: { children: ReactNode } & TooltipOptions) {
 	// This can accept any props as options, e.g. `placement`,
@@ -16,7 +15,8 @@ const Trigger = forwardRef<HTMLButtonElement, HTMLProps<HTMLButtonElement> & { a
 	propRef,
 ) {
 	const context = useTooltipContext();
-	const childrenRef = (children as ReactNode).ref;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	const childrenRef = (children as any).ref;
 	const ref = useMergeRefs([context.refs.setReference, propRef, childrenRef]);
 
 	// `asChild` allows the user to pass any element as the anchor

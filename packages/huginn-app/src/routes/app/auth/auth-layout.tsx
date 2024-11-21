@@ -1,24 +1,16 @@
 import clsx from "clsx";
-import type { ReactNode } from "react";
-import { Outlet, useViewTransitionState } from "react-router";
+import { Outlet, redirect } from "react-router";
+
+export async function clientLoader() {
+	if (client?.isLoggedIn) {
+		throw redirect("/channels/@me");
+	}
+}
 
 export default function Layout() {
 	const { state: backgroundState } = useContext(AuthBackgroundContext);
-	// const transitions = useTransition(router.state.location.pathname, {
-	//   from: { opacity: 0, transform: 'scale(0.75,0.75)' },
-	//   enter: { opacity: 1, transform: 'scale(1,1)' },
-	//   leave: { opacity: 0, transform: 'scale(0.75,0.75)' },
-	//   config: { duration: 250, easing: easings.easeInOutSine },
-	// })
 
 	const modalsDispatch = useModalsDispatch();
-
-	// const style = useSpring({
-	//   background: backgroundState === 2 ? 'rgba(38,38,38,0)' : 'rgba(38,38,38,1)',
-	//   config: { duration: 250 },
-	//   immediate: !routeHistory.lastPathname,
-	// })
-
 	return (
 		<div className={clsx("absolute inset-0", backgroundState === 2 && "pointer-events-none")}>
 			<div className={clsx("absolute inset-0 select-none transition-all duration-500", backgroundState === 1 ? "opacity-100" : "opacity-0")}>
@@ -30,12 +22,6 @@ export default function Layout() {
 					</div>
 				</div>
 			</div>
-			{/* {transitions((style) => (
-         <AnimatedOutlet
-           style={style}
-           className="absolute flex h-full w-full items-center justify-center"
-         />
-       ))} */}
 			<div className="absolute flex h-full w-full items-center justify-center">
 				<Outlet />
 			</div>
