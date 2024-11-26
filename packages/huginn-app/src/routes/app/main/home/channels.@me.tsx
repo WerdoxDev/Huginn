@@ -8,7 +8,13 @@ export default function Component() {
 		<div className="flex h-full flex-col">
 			<div className="flex h-full flex-col items-center justify-center gap-y-5">
 				<div className="flex max-w-md flex-col items-center text-center text-text">
-					<IconFa6SolidCrow className="hover:-rotate-12 mb-2.5 size-20 text-accent transition-transform hover:scale-105 active:rotate-6" />
+					<div className="mb-2.5 rounded-xl bg-background p-5 shadow-lg">
+						<HuginnIcon
+							outlined
+							overrideTheme="text"
+							className="hover:-rotate-12 size-20 text-accent transition-transform hover:scale-105 active:rotate-6"
+						/>
+					</div>
 					<div className="mb-2.5 font-bold text-2xl">Welcome to Huginn</div>
 					<div>
 						Start by adding your friends in the{" "}

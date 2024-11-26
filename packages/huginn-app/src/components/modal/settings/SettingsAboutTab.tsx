@@ -15,20 +15,20 @@ export default function SettingsAboutTab() {
 	});
 	return (
 		<div className="mt-5 w-full text-text">
-			<div className="mb-2 flex gap-x-2 font-bold text-2xl">
-				<IconFa6SolidCrow className="text-accent" />
-				Huginn
+			<div className="mb-5 flex items-center gap-x-3">
+				<HuginnIcon outlined className="h-16 w-16" />
+				<span className="font-bold text-2xl">Huginn</span>
 			</div>
 			<div>
-				A simple, yet playful chat application to make chatting, <span className="text-text/70">well... </span>
+				<span>A simple, yet playful chat application to make chatting,</span> <span className="text-text/70">well... </span>
 				<span className="font-bold">FUN!</span> Inspired by <span className="text-success/90">Norse mythology</span>, it captures the spirit of{" "}
 				<span className="font-bold text-accent">Huginn</span>, one of <span className="text-error">Odin's</span> ravens, symbolizing thought and
-				memory.
+				<span>memory.</span>
 			</div>
 			<div className="mt-10">
 				<div>
 					<span className="text-text/70">Author: </span>
-					Matin Tat (Werdox)
+					<span>Matin Tat (Werdox)</span>
 				</div>
 				<div>
 					<span className="text-text/70">Github: </span>

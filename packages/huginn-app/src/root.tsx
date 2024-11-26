@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 // import { PostHogProvider } from "posthog-js/react";
-import posthog from "posthog-js";
+// import posthog from "posthog-js";
 import type { ReactNode } from "react";
 import type { Route } from "./+types.root";
 
@@ -25,7 +25,7 @@ export const ErrorBoundary = RouteErrorComponent;
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
 	const pathname = new URL(request.url).pathname;
-	posthog.capture("$pageview", { $current_url: window.origin + pathname });
+	// posthog.capture("$pageview", { $current_url: window.origin + pathname });
 
 	if (pathname === "/splashscreen" || pathname === "/redirect") {
 		return;
@@ -134,7 +134,6 @@ function AppMaximizedEvent() {
 			const appWindow = getCurrentWebviewWindow();
 			const unlisten = appWindow.onResized(async () => {
 				const appMaximized = await appWindow.isMaximized();
-				console.log("CHANGED", appMaximized);
 				dispatch({ maximized: appMaximized });
 			});
 

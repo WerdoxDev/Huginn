@@ -11,6 +11,7 @@ type WindowContextType = {
 const defaultValue: WindowContextType = {
 	maximized: false,
 	environment: globalThis.__TAURI_INTERNALS__ ? "desktop" : "browser",
+	versionFlavour: await getVersionFlavour(),
 };
 
 const WindowContext = createContext<WindowContextType>(defaultValue);
@@ -23,7 +24,6 @@ export function WindowProvider(props: { children?: ReactNode }) {
 		async function initialize() {
 			dispatch({
 				maximized: globalThis.__TAURI_INTERNALS__ ? await getCurrentWebviewWindow().isMaximized() : true,
-				versionFlavour: await getVersionFlavour(),
 			});
 		}
 
