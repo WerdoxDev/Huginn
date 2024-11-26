@@ -1,8 +1,18 @@
 {
-	"extends": "./tsconfig.base.json",
 	"compilerOptions": {
-		"noEmit": true,
-		"allowJs": true
-	},
-	"include": ["eslint.config.js"]
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"moduleDetection": "force",
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"forceConsistentCasingInFileNames": true,
+		"declaration": true,
+		"declarationMap": true,
+		"composite": true,
+		"isolatedModules": true,
+		"strict": true,
+		"skipLibCheck": true,
+		"verbatimModuleSyntax": true,
+		"noEmit": true
+	}
 }
