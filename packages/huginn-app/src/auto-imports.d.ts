@@ -174,7 +174,7 @@ declare global {
   const requiredFieldError: typeof import('./lib/utils')['requiredFieldError']
   const root: typeof import('./root')['default']
   const routeHistory: typeof import("./contexts/historyContext")["routeHistory"]
-  const routes: typeof import('./routes')['routes']
+  const routes: typeof import('./routes')['default']
   const setup: typeof import("./middlewares/setup")["setup"]
   const startTransition: typeof import('react')['startTransition']
   const tokenize: typeof import('./lib/huginn-tokenizer')['tokenize']
