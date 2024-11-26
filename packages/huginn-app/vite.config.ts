@@ -13,11 +13,7 @@ type CargoToml = { package: { version: string } };
 // https://vitejs.dev/config/
 export default defineConfig({
 	plugins: [
-		reactRouter({
-			appDirectory: "src",
-			// Server-side render by default, to enable SPA mode set this to `false`
-			ssr: false,
-		}),
+		reactRouter(),
 		Icons({ compiler: "jsx", jsx: "react" }),
 		AutoImport({
 			imports: ["react"],
