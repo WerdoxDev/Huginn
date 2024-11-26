@@ -7,7 +7,7 @@
 		"tauri-dev": "tauri dev",
 		"tauri-build": "tauri build",
 		"tauri": "tauri",
-		"dev": "bunx --bun react-router dev",
+		"dev": "react-router dev",
 		"build": "react-router build",
 		"lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
 		"preview": "vite preview",
@@ -16,6 +16,8 @@
 	"dependencies": {
 		"@floating-ui/react": "^0.26.28",
 		"@headlessui/react": "^2.2.0",
+		"@huginn/api": "workspace:*",
+		"@huginn/shared": "workspace:*",
 		"@react-router/node": "^7.0.1",
 		"@react-router/serve": "^7.0.1",
 		"@std/encoding": "npm:@jsr/std__encoding",
