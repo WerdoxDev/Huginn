@@ -19,11 +19,13 @@
 	src: url("assets/NotoSans.ttf") format("TrueType");
 	font-style: normal;
 }
+
 @font-face {
 	font-family: "Noto Sans";
 	src: url("assets/NotoSansItalic.ttf") format("TrueType");
 	font-style: italic;
 }
+
 @font-face {
 	font-family: "Noto Sans Arabic";
 	src: url("assets/NotoSansArabic.ttf") format("TrueType");

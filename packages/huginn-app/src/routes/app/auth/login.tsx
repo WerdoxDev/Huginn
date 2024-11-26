@@ -1,10 +1,10 @@
 import { ClientReadyState, HuginnAPIError } from "@huginn/api";
 import type { APIPostLoginJSONBody } from "@huginn/shared";
-import { usePostHog } from "posthog-js/react";
+// import { usePostHog } from "posthog-js/react";
 import { redirect, useNavigate, useSearchParams } from "react-router";
 
 export default function Login() {
-	const posthog = usePostHog();
+	// const posthog = usePostHog();
 	const client = useClient();
 	const handleServerError = useErrorHandler();
 	const initializeClient = useInitializeClient();
@@ -44,7 +44,7 @@ export default function Login() {
 				setHidden(true);
 
 				await initializeClient(undefined, undefined, "/channels/@me");
-				posthog?.capture("logged_in", null);
+				// posthog?.capture("logged_in", null);
 			},
 		},
 		handleErrors,
@@ -61,7 +61,7 @@ export default function Login() {
 
 					await initializeClient(undefined, refreshToken, search.get("redirect") ?? "/channels/@me");
 
-					posthog?.capture("logged_in_with_token");
+					// posthog?.capture("logged_in_with_token");
 				} else {
 					unhide();
 				}

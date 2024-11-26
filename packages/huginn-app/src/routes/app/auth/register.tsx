@@ -1,10 +1,10 @@
 import type { APIPostRegisterJSONBody } from "@huginn/shared";
-import { usePostHog } from "posthog-js/react";
+// import { usePostHog } from "posthog-js/react";
 import { redirect } from "react-router";
 
 export default function Register() {
 	const client = useClient();
-	const posthog = usePostHog();
+	// const posthog = usePostHog();
 	const appWindow = useWindow();
 	const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
 	const initializeClient = useInitializeClient();
@@ -35,7 +35,7 @@ export default function Register() {
 				setHidden(true);
 
 				await initializeClient(undefined, undefined, "/channels/@me");
-				posthog.capture("registered");
+				// posthog.capture("registered");
 			},
 		},
 		handleErrors,

@@ -2,7 +2,7 @@ import type { DeepPartial, SettingsTab, SettingsTabProps } from "@/types";
 import { type SettingsContextType, useSettings, useSettingsDispatcher } from "@contexts/settingsContext";
 import { DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import clsx from "clsx";
-import { usePostHog } from "posthog-js/react";
+// import { usePostHog } from "posthog-js/react";
 import { Fragment } from "react";
 
 const tabs: SettingsTab[] = [
@@ -39,7 +39,7 @@ function useFlatTabs() {
 
 export default function SettingsModal() {
 	const { settings: modal } = useModals();
-	const posthog = usePostHog();
+	// const posthog = usePostHog();
 
 	const dispatch = useModalsDispatch();
 
@@ -56,49 +56,57 @@ export default function SettingsModal() {
 			modifiedSettings.current = { ...settings };
 			setCurrentTab(flatTabs[defaultTabIndex]?.text ?? "");
 			setSettingsValid(true);
-			posthog.capture("settings_modal_opened");
+			// posthog.capture("settings_modal_opened");
 		} else {
-			if (
-				(modifiedSettings.current?.serverAddress && settings.serverAddress !== modifiedSettings.current.serverAddress) ||
-				(modifiedSettings.current?.cdnAddress && settings.cdnAddress !== modifiedSettings.current.cdnAddress)
-			) {
-				dispatch({
-					info: {
-						isOpen: true,
-						status: "default",
-						text: "Server or CDN address changed. The app should be restarted!",
-						title: "Hang on!",
-						action: {
-							confirm: {
-								text: "Restart",
-								callback: async () => {
-									await onSave();
-									dispatch({ info: { isOpen: false } });
-									location.reload();
-								},
-							},
-							cancel: {
-								text: "Revert",
-								callback: () => {
-									modifiedSettings.current = { ...settings };
-									dispatch({ info: { isOpen: false } });
-								},
-							},
-						},
-						closable: false,
-					},
-				});
-			} else {
-				onSave();
-			}
-
-			posthog.capture("settings_modal_closed");
+			checkForChanges();
+			// posthog.capture("settings_modal_closed");
 		}
 	}, [modal.isOpen]);
 
+	useEffect(() => {
+		checkForChanges();
+	}, [currentTab]);
+
 	async function onSave() {
+		// TODO: THIS IS NOT CORRECTLY CHECKING
 		if (modifiedSettings.current && modifiedSettings.current !== settings) {
 			await settingsDispatch(modifiedSettings.current);
+		}
+	}
+
+	async function checkForChanges() {
+		if (
+			(modifiedSettings.current?.serverAddress && settings.serverAddress !== modifiedSettings.current.serverAddress) ||
+			(modifiedSettings.current?.cdnAddress && settings.cdnAddress !== modifiedSettings.current.cdnAddress)
+		) {
+			dispatch({
+				info: {
+					isOpen: true,
+					status: "default",
+					text: "Server or CDN address changed. The app should be restarted!",
+					title: "Hang on!",
+					action: {
+						confirm: {
+							text: "Restart",
+							callback: async () => {
+								await onSave();
+								dispatch({ info: { isOpen: false } });
+								location.reload();
+							},
+						},
+						cancel: {
+							text: "Revert",
+							callback: () => {
+								modifiedSettings.current = { ...settings };
+								dispatch({ info: { isOpen: false } });
+							},
+						},
+					},
+					closable: false,
+				},
+			});
+		} else {
+			onSave();
 		}
 	}
 

@@ -1,11 +1,11 @@
 import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
 import clsx from "clsx";
-import { usePostHog } from "posthog-js/react";
+// import { usePostHog } from "posthog-js/react";
 
 export default function InfoModal() {
 	const { info: modal } = useModals();
 	const dispatch = useModalsDispatch();
-	const posthog = usePostHog();
+	// const posthog = usePostHog();
 
 	const mutationState = useMutationLatestState(modal.action?.confirm?.mutationKey);
 
@@ -34,9 +34,9 @@ export default function InfoModal() {
 
 	useEffect(() => {
 		if (modal.isOpen) {
-			posthog.capture("info_modal_opened", { title: modal.title, text: modal.text, status: modal.status });
+			// posthog.capture("info_modal_opened", { title: modal.title, text: modal.text, status: modal.status });
 		} else {
-			posthog.capture("info_modal_closed");
+			// posthog.capture("info_modal_closed");
 		}
 	}, [modal.isOpen]);
 

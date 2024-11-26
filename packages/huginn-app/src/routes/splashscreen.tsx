@@ -62,7 +62,7 @@ export default function Component() {
 	return (
 		<div className="flex h-full w-full select-none rounded-xl bg-background" data-tauri-drag-region>
 			<div className="mt-16 flex w-full flex-col items-center" data-tauri-drag-region>
-				<IconFa6SolidCrow className="hover:-rotate-12 size-20 animate-pulse text-accent drop-shadow-[0px_0px_25px_rgb(var(--color-primary))] transition-all hover:scale-105 active:rotate-6" />
+				<HuginnIcon className="hover:-rotate-12 size-20 animate-pulse text-accent drop-shadow-[0px_0px_25px_rgb(var(--color-primary))] transition-all hover:scale-105 active:rotate-6" />
 				<div className="mt-3 font-bold text-text text-xl">Huginn</div>
 				<div className="mt-3 text-text/80">
 					<div className="flex items-center justify-center gap-x-2">

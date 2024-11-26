@@ -2,7 +2,7 @@
 	"build": {
 		"beforeBuildCommand": "bun run build",
 		"beforeDevCommand": "bun run dev",
-		"frontendDist": "../dist",
+		"frontendDist": "../build/client",
 		"devUrl": "http://localhost:5173"
 	},
 	"bundle": {
@@ -16,10 +16,11 @@
 			"certificateThumbprint": null,
 			"digestAlgorithm": "sha256",
 			"timestampUrl": "",
-			"allowDowngrades": true
+			"allowDowngrades": true,
+         "nsis":{"installerIcon": "icons/icon.ico"}
 		},
 		"longDescription": "",
-		"shortDescription": "",
+		"shortDescription": "A norse themed chat application",
 		"resources": [],
 		"createUpdaterArtifacts": true
 	},

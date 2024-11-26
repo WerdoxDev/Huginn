@@ -59,6 +59,7 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void) {
 			onFinished?.(false);
 			return;
 		}
+		// console.log(appWindow.versionFlavour);
 
 		await invoke("check_update", { target: `windows-${overrideTarget ?? appWindow.versionFlavour}` });
 	}

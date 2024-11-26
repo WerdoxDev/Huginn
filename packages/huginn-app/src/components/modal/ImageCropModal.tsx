@@ -1,12 +1,12 @@
 import { DialogPanel } from "@headlessui/react";
 import "cropperjs/dist/cropper.css";
-import { usePostHog } from "posthog-js/react";
+// import { usePostHog } from "posthog-js/react";
 import Cropper, { type ReactCropperElement } from "react-cropper";
 import { SuperImageCropper } from "super-image-cropper";
 
 export default function ImageCropModal() {
 	const { imageCrop: modal } = useModals();
-	const posthog = usePostHog();
+	// const posthog = usePostHog();
 	const modalsDispatch = useModalsDispatch();
 	const cropperRef = useRef<ReactCropperElement>(null);
 	const { dispatchEvent } = useEvent();
@@ -35,9 +35,9 @@ export default function ImageCropModal() {
 
 	useEffect(() => {
 		if (modal.isOpen) {
-			posthog.capture("image_crop_modal_opened");
+			// posthog.capture("image_crop_modal_opened");
 		} else {
-			posthog.capture("image_crop_modal_closed");
+			// posthog.capture("image_crop_modal_closed");
 		}
 	}, [modal.isOpen]);
 

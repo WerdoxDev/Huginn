@@ -55,6 +55,7 @@ declare global {
   const HomeTopbar: typeof import('./components/channels/HomeTopbar')['default']
   const HuginnButton: typeof import('./components/button/HuginnButton')['default']
   const HuginnDropdown: typeof import('./components/dropdown/HuginnDropdown')['default']
+  const HuginnIcon: typeof import('./components/HuginnIcon')['default']
   const HuginnInput: typeof import('./components/input/HuginnInput')['default']
   const HuginnRouterProvider: typeof import("./HuginnRouterProvider")["default"]
   const IconFa6SolidCrow: typeof import('~icons/fa6-solid/crow.jsx')['default']

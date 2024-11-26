@@ -17,6 +17,7 @@ target
 .cache
 .output
 .react-router
+build
 
 *.code-workspace
 

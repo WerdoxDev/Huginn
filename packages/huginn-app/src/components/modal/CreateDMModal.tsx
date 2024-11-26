@@ -1,14 +1,14 @@
 import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
 import type { APIRelationUser } from "@huginn/shared";
 import { useQuery } from "@tanstack/react-query";
-import { usePostHog } from "posthog-js/react";
+// import { usePostHog } from "posthog-js/react";
 
 export default function CreateDMModal() {
 	const { createDM: modal } = useModals();
 	const dispatch = useModalsDispatch();
 
 	const client = useClient();
-	const posthog = usePostHog();
+	// const posthog = usePostHog();
 	const { data } = useQuery(getRelationshipsOptions(client));
 
 	const [selectedUsers, setSelectedUsers] = useState<APIRelationUser[]>([]);
@@ -20,10 +20,10 @@ export default function CreateDMModal() {
 
 	useEffect(() => {
 		if (modal.isOpen) {
-			posthog.capture("create_group_modal_opened");
+			// posthog.capture("create_group_modal_opened");
 			setSelectedUsers([]);
 		} else {
-			posthog.capture("create_group_modal_closed");
+			// posthog.capture("create_group_modal_closed");
 		}
 	}, [modal.isOpen]);
 
