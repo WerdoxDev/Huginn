@@ -10,7 +10,7 @@ describe("user-patch-current", () => {
 		const edit: APIPatchCurrentUserJSONBody = {
 			displayName: "test-edited",
 			email: "test.edited@gmail.com",
-			username: "test-edited",
+			username: "test_edited",
 			newPassword: "test-edited",
 			password: "test-incorrect",
 		};
@@ -45,7 +45,7 @@ describe("user-patch-current", () => {
 		const edit: APIPatchCurrentUserJSONBody = {
 			displayName: "test-edited",
 			email: "invalid",
-			username: "test-edited",
+			username: "test_edited",
 			newPassword: "test-edited",
 			password: "test",
 		};
@@ -58,7 +58,7 @@ describe("user-patch-current", () => {
 		const result = await client.users.edit({
 			displayName: "test-edited",
 			email: "test-edited@gmail.com",
-			username: "test-edited",
+			username: "test_edited",
 			newPassword: "test-edited",
 			password: "test",
 		});

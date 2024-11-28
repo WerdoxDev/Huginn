@@ -10,51 +10,57 @@ datasource db {
 }
 
 model User {
-   id                   BigInt         @id
-   username             String         @unique
+   id                   BigInt             @id
+   username             String             @unique
    displayName          String?
-   email                String         @unique
+   email                String             @unique
    avatar               String?
    password             String?
-   flags                Int            @db.SmallInt
-   system               Boolean        @default(false)
-   includedChannels     Channel[]      @relation("channel_recipients")
-   ownedChannels        Channel[]      @relation("channel_owner")
-   tempDeletedChannels  Channel[]      @relation("channel_temp_deleted")
+   flags                Int                @db.SmallInt
+   system               Boolean            @default(false)
+   includedChannels     Channel[]          @relation("channel_recipients")
+   ownedChannels        Channel[]          @relation("channel_owner")
+   tempDeletedChannels  Channel[]          @relation("channel_temp_deleted")
    messages             Message[]
-   mentionedMessages    Message[]      @relation("message_mentions")
-   relationships        Relationship[] @relation("relation_owner")
-   relatedRelationships Relationship[] @relation("relation_user")
+   mentionedMessages    Message[]          @relation("message_mentions")
+   relationships        Relationship[]     @relation("relation_owner")
+   relatedRelationships Relationship[]     @relation("relation_user")
+   identityProvider     IdentityProvider[]
+   readStates           ReadState[]
 }
 
 model Channel {
-   id                 BigInt    @id
+   id                 BigInt      @id
    icon               String?
    lastMessageId      BigInt?
+   lastMessage        Message?    @relation("channel_last_message", fields: [lastMessageId], references: [id])
    name               String?
-   owner              User?     @relation("channel_owner", fields: [ownerId], references: [id])
+   owner              User?       @relation("channel_owner", fields: [ownerId], references: [id])
    ownerId            BigInt?
-   recipients         User[]    @relation("channel_recipients")
+   recipients         User[]      @relation("channel_recipients")
    messages           Message[]
    type               Int
-   tempDeletedByUsers User[]    @relation("channel_temp_deleted")
+   tempDeletedByUsers User[]      @relation("channel_temp_deleted")
+   readStates         ReadState[]
 }
 
 model Message {
-   id          BigInt    @id
-   author      User      @relation(fields: [authorId], references: [id])
-   authorId    BigInt
-   channel     Channel   @relation(fields: [channelId], references: [id])
-   channelId   BigInt
-   content     String
-   createdAt   DateTime
-   editedAt    DateTime?
-   mentions    User[]    @relation("message_mentions")
-   attachments String[]
-   reactions   String[]
-   pinned      Boolean
-   type        Int
-   flags       Int?      @db.SmallInt
+   id                  BigInt      @id
+   author              User        @relation(fields: [authorId], references: [id])
+   authorId            BigInt
+   channel             Channel     @relation(fields: [channelId], references: [id])
+   channelId           BigInt
+   content             String
+   createdAt           DateTime
+   editedAt            DateTime?
+   mentions            User[]      @relation("message_mentions")
+   attachments         String[]
+   reactions           String[]
+   pinned              Boolean
+   type                Int
+   flags               Int?        @db.SmallInt
+   readStates          ReadState[]
+   lastMessageChannels Channel[]   @relation("channel_last_message")
 }
 
 model Relationship {
@@ -72,7 +78,20 @@ model IdentityProvider {
    id             BigInt  @id
    providerUserId String  @unique
    userId         BigInt?
+   user           User?   @relation(fields: [userId], references: [id])
    completed      Boolean
    providerType   String
    refreshToken   String
+}
+
+model ReadState {
+   channel       Channel @relation(fields: [channelId], references: [id])
+   channelId     BigInt
+   user          User    @relation(fields: [userId], references: [id])
+   userId        BigInt
+   unreadCount   Int
+   lastMessage   Message @relation(fields: [lastMessageId], references: [id])
+   lastMessageId BigInt
+
+   @@id([channelId, userId])
 }

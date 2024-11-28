@@ -22,10 +22,6 @@ export default function AuthWrapper(props: {
 		(x) => x === true,
 	);
 
-	useEffect(() => {
-		console.log(isTransitioning);
-	}, [isTransitioning]);
-
 	return (
 		<form
 			id={props.hidden ? "auth-form-hidden" : "auth-form"}
