@@ -20,7 +20,7 @@ router.get(
 		}
 
 		const message: APIGetMessageByIdResult = idFix(
-			await prisma.message.getById(channelId, messageId, merge(includeMessageAuthor, includeMessageMentions, omitMessageAuthorId)),
+			await prisma.message.getById(channelId, messageId, merge(includeMessageAuthor, includeMessageMentions), omitMessageAuthorId),
 		);
 
 		setResponseStatus(event, HttpCode.OK);

@@ -28,7 +28,7 @@ export const test4Credentials: LoginCredentials = {
 };
 
 export const editCredentials: LoginCredentials = {
-	username: "test-edited",
+	username: "test_edited",
 	email: "test.edited@gmail.com",
 	password: "test-edited",
 };

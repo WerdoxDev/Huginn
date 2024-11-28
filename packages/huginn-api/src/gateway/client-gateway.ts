@@ -91,7 +91,7 @@ export class Gateway {
 
 	public async waitForReady(): Promise<void> {
 		if (this.socket?.readyState !== WebSocket.OPEN) {
-			throw new Error("WebSocket is not connected");
+			throw new Error("WebSocket is not connected.");
 		}
 
 		let onMessage: ((e: MessageEvent) => void) | undefined = undefined;

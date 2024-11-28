@@ -27,10 +27,6 @@ const iconSources: Record<ModifiedThemeType, string[]> = {
 
 export default function HuginnIcon(props: { className?: string; overrideTheme?: ModifiedThemeType; outlined?: boolean }) {
 	const settings = useSettings();
-
-	useEffect(() => {
-		console.log(settings.theme);
-	}, [settings]);
 	const source = useMemo(() => iconSources[props.overrideTheme ?? settings.theme], [props.overrideTheme, settings]);
 
 	return <img alt="huginn-icon" src={source[props.outlined ? 1 : 0]} className={clsx(props.className)} />;
