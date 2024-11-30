@@ -59,7 +59,7 @@ model Message {
    pinned              Boolean
    type                Int
    flags               Int?        @db.SmallInt
-   readStates          ReadState[]
+   lastReadMessages    ReadState[]
    lastMessageChannels Channel[]   @relation("channel_last_message")
 }
 
@@ -85,13 +85,12 @@ model IdentityProvider {
 }
 
 model ReadState {
-   channel       Channel @relation(fields: [channelId], references: [id])
-   channelId     BigInt
-   user          User    @relation(fields: [userId], references: [id])
-   userId        BigInt
-   unreadCount   Int
-   lastMessage   Message @relation(fields: [lastMessageId], references: [id])
-   lastMessageId BigInt
+   channel           Channel  @relation(fields: [channelId], references: [id])
+   channelId         BigInt
+   user              User     @relation(fields: [userId], references: [id])
+   userId            BigInt
+   lastReadMessage   Message? @relation(fields: [lastReadMessageId], references: [id])
+   lastReadMessageId BigInt?
 
    @@id([channelId, userId])
 }

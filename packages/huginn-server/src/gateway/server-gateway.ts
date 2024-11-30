@@ -1,5 +1,5 @@
 import { logGatewayClose, logGatewayOpen, logGatewayRecieve, logGatewaySend, logServerError } from "@huginn/backend-shared";
-import { constants, type UserSettings, WorkerID, merge } from "@huginn/shared";
+import { constants, type APIReadStateWithoutUser, type UserSettings, WorkerID, merge } from "@huginn/shared";
 import { GatewayCode } from "@huginn/shared";
 import {
 	type BasePayload,
@@ -195,19 +195,44 @@ export class ServerGateway {
 		await client.initialize({ user, sessionId, ...data.d.properties });
 		this.clients.set(sessionId, client);
 
+		// Relationships
 		const userRelationships = idFix(await prisma.relationship.getUserRelationships(user.id, includeRelationshipUser));
+
+		// Channels
 		const userChannels = idFix(
 			await prisma.channel.getUserChannels(user.id, false, merge(includeChannelRecipients, excludeChannelRecipient(user.id))),
 		);
 
+		// Presences
 		const presences = this.presenceManeger.getUserPresences(client);
 
+		// Read states
+		const dbReadStates = idFix(await prisma.readState.getUserStates(user.id));
+		const finalReadStates: APIReadStateWithoutUser[] = [];
+
+		for (const readState of dbReadStates) {
+			finalReadStates.push({
+				channelId: readState.channelId,
+				lastReadMessageId: readState.lastReadMessageId,
+				unreadCount: await prisma.readState.countUnreadMessages(readState.userId, readState.channelId),
+			});
+		}
+
+		// Settings
 		//TODO: ADD ACTUAL PROPER SETTINGS
 		const settings: UserSettings = { status: "online" };
 
 		const readyData: GatewayReadyDispatch = {
 			op: GatewayOperations.DISPATCH,
-			d: { user, sessionId: sessionId, privateChannels: userChannels, relationships: userRelationships, userSettings: settings, presences },
+			d: {
+				user,
+				sessionId: sessionId,
+				privateChannels: userChannels,
+				relationships: userRelationships,
+				userSettings: settings,
+				presences,
+				readStates: finalReadStates,
+			},
 			t: "ready",
 			s: client.increaseSequence(),
 		};

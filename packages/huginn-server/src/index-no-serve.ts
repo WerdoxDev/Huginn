@@ -1,6 +1,6 @@
 import { startServer } from "./server";
 import "./setup";
 
-const { router } = await startServer({ serve: false });
+const { router, server } = await startServer({ serve: false, defineOptions: false, logRoutes: true });
 
-export { router };
+export { router, server };

@@ -2,6 +2,7 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import authExtention from "./auth";
 import channelExtention from "./channel";
 import messagesExtention from "./message";
+import readStateExtention from "./readState";
 import relationshipExtention from "./relationship";
 import userExtention from "./user";
 
@@ -25,6 +26,7 @@ export const prisma = prismaBase
 	.$extends(userExtention)
 	.$extends(channelExtention)
 	.$extends(messagesExtention)
-	.$extends(relationshipExtention);
+	.$extends(relationshipExtention)
+	.$extends(readStateExtention);
 
 export * from "./error";

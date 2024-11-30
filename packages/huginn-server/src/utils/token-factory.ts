@@ -30,11 +30,7 @@ export async function createTokens<Payload extends TokenPayload | IdentityTokenP
 	return [accessToken, refreshToken] as TokenResult<Payload>;
 }
 
-export async function verifyToken<IdentityToken extends boolean = false>(
-	token: string,
-	secret: Uint8Array = ACCESS_TOKEN_SECRET_ENCODED,
-	identity?: IdentityToken,
-) {
+export async function verifyToken<IdentityToken extends boolean = false>(token: string, secret: Uint8Array = ACCESS_TOKEN_SECRET_ENCODED) {
 	try {
 		if (tokenInvalidator.isInvalid(token)) {
 			return { valid: false, payload: null };

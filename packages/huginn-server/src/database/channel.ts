@@ -161,12 +161,13 @@ const channelExtention = Prisma.defineExtension({
 					})) as ChannelPayload<Include>;
 				}
 
+				assertObj("deleteDM", editedChannel, DBErrorType.NULL_CHANNEL);
 				return editedChannel as ChannelPayload<Include>;
 			},
-			async assertChannelExists(methodName: string, id: Snowflake) {
-				assertId(methodName, id);
-				const channelExists = await prisma.channel.exists({ id: BigInt(id) });
-				assertCondition(methodName, !channelExists, DBErrorType.NULL_CHANNEL, id);
+			async assertChannelExists(methodName: string, channelId: Snowflake) {
+				assertId(methodName, channelId);
+				const channelExists = await prisma.channel.exists({ id: BigInt(channelId) });
+				assertCondition(methodName, !channelExists, DBErrorType.NULL_CHANNEL, channelId);
 			},
 		},
 	},

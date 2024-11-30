@@ -283,3 +283,11 @@ export type UserSettings = {
 export type OAuthType = "google" | "github";
 export type OAuthFlow = "browser" | "websocket";
 export type OAuthAction = "register" | "login";
+
+export type APIReadState = {
+	channelId: Snowflake;
+	lastReadMessageId: Snowflake | null;
+	unreadCount: number;
+};
+
+export type APIReadStateWithoutUser = Omit<APIReadState, "userId">;

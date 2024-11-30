@@ -20,7 +20,7 @@ export class HTTPError extends Error {
 		public url: string,
 		bodyData: Pick<InternalRequest, "body" | "files">,
 	) {
-		super(statusText);
+		super(`${statusText}:${status}`);
 		this.requestBody = { files: bodyData.files, json: bodyData.body };
 	}
 }

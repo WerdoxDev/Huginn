@@ -26,4 +26,5 @@ export enum WorkerID {
 	API = 5,
 	APP = 6,
 	IDENTITY_PROVIDER = 7,
+	TESTING = 8,
 }
