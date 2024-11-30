@@ -1,4 +1,4 @@
-import { unauthorized, useValidatedParams } from "@huginn/backend-shared";
+import { missingAccess, unauthorized, useValidatedParams } from "@huginn/backend-shared";
 import { type APIGetMessageByIdResult, HttpCode, idFix, merge, omit } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
@@ -16,7 +16,7 @@ router.get(
 		const { channelId, messageId } = await useValidatedParams(event, schema);
 
 		if (!(await prisma.user.hasChannel(payload.id, channelId))) {
-			return unauthorized(event);
+			return missingAccess(event);
 		}
 
 		const message: APIGetMessageByIdResult = idFix(

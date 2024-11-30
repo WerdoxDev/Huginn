@@ -295,11 +295,11 @@ export type UserSettings = {
 export type OAuthType = "google" | "github";
 export type OAuthFlow = "browser" | "websocket";
 
+export type OAuthAction = "register" | "login";
+
 export type APIReadState = {
-	userId: Snowflake;
 	channelId: Snowflake;
 	lastReadMessageId: Snowflake | null;
-	lastReadMessageTimestamp: Date | string | null;
 	unreadCount: number;
 };
 

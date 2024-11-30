@@ -43,12 +43,12 @@ const relationshipExtention = Prisma.defineExtension({
 				assertId("deleteByUserId", ownerId, userId);
 
 				const relation = await prisma.relationship.findFirst({ where: { userId: BigInt(userId), ownerId: BigInt(ownerId) } });
-				assertObj("deleteByUserId", relation, DBErrorType.NULL_RELATIONSHIP);
+				assertObj("deleteByUserId", relation, DBErrorType.NULL_RELATIONSHIP, `${ownerId}>${userId}`);
 
 				const oppositeRelation = await prisma.relationship.findFirst({
 					where: { userId: BigInt(ownerId), ownerId: BigInt(userId) },
 				});
-				assertObj("deleteByUserId", oppositeRelation, DBErrorType.NULL_RELATIONSHIP);
+				assertObj("deleteByUserId", oppositeRelation, DBErrorType.NULL_RELATIONSHIP, `${userId}>${ownerId}`);
 
 				const deleteRelation = prisma.relationship.delete({ where: { id: relation?.id } });
 				const deleteOppositeRelation = prisma.relationship.delete({ where: { id: oppositeRelation?.id } });

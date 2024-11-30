@@ -8,6 +8,7 @@ import { colors } from "consola/utils";
 import {
 	type App,
 	type H3Error,
+	type PlainHandler,
 	type Router,
 	createApp,
 	createRouter,
@@ -19,6 +20,7 @@ import {
 	serveStatic,
 	setResponseHeader,
 	setResponseStatus,
+	toPlainHandler,
 	toWebHandler,
 	useBase,
 } from "h3";
@@ -32,15 +34,19 @@ import { handleCommonDBErrors } from "#utils/route-utils";
 import { TokenInvalidator } from "#utils/token-invalidator";
 import { version } from "../package.json";
 
-export async function startServer(options?: { serve: boolean }): Promise<{ server?: Server; app: App; router: Router }> {
+export async function startServer(options?: { serve: boolean; defineOptions: boolean; logRoutes?: boolean }): Promise<{
+	server?: Server;
+	app: App;
+	router: Router;
+	handler: PlainHandler;
+}> {
 	consola.info(`Using version ${version}`);
 	consola.start("Starting server...");
 
 	const app = createApp({
-		onError: options?.serve
+		onError: options?.defineOptions
 			? (error, event) => {
 					const id = event.context.id;
-
 					if (error.cause && !(error.cause instanceof Error) && typeof error.cause === "object" && "errors" in error.cause) {
 						const status = getResponseStatus(event);
 						logReject(event.path, event.method, id, error.cause as HuginnErrorData, status);
@@ -66,6 +72,7 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 						return send(event, JSON.stringify(errorFactory.toObject()));
 					}
 
+					console.log(error);
 					logServerError(event.path, error.cause as H3Error);
 					logReject(event.path, event.method, id, "Server Error", HttpCode.SERVER_ERROR);
 
@@ -73,7 +80,7 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 					return send(event, JSON.stringify(createErrorFactory(Errors.serverError()).toObject()));
 				}
 			: undefined,
-		onAfterResponse: options?.serve
+		onAfterResponse: options?.defineOptions
 			? (event, response) => {
 					if (event.method === "OPTIONS") {
 						return;
@@ -89,7 +96,7 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 					}
 				}
 			: undefined,
-		onRequest: options?.serve
+		onRequest: options?.defineOptions
 			? async (event) => {
 					if (handleCors(event, { origin: "*", preflight: { statusCode: 204 }, methods: "*" })) {
 						return;
@@ -104,7 +111,7 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 	mainRouter = createRouter();
 	router = createRouter();
 
-	await importRoutes();
+	await importRoutes(options?.logRoutes);
 
 	mainRouter.get(
 		"/",
@@ -116,7 +123,7 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 	mainRouter.use("/api/**", useBase("/api", router.handler));
 
 	if (!options?.serve) {
-		return { app, router: mainRouter };
+		return { app, router: mainRouter, handler: toPlainHandler(app) };
 	}
 
 	const handler = toWebHandler(app);
@@ -150,7 +157,7 @@ export async function startServer(options?: { serve: boolean }): Promise<{ serve
 	consola.success("Server started!");
 	consola.box(`Listening on ${colors.green(server.url.href)}`);
 
-	return { server, app, router: mainRouter };
+	return { server, app, router: mainRouter, handler: toPlainHandler(app) };
 }
 
 export const gateway = new ServerGateway({ logHeartbeat: false });

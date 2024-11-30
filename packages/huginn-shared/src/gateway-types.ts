@@ -1,4 +1,4 @@
-import type { APIChannelUser, DirectChannel, UserPresence, UserSettings } from "./api-types";
+import type { APIChannelUser, APIReadState, APIReadStateWithoutUser, DirectChannel, UserPresence, UserSettings } from "./api-types";
 import type { APIMessage, APIMessageUser, APIRelationshipWithoutOwner, APIUser, Tokens } from "./api-types";
 import type { Snowflake } from "./snowflake";
 
@@ -101,6 +101,7 @@ export type GatewayReadyDispatchData = {
 	privateChannels: DirectChannel[];
 	presences: UserPresence[];
 	userSettings: UserSettings;
+	readStates: APIReadStateWithoutUser[];
 };
 
 export type GatewayResume = NonDispatchPayload & {

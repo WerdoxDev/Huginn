@@ -8,6 +8,7 @@ import {
 	type Router,
 	createApp,
 	createRouter,
+	defineEventHandler,
 	getResponseStatus,
 	handleCors,
 	send,
@@ -24,13 +25,17 @@ import { isCDNError } from "./error";
 import { importRoutes } from "./routes";
 import { CERT_FILE, KEY_FILE, envs } from "./setup";
 
-export async function startCdn(options?: { serve: boolean; storage: "aws" | "local" }): Promise<{ cdn?: Server; app: App; router: Router }> {
+export async function startCdn(options?: { serve: boolean; defineOptions: boolean; storage: "aws" | "local" }): Promise<{
+	cdn?: Server;
+	app: App;
+	router: Router;
+}> {
 	consola.info(`Using version ${version}`);
 	consola.info(`Using ${colors.yellow(options?.storage ?? "")} storage`);
 	consola.start("Starting cdn...");
 
 	const app = createApp({
-		onError: options?.serve
+		onError: options?.defineOptions
 			? (error, event) => {
 					const id = event.context.id;
 
@@ -66,7 +71,7 @@ export async function startCdn(options?: { serve: boolean; storage: "aws" | "loc
 					return send(event, JSON.stringify(createErrorFactory(Errors.serverError()).toObject()));
 				}
 			: undefined,
-		onAfterResponse: options?.serve
+		onAfterResponse: options?.defineOptions
 			? (event, response) => {
 					if (event.method === "OPTIONS") {
 						return;
@@ -82,7 +87,7 @@ export async function startCdn(options?: { serve: boolean; storage: "aws" | "loc
 					}
 				}
 			: undefined,
-		onRequest: options?.serve
+		onRequest: options?.defineOptions
 			? (event) => {
 					if (handleCors(event, { origin: "*", preflight: { statusCode: 204 }, methods: "*" })) {
 						return;
@@ -98,6 +103,13 @@ export async function startCdn(options?: { serve: boolean; storage: "aws" | "loc
 	storage = options?.storage === "aws" ? new S3Storage() : new FileStorage();
 
 	await importRoutes();
+
+	router.get(
+		"/",
+		defineEventHandler(() => {
+			return '<div style="height:100%; display: flex; align-items:center; justify-content:center;"><div style="font-size: 2rem;">Huginn CDN Homepage</div></div>';
+		}),
+	);
 
 	if (!options?.serve) {
 		return { app, router };

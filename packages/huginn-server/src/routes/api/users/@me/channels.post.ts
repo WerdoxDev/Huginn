@@ -1,12 +1,13 @@
 import { createErrorFactory, createHuginnError, useValidatedBody } from "@huginn/backend-shared";
 import { invalidFormBody } from "@huginn/backend-shared";
-import { type APIPostDMChannelResult, ChannelType, Errors, HttpCode, idFix, merge } from "@huginn/shared";
+import { type APIPostDMChannelResult, ChannelType, Errors, HttpCode, idFix } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { excludeChannelRecipient, includeChannelRecipients } from "#database/common";
+import { includeChannelRecipients } from "#database/common";
 import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
+import { channelWithoutRecipient } from "#utils/helpers";
 import { useVerifiedJwt } from "#utils/route-utils";
 import { validateChannelName } from "#utils/validation";
 
@@ -30,20 +31,24 @@ router.post(
 			return createHuginnError(event, formError);
 		}
 
+		// Create dm
 		const createdChannel: APIPostDMChannelResult = idFix(
 			await prisma.channel.createDM(payload.id, body.recipients, body.name, includeChannelRecipients),
 		);
 
-		for (const id of [payload.id, ...body.recipients]) {
-			const channel: APIPostDMChannelResult = { ...createdChannel, recipients: createdChannel.recipients.filter((x) => x.id !== id) };
-			gateway.subscribeSessionsToTopic(id, createdChannel.id);
+		// Subscribe topics, dispatch channel create event, create read state
+		for (const recipientId of [...createdChannel.recipients.map((x) => x.id)]) {
+			const channel: APIPostDMChannelResult = { ...createdChannel, recipients: createdChannel.recipients.filter((x) => x.id !== recipientId) };
+			gateway.subscribeSessionsToTopic(recipientId, createdChannel.id);
 
-			if (channel.type === ChannelType.GROUP_DM || id === payload.id) {
-				dispatchToTopic(id, "channel_create", channel);
+			if (channel.type === ChannelType.GROUP_DM || recipientId === payload.id) {
+				dispatchToTopic(recipientId, "channel_create", channel);
 			}
+
+			await prisma.readState.createState(recipientId, createdChannel.id);
 		}
 
 		setResponseStatus(event, HttpCode.CREATED);
-		return { ...createdChannel, recipients: createdChannel.recipients.filter((x) => x.id !== payload.id) } as APIPostDMChannelResult;
+		return channelWithoutRecipient(createdChannel, payload.id) as APIPostDMChannelResult;
 	}),
 );

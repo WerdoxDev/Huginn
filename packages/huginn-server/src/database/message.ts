@@ -2,7 +2,7 @@ import type { Snowflake } from "@huginn/shared";
 import { WorkerID, snowflake } from "@huginn/shared";
 import type { MessageType } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
-import { DBErrorType, assertId, assertObj, prisma } from ".";
+import { DBErrorType, assertCondition, assertId, assertObj, prisma } from ".";
 import type { MessageInclude, MessageOmit, MessagePayload } from "./common";
 
 const messagesExtention = Prisma.defineExtension({
@@ -88,6 +88,11 @@ const messagesExtention = Prisma.defineExtension({
 
 				assertObj("createDefaultMessage", message, DBErrorType.NULL_MESSAGE);
 				return message as MessagePayload<Include, Omit>;
+			},
+			async assertMessageExists(methodName: string, messageId: Snowflake) {
+				assertId(methodName, messageId);
+				const messageExists = await prisma.message.exists({ id: BigInt(messageId) });
+				assertCondition(methodName, !messageExists, DBErrorType.NULL_MESSAGE, messageId);
 			},
 		},
 	},

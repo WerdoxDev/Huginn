@@ -1,9 +1,9 @@
 import { missingAccess, useValidatedParams } from "@huginn/backend-shared";
-import { type APIDeleteDMChannelResult, ChannelType, HttpCode, MessageFlags, MessageType, idFix, omit } from "@huginn/shared";
+import { type APIDeleteDMChannelResult, ChannelType, HttpCode, MessageFlags, MessageType, idFix, merge, omit } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { includeChannelRecipients } from "#database/common";
+import { excludeChannelRecipient, includeChannelRecipients } from "#database/common";
 import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { dispatchChannel, dispatchMessage } from "#utils/helpers";
@@ -38,16 +38,23 @@ router.delete(
 			}
 		}
 
-		const deletedChannel: APIDeleteDMChannelResult = idFix(await prisma.channel.deleteDM(channelId, payload.id, includeChannelRecipients));
-
+		// Delete or leave the DM
+		const deletedChannel: APIDeleteDMChannelResult = idFix(
+			await prisma.channel.deleteDM(channelId, payload.id, merge(includeChannelRecipients, excludeChannelRecipient(payload.id))),
+		);
 		dispatchToTopic(payload.id, "channel_delete", omit(channel, ["recipients"]));
 
+		// Delete read state
+		await prisma.readState.deleteState(payload.id, deletedChannel.id);
+
+		// Dispatch channel recipient remove event
 		const removedRecipient = channel.recipients.find((x) => x.id === payload.id);
 		if (channel.type === ChannelType.GROUP_DM && removedRecipient) {
 			dispatchToTopic(channelId, "channel_recipient_remove", { channelId: channelId, user: removedRecipient });
 			gateway.unsubscribeSessionsFromTopic(payload.id, channelId);
 		}
 
+		// Send a recipient remove message in group dm
 		if (channel.type === ChannelType.GROUP_DM) {
 			await dispatchMessage(payload.id, channelId, MessageType.RECIPIENT_REMOVE, "", undefined, undefined, MessageFlags.NONE);
 		}
