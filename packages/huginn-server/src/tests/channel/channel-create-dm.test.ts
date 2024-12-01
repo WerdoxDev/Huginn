@@ -21,7 +21,7 @@ describe("channel-create-dm", () => {
 		const result3 = testHandler("/api/users/@me/channels", authHeader(user.accessToken), "POST", { recipients: ["000000000000000000"] }).then(
 			removeChannelLater,
 		);
-		expect(result3).rejects.toThrow("Unknown User"); // Unknown id
+		expect(result3).rejects.toThrow(`Unknown User (${user.id},000000000000000000)`); // Unknown id
 	});
 	test("unauthorized", async () => {
 		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");

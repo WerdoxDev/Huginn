@@ -11,7 +11,7 @@ import { channelWithoutRecipient } from "#utils/helpers";
 import { useVerifiedJwt } from "#utils/route-utils";
 import { validateChannelName } from "#utils/validation";
 
-const schema = z.object({ name: z.optional(z.string()), recipients: z.array(z.string()) });
+const schema = z.object({ name: z.optional(z.string()), recipients: z.array(z.string()).min(1) });
 
 router.post(
 	"/users/@me/channels",
@@ -19,9 +19,9 @@ router.post(
 		const { payload } = await useVerifiedJwt(event);
 		const body = await useValidatedBody(event, schema);
 
-		if (body.recipients.length === 0) {
-			return invalidFormBody(event);
-		}
+		// if (body.recipients.length === 0) {
+		// 	return invalidFormBody(event);
+		// }
 
 		const formError = createErrorFactory(Errors.invalidFormBody());
 
@@ -45,6 +45,7 @@ router.post(
 				dispatchToTopic(recipientId, "channel_create", channel);
 			}
 
+			// TODO: OPTIMIZE THIS: This can be a single query call with createMany
 			await prisma.readState.createState(recipientId, createdChannel.id);
 		}
 

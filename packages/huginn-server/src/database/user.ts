@@ -32,11 +32,6 @@ const userExtention = Prisma.defineExtension({
 				assertObj("edit", updatedUser, DBErrorType.NULL_USER, id);
 				return updatedUser as UserPayload<Include, Select>;
 			},
-			async assertUserExists(methodName: string, userId: Snowflake) {
-				assertId(methodName, userId);
-				const userExists = await prisma.user.exists({ id: BigInt(userId) });
-				assertCondition(methodName, !userExists, DBErrorType.NULL_USER, userId);
-			},
 			async hasChannel(userId: Snowflake, channelId: Snowflake) {
 				assertId("hasChannel", userId, channelId);
 
