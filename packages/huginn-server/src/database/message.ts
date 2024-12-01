@@ -2,7 +2,7 @@ import type { Snowflake } from "@huginn/shared";
 import { WorkerID, snowflake } from "@huginn/shared";
 import type { MessageType } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
-import { DBErrorType, assertCondition, assertId, assertObj, prisma } from ".";
+import { DBErrorType, assertCondition, assertExists, assertId, assertObj, prisma } from ".";
 import type { MessageInclude, MessageOmit, MessagePayload } from "./common";
 
 const messagesExtention = Prisma.defineExtension({
@@ -14,17 +14,21 @@ const messagesExtention = Prisma.defineExtension({
 				include?: Include,
 				omit?: Omit,
 			) {
-				assertId("getById", channelId, messageId);
-				await prisma.channel.assertChannelExists("getById", channelId);
+				try {
+					assertId("getById", channelId, messageId);
+					const message = await prisma.message.findUnique({
+						where: { channelId: BigInt(channelId), id: BigInt(messageId) },
+						include: include,
+						...(omit && { omit: omit }),
+					});
 
-				const message = await prisma.message.findUnique({
-					where: { channelId: BigInt(channelId), id: BigInt(messageId) },
-					include: include,
-					...(omit && { omit: omit }),
-				});
-
-				assertObj("getById", message, DBErrorType.NULL_MESSAGE, messageId);
-				return message as MessagePayload<Include, Omit>;
+					assertObj("getById", message, DBErrorType.NULL_MESSAGE, messageId);
+					return message as MessagePayload<Include, Omit>;
+				} catch (e) {
+					await assertExists(e, "getById", DBErrorType.NULL_CHANNEL, [channelId]);
+					await assertExists(e, "getById", DBErrorType.NULL_MESSAGE, [messageId]);
+					throw e;
+				}
 			},
 			async getMessages<Include extends MessageInclude, Omit extends MessageOmit>(
 				channelId: Snowflake,
@@ -34,22 +38,25 @@ const messagesExtention = Prisma.defineExtension({
 				include?: Include,
 				omit?: Omit,
 			) {
-				await prisma.channel.assertChannelExists("getMessages", channelId);
+				try {
+					const cursor = after ?? before;
+					const direction = after ? "forward" : before ? "backward" : "none";
 
-				const cursor = after ?? before;
-				const direction = after ? "forward" : before ? "backward" : "none";
+					const messages = await prisma.message.findMany({
+						where: { channelId: BigInt(channelId) },
+						include: include,
+						...(omit && { omit: omit }),
+						cursor: cursor ? { id: BigInt(cursor) } : undefined,
+						skip: direction === "none" ? undefined : 1,
+						take: (direction === "forward" ? 1 : -1) * limit,
+					});
 
-				const messages = await prisma.message.findMany({
-					where: { channelId: BigInt(channelId) },
-					include: include,
-					...(omit && { omit: omit }),
-					cursor: cursor ? { id: BigInt(cursor) } : undefined,
-					skip: direction === "none" ? undefined : 1,
-					take: (direction === "forward" ? 1 : -1) * limit,
-				});
-
-				assertObj("getMessages", messages, DBErrorType.NULL_MESSAGE);
-				return messages as MessagePayload<Include, Omit>[];
+					assertObj("getMessages", messages, DBErrorType.NULL_MESSAGE);
+					return messages as MessagePayload<Include, Omit>[];
+				} catch (e) {
+					await assertExists(e, "getMessages", DBErrorType.NULL_CHANNEL, [channelId]);
+					throw e;
+				}
 			},
 			async createDefaultMessage<Include extends MessageInclude, Omit extends MessageOmit>(
 				authorId: Snowflake,
@@ -62,37 +69,35 @@ const messagesExtention = Prisma.defineExtension({
 				include?: Include,
 				omit?: Omit,
 			) {
-				await prisma.user.assertUserExists("createDefaultMessage", authorId);
-				await prisma.channel.assertChannelExists("createDefaultMessage", channelId);
+				try {
+					const message = await prisma.message.create({
+						data: {
+							id: snowflake.generate(WorkerID.MESSAGE),
+							type: type,
+							channelId: BigInt(channelId),
+							content: content ?? "",
+							attachments: attachments,
+							mentions: { connect: mentions?.map((x) => ({ id: BigInt(x) })) },
+							authorId: BigInt(authorId),
+							createdAt: new Date(),
+							editedAt: null,
+							pinned: false,
+							reactions: [],
+							flags: flags,
+						},
+						include: include,
+						...(omit && { omit: omit }),
+					});
 
-				const message = await prisma.message.create({
-					data: {
-						id: snowflake.generate(WorkerID.MESSAGE),
-						type: type,
-						channelId: BigInt(channelId),
-						content: content ?? "",
-						attachments: attachments,
-						mentions: { connect: mentions?.map((x) => ({ id: BigInt(x) })) },
-						authorId: BigInt(authorId),
-						createdAt: new Date(),
-						editedAt: null,
-						pinned: false,
-						reactions: [],
-						flags: flags,
-					},
-					include: include,
-					...(omit && { omit: omit }),
-				});
+					await prisma.channel.update({ where: { id: BigInt(channelId) }, data: { lastMessageId: message.id } });
 
-				await prisma.channel.update({ where: { id: BigInt(channelId) }, data: { lastMessageId: message.id } });
-
-				assertObj("createDefaultMessage", message, DBErrorType.NULL_MESSAGE);
-				return message as MessagePayload<Include, Omit>;
-			},
-			async assertMessageExists(methodName: string, messageId: Snowflake) {
-				assertId(methodName, messageId);
-				const messageExists = await prisma.message.exists({ id: BigInt(messageId) });
-				assertCondition(methodName, !messageExists, DBErrorType.NULL_MESSAGE, messageId);
+					assertObj("createDefaultMessage", message, DBErrorType.NULL_MESSAGE);
+					return message as MessagePayload<Include, Omit>;
+				} catch (e) {
+					await assertExists(e, "createDefaultMessage", DBErrorType.NULL_CHANNEL, [channelId]);
+					await assertExists(e, "createDefaultMessage", DBErrorType.NULL_USER, [authorId]);
+					throw e;
+				}
 			},
 		},
 	},

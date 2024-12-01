@@ -1,6 +1,6 @@
 import {
 	constants,
-	ChannelType,
+	type ChannelType,
 	HTTPError,
 	HuginnAPIError,
 	type HuginnErrorData,

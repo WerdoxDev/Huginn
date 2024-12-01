@@ -2,9 +2,16 @@ import { type Snowflake, merge } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 
 export type ChannelInclude = Prisma.ChannelInclude | undefined;
-export type ChannelPayload<I extends ChannelInclude> = Prisma.ChannelGetPayload<{
-	include: I;
-}>;
+export type ChannelSelect = Prisma.ChannelSelect | undefined;
+export type ChannelPayload<I extends ChannelInclude = undefined, S extends ChannelSelect = undefined> = I extends undefined
+	? Prisma.ChannelGetPayload<{
+			select: S;
+		}>
+	: S extends undefined
+		? Prisma.ChannelGetPayload<{
+				include: I;
+			}>
+		: never;
 
 export type UserInclude = Prisma.UserInclude | undefined;
 export type UserSelect = Prisma.UserSelect | undefined;

@@ -1,6 +1,6 @@
 import { type Snowflake, snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
-import { DBErrorType, assertCondition, assertId, assertObj, prisma } from "#database";
+import { DBErrorType, assertCondition, assertExists, assertId, assertObj, prisma } from "#database";
 
 const readStateExtention = Prisma.defineExtension({
 	model: {
@@ -24,44 +24,53 @@ const readStateExtention = Prisma.defineExtension({
 				return readStates;
 			},
 			async createState(userId: Snowflake, channelId: Snowflake) {
-				await prisma.user.assertUserExists("createState", userId);
-				await prisma.channel.assertChannelExists("createState", channelId);
+				try {
+					const existing = await prisma.readState.findUnique({
+						where: { channelId_userId: { userId: BigInt(userId), channelId: BigInt(channelId) } },
+					});
 
-				const existing = await prisma.readState.findUnique({
-					where: { channelId_userId: { userId: BigInt(userId), channelId: BigInt(channelId) } },
-				});
+					if (existing) {
+						return existing;
+					}
 
-				if (existing) {
-					return existing;
+					const readState = await prisma.readState.create({ data: { userId: BigInt(userId), channelId: BigInt(channelId) } });
+					assertObj("createState", readState, DBErrorType.NULL_READ_STATE);
+
+					return readState;
+				} catch (e) {
+					await assertExists(e, "createState", DBErrorType.NULL_CHANNEL, [channelId]);
+					await assertExists(e, "createState", DBErrorType.NULL_USER, [userId]);
+					throw e;
 				}
-
-				const readState = await prisma.readState.create({ data: { userId: BigInt(userId), channelId: BigInt(channelId) } });
-				assertObj("createState", readState, DBErrorType.NULL_READ_STATE);
-
-				return readState;
 			},
 			async deleteState(userId: Snowflake, channelId: Snowflake) {
-				await prisma.readState.assertReadStateExists("deleteState", userId, channelId);
+				try {
+					const deletedReadState = await prisma.readState.delete({
+						where: { channelId_userId: { userId: BigInt(userId), channelId: BigInt(channelId) } },
+					});
 
-				const deletedReadState = await prisma.readState.delete({
-					where: { channelId_userId: { userId: BigInt(userId), channelId: BigInt(channelId) } },
-				});
-
-				assertObj("deleteState", deletedReadState, DBErrorType.NULL_READ_STATE);
-				return deletedReadState;
+					assertObj("deleteState", deletedReadState, DBErrorType.NULL_READ_STATE);
+					return deletedReadState;
+				} catch (e) {
+					await assertExists(e, "createState", DBErrorType.NULL_READ_STATE, [{ userId, channelId }]);
+					throw e;
+				}
 			},
 			async updateLastReadMessage(userId: Snowflake, channelId: Snowflake, lastReadMessageId: Snowflake) {
-				await prisma.readState.assertReadStateExists("setLatestReadMessage", userId, channelId);
-				await prisma.message.assertMessageExists("setLatestReadMessage", lastReadMessageId);
+				try {
+					const updatedReadState = await prisma.readState.update({
+						where: { channelId_userId: { userId: BigInt(userId), channelId: BigInt(channelId) } },
+						data: { lastReadMessage: { connect: { id: BigInt(lastReadMessageId) } } },
+					});
 
-				const updatedReadState = await prisma.readState.update({
-					where: { channelId_userId: { userId: BigInt(userId), channelId: BigInt(channelId) } },
-					data: { lastReadMessage: { connect: { id: BigInt(lastReadMessageId) } } },
-				});
+					assertObj("updateLastReadMessage", updatedReadState, DBErrorType.NULL_READ_STATE);
 
-				assertObj("updateLastReadMessage", updatedReadState, DBErrorType.NULL_READ_STATE);
-
-				return updatedReadState;
+					return updatedReadState;
+				} catch (e) {
+					await assertExists(e, "updateLastReadMessage", DBErrorType.NULL_MESSAGE, [lastReadMessageId]);
+					await assertExists(e, "updateLastReadMessage", DBErrorType.NULL_READ_STATE, [{ userId, channelId }]);
+					throw e;
+				}
 			},
 			async countUnreadMessages(userId: Snowflake, channelId: Snowflake) {
 				const readState = await prisma.readState.getByUserAndChannelId(userId, channelId);
@@ -72,11 +81,6 @@ const readStateExtention = Prisma.defineExtension({
 				});
 
 				return unreadCount;
-			},
-			async assertReadStateExists(methodName: string, userId: Snowflake, channelId: Snowflake) {
-				assertId(methodName, userId, channelId);
-				const readStateExists = await prisma.readState.exists({ userId: BigInt(userId), channelId: BigInt(channelId) });
-				assertCondition(methodName, !readStateExists, DBErrorType.NULL_READ_STATE, `${userId}:${channelId}`);
 			},
 		},
 	},

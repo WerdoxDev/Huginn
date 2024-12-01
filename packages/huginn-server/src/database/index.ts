@@ -1,4 +1,5 @@
 import { Prisma, PrismaClient } from "@prisma/client";
+import assertExtention from "./assert";
 import authExtention from "./auth";
 import channelExtention from "./channel";
 import messagesExtention from "./message";
@@ -14,14 +15,15 @@ export const prismaBase = new PrismaClient().$extends({
 				const context = Prisma.getExtensionContext(this);
 
 				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-				const result = await (context as any).findFirst({ where });
-				return result !== null;
+				const result = await (context as any).count({ where });
+				return result !== 0;
 			},
 		},
 	},
 });
 
 export const prisma = prismaBase
+	.$extends(assertExtention)
 	.$extends(authExtention)
 	.$extends(userExtention)
 	.$extends(channelExtention)

@@ -17,7 +17,7 @@ router.delete(
 		const { payload } = await useVerifiedJwt(event);
 		const { channelId } = await useValidatedParams(event, schema);
 
-		const channel = idFix(await prisma.channel.getById(channelId, includeChannelRecipients));
+		const channel = idFix(await prisma.channel.getById(channelId, undefined, merge(includeChannelRecipients, { type: true, ownerId: true })));
 
 		if (!(await prisma.user.hasChannel(payload.id, channelId))) {
 			return missingAccess(event);
@@ -42,7 +42,7 @@ router.delete(
 		const deletedChannel: APIDeleteDMChannelResult = idFix(
 			await prisma.channel.deleteDM(channelId, payload.id, merge(includeChannelRecipients, excludeChannelRecipient(payload.id))),
 		);
-		dispatchToTopic(payload.id, "channel_delete", omit(channel, ["recipients"]));
+		dispatchToTopic(payload.id, "channel_delete", omit(deletedChannel, ["recipients"]));
 
 		// Delete read state
 		await prisma.readState.deleteState(payload.id, deletedChannel.id);

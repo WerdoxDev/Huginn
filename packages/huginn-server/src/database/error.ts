@@ -1,6 +1,7 @@
 import type { Snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 import { H3Error, createError } from "h3";
+import { prisma } from "#database";
 
 export class DBError extends Error {
 	public constructor(
@@ -27,11 +28,12 @@ export function assertError(error: Error | null, type: DBErrorType) {
 	return actualError && isDBError(actualError) && actualError.isErrorType(type);
 }
 
-export function assertId(methodName: string, ...ids: Snowflake[]) {
+export function assertId(methodName: string, ...ids: (Snowflake | undefined)[]) {
 	let lastValidIndex = -1;
 	try {
 		for (const [i, id] of ids.entries()) {
-			BigInt(id);
+			// biome-ignore lint/style/noNonNullAssertion: <explanation>
+			BigInt(id!);
 			lastValidIndex = i;
 		}
 	} catch (e) {
@@ -57,6 +59,28 @@ export function isDBError(object: unknown): object is DBError {
 	}
 
 	return false;
+}
+
+export async function assertExists(
+	error: unknown,
+	methodName: string,
+	errorType: DBErrorType,
+	ids: (Snowflake | undefined)[] | { userId: Snowflake; channelId: Snowflake }[],
+) {
+	const normalIds = ids as Snowflake[];
+	const readStateIds = ids as { userId: Snowflake; channelId: Snowflake }[];
+
+	if (errorType === DBErrorType.NULL_USER) {
+		await prisma.user.assertUsersExist(methodName, normalIds);
+	} else if (errorType === DBErrorType.NULL_CHANNEL) {
+		await prisma.channel.assertChannelsExist(methodName, normalIds);
+	} else if (errorType === DBErrorType.NULL_MESSAGE) {
+		await prisma.message.assertMessagesExist(methodName, normalIds);
+	} else if (errorType === DBErrorType.NULL_RELATIONSHIP) {
+		await prisma.relationship.assertRelationshipsExist(methodName, normalIds);
+	} else if (errorType === DBErrorType.NULL_READ_STATE) {
+		await prisma.readState.assertReadStatesExist(methodName, readStateIds);
+	}
 }
 
 export function isPrismaError(object: unknown): object is (

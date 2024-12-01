@@ -34,7 +34,7 @@ router.patch(
 			return createHuginnError(event, formError);
 		}
 
-		const channel = idFix(await prisma.channel.getById(channelId));
+		const channel = idFix(await prisma.channel.getById(channelId, undefined, { name: true, icon: true, ownerId: true }));
 
 		if (body.owner && channel.ownerId !== payload.id) {
 			return missingPermission(event);

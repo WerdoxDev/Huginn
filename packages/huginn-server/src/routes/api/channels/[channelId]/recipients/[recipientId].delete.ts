@@ -17,7 +17,7 @@ router.delete(
 		const { payload } = await useVerifiedJwt(event);
 		const { channelId, recipientId } = await useValidatedParams(event, paramsSchema);
 
-		await prisma.user.assertUserExists("/channels/:channelId/recipients/:recipientId", recipientId);
+		await prisma.user.assertUsersExist("/channels/:channelId/recipients/:recipientId", [recipientId]);
 
 		const channel = idFix(await prisma.channel.getById(channelId, includeChannelRecipients));
 		if (!channel.recipients.find((x) => x.id === payload.id)) {
