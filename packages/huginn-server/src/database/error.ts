@@ -1,6 +1,5 @@
 import type { Snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
-import type { SystemError } from "bun";
 import { H3Error, createError } from "h3";
 
 export class DBError extends Error {
