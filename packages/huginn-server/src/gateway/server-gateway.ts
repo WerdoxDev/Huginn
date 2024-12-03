@@ -88,13 +88,13 @@ export class ServerGateway {
 			logGatewayRecieve(session?.data?.sessionId ?? peer.id, data, this.options.logHeartbeat);
 
 			// Identify
-			if (isOpcode<GatewayIdentify>(data, GatewayOperations.IDENTIFY)) {
+			if (isOpcode(data, GatewayOperations.IDENTIFY)) {
 				await this.handleIdentify(peer, data);
 				// Resume
-			} else if (isOpcode<GatewayResume>(data, GatewayOperations.RESUME)) {
+			} else if (isOpcode(data, GatewayOperations.RESUME)) {
 				this.handleResume(peer, data);
 				// Heartbeat
-			} else if (isOpcode<GatewayHeartbeat>(data, GatewayOperations.HEARTBEAT)) {
+			} else if (isOpcode(data, GatewayOperations.HEARTBEAT)) {
 				this.handleHeartbeat(peer, data);
 				// -- Not authenticated --
 			} else if (!session?.data) {

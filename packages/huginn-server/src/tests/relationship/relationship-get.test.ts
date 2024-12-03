@@ -1,15 +1,10 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import type { APIGetUserRelationshipByIdResult, APIGetUserRelationshipsResult } from "@huginn/shared";
-import { authHeader, createTestRelationships, createTestUser, removeUsers, testHandler } from "#tests/utils";
-
-afterEach(async () => {
-	await removeUsers();
-});
+import { authHeader, createTestRelationships, createTestUsers, testHandler } from "#tests/utils";
 
 describe("relationship-get", () => {
 	test("invalid", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
+		const [user, user2] = await createTestUsers(2);
 
 		const result = testHandler("/api/users/@me/relationships/invalid", authHeader(user.accessToken), "GET");
 		expect(result).rejects.toThrow("Snowflake"); // Invalid id
@@ -22,9 +17,7 @@ describe("relationship-get", () => {
 		expect(result3).rejects.toThrow("Unknown Relationship");
 	});
 	test("get all", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
-		const user3 = await createTestUser("test3", "test3", "test3@gmail.com", "test3");
+		const [user, user2, user3] = await createTestUsers(3);
 
 		await createTestRelationships(user.id, user2.id, true);
 		await createTestRelationships(user.id, user3.id, true);
@@ -35,8 +28,7 @@ describe("relationship-get", () => {
 		expect(result).toHaveLength(2);
 	});
 	test("get by id", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
+		const [user, user2] = await createTestUsers(2);
 
 		const [userRelationship] = await createTestRelationships(user.id, user2.id, true);
 

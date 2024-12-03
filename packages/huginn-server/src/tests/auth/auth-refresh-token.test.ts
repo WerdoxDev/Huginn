@@ -1,10 +1,6 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import type { APIPostRefreshTokenResult } from "@huginn/shared";
-import { createTestUser, removeUsers, testHandler } from "#tests/utils";
-
-afterEach(async () => {
-	await removeUsers();
-});
+import { createTestUsers, testHandler } from "#tests/utils";
 
 describe("auth-refresh-token", () => {
 	test("unauthorized", async () => {
@@ -14,7 +10,7 @@ describe("auth-refresh-token", () => {
 		expect(result).rejects.toThrow("Unauthorized");
 	});
 	test("successful", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
+		const [user] = await createTestUsers(1);
 
 		const refreshToken = user.refreshToken;
 		const result = (await testHandler("/api/auth/refresh-token", {}, "POST", { refreshToken })) as APIPostRefreshTokenResult;

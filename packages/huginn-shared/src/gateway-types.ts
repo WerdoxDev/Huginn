@@ -12,6 +12,15 @@ export enum GatewayOperations {
 	HEARTBEAT_ACK = 11,
 }
 
+export type GatewayOperationTypes = {
+	[GatewayOperations.DISPATCH]: GatewayDispatch;
+	[GatewayOperations.HEARTBEAT]: GatewayHeartbeat;
+	[GatewayOperations.HEARTBEAT_ACK]: GatewayHeartbeatAck;
+	[GatewayOperations.HELLO]: GatewayHello;
+	[GatewayOperations.RESUME]: GatewayResume;
+	[GatewayOperations.IDENTIFY]: GatewayIdentify;
+};
+
 export type GatewayEvents = {
 	open: undefined;
 	close: number;

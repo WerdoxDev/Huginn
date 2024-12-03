@@ -1,10 +1,6 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import type { APIPostLoginResult, LoginCredentials } from "@huginn/shared";
-import { createTestUser, removeUsers, testHandler } from "#tests/utils";
-
-afterEach(async () => {
-	await removeUsers();
-});
+import { createTestUsers, testHandler } from "#tests/utils";
 
 describe("auth-login", () => {
 	test("invalid form body", () => {
@@ -13,25 +9,25 @@ describe("auth-login", () => {
 	});
 
 	test("incorrect credentials", async () => {
-		await createTestUser("test", "test", "test@gmail.com", "test");
+		const [user] = await createTestUsers(1);
 
 		const incorrectEmail: LoginCredentials = {
 			email: "incorrect",
-			password: "test",
+			password: user.password ?? "",
 		};
 
 		const incorrectUsername: LoginCredentials = {
 			username: "incorrect",
-			password: "test",
+			password: user.password ?? "",
 		};
 
 		const incorrectPasswordWithEmail: LoginCredentials = {
-			email: "test@gmail.com",
+			email: user.email,
 			password: "incorrect",
 		};
 
 		const incorrectPasswordWithUsername: LoginCredentials = {
-			username: "test",
+			username: user.username,
 			password: "incorrect",
 		};
 
@@ -49,16 +45,16 @@ describe("auth-login", () => {
 	});
 
 	test("with username & email", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
+		const [user] = await createTestUsers(1);
 
 		const withUsername: LoginCredentials = {
-			username: "test",
-			password: "test",
+			username: user.username,
+			password: user.password ?? "",
 		};
 
 		const withEmail: LoginCredentials = {
-			email: "test@gmail.com",
-			password: "test",
+			email: user.email,
+			password: user.password ?? "",
 		};
 
 		const result = (await testHandler("/api/auth/login", {}, "POST", withUsername)) as APIPostLoginResult;

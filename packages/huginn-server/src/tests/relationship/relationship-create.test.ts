@@ -1,15 +1,11 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { RelationshipType } from "@huginn/shared";
 import { prisma } from "#database";
-import { authHeader, createTestRelationships, createTestUser, removeUsers, testHandler } from "#tests/utils";
-
-afterEach(async () => {
-	await removeUsers();
-});
+import { authHeader, createTestRelationships, createTestUsers, testHandler } from "#tests/utils";
 
 describe("relationship-create", () => {
 	test("invalid", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
+		const [user] = await createTestUsers(1);
 
 		const result = testHandler("/api/users/@me/relationships", authHeader(user.accessToken), "POST", {});
 		expect(result).rejects.toThrow("Invalid Form Body");
@@ -20,38 +16,35 @@ describe("relationship-create", () => {
 
 	test("unauthorized", async () => {
 		// It's good to make sure the data is real and only not authenticated
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
+		const [user] = await createTestUsers(1);
 
-		const result = testHandler("/api/users/@me/relationships", {}, "POST", { username: user2.username });
+		const result = testHandler("/api/users/@me/relationships", {}, "POST", { username: user.username });
 		expect(result).rejects.toThrow("Unauthorized");
 	});
 
 	test("request self", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
+		const [user] = await createTestUsers(1);
 
 		const result = testHandler("/api/users/@me/relationships", authHeader(user.accessToken), "POST", { username: user.username });
 		expect(result).rejects.toThrow("to self");
 	});
 
 	test("with username", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
+		const [user, user2] = await createTestUsers(2);
 
 		const result = testHandler("/api/users/@me/relationships", authHeader(user.accessToken), "POST", { username: user2.username });
 		expect(result).resolves.toBe(undefined);
 	});
 
 	test("with user id", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
+		const [user, user2] = await createTestUsers(2);
 
 		const result = testHandler(`/api/users/@me/relationships/${user2.id}`, authHeader(user.accessToken), "PUT");
 		expect(result).resolves.toBe(undefined);
 	});
 
 	test("accept", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
+		const [user, user2] = await createTestUsers(2);
 
 		await createTestRelationships(user.id, user2.id);
 
