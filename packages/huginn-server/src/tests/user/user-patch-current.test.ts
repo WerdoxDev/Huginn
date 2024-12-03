@@ -1,28 +1,24 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { type APIPatchCurrentUserJSONBody, type APIPatchCurrentUserResult, resolveImage } from "@huginn/shared";
 import pathe from "pathe";
-import { authHeader, createTestUser, isCDNRunning, removeUsers, resolveAll, testHandler } from "#tests/utils";
-
-afterEach(async () => {
-	await removeUsers();
-});
+import { authHeader, createTestUsers, isCDNRunning, testHandler } from "#tests/utils";
 
 describe("user-patch-current", () => {
 	test("invalid", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
+		const [user] = await createTestUsers(1);
 
 		const emptyUsername: APIPatchCurrentUserJSONBody = {
 			username: "",
-			password: "test",
+			password: user.password ?? "",
 		};
 
 		const shortUsername: APIPatchCurrentUserJSONBody = {
 			username: "t",
-			password: "test",
+			password: user.password ?? "",
 		};
 
 		const shortNewPassword: APIPatchCurrentUserJSONBody = {
-			password: "test",
+			password: user.password ?? "",
 			newPassword: "t",
 		};
 
@@ -52,15 +48,14 @@ describe("user-patch-current", () => {
 	});
 
 	test("existing username & email", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		await createTestUser("test2", "test2", "test2@gmail.com", "test2");
+		const [user, user2] = await createTestUsers(2);
 
 		const existingUsername: APIPatchCurrentUserJSONBody = {
-			username: "test2",
+			username: user2.username,
 		};
 
 		const existingEmail: APIPatchCurrentUserJSONBody = {
-			email: "test2@gmail.com",
+			email: user2.email,
 		};
 
 		const result = testHandler("/api/users/@me", authHeader(user.accessToken), "PATCH", existingUsername);
@@ -71,7 +66,7 @@ describe("user-patch-current", () => {
 	});
 
 	test("empty displayName", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
+		const [user] = await createTestUsers(1);
 
 		const edit: APIPatchCurrentUserJSONBody = {
 			displayName: "",
@@ -84,14 +79,14 @@ describe("user-patch-current", () => {
 	});
 
 	test("successful", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
+		const [user] = await createTestUsers(1);
 
 		const edit: Required<APIPatchCurrentUserJSONBody> = {
 			displayName: "test-edited",
 			email: "test-edited@gmail.com",
 			username: "test_edited",
 			newPassword: "test-edited",
-			password: "test",
+			password: user.password ?? "",
 			avatar: null,
 		};
 
@@ -106,7 +101,7 @@ describe("user-patch-current", () => {
 	});
 
 	test.skipIf(!isCDNRunning)("avatar successful", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
+		const [user] = await createTestUsers(1);
 
 		const image = await resolveImage(pathe.resolve(__dirname, "../pixel.png"));
 		const result = (await testHandler("/api/users/@me", authHeader(user.accessToken), "PATCH", {

@@ -1,16 +1,10 @@
-import { afterEach, beforeAll, describe, expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { type APIPostDefaultMessageResult, ChannelType } from "@huginn/shared";
-import { authHeader, createTestChannel, createTestUser, removeChannels, removeUsers, testHandler } from "#tests/utils";
-
-afterEach(async () => {
-	await removeChannels();
-	await removeUsers();
-});
+import { authHeader, createTestChannel, createTestUsers, testHandler } from "#tests/utils";
 
 describe("message-create", () => {
 	test("invalid", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
+		const [user, user2] = await createTestUsers(2);
 
 		const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
 
@@ -25,9 +19,7 @@ describe("message-create", () => {
 	});
 
 	test("unauthorized", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
-		const user3 = await createTestUser("test3", "test3", "test3@gmail.com", "test3");
+		const [user, user2, user3] = await createTestUsers(3);
 
 		const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
 
@@ -39,8 +31,7 @@ describe("message-create", () => {
 	});
 
 	test("successful", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
+		const [user, user2] = await createTestUsers(2);
 
 		const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
 

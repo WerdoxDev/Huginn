@@ -1,53 +1,46 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import path from "node:path";
 import { type APIPatchDMChannelResult, ChannelType, resolveImage } from "@huginn/shared";
-import { authHeader, createTestChannel, createTestUser, isCDNRunning, removeChannels, removeUsers, testHandler } from "#tests/utils";
-
-afterEach(async () => {
-	await removeChannels();
-	await removeUsers();
-});
+import { authHeader, createTestChannel, createTestUsers, isCDNRunning, testHandler } from "#tests/utils";
 
 describe("channel-patch", () => {
-	test("invalid", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
-		const user3 = await createTestUser("test3", "test3", "test3@gmail.com", "test3");
-		const user4 = await createTestUser("test4", "test4", "test4@gmail.com", "test4");
+	test(
+		"invalid",
+		async () => {
+			const [user, user2, user3, user4] = await createTestUsers(4);
 
-		const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
-		const groupChannel = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
+			const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
+			const groupChannel = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
 
-		// Name too long
-		const result = testHandler(`/api/channels/${groupChannel.id}`, authHeader(user.accessToken), "PATCH", { name: ".".repeat(101) });
-		expect(result).rejects.toThrow("Invalid Form Body");
+			// Name too long
+			const result = testHandler(`/api/channels/${groupChannel.id}`, authHeader(user.accessToken), "PATCH", { name: ".".repeat(101) });
+			expect(result).rejects.toThrow("Invalid Form Body");
 
-		// Unknown User
-		const result2 = testHandler(`/api/channels/${groupChannel.id}/recipients/123`, authHeader(user.accessToken), "DELETE");
-		expect(result2).rejects.toThrow("Unknown User");
+			// Unknown User
+			const result2 = testHandler(`/api/channels/${groupChannel.id}/recipients/123`, authHeader(user.accessToken), "DELETE");
+			expect(result2).rejects.toThrow("Unknown User");
 
-		// Unknown User
-		const result3 = testHandler(`/api/channels/${groupChannel.id}/recipients/123`, authHeader(user.accessToken), "PUT");
-		expect(result3).rejects.toThrow("Unknown User");
+			// Unknown User
+			const result3 = testHandler(`/api/channels/${groupChannel.id}/recipients/123`, authHeader(user.accessToken), "PUT");
+			expect(result3).rejects.toThrow("Unknown User");
 
-		// Recipient not part of the channel
-		const result4 = testHandler(`/api/channels/${groupChannel.id}/recipients/${user4.id}`, authHeader(user.accessToken), "DELETE");
-		expect(result4).rejects.toThrow("Invalid Recipient");
+			// Recipient not part of the channel
+			const result4 = testHandler(`/api/channels/${groupChannel.id}/recipients/${user4.id}`, authHeader(user.accessToken), "DELETE");
+			expect(result4).rejects.toThrow("Invalid Recipient");
 
-		// Channel is not a group
-		const result5 = testHandler(`/api/channels/${channel.id}/recipients/${user4.id}`, authHeader(user.accessToken), "PUT");
-		expect(result5).rejects.toThrow("Invalid Channel Type");
+			// Channel is not a group
+			const result5 = testHandler(`/api/channels/${channel.id}/recipients/${user4.id}`, authHeader(user.accessToken), "PUT");
+			expect(result5).rejects.toThrow("Invalid Channel Type");
 
-		// Channel is not a group
-		const result6 = testHandler(`/api/channels/${channel.id}/recipients/${user4.id}`, authHeader(user.accessToken), "DELETE");
-		expect(result6).rejects.toThrow("Invalid Channel Type");
-	});
+			// Channel is not a group
+			const result6 = testHandler(`/api/channels/${channel.id}/recipients/${user4.id}`, authHeader(user.accessToken), "DELETE");
+			expect(result6).rejects.toThrow("Invalid Channel Type");
+		},
+		{ timeout: 10000 },
+	);
 
 	test("unauthorized", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
-		const user3 = await createTestUser("test3", "test3", "test3@gmail.com", "test3");
-		const user4 = await createTestUser("test4", "test4", "test4@gmail.com", "test4");
+		const [user, user2, user3, user4] = await createTestUsers(4);
 
 		const channel = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
 
@@ -70,11 +63,7 @@ describe("channel-patch", () => {
 	test(
 		"add & remove recipients",
 		async () => {
-			const user = await createTestUser("test", "test", "test@gmail.com", "test");
-			const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
-			const user3 = await createTestUser("test3", "test3", "test3@gmail.com", "test3");
-			const user4 = await createTestUser("test4", "test4", "test4@gmail.com", "test4");
-			const user5 = await createTestUser("test5", "test5", "test5@gmail.com", "test5");
+			const [user, user2, user3, user4, user5] = await createTestUsers(5);
 
 			const channel = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
 
@@ -94,9 +83,7 @@ describe("channel-patch", () => {
 	);
 
 	test("successful", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
-		const user3 = await createTestUser("test3", "test3", "test3@gmail.com", "test3");
+		const [user, user2, user3] = await createTestUsers(3);
 
 		const channel = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
 
@@ -120,9 +107,7 @@ describe("channel-patch", () => {
 	});
 
 	test.skipIf(!isCDNRunning)("icon successful", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
-		const user3 = await createTestUser("test3", "test3", "test3@gmail.com", "test3");
+		const [user, user2, user3] = await createTestUsers(3);
 
 		const channel = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
 

@@ -1,16 +1,11 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { type APIDeleteDMChannelResult, type APIPostDMChannelResult, ChannelType } from "@huginn/shared";
 import { prisma } from "#database";
-import { authHeader, createTestChannel, createTestUser, removeChannels, removeUsers, testHandler } from "#tests/utils";
-
-afterEach(async () => {
-	await removeChannels();
-	await removeUsers();
-});
+import { authHeader, createTestChannel, createTestUsers, testHandler } from "#tests/utils";
 
 describe("channel-remove-dm", () => {
 	test("invalid", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
+		const [user] = await createTestUsers(1);
 
 		const result = testHandler("/api/channels/invalid", authHeader(user.accessToken), "DELETE");
 		expect(result).rejects.toThrow("Snowflake"); // Invalid id
@@ -20,10 +15,7 @@ describe("channel-remove-dm", () => {
 	});
 
 	test("unauthorized", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
-		const user3 = await createTestUser("test3", "test3", "test3@gmail.com", "test3");
-		const user4 = await createTestUser("test4", "test4", "test4@gmail.com", "test4");
+		const [user, user2, user3, user4] = await createTestUsers(4);
 
 		const channel = await createTestChannel(undefined, ChannelType.GROUP_DM, user.id, user2.id);
 		const groupChannel = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
@@ -43,9 +35,7 @@ describe("channel-remove-dm", () => {
 	test(
 		"successful",
 		async () => {
-			const user = await createTestUser("test", "test", "test@gmail.com", "test");
-			const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
-			const user3 = await createTestUser("test3", "test3", "test3@gmail.com", "test3");
+			const [user, user2, user3] = await createTestUsers(3);
 
 			const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
 			const groupChannel = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
@@ -78,8 +68,7 @@ describe("channel-remove-dm", () => {
 	);
 
 	test("restore successful", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
+		const [user, user2] = await createTestUsers(2);
 
 		const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
 

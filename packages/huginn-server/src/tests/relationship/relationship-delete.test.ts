@@ -1,14 +1,9 @@
-import { afterEach, describe, expect, test } from "bun:test";
-import { authHeader, createTestRelationships, createTestUser, removeUsers, resolveAll, testHandler } from "#tests/utils";
-
-afterEach(async () => {
-	await removeUsers();
-});
+import { describe, expect, test } from "bun:test";
+import { authHeader, createTestRelationships, createTestUsers, testHandler } from "#tests/utils";
 
 describe("relationship-delete", () => {
 	test("invalid", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
+		const [user, user2] = await createTestUsers(2);
 
 		const result = testHandler("/api/users/@me/relationships/invalid", authHeader(user.accessToken), "DELETE");
 		expect(result).rejects.toThrow("Snowflake"); // Invalid id
@@ -21,8 +16,7 @@ describe("relationship-delete", () => {
 		expect(result3).rejects.toThrow("Unknown Relationship");
 	});
 	test("successful", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
+		const [user, user2] = await createTestUsers(2);
 
 		await createTestRelationships(user.id, user2.id, true);
 

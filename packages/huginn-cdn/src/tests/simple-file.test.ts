@@ -8,7 +8,8 @@ const url = `http://${envs.CDN_HOST}:${envs.CDN_PORT}`;
 
 const categories = ["avatars", "channel-icons"];
 
-await startCdn({ serve: true, storage: "local" });
+//TODO: Make sure of PlainHandler instead of fetch
+await startCdn({ serve: true, defineOptions: true, storage: "local" });
 
 for (const category of categories) {
 	test(`POST /${category}/123 empty to be not ok`, async () => {

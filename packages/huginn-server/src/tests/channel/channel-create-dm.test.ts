@@ -1,16 +1,11 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import type { APIPostDMChannelResult, Snowflake } from "@huginn/shared";
 import type { APIChannelUser } from "@huginn/shared";
-import { authHeader, createTestUser, removeChannelLater, removeChannels, removeUsers, testHandler } from "#tests/utils";
-
-afterEach(async () => {
-	await removeChannels();
-	await removeUsers();
-});
+import { authHeader, createTestUsers, removeChannelLater, testHandler } from "#tests/utils";
 
 describe("channel-create-dm", () => {
 	test("invalid", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
+		const [user] = await createTestUsers(1);
 
 		const result = testHandler("/api/users/@me/channels", authHeader(user.accessToken), "POST", {}).then(removeChannelLater);
 		expect(result).rejects.toThrow("Invalid Form Body"); // Invalid
@@ -24,14 +19,13 @@ describe("channel-create-dm", () => {
 		expect(result3).rejects.toThrow(`Unknown User (${user.id},000000000000000000)`); // Unknown id
 	});
 	test("unauthorized", async () => {
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
+		const [_user, user2] = await createTestUsers(2);
 
 		const result = testHandler("/api/users/@me/channels", {}, "POST", { recipients: [user2.id.toString()] }).then(removeChannelLater);
 		expect(result).rejects.toThrow("Unauthorized");
 	});
 	test("single dm", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
+		const [user, user2] = await createTestUsers(2);
 
 		const result = (await testHandler("/api/users/@me/channels", authHeader(user.accessToken), "POST", {
 			recipients: [user2.id.toString()],
@@ -40,9 +34,7 @@ describe("channel-create-dm", () => {
 		expect(containsId(result.recipients, user2.id.toString())).toBe(true);
 	});
 	test("group dm", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
-		const user3 = await createTestUser("test3", "test3", "test3@gmail.com", "test3");
+		const [user, user2, user3] = await createTestUsers(3);
 
 		const result = (await testHandler("/api/users/@me/channels", authHeader(user.accessToken), "POST", {
 			recipients: [user2.id.toString(), user3.id.toString()],
@@ -53,9 +45,7 @@ describe("channel-create-dm", () => {
 		expect(containsId(result.recipients, user3.id.toString())).toBe(true);
 	});
 	test("group dm with name", async () => {
-		const user = await createTestUser("test", "test", "test@gmail.com", "test");
-		const user2 = await createTestUser("test2", "test2", "test2@gmail.com", "test2");
-		const user3 = await createTestUser("test3", "test3", "test3@gmail.com", "test3");
+		const [user, user2, user3] = await createTestUsers(3);
 
 		const result = (await testHandler("/api/users/@me/channels", authHeader(user.accessToken), "POST", {
 			recipients: [user2.id.toString(), user3.id.toString()],

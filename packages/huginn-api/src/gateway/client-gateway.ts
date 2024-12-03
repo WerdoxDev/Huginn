@@ -1,6 +1,5 @@
 import {
 	GatewayCode,
-	type GatewayDispatch,
 	type GatewayEvents,
 	type GatewayHeartbeat,
 	type GatewayHello,
@@ -182,11 +181,11 @@ export class Gateway {
 		const data = JSON.parse(e.data);
 
 		// Hello
-		if (isOpcode<GatewayHello>(data, GatewayOperations.HELLO)) {
+		if (isOpcode(data, GatewayOperations.HELLO)) {
 			this.handleHello(data);
 			this.emit("hello", data.d);
 			// Dispatch
-		} else if (isOpcode<GatewayDispatch>(data, GatewayOperations.DISPATCH)) {
+		} else if (isOpcode(data, GatewayOperations.DISPATCH)) {
 			this.sequence = data.s;
 
 			if (data.t === "ready") {
