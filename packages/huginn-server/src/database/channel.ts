@@ -164,6 +164,7 @@ const channelExtention = Prisma.defineExtension({
 							where: { id: BigInt(channelId) },
 							data: { tempDeletedByUsers: { connect: { id: BigInt(userId) } } },
 							include: include,
+							omit: { icon: true, ownerId: true, name: true },
 						})) as ChannelPayload<Include>;
 					}
 

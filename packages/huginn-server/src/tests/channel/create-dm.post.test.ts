@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import type { APIPostDMChannelResult, Snowflake } from "@huginn/shared";
-import type { APIChannelUser } from "@huginn/shared";
+import { type APIPostDMChannelResult, ChannelType } from "@huginn/shared";
+import { expectChannelExactRecipients, expectChannelExactSchema } from "#tests/expect-utils";
 import { authHeader, createTestUsers, removeChannelLater, testHandler } from "#tests/utils";
 
-describe("channel-create-dm", () => {
-	test("invalid", async () => {
+describe("POST /users/@me/channels", () => {
+	test("should return 'Invalid Form Body' when body constrains are not met", async () => {
 		const [user] = await createTestUsers(1);
 
 		const result = testHandler("/api/users/@me/channels", authHeader(user.accessToken), "POST", {}).then(removeChannelLater);
@@ -18,33 +18,33 @@ describe("channel-create-dm", () => {
 		);
 		expect(result3).rejects.toThrow(`Unknown User (${user.id},000000000000000000)`); // Unknown id
 	});
-	test("unauthorized", async () => {
+	test("should return 'Unauthorized' when no token is passed", async () => {
 		const [_user, user2] = await createTestUsers(2);
 
 		const result = testHandler("/api/users/@me/channels", {}, "POST", { recipients: [user2.id.toString()] }).then(removeChannelLater);
 		expect(result).rejects.toThrow("Unauthorized");
 	});
-	test("single dm", async () => {
+	test("should create a channel with type 0 (single) when request is successful", async () => {
 		const [user, user2] = await createTestUsers(2);
 
 		const result = (await testHandler("/api/users/@me/channels", authHeader(user.accessToken), "POST", {
 			recipients: [user2.id.toString()],
 		}).then(removeChannelLater)) as APIPostDMChannelResult;
 
-		expect(containsId(result.recipients, user2.id.toString())).toBe(true);
+		expectChannelExactSchema(result, ChannelType.DM);
+		expectChannelExactRecipients(result, [user2]);
 	});
-	test("group dm", async () => {
+	test("should create a channel with type 1 (group) when request is successful", async () => {
 		const [user, user2, user3] = await createTestUsers(3);
 
 		const result = (await testHandler("/api/users/@me/channels", authHeader(user.accessToken), "POST", {
 			recipients: [user2.id.toString(), user3.id.toString()],
 		}).then(removeChannelLater)) as APIPostDMChannelResult;
 
-		expect(result.ownerId).toBe(user.id.toString());
-		expect(containsId(result.recipients, user2.id.toString())).toBe(true);
-		expect(containsId(result.recipients, user3.id.toString())).toBe(true);
+		expectChannelExactSchema(result, ChannelType.GROUP_DM, undefined, [user.id]);
+		expectChannelExactRecipients(result, [user2, user3]);
 	});
-	test("group dm with name", async () => {
+	test("should create a channel with type 0 (single) and name 'test_group' when request is successful", async () => {
 		const [user, user2, user3] = await createTestUsers(3);
 
 		const result = (await testHandler("/api/users/@me/channels", authHeader(user.accessToken), "POST", {
@@ -52,13 +52,7 @@ describe("channel-create-dm", () => {
 			name: "test_group",
 		}).then(removeChannelLater)) as APIPostDMChannelResult;
 
-		expect(result.ownerId).toBe(user.id.toString());
-		expect(containsId(result.recipients, user2.id.toString())).toBe(true);
-		expect(containsId(result.recipients, user3.id.toString())).toBe(true);
-		expect(result.name).toBe("test_group");
+		expectChannelExactSchema(result, ChannelType.GROUP_DM, undefined, [user.id], "test_group");
+		expectChannelExactRecipients(result, [user2, user3]);
 	});
 });
-
-function containsId(recipients: APIChannelUser[], id: Snowflake | undefined) {
-	return recipients.some((x) => x.id === id);
-}

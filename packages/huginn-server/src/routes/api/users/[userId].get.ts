@@ -1,5 +1,5 @@
 import { useValidatedParams } from "@huginn/backend-shared";
-import { type APIGetUserByIdResult, HttpCode, idFix, omit } from "@huginn/shared";
+import { type APIPublicUser, HttpCode, idFix } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
@@ -15,7 +15,7 @@ router.get(
 		await useVerifiedJwt(event);
 		const userId = (await useValidatedParams(event, schema)).userId;
 
-		const user: APIGetUserByIdResult = idFix(await prisma.user.getById(userId, undefined, selectPublicUser));
+		const user: APIPublicUser = idFix(await prisma.user.getById(userId, undefined, selectPublicUser));
 
 		setResponseStatus(event, HttpCode.OK);
 		return user;

@@ -1,9 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import type { APIPostRegisterResult, RegisterUser } from "@huginn/shared";
+import { expectPrivateUserExactSchema } from "#tests/expect-utils";
 import { createTestUsers, removeUserLater, testHandler } from "#tests/utils";
 
-describe("auth-register", () => {
-	test("invalid", async () => {
+describe("POST /auth/register", () => {
+	test("should return 'Invalid Form Body' when body constrains are not met", async () => {
 		const shortUsername: RegisterUser = {
 			username: "t",
 			displayName: "test01",
@@ -38,7 +39,7 @@ describe("auth-register", () => {
 		expect(result4).rejects.toThrow("Invalid Form Body");
 	});
 
-	test("existing email & username", async () => {
+	test("should return 'Invalid Form Body' when username or email already exists", async () => {
 		const [user] = await createTestUsers(1);
 
 		const existingUsername: RegisterUser = {
@@ -62,7 +63,7 @@ describe("auth-register", () => {
 		expect(result2).rejects.toThrow("Invalid Form Body");
 	});
 
-	test("successful", async () => {
+	test("should created a user when the request is successful", async () => {
 		const user: RegisterUser = {
 			username: "test04",
 			displayName: "test04",
@@ -71,6 +72,6 @@ describe("auth-register", () => {
 		};
 
 		const result = (await testHandler("/api/auth/register", {}, "POST", user).then(removeUserLater)) as APIPostRegisterResult;
-		expect(result?.id).toBeDefined();
+		expectPrivateUserExactSchema(result);
 	});
 });

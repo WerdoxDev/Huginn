@@ -1,11 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import path from "node:path";
-import { type APIPatchDMChannelResult, ChannelType, resolveImage } from "@huginn/shared";
+import { type APIPatchDMChannelResult, ChannelType, getFileHash, resolveImage, toArrayBuffer } from "@huginn/shared";
+import pathe from "pathe";
+import { expectChannelExactRecipients, expectChannelExactSchema } from "#tests/expect-utils";
 import { authHeader, createTestChannel, createTestUsers, isCDNRunning, testHandler } from "#tests/utils";
 
-describe("channel-patch", () => {
+describe("PATCH /channels/:channelId", () => {
 	test(
-		"invalid",
+		"should return 'Invalid Form Body' when id is invalid or body constrains are not met",
 		async () => {
 			const [user, user2, user3, user4] = await createTestUsers(4);
 
@@ -39,7 +40,7 @@ describe("channel-patch", () => {
 		{ timeout: 10000 },
 	);
 
-	test("unauthorized", async () => {
+	test("should return 'Unauthorized' when no token is passed or user does not have the channel", async () => {
 		const [user, user2, user3, user4] = await createTestUsers(4);
 
 		const channel = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
@@ -61,7 +62,7 @@ describe("channel-patch", () => {
 	});
 
 	test(
-		"add & remove recipients",
+		"should add and remove a recipient when the request is successful",
 		async () => {
 			const [user, user2, user3, user4, user5] = await createTestUsers(5);
 
@@ -82,7 +83,7 @@ describe("channel-patch", () => {
 		{ timeout: 10000 },
 	);
 
-	test("successful", async () => {
+	test("should return the edited channel when the request is successful", async () => {
 		const [user, user2, user3] = await createTestUsers(3);
 
 		const channel = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
@@ -92,8 +93,8 @@ describe("channel-patch", () => {
 			name: "test_group_edited",
 		})) as APIPatchDMChannelResult;
 
-		expect(result.id).toBe(channel.id.toString());
-		expect(result.name).toBe("test_group_edited");
+		expectChannelExactSchema(result, ChannelType.GROUP_DM, channel.id, [user.id], "test_group_edited");
+		expectChannelExactRecipients(result, [user2, user3]);
 
 		const channel2 = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
 
@@ -102,31 +103,35 @@ describe("channel-patch", () => {
 			name: "test_group_edited2",
 		})) as APIPatchDMChannelResult;
 
-		expect(result2.id).toBe(channel2.id.toString());
-		expect(result2.name).toBe("test_group_edited2");
+		expectChannelExactSchema(result2, ChannelType.GROUP_DM, channel2.id, [user.id], "test_group_edited2");
+		expectChannelExactRecipients(result2, [user, user3]);
 	});
 
-	test.skipIf(!isCDNRunning)("icon successful", async () => {
+	test.skipIf(!isCDNRunning)("should change the channel icon when the request is successful", async () => {
 		const [user, user2, user3] = await createTestUsers(3);
 
 		const channel = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
 
+		const iconData = await resolveImage(pathe.resolve(__dirname, "../pixel.png"));
+		// biome-ignore lint/style/noNonNullAssertion: <explanation>
+		const iconHash = getFileHash(toArrayBuffer(iconData!));
+
 		// Owner edits channel icon
 		const result = (await testHandler(`/api/channels/${channel.id}`, authHeader(user.accessToken), "PATCH", {
-			icon: await resolveImage(path.resolve(__dirname, "../pixel.png")),
+			icon: iconData,
 		})) as APIPatchDMChannelResult;
 
-		expect(result.id).toBe(channel.id.toString());
-		expect(result.icon).toHaveLength(32);
+		expectChannelExactSchema(result, ChannelType.GROUP_DM, channel.id, [user.id], undefined, iconHash);
+		expectChannelExactRecipients(result, [user2, user3]);
 
 		const channel2 = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
 
 		// Non owner edits channel icon
 		const result2 = (await testHandler(`/api/channels/${channel2.id}`, authHeader(user2.accessToken), "PATCH", {
-			icon: await resolveImage(path.resolve(__dirname, "../pixel.png")),
+			icon: iconData,
 		})) as APIPatchDMChannelResult;
 
-		expect(result2.id).toBe(channel2.id.toString());
-		expect(result2.icon).toHaveLength(32);
+		expectChannelExactSchema(result2, ChannelType.GROUP_DM, channel2.id, [user.id], undefined, iconHash);
+		expectChannelExactRecipients(result2, [user, user3]);
 	});
 });

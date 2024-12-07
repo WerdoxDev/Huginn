@@ -61,7 +61,7 @@ export type Tokens = {
 
 export type APIGetUserResult = APIUser;
 export type APIGetCurrentUserResult = APIUser;
-export type APIGetUserByIdResult = APIUser;
+export type APIGetUserByIdResult = APIPublicUser;
 
 export type APIPostRefreshTokenJSONBody = {
 	refreshToken: string;

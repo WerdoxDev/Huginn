@@ -4,5 +4,5 @@ import { removeChannels, removeUsers, timeSpent } from "./utils";
 afterAll(async () => {
 	await removeChannels();
 	await removeUsers();
-	console.log(timeSpent);
+	// console.log(timeSpent);
 });
