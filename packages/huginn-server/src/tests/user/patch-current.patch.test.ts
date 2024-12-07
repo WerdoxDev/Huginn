@@ -1,10 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import { type APIPatchCurrentUserJSONBody, type APIPatchCurrentUserResult, resolveImage } from "@huginn/shared";
+import { type APIPatchCurrentUserJSONBody, type APIPatchCurrentUserResult, getFileHash, resolveImage, toArrayBuffer } from "@huginn/shared";
 import pathe from "pathe";
+import { expectUserExactSchema } from "#tests/expect-utils";
 import { authHeader, createTestUsers, isCDNRunning, testHandler } from "#tests/utils";
 
-describe("user-patch-current", () => {
-	test("invalid", async () => {
+describe("PATCH /users/@me", () => {
+	test("should return 'Invalid Form Body' when body constrains are not met", async () => {
 		const [user] = await createTestUsers(1);
 
 		const emptyUsername: APIPatchCurrentUserJSONBody = {
@@ -47,7 +48,15 @@ describe("user-patch-current", () => {
 		expect(result5).rejects.toThrow("Invalid Form Body");
 	});
 
-	test("existing username & email", async () => {
+	test("should return 'Unauthorized' when no token is passed", async () => {
+		await createTestUsers(1);
+
+		// No token
+		const result = testHandler("/api/users/@me", {}, "PATCH");
+		expect(result).rejects.toThrow("Unauthorized");
+	});
+
+	test("should return 'Invalid Form Body' when the username or email is already in use", async () => {
 		const [user, user2] = await createTestUsers(2);
 
 		const existingUsername: APIPatchCurrentUserJSONBody = {
@@ -65,7 +74,7 @@ describe("user-patch-current", () => {
 		expect(result2).rejects.toThrow("Invalid Form Body");
 	});
 
-	test("empty displayName", async () => {
+	test("should set the displayName to 'null' when the request is successful", async () => {
 		const [user] = await createTestUsers(1);
 
 		const edit: APIPatchCurrentUserJSONBody = {
@@ -74,11 +83,10 @@ describe("user-patch-current", () => {
 
 		const result = (await testHandler("/api/users/@me", authHeader(user.accessToken), "PATCH", edit)) as APIPatchCurrentUserResult;
 
-		expect(result?.id).toBe(user.id.toString());
-		expect(result.displayName).toBeNull();
+		expectUserExactSchema(result, user.id, user.username, null, user.avatar, user.flags, user.email, user.password, true);
 	});
 
-	test("successful", async () => {
+	test("should edit the current user when the request is successful", async () => {
 		const [user] = await createTestUsers(1);
 
 		const edit: Required<APIPatchCurrentUserJSONBody> = {
@@ -92,24 +100,20 @@ describe("user-patch-current", () => {
 
 		const result = (await testHandler("/api/users/@me", authHeader(user.accessToken), "PATCH", edit)) as APIPatchCurrentUserResult;
 
-		expect(result?.id).toBe(user.id.toString());
-		expect(result.displayName).toBe(edit.displayName);
-		expect(result.email).toBe(edit.email);
-		expect(result.username).toBe(edit.username);
-		expect(result.password).toBe(edit.newPassword);
-		expect(result.avatar).toBe(edit.avatar);
+		expectUserExactSchema(result, user.id, edit.username, edit.displayName, null, user.flags, edit.email, edit.newPassword, true);
 	});
 
-	test.skipIf(!isCDNRunning)("avatar successful", async () => {
+	test.skipIf(!isCDNRunning)("should change the user's avatar when the request is successful", async () => {
 		const [user] = await createTestUsers(1);
 
-		const image = await resolveImage(pathe.resolve(__dirname, "../pixel.png"));
+		const avatarData = await resolveImage(pathe.resolve(__dirname, "../pixel.png"));
+		// biome-ignore lint/style/noNonNullAssertion: <explanation>
+		const avatarHash = getFileHash(toArrayBuffer(avatarData!));
+
 		const result = (await testHandler("/api/users/@me", authHeader(user.accessToken), "PATCH", {
-			avatar: image,
+			avatar: avatarData,
 		})) as APIPatchCurrentUserResult;
 
-		expect(result?.id).toBe(user.id.toString());
-		expect(result.avatar).toBeDefined();
-		expect(result.avatar).toHaveLength(32);
+		expectUserExactSchema(result, user.id, user.username, user.displayName, avatarHash, user.flags, user.email, user.password, true);
 	});
 });

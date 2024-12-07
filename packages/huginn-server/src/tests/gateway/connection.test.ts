@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { GatewayCode, type GatewayIdentify, GatewayOperations } from "@huginn/shared";
-import { createTestUsers, getIdentifiedWebSocket, getReadyWebSocket, getWebSocket, testIsDispatch, testIsOpcode, wsSend } from "#tests/utils";
+import { createTestUsers, getReadyWebSocket, getWebSocket, testIsDispatch, testIsOpcode, wsSend } from "#tests/utils";
 
-describe("gateway-connection", () => {
-	test("not authenticated", async (done) => {
+describe("Connection", () => {
+	test("should close the websocket with code 4003 (NOT_AUTHENTICATED) when the websocket is not authenticated", async (done) => {
 		const ws = await getWebSocket();
 
 		ws.onmessage = ({ data }) => {
@@ -19,7 +19,7 @@ describe("gateway-connection", () => {
 		};
 	});
 
-	test("already authenticated", async (done) => {
+	test("should close the websocket with code 4005 (ALREADY_AUTHENTICATED) when the websocket is already authenticated", async (done) => {
 		const [user] = await createTestUsers(1);
 		const ws = await getWebSocket();
 
@@ -47,7 +47,7 @@ describe("gateway-connection", () => {
 		};
 	});
 
-	test("unknown opcode", async (done) => {
+	test("should close the websocket with code 4001 (UNKNOWN_OPCODE) when the sent message has an unknown op code", async (done) => {
 		const ws = await getReadyWebSocket();
 
 		ws.onclose = ({ code }) => {
@@ -58,7 +58,7 @@ describe("gateway-connection", () => {
 		wsSend(ws, { op: 99 });
 	});
 
-	test("decode error", async (done) => {
+	test("should close the websocket with code 4002 (DECODE_ERROR) when sent message cannot be decoded", async (done) => {
 		const ws = await getReadyWebSocket();
 
 		ws.onclose = ({ code }) => {
@@ -69,7 +69,7 @@ describe("gateway-connection", () => {
 		ws.send("[123,]");
 	});
 
-	test("authentication failed", async (done) => {
+	test("should close the websocket with code 4004 (AUTHENTICATION_FAILED) when the authentication process fails", async (done) => {
 		const ws = await getWebSocket();
 
 		const identifyData: GatewayIdentify = {

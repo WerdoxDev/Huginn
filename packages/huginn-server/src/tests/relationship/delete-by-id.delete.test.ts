@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { authHeader, createTestRelationships, createTestUsers, testHandler } from "#tests/utils";
 
-describe("relationship-delete", () => {
-	test("invalid", async () => {
+describe("DELETE /users/@me/relationships/:userId", () => {
+	test("should return 'Invalid Form Body' when id is invalid", async () => {
 		const [user, user2] = await createTestUsers(2);
 
 		const result = testHandler("/api/users/@me/relationships/invalid", authHeader(user.accessToken), "DELETE");
@@ -15,7 +15,16 @@ describe("relationship-delete", () => {
 		const result3 = testHandler(`/api/users/@me/relationships/${user2.id}`, authHeader(user.accessToken), "DELETE");
 		expect(result3).rejects.toThrow("Unknown Relationship");
 	});
-	test("successful", async () => {
+	test("should return 'Unauthorized' when no token is passed", async () => {
+		const [user, user2] = await createTestUsers(3);
+
+		await createTestRelationships(user.id, user2.id, true);
+
+		// No token
+		const result = testHandler(`/api/users/@me/relationships/${user2.id}`, {}, "DELETE");
+		expect(result).rejects.toThrow("Unauthorized");
+	});
+	test("should delete a relationship between two users when the request is successful", async () => {
 		const [user, user2] = await createTestUsers(2);
 
 		await createTestRelationships(user.id, user2.id, true);

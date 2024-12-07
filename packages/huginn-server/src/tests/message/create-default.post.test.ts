@@ -1,9 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { type APIPostDefaultMessageResult, ChannelType } from "@huginn/shared";
+import { type APIPostDefaultMessageResult, ChannelType, MessageType } from "@huginn/shared";
+import { expectMessageExactSchema } from "#tests/expect-utils";
 import { authHeader, createTestChannel, createTestUsers, testHandler } from "#tests/utils";
 
-describe("message-create", () => {
-	test("invalid", async () => {
+describe("POST /api/channels/:channelId/messages", () => {
+	test("should return 'Invalid Form Body' when id is invalid or body constrains are not met", async () => {
 		const [user, user2] = await createTestUsers(2);
 
 		const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
@@ -18,19 +19,21 @@ describe("message-create", () => {
 		expect(result3).rejects.toThrow("Invalid Form Body"); // Invalid content
 	});
 
-	test("unauthorized", async () => {
+	test("should return 'Unauthorized' when no token is passed or user is not part of the channel", async () => {
 		const [user, user2, user3] = await createTestUsers(3);
 
 		const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
 
+		// No token
 		const result = testHandler(`/api/channels/${channel.id}/messages`, {}, "POST", { content: "test" });
 		expect(result).rejects.toThrow("Unauthorized");
 
+		// User does not have the channel
 		const result2 = testHandler(`/api/channels/${channel.id}/messages`, authHeader(user3.accessToken), "POST", { content: "test" });
 		expect(result2).rejects.toThrow("Missing Access");
 	});
 
-	test("successful", async () => {
+	test("should create a message in the channel when the request is successful", async () => {
 		const [user, user2] = await createTestUsers(2);
 
 		const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
@@ -39,8 +42,6 @@ describe("message-create", () => {
 			content: "test",
 		})) as APIPostDefaultMessageResult;
 
-		expect(result.channelId).toBe(channel.id.toString());
-		expect(result.content).toBe("test");
-		expect(result.author.id).toBe(user.id.toString());
+		expectMessageExactSchema(result, MessageType.DEFAULT, undefined, channel.id, user, "test");
 	});
 });

@@ -54,6 +54,7 @@ const messagesExtention = Prisma.defineExtension({
 					assertObj("getMessages", messages, DBErrorType.NULL_MESSAGE);
 					return messages as MessagePayload<Include, Omit>[];
 				} catch (e) {
+					console.log("HIII?");
 					await assertExists(e, "getMessages", DBErrorType.NULL_CHANNEL, [channelId]);
 					throw e;
 				}

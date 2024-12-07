@@ -1,5 +1,5 @@
 import { missingAccess, useValidatedParams } from "@huginn/backend-shared";
-import { type APIGetChannelByIdResult, ChannelType, HttpCode, idFix, merge } from "@huginn/shared";
+import { type APIGetChannelByIdResult, ChannelType, HttpCode, idFix, merge, omit } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
@@ -23,7 +23,15 @@ router.get(
 			return missingAccess(event);
 		}
 
+		let finalChannel: APIGetChannelByIdResult;
+
+		if (channel.type === ChannelType.DM) {
+			finalChannel = omit(channel, ["icon", "name", "ownerId"]);
+		} else {
+			finalChannel = channel;
+		}
+
 		setResponseStatus(event, HttpCode.OK);
-		return channel;
+		return finalChannel;
 	}),
 );

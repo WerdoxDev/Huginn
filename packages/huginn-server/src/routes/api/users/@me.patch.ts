@@ -1,20 +1,9 @@
 import { createErrorFactory, createHuginnError, useValidatedBody } from "@huginn/backend-shared";
-import {
-	constants,
-	type APIPatchCurrentUserResult,
-	CDNRoutes,
-	Errors,
-	Fields,
-	HttpCode,
-	getFileHash,
-	idFix,
-	omit,
-	pick,
-	toArrayBuffer,
-} from "@huginn/shared";
+import { constants, type APIPatchCurrentUserResult, CDNRoutes, Errors, Fields, HttpCode, getFileHash, idFix, toArrayBuffer } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
+import { selectPrivateUser } from "#database/common";
 import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { useVerifiedJwt } from "#utils/route-utils";
@@ -88,13 +77,18 @@ router.patch(
 		}
 
 		const updatedUser = idFix(
-			await prisma.user.edit(payload.id, {
-				email: body.email,
-				username: body.username?.toLowerCase(),
-				displayName: !body.displayName ? null : body.displayName,
-				avatar: avatarHash,
-				password: body.newPassword,
-			}),
+			await prisma.user.edit(
+				payload.id,
+				{
+					email: body.email,
+					username: body.username?.toLowerCase(),
+					displayName: !body.displayName && body.displayName !== undefined ? null : body.displayName,
+					avatar: avatarHash,
+					password: body.newPassword,
+				},
+				undefined,
+				selectPrivateUser,
+			),
 		);
 
 		const [accessToken, refreshToken] = await createTokens(

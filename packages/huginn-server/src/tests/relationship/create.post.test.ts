@@ -3,8 +3,8 @@ import { RelationshipType } from "@huginn/shared";
 import { prisma } from "#database";
 import { authHeader, createTestRelationships, createTestUsers, testHandler } from "#tests/utils";
 
-describe("relationship-create", () => {
-	test("invalid", async () => {
+describe("POST /users/@me/relationships", () => {
+	test("should return 'Invalid Form Body' when body constrains are not met", async () => {
 		const [user] = await createTestUsers(1);
 
 		const result = testHandler("/api/users/@me/relationships", authHeader(user.accessToken), "POST", {});
@@ -14,7 +14,7 @@ describe("relationship-create", () => {
 		expect(result2).rejects.toThrow("Invalid Form Body");
 	});
 
-	test("unauthorized", async () => {
+	test("should return 'Unauthorized' when no token is passed", async () => {
 		// It's good to make sure the data is real and only not authenticated
 		const [user] = await createTestUsers(1);
 
@@ -22,28 +22,28 @@ describe("relationship-create", () => {
 		expect(result).rejects.toThrow("Unauthorized");
 	});
 
-	test("request self", async () => {
+	test("should return '... to self' when the user tries to create a friend request to itself", async () => {
 		const [user] = await createTestUsers(1);
 
 		const result = testHandler("/api/users/@me/relationships", authHeader(user.accessToken), "POST", { username: user.username });
 		expect(result).rejects.toThrow("to self");
 	});
 
-	test("with username", async () => {
+	test("should create a relationship with a user's username when the request is successful", async () => {
 		const [user, user2] = await createTestUsers(2);
 
 		const result = testHandler("/api/users/@me/relationships", authHeader(user.accessToken), "POST", { username: user2.username });
 		expect(result).resolves.toBe(undefined);
 	});
 
-	test("with user id", async () => {
+	test("should create a relationship with a user's id when the request is successful", async () => {
 		const [user, user2] = await createTestUsers(2);
 
 		const result = testHandler(`/api/users/@me/relationships/${user2.id}`, authHeader(user.accessToken), "PUT");
 		expect(result).resolves.toBe(undefined);
 	});
 
-	test("accept", async () => {
+	test("should convert a relationship to type 1 (friend) when the request is successful", async () => {
 		const [user, user2] = await createTestUsers(2);
 
 		await createTestRelationships(user.id, user2.id);
