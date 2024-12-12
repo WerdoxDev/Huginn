@@ -24,7 +24,7 @@ describe("POST /users/@me/channels", () => {
 		const result = testHandler("/api/users/@me/channels", {}, "POST", { recipients: [user2.id.toString()] }).then(removeChannelLater);
 		expect(result).rejects.toThrow("Unauthorized");
 	});
-	test("should create a channel with type 0 (single) when request is successful", async () => {
+	test("should create a channel with type 0 (DM) when request is successful", async () => {
 		const [user, user2] = await createTestUsers(2);
 
 		const result = (await testHandler("/api/users/@me/channels", authHeader(user.accessToken), "POST", {
@@ -34,7 +34,7 @@ describe("POST /users/@me/channels", () => {
 		expectChannelExactSchema(result, ChannelType.DM);
 		expectChannelExactRecipients(result, [user2]);
 	});
-	test("should create a channel with type 1 (group) when request is successful", async () => {
+	test("should create a channel with type 1 (GROUP_DM) when request is successful", async () => {
 		const [user, user2, user3] = await createTestUsers(3);
 
 		const result = (await testHandler("/api/users/@me/channels", authHeader(user.accessToken), "POST", {
@@ -44,7 +44,7 @@ describe("POST /users/@me/channels", () => {
 		expectChannelExactSchema(result, ChannelType.GROUP_DM, undefined, [user.id]);
 		expectChannelExactRecipients(result, [user2, user3]);
 	});
-	test("should create a channel with type 0 (single) and name 'test_group' when request is successful", async () => {
+	test("should create a channel with type 0 (DM) and name 'test_group' when request is successful", async () => {
 		const [user, user2, user3] = await createTestUsers(3);
 
 		const result = (await testHandler("/api/users/@me/channels", authHeader(user.accessToken), "POST", {

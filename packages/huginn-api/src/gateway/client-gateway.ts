@@ -5,10 +5,10 @@ import {
 	type GatewayHello,
 	type GatewayIdentify,
 	GatewayOperations,
-	type GatewayReadyDispatchData,
+	type GatewayReadyData,
 	type GatewayResume,
 } from "@huginn/shared";
-import type { BasePayload, Snowflake } from "@huginn/shared";
+import type { GatewayPayload, Snowflake } from "@huginn/shared";
 import { isOpcode } from "@huginn/shared";
 import type { HuginnClient } from "../../";
 import { EventEmitterWithHistory } from "../client/event-emitter";
@@ -21,7 +21,7 @@ export class Gateway {
 	private readonly emitter = new EventEmitterWithHistory();
 
 	public socket?: WebSocket;
-	public readyData?: GatewayReadyDispatchData;
+	public readyData?: GatewayReadyData;
 	public peerId?: string;
 
 	private receivedHello = false;
@@ -62,7 +62,7 @@ export class Gateway {
 					r(true);
 				} else {
 					onMessage = (e: MessageEvent) => {
-						const op = (JSON.parse(e.data) as BasePayload).op;
+						const op = (JSON.parse(e.data) as GatewayPayload).op;
 						if (op === GatewayOperations.HELLO) {
 							this.sendIdentify();
 							r(true);
@@ -101,7 +101,7 @@ export class Gateway {
 				r(true);
 			} else {
 				onMessage = (e: MessageEvent) => {
-					const t = (JSON.parse(e.data) as BasePayload).t;
+					const t = (JSON.parse(e.data) as GatewayPayload).t;
 					if (t === "ready") {
 						r(true);
 					}
@@ -189,7 +189,7 @@ export class Gateway {
 			this.sequence = data.s;
 
 			if (data.t === "ready") {
-				this.handleReady(data.d as GatewayReadyDispatchData);
+				this.handleReady(data.d as GatewayReadyData);
 			}
 
 			this.emit(data.t, data.d);
@@ -222,7 +222,7 @@ export class Gateway {
 		}
 	}
 
-	private handleReady(data: GatewayReadyDispatchData) {
+	private handleReady(data: GatewayReadyData) {
 		this.sessionId = data.sessionId;
 		this.client.user = data.user;
 

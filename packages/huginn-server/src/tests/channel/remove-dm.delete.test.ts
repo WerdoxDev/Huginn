@@ -34,7 +34,7 @@ describe("DELETE /channels/:channelId", () => {
 	});
 
 	test(
-		"should temporary close a type 0 (single) channel or leave a type 1 (group) channel when the request is successful",
+		"should temporary close a type 0 (DM) channel or leave a type 1 (GROUP_DM) channel when the request is successful",
 		async () => {
 			const [user, user2, user3] = await createTestUsers(3);
 
@@ -68,7 +68,7 @@ describe("DELETE /channels/:channelId", () => {
 		{ timeout: 10000 },
 	);
 
-	test("should restore a type 0 (single) channel from being closed when the request is successful", async () => {
+	test("should restore a type 0 (DM) channel from being closed when the request is successful", async () => {
 		const [user, user2] = await createTestUsers(2);
 
 		const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);

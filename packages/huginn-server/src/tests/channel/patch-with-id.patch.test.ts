@@ -62,7 +62,7 @@ describe("PATCH /channels/:channelId", () => {
 	});
 
 	test(
-		"should add and remove a recipient when the request is successful",
+		"should add and remove a recipient from a channel when the request is successful",
 		async () => {
 			const [user, user2, user3, user4, user5] = await createTestUsers(5);
 

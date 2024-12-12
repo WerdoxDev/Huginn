@@ -1,12 +1,14 @@
 import {
 	constants,
+	type APIChannelUser,
+	type APIUser,
 	type ChannelType,
-	type DataPayload,
-	GatewayCode,
 	type GatewayEvents,
 	type GatewayIdentify,
 	type GatewayOperationTypes,
 	GatewayOperations,
+	type GatewayPayload,
+	type GatewayReadyData,
 	HTTPError,
 	HuginnAPIError,
 	type HuginnErrorData,
@@ -17,21 +19,19 @@ import {
 	isOpcode,
 	snowflake,
 } from "@huginn/shared";
-import type { Server } from "bun";
 import type { PlainHandler, PlainRequest } from "h3";
-import { unknown } from "zod";
 import { prisma } from "#database";
 import { startServer } from "#server";
 import { envs } from "#setup";
 import { createTokens } from "#utils/token-factory";
 
 export const isCDNRunning = await checkCDNRunning();
+export type TestUser = Omit<APIUser, "id"> & { id: bigint; accessToken: string; refreshToken: string };
 
 let plainHandler: PlainHandler;
-async function getServerHandler(serve: boolean) {
+async function getServerHandler() {
 	if (!plainHandler) {
-		const { handler, app, router } = await startServer({ serve: serve, defineOptions: true });
-		app.use(router);
+		const { handler, app, router } = await startServer({ serve: true, defineOptions: true });
 
 		plainHandler = handler;
 	}
@@ -45,7 +45,7 @@ export async function testHandler(
 	method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
 	body?: PlainRequest["body"] | unknown,
 ) {
-	const handler = await getServerHandler(true);
+	const handler = await getServerHandler();
 
 	let finalBody: PlainRequest["body"];
 	const finalHeaders: Record<string, string> = headers;
@@ -77,9 +77,11 @@ export async function testHandler(
 	}
 }
 
+const connectedWebsockets: WebSocket[] = [];
 export async function getWebSocket() {
-	await getServerHandler(true);
+	await getServerHandler();
 	const ws = new WebSocket(`ws://${envs.SERVER_HOST}:${envs.SERVER_PORT}/gateway`);
+	connectedWebsockets.push(ws);
 	return ws;
 }
 
@@ -91,41 +93,57 @@ export function wsSend(ws: WebSocket, data: unknown) {
 	}
 }
 
-export async function getReadyWebSocket() {
-	const [user] = await createTestUsers(1);
-	const ws = await getIdentifiedWebSocket();
+export async function getReadyWebSocket(user?: TestUser) {
+	let finalUser = user;
+	if (!finalUser) {
+		finalUser = (await createTestUsers(1))[0];
+	}
 
-	await new Promise((r) => {
+	const ws = await getIdentifiedWebSocket(finalUser);
+
+	const readyData = await new Promise<GatewayReadyData>((resolve, reject) => {
 		ws.onmessage = (event) => {
-			if (testIsDispatch(event.data, "ready")) {
-				// Test
-				r(true);
+			const data = JSON.parse(event.data);
+			if (testIsDispatch(data, "ready")) {
+				resolve(data.d);
 			}
+		};
+
+		ws.onclose = ({ code }) => {
+			reject(code);
 		};
 	});
 
-	return ws;
+	return { ws, readyData, user: finalUser };
 }
 
-export async function getIdentifiedWebSocket() {
-	const [user] = await createTestUsers(1);
+export async function getIdentifiedWebSocket(user?: TestUser) {
+	let finalUser = user;
+	if (!finalUser) {
+		finalUser = (await createTestUsers(1))[0];
+	}
+
 	const ws = await getWebSocket();
 
 	const identifyData: GatewayIdentify = {
 		op: GatewayOperations.IDENTIFY,
 		d: {
-			token: user.accessToken,
+			token: finalUser.accessToken,
 			intents: 0,
 			properties: { os: "test", browser: "test", device: "test" },
 		},
 	};
 
-	await new Promise((r) => {
+	await new Promise((resolve, reject) => {
 		ws.onmessage = (event) => {
 			if (testIsOpcode(event.data, GatewayOperations.HELLO)) {
 				wsSend(ws, identifyData);
-				r(true);
+				resolve(true);
 			}
+		};
+
+		ws.onclose = ({ code }) => {
+			reject(code);
 		};
 	});
 
@@ -133,11 +151,11 @@ export async function getIdentifiedWebSocket() {
 }
 
 export function testIsOpcode<O extends keyof GatewayOperationTypes>(data: unknown, opcode: O): data is GatewayOperationTypes[O] {
-	if (typeof data !== "string") {
-		return false;
+	let parsedData = data;
+	if (typeof data === "string") {
+		parsedData = JSON.parse(data);
 	}
 
-	const parsedData = JSON.parse(data);
 	if (isOpcode(parsedData, opcode)) {
 		return true;
 	}
@@ -145,12 +163,14 @@ export function testIsOpcode<O extends keyof GatewayOperationTypes>(data: unknow
 	return false;
 }
 
-export function testIsDispatch<E extends keyof GatewayEvents>(data: unknown, eventType: E): data is GatewayEvents[E] {
+export function testIsDispatch<Event extends keyof GatewayEvents>(data: unknown, eventType: Event): data is GatewayPayload<Event> {
 	if (testIsOpcode(data, GatewayOperations.DISPATCH)) {
-		const parsedData: DataPayload<E> = JSON.parse(data as unknown as string);
+		let parsedData = data as GatewayPayload<Event>;
+		if (typeof data === "string") {
+			parsedData = JSON.parse(data as unknown as string);
+		}
+
 		if (parsedData.t === eventType) {
-			// biome-ignore lint/style/noParameterAssign: i am reassigning the event.data here for better test writing
-			data = parsedData;
 			return true;
 		}
 	}
@@ -225,7 +245,7 @@ export async function createTestUsers(amount: number) {
 
 			removeUserLater(x);
 
-			return { ...x, accessToken, refreshToken };
+			return { ...x, accessToken, refreshToken } as TestUser;
 		}),
 	);
 }
@@ -366,4 +386,28 @@ export async function removeChannels() {
 	timeSpent.deleteChannels += t1 - t0;
 
 	removeChannelsQueue.splice(0, removeChannelsQueue.length);
+}
+
+export function disconnectWebSockets() {
+	for (const ws of connectedWebsockets) {
+		ws.close();
+	}
+}
+
+export function containsId(recipients: APIChannelUser[], id: Snowflake | undefined) {
+	return recipients.some((x) => x.id === id);
+}
+
+let timesDoneCalled = 0;
+export function multiDone(done: (err?: unknown) => void, amount: number) {
+	function tryDone() {
+		timesDoneCalled++;
+
+		if (timesDoneCalled === amount) {
+			done();
+			timesDoneCalled = 0;
+		}
+	}
+
+	return tryDone;
 }

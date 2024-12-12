@@ -26,7 +26,7 @@ export type GatewayEvents = {
 	close: number;
 	hello: GatewayHelloData;
 	identify: GatewayIdentifyData;
-	ready: GatewayReadyDispatchData;
+	ready: GatewayReadyData;
 	resumed: undefined;
 	message_create: GatewayMessageCreateData;
 	message_delete: GatewayMessageDeleteData;
@@ -43,25 +43,23 @@ export type GatewayEvents = {
 	oauth_redirect: GatewayOAuthRedirectData;
 };
 
-export type BasePayload = {
-	op: GatewayOperations;
-	d?: unknown;
+export type GatewayPayload<Event extends keyof GatewayEvents | undefined = undefined> = {
+	op: Event extends undefined ? GatewayOperations : GatewayOperations.DISPATCH;
 	s: number;
-	t?: string;
-};
+} & (Event extends undefined ? { d?: unknown; t?: string } : { d: GatewayEvents[Extract<Event, keyof GatewayEvents>]; t: Event });
 
-export type NonDispatchPayload = Omit<BasePayload, "s" | "t">;
+export type NonDispatchPayload = Omit<GatewayPayload, "s" | "t">;
 
-export type DataPayload<Event extends keyof GatewayEvents, D = unknown> = {
-	op: GatewayOperations.DISPATCH;
-	t: Event;
-	d: D;
-} & BasePayload;
+// export type DataPayload<Event extends keyof GatewayEvents, D = unknown> = {
+// 	op: GatewayOperations.DISPATCH;
+// 	t: Event;
+// 	d: D;
+// } & BasePayload;
 
 export type GatewayDispatch = {
 	t: keyof GatewayEvents;
 	d: GatewayEvents[keyof GatewayEvents];
-} & BasePayload;
+} & GatewayPayload;
 
 export type GatewayHello = NonDispatchPayload & {
 	op: GatewayOperations.HELLO;
@@ -101,9 +99,9 @@ export type GatewayIdentifyProperties = {
 	device: string;
 };
 
-export type GatewayReadyDispatch = DataPayload<"ready", GatewayReadyDispatchData>;
+// export type GatewayReady = DataPayload<"ready", GatewayReadyData>;
 
-export type GatewayReadyDispatchData = {
+export type GatewayReadyData = {
 	user: APIUser;
 	sessionId: Snowflake;
 	relationships: APIRelationshipWithoutOwner[];
@@ -124,7 +122,7 @@ export type GatewayResumeData = {
 	seq: number;
 };
 
-export type GatewayResumedData = DataPayload<"resumed", undefined>;
+// export type GatewayResumedData = DataPayload<"resumed", undefined>;
 export type GatewayMessageCreateData = Omit<APIMessage, "mentions"> & GatewayMessageEventExtraFields;
 export type GatewayMessageDeleteData = {
 	id: Snowflake;
