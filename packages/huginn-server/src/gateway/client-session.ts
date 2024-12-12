@@ -1,7 +1,7 @@
 import { EventEmitter } from "node:events";
 import { constants, RelationshipType, merge } from "@huginn/shared";
 import { GatewayCode } from "@huginn/shared";
-import type { BasePayload } from "@huginn/shared";
+import type { GatewayPayload } from "@huginn/shared";
 import { idFix } from "@huginn/shared";
 import type { ServerWebSocket } from "bun";
 import type { Peer } from "crossws";
@@ -13,7 +13,7 @@ export class ClientSession extends EventEmitter {
 	public data?: ClientSessionInfo;
 	public peer: Peer;
 
-	private sentMessages: Map<number, BasePayload>;
+	private sentMessages: Map<number, GatewayPayload>;
 	private subscribedTopics: Set<string>;
 	private hearbeatTimeout?: Timer;
 	public sequence?: number;
@@ -68,7 +68,7 @@ export class ClientSession extends EventEmitter {
 		return this.sequence;
 	}
 
-	public addMessage(data: BasePayload) {
+	public addMessage(data: GatewayPayload) {
 		this.sentMessages.set(data.s, data);
 	}
 

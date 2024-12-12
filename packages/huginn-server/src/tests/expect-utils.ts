@@ -11,10 +11,16 @@ import {
 	type APIUser,
 	ChannelType,
 	type DirectChannel,
+	type GatewayDMCHannelRecipientAddData,
+	type GatewayDMCHannelRecipientRemoveData,
+	type GatewayTypingStartData,
 	MessageType,
+	type PresenceStatus,
 	RelationshipType,
 	type Snowflake,
+	type UserPresence,
 } from "@huginn/shared";
+import { type TestUser, containsId } from "./utils";
 
 export function expectPrivateUserExactSchema(user: object) {
 	expect(Object.keys(user).sort()).toStrictEqual(
@@ -55,7 +61,15 @@ export function expectUserExactSchema(
 	if (flags) expect(castedUser.flags).toBe(flags);
 }
 
-export function expectChannelExactSchema(channel: object, type: ChannelType, id?: bigint, ownerIds?: bigint[], name?: string, icon?: string) {
+export function expectChannelExactSchema(
+	channel: object,
+	type: ChannelType,
+	id?: bigint,
+	ownerIds?: bigint[],
+	name?: string,
+	icon?: string,
+	withoutRecipients?: boolean,
+) {
 	expect(channel).toHaveProperty("type", type);
 
 	const castedChannel = channel as DirectChannel;
@@ -64,25 +78,31 @@ export function expectChannelExactSchema(channel: object, type: ChannelType, id?
 	if (id) expect(castedChannel.id).toBe(id.toString());
 
 	if (type === ChannelType.DM) {
-		expect(Object.keys(channel).sort()).toStrictEqual(["id", "lastMessageId", "recipients", "type"].sort());
+		expect(Object.keys(channel).sort()).toStrictEqual(
+			withoutRecipients ? ["id", "lastMessageId", "type"].sort() : ["id", "lastMessageId", "recipients", "type"].sort(),
+		);
 		handled = true;
 	}
 
 	if (type === ChannelType.GROUP_DM) {
-		expect(Object.keys(channel).sort()).toStrictEqual(["id", "lastMessageId", "recipients", "type", "icon", "name", "ownerId"].sort());
+		expect(Object.keys(channel).sort()).toStrictEqual(
+			withoutRecipients
+				? ["id", "lastMessageId", "type", "icon", "name", "ownerId"].sort()
+				: ["id", "lastMessageId", "recipients", "type", "icon", "name", "ownerId"].sort(),
+		);
 		if (ownerIds && castedChannel.ownerId) expect(ownerIds).toContain(BigInt(castedChannel.ownerId));
 		expect(castedChannel.name).toBe(name ? name : null);
 		expect(castedChannel.icon).toBe(icon ? icon : null);
 		handled = true;
 	}
 
-	for (const recipient of (channel as APIPostDMChannelResult).recipients) {
-		expect(Object.keys(recipient).sort()).toStrictEqual(["id", "username", "displayName", "flags", "avatar"].sort());
+	if (!withoutRecipients) {
+		for (const recipient of (channel as APIPostDMChannelResult).recipients) {
+			expect(Object.keys(recipient).sort()).toStrictEqual(["id", "username", "displayName", "flags", "avatar"].sort());
+		}
 	}
 
-	if (!handled) {
-		throw new Error(`Channel with the type of ${type} was not handled`);
-	}
+	expect(handled, `Channel with the type of ${type} was not handled`).toBeTrue();
 }
 
 export function expectChannelExactRecipients(channel: DirectChannel, recipients: (Omit<APIChannelUser, "id"> & { id: bigint })[]) {
@@ -113,6 +133,7 @@ export function expectMessageExactSchema(
 	channelId?: bigint,
 	author?: Omit<APIMessageUser, "id"> & { id: bigint },
 	content?: string,
+	mentions?: (Omit<APIMessageUser, "id"> & { id: bigint })[],
 ) {
 	expect(message).toHaveProperty("type", type);
 
@@ -146,14 +167,17 @@ export function expectMessageExactSchema(
 				flags: author.flags,
 			});
 		}
+		if (mentions) {
+			expect(castedMessage.mentions.sort()).toStrictEqual(
+				mentions.map((x) => ({ id: x.id.toString(), avatar: x.avatar, displayName: x.displayName, flags: x.flags, username: x.username })).sort(),
+			);
+		}
 		expect(Object.keys(castedMessage.author).sort()).toStrictEqual(["id", "username", "displayName", "flags", "avatar"].sort());
 
 		handled = true;
 	}
 
-	if (!handled) {
-		throw new Error(`Message with the type of ${type} was not handled`);
-	}
+	expect(handled, `Message with the type of ${type} was not handled`).toBeTrue();
 }
 
 export function expectRelationshipExactSchema(
@@ -187,11 +211,39 @@ export function expectRelationshipExactSchema(
 		handled = true;
 	}
 
-	if (!handled) {
-		throw new Error(`Relationship with the type of ${type} was not handled`);
+	expect(handled, `Relationship with the type of ${type} was not handled`).toBeTrue();
+}
+
+export function expectPresenceExactSchema(presence: object, user: TestUser, status: PresenceStatus) {
+	const castedPresence = presence as UserPresence;
+	expect(castedPresence.status).toBe(status);
+
+	if (status === "online") {
+		expectUserExactSchema(castedPresence.user, user.id, user.username, user.displayName, user.avatar, user.flags);
+	} else if (status === "offline") {
+		expect(presence).toStrictEqual({ user: { id: user.id.toString() }, status: "offline" });
 	}
 }
 
-function containsId(recipients: APIChannelUser[], id: Snowflake | undefined) {
-	return recipients.some((x) => x.id === id);
+export function expectTypingExactSchema(typing: object, channelId?: bigint, userId?: bigint) {
+	const castedTyping = typing as GatewayTypingStartData;
+
+	expect(Object.keys(typing).sort()).toStrictEqual(["channelId", "userId", "timestamp"].sort());
+	if (channelId) expect(castedTyping.channelId).toBe(channelId.toString());
+	if (userId) expect(castedTyping.userId).toBe(userId.toString());
+}
+
+export function expectRecipientModifyExactSchema(recipientModify: object, channelId?: bigint, user?: TestUser) {
+	const castedRecipientModify = recipientModify as GatewayDMCHannelRecipientAddData | GatewayDMCHannelRecipientRemoveData;
+
+	expect(Object.keys(recipientModify).sort()).toStrictEqual(["channelId", "user"].sort());
+	if (channelId) expect(castedRecipientModify.channelId).toBe(channelId.toString());
+	if (user)
+		expect(castedRecipientModify.user).toStrictEqual({
+			id: user.id.toString(),
+			avatar: user.avatar,
+			displayName: user.displayName,
+			flags: user.flags,
+			username: user.username,
+		});
 }

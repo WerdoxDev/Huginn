@@ -1,4 +1,4 @@
-import type { GatewayPresenceUpdateData, GatewayReadyDispatchData, Snowflake } from "@huginn/shared";
+import type { GatewayPresenceUpdateData, GatewayReadyData, Snowflake } from "@huginn/shared";
 import { type ReactNode, createContext } from "react";
 
 type PresenceContextType = GatewayPresenceUpdateData[];
@@ -29,7 +29,7 @@ export function PresenceProvider(props: { children?: ReactNode }) {
 		});
 	}
 
-	function onReady(d: GatewayReadyDispatchData) {
+	function onReady(d: GatewayReadyData) {
 		setPresences([]);
 		onPresenceUpdated({ user: d.user, status: client.gateway.readyData?.userSettings?.status || "offline" });
 

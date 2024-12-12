@@ -2,15 +2,13 @@ import { logGatewayClose, logGatewayOpen, logGatewayRecieve, logGatewaySend, log
 import { constants, type APIReadStateWithoutUser, type UserSettings, WorkerID, merge } from "@huginn/shared";
 import { GatewayCode } from "@huginn/shared";
 import {
-	type BasePayload,
 	type GatewayHeartbeat,
 	type GatewayHeartbeatAck,
 	type GatewayHello,
 	type GatewayIdentify,
 	GatewayOperations,
-	type GatewayReadyDispatch,
+	type GatewayPayload,
 	type GatewayResume,
-	type GatewayResumedData,
 } from "@huginn/shared";
 import { type Snowflake, snowflake } from "@huginn/shared";
 import { idFix, isOpcode } from "@huginn/shared";
@@ -55,7 +53,7 @@ export class ServerGateway {
 		}
 	}
 
-	private async close(peer: Peer, details: { code?: number; reason?: string }) {
+	private async close(peer: Peer, event: { code?: number; reason?: string }) {
 		this.deleteUninitializedClient(peer.id);
 
 		const client = this.getSessionByPeerId(peer.id);
@@ -66,18 +64,18 @@ export class ServerGateway {
 
 		client?.dispose();
 
-		if (client?.data && details.code === GatewayCode.INVALID_SESSION) {
+		if (client?.data && event.code === GatewayCode.INVALID_SESSION) {
 			this.clients.delete(client.data.sessionId);
 		} else if (client?.data) {
 			this.queueClientDisconnect(client.data.sessionId);
 		}
 
-		logGatewayClose(details.code || 0, details.reason || "");
+		logGatewayClose(event.code || 0, event.reason || "");
 	}
 
 	private async message(peer: Peer, message: Message) {
 		try {
-			const data: BasePayload = message.json();
+			const data: GatewayPayload = message.json();
 
 			if (!validateGatewayData(data)) {
 				peer.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
@@ -148,7 +146,7 @@ export class ServerGateway {
 		return this.clients.get(key);
 	}
 
-	public sendToTopic(topic: string, data: BasePayload) {
+	public sendToTopic(topic: string, data: GatewayPayload) {
 		for (const client of this.clients.values()) {
 			if (client.isSubscribed(topic)) {
 				const newData = { ...data, s: client.increaseSequence() };
@@ -222,7 +220,7 @@ export class ServerGateway {
 		//TODO: ADD ACTUAL PROPER SETTINGS
 		const settings: UserSettings = { status: "online" };
 
-		const readyData: GatewayReadyDispatch = {
+		const readyData: GatewayPayload<"ready"> = {
 			op: GatewayOperations.DISPATCH,
 			d: {
 				user,
@@ -261,7 +259,7 @@ export class ServerGateway {
 			throw new Error("client was null in handleResume");
 		}
 
-		if (!client.sequence || data.d.seq > client.sequence) {
+		if (client.sequence === undefined || data.d.seq > client.sequence) {
 			peer.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
 			return;
 		}
@@ -285,7 +283,7 @@ export class ServerGateway {
 			this.send(peer, _data);
 		}
 
-		const resumedData: GatewayResumedData = {
+		const resumedData: GatewayPayload<"resumed"> = {
 			t: "resumed",
 			op: GatewayOperations.DISPATCH,
 			d: undefined,
@@ -305,7 +303,7 @@ export class ServerGateway {
 	private queueClientDisconnect(sessionId: Snowflake) {
 		setTimeout(() => {
 			if (this.cancelledClientDisconnects.includes(sessionId)) {
-				this.cancelledClientDisconnects = this.cancelledClientDisconnects.filter((x) => x === sessionId);
+				this.cancelledClientDisconnects = this.cancelledClientDisconnects.filter((x) => x !== sessionId);
 				return;
 			}
 
@@ -314,7 +312,7 @@ export class ServerGateway {
 	}
 
 	private send(peer: Peer, data: unknown) {
-		logGatewaySend(peer.id, data as BasePayload, this.options.logHeartbeat);
+		logGatewaySend(peer.id, data as GatewayPayload, this.options.logHeartbeat);
 
 		peer.send(JSON.stringify(data));
 	}
