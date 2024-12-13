@@ -1,7 +1,7 @@
 import type { TooltipOptions } from "@/types";
 import { useMergeRefs } from "@floating-ui/react";
 import { Portal, Transition } from "@headlessui/react";
-import { type HTMLProps, type ReactNode, cloneElement, isValidElement } from "react";
+import { type HTMLProps, type ReactNode, type RefObject, cloneElement, isValidElement } from "react";
 
 export default function Tooltip({ children, ...options }: { children: ReactNode } & TooltipOptions) {
 	// This can accept any props as options, e.g. `placement`,
@@ -10,23 +10,22 @@ export default function Tooltip({ children, ...options }: { children: ReactNode 
 	return <TooltipContext.Provider value={tooltip}>{children}</TooltipContext.Provider>;
 }
 
-const Trigger = forwardRef<HTMLButtonElement, HTMLProps<HTMLButtonElement> & { asChild?: boolean }>(function TooltipTrigger(
-	{ children, asChild = false, ...props },
-	propRef,
-) {
+function Trigger(props: HTMLProps<HTMLButtonElement> & { asChild?: boolean }) {
 	const context = useTooltipContext();
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	const childrenRef = (children as any).ref;
-	const ref = useMergeRefs([context.refs.setReference, propRef, childrenRef]);
+	const childrenRef = (props.children as any).ref;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	const childrenProps = (props.children as any).props;
+	const ref = useMergeRefs([context.refs.setReference, props.ref, childrenRef]);
 
 	// `asChild` allows the user to pass any element as the anchor
-	if (asChild && isValidElement(children)) {
+	if (props.asChild && isValidElement(props.children)) {
 		return cloneElement(
-			children,
+			props.children,
 			context.getReferenceProps({
 				ref,
 				...props,
-				...children.props,
+				...childrenProps,
 				"data-state": context.open ? "open" : "closed",
 			}),
 		);
@@ -39,14 +38,14 @@ const Trigger = forwardRef<HTMLButtonElement, HTMLProps<HTMLButtonElement> & { a
 			data-state={context.open ? "open" : "closed"}
 			{...context.getReferenceProps(props)}
 		>
-			{children}
+			{props.children}
 		</button>
 	);
-});
+}
 
-const Content = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElement>>(function TooltipContent({ style, ...props }, propRef) {
+function Content(props: HTMLProps<HTMLDivElement>) {
 	const context = useTooltipContext();
-	const ref = useMergeRefs([context.refs.setFloating, propRef]);
+	const ref = useMergeRefs([context.refs.setFloating, props.ref]);
 
 	const staticSide = useMemo(
 		() =>
@@ -75,7 +74,7 @@ const Content = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElement>>(function T
 					ref={ref}
 					style={{
 						...context.floatingStyles,
-						...style,
+						...props.style,
 					}}
 					{...context.getFloatingProps(props)}
 				>
@@ -89,7 +88,7 @@ const Content = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElement>>(function T
 			</Portal>
 		</Transition>
 	);
-});
+}
 
 Tooltip.Trigger = Trigger;
 Tooltip.Content = Content;
