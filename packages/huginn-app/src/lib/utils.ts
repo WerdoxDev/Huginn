@@ -1,6 +1,5 @@
 import type { InputStatus, InputStatuses, InputValue, InputValues, VersionFlavour } from "@/types";
-import { HuginnAPIError } from "@huginn/api";
-import type { HuginnError, HuginnErrorData } from "@huginn/shared";
+import { HuginnAPIError, type HuginnError, type HuginnErrorData } from "@huginn/shared";
 import { getVersion } from "@tauri-apps/api/app";
 import type { JSXElementConstructor, ReactNode } from "react";
 import { Children, isValidElement } from "react";

@@ -1,5 +1,6 @@
 import type { MessageRendererProps } from "@/types";
 import { MessageType, arrayEqual } from "@huginn/shared";
+import type { RefObject } from "react";
 import { type BasePoint, Editor, Element, type Node, type Path, type Range, Text, createEditor } from "slate";
 import { DefaultElement, type RenderElementProps, type RenderLeafProps, withReact } from "slate-react";
 
@@ -13,7 +14,7 @@ const withHuginn = (editor: Editor) => {
 
 type SpoilerLocation = { anchor: BasePoint; focus: BasePoint };
 
-const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, ref) => {
+function MessageRenderer(props: MessageRendererProps & { ref: RefObject<HTMLLIElement> }) {
 	const editor = useMemo(() => withReact(withHuginn(createEditor())), []);
 	const spoilerLocations = useRef<SpoilerLocation[]>([]);
 
@@ -127,7 +128,7 @@ const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, 
 	}, []);
 
 	return (
-		<li ref={ref} className="group select-text">
+		<li ref={props.ref} className="group select-text">
 			{(props.renderInfo.message.preview || [MessageType.DEFAULT].includes(props.renderInfo.message.type)) && (
 				<DefaultMessage {...props} editor={editor} decorate={decorate} renderElement={renderElement} renderLeaf={renderLeaf} />
 			)}
@@ -141,6 +142,6 @@ const MessageRenderer = forwardRef<HTMLLIElement, MessageRendererProps>((props, 
 				].includes(props.renderInfo.message.type) && <ActionMessage {...props} />}
 		</li>
 	);
-});
+}
 
 export default MessageRenderer;

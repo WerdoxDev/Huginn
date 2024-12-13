@@ -1,5 +1,5 @@
-import { ClientReadyState, HuginnAPIError } from "@huginn/api";
-import type { APIPostLoginJSONBody } from "@huginn/shared";
+import { ClientReadyState } from "@huginn/api";
+import { type APIPostLoginJSONBody, HuginnAPIError } from "@huginn/shared";
 // import { usePostHog } from "posthog-js/react";
 import { redirect, useNavigate, useSearchParams } from "react-router";
 

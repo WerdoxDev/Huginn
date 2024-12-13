@@ -23,7 +23,7 @@ import {
 	useRole,
 } from "@floating-ui/react";
 import clsx from "clsx";
-import { type HTMLProps, Suspense, createContext } from "react";
+import { type HTMLProps, type RefObject, Suspense, createContext } from "react";
 
 const Context = createContext<{
 	getItemProps: (userProps?: React.HTMLProps<HTMLElement>) => Record<string, unknown>;
@@ -39,7 +39,7 @@ const Context = createContext<{
 	isOpen: false,
 });
 
-const Menu = forwardRef<HTMLButtonElement, ContextMenuProps & HTMLProps<HTMLButtonElement>>(({ children, label, ...props }, forwardedRef) => {
+function Menu(props: ContextMenuProps & HTMLProps<HTMLButtonElement>) {
 	const [isOpen, _setIsOpen] = useState(false);
 	const [hasFocusInside, setHasFocusInside] = useState(false);
 	const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -78,7 +78,7 @@ const Menu = forwardRef<HTMLButtonElement, ContextMenuProps & HTMLProps<HTMLButt
 		onNavigate: setActiveIndex,
 	});
 
-	const mergedRefs = useMergeRefs([refs.setReference, item.ref, forwardedRef]);
+	const mergedRefs = useMergeRefs([refs.setReference, item.ref, props.ref]);
 
 	const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions([hover, role, dismiss, listNavigation]);
 
@@ -161,7 +161,7 @@ const Menu = forwardRef<HTMLButtonElement, ContextMenuProps & HTMLProps<HTMLButt
 						}),
 					)}
 				>
-					{label}
+					{props.label}
 					<span aria-hidden style={{ marginLeft: 10, fontSize: 10 }}>
 						▶
 					</span>
@@ -197,44 +197,42 @@ const Menu = forwardRef<HTMLButtonElement, ContextMenuProps & HTMLProps<HTMLButt
 			</Context.Provider>
 		</FloatingNode>
 	);
-});
+}
 
-const Item = forwardRef<HTMLButtonElement, ContextMenuItemProps & React.ButtonHTMLAttributes<HTMLButtonElement>>(
-	({ label, disabled, ...props }, forwardedRef) => {
-		const menu = useContext(Context);
-		const item = useListItem({ label: disabled ? null : label });
-		const tree = useFloatingTree();
-		const isActive = item.index === menu.activeIndex;
+function Item(props: ContextMenuItemProps & React.ButtonHTMLAttributes<HTMLButtonElement> & { ref?: RefObject<HTMLButtonElement> }) {
+	const menu = useContext(Context);
+	const item = useListItem({ label: props.disabled ? null : props.label });
+	const tree = useFloatingTree();
+	const isActive = item.index === menu.activeIndex;
 
-		return (
-			<button
-				{...props}
-				ref={useMergeRefs([item.ref, forwardedRef])}
-				type="button"
-				role="menuitem"
-				className={clsx(
-					"flex items-center justify-between gap-x-5 rounded-sm px-2 py-1 text-start text-sm text-white/90 outline-none focus:bg-primary",
-					props.className,
-				)}
-				tabIndex={isActive ? 0 : -1}
-				disabled={disabled}
-				{...menu.getItemProps({
-					onClick(event: React.MouseEvent<HTMLButtonElement>) {
-						props.onClick?.(event);
-						tree?.events.emit("click");
-					},
-					onFocus(event: React.FocusEvent<HTMLButtonElement>) {
-						props.onFocus?.(event);
-						menu.setHasFocusInside(true);
-					},
-				})}
-			>
-				{label}
-				{props.children}
-			</button>
-		);
-	},
-);
+	return (
+		<button
+			{...props}
+			ref={useMergeRefs([item.ref, props.ref])}
+			type="button"
+			role="menuitem"
+			className={clsx(
+				"flex items-center justify-between gap-x-5 rounded-sm px-2 py-1 text-start text-sm text-white/90 outline-none focus:bg-primary",
+				props.className,
+			)}
+			tabIndex={isActive ? 0 : -1}
+			disabled={props.disabled}
+			{...menu.getItemProps({
+				onClick(event: React.MouseEvent<HTMLButtonElement>) {
+					props.onClick?.(event);
+					tree?.events.emit("click");
+				},
+				onFocus(event: React.FocusEvent<HTMLButtonElement>) {
+					props.onFocus?.(event);
+					menu.setHasFocusInside(true);
+				},
+			})}
+		>
+			{props.label}
+			{props.children}
+		</button>
+	);
+}
 
 export default function ContextMenu(props: ContextMenuProps) {
 	const parentId = useFloatingParentNodeId();
