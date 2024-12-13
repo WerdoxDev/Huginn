@@ -13,5 +13,5 @@
 		},
 		"rootDirs": [".", "./.react-router/types"]
 	},
-	"include": ["src", "src-tauri", ".react-router/types/**/*"]
+	"include": ["src", ".react-router/types/**/*"]
 }

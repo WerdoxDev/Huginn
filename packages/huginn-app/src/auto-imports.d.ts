@@ -243,9 +243,3 @@ declare global {
   const useWindow: typeof import('./contexts/windowContext')['useWindow']
   const useWindowDispatch: typeof import('./contexts/windowContext')['useWindowDispatch']
 }
-// for type re-export
-declare global {
-  // @ts-ignore
-  export type { TokenTypeFlag } from './lib/huginn-tokenizer'
-  import('./lib/huginn-tokenizer')
-}

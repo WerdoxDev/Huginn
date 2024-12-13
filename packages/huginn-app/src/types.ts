@@ -1,38 +1,41 @@
-import type { SettingsContextType } from "@contexts/settingsContext";
 import type { Placement } from "@floating-ui/react";
 import type { AddChannelRecipientMutationVars } from "@hooks/mutations/useAddChannelRecipient";
 import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMChannel";
 import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
 import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePatchDMChannel";
 import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRemoveChannelRecipient";
-import type { APIChannelUser, APIDefaultMessage, APIMessageUser, APIRelationUser, DirectChannel, RelationshipType, Snowflake } from "@huginn/shared";
 import type { HTMLInputTypeAttribute, ReactNode } from "react";
 
 export type StatusCode = "none" | "default" | "error" | "success";
 
-export type LoadingState = "none" | "loading" | "checking_update" | "updating" | "test";
+export type LoadingState =
+  | "none"
+  | "loading"
+  | "checking_update"
+  | "updating"
+  | "test";
 
 export type InputStatus = {
-	code: StatusCode;
-	text: string;
+  code: StatusCode;
+  text: string;
 };
 
 export type InputValue = {
-	required: boolean;
-	value: string;
+  required: boolean;
+  value: string;
 };
 
 export type InputOptions = {
-	name: string;
-	required: boolean;
-	default?: string | null;
+  name: string;
+  required: boolean;
+  default?: string | null;
 };
 
 export type InputProp = {
-	status: InputStatus;
-	value: string;
-	required: boolean;
-	onChange: (e: HTMLInputElement) => void;
+  status: InputStatus;
+  value: string;
+  required: boolean;
+  onChange: (e: HTMLInputElement) => void;
 };
 
 export type InputStatuses = Record<string, InputStatus>;
@@ -40,141 +43,161 @@ export type InputValues = Record<string, InputValue>;
 export type InputProps = Record<string, InputProp>;
 
 export type MessageDetail = {
-	status: StatusCode;
-	text: string;
-	visible: boolean;
+  status: StatusCode;
+  text: string;
+  visible: boolean;
 };
 
 export type HuginnInputProps = {
-	children?: ReactNode;
-	headless?: boolean;
-	className?: string;
-	status: InputStatus;
-	required?: boolean;
-	disabled?: boolean;
-	value?: string;
-	placeholder?: string;
-	type?: HTMLInputTypeAttribute;
-	onChange?: (e: HTMLInputElement) => void;
-	onFocusChanged?: (focused: boolean) => void;
+  children?: ReactNode;
+  headless?: boolean;
+  className?: string;
+  status: InputStatus;
+  required?: boolean;
+  disabled?: boolean;
+  value?: string;
+  placeholder?: string;
+  type?: HTMLInputTypeAttribute;
+  onChange?: (e: HTMLInputElement) => void;
+  onFocusChanged?: (focused: boolean) => void;
 };
 
 export type HuginnButtonProps = {
-	children?: ReactNode;
-	type?: "submit" | "reset" | "button" | undefined;
-	className?: string;
-	disabled?: boolean;
-	innerClassName?: string;
-	onClick?: () => void;
+  children?: ReactNode;
+  type?: "submit" | "reset" | "button" | undefined;
+  className?: string;
+  disabled?: boolean;
+  innerClassName?: string;
+  onClick?: () => void;
 };
 
 export type ModalState = {
-	isOpen: boolean;
+  isOpen: boolean;
 };
 
 export type InfoModalState = {
-	state: StatusCode;
-	text: string;
+  state: StatusCode;
+  text: string;
 } & ModalState;
 
 export type UpdaterProgress = {
-	chunkLength: number;
-	contentLength: number;
+  chunkLength: number;
+  contentLength: number;
 };
 
 export type SettingsTab = {
-	name: string;
-	text: string;
-	auth?: boolean;
-	children?: Omit<SettingsTab, "children">[];
-	icon?: ReactNode;
-	component?: (props: SettingsTabProps) => React.JSX.Element;
+  name: string;
+  text: string;
+  auth?: boolean;
+  children?: Omit<SettingsTab, "children">[];
+  icon?: ReactNode;
+  component?: (props: SettingsTabProps) => React.JSX.Element;
 };
 
 export type SettingsTabProps = {
-	settings: DeepPartial<SettingsContextType>;
-	onChange?: (value: DeepPartial<SettingsContextType>) => void;
-	onSave?: () => Promise<void>;
+  settings: DeepPartial<any>;
+  onChange?: (value: DeepPartial<any>) => void;
+  onSave?: () => Promise<void>;
 };
 
-export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
+export type DeepPartial<T> = T extends object
+  ? { [P in keyof T]?: DeepPartial<T[P]> }
+  : T;
 
 export type DropboxItem = {
-	text: string;
-	icon?: ReactNode;
-	value: string;
+  text: string;
+  icon?: ReactNode;
+  value: string;
 };
 
 export type ColorTheme = {
-	background: string;
-	secondary: string;
-	tertiary: string;
-	primary: string;
-	accent: string;
-	accent2: string;
-	success: string;
-	text: string;
-	error: string;
-	warning: string;
+  background: string;
+  secondary: string;
+  tertiary: string;
+  primary: string;
+  accent: string;
+  accent2: string;
+  success: string;
+  text: string;
+  error: string;
+  warning: string;
 };
 
-export type ThemeType = "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal";
+export type ThemeType =
+  | "cerulean"
+  | "pine green"
+  | "eggplant"
+  | "coffee"
+  | "charcoal";
 
 export type TooltipOptions = {
-	initialOpen?: boolean;
-	placement?: Placement;
-	open?: boolean;
-	onOpenChange?: (open: boolean) => void;
+  initialOpen?: boolean;
+  placement?: Placement;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 export type ContextMenuProps = {
-	label?: string;
-	renderChildren: ReactNode;
-	close?: () => void;
+  label?: string;
+  renderChildren: ReactNode;
+  close?: () => void;
 } & ContextMenuStateProps;
 
 export type ContextMenuStateProps<T = unknown> = {
-	contextData?: T;
-	isOpen?: boolean;
-	position?: [number, number];
+  contextData?: T;
+  isOpen?: boolean;
+  position?: [number, number];
 };
 
 export type ContextMenuItemProps = {
-	label: string;
-	disabled?: boolean;
+  label: string;
+  disabled?: boolean;
 };
 
-export type ContextMenuRelationship = { user: APIRelationUser; type: RelationshipType };
-export type ContextMenuDMChannel = DirectChannel;
-export type ContextMenuDMChannelRecipient = { channelId: Snowflake; recipient: APIChannelUser };
+export type ContextMenuRelationship = {
+  user: any;
+  type: any;
+};
+export type ContextMenuDMChannel = any;
+export type ContextMenuDMChannelRecipient = {
+  channelId: string;
+  recipient: any;
+};
 
 export type MessageRenderInfo = {
-	message: AppChannelMessage;
-	newMinute: boolean;
-	newDate: boolean;
-	newAuthor: boolean;
-	exoticType: boolean;
+  message: AppChannelMessage;
+  newMinute: boolean;
+  newDate: boolean;
+  newAuthor: boolean;
+  exoticType: boolean;
 };
 
 export type VersionFlavour = "nightly" | "release";
 
 export type MessageRendererProps = {
-	renderInfo: MessageRenderInfo;
-	nextRenderInfo?: MessageRenderInfo;
-	lastRenderInfo?: MessageRenderInfo;
+  renderInfo: MessageRenderInfo;
+  nextRenderInfo?: MessageRenderInfo;
+  lastRenderInfo?: MessageRenderInfo;
 };
 
 export type MutationKinds = {
-	"create-dm-channel_recipient": CreateDMChannelMutationVars;
-	"create-dm-channel_other": CreateDMChannelMutationVars;
-	"patch-dm-channel": PatchDMChannelMutationVars;
-	"delete-dm-channel": Snowflake;
-	"remove-channel-recipient": RemoveChannelRecipientMutationVars;
-	"add-channel-recipient": AddChannelRecipientMutationVars;
-	"create-relationship": CreateRelationshipMutationVars;
-	"remove-relationship": Snowflake;
+  "create-dm-channel_recipient": CreateDMChannelMutationVars;
+  "create-dm-channel_other": CreateDMChannelMutationVars;
+  "patch-dm-channel": PatchDMChannelMutationVars;
+  "delete-dm-channel": string;
+  "remove-channel-recipient": RemoveChannelRecipientMutationVars;
+  "add-channel-recipient": AddChannelRecipientMutationVars;
+  "create-relationship": CreateRelationshipMutationVars;
+  "remove-relationship": string;
 };
 
 export type AppChannelMessage =
-	| { preview: true; id: Snowflake; createdAt: string; author: APIMessageUser; nonce?: number | string; content: string }
-	| ({ preview: false } & APIDefaultMessage);
+  | {
+      preview: true;
+      id: string;
+      createdAt: string;
+      author: any;
+      nonce?: number | string;
+      content: string;
+    }
+  | ({ preview: false } & any);
