@@ -12,8 +12,7 @@ export function useInitializeClient() {
 			await client.initializeWithToken({ token, refreshToken });
 		}
 
-		await client.gateway.identify();
-		await client.gateway.waitForReady();
+		await client.gateway.authenticate();
 
 		setUser(client.user);
 
