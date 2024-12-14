@@ -25,6 +25,7 @@ export class HuginnClient {
 	public oauth: OAuthAPI;
 	public common: CommonAPI;
 	public gateway: Gateway;
+	public _internals: { rest: REST; cdn: CDN };
 
 	public user?: APIUser;
 
@@ -41,6 +42,8 @@ export class HuginnClient {
 		this.tokenHandler = new TokenHandler(this);
 		this.rest = new REST(this, this.options.rest);
 		this.cdn = new CDN(this.options.rest?.cdn);
+
+		this._internals = { rest: this.rest, cdn: this.cdn };
 
 		this.auth = new AuthAPI(this.rest);
 		this.users = new UserAPI(this.rest);

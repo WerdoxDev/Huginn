@@ -40,10 +40,6 @@ export async function resolveRequest(request: InternalRequest): Promise<Resolved
 		headers.Authorization = `${request.authPrefix} ${request.token}`;
 	}
 
-	if (request.reason?.length) {
-		headers["X-Log-Reason"] = encodeURIComponent(request.reason);
-	}
-
 	const url = `${request.root}${request.fullRoute}${query}`;
 
 	if (request.files?.length) {

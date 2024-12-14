@@ -2,9 +2,14 @@ import { constants, type ImageFormats, type ImageURLOptions, type Snowflake } fr
 
 export class CDN {
 	private readonly cdn?: string;
+	public _internals: {
+		dynamicMakeURL: (route: string, hash: string, options: ImageURLOptions) => string;
+		makeURL: (route: string, options: ImageURLOptions) => string;
+	};
 
 	public constructor(cdn?: string) {
 		this.cdn = cdn;
+		this._internals = { dynamicMakeURL: this.dynamicMakeURL, makeURL: this.makeURL };
 	}
 
 	public avatar(id: Snowflake, hash: string, options?: Readonly<ImageURLOptions>): string {
@@ -22,7 +27,7 @@ export class CDN {
 	 * @param hash - The hash provided by Discord for this icon
 	 * @param options - Optional options for the link
 	 */
-	private dynamicMakeURL(route: string, hash: string, { forceStatic = false, ...options }: Readonly<ImageURLOptions> = {}): string {
+	public dynamicMakeURL(route: string, hash: string, { forceStatic = false, ...options }: Readonly<ImageURLOptions> = {}): string {
 		return this.makeURL(route, !forceStatic && hash.startsWith("a_") ? { ...options, format: "gif" } : options);
 	}
 
@@ -32,7 +37,7 @@ export class CDN {
 	 * @param route - The base cdn route
 	 * @param options - The format/size options for the link
 	 */
-	private makeURL(route: string, { format = "webp", size }: Readonly<ImageURLOptions> = {}): string {
+	public makeURL(route: string, { format = "webp", size }: Readonly<ImageURLOptions> = {}): string {
 		format = String(format).toLowerCase() as ImageFormats;
 
 		if (!constants.ALLOWED_IMAGE_FORMATS.includes(format)) {

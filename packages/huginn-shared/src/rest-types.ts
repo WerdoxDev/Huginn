@@ -1,12 +1,6 @@
 import type { RouteLike } from "./routes";
 
-export enum RequestMethod {
-	DELETE = "DELETE",
-	GET = "GET",
-	PATCH = "PATCH",
-	POST = "POST",
-	PUT = "PUT",
-}
+export type RequestMethod = "DELETE" | "GET" | "PATCH" | "POST" | "PUT";
 
 export type ResponseLike = {
 	body: ReadableStream | null;
@@ -65,11 +59,6 @@ export type RequestData = {
 	 * Query string parameters to append to the called endpoint
 	 */
 	query?: URLSearchParams;
-
-	/**
-	 * Reason to show in log
-	 */
-	reason?: string | undefined;
 };
 
 export type InternalRequest = {

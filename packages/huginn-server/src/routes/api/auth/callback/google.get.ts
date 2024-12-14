@@ -1,5 +1,5 @@
 import { forbidden, useValidatedQuery } from "@huginn/backend-shared";
-import { constants, CDNRoutes, HttpCode, OAuthCode, RequestMethod, WorkerID, getFileHash, idFix, snowflake } from "@huginn/shared";
+import { constants, CDNRoutes, HttpCode, OAuthCode, WorkerID, getFileHash, idFix, snowflake } from "@huginn/shared";
 import { toSnakeCase } from "@std/text";
 import { defineEventHandler, getHeader, getRequestProtocol, sendNoContent, sendRedirect, useSession } from "h3";
 import { z } from "zod";
@@ -51,7 +51,7 @@ router.get(
 				redirect_uri: `${host}/api/auth/callback/google`,
 			});
 
-			const response: GoogleOAuth2Response = await serverFetch("https://accounts.google.com/o/oauth2/token", RequestMethod.POST, {
+			const response: GoogleOAuth2Response = await serverFetch("https://accounts.google.com/o/oauth2/token", "POST", {
 				headers: { "Content-Type": "application/x-www-form-urlencoded" },
 				body: query.toString(),
 			});
@@ -60,7 +60,7 @@ router.get(
 				return forbidden(event);
 			}
 
-			const googleUser: GoogleUserReponse = await serverFetch("https://www.googleapis.com/userinfo/v2/me", RequestMethod.GET, {
+			const googleUser: GoogleUserReponse = await serverFetch("https://www.googleapis.com/userinfo/v2/me", "GET", {
 				token: response.access_token,
 			});
 

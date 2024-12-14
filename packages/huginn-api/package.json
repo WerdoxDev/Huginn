@@ -8,9 +8,10 @@
 	"dependencies": {
 		"@huginn/shared": "workspace:*",
 		"@std/encoding": "npm:@jsr/std__encoding",
-		"jose": "^5.7.0"
+		"jose": "^5.9.6",
+		"pathe": "^1.1.2"
 	},
 	"devDependencies": {
-		"@types/bun": "^1.1.6"
+		"@types/bun": "^1.1.14"
 	}
 }
