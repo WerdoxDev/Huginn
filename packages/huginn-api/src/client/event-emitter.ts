@@ -7,13 +7,13 @@ export class EventEmitterWithHistory {
 	private queuedEvents: { [event: string]: any[] } = {}; // Cache for past events
 
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	on<T = any>(event: string, listener: EventCallback<T>, skipQueue?: boolean): void {
+	on<T = any>(event: string, listener: EventCallback<T>, withoutHistory?: boolean): void {
 		if (!this.events[event]) {
 			this.events[event] = [];
 		}
 		this.events[event].push(listener);
 
-		if (skipQueue) {
+		if (withoutHistory) {
 			this.queuedEvents[event] = [];
 		} // Process any queued events
 		else if (this.queuedEvents[event]) {

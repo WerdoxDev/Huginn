@@ -1,8 +1,11 @@
 import { readFile } from "node:fs/promises";
 import * as path from "node:path";
 import { reactRouter } from "@react-router/dev/vite";
+import autoprefixer from "autoprefixer";
 // import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import { parseTOML } from "confbox";
+import { reactRouterDevTools } from "react-router-devtools";
+import tailwindcss from "tailwindcss";
 import AutoImport from "unplugin-auto-import/vite";
 import IconsResolver from "unplugin-icons/resolver";
 import Icons from "unplugin-icons/vite";
@@ -13,6 +16,7 @@ type CargoToml = { package: { version: string } };
 // https://vitejs.dev/config/
 export default defineConfig({
 	plugins: [
+		// reactRouterDevTools(),
 		reactRouter(),
 		Icons({ compiler: "jsx", jsx: "react" }),
 		AutoImport({
@@ -22,6 +26,12 @@ export default defineConfig({
 			dts: "./src/auto-imports.d.ts",
 		}),
 	],
+
+	css: {
+		postcss: {
+			plugins: [tailwindcss, autoprefixer],
+		},
+	},
 
 	define: {
 		__APP_VERSION__: JSON.stringify((parseTOML(await readFile("src-tauri/Cargo.toml", "utf8")) as CargoToml).package.version),

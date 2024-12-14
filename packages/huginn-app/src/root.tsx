@@ -1,13 +1,11 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, redirect } from "react-router";
 
-import "./index.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { listen } from "@tauri-apps/api/event";
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 // import { PostHogProvider } from "posthog-js/react";
 // import posthog from "posthog-js";
 import type { ReactNode } from "react";
-import type { Route } from "./+types.root";
+import type { Route } from "./+types/root";
+import stylesheet from "./index.css?url";
 
 export const queryClient = new QueryClient({
 	defaultOptions: { queries: { refetchOnReconnect: false, refetchOnWindowFocus: false, refetchOnMount: false, staleTime: 60000 } },
@@ -20,6 +18,8 @@ export const queryClient = new QueryClient({
 // 	autocapture: false,
 // 	capture_pageview: false,
 // });
+
+export const links: Route.LinksFunction = () => [{ rel: "stylesheet", href: stylesheet }];
 
 export const ErrorBoundary = RouteErrorComponent;
 
@@ -76,25 +76,11 @@ export default function Root() {
 				<HistoryProvider>
 					{settingsLoaded && (
 						<SettingsProvider>
-							<APIProvider>
-								<WindowProvider>
-									<ThemeProvier>
-										<ModalProvider>
-											<ContextMenuProvider>
-												<UserProvider>
-													<PresenceProvider>
-														<TypingProvider>
-															<MainRenderer>
-																<Outlet />
-															</MainRenderer>
-														</TypingProvider>
-													</PresenceProvider>
-												</UserProvider>
-											</ContextMenuProvider>
-										</ModalProvider>
-									</ThemeProvier>
-								</WindowProvider>
-							</APIProvider>
+							<WindowProvider>
+								<ThemeProvier>
+									<Outlet />
+								</ThemeProvier>
+							</WindowProvider>
 						</SettingsProvider>
 					)}
 				</HistoryProvider>
@@ -102,65 +88,4 @@ export default function Root() {
 		</QueryClientProvider>
 		// </PostHogProvider>
 	);
-}
-
-function MainRenderer(props: { children: ReactNode }) {
-	const appWindow = useWindow();
-	return (
-		<div className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
-			{window.location.pathname !== "/splashscreen" && appWindow.environment === "desktop" && <TitleBar />}
-			<div className="relative h-full w-full">
-				{props.children}
-				{/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
-				{appWindow.environment === "desktop" && (
-					<>
-						<AppMaximizedEvent />
-						<AppOpenUrlEvent />
-					</>
-				)}
-				<ModalsRenderer />
-				<ContextMenusRenderer />
-			</div>
-		</div>
-	);
-}
-
-function AppMaximizedEvent() {
-	const dispatch = useWindowDispatch();
-	const huginnWindow = useWindow();
-
-	useEffect(() => {
-		if (huginnWindow.environment === "desktop") {
-			const appWindow = getCurrentWebviewWindow();
-			const unlisten = appWindow.onResized(async () => {
-				const appMaximized = await appWindow.isMaximized();
-				dispatch({ maximized: appMaximized });
-			});
-
-			return () => {
-				unlisten.then((f) => f());
-			};
-		}
-	}, []);
-
-	return null;
-}
-
-function AppOpenUrlEvent() {
-	const { dispatchEvent } = useEvent();
-	const huginnWindow = useWindow();
-
-	useEffect(() => {
-		if (huginnWindow.environment === "desktop") {
-			const unlisten = listen("deep-link://new-url", (event) => {
-				dispatchEvent("open_url", event.payload as string[]);
-			});
-
-			return () => {
-				unlisten.then((f) => f());
-			};
-		}
-	}, []);
-
-	return null;
 }

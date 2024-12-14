@@ -2,18 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* @layer base {
-   :root {
-      --color-background: 48 48 48;
-      --color-secondary: 38 38 38;
-      --color-tertiary: 31 31 31;
-      --color-primary: 0 128 128;
-      --color-text: 235 235 211;
-      --color-link: 2 202 185;
-      --color-error: 248 113 113;
-   }
-} */
-
 @font-face {
 	font-family: "Noto Sans";
 	src: url("assets/NotoSans.ttf") format("TrueType");
@@ -140,7 +128,6 @@ input::-ms-clear {
 }
 
 .cropper-wrap-box {
-	/* rounded-lg */
 	border-radius: 0.5rem;
 }
 
@@ -170,7 +157,6 @@ input::-ms-clear {
 }
 
 @keyframes slide-to-right{
-   /* from {transform: translate(50%, 0);} */
    to {transform: translateX(100%);}
 }
 
@@ -198,35 +184,11 @@ input::-ms-clear {
 
 ::view-transition-old(auth-background){
    display: none;
-   /* animation: none; */
 }
 
 ::view-transition-new(auth-background){
    animation: none;
 }
-/*
-::view-transition-old(auth-loading-spinner){
-   animation: fa 1s both;
-} */
-
-/* ::view-transition-old(auth-background){
-   animation: scale-up-large 500ms both cubic-bezier(0.87, 0, 0.13, 1), fade-out 500ms both;
-   mix-blend-mode: plus-lighter;
-}
-
-::view-transition-new(auth-background){
-   animation: scale-down-large 500ms both cubic-bezier(0.87, 0, 0.13, 1), fade-out 500ms both;
-   z-index: 100;
-   mix-blend-mode: plus-lighter;
-} */
-
-/* ::view-transition-old(auth-background2){
-   animation: slide-to-left 10s both;
-} */
-
-/* svg.transitioning g path {
-   d: "M0 324.5C-55.6 314.6 -111.2 304.7 -161 278.9C-210.8 253.1 -254.7 211.4 -281 162.2C-307.3 113.1 -315.9 56.6 -324.5 0L0 0Z";
-} */
 
 #auth-form{
    animation: fade-in 350ms both, scale-up 350ms both;
@@ -239,10 +201,6 @@ input::-ms-clear {
 html::view-transition-group(root),html::view-transition-new(root), html::view-transition-old(root){
    animation: none;
 }
-
-/* ::view-transition-old(auth){
-   animation: fade-out 10s both;
-} */
 
 ::view-transition-new(auth-login),
 ::view-transition-new(auth-register),

@@ -22,6 +22,7 @@ export type GatewayOperationTypes = {
 };
 
 export type GatewayEvents = {
+	message: GatewayPayload;
 	open: undefined;
 	close: number;
 	hello: GatewayHelloData;

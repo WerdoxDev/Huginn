@@ -24,7 +24,6 @@ export class Gateway {
 	public readyData?: GatewayReadyData;
 	public peerId?: string;
 
-	private receivedHello = false;
 	private heartbeatInterval?: ReturnType<typeof setTimeout>;
 	private sequence?: number;
 	private sessionId?: Snowflake;
@@ -33,8 +32,12 @@ export class Gateway {
 		this.emitter.emit(eventName, eventArg);
 	}
 
-	on<EventName extends keyof GatewayEvents>(eventName: EventName, handler: (eventArg: GatewayEvents[EventName]) => void, skipQueue?: boolean): void {
-		this.emitter.on(eventName, handler, skipQueue);
+	on<EventName extends keyof GatewayEvents>(
+		eventName: EventName,
+		handler: (eventArg: GatewayEvents[EventName]) => void,
+		withoutHistory?: boolean,
+	): void {
+		this.emitter.on(eventName, handler, withoutHistory);
 	}
 
 	off<EventName extends keyof GatewayEvents>(eventName: EventName, handler: (eventArg: GatewayEvents[EventName]) => void): void {
@@ -51,74 +54,40 @@ export class Gateway {
 		this.startListening();
 	}
 
-	public async identify(): Promise<void> {
-		let onMessage: ((e: MessageEvent) => void) | undefined = undefined;
-		let onClose: (() => void) | undefined = undefined;
-
-		const result = await new Promise((r) => {
-			if (!this.sequence || !this.sessionId) {
-				if (this.receivedHello) {
-					this.sendIdentify();
-					r(true);
-				} else {
-					onMessage = (e: MessageEvent) => {
-						const op = (JSON.parse(e.data) as GatewayPayload).op;
-						if (op === GatewayOperations.HELLO) {
-							this.sendIdentify();
-							r(true);
-						}
-					};
-					onClose = () => {
-						r(false);
-					};
-
-					this.socket?.addEventListener("message", onMessage);
-					this.socket?.addEventListener("close", onClose);
-				}
-			}
-		});
-
-		if (onMessage && onClose) {
-			this.socket?.removeEventListener("message", onMessage);
-			this.socket?.removeEventListener("close", onClose);
-		}
-
-		if (!result) {
-			throw new Error("Gateway closed before identifying.");
-		}
-	}
-
-	public async waitForReady(): Promise<void> {
+	public async authenticate(): Promise<void> {
 		if (this.socket?.readyState !== WebSocket.OPEN) {
 			throw new Error("WebSocket is not connected.");
 		}
-
-		let onMessage: ((e: MessageEvent) => void) | undefined = undefined;
-		let onClose: (() => void) | undefined = undefined;
 
 		const result = await new Promise((r) => {
 			if (this.client.user) {
 				r(true);
 			} else {
-				onMessage = (e: MessageEvent) => {
-					const t = (JSON.parse(e.data) as GatewayPayload).t;
-					if (t === "ready") {
-						r(true);
+				const onMessage = (data: GatewayPayload) => {
+					console.log("hereeee");
+					if (isOpcode(data, GatewayOperations.HELLO)) {
+						this.sendIdentify();
+					}
+
+					if (isOpcode(data, GatewayOperations.DISPATCH)) {
+						if (data.t === "ready") {
+							r(true);
+
+							this.off("message", onMessage);
+						}
 					}
 				};
-				onClose = () => {
+
+				const onClose = () => {
 					r(false);
+
+					this.socket?.removeEventListener("close", onClose);
 				};
 
-				this.socket?.addEventListener("message", onMessage);
+				this.on("message", onMessage);
 				this.socket?.addEventListener("close", onClose);
 			}
 		});
-
-		if (onMessage && onClose) {
-			this.socket?.removeEventListener("message", onMessage);
-			this.socket?.removeEventListener("close", onClose);
-		}
 
 		if (!result) {
 			throw new Error("Gateway closed before being ready.");
@@ -152,7 +121,6 @@ export class Gateway {
 		this.emit("close", e.code);
 
 		this.readyData = undefined;
-		this.receivedHello = false;
 
 		if (e.code === 1000) {
 			return;
@@ -166,9 +134,9 @@ export class Gateway {
 
 			this.connect();
 
-			if (this.client.readyState === ClientReadyState.READY) {
-				await this.identify();
-			}
+			// if (this.client.readyState === ClientReadyState.READY) {
+			// 	await this.identify();
+			// }
 		}, 1000);
 	}
 
@@ -194,17 +162,17 @@ export class Gateway {
 
 			this.emit(data.t, data.d);
 		}
+
+		this.emit("message", data);
 	}
 
 	public close(): void {
 		this.socket?.close(1000);
 		this.sequence = undefined;
 		this.sessionId = undefined;
-		this.receivedHello = false;
 	}
 
 	private handleHello(data: GatewayHello) {
-		this.receivedHello = true;
 		this.peerId = data.d.peerId;
 		this.startHeartbeat(data.d.heartbeatInterval);
 
