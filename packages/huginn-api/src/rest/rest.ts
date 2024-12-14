@@ -1,5 +1,5 @@
 import { HTTPError, type HuginnErrorData, resolveRequest } from "@huginn/shared";
-import { type HandlerRequestData, type InternalRequest, type RequestData, RequestMethod, type ResponseLike, parseResponse } from "@huginn/shared";
+import { type HandlerRequestData, type InternalRequest, type RequestData, type ResponseLike, parseResponse } from "@huginn/shared";
 import type { RouteLike } from "@huginn/shared";
 import { HuginnAPIError } from "@huginn/shared";
 import type { HuginnClient } from "../..";
@@ -23,7 +23,7 @@ export class REST {
 	 * @param options - Optional request options
 	 */
 	public async get(fullRoute: RouteLike, options: RequestData = {}): Promise<unknown> {
-		return this.request({ ...options, fullRoute, method: RequestMethod.GET });
+		return this.request({ ...options, fullRoute, method: "GET" });
 	}
 
 	/**
@@ -33,7 +33,7 @@ export class REST {
 	 * @param options - Optional request options
 	 */
 	public async post(fullRoute: RouteLike, options: RequestData = {}): Promise<unknown> {
-		return this.request({ ...options, fullRoute, method: RequestMethod.POST });
+		return this.request({ ...options, fullRoute, method: "POST" });
 	}
 
 	/**
@@ -43,7 +43,7 @@ export class REST {
 	 * @param options - Optional request options
 	 */
 	public async put(fullRoute: RouteLike, options: RequestData = {}): Promise<unknown> {
-		return this.request({ ...options, fullRoute, method: RequestMethod.PUT });
+		return this.request({ ...options, fullRoute, method: "PUT" });
 	}
 
 	/**
@@ -53,7 +53,7 @@ export class REST {
 	 * @param options - Optional request options
 	 */
 	public async patch(fullRoute: RouteLike, options: RequestData = {}): Promise<unknown> {
-		return this.request({ ...options, fullRoute, method: RequestMethod.PATCH });
+		return this.request({ ...options, fullRoute, method: "PATCH" });
 	}
 
 	/**
@@ -63,7 +63,7 @@ export class REST {
 	 * @param options - Optional request options
 	 */
 	public async delete(fullRoute: RouteLike, options: RequestData = {}): Promise<unknown> {
-		return this.request({ ...options, fullRoute, method: RequestMethod.DELETE });
+		return this.request({ ...options, fullRoute, method: "DELETE" });
 	}
 
 	/**

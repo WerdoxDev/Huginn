@@ -1,15 +1,5 @@
 import { logCDNRequest } from "@huginn/backend-shared";
-import {
-	HTTPError,
-	type HandlerRequestData,
-	type InternalRequest,
-	type RequestData,
-	RequestMethod,
-	type ResponseLike,
-	type RouteLike,
-	parseResponse,
-	resolveRequest,
-} from "@huginn/shared";
+import { HTTPError, type InternalRequest, type RequestData, type RequestMethod, type RouteLike, parseResponse, resolveRequest } from "@huginn/shared";
 import { envs } from "#setup";
 
 export async function cdnUpload<T>(fullRoute: RouteLike, options: RequestData = {}) {
@@ -17,8 +7,8 @@ export async function cdnUpload<T>(fullRoute: RouteLike, options: RequestData = 
 		throw new Error("CDN Root was not configured");
 	}
 
-	logCDNRequest(fullRoute, RequestMethod.POST);
-	return (await request({ ...options, root: envs.CDN_ROOT, method: RequestMethod.POST, fullRoute, throw: true })) as Promise<T>;
+	logCDNRequest(fullRoute, "POST");
+	return (await request({ ...options, root: envs.CDN_ROOT, method: "POST", fullRoute, throw: true })) as Promise<T>;
 }
 
 export async function serverFetch<T>(url: string, method: RequestMethod, options: RequestData & { throw?: boolean }) {

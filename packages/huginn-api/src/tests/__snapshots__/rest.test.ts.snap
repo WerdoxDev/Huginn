@@ -1,0 +1,16 @@
+// Bun Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`REST should add a file to the body and correctly determine its contentType: body file auto contentType 1`] = `
+{
+  "fetchOptions": {
+    "body": FormData (entries) FormData FormData {
+      "files[0]": File (182 bytes) {
+        name: "test"
+      },
+    },
+    "headers": {},
+    "method": "POST",
+  },
+  "url": "https://test.com/test",
+}
+`;
