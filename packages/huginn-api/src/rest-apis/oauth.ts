@@ -1,7 +1,6 @@
 import {
 	type APIPostOAuthConfirmJSONBody,
 	type APIPostOAuthConfirmResult,
-	type OAuthAction,
 	type OAuthFlow,
 	type OAuthType,
 	Routes,
@@ -24,14 +23,13 @@ export class OAuthAPI {
 		return this.rest.post(Routes.confirmOAuth(), { body, auth: true, token: identityToken }) as Promise<APIPostOAuthConfirmResult>;
 	}
 
-	public getOAuthURL(type: OAuthType, flow: OAuthFlow, action: OAuthAction, redirectUrl: string): string {
+	public getOAuthURL(type: OAuthType, flow: OAuthFlow, redirectUrl: string): string {
 		if (type === "google") {
 			const url = new URL("/api/auth/google", this.rest.options?.api);
 
 			const state = encodeBase64(`${Date.now()}:${generateRandomString(16)}`);
 			url.searchParams.set("state", state);
 			url.searchParams.set("flow", flow);
-			url.searchParams.set("action", action);
 			if (flow === "browser" && redirectUrl) {
 				url.searchParams.set("redirect_url", redirectUrl);
 			}

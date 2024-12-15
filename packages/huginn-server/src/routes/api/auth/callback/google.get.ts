@@ -35,13 +35,14 @@ router.get(
 
 		const { code, error, state } = await useValidatedQuery(event, querySchema);
 
-		const { redirect_url, state: sessionState, flow, peer_id, action } = (await useSession(event, { password: envs.SESSION_PASSWORD })).data;
+		const { redirect_url, state: sessionState, flow, peer_id } = (await useSession(event, { password: envs.SESSION_PASSWORD })).data;
 		if (sessionState !== state || !state) {
 			return forbidden(event);
 		}
 
 		const host = `${getRequestProtocol(event)}://${getHeader(event, "host")}`;
 
+		// Code from google oauth
 		if (code) {
 			const query = new URLSearchParams({
 				client_id: envs.GOOGLE_CLIENT_ID,
@@ -51,15 +52,18 @@ router.get(
 				redirect_uri: `${host}/api/auth/callback/google`,
 			});
 
+			// Get a token using the code
 			const response: GoogleOAuth2Response = await serverFetch("https://accounts.google.com/o/oauth2/token", "POST", {
 				headers: { "Content-Type": "application/x-www-form-urlencoded" },
 				body: query.toString(),
 			});
 
+			// Return 'Forbidden' if can't get the token
 			if ("error" in response) {
 				return forbidden(event);
 			}
 
+			// Use the token to fetch the google user
 			const googleUser: GoogleUserReponse = await serverFetch("https://www.googleapis.com/userinfo/v2/me", "GET", {
 				token: response.access_token,
 			});
@@ -74,7 +78,9 @@ router.get(
 					constants.REFRESH_TOKEN_EXPIRE_TIME,
 				);
 
+				// Dispatch to whoever is subbed to the state topic of this authentication
 				dispatchToTopic(state, "oauth_redirect", { access_token: accessToken, refresh_token: refreshToken });
+				gateway.getSessionByKey(peer_id)?.unsubscribe(state);
 
 				const redirectUrl = new URL(flow === "browser" ? redirect_url : `${host}/static/redirect.html`);
 				redirectUrl.searchParams.set("flow", flow);
@@ -97,6 +103,7 @@ router.get(
 				update: {},
 			});
 
+			// Get the user's avatar
 			let avatarHash: null | string = null;
 			if (googleUser.picture) {
 				const avatarData = await (await fetch(googleUser.picture.replace("s96-c", "s256-c"))).arrayBuffer();
@@ -107,6 +114,7 @@ router.get(
 				)[0];
 			}
 
+			// Create an identity token
 			const [token] = await createTokens(
 				{
 					providerId: upsertedIdentityProvider.id.toString(),

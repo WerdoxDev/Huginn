@@ -1,4 +1,4 @@
-import type { GatewayOAuthRedirectData, OAuthAction, OAuthType } from "@huginn/shared";
+import type { GatewayOAuthRedirectData, OAuthType } from "@huginn/shared";
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import { UserAttentionType, getCurrentWindow } from "@tauri-apps/api/window";
 import { open } from "@tauri-apps/plugin-shell";
@@ -15,14 +15,9 @@ export function useOAuth() {
 
 	// Websocket
 
-	function startOAuth(type: OAuthType, action: OAuthAction) {
+	function startOAuth(type: OAuthType) {
 		listenOAuth();
-		const url = client.oauth.getOAuthURL(
-			type,
-			appWindow.environment === "browser" ? "browser" : "websocket",
-			action,
-			`${window.origin}/oauth-redirect`,
-		);
+		const url = client.oauth.getOAuthURL(type, appWindow.environment === "browser" ? "browser" : "websocket", `${window.origin}/oauth-redirect`);
 
 		if (appWindow.environment === "browser") {
 			window.open(url, "_self");

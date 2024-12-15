@@ -67,9 +67,23 @@ export async function testHandler(
 		return responseBody;
 	}
 
+	if (response.status >= 300 && response.status < 400) {
+		return response;
+	}
+
 	if (response.status >= 400 && response.status < 500) {
-		const errorData = responseBody as HuginnErrorData;
-		throw new HuginnAPIError(errorData, errorData.code, response.status, method, path, { body });
+		let error: HuginnAPIError;
+		try {
+			// console.log(responseBody);
+			const errorData = responseBody as HuginnErrorData;
+			error = new HuginnAPIError(errorData, errorData.code, response.status, method, path, { body });
+		} catch (e) {
+			throw new HTTPError(response.status, response.statusText, method, path, { body });
+		}
+
+		if (error) {
+			throw error;
+		}
 	}
 
 	if (response.status >= 500 && response.status < 600) {

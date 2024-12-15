@@ -1,6 +1,5 @@
 import type { APIPostRegisterJSONBody } from "@huginn/shared";
 // import { usePostHog } from "posthog-js/react";
-import { redirect } from "react-router";
 
 export default function Register() {
 	const client = useClient();
@@ -68,7 +67,7 @@ export default function Register() {
 			</div>
 			<div className="mt-5 flex w-full gap-x-2">
 				<HuginnButton
-					onClick={() => startOAuth("google", "register")}
+					onClick={() => startOAuth("google")}
 					type="button"
 					innerClassName="flex items-center justify-center gap-x-2"
 					className="w-full rounded-lg border-2 border-accent2 bg-secondary py-2 text-text transition-all hover:shadow-lg"

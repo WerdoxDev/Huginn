@@ -10,7 +10,6 @@ const querySchema = z.object({
 	redirect_url: z.optional(z.string()),
 	state: z.string(),
 	flow: z.string(),
-	action: z.string(),
 	peer_id: z.optional(z.string()),
 });
 
@@ -21,7 +20,7 @@ router.get(
 			return sendNoContent(event, HttpCode.NOT_IMPLEMENTED);
 		}
 
-		const { redirect_url, state, flow, peer_id, action } = await useValidatedQuery(event, querySchema);
+		const { redirect_url, state, flow, peer_id } = await useValidatedQuery(event, querySchema);
 
 		const [error, decodedToken] = await catchError(() => new TextDecoder().decode(decodeBase64(state)).split(":"));
 		if (error) {
@@ -44,7 +43,7 @@ router.get(
 		}
 
 		const session = await useSession(event, { password: envs.SESSION_PASSWORD });
-		await session.update({ state, redirect_url, flow, peer_id, action });
+		await session.update({ state, redirect_url, flow, peer_id });
 
 		if (flow === "websocket" && peer_id) {
 			gateway.getSessionByKey(peer_id)?.subscribe(state);
