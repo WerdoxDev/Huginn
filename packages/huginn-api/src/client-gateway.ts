@@ -10,10 +10,10 @@ import {
 } from "@huginn/shared";
 import type { GatewayPayload, Snowflake } from "@huginn/shared";
 import { isOpcode } from "@huginn/shared";
-import type { HuginnClient } from "../../";
-import { EventEmitterWithHistory } from "../client/event-emitter";
-import { ClientReadyState, type GatewayOptions } from "../types";
-import { DefaultGatewayOptions } from "./constants";
+import type { HuginnClient } from ".";
+import { EventEmitterWithHistory } from "./event-emitter";
+import { ClientReadyState, type GatewayOptions } from "./types";
+import { defaultClientOptions } from "./utils";
 
 export class Gateway {
 	public readonly options: GatewayOptions;
@@ -44,8 +44,8 @@ export class Gateway {
 		this.emitter.off(eventName, handler);
 	}
 
-	public constructor(client: HuginnClient, options: Partial<GatewayOptions> = {}) {
-		this.options = { ...DefaultGatewayOptions, ...options };
+	public constructor(client: HuginnClient, options?: Partial<GatewayOptions>) {
+		this.options = { ...defaultClientOptions.gateway, ...options };
 		this.client = client;
 	}
 
@@ -204,7 +204,7 @@ export class Gateway {
 			op: GatewayOperations.IDENTIFY,
 			d: {
 				token: this.client.tokenHandler.token ?? "",
-				intents: this.client.options.intents,
+				intents: this.options.intents,
 				properties: { os: "windows", browser: "idk", device: "idk" },
 			},
 		};

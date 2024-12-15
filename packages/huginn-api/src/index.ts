@@ -1,2 +1,2 @@
-export * from "./client/huginn-client";
+export * from "./huginn-client";
 export * from "./types";

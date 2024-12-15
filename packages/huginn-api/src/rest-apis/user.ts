@@ -3,11 +3,11 @@ import {
 	type APIGetUserResult,
 	type APIPatchCurrentUserJSONBody,
 	type APIPatchCurrentUserResult,
-	resolveImage,
 	Routes,
 	type Snowflake,
+	resolveImage,
 } from "@huginn/shared";
-import type { REST } from "../rest/rest";
+import type { REST } from "../rest";
 
 export class UserAPI {
 	private readonly rest: REST;

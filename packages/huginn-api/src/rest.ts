@@ -2,16 +2,16 @@ import { HTTPError, type HuginnErrorData, resolveRequest } from "@huginn/shared"
 import { type HandlerRequestData, type InternalRequest, type RequestData, type ResponseLike, parseResponse } from "@huginn/shared";
 import type { RouteLike } from "@huginn/shared";
 import { HuginnAPIError } from "@huginn/shared";
-import type { HuginnClient } from "../..";
-import type { RESTOptions } from "../types";
-import { DefaultRestOptions } from "./rest-utils";
+import type { HuginnClient } from ".";
+import type { RESTOptions } from "./types";
+import { defaultClientOptions } from "./utils";
 
 export class REST {
 	public readonly options: RESTOptions;
 	private client: HuginnClient;
 
 	public constructor(client: HuginnClient, options: Partial<RESTOptions> = {}) {
-		this.options = { ...DefaultRestOptions, ...options };
+		this.options = { ...defaultClientOptions.rest, ...options };
 
 		this.client = client;
 	}

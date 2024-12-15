@@ -1,8 +1,6 @@
-import type { TokenPayload } from "@huginn/shared";
+import type { ResponseLike, TokenPayload } from "@huginn/shared";
 import * as jose from "jose";
-import { DefaultGatewayOptions } from "./gateway/constants";
-import { DefaultRestOptions } from "./rest/rest-utils";
-import type { ClientOptions } from "./types";
+import type { CDNOptions, ClientOptions, GatewayOptions, RESTOptions } from "./types";
 
 export function decodeToken(token: string): [boolean, (TokenPayload & jose.JWTPayload) | null] {
 	try {
@@ -14,10 +12,38 @@ export function decodeToken(token: string): [boolean, (TokenPayload & jose.JWTPa
 	}
 }
 
-export function createDefaultClientOptions(): ClientOptions {
+export const defaultClientOptions = {
+	rest: {
+		api: "https://asgard.huginn.dev/api",
+		authPrefix: "Bearer",
+		makeRequest(url, init) {
+			return defaultMakeRequest(url, init);
+		},
+	} as RESTOptions,
+	cdn: { url: "https://asgard.huginn.dev" } as CDNOptions,
+	gateway: { url: "wss://asgard.huginn.dev/gateway", log: false, intents: 0 } as GatewayOptions,
+} as const;
+
+export async function defaultMakeRequest(url: string, init: RequestInit): Promise<ResponseLike> {
+	const response = await fetch(url, init);
+
 	return {
-		rest: { ...DefaultRestOptions },
-		gateway: { ...DefaultGatewayOptions },
-		intents: 0,
+		body: response.body,
+		async arrayBuffer() {
+			return response.arrayBuffer();
+		},
+		async json() {
+			return response.json();
+		},
+		async text() {
+			return response.text();
+		},
+		get bodyUsed() {
+			return response.bodyUsed;
+		},
+		headers: response.headers,
+		status: response.status,
+		statusText: response.statusText,
+		ok: response.status >= 200 && response.status < 300,
 	};
 }
