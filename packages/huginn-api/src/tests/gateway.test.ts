@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { HuginnClient } from "../client/huginn-client";
+import { HuginnClient } from "../huginn-client";
 
 describe("Gateway", () => {
 	test("should connect and emit 'open' event", async (done) => {

@@ -8,8 +8,8 @@ import {
 	generateRandomString,
 } from "@huginn/shared";
 import { encodeBase64 } from "@std/encoding";
-import type { Gateway } from "../gateway/client-gateway";
-import type { REST } from "../rest/rest";
+import type { Gateway } from "../client-gateway";
+import type { REST } from "../rest";
 
 export class OAuthAPI {
 	private readonly rest: REST;

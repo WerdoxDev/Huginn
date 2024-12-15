@@ -1,17 +1,17 @@
 import type { APIPostLoginResult, APIPostRegisterResult, APIUser, LoginCredentials, RegisterUser, Tokens } from "@huginn/shared";
 import { type Snowflake, WorkerID, snowflake } from "@huginn/shared";
-import { AuthAPI } from "../apis/auth";
-import { ChannelAPI } from "../apis/channel";
-import { CommonAPI } from "../apis/common";
-import { OAuthAPI } from "../apis/oauth";
-import { RelationshipAPI } from "../apis/relationship";
-import { UserAPI } from "../apis/user";
-import { Gateway } from "../gateway/client-gateway";
-import { CDN } from "../rest/cdn";
-import { REST } from "../rest/rest";
-import { TokenHandler } from "../rest/token-handler";
-import { type ClientOptions, ClientReadyState } from "../types";
-import { createDefaultClientOptions } from "../utils";
+import { type ClientOptions, ClientReadyState } from ".";
+import { CDN } from "./cdn";
+import { Gateway } from "./client-gateway";
+import { REST } from "./rest";
+import { AuthAPI } from "./rest-apis/auth";
+import { ChannelAPI } from "./rest-apis/channel";
+import { CommonAPI } from "./rest-apis/common";
+import { OAuthAPI } from "./rest-apis/oauth";
+import { RelationshipAPI } from "./rest-apis/relationship";
+import { UserAPI } from "./rest-apis/user";
+import { TokenHandler } from "./token-handler";
+import { defaultClientOptions } from "./utils";
 
 export class HuginnClient {
 	public readonly options: ClientOptions;
@@ -32,16 +32,14 @@ export class HuginnClient {
 	public readyState: ClientReadyState = ClientReadyState.NONE;
 
 	constructor(options?: Partial<ClientOptions>) {
-		const defaultOptions = createDefaultClientOptions();
-
 		this.options = {
-			...defaultOptions,
+			...defaultClientOptions,
 			...options,
 		};
 
 		this.tokenHandler = new TokenHandler(this);
 		this.rest = new REST(this, this.options.rest);
-		this.cdn = new CDN(this.options.rest?.cdn);
+		this.cdn = new CDN(this.options.cdn);
 
 		this._internals = { rest: this.rest, cdn: this.cdn };
 

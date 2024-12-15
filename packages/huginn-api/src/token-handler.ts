@@ -1,5 +1,5 @@
-import type { HuginnClient } from "../../";
-import { decodeToken } from "../utils";
+import type { HuginnClient } from ".";
+import { decodeToken } from "./utils";
 
 export class TokenHandler {
 	private _token?: string;

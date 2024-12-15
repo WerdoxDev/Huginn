@@ -7,7 +7,7 @@ import type {
 	APIPostRegisterResult,
 } from "@huginn/shared";
 import { Routes } from "@huginn/shared";
-import type { REST } from "../rest/rest";
+import type { REST } from "../rest";
 
 export class AuthAPI {
 	private readonly rest: REST;

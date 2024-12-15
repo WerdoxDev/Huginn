@@ -13,7 +13,7 @@ import type {
 } from "@huginn/shared";
 import { Routes, resolveImage } from "@huginn/shared";
 import type { Snowflake } from "@huginn/shared";
-import type { REST } from "../rest/rest";
+import type { REST } from "../rest";
 
 export class ChannelAPI {
 	private readonly rest: REST;

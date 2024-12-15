@@ -1,0 +1,19 @@
+// Bun Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Client should have correct defualt options: client default options 1`] = `
+{
+  "cdn": {
+    "url": "https://asgard.huginn.dev",
+  },
+  "gateway": {
+    "intents": 0,
+    "log": false,
+    "url": "wss://asgard.huginn.dev/gateway",
+  },
+  "rest": {
+    "api": "https://asgard.huginn.dev/api",
+    "authPrefix": "Bearer",
+    "makeRequest": [Function: makeRequest],
+  },
+}
+`;

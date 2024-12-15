@@ -1,7 +1,7 @@
 import type { APIGetUserRelationshipByIdResult, APIGetUserRelationshipsResult, APIPostRelationshipJSONBody } from "@huginn/shared";
 import { Routes } from "@huginn/shared";
 import type { Snowflake } from "@huginn/shared";
-import type { REST } from "../rest/rest";
+import type { REST } from "../rest";
 
 export class RelationshipAPI {
 	private readonly rest: REST;

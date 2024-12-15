@@ -1,22 +1,26 @@
 import type { ResponseLike } from "@huginn/shared";
 
 export type ClientOptions = {
-	// TODO: Actually implement intents
-	intents: number;
 	rest?: Partial<RESTOptions>;
+	cdn?: Partial<CDNOptions>;
 	gateway?: Partial<GatewayOptions>;
 };
 
 export type RESTOptions = {
 	api: string;
-	cdn: string;
 	authPrefix: "Bearer";
 	makeRequest(url: string, init: RequestInit): Promise<ResponseLike>;
+};
+
+export type CDNOptions = {
+	url: string;
 };
 
 export type GatewayOptions = {
 	url: string;
 	log: boolean;
+	// TODO: Actually implement intents
+	intents: number;
 	createSocket(url: string): WebSocket;
 };
 

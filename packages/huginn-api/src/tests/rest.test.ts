@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { type HuginnErrorData, JsonCode, type RequestMethod, parseResponse, resolveImage, resolveRequest } from "@huginn/shared";
 import pathe from "pathe";
-import { HuginnClient } from "../client/huginn-client";
+import { HuginnClient } from "../huginn-client";
 
 describe("REST", () => {
 	test.each(["GET", "POST", "PATCH", "PUT", "DELETE", "HEAD"])("should correctly resolve a %p request options", async (method) => {

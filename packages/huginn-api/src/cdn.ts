@@ -1,15 +1,12 @@
 import { constants, type ImageFormats, type ImageURLOptions, type Snowflake } from "@huginn/shared";
+import type { CDNOptions } from "./types";
+import { defaultClientOptions } from "./utils";
 
 export class CDN {
-	private readonly cdn?: string;
-	public _internals: {
-		dynamicMakeURL: (route: string, hash: string, options: ImageURLOptions) => string;
-		makeURL: (route: string, options: ImageURLOptions) => string;
-	};
+	private readonly options: CDNOptions;
 
-	public constructor(cdn?: string) {
-		this.cdn = cdn;
-		this._internals = { dynamicMakeURL: this.dynamicMakeURL, makeURL: this.makeURL };
+	public constructor(options?: Partial<CDNOptions>) {
+		this.options = { ...defaultClientOptions.cdn, ...options };
 	}
 
 	public avatar(id: Snowflake, hash: string, options?: Readonly<ImageURLOptions>): string {
@@ -48,7 +45,7 @@ export class CDN {
 			throw new RangeError(`Invalid size provided: ${size}\nMust be one of: ${constants.ALLOWED_IMAGE_SIZES.join(", ")}`);
 		}
 
-		const url = new URL(`${this.cdn}${route}.${format}`);
+		const url = new URL(`${this.options.url}${route}.${format}`);
 
 		if (size) {
 			url.searchParams.set("size", String(size));
