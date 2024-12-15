@@ -14,9 +14,12 @@ export function APIProvider(props: { children?: ReactNode }) {
 	const _client = useMemo(() => {
 		if (!window.location.pathname.includes("splashscreen") && client === undefined) {
 			client = new HuginnClient({
-				rest: { api: `${settings.serverAddress}/api`, cdn: settings.cdnAddress },
+				rest: { api: `${settings.serverAddress}/api` },
+				cdn: { url: settings.cdnAddress },
 				gateway: {
 					url: `${settings.serverAddress}/gateway`,
+					intents: 0,
+					log: true,
 					createSocket(url) {
 						return new WebSocket(url);
 					},
