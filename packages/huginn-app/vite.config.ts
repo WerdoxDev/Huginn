@@ -10,8 +10,10 @@ import AutoImport from "unplugin-auto-import/vite";
 import IconsResolver from "unplugin-icons/resolver";
 import Icons from "unplugin-icons/vite";
 import { defineConfig } from "vite";
+import babel from "vite-plugin-babel";
 
 type CargoToml = { package: { version: string } };
+const reactCompilerConfig = { target: "19" };
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -24,6 +26,13 @@ export default defineConfig({
 			resolvers: [IconsResolver({ prefix: "Icon", extension: "jsx" })],
 			dirs: ["./src/**", "!src/routes/**"],
 			dts: "./src/auto-imports.d.ts",
+		}),
+		babel({
+			filter: /\.[jt]sx?$/,
+			babelConfig: {
+				presets: ["@babel/preset-typescript"],
+				plugins: [["babel-plugin-react-compiler", reactCompilerConfig], "@babel/plugin-syntax-jsx"],
+			},
 		}),
 	],
 
