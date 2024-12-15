@@ -14,6 +14,7 @@
 		"typecheck": "react-router typegen --watch && tsc"
 	},
 	"dependencies": {
+		"@babel/plugin-syntax-jsx": "^7.25.9",
 		"@floating-ui/react": "^0.26.28",
 		"@headlessui/react": "^2.2.0",
 		"@huginn/api": "workspace:*",
@@ -28,6 +29,7 @@
 		"@tauri-apps/plugin-process": "^2.0.0",
 		"@tauri-apps/plugin-shell": "^2.0.1",
 		"@tauri-apps/plugin-updater": "^2.0.0",
+		"babel-plugin-react-compiler": "^19.0.0-beta-37ed2a7-20241206",
 		"clsx": "^2.1.1",
 		"confbox": "^0.1.8",
 		"isbot": "^5.1.17",
@@ -42,7 +44,8 @@
 		"react-router": "^7.0.1",
 		"slate": "^0.110.2",
 		"slate-react": "^0.110.3",
-		"super-image-cropper": "^1.0.23"
+		"super-image-cropper": "^1.0.23",
+		"vite-plugin-babel": "^1.3.0"
 	},
 	"devDependencies": {
 		"@iconify/json": "^2.2.276",
