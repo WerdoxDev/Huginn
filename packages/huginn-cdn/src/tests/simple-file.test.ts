@@ -1,4 +1,4 @@
-import { expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import path from "node:path";
 import { type HuginnErrorFieldInformation, compareArrayBuffers } from "@huginn/shared";
 import { startCdn } from "#cdn";
@@ -10,7 +10,6 @@ const categories = ["avatars", "channel-icons"];
 
 //TODO: Make sure of PlainHandler instead of fetch
 await startCdn({ serve: true, defineOptions: true, storage: "local" });
-
 for (const category of categories) {
 	test(`POST /${category}/123 empty to be not ok`, async () => {
 		const result = await fetch(`${url}/${category}/123`, { method: "POST" });

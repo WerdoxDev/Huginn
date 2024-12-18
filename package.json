@@ -1,9 +1,9 @@
 {
 	"name": "monorepo",
 	"devDependencies": {
-		"@biomejs/biome": "^1.9.2",
+		"@biomejs/biome": "^1.9.4",
 		"@types/bun": "latest",
-		"typescript": "^5.5.4"
+		"typescript": "^5.7.2"
 	},
 	"private": "true",
 	"scripts": {

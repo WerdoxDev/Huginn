@@ -2,7 +2,7 @@ import { type H3Event, createError, getQuery, getRouterParams, readBody } from "
 import type { z } from "zod";
 import { invalidFormBody } from "./route-errors-h3";
 
-export async function useValidatedBody<T extends z.Schema>(event: H3Event, schema: T): Promise<z.infer<T>> {
+export async function useValidatedBody<T extends z.ZodTypeAny>(event: H3Event, schema: T): Promise<z.infer<T>> {
 	try {
 		const body = await readBody(event);
 		const parsedBody = await schema.parse(body);
@@ -12,7 +12,7 @@ export async function useValidatedBody<T extends z.Schema>(event: H3Event, schem
 	}
 }
 
-export async function useValidatedParams<T extends z.Schema>(event: H3Event, schema: T): Promise<z.infer<T>> {
+export async function useValidatedParams<T extends z.ZodTypeAny>(event: H3Event, schema: T): Promise<z.infer<T>> {
 	try {
 		const params = getRouterParams(event);
 		const parsedParams = await schema.parse(params);
@@ -22,7 +22,7 @@ export async function useValidatedParams<T extends z.Schema>(event: H3Event, sch
 	}
 }
 
-export async function useValidatedQuery<T extends z.Schema>(event: H3Event, schema: T): Promise<z.infer<T>> {
+export async function useValidatedQuery<T extends z.ZodTypeAny>(event: H3Event, schema: T): Promise<z.infer<T>> {
 	try {
 		const query = getQuery(event);
 		const parsedQuery = await schema.parse(query);

@@ -8,10 +8,10 @@
 		"tailwind": "bunx tailwindcss -i ./src/routes/static/input.css -o ./src/routes/static/output.css --watch"
 	},
 	"dependencies": {
-		"@aws-sdk/client-s3": "^3.701.0",
+		"@aws-sdk/client-s3": "^3.714.0",
 		"@huginn/backend-shared": "workspace:*",
 		"@huginn/shared": "workspace:*",
-		"@prisma/client": "6",
+		"@prisma/client": "^6.1.0",
 		"@std/collections": "npm:@jsr/std__collections",
 		"@std/encoding": "npm:@jsr/std__encoding",
 		"@std/media-types": "npm:@jsr/std__media-types",
@@ -24,9 +24,9 @@
 		"octokit": "^4.0.2",
 		"ohash": "^1.1.4",
 		"pathe": "^1.1.2",
-		"prisma": "6",
+		"prisma": "^6.1.0",
 		"semver": "^7.6.3",
-		"zod": "^3.23.8"
+		"zod": "^3.24.1"
 	},
 	"devDependencies": {
 		"@octokit/types": "^13.6.2"
