@@ -3,6 +3,9 @@ import { prisma } from "#database";
 
 const users = ["test", "test2", "test3", "test4"];
 
+await prisma.message.deleteMany({ where: { author: { username: { in: users } } } });
+await prisma.readState.deleteMany({ where: { user: { username: { in: users } } } });
+await prisma.channel.deleteMany({ where: { recipients: { every: { username: { in: users } } } } });
 await prisma.user.deleteMany({ where: { username: { in: users } } });
 
 const createdUsers: Awaited<ReturnType<typeof prisma.user.create>>[] = [];
@@ -27,7 +30,11 @@ for (const user of createdUsers) {
 	}
 }
 
-await prisma.channel.createDM(
+const channel = await prisma.channel.createDM(
 	createdUsers[0].id.toString(),
 	createdUsers.slice(1).map((x) => x.id.toString()),
 );
+
+for (const user of createdUsers) {
+	await prisma.readState.createState(user.id.toString(), channel.id.toString());
+}

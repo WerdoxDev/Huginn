@@ -1,5 +1,7 @@
 import { type Snowflake, snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import consola from "consola";
 import { DBErrorType, assertCondition, assertExists, assertId, assertObj, prisma } from "#database";
 
 const readStateExtention = Prisma.defineExtension({
@@ -56,17 +58,34 @@ const readStateExtention = Prisma.defineExtension({
 					throw e;
 				}
 			},
-			async updateLastReadMessage(userId: Snowflake, channelId: Snowflake, lastReadMessageId: Snowflake) {
+			async updateLastReadMessage(userId: Snowflake, channelId: Snowflake, lastReadMessageId: Snowflake, lastReadTimestamp: Date) {
 				try {
+					const olderExists = await prisma.readState.exists({
+						userId: BigInt(userId),
+						channelId: BigInt(channelId),
+						OR: [{ lastReadMessage: null }, { lastReadMessage: { timestamp: { lt: lastReadTimestamp } } }],
+					});
+
+					if (!olderExists) {
+						return;
+					}
+
 					const updatedReadState = await prisma.readState.update({
-						where: { channelId_userId: { userId: BigInt(userId), channelId: BigInt(channelId) } },
-						data: { lastReadMessage: { connect: { id: BigInt(lastReadMessageId) } } },
+						where: {
+							channelId_userId: { userId: BigInt(userId), channelId: BigInt(channelId) },
+							OR: [{ lastReadMessage: null }, { lastReadMessage: { timestamp: { lt: lastReadTimestamp } } }],
+						},
+						data: { lastReadMessage: { connect: { id: BigInt(lastReadMessageId) } }, lastReadTimestamp: lastReadTimestamp },
 					});
 
 					assertObj("updateLastReadMessage", updatedReadState, DBErrorType.NULL_READ_STATE);
 
 					return updatedReadState;
 				} catch (e) {
+					if (e instanceof PrismaClientKnownRequestError && e.code === "P2025") {
+						consola.info("Rare error due to fast updates, ignoring");
+						return;
+					}
 					await assertExists(e, "updateLastReadMessage", DBErrorType.NULL_MESSAGE, [lastReadMessageId]);
 					await assertExists(e, "updateLastReadMessage", DBErrorType.NULL_READ_STATE, [{ userId, channelId }]);
 					throw e;
@@ -75,12 +94,13 @@ const readStateExtention = Prisma.defineExtension({
 			async countUnreadMessages(userId: Snowflake, channelId: Snowflake) {
 				const readState = await prisma.readState.getByUserAndChannelId(userId, channelId);
 
-				const unreadCount = await prisma.message.count({
-					where: { channelId: BigInt(channelId), author: { id: { not: BigInt(userId) } } },
-					cursor: readState.lastReadMessageId ? { id: BigInt(readState.lastReadMessageId) } : undefined,
-				});
+				const unreadCount =
+					(await prisma.message.count({
+						where: { channelId: BigInt(channelId), author: { id: { not: BigInt(userId) } } },
+						cursor: readState.lastReadMessageId ? { id: BigInt(readState.lastReadMessageId) } : undefined,
+					})) - 1;
 
-				return unreadCount;
+				return unreadCount < 0 ? 0 : unreadCount;
 			},
 		},
 	},

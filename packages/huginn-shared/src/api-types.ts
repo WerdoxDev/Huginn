@@ -298,6 +298,7 @@ export type OAuthFlow = "browser" | "websocket";
 export type APIReadState = {
 	channelId: Snowflake;
 	lastReadMessageId: Snowflake | null;
+	lastReadTimestamp: Date | string | null;
 	unreadCount: number;
 };
 

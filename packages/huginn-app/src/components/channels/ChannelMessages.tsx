@@ -1,32 +1,83 @@
-import type { AppChannelMessage, MessageRenderInfo } from "@/types";
+import type { AppChannelMessage, MessageRenderInfo, MessageRendererProps } from "@/types";
 import { MessageType, type Snowflake } from "@huginn/shared";
-import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import clsx from "clsx";
+// import { usePrevious } from "@uidotdev/usehooks";
 import moment from "moment";
-import type { RefObject } from "react";
+import type { DependencyList, EffectCallback, RefObject } from "react";
 
 const topScrollOffset = 100;
 const bottomScrollOffset = 100;
 
+function usePrevious<T>(value: T): T | undefined {
+	const ref = useRef<T | undefined>(undefined);
+
+	useEffect(() => {
+		ref.current = value;
+	}, [value]);
+
+	return ref.current;
+}
+
+function useEffectAllDepsChange(fn: EffectCallback, deps: DependencyList) {
+	const prevDeps = usePrevious(deps);
+	const changeTarget = useRef<typeof deps>(undefined);
+
+	useEffect(() => {
+		// nothing to compare to yet
+		if (changeTarget.current === undefined) {
+			changeTarget.current = prevDeps;
+		}
+
+		// we're mounting, so call the callback
+		if (changeTarget.current === undefined) {
+			return fn();
+		}
+
+		// make sure every dependency has changed
+		if (changeTarget.current.every((dep, i) => dep !== deps[i])) {
+			changeTarget.current = deps;
+
+			return fn();
+		}
+	}, [fn, prevDeps, deps]);
+}
+
 export default function ChannelMessages(props: { channelId: Snowflake; messages: AppChannelMessage[] }) {
 	const client = useClient();
+	const { user } = useUser();
 	const queryClient = useQueryClient();
 	const [sortedMessages, setSortedMessages] = useState<AppChannelMessage[]>([]);
 
 	const { data, fetchNextPage, fetchPreviousPage, isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
 		useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client, props.channelId));
 
-	const channelScroll = useChannelScroll();
-	const channelScrollDispatch = useChannelScrollDispatch();
+	const { savedScrolls, saveScroll, setVisibleMessages, visibleMessages } = useChannelMeta();
 	const [getContent, setContent, removeContent] = useDynamicRefs<HTMLLIElement>();
 	const { listenEvent } = useEvent();
+	const lastReadMessageTimestamp = useRef<number>(undefined);
+	const [firstUnreadMessageId, setFirstUnreadMessageId] = useState<Snowflake | undefined>(undefined);
+	const currentChannel = useCurrentChannel();
 
-	const messageRenderInfos = useMemo<MessageRenderInfo[]>(() => calculateMessageRenderInfos(), [sortedMessages, props.channelId]);
+	const readState = useSingleReadState(props.channelId);
+	const { updateChannelLastReadMessage, getReadState } = useReadStates();
+
+	const messageRenderInfos = useMemo<MessageRenderInfo[]>(
+		() => calculateMessageRenderInfos(),
+		[sortedMessages, props.channelId, firstUnreadMessageId],
+	);
 	const scroll = useRef<HTMLOListElement>(null);
 	const previousScrollTop = useRef(-1);
-	const previousChannelId = useRef<Snowflake>();
+	const previousChannelId = useRef<Snowflake>(undefined);
 	const itemsHeight = useRef(0);
 	const listHasUpdated = useRef(false);
 	const shouldScrollOnNextRender = useRef(false);
+
+	const ackMutation = useMutation({
+		async mutationFn(data: { channelId: Snowflake; messageId: Snowflake }) {
+			await client.channels.ackMessage(data.channelId, data.messageId);
+		},
+	});
 
 	useLayoutEffect(() => {
 		setSortedMessages(
@@ -34,14 +85,14 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 				if (a.preview !== b.preview) {
 					return a.preview ? 1 : -1; // Move true to the end
 				}
-				return moment(a.createdAt).unix() - moment(b.createdAt).unix();
+				return moment(a.timestamp).isAfter(b.timestamp) ? 1 : -1;
 			}),
 		);
 	}, [props.messages]);
 
 	async function onScroll() {
 		if (!scroll.current || sortedMessages.length === 0) return;
-		channelScrollDispatch({ channelId: props.channelId, scroll: scroll.current.scrollTop ?? 0 });
+		saveScroll(props.channelId, scroll.current.scrollTop ?? 0);
 
 		// Scrolling up
 		if (scroll.current.scrollTop <= topScrollOffset && !isFetchingPreviousPage && hasPreviousPage && listHasUpdated.current) {
@@ -53,6 +104,8 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 				}
 			}
 
+			setFirstUnreadMessageId(undefined);
+
 			await fetchPreviousPageExtra();
 		}
 		// Scrolling down
@@ -63,6 +116,9 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			listHasUpdated.current
 		) {
 			listHasUpdated.current = false;
+
+			setFirstUnreadMessageId(undefined);
+
 			await fetchNextPage();
 		}
 	}
@@ -81,12 +137,14 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		const value = sortedMessages.map((message, i) => {
 			const lastMessage: AppChannelMessage | undefined = sortedMessages[i - 1];
 
-			const newDate = !moment(message.createdAt).isSame(lastMessage?.createdAt, "date") && !!lastMessage;
-			const newMinute = !moment(message.createdAt).isSame(lastMessage?.createdAt, "minute");
+			const newDate = !moment(message.timestamp).isSame(lastMessage?.timestamp, "date") && !!lastMessage;
+			const newMinute = !moment(message.timestamp).isSame(lastMessage?.timestamp, "minute");
 			const newAuthor = message.author.id !== lastMessage?.author.id;
 			const exoticType = message.preview ? false : message.type !== MessageType.DEFAULT;
+			const unread = firstUnreadMessageId === message.id;
+			// const unread = i === sortedMessages.length - 1;
 
-			return { message, newMinute, newDate, newAuthor, exoticType };
+			return { message, newMinute, newDate, newAuthor, exoticType, unread };
 		});
 
 		return value;
@@ -122,9 +180,14 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	// 	}
 	// }
 
+	// Listening for new messages
 	useEffect(() => {
 		const unlisten = listenEvent("message_added", (d) => {
-			if (!scroll.current || !d.visible) return;
+			// if (!d.self && d.inLoadedQueryPage && !firstUnreadMessageId) {
+			// 	setFirstUnreadMessageId(d.message.id);
+			// }
+
+			if (!scroll.current || !d.inVisibleQueryPage) return;
 			const scrollOffset = scroll.current.scrollHeight - scroll.current.clientHeight - scroll.current.scrollTop;
 
 			if (d.self || scrollOffset <= 50) {
@@ -136,16 +199,24 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		return () => {
 			unlisten();
 		};
+	}, [props.channelId, firstUnreadMessageId]);
+
+	// Cleanup
+	useEffect(() => {
+		return () => {
+			setFirstUnreadMessageId(undefined);
+			lastReadMessageTimestamp.current = undefined;
+		};
 	}, [props.channelId]);
 
+	// Scrolling to saved scroll
 	useEffect(() => {
 		if (sortedMessages.length === 0) return;
 
 		// checkForExtraSpace();
-		// Scrolling to saved scroll
 		if (previousChannelId.current !== props.channelId) {
-			if (channelScroll.has(props.channelId) && scroll.current) {
-				const newScroll = channelScroll.get(props.channelId) ?? 0;
+			if (savedScrolls.has(props.channelId) && scroll.current) {
+				const newScroll = savedScrolls.get(props.channelId) ?? 0;
 				scroll.current.scrollTop = newScroll;
 			} else {
 				scrollDown();
@@ -154,6 +225,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		}
 	}, [sortedMessages]);
 
+	// Doing height calculations
 	useEffect(() => {
 		if (!scroll.current) return;
 
@@ -185,6 +257,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		listHasUpdated.current = true;
 	}, [sortedMessages]);
 
+	// Should scroll check
 	useEffect(() => {
 		if (!scroll.current || sortedMessages.length === 0) return;
 
@@ -192,6 +265,63 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			scrollDown();
 			shouldScrollOnNextRender.current = false;
 		}
+	}, [sortedMessages]);
+
+	useEffect(() => {
+		async function sendAck() {
+			const latestMessageId = visibleMessages.toSorted((a, b) => a.timestamp - b.timestamp)[visibleMessages.length - 1]?.messageId;
+
+			if (!latestMessageId) {
+				return;
+			}
+
+			const latestMessage = props.messages.find((x) => x.id === latestMessageId);
+
+			if (!latestMessage) {
+				return;
+			}
+
+			if ((!readState?.messageId || moment(readState?.timestamp).isBefore(latestMessage.timestamp)) && user?.id !== latestMessage.author.id) {
+				updateChannelLastReadMessage(props.channelId, latestMessage.id, moment(latestMessage.timestamp).valueOf());
+				await ackMutation.mutateAsync({ channelId: props.channelId, messageId: latestMessage.id });
+			}
+		}
+
+		sendAck();
+	}, [visibleMessages]);
+
+	function onMessageVisiblityChanged(messageId: Snowflake, isVisible: boolean) {
+		const foundMessage = sortedMessages.find((x) => x.id === messageId);
+		if (!foundMessage) {
+			return;
+		}
+		if (isVisible) {
+			setVisibleMessages((old) => [...old, { messageId, timestamp: moment(foundMessage.timestamp).unix() }]);
+		} else {
+			setVisibleMessages((old) => old.filter((x) => x.messageId !== messageId));
+		}
+	}
+
+	useEffect(() => {
+		const lastMessage = sortedMessages[sortedMessages.length - 1];
+		if (lastMessage && lastMessage.author.id === user?.id && currentChannel?.lastMessageId === lastMessage.id) {
+			setFirstUnreadMessageId(undefined);
+			lastReadMessageTimestamp.current = undefined;
+		}
+
+		if (firstUnreadMessageId) {
+			return;
+		}
+
+		if (!lastReadMessageTimestamp.current) {
+			const channelReadState = getReadState(props.channelId);
+			lastReadMessageTimestamp.current = channelReadState?.timestamp;
+		}
+
+		const message = sortedMessages
+			.filter((x) => x.author.id !== user?.id)
+			.find((x) => moment(x.timestamp).isAfter(lastReadMessageTimestamp.current));
+		setFirstUnreadMessageId(message?.id);
 	}, [sortedMessages]);
 
 	return (
@@ -214,6 +344,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 						renderInfo={messageRenderInfos[i]}
 						nextRenderInfo={messageRenderInfos[i + 1]}
 						lastRenderInfo={messageRenderInfos[i - 1]}
+						onVisibilityChanged={onMessageVisiblityChanged}
 						setContent={setContent}
 					/>
 				))}
@@ -222,27 +353,33 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	);
 }
 
-function MessageWrapper(props: {
-	message: AppChannelMessage;
-	renderInfo: MessageRenderInfo;
-	nextRenderInfo?: MessageRenderInfo;
-	lastRenderInfo?: MessageRenderInfo;
-	setContent: (key: string) => RefObject<HTMLLIElement>;
-}) {
+function MessageWrapper(
+	props: {
+		message: AppChannelMessage;
+		setContent: (key: string) => RefObject<HTMLLIElement | null>;
+	} & MessageRendererProps,
+) {
 	return (
 		<>
+			{props.renderInfo.unread && !props.renderInfo.newDate && (
+				<li className="mx-2 my-[2.5px] h-px shrink-0 bg-error" ref={props.setContent(`${props.message.id}_separator`)} />
+			)}
 			{!props.message.preview && props.renderInfo.newDate && (
 				<li
-					className="mx-2 my-5 flex h-0 items-center justify-center text-center font-semibold text-text/70 text-xs [border-top:thin_solid_rgb(var(--color-text)/0.25)]"
+					className={clsx(
+						"mx-2 my-5 flex h-0 items-center justify-center text-center font-semibold text-text/70 text-xs",
+						props.renderInfo.unread ? "[border-top:thin_solid_rgb(var(--color-error))]" : "[border-top:thin_solid_rgb(var(--color-text)/0.25)]",
+					)}
 					ref={props.setContent(`${props.message.id}_separator`)}
 				>
-					<span className="bg-tertiary px-2">{moment(props.message.createdAt).format("DD. MMMM YYYY")}</span>
+					<span className="bg-tertiary px-2">{moment(props.message.timestamp).format("DD. MMMM YYYY")}</span>
 				</li>
 			)}
 			<MessageRenderer
 				renderInfo={props.renderInfo}
 				nextRenderInfo={props.nextRenderInfo}
 				lastRenderInfo={props.lastRenderInfo}
+				onVisibilityChanged={props.onVisibilityChanged}
 				ref={props.setContent(props.message.id)}
 			/>
 		</>

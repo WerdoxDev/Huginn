@@ -64,7 +64,6 @@ export class Gateway {
 				r(true);
 			} else {
 				const onMessage = (data: GatewayPayload) => {
-					console.log("hereeee");
 					if (isOpcode(data, GatewayOperations.HELLO)) {
 						this.sendIdentify();
 					}

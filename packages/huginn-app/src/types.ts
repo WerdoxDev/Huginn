@@ -154,6 +154,7 @@ export type MessageRenderInfo = {
 	newDate: boolean;
 	newAuthor: boolean;
 	exoticType: boolean;
+	unread: boolean;
 };
 
 export type VersionFlavour = "nightly" | "release";
@@ -162,6 +163,7 @@ export type MessageRendererProps = {
 	renderInfo: MessageRenderInfo;
 	nextRenderInfo?: MessageRenderInfo;
 	lastRenderInfo?: MessageRenderInfo;
+	onVisibilityChanged: (messageId: Snowflake, visible: boolean) => void;
 };
 
 export type MutationKinds = {
@@ -176,5 +178,5 @@ export type MutationKinds = {
 };
 
 export type AppChannelMessage =
-	| { preview: true; id: Snowflake; createdAt: string; author: APIMessageUser; nonce?: number | string; content: string }
+	| { preview: true; id: Snowflake; timestamp: string; author: APIMessageUser; nonce?: number | string; content: string; channelId: Snowflake }
 	| ({ preview: false } & APIDefaultMessage);

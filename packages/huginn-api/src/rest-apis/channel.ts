@@ -73,4 +73,8 @@ export class ChannelAPI {
 	public async typing(channelId: Snowflake): Promise<unknown> {
 		return this.rest.post(Routes.channelTyping(channelId), { auth: true });
 	}
+
+	public async ackMessage(channelId: Snowflake, messageId: Snowflake): Promise<unknown> {
+		return this.rest.post(Routes.channelMessageAck(channelId, messageId), { auth: true });
+	}
 }

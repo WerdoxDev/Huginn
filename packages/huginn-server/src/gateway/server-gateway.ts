@@ -210,6 +210,7 @@ export class ServerGateway {
 
 		for (const readState of dbReadStates) {
 			finalReadStates.push({
+				lastReadTimestamp: readState.lastReadTimestamp,
 				channelId: readState.channelId,
 				lastReadMessageId: readState.lastReadMessageId,
 				unreadCount: await prisma.readState.countUnreadMessages(readState.userId, readState.channelId),

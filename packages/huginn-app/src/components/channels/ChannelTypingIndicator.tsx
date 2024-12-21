@@ -5,7 +5,7 @@ export default function ChannelTypingIndicator(props: { channelId: Snowflake }) 
 	const { typings } = useTypings();
 	const { recipients } = useChannelRecipients(props.channelId, undefined);
 
-	const lastValue = useRef<{ count: number; recipientsText: string; channelId: Snowflake }>();
+	const lastValue = useRef<{ count: number; recipientsText: string; channelId: Snowflake }>(undefined);
 
 	const channelTypings = useMemo(
 		() => typings.filter((x) => x.channelId === props.channelId).map((x) => recipients?.find((y) => y.id === x.userId)),

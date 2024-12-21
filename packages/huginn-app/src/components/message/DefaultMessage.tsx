@@ -15,7 +15,7 @@ export default function DefaultMessage(
 ) {
 	const { user } = useUser();
 
-	const formattedTime = useMemo(() => moment(props.renderInfo.message?.createdAt).format("DD.MM.YYYY HH:mm"), [props.renderInfo.message]);
+	const formattedTime = useMemo(() => moment(props.renderInfo.message?.timestamp).format("DD.MM.YYYY HH:mm"), [props.renderInfo.message]);
 	const isSelf = useMemo(() => props.renderInfo.message.author.id === user?.id, [props.renderInfo.message.author]);
 
 	const initialValue = useMemo(() => deserialize(props.renderInfo.message.content ?? ""), []);
@@ -31,6 +31,9 @@ export default function DefaultMessage(
 		() => props.renderInfo.newDate || !props.lastRenderInfo || props.renderInfo.newDate,
 		[props.renderInfo, props.lastRenderInfo],
 	);
+
+	const isNextUnread = useMemo(() => props.nextRenderInfo?.unread, [props.nextRenderInfo]);
+	const isUnread = useMemo(() => props.renderInfo.unread, [props.renderInfo]);
 
 	const [widths, setWidths] = useState<{ width: number; lastWidth: number; nextWidth: number }>({ width: 0, lastWidth: 0, nextWidth: 0 });
 
@@ -49,18 +52,19 @@ export default function DefaultMessage(
 	return (
 		<div
 			className={clsx(
-				"ml-2 flex flex-col items-start gap-y-2 p-2 hover:bg-secondary hover:shadow-lg",
+				"ml-2 flex flex-col items-start gap-y-2 p-2 hover:bg-secondary hover:shadow-md",
 				!isSelf && "ml-4",
 				(isSeparate || isLastExotic) && "rounded-t-lg",
 				isNextSeparate && "rounded-b-lg",
-				!isSeparate && !isLastExotic && "mt-0.5 py-0",
+				!isSeparate && !isLastExotic && "py-0",
+				!isSeparate && !isLastExotic && !isUnread && "mt-0.5",
 				!isNextSeparate && "pb-0",
-				isSeparate && !isNewDate && "mt-1.5",
+				isSeparate && !isNewDate && !isUnread && "mt-1.5",
 			)}
 		>
 			{(isSeparate || isLastExotic) && (
 				<div className="flex items-center gap-x-2 overflow-hidden">
-					<UserAvatarWithStatus
+					<UserAvatar
 						userId={props.renderInfo.message.author.id}
 						avatarHash={props.renderInfo.message.author.avatar}
 						statusSize="0.5rem"
@@ -89,6 +93,7 @@ export default function DefaultMessage(
 							"px-2.5 py-1.5 font-normal text-white [overflow-wrap:anywhere]",
 							props.renderInfo.message.preview && "bg-primary/50 text-white/50",
 							isSelf ? "bg-primary" : "bg-background",
+							isUnread && !isSeparate && "!rounded-t-none",
 							isSeparate && "!rounded-t-xl",
 							isNextSeparate && "!rounded-b-xl",
 						)}
