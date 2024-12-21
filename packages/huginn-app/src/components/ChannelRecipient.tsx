@@ -10,7 +10,7 @@ export default function ChannelRecipient(props: { channelId: Snowflake; isOwner:
 			onContextMenu={(e) => openContextMenu({ channelId: props.channelId, recipient: props.recipient }, e)}
 			className="group/recipient relative flex items-center gap-x-3 rounded-lg p-1.5 hover:cursor-pointer hover:bg-background"
 		>
-			<UserAvatarWithStatus
+			<UserAvatar
 				userId={props.recipient.id}
 				avatarHash={props.recipient.avatar}
 				className={clsx((!presence || presence?.status === "offline") && "opacity-30", "group-hover/recipient:opacity-100")}

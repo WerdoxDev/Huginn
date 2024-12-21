@@ -19,13 +19,14 @@ export function useSendMessage() {
 			const previewMessage: AppChannelMessage = {
 				preview: true,
 				id: snowflake.generateString(WorkerID.APP),
-				createdAt: new Date(Date.now()).toISOString(),
+				timestamp: new Date(Date.now()).toISOString(),
 				content: data.content,
+				channelId: data.channelId,
 				author: pick(user, ["id", "avatar", "displayName", "username", "flags"]),
 				nonce: nonce,
 			};
 
-			dispatchEvent("message_added", { message: previewMessage, visible: true, self: true });
+			dispatchEvent("message_added", { message: previewMessage, inLoadedQueryPage: true, visible: true, self: true, inVisibleQueryPage: true });
 
 			// Add Preview Message
 			queryClient.setQueryData<InfiniteData<AppChannelMessage[], { before: string; after: string }>>(["messages", data.channelId], (old) => {

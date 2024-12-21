@@ -1,13 +1,10 @@
 import { ChannelType, type DirectChannel } from "@huginn/shared";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import { NavLink, useParams } from "react-router";
 
 export default function DirectMessageChannel(props: { channel: DirectChannel; onSelected?: () => void }) {
-	const queryClient = useQueryClient();
-	const client = useClient();
-	const { isLoading } = useInfiniteQuery(getMessagesOptions(queryClient, client, props.channel?.id, false));
-
+	const { isLoading } = useQuery({ queryKey: ["messages", props.channel.id], enabled: false });
 	const { open: openContextMenu } = useContextMenu("dm_channel");
 
 	const { channelId } = useParams();
@@ -29,7 +26,7 @@ export default function DirectMessageChannel(props: { channel: DirectChannel; on
 		>
 			<NavLink prefetch="intent" className="flex items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>
 				{props.channel.type === ChannelType.DM ? (
-					<UserAvatarWithStatus userId={props.channel.recipients[0]?.id} avatarHash={props.channel.recipients[0]?.avatar} className="mr-3" />
+					<UserAvatar userId={props.channel.recipients[0]?.id} avatarHash={props.channel.recipients[0]?.avatar} className="mr-3" />
 				) : (
 					<ChannelIcon channelId={props.channel?.id} iconHash={props.channel?.icon} className="mr-3" />
 				)}

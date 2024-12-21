@@ -201,8 +201,8 @@ type APIBaseMessage = {
 	channelId: Snowflake;
 	author: APIMessageUser;
 	content: string;
-	createdAt: Date | string;
-	editedAt: Date | string | null;
+	timestamp: Date | string;
+	editedTimestamp: Date | string | null;
 	attachments: string[];
 	pinned: boolean;
 	mentions: APIMessageUser[];
@@ -288,6 +288,7 @@ export type OAuthFlow = "browser" | "websocket";
 export type APIReadState = {
 	channelId: Snowflake;
 	lastReadMessageId: Snowflake | null;
+	lastReadTimestamp: Date | string | null;
 	unreadCount: number;
 };
 

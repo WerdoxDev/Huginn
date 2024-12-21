@@ -51,8 +51,8 @@ model Message {
    channel             Channel     @relation(fields: [channelId], references: [id])
    channelId           BigInt
    content             String
-   createdAt           DateTime
-   editedAt            DateTime?
+   timestamp           DateTime
+   editedTimestamp     DateTime?
    mentions            User[]      @relation("message_mentions")
    attachments         String[]
    reactions           String[]
@@ -85,11 +85,12 @@ model IdentityProvider {
 }
 
 model ReadState {
-   channel           Channel  @relation(fields: [channelId], references: [id])
+   channel           Channel   @relation(fields: [channelId], references: [id])
    channelId         BigInt
-   user              User     @relation(fields: [userId], references: [id])
+   user              User      @relation(fields: [userId], references: [id])
    userId            BigInt
-   lastReadMessage   Message? @relation(fields: [lastReadMessageId], references: [id])
+   lastReadTimestamp DateTime?
+   lastReadMessage   Message?  @relation(fields: [lastReadMessageId], references: [id])
    lastReadMessageId BigInt?
 
    @@id([channelId, userId])

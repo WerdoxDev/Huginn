@@ -9,7 +9,7 @@ export function useUniqueUsernameMessage(values: InputValues, resetInput: (input
 	const defaultMessage = "Please only use numbers, letters, _ or .";
 	const [message, setMessage] = useState<MessageDetail>({ text: defaultMessage, status: "default", visible: false });
 
-	const usernameTimeout = useRef<number>();
+	const usernameTimeout = useRef<number>(undefined);
 	const lastFocus = useRef<boolean>(false);
 	const prevUsername = useRef(values[usernameField].value);
 

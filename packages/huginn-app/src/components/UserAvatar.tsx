@@ -2,12 +2,13 @@ import type { Snowflake } from "@huginn/shared";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 
-export default function UserAvatarWithStatus(props: {
+export default function UserAvatar(props: {
 	userId: Snowflake;
 	avatarHash?: string | null;
 	size?: string;
 	statusSize?: string;
 	className?: string;
+	hideStatus?: boolean;
 }) {
 	const client = useClient();
 	const { data: avatar, isLoading } = useQuery(getUserAvatar(props.userId, props.avatarHash, client));
@@ -34,13 +35,15 @@ export default function UserAvatarWithStatus(props: {
 			) : (
 				hasErrors && <div className="flex h-full w-full items-center justify-center rounded-full bg-error/50 font-bold text-text">!</div>
 			)}
-			<div
-				className={clsx(
-					"absolute right-0 bottom-0 rounded-full",
-					presence ? (presence.status === "online" ? "bg-success" : "bg-transparent") : "bg-transparent",
-				)}
-				style={{ width: statusSize, height: statusSize }}
-			/>
+			{!props.hideStatus && (
+				<div
+					className={clsx(
+						"absolute right-0 bottom-0 rounded-full",
+						presence ? (presence.status === "online" ? "bg-success" : "bg-transparent") : "bg-transparent",
+					)}
+					style={{ width: statusSize, height: statusSize }}
+				/>
+			)}
 		</div>
 	);
 }

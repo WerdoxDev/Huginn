@@ -15,7 +15,7 @@ router.post(
 		const { channelId, messageId } = await useValidatedParams(event, schema);
 
 		const message = idFix(await prisma.message.getById(channelId, messageId));
-		await prisma.readState.updateLastReadMessage(payload.id, channelId, message.id);
+		await prisma.readState.updateLastReadMessage(payload.id, channelId, message.id, message.timestamp);
 
 		return sendNoContent(event, HttpCode.OK);
 	}),

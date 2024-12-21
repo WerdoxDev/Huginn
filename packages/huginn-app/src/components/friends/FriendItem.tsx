@@ -50,7 +50,7 @@ export default function FriendItem(props: {
 			}}
 		>
 			<div className="flex">
-				<UserAvatarWithStatus userId={props.user.id} avatarHash={props.user.avatar} className="mr-3" />
+				<UserAvatar userId={props.user.id} avatarHash={props.user.avatar} className="mr-3" />
 				<div className="flex flex-col items-start">
 					<span className="font-semibold text-text">{props.user.displayName ?? props.user.username}</span>
 					<span className="text-sm text-text/50">{presenceText}</span>

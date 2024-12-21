@@ -8,50 +8,14 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 	const client = useClient();
 	const { user } = useUser();
 	const queryClient = useQueryClient();
-	const mutation = useCreateDMChannel("create-dm-channel_other");
-	const { dispatchEvent } = useEvent();
-	const { removeTyping: removeTimeout } = useTypings();
+	const currentChannel = useCurrentChannel();
+	const { updateLastMessageId } = useChannels();
+	const { addMessageToCurrentQueryPage } = useMessages();
+	const { visibleMessages } = useChannelMeta();
 
 	function onMessageCreated(d: GatewayMessageCreateData) {
-		const channels = queryClient.getQueryData<APIGetUserChannelsResult>(["channels", "@me"]);
-		const thisChannelIndex = channels?.findIndex((x) => x.id === d.channelId) ?? -1;
-		const thisChannel = channels?.find((x) => x.id === d.channelId);
-
-		//TODO: Notification stuff goes here
-
-		if (!thisChannel) {
-			mutation.mutate({ recipients: [d.author.id], skipNavigation: true });
-			return;
-		}
-
-		let messageVisible = false;
-
-		queryClient.setQueryData<InfiniteData<AppChannelMessage[], { before: string; after: string }>>(["messages", d.channelId], (old) => {
-			if (!old) return undefined;
-
-			const lastPage = old.pages[old.pages.length - 1];
-			const lastParams = old.pageParams[old.pageParams.length - 1];
-			// See if the message can be appended to the current page
-			if (!lastParams.before && (!lastParams.after || lastPage.some((x) => x.id === thisChannel.lastMessageId))) {
-				messageVisible = true;
-				const newMessage: AppChannelMessage = { ...d, preview: false };
-				return {
-					...old,
-					pages: [...old.pages.toSpliced(old.pages.length - 1, 1, [...lastPage.filter((x) => !x.nonce || x.nonce !== d.nonce), newMessage])],
-				};
-			}
-
-			return old;
-		});
-
-		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (data) => {
-			if (!data || thisChannelIndex === -1) return undefined;
-
-			return [...data.toSpliced(thisChannelIndex, 1, { ...thisChannel, lastMessageId: d.id })];
-		});
-
-		removeTimeout(d.author.id, d.channelId);
-		dispatchEvent("message_added", { message: { ...d, preview: false }, visible: messageVisible, self: d.author.id === user?.id });
+		addMessageToCurrentQueryPage(d);
+		updateLastMessageId(d.channelId, d.id);
 	}
 
 	function onUserUpdated(data: GatewayUserUpdateData | GatewayPresenceUpdateData) {
@@ -82,7 +46,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 			client.gateway.off("user_update", onUserUpdated);
 			client.gateway.off("presence_update", onUserUpdated);
 		};
-	}, []);
+	}, [currentChannel, user, visibleMessages]);
 
 	return props.children;
 }

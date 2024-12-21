@@ -15,19 +15,21 @@ export default function Layout() {
 				<ContextMenuProvider>
 					<UserProvider>
 						<PresenceProvider>
-							<TypingProvider>
-								<MainRenderer>
-									<AuthBackgroundContext.Provider value={{ state: backgroundState, setState: setBackgroundState }}>
-										<div
-											className={clsx("absolute inset-0 bg-secondary", appWindow.environment === "desktop" && "top-6")}
-											style={isTransitioning ? { viewTransitionName: "auth" } : undefined}
-										>
-											<AuthBackgroundSvg state={backgroundState} />
-											<Outlet />
-										</div>
-									</AuthBackgroundContext.Provider>
-								</MainRenderer>
-							</TypingProvider>
+							<ReadStateProvider>
+								<TypingProvider>
+									<MainRenderer>
+										<AuthBackgroundContext.Provider value={{ state: backgroundState, setState: setBackgroundState }}>
+											<div
+												className={clsx("absolute inset-0 bg-secondary", appWindow.environment === "desktop" && "top-6")}
+												style={isTransitioning ? { viewTransitionName: "auth" } : undefined}
+											>
+												<AuthBackgroundSvg state={backgroundState} />
+												<Outlet />
+											</div>
+										</AuthBackgroundContext.Provider>
+									</MainRenderer>
+								</TypingProvider>
+							</ReadStateProvider>
 						</PresenceProvider>
 					</UserProvider>
 				</ContextMenuProvider>

@@ -10,7 +10,7 @@ export default function HomeTopbar(props: { channel: DirectChannel; onRecipients
 		<div className="flex h-[4.75rem] flex-shrink-0 items-center bg-tertiary px-6">
 			<div className="flex w-full items-center">
 				{props.channel.type === ChannelType.DM ? (
-					<UserAvatarWithStatus userId={otherUsers[0]?.id} avatarHash={otherUsers[0]?.avatar} className="mr-3" />
+					<UserAvatar userId={otherUsers[0]?.id} avatarHash={otherUsers[0]?.avatar} className="mr-3" />
 				) : (
 					<ChannelIcon channelId={props.channel?.id} iconHash={props.channel?.icon} className="mr-3" />
 				)}

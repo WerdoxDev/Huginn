@@ -46,7 +46,7 @@ function isPrintableKey(event: KeyboardEvent) {
 export function useSendTyping() {
 	const client = useClient();
 	const canSend = useRef(true);
-	const timeout = useRef<number>();
+	const timeout = useRef<number>(undefined);
 
 	const mutation = useMutation({
 		mutationKey: ["send-typing"],
