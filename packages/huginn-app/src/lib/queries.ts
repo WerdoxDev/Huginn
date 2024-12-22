@@ -33,11 +33,11 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
 		},
 		getNextPageParam(last) {
 			const channels: APIGetUserChannelsResult | undefined = queryClient.getQueryData(["channels", "@me"]);
-			const thisChannel = channels?.find((x) => x.id === channelId);
+			const targetChannel = channels?.find((x) => x.id === channelId);
 
 			const latestMessage = last[last.length - 1];
 
-			return !latestMessage?.preview && latestMessage && (!thisChannel || thisChannel.lastMessageId !== latestMessage.id)
+			return !latestMessage?.preview && latestMessage && (!targetChannel || targetChannel.lastMessageId !== latestMessage.id)
 				? { after: latestMessage.id, before: "" }
 				: undefined;
 		},

@@ -1,5 +1,5 @@
 import { ChannelType, type DirectChannel } from "@huginn/shared";
-import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { NavLink, useParams } from "react-router";
 

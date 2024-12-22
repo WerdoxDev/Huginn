@@ -17,21 +17,17 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 	const location = useLocation();
-
-	const locationRef = useRef(location);
-
-	useEffect(() => {
-		locationRef.current = location;
-	});
+	const { addChannelToReadStates } = useReadStates();
 
 	function onChannelCreated(d: GatewayDMChannelCreateData) {
 		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (old) => (old && !old.some((x) => x.id === d.id) ? [d, ...old] : old));
+		addChannelToReadStates(d.id);
 	}
 
 	function onChannelDeleted(d: GatewayDMChannelDeleteData) {
 		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (old) => old?.filter((x) => x.id !== d.id));
 
-		if (locationRef.current.pathname.includes(d.id)) {
+		if (location.pathname.includes(d.id)) {
 			navigate("/channels/@me", { replace: true, flushSync: true });
 		}
 
@@ -86,7 +82,7 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
 			client.gateway.off("channel_recipient_remove", onChannelRecipientRemoved);
 			client.gateway.off("presence_update", onPresenceUpdated);
 		};
-	}, []);
+	}, [location]);
 
 	return props.children;
 }

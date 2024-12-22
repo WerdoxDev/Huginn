@@ -1,7 +1,7 @@
 import type { APIGetUserChannelsResult, Snowflake } from "@huginn/shared";
 import { useQueryClient } from "@tanstack/react-query";
 
-function useChannels() {
+function useChannelUtils() {
 	const queryClient = useQueryClient();
 
 	function updateLastMessageId(channelId: Snowflake, messageId: Snowflake) {
@@ -11,11 +11,11 @@ function useChannels() {
 			const channel = data.find((x) => x.id === channelId);
 			if (!channel) return data;
 
-			return [...data.filter((x) => x.id !== channelId), { ...channel, lastMessageId: messageId }];
+			return [{ ...channel, lastMessageId: messageId }, ...data.filter((x) => x.id !== channelId)];
 		});
 	}
 
 	return { updateLastMessageId };
 }
 
-export default useChannels;
+export default useChannelUtils;
