@@ -1,5 +1,5 @@
 import type { AppChannelMessage } from "@/types";
-import { type APIGetUserChannelsResult, type GatewayUserUpdateData, omit } from "@huginn/shared";
+import { type GatewayUserUpdateData, omit } from "@huginn/shared";
 import type { APIMessageUser, GatewayMessageCreateData, GatewayPresenceUpdateData } from "@huginn/shared";
 import { type InfiniteData, useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
@@ -9,12 +9,13 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 	const { user } = useUser();
 	const queryClient = useQueryClient();
 	const currentChannel = useCurrentChannel();
-	const { updateLastMessageId } = useChannels();
-	const { addMessageToCurrentQueryPage } = useMessages();
+	const { updateLastMessageId } = useChannelUtils();
+	const { addMessageToCurrentQueryPage } = useMessagesUtils();
 	const { visibleMessages } = useChannelMeta();
+	const appWindow = useWindow();
 
-	function onMessageCreated(d: GatewayMessageCreateData) {
-		addMessageToCurrentQueryPage(d);
+	async function onMessageCreated(d: GatewayMessageCreateData) {
+		await addMessageToCurrentQueryPage(d, true);
 		updateLastMessageId(d.channelId, d.id);
 	}
 
@@ -46,7 +47,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 			client.gateway.off("user_update", onUserUpdated);
 			client.gateway.off("presence_update", onUserUpdated);
 		};
-	}, [currentChannel, user, visibleMessages]);
+	}, [currentChannel, user, visibleMessages, appWindow.focused]);
 
 	return props.children;
 }

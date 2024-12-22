@@ -6,10 +6,12 @@ type WindowContextType = {
 	maximized: boolean;
 	environment: "browser" | "desktop";
 	versionFlavour?: VersionFlavour;
+	focused: boolean;
 };
 
 const defaultValue: WindowContextType = {
 	maximized: false,
+	focused: false,
 	environment: globalThis.__TAURI_INTERNALS__ ? "desktop" : "browser",
 	versionFlavour: await getVersionFlavour(),
 };
@@ -27,7 +29,18 @@ export function WindowProvider(props: { children?: ReactNode }) {
 			});
 		}
 
+		function onFocusChange(event: FocusEvent) {
+			dispatch({ focused: event.type === "focus" });
+		}
+
 		initialize();
+		window.addEventListener("focus", onFocusChange);
+		window.addEventListener("blur", onFocusChange);
+
+		return () => {
+			window.removeEventListener("focus", onFocusChange);
+			window.removeEventListener("blur", onFocusChange);
+		};
 	}, []);
 
 	return (

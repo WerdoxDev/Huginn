@@ -1,33 +1,44 @@
 import type { AppChannelMessage } from "@/types";
 import type { APIGetUserChannelsResult, APIMessage, Snowflake } from "@huginn/shared";
 import { type InfiniteData, useQueryClient } from "@tanstack/react-query";
+import moment from "moment";
 
-export function useMessages() {
+export function useMessagesUtils() {
 	const queryClient = useQueryClient();
 	const { dispatchEvent } = useEvent();
 	const currentChannel = useCurrentChannel();
 	const mutation = useCreateDMChannel("create-dm-channel_other");
 	const { visibleMessages } = useChannelMeta();
 	const { user } = useUser();
+	const { updateChannelLastReadMessage, addChannelToReadStates } = useReadStates();
+	const appWindow = useWindow();
 
 	function getCurrentPageMessages(channelId: Snowflake) {
 		const messages = queryClient.getQueryData<InfiniteData<AppChannelMessage[], { before: string; after: string }>>(["messages", channelId]);
 		return messages?.pages.flat();
 	}
 
-	function addMessageToCurrentQueryPage(message: APIMessage, canCreateChannel = false) {
+	async function addMessageToCurrentQueryPage(message: APIMessage, canCreateChannel = false) {
 		const channels = queryClient.getQueryData<APIGetUserChannelsResult>(["channels", "@me"]);
 		const targetChannel = channels?.find((x) => x.id === message.channelId);
+		const newMessage: AppChannelMessage = { ...message, preview: false };
 
 		if (!targetChannel) {
 			if (!canCreateChannel) return;
-			mutation.mutate({ recipients: [message.author.id], skipNavigation: true });
+			await mutation.mutateAsync({ recipients: [message.author.id], skipNavigation: true });
+			addChannelToReadStates(message.channelId);
+			dispatchEvent("message_added", {
+				message: newMessage,
+				visible: false,
+				inLoadedQueryPage: false,
+				inVisibleQueryPage: false,
+				self: message.author.id === user?.id,
+			});
 			return;
 		}
 
 		let inLoadedQueryPage = false;
 		let inVisibleQueryPage = false;
-		const newMessage: AppChannelMessage = { ...message, preview: false };
 
 		queryClient.setQueryData<InfiniteData<AppChannelMessage[], { before: string; after: string }>>(["messages", message.channelId], (old) => {
 			if (!old) return undefined;
@@ -55,7 +66,10 @@ export function useMessages() {
 
 		dispatchEvent("message_added", {
 			message: newMessage,
-			visible: currentChannel?.id === message.channelId && visibleMessages.some((x) => x.messageId === currentChannel.lastMessageId),
+			visible:
+				currentChannel?.id === message.channelId &&
+				visibleMessages.some((x) => x.messageId === currentChannel.lastMessageId) &&
+				appWindow.focused,
 			inLoadedQueryPage: inLoadedQueryPage,
 			inVisibleQueryPage: inVisibleQueryPage,
 			self: message.author.id === user?.id,
