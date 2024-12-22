@@ -1,7 +1,7 @@
 import { UserFlags, WorkerID, snowflake } from "@huginn/shared";
 import { prisma } from "#database";
 
-const users = ["test", "test2", "test3", "test4"];
+const users = ["user", "user2", "user3", "user4"];
 
 await prisma.message.deleteMany({ where: { author: { username: { in: users } } } });
 await prisma.readState.deleteMany({ where: { user: { username: { in: users } } } });

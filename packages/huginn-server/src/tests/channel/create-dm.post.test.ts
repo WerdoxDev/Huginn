@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { type APIPostDMChannelResult, ChannelType } from "@huginn/shared";
-import { expectChannelExactRecipients, expectChannelExactSchema } from "#tests/expect-utils";
+import { prisma } from "#database";
+import { expectChannelExactRecipients, expectChannelExactSchema, expectReadStatesExactSchema } from "#tests/expect-utils";
 import { authHeader, createTestUsers, removeChannelLater, testHandler } from "#tests/utils";
 
 describe("POST /users/@me/channels", () => {
@@ -24,7 +25,7 @@ describe("POST /users/@me/channels", () => {
 		const result = testHandler("/api/users/@me/channels", {}, "POST", { recipients: [user2.id.toString()] }).then(removeChannelLater);
 		expect(result).rejects.toThrow("Unauthorized");
 	});
-	test("should create a channel with type 0 (DM) when request is successful", async () => {
+	test("should create a channel with type 0 (DM) with read states when request is successful", async () => {
 		const [user, user2] = await createTestUsers(2);
 
 		const result = (await testHandler("/api/users/@me/channels", authHeader(user.accessToken), "POST", {
@@ -33,8 +34,12 @@ describe("POST /users/@me/channels", () => {
 
 		expectChannelExactSchema(result, ChannelType.DM);
 		expectChannelExactRecipients(result, [user2]);
+
+		// Expect all read states to be created
+		const readStates = await prisma.readState.findMany({ where: { channelId: BigInt(result.id) } });
+		expectReadStatesExactSchema(readStates, result.id, [user.id, user2.id]);
 	});
-	test("should create a channel with type 1 (GROUP_DM) when request is successful", async () => {
+	test("should create a channel with type 1 (GROUP_DM) with read states when request is successful", async () => {
 		const [user, user2, user3] = await createTestUsers(3);
 
 		const result = (await testHandler("/api/users/@me/channels", authHeader(user.accessToken), "POST", {
@@ -43,8 +48,12 @@ describe("POST /users/@me/channels", () => {
 
 		expectChannelExactSchema(result, ChannelType.GROUP_DM, undefined, [user.id]);
 		expectChannelExactRecipients(result, [user2, user3]);
+
+		// Expect all read states to be created
+		const readStates = await prisma.readState.findMany({ where: { channelId: BigInt(result.id) } });
+		expectReadStatesExactSchema(readStates, result.id, [user.id, user2.id, user3.id]);
 	});
-	test("should create a channel with type 0 (DM) and name 'test_group' when request is successful", async () => {
+	test("should create a channel with type 1 (GROUP_DM) and name 'test_group' when request is successful", async () => {
 		const [user, user2, user3] = await createTestUsers(3);
 
 		const result = (await testHandler("/api/users/@me/channels", authHeader(user.accessToken), "POST", {
@@ -54,5 +63,9 @@ describe("POST /users/@me/channels", () => {
 
 		expectChannelExactSchema(result, ChannelType.GROUP_DM, undefined, [user.id], "test_group");
 		expectChannelExactRecipients(result, [user2, user3]);
+
+		// Expect all read states to be created
+		const readStates = await prisma.readState.findMany({ where: { channelId: BigInt(result.id) } });
+		expectReadStatesExactSchema(readStates, result.id, [user.id, user2.id, user3.id]);
 	});
 });

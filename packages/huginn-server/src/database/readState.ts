@@ -58,12 +58,12 @@ const readStateExtention = Prisma.defineExtension({
 					throw e;
 				}
 			},
-			async updateLastReadMessage(userId: Snowflake, channelId: Snowflake, lastReadMessageId: Snowflake, lastReadTimestamp: Date) {
+			async updateLastRead(userId: Snowflake, channelId: Snowflake, lastReadMessageId: Snowflake, lastReadMessageTimestamp: Date) {
 				try {
 					const olderExists = await prisma.readState.exists({
 						userId: BigInt(userId),
 						channelId: BigInt(channelId),
-						OR: [{ lastReadMessage: null }, { lastReadMessage: { timestamp: { lt: lastReadTimestamp } } }],
+						OR: [{ lastReadMessage: null }, { lastReadMessage: { timestamp: { lt: lastReadMessageTimestamp } } }],
 					});
 
 					if (!olderExists) {
@@ -73,9 +73,9 @@ const readStateExtention = Prisma.defineExtension({
 					const updatedReadState = await prisma.readState.update({
 						where: {
 							channelId_userId: { userId: BigInt(userId), channelId: BigInt(channelId) },
-							OR: [{ lastReadMessage: null }, { lastReadMessage: { timestamp: { lt: lastReadTimestamp } } }],
+							OR: [{ lastReadMessage: null }, { lastReadMessage: { timestamp: { lt: lastReadMessageTimestamp } } }],
 						},
-						data: { lastReadMessage: { connect: { id: BigInt(lastReadMessageId) } }, lastReadTimestamp: lastReadTimestamp },
+						data: { lastReadMessage: { connect: { id: BigInt(lastReadMessageId) } }, lastReadMessageTimestamp: lastReadMessageTimestamp },
 					});
 
 					assertObj("updateLastReadMessage", updatedReadState, DBErrorType.NULL_READ_STATE);

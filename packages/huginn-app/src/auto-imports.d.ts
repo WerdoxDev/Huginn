@@ -175,6 +175,7 @@ declare global {
   const useChannel: typeof import('./hooks/useChannel')['useChannel']
   const useChannelMeta: typeof import('./contexts/channelMetaContext')['useChannelMeta']
   const useChannelName: typeof import('./hooks/useChannelName')['useChannelName']
+  const useChannelReadState: typeof import('./contexts/readStateContext')['useChannelReadState']
   const useChannelRecipients: typeof import('./hooks/useChannelRecipients')['useChannelRecipients']
   const useChannelUtils: typeof import('./hooks/useChannelUtils')['default']
   const useChannels: typeof import('./hooks/useChannels')['default']

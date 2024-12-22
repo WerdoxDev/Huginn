@@ -1,5 +1,5 @@
 import { afterAll, afterEach } from "bun:test";
-import { disconnectWebSockets, removeChannels, removeUsers, timeSpent } from "./utils";
+import { disconnectWebSockets, removeChannels, removeUsers } from "./utils";
 
 afterEach(() => {
 	disconnectWebSockets();

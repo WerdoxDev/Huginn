@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { type APIPatchDMChannelResult, ChannelType, getFileHash, resolveImage, toArrayBuffer } from "@huginn/shared";
 import pathe from "pathe";
-import { expectChannelExactRecipients, expectChannelExactSchema } from "#tests/expect-utils";
+import { prisma } from "#database";
+import { expectChannelExactRecipients, expectChannelExactSchema, expectReadStatesExactSchema } from "#tests/expect-utils";
 import { authHeader, createTestChannel, createTestUsers, isCDNRunning, testHandler } from "#tests/utils";
 
 describe("PATCH /channels/:channelId", () => {
@@ -72,13 +73,25 @@ describe("PATCH /channels/:channelId", () => {
 			const result = testHandler(`/api/channels/${channel.id}/recipients/${user4.id}`, authHeader(user.accessToken), "PUT");
 			expect(result).resolves.toBe(undefined);
 
+			// user4 should have a read state
+			const readStates = await prisma.readState.findMany({ where: { userId: BigInt(user4.id) } });
+			expectReadStatesExactSchema(readStates, channel.id.toString(), [user4.id]);
+
 			// Non owner adds user5
 			const result2 = testHandler(`/api/channels/${channel.id}/recipients/${user5.id}`, authHeader(user2.accessToken), "PUT");
 			expect(result2).resolves.toBe(undefined);
 
+			// user5 should have a read state
+			const readStates2 = await prisma.readState.findMany({ where: { userId: BigInt(user5.id) } });
+			expectReadStatesExactSchema(readStates2, channel.id.toString(), [user5.id]);
+
 			// Owner removes user4
 			const result3 = testHandler(`/api/channels/${channel.id}/recipients/${user4.id}`, authHeader(user.accessToken), "DELETE");
 			expect(result3).resolves.toBe(undefined);
+
+			// user4 should not have a read state
+			const exists = await prisma.readState.exists({ userId: BigInt(user4.id) });
+			expect(exists).toBeFalse();
 		},
 		{ timeout: 10000 },
 	);

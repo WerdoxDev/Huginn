@@ -18,12 +18,12 @@ export default function Login() {
 		{
 			name: "login",
 			required: true,
-			default: import.meta.env.DEV ? "test" : undefined,
+			default: import.meta.env.DEV ? "user" : undefined,
 		},
 		{
 			name: "password",
 			required: true,
-			default: import.meta.env.DEV ? "test" : undefined,
+			default: import.meta.env.DEV ? "user" : undefined,
 		},
 	]);
 

@@ -10,7 +10,7 @@ export function useMessagesUtils() {
 	const mutation = useCreateDMChannel("create-dm-channel_other");
 	const { visibleMessages } = useChannelMeta();
 	const { user } = useUser();
-	const { updateChannelLastReadMessage, addChannelToReadStates } = useReadStates();
+	const { updateChannelLastReadState: updateChannelLastReadMessage, addChannelToReadStates } = useReadStates();
 	const appWindow = useWindow();
 
 	function getCurrentPageMessages(channelId: Snowflake) {

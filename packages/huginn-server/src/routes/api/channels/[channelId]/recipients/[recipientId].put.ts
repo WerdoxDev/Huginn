@@ -32,11 +32,16 @@ router.put(
 
 		const updatedChannel = idFix(await prisma.channel.addRecipient(channelId, recipientId, includeChannelRecipients));
 
+		// Create read state
+		await prisma.readState.createState(recipientId, channelId);
+
+		// Dispatch recipient add event
 		const addedRecipient = updatedChannel.recipients.find((x) => x.id === recipientId);
 		if (addedRecipient) {
 			dispatchToTopic(channelId, "channel_recipient_add", { channelId: channelId, user: addedRecipient });
 		}
 
+		// Dispatch channel create event
 		gateway.subscribeSessionsToTopic(recipientId, channelId);
 		dispatchChannel(updatedChannel, "channel_create", recipientId);
 
