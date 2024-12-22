@@ -42,10 +42,12 @@ router.delete(
 		const deletedChannel: APIDeleteDMChannelResult = idFix(
 			await prisma.channel.deleteDM(channelId, payload.id, merge(includeChannelRecipients, excludeChannelRecipient(payload.id))),
 		);
-		dispatchToTopic(payload.id, "channel_delete", omit(deletedChannel, ["recipients"]));
 
 		// Delete read state
 		await prisma.readState.deleteState(payload.id, deletedChannel.id);
+
+		// Dispatch channel delete event
+		dispatchToTopic(payload.id, "channel_delete", omit(deletedChannel, ["recipients"]));
 
 		// Dispatch channel recipient remove event
 		const removedRecipient = channel.recipients.find((x) => x.id === payload.id);

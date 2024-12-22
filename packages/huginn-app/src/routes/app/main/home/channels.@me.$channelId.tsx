@@ -1,5 +1,5 @@
 import { ChannelType } from "@huginn/shared";
-import { useQuery, useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import type { Route } from "./+types/channels.@me.$channelId";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {

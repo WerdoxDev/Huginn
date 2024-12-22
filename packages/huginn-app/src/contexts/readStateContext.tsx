@@ -3,8 +3,8 @@ import moment from "moment";
 import { type ReactNode, createContext } from "react";
 
 type ReadStateContextType = {
-	lastReadMessages: ReadonlyArray<ContextReadState>;
-	updateChannelLastReadMessage: (channelId: Snowflake, messageId: Snowflake, timestamp: number) => void;
+	readStates: ReadonlyArray<ContextReadState>;
+	updateChannelLastReadState: (channelId: Snowflake, messageId: Snowflake, messageTimestamp: number) => void;
 	addChannelToReadStates: (channelId: Snowflake) => void;
 	removeChannelFromReadStates: (channelId: Snowflake) => void;
 };
@@ -14,12 +14,12 @@ const ReadStateContext = createContext<ReadStateContextType>({} as ReadStateCont
 
 export function ReadStateProvider(props: { children?: ReactNode }) {
 	const client = useClient();
-	const [lastReadMessages, setLastReadMessages] = useState<ContextReadState[]>([]);
+	const [readStates, setReadStates] = useState<ContextReadState[]>([]);
 	const { listenEvent } = useEvent();
 	const { getCurrentPageMessages } = useMessagesUtils();
 
 	function onReady(d: GatewayReadyData) {
-		setLastReadMessages(
+		setReadStates(
 			d.readStates.map((x) => ({
 				channelId: x.channelId,
 				lastReadMessageId: x.lastReadMessageId ?? undefined,
@@ -29,29 +29,28 @@ export function ReadStateProvider(props: { children?: ReactNode }) {
 		);
 	}
 
-	function updateChannelLastReadMessage(channelId: Snowflake, lastReadMessageId: Snowflake, lastReadMessageTimestamp: number) {
+	function updateChannelLastReadState(channelId: Snowflake, lastReadMessageId: Snowflake, lastReadMessageTimestamp: number) {
 		const messages = getCurrentPageMessages(channelId)?.filter((x) => !x.preview);
-		console.log(messages);
 		if (!messages || !messages.some((x) => x.id === lastReadMessageId)) return;
 
 		const unreadCount = messages.filter((x) => moment(x.timestamp).isAfter(lastReadMessageTimestamp)).length;
 
-		setLastReadMessages((prev) => [
+		setReadStates((prev) => [
 			...prev.filter((x) => x.channelId !== channelId),
 			{ channelId, lastReadMessageId: lastReadMessageId, lastReadMessageTimestamp: lastReadMessageTimestamp, unreadCount: unreadCount },
 		]);
 	}
 
 	function addChannelToReadStates(channelId: Snowflake) {
-		setLastReadMessages((prev) => [...prev, { channelId, lastReadMessageId: undefined, lastReadMessageTimestamp: 0, unreadCount: 0 }]);
+		setReadStates((prev) => [...prev, { channelId, lastReadMessageId: undefined, lastReadMessageTimestamp: 0, unreadCount: 0 }]);
 	}
 
 	function removeChannelFromReadStates(channelId: Snowflake) {
-		setLastReadMessages((prev) => prev.filter((x) => x.channelId !== channelId));
+		setReadStates((prev) => prev.filter((x) => x.channelId !== channelId));
 	}
 
 	function increaseUnreadCount(channelId: Snowflake) {
-		setLastReadMessages((prev) => {
+		setReadStates((prev) => {
 			const readState = prev.find((x) => x.channelId === channelId);
 			console.log(readState);
 			if (readState) {
@@ -78,15 +77,15 @@ export function ReadStateProvider(props: { children?: ReactNode }) {
 	}, []);
 
 	return (
-		<ReadStateContext.Provider value={{ lastReadMessages, updateChannelLastReadMessage, addChannelToReadStates, removeChannelFromReadStates }}>
+		<ReadStateContext.Provider value={{ readStates, updateChannelLastReadState, addChannelToReadStates, removeChannelFromReadStates }}>
 			{props.children}
 		</ReadStateContext.Provider>
 	);
 }
 
-export function useSingleReadState(channelId: Snowflake) {
+export function useChannelReadState(channelId: Snowflake) {
 	const context = useContext(ReadStateContext);
-	return useMemo(() => context.lastReadMessages.find((x) => x.channelId === channelId), [context.lastReadMessages, channelId]);
+	return useMemo(() => context.readStates.find((x) => x.channelId === channelId), [context.readStates, channelId]);
 }
 
 export function useReadStates() {

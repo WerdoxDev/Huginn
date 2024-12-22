@@ -1,5 +1,5 @@
 export default function GuildsBar() {
-	const { lastReadMessages } = useReadStates();
+	const { readStates: lastReadMessages } = useReadStates();
 
 	return (
 		<nav className="flex h-full w-[4.75rem] shrink-0 flex-col bg-background p-3.5">

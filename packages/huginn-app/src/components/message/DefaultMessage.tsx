@@ -32,7 +32,6 @@ export default function DefaultMessage(
 		[props.renderInfo, props.lastRenderInfo],
 	);
 
-	const isNextUnread = useMemo(() => props.nextRenderInfo?.unread, [props.nextRenderInfo]);
 	const isUnread = useMemo(() => props.renderInfo.unread, [props.renderInfo]);
 
 	const [widths, setWidths] = useState<{ width: number; lastWidth: number; nextWidth: number }>({ width: 0, lastWidth: 0, nextWidth: 0 });

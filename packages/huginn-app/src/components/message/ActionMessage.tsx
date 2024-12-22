@@ -13,14 +13,15 @@ export default function ActionMessage(props: MessageRendererProps) {
 
 	const isLastExotic = useMemo(() => props.lastRenderInfo?.exoticType || !props.lastRenderInfo, [props.lastRenderInfo]);
 	const isNextExotic = useMemo(() => props.nextRenderInfo?.exoticType || !props.nextRenderInfo, [props.nextRenderInfo]);
+	const isUnread = useMemo(() => props.renderInfo.unread, [props.renderInfo]);
 
 	const type = useMemo(() => !props.renderInfo.message.preview && props.renderInfo.message.type, [props.renderInfo]);
 	return (
 		<div
 			className={clsx(
 				"flex items-center rounded-r-md py-0.5 pl-4 text-text hover:bg-secondary",
-				!isLastExotic && !props.renderInfo.newDate && "mt-1.5",
-				!isNextExotic && "mb-1.5",
+				!isLastExotic && !props.renderInfo.newDate && !isUnread && "mt-1.5",
+				!isNextExotic && !isUnread && "mb-1.5",
 			)}
 		>
 			{type === MessageType.RECIPIENT_REMOVE && <IconMingcuteArrowLeftFill className="mr-4 size-5 text-error" />}

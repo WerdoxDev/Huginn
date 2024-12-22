@@ -29,12 +29,11 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	const { savedScrolls, saveScroll, setVisibleMessages, visibleMessages } = useChannelMeta();
 	const [getContent, setContent, removeContent] = useDynamicRefs<HTMLLIElement>();
 	const { listenEvent } = useEvent();
-	// const lastReadMessage = useRef<number>(undefined);
 	const [firstUnreadMessageId, setFirstUnreadMessageId] = useState<Snowflake | undefined>(undefined);
 	const appWindow = useWindow();
 
-	const readState = useSingleReadState(props.channelId);
-	const { updateChannelLastReadMessage } = useReadStates();
+	const readState = useChannelReadState(props.channelId);
+	const { updateChannelLastReadState: updateChannelLastReadMessage } = useReadStates();
 
 	const messageRenderInfos = useMemo<MessageRenderInfo[]>(
 		() => calculateMessageRenderInfos(),
@@ -96,7 +95,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		const value = sortedMessages.map((message, i) => {
 			const lastMessage: AppChannelMessage | undefined = sortedMessages[i - 1];
 
-			const newDate = !moment(message.timestamp).isSame(lastMessage?.timestamp, "date") && !!lastMessage;
+			const newDate = !moment(message.timestamp).isSame(lastMessage?.timestamp, "date") || !lastMessage;
 			const newMinute = !moment(message.timestamp).isSame(lastMessage?.timestamp, "minute");
 			const newAuthor = message.author.id !== lastMessage?.author.id;
 			const exoticType = message.preview ? false : message.type !== MessageType.DEFAULT;
@@ -325,17 +324,36 @@ function MessageWrapper(
 	return (
 		<>
 			{props.renderInfo.unread && !props.renderInfo.newDate && (
-				<li className="mx-2 my-[2.5px] h-px shrink-0 bg-error" ref={props.setContent(`${props.message.id}_separator`)} />
+				<li
+					className={clsx(
+						"pointer-events-none relative mr-10 ml-2 flex h-px shrink-0 items-center justify-center bg-error/75",
+						props.lastRenderInfo ? "my-1" : "mb-1",
+					)}
+					ref={props.setContent(`${props.message.id}_separator`)}
+				>
+					<div className="-mr-10 absolute right-0 flex w-10 items-center justify-center rounded-l-md bg-error/75 py-1 font-bold text-white text-xs uppercase">
+						new
+					</div>
+				</li>
 			)}
 			{!props.message.preview && props.renderInfo.newDate && (
 				<li
 					className={clsx(
-						"mx-2 my-5 flex h-0 items-center justify-center text-center font-semibold text-text/70 text-xs",
-						props.renderInfo.unread ? "[border-top:thin_solid_rgb(var(--color-error))]" : "[border-top:thin_solid_rgb(var(--color-text)/0.25)]",
+						"relative my-5 flex h-0 items-center justify-center text-center font-semibold text-xs",
+						props.renderInfo.unread
+							? "mr-10 ml-2 text-error/100 [border-top:thin_solid_rgb(var(--color-error)/0.75)]"
+							: "mx-2 text-text/70 [border-top:thin_solid_rgb(var(--color-text)/0.25)]",
 					)}
 					ref={props.setContent(`${props.message.id}_separator`)}
 				>
-					<span className="bg-tertiary px-2">{moment(props.message.timestamp).format("DD. MMMM YYYY")}</span>
+					<span className={clsx("bg-tertiary px-2", props.renderInfo.unread && "ml-10")}>
+						{moment(props.message.timestamp).format("DD. MMMM YYYY")}
+					</span>
+					{props.renderInfo.unread && (
+						<div className="-mr-8 absolute right-0 flex w-10 items-center justify-center rounded-l-md bg-error/75 py-1 font-bold text-white text-xs uppercase">
+							new
+						</div>
+					)}
 				</li>
 			)}
 			<MessageRenderer

@@ -6,6 +6,7 @@ import {
 	type APIMessageUser,
 	type APIPostDMChannelResult,
 	type APIPublicUser,
+	type APIReadState,
 	type APIRelationUser,
 	type APIRelationshipWithoutOwner,
 	type APIUser,
@@ -246,4 +247,19 @@ export function expectRecipientModifyExactSchema(recipientModify: object, channe
 			flags: user.flags,
 			username: user.username,
 		});
+}
+
+export function expectReadStatesExactSchema(readStates: object[], channelId: Snowflake, userIds: bigint[]) {
+	const parsedReadStates = readStates as (Omit<APIReadState, "userId"> & { userId: bigint })[];
+	expect(readStates.length).toBe(userIds.length);
+
+	expect(
+		parsedReadStates.every((x) => userIds.some((y) => y === x.userId)),
+		"The user ids of read states does not match the expected user ids",
+	).toBeTrue();
+
+	for (const readState of readStates) {
+		expect(Object.keys(readState).sort()).toStrictEqual(["channelId", "userId", "lastReadMessageId", "lastReadMessageTimestamp"].sort());
+		expect(readState).toHaveProperty("channelId", BigInt(channelId));
+	}
 }

@@ -38,6 +38,10 @@ router.delete(
 
 		const updatedChannel = idFix(await prisma.channel.removeRecipient(channelId, recipientId, includeChannelRecipients));
 
+		// Delete read state
+		await prisma.readState.deleteState(recipientId, channelId);
+
+		// Dispatch channel delete event
 		dispatchToTopic(recipientId, "channel_delete", omit(updatedChannel, ["recipients"]));
 		gateway.unsubscribeSessionsFromTopic(recipientId, channelId);
 

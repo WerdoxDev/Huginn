@@ -296,6 +296,7 @@ export type OAuthType = "google" | "github";
 export type OAuthFlow = "browser" | "websocket";
 
 export type APIReadState = {
+	userId: Snowflake;
 	channelId: Snowflake;
 	lastReadMessageId: Snowflake | null;
 	lastReadTimestamp: Date | string | null;
