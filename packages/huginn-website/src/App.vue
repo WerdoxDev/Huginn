@@ -4,7 +4,7 @@ import { Analytics } from "@vercel/analytics/vue";
 import { onMounted, ref } from "vue";
 import HeaderButton from "./components/HeaderButton.vue";
 import ThemeChanger from "./components/ThemeChanger.vue";
-import { loadTheme } from "./scripts/useChangeTheme";
+import { currentTheme, loadTheme } from "./scripts/useChangeTheme";
 
 const isMenuOpen = ref(false);
 
@@ -28,7 +28,7 @@ function closeMenu(event: MouseEvent) {
       class="fixed top-0 flex w-full items-center md:justify-center border-b border-text bg-black/30 px-5 md:px-20 py-4 backdrop-blur-md">
       <RouterLink to="/" class="flex items-center transition-opacity duration-[250ms]"
          :class="{ 'opacity-0': isMenuOpen }">
-         <img src=" /huginn-logo.png" class="size-10" />
+         <img :src="`/logo/${currentTheme.logoOutline}`" class="size-10" />
          <div class="pl-3 text-2xl font-bold">HUGINN</div>
       </RouterLink>
 
@@ -59,7 +59,7 @@ function closeMenu(event: MouseEvent) {
       <div class="fixed right-0 w-4/5 h-full bg-tertiary shadow-xl" v-if="isMenuOpen">
          <div class="m-5 flex">
             <RouterLink to="/" class="flex items-center">
-               <img src="/huginn-logo.png" class="size-10" />
+               <img :src="`/logo/${currentTheme.logo}`" class="size-10" />
                <div class="pl-3 text-2xl font-bold">HUGINN</div>
             </RouterLink>
 

@@ -1,3 +1,5 @@
+import { ref } from "vue";
+
 const themeStorageKey = "theme-type"
 
 export type ThemeType = "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal";
@@ -15,6 +17,9 @@ export type ColorTheme = {
     text: string,
     error: string,
     warning: string,
+
+    logo: string,
+    logoOutline: string,
 }
 
 export const ceruleanTheme: ColorTheme = {
@@ -30,6 +35,9 @@ export const ceruleanTheme: ColorTheme = {
     text: "#EBEBD3",
     error: "#FA8072",
     warning: "#ED9121",
+
+    logo: "huginn-cerulean.png",
+    logoOutline: "huginn-cerulean-outlined.png"
 };
 
 export const pineGreenTheme: ColorTheme = {
@@ -45,6 +53,9 @@ export const pineGreenTheme: ColorTheme = {
     text: "#EBEBD3",
     error: "#FA8072",
     warning: "#ED9121",
+
+    logo: "huginn-pinegreen.png",
+    logoOutline: "huginn-pinegreen-outlined.png"
 };
 
 export const eggplantTheme: ColorTheme = {
@@ -60,6 +71,9 @@ export const eggplantTheme: ColorTheme = {
     text: "#EBEBD3",
     error: "#FA8072",
     warning: "#ED9121",
+
+    logo: "huginn-eggplant.png",
+    logoOutline: "huginn-eggplant-outlined.png"
 };
 
 export const coffeeTheme: ColorTheme = {
@@ -75,6 +89,9 @@ export const coffeeTheme: ColorTheme = {
     text: "#EBEBD3",
     error: "#FA8072",
     warning: "#ED9121",
+
+    logo: "huginn-coffee.png",
+    logoOutline: "huginn-coffee-outlined.png"
 };
 
 export const charcoalTheme: ColorTheme = {
@@ -90,9 +107,12 @@ export const charcoalTheme: ColorTheme = {
     text: "#EBEBD3",
     error: "#FA8072",
     warning: "#ED9121",
+
+    logo: "huginn-charcoal.png",
+    logoOutline: "huginn-charcoal-outlined.png"
 };
 
-export let currentTheme: ColorTheme = coffeeTheme;
+export let currentTheme = ref(coffeeTheme);
 
 export function loadTheme() {
     let loadedTheme: ThemeType = localStorage.getItem(themeStorageKey) as ThemeType
@@ -105,8 +125,8 @@ export function loadTheme() {
 }
 
 export function useChangeTheme(theme: ThemeType) {
-    currentTheme = getColorTheme(theme)
-    setColorProperty(currentTheme)
+    currentTheme.value = getColorTheme(theme)
+    setColorProperty(currentTheme.value)
 
     localStorage.setItem(themeStorageKey, theme)
 }

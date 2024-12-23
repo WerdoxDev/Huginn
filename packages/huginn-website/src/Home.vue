@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import { RouterLink } from "vue-router";
 import { Icon } from "@iconify/vue/dist/iconify.js";
 import { Rive } from "@rive-app/canvas";
+import { currentTheme } from "./scripts/useChangeTheme";
 import Feature from "./components/Feature.vue";
 
 const onlineCount = ref("");
@@ -38,7 +39,7 @@ onMounted(async () => {
       <div class="flex flex-col md:flex-row md:space-x-7">
          <div class="w-full px-4 md:w-96 md:px-0">
             <div class="flex flex-col items-center justify-center md:flex-row md:justify-start">
-               <img src="/huginn-logo.svg"
+               <img :src="`/logo/${currentTheme.logo}`"
                   class="size-20 object-contain transition-all hover:-rotate-12 active:rotate-6" />
                <p class="text-5xl font-extrabold text-text md:ml-4">Huginn</p>
             </div>

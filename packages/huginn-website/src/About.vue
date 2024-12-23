@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Icon } from "@iconify/vue/dist/iconify.js";
+import { currentTheme } from "./scripts/useChangeTheme";
 </script>
 
 <template>
@@ -7,7 +8,7 @@ import { Icon } from "@iconify/vue/dist/iconify.js";
         <div class="flex flex-col w-full px-4 md:max-w-5xl">
 
             <div class="flex items-center justify-center md:justify-start">
-                <img src="/huginn-logo.svg"
+                <img :src="`/logo/${currentTheme.logo}`"
                     class="size-12 object-contain transition-all hover:-rotate-12 active:rotate-6" />
                 <p class="text-4xl text-text font-bold ml-2">About Huginn</p>
             </div>
