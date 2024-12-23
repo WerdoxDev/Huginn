@@ -1,8 +1,8 @@
 import clsx from "clsx";
+import { useStore } from "zustand";
 
 export default function AuthBackgroundSvg(props: { state: number }) {
-	const colorTheme = useTheme();
-	const fillColor = useMemo(() => colorTheme.accent2, [colorTheme]);
+	const fillColor = useStore(useThemeStore(), (state) => state.theme.accent2);
 	const isTransitioning = useMainViewTransitionState();
 
 	const path1 = {

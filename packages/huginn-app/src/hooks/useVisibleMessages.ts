@@ -3,7 +3,7 @@ import type { Snowflake } from "@huginn/shared";
 import moment from "moment";
 
 export function useVisibleMessages(channelId: Snowflake, sortedMessages: AppChannelMessage[]) {
-	const { setCurrentVisibleMessages } = useChannelsInfo();
+	const { addVisibleMessage, removeVisibleMessage, clearVisibleMessages } = useChannelStore();
 
 	function onMessageVisiblityChanged(messageId: Snowflake, isVisible: boolean) {
 		const foundMessage = sortedMessages.find((x) => x.id === messageId);
@@ -11,18 +11,15 @@ export function useVisibleMessages(channelId: Snowflake, sortedMessages: AppChan
 			return;
 		}
 		if (isVisible) {
-			setCurrentVisibleMessages((old) => [
-				...old,
-				{ messageId, messageTimestamp: moment(foundMessage.timestamp).valueOf(), channelId: channelId },
-			]);
+			addVisibleMessage(foundMessage.id, moment(foundMessage.timestamp).valueOf(), channelId);
 		} else {
-			setCurrentVisibleMessages((old) => old.filter((x) => x.messageId !== messageId));
+			removeVisibleMessage(foundMessage.id);
 		}
 	}
 
 	useEffect(() => {
 		return () => {
-			setCurrentVisibleMessages([]);
+			clearVisibleMessages();
 		};
 	}, [channelId]);
 

@@ -18,7 +18,7 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void) {
 	const [info, setInfo] = useState<UpdateInfo>();
 	const contentLength = useRef(0);
 	const downloaded = useRef(0);
-	const appWindow = useWindow();
+	const huginnWindow = useHuginnWindow();
 
 	useEffect(() => {
 		let unlistenProgress: UnlistenFn;
@@ -52,7 +52,7 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void) {
 			unlistenInfo?.();
 			unlistenNotAvailable?.();
 		};
-	}, [appWindow.versionFlavour]);
+	}, [huginnWindow.versionFlavour]);
 
 	async function checkAndDownload(overrideTarget?: VersionFlavour) {
 		if (import.meta.env.DEV) {
@@ -61,7 +61,7 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void) {
 		}
 		// console.log(appWindow.versionFlavour);
 
-		await invoke("check_update", { target: `windows-${overrideTarget ?? appWindow.versionFlavour}` });
+		await invoke("check_update", { target: `windows-${overrideTarget ?? huginnWindow.versionFlavour}` });
 	}
 
 	return { checkAndDownload, info, progress, contentLength, downloaded };

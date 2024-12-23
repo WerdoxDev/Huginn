@@ -13,10 +13,10 @@ const themes: DropboxItem[] = [
 ];
 
 export default function SettingsThemeTab(props: SettingsTabProps) {
-	const themeDispatch = useThemeDispather();
+	const { setTheme } = useTheme();
 
 	function onChange(item: DropboxItem) {
-		themeDispatch(item.value as ThemeType);
+		setTheme(item.value as ThemeType);
 		props.onChange?.({ theme: item.value as ThemeType });
 	}
 

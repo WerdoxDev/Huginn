@@ -54,6 +54,7 @@ export default defineConfig({
 			"@hooks": path.join(__dirname, "./src/hooks"),
 			"@contexts": path.join(__dirname, "./src/contexts"),
 			"@components": path.join(__dirname, "./src/components"),
+			"@stores": path.join(__dirname, "./src/stores"),
 		},
 	},
 	// prevent vite from obscuring rust errors

@@ -4,7 +4,6 @@ import type { APIPostRegisterJSONBody } from "@huginn/shared";
 export default function Register() {
 	const client = useClient();
 	// const posthog = usePostHog();
-	const appWindow = useWindow();
 	const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
 	const initializeClient = useInitializeClient();
 	const startOAuth = useOAuth();

@@ -76,11 +76,11 @@ export default function Root() {
 				<HistoryProvider>
 					{settingsLoaded && (
 						<SettingsProvider>
-							<WindowProvider>
+							<HuginnWindowProvider>
 								<ThemeProvier>
 									<Outlet />
 								</ThemeProvier>
-							</WindowProvider>
+							</HuginnWindowProvider>
 						</SettingsProvider>
 					)}
 				</HistoryProvider>

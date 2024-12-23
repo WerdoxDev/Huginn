@@ -10,12 +10,10 @@ export default function Layout() {
 	return (
 		<div className="absolute inset-0 overflow-hidden">
 			<div className="flex h-full w-full select-none bg-background">
-				<ChannelsInfoProvider>
-					<WebsocketProviders>
-						<GuildsBar />
-						<Outlet />
-					</WebsocketProviders>
-				</ChannelsInfoProvider>
+				<WebsocketProviders>
+					<GuildsBar />
+					<Outlet />
+				</WebsocketProviders>
 			</div>
 		</div>
 	);

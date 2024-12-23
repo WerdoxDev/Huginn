@@ -3,12 +3,12 @@ import { getTauriVersion, getVersion } from "@tauri-apps/api/app";
 import { open } from "@tauri-apps/plugin-shell";
 
 export default function SettingsAboutTab() {
-	const appWindow = useWindow();
+	const huginnWindow = useHuginnWindow();
 	const { data: appData } = useQuery({
 		queryKey: ["app-data"],
 		queryFn: async () => {
-			const version = appWindow.environment === "desktop" ? await getVersion() : __APP_VERSION__;
-			const tauriVersion = appWindow.environment === "desktop" && (await getTauriVersion());
+			const version = huginnWindow.environment === "desktop" ? await getVersion() : __APP_VERSION__;
+			const tauriVersion = huginnWindow.environment === "desktop" && (await getTauriVersion());
 
 			return { version, tauriVersion };
 		},
@@ -40,7 +40,7 @@ export default function SettingsAboutTab() {
 					<span className="text-text/70">App version: </span>
 					{appData?.version}
 				</div>
-				{appWindow.environment === "desktop" && (
+				{huginnWindow.environment === "desktop" && (
 					<div>
 						<span className="text-text/70">Tauri version: </span>
 						{appData?.tauriVersion}

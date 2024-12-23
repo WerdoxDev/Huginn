@@ -4,7 +4,7 @@ import type { ReactPortal } from "react";
 import { createPortal } from "react-dom";
 
 export default function TitleBar(): ReactPortal {
-	const huginnWindow = useWindow();
+	const huginnWindow = useHuginnWindow();
 	const appWindow = useRef<WebviewWindow>(undefined);
 
 	async function minimize() {

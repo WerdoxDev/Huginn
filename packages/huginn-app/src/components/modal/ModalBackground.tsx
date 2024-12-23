@@ -2,11 +2,11 @@ import { DialogBackdrop } from "@headlessui/react";
 import clsx from "clsx";
 
 export default function ModalBackground() {
-	const appWindow = useWindow();
+	const huginnWindow = useHuginnWindow();
 
 	return (
 		<DialogBackdrop
-			className={clsx("fixed inset-0 bg-black/50", !appWindow.maximized && "rounded-b-lg", appWindow.environment === "desktop" && "top-6")}
+			className={clsx("fixed inset-0 bg-black/50", !huginnWindow.maximized && "rounded-b-lg", huginnWindow.environment === "desktop" && "top-6")}
 		/>
 	);
 }
