@@ -17,7 +17,7 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 	const location = useLocation();
-	const { addChannelToReadStates } = useReadStates();
+	const { addChannelToReadStates, removeChannelFromReadStates } = useReadStates();
 
 	function onChannelCreated(d: GatewayDMChannelCreateData) {
 		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (old) => (old && !old.some((x) => x.id === d.id) ? [d, ...old] : old));
@@ -31,6 +31,7 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
 			navigate("/channels/@me", { replace: true, flushSync: true });
 		}
 
+		removeChannelFromReadStates(d.id);
 		queryClient.removeQueries({ queryKey: ["messages", d.id] });
 	}
 

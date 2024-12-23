@@ -13,12 +13,11 @@ export function useLogout() {
 		},
 	});
 
-	async function logout(shouldNavigate: boolean) {
+	async function logout() {
 		localStorage.removeItem("refresh-token");
 		localStorage.removeItem("access-token");
-		await mutation.mutateAsync();
+		mutation.mutate();
 
-		if (!shouldNavigate) return;
 		await navigate("/login", { replace: true, viewTransition: true });
 
 		queryClient.removeQueries({ queryKey: ["channels"] });

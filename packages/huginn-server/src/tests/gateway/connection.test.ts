@@ -7,6 +7,7 @@ import {
 	GatewayOperations,
 	type GatewayPayload,
 	type GatewayResume,
+	type GatewayResumeData,
 } from "@huginn/shared";
 import { gateway } from "#server";
 import { createTestUsers, getReadyWebSocket, getWebSocket, testIsDispatch, testIsOpcode, wsSend } from "#tests/utils";
@@ -102,20 +103,31 @@ describe("Connection", () => {
 		};
 	});
 
-	test("should close the websocket with code 4006 (INVALID_SEQ) when the sent sequence number is invalid", async (done) => {
-		const { ws } = await getReadyWebSocket();
+	test("should close the websocket with code 4006 (INVALID_SEQ) when the sent sequence number for resuming is invalid", async (done) => {
+		const { ws, user, readyData } = await getReadyWebSocket();
+		ws.close();
 
-		const heartbeatData: GatewayHeartbeat = {
-			op: GatewayOperations.HEARTBEAT,
-			d: 10,
+		for (let i = 0; i < 10; i++) {
+			gateway.sendToTopic(user.id.toString(), { op: GatewayOperations.DISPATCH, s: 0, d: i });
+		}
+
+		const ws2 = await getWebSocket();
+
+		const resumeData: GatewayResume = {
+			op: GatewayOperations.RESUME,
+			d: { sessionId: readyData.sessionId, token: user.accessToken, seq: 11 },
 		};
 
-		ws.onclose = ({ code }) => {
+		ws2.onclose = ({ code }) => {
 			expect(code).toBe(GatewayCode.INVALID_SEQ);
 			done();
 		};
 
-		wsSend(ws, heartbeatData);
+		ws2.onmessage = (event) => {
+			if (testIsOpcode(event.data, GatewayOperations.HELLO)) {
+				wsSend(ws2, resumeData);
+			}
+		};
 	});
 
 	test("should close the websocket with code 4009 (INVALID_SESSION) when trying to resume a non existing session", async (done) => {

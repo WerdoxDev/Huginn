@@ -159,10 +159,10 @@ export class ServerGateway {
 	private handleHeartbeat(peer: Peer, data: GatewayHeartbeat) {
 		const client = this.getSessionByPeerId(peer.id);
 
-		if (client && data.d !== client?.sequence) {
-			peer.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
-			return;
-		}
+		// if (client && data.d !== client?.sequence) {
+		// 	peer.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
+		// 	return;
+		// }
 
 		client?.resetTimeout();
 		const hearbeatAckData: GatewayHeartbeatAck = { op: GatewayOperations.HEARTBEAT_ACK };
@@ -210,7 +210,7 @@ export class ServerGateway {
 
 		for (const readState of dbReadStates) {
 			finalReadStates.push({
-				lastReadTimestamp: readState.lastReadTimestamp,
+				lastReadMessageTimestamp: readState.lastReadMessageTimestamp,
 				channelId: readState.channelId,
 				lastReadMessageId: readState.lastReadMessageId,
 				unreadCount: await prisma.readState.countUnreadMessages(readState.userId, readState.channelId),

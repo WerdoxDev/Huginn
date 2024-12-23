@@ -14,6 +14,7 @@ export function getChannelsOptions(client: HuginnClient, guildId: Snowflake) {
 		initialData: () => client.gateway.readyData?.privateChannels,
 	});
 }
+
 export function getMessagesOptions(queryClient: QueryClient, client: HuginnClient, channelId: Snowflake, enabled = true) {
 	return infiniteQueryOptions({
 		queryKey: ["messages", channelId],

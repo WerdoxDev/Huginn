@@ -8,7 +8,7 @@ export default function UserInfo(props: { user: APIUser }) {
 
 	const mutation = useMutation({
 		async mutationFn() {
-			await logout(true);
+			await logout();
 		},
 	});
 

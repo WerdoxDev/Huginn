@@ -55,12 +55,12 @@ export class Gateway {
 	}
 
 	public async authenticate(): Promise<void> {
-		if (this.socket?.readyState !== WebSocket.OPEN) {
+		if (this.socket?.readyState !== WebSocket.OPEN && this.socket?.readyState !== WebSocket.CONNECTING) {
 			throw new Error("WebSocket is not connected.");
 		}
 
 		const result = await new Promise((r) => {
-			if (this.client.user) {
+			if (this.client.user && this.client.readyState === ClientReadyState.READY) {
 				r(true);
 			} else {
 				const onMessage = (data: GatewayPayload) => {
@@ -133,13 +133,14 @@ export class Gateway {
 
 			this.connect();
 
-			// if (this.client.readyState === ClientReadyState.READY) {
-			// 	await this.identify();
-			// }
+			if (this.client.readyState === ClientReadyState.READY) {
+				this.client.readyState = ClientReadyState.RECONNECRING;
+				await this.authenticate();
+			}
 		}, 1000);
 	}
 
-	private onMessage(e: MessageEvent) {
+	private async onMessage(e: MessageEvent) {
 		if (typeof e.data !== "string") {
 			console.error("Non string messages are not yet supported");
 			return;
@@ -149,7 +150,7 @@ export class Gateway {
 
 		// Hello
 		if (isOpcode(data, GatewayOperations.HELLO)) {
-			this.handleHello(data);
+			await this.handleHello(data);
 			this.emit("hello", data.d);
 			// Dispatch
 		} else if (isOpcode(data, GatewayOperations.DISPATCH)) {
@@ -171,7 +172,7 @@ export class Gateway {
 		this.sessionId = undefined;
 	}
 
-	private handleHello(data: GatewayHello) {
+	private async handleHello(data: GatewayHello) {
 		this.peerId = data.d.peerId;
 		this.startHeartbeat(data.d.heartbeatInterval);
 

@@ -107,13 +107,16 @@ export class HuginnClient {
 	}
 
 	public async logout(): Promise<void> {
-		await this.auth.logout();
+		try {
+			this.readyState = ClientReadyState.NONE;
+			await this.auth.logout();
+		} catch (e) {
+			console.log(e);
+		}
 
 		this.tokenHandler.token = undefined;
 		this.user = undefined;
 		this.gateway.close();
-
-		this.readyState = ClientReadyState.NONE;
 	}
 
 	public get isLoggedIn(): boolean {

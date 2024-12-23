@@ -48,7 +48,7 @@ export default function SettingsModal() {
 
 	const settings = useSettings();
 	const [settingsValid, setSettingsValid] = useState(false);
-	const modifiedSettings = useRef<DeepPartial<SettingsContextType>>();
+	const modifiedSettings = useRef<DeepPartial<SettingsContextType>>(undefined);
 	const settingsDispatch = useSettingsDispatcher();
 
 	useEffect(() => {
