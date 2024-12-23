@@ -1,11 +1,11 @@
 export default function GuildsBar() {
-	const { readStates: lastReadMessages } = useReadStates();
+	const { readStates } = useReadStates();
 
 	return (
 		<nav className="flex h-full w-[4.75rem] shrink-0 flex-col bg-background p-3.5">
 			<HomeButton />
 			<div className="flex flex-col items-center justify-center">
-				{lastReadMessages
+				{readStates
 					.filter((x) => x.unreadCount > 0)
 					.map((x) => (
 						<UnreadChannel key={x.channelId} channelId={x.channelId} unreadCount={x.unreadCount} />

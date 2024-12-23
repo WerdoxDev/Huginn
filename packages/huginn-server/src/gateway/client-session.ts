@@ -3,7 +3,6 @@ import { constants, RelationshipType, merge } from "@huginn/shared";
 import { GatewayCode } from "@huginn/shared";
 import type { GatewayPayload } from "@huginn/shared";
 import { idFix } from "@huginn/shared";
-import type { ServerWebSocket } from "bun";
 import type { Peer } from "crossws";
 import { excludeChannelRecipient, includeChannelRecipients, includeRelationshipUser } from "#database/common";
 import { prisma } from "#database/index";

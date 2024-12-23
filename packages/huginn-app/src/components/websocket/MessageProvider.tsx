@@ -1,21 +1,81 @@
 import type { AppChannelMessage } from "@/types";
 import { type GatewayUserUpdateData, omit } from "@huginn/shared";
-import type { APIMessageUser, GatewayMessageCreateData, GatewayPresenceUpdateData } from "@huginn/shared";
+import type {
+	APIGetUserChannelsResult,
+	APIMessage,
+	APIMessageUser,
+	GatewayMessageCreateData,
+	GatewayPresenceUpdateData,
+	Snowflake,
+} from "@huginn/shared";
 import { type InfiniteData, useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 
 export default function MessageProvider(props: { children?: ReactNode }) {
-	const client = useClient();
-	const { user } = useUser();
 	const queryClient = useQueryClient();
+	const { dispatchEvent } = useEvent();
 	const currentChannel = useCurrentChannel();
+	const mutation = useCreateDMChannel("create-dm-channel_other");
+	const { currentVisibleMessages } = useChannelsInfo();
 	const { updateLastMessageId } = useChannelUtils();
-	const { addMessageToCurrentQueryPage } = useMessagesUtils();
-	const { visibleMessages } = useChannelMeta();
+	const { user } = useUser();
+	const { addChannelToReadStates } = useReadStates();
 	const appWindow = useWindow();
 
 	async function onMessageCreated(d: GatewayMessageCreateData) {
-		await addMessageToCurrentQueryPage(d, true);
+		const channels = queryClient.getQueryData<APIGetUserChannelsResult>(["channels", "@me"]);
+		const targetChannel = channels?.find((x) => x.id === d.channelId);
+		const newMessage: AppChannelMessage = { ...d, preview: false };
+
+		if (!targetChannel) {
+			await mutation.mutateAsync({ recipients: [d.author.id], skipNavigation: true });
+			addChannelToReadStates(d.channelId);
+			dispatchEvent("message_added", {
+				message: newMessage,
+				visible: false,
+				inLoadedQueryPage: false,
+				inVisibleQueryPage: false,
+				self: d.author.id === user?.id,
+			});
+			return;
+		}
+
+		let inLoadedQueryPage = false;
+		let inVisibleQueryPage = false;
+
+		queryClient.setQueryData<InfiniteData<AppChannelMessage[], { before: string; after: string }>>(["messages", d.channelId], (old) => {
+			if (!old) return undefined;
+
+			const lastPage = old.pages[old.pages.length - 1];
+			const lastParams = old.pageParams[old.pageParams.length - 1];
+			// See if the message can be appended to the current page
+			if (!lastParams.before && (!lastParams.after || lastPage.some((x) => x.id === targetChannel?.lastMessageId))) {
+				inLoadedQueryPage = true;
+				console.log(targetChannel.id, currentChannel?.id);
+				if (targetChannel.id === currentChannel?.id) {
+					inVisibleQueryPage = true;
+				}
+
+				return {
+					...old,
+					pages: [...old.pages.toSpliced(old.pages.length - 1, 1, [...lastPage.filter((x) => !x.nonce || x.nonce !== d.nonce), newMessage])],
+				};
+			}
+
+			return old;
+		});
+
+		dispatchEvent("message_added", {
+			message: newMessage,
+			visible:
+				currentChannel?.id === d.channelId &&
+				currentVisibleMessages.some((x) => x.messageId === currentChannel.lastMessageId) &&
+				appWindow.focused,
+			inLoadedQueryPage: inLoadedQueryPage,
+			inVisibleQueryPage: inVisibleQueryPage,
+			self: d.author.id === user?.id,
+		});
+
 		updateLastMessageId(d.channelId, d.id);
 	}
 
@@ -47,7 +107,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 			client.gateway.off("user_update", onUserUpdated);
 			client.gateway.off("presence_update", onUserUpdated);
 		};
-	}, [currentChannel, user, visibleMessages, appWindow.focused]);
+	}, [currentChannel, user, currentVisibleMessages, appWindow.focused]);
 
 	return props.children;
 }

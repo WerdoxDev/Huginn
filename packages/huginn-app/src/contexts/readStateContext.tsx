@@ -23,7 +23,7 @@ export function ReadStateProvider(props: { children?: ReactNode }) {
 			d.readStates.map((x) => ({
 				channelId: x.channelId,
 				lastReadMessageId: x.lastReadMessageId ?? undefined,
-				lastReadMessageTimestamp: moment(x.lastReadTimestamp).valueOf() ?? 0,
+				lastReadMessageTimestamp: moment(x.lastReadMessageTimestamp).valueOf() ?? 0,
 				unreadCount: x.unreadCount,
 			})),
 		);
@@ -52,7 +52,6 @@ export function ReadStateProvider(props: { children?: ReactNode }) {
 	function increaseUnreadCount(channelId: Snowflake) {
 		setReadStates((prev) => {
 			const readState = prev.find((x) => x.channelId === channelId);
-			console.log(readState);
 			if (readState) {
 				return [...prev.filter((x) => x.channelId !== channelId), { ...readState, unreadCount: readState.unreadCount + 1 }];
 			}
@@ -62,7 +61,6 @@ export function ReadStateProvider(props: { children?: ReactNode }) {
 
 	useEffect(() => {
 		const unlisten = listenEvent("message_added", (data) => {
-			console.log(data);
 			if (!data.self && !data.visible) {
 				increaseUnreadCount(data.message.channelId);
 			}

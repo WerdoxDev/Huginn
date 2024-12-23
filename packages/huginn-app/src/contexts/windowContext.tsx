@@ -26,6 +26,7 @@ export function WindowProvider(props: { children?: ReactNode }) {
 		async function initialize() {
 			dispatch({
 				maximized: globalThis.__TAURI_INTERNALS__ ? await getCurrentWebviewWindow().isMaximized() : true,
+				focused: document.hasFocus(),
 			});
 		}
 

@@ -334,7 +334,7 @@ export async function createTestMessages(channelId: bigint, authorId: bigint, am
 			channelId,
 			authorId,
 			type: MessageType.DEFAULT,
-			createdAt: new Date(),
+			timestamp: new Date(),
 			pinned: false,
 		});
 	}

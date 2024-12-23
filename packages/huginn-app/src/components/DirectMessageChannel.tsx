@@ -1,10 +1,12 @@
 import { ChannelType, type DirectChannel } from "@huginn/shared";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import { NavLink, useParams } from "react-router";
 
 export default function DirectMessageChannel(props: { channel: DirectChannel; onSelected?: () => void }) {
-	const { isLoading } = useQuery({ queryKey: ["messages", props.channel.id], enabled: false });
+	const client = useClient();
+	const queryClient = useQueryClient();
+	const { isLoading } = useInfiniteQuery(getMessagesOptions(queryClient, client, props.channel.id, false));
 	const { open: openContextMenu } = useContextMenu("dm_channel");
 
 	const { channelId } = useParams();

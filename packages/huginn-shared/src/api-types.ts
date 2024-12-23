@@ -299,7 +299,7 @@ export type APIReadState = {
 	userId: Snowflake;
 	channelId: Snowflake;
 	lastReadMessageId: Snowflake | null;
-	lastReadTimestamp: Date | string | null;
+	lastReadMessageTimestamp: Date | string | null;
 	unreadCount: number;
 };
 
