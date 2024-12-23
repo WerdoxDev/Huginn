@@ -6,15 +6,15 @@ import { ref } from "vue";
 const isVisible = ref(false);
 
 const featureProps = defineProps<{
-	header: string;
-	text: string;
-	icon: string;
+    header: string;
+    text: string;
+    icon: string;
 }>();
 
 function onElementVisible(state: boolean) {
-	if (!state) return;
+    if (!state) return;
 
-	isVisible.value = true;
+    isVisible.value = true;
 }
 </script>
 
@@ -22,11 +22,11 @@ function onElementVisible(state: boolean) {
 
     <div v-element-visibility="onElementVisible" class="w-full md:w-[38rem] md:h-64">
         <Transition name="fade">
-            <div v-if="isVisible" class="bg-[#262626] rounded-2xl h-full w-full p-6">
+            <div v-if="isVisible" class="bg-secondary rounded-2xl h-full w-full p-6">
 
                 <div class="space-y-4">
                     <div class="flex flex-row items-center space-x-2">
-                        <Icon :icon="featureProps.icon" class="size-8 text-[#D99A6C]" />
+                        <Icon :icon="featureProps.icon" class="size-8 text-accent" />
                         <div class="text-xl md:text-2xl font-bold">{{ featureProps.header }}</div>
                     </div>
 

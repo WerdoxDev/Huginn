@@ -1,25 +1,31 @@
 <script setup lang="ts">
 import { Icon } from "@iconify/vue/dist/iconify.js";
 import { Analytics } from "@vercel/analytics/vue";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import HeaderButton from "./components/HeaderButton.vue";
+import ThemeChanger from "./components/ThemeChanger.vue";
+import { loadTheme } from "./scripts/useChangeTheme";
 
 const isMenuOpen = ref(false);
 
+onMounted(() => {
+   loadTheme()
+})
+
 function toggleMenu(event: MouseEvent) {
-	isMenuOpen.value = !isMenuOpen.value;
+   isMenuOpen.value = !isMenuOpen.value;
 }
 function closeMenu(event: MouseEvent) {
-	event.stopPropagation();
-	isMenuOpen.value = false;
+   event.stopPropagation();
+   isMenuOpen.value = false;
 }
 </script>
 
 <template>
-   <Analytics/>
+   <Analytics />
    <!-- Header -->
    <div
-      class="fixed top-0 flex w-full items-center md:justify-center border-b border-[#EBEBD3] bg-black/30 px-5 md:px-20 py-4 backdrop-blur-md">
+      class="fixed top-0 flex w-full items-center md:justify-center border-b border-text bg-black/30 px-5 md:px-20 py-4 backdrop-blur-md">
       <RouterLink to="/" class="flex items-center transition-opacity duration-[250ms]"
          :class="{ 'opacity-0': isMenuOpen }">
          <img src=" /huginn-logo.png" class="size-10" />
@@ -36,7 +42,7 @@ function closeMenu(event: MouseEvent) {
          <HeaderButton link="/about" text="About" />
          <HeaderButton link="/download" text="Download" />
 
-         <div class="w-0.5 bg-[#EBEBD3]/30" />
+         <div class="w-0.5 bg-text/30" />
 
          <a href="https://github.com/WerdoxDev/Huginn" target="_blank">
             <Icon icon="bi:github" class="size-6 transition-all hover:shadow-md" />
@@ -50,7 +56,7 @@ function closeMenu(event: MouseEvent) {
    </Transition>
 
    <Transition name="slide-in-out">
-      <div class="fixed right-0 w-4/5 h-full bg-[#1f1f1f] shadow-xl" v-if="isMenuOpen">
+      <div class="fixed right-0 w-4/5 h-full bg-tertiary shadow-xl" v-if="isMenuOpen">
          <div class="m-5 flex">
             <RouterLink to="/" class="flex items-center">
                <img src="/huginn-logo.png" class="size-10" />
@@ -71,28 +77,30 @@ function closeMenu(event: MouseEvent) {
       </div>
    </Transition>
 
-
    <!-- Router View & Footer -->
    <div class="flex h-full flex-col">
+
       <RouterView />
+
+      <ThemeChanger class="sticky bottom-5 ml-auto mr-5 mb-5" />
 
       <!-- Footer -->
       <div
-         class="flex shrink-0 flex-col md:flex-row border-t border-[#1f1f1f] bg-[#262626] bg-gradient-to-t px-5 md:px-12 py-3">
+         class="relative flex shrink-0 flex-col md:flex-row border-t border-tertiary bg-secondary bg-gradient-to-t px-5 md:px-12 py-3">
          <div class="hidden md:block ml-7">
-            Huginn made by <a href="https://github.com/WerdoxDev" target="_blank" class="text-[#D99A6C] underline">Matin
+            Huginn made by <a href="https://github.com/WerdoxDev" target="_blank" class="text-accent underline">Matin
                Tat</a> /
             Website made by
-            <a href="https://github.com/VoiD-ev" target="_blank" class="text-[#D99A6C] underline">Mahziyar
+            <a href="https://github.com/VoiD-ev" target="_blank" class="text-accent underline">Mahziyar
                Farahmandian</a>
          </div>
 
          <div class="md:hidden text-sm">
-            Huginn made by <a href="https://github.com/WerdoxDev" target="_blank" class="text-[#D99A6C] underline">Matin
+            Huginn made by <a href="https://github.com/WerdoxDev" target="_blank" class="text-accent underline">Matin
                Tat</a>
          </div>
          <div class="md:hidden text-sm mt-1">Website made by
-            <a href="https://github.com/VoiD-ev" target="_blank" class="text-[#D99A6C] underline">Mahziyar
+            <a href="https://github.com/VoiD-ev" target="_blank" class="text-accent underline">Mahziyar
                Farahmandian</a>
          </div>
 

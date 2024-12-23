@@ -1,4 +1,10 @@
+const themeStorageKey = "theme-type"
+
+export type ThemeType = "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal";
+
 export type ColorTheme = {
+    type: ThemeType,
+
     background: string,
     secondary: string,
     tertiary: string,
@@ -12,6 +18,8 @@ export type ColorTheme = {
 }
 
 export const ceruleanTheme: ColorTheme = {
+    type: "cerulean",
+
     background: "#303030",
     secondary: "#262626",
     tertiary: "#1f1f1f",
@@ -25,6 +33,8 @@ export const ceruleanTheme: ColorTheme = {
 };
 
 export const pineGreenTheme: ColorTheme = {
+    type: "pine green",
+
     background: "#303030",
     secondary: "#262626",
     tertiary: "#1f1f1f",
@@ -38,6 +48,8 @@ export const pineGreenTheme: ColorTheme = {
 };
 
 export const eggplantTheme: ColorTheme = {
+    type: "eggplant",
+
     background: "#303030",
     secondary: "#262626",
     tertiary: "#1f1f1f",
@@ -51,6 +63,8 @@ export const eggplantTheme: ColorTheme = {
 };
 
 export const coffeeTheme: ColorTheme = {
+    type: "coffee",
+
     background: "#303030",
     secondary: "#262626",
     tertiary: "#1f1f1f",
@@ -64,6 +78,8 @@ export const coffeeTheme: ColorTheme = {
 };
 
 export const charcoalTheme: ColorTheme = {
+    type: "charcoal",
+
     background: "#303030",
     secondary: "#262626",
     tertiary: "#1f1f1f",
@@ -78,9 +94,47 @@ export const charcoalTheme: ColorTheme = {
 
 export let currentTheme: ColorTheme = coffeeTheme;
 
-export function useChangeTheme(theme: ColorTheme) {
-    currentTheme = theme
+export function loadTheme() {
+    let loadedTheme: ThemeType = localStorage.getItem(themeStorageKey) as ThemeType
+
+    if (loadedTheme === null) {
+        loadedTheme = "coffee"
+    }
+
+    useChangeTheme(loadedTheme)
+}
+
+export function useChangeTheme(theme: ThemeType) {
+    currentTheme = getColorTheme(theme)
     setColorProperty(currentTheme)
+
+    localStorage.setItem(themeStorageKey, theme)
+}
+
+function getColorTheme(type: ThemeType): ColorTheme {
+    let theme: ColorTheme;
+
+    switch (type) {
+        case "cerulean":
+            theme = ceruleanTheme;
+            break;
+        case "pine green":
+            theme = pineGreenTheme;
+            break;
+        case "eggplant":
+            theme = eggplantTheme;
+            break;
+        case "coffee":
+            theme = coffeeTheme;
+            break;
+        case "charcoal":
+            theme = charcoalTheme;
+            break;
+        default:
+            theme = coffeeTheme;
+    }
+
+    return theme;
 }
 
 function setColorProperty(theme: ColorTheme) {

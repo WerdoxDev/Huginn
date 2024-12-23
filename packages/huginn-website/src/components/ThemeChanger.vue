@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue/dist/iconify.js';
-import { onMounted, ref } from 'vue';
-import { ceruleanTheme, charcoalTheme, coffeeTheme, ColorTheme, eggplantTheme, pineGreenTheme, useChangeTheme } from '../scripts/useChangeTheme';
+import { ref } from 'vue';
+import { ceruleanTheme, charcoalTheme, coffeeTheme, ColorTheme, currentTheme, eggplantTheme, pineGreenTheme, useChangeTheme } from '../scripts/useChangeTheme';
 
 const isOpen = ref(false)
-
-onMounted(() => {
-    useChangeTheme(coffeeTheme)
-})
 
 function toggleMenu() {
     isOpen.value = !isOpen.value
@@ -15,7 +11,7 @@ function toggleMenu() {
 }
 
 function chooseTheme(theme: ColorTheme) {
-    useChangeTheme(theme)
+    useChangeTheme(theme.type)
     toggleMenu()
 }
 
@@ -64,9 +60,8 @@ function chooseTheme(theme: ColorTheme) {
 <style>
 .menu-enter-from,
 .menu-leave-to {
-    transition-property: all;
     opacity: 0;
-    transform: scale(0.25);
+    transform: scale(0.9);
 }
 
 .menu-enter-active,
@@ -74,6 +69,5 @@ function chooseTheme(theme: ColorTheme) {
     transition-property: all;
     transition-duration: 250ms;
     transition-timing-function: ease;
-    transform: scale(1);
 }
 </style>

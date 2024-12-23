@@ -8,8 +8,8 @@
 	font-weight: 400;
 
 	color-scheme: dark;
-	background-color: #303030;
-	color: #ebebd3;
+	@apply bg-background;
+	@apply text-text;
 
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
@@ -18,7 +18,7 @@
 }
 
 ::selection {
-	background: #d99a6c5f;
+	@apply bg-accent/30;
 }
 
 #app,
