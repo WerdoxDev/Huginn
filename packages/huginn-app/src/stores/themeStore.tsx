@@ -1,5 +1,7 @@
 import type { ColorTheme, ThemeType } from "@/types";
-import { type Dispatch, type ReactNode, createContext } from "react";
+import { type ReactNode, createContext } from "react";
+import { createStore, useStore } from "zustand";
+import { combine } from "zustand/middleware";
 
 export const ceruleanTheme: ColorTheme = {
 	background: "#303030",
@@ -66,45 +68,52 @@ export const charcoalTheme: ColorTheme = {
 	warning: "#ED9121",
 };
 
-const defaultValue: ColorTheme = pineGreenTheme;
+const store = createStore(
+	combine(
+		{
+			themeType: "pine green" as ThemeType,
+			theme: pineGreenTheme as ColorTheme,
+		},
+		(set) => ({
+			setTheme: (type: ThemeType) =>
+				set(() => {
+					let theme: ColorTheme;
+					switch (type) {
+						case "cerulean":
+							theme = ceruleanTheme;
+							break;
+						case "pine green":
+							theme = pineGreenTheme;
+							break;
+						case "eggplant":
+							theme = eggplantTheme;
+							break;
+						case "coffee":
+							theme = coffeeTheme;
+							break;
+						case "charcoal":
+							theme = charcoalTheme;
+							break;
+						default:
+							theme = charcoalTheme;
+					}
+					setColorProperty(theme);
+					return { themeType: type, theme };
+				}),
+		}),
+	),
+);
 
-const ThemeContext = createContext<ColorTheme>(defaultValue);
-const ThemeContextDispather = createContext<Dispatch<ThemeType>>(() => {});
+const ThemeContext = createContext<typeof store>({} as typeof store);
 
 export function ThemeProvier(props: { children?: ReactNode }) {
 	const settings = useSettings();
-	const [colorTheme, dispatch] = useReducer(colorThemeReducer, defaultValue);
 
 	useLayoutEffect(() => {
-		dispatch(settings.theme);
+		store.getState().setTheme(settings.theme);
 	}, []);
-	return (
-		<ThemeContext.Provider value={colorTheme}>
-			<ThemeContextDispather.Provider value={dispatch}>{props.children}</ThemeContextDispather.Provider>
-		</ThemeContext.Provider>
-	);
-}
 
-function colorThemeReducer(_colorTheme: ColorTheme, action: ThemeType): ColorTheme {
-	switch (action) {
-		case "cerulean":
-			setColorProperty(ceruleanTheme);
-			return ceruleanTheme;
-		case "pine green":
-			setColorProperty(pineGreenTheme);
-			return pineGreenTheme;
-		case "eggplant":
-			setColorProperty(eggplantTheme);
-			return eggplantTheme;
-		case "coffee":
-			setColorProperty(coffeeTheme);
-			return coffeeTheme;
-		case "charcoal":
-			setColorProperty(charcoalTheme);
-			return charcoalTheme;
-		default:
-			return pineGreenTheme;
-	}
+	return <ThemeContext.Provider value={store}>{props.children}</ThemeContext.Provider>;
 }
 
 function setColorProperty(theme: ColorTheme) {
@@ -127,9 +136,10 @@ function hexToRgb(hex: string) {
 }
 
 export function useTheme() {
-	return useContext(ThemeContext);
+	const store = useContext(ThemeContext);
+	return useStore(store);
 }
 
-export function useThemeDispather() {
-	return useContext(ThemeContextDispather);
+export function useThemeStore() {
+	return useContext(ThemeContext);
 }

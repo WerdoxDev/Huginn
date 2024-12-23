@@ -7,9 +7,9 @@ export function useMessageAcker(channelId: Snowflake, messages: AppChannelMessag
 	const client = useClient();
 	const { user } = useUser();
 	const readState = useChannelReadState(channelId);
-	const { currentVisibleMessages } = useChannelsInfo();
+	const { currentVisibleMessages } = useChannelStore();
 	const { updateChannelLastReadState } = useReadStates();
-	const appWindow = useWindow();
+	const huginnWindow = useHuginnWindow();
 
 	const mutation = useMutation({
 		async mutationFn(data: { channelId: Snowflake; messageId: Snowflake }) {
@@ -18,7 +18,7 @@ export function useMessageAcker(channelId: Snowflake, messages: AppChannelMessag
 	});
 
 	useEffect(() => {
-		if (!appWindow.focused) {
+		if (!huginnWindow.focused) {
 			return;
 		}
 
@@ -45,5 +45,5 @@ export function useMessageAcker(channelId: Snowflake, messages: AppChannelMessag
 		}
 
 		trySendAck();
-	}, [currentVisibleMessages, appWindow.focused, messages]);
+	}, [currentVisibleMessages, huginnWindow.focused, messages]);
 }

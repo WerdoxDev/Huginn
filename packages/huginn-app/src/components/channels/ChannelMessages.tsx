@@ -24,7 +24,9 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	const { data, fetchNextPage, fetchPreviousPage, isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
 		useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client, props.channelId));
 
-	const { savedScrolls, saveScroll } = useChannelsInfo();
+	// const { savedScrolls, saveScroll } = useChannelsInfo();
+	const { savedScrolls, saveScroll } = useChannelStore();
+
 	const { onMessageVisiblityChanged } = useVisibleMessages(props.channelId, sortedMessages);
 	const { setRef } = useDynamicRefs<HTMLLIElement>();
 	const { listenEvent } = useEvent();
@@ -45,7 +47,6 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
 	async function onScroll() {
 		if (!scroll.current || sortedMessages.length === 0) return;
-		saveScroll(props.channelId, scroll.current.scrollTop ?? 0);
 
 		// Scrolling up
 		if (scroll.current.scrollTop <= topScrollOffset && !isFetchingPreviousPage && hasPreviousPage) {
@@ -117,8 +118,9 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		scroll.current.scrollTop = offset + lastSeenElement.current.distanceToTop + heightDifference;
 	}, [data]);
 
-	useEffect(() => {
+	useLayoutEffect(() => {
 		return () => {
+			saveScroll(previousChannelId.current ?? props.channelId, scroll.current?.scrollTop ?? 0);
 			lastDirection.current = "none";
 		};
 	}, [props.channelId]);

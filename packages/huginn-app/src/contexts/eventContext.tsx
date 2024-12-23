@@ -16,10 +16,7 @@ type EventContextType = {
 	listenEvent<K extends keyof EventTypes>(type: K, callback: (data: EventTypes[K]) => void): () => void;
 };
 
-const EventContext = createContext<EventContextType>({
-	dispatchEvent: (_type, _data) => {},
-	listenEvent: (_type, _callback) => () => {},
-});
+const EventContext = createContext<EventContextType>({} as EventContextType);
 
 export function EventProvider(props: { children?: ReactNode }) {
 	const events = useRef<EventType[]>([]);

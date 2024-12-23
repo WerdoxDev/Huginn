@@ -7,7 +7,7 @@ import { useNavigate } from "react-router";
 export function useOAuth() {
 	const client = useClient();
 	const navigate = useNavigate();
-	const appWindow = useWindow();
+	const huginnWindow = useHuginnWindow();
 	const { listenEvent } = useEvent();
 	const modalsDispatch = useModalsDispatch();
 
@@ -17,9 +17,9 @@ export function useOAuth() {
 
 	function startOAuth(type: OAuthType) {
 		listenOAuth();
-		const url = client.oauth.getOAuthURL(type, appWindow.environment === "browser" ? "browser" : "websocket", `${window.origin}/oauth-redirect`);
+		const url = client.oauth.getOAuthURL(type, huginnWindow.environment === "browser" ? "browser" : "websocket", `${window.origin}/oauth-redirect`);
 
-		if (appWindow.environment === "browser") {
+		if (huginnWindow.environment === "browser") {
 			window.open(url, "_self");
 		} else {
 			modalsDispatch({

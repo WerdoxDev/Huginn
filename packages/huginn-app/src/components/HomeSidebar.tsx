@@ -2,12 +2,15 @@ import type { APIGetUserChannelsResult } from "@huginn/shared";
 import clsx from "clsx";
 
 export default function HomeSidebar(props: { channels?: APIGetUserChannelsResult }) {
-	const appWindow = useWindow();
+	const huginnWindow = useHuginnWindow();
 	const dispatch = useModalsDispatch();
 
 	return (
 		<nav
-			className={clsx("flex h-full flex-col overflow-hidden rounded-l-xl bg-secondary ", appWindow.environment === "browser" && "rounded-tl-none")}
+			className={clsx(
+				"flex h-full flex-col overflow-hidden rounded-l-xl bg-secondary ",
+				huginnWindow.environment === "browser" && "rounded-tl-none",
+			)}
 		>
 			<div className="flex h-[4.75rem] shrink-0 items-center px-6">
 				<div className="font-bold text-text text-xl">Home</div>

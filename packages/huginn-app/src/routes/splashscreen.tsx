@@ -1,7 +1,7 @@
 import type { LoadingState } from "@/types";
 import { invoke } from "@tauri-apps/api/core";
 
-export default function Component() {
+export default function Splashscreen() {
 	const { checkAndDownload, info, progress, contentLength, downloaded } = useUpdater(async (wasAvailable) => {
 		setLoadingState("loading");
 		if (!wasAvailable) {
@@ -9,7 +9,7 @@ export default function Component() {
 		}
 	});
 
-	const appWindowDispatch = useWindowDispatch();
+	const { setVersionFlavour } = useHuginnWindow();
 
 	const [loadingState, setLoadingState] = useState<LoadingState>("none");
 
@@ -39,7 +39,7 @@ export default function Component() {
 		const bc = new BroadcastChannel("huginn");
 		bc.onmessage = (event) => {
 			if (event.data.name === "restart_splashscreen" && event.data.target) {
-				appWindowDispatch({ versionFlavour: event.data.target });
+				setVersionFlavour(event.data.target);
 
 				setLoadingState("checking_update");
 				checkAndDownload(event.data.target);

@@ -16,11 +16,10 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 	const { dispatchEvent } = useEvent();
 	const currentChannel = useCurrentChannel();
 	const mutation = useCreateDMChannel("create-dm-channel_other");
-	const { currentVisibleMessages } = useChannelsInfo();
-	const { updateLastMessageId } = useChannelUtils();
+	const { currentVisibleMessages, updateLastMessageId } = useChannelStore();
 	const { user } = useUser();
 	const { addChannelToReadStates } = useReadStates();
-	const appWindow = useWindow();
+	const huginnWindow = useHuginnWindow();
 
 	async function onMessageCreated(d: GatewayMessageCreateData) {
 		const channels = queryClient.getQueryData<APIGetUserChannelsResult>(["channels", "@me"]);
@@ -70,7 +69,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 			visible:
 				currentChannel?.id === d.channelId &&
 				currentVisibleMessages.some((x) => x.messageId === currentChannel.lastMessageId) &&
-				appWindow.focused,
+				huginnWindow.focused,
 			inLoadedQueryPage: inLoadedQueryPage,
 			inVisibleQueryPage: inVisibleQueryPage,
 			self: d.author.id === user?.id,
@@ -107,7 +106,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 			client.gateway.off("user_update", onUserUpdated);
 			client.gateway.off("presence_update", onUserUpdated);
 		};
-	}, [currentChannel, user, currentVisibleMessages, appWindow.focused]);
+	}, [currentChannel, user, currentVisibleMessages, huginnWindow.focused]);
 
 	return props.children;
 }

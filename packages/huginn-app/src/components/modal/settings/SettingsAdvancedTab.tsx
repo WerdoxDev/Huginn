@@ -7,14 +7,14 @@ const flavourItems: DropboxItem[] = [
 ];
 
 export default function SettingsAdvancedTab(props: SettingsTabProps) {
-	const appWindow = useWindow();
+	const huginnWindow = useHuginnWindow();
 
 	const { values, validateValues, inputsProps } = useInputs([
 		{ name: "serverAddress", required: false, default: props.settings.serverAddress },
 		{ name: "cdnAddress", required: false, default: props.settings.cdnAddress },
 	]);
 
-	const [selectedFlavour, setSelectedFlavour] = useState(flavourItems.find((x) => x.value === appWindow.versionFlavour));
+	const [selectedFlavour, setSelectedFlavour] = useState(flavourItems.find((x) => x.value === huginnWindow.versionFlavour));
 
 	const dispatch = useModalsDispatch();
 
@@ -56,7 +56,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 					cancel: {
 						text: "Cancel",
 						callback: () => {
-							setSelectedFlavour(flavourItems.find((x) => x.value === appWindow.versionFlavour));
+							setSelectedFlavour(flavourItems.find((x) => x.value === huginnWindow.versionFlavour));
 							dispatch({ info: { isOpen: false } });
 						},
 					},
@@ -68,7 +68,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 
 	return (
 		<div className="flex flex-col gap-y-10">
-			{appWindow.environment === "desktop" && (
+			{huginnWindow.environment === "desktop" && (
 				<div>
 					<HuginnDropdown forceSelected={selectedFlavour} onChange={onFlavourChange}>
 						<HuginnDropdown.Label>App Flavour</HuginnDropdown.Label>

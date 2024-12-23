@@ -6,7 +6,7 @@ import { Outlet } from "react-router";
 
 export default function Layout() {
 	const [backgroundState, setBackgroundState] = useState(2);
-	const appWindow = useWindow();
+	const huginnWindow = useHuginnWindow();
 	const isTransitioning = useMainViewTransitionState();
 
 	return (
@@ -20,7 +20,7 @@ export default function Layout() {
 									<MainRenderer>
 										<AuthBackgroundContext.Provider value={{ state: backgroundState, setState: setBackgroundState }}>
 											<div
-												className={clsx("absolute inset-0 bg-secondary", appWindow.environment === "desktop" && "top-6")}
+												className={clsx("absolute inset-0 bg-secondary", huginnWindow.environment === "desktop" && "top-6")}
 												style={isTransitioning ? { viewTransitionName: "auth" } : undefined}
 											>
 												<AuthBackgroundSvg state={backgroundState} />
@@ -39,16 +39,16 @@ export default function Layout() {
 }
 
 function MainRenderer(props: { children: ReactNode }) {
-	const appWindow = useWindow();
+	const huginnWindow = useHuginnWindow();
 	return (
-		<div className={`flex h-full flex-col overflow-hidden ${appWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
-			{window.location.pathname !== "/splashscreen" && appWindow.environment === "desktop" && <TitleBar />}
+		<div className={`flex h-full flex-col overflow-hidden ${huginnWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
+			{window.location.pathname !== "/splashscreen" && huginnWindow.environment === "desktop" && <TitleBar />}
 			<div className="relative h-full w-full">
 				{props.children}
 				{/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
-				{appWindow.environment === "desktop" && (
+				{huginnWindow.environment === "desktop" && (
 					<>
-						<AppMaximizedEvent />
+						{/* <AppMaximizedEvent /> */}
 						<AppOpenUrlEvent />
 					</>
 				)}
@@ -59,30 +59,18 @@ function MainRenderer(props: { children: ReactNode }) {
 	);
 }
 
-function AppMaximizedEvent() {
-	const dispatch = useWindowDispatch();
-	const huginnWindow = useWindow();
+// function AppMaximizedEvent() {
+// 	const dispatch = useWindowDispatch();
+// 	const huginnWindow = useWindow();
 
-	useEffect(() => {
-		if (huginnWindow.environment === "desktop") {
-			const appWindow = getCurrentWebviewWindow();
-			const unlisten = appWindow.onResized(async () => {
-				const appMaximized = await appWindow.isMaximized();
-				dispatch({ maximized: appMaximized });
-			});
+// 	useEffect(() => {}, []);
 
-			return () => {
-				unlisten.then((f) => f());
-			};
-		}
-	}, []);
-
-	return null;
-}
+// 	return null;
+// }
 
 function AppOpenUrlEvent() {
 	const { dispatchEvent } = useEvent();
-	const huginnWindow = useWindow();
+	const huginnWindow = useHuginnWindow();
 
 	useEffect(() => {
 		if (huginnWindow.environment === "desktop") {
