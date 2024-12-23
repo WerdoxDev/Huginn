@@ -14,7 +14,7 @@ const withHuginn = (editor: Editor) => {
 
 type SpoilerLocation = { anchor: BasePoint; focus: BasePoint };
 
-function MessageRenderer(props: MessageRendererProps & { ref: RefObject<HTMLLIElement | null> }) {
+function MessageRenderer(props: MessageRendererProps) {
 	const editor = useMemo(() => withReact(withHuginn(createEditor())), []);
 	const spoilerLocations = useRef<SpoilerLocation[]>([]);
 	const isInView = useIsInView(props.ref);
@@ -135,7 +135,7 @@ function MessageRenderer(props: MessageRendererProps & { ref: RefObject<HTMLLIEl
 	}, [isInView, props.renderInfo.message.preview]);
 
 	return (
-		<li ref={props.ref} className="group select-text">
+		<li className="group shrink-0 select-text" ref={props.ref} id={props.renderInfo.message.id}>
 			{(props.renderInfo.message.preview || [MessageType.DEFAULT].includes(props.renderInfo.message.type)) && (
 				<DefaultMessage {...props} editor={editor} decorate={decorate} renderElement={renderElement} renderLeaf={renderLeaf} />
 			)}
