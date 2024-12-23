@@ -16,6 +16,10 @@ function removeRef(key: string): boolean {
 	return map.delete(key);
 }
 
-export function useDynamicRefs<T>(): [(key: string) => undefined | RefObject<T>, (key: string) => RefObject<T | null>, (key: string) => boolean] {
-	return [getRef, setRef, removeRef];
+export function useDynamicRefs<T>(): {
+	getRef: (key: string) => undefined | RefObject<T>;
+	setRef: (key: string) => RefObject<T | null>;
+	removeRef: (key: string) => boolean;
+} {
+	return { getRef, setRef, removeRef };
 }

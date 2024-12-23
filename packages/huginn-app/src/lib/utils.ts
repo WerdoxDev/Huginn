@@ -84,3 +84,23 @@ export async function getVersionFlavour(): Promise<VersionFlavour> {
 	const version = await getVersion();
 	return version.includes("nightly") ? "nightly" : "release";
 }
+
+export function getFirstChildClosestToTop<E extends HTMLElement>(container: E) {
+	const containerRect = container.getBoundingClientRect();
+	const containerTop = containerRect.top;
+
+	let closestChild = null;
+	let smallestDistance = Number.POSITIVE_INFINITY;
+
+	for (const child of container.children) {
+		const childRect = child.getBoundingClientRect();
+		const distanceFromTop = Math.abs(childRect.top - containerTop);
+
+		if (distanceFromTop < smallestDistance) {
+			smallestDistance = distanceFromTop;
+			closestChild = child;
+		}
+	}
+
+	return closestChild;
+}

@@ -3,14 +3,12 @@ import { MessageType, type Snowflake } from "@huginn/shared";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import moment from "moment";
-import type { RefObject } from "react";
 
 const topScrollOffset = 100;
 const bottomScrollOffset = 100;
 
 export default function ChannelMessages(props: { channelId: Snowflake; messages: AppChannelMessage[] }) {
 	const client = useClient();
-	const { user } = useUser();
 	const queryClient = useQueryClient();
 	const sortedMessages = useMemo(
 		() =>
@@ -28,10 +26,9 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
 	const { savedScrolls, saveScroll } = useChannelsInfo();
 	const { onMessageVisiblityChanged } = useVisibleMessages(props.channelId, sortedMessages);
-	const [getContent, setContent, removeContent] = useDynamicRefs<HTMLLIElement>();
+	const { setRef } = useDynamicRefs<HTMLLIElement>();
 	const { listenEvent } = useEvent();
 
-	const readState = useChannelReadState(props.channelId);
 	useMessageAcker(props.channelId, props.messages);
 	const { firstUnreadMessageId } = useFirstUnreadMessage(props.channelId, sortedMessages);
 
@@ -41,49 +38,43 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	);
 
 	const scroll = useRef<HTMLOListElement>(null);
-	const previousScrollTop = useRef(-1);
 	const previousChannelId = useRef<Snowflake>(undefined);
-	const itemsHeight = useRef(0);
-	const listHasUpdated = useRef(false);
 	const shouldScrollOnNextRender = useRef(false);
+	const lastSeenElement = useRef<{ messageId: Snowflake; height: number; distanceToTop: number }>(null);
+	const lastDirection = useRef<"up" | "down" | "none">("none");
 
 	async function onScroll() {
 		if (!scroll.current || sortedMessages.length === 0) return;
 		saveScroll(props.channelId, scroll.current.scrollTop ?? 0);
 
 		// Scrolling up
-		if (scroll.current.scrollTop <= topScrollOffset && !isFetchingPreviousPage && hasPreviousPage && listHasUpdated.current) {
-			// Remove the old refs
-			if (data.pages.length === 3) {
-				for (const message of data.pages[data.pages.length - 1]) {
-					removeContent(message.id);
-					removeContent(`${message.id}_separator`);
-				}
-			}
+		if (scroll.current.scrollTop <= topScrollOffset && !isFetchingPreviousPage && hasPreviousPage) {
+			lastDirection.current = "up";
+			await fetchPreviousPage();
 
-			await fetchPreviousPageExtra();
+			// A little trick to preserve the distance between scroll rect top and selected element
+			const savedScrollTop = scroll.current.scrollTop;
+			scroll.current.scrollTop = 0;
+
+			const messageElement = getFirstChildClosestToTop(scroll.current) as HTMLLIElement;
+			if (!messageElement) return;
+
+			lastSeenElement.current = {
+				messageId: messageElement.id,
+				height: messageElement.clientHeight,
+				distanceToTop: savedScrollTop,
+			};
 		}
 		// Scrolling down
 		else if (
 			scroll.current.scrollHeight - scroll.current.clientHeight - scroll.current.scrollTop <= bottomScrollOffset &&
 			!isFetchingNextPage &&
-			hasNextPage &&
-			listHasUpdated.current
+			hasNextPage
 		) {
-			listHasUpdated.current = false;
-
+			// listHasUpdated.current = false;
+			lastDirection.current = "down";
 			await fetchNextPage();
 		}
-	}
-
-	async function fetchPreviousPageExtra() {
-		if (!scroll.current) {
-			return;
-		}
-
-		listHasUpdated.current = false;
-		await fetchPreviousPage();
-		previousScrollTop.current = scroll.current.scrollTop;
 	}
 
 	function calculateMessageRenderInfos(): MessageRenderInfo[] {
@@ -110,16 +101,27 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		scroll.current.scrollTop = scroll.current.scrollHeight - scroll.current.clientHeight;
 	}
 
-	function getFullHeight(element?: HTMLLIElement | null) {
-		if (!element) {
-			return 0;
+	// Calculating scrolltop position after an upward fetch
+	useLayoutEffect(() => {
+		if (!lastSeenElement.current || !scroll.current || lastDirection.current !== "up" || previousChannelId.current !== props.channelId) {
+			return;
 		}
 
-		const styles = getComputedStyle(element);
-		const margin = Number.parseFloat(styles.marginTop) + Number.parseFloat(styles.marginBottom);
+		const messageElement = [...scroll.current.children].find((x) => x.id === lastSeenElement.current?.messageId) as HTMLLIElement;
+		const elementRect = messageElement.getBoundingClientRect();
+		const scrollRect = scroll.current.getBoundingClientRect();
 
-		return element.offsetHeight + margin;
-	}
+		const offset = elementRect.top - scrollRect.top;
+		const heightDifference = messageElement.clientHeight - lastSeenElement.current.height;
+
+		scroll.current.scrollTop = offset + lastSeenElement.current.distanceToTop + heightDifference;
+	}, [data]);
+
+	useEffect(() => {
+		return () => {
+			lastDirection.current = "none";
+		};
+	}, [props.channelId]);
 
 	// Listening for new messages
 	useEffect(() => {
@@ -128,7 +130,6 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			const scrollOffset = scroll.current.scrollHeight - scroll.current.clientHeight - scroll.current.scrollTop;
 
 			if (d.self || scrollOffset <= 50) {
-				// scrollDown();
 				shouldScrollOnNextRender.current = true;
 			}
 		});
@@ -154,38 +155,6 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		}
 	}, [sortedMessages]);
 
-	// Doing height calculations
-	useEffect(() => {
-		if (!scroll.current) return;
-
-		let height = 0;
-		for (const message of data.pages[0]) {
-			const elementHeight = getFullHeight(getContent(message.id)?.current) + getFullHeight(getContent(`${message.id}_separator`)?.current);
-			height += elementHeight;
-		}
-
-		// Set previous to -1 so fetching next page doesnt do anything but prev page does.
-		if (previousScrollTop.current !== -1) {
-			let previousHeight = 0;
-			let previousHeightDiff = 0;
-
-			if (data.pages[1]) {
-				for (const message of data.pages[1]) {
-					const elementHeight = getFullHeight(getContent(message.id)?.current) + getFullHeight(getContent(`${message.id}_separator`)?.current);
-					previousHeight += elementHeight;
-				}
-			}
-
-			previousHeightDiff = itemsHeight.current - previousHeight;
-			scroll.current.scrollTop = previousScrollTop.current + (height - previousHeightDiff);
-			previousScrollTop.current = -1;
-		}
-
-		itemsHeight.current = height;
-
-		listHasUpdated.current = true;
-	}, [sortedMessages]);
-
 	// Should scroll check
 	useEffect(() => {
 		if (!scroll.current || sortedMessages.length === 0) return;
@@ -196,15 +165,14 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		}
 	}, [sortedMessages]);
 
-	// Set the first unread message id
-
 	return (
 		<div className="relative flex w-full flex-col">
 			<ChannelMessageLoadingIndicator isFetchingNextPage={isFetchingNextPage} isFetchingPreviousPage={isFetchingPreviousPage} />
 			<ChannelTypingIndicator channelId={props.channelId} />
-			<ol className="flex h-full flex-col overflow-y-scroll py-2 pr-0 pb-7" ref={scroll} onScroll={onScroll}>
+			<ol className="flex h-full flex-col overflow-y-scroll pr-0 pb-7" ref={scroll} onScroll={onScroll}>
+				{scroll.current?.scrollHeight === scroll.current?.clientHeight && <div className="h-full shrink" />}
 				{props.messages.length === 0 && (
-					<div className="flex h-full w-full items-center justify-center">
+					<div className="flex h-full w-full shrink-0 items-center justify-center">
 						<div className="flex items-center justify-center gap-x-2 rounded-lg bg-background p-2 pr-3 text-text italic underline">
 							<IconMingcuteLookDownFill className="size-10" />
 							<span>Empty</span>
@@ -220,13 +188,13 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 				)}
 				{sortedMessages.map((message, i) => (
 					<MessageWrapper
+						ref={setRef(message.id)}
 						key={message.id}
 						message={message}
 						renderInfo={messageRenderInfos[i]}
 						nextRenderInfo={messageRenderInfos[i + 1]}
 						lastRenderInfo={messageRenderInfos[i - 1]}
 						onVisibilityChanged={onMessageVisiblityChanged}
-						setContent={setContent}
 					/>
 				))}
 			</ol>
@@ -237,7 +205,6 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 function MessageWrapper(
 	props: {
 		message: AppChannelMessage;
-		setContent: (key: string) => RefObject<HTMLLIElement | null>;
 	} & MessageRendererProps,
 ) {
 	return (
@@ -248,7 +215,6 @@ function MessageWrapper(
 						"pointer-events-none relative mr-10 ml-2 flex h-px shrink-0 items-center justify-center bg-error/75",
 						props.lastRenderInfo ? "my-1" : "mb-1",
 					)}
-					ref={props.setContent(`${props.message.id}_separator`)}
 				>
 					<div className="-mr-10 absolute right-0 flex w-10 items-center justify-center rounded-l-md bg-error/75 py-1 font-bold text-white text-xs uppercase">
 						new
@@ -258,13 +224,12 @@ function MessageWrapper(
 			{!props.message.preview && props.renderInfo.newDate && (
 				<li
 					className={clsx(
-						"relative flex h-0 items-center justify-center text-center font-semibold text-xs",
+						"relative flex h-0 shrink-0 items-center justify-center text-center font-semibold text-xs",
 						props.lastRenderInfo ? "my-5" : "mt-2 mb-5",
 						props.renderInfo.unread
 							? "mr-10 ml-2 text-error/100 [border-top:thin_solid_rgb(var(--color-error)/0.75)]"
 							: "mx-2 text-text/70 [border-top:thin_solid_rgb(var(--color-text)/0.25)]",
 					)}
-					ref={props.setContent(`${props.message.id}_separator`)}
 				>
 					<span className={clsx("bg-tertiary px-2", props.renderInfo.unread && "ml-10")}>
 						{moment(props.message.timestamp).format("DD. MMMM YYYY")}
@@ -277,11 +242,11 @@ function MessageWrapper(
 				</li>
 			)}
 			<MessageRenderer
+				ref={props.ref}
 				renderInfo={props.renderInfo}
 				nextRenderInfo={props.nextRenderInfo}
 				lastRenderInfo={props.lastRenderInfo}
 				onVisibilityChanged={props.onVisibilityChanged}
-				ref={props.setContent(props.message.id)}
 			/>
 		</>
 	);

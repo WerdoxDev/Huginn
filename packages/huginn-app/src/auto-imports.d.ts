@@ -152,6 +152,7 @@ declare global {
   const getChannelIcon: typeof import('./lib/queries')['getChannelIcon']
   const getChannelsOptions: typeof import('./lib/queries')['getChannelsOptions']
   const getEmptyStatuses: typeof import('./lib/utils')['getEmptyStatuses']
+  const getFirstChildClosestToTop: typeof import('./lib/utils')['getFirstChildClosestToTop']
   const getInputCurrentStatus: typeof import('./lib/utils')['getInputCurrentStatus']
   const getInputsStatusesFromError: typeof import('./lib/utils')['getInputsStatusesFromError']
   const getInputsValidatedStatuses: typeof import('./lib/utils')['getInputsValidatedStatuses']

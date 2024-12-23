@@ -6,7 +6,7 @@ import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateR
 import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePatchDMChannel";
 import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRemoveChannelRecipient";
 import type { APIChannelUser, APIDefaultMessage, APIMessageUser, APIRelationUser, DirectChannel, RelationshipType, Snowflake } from "@huginn/shared";
-import type { HTMLInputTypeAttribute, ReactNode } from "react";
+import type { HTMLInputTypeAttribute, ReactNode, RefObject } from "react";
 
 export type StatusCode = "none" | "default" | "error" | "success";
 
@@ -164,6 +164,7 @@ export type MessageRendererProps = {
 	nextRenderInfo?: MessageRenderInfo;
 	lastRenderInfo?: MessageRenderInfo;
 	onVisibilityChanged: (messageId: Snowflake, visible: boolean) => void;
+	ref: RefObject<HTMLLIElement | null>;
 };
 
 export type MutationKinds = {
