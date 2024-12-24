@@ -16,6 +16,8 @@ target
 .nitro
 .cache
 .output
+.react-router
+build
 
 *.code-workspace
 
