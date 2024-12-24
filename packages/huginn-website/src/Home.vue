@@ -39,25 +39,24 @@ onMounted(async () => {
       <div class="flex flex-col md:flex-row md:space-x-7">
          <div class="w-full px-4 md:w-96 md:px-0">
             <div class="flex flex-col items-center justify-center md:flex-row md:justify-start">
-               <img :src="`/logo/${currentTheme.logo}`"
-                  class="size-20 object-contain transition-all hover:-rotate-12 active:rotate-6" />
-               <p class="text-5xl font-extrabold text-text md:ml-4">Huginn</p>
+               <img :src="`/logo/${currentTheme.logoOutline}`"
+                  class="size-24 md:size-20 object-contain transition-all hover:-rotate-12 active:rotate-6" />
+               <p class="text-5xl font-extrabold text-text mt-4 md:mt-0 md:ml-4">Huginn</p>
             </div>
 
-            <p class="mx-2 mt-6 text-center text-2xl md:mx-0 md:text-left">
+            <div
+               class="w-fit flex flex-row items-center mx-auto mt-8 py-2 px-4 pr-6 gap-x-2 bg-tertiary/50 transition-all shadow-md hover:shadow-lg border border-primary rounded-full">
+               <Icon icon="mingcute:group-3-fill" class="size-10 text-accent" />
+               <p class="text-center md:text-left text-xl font-bold"><span class="font-bold text-accent">100</span>
+                  warriors chatting!
+               </p>
+            </div>
+
+            <p class="mx-2 mt-8 text-center text-2xl md:mx-0 md:text-left">
                A fast, customizable chat app with a touch of Norse mythology.
             </p>
 
-            <div class="mt-6 flex flex-row items-center justify-center space-x-2 md:justify-start">
-               <div class="size-2 rounded-full bg-green-400" />
-               <p class="text-sm font-bold md:text-xs">CHATTING</p>
-            </div>
-
-            <div>
-               <p class="text-center text-3xl md:text-left md:text-2xl">{{ onlineCount }}</p>
-            </div>
-
-            <div class="flex w-full flex-row space-x-2 pt-10">
+            <div class="flex w-full flex-row space-x-2 mt-12">
                <RouterLink to="/download"
                   class="flex h-12 w-full items-center justify-center space-x-2 rounded-md bg-primary px-5 text-xl transition-all hover:bg-primary/50">
                   <div class="font-bold">DOWNLOAD HUGINN</div>

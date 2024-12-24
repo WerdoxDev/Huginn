@@ -25,7 +25,7 @@ function closeMenu(event: MouseEvent) {
    <Analytics />
    <!-- Header -->
    <div
-      class="fixed top-0 z-30 flex w-full items-center md:justify-center border-b border-text bg-black/30 px-5 md:px-20 py-4 backdrop-blur-md">
+      class="fixed top-0 z-30 flex w-full items-center md:justify-center border-b border-text bg-black/30 px-5 md:pl-20 md:pr-10 py-4 backdrop-blur-md">
       <RouterLink to="/" class="flex items-center transition-opacity duration-[250ms]"
          :class="{ 'opacity-0': isMenuOpen }">
          <img :src="`/logo/${currentTheme.logoOutline}`" class="size-10" />
@@ -36,7 +36,7 @@ function closeMenu(event: MouseEvent) {
          <Icon icon="material-symbols:menu" class="size-8" />
       </button>
 
-      <div class="ml-auto hidden md:flex space-x-8">
+      <div class="ml-auto hidden md:flex gap-x-10">
          <HeaderButton link="/" text="Home" />
          <HeaderButton link="/docs" text="Docs" />
          <HeaderButton link="/about" text="About" />
@@ -45,21 +45,21 @@ function closeMenu(event: MouseEvent) {
          <div class="w-0.5 bg-text/30" />
 
          <a href="https://github.com/WerdoxDev/Huginn" target="_blank">
-            <Icon icon="bi:github" class="size-6 transition-all hover:shadow-md" />
+            <Icon icon="bi:github" class="size-8 transition-all hover:shadow-md" />
          </a>
       </div>
    </div>
 
    <!-- Menu -->
    <Transition name="opacity-fade">
-      <div class="fixed inset-0 bg-black/25" v-if="isMenuOpen" @click="toggleMenu"></div>
+      <div class="fixed inset-0 z-40 bg-black/25" v-if="isMenuOpen" @click="toggleMenu"></div>
    </Transition>
 
    <Transition name="slide-in-out">
-      <div class="fixed right-0 w-4/5 h-full bg-tertiary shadow-xl" v-if="isMenuOpen">
+      <div class="fixed z-50 right-0 w-4/5 h-full bg-tertiary shadow-xl" v-if="isMenuOpen">
          <div class="m-5 flex">
             <RouterLink to="/" class="flex items-center">
-               <img :src="`/logo/${currentTheme.logo}`" class="size-10" />
+               <img :src="`/logo/${currentTheme.logoOutline}`" class="size-10" />
                <div class="pl-3 text-2xl font-bold">HUGINN</div>
             </RouterLink>
 
@@ -68,7 +68,7 @@ function closeMenu(event: MouseEvent) {
             </button>
          </div>
 
-         <div class="flex flex-col gap-2.5 text-lg mt-10 ml-10">
+         <div class="flex flex-col gap-y-7 mt-10 ml-10">
             <HeaderButton link="/" text="Home" @click="closeMenu" />
             <HeaderButton link="/docs" text="Docs" @click="closeMenu" />
             <HeaderButton link="/about" text="About" @click="closeMenu" />
