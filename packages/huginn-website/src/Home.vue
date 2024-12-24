@@ -6,7 +6,7 @@ import { Rive } from "@rive-app/canvas";
 import { currentTheme } from "./scripts/useChangeTheme";
 import Feature from "./components/Feature.vue";
 
-const onlineCount = ref("");
+const onlineCount = ref("0");
 
 onMounted(async () => {
    try {
@@ -47,7 +47,8 @@ onMounted(async () => {
             <div
                class="w-fit flex flex-row items-center mx-auto mt-8 py-2 px-4 pr-6 gap-x-2 bg-tertiary/50 transition-all shadow-md hover:shadow-lg border border-primary rounded-full">
                <Icon icon="mingcute:group-3-fill" class="size-10 text-accent" />
-               <p class="text-center md:text-left text-xl font-bold"><span class="font-bold text-accent">100</span>
+               <p class="text-center md:text-left text-xl font-bold"><span class="font-bold text-accent">{{ onlineCount
+                     }}</span>
                   warriors chatting!
                </p>
             </div>
