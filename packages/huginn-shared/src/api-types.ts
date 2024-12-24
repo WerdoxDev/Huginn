@@ -242,7 +242,8 @@ export type APIPostDefaultMessageJSONBody = {
 export type APIPostDefaultMessageResult = APIDefaultMessage;
 export type APIGetMessageByIdResult = APIMessage;
 export type APIGetChannelMessagesResult = APIMessage[];
-export type APIGetReleasesResult = Record<string, { version: string; date: string; windowsSetupUrl?: string } | undefined>;
+export type APIGetLatestReleasesResult = Record<string, { version: string; date: string; windowsSetupUrl?: string; url?: string } | undefined>;
+export type APIGetAllReleasesResult = Array<{ version: string; date: string; windowsSetupUrl?: string; url?: string }>;
 
 export type APICheckUpdateResult = {
 	version: string;
