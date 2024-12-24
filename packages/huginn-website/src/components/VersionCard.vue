@@ -24,8 +24,8 @@ const flavour = computed(() => props.version.includes("nightly") ? "nightly" : "
             :class="{ 'border-warning/70 text-warning': flavour === 'nightly', 'border-success/70 text-success': flavour === 'release' }"
             class="rounded-lg border py-0.5 px-2 ml-2">{{ flavour }}
          </div>
-         <div class="hidden md:visible ml-auto text-text/70 self-start">{{ moment(date).format("Do MMM YYYY") }}</div>
-         <div class="visible md:hidden ml-auto text-text/70 self-start">{{ moment(date).format("DD.MM.YYYY") }}</div>
+         <div class="hidden md:block ml-auto text-text/70 self-start">{{ moment(date).format("Do MMM YYYY") }}</div>
+         <div class="md:hidden ml-auto text-text/70 self-start">{{ moment(date).format("DD.MM.YYYY") }}</div>
       </div>
 
       <div class="mt-3">{{ description }}
