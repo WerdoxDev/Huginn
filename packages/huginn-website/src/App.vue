@@ -25,7 +25,7 @@ function closeMenu(event: MouseEvent) {
    <Analytics />
    <!-- Header -->
    <div
-      class="fixed top-0 flex w-full items-center md:justify-center border-b border-text bg-black/30 px-5 md:px-20 py-4 backdrop-blur-md">
+      class="fixed top-0 z-30 flex w-full items-center md:justify-center border-b border-text bg-black/30 px-5 md:px-20 py-4 backdrop-blur-md">
       <RouterLink to="/" class="flex items-center transition-opacity duration-[250ms]"
          :class="{ 'opacity-0': isMenuOpen }">
          <img :src="`/logo/${currentTheme.logoOutline}`" class="size-10" />
