@@ -242,8 +242,17 @@ export type APIPostDefaultMessageJSONBody = {
 export type APIPostDefaultMessageResult = APIDefaultMessage;
 export type APIGetMessageByIdResult = APIMessage;
 export type APIGetChannelMessagesResult = APIMessage[];
-export type APIGetLatestReleasesResult = Record<string, { version: string; date: string; windowsSetupUrl?: string; url?: string } | undefined>;
-export type APIGetAllReleasesResult = Array<{ version: string; date: string; windowsSetupUrl?: string; url?: string }>;
+export type APIRelease = {
+	version: string;
+	date: string;
+	url: string;
+	description?: string;
+	windowsSetupUrl?: string;
+	macosSetupUrl?: string;
+	linuxSetupUrl?: string;
+};
+export type APIGetLatestReleasesResult = Record<string, APIRelease | undefined>;
+export type APIGetAllReleasesResult = APIRelease[];
 
 export type APICheckUpdateResult = {
 	version: string;
