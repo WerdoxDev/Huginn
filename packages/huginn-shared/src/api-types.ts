@@ -61,7 +61,7 @@ export type Tokens = {
 
 export type APIGetUserResult = APIUser;
 export type APIGetCurrentUserResult = APIUser;
-export type APIGetUserByIdResult = APIUser;
+export type APIGetUserByIdResult = APIPublicUser;
 
 export type APIPostRefreshTokenJSONBody = {
 	refreshToken: string;
@@ -201,8 +201,8 @@ type APIBaseMessage = {
 	channelId: Snowflake;
 	author: APIMessageUser;
 	content: string;
-	createdAt: Date | string;
-	editedAt: Date | string | null;
+	timestamp: Date | string;
+	editedTimestamp: Date | string | null;
 	attachments: string[];
 	pinned: boolean;
 	mentions: APIMessageUser[];
@@ -242,7 +242,8 @@ export type APIPostDefaultMessageJSONBody = {
 export type APIPostDefaultMessageResult = APIDefaultMessage;
 export type APIGetMessageByIdResult = APIMessage;
 export type APIGetChannelMessagesResult = APIMessage[];
-export type APIGetReleasesResult = Record<string, { version: string; date: string; windowsSetupUrl?: string } | undefined>;
+export type APIGetLatestReleasesResult = Record<string, { version: string; date: string; windowsSetupUrl?: string; url?: string } | undefined>;
+export type APIGetAllReleasesResult = Array<{ version: string; date: string; windowsSetupUrl?: string; url?: string }>;
 
 export type APICheckUpdateResult = {
 	version: string;
@@ -268,7 +269,7 @@ export enum MessageType {
 
 export type PresenceStatus = "offline" | "online" | "dnd" | "idle";
 export type UserPresence = {
-	user: Partial<APIUser> & { id: Snowflake };
+	user: PresenceUser;
 	status: PresenceStatus;
 	clientStatus?: {
 		web?: PresenceStatus;
@@ -276,10 +277,21 @@ export type UserPresence = {
 	};
 };
 
+export type PresenceUser = Partial<APIPublicUser> & { id: Snowflake };
+
 export type UserSettings = {
 	status: PresenceStatus;
 };
 
 export type OAuthType = "google" | "github";
 export type OAuthFlow = "browser" | "websocket";
-export type OAuthAction = "register" | "login";
+
+export type APIReadState = {
+	userId: Snowflake;
+	channelId: Snowflake;
+	lastReadMessageId: Snowflake | null;
+	lastReadMessageTimestamp: Date | string | null;
+	unreadCount: number;
+};
+
+export type APIReadStateWithoutUser = Omit<APIReadState, "userId">;
