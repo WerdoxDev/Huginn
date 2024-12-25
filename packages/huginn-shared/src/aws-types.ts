@@ -1,7 +1,6 @@
 export type VersionsObject = Record<
 	string,
 	{
-		flavour: "release" | "nightly";
 		publishDate: string;
 		description: string;
 		downloads: {
