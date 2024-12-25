@@ -1,5 +1,7 @@
 import type { Endpoints } from "@octokit/types";
 
+export type PackageType = "app" | "api" | "server" | "cdn" | "bifrost" | "bundler" | "shared" | "backend-shared";
+
 export type BuildFlavour = "release" | "nightly";
 
 export type BuildFiles = {
@@ -13,13 +15,10 @@ export type CargoContent = {
 
 export type Suggestions = {
 	latest?: string | null;
-	latestNightly?: string | null;
 	localLatest?: string | null;
-	localLatestNightly?: string | null;
 	nextPatch?: string | null;
 	nextMinor?: string | null;
 	nextMajor?: string | null;
-	nextNightly?: string | null;
 };
 
 export type GitHubRelease =
