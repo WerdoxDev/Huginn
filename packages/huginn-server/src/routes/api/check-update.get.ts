@@ -5,12 +5,12 @@ import * as semver from "semver";
 import { router, s3 } from "#server";
 import { envs } from "#setup";
 
-type TargetKind = "none" | "windows-release" | "windows-nightly";
+type TargetKind = "none" | "windows";
 
 router.get(
 	"/check-update/:target/:currentVersion",
 	defineEventHandler(async (event) => {
-		// windows-latest, windows-nightly
+		// windows
 		const target = (event.context.params?.target ?? "none") as TargetKind;
 		const currentVersion = event.context.params?.currentVersion ?? "";
 
@@ -23,35 +23,25 @@ router.get(
 
 		const sortedVersions = Object.keys(versions).sort(semver.rcompare);
 
-		const latest = sortedVersions.find((x) => !semver.prerelease(x));
-		const latestNightly = sortedVersions.find((x) => semver.prerelease(x)?.[0]);
+		const [latest] = sortedVersions;
 
-		if ((target === "windows-release" && !latest) || (target === "windows-nightly" && !latestNightly)) {
+		// We don't have a version
+		if (!latest) {
 			return sendNoContent(event, HttpCode.NO_CONTENT);
 		}
 
-		if ((target === "windows-release" && currentVersion === latest) || (target === "windows-nightly" && currentVersion === latestNightly)) {
+		// Already on the latest version
+		if (target === "windows" && currentVersion === latest) {
 			return sendNoContent(event, HttpCode.NO_CONTENT);
 		}
 
-		if (target === "windows-release" && latest) {
+		// Send newest version
+		if (target === "windows" && latest) {
 			const version = versions[latest];
 
 			setResponseStatus(event, HttpCode.OK);
 			return {
 				version: latest,
-				notes: version.description,
-				pub_date: version.publishDate,
-				signature: version.downloads.windows?.signature,
-				url: version.downloads.windows?.url,
-			} as APICheckUpdateResult;
-		}
-		if (target === "windows-nightly" && latestNightly) {
-			const version = versions[latestNightly];
-
-			setResponseStatus(event, HttpCode.OK);
-			return {
-				version: latestNightly,
 				notes: version.description,
 				pub_date: version.publishDate,
 				signature: version.downloads.windows?.signature,
