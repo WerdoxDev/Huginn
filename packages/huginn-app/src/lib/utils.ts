@@ -1,6 +1,5 @@
-import type { InputStatus, InputStatuses, InputValue, InputValues, VersionFlavour } from "@/types";
+import type { InputStatus, InputStatuses, InputValue, InputValues } from "@/types";
 import { HuginnAPIError, type HuginnError, type HuginnErrorData } from "@huginn/shared";
-import { getVersion } from "@tauri-apps/api/app";
 import type { JSXElementConstructor, ReactNode } from "react";
 import { Children, isValidElement } from "react";
 
@@ -75,14 +74,6 @@ export function createSingleEntryError(error: HuginnAPIError, name: string): Hug
 	return {
 		[name]: { _errors: [{ code: error.rawError.code.toString(), message: apiMessage ? apiMessage[1] : error.rawError.message }] },
 	};
-}
-
-export async function getVersionFlavour(): Promise<VersionFlavour> {
-	if (!globalThis.__TAURI_INTERNALS__) {
-		return "release";
-	}
-	const version = await getVersion();
-	return version.includes("nightly") ? "nightly" : "release";
 }
 
 export function getFirstChildClosestToTop<E extends HTMLElement>(container: E) {

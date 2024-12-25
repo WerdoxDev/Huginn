@@ -9,8 +9,6 @@ export default function Splashscreen() {
 		}
 	});
 
-	const { setVersionFlavour } = useHuginnWindow();
-
 	const [loadingState, setLoadingState] = useState<LoadingState>("none");
 
 	const loadingText = useMemo(() => {
@@ -38,11 +36,9 @@ export default function Splashscreen() {
 	useEffect(() => {
 		const bc = new BroadcastChannel("huginn");
 		bc.onmessage = (event) => {
-			if (event.data.name === "restart_splashscreen" && event.data.target) {
-				setVersionFlavour(event.data.target);
-
+			if (event.data.name === "restart_splashscreen") {
 				setLoadingState("checking_update");
-				checkAndDownload(event.data.target);
+				checkAndDownload();
 			}
 		};
 
