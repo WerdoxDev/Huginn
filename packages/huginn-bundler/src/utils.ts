@@ -1,9 +1,9 @@
 import { readdir } from "node:fs/promises";
 import path from "node:path";
-import { parseTOML, stringifyTOML } from "confbox";
+import { parseJSON, parseTOML, stringifyJSON, stringifyTOML } from "confbox";
 import * as semver from "semver";
-import { NSIS_RELATIVE_PATH, octokit } from ".";
-import type { BuildFiles, BuildFlavour, CargoContent, GitHubRelease } from "./types";
+import { envs, octokit, packages } from ".";
+import type { BuildFiles, BuildFlavour, CargoContent, GitHubRelease, PackageType } from "./types";
 
 /**
  * @returns a BuildFiles object that contains .exe and .sig files from the tauri debug/release build folder
@@ -24,7 +24,7 @@ export async function getBuildFiles<Throw extends boolean>(
 
 	if (!nsisSigFileName || !nsisSetupFileName) {
 		if (!throwOnNotFound) return null as never;
-		throw new Error(`.exe or .sig file not found in (${path.join(buildPath, NSIS_RELATIVE_PATH)})`);
+		throw new Error(`.exe or .sig file not found in (${path.join(buildPath, envs.NSIS_RELATIVE_PATH)})`);
 	}
 
 	const nsisSigFilePath = path.join(buildPath, nsisSigFileName);
@@ -34,13 +34,6 @@ export async function getBuildFiles<Throw extends boolean>(
 		nsisSigFile: { name: nsisSigFileName, path: nsisSigFilePath },
 		nsisSetupFile: { name: nsisSetupFileName, path: nsisSetupFilePath },
 	};
-}
-
-/**
- * @returns a string of either 'nightly' or 'release' depending on the version
- */
-export function getBuildFlavour(version: string): BuildFlavour {
-	return semver.prerelease(version)?.includes("nightly") ? "nightly" : "release";
 }
 
 /**
@@ -65,6 +58,14 @@ export async function writeCargoTomlVersion(path: string, version: string): Prom
 	content.package.version = version;
 
 	const stringlified = stringifyTOML(content);
+	await Bun.write(path, stringlified);
+}
+
+export async function writePackageJsonVersion(path: string, version: string): Promise<void> {
+	const packageJsonContent = await Bun.file(path).json();
+
+	packageJsonContent.version = version;
+	const stringlified = stringifyJSON(packageJsonContent);
 	await Bun.write(path, stringlified);
 }
 
@@ -98,4 +99,32 @@ export async function getDownloadInfo(
 	const sigFileContent = await (await fetch(sigFileAsset.browser_download_url)).text();
 
 	return { url: runFileAsset.browser_download_url, signature: sigFileContent };
+}
+
+export function getPackage(packageType: PackageType) {
+	const foundPackage = Object.values(packages).find((x) => x.type === packageType);
+	if (!foundPackage) {
+		throw new Error(`Package of type ${packageType} was not found`);
+	}
+	return foundPackage as { path: string; name: string; type: PackageType };
+}
+
+export function getStrippedVersion(packageType: PackageType, tag: string) {
+	const packageName = getPackage(packageType).name;
+	return tag.replace(`${packageName}-`, "").trim();
+}
+
+export async function getPackageReleases(packageType: PackageType) {
+	const packageName = getPackage(packageType).name;
+	const releases = (await octokit.rest.repos.listReleases({ owner: "WerdoxDev", repo: envs.REPO_NAME })).data
+		.filter((x) => x.tag_name.includes(packageName))
+		.sort((v1, v2) => semver.rcompare(getStrippedVersion(packageType, v1.tag_name), getStrippedVersion(packageType, v2.tag_name)));
+
+	return releases;
+}
+
+export async function getPackageVersion(packageType: PackageType) {
+	const packagePath = getPackage(packageType).path;
+	const packageJson = await Bun.file(path.join(packagePath, "package.json")).json();
+	return packageJson.version as string;
 }

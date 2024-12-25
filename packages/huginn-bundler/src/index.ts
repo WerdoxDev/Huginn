@@ -3,6 +3,7 @@
 import { mkdir, readdir, rm } from "node:fs/promises";
 import path from "node:path";
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { readEnv } from "@huginn/backend-shared";
 import type { VersionsObject } from "@huginn/shared";
 import { $ } from "bun";
 import { defineCommand, runMain, showUsage } from "citty";
@@ -11,94 +12,114 @@ import { colors } from "consola/utils";
 import { Octokit } from "octokit";
 import * as semver from "semver";
 import { logger } from "./logger";
-import type { Suggestions } from "./types";
-import { directoryExists, getBuildFiles, getBuildFlavour, getDownloadInfo, getReleaseByTag, writeCargoTomlVersion } from "./utils";
+import type { PackageType, Suggestions } from "./types";
+import {
+	directoryExists,
+	getBuildFiles,
+	getDownloadInfo,
+	getPackage,
+	getPackageReleases,
+	getPackageVersion,
+	getReleaseByTag,
+	writeCargoTomlVersion,
+	writePackageJsonVersion,
+} from "./utils";
 
-export const APP_PATH: string = process.env.APP_PATH ?? "";
-export const BUILDS_PATH: string = process.env.BUILDS_PATH ?? "";
-export const TAURI_BUILD_PATH: string = process.env.TAURI_BUILD_PATH ?? "";
-export const CARGO_TOML_PATH: string = process.env.CARGO_TOML_PATH ?? "";
-export const NSIS_RELATIVE_PATH = "/bundle/nsis";
+export const envs = readEnv([
+	"APP_PATH",
+	"SERVER_PATH",
+	"BIFROST_PATH",
+	"CDN_PATH",
+	"API_PATH",
+	"SHARED_PATH",
+	"BUNDLER_PATH",
+	"BACKEND_SHARED_PATH",
+	{ key: "APP_BUILDS_PATH", default: "" },
+	{ key: "APP_TAURI_BUILD_PATH", default: "" },
+	{ key: "APP_CARGO_TOML_PATH", default: "" },
+	{ key: "NSIS_RELATIVE_PATH", default: "/bundle/nsis" },
+	"GIST_ID",
+	{ key: "REPO_NAME", default: "" },
+	"GITHUB_TOKEN",
+	"AWS_REGION",
+	"AWS_REGION",
+	"AWS_KEY_ID",
+	"AWS_SECRET_KEY",
+	"AWS_BUCKET",
+	"AWS_VERSIONS_OBJECT_KEY",
+] as const);
 
-export const GIST_ID: string = process.env.GIST_ID ?? "";
-export const REPO: string = process.env.REPO_NAME ?? "";
-export const GITHUB_TOKEN: string = process.env.GITHUB_TOKEN ?? "";
+export const packages = {
+	app: {
+		type: "app",
+		path: envs.APP_PATH,
+		name: "huginn/app",
+		buildsPath: envs.APP_BUILDS_PATH,
+		tauriBuildPath: envs.APP_TAURI_BUILD_PATH,
+		cargoTomlPath: envs.APP_CARGO_TOML_PATH,
+	},
+	server: {
+		type: "server",
+		path: envs.SERVER_PATH,
+		name: "huginn/server",
+	},
+	cdn: {
+		type: "cdn",
+		path: envs.CDN_PATH,
+		name: "huginn/cdn",
+	},
+	bifrost: {
+		type: "bifrost",
+		path: envs.BIFROST_PATH,
+		name: "huginn/bifrost",
+	},
+	api: {
+		type: "api",
+		path: envs.API_PATH,
+		name: "huginn/api",
+	},
+	shared: {
+		type: "shared",
+		path: envs.SHARED_PATH,
+		name: "huginn/shared",
+	},
+	backendShared: {
+		type: "backend-shared",
+		path: envs.BACKEND_SHARED_PATH,
+		name: "huginn/backend-shared",
+	},
+	bundler: {
+		type: "bundler",
+		path: envs.BUNDLER_PATH,
+		name: "huginn/bundler",
+	},
+};
 
-export const AWS_REGION: string = process.env.AWS_REGION ?? "";
-export const AWS_KEY_ID: string = process.env.AWS_KEY_ID ?? "";
-export const AWS_SECRET_KEY: string = process.env.AWS_SECRET_KEY ?? "";
-export const AWS_BUCKET: string = process.env.AWS_BUCKET ?? "";
-export const AWS_VERSIONS_OBJECT_KEY: string = process.env.AWS_VERSIONS_OBJECT_KEY ?? "";
-
-export const octokit: Octokit = new Octokit({ auth: GITHUB_TOKEN });
+export const octokit: Octokit = new Octokit({ auth: envs.GITHUB_TOKEN });
 export const s3: S3Client = new S3Client({
-	region: AWS_REGION,
-	credentials: { accessKeyId: AWS_KEY_ID, secretAccessKey: AWS_SECRET_KEY },
+	region: envs.AWS_REGION,
+	credentials: { accessKeyId: envs.AWS_KEY_ID ?? "", secretAccessKey: envs.AWS_SECRET_KEY ?? "" },
 });
 
 const main = defineCommand({
 	meta: {
 		name: "huginn-bundler",
-		version: "0.1.0",
-		description: "Very simple bundler that builds the Huginn App and uploads it to github!",
+		version: "1.0.0",
+		description: "Very simple bundler for the entire Huginn repository to build & upload versions to github!",
 	},
 	args: {
+		package: {
+			type: "string",
+			alias: "p",
+			required: true,
+			description: "The package name to bundler/build/upload/publish/bump...",
+		},
 		version: {
 			type: "string",
 			alias: "v",
 			required: false,
 			description: "A SemVer string for the build or upload or deleting",
 			valueHint: "SEMVER",
-		},
-		skip: {
-			type: "boolean",
-			description: "Skips prompting for a description. Useful for nightly builds.",
-			default: false,
-			required: false,
-		},
-		deleteLocal: {
-			type: "boolean",
-			alias: "l",
-			description: "Deletes the provided SemVer version from local",
-			required: false,
-			default: false,
-		},
-		deleteGithub: {
-			type: "boolean",
-			alias: "g",
-			description: "Deletes the provided SemVer from GitHub",
-			valueHint: "SEMVER",
-			required: false,
-			default: false,
-		},
-		deleteAmazon: {
-			type: "boolean",
-			alias: "x",
-			description: "Deletes the provided SemVer from AWS S3 bucket",
-			valueHint: "SEMVER",
-			required: false,
-			default: false,
-		},
-		upload: {
-			type: "boolean",
-			alias: "u",
-			description: "Uploads the build to GitHub as a release. If build already exists, it skips building it again",
-			required: false,
-			default: false,
-		},
-		amazon: {
-			type: "boolean",
-			alias: "a",
-			description: "Adds the version to the AWS S3 bucket. If it exists, it gets updated. This won't work without uploading to GitHub",
-			required: false,
-			default: false,
-		},
-		draft: {
-			type: "boolean",
-			alias: "d",
-			description: "Whether or not the GitHub release should be a draft",
-			default: false,
-			required: false,
 		},
 		suggest: {
 			type: "boolean",
@@ -107,6 +128,18 @@ const main = defineCommand({
 			required: false,
 			default: false,
 		},
+		local: {
+			type: "boolean",
+			alias: "l",
+			description: "Does not publish anything to github. Only for local builds of the app",
+		},
+		draft: {
+			type: "boolean",
+			alias: "d",
+			description: "Whether or not the GitHub release should be a draft",
+			default: false,
+			required: false,
+		},
 		force: {
 			type: "boolean",
 			alias: "f",
@@ -114,41 +147,57 @@ const main = defineCommand({
 			required: false,
 			default: false,
 		},
+		delete: {
+			type: "boolean",
+			description: "Deletes a release from GitHub using the provided version",
+			required: false,
+		},
 	},
 	async run({ args }) {
+		const packageType = args.package as PackageType;
+
 		if (args.suggest) {
-			const suggestions = await getSuggestions();
-			logSuggestions(suggestions);
+			const suggestions = await getSuggestions(packageType);
+			logSuggestions(packageType, suggestions);
 			return;
 		}
 
 		if (args.version) {
-			if (args.deleteLocal || args.deleteGithub || args.deleteAmazon) {
-				await deleteVersion(args.version, args.deleteLocal, args.deleteGithub, args.deleteAmazon);
+			if (args.delete) {
+				await deleteVersion(packageType, args.version);
 				return;
 			}
 
-			const result = await build(args.version, args.force);
+			const suggestions = await getSuggestions(packageType);
+			const suggestedVersions = [suggestions.nextPatch, suggestions.nextMinor, suggestions.nextMajor];
 
-			if ((args.upload || args.amazon) && result) {
-				if (args.draft && args.upload) {
-					const confirmation = await consola.prompt("A draft release cannot later be edited in the cli. Do you want to continue?", {
-						type: "confirm",
-					});
-					if (!confirmation) {
-						return;
-					}
-				}
-
-				if (args.upload) {
-					const description = args.skip ? "" : await consola.prompt("Enter a description:", { type: "text" });
-					await createRelease(args.version, description, args.draft);
-				}
-				if (args.amazon) {
-					await addToAmazon(args.version);
-				}
+			if (!suggestedVersions.includes(args.version) && !args.force) {
+				logger.versionNotSuggested(args.version);
 				return;
 			}
+
+			if (packageType === "app") {
+				await buildApp(args.version);
+			} else {
+				await updatePackageJson(packageType, args.version);
+			}
+
+			if (args.local) {
+				return;
+			}
+
+			if (args.draft) {
+				const confirmation = await consola.prompt("A draft release cannot later be edited in the cli. Do you want to continue?", {
+					type: "confirm",
+				});
+				if (!confirmation) {
+					return;
+				}
+			}
+
+			await createRelease(packageType, args.version, args.draft);
+
+			if (packageType === "app" && !args.draft) await addToAmazon(args.version);
 
 			return;
 		}
@@ -159,86 +208,64 @@ const main = defineCommand({
 
 runMain(main);
 
-async function getSuggestions(): Promise<Suggestions> {
-	const releases = (await octokit.rest.repos.listReleases({ owner: "WerdoxDev", repo: REPO })).data.sort((v1, v2) =>
-		semver.rcompare(v1.name ?? v1.tag_name, v2.name ?? v2.tag_name),
-	);
-	const localBuilds = (await readdir(BUILDS_PATH))
-		.map((x) => semver.valid(x))
-		.filter((x) => x !== null)
-		.sort(semver.rcompare);
+async function getSuggestions(packageType: PackageType): Promise<Suggestions> {
+	const releases = await getPackageReleases(packageType);
 
-	const latest = releases.find((x) => !x.prerelease);
-	const latestNightly = releases.find((x) => x.prerelease);
+	let localLatest: string | undefined;
+	if (packageType === "app") {
+		const localBuilds = (await readdir(envs.APP_BUILDS_PATH))
+			.map((x) => semver.valid(x))
+			.filter((x) => x !== null)
+			.sort(semver.rcompare);
 
-	const localLatest = localBuilds.find((x) => !semver.prerelease(x));
-	const localLatestNightly = localBuilds.find((x) => semver.prerelease(x)?.[0]);
+		localLatest = localBuilds[0];
+	} else {
+		localLatest = await getPackageVersion(packageType);
+	}
+
+	const [latest] = releases;
 
 	const nextPatch = semver.inc(localLatest ?? "", "patch");
 	const nextMinor = semver.inc(localLatest ?? "", "minor");
 	const nextMajor = semver.inc(localLatest ?? "", "major");
-	const nextNightly =
-		localLatest &&
-		semver.inc(
-			localLatestNightly ? (semver.compare(localLatest, localLatestNightly) === 1 ? localLatest : (localLatestNightly ?? "")) : localLatest,
-			"prerelease",
-			"nightly",
-		);
 
 	return {
 		latest: latest?.name,
-		latestNightly: latestNightly?.name,
 		localLatest,
-		localLatestNightly,
 		nextPatch,
 		nextMinor,
 		nextMajor,
-		nextNightly,
 	};
 }
 
-function logSuggestions(suggestions: Suggestions) {
-	consola.log("");
-	consola.log(`${colors.gray("---")} ${colors.magenta("Next version suggestions")}`);
-	consola.log(`  ${colors.gray("--")} ${colors.green(colors.bold("nightly"))}: ${colors.green(suggestions.nextNightly ?? "none")}`);
-	consola.log(`  ${colors.gray("--")} ${colors.green(colors.bold("patch"))}: ${colors.green(suggestions.nextPatch ?? "none")}`);
-	consola.log(`  ${colors.gray("--")} ${colors.green(colors.bold("minor"))}: ${colors.green(suggestions.nextMinor ?? "none")}`);
-	consola.log(`  ${colors.gray("--")} ${colors.green(colors.bold("major"))}: ${colors.green(suggestions.nextMajor ?? "none")}`);
+function logSuggestions(packageType: PackageType, suggestions: Suggestions) {
+	consola.log(`${colors.gray(packageType)} ${colors.gray("->")} ${colors.magenta(colors.bold("Next"))}`);
+	consola.log(`  ${colors.green(colors.bold("shame"))}: ${colors.green(suggestions.nextPatch ?? "none")}`);
+	consola.log(`  ${colors.green(colors.bold("default"))}: ${colors.green(suggestions.nextMinor ?? "none")}`);
+	consola.log(`  ${colors.green(colors.bold("proud"))}: ${colors.green(suggestions.nextMajor ?? "none")}`);
 	consola.log("");
 
-	consola.log(`${colors.gray("---")} ${colors.yellow("Current versions")}`);
-	consola.log(`  ${colors.gray("--")} ${colors.blue("local")}: ${colors.cyan(suggestions.localLatest ?? "none")}`);
-	consola.log(`  ${colors.gray("--")} ${colors.blue("local")} ${colors.red("nightly")}: ${colors.cyan(suggestions.localLatestNightly ?? "none")}`);
-	consola.log(`  ${colors.gray("--")} ${colors.blue("GitHub")}: ${colors.cyan(suggestions.latest ?? "none")}`);
-	consola.log(`  ${colors.gray("--")} ${colors.blue("GitHub")} ${colors.red("nightly")}: ${colors.cyan(suggestions.latestNightly ?? "none")}`);
+	consola.log(`${colors.gray(packageType)} ${colors.gray("->")} ${colors.yellow(colors.bold("Current"))}`);
+	consola.log(`  ${colors.blue("local")}: ${colors.cyan(suggestions.localLatest ?? "none")}`);
+	consola.log(`  ${colors.blue("GitHub")}: ${colors.cyan(suggestions.latest ?? "none")}`);
 }
 
-async function build(version: string, force?: boolean): Promise<boolean> {
+async function buildApp(version: string): Promise<void> {
 	try {
-		const versionDir = path.join(BUILDS_PATH, version);
-		const buildPath = path.join(TAURI_BUILD_PATH, NSIS_RELATIVE_PATH);
+		const versionDir = path.join(envs.APP_BUILDS_PATH, version);
+		const buildPath = path.join(envs.APP_TAURI_BUILD_PATH, envs.NSIS_RELATIVE_PATH);
 
 		if (await directoryExists(versionDir)) {
 			logger.versionExists(version);
-			return true;
+			return;
 		}
-
-		const suggestions = await getSuggestions();
-		const suggestedVersions = [suggestions.nextNightly, suggestions.nextPatch, suggestions.nextMinor, suggestions.nextMajor];
-
-		if (!suggestedVersions.includes(version) && !force) {
-			logger.versionNotSuggested(version);
-			return false;
-		}
-
-		const flavour = getBuildFlavour(version);
 
 		// Update the version number in cargo.toml
-		await writeCargoTomlVersion(CARGO_TOML_PATH, version);
+		await writeCargoTomlVersion(envs.APP_CARGO_TOML_PATH, version);
 
-		logger.versionFieldsUpdated(version);
+		logger.cargoVersionUpdated(version);
 
-		logger.buildingApp(version, flavour);
+		logger.buildingApp(version);
 
 		let files = await getBuildFiles(buildPath, version);
 
@@ -253,7 +280,7 @@ async function build(version: string, force?: boolean): Promise<boolean> {
 			});
 
 			// Run the build script and log the result
-			await $`cd ${APP_PATH} && bun tauri-build`.quiet();
+			await $`cd ${envs.APP_PATH} && bun tauri-build`.quiet();
 		}
 
 		logger.copyingBuildFiles(versionDir);
@@ -266,113 +293,105 @@ async function build(version: string, force?: boolean): Promise<boolean> {
 		// Get blob for setup.exe, .exe and .sig files
 		const sigFile = Bun.file(files.nsisSigFile.path);
 		const setupFile = Bun.file(files.nsisSetupFile.path);
-		const exeFile = Bun.file(path.join(TAURI_BUILD_PATH, "huginn.exe"));
+		const exeFile = Bun.file(path.join(envs.APP_TAURI_BUILD_PATH, "huginn.exe"));
 
 		// Copy setup.exe, .exe and .sig files to our new version's folder
 		await Bun.write(path.join(versionDir, files.nsisSigFile.name), sigFile);
 		await Bun.write(path.join(versionDir, files.nsisSetupFile.name), setupFile);
 		await Bun.write(path.join(versionDir, `Huginn_${version}.exe`), exeFile);
 
-		logger.buildCompleted(version, flavour);
-
-		return true;
+		logger.buildCompleted(version);
 	} catch (e) {
 		consola.error("Something went wrong... ");
 		throw e;
 	}
 }
 
-async function createRelease(version: string, description: string, draft: boolean) {
-	const flavour = getBuildFlavour(version);
+async function updatePackageJson(packageType: PackageType, version: string) {
+	const thisPackage = getPackage(packageType);
+	await writePackageJsonVersion(path.join(thisPackage.path, "package.json"), version);
+	logger.packageVersionUpdated(packageType, version);
+}
+
+async function createRelease(packageType: PackageType, version: string, draft: boolean) {
+	const thisPackage = getPackage(packageType);
 	const owner = "WerdoxDev";
 
 	// Create the release with a description
-	const releaseName = `v${version}`;
+	const tagName = `${thisPackage.name}-v${version}`;
 
-	let release = await getReleaseByTag(releaseName, owner, REPO);
+	let release = await getReleaseByTag(tagName, owner, envs.REPO_NAME);
 	const releaseExists = !!release;
 
 	if (release) {
 		logger.releaseExists(version);
-
-		await octokit.rest.repos.updateRelease({
-			release_id: release.data.id,
-			owner,
-			repo: REPO,
-			body: description ? description : undefined,
-			name: releaseName,
-			tag_name: releaseName,
-			target_commitish: "master",
-			draft,
-		});
 	} else {
-		logger.creatingRelease(version, flavour, draft);
+		logger.creatingRelease(packageType, version, draft);
 
 		release = await octokit.rest.repos.createRelease({
 			owner,
-			repo: REPO,
-			name: releaseName,
-			tag_name: releaseName,
+			repo: envs.REPO_NAME,
+			name: `${thisPackage.name} v${version}`,
+			tag_name: tagName,
 			target_commitish: "master",
-			body: description,
-			prerelease: flavour === "nightly",
 			draft,
-			generate_release_notes: flavour === "nightly",
+			generate_release_notes: true,
 		});
 	}
 
-	// Get build files from debug or release folders
-	const files = await getBuildFiles(path.join(BUILDS_PATH, version), version, true);
+	if (packageType === "app") {
+		// Get build files from debug or release folders
+		const files = await getBuildFiles(path.join(envs.APP_BUILDS_PATH, version), version, true);
 
-	// Convert build files to strings
-	const sigFileString = await Bun.file(files.nsisSigFile.path).text();
-	const setupFileString = await Bun.file(files.nsisSetupFile.path).arrayBuffer();
+		// Convert build files to strings
+		const sigFileString = await Bun.file(files.nsisSigFile.path).text();
+		const setupFileString = await Bun.file(files.nsisSetupFile.path).arrayBuffer();
 
-	const releaseAssets = await octokit.rest.repos.listReleaseAssets({ release_id: release.data.id, owner, repo: REPO });
+		const releaseAssets = await octokit.rest.repos.listReleaseAssets({ release_id: release.data.id, owner, repo: envs.REPO_NAME });
 
-	if (releaseAssets.data.length > 0) {
-		logger.deletingExistingAssets(version);
+		if (releaseAssets.data.length > 0) {
+			logger.deletingExistingAssets(version);
 
-		for (const asset of releaseAssets.data) {
-			await octokit.rest.repos.deleteReleaseAsset({ asset_id: asset.id, owner, repo: REPO });
+			for (const asset of releaseAssets.data) {
+				await octokit.rest.repos.deleteReleaseAsset({ asset_id: asset.id, owner, repo: envs.REPO_NAME });
+			}
 		}
+
+		logger.uploadingReleaseFiles();
+
+		// Upload .exe and .sig and files to the release
+		await octokit.rest.repos.uploadReleaseAsset({
+			name: files.nsisSigFile.name,
+			release_id: release.data.id,
+			owner,
+			repo: envs.REPO_NAME,
+			data: sigFileString,
+		});
+
+		await octokit.rest.repos.uploadReleaseAsset({
+			name: files.nsisSetupFile.name,
+			release_id: release.data.id,
+			owner,
+			repo: envs.REPO_NAME,
+			data: setupFileString as unknown as string,
+		});
 	}
 
-	logger.uploadingReleaseFiles();
-
-	// Upload .exe and .sig and files to the release
-	await octokit.rest.repos.uploadReleaseAsset({
-		name: files.nsisSigFile.name,
-		release_id: release.data.id,
-		owner,
-		repo: REPO,
-		data: sigFileString,
-	});
-
-	await octokit.rest.repos.uploadReleaseAsset({
-		name: files.nsisSetupFile.name,
-		release_id: release.data.id,
-		owner,
-		repo: REPO,
-		data: setupFileString as unknown as string,
-	});
-
 	if (releaseExists) {
-		logger.releaseUpdated(version, flavour);
+		logger.releaseUpdated(version);
 	} else {
-		logger.releaseCreated(version, flavour, draft);
+		logger.releaseCreated(packageType, version, draft);
 	}
 
 	logger.releaseLink(release.data.html_url);
 }
 
 async function addToAmazon(version: string) {
-	const flavour = getBuildFlavour(version);
-
-	const release = await getReleaseByTag(`v${version}`, "WerdoxDev", REPO);
+	const thisPackage = getPackage("app");
+	const release = await getReleaseByTag(`${thisPackage.name}-v${version}`, "WerdoxDev", envs.REPO_NAME);
 
 	if (!release) {
-		logger.releaseDoesNotExist(version);
+		logger.releaseDoesNotExist("app", version);
 		return;
 	}
 
@@ -383,7 +402,7 @@ async function addToAmazon(version: string) {
 
 	let versions: VersionsObject = {};
 	try {
-		const getCommand = new GetObjectCommand({ Bucket: AWS_BUCKET, Key: AWS_VERSIONS_OBJECT_KEY });
+		const getCommand = new GetObjectCommand({ Bucket: envs.AWS_BUCKET, Key: envs.AWS_VERSIONS_OBJECT_KEY });
 		versions = JSON.parse((await (await s3.send(getCommand)).Body?.transformToString()) ?? "");
 	} catch {
 		logger.creatingAmazonObject();
@@ -397,12 +416,12 @@ async function addToAmazon(version: string) {
 	} else {
 		logger.updatingAmazonObject(version);
 
-		versions[version] = { description, publishDate, flavour, downloads: { windows: windowsDownloadInfo } };
+		versions[version] = { description, publishDate, downloads: { windows: windowsDownloadInfo } };
 	}
 
 	const putCommand = new PutObjectCommand({
-		Bucket: AWS_BUCKET,
-		Key: AWS_VERSIONS_OBJECT_KEY,
+		Bucket: envs.AWS_BUCKET,
+		Key: envs.AWS_VERSIONS_OBJECT_KEY,
 		ACL: "public-read",
 		Body: JSON.stringify(versions),
 		ContentType: "application/json",
@@ -412,13 +431,14 @@ async function addToAmazon(version: string) {
 	logger.amazonObjectUpdated(version);
 }
 
-async function deleteVersion(version: string, deleteLocal: boolean, deleteGitHub: boolean, deleteAmazon: boolean) {
+async function deleteVersion(packageType: PackageType, version: string) {
 	const owner = "WerdoxDev";
-	const versionDir = path.join(BUILDS_PATH, version);
+	const versionDir = path.join(envs.APP_BUILDS_PATH, version);
+	const thisPackage = getPackage(packageType);
 
-	if (deleteLocal) {
+	if (packageType === "app") {
 		if (await directoryExists(versionDir)) {
-			await rm(path.join(BUILDS_PATH, version), {
+			await rm(path.join(envs.APP_BUILDS_PATH, version), {
 				force: true,
 				recursive: true,
 			});
@@ -429,22 +449,20 @@ async function deleteVersion(version: string, deleteLocal: boolean, deleteGitHub
 		}
 	}
 
-	if (deleteGitHub) {
-		const release = await getReleaseByTag(`v${version}`, owner, REPO);
+	const release = await getReleaseByTag(`${thisPackage.name}-v${version}`, owner, envs.REPO_NAME);
 
-		if (release) {
-			await octokit.rest.repos.deleteRelease({ owner, release_id: release.data.id, repo: REPO });
-			await octokit.rest.git.deleteRef({ owner, repo: REPO, ref: `tags/v${version}` });
+	if (release) {
+		await octokit.rest.repos.deleteRelease({ owner, release_id: release.data.id, repo: envs.REPO_NAME });
+		await octokit.rest.git.deleteRef({ owner, repo: envs.REPO_NAME, ref: `tags/${thisPackage.name}-v${version}` });
 
-			logger.releaseDeleted(version);
-		} else {
-			logger.releaseDoesNotExist(version);
-		}
+		logger.releaseDeleted(packageType, version);
+	} else {
+		logger.releaseDoesNotExist("app", version);
 	}
 
-	if (deleteAmazon) {
+	if (packageType === "app") {
 		try {
-			const getCommand = new GetObjectCommand({ Bucket: AWS_BUCKET, Key: AWS_VERSIONS_OBJECT_KEY });
+			const getCommand = new GetObjectCommand({ Bucket: envs.AWS_BUCKET, Key: envs.AWS_VERSIONS_OBJECT_KEY });
 			const versions: VersionsObject = JSON.parse((await (await s3.send(getCommand)).Body?.transformToString()) ?? "");
 
 			if (!(version in versions)) {
@@ -455,8 +473,8 @@ async function deleteVersion(version: string, deleteLocal: boolean, deleteGitHub
 			delete versions[version];
 
 			const putCommand = new PutObjectCommand({
-				Bucket: AWS_BUCKET,
-				Key: AWS_VERSIONS_OBJECT_KEY,
+				Bucket: envs.AWS_BUCKET,
+				Key: envs.AWS_VERSIONS_OBJECT_KEY,
 				ACL: "public-read",
 				Body: JSON.stringify(versions),
 				ContentType: "application/json",
