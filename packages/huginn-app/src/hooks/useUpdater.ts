@@ -1,4 +1,3 @@
-import type { VersionFlavour } from "@/types";
 import { invoke } from "@tauri-apps/api/core";
 import { type UnlistenFn, listen } from "@tauri-apps/api/event";
 
@@ -18,7 +17,6 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void) {
 	const [info, setInfo] = useState<UpdateInfo>();
 	const contentLength = useRef(0);
 	const downloaded = useRef(0);
-	const huginnWindow = useHuginnWindow();
 
 	useEffect(() => {
 		let unlistenProgress: UnlistenFn;
@@ -52,16 +50,15 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void) {
 			unlistenInfo?.();
 			unlistenNotAvailable?.();
 		};
-	}, [huginnWindow.versionFlavour]);
+	}, []);
 
-	async function checkAndDownload(overrideTarget?: VersionFlavour) {
+	async function checkAndDownload() {
 		if (import.meta.env.DEV) {
 			onFinished?.(false);
 			return;
 		}
-		// console.log(appWindow.versionFlavour);
 
-		await invoke("check_update", { target: `windows-${overrideTarget ?? huginnWindow.versionFlavour}` });
+		await invoke("check_update", { target: "windows" });
 	}
 
 	return { checkAndDownload, info, progress, contentLength, downloaded };

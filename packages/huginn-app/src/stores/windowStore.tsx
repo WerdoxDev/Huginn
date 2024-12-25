@@ -1,4 +1,3 @@
-import type { VersionFlavour } from "@/types";
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { type ReactNode, createContext } from "react";
@@ -11,11 +10,9 @@ const store = createStore(
 			maximized: false,
 			focused: false,
 			environment: globalThis.__TAURI_INTERNALS__ ? "desktop" : "browser",
-			versionFlavour: await getVersionFlavour(),
 		},
 		(set) => ({
 			setMaximized: (isMaximized: boolean) => set({ maximized: isMaximized }),
-			setVersionFlavour: (flavour: VersionFlavour) => set({ versionFlavour: flavour }),
 		}),
 	),
 );

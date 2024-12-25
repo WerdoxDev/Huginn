@@ -157,8 +157,6 @@ export type MessageRenderInfo = {
 	unread: boolean;
 };
 
-export type VersionFlavour = "nightly" | "release";
-
 export type MessageRendererProps = {
 	renderInfo: MessageRenderInfo;
 	nextRenderInfo?: MessageRenderInfo;

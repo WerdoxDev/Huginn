@@ -1,10 +1,7 @@
-import type { DeepPartial, ThemeType, VersionFlavour } from "@/types";
+import type { DeepPartial, ThemeType } from "@/types";
 import { appConfigDir } from "@tauri-apps/api/path";
-import { BaseDirectory, exists, mkdir, readFile, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import { BaseDirectory, exists, mkdir, readFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { type ReactNode, createContext } from "react";
-
-const RELEASE_SETTINGS = "settings.json";
-const NIGHTLY_SETTINGS = "settings-nightly.json";
 
 export type SettingsContextType = {
 	serverAddress: string;
@@ -19,18 +16,17 @@ const defaultValue: SettingsContextType = {
 };
 
 let value = defaultValue;
-let currentFlavour: VersionFlavour;
 let filePath: string;
 let localStorageItem: string;
 
 export async function initializeSettings() {
-	currentFlavour = await getVersionFlavour();
-	filePath = currentFlavour === "nightly" ? NIGHTLY_SETTINGS : RELEASE_SETTINGS;
-	localStorageItem = currentFlavour === "nightly" ? "settings-nightly" : "settings";
+	filePath = "settings.json";
+	localStorageItem = "settings";
+
 	if (globalThis.__TAURI_INTERNALS__) {
+		await tryCreateSettingsFile();
 		const fileContent = new TextDecoder().decode(await readFile(filePath, { baseDir: BaseDirectory.AppConfig }));
 		value = { ...defaultValue, ...JSON.parse(fileContent) };
-		await tryCreateSettingsFile();
 	} else {
 		if (!globalThis.localStorage.getItem(localStorageItem)) {
 			globalThis.localStorage.setItem(localStorageItem, JSON.stringify(defaultValue));
