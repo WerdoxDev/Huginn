@@ -1,17 +1,1 @@
-{
-	"name": "@huginn/api",
-	"main": "./src/index.ts",
-	"type": "module",
-	"scripts": {
-		"start": "bun --watch ./src/index.ts"
-	},
-	"dependencies": {
-		"@huginn/shared": "workspace:*",
-		"@std/encoding": "npm:@jsr/std__encoding",
-		"jose": "^5.9.6",
-		"pathe": "^1.1.2"
-	},
-	"devDependencies": {
-		"@types/bun": "^1.1.14"
-	}
-}
+{"name":"@huginn/api","main":"./src/index.ts","version":"0.3.0","type":"module","scripts":{"start":"bun --watch ./src/index.ts"},"dependencies":{"@huginn/shared":"workspace:*","@std/encoding":"npm:@jsr/std__encoding","jose":"^5.9.6","pathe":"^1.1.2"},"devDependencies":{"@types/bun":"^1.1.14"}}
