@@ -51,7 +51,7 @@ function closeMenu(event: MouseEvent) {
    </div>
 
    <!-- Menu -->
-   <Transition name="opacity-fade">
+   <Transition name="menu-fade">
       <div class="fixed inset-0 z-40 bg-black/25" v-if="isMenuOpen" @click="toggleMenu"></div>
    </Transition>
 
@@ -78,7 +78,7 @@ function closeMenu(event: MouseEvent) {
    </Transition>
 
    <!-- Router View & Footer -->
-   <div class="flex h-full flex-col">
+   <div class="flex flex-col h-full">
 
       <RouterView />
 
@@ -124,29 +124,3 @@ function closeMenu(event: MouseEvent) {
       </div>
    </div>
 </template>
-
-<style>
-.opacity-fade-enter-from,
-.opacity-fade-leave-to {
-   opacity: 0;
-}
-
-.opacity-fade-enter-active,
-.opacity-fade-leave-active {
-   transition-property: opacity;
-   transition-duration: 250ms;
-   transition-timing-function: ease;
-}
-
-.slide-in-out-enter-from,
-.slide-in-out-leave-to {
-   translate: 100% 0;
-}
-
-.slide-in-out-enter-active,
-.slide-in-out-leave-active {
-   transition-property: translate;
-   transition-duration: 250ms;
-   transition-timing-function: ease;
-}
-</style>

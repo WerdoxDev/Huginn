@@ -251,7 +251,7 @@ export type APIRelease = {
 	macosSetupUrl?: string;
 	linuxSetupUrl?: string;
 };
-export type APIGetLatestReleasesResult = Record<string, APIRelease | undefined>;
+export type APIGetLatestReleaseResult = APIRelease | undefined;
 export type APIGetAllReleasesResult = APIRelease[];
 
 export type APICheckUpdateResult = {

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { RouterLink } from "vue-router";
 import { Icon } from "@iconify/vue/dist/iconify.js";
 import { Rive } from "@rive-app/canvas";
-import { currentTheme } from "./scripts/useChangeTheme";
+import { onMounted, ref } from "vue";
+import { RouterLink } from "vue-router";
 import Feature from "./components/Feature.vue";
+import { currentTheme } from "./scripts/useChangeTheme";
 
 const onlineCount = ref("0");
 
