@@ -1,12 +1,12 @@
 import { TabPanel } from "@headlessui/react";
 
 export default function AddFriendTab() {
-	const { inputsProps, values, handleErrors, setInputStatus } = useInputs([{ name: "username", required: false }]);
+	const { inputsProps, values, handleErrors, setStatus } = useInputs([{ name: "username", required: false }]);
 
 	const [disabled, setDisabled] = useState(false);
 
 	const mutation = useCreateRelationship(({ username }) => {
-		setInputStatus("username", { code: "success", text: `Friend request sent to ${username}!` });
+		setStatus("username", { code: "success", text: `Friend request sent to ${username}!` });
 	}, handleErrors);
 
 	useEffect(() => {

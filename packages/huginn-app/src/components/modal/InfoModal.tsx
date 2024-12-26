@@ -91,7 +91,8 @@ export default function InfoModal() {
 			{modal.closable && (
 				<ModalCloseButton
 					onClick={() => {
-						dispatch({ info: { isOpen: false } });
+						if (!modal.action?.cancel?.callback) dispatch({ info: { isOpen: false } });
+						else modal.action.cancel.callback();
 					}}
 				/>
 			)}

@@ -12,7 +12,7 @@ export default function CreateDMModal() {
 	const { data } = useQuery(getRelationshipsOptions(client));
 
 	const [selectedUsers, setSelectedUsers] = useState<APIRelationUser[]>([]);
-	const { inputsProps, setInputValue, values, validateValues, handleErrors } = useInputs([{ name: "name", required: false }]);
+	const { inputsProps, setValue, values, validateValues, handleErrors } = useInputs([{ name: "name", required: false }]);
 
 	const mutation = useCreateDMChannel("create-dm-channel_other", handleErrors);
 
@@ -29,7 +29,7 @@ export default function CreateDMModal() {
 
 	useEffect(() => {
 		if (selectedUsers.length < 2) {
-			setInputValue("name", "");
+			setValue("name", "");
 		}
 	}, [selectedUsers]);
 

@@ -1,4 +1,5 @@
-import { type APIGetUserChannelsResult, type Snowflake, snowflake } from "@huginn/shared";
+import type { APIGetUserChannelsResult, Snowflake } from "@huginn/shared";
+import type { QueryClient } from "@tanstack/react-query";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 
@@ -22,7 +23,7 @@ export const useChannelStore = create(
 					currentVisibleMessages: [...state.currentVisibleMessages.filter((x) => x.messageId !== id)],
 				})),
 			clearVisibleMessages: () => set({ currentVisibleMessages: [] }),
-			updateLastMessageId: (channelId: Snowflake, messageId: Snowflake) => {
+			updateLastMessageId: (queryClient: QueryClient, channelId: Snowflake, messageId: Snowflake) => {
 				queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (data) => {
 					if (!data) return undefined;
 

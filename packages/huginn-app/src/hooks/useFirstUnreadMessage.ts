@@ -1,5 +1,5 @@
 import type { AppChannelMessage } from "@/types";
-import type { Snowflake } from "@huginn/shared";
+import { type Snowflake, snowflake } from "@huginn/shared";
 import moment from "moment";
 
 export function useFirstUnreadMessage(channelId: Snowflake, sortedMessages: AppChannelMessage[]) {
@@ -16,7 +16,11 @@ export function useFirstUnreadMessage(channelId: Snowflake, sortedMessages: AppC
 
 		const firstUnreadMessage = sortedMessages
 			.filter((x) => x.author.id !== user?.id)
-			.find((x) => moment(x.timestamp).isAfter(readState?.lastReadMessageTimestamp));
+			.find((x) =>
+				moment(snowflake.getTimestamp(x.id)).isAfter(
+					readState.lastReadMessageId ? snowflake.getTimestamp(readState?.lastReadMessageId) : undefined,
+				),
+			);
 
 		setFirstUnreadMessageId(firstUnreadMessage?.id);
 	}, [channelId]);

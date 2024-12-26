@@ -1,6 +1,5 @@
 import type { MessageRendererProps } from "@/types";
 import { MessageType, arrayEqual } from "@huginn/shared";
-import type { RefObject } from "react";
 import { type BasePoint, Editor, Element, type Node, type Path, type Range, Text, createEditor } from "slate";
 import { DefaultElement, type RenderElementProps, type RenderLeafProps, withReact } from "slate-react";
 

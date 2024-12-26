@@ -1,9 +1,34 @@
-import type { APIGetUserChannelsResult } from "@huginn/shared";
+import { type APIGetUserChannelsResult, snowflake } from "@huginn/shared";
 import clsx from "clsx";
+import moment from "moment";
 
 export default function HomeSidebar(props: { channels?: APIGetUserChannelsResult }) {
 	const huginnWindow = useHuginnWindow();
 	const dispatch = useModalsDispatch();
+
+	const sortedChannels = useMemo(
+		() =>
+			props.channels?.toSorted((a, b) => {
+				if (a.lastMessageId && !b.lastMessageId) {
+					return moment(snowflake.getTimestamp(a.lastMessageId)).isBefore(snowflake.getTimestamp(b.id)) ? 1 : -1;
+				}
+
+				if (!a.lastMessageId && b.lastMessageId) {
+					return moment(snowflake.getTimestamp(a.id)).isBefore(snowflake.getTimestamp(b.lastMessageId)) ? 1 : -1;
+				}
+
+				if (!a.lastMessageId && !b.lastMessageId) {
+					return moment(snowflake.getTimestamp(a.id)).isBefore(snowflake.getTimestamp(b.id)) ? 1 : -1;
+				}
+
+				if (a.lastMessageId && b.lastMessageId) {
+					return moment(snowflake.getTimestamp(a.lastMessageId)).isBefore(snowflake.getTimestamp(b.lastMessageId)) ? 1 : -1;
+				}
+
+				return 0;
+			}),
+		[props.channels],
+	);
 
 	return (
 		<nav
@@ -29,7 +54,7 @@ export default function HomeSidebar(props: { channels?: APIGetUserChannelsResult
 				</Tooltip>
 			</div>
 			<ul className="scroll-alternative2 flex h-full flex-col gap-y-0.5 overflow-y-scroll px-2 pb-2">
-				{props.channels?.map((channel) => (
+				{sortedChannels?.map((channel) => (
 					<DirectMessageChannel key={channel.id} channel={channel} />
 				))}
 			</ul>

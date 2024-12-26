@@ -6,7 +6,14 @@ export default function ModalErrorComponent(props: { error: unknown }) {
 	const handleError = useErrorHandler({
 		cancel: {
 			callback: () => {
-				dispatch({ info: { isOpen: false } });
+				dispatch({
+					info: { isOpen: false },
+					addRecipient: { isOpen: false },
+					settings: { isOpen: false },
+					createDM: { isOpen: false },
+					editGroup: { isOpen: false },
+					imageCrop: { isOpen: false },
+				});
 				resetBoundary();
 			},
 		},

@@ -37,7 +37,7 @@ export type APIUser = {
 	displayName: string | null;
 	avatar: string | null;
 	system?: boolean;
-	email?: string;
+	email: string;
 	password?: string | null;
 	// TODO: Actually implement flags
 	flags: UserFlags;
@@ -299,7 +299,6 @@ export type APIReadState = {
 	userId: Snowflake;
 	channelId: Snowflake;
 	lastReadMessageId: Snowflake | null;
-	lastReadMessageTimestamp: Date | string | null;
 	unreadCount: number;
 };
 

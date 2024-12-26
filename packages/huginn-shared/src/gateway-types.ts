@@ -31,6 +31,7 @@ export type GatewayEvents = {
 	resumed: undefined;
 	message_create: GatewayMessageCreateData;
 	message_delete: GatewayMessageDeleteData;
+	message_ack: GatewayMessageAckData;
 	typying_start: GatewayTypingStartData;
 	relationship_add: GatewayRelationshipCreateData;
 	relationship_remove: Snowflake;
@@ -138,6 +139,8 @@ type GatewayMessageEventExtraFields = {
 	mentions: APIMessageUser[];
 	// mentions: (APIUser & {member: Omit<APIGuildMember, "user">})[];
 };
+
+export type GatewayMessageAckData = { channelId: Snowflake; messageId: Snowflake };
 
 export type GatewayRelationshipCreateData = APIRelationshipWithoutOwner;
 export type GatewayDMChannelCreateData = DirectChannel;
