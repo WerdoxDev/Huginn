@@ -41,7 +41,7 @@ export function ReadStateProvider(props: { children?: ReactNode }) {
 	}
 
 	function addChannelToReadStates(channelId: Snowflake) {
-		setReadStates((prev) => [...prev, { channelId, lastReadMessageId: undefined, lastReadMessageTimestamp: 0, unreadCount: 0 }]);
+		setReadStates((prev) => [...prev, { channelId, lastReadMessageId: undefined, unreadCount: 0 }]);
 	}
 
 	function removeChannelFromReadStates(channelId: Snowflake) {

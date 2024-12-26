@@ -259,7 +259,7 @@ export function expectReadStatesExactSchema(readStates: object[], channelId: Sno
 	).toBeTrue();
 
 	for (const readState of readStates) {
-		expect(Object.keys(readState).sort()).toStrictEqual(["channelId", "userId", "lastReadMessageId", "lastReadMessageTimestamp"].sort());
+		expect(Object.keys(readState).sort()).toStrictEqual(["channelId", "userId", "lastReadMessageId"].sort());
 		expect(readState).toHaveProperty("channelId", BigInt(channelId));
 	}
 }

@@ -79,7 +79,9 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 	}
 
 	function onMessageAck(d: GatewayMessageAckData) {
-		setLatestReadMessage(d.channelId, d.messageId);
+		if (currentChannel?.id !== d.channelId) {
+			setLatestReadMessage(d.channelId, d.messageId);
+		}
 	}
 
 	function onUserUpdated(data: GatewayUserUpdateData | GatewayPresenceUpdateData) {
