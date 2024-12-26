@@ -4,28 +4,17 @@ import { type HuginnErrorData, omit } from "@huginn/shared";
 export function useInputs(inputsOptions: InputOptions[]) {
 	const newValues: InputValues = {};
 	const newStatuses: InputStatuses = {};
-	const newInputsProps: InputProps = {};
 
 	for (const x of inputsOptions) {
 		newValues[x.name] = { value: x.default ?? "", required: x.required };
 		newStatuses[x.name] = { code: "none", text: "" };
-
-		newInputsProps[x.name] = {
-			value: newValues[x.name].value,
-			status: newStatuses[x.name],
-			required: x.required,
-			onChange: (e) => {
-				setInputValue(x.name, e.value);
-			},
-		};
 	}
 
 	const [values, setValues] = useState<InputValues>(newValues);
 	const [statuses, setStatuses] = useState<InputStatuses>(newStatuses);
-	const [inputsProps, setInputProps] = useState<InputProps>(newInputsProps);
 	const [errorStatuses, setErrorStatuses] = useState<InputStatuses>({});
 
-	useEffect(() => {
+	const inputsProps = useMemo<InputProps>(() => {
 		const newInputsProps: InputProps = {};
 
 		for (const x of inputsOptions) {
@@ -34,15 +23,20 @@ export function useInputs(inputsOptions: InputOptions[]) {
 				status: statuses[x.name],
 				required: x.required,
 				onChange: (e) => {
-					setInputValue(x.name, e.value);
+					e.preventDefault();
+					let finalValue = e.target.value;
+					if (x.lowercase) {
+						finalValue = finalValue.toLowerCase();
+					}
+					setValue(x.name, finalValue);
 				},
 			};
 		}
 
-		setInputProps(newInputsProps);
+		return newInputsProps;
 	}, [values, statuses]);
 
-	function setInputValue(inputName: string, value: string | null) {
+	function setValue(inputName: string, value: string | null) {
 		const updatedValues = { ...values };
 		const updatedStatuses = { ...statuses };
 
@@ -56,7 +50,7 @@ export function useInputs(inputsOptions: InputOptions[]) {
 	function validateValues() {
 		const validatedStatuses = getInputsValidatedStatuses(values, statuses);
 		setStatuses(validatedStatuses);
-		if (checkStatusesHaveErrors(validatedStatuses, errorStatuses)) {
+		if (doStatusesHaveErrors(validatedStatuses, errorStatuses)) {
 			return false;
 		}
 
@@ -70,13 +64,12 @@ export function useInputs(inputsOptions: InputOptions[]) {
 
 	function handleErrors(errors: HuginnErrorData) {
 		const newStatuses = getInputsStatusesFromError(statuses, errors);
-		console.log(newStatuses);
 
 		setStatuses(newStatuses);
 		setErrorStatuses({ ...newStatuses });
 	}
 
-	function setInputStatus(inputName: string, status: InputStatus) {
+	function setStatus(inputName: string, status: InputStatus) {
 		const newStatuses = { ...statuses };
 		newStatuses[inputName] = status;
 
@@ -96,11 +89,11 @@ export function useInputs(inputsOptions: InputOptions[]) {
 		inputsProps,
 		values,
 		statuses,
-		setInputValue,
+		setValue,
 		validateValues,
 		resetStatuses,
 		handleErrors,
-		setInputStatus,
+		setStatus,
 		resetInput,
 	};
 }

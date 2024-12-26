@@ -1,7 +1,7 @@
 import type { HuginnInputProps, InputStatus } from "@/types";
 import { WorkerID, snowflake } from "@huginn/shared";
 import clsx from "clsx";
-import { type HTMLInputTypeAttribute, type MutableRefObject, type ReactNode, createContext } from "react";
+import { type ChangeEvent, type HTMLInputTypeAttribute, type MutableRefObject, type ReactNode, createContext } from "react";
 
 const InputContext = createContext<{
 	id: string;
@@ -12,7 +12,7 @@ const InputContext = createContext<{
 	type?: HTMLInputTypeAttribute;
 	inputRef?: MutableRefObject<HTMLInputElement | null>;
 	disabled?: boolean;
-	onChange?: (e: HTMLInputElement) => void;
+	onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
 	onFocusChange?: (focused: boolean) => void;
 }>({
 	id: "",
@@ -43,21 +43,23 @@ export default function HuginnInput(props: HuginnInputProps) {
 	);
 }
 
-function Input(props: { headless?: boolean; className?: string }) {
+function Input(props: { headless?: boolean; className?: string; lowercase?: boolean }) {
 	const inputContext = useContext(InputContext);
+	const [cursor, setCursor] = useState<number | null>(null);
 
-	useEffect(() => {
-		setTimeout(() => {
-			if (inputContext.value !== undefined && inputContext.inputRef?.current && inputContext.inputRef?.current?.value !== inputContext.value) {
-				inputContext.inputRef.current.value = inputContext.value;
-			}
-		});
-	}, [inputContext.value]);
+	function onChange(e: ChangeEvent<HTMLInputElement>) {
+		setCursor(e.target.selectionStart);
+		inputContext.onChange?.(e);
+	}
+	useLayoutEffect(() => {
+		inputContext.inputRef?.current?.setSelectionRange(cursor, cursor);
+	}, [inputContext.value, cursor]);
 
 	return (
 		<input
+			spellCheck={false}
 			id={inputContext.id}
-			// value={inputContext.value}
+			value={inputContext.value}
 			ref={inputContext.inputRef}
 			className={clsx(
 				!props.headless && "w-full bg-transparent p-2 text-white placeholder-text/60 outline-none disabled:cursor-not-allowed",
@@ -67,7 +69,7 @@ function Input(props: { headless?: boolean; className?: string }) {
 			type={inputContext.type ?? "text"}
 			autoComplete="new-password"
 			placeholder={inputContext.placeholder}
-			onChange={(e) => inputContext.onChange?.(e.target)}
+			onChange={onChange}
 			onFocus={() => inputContext.onFocusChange?.(true)}
 			onBlur={() => inputContext.onFocusChange?.(false)}
 		/>

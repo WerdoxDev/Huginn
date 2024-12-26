@@ -10,15 +10,8 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 	const { listenEvent } = useEvent();
 	const modalsDispatch = useModalsDispatch();
 
-	const {
-		inputsProps,
-		values,
-		handleErrors,
-		resetStatuses,
-		resetInput,
-		setInputValue: onValueChanged,
-	} = useInputs([
-		{ name: "username", required: true, default: user?.username },
+	const { inputsProps, values, handleErrors, resetStatuses, resetInput, setValue } = useInputs([
+		{ name: "username", required: true, default: user?.username, lowercase: true },
 		{ name: "displayName", required: false, default: user?.displayName },
 		{ name: "password", required: false },
 		{ name: "newPassword", required: false },
@@ -34,8 +27,8 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 		client.tokenHandler.refreshToken = result.refreshToken;
 		setUser(omit(result, ["refreshToken", "token"]));
 
-		onValueChanged("password", "");
-		onValueChanged("newPassword", "");
+		setValue("password", "");
+		setValue("newPassword", "");
 		resetStatuses();
 
 		onChanged(values.username.value, result.username);
@@ -100,10 +93,11 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 		}
 
 		setAvatarData(originalAvatar);
-		onValueChanged("username", user.username);
-		onValueChanged("displayName", user.displayName);
-		onValueChanged("password", "");
-		onValueChanged("newPassword", "");
+		setValue("username", user.username);
+		setValue("displayName", user.displayName);
+		setValue("password", "");
+		setValue("newPassword", "");
+		resetStatuses();
 
 		onFocusChanged(false);
 
@@ -124,7 +118,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 							<HuginnInput {...inputsProps.username} onFocusChanged={onFocusChanged}>
 								<HuginnInput.Label text="Username" className="mb-2" />
 								<HuginnInput.Wrapper className="!bg-background" border="left">
-									<HuginnInput.Input className="lowercase" />
+									<HuginnInput.Input />
 								</HuginnInput.Wrapper>
 								<AnimatedMessage className="mt-1" {...usernameMessageDetail} />
 							</HuginnInput>

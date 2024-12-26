@@ -6,7 +6,7 @@ import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateR
 import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePatchDMChannel";
 import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRemoveChannelRecipient";
 import type { APIChannelUser, APIDefaultMessage, APIMessageUser, APIRelationUser, DirectChannel, RelationshipType, Snowflake } from "@huginn/shared";
-import type { HTMLInputTypeAttribute, ReactNode, RefObject } from "react";
+import type { ChangeEvent, HTMLInputTypeAttribute, ReactNode, RefObject } from "react";
 
 export type StatusCode = "none" | "default" | "error" | "success";
 
@@ -26,13 +26,14 @@ export type InputOptions = {
 	name: string;
 	required: boolean;
 	default?: string | null;
+	lowercase?: boolean;
 };
 
 export type InputProp = {
 	status: InputStatus;
 	value: string;
 	required: boolean;
-	onChange: (e: HTMLInputElement) => void;
+	onChange: (e: ChangeEvent<HTMLInputElement>) => void;
 };
 
 export type InputStatuses = Record<string, InputStatus>;
@@ -55,7 +56,7 @@ export type HuginnInputProps = {
 	value?: string;
 	placeholder?: string;
 	type?: HTMLInputTypeAttribute;
-	onChange?: (e: HTMLInputElement) => void;
+	onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
 	onFocusChanged?: (focused: boolean) => void;
 };
 
