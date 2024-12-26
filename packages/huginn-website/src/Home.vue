@@ -49,7 +49,7 @@ onMounted(async () => {
                <Icon icon="mingcute:group-3-fill" class="size-10 text-accent" />
                <p class="text-center md:text-left text-xl font-bold"><span class="font-bold text-accent">{{ onlineCount
                      }}</span>
-                  warriors chatting!
+                  warriors online!
                </p>
             </div>
 
