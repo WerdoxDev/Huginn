@@ -17,11 +17,7 @@ export default function AddFriendInput(
 							: "ring-transparent has-[:focus]:ring-primary",
 				)}
 			>
-				<input
-					className="w-full bg-secondary text-text placeholder-text/50 outline-none"
-					placeholder="e.g: Werdox"
-					onChange={(e) => props.onChange?.(e.target)}
-				/>
+				<input className="w-full bg-secondary text-text placeholder-text/50 outline-none" placeholder="e.g: Werdox" onChange={props.onChange} />
 				<LoadingButton
 					iconClassName="!size-6"
 					loading={props.loading}

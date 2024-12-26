@@ -4,6 +4,7 @@ import type {
 	APIGetUserChannelsResult,
 	APIMessage,
 	APIMessageUser,
+	GatewayMessageAckData,
 	GatewayMessageCreateData,
 	GatewayPresenceUpdateData,
 	Snowflake,
@@ -18,7 +19,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 	const mutation = useCreateDMChannel("create-dm-channel_other");
 	const { currentVisibleMessages, updateLastMessageId } = useChannelStore();
 	const { user } = useUser();
-	const { addChannelToReadStates } = useReadStates();
+	const { addChannelToReadStates, setLatestReadMessage } = useReadStates();
 	const huginnWindow = useHuginnWindow();
 
 	async function onMessageCreated(d: GatewayMessageCreateData) {
@@ -50,7 +51,6 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 			// See if the message can be appended to the current page
 			if (!lastParams.before && (!lastParams.after || lastPage.some((x) => x.id === targetChannel?.lastMessageId))) {
 				inLoadedQueryPage = true;
-				console.log(targetChannel.id, currentChannel?.id);
 				if (targetChannel.id === currentChannel?.id) {
 					inVisibleQueryPage = true;
 				}
@@ -64,6 +64,8 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 			return old;
 		});
 
+		updateLastMessageId(queryClient, d.channelId, d.id);
+
 		dispatchEvent("message_added", {
 			message: newMessage,
 			visible:
@@ -74,8 +76,10 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 			inVisibleQueryPage: inVisibleQueryPage,
 			self: d.author.id === user?.id,
 		});
+	}
 
-		updateLastMessageId(d.channelId, d.id);
+	function onMessageAck(d: GatewayMessageAckData) {
+		setLatestReadMessage(d.channelId, d.messageId);
 	}
 
 	function onUserUpdated(data: GatewayUserUpdateData | GatewayPresenceUpdateData) {
@@ -98,11 +102,13 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 
 	useEffect(() => {
 		client.gateway.on("message_create", onMessageCreated);
+		client.gateway.on("message_ack", onMessageAck);
 		client.gateway.on("user_update", onUserUpdated);
 		client.gateway.on("presence_update", onUserUpdated);
 
 		return () => {
 			client.gateway.off("message_create", onMessageCreated);
+			client.gateway.off("message_ack", onMessageAck);
 			client.gateway.off("user_update", onUserUpdated);
 			client.gateway.off("presence_update", onUserUpdated);
 		};

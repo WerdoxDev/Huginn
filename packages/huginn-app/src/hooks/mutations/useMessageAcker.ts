@@ -1,5 +1,5 @@
 import type { AppChannelMessage } from "@/types";
-import type { Snowflake } from "@huginn/shared";
+import { type Snowflake, snowflake } from "@huginn/shared";
 import { useMutation } from "@tanstack/react-query";
 import moment from "moment";
 
@@ -8,7 +8,7 @@ export function useMessageAcker(channelId: Snowflake, messages: AppChannelMessag
 	const { user } = useUser();
 	const readState = useChannelReadState(channelId);
 	const { currentVisibleMessages } = useChannelStore();
-	const { updateChannelLastReadState } = useReadStates();
+	const { setLatestReadMessage } = useReadStates();
 	const huginnWindow = useHuginnWindow();
 
 	const mutation = useMutation({
@@ -36,10 +36,11 @@ export function useMessageAcker(channelId: Snowflake, messages: AppChannelMessag
 
 			// if the latest message is from the user or the message is older than the last read message, don't send an ack
 			if (
-				(!readState?.lastReadMessageId || moment(readState?.lastReadMessageTimestamp).isBefore(latestMessage.timestamp)) &&
+				(!readState?.lastReadMessageId ||
+					moment(snowflake.getTimestamp(readState.lastReadMessageId)).isBefore(snowflake.getTimestamp(latestMessage.id))) &&
 				user?.id !== latestMessage.author.id
 			) {
-				updateChannelLastReadState(channelId, latestMessage.id, moment(latestMessage.timestamp).valueOf());
+				// setLatestReadMessage(channelId, latestMessage.id);
 				await mutation.mutateAsync({ channelId: channelId, messageId: latestMessage.id });
 			}
 		}

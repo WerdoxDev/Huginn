@@ -1,5 +1,5 @@
 import type { AppChannelMessage, MessageRenderInfo, MessageRendererProps } from "@/types";
-import { MessageType, type Snowflake } from "@huginn/shared";
+import { MessageType, type Snowflake, snowflake } from "@huginn/shared";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import moment from "moment";
@@ -16,7 +16,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 				if (a.preview !== b.preview) {
 					return a.preview ? 1 : -1; // Move true to the end
 				}
-				return moment(a.timestamp).isAfter(b.timestamp) ? 1 : -1;
+				return moment(snowflake.getTimestamp(a.id)).isAfter(snowflake.getTimestamp(b.id)) ? 1 : -1;
 			}),
 		[props.messages],
 	);
@@ -36,17 +36,21 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
 	const messageRenderInfos = useMemo<MessageRenderInfo[]>(
 		() => calculateMessageRenderInfos(),
-		[sortedMessages, props.channelId, firstUnreadMessageId, hasPreviousPage],
+		[sortedMessages, props.channelId, firstUnreadMessageId],
 	);
 
 	const scroll = useRef<HTMLOListElement>(null);
-	const previousChannelId = useRef<Snowflake>(undefined);
 	const shouldScrollOnNextRender = useRef(false);
+	const lastChannelId = useRef<Snowflake>(undefined);
+	const lastScrollTop = useRef<number>(undefined);
 	const lastSeenElement = useRef<{ messageId: Snowflake; height: number; distanceToTop: number }>(null);
 	const lastDirection = useRef<"up" | "down" | "none">("none");
 
 	async function onScroll() {
 		if (!scroll.current || sortedMessages.length === 0) return;
+
+		lastScrollTop.current = scroll.current.scrollTop;
+		console.log("scroll");
 
 		// Scrolling up
 		if (scroll.current.scrollTop <= topScrollOffset && !isFetchingPreviousPage && hasPreviousPage) {
@@ -104,7 +108,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
 	// Calculating scrolltop position after an upward fetch
 	useLayoutEffect(() => {
-		if (!lastSeenElement.current || !scroll.current || lastDirection.current !== "up" || previousChannelId.current !== props.channelId) {
+		if (!lastSeenElement.current || !scroll.current || lastDirection.current !== "up" || lastChannelId.current !== props.channelId) {
 			return;
 		}
 
@@ -118,11 +122,9 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		scroll.current.scrollTop = offset + lastSeenElement.current.distanceToTop + heightDifference;
 	}, [data]);
 
-	useLayoutEffect(() => {
-		return () => {
-			saveScroll(previousChannelId.current ?? props.channelId, scroll.current?.scrollTop ?? 0);
-			lastDirection.current = "none";
-		};
+	useEffect(() => {
+		saveScroll(lastChannelId.current ?? props.channelId, lastScrollTop.current ?? 0);
+		lastDirection.current = "none";
 	}, [props.channelId]);
 
 	// Listening for new messages
@@ -146,14 +148,14 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		if (sortedMessages.length === 0) return;
 
 		// checkForExtraSpace();
-		if (previousChannelId.current !== props.channelId) {
+		if (lastChannelId.current !== props.channelId) {
 			if (savedScrolls.has(props.channelId) && scroll.current) {
 				const newScroll = savedScrolls.get(props.channelId) ?? 0;
 				scroll.current.scrollTop = newScroll;
 			} else {
 				scrollDown();
 			}
-			previousChannelId.current = props.channelId;
+			lastChannelId.current = props.channelId;
 		}
 	}, [sortedMessages]);
 

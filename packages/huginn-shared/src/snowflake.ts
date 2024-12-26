@@ -15,6 +15,9 @@ export const snowflake = {
 		const value = globalSnowflake.generate({ workerId: BigInt(workerId) });
 		return value;
 	},
+	getTimestamp(id: Snowflake): number {
+		return globalSnowflake.timestampFrom(id);
+	},
 };
 
 export enum WorkerID {
