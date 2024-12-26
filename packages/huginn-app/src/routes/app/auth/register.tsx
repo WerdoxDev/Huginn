@@ -11,7 +11,7 @@ export default function Register() {
 	const { inputsProps, values, resetStatuses, handleErrors, validateValues, resetInput } = useInputs([
 		{ name: "email", required: true },
 		{ name: "displayName", required: false },
-		{ name: "username", required: true },
+		{ name: "username", required: true, lowercase: true },
 		{ name: "password", required: true },
 	]);
 

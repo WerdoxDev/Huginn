@@ -53,7 +53,7 @@ export function getEmptyStatuses(states: InputStatuses) {
 	return newStatuses;
 }
 
-export function checkStatusesHaveErrors(statuses: InputStatuses, exclude?: InputStatuses) {
+export function doStatusesHaveErrors(statuses: InputStatuses, exclude?: InputStatuses) {
 	const excludeValues = Object.values(exclude ?? {});
 	return Object.values(statuses).filter((x) => x.code === "error" && !excludeValues.includes(x)).length !== 0;
 }
