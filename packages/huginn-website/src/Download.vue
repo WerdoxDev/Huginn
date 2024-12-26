@@ -1,218 +1,76 @@
 <script setup lang="ts">
-import type { APIGetReleasesResult } from "@huginn/shared";
-import { Icon } from "@iconify/vue";
-import { computed, onMounted, ref } from "vue";
-import CustomList from "./components/CustomList.vue";
+import type { APIGetAllReleasesResult, APIGetLatestReleaseResult } from "@huginn/shared";
+import { onMounted, ref } from "vue";
+import VersionCard from "./components/VersionCard.vue";
 
-type VersionKind = "none" | "release" | "nightly";
-type PlatformKind = "windows" | "mac" | "linux";
-
-const versionKind = ref<VersionKind>(); // 1 = Release, 2 = Dev
-const platformKind = ref<PlatformKind>("windows"); // 0 = Windows, 1 = Mac, 2 = Linux
-const isAnyVersionAvailable = ref(false);
-
-const versionTexts = ref<Record<string, { version: string; date: string; prerelease?: string; buildId?: string }>>({});
-
-const buttonVersionText = computed(() => {
-	if (platformKind.value === "windows") {
-		if (versionKind.value === "release") {
-			return versionTexts.value?.release.version;
-		}if (versionKind.value === "nightly") {
-			return `${versionTexts.value?.nightly?.version} ${versionTexts.value?.nightly?.prerelease}`;
-		}
-	}
-});
-const dateText = computed(() => {
-	if (platformKind.value === "windows") {
-		if (versionKind.value === "release") {
-			return versionTexts.value?.release.date;
-		}if (versionKind.value === "nightly") {
-			return versionTexts.value?.nightly.date;
-		}
-	}
-});
-
-const latestInfo = ref<APIGetReleasesResult>();
+export type FlavourType = "nightly" | "release";
+const latestRelease = ref<APIGetLatestReleaseResult>(undefined);
+const allReleases = ref<APIGetAllReleasesResult>([]);
+const loading = ref(false);
+const loading2 = ref(false);
+const showingOlder = ref(false);
 
 onMounted(async () => {
-	console.log(import.meta.env.VITE_SERVER_ADDRESS, "hi");
-	try {
-		const data = await fetch(`${import.meta.env.VITE_SERVER_ADDRESS}/api/releases`);
-		latestInfo.value = await data.json();
-	} catch {
-		console.error("Something went wrong fetching releases.");
-	}
+   loading.value = true;
+   const url = new URL("/api/latest-release", import.meta.env.VITE_SERVER_ADDRESS).toString();
+   latestRelease.value = await (await fetch(url)).json();
+   loading.value = false;
+})
 
-	if (latestInfo.value?.nightly) {
-		const nightlySplit = latestInfo.value?.nightly.version.split("-");
+async function loadOrHideOlder() {
+   if (showingOlder.value) {
+      allReleases.value = [];
+      showingOlder.value = false;
+      return;
+   }
 
-		if (nightlySplit) {
-			const nightlyDate = new Date(latestInfo.value.nightly.date);
+   loading2.value = true;
 
-			// Pure version number without 'v' at the beginning
-			const version = nightlySplit[0].slice(1);
+   const url = new URL("/api/all-releases", import.meta.env.VITE_SERVER_ADDRESS).toString();
+   allReleases.value = (await (await fetch(url)).json() as APIGetAllReleasesResult).filter(x => x.version !== latestRelease.value?.version);
 
-			const nightlyPrereleaseSplit = nightlySplit[1].split(".");
-
-			// Prerelease identifier with first character in uppercase
-			const prerelease = nightlyPrereleaseSplit[0].charAt(0).toUpperCase() + nightlyPrereleaseSplit[0].slice(1);
-
-			// Prerelease build identifier
-			const buildId = nightlyPrereleaseSplit[1];
-
-			const date = getFormattedDate(nightlyDate);
-
-			versionTexts.value.nightly = { version, prerelease, buildId, date };
-		}
-	}
-
-	if (latestInfo.value?.release) {
-		const releaseDate = new Date(latestInfo.value.release.date);
-		const version = latestInfo.value.release.version.slice(1);
-		const date = getFormattedDate(releaseDate);
-
-		versionTexts.value.release = { version, date };
-	}
-
-	updateVersionAvailabilities();
-});
-
-function getFormattedDate(date: Date) {
-	return `${date.getDate().toString().padStart(2, "0")}.${(date.getMonth() + 1).toString().padStart(2, "0")}.${date.getFullYear()}`;
-}
-
-function download(platform: PlatformKind, version: VersionKind) {
-	const downloadLink = getDownloadLink(platform, version);
-	window.open(downloadLink);
-}
-
-function getDownloadLink(platform: PlatformKind, version: VersionKind): string | undefined {
-	if (platform === "windows") {
-		// Selected Windows
-
-		if (version === "release") {
-			// Selected Release version
-			return latestInfo.value?.release?.windowsSetupUrl;
-		}if (version === "nightly") {
-			// Selected Dev version
-			return latestInfo.value?.nightly?.windowsSetupUrl;
-		}
-	}
-
-	return undefined;
-}
-
-function isVersionAvailable(version: VersionKind): boolean {
-	if (!platformKind.value) {
-		return false;
-	}
-
-	const downloadLink = getDownloadLink(platformKind.value, version);
-	return !!downloadLink;
-}
-
-function updateVersionAvailabilities() {
-	for (let i = 0; i < 2; i++) {
-		const version = i + 1 === 1 ? "release" : "nightly";
-		const versionAvailable: boolean = isVersionAvailable(version);
-
-		if (versionAvailable) {
-			versionKind.value = version;
-			isAnyVersionAvailable.value = true;
-			break;
-		}
-	}
+   loading2.value = false;
+   showingOlder.value = true;
 }
 </script>
 
 <template>
-   <div class="mt-16 flex h-full w-full items-center justify-center">
-      <div class="hidden w-full max-w-5xl flex-col md:flex">
-         <h1 class="mb-6 text-4xl font-bold">Download Huginn</h1>
-         <h3 class="text-lg">Thank you for downloading Huginn</h3>
-         <h3 class="text-lg">Please choose your version</h3>
-
-         <div class="my-10 h-0.5 w-[30rem] bg-[#EBEBD3]/50" />
-
-         <div class="text-lg">
-            <div class="flex flex-row" v-if="latestInfo && platformKind && versionKind">
-               <span>Download <span class="font-bold">Huginn</span> for</span>
-
-               <CustomList
-                  class="w-36"
-                  @changed="
-                     selected => {
-                        platformKind = selected;
-                        updateVersionAvailabilities();
-                     }
-                  "
-                  :default="platformKind"
-                  :options="[
-                     { text: 'Windows', icon: 'mingcute:windows-fill', disabled: false, hidden: false },
-                     { text: 'Mac', icon: 'ic:baseline-apple', disabled: true, hidden: false },
-                     { text: 'Linux', icon: 'mdi:linux', disabled: true, hidden: false },
-                  ]"
-               />
-
-               running
-
-               <CustomList
-                  class="w-32"
-                  @changed="
-                     selected => {
-                        versionKind = selected;
-                     }
-                  "
-                  :default="versionKind"
-                  :options="[
-                     { text: 'None', icon: 'nimbus:forbidden', disabled: false, hidden: isAnyVersionAvailable },
-                     {
-                        text: 'Release',
-                        icon: 'material-symbols:new-releases',
-                        disabled: !isVersionAvailable('release'),
-                        hidden: false,
-                     },
-                     { text: 'Nightly', icon: 'ph:moon-fill', disabled: !isVersionAvailable('nightly'), hidden: false },
-                  ]"
-               />
-            </div>
-
-            <div class="mt-6 flex items-center" v-if="latestInfo && platformKind && versionKind">
-               <button
-                  @click="download(platformKind!, versionKind!)"
-                  class="flex w-max flex-row items-center gap-x-2 rounded-md bg-[#7b563c] px-4 py-2 transition-all hover:bg-[#7b563c]/50"
-                  :class="{ 'bg-[#7b563c]/50': versionKind === 'none' }"
-                  :disabled="versionKind === 'none'"
-               >
-                  <Icon icon="mingcute:download-3-fill" />
-                  {{ versionKind !== "none" ? "Download Huginn " + buttonVersionText : "Select a Version" }}
-               </button>
-
-               <div
-                  class="ml-4 flex h-full w-fit items-center rounded-md bg-[#76FF7A]/30 px-4 py-2"
-                  :class="{ hidden: versionKind === 'none' }"
-               >
-                  <Icon icon="clarity:date-solid" class="mr-2" />
-                  {{ dateText }}
-               </div>
-
-               <div
-                  class="ml-4 flex h-full w-fit items-center rounded-md bg-[#00A7E0]/30 px-4 py-2"
-                  :class="{ hidden: versionKind !== 'nightly' }"
-               >
-                  <Icon icon="mdi:wrench" class="mr-2" />
-                  Build {{ versionTexts?.nightly?.buildId?.toUpperCase() }}
-               </div>
-            </div>
-         </div>
+   <div class="flex flex-col mt-32 md:mt-52 w-full">
+      <div class="flex flex-col mb-10">
+         <div class="text-5xl font-extrabold text-center w-full">Download Huginn</div>
+         <div class="text-xl mt-7 text-center w-full">Please choose your version</div>
       </div>
 
-      <div class="flex flex-col items-center justify-center gap-12 px-6 md:hidden">
-         <Icon icon="clarity:sad-face-solid" class="size-20" />
-         <div class="text-center text-2xl">Unfortunately <span class="font-bold">Huginn</span> is not available for your device.</div>
-         <RouterLink to="/" class="flex items-center text-[#D99A6C] underline">
-            <Icon icon="lets-icons:back" class="mr-1" />Back to Homepage
-         </RouterLink>
-      </div>
+   </div>
+   <div class="flex flex-col gap-y-5 items-center px-4 mb-auto pb-32">
+      <div v-if="loading" class="text-xl font-bold animate-pulse">Loading...</div>
+
+      <VersionCard v-if="latestRelease" :version="latestRelease.version" :date="latestRelease.date" latest
+         :url="latestRelease.url" :windows-setup-url="latestRelease.windowsSetupUrl"
+         :macos-setup-url="latestRelease.macosSetupUrl" :linux-setup-url="latestRelease.linuxSetupUrl" />
+
+      <button class="hover:underline text-accent text-lg" @click="loadOrHideOlder" v-if="!loading2 && !loading">{{
+         showingOlder
+            ? "Hide older versions" : "Load older versions" }}</button>
+
+      <div v-if="loading2" class="text-xl font-bold animate-pulse">Loading...</div>
+
+      <VersionCard v-for="release in allReleases" :version="release.version" :date="release.date" :url="release.url"
+         :windows-setup-url="release.windowsSetupUrl" :macos-setup-url="release.macosSetupUrl"
+         :linux-setup-url="release.linuxSetupUrl" />
+      <VersionCard v-for="release in allReleases" :version="release.version" :date="release.date" :url="release.url"
+         :windows-setup-url="release.windowsSetupUrl" :macos-setup-url="release.macosSetupUrl"
+         :linux-setup-url="release.linuxSetupUrl" />
+      <VersionCard v-for="release in allReleases" :version="release.version" :date="release.date" :url="release.url"
+         :windows-setup-url="release.windowsSetupUrl" :macos-setup-url="release.macosSetupUrl"
+         :linux-setup-url="release.linuxSetupUrl" />
+      <VersionCard v-for="release in allReleases" :version="release.version" :date="release.date" :url="release.url"
+         :windows-setup-url="release.windowsSetupUrl" :macos-setup-url="release.macosSetupUrl"
+         :linux-setup-url="release.linuxSetupUrl" />
+      <VersionCard v-for="release in allReleases" :version="release.version" :date="release.date" :url="release.url"
+         :windows-setup-url="release.windowsSetupUrl" :macos-setup-url="release.macosSetupUrl"
+         :linux-setup-url="release.linuxSetupUrl" />
+
+      <div v-if="showingOlder && allReleases.length === 0" class="text-lg">No more releases...</div>
    </div>
 </template>

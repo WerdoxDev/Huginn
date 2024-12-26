@@ -6,51 +6,36 @@ import { ref } from "vue";
 const isVisible = ref(false);
 
 const featureProps = defineProps<{
-	header: string;
-	text: string;
-	icon: string;
+   header: string;
+   text: string;
+   icon: string;
 }>();
 
 function onElementVisible(state: boolean) {
-	if (!state) return;
+   if (!state) return;
 
-	isVisible.value = true;
+   isVisible.value = true;
 }
 </script>
 
 <template>
 
-    <div v-element-visibility="onElementVisible" class="w-full md:w-[38rem] md:h-64">
-        <Transition name="fade">
-            <div v-if="isVisible" class="bg-[#262626] rounded-2xl h-full w-full p-6">
+   <div v-element-visibility="onElementVisible" class="w-full md:w-[38rem] md:h-64">
+      <Transition name="fade">
+         <div v-if="isVisible"
+            class="group bg-secondary rounded-2xl shadow-md h-full w-full p-6 border-2 border-text/20 border-b-4 border-b-primary transition-all hover:bg-tertiary/70 hover:shadow-xl hover:border-text/50 hover:border-b-accent hover:-translate-y-2 hover:scale-105">
 
-                <div class="space-y-4">
-                    <div class="flex flex-row items-center space-x-2">
-                        <Icon :icon="featureProps.icon" class="size-8 text-[#D99A6C]" />
-                        <div class="text-xl md:text-2xl font-bold">{{ featureProps.header }}</div>
-                    </div>
+            <div class="">
+               <div class="flex flex-row items-center rounded-2xl space-x-5">
+                  <div class="group-hover:bg-accent/20 transition-all p-3 bg-accent/10 rounded-xl">
+                     <Icon :icon="featureProps.icon" class="size-10 text-accent" />
+                  </div>
+                  <div class="text-xl md:text-2xl font-bold text-accent">{{ featureProps.header }}</div>
+               </div>
 
-                    <div class="text-lg">{{ featureProps.text }}</div>
-                </div>
+               <div class="text-lg mt-6">{{ featureProps.text }}</div>
             </div>
-        </Transition>
-    </div>
+         </div>
+      </Transition>
+   </div>
 </template>
-
-<style>
-.fade-enter-from {
-    opacity: 0;
-    translate: 0 100px;
-}
-
-.fade-enter-active {
-    transition-property: all;
-    transition-duration: 500ms;
-    transition-timing-function: ease;
-}
-
-.fade-enter-to {
-    opacity: 1;
-    translate: 0 0;
-}
-</style>
