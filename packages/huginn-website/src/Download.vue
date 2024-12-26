@@ -58,18 +58,6 @@ async function loadOrHideOlder() {
       <VersionCard v-for="release in allReleases" :version="release.version" :date="release.date" :url="release.url"
          :windows-setup-url="release.windowsSetupUrl" :macos-setup-url="release.macosSetupUrl"
          :linux-setup-url="release.linuxSetupUrl" />
-      <VersionCard v-for="release in allReleases" :version="release.version" :date="release.date" :url="release.url"
-         :windows-setup-url="release.windowsSetupUrl" :macos-setup-url="release.macosSetupUrl"
-         :linux-setup-url="release.linuxSetupUrl" />
-      <VersionCard v-for="release in allReleases" :version="release.version" :date="release.date" :url="release.url"
-         :windows-setup-url="release.windowsSetupUrl" :macos-setup-url="release.macosSetupUrl"
-         :linux-setup-url="release.linuxSetupUrl" />
-      <VersionCard v-for="release in allReleases" :version="release.version" :date="release.date" :url="release.url"
-         :windows-setup-url="release.windowsSetupUrl" :macos-setup-url="release.macosSetupUrl"
-         :linux-setup-url="release.linuxSetupUrl" />
-      <VersionCard v-for="release in allReleases" :version="release.version" :date="release.date" :url="release.url"
-         :windows-setup-url="release.windowsSetupUrl" :macos-setup-url="release.macosSetupUrl"
-         :linux-setup-url="release.linuxSetupUrl" />
 
       <div v-if="showingOlder && allReleases.length === 0" class="text-lg">No more releases...</div>
    </div>
