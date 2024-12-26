@@ -40,7 +40,7 @@ export function useMessageAcker(channelId: Snowflake, messages: AppChannelMessag
 					moment(snowflake.getTimestamp(readState.lastReadMessageId)).isBefore(snowflake.getTimestamp(latestMessage.id))) &&
 				user?.id !== latestMessage.author.id
 			) {
-				// setLatestReadMessage(channelId, latestMessage.id);
+				setLatestReadMessage(channelId, latestMessage.id);
 				await mutation.mutateAsync({ channelId: channelId, messageId: latestMessage.id });
 			}
 		}
