@@ -48,12 +48,12 @@ export default function SettingsModal() {
 
 	const settings = useSettings();
 	const [settingsValid, setSettingsValid] = useState(false);
-	const modifiedSettings = useRef<DeepPartial<SettingsContextType>>(undefined);
+	const [modifiedSettings, setModifiedSettings] = useState<DeepPartial<SettingsContextType> | undefined>(undefined);
 	const settingsDispatch = useSettingsDispatcher();
 
 	useEffect(() => {
 		if (modal.isOpen) {
-			modifiedSettings.current = { ...settings };
+			setModifiedSettings({ ...settings });
 			setCurrentTab(flatTabs[defaultTabIndex]?.text ?? "");
 			setSettingsValid(true);
 			// posthog.capture("settings_modal_opened");
@@ -69,15 +69,15 @@ export default function SettingsModal() {
 
 	async function onSave() {
 		// TODO: THIS IS NOT CORRECTLY CHECKING
-		if (modifiedSettings.current && modifiedSettings.current !== settings) {
-			await settingsDispatch(modifiedSettings.current);
+		if (modifiedSettings && modifiedSettings !== settings) {
+			await settingsDispatch(modifiedSettings);
 		}
 	}
 
 	async function checkForChanges() {
 		if (
-			(modifiedSettings.current?.serverAddress && settings.serverAddress !== modifiedSettings.current.serverAddress) ||
-			(modifiedSettings.current?.cdnAddress && settings.cdnAddress !== modifiedSettings.current.cdnAddress)
+			(modifiedSettings?.serverAddress && settings.serverAddress !== modifiedSettings.serverAddress) ||
+			(modifiedSettings?.cdnAddress && settings.cdnAddress !== modifiedSettings.cdnAddress)
 		) {
 			dispatch({
 				info: {
@@ -97,7 +97,7 @@ export default function SettingsModal() {
 						cancel: {
 							text: "Revert",
 							callback: () => {
-								modifiedSettings.current = { ...settings };
+								setModifiedSettings({ ...settings });
 								dispatch({ info: { isOpen: false } });
 							},
 						},
@@ -115,7 +115,7 @@ export default function SettingsModal() {
 	}
 
 	function onSettingsChanged(value: DeepPartial<SettingsContextType>) {
-		modifiedSettings.current = { ...modifiedSettings.current, ...value };
+		setModifiedSettings((old) => ({ ...old, ...value }));
 	}
 
 	return (
@@ -133,8 +133,8 @@ export default function SettingsModal() {
 							<SettingsTabs />
 						</TabList>
 					</div>
-					{settingsValid && modifiedSettings.current && (
-						<SettingsPanels currentTab={currentTab} settings={modifiedSettings.current} onChange={onSettingsChanged} onSave={onSave} />
+					{settingsValid && modifiedSettings && (
+						<SettingsPanels currentTab={currentTab} settings={modifiedSettings} onChange={onSettingsChanged} onSave={onSave} />
 					)}
 				</TabGroup>
 				<ModalCloseButton

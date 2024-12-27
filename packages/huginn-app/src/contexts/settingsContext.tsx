@@ -7,12 +7,14 @@ export type SettingsContextType = {
 	serverAddress: string;
 	cdnAddress: string;
 	theme: ThemeType;
+	chatMode?: "normal" | "compact";
 };
 
 const defaultValue: SettingsContextType = {
 	serverAddress: "https://asgard.huginn.dev",
 	cdnAddress: "https://asgard.huginn.dev",
 	theme: "pine green",
+	chatMode: "normal",
 };
 
 let value = defaultValue;
