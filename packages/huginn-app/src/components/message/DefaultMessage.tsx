@@ -14,6 +14,9 @@ export default function DefaultMessage(
 	},
 ) {
 	const { user } = useUser();
+	const settings = useSettings();
+
+	const isCompact = useMemo(() => settings.chatMode === "compact", [settings]);
 
 	const formattedTime = useMemo(() => moment(props.renderInfo.message?.timestamp).format("DD.MM.YYYY HH:mm"), [props.renderInfo.message]);
 	const isSelf = useMemo(() => props.renderInfo.message.author.id === user?.id, [props.renderInfo.message.author]);
@@ -48,7 +51,69 @@ export default function DefaultMessage(
 		return content.split("\n").map((line) => ({ type: "paragraph", children: [{ text: line }] }));
 	}
 
-	return (
+	return isCompact ? (
+		<div
+			className={clsx(
+				"ml-2 flex flex-col items-start gap-y-2 p-2 hover:bg-secondary hover:shadow-md",
+				(isSeparate || isLastExotic) && "rounded-t-lg",
+				isNextSeparate && "rounded-b-lg",
+				!isSeparate && !isLastExotic && "py-0",
+				!isSeparate && !isLastExotic && !isUnread && "mt-0",
+				!isNextSeparate && "pb-0",
+				isSeparate && !isNewDate && !isUnread && "mt-1.5",
+			)}
+		>
+			{(isSeparate || isLastExotic) && (
+				<div className="flex items-center justify-center gap-x-2">
+					<div className="text-sm text-text">
+						{isSelf ? "You" : (props.renderInfo.message.author.displayName ?? props.renderInfo.message.author.username)}
+					</div>
+					{!props.renderInfo.message.preview &&
+					props.renderInfo.message.flags &&
+					hasFlag(props.renderInfo.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
+						<IconMingcuteNotificationOffFill className="size-4 text-text" />
+					) : null}
+					<div className="text-text/50 text-xs">{formattedTime}</div>
+				</div>
+			)}
+			<div className="flex gap-2">
+				{(isSeparate || isLastExotic) && (
+					<div className="flex items-center gap-x-2 overflow-hidden">
+						<UserAvatar
+							userId={props.renderInfo.message.author.id}
+							avatarHash={props.renderInfo.message.author.avatar}
+							statusSize="0.5rem"
+							size="1.75rem"
+						/>
+					</div>
+				)}
+				<div className={clsx("overflow-hidden font-light text-white", !isSeparate && !isLastExotic && "ml-9")}>
+					<Slate editor={props.editor} initialValue={initialValue}>
+						<Editable
+							id={`${props.renderInfo.message.id}_inner`}
+							readOnly
+							decorate={props.decorate}
+							renderLeaf={props.renderLeaf}
+							renderElement={props.renderElement}
+							className={clsx(
+								"px-2.5 py-1.5 font-normal text-white [overflow-wrap:anywhere]",
+								props.renderInfo.message.preview && "bg-primary/50 text-white/50",
+								isSelf ? "bg-primary" : "bg-background",
+								isUnread && !isSeparate && "!rounded-t-none",
+								isSeparate && "!rounded-t-xl",
+								isNextSeparate && "!rounded-b-xl",
+							)}
+							style={{
+								borderBottomRightRadius: `${clamp(widths.width - widths.nextWidth, 0, 12)}px`,
+								borderTopRightRadius: `${clamp(widths.width - widths.lastWidth, 0, 12)}px`,
+							}}
+							disableDefaultStyles
+						/>
+					</Slate>
+				</div>
+			</div>
+		</div>
+	) : (
 		<div
 			className={clsx(
 				"ml-2 flex flex-col items-start gap-y-2 p-2 hover:bg-secondary hover:shadow-md",
