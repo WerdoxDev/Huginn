@@ -1,6 +1,8 @@
+import { Transition } from "@headlessui/react";
 import { snowflake } from "@huginn/shared";
 import { useQuery } from "@tanstack/react-query";
 import moment from "moment";
+import { AnimatePresence, LayoutGroup, type Variants, motion } from "motion/react";
 
 export default function GuildsBar() {
 	const client = useClient();
@@ -24,20 +26,34 @@ export default function GuildsBar() {
 		[readStates],
 	);
 
+	const variants: Variants = {
+		visible: (i) => ({
+			scale: 1,
+			opacity: 1,
+			transition: { type: "spring", bounce: 0.4, delay: i * 0.1 },
+		}),
+		hidden: { scale: 0, opacity: 0 },
+		exit: { scale: 0, opacity: 0 },
+	};
+
 	return (
 		<nav className="flex h-full w-[4.75rem] shrink-0 flex-col bg-background p-3.5">
 			<HomeButton />
 			<div className="flex flex-col items-center justify-center">
-				{sortedReadStates.map((x) => (
-					<UnreadChannel key={x.channelId} channelId={x.channelId} unreadCount={x.unreadCount} />
-				))}
+				<AnimatePresence mode="popLayout">
+					{sortedReadStates.map((x, i) => (
+						<motion.div layout custom={i} variants={variants} key={x.channelId} initial="hidden" animate="visible" exit="exit">
+							<UnreadChannel channelId={x.channelId} unreadCount={x.unreadCount} />
+						</motion.div>
+					))}
+				</AnimatePresence>
 			</div>
-			<div className="mx-4 my-3.5 h-0.5 bg-white/20" />
-			<div className="flex flex-col items-center gap-3">
+			<motion.div layout className="mx-4 my-3.5 h-0.5 bg-white/20" />
+			<motion.div layout className="flex flex-col items-center gap-3">
 				<GuildButton />
 				<GuildButton />
 				<GuildButton />
-			</div>
+			</motion.div>
 		</nav>
 	);
 }
