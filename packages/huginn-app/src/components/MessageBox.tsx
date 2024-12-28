@@ -2,7 +2,7 @@ import { MessageFlags } from "@huginn/shared";
 import { TokenTypeFlag } from "@lib/huginn-tokenizer";
 import type { KeyboardEvent } from "react";
 import { useParams } from "react-router";
-import { type Descendant, Editor, Node, type Path, type Range, Text, createEditor } from "slate";
+import { type Descendant, Editor, Node, type Path, type Range, Text, createEditor, start } from "slate";
 import { DefaultElement, Editable, type RenderElementProps, type RenderLeafProps, Slate, withReact } from "slate-react";
 
 const initialValue: Descendant[] = [
@@ -74,7 +74,40 @@ export default function MessageBox() {
 			sendMessage(flags);
 		}
 
+		if (event.ctrlKey && event.key === "b" && editor.selection) {
+			toggleMarkAtSelection("**");
+		}
+		if (event.ctrlKey && event.key === "i" && editor.selection) {
+			toggleMarkAtSelection("*");
+		}
+
 		sendTypingMutate(event, { channelId: params.channelId ?? "" });
+	}
+
+	function toggleMarkAtSelection(mark: string) {
+		if (!editor.selection) {
+			return;
+		}
+
+		const markLength = mark.length;
+		const path = editor.selection.anchor.path;
+		const nodeAtSelection = editor.leaf(editor.selection);
+		const startOffset = Math.min(editor.selection.anchor.offset, editor.selection.focus.offset);
+		const endOffset = Math.max(editor.selection.anchor.offset, editor.selection.focus.offset);
+
+		const nodeText = nodeAtSelection[0].text;
+		const actualText = nodeText.slice(startOffset, endOffset);
+		const guessText = nodeText.slice(Math.max(startOffset - markLength, 0), endOffset + markLength);
+		if (guessText === `${mark}${actualText}${mark}`) {
+			editor.delete({ at: { anchor: { offset: startOffset - markLength, path: path }, focus: { offset: startOffset, path: path } } });
+			editor.delete({ at: { anchor: { offset: endOffset - markLength, path: path }, focus: { offset: endOffset, path: path } } });
+			return;
+		}
+
+		editor.insertText(mark, { at: { offset: startOffset, path: path } });
+
+		editor.insertText(mark, { at: { offset: endOffset + markLength, path: path } });
+		editor.select({ anchor: { offset: startOffset + markLength, path: path }, focus: { offset: endOffset + markLength, path: path } });
 	}
 
 	function sendMessage(flags: MessageFlags) {
