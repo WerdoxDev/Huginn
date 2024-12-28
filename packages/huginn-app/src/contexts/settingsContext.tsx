@@ -11,8 +11,8 @@ export type SettingsContextType = {
 };
 
 const defaultValue: SettingsContextType = {
-	serverAddress: "https://asgard.huginn.dev",
-	cdnAddress: "https://asgard.huginn.dev",
+	serverAddress: "https://midgard.huginn.dev",
+	cdnAddress: "https://midgard.huginn.dev",
 	theme: "pine green",
 	chatMode: "normal",
 };

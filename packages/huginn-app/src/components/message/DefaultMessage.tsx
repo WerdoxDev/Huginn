@@ -1,5 +1,5 @@
 import type { MessageRendererProps } from "@/types";
-import { MessageFlags, clamp, hasFlag } from "@huginn/shared";
+import { MessageFlags, type Snowflake, clamp, hasFlag } from "@huginn/shared";
 import clsx from "clsx";
 import moment from "moment";
 import type { BaseEditor, Descendant, NodeEntry, Range } from "slate";
@@ -88,28 +88,20 @@ export default function DefaultMessage(
 					</div>
 				)}
 				<div className={clsx("overflow-hidden font-light text-white", !isSeparate && !isLastExotic && "ml-9")}>
-					<Slate editor={props.editor} initialValue={initialValue}>
-						<Editable
-							id={`${props.renderInfo.message.id}_inner`}
-							readOnly
-							decorate={props.decorate}
-							renderLeaf={props.renderLeaf}
-							renderElement={props.renderElement}
-							className={clsx(
-								"px-2.5 py-1.5 font-normal text-white [overflow-wrap:anywhere]",
-								props.renderInfo.message.preview && "bg-primary/50 text-white/50",
-								isSelf ? "bg-primary" : "bg-background",
-								isUnread && !isSeparate && "!rounded-t-none",
-								isSeparate && "!rounded-t-xl",
-								isNextSeparate && "!rounded-b-xl",
-							)}
-							style={{
-								borderBottomRightRadius: `${clamp(widths.width - widths.nextWidth, 0, 12)}px`,
-								borderTopRightRadius: `${clamp(widths.width - widths.lastWidth, 0, 12)}px`,
-							}}
-							disableDefaultStyles
-						/>
-					</Slate>
+					<MarkdownRenderer
+						decorate={props.decorate}
+						editor={props.editor}
+						initialValue={initialValue}
+						isNextSeparate={isNextSeparate}
+						isPreview={props.renderInfo.message.preview}
+						isSelf={isSelf}
+						isSeparate={isSeparate}
+						isUnread={isUnread}
+						messageId={props.renderInfo.message.id}
+						renderElement={props.renderElement}
+						renderLeaf={props.renderLeaf}
+						widths={widths}
+					/>
 				</div>
 			</div>
 		</div>
@@ -146,29 +138,61 @@ export default function DefaultMessage(
 				</div>
 			)}
 			<div className="overflow-hidden font-light text-white">
-				<Slate editor={props.editor} initialValue={initialValue}>
-					<Editable
-						id={`${props.renderInfo.message.id}_inner`}
-						readOnly
-						decorate={props.decorate}
-						renderLeaf={props.renderLeaf}
-						renderElement={props.renderElement}
-						className={clsx(
-							"px-2.5 py-1.5 font-normal text-white [overflow-wrap:anywhere]",
-							props.renderInfo.message.preview && "bg-primary/50 text-white/50",
-							isSelf ? "bg-primary" : "bg-background",
-							isUnread && !isSeparate && "!rounded-t-none",
-							isSeparate && "!rounded-t-xl",
-							isNextSeparate && "!rounded-b-xl",
-						)}
-						style={{
-							borderBottomRightRadius: `${clamp(widths.width - widths.nextWidth, 0, 12)}px`,
-							borderTopRightRadius: `${clamp(widths.width - widths.lastWidth, 0, 12)}px`,
-						}}
-						disableDefaultStyles
-					/>
-				</Slate>
+				<MarkdownRenderer
+					decorate={props.decorate}
+					editor={props.editor}
+					initialValue={initialValue}
+					isNextSeparate={isNextSeparate}
+					isPreview={props.renderInfo.message.preview}
+					isSelf={isSelf}
+					isSeparate={isSeparate}
+					isUnread={isUnread}
+					messageId={props.renderInfo.message.id}
+					renderElement={props.renderElement}
+					renderLeaf={props.renderLeaf}
+					widths={widths}
+				/>
 			</div>
 		</div>
+	);
+}
+
+function MarkdownRenderer(props: {
+	editor: ReactEditor;
+	initialValue: Descendant[];
+	messageId: Snowflake;
+	isPreview: boolean;
+	decorate(entry: NodeEntry): Range[];
+	renderLeaf(props: RenderLeafProps): React.JSX.Element;
+	renderElement(props: RenderElementProps): React.JSX.Element;
+	widths: { width: number; lastWidth: number; nextWidth: number };
+	isSelf: boolean;
+	isUnread: boolean;
+	isSeparate: boolean;
+	isNextSeparate: boolean;
+}) {
+	return (
+		<Slate editor={props.editor} initialValue={props.initialValue}>
+			<Editable
+				id={`${props.messageId}_inner`}
+				readOnly
+				decorate={props.decorate}
+				renderLeaf={props.renderLeaf}
+				renderElement={props.renderElement}
+				className={clsx(
+					"px-2.5 py-1.5 font-normal text-white [overflow-wrap:anywhere]",
+					props.isPreview && "bg-primary/20 text-white/50",
+					props.isSelf && !props.isPreview ? "bg-primary/70" : "bg-background",
+					props.isUnread && !props.isSeparate && "!rounded-t-none",
+					props.isSeparate && "!rounded-t-xl",
+					props.isNextSeparate && "!rounded-b-xl",
+				)}
+				style={{
+					borderBottomRightRadius: `${clamp(props.widths.width - props.widths.nextWidth, 0, 12)}px`,
+					borderTopRightRadius: `${clamp(props.widths.width - props.widths.lastWidth, 0, 12)}px`,
+				}}
+				disableDefaultStyles
+			/>
+		</Slate>
 	);
 }

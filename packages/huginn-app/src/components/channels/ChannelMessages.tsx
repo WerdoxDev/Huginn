@@ -50,7 +50,6 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		if (!scroll.current || sortedMessages.length === 0) return;
 
 		lastScrollTop.current = scroll.current.scrollTop;
-		console.log("scroll");
 
 		// Scrolling up
 		if (scroll.current.scrollTop <= topScrollOffset && !isFetchingPreviousPage && hasPreviousPage) {
