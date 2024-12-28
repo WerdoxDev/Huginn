@@ -11,6 +11,7 @@ export const useChannelStore = create(
 		},
 		(set) => ({
 			saveScroll: (channelId: Snowflake, scroll: number) => set((state) => ({ savedScrolls: new Map(state.savedScrolls).set(channelId, scroll) })),
+			resetScrolls: () => set({ savedScrolls: new Map() }),
 			addVisibleMessage: (id: Snowflake, timestamp: number, channelId: Snowflake) =>
 				set((state) => ({
 					currentVisibleMessages: [

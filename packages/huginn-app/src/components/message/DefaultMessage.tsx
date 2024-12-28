@@ -78,7 +78,7 @@ export default function DefaultMessage(
 			)}
 			<div className="flex gap-2">
 				{(isSeparate || isLastExotic) && (
-					<div className="flex items-center gap-x-2 overflow-hidden">
+					<div className="flex gap-x-2 overflow-hidden">
 						<UserAvatar
 							userId={props.renderInfo.message.author.id}
 							avatarHash={props.renderInfo.message.author.avatar}
@@ -96,6 +96,7 @@ export default function DefaultMessage(
 						isPreview={props.renderInfo.message.preview}
 						isSelf={isSelf}
 						isSeparate={isSeparate}
+						isLastExotic={isLastExotic}
 						isUnread={isUnread}
 						messageId={props.renderInfo.message.id}
 						renderElement={props.renderElement}
@@ -148,6 +149,7 @@ export default function DefaultMessage(
 					isSeparate={isSeparate}
 					isUnread={isUnread}
 					messageId={props.renderInfo.message.id}
+					isLastExotic={isLastExotic}
 					renderElement={props.renderElement}
 					renderLeaf={props.renderLeaf}
 					widths={widths}
@@ -170,6 +172,7 @@ function MarkdownRenderer(props: {
 	isUnread: boolean;
 	isSeparate: boolean;
 	isNextSeparate: boolean;
+	isLastExotic: boolean;
 }) {
 	return (
 		<Slate editor={props.editor} initialValue={props.initialValue}>
@@ -184,7 +187,7 @@ function MarkdownRenderer(props: {
 					props.isPreview && "bg-primary/20 text-white/50",
 					props.isSelf && !props.isPreview ? "bg-primary/70" : "bg-background",
 					props.isUnread && !props.isSeparate && "!rounded-t-none",
-					props.isSeparate && "!rounded-t-xl",
+					(props.isSeparate || props.isLastExotic) && "!rounded-t-xl",
 					props.isNextSeparate && "!rounded-b-xl",
 				)}
 				style={{

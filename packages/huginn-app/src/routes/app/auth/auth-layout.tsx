@@ -1,8 +1,11 @@
 import clsx from "clsx";
 import { Outlet, redirect } from "react-router";
+import type { Route } from "./+types/auth-layout";
 
-export async function clientLoader() {
-	if (client?.isLoggedIn) {
+export async function clientLoader({ request }: Route.ClientLoaderArgs) {
+	const force = new URL(request.url).searchParams.get("force") === "1";
+
+	if (client?.isLoggedIn && !force) {
 		throw redirect("/channels/@me");
 	}
 }
