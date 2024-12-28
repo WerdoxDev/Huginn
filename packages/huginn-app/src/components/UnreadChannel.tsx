@@ -1,6 +1,7 @@
 import { ChannelType, type Snowflake } from "@huginn/shared";
+import type { RefObject } from "react";
 
-export default function UnreadChannel(props: { channelId: Snowflake; unreadCount: number }) {
+export default function UnreadChannel(props: { channelId: Snowflake; unreadCount: number; className?: string; ref?: RefObject<HTMLDivElement> }) {
 	const channel = useChannel(props.channelId);
 	const channelName = useChannelName(channel?.recipients, channel?.name);
 	const navigateToChannel = useNavigateToChannel();
@@ -11,10 +12,7 @@ export default function UnreadChannel(props: { channelId: Snowflake; unreadCount
 
 	return (
 		<Tooltip placement="right">
-			<Tooltip.Trigger
-				className="relative mt-3 flex items-center rounded-lg hover:bg-secondary/10"
-				onClick={() => navigateToChannel("@me", channel.id)}
-			>
+			<Tooltip.Trigger className="relative mt-3 flex items-center rounded-lg" onClick={() => navigateToChannel("@me", channel.id)}>
 				{channel.type === ChannelType.DM ? (
 					<UserAvatar userId={channel.recipients[0]?.id} avatarHash={channel.recipients[0]?.avatar} size="3rem" hideStatus />
 				) : (
