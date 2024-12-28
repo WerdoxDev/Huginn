@@ -5,6 +5,7 @@ export function useLogout() {
 	const queryClient = useQueryClient();
 	const client = useClient();
 	const navigate = useNavigate();
+	const { resetScrolls } = useChannelStore();
 
 	const mutation = useHuginnMutation({
 		async mutationFn() {
@@ -16,10 +17,11 @@ export function useLogout() {
 	async function logout() {
 		localStorage.removeItem("refresh-token");
 		localStorage.removeItem("access-token");
-		mutation.mutate();
 
-		await navigate("/login", { replace: true, viewTransition: true });
+		await navigate(`/login?${new URLSearchParams({ force: "1" }).toString()}`, { replace: true, viewTransition: true });
+		await mutation.mutateAsync();
 
+		resetScrolls();
 		queryClient.removeQueries({ queryKey: ["channels"] });
 		queryClient.removeQueries({ queryKey: ["messages"] });
 		queryClient.removeQueries({ queryKey: ["relationships"] });

@@ -27,7 +27,7 @@ export default function MockDefaultMessageCompact(props: {
 			)}
 			<div className="flex gap-2">
 				{props.separate && (
-					<div className="flex items-center gap-x-2 overflow-hidden">
+					<div className="flex gap-x-2 overflow-hidden">
 						<UserAvatar userId="0" statusSize="0.5rem" size="1.75rem" />
 					</div>
 				)}
@@ -36,7 +36,7 @@ export default function MockDefaultMessageCompact(props: {
 						className={clsx(
 							"px-2.5 py-1.5 font-normal text-white [overflow-wrap:anywhere]",
 							props.separate && "rounded-t-xl",
-							props.self ? "bg-primary" : "bg-background",
+							props.self ? "bg-primary/70" : "bg-background",
 							props.end && "!rounded-b-xl",
 						)}
 						style={{ borderTopRightRadius: props.roundedTop, borderBottomRightRadius: props.roundedBottom }}
