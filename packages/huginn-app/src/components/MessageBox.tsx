@@ -75,39 +75,53 @@ export default function MessageBox() {
 		}
 
 		if (event.ctrlKey && event.key === "b" && editor.selection) {
-			toggleMarkAtSelection("**");
+			toggleMarkAtSelection("bold");
 		}
 		if (event.ctrlKey && event.key === "i" && editor.selection) {
-			toggleMarkAtSelection("*");
+			toggleMarkAtSelection("italic");
+		}
+		if (event.ctrlKey && event.key === "u" && editor.selection) {
+			toggleMarkAtSelection("underline");
 		}
 
 		sendTypingMutate(event, { channelId: params.channelId ?? "" });
 	}
 
-	function toggleMarkAtSelection(mark: string) {
+	function toggleMarkAtSelection(markType: "bold" | "italic" | "underline") {
 		if (!editor.selection) {
 			return;
 		}
 
+		const mark = markType === "bold" ? "**" : markType === "italic" ? "*" : markType === "underline" ? "__" : "";
 		const markLength = mark.length;
 		const path = editor.selection.anchor.path;
 		const nodeAtSelection = editor.leaf(editor.selection);
-		const startOffset = Math.min(editor.selection.anchor.offset, editor.selection.focus.offset);
-		const endOffset = Math.max(editor.selection.anchor.offset, editor.selection.focus.offset);
 
-		const nodeText = nodeAtSelection[0].text;
-		const actualText = nodeText.slice(startOffset, endOffset);
-		const guessText = nodeText.slice(Math.max(startOffset - markLength, 0), endOffset + markLength);
-		if (guessText === `${mark}${actualText}${mark}`) {
-			editor.delete({ at: { anchor: { offset: startOffset - markLength, path: path }, focus: { offset: startOffset, path: path } } });
-			editor.delete({ at: { anchor: { offset: endOffset - markLength, path: path }, focus: { offset: endOffset, path: path } } });
-			return;
+		for (const node of editor.nodes({ at: editor.selection, mode: "lowest" })) {
+			const decoration = decorate(node).find(
+				(x) => (x.bold && markType === "bold") || (x.italic && markType === "italic") || (x.underline && markType === "underline"),
+			);
+
+			const startOffset = Math.min(editor.selection.anchor.offset, editor.selection.focus.offset);
+			const endOffset = Math.max(editor.selection.anchor.offset, editor.selection.focus.offset);
+
+			if (!decoration) {
+				editor.insertText(mark, { at: { offset: startOffset, path: path } });
+
+				editor.insertText(mark, { at: { offset: endOffset + markLength, path: path } });
+				editor.select({ anchor: { offset: startOffset + markLength, path: path }, focus: { offset: endOffset + markLength, path: path } });
+				return;
+			}
+
+			const nodeText = nodeAtSelection[0].text;
+			const actualText = nodeText.slice(startOffset, endOffset);
+			const guessText = nodeText.slice(Math.max(startOffset - markLength, 0), endOffset + markLength);
+			if (guessText === `${mark}${actualText}${mark}`) {
+				editor.delete({ at: { anchor: { offset: startOffset - markLength, path: path }, focus: { offset: startOffset, path: path } } });
+				editor.delete({ at: { anchor: { offset: endOffset - markLength, path: path }, focus: { offset: endOffset, path: path } } });
+				return;
+			}
 		}
-
-		editor.insertText(mark, { at: { offset: startOffset, path: path } });
-
-		editor.insertText(mark, { at: { offset: endOffset + markLength, path: path } });
-		editor.select({ anchor: { offset: startOffset + markLength, path: path }, focus: { offset: endOffset + markLength, path: path } });
 	}
 
 	function sendMessage(flags: MessageFlags) {
