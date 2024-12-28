@@ -330,8 +330,6 @@ async function createRelease(packageType: PackageType, version: string, draft: b
 	} else {
 		logger.creatingRelease(packageType, version, draft);
 
-		consola.log(latestRelease.tag_name);
-
 		// Fetch commits between the previous and new tags
 		const commits = await octokit.rest.repos.compareCommitsWithBasehead({
 			owner,
