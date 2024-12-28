@@ -318,24 +318,38 @@ async function createRelease(packageType: PackageType, version: string, draft: b
 	const owner = "WerdoxDev";
 
 	// Create the release with a description
-	const tagName = `${thisPackage.name}-v${version}`;
+	const newTagName = `${thisPackage.name}-v${version}`;
 
-	let release = await getReleaseByTag(tagName, owner, envs.REPO_NAME);
+	let release = await getReleaseByTag(newTagName, owner, envs.REPO_NAME);
 	const releaseExists = !!release;
+
+	const [latestRelease] = await getPackageReleases(packageType);
 
 	if (release) {
 		logger.releaseExists(version);
 	} else {
 		logger.creatingRelease(packageType, version, draft);
 
+		consola.log(latestRelease.tag_name);
+
+		// Fetch commits between the previous and new tags
+		const commits = await octokit.rest.repos.compareCommitsWithBasehead({
+			owner,
+			repo: envs.REPO_NAME,
+			basehead: `${latestRelease.tag_name}...dev`,
+		});
+
+		// Extract commit messages
+		const commitMessages = commits.data.commits.map((commit) => `- ${commit.commit.message} ${commit.sha}`).join("\n");
+
 		release = await octokit.rest.repos.createRelease({
 			owner,
 			repo: envs.REPO_NAME,
 			name: `${thisPackage.name} v${version}`,
-			tag_name: tagName,
-			target_commitish: "master",
+			tag_name: newTagName,
+			target_commitish: "dev",
+			body: `### Commits:\n${commitMessages}`,
 			draft,
-			generate_release_notes: true,
 		});
 	}
 
