@@ -1,6 +1,6 @@
 import { hasFlag } from "@huginn/shared";
 
-type TokenType = "bold" | "italic" | "underline" | "spoiler";
+type TokenType = "bold" | "italic" | "underline" | "spoiler" | "link";
 
 export enum TokenTypeFlag {
 	NONE = 0,
@@ -8,6 +8,7 @@ export enum TokenTypeFlag {
 	ITALIC = 1 << 1,
 	UNDERLINE = 1 << 2,
 	SPOILER = 1 << 3,
+	LINK = 1 << 4,
 }
 
 type FinishedToken = {
@@ -26,6 +27,7 @@ const tokenTypes: Record<string, TokenTypeFlag> = {
 	twou: TokenTypeFlag.UNDERLINE,
 	threeu: TokenTypeFlag.UNDERLINE | TokenTypeFlag.ITALIC,
 	twol: TokenTypeFlag.SPOILER,
+	link: TokenTypeFlag.LINK,
 };
 
 const cache = new Map<string, FinishedToken[]>();
@@ -38,7 +40,8 @@ export function tokenize(text: string) {
 	const tokens: FinishedToken[] = [];
 
 	let match: RegExpExecArray | null;
-	const pattern = /(?<threes>(\*\*\*))|(?<twos>(\*\*))|(?<ones>(\*))|(?<threeu>(\_\_\_))|(?<twou>(\_\_))|(?<oneu>(\_))|(?<twol>(\|\|))/g;
+	const pattern =
+		/(?<link>https?:\/\/(?:www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)|(?<threes>(\*\*\*))|(?<twos>(\*\*))|(?<ones>(\*))|(?<threeu>(\_\_\_))|(?<twou>(\_\_))|(?<oneu>(\_))|(?<twol>(\|\|))/g;
 
 	const unfinishedTokens: { start?: Token; end?: Token; type: TokenTypeFlag }[] = [];
 	// biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
@@ -46,25 +49,35 @@ export function tokenize(text: string) {
 		for (const [group, type] of Object.entries(tokenTypes)) {
 			if (match.groups?.[group]) {
 				const unfinishedTokenIndex = unfinishedTokens.findIndex((x) => x.type === type);
-				const unfinishedToken = unfinishedTokens[unfinishedTokenIndex];
 
-				if (!unfinishedToken) {
-					unfinishedTokens.push({ start: { index: match.index, text: match[0] }, type: type });
-				} else if (unfinishedToken && !unfinishedToken.end) {
-					unfinishedToken.end = { index: match.index, text: match[0] };
+				let token = unfinishedTokens[unfinishedTokenIndex];
+				if (hasFlag(type, TokenTypeFlag.LINK)) {
+					token = {
+						start: { index: match.index, text: "" },
+						end: { index: match.index + match[0].length, text: "" },
+						type: type,
+					};
 				}
 
-				if (unfinishedToken?.start && unfinishedToken?.end) {
-					const content = text.slice(unfinishedToken.start.index + unfinishedToken.start.text.length, unfinishedToken.end.index);
+				if (!token) {
+					unfinishedTokens.push({ start: { index: match.index, text: match[0] }, type: type });
+				} else if (token && !token.end) {
+					token.end = { index: match.index, text: match[0] };
+				}
+
+				if (token?.start && token?.end) {
+					const content = text.slice(token.start.index + token.start.text.length, token.end.index);
 					tokens.push({
-						start: unfinishedToken.start.index,
+						start: token.start.index,
 						content,
-						end: unfinishedToken.end.index + unfinishedToken.end.text.length - 1,
-						type: getTokenTypeFromFlag(unfinishedToken.type),
-						mark: unfinishedToken.start.text,
+						end: token.end.index + token.end.text.length - 1,
+						type: getTokenTypeFromFlag(token.type),
+						mark: token.start.text,
 					});
 
-					unfinishedTokens.splice(unfinishedTokenIndex, 1);
+					if (unfinishedTokenIndex !== -1) {
+						unfinishedTokens.splice(unfinishedTokenIndex, 1);
+					}
 				}
 			}
 		}
@@ -82,6 +95,7 @@ function getTokenTypeFromFlag(flag: TokenTypeFlag): TokenType[] {
 	if (hasFlag(flag, TokenTypeFlag.ITALIC)) finalTokens.push("italic");
 	if (hasFlag(flag, TokenTypeFlag.UNDERLINE)) finalTokens.push("underline");
 	if (hasFlag(flag, TokenTypeFlag.SPOILER)) finalTokens.push("spoiler");
+	if (hasFlag(flag, TokenTypeFlag.LINK)) finalTokens.push("link");
 
 	return finalTokens;
 }

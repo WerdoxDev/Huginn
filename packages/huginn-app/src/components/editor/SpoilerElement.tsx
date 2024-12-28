@@ -14,7 +14,9 @@ export default function SpoilerElement(props: RenderElementProps) {
 				setHidden(false);
 			}}
 		>
-			<span {...props.attributes}>{props.children}</span>
+			<span {...props.attributes} className={clsx(hidden && "pointer-events-none")}>
+				{props.children}
+			</span>
 		</div>
 	);
 }

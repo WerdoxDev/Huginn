@@ -15,7 +15,7 @@ type SpoilerElement = {
 
 type CustomElement = ParagraphElement | SpoilerElement;
 
-type TextFormats = { bold?: boolean; italic?: boolean; underline?: boolean; mark?: boolean; spoiler?: boolean };
+type TextFormats = { bold?: boolean; italic?: boolean; underline?: boolean; mark?: boolean; spoiler?: boolean; link?: boolean };
 type FormattedText = { text: string } & TextFormats;
 
 type CustomText = FormattedText;
