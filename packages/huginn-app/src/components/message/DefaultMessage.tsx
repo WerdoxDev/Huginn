@@ -2,13 +2,13 @@ import type { MessageRendererProps } from "@/types";
 import { MessageFlags, type Snowflake, clamp, hasFlag } from "@huginn/shared";
 import clsx from "clsx";
 import moment from "moment";
-import type { BaseEditor, Descendant, NodeEntry, Range } from "slate";
+import type { BaseEditor, Descendant } from "slate";
 import { Editable, type ReactEditor, type RenderElementProps, type RenderLeafProps, Slate } from "slate-react";
 
 export default function DefaultMessage(
 	props: MessageRendererProps & {
+		initialValue: Descendant[];
 		editor: BaseEditor & ReactEditor;
-		decorate(entry: NodeEntry): Range[];
 		renderLeaf(props: RenderLeafProps): React.JSX.Element;
 		renderElement(props: RenderElementProps): React.JSX.Element;
 	},
@@ -20,8 +20,6 @@ export default function DefaultMessage(
 
 	const formattedTime = useMemo(() => moment(props.renderInfo.message?.timestamp).format("DD.MM.YYYY HH:mm"), [props.renderInfo.message]);
 	const isSelf = useMemo(() => props.renderInfo.message.author.id === user?.id, [props.renderInfo.message.author]);
-
-	const initialValue = useMemo(() => deserialize(props.renderInfo.message.content ?? ""), []);
 
 	const isLastExotic = useMemo(() => props.lastRenderInfo?.exoticType === true, [props.lastRenderInfo]);
 	const isSeparate = useMemo(() => props.renderInfo.newAuthor || props.renderInfo.newMinute || props.renderInfo.newDate, [props.renderInfo]);
@@ -46,10 +44,6 @@ export default function DefaultMessage(
 
 		setWidths({ width, lastWidth, nextWidth });
 	}, [props.renderInfo, props.lastRenderInfo, props.nextRenderInfo]);
-
-	function deserialize(content: string): Descendant[] {
-		return content.split("\n").map((line) => ({ type: "paragraph", children: [{ text: line }] }));
-	}
 
 	return isCompact ? (
 		<div
@@ -89,9 +83,8 @@ export default function DefaultMessage(
 				)}
 				<div className={clsx("overflow-hidden font-light text-white", !isSeparate && !isLastExotic && "ml-9")}>
 					<MarkdownRenderer
-						decorate={props.decorate}
+						initialValue={props.initialValue}
 						editor={props.editor}
-						initialValue={initialValue}
 						isNextSeparate={isNextSeparate}
 						isPreview={props.renderInfo.message.preview}
 						isSelf={isSelf}
@@ -140,9 +133,8 @@ export default function DefaultMessage(
 			)}
 			<div className="overflow-hidden font-light text-white">
 				<MarkdownRenderer
-					decorate={props.decorate}
+					initialValue={props.initialValue}
 					editor={props.editor}
-					initialValue={initialValue}
 					isNextSeparate={isNextSeparate}
 					isPreview={props.renderInfo.message.preview}
 					isSelf={isSelf}
@@ -154,6 +146,11 @@ export default function DefaultMessage(
 					renderLeaf={props.renderLeaf}
 					widths={widths}
 				/>
+				{/* {!props.renderInfo.message.preview &&
+					props.renderInfo.message.embeds.length > 0 &&
+					props.renderInfo.message.embeds.map((x, i) => (
+						<EmbedElement image={x.thumbnail?.url} key={i} description={x.description} title={x.title} url={x.url} />
+					))} */}
 			</div>
 		</div>
 	);
@@ -161,10 +158,9 @@ export default function DefaultMessage(
 
 function MarkdownRenderer(props: {
 	editor: ReactEditor;
-	initialValue: Descendant[];
 	messageId: Snowflake;
 	isPreview: boolean;
-	decorate(entry: NodeEntry): Range[];
+	initialValue: Descendant[];
 	renderLeaf(props: RenderLeafProps): React.JSX.Element;
 	renderElement(props: RenderElementProps): React.JSX.Element;
 	widths: { width: number; lastWidth: number; nextWidth: number };
@@ -179,7 +175,6 @@ function MarkdownRenderer(props: {
 			<Editable
 				id={`${props.messageId}_inner`}
 				readOnly
-				decorate={props.decorate}
 				renderLeaf={props.renderLeaf}
 				renderElement={props.renderElement}
 				className={clsx(

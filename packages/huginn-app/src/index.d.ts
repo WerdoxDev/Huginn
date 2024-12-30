@@ -1,19 +1,28 @@
-import type { BaseEditor, BaseRange } from "slate";
+import type { BaseEditor, BaseRange, Descendant } from "slate";
 import type { ReactEditor } from "slate-react";
 
 type CustomEditor = BaseEditor & ReactEditor;
 
 type ParagraphElement = {
 	type: "paragraph";
-	children: CustomText[];
+	children: Descendant[];
 };
 
 type SpoilerElement = {
 	type: "spoiler";
-	children: CustomText[];
+	children: Descendant[];
 };
 
-type CustomElement = ParagraphElement | SpoilerElement;
+type EmbedElement = {
+	type: "embed";
+	title?: string;
+	description?: string;
+	url?: string;
+	image?: string;
+	children: Descendant[];
+};
+
+type CustomElement = ParagraphElement | SpoilerElement | EmbedElement;
 
 type TextFormats = { bold?: boolean; italic?: boolean; underline?: boolean; mark?: boolean; spoiler?: boolean; link?: boolean };
 type FormattedText = { text: string } & TextFormats;
