@@ -204,6 +204,7 @@ type APIBaseMessage = {
 	timestamp: Date | string;
 	editedTimestamp: Date | string | null;
 	attachments: string[];
+	embeds: APIEmbed[];
 	pinned: boolean;
 	mentions: APIMessageUser[];
 };
@@ -237,6 +238,20 @@ export type APIPostDefaultMessageJSONBody = {
 	attachments?: string[];
 	flags?: MessageFlags;
 	nonce?: number | string;
+};
+
+export type APIEmbed = {
+	title?: string;
+	type?: string;
+	description?: string;
+	url?: string;
+	thumbnail?: APIThumbnail;
+};
+
+export type APIThumbnail = {
+	url: string;
+	width?: number;
+	height?: number;
 };
 
 export type APIPostDefaultMessageResult = APIDefaultMessage;

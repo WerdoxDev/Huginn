@@ -30,4 +30,6 @@ export enum WorkerID {
 	APP = 6,
 	IDENTITY_PROVIDER = 7,
 	TESTING = 8,
+	EMBED = 9,
+	THUMBNAIL = 10,
 }
