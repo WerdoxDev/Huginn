@@ -1,5 +1,5 @@
 import { sha256 } from "ohash";
-import type { GatewayOperationTypes, GatewayOperations } from "./gateway-types";
+import type { GatewayOperationTypes } from "./gateway-types";
 
 export function pick<Data extends object, Keys extends keyof Data>(data: Data, keys: Keys[]): Pick<Data, Keys> {
 	const result = {} as Pick<Data, Keys>;
@@ -199,4 +199,22 @@ export function arrayEqual(array1: unknown[], array2: unknown[]): boolean {
 	}
 
 	return true;
+}
+
+type NullToUndefined<T> = {
+	[K in keyof T]: T[K] extends object | null ? NullToUndefined<Exclude<T[K], null>> : null extends T[K] ? Exclude<T[K], null> | undefined : T[K];
+};
+
+export function nullToUndefined<T>(obj: T): NullToUndefined<T> {
+	if (Array.isArray(obj)) {
+		return obj.map(nullToUndefined) as NullToUndefined<T>;
+	}
+	if (obj && typeof obj === "object") {
+		return Object.fromEntries(
+			Object.entries(obj)
+				.filter(([_, value]) => value !== null) // Exclude `null` fields
+				.map(([key, value]) => [key, nullToUndefined(value)]), // Recursively process nested objects
+		) as NullToUndefined<T>;
+	}
+	return obj as NullToUndefined<T>;
 }
