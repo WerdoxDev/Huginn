@@ -11,13 +11,15 @@ export enum TokenTypeFlag {
 	LINK = 1 << 4,
 }
 
-type FinishedToken = {
+export type FinishedToken = {
 	type: TokenType[];
 	content: string;
 	start: number;
 	end: number;
 	mark?: string;
 };
+
+type Token = { index: number; text: string };
 
 const tokenTypes: Record<string, TokenTypeFlag> = {
 	threes: TokenTypeFlag.BOLD | TokenTypeFlag.ITALIC,
@@ -34,14 +36,14 @@ const cache = new Map<string, FinishedToken[]>();
 
 export function tokenize(text: string) {
 	if (cache.has(text)) {
-		return cache.get(text);
+		return cache.get(text) as FinishedToken[];
 	}
 
 	const tokens: FinishedToken[] = [];
 
 	let match: RegExpExecArray | null;
 	const pattern =
-		/(?<link>https?:\/\/(?:www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)|(?<threes>(\*\*\*))|(?<twos>(\*\*))|(?<ones>(\*))|(?<threeu>(\_\_\_))|(?<twou>(\_\_))|(?<oneu>(\_))|(?<twol>(\|\|))/g;
+		/(?<link>https?:\/\/[^\s/$.?#].[^\s]*)|(?<threes>(\*\*\*))|(?<twos>(\*\*))|(?<ones>(\*))|(?<threeu>(\_\_\_))|(?<twou>(\_\_))|(?<oneu>(\_))|(?<twol>(\|\|))/g;
 
 	const unfinishedTokens: { start?: Token; end?: Token; type: TokenTypeFlag }[] = [];
 	// biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
@@ -88,6 +90,36 @@ export function tokenize(text: string) {
 	return tokens;
 }
 
+export function mergeTokens(tokens: FinishedToken[]) {
+	tokens.sort((a, b) => a.start - b.start || b.end - a.end);
+
+	const mergedTokens: FinishedToken[] = [];
+	let currentToken: FinishedToken | undefined = undefined;
+	for (const token of tokens) {
+		if (!currentToken) {
+			currentToken = token;
+		} else if (token.start >= currentToken.start && token.end <= currentToken.end) {
+			const mergedToken: FinishedToken = {
+				content: currentToken.content.replaceAll(token.mark ?? "", ""),
+				start: currentToken.start,
+				end: currentToken.end,
+				type: [...currentToken.type, ...token.type],
+				mark: (currentToken.mark ?? "") + (token.mark ?? ""),
+			};
+			currentToken = mergedToken;
+		} else {
+			mergedTokens.push(currentToken);
+			currentToken = token;
+		}
+	}
+
+	if (currentToken) {
+		mergedTokens.push(currentToken);
+	}
+
+	return mergedTokens;
+}
+
 function getTokenTypeFromFlag(flag: TokenTypeFlag): TokenType[] {
 	const finalTokens: TokenType[] = [];
 
@@ -99,5 +131,3 @@ function getTokenTypeFromFlag(flag: TokenTypeFlag): TokenType[] {
 
 	return finalTokens;
 }
-
-type Token = { index: number; text: string };

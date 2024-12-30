@@ -1,21 +1,21 @@
 import type { MessageRendererProps } from "@/types";
-import { MessageType, arrayEqual } from "@huginn/shared";
-import { type BasePoint, Editor, Element, type Node, type Path, type Range, Text, createEditor } from "slate";
+import EmbedElement from "@components/editor/EmbedElement";
+import { MessageType } from "@huginn/shared";
+import { mergeTokens } from "@lib/huginn-tokenizer";
+import { type Descendant, type Editor, createEditor } from "slate";
 import { DefaultElement, type RenderElementProps, type RenderLeafProps, withReact } from "slate-react";
 
 const withHuginn = (editor: Editor) => {
-	const { isInline } = editor;
+	const { isInline, isVoid } = editor;
 
 	editor.isInline = (element) => (element.type === "spoiler" ? true : isInline(element));
+	editor.isVoid = (element) => (element.type === "embed" ? true : isVoid(element));
 
 	return editor;
 };
 
-type SpoilerLocation = { anchor: BasePoint; focus: BasePoint };
-
 function MessageRenderer(props: MessageRendererProps) {
 	const editor = useMemo(() => withReact(withHuginn(createEditor())), []);
-	const spoilerLocations = useRef<SpoilerLocation[]>([]);
 	const isInView = useIsInView(props.ref);
 
 	const renderLeaf = useCallback((props: RenderLeafProps) => {
@@ -23,6 +23,10 @@ function MessageRenderer(props: MessageRendererProps) {
 	}, []);
 
 	const renderElement = useCallback((props: RenderElementProps) => {
+		if (props.element.type === "embed") {
+			return <EmbedElement {...props} />;
+		}
+
 		if (props.element.type === "spoiler") {
 			return <SpoilerElement {...props} />;
 		}
@@ -30,101 +34,63 @@ function MessageRenderer(props: MessageRendererProps) {
 		return <DefaultElement {...props} />;
 	}, []);
 
-	const decorate = useCallback(([node, path]: [Node, Path]) => {
-		const ranges: Range[] = [];
+	const initialValue = useMemo(() => {
+		const nodes: Descendant[] = [];
 
-		if (!Text.isText(node)) {
-			return ranges;
-		}
-
-		const tokens = tokenize(node.text)?.sort((a, b) => a.start - b.start);
-		const offsets: { from: number; offset: number }[] = [];
-
-		for (const token of tokens ?? []) {
-			const offset = offsets
-				.filter((x) => x.from < token.start)
-				.map((x) => x.offset)
-				.reduce((a, b) => a + b, 0);
-
-			for (const tokenType of token.type) {
-				const location = { anchor: { path, offset: token.start - offset }, focus: { path, offset: token.end - offset + 1 } };
-				if (tokenType === "spoiler" && path.length === 2) {
-					if (!spoilerLocations.current.some((x) => arrayEqual(x.anchor.path, path) && x.anchor.offset === token.start)) {
-						spoilerLocations.current.push({ anchor: { path, offset: token.start }, focus: { path, offset: token.end + 1 } });
-						ranges.push({
-							...location,
-							text: token.content,
-						});
-						continue;
-					}
-				}
-				ranges.push({
-					[tokenType]: true,
-					...location,
-					text: token.content,
-				});
+		for (const line of props.renderInfo.message.content.split("\n")) {
+			const tokens = mergeTokens(tokenize(line));
+			if (tokens.length === 0) {
+				nodes.push({ type: "paragraph", children: [{ text: line }] });
+				continue;
 			}
 
-			offsets.push({ from: token.start, offset: token.mark?.length || 0 }, { from: token.end, offset: token.mark?.length || 0 });
-		}
+			const node: Descendant = { type: "paragraph", children: [] };
+			let lastTokenEnd = undefined;
 
-		return ranges;
-	}, []);
+			for (const token of tokens) {
+				if (token.start !== 0 || lastTokenEnd) {
+					node.children.push({ text: line.slice(lastTokenEnd, token.start) });
+				}
+				lastTokenEnd = token.end + 1;
 
-	useEffect(() => {
-		if (spoilerLocations.current.length === 0) return;
+				const types = token.type.reduce(
+					(acc, style) => {
+						acc[style] = true;
+						return acc;
+					},
+					{} as Record<string, boolean>,
+				);
 
-		// Remove last inserted spoilers
-		let iterator = editor.nodes({ at: { anchor: editor.start([]), focus: editor.end([]) } });
-		let result = iterator.next();
-		while (!result.done) {
-			if (Array.isArray(result.value)) {
-				const [node, path] = result.value;
-				if (Element.isElement(node) && node.type === "spoiler") {
-					editor.unwrapNodes({ at: { path, offset: 0 }, match: (n) => !Editor.isEditor(n) && Element.isElement(n) && n.type === "spoiler" });
-					iterator = editor.nodes({ at: { anchor: editor.start([]), focus: editor.end([]) } });
+				if (token.type.includes("spoiler")) {
+					node.children.push({ type: "spoiler", children: [{ text: token.content, ...types }] });
+				} else {
+					node.children.push({ text: token.content, ...types });
 				}
 			}
-			result = iterator.next();
-		}
 
-		//TODO: This can become a generic thing to use for later with more kinds of element replacing markdown
-		// Group each line of spoilers into an array resulting in an array of arrays
-		const groupedSpoilers = [...spoilerLocations.current].reduce(
-			(acc, item) => {
-				const key = String(item.anchor.path[0]);
-				if (!acc[key]) {
-					acc[key] = [];
-				}
-
-				acc[key].push(item);
-
-				return acc;
-			},
-			{} as { [key: string]: SpoilerLocation[] },
-		);
-
-		// Wrap and split nodes where ever a spoiler is seen
-		for (const lineIndex of Object.keys(groupedSpoilers)) {
-			let skipped = 0;
-			for (const [i, spoiler] of groupedSpoilers[lineIndex].entries()) {
-				const location: SpoilerLocation = {
-					anchor: { path: [Number(lineIndex), i * 2], offset: spoiler.anchor.offset - skipped },
-					focus: { path: [Number(lineIndex), i * 2], offset: spoiler.focus.offset - skipped },
-				};
-
-				editor.wrapNodes({ type: "spoiler", children: [{ text: "" }] }, { at: { ...location }, split: true });
-
-				for (let j = i === 0 ? 0 : i * 2; j < (i === 0 ? 2 : i * 2 + 2); j++) {
-					const node = editor.node({ path: [Number(lineIndex), j], offset: 0 })[0];
-					if (Text.isText(node)) {
-						skipped += node.text.length;
-					} else if (Element.isElement(node)) {
-						skipped += node.children[0].text.length;
-					}
-				}
+			if (lastTokenEnd !== line.length) {
+				node.children.push({ text: line.slice(lastTokenEnd) });
 			}
+			nodes.push(node);
 		}
+
+		console.log(props.renderInfo.message.preview);
+		if (props.renderInfo.message.preview) {
+			return nodes;
+		}
+
+		for (const embed of props.renderInfo.message.embeds) {
+			nodes.push({
+				type: "embed",
+				image: embed.thumbnail?.url,
+				url: embed.url,
+				description: embed.description,
+				title: embed.title,
+				children: [{ text: "" }],
+			});
+		}
+
+		return nodes;
 	}, []);
 
 	useEffect(() => {
@@ -136,7 +102,7 @@ function MessageRenderer(props: MessageRendererProps) {
 	return (
 		<li className="group shrink-0 select-text" ref={props.ref} id={props.renderInfo.message.id}>
 			{(props.renderInfo.message.preview || [MessageType.DEFAULT].includes(props.renderInfo.message.type)) && (
-				<DefaultMessage {...props} editor={editor} decorate={decorate} renderElement={renderElement} renderLeaf={renderLeaf} />
+				<DefaultMessage {...props} initialValue={initialValue} editor={editor} renderElement={renderElement} renderLeaf={renderLeaf} />
 			)}
 			{!props.renderInfo.message.preview &&
 				[
