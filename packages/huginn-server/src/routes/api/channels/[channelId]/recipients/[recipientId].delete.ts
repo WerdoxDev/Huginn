@@ -3,7 +3,7 @@ import { ChannelType, Errors, HttpCode, MessageFlags, MessageType, idFix, omit }
 import { defineEventHandler, sendNoContent, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { includeChannelRecipients, includeMessageAuthorAndMentions, omitMessageAuthorId } from "#database/common";
+import { includeChannelRecipients, includeMessageDefaultFields, omitMessageAuthorId } from "#database/common";
 import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { dispatchMessage } from "#utils/helpers";

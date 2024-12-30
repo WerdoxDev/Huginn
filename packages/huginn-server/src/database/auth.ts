@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import { DBErrorType, assertObj, prisma } from ".";
 import { selectPrivateUser } from "./common";
 
-const authExtention = Prisma.defineExtension({
+const authExtension = Prisma.defineExtension({
 	name: "auth",
 	model: {
 		user: {
@@ -45,4 +45,4 @@ const authExtention = Prisma.defineExtension({
 	},
 });
 
-export default authExtention;
+export default authExtension;

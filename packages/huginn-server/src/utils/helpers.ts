@@ -1,6 +1,6 @@
 import { type DirectChannel, type GatewayEvents, type MessageType, type Snowflake, idFix } from "@huginn/shared";
 import { prisma } from "#database";
-import { includeMessageAuthorAndMentions, omitMessageAuthorId } from "#database/common";
+import { includeMessageDefaultFields, omitMessageAuthorId } from "#database/common";
 import { dispatchToTopic } from "./gateway-utils";
 
 export async function dispatchMessage(
@@ -21,7 +21,7 @@ export async function dispatchMessage(
 			attachments,
 			mentions,
 			flags,
-			includeMessageAuthorAndMentions,
+			includeMessageDefaultFields,
 			omitMessageAuthorId,
 		),
 	);

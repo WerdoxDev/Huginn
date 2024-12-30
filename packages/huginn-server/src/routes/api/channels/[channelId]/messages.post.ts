@@ -1,12 +1,12 @@
 import { invalidFormBody, missingAccess, useValidatedBody, useValidatedParams } from "@huginn/backend-shared";
-import { type APIMessage, HttpCode, MessageType, idFix, omit } from "@huginn/shared";
+import { type APIEmbed, type APIMessage, HttpCode, MessageType, idFix, nullToUndefined } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { includeChannelRecipients, includeMessageAuthorAndMentions, omitMessageAuthorId } from "#database/common";
+import { includeChannelRecipients, includeMessageDefaultFields, omitMessageAuthorId } from "#database/common";
 import { router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { useVerifiedJwt } from "#utils/route-utils";
+import { extractEmbedTags, extractLinks, useVerifiedJwt } from "#utils/route-utils";
 
 const bodySchema = z.object({
 	content: z.optional(z.string()),
@@ -33,20 +33,38 @@ router.post(
 			return invalidFormBody(event);
 		}
 
-		const message: APIMessage = idFix(
+		const embeds: APIEmbed[] = [];
+		const links = extractLinks(body.content);
+		for (const link of links) {
+			const metadata = await extractEmbedTags(link);
+			if (Object.keys(metadata).length > 0) {
+				embeds.push({
+					title: metadata.title,
+					url: metadata.url,
+					description: metadata.description,
+					thumbnail: metadata.image ? { url: metadata.image } : undefined,
+				});
+			}
+		}
+		// links
+
+		const dbMessage = idFix(
 			await prisma.message.createDefaultMessage(
 				payload.id,
 				channelId,
 				MessageType.DEFAULT,
 				body.content,
 				body.attachments,
+				embeds.length === 0 ? undefined : embeds,
 				undefined,
 				body.flags,
-				includeMessageAuthorAndMentions,
+				includeMessageDefaultFields,
 				omitMessageAuthorId,
 			),
 		);
 
+		const message: APIMessage = { ...dbMessage, embeds: nullToUndefined(dbMessage.embeds) };
+		console.log(message);
 		message.nonce = body.nonce;
 
 		dispatchToTopic(channelId, "message_create", message);

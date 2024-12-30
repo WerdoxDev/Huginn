@@ -88,7 +88,11 @@ export const includeMessageMentions = Prisma.validator<Prisma.MessageInclude>()(
 	mentions: { select: selectPublicUser },
 });
 
-export const includeMessageAuthorAndMentions = merge(includeMessageAuthor, includeMessageMentions);
+export const includeMessageEmbeds = Prisma.validator<Prisma.MessageInclude>()({
+	embeds: { select: { description: true, title: true, type: true, url: true, thumbnail: { select: { height: true, url: true, width: true } } } },
+});
+
+export const includeMessageDefaultFields = merge(merge(includeMessageAuthor, includeMessageMentions), includeMessageEmbeds);
 
 export const includeRelationshipUser = Prisma.validator<Prisma.RelationshipInclude>()({
 	user: { select: selectPublicUser },

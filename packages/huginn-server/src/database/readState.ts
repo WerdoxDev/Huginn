@@ -4,7 +4,7 @@ import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import consola from "consola";
 import { DBErrorType, assertCondition, assertExists, assertId, assertObj, prisma } from "#database";
 
-const readStateExtention = Prisma.defineExtension({
+const readStateExtension = Prisma.defineExtension({
 	model: {
 		readState: {
 			async getByUserAndChannelId(userId: Snowflake, channelId: Snowflake) {
@@ -106,4 +106,4 @@ const readStateExtention = Prisma.defineExtension({
 	},
 });
 
-export default readStateExtention;
+export default readStateExtension;
