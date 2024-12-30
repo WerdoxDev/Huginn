@@ -3,7 +3,7 @@ import { CDNRoutes, Errors, HttpCode, MessageFlags, MessageType, getFileHash, id
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { excludeChannelRecipient, includeChannelRecipients, includeMessageAuthorAndMentions, omitMessageAuthorId } from "#database/common";
+import { excludeChannelRecipient, includeChannelRecipients, includeMessageDefaultFields, omitMessageAuthorId } from "#database/common";
 import { router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { channelWithoutRecipient, dispatchChannel, dispatchMessage } from "#utils/helpers";

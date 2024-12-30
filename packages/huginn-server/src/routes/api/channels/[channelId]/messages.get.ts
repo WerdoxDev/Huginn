@@ -1,9 +1,9 @@
 import { missingAccess, useValidatedParams, useValidatedQuery } from "@huginn/backend-shared";
-import { type APIGetChannelByIdResult, type APIGetChannelMessagesResult, HttpCode, idFix, omitArray } from "@huginn/shared";
+import { type APIGetChannelByIdResult, type APIGetChannelMessagesResult, HttpCode, idFix, nullToUndefined, omitArray } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { includeMessageAuthorAndMentions, omitMessageAuthorId } from "#database/common";
+import { includeMessageDefaultFields, omitMessageAuthorId } from "#database/common";
 import { router } from "#server";
 import { useVerifiedJwt } from "#utils/route-utils";
 
@@ -26,9 +26,9 @@ router.get(
 			return missingAccess(event);
 		}
 
-		const messages: APIGetChannelMessagesResult = idFix(
-			await prisma.message.getMessages(channelId, limit, before, after, includeMessageAuthorAndMentions, omitMessageAuthorId),
-		);
+		const dbMessages = idFix(await prisma.message.getMessages(channelId, limit, before, after, includeMessageDefaultFields, omitMessageAuthorId));
+
+		const messages: APIGetChannelMessagesResult = dbMessages.map((x) => ({ ...x, embeds: nullToUndefined(x.embeds) }));
 
 		setResponseStatus(event, HttpCode.OK);
 		return messages;

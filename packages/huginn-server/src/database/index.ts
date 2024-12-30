@@ -1,11 +1,12 @@
 import { Prisma, PrismaClient } from "@prisma/client";
-import assertExtention from "./assert";
-import authExtention from "./auth";
-import channelExtention from "./channel";
-import messagesExtention from "./message";
-import readStateExtention from "./readState";
-import relationshipExtention from "./relationship";
-import userExtention from "./user";
+import assertExtension from "./assert";
+import authExtension from "./auth";
+import channelExtension from "./channel";
+import embedExtension from "./embed";
+import messagesExtension from "./message";
+import readStateExtension from "./readState";
+import relationshipExtension from "./relationship";
+import userExtension from "./user";
 
 // export const prismaBase = new PrismaClient({ omit: { user: { password: true } } }).$extends({
 export const prismaBase = new PrismaClient();
@@ -24,13 +25,14 @@ export const prisma = prismaBase
 			},
 		},
 	})
-	.$extends(assertExtention)
-	.$extends(authExtention)
-	.$extends(userExtention)
-	.$extends(channelExtention)
-	.$extends(messagesExtention)
-	.$extends(relationshipExtention)
-	.$extends(readStateExtention);
+	.$extends(assertExtension)
+	.$extends(authExtension)
+	.$extends(userExtension)
+	.$extends(channelExtension)
+	.$extends(messagesExtension)
+	.$extends(relationshipExtension)
+	.$extends(readStateExtension)
+	.$extends(embedExtension);
 
 // let longest = 0;
 // prismaBase.$on("query", (e) => {

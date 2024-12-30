@@ -1,11 +1,11 @@
-import type { Snowflake } from "@huginn/shared";
+import type { APIEmbed, Snowflake } from "@huginn/shared";
 import { WorkerID, snowflake } from "@huginn/shared";
 import type { MessageType } from "@huginn/shared";
-import { Prisma } from "@prisma/client";
-import { DBErrorType, assertCondition, assertExists, assertId, assertObj, prisma } from ".";
+import { type Embed, Prisma } from "@prisma/client";
+import { DBErrorType, assertExists, assertId, assertObj, prisma } from ".";
 import type { MessageInclude, MessageOmit, MessagePayload } from "./common";
 
-const messagesExtention = Prisma.defineExtension({
+const messagesExtension = Prisma.defineExtension({
 	model: {
 		message: {
 			async getById<Include extends MessageInclude, Omit extends MessageOmit>(
@@ -65,12 +65,21 @@ const messagesExtention = Prisma.defineExtension({
 				type: MessageType,
 				content?: string,
 				attachments?: string[],
+				embeds?: APIEmbed[],
 				mentions?: Snowflake[],
 				flags?: number,
 				include?: Include,
 				omit?: Omit,
 			) {
 				try {
+					const createdEmbeds: Embed[] = [];
+
+					if (embeds) {
+						for (const embed of embeds) {
+							createdEmbeds.push(await prisma.embed.createEmbed(embed.title, embed.description, embed.url, embed.type, embed.thumbnail));
+						}
+					}
+
 					const message = await prisma.message.create({
 						data: {
 							id: snowflake.generate(WorkerID.MESSAGE),
@@ -81,6 +90,7 @@ const messagesExtention = Prisma.defineExtension({
 							mentions: { connect: mentions?.map((x) => ({ id: BigInt(x) })) },
 							authorId: BigInt(authorId),
 							timestamp: new Date(),
+							embeds: embeds ? { connect: createdEmbeds.map((x) => ({ id: x.id })) } : undefined,
 							editedTimestamp: null,
 							pinned: false,
 							reactions: [],
@@ -89,6 +99,8 @@ const messagesExtention = Prisma.defineExtension({
 						include: include,
 						...(omit && { omit: omit }),
 					});
+
+					console.log(message);
 
 					await prisma.channel.update({ where: { id: BigInt(channelId) }, data: { lastMessageId: message.id } });
 
@@ -104,4 +116,4 @@ const messagesExtention = Prisma.defineExtension({
 	},
 });
 
-export default messagesExtention;
+export default messagesExtension;

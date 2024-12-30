@@ -4,7 +4,7 @@ import { Prisma } from "@prisma/client";
 import { DBErrorType, assertCondition, assertId, assertObj, prisma } from ".";
 import type { UserInclude, UserPayload, UserSelect } from "./common";
 
-const userExtention = Prisma.defineExtension({
+const userExtension = Prisma.defineExtension({
 	model: {
 		user: {
 			async getById<Include extends UserInclude, Select extends UserSelect>(id: Snowflake, include?: Include, select?: Select) {
@@ -46,4 +46,4 @@ const userExtention = Prisma.defineExtension({
 	},
 });
 
-export default userExtention;
+export default userExtension;

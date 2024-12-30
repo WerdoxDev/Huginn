@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import { DBErrorType, assertCondition, assertExists, assertId, assertObj, prisma } from ".";
 import type { RelationshipInclude, RelationshipOmit, RelationshipPayload } from "./common";
 
-const relationshipExtention = Prisma.defineExtension({
+const relationshipExtension = Prisma.defineExtension({
 	model: {
 		relationship: {
 			async getByUserId<Include extends RelationshipInclude, Omit extends RelationshipOmit>(
@@ -131,4 +131,4 @@ const relationshipExtention = Prisma.defineExtension({
 	},
 });
 
-export default relationshipExtention;
+export default relationshipExtension;

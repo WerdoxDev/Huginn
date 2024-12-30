@@ -4,7 +4,7 @@ import { assertExists, prisma } from ".";
 import type { ChannelInclude, ChannelPayload, ChannelSelect } from "./common";
 import { DBErrorType, assertCondition, assertId, assertObj, isPrismaError } from "./error";
 
-const channelExtention = Prisma.defineExtension({
+const channelExtension = Prisma.defineExtension({
 	model: {
 		channel: {
 			async getById<Include extends ChannelInclude, Select extends ChannelSelect>(id: Snowflake, include?: Include, select?: Select) {
@@ -180,4 +180,4 @@ const channelExtention = Prisma.defineExtension({
 	},
 });
 
-export default channelExtention;
+export default channelExtension;
