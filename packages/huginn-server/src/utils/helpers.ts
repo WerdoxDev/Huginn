@@ -13,7 +13,7 @@ export async function dispatchMessage(
 	flags?: number,
 ) {
 	const message = idFix(
-		await prisma.message.createDefaultMessage(
+		await prisma.message.createMessage(
 			authorId,
 			channelId,
 			type,

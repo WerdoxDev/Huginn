@@ -59,7 +59,7 @@ const messagesExtension = Prisma.defineExtension({
 					throw e;
 				}
 			},
-			async createDefaultMessage<Include extends MessageInclude, MOmit extends MessageOmit>(
+			async createMessage<Include extends MessageInclude, MOmit extends MessageOmit>(
 				authorId: Snowflake,
 				channelId: Snowflake,
 				type: MessageType,
@@ -109,6 +109,42 @@ const messagesExtension = Prisma.defineExtension({
 				} catch (e) {
 					await assertExists(e, "createDefaultMessage", DBErrorType.NULL_CHANNEL, [channelId]);
 					await assertExists(e, "createDefaultMessage", DBErrorType.NULL_USER, [authorId]);
+					throw e;
+				}
+			},
+			async updateMessage<Include extends MessageInclude, Omit extends MessageOmit>(
+				id: Snowflake,
+				content?: string,
+				embeds?: DBEmbed[],
+				include?: Include,
+				omit?: Omit,
+			) {
+				try {
+					const createdEmbeds: Embed[] = [];
+
+					if (embeds) {
+						for (const embed of embeds) {
+							createdEmbeds.push(
+								await prisma.embed.createEmbed(embed.title, embed.description, embed.url, embed.timestamp, embed.type, embed.thumbnail),
+							);
+						}
+					}
+
+					const message = await prisma.message.update({
+						where: { id: BigInt(id) },
+						data: {
+							content: content,
+							embeds: embeds ? { set: createdEmbeds.map((x) => ({ id: x.id })) } : { set: [] },
+							editedTimestamp: new Date(),
+						},
+						include: include,
+						...(omit && { omit: omit }),
+					});
+
+					assertObj("updateMessage", message, DBErrorType.NULL_MESSAGE);
+					return message as MessagePayload<Include, Omit>;
+				} catch (e) {
+					await assertExists(e, "updateMessage", DBErrorType.NULL_MESSAGE, [id]);
 					throw e;
 				}
 			},

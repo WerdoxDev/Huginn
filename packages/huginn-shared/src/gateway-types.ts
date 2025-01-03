@@ -31,6 +31,7 @@ export type GatewayEvents = {
 	resumed: undefined;
 	message_create: GatewayMessageCreateData;
 	message_delete: GatewayMessageDeleteData;
+	message_update: GatewayMessageUpdateData;
 	message_ack: GatewayMessageAckData;
 	typying_start: GatewayTypingStartData;
 	relationship_add: GatewayRelationshipCreateData;
@@ -126,6 +127,7 @@ export type GatewayResumeData = {
 
 // export type GatewayResumedData = DataPayload<"resumed", undefined>;
 export type GatewayMessageCreateData = Omit<APIMessage, "mentions"> & GatewayMessageEventExtraFields;
+export type GatewayMessageUpdateData = Omit<APIMessage, "mentions"> & GatewayMessageEventExtraFields;
 export type GatewayMessageDeleteData = {
 	id: Snowflake;
 	channelId: Snowflake;
