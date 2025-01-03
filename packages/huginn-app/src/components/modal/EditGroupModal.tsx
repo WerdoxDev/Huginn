@@ -8,7 +8,7 @@ export default function EditGroupModal() {
 	const { listenEvent } = useEvent();
 	const { inputsProps, setValue, handleErrors, values, validateValues, resetStatuses } = useInputs([{ name: "name", required: false }]);
 
-	const { data: originalIcon } = useQuery(getChannelIcon(modal.channel?.id, modal.channel?.icon, client));
+	const { data: originalIcon } = useQuery(getChannelIconOptions(modal.channel?.id, modal.channel?.icon, client));
 	const mutation = usePatchDMChannel(handleErrors);
 
 	const placeholderName = useChannelName(modal.channel?.recipients, null);

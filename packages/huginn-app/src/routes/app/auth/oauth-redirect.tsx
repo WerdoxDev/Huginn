@@ -25,7 +25,7 @@ export default function Component() {
 
 	const [hidden, setHidden] = useState(false);
 	const [shouldRender, setShouldRender] = useState(false);
-	const { data: originalAvatar } = useQuery(getUserAvatar(decodedToken?.providerUserId, decodedToken?.avatarHash, client));
+	const { data: originalAvatar } = useQuery(getUserAvatarOptions(decodedToken?.providerUserId, decodedToken?.avatarHash, client));
 	const [avatarData, setAvatarData] = useState<string | null>(null);
 	const { message: usernameMessageDetail, onFocusChanged } = useUniqueUsernameMessage(values, resetInput, "username");
 

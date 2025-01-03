@@ -1,3 +1,4 @@
+import type { Snowflake } from "@huginn/shared";
 import type { BaseEditor, BaseRange, Descendant } from "slate";
 import type { ReactEditor } from "slate-react";
 
@@ -19,6 +20,8 @@ type EmbedElement = {
 	description?: string;
 	url?: string;
 	image?: string;
+	width?: number;
+	height?: number;
 	children: Descendant[];
 };
 

@@ -146,11 +146,6 @@ export default function DefaultMessage(
 					renderLeaf={props.renderLeaf}
 					widths={widths}
 				/>
-				{/* {!props.renderInfo.message.preview &&
-					props.renderInfo.message.embeds.length > 0 &&
-					props.renderInfo.message.embeds.map((x, i) => (
-						<EmbedElement image={x.thumbnail?.url} key={i} description={x.description} title={x.title} url={x.url} />
-					))} */}
 			</div>
 		</div>
 	);

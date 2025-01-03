@@ -74,7 +74,6 @@ function MessageRenderer(props: MessageRendererProps) {
 			nodes.push(node);
 		}
 
-		console.log(props.renderInfo.message.preview);
 		if (props.renderInfo.message.preview) {
 			return nodes;
 		}
@@ -87,6 +86,8 @@ function MessageRenderer(props: MessageRendererProps) {
 				description: embed.description,
 				title: embed.title,
 				children: [{ text: "" }],
+				height: embed.thumbnail?.height,
+				width: embed.thumbnail?.width,
 			});
 		}
 
