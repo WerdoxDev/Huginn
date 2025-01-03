@@ -19,6 +19,7 @@ export async function dispatchMessage(
 			type,
 			content,
 			attachments,
+			undefined,
 			mentions,
 			flags,
 			includeMessageDefaultFields,
@@ -26,7 +27,7 @@ export async function dispatchMessage(
 		),
 	);
 
-	dispatchToTopic(channelId, "message_create", message);
+	dispatchToTopic(channelId, "message_create", { ...message, embeds: [] });
 }
 
 export function channelWithoutRecipient(channel: DirectChannel, recipientId: Snowflake) {

@@ -33,7 +33,7 @@ model Channel {
    id                 BigInt      @id
    icon               String?
    lastMessageId      BigInt?
-   lastMessage        Message?    @relation("channel_last_message", fields: [lastMessageId], references: [id])
+   lastMessage        Message?    @relation("channel_last_message", fields: [lastMessageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
    name               String?
    owner              User?       @relation("channel_owner", fields: [ownerId], references: [id])
    ownerId            BigInt?
@@ -46,9 +46,9 @@ model Channel {
 
 model Message {
    id                  BigInt      @id
-   author              User        @relation(fields: [authorId], references: [id])
+   author              User        @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    authorId            BigInt
-   channel             Channel     @relation(fields: [channelId], references: [id])
+   channel             Channel     @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    channelId           BigInt
    content             String
    timestamp           DateTime
@@ -69,9 +69,9 @@ model Relationship {
    type     Int       @db.SmallInt
    nickname String
    since    DateTime?
-   owner    User      @relation("relation_owner", fields: [ownerId], references: [id], onDelete: Cascade)
+   owner    User      @relation("relation_owner", fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    ownerId  BigInt
-   user     User      @relation("relation_user", fields: [userId], references: [id], onDelete: Cascade)
+   user     User      @relation("relation_user", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    userId   BigInt
 }
 
@@ -86,11 +86,11 @@ model IdentityProvider {
 }
 
 model ReadState {
-   channel           Channel  @relation(fields: [channelId], references: [id])
+   channel           Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    channelId         BigInt
-   user              User     @relation(fields: [userId], references: [id])
+   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    userId            BigInt
-   lastReadMessage   Message? @relation(fields: [lastReadMessageId], references: [id])
+   lastReadMessage   Message? @relation(fields: [lastReadMessageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
    lastReadMessageId BigInt?
 
    @@id([channelId, userId])
@@ -102,16 +102,17 @@ model Embed {
    type        String?
    description String?
    url         String?
-   message     Message?   @relation(fields: [messageId], references: [id])
+   timestamp   DateTime?
+   message     Message?   @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    messageId   BigInt?
    thumbnail   Thumbnail?
 }
 
 model Thumbnail {
    id      BigInt @id
-   width   Int?
-   height  Int?
+   width   Int
+   height  Int
    url     String
-   embed   Embed  @relation(fields: [embedId], references: [id])
+   embed   Embed  @relation(fields: [embedId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    embedId BigInt @unique
 }

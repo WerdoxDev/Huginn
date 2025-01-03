@@ -154,7 +154,21 @@ export function expectMessageExactSchema(
 		].includes(type)
 	) {
 		expect(Object.keys(message).sort()).toStrictEqual(
-			["id", "type", "channelId", "author", "content", "createdAt", "editedAt", "attachments", "pinned", "mentions", "reactions", "flags"].sort(),
+			[
+				"id",
+				"type",
+				"channelId",
+				"author",
+				"content",
+				"timestamp",
+				"editedTimestamp",
+				"embeds",
+				"attachments",
+				"pinned",
+				"mentions",
+				"reactions",
+				"flags",
+			].sort(),
 		);
 
 		if (channelId) expect(castedMessage.channelId).toBe(channelId.toString());

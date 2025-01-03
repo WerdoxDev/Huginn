@@ -1,8 +1,6 @@
 import type { ErrorFactory } from "@huginn/backend-shared/src/error-factory";
-import { constants } from "@huginn/shared";
+import { constants, type APIEmbed } from "@huginn/shared";
 import { Fields } from "@huginn/shared";
-import { anyOf, char, charIn, charNotIn, createRegExp, digit, exactly, letter, not, oneOrMore } from "magic-regexp";
-import { convert } from "magic-regexp/converter";
 import { prisma } from "#database";
 
 export function validateEmail(email: string | undefined, errorObject: ErrorFactory) {
@@ -101,4 +99,19 @@ export async function validateChannelName(channelName: string | undefined | null
 	}
 
 	return false;
+}
+
+export function validateEmbeds(embeds: APIEmbed[], errorObject: ErrorFactory) {
+	for (const [i, embed] of embeds.entries()) {
+		if (!embed.title && !embed.description && !embed.thumbnail) {
+			errorObject.addError(`embeds.${i}.title`, Fields.softRequired());
+			errorObject.addError(`embeds.${i}.description`, Fields.softRequired());
+			errorObject.addError(`embeds.${i}.thumbnail`, Fields.softRequired());
+			return false;
+		}
+		if (embed.url && !embed.title) {
+			errorObject.addError(`embeds.${i}.title`, Fields.required());
+			return false;
+		}
+	}
 }

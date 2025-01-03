@@ -13,6 +13,7 @@ import {
 	createApp,
 	createRouter,
 	defineEventHandler,
+	eventHandler,
 	getResponseStatus,
 	handleCors,
 	readBody,
@@ -81,7 +82,7 @@ export async function startServer(options?: { serve: boolean; defineOptions: boo
 				}
 			: undefined,
 		onAfterResponse: options?.defineOptions
-			? (event, response) => {
+			? async (event, response) => {
 					if (event.method === "OPTIONS") {
 						return;
 					}
@@ -94,6 +95,8 @@ export async function startServer(options?: { serve: boolean; defineOptions: boo
 					} else {
 						logReject(event.path, event.method, id, response?.body as HuginnErrorData, status);
 					}
+
+					await Promise.all(event.context.waitUntilPromises?.map((x) => x()) ?? []);
 				}
 			: undefined,
 		onRequest: options?.defineOptions
@@ -107,6 +110,17 @@ export async function startServer(options?: { serve: boolean; defineOptions: boo
 				}
 			: undefined,
 	});
+
+	app.use(
+		eventHandler((event) => {
+			event.waitUntil = (promise) => {
+				if (!event.context.waitUntilPromises) {
+					event.context.waitUntilPromises = [];
+				}
+				event.context.waitUntilPromises.push(promise);
+			};
+		}),
+	);
 
 	mainRouter = createRouter();
 	router = createRouter();

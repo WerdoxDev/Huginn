@@ -6,7 +6,6 @@ import { authHeader, createTestChannel, createTestUsers, testHandler } from "#te
 describe("POST /api/channels/:channelId/messages", () => {
 	test("should return 'Invalid Form Body' when id is invalid or body constrains are not met", async () => {
 		const [user, user2] = await createTestUsers(2);
-
 		const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
 
 		const result = testHandler("/api/channels/invalid/messages", authHeader(user.accessToken), "POST", { content: "test" });
@@ -17,6 +16,23 @@ describe("POST /api/channels/:channelId/messages", () => {
 
 		const result3 = testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", { content: "" });
 		expect(result3).rejects.toThrow("Invalid Form Body"); // Invalid content
+	});
+
+	test("should return 'Invalid Form Body' when embed constrains are not met", async () => {
+		const [user, user2] = await createTestUsers(2);
+		const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
+
+		// Url requires title
+		const result = testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", {
+			embeds: [{ url: "" }],
+		});
+		expect(result).rejects.toThrow("Invalid Form Body");
+
+		// Timestamp requires either title or description or thumbnail
+		const result2 = testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", {
+			embeds: [{ timestamp: new Date().toISOString() }],
+		});
+		expect(result2).rejects.toThrow("Invalid Form Body");
 	});
 
 	test("should return 'Unauthorized' when no token is passed or user is not part of the channel", async () => {
