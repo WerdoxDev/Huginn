@@ -1,13 +1,14 @@
-import { type APIThumbnail, type Snowflake, WorkerID, snowflake } from "@huginn/shared";
+import { WorkerID, snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 import { prisma } from "#database";
+import type { DBThumbnail } from "#utils/types";
 
 const embedExtension = Prisma.defineExtension({
 	model: {
 		embed: {
-			async createEmbed(title?: string, description?: string, url?: string, type?: string, thumbnail?: APIThumbnail) {
+			async createEmbed(title?: string, description?: string, url?: string, timestamp?: string, type?: string, thumbnail?: DBThumbnail) {
 				const embed = await prisma.embed.create({
-					data: { id: snowflake.generate(WorkerID.EMBED), title, description, url, type },
+					data: { id: snowflake.generate(WorkerID.EMBED), title, description, url, type, timestamp },
 				});
 				if (thumbnail) {
 					await prisma.thumbnail.create({

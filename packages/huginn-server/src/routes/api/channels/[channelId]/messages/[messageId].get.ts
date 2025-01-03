@@ -1,9 +1,9 @@
 import { missingAccess, unauthorized, useValidatedParams } from "@huginn/backend-shared";
-import { type APIGetMessageByIdResult, HttpCode, idFix, merge, omit } from "@huginn/shared";
+import { type APIGetMessageByIdResult, HttpCode, idFix, merge, nullToUndefined, omit } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { includeMessageAuthor, includeMessageMentions, omitMessageAuthorId } from "#database/common";
+import { includeMessageAuthor, includeMessageDefaultFields, includeMessageMentions, omitMessageAuthorId } from "#database/common";
 import { router } from "#server";
 import { useVerifiedJwt } from "#utils/route-utils";
 
@@ -19,9 +19,8 @@ router.get(
 			return missingAccess(event);
 		}
 
-		const message: APIGetMessageByIdResult = idFix(
-			await prisma.message.getById(channelId, messageId, merge(includeMessageAuthor, includeMessageMentions), omitMessageAuthorId),
-		);
+		const dbMessage = idFix(await prisma.message.getById(channelId, messageId, includeMessageDefaultFields, omitMessageAuthorId));
+		const message: APIGetMessageByIdResult = { ...dbMessage, embeds: nullToUndefined(dbMessage.embeds) };
 
 		setResponseStatus(event, HttpCode.OK);
 		return message;

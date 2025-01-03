@@ -1,5 +1,5 @@
 import { type ErrorFactory, createErrorFactory, unauthorized } from "@huginn/backend-shared";
-import { Errors, HttpCode, type IdentityTokenPayload, type TokenPayload, type Unpacked, idFix } from "@huginn/shared";
+import { Errors, HttpCode, type IdentityTokenPayload, type TokenPayload, type Unpacked } from "@huginn/shared";
 import type { Endpoints } from "@octokit/types";
 import { type H3Event, getHeader, setResponseStatus } from "h3";
 import { JSDOM } from "jsdom";

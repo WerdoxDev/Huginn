@@ -1,25 +1,55 @@
-import type { HuginnErrorData, HuginnErrorGroupWrapper, JsonCode } from "@huginn/shared";
+import type { HuginnError, HuginnErrorData, HuginnErrorFieldInformation, HuginnErrorGroupWrapper, JsonCode } from "@huginn/shared";
 
 export class ErrorFactory {
 	public message: string;
 	public code: JsonCode;
-	public errors: Record<string, HuginnErrorGroupWrapper> = {};
+	public errors: HuginnError = {};
 
 	public constructor(message: string, code: JsonCode) {
 		this.message = message;
 		this.code = code;
 	}
 
-	public errorRaw(name: string, message: string, code: string): this {
-		if (!this.errors[name]) {
-			this.errors[name] = { _errors: [] };
-		}
-		this.errors[name]._errors.push({ code, message });
+	public addError(path: string, field: [string, string]): this {
+		this.setValueByPath(this.errors, path, { code: field[1], message: field[0] });
 		return this;
 	}
 
-	public addError(name: string, field: [string, string]): this {
-		return this.errorRaw(name, field[0], field[1]);
+	getValueByPath(obj: HuginnError, path: string): HuginnError | undefined {
+		const paths = path.split(".");
+		let current = obj;
+
+		for (let i = 0; i < paths.length; ++i) {
+			if (current[paths[i]] === undefined) {
+				return undefined;
+			}
+			current = current[paths[i]] as HuginnError;
+		}
+
+		return current;
+	}
+
+	setValueByPath(obj: HuginnError, path: string, value: HuginnErrorFieldInformation): HuginnError {
+		const [current, ...rest] = path.split(".");
+
+		if (rest.length > 0) {
+			if (!obj[current]) {
+				obj[current] = {};
+			}
+			if (typeof obj[current] !== "object") {
+				obj[current] = this.setValueByPath({}, rest.join("."), value);
+			} else {
+				obj[current] = this.setValueByPath(obj[current] as HuginnError, rest.join("."), value);
+			}
+		} else {
+			if (!obj[current]?._errors) {
+				obj[current] = { _errors: [] };
+			}
+
+			(obj[current]._errors as HuginnErrorFieldInformation[]).push(value);
+		}
+
+		return obj;
 	}
 
 	public toObject(): HuginnErrorData {
