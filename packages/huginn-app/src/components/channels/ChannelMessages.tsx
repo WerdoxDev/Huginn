@@ -158,8 +158,18 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			}
 		});
 
+		const unlisten2 = listenEvent("message_updated", (d) => {
+			if (!scroll.current || !d.inVisibleQueryPage) return;
+			const scrollOffset = scroll.current.scrollHeight - scroll.current.clientHeight - scroll.current.scrollTop;
+
+			if (scrollOffset <= 50) {
+				shouldScrollOnNextRender.current = true;
+			}
+		});
+
 		return () => {
 			unlisten();
+			unlisten2();
 		};
 	}, [props.channelId]);
 
@@ -214,7 +224,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 				{sortedMessages.map((message, i) => (
 					<MessageWrapper
 						ref={setRef(message.id)}
-						key={message.id}
+						key={message.preview ? message.timestamp : ((message.editedTimestamp as string) ?? message.timestamp)}
 						message={message}
 						renderInfo={messageRenderInfos[i]}
 						nextRenderInfo={messageRenderInfos[i + 1]}

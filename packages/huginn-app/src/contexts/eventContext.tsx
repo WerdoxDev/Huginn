@@ -1,9 +1,10 @@
 import type { AppChannelMessage } from "@/types";
-import type { APIUser, GatewayMessageCreateData } from "@huginn/shared";
+import type { APIUser } from "@huginn/shared";
 import { type ReactNode, createContext } from "react";
 
 type EventTypes = {
 	message_added: { message: AppChannelMessage; inLoadedQueryPage: boolean; inVisibleQueryPage: boolean; visible: boolean; self: boolean };
+	message_updated: { message: AppChannelMessage; inLoadedQueryPage: boolean; inVisibleQueryPage: boolean; visible: boolean; self: boolean };
 	user_updated: APIUser;
 	image_cropper_done: { croppedImageData: string };
 	open_url: string[];
