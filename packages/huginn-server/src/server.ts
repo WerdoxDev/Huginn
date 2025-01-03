@@ -96,7 +96,7 @@ export async function startServer(options?: { serve: boolean; defineOptions: boo
 						logReject(event.path, event.method, id, response?.body as HuginnErrorData, status);
 					}
 
-					await Promise.all(event.context.waitUntilPromises?.map((x) => x()) ?? []);
+					Promise.all(event.context.waitUntilPromises?.map((x) => x()) ?? []);
 				}
 			: undefined,
 		onRequest: options?.defineOptions

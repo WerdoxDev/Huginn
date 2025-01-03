@@ -1,8 +1,10 @@
 import { type ErrorFactory, createErrorFactory, unauthorized } from "@huginn/backend-shared";
 import { Errors, HttpCode, type IdentityTokenPayload, type TokenPayload, type Unpacked } from "@huginn/shared";
 import type { Endpoints } from "@octokit/types";
+import { Consola } from "consola";
 import { type H3Event, getHeader, setResponseStatus } from "h3";
 import { JSDOM } from "jsdom";
+import probe, { type ProbeResult } from "probe-image-size";
 import * as semver from "semver";
 import { type DBError, DBErrorType, prisma } from "#database";
 import { octokit } from "#server";
@@ -138,13 +140,27 @@ export async function extractEmbedTags(url: string): Promise<Record<string, stri
 				metadata.title = title.text;
 			}
 		}
+
 		if (!metadata.url) {
 			metadata.url = url;
+		}
+
+		if (metadata.image && !metadata.image.startsWith("http")) {
+			metadata.image = new URL(metadata.image, url).toString();
 		}
 
 		return metadata;
 	} catch (error) {
 		console.error("Error fetching embed info:", error);
 		return {};
+	}
+}
+
+export async function getImageData(url: string): Promise<ProbeResult | undefined> {
+	try {
+		return await probe(url);
+	} catch (e) {
+		console.error("Error fetching image data:", e);
+		return undefined;
 	}
 }
