@@ -10,7 +10,7 @@ export type HuginnErrorGroupWrapper = {
 	_errors: HuginnErrorFieldInformation[];
 };
 
-export type HuginnError = Record<string, HuginnErrorGroupWrapper>;
+export type HuginnError = { [k: string]: HuginnErrorGroupWrapper | HuginnError };
 
 export type HuginnErrorData = {
 	code: number;
@@ -85,6 +85,7 @@ export enum GatewayCode {
 
 export enum FieldCode {
 	REQUIRED = "REQUIRED",
+	SOFT_REQUIRED = "SOFT_REQUIRED",
 	INVALID_LOGIN = "INVALID_LOGIN",
 	WRONG_LENGHTH = "INCORRECT_LENGTH",
 	USERNAME_TAKEN = "USERNAME_TAKEN",
@@ -102,6 +103,9 @@ export enum OAuthCode {
 export const Fields = {
 	required(): [string, string] {
 		return ["This field is required", FieldCode.REQUIRED];
+	},
+	softRequired(): [string, string] {
+		return ["This field or one of the other fields is required", FieldCode.SOFT_REQUIRED];
 	},
 	invalidLogin(): [string, string] {
 		return ["Login or password is invalid", FieldCode.INVALID_LOGIN];

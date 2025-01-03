@@ -245,6 +245,7 @@ export type APIEmbed = {
 	type?: string;
 	description?: string;
 	url?: string;
+	timestamp?: string;
 	thumbnail?: APIThumbnail;
 };
 
