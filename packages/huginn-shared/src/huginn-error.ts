@@ -1,4 +1,11 @@
-import { type HuginnError, type HuginnErrorData, type HuginnErrorGroupWrapper, type RequestBody, isErrorResponse } from "./errors";
+import {
+	type HuginnError,
+	type HuginnErrorData,
+	type HuginnErrorGroupWrapper,
+	type RequestBody,
+	isErrorGroupWrapper,
+	isErrorResponse,
+} from "./errors";
 import type { InternalRequest } from "./rest-types";
 
 export class HuginnAPIError extends Error {
@@ -58,10 +65,10 @@ export class HuginnAPIError extends Error {
 				yield val;
 			}
 			// TODO: IF YOU EVER RUN INTO ERROR PROBLEMS LATER, MAYBE CHECK THIS
-			//  else if (isErrorGroupWrapper(val)) {
-			//    for (const error of val._errors) {
-			//       yield* this.flattenHuginnError(error, nextKey);
-			//    }
+			// else if (isErrorGroupWrapper(val)) {
+			// 	for (const error of val._errors) {
+			// 		yield* HuginnAPIError.flattenHuginnError(error, nextKey);
+			// 	}
 			// }
 			else {
 				yield* HuginnAPIError.flattenHuginnError(val, nextKey);
