@@ -4,7 +4,7 @@ import clsx from "clsx";
 import type { RenderElementProps } from "slate-react";
 
 export default function EmbedElement(props: RenderElementProps) {
-	const { image, url, description, title } = props.element as SlateEmbedElement;
+	const { image, url, description, title, width, height } = props.element as SlateEmbedElement;
 
 	return (
 		<div {...props.attributes} contentEditable={false} className="w-full">
@@ -15,26 +15,12 @@ export default function EmbedElement(props: RenderElementProps) {
 					</span>
 				)}
 				{description && <span className="mb-2 text-sm">{description}</span>}
-				{image && <img src={image} alt="huginn" className="max-w-sm rounded-md" />}
+				{image && (
+					<div className="w-full max-w-sm" style={{ aspectRatio: `${width ?? 16}/${height ?? 9}` }}>
+						<img src={image} alt="huginn" className="w-full rounded-md" />
+					</div>
+				)}
 			</div>
 		</div>
 	);
 }
-
-// export default function EmbedElement(props: { title?: string; description?: string; url?: string; image?: string }) {
-// 	const { image, url, description, title } = props;
-
-// 	return (
-// 		<div className="max-w-md">
-// 			<div className="mt-2 flex flex-col rounded-xl bg-primary/70 p-2">
-// 				{title && (
-// 					<span className={clsx(url && "cursor-pointer text-white underline", "mb-1")} onClick={url ? () => open(url) : undefined}>
-// 						{title}
-// 					</span>
-// 				)}
-// 				{description && <span className="mb-2 text-sm">{description}</span>}
-// 				{image && <img src={image} alt="huginn" className="w=full rounded-lg" />}
-// 			</div>
-// 		</div>
-// 	);
-// }

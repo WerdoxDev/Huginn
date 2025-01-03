@@ -1,5 +1,5 @@
 import type { InputStatus, InputStatuses, InputValue, InputValues } from "@/types";
-import { HuginnAPIError, type HuginnError, type HuginnErrorData } from "@huginn/shared";
+import { HuginnAPIError, type HuginnError, type HuginnErrorData, type HuginnErrorGroupWrapper } from "@huginn/shared";
 import type { JSXElementConstructor, ReactNode } from "react";
 import { Children, isValidElement } from "react";
 
@@ -33,7 +33,7 @@ export function getInputsStatusesFromError(statuses: InputStatuses, error: Hugin
 		} else if (((field && key === field) ?? !field) && error.errors[key]) {
 			newStatuses[key] = {
 				code: "error",
-				text: error.errors[key]._errors[0].message,
+				text: (error.errors[key] as HuginnErrorGroupWrapper)._errors[0].message,
 			};
 		} else {
 			newStatuses[key] = { code: "none", text: "" };

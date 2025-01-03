@@ -22,7 +22,7 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
 		queryFn: async ({ pageParam }) => {
 			const messages = await client.channels.getMessages(
 				channelId,
-				50,
+				20,
 				pageParam.before.toString() || undefined,
 				pageParam.after.toString() || undefined,
 			);
@@ -30,7 +30,7 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
 		},
 		getPreviousPageParam(first) {
 			const earliestMessage = first[0];
-			return earliestMessage && first.length >= 50 ? { before: earliestMessage.id, after: "" } : undefined;
+			return earliestMessage && first.length >= 20 ? { before: earliestMessage.id, after: "" } : undefined;
 		},
 		getNextPageParam(last) {
 			const channels: APIGetUserChannelsResult | undefined = queryClient.getQueryData(["channels", "@me"]);
@@ -56,7 +56,7 @@ export function getRelationshipsOptions(client: HuginnClient) {
 	});
 }
 
-export function getUserAvatar(userId: Snowflake | undefined, avatarHash: string | null | undefined, client: HuginnClient) {
+export function getUserAvatarOptions(userId: Snowflake | undefined, avatarHash: string | null | undefined, client: HuginnClient) {
 	return queryOptions({
 		queryKey: ["avatar", userId, avatarHash],
 		async queryFn() {
@@ -70,7 +70,7 @@ export function getUserAvatar(userId: Snowflake | undefined, avatarHash: string 
 	});
 }
 
-export function getChannelIcon(channelId: Snowflake | undefined, iconHash: string | null | undefined, client: HuginnClient) {
+export function getChannelIconOptions(channelId: Snowflake | undefined, iconHash: string | null | undefined, client: HuginnClient) {
 	return queryOptions({
 		queryKey: ["channel-icon", channelId, iconHash],
 		async queryFn() {

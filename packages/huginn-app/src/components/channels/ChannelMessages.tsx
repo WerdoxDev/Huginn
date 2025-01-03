@@ -1,6 +1,6 @@
 import type { AppChannelMessage, MessageRenderInfo, MessageRendererProps } from "@/types";
 import { MessageType, type Snowflake, snowflake } from "@huginn/shared";
-import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import { useQueries, useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import moment from "moment";
 
@@ -43,6 +43,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	const shouldScrollOnNextRender = useRef(false);
 	const lastChannelId = useRef<Snowflake>(undefined);
 	const lastScrollTop = useRef<number>(undefined);
+	const lastDistanceToBottom = useRef<number>(undefined);
 	const lastSeenElement = useRef<{ messageId: Snowflake; height: number; distanceToTop: number }>(null);
 	const lastDirection = useRef<"up" | "down" | "none">("none");
 
@@ -56,18 +57,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			lastDirection.current = "up";
 			await fetchPreviousPage();
 
-			// A little trick to preserve the distance between scroll rect top and selected element
-			const savedScrollTop = scroll.current.scrollTop;
-			scroll.current.scrollTop = 0;
-
-			const messageElement = getFirstChildClosestToTop(scroll.current) as HTMLLIElement;
-			if (!messageElement) return;
-
-			lastSeenElement.current = {
-				messageId: messageElement.id,
-				height: messageElement.clientHeight,
-				distanceToTop: savedScrollTop,
-			};
+			saveLastSeenMessage();
 		}
 		// Scrolling down
 		else if (
@@ -102,7 +92,38 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			return;
 		}
 
-		scroll.current.scrollTop = scroll.current.scrollHeight - scroll.current.clientHeight;
+		scroll.current.scrollTo(0, scroll.current.scrollHeight);
+		// scroll.current.scrollTop = scroll.current.scrollHeight - scroll.current.clientHeight;
+	}
+
+	function saveLastSeenMessage() {
+		if (!scroll.current) return;
+
+		// A little trick to preserve the distance between scroll rect top and selected element
+		const savedScrollTop = scroll.current.scrollTop;
+		scroll.current.scrollTop = 0;
+
+		const messageElement = getFirstChildClosestToTop(scroll.current) as HTMLLIElement;
+		if (!messageElement) return;
+
+		lastSeenElement.current = {
+			messageId: messageElement.id,
+			height: messageElement.clientHeight,
+			distanceToTop: savedScrollTop,
+		};
+	}
+
+	function scrollToLastSeenMessage() {
+		if (!lastSeenElement.current || !scroll.current) return;
+
+		const foundMessageElement = [...scroll.current.children].find((x) => x.id === lastSeenElement.current?.messageId) as HTMLLIElement;
+		const elementRect = foundMessageElement.getBoundingClientRect();
+		const scrollRect = scroll.current.getBoundingClientRect();
+
+		const offset = elementRect.top - scrollRect.top;
+		const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
+
+		scroll.current.scrollTop = offset + lastSeenElement.current.distanceToTop + heightDifference;
 	}
 
 	// Calculating scrolltop position after an upward fetch
@@ -111,19 +132,19 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			return;
 		}
 
-		const messageElement = [...scroll.current.children].find((x) => x.id === lastSeenElement.current?.messageId) as HTMLLIElement;
-		const elementRect = messageElement.getBoundingClientRect();
-		const scrollRect = scroll.current.getBoundingClientRect();
-
-		const offset = elementRect.top - scrollRect.top;
-		const heightDifference = messageElement.clientHeight - lastSeenElement.current.height;
-
-		scroll.current.scrollTop = offset + lastSeenElement.current.distanceToTop + heightDifference;
+		scrollToLastSeenMessage();
 	}, [data]);
 
 	useEffect(() => {
+		// clearLoadedImages();
+		lastDistanceToBottom.current = undefined;
 		saveScroll(lastChannelId.current ?? props.channelId, lastScrollTop.current ?? 0);
 		lastDirection.current = "none";
+
+		return () => {
+			saveScroll(lastChannelId.current ?? props.channelId, lastScrollTop.current ?? 0);
+			// clearLoadedImages();
+		};
 	}, [props.channelId]);
 
 	// Listening for new messages
@@ -189,6 +210,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 						</div>
 					</div>
 				)}
+
 				{sortedMessages.map((message, i) => (
 					<MessageWrapper
 						ref={setRef(message.id)}

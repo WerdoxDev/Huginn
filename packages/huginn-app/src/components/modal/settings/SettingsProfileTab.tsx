@@ -1,7 +1,7 @@
 import type { SettingsTabProps } from "@/types";
 import { Transition } from "@headlessui/react";
 import { omit } from "@huginn/shared";
-import { getUserAvatar } from "@lib/queries";
+import { getUserAvatarOptions } from "@lib/queries";
 import { useQuery } from "@tanstack/react-query";
 
 export default function SettingsProfileTab(_props: SettingsTabProps) {
@@ -17,7 +17,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 		{ name: "newPassword", required: false },
 	]);
 
-	const { data: originalAvatar } = useQuery(getUserAvatar(user?.id, user?.avatar, client));
+	const { data: originalAvatar } = useQuery(getUserAvatarOptions(user?.id, user?.avatar, client));
 	const [avatarData, setAvatarData] = useState<string | null | undefined>(() => originalAvatar);
 
 	const { message: usernameMessageDetail, onFocusChanged, onChanged } = useUniqueUsernameMessage(values, resetInput, "username");

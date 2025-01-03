@@ -9,7 +9,7 @@ export default function ChannelIcon(props: {
 	className?: string;
 }) {
 	const client = useClient();
-	const { data: icon, isLoading } = useQuery(getChannelIcon(props.channelId, props.iconHash, client));
+	const { data: icon, isLoading } = useQuery(getChannelIconOptions(props.channelId, props.iconHash, client));
 
 	const [hasErrors, setHasErrors] = useState(false);
 

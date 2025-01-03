@@ -11,7 +11,7 @@ export default function UserAvatar(props: {
 	hideStatus?: boolean;
 }) {
 	const client = useClient();
-	const { data: avatar, isLoading } = useQuery(getUserAvatar(props.userId, props.avatarHash, client));
+	const { data: avatar, isLoading } = useQuery(getUserAvatarOptions(props.userId, props.avatarHash, client));
 
 	const presence = usePresence(props.userId);
 	const [hasErrors, setHasErrors] = useState(false);
