@@ -1,6 +1,6 @@
 import type { AppChannelMessage, MessageRenderInfo, MessageRendererProps } from "@/types";
 import { MessageType, type Snowflake, snowflake } from "@huginn/shared";
-import { useQueries, useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import moment from "moment";
 
@@ -24,7 +24,6 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	const { data, fetchNextPage, fetchPreviousPage, isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
 		useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client, props.channelId));
 
-	// const { savedScrolls, saveScroll } = useChannelsInfo();
 	const { savedScrolls, saveScroll } = useChannelStore();
 
 	const { onMessageVisiblityChanged } = useVisibleMessages(props.channelId, sortedMessages);
