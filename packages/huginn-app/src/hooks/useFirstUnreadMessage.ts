@@ -28,7 +28,7 @@ export function useFirstUnreadMessage(channelId: Snowflake, sortedMessages: AppC
 	useEffect(() => {
 		const unlisten = listenEvent("message_added", (d) => {
 			// if the message is not from the user and (the message is not visible or we already read the last message), set the first unread message id
-			if (!d.self && d.inLoadedQueryPage && (d.visible || readState?.unreadCount === 0)) {
+			if (!d.self && d.inLoadedQueryPage && (d.visible || readState?.unreadCount === 0) && !firstUnreadMessageId) {
 				setFirstUnreadMessageId(d.message.id);
 			} else if (d.self && d.inLoadedQueryPage && d.visible) {
 				setFirstUnreadMessageId(undefined);

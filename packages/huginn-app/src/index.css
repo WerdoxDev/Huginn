@@ -76,7 +76,7 @@ body,
 }
 
 ::-webkit-scrollbar-thumb {
-	@apply shadow-secondary rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)];
+	@apply shadow-secondary rounded-full [border:solid_8px_transparent] [box-shadow:_inset_0_0_10px_10px_var(--tw-shadow-color)] min-h-20;
 }
 
 .scroll-alternative::-webkit-scrollbar-track {

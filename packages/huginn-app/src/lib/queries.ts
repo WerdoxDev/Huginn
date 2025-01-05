@@ -22,7 +22,7 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
 		queryFn: async ({ pageParam }) => {
 			const messages = await client.channels.getMessages(
 				channelId,
-				20,
+				50,
 				pageParam.before.toString() || undefined,
 				pageParam.after.toString() || undefined,
 			);
@@ -30,7 +30,7 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
 		},
 		getPreviousPageParam(first) {
 			const earliestMessage = first[0];
-			return earliestMessage && first.length >= 20 ? { before: earliestMessage.id, after: "" } : undefined;
+			return earliestMessage && first.length >= 50 ? { before: earliestMessage.id, after: "" } : undefined;
 		},
 		getNextPageParam(last) {
 			const channels: APIGetUserChannelsResult | undefined = queryClient.getQueryData(["channels", "@me"]);
