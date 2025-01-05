@@ -14,6 +14,7 @@ import {
 	createApp,
 	createRouter,
 	defineEventHandler,
+	eventHandler,
 	getHeader,
 	getResponseStatus,
 	handleCors,
@@ -100,6 +101,17 @@ router.use(
 		}
 
 		return result;
+	}),
+);
+
+app.use(
+	eventHandler((event) => {
+		event.waitUntil = (promise) => {
+			if (!event.context.waitUntilPromises) {
+				event.context.waitUntilPromises = [];
+			}
+			event.context.waitUntilPromises.push(promise);
+		};
 	}),
 );
 
