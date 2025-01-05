@@ -48,9 +48,9 @@ export default function DefaultMessage(
 	return isCompact ? (
 		<div
 			className={clsx(
-				"ml-2 flex flex-col items-start gap-y-2 p-2 hover:bg-secondary hover:shadow-md",
-				(isSeparate || isLastExotic) && "rounded-t-lg",
-				isNextSeparate && "rounded-b-lg",
+				"group flex flex-col items-start gap-y-2 p-2 pl-4 hover:bg-secondary",
+				(isSeparate || isLastExotic) && "rounded-tr-lg",
+				isNextSeparate && "rounded-br-lg",
 				!isSeparate && !isLastExotic && "py-0",
 				!isSeparate && !isLastExotic && !isUnread && "mt-0",
 				!isNextSeparate && "pb-0",
@@ -81,7 +81,7 @@ export default function DefaultMessage(
 						/>
 					</div>
 				)}
-				<div className={clsx("overflow-hidden font-light text-white", !isSeparate && !isLastExotic && "ml-9")}>
+				<div className={clsx("font-light text-white", !isSeparate && !isLastExotic && "ml-9")}>
 					<MarkdownRenderer
 						initialValue={props.initialValue}
 						editor={props.editor}
@@ -102,10 +102,10 @@ export default function DefaultMessage(
 	) : (
 		<div
 			className={clsx(
-				"ml-2 flex flex-col items-start gap-y-2 p-2 hover:bg-secondary hover:shadow-md",
-				!isSelf && "ml-4",
-				(isSeparate || isLastExotic) && "rounded-t-lg",
-				isNextSeparate && "rounded-b-lg",
+				"group flex flex-col items-start gap-y-2 p-2 pl-4 hover:bg-secondary",
+				!isSelf && "pl-6",
+				(isSeparate || isLastExotic) && "rounded-tr-lg",
+				isNextSeparate && "rounded-br-lg",
 				!isSeparate && !isLastExotic && "py-0",
 				!isSeparate && !isLastExotic && !isUnread && "mt-0.5",
 				!isNextSeparate && "pb-0",
@@ -113,7 +113,7 @@ export default function DefaultMessage(
 			)}
 		>
 			{(isSeparate || isLastExotic) && (
-				<div className="flex items-center gap-x-2 overflow-hidden">
+				<div className="flex items-center gap-x-2">
 					<UserAvatar
 						userId={props.renderInfo.message.author.id}
 						avatarHash={props.renderInfo.message.author.avatar}
@@ -173,7 +173,7 @@ function MarkdownRenderer(props: {
 				renderLeaf={props.renderLeaf}
 				renderElement={props.renderElement}
 				className={clsx(
-					"px-2.5 py-1.5 font-normal text-white [overflow-wrap:anywhere]",
+					"px-2.5 py-1.5 font-normal text-white [overflow-wrap:anywhere] group-hover:shadow-lg",
 					props.isPreview && "bg-primary/20 text-white/50",
 					props.isSelf && !props.isPreview ? "bg-primary/70" : "bg-background",
 					props.isUnread && !props.isSeparate && "!rounded-t-none",
