@@ -1,15 +1,1 @@
-{
-"name": "@huginn/backend-shared",
-"main": "./src/index.ts",
-"version": "1.0.0",
-"type": "module",
-"dependencies": {
-"@sapphire/snowflake": "^3.5.3",
-"consola": "^3.2.3",
-"h3": "^1.13.0",
-"zod": "^3.23.8"
-},
-"devDependencies": {
-"@types/bun": "latest"
-}
-}
+{"name":"@huginn/backend-shared","main":"./src/index.ts","version":"1.0.1","type":"module","dependencies":{"@sapphire/snowflake":"^3.5.3","consola":"^3.2.3","h3":"^1.13.0","zod":"^3.23.8"},"devDependencies":{"@types/bun":"latest"}}
