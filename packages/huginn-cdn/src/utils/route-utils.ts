@@ -1,25 +1,8 @@
-import { type ErrorFactory, createErrorFactory } from "@huginn/backend-shared";
-import { Errors, HttpCode } from "@huginn/shared";
+import { HttpCode } from "@huginn/shared";
 import { type H3Event, setResponseHeader, setResponseStatus } from "h3";
 import { storage } from "#cdn";
-import { type CDNError, CDNErrorType } from "#error";
 import type { FileCategory } from "#types";
 import { extractFileInfo, findImageByName, transformImage } from "./file-utils";
-
-export function handleCommonCDNErrors(event: H3Event, error: CDNError) {
-	let errorFactory: ErrorFactory | undefined;
-
-	if (error.isErrorType(CDNErrorType.FILE_NOT_FOUND)) {
-		setResponseStatus(event, HttpCode.NOT_FOUND);
-		errorFactory = createErrorFactory(Errors.fileNotFound());
-	}
-	if (error.isErrorType(CDNErrorType.INVALID_FILE_FORMAT)) {
-		setResponseStatus(event, HttpCode.BAD_REQUEST);
-		errorFactory = createErrorFactory(Errors.invalidFileFormat());
-	}
-
-	return errorFactory;
-}
 
 export async function tryResolveImage(event: H3Event, category: FileCategory, subDirectory: string, hash: string) {
 	const { name, format, mimeType } = extractFileInfo(hash);
