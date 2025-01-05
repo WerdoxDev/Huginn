@@ -1,6 +1,7 @@
+import { DBErrorType } from "@huginn/backend-shared/types";
 import { type APIPostLoginJSONBody, type APIPostRegisterJSONBody, UserFlags, WorkerID, snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
-import { DBErrorType, assertObj, prisma } from ".";
+import { assertObj, prisma } from ".";
 import { selectPrivateUser } from "./common";
 
 const authExtension = Prisma.defineExtension({

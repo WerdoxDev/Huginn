@@ -1,6 +1,7 @@
+import { DBErrorType } from "@huginn/backend-shared/types";
 import { RelationshipType, type Snowflake, WorkerID, snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
-import { DBErrorType, assertCondition, assertExists, assertId, assertObj, prisma } from ".";
+import { assertCondition, assertExists, assertId, assertObj, prisma } from ".";
 
 const relationshipExtension = Prisma.defineExtension({
 	model: {

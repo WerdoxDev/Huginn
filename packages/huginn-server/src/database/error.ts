@@ -1,23 +1,9 @@
+import { DBError, isDBError } from "@huginn/backend-shared";
+import { DBErrorType } from "@huginn/backend-shared/types";
 import type { Snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 import { H3Error, createError } from "h3";
 import { prisma } from "#database";
-
-export class DBError extends Error {
-	public constructor(
-		public callerName: string,
-		public type: DBErrorType,
-		public cause?: string,
-	) {
-		super(`Unhandeled Database Error => ${callerName} => ${type}: ${cause ? `(${cause})` : ""}`, {
-			cause: cause,
-		});
-	}
-
-	isErrorType(type: DBErrorType) {
-		return this.type === type;
-	}
-}
 
 export function assertError(error: Error | null, type: DBErrorType) {
 	let actualError = error;
@@ -51,14 +37,6 @@ export function assertCondition(methodName: string, shouldAssert: boolean, error
 	if (shouldAssert) {
 		throw createError({ cause: new DBError(methodName, errorType, cause) });
 	}
-}
-
-export function isDBError(object: unknown): object is DBError {
-	if (object !== null && typeof object === "object" && object instanceof DBError) {
-		return true;
-	}
-
-	return false;
 }
 
 export async function assertExists(
@@ -101,13 +79,4 @@ export function isPrismaError(object: unknown): object is (
 	}
 
 	return false;
-}
-
-export enum DBErrorType {
-	INVALID_ID = "INVALID_ID",
-	NULL_USER = "NULL_USER",
-	NULL_CHANNEL = "NULL_CHANNEL",
-	NULL_MESSAGE = "NULL_MESSAGE",
-	NULL_RELATIONSHIP = "NULL_RELATIONSHIP",
-	NULL_READ_STATE = "NULL_READ_STATE",
 }

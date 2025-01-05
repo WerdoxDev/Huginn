@@ -1,12 +1,11 @@
-import { type ErrorFactory, createErrorFactory, unauthorized } from "@huginn/backend-shared";
-import { Errors, HttpCode, type IdentityTokenPayload, type TokenPayload, type Unpacked } from "@huginn/shared";
+import { unauthorized } from "@huginn/backend-shared";
+import type { IdentityTokenPayload, TokenPayload, Unpacked } from "@huginn/shared";
 import type { Endpoints } from "@octokit/types";
-import { Consola } from "consola";
-import { type H3Event, getHeader, setResponseStatus } from "h3";
+import { type H3Event, getHeader } from "h3";
 import { JSDOM } from "jsdom";
 import probe, { type ProbeResult } from "probe-image-size";
 import * as semver from "semver";
-import { type DBError, DBErrorType, prisma } from "#database";
+import { prisma } from "#database";
 import { octokit } from "#server";
 import { envs } from "#setup";
 import { verifyToken } from "./token-factory";
@@ -30,38 +29,7 @@ export async function useVerifiedJwt<IdentityToken extends boolean = false>(even
 		throw unauthorized(event);
 	}
 
-	// if (identity && !(await prisma.identityProvider.exists({ id: BigInt((payload as IdentityTokenPayload).providerId) }))) {
-	// 	throw unauthorized(event);
-	// }
-
 	return { payload: payload as IdentityToken extends true ? IdentityTokenPayload : TokenPayload, token };
-}
-
-export function handleCommonDBErrors(event: H3Event, error: DBError) {
-	let errorFactory: ErrorFactory | undefined;
-
-	if (error.isErrorType(DBErrorType.INVALID_ID)) {
-		setResponseStatus(event, HttpCode.BAD_REQUEST);
-		errorFactory = createErrorFactory(Errors.invalidId(error.cause));
-	}
-	if (error.isErrorType(DBErrorType.NULL_USER)) {
-		setResponseStatus(event, HttpCode.NOT_FOUND);
-		errorFactory = createErrorFactory(Errors.unknownUser(error.cause));
-	}
-	if (error.isErrorType(DBErrorType.NULL_RELATIONSHIP)) {
-		setResponseStatus(event, HttpCode.NOT_FOUND);
-		errorFactory = createErrorFactory(Errors.unknownRelationship(error.cause));
-	}
-	if (error.isErrorType(DBErrorType.NULL_CHANNEL)) {
-		setResponseStatus(event, HttpCode.NOT_FOUND);
-		errorFactory = createErrorFactory(Errors.unknownChannel(error.cause));
-	}
-	if (error.isErrorType(DBErrorType.NULL_MESSAGE)) {
-		setResponseStatus(event, HttpCode.NOT_FOUND);
-		errorFactory = createErrorFactory(Errors.unknownMessage(error.cause));
-	}
-
-	return errorFactory;
 }
 
 export function getWindowsAssetUrl(release?: Unpacked<Endpoints["GET /repos/{owner}/{repo}/releases"]["response"]["data"]>) {

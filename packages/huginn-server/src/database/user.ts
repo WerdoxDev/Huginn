@@ -1,7 +1,8 @@
+import { DBErrorType } from "@huginn/backend-shared/types";
 import type { APIPatchCurrentUserJSONBody } from "@huginn/shared";
 import type { Snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
-import { DBErrorType, assertId, assertObj, prisma } from ".";
+import { assertId, assertObj, prisma } from ".";
 
 const userExtension = Prisma.defineExtension({
 	model: {

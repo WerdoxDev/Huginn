@@ -1,9 +1,10 @@
-import type { APIEmbed, APIThumbnail, Snowflake } from "@huginn/shared";
+import { DBErrorType } from "@huginn/backend-shared/types";
+import type { Snowflake } from "@huginn/shared";
 import { WorkerID, snowflake } from "@huginn/shared";
 import type { MessageType } from "@huginn/shared";
 import { type Embed, Prisma } from "@prisma/client";
 import type { DBEmbed } from "#utils/types";
-import { DBErrorType, assertExists, assertId, assertObj, prisma } from ".";
+import { assertExists, assertId, assertObj, prisma } from ".";
 
 const messagesExtension = Prisma.defineExtension({
 	model: {
