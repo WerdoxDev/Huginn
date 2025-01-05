@@ -3,7 +3,7 @@ import { CDNRoutes, Errors, HttpCode, MessageFlags, MessageType, getFileHash, id
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { excludeChannelRecipient, includeChannelRecipients, includeMessageDefaultFields, omitMessageAuthorId } from "#database/common";
+import { omitChannelRecipient, omitMessageAuthorId, selectChannelRecipients, selectMessageDefaults } from "#database/common";
 import { router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { channelWithoutRecipient, dispatchChannel, dispatchMessage } from "#utils/helpers";
@@ -34,7 +34,7 @@ router.patch(
 			return createHuginnError(event, formError);
 		}
 
-		const channel = idFix(await prisma.channel.getById(channelId, undefined, { name: true, icon: true, ownerId: true }));
+		const channel = idFix(await prisma.channel.getById(channelId, { select: { name: true, icon: true, ownerId: true } }));
 
 		if (body.owner && channel.ownerId !== payload.id) {
 			return missingPermission(event);
@@ -55,7 +55,7 @@ router.patch(
 		}
 
 		const updatedChannel = idFix(
-			await prisma.channel.editDM(channelId, { name: body.name, icon: channelIconHash, owner: body.owner }, includeChannelRecipients),
+			await prisma.channel.editDM(channelId, body.name, channelIconHash, body.owner, { include: selectChannelRecipients }),
 		);
 
 		for (const recipient of updatedChannel.recipients) {

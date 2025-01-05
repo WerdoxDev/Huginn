@@ -3,7 +3,7 @@ import { type APIGetChannelByIdResult, ChannelType, HttpCode, idFix, merge, omit
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { excludeChannelRecipient, includeChannelRecipients } from "#database/common";
+import { omitChannelRecipient, selectChannelRecipients } from "#database/common";
 import { router } from "#server";
 import { useVerifiedJwt } from "#utils/route-utils";
 
@@ -16,7 +16,7 @@ router.get(
 		const { channelId } = await useValidatedParams(event, schema);
 
 		const channel: APIGetChannelByIdResult = idFix(
-			await prisma.channel.getById(channelId, merge(includeChannelRecipients, excludeChannelRecipient(payload.id))),
+			await prisma.channel.getById(channelId, { include: merge(selectChannelRecipients, omitChannelRecipient(payload.id)) }),
 		);
 
 		if (!(await prisma.user.hasChannel(payload.id, channelId))) {

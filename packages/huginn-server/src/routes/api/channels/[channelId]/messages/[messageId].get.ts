@@ -3,7 +3,7 @@ import { type APIGetMessageByIdResult, HttpCode, idFix, merge, nullToUndefined, 
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { includeMessageAuthor, includeMessageDefaultFields, includeMessageMentions, omitMessageAuthorId } from "#database/common";
+import { omitMessageAuthorId, selectMessageAuthor, selectMessageDefaults, selectMessageMentions } from "#database/common";
 import { router } from "#server";
 import { useVerifiedJwt } from "#utils/route-utils";
 
@@ -19,7 +19,7 @@ router.get(
 			return missingAccess(event);
 		}
 
-		const dbMessage = idFix(await prisma.message.getById(channelId, messageId, includeMessageDefaultFields, omitMessageAuthorId));
+		const dbMessage = idFix(await prisma.message.getById(channelId, messageId, { select: selectMessageDefaults }));
 		const message: APIGetMessageByIdResult = { ...dbMessage, embeds: nullToUndefined(dbMessage.embeds) };
 
 		setResponseStatus(event, HttpCode.OK);

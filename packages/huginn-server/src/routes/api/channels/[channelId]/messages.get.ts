@@ -3,7 +3,7 @@ import { type APIGetChannelByIdResult, type APIGetChannelMessagesResult, HttpCod
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { includeMessageDefaultFields, omitMessageAuthorId } from "#database/common";
+import { omitMessageAuthorId, selectMessageDefaults } from "#database/common";
 import { router } from "#server";
 import { useVerifiedJwt } from "#utils/route-utils";
 
@@ -20,14 +20,13 @@ router.get(
 		const before = query.before;
 		const after = query.after;
 
-		const channel = idFix(await prisma.channel.getById(channelId, undefined, { id: true }));
+		const channel = idFix(await prisma.channel.getById(channelId, { select: { id: true } }));
 
 		if (!(await prisma.user.hasChannel(payload.id, channel.id))) {
 			return missingAccess(event);
 		}
 
-		const dbMessages = idFix(await prisma.message.getMessages(channelId, limit, before, after, includeMessageDefaultFields, omitMessageAuthorId));
-
+		const dbMessages = idFix(await prisma.message.getMessages(channelId, limit, before, after, { select: selectMessageDefaults }));
 		const messages: APIGetChannelMessagesResult = dbMessages.map((x) => ({ ...x, embeds: nullToUndefined(x.embeds) }));
 
 		setResponseStatus(event, HttpCode.OK);

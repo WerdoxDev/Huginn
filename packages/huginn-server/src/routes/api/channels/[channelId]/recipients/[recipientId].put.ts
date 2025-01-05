@@ -1,9 +1,9 @@
 import { missingAccess, singleError, useValidatedParams } from "@huginn/backend-shared";
-import { ChannelType, Errors, HttpCode, MessageFlags, MessageType, idFix } from "@huginn/shared";
+import { ChannelType, Errors, HttpCode, MessageFlags, MessageType, idFix, merge } from "@huginn/shared";
 import { defineEventHandler, sendNoContent } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { includeChannelRecipients } from "#database/common";
+import { selectChannelRecipients } from "#database/common";
 import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { dispatchChannel, dispatchMessage } from "#utils/helpers";
@@ -17,7 +17,7 @@ router.put(
 		const { payload } = await useVerifiedJwt(event);
 		const { channelId, recipientId } = await useValidatedParams(event, paramsSchema);
 
-		const channel = idFix(await prisma.channel.getById(channelId, includeChannelRecipients));
+		const channel = idFix(await prisma.channel.getById(channelId, { select: { ...selectChannelRecipients, type: true } }));
 		if (channel.type !== ChannelType.GROUP_DM) {
 			return singleError(event, Errors.invalidChannelType());
 		}
@@ -30,7 +30,7 @@ router.put(
 			return sendNoContent(event, HttpCode.NO_CONTENT);
 		}
 
-		const updatedChannel = idFix(await prisma.channel.addRecipient(channelId, recipientId, includeChannelRecipients));
+		const updatedChannel = idFix(await prisma.channel.addRecipient(channelId, recipientId, { include: selectChannelRecipients }));
 
 		// Create read state
 		await prisma.readState.createState(recipientId, channelId);

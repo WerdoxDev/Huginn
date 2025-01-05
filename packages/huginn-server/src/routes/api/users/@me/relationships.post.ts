@@ -3,7 +3,7 @@ import { Errors, HttpCode, RelationshipType, type Snowflake, idFix, omit } from 
 import { type H3Event, defineEventHandler, sendNoContent } from "h3";
 import { z } from "zod";
 import { DBErrorType, assertError, prisma } from "#database";
-import { includeRelationshipUser, selectPublicUser } from "#database/common";
+import { selectPublicUser, selectRelationshipUser } from "#database/common";
 import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { useVerifiedJwt } from "#utils/route-utils";
@@ -48,7 +48,9 @@ export async function relationshipPost(event: H3Event, userId: Snowflake) {
 			type: RelationshipType.PENDING_OUTGOING,
 		}))
 	) {
-		const relationships = idFix(await prisma.relationship.createRelationship(payload.id, userId, includeRelationshipUser, { userId: true }));
+		const relationships = idFix(
+			await prisma.relationship.createRelationship(payload.id, userId, { include: { ...selectRelationshipUser }, omit: { userId: true } }),
+		);
 
 		const relationshipOwner = relationships.find((x) => x.ownerId === payload.id);
 		const relationshipUser = relationships.find((x) => x.ownerId === userId);

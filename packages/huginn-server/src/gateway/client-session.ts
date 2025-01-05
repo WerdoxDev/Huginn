@@ -4,7 +4,7 @@ import { GatewayCode } from "@huginn/shared";
 import type { GatewayPayload } from "@huginn/shared";
 import { idFix } from "@huginn/shared";
 import type { Peer } from "crossws";
-import { excludeChannelRecipient, includeChannelRecipients, includeRelationshipUser } from "#database/common";
+import { omitChannelRecipient, selectChannelRecipients, selectRelationshipUser } from "#database/common";
 import { prisma } from "#database/index";
 import type { ClientSessionInfo } from "#utils/types";
 
@@ -87,8 +87,12 @@ export class ClientSession extends EventEmitter {
 		const userId = this.data.user.id;
 		this.subscribe(userId);
 
-		const relationships = idFix(await prisma.relationship.getUserRelationships(userId, includeRelationshipUser));
-		const channels = idFix(await prisma.channel.getUserChannels(userId, true, merge(includeChannelRecipients, excludeChannelRecipient(userId))));
+		const relationships = idFix(await prisma.relationship.getUserRelationships(userId, { select: { ...selectRelationshipUser, type: true } }));
+		const channels = idFix(
+			await prisma.channel.getUserChannels(userId, true, {
+				select: { ...merge(selectChannelRecipients, omitChannelRecipient(userId)), id: true },
+			}),
+		);
 
 		const publicUserIds = [...new Set([...relationships.map((x) => x.user.id), ...channels.flatMap((x) => x.recipients).map((x) => x.id)])];
 		const presenceUserIds = [...new Set([...relationships.filter((x) => x.type === RelationshipType.FRIEND).map((x) => x.user.id)])];

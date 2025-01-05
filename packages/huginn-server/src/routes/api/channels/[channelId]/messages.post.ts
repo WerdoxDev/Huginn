@@ -1,10 +1,10 @@
 import { createErrorFactory, createHuginnError, invalidFormBody, missingAccess, useValidatedBody, useValidatedParams } from "@huginn/backend-shared";
-import { type APIEmbed, type APIMessage, Errors, HttpCode, MessageType, idFix, nullToUndefined } from "@huginn/shared";
+import { type APIMessage, Errors, HttpCode, MessageType, idFix, nullToUndefined } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
-import probe, { type ProbeResult } from "probe-image-size";
+import type { ProbeResult } from "probe-image-size";
 import { z } from "zod";
 import { prisma } from "#database";
-import { includeChannelRecipients, includeMessageDefaultFields, omitMessageAuthorId } from "#database/common";
+import { omitMessageAuthorId, selectMessageDefaults } from "#database/common";
 import { router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { extractEmbedTags, extractLinks, getImageData, useVerifiedJwt } from "#utils/route-utils";
@@ -39,7 +39,7 @@ router.post(
 		const body = await useValidatedBody(event, bodySchema);
 		const { channelId } = await useValidatedParams(event, paramsSchema);
 
-		const channel = idFix(await prisma.channel.getById(channelId, includeChannelRecipients));
+		const channel = idFix(await prisma.channel.getById(channelId, { select: { id: true } }));
 		if (!(await prisma.user.hasChannel(payload.id, channel.id))) {
 			return missingAccess(event);
 		}
@@ -89,8 +89,7 @@ router.post(
 				processedEmbeds.length === 0 ? undefined : processedEmbeds,
 				undefined,
 				body.flags,
-				includeMessageDefaultFields,
-				omitMessageAuthorId,
+				{ select: selectMessageDefaults },
 			),
 		);
 
@@ -122,9 +121,7 @@ router.post(
 				}
 			}
 
-			const updatedMessage = idFix(
-				await prisma.message.updateMessage(dbMessage.id, undefined, embeds, includeMessageDefaultFields, omitMessageAuthorId),
-			);
+			const updatedMessage = idFix(await prisma.message.updateMessage(dbMessage.id, undefined, embeds, { select: selectMessageDefaults }));
 
 			dispatchToTopic(channelId, "message_update", { ...updatedMessage, embeds: nullToUndefined(updatedMessage.embeds) });
 		});

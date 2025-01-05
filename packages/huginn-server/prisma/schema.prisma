@@ -1,6 +1,6 @@
 generator client {
    provider        = "prisma-client-js"
-   previewFeatures = ["omitApi"]
+   previewFeatures = ["omitApi", "relationJoins"]
 }
 
 datasource db {
@@ -42,6 +42,8 @@ model Channel {
    type               Int
    tempDeletedByUsers User[]      @relation("channel_temp_deleted")
    readStates         ReadState[]
+
+   @@index([type])
 }
 
 model Message {
@@ -62,6 +64,8 @@ model Message {
    flags               Int?        @db.SmallInt
    lastReadMessages    ReadState[]
    lastMessageChannels Channel[]   @relation("channel_last_message")
+
+   @@index([channelId])
 }
 
 model Relationship {
@@ -73,6 +77,8 @@ model Relationship {
    ownerId  BigInt
    user     User      @relation("relation_user", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    userId   BigInt
+
+   @@index([ownerId])
 }
 
 model IdentityProvider {

@@ -14,7 +14,7 @@ import { type Snowflake, snowflake } from "@huginn/shared";
 import { idFix, isOpcode } from "@huginn/shared";
 import type { Message, Peer } from "crossws";
 import crossws, { type BunAdapter } from "crossws/adapters/bun";
-import { excludeChannelRecipient, includeChannelRecipients, includeRelationshipUser } from "#database/common";
+import { omitChannelRecipient, omitRelationshipUserIds, selectChannelRecipients, selectPrivateUser, selectRelationshipUser } from "#database/common";
 import { prisma } from "#database/index";
 import { verifyToken } from "#utils/token-factory";
 import type { ServerGatewayOptions } from "#utils/types";
@@ -182,7 +182,7 @@ export class ServerGateway {
 			return;
 		}
 
-		const user = idFix(await prisma.user.getById(payload.id));
+		const user = idFix(await prisma.user.getById(payload.id, { select: selectPrivateUser }));
 		const sessionId = snowflake.generateString(WorkerID.GATEWAY);
 
 		// The uninitialized client is stored using it's peer_id instead of session_id
@@ -194,11 +194,13 @@ export class ServerGateway {
 		this.clients.set(sessionId, client);
 
 		// Relationships
-		const userRelationships = idFix(await prisma.relationship.getUserRelationships(user.id, includeRelationshipUser));
+		const userRelationships = idFix(
+			await prisma.relationship.getUserRelationships(user.id, { include: selectRelationshipUser, omit: omitRelationshipUserIds }),
+		);
 
 		// Channels
 		const userChannels = idFix(
-			await prisma.channel.getUserChannels(user.id, false, merge(includeChannelRecipients, excludeChannelRecipient(user.id))),
+			await prisma.channel.getUserChannels(user.id, false, { include: merge(selectChannelRecipients, omitChannelRecipient(user.id)) }),
 		);
 
 		// Presences
@@ -264,7 +266,7 @@ export class ServerGateway {
 			return;
 		}
 
-		const user = idFix(await prisma.user.getById(payload.id));
+		const user = idFix(await prisma.user.getById(payload.id, { select: { id: true } }));
 
 		this.deleteUninitializedClient(peer.id);
 

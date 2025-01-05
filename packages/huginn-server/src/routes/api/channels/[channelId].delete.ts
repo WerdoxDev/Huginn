@@ -3,7 +3,7 @@ import { type APIDeleteDMChannelResult, ChannelType, HttpCode, MessageFlags, Mes
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { excludeChannelRecipient, includeChannelRecipients } from "#database/common";
+import { omitChannelRecipient, selectChannelRecipients } from "#database/common";
 import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { dispatchChannel, dispatchMessage } from "#utils/helpers";
@@ -17,7 +17,7 @@ router.delete(
 		const { payload } = await useVerifiedJwt(event);
 		const { channelId } = await useValidatedParams(event, schema);
 
-		const channel = idFix(await prisma.channel.getById(channelId, undefined, merge(includeChannelRecipients, { type: true, ownerId: true })));
+		const channel = idFix(await prisma.channel.getById(channelId, { select: { ...selectChannelRecipients, type: true, ownerId: true } }));
 
 		if (!(await prisma.user.hasChannel(payload.id, channelId))) {
 			return missingAccess(event);
@@ -28,8 +28,10 @@ router.delete(
 			const updatedChannel = idFix(
 				await prisma.channel.editDM(
 					channelId,
-					{ owner: channel.recipients.filter((x) => x.id !== payload.id).toSorted((a, b) => (a.username > b.username ? 1 : -1))[0].id },
-					includeChannelRecipients,
+					undefined,
+					undefined,
+					channel.recipients.filter((x) => x.id !== payload.id).toSorted((a, b) => (a.username > b.username ? 1 : -1))[0].id,
+					{ include: selectChannelRecipients },
 				),
 			);
 
@@ -40,7 +42,7 @@ router.delete(
 
 		// Delete or leave the DM
 		const deletedChannel: APIDeleteDMChannelResult = idFix(
-			await prisma.channel.deleteDM(channelId, payload.id, merge(includeChannelRecipients, excludeChannelRecipient(payload.id))),
+			await prisma.channel.deleteDM(channelId, payload.id, { include: merge(selectChannelRecipients, omitChannelRecipient(payload.id)) }),
 		);
 
 		// Delete read state

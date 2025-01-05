@@ -1,1 +1,1 @@
-{"name":"@huginn/shared","main":"./src/index.ts","version":"1.1.0","type":"module","dependencies":{"@sapphire/snowflake":"^3.5.3","@std/encoding":"npm:@jsr/std__encoding","file-type":"^19.5.0","ohash":"^1.1.4"},"devDependencies":{"@types/bun":"latest"}}
+{"name":"@huginn/shared","main":"./src/index.ts","version":"1.2.0","type":"module","dependencies":{"@sapphire/snowflake":"^3.5.3","@std/encoding":"npm:@jsr/std__encoding","file-type":"^19.5.0","ohash":"^1.1.4"},"devDependencies":{"@types/bun":"latest"}}

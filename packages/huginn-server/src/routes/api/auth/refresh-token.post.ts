@@ -20,7 +20,7 @@ router.post(
 			throw unauthorized(event);
 		}
 
-		const user = idFix(await prisma.user.getById(payload.id));
+		const user = idFix(await prisma.user.getById(payload.id, { select: { id: true } }));
 
 		const [accessToken, refreshToken] = await createTokens(
 			{ id: user.id, isOAuth: await prisma.identityProvider.exists({ userId: BigInt(user.id) }) },
