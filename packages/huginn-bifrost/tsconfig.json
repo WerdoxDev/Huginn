@@ -4,5 +4,5 @@
 		"lib": ["ESNext"],
 		"isolatedDeclarations": true
 	},
-	"include": ["src"]
+	"include": ["src", "../huginn-server/src/utils/types.ts"]
 }
