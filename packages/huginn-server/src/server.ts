@@ -55,8 +55,6 @@ export async function startServer(options?: { serve: boolean; defineOptions: boo
 			: undefined,
 	});
 
-	commonHandlers(app);
-
 	mainRouter = createRouter();
 	router = createRouter();
 
@@ -74,6 +72,8 @@ export async function startServer(options?: { serve: boolean; defineOptions: boo
 	if (!options?.serve) {
 		return { app, router: mainRouter, handler: toPlainHandler(app) };
 	}
+
+	commonHandlers(app);
 
 	const handler = toWebHandler(app);
 	app.use(mainRouter);

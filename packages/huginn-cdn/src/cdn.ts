@@ -52,8 +52,6 @@ export async function startCdn(options?: { serve: boolean; defineOptions: boolea
 			: undefined,
 	});
 
-	commonHandlers(app);
-
 	router = createRouter();
 	storage = options?.storage === "aws" ? new S3Storage() : new FileStorage();
 
@@ -69,6 +67,8 @@ export async function startCdn(options?: { serve: boolean; defineOptions: boolea
 	if (!options?.serve) {
 		return { app, router };
 	}
+
+	commonHandlers(app);
 
 	const handler = toWebHandler(app);
 	app.use(router);
