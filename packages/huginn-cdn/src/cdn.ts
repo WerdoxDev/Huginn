@@ -1,27 +1,20 @@
-import { type ErrorFactory, createErrorFactory, logReject, logRequest, logResponse, logServerError } from "@huginn/backend-shared";
-import { Errors, HttpCode, type HuginnErrorData, generateRandomString } from "@huginn/shared";
+import {
+	cdnOnError,
+	commonHandlers,
+	handleCommonError,
+	handleErrorFactory,
+	handleServerError,
+	sharedOnAfterResponse,
+	sharedOnRequest,
+} from "@huginn/backend-shared";
 import type { Server } from "bun";
 import consola from "consola";
 import { colors } from "consola/utils";
-import {
-	type App,
-	type Router,
-	createApp,
-	createRouter,
-	defineEventHandler,
-	getResponseStatus,
-	handleCors,
-	send,
-	setResponseHeader,
-	setResponseStatus,
-	toWebHandler,
-} from "h3";
+import { type App, type Router, createApp, createRouter, defineEventHandler, toWebHandler } from "h3";
 import { FileStorage } from "#storage/file-storage";
 import { S3Storage } from "#storage/s3-storage";
 import type { Storage } from "#storage/storage";
-import { handleCommonCDNErrors } from "#utils/route-utils";
 import { version } from "../package.json";
-import { isCDNError } from "./error";
 import { importRoutes } from "./routes";
 import { CERT_FILE, KEY_FILE, envs } from "./setup";
 
@@ -38,66 +31,28 @@ export async function startCdn(options?: { serve: boolean; defineOptions: boolea
 		onError: options?.defineOptions
 			? (error, event) => {
 					const id = event.context.id;
+					const commonError = handleCommonError(error, event, id);
+					if (commonError) return commonError;
 
-					if (error.cause && !(error.cause instanceof Error) && typeof error.cause === "object" && "errors" in error.cause) {
-						const status = getResponseStatus(event);
-						logReject(event.path, event.method, id, error.cause as HuginnErrorData, status);
-						return send(event, JSON.stringify(error.cause), "application/json");
-					}
-					if (error.statusCode === HttpCode.NOT_FOUND) {
-						setResponseStatus(event, HttpCode.NOT_FOUND, "Not Found");
-						logReject(event.path, event.method, id, undefined, HttpCode.NOT_FOUND);
-						return send(event, `${event.path} Not Found`);
-					}
+					const errorFactory = cdnOnError(error, event, undefined);
+					if (errorFactory) return handleErrorFactory(event, errorFactory, id);
 
-					// Common errors
-					let errorFactory: ErrorFactory | undefined;
-					if (isCDNError(error.cause)) {
-						errorFactory = handleCommonCDNErrors(event, error.cause);
-					}
-
-					if (errorFactory) {
-						const status = getResponseStatus(event);
-						logReject(event.path, event.method, id, errorFactory.toObject(), status);
-
-						setResponseHeader(event, "content-type", "application/json");
-						return send(event, JSON.stringify(errorFactory.toObject()));
-					}
-
-					logServerError(event.path, error.cause as Error);
-					logReject(event.path, event.method, id, "Server Error", HttpCode.SERVER_ERROR);
-
-					setResponseStatus(event, HttpCode.SERVER_ERROR);
-					return send(event, JSON.stringify(createErrorFactory(Errors.serverError()).toObject()));
+					return handleServerError(error, event, id);
 				}
 			: undefined,
 		onAfterResponse: options?.defineOptions
 			? (event, response) => {
-					if (event.method === "OPTIONS") {
-						return;
-					}
-
-					const id = event.context.id;
-					const status = getResponseStatus(event);
-
-					if (status >= 200 && status < 500) {
-						logResponse(event.path, status, id, response?.body);
-					} else {
-						logReject(event.path, event.method, id, response?.body as HuginnErrorData, status);
-					}
+					return sharedOnAfterResponse(event, response);
 				}
 			: undefined,
 		onRequest: options?.defineOptions
-			? (event) => {
-					if (handleCors(event, { origin: "*", preflight: { statusCode: 204 }, methods: "*" })) {
-						return;
-					}
-					event.context.id = generateRandomString(6);
-					const id = event.context.id;
-					logRequest(event.path, event.method, id, undefined);
+			? async (event) => {
+					return await sharedOnRequest(event);
 				}
 			: undefined,
 	});
+
+	commonHandlers(app);
 
 	router = createRouter();
 	storage = options?.storage === "aws" ? new S3Storage() : new FileStorage();
