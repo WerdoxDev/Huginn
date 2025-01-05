@@ -77,6 +77,8 @@ const app = createApp({
 		} else {
 			logReject(event.path, event.method, id, response?.body as HuginnErrorData, status);
 		}
+
+		Promise.all(event.context.waitUntilPromises?.map((x) => x()) ?? []);
 	},
 	async onRequest(event) {
 		if (handleCors(event, { origin: "*", preflight: { statusCode: 204 }, methods: "*" })) {
