@@ -334,7 +334,7 @@ async function createRelease(packageType: PackageType, version: string, draft: b
 		const commits = await octokit.rest.repos.compareCommitsWithBasehead({
 			owner,
 			repo: envs.REPO_NAME,
-			basehead: `${latestRelease.tag_name}...dev`,
+			basehead: `${latestRelease ? latestRelease.tag_name : "dev"}...dev`,
 		});
 
 		// Extract commit messages
