@@ -1,9 +1,10 @@
 import { catchError, createErrorFactory, createHuginnError, useValidatedBody } from "@huginn/backend-shared";
+import { DBErrorType } from "@huginn/backend-shared/types";
 import { Errors, HttpCode, RelationshipType, type Snowflake, idFix, omit } from "@huginn/shared";
 import { type H3Event, defineEventHandler, sendNoContent } from "h3";
 import { z } from "zod";
-import { DBErrorType, assertError, prisma } from "#database";
-import { selectPublicUser, selectRelationshipUser } from "#database/common";
+import { assertError, prisma } from "#database";
+import { selectRelationshipUser } from "#database/common";
 import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { useVerifiedJwt } from "#utils/route-utils";

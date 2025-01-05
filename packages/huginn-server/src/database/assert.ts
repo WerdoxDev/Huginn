@@ -1,6 +1,7 @@
+import { DBErrorType } from "@huginn/backend-shared/types";
 import type { Snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
-import { DBErrorType, assertCondition, assertId, prisma } from "#database";
+import { assertCondition, assertId, prisma } from "#database";
 
 const assertExtension = Prisma.defineExtension({
 	model: {

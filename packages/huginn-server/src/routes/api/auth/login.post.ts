@@ -1,9 +1,10 @@
 import { catchError, useValidatedBody } from "@huginn/backend-shared";
 import { createErrorFactory, createHuginnError } from "@huginn/backend-shared";
+import { DBErrorType } from "@huginn/backend-shared/types";
 import { constants, type APIPostLoginResult, Errors, Fields, HttpCode, idFix } from "@huginn/shared";
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
-import { DBErrorType, assertError } from "#database/error";
+import { assertError } from "#database/error";
 import { prisma } from "#database/index";
 import { router } from "#server";
 import { createTokens } from "#utils/token-factory";

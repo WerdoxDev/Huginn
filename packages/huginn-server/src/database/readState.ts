@@ -1,8 +1,9 @@
+import { DBErrorType } from "@huginn/backend-shared/types";
 import { type Snowflake, snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import consola from "consola";
-import { DBErrorType, assertCondition, assertExists, assertId, assertObj, prisma } from "#database";
+import { assertCondition, assertExists, assertId, assertObj, prisma } from "#database";
 
 const readStateExtension = Prisma.defineExtension({
 	model: {
