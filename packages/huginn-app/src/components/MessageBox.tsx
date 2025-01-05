@@ -146,24 +146,30 @@ export default function MessageBox() {
 
 	return (
 		<div className="relative mx-5 mr-64 flex w-full flex-wrap-reverse py-2">
-			<form className="absolute w-full">
-				<div className="flex h-full items-start justify-center rounded-3xl bg-tertiary p-2 ring-2 ring-background">
-					<div className="mr-2 flex shrink-0 cursor-pointer items-center rounded-full bg-background p-1.5 transition-all hover:bg-white hover:bg-opacity-20 hover:shadow-xl">
+			<form className="w-full">
+				<div className="flex h-full items-start rounded-3xl bg-tertiary ring-2 ring-background">
+					<div className="m-2 mr-2 flex shrink-0 cursor-pointer items-center rounded-full bg-background p-1.5 transition-all hover:bg-white hover:bg-opacity-20 hover:shadow-xl">
 						<IconMingcuteAddFill name="gravity-ui:plus" className="h-5 w-5 text-text" />
 					</div>
-					<div className="h-full w-full self-center overflow-hidden py-2">
+					<div className="h-full w-full overflow-hidden">
 						<Slate editor={editor} initialValue={initialValue}>
 							<Editable
 								placeholder="Message @Emam"
-								className="font-light text-white leading-none caret-white outline-none"
+								className="h-full py-3.5 font-light text-white leading-5 caret-white outline-none"
 								renderLeaf={renderLeaf}
 								renderElement={renderElement}
 								decorate={decorate}
 								onKeyDown={onKeyDown}
+								renderPlaceholder={({ children, attributes }) => (
+									<div {...attributes} className="">
+										{children}
+									</div>
+								)}
+								// disableDefaultStyles
 							/>
 						</Slate>
 					</div>
-					<div className="ml-2 flex gap-x-2">
+					<div className="ml-2 flex h-8 gap-x-2 p-2">
 						<div className="h-8 w-8 rounded-full bg-background" />
 						<div className="h-8 w-8 rounded-full bg-background" />
 						<button className="h-8 w-8 rounded-full bg-primary p-0.5" type="button" onClick={() => sendMessage(MessageFlags.NONE)}>
