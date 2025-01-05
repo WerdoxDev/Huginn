@@ -51,7 +51,7 @@ router.patch(
 
 		const databaseError = createErrorFactory(Errors.invalidFormBody());
 
-		const user = idFix(await prisma.user.getById(payload.id));
+		const user = idFix(await prisma.user.getById(payload.id, { select: { id: true, password: true } }));
 		validateCorrectPassword(body.password, user.password, databaseError);
 
 		await validateUsernameUnique(body.username, databaseError);
@@ -86,8 +86,7 @@ router.patch(
 					avatar: avatarHash,
 					password: body.newPassword,
 				},
-				undefined,
-				selectPrivateUser,
+				{ select: selectPrivateUser },
 			),
 		);
 

@@ -15,7 +15,7 @@ router.get(
 		await useVerifiedJwt(event);
 		const userId = (await useValidatedParams(event, schema)).userId;
 
-		const user: APIPublicUser = idFix(await prisma.user.getById(userId, undefined, selectPublicUser));
+		const user: APIPublicUser = idFix(await prisma.user.getById(userId, { select: selectPublicUser }));
 
 		setResponseStatus(event, HttpCode.OK);
 		return user;

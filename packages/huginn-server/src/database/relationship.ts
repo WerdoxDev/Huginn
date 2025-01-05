@@ -1,42 +1,30 @@
 import { RelationshipType, type Snowflake, WorkerID, snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 import { DBErrorType, assertCondition, assertExists, assertId, assertObj, prisma } from ".";
-import type { RelationshipInclude, RelationshipOmit, RelationshipPayload } from "./common";
 
 const relationshipExtension = Prisma.defineExtension({
 	model: {
 		relationship: {
-			async getByUserId<Include extends RelationshipInclude, Omit extends RelationshipOmit>(
-				ownerId: Snowflake,
-				userId: Snowflake,
-				include?: Include,
-				omit?: Omit,
-			) {
+			async getByUserId<Args extends Prisma.RelationshipDefaultArgs>(ownerId: Snowflake, userId: Snowflake, args?: Args) {
 				assertId("getByUserId", ownerId, userId);
 
 				const relationship = await prisma.relationship.findFirst({
 					where: { ownerId: BigInt(ownerId), userId: BigInt(userId) },
-					include: include,
-					...(omit && { omit: omit }),
+					...args,
 				});
 
 				assertObj("getById", relationship, DBErrorType.NULL_RELATIONSHIP, `${ownerId}, ${userId}`);
-				return relationship as RelationshipPayload<Include, Omit>;
+				return relationship as Prisma.RelationshipGetPayload<Args>;
 			},
-			async getUserRelationships<Include extends RelationshipInclude, Omit extends RelationshipOmit>(
-				userId: Snowflake,
-				include?: Include,
-				omit?: Omit,
-			) {
+			async getUserRelationships<Args extends Prisma.RelationshipDefaultArgs>(userId: Snowflake, args?: Args) {
 				try {
 					const relationships = await prisma.relationship.findMany({
 						where: { ownerId: BigInt(userId) },
-						include: include,
-						...(omit && { omit: omit }),
+						...args,
 					});
 
 					assertObj("getUserRelationships", relationships, DBErrorType.NULL_RELATIONSHIP);
-					return relationships as RelationshipPayload<Include>[];
+					return relationships as Prisma.RelationshipGetPayload<Args>[];
 				} catch (e) {
 					await assertExists(e, "getUserRelationships", DBErrorType.NULL_USER, [userId]);
 					throw e;
@@ -58,12 +46,7 @@ const relationshipExtension = Prisma.defineExtension({
 
 				await prisma.$transaction([deleteRelation, deleteOppositeRelation]);
 			},
-			async createRelationship<Include extends RelationshipInclude, Omit extends RelationshipOmit>(
-				senderId: string,
-				recieverId: string,
-				include?: Include,
-				omit?: Omit,
-			) {
+			async createRelationship<Args extends Prisma.RelationshipDefaultArgs>(senderId: string, recieverId: string, args?: Args) {
 				try {
 					const incomingExists = await prisma.relationship.exists({
 						ownerId: BigInt(senderId),
@@ -89,11 +72,10 @@ const relationshipExtension = Prisma.defineExtension({
 									{ ownerId: BigInt(recieverId), userId: BigInt(senderId) },
 								],
 							},
-							include: include,
-							...(omit && { omit: omit }),
+							...args,
 						});
 
-						return relationships as RelationshipPayload<Include, Omit>[];
+						return relationships as Prisma.RelationshipGetPayload<Args>[];
 					}
 
 					const relationships = await prisma.relationship.createManyAndReturn({
@@ -115,13 +97,12 @@ const relationshipExtension = Prisma.defineExtension({
 								since: null,
 							},
 						],
-						include: include,
-						...(omit && { omit: omit }),
+						...args,
 					});
 
 					assertObj("createRelationship", relationships, DBErrorType.NULL_RELATIONSHIP);
 
-					return relationships as RelationshipPayload<Include, Omit>[];
+					return relationships as Prisma.RelationshipGetPayload<Args>[];
 				} catch (e) {
 					await assertExists(e, "createRelationship", DBErrorType.NULL_USER, [senderId, recieverId]);
 					throw e;

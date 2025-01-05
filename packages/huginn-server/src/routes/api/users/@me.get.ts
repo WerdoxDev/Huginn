@@ -10,7 +10,7 @@ router.get(
 	defineEventHandler(async (event) => {
 		const { payload } = await useVerifiedJwt(event);
 
-		const user: APIGetCurrentUserResult = idFix(await prisma.user.getById(payload.id, undefined, selectPrivateUser));
+		const user: APIGetCurrentUserResult = idFix(await prisma.user.getById(payload.id, { select: selectPrivateUser }));
 
 		setResponseStatus(event, HttpCode.OK);
 		return user;

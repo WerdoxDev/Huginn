@@ -41,26 +41,30 @@ describe("PATCH /channels/:channelId", () => {
 		{ timeout: 10000 },
 	);
 
-	test("should return 'Unauthorized' when no token is passed or user does not have the channel", async () => {
-		const [user, user2, user3, user4] = await createTestUsers(4);
+	test(
+		"should return 'Unauthorized' when no token is passed or user does not have the channel",
+		async () => {
+			const [user, user2, user3, user4] = await createTestUsers(4);
 
-		const channel = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
+			const channel = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
 
-		const result = testHandler(`/api/channels/${channel.id}`, {}, "PATCH", { name: "something_else" });
-		expect(result).rejects.toThrow("Unauthorized");
+			const result = testHandler(`/api/channels/${channel.id}`, {}, "PATCH", { name: "something_else" });
+			expect(result).rejects.toThrow("Unauthorized");
 
-		// User 4 does not have the channel and can't add a recipient to it.
-		const result2 = testHandler(`/api/channels/${channel.id}/recipients/${user3.id}`, authHeader(user4.accessToken), "PUT");
-		expect(result2).rejects.toThrow("Missing Access");
+			// User 4 does not have the channel and can't add a recipient to it.
+			const result2 = testHandler(`/api/channels/${channel.id}/recipients/${user3.id}`, authHeader(user4.accessToken), "PUT");
+			expect(result2).rejects.toThrow("Missing Access");
 
-		// User 4 does not have the channel and can't remove a recipient from it.
-		const result3 = testHandler(`/api/channels/${channel.id}/recipients/${user3.id}`, authHeader(user4.accessToken), "DELETE");
-		expect(result3).rejects.toThrow("Missing Access");
+			// User 4 does not have the channel and can't remove a recipient from it.
+			const result3 = testHandler(`/api/channels/${channel.id}/recipients/${user3.id}`, authHeader(user4.accessToken), "DELETE");
+			expect(result3).rejects.toThrow("Missing Access");
 
-		// User 3 is not the owner and can't remove a recipient from it.
-		const result4 = testHandler(`/api/channels/${channel.id}/recipients/${user3.id}`, authHeader(user2.accessToken), "DELETE");
-		expect(result4).rejects.toThrow("Missing Permission");
-	});
+			// User 3 is not the owner and can't remove a recipient from it.
+			const result4 = testHandler(`/api/channels/${channel.id}/recipients/${user3.id}`, authHeader(user2.accessToken), "DELETE");
+			expect(result4).rejects.toThrow("Missing Permission");
+		},
+		{ timeout: 10000 },
+	);
 
 	test(
 		"should add and remove a recipient from a channel when the request is successful",
@@ -96,29 +100,33 @@ describe("PATCH /channels/:channelId", () => {
 		{ timeout: 10000 },
 	);
 
-	test("should return the edited channel when the request is successful", async () => {
-		const [user, user2, user3] = await createTestUsers(3);
+	test(
+		"should return the edited channel when the request is successful",
+		async () => {
+			const [user, user2, user3] = await createTestUsers(3);
 
-		const channel = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
+			const channel = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
 
-		// Owner edits channel
-		const result = (await testHandler(`/api/channels/${channel.id}`, authHeader(user.accessToken), "PATCH", {
-			name: "test_group_edited",
-		})) as APIPatchDMChannelResult;
+			// Owner edits channel
+			const result = (await testHandler(`/api/channels/${channel.id}`, authHeader(user.accessToken), "PATCH", {
+				name: "test_group_edited",
+			})) as APIPatchDMChannelResult;
 
-		expectChannelExactSchema(result, ChannelType.GROUP_DM, channel.id, [user.id], "test_group_edited");
-		expectChannelExactRecipients(result, [user2, user3]);
+			expectChannelExactSchema(result, ChannelType.GROUP_DM, channel.id, [user.id], "test_group_edited");
+			expectChannelExactRecipients(result, [user2, user3]);
 
-		const channel2 = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
+			const channel2 = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
 
-		// Non owner edits channel
-		const result2 = (await testHandler(`/api/channels/${channel2.id}`, authHeader(user2.accessToken), "PATCH", {
-			name: "test_group_edited2",
-		})) as APIPatchDMChannelResult;
+			// Non owner edits channel
+			const result2 = (await testHandler(`/api/channels/${channel2.id}`, authHeader(user2.accessToken), "PATCH", {
+				name: "test_group_edited2",
+			})) as APIPatchDMChannelResult;
 
-		expectChannelExactSchema(result2, ChannelType.GROUP_DM, channel2.id, [user.id], "test_group_edited2");
-		expectChannelExactRecipients(result2, [user, user3]);
-	});
+			expectChannelExactSchema(result2, ChannelType.GROUP_DM, channel2.id, [user.id], "test_group_edited2");
+			expectChannelExactRecipients(result2, [user, user3]);
+		},
+		{ timeout: 10000 },
+	);
 
 	test.skipIf(!isCDNRunning)("should change the channel icon when the request is successful", async () => {
 		const [user, user2, user3] = await createTestUsers(3);

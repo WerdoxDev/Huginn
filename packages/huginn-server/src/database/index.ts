@@ -1,4 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
+import { withOptimize } from "@prisma/extension-optimize";
+import { envs } from "#setup";
 import assertExtension from "./assert";
 import authExtension from "./auth";
 import channelExtension from "./channel";
@@ -9,7 +11,7 @@ import relationshipExtension from "./relationship";
 import userExtension from "./user";
 
 // export const prismaBase = new PrismaClient({ omit: { user: { password: true } } }).$extends({
-export const prismaBase = new PrismaClient();
+export const prismaBase = new PrismaClient().$extends(withOptimize({ apiKey: process.env.OPTIMIZE_API_KEY ?? "", enable: false }));
 
 export const prisma = prismaBase
 	.$extends({

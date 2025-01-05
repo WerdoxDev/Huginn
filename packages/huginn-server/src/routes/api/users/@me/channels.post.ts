@@ -4,7 +4,7 @@ import { type APIPostDMChannelResult, ChannelType, Errors, HttpCode, idFix } fro
 import { defineEventHandler, setResponseStatus } from "h3";
 import { z } from "zod";
 import { prisma } from "#database";
-import { includeChannelRecipients } from "#database/common";
+import { selectChannelRecipients } from "#database/common";
 import { gateway, router } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { channelWithoutRecipient } from "#utils/helpers";
@@ -33,7 +33,7 @@ router.post(
 
 		// Create dm
 		const createdChannel: APIPostDMChannelResult = idFix(
-			await prisma.channel.createDM(payload.id, body.recipients, body.name, includeChannelRecipients),
+			await prisma.channel.createDM(payload.id, body.recipients, body.name, { include: selectChannelRecipients }),
 		);
 
 		// Subscribe topics, dispatch channel create event, create read state
