@@ -1,8 +1,8 @@
 {
-	"huginn-api": "0.3.0",
-	"huginn-server": "0.7.1",
-	"huginn-cdn": "0.2.1",
-	"huginn-bifrost": "0.2.2",
-	"huginn-shared": "0.3.0",
-	"huginn-backend-shared": "0.1.1"
+	"packages/huginn-api": "0.3.0",
+	"packages/huginn-server": "0.7.1",
+	"packages/huginn-cdn": "0.2.1",
+	"packages/huginn-bifrost": "0.2.2",
+	"packages/huginn-shared": "0.3.0",
+	"packages/huginn-backend-shared": "0.1.1"
 }
