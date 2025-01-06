@@ -1,6 +1,6 @@
 import type { ResponseLike, TokenPayload } from "@huginn/shared";
 import * as jose from "jose";
-import type { CDNOptions, ClientOptions, GatewayOptions, RESTOptions } from "./types";
+import type { CDNOptions, GatewayOptions, RESTOptions } from "./types";
 
 export function decodeToken(token: string): [boolean, (TokenPayload & jose.JWTPayload) | null] {
 	try {
