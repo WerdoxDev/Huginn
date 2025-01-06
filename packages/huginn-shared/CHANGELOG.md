@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/WerdoxDev/Huginn/compare/shared@v0.4.0...shared@v0.4.1) (2025-01-06)
+
+
+### Bug Fixes
+
+* **shared:** remove unused import ([6622d39](https://github.com/WerdoxDev/Huginn/commit/6622d39b4d64691c916f744645f212e91d39edb6))
+
 ## [0.4.0](https://github.com/WerdoxDev/Huginn/compare/shared-v0.3.0...shared@v0.4.0) (2025-01-06)
 
 
