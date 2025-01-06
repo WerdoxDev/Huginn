@@ -1,7 +1,7 @@
 {
 	"name": "huginn-bifrost",
 	"module": "index.ts",
-	"version": "0.4.0",
+	"version": "0.5.0",
 	"type": "module",
 	"scripts": {
 		"dev": "bun --watch src/index.ts",
