@@ -2,7 +2,7 @@
 	"release-type": "node",
 	"include-component-in-tag": true,
 	"tag-separator": "@",
-	"separate-pull-requests": true,
+	"separate-pull-requests": false,
 	"packages": {
 		"packages/huginn-api": {
 			"package-name": "huginn-api"
