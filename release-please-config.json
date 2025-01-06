@@ -5,22 +5,22 @@
 	"separate-pull-requests": false,
 	"packages": {
 		"packages/huginn-api": {
-			"package-name": "huginn-api"
+			"package-name": "api"
 		},
 		"packages/huginn-server": {
-			"package-name": "huginn-server"
+			"package-name": "server"
 		},
 		"packages/huginn-cdn": {
-			"package-name": "huginn-cdn"
+			"package-name": "cdn"
 		},
 		"packages/huginn-bifrost": {
-			"package-name": "huginn-bifrost"
+			"package-name": "bifrost"
 		},
 		"packages/huginn-shared": {
-			"package-name": "huginn-shared"
+			"package-name": "shared"
 		},
 		"packages/huginn-backend-shared": {
-			"package-name": "huginn-backend-shared"
+			"package-name": "backend-shared"
 		}
 	}
 }
