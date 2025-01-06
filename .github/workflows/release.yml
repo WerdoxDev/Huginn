@@ -7,10 +7,10 @@ permissions:
 on: workflow_dispatch
 
 jobs:
-  deploy:
-    name: Deploy service
+  release-please:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: googleapis/release-please-action@v4
         id: release
