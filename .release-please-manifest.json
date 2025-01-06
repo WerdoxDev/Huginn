@@ -4,5 +4,6 @@
 	"huginn-cdn": "0.2.1",
 	"huginn-bifrost": "0.2.2",
 	"huginn-shared": "0.3.0",
-	"huginn-backend-shared": "0.1.1"
+	"huginn-backend-shared": "0.1.1",
+	"packages/huginn-shared": "1.0.0"
 }
