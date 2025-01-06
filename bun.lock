@@ -84,7 +84,7 @@
     },
     "packages/huginn-backend-shared": {
       "name": "@huginn/backend-shared",
-      "version": "1.0.0",
+      "version": "0.1.1",
       "dependencies": {
         "@sapphire/snowflake": "^3.5.3",
         "consola": "^3.2.3",
@@ -97,7 +97,7 @@
     },
     "packages/huginn-bifrost": {
       "name": "huginn-bifrost",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "dependencies": {
         "@huginn/cdn": "packages/huginn-cdn",
         "@huginn/server": "packages/huginn-server",
@@ -129,7 +129,7 @@
     },
     "packages/huginn-cdn": {
       "name": "@huginn/cdn",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "dependencies": {
         "@aws-sdk/client-s3": "^3.658.1",
         "@huginn/backend-shared": "packages/huginn-backend-shared",
@@ -146,7 +146,7 @@
     },
     "packages/huginn-server": {
       "name": "@huginn/server",
-      "version": "0.7.0",
+      "version": "0.7.1",
       "dependencies": {
         "@aws-sdk/client-s3": "^3.714.0",
         "@huginn/backend-shared": "packages/huginn-backend-shared",
@@ -179,7 +179,7 @@
     },
     "packages/huginn-shared": {
       "name": "@huginn/shared",
-      "version": "1.2.0",
+      "version": "0.3.0",
       "dependencies": {
         "@sapphire/snowflake": "^3.5.3",
         "@std/encoding": "npm:@jsr/std__encoding",

@@ -1,0 +1,26 @@
+{
+	"release-type": "node",
+	"include-component-in-tag": true,
+	"tag-separator": "@",
+	"separate-pull-requests": true,
+	"packages": {
+		"packages/huginn-api": {
+			"package-name": "huginn-api"
+		},
+		"packages/huginn-server": {
+			"package-name": "huginn-server"
+		},
+		"packages/huginn-cdn": {
+			"package-name": "huginn-cdn"
+		},
+		"packages/huginn-bifrost": {
+			"package-name": "huginn-bifrost"
+		},
+		"packages/huginn-shared": {
+			"package-name": "huginn-shared"
+		},
+		"packages/huginn-backend-shared": {
+			"package-name": "huginn-backend-shared"
+		}
+	}
+}
