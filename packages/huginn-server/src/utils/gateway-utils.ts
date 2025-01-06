@@ -1,6 +1,6 @@
 import { logGatewaySend } from "@huginn/backend-shared";
 import { type GatewayEvents, GatewayOperations } from "@huginn/shared";
-import { gateway, router } from "../server";
+import { gateway } from "../server";
 
 export function dispatchToTopic<K extends keyof GatewayEvents>(topics: string | string[], t: K, d: GatewayEvents[K]) {
 	const data = { op: GatewayOperations.DISPATCH, t, d, s: 0 };
