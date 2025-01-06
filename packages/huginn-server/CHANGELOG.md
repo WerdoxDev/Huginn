@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.8.0...server@v0.8.1) (2025-01-06)
+
+
+### Bug Fixes
+
+* **server:** remove unused import ([7a1d25a](https://github.com/WerdoxDev/Huginn/commit/7a1d25a3b01c92e621c6c0a423b00437fb20c7c1))
+
 ## [0.8.0](https://github.com/WerdoxDev/Huginn/compare/server-v0.7.0...server@v0.8.0) (2025-01-06)
 
 
