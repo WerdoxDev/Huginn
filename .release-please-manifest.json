@@ -1,6 +1,6 @@
 {
 	"packages/huginn-api": "0.3.0",
-	"packages/huginn-server": "0.7.1",
+	"packages/huginn-server": "0.8.0",
 	"packages/huginn-cdn": "0.2.1",
 	"packages/huginn-bifrost": "0.2.2",
 	"packages/huginn-shared": "0.3.0",
