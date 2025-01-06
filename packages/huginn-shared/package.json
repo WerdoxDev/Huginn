@@ -1,8 +1,15 @@
 {
 	"name": "@huginn/shared",
 	"main": "./src/index.ts",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"type": "module",
-	"dependencies": { "@sapphire/snowflake": "^3.5.3", "@std/encoding": "npm:@jsr/std__encoding", "file-type": "^19.5.0", "ohash": "^1.1.4" },
-	"devDependencies": { "@types/bun": "latest" }
+	"dependencies": {
+		"@sapphire/snowflake": "^3.5.3",
+		"@std/encoding": "npm:@jsr/std__encoding",
+		"file-type": "^19.5.0",
+		"ohash": "^1.1.4"
+	},
+	"devDependencies": {
+		"@types/bun": "latest"
+	}
 }
