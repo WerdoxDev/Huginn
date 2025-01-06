@@ -1,10 +1,15 @@
-name: release-please
+name: release
 
 permissions:
   contents: write
   pull-requests: write
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - master
 
 jobs:
   release-please:
@@ -12,5 +17,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: googleapis/release-please-action@v4
+      - name: Get commit message
+        id: get_message
+        run: echo "commit_message=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+
+      - name: Run release-please on release commit or dispatch
+        uses: googleapis/release-please-action@v4
         id: release
+        if: |
+          github.event_name == 'workflow_dispatch' ||
+          contains(env.commit_message, ': release')
