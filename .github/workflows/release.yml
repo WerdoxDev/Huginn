@@ -14,5 +14,3 @@ jobs:
 
       - uses: googleapis/release-please-action@v4
         id: release
-        with:
-          skip-github-pull-request: true
