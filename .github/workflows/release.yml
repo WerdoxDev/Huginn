@@ -40,6 +40,9 @@ jobs:
 
           COMPONENT_NAME="app"
 
+          echo "app_release_needed=false" >> $GITHUB_OUTPUT
+          echo "app_release_pr_number=" >> $GITHUB_OUTPUT
+
           echo "$RELEASE_PRS" | jq -c '.[]' | while read -r PR; do
             TITLE=$(echo "$PR" | jq -r '.title')
             if [[ "$TITLE" == *"$COMPONENT_NAME"* ]]; then
@@ -50,14 +53,9 @@ jobs:
             fi
           done
 
-          # Default to no release needed if not set
-          echo "app_release_needed=false" >> $GITHUB_OUTPUT
-          echo "app_release_pr_number=" >> $GITHUB_OUTPUT
-
       - name: test pr
         run: |
           echo "${{steps.check_pr.outputs.app_release_needed}}"
-
 
   publish-app:
     needs: release-please
