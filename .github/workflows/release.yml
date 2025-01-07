@@ -28,7 +28,8 @@ jobs:
         id: check_pr
         run: |
           echo "Parsing release-pull-requests JSON..."
-          RELEASE_PRS='${{ steps.release_please.outputs.prs }}'
+          echo "${{steps.release.outputs}}"
+          RELEASE_PRS='${{ steps.release.outputs.prs }}'
           COMPONENT_NAME="app"
 
           echo "$RELEASE_PRS" | jq -c '.[]' | while read PR; do
