@@ -54,6 +54,10 @@ jobs:
           echo "app_release_needed=false" >> $GITHUB_OUTPUT
           echo "app_release_pr_number=" >> $GITHUB_OUTPUT
 
+      - name: test pr
+        run: |
+          echo "${{steps.check_pr.outputs.app_release_needed}}"
+
 
   publish-app:
     needs: release-please
@@ -67,7 +71,7 @@ jobs:
               args: ''
 
     runs-on: ${{ matrix.platform }}
-    if: needs.release-please.outputs.app_release_needed == true
+    if: needs.release-please.outputs.app_release_needed == 'true'
     steps:
       - uses: actions/checkout@v4
 
