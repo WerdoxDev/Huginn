@@ -16,7 +16,7 @@ jobs:
   release-please:
    runs-on: ubuntu-latest
    outputs:
-     app_release_created: ${{ steps.release.outputs['packages/huginn-app--release_created'] }}
+     app_release_created: ${{ fromJson(steps.release.outputs['packages/huginn-app--release_created']) }}
    steps:
       - uses: actions/checkout@v4
 
@@ -41,7 +41,7 @@ jobs:
               args: ''
 
     runs-on: ${{ matrix.platform }}
-    if: ${{fromJson( needs.release-please.outputs.app_release_created)}}
+    if: ${{needs.release-please.outputs.app_release_created}}
 
     steps:
       - uses: actions/checkout@v4
