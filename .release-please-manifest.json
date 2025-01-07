@@ -5,5 +5,5 @@
 	"packages/huginn-bifrost": "0.2.0",
 	"packages/huginn-shared": "0.3.0",
 	"packages/huginn-backend-shared": "0.1.0",
-	"packages/huginn-app": "0.8.0"
+	"packages/huginn-app/src-tauri": "0.8.0"
 }
