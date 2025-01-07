@@ -27,25 +27,25 @@ jobs:
       - name: check for app release pr
         id: check_pr
         run: |
-          echo "Parsing release-pull-requests JSON..."
-          echo "${{steps.release.outputs}}"
-          RELEASE_PRS='${{ steps.release.outputs.prs }}'
-          COMPONENT_NAME="app"
+         echo "Parsing release-pull-requests JSON..."
+         RELEASE_PRS="${{ steps.release.outputs.prs }}"
+         COMPONENT_NAME="app"
 
-          echo "$RELEASE_PRS" | jq -c '.[]' | while read PR; do
+         echo "$RELEASE_PRS" | jq -c '.[]' | while read -r PR; do
             TITLE=$(echo "$PR" | jq -r '.title')
             if [[ "$TITLE" == *"$COMPONENT_NAME"* ]]; then
-              echo "Found release PR for $COMPONENT_NAME: $TITLE"
-              echo "release_needed=true" >> $GITHUB_ENV
-              echo "release_pr=$(echo "$PR" | jq -r '.number')" >> $GITHUB_ENV
-              break
+               echo "Found release PR for $COMPONENT_NAME: $TITLE"
+               echo "release_needed=true" >> "$GITHUB_ENV"
+               echo "release_pr=$(echo "$PR" | jq -r '.number')" >> "$GITHUB_ENV"
+               break
             fi
-          done
+         done
 
-          # Default to no release needed if not set
-          if [ -z "$release_needed" ]; then
-            echo "release_needed=false" >> $GITHUB_ENV
-          fi
+         # Default to no release needed if not set
+         if [ -z "$release_needed" ]; then
+            echo "release_needed=false" >> "$GITHUB_ENV"
+         fi
+
 
   # publish-app:
   #   strategy:
