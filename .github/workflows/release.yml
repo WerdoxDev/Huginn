@@ -49,6 +49,7 @@ jobs:
               echo "Found release PR for $COMPONENT_NAME: $TITLE"
               echo "app_release_needed=true" >> $GITHUB_OUTPUT
               echo "app_release_pr_number=$(echo "$PR" | jq -r '.number')" >> $GITHUB_OUTPUT
+              echo "$PR" | jq -r '.body'
               exit 0
             fi
           done
@@ -97,6 +98,8 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{secrets.TAURI_SIGNING_PRIVATE_KEY}}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD}}
         with:
           projectPath: "packages/huginn-app"
           tagName: app@v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
