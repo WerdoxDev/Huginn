@@ -13,12 +13,12 @@ on:
 
 jobs:
   release-please:
-    outputs:
+   runs-on: ubuntu-latest
+   outputs:
       app_release_needed: ${{steps.check_pr.outputs.app_release_needed}}
       app_release_pr_body: ${{steps.check_pr.outputs.app_release_pr_body}}
 
-    runs-on: ubuntu-latest
-    steps:
+   steps:
       - uses: actions/checkout@v4
 
       - name: run release-please on release commit or dispatch
@@ -44,16 +44,15 @@ jobs:
             TITLE=$(echo "$PR" | jq -r '.title')
             if [[ "$TITLE" == *"$COMPONENT_NAME"* ]]; then
               echo "Found release PR for $COMPONENT_NAME: $TITLE"
-              echo "app_release_needed=true" >>"$GITHUB_ENV"
-              echo "app_release_pr_body=$(echo "$PR")" >> "$GITHUB_ENV"
-              break
+              echo "::set-output name=app_release_needed::true"
+              echo "::set-output name=app_release_pr_body::$(echo "$PR" | jq -r '.body')"
+              exit 0
             fi
           done
 
           # Default to no release needed if not set
-          if [ -z "$app_release_needed" ]; then
-            echo "app_release_needed=false" >> "$GITHUB_ENV"
-          fi
+          echo "::set-output name=app_release_needed::false"
+          echo "::set-output name=app_release_pr_body::"
 
 
   publish-app:
