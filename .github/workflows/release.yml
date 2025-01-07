@@ -41,7 +41,7 @@ jobs:
               args: ''
 
     runs-on: ${{ matrix.platform }}
-    if: ${{needs.release-please.outputs.app_release_created}}
+    if: ${{needs.release-please.outputs.app_release_created == 'true'}}
 
     steps:
       - uses: actions/checkout@v4
