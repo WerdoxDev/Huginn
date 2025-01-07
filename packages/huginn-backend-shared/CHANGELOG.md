@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.2.0...backend-shared@v0.2.1) (2025-01-07)
+
+
+### Bug Fixes
+
+* **backend-shared:** remove unused import ([91e61c6](https://github.com/WerdoxDev/Huginn/commit/91e61c63b35a1e693f8a72c72c5ae11c5ee0919a))
+
 ## [0.2.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared-v0.1.0...backend-shared@v0.2.0) (2025-01-07)
 
 
