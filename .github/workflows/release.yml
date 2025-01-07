@@ -44,15 +44,15 @@ jobs:
             TITLE=$(echo "$PR" | jq -r '.title')
             if [[ "$TITLE" == *"$COMPONENT_NAME"* ]]; then
               echo "Found release PR for $COMPONENT_NAME: $TITLE"
-              echo "::set-output name=app_release_needed::true"
-              echo "::set-output name=app_release_pr_body::$(echo "$PR" | jq -r '.body')"
+              echo "app_release_needed=true" >> $GITHUB_OUTPUT
+              echo "app_release_pr_body=$(echo "$PR" | jq -r '.body')" >> $GITHUB_OUTPUT
               exit 0
             fi
           done
 
           # Default to no release needed if not set
-          echo "::set-output name=app_release_needed::false"
-          echo "::set-output name=app_release_pr_body::"
+          echo "app_release_needed=false" >> $GITHUB_OUTPUT
+          echo "app_release_pr_body=" >> $GITHUB_OUTPUT
 
 
   publish-app:
@@ -67,7 +67,7 @@ jobs:
               args: ''
 
     runs-on: ${{ matrix.platform }}
-    if: needs.release-please.outputs.app_release_needed
+    if: needs.release-please.outputs.app_release_needed == true
     steps:
       - uses: actions/checkout@v4
 
