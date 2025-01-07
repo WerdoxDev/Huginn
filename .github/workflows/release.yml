@@ -13,6 +13,10 @@ on:
 
 jobs:
   release-please:
+    outputs:
+      app_release_needed: ${{steps.check_pr.outputs.app_release_needed}}
+      app_release_pr_body: ${{steps.check_pr.outputs.app_release_pr_body}}
+
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -40,60 +44,62 @@ jobs:
             TITLE=$(echo "$PR" | jq -r '.title')
             if [[ "$TITLE" == *"$COMPONENT_NAME"* ]]; then
               echo "Found release PR for $COMPONENT_NAME: $TITLE"
-              echo "release_needed=true" >>"$GITHUB_ENV"
-              echo "release_pr=$(echo "$PR" | jq -r '.number')" >>"$GITHUB_ENV"
+              echo "app_release_needed=true" >>"$GITHUB_ENV"
+              echo "app_release_pr_body=$(echo "$PR" | jq -r '.body')" >>"$GITHUB_ENV"
               break
             fi
           done
 
           # Default to no release needed if not set
-          if [ -z "$release_needed" ]; then
-            echo "release_needed=false" >> "$GITHUB_ENV"
+          if [ -z "$app_release_needed" ]; then
+            echo "app_release_needed=false" >> "$GITHUB_ENV"
           fi
 
 
-  # publish-app:
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       include:
-  #         # - platform: 'ubuntu-22.04'
-  #         #   args: ''
-  #         - platform: 'windows-latest'
-  #           args: ''
+  publish-app:
+    needs: release-please
+    strategy:
+      fail-fast: false
+      matrix:
+         include:
+            # - platform: 'ubuntu-22.04'
+            #   args: ''
+            - platform: 'windows-latest'
+              args: ''
 
-  #   runs-on: ${{ matrix.platform }}
-  #   steps:
-  #     - uses: actions/checkout@v4
+    runs-on: ${{ matrix.platform }}
+    if: needs.release-please.outputs.app_release_needed
+    steps:
+      - uses: actions/checkout@v4
 
-  #     - name: install dependencies (ubuntu only)
-  #       if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
-  #       run: |
-  #         sudo apt-get update
-  #         sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
-  #     - name: setup bun
-  #       uses: oven-sh/setup-bun@v2
+      - name: setup bun
+        uses: oven-sh/setup-bun@v2
 
-  #     - name: install Rust stable
-  #       uses: dtolnay/rust-toolchain@stable # Set this to dtolnay/rust-toolchain@nightly
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable # Set this to dtolnay/rust-toolchain@nightly
 
-  #     - name: Rust cache
-  #       uses: swatinem/rust-cache@v2
-  #       with:
-  #         workspaces: './packages/huginn-app/src-tauri -> target'
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './packages/huginn-app/src-tauri -> target'
 
-  #     - name: install frontend dependencies
-  #       # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
-  #       run: cd packages/huginn-app && bun install # change this to npm or pnpm depending on which one you use.
+      - name: install frontend dependencies
+        # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
+        run: cd packages/huginn-app && bun install # change this to npm or pnpm depending on which one you use.
 
-  #     - uses: tauri-apps/tauri-action@v0
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
-  #         releaseName: 'App v__VERSION__'
-  #         releaseBody: 'See the assets to download this version and install.'
-  #         releaseDraft: true
-  #         prerelease: false
-  #         args: ${{ matrix.args }}
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: app@v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
+          releaseName: 'app: v__VERSION__'
+          releaseBody: "${{needs.release-please.outputs.app_release_pr_body}}"
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
