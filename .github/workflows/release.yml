@@ -29,9 +29,10 @@ jobs:
         run: |
           echo "Parsing release-pull-requests JSON..."
 
-          read -r -d '' RELEASE_PRS << 'EOF'
+          RELEASE_PRS=$(cat << 'EOF'
           ${{steps.release.outputs.prs}}
           EOF
+          )
 
           COMPONENT_NAME="app"
 
