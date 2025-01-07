@@ -22,6 +22,11 @@
 		},
 		"packages/huginn-backend-shared": {
 			"package-name": "backend-shared"
+		},
+		"packages/huginn-app": {
+			"package-name": "app",
+			"skip-github-release": true,
+			"separate-pull-requests": true
 		}
 	}
 }

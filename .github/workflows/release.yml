@@ -17,9 +17,78 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run release-please on release commit or dispatch
+      - name: run release-please on release commit or dispatch
         uses: googleapis/release-please-action@v4
         id: release
         if: |
           github.event_name == 'workflow_dispatch' ||
           contains(github.event.head_commit.message, ': release')
+
+      - name: check for app release pr
+        id: check_pr
+        run: |
+          echo "Parsing release-pull-requests JSON..."
+          RELEASE_PRS='${{ steps.release_please.outputs.prs }}'
+          COMPONENT_NAME="app"
+
+          echo "$RELEASE_PRS" | jq -c '.[]' | while read PR; do
+            TITLE=$(echo "$PR" | jq -r '.title')
+            if [[ "$TITLE" == *"$COMPONENT_NAME"* ]]; then
+              echo "Found release PR for $COMPONENT_NAME: $TITLE"
+              echo "release_needed=true" >> $GITHUB_ENV
+              echo "release_pr=$(echo "$PR" | jq -r '.number')" >> $GITHUB_ENV
+              break
+            fi
+          done
+
+          # Default to no release needed if not set
+          if [ -z "$release_needed" ]; then
+            echo "release_needed=false" >> $GITHUB_ENV
+          fi
+
+  publish-app:
+    if: ${{ steps.release.outputs['packages/huginn-app--release_created']}}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # - platform: 'ubuntu-22.04'
+          #   args: ''
+          - platform: 'windows-latest'
+            args: ''
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: setup bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable # Set this to dtolnay/rust-toolchain@nightly
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './packages/huginn-app/src-tauri -> target'
+
+      - name: install frontend dependencies
+        # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
+        run: cd packages/huginn-app && bun install # change this to npm or pnpm depending on which one you use.
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
+          releaseName: 'App v__VERSION__'
+          releaseBody: 'See the assets to download this version and install.'
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
