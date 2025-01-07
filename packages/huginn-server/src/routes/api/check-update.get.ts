@@ -38,13 +38,13 @@ router.get(
 		}
 
 		// Already on the latest version
-		if (target === "windows-x86_64" && currentVersion === latestVersion) {
+		if (target.includes("windows") && currentVersion === latestVersion) {
 			return sendNoContent(event, HttpCode.NO_CONTENT);
 		}
 
 		// Send newest version
-		if (target === "windows-x86_64" && latestVersion) {
-			const platform = latestInfo.platforms[target];
+		if (target.includes("windows") && latestVersion) {
+			const platform = latestInfo.platforms["windows-x86_64"];
 
 			setResponseStatus(event, HttpCode.OK);
 			return {
