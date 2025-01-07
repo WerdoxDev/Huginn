@@ -2,7 +2,6 @@
 	"release-type": "node",
 	"include-component-in-tag": true,
 	"tag-separator": "@",
-	"separate-pull-requests": false,
 	"include-v-in-tag": true,
 	"commit-search-depth": 100,
 	"packages": {
@@ -26,6 +25,7 @@
 		},
 		"packages/huginn-app": {
 			"package-name": "app",
+			"separate-pull-requests": true,
 			"extra-files": [
 				{
 					"type": "toml",
