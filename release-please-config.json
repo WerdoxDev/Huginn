@@ -28,7 +28,7 @@
 			"package-name": "app",
 			"release-type": "rust",
 			"separate-pull-requests": true,
-			"extra-files": ["../"]
+			"extra-files": ["../*"]
 		}
 	}
 }
