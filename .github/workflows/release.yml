@@ -22,7 +22,7 @@ jobs:
       - name: run release-please on release commit or dispatch
         uses: googleapis/release-please-action@v4
         with:
-          default-branch: ${{github.ref_name}}
+          target-branch: ${{github.ref_name}}
         id: release
         if: |
           github.event_name == 'workflow_dispatch' ||
