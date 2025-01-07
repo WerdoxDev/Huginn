@@ -4,6 +4,7 @@
 	"tag-separator": "@",
 	"separate-pull-requests": false,
 	"include-v-in-tag": true,
+	"commit-search-depth": 100,
 	"packages": {
 		"packages/huginn-api": {
 			"package-name": "api"
