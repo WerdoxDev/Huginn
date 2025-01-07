@@ -17,6 +17,7 @@ jobs:
    outputs:
       app_release_needed: ${{steps.check_pr.outputs.app_release_needed}}
       app_release_pr_number: ${{steps.check_pr.outputs.app_release_pr_number}}
+      app_release_pr_body: ${{steps.check_pr.outputs.app_release_pr_body}}
 
    steps:
       - uses: actions/checkout@v4
@@ -42,6 +43,7 @@ jobs:
 
           echo "app_release_needed=false" >> $GITHUB_OUTPUT
           echo "app_release_pr_number=" >> $GITHUB_OUTPUT
+          echo "app_release_pr_body=" >> $GITHUB_OUTPUT
 
           echo "$RELEASE_PRS" | jq -c '.[]' | while read -r PR; do
             TITLE=$(echo "$PR" | jq -r '.title')
@@ -49,7 +51,9 @@ jobs:
               echo "Found release PR for $COMPONENT_NAME: $TITLE"
               echo "app_release_needed=true" >> $GITHUB_OUTPUT
               echo "app_release_pr_number=$(echo "$PR" | jq -r '.number')" >> $GITHUB_OUTPUT
-              echo "$PR" | jq -r '.body'
+
+              PR_BODY=$(echo "$PR" | jq -r '.body')
+              echo "app_release_pr_body=$PR_BODY" >> $GITHUB_OUTPUT
               exit 0
             fi
           done
@@ -70,7 +74,9 @@ jobs:
               args: ''
 
     runs-on: ${{ matrix.platform }}
-    if: needs.release-please.outputs.app_release_needed == 'true'
+    if: |
+     contains(github.event.head_commit.message, ': release app')
+
     steps:
       - uses: actions/checkout@v4
 

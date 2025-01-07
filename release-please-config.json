@@ -24,9 +24,9 @@
 		"packages/huginn-backend-shared": {
 			"package-name": "backend-shared"
 		},
-		"packages/huginn-app": {
+		"packages/huginn-app/src-tauri": {
 			"package-name": "app",
-			"skip-github-release": true,
+			"release-type": "rust",
 			"separate-pull-requests": true
 		}
 	}
