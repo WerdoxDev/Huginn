@@ -37,12 +37,12 @@ export function getWindowsAssetUrl(release?: Unpacked<Endpoints["GET /repos/{own
 }
 
 export function getAppPackageVersion(tagName: string) {
-	return tagName.replace("huginn/app-", "");
+	return tagName.replace("app@", "");
 }
 
 export async function getAllAppReleases() {
 	const releases = (await octokit.rest.repos.listReleases({ owner: envs.REPO_OWNER, repo: envs.REPO })).data
-		.filter((x) => x.tag_name.includes("huginn/app"))
+		.filter((x) => x.tag_name.includes("app@"))
 		.sort((v1, v2) => semver.rcompare(getAppPackageVersion(v1.tag_name), getAppPackageVersion(v2.tag_name)));
 	return releases;
 }

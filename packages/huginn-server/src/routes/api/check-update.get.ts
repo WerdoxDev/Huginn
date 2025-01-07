@@ -1,11 +1,10 @@
-import { GetObjectCommand } from "@aws-sdk/client-s3";
-import { type APICheckUpdateResult, HttpCode, type VersionsObject } from "@huginn/shared";
+import { type APICheckUpdateResult, HttpCode } from "@huginn/shared";
 import { defineEventHandler, sendNoContent, setResponseStatus } from "h3";
 import * as semver from "semver";
-import { router, s3 } from "#server";
+import { octokit, router } from "#server";
 import { envs } from "#setup";
 
-type TargetKind = "none" | "windows";
+type TargetKind = "none" | "windows-x86_64";
 
 router.get(
 	"/check-update/:target/:currentVersion",
@@ -18,34 +17,42 @@ router.get(
 			return sendNoContent(event, HttpCode.NO_CONTENT);
 		}
 
-		const getCommand = new GetObjectCommand({ Bucket: envs.AWS_BUCKET, Key: envs.AWS_VERSIONS_OBJECT_KEY });
-		const versions: VersionsObject = JSON.parse((await (await s3.send(getCommand)).Body?.transformToString()) ?? "");
+		// const getCommand = new GetObjectCommand({ Bucket: envs.AWS_BUCKET, Key: envs.AWS_VERSIONS_OBJECT_KEY });
+		// const versions: VersionsObject = JSON.parse((await (await s3.send(getCommand)).Body?.transformToString()) ?? "");
+		const tags = await octokit.request("GET /repos/{owner}/{repo}/tags", { owner: envs.REPO_OWNER, repo: envs.REPO, per_page: 100 });
+		const [latestTag] = tags.data
+			.filter((x) => x.name.startsWith("app@v"))
+			.toSorted((a, b) => semver.rcompare(a.name.replace("app@", ""), b.name.replace("app@", "")));
 
-		const sortedVersions = Object.keys(versions).sort(semver.rcompare);
+		const latestVersion = latestTag.name.replace("app@v", "");
+		const latestRelease = await octokit.rest.repos.getReleaseByTag({ owner: envs.REPO_OWNER, repo: envs.REPO, tag: latestTag.name });
+		const latestInfo = await (await fetch(latestRelease.data.assets.find((x) => x.name === "latest.json")?.browser_download_url ?? "")).json();
 
-		const [latest] = sortedVersions;
+		// const sortedVersions = Object.keys(versions).sort(semver.rcompare);
+
+		// const [latest] = sortedVersions;
 
 		// We don't have a version
-		if (!latest) {
+		if (!latestVersion) {
 			return sendNoContent(event, HttpCode.NO_CONTENT);
 		}
 
 		// Already on the latest version
-		if (target === "windows" && currentVersion === latest) {
+		if (target === "windows-x86_64" && currentVersion === latestVersion) {
 			return sendNoContent(event, HttpCode.NO_CONTENT);
 		}
 
 		// Send newest version
-		if (target === "windows" && latest) {
-			const version = versions[latest];
+		if (target === "windows-x86_64" && latestVersion) {
+			const platform = latestInfo.platforms[target];
 
 			setResponseStatus(event, HttpCode.OK);
 			return {
-				version: latest,
-				notes: version.description,
-				pub_date: version.publishDate,
-				signature: version.downloads.windows?.signature,
-				url: version.downloads.windows?.url,
+				version: latestVersion,
+				notes: latestInfo.notes,
+				pub_date: latestInfo.pub_date,
+				signature: platform.signature,
+				url: platform.url,
 			} as APICheckUpdateResult;
 		}
 	}),
