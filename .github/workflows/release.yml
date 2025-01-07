@@ -10,14 +10,11 @@ on:
   push:
     branches:
       - master
+      - dev
 
 jobs:
   release-please:
    runs-on: ubuntu-latest
-   outputs:
-      app_release_needed: ${{steps.check_pr.outputs.app_release_needed}}
-      app_release_pr_number: ${{steps.check_pr.outputs.app_release_pr_number}}
-      app_release_pr_body: ${{steps.check_pr.outputs.app_release_pr_body}}
 
    steps:
       - uses: actions/checkout@v4
@@ -28,39 +25,6 @@ jobs:
         if: |
           github.event_name == 'workflow_dispatch' ||
           contains(github.event.head_commit.message, ': release')
-
-      - name: check for app release pr
-        id: check_pr
-        run: |
-          echo "Parsing release-pull-requests JSON..."
-
-          RELEASE_PRS=$(cat << 'EOF'
-          ${{steps.release.outputs.prs}}
-          EOF
-          )
-
-          COMPONENT_NAME="app"
-
-          echo "app_release_needed=false" >> $GITHUB_OUTPUT
-          echo "app_release_pr_number=" >> $GITHUB_OUTPUT
-          echo "app_release_pr_body=" >> $GITHUB_OUTPUT
-
-          echo "$RELEASE_PRS" | jq -c '.[]' | while read -r PR; do
-            TITLE=$(echo "$PR" | jq -r '.title')
-            if [[ "$TITLE" == *"$COMPONENT_NAME"* ]]; then
-              echo "Found release PR for $COMPONENT_NAME: $TITLE"
-              echo "app_release_needed=true" >> $GITHUB_OUTPUT
-              echo "app_release_pr_number=$(echo "$PR" | jq -r '.number')" >> $GITHUB_OUTPUT
-
-              PR_BODY=$(echo "$PR" | jq -r '.body')
-              echo "app_release_pr_body=$PR_BODY" >> $GITHUB_OUTPUT
-              exit 0
-            fi
-          done
-
-      - name: test pr
-        run: |
-          echo "${{steps.check_pr.outputs.app_release_needed}}"
 
   publish-app:
     needs: release-please
@@ -109,8 +73,7 @@ jobs:
         with:
           projectPath: "packages/huginn-app"
           tagName: app@v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
-          releaseName: 'app: v__VERSION__'
-          releaseBody: "${{needs.release-please.outputs.app_release_pr_number}}"
-          releaseDraft: true
+          releaseName: "app: v__VERSION__"
+          releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
