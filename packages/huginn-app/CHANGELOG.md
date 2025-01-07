@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.9.1...app@v0.9.2) (2025-01-07)
+
+
+### Bug Fixes
+
+* **app:** remove unused package ([c7374ff](https://github.com/WerdoxDev/Huginn/commit/c7374ffbbd7636e36421158696690a9575730683))
+
 ## [0.9.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.9.0...app@v0.9.1) (2025-01-07)
 
 
