@@ -26,7 +26,6 @@
 		},
 		"packages/huginn-app": {
 			"package-name": "app",
-			"separate-pull-requests": true,
 			"extra-files": [
 				{
 					"type": "toml",
