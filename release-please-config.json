@@ -27,7 +27,8 @@
 		"packages/huginn-app": {
 			"package-name": "app",
 			"release-type": "rust",
-			"separate-pull-requests": true
+			"separate-pull-requests": true,
+			"extra-files": ["packages/huginn-app/src-tauri/Cargo.toml"]
 		}
 	}
 }
