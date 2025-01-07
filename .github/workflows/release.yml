@@ -45,7 +45,7 @@ jobs:
             if [[ "$TITLE" == *"$COMPONENT_NAME"* ]]; then
               echo "Found release PR for $COMPONENT_NAME: $TITLE"
               echo "app_release_needed=true" >>"$GITHUB_ENV"
-              echo "app_release_pr_body=$(echo "$PR" | jq -r '.body')" >>"$GITHUB_ENV"
+              echo "app_release_pr_body=$(echo "$PR")" >> "$GITHUB_ENV"
               break
             fi
           done
