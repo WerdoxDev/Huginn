@@ -1,9 +1,9 @@
 {
-	"packages/huginn-api": "0.3.0",
-	"packages/huginn-server": "0.7.0",
-	"packages/huginn-cdn": "0.2.0",
-	"packages/huginn-bifrost": "0.2.0",
-	"packages/huginn-shared": "0.3.0",
-	"packages/huginn-backend-shared": "0.1.0",
+	"packages/huginn-api": "0.4.0",
+	"packages/huginn-server": "0.8.0",
+	"packages/huginn-cdn": "0.3.0",
+	"packages/huginn-bifrost": "0.3.0",
+	"packages/huginn-shared": "0.4.0",
+	"packages/huginn-backend-shared": "0.2.0",
 	"packages/huginn-app/src-tauri": "0.8.0"
 }
