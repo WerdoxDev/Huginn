@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.9.0...app@v0.9.1) (2025-01-07)
+
+
+### Bug Fixes
+
+* **app:** remove private from package.json ([912b644](https://github.com/WerdoxDev/Huginn/commit/912b644c3e0cf904e492cbd191195a87b1bad0f2))
+
 ## [0.9.0](https://github.com/werdoxdev/huginn/compare/app@v0.8.0...app@v0.9.0) (2025-01-07)
 
 
