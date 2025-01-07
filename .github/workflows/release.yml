@@ -28,18 +28,24 @@ jobs:
         id: check_pr
         run: |
          echo "Parsing release-pull-requests JSON..."
-         RELEASE_PRS="${{ steps.release.outputs.prs }}"
+         read -r -d '' RELEASE_PRS << 'EOF'
+            ${{steps.release.outputs.prs}}
+         EOF
+
          COMPONENT_NAME="app"
 
          echo "$RELEASE_PRS" | jq -c '.[]' | while read -r PR; do
             TITLE=$(echo "$PR" | jq -r '.title')
             if [[ "$TITLE" == *"$COMPONENT_NAME"* ]]; then
                echo "Found release PR for $COMPONENT_NAME: $TITLE"
-               echo "release_needed=true" >> "$GITHUB_ENV"
-               echo "release_pr=$(echo "$PR" | jq -r '.number')" >> "$GITHUB_ENV"
+               echo "release_needed=true" >>"$GITHUB_ENV"
+               echo "release_pr=$(echo "$PR" | jq -r '.number')" >>"$GITHUB_ENV"
                break
             fi
          done
+
+         COMPONENT_NAME="app"
+
 
          # Default to no release needed if not set
          if [ -z "$release_needed" ]; then
