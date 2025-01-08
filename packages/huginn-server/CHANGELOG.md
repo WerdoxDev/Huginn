@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.9.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.8.0...server@v0.9.0) (2025-01-08)
+
+
+### Features
+
+* **server:** move version checking to github releases instead of aws s3 ([ffb972f](https://github.com/WerdoxDev/Huginn/commit/ffb972f9e771b52093f54eedb89cf8f073e88b5d))
+
+
+### Bug Fixes
+
+* **server:** check-update should only check if target includes a certain string ([84e1400](https://github.com/WerdoxDev/Huginn/commit/84e14007f828f0e6da872c26dc1e9b1d7c64f8b3))
+
 ## [0.8.0](https://github.com/WerdoxDev/Huginn/compare/server-v0.7.0...server@v0.8.0) (2025-01-07)
 
 

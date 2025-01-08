@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.9.2...app@v0.9.3) (2025-01-08)
+
+
+### Bug Fixes
+
+* **app:** link rendering with interfering markdown should be prioritized ([7d35818](https://github.com/WerdoxDev/Huginn/commit/7d3581874549abd387db06a1677c8c14a9f70e1f))
+
 ## [0.9.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.9.1...app@v0.9.2) (2025-01-07)
 
 
