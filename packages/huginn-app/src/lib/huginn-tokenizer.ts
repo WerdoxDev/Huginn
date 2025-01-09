@@ -18,7 +18,8 @@ export type FinishedToken = {
 	start: number;
 	end: number;
 	data?: { url?: string };
-	mark?: string;
+	startMark?: string;
+	endMark?: string;
 };
 
 type Token = { index: number; text: string };
@@ -46,7 +47,7 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
 		}
 	}
 
-	console.log("NO CACHE");
+	console.log("NO CACHE", text);
 
 	let _text = text;
 
@@ -84,8 +85,8 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
 			if (
 				tokens.some(
 					(x) =>
-						((match?.index ?? 0) >= x.start && (match?.index ?? 0) <= x.start + (x.mark?.length ?? 0) - 1) ||
-						((match?.index ?? 0) <= x.end && (match?.index ?? 0) >= x.end - (x.mark?.length ?? 0) + 1),
+						((match?.index ?? 0) >= x.start && (match?.index ?? 0) <= x.start + (x.startMark?.length ?? 0) - 1) ||
+						((match?.index ?? 0) <= x.end && (match?.index ?? 0) >= x.end - (x.startMark?.length ?? 0) + 1),
 				)
 			) {
 				continue;
@@ -99,7 +100,7 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
 				const interferingToken = tokens.find((x) => x.end === endIndex - 1);
 				token = {
 					start: { index: match.index, text: "" },
-					end: { index: endIndex - (interferingToken?.mark?.length ?? 0), text: "" },
+					end: { index: endIndex - (interferingToken?.startMark?.length ?? 0), text: "" },
 					type: type,
 				};
 			} else if (hasFlag(type, TokenTypeFlag.MASK_LINK) && match.groups) {
@@ -131,7 +132,8 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
 						content,
 						end: token.end.index + token.end.text.length - 1,
 						types: getTokenTypeFromFlag(token.type),
-						mark: token.start.text,
+						startMark: token.start.text,
+						endMark: token.end.text,
 					});
 				}
 
@@ -158,9 +160,9 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
 	}
 
 	// add all text as a single token because no token was created
-	if (tokens.length === 0) {
+	if (tokens.length === 0 && text) {
 		tokens.push({ start: 0, end: _text.length - 1, content: _text, types: [] });
-	} else {
+	} else if (text) {
 		let lastTokenEnd = undefined;
 		for (const token of tokens.toSorted((a, b) => a.start - b.start)) {
 			// if(lastTokenEnd && token.start <)
@@ -182,9 +184,76 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
 			tokens.push({ start: lastTokenEnd + 1, end: _text.length - 1, content: _text.slice(lastTokenEnd + 1), types: [] });
 		}
 	}
-	console.log([...tokens]);
 
+	tokens.sort((a, b) => a.start - b.start);
+
+	// separate tokens into a left-to-right appendable form
+	const copiedTokens = [...tokens];
+	const indeciesToRemove: number[] = [];
+	for (const [i, token] of copiedTokens.entries()) {
+		const memberTokens = copiedTokens.filter(
+			(x) =>
+				x.start > token.start &&
+				x.end < token.end &&
+				// Ensure no other x fully contains this one within the same range
+				!copiedTokens.some((other) => other.start < x.start && other.end > x.end && other.start > token.start && other.end < token.end),
+		);
+		if (memberTokens.length === 0) {
+			continue;
+		}
+
+		for (const [i, memberToken] of memberTokens.entries()) {
+			const maximumEnd = i === memberTokens.length - 1 ? token.end : memberTokens[i + 1].start - 1;
+			const minimumStart = i === 0 ? token.start : memberTokens[i - 1].end + 1;
+			console.log(memberToken);
+
+			if (minimumStart === token.start) {
+				// add prefix token
+				tokens.push({
+					start: minimumStart,
+					end: memberToken.start - 1,
+					content: _text.slice(minimumStart + (token.startMark?.length ?? 0), memberToken.start),
+					startMark: token.startMark,
+					types: token.types,
+				});
+			}
+
+			if (maximumEnd === token.end) {
+				// add suffix token
+				tokens.push({
+					start: memberToken.end + 1,
+					end: maximumEnd,
+					content: _text.slice(memberToken.end + 1, maximumEnd - (token.endMark?.length ?? 0) + 1),
+					endMark: token.endMark,
+					types: token.types,
+				});
+			}
+
+			// console.log(minimumStart, token.start, maximumEnd, token.end);
+			if (maximumEnd !== token.end) {
+				tokens.push({
+					start: memberToken.end + 1,
+					end: maximumEnd,
+					content: _text.slice(memberToken.end + 1, maximumEnd + 1),
+					types: token.types,
+				});
+			}
+
+			memberToken.types.push(...token.types);
+		}
+
+		indeciesToRemove.push(i);
+	}
+
+	// Remove indecies based on a higher first approach
+	for (const index of indeciesToRemove.toSorted((a, b) => b - a)) {
+		tokens.splice(index, 1);
+	}
+
+	tokens.sort((a, b) => a.start - b.start);
 	caches.set(text, { tokens: tokens, skippedTokens: skipTokens });
+
+	console.log(tokens);
 
 	return tokens;
 }
@@ -199,11 +268,11 @@ export function mergeTokens(tokens: FinishedToken[]) {
 			currentToken = token;
 		} else if (token.start >= currentToken.start && token.end <= currentToken.end) {
 			const mergedToken: FinishedToken = {
-				content: currentToken.content.replaceAll(token.mark ?? "", ""),
+				content: currentToken.content.replaceAll(token.startMark ?? "", ""),
 				start: currentToken.start,
 				end: currentToken.end,
 				types: [...currentToken.types, ...token.types],
-				mark: (currentToken.mark ?? "") + (token.mark ?? ""),
+				startMark: (currentToken.startMark ?? "") + (token.startMark ?? ""),
 			};
 			currentToken = mergedToken;
 		} else {

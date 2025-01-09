@@ -1,3 +1,4 @@
+import type { CustomElement } from "@/index";
 import type { MessageRendererProps } from "@/types";
 import EmbedElement from "@components/editor/EmbedElement";
 import { MessageType } from "@huginn/shared";
@@ -50,29 +51,38 @@ function MessageRenderer(props: MessageRendererProps) {
 		for (const line of props.renderInfo.message.content.split("\n")) {
 			const node: Descendant = { type: "paragraph", children: [] };
 
-			const tokens = mergeTokens(tokenize(line));
+			const tokens = tokenize(line).filter((x) => x.content || x.startMark || x.endMark);
 
+			let activeSpoilerIndex: number | undefined = undefined;
 			for (const token of tokens) {
-				if (token.types.includes("spoiler")) {
-					node.children.push({
+				if (token.types.includes("spoiler") && activeSpoilerIndex === undefined) {
+					const newLength = node.children.push({
 						type: "spoiler",
-						children: [
-							{
-								text: token.content,
-								...getMappedTypes(token.types),
-								url: token.types.includes("link") || token.types.includes("mask_link") ? (token.data?.url ?? token.content) : undefined,
-							},
-						],
+						children: token.content ? [{ text: token.content }] : [],
 					});
+
+					if (token.endMark !== "||") {
+						activeSpoilerIndex = newLength - 1;
+					}
+				} else if (activeSpoilerIndex !== undefined && token.endMark === "||") {
+					if (token.content) {
+						(node.children[activeSpoilerIndex] as CustomElement).children.push({ text: token.content });
+					}
+					activeSpoilerIndex = undefined;
 				} else {
-					node.children.push({
-						text: token.content,
-						...getMappedTypes(token.types),
-						url: token.types.includes("link") || token.types.includes("mask_link") ? (token.data?.url ?? token.content) : undefined,
-					});
+					const nodeToPush = activeSpoilerIndex !== undefined ? (node.children[activeSpoilerIndex] as CustomElement) : node;
+
+					if (token.content) {
+						nodeToPush.children.push({
+							text: token.content,
+							...getMappedTypes(token.types),
+							url: token.types.includes("link") || token.types.includes("mask_link") ? (token.data?.url ?? token.content) : undefined,
+						});
+					}
 				}
 			}
 
+			// console.log(node);
 			nodes.push(node);
 		}
 
