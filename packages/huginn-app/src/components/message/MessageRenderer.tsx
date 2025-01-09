@@ -82,7 +82,7 @@ function MessageRenderer(props: MessageRendererProps) {
 				}
 			}
 
-			// console.log(node);
+			if (!node.children.length) continue;
 			nodes.push(node);
 		}
 

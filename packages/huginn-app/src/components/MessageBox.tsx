@@ -52,11 +52,10 @@ export default function MessageBox() {
 				});
 			}
 			if (endMarkLength) {
-				const isMarkSingle = token.start === token.end;
 				ranges.push({
 					mark: true,
 					anchor: { path, offset: token.end + 1 },
-					focus: { path, offset: token.end - endMarkLength + (isMarkSingle ? 0 : 1) },
+					focus: { path, offset: token.end - endMarkLength + 1 },
 				});
 			}
 
