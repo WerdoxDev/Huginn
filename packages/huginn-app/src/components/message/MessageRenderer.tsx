@@ -1,7 +1,7 @@
 import type { MessageRendererProps } from "@/types";
 import EmbedElement from "@components/editor/EmbedElement";
 import { MessageType } from "@huginn/shared";
-import { mergeTokens } from "@lib/huginn-tokenizer";
+import { type FinishedToken, type TokenType, mergeTokens } from "@lib/huginn-tokenizer";
 import { type Descendant, type Editor, createEditor } from "slate";
 import { DefaultElement, type RenderElementProps, type RenderLeafProps, withReact } from "slate-react";
 
@@ -34,43 +34,45 @@ function MessageRenderer(props: MessageRendererProps) {
 		return <DefaultElement {...props} />;
 	}, []);
 
+	function getMappedTypes(types: TokenType[]) {
+		return types.reduce(
+			(acc, style) => {
+				acc[style] = true;
+				return acc;
+			},
+			{} as Record<string, boolean>,
+		);
+	}
+
 	const initialValue = useMemo(() => {
 		const nodes: Descendant[] = [];
 
 		for (const line of props.renderInfo.message.content.split("\n")) {
-			const tokens = mergeTokens(tokenize(line));
-			if (tokens.length === 0) {
-				nodes.push({ type: "paragraph", children: [{ text: line }] });
-				continue;
-			}
-
 			const node: Descendant = { type: "paragraph", children: [] };
-			let lastTokenEnd = undefined;
+
+			const tokens = mergeTokens(tokenize(line));
 
 			for (const token of tokens) {
-				if (token.start !== 0 || lastTokenEnd) {
-					node.children.push({ text: line.slice(lastTokenEnd, token.start) });
-				}
-				lastTokenEnd = token.end + 1;
-
-				const types = token.type.reduce(
-					(acc, style) => {
-						acc[style] = true;
-						return acc;
-					},
-					{} as Record<string, boolean>,
-				);
-
-				if (token.type.includes("spoiler")) {
-					node.children.push({ type: "spoiler", children: [{ text: token.content, ...types }] });
+				if (token.types.includes("spoiler")) {
+					node.children.push({
+						type: "spoiler",
+						children: [
+							{
+								text: token.content,
+								...getMappedTypes(token.types),
+								url: token.types.includes("link") || token.types.includes("mask_link") ? (token.data?.url ?? token.content) : undefined,
+							},
+						],
+					});
 				} else {
-					node.children.push({ text: token.content, ...types });
+					node.children.push({
+						text: token.content,
+						...getMappedTypes(token.types),
+						url: token.types.includes("link") || token.types.includes("mask_link") ? (token.data?.url ?? token.content) : undefined,
+					});
 				}
 			}
 
-			if (lastTokenEnd !== line.length) {
-				node.children.push({ text: line.slice(lastTokenEnd) });
-			}
 			nodes.push(node);
 		}
 

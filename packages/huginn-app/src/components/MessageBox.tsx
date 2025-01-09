@@ -38,7 +38,7 @@ export default function MessageBox() {
 			return ranges;
 		}
 
-		const tokens = tokenize(node.text);
+		const tokens = tokenize(node.text, ["mask_link"]);
 
 		for (const token of tokens ?? []) {
 			const markLength = token.mark?.length ?? 0;
@@ -55,7 +55,7 @@ export default function MessageBox() {
 				focus: { path, offset: end },
 			});
 
-			for (const tokenType of token.type) {
+			for (const tokenType of token.types) {
 				ranges.push({
 					[tokenType]: true,
 					anchor: { path, offset: token.start + markLength },

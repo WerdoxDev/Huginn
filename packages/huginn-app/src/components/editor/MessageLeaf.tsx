@@ -11,19 +11,19 @@ export default function MessageLeaf(props: RenderLeafProps) {
 		);
 	}
 
-	if (props.leaf.bold || props.leaf.italic || props.leaf.underline || props.leaf.link) {
+	if (props.leaf.bold || props.leaf.italic || props.leaf.underline || props.leaf.link || props.leaf.mask_link) {
 		return (
 			<span
 				className={clsx(
 					props.leaf.bold && "font-bold",
 					props.leaf.italic && "italic",
 					props.leaf.underline && "underline",
-					props.leaf.link && "relative cursor-pointer underline",
+					(props.leaf.link || props.leaf.mask_link) && "relative cursor-pointer underline",
 				)}
-				onClick={props.leaf.link ? () => open(props.leaf.text) : undefined}
+				onClick={props.leaf.link || props.leaf.mask_link ? () => open(props.leaf.url ?? "") : undefined}
 				{...props.attributes}
 			>
-				{props.leaf.link ? (
+				{props.leaf.link || props.leaf.mask_link ? (
 					<span>
 						{props.children}
 						<span className="-mx-0.5 absolute inset-0 hover:bg-text/20" />

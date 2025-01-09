@@ -27,8 +27,8 @@ type EmbedElement = {
 
 type CustomElement = ParagraphElement | SpoilerElement | EmbedElement;
 
-type TextFormats = { bold?: boolean; italic?: boolean; underline?: boolean; mark?: boolean; spoiler?: boolean; link?: boolean };
-type FormattedText = { text: string } & TextFormats;
+type TextFormats = { bold?: boolean; italic?: boolean; underline?: boolean; mark?: boolean; spoiler?: boolean; link?: boolean; mask_link?: boolean };
+type FormattedText = { text: string; url?: string } & TextFormats;
 
 type CustomText = FormattedText;
 type CustomRange = BaseRange & TextFormats & { text?: string };

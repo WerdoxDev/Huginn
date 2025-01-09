@@ -173,7 +173,7 @@ function MarkdownRenderer(props: {
 				renderLeaf={props.renderLeaf}
 				renderElement={props.renderElement}
 				className={clsx(
-					"px-2.5 py-1.5 font-normal text-white [overflow-wrap:anywhere] group-hover:shadow-lg",
+					"whitespace-break-spaces px-2.5 py-1.5 font-normal text-white [overflow-wrap:anywhere] group-hover:shadow-lg",
 					props.isPreview && "bg-primary/20 text-white/50",
 					props.isSelf && !props.isPreview ? "bg-primary/70" : "bg-background",
 					props.isUnread && !props.isSeparate && "!rounded-t-none",
