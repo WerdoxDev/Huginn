@@ -187,20 +187,6 @@ export function clamp(current: number, min: number, max: number): number {
 	return Math.min(Math.max(current, min), max);
 }
 
-export function arrayEqual(array1: unknown[], array2: unknown[]): boolean {
-	if (array1.length !== array2.length) {
-		return false;
-	}
-
-	for (let i = 0; i < array1.length; i++) {
-		if (array1[i] !== array2[i]) {
-			return false;
-		}
-	}
-
-	return true;
-}
-
 type NullToUndefined<T> = {
 	[K in keyof T]: T[K] extends object | null ? NullToUndefined<Exclude<T[K], null>> : null extends T[K] ? Exclude<T[K], null> | undefined : T[K];
 };
@@ -217,4 +203,8 @@ export function nullToUndefined<T>(obj: T): NullToUndefined<T> {
 		) as NullToUndefined<T>;
 	}
 	return obj as NullToUndefined<T>;
+}
+
+export function arrayEqual(a1: unknown[] | undefined, a2: unknown[] | undefined): boolean {
+	return JSON.stringify(a1) === JSON.stringify(a2);
 }
