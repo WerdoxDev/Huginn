@@ -18,7 +18,7 @@ export default function EditorLeaf(props: RenderLeafProps) {
 					props.leaf.italic && "italic",
 					props.leaf.underline && "underline",
 					props.leaf.spoiler && "rounded-sm px-0.5",
-					props.leaf.spoiler && props.leaf.text !== " " && "bg-white/20",
+					props.leaf.spoiler && "bg-white/20",
 					props.leaf.link && "text-accent",
 				)}
 				{...props.attributes}

@@ -39,15 +39,12 @@ const tokenTypes: Record<string, TokenTypeFlag> = {
 const caches = new Map<string, { tokens: FinishedToken[]; skippedTokens?: TokenType[] }>();
 
 export function tokenize(text: string, skipTokens?: TokenType[]) {
-	//TODO: Cache is disabled because exclusions are not being taken into account
 	if (caches.has(text)) {
 		const cache = caches.get(text);
 		if (cache?.tokens && arrayEqual(cache?.skippedTokens, skipTokens)) {
 			return cache?.tokens;
 		}
 	}
-
-	console.log("NO CACHE", text);
 
 	let _text = text;
 
@@ -205,7 +202,6 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
 		for (const [i, memberToken] of memberTokens.entries()) {
 			const maximumEnd = i === memberTokens.length - 1 ? token.end : memberTokens[i + 1].start - 1;
 			const minimumStart = i === 0 ? token.start : memberTokens[i - 1].end + 1;
-			console.log(memberToken);
 
 			if (minimumStart === token.start) {
 				// add prefix token
@@ -229,7 +225,6 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
 				});
 			}
 
-			// console.log(minimumStart, token.start, maximumEnd, token.end);
 			if (maximumEnd !== token.end) {
 				tokens.push({
 					start: memberToken.end + 1,
@@ -252,8 +247,6 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
 
 	tokens.sort((a, b) => a.start - b.start);
 	caches.set(text, { tokens: tokens, skippedTokens: skipTokens });
-
-	console.log(tokens);
 
 	return tokens;
 }

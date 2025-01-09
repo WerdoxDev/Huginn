@@ -40,27 +40,34 @@ export default function MessageBox() {
 
 		const tokens = tokenize(node.text, ["mask_link"]);
 
-		for (const token of tokens ?? []) {
-			const markLength = token.startMark?.length ?? 0;
-			const end = token.end + 1;
+		for (const token of tokens) {
+			const startMarkLength = token.startMark?.length ?? 0;
+			const endMarkLength = token.endMark?.length ?? 0;
 
-			ranges.push({
-				mark: true,
-				anchor: { path, offset: token.start },
-				focus: { path, offset: token.start + markLength },
-			});
-			ranges.push({
-				mark: true,
-				anchor: { path, offset: end - markLength },
-				focus: { path, offset: end },
-			});
-
-			for (const tokenType of token.types) {
+			if (startMarkLength) {
 				ranges.push({
-					[tokenType]: true,
-					anchor: { path, offset: token.start + markLength },
-					focus: { path, offset: end - markLength },
+					mark: true,
+					anchor: { path, offset: token.start },
+					focus: { path, offset: token.start + startMarkLength },
 				});
+			}
+			if (endMarkLength) {
+				const isMarkSingle = token.start === token.end;
+				ranges.push({
+					mark: true,
+					anchor: { path, offset: token.end + 1 },
+					focus: { path, offset: token.end - endMarkLength + (isMarkSingle ? 0 : 1) },
+				});
+			}
+
+			if (token.content) {
+				for (const tokenType of token.types) {
+					ranges.push({
+						[tokenType]: true,
+						anchor: { path, offset: token.start + startMarkLength },
+						focus: { path, offset: token.end - endMarkLength + 1 },
+					});
+				}
 			}
 		}
 
@@ -155,7 +162,7 @@ export default function MessageBox() {
 						<Slate editor={editor} initialValue={initialValue}>
 							<Editable
 								placeholder="Message @Emam"
-								className="h-full py-3.5 font-light text-white leading-5 caret-white outline-none"
+								className="h-full whitespace-break-spaces py-3.5 font-light text-white leading-5 caret-white outline-none"
 								renderLeaf={renderLeaf}
 								renderElement={renderElement}
 								decorate={decorate}
