@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.10.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.9.3...app@v0.10.0) (2025-01-09)
+
+
+### Features
+
+* **app:** add fully nestable tokens to tokenizer ([93e36a8](https://github.com/WerdoxDev/Huginn/commit/93e36a8b5e72d31ca665ef0f9095f6a82e608ea5))
+
+
+### Bug Fixes
+
+* **app:** editor decorate function is not considering single char marks ([b5d329e](https://github.com/WerdoxDev/Huginn/commit/b5d329e20ea56fdf093a32af01c4a90931986008))
+* **app:** tokenizer is adding nested tokens as rest tokens ([7b38144](https://github.com/WerdoxDev/Huginn/commit/7b38144423a605b5397b1329eb371c00b31b9a64))
+
 ## [0.9.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.9.2...app@v0.9.3) (2025-01-08)
 
 

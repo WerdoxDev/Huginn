@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.4.0...shared@v0.5.0) (2025-01-09)
+
+
+### Features
+
+* **shared:** add arrayEqual utility ([3a7860e](https://github.com/WerdoxDev/Huginn/commit/3a7860e8d6426a251f260f1608a7d4f010b4759a))
+
 ## [0.4.0](https://github.com/WerdoxDev/Huginn/compare/shared-v0.3.0...shared@v0.4.0) (2025-01-07)
 
 
