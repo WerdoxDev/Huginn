@@ -2,14 +2,14 @@ import type { CustomElement } from "@/index";
 import type { MessageRendererProps } from "@/types";
 import EmbedElement from "@components/editor/EmbedElement";
 import { MessageType } from "@huginn/shared";
-import { type FinishedToken, type TokenType, mergeTokens } from "@lib/huginn-tokenizer";
+import { type ElementToken, type FinishedToken, type TokenType, mergeTokens } from "@lib/huginn-tokenizer";
 import { type Descendant, type Editor, createEditor } from "slate";
 import { DefaultElement, type RenderElementProps, type RenderLeafProps, withReact } from "slate-react";
 
 const withHuginn = (editor: Editor) => {
 	const { isInline, isVoid } = editor;
 
-	editor.isInline = (element) => (element.type === "spoiler" ? true : isInline(element));
+	editor.isInline = (element) => (element.type === "spoiler" || element.type === "mask_link" ? true : isInline(element));
 	editor.isVoid = (element) => (element.type === "embed" ? true : isVoid(element));
 
 	return editor;
@@ -32,6 +32,10 @@ function MessageRenderer(props: MessageRendererProps) {
 			return <SpoilerElement {...props} />;
 		}
 
+		if (props.element.type === "mask_link") {
+			return <MaskLinkElement {...props} />;
+		}
+
 		return <DefaultElement {...props} />;
 	}, []);
 
@@ -51,34 +55,37 @@ function MessageRenderer(props: MessageRendererProps) {
 		for (const line of props.renderInfo.message.content.split("\n")) {
 			const node: Descendant = { type: "paragraph", children: [] };
 
-			const tokens = tokenize(line).filter((x) => x.content || x.startMark || x.endMark);
+			const { tokens, elementTokens } = tokenize(line);
 
-			let activeSpoilerIndex: number | undefined = undefined;
+			const currentElements: Array<{ element: CustomElement; token: ElementToken }> = [];
 			for (const token of tokens) {
-				if (token.types.includes("spoiler") && activeSpoilerIndex === undefined) {
-					const newLength = node.children.push({
-						type: "spoiler",
-						children: token.content ? [{ text: token.content }] : [],
+				let currentNode = (currentElements.length === 0 ? node : currentElements[currentElements.length - 1].element) as CustomElement;
+
+				// add new custom element if it starts from here
+				const elementToken = elementTokens.find((x) => x.start === token.start);
+				if (elementToken) {
+					const element: CustomElement =
+						elementToken.type === "spoiler"
+							? { type: elementToken.type, children: [] }
+							: { type: elementToken.type, children: [], url: elementToken.data?.url };
+					currentElements.push({ token: elementToken, element: element });
+					currentNode.children.push(element);
+				}
+
+				// remove any custom elements that have ended
+				const endedElementIndex = currentElements.findIndex((x) => token.start > x.token.end);
+				if (endedElementIndex !== -1) {
+					currentElements.splice(endedElementIndex, 1);
+				}
+
+				// recalculate current node
+				currentNode = (currentElements.length === 0 ? node : currentElements[currentElements.length - 1].element) as CustomElement;
+
+				if (token.content) {
+					currentNode.children.push({
+						text: token.content,
+						...getMappedTypes(token.types),
 					});
-
-					if (token.endMark !== "||") {
-						activeSpoilerIndex = newLength - 1;
-					}
-				} else if (activeSpoilerIndex !== undefined && token.endMark === "||") {
-					if (token.content) {
-						(node.children[activeSpoilerIndex] as CustomElement).children.push({ text: token.content });
-					}
-					activeSpoilerIndex = undefined;
-				} else {
-					const nodeToPush = activeSpoilerIndex !== undefined ? (node.children[activeSpoilerIndex] as CustomElement) : node;
-
-					if (token.content) {
-						nodeToPush.children.push({
-							text: token.content,
-							...getMappedTypes(token.types),
-							url: token.types.includes("link") || token.types.includes("mask_link") ? (token.data?.url ?? token.content) : undefined,
-						});
-					}
 				}
 			}
 

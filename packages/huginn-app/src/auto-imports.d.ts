@@ -98,6 +98,7 @@ declare global {
   const LoadingButton: typeof import('./components/button/LoadingButton')['default']
   const LoadingDot: typeof import('./components/LoadingDot')['default']
   const LoadingIcon: typeof import('./components/LoadingIcon')['default']
+  const MaskLinkElement: typeof import('./components/editor/MaskLinkElement')['default']
   const MessageBox: typeof import('./components/MessageBox')['default']
   const MessageLeaf: typeof import('./components/editor/MessageLeaf')['default']
   const MessageProvider: typeof import('./components/websocket/MessageProvider')['default']

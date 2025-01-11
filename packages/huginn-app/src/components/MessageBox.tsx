@@ -38,7 +38,7 @@ export default function MessageBox() {
 			return ranges;
 		}
 
-		const tokens = tokenize(node.text, ["mask_link"]);
+		const { tokens } = tokenize(node.text, ["mask_link"]);
 
 		for (const token of tokens) {
 			const startMarkLength = token.startMark?.length ?? 0;
