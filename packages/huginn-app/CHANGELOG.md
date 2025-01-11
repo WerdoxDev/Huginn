@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.11.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.10.0...app@v0.11.0) (2025-01-11)
+
+
+### Features
+
+* **app:** fix all markdown problems ([701c708](https://github.com/WerdoxDev/Huginn/commit/701c70893b74ace03f6e89a8f73b0a64ef32abdc))
+
+
+### Bug Fixes
+
+* **app:** remove commeted code from tokenizer ([8f95023](https://github.com/WerdoxDev/Huginn/commit/8f9502325d846b02fa4aa90fc786595c17484c04))
+* **app:** simplify link token content shifting ([24ea694](https://github.com/WerdoxDev/Huginn/commit/24ea69423b57808b60541361c98a4215ef6182c7))
+
 ## [0.10.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.9.3...app@v0.10.0) (2025-01-09)
 
 
