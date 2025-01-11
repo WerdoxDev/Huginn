@@ -39,7 +39,6 @@ const tokenTypes: Record<string, TokenTypeFlag> = {
 	threeu: TokenTypeFlag.UNDERLINE | TokenTypeFlag.ITALIC,
 	twol: TokenTypeFlag.SPOILER,
 	link: TokenTypeFlag.LINK,
-	// mask: TokenTypeFlag.MASK_LINK,
 };
 
 const caches = new Map<string, { tokens: FinishedToken[]; elementTokens: ElementToken[]; skippedTokens?: TokenType[] }>();
@@ -100,22 +99,6 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
 	const unfinishedTokens: Array<{ start?: Token; end?: Token; type: TokenTypeFlag }> = [];
 	for (const pattern of patterns) {
 		do {
-			// let textToMatch = _text;
-
-			// for links, replace all end marks with an empty space to not match those tokens
-			// if (pattern.source.includes("link")) {
-			// 	for (const token of tokens.filter()) {
-			// 		textToMatch = removeSlice(
-			// 			textToMatch,
-			// 			token.end - (token.endMark?.length ?? 0) + 1,
-			// 			token.end + 1,
-			// 			new Array((token.endMark?.length ?? 0) + 1).join(" "),
-			// 		);
-			// 		console.log(textToMatch);
-			// 	}
-			// 	// console.log(textToMatch, );
-			// }
-
 			match = pattern.exec(_text);
 			if (!match) {
 				continue;
@@ -217,8 +200,6 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
 
 		unfinishedTokens.splice(0, unfinishedTokens.length);
 	}
-
-	// console.log([...tokens]);
 
 	// add all text as a single token because no token was created
 	if (tokens.length === 0 && text) {
