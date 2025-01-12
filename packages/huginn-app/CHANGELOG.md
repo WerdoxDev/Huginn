@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.12.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.11.0...app@v0.12.0) (2025-01-12)
+
+
+### Features
+
+* **app:** cleanup tokenizer and make it work on entire content and tokenize per line ([2833881](https://github.com/WerdoxDev/Huginn/commit/2833881fc63615ba2cde2f5d8abe1785f8a0857b))
+* **app:** migrate to markdown-it for markdown. basically ditching huginn-tokenizer ([de682f8](https://github.com/WerdoxDev/Huginn/commit/de682f8b2d3b1ff43ddd45cf3a08705e5b3dfd11))
+
 ## [0.11.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.10.0...app@v0.11.0) (2025-01-11)
 
 
