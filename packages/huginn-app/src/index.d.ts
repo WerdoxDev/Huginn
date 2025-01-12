@@ -14,8 +14,8 @@ type SpoilerElement = {
 	children: Descendant[];
 };
 
-type MaskLinkElement = {
-	type: "mask_link";
+type LinkElement = {
+	type: "link";
 	children: Descendant[];
 	url?: string;
 };
@@ -38,9 +38,9 @@ type EmbedElement = {
 	children: Descendant[];
 };
 
-type CustomElement = ParagraphElement | SpoilerElement | EmbedElement | MaskLinkElement | CodeElement;
+type CustomElement = ParagraphElement | SpoilerElement | EmbedElement | LinkElement | CodeElement;
 
-type TextFormats = { bold?: boolean; italic?: boolean; underline?: boolean; mark?: boolean; spoiler?: boolean; link?: boolean; mask_link?: boolean };
+type TextFormats = { bold?: boolean; italic?: boolean; underline?: boolean; mark?: boolean; spoiler?: boolean; link?: boolean };
 type FormattedText = { text: string } & TextFormats;
 
 type CustomText = FormattedText;

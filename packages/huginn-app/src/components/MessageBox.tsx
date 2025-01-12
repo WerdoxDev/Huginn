@@ -1,8 +1,9 @@
 import { MessageFlags } from "@huginn/shared";
-import { TokenTypeFlag } from "@lib/huginn-tokenizer";
+import markdownit from "markdown-it";
+import type Token from "markdown-it/lib/token.mjs";
 import type { KeyboardEvent } from "react";
 import { useParams } from "react-router";
-import { type Descendant, Editor, Node, type Path, type Range, Text, createEditor, start } from "slate";
+import { type Descendant, Editor, Node, type Path, type Range, Text, createEditor } from "slate";
 import { DefaultElement, Editable, type RenderElementProps, type RenderLeafProps, Slate, withReact } from "slate-react";
 
 const initialValue: Descendant[] = [
@@ -19,6 +20,7 @@ const initialValue: Descendant[] = [
 export default function MessageBox() {
 	const editor = useMemo(() => withReact(createEditor()), []);
 	const params = useParams();
+	const md = useMemo(() => new markdownit({ linkify: true }).use(markdownSpoiler).use(markdownUnderline).use(markdownMainEditor), []);
 
 	const sendMessageMutation = useSendMessage();
 	const { reset: resetTyping, mutate: sendTypingMutate } = useSendTyping();
@@ -38,36 +40,42 @@ export default function MessageBox() {
 			return ranges;
 		}
 
-		const { tokens } = tokenize(node.text, ["mask_link"]);
+		const result = md.parse(node.text, {});
+		const tokens = result.find((x) => x.type === "inline")?.children;
 
+		if (!tokens) {
+			return [];
+		}
+
+		let index = 0;
+		const currentOpenedTokens: Token[] = [];
 		for (const token of tokens) {
-			const startMarkLength = token.startMark?.length ?? 0;
-			const endMarkLength = token.endMark?.length ?? 0;
+			const currentTokenEnd = getMarkupLength(token.markup) + token.content.length;
 
-			if (startMarkLength) {
-				ranges.push({
-					mark: true,
-					anchor: { path, offset: token.start },
-					focus: { path, offset: token.start + startMarkLength },
-				});
-			}
-			if (endMarkLength) {
-				ranges.push({
-					mark: true,
-					anchor: { path, offset: token.end + 1 },
-					focus: { path, offset: token.end - endMarkLength + 1 },
-				});
+			if (isOpenToken(token) || isCloseToken(token)) {
+				if (hasMarkup(token.markup)) {
+					ranges.push({
+						mark: true,
+						anchor: { path, offset: index },
+						focus: { path, offset: index + currentTokenEnd },
+					});
+				}
+
+				if (isOpenToken(token)) {
+					currentOpenedTokens.push(token);
+				} else if (isCloseToken(token)) {
+					currentOpenedTokens.pop();
+				}
 			}
 
 			if (token.content) {
-				for (const tokenType of token.types) {
-					ranges.push({
-						[tokenType]: true,
-						anchor: { path, offset: token.start + startMarkLength },
-						focus: { path, offset: token.end - endMarkLength + 1 },
-					});
-				}
+				ranges.push({
+					...getSlateFormats(currentOpenedTokens),
+					anchor: { path, offset: index },
+					focus: { path, offset: index + currentTokenEnd },
+				});
 			}
+			index += currentTokenEnd;
 		}
 
 		return ranges;

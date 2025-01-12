@@ -1,10 +1,10 @@
-import type { MaskLinkElement as SlateMaskLinkElement } from "@/index";
+import type { LinkElement as SlateLinkElement } from "@/index";
 import { open } from "@tauri-apps/plugin-shell";
 import type { RenderElementProps } from "slate-react";
 
-export default function MaskLinkElement(props: RenderElementProps) {
+export default function LinkElement(props: RenderElementProps) {
 	const huginnWindow = useHuginnWindow();
-	const { url } = props.element as SlateMaskLinkElement;
+	const { url } = props.element as SlateLinkElement;
 
 	return (
 		<span

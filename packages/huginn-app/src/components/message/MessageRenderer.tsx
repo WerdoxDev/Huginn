@@ -1,16 +1,16 @@
-import type { CodeElement, CustomElement } from "@/index";
+import type { CustomElement, ParagraphElement } from "@/index";
 import type { MessageRendererProps } from "@/types";
-import CodeElement from "@components/editor/CodeElement";
 import EmbedElement from "@components/editor/EmbedElement";
 import { MessageType } from "@huginn/shared";
-import type { ElementToken, TokenType } from "@lib/huginn-tokenizer";
+import markdownit from "markdown-it";
+import type Token from "markdown-it/lib/token.mjs";
 import { type Descendant, type Editor, createEditor } from "slate";
 import { DefaultElement, type RenderElementProps, type RenderLeafProps, withReact } from "slate-react";
 
 const withHuginn = (editor: Editor) => {
 	const { isInline, isVoid } = editor;
 
-	editor.isInline = (element) => (element.type === "spoiler" || element.type === "mask_link" ? true : isInline(element));
+	editor.isInline = (element) => (element.type === "spoiler" || element.type === "link" ? true : isInline(element));
 	editor.isVoid = (element) => (element.type === "embed" ? true : isVoid(element));
 
 	return editor;
@@ -19,6 +19,7 @@ const withHuginn = (editor: Editor) => {
 function MessageRenderer(props: MessageRendererProps) {
 	const editor = useMemo(() => withReact(withHuginn(createEditor())), []);
 	const isInView = useIsInView(props.ref);
+	const md = useMemo(() => new markdownit({ linkify: true }).use(markdownSpoiler).use(markdownUnderline).use(markdownMainMessage), []);
 
 	const renderLeaf = useCallback((props: RenderLeafProps) => {
 		return <MessageLeaf {...props} />;
@@ -33,8 +34,8 @@ function MessageRenderer(props: MessageRendererProps) {
 			return <SpoilerElement {...props} />;
 		}
 
-		if (props.element.type === "mask_link") {
-			return <MaskLinkElement {...props} />;
+		if (props.element.type === "link") {
+			return <LinkElement {...props} />;
 		}
 
 		if (props.element.type === "code") {
@@ -44,83 +45,99 @@ function MessageRenderer(props: MessageRendererProps) {
 		return <DefaultElement {...props} />;
 	}, []);
 
-	function getMappedTypes(types: TokenType[]) {
-		return types.reduce(
-			(acc, style) => {
-				acc[style] = true;
-				return acc;
-			},
-			{} as Record<string, boolean>,
-		);
+	function getNodeByPath(rootNode: CustomElement, path: number[]) {
+		let current = rootNode;
+
+		for (const index of path) {
+			if (!Array.isArray(current.children) || current.children[index] === undefined) {
+				throw new Error("Invalid path");
+			}
+			current = current.children[index] as CustomElement; // Navigate to the children
+		}
+
+		return current; // Returns the children array at the final path
 	}
 
 	const initialValue = useMemo(() => {
 		const nodes: Descendant[] = [];
 
-		let currentCodeElement: CodeElement | undefined;
-		const { tokens, elementTokens } = tokenize(props.renderInfo.message.content);
-		const groupedTokens = Object.groupBy(tokens, (x) => x.line);
-		const groupedElementTokens = Object.groupBy(elementTokens, (x) => x.line);
+		const result = md.parse(props.renderInfo.message.content, {});
+		const tokens = result.reduce((accumulator: Token[], token) => {
+			if (token.type === "inline" || token.type === "paragraph_open" || token.type === "paragraph_close") accumulator.push(token);
 
-		lineLoop: for (const [lineString, lineTokens] of Object.entries(groupedTokens)) {
-			const line = Number(lineString);
-			const node: Descendant = { type: "paragraph", children: [] };
-			if (!lineTokens) {
+			return accumulator;
+		}, []);
+
+		if (!tokens) {
+			return [];
+		}
+
+		let lineNode: ParagraphElement = { type: "paragraph", children: [] };
+		const currentPath: number[] = [];
+		const currentOpenedTokens: Token[] = [];
+		for (const [i, rootToken] of tokens.entries()) {
+			// when a line is empty, the next line will start a new paragraph
+			if (rootToken.type === "paragraph_close" && i !== tokens.length - 1) {
+				if (lineNode.children.length) {
+					nodes.push({ ...lineNode });
+				}
+
+				nodes.push({ type: "paragraph", children: [{ text: "" }] });
+				lineNode = { type: "paragraph", children: [] };
+			}
+
+			if (!rootToken.children?.length) {
 				continue;
 			}
 
-			// const { tokens, elementTokens } = tokenize(line);
+			for (const token of rootToken.children) {
+				// softbreak is just \n inside a text
+				if (token.type === "softbreak") {
+					nodes.push({ ...lineNode });
+					lineNode = { type: "paragraph", children: [] };
+					continue;
+				}
 
-			const currentElements: Array<{ element: CustomElement; token: ElementToken }> = [];
-			console.log(currentCodeElement);
-			for (const token of lineTokens) {
-				if (token.types.includes("code")) {
-					if (currentCodeElement) {
-						nodes.push({ ...currentCodeElement });
-						currentCodeElement = undefined;
-						continue lineLoop;
+				const deepestNode = !currentPath.length ? lineNode : getNodeByPath(lineNode, currentPath);
+
+				if (isElementOpenToken(token)) {
+					if (token.type === "link_open") {
+						deepestNode.children.push({ type: "link", children: [], url: token.attrs?.[0][1] });
+					} else if (token.type === "spoiler_open") {
+						deepestNode.children.push({ type: "spoiler", children: [] });
 					}
-					currentCodeElement = { children: [{ text: "" }], type: "code", code: "", language: token.content ? token.content : undefined };
-
-					continue lineLoop;
-				}
-				if (currentCodeElement) {
-					currentCodeElement.code += `${line}\n`;
-					continue lineLoop;
+					currentPath.push(deepestNode.children.length - 1);
+					continue;
 				}
 
-				let currentNode = (currentElements.length === 0 ? node : currentElements[currentElements.length - 1].element) as CustomElement;
-
-				// add new custom element if it starts from here
-				const elementToken = elementTokens.find((x) => x.line === line && x.start === token.start);
-				if (elementToken) {
-					const element: CustomElement =
-						elementToken.type === "spoiler"
-							? { type: elementToken.type, children: [] }
-							: { type: elementToken.type, children: [], url: elementToken.data?.url };
-					currentElements.push({ token: elementToken, element: element });
-					currentNode.children.push(element);
+				if (isElementCloseToken(token)) {
+					currentPath.pop();
+					continue;
 				}
 
-				// remove any custom elements that have ended
-				const endedElementIndex = currentElements.findIndex((x) => token.start > x.token.end);
-				if (endedElementIndex !== -1) {
-					currentElements.splice(endedElementIndex, 1);
+				if (isOpenToken(token) || isCloseToken(token)) {
+					if (isOpenToken(token)) {
+						currentOpenedTokens.push(token);
+					} else if (isCloseToken(token)) {
+						currentOpenedTokens.pop();
+					}
+					continue;
 				}
 
-				// recalculate current node
-				currentNode = (currentElements.length === 0 ? node : currentElements[currentElements.length - 1].element) as CustomElement;
-
-				if (token.content) {
-					currentNode.children.push({
-						text: token.content,
-						...getMappedTypes(token.types),
-					});
+				if (!token.content) {
+					continue;
 				}
+
+				deepestNode.children.push({
+					...getSlateFormats(currentOpenedTokens),
+					text: token.content,
+				});
 			}
+		}
 
-			if (!node.children.length) continue;
-			nodes.push(node);
+		// add the last line
+		if (lineNode.children.length) {
+			nodes.push(lineNode);
 		}
 
 		if (props.renderInfo.message.preview) {
