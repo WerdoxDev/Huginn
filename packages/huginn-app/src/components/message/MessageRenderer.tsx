@@ -1,8 +1,9 @@
-import type { CustomElement } from "@/index";
+import type { CodeElement, CustomElement } from "@/index";
 import type { MessageRendererProps } from "@/types";
+import CodeElement from "@components/editor/CodeElement";
 import EmbedElement from "@components/editor/EmbedElement";
 import { MessageType } from "@huginn/shared";
-import { type ElementToken, type FinishedToken, type TokenType, mergeTokens } from "@lib/huginn-tokenizer";
+import type { ElementToken, TokenType } from "@lib/huginn-tokenizer";
 import { type Descendant, type Editor, createEditor } from "slate";
 import { DefaultElement, type RenderElementProps, type RenderLeafProps, withReact } from "slate-react";
 
@@ -36,6 +37,10 @@ function MessageRenderer(props: MessageRendererProps) {
 			return <MaskLinkElement {...props} />;
 		}
 
+		if (props.element.type === "code") {
+			return <CodeElement {...props} />;
+		}
+
 		return <DefaultElement {...props} />;
 	}, []);
 
@@ -52,17 +57,42 @@ function MessageRenderer(props: MessageRendererProps) {
 	const initialValue = useMemo(() => {
 		const nodes: Descendant[] = [];
 
-		for (const line of props.renderInfo.message.content.split("\n")) {
-			const node: Descendant = { type: "paragraph", children: [] };
+		let currentCodeElement: CodeElement | undefined;
+		const { tokens, elementTokens } = tokenize(props.renderInfo.message.content);
+		const groupedTokens = Object.groupBy(tokens, (x) => x.line);
+		const groupedElementTokens = Object.groupBy(elementTokens, (x) => x.line);
 
-			const { tokens, elementTokens } = tokenize(line);
+		lineLoop: for (const [lineString, lineTokens] of Object.entries(groupedTokens)) {
+			const line = Number(lineString);
+			const node: Descendant = { type: "paragraph", children: [] };
+			if (!lineTokens) {
+				continue;
+			}
+
+			// const { tokens, elementTokens } = tokenize(line);
 
 			const currentElements: Array<{ element: CustomElement; token: ElementToken }> = [];
-			for (const token of tokens) {
+			console.log(currentCodeElement);
+			for (const token of lineTokens) {
+				if (token.types.includes("code")) {
+					if (currentCodeElement) {
+						nodes.push({ ...currentCodeElement });
+						currentCodeElement = undefined;
+						continue lineLoop;
+					}
+					currentCodeElement = { children: [{ text: "" }], type: "code", code: "", language: token.content ? token.content : undefined };
+
+					continue lineLoop;
+				}
+				if (currentCodeElement) {
+					currentCodeElement.code += `${line}\n`;
+					continue lineLoop;
+				}
+
 				let currentNode = (currentElements.length === 0 ? node : currentElements[currentElements.length - 1].element) as CustomElement;
 
 				// add new custom element if it starts from here
-				const elementToken = elementTokens.find((x) => x.start === token.start);
+				const elementToken = elementTokens.find((x) => x.line === line && x.start === token.start);
 				if (elementToken) {
 					const element: CustomElement =
 						elementToken.type === "spoiler"

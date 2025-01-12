@@ -1,6 +1,6 @@
 import { arrayEqual, hasFlag } from "@huginn/shared";
 
-export type TokenType = "bold" | "italic" | "underline" | "spoiler" | "link" | "mask_link";
+export type TokenType = "bold" | "italic" | "underline" | "spoiler" | "link" | "mask_link" | "code";
 
 export enum TokenTypeFlag {
 	NONE = 0,
@@ -10,6 +10,7 @@ export enum TokenTypeFlag {
 	SPOILER = 1 << 3,
 	LINK = 1 << 4,
 	MASK_LINK = 1 << 5,
+	CODE = 1 << 6,
 }
 
 export type FinishedToken = {
@@ -19,6 +20,13 @@ export type FinishedToken = {
 	end: number;
 	startMark?: string;
 	endMark?: string;
+	line: number;
+};
+
+type UnfinishedToken = {
+	start?: TokenMark;
+	end?: TokenMark;
+	typeFlags: TokenTypeFlag;
 };
 
 export type ElementToken = {
@@ -26,9 +34,10 @@ export type ElementToken = {
 	end: number;
 	data?: { url?: string };
 	type: "spoiler" | "mask_link";
+	line: number;
 };
 
-type Token = { index: number; text: string };
+type TokenMark = { index: number; text: string };
 
 const tokenTypes: Record<string, TokenTypeFlag> = {
 	threes: TokenTypeFlag.BOLD | TokenTypeFlag.ITALIC,
@@ -38,25 +47,83 @@ const tokenTypes: Record<string, TokenTypeFlag> = {
 	twou: TokenTypeFlag.UNDERLINE,
 	threeu: TokenTypeFlag.UNDERLINE | TokenTypeFlag.ITALIC,
 	twol: TokenTypeFlag.SPOILER,
+	threeb: TokenTypeFlag.CODE,
 	link: TokenTypeFlag.LINK,
 };
 
 const caches = new Map<string, { tokens: FinishedToken[]; elementTokens: ElementToken[]; skippedTokens?: TokenType[] }>();
 
 export function tokenize(text: string, skipTokens?: TokenType[]) {
-	if (caches.has(text)) {
-		const cache = caches.get(text);
-		if (cache && arrayEqual(cache?.skippedTokens, skipTokens)) {
-			return { tokens: cache.tokens, elementTokens: cache.elementTokens };
+	const finalTokens: FinishedToken[] = [];
+	const finalElementTokens: ElementToken[] = [];
+
+	for (const [i, line] of text.split("\n").entries()) {
+		if (caches.has(line)) {
+			const cache = caches.get(line);
+			if (cache && arrayEqual(cache?.skippedTokens, skipTokens)) {
+				return { tokens: cache.tokens, elementTokens: cache.elementTokens };
+			}
 		}
+
+		let _text = line;
+
+		let tokens: FinishedToken[] = [];
+		const elementTokens: ElementToken[] = [];
+
+		// add mask links before any other tokens
+		if (!skipTokens?.includes("mask_link")) {
+			_text = addMaskLinkTokens(tokens, elementTokens, _text, i);
+		}
+
+		// add all regex tokens. (element tokens are also added but by reference and not assignment)
+		tokens = addRegexTokens(tokens, elementTokens, _text, i, skipTokens);
+
+		addGapTokens(tokens, _text, i);
+
+		splitOverlappingTokens(tokens, _text, i);
+
+		finalTokens.push(...tokens);
+		finalElementTokens.push(...elementTokens);
 	}
 
-	let _text = text;
+	caches.set(text, { tokens: finalTokens, elementTokens: finalElementTokens, skippedTokens: skipTokens });
 
-	let tokens: FinishedToken[] = [];
-	const elementTokens: ElementToken[] = [];
+	return { tokens: finalTokens, elementTokens: finalElementTokens };
+}
 
+function addMaskLinkTokens(tokens: FinishedToken[], elementTokens: ElementToken[], text: string, line: number) {
 	let match: RegExpExecArray | null;
+	let _text = text;
+	const maskPattern = /(?<mask>\[(?<mask_content>[^\]]+)\]\((?<mask_link>https?:\/\/[^\s/$.?#].[^\s]*(?<![\)]))\))/g;
+	do {
+		match = maskPattern.exec(_text);
+		if (!match || !match.groups) {
+			continue;
+		}
+
+		_text = removeSlice(_text, match.index, match.index + match[0].length, `${match.groups.mask_content}`);
+		maskPattern.lastIndex = match.index + match.groups.mask_content.length - 1;
+		tokens.push({
+			start: match.index,
+			end: match.index + match.groups.mask_content.length - 1,
+			content: `${match.groups.mask_content}`,
+			types: ["mask_link"],
+			line,
+		});
+
+		elementTokens.push({
+			start: match.index,
+			end: match.index + match.groups.mask_content.length - 1,
+			data: { url: match.groups.mask_link },
+			type: "mask_link",
+			line,
+		});
+	} while (match);
+
+	return _text;
+}
+
+function addRegexTokens(tokens: FinishedToken[], elementTokens: ElementToken[], text: string, line: number, skipTokens?: TokenType[]) {
 	const patterns = [
 		/(?<threes>(\*\*\*))/g,
 		/(?<twos>(\*\*))/g,
@@ -65,131 +132,82 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
 		/(?<twou>(\_\_))/g,
 		/(?<oneu>(\_))/g,
 		/(?<twol>(\|\|))/g,
+		/(?<threeb>```(?:(?<language>\S.*))?|```)/g,
 		/(?<link>https?:\/\/[^\s/$.?#].[^\s]*(?<![\)]))/g,
 	];
 
-	// add mask links before any other tokens
-	const maskPattern = /(?<mask>\[(?<mask_content>[^\]]+)\]\((?<mask_link>https?:\/\/[^\s/$.?#].[^\s]*(?<![\)]))\))/g;
+	let match: RegExpExecArray | null;
+	let _tokens = [...tokens];
 
-	if (!skipTokens?.includes("mask_link")) {
-		do {
-			match = maskPattern.exec(_text);
-			if (!match || !match.groups) {
-				continue;
-			}
-
-			_text = removeSlice(_text, match.index, match.index + match[0].length, `${match.groups.mask_content}`);
-			maskPattern.lastIndex = match.index + match.groups.mask_content.length - 1;
-			tokens.push({
-				start: match.index,
-				end: match.index + match.groups.mask_content.length - 1,
-				content: `${match.groups.mask_content}`,
-				types: ["mask_link"],
-			});
-
-			elementTokens.push({
-				start: match.index,
-				end: match.index + match.groups.mask_content.length - 1,
-				data: { url: match.groups.mask_link },
-				type: "mask_link",
-			});
-		} while (match);
-	}
-
-	const unfinishedTokens: Array<{ start?: Token; end?: Token; type: TokenTypeFlag }> = [];
+	const unfinishedTokens: UnfinishedToken[] = [];
 	for (const pattern of patterns) {
 		do {
-			match = pattern.exec(_text);
+			match = pattern.exec(text);
 			if (!match) {
 				continue;
 			}
 
-			const type = tokenTypes[Object.keys(match.groups ?? {})[0]];
-			if (!type) {
+			const typeFlag = tokenTypes[Object.keys(match.groups ?? {})[0]];
+			if (!typeFlag) {
 				continue;
 			}
 
-			if (skipTokens?.some((x) => getTokenFlagFromType(x) === type)) {
+			if (skipTokens?.some((x) => getTokenFlagFromType(x) === typeFlag)) {
 				continue;
 			}
 
-			const unfinishedTokenIndex = unfinishedTokens.findIndex((x) => x.type === type);
+			const unfinishedTokenIndex = unfinishedTokens.findIndex((x) => x.typeFlags === typeFlag);
 			let unfinishedToken = unfinishedTokens[unfinishedTokenIndex];
 
-			if (
-				tokens.some((x) => {
-					const index = match?.index ?? 0;
-					return (
-						// check to see if any finished token exists where an unfinished token wants to begin
-						(x.startMark || x.endMark) &&
-						((index >= x.start && index <= x.start + (x.startMark?.length ?? 0) - 1) ||
-							(index <= x.end && index >= x.end - (x.endMark?.length ?? 0) + 1))
-					);
-				})
-			) {
+			if (doesOverlappingMarkedTokensExist(_tokens, match.index ?? 0)) {
 				continue;
 			}
 
 			// create a link token
-			if (hasFlag(type, TokenTypeFlag.LINK)) {
-				const matchEnd = match.index + match[0].length;
-
-				const overlappingTokens = tokens
-					.filter((x) => x.start < (match?.index ?? 0) && x.end <= matchEnd - 1 && x.end > (match?.index ?? 0))
-					.toSorted((a, b) => a.end - b.end);
-				const overlappingLength =
-					overlappingTokens.length !== 0
-						? overlappingTokens[overlappingTokens.length - 1].end - (overlappingTokens[0].end - (overlappingTokens[0].endMark?.length ?? 0))
-						: 0;
-
-				console.log(
-					[...tokens],
-					overlappingTokens,
-					match[0],
-					match.index,
-					matchEnd,
-					_text,
-					_text.slice(match.index, matchEnd - overlappingLength),
-				);
-
-				const newMatch = new RegExp(pattern.source, pattern.flags).exec(_text.slice(match.index, matchEnd - overlappingLength));
-
-				unfinishedToken = {
-					start: { index: match.index, text: "" },
-					end: { index: match.index + (newMatch?.groups?.link.length ?? 0), text: "" },
-					type: type,
-				};
-
-				tokens = tokens.filter((x) => x.start <= (unfinishedToken.start?.index ?? 0) || x.end >= (unfinishedToken.end?.index ?? 0));
+			if (hasFlag(typeFlag, TokenTypeFlag.LINK)) {
+				({ tokens: _tokens, unfinishedToken } = addLinkToken(_tokens, typeFlag, match, pattern, text));
+			}
+			// create code token
+			else if (hasFlag(typeFlag, TokenTypeFlag.CODE)) {
+				_tokens.push({
+					start: match.index,
+					end: match.index + match[0].length - 1,
+					content: match.groups?.language ?? "",
+					startMark: "```",
+					types: ["code"],
+					line,
+				});
+				continue;
 			}
 
 			// Token does not exist
 			if (!unfinishedToken) {
-				unfinishedTokens.push({ start: { index: match.index, text: match[0] }, type: type });
+				unfinishedTokens.push({ start: { index: match.index, text: match[0] }, typeFlags: typeFlag });
 			} else if (unfinishedToken && !unfinishedToken.end) {
 				unfinishedToken.end = { index: match.index, text: match[0] };
 			}
 
 			// Check token is complete
 			if (unfinishedToken?.start && unfinishedToken?.end) {
-				const content = _text.slice(unfinishedToken.start.index + unfinishedToken.start.text.length, unfinishedToken.end.index);
+				const content = text.slice(unfinishedToken.start.index + unfinishedToken.start.text.length, unfinishedToken.end.index);
 				if (content) {
-					tokens.push({
+					_tokens.push({
 						start: unfinishedToken.start.index,
 						content,
 						end: unfinishedToken.end.index + unfinishedToken.end.text.length - 1,
-						types: getTokenTypeFromFlag(unfinishedToken.type),
+						types: getTokenTypeFromFlag(unfinishedToken.typeFlags),
 						startMark: unfinishedToken.start.text,
 						endMark: unfinishedToken.end.text,
+						line,
 					});
 
-					if (hasFlag(unfinishedToken.type, TokenTypeFlag.SPOILER)) {
-						elementTokens.push({ start: unfinishedToken.start.index, end: unfinishedToken.end.index, type: "spoiler" });
+					if (hasFlag(unfinishedToken.typeFlags, TokenTypeFlag.SPOILER)) {
+						elementTokens.push({ start: unfinishedToken.start.index, end: unfinishedToken.end.index, type: "spoiler", line });
 					}
 				}
 
 				if (!content) {
-					unfinishedTokens.push({ start: unfinishedToken.end, type: unfinishedToken.type });
+					unfinishedTokens.push({ start: unfinishedToken.end, typeFlags: unfinishedToken.typeFlags });
 				}
 
 				if (unfinishedTokenIndex !== -1) {
@@ -201,9 +219,50 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
 		unfinishedTokens.splice(0, unfinishedTokens.length);
 	}
 
+	return _tokens;
+}
+
+function addLinkToken(tokens: FinishedToken[], typeFlag: TokenTypeFlag, match: RegExpExecArray, pattern: RegExp, text: string) {
+	const matchEnd = match.index + match[0].length;
+	let _tokens = [...tokens];
+
+	const overlappingTokens = _tokens
+		.filter((x) => x.start < (match?.index ?? 0) && x.end <= matchEnd - 1 && x.end > (match?.index ?? 0))
+		.toSorted((a, b) => a.end - b.end);
+
+	const overlappingLength =
+		overlappingTokens.length !== 0
+			? overlappingTokens[overlappingTokens.length - 1].end - (overlappingTokens[0].end - (overlappingTokens[0].endMark?.length ?? 0))
+			: 0;
+
+	const newMatch = new RegExp(pattern.source, pattern.flags).exec(text.slice(match.index, matchEnd - overlappingLength));
+
+	const unfinishedToken: UnfinishedToken = {
+		start: { index: match.index, text: "" },
+		end: { index: match.index + (newMatch?.groups?.link.length ?? 0), text: "" },
+		typeFlags: typeFlag,
+	};
+
+	_tokens = _tokens.filter((x) => x.start <= (unfinishedToken.start?.index ?? 0) || x.end >= (unfinishedToken.end?.index ?? 0));
+
+	return { tokens: _tokens, unfinishedToken };
+}
+
+function doesOverlappingMarkedTokensExist(tokens: FinishedToken[], index: number) {
+	return tokens.some((x) => {
+		return (
+			// check to see if any finished token exists where an unfinished token wants to begin
+			(x.startMark || x.endMark) &&
+			((index >= x.start && index <= x.start + (x.startMark?.length ?? 0) - 1) ||
+				(index <= x.end && index >= x.end - (x.endMark?.length ?? 0) + 1))
+		);
+	});
+}
+
+function addGapTokens(tokens: FinishedToken[], text: string, line: number) {
 	// add all text as a single token because no token was created
 	if (tokens.length === 0 && text) {
-		tokens.push({ start: 0, end: _text.length - 1, content: _text, types: [] });
+		tokens.push({ start: 0, end: text.length - 1, content: text, types: [], line });
 	}
 	// add all of other non tokenized texts
 	else if (text) {
@@ -211,11 +270,11 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
 		for (const token of tokens.toSorted((a, b) => a.start - b.start)) {
 			// if this is not the first token and the last saved position is not directly before this token. so there is atleast a 1 character gap
 			if (lastTokenEnd && token.start > lastTokenEnd + 1) {
-				tokens.push({ start: lastTokenEnd + 1, end: token.start - 1, content: _text.slice(lastTokenEnd + 1, token.start), types: [] });
+				tokens.push({ start: lastTokenEnd + 1, end: token.start - 1, content: text.slice(lastTokenEnd + 1, token.start), types: [], line });
 			}
 			// if this is the first token and it doesn't start from 0, add the text before it
 			else if (!lastTokenEnd && token.start !== 0) {
-				tokens.push({ start: 0, end: token.start - 1, content: _text.slice(0, token.start), types: [] });
+				tokens.push({ start: 0, end: token.start - 1, content: text.slice(0, token.start), types: [], line });
 			}
 
 			if (token.end > (lastTokenEnd ?? 0)) {
@@ -223,12 +282,14 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
 			}
 		}
 		// add the remaining end section of the text
-		if (lastTokenEnd && lastTokenEnd !== _text.length - 1) {
-			tokens.push({ start: lastTokenEnd + 1, end: _text.length - 1, content: _text.slice(lastTokenEnd + 1), types: [] });
+		if (lastTokenEnd && lastTokenEnd !== text.length - 1) {
+			tokens.push({ start: lastTokenEnd + 1, end: text.length - 1, content: text.slice(lastTokenEnd + 1), types: [], line });
 		}
 	}
+}
 
-	tokens.sort((a, b) => a.start - b.start);
+function splitOverlappingTokens(tokens: FinishedToken[], text: string, line: number) {
+	sortTokens(tokens);
 
 	// separate tokens into a left-to-right appendable form
 	const copiedTokens = [...tokens];
@@ -258,9 +319,10 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
 				tokens.push({
 					start: minimumStart,
 					end: memberToken.start - 1,
-					content: _text.slice(minimumStart + (token.startMark?.length ?? 0), memberToken.start),
+					content: text.slice(minimumStart + (token.startMark?.length ?? 0), memberToken.start),
 					startMark: token.startMark,
 					types: token.types,
+					line,
 				});
 			}
 
@@ -269,9 +331,10 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
 				tokens.push({
 					start: memberToken.end + 1,
 					end: maximumEnd,
-					content: _text.slice(memberToken.end + 1, maximumEnd - (token.endMark?.length ?? 0) + 1),
+					content: text.slice(memberToken.end + 1, maximumEnd - (token.endMark?.length ?? 0) + 1),
 					endMark: token.endMark,
 					types: token.types,
+					line,
 				});
 			}
 
@@ -279,8 +342,9 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
 				tokens.push({
 					start: memberToken.end + 1,
 					end: maximumEnd,
-					content: _text.slice(memberToken.end + 1, maximumEnd + 1),
+					content: text.slice(memberToken.end + 1, maximumEnd + 1),
 					types: token.types,
+					line,
 				});
 			}
 
@@ -295,40 +359,11 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
 		tokens.splice(index, 1);
 	}
 
-	tokens.sort((a, b) => a.start - b.start);
-	caches.set(text, { tokens: tokens, elementTokens: elementTokens, skippedTokens: skipTokens });
-
-	return { tokens: tokens, elementTokens: elementTokens };
+	sortTokens(tokens);
 }
 
-export function mergeTokens(tokens: FinishedToken[]) {
-	tokens.sort((a, b) => a.start - b.start || b.end - a.end);
-
-	const mergedTokens: FinishedToken[] = [];
-	let currentToken: FinishedToken | undefined = undefined;
-	for (const token of tokens) {
-		if (!currentToken) {
-			currentToken = token;
-		} else if (token.start >= currentToken.start && token.end <= currentToken.end) {
-			const mergedToken: FinishedToken = {
-				content: currentToken.content.replaceAll(token.startMark ?? "", ""),
-				start: currentToken.start,
-				end: currentToken.end,
-				types: [...currentToken.types, ...token.types],
-				startMark: (currentToken.startMark ?? "") + (token.startMark ?? ""),
-			};
-			currentToken = mergedToken;
-		} else {
-			mergedTokens.push(currentToken);
-			currentToken = token;
-		}
-	}
-
-	if (currentToken) {
-		mergedTokens.push(currentToken);
-	}
-
-	return mergedTokens;
+function sortTokens(tokens: FinishedToken[]) {
+	tokens.sort((a, b) => a.start - b.start);
 }
 
 function removeSlice(text: string, start: number, end: number, replacement: string) {

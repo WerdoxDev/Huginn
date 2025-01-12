@@ -1,4 +1,5 @@
 import type { MaskLinkElement as SlateMaskLinkElement } from "@/index";
+import { open } from "@tauri-apps/plugin-shell";
 import type { RenderElementProps } from "slate-react";
 
 export default function MaskLinkElement(props: RenderElementProps) {

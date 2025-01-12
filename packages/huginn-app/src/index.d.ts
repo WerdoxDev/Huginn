@@ -20,6 +20,13 @@ type MaskLinkElement = {
 	url?: string;
 };
 
+type CodeElement = {
+	type: "code";
+	children: Descendant[];
+	code: string;
+	language?: string;
+};
+
 type EmbedElement = {
 	type: "embed";
 	title?: string;
@@ -31,7 +38,7 @@ type EmbedElement = {
 	children: Descendant[];
 };
 
-type CustomElement = ParagraphElement | SpoilerElement | EmbedElement | MaskLinkElement;
+type CustomElement = ParagraphElement | SpoilerElement | EmbedElement | MaskLinkElement | CodeElement;
 
 type TextFormats = { bold?: boolean; italic?: boolean; underline?: boolean; mark?: boolean; spoiler?: boolean; link?: boolean; mask_link?: boolean };
 type FormattedText = { text: string } & TextFormats;

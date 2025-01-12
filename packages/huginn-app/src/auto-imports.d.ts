@@ -26,6 +26,7 @@ declare global {
   const ChannelTypingIndicator: typeof import('./components/channels/ChannelTypingIndicator')['default']
   const ChannelsContextMenu: typeof import('./components/contextmenu/ChannelsContextMenu')['default']
   const ChannelsProvider: typeof import('./components/websocket/ChannelsProvider')['default']
+  const CodeElement: typeof import('./components/editor/CodeElement')['default']
   const ComboboxInput: typeof import('./components/input/ComboboxInput')['default']
   const ContextMenu: typeof import('./components/contextmenu/ContextMenu')['default']
   const ContextMenuProvider: typeof import('./stores/contextMenuStore')['ContextMenuProvider']
