@@ -1,9 +1,10 @@
+import type { HuginnToken } from "@/types";
 import { MessageFlags } from "@huginn/shared";
+import hljs from "highlight.js";
 import markdownit from "markdown-it";
-import type Token from "markdown-it/lib/token.mjs";
 import type { KeyboardEvent } from "react";
 import { useParams } from "react-router";
-import { type Descendant, Editor, Node, type Path, type Range, Text, createEditor } from "slate";
+import { type Descendant, Editor, Element, Node, type Path, type Range, createEditor } from "slate";
 import { DefaultElement, Editable, type RenderElementProps, type RenderLeafProps, Slate, withReact } from "slate-react";
 
 const initialValue: Descendant[] = [
@@ -17,10 +18,13 @@ const initialValue: Descendant[] = [
 	},
 ];
 
+let cache: { text: string; decorations: Record<number, Range[]> } | undefined = undefined;
+
 export default function MessageBox() {
 	const editor = useMemo(() => withReact(createEditor()), []);
 	const params = useParams();
 	const md = useMemo(() => new markdownit({ linkify: true }).use(markdownSpoiler).use(markdownUnderline).use(markdownMainEditor), []);
+	// const cache = useRef<{ text: string; decorations: Map<number, Range[]> }>(undefined);
 
 	const sendMessageMutation = useSendMessage();
 	const { reset: resetTyping, mutate: sendTypingMutate } = useSendTyping();
@@ -33,53 +37,144 @@ export default function MessageBox() {
 		return <DefaultElement {...props} />;
 	}, []);
 
-	const decorate = useCallback(([node, path]: [Node, Path]) => {
-		const ranges: Range[] = [];
+	function getAllChildren() {
+		const children = Array.from(
+			Editor.nodes(editor, {
+				at: [],
+				mode: "highest",
+				match: (node, path) => Element.isElement(node),
+			}),
+		);
 
-		if (!Text.isText(node)) {
-			return ranges;
+		return children;
+	}
+
+	function calculateRanges() {
+		const decorations: Record<number, Range[]> = {};
+		const children = getAllChildren();
+
+		const text = children.map((x) => Node.string(x[0])).join("\n");
+
+		if (cache?.text === text) {
+			return { ...cache.decorations };
 		}
 
-		const result = md.parse(node.text, {});
-		const tokens = result.find((x) => x.type === "inline")?.children;
+		const result = md.parse(text, {});
+		const tokens = organizeTokens(result);
 
-		if (!tokens) {
-			return [];
-		}
+		for (const [i, lineTokens] of tokens.entries()) {
+			const child = children.find((x) => x[1][0] === i);
+			if (!child) {
+				continue;
+			}
 
-		let index = 0;
-		const currentOpenedTokens: Token[] = [];
-		for (const token of tokens) {
-			const currentTokenEnd = getMarkupLength(token.markup) + token.content.length;
+			const ranges: Range[] = [];
+			const path = child[1];
 
-			if (isOpenToken(token) || isCloseToken(token)) {
-				if (hasMarkup(token.markup)) {
+			let index = 0;
+			const currentOpenedTokens: HuginnToken[] = [];
+
+			for (const token of lineTokens) {
+				if (token.type === "fence" && token.map) {
+					const highlighted = hljs.highlight(token.content, { language: getCodeLanguage(token.info) });
+					const parser = new DOMParser();
+
+					const doc = parser.parseFromString(highlighted.value, "text/html");
+					console.log(doc);
+
+					let tokens: Array<{ type: string; content: string | null }> = [];
+
+					function parseNode(node: ChildNode) {
+						if (node.nodeType === window.Node.ELEMENT_NODE) {
+							const tokenType = (node as HTMLElement)?.className; // e.g., "hljs-keyword", "hljs-string"
+
+							let onlyHasText = true;
+							for (const childNode of node.childNodes.values()) {
+								if (childNode.nodeType !== window.Node.TEXT_NODE) onlyHasText = false;
+							}
+
+							if (!onlyHasText) {
+								const childrenTokens = Array.from(node.childNodes).flatMap(parseNode);
+								return childrenTokens.map((token) => ({ type: token.type, content: token.content }));
+							}
+
+							return { type: tokenType, content: node.textContent };
+						}
+
+						if (node.nodeType === window.Node.TEXT_NODE) {
+							return [{ type: "text", content: node.textContent }];
+						}
+
+						return [];
+					}
+
+					tokens = Array.from(doc.body.childNodes).flatMap((node) => parseNode(node));
+
+					console.log(tokens);
+
+					// console.log(doc);
+
+					tokens = splitHighlightedTokens(tokens);
+					tokens = getHighlightedLineTokens(tokens, i - (token.map[0] + 1));
+
+					let codeIndex = 0;
+					for (const token of tokens) {
+						ranges.push({
+							anchor: { path, offset: codeIndex },
+							focus: { path, offset: codeIndex + (token.content?.length ?? 0) },
+							codeToken: token.type,
+						});
+						codeIndex += token.content?.length ?? 0;
+					}
+
+					continue;
+				}
+
+				const currentTokenEnd = getTokenLength(token);
+
+				if (isOpenToken(token) || isCloseToken(token)) {
+					if (hasMarkup(token.markup)) {
+						ranges.push({
+							mark: true,
+							anchor: { path, offset: index },
+							focus: { path, offset: index + currentTokenEnd },
+						});
+					}
+
+					if (isOpenToken(token)) {
+						currentOpenedTokens.push(token);
+					} else if (isCloseToken(token)) {
+						currentOpenedTokens.pop();
+					}
+				}
+
+				if (token.content) {
 					ranges.push({
-						mark: true,
+						...getSlateFormats(currentOpenedTokens),
 						anchor: { path, offset: index },
 						focus: { path, offset: index + currentTokenEnd },
 					});
 				}
-
-				if (isOpenToken(token)) {
-					currentOpenedTokens.push(token);
-				} else if (isCloseToken(token)) {
-					currentOpenedTokens.pop();
-				}
+				index += currentTokenEnd;
 			}
 
-			if (token.content) {
-				ranges.push({
-					...getSlateFormats(currentOpenedTokens),
-					anchor: { path, offset: index },
-					focus: { path, offset: index + currentTokenEnd },
-				});
-			}
-			index += currentTokenEnd;
+			decorations[i] = ranges;
 		}
 
-		return ranges;
-	}, []);
+		cache = { text, decorations: decorations };
+
+		return decorations;
+	}
+
+	function decorate([node, path]: [Node, Path]) {
+		const ranges = calculateRanges();
+
+		if (path[0] in ranges) {
+			return [...ranges[path[0]]];
+		}
+
+		return [];
+	}
 
 	function onKeyDown(event: KeyboardEvent) {
 		if (!event.shiftKey && event.code === "Enter") {

@@ -11,6 +11,7 @@ export default function LinkElement(props: RenderElementProps) {
 			{...props.attributes}
 			className="relative cursor-pointer underline"
 			onClick={url ? () => (huginnWindow.environment === "desktop" ? open(url) : window.open(url)) : undefined}
+			title={url}
 		>
 			<span>
 				{props.children}

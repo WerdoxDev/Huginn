@@ -33,6 +33,7 @@
 		"babel-plugin-react-compiler": "^19.0.0-beta-df7b47d-20241124",
 		"clsx": "^2.1.1",
 		"confbox": "^0.1.8",
+		"highlight.js": "^11.11.1",
 		"isbot": "^5.1.18",
 		"jose": "^5.9.6",
 		"markdown-it": "^14.1.0",

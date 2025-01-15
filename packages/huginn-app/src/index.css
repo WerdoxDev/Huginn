@@ -19,6 +19,31 @@
 	src: url("assets/NotoSansArabic.ttf") format("TrueType");
 }
 
+@font-face {
+	font-family: "Ubuntu Mono";
+	src: url("assets/UbuntuMono-Regular.ttf") format("TrueType");
+   font-style: normal;
+}
+
+@font-face {
+	font-family: "Ubuntu Mono";
+	src: url("assets/UbuntuMono-Bold.ttf") format("TrueType");
+   font-weight: bold;
+}
+
+@font-face {
+	font-family: "Ubuntu Mono";
+	src: url("assets/UbuntuMono-Italic.ttf") format("TrueType");
+   font-style: italic;
+}
+
+@font-face {
+	font-family: "Ubuntu Mono";
+	src: url("assets/UbuntuMono-BoldItalic.ttf") format("TrueType");
+   font-weight: bold;
+   font-style: italic;
+}
+
 :root {
 	font-family: "Noto Sans", "Noto Sans Arabic", sans-serif;
 	-webkit-font-smoothing: none;
@@ -212,4 +237,16 @@ html::view-transition-group(root),html::view-transition-new(root), html::view-tr
 ::view-transition-old(auth-register),
 ::view-transition-old(auth-oauth-redirect) {
    animation: fade-out 250ms both, scale-down 250ms both;
+}
+
+.hljs-comment {
+   font-style: italic;
+}
+
+.hljs-keyword {
+   font-style: italic;
+}
+
+.hljs-emphasis {
+   font-style: italic;
 }

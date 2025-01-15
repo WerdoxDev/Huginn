@@ -1,5 +1,5 @@
 import type { CustomElement, ParagraphElement } from "@/index";
-import type { MessageRendererProps } from "@/types";
+import type { HuginnToken, MessageRendererProps } from "@/types";
 import EmbedElement from "@components/editor/EmbedElement";
 import { MessageType } from "@huginn/shared";
 import markdownit from "markdown-it";
@@ -62,49 +62,31 @@ function MessageRenderer(props: MessageRendererProps) {
 		const nodes: Descendant[] = [];
 
 		const result = md.parse(props.renderInfo.message.content, {});
-		const tokens = result.reduce((accumulator: Token[], token) => {
-			if (token.type === "inline" || token.type === "paragraph_open" || token.type === "paragraph_close") accumulator.push(token);
-
-			return accumulator;
-		}, []);
-
-		if (!tokens) {
-			return [];
-		}
+		const tokens = organizeTokens(result);
 
 		let lineNode: ParagraphElement = { type: "paragraph", children: [] };
 		const currentPath: number[] = [];
-		const currentOpenedTokens: Token[] = [];
-		for (const [i, rootToken] of tokens.entries()) {
-			// when a line is empty, the next line will start a new paragraph
-			if (rootToken.type === "paragraph_close" && i !== tokens.length - 1) {
-				if (lineNode.children.length) {
-					nodes.push({ ...lineNode });
-				}
+		const currentOpenedTokens: HuginnToken[] = [];
 
-				nodes.push({ type: "paragraph", children: [{ text: "" }] });
+		for (const lineTokens of tokens) {
+			if (lineTokens.length === 0) {
+				lineNode.children.push({ text: "" });
+				nodes.push({ ...lineNode });
 				lineNode = { type: "paragraph", children: [] };
-			}
-
-			if (!rootToken.children?.length) {
 				continue;
 			}
 
-			for (const token of rootToken.children) {
-				// softbreak is just \n inside a text
-				if (token.type === "softbreak") {
-					nodes.push({ ...lineNode });
-					lineNode = { type: "paragraph", children: [] };
-					continue;
-				}
-
+			for (const token of lineTokens) {
 				const deepestNode = !currentPath.length ? lineNode : getNodeByPath(lineNode, currentPath);
 
 				if (isElementOpenToken(token)) {
+					// console.log(deepestNode);
 					if (token.type === "link_open") {
 						deepestNode.children.push({ type: "link", children: [], url: token.attrs?.[0][1] });
 					} else if (token.type === "spoiler_open") {
 						deepestNode.children.push({ type: "spoiler", children: [] });
+					} else if (token.type === "fence_open") {
+						deepestNode.children.push({ type: "code", children: [{ text: "" }], code: token.content, language: token.info });
 					}
 					currentPath.push(deepestNode.children.length - 1);
 					continue;
@@ -128,10 +110,21 @@ function MessageRenderer(props: MessageRendererProps) {
 					continue;
 				}
 
+				// fence token is already finished from it's start because the code is passed as a whole
+				if (token.type === "fence") {
+					continue;
+				}
+
 				deepestNode.children.push({
 					...getSlateFormats(currentOpenedTokens),
 					text: token.content,
 				});
+			}
+
+			if (lineNode.children.length) {
+				nodes.push({ ...lineNode });
+				currentPath.splice(0, currentPath.length);
+				lineNode = { type: "paragraph", children: [] };
 			}
 		}
 

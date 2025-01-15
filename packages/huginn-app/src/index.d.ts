@@ -40,7 +40,15 @@ type EmbedElement = {
 
 type CustomElement = ParagraphElement | SpoilerElement | EmbedElement | LinkElement | CodeElement;
 
-type TextFormats = { bold?: boolean; italic?: boolean; underline?: boolean; mark?: boolean; spoiler?: boolean; link?: boolean };
+type TextFormats = {
+	bold?: boolean;
+	italic?: boolean;
+	underline?: boolean;
+	mark?: boolean;
+	spoiler?: boolean;
+	link?: boolean;
+	codeToken?: string;
+};
 type FormattedText = { text: string } & TextFormats;
 
 type CustomText = FormattedText;

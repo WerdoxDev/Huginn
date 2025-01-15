@@ -1,6 +1,7 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, redirect } from "react-router";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import highlightjs from "highlight.js/styles/atom-one-dark.css?url";
 // import { PostHogProvider } from "posthog-js/react";
 // import posthog from "posthog-js";
 import type { ReactNode } from "react";
@@ -19,7 +20,10 @@ export const queryClient = new QueryClient({
 // 	capture_pageview: false,
 // });
 
-export const links: Route.LinksFunction = () => [{ rel: "stylesheet", href: stylesheet }];
+export const links: Route.LinksFunction = () => [
+	{ rel: "stylesheet", href: stylesheet },
+	{ rel: "stylesheet", href: highlightjs },
+];
 
 export const ErrorBoundary = RouteErrorComponent;
 

@@ -180,3 +180,12 @@ export type MutationKinds = {
 export type AppChannelMessage =
 	| { preview: true; id: Snowflake; timestamp: string; author: APIMessageUser; nonce?: number | string; content: string; channelId: Snowflake }
 	| ({ preview: false } & APIDefaultMessage);
+
+export type HuginnToken = {
+	type: string;
+	markup: string;
+	content: string;
+	info: string;
+	map: number[] | null;
+	attrs: Array<[string, string]> | null;
+};
