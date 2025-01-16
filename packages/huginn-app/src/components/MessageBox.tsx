@@ -80,22 +80,22 @@ export default function MessageBox() {
 					const parser = new DOMParser();
 
 					const doc = parser.parseFromString(highlighted.value, "text/html");
-					console.log(doc);
 
 					let tokens: Array<{ type: string; content: string | null }> = [];
 
-					function parseNode(node: ChildNode) {
+					function parseNode(node: ChildNode): Array<{ type: string; content: string | null }> | { type: string; content: string | null } {
 						if (node.nodeType === window.Node.ELEMENT_NODE) {
 							const tokenType = (node as HTMLElement)?.className; // e.g., "hljs-keyword", "hljs-string"
 
-							let onlyHasText = true;
-							for (const childNode of node.childNodes.values()) {
-								if (childNode.nodeType !== window.Node.TEXT_NODE) onlyHasText = false;
-							}
+							const onlyHasText = Array.from(node.childNodes).every((child) => child.nodeType === window.Node.TEXT_NODE);
 
 							if (!onlyHasText) {
-								const childrenTokens = Array.from(node.childNodes).flatMap(parseNode);
-								return childrenTokens.map((token) => ({ type: token.type, content: token.content }));
+								return Array.from(node.childNodes)
+									.flatMap(parseNode)
+									.map((token: { type: string; content: string | null }) => ({
+										type: token.type,
+										content: token.content,
+									}));
 							}
 
 							return { type: tokenType, content: node.textContent };
@@ -109,10 +109,6 @@ export default function MessageBox() {
 					}
 
 					tokens = Array.from(doc.body.childNodes).flatMap((node) => parseNode(node));
-
-					console.log(tokens);
-
-					// console.log(doc);
 
 					tokens = splitHighlightedTokens(tokens);
 					tokens = getHighlightedLineTokens(tokens, i - (token.map[0] + 1));
@@ -254,7 +250,7 @@ export default function MessageBox() {
 	}
 
 	return (
-		<div className="relative mx-5 mr-64 flex w-full flex-wrap-reverse py-2">
+		<div className=" bottom-0 z-10 mx-5 flex py-2">
 			<form className="w-full">
 				<div className="flex h-full items-start rounded-3xl bg-tertiary ring-2 ring-background">
 					<div className="m-2 mr-2 flex shrink-0 cursor-pointer items-center rounded-full bg-background p-1.5 transition-all hover:bg-white hover:bg-opacity-20 hover:shadow-xl">
@@ -264,7 +260,7 @@ export default function MessageBox() {
 						<Slate editor={editor} initialValue={initialValue}>
 							<Editable
 								placeholder="Message @Emam"
-								className="h-full whitespace-break-spaces py-3.5 font-light text-white leading-5 caret-white outline-none"
+								className="h-full whitespace-break-spaces py-3.5 font-light text-white leading-[22px] caret-white outline-none"
 								renderLeaf={renderLeaf}
 								renderElement={renderElement}
 								decorate={decorate}

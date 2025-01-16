@@ -47,6 +47,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	const lastDirection = useRef<"up" | "down" | "none">("none");
 
 	async function onScroll() {
+		// console.log("SC");
 		if (!scroll.current || sortedMessages.length === 0) return;
 
 		lastScrollTop.current = scroll.current.scrollTop;
@@ -73,6 +74,8 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	function calculateMessageRenderInfos(): MessageRenderInfo[] {
 		const value = sortedMessages.map((message, i) => {
 			const lastMessage: AppChannelMessage | undefined = sortedMessages[i - 1];
+
+			console.log(lastMessage, message);
 
 			const newDate = (lastMessage && !moment(message.timestamp).isSame(lastMessage?.timestamp, "date")) || (!lastMessage && !hasPreviousPage);
 			const newMinute = !moment(message.timestamp).isSame(lastMessage?.timestamp, "minute");
@@ -199,10 +202,11 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	}, [sortedMessages]);
 
 	return (
-		<div className="relative flex w-full flex-col">
+		// <div className="flex h-full w-full flex-col overflow-hidden">
+		<>
 			<ChannelMessageLoadingIndicator isFetchingNextPage={isFetchingNextPage} isFetchingPreviousPage={isFetchingPreviousPage} />
 			<ChannelTypingIndicator channelId={props.channelId} />
-			<ol className="flex h-full flex-col overflow-y-scroll pr-0 pb-7" ref={scroll} onScroll={onScroll}>
+			<ol className="flex h-full flex-col-reverse overflow-y-scroll pr-0 pb-7" ref={scroll} onScroll={onScroll}>
 				{scroll.current?.scrollHeight === scroll.current?.clientHeight && <div className="h-full shrink" />}
 				{props.messages.length === 0 && (
 					<div className="flex h-full w-full shrink-0 items-center justify-center">
@@ -212,6 +216,20 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 						</div>
 					</div>
 				)}
+				{sortedMessages
+					.map((message, i) => (
+						<MessageWrapper
+							ref={setRef(message.id)}
+							key={message.preview ? message.timestamp : ((message.editedTimestamp as string) ?? message.timestamp)}
+							message={message}
+							renderInfo={messageRenderInfos[i]}
+							nextRenderInfo={messageRenderInfos[i + 1]}
+							lastRenderInfo={messageRenderInfos[i - 1]}
+							onVisibilityChanged={onMessageVisiblityChanged}
+						/>
+					))
+					.toReversed()}
+
 				{!hasPreviousPage && sortedMessages.length !== 0 && (
 					<div className="flex h-20 shrink-0 flex-col justify-center">
 						<div className="ml-10 text-text/70">
@@ -219,20 +237,9 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 						</div>
 					</div>
 				)}
-
-				{sortedMessages.map((message, i) => (
-					<MessageWrapper
-						ref={setRef(message.id)}
-						key={message.preview ? message.timestamp : ((message.editedTimestamp as string) ?? message.timestamp)}
-						message={message}
-						renderInfo={messageRenderInfos[i]}
-						nextRenderInfo={messageRenderInfos[i + 1]}
-						lastRenderInfo={messageRenderInfos[i - 1]}
-						onVisibilityChanged={onMessageVisiblityChanged}
-					/>
-				))}
 			</ol>
-		</div>
+		</>
+		// </div>
 	);
 }
 
@@ -243,18 +250,13 @@ function MessageWrapper(
 ) {
 	return (
 		<>
-			{props.renderInfo.unread && !props.renderInfo.newDate && (
-				<li
-					className={clsx(
-						"pointer-events-none relative mr-10 ml-2 flex h-px shrink-0 items-center justify-center bg-error/75",
-						props.lastRenderInfo ? "my-1" : "mb-1",
-					)}
-				>
-					<div className="-mr-10 absolute right-0 flex w-10 items-center justify-center rounded-l-md bg-error/75 py-1 font-bold text-white text-xs uppercase">
-						new
-					</div>
-				</li>
-			)}
+			<MessageRenderer
+				ref={props.ref}
+				renderInfo={props.renderInfo}
+				nextRenderInfo={props.nextRenderInfo}
+				lastRenderInfo={props.lastRenderInfo}
+				onVisibilityChanged={props.onVisibilityChanged}
+			/>
 			{!props.message.preview && props.renderInfo.newDate && (
 				<li
 					className={clsx(
@@ -275,13 +277,18 @@ function MessageWrapper(
 					)}
 				</li>
 			)}
-			<MessageRenderer
-				ref={props.ref}
-				renderInfo={props.renderInfo}
-				nextRenderInfo={props.nextRenderInfo}
-				lastRenderInfo={props.lastRenderInfo}
-				onVisibilityChanged={props.onVisibilityChanged}
-			/>
+			{props.renderInfo.unread && !props.renderInfo.newDate && (
+				<li
+					className={clsx(
+						"pointer-events-none relative mr-10 ml-2 flex h-px shrink-0 items-center justify-center bg-error/75",
+						props.lastRenderInfo ? "my-1" : "mb-1",
+					)}
+				>
+					<div className="-mr-10 absolute right-0 flex w-10 items-center justify-center rounded-l-md bg-error/75 py-1 font-bold text-white text-xs uppercase">
+						new
+					</div>
+				</li>
+			)}
 		</>
 	);
 }

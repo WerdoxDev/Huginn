@@ -37,15 +37,15 @@ export default function Component({ params: { channelId } }: Route.ComponentProp
 				<HomeTopbar channel={channel} onRecipientsClick={onRecipientsClick} />
 				<div className="h-0.5 flex-shrink-0 bg-white/10" />
 				<div className="flex h-full w-full overflow-hidden">
-					<ChannelMessages channelId={channelId} messages={messages.pages.flat()} />
+					<div className="flex h-full w-full flex-col overflow-hidden">
+						<ChannelMessages channelId={channelId} messages={messages.pages.flat()} />
+						<MessageBox />
+					</div>
 					{channel.type === ChannelType.GROUP_DM && channel.ownerId && (
 						<RecipientsSidebar channelId={channel.id} recipients={channel.recipients} ownerId={channel.ownerId} visible={recipientsVisible} />
 					)}
 				</div>
-				<div className="flex h-16 w-full flex-shrink-0 bg-background">
-					<MessageBox />
-					{/* <div className="h-full w-64 flex-shrink-0" /> */}
-				</div>
+				<div className="absolute bottom-0 flex h-16 w-full flex-shrink-0 bg-background" />
 			</div>
 		)
 	);

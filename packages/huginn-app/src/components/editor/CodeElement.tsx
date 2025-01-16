@@ -11,8 +11,7 @@ export default function CodeElement(props: RenderElementProps) {
 		<div
 			{...props.attributes}
 			contentEditable={false}
-			className="my-1 rounded-md bg-secondary px-2 py-1"
-			style={{ fontFamily: "Ubuntu Mono" }}
+			className="my-1 rounded-md bg-secondary px-2 py-1 font-ubuntu"
 			// biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
 			dangerouslySetInnerHTML={{ __html: highlighted.value }}
 		/>

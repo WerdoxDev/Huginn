@@ -21,6 +21,7 @@ export default function EditorLeaf(props: RenderLeafProps) {
 					props.leaf.spoiler && "bg-white/20",
 					props.leaf.link && "text-accent",
 					props.leaf.codeToken,
+					props.leaf.codeToken && "font-ubuntu text-sm",
 				)}
 				spellCheck={!props.leaf.codeToken}
 				{...props.attributes}

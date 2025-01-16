@@ -18,6 +18,7 @@ export default {
 		},
 		fontFamily: {
 			noto: ["Noto Sans", "sans-serif"],
+			ubuntu: ["Ubuntu Mono", "monospace"],
 		},
 	},
 	plugins: [],
