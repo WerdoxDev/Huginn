@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.12.0...app@v0.13.0) (2025-01-15)
+
+
+### Features
+
+* **app:** add code block in messages ([7e97835](https://github.com/WerdoxDev/Huginn/commit/7e97835acfe80f491a39c7d685c3a735ab064d7e))
+
 ## [0.12.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.11.0...app@v0.12.0) (2025-01-12)
 
 
