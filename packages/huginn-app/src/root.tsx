@@ -1,6 +1,8 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, redirect } from "react-router";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { convertFileSrc } from "@tauri-apps/api/core";
+import { join, resolveResource, resourceDir } from "@tauri-apps/api/path";
 import highlightjs from "highlight.js/styles/atom-one-dark.css?url";
 // import { PostHogProvider } from "posthog-js/react";
 // import posthog from "posthog-js";
@@ -71,6 +73,17 @@ export default function Root() {
 
 	useEffect(() => {
 		initializeSettings().then((x) => setSettingsLoaded(true));
+		initializeNotification().then();
+
+		async function test() {
+			console.log(convertFileSrc(await join(await resourceDir(), "resources/huginn-text.png")));
+		}
+
+		test();
+
+		// resolveResource("test.txt").then((x) => {
+		// 	console.log(x);
+		// });
 	}, []);
 
 	return (

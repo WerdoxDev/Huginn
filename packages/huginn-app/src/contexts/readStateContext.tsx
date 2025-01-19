@@ -1,4 +1,7 @@
 import { type GatewayReadyData, type Snowflake, snowflake } from "@huginn/shared";
+import { convertFileSrc } from "@tauri-apps/api/core";
+import { join, resourceDir } from "@tauri-apps/api/path";
+import { ScheduleEvery } from "@tauri-apps/plugin-notification";
 import moment from "moment";
 import { type ReactNode, createContext } from "react";
 
@@ -17,6 +20,7 @@ export function ReadStateProvider(props: { children?: ReactNode }) {
 	const [readStates, setReadStates] = useState<ContextReadState[]>([]);
 	const { listenEvent } = useEvent();
 	const { getCurrentPageMessages } = useMessagesUtils();
+	const { sendNotification } = useNotification();
 
 	function onReady(d: GatewayReadyData) {
 		setReadStates(
@@ -59,8 +63,10 @@ export function ReadStateProvider(props: { children?: ReactNode }) {
 	}
 
 	useEffect(() => {
-		const unlisten = listenEvent("message_added", (data) => {
+		const unlisten = listenEvent("message_added", async (data) => {
 			if (!data.self && !data.visible) {
+				console.log(await join(await resourceDir(), "resources/huginn-text.png"));
+				sendNotification(data.message.author.username, data.message.content, await join(await resourceDir(), "resources/huginn-text.png"));
 				increaseUnreadCount(data.message.channelId);
 			}
 		});

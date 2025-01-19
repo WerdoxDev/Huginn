@@ -22,6 +22,7 @@
     "fs:allow-read-file",
     "fs:allow-write-text-file",
     "fs:allow-read-text-file",
+    "fs:allow-resource-read-recursive",
     "updater:allow-check",
     "updater:default",
     "core:window:allow-maximize",
@@ -36,6 +37,7 @@
     "shell:allow-open",
     "process:allow-restart",
     "process:default",
-    "deep-link:default"
+    "deep-link:default",
+    "notification:default"
   ]
 }

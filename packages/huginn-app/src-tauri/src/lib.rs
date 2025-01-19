@@ -1,6 +1,10 @@
+use std::{env, path::Path};
+
+extern crate winrt_notification;
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager, WindowEvent};
 use tauri_plugin_updater::UpdaterExt;
+use winrt_notification::{Duration, IconCrop, Sound, Toast};
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -52,11 +56,25 @@ async fn open_splashscreen(app: AppHandle) {
 }
 
 #[tauri::command]
-async fn check_update(app: tauri::AppHandle, target: String) -> tauri::Result<()> {
+async fn check_update(app: AppHandle, target: String) -> tauri::Result<()> {
     let handle = app.app_handle().clone();
     tauri::async_runtime::spawn(async move {
         let _ = update(handle, target).await;
     });
+
+    Ok(())
+}
+
+#[tauri::command]
+async fn send_notification(title: &str, text: &str, image_path: &str) -> tauri::Result<()> {
+    Toast::new("dev.huginn.desktop")
+        .title(title)
+        .text1(text)
+        .sound(Some(Sound::Default))
+        .duration(Duration::Short)
+        .icon(&Path::new(image_path), IconCrop::Square, "alt")
+        .show()
+        .expect("unable to toast");
 
     Ok(())
 }
@@ -136,10 +154,12 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_notification::init())
         .invoke_handler(tauri::generate_handler![
             close_splashscreen,
             open_splashscreen,
-            check_update
+            check_update,
+            send_notification
         ])
         .on_window_event(|window, event| match event {
             WindowEvent::Destroyed => {

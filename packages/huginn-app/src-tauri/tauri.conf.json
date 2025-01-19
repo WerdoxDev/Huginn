@@ -21,7 +21,9 @@
 		},
 		"longDescription": "",
 		"shortDescription": "A norse themed chat application",
-		"resources": [],
+		"resources": [
+         "resources/**/*"
+      ],
 		"createUpdaterArtifacts": true
 	},
 	"productName": "Huginn",
@@ -71,7 +73,11 @@
 			}
 		],
 		"security": {
-			"csp": null
+			"csp": null,
+         "assetProtocol": {
+            "enable": true,
+            "scope": ["**/*"]
+         }
 		}
 	}
 }
