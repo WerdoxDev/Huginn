@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.14.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.13.0...app@v0.14.0) (2025-01-19)
+
+
+### Features
+
+* **app:** add native os notification with temporary icon ([076837a](https://github.com/WerdoxDev/Huginn/commit/076837a091ea0d704882f03b0ad250e86b9d64b4))
+* **app:** MessageBox should push the messages up when new lines are added ([77fa712](https://github.com/WerdoxDev/Huginn/commit/77fa712f3ef6d1007b148b369e10e5dff7cfeee9))
+
 ## [0.13.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.12.0...app@v0.13.0) (2025-01-15)
 
 
