@@ -1,10 +1,11 @@
 {
 	"name": "@huginn/server",
-	"main": "./src/index-no-serve.ts",
 	"version": "0.9.0",
 	"type": "module",
 	"scripts": {
-		"dev": "bun --watch src/index.ts",
+		"build": "nitro build",
+		"dev": "nitro dev",
+		"prepare": "nitro prepare",
 		"tailwind": "bunx tailwindcss -i ./src/routes/static/input.css -o ./src/routes/static/output.css --watch"
 	},
 	"dependencies": {
@@ -21,7 +22,6 @@
 		"@types/probe-image-size": "^7.2.5",
 		"consola": "^3.2.3",
 		"crossws": "^0.3.1",
-		"h3": "^1.13.0",
 		"jose": "^5.9.6",
 		"jsdom": "^25.0.1",
 		"magic-regexp": "^0.8.0",
@@ -34,7 +34,8 @@
 		"zod": "^3.24.1"
 	},
 	"devDependencies": {
-		"@octokit/types": "^13.6.2"
+		"@octokit/types": "^13.6.2",
+		"nitropack": "^2.10.4"
 	},
 	"imports": {
 		"#database": "./src/database/index.ts",

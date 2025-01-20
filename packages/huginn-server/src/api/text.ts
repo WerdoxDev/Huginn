@@ -1,13 +1,11 @@
 import { type APIGetAllReleasesResult, HttpCode } from "@huginn/shared";
-import { defineEventHandler, setResponseStatus } from "h3";
+// import { defineEventHandler, setResponseStatus } from "h3";
 import * as semver from "semver";
 import { octokit, router } from "#server";
 import { envs } from "#setup";
 import { getAllAppReleases, getAppPackageVersion, getWindowsAssetUrl } from "#utils/route-utils";
 
-router.get(
-	"/all-releases",
-	defineEventHandler(async (event) => {
+export default 	defineEventHandler(async (event) => {
 		const releases = await getAllAppReleases();
 
 		const json: APIGetAllReleasesResult = releases.map((release) => {
@@ -22,5 +20,5 @@ router.get(
 
 		setResponseStatus(event, HttpCode.OK);
 		return json;
-	}),
-);
+});
+

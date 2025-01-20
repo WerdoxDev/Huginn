@@ -1,7 +1,6 @@
 {
-	"extends": "../../tsconfig.json",
+	"extends": "./.nitro/types/tsconfig.json",
 	"compilerOptions": {
 		"lib": ["ESNext", "DOM"]
-	},
-	"include": ["src", "package.json"]
+	}
 }
