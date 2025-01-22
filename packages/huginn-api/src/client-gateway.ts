@@ -125,8 +125,14 @@ export class Gateway {
 			return;
 		}
 
-		setTimeout(async () => {
-			if (e.code === GatewayCode.INVALID_SESSION) {
+		this.tryReconnect(e);
+	}
+
+	private async tryReconnect(event: CloseEvent) {
+		try {
+			// biome-ignore lint/style/noNonNullAssertion: <explanation>
+			await fetch(this.client.options.rest?.api!);
+			if (event.code === GatewayCode.INVALID_SESSION) {
 				this.sequence = undefined;
 				this.sessionId = undefined;
 			}
@@ -137,7 +143,10 @@ export class Gateway {
 				this.client.readyState = ClientReadyState.RECONNECRING;
 				await this.authenticate();
 			}
-		}, 1000);
+		} catch (e) {
+			console.error("Could not connect to ws");
+			this.tryReconnect(event);
+		}
 	}
 
 	private async onMessage(e: MessageEvent) {
