@@ -1,3 +1,5 @@
+import type { NitroApp } from "nitropack/types";
+
 import { Errors, HttpCode, type HuginnErrorData, generateRandomString } from "@huginn/shared";
 import {
 	type App,
@@ -101,7 +103,7 @@ export function sharedOnAfterResponse(event: H3Event, response: { body?: unknown
 		logReject(event.path, event.method, id, response?.body as HuginnErrorData, status);
 	}
 
-	Promise.all(event.context.waitUntilPromises?.map((x) => x()) ?? []);
+	Promise.allSettled(event.context.huginnWaitUntilPromises?.map((x) => x()) ?? []);
 }
 
 export async function sharedOnRequest(event: H3Event): Promise<void> {
@@ -114,15 +116,13 @@ export async function sharedOnRequest(event: H3Event): Promise<void> {
 	logRequest(event.path, event.method, id, event.method !== "GET" ? await readBody(event) : undefined);
 }
 
-export function commonHandlers(app: App): void {
-	app.use(
-		eventHandler((event) => {
-			event.waitUntil = (promise) => {
-				if (!event.context.waitUntilPromises) {
-					event.context.waitUntilPromises = [];
-				}
-				event.context.waitUntilPromises.push(promise);
-			};
-		}),
-	);
+export function commonHandlers(nitroApp: NitroApp): void {
+	nitroApp.hooks.hook("request", async (event) => {
+		event.huginWaitUntil = (promise) => {
+			if (!event.context.huginnWaitUntilPromises) {
+				event.context.huginnWaitUntilPromises = [];
+			}
+			event.context.huginnWaitUntilPromises.push(promise);
+		};
+	});
 }

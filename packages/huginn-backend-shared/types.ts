@@ -1,10 +1,10 @@
 declare module "h3" {
 	interface H3Event {
-		waitUntil: (promise: () => Promise<unknown>) => void;
+		huginWaitUntil: (promise: () => Promise<unknown>) => void;
 	}
 
 	interface H3EventContext {
-		waitUntilPromises?: (() => Promise<unknown>)[];
+		huginnWaitUntilPromises?: (() => Promise<unknown>)[];
 	}
 }
 

@@ -53,6 +53,7 @@ export function isCDNError(object: unknown): object is CDNError {
 
 export function createHuginnError(event: H3Event, errorFactory: ErrorFactory, status: HttpCode = HttpCode.BAD_REQUEST): HuginnErrorData {
 	setResponseStatus(event, status);
+	event.context.overrideStatus = status;
 	return errorFactory.toObject();
 }
 
