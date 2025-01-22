@@ -9,7 +9,7 @@ import {
 	type GatewayResume,
 	type GatewayResumeData,
 } from "@huginn/shared";
-import { gateway } from "#server";
+import { gateway } from "#setup";
 import { createTestUsers, getReadyWebSocket, getWebSocket, testIsDispatch, testIsOpcode, wsSend } from "#tests/utils";
 
 describe("Connection", () => {

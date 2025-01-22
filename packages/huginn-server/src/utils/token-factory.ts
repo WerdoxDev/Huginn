@@ -1,10 +1,9 @@
 import type { IdentityTokenPayload, Snowflake, TokenPayload } from "@huginn/shared";
 import * as jose from "jose";
-import { tokenInvalidator } from "#server";
-import { envs } from "#setup";
+import { tokenInvalidator } from "#setup";
 
-export const ACCESS_TOKEN_SECRET_ENCODED = new TextEncoder().encode(envs.ACCESS_TOKEN_SECRET ?? "");
-export const REFRESH_TOKEN_SECRET_ENCODED = new TextEncoder().encode(envs.REFRESH_TOKEN_SECRET ?? "");
+export const ACCESS_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.ACCESS_TOKEN_SECRET ?? "");
+export const REFRESH_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.REFRESH_TOKEN_SECRET ?? "");
 
 type TokenResult<Payload extends TokenPayload | IdentityTokenPayload> = Payload extends { id: Snowflake } ? [string, string] : [string];
 

@@ -4,7 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "nitro build",
-		"dev": "nitro dev",
+		"dev": "nitro dev --port 3004 --host",
 		"prepare": "nitro prepare",
 		"tailwind": "bunx tailwindcss -i ./src/routes/static/input.css -o ./src/routes/static/output.css --watch"
 	},
@@ -22,8 +22,10 @@
 		"@types/probe-image-size": "^7.2.5",
 		"consola": "^3.2.3",
 		"crossws": "^0.3.1",
+		"get-port-please": "^3.1.2",
 		"jose": "^5.9.6",
 		"jsdom": "^25.0.1",
+		"listhen": "^1.9.0",
 		"magic-regexp": "^0.8.0",
 		"octokit": "^4.0.2",
 		"ohash": "^1.1.4",
@@ -35,7 +37,8 @@
 	},
 	"devDependencies": {
 		"@octokit/types": "^13.6.2",
-		"nitropack": "^2.10.4"
+		"h3": "^1.14.0",
+		"nitropack": "npm:nitropack-nightly@latest"
 	},
 	"imports": {
 		"#database": "./src/database/index.ts",

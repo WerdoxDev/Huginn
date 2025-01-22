@@ -1,5 +1,9 @@
+import { S3Client } from "@aws-sdk/client-s3";
 import { readEnv } from "@huginn/backend-shared";
 import consola from "consola";
+import { Octokit } from "octokit";
+import { ServerGateway } from "#gateway/server-gateway";
+import { TokenInvalidator } from "#utils/token-invalidator";
 
 export const envs = readEnv([
 	"ACCESS_TOKEN_SECRET",
@@ -33,7 +37,10 @@ if (!envs.POSTGRESQL_URL) {
 	process.exit();
 }
 
-// if (!serverHost || !serverPort) {
-//    consola.error("Server config is not set correctly!");
-//    process.exit();
-// }
+export const gateway = new ServerGateway({ logHeartbeat: false });
+export const tokenInvalidator = new TokenInvalidator();
+export const octokit: Octokit = new Octokit({ auth: envs.GITHUB_TOKEN });
+export const s3 = new S3Client({
+	region: envs.AWS_REGION,
+	credentials: { accessKeyId: envs.AWS_KEY_ID ?? "", secretAccessKey: envs.AWS_SECRET_KEY ?? "" },
+});

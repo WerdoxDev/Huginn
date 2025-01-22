@@ -1,12 +1,13 @@
 import { unauthorized } from "@huginn/backend-shared";
 import type { IdentityTokenPayload, TokenPayload, Unpacked } from "@huginn/shared";
 import type { Endpoints } from "@octokit/types";
-import { type H3Event, getHeader } from "h3";
+
+import type { H3Event } from "h3";
 import { JSDOM } from "jsdom";
 import probe, { type ProbeResult } from "probe-image-size";
 import * as semver from "semver";
 import { prisma } from "#database";
-import { octokit } from "#server";
+import { octokit } from "#setup";
 import { envs } from "#setup";
 import { verifyToken } from "./token-factory";
 

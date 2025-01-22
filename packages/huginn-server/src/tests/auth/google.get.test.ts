@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { generateRandomString } from "@huginn/shared";
 import { encodeBase64 } from "@std/encoding";
-import type { PlainResponse } from "h3";
+
 import { testHandler } from "#tests/utils";
 
 describe("GET /auth/google", () => {
 	test("should return '404' when query params are not correct", async () => {
-		const result = testHandler("/api/auth/google", {}, "GET", {});
+		const result = testHandler("/api/auth/google", {}, "GET");
 		expect(result).rejects.toThrow("Not Found");
 	});
 
@@ -42,9 +42,9 @@ describe("GET /auth/google", () => {
 			`/api/auth/google?${new URLSearchParams({ redirect_url: "https://app.huginn.dev/", state: state, flow: "browser" }).toString()}`,
 			{},
 			"GET",
-		)) as PlainResponse;
+		)) as Response;
 
 		expect(result.status).toBe(302);
-		expect(result.headers[1][1]).toInclude("https://accounts.google.com/o/oauth2");
+		expect(result.headers.get("location")).toInclude("https://accounts.google.com/o/oauth2");
 	});
 });

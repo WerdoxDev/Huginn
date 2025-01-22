@@ -13,7 +13,6 @@ import {
 import { type Snowflake, snowflake } from "@huginn/shared";
 import { idFix, isOpcode } from "@huginn/shared";
 import type { Message, Peer } from "crossws";
-import crossws, { type BunAdapter } from "crossws/adapters/bun";
 import { omitChannelRecipient, omitRelationshipUserIds, selectChannelRecipients, selectPrivateUser, selectRelationshipUser } from "#database/common";
 import { prisma } from "#database/index";
 import { verifyToken } from "#utils/token-factory";
@@ -27,7 +26,7 @@ export class ServerGateway {
 	private clients: Map<string, ClientSession>;
 	private cancelledClientDisconnects: string[];
 	public presenceManeger: PresenceManager;
-	public internalWS: BunAdapter;
+	// public internalWS: BunAdapter;
 
 	public constructor(options: ServerGatewayOptions) {
 		this.options = options;
@@ -35,10 +34,10 @@ export class ServerGateway {
 		this.presenceManeger = new PresenceManager();
 		this.cancelledClientDisconnects = [];
 
-		this.internalWS = crossws({ hooks: { open: this.open.bind(this), close: this.close.bind(this), message: this.message.bind(this) } });
+		// this.internalWS = crossws({ hooks: { open: this.open.bind(this), close: this.close.bind(this), message: this.message.bind(this) } });
 	}
 
-	private open(peer: Peer) {
+	public open(peer: Peer) {
 		try {
 			logGatewayOpen();
 
@@ -53,7 +52,7 @@ export class ServerGateway {
 		}
 	}
 
-	private async close(peer: Peer, event: { code?: number; reason?: string }) {
+	public async close(peer: Peer, event: { code?: number; reason?: string }) {
 		this.deleteUninitializedClient(peer.id);
 
 		const client = this.getSessionByPeerId(peer.id);
@@ -73,7 +72,7 @@ export class ServerGateway {
 		logGatewayClose(event.code || 0, event.reason || "");
 	}
 
-	private async message(peer: Peer, message: Message) {
+	public async message(peer: Peer, message: Message) {
 		try {
 			const data: GatewayPayload = message.json();
 

@@ -2,7 +2,7 @@ import { DBError, isDBError } from "@huginn/backend-shared";
 import { DBErrorType } from "@huginn/backend-shared/types";
 import type { Snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
-import { H3Error, createError } from "h3";
+import { H3Error } from "h3";
 import { prisma } from "#database";
 
 export function assertError(error: Error | null, type: DBErrorType) {

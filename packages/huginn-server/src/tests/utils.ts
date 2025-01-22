@@ -19,48 +19,80 @@ import {
 	isOpcode,
 	snowflake,
 } from "@huginn/shared";
-import type { PlainHandler, PlainRequest } from "h3";
+import { $ } from "bun";
+import { waitForPort } from "get-port-please";
+import { build, copyPublicAssets, createNitro, prepare, prerender } from "nitropack";
+import { join, resolve } from "pathe";
 import { prisma } from "#database";
-import { startServer } from "#server";
 import { envs } from "#setup";
 import { createTokens } from "#utils/token-factory";
 
 export const isCDNRunning = await checkCDNRunning();
 export type TestUser = Omit<APIUser, "id"> & { id: bigint; accessToken: string; refreshToken: string };
 
-let plainHandler: PlainHandler;
-async function getServerHandler() {
-	if (!plainHandler) {
-		const { handler, app, router } = await startServer({ serve: true, defineOptions: true });
+let server: { url: string };
+async function getServer() {
+	if (!server) {
+		const rootDir = process.cwd();
+		const outDir = resolve(rootDir, ".output");
+		console.log(rootDir, "ROOT");
+		console.log(outDir, "OUT");
+		console.log(join(outDir, ".nitro"), "BUILD");
+		const nitro = await createNitro({
+			experimental: { websocket: true },
+			preset: "bun",
+			rootDir: rootDir,
+			buildDir: join(outDir, ".nitro"),
+			output: {
+				dir: outDir,
+			},
+			timing: true,
+			serveStatic: true,
+			compatibilityDate: "2025-01-20",
+			errorHandler: join(rootDir, "src/utils/error-handler.ts"),
+			srcDir: join(rootDir, "src"),
+		});
 
-		plainHandler = handler;
+		await prepare(nitro);
+		await copyPublicAssets(nitro);
+		await prerender(nitro);
+		await build(nitro);
+
+		Bun.spawn(["bun", resolve(outDir, "server/index.mjs")], { env: { NITRO_PORT: "3004" }, stdin: "inherit" });
+
+		await waitForPort(3004);
+		server = { url: "http://localhost:3004" };
 	}
 
-	return plainHandler;
+	return server;
 }
 
+await getServer();
+
 export async function testHandler(
-	path: PlainRequest["path"],
+	path: string,
 	headers: Record<string, string>,
 	method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
-	body?: PlainRequest["body"] | unknown,
+	body?: unknown,
 ) {
-	const handler = await getServerHandler();
+	const handler = await getServer();
+	const url = new URL(path, handler.url).toString();
+	console.log(url);
 
-	let finalBody: PlainRequest["body"];
+	let finalBody: unknown;
 	const finalHeaders: Record<string, string> = headers;
 
-	if (body && typeof body === "object") {
+	if (body && typeof body === "object" && method !== "GET") {
 		finalHeaders["Content-Type"] = "application/json";
 		finalBody = JSON.stringify(body);
 	}
 
-	const response = await handler({ path, headers: finalHeaders, method, body: finalBody });
+	const response = await fetch(url, { headers: finalHeaders, method, body: finalBody as BodyInit, redirect: "manual" });
 
 	let responseBody: unknown;
 	const headersMap = new Map(response.headers);
 	if (headersMap.get("content-type")?.startsWith("application/json")) {
-		responseBody = JSON.parse(response.body as string);
+		responseBody = await response.json();
 	}
 
 	if (response.status >= 200 && response.status < 300) {
@@ -93,8 +125,8 @@ export async function testHandler(
 
 const connectedWebsockets: WebSocket[] = [];
 export async function getWebSocket() {
-	await getServerHandler();
-	const ws = new WebSocket(`ws://${envs.SERVER_HOST}:${envs.SERVER_PORT}/gateway`);
+	await getServer();
+	const ws = new WebSocket("ws://localhost:3004/gateway");
 	connectedWebsockets.push(ws);
 	return ws;
 }
