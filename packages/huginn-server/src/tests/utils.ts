@@ -21,8 +21,7 @@ import {
 } from "@huginn/shared";
 import { $ } from "bun";
 import { waitForPort } from "get-port-please";
-import { build, copyPublicAssets, createNitro, prepare, prerender } from "nitropack";
-import { join, resolve } from "pathe";
+import { resolve } from "pathe";
 import { prisma } from "#database";
 import { envs } from "#setup";
 import { createTokens } from "#utils/token-factory";
@@ -30,44 +29,29 @@ import { createTokens } from "#utils/token-factory";
 export const isCDNRunning = await checkCDNRunning();
 export type TestUser = Omit<APIUser, "id"> & { id: bigint; accessToken: string; refreshToken: string };
 
+const connectedWebsockets: WebSocket[] = [];
+const currentIndecies = { users: 0, channels: 0, relationships: 0, messages: 0 };
+
+const removeUsersQueue: bigint[] = [];
+const removeChannelsQueue: bigint[] = [];
+
 let server: { url: string };
-async function getServer() {
+export async function getServer() {
 	if (!server) {
+		await $`bun run build`;
 		const rootDir = process.cwd();
 		const outDir = resolve(rootDir, ".output");
-		console.log(rootDir, "ROOT");
-		console.log(outDir, "OUT");
-		console.log(join(outDir, ".nitro"), "BUILD");
-		const nitro = await createNitro({
-			experimental: { websocket: true },
-			preset: "bun",
-			rootDir: rootDir,
-			buildDir: join(outDir, ".nitro"),
-			output: {
-				dir: outDir,
-			},
-			timing: true,
-			serveStatic: true,
-			compatibilityDate: "2025-01-20",
-			errorHandler: join(rootDir, "src/utils/error-handler.ts"),
-			srcDir: join(rootDir, "src"),
-		});
 
-		await prepare(nitro);
-		await copyPublicAssets(nitro);
-		await prerender(nitro);
-		await build(nitro);
+		Bun.spawn(["bun", resolve(outDir, "server/index.mjs")], { env: { NITRO_PORT: "3004" }, stdout: "inherit" });
 
-		Bun.spawn(["bun", resolve(outDir, "server/index.mjs")], { env: { NITRO_PORT: "3004" }, stdin: "inherit" });
-
-		await waitForPort(3004);
 		server = { url: "http://localhost:3004" };
+		await waitForPort(3004);
 	}
 
 	return server;
 }
 
-await getServer();
+// await getServer();
 
 export async function testHandler(
 	path: string,
@@ -77,7 +61,6 @@ export async function testHandler(
 ) {
 	const handler = await getServer();
 	const url = new URL(path, handler.url).toString();
-	console.log(url);
 
 	let finalBody: unknown;
 	const finalHeaders: Record<string, string> = headers;
@@ -123,7 +106,6 @@ export async function testHandler(
 	}
 }
 
-const connectedWebsockets: WebSocket[] = [];
 export async function getWebSocket() {
 	await getServer();
 	const ws = new WebSocket("ws://localhost:3004/gateway");
@@ -256,8 +238,6 @@ export const timeSpent = {
 	deleteReadStates: 0,
 };
 
-const currentIndecies = { users: 0, channels: 0, relationships: 0, messages: 0 };
-
 export async function createTestUsers(amount: number) {
 	const t0 = performance.now();
 
@@ -380,9 +360,6 @@ export async function createTestMessages(channelId: bigint, authorId: bigint, am
 
 	return createdMessages;
 }
-
-const removeUsersQueue: bigint[] = [];
-const removeChannelsQueue: bigint[] = [];
 
 export function removeUserLater<T>(user: T) {
 	if (user && typeof user === "object" && "id" in user) {

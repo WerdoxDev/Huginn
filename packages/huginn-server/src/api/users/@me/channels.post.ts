@@ -1,7 +1,5 @@
 import { createErrorFactory, createHuginnError, useValidatedBody } from "@huginn/backend-shared";
-import { invalidFormBody } from "@huginn/backend-shared";
 import { type APIPostDMChannelResult, ChannelType, Errors, HttpCode, idFix } from "@huginn/shared";
-
 import { z } from "zod";
 import { prisma } from "#database";
 import { selectChannelRecipients } from "#database/common";
@@ -11,15 +9,11 @@ import { channelWithoutRecipient } from "#utils/helpers";
 import { useVerifiedJwt } from "#utils/route-utils";
 import { validateChannelName } from "#utils/validation";
 
-const schema = z.object({ name: z.optional(z.string()), recipients: z.array(z.string()).min(1) });
+const schema = z.object({ name: z.optional(z.string()), recipients: z.array(z.string()).nonempty() });
 
 export default defineEventHandler(async (event) => {
 	const { payload } = await useVerifiedJwt(event);
 	const body = await useValidatedBody(event, schema);
-
-	// if (body.recipients.length === 0) {
-	// 	return invalidFormBody(event);
-	// }
 
 	const formError = createErrorFactory(Errors.invalidFormBody());
 

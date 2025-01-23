@@ -38,7 +38,7 @@
 	"devDependencies": {
 		"@octokit/types": "^13.6.2",
 		"h3": "^1.14.0",
-		"nitropack": "npm:nitropack-nightly@latest"
+		"nitropack": "^2.0.0"
 	},
 	"imports": {
 		"#database": "./src/database/index.ts",
