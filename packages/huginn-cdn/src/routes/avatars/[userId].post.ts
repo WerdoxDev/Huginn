@@ -2,29 +2,26 @@ import { catchError, invalidFormBody, useValidatedParams } from "@huginn/backend
 import { HttpCode } from "@huginn/shared";
 import { defineEventHandler, readFormData, setResponseStatus } from "h3";
 import { z } from "zod";
-import { router, storage } from "#cdn";
+import { storage } from "#setup";
 
 const schema = z.object({ userId: z.string() });
 
-router.post(
-	"/avatars/:userId",
-	defineEventHandler(async (event) => {
-		const { userId } = await useValidatedParams(event, schema);
-		const [error, body] = await catchError(async () => await readFormData(event));
+export default defineEventHandler(async (event) => {
+	const { userId } = await useValidatedParams(event, schema);
+	const [error, body] = await catchError(async () => await readFormData(event));
 
-		if (error) {
-			return invalidFormBody(event);
-		}
+	if (error) {
+		return invalidFormBody(event);
+	}
 
-		const file = body.get("files[0]");
+	const file = body.get("files[0]");
 
-		if (!body || !file || !(file instanceof File)) {
-			return invalidFormBody(event);
-		}
+	if (!body || !file || !(file instanceof File)) {
+		return invalidFormBody(event);
+	}
 
-		await storage.writeFile("avatars", userId, file.name, await file.arrayBuffer());
+	await storage.writeFile("avatars", userId, file.name, await file.arrayBuffer());
 
-		setResponseStatus(event, HttpCode.CREATED);
-		return file.name;
-	}),
-);
+	setResponseStatus(event, HttpCode.CREATED);
+	return file.name;
+});

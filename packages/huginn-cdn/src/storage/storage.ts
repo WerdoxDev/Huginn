@@ -1,4 +1,4 @@
-import type { FileCategory } from "#types";
+import type { FileCategory } from "#utils/types";
 
 export abstract class Storage {
 	public name: string;

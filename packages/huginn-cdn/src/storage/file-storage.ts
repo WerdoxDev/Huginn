@@ -2,7 +2,7 @@ import { logFileNotFound, logGetFile, logWriteFile } from "@huginn/backend-share
 import pathe from "pathe";
 import { envs } from "#setup";
 import { Storage } from "#storage/storage";
-import type { FileCategory } from "#types";
+import type { FileCategory } from "#utils/types";
 
 export class FileStorage extends Storage {
 	public constructor() {

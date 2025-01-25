@@ -1,70 +1,61 @@
 import { describe, expect, test } from "bun:test";
 import path from "node:path";
-import { type HuginnErrorFieldInformation, compareArrayBuffers } from "@huginn/shared";
-import { startCdn } from "#cdn";
+import { testHandler } from "@huginn/backend-shared";
+import { compareArrayBuffers } from "@huginn/shared";
 import { envs } from "../setup";
-
-const url = `http://${envs.CDN_HOST}:${envs.CDN_PORT}`;
 
 const categories = ["avatars", "channel-icons"];
 
-//TODO: Make sure of PlainHandler instead of fetch
-await startCdn({ serve: true, defineOptions: true, storage: "local" });
 for (const category of categories) {
-	test(`POST /${category}/123 empty to be not ok`, async () => {
-		const result = await fetch(`${url}/${category}/123`, { method: "POST" });
+	describe(`${category} operations`, () => {
+		test(`should return 'Invalid Form Body' when body constrains are not met`, async () => {
+			const result = testHandler(`/${category}/123`, {}, "POST");
 
-		expect(result.status).not.toBe(500);
-	});
+			expect(result).rejects.toThrow("Invalid Form Body");
+		});
 
-	test(`POST /${category}/123 is ok`, async () => {
-		const formData = new FormData();
-		formData.append("files[0]", Bun.file(path.resolve(__dirname, "pixel.png")), "pixel.png");
+		test(`should return 'File Not Found' when a file with doesn't exist`, async () => {
+			const result = testHandler(`/${category}/123/invalid.png`, {}, "GET");
+			expect(result).rejects.toThrow("File Not Found");
+		});
 
-		const result = await fetch(`${url}/${category}/123`, { method: "POST", body: formData });
+		test(`should return 'Invalid File Format' when the specified file format is invalid`, async () => {
+			const result = testHandler(`${category}/123/pixel.gif`, {}, "GET");
+			expect(result).rejects.toThrow("Invalid File Format");
+		});
 
-		expect(result.ok).toBeTrue();
-		expect(await result.text()).toBe("pixel.png");
-	});
+		test("should return the file name when file upload is successful", async () => {
+			const formData = new FormData();
+			formData.append("files[0]", Bun.file(path.resolve(__dirname, "pixel.png")), "pixel.png");
 
-	test(`GET /${category}/123/pixel.png exists`, async () => {
-		const result = await fetch(`${url}/${category}/123/pixel.png`, { method: "GET" });
+			const result = (await testHandler(`/${category}/123`, {}, "POST", formData, true)) as Response;
+			expect(await result.text()).toBe("pixel.png");
+		});
 
-		expect(result.ok).toBeTrue();
+		test("should return an exact file when request is successful", async () => {
+			const result = (await testHandler(`/${category}/123/pixel.png`, {}, "GET", undefined, true)) as Response;
 
-		const fileData = await Bun.file(path.resolve(__dirname, "pixel.png")).arrayBuffer();
-		const requestData = await result.arrayBuffer();
+			expect(result.ok).toBeTrue();
 
-		expect(compareArrayBuffers(fileData, requestData)).toBeTrue();
-	});
+			const fileData = await Bun.file(path.resolve(__dirname, "pixel.png")).arrayBuffer();
+			const requestData = await result.arrayBuffer();
 
-	test(`GET /${category}/123/pixel.{jpef,jpg,webp} exists`, async () => {
-		const results = await Promise.all([
-			fetch(`${url}/${category}/123/pixel.jpeg`, { method: "GET" }),
-			fetch(`${url}/${category}/123/pixel.jpg`, { method: "GET" }),
-			fetch(`${url}/${category}/123/pixel.webp`, { method: "GET" }),
-		]);
+			expect(compareArrayBuffers(fileData, requestData)).toBeTrue();
+		});
 
-		expect(results.every((x) => x.ok)).toBeTrue();
+		test(`should return an image in different formats even if they aren't cached / don't exist`, async () => {
+			const results = (await Promise.all([
+				testHandler(`/${category}/123/pixel.jpeg`, {}, "GET", undefined, true),
+				testHandler(`/${category}/123/pixel.jpg`, {}, "GET", undefined, true),
+				testHandler(`/${category}/123/pixel.webp`, {}, "GET", undefined, true),
+			])) as [Response, Response, Response];
 
-		for (const format of ["jpeg", "jpg", "webp"]) {
-			const file = Bun.file(path.resolve(envs.UPLOADS_DIR, `${category}/123/pixel.${format}`));
-			expect(await file.exists()).toBeTrue();
-		}
-	});
+			expect(results.every((x) => x.ok)).toBeTrue();
 
-	test(`GET /${category}/123/invalid.png does not exist`, async () => {
-		const result = await fetch(`${url}/${category}/123/invalid.png`, { method: "GET" });
-		const json = (await result.json()) as HuginnErrorFieldInformation;
-
-		expect(json.message.toLowerCase()).toContain("file not found");
-	});
-
-	test(`GET /${category}/123/pixel.gif to be invalid format`, async () => {
-		const result = await fetch(`${url}/${category}/123/pixel.gif`, { method: "GET" });
-		const json = (await result.json()) as HuginnErrorFieldInformation;
-
-		expect(json).toBeDefined();
-		expect(json.message.toLowerCase()).toContain("invalid file format");
+			for (const format of ["jpeg", "jpg", "webp"]) {
+				const file = Bun.file(path.resolve(envs.UPLOADS_DIR, `${category}/123/pixel.${format}`));
+				expect(await file.exists()).toBeTrue();
+			}
+		});
 	});
 }

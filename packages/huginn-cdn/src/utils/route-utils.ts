@@ -1,7 +1,7 @@
 import { HttpCode } from "@huginn/shared";
 import { type H3Event, setResponseHeader, setResponseStatus } from "h3";
-import { storage } from "#cdn";
-import type { FileCategory } from "#types";
+import { storage } from "#setup";
+import type { FileCategory } from "#utils/types";
 import { extractFileInfo, findImageByName, transformImage } from "./file-utils";
 
 export async function tryResolveImage(event: H3Event, category: FileCategory, subDirectory: string, hash: string) {

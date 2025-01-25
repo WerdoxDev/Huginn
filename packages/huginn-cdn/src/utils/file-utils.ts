@@ -2,8 +2,8 @@ import { CDNError } from "@huginn/backend-shared";
 import { CDNErrorType } from "@huginn/backend-shared/types";
 import { createError } from "h3";
 import sharp from "sharp";
-import { storage } from "#cdn";
-import { type FileCategory, type FileContentTypes, type FileFormats, type FileInfo, FileTypes } from "../types";
+import { storage } from "#setup";
+import { type FileCategory, type FileContentTypes, type FileFormats, type FileInfo, FileTypes } from "./types";
 
 export function extractFileInfo(filename: string): FileInfo {
 	const split = filename.split(".");
