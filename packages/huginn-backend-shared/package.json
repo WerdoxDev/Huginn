@@ -6,11 +6,12 @@
 	"dependencies": {
 		"@sapphire/snowflake": "^3.5.3",
 		"consola": "^3.2.3",
-		"h3": "^1.13.0",
+		"pathe": "^2.0.2",
 		"zod": "^3.23.8"
 	},
 	"devDependencies": {
 		"@types/bun": "latest",
+		"get-port-please": "^3.1.2",
 		"nitropack": "^2.10.4"
 	}
 }
