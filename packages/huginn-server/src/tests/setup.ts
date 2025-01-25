@@ -1,10 +1,10 @@
 import { afterAll, afterEach, beforeAll, setDefaultTimeout } from "bun:test";
-import { disconnectWebSockets, getServer, removeChannels, removeUsers } from "./utils";
+import { disconnectWebSockets, removeChannels, removeUsers, startServer, testHandler } from "./utils";
 
-setDefaultTimeout(20000);
+// setDefaultTimeout(10000);
 
 beforeAll(async () => {
-	await getServer();
+	await startServer();
 });
 
 afterEach(() => {
