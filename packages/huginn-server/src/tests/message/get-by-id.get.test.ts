@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
+import { testHandler } from "@huginn/backend-shared";
 import { type APIGetMessageByIdResult, ChannelType, MessageType } from "@huginn/shared";
 import { expectMessageExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestMessages, createTestUsers, testHandler } from "#tests/utils";
+import { authHeader, createTestChannel, createTestMessages, createTestUsers } from "#tests/utils";
 
 describe("GET /channels/:channelId/messages/:messageId", () => {
 	test("should return 'Invalid Form Body' when id is invalid", async () => {

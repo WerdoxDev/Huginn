@@ -1,5 +1,6 @@
 import { describe, test } from "bun:test";
-import { ChannelType, MessageType, getFileHash, resolveImage, toArrayBuffer } from "@huginn/shared";
+import { testHandler } from "@huginn/backend-shared";
+import { ChannelType, MessageType, resolveImage } from "@huginn/shared";
 import pathe from "pathe";
 import { expectMessageExactSchema } from "#tests/expect-utils";
 import {
@@ -10,7 +11,6 @@ import {
 	getReadyWebSocket,
 	isCDNRunning,
 	multiDone,
-	testHandler,
 	testIsDispatch,
 } from "#tests/utils";
 

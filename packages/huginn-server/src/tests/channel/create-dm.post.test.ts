@@ -1,8 +1,9 @@
 import { describe, expect, test } from "bun:test";
+import { testHandler } from "@huginn/backend-shared";
 import { type APIPostDMChannelResult, ChannelType } from "@huginn/shared";
 import { prisma } from "#database";
 import { expectChannelExactRecipients, expectChannelExactSchema, expectReadStatesExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestUsers, removeChannelLater, testHandler } from "#tests/utils";
+import { authHeader, createTestUsers, removeChannelLater } from "#tests/utils";
 
 describe("POST /users/@me/channels", () => {
 	test("should return 'Invalid Form Body' when body constrains are not met", async () => {

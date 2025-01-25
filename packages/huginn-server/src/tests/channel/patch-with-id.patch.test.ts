@@ -1,9 +1,10 @@
 import { describe, expect, test } from "bun:test";
+import { testHandler } from "@huginn/backend-shared";
 import { type APIPatchDMChannelResult, ChannelType, getFileHash, resolveImage, toArrayBuffer } from "@huginn/shared";
 import pathe from "pathe";
 import { prisma } from "#database";
 import { expectChannelExactRecipients, expectChannelExactSchema, expectReadStatesExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestUsers, isCDNRunning, testHandler } from "#tests/utils";
+import { authHeader, createTestChannel, createTestUsers, isCDNRunning } from "#tests/utils";
 
 describe("PATCH /channels/:channelId", () => {
 	test(

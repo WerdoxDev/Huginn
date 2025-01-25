@@ -93,11 +93,12 @@
       "dependencies": {
         "@sapphire/snowflake": "^3.5.3",
         "consola": "^3.2.3",
-        "h3": "^1.13.0",
+        "pathe": "^2.0.2",
         "zod": "^3.23.8",
       },
       "devDependencies": {
         "@types/bun": "latest",
+        "get-port-please": "^3.1.2",
         "nitropack": "^2.10.4",
       },
     },
@@ -141,13 +142,14 @@
         "@huginn/backend-shared": "packages/huginn-backend-shared",
         "@huginn/shared": "packages/huginn-shared",
         "consola": "^3.2.3",
-        "h3": "^1.12.0",
         "pathe": "^1.1.2",
         "sharp": "^0.33.5",
         "zod": "^3.23.8",
       },
       "devDependencies": {
         "@types/bun": "latest",
+        "h3": "^1.14.0",
+        "nitropack": "^2.10.4",
       },
     },
     "packages/huginn-server": {
@@ -502,11 +504,11 @@
 
     "@huginn/api": ["@huginn/api@workspace:packages/huginn-api", { "dependencies": { "@huginn/shared": "packages/huginn-shared", "@std/encoding": "npm:@jsr/std__encoding", "jose": "^5.9.6", "pathe": "^1.1.2" }, "devDependencies": { "@types/bun": "^1.1.14" } }],
 
-    "@huginn/backend-shared": ["@huginn/backend-shared@workspace:packages/huginn-backend-shared", { "dependencies": { "@sapphire/snowflake": "^3.5.3", "consola": "^3.2.3", "h3": "^1.13.0", "zod": "^3.23.8" }, "devDependencies": { "@types/bun": "latest", "nitropack": "^2.10.4" } }],
+    "@huginn/backend-shared": ["@huginn/backend-shared@workspace:packages/huginn-backend-shared", { "dependencies": { "@sapphire/snowflake": "^3.5.3", "consola": "^3.2.3", "pathe": "^2.0.2", "zod": "^3.23.8" }, "devDependencies": { "@types/bun": "latest", "get-port-please": "^3.1.2", "nitropack": "^2.10.4" } }],
 
     "@huginn/bundler": ["@huginn/bundler@workspace:packages/huginn-bundler", { "dependencies": { "@aws-sdk/client-s3": "^3.717.0", "@huginn/backend-shared": "packages/huginn-backend-shared", "@huginn/shared": "packages/huginn-shared", "citty": "^0.1.6", "confbox": "^0.1.8", "consola": "^3.3.1", "octokit": "^3.2.1", "semver": "^7.6.3" }, "devDependencies": { "@octokit/types": "^13.6.2", "@types/bun": "latest", "@types/semver": "^7.5.8" }, "bin": { "bundler": "./src/index.ts" } }],
 
-    "@huginn/cdn": ["@huginn/cdn@workspace:packages/huginn-cdn", { "dependencies": { "@aws-sdk/client-s3": "^3.658.1", "@huginn/backend-shared": "packages/huginn-backend-shared", "@huginn/shared": "packages/huginn-shared", "consola": "^3.2.3", "h3": "^1.12.0", "pathe": "^1.1.2", "sharp": "^0.33.5", "zod": "^3.23.8" }, "devDependencies": { "@types/bun": "latest" } }],
+    "@huginn/cdn": ["@huginn/cdn@workspace:packages/huginn-cdn", { "dependencies": { "@aws-sdk/client-s3": "^3.658.1", "@huginn/backend-shared": "packages/huginn-backend-shared", "@huginn/shared": "packages/huginn-shared", "consola": "^3.2.3", "pathe": "^1.1.2", "sharp": "^0.33.5", "zod": "^3.23.8" }, "devDependencies": { "@types/bun": "latest", "h3": "^1.14.0", "nitropack": "^2.10.4" } }],
 
     "@huginn/server": ["@huginn/server@workspace:packages/huginn-server", { "dependencies": { "@aws-sdk/client-s3": "^3.714.0", "@huginn/backend-shared": "packages/huginn-backend-shared", "@huginn/shared": "packages/huginn-shared", "@prisma/client": "^6.1.0", "@prisma/extension-optimize": "^1.1.4", "@std/collections": "npm:@jsr/std__collections", "@std/encoding": "npm:@jsr/std__encoding", "@std/media-types": "npm:@jsr/std__media-types", "@std/text": "npm:@jsr/std__text", "@types/jsdom": "^21.1.7", "@types/probe-image-size": "^7.2.5", "consola": "^3.2.3", "crossws": "^0.3.1", "get-port-please": "^3.1.2", "jose": "^5.9.6", "jsdom": "^25.0.1", "listhen": "^1.9.0", "magic-regexp": "^0.8.0", "octokit": "^4.0.2", "ohash": "^1.1.4", "pathe": "^1.1.2", "prisma": "^6.1.0", "probe-image-size": "^7.2.3", "semver": "^7.6.3", "zod": "^3.24.1" }, "devDependencies": { "@octokit/types": "^13.6.2", "h3": "^1.14.0", "nitropack": "^2.0.0" } }],
 
@@ -2587,6 +2589,8 @@
     "@google-automations/git-file-utils/@octokit/types": ["@octokit/types@9.3.2", "", { "dependencies": { "@octokit/openapi-types": "^18.0.0" } }, "sha512-D4iHGTdAnEEVsB8fl95m1hiz7D5YiRdQ9b/OEb3BYRVwbLsGHcRVPz+u+BgRLNk0Q0/4iZCBqDN96j2XNxfXrA=="],
 
     "@google-automations/git-file-utils/minimatch": ["minimatch@5.1.6", "", { "dependencies": { "brace-expansion": "^2.0.1" } }, "sha512-lKwV/1brpG6mBUFHtb7NUmtABCb2WZZmm2wNiOA5hAb8VdCS4B3dtMWyvcoViccwAW/COERjXLt0zP1zXUN26g=="],
+
+    "@huginn/backend-shared/pathe": ["pathe@2.0.2", "", {}, "sha512-15Ztpk+nov8DR524R4BF7uEuzESgzUEAV4Ah7CUMNGXdE5ELuvxElxGXndBl32vMSsWa1jpNf22Z+Er3sKwq+w=="],
 
     "@huginn/server/octokit": ["octokit@4.1.0", "", { "dependencies": { "@octokit/app": "^15.1.2", "@octokit/core": "^6.1.3", "@octokit/oauth-app": "^7.1.4", "@octokit/plugin-paginate-graphql": "^5.2.4", "@octokit/plugin-paginate-rest": "^11.4.0", "@octokit/plugin-rest-endpoint-methods": "^13.3.0", "@octokit/plugin-retry": "^7.1.3", "@octokit/plugin-throttling": "^9.4.0", "@octokit/request-error": "^6.1.6", "@octokit/types": "^13.7.0" } }, "sha512-/UrQAOSvkc+lUUWKNzy4ByAgYU9KpFzZQt8DnC962YmQuDiZb1SNJ90YukCCK5aMzKqqCA+z1kkAlmzYvdYKag=="],
 

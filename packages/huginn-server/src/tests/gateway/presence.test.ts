@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import type { RelationshipType } from "@huginn/shared";
-import { expectPresenceExactSchema, expectRelationshipExactSchema } from "#tests/expect-utils";
+import { testHandler } from "@huginn/backend-shared";
+import { expectPresenceExactSchema } from "#tests/expect-utils";
 import {
 	authHeader,
 	createTestRelationships,
@@ -8,7 +8,6 @@ import {
 	getIdentifiedWebSocket,
 	getReadyWebSocket,
 	multiDone,
-	testHandler,
 	testIsDispatch,
 } from "#tests/utils";
 

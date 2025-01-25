@@ -1,7 +1,8 @@
 import { describe, test } from "bun:test";
+import { testHandler } from "@huginn/backend-shared";
 import { ChannelType } from "@huginn/shared";
 import { expectTypingExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestUsers, getReadyWebSocket, multiDone, testHandler, testIsDispatch } from "#tests/utils";
+import { authHeader, createTestChannel, createTestUsers, getReadyWebSocket, multiDone, testIsDispatch } from "#tests/utils";
 
 describe("Typing", () => {
 	test(

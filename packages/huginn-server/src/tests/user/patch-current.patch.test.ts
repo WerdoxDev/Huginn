@@ -1,8 +1,9 @@
 import { describe, expect, test } from "bun:test";
+import { testHandler } from "@huginn/backend-shared";
 import { type APIPatchCurrentUserJSONBody, type APIPatchCurrentUserResult, getFileHash, resolveImage, toArrayBuffer } from "@huginn/shared";
 import pathe from "pathe";
 import { expectUserExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestUsers, isCDNRunning, testHandler } from "#tests/utils";
+import { authHeader, createTestUsers, isCDNRunning } from "#tests/utils";
 
 describe("PATCH /users/@me", () => {
 	test("should return 'Invalid Form Body' when body constrains are not met", async () => {

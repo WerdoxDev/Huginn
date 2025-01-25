@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
+import { testHandler } from "@huginn/backend-shared";
 import type { APIGetCurrentUserResult } from "@huginn/shared";
 import { expectUserExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestUsers, testHandler } from "#tests/utils";
+import { authHeader, createTestUsers } from "#tests/utils";
 
 describe("GET /users/@me", () => {
 	test("should return 'Unauthorized' when no token is passed", async () => {

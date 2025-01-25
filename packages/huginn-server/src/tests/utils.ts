@@ -20,9 +20,8 @@ import {
 	snowflake,
 } from "@huginn/shared";
 import { $ } from "bun";
-import consola from "consola";
 import { waitForPort } from "get-port-please";
-import { type Nitro, build, copyPublicAssets, createNitro, prepare, prerender } from "nitropack";
+import { type Nitro, createNitro } from "nitropack";
 import { join, resolve } from "pathe";
 import { prisma } from "#database";
 import { envs } from "#setup";
@@ -31,147 +30,11 @@ import { createTokens } from "#utils/token-factory";
 export const isCDNRunning = await checkCDNRunning();
 export type TestUser = Omit<APIUser, "id"> & { id: bigint; accessToken: string; refreshToken: string };
 
-export type TestContext = {
-	nitro: Nitro;
-	server?: { url: string };
-};
-
 const connectedWebsockets: WebSocket[] = [];
 const currentIndecies = { users: 0, channels: 0, relationships: 0, messages: 0 };
 
 const removeUsersQueue: bigint[] = [];
 const removeChannelsQueue: bigint[] = [];
-
-let currentContext: TestContext | undefined;
-export async function getContext() {
-	if (!currentContext) {
-		const rootDir = process.cwd();
-
-		const outDir = resolve(rootDir, ".output");
-
-		const ctx: TestContext = {
-			nitro: await createNitro(
-				{
-					preset: "bun",
-					dev: false,
-					rootDir: ".",
-					buildDir: join(outDir, ".nitro"),
-					serveStatic: true,
-					output: {
-						dir: outDir,
-					},
-					timing: true,
-					inlineDynamicImports: true,
-					replace: {
-						"import.meta.test": JSON.stringify(true),
-					},
-				},
-				{ compatibilityDate: "2025-01-20" },
-			),
-		};
-
-		currentContext = ctx;
-	}
-
-	return currentContext;
-}
-
-export async function startServer() {
-	const ctx = await getContext();
-
-	if (!ctx) {
-		throw new Error("Nitro test context is not initialized.");
-	}
-
-	await $`bun ./src/tests/build-server.ts`.quiet();
-
-	const child = Bun.spawn(["bun", resolve(ctx.nitro.options.output.dir, "server/index.mjs")], {
-		env: { NITRO_PORT: "3004" },
-		stdout: "pipe",
-		stderr: "pipe",
-	});
-
-	await waitForServer(child.stdout);
-	ctx.server = { url: "http://localhost:3004" };
-
-	return ctx;
-}
-
-async function waitForServer(stream: ReadableStream<Uint8Array<ArrayBufferLike>>) {
-	const reader = stream.getReader();
-	let done = false;
-	let value: Uint8Array | undefined;
-	let outputBuffer = "";
-
-	do {
-		// Read a chunk from the stream
-		({ done, value } = await reader.read());
-
-		if (!done) {
-			const output = new TextDecoder().decode(value);
-			outputBuffer += output;
-
-			if (outputBuffer.includes("> Nitro Start")) {
-				break; // Exit the loop if desired text is found
-			}
-		}
-	} while (!done);
-
-	await waitForPort(3004);
-}
-
-export async function testHandler(
-	path: string,
-	headers: Record<string, string>,
-	method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
-	body?: unknown,
-) {
-	const ctx = await getContext();
-	const url = new URL(path, ctx.server?.url).toString();
-
-	let finalBody: unknown;
-	const finalHeaders: Record<string, string> = headers;
-
-	if (body && typeof body === "object" && method !== "GET") {
-		finalHeaders["Content-Type"] = "application/json";
-		finalBody = JSON.stringify(body);
-	}
-
-	const response = await fetch(url, { headers: finalHeaders, method, body: finalBody as BodyInit, redirect: "manual" });
-
-	let responseBody: unknown;
-	const headersMap = new Map(response.headers);
-	if (headersMap.get("content-type")?.startsWith("application/json")) {
-		responseBody = await response.json();
-	}
-
-	if (response.status >= 200 && response.status < 300) {
-		return responseBody;
-	}
-
-	if (response.status >= 300 && response.status < 400) {
-		return response;
-	}
-
-	if (response.status >= 400 && response.status < 500) {
-		let error: HuginnAPIError;
-		try {
-			// console.log(responseBody);
-			const errorData = responseBody as HuginnErrorData;
-			error = new HuginnAPIError(errorData, errorData.code, response.status, method, path, { body });
-		} catch (e) {
-			throw new HTTPError(response.status, response.statusText, method, path, { body });
-		}
-
-		if (error) {
-			throw error;
-		}
-	}
-
-	if (response.status >= 500 && response.status < 600) {
-		throw new HTTPError(response.status, response.statusText, method, path, { body });
-	}
-}
 
 export async function getWebSocket() {
 	const ws = new WebSocket("ws://localhost:3004/gateway");

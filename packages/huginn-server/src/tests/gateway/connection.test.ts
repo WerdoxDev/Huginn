@@ -1,14 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import {
-	GatewayCode,
-	type GatewayDispatch,
-	type GatewayHeartbeat,
-	type GatewayIdentify,
-	GatewayOperations,
-	type GatewayPayload,
-	type GatewayResume,
-	type GatewayResumeData,
-} from "@huginn/shared";
+import { GatewayCode, type GatewayIdentify, GatewayOperations, type GatewayResume } from "@huginn/shared";
 import { gateway } from "#setup";
 import { createTestUsers, getReadyWebSocket, getWebSocket, testIsDispatch, testIsOpcode, wsSend } from "#tests/utils";
 

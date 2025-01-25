@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { generateRandomString } from "@huginn/shared";
 import { encodeBase64 } from "@std/encoding";
 
-import { testHandler } from "#tests/utils";
+import { testHandler } from "@huginn/backend-shared";
 
 describe("GET /auth/google", () => {
 	test("should return '404' when query params are not correct", async () => {
@@ -42,6 +42,7 @@ describe("GET /auth/google", () => {
 			`/api/auth/google?${new URLSearchParams({ redirect_url: "https://app.huginn.dev/", state: state, flow: "browser" }).toString()}`,
 			{},
 			"GET",
+			true,
 		)) as Response;
 
 		expect(result.status).toBe(302);

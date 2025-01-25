@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
+import { testHandler } from "@huginn/backend-shared";
 import type { APIPostRegisterResult, RegisterUser } from "@huginn/shared";
 import { expectPrivateUserExactSchema } from "#tests/expect-utils";
-import { createTestUsers, removeUserLater, testHandler } from "#tests/utils";
+import { createTestUsers, removeUserLater } from "#tests/utils";
 
 describe("POST /auth/register", () => {
 	test("should return 'Invalid Form Body' when body constrains are not met", async () => {

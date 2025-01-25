@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
+import { testHandler } from "@huginn/backend-shared";
 import { type APIPostDefaultMessageResult, ChannelType, MessageType } from "@huginn/shared";
 import { expectMessageExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestUsers, testHandler } from "#tests/utils";
+import { authHeader, createTestChannel, createTestUsers } from "#tests/utils";
 
 describe("POST /api/channels/:channelId/messages", () => {
 	test("should return 'Invalid Form Body' when id is invalid or body constrains are not met", async () => {

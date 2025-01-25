@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
+import { testHandler } from "@huginn/backend-shared";
 import { RelationshipType } from "@huginn/shared";
 import { expectRelationshipExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestRelationships, createTestUsers, getReadyWebSocket, multiDone, testHandler, testIsDispatch } from "#tests/utils";
+import { authHeader, createTestRelationships, createTestUsers, getReadyWebSocket, multiDone, testIsDispatch } from "#tests/utils";
 
 describe("Relationship", () => {
 	test("should send a relationship_add when a relationship is made with the user", async (done) => {

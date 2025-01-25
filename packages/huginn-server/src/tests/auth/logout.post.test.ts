@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { authHeader, createTestUsers, testHandler } from "#tests/utils";
+import { testHandler } from "@huginn/backend-shared";
+import { authHeader, createTestUsers } from "#tests/utils";
 import { verifyToken } from "#utils/token-factory";
 
 describe("POST /auth/logout", () => {

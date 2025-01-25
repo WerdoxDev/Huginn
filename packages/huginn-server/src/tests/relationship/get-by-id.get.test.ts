@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { type APIGetUserRelationshipByIdResult, type APIGetUserRelationshipsResult, RelationshipType } from "@huginn/shared";
+import { testHandler } from "@huginn/backend-shared";
+import { type APIGetUserRelationshipByIdResult, RelationshipType } from "@huginn/shared";
 import { expectRelationshipExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestRelationships, createTestUsers, testHandler } from "#tests/utils";
+import { authHeader, createTestRelationships, createTestUsers } from "#tests/utils";
 
 describe("GET /users/@me/relationships/:userId", () => {
 	test("should return 'Invalid Form Body' when id is invalid", async () => {

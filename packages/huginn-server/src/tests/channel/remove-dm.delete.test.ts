@@ -1,8 +1,9 @@
 import { describe, expect, test } from "bun:test";
+import { testHandler } from "@huginn/backend-shared";
 import { type APIDeleteDMChannelResult, type APIPostDMChannelResult, ChannelType } from "@huginn/shared";
 import { prisma } from "#database";
 import { expectChannelExactRecipients, expectChannelExactSchema, expectReadStatesExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestUsers, testHandler } from "#tests/utils";
+import { authHeader, createTestChannel, createTestUsers } from "#tests/utils";
 
 describe("DELETE /channels/:channelId", () => {
 	test("should return 'Invalid Form Body' when id is invalid", async () => {

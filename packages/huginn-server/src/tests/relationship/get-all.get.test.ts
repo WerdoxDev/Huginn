@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
+import { testHandler } from "@huginn/backend-shared";
 import { type APIGetUserRelationshipsResult, RelationshipType } from "@huginn/shared";
 import { expectRelationshipExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestRelationships, createTestUsers, testHandler } from "#tests/utils";
+import { authHeader, createTestRelationships, createTestUsers } from "#tests/utils";
 
 describe("GET /users/@me/relationships", () => {
 	test("should return 'Unauthorized' when no token is passed", async () => {

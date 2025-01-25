@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
+import { testHandler } from "@huginn/backend-shared";
 import { RelationshipType } from "@huginn/shared";
 import { prisma } from "#database";
-import { authHeader, createTestRelationships, createTestUsers, testHandler } from "#tests/utils";
+import { authHeader, createTestRelationships, createTestUsers } from "#tests/utils";
 
 describe("POST /users/@me/relationships", () => {
 	test("should return 'Invalid Form Body' when body constrains are not met", async () => {

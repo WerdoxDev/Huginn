@@ -1,5 +1,6 @@
 import { describe, test } from "bun:test";
-import { type APIPostDMChannelResult, ChannelType } from "@huginn/shared";
+import { testHandler } from "@huginn/backend-shared";
+import { ChannelType } from "@huginn/shared";
 import { expectChannelExactRecipients, expectChannelExactSchema, expectRecipientModifyExactSchema } from "#tests/expect-utils";
 import {
 	authHeader,
@@ -9,7 +10,6 @@ import {
 	getReadyWebSocket,
 	multiDone,
 	removeChannelLater,
-	testHandler,
 	testIsDispatch,
 } from "#tests/utils";
 

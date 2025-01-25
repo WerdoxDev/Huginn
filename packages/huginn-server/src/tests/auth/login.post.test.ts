@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
+import { testHandler } from "@huginn/backend-shared";
 import type { APIPostLoginResult, LoginCredentials } from "@huginn/shared";
-import { createTestUsers, testHandler } from "#tests/utils";
+import { createTestUsers } from "#tests/utils";
 
 describe("POST /auth/login", () => {
 	test("should return 'Invalid Form Body' when body constrains are not met", () => {

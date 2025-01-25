@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
+import { testHandler } from "@huginn/backend-shared";
 import { type APIGetUserChannelsResult, ChannelType } from "@huginn/shared";
 import { expectChannelExactRecipients, expectChannelExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestUsers, testHandler } from "#tests/utils";
+import { authHeader, createTestChannel, createTestUsers } from "#tests/utils";
 
 describe("GET /users/@me/channels", () => {
 	test("should return 'Unauthorized' when no token is passed", async () => {
