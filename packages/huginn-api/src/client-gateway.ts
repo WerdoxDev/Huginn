@@ -145,6 +145,7 @@ export class Gateway {
 			}
 		} catch (e) {
 			console.error("Could not connect to ws");
+			await new Promise((r) => setTimeout(r, 1000));
 			this.tryReconnect(event);
 		}
 	}

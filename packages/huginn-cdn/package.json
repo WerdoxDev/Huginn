@@ -4,7 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "nitro build",
-		"dev": "nitro dev --port 3004 --host",
+		"dev": "nitro dev --port 3003 --host",
 		"prepare": "nitro prepare"
 	},
 	"dependencies": {
