@@ -1,102 +1,59 @@
-import {
-	commonHandlers,
-	createErrorFactory,
-	handleCommonError,
-	handleErrorFactory,
-	handleServerError,
-	readEnv,
-	serverOnError,
-	sharedOnAfterResponse,
-	sharedOnRequest,
-} from "@huginn/backend-shared";
-import { router as cdnRouter } from "@huginn/cdn";
-import { router as serverRouter } from "@huginn/server";
-import { gateway } from "@huginn/server/src/server";
-import { Errors, HttpCode } from "@huginn/shared";
-import type { Serve, Server } from "bun";
-import consola from "consola";
-import { colors } from "consola/utils";
-import { createApp, createRouter, defineEventHandler, eventHandler, toWebHandler } from "h3";
+import type { WebSocketHandler } from "bun";
+import { Hono } from "hono";
 
-const app = createApp({
-	onError(error, event) {
-		const id = event.context.id;
-		const commonError = handleCommonError(error, event, id);
-		if (commonError) return commonError;
+const app = new Hono();
 
-		const errorFactory = serverOnError(error, event, undefined);
-		if (errorFactory) return handleErrorFactory(event, errorFactory, id);
+// Route requests based on the path
+app.all("/api/*", async (c) => {
+	const targetUrl = `http://localhost:3004${c.req.path}`;
 
-		return handleServerError(error, event, id);
-	},
-	onAfterResponse(event, response) {
-		return sharedOnAfterResponse(event, response);
-	},
-	async onRequest(event) {
-		return await sharedOnRequest(event);
-	},
+	return fetch(targetUrl, c.req.raw);
 });
 
-commonHandlers(app);
+const websocketHandler: WebSocketHandler<{ url: string; client: WebSocket | undefined }> = {
+	open(serverSocket) {
+		console.log("WebSocket connection established:", serverSocket.data.url);
 
-const router = createRouter();
-
-router.use(
-	"/**",
-	defineEventHandler(async (event) => {
-		let result = await serverRouter.handler(event);
-
-		if (!result) {
-			result = await cdnRouter.handler(event);
+		// Determine target server based on path
+		let targetUrl: string | undefined;
+		if (serverSocket.data.url.startsWith("http://localhost:3001/gateway")) {
+			targetUrl = "ws://localhost:3004/gateway";
+		} else {
+			serverSocket.close(4001, "Unknown WebSocket route");
+			return;
 		}
 
-		return result;
-	}),
-);
+		// Create a WebSocket connection to the target server
+		const clientSocket = new WebSocket(targetUrl);
+		serverSocket.data.client = clientSocket;
 
-app.use(router);
+		clientSocket.onmessage = (event) => {
+			serverSocket.send(event.data);
+		};
 
-const handler = toWebHandler(app);
-
-const envs = readEnv(["HOST", "PORT", "PASSPHRASE", "CERTIFICATE_PATH", "PRIVATE_KEY_PATH"] as const);
-
-const CERT_FILE = envs.CERTIFICATE_PATH && Bun.file(envs.CERTIFICATE_PATH);
-const KEY_FILE = envs.PRIVATE_KEY_PATH && Bun.file(envs.PRIVATE_KEY_PATH);
-const PASSPHRASE = process.env.PASSPHRASE;
-
-let server: Server;
-const options: Serve = {
-	port: envs.PORT,
-	async fetch(req, server) {
-		const url = new URL(req.url);
-		if (url.pathname === "/gateway") {
-			const response = await gateway.internalWS.handleUpgrade(req, server);
-
-			if (response) {
-				return response;
-			}
-
-			return new Response(JSON.stringify(createErrorFactory(Errors.websocketFail())), { status: HttpCode.BAD_REQUEST });
-		}
-
-		return handler(req);
+		clientSocket.onclose = (event) => {
+			serverSocket.close(event.code, event.reason);
+		};
 	},
-	tls: {
-		cert: CERT_FILE,
-		key: KEY_FILE,
-		passphrase: PASSPHRASE,
+
+	close(serverSocket, code, reason) {
+		serverSocket.data.client?.close(code, reason);
+	},
+
+	message(serverSocket, message) {
+		serverSocket.data.client?.send(message);
 	},
 };
 
-try {
-	server = Bun.serve({
-		...options,
-		hostname: envs.HOST,
-		websocket: gateway.internalWS.websocket,
-	});
-} catch {
-	server = Bun.serve({ ...options, hostname: "localhost", websocket: gateway.internalWS.websocket });
-}
-
-consola.success("Bifrost started!");
-consola.box(`Listening on ${colors.magenta(server.url.href)}`);
+Bun.serve({
+	fetch(request, server) {
+		if (request.url.includes("gateway")) {
+			if (server.upgrade(request, { data: { url: request.url, client: undefined } })) {
+				return;
+			}
+		}
+		return app.fetch(request, server);
+	},
+	websocket: websocketHandler,
+	port: "3001",
+});

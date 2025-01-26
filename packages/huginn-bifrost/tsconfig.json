@@ -1,8 +1,7 @@
 {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
-		"lib": ["ESNext"],
-		"isolatedDeclarations": true
+		"lib": ["ESNext"]
 	},
 	"include": ["src", "../huginn-server/src/utils/types.ts"]
 }
