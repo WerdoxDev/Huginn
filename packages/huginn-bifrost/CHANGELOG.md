@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0](https://github.com/WerdoxDev/Huginn/compare/bifrost@v0.3.0...bifrost@v0.4.0) (2025-02-01)
+
+
+### Features
+
+* **bifrost:** add simple reverse proxy ([7ed671b](https://github.com/WerdoxDev/Huginn/commit/7ed671b3c05837c6e78cbbeeba2671232b5ab6cd))
+
+
+### Bug Fixes
+
+* **bifrost:** add cdn route handling + better websocket handling ([33b95f2](https://github.com/WerdoxDev/Huginn/commit/33b95f26ec35c97acadbbee931930ae6d12460ba))
+
 ## [0.3.0](https://github.com/WerdoxDev/Huginn/compare/bifrost-v0.2.0...bifrost@v0.3.0) (2025-01-07)
 
 

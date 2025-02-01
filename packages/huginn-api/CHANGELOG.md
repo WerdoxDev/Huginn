@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.4.0...api@v0.5.0) (2025-02-01)
+
+
+### Features
+
+* **api:** add much better gateway reconnect handling ([8121a92](https://github.com/WerdoxDev/Huginn/commit/8121a92005a5ad73dc7e2e6c3d82369603af34e4))
+* **cdn, server:** abandoning nitro migration in favor of Hono ([bb5ccf7](https://github.com/WerdoxDev/Huginn/commit/bb5ccf73fac4e61c0dfb6750a71e48f81f8baa7d))
+
+
+### Bug Fixes
+
+* **api:** client gateway is no longer required to make a fetch to /api first ([65ca836](https://github.com/WerdoxDev/Huginn/commit/65ca8368472e75f8a7cbd2f228615d2c6f264d22))
+
 ## [0.4.0](https://github.com/WerdoxDev/Huginn/compare/api-v0.3.0...api@v0.4.0) (2025-01-07)
 
 

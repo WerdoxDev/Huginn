@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.3.0...cdn@v0.4.0) (2025-02-01)
+
+
+### Features
+
+* **cdn, server:** abandoning nitro migration in favor of Hono ([bb5ccf7](https://github.com/WerdoxDev/Huginn/commit/bb5ccf73fac4e61c0dfb6750a71e48f81f8baa7d))
+* **cdn:** migrate cdn to use nitro + working tests ([5761b17](https://github.com/WerdoxDev/Huginn/commit/5761b177f02c09bf285d29a913d221d0bb6787d3))
+
 ## [0.3.0](https://github.com/WerdoxDev/Huginn/compare/cdn-v0.2.0...cdn@v0.3.0) (2025-01-07)
 
 

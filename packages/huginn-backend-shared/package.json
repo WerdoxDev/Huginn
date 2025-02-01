@@ -1,7 +1,7 @@
 {
 	"name": "@huginn/backend-shared",
 	"main": "./src/index.ts",
-	"version": "0.2.1",
+	"version": "0.3.0",
 	"type": "module",
 	"dependencies": {
 		"@hono/zod-validator": "^0.4.2",
