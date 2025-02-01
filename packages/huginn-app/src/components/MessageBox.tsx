@@ -250,7 +250,7 @@ export default function MessageBox() {
 	}
 
 	return (
-		<div className=" bottom-0 z-10 mx-5 flex py-2">
+		<div className="bottom-0 z-10 mx-5 flex py-2">
 			<form className="w-full">
 				<div className="flex h-full items-start rounded-3xl bg-tertiary ring-2 ring-background">
 					<div className="m-2 mr-2 flex shrink-0 cursor-pointer items-center rounded-full bg-background p-1.5 transition-all hover:bg-white hover:bg-opacity-20 hover:shadow-xl">
@@ -260,7 +260,7 @@ export default function MessageBox() {
 						<Slate editor={editor} initialValue={initialValue}>
 							<Editable
 								placeholder="Message @Emam"
-								className="h-full whitespace-break-spaces py-3.5 font-light text-white leading-[22px] caret-white outline-none"
+								className="h-full whitespace-break-spaces py-3 font-light text-white leading-[24px] caret-white outline-none"
 								renderLeaf={renderLeaf}
 								renderElement={renderElement}
 								decorate={decorate}

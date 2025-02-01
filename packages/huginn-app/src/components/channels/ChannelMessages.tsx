@@ -75,8 +75,6 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		const value = sortedMessages.map((message, i) => {
 			const lastMessage: AppChannelMessage | undefined = sortedMessages[i - 1];
 
-			console.log(lastMessage, message);
-
 			const newDate = (lastMessage && !moment(message.timestamp).isSame(lastMessage?.timestamp, "date")) || (!lastMessage && !hasPreviousPage);
 			const newMinute = !moment(message.timestamp).isSame(lastMessage?.timestamp, "minute");
 			const newAuthor = message.author.id !== lastMessage?.author.id;
