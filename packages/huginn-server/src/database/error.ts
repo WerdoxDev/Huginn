@@ -2,16 +2,15 @@ import { DBError, isDBError } from "@huginn/backend-shared";
 import { DBErrorType } from "@huginn/backend-shared/types";
 import type { Snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
-import { H3Error } from "h3";
 import { prisma } from "#database";
 
 export function assertError(error: Error | null, type: DBErrorType) {
-	let actualError = error;
-	if (error instanceof H3Error) {
-		actualError = error.cause as DBError;
-	}
+	// let actualError = error;
+	// if (error instanceof Error) {
+	// 	actualError = error.cause as DBError;
+	// }
 
-	return actualError && isDBError(actualError) && actualError.isErrorType(type);
+	return error && isDBError(error) && error.isErrorType(type);
 }
 
 export function assertId(methodName: string, ...ids: (Snowflake | undefined)[]) {
@@ -23,19 +22,19 @@ export function assertId(methodName: string, ...ids: (Snowflake | undefined)[]) 
 			lastValidIndex = i;
 		}
 	} catch (e) {
-		throw createError({ cause: new DBError(methodName, DBErrorType.INVALID_ID, ids[lastValidIndex + 1]) });
+		throw new DBError(methodName, DBErrorType.INVALID_ID, ids[lastValidIndex + 1]);
 	}
 }
 
 export function assertObj(methodName: string, obj: unknown, errorType: DBErrorType, cause?: string) {
 	if (obj === null || typeof obj !== "object") {
-		throw createError({ cause: new DBError(methodName, errorType, cause) });
+		throw new DBError(methodName, errorType, cause);
 	}
 }
 
 export function assertCondition(methodName: string, shouldAssert: boolean, errorType: DBErrorType, cause?: string) {
 	if (shouldAssert) {
-		throw createError({ cause: new DBError(methodName, errorType, cause) });
+		throw new DBError(methodName, errorType, cause);
 	}
 }
 

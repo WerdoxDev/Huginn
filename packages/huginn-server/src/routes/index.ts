@@ -1,3 +1,5 @@
-export default defineEventHandler((event) => {
-	return "Huginn API Homepage";
+import { createRoute } from "@huginn/backend-shared";
+
+createRoute("GET", "/", (c) => {
+	return c.text("API Home");
 });

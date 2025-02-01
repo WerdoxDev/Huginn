@@ -13,6 +13,14 @@
 			"path": "packages/huginn-cdn"
 		},
 		{
+			"name": "huginn-backend-shared",
+			"path": "packages/huginn-backend-shared"
+		},
+		{
+			"name": "huginn-bifrost",
+			"path": "packages/huginn-bifrost"
+		},
+		{
 			"name": "huginn-api",
 			"path": "packages/huginn-api"
 		},
@@ -27,14 +35,6 @@
 		{
 			"name": "huginn-shared",
 			"path": "packages/huginn-shared"
-		},
-		{
-			"name": "huginn-backend-shared",
-			"path": "packages/huginn-backend-shared"
-		},
-		{
-			"name": "huginn-bifrost",
-			"path": "packages/huginn-bifrost"
 		},
 		{
 			"name": "huginn-website",

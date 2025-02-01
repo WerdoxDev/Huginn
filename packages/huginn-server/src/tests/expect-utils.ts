@@ -1,7 +1,6 @@
 import { expect } from "bun:test";
 import {
 	type APIChannelUser,
-	type APIDefaultMessage,
 	type APIMessage,
 	type APIMessageUser,
 	type APIPostDMChannelResult,
@@ -9,7 +8,6 @@ import {
 	type APIReadState,
 	type APIRelationUser,
 	type APIRelationshipWithoutOwner,
-	type APIUser,
 	ChannelType,
 	type DirectChannel,
 	type GatewayDMCHannelRecipientAddData,

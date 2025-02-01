@@ -1,9 +1,9 @@
 import { afterAll, afterEach, beforeAll } from "bun:test";
-import { startServer } from "@huginn/backend-shared";
+import { prepareServer } from "@huginn/backend-shared";
 import { disconnectWebSockets, removeChannels, removeUsers } from "./utils";
 
 beforeAll(async () => {
-	await startServer();
+	await prepareServer();
 });
 
 afterEach(() => {

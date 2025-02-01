@@ -9,9 +9,6 @@ import {
 	GatewayOperations,
 	type GatewayPayload,
 	type GatewayReadyData,
-	HTTPError,
-	HuginnAPIError,
-	type HuginnErrorData,
 	MessageType,
 	RelationshipType,
 	type Snowflake,
@@ -19,10 +16,6 @@ import {
 	isOpcode,
 	snowflake,
 } from "@huginn/shared";
-import { $ } from "bun";
-import { waitForPort } from "get-port-please";
-import { type Nitro, createNitro } from "nitropack";
-import { join, resolve } from "pathe";
 import { prisma } from "#database";
 import { envs } from "#setup";
 import { createTokens } from "#utils/token-factory";
@@ -147,6 +140,7 @@ export async function resolveAll(...promises: Promise<unknown>[]) {
 export async function checkCDNRunning() {
 	try {
 		const url = envs.CDN_ROOT;
+		console.log(url);
 		if (!url) return false;
 
 		const result = await fetch(url);
