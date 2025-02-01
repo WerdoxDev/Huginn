@@ -140,7 +140,7 @@ export function logGatewaySend(topics: string | string[], data: GatewayPayload, 
 		dataText = colors.gray("Data Too Long");
 	}
 
-	consola.info(`${gatewaySend} ${divider} ${topicText} ${divider} ${opcodeText} (${opcodeNumberText}) ${divider} ${dataText}\n`);
+	consola.info(`${gatewaySend} ${divider} ${topicText} ${divider} ${opcodeText} (${opcodeNumberText}) ${divider} ${dataText}`);
 }
 
 export function logGetFile(category: string, name: string): void {

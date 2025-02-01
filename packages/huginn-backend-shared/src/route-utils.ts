@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import type { Env, Hono, MiddlewareHandler, ValidationTargets } from "hono";
+import type { Context, Env, Hono, MiddlewareHandler, ValidationTargets } from "hono";
 import type { OnHandlerInterface } from "hono/types";
 import type { ZodSchema, z } from "zod";
 import { invalidFormBody, notFound } from "./errors";
@@ -61,4 +61,15 @@ export async function catchError<T>(fn: (() => Promise<T>) | (() => T)): Promise
 	} catch (e) {
 		return [e as Error, null];
 	}
+}
+
+export function waitUntil(c: Context, callback: () => Promise<unknown>) {
+	let promises = c.get("waitUntilPromises");
+	if (!promises) {
+		promises = [callback];
+	} else {
+		promises.push(callback);
+	}
+
+	c.set("waitUntilPromises", promises);
 }

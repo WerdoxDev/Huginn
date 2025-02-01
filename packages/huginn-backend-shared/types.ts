@@ -1,13 +1,3 @@
-declare module "h3" {
-	interface H3Event {
-		huginWaitUntil: (promise: () => Promise<unknown>) => void;
-	}
-
-	interface H3EventContext {
-		huginnWaitUntilPromises?: (() => Promise<unknown>)[];
-	}
-}
-
 export enum DBErrorType {
 	INVALID_ID = "INVALID_ID",
 	NULL_USER = "NULL_USER",
@@ -25,6 +15,7 @@ export enum CDNErrorType {
 declare module "hono" {
 	interface ContextVariableMap {
 		id: string;
-      startTime: number;
+		startTime: number;
+		waitUntilPromises?: (() => Promise<unknown>)[];
 	}
 }

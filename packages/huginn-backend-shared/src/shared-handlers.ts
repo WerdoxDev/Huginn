@@ -69,23 +69,22 @@ export async function sharedOnAfterResponse(c: Context): Promise<void> {
 		logReject(c.req.path, c.req.method, time.toFixed(2), id, body ? (body as HuginnErrorData) : body, status);
 	}
 
-	// Promise.allSettled(event.context.huginnWaitUntilPromises?.map((x) => x()) ?? []);
+	Promise.allSettled(c.get("waitUntilPromises")?.map((x) => x()) ?? []);
 }
 
-export function sharedOnRequest(c: Context) {
-	c.set("startTime", performance.now());
+export async function sharedOnRequest(c: Context) {
 	const id = generateRandomString(6);
+	c.set("startTime", performance.now());
 	c.set("id", id);
-	logRequest(c.req.path, c.req.method, id, c.req.method !== "GET" ? c.req.parseBody() : undefined);
-}
 
-export function commonHandlers(nitroApp: NitroApp): void {
-	nitroApp.hooks.hook("request", async (event) => {
-		event.huginWaitUntil = (promise) => {
-			if (!event.context.huginnWaitUntilPromises) {
-				event.context.huginnWaitUntilPromises = [];
-			}
-			event.context.huginnWaitUntilPromises.push(promise);
-		};
-	});
+	const clone = c.req.raw.clone();
+	const contentType = clone.headers.get("Content-Type");
+	const body = contentType?.includes("application/json")
+		? await clone.json()
+		: contentType?.includes("multipart/form-data")
+			? await clone.formData()
+			: contentType?.includes("text/plain")
+				? await clone.text()
+				: undefined;
+	logRequest(c.req.path, c.req.method, id, body);
 }
