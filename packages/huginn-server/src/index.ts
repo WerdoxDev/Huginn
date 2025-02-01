@@ -44,10 +44,10 @@ app.all(
 app.use(
 	"*",
 	createMiddleware(async (c, next) => {
-		sharedOnRequest(c);
+		await sharedOnRequest(c);
 		await next();
 
-		if (c.res.ok) {
+		if (!c.error) {
 			await sharedOnAfterResponse(c);
 		}
 	}),
@@ -55,7 +55,6 @@ app.use(
 
 export { app };
 
-// await import("./routes/users/@me/channels.post");
 await importRoutes();
 // showRoutes(app, { colorize: true, verbose: false });
 

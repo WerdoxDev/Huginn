@@ -1,4 +1,4 @@
-import { createErrorFactory, createHuginnError, createRoute, invalidFormBody, missingAccess, validator } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, createRoute, invalidFormBody, missingAccess, validator, waitUntil } from "@huginn/backend-shared";
 import { type APIMessage, Errors, HttpCode, MessageType, idFix, nullToUndefined } from "@huginn/shared";
 
 import type { ProbeResult } from "probe-image-size";
@@ -97,31 +97,31 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), validator(
 
 	// Embed generation from urls inside the message content
 	// TODO: THIS WONT WORK WITH HONO
-	// event.huginWaitUntil(async () => {
-	// 	const embeds: DBEmbed[] = [];
-	// 	const links = extractLinks(body.content);
-	// 	for (const link of links) {
-	// 		const metadata = await extractEmbedTags(link);
-	// 		if (Object.keys(metadata).length > 0) {
-	// 			// Fetch image data from embed
-	// 			let thumbnailData: ProbeResult | undefined;
-	// 			if (metadata.image) {
-	// 				thumbnailData = await getImageData(metadata.image);
-	// 			}
+	waitUntil(c, async () => {
+		const embeds: DBEmbed[] = [];
+		const links = extractLinks(body.content);
+		for (const link of links) {
+			const metadata = await extractEmbedTags(link);
+			if (Object.keys(metadata).length > 0) {
+				// Fetch image data from embed
+				let thumbnailData: ProbeResult | undefined;
+				if (metadata.image) {
+					thumbnailData = await getImageData(metadata.image);
+				}
 
-	// 			embeds.push({
-	// 				title: metadata.title,
-	// 				url: metadata.url,
-	// 				description: metadata.description,
-	// 				thumbnail: thumbnailData ? { url: thumbnailData.url, width: thumbnailData.width, height: thumbnailData.height } : undefined,
-	// 			});
-	// 		}
-	// 	}
+				embeds.push({
+					title: metadata.title,
+					url: metadata.url,
+					description: metadata.description,
+					thumbnail: thumbnailData ? { url: thumbnailData.url, width: thumbnailData.width, height: thumbnailData.height } : undefined,
+				});
+			}
+		}
 
-	// 	const updatedMessage = idFix(await prisma.message.updateMessage(dbMessage.id, undefined, embeds, { select: selectMessageDefaults }));
+		const updatedMessage = idFix(await prisma.message.updateMessage(dbMessage.id, undefined, embeds, { select: selectMessageDefaults }));
 
-	// 	dispatchToTopic(channelId, "message_update", { ...updatedMessage, embeds: nullToUndefined(updatedMessage.embeds) });
-	// });
+		dispatchToTopic(channelId, "message_update", { ...updatedMessage, embeds: nullToUndefined(updatedMessage.embeds) });
+	});
 
 	return c.json(message, HttpCode.CREATED);
 });

@@ -1,11 +1,11 @@
-import { createErrorFactory, createHuginnError, createRoute, useValidatedBody, validator } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, createRoute, validator } from "@huginn/backend-shared";
 import { constants, type APIPatchCurrentUserResult, CDNRoutes, Errors, Fields, HttpCode, getFileHash, idFix, toArrayBuffer } from "@huginn/shared";
 import { z } from "zod";
 import { prisma } from "#database";
 import { selectPrivateUser } from "#database/common";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { useVerifiedJwt, verifyJwt } from "#utils/route-utils";
+import { verifyJwt } from "#utils/route-utils";
 import { cdnUpload } from "#utils/server-request";
 import { createTokens } from "#utils/token-factory";
 import {
@@ -81,7 +81,7 @@ createRoute("PATCH", "/api/users/@me", verifyJwt(), validator("json", schema), a
 				username: body.username?.toLowerCase(),
 				displayName: !body.displayName && body.displayName !== undefined ? null : body.displayName,
 				avatar: avatarHash,
-				password: body.newPassword,
+				password: body.newPassword ? body.newPassword : undefined,
 			},
 			{ select: selectPrivateUser },
 		),

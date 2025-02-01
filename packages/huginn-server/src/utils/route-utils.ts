@@ -1,16 +1,14 @@
 import { unauthorized } from "@huginn/backend-shared";
 import type { IdentityTokenPayload, TokenPayload, Unpacked } from "@huginn/shared";
 import type { Endpoints } from "@octokit/types";
-import type { H3Event } from "h3";
 import { createMiddleware } from "hono/factory";
-import { sign, verify } from "hono/jwt";
 import { JSDOM } from "jsdom";
 import probe, { type ProbeResult } from "probe-image-size";
 import * as semver from "semver";
 import { prisma } from "#database";
 import { octokit } from "#setup";
 import { envs } from "#setup";
-import { ACCESS_TOKEN_SECRET_ENCODED, verifyToken } from "./token-factory";
+import { verifyToken } from "./token-factory";
 
 export function verifyJwt(identity?: boolean) {
 	return createMiddleware(async (c, next) => {
@@ -46,28 +44,6 @@ export function verifyJwt(identity?: boolean) {
 		await next();
 		// return { payload: payload as IdentityToken extends true ? IdentityTokenPayload : TokenPayload, token };
 	});
-}
-
-export async function useVerifiedJwt<IdentityToken extends boolean = false>(event: H3Event, identity?: IdentityToken) {
-	const bearer = getHeader(event, "Authorization");
-
-	if (!bearer) {
-		throw unauthorized(event);
-	}
-
-	const token = bearer.split(" ")[1];
-
-	const { valid, payload } = await verifyToken(token);
-
-	if (!valid || !payload) {
-		throw unauthorized(event);
-	}
-
-	if (!identity && !(await prisma.user.exists({ id: BigInt((payload as TokenPayload).id) }))) {
-		throw unauthorized(event);
-	}
-
-	return { payload: payload as IdentityToken extends true ? IdentityTokenPayload : TokenPayload, token };
 }
 
 export function getWindowsAssetUrl(release?: Unpacked<Endpoints["GET /repos/{owner}/{repo}/releases"]["response"]["data"]>) {

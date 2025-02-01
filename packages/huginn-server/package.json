@@ -3,7 +3,7 @@
 	"version": "0.9.0",
 	"type": "module",
 	"scripts": {
-		"dev": "bun src/index.ts",
+		"dev": "bun src/index.ts --watch",
 		"tailwind": "bunx tailwindcss -i ./src/routes/static/input.css -o ./src/routes/static/output.css --watch"
 	},
 	"dependencies": {
