@@ -130,8 +130,6 @@ export class Gateway {
 
 	private async tryReconnect(event: CloseEvent) {
 		try {
-			// biome-ignore lint/style/noNonNullAssertion: <explanation>
-			await fetch(this.client.options.rest?.api!);
 			if (event.code === GatewayCode.INVALID_SESSION) {
 				this.sequence = undefined;
 				this.sessionId = undefined;
