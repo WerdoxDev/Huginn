@@ -1,119 +1,82 @@
-import type { NitroApp } from "nitropack/types";
-
 import { Errors, HttpCode, type HuginnErrorData, generateRandomString } from "@huginn/shared";
-import {
-	type App,
-	type H3Error,
-	type H3Event,
-	eventHandler,
-	getResponseStatus,
-	handleCors,
-	readBody,
-	send,
-	setResponseHeader,
-	setResponseStatus,
-} from "h3";
+import type { Context } from "hono";
 import { CDNErrorType, DBErrorType } from "../types";
-import { type ErrorFactory, createErrorFactory } from "./error-factory";
-import { isCDNError, isDBError } from "./errors";
+import { createErrorFactory } from "./error-factory";
+import { createHuginnError, isCDNError, isDBError } from "./errors";
 import { logReject, logRequest, logResponse, logServerError } from "./log-utils";
 
-export function serverOnError(error: H3Error, event: H3Event, errorFactory: ErrorFactory | undefined): ErrorFactory | undefined {
-	if (!isDBError(error.cause)) return errorFactory;
+export function serverOnError(error: Error, c: Context) {
+	if (!isDBError(error)) return;
 
-	if (error.cause.isErrorType(DBErrorType.INVALID_ID)) {
-		setResponseStatus(event, HttpCode.BAD_REQUEST);
-		return createErrorFactory(Errors.invalidId(error.cause.cause));
+	if (error.isErrorType(DBErrorType.INVALID_ID)) {
+		return createHuginnError(c, createErrorFactory(Errors.invalidId(error.cause)), HttpCode.BAD_REQUEST);
 	}
-	if (error.cause.isErrorType(DBErrorType.NULL_USER)) {
-		setResponseStatus(event, HttpCode.NOT_FOUND);
-		return createErrorFactory(Errors.unknownUser(error.cause.cause));
+	if (error.isErrorType(DBErrorType.NULL_USER)) {
+		return createHuginnError(c, createErrorFactory(Errors.unknownUser(error.cause)), HttpCode.NOT_FOUND);
 	}
-	if (error.cause.isErrorType(DBErrorType.NULL_RELATIONSHIP)) {
-		setResponseStatus(event, HttpCode.NOT_FOUND);
-		return createErrorFactory(Errors.unknownRelationship(error.cause.cause));
+	if (error.isErrorType(DBErrorType.NULL_RELATIONSHIP)) {
+		return createHuginnError(c, createErrorFactory(Errors.unknownRelationship(error.cause)), HttpCode.NOT_FOUND);
 	}
-	if (error.cause.isErrorType(DBErrorType.NULL_CHANNEL)) {
-		setResponseStatus(event, HttpCode.NOT_FOUND);
-		return createErrorFactory(Errors.unknownChannel(error.cause.cause));
+	if (error.isErrorType(DBErrorType.NULL_CHANNEL)) {
+		return createHuginnError(c, createErrorFactory(Errors.unknownChannel(error.cause)), HttpCode.NOT_FOUND);
 	}
-	if (error.cause.isErrorType(DBErrorType.NULL_MESSAGE)) {
-		setResponseStatus(event, HttpCode.NOT_FOUND);
-		return createErrorFactory(Errors.unknownMessage(error.cause.cause));
+	if (error.isErrorType(DBErrorType.NULL_MESSAGE)) {
+		return createHuginnError(c, createErrorFactory(Errors.unknownMessage(error.cause)), HttpCode.NOT_FOUND);
 	}
 
-	return errorFactory;
+	return;
 }
 
-export function cdnOnError(error: H3Error, event: H3Event, errorFactory: ErrorFactory | undefined): ErrorFactory | undefined {
-	if (!isCDNError(error.cause)) return errorFactory;
+export function cdnOnError(error: Error, c: Context) {
+	if (!isCDNError(error)) return;
 
-	if (error.cause.isErrorType(CDNErrorType.FILE_NOT_FOUND)) {
-		setResponseStatus(event, HttpCode.NOT_FOUND);
-		return createErrorFactory(Errors.fileNotFound());
+	if (error.isErrorType(CDNErrorType.FILE_NOT_FOUND)) {
+		return createHuginnError(c, createErrorFactory(Errors.fileNotFound()), HttpCode.NOT_FOUND);
 	}
-	if (error.cause.isErrorType(CDNErrorType.INVALID_FILE_FORMAT)) {
-		setResponseStatus(event, HttpCode.BAD_REQUEST);
-		return createErrorFactory(Errors.invalidFileFormat());
+	if (error.isErrorType(CDNErrorType.INVALID_FILE_FORMAT)) {
+		return createHuginnError(c, createErrorFactory(Errors.invalidFileFormat()), HttpCode.BAD_REQUEST);
 	}
 
-	return errorFactory;
+	return;
 }
 
-export function handleCommonError(error: H3Error, event: H3Event, id: string): Promise<void> | undefined {
-	if (error.cause && !(error.cause instanceof Error) && typeof error.cause === "object" && "errors" in error.cause) {
-		const status = getResponseStatus(event);
-		logReject(event.path, event.method, id, error.cause as HuginnErrorData, status);
-		return send(event, JSON.stringify(error.cause), "application/json");
-	}
-	if (error.statusCode === HttpCode.NOT_FOUND) {
-		setResponseStatus(event, HttpCode.NOT_FOUND, "Not Found");
-		logReject(event.path, event.method, id, undefined, HttpCode.NOT_FOUND);
-		return send(event, `${event.path} Not Found`);
-	}
+export function handleServerError(error: Error, c: Context) {
+	const id = c.get("id");
+	const time = performance.now() - c.get("startTime");
+
+	logServerError(c.req.path, error);
+	logReject(c.req.path, c.req.method, time.toFixed(2), id, "Server Error", HttpCode.SERVER_ERROR);
+
+	return c.json(createErrorFactory(Errors.serverError()).toObject(), HttpCode.SERVER_ERROR);
 }
 
-export function handleErrorFactory(event: H3Event, errorFactory: ErrorFactory, id: string): Promise<void> {
-	const status = getResponseStatus(event);
-	logReject(event.path, event.method, id, errorFactory.toObject(), status);
-
-	setResponseHeader(event, "content-type", "application/json");
-	return send(event, JSON.stringify(errorFactory.toObject()));
-}
-
-export function handleServerError(error: H3Error, event: H3Event, id: string): Promise<void> {
-	logServerError(event.path, error.cause as H3Error);
-	logReject(event.path, event.method, id, "Server Error", HttpCode.SERVER_ERROR);
-
-	setResponseStatus(event, HttpCode.SERVER_ERROR);
-	return send(event, JSON.stringify(createErrorFactory(Errors.serverError()).toObject()));
-}
-
-export function sharedOnAfterResponse(event: H3Event, response: { body?: unknown } | undefined): void {
-	if (event.method === "OPTIONS") {
+export async function sharedOnAfterResponse(c: Context): Promise<void> {
+	if (c.req.method === "OPTIONS") {
 		return;
 	}
 
-	const id = event.context.id;
-	const status = getResponseStatus(event);
+	const clone = c.res.clone();
+	const contentType = c.res.headers.get("Content-Type");
+	const body = contentType?.includes("application/json") ? await clone.json() : contentType?.includes("text/plain") ? await clone.text() : undefined;
 
-	if (status >= 200 && status < 500) {
-		logResponse(event.path, status, id, response?.body);
+	const id = c.get("id");
+	const time = performance.now() - c.get("startTime");
+	const status = c.res.status;
+
+	if (status >= 200 && status < 400) {
+		logResponse(c.req.path, status, time.toFixed(2), id, body);
 	} else {
-		logReject(event.path, event.method, id, response?.body as HuginnErrorData, status);
+		logReject(c.req.path, c.req.method, time.toFixed(2), id, body ? (body as HuginnErrorData) : body, status);
 	}
 
-	Promise.allSettled(event.context.huginnWaitUntilPromises?.map((x) => x()) ?? []);
+	// Promise.allSettled(event.context.huginnWaitUntilPromises?.map((x) => x()) ?? []);
 }
 
-export async function sharedOnRequest(event: H3Event): Promise<void> {
-	if (handleCors(event, { origin: "*", preflight: { statusCode: 204 }, methods: "*" })) {
-		return;
-	}
-
-	event.context.id = generateRandomString(6);
-	const id = event.context.id;
-	logRequest(event.path, event.method, id, event.method !== "GET" ? await readBody(event) : undefined);
+export function sharedOnRequest(c: Context) {
+	c.set("startTime", performance.now());
+	const id = generateRandomString(6);
+	c.set("id", id);
+	logRequest(c.req.path, c.req.method, id, c.req.method !== "GET" ? c.req.parseBody() : undefined);
 }
 
 export function commonHandlers(nitroApp: NitroApp): void {

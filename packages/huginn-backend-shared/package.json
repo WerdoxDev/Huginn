@@ -4,6 +4,7 @@
 	"version": "0.2.1",
 	"type": "module",
 	"dependencies": {
+		"@hono/zod-validator": "^0.4.2",
 		"@sapphire/snowflake": "^3.5.3",
 		"consola": "^3.2.3",
 		"pathe": "^2.0.2",
@@ -11,7 +12,6 @@
 	},
 	"devDependencies": {
 		"@types/bun": "latest",
-		"get-port-please": "^3.1.2",
-		"nitropack": "^2.10.4"
+		"hono": "^4.6.19"
 	}
 }

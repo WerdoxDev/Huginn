@@ -1,35 +1,58 @@
-import { type H3Event, createError, getQuery, getRouterParams, readBody } from "h3";
-import type { z } from "zod";
-import { invalidFormBody } from "./errors";
+import { zValidator } from "@hono/zod-validator";
+import type { Env, Hono, MiddlewareHandler, ValidationTargets } from "hono";
+import type { OnHandlerInterface } from "hono/types";
+import type { ZodSchema, z } from "zod";
+import { invalidFormBody, notFound } from "./errors";
 
-export async function useValidatedBody<T extends z.ZodTypeAny>(event: H3Event, schema: T): Promise<z.infer<T>> {
-	try {
-		const body = await readBody(event);
-		const parsedBody = await schema.parse(body);
-		return parsedBody;
-	} catch (e) {
-		throw invalidFormBody(event);
-	}
+let appInstance: Hono;
+
+export function setAppInstance(app: Hono): void {
+	appInstance = app;
 }
 
-export async function useValidatedParams<T extends z.ZodTypeAny>(event: H3Event, schema: T): Promise<z.infer<T>> {
-	try {
-		const params = getRouterParams(event);
-		const parsedParams = await schema.parse(params);
-		return parsedParams;
-	} catch (e) {
-		throw createError({ statusCode: 404 });
-	}
-}
+// @ts-ignore
+const createRoute: OnHandlerInterface = (method, path: string, ...handlers) => {
+	appInstance.on(method, path, ...handlers);
+};
 
-export async function useValidatedQuery<T extends z.ZodTypeAny>(event: H3Event, schema: T): Promise<z.infer<T>> {
-	try {
-		const query = getQuery(event);
-		const parsedQuery = await schema.parse(query);
-		return parsedQuery;
-	} catch (e) {
-		throw createError({ statusCode: 404 });
+export { createRoute };
+
+export function validator<T extends keyof ValidationTargets, S extends ZodSchema>(
+	target: T,
+	schema: S,
+): MiddlewareHandler<
+	Env,
+	string,
+	{
+		in: (undefined extends z.input<S> ? true : false) extends true
+			? {
+					[K in T]?:
+						| (z.input<S> extends infer T_1
+								? T_1 extends z.input<S>
+									? T_1 extends ValidationTargets[K]
+										? T_1
+										: { [K2 in keyof T_1]?: ValidationTargets[K][K2] | undefined }
+									: never
+								: never)
+						| undefined;
+				}
+			: {
+					[K_1 in T]: z.input<S> extends infer T_2
+						? T_2 extends z.input<S>
+							? T_2 extends ValidationTargets[K_1]
+								? T_2
+								: { [K2_1 in keyof T_2]: ValidationTargets[K_1][K2_1] }
+							: never
+						: never;
+				};
+		out: { [K_2 in T]: z.output<S> };
 	}
+> {
+	return zValidator(target, schema, (result, c) => {
+		if (!result.success) {
+			return target === "json" ? invalidFormBody(c) : notFound(c);
+		}
+	});
 }
 
 export async function catchError<T>(fn: (() => Promise<T>) | (() => T)): Promise<[Error, null] | [null, T]> {

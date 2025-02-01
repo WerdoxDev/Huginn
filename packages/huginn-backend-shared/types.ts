@@ -21,3 +21,10 @@ export enum CDNErrorType {
 	FILE_NOT_FOUND = "FILE_NOT_FOUND",
 	INVALID_FILE_FORMAT = "INVALID_FILE_FORMAT",
 }
+
+declare module "hono" {
+	interface ContextVariableMap {
+		id: string;
+      startTime: number;
+	}
+}

@@ -21,16 +21,17 @@ const cdn = colors.bold(colors.gray("CDN REQUEST"));
 export function logServerError(path: string, e: Error): void {
 	consola.box(
 		`${colors.bold(colors.red("Server Error:"))} ${colors.green(path.length > 100 ? `${path.slice(0, 100)}...` : path)}\n`,
-		e.cause ?? e.stack ?? e.message ?? e,
+		e?.cause ?? e?.stack ?? e?.message ?? e,
 	);
 }
 
-export function logReject(path: string, method: string, id?: string, error?: HuginnErrorData | string, status?: number): void {
+export function logReject(path: string, method: string, time: string, id?: string, error?: HuginnErrorData | string, status?: number): void {
 	const rejectText = colors.bold(colors.red("Rejected"));
 	const methodText = colors.bold(colors.red(method));
 	const pathText = colors.green(path);
 	const statusText = status ? colors.bold(colors.red(` ${status} `)) : " ";
 	const idText = colors.yellow(id ?? "unknown");
+	const timeText = colors.gray(`${time}ms`);
 	let errorText: string = colors.red("Unknown Error");
 
 	if (typeof error === "string") {
@@ -40,19 +41,20 @@ export function logReject(path: string, method: string, id?: string, error?: Hug
 	}
 
 	consola.fail(
-		`${idText} ${divider} ${endText} ${divider} ${rejectText} (${methodText}) ${divider} ${pathText} ${divider}${statusText}${errorText}\n`,
+		`${idText} ${divider} ${endText} ${divider} ${rejectText} (${methodText}) ${divider} ${pathText} ${divider}${statusText}${errorText} ${timeText}\n`,
 	);
 }
 
-export function logResponse(path: string, status: number, id?: string, data?: unknown): void {
+export function logResponse(path: string, status: number, time: string, id?: string, data?: unknown): void {
 	logData(path, responseDataText, id, data);
 
 	const responseText = colors.bold(colors.magenta("Response"));
 	const statusText = colors.bold(colors.magenta(status));
 	const pathText = colors.green(path);
 	const idText = colors.yellow(id ?? "unknown");
+	const timeText = colors.gray(`${time}ms`);
 
-	consola.success(`${idText} ${divider} ${endText} ${divider} ${responseText} (${statusText}) ${divider} ${pathText}\n`);
+	consola.success(`${idText} ${divider} ${endText} ${divider} ${responseText} (${statusText}) ${divider} ${pathText} ${timeText}\n`);
 }
 
 export function logRequest(path: string, method: string, id?: string, data?: unknown): void {

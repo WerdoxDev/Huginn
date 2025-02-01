@@ -6,3 +6,4 @@ export * from "./route-utils";
 export * from "./env-reader";
 export * from "./shared-handlers";
 export * from "./test-utils";
+export * from "./route-importer";

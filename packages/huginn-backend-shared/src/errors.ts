@@ -1,5 +1,6 @@
-import { Errors, HttpCode, type HuginnErrorData, type JsonCode } from "@huginn/shared";
-import { type H3Event, setResponseStatus } from "h3";
+import { Errors, HttpCode, type JsonCode } from "@huginn/shared";
+import type { Context } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { CDNErrorType, DBErrorType } from "../types";
 import { type ErrorFactory, createErrorFactory } from "./error-factory";
 
@@ -51,40 +52,42 @@ export function isCDNError(object: unknown): object is CDNError {
 	return false;
 }
 
-export function createHuginnError(event: H3Event, errorFactory: ErrorFactory, status: HttpCode = HttpCode.BAD_REQUEST): HuginnErrorData {
-	setResponseStatus(event, status);
-	event.context.overrideStatus = status;
-	return errorFactory.toObject();
+export function createHuginnError(c: Context, errorFactory: ErrorFactory, status: ContentfulStatusCode = HttpCode.BAD_REQUEST) {
+	return c.json(errorFactory.toObject(), status);
 }
 
-export function unauthorized(event: H3Event): HuginnErrorData {
-	return createHuginnError(event, createErrorFactory(Errors.unauthorized()), HttpCode.UNAUTHORIZED);
+export function unauthorized(c: Context) {
+	return createHuginnError(c, createErrorFactory(Errors.unauthorized()), HttpCode.UNAUTHORIZED);
 }
 
-export function forbidden(event: H3Event): HuginnErrorData {
-	return createHuginnError(event, createErrorFactory(Errors.forbidden()), HttpCode.FORBIDDEN);
+export function forbidden(c: Context) {
+	return createHuginnError(c, createErrorFactory(Errors.forbidden()), HttpCode.FORBIDDEN);
 }
 
-export function invalidFormBody(event: H3Event): HuginnErrorData {
-	return createHuginnError(event, createErrorFactory(Errors.invalidFormBody()));
+export function invalidFormBody(c: Context) {
+	return createHuginnError(c, createErrorFactory(Errors.invalidFormBody()));
 }
 
-export function fileNotFound(event: H3Event): HuginnErrorData {
-	return createHuginnError(event, createErrorFactory(Errors.fileNotFound()), HttpCode.NOT_FOUND);
+export function fileNotFound(c: Context) {
+	return createHuginnError(c, createErrorFactory(Errors.fileNotFound()), HttpCode.NOT_FOUND);
 }
 
-export function invalidFileFormat(event: H3Event): HuginnErrorData {
-	return createHuginnError(event, createErrorFactory(Errors.invalidFileFormat()));
+export function invalidFileFormat(c: Context) {
+	return createHuginnError(c, createErrorFactory(Errors.invalidFileFormat()));
 }
 
-export function missingAccess(event: H3Event): HuginnErrorData {
-	return createHuginnError(event, createErrorFactory(Errors.missingAccess()), HttpCode.FORBIDDEN);
+export function missingAccess(c: Context) {
+	return createHuginnError(c, createErrorFactory(Errors.missingAccess()), HttpCode.FORBIDDEN);
 }
 
-export function missingPermission(event: H3Event): HuginnErrorData {
-	return createHuginnError(event, createErrorFactory(Errors.missingPermission()), HttpCode.FORBIDDEN);
+export function missingPermission(c: Context) {
+	return createHuginnError(c, createErrorFactory(Errors.missingPermission()), HttpCode.FORBIDDEN);
 }
 
-export function singleError(event: H3Event, error: [string, JsonCode], status: HttpCode = HttpCode.BAD_REQUEST): HuginnErrorData {
-	return createHuginnError(event, createErrorFactory(error), status);
+export function notFound(c: Context) {
+	return c.text("Not Found", HttpCode.NOT_FOUND);
+}
+
+export function singleError(c: Context, error: [string, JsonCode], status: ContentfulStatusCode = HttpCode.BAD_REQUEST) {
+	return createHuginnError(c, createErrorFactory(error), status);
 }
