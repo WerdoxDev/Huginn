@@ -1,12 +1,8 @@
-import { useValidatedParams } from "@huginn/backend-shared";
-import { defineEventHandler } from "h3";
-import { z } from "zod";
+import { createRoute } from "@huginn/backend-shared";
 import { tryResolveImage } from "#utils/route-utils";
 
-const schema = z.object({ channelId: z.string(), iconHash: z.string() });
+createRoute("GET", "/channel-icons/:channelId/:iconHash", async (c) => {
+	const { iconHash, channelId } = c.req.param();
 
-export default defineEventHandler(async (event) => {
-	const { iconHash, channelId } = await useValidatedParams(event, schema);
-
-	return tryResolveImage(event, "channel-icons", channelId, iconHash);
+	return tryResolveImage(c, "channel-icons", channelId, iconHash);
 });

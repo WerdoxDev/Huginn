@@ -19,3 +19,10 @@ export type FileInfo = {
 };
 
 export type FileCategory = "avatars" | "channel-icons";
+
+declare module "hono" {
+	interface ContextVariableMap {
+		id: string;
+		startTime: number;
+	}
+}

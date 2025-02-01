@@ -1,6 +1,7 @@
 import { beforeAll } from "bun:test";
-import { startServer } from "@huginn/backend-shared";
+import { prepareServer } from "@huginn/backend-shared";
 
 beforeAll(async () => {
-	await startServer();
+	process.env.test = JSON.stringify(true);
+	await prepareServer();
 });

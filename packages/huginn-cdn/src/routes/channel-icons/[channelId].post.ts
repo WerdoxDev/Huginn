@@ -1,27 +1,23 @@
-import { catchError, invalidFormBody, useValidatedParams } from "@huginn/backend-shared";
+import { catchError, createRoute, invalidFormBody } from "@huginn/backend-shared";
 import { HttpCode } from "@huginn/shared";
-import { defineEventHandler, readFormData, setResponseStatus } from "h3";
-import { z } from "zod";
 import { storage } from "#setup";
 
-const schema = z.object({ channelId: z.string() });
+createRoute("POST", "/channel-icons/:channelId", async (c) => {
+	const { channelId } = c.req.param();
 
-export default defineEventHandler(async (event) => {
-	const { channelId } = await useValidatedParams(event, schema);
-	const [error, body] = await catchError(async () => await readFormData(event));
+	const [error, body] = await catchError(async () => await c.req.formData());
 
 	if (error) {
-		return invalidFormBody(event);
+		return invalidFormBody(c);
 	}
 
 	const file = body.get("files[0]");
 
 	if (!body || !file || !(file instanceof File)) {
-		return invalidFormBody(event);
+		return invalidFormBody(c);
 	}
 
-	await storage.writeFile("channel-icons", channelId, file.name, await file.arrayBuffer());
+	await storage.writeFile("channel-icons", channelId, file.name, file.stream());
 
-	setResponseStatus(event, HttpCode.CREATED);
-	return file.name;
+	return c.text(file.name, HttpCode.CREATED);
 });

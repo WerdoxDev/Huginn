@@ -1,6 +1,5 @@
 import { CDNError } from "@huginn/backend-shared";
 import { CDNErrorType } from "@huginn/backend-shared/types";
-import { createError } from "h3";
 import sharp from "sharp";
 import { storage } from "#setup";
 import { type FileCategory, type FileContentTypes, type FileFormats, type FileInfo, FileTypes } from "./types";
@@ -28,11 +27,11 @@ export async function findImageByName(category: FileCategory, subDirectory: stri
 		const exists = await storage.exists(category, subDirectory, filename);
 
 		if (exists) {
-			return { file: (await storage.getFile(category, subDirectory, filename)) as ArrayBuffer, info: extractFileInfo(filename) };
+			return { file: (await storage.getFile(category, subDirectory, filename)) as ReadableStream, info: extractFileInfo(filename) };
 		}
 	}
 
-	throw createError({ cause: new CDNError("findImageByName", CDNErrorType.FILE_NOT_FOUND) });
+	throw new CDNError("findImageByName", CDNErrorType.FILE_NOT_FOUND);
 }
 
 export async function transformImage(data: ArrayBuffer, format: FileFormats, quality: number): Promise<ArrayBuffer> {
@@ -46,5 +45,5 @@ export async function transformImage(data: ArrayBuffer, format: FileFormats, qua
 		return (await sharp(data).png({ quality }).toBuffer()).buffer as ArrayBuffer;
 	}
 
-	throw createError({ cause: new CDNError("transformImage", CDNErrorType.INVALID_FILE_FORMAT) });
+	throw new CDNError("transformImage", CDNErrorType.INVALID_FILE_FORMAT);
 }

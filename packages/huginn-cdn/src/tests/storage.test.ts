@@ -8,12 +8,7 @@ const storages = [new FileStorage(), new S3Storage()];
 for (const storage of storages) {
 	describe(`${storage.name} storage operations`, () => {
 		test("should return true when writing is successful", async () => {
-			const result = await storage.writeFile(
-				"avatars",
-				"storage-test",
-				"pixel.png",
-				await Bun.file(pathe.join(__dirname, "pixel.png")).arrayBuffer(),
-			);
+			const result = await storage.writeFile("avatars", "storage-test", "pixel.png", Bun.file(pathe.join(__dirname, "pixel.png")).stream());
 			expect(result).toBeTrue();
 		});
 
