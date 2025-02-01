@@ -18,10 +18,10 @@ setAppInstance(app);
 app.all(
 	"*",
 	createMiddleware(async (c, next) => {
-		sharedOnRequest(c);
+		await sharedOnRequest(c);
 		await next();
 
-		if (c.res.ok) {
+		if (!c.finalized) {
 			await sharedOnAfterResponse(c);
 		}
 	}),
