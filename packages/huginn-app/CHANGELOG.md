@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.14.0...app@v0.14.1) (2025-02-01)
+
+
+### Bug Fixes
+
+* **app:** small padding issue in MessageBox ([2d26459](https://github.com/WerdoxDev/Huginn/commit/2d264597c88c80953fcdcb7f722eb182d7821415))
+
 ## [0.14.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.13.0...app@v0.14.0) (2025-01-19)
 
 
