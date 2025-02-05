@@ -8,6 +8,7 @@ type EventTypes = {
 	user_updated: APIUser;
 	image_cropper_done: { croppedImageData: string };
 	open_url: string[];
+	message_box_height_changed: { difference: number };
 };
 
 type EventType = { type: keyof EventTypes; data: EventTypes[keyof EventTypes] };

@@ -24,6 +24,10 @@ export default function MessageBox() {
 	const editor = useMemo(() => withReact(createEditor()), []);
 	const params = useParams();
 	const md = useMemo(() => new markdownit({ linkify: true }).use(markdownSpoiler).use(markdownUnderline).use(markdownMainEditor), []);
+	const editorRef = useRef<HTMLDivElement>(null);
+	const { dispatchEvent } = useEvent();
+	const currentChannel = useCurrentChannel();
+	const channelName = useChannelName(currentChannel?.recipients, currentChannel?.name);
 	// const cache = useRef<{ text: string; decorations: Map<number, Range[]> }>(undefined);
 
 	const sendMessageMutation = useSendMessage();
@@ -249,8 +253,25 @@ export default function MessageBox() {
 		return nodes.map((n) => Node.string(n)).join("\n");
 	}
 
+	useEffect(() => {
+		if (!editorRef.current) return;
+		let lastHeight = editorRef.current.clientHeight;
+
+		const resizeObserver = new ResizeObserver((entries) => {
+			const height = entries[0].target.clientHeight;
+			dispatchEvent("message_box_height_changed", { difference: height - lastHeight });
+			lastHeight = height;
+		});
+
+		resizeObserver.observe(editorRef.current);
+
+		return () => {
+			resizeObserver.disconnect();
+		};
+	}, []);
+
 	return (
-		<div className="bottom-0 z-10 mx-5 flex py-2">
+		<div className="bottom-0 z-10 mx-5 flex bg-transparent py-2">
 			<form className="w-full">
 				<div className="flex h-full items-start rounded-3xl bg-tertiary ring-2 ring-background">
 					<div className="m-2 mr-2 flex shrink-0 cursor-pointer items-center rounded-full bg-background p-1.5 transition-all hover:bg-white hover:bg-opacity-20 hover:shadow-xl">
@@ -259,7 +280,8 @@ export default function MessageBox() {
 					<div className="h-full w-full overflow-hidden">
 						<Slate editor={editor} initialValue={initialValue}>
 							<Editable
-								placeholder="Message @Emam"
+								ref={editorRef}
+								placeholder={`Message ${channelName}`}
 								className="h-full whitespace-break-spaces py-3 font-light text-white leading-[24px] caret-white outline-none"
 								renderLeaf={renderLeaf}
 								renderElement={renderElement}

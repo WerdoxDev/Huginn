@@ -157,6 +157,7 @@ declare global {
   const getChannelsOptions: typeof import('./lib/queries')['getChannelsOptions']
   const getCodeLanguage: typeof import('./lib/markdown-utils')['getCodeLanguage']
   const getEmptyStatuses: typeof import('./lib/utils')['getEmptyStatuses']
+  const getFirstChildClosestToBottom: typeof import('./lib/utils')['getFirstChildClosestToBottom']
   const getFirstChildClosestToTop: typeof import('./lib/utils')['getFirstChildClosestToTop']
   const getHighlightedLineTokens: typeof import('./lib/markdown-utils')['getHighlightedLineTokens']
   const getInputCurrentStatus: typeof import('./lib/utils')['getInputCurrentStatus']
