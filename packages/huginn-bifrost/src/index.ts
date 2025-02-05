@@ -8,19 +8,49 @@ app.use(cors());
 
 // Route requests based on the path
 app.all("/api/*", async (c) => {
-	const targetUrl = `http://localhost:3004${c.req.path}`;
+	const url = new URL(c.req.raw.url);
+	const targetUrl = `http://localhost:3004${url.pathname}${url.search}`;
 
-	return fetch(targetUrl, c.req.raw);
+	const res = c.req.raw;
+	return fetch(targetUrl, {
+		body: res.body,
+		cache: res.cache,
+		credentials: res.credentials,
+		headers: res.headers,
+		integrity: res.integrity,
+		keepalive: res.keepalive,
+		method: res.method,
+		mode: res.mode,
+		redirect: "manual",
+		referrer: res.referrer,
+		referrerPolicy: res.referrerPolicy,
+		signal: res.signal,
+	});
 });
 
 app.all("/*", async (c) => {
-	const targetUrl = `http://localhost:3002${c.req.path}`;
+	const url = new URL(c.req.raw.url);
+	const targetUrl = `http://localhost:3002${url.pathname}${url.search}`;
 
-	return fetch(targetUrl, c.req.raw);
+	const res = c.req.raw;
+	return fetch(targetUrl, {
+		body: res.body,
+		cache: res.cache,
+		credentials: res.credentials,
+		headers: res.headers,
+		integrity: res.integrity,
+		keepalive: res.keepalive,
+		method: res.method,
+		mode: res.mode,
+		redirect: "manual",
+		referrer: res.referrer,
+		referrerPolicy: res.referrerPolicy,
+		signal: res.signal,
+	});
 });
 
 app.onError((error, c) => {
-	console.log("Error on", c.req.path);
+	console.log("Error on", c.req.path, error);
 	return c.text("An endpoint is not connected");
 });
 
