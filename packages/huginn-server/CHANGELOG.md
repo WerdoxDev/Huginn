@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.10.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.9.0...server@v0.10.0) (2025-02-01)
+
+
+### Features
+
+* **cdn, server:** abandoning nitro migration in favor of Hono ([bb5ccf7](https://github.com/WerdoxDev/Huginn/commit/bb5ccf73fac4e61c0dfb6750a71e48f81f8baa7d))
+* **server:** add command driven nitro build ([d26919e](https://github.com/WerdoxDev/Huginn/commit/d26919ea0073f5e2f1f55863e7f5cef8f4c93cd8))
+* **server:** complete test migration ([4e369ba](https://github.com/WerdoxDev/Huginn/commit/4e369baca343525f462b66799117b3fbd39df937))
+* **server:** use backend-shared's test utils instead ([de63d39](https://github.com/WerdoxDev/Huginn/commit/de63d39913f7da0023736d566e641c21ccdb893e))
+
+
+### Bug Fixes
+
+* **server:** fix problem with user patching and password getting reset + remove unused methods ([c16552d](https://github.com/WerdoxDev/Huginn/commit/c16552d6e8938f7d086142558e4d25b5d3c0c3e1))
+
 ## [0.9.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.8.0...server@v0.9.0) (2025-01-08)
 
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.2.1...backend-shared@v0.3.0) (2025-02-01)
+
+
+### Features
+
+* **backend-shared:** change waitUntil promises name to solve conflict with nitro ([40a6dc3](https://github.com/WerdoxDev/Huginn/commit/40a6dc3c1d64c257e41972af869bd0037bf0de4a))
+* **backend-shared:** move server's test utils to backend-shared ([7bf1265](https://github.com/WerdoxDev/Huginn/commit/7bf12657f1268c9c09f927a8b76f6f4e91d3d8d5))
+
 ## [0.2.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.2.0...backend-shared@v0.2.1) (2025-01-07)
 
 
