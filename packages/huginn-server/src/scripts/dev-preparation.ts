@@ -1,4 +1,4 @@
-import { UserFlags, WorkerID, snowflake } from "@huginn/shared";
+import { MessageType, UserFlags, WorkerID, snowflake } from "@huginn/shared";
 import { prisma } from "#database";
 
 const users = ["user", "user2", "user3", "user4"];
@@ -34,6 +34,10 @@ const channel = await prisma.channel.createDM(
 	createdUsers[0].id.toString(),
 	createdUsers.slice(1).map((x) => x.id.toString()),
 );
+
+for (let i = 0; i < 200; i++) {
+	await prisma.message.createMessage(createdUsers[0].id.toString(), channel.id.toString(), MessageType.DEFAULT, `${i.toString() + " ".repeat(i)}.`);
+}
 
 for (const user of createdUsers) {
 	await prisma.readState.createState(user.id.toString(), channel.id.toString());

@@ -7,7 +7,7 @@ import { prisma } from "#database";
 import { selectMessageDefaults } from "#database/common";
 
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { getImageData, verifyJwt } from "#utils/route-utils";
+import { extractEmbedTags, extractLinks, getImageData, verifyJwt } from "#utils/route-utils";
 import type { DBEmbed } from "#utils/types";
 import { validateEmbeds } from "#utils/validation";
 

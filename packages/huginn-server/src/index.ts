@@ -9,6 +9,7 @@ import {
 } from "@huginn/backend-shared";
 import { Hono } from "hono";
 import { CookieStore, sessionMiddleware } from "hono-sessions";
+import { showRoutes } from "hono/dev";
 import { createMiddleware } from "hono/factory";
 import { ws } from "#routes/gateway";
 import { envs } from "#setup";
@@ -56,7 +57,7 @@ app.use(
 export { app };
 
 await importRoutes();
-// showRoutes(app, { colorize: true, verbose: false });
+showRoutes(app, { colorize: true, verbose: false });
 
 if (!process.env.test) {
 	Bun.serve({
