@@ -9,12 +9,14 @@ import {
 } from "@huginn/backend-shared";
 import { Hono } from "hono";
 import { CookieStore, sessionMiddleware } from "hono-sessions";
+import { serveStatic } from "hono/bun";
+import { cors } from "hono/cors";
 import { showRoutes } from "hono/dev";
 import { createMiddleware } from "hono/factory";
 import { ws } from "#routes/gateway";
 import { envs } from "#setup";
 
-const app = new Hono();
+const app = new Hono().use(cors());
 setAppInstance(app);
 
 const store = new CookieStore();
@@ -57,6 +59,9 @@ app.use(
 export { app };
 
 await importRoutes();
+
+app.use("*", serveStatic({ root: "./src/static" }));
+
 showRoutes(app, { colorize: true, verbose: false });
 
 if (!process.env.test) {

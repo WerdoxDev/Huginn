@@ -85,7 +85,7 @@ createRoute("GET", "/api/auth/callback/google", validator("query", querySchema),
 			dispatchToTopic(state, "oauth_redirect", { access_token: accessToken, refresh_token: refreshToken });
 			gateway.getSessionByKey(peer_id)?.unsubscribe(state);
 
-			const redirectUrl = new URL(flow === "browser" ? redirect_url : `${host}/static/redirect.html`);
+			const redirectUrl = new URL(flow === "browser" ? redirect_url : `${host}/redirect.html`);
 			redirectUrl.searchParams.set("flow", flow);
 			redirectUrl.searchParams.set("access_token", accessToken);
 			redirectUrl.searchParams.set("refresh_token", refreshToken);
@@ -134,7 +134,7 @@ createRoute("GET", "/api/auth/callback/google", validator("query", querySchema),
 		dispatchToTopic(state, "oauth_redirect", { token: token });
 		gateway.getSessionByKey(peer_id)?.unsubscribe(state);
 
-		const redirectUrl = new URL(flow === "browser" ? redirect_url : `${host}/static/redirect.html`);
+		const redirectUrl = new URL(flow === "browser" ? redirect_url : `${host}/redirect.html`);
 		redirectUrl.searchParams.set("flow", flow);
 		redirectUrl.searchParams.set("token", token);
 
@@ -143,7 +143,7 @@ createRoute("GET", "/api/auth/callback/google", validator("query", querySchema),
 
 	// User clicked "Cancel"
 	if (error === "access_denied") {
-		const redirectUrl = new URL(flow === "browser" ? new URL(redirect_url).origin : `${host}/static/redirect.html`);
+		const redirectUrl = new URL(flow === "browser" ? new URL(redirect_url).origin : `${host}/redirect.html`);
 		redirectUrl.searchParams.set("flow", flow);
 		redirectUrl.searchParams.set("error", OAuthCode.CANCELLED);
 
