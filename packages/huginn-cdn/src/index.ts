@@ -8,11 +8,12 @@ import {
 	sharedOnRequest,
 } from "@huginn/backend-shared";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { showRoutes } from "hono/dev";
 import { createMiddleware } from "hono/factory";
 import { envs } from "#setup";
 
-const app = new Hono();
+const app = new Hono().use(cors());
 setAppInstance(app);
 
 app.all(
