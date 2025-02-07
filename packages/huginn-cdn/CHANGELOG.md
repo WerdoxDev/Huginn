@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.4.0...cdn@v0.4.1) (2025-02-07)
+
+
+### Bug Fixes
+
+* **cdn:** cors was not applied to cdn ([db7dce6](https://github.com/WerdoxDev/Huginn/commit/db7dce64c6bdf672f49bb91d3cfa1ad779e2db26))
+
 ## [0.4.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.3.0...cdn@v0.4.0) (2025-02-01)
 
 
