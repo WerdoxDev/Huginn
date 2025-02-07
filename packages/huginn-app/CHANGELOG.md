@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.14.1...app@v0.14.2) (2025-02-07)
+
+
+### Bug Fixes
+
+* **app:** fix scrolling problem in ChannelMessages ([76047f8](https://github.com/WerdoxDev/Huginn/commit/76047f826027174b0968470b768c7c7224ab2c33))
+
 ## [0.14.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.14.0...app@v0.14.1) (2025-02-01)
 
 

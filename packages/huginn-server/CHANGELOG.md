@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.11.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.10.0...server@v0.11.0) (2025-02-07)
+
+
+### Features
+
+* **server:** add test messages to prepration script ([a680e7a](https://github.com/WerdoxDev/Huginn/commit/a680e7a2660d266492c23d04fbe50c7d0b69aa6f))
+
+
+### Bug Fixes
+
+* **server:** static routes not working after migration to hono ([f27086c](https://github.com/WerdoxDev/Huginn/commit/f27086c4e91e3cbb1d1b0435ba9233bccf115844))
+
 ## [0.10.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.9.0...server@v0.10.0) (2025-02-01)
 
 
