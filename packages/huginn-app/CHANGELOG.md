@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.14.2...app@v0.15.0) (2025-02-08)
+
+
+### Features
+
+* **app:** add copy to code block + code language highlight ([978c19f](https://github.com/WerdoxDev/Huginn/commit/978c19fc50c3e0f689800238d1a9fcd24691cbea))
+
 ## [0.14.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.14.1...app@v0.14.2) (2025-02-07)
 
 
