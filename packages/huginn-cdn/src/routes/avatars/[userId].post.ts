@@ -5,7 +5,7 @@ import { storage } from "#setup";
 
 const schema = z.object({ userId: z.string() });
 
-createRoute("POST", "/avatars/:userId", validator("param", schema), async (c) => {
+createRoute("POST", "/cdn/avatars/:userId", validator("param", schema), async (c) => {
 	const { userId } = c.req.param();
 	const [error, body] = await catchError(async () => await c.req.formData());
 
