@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.11.0...server@v0.11.1) (2025-02-08)
+
+
+### Bug Fixes
+
+* **server:** fix redirect host not being correct on prod ([7bfbdc6](https://github.com/WerdoxDev/Huginn/commit/7bfbdc68ff3bb49e3c4c581428640a63b71df35a))
+
 ## [0.11.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.10.0...server@v0.11.0) (2025-02-07)
 
 

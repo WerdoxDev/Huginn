@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/WerdoxDev/Huginn/compare/bifrost@v0.4.0...bifrost@v0.4.1) (2025-02-08)
+
+
+### Bug Fixes
+
+* **bifrost:** server static routes are not recognised ([475ab08](https://github.com/WerdoxDev/Huginn/commit/475ab0841603235f9f6e0c46f98b809758fa4b43))
+
 ## [0.4.0](https://github.com/WerdoxDev/Huginn/compare/bifrost@v0.3.0...bifrost@v0.4.0) (2025-02-01)
 
 
