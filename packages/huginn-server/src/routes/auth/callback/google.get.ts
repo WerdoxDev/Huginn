@@ -2,6 +2,7 @@ import { createRoute, forbidden, validator } from "@huginn/backend-shared";
 import { constants, CDNRoutes, HttpCode, OAuthCode, WorkerID, getFileHash, idFix, snowflake } from "@huginn/shared";
 import { toSnakeCase } from "@std/text";
 
+import consola from "consola";
 import { z } from "zod";
 import { prisma } from "#database";
 import { gateway } from "#setup";
@@ -40,10 +41,11 @@ createRoute("GET", "/api/auth/callback/google", validator("query", querySchema),
 	const peer_id = session.get("peer_id");
 
 	if (sessionState !== state || !state) {
+		consola.info("Session state mismatch");
 		return forbidden(c);
 	}
 
-	const host = new URL(c.req.url).origin;
+	const host = envs.REDIRECT_HOST;
 
 	// Code from google oauth
 	if (code) {
@@ -63,6 +65,7 @@ createRoute("GET", "/api/auth/callback/google", validator("query", querySchema),
 
 		// Return 'Forbidden' if can't get the token
 		if ("error" in response) {
+			consola.info("Error in response", response);
 			return forbidden(c);
 		}
 
@@ -150,6 +153,7 @@ createRoute("GET", "/api/auth/callback/google", validator("query", querySchema),
 		return c.redirect(redirectUrl.toString(), HttpCode.FOUND);
 	}
 	if (error || !state) {
+		consola.info("Error or no state");
 		return forbidden(c);
 	}
 });
