@@ -80,7 +80,7 @@ export default function MessageBox() {
 
 			for (const token of lineTokens) {
 				if (token.type === "fence" && token.map) {
-					const highlighted = hljs.highlight(token.content, { language: getCodeLanguage(token.info) });
+					const highlighted = hljs.highlight(token.content, { language: getCodeLanguage(token.info) ?? "md" });
 					const parser = new DOMParser();
 
 					const doc = parser.parseFromString(highlighted.value, "text/html");
@@ -145,6 +145,14 @@ export default function MessageBox() {
 						currentOpenedTokens.push(token);
 					} else if (isCloseToken(token)) {
 						currentOpenedTokens.pop();
+					}
+
+					if (token.type === "fence_open" && getCodeLanguage(token.info)) {
+						ranges.push({
+							codeLanguage: true,
+							anchor: { path, offset: index + 3 },
+							focus: { path, offset: index + 3 + token.info.length },
+						});
 					}
 				}
 

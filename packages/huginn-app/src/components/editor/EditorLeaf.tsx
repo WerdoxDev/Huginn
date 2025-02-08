@@ -10,7 +10,15 @@ export default function EditorLeaf(props: RenderLeafProps) {
 		);
 	}
 
-	if (props.leaf.bold || props.leaf.italic || props.leaf.underline || props.leaf.spoiler || props.leaf.link || props.leaf.codeToken) {
+	if (
+		props.leaf.bold ||
+		props.leaf.italic ||
+		props.leaf.underline ||
+		props.leaf.spoiler ||
+		props.leaf.link ||
+		props.leaf.codeToken ||
+		props.leaf.codeLanguage
+	) {
 		return (
 			<span
 				className={clsx(
@@ -22,6 +30,7 @@ export default function EditorLeaf(props: RenderLeafProps) {
 					props.leaf.link && "text-accent",
 					props.leaf.codeToken,
 					props.leaf.codeToken && "font-ubuntu text-sm",
+					props.leaf.codeLanguage && "text-accent",
 				)}
 				spellCheck={!props.leaf.codeToken}
 				{...props.attributes}

@@ -48,6 +48,7 @@ type TextFormats = {
 	spoiler?: boolean;
 	link?: boolean;
 	codeToken?: string;
+	codeLanguage?: boolean;
 };
 type FormattedText = { text: string } & TextFormats;
 

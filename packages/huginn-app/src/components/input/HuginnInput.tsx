@@ -1,7 +1,7 @@
 import type { HuginnInputProps, InputStatus } from "@/types";
 import { WorkerID, snowflake } from "@huginn/shared";
 import clsx from "clsx";
-import { type ChangeEvent, type HTMLInputTypeAttribute, type MutableRefObject, type ReactNode, createContext } from "react";
+import { type ChangeEvent, type HTMLInputTypeAttribute, type ReactNode, type RefObject, createContext } from "react";
 
 const InputContext = createContext<{
 	id: string;
@@ -10,7 +10,7 @@ const InputContext = createContext<{
 	required?: boolean;
 	placeholder?: string;
 	type?: HTMLInputTypeAttribute;
-	inputRef?: MutableRefObject<HTMLInputElement | null>;
+	inputRef?: RefObject<HTMLInputElement | null>;
 	disabled?: boolean;
 	onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
 	onFocusChange?: (focused: boolean) => void;

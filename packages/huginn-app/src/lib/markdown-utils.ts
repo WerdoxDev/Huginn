@@ -179,7 +179,9 @@ export function getCodeLanguage(language: string) {
 			return "c++";
 		case "c++":
 			return "c++";
-		default:
+		case "md":
 			return "md";
+		default:
+			return undefined;
 	}
 }

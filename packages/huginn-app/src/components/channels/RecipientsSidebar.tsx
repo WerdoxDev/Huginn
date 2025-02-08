@@ -23,8 +23,8 @@ export default function RecipientsSidebar(props: { channelId: Snowflake; recipie
 
 	return (
 		<Transition show={props.visible}>
-			<div className="group relative my-2 w-56 flex-shrink-0 transition-all duration-200 data-[closed]:w-0 data-[closed]:scale-90 data-[closed]:opacity-0">
-				<div className="absolute flex h-full w-[13.5rem] flex-col gap-y-2 overflow-hidden rounded-xl bg-secondary p-2 shadow-lg ring-2 ring-primary/70 transition-all duration-700 group-data-[closed]:ring-0">
+			<div className="group relative my-2 mb-16 w-56 flex-shrink-0 transition-all duration-200 data-[closed]:w-0 data-[closed]:scale-90 data-[closed]:opacity-0">
+				<div className="absolute top-0 bottom-2 flex w-[13.5rem] flex-col gap-y-2 overflow-hidden rounded-xl bg-secondary p-2 shadow-lg ring-2 ring-primary/70 transition-all duration-700 group-data-[closed]:ring-0">
 					<div className="mt-1 ml-2 text-text/70 text-xs uppercase">Members - {recipients.length}</div>
 					<div className="flex flex-col gap-y-0.5 ">
 						{recipients.map((x) => (

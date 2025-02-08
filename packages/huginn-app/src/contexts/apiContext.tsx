@@ -15,7 +15,7 @@ export function APIProvider(props: { children?: ReactNode }) {
 		if (!window.location.pathname.includes("splashscreen") && client === undefined) {
 			client = new HuginnClient({
 				rest: { api: `${settings.serverAddress}/api` },
-				cdn: { url: settings.cdnAddress },
+				cdn: { url: `${settings.cdnAddress}/cdn` },
 				gateway: {
 					url: `${settings.serverAddress}/gateway`,
 					intents: 0,
