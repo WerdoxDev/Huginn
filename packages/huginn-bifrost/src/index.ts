@@ -1,13 +1,14 @@
 import type { WebSocketHandler } from "bun";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { METHODS } from "hono/router";
 
 const app = new Hono();
 
 app.use(cors());
 
 // Route requests based on the path
-app.all("/api/*", async (c) => {
+app.on(["GET", "OPTIONS", "POST", "PUT", "DELETE", "PATCH"], ["/api/*", "/redirect.html", "/output.css", "/favicon.ico"], async (c) => {
 	const url = new URL(c.req.raw.url);
 	const targetUrl = `http://localhost:3004${url.pathname}${url.search}`;
 
@@ -28,7 +29,7 @@ app.all("/api/*", async (c) => {
 	});
 });
 
-app.all("/*", async (c) => {
+app.on(["GET", "OPTIONS", "POST", "PUT", "DELETE", "PATCH"], ["/cdn/*"], async (c) => {
 	const url = new URL(c.req.raw.url);
 	const targetUrl = `http://localhost:3002${url.pathname}${url.search}`;
 
