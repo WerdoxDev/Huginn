@@ -48,7 +48,7 @@ createRoute("GET", "/api/auth/google", validator("query", querySchema), async (c
 		gateway.getSessionByKey(peer_id)?.subscribe(state);
 	}
 
-	const host = new URL(c.req.url).origin;
+	const host = envs.REDIRECT_HOST;
 	// const host = `${getRequestProtocol(event)}://${getHeader(event, "host")}`;
 	const authEndpoint = new URL("https://accounts.google.com/o/oauth2/v2/auth");
 	authEndpoint.searchParams.set("client_id", envs.GOOGLE_CLIENT_ID);

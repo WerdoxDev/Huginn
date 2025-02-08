@@ -27,6 +27,7 @@ export const envs = readEnv([
 	"GOOGLE_CLIENT_SECRET",
 	"SESSION_PASSWORD",
 	"ALLOWED_ORIGINS",
+	"REDIRECT_HOST",
 ] as const);
 
 export const CERT_FILE = envs.CERTIFICATE_PATH && Bun.file(envs.CERTIFICATE_PATH);

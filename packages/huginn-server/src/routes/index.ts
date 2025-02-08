@@ -1,5 +1,5 @@
 import { createRoute } from "@huginn/backend-shared";
 
-createRoute("GET", "/", (c) => {
+createRoute("GET", "/api", (c) => {
 	return c.text("API Home");
 });
