@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.16.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.15.0...app@v0.16.0) (2025-02-09)
+
+
+### Features
+
+* **app:** add notification click event & goto channel functionality ([9d967a2](https://github.com/WerdoxDev/Huginn/commit/9d967a2ccddff3d2b658fd7b9974d616ba1dc036))
+
+
+### Bug Fixes
+
+* **server:** fix google callback redirect mismatch ([ba6bae6](https://github.com/WerdoxDev/Huginn/commit/ba6bae6c66306063f5a03a8238e34ff6893e5e96))
+
 ## [0.15.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.14.2...app@v0.15.0) (2025-02-08)
 
 

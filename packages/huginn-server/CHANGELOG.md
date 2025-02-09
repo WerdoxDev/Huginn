@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.2](https://github.com/WerdoxDev/Huginn/compare/server@v0.11.1...server@v0.11.2) (2025-02-09)
+
+
+### Bug Fixes
+
+* **server:** fix google callback redirect mismatch ([ba6bae6](https://github.com/WerdoxDev/Huginn/commit/ba6bae6c66306063f5a03a8238e34ff6893e5e96))
+
 ## [0.11.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.11.0...server@v0.11.1) (2025-02-08)
 
 
