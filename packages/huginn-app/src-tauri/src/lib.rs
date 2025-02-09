@@ -1,10 +1,12 @@
 use std::{env, path::Path};
 
-extern crate winrt_notification;
+// extern crate winrt_notification;
 use serde::Serialize;
+use tauri::menu::{Menu, MenuItem};
+use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Emitter, Manager, WindowEvent};
 use tauri_plugin_updater::UpdaterExt;
-use winrt_notification::{Duration, IconCrop, Sound, Toast};
+use tauri_winrt_notification::{Duration, IconCrop, Sound, Toast};
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -56,6 +58,15 @@ async fn open_splashscreen(app: AppHandle) {
 }
 
 #[tauri::command]
+async fn open_main(app: AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.show();
+        let _ = window.set_focus();
+        let _ = window.unminimize();
+    }
+}
+
+#[tauri::command]
 async fn check_update(app: AppHandle, target: String) -> tauri::Result<()> {
     let handle = app.app_handle().clone();
     tauri::async_runtime::spawn(async move {
@@ -66,12 +77,24 @@ async fn check_update(app: AppHandle, target: String) -> tauri::Result<()> {
 }
 
 #[tauri::command]
-async fn send_notification(title: &str, text: &str, image_path: &str) -> tauri::Result<()> {
+async fn send_notification(
+    app: AppHandle,
+    data: String,
+    title: &str,
+    text: &str,
+    image_path: &str,
+) -> tauri::Result<()> {
     Toast::new("dev.huginn.desktop")
         .title(title)
         .text1(text)
         .sound(Some(Sound::Default))
         .duration(Duration::Short)
+        .on_activated(move |_| {
+            app.emit("notification-clicked", data.clone()).unwrap();
+            // println!("Notification activated! {action:?}");
+            Ok(())
+        })
+        //   .add_button("Test", "action222")
         .icon(&Path::new(image_path), IconCrop::Square, "alt")
         .show()
         .expect("unable to toast");
@@ -159,7 +182,8 @@ pub fn run() {
             close_splashscreen,
             open_splashscreen,
             check_update,
-            send_notification
+            send_notification,
+            open_main
         ])
         .on_window_event(|window, event| match event {
             WindowEvent::Destroyed => {
@@ -177,6 +201,36 @@ pub fn run() {
                 use tauri_plugin_deep_link::DeepLinkExt;
                 app.deep_link().register_all()?;
             }
+
+            let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&quit_item])?;
+
+            let _tray = TrayIconBuilder::new()
+                .icon(app.default_window_icon().unwrap().clone())
+                .tooltip("Huginn")
+                .on_tray_icon_event(|tray, event| match event {
+                    TrayIconEvent::Click {
+                        button: MouseButton::Left,
+                        button_state: MouseButtonState::Up,
+                        ..
+                    } => {
+                        let app = tray.app_handle();
+
+                        app.emit("tray-clicked", ()).unwrap();
+                    }
+                    _ => {}
+                })
+                .on_menu_event(|app, event| match event.id.as_ref() {
+                    "quit" => {
+                        app.exit(0);
+                    }
+                    _ => {}
+                })
+                .menu(&menu)
+                .show_menu_on_left_click(false)
+                .build(app)
+                .expect("failed to create tray icon");
+
             Ok(())
         });
 

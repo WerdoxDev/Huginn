@@ -1,5 +1,4 @@
 import { listen } from "@tauri-apps/api/event";
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import clsx from "clsx";
 import type { ReactNode } from "react";
 import { Outlet } from "react-router";
@@ -15,21 +14,23 @@ export default function Layout() {
 				<ContextMenuProvider>
 					<UserProvider>
 						<PresenceProvider>
-							<ReadStateProvider>
-								<TypingProvider>
-									<MainRenderer>
-										<AuthBackgroundContext.Provider value={{ state: backgroundState, setState: setBackgroundState }}>
-											<div
-												className={clsx("absolute inset-0 bg-secondary", huginnWindow.environment === "desktop" && "top-6")}
-												style={isTransitioning ? { viewTransitionName: "auth" } : undefined}
-											>
-												<AuthBackgroundSvg state={backgroundState} />
-												<Outlet />
-											</div>
-										</AuthBackgroundContext.Provider>
-									</MainRenderer>
-								</TypingProvider>
-							</ReadStateProvider>
+							<NotificationProvider>
+								<ReadStateProvider>
+									<TypingProvider>
+										<MainRenderer>
+											<AuthBackgroundContext.Provider value={{ state: backgroundState, setState: setBackgroundState }}>
+												<div
+													className={clsx("absolute inset-0 bg-secondary", huginnWindow.environment === "desktop" && "top-6")}
+													style={isTransitioning ? { viewTransitionName: "auth" } : undefined}
+												>
+													<AuthBackgroundSvg state={backgroundState} />
+													<Outlet />
+												</div>
+											</AuthBackgroundContext.Provider>
+										</MainRenderer>
+									</TypingProvider>
+								</ReadStateProvider>
+							</NotificationProvider>
 						</PresenceProvider>
 					</UserProvider>
 				</ContextMenuProvider>

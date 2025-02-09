@@ -16,7 +16,7 @@ export default function TitleBar(): ReactPortal {
 	}
 
 	async function close() {
-		await appWindow.current?.close();
+		await appWindow.current?.hide();
 	}
 
 	useEffect(() => {

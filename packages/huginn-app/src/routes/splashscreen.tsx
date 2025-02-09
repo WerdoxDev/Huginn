@@ -1,11 +1,14 @@
 import type { LoadingState } from "@/types";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 
 export default function Splashscreen() {
+	const updateFinished = useRef(false);
 	const { checkAndDownload, info, progress, contentLength, downloaded } = useUpdater(async (wasAvailable) => {
 		setLoadingState("loading");
 		if (!wasAvailable) {
 			await invoke("close_splashscreen");
+			updateFinished.current = true;
 		}
 	});
 
@@ -50,8 +53,15 @@ export default function Splashscreen() {
 		invoke("open_splashscreen");
 		checkForUpdate();
 
+		const unlisten = listen("tray-clicked", () => {
+			if (updateFinished.current) {
+				invoke("open_main");
+			}
+		});
+
 		return () => {
 			bc.close();
+			unlisten.then((f) => f());
 		};
 	}, []);
 
