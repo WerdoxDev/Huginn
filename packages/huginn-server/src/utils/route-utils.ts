@@ -61,6 +61,29 @@ export async function getAllAppReleases() {
 	return releases;
 }
 
+export async function getAllTags() {
+	let page = 1;
+	let allTags: Array<{ name: string }> = [];
+	let hasNextPage = true;
+
+	while (hasNextPage) {
+		const response = await octokit.request("GET /repos/{owner}/{repo}/tags", {
+			owner: envs.REPO_OWNER,
+			repo: envs.REPO,
+			per_page: 100,
+			page,
+		});
+
+		allTags = allTags.concat(response.data);
+
+		// Check if we received 100 tags—if so, there might be another page
+		hasNextPage = response.data.length === 100;
+		page++;
+	}
+
+	return allTags;
+}
+
 export function extractLinks(input?: string): string[] {
 	const urlRegex = /https?:\/\/[^\s/$.?#].[^\s]*/g;
 	return input?.match(urlRegex) || [];

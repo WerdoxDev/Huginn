@@ -3,6 +3,7 @@ import { type APICheckUpdateResult, HttpCode } from "@huginn/shared";
 import * as semver from "semver";
 import { octokit } from "#setup";
 import { envs } from "#setup";
+import { getAllTags } from "#utils/route-utils";
 
 type TargetKind = "none" | "windows-x86_64";
 
@@ -17,10 +18,12 @@ createRoute("GET", "/api/check-update/:target/:currentVersion", async (c) => {
 
 	// const getCommand = new GetObjectCommand({ Bucket: envs.AWS_BUCKET, Key: envs.AWS_VERSIONS_OBJECT_KEY });
 	// const versions: VersionsObject = JSON.parse((await (await s3.send(getCommand)).Body?.transformToString()) ?? "");
-	const tags = await octokit.request("GET /repos/{owner}/{repo}/tags", { owner: envs.REPO_OWNER, repo: envs.REPO, per_page: 100 });
-	const [latestTag] = tags.data
+	const tags = await getAllTags();
+	const [latestTag] = tags
 		.filter((x) => x.name.startsWith("app@v"))
 		.toSorted((a, b) => semver.rcompare(a.name.replace("app@", ""), b.name.replace("app@", "")));
+
+	console.log(tags.length);
 
 	const latestVersion = latestTag.name.replace("app@v", "");
 	const latestRelease = await octokit.rest.repos.getReleaseByTag({ owner: envs.REPO_OWNER, repo: envs.REPO, tag: latestTag.name });
