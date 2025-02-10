@@ -178,6 +178,7 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_cli::init())
         .invoke_handler(tauri::generate_handler![
             close_splashscreen,
             open_splashscreen,
@@ -200,6 +201,25 @@ pub fn run() {
             {
                 use tauri_plugin_deep_link::DeepLinkExt;
                 app.deep_link().register_all()?;
+            }
+
+            #[cfg(desktop)]
+            {
+                use tauri_plugin_autostart::MacosLauncher;
+                use tauri_plugin_autostart::ManagerExt;
+
+                let _ = app.handle().plugin(tauri_plugin_autostart::init(
+                    MacosLauncher::LaunchAgent,
+                    Some(vec!["--silent"]),
+                ));
+
+                let autostart_manager = app.autolaunch();
+                let _ = autostart_manager.enable();
+
+                println!(
+                    "registered for autostart? {}",
+                    autostart_manager.is_enabled().unwrap()
+                );
             }
 
             let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;

@@ -4,10 +4,13 @@ import { listen } from "@tauri-apps/api/event";
 
 export default function Splashscreen() {
 	const updateFinished = useRef(false);
+	const huginnWindow = useHuginnWindow();
 	const { checkAndDownload, info, progress, contentLength, downloaded } = useUpdater(async (wasAvailable) => {
 		setLoadingState("loading");
 		if (!wasAvailable) {
-			await invoke("close_splashscreen");
+			if (huginnWindow.matches.args?.silent?.value !== true) {
+				await invoke("close_splashscreen");
+			}
 			updateFinished.current = true;
 		}
 	});
@@ -37,6 +40,8 @@ export default function Splashscreen() {
 	}, [info]);
 
 	useEffect(() => {
+		updateFinished.current = false;
+
 		const bc = new BroadcastChannel("huginn");
 		bc.onmessage = (event) => {
 			if (event.data.name === "restart_splashscreen") {
@@ -50,7 +55,9 @@ export default function Splashscreen() {
 			await checkAndDownload();
 		}
 
-		invoke("open_splashscreen");
+		if (huginnWindow.matches.args?.silent?.value !== true) {
+			invoke("open_splashscreen");
+		}
 		checkForUpdate();
 
 		const unlisten = listen("tray-clicked", () => {

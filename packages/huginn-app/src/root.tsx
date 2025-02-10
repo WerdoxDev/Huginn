@@ -67,26 +67,18 @@ export function Layout(props: { children: ReactNode }) {
 }
 
 export default function Root() {
-	const [settingsLoaded, setSettingsLoaded] = useState(false);
-
-	useEffect(() => {
-		initializeSettings().then((x) => setSettingsLoaded(true));
-	}, []);
-
 	return (
 		// <PostHogProvider client={posthogClient}>
 		<QueryClientProvider client={queryClient}>
 			<EventProvider>
 				<HistoryProvider>
-					{settingsLoaded && (
-						<SettingsProvider>
-							<HuginnWindowProvider>
-								<ThemeProvier>
-									<Outlet />
-								</ThemeProvier>
-							</HuginnWindowProvider>
-						</SettingsProvider>
-					)}
+					<SettingsProvider>
+						<HuginnWindowProvider>
+							<ThemeProvier>
+								<Outlet />
+							</ThemeProvier>
+						</HuginnWindowProvider>
+					</SettingsProvider>
 				</HistoryProvider>
 			</EventProvider>
 		</QueryClientProvider>

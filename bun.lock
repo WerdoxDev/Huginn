@@ -35,7 +35,7 @@
     },
     "packages/huginn-app": {
       "name": "huginn-app-react",
-      "version": "0.14.1",
+      "version": "0.16.0",
       "dependencies": {
         "@babel/plugin-syntax-jsx": "^7.25.9",
         "@floating-ui/react": "^0.26.28",
@@ -47,6 +47,8 @@
         "@std/encoding": "npm:@jsr/std__encoding",
         "@tanstack/react-query": "^5.66.0",
         "@tauri-apps/api": "^2.2.0",
+        "@tauri-apps/plugin-autostart": ">=2",
+        "@tauri-apps/plugin-cli": ">=2",
         "@tauri-apps/plugin-deep-link": "~2.0.1",
         "@tauri-apps/plugin-fs": "^2.2.0",
         "@tauri-apps/plugin-notification": "^2.2.1",
@@ -114,7 +116,7 @@
     },
     "packages/huginn-bifrost": {
       "name": "huginn-bifrost",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "dependencies": {
         "@hono/node-server": "^1.13.7",
         "@huginn/cdn": "workspace:*",
@@ -154,7 +156,7 @@
     },
     "packages/huginn-cdn": {
       "name": "@huginn/cdn",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "dependencies": {
         "@aws-sdk/client-s3": "^3.658.1",
         "@huginn/backend-shared": "workspace:*",
@@ -171,7 +173,7 @@
     },
     "packages/huginn-server": {
       "name": "@huginn/server",
-      "version": "0.10.0",
+      "version": "0.11.2",
       "dependencies": {
         "@aws-sdk/client-s3": "^3.714.0",
         "@huginn/backend-shared": "workspace:*",
@@ -186,6 +188,7 @@
         "@types/probe-image-size": "^7.2.5",
         "consola": "^3.2.3",
         "crossws": "^0.3.1",
+        "destr": "^2.0.3",
         "get-port-please": "^3.1.2",
         "hono": "^4.6.19",
         "hono-sessions": "^0.7.1",
@@ -200,6 +203,7 @@
         "probe-image-size": "^7.2.3",
         "semver": "^7.6.3",
         "zod": "^3.24.1",
+        "zod-form-data": "^2.0.5",
       },
       "devDependencies": {
         "@octokit/types": "^13.6.2",
@@ -1072,6 +1076,10 @@
     "@tauri-apps/cli-win32-ia32-msvc": ["@tauri-apps/cli-win32-ia32-msvc@2.2.7", "", { "os": "win32", "cpu": "ia32" }, "sha512-EiJ5/25tLSQOSGvv+t6o3ZBfOTKB5S3vb+hHQuKbfmKdRF0XQu2YPdIi1CQw1DU97ZAE0Dq4frvnyYEKWgMzVQ=="],
 
     "@tauri-apps/cli-win32-x64-msvc": ["@tauri-apps/cli-win32-x64-msvc@2.2.7", "", { "os": "win32", "cpu": "x64" }, "sha512-ZB8Kw90j8Ld+9tCWyD2fWCYfIrzbQohJ4DJSidNwbnehlZzP7wAz6Z3xjsvUdKtQ3ibtfoeTqVInzCCEpI+pWg=="],
+
+    "@tauri-apps/plugin-autostart": ["@tauri-apps/plugin-autostart@2.2.0", "", { "dependencies": { "@tauri-apps/api": "^2.0.0" } }, "sha512-TzVcDZdOvdot0avkpstUWJKKEl4cyxLpFB9DZZRW5zH8k+Bv8IVJmO0zyYuw+7oKlGdHOINbD/7Je7GHMViw5w=="],
+
+    "@tauri-apps/plugin-cli": ["@tauri-apps/plugin-cli@2.2.0", "", { "dependencies": { "@tauri-apps/api": "^2.0.0" } }, "sha512-rvNhMog9rHr01Xk+trBFKJ0eZICIvPkm9GX6ogB89/0hROU/lf+a/sb4vC0wtSeR7zrJuCSxwxYuvHCZheaYFA=="],
 
     "@tauri-apps/plugin-deep-link": ["@tauri-apps/plugin-deep-link@2.0.1", "", { "dependencies": { "@tauri-apps/api": "^2.0.0" } }, "sha512-YhUgfxuq0xshwOFzdLBJYFJ5t+b/QCDJfq9wmWlKkVkQCQRsGyKYLp4RwKe0zwqcQ4DxaG6nctpv9ARu4Oj9hA=="],
 
@@ -2604,6 +2612,8 @@
     "zip-stream": ["zip-stream@6.0.1", "", { "dependencies": { "archiver-utils": "^5.0.0", "compress-commons": "^6.0.2", "readable-stream": "^4.0.0" } }, "sha512-zK7YHHz4ZXpW89AHXUPbQVGKI7uvkd3hzusTdotCg1UxyaVtg0zFJSTfW/Dq5f7OBBVnq6cZIaC8Ti4hb6dtCA=="],
 
     "zod": ["zod@3.24.1", "", {}, "sha512-muH7gBL9sI1nciMZV67X5fTKKBLtwpZ5VBp1vsOQzj1MhrBZ4wlVCm3gedKZWLp0Oyel8sIGfeiz54Su+OVT+A=="],
+
+    "zod-form-data": ["zod-form-data@2.0.5", "", { "peerDependencies": { "zod": ">= 3.11.0" } }, "sha512-T7dV6lTBCwkd8PyvJVCnjXKpgXomU8gEm/TcvEZY7qNdRhIo9T17HrdlHIK68PzTAYaV2HxR9rgwpTSWv0L+QQ=="],
 
     "zustand": ["zustand@5.0.3", "", { "peerDependencies": { "@types/react": ">=18.0.0", "immer": ">=9.0.6", "react": ">=18.0.0", "use-sync-external-store": ">=1.2.0" }, "optionalPeers": ["@types/react", "immer", "react", "use-sync-external-store"] }, "sha512-14fwWQtU3pH4dE0dOpdMiWjddcH+QzKIgk1cl8epwSE7yag43k/AD/m4L6+K7DytAOr9gGBe3/EXj9g7cdostg=="],
 

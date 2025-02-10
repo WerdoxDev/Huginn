@@ -41,6 +41,8 @@
     "process:allow-restart",
     "process:default",
     "deep-link:default",
-    "notification:default"
+    "notification:default",
+    "cli:default",
+    "cli:allow-cli-matches"
   ]
 }

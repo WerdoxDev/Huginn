@@ -33,13 +33,23 @@
 			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEZBQzhCNUZDMEVFMDlCMkYKUldRdm0rQU8vTFhJK3JnS1NCRzIzUS9NM21tbHdBYlo1UzkyNDZYNTd6OEE1TFJpNkd4ekdVKzAK",
 			"endpoints": ["https://midgard.huginn.dev/api/check-update/{{target}}/{{current_version}}", "https://asgard.huginn.dev/api/check-update/{{target}}/{{current_version}}"],
 			"windows": {
-				"installMode": "passive"
+				"installMode": "quiet"
 			}
 		},
       "deep-link":{
          "desktop":{
             "schemes": ["huginn"]
          }
+      },
+      "cli":{
+         "description":"Huginn App CLI",
+         "args": [
+            {
+               "short":"s",
+               "name":"silent",
+               "description":"Launches the app by just showing it in the system tray without showing the window"
+            }
+         ]
       }
 	},
 	"app": {

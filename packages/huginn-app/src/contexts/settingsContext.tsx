@@ -43,6 +43,11 @@ const SettingsDispatchContext = createContext<(action: DeepPartial<SettingsConte
 
 export function SettingsProvider(props: { children?: ReactNode }) {
 	const [settings, dispatch] = useReducer(settingsReducer, value);
+	const [settingsLoaded, setSettingsLoaded] = useState(false);
+
+	useEffect(() => {
+		initializeSettings().then(() => setSettingsLoaded(true));
+	}, []);
 
 	async function dispatchSaveSettings(action: DeepPartial<SettingsContextType>) {
 		if (globalThis.__TAURI_INTERNALS__) {
@@ -56,7 +61,7 @@ export function SettingsProvider(props: { children?: ReactNode }) {
 
 	return (
 		<SettingsContext.Provider value={settings}>
-			<SettingsDispatchContext.Provider value={dispatchSaveSettings}>{props.children}</SettingsDispatchContext.Provider>
+			<SettingsDispatchContext.Provider value={dispatchSaveSettings}>{settingsLoaded && props.children}</SettingsDispatchContext.Provider>
 		</SettingsContext.Provider>
 	);
 }
