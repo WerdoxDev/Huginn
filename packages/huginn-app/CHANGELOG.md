@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.16.0...app@v0.17.0) (2025-02-10)
+
+
+### Features
+
+* **app:** add untested Autostart capability ([c9b34aa](https://github.com/WerdoxDev/Huginn/commit/c9b34aae1488011aa225052d490cdde83bfabd37))
+
 ## [0.16.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.15.0...app@v0.16.0) (2025-02-09)
 
 
