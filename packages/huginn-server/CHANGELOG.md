@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.3](https://github.com/WerdoxDev/Huginn/compare/server@v0.11.2...server@v0.11.3) (2025-02-10)
+
+
+### Bug Fixes
+
+* **server:** getting github tags should be paginated to get all available ones ([a8f3665](https://github.com/WerdoxDev/Huginn/commit/a8f36657d14da7f9c04cdffbe27e1b63aa737504))
+
 ## [0.11.2](https://github.com/WerdoxDev/Huginn/compare/server@v0.11.1...server@v0.11.2) (2025-02-09)
 
 
