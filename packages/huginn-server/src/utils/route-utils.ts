@@ -13,7 +13,7 @@ import { verifyToken } from "./token-factory";
 export function verifyJwt(identity?: boolean) {
 	return createMiddleware(async (c, next) => {
 		//TODO: THIS IS TO FIX A VERY WEIRD BUG IN HONO
-		await c.req.blob();
+		// await c.req.blob();
 
 		const bearer = c.req.header("Authorization");
 

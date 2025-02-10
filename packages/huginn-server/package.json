@@ -20,6 +20,7 @@
 		"@types/probe-image-size": "^7.2.5",
 		"consola": "^3.2.3",
 		"crossws": "^0.3.1",
+		"destr": "^2.0.3",
 		"get-port-please": "^3.1.2",
 		"hono": "^4.6.19",
 		"hono-sessions": "^0.7.1",
@@ -33,7 +34,8 @@
 		"prisma": "^6.1.0",
 		"probe-image-size": "^7.2.3",
 		"semver": "^7.6.3",
-		"zod": "^3.24.1"
+		"zod": "^3.24.1",
+		"zod-form-data": "^2.0.5"
 	},
 	"devDependencies": {
 		"@octokit/types": "^13.6.2"

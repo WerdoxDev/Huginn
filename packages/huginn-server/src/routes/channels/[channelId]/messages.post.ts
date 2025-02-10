@@ -1,6 +1,6 @@
 import { createErrorFactory, createHuginnError, createRoute, invalidFormBody, missingAccess, validator, waitUntil } from "@huginn/backend-shared";
 import { type APIMessage, Errors, HttpCode, MessageType, idFix, nullToUndefined } from "@huginn/shared";
-
+import { safeDestr } from "destr";
 import type { ProbeResult } from "probe-image-size";
 import { z } from "zod";
 import { prisma } from "#database";
@@ -11,7 +11,7 @@ import { extractEmbedTags, extractLinks, getImageData, verifyJwt } from "#utils/
 import type { DBEmbed } from "#utils/types";
 import { validateEmbeds } from "#utils/validation";
 
-const schema = z.object({
+const jsonSchema = z.object({
 	content: z.optional(z.string()),
 	attachments: z.optional(z.array(z.string())),
 	embeds: z.optional(
@@ -30,9 +30,47 @@ const schema = z.object({
 	nonce: z.optional(z.union([z.number(), z.string()])),
 });
 
-createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), validator("json", schema), async (c) => {
+const formSchema = z.object({
+	payload_json: z.string().nonempty(),
+	files: z.array(z.instanceof(File)),
+});
+
+createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) => {
+	let body: z.infer<typeof jsonSchema>;
+	let files: File[] = [];
+	const contentType = c.req.header("Content-Type");
+
+	if (contentType?.includes("application/json")) {
+		const result = jsonSchema.safeParse(await c.req.json());
+
+		if (!result.success) {
+			return invalidFormBody(c);
+		}
+
+		body = result.data;
+	} else if (contentType?.includes("multipart/form-data")) {
+		const formData = await c.req.parseBody();
+		const formFiles: File[] = [];
+		for (const key of Object.keys(formData)) {
+			if (key.startsWith("files[")) {
+				formFiles.push(formData[key] as File);
+			}
+		}
+
+		const formResult = formSchema.safeParse({ ...formData, files: formFiles });
+		const jsonResult = jsonSchema.safeParse(safeDestr(formData.payload_json as string));
+
+		if (!formResult.success || !jsonResult.success) {
+			return invalidFormBody(c);
+		}
+
+		body = jsonResult.data;
+		files = formResult.data.files;
+	} else {
+		return invalidFormBody(c);
+	}
+
 	const payload = c.get("tokenPayload");
-	const body = c.req.valid("json");
 	const { channelId } = c.req.param();
 
 	const channel = idFix(await prisma.channel.getById(channelId, { select: { id: true } }));
@@ -92,11 +130,9 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), validator(
 	const message: APIMessage = { ...dbMessage, embeds: nullToUndefined(dbMessage.embeds) };
 	message.nonce = body.nonce;
 
-	// TODO: Don't send notification if message has SUPPRESS_NOTIFICATIONS
 	dispatchToTopic(channelId, "message_create", message);
 
 	// Embed generation from urls inside the message content
-	// TODO: THIS WONT WORK WITH HONO
 	waitUntil(c, async () => {
 		const embeds: DBEmbed[] = [];
 		const links = extractLinks(body.content);
