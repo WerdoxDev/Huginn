@@ -17,37 +17,7 @@ const createRoute: OnHandlerInterface = (method, path: string, ...handlers) => {
 
 export { createRoute };
 
-export function validator<T extends keyof ValidationTargets, S extends ZodSchema>(
-	target: T,
-	schema: S,
-): MiddlewareHandler<
-	Env,
-	string,
-	{
-		in: (undefined extends z.input<S> ? true : false) extends true
-			? {
-					[K in T]?:
-						| (z.input<S> extends infer T_1
-								? T_1 extends z.input<S>
-									? T_1 extends ValidationTargets[K]
-										? T_1
-										: { [K2 in keyof T_1]?: ValidationTargets[K][K2] | undefined }
-									: never
-								: never)
-						| undefined;
-				}
-			: {
-					[K_1 in T]: z.input<S> extends infer T_2
-						? T_2 extends z.input<S>
-							? T_2 extends ValidationTargets[K_1]
-								? T_2
-								: { [K2_1 in keyof T_2]: ValidationTargets[K_1][K2_1] }
-							: never
-						: never;
-				};
-		out: { [K_2 in T]: z.output<S> };
-	}
-> {
+export function validator<T extends keyof ValidationTargets, S extends ZodSchema>(target: T, schema: S) {
 	return zValidator(target, schema, (result, c) => {
 		if (!result.success) {
 			return target === "json" ? invalidFormBody(c) : notFound(c);
