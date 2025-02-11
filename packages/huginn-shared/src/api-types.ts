@@ -203,7 +203,7 @@ type APIBaseMessage = {
 	content: string;
 	timestamp: Date | string;
 	editedTimestamp: Date | string | null;
-	attachments: string[];
+	attachments: APIAttachment[];
 	embeds: APIEmbed[];
 	pinned: boolean;
 	mentions: APIMessageUser[];
@@ -235,7 +235,8 @@ export type APIDefaultMessage = {
 
 export type APIPostDefaultMessageJSONBody = {
 	content?: string;
-	attachments?: string[];
+	attachments?: APIPostAttachmentJSONBody[];
+	embeds?: APIEmbed[];
 	flags?: MessageFlags;
 	nonce?: number | string;
 };
@@ -253,6 +254,24 @@ export type APIThumbnail = {
 	url: string;
 	width?: number;
 	height?: number;
+};
+
+export type APIPostAttachmentJSONBody = {
+	id: number;
+	description?: string;
+	filename: string;
+};
+
+export type APIAttachment = {
+	id: Snowflake;
+	description?: string;
+	filename: string;
+	width?: number;
+	height?: number;
+	contentType?: string;
+	url: string;
+	size: number;
+	flags: number;
 };
 
 export type APIPostDefaultMessageResult = APIDefaultMessage;

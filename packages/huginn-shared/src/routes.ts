@@ -155,4 +155,12 @@ export const CDNRoutes = {
 	uploadChannelIcon(channelId: Snowflake): `/channel-icons/${string}` {
 		return `/channel-icons/${channelId}` as const;
 	},
+
+	/**
+	 * Route for:
+	 * - POST '/attachments/{channel.id}/{message.id}'
+	 */
+	uploadAttachment(channelId: Snowflake, messageId: Snowflake): `/attachments/${string}/${string}` {
+		return `/attachments/${channelId}/${messageId}`;
+	},
 };
