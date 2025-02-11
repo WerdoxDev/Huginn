@@ -22,7 +22,7 @@ app.all(
 		await sharedOnRequest(c);
 		await next();
 
-		if (!c.finalized) {
+		if (!c.error) {
 			await sharedOnAfterResponse(c);
 		}
 	}),

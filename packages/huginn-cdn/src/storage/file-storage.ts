@@ -11,7 +11,7 @@ export class FileStorage extends Storage {
 
 	public async getFile(category: FileCategory, subDirectory: string, name: string): Promise<ReadableStream | undefined> {
 		try {
-			const file = Bun.file(join(envs.UPLOADS_DIR, category, subDirectory, name));
+			const file = Bun.file(join(envs.UPLOADS_DIR, category, ...subDirectory.split("/"), name));
 
 			if (!(await file.exists())) {
 				logFileNotFound(category, name);

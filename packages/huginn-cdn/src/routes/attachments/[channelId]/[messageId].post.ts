@@ -2,8 +2,8 @@ import { catchError, createRoute, invalidFormBody } from "@huginn/backend-shared
 import { HttpCode } from "@huginn/shared";
 import { storage } from "#setup";
 
-createRoute("POST", "/cdn/channel-icons/:channelId", async (c) => {
-	const { channelId } = c.req.param();
+createRoute("POST", "/cdn/attachments/:channelId/:messageId", async (c) => {
+	const { channelId, messageId } = c.req.param();
 	const [error, body] = await catchError(async () => await c.req.formData());
 
 	if (error) {
@@ -16,7 +16,7 @@ createRoute("POST", "/cdn/channel-icons/:channelId", async (c) => {
 		return invalidFormBody(c);
 	}
 
-	await storage.writeFile("channel-icons", channelId, file.name, file.stream());
+	await storage.writeFile("attachments", `${channelId}/${messageId}`, file.name, file.stream());
 
 	return c.text(file.name, HttpCode.CREATED);
 });

@@ -19,7 +19,7 @@ export class S3Storage extends Storage {
 
 	public async getFile(category: FileCategory, subDirectory: string, name: string): Promise<ReadableStream | undefined> {
 		try {
-			const cmd = new GetObjectCommand({ Bucket: envs.AWS_BUCKET, Key: join(category, subDirectory, name) });
+			const cmd = new GetObjectCommand({ Bucket: envs.AWS_BUCKET, Key: join(category, ...subDirectory.split("/"), name) });
 			const result = await this.s3.send(cmd);
 
 			logGetFile(category, name);
