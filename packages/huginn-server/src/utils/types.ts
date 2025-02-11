@@ -1,4 +1,13 @@
-import type { APIEmbed, APIThumbnail, APIUser, GatewayIdentifyProperties, IdentityTokenPayload, TokenPayload } from "@huginn/shared";
+import type {
+	APIEmbed,
+	APIPostAttachmentJSONBody,
+	APIThumbnail,
+	APIUser,
+	GatewayIdentifyProperties,
+	IdentityTokenPayload,
+	TokenPayload,
+} from "@huginn/shared";
+import type { Attachment } from "@prisma/client";
 import type { Session } from "hono-sessions";
 
 export type ServerGatewayOptions = {
@@ -20,6 +29,15 @@ export type AppVersionInfo = {
 
 export type DBEmbed = Omit<APIEmbed, "thumbnail"> & { thumbnail?: DBThumbnail };
 export type DBThumbnail = Required<APIThumbnail>;
+
+export type DBAttachment = Omit<APIPostAttachmentJSONBody, "id"> & {
+	contentType: string;
+	size: number;
+	url: string;
+	height?: number;
+	width?: number;
+	flags: number;
+};
 
 declare module "hono" {
 	interface ContextVariableMap {

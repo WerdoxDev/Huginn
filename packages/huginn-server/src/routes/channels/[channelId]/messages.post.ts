@@ -1,19 +1,20 @@
-import { createErrorFactory, createHuginnError, createRoute, invalidFormBody, missingAccess, validator, waitUntil } from "@huginn/backend-shared";
-import { type APIMessage, Errors, HttpCode, MessageType, idFix, nullToUndefined } from "@huginn/shared";
+import { createErrorFactory, createHuginnError, createRoute, invalidFormBody, missingAccess, waitUntil } from "@huginn/backend-shared";
+import { type APIMessage, CDNRoutes, Errors, FileTypes, HttpCode, MessageType, WorkerID, idFix, nullToUndefined, snowflake } from "@huginn/shared";
 import { safeDestr } from "destr";
 import type { ProbeResult } from "probe-image-size";
+import type { Metadata } from "sharp";
 import { z } from "zod";
 import { prisma } from "#database";
 import { selectMessageDefaults } from "#database/common";
-
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { extractEmbedTags, extractLinks, getImageData, verifyJwt } from "#utils/route-utils";
-import type { DBEmbed } from "#utils/types";
+import { cdnUpload, serverFetch } from "#utils/server-request";
+import type { DBAttachment, DBEmbed } from "#utils/types";
 import { validateEmbeds } from "#utils/validation";
 
 const jsonSchema = z.object({
 	content: z.optional(z.string()),
-	attachments: z.optional(z.array(z.string())),
+	attachments: z.optional(z.array(z.object({ id: z.number(), description: z.optional(z.string()), filename: z.string() }))),
 	embeds: z.optional(
 		z.array(
 			z.object({
@@ -32,12 +33,12 @@ const jsonSchema = z.object({
 
 const formSchema = z.object({
 	payload_json: z.string().nonempty(),
-	files: z.array(z.instanceof(File)),
+	files: z.record(z.string(), z.instanceof(File)),
 });
 
 createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) => {
 	let body: z.infer<typeof jsonSchema>;
-	let files: File[] = [];
+	let files: Record<string, File> = {};
 	const contentType = c.req.header("Content-Type");
 
 	if (contentType?.includes("application/json")) {
@@ -50,10 +51,10 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 		body = result.data;
 	} else if (contentType?.includes("multipart/form-data")) {
 		const formData = await c.req.parseBody();
-		const formFiles: File[] = [];
+		const formFiles: Record<string, File> = {};
 		for (const key of Object.keys(formData)) {
 			if (key.startsWith("files[")) {
-				formFiles.push(formData[key] as File);
+				formFiles[key] = formData[key] as File;
 			}
 		}
 
@@ -70,28 +71,69 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 		return invalidFormBody(c);
 	}
 
+	console.log(files);
 	const payload = c.get("tokenPayload");
 	const { channelId } = c.req.param();
 
+	// Check permission
 	const channel = idFix(await prisma.channel.getById(channelId, { select: { id: true } }));
 	if (!(await prisma.user.hasChannel(payload.id, channel.id))) {
 		return missingAccess(c);
 	}
 
+	// Body must have either content, attachment or embeds
 	if (!body.content && !body.attachments && !body.embeds) {
 		return invalidFormBody(c);
 	}
 
+	// Validate embeds
 	const formError = createErrorFactory(Errors.invalidFormBody());
 	if (body.embeds && !validateEmbeds(body.embeds, formError)) {
 		return createHuginnError(c, formError);
+	}
+
+	// Validate attachments
+	if (body.attachments) {
+		for (const [i, attachment] of body.attachments.entries()) {
+			if (!(`files[${i}]` in files) || files[`files[${i}]`].name !== attachment.filename) return invalidFormBody(c);
+		}
+	}
+
+	const messageId = snowflake.generate(WorkerID.MESSAGE);
+
+	const processedAttachments: DBAttachment[] = [];
+	if (body.attachments) {
+		for (const attachment of body.attachments) {
+			const file = files[`files[${attachment.id}]`];
+			const fileArrayBuffer = await file.arrayBuffer();
+
+			const name = (await cdnUpload(CDNRoutes.uploadAttachment(channelId, messageId.toString()), {
+				files: [{ data: fileArrayBuffer, name: file.name, contentType: file.type }],
+			})) as string;
+
+			let imageData: Metadata | undefined;
+			if (file.type !== FileTypes.zip && file.type !== FileTypes.other) {
+				imageData = await getImageData(fileArrayBuffer);
+			}
+
+			processedAttachments.push({
+				contentType: file.type,
+				description: attachment.description,
+				size: file.size,
+				filename: file.name,
+				flags: 0,
+				width: imageData?.width,
+				height: imageData?.height,
+				url: `http://localhost:3002/cdn/attachments/${channelId}/${messageId}/${name}`,
+			});
+		}
 	}
 
 	// Fetch image data from embeds
 	const processedEmbeds: DBEmbed[] = [];
 	if (body.embeds) {
 		for (const embed of body.embeds) {
-			let thumbnailData: ProbeResult | undefined;
+			let thumbnailData: Metadata | undefined;
 			if (embed.thumbnail && (!embed.thumbnail.width || !embed.thumbnail.height)) {
 				thumbnailData = await getImageData(embed.thumbnail.url);
 			}
@@ -104,9 +146,9 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 				type: embed.type,
 				thumbnail: thumbnailData
 					? {
-							url: thumbnailData.url,
-							width: embed.thumbnail?.width ?? thumbnailData.width,
-							height: embed.thumbnail?.height ?? thumbnailData.height,
+							url: embed.thumbnail?.url ?? "",
+							width: embed.thumbnail?.width ?? thumbnailData.width ?? 0,
+							height: embed.thumbnail?.height ?? thumbnailData.height ?? 0,
 						}
 					: undefined,
 			});
@@ -115,11 +157,12 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 
 	const dbMessage = idFix(
 		await prisma.message.createMessage(
+			messageId,
 			payload.id,
 			channelId,
 			MessageType.DEFAULT,
 			body.content,
-			body.attachments,
+			processedAttachments,
 			processedEmbeds.length === 0 ? undefined : processedEmbeds,
 			undefined,
 			body.flags,
@@ -127,7 +170,9 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 		),
 	);
 
-	const message: APIMessage = { ...dbMessage, embeds: nullToUndefined(dbMessage.embeds) };
+	// dbMessage.attachments[0].
+
+	const message: APIMessage = { ...dbMessage, embeds: nullToUndefined(dbMessage.embeds), attachments: nullToUndefined(dbMessage.attachments) };
 	message.nonce = body.nonce;
 
 	dispatchToTopic(channelId, "message_create", message);
@@ -140,7 +185,7 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 			const metadata = await extractEmbedTags(link);
 			if (Object.keys(metadata).length > 0) {
 				// Fetch image data from embed
-				let thumbnailData: ProbeResult | undefined;
+				let thumbnailData: Metadata | undefined;
 				if (metadata.image) {
 					thumbnailData = await getImageData(metadata.image);
 				}
@@ -149,14 +194,18 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 					title: metadata.title,
 					url: metadata.url,
 					description: metadata.description,
-					thumbnail: thumbnailData ? { url: thumbnailData.url, width: thumbnailData.width, height: thumbnailData.height } : undefined,
+					thumbnail: thumbnailData ? { url: metadata.image, width: thumbnailData.width ?? 0, height: thumbnailData.height ?? 0 } : undefined,
 				});
 			}
 		}
 
 		const updatedMessage = idFix(await prisma.message.updateMessage(dbMessage.id, undefined, embeds, { select: selectMessageDefaults }));
 
-		dispatchToTopic(channelId, "message_update", { ...updatedMessage, embeds: nullToUndefined(updatedMessage.embeds) });
+		dispatchToTopic(channelId, "message_update", {
+			...updatedMessage,
+			embeds: nullToUndefined(updatedMessage.embeds),
+			attachments: nullToUndefined(updatedMessage.attachments),
+		});
 	});
 
 	return c.json(message, HttpCode.CREATED);

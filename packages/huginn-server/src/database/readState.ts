@@ -3,9 +3,9 @@ import { type Snowflake, snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import consola from "consola";
-import { assertCondition, assertExists, assertId, assertObj, prisma } from "#database";
+import { assertExists, assertId, assertObj, prisma } from "#database";
 
-const readStateExtension = Prisma.defineExtension({
+export const readStateExtension = Prisma.defineExtension({
 	model: {
 		readState: {
 			async getByUserAndChannelId(userId: Snowflake, channelId: Snowflake) {
@@ -106,5 +106,3 @@ const readStateExtension = Prisma.defineExtension({
 		},
 	},
 });
-
-export default readStateExtension;

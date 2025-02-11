@@ -54,31 +54,15 @@ createRoute("PATCH", "/api/channels/:channelId", verifyJwt(), validator("json", 
 	}
 
 	if (channel.name !== updatedChannel.name) {
-		await dispatchMessage(
-			payload.id,
-			channelId,
-			MessageType.CHANNEL_NAME_CHANGED,
-			updatedChannel.name ?? "",
-			undefined,
-			undefined,
-			MessageFlags.NONE,
-		);
+		await dispatchMessage(payload.id, channelId, MessageType.CHANNEL_NAME_CHANGED, updatedChannel.name ?? "", undefined, MessageFlags.NONE);
 	}
 
 	if (channel.icon !== updatedChannel.icon) {
-		await dispatchMessage(payload.id, channelId, MessageType.CHANNEL_ICON_CHANGED, "", undefined, undefined, MessageFlags.NONE);
+		await dispatchMessage(payload.id, channelId, MessageType.CHANNEL_ICON_CHANGED, "", undefined, MessageFlags.NONE);
 	}
 
 	if (channel.ownerId !== updatedChannel.ownerId) {
-		await dispatchMessage(
-			payload.id,
-			channelId,
-			MessageType.CHANNEL_OWNER_CHANGED,
-			"",
-			undefined,
-			[updatedChannel.ownerId || ""],
-			MessageFlags.NONE,
-		);
+		await dispatchMessage(payload.id, channelId, MessageType.CHANNEL_OWNER_CHANGED, "", [updatedChannel.ownerId || ""], MessageFlags.NONE);
 	}
 
 	return c.json(channelWithoutRecipient(updatedChannel, payload.id), HttpCode.OK);

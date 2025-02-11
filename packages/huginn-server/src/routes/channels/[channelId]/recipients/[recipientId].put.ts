@@ -39,7 +39,7 @@ createRoute("PUT", "/api/channels/:channelId/recipients/:recipientId", verifyJwt
 	gateway.subscribeSessionsToTopic(recipientId, channelId);
 	dispatchChannel(updatedChannel, "channel_create", recipientId);
 
-	await dispatchMessage(payload.id, channelId, MessageType.RECIPIENT_ADD, "", undefined, [recipientId], MessageFlags.NONE);
+	await dispatchMessage(payload.id, channelId, MessageType.RECIPIENT_ADD, "", [recipientId], MessageFlags.NONE);
 
 	return c.newResponse(null, HttpCode.NO_CONTENT);
 });

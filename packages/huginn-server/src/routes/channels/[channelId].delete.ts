@@ -54,7 +54,7 @@ createRoute("DELETE", "/api/channels/:channelId", verifyJwt(), async (c) => {
 
 	// Send a recipient remove message in group dm
 	if (channel.type === ChannelType.GROUP_DM) {
-		await dispatchMessage(payload.id, channelId, MessageType.RECIPIENT_REMOVE, "", undefined, undefined, MessageFlags.NONE);
+		await dispatchMessage(payload.id, channelId, MessageType.RECIPIENT_REMOVE, "", undefined, MessageFlags.NONE);
 	}
 
 	return c.json(deletedChannel, HttpCode.OK);

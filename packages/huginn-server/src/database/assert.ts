@@ -3,7 +3,7 @@ import type { Snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 import { assertCondition, assertId, prisma } from "#database";
 
-const assertExtension = Prisma.defineExtension({
+export const assertExtension = Prisma.defineExtension({
 	model: {
 		user: {
 			async assertUsersExist(methodName: string, userIds: Snowflake[]) {
@@ -49,5 +49,3 @@ const assertExtension = Prisma.defineExtension({
 		},
 	},
 });
-
-export default assertExtension;

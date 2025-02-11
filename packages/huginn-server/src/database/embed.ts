@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "#database";
 import type { DBThumbnail } from "#utils/types";
 
-const embedExtension = Prisma.defineExtension({
+export const embedExtension = Prisma.defineExtension({
 	model: {
 		embed: {
 			async createEmbed(title?: string, description?: string, url?: string, timestamp?: string, type?: string, thumbnail?: DBThumbnail) {
@@ -27,5 +27,3 @@ const embedExtension = Prisma.defineExtension({
 		},
 	},
 });
-
-export default embedExtension;

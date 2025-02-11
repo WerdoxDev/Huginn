@@ -1,6 +1,5 @@
 import { createRoute, missingAccess } from "@huginn/backend-shared";
 import { type APIGetMessageByIdResult, HttpCode, idFix, nullToUndefined } from "@huginn/shared";
-import { z } from "zod";
 import { prisma } from "#database";
 import { selectMessageDefaults } from "#database/common";
 import { verifyJwt } from "#utils/route-utils";
@@ -14,7 +13,11 @@ createRoute("GET", "/api/channels/:channelId/messages/:messageId", verifyJwt(), 
 	}
 
 	const dbMessage = idFix(await prisma.message.getById(channelId, messageId, { select: selectMessageDefaults }));
-	const message: APIGetMessageByIdResult = { ...dbMessage, embeds: nullToUndefined(dbMessage.embeds) };
+	const message: APIGetMessageByIdResult = {
+		...dbMessage,
+		embeds: nullToUndefined(dbMessage.embeds),
+		attachments: nullToUndefined(dbMessage.attachments),
+	};
 
 	return c.json(message, HttpCode.OK);
 });

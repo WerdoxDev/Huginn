@@ -2,11 +2,11 @@ import { DBErrorType } from "@huginn/backend-shared/types";
 import type { Snowflake } from "@huginn/shared";
 import { WorkerID, snowflake } from "@huginn/shared";
 import type { MessageType } from "@huginn/shared";
-import { type Embed, Prisma } from "@prisma/client";
-import type { DBEmbed } from "#utils/types";
+import { type Attachment, type Embed, Prisma } from "@prisma/client";
+import type { DBAttachment, DBEmbed } from "#utils/types";
 import { assertExists, assertId, assertObj, prisma } from ".";
 
-const messagesExtension = Prisma.defineExtension({
+export const messagesExtension = Prisma.defineExtension({
 	model: {
 		message: {
 			async getById<Args extends Prisma.MessageDefaultArgs>(channelId: Snowflake, messageId: Snowflake, args?: Args) {
@@ -52,11 +52,12 @@ const messagesExtension = Prisma.defineExtension({
 				}
 			},
 			async createMessage<Args extends Prisma.MessageDefaultArgs>(
+				id: bigint | undefined,
 				authorId: Snowflake,
 				channelId: Snowflake,
 				type: MessageType,
 				content?: string,
-				attachments?: string[],
+				attachments?: DBAttachment[],
 				embeds?: DBEmbed[],
 				mentions?: Snowflake[],
 				flags?: number,
@@ -64,6 +65,7 @@ const messagesExtension = Prisma.defineExtension({
 			) {
 				try {
 					const createdEmbeds: Embed[] = [];
+					const createdAttachments: Attachment[] = [];
 
 					if (embeds) {
 						for (const embed of embeds) {
@@ -73,13 +75,30 @@ const messagesExtension = Prisma.defineExtension({
 						}
 					}
 
+					if (attachments) {
+						for (const attachment of attachments) {
+							createdAttachments.push(
+								await prisma.attachment.createAttachment(
+									attachment.filename,
+									attachment.contentType,
+									attachment.size,
+									attachment.url,
+									attachment.flags,
+									attachment.width,
+									attachment.height,
+									attachment.description,
+								),
+							);
+						}
+					}
+
 					const message = await prisma.message.create({
 						data: {
-							id: snowflake.generate(WorkerID.MESSAGE),
+							id: id ?? snowflake.generate(WorkerID.MESSAGE),
 							type: type,
 							channelId: BigInt(channelId),
 							content: content ?? "",
-							attachments: attachments,
+							attachments: attachments ? { connect: createdAttachments.map((x) => ({ id: x.id })) } : undefined,
 							mentions: { connect: mentions?.map((x) => ({ id: BigInt(x) })) },
 							authorId: BigInt(authorId),
 							timestamp: new Date(),
@@ -87,7 +106,7 @@ const messagesExtension = Prisma.defineExtension({
 							editedTimestamp: null,
 							pinned: false,
 							reactions: [],
-							flags: flags,
+							flags: flags ?? 0,
 						},
 						...args,
 					});
@@ -135,5 +154,3 @@ const messagesExtension = Prisma.defineExtension({
 		},
 	},
 });
-
-export default messagesExtension;

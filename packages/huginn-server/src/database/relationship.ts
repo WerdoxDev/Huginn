@@ -3,7 +3,7 @@ import { RelationshipType, type Snowflake, WorkerID, snowflake } from "@huginn/s
 import { Prisma } from "@prisma/client";
 import { assertCondition, assertExists, assertId, assertObj, prisma } from ".";
 
-const relationshipExtension = Prisma.defineExtension({
+export const relationshipExtension = Prisma.defineExtension({
 	model: {
 		relationship: {
 			async getByUserId<Args extends Prisma.RelationshipDefaultArgs>(ownerId: Snowflake, userId: Snowflake, args?: Args) {
@@ -112,5 +112,3 @@ const relationshipExtension = Prisma.defineExtension({
 		},
 	},
 });
-
-export default relationshipExtension;

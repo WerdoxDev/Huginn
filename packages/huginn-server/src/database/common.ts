@@ -38,10 +38,17 @@ export const selectMessageEmbeds = Prisma.validator<Prisma.MessageSelect>()({
 	embeds: { select: { description: true, title: true, type: true, url: true, thumbnail: { select: { height: true, url: true, width: true } } } },
 });
 
+export const selectMessageAttachments = Prisma.validator<Prisma.MessageSelect>()({
+	attachments: {
+		select: { id: true, contentType: true, description: true, filename: true, flags: true, height: true, size: true, url: true, width: true },
+	},
+});
+
 export const selectMessageDefaults = Prisma.validator<Prisma.MessageSelect>()({
 	...selectMessageAuthor,
 	...selectMessageMentions,
 	...selectMessageEmbeds,
+	...selectMessageAttachments,
 	channelId: true,
 	content: true,
 	timestamp: true,
@@ -49,7 +56,6 @@ export const selectMessageDefaults = Prisma.validator<Prisma.MessageSelect>()({
 	type: true,
 	pinned: true,
 	id: true,
-	attachments: true,
 	reactions: true,
 	flags: true,
 });

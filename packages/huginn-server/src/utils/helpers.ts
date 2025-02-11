@@ -2,23 +2,23 @@ import { type DirectChannel, type GatewayEvents, type MessageType, type Snowflak
 import { prisma } from "#database";
 import { omitMessageAuthorId, selectMessageDefaults } from "#database/common";
 import { dispatchToTopic } from "./gateway-utils";
+import type { DBAttachment } from "./types";
 
 export async function dispatchMessage(
 	authorId: Snowflake,
 	channelId: Snowflake,
 	type: MessageType,
 	content?: string,
-	attachments?: string[],
 	mentions?: Snowflake[],
 	flags?: number,
 ) {
 	const message = idFix(
-		await prisma.message.createMessage(authorId, channelId, type, content, attachments, undefined, mentions, flags, {
+		await prisma.message.createMessage(undefined, authorId, channelId, type, content, undefined, undefined, mentions, flags, {
 			select: selectMessageDefaults,
 		}),
 	);
 
-	dispatchToTopic(channelId, "message_create", { ...message, embeds: [] });
+	dispatchToTopic(channelId, "message_create", { ...message, embeds: [], attachments: [] });
 }
 
 export function channelWithoutRecipient(channel: DirectChannel, recipientId: Snowflake) {

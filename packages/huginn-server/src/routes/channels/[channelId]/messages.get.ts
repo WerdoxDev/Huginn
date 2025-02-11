@@ -22,7 +22,11 @@ createRoute("GET", "/api/channels/:channelId/messages", verifyJwt(), validator("
 	}
 
 	const dbMessages = idFix(await prisma.message.getMessages(channelId, limit, before, after, { select: selectMessageDefaults }));
-	const messages: APIGetChannelMessagesResult = dbMessages.map((x) => ({ ...x, embeds: nullToUndefined(x.embeds) }));
+	const messages: APIGetChannelMessagesResult = dbMessages.map((x) => ({
+		...x,
+		embeds: nullToUndefined(x.embeds),
+		attachments: nullToUndefined(x.attachments),
+	}));
 
 	return c.json(messages, HttpCode.OK);
 });

@@ -1,6 +1,6 @@
 generator client {
    provider        = "prisma-client-js"
-   previewFeatures = ["omitApi", "relationJoins"]
+   previewFeatures = ["relationJoins"]
 }
 
 datasource db {
@@ -47,23 +47,23 @@ model Channel {
 }
 
 model Message {
-   id                  BigInt      @id
-   author              User        @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+   id                  BigInt       @id
+   author              User         @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    authorId            BigInt
-   channel             Channel     @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+   channel             Channel      @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    channelId           BigInt
    content             String
    timestamp           DateTime
    editedTimestamp     DateTime?
-   mentions            User[]      @relation("message_mentions")
+   mentions            User[]       @relation("message_mentions")
    embeds              Embed[]
-   attachments         String[]
+   attachments         Attachment[]
    reactions           String[]
    pinned              Boolean
    type                Int
-   flags               Int?        @db.SmallInt
+   flags               Int          @db.SmallInt
    lastReadMessages    ReadState[]
-   lastMessageChannels Channel[]   @relation("channel_last_message")
+   lastMessageChannels Channel[]    @relation("channel_last_message")
 
    @@index([channelId])
 }
@@ -121,4 +121,18 @@ model Thumbnail {
    url     String
    embed   Embed  @relation(fields: [embedId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    embedId BigInt @unique
+}
+
+model Attachment {
+   id          BigInt   @id
+   filename    String
+   description String?
+   contentType String
+   size        Int
+   url         String
+   width       Int?
+   height      Int?
+   flags       Int      @db.SmallInt
+   message     Message? @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+   messageId   BigInt?
 }

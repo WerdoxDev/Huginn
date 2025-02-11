@@ -47,7 +47,7 @@ createRoute("DELETE", "/api/channels/:channelId/recipients/:recipientId", verify
 		});
 	}
 
-	await dispatchMessage(payload.id, channelId, MessageType.RECIPIENT_REMOVE, "", undefined, [recipientId], MessageFlags.NONE);
+	await dispatchMessage(payload.id, channelId, MessageType.RECIPIENT_REMOVE, "", [recipientId], MessageFlags.NONE);
 
 	return c.newResponse(null, HttpCode.NO_CONTENT);
 });

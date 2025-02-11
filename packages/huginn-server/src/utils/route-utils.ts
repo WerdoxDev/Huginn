@@ -3,8 +3,8 @@ import type { IdentityTokenPayload, TokenPayload, Unpacked } from "@huginn/share
 import type { Endpoints } from "@octokit/types";
 import { createMiddleware } from "hono/factory";
 import { JSDOM } from "jsdom";
-import probe, { type ProbeResult } from "probe-image-size";
 import * as semver from "semver";
+import sharp from "sharp";
 import { prisma } from "#database";
 import { octokit } from "#setup";
 import { envs } from "#setup";
@@ -161,9 +161,9 @@ export async function extractEmbedTags(url: string): Promise<Record<string, stri
 	}
 }
 
-export async function getImageData(url: string): Promise<ProbeResult | undefined> {
+export async function getImageData(source: string | ArrayBuffer): Promise<sharp.Metadata | undefined> {
 	try {
-		return await probe(url);
+		return await sharp(source).metadata();
 	} catch (e) {
 		console.error("Error fetching image data:", e);
 		return undefined;

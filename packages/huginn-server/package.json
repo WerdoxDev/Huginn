@@ -32,8 +32,8 @@
 		"ohash": "^1.1.4",
 		"pathe": "^1.1.2",
 		"prisma": "^6.1.0",
-		"probe-image-size": "^7.2.3",
 		"semver": "^7.6.3",
+		"sharp": "^0.33.5",
 		"zod": "^3.24.1",
 		"zod-form-data": "^2.0.5"
 	},

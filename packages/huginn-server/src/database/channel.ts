@@ -4,7 +4,7 @@ import { Prisma } from "@prisma/client";
 import { assertExists, prisma } from ".";
 import { assertId, assertObj } from "./error";
 
-const channelExtension = Prisma.defineExtension({
+export const channelExtension = Prisma.defineExtension({
 	model: {
 		channel: {
 			async getById<Args extends Prisma.ChannelDefaultArgs>(id: Snowflake, args?: Args) {
@@ -186,5 +186,3 @@ const channelExtension = Prisma.defineExtension({
 		},
 	},
 });
-
-export default channelExtension;

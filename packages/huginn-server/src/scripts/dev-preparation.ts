@@ -36,7 +36,13 @@ const channel = await prisma.channel.createDM(
 );
 
 for (let i = 0; i < 200; i++) {
-	await prisma.message.createMessage(createdUsers[0].id.toString(), channel.id.toString(), MessageType.DEFAULT, `${i.toString() + " ".repeat(i)}.`);
+	await prisma.message.createMessage(
+		undefined,
+		createdUsers[0].id.toString(),
+		channel.id.toString(),
+		MessageType.DEFAULT,
+		`${i.toString() + " ".repeat(i)}.`,
+	);
 }
 
 for (const user of createdUsers) {

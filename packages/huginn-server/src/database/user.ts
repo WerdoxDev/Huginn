@@ -4,7 +4,7 @@ import type { Snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 import { assertId, assertObj, prisma } from ".";
 
-const userExtension = Prisma.defineExtension({
+export const userExtension = Prisma.defineExtension({
 	model: {
 		user: {
 			async getById<Args extends Prisma.UserDefaultArgs>(id: Snowflake, args?: Args) {
@@ -40,5 +40,3 @@ const userExtension = Prisma.defineExtension({
 		},
 	},
 });
-
-export default userExtension;
