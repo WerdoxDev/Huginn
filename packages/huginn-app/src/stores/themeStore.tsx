@@ -110,6 +110,7 @@ export function ThemeProvier(props: { children?: ReactNode }) {
 	const settings = useSettings();
 
 	useLayoutEffect(() => {
+		console.log(settings, "FORM THME");
 		store.getState().setTheme(settings.theme);
 	}, []);
 

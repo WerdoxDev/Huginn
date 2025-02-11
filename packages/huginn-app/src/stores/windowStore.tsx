@@ -38,7 +38,7 @@ export function HuginnWindowProvider(props: { children?: ReactNode }) {
 			});
 		}
 
-		initialize().then(() => setWindowLoaded(true));
+		if (!windowLoaded) initialize().then(() => setWindowLoaded(true));
 
 		window.addEventListener("focus", onFocusChange);
 		window.addEventListener("blur", onFocusChange);

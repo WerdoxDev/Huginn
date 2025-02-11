@@ -25,55 +25,48 @@ struct UpdateInfo<'a> {
 
 #[tauri::command]
 async fn close_splashscreen(app: AppHandle) {
-    // Show main window
-    app.get_webview_window("main")
-        .expect("no window labeled 'main' found")
-        .show()
-        .unwrap();
-
     // Hide splashscreen window
     app.get_webview_window("splashscreen")
         .expect("no window labeled 'splashscreen' found")
         .hide()
         .unwrap();
-
-    app.emit("splashscreen-close", ()).unwrap();
 }
 
 #[tauri::command]
 async fn open_splashscreen(app: AppHandle) {
-    // Hide main window
-    app.get_webview_window("main")
-        .expect("no window labeled 'main' found")
-        .hide()
-        .unwrap();
-
     // Show splashscreen window
     app.get_webview_window("splashscreen")
         .expect("no window labeled 'splashscreen' found")
         .show()
         .unwrap();
-
-    app.emit("splashscreen-open", ()).unwrap();
 }
 
 #[tauri::command]
-async fn open_main(app: AppHandle) {
-    if let Some(window) = app.get_webview_window("main") {
-        let _ = window.show();
-        let _ = window.set_focus();
-        let _ = window.unminimize();
-    }
+async fn open_and_focus_main(app: AppHandle) {
+    let window = app
+        .get_webview_window("main")
+        .expect("no window labeled 'main' found");
+
+    let _ = window.show();
+    let _ = window.set_focus();
+    let _ = window.unminimize();
 }
 
 #[tauri::command]
-async fn check_update(app: AppHandle, target: String) -> tauri::Result<()> {
+async fn close_main(app: AppHandle) {
+    // Hide main window
+    app.get_webview_window("main")
+        .expect("no window labeled 'main' found")
+        .show()
+        .unwrap();
+}
+
+#[tauri::command]
+async fn check_update(app: AppHandle, target: String) {
     let handle = app.app_handle().clone();
     tauri::async_runtime::spawn(async move {
         let _ = update(handle, target).await;
     });
-
-    Ok(())
 }
 
 #[tauri::command]
@@ -182,9 +175,10 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             close_splashscreen,
             open_splashscreen,
+            close_main,
+            open_and_focus_main,
             check_update,
-            send_notification,
-            open_main
+            send_notification
         ])
         .on_window_event(|window, event| match event {
             WindowEvent::Destroyed => {

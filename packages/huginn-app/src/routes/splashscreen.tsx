@@ -10,6 +10,7 @@ export default function Splashscreen() {
 		if (!wasAvailable) {
 			if (huginnWindow.matches.args?.silent?.value !== true) {
 				await invoke("close_splashscreen");
+				await invoke("open_and_focus_main");
 			}
 			updateFinished.current = true;
 		}
@@ -56,13 +57,14 @@ export default function Splashscreen() {
 		}
 
 		if (huginnWindow.matches.args?.silent?.value !== true) {
+			invoke("close_main");
 			invoke("open_splashscreen");
 		}
 		checkForUpdate();
 
 		const unlisten = listen("tray-clicked", () => {
 			if (updateFinished.current) {
-				invoke("open_main");
+				invoke("open_and_focus_main");
 			}
 		});
 

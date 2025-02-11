@@ -17,7 +17,6 @@ const defaultValue: SettingsContextType = {
 	chatMode: "normal",
 };
 
-let value = defaultValue;
 let filePath: string;
 let localStorageItem: string;
 
@@ -28,25 +27,30 @@ export async function initializeSettings() {
 	if (globalThis.__TAURI_INTERNALS__) {
 		await tryCreateSettingsFile();
 		const fileContent = new TextDecoder().decode(await readFile(filePath, { baseDir: BaseDirectory.AppConfig }));
-		value = { ...defaultValue, ...JSON.parse(fileContent) };
-	} else {
-		if (!globalThis.localStorage.getItem(localStorageItem)) {
-			globalThis.localStorage.setItem(localStorageItem, JSON.stringify(defaultValue));
-		}
-		// biome-ignore lint/style/noNonNullAssertion: <explanation>
-		value = { ...defaultValue, ...JSON.parse(globalThis.localStorage.getItem(localStorageItem)!) };
+		console.log(fileContent);
+		return { ...defaultValue, ...JSON.parse(fileContent) };
 	}
+
+	if (!globalThis.localStorage.getItem(localStorageItem)) {
+		globalThis.localStorage.setItem(localStorageItem, JSON.stringify(defaultValue));
+	}
+	// biome-ignore lint/style/noNonNullAssertion: <explanation>
+	return { ...defaultValue, ...JSON.parse(globalThis.localStorage.getItem(localStorageItem)!) };
 }
 
-const SettingsContext = createContext<SettingsContextType>(value);
+const SettingsContext = createContext<SettingsContextType>(defaultValue);
 const SettingsDispatchContext = createContext<(action: DeepPartial<SettingsContextType>) => Promise<void>>(() => new Promise(() => {}));
 
 export function SettingsProvider(props: { children?: ReactNode }) {
-	const [settings, dispatch] = useReducer(settingsReducer, value);
+	const [settings, dispatch] = useReducer(settingsReducer, defaultValue);
 	const [settingsLoaded, setSettingsLoaded] = useState(false);
 
 	useEffect(() => {
-		initializeSettings().then(() => setSettingsLoaded(true));
+		if (!settingsLoaded)
+			initializeSettings().then((settings) => {
+				dispatch(settings);
+				setSettingsLoaded(true);
+			});
 	}, []);
 
 	async function dispatchSaveSettings(action: DeepPartial<SettingsContextType>) {
@@ -74,6 +78,7 @@ function settingsReducer(settings: SettingsContextType, action: DeepPartial<Sett
 
 async function writeSettingsFile(settings: SettingsContextType) {
 	try {
+		console.log("WRITE", settings);
 		await writeTextFile(filePath, JSON.stringify(settings, null, 2), { baseDir: BaseDirectory.AppConfig });
 	} catch (e) {
 		console.error(e);

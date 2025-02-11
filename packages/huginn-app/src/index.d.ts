@@ -38,7 +38,18 @@ type EmbedElement = {
 	children: Descendant[];
 };
 
-type CustomElement = ParagraphElement | SpoilerElement | EmbedElement | LinkElement | CodeElement;
+type AttachmentElement = {
+	type: "attachment";
+	description?: string;
+	url: string;
+	width?: number;
+	height?: number;
+	size: number;
+	children: Descendant[];
+	contentType?: string;
+};
+
+type CustomElement = ParagraphElement | SpoilerElement | EmbedElement | LinkElement | CodeElement | AttachmentElement;
 
 type TextFormats = {
 	bold?: boolean;

@@ -42,6 +42,10 @@ function MessageRenderer(props: MessageRendererProps) {
 			return <CodeElement {...props} />;
 		}
 
+		if (props.element.type === "attachment") {
+			return <AttachmentElement {...props} />;
+		}
+
 		return <DefaultElement {...props} />;
 	}, []);
 
@@ -147,6 +151,32 @@ function MessageRenderer(props: MessageRendererProps) {
 				children: [{ text: "" }],
 				height: embed.thumbnail?.height,
 				width: embed.thumbnail?.width,
+			});
+		}
+
+		for (const embed of props.renderInfo.message.embeds) {
+			nodes.push({
+				type: "embed",
+				image: embed.thumbnail?.url,
+				url: embed.url,
+				description: embed.description,
+				title: embed.title,
+				children: [{ text: "" }],
+				height: embed.thumbnail?.height,
+				width: embed.thumbnail?.width,
+			});
+		}
+
+		for (const attachment of props.renderInfo.message.attachments) {
+			nodes.push({
+				type: "attachment",
+				url: attachment.url,
+				description: attachment.description,
+				children: [{ text: "" }],
+				height: attachment?.height,
+				width: attachment?.width,
+				size: attachment.size,
+				contentType: attachment.contentType,
 			});
 		}
 

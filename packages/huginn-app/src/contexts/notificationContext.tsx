@@ -36,10 +36,7 @@ export function NotificationProvider(props: { children?: ReactNode }) {
 		// Listen to click event and navigate user to the channel
 		const unlisten = listen("notification-clicked", async (event) => {
 			const data = event.payload as string;
-			const appWindow = getCurrentWebviewWindow();
-			await appWindow.show();
-			await appWindow.setFocus();
-			await appWindow.unminimize();
+			await invoke("open_and_focus_main");
 			//TODO: THIS SHOULD CHANGE WHEN GUIDS ARE A THING
 			await navigate(`/channels/@me/${data}`);
 		});

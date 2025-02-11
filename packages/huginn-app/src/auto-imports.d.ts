@@ -14,6 +14,7 @@ declare global {
   const AddRecipientInput: typeof import('./components/input/AddRecipientInput')['default']
   const AddRecipientModal: typeof import('./components/modal/AddRecipientModal')['default']
   const AnimatedMessage: typeof import('./components/AnimatedMessage')['default']
+  const AttachmentElement: typeof import('./components/editor/AttachmentElement')['default']
   const AuthBackgroundContext: typeof import('./contexts/authBackgroundContext')['AuthBackgroundContext']
   const AuthBackgroundSvg: typeof import('./components/AuthBackgroundSvg')['default']
   const AuthWrapper: typeof import('./components/AuthWrapper')['default']
