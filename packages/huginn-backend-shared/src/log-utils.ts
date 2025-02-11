@@ -91,8 +91,8 @@ export function logData(path: string, text: string, id?: string, data?: unknown)
 	consola.info(`${idText} ${divider} ${text} ${divider} ${pathText} ${divider} ${dataText}`);
 }
 
-export function logGatewayOpen(): void {
-	consola.info(`${gatewayOpen}\n`);
+export function logGatewayOpen(address?: string): void {
+	consola.info(`${gatewayOpen} ${address ?? "(unknown address)"}\n`);
 }
 
 export function logGatewayClose(code: number, reason: string): void {
