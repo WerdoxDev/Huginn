@@ -14,26 +14,21 @@ export default function ConnectionStatus() {
 	const { user } = useUser();
 
 	const [connectionState, setConnectionState] = useState<Status>(
-		client.gateway.socket?.OPEN === 1 && user ? "connected" : client.gateway.socket?.OPEN === 1 && !user ? "unauthenticated" : "none",
+		client.gateway.socket?.readyState === 1 && user ? "connected" : client.gateway.socket?.readyState === 1 && !user ? "unauthenticated" : "none",
 	);
 
 	useEffect(() => {
 		function onReady() {
 			setConnectionState("connected");
-			console.log("read");
 		}
 
 		function onOpen() {
 			setConnectionState("unauthenticated");
-			console.log("open");
 		}
 
 		function onClose() {
 			setConnectionState("disconnected");
-			console.log("dis");
 		}
-
-		console.log(client.gateway.socket?.OPEN);
 
 		client.gateway.on("open", onOpen);
 		client.gateway.on("close", onClose);
