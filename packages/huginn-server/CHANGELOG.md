@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.13.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.12.0...server@v0.13.0) (2025-02-11)
+
+
+### Features
+
+* **server:** add attachment creation + cdn attachment upload ([c63f0ef](https://github.com/WerdoxDev/Huginn/commit/c63f0ef8c808b17b5fd11e6393ce0e3f90c7e8be))
+
+
+### Bug Fixes
+
+* **server:** image data from url is not handled correctly ([c2fb6f4](https://github.com/WerdoxDev/Huginn/commit/c2fb6f4c1a8605b7fe1f0859c9696c22b2c44962))
+
 ## [0.12.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.11.2...server@v0.12.0) (2025-02-10)
 
 

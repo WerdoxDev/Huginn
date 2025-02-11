@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.4.1...cdn@v0.5.0) (2025-02-11)
+
+
+### Features
+
+* **cdn:** add attachment upload/get routes ([58cd333](https://github.com/WerdoxDev/Huginn/commit/58cd333934bb5979931bf42415de62db2912468e))
+
 ## [0.4.1](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.4.0...cdn@v0.4.1) (2025-02-07)
 
 

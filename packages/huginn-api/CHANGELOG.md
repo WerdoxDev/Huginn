@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.5.0...api@v0.6.0) (2025-02-11)
+
+
+### Features
+
+* **app:** add status bar ([66cefb3](https://github.com/WerdoxDev/Huginn/commit/66cefb38090e10e3c4c6d556ba178a075a645d64))
+
 ## [0.5.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.4.0...api@v0.5.0) (2025-02-01)
 
 
