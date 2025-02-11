@@ -19,10 +19,7 @@ const notFoundFile = colors.bold(colors.red("FILE NOT FOUND"));
 const cdn = colors.bold(colors.gray("CDN REQUEST"));
 
 export function logServerError(path: string, e: Error): void {
-	consola.box(
-		`${colors.bold(colors.red("Server Error:"))} ${colors.green(path.length > 100 ? `${path.slice(0, 100)}...` : path)}\n`,
-		e?.cause ?? e?.stack ?? e?.message ?? e,
-	);
+	consola.box(`${colors.bold(colors.red("Server Error:"))} ${colors.green(path.length > 100 ? `${path.slice(0, 100)}...` : path)}\n`, e);
 }
 
 export function logReject(path: string, method: string, time: string, id?: string, error?: HuginnErrorData | string, status?: number): void {
