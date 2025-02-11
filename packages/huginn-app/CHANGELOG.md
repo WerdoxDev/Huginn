@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.18.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.17.0...app@v0.18.0) (2025-02-11)
+
+
+### Features
+
+* **app:** add experimental attachment rendering ([cd85462](https://github.com/WerdoxDev/Huginn/commit/cd854622417d51def99279808e3e3f159455398f))
+* **app:** add status bar ([66cefb3](https://github.com/WerdoxDev/Huginn/commit/66cefb38090e10e3c4c6d556ba178a075a645d64))
+
+
+### Bug Fixes
+
+* **app:** initial connection state is handled incorrectly ([3c0fb73](https://github.com/WerdoxDev/Huginn/commit/3c0fb73218e5e58aea8f04226a9039852999c707))
+
 ## [0.17.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.16.0...app@v0.17.0) (2025-02-10)
 
 

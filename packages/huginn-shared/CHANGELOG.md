@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.5.0...shared@v0.6.0) (2025-02-11)
+
+
+### Features
+
+* **shared:** add attachment related types and utils ([6740b38](https://github.com/WerdoxDev/Huginn/commit/6740b387b2f7de990fe9bd3f0a72dd1ff7ab99e5))
+
 ## [0.5.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.4.0...shared@v0.5.0) (2025-01-09)
 
 
