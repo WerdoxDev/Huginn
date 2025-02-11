@@ -2,6 +2,7 @@ import { type WebviewWindow, getCurrentWebviewWindow } from "@tauri-apps/api/web
 import clsx from "clsx";
 import type { ReactPortal } from "react";
 import { createPortal } from "react-dom";
+import ConnectionStatus from "./ConnectionStatus";
 
 export default function TitleBar(): ReactPortal {
 	const huginnWindow = useHuginnWindow();
@@ -34,8 +35,8 @@ export default function TitleBar(): ReactPortal {
 			data-tauri-drag-region
 		>
 			<div className="pointer-events-none mx-3.5 flex-shrink-0 font-medium text-text text-xs uppercase">Huginn</div>
-			<div className="w-full flex-shrink" />
-			<div className="flex h-full gap-x-1">
+			<ConnectionStatus />
+			<div className="ml-auto flex h-full gap-x-1">
 				<button type="button" className="flex h-full w-8 items-center justify-center hover:bg-secondary" onClick={minimize}>
 					<IconMingcuteMinimizeFill className="h-4 w-4 text-white opacity-80" />
 				</button>

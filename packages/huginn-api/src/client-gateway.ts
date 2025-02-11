@@ -79,7 +79,7 @@ export class Gateway {
 
 				const onClose = () => {
 					r(false);
-
+					this.off("message", onMessage);
 					this.socket?.removeEventListener("close", onClose);
 				};
 
@@ -129,7 +129,9 @@ export class Gateway {
 	}
 
 	private async tryReconnect(event: CloseEvent) {
-		try {
+		window.setTimeout(async () => {
+			this.client.readyState = ClientReadyState.RECONNECRING;
+
 			if (event.code === GatewayCode.INVALID_SESSION) {
 				this.sequence = undefined;
 				this.sessionId = undefined;
@@ -137,15 +139,10 @@ export class Gateway {
 
 			this.connect();
 
-			if (this.client.readyState === ClientReadyState.READY) {
-				this.client.readyState = ClientReadyState.RECONNECRING;
+			if (this.client.user) {
 				await this.authenticate();
 			}
-		} catch (e) {
-			console.error("Could not connect to ws");
-			await new Promise((r) => setTimeout(r, 1000));
-			this.tryReconnect(event);
-		}
+		}, 2000);
 	}
 
 	private async onMessage(e: MessageEvent) {
