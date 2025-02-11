@@ -36,7 +36,7 @@ export class ServerGateway {
 
 	public open(peer: Peer) {
 		try {
-			logGatewayOpen();
+			logGatewayOpen(peer.remoteAddress);
 
 			// We create an uninitialized client only for oauth and keeping an eye for it's heartbeat
 			const client = new ClientSession(peer);

@@ -199,6 +199,10 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 			}
 		}
 
+		if (!embeds.length) {
+			return;
+		}
+
 		const updatedMessage = idFix(await prisma.message.updateMessage(dbMessage.id, undefined, embeds, { select: selectMessageDefaults }));
 
 		dispatchToTopic(channelId, "message_update", {

@@ -163,7 +163,14 @@ export async function extractEmbedTags(url: string): Promise<Record<string, stri
 
 export async function getImageData(source: string | ArrayBuffer): Promise<sharp.Metadata | undefined> {
 	try {
-		return await sharp(source).metadata();
+		let arrayBuffer: ArrayBuffer;
+		if (typeof source === "string") {
+			arrayBuffer = await (await fetch(source)).arrayBuffer();
+		} else {
+			arrayBuffer = source;
+		}
+
+		return await sharp(arrayBuffer).metadata();
 	} catch (e) {
 		console.error("Error fetching image data:", e);
 		return undefined;
