@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.3.0...backend-shared@v0.4.0) (2025-02-11)
+
+
+### Features
+
+* **backend-shared:** add peer address to gateway open log ([66ded2e](https://github.com/WerdoxDev/Huginn/commit/66ded2e13c44c11dd7a40dfbde5c6e2355e6cf0a))
+
+
+### Bug Fixes
+
+* **backend-shared:** error logging is not logging the whole error ([777693f](https://github.com/WerdoxDev/Huginn/commit/777693fee0eba9b39a32f58f771d9d4c5d648cf8))
+
 ## [0.3.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.2.1...backend-shared@v0.3.0) (2025-02-01)
 
 
