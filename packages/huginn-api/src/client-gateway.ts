@@ -121,7 +121,7 @@ export class Gateway {
 
 		this.readyData = undefined;
 
-		if (e.code === 1000) {
+		if (e.code === GatewayCode.INTENTIONAL_CLOSE) {
 			return;
 		}
 
@@ -129,7 +129,7 @@ export class Gateway {
 	}
 
 	private async tryReconnect(event: CloseEvent) {
-		window.setTimeout(async () => {
+		setTimeout(async () => {
 			this.client.readyState = ClientReadyState.RECONNECRING;
 
 			if (event.code === GatewayCode.INVALID_SESSION) {
@@ -172,7 +172,7 @@ export class Gateway {
 	}
 
 	public close(): void {
-		this.socket?.close(1000);
+		this.socket?.close(GatewayCode.INTENTIONAL_CLOSE);
 		this.sequence = undefined;
 		this.sessionId = undefined;
 	}
