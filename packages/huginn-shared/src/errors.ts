@@ -81,6 +81,7 @@ export enum GatewayCode {
 	SESSION_TIMEOUT = 4007,
 	INVALID_INTENTS = 4008,
 	INVALID_SESSION = 4009,
+	INTENTIONAL_CLOSE = 4010,
 }
 
 export enum FieldCode {
