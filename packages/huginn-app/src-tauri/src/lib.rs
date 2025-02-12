@@ -57,7 +57,7 @@ async fn close_main(app: AppHandle) {
     // Hide main window
     app.get_webview_window("main")
         .expect("no window labeled 'main' found")
-        .show()
+        .hide()
         .unwrap();
 }
 
@@ -65,7 +65,10 @@ async fn close_main(app: AppHandle) {
 async fn check_update(app: AppHandle, target: String) {
     let handle = app.app_handle().clone();
     tauri::async_runtime::spawn(async move {
-        let _ = update(handle, target).await;
+        match update(handle, target).await {
+            Ok(()) => println!("Update was ok"),
+            Err(_) => app.emit("update-failed", ()).unwrap(),
+        }
     });
 }
 
