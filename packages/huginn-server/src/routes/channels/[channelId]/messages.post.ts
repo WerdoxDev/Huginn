@@ -1,5 +1,17 @@
 import { createErrorFactory, createHuginnError, createRoute, invalidFormBody, missingAccess, waitUntil } from "@huginn/backend-shared";
-import { type APIMessage, CDNRoutes, Errors, FileTypes, HttpCode, MessageType, WorkerID, idFix, nullToUndefined, snowflake } from "@huginn/shared";
+import {
+	type APIMessage,
+	CDNRoutes,
+	Errors,
+	FileTypes,
+	HttpCode,
+	MessageType,
+	WorkerID,
+	idFix,
+	isImageMediaType,
+	nullToUndefined,
+	snowflake,
+} from "@huginn/shared";
 import { safeDestr } from "destr";
 import type { ProbeResult } from "probe-image-size";
 import type { Metadata } from "sharp";
@@ -71,7 +83,6 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 		return invalidFormBody(c);
 	}
 
-	console.log(files);
 	const payload = c.get("tokenPayload");
 	const { channelId } = c.req.param();
 
@@ -112,7 +123,7 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 			})) as string;
 
 			let imageData: Metadata | undefined;
-			if (file.type !== FileTypes.zip && file.type !== FileTypes.other) {
+			if (isImageMediaType(file.type)) {
 				imageData = await getImageData(fileArrayBuffer);
 			}
 

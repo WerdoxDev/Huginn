@@ -67,7 +67,7 @@ export async function getAllTags() {
 	let hasNextPage = true;
 
 	while (hasNextPage) {
-		const response = await octokit.request("GET /repos/{owner}/{repo}/tags", {
+		const response = await octokit.rest.repos.listTags({
 			owner: envs.REPO_OWNER,
 			repo: envs.REPO,
 			per_page: 100,
