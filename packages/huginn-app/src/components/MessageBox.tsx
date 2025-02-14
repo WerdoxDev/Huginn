@@ -342,6 +342,7 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 			}
 
 			setAttachments(attachments);
+			editorRef.current?.focus();
 		};
 
 		input.click();
@@ -356,6 +357,11 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 	useEffect(() => {
 		setAttachments([]);
 	}, [props.messages]);
+
+	// Focus on the messagebox when we change channel
+	useEffect(() => {
+		editorRef.current?.focus();
+	}, [currentChannel?.id]);
 
 	useEffect(() => {
 		if (!thisRef.current) return;

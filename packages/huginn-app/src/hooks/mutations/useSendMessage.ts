@@ -37,7 +37,10 @@ export function useSendMessage() {
 			};
 
 			const filenames = data.attachments.map((x) => x.filename);
-			setMessageUploadProgress(previewMessage.id, { percentage: 0, filenames, total: 0 });
+
+			if (data.attachments.length) {
+				setMessageUploadProgress(previewMessage.id, { percentage: 0, filenames, total: 0 });
+			}
 
 			// Add Preview Message
 			queryClient.setQueryData<InfiniteData<AppChannelMessage[], { before: string; after: string }>>(["messages", data.channelId], (old) => {
@@ -64,8 +67,10 @@ export function useSendMessage() {
 						nonce: nonce,
 					},
 					data.attachments.map((x) => ({ data: x.data, name: x.filename, contentType: x.contentType })),
-					(event) =>
-						setMessageUploadProgress(previewMessage.id, { percentage: (event.loaded / event.total) * 100, filenames, total: event.total }),
+					data.attachments.length
+						? (event) =>
+								setMessageUploadProgress(previewMessage.id, { percentage: (event.loaded / event.total) * 100, filenames, total: event.total })
+						: undefined,
 				),
 			};
 		},

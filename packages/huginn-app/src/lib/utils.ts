@@ -96,3 +96,8 @@ export function getFirstChildClosestToTop<E extends HTMLElement>(container: E) {
 
 	return closestChild;
 }
+
+export function getSizeText(size: number) {
+	const type = size >= 1000000 ? "mb" : "kb";
+	return `${(size / (type === "kb" ? 1000 : 1000000)).toFixed(2)} ${type === "kb" ? "KB" : "MB"}`;
+}
