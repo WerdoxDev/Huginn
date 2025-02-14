@@ -164,7 +164,7 @@ export function logFileNotFound(category: string, name: string): void {
 export function logCDNRequest(path: string, method: string): void {
 	const pathText = colors.green(path);
 	const methodText = colors.bold(colors.green(method));
-	consola.info(`${cdn} ${divider} ${pathText} (${methodText})`);
+	consola.info(`${cdn} ${divider} (${methodText}) ${divider} ${pathText}`);
 }
 
 function opcodeToText(opcode: GatewayOperations) {
