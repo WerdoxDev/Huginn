@@ -27,7 +27,6 @@ export async function initializeSettings() {
 	if (globalThis.__TAURI_INTERNALS__) {
 		await tryCreateSettingsFile();
 		const fileContent = new TextDecoder().decode(await readFile(filePath, { baseDir: BaseDirectory.AppConfig }));
-		console.log(fileContent);
 		return { ...defaultValue, ...JSON.parse(fileContent) };
 	}
 

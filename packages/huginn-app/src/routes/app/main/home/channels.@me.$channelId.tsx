@@ -49,7 +49,7 @@ export default function Component({ params: { channelId } }: Route.ComponentProp
 				<div className="flex h-full w-full overflow-hidden">
 					<div className="flex h-full w-full flex-col overflow-hidden">
 						<ChannelMessages channelId={channelId} messages={messages.pages.flat()} />
-						<MessageBox />
+						<MessageBox messages={messages.pages.flat()} />
 					</div>
 					{channel.type === ChannelType.GROUP_DM && channel.ownerId && (
 						<RecipientsSidebar channelId={channel.id} recipients={channel.recipients} ownerId={channel.ownerId} visible={recipientsVisible} />

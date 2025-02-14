@@ -25,6 +25,7 @@ const bottomScrollOffset = 100;
 export default function ChannelMessages(props: { channelId: Snowflake; messages: AppChannelMessage[] }) {
 	const client = useClient();
 	const queryClient = useQueryClient();
+	// const { error, data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client, props.channelId));
 	const sortedMessages = useMemo(
 		() =>
 			props.messages.toSorted((a, b) => {
@@ -213,13 +214,16 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			scrollDown();
 			shouldScrollOnNextRender.current = false;
 		}
+
+		console.log("MESSAGE CHANGED 2");
 	}, [sortedMessages]);
 
 	useEffect(() => {
 		const unlisten = listenEvent("message_box_height_changed", (d) => {
 			if (!scroll.current) return;
 
-			if (scroll.current.scrollHeight - scroll.current.clientHeight - scroll.current.scrollTop !== 0) {
+			if (scroll.current.scrollHeight - scroll.current.clientHeight - scroll.current.scrollTop >= 1) {
+				console.log("SCROLL");
 				scroll.current.scrollTop += d.difference;
 			}
 		});
@@ -235,7 +239,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			<ChannelTypingIndicator channelId={props.channelId} />
 			<ol className="flex h-full flex-col overflow-y-scroll pr-0 pb-7" ref={scroll} onScroll={onScroll}>
 				{scroll.current?.scrollHeight === scroll.current?.clientHeight && <div className="h-full shrink" />}
-				{props.messages.length === 0 && (
+				{sortedMessages.length === 0 && (
 					<div className="flex h-full w-full shrink-0 items-center justify-center">
 						<div className="flex items-center justify-center gap-x-2 rounded-lg bg-background p-2 pr-3 text-text italic underline">
 							<IconMingcuteLookDownFill className="size-10" />

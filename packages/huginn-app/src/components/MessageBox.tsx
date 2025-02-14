@@ -1,4 +1,6 @@
-import type { HuginnToken } from "@/types";
+import { queryClient } from "@/root";
+import type { AppChannelMessage, HuginnToken } from "@/types";
+import { client } from "@contexts/apiContext";
 import { useEvent } from "@contexts/eventContext";
 import { useSendMessage } from "@hooks/mutations/useSendMessage";
 import { useSendTyping } from "@hooks/mutations/useSendTyping";
@@ -19,6 +21,8 @@ import {
 	organizeTokens,
 	splitHighlightedTokens,
 } from "@lib/markdown-utils";
+import { getMessagesOptions } from "@lib/queries";
+import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import hljs from "highlight.js";
 import markdownit from "markdown-it";
@@ -42,13 +46,14 @@ const initialValue: Descendant[] = [
 
 let cache: { text: string; decorations: Record<number, Range[]> } | undefined = undefined;
 
-type AttachmentType = { id: number; dataUrl?: string; arrayBuffer: ArrayBuffer; filename: string };
+type AttachmentType = { id: number; dataUrl?: string; arrayBuffer: ArrayBuffer; filename: string; description?: string; contentType: string };
 
-export default function MessageBox() {
+export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 	const editor = useMemo(() => withReact(createEditor()), []);
 	const params = useParams();
 	const md = useMemo(() => new markdownit({ linkify: true }).use(markdownSpoiler).use(markdownUnderline).use(markdownMainEditor), []);
 	const editorRef = useRef<HTMLDivElement>(null);
+	const thisRef = useRef<HTMLDivElement>(null);
 	const { dispatchEvent } = useEvent();
 	const currentChannel = useCurrentChannel();
 	const channelName = useChannelName(currentChannel?.recipients, currentChannel?.name);
@@ -268,12 +273,25 @@ export default function MessageBox() {
 
 	function sendMessage(flags: MessageFlags) {
 		const content = serialize(editor.children);
-		if (!content) {
+		if (!content && !attachments.length) {
 			return;
 		}
 
-		sendMessageMutation.mutate({ channelId: params.channelId ?? "", content, flags });
+		sendMessageMutation.mutate({
+			channelId: params.channelId ?? "",
+			content,
+			flags,
+			attachments: attachments.map((x) => ({
+				id: x.id,
+				contentType: x.contentType,
+				data: x.arrayBuffer,
+				filename: x.filename,
+				description: x.description,
+			})),
+		});
+
 		resetTyping();
+
 		editor.delete({
 			at: {
 				anchor: Editor.start(editor, []),
@@ -300,7 +318,7 @@ export default function MessageBox() {
 			const attachments: AttachmentType[] = [];
 			for (const [i, file] of files.entries()) {
 				if (!isImageMediaType(file.type)) {
-					attachments.push({ id: i, arrayBuffer: await file.arrayBuffer(), dataUrl: undefined, filename: file.name });
+					attachments.push({ id: i, arrayBuffer: await file.arrayBuffer(), dataUrl: undefined, filename: file.name, contentType: file.type });
 					continue;
 				}
 
@@ -320,19 +338,28 @@ export default function MessageBox() {
 					};
 				});
 
-				attachments.push({ id: i, arrayBuffer: await file.arrayBuffer(), dataUrl: dataUrl, filename: file.name });
+				attachments.push({ id: i, arrayBuffer: await file.arrayBuffer(), dataUrl: dataUrl, filename: file.name, contentType: file.type });
 			}
 
-			console.log(attachments);
 			setAttachments(attachments);
 		};
 
 		input.click();
 	}
 
+	function removeAttachment(id: number) {
+		setAttachments((old) => old.filter((x) => x.id !== id));
+	}
+
+	// This is to match the updating of channel messages and message box in a single frame so that upon rendering a new preview message,
+	// the attachments are also cleared. So eveything happens in one frame.
 	useEffect(() => {
-		if (!editorRef.current) return;
-		let lastHeight = editorRef.current.clientHeight;
+		setAttachments([]);
+	}, [props.messages]);
+
+	useEffect(() => {
+		if (!thisRef.current) return;
+		let lastHeight = thisRef.current.clientHeight;
 
 		const resizeObserver = new ResizeObserver((entries) => {
 			const height = entries[0].target.clientHeight;
@@ -340,7 +367,7 @@ export default function MessageBox() {
 			lastHeight = height;
 		});
 
-		resizeObserver.observe(editorRef.current);
+		resizeObserver.observe(thisRef.current);
 
 		return () => {
 			resizeObserver.disconnect();
@@ -348,10 +375,10 @@ export default function MessageBox() {
 	}, []);
 
 	return (
-		<div className="bottom-0 z-10 flex-col px-5 py-1.5">
+		<div className="bottom-0 z-10 flex-col px-5 py-1.5" ref={thisRef}>
 			{attachments.length !== 0 && (
-				<div className="rounded-xl rounded-b-none border-2 border-background border-b-0 bg-tertiary px-2.5 py-2.5 pb-0 overflow-visible">
-					<div className="flex gap-x-5 overflow-x-scroll px-2.5 py-2.5 scroll-alternative-x pb-0">
+				<div className="overflow-visible rounded-xl rounded-b-none border-2 border-background border-b-0 bg-tertiary px-2.5 py-2.5 pb-0">
+					<div className="scroll-alternative-x flex gap-x-5 overflow-x-scroll px-2.5 py-2.5 pb-0">
 						{attachments.map((x) => (
 							<div key={x.id} className="relative flex h-48 w-48 shrink-0 flex-col rounded-lg bg-background p-2">
 								<div className="-top-2 -right-2 absolute overflow-hidden rounded-md bg-background shadow-xl">
@@ -362,7 +389,7 @@ export default function MessageBox() {
 										<Tooltip.Content>Edit</Tooltip.Content>
 									</Tooltip>
 									<Tooltip>
-										<Tooltip.Trigger className="p-1.5 hover:bg-secondary/50">
+										<Tooltip.Trigger className="p-1.5 hover:bg-secondary/50" onClick={() => removeAttachment(x.id)}>
 											<IconMingcuteDelete2Fill className="size-5 text-error" />
 										</Tooltip.Trigger>
 										<Tooltip.Content>Delete</Tooltip.Content>
@@ -370,12 +397,12 @@ export default function MessageBox() {
 								</div>
 								<div className="flex h-full min-h-0 items-center justify-center rounded-md bg-secondary">
 									{x.dataUrl ? (
-										<img className="max-h-full max-w-full" src={x.dataUrl} alt="" />
+										<img className="max-h-full max-w-full" src={x.dataUrl} alt={x.filename} />
 									) : (
-										<IconMingcuteFileFill className="size-20 text-text " />
+										<IconMingcuteFileFill className="size-20 text-text" />
 									)}
 								</div>
-								<div className="mt-2 w-full shrink-0 overflow-hidden text-ellipsis whitespace-nowrap text-text">{x.filename}</div>
+								<div className="mt-2 w-full shrink-0 overflow-hidden text-ellipsis whitespace-nowrap text-white">{x.filename}</div>
 							</div>
 						))}
 					</div>
@@ -385,13 +412,16 @@ export default function MessageBox() {
 				<div
 					className={clsx("flex h-full items-start rounded-3xl border-2 border-background bg-tertiary", attachments.length && "rounded-t-none")}
 				>
-					<button
-						onClick={addFile}
-						type="button"
-						className="m-2 mr-2 flex shrink-0 cursor-pointer items-center rounded-full bg-background p-1.5 transition-all hover:bg-white hover:bg-opacity-20 hover:shadow-xl"
-					>
-						<IconMingcuteAddFill name="gravity-ui:plus" className="h-5 w-5 text-text" />
-					</button>
+					<Tooltip>
+						<Tooltip.Trigger
+							onClick={addFile}
+							type="button"
+							className="m-2 mr-2 flex shrink-0 cursor-pointer items-center rounded-full bg-background p-1.5 transition-all hover:bg-white hover:bg-opacity-20 hover:shadow-xl"
+						>
+							<IconMingcuteAddFill name="gravity-ui:plus" className="h-5 w-5 text-text" />
+						</Tooltip.Trigger>
+						<Tooltip.Content>Upload Files</Tooltip.Content>
+					</Tooltip>
 					<div className="h-full w-full overflow-hidden">
 						<Slate editor={editor} initialValue={initialValue}>
 							<Editable

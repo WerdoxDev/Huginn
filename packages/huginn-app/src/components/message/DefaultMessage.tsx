@@ -1,12 +1,14 @@
 import type { MessageRendererProps } from "@/types";
 import UserAvatar from "@components/UserAvatar";
+import Tooltip from "@components/tooltip/Tooltip";
 import { useSettings } from "@contexts/settingsContext";
 import { useUser } from "@contexts/userContext";
 import { MessageFlags, type Snowflake, clamp, hasFlag } from "@huginn/shared";
+import { useChannelStore } from "@stores/channelStore";
 import clsx from "clsx";
 import moment from "moment";
-import { useMemo, useState, useLayoutEffect } from "react";
-import type { BaseEditor, Descendant } from "slate";
+import { useLayoutEffect, useMemo, useState } from "react";
+import { type BaseEditor, type Descendant, Span } from "slate";
 import { Editable, type ReactEditor, type RenderElementProps, type RenderLeafProps, Slate } from "slate-react";
 
 export default function DefaultMessage(
@@ -169,27 +171,62 @@ function MarkdownRenderer(props: {
 	isNextSeparate: boolean;
 	isLastExotic: boolean;
 }) {
+	const { messageUploadProgresses } = useChannelStore();
+	const progress = useMemo(
+		() => (props.isPreview ? messageUploadProgresses[props.messageId] : undefined),
+		[props.isPreview, messageUploadProgresses],
+	);
+	// const progress = { filenames: ["ddddddddddddddddddddd.jpeg"], percentage: 50, total: 234553 };
+
 	return (
-		<Slate editor={props.editor} initialValue={props.initialValue}>
-			<Editable
-				id={`${props.messageId}_inner`}
-				readOnly
-				renderLeaf={props.renderLeaf}
-				renderElement={props.renderElement}
-				className={clsx(
-					"whitespace-break-spaces px-2.5 py-1.5 font-normal text-white [overflow-wrap:anywhere] group-hover:shadow-lg",
-					props.isPreview && "bg-primary/20 text-white/50",
-					props.isSelf && !props.isPreview ? "bg-primary/70" : "bg-background",
-					props.isUnread && !props.isSeparate && "!rounded-t-none",
-					(props.isSeparate || props.isLastExotic) && "!rounded-t-xl",
-					props.isNextSeparate && "!rounded-b-xl",
-				)}
-				style={{
-					borderBottomRightRadius: `${clamp(props.widths.width - props.widths.nextWidth, 0, 12)}px`,
-					borderTopRightRadius: `${clamp(props.widths.width - props.widths.lastWidth, 0, 12)}px`,
-				}}
-				disableDefaultStyles
-			/>
-		</Slate>
+		<div
+			className={clsx(
+				"whitespace-break-spaces px-2.5 py-1.5 font-normal text-white [overflow-wrap:anywhere] group-hover:shadow-lg",
+				props.isPreview && "bg-primary/20 text-white/50",
+				props.isSelf && !props.isPreview ? "bg-primary/70" : "bg-background",
+				props.isUnread && !props.isSeparate && "!rounded-t-none",
+				(props.isSeparate || props.isLastExotic) && "!rounded-t-xl",
+				props.isNextSeparate && "!rounded-b-xl",
+			)}
+			style={{
+				borderBottomRightRadius: `${clamp(props.widths.width - props.widths.nextWidth, 0, 12)}px`,
+				borderTopRightRadius: `${clamp(props.widths.width - props.widths.lastWidth, 0, 12)}px`,
+			}}
+		>
+			{progress !== undefined ? (
+				<div className="my-1 flex max-w-sm items-center gap-x-2 rounded-lg bg-secondary px-2 py-3">
+					<IconMingcuteFileFill className="size-10 shrink-0" />
+					<div className="flex w-full flex-col justify-center gap-y-2 overflow-hidden">
+						<div className="flex gap-x-1">
+							<div className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm text-white">
+								{progress.filenames.length === 1
+									? `Uploading ${progress.filenames[0]}.`
+									: `Uploading ${progress.filenames.length} files.`}{" "}
+							</div>
+							<div className="shrink-0 text-sm">- {(progress.total / 1024).toFixed(2)}KB</div>
+						</div>
+						<div className="h-2 w-full overflow-hidden rounded-full bg-tertiary">
+							<div style={{ width: `${progress.percentage}%` }} className="h-full bg-accent/80" />
+						</div>
+					</div>
+					<Tooltip>
+						<Tooltip.Trigger className="ml-2">
+							<IconMingcuteCloseFill className="size-6 text-white/50 transition-colors duration-100 hover:text-white" />
+						</Tooltip.Trigger>
+						<Tooltip.Content>Cancel</Tooltip.Content>
+					</Tooltip>
+				</div>
+			) : (
+				<Slate editor={props.editor} initialValue={props.initialValue}>
+					<Editable
+						id={`${props.messageId}_inner`}
+						readOnly
+						renderLeaf={props.renderLeaf}
+						renderElement={props.renderElement}
+						disableDefaultStyles
+					/>
+				</Slate>
+			)}
+		</div>
 	);
 }

@@ -44,9 +44,10 @@ type AttachmentElement = {
 	url: string;
 	width?: number;
 	height?: number;
+	filename: string;
 	size: number;
 	children: Descendant[];
-	contentType?: string;
+	contentType: string;
 };
 
 type CustomElement = ParagraphElement | SpoilerElement | EmbedElement | LinkElement | CodeElement | AttachmentElement;

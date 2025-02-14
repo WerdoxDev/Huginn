@@ -181,6 +181,14 @@ export type AppChannelMessage =
 	| { preview: true; id: Snowflake; timestamp: string; author: APIMessageUser; nonce?: number | string; content: string; channelId: Snowflake }
 	| ({ preview: false } & APIDefaultMessage);
 
+export type AppAttachment = {
+	id: number;
+	data: ArrayBuffer;
+	filename: string;
+	contentType: string;
+	description?: string;
+};
+
 export type HuginnToken = {
 	type: string;
 	markup: string;

@@ -11,10 +11,10 @@ import { MessageType } from "@huginn/shared";
 import { markdownMainMessage } from "@lib/markdown-main";
 import { markdownSpoiler } from "@lib/markdown-spoiler";
 import { markdownUnderline } from "@lib/markdown-underline";
-import { organizeTokens, isElementOpenToken, isElementCloseToken, isOpenToken, isCloseToken, getSlateFormats } from "@lib/markdown-utils";
+import { getSlateFormats, isCloseToken, isElementCloseToken, isElementOpenToken, isOpenToken, organizeTokens } from "@lib/markdown-utils";
 import markdownit from "markdown-it";
 import type Token from "markdown-it/lib/token.mjs";
-import { useMemo, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { type Descendant, type Editor, createEditor } from "slate";
 import { DefaultElement, type RenderElementProps, type RenderLeafProps, withReact } from "slate-react";
 import ActionMessage from "./ActionMessage";
@@ -177,6 +177,7 @@ function MessageRenderer(props: MessageRendererProps) {
 				width: attachment?.width,
 				size: attachment.size,
 				contentType: attachment.contentType,
+				filename: attachment.filename,
 			});
 		}
 

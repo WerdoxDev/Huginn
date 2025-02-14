@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
-import { type UnlistenFn, listen } from "@tauri-apps/api/event";
-import { useState, useRef, useEffect } from "react";
+import { listen } from "@tauri-apps/api/event";
+import { useEffect, useRef, useState } from "react";
 
 type UpdateProgress = {
 	downloaded: number;
@@ -56,8 +56,8 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void) {
 
 	async function checkAndDownload() {
 		if (import.meta.env.DEV) {
-			// onFinished?.(false);
-			// return;
+			onFinished?.(false);
+			return;
 		}
 
 		await invoke("check_update", { target: "windows" });
