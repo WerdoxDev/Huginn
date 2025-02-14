@@ -1,4 +1,5 @@
 import { sha256 } from "ohash";
+import { FileTypes } from "./cdn-types";
 import type { GatewayOperationTypes } from "./gateway-types";
 
 export function pick<Data extends object, Keys extends keyof Data>(data: Data, keys: Keys[]): Pick<Data, Keys> {
@@ -207,4 +208,12 @@ export function nullToUndefined<T>(obj: T): NullToUndefined<T> {
 
 export function arrayEqual(a1: unknown[] | undefined, a2: unknown[] | undefined): boolean {
 	return JSON.stringify(a1) === JSON.stringify(a2);
+}
+
+export function isImageMediaType(type: string): boolean {
+	if (type === FileTypes.gif || type === FileTypes.jpeg || type === FileTypes.jpg || type === FileTypes.png || type === FileTypes.webp) {
+		return true;
+	}
+
+	return false;
 }
