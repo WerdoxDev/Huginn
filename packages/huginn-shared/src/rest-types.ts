@@ -59,6 +59,14 @@ export type RequestData = {
 	 * Query string parameters to append to the called endpoint
 	 */
 	query?: URLSearchParams;
+
+	/**
+	 * Use XMLHttpRequest to do the request. (Only useful for tracking upload progress)
+	 */
+	xhr?: {
+		enabled: boolean;
+		onUploadProgress?: (event: ProgressEvent) => void;
+	};
 };
 
 export type InternalRequest = {

@@ -268,7 +268,7 @@ export type APIAttachment = {
 	filename: string;
 	width?: number;
 	height?: number;
-	contentType?: string;
+	contentType: string;
 	url: string;
 	size: number;
 	flags: number;
