@@ -10,6 +10,7 @@ import type {
 	APIPostDMChannelResult,
 	APIPostDefaultMessageJSONBody,
 	APIPostDefaultMessageResult,
+	RawFile,
 } from "@huginn/shared";
 import { Routes, resolveImage } from "@huginn/shared";
 import type { Snowflake } from "@huginn/shared";
@@ -66,8 +67,18 @@ export class ChannelAPI {
 		return this.rest.delete(Routes.channel(channelId), { auth: true }) as Promise<APIDeleteDMChannelResult>;
 	}
 
-	public async createMessage(channelId: Snowflake, body: APIPostDefaultMessageJSONBody): Promise<APIPostDefaultMessageResult> {
-		return this.rest.post(Routes.channelMessages(channelId), { body, auth: true }) as Promise<APIPostDefaultMessageResult>;
+	public async createMessage(
+		channelId: Snowflake,
+		body: APIPostDefaultMessageJSONBody,
+		files: RawFile[],
+		onUploadProgress?: (event: ProgressEvent) => void,
+	): Promise<APIPostDefaultMessageResult> {
+		return this.rest.post(Routes.channelMessages(channelId), {
+			body,
+			auth: true,
+			files,
+			xhr: { enabled: true, onUploadProgress },
+		}) as Promise<APIPostDefaultMessageResult>;
 	}
 
 	public async typing(channelId: Snowflake): Promise<unknown> {

@@ -79,7 +79,12 @@ export class REST {
 			authPrefix: this.options.authPrefix,
 		});
 
-		const response = await this.options.makeRequest(url, fetchOptions);
+		let response: ResponseLike;
+		if (options.xhr) {
+			response = await this.sendXHRRequest(url, fetchOptions, options.xhr);
+		} else {
+			response = await this.options.makeRequest(url, fetchOptions);
+		}
 
 		if (response.ok) return parseResponse(response);
 
@@ -107,5 +112,59 @@ export class REST {
 		}
 
 		return response;
+	}
+
+	private async sendXHRRequest(url: string, init: RequestInit, xhrOptions: RequestData["xhr"]) {
+		const xhr = new XMLHttpRequest();
+		xhr.open(init.method ?? "GET", url);
+
+		if (init.headers) {
+			for (const [key, value] of Object.entries(init.headers)) {
+				xhr.setRequestHeader(key, value);
+			}
+		}
+
+		xhr.upload.onprogress = (event) => {
+			xhrOptions?.onUploadProgress?.(event);
+		};
+
+		xhr.send(init.body as XMLHttpRequestBodyInit);
+
+		const result = await new Promise<ResponseLike>((resolve, reject) => {
+			xhr.onload = () => {
+				const headers = xhr.getAllResponseHeaders();
+				const array = headers.trim().split(/[\r\n]+/);
+
+				// Create a map of header names to values
+				const headerMap: Record<string, string> = {};
+				for (const line of array) {
+					const parts = line.split(": ");
+					const header = parts.shift();
+					const value = parts.join(": ");
+
+					if (header) {
+						headerMap[header] = value;
+					}
+				}
+
+				const blob = new Blob([xhr.response]);
+
+				resolve({
+					status: xhr.status,
+					headers: new Headers(headerMap),
+					json: () => JSON.parse(xhr.responseText),
+					body: blob.stream(),
+					ok: xhr.status >= 200 && xhr.status < 300,
+					bodyUsed: false,
+					statusText: xhr.statusText,
+					text: async () => xhr.responseText,
+					arrayBuffer: async () => {
+						throw Error("Arraybuffer response is not available with XHR requests");
+					},
+				});
+			};
+		});
+
+		return result;
 	}
 }
