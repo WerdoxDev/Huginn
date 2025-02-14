@@ -13,6 +13,8 @@ import pinegreenOutlinedUrl from "@/assets/huginn-pinegreen-outlined.png";
 import pinegreenUrl from "@/assets/huginn-pinegreen.png";
 import textOutlinedUrl from "@/assets/huginn-text-outlined.png";
 import textUrl from "@/assets/huginn-text.png";
+import { useTheme } from "@stores/themeStore";
+import { useMemo } from "react";
 
 type ModifiedThemeType = ThemeType | "text";
 

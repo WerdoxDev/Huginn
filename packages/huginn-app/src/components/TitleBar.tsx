@@ -1,8 +1,9 @@
 import { type WebviewWindow, getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import clsx from "clsx";
-import type { ReactPortal } from "react";
+import { useEffect, useRef, type ReactPortal } from "react";
 import { createPortal } from "react-dom";
 import ConnectionStatus from "./ConnectionStatus";
+import { useHuginnWindow } from "@stores/windowStore";
 
 export default function TitleBar(): ReactPortal {
 	const huginnWindow = useHuginnWindow();

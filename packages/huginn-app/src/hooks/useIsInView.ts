@@ -1,4 +1,4 @@
-import type { RefObject } from "react";
+import { useEffect, useMemo, useState, type RefObject } from "react";
 
 export function useIsInView(ref: RefObject<HTMLElement | null>) {
 	const [isInView, setIsInView] = useState(false);

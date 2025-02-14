@@ -1,6 +1,7 @@
 import type { HuginnInputProps } from "@/types";
 import clsx from "clsx";
-import { type ReactNode, createContext } from "react";
+import { type ReactNode, createContext, useContext } from "react";
+import HuginnInput from "./HuginnInput";
 
 const ComboboxContext = createContext<{ selection: unknown[]; toggleSelection: (value: unknown) => void } | undefined>(undefined);
 

@@ -1,5 +1,6 @@
 import type { GatewayPresenceUpdateData, GatewayReadyData, Snowflake } from "@huginn/shared";
-import { type ReactNode, createContext } from "react";
+import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useClient } from "./apiContext";
 
 type PresenceContextType = GatewayPresenceUpdateData[];
 const defaultValue: PresenceContextType = [];

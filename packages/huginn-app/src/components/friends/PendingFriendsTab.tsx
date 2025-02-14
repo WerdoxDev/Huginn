@@ -1,7 +1,11 @@
 import { useClient } from "@contexts/apiContext";
 import { TabPanel } from "@headlessui/react";
+import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
+import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship";
 import { type APIRelationshipWithoutOwner, RelationshipType } from "@huginn/shared";
 import type { Snowflake } from "@huginn/shared";
+import { useMemo } from "react";
+import FriendItem from "./FriendItem";
 
 export default function PendingFriendsTab(props: { friends: APIRelationshipWithoutOwner[] }) {
 	const createMutation = useCreateRelationship();

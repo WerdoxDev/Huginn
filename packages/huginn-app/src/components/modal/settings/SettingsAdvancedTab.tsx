@@ -1,4 +1,7 @@
 import type { SettingsTabProps } from "@/types";
+import HuginnInput from "@components/input/HuginnInput";
+import { useInputs } from "@hooks/useInputs";
+import { useEffect } from "react";
 
 export default function SettingsAdvancedTab(props: SettingsTabProps) {
 	const { values, validateValues, inputsProps, setValue } = useInputs([

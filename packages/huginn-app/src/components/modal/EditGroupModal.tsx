@@ -1,5 +1,18 @@
+import HuginnButton from "@components/button/HuginnButton";
+import LoadingButton from "@components/button/LoadingButton";
+import ModalCloseButton from "@components/button/ModalCloseButton";
+import ImageSelector from "@components/ImageSelector";
+import HuginnInput from "@components/input/HuginnInput";
+import { useClient } from "@contexts/apiContext";
+import { useEvent } from "@contexts/eventContext";
+import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
+import { usePatchDMChannel } from "@hooks/mutations/usePatchDMChannel";
+import { useChannelName } from "@hooks/useChannelName";
+import { useInputs } from "@hooks/useInputs";
+import { getChannelIconOptions } from "@lib/queries";
 import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 
 export default function EditGroupModal() {
 	const client = useClient();

@@ -1,9 +1,16 @@
 import type { DeepPartial, SettingsTab, SettingsTabProps } from "@/types";
+import ModalCloseButton from "@components/button/ModalCloseButton";
+import { useClient } from "@contexts/apiContext";
+import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { type SettingsContextType, useSettings, useSettingsDispatcher } from "@contexts/settingsContext";
 import { DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import clsx from "clsx";
 // import { usePostHog } from "posthog-js/react";
-import { Fragment } from "react";
+import { Fragment, memo, useEffect, useState } from "react";
+import SettingsAboutTab from "./settings/SettingsAboutTab";
+import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
+import SettingsProfileTab from "./settings/SettingsProfileTab";
+import SettingsThemeTab from "./settings/SettingsThemeTab";
 
 const tabs: SettingsTab[] = [
 	{

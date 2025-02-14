@@ -1,3 +1,4 @@
+import { useHistory } from "@contexts/historyContext";
 import { useLocation, useNavigate } from "react-router";
 
 export function useSafePathname() {

@@ -1,7 +1,16 @@
+import { useClient } from "@contexts/apiContext";
+import { useChannelName } from "@hooks/useChannelName";
+import { useSafeDeleteDMChannel } from "@hooks/useSafeDeleteDMChannel";
 import { ChannelType, type DirectChannel } from "@huginn/shared";
+import { getMessagesOptions } from "@lib/queries";
+import { useContextMenu } from "@stores/contextMenuStore";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
+import { useMemo } from "react";
 import { NavLink, useParams } from "react-router";
+import ChannelIcon from "./ChannelIcon";
+import LoadingIcon from "./LoadingIcon";
+import UserAvatar from "./UserAvatar";
 
 export default function DirectMessageChannel(props: { channel: DirectChannel; onSelected?: () => void }) {
 	const client = useClient();

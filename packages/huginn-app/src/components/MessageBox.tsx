@@ -1,11 +1,33 @@
 import type { HuginnToken } from "@/types";
-import { MessageFlags } from "@huginn/shared";
+import { useEvent } from "@contexts/eventContext";
+import { useSendMessage } from "@hooks/mutations/useSendMessage";
+import { useSendTyping } from "@hooks/mutations/useSendTyping";
+import { useChannelName } from "@hooks/useChannelName";
+import { useCurrentChannel } from "@hooks/useCurrentChannel";
+import { FileTypes, MessageFlags, isImageMediaType, resolveFile, resolveImage } from "@huginn/shared";
+import { markdownMainEditor } from "@lib/markdown-main";
+import { markdownSpoiler } from "@lib/markdown-spoiler";
+import { markdownUnderline } from "@lib/markdown-underline";
+import {
+	getCodeLanguage,
+	getHighlightedLineTokens,
+	getSlateFormats,
+	getTokenLength,
+	hasMarkup,
+	isCloseToken,
+	isOpenToken,
+	organizeTokens,
+	splitHighlightedTokens,
+} from "@lib/markdown-utils";
+import clsx from "clsx";
 import hljs from "highlight.js";
 import markdownit from "markdown-it";
-import type { KeyboardEvent } from "react";
+import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router";
 import { type Descendant, Editor, Element, Node, type Path, type Range, createEditor } from "slate";
 import { DefaultElement, Editable, type RenderElementProps, type RenderLeafProps, Slate, withReact } from "slate-react";
+import EditorLeaf from "./editor/EditorLeaf";
+import Tooltip from "./tooltip/Tooltip";
 
 const initialValue: Descendant[] = [
 	{
@@ -20,6 +42,8 @@ const initialValue: Descendant[] = [
 
 let cache: { text: string; decorations: Record<number, Range[]> } | undefined = undefined;
 
+type AttachmentType = { id: number; dataUrl?: string; arrayBuffer: ArrayBuffer; filename: string };
+
 export default function MessageBox() {
 	const editor = useMemo(() => withReact(createEditor()), []);
 	const params = useParams();
@@ -28,6 +52,7 @@ export default function MessageBox() {
 	const { dispatchEvent } = useEvent();
 	const currentChannel = useCurrentChannel();
 	const channelName = useChannelName(currentChannel?.recipients, currentChannel?.name);
+	const [attachments, setAttachments] = useState<AttachmentType[]>([]);
 	// const cache = useRef<{ text: string; decorations: Map<number, Range[]> }>(undefined);
 
 	const sendMessageMutation = useSendMessage();
@@ -261,6 +286,50 @@ export default function MessageBox() {
 		return nodes.map((n) => Node.string(n)).join("\n");
 	}
 
+	function addFile() {
+		const input = document.createElement("input");
+		input.type = "file";
+		input.multiple = true;
+		// input.accept = "image/png,image/jpeg,image/webp,image/gif";
+
+		input.onchange = async (e) => {
+			const inputFiles = (e.target as HTMLInputElement).files;
+			if (!inputFiles) return;
+
+			const files = Array.from(inputFiles);
+			const attachments: AttachmentType[] = [];
+			for (const [i, file] of files.entries()) {
+				if (!isImageMediaType(file.type)) {
+					attachments.push({ id: i, arrayBuffer: await file.arrayBuffer(), dataUrl: undefined, filename: file.name });
+					continue;
+				}
+
+				const reader = new FileReader();
+				reader.readAsDataURL(file);
+
+				const dataUrl = await new Promise<string>((res, rej) => {
+					reader.onload = (readerEvent) => {
+						const content = readerEvent.target?.result;
+						if (typeof content === "string") {
+							res(content);
+						}
+					};
+
+					reader.onerror = () => {
+						rej();
+					};
+				});
+
+				attachments.push({ id: i, arrayBuffer: await file.arrayBuffer(), dataUrl: dataUrl, filename: file.name });
+			}
+
+			console.log(attachments);
+			setAttachments(attachments);
+		};
+
+		input.click();
+	}
+
 	useEffect(() => {
 		if (!editorRef.current) return;
 		let lastHeight = editorRef.current.clientHeight;
@@ -279,12 +348,50 @@ export default function MessageBox() {
 	}, []);
 
 	return (
-		<div className="bottom-0 z-10 mx-5 flex bg-transparent py-2">
-			<form className="w-full">
-				<div className="flex h-full items-start rounded-3xl bg-tertiary ring-2 ring-background">
-					<div className="m-2 mr-2 flex shrink-0 cursor-pointer items-center rounded-full bg-background p-1.5 transition-all hover:bg-white hover:bg-opacity-20 hover:shadow-xl">
-						<IconMingcuteAddFill name="gravity-ui:plus" className="h-5 w-5 text-text" />
+		<div className="bottom-0 z-10 flex-col px-5 py-1.5">
+			{attachments.length !== 0 && (
+				<div className="rounded-xl rounded-b-none border-2 border-background border-b-0 bg-tertiary px-2.5 py-2.5 pb-0 overflow-visible">
+					<div className="flex gap-x-5 overflow-x-scroll px-2.5 py-2.5 scroll-alternative-x pb-0">
+						{attachments.map((x) => (
+							<div key={x.id} className="relative flex h-48 w-48 shrink-0 flex-col rounded-lg bg-background p-2">
+								<div className="-top-2 -right-2 absolute overflow-hidden rounded-md bg-background shadow-xl">
+									<Tooltip>
+										<Tooltip.Trigger className="p-1.5 hover:bg-secondary/50">
+											<IconMingcuteEdit2Fill className="size-5 text-text" />
+										</Tooltip.Trigger>
+										<Tooltip.Content>Edit</Tooltip.Content>
+									</Tooltip>
+									<Tooltip>
+										<Tooltip.Trigger className="p-1.5 hover:bg-secondary/50">
+											<IconMingcuteDelete2Fill className="size-5 text-error" />
+										</Tooltip.Trigger>
+										<Tooltip.Content>Delete</Tooltip.Content>
+									</Tooltip>
+								</div>
+								<div className="flex h-full min-h-0 items-center justify-center rounded-md bg-secondary">
+									{x.dataUrl ? (
+										<img className="max-h-full max-w-full" src={x.dataUrl} alt="" />
+									) : (
+										<IconMingcuteFileFill className="size-20 text-text " />
+									)}
+								</div>
+								<div className="mt-2 w-full shrink-0 overflow-hidden text-ellipsis whitespace-nowrap text-text">{x.filename}</div>
+							</div>
+						))}
 					</div>
+				</div>
+			)}
+			<form className="w-full">
+				<div
+					className={clsx("flex h-full items-start rounded-3xl border-2 border-background bg-tertiary", attachments.length && "rounded-t-none")}
+				>
+					<button
+						onClick={addFile}
+						type="button"
+						className="m-2 mr-2 flex shrink-0 cursor-pointer items-center rounded-full bg-background p-1.5 transition-all hover:bg-white hover:bg-opacity-20 hover:shadow-xl"
+					>
+						<IconMingcuteAddFill name="gravity-ui:plus" className="h-5 w-5 text-text" />
+					</button>
 					<div className="h-full w-full overflow-hidden">
 						<Slate editor={editor} initialValue={initialValue}>
 							<Editable
@@ -295,12 +402,8 @@ export default function MessageBox() {
 								renderElement={renderElement}
 								decorate={decorate}
 								onKeyDown={onKeyDown}
-								renderPlaceholder={({ children, attributes }) => (
-									<div {...attributes} className="">
-										{children}
-									</div>
-								)}
-								// disableDefaultStyles
+								renderPlaceholder={({ children, attributes }) => <div {...attributes}>{children}</div>}
+								disableDefaultStyles
 							/>
 						</Slate>
 					</div>

@@ -1,6 +1,23 @@
+import AnimatedMessage from "@components/AnimatedMessage";
+import AuthWrapper from "@components/AuthWrapper";
+import HuginnButton from "@components/button/HuginnButton";
+import LoadingButton from "@components/button/LoadingButton";
+import ImageSelector from "@components/ImageSelector";
+import HuginnInput from "@components/input/HuginnInput";
+import { useClient } from "@contexts/apiContext";
+import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
+import { useEvent } from "@contexts/eventContext";
+import { useHistory } from "@contexts/historyContext";
+import { useModalsDispatch } from "@contexts/modalContext";
+import { useHuginnMutation } from "@hooks/useHuginnMutation";
+import { useInitializeClient } from "@hooks/useInitializeClient";
+import { useInputs } from "@hooks/useInputs";
+import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import type { APIPostOAuthConfirmJSONBody, IdentityTokenPayload } from "@huginn/shared";
+import { getUserAvatarOptions } from "@lib/queries";
 import { useQuery } from "@tanstack/react-query";
 import * as jose from "jose";
+import { useContext, useMemo, useState, useEffect } from "react";
 import { redirect, useNavigate, useSearchParams } from "react-router";
 
 export default function Component() {

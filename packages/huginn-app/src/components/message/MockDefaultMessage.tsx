@@ -1,3 +1,4 @@
+import UserAvatar from "@components/UserAvatar";
 import clsx from "clsx";
 
 export default function MockDefaultMessage(props: {

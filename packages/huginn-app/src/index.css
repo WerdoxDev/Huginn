@@ -94,6 +94,7 @@ body,
 
 ::-webkit-scrollbar {
 	@apply w-6;
+   @apply h-6;
 }
 
 ::-webkit-scrollbar-track {

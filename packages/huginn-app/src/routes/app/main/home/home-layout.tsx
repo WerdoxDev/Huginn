@@ -1,3 +1,9 @@
+import { queryClient } from "@/root";
+import HomeSidebar from "@components/HomeSidebar";
+import UserInfo from "@components/UserInfo";
+import { client, useClient } from "@contexts/apiContext";
+import { useUser } from "@contexts/userContext";
+import { getChannelsOptions } from "@lib/queries";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Outlet } from "react-router";
 

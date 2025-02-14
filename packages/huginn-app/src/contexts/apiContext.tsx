@@ -1,5 +1,6 @@
 import { HuginnClient } from "@huginn/api";
-import { type ReactNode, createContext } from "react";
+import { type ReactNode, createContext, useContext, useMemo } from "react";
+import { useSettings } from "./settingsContext";
 
 type APIContextType = HuginnClient;
 

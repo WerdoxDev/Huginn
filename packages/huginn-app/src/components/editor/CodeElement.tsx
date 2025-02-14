@@ -1,5 +1,7 @@
 import type { CodeElement as SlateCodeElement } from "@/index";
+import { getCodeLanguage } from "@lib/markdown-utils";
 import hljs from "highlight.js";
+import { useState, useMemo } from "react";
 import type { RenderElementProps } from "slate-react";
 
 export default function CodeElement(props: RenderElementProps) {

@@ -1,3 +1,3 @@
 export default function GuildButton() {
-	return <div className="bg-secondary ring-text h-12 w-12 rounded-full transition-shadow hover:ring-2" />;
+	return <div className="h-12 w-12 rounded-full bg-secondary ring-text transition-shadow hover:ring-2" />;
 }

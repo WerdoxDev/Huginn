@@ -1,9 +1,10 @@
 import type { Snowflake } from "@huginn/shared";
+import { useHuginnWindow } from "@stores/windowStore";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { isPermissionGranted, requestPermission } from "@tauri-apps/plugin-notification";
-import { type ReactNode, createContext } from "react";
+import { type ReactNode, createContext, useContext, useEffect } from "react";
 import { useNavigate } from "react-router";
 
 type NotificationContextType = {
@@ -31,6 +32,10 @@ export function NotificationProvider(props: { children?: ReactNode }) {
 	const navigate = useNavigate();
 
 	useEffect(() => {
+		if (huginnWindow.environment !== "desktop") {
+			return;
+		}
+
 		initializeNotification().then();
 
 		// Listen to click event and navigate user to the channel

@@ -4,7 +4,6 @@ import { reactRouter } from "@react-router/dev/vite";
 import autoprefixer from "autoprefixer";
 // import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import { parseTOML } from "confbox";
-import { reactRouterDevTools } from "react-router-devtools";
 import tailwindcss from "tailwindcss";
 import AutoImport from "unplugin-auto-import/vite";
 import IconsResolver from "unplugin-icons/resolver";
@@ -20,12 +19,10 @@ export default defineConfig({
 	plugins: [
 		// reactRouterDevTools(),
 		reactRouter(),
-		Icons({ compiler: "jsx", jsx: "react" }),
+		Icons({ compiler: "jsx" }),
 		AutoImport({
-			imports: ["react"],
 			resolvers: [IconsResolver({ prefix: "Icon", extension: "jsx" })],
-			dirs: ["./src/**", "!src/routes/**"],
-			dts: "./src/auto-imports.d.ts",
+			// dts: "./src/auto-imports.d.ts",
 		}),
 		babel({
 			filter: /\.[jt]sx?$/,

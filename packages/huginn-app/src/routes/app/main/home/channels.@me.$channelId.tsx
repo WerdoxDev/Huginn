@@ -1,5 +1,15 @@
+import { queryClient } from "@/root";
+import MessageBox from "@components/MessageBox";
+import ChannelMessages from "@components/channels/ChannelMessages";
+import HomeTopbar from "@components/channels/HomeTopbar";
+import RecipientsSidebar from "@components/channels/RecipientsSidebar";
+import { client, useClient } from "@contexts/apiContext";
+import { useSafePathname } from "@hooks/useLastSafePathname";
+import { useErrorHandler } from "@hooks/useServerErrorHandler";
 import { ChannelType } from "@huginn/shared";
+import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import type { Route } from "./+types/channels.@me.$channelId";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {

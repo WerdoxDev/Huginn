@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import HuginnButton from "./HuginnButton";
 
 export default function QuickActionButton(props: { children?: ReactNode; onClick?: () => void }) {
 	return (

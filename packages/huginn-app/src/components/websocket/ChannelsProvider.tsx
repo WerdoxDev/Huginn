@@ -1,3 +1,5 @@
+import { useClient } from "@contexts/apiContext";
+import { useReadStates } from "@contexts/readStateContext";
 import type {
 	APIChannelUser,
 	APIGetUserChannelsResult,
@@ -9,7 +11,7 @@ import type {
 	GatewayPresenceUpdateData,
 } from "@huginn/shared";
 import { useQueryClient } from "@tanstack/react-query";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router";
 
 export default function ChannelsProvider(props: { children?: ReactNode }) {

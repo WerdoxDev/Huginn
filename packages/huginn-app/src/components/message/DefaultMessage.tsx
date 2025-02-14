@@ -1,7 +1,11 @@
 import type { MessageRendererProps } from "@/types";
+import UserAvatar from "@components/UserAvatar";
+import { useSettings } from "@contexts/settingsContext";
+import { useUser } from "@contexts/userContext";
 import { MessageFlags, type Snowflake, clamp, hasFlag } from "@huginn/shared";
 import clsx from "clsx";
 import moment from "moment";
+import { useMemo, useState, useLayoutEffect } from "react";
 import type { BaseEditor, Descendant } from "slate";
 import { Editable, type ReactEditor, type RenderElementProps, type RenderLeafProps, Slate } from "slate-react";
 

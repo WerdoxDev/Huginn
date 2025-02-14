@@ -1,3 +1,5 @@
+import { useMainViewTransitionState } from "@hooks/useMainViewTransitionState";
+import { useThemeStore } from "@stores/themeStore";
 import clsx from "clsx";
 import { useStore } from "zustand";
 

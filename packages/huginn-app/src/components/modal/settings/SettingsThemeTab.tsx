@@ -1,5 +1,8 @@
 import type { DropboxItem, SettingsTabProps, ThemeType } from "@/types";
+import HuginnDropdown from "@components/dropdown/HuginnDropdown";
+import MockDefaultMessage from "@components/message/MockDefaultMessage";
 import MockDefaultMessageCompact from "@components/message/MockDefaultMessageCompact";
+import { pineGreenTheme, ceruleanTheme, eggplantTheme, coffeeTheme, charcoalTheme, useTheme } from "@stores/themeStore";
 import clsx from "clsx";
 
 function ThemeIcon(props: { color: string }) {

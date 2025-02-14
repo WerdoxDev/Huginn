@@ -1,7 +1,12 @@
+import { useClient } from "@contexts/apiContext";
+import { useEvent } from "@contexts/eventContext";
+import { useModalsDispatch } from "@contexts/modalContext";
 import type { GatewayOAuthRedirectData, OAuthType } from "@huginn/shared";
+import { useHuginnWindow } from "@stores/windowStore";
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import { UserAttentionType, getCurrentWindow } from "@tauri-apps/api/window";
 import { open } from "@tauri-apps/plugin-shell";
+import { useEffect } from "react";
 import { useNavigate } from "react-router";
 
 export function useOAuth() {

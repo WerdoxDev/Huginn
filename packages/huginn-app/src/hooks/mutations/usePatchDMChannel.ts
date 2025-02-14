@@ -1,3 +1,5 @@
+import { useClient } from "@contexts/apiContext";
+import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import type { APIPatchDMChannelJSONBody, HuginnErrorData } from "@huginn/shared";
 
 export type PatchDMChannelMutationVars = { channelId: string } & APIPatchDMChannelJSONBody;

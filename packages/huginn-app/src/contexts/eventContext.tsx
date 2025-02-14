@@ -1,6 +1,6 @@
 import type { AppChannelMessage } from "@/types";
 import type { APIUser } from "@huginn/shared";
-import { type ReactNode, createContext } from "react";
+import { type ReactNode, createContext, useCallback, useContext, useRef } from "react";
 
 type EventTypes = {
 	message_added: { message: AppChannelMessage; inLoadedQueryPage: boolean; inVisibleQueryPage: boolean; visible: boolean; self: boolean };

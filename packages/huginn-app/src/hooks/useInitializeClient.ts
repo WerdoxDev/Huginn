@@ -1,4 +1,6 @@
 // import { usePostHog } from "posthog-js/react";
+import { useClient } from "@contexts/apiContext";
+import { useUser } from "@contexts/userContext";
 import { useNavigate } from "react-router";
 
 export function useInitializeClient() {

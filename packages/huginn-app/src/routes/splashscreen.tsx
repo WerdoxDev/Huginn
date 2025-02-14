@@ -1,6 +1,11 @@
 import type { LoadingState } from "@/types";
+import HuginnIcon from "@components/HuginnIcon";
+import LoadingIcon from "@components/LoadingIcon";
+import { useUpdater } from "@hooks/useUpdater";
+import { useHuginnWindow } from "@stores/windowStore";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export default function Splashscreen() {
 	const updateFinished = useRef(false);

@@ -1,5 +1,6 @@
 import type { ColorTheme, ThemeType } from "@/types";
-import { type ReactNode, createContext } from "react";
+import { useSettings } from "@contexts/settingsContext";
+import { type ReactNode, createContext, useContext, useLayoutEffect } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 
@@ -110,7 +111,6 @@ export function ThemeProvier(props: { children?: ReactNode }) {
 	const settings = useSettings();
 
 	useLayoutEffect(() => {
-		console.log(settings, "FORM THME");
 		store.getState().setTheme(settings.theme);
 	}, []);
 

@@ -1,5 +1,11 @@
+import { usePresence } from "@contexts/presenceContext";
+import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import type { APIChannelUser, Snowflake } from "@huginn/shared";
+import { useContextMenu } from "@stores/contextMenuStore";
 import clsx from "clsx";
+import LoadingIcon from "./LoadingIcon";
+import UserAvatar from "./UserAvatar";
+import Tooltip from "./tooltip/Tooltip";
 
 export default function ChannelRecipient(props: { channelId: Snowflake; isOwner: boolean; recipient: APIChannelUser }) {
 	const presence = usePresence(props.recipient.id);

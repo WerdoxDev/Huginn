@@ -1,8 +1,22 @@
 import type { SettingsTabProps } from "@/types";
+import AnimatedMessage from "@components/AnimatedMessage";
+import HuginnButton from "@components/button/HuginnButton";
+import LoadingButton from "@components/button/LoadingButton";
+import ImageSelector from "@components/ImageSelector";
+import HuginnInput from "@components/input/HuginnInput";
+import PasswordInput from "@components/input/PasswordInput";
+import { useClient } from "@contexts/apiContext";
+import { useEvent } from "@contexts/eventContext";
+import { useModalsDispatch } from "@contexts/modalContext";
+import { useUser } from "@contexts/userContext";
 import { Transition } from "@headlessui/react";
+import { usePatchUser } from "@hooks/mutations/usePatchUser";
+import { useInputs } from "@hooks/useInputs";
+import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import { omit } from "@huginn/shared";
 import { getUserAvatarOptions } from "@lib/queries";
 import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo, useEffect } from "react";
 
 export default function SettingsProfileTab(_props: SettingsTabProps) {
 	const client = useClient();

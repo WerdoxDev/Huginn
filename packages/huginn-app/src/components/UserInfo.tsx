@@ -1,6 +1,10 @@
+import { useModalsDispatch } from "@contexts/modalContext";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { useLogout } from "@hooks/useLogout";
 import type { APIUser } from "@huginn/shared";
 import { useMutation } from "@tanstack/react-query";
+import UserAvatar from "./UserAvatar";
+import Tooltip from "./tooltip/Tooltip";
 
 export default function UserInfo(props: { user: APIUser }) {
 	const modalsDispatch = useModalsDispatch();

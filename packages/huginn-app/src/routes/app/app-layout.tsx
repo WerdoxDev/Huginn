@@ -1,6 +1,22 @@
+import AuthBackgroundSvg from "@components/AuthBackgroundSvg";
+import TitleBar from "@components/TitleBar";
+import ContextMenusRenderer from "@components/contextmenu/ContextMenusRenderer";
+import ModalsRenderer from "@components/modal/ModalsRenderer";
+import { APIProvider } from "@contexts/apiContext";
+import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
+import { useEvent } from "@contexts/eventContext";
+import { ModalProvider } from "@contexts/modalContext";
+import { NotificationProvider } from "@contexts/notificationContext";
+import { PresenceProvider } from "@contexts/presenceContext";
+import { ReadStateProvider } from "@contexts/readStateContext";
+import { TypingProvider } from "@contexts/typingContext";
+import { UserProvider } from "@contexts/userContext";
+import { useMainViewTransitionState } from "@hooks/useMainViewTransitionState";
+import { ContextMenuProvider } from "@stores/contextMenuStore";
+import { useHuginnWindow } from "@stores/windowStore";
 import { listen } from "@tauri-apps/api/event";
 import clsx from "clsx";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Outlet } from "react-router";
 
 export default function Layout() {

@@ -1,11 +1,24 @@
 import type { CustomElement, ParagraphElement } from "@/index";
 import type { HuginnToken, MessageRendererProps } from "@/types";
+import AttachmentElement from "@components/editor/AttachmentElement";
+import CodeElement from "@components/editor/CodeElement";
 import EmbedElement from "@components/editor/EmbedElement";
+import LinkElement from "@components/editor/LinkElement";
+import MessageLeaf from "@components/editor/MessageLeaf";
+import SpoilerElement from "@components/editor/SpoilerElement";
+import { useIsInView } from "@hooks/useIsInView";
 import { MessageType } from "@huginn/shared";
+import { markdownMainMessage } from "@lib/markdown-main";
+import { markdownSpoiler } from "@lib/markdown-spoiler";
+import { markdownUnderline } from "@lib/markdown-underline";
+import { organizeTokens, isElementOpenToken, isElementCloseToken, isOpenToken, isCloseToken, getSlateFormats } from "@lib/markdown-utils";
 import markdownit from "markdown-it";
 import type Token from "markdown-it/lib/token.mjs";
+import { useMemo, useCallback, useEffect } from "react";
 import { type Descendant, type Editor, createEditor } from "slate";
 import { DefaultElement, type RenderElementProps, type RenderLeafProps, withReact } from "slate-react";
+import ActionMessage from "./ActionMessage";
+import DefaultMessage from "./DefaultMessage";
 
 const withHuginn = (editor: Editor) => {
 	const { isInline, isVoid } = editor;

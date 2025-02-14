@@ -1,5 +1,7 @@
 import type { GatewayTypingStartData, Snowflake } from "@huginn/shared";
-import { type ReactNode, createContext } from "react";
+import { type ReactNode, createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useClient } from "./apiContext";
+import { useEvent } from "./eventContext";
 
 type TypingContextType = { removeTyping: (userId: Snowflake, channelId: Snowflake) => void; typings: GatewayTypingStartData[] };
 const TypingContext = createContext<TypingContextType>({} as TypingContextType);

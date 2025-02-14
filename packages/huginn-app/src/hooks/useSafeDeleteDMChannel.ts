@@ -1,5 +1,7 @@
+import { useModalsDispatch } from "@contexts/modalContext";
 import { ChannelType, type DirectChannel, type Snowflake } from "@huginn/shared";
 import type { UseMutationResult } from "@tanstack/react-query";
+import { useDeleteDMChannel } from "./mutations/useDeleteDMChannel";
 
 export function useSafeDeleteDMChannel(channelId?: Snowflake, channelType?: DirectChannel["type"], channelName?: string) {
 	const mutation = useDeleteDMChannel();

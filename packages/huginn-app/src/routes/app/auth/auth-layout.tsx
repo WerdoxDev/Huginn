@@ -1,6 +1,12 @@
 import clsx from "clsx";
 import { Outlet, redirect } from "react-router";
 import type { Route } from "./+types/auth-layout";
+import HuginnIcon from "@components/HuginnIcon";
+import LoadingIcon from "@components/LoadingIcon";
+import { client } from "@contexts/apiContext";
+import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
+import { useModalsDispatch } from "@contexts/modalContext";
+import { useContext } from "react";
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
 	const force = new URL(request.url).searchParams.get("force") === "1";

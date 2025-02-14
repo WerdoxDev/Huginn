@@ -1,3 +1,4 @@
+import { useClient } from "@contexts/apiContext";
 import type { Snowflake } from "@huginn/shared";
 import { useMutation } from "@tanstack/react-query";
 

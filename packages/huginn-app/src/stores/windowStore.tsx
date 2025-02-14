@@ -1,7 +1,7 @@
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { type CliMatches, getMatches } from "@tauri-apps/plugin-cli";
-import { type ReactNode, createContext } from "react";
+import { type ReactNode, createContext, useEffect, useState } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 
@@ -34,7 +34,7 @@ export function HuginnWindowProvider(props: { children?: ReactNode }) {
 			store.setState({
 				maximized: globalThis.__TAURI_INTERNALS__ ? await getCurrentWebviewWindow().isMaximized() : true,
 				focused: document.hasFocus(),
-				matches: await getMatches(),
+				matches: globalThis.__TAURI_INTERNALS__ ? await getMatches() : undefined,
 			});
 		}
 

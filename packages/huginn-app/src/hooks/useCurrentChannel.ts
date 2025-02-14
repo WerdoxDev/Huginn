@@ -1,5 +1,6 @@
 import type { APIGetUserChannelsResult } from "@huginn/shared";
 import { useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { useParams } from "react-router";
 
 export function useCurrentChannel() {

@@ -1,5 +1,11 @@
+import { useChannel } from "@hooks/useChannel";
+import { useChannelName } from "@hooks/useChannelName";
+import useNavigateToChannel from "@hooks/useNavigateToChannel";
 import { ChannelType, type Snowflake } from "@huginn/shared";
 import type { RefObject } from "react";
+import ChannelIcon from "./ChannelIcon";
+import Tooltip from "./tooltip/Tooltip";
+import UserAvatar from "./UserAvatar";
 
 export default function UnreadChannel(props: { channelId: Snowflake; unreadCount: number; className?: string; ref?: RefObject<HTMLDivElement> }) {
 	const channel = useChannel(props.channelId);

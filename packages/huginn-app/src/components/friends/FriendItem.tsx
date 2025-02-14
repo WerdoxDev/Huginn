@@ -1,6 +1,11 @@
+import LoadingIcon from "@components/LoadingIcon";
+import UserAvatar from "@components/UserAvatar";
+import Tooltip from "@components/tooltip/Tooltip";
+import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import { type APIRelationUser, RelationshipType } from "@huginn/shared";
 import type { Snowflake, UserPresence } from "@huginn/shared";
-import type { MouseEvent } from "react";
+import { useContextMenu } from "@stores/contextMenuStore";
+import { type MouseEvent, useMemo } from "react";
 
 export default function FriendItem(props: {
 	type: RelationshipType;

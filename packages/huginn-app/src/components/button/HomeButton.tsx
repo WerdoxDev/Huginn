@@ -1,3 +1,4 @@
+import HuginnIcon from "@components/HuginnIcon";
 import { NavLink } from "react-router";
 
 export default function HomeButton() {

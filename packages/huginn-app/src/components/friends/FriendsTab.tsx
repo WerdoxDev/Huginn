@@ -1,5 +1,8 @@
 import { TabPanel } from "@headlessui/react";
+import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import type { APIRelationshipWithoutOwner, Snowflake, UserPresence } from "@huginn/shared";
+import { useMemo } from "react";
+import FriendItem from "./FriendItem";
 
 export default function FriendsTab(props: { friends: APIRelationshipWithoutOwner[] | null; presences: UserPresence[]; text: string }) {
 	const mutation = useCreateDMChannel("create-dm-channel_other");

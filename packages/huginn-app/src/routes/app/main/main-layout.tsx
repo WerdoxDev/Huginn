@@ -1,3 +1,7 @@
+import GuildsBar from "@components/GuildsBar";
+import WebsocketProviders from "@components/websocket/WebsocketProviders";
+import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
+import { useContext, useEffect } from "react";
 import { Outlet } from "react-router";
 
 export default function Layout() {

@@ -1,4 +1,9 @@
+import { useModalsDispatch } from "@contexts/modalContext";
+import { useChannelName } from "@hooks/useChannelName";
+import { useSafeDeleteDMChannel } from "@hooks/useSafeDeleteDMChannel";
 import { ChannelType } from "@huginn/shared";
+import { useContextMenu } from "@stores/contextMenuStore";
+import ContextMenu from "./ContextMenu";
 
 export default function ChannelsContextMenu() {
 	const { data } = useContextMenu("dm_channel");

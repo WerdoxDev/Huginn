@@ -1,5 +1,6 @@
 import type { APIGetUserChannelsResult, Snowflake } from "@huginn/shared";
 import { useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
 
 export function useChannel(channelId: Snowflake) {
 	const queryClient = useQueryClient();

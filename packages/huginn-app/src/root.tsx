@@ -1,10 +1,16 @@
-import { Links, Meta, Outlet, Scripts, ScrollRestoration, redirect } from "react-router";
-
+import RouteErrorComponent from "@components/RouteErrorComponent";
+import { client } from "@contexts/apiContext";
+import { EventProvider } from "@contexts/eventContext";
+import { HistoryProvider } from "@contexts/historyContext";
+import { SettingsProvider } from "@contexts/settingsContext";
+import { ThemeProvier } from "@stores/themeStore";
+import { HuginnWindowProvider } from "@stores/windowStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import highlightjs from "highlight.js/styles/atom-one-dark.css?url";
 // import { PostHogProvider } from "posthog-js/react";
 // import posthog from "posthog-js";
 import type { ReactNode } from "react";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, redirect } from "react-router";
 import type { Route } from "./+types/root";
 import stylesheet from "./index.css?url";
 

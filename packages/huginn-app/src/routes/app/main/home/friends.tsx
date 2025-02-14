@@ -1,3 +1,10 @@
+import { queryClient } from "@/root";
+import AddFriendTab from "@components/friends/AddFriendTab";
+import FriendsTab from "@components/friends/FriendsTab";
+import FriendsTabItem from "@components/friends/FriendsTabItem";
+import PendingFriendsTab from "@components/friends/PendingFriendsTab";
+import { client, useClient } from "@contexts/apiContext";
+import { usePresences } from "@contexts/presenceContext";
 import { Tab, TabGroup, TabList, TabPanels } from "@headlessui/react";
 import { RelationshipType } from "@huginn/shared";
 import { getRelationshipsOptions } from "@lib/queries";

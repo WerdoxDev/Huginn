@@ -1,5 +1,8 @@
+import { useClient } from "@contexts/apiContext";
+import { useUser } from "@contexts/userContext";
 import { ClientReadyState } from "@huginn/api";
 import clsx from "clsx";
+import { useState, useEffect } from "react";
 
 type Status = "connected" | "disconnected" | "unauthenticated" | "none";
 const statusTexts: Record<Status, string> = {

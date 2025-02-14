@@ -1,4 +1,4 @@
-import type { RefObject } from "react";
+import { createRef, type RefObject } from "react";
 
 const map = new Map<string, RefObject<unknown>>();
 

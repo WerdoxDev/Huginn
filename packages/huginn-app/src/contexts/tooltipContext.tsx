@@ -1,6 +1,6 @@
 import type { TooltipOptions } from "@/types";
 import { arrow, autoUpdate, flip, offset, shift, useDismiss, useFloating, useFocus, useHover, useInteractions, useRole } from "@floating-ui/react";
-import { createContext } from "react";
+import { createContext, useContext, useRef, useState } from "react";
 
 type TooltipContextType = ReturnType<typeof useTooltip> | null;
 

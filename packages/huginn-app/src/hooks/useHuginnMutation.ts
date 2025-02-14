@@ -1,5 +1,7 @@
 import type { HuginnErrorData } from "@huginn/shared";
+import { isWorthyHuginnError } from "@lib/utils";
 import { type QueryClient, type UseMutationOptions, type UseMutationResult, useMutation } from "@tanstack/react-query";
+import { useErrorHandler } from "./useServerErrorHandler";
 
 export function useHuginnMutation<TData = unknown, TVariables = void, TContext = unknown>(
 	options: UseMutationOptions<TData, Error, TVariables, TContext>,

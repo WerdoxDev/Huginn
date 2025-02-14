@@ -1,4 +1,9 @@
+import ModalErrorComponent from "@components/ModalErrorComponent";
+import { useModals, useModalsDispatch } from "@contexts/modalContext";
+import { useUser } from "@contexts/userContext";
+import { lazy } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import BaseModal from "./BaseModal";
 
 const CreateDMModal = lazy(() => import("./CreateDMModal"));
 const SettingsModal = lazy(() => import("./SettingsModal"));

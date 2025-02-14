@@ -1,7 +1,13 @@
 import type { AppChannelMessage } from "@/types";
+import { useClient } from "@contexts/apiContext";
+import { useChannelReadState, useReadStates } from "@contexts/readStateContext";
+import { useUser } from "@contexts/userContext";
 import { type Snowflake, snowflake } from "@huginn/shared";
+import { useChannelStore } from "@stores/channelStore";
+import { useHuginnWindow } from "@stores/windowStore";
 import { useMutation } from "@tanstack/react-query";
 import moment from "moment";
+import { useEffect } from "react";
 
 export function useMessageAcker(channelId: Snowflake, messages: AppChannelMessage[]) {
 	const client = useClient();

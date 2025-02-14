@@ -1,3 +1,6 @@
+import { useModalsDispatch } from "@contexts/modalContext";
+import { useErrorHandler } from "@hooks/useServerErrorHandler";
+import { useEffect } from "react";
 import { useErrorBoundary } from "react-error-boundary";
 
 export default function ModalErrorComponent(props: { error: unknown }) {

@@ -1,4 +1,5 @@
 import { DialogBackdrop } from "@headlessui/react";
+import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 
 export default function ModalBackground() {

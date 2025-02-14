@@ -1,5 +1,9 @@
+import LoadingDot from "@components/LoadingDot";
+import { useTypings } from "@contexts/typingContext";
 import { Transition } from "@headlessui/react";
+import { useChannelRecipients } from "@hooks/useChannelRecipients";
 import type { Snowflake } from "@huginn/shared";
+import { useMemo, useRef } from "react";
 
 export default function ChannelTypingIndicator(props: { channelId: Snowflake }) {
 	const { typings } = useTypings();

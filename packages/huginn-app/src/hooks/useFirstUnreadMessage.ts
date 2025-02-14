@@ -1,6 +1,10 @@
 import type { AppChannelMessage } from "@/types";
+import { useEvent } from "@contexts/eventContext";
+import { useChannelReadState } from "@contexts/readStateContext";
+import { useUser } from "@contexts/userContext";
 import { type Snowflake, snowflake } from "@huginn/shared";
 import moment from "moment";
+import { useState, useEffect } from "react";
 
 export function useFirstUnreadMessage(channelId: Snowflake, sortedMessages: AppChannelMessage[]) {
 	const { user } = useUser();

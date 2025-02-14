@@ -1,4 +1,10 @@
 import type { AppChannelMessage } from "@/types";
+import { client } from "@contexts/apiContext";
+import { useEvent } from "@contexts/eventContext";
+import { useReadStates } from "@contexts/readStateContext";
+import { useUser } from "@contexts/userContext";
+import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
+import { useCurrentChannel } from "@hooks/useCurrentChannel";
 import { type GatewayUserUpdateData, omit } from "@huginn/shared";
 import type {
 	APIGetUserChannelsResult,
@@ -10,8 +16,10 @@ import type {
 	GatewayPresenceUpdateData,
 	Snowflake,
 } from "@huginn/shared";
+import { useChannelStore } from "@stores/channelStore";
+import { useHuginnWindow } from "@stores/windowStore";
 import { type InfiniteData, useQueryClient } from "@tanstack/react-query";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 
 export default function MessageProvider(props: { children?: ReactNode }) {
 	const queryClient = useQueryClient();

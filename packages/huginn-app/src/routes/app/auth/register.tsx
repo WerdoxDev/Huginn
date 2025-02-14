@@ -1,4 +1,19 @@
+import AnimatedMessage from "@components/AnimatedMessage";
+import AuthWrapper from "@components/AuthWrapper";
+import HuginnButton from "@components/button/HuginnButton";
+import LinkButton from "@components/button/LinkButton";
+import LoadingButton from "@components/button/LoadingButton";
+import HuginnInput from "@components/input/HuginnInput";
+import PasswordInput from "@components/input/PasswordInput";
+import { useClient } from "@contexts/apiContext";
+import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
+import { useHuginnMutation } from "@hooks/useHuginnMutation";
+import { useInitializeClient } from "@hooks/useInitializeClient";
+import { useInputs } from "@hooks/useInputs";
+import { useOAuth } from "@hooks/useOAuth";
+import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import type { APIPostRegisterJSONBody } from "@huginn/shared";
+import { useContext, useState, useEffect } from "react";
 // import { usePostHog } from "posthog-js/react";
 
 export default function Register() {

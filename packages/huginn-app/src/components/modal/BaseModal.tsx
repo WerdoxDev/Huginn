@@ -1,6 +1,8 @@
 import { Dialog } from "@headlessui/react";
+import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { type ReactNode, Suspense } from "react";
+import ModalBackground from "./ModalBackground";
 
 export default function BaseModal(props: { modal: { isOpen: boolean }; onClose: () => void; children?: ReactNode; renderChildren: ReactNode }) {
 	const huginnWindow = useHuginnWindow();

@@ -1,3 +1,5 @@
+import { useErrorHandler } from "@hooks/useServerErrorHandler";
+import { useEffect } from "react";
 import { Outlet, useNavigate, useRouteError } from "react-router";
 
 export default function RouteErrorComponent() {
