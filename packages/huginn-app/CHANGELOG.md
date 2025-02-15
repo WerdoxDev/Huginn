@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.19.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.18.0...app@v0.19.0) (2025-02-15)
+
+
+### Features
+
+* **app:** add size string utility ([b3e6a15](https://github.com/WerdoxDev/Huginn/commit/b3e6a15aef5c9a09e027f354fdbf53f627cb55da))
+* **app:** attachment uploading indicator ([a084675](https://github.com/WerdoxDev/Huginn/commit/a084675f204a60f83b2b36a740603a06f7054e73))
+* **app:** remove auto imports + experimental ui for adding attachments ([aedff6c](https://github.com/WerdoxDev/Huginn/commit/aedff6cf1f08f8c2a193474006e1a5ea24afddd7))
+
+
+### Bug Fixes
+
+* **app:** updater is not retrying updates upon failure ([76561d6](https://github.com/WerdoxDev/Huginn/commit/76561d62e9376b40de851a7f94e8b8a39b2bf4a3))
+
 ## [0.18.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.17.0...app@v0.18.0) (2025-02-11)
 
 
