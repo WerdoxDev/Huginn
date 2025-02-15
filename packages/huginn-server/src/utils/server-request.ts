@@ -3,12 +3,12 @@ import { HTTPError, type InternalRequest, type RequestData, type RequestMethod, 
 import { envs } from "#setup";
 
 export async function cdnUpload<T>(fullRoute: RouteLike, options: RequestData = {}) {
-	if (!envs.CDN_ROOT) {
+	if (!envs.CDN_LOCAL_URL) {
 		throw new Error("CDN Root was not configured");
 	}
 
 	logCDNRequest(fullRoute, "POST");
-	return (await request({ ...options, root: envs.CDN_ROOT, method: "POST", fullRoute, throw: true })) as Promise<T>;
+	return (await request({ ...options, root: envs.CDN_LOCAL_URL, method: "POST", fullRoute, throw: true })) as Promise<T>;
 }
 
 export async function serverFetch<T>(url: string, method: RequestMethod, options: RequestData & { throw?: boolean }) {

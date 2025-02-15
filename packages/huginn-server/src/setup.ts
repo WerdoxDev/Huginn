@@ -9,7 +9,8 @@ export const envs = readEnv([
 	"ACCESS_TOKEN_SECRET",
 	"REFRESH_TOKEN_SECRET",
 	"POSTGRESQL_URL",
-	"CDN_ROOT",
+	"CDN_LOCAL_URL",
+	"CDN_PUBLIC_URL",
 	"SERVER_HOST",
 	"SERVER_PORT",
 	"GITHUB_TOKEN",
@@ -28,7 +29,6 @@ export const envs = readEnv([
 	"SESSION_PASSWORD",
 	"ALLOWED_ORIGINS",
 	"REDIRECT_HOST",
-	"ATTACHMENTS_HOST",
 ] as const);
 
 export const CERT_FILE = envs.CERTIFICATE_PATH && Bun.file(envs.CERTIFICATE_PATH);

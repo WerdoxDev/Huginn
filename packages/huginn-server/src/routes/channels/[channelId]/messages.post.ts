@@ -136,7 +136,7 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 				flags: 0,
 				width: imageData?.width,
 				height: imageData?.height,
-				url: `${envs.ATTACHMENTS_HOST}/attachments/${channelId}/${messageId}/${name}`,
+				url: `${envs.CDN_PUBLIC_URL}/attachments/${channelId}/${messageId}/${name}`,
 			});
 		}
 	}

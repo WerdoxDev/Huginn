@@ -139,7 +139,7 @@ export async function resolveAll(...promises: Promise<unknown>[]) {
 
 export async function checkCDNRunning() {
 	try {
-		const url = envs.CDN_ROOT;
+		const url = envs.CDN_LOCAL_URL;
 		console.log(url);
 		if (!url) return false;
 
