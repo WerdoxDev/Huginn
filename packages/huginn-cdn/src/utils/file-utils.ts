@@ -6,14 +6,17 @@ import { storage } from "#setup";
 import type { FileCategory, FileInfo } from "./types";
 
 export function extractFileInfo(filename: string): FileInfo {
-	const split = filename.split(".");
-	const name = split[0];
+	const extensionStartIndex = filename.lastIndexOf(".");
+	const extension = filename.slice(extensionStartIndex + 1);
+	const name = filename.slice(0, extensionStartIndex);
 
-	if (!Object.keys(FileTypes).some((x) => x === split[1])) {
-		return { name, format: split[1], mimeType: "application/octet-stream" };
+	console.log(extension, name);
+
+	if (!Object.keys(FileTypes).some((x) => x === extension)) {
+		return { name, format: extension, mimeType: "application/octet-stream" };
 	}
 
-	const format = split[1] as keyof typeof FileTypes;
+	const format = extension as keyof typeof FileTypes;
 	const mimeType = FileTypes[format] as FileContentTypes;
 
 	return { name, format, mimeType };
