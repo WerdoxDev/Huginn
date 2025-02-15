@@ -161,7 +161,7 @@ export async function extractEmbedTags(url: string): Promise<Record<string, stri
 	}
 }
 
-export async function getImageData(source: string | ArrayBuffer): Promise<sharp.Metadata | undefined> {
+export async function getImageData(source: string | ArrayBuffer, maxWidth: number, maxHeight: number) {
 	try {
 		let arrayBuffer: ArrayBuffer;
 		if (typeof source === "string") {
@@ -170,7 +170,22 @@ export async function getImageData(source: string | ArrayBuffer): Promise<sharp.
 			arrayBuffer = source;
 		}
 
-		return await sharp(arrayBuffer).metadata();
+		const metadata = await sharp(arrayBuffer).metadata();
+		const width = metadata?.width ?? 0;
+		const height = metadata?.height ?? 0;
+		const aspectRatio = width / (height ?? 0);
+
+		// Calculate width first
+		let newWidth = Math.min(width, maxWidth);
+		let newHeight = newWidth / aspectRatio;
+
+		// If the new height exceeds maxHeight, adjust it
+		if (newHeight > maxHeight) {
+			newHeight = maxHeight;
+			newWidth = newHeight * aspectRatio;
+		}
+
+		return { width: newWidth, height: newHeight };
 	} catch (e) {
 		console.error("Error fetching image data:", e);
 		return undefined;

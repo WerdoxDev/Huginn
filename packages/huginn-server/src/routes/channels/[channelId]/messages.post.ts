@@ -122,9 +122,9 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 				files: [{ data: fileArrayBuffer, name: file.name, contentType: file.type }],
 			})) as string;
 
-			let imageData: Metadata | undefined;
+			let imageData: { width: number; height: number } | undefined;
 			if (isImageMediaType(file.type)) {
-				imageData = await getImageData(fileArrayBuffer);
+				imageData = await getImageData(fileArrayBuffer, 448, 320);
 			}
 
 			processedAttachments.push({
@@ -144,9 +144,9 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 	const processedEmbeds: DBEmbed[] = [];
 	if (body.embeds) {
 		for (const embed of body.embeds) {
-			let thumbnailData: Metadata | undefined;
+			let thumbnailData: { width: number; height: number } | undefined;
 			if (embed.thumbnail && (!embed.thumbnail.width || !embed.thumbnail.height)) {
-				thumbnailData = await getImageData(embed.thumbnail.url);
+				thumbnailData = await getImageData(embed.thumbnail.url, 384, 320);
 			}
 
 			processedEmbeds.push({
@@ -196,9 +196,9 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 			const metadata = await extractEmbedTags(link);
 			if (Object.keys(metadata).length > 0) {
 				// Fetch image data from embed
-				let thumbnailData: Metadata | undefined;
+				let thumbnailData: { width: number; height: number } | undefined;
 				if (metadata.image) {
-					thumbnailData = await getImageData(metadata.image);
+					thumbnailData = await getImageData(metadata.image, 384, 320);
 				}
 
 				embeds.push({
