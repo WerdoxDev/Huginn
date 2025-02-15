@@ -54,9 +54,9 @@ export class Gateway {
 		this.startListening();
 	}
 
-	public async authenticate(): Promise<void> {
+	public async authenticate(): Promise<boolean> {
 		if (this.socket?.readyState !== WebSocket.OPEN && this.socket?.readyState !== WebSocket.CONNECTING) {
-			throw new Error("WebSocket is not connected.");
+			return false;
 		}
 
 		const result = await new Promise((r) => {
@@ -89,8 +89,10 @@ export class Gateway {
 		});
 
 		if (!result) {
-			throw new Error("Gateway closed before being ready.");
+			return false;
 		}
+
+		return true;
 	}
 
 	private startListening() {
