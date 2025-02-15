@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.13.0...server@v0.13.1) (2025-02-15)
+
+
+### Bug Fixes
+
+* **server:** better image type detection for attachments ([44e23d5](https://github.com/WerdoxDev/Huginn/commit/44e23d5ab48ca13e3629df811418f2b237d4b662))
+
 ## [0.13.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.12.0...server@v0.13.0) (2025-02-11)
 
 
