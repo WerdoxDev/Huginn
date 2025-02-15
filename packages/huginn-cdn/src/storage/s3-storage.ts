@@ -17,26 +17,26 @@ export class S3Storage extends Storage {
 		});
 	}
 
-	public async getFile(category: FileCategory, subDirectory: string, name: string): Promise<ReadableStream | undefined> {
+	public async getFile(category: FileCategory, subDirectory: string, name: string): Promise<ArrayBuffer | undefined> {
 		try {
 			const cmd = new GetObjectCommand({ Bucket: envs.AWS_BUCKET, Key: join(category, ...subDirectory.split("/"), name) });
 			const result = await this.s3.send(cmd);
 
 			logGetFile(category, name);
-			return result.Body?.transformToWebStream();
+			return (await result.Body?.transformToByteArray())?.buffer as ArrayBuffer;
 		} catch (e) {
 			logFileNotFound(category, name);
 			return undefined;
 		}
 	}
 
-	public async writeFile(category: FileCategory, subDirectory: string, name: string, data: string | ReadableStream): Promise<boolean> {
+	public async writeFile(category: FileCategory, subDirectory: string, name: string, data: string | ArrayBuffer): Promise<boolean> {
 		logWriteFile(category, name);
 		try {
 			const cmd = new PutObjectCommand({
 				Bucket: envs.AWS_BUCKET,
 				Key: join(category, subDirectory, name),
-				Body: data instanceof ReadableStream ? new Uint8Array(await Bun.readableStreamToArrayBuffer(data)) : data,
+				Body: data instanceof ArrayBuffer ? new Uint8Array(data) : data,
 			});
 			const result = await this.s3.send(cmd);
 			return true;

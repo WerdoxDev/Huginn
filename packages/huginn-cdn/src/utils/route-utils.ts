@@ -19,9 +19,9 @@ export async function tryResolveImage(c: Context, category: FileCategory, subDir
 	// File doesn't exist so we have to see if another format exists
 	const { file: otherFile } = await findImageByName(category, subDirectory, name);
 
-	const fileArrayBuffer = await Bun.readableStreamToArrayBuffer(otherFile);
-	const result = await transformImage(fileArrayBuffer, format, 100);
-	await storage.writeFile(category, subDirectory, hash, new Blob([result]).stream());
+	// const fileArrayBuffer = await Bun.readableStreamToArrayBuffer(otherFile);
+	const result = await transformImage(otherFile, format, 100);
+	await storage.writeFile(category, subDirectory, hash, result);
 
 	return c.body(new Blob([result]).stream(), HttpCode.OK, { "Content-Type": mimeType });
 }

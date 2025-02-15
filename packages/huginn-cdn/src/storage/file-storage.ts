@@ -9,7 +9,7 @@ export class FileStorage extends Storage {
 		super("local");
 	}
 
-	public async getFile(category: FileCategory, subDirectory: string, name: string): Promise<ReadableStream | undefined> {
+	public async getFile(category: FileCategory, subDirectory: string, name: string): Promise<ArrayBuffer | undefined> {
 		try {
 			const file = Bun.file(join(envs.UPLOADS_DIR, category, ...subDirectory.split("/"), name));
 
@@ -19,20 +19,17 @@ export class FileStorage extends Storage {
 			}
 
 			logGetFile(category, name);
-			return file.stream();
+			return await file.arrayBuffer();
 		} catch (e) {
 			logFileNotFound(category, name);
 			return undefined;
 		}
 	}
 
-	public async writeFile(category: FileCategory, subDirectory: string, name: string, data: string | ReadableStream): Promise<boolean> {
+	public async writeFile(category: FileCategory, subDirectory: string, name: string, data: string | ArrayBuffer): Promise<boolean> {
 		logWriteFile(category, name);
 		try {
-			await Bun.write(
-				join(envs.UPLOADS_DIR, category, subDirectory, name),
-				data instanceof ReadableStream ? await Bun.readableStreamToArrayBuffer(data) : data,
-			);
+			await Bun.write(join(envs.UPLOADS_DIR, category, subDirectory, name), data);
 			return true;
 		} catch (e) {
 			console.error(this.name, "writeFile", e);

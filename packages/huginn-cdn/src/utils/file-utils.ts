@@ -28,7 +28,7 @@ export async function findImageByName(category: FileCategory, subDirectory: stri
 		const exists = await storage.exists(category, subDirectory, filename);
 
 		if (exists) {
-			return { file: (await storage.getFile(category, subDirectory, filename)) as ReadableStream, info: extractFileInfo(filename) };
+			return { file: (await storage.getFile(category, subDirectory, filename)) as ArrayBuffer, info: extractFileInfo(filename) };
 		}
 	}
 
