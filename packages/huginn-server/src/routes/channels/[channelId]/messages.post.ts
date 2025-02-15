@@ -18,6 +18,7 @@ import type { Metadata } from "sharp";
 import { z } from "zod";
 import { prisma } from "#database";
 import { selectMessageDefaults } from "#database/common";
+import { envs } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { extractEmbedTags, extractLinks, getImageData, verifyJwt } from "#utils/route-utils";
 import { cdnUpload, serverFetch } from "#utils/server-request";
@@ -135,7 +136,7 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 				flags: 0,
 				width: imageData?.width,
 				height: imageData?.height,
-				url: `http://localhost:3002/cdn/attachments/${channelId}/${messageId}/${name}`,
+				url: `${envs.ATTACHMENTS_HOST}/attachments/${channelId}/${messageId}/${name}`,
 			});
 		}
 	}
