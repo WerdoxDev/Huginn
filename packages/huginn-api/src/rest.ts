@@ -1,4 +1,4 @@
-import { HTTPError, type HuginnErrorData, resolveRequest } from "@huginn/shared";
+import { HTTPError, type HuginnErrorData, isBrowser, resolveRequest } from "@huginn/shared";
 import { type HandlerRequestData, type InternalRequest, type RequestData, type ResponseLike, parseResponse } from "@huginn/shared";
 import type { RouteLike } from "@huginn/shared";
 import { HuginnAPIError } from "@huginn/shared";
@@ -80,7 +80,7 @@ export class REST {
 		});
 
 		let response: ResponseLike;
-		if (options.xhr && globalThis === window) {
+		if (options.xhr && isBrowser()) {
 			response = await this.sendXHRRequest(url, fetchOptions, options.xhr);
 		} else {
 			response = await this.options.makeRequest(url, fetchOptions);

@@ -217,3 +217,11 @@ export function isImageMediaType(type: string): boolean {
 
 	return false;
 }
+
+export function isBrowser(): boolean {
+	try {
+		return globalThis === window;
+	} catch (e) {
+		return false;
+	}
+}
