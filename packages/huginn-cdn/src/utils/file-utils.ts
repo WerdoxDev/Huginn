@@ -7,10 +7,8 @@ import type { FileCategory, FileInfo } from "./types";
 
 export function extractFileInfo(filename: string): FileInfo {
 	const extensionStartIndex = filename.lastIndexOf(".");
-	const extension = filename.slice(extensionStartIndex + 1);
+	const extension = filename.slice(extensionStartIndex + 1).toLowerCase();
 	const name = filename.slice(0, extensionStartIndex);
-
-	console.log(extension, name);
 
 	if (!Object.keys(FileTypes).some((x) => x === extension)) {
 		return { name, format: extension, mimeType: "application/octet-stream" };
