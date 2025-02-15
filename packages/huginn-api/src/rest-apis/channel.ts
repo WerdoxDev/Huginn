@@ -70,7 +70,7 @@ export class ChannelAPI {
 	public async createMessage(
 		channelId: Snowflake,
 		body: APIPostDefaultMessageJSONBody,
-		files: RawFile[],
+		files?: RawFile[],
 		onUploadProgress?: (event: ProgressEvent) => void,
 	): Promise<APIPostDefaultMessageResult> {
 		return this.rest.post(Routes.channelMessages(channelId), {
