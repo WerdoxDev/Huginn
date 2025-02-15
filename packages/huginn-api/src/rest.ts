@@ -80,7 +80,7 @@ export class REST {
 		});
 
 		let response: ResponseLike;
-		if (options.xhr) {
+		if (options.xhr && globalThis === window) {
 			response = await this.sendXHRRequest(url, fetchOptions, options.xhr);
 		} else {
 			response = await this.options.makeRequest(url, fetchOptions);
