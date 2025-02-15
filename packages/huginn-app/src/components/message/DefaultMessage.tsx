@@ -4,6 +4,7 @@ import Tooltip from "@components/tooltip/Tooltip";
 import { useSettings } from "@contexts/settingsContext";
 import { useUser } from "@contexts/userContext";
 import { MessageFlags, type Snowflake, clamp, hasFlag } from "@huginn/shared";
+import { getSizeText } from "@lib/utils";
 import { useChannelStore } from "@stores/channelStore";
 import clsx from "clsx";
 import moment from "moment";
@@ -176,7 +177,6 @@ function MarkdownRenderer(props: {
 		() => (props.isPreview ? messageUploadProgresses[props.messageId] : undefined),
 		[props.isPreview, messageUploadProgresses],
 	);
-	// const progress = { filenames: ["ddddddddddddddddddddd.jpeg"], percentage: 50, total: 234553 };
 
 	return (
 		<div
@@ -203,7 +203,7 @@ function MarkdownRenderer(props: {
 									? `Uploading ${progress.filenames[0]}.`
 									: `Uploading ${progress.filenames.length} files.`}{" "}
 							</div>
-							<div className="shrink-0 text-sm">- {(progress.total / 1024).toFixed(2)}KB</div>
+							<div className="shrink-0 text-sm">- {getSizeText(progress.total)}</div>
 						</div>
 						<div className="h-2 w-full overflow-hidden rounded-full bg-tertiary">
 							<div style={{ width: `${progress.percentage}%` }} className="h-full bg-accent/80" />

@@ -20,13 +20,16 @@ export default function AttachmentElement(props: RenderElementProps) {
 	}
 
 	return (
-		<div {...props.attributes} contentEditable={false} className="w-[28rem]">
+		<div {...props.attributes} contentEditable={false}>
 			<div className="mt-1 mb-1 flex flex-col items-start rounded-lg">
 				{description && <span className={clsx("text-sm")}>{description}</span>}
 				{isImageMediaType(contentType) ? (
-					<div className="w-full" style={{ aspectRatio: `${width ?? 16}/${height ?? 9}` }}>
-						<img src={url} alt="huginn" className="w-full rounded-md" />
-					</div>
+					<img
+						src={url}
+						alt="huginn"
+						className="rounded-md object-contain"
+						style={{ width: `min(28rem,${width}px)`, height: `min(20rem,${height}px)` }}
+					/>
 				) : (
 					<div className="flex w-full items-center gap-x-2 rounded-lg bg-secondary px-2 py-3">
 						<IconMingcuteFileFill className="size-10 shrink-0" />
