@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.7.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.6.0...api@v0.7.0) (2025-02-15)
+
+
+### Features
+
+* **api:** add xhr support to requests ([d634709](https://github.com/WerdoxDev/Huginn/commit/d634709fc6afbd7df0966373441c2d505c6ed627))
+
+
+### Bug Fixes
+
+* **api:** add a custom close code to prevent issues with compatibility ([b6b05d8](https://github.com/WerdoxDev/Huginn/commit/b6b05d8f60de8b3e50cd0c9042a3ac60fc9cd23c))
+
 ## [0.6.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.5.0...api@v0.6.0) (2025-02-11)
 
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.7.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.6.0...shared@v0.7.0) (2025-02-15)
+
+
+### Features
+
+* **shared:** add a new gateway close code ([c13e95d](https://github.com/WerdoxDev/Huginn/commit/c13e95d0021d94bd1a8b6c3567c53717e4560821))
+* **shared:** add utility function for detecting an image from mime-type ([e5323d4](https://github.com/WerdoxDev/Huginn/commit/e5323d4cce126437189ce4a7b1064cb52eed31c9))
+* **shared:** add xhr option types + small type fix ([7fcaafd](https://github.com/WerdoxDev/Huginn/commit/7fcaafd42e2318221765828b5caf494f1eeeb5be))
+
 ## [0.6.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.5.0...shared@v0.6.0) (2025-02-11)
 
 
