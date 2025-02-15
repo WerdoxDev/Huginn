@@ -2,7 +2,7 @@ import AddFriendInput from "@components/input/AddFriendInput";
 import { TabPanel } from "@headlessui/react";
 import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
 import { useInputs } from "@hooks/useInputs";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function AddFriendTab() {
 	const { inputsProps, values, handleErrors, setStatus } = useInputs([{ name: "username", required: false }]);
@@ -28,7 +28,7 @@ export default function AddFriendTab() {
 			>
 				<AddFriendInput
 					loading={mutation.isPending}
-					className="mt-5 "
+					className="mt-5"
 					{...inputsProps.username}
 					buttonProps={{ type: "submit" }}
 					onClick={() => {
