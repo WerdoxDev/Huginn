@@ -9,7 +9,7 @@ export function hasMarkup(markup: string) {
 export function getTokenLength(token: HuginnToken) {
 	return (
 		(token.markup === "autolink" ? 1 : token.markup !== "linkify" ? token.markup.length : 0) +
-		(!token.type.includes("fence") ? token.content.length : 0)
+		(token.type === "link_open" ? (token.attrs?.[0]?.[1].length ?? 0) : !token.type.includes("fence") ? token.content.length : 0)
 	);
 }
 
@@ -85,7 +85,7 @@ export function organizeTokens(tokens: Token[]) {
 			// Process inline tokens
 			const inlineTokens = token.children || [];
 			for (const inlineToken of inlineTokens) {
-				if (inlineToken.type === "softbreak") {
+				if (inlineToken.type === "softbreak" || inlineToken.type === "hardbreak") {
 					// Push the current line and start a new line
 					lines.push(currentLine);
 					currentLine = [];

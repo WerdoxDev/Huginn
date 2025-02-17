@@ -10,14 +10,14 @@ export default function LinkElement(props: RenderElementProps) {
 	return (
 		<span
 			{...props.attributes}
-			className="relative cursor-pointer underline"
+			className="relative inline-block cursor-pointer underline"
 			onClick={url ? () => (huginnWindow.environment === "desktop" ? open(url) : window.open(url)) : undefined}
 			title={url}
 		>
-			<span>
+			<div className="">
 				{props.children}
-				<span className="-mx-0.5 absolute inset-0 hover:bg-text/20" />
-			</span>
+				<div className="-mx-0.5 absolute inset-0 rounded-sm hover:bg-text/20" />
+			</div>
 		</span>
 	);
 }

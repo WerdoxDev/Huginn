@@ -94,6 +94,7 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 		}
 
 		const result = md.parse(text, {});
+		console.log(result);
 		const tokens = organizeTokens(result);
 
 		for (const [i, lineTokens] of tokens.entries()) {
@@ -184,6 +185,18 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 							focus: { path, offset: index + 3 + token.info.length },
 						});
 					}
+				}
+
+				// Links have an special href which include the actual whole link instead of the normalized one
+				if (token.type === "link_open") {
+					ranges.push({
+						...getSlateFormats(currentOpenedTokens),
+						anchor: { path, offset: index },
+						focus: { path, offset: index + currentTokenEnd },
+					});
+
+					index += currentTokenEnd;
+					continue;
 				}
 
 				if (token.content) {
