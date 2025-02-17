@@ -7,6 +7,7 @@ import {
 	sharedOnAfterResponse,
 	sharedOnRequest,
 } from "@huginn/backend-shared";
+import consola from "consola";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { showRoutes } from "hono/dev";
@@ -47,6 +48,8 @@ export { app };
 
 await importRoutes();
 showRoutes(app, { colorize: true, verbose: false });
+
+consola.box(`Listening on ${envs.CDN_HOST}:${envs.CDN_PORT}`);
 
 if (!process.env.test) {
 	Bun.serve({
