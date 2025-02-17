@@ -1,7 +1,6 @@
 **/huginn-app
 **/huginn-bundler
 **/huginn-website
-**/huginn-api
 **/node_modules
 
 **/Dockerfile*

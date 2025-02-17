@@ -1,0 +1,37 @@
+services:
+  caddy:
+    image: caddy:latest
+    ports:
+      - "3000:3000"
+    configs:
+      - source: caddy_config
+        target: /etc/caddy/Caddyfile
+    networks:
+      - caddy
+
+  server:
+    image: ghcr.io/werdoxdev/huginn-server:latest
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=3004
+    env_file:
+      - packages/huginn-server/.env
+    networks:
+      - caddy
+  cdn:
+    image: ghcr.io/werdoxdev/huginn-cdn:latest
+    env_file:
+      - packages/huginn-cdn/.env
+    environment:
+      - CDN_HOST=0.0.0.0
+      - CDN_PORT=3002
+    networks:
+      - caddy
+
+networks:
+  caddy:
+    driver: overlay
+
+configs:
+  caddy_config:
+    external: true

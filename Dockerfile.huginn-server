@@ -1,0 +1,33 @@
+# use the official Bun image
+# see all versions at https://hub.docker.com/r/oven/bun/tags
+FROM oven/bun:1.2.2 AS base
+LABEL org.opencontainers.image.source=https://github.com/werdoxdev/huginn
+WORKDIR /src
+
+# install dependencies into temp directory
+# this will cache them and speed up future builds
+FROM base AS install
+RUN mkdir -p /temp/deps
+COPY package.json bun.lock .npmrc /temp/deps/
+COPY packages/huginn-backend-shared/package.json /temp/deps/packages/huginn-backend-shared/package.json
+COPY packages/huginn-shared/package.json /temp/deps/packages/huginn-shared/package.json
+COPY packages/huginn-server/package.json /temp/deps/packages/huginn-server/package.json
+RUN cd /temp/deps && bun install
+# RUN ls -lah /temp/deps && tree /temp/deps
+
+# copy node_modules from temp directory
+# then copy all (non-ignored) project files into the image
+FROM base AS prerelease
+COPY --from=install /temp/deps/node_modules node_modules
+COPY . .
+RUN cd packages/huginn-server && bunx prisma generate
+
+# run the app
+# RUN mkdir -p packages/huginn-cdn/uploads
+# RUN chown -R bun:bun packages/huginn-cdn/uploads
+# RUN chown -R bun:bun packages/huginn-server/package.json
+# RUN chmod 755 packages/huginn-cdn/uploads
+# RUN chmod 755 packages/huginn-server/package.json
+USER bun
+EXPOSE 3004/tcp
+ENTRYPOINT [ "bun", "run", "server" ]
