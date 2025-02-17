@@ -7,6 +7,7 @@ import {
 	sharedOnAfterResponse,
 	sharedOnRequest,
 } from "@huginn/backend-shared";
+import consola from "consola";
 import { Hono } from "hono";
 import { CookieStore, sessionMiddleware } from "hono-sessions";
 import { serveStatic } from "hono/bun";
@@ -63,6 +64,8 @@ await importRoutes();
 app.use("*", serveStatic({ root: "./src/static" }));
 
 showRoutes(app, { colorize: true, verbose: false });
+
+consola.box(`Listening on ${envs.SERVER_HOST}:${envs.SERVER_PORT}`);
 
 if (!process.env.test) {
 	Bun.serve({

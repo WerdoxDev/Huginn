@@ -4,6 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "bun src/index.ts --watch",
+		"start": "bun src/index.ts",
 		"tailwind": "bunx tailwindcss -i ./src/routes/static/input.css -o ./src/routes/static/output.css --watch"
 	},
 	"dependencies": {
