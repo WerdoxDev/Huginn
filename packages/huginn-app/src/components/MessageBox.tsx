@@ -1,12 +1,10 @@
-import { queryClient } from "@/root";
 import type { AppChannelMessage, HuginnToken } from "@/types";
-import { client } from "@contexts/apiContext";
 import { useEvent } from "@contexts/eventContext";
 import { useSendMessage } from "@hooks/mutations/useSendMessage";
 import { useSendTyping } from "@hooks/mutations/useSendTyping";
 import { useChannelName } from "@hooks/useChannelName";
 import { useCurrentChannel } from "@hooks/useCurrentChannel";
-import { FileTypes, MessageFlags, isImageMediaType, resolveFile, resolveImage } from "@huginn/shared";
+import { MessageFlags, isImageMediaType } from "@huginn/shared";
 import { markdownMainEditor } from "@lib/markdown-main";
 import { markdownSpoiler } from "@lib/markdown-spoiler";
 import { markdownUnderline } from "@lib/markdown-underline";
@@ -21,15 +19,18 @@ import {
 	organizeTokens,
 	splitHighlightedTokens,
 } from "@lib/markdown-utils";
-import { getMessagesOptions } from "@lib/queries";
-import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import { getCurrentWebview } from "@tauri-apps/api/webview";
+import { readFile } from "@tauri-apps/plugin-fs";
 import clsx from "clsx";
 import hljs from "highlight.js";
 import markdownit from "markdown-it";
-import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import mime from "mime";
+import { normalize } from "pathe";
+import { type ClipboardEvent, type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router";
 import { type Descendant, Editor, Element, Node, type Path, type Range, createEditor } from "slate";
 import { DefaultElement, Editable, type RenderElementProps, type RenderLeafProps, Slate, withReact } from "slate-react";
+import DraggingIndicator from "./DraggingIndicator";
 import EditorLeaf from "./editor/EditorLeaf";
 import Tooltip from "./tooltip/Tooltip";
 
@@ -47,6 +48,7 @@ const initialValue: Descendant[] = [
 let cache: { text: string; decorations: Record<number, Range[]> } | undefined = undefined;
 
 type AttachmentType = { id: number; dataUrl?: string; arrayBuffer: ArrayBuffer; filename: string; description?: string; contentType: string };
+type AttachmentInputType = { name: string; type: string; arrayBuffer: () => Promise<ArrayBuffer> };
 
 export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 	const editor = useMemo(() => withReact(createEditor()), []);
@@ -58,6 +60,7 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 	const currentChannel = useCurrentChannel();
 	const channelName = useChannelName(currentChannel?.recipients, currentChannel?.name);
 	const [attachments, setAttachments] = useState<AttachmentType[]>([]);
+	const [dragging, setDragging] = useState(false);
 	// const cache = useRef<{ text: string; decorations: Map<number, Range[]> }>(undefined);
 
 	const sendMessageMutation = useSendMessage();
@@ -317,7 +320,7 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 		return nodes.map((n) => Node.string(n)).join("\n");
 	}
 
-	function addFile() {
+	function addFiles() {
 		const input = document.createElement("input");
 		input.type = "file";
 		input.multiple = true;
@@ -327,42 +330,50 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 			const inputFiles = (e.target as HTMLInputElement).files;
 			if (!inputFiles) return;
 
-			const files = Array.from(inputFiles);
-			const attachments: AttachmentType[] = [];
-			for (const [i, file] of files.entries()) {
-				if (!isImageMediaType(file.type)) {
-					attachments.push({ id: i, arrayBuffer: await file.arrayBuffer(), dataUrl: undefined, filename: file.name, contentType: file.type });
-					continue;
-				}
-
-				const reader = new FileReader();
-				reader.readAsDataURL(file);
-
-				const dataUrl = await new Promise<string>((res, rej) => {
-					reader.onload = (readerEvent) => {
-						const content = readerEvent.target?.result;
-						if (typeof content === "string") {
-							res(content);
-						}
-					};
-
-					reader.onerror = () => {
-						rej();
-					};
-				});
-
-				attachments.push({ id: i, arrayBuffer: await file.arrayBuffer(), dataUrl: dataUrl, filename: file.name, contentType: file.type });
-			}
-
-			setAttachments(attachments);
-			editorRef.current?.focus();
+			addAttachments(Array.from(inputFiles));
 		};
 
 		input.click();
 	}
 
+	async function addAttachments(input: AttachmentInputType[]) {
+		const attachments: AttachmentType[] = [];
+		for (const [i, file] of input.entries()) {
+			const arrayBuffer = await file.arrayBuffer();
+			if (!isImageMediaType(file.type)) {
+				attachments.push({ id: i, arrayBuffer: arrayBuffer, dataUrl: undefined, filename: file.name, contentType: file.type });
+				continue;
+			}
+
+			const reader = new FileReader();
+			reader.readAsDataURL(new Blob([arrayBuffer]));
+
+			const dataUrl = await new Promise<string>((res, rej) => {
+				reader.onload = (readerEvent) => {
+					const content = readerEvent.target?.result;
+					if (typeof content === "string") {
+						res(content);
+					}
+				};
+
+				reader.onerror = () => {
+					rej();
+				};
+			});
+
+			attachments.push({ id: i, arrayBuffer: arrayBuffer, dataUrl: dataUrl, filename: file.name, contentType: file.type });
+		}
+
+		setAttachments(attachments);
+		editorRef.current?.focus();
+	}
+
 	function removeAttachment(id: number) {
 		setAttachments((old) => old.filter((x) => x.id !== id));
+	}
+
+	function onPaste(e: ClipboardEvent) {
+		addAttachments(Array.from(e.clipboardData.files));
 	}
 
 	// This is to match the updating of channel messages and message box in a single frame so that upon rendering a new preview message,
@@ -386,15 +397,44 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 			lastHeight = height;
 		});
 
+		const unlisten = getCurrentWebview().onDragDropEvent(async (e) => {
+			if (e.payload.type === "enter") {
+				setDragging(true);
+			} else if (e.payload.type === "leave") {
+				setDragging(false);
+			} else if (e.payload.type === "drop") {
+				const files: AttachmentInputType[] = [];
+				setDragging(false);
+				for (const path of e.payload.paths) {
+					const filename = normalize(path).split("/").pop();
+					const file = await readFile(path);
+					const type = mime.getType(filename);
+
+					if (!type) {
+						continue;
+					}
+
+					files.push({ name: filename, type: type, arrayBuffer: async () => file.buffer as ArrayBuffer });
+				}
+
+				addAttachments(files);
+			}
+		});
+		// const unlisten = listenEvent("files_dragged", (d) => {
+		// 	addAttachments(d.files);
+		// });
+
 		resizeObserver.observe(thisRef.current);
 
 		return () => {
 			resizeObserver.disconnect();
+			unlisten.then((f) => f());
 		};
 	}, []);
 
 	return (
 		<div className="bottom-0 z-10 flex-col px-5 py-1.5" ref={thisRef}>
+			<DraggingIndicator isDragging={dragging} />
 			{attachments.length !== 0 && (
 				<div className="overflow-visible rounded-xl rounded-b-none border-2 border-background border-b-0 bg-tertiary px-2.5 py-2.5 pb-0">
 					<div className="scroll-alternative-x flex gap-x-5 overflow-x-scroll px-2.5 py-2.5 pb-0">
@@ -433,7 +473,7 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 				>
 					<Tooltip>
 						<Tooltip.Trigger
-							onClick={addFile}
+							onClick={addFiles}
 							type="button"
 							className="m-2 mr-2 flex shrink-0 cursor-pointer items-center rounded-full bg-background p-1.5 transition-all hover:bg-white hover:bg-opacity-20 hover:shadow-xl"
 						>
@@ -444,6 +484,7 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 					<div className="h-full w-full overflow-hidden">
 						<Slate editor={editor} initialValue={initialValue}>
 							<Editable
+								onPaste={onPaste}
 								ref={editorRef}
 								placeholder={`Message ${channelName}`}
 								className="h-full whitespace-break-spaces py-3 font-light text-white leading-[24px] caret-white outline-none"

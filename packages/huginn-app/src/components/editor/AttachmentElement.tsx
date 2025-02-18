@@ -1,15 +1,26 @@
 import type { AttachmentElement as SlateAttachmentElement } from "@/index";
+import LoadingIcon from "@components/LoadingIcon";
 import Tooltip from "@components/tooltip/Tooltip";
 import { isImageMediaType } from "@huginn/shared";
 import { getSizeText } from "@lib/utils";
 import { useHuginnWindow } from "@stores/windowStore";
 import { open } from "@tauri-apps/plugin-shell";
 import clsx from "clsx";
+import { useEffect, useRef, useState } from "react";
 import type { RenderElementProps } from "slate-react";
 
 export default function AttachmentElement(props: RenderElementProps) {
 	const { contentType, url, description, size, width, height, filename } = props.element as SlateAttachmentElement;
 	const huginnWindow = useHuginnWindow();
+	const [loaded, setLoaded] = useState(false);
+	const [errored, setErrored] = useState(false);
+	const imgRef = useRef<HTMLImageElement>(null);
+
+	useEffect(() => {
+		if (imgRef.current?.complete) {
+			setLoaded(true);
+		}
+	}, []);
 
 	function download() {
 		if (huginnWindow.environment === "desktop") {
@@ -21,15 +32,30 @@ export default function AttachmentElement(props: RenderElementProps) {
 
 	return (
 		<div {...props.attributes} contentEditable={false}>
-			<div className="mt-1 mb-1 flex flex-col items-start rounded-lg">
+			<div className="relative mt-1 mb-1 flex flex-col items-start rounded-lg">
 				{description && <span className={clsx("text-sm")}>{description}</span>}
 				{isImageMediaType(contentType) ? (
-					<img
-						src={url}
-						alt="huginn"
-						className="rounded-md object-contain"
-						style={{ width: `min(28rem,${width}px)`, height: `min(20rem,${height}px)` }}
-					/>
+					<>
+						<img
+							onError={() => setErrored(true)}
+							loading="lazy"
+							onLoad={() => setLoaded(true)}
+							ref={imgRef}
+							src={url}
+							alt="huginn"
+							className={clsx("rounded-md object-contain", errored && "hidden")}
+							style={{ width: `min(28rem,${width}px)`, height: `min(20rem,${height}px)` }}
+						/>
+						{(!loaded || errored) && (
+							<div
+								className={clsx(!errored && "absolute inset-0", "flex items-center justify-center rounded-md bg-background/40")}
+								style={{ width: `min(28rem,${width}px)`, height: `min(20rem,${height}px)` }}
+							>
+								{!loaded && !errored && <LoadingIcon className="size-16" />}
+								{errored && <IconMingcuteWarningFill className="size-16 text-error" />}
+							</div>
+						)}
+					</>
 				) : (
 					<div className="flex w-full items-center gap-x-2 rounded-lg bg-secondary px-2 py-3">
 						<IconMingcuteFileFill className="size-10 shrink-0" />

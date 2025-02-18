@@ -4,12 +4,13 @@ import ChannelMessages from "@components/channels/ChannelMessages";
 import HomeTopbar from "@components/channels/HomeTopbar";
 import RecipientsSidebar from "@components/channels/RecipientsSidebar";
 import { client, useClient } from "@contexts/apiContext";
+import { useEvent } from "@contexts/eventContext";
 import { useSafePathname } from "@hooks/useLastSafePathname";
 import { useErrorHandler } from "@hooks/useServerErrorHandler";
 import { ChannelType } from "@huginn/shared";
 import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { type DragEvent, useEffect, useState } from "react";
 import type { Route } from "./+types/channels.@me.$channelId";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
@@ -22,6 +23,7 @@ export default function Component({ params: { channelId } }: Route.ComponentProp
 	const { error, data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client, channelId));
 	const channel = useSuspenseQuery(getChannelsOptions(client, "@me")).data?.find((x: { id: string }) => x.id === channelId);
 	const { navigateBack } = useSafePathname();
+	const { dispatchEvent } = useEvent();
 
 	const handleServerError = useErrorHandler();
 

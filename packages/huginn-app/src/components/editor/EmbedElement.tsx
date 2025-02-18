@@ -19,7 +19,13 @@ export default function EmbedElement(props: RenderElementProps) {
 				)}
 				{description && <span className={clsx("text-sm", image && "mb-2")}>{description}</span>}
 				{image && (
-					<img src={image} alt="huginn" className="rounded-md" style={{ width: `min(24rem,${width}px)`, height: `min(20rem,${height}px)` }} />
+					<img
+						src={image}
+						alt="huginn"
+						className="rounded-md"
+						loading="lazy"
+						style={{ width: `min(24rem,${width}px)`, height: `min(20rem,${height}px)` }}
+					/>
 				)}
 			</div>
 		</div>

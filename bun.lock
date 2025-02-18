@@ -22,7 +22,7 @@
     },
     "packages/huginn-api": {
       "name": "@huginn/api",
-      "version": "0.5.0",
+      "version": "0.7.0",
       "dependencies": {
         "@huginn/shared": "workspace:*",
         "@std/encoding": "npm:@jsr/std__encoding",
@@ -35,7 +35,7 @@
     },
     "packages/huginn-app": {
       "name": "huginn-app-react",
-      "version": "0.16.0",
+      "version": "0.19.1",
       "dependencies": {
         "@babel/plugin-syntax-jsx": "^7.25.9",
         "@floating-ui/react": "^0.26.28",
@@ -64,8 +64,10 @@
         "isbot": "^5.1.22",
         "jose": "^5.9.6",
         "markdown-it": "^14.1.0",
+        "mime": "^4.0.6",
         "moment": "^2.30.1",
         "motion": "^11.18.2",
+        "pathe": "^2.0.3",
         "posthog-js": "^1.215.4",
         "react": "^19.0.0",
         "react-cropper": "^2.3.3",
@@ -101,7 +103,7 @@
     },
     "packages/huginn-backend-shared": {
       "name": "@huginn/backend-shared",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "dependencies": {
         "@hono/zod-validator": "^0.4.2",
         "@sapphire/snowflake": "^3.5.3",
@@ -156,7 +158,7 @@
     },
     "packages/huginn-cdn": {
       "name": "@huginn/cdn",
-      "version": "0.4.1",
+      "version": "0.5.0",
       "dependencies": {
         "@aws-sdk/client-s3": "^3.658.1",
         "@huginn/backend-shared": "workspace:*",
@@ -173,7 +175,7 @@
     },
     "packages/huginn-server": {
       "name": "@huginn/server",
-      "version": "0.11.2",
+      "version": "0.13.1",
       "dependencies": {
         "@aws-sdk/client-s3": "^3.714.0",
         "@huginn/backend-shared": "workspace:*",
@@ -211,7 +213,7 @@
     },
     "packages/huginn-shared": {
       "name": "@huginn/shared",
-      "version": "0.5.0",
+      "version": "0.7.0",
       "dependencies": {
         "@sapphire/snowflake": "^3.5.3",
         "@std/encoding": "npm:@jsr/std__encoding",
@@ -2836,6 +2838,8 @@
     "h3/iron-webcrypto": ["iron-webcrypto@1.2.1", "", {}, "sha512-feOM6FaSr6rEABp/eDfVseKyTMDt+KGpeB35SkVn9Tyn0CqvVsY3EwI0v5i8nMHyJnzCIQf7nsy3p41TPkJZhg=="],
 
     "hosted-git-info/lru-cache": ["lru-cache@7.18.3", "", {}, "sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA=="],
+
+    "huginn-app-react/pathe": ["pathe@2.0.3", "", {}, "sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w=="],
 
     "image-type/file-type": ["file-type@10.11.0", "", {}, "sha512-uzk64HRpUZyTGZtVuvrjP0FYxzQrBf4rojot6J65YMEbwBLB0CWm0CLojVpwpmFmxcE/lkvYICgfcGozbBq6rw=="],
 
