@@ -21,6 +21,8 @@ FROM base AS prerelease
 COPY --from=install /temp/deps/node_modules node_modules
 COPY . .
 RUN cd packages/huginn-server && bunx prisma generate
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # run the app
 # RUN mkdir -p packages/huginn-cdn/uploads
@@ -28,6 +30,7 @@ RUN cd packages/huginn-server && bunx prisma generate
 # RUN chown -R bun:bun packages/huginn-server/package.json
 # RUN chmod 755 packages/huginn-cdn/uploads
 # RUN chmod 755 packages/huginn-server/package.json
-USER bun
+# USER bun
 EXPOSE 3004/tcp
-ENTRYPOINT [ "bun", "run", "server" ]
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["packages/huginn-server", "server"]

@@ -13,7 +13,8 @@ uploads
 builds
 target
 
-.env
+*.env
+
 .data
 .nitro
 .cache

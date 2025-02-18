@@ -20,6 +20,8 @@ RUN cd /temp/deps && bun install
 FROM base AS prerelease
 COPY --from=install /temp/deps/node_modules node_modules
 COPY . /src
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # run the app
 # RUN mkdir -p packages/huginn-cdn/uploads
@@ -28,5 +30,6 @@ COPY . /src
 # RUN chmod 755 packages/huginn-cdn/uploads
 # RUN chmod 755 packages/huginn-server/package.json
 USER bun
-EXPOSE 3002
-ENTRYPOINT [ "bun", "run", "cdn" ]
+EXPOSE 3002/tcp
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["packages/huginn-cdn", "cdn"]

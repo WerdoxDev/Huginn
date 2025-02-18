@@ -14,17 +14,21 @@ services:
     environment:
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT=3004
-    env_file:
-      - packages/huginn-server/.env
+      - ALLOWED_ORIGINS=http://localhost:5173/,https://app.huginn.dev/
+      - REDIRECT_HOST=https://midgard.huginn.dev
+      - CDN_PUBLIC_URL=https://midgard.huginn.dev/cdn
+      - CDN_LOCAL_URL=http://cdn:3002/cdn
+    secrets:
+      - backend_secrets
     networks:
       - caddy
   cdn:
     image: ghcr.io/werdoxdev/huginn-cdn:latest
-    env_file:
-      - packages/huginn-cdn/.env
     environment:
       - CDN_HOST=0.0.0.0
       - CDN_PORT=3002
+    secrets:
+      - backend_secrets
     networks:
       - caddy
 
@@ -34,4 +38,8 @@ networks:
 
 configs:
   caddy_config:
+    external: true
+
+secrets:
+  backend_secrets:
     external: true
