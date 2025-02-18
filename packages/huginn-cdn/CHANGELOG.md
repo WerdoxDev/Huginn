@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.6.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.5.0...cdn@v0.6.0) (2025-02-18)
+
+
+### Features
+
+* **cdn:** add startup text ([3f37887](https://github.com/WerdoxDev/Huginn/commit/3f37887a862290c33fbdb1731dbf2c5807e57667))
+* **cdn:** move back to array buffers instead of stream to see if performance is better ([bed7830](https://github.com/WerdoxDev/Huginn/commit/bed78309f636a8b111727286be9bd75e8bc7e95c))
+
+
+### Bug Fixes
+
+* **cdn:** file extension is not correctly found ([84764fd](https://github.com/WerdoxDev/Huginn/commit/84764fd6786c0dbd00763bb5444cf9293a88f7fe))
+* **cdn:** file extension is not normalized to lower case ([fd94b62](https://github.com/WerdoxDev/Huginn/commit/fd94b62320767e1aaff4799a6b09f888f10fac03))
+
 ## [0.5.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.4.1...cdn@v0.5.0) (2025-02-11)
 
 
