@@ -3,7 +3,8 @@ import { type APIGetChannelMessagesResult, HttpCode, idFix, nullToUndefined } fr
 import { z } from "zod";
 import { prisma } from "#database";
 import { selectMessageDefaults } from "#database/common";
-import { verifyJwt } from "#utils/route-utils";
+import { envs } from "#setup";
+import { getAttachmentUrl, verifyJwt } from "#utils/route-utils";
 
 const querySchema = z.object({ limit: z.optional(z.string()), before: z.optional(z.string()), after: z.optional(z.string()) });
 
@@ -25,7 +26,7 @@ createRoute("GET", "/api/channels/:channelId/messages", verifyJwt(), validator("
 	const messages: APIGetChannelMessagesResult = dbMessages.map((x) => ({
 		...x,
 		embeds: nullToUndefined(x.embeds),
-		attachments: nullToUndefined(x.attachments),
+		attachments: nullToUndefined(x.attachments.map((x) => ({ ...x, url: getAttachmentUrl(x.url) }))),
 	}));
 
 	return c.json(messages, HttpCode.OK);

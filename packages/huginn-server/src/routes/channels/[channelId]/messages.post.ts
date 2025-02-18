@@ -20,7 +20,7 @@ import { prisma } from "#database";
 import { selectMessageDefaults } from "#database/common";
 import { envs } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { extractEmbedTags, extractLinks, getImageData, verifyJwt } from "#utils/route-utils";
+import { extractEmbedTags, extractLinks, getAttachmentUrl, getImageData, verifyJwt } from "#utils/route-utils";
 import { cdnUpload, serverFetch } from "#utils/server-request";
 import type { DBAttachment, DBEmbed } from "#utils/types";
 import { validateEmbeds } from "#utils/validation";
@@ -136,7 +136,7 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 				flags: 0,
 				width: imageData?.width,
 				height: imageData?.height,
-				url: `${envs.CDN_PUBLIC_URL}/attachments/${channelId}/${messageId}/${name}`,
+				url: `attachments/${channelId}/${messageId}/${name}`,
 			});
 		}
 	}
@@ -184,7 +184,11 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 
 	// dbMessage.attachments[0].
 
-	const message: APIMessage = { ...dbMessage, embeds: nullToUndefined(dbMessage.embeds), attachments: nullToUndefined(dbMessage.attachments) };
+	const message: APIMessage = {
+		...dbMessage,
+		embeds: nullToUndefined(dbMessage.embeds),
+		attachments: nullToUndefined(dbMessage.attachments.map((x) => ({ ...x, url: getAttachmentUrl(x.url) }))),
+	};
 	message.nonce = body.nonce;
 
 	dispatchToTopic(channelId, "message_create", message);
@@ -220,7 +224,7 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 		dispatchToTopic(channelId, "message_update", {
 			...updatedMessage,
 			embeds: nullToUndefined(updatedMessage.embeds),
-			attachments: nullToUndefined(updatedMessage.attachments),
+			attachments: nullToUndefined(updatedMessage.attachments.map((x) => ({ ...x, url: getAttachmentUrl(x.url) }))),
 		});
 	});
 

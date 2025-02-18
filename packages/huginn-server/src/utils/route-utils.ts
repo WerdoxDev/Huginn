@@ -191,3 +191,27 @@ export async function getImageData(source: string | ArrayBuffer, maxWidth: numbe
 		return undefined;
 	}
 }
+
+export function getAttachmentUrl(url: string) {
+	try {
+		const cdnBase = new URL(envs.CDN_PUBLIC_URL ?? ""); // Ensure newBase is a valid URL
+
+		let old: URL;
+		try {
+			old = new URL(url); // Check if oldUrl is absolute
+			old.pathname = old.pathname.replace(cdnBase.pathname, "");
+			old.pathname = cdnBase.pathname.replace(/\/$/, "") + old.pathname; // Preserve newBase's path
+			old = new URL(old.pathname, cdnBase);
+		} catch {
+			// If oldUrl is relative, ensure correct path joining
+			const newUrl = url.replace(/^\/+/, ""); // Remove leading slashes
+			cdnBase.pathname = `${cdnBase.pathname.replace(/\/$/, "")}/${newUrl}`; // Append correctly
+			old = cdnBase;
+		}
+
+		return old.toString();
+	} catch (error) {
+		console.error("Invalid URL:", error);
+		return url;
+	}
+}
