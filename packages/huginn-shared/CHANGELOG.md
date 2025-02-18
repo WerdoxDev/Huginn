@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/WerdoxDev/Huginn/compare/shared@v0.7.0...shared@v0.7.1) (2025-02-18)
+
+
+### Bug Fixes
+
+* **api:** add the browser checking function to utils ([45b6851](https://github.com/WerdoxDev/Huginn/commit/45b6851743e4ca6e2ae32a689b139f3d9af70bbe))
+
 ## [0.7.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.6.0...shared@v0.7.0) (2025-02-15)
 
 
