@@ -1,6 +1,6 @@
 import { CDNError } from "@huginn/backend-shared";
 import { CDNErrorType } from "@huginn/backend-shared/types";
-import { type FileContentTypes, type FileFormats, FileTypes } from "@huginn/shared";
+import { type FileContentTypes, type FileFormats, fileTypes } from "@huginn/shared";
 import sharp from "sharp";
 import { storage } from "#setup";
 import type { FileCategory, FileInfo } from "./types";
@@ -10,12 +10,12 @@ export function extractFileInfo(filename: string): FileInfo {
 	const extension = filename.slice(extensionStartIndex + 1).toLowerCase();
 	const name = filename.slice(0, extensionStartIndex);
 
-	if (!Object.keys(FileTypes).some((x) => x === extension)) {
+	if (!Object.keys(fileTypes).some((x) => x === extension)) {
 		return { name, format: extension, mimeType: "application/octet-stream" };
 	}
 
-	const format = extension as keyof typeof FileTypes;
-	const mimeType = FileTypes[format] as FileContentTypes;
+	const format = extension as keyof typeof fileTypes;
+	const mimeType = fileTypes[format] as FileContentTypes;
 
 	return { name, format, mimeType };
 }

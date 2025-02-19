@@ -14,20 +14,20 @@ export class FileStorage extends Storage {
 			const file = Bun.file(join(envs.UPLOADS_DIR, category, ...subDirectory.split("/"), name));
 
 			if (!(await file.exists())) {
-				logFileNotFound(category, name);
+				logFileNotFound(category, subDirectory, name);
 				return undefined;
 			}
 
-			logGetFile(category, name);
+			logGetFile(category, subDirectory, name);
 			return await file.arrayBuffer();
 		} catch (e) {
-			logFileNotFound(category, name);
+			logFileNotFound(category, subDirectory, name);
 			return undefined;
 		}
 	}
 
 	public async writeFile(category: FileCategory, subDirectory: string, name: string, data: string | ArrayBuffer): Promise<boolean> {
-		logWriteFile(category, name);
+		logWriteFile(category, subDirectory, name);
 		try {
 			await Bun.write(join(envs.UPLOADS_DIR, category, subDirectory, name), data);
 			return true;
@@ -41,7 +41,7 @@ export class FileStorage extends Storage {
 		try {
 			return await Bun.file(join(envs.UPLOADS_DIR, category, subDirectory, name)).exists();
 		} catch (e) {
-			logFileNotFound(category, name);
+			logFileNotFound(category, subDirectory, name);
 			return false;
 		}
 	}
