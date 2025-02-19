@@ -22,16 +22,16 @@ export class S3Storage extends Storage {
 			const cmd = new GetObjectCommand({ Bucket: envs.AWS_BUCKET, Key: join(category, ...subDirectory.split("/"), name) });
 			const result = await this.s3.send(cmd);
 
-			logGetFile(category, name);
+			logGetFile(category, subDirectory, name);
 			return (await result.Body?.transformToByteArray())?.buffer as ArrayBuffer;
 		} catch (e) {
-			logFileNotFound(category, name);
+			logFileNotFound(category, subDirectory, name);
 			return undefined;
 		}
 	}
 
 	public async writeFile(category: FileCategory, subDirectory: string, name: string, data: string | ArrayBuffer): Promise<boolean> {
-		logWriteFile(category, name);
+		logWriteFile(category, subDirectory, name);
 		try {
 			const cmd = new PutObjectCommand({
 				Bucket: envs.AWS_BUCKET,
@@ -52,7 +52,7 @@ export class S3Storage extends Storage {
 			const result = await this.s3.send(cmd);
 			return true;
 		} catch (e) {
-			logFileNotFound(category, name);
+			logFileNotFound(category, subDirectory, name);
 			return false;
 		}
 	}
