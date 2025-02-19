@@ -225,3 +225,23 @@ export function isBrowser(): boolean {
 		return false;
 	}
 }
+
+export function constrainImageSize(
+	width: number,
+	height: number,
+	maxWidth: number,
+	maxHeight: number,
+	minimumSize?: boolean,
+): { width: number; height: number } {
+	const aspectRatio = width / height;
+
+	let newWidth = minimumSize ? Math.min(width, maxWidth) : maxWidth;
+	let newHeight = newWidth / aspectRatio;
+
+	if (newHeight > maxHeight) {
+		newHeight = maxHeight;
+		newWidth = newHeight * aspectRatio;
+	}
+
+	return { width: newWidth, height: newHeight };
+}
