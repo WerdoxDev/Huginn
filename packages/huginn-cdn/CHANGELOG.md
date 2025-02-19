@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.6.0...cdn@v0.7.0) (2025-02-19)
+
+
+### Features
+
+* **cdn:** add quality option to attachment  fetching ([7f4ba7e](https://github.com/WerdoxDev/Huginn/commit/7f4ba7e9c192392ffd81ca56a81d920f894edbdb))
+* **cdn:** add subdirectory in logs ([7ec8767](https://github.com/WerdoxDev/Huginn/commit/7ec87672da5fdc0434aa08b012ce422245d97182))
+
 ## [0.6.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.5.0...cdn@v0.6.0) (2025-02-18)
 
 

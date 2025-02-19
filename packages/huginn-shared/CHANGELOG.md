@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.8.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.7.1...shared@v0.8.0) (2025-02-19)
+
+
+### Features
+
+* **shared:** add new utility and increase access token expiree ([9587456](https://github.com/WerdoxDev/Huginn/commit/9587456ba062a01a1ea8d8625d706e05db4dd038))
+
+
+### Bug Fixes
+
+* **shared:** fix some name issues ([809070e](https://github.com/WerdoxDev/Huginn/commit/809070ec05347ccbd4d7883ab13908b53b3df987))
+
 ## [0.7.1](https://github.com/WerdoxDev/Huginn/compare/shared@v0.7.0...shared@v0.7.1) (2025-02-18)
 
 

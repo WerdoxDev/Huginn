@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.4.0...backend-shared@v0.5.0) (2025-02-19)
+
+
+### Features
+
+* **backend-shared:** add subdirectory in logs ([6a7b2b3](https://github.com/WerdoxDev/Huginn/commit/6a7b2b38e5bfc802428be7660bb70013161a6244))
+
 ## [0.4.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.3.0...backend-shared@v0.4.0) (2025-02-11)
 
 
