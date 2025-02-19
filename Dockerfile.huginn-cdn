@@ -29,7 +29,7 @@ RUN chmod +x /entrypoint.sh
 # RUN chown -R bun:bun packages/huginn-cdn/package.json
 # RUN chmod 755 packages/huginn-cdn/uploads
 # RUN chmod 755 packages/huginn-server/package.json
-USER bun
+# USER bun
 EXPOSE 3002/tcp
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["packages/huginn-cdn", "cdn"]

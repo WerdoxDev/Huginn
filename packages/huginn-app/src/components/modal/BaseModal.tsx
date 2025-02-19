@@ -4,7 +4,13 @@ import clsx from "clsx";
 import { type ReactNode, Suspense } from "react";
 import ModalBackground from "./ModalBackground";
 
-export default function BaseModal(props: { modal: { isOpen: boolean }; onClose: () => void; children?: ReactNode; renderChildren: ReactNode }) {
+export default function BaseModal(props: {
+	modal: { isOpen: boolean };
+	onClose: () => void;
+	children?: ReactNode;
+	renderChildren: ReactNode;
+	backgroundClassName?: string;
+}) {
 	const huginnWindow = useHuginnWindow();
 	return (
 		<Suspense>
@@ -14,7 +20,7 @@ export default function BaseModal(props: { modal: { isOpen: boolean }; onClose: 
 				onClose={props.onClose}
 				className="relative z-10 transition duration-200 data-[closed]:opacity-0"
 			>
-				<ModalBackground />
+				<ModalBackground className={props.backgroundClassName} />
 				<div className={clsx("fixed inset-0", huginnWindow.environment === "desktop" && "top-6")}>
 					<div className="flex h-full w-full items-center justify-center">{props.renderChildren}</div>
 				</div>

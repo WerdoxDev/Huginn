@@ -1,12 +1,13 @@
 import type { AttachmentElement as SlateAttachmentElement } from "@/index";
 import LoadingIcon from "@components/LoadingIcon";
 import Tooltip from "@components/tooltip/Tooltip";
-import { isImageMediaType } from "@huginn/shared";
+import { useModalsDispatch } from "@contexts/modalContext";
+import { constrainImageSize, isImageMediaType } from "@huginn/shared";
 import { getSizeText } from "@lib/utils";
 import { useHuginnWindow } from "@stores/windowStore";
 import { open } from "@tauri-apps/plugin-shell";
 import clsx from "clsx";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { RenderElementProps } from "slate-react";
 
 export default function AttachmentElement(props: RenderElementProps) {
@@ -15,6 +16,8 @@ export default function AttachmentElement(props: RenderElementProps) {
 	const [loaded, setLoaded] = useState(false);
 	const [errored, setErrored] = useState(false);
 	const imgRef = useRef<HTMLImageElement>(null);
+	const dimensions = useMemo(() => constrainImageSize(width ?? 0, height ?? 0, 448, 320, true), [width, height]);
+	const dispatch = useModalsDispatch();
 
 	useEffect(() => {
 		if (imgRef.current?.complete) {
@@ -42,14 +45,15 @@ export default function AttachmentElement(props: RenderElementProps) {
 							onLoad={() => setLoaded(true)}
 							ref={imgRef}
 							src={url}
-							alt="huginn"
-							className={clsx("rounded-md object-contain", errored && "hidden")}
-							style={{ width: `min(28rem,${width}px)`, height: `min(20rem,${height}px)` }}
+							alt={filename}
+							onClick={() => dispatch({ magnifiedImage: { isOpen: true, url, width, height, filename } })}
+							className={clsx("cursor-pointer rounded-md object-contain", errored && "hidden")}
+							style={{ width: `${dimensions.width}px`, height: `${dimensions.height}px` }}
 						/>
 						{(!loaded || errored) && (
 							<div
 								className={clsx(!errored && "absolute inset-0", "flex items-center justify-center rounded-md bg-background/40")}
-								style={{ width: `min(28rem,${width}px)`, height: `min(20rem,${height}px)` }}
+								style={{ width: `${dimensions.width}px`, height: `${dimensions.height}px` }}
 							>
 								{!loaded && !errored && <LoadingIcon className="size-16" />}
 								{errored && <IconMingcuteWarningFill className="size-16 text-error" />}

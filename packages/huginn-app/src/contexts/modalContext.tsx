@@ -29,6 +29,7 @@ export type ModalContextType = {
 	createDM: DefaultModal;
 	editGroup: DefaultModal & { channel?: APIChannel };
 	addRecipient: DefaultModal & { channelId: Snowflake };
+	magnifiedImage: DefaultModal & { url: string; width: number; height: number; filename: string };
 };
 
 const defaultValue: ModalContextType = {
@@ -38,6 +39,7 @@ const defaultValue: ModalContextType = {
 	createDM: { isOpen: false },
 	editGroup: { isOpen: false },
 	addRecipient: { isOpen: false, channelId: "" },
+	magnifiedImage: { isOpen: false, url: "", filename: "", width: 0, height: 0 },
 };
 
 const ModalContext = createContext<ModalContextType>(defaultValue);
@@ -60,8 +62,9 @@ function modalsReducer(modals: ModalContextType, action: DeepPartial<ModalContex
 	const createDM = action.createDM ? Object.assign({}, modals.createDM, action.createDM) : modals.createDM;
 	const editGroup = action.editGroup ? Object.assign({}, modals.editGroup, action.editGroup) : modals.editGroup;
 	const addRecipient = action.addRecipient ? Object.assign({}, modals.addRecipient, action.addRecipient) : modals.addRecipient;
+	const magnifiedImage = action.magnifiedImage ? Object.assign({}, modals.magnifiedImage, action.magnifiedImage) : modals.magnifiedImage;
 
-	return { settings, info, imageCrop, createDM, editGroup, addRecipient };
+	return { settings, info, imageCrop, createDM, editGroup, addRecipient, magnifiedImage };
 }
 
 export function useModals() {
