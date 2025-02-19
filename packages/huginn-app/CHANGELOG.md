@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.21.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.20.0...app@v0.21.0) (2025-02-19)
+
+
+### Features
+
+* **app:** add magnifying image capability ([e535c49](https://github.com/WerdoxDev/Huginn/commit/e535c4940c45d4e158eb4a456e4febc2a9661343))
+* **app:** add magnifying loading indicator + orignal open button ([77f41e2](https://github.com/WerdoxDev/Huginn/commit/77f41e2589253580bd04a8065f23597d3285d5ba))
+
 ## [0.20.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.19.1...app@v0.20.0) (2025-02-18)
 
 

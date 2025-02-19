@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.14.0...server@v0.15.0) (2025-02-19)
+
+
+### Features
+
+* **server:** remove image size constrains in favour of app auto constrains ([3f439bb](https://github.com/WerdoxDev/Huginn/commit/3f439bb7d0d6e8dcb7f3ab31b3d8cac0ee1fb4b3))
+
 ## [0.14.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.13.1...server@v0.14.0) (2025-02-18)
 
 
