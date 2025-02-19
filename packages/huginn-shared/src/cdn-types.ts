@@ -12,7 +12,7 @@ export type ImageURLOptions = {
 	forceStatic?: boolean;
 };
 
-export const FileTypes = {
+export const fileTypes = {
 	png: "image/png",
 	jpeg: "image/jpeg",
 	jpg: "image/jpeg",
@@ -23,5 +23,5 @@ export const FileTypes = {
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-export type FileFormats = keyof typeof FileTypes | (string & {});
-export type FileContentTypes = (typeof FileTypes)[keyof typeof FileTypes];
+export type FileFormats = keyof typeof fileTypes | (string & {});
+export type FileContentTypes = (typeof fileTypes)[keyof typeof fileTypes];

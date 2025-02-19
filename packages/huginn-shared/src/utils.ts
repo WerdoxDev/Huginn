@@ -1,5 +1,5 @@
 import { sha256 } from "ohash";
-import { FileTypes } from "./cdn-types";
+import { fileTypes } from "./cdn-types";
 import type { GatewayOperationTypes } from "./gateway-types";
 
 export function pick<Data extends object, Keys extends keyof Data>(data: Data, keys: Keys[]): Pick<Data, Keys> {
@@ -211,7 +211,7 @@ export function arrayEqual(a1: unknown[] | undefined, a2: unknown[] | undefined)
 }
 
 export function isImageMediaType(type: string): boolean {
-	if (type === FileTypes.gif || type === FileTypes.jpeg || type === FileTypes.jpg || type === FileTypes.png || type === FileTypes.webp) {
+	if (type === fileTypes.gif || type === fileTypes.jpeg || type === fileTypes.jpg || type === fileTypes.png || type === fileTypes.webp) {
 		return true;
 	}
 
@@ -226,22 +226,23 @@ export function isBrowser(): boolean {
 	}
 }
 
-export function constrainImageSize(
-	width: number,
-	height: number,
-	maxWidth: number,
-	maxHeight: number,
-	minimumSize?: boolean,
-): { width: number; height: number } {
+export function constrainImageSize(width: number, height: number, maxWidth: number, maxHeight: number): { width: number; height: number } {
 	const aspectRatio = width / height;
 
-	let newWidth = minimumSize ? Math.min(width, maxWidth) : maxWidth;
-	let newHeight = newWidth / aspectRatio;
+	let newWidth = width;
+	let newHeight = height;
+
+	if (width > maxWidth) {
+		newWidth = maxWidth;
+		newHeight = newWidth / aspectRatio;
+	}
 
 	if (newHeight > maxHeight) {
 		newHeight = maxHeight;
 		newWidth = newHeight * aspectRatio;
 	}
+
+	console.log("RES", newWidth, newHeight, width, height);
 
 	return { width: newWidth, height: newHeight };
 }
