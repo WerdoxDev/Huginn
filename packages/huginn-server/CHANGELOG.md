@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.14.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.13.1...server@v0.14.0) (2025-02-18)
+
+
+### Features
+
+* **server:** add startup text ([c386c63](https://github.com/WerdoxDev/Huginn/commit/c386c63423fd26f4ab2f34ad47def2633acaa8a6))
+* **server:** add utility function to get an attachments url ([9a61380](https://github.com/WerdoxDev/Huginn/commit/9a6138064b0ad28e2457a634acbd947e956b1919))
+
+
+### Bug Fixes
+
+* **server:** cdn attachments url is a localhost and not midgard ([981e764](https://github.com/WerdoxDev/Huginn/commit/981e76453cbe952aaf4f64410e949568a9bd5b4f))
+* **server:** use better names for cdn local and public url ([e63055e](https://github.com/WerdoxDev/Huginn/commit/e63055e62b97656b1eb21ba41718ab22ab95667e))
+
 ## [0.13.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.13.0...server@v0.13.1) (2025-02-15)
 
 

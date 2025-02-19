@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.20.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.19.1...app@v0.20.0) (2025-02-18)
+
+
+### Features
+
+* **app:** copy pasting + drag dropping images for attachments ([69e37dd](https://github.com/WerdoxDev/Huginn/commit/69e37ddcc744ed85d7d5b076b7a443cf77966f5b))
+* **app:** fix markdown hardbreak and link href ([bea96c6](https://github.com/WerdoxDev/Huginn/commit/bea96c6c8d3ed4b09987eacad3747e802cec20e5))
+
 ## [0.19.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.19.0...app@v0.19.1) (2025-02-15)
 
 

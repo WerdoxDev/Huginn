@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.7.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.7.0...api@v0.7.1) (2025-02-18)
+
+
+### Bug Fixes
+
+* **api:** add the browser checking function to utils ([45b6851](https://github.com/WerdoxDev/Huginn/commit/45b6851743e4ca6e2ae32a689b139f3d9af70bbe))
+* **api:** make files optional on createMessage ([4ab9e83](https://github.com/WerdoxDev/Huginn/commit/4ab9e839b113a9807a9adc72327ae2e765c9a8d6))
+* **api:** prevent non browser environments from using XHR ([0ac5cd0](https://github.com/WerdoxDev/Huginn/commit/0ac5cd03a0e8501fe43ef0cf57272bbaff9b0b73))
+* **api:** remove error throws from gateway authenticate because they cannot be catched ([e1385ca](https://github.com/WerdoxDev/Huginn/commit/e1385ca7592ebb831b5c5fbf286523f954a238e7))
+
 ## [0.7.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.6.0...api@v0.7.0) (2025-02-15)
 
 
