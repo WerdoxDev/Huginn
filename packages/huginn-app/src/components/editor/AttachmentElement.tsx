@@ -2,6 +2,7 @@ import type { AttachmentElement as SlateAttachmentElement } from "@/index";
 import LoadingIcon from "@components/LoadingIcon";
 import Tooltip from "@components/tooltip/Tooltip";
 import { useModalsDispatch } from "@contexts/modalContext";
+import { useOpen } from "@hooks/useOpen";
 import { constrainImageSize, isImageMediaType } from "@huginn/shared";
 import { getSizeText } from "@lib/utils";
 import { useHuginnWindow } from "@stores/windowStore";
@@ -12,11 +13,11 @@ import type { RenderElementProps } from "slate-react";
 
 export default function AttachmentElement(props: RenderElementProps) {
 	const { contentType, url, description, size, width, height, filename } = props.element as SlateAttachmentElement;
-	const huginnWindow = useHuginnWindow();
+	const { openUrl } = useOpen();
 	const [loaded, setLoaded] = useState(false);
 	const [errored, setErrored] = useState(false);
 	const imgRef = useRef<HTMLImageElement>(null);
-	const dimensions = useMemo(() => constrainImageSize(width ?? 0, height ?? 0, 448, 320, true), [width, height]);
+	const dimensions = useMemo(() => constrainImageSize(width ?? 0, height ?? 0, 448, 320), [width, height]);
 	const dispatch = useModalsDispatch();
 
 	useEffect(() => {
@@ -24,14 +25,6 @@ export default function AttachmentElement(props: RenderElementProps) {
 			setLoaded(true);
 		}
 	}, []);
-
-	function download() {
-		if (huginnWindow.environment === "desktop") {
-			open(url);
-		} else {
-			window.open(url);
-		}
-	}
 
 	return (
 		<div {...props.attributes} contentEditable={false}>
@@ -44,7 +37,7 @@ export default function AttachmentElement(props: RenderElementProps) {
 							loading="lazy"
 							onLoad={() => setLoaded(true)}
 							ref={imgRef}
-							src={url}
+							src={`${url}?quality=50`}
 							alt={filename}
 							onClick={() => dispatch({ magnifiedImage: { isOpen: true, url, width, height, filename } })}
 							className={clsx("cursor-pointer rounded-md object-contain", errored && "hidden")}
@@ -64,13 +57,13 @@ export default function AttachmentElement(props: RenderElementProps) {
 					<div className="flex w-full items-center gap-x-2 rounded-lg bg-secondary px-2 py-3">
 						<IconMingcuteFileFill className="size-10 shrink-0" />
 						<div className="flex flex-col justify-center gap-y-0.5">
-							<div className="cursor-pointer text-accent text-sm hover:underline" onClick={download}>
+							<div className="cursor-pointer text-accent text-sm hover:underline" onClick={() => openUrl(url)}>
 								{filename}
 							</div>
 							<div className="text-white/50 text-xs">{getSizeText(size)}</div>
 						</div>
 						<Tooltip>
-							<Tooltip.Trigger className="ml-auto" onClick={download}>
+							<Tooltip.Trigger className="ml-auto" onClick={() => openUrl(url)}>
 								<IconMingcuteDownload2Fill className="size-6 text-white/50 transition-colors duration-100 hover:text-white" />
 							</Tooltip.Trigger>
 							<Tooltip.Content>Download</Tooltip.Content>
