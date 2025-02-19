@@ -140,25 +140,28 @@ export function logGatewaySend(topics: string | string[], data: GatewayPayload, 
 	consola.info(`${gatewaySend} ${divider} ${topicText} ${divider} ${opcodeText} (${opcodeNumberText}) ${divider} ${dataText}`);
 }
 
-export function logGetFile(category: string, name: string): void {
+export function logGetFile(category: string, subDirectory: string, name: string): void {
 	const categoryText = colors.blue(category);
 	const nameText = colors.green(name);
+	const subDirectoryText = colors.green(subDirectory);
 
-	consola.info(`${getFile} ${divider} ${categoryText} ${divider} ${nameText}`);
+	consola.info(`${getFile} ${divider} ${categoryText} ${divider} ${subDirectoryText} ${divider} ${nameText}`);
 }
 
-export function logWriteFile(category: string, name: string): void {
+export function logWriteFile(category: string, subDirectory: string, name: string): void {
 	const categoryText = colors.blue(category);
 	const nameText = colors.green(name);
+	const subDirectoryText = colors.green(subDirectory);
 
-	consola.info(`${writeFile} ${divider} ${categoryText} ${divider} ${nameText}`);
+	consola.info(`${writeFile} ${divider} ${categoryText} ${divider} ${subDirectoryText} ${divider} ${nameText}`);
 }
 
-export function logFileNotFound(category: string, name: string): void {
+export function logFileNotFound(category: string, subDirectory: string, name: string): void {
 	const categoryText = colors.blue(category);
 	const nameText = colors.green(name);
+	const subDirectoryText = colors.green(subDirectory);
 
-	consola.info(`${notFoundFile} ${divider} ${categoryText} ${divider} ${nameText}`);
+	consola.info(`${notFoundFile} ${divider} ${categoryText} ${divider} ${subDirectoryText} ${divider} ${nameText}`);
 }
 
 export function logCDNRequest(path: string, method: string): void {
