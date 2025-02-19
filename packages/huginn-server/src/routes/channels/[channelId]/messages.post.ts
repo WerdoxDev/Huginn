@@ -3,7 +3,6 @@ import {
 	type APIMessage,
 	CDNRoutes,
 	Errors,
-	FileTypes,
 	HttpCode,
 	MessageType,
 	WorkerID,
@@ -13,15 +12,12 @@ import {
 	snowflake,
 } from "@huginn/shared";
 import { safeDestr } from "destr";
-import type { ProbeResult } from "probe-image-size";
-import type { Metadata } from "sharp";
 import { z } from "zod";
 import { prisma } from "#database";
 import { selectMessageDefaults } from "#database/common";
-import { envs } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { extractEmbedTags, extractLinks, getAttachmentUrl, getImageData, verifyJwt } from "#utils/route-utils";
-import { cdnUpload, serverFetch } from "#utils/server-request";
+import { cdnUpload } from "#utils/server-request";
 import type { DBAttachment, DBEmbed } from "#utils/types";
 import { validateEmbeds } from "#utils/validation";
 
@@ -125,7 +121,7 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 
 			let imageData: { width: number; height: number } | undefined;
 			if (isImageMediaType(file.type)) {
-				imageData = await getImageData(fileArrayBuffer, 448, 320);
+				imageData = await getImageData(fileArrayBuffer);
 			}
 
 			processedAttachments.push({
@@ -147,7 +143,7 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 		for (const embed of body.embeds) {
 			let thumbnailData: { width: number; height: number } | undefined;
 			if (embed.thumbnail && (!embed.thumbnail.width || !embed.thumbnail.height)) {
-				thumbnailData = await getImageData(embed.thumbnail.url, 384, 320);
+				thumbnailData = await getImageData(embed.thumbnail.url);
 			}
 
 			processedEmbeds.push({
@@ -203,7 +199,7 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 				// Fetch image data from embed
 				let thumbnailData: { width: number; height: number } | undefined;
 				if (metadata.image) {
-					thumbnailData = await getImageData(metadata.image, 384, 320);
+					thumbnailData = await getImageData(metadata.image);
 				}
 
 				embeds.push({

@@ -1,5 +1,5 @@
 import { unauthorized } from "@huginn/backend-shared";
-import type { IdentityTokenPayload, TokenPayload, Unpacked } from "@huginn/shared";
+import { type IdentityTokenPayload, type TokenPayload, type Unpacked, constrainImageSize } from "@huginn/shared";
 import type { Endpoints } from "@octokit/types";
 import { createMiddleware } from "hono/factory";
 import { JSDOM } from "jsdom";
@@ -161,7 +161,7 @@ export async function extractEmbedTags(url: string): Promise<Record<string, stri
 	}
 }
 
-export async function getImageData(source: string | ArrayBuffer, maxWidth: number, maxHeight: number) {
+export async function getImageData(source: string | ArrayBuffer) {
 	try {
 		let arrayBuffer: ArrayBuffer;
 		if (typeof source === "string") {
@@ -171,21 +171,9 @@ export async function getImageData(source: string | ArrayBuffer, maxWidth: numbe
 		}
 
 		const metadata = await sharp(arrayBuffer).metadata();
-		const width = metadata?.width ?? 0;
-		const height = metadata?.height ?? 0;
-		const aspectRatio = width / (height ?? 0);
+		// const newDimensions = constrainImageSize(metadata.width ?? 0, metadata.height ?? 0, maxWidth, maxHeight, true);
 
-		// Calculate width first
-		let newWidth = Math.min(width, maxWidth);
-		let newHeight = newWidth / aspectRatio;
-
-		// If the new height exceeds maxHeight, adjust it
-		if (newHeight > maxHeight) {
-			newHeight = maxHeight;
-			newWidth = newHeight * aspectRatio;
-		}
-
-		return { width: newWidth, height: newHeight };
+		return { width: metadata.width ?? 0, height: metadata.height ?? 0 };
 	} catch (e) {
 		console.error("Error fetching image data:", e);
 		return undefined;
