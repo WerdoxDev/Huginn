@@ -2,12 +2,17 @@ services:
   caddy:
     image: caddy:latest
     ports:
-      - "3000:3000"
+      - "443:443"
+      - "80:80"
     configs:
       - source: caddy_config
         target: /etc/caddy/Caddyfile
     networks:
       - caddy
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
 
   server:
     image: ghcr.io/werdoxdev/huginn-server:latest
@@ -16,12 +21,16 @@ services:
       - SERVER_PORT=3004
       - ALLOWED_ORIGINS=http://localhost:5173/,https://app.huginn.dev/
       - REDIRECT_HOST=https://midgard.huginn.dev
-      - CDN_PUBLIC_URL=https://midgard.huginn.dev/cdn
+      # - CDN_PUBLIC_URL=https://midgard.huginn.dev/cdn
+      # - CDN_PUBLIC_URL=http://192.168.178.62:3000/cdn
       - CDN_LOCAL_URL=http://cdn:3002/cdn
     secrets:
       - backend_secrets
     networks:
       - caddy
+    depends_on:
+      - caddy
+    restart: always
   cdn:
     image: ghcr.io/werdoxdev/huginn-cdn:latest
     environment:
@@ -31,6 +40,9 @@ services:
       - backend_secrets
     networks:
       - caddy
+    depends_on:
+      - caddy
+    restart: always
 
 networks:
   caddy:
@@ -39,6 +51,10 @@ networks:
 configs:
   caddy_config:
     external: true
+
+volumes:
+  caddy_data:
+  caddy_config:
 
 secrets:
   backend_secrets:

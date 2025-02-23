@@ -19,7 +19,8 @@ RUN cd /temp/deps && bun install
 # then copy all (non-ignored) project files into the image
 FROM base AS prerelease
 COPY --from=install /temp/deps/node_modules node_modules
-COPY . .
+COPY . /src
+RUN rm -rf /src/packages/huginn-cdn
 RUN cd packages/huginn-server && bunx prisma generate
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
