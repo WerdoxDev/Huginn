@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.7.0...cdn@v0.8.0) (2025-02-23)
+
+
+### Features
+
+* **cdn:** add concurrency limiting + save image with quality query param ([0248707](https://github.com/WerdoxDev/Huginn/commit/024870757a6d82d54235db48dac91648a7ace706))
+
 ## [0.7.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.6.0...cdn@v0.7.0) (2025-02-19)
 
 

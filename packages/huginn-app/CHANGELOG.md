@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.21.0...app@v0.22.0) (2025-02-23)
+
+
+### Features
+
+* **app:** add attachments animation + quality reduction after a certain size ([0b96e3a](https://github.com/WerdoxDev/Huginn/commit/0b96e3a45e588cbcd17c94a3318b2984073c1461))
+
 ## [0.21.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.20.0...app@v0.21.0) (2025-02-19)
 
 

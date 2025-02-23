@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.8.0...shared@v0.9.0) (2025-02-23)
+
+
+### Features
+
+* **shared:** add changeUrlBase utility ([756b858](https://github.com/WerdoxDev/Huginn/commit/756b8583d05713062455b240605dc7c9f293dfa2))
+
 ## [0.8.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.7.1...shared@v0.8.0) (2025-02-19)
 
 
