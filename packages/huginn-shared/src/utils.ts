@@ -246,3 +246,27 @@ export function constrainImageSize(width: number, height: number, maxWidth: numb
 
 	return { width: newWidth, height: newHeight };
 }
+
+export function changeUrlBase(url: string, newBase: string): string {
+	try {
+		const newBaseUrl = new URL(newBase); // Ensure newBase is a valid URL
+
+		let oldUrl: URL;
+		try {
+			oldUrl = new URL(url); // Check if oldUrl is absolute
+			oldUrl.pathname = oldUrl.pathname.replace(newBaseUrl.pathname, "");
+			oldUrl.pathname = newBaseUrl.pathname.replace(/\/$/, "") + oldUrl.pathname; // Preserve newBase's path
+			oldUrl = new URL(oldUrl.pathname, newBaseUrl);
+		} catch {
+			// If oldUrl is relative, ensure correct path joining
+			const newUrl = url.replace(/^\/+/, ""); // Remove leading slashes
+			newBaseUrl.pathname = `${newBaseUrl.pathname.replace(/\/$/, "")}/${newUrl}`; // Append correctly
+			oldUrl = newBaseUrl;
+		}
+
+		return oldUrl.toString();
+	} catch (error) {
+		console.error("Invalid URL:", error);
+		return url;
+	}
+}
