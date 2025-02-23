@@ -63,7 +63,7 @@ export function Layout(props: { children: ReactNode }) {
 				<Meta />
 				<Links />
 			</head>
-			<body>
+			<body className="overflow-hidden">
 				{props.children}
 				<ScrollRestoration />
 				<Scripts />

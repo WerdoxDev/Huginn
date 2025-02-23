@@ -1,4 +1,4 @@
-import type { AppChannelMessage, HuginnToken } from "@/types";
+import type { AppChannelMessage, AttachmentType, HuginnToken } from "@/types";
 import { useEvent } from "@contexts/eventContext";
 import { useSendMessage } from "@hooks/mutations/useSendMessage";
 import { useSendTyping } from "@hooks/mutations/useSendTyping";
@@ -19,6 +19,7 @@ import {
 	organizeTokens,
 	splitHighlightedTokens,
 } from "@lib/markdown-utils";
+import { useHuginnWindow } from "@stores/windowStore";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { readFile } from "@tauri-apps/plugin-fs";
 import clsx from "clsx";
@@ -26,10 +27,11 @@ import hljs from "highlight.js";
 import markdownit from "markdown-it";
 import mime from "mime";
 import { normalize } from "pathe";
-import { type ClipboardEvent, type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type ClipboardEvent, type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useParams } from "react-router";
 import { type Descendant, Editor, Element, Node, type Path, type Range, createEditor } from "slate";
 import { DefaultElement, Editable, type RenderElementProps, type RenderLeafProps, Slate, withReact } from "slate-react";
+import AttachmentsPreview from "./AttachmentsPreview";
 import DraggingIndicator from "./DraggingIndicator";
 import EditorLeaf from "./editor/EditorLeaf";
 import Tooltip from "./tooltip/Tooltip";
@@ -47,7 +49,6 @@ const initialValue: Descendant[] = [
 
 let cache: { text: string; decorations: Record<number, Range[]> } | undefined = undefined;
 
-type AttachmentType = { id: number; dataUrl?: string; arrayBuffer: ArrayBuffer; filename: string; description?: string; contentType: string };
 type AttachmentInputType = { name: string; type: string; arrayBuffer: () => Promise<ArrayBuffer> };
 
 export default function MessageBox(props: { messages: AppChannelMessage[] }) {
@@ -61,6 +62,8 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 	const channelName = useChannelName(currentChannel?.recipients, currentChannel?.name);
 	const [attachments, setAttachments] = useState<AttachmentType[]>([]);
 	const [dragging, setDragging] = useState(false);
+	const huginnWindow = useHuginnWindow();
+	const [isPending, startTransition] = useTransition();
 	// const cache = useRef<{ text: string; decorations: Map<number, Range[]> }>(undefined);
 
 	const sendMessageMutation = useSendMessage();
@@ -246,6 +249,9 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 		if (event.ctrlKey && event.key === "u" && editor.selection) {
 			toggleMarkAtSelection("underline");
 		}
+		if (event.key === "Escape") {
+			setAttachments([]);
+		}
 
 		sendTypingMutate(event, { channelId: params.channelId ?? "" });
 	}
@@ -330,42 +336,44 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 			const inputFiles = (e.target as HTMLInputElement).files;
 			if (!inputFiles) return;
 
-			addAttachments(Array.from(inputFiles));
+			await addAttachments(Array.from(inputFiles));
 		};
 
 		input.click();
 	}
 
 	async function addAttachments(input: AttachmentInputType[]) {
-		const attachments: AttachmentType[] = [];
-		for (const [i, file] of input.entries()) {
-			const arrayBuffer = await file.arrayBuffer();
-			if (!isImageMediaType(file.type)) {
-				attachments.push({ id: i, arrayBuffer: arrayBuffer, dataUrl: undefined, filename: file.name, contentType: file.type });
-				continue;
+		startTransition(async () => {
+			const attachments: AttachmentType[] = [];
+			for (const [i, file] of input.entries()) {
+				const arrayBuffer = await file.arrayBuffer();
+				if (!isImageMediaType(file.type)) {
+					attachments.push({ id: i, arrayBuffer: arrayBuffer, dataUrl: undefined, filename: file.name, contentType: file.type });
+					continue;
+				}
+
+				const reader = new FileReader();
+				reader.readAsDataURL(new Blob([arrayBuffer]));
+
+				const dataUrl = await new Promise<string>((res, rej) => {
+					reader.onload = (readerEvent) => {
+						const content = readerEvent.target?.result;
+						if (typeof content === "string") {
+							res(content);
+						}
+					};
+
+					reader.onerror = () => {
+						rej();
+					};
+				});
+
+				attachments.push({ id: i, arrayBuffer: arrayBuffer, dataUrl: dataUrl, filename: file.name, contentType: file.type });
 			}
 
-			const reader = new FileReader();
-			reader.readAsDataURL(new Blob([arrayBuffer]));
-
-			const dataUrl = await new Promise<string>((res, rej) => {
-				reader.onload = (readerEvent) => {
-					const content = readerEvent.target?.result;
-					if (typeof content === "string") {
-						res(content);
-					}
-				};
-
-				reader.onerror = () => {
-					rej();
-				};
-			});
-
-			attachments.push({ id: i, arrayBuffer: arrayBuffer, dataUrl: dataUrl, filename: file.name, contentType: file.type });
-		}
-
-		setAttachments(attachments);
-		editorRef.current?.focus();
+			setAttachments(attachments);
+			editorRef.current?.focus();
+		});
 	}
 
 	function removeAttachment(id: number) {
@@ -397,29 +405,32 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 			lastHeight = height;
 		});
 
-		const unlisten = getCurrentWebview().onDragDropEvent(async (e) => {
-			if (e.payload.type === "enter") {
-				setDragging(true);
-			} else if (e.payload.type === "leave") {
-				setDragging(false);
-			} else if (e.payload.type === "drop") {
-				const files: AttachmentInputType[] = [];
-				setDragging(false);
-				for (const path of e.payload.paths) {
-					const filename = normalize(path).split("/").pop();
-					const file = await readFile(path);
-					const type = mime.getType(filename);
+		const unlisten =
+			huginnWindow.environment === "desktop"
+				? getCurrentWebview().onDragDropEvent(async (e) => {
+						if (e.payload.type === "enter") {
+							setDragging(true);
+						} else if (e.payload.type === "leave") {
+							setDragging(false);
+						} else if (e.payload.type === "drop") {
+							const files: AttachmentInputType[] = [];
+							setDragging(false);
+							for (const path of e.payload.paths) {
+								const filename = normalize(path).split("/").pop();
+								const file = await readFile(path);
+								const type = mime.getType(filename);
 
-					if (!type) {
-						continue;
-					}
+								if (!type) {
+									continue;
+								}
 
-					files.push({ name: filename, type: type, arrayBuffer: async () => file.buffer as ArrayBuffer });
-				}
+								files.push({ name: filename, type: type, arrayBuffer: async () => file.buffer as ArrayBuffer });
+							}
 
-				addAttachments(files);
-			}
-		});
+							addAttachments(files);
+						}
+					})
+				: undefined;
 		// const unlisten = listenEvent("files_dragged", (d) => {
 		// 	addAttachments(d.files);
 		// });
@@ -428,48 +439,20 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 
 		return () => {
 			resizeObserver.disconnect();
-			unlisten.then((f) => f());
+			unlisten?.then((f) => f());
 		};
 	}, []);
 
 	return (
 		<div className="bottom-0 z-10 flex-col px-5 py-1.5" ref={thisRef}>
 			<DraggingIndicator isDragging={dragging} />
-			{attachments.length !== 0 && (
-				<div className="overflow-visible rounded-xl rounded-b-none border-2 border-background border-b-0 bg-tertiary px-2.5 py-2.5 pb-0">
-					<div className="scroll-alternative-x flex gap-x-5 overflow-x-scroll px-2.5 py-2.5 pb-0">
-						{attachments.map((x) => (
-							<div key={x.id} className="relative flex h-48 w-48 shrink-0 flex-col rounded-lg bg-background p-2">
-								<div className="-top-2 -right-2 absolute overflow-hidden rounded-md bg-background shadow-xl">
-									<Tooltip>
-										<Tooltip.Trigger className="p-1.5 hover:bg-secondary/50">
-											<IconMingcuteEdit2Fill className="size-5 text-text" />
-										</Tooltip.Trigger>
-										<Tooltip.Content>Edit</Tooltip.Content>
-									</Tooltip>
-									<Tooltip>
-										<Tooltip.Trigger className="p-1.5 hover:bg-secondary/50" onClick={() => removeAttachment(x.id)}>
-											<IconMingcuteDelete2Fill className="size-5 text-error" />
-										</Tooltip.Trigger>
-										<Tooltip.Content>Delete</Tooltip.Content>
-									</Tooltip>
-								</div>
-								<div className="flex h-full min-h-0 items-center justify-center rounded-md bg-secondary">
-									{x.dataUrl ? (
-										<img className="max-h-full max-w-full" src={x.dataUrl} alt={x.filename} />
-									) : (
-										<IconMingcuteFileFill className="size-20 text-text" />
-									)}
-								</div>
-								<div className="mt-2 w-full shrink-0 overflow-hidden text-ellipsis whitespace-nowrap text-white">{x.filename}</div>
-							</div>
-						))}
-					</div>
-				</div>
-			)}
+			<AttachmentsPreview attachments={attachments} onRemove={removeAttachment} />
 			<form className="w-full">
 				<div
-					className={clsx("flex h-full items-start rounded-3xl border-2 border-background bg-tertiary", attachments.length && "rounded-t-none")}
+					className={clsx(
+						"flex h-full items-start rounded-3xl border-2 border-background bg-tertiary transition-[border-radius]",
+						attachments.length && "rounded-t-none",
+					)}
 				>
 					<Tooltip>
 						<Tooltip.Trigger

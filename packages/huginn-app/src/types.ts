@@ -197,3 +197,5 @@ export type HuginnToken = {
 	map: number[] | null;
 	attrs: Array<[string, string]> | null;
 };
+
+export type AttachmentType = { id: number; dataUrl?: string; arrayBuffer: ArrayBuffer; filename: string; description?: string; contentType: string };

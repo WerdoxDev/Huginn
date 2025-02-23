@@ -1,7 +1,9 @@
+use std::fs;
 use std::{env, path::Path};
 
 // extern crate winrt_notification;
 use serde::Serialize;
+use serde_json::Value;
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Emitter, Manager, WindowEvent};
@@ -100,8 +102,18 @@ async fn send_notification(
 
 async fn update(app: AppHandle, target: String) -> Result<(), tauri_plugin_updater::Error> {
     println!("Checking update...");
+
+    let server_address = get_server_address(app.clone()).unwrap();
+    let update_endpoint = format!(
+        "{}/api/check-update/{{{{target}}}}/{{{{current_version}}}}",
+        server_address
+    );
+
+    println!("{}", update_endpoint);
+
     if let Some(update) = app
         .updater_builder()
+        .endpoints(vec![update_endpoint.parse().expect("Invalid URL")])?
         .version_comparator(|current, update| update.version != current)
         .target(target)
         .build()?
@@ -154,6 +166,28 @@ async fn update(app: AppHandle, target: String) -> Result<(), tauri_plugin_updat
     println!("No update!");
 
     Ok(())
+}
+
+fn get_server_address(app: AppHandle) -> Result<String, String> {
+    let settings_path = app
+        .path()
+        .app_config_dir()
+        .expect("could not resolve app_config_dir")
+        .join("settings.json");
+
+    let settings_data = fs::read_to_string(&settings_path)
+        .map_err(|e| format!("failed to read settings.json: {}", e))?;
+
+    let json: Value =
+        serde_json::from_str(&settings_data).map_err(|e| format!("failed to pase JSON: {}", e))?;
+
+    let server_address = json
+        .get("serverAddress")
+        .and_then(|v| v.as_str())
+        .map(String::from)
+        .ok_or("serverAddress not found or not a string".to_string());
+
+    server_address
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
