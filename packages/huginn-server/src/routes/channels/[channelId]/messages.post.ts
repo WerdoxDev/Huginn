@@ -1,4 +1,4 @@
-import { createErrorFactory, createHuginnError, createRoute, invalidFormBody, missingAccess, waitUntil } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, createRoute, getImageData, invalidFormBody, missingAccess, waitUntil } from "@huginn/backend-shared";
 import {
 	type APIMessage,
 	CDNRoutes,
@@ -16,7 +16,7 @@ import { z } from "zod";
 import { prisma } from "#database";
 import { selectMessageDefaults } from "#database/common";
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { extractEmbedTags, extractLinks, getAttachmentUrl, getImageData, verifyJwt } from "#utils/route-utils";
+import { extractEmbedTags, extractLinks, getAttachmentUrl, verifyJwt } from "#utils/route-utils";
 import { cdnUpload } from "#utils/server-request";
 import type { DBAttachment, DBEmbed } from "#utils/types";
 import { validateEmbeds } from "#utils/validation";

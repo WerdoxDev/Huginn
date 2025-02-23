@@ -1,10 +1,9 @@
 import { unauthorized } from "@huginn/backend-shared";
-import { type IdentityTokenPayload, type TokenPayload, type Unpacked, constrainImageSize } from "@huginn/shared";
+import type { IdentityTokenPayload, TokenPayload, Unpacked } from "@huginn/shared";
 import type { Endpoints } from "@octokit/types";
 import { createMiddleware } from "hono/factory";
 import { JSDOM } from "jsdom";
 import * as semver from "semver";
-import sharp from "sharp";
 import { prisma } from "#database";
 import { octokit } from "#setup";
 import { envs } from "#setup";
@@ -161,45 +160,6 @@ export async function extractEmbedTags(url: string): Promise<Record<string, stri
 	}
 }
 
-export async function getImageData(source: string | ArrayBuffer) {
-	try {
-		let arrayBuffer: ArrayBuffer;
-		if (typeof source === "string") {
-			arrayBuffer = await (await fetch(source)).arrayBuffer();
-		} else {
-			arrayBuffer = source;
-		}
-
-		const metadata = await sharp(arrayBuffer).metadata();
-		// const newDimensions = constrainImageSize(metadata.width ?? 0, metadata.height ?? 0, maxWidth, maxHeight, true);
-
-		return { width: metadata.width ?? 0, height: metadata.height ?? 0 };
-	} catch (e) {
-		console.error("Error fetching image data:", e);
-		return undefined;
-	}
-}
-
 export function getAttachmentUrl(url: string) {
-	try {
-		const cdnBase = new URL(envs.CDN_PUBLIC_URL ?? ""); // Ensure newBase is a valid URL
-
-		let old: URL;
-		try {
-			old = new URL(url); // Check if oldUrl is absolute
-			old.pathname = old.pathname.replace(cdnBase.pathname, "");
-			old.pathname = cdnBase.pathname.replace(/\/$/, "") + old.pathname; // Preserve newBase's path
-			old = new URL(old.pathname, cdnBase);
-		} catch {
-			// If oldUrl is relative, ensure correct path joining
-			const newUrl = url.replace(/^\/+/, ""); // Remove leading slashes
-			cdnBase.pathname = `${cdnBase.pathname.replace(/\/$/, "")}/${newUrl}`; // Append correctly
-			old = cdnBase;
-		}
-
-		return old.toString();
-	} catch (error) {
-		console.error("Invalid URL:", error);
-		return url;
-	}
+	return url;
 }

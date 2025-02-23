@@ -10,7 +10,6 @@ export const envs = readEnv([
 	"REFRESH_TOKEN_SECRET",
 	"POSTGRESQL_URL",
 	"CDN_LOCAL_URL",
-	"CDN_PUBLIC_URL",
 	"SERVER_HOST",
 	"SERVER_PORT",
 	"GITHUB_TOKEN",
