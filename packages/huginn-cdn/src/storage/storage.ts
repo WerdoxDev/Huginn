@@ -6,7 +6,7 @@ export abstract class Storage {
 		this.name = name;
 	}
 
-	public abstract getFile(category: FileCategory, subDirectory: string, name: string): Promise<ArrayBuffer | undefined>;
+	public abstract getFile(category: FileCategory, subDirectory: string, name: string): Promise<ReadableStream | undefined>;
 
 	public abstract writeFile(category: FileCategory, subDirectory: string, name: string, data: ArrayBuffer | string): Promise<boolean> | boolean;
 

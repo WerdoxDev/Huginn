@@ -9,7 +9,7 @@ export class FileStorage extends Storage {
 		super("local");
 	}
 
-	public async getFile(category: FileCategory, subDirectory: string, name: string): Promise<ArrayBuffer | undefined> {
+	public async getFile(category: FileCategory, subDirectory: string, name: string): Promise<ReadableStream | undefined> {
 		try {
 			const file = Bun.file(join(envs.UPLOADS_DIR, category, ...subDirectory.split("/"), name));
 
@@ -19,7 +19,7 @@ export class FileStorage extends Storage {
 			}
 
 			logGetFile(category, subDirectory, name);
-			return await file.arrayBuffer();
+			return file.stream();
 		} catch (e) {
 			logFileNotFound(category, subDirectory, name);
 			return undefined;

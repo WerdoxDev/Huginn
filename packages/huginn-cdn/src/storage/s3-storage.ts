@@ -17,13 +17,14 @@ export class S3Storage extends Storage {
 		});
 	}
 
-	public async getFile(category: FileCategory, subDirectory: string, name: string): Promise<ArrayBuffer | undefined> {
+	public async getFile(category: FileCategory, subDirectory: string, name: string): Promise<ReadableStream | undefined> {
 		try {
 			const cmd = new GetObjectCommand({ Bucket: envs.AWS_BUCKET, Key: join(category, ...subDirectory.split("/"), name) });
 			const result = await this.s3.send(cmd);
 
 			logGetFile(category, subDirectory, name);
-			return (await result.Body?.transformToByteArray())?.buffer as ArrayBuffer;
+			return result.Body?.transformToWebStream();
+			// return (await result.Body?.transformToByteArray())?.buffer as ArrayBuffer;
 		} catch (e) {
 			logFileNotFound(category, subDirectory, name);
 			return undefined;
