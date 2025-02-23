@@ -30,7 +30,6 @@ services:
       - caddy
     depends_on:
       - caddy
-    restart: always
   cdn:
     image: ghcr.io/werdoxdev/huginn-cdn:latest
     environment:
@@ -42,7 +41,10 @@ services:
       - caddy
     depends_on:
       - caddy
-    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
 
 networks:
   caddy:

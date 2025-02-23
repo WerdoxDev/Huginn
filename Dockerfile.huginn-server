@@ -1,6 +1,6 @@
 # use the official Bun image
 # see all versions at https://hub.docker.com/r/oven/bun/tags
-FROM oven/bun:1.2.2 AS base
+FROM oven/bun:1.2.2-alpine AS base
 LABEL org.opencontainers.image.source=https://github.com/werdoxdev/huginn
 WORKDIR /src
 
