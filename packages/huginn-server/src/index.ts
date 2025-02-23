@@ -79,5 +79,6 @@ if (!process.env.test) {
 		},
 		hostname: envs.SERVER_HOST,
 		port: envs.SERVER_PORT,
+		idleTimeout: 40,
 	});
 }
