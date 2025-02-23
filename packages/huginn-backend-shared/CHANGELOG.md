@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.5.0...backend-shared@v0.6.0) (2025-02-23)
+
+
+### Features
+
+* **backend-shared:** add getImageData utility from server ([1e60746](https://github.com/WerdoxDev/Huginn/commit/1e60746548f0aa96380106140aa46a25955ccb8d))
+
 ## [0.5.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.4.0...backend-shared@v0.5.0) (2025-02-19)
 
 
