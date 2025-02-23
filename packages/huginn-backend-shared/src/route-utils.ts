@@ -1,7 +1,8 @@
 import { zValidator } from "@hono/zod-validator";
-import type { Context, Env, Hono, MiddlewareHandler, ValidationTargets } from "hono";
+import type { Context, Hono, ValidationTargets } from "hono";
 import type { OnHandlerInterface } from "hono/types";
-import type { ZodSchema, z } from "zod";
+import sharp from "sharp";
+import type { ZodSchema } from "zod";
 import { invalidFormBody, notFound } from "./errors";
 
 let appInstance: Hono;
@@ -17,6 +18,7 @@ const createRoute: OnHandlerInterface = (method, path: string, ...handlers) => {
 
 export { createRoute };
 
+// @ts-ignore
 export function validator<T extends keyof ValidationTargets, S extends ZodSchema>(target: T, schema: S) {
 	return zValidator(target, schema, (result, c) => {
 		if (!result.success) {
@@ -42,4 +44,23 @@ export function waitUntil(c: Context, callback: () => Promise<unknown>) {
 	}
 
 	c.set("waitUntilPromises", promises);
+}
+
+export async function getImageData(source: string | ArrayBuffer) {
+	try {
+		let arrayBuffer: ArrayBuffer;
+		if (typeof source === "string") {
+			arrayBuffer = await (await fetch(source)).arrayBuffer();
+		} else {
+			arrayBuffer = source;
+		}
+
+		const metadata = await sharp(arrayBuffer).metadata();
+		// const newDimensions = constrainImageSize(metadata.width ?? 0, metadata.height ?? 0, maxWidth, maxHeight, true);
+
+		return { width: metadata.width ?? 0, height: metadata.height ?? 0 };
+	} catch (e) {
+		console.error("Error fetching image data:", e);
+		return undefined;
+	}
 }
