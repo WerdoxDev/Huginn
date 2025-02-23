@@ -1,6 +1,8 @@
+import { Readable, Writable } from "node:stream";
 import { CDNError } from "@huginn/backend-shared";
 import { CDNErrorType } from "@huginn/backend-shared/types";
 import { type FileContentTypes, type FileFormats, fileTypes } from "@huginn/shared";
+import type { StreamingApi } from "hono/utils/stream";
 import PQueue from "p-queue";
 import sharp from "sharp";
 import { storage } from "#setup";
@@ -39,26 +41,51 @@ export async function findImageByName(category: FileCategory, subDirectory: stri
 	throw new CDNError("findImageByName", CDNErrorType.FILE_NOT_FOUND);
 }
 
-export async function transformImage(data: ArrayBuffer, format: FileFormats, quality: number): Promise<ArrayBuffer> {
-	sharp.concurrency(2);
+export async function transformImage(input: ReadableStream, output: StreamingApi, format: FileFormats, quality: number): Promise<boolean> {
+	return (await queue.add(() => {
+		const reader = input.getReader();
 
-	let buffer: Buffer<ArrayBufferLike> | undefined;
-	if (format === "jpg" || format === "jpeg") {
-		buffer = (await queue.add(() => sharp(data).jpeg({ quality }).toBuffer())) as Buffer<ArrayBufferLike>;
-	}
-	if (format === "webp") {
-		buffer = (await queue.add(() => sharp(data).webp({ quality }).toBuffer())) as Buffer<ArrayBufferLike>;
-	}
-	if (format === "png") {
-		buffer = (await queue.add(() => sharp(data).png({ quality }).toBuffer())) as Buffer<ArrayBufferLike>;
-	}
-	if (format === "gif") {
-		buffer = (await queue.add(() => sharp(data).gif().toBuffer())) as Buffer<ArrayBufferLike>;
-	}
+		const nodeWritable = new Writable({
+			async write(chunk: Buffer, _encoding, cb) {
+				await output.write(chunk);
+				cb();
+			},
+		});
 
-	if (buffer) {
-		return buffer.buffer as ArrayBuffer;
-	}
+		const nodeReadable = new Readable({
+			async read() {
+				const { done, value } = await reader.read();
+				if (done) {
+					this.push(null);
+				} else {
+					this.push(value);
+				}
+			},
+		});
 
-	throw new CDNError("transformImage", CDNErrorType.INVALID_FILE_FORMAT);
+		let finalStream: Writable;
+		if (format === "jpeg" || format === "jpg") {
+			finalStream = nodeReadable.pipe(sharp().jpeg({ quality })).pipe(nodeWritable);
+		}
+		if (format === "webp") {
+			finalStream = nodeReadable.pipe(sharp().webp({ quality })).pipe(nodeWritable);
+		}
+		if (format === "png") {
+			finalStream = nodeReadable.pipe(sharp().png({ quality })).pipe(nodeWritable);
+		}
+		if (format === "gif") {
+			finalStream = nodeReadable.pipe(sharp().gif()).pipe(nodeWritable);
+		}
+
+		return new Promise<boolean>((res, rej) => {
+			if (!finalStream) {
+				rej(new CDNError("transformImage", CDNErrorType.INVALID_FILE_FORMAT));
+				output.close();
+			}
+			finalStream?.on("finish", () => {
+				res(true);
+				output.close();
+			});
+		});
+	})) as boolean;
 }

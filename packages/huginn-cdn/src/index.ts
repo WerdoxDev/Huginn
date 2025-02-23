@@ -9,11 +9,9 @@ import {
 } from "@huginn/backend-shared";
 import consola from "consola";
 import { Hono } from "hono";
-import { cache } from "hono/cache";
 import { cors } from "hono/cors";
 import { showRoutes } from "hono/dev";
 import { createMiddleware } from "hono/factory";
-import sharp from "sharp";
 import { envs } from "#setup";
 
 const app = new Hono().use(cors());
@@ -30,16 +28,16 @@ app.all(
 		}
 	}),
 );
+
+// console.log(caches.default);
 // disable caching
-app.get("*", cache({ cacheName: "cdn", cacheControl: "public, max-age=31536000" }));
+// app.get("*", cache({ cacheName: "cdn", t }));
 
 app.onError((error, c) => {
 	const returnedError = cdnOnError(error, c);
 	if (returnedError) {
 		return returnedError;
 	}
-
-	console.log(error);
 
 	return handleServerError(error, c);
 });

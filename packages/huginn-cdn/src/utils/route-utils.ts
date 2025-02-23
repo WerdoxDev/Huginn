@@ -1,5 +1,7 @@
+import { waitUntil } from "@huginn/backend-shared";
 import { HttpCode } from "@huginn/shared";
 import type { Context } from "hono";
+import { StreamingApi } from "hono/utils/stream";
 import { storage } from "#setup";
 import type { FileCategory } from "#utils/types";
 import { extractFileInfo, findImageByName, transformImage } from "./file-utils";
@@ -11,17 +13,23 @@ export async function tryResolveImage(c: Context, category: FileCategory, subDir
 	const file = await storage.getFile(category, subDirectory, `${name}.${format}`);
 
 	if (file) {
-		// c.status(HttpCode.OK);
-		// c.header()
 		return c.body(file, HttpCode.OK, { "Content-Type": mimeType });
 	}
 
 	// File doesn't exist so we have to see if another format exists
 	const { file: otherFile } = await findImageByName(category, subDirectory, name);
 
-	const fileArrayBuffer = await Bun.readableStreamToArrayBuffer(otherFile);
-	const result = await transformImage(fileArrayBuffer, format, 100);
-	await storage.writeFile(category, subDirectory, hash, result);
+	const { readable, writable } = new TransformStream();
+	const stream = new StreamingApi(writable, readable);
 
-	return c.body(new Blob([result]).stream(), HttpCode.OK, { "Content-Type": mimeType });
+	const result = await transformImage(otherFile, stream, format, 100);
+	const [readable1, readable2] = stream.responseReadable.tee();
+
+	waitUntil(c, async () => {
+		if (result) {
+			await storage.writeFile(category, subDirectory, hash, await Bun.readableStreamToArrayBuffer(readable2));
+		}
+	});
+
+	return c.body(readable1, HttpCode.OK, { "Content-Type": mimeType });
 }

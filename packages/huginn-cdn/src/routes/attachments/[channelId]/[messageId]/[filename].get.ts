@@ -1,6 +1,6 @@
-import { createRoute, fileNotFound, validator } from "@huginn/backend-shared";
+import { createRoute, fileNotFound, validator, waitUntil } from "@huginn/backend-shared";
 import { HttpCode, fileTypes, isImageMediaType } from "@huginn/shared";
-import PQueue from "p-queue";
+import { StreamingApi } from "hono/utils/stream";
 import { z } from "zod";
 import { storage } from "#setup";
 import { extractFileInfo, transformImage } from "#utils/file-utils";
@@ -25,13 +25,24 @@ createRoute("GET", "/cdn/attachments/:channelId/:messageId/:filename", validator
 			return fileNotFound(c);
 		}
 
-		const arrayBuffer = await Bun.readableStreamToArrayBuffer(file);
-		const transformed = await transformImage(arrayBuffer, Object.entries(fileTypes).find((x) => x[1] === mimeType)?.[0] ?? "png", Number(quality));
+		const { readable, writable } = new TransformStream();
+		const stream = new StreamingApi(writable, readable);
 
-		if (transformed) {
-			await storage.writeFile("attachments", `${channelId}/${messageId}`, actualFileName, transformed);
-			return c.body(transformed, HttpCode.OK, { "Content-Type": mimeType });
-		}
+		const result = await transformImage(
+			file as ReadableStream,
+			stream,
+			Object.entries(fileTypes).find((x) => x[1] === mimeType)?.[0] ?? "png",
+			Number(quality),
+		);
+		const [readable1, readable2] = stream.responseReadable.tee();
+
+		waitUntil(c, async () => {
+			if (result) {
+				await storage.writeFile("attachments", `${channelId}/${messageId}`, actualFileName, await Bun.readableStreamToArrayBuffer(readable2));
+			}
+		});
+
+		return c.body(readable1, HttpCode.OK, { "Content-Type": mimeType });
 	}
 
 	if (!file) {
