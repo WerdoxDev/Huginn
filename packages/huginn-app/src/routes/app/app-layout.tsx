@@ -5,7 +5,7 @@ import ModalsRenderer from "@components/modal/ModalsRenderer";
 import { APIProvider } from "@contexts/apiContext";
 import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
 import { useEvent } from "@contexts/eventContext";
-import { ModalProvider } from "@contexts/modalContext";
+import { ModalProvider, useModals, useModalsDispatch } from "@contexts/modalContext";
 import { NotificationProvider } from "@contexts/notificationContext";
 import { PresenceProvider } from "@contexts/presenceContext";
 import { ReadStateProvider } from "@contexts/readStateContext";
@@ -57,6 +57,14 @@ export default function Layout() {
 
 function MainRenderer(props: { children: ReactNode }) {
 	const huginnWindow = useHuginnWindow();
+
+	const dispatch = useModalsDispatch();
+	const { news } = useModals();
+
+	useEffect(() => {
+		// dispatch({ news: { isOpen: true } });
+	}, []);
+
 	return (
 		<div className={`flex h-full flex-col overflow-hidden ${huginnWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
 			{window.location.pathname !== "/splashscreen" && huginnWindow.environment === "desktop" && <TitleBar />}

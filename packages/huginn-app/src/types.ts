@@ -10,7 +10,7 @@ import type { ChangeEvent, HTMLInputTypeAttribute, ReactNode, RefObject } from "
 
 export type StatusCode = "none" | "default" | "error" | "success";
 
-export type LoadingState = "none" | "loading" | "checking_update" | "updating" | "test";
+export type LoadingState = "none" | "loading" | "checking_update" | "checking_update_failed" | "updating" | "test";
 
 export type InputStatus = {
 	code: StatusCode;

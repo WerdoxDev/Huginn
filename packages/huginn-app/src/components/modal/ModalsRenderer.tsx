@@ -12,10 +12,11 @@ const EditGroupModal = lazy(() => import("./EditGroupModal"));
 const AddRecipientModal = lazy(() => import("./AddRecipientModal"));
 const InfoModal = lazy(() => import("./InfoModal"));
 const MagnifiedImageModal = lazy(() => import("./MagnifiedImageModal"));
+const NewsModal = lazy(() => import("./NewsModal"));
 
 export default function ModalsRenderer() {
 	const { user } = useUser();
-	const { createDM, addRecipient, editGroup, imageCrop, info, settings, magnifiedImage } = useModals();
+	const { createDM, addRecipient, editGroup, imageCrop, info, settings, magnifiedImage, news } = useModals();
 	const dispatch = useModalsDispatch();
 
 	return (
@@ -29,6 +30,7 @@ export default function ModalsRenderer() {
 					onClose={() => dispatch({ magnifiedImage: { isOpen: false } })}
 					backgroundClassName="bg-black/70"
 				/>
+				<BaseModal renderChildren={<NewsModal />} modal={news} onClose={() => dispatch({ news: { isOpen: false } })} />
 				{user && (
 					<>
 						<BaseModal renderChildren={<CreateDMModal />} onClose={() => dispatch({ createDM: { isOpen: false } })} modal={createDM} />

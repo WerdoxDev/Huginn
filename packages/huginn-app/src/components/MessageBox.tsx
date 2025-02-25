@@ -100,8 +100,10 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 		}
 
 		const result = md.parse(text, {});
-		console.log(result);
+		// console.log(result);
 		const tokens = organizeTokens(result);
+
+		// console.log(tokens);
 
 		for (const [i, lineTokens] of tokens.entries()) {
 			const child = children.find((x) => x[1][0] === i);
@@ -114,6 +116,7 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 
 			let index = 0;
 			const currentOpenedTokens: HuginnToken[] = [];
+			let currentLinkHref: string | undefined;
 
 			for (const token of lineTokens) {
 				if (token.type === "fence" && token.map) {
@@ -167,7 +170,7 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 					continue;
 				}
 
-				const currentTokenEnd = getTokenLength(token);
+				const currentTokenEnd = currentLinkHref?.length ?? getTokenLength(token);
 
 				if (isOpenToken(token) || isCloseToken(token)) {
 					if (hasMarkup(token.markup)) {
@@ -195,12 +198,7 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 
 				// Links have an special href which include the actual whole link instead of the normalized one
 				if (token.type === "link_open") {
-					ranges.push({
-						...getSlateFormats(currentOpenedTokens),
-						anchor: { path, offset: index },
-						focus: { path, offset: index + currentTokenEnd },
-					});
-
+					currentLinkHref = token.attrs?.[0]?.[1];
 					index += currentTokenEnd;
 					continue;
 				}
@@ -211,6 +209,7 @@ export default function MessageBox(props: { messages: AppChannelMessage[] }) {
 						anchor: { path, offset: index },
 						focus: { path, offset: index + currentTokenEnd },
 					});
+					currentLinkHref = undefined;
 				}
 				index += currentTokenEnd;
 			}

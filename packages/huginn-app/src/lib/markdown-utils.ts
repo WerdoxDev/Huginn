@@ -9,7 +9,7 @@ export function hasMarkup(markup: string) {
 export function getTokenLength(token: HuginnToken) {
 	return (
 		(token.markup === "autolink" ? 1 : token.markup !== "linkify" ? token.markup.length : 0) +
-		(token.type === "link_open" ? (token.attrs?.[0]?.[1].length ?? 0) : !token.type.includes("fence") ? token.content.length : 0)
+		(!token.type.includes("fence") ? token.content.length : 0)
 	);
 }
 
