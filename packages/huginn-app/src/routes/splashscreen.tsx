@@ -103,7 +103,10 @@ export default function Splashscreen() {
 				<div className="mt-4 font-bold text-text text-xl">Huginn</div>
 				<div className="mt-2 text-text/80">
 					<div className="flex items-center justify-center gap-x-2 text-center">
-						<span className="text-lg">{loadingStates[loadingState]}</span>
+						<span className="text-lg">
+							{loadingStates[loadingState]}
+							{loadingState === "updating" ? info?.version : ""}
+						</span>
 						{loadingState === "checking_update_failed" && <IconMingcuteAlertFill className="size-6 text-warning" />}
 						{loadingState === "cant_update" && <IconMingcuteAlertFill className="size-6 text-error" />}
 						{loadingState === "checking_update" && <LoadingIcon className="size-6" />}
