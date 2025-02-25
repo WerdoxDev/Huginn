@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.6.0...backend-shared@v0.7.0) (2025-02-25)
+
+
+### Features
+
+* **backend-shared:** add ffmpeg probing ([32119a0](https://github.com/WerdoxDev/Huginn/commit/32119a04b7dfe8a75256ce8037b1363b818eb323))
+
 ## [0.6.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.5.0...backend-shared@v0.6.0) (2025-02-23)
 
 

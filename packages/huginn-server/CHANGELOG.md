@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.16.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.15.1...server@v0.16.0) (2025-02-25)
+
+
+### Features
+
+* **server:** add ffmpge video probing ([2236c9d](https://github.com/WerdoxDev/Huginn/commit/2236c9df9312d42899e51dbb4836517d4ecf600a))
+
+
+### Bug Fixes
+
+* **server:** add larger idle timeout ([1cf8c80](https://github.com/WerdoxDev/Huginn/commit/1cf8c8019a70c87a1f5d6c504eac667d3c53c0de))
+* **server:** ffmpeg temp dir is wrong ([5fdc805](https://github.com/WerdoxDev/Huginn/commit/5fdc8054e809b58e71cbc466a0e45d322059ceff))
+
 ## [0.15.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.15.0...server@v0.15.1) (2025-02-23)
 
 
