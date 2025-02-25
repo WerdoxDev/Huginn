@@ -1,4 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
+import ffmpeg, { ffprobe } from "fluent-ffmpeg";
 import type { Context, Hono, ValidationTargets } from "hono";
 import type { OnHandlerInterface } from "hono/types";
 import sharp from "sharp";
@@ -62,5 +63,30 @@ export async function getImageData(source: string | ArrayBuffer) {
 	} catch (e) {
 		console.error("Error fetching image data:", e);
 		return undefined;
+	}
+}
+
+export async function getVideoData(filePath: string, source: ArrayBuffer) {
+	try {
+		await Bun.file(filePath).write(source);
+
+		const result = await new Promise<{ width: number; height: number }>((res, rej) => {
+			ffprobe(filePath, (err, data) => {
+				if (err) {
+					rej(err);
+				}
+
+				const stream = data.streams[0];
+				if (!stream) {
+					rej();
+				}
+
+				res({ width: stream.width ?? 0, height: stream.height ?? 0 });
+			});
+		});
+
+		return result;
+	} catch (e) {
+		console.log(e);
 	}
 }
