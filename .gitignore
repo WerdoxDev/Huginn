@@ -10,6 +10,7 @@ lerna-debug.log*
 packages/hayat-poshti-proxy
 
 uploads
+cache
 builds
 target
 
