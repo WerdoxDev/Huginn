@@ -28,7 +28,7 @@ export const envs = readEnv([
 	"SESSION_PASSWORD",
 	"ALLOWED_ORIGINS",
 	"REDIRECT_HOST",
-	{ key: "FFMPEG_TEMP_DIR", default: "../ffmpeg" },
+	{ key: "FFMPEG_TEMP_DIR", default: "./ffmpeg" },
 ] as const);
 
 export const CERT_FILE = envs.CERTIFICATE_PATH && Bun.file(envs.CERTIFICATE_PATH);
