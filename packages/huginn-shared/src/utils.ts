@@ -218,6 +218,14 @@ export function isImageMediaType(type: string): boolean {
 	return false;
 }
 
+export function isVideoMediaType(type: string): boolean {
+	if (type === fileTypes.webm || type === fileTypes.mp4 || type === fileTypes.gifv) {
+		return true;
+	}
+
+	return false;
+}
+
 export function isBrowser(): boolean {
 	try {
 		return globalThis === window;
@@ -234,15 +242,13 @@ export function constrainImageSize(width: number, height: number, maxWidth: numb
 
 	if (width > maxWidth) {
 		newWidth = maxWidth;
-		newHeight = newWidth / aspectRatio;
+		newHeight = Math.round(newWidth / aspectRatio);
 	}
 
 	if (newHeight > maxHeight) {
 		newHeight = maxHeight;
-		newWidth = newHeight * aspectRatio;
+		newWidth = Math.round(newHeight * aspectRatio);
 	}
-
-	console.log("RES", newWidth, newHeight, width, height);
 
 	return { width: newWidth, height: newHeight };
 }
@@ -269,4 +275,14 @@ export function changeUrlBase(url: string, newBase: string): string {
 		console.error("Invalid URL:", error);
 		return url;
 	}
+}
+
+export function formatSeconds(seconds: number) {
+	const minutes = Math.floor(seconds / 60);
+	const remainingSeconds = seconds % 60;
+
+	const formattedMinutes = String(minutes).padStart(2, "0");
+	const formattedSeconds = String(Math.floor(remainingSeconds)).padStart(2, "0");
+
+	return `${formattedMinutes}:${formattedSeconds}`;
 }
