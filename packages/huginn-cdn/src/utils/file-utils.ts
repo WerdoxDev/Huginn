@@ -1,7 +1,7 @@
 import { Readable, Writable } from "node:stream";
 import { CDNError } from "@huginn/backend-shared";
 import { CDNErrorType } from "@huginn/backend-shared/types";
-import { type FileContentTypes, type FileFormats, fileTypes } from "@huginn/shared";
+import { type FileContentTypes, type ImageFormats, fileTypes } from "@huginn/shared";
 import type { StreamingApi } from "hono/utils/stream";
 import PQueue from "p-queue";
 import sharp from "sharp";
@@ -41,7 +41,14 @@ export async function findImageByName(category: FileCategory, subDirectory: stri
 	throw new CDNError("findImageByName", CDNErrorType.FILE_NOT_FOUND);
 }
 
-export async function transformImage(input: ReadableStream, output: StreamingApi, format: FileFormats, quality: number): Promise<boolean> {
+export async function transformImage(
+	input: ReadableStream,
+	output: StreamingApi,
+	format?: ImageFormats,
+	quality?: number,
+	width?: number,
+	height?: number,
+): Promise<boolean> {
 	return (await queue.add(() => {
 		const reader = input.getReader();
 
@@ -63,19 +70,16 @@ export async function transformImage(input: ReadableStream, output: StreamingApi
 			},
 		});
 
-		let finalStream: Writable;
-		if (format === "jpeg" || format === "jpg") {
-			finalStream = nodeReadable.pipe(sharp().jpeg({ quality })).pipe(nodeWritable);
+		let s = sharp();
+		if ((width && !Number.isNaN(width)) || (height && !Number.isNaN(height))) {
+			s = s.resize({ width, height });
 		}
-		if (format === "webp") {
-			finalStream = nodeReadable.pipe(sharp().webp({ quality })).pipe(nodeWritable);
+
+		if (format) {
+			s = s.toFormat(format, { lossless: quality === 100, quality: quality !== 100 && !Number.isNaN(quality) ? quality : undefined });
 		}
-		if (format === "png") {
-			finalStream = nodeReadable.pipe(sharp().png({ quality })).pipe(nodeWritable);
-		}
-		if (format === "gif") {
-			finalStream = nodeReadable.pipe(sharp().gif()).pipe(nodeWritable);
-		}
+
+		const finalStream = nodeReadable.pipe(s).pipe(nodeWritable);
 
 		return new Promise<boolean>((res, rej) => {
 			if (!finalStream) {

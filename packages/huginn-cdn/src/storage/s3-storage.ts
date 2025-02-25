@@ -1,4 +1,11 @@
-import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+	GetObjectCommand,
+	type HeadBucketCommandOutput,
+	HeadObjectCommand,
+	type HeadObjectCommandOutput,
+	PutObjectCommand,
+	S3Client,
+} from "@aws-sdk/client-s3";
 import { logFileNotFound, logGetFile, logWriteFile } from "@huginn/backend-shared";
 import { join } from "pathe";
 import { envs } from "#setup";
@@ -17,14 +24,13 @@ export class S3Storage extends Storage {
 		});
 	}
 
-	public async getFile(category: FileCategory, subDirectory: string, name: string): Promise<ReadableStream | undefined> {
+	public async getFile(category: FileCategory, subDirectory: string, name: string, range?: string): Promise<ReadableStream | undefined> {
 		try {
-			const cmd = new GetObjectCommand({ Bucket: envs.AWS_BUCKET, Key: join(category, ...subDirectory.split("/"), name) });
+			const cmd = new GetObjectCommand({ Bucket: envs.AWS_BUCKET, Key: join(category, ...subDirectory.split("/"), name), Range: range });
 			const result = await this.s3.send(cmd);
 
 			logGetFile(category, subDirectory, name);
 			return result.Body?.transformToWebStream();
-			// return (await result.Body?.transformToByteArray())?.buffer as ArrayBuffer;
 		} catch (e) {
 			logFileNotFound(category, subDirectory, name);
 			return undefined;
@@ -55,6 +61,17 @@ export class S3Storage extends Storage {
 		} catch (e) {
 			logFileNotFound(category, subDirectory, name);
 			return false;
+		}
+	}
+
+	public async head(category: FileCategory, subDirectory: string, name: string): Promise<HeadObjectCommandOutput | undefined> {
+		try {
+			const cmd = new HeadObjectCommand({ Bucket: envs.AWS_BUCKET, Key: join(category, subDirectory, name) });
+			const result = await this.s3.send(cmd);
+			return result;
+		} catch (e) {
+			logFileNotFound(category, subDirectory, name);
+			return undefined;
 		}
 	}
 }

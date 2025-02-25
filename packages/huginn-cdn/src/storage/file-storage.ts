@@ -1,17 +1,19 @@
 import { logFileNotFound, logGetFile, logWriteFile } from "@huginn/backend-shared";
 import { join } from "pathe";
-import { envs } from "#setup";
 import { Storage } from "#storage/storage";
 import type { FileCategory } from "#utils/types";
 
 export class FileStorage extends Storage {
-	public constructor() {
+	directory: string;
+
+	public constructor(directory: string) {
 		super("local");
+		this.directory = directory;
 	}
 
 	public async getFile(category: FileCategory, subDirectory: string, name: string): Promise<ReadableStream | undefined> {
 		try {
-			const file = Bun.file(join(envs.UPLOADS_DIR, category, ...subDirectory.split("/"), name));
+			const file = Bun.file(join(this.directory, category, ...subDirectory.split("/"), name));
 
 			if (!(await file.exists())) {
 				logFileNotFound(category, subDirectory, name);
@@ -29,7 +31,7 @@ export class FileStorage extends Storage {
 	public async writeFile(category: FileCategory, subDirectory: string, name: string, data: string | ArrayBuffer): Promise<boolean> {
 		logWriteFile(category, subDirectory, name);
 		try {
-			await Bun.write(join(envs.UPLOADS_DIR, category, subDirectory, name), data);
+			await Bun.write(join(this.directory, category, ...subDirectory.split("/"), name), data);
 			return true;
 		} catch (e) {
 			console.error(this.name, "writeFile", e);
@@ -39,7 +41,7 @@ export class FileStorage extends Storage {
 
 	public async exists(category: FileCategory, subDirectory: string, name: string): Promise<boolean> {
 		try {
-			return await Bun.file(join(envs.UPLOADS_DIR, category, subDirectory, name)).exists();
+			return await Bun.file(join(this.directory, category, ...subDirectory.split("/"), name)).exists();
 		} catch (e) {
 			logFileNotFound(category, subDirectory, name);
 			return false;
