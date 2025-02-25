@@ -1,6 +1,6 @@
-import { useIsMutating, useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { invoke } from "@tauri-apps/api/core";
-import { type UnlistenFn, listen } from "@tauri-apps/api/event";
+import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef, useState } from "react";
 
 type UpdateProgress = {
@@ -31,6 +31,7 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void, onTry?:
 				});
 				const unlistenNotAvailable = listen("update-not-available", () => {
 					unlistenAll();
+					onFinished?.(false);
 					res(undefined);
 				});
 				const unlistenFailed = listen("update-failed", () => {
@@ -51,26 +52,14 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void, onTry?:
 			setInfo(result);
 		},
 		onError(error, variables, context) {
-			console.log("ERRORED");
 			isChecking.current = false;
 			onError?.();
 		},
-		onSuccess: () => {
-			console.log("SUCCESS");
-		},
 		retry: 2,
-		retryDelay: 2000,
+		retryDelay: 3000,
 	});
 
 	useEffect(() => {
-		// const unlistenNotAvailable = listen("update-not-available", () => {
-		// 	onFinished?.(false);
-		// });
-
-		// const unlistenInfo = listen<UpdateInfo>("update-info", (event) => {
-		// 	setInfo(event.payload);
-		// });
-
 		const unlistenProgress = listen<UpdateProgress>("update-progress", (event) => {
 			downloaded.current = event.payload.downloaded;
 			contentLength.current = event.payload.contentLength;
@@ -82,26 +71,18 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void, onTry?:
 			onFinished?.(true);
 		});
 
-		// const unlistenFailed = listen("update-failed", () => {
-		// 	setTimeout(() => {
-		// 		invoke("check_update", { target: "windows" });
-		// 	}, 2000);
-		// });
-
 		return () => {
 			unlistenProgress.then((f) => f());
 			unlistenFinished.then((f) => f());
-			// unlistenInfo.then((f) => f());
-			// unlistenNotAvailable.then((f) => f());
-			// unlistenFailed.then((f) => f());
 		};
 	}, []);
 
 	async function checkAndDownload() {
-		// if (import.meta.env.DEV) {
-		// 	onFinished?.(false);
-		// 	return;
-		// }
+		if (import.meta.env.DEV) {
+			onFinished?.(false);
+			return;
+		}
+
 		if (!isChecking.current) {
 			isChecking.current = true;
 			updateMutation.mutate();

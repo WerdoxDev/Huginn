@@ -26,8 +26,6 @@ export default function Splashscreen() {
 			if (!wasAvailable) {
 				if (huginnWindow.matches.args?.silent?.value !== true) {
 					switchToMain();
-					// await invoke("close_splashscreen");
-					// await invoke("open_and_focus_main");
 				}
 				updateFinished.current = true;
 			}
@@ -37,7 +35,7 @@ export default function Splashscreen() {
 		},
 		() => {
 			setLoadingState("checking_update_failed");
-			startCountdown(2);
+			startCountdown(3);
 		},
 		() => {
 			setLoadingState("cant_update");
