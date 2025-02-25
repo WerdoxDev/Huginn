@@ -1,4 +1,13 @@
-import { createErrorFactory, createHuginnError, createRoute, getImageData, invalidFormBody, missingAccess, waitUntil } from "@huginn/backend-shared";
+import {
+	createErrorFactory,
+	createHuginnError,
+	createRoute,
+	getImageData,
+	getVideoData,
+	invalidFormBody,
+	missingAccess,
+	waitUntil,
+} from "@huginn/backend-shared";
 import {
 	type APIMessage,
 	CDNRoutes,
@@ -8,13 +17,16 @@ import {
 	WorkerID,
 	idFix,
 	isImageMediaType,
+	isVideoMediaType,
 	nullToUndefined,
 	snowflake,
 } from "@huginn/shared";
 import { safeDestr } from "destr";
+import { join } from "pathe";
 import { z } from "zod";
 import { prisma } from "#database";
 import { selectMessageDefaults } from "#database/common";
+import { envs } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { extractEmbedTags, extractLinks, getAttachmentUrl, verifyJwt } from "#utils/route-utils";
 import { cdnUpload } from "#utils/server-request";
@@ -119,9 +131,12 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 				files: [{ data: fileArrayBuffer, name: file.name, contentType: file.type }],
 			})) as string;
 
-			let imageData: { width: number; height: number } | undefined;
+			let dimensions: { width: number; height: number } | undefined;
 			if (isImageMediaType(file.type)) {
-				imageData = await getImageData(fileArrayBuffer);
+				dimensions = await getImageData(fileArrayBuffer);
+			}
+			if (isVideoMediaType(file.type)) {
+				dimensions = await getVideoData(join(envs.FFMPEG_TEMP_DIR, file.name), fileArrayBuffer);
 			}
 
 			processedAttachments.push({
@@ -130,8 +145,8 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 				size: file.size,
 				filename: file.name,
 				flags: 0,
-				width: imageData?.width,
-				height: imageData?.height,
+				width: dimensions?.width,
+				height: dimensions?.height,
 				url: `attachments/${channelId}/${messageId}/${name}`,
 			});
 		}

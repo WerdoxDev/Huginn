@@ -28,6 +28,7 @@ export const envs = readEnv([
 	"SESSION_PASSWORD",
 	"ALLOWED_ORIGINS",
 	"REDIRECT_HOST",
+	{ key: "FFMPEG_TEMP_DIR", default: "../ffmpeg" },
 ] as const);
 
 export const CERT_FILE = envs.CERTIFICATE_PATH && Bun.file(envs.CERTIFICATE_PATH);
@@ -40,6 +41,7 @@ if (!envs.POSTGRESQL_URL) {
 
 export const gateway = new ServerGateway({ logHeartbeat: false });
 export const tokenInvalidator = new TokenInvalidator();
+consola.log(envs.GITHUB_TOKEN);
 export const octokit: Octokit = new Octokit({ auth: envs.GITHUB_TOKEN });
 export const s3 = new S3Client({
 	region: envs.AWS_REGION,
