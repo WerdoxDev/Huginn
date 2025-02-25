@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.23.0...app@v0.23.1) (2025-02-25)
+
+
+### Bug Fixes
+
+* **app:** fix updater not doing anything after success ([891d303](https://github.com/WerdoxDev/Huginn/commit/891d303d4c2341ebabad2812e5c1c4f4cf966023))
+
 ## [0.23.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.22.0...app@v0.23.0) (2025-02-25)
 
 
