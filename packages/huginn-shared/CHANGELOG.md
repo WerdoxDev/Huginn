@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.9.0...shared@v0.10.0) (2025-02-25)
+
+
+### Features
+
+* **shared:** add video related types ([ba6da2a](https://github.com/WerdoxDev/Huginn/commit/ba6da2a353dec7e2862b5c2d8eba977bb2232179))
+
 ## [0.9.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.8.0...shared@v0.9.0) (2025-02-23)
 
 
