@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.9.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.8.0...cdn@v0.9.0) (2025-02-25)
+
+
+### Features
+
+* **cdn:** add attachment video byte range support ([e247fab](https://github.com/WerdoxDev/Huginn/commit/e247fab4e393d52e8e17b9843a90719adf26f9ed))
+
+
+### Bug Fixes
+
+* **cdn:** convert to reading from streams instead of arraybuffers + writing to s3 after response ([89d16eb](https://github.com/WerdoxDev/Huginn/commit/89d16eb283a77d234557aed3562626d8b6ebb698))
+
 ## [0.8.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.7.0...cdn@v0.8.0) (2025-02-23)
 
 

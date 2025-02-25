@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.23.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.22.0...app@v0.23.0) (2025-02-25)
+
+
+### Features
+
+* add resource limiting to cdn + use bun alpine instead of debian ([2f9f8f7](https://github.com/WerdoxDev/Huginn/commit/2f9f8f799b2272eef0e097eefa1ea16128006835))
+* **app:** add much better update handling + video rendering ([ca04b73](https://github.com/WerdoxDev/Huginn/commit/ca04b73a61348f565469774c711e9adc37cfa6ce))
+
 ## [0.22.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.21.0...app@v0.22.0) (2025-02-23)
 
 
