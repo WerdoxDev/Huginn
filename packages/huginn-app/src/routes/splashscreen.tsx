@@ -21,7 +21,7 @@ export default function Splashscreen() {
 	const huginnWindow = useHuginnWindow();
 	const { startCountdown, countdown: retryCountdown } = useCountdown();
 	const { checkAndDownload, info, progress, contentLength, downloaded } = useUpdater(
-		async (wasAvailable) => {
+		(wasAvailable) => {
 			setLoadingState("loading");
 			if (!wasAvailable) {
 				if (huginnWindow.matches.args?.silent?.value !== true) {

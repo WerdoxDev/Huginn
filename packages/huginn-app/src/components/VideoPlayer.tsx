@@ -97,8 +97,15 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 		// e.currentTarget.
 		// const pos = (e.pageX - progress.offsetLeft - progress.offsetParent.offsetLeft) / progress.offsetWidth;
 		const rect = progressRef.current.getBoundingClientRect();
-		const percentage = Math.min(Math.max(0, ((mouseX - rect.left) / (rect.right - rect.left)) * 100), 100);
+		const left = rect.left;
+		const adjustedMouseX = mouseX - rect.left;
+		console.log(rect.left);
+		let percentage = 0;
+		if (adjustedMouseX > 10) {
+			percentage = Math.min(Math.max(0, (adjustedMouseX / (rect.right - left)) * 100), 100);
+		}
 		const duration = videoRef.current?.duration ?? 0;
+		console.log(percentage);
 
 		if (videoRef.current) {
 			const time = (duration / 100) * percentage;
@@ -165,10 +172,10 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 					}}
 				>
 					<div className="absolute h-full rounded-md bg-white/30 transition-[width]" style={{ width: `${buffer}%` }} />
-					<div className="absolute h-full rounded-md bg-accent" style={{ width: `${progress}%` }} />
+					<div className="absolute h-full rounded-md bg-accent" style={{ width: `clamp(10px, ${progress}%, 100%)` }} />
 					<div
-						className="absolute h-4 w-4 scale-0 rounded-full bg-text transition-transform group-hover/progress:scale-100"
-						style={{ left: `calc(${progress}% - 8px)` }}
+						className="absolute h-4 w-4 scale-0 rounded-full bg-text/100 transition-transform group-hover/progress:scale-100"
+						style={{ left: `clamp(2px, calc(${progress}% - 8px), 100%)` }}
 					/>
 				</div>
 			</div>
