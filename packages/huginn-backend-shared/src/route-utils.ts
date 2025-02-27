@@ -68,7 +68,8 @@ export async function getImageData(source: string | ArrayBuffer) {
 
 export async function getVideoData(filePath: string, source: ArrayBuffer) {
 	try {
-		await Bun.file(filePath).write(source);
+		const file = Bun.file(filePath);
+		await file.write(source);
 
 		const result = await new Promise<{ width: number; height: number }>((res, rej) => {
 			ffprobe(filePath, (err, data) => {
@@ -84,6 +85,8 @@ export async function getVideoData(filePath: string, source: ArrayBuffer) {
 				res({ width: stream.width ?? 0, height: stream.height ?? 0 });
 			});
 		});
+
+		await file.delete();
 
 		return result;
 	} catch (e) {
