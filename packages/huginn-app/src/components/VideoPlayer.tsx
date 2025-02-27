@@ -1,15 +1,16 @@
 import { Transition } from "@headlessui/react";
 import { formatSeconds } from "@huginn/shared";
 import clsx from "clsx";
-import { type MouseEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import LoadingIcon from "./LoadingIcon";
 
+const OFFSET_PERCENTAGE = 3;
 export default function VideoPlayer(props: { url: string; width: number; height: number; type: string }) {
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const progressRef = useRef<HTMLDivElement>(null);
 	const [playing, setPlaying] = useState(false);
-	const [progress, setProgress] = useState(0);
-	const [buffer, setBuffer] = useState(0);
+	const [progressPercentage, setProgressPercentage] = useState(0);
+	const [bufferPercentage, setBufferPercentage] = useState(0);
 	const [videoDuration, setVideoDuration] = useState(0);
 	const [videoTime, setVideoTime] = useState(0);
 	const [loaded, setLoaded] = useState(false);
@@ -45,7 +46,14 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 				const current = videoRef.current?.currentTime ?? 0;
 				const duration = videoRef.current?.duration ?? 0;
 				setVideoTime(current);
-				setProgress((current / duration) * 100);
+
+				let passedPercentage = (current / duration) * 100;
+				passedPercentage = Math.max(0, Math.min(100, passedPercentage));
+
+				const visualPercentage = (passedPercentage / 100) * (100 - OFFSET_PERCENTAGE) + OFFSET_PERCENTAGE;
+				const clampedVisualPercentage = Math.max(OFFSET_PERCENTAGE, Math.min(100, visualPercentage));
+
+				setProgressPercentage(clampedVisualPercentage);
 			},
 			{ signal: controller.signal },
 		);
@@ -61,8 +69,7 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 
 					if (duration > 0) {
 						const percentage = (end / duration) * 100;
-						console.log(percentage);
-						setBuffer(percentage);
+						setBufferPercentage(percentage);
 					}
 				}
 			},
@@ -72,7 +79,7 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 		document.addEventListener(
 			"mousemove",
 			(e) => {
-				if (dragging.current) setVideoProgress(e.pageX);
+				if (dragging.current) setVideoProgressFromMouse(e.pageX);
 			},
 			{ signal: controller.signal },
 		);
@@ -85,36 +92,35 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 			{ signal: controller.signal },
 		);
 
+		setProgressPercentage(OFFSET_PERCENTAGE);
+
 		return () => {
 			controller.abort();
 		};
 	}, []);
 
-	function setVideoProgress(mouseX: number) {
+	function setVideoProgressFromMouse(mouseX: number) {
 		if (!progressRef.current) {
 			return;
 		}
-		// e.currentTarget.
-		// const pos = (e.pageX - progress.offsetLeft - progress.offsetParent.offsetLeft) / progress.offsetWidth;
 		const rect = progressRef.current.getBoundingClientRect();
-		const left = rect.left;
-		const adjustedMouseX = mouseX - rect.left;
-		console.log(rect.left);
-		let percentage = 0;
-		if (adjustedMouseX > 10) {
-			percentage = Math.min(Math.max(0, (adjustedMouseX / (rect.right - left)) * 100), 100);
-		}
-		const duration = videoRef.current?.duration ?? 0;
-		console.log(percentage);
+		const x = mouseX - rect.left;
 
+		let percentage = (x / rect.width) * 100;
+		percentage = Math.max(0, percentage - OFFSET_PERCENTAGE);
+		percentage = Math.min(100 - OFFSET_PERCENTAGE, percentage);
+
+		let actualPercentage = (percentage / (100 - OFFSET_PERCENTAGE)) * 100;
+		actualPercentage = Math.max(0, Math.min(100, actualPercentage));
+
+		percentage = Math.max(percentage + OFFSET_PERCENTAGE, OFFSET_PERCENTAGE);
 		if (videoRef.current) {
-			const time = (duration / 100) * percentage;
-			videoRef.current.currentTime = (duration / 100) * percentage;
+			const duration = videoRef.current?.duration ?? 0;
+			const time = (duration / 100) * actualPercentage;
+			videoRef.current.currentTime = time;
 			setVideoTime(time);
-			setProgress(percentage);
+			setProgressPercentage(percentage);
 		}
-
-		// video.currentTime = pos * video.duration;
 	}
 
 	function togglePlaying() {
@@ -153,7 +159,10 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 				</div>
 			</Transition>
 			<div
-				className="absolute inset-x-0 bottom-0 flex translate-y-full items-center gap-x-2 bg-tertiary/90 px-2 py-2 opacity-0 transition-[opacity,transform] group-hover/video:translate-y-0 group-hover/video:opacity-100"
+				className={clsx(
+					"absolute inset-x-0 bottom-0 flex items-center gap-x-2 bg-tertiary/90 px-2 py-2 transition-[opacity,transform]",
+					playing && "translate-y-full opacity-0 group-hover/video:translate-y-0 group-hover/video:opacity-100",
+				)}
 				onClick={(e) => e.stopPropagation()}
 			>
 				<button type="button" onClick={togglePlaying} className="shrink-0 text-white/80 hover:text-white">
@@ -163,19 +172,19 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 					{formatSeconds(videoTime)} / {formatSeconds(videoDuration)}
 				</div>
 				<div
-					ref={progressRef}
-					className="group/progress relative flex h-2 w-full cursor-pointer items-center rounded-md bg-white/20"
-					onClick={(e) => setVideoProgress(e.pageX)}
+					className="group/progress relative flex h-2 w-[400px] cursor-pointer items-center rounded-md bg-white/20"
+					onClick={(e) => setVideoProgressFromMouse(e.pageX)}
 					onMouseDown={(e) => {
 						dragging.current = true;
 						e.preventDefault();
 					}}
+					ref={progressRef}
 				>
-					<div className="absolute h-full rounded-md bg-white/30 transition-[width]" style={{ width: `${buffer}%` }} />
-					<div className="absolute h-full rounded-md bg-accent" style={{ width: `clamp(10px, ${progress}%, 100%)` }} />
+					<div className="absolute h-full rounded-md bg-white/30 transition-[width]" style={{ width: `${bufferPercentage}%` }} />
+					<div className="absolute h-full rounded-md bg-accent" style={{ width: `${progressPercentage}%` }} />
 					<div
-						className="absolute h-4 w-4 scale-0 rounded-full bg-text/100 transition-transform group-hover/progress:scale-100"
-						style={{ left: `clamp(2px, calc(${progress}% - 8px), 100%)` }}
+						className="absolute h-4 w-4 scale-0 rounded-full bg-text/50 transition-transform group-hover/progress:scale-100"
+						style={{ left: `calc(${progressPercentage}% - 8px)` }}
 					/>
 				</div>
 			</div>
