@@ -19,3 +19,6 @@
 **/.idea
 **/coverage*
 **/secrets.env
+**/ffmpeg
+**/cache
+**/uploads
