@@ -16,7 +16,9 @@ createRoute("POST", "/cdn/attachments/:channelId/:messageId", async (c) => {
 		return invalidFormBody(c);
 	}
 
-	await storage.writeFile("attachments", `${channelId}/${messageId}`, file.name, await file.arrayBuffer());
+	// const arrayBuffer = await Bun.readableStreamToArrayBuffer(file.stream());
+	// console.log(arrayBuffer.byteLength);
+	await storage.writeFile("attachments", `${channelId}/${messageId}`, file.name, file.stream());
 
 	return c.text(file.name, HttpCode.CREATED);
 });

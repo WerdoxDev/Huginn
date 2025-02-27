@@ -17,7 +17,7 @@ createRoute("POST", "/cdn/avatars/:userId", async (c) => {
 		return invalidFormBody(c);
 	}
 
-	await storage.writeFile("avatars", userId, file.name, await file.arrayBuffer());
+	await storage.writeFile("avatars", userId, file.name, file.stream());
 
 	return c.text(file.name, HttpCode.CREATED);
 });

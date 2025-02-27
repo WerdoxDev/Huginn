@@ -28,10 +28,11 @@ export class FileStorage extends Storage {
 		}
 	}
 
-	public async writeFile(category: FileCategory, subDirectory: string, name: string, data: string | ArrayBuffer): Promise<boolean> {
+	public async writeFile(category: FileCategory, subDirectory: string, name: string, data: ReadableStream): Promise<boolean> {
 		logWriteFile(category, subDirectory, name);
 		try {
-			await Bun.write(join(this.directory, category, ...subDirectory.split("/"), name), data);
+			const file = Bun.file(join(this.directory, category, ...subDirectory.split("/"), name));
+			await file.write(await Bun.readableStreamToArrayBuffer(data));
 			return true;
 		} catch (e) {
 			console.error(this.name, "writeFile", e);
@@ -45,6 +46,16 @@ export class FileStorage extends Storage {
 		} catch (e) {
 			logFileNotFound(category, subDirectory, name);
 			return false;
+		}
+	}
+
+	public async stat(category: FileCategory, subDirectory: string, name: string): Promise<unknown> {
+		try {
+			const stat = await Bun.file(join(this.directory, category, ...subDirectory.split("/"), name)).stat();
+			return stat;
+		} catch (e) {
+			logFileNotFound(category, subDirectory, name);
+			return undefined;
 		}
 	}
 }

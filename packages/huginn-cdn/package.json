@@ -7,7 +7,6 @@
 		"dev": "bun src/index.ts --watch"
 	},
 	"dependencies": {
-		"@aws-sdk/client-s3": "^3.750.0",
 		"@huginn/backend-shared": "workspace:*",
 		"@huginn/shared": "workspace:*",
 		"consola": "^3.4.0",

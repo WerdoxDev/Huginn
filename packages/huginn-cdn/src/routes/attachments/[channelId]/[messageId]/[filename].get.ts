@@ -1,6 +1,6 @@
-import type { HeadBucketCommandOutput, HeadObjectCommandOutput } from "@aws-sdk/client-s3";
 import { createRoute, fileNotFound, validator, waitUntil } from "@huginn/backend-shared";
 import { HttpCode, type ImageFormats, fileTypes, isImageMediaType, isVideoMediaType } from "@huginn/shared";
+import type { S3Stats } from "bun";
 import { StreamingApi } from "hono/utils/stream";
 import { z } from "zod";
 import { cacheStorage, storage } from "#setup";
@@ -22,7 +22,7 @@ createRoute("GET", "/cdn/attachments/:channelId/:messageId/:filename", validator
 
 	// Video files with range require gettings a specific range of bytes from the video
 	if (isVideoMediaType(mimeType)) {
-		const head = (await storage.head("attachments", `${channelId}/${messageId}`, filename)) as HeadObjectCommandOutput;
+		const head = (await storage.stat("attachments", `${channelId}/${messageId}`, filename)) as S3Stats;
 		if (!head) {
 			return fileNotFound(c);
 		}
@@ -31,15 +31,14 @@ createRoute("GET", "/cdn/attachments/:channelId/:messageId/:filename", validator
 		if (range) {
 			const parts = range.replace(/bytes=/, "").split("-");
 			const start = Number.parseInt(parts[0], 10);
-			const end = parts[1] ? Number.parseInt(parts[1], 10) : (head.ContentLength ?? 0) - 1;
+			const end = parts[1] ? Number.parseInt(parts[1], 10) : (head.size ?? 0) - 1;
 			const chunkSize = end - start + 1;
-
-			const file = await storage.getFile("attachments", `${channelId}/${messageId}`, filename, range);
+			const file = await storage.getFile("attachments", `${channelId}/${messageId}`, filename, start, end);
 
 			if (file) {
 				return c.body(file, HttpCode.PARTIAL_CONTENT, {
 					"Content-Type": mimeType,
-					"Content-Range": `bytes ${start}-${end}/${head.ContentLength}`,
+					"Content-Range": `bytes ${start}-${end}/${head.size}`,
 					"Accept-Ranges": "bytes",
 					"Content-Length": chunkSize.toString(),
 				});
@@ -82,12 +81,7 @@ createRoute("GET", "/cdn/attachments/:channelId/:messageId/:filename", validator
 		// Write the image in cache
 		waitUntil(c, async () => {
 			if (result) {
-				await cacheStorage.writeFile(
-					"attachments",
-					`${channelId}/${messageId}/${cacheDir}`,
-					filename,
-					await Bun.readableStreamToArrayBuffer(readable2),
-				);
+				await cacheStorage.writeFile("attachments", `${channelId}/${messageId}/${cacheDir}`, filename, readable2);
 			}
 		});
 

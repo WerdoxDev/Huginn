@@ -1,12 +1,5 @@
-import {
-	GetObjectCommand,
-	type HeadBucketCommandOutput,
-	HeadObjectCommand,
-	type HeadObjectCommandOutput,
-	PutObjectCommand,
-	S3Client,
-} from "@aws-sdk/client-s3";
 import { logFileNotFound, logGetFile, logWriteFile } from "@huginn/backend-shared";
+import { S3Client, type S3Stats } from "bun";
 import { join } from "pathe";
 import { envs } from "#setup";
 import { Storage } from "#storage/storage";
@@ -20,32 +13,38 @@ export class S3Storage extends Storage {
 
 		this.s3 = new S3Client({
 			region: envs.AWS_REGION,
-			credentials: { accessKeyId: envs.AWS_KEY_ID ?? "", secretAccessKey: envs.AWS_SECRET_KEY ?? "" },
+			accessKeyId: envs.AWS_KEY_ID,
+			secretAccessKey: envs.AWS_SECRET_KEY,
+			bucket: envs.AWS_BUCKET,
 		});
 	}
 
-	public async getFile(category: FileCategory, subDirectory: string, name: string, range?: string): Promise<ReadableStream | undefined> {
+	public async getFile(
+		category: FileCategory,
+		subDirectory: string,
+		name: string,
+		start?: number,
+		end?: number,
+	): Promise<ReadableStream | undefined> {
 		try {
-			const cmd = new GetObjectCommand({ Bucket: envs.AWS_BUCKET, Key: join(category, ...subDirectory.split("/"), name), Range: range });
-			const result = await this.s3.send(cmd);
+			let file = this.s3.file(join(category, ...subDirectory.split("/"), name), { partSize: 5 * 1024 * 1024 });
+			if (start || end) {
+				file = file.slice(start, end);
+			}
 
 			logGetFile(category, subDirectory, name);
-			return result.Body?.transformToWebStream();
+			return file.stream();
 		} catch (e) {
 			logFileNotFound(category, subDirectory, name);
 			return undefined;
 		}
 	}
 
-	public async writeFile(category: FileCategory, subDirectory: string, name: string, data: string | ArrayBuffer): Promise<boolean> {
+	public async writeFile(category: FileCategory, subDirectory: string, name: string, data: ReadableStream): Promise<boolean> {
 		logWriteFile(category, subDirectory, name);
 		try {
-			const cmd = new PutObjectCommand({
-				Bucket: envs.AWS_BUCKET,
-				Key: join(category, subDirectory, name),
-				Body: data instanceof ArrayBuffer ? new Uint8Array(data) : data,
-			});
-			const result = await this.s3.send(cmd);
+			const file = this.s3.file(join(category, ...subDirectory.split("/"), name));
+			const result = await file.write(new Response(data));
 			return true;
 		} catch (e) {
 			console.error(this.name, "writeFile", e);
@@ -55,20 +54,18 @@ export class S3Storage extends Storage {
 
 	public async exists(category: FileCategory, subDirectory: string, name: string): Promise<boolean> {
 		try {
-			const cmd = new HeadObjectCommand({ Bucket: envs.AWS_BUCKET, Key: join(category, subDirectory, name) });
-			const result = await this.s3.send(cmd);
-			return true;
+			const exists = await this.s3.exists(join(category, ...subDirectory.split("/"), name));
+			return exists;
 		} catch (e) {
 			logFileNotFound(category, subDirectory, name);
 			return false;
 		}
 	}
 
-	public async head(category: FileCategory, subDirectory: string, name: string): Promise<HeadObjectCommandOutput | undefined> {
+	public async stat(category: FileCategory, subDirectory: string, name: string): Promise<S3Stats | undefined> {
 		try {
-			const cmd = new HeadObjectCommand({ Bucket: envs.AWS_BUCKET, Key: join(category, subDirectory, name) });
-			const result = await this.s3.send(cmd);
-			return result;
+			const stat = await this.s3.stat(join(category, ...subDirectory.split("/"), name));
+			return stat;
 		} catch (e) {
 			logFileNotFound(category, subDirectory, name);
 			return undefined;

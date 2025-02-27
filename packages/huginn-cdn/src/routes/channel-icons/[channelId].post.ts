@@ -16,7 +16,7 @@ createRoute("POST", "/cdn/channel-icons/:channelId", async (c) => {
 		return invalidFormBody(c);
 	}
 
-	await storage.writeFile("channel-icons", channelId, file.name, await file.arrayBuffer());
+	await storage.writeFile("channel-icons", channelId, file.name, file.stream());
 
 	return c.text(file.name, HttpCode.CREATED);
 });

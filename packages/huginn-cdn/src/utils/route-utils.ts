@@ -27,7 +27,7 @@ export async function tryResolveImage(c: Context, category: FileCategory, subDir
 
 	waitUntil(c, async () => {
 		if (result) {
-			await storage.writeFile(category, subDirectory, hash, await Bun.readableStreamToArrayBuffer(readable2));
+			await storage.writeFile(category, subDirectory, hash, readable2);
 		}
 	});
 
