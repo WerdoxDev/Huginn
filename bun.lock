@@ -35,7 +35,7 @@
     },
     "packages/huginn-app": {
       "name": "huginn-app-react",
-      "version": "0.22.0",
+      "version": "0.23.1",
       "dependencies": {
         "@babel/plugin-syntax-jsx": "^7.25.9",
         "@floating-ui/react": "^0.26.28",
@@ -103,7 +103,7 @@
     },
     "packages/huginn-backend-shared": {
       "name": "@huginn/backend-shared",
-      "version": "0.6.0",
+      "version": "0.7.0",
       "dependencies": {
         "@hono/zod-validator": "^0.4.2",
         "@sapphire/snowflake": "^3.5.3",
@@ -161,9 +161,8 @@
     },
     "packages/huginn-cdn": {
       "name": "@huginn/cdn",
-      "version": "0.8.0",
+      "version": "0.9.0",
       "dependencies": {
-        "@aws-sdk/client-s3": "^3.750.0",
         "@huginn/backend-shared": "workspace:*",
         "@huginn/shared": "workspace:*",
         "consola": "^3.4.0",
@@ -179,7 +178,7 @@
     },
     "packages/huginn-server": {
       "name": "@huginn/server",
-      "version": "0.15.1",
+      "version": "0.16.0",
       "dependencies": {
         "@aws-sdk/client-s3": "^3.750.0",
         "@huginn/backend-shared": "workspace:*",
@@ -218,7 +217,7 @@
     },
     "packages/huginn-shared": {
       "name": "@huginn/shared",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "dependencies": {
         "@sapphire/snowflake": "^3.5.3",
         "@std/encoding": "npm:@jsr/std__encoding",
@@ -2650,9 +2649,15 @@
 
     "@google-automations/git-file-utils/minimatch": ["minimatch@5.1.6", "", { "dependencies": { "brace-expansion": "^2.0.1" } }, "sha512-lKwV/1brpG6mBUFHtb7NUmtABCb2WZZmm2wNiOA5hAb8VdCS4B3dtMWyvcoViccwAW/COERjXLt0zP1zXUN26g=="],
 
+    "@huginn/backend-shared/@types/bun": ["@types/bun@1.2.4", "", { "dependencies": { "bun-types": "1.2.4" } }, "sha512-QtuV5OMR8/rdKJs213iwXDpfVvnskPXY/S0ZiFbsTjQZycuqPbMW8Gf/XhLfwE5njW8sxI2WjISURXPlHypMFA=="],
+
     "@huginn/backend-shared/pathe": ["pathe@2.0.3", "", {}, "sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w=="],
 
+    "@huginn/cdn/@types/bun": ["@types/bun@1.2.4", "", { "dependencies": { "bun-types": "1.2.4" } }, "sha512-QtuV5OMR8/rdKJs213iwXDpfVvnskPXY/S0ZiFbsTjQZycuqPbMW8Gf/XhLfwE5njW8sxI2WjISURXPlHypMFA=="],
+
     "@huginn/server/octokit": ["octokit@4.1.2", "", { "dependencies": { "@octokit/app": "^15.1.4", "@octokit/core": "^6.1.4", "@octokit/oauth-app": "^7.1.6", "@octokit/plugin-paginate-graphql": "^5.2.4", "@octokit/plugin-paginate-rest": "^11.4.2", "@octokit/plugin-rest-endpoint-methods": "^13.3.1", "@octokit/plugin-retry": "^7.1.4", "@octokit/plugin-throttling": "^9.4.0", "@octokit/request-error": "^6.1.7", "@octokit/types": "^13.7.0" } }, "sha512-0kcTxJOK3yQrJsRb8wKa28hlTze4QOz4sLuUnfXXnhboDhFKgv8LxS86tFwbsafDW9JZ08ByuVAE8kQbYJIZkA=="],
+
+    "@huginn/shared/@types/bun": ["@types/bun@1.2.4", "", { "dependencies": { "bun-types": "1.2.4" } }, "sha512-QtuV5OMR8/rdKJs213iwXDpfVvnskPXY/S0ZiFbsTjQZycuqPbMW8Gf/XhLfwE5njW8sxI2WjISURXPlHypMFA=="],
 
     "@iconify/utils/globals": ["globals@15.14.0", "", {}, "sha512-OkToC372DtlQeje9/zHIo5CT8lRP/FUgEOKBEhU4e0abL7J7CD24fD9ohiLN5hagG/kWCYj4K5oaxxtj2Z0Dig=="],
 
@@ -3032,6 +3037,10 @@
 
     "@google-automations/git-file-utils/@octokit/types/@octokit/openapi-types": ["@octokit/openapi-types@18.1.1", "", {}, "sha512-VRaeH8nCDtF5aXWnjPuEMIYf1itK/s3JYyJcWFJT8X9pSNnBtriDf7wlEWsGuhPLl4QIH4xM8fqTXDwJ3Mu6sw=="],
 
+    "@huginn/backend-shared/@types/bun/bun-types": ["bun-types@1.2.4", "", { "dependencies": { "@types/node": "*", "@types/ws": "~8.5.10" } }, "sha512-nDPymR207ZZEoWD4AavvEaa/KZe/qlrbMSchqpQwovPZCKc7pwMoENjEtHgMKaAjJhy+x6vfqSBA1QU3bJgs0Q=="],
+
+    "@huginn/cdn/@types/bun/bun-types": ["bun-types@1.2.4", "", { "dependencies": { "@types/node": "*", "@types/ws": "~8.5.10" } }, "sha512-nDPymR207ZZEoWD4AavvEaa/KZe/qlrbMSchqpQwovPZCKc7pwMoENjEtHgMKaAjJhy+x6vfqSBA1QU3bJgs0Q=="],
+
     "@huginn/server/octokit/@octokit/app": ["@octokit/app@15.1.4", "", { "dependencies": { "@octokit/auth-app": "^7.1.5", "@octokit/auth-unauthenticated": "^6.1.2", "@octokit/core": "^6.1.4", "@octokit/oauth-app": "^7.1.6", "@octokit/plugin-paginate-rest": "^11.4.2", "@octokit/types": "^13.6.2", "@octokit/webhooks": "^13.6.1" } }, "sha512-PM1MqlPAnItjQIKWRmSoJu02+m7Eif4Am3w5C+Ctkw0//QETWMbW2ejBZhcw3aS7wRcFSbS+lH3NoYm614aZVQ=="],
 
     "@huginn/server/octokit/@octokit/core": ["@octokit/core@6.1.4", "", { "dependencies": { "@octokit/auth-token": "^5.0.0", "@octokit/graphql": "^8.1.2", "@octokit/request": "^9.2.1", "@octokit/request-error": "^6.1.7", "@octokit/types": "^13.6.2", "before-after-hook": "^3.0.2", "universal-user-agent": "^7.0.0" } }, "sha512-lAS9k7d6I0MPN+gb9bKDt7X8SdxknYqAMh44S5L+lNqIN2NuV8nvv3g8rPp7MuRxcOpxpUIATWprO0C34a8Qmg=="],
@@ -3049,6 +3058,8 @@
     "@huginn/server/octokit/@octokit/plugin-throttling": ["@octokit/plugin-throttling@9.4.0", "", { "dependencies": { "@octokit/types": "^13.7.0", "bottleneck": "^2.15.3" }, "peerDependencies": { "@octokit/core": "^6.1.3" } }, "sha512-IOlXxXhZA4Z3m0EEYtrrACkuHiArHLZ3CvqWwOez/pURNqRuwfoFlTPbN5Muf28pzFuztxPyiUiNwz8KctdZaQ=="],
 
     "@huginn/server/octokit/@octokit/request-error": ["@octokit/request-error@6.1.7", "", { "dependencies": { "@octokit/types": "^13.6.2" } }, "sha512-69NIppAwaauwZv6aOzb+VVLwt+0havz9GT5YplkeJv7fG7a40qpLt/yZKyiDxAhgz0EtgNdNcb96Z0u+Zyuy2g=="],
+
+    "@huginn/shared/@types/bun/bun-types": ["bun-types@1.2.4", "", { "dependencies": { "@types/node": "*", "@types/ws": "~8.5.10" } }, "sha512-nDPymR207ZZEoWD4AavvEaa/KZe/qlrbMSchqpQwovPZCKc7pwMoENjEtHgMKaAjJhy+x6vfqSBA1QU3bJgs0Q=="],
 
     "@isaacs/cliui/string-width/emoji-regex": ["emoji-regex@9.2.2", "", {}, "sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg=="],
 

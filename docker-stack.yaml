@@ -30,6 +30,11 @@ services:
       - caddy
     depends_on:
       - caddy
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+          cpus: "2.0"
   cdn:
     image: ghcr.io/werdoxdev/huginn-cdn:latest
     environment:
@@ -44,7 +49,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "1.0"
+          memory: 400M
+          cpus: "2.0"
 
 networks:
   caddy:

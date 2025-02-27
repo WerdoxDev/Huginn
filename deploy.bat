@@ -1,7 +1,12 @@
 @echo off
 
+echo **/huginn-cdn>> .dockerignore
 docker build -t ghcr.io/werdoxdev/huginn-server -f Dockerfile.huginn-server .
+git checkout .dockerignore
+
+echo **/huginn-server>> .dockerignore
 docker build -t ghcr.io/werdoxdev/huginn-cdn -f Dockerfile.huginn-cdn .
+git checkout .dockerignore
 
 docker push ghcr.io/werdoxdev/huginn-server:latest
 docker push ghcr.io/werdoxdev/huginn-cdn:latest

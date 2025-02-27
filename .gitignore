@@ -22,6 +22,7 @@ target
 .output
 .react-router
 build
+ffmpeg
 
 *.code-workspace
 
