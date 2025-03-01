@@ -1,21 +1,23 @@
 import { Transition } from "@headlessui/react";
+import { useProgressBar } from "@hooks/useProgressBar";
+import { useTimeout } from "@hooks/useTimeout";
 import { formatSeconds } from "@huginn/shared";
 import clsx from "clsx";
-import { useEffect, useRef, useState } from "react";
+import { type MouseEvent, useEffect, useRef, useState } from "react";
 import LoadingIcon from "./LoadingIcon";
+import ProgressBar from "./ProgressBar";
 
-const OFFSET_PERCENTAGE = 3;
 export default function VideoPlayer(props: { url: string; width: number; height: number; type: string }) {
 	const videoRef = useRef<HTMLVideoElement>(null);
-	const progressRef = useRef<HTMLDivElement>(null);
 	const [playing, setPlaying] = useState(false);
-	const [progressPercentage, setProgressPercentage] = useState(0);
-	const [bufferPercentage, setBufferPercentage] = useState(0);
+	const videoProgress = useProgressBar({ startOffset: 2, endOffset: 0, mouseOffset: 5 });
+	const audioProgress = useProgressBar({ startOffset: 10, endOffset: 0, mouseOffset: 5, defaultValue: 100 });
+	const [audioHovering, setAudioHovering] = useState(false);
 	const [videoDuration, setVideoDuration] = useState(0);
 	const [videoTime, setVideoTime] = useState(0);
 	const [loaded, setLoaded] = useState(false);
 	const [errored, setErrored] = useState(false);
-	const dragging = useRef(false);
+	const { cancel: cancelTimeout, start: startTimeout } = useTimeout(() => setAudioHovering(false), 1000);
 
 	useEffect(() => {
 		const controller = new AbortController();
@@ -47,13 +49,8 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 				const duration = videoRef.current?.duration ?? 0;
 				setVideoTime(current);
 
-				let passedPercentage = (current / duration) * 100;
-				passedPercentage = Math.max(0, Math.min(100, passedPercentage));
-
-				const visualPercentage = (passedPercentage / 100) * (100 - OFFSET_PERCENTAGE) + OFFSET_PERCENTAGE;
-				const clampedVisualPercentage = Math.max(OFFSET_PERCENTAGE, Math.min(100, visualPercentage));
-
-				setProgressPercentage(clampedVisualPercentage);
+				const percentage = (current / duration) * 100;
+				videoProgress.setPercentage(videoProgress.getVisualPercentage(percentage));
 			},
 			{ signal: controller.signal },
 		);
@@ -69,61 +66,49 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 
 					if (duration > 0) {
 						const percentage = (end / duration) * 100;
-						setBufferPercentage(percentage);
+						videoProgress.setBufferPercentage(videoProgress.getVisualPercentage(percentage));
 					}
 				}
 			},
 			{ signal: controller.signal },
 		);
 
-		document.addEventListener(
-			"mousemove",
-			(e) => {
-				if (dragging.current) setVideoProgressFromMouse(e.pageX);
-			},
-			{ signal: controller.signal },
-		);
-
-		document.addEventListener(
-			"mouseup",
-			() => {
-				dragging.current = false;
-			},
-			{ signal: controller.signal },
-		);
-
-		setProgressPercentage(OFFSET_PERCENTAGE);
-
 		return () => {
 			controller.abort();
 		};
 	}, []);
 
-	function setVideoProgressFromMouse(mouseX: number) {
-		if (!progressRef.current) {
-			return;
-		}
-		const rect = progressRef.current.getBoundingClientRect();
-		const x = mouseX - rect.left;
-
-		let percentage = (x / rect.width) * 100;
-		percentage = Math.max(0, percentage - OFFSET_PERCENTAGE);
-		percentage = Math.min(100 - OFFSET_PERCENTAGE, percentage);
-
-		let actualPercentage = (percentage / (100 - OFFSET_PERCENTAGE)) * 100;
-		actualPercentage = Math.max(0, Math.min(100, actualPercentage));
-
-		percentage = Math.max(percentage + OFFSET_PERCENTAGE, OFFSET_PERCENTAGE);
+	function setVideoPercentage(percentage: number) {
 		if (videoRef.current) {
 			const duration = videoRef.current?.duration ?? 0;
-			const time = (duration / 100) * actualPercentage;
+			const time = (duration / 100) * percentage;
 			videoRef.current.currentTime = time;
 			setVideoTime(time);
-			setProgressPercentage(percentage);
 		}
 	}
 
+	function setAudioPercentage(percentage: number) {
+		if (videoRef.current) {
+			videoRef.current.volume = percentage / 100;
+		}
+	}
+
+	function cancelAudioHoverTimeout() {
+		console.log("CANCEL");
+		cancelTimeout();
+		setAudioHovering(true);
+	}
+
+	function startAudioHoverTimeout(e: MouseEvent) {
+		e.stopPropagation();
+		startTimeout();
+	}
+
 	function togglePlaying() {
+		if (audioProgress.dragging || videoProgress.dragging) {
+			return;
+		}
+
 		if (playing) {
 			videoRef.current?.pause();
 		} else {
@@ -134,7 +119,8 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 		<div
 			style={{ width: `${props.width}px`, height: `${props.height}px` }}
 			className="group/video relative overflow-hidden rounded-lg"
-			onClick={togglePlaying}
+			onMouseUp={togglePlaying}
+			// onClick={togglePlaying}
 		>
 			{/* biome-ignore lint/a11y/useMediaCaption: <explanation> */}
 			<video
@@ -171,21 +157,26 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 				<div className="shrink-0 text-sm">
 					{formatSeconds(videoTime)} / {formatSeconds(videoDuration)}
 				</div>
-				<div
-					className="group/progress relative flex h-2 w-[400px] cursor-pointer items-center rounded-md bg-white/20"
-					onClick={(e) => setVideoProgressFromMouse(e.pageX)}
-					onMouseDown={(e) => {
-						dragging.current = true;
-						e.preventDefault();
-					}}
-					ref={progressRef}
-				>
-					<div className="absolute h-full rounded-md bg-white/30 transition-[width]" style={{ width: `${bufferPercentage}%` }} />
-					<div className="absolute h-full rounded-md bg-accent" style={{ width: `${progressPercentage}%` }} />
-					<div
-						className="absolute h-4 w-4 scale-0 rounded-full bg-text/50 transition-transform group-hover/progress:scale-100"
-						style={{ left: `calc(${progressPercentage}% - 8px)` }}
+				<ProgressBar {...videoProgress} orientation="horizontal" onPercentageChange={setVideoPercentage} />
+				<div className="relative flex cursor-pointer items-center justify-center">
+					<IconMingcuteVolumeFill
+						className="size-6 shrink-0 text-white/80 hover:text-white"
+						onMouseLeave={startAudioHoverTimeout}
+						onMouseEnter={cancelAudioHoverTimeout}
 					/>
+					{(audioHovering || audioProgress.dragging) && (
+						<div
+							className="absolute bottom-10 h-24 w-4 rounded-lg bg-tertiary/90 p-1"
+							onMouseEnter={cancelAudioHoverTimeout}
+							onMouseLeave={startAudioHoverTimeout}
+							onMouseUp={(e) => {
+								e.stopPropagation();
+								console.log("UP");
+							}}
+						>
+							<ProgressBar {...audioProgress} orientation="vertical" onPercentageChange={setAudioPercentage} />
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
