@@ -65,6 +65,7 @@ export type RequestData = {
 	 */
 	xhr?: {
 		enabled: boolean;
+		signal?: AbortSignal;
 		onUploadProgress?: (event: ProgressEvent) => void;
 	};
 };
