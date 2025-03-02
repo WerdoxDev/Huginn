@@ -199,3 +199,20 @@ export type HuginnToken = {
 };
 
 export type AttachmentType = { id: number; dataUrl?: string; arrayBuffer: ArrayBuffer; filename: string; description?: string; contentType: string };
+
+export type ProgressBarProps = {
+	orientation: "horizontal" | "vertical";
+	percentage: number;
+	bufferPercentage?: number;
+	dragging: boolean;
+	setPercentage: (percentage: number) => void;
+	setBufferPercentage?: (bufferPercentage: number) => void;
+	setDragging: (dragging: boolean) => void;
+	onPercentageChange?: (percentage: number) => void;
+	startOffset?: number;
+	endOffset?: number;
+	mouseOffset?: number;
+	className?: string;
+};
+
+export type UploadProgress = { filenames: string[]; percentage: number; total: number; onAbort?: () => void };

@@ -92,6 +92,11 @@ body,
 	animation: loading 1s infinite linear;
 }
 
+video::-webkit-media-controls {
+   display: none !important;
+ }
+
+
 ::-webkit-scrollbar {
 	@apply w-6;
    @apply h-6;

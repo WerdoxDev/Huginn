@@ -38,8 +38,31 @@ export function useSendMessage() {
 
 			const filenames = data.attachments.map((x) => x.filename);
 
+			const abortController = new AbortController();
+
+			function onAbort() {
+				abortController.abort();
+
+				queryClient.setQueryData<InfiniteData<AppChannelMessage[], { before: string; after: string }>>(["messages", data.channelId], (old) => {
+					if (!old) return undefined;
+
+					const lastPage = old.pages[old.pages.length - 1];
+
+					return {
+						...old,
+						pages: [
+							...old.pages.toSpliced(
+								old.pages.length - 1,
+								1,
+								lastPage.filter((x) => x.id !== previewMessage.id),
+							),
+						],
+					};
+				});
+			}
+
 			if (data.attachments.length) {
-				setMessageUploadProgress(previewMessage.id, { percentage: 0, filenames, total: 0 });
+				setMessageUploadProgress(previewMessage.id, { percentage: 0, filenames, total: 0, onAbort });
 			}
 
 			// Add Preview Message
@@ -69,8 +92,14 @@ export function useSendMessage() {
 					data.attachments.map((x) => ({ data: x.data, name: x.filename, contentType: x.contentType })),
 					data.attachments.length
 						? (event) =>
-								setMessageUploadProgress(previewMessage.id, { percentage: (event.loaded / event.total) * 100, filenames, total: event.total })
+								setMessageUploadProgress(previewMessage.id, {
+									percentage: (event.loaded / event.total) * 100,
+									filenames,
+									total: event.total,
+									onAbort,
+								})
 						: undefined,
+					abortController.signal,
 				),
 			};
 		},

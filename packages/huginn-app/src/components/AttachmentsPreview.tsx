@@ -1,6 +1,5 @@
 import type { AttachmentType } from "@/types";
 import { Transition } from "@headlessui/react";
-import clsx from "clsx";
 import { AnimatePresence, type Variants, motion } from "motion/react";
 import Tooltip from "./tooltip/Tooltip";
 

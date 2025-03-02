@@ -13,7 +13,6 @@ import { markdownSpoiler } from "@lib/markdown-spoiler";
 import { markdownUnderline } from "@lib/markdown-underline";
 import { getSlateFormats, isCloseToken, isElementCloseToken, isElementOpenToken, isOpenToken, organizeTokens } from "@lib/markdown-utils";
 import markdownit from "markdown-it";
-import type Token from "markdown-it/lib/token.mjs";
 import { useCallback, useEffect, useMemo } from "react";
 import { type Descendant, type Editor, createEditor } from "slate";
 import { DefaultElement, type RenderElementProps, type RenderLeafProps, withReact } from "slate-react";

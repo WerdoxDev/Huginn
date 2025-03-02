@@ -1,23 +1,24 @@
 import { Transition } from "@headlessui/react";
 import { useProgressBar } from "@hooks/useProgressBar";
-import { useTimeout } from "@hooks/useTimeout";
 import { formatSeconds } from "@huginn/shared";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import clsx from "clsx";
 import { type MouseEvent, useEffect, useRef, useState } from "react";
 import LoadingIcon from "./LoadingIcon";
 import ProgressBar from "./ProgressBar";
+import VolumeBar from "./VolumeBar";
 
 export default function VideoPlayer(props: { url: string; width: number; height: number; type: string }) {
+	const containerRef = useRef<HTMLDivElement>(null);
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const [playing, setPlaying] = useState(false);
 	const videoProgress = useProgressBar({ startOffset: 2, endOffset: 0, mouseOffset: 5 });
 	const audioProgress = useProgressBar({ startOffset: 10, endOffset: 0, mouseOffset: 5, defaultValue: 100 });
-	const [audioHovering, setAudioHovering] = useState(false);
 	const [videoDuration, setVideoDuration] = useState(0);
 	const [videoTime, setVideoTime] = useState(0);
 	const [loaded, setLoaded] = useState(false);
 	const [errored, setErrored] = useState(false);
-	const { cancel: cancelTimeout, start: startTimeout } = useTimeout(() => setAudioHovering(false), 1000);
+	const [fullscreen, setFullscreen] = useState(false);
 
 	useEffect(() => {
 		const controller = new AbortController();
@@ -93,19 +94,8 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 		}
 	}
 
-	function cancelAudioHoverTimeout() {
-		console.log("CANCEL");
-		cancelTimeout();
-		setAudioHovering(true);
-	}
-
-	function startAudioHoverTimeout(e: MouseEvent) {
-		e.stopPropagation();
-		startTimeout();
-	}
-
-	function togglePlaying() {
-		if (audioProgress.dragging || videoProgress.dragging) {
+	function togglePlaying(e: MouseEvent) {
+		if (audioProgress.dragging || videoProgress.dragging || e.button !== 0) {
 			return;
 		}
 
@@ -115,18 +105,31 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 			videoRef.current?.play();
 		}
 	}
+
+	function toggleFullscreen() {
+		if (document.fullscreenElement) {
+			document.exitFullscreen();
+			setFullscreen(false);
+			getCurrentWindow().setFullscreen(false);
+		} else {
+			containerRef.current?.requestFullscreen();
+			getCurrentWindow().setFullscreen(true);
+			setFullscreen(true);
+		}
+	}
 	return (
 		<div
+			ref={containerRef}
 			style={{ width: `${props.width}px`, height: `${props.height}px` }}
-			className="group/video relative overflow-hidden rounded-lg"
+			className="group/video relative flex overflow-hidden rounded-lg"
 			onMouseUp={togglePlaying}
-			// onClick={togglePlaying}
 		>
 			{/* biome-ignore lint/a11y/useMediaCaption: <explanation> */}
 			<video
-				width={props.width}
-				height={props.height}
-				style={{ width: `${props.width}px`, height: `${props.height}px` }}
+				className={clsx(fullscreen && "")}
+				width={fullscreen ? undefined : props.width}
+				height={fullscreen ? undefined : props.height}
+				style={fullscreen ? undefined : { width: `${props.width}px`, height: `${props.height}px` }}
 				src={props.url}
 				ref={videoRef}
 				onLoadedData={() => setLoaded(true)}
@@ -146,10 +149,10 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 			</Transition>
 			<div
 				className={clsx(
-					"absolute inset-x-0 bottom-0 flex items-center gap-x-2 bg-tertiary/90 px-2 py-2 transition-[opacity,transform]",
+					"absolute inset-x-0 bottom-0 flex items-center gap-x-4 bg-tertiary/90 px-2 py-2 transition-[opacity,transform]",
 					playing && "translate-y-full opacity-0 group-hover/video:translate-y-0 group-hover/video:opacity-100",
 				)}
-				onClick={(e) => e.stopPropagation()}
+				onMouseUp={(e) => e.stopPropagation()}
 			>
 				<button type="button" onClick={togglePlaying} className="shrink-0 text-white/80 hover:text-white">
 					{playing ? <IconMingcutePauseFill className="size-6" /> : <IconMingcutePlayFill className="size-6" />}
@@ -158,26 +161,10 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 					{formatSeconds(videoTime)} / {formatSeconds(videoDuration)}
 				</div>
 				<ProgressBar {...videoProgress} orientation="horizontal" onPercentageChange={setVideoPercentage} />
-				<div className="relative flex cursor-pointer items-center justify-center">
-					<IconMingcuteVolumeFill
-						className="size-6 shrink-0 text-white/80 hover:text-white"
-						onMouseLeave={startAudioHoverTimeout}
-						onMouseEnter={cancelAudioHoverTimeout}
-					/>
-					{(audioHovering || audioProgress.dragging) && (
-						<div
-							className="absolute bottom-10 h-24 w-4 rounded-lg bg-tertiary/90 p-1"
-							onMouseEnter={cancelAudioHoverTimeout}
-							onMouseLeave={startAudioHoverTimeout}
-							onMouseUp={(e) => {
-								e.stopPropagation();
-								console.log("UP");
-							}}
-						>
-							<ProgressBar {...audioProgress} orientation="vertical" onPercentageChange={setAudioPercentage} />
-						</div>
-					)}
-				</div>
+				<VolumeBar {...audioProgress} onPercentageChange={setAudioPercentage} />
+				<button type="button" className="shrink-0 text-white/80 hover:text-white" onClick={toggleFullscreen}>
+					{fullscreen ? <IconMingcuteFullscreenExitFill className="size-6" /> : <IconMingcuteFullscreenFill className="size-6" />}
+				</button>
 			</div>
 		</div>
 	);

@@ -30,7 +30,6 @@ export default function AttachmentElement(props: RenderElementProps) {
 		if (imgRef.current?.complete) {
 			setLoaded(true);
 		}
-		console.log(dimensions, width, height, filename);
 	}, []);
 
 	return (

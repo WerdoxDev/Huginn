@@ -214,8 +214,6 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			scrollDown();
 			shouldScrollOnNextRender.current = false;
 		}
-
-		console.log("MESSAGE CHANGED 2");
 	}, [sortedMessages]);
 
 	useEffect(() => {
@@ -223,7 +221,6 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			if (!scroll.current) return;
 
 			if (scroll.current.scrollHeight - scroll.current.clientHeight - scroll.current.scrollTop >= 1) {
-				console.log("SCROLL");
 				scroll.current.scrollTop += d.difference;
 			}
 		});

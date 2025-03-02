@@ -1,26 +1,9 @@
+import type { ProgressBarProps } from "@/types";
 import clsx from "clsx";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
-export default function ProgressBar(props: {
-	percentage: number;
-	setPercentage: (percentage: number) => void;
-	bufferPercentage?: number;
-	setBufferPercentage?: (bufferPercentage: number) => void;
-	startOffset?: number;
-	endOffset?: number;
-	mouseOffset?: number;
-	onPercentageChange: (percentage: number) => void;
-	orientation: "horizontal" | "vertical";
-	dragging: boolean;
-	setDragging: (dragging: boolean) => void;
-	className?: string;
-}) {
+export default function ProgressBar(props: ProgressBarProps) {
 	const progressRef = useRef<HTMLDivElement>(null);
-	const dragging = useRef(props.dragging);
-
-	useEffect(() => {
-		dragging.current = props.dragging;
-	}, [props.dragging]);
 
 	useEffect(() => {
 		const controller = new AbortController();
@@ -28,7 +11,7 @@ export default function ProgressBar(props: {
 		document.addEventListener(
 			"mousemove",
 			(e) => {
-				if (dragging.current) setPercentageFromMouse(props.orientation === "horizontal" ? e.pageX : e.pageY);
+				if (props.dragging) setPercentageFromMouse(props.orientation === "horizontal" ? e.pageX : e.pageY);
 			},
 			{ signal: controller.signal },
 		);
@@ -44,7 +27,7 @@ export default function ProgressBar(props: {
 		return () => {
 			controller.abort();
 		};
-	}, []);
+	}, [props.dragging, props.orientation, props.percentage]);
 
 	function setPercentageFromMouse(mousePosition: number) {
 		if (!progressRef.current) {
@@ -100,10 +83,7 @@ export default function ProgressBar(props: {
 				}}
 			/>
 			<div
-				className={clsx(
-					"absolute h-3 w-3 scale-0 rounded-full bg-text transition-transform",
-					props.dragging ? "scale-100" : "group-hover/progress:scale-100",
-				)}
+				className={clsx("absolute h-3 w-3 scale-0 rounded-full bg-text", props.dragging ? "scale-100" : "group-hover/progress:scale-100")}
 				style={{
 					left: props.orientation === "horizontal" ? `calc(${props.percentage}% - ${6 + (props.mouseOffset ?? 0)}px` : "unset",
 					bottom: props.orientation === "vertical" ? `calc(${props.percentage}% - ${6 + (props.mouseOffset ?? 0)}px)` : "unset",

@@ -1,3 +1,4 @@
+import type { UploadProgress } from "@/types";
 import type { APIGetUserChannelsResult, Snowflake } from "@huginn/shared";
 import type { QueryClient } from "@tanstack/react-query";
 import { create } from "zustand";
@@ -8,7 +9,7 @@ export const useChannelStore = create(
 		{
 			savedScrolls: new Map<Snowflake, number>(),
 			currentVisibleMessages: [] as Array<{ messageId: Snowflake; messageTimestamp: number; channelId: Snowflake }>,
-			messageUploadProgresses: {} as Record<Snowflake, { filenames: string[]; percentage: number; total: number }>,
+			messageUploadProgress: {} as Record<Snowflake, UploadProgress>,
 		},
 		(set) => ({
 			saveScroll: (channelId: Snowflake, scroll: number) => set((state) => ({ savedScrolls: new Map(state.savedScrolls).set(channelId, scroll) })),
@@ -35,11 +36,11 @@ export const useChannelStore = create(
 					return [{ ...channel, lastMessageId: messageId }, ...data.filter((x) => x.id !== channelId)];
 				});
 			},
-			setMessageUploadProgress: (previewMessageId: Snowflake, progress: { filenames: string[]; percentage: number; total: number }) =>
-				set((state) => ({ messageUploadProgresses: { ...state.messageUploadProgresses, [previewMessageId]: progress } })),
+			setMessageUploadProgress: (previewMessageId: Snowflake, progress: UploadProgress) =>
+				set((state) => ({ messageUploadProgress: { ...state.messageUploadProgress, [previewMessageId]: progress } })),
 			deleteMessageUploadProgress: (previewMessageId: Snowflake) =>
 				set((state) => ({
-					messageUploadProgresses: Object.fromEntries(Object.entries(state.messageUploadProgresses).filter(([id]) => id !== previewMessageId)),
+					messageUploadProgress: Object.fromEntries(Object.entries(state.messageUploadProgress).filter(([id]) => id !== previewMessageId)),
 				})),
 		}),
 	),
