@@ -124,6 +124,18 @@ export class REST {
 			}
 		}
 
+		function abortListener() {
+			xhr.abort();
+		}
+
+		xhrOptions?.signal?.addEventListener("abort", abortListener);
+
+		xhr.addEventListener("readystatechange", () => {
+			if (xhr.readyState === XMLHttpRequest.DONE) {
+				xhrOptions?.signal?.removeEventListener("abort", abortListener);
+			}
+		});
+
 		xhr.upload.onprogress = (event) => {
 			xhrOptions?.onUploadProgress?.(event);
 		};

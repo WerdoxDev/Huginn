@@ -72,12 +72,13 @@ export class ChannelAPI {
 		body: APIPostDefaultMessageJSONBody,
 		files?: RawFile[],
 		onUploadProgress?: (event: ProgressEvent) => void,
+		signal?: AbortSignal,
 	): Promise<APIPostDefaultMessageResult> {
 		return this.rest.post(Routes.channelMessages(channelId), {
 			body,
 			auth: true,
 			files,
-			xhr: { enabled: true, onUploadProgress },
+			xhr: { enabled: true, onUploadProgress, signal },
 		}) as Promise<APIPostDefaultMessageResult>;
 	}
 
