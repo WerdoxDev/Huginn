@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.7.1...api@v0.8.0) (2025-03-02)
+
+
+### Features
+
+* **api:** add aborting capability to xhr ([0fb2855](https://github.com/WerdoxDev/Huginn/commit/0fb2855a64e14383a70b5c1e63df66ba2179f4f0))
+
 ## [0.7.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.7.0...api@v0.7.1) (2025-02-18)
 
 

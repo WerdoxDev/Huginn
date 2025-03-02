@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.7.0...backend-shared@v0.7.1) (2025-03-02)
+
+
+### Bug Fixes
+
+* **backend-shared:** ffmpeg temp file is not deleted ([927f292](https://github.com/WerdoxDev/Huginn/commit/927f292989a27f79f1895ac87935962d60d6faf9))
+
 ## [0.7.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.6.0...backend-shared@v0.7.0) (2025-02-25)
 
 

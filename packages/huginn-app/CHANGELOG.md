@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.24.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.23.1...app@v0.24.0) (2025-03-02)
+
+
+### Features
+
+* **app:** add cancel button functionality to attachment sending ([a70cdcc](https://github.com/WerdoxDev/Huginn/commit/a70cdcc157250961fc59e1160d7016c0b594c637))
+* **app:** add partial audio control to VideoPlayer ([367a0b2](https://github.com/WerdoxDev/Huginn/commit/367a0b23cd8cb8a06d203906fb27b57b0fefdf5c))
+
+
+### Bug Fixes
+
+* **app:** fix updating version text ([38226e5](https://github.com/WerdoxDev/Huginn/commit/38226e5c373ca7760b3902840376c97b204fe316))
+* **app:** fix VidePlayer progress handle offset ([fef3576](https://github.com/WerdoxDev/Huginn/commit/fef35762605b370b6fe8067a2d3db9981127c9b3))
+* **app:** video timeline looks a bit weird at the beginning ([6f5cc0a](https://github.com/WerdoxDev/Huginn/commit/6f5cc0a0176367adae3b49e8d58a960163e018d6))
+
 ## [0.23.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.23.0...app@v0.23.1) (2025-02-25)
 
 

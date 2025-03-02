@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.9.0...cdn@v0.10.0) (2025-03-02)
+
+
+### Features
+
+* **cdn:** migrate to bun S3 client ([d5e8dd4](https://github.com/WerdoxDev/Huginn/commit/d5e8dd450ff33bf3328259f7ac571b7c0d4ec42d))
+
 ## [0.9.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.8.0...cdn@v0.9.0) (2025-02-25)
 
 

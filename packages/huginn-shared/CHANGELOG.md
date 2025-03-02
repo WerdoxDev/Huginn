@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.10.0...shared@v0.11.0) (2025-03-02)
+
+
+### Features
+
+* **shared:** add signal to xhr options ([0e081c6](https://github.com/WerdoxDev/Huginn/commit/0e081c63d3450c73a512880610bedd7588a1a457))
+
 ## [0.10.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.9.0...shared@v0.10.0) (2025-02-25)
 
 
