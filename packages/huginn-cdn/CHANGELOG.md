@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.2](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.10.1...cdn@v0.10.2) (2025-03-03)
+
+
+### Bug Fixes
+
+* **cdn:** file type convesion is failing with 404 ([dbf55d2](https://github.com/WerdoxDev/Huginn/commit/dbf55d2513cbd861f2ba81ea5564baa257666c0f))
+
 ## [0.10.1](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.10.0...cdn@v0.10.1) (2025-03-03)
 
 
