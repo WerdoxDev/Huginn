@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.16.0...server@v0.17.0) (2025-03-03)
+
+
+### Features
+
+* **server:** add embed image and video types + fix link detection ([0e028f0](https://github.com/WerdoxDev/Huginn/commit/0e028f039d12062a9b6ef3da1a9388bdae8348da))
+
 ## [0.16.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.15.1...server@v0.16.0) (2025-02-25)
 
 

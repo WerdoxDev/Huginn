@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.25.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.24.0...app@v0.25.0) (2025-03-03)
+
+
+### Features
+
+* **app:** add embed image and video only rendering ([af32433](https://github.com/WerdoxDev/Huginn/commit/af3243303718f734962cf7fc9df4635d451f63ae))
+
 ## [0.24.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.23.1...app@v0.24.0) (2025-03-02)
 
 

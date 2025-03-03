@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.1](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.10.0...cdn@v0.10.1) (2025-03-03)
+
+
+### Bug Fixes
+
+* **cdn:** dev script --hot is not in the correct place ([40cdd16](https://github.com/WerdoxDev/Huginn/commit/40cdd1686933f91f830b4e6bb4e468ab54ceffd7))
+
 ## [0.10.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.9.0...cdn@v0.10.0) (2025-03-02)
 
 
