@@ -10,10 +10,11 @@ export async function tryResolveImage(c: Context, category: FileCategory, subDir
 	const { name, format, mimeType } = extractFileInfo(hash);
 
 	// Best scenario, file already exists and ready to serve
-	const file = await storage.getFile(category, subDirectory, `${name}.${format}`);
+	const exists = await storage.exists(category, subDirectory, `${name}.${format}`);
 
-	if (file) {
-		return c.body(file, HttpCode.OK, { "Content-Type": mimeType });
+	if (exists) {
+		const file = await storage.getFile(category, subDirectory, `${name}.${format}`);
+		return c.body(file as ReadableStream, HttpCode.OK, { "Content-Type": mimeType });
 	}
 
 	// File doesn't exist so we have to see if another format exists
