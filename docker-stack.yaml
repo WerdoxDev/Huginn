@@ -1,69 +1,66 @@
-services:
-  caddy:
-    image: caddy:latest
-    ports:
-      - "443:443"
-      - "80:80"
-    configs:
-      - source: caddy_config
-        target: /etc/caddy/Caddyfile
-    networks:
-      - caddy
-    volumes:
-      - caddy_data:/data
-      - caddy_config:/config
-    restart: unless-stopped
-
-  server:
-    image: ghcr.io/werdoxdev/huginn-server:latest
-    environment:
-      - SERVER_HOST=0.0.0.0
-      - SERVER_PORT=3004
-      - ALLOWED_ORIGINS=http://localhost:5173/,https://app.huginn.dev/,https://dev.huginn.dev/
-      - REDIRECT_HOST=https://midgard.huginn.dev
-      # - CDN_PUBLIC_URL=https://midgard.huginn.dev/cdn
-      # - CDN_PUBLIC_URL=http://192.168.178.62:3000/cdn
-      - CDN_LOCAL_URL=http://cdn:3002/cdn
-    secrets:
-      - backend_secrets
-    networks:
-      - caddy
-    depends_on:
-      - caddy
-    deploy:
-      resources:
-        limits:
-          memory: 300M
-          cpus: "2.0"
-  cdn:
-    image: ghcr.io/werdoxdev/huginn-cdn:latest
-    environment:
-      - CDN_HOST=0.0.0.0
-      - CDN_PORT=3002
-    secrets:
-      - backend_secrets
-    networks:
-      - caddy
-    depends_on:
-      - caddy
-    deploy:
-      resources:
-        limits:
-          memory: 400M
-          cpus: "2.0"
-
 networks:
-  caddy:
-    driver: overlay
+   caddy:
+      external: true
+
+services:
+   caddy:
+      image: caddy:latest
+      configs:
+         - source: caddy_config
+           target: /etc/caddy/Caddyfile
+      networks:
+         - caddy
+      volumes:
+         - caddy_data:/data
+         - caddy_config:/config
+      restart: unless-stopped
+
+   server:
+      image: ghcr.io/werdoxdev/huginn-server:latest
+      environment:
+         - SERVER_HOST=0.0.0.0
+         - SERVER_PORT=3004
+         - ALLOWED_ORIGINS=http://localhost:5173/,https://app.huginn.dev/,https://dev.huginn.dev/
+         - REDIRECT_HOST=https://midgard.huginn.dev
+         # - CDN_PUBLIC_URL=https://midgard.huginn.dev/cdn
+         # - CDN_PUBLIC_URL=http://192.168.178.62:3000/cdn
+         - CDN_LOCAL_URL=http://cdn:3002/cdn
+      secrets:
+         - backend_secrets
+      networks:
+         - caddy
+      depends_on:
+         - caddy
+      deploy:
+         resources:
+            limits:
+               memory: 1.5g
+               cpus: "2.0"
+   cdn:
+      image: ghcr.io/werdoxdev/huginn-cdn:latest
+      environment:
+         - CDN_HOST=0.0.0.0
+         - CDN_PORT=3002
+      secrets:
+         - backend_secrets
+      networks:
+         - caddy
+      depends_on:
+         - caddy
+      deploy:
+         resources:
+            limits:
+               memory: 1.5g
+               cpus: "2.0"
 
 configs:
-  caddy_config:
-    external: true
+   caddy_config:
+      external: true
 
 volumes:
-  caddy_data:
-  caddy_config:
+   caddy_data:
+   caddy_config:
 
 secrets:
-  backend_secrets:
-    external: true
+   backend_secrets:
+      external: true

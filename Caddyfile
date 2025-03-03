@@ -1,4 +1,4 @@
-midgard.huginn.dev {
+:80 {
   reverse_proxy /api* server:3004
   reverse_proxy /redirect.html server:3004
   reverse_proxy /output.css server:3004
