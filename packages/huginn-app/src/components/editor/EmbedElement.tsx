@@ -9,6 +9,7 @@ import type { RenderElementProps } from "slate-react";
 
 export default function EmbedElement(props: RenderElementProps) {
 	const { url, description, title, thumbnail, video } = props.element as SlateEmbedElement;
+	const barebone = useMemo(() => description === undefined && title === undefined && (thumbnail || video), [description, title, thumbnail, video]);
 	const dimensions = useMemo(
 		() =>
 			constrainImageSize(
@@ -23,7 +24,7 @@ export default function EmbedElement(props: RenderElementProps) {
 
 	return (
 		<div {...props.attributes} contentEditable={false} style={{ maxWidth: `${constants.EMBED_MEDIA_MAX_WIDTH + 16}px` }}>
-			<div className="mt-1 mb-1 flex max-w-md flex-col items-start rounded-lg bg-tertiary p-2">
+			<div className={clsx("mt-1 mb-1 flex max-w-md flex-col items-start", !barebone && "rounded-lg bg-tertiary p-2")}>
 				{title && (
 					<span
 						className={clsx(url && "cursor-pointer text-accent hover:underline", description ? "mb-1" : "mb-2")}
@@ -37,7 +38,7 @@ export default function EmbedElement(props: RenderElementProps) {
 					<img
 						src={thumbnail.url}
 						alt="huginn"
-						className="cursor-pointer rounded-md"
+						className={clsx("cursor-pointer", barebone ? "rounded-lg" : "rounded-md")}
 						onClick={() =>
 							dispatch({
 								magnifiedImage: { isOpen: true, url: thumbnail.url, width: thumbnail.width, height: thumbnail.height, filename: title },
@@ -47,7 +48,9 @@ export default function EmbedElement(props: RenderElementProps) {
 						style={{ width: `${dimensions.width}px`, height: `${dimensions.height}px` }}
 					/>
 				)}
-				{video && <VideoPlayer className="!rounded-md" url={video.url} width={dimensions.width} height={dimensions.height} />}
+				{video && (
+					<VideoPlayer className={clsx(!barebone && "!rounded-md")} url={video.url} width={dimensions.width} height={dimensions.height} />
+				)}
 			</div>
 		</div>
 	);

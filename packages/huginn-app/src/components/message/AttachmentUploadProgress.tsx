@@ -28,7 +28,7 @@ export default function AttachmentUploadProgress(props: { progress: UploadProgre
 				</div>
 			</div>
 			<Tooltip>
-				<Tooltip.Trigger className="mr-2 ml-2" onClick={props.progress.onAbort}>
+				<Tooltip.Trigger className="mx-2" onClick={props.progress.onAbort}>
 					<IconMingcuteCloseFill className="size-6 text-white/50 transition-colors duration-100 hover:text-white" />
 				</Tooltip.Trigger>
 				<Tooltip.Content>Cancel</Tooltip.Content>

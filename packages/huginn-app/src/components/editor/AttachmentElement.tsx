@@ -34,7 +34,7 @@ export default function AttachmentElement(props: RenderElementProps) {
 
 	return (
 		<div {...props.attributes} contentEditable={false}>
-			<div className="relative mt-1 mb-1 flex flex-col items-start rounded-lg">
+			<div className="relative mt-1 mb-1 flex flex-col items-start">
 				{description && <span className={clsx("text-sm")}>{description}</span>}
 				{isImageMediaType(contentType) ? (
 					<>
@@ -46,14 +46,14 @@ export default function AttachmentElement(props: RenderElementProps) {
 							src={`${basedUrl}?${new URLSearchParams({ format: "webp", width: dimensions.width.toString(), height: dimensions.height.toString() }).toString()}`}
 							alt={filename}
 							onClick={() => dispatch({ magnifiedImage: { isOpen: true, url: basedUrl, width, height, filename } })}
-							className={clsx("cursor-pointer rounded-md object-contain", errored && "hidden")}
+							className={clsx("cursor-pointer rounded-lg object-contain", errored && "hidden")}
 							style={{ width: `${dimensions.width}px`, height: `${dimensions.height}px` }}
 						/>
 						<Transition show={!loaded || errored}>
 							<div
 								className={clsx(
 									!errored && "absolute inset-0",
-									"flex items-center justify-center rounded-md bg-background/40 duration-200 data-[closed]:opacity-0",
+									"flex items-center justify-center rounded-lg bg-background/40 duration-200 data-[closed]:opacity-0",
 								)}
 								style={{ width: `${dimensions.width}px`, height: `${dimensions.height}px` }}
 							>
@@ -65,16 +65,16 @@ export default function AttachmentElement(props: RenderElementProps) {
 				) : isVideoMediaType(contentType) ? (
 					<VideoPlayer url={basedUrl} width={dimensions.width} height={dimensions.height} />
 				) : (
-					<div className="flex w-full items-center gap-x-2 rounded-lg bg-secondary px-2 py-3">
+					<div className="flex w-[24rem] items-center gap-x-2 rounded-lg bg-secondary px-2 py-3">
 						<IconMingcuteFileFill className="size-10 shrink-0" />
-						<div className="flex flex-col justify-center gap-y-0.5">
+						<div className="flex flex-col justify-center gap-y-0.5 w-full">
 							<div className="cursor-pointer text-accent text-sm hover:underline" onClick={() => openUrl(basedUrl)}>
 								{filename}
 							</div>
 							<div className="text-white/50 text-xs">{getSizeText(size)}</div>
 						</div>
 						<Tooltip>
-							<Tooltip.Trigger className="ml-auto" onClick={() => openUrl(basedUrl)}>
+							<Tooltip.Trigger className="mx-2" onClick={() => openUrl(basedUrl)}>
 								<IconMingcuteDownload2Fill className="size-6 text-white/50 transition-colors duration-100 hover:text-white" />
 							</Tooltip.Trigger>
 							<Tooltip.Content>Download</Tooltip.Content>

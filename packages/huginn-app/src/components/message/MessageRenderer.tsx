@@ -75,7 +75,7 @@ function MessageRenderer(props: MessageRendererProps) {
 	}
 
 	const initialValue = useMemo(() => {
-		const nodes: Descendant[] = [];
+		let nodes: Descendant[] = [];
 
 		const result = md.parse(props.renderInfo.message.content, {});
 		const tokens = organizeTokens(result);
@@ -151,6 +151,13 @@ function MessageRenderer(props: MessageRendererProps) {
 
 		if (props.renderInfo.message.preview) {
 			return nodes;
+		}
+
+		if (props.renderInfo.message.embeds.length === 1) {
+			const embed = props.renderInfo.message.embeds[0];
+			if ((embed.type === "image" || embed.type === "video") && embed.url === props.renderInfo.message.content) {
+				nodes = [];
+			}
 		}
 
 		for (const embed of props.renderInfo.message.embeds) {
