@@ -29,12 +29,11 @@ type CodeElement = {
 
 type EmbedElement = {
 	type: "embed";
+	thumbnail?: { url: string; width?: number; height?: number };
+	video?: { url: string; width?: number; height?: number };
 	title?: string;
 	description?: string;
 	url?: string;
-	image?: string;
-	width?: number;
-	height?: number;
 	children: Descendant[];
 };
 

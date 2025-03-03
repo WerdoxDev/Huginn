@@ -19,7 +19,7 @@ export default function AttachmentElement(props: RenderElementProps) {
 	const [errored, setErrored] = useState(false);
 	const imgRef = useRef<HTMLImageElement>(null);
 	const dimensions = useMemo(
-		() => constrainImageSize(width ?? 0, height ?? 0, constants.ATTACHMENT_IMAGE_MAX_WIDTH, constants.ATTACHMENT_IMAGE_MAX_HEIGHT),
+		() => constrainImageSize(width ?? 0, height ?? 0, constants.ATTACHMENT_MEDIA_MAX_WIDTH, constants.ATTACHMENT_MEDIA_MAX_HEIGHT),
 		[width, height],
 	);
 	const settings = useSettings();
@@ -63,7 +63,7 @@ export default function AttachmentElement(props: RenderElementProps) {
 						</Transition>
 					</>
 				) : isVideoMediaType(contentType) ? (
-					<VideoPlayer url={basedUrl} width={dimensions.width} height={dimensions.height} type={contentType} />
+					<VideoPlayer url={basedUrl} width={dimensions.width} height={dimensions.height} />
 				) : (
 					<div className="flex w-full items-center gap-x-2 rounded-lg bg-secondary px-2 py-3">
 						<IconMingcuteFileFill className="size-10 shrink-0" />

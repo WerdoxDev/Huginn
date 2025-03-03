@@ -1,4 +1,5 @@
 import type { EmbedElement as SlateEmbedElement } from "@/index";
+import VideoPlayer from "@components/VideoPlayer";
 import { useModalsDispatch } from "@contexts/modalContext";
 import { constants, constrainImageSize } from "@huginn/shared";
 import { open } from "@tauri-apps/plugin-shell";
@@ -7,15 +8,21 @@ import { useMemo } from "react";
 import type { RenderElementProps } from "slate-react";
 
 export default function EmbedElement(props: RenderElementProps) {
-	const { image, url, description, title, width, height } = props.element as SlateEmbedElement;
+	const { url, description, title, thumbnail, video } = props.element as SlateEmbedElement;
 	const dimensions = useMemo(
-		() => constrainImageSize(width ?? 0, height ?? 0, constants.EMBED_IMAGE_MAX_WIDTH, constants.EMBED_IMAGE_MAX_HEIGHT),
-		[width, height],
+		() =>
+			constrainImageSize(
+				thumbnail?.width ?? video?.width ?? 0,
+				thumbnail?.height ?? video?.height ?? 0,
+				constants.EMBED_MEDIA_MAX_WIDTH,
+				constants.EMBED_MEDIA_MAX_HEIGHT,
+			),
+		[thumbnail, video],
 	);
 	const dispatch = useModalsDispatch();
 
 	return (
-		<div {...props.attributes} contentEditable={false} style={{ maxWidth: `${constants.EMBED_IMAGE_MAX_WIDTH + 16}px` }}>
+		<div {...props.attributes} contentEditable={false} style={{ maxWidth: `${constants.EMBED_MEDIA_MAX_WIDTH + 16}px` }}>
 			<div className="mt-1 mb-1 flex max-w-md flex-col items-start rounded-lg bg-tertiary p-2">
 				{title && (
 					<span
@@ -25,17 +32,22 @@ export default function EmbedElement(props: RenderElementProps) {
 						{title}
 					</span>
 				)}
-				{description && <span className={clsx("text-sm", image && "mb-2")}>{description}</span>}
-				{image && (
+				{description && <span className={clsx("text-sm", thumbnail && "mb-2")}>{description}</span>}
+				{thumbnail && (
 					<img
-						src={image}
+						src={thumbnail.url}
 						alt="huginn"
 						className="cursor-pointer rounded-md"
-						onClick={() => dispatch({ magnifiedImage: { isOpen: true, url: image, width, height, filename: title } })}
+						onClick={() =>
+							dispatch({
+								magnifiedImage: { isOpen: true, url: thumbnail.url, width: thumbnail.width, height: thumbnail.height, filename: title },
+							})
+						}
 						loading="lazy"
 						style={{ width: `${dimensions.width}px`, height: `${dimensions.height}px` }}
 					/>
 				)}
+				{video && <VideoPlayer className="!rounded-md" url={video.url} width={dimensions.width} height={dimensions.height} />}
 			</div>
 		</div>
 	);

@@ -8,7 +8,7 @@ import LoadingIcon from "./LoadingIcon";
 import ProgressBar from "./ProgressBar";
 import VolumeBar from "./VolumeBar";
 
-export default function VideoPlayer(props: { url: string; width: number; height: number; type: string }) {
+export default function VideoPlayer(props: { url: string; width: number; height: number; className?: string }) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const [playing, setPlaying] = useState(false);
@@ -121,7 +121,7 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 		<div
 			ref={containerRef}
 			style={{ width: `${props.width}px`, height: `${props.height}px` }}
-			className="group/video relative flex overflow-hidden rounded-lg"
+			className={clsx("group/video relative flex overflow-hidden rounded-lg", props.className)}
 			onMouseUp={togglePlaying}
 		>
 			{/* biome-ignore lint/a11y/useMediaCaption: <explanation> */}

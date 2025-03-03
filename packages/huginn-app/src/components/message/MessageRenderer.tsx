@@ -156,13 +156,12 @@ function MessageRenderer(props: MessageRendererProps) {
 		for (const embed of props.renderInfo.message.embeds) {
 			nodes.push({
 				type: "embed",
-				image: embed.thumbnail?.url,
+				thumbnail: embed.thumbnail,
+				video: embed.video,
 				url: embed.url,
 				description: embed.description,
 				title: embed.title,
 				children: [{ text: "" }],
-				height: embed.thumbnail?.height,
-				width: embed.thumbnail?.width,
 			});
 		}
 
