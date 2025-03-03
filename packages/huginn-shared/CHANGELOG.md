@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.11.0...shared@v0.12.0) (2025-03-03)
+
+
+### Features
+
+* **shared:** do little name changes + new APIVideo type ([59b0a3c](https://github.com/WerdoxDev/Huginn/commit/59b0a3c64c9eda8c2aa3a0c94b406673f38d09da))
+
 ## [0.11.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.10.0...shared@v0.11.0) (2025-03-02)
 
 
