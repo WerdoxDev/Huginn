@@ -3,6 +3,7 @@ import type { IdentityTokenPayload, TokenPayload, Unpacked } from "@huginn/share
 import type { Endpoints } from "@octokit/types";
 import { createMiddleware } from "hono/factory";
 import { JSDOM } from "jsdom";
+import markdownit from "markdown-it";
 import * as semver from "semver";
 import { prisma } from "#database";
 import { octokit } from "#setup";
@@ -84,8 +85,27 @@ export async function getAllTags() {
 }
 
 export function extractLinks(input?: string): string[] {
-	const urlRegex = /https?:\/\/[^\s/$.?#].[^\s]*/g;
-	return input?.match(urlRegex) || [];
+	const md = new markdownit({ linkify: true });
+	const tokens = md.parse(input ?? "", {});
+	const links: string[] = [];
+
+	for (const token of tokens) {
+		if (token.type === "inline" && token.children) {
+			for (const childToken of token.children) {
+				if (childToken.type === "link_open") {
+					links.push(childToken.attrs?.[0]?.[1] ?? "");
+				}
+			}
+		}
+	}
+
+	return links;
+}
+
+export async function extractData(url: string) {
+	const response = await fetch(url, { headers: { "accept-language": "en" } });
+	const contentType = response.headers.get("Content-Type");
+	return { response, contentType };
 }
 
 const metaTagsMap = {
@@ -101,10 +121,9 @@ const metaTagsMap = {
 	"twitter:image": "image",
 };
 
-export async function extractEmbedTags(url: string): Promise<Record<string, string>> {
+export async function extractEmbedTags(response: Response): Promise<Record<string, string>> {
 	try {
 		// Fetch the HTML of the page
-		const response = await fetch(url, { headers: { "accept-language": "en" } });
 		if (!response.ok) {
 			throw new Error(`HTTP error! Status: ${response.status}`);
 		}
@@ -146,13 +165,14 @@ export async function extractEmbedTags(url: string): Promise<Record<string, stri
 		}
 
 		if (!metadata.url) {
-			metadata.url = url;
+			metadata.url = response.url;
 		}
 
 		if (metadata.image && !metadata.image.startsWith("http")) {
-			metadata.image = new URL(metadata.image, url).toString();
+			metadata.image = new URL(metadata.image, response.url).toString();
 		}
 
+		console.log(metadata);
 		return metadata;
 	} catch (error) {
 		console.error("Error fetching embed info:", error);

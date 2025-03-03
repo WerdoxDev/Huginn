@@ -70,7 +70,15 @@ export const messagesExtension = Prisma.defineExtension({
 					if (embeds) {
 						for (const embed of embeds) {
 							createdEmbeds.push(
-								await prisma.embed.createEmbed(embed.title, embed.description, embed.url, embed.timestamp, embed.type, embed.thumbnail),
+								await prisma.embed.createEmbed(
+									embed.title,
+									embed.description,
+									embed.url,
+									embed.timestamp,
+									embed.type,
+									embed.thumbnail,
+									embed.video,
+								),
 							);
 						}
 					}
@@ -129,7 +137,15 @@ export const messagesExtension = Prisma.defineExtension({
 					if (embeds) {
 						for (const embed of embeds) {
 							createdEmbeds.push(
-								await prisma.embed.createEmbed(embed.title, embed.description, embed.url, embed.timestamp, embed.type, embed.thumbnail),
+								await prisma.embed.createEmbed(
+									embed.title,
+									embed.description,
+									embed.url,
+									embed.timestamp,
+									embed.type,
+									embed.thumbnail,
+									embed.video,
+								),
 							);
 						}
 					}

@@ -3,7 +3,7 @@
 	"version": "0.16.0",
 	"type": "module",
 	"scripts": {
-		"dev": "bun src/index.ts --watch",
+		"dev": "bun --hot src/index.ts",
 		"start": "bun src/index.ts",
 		"tailwind": "bunx tailwindcss -i ./src/routes/static/input.css -o ./src/routes/static/output.css --watch"
 	},
@@ -18,6 +18,7 @@
 		"@std/media-types": "npm:@jsr/std__media-types",
 		"@std/text": "npm:@jsr/std__text",
 		"@types/jsdom": "^21.1.7",
+		"@types/markdown-it": "^14.1.2",
 		"@types/probe-image-size": "^7.2.5",
 		"consola": "^3.4.0",
 		"crossws": "^0.3.4",
@@ -30,6 +31,7 @@
 		"jsdom": "^25.0.1",
 		"listhen": "^1.9.0",
 		"magic-regexp": "^0.8.0",
+		"markdown-it": "^14.1.0",
 		"octokit": "^4.1.2",
 		"ohash": "^1.1.4",
 		"pathe": "^1.1.2",

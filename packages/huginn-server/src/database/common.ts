@@ -35,7 +35,16 @@ export const selectMessageMentions = Prisma.validator<Prisma.MessageSelect>()({
 });
 
 export const selectMessageEmbeds = Prisma.validator<Prisma.MessageSelect>()({
-	embeds: { select: { description: true, title: true, type: true, url: true, thumbnail: { select: { height: true, url: true, width: true } } } },
+	embeds: {
+		select: {
+			description: true,
+			title: true,
+			type: true,
+			url: true,
+			thumbnail: { select: { height: true, url: true, width: true } },
+			video: { select: { url: true, height: true, width: true } },
+		},
+	},
 });
 
 export const selectMessageAttachments = Prisma.validator<Prisma.MessageSelect>()({

@@ -3,6 +3,7 @@ import type {
 	APIPostAttachmentJSONBody,
 	APIThumbnail,
 	APIUser,
+	APIVideo,
 	GatewayIdentifyProperties,
 	IdentityTokenPayload,
 	TokenPayload,
@@ -27,8 +28,9 @@ export type AppVersionInfo = {
 	notes: string;
 };
 
-export type DBEmbed = Omit<APIEmbed, "thumbnail"> & { thumbnail?: DBThumbnail };
+export type DBEmbed = Omit<APIEmbed, "thumbnail" | "video"> & { thumbnail?: DBThumbnail; video?: DBVideo };
 export type DBThumbnail = Required<APIThumbnail>;
+export type DBVideo = Required<APIVideo>;
 
 export type DBAttachment = Omit<APIPostAttachmentJSONBody, "id"> & {
 	contentType: string;

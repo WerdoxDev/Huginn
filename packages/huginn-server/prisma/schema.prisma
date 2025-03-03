@@ -112,9 +112,19 @@ model Embed {
    message     Message?   @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    messageId   BigInt?
    thumbnail   Thumbnail?
+   video       Video?
 }
 
 model Thumbnail {
+   id      BigInt @id
+   width   Int
+   height  Int
+   url     String
+   embed   Embed  @relation(fields: [embedId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+   embedId BigInt @unique
+}
+
+model Video {
    id      BigInt @id
    width   Int
    height  Int
