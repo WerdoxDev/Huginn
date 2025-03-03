@@ -4,7 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"start": "bun src/index.ts",
-		"dev": "bun src/index.ts --watch"
+		"dev": "bun --hot src/index.ts"
 	},
 	"dependencies": {
 		"@huginn/backend-shared": "workspace:*",
