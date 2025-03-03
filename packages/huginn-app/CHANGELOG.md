@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.26.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.25.0...app@v0.26.0) (2025-03-03)
+
+
+### Features
+
+* **app:** hide message link when it's the only content ([c228acf](https://github.com/WerdoxDev/Huginn/commit/c228acfb3c2c4a0b6dd03a833abf08173999c10a))
+* **app:** make both embed and attachment use a consistent image / video component ([f231307](https://github.com/WerdoxDev/Huginn/commit/f231307c52decd911d7bb5aa50a493a999916ce7))
+
 ## [0.25.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.24.0...app@v0.25.0) (2025-03-03)
 
 
