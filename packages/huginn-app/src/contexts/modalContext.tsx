@@ -29,7 +29,7 @@ export type ModalContextType = {
 	createDM: DefaultModal;
 	editGroup: DefaultModal & { channel?: APIChannel };
 	addRecipient: DefaultModal & { channelId: Snowflake };
-	magnifiedImage: DefaultModal & { url: string; width: number; height: number; filename: string };
+	magnifiedImage: DefaultModal & { url: string; width: number; height: number; filename?: string };
 	news: DefaultModal & { html: string };
 };
 

@@ -1,4 +1,5 @@
 import type { EmbedElement as SlateEmbedElement } from "@/index";
+import ImagePreview from "@components/ImagePreview";
 import VideoPlayer from "@components/VideoPlayer";
 import { useModalsDispatch } from "@contexts/modalContext";
 import { constants, constrainImageSize } from "@huginn/shared";
@@ -20,7 +21,6 @@ export default function EmbedElement(props: RenderElementProps) {
 			),
 		[thumbnail, video],
 	);
-	const dispatch = useModalsDispatch();
 
 	return (
 		<div {...props.attributes} contentEditable={false} style={{ maxWidth: `${constants.EMBED_MEDIA_MAX_WIDTH + 16}px` }}>
@@ -34,23 +34,22 @@ export default function EmbedElement(props: RenderElementProps) {
 					</span>
 				)}
 				{description && <span className={clsx("text-sm", thumbnail && "mb-2")}>{description}</span>}
-				{thumbnail && (
-					<img
-						src={thumbnail.url}
-						alt="huginn"
-						className={clsx("cursor-pointer", barebone ? "rounded-lg" : "rounded-md")}
-						onClick={() =>
-							dispatch({
-								magnifiedImage: { isOpen: true, url: thumbnail.url, width: thumbnail.width, height: thumbnail.height, filename: title },
-							})
-						}
-						loading="lazy"
-						style={{ width: `${dimensions.width}px`, height: `${dimensions.height}px` }}
-					/>
-				)}
-				{video && (
-					<VideoPlayer className={clsx(!barebone && "!rounded-md")} url={video.url} width={dimensions.width} height={dimensions.height} />
-				)}
+				<div className="relative">
+					{thumbnail && (
+						<ImagePreview
+							width={dimensions.width}
+							height={dimensions.height}
+							originalWidth={thumbnail.width ?? 0}
+							originalHeight={thumbnail.height ?? 0}
+							url={thumbnail.url}
+							disableQuery
+							className={clsx(!barebone && "!rounded-md")}
+						/>
+					)}
+					{video && (
+						<VideoPlayer className={clsx(!barebone && "!rounded-md")} url={video.url} width={dimensions.width} height={dimensions.height} />
+					)}
+				</div>
 			</div>
 		</div>
 	);

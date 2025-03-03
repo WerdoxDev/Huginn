@@ -10,7 +10,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 const loadingStates = {
 	loading: "Loading",
 	checking_update: "Checking for updates",
-	updating: "Updating",
+	updating: "Updating to",
 	checking_update_failed: "Update failed",
 	cant_update: "Could not check for updates",
 	none: "Invalid State",
@@ -104,8 +104,7 @@ export default function Splashscreen() {
 				<div className="mt-2 text-text/80">
 					<div className="flex items-center justify-center gap-x-2 text-center">
 						<span className="text-lg">
-							{loadingStates[loadingState]}
-							{loadingState === "updating" ? info?.version : ""}
+							{loadingStates[loadingState]} <span className="font-bold">{loadingState === "updating" ? info?.version : ""}</span>
 						</span>
 						{loadingState === "checking_update_failed" && <IconMingcuteAlertFill className="size-6 text-warning" />}
 						{loadingState === "cant_update" && <IconMingcuteAlertFill className="size-6 text-error" />}
