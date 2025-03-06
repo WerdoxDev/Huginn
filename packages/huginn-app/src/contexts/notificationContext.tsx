@@ -1,8 +1,6 @@
-import type { Snowflake } from "@huginn/shared";
 import { useHuginnWindow } from "@stores/windowStore";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { isPermissionGranted, requestPermission } from "@tauri-apps/plugin-notification";
 import { type ReactNode, createContext, useContext, useEffect } from "react";
 import { useNavigate } from "react-router";

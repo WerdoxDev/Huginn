@@ -1,5 +1,6 @@
 import { useMessagesUtils } from "@hooks/useMessageUtils";
-import { type GatewayReadyData, type Snowflake, WorkerID, snowflake } from "@huginn/shared";
+import { type GatewayReadyData, RelationshipType, type Snowflake, WorkerID, snowflake } from "@huginn/shared";
+import { useHuginnWindow } from "@stores/windowStore";
 import { join, resourceDir } from "@tauri-apps/api/path";
 import moment from "moment";
 import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
@@ -9,6 +10,8 @@ import { useNotification } from "./notificationContext";
 
 type ReadStateContextType = {
 	readStates: ReadonlyArray<ContextReadState>;
+	friendsNotificationsCount: number;
+	setFriendsNotificationsCount: (count: number) => void;
 	setLatestReadMessage: (channelId: Snowflake, messageId: Snowflake) => void;
 	addChannelToReadStates: (channelId: Snowflake) => void;
 	removeChannelFromReadStates: (channelId: Snowflake) => void;
@@ -20,9 +23,11 @@ const ReadStateContext = createContext<ReadStateContextType>({} as ReadStateCont
 export function ReadStateProvider(props: { children?: ReactNode }) {
 	const client = useClient();
 	const [readStates, setReadStates] = useState<ContextReadState[]>([]);
+	const [friendsNotificationsCount, setFriendsNotificationsCount] = useState<number>(0);
 	const { listenEvent } = useEvent();
 	const { getCurrentPageMessages } = useMessagesUtils();
 	const { sendNotification } = useNotification();
+	const huginnWindow = useHuginnWindow();
 
 	function onReady(d: GatewayReadyData) {
 		setReadStates(
@@ -32,6 +37,7 @@ export function ReadStateProvider(props: { children?: ReactNode }) {
 				unreadCount: x.unreadCount,
 			})),
 		);
+		setFriendsNotificationsCount(d.relationships.filter((x) => x.type === RelationshipType.PENDING_INCOMING).length);
 	}
 
 	function setLatestReadMessage(channelId: Snowflake, messageId: Snowflake) {
@@ -68,12 +74,14 @@ export function ReadStateProvider(props: { children?: ReactNode }) {
 		const unlisten = listenEvent("message_added", async (data) => {
 			if (!data.self && !data.visible) {
 				// console.log(await join(await resourceDir(), "resources/huginn-text.png"));
-				sendNotification(
-					data.message.channelId,
-					data.message.author.username,
-					data.message.content,
-					await join(await resourceDir(), "resources/huginn-text.png"),
-				);
+				if (huginnWindow.environment === "desktop") {
+					sendNotification(
+						data.message.channelId,
+						data.message.author.username,
+						data.message.content,
+						await join(await resourceDir(), "resources/huginn-text.png"),
+					);
+				}
 				increaseUnreadCount(data.message.channelId);
 			}
 		});
@@ -87,7 +95,16 @@ export function ReadStateProvider(props: { children?: ReactNode }) {
 	}, []);
 
 	return (
-		<ReadStateContext.Provider value={{ readStates, setLatestReadMessage, addChannelToReadStates, removeChannelFromReadStates }}>
+		<ReadStateContext.Provider
+			value={{
+				readStates,
+				friendsNotificationsCount,
+				setFriendsNotificationsCount,
+				setLatestReadMessage,
+				addChannelToReadStates,
+				removeChannelFromReadStates,
+			}}
+		>
 			{props.children}
 		</ReadStateContext.Provider>
 	);

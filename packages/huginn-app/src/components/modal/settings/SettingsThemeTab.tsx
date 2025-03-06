@@ -2,7 +2,7 @@ import type { DropboxItem, SettingsTabProps, ThemeType } from "@/types";
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
 import MockDefaultMessage from "@components/message/MockDefaultMessage";
 import MockDefaultMessageCompact from "@components/message/MockDefaultMessageCompact";
-import { pineGreenTheme, ceruleanTheme, eggplantTheme, coffeeTheme, charcoalTheme, useTheme } from "@stores/themeStore";
+import { ceruleanTheme, charcoalTheme, coffeeTheme, eggplantTheme, pineGreenTheme, useTheme } from "@stores/themeStore";
 import clsx from "clsx";
 
 function ThemeIcon(props: { color: string }) {
@@ -43,7 +43,10 @@ export default function SettingsThemeTab(props: SettingsTabProps) {
 			</HuginnDropdown>
 			<div className="flex flex-col">
 				<span className="mb-2 select-none font-medium text-text text-xs uppercase opacity-90">Chat Mode</span>
-				<div className="flex gap-x-5">
+				<div className="relative ml-2 flex w-max gap-x-5">
+					<div className="-m-2 absolute inset-0 rounded-2xl bg-black/50 flex justify-center items-center text-error font-bold text-2xl">
+						TEMPORARY DISABLED
+					</div>
 					<CompactModeOption isSelected={props.settings.chatMode === "normal"} onChange={onChatModeChange} />
 					<CompactModeOption representCompact isSelected={props.settings.chatMode === "compact"} onChange={onChatModeChange} />
 				</div>

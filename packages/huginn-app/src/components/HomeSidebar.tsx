@@ -1,16 +1,20 @@
+import { useClient } from "@contexts/apiContext";
 import { useModalsDispatch } from "@contexts/modalContext";
-import { type APIGetUserChannelsResult, snowflake } from "@huginn/shared";
+import { useReadStates } from "@contexts/readStateContext";
+import { type APIGetUserChannelsResult, RelationshipType, snowflake } from "@huginn/shared";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import moment from "moment";
 import { useMemo } from "react";
-import RingLinkButton from "./button/RingLinkButton";
+import AttentionIndicator from "./AttentionIndicator";
 import DirectMessageChannel from "./DirectMessageChannel";
+import RingLinkButton from "./button/RingLinkButton";
 import Tooltip from "./tooltip/Tooltip";
 
 export default function HomeSidebar(props: { channels?: APIGetUserChannelsResult }) {
 	const huginnWindow = useHuginnWindow();
 	const dispatch = useModalsDispatch();
+	const { friendsNotificationsCount } = useReadStates();
 
 	const sortedChannels = useMemo(
 		() =>
@@ -45,9 +49,14 @@ export default function HomeSidebar(props: { channels?: APIGetUserChannelsResult
 		>
 			<div className="flex h-[4.75rem] shrink-0 items-center px-6">
 				<div className="font-bold text-text text-xl">Home</div>
-				<RingLinkButton prefetch="intent" to="/friends" className="ml-6 px-2 py-1 font-medium text-xs">
-					Friends
-				</RingLinkButton>
+				<div className="relative ml-6">
+					<RingLinkButton prefetch="intent" to="/friends" className="px-2.5 py-1 font-medium text-xs">
+						Friends
+					</RingLinkButton>
+					{friendsNotificationsCount !== 0 && (
+						<AttentionIndicator className="-right-2.5 -bottom-3">{friendsNotificationsCount}</AttentionIndicator>
+					)}
+				</div>
 			</div>
 			<div className="h-0.5 shrink-0 bg-white/10" />
 			<div className="mx-3.5 mt-6 mb-3.5 flex shrink-0 items-center justify-between text-xs">

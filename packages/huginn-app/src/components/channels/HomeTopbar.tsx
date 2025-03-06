@@ -1,6 +1,6 @@
 import ChannelIcon from "@components/ChannelIcon";
-import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
+import Tooltip from "@components/tooltip/Tooltip";
 import { useUser } from "@contexts/userContext";
 import { useChannelName } from "@hooks/useChannelName";
 import { ChannelType, type DirectChannel } from "@huginn/shared";
@@ -20,7 +20,10 @@ export default function HomeTopbar(props: { channel: DirectChannel; onRecipients
 				) : (
 					<ChannelIcon channelId={props.channel?.id} iconHash={props.channel?.icon} className="mr-3" />
 				)}
-				<div className="text-text">{name}</div>
+				<Tooltip>
+					<Tooltip.Trigger className="text-text">{name}</Tooltip.Trigger>
+					{props.channel.recipients.length === 1 && <Tooltip.Content>{props.channel.recipients[0].username}</Tooltip.Content>}
+				</Tooltip>
 				<div className="ml-auto flex">
 					{props.channel.type === ChannelType.GROUP_DM && (
 						<Tooltip placement="top">

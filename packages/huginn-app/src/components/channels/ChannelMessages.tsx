@@ -254,7 +254,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 				{sortedMessages.map((message, i) => (
 					<MessageWrapper
 						ref={setRef(message.id)}
-						key={message.preview ? message.timestamp : ((message.editedTimestamp as string) ?? message.timestamp)}
+						key={message.preview ? message.timestamp : message.id}
 						message={message}
 						renderInfo={messageRenderInfos[i]}
 						nextRenderInfo={messageRenderInfos[i + 1]}

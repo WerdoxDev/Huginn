@@ -3,9 +3,10 @@ import { useChannelName } from "@hooks/useChannelName";
 import useNavigateToChannel from "@hooks/useNavigateToChannel";
 import { ChannelType, type Snowflake } from "@huginn/shared";
 import type { RefObject } from "react";
+import AttentionIndicator from "./AttentionIndicator";
 import ChannelIcon from "./ChannelIcon";
-import Tooltip from "./tooltip/Tooltip";
 import UserAvatar from "./UserAvatar";
+import Tooltip from "./tooltip/Tooltip";
 
 export default function UnreadChannel(props: { channelId: Snowflake; unreadCount: number; className?: string; ref?: RefObject<HTMLDivElement> }) {
 	const channel = useChannel(props.channelId);
@@ -24,9 +25,7 @@ export default function UnreadChannel(props: { channelId: Snowflake; unreadCount
 				) : (
 					<ChannelIcon channelId={channel?.id} iconHash={channel?.icon} size="3rem" />
 				)}
-				<div className="absolute right-0 bottom-0 h-5 w-5 rounded-full bg-error font-bold text-sm">
-					<div className="text-white">{props.unreadCount}</div>
-				</div>
+				<AttentionIndicator className="right-0 bottom-0">{props.unreadCount}</AttentionIndicator>
 			</Tooltip.Trigger>
 			<Tooltip.Content>{channelName}</Tooltip.Content>
 		</Tooltip>

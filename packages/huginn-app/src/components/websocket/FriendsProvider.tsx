@@ -1,13 +1,15 @@
 import { useClient } from "@contexts/apiContext";
-import type { APIGetUserRelationshipsResult } from "@huginn/shared";
+import { useReadStates } from "@contexts/readStateContext";
+import { type APIGetUserRelationshipsResult, RelationshipType } from "@huginn/shared";
 import type { APIRelationUser, GatewayPresenceUpdateData, GatewayRelationshipCreateData } from "@huginn/shared";
 import type { Snowflake } from "@huginn/shared";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 
 export default function FriendsProvider(props: { children?: ReactNode }) {
 	const client = useClient();
 	const queryClient = useQueryClient();
+	const { setFriendsNotificationsCount } = useReadStates();
 
 	function onRelationshipCreated(d: GatewayRelationshipCreateData) {
 		const friends = queryClient.getQueryData<APIGetUserRelationshipsResult>(["relationships"]);
@@ -22,11 +24,15 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
 			return;
 		}
 
-		queryClient.setQueryData(["relationships"], [...friends, d]);
+		const newFriends = queryClient.setQueryData<APIGetUserRelationshipsResult>(["relationships"], [...friends, d]);
+		setFriendsNotificationsCount(newFriends?.filter((x) => x.type === RelationshipType.PENDING_INCOMING).length ?? 0);
 	}
 
 	function onRelationshipDeleted(userId: Snowflake) {
-		queryClient.setQueryData<APIGetUserRelationshipsResult>(["relationships"], (old) => old?.filter((x) => x.user.id !== userId));
+		const newFriends = queryClient.setQueryData<APIGetUserRelationshipsResult>(["relationships"], (old) =>
+			old?.filter((x) => x.user.id !== userId),
+		);
+		setFriendsNotificationsCount(newFriends?.filter((x) => x.type === RelationshipType.PENDING_INCOMING).length ?? 0);
 	}
 
 	function onPresenceUpdated(presence: GatewayPresenceUpdateData) {
@@ -35,7 +41,7 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
 			return;
 		}
 
-		queryClient.setQueryData<APIGetUserRelationshipsResult>(["relationships"], (old) =>
+		const newFriends = queryClient.setQueryData<APIGetUserRelationshipsResult>(["relationships"], (old) =>
 			old?.map((relationship) =>
 				relationship.user.id === user.id
 					? { ...relationship, user: user }
@@ -44,6 +50,8 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
 						},
 			),
 		);
+
+		setFriendsNotificationsCount(newFriends?.filter((x) => x.type === RelationshipType.PENDING_INCOMING).length ?? 0);
 	}
 
 	useEffect(() => {
