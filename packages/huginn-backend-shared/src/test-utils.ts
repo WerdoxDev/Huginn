@@ -5,6 +5,7 @@ import { join } from "pathe";
 let app: Hono;
 
 export async function prepareServer() {
+	process.env.TEST = JSON.stringify(true);
 	app = (await import(join(process.cwd(), "src", "index"))).app as Hono;
 }
 
@@ -27,12 +28,17 @@ export async function testHandler(
 		}
 	}
 
-	let response: Response;
-	try {
-		response = await app.request(path, { headers: finalHeaders, method, body: finalBody as BodyInit, redirect: "manual" });
-	} catch (e) {
-		response = e as Response;
-	}
+	// let response: Response;
+	// try {
+	const response = await fetch(new URL(path, "http://localhost:3004"), {
+		headers: finalHeaders,
+		method,
+		body: finalBody as BodyInit,
+		redirect: "manual",
+	});
+	// } catch (e) {
+	// 	response = e as Response;
+	// }
 
 	let responseBody: unknown;
 	const headersMap = new Map(response.headers);
