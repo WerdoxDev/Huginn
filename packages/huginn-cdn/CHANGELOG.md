@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.3](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.10.2...cdn@v0.10.3) (2025-03-06)
+
+
+### Bug Fixes
+
+* **cdn:** remove test flag from cdn as it is now in backend-shared ([143b168](https://github.com/WerdoxDev/Huginn/commit/143b16842312fe19d44b871d14c1d06bbdf43f43))
+
 ## [0.10.2](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.10.1...cdn@v0.10.2) (2025-03-03)
 
 
