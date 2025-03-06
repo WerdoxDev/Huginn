@@ -172,7 +172,6 @@ export async function extractEmbedTags(response: Response): Promise<Record<strin
 			metadata.image = new URL(metadata.image, response.url).toString();
 		}
 
-		console.log(metadata);
 		return metadata;
 	} catch (error) {
 		console.error("Error fetching embed info:", error);

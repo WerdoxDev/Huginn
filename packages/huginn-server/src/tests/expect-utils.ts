@@ -1,6 +1,8 @@
 import { expect } from "bun:test";
 import {
+	type APIAttachment,
 	type APIChannelUser,
+	type APIEmbed,
 	type APIMessage,
 	type APIMessageUser,
 	type APIPostDMChannelResult,
@@ -8,6 +10,8 @@ import {
 	type APIReadState,
 	type APIRelationUser,
 	type APIRelationshipWithoutOwner,
+	type APIThumbnail,
+	type APIVideo,
 	ChannelType,
 	type DirectChannel,
 	type GatewayDMCHannelRecipientAddData,
@@ -274,4 +278,54 @@ export function expectReadStatesExactSchema(readStates: object[], channelId: Sno
 		expect(Object.keys(readState).sort()).toStrictEqual(["channelId", "userId", "lastReadMessageId"].sort());
 		expect(readState).toHaveProperty("channelId", BigInt(channelId));
 	}
+}
+
+export function expectAttachmentExactSchema(
+	attachment: object,
+	messageId: string,
+	channelId: string,
+	filename: string,
+	width: number,
+	height: number,
+	description?: string,
+) {
+	const parsedAttachment = attachment as APIAttachment;
+
+	expect(parsedAttachment).toStrictEqual({
+		id: parsedAttachment.id,
+		flags: parsedAttachment.flags,
+		size: parsedAttachment.size,
+		contentType: parsedAttachment.contentType,
+		url: parsedAttachment.url,
+		filename,
+		width,
+		height,
+		...(parsedAttachment.description || description ? { description } : {}),
+	});
+	expect(parsedAttachment.url).toInclude(filename);
+	expect(parsedAttachment.url).toInclude(messageId);
+	expect(parsedAttachment.url).toInclude(channelId);
+}
+
+export function expectEmbedExactSchema(
+	embed: object,
+	title?: string,
+	url?: string,
+	description?: string,
+	type?: APIEmbed["type"],
+	timestamp?: string,
+	thumbnail?: APIThumbnail,
+	video?: APIVideo,
+) {
+	const parsedEmbed = embed as APIEmbed;
+
+	expect(parsedEmbed).toStrictEqual({
+		...(parsedEmbed.title || title ? { title } : {}),
+		...(parsedEmbed.url || url ? { url } : {}),
+		...(parsedEmbed.description || description ? { description } : {}),
+		...(parsedEmbed.type || type ? { type } : {}),
+		...(parsedEmbed.timestamp || timestamp ? { timestamp } : {}),
+		...(parsedEmbed.thumbnail || thumbnail ? { thumbnail } : {}),
+		...(parsedEmbed.video || video ? { video } : {}),
+	});
 }

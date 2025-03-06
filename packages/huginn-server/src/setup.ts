@@ -41,7 +41,6 @@ if (!envs.POSTGRESQL_URL) {
 
 export const gateway = new ServerGateway({ logHeartbeat: false });
 export const tokenInvalidator = new TokenInvalidator();
-consola.log(envs.GITHUB_TOKEN);
 export const octokit: Octokit = new Octokit({ auth: envs.GITHUB_TOKEN });
 export const s3 = new S3Client({
 	region: envs.AWS_REGION,

@@ -103,15 +103,34 @@ export async function validateChannelName(channelName: string | undefined | null
 
 export function validateEmbeds(embeds: APIEmbed[], errorObject: ErrorFactory) {
 	for (const [i, embed] of embeds.entries()) {
-		if (!embed.title && !embed.description && !embed.thumbnail) {
+		if (embed.type === "rich" && !embed.title && !embed.description && !embed.thumbnail) {
 			errorObject.addError(`embeds.${i}.title`, Fields.softRequired());
 			errorObject.addError(`embeds.${i}.description`, Fields.softRequired());
 			errorObject.addError(`embeds.${i}.thumbnail`, Fields.softRequired());
 			return false;
 		}
-		if (embed.url && !embed.title) {
+		if (embed.type === "rich" && embed.url && !embed.title) {
 			errorObject.addError(`embeds.${i}.title`, Fields.required());
 			return false;
 		}
+		if (embed.type === "image" && !embed.url) {
+			errorObject.addError(`embeds.${i}.url`, Fields.required());
+			return false;
+		}
+		if (embed.type === "image" && !embed.thumbnail) {
+			errorObject.addError(`embeds.${i}.thumbnail`, Fields.required());
+			return false;
+		}
+
+		if (embed.type === "video" && !embed.url) {
+			errorObject.addError(`embeds.${i}.url`, Fields.required());
+			return false;
+		}
+		if (embed.type === "video" && !embed.video) {
+			errorObject.addError(`embeds.${i}.video`, Fields.required());
+			return false;
+		}
 	}
+
+	return true;
 }

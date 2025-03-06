@@ -13,7 +13,7 @@ createRoute("POST", "/api/auth/refresh-token", validator("json", schema), async 
 	const { valid, payload } = await verifyToken(body.refreshToken, REFRESH_TOKEN_SECRET_ENCODED);
 
 	if (!valid || !payload) {
-		throw unauthorized(c);
+		return unauthorized(c);
 	}
 
 	const user = idFix(await prisma.user.getById(payload.id, { select: { id: true } }));

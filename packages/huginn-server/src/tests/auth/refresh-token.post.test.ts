@@ -4,7 +4,7 @@ import type { APIPostRefreshTokenResult } from "@huginn/shared";
 import { createTestUsers } from "#tests/utils";
 
 describe("POST /auth/refresh-token", () => {
-	test("should return 'Unauthorized' when no token is passed", async () => {
+	test("should return 'Unauthorized' when invalid token is passed", async () => {
 		const refreshToken = "invalid token";
 		const result = testHandler("/api/auth/refresh-token", {}, "POST", { refreshToken });
 

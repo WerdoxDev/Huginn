@@ -92,7 +92,8 @@ export async function getIdentifiedWebSocket(user?: TestUser) {
 			}
 		};
 
-		ws.onclose = ({ code }) => {
+		ws.onclose = ({ code, reason }) => {
+			console.log(reason);
 			reject(code);
 		};
 	});
@@ -140,7 +141,6 @@ export async function resolveAll(...promises: Promise<unknown>[]) {
 export async function checkCDNRunning() {
 	try {
 		const url = envs.CDN_LOCAL_URL;
-		console.log(url);
 		if (!url) return false;
 
 		const result = await fetch(url);
@@ -271,6 +271,7 @@ export async function createTestMessages(channelId: bigint, authorId: bigint, am
 			type: MessageType.DEFAULT,
 			timestamp: new Date(),
 			pinned: false,
+			flags: 0,
 		});
 	}
 

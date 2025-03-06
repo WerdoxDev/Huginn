@@ -27,6 +27,10 @@ app.notFound((c) => {
 });
 
 app.onError((error, c) => {
+	if (process.env.TEST) {
+		console.log(error);
+	}
+
 	const returnedError = serverOnError(error, c);
 	if (returnedError) {
 		return returnedError;
@@ -65,20 +69,22 @@ app.use("*", serveStatic({ root: "./src/static" }));
 
 showRoutes(app, { colorize: true, verbose: false });
 
-consola.box(`Listening on ${envs.SERVER_HOST}:${envs.SERVER_PORT}`);
+const server = Bun.serve({
+	websocket: ws.websocket,
+	fetch(req, server) {
+		if (req.headers.get("upgrade") === "websocket") {
+			return ws.handleUpgrade(req, server);
+		}
 
-if (!process.env.test) {
-	Bun.serve({
-		websocket: ws.websocket,
-		fetch(req, server) {
-			if (req.headers.get("upgrade") === "websocket") {
-				return ws.handleUpgrade(req, server);
-			}
+		return app.fetch(req, server);
+	},
+	hostname: envs.SERVER_HOST,
+	port: envs.SERVER_PORT,
+	idleTimeout: 40,
+});
 
-			return app.fetch(req, server);
-		},
-		hostname: envs.SERVER_HOST,
-		port: envs.SERVER_PORT,
-		idleTimeout: 40,
-	});
+if (process.env.TEST) {
+	console.log(`Listening on ${server.hostname}:${server.port}`);
+} else {
+	consola.box(`Listening on ${server.hostname}:${server.port}`);
 }

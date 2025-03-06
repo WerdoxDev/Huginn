@@ -39,7 +39,7 @@ const jsonSchema = z.object({
 	embeds: z.optional(
 		z.array(
 			z.object({
-				type: z.optional(z.enum(["rich", "image", "video"])),
+				type: z.enum(["rich", "image", "video"]),
 				title: z.optional(z.string()),
 				url: z.optional(z.string()),
 				description: z.optional(z.string()),
@@ -115,7 +115,7 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 	// Validate attachments
 	if (body.attachments) {
 		for (const [i, attachment] of body.attachments.entries()) {
-			if (!(`files[${i}]` in files) || files[`files[${i}]`].name !== attachment.filename) return invalidFormBody(c);
+			if (!(`files[${attachment.id}]` in files) || files[`files[${i}]`].name !== attachment.filename) return invalidFormBody(c);
 		}
 	}
 
@@ -247,6 +247,7 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 				}
 
 				embeds.push({
+					type: "rich",
 					title: metadata.title,
 					url: metadata.url,
 					description: metadata.description,
