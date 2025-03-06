@@ -83,7 +83,10 @@ export default function ProgressBar(props: ProgressBarProps) {
 				}}
 			/>
 			<div
-				className={clsx("absolute h-3 w-3 scale-0 rounded-full bg-text", props.dragging ? "scale-100" : "group-hover/progress:scale-100")}
+				className={clsx(
+					"absolute h-3 w-3 scale-0 rounded-full bg-text transition-transform",
+					props.dragging ? "scale-100" : "group-hover/progress:scale-100",
+				)}
 				style={{
 					left: props.orientation === "horizontal" ? `calc(${props.percentage}% - ${6 + (props.mouseOffset ?? 0)}px` : "unset",
 					bottom: props.orientation === "vertical" ? `calc(${props.percentage}% - ${6 + (props.mouseOffset ?? 0)}px)` : "unset",

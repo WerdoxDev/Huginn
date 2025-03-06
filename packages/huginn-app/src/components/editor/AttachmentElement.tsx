@@ -38,7 +38,7 @@ export default function AttachmentElement(props: RenderElementProps) {
 				) : (
 					<div className="flex w-[24rem] items-center gap-x-2 rounded-lg bg-secondary px-2 py-3">
 						<IconMingcuteFileFill className="size-10 shrink-0" />
-						<div className="flex w-full flex-col justify-center gap-y-0.5 overflow-hidden">
+						<div className="flex w-full flex-col justify-center gap-y-0.5 overflow-hidden rounded-lg px-2.5">
 							<div
 								className="cursor-pointer overflow-hidden text-ellipsis text-nowrap text-accent text-sm hover:underline"
 								onClick={() => openUrl(basedUrl)}

@@ -24,7 +24,9 @@ export default function EmbedElement(props: RenderElementProps) {
 
 	return (
 		<div {...props.attributes} contentEditable={false} style={{ maxWidth: `${constants.EMBED_MEDIA_MAX_WIDTH + 16}px` }}>
-			<div className={clsx("mt-1 mb-1 flex max-w-md flex-col items-start", !barebone && "rounded-lg bg-tertiary p-2")}>
+			<div
+				className={clsx("mt-1 mb-1 flex max-w-md flex-col items-start", !barebone && "rounded-lg border-background border-l-4 bg-tertiary p-2")}
+			>
 				{title && (
 					<span
 						className={clsx(url && "cursor-pointer text-accent hover:underline", description ? "mb-1" : "mb-2")}
@@ -43,12 +45,9 @@ export default function EmbedElement(props: RenderElementProps) {
 							originalHeight={thumbnail.height ?? 0}
 							url={thumbnail.url}
 							disableQuery
-							className={clsx(!barebone && "!rounded-md")}
 						/>
 					)}
-					{video && (
-						<VideoPlayer className={clsx(!barebone && "!rounded-md")} url={video.url} width={dimensions.width} height={dimensions.height} />
-					)}
+					{video && <VideoPlayer url={video.url} width={dimensions.width} height={dimensions.height} />}
 				</div>
 			</div>
 		</div>

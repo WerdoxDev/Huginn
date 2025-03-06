@@ -10,7 +10,6 @@ export default function ImagePreview(props: {
 	height: number;
 	originalWidth: number;
 	originalHeight: number;
-	className?: string;
 	filename?: string;
 	disableQuery?: boolean;
 }) {
@@ -45,15 +44,14 @@ export default function ImagePreview(props: {
 						},
 					})
 				}
-				className={clsx("cursor-pointer overflow-hidden rounded-lg object-contain", errored && "hidden", props.className)}
+				className={clsx("cursor-pointer overflow-hidden rounded-md object-contain", errored && "hidden")}
 				style={{ width: `${props.width}px`, height: `${props.height}px` }}
 			/>
 			<Transition show={!loaded || errored}>
 				<div
 					className={clsx(
 						!errored && "absolute inset-0",
-						"flex items-center justify-center rounded-lg bg-background/40 duration-200 data-[closed]:opacity-0",
-						props.className,
+						"flex items-center justify-center rounded-md bg-background/40 duration-200 data-[closed]:opacity-0",
 					)}
 					style={{ width: `${props.width}px`, height: `${props.height}px` }}
 				>

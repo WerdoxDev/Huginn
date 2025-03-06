@@ -8,7 +8,7 @@ import LoadingIcon from "./LoadingIcon";
 import ProgressBar from "./ProgressBar";
 import VolumeBar from "./VolumeBar";
 
-export default function VideoPlayer(props: { url: string; width: number; height: number; className?: string }) {
+export default function VideoPlayer(props: { url: string; width: number; height: number }) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const [playing, setPlaying] = useState(false);
@@ -121,12 +121,11 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 		<div
 			ref={containerRef}
 			style={{ width: `${props.width}px`, height: `${props.height}px` }}
-			className={clsx("group/video relative flex overflow-hidden rounded-lg", props.className)}
+			className="group/video relative flex overflow-hidden rounded-md"
 			onMouseUp={togglePlaying}
 		>
 			{/* biome-ignore lint/a11y/useMediaCaption: <explanation> */}
 			<video
-				className={clsx(fullscreen && "")}
 				width={fullscreen ? undefined : props.width}
 				height={fullscreen ? undefined : props.height}
 				style={fullscreen ? undefined : { width: `${props.width}px`, height: `${props.height}px` }}
@@ -139,7 +138,7 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 				<div
 					className={clsx(
 						!errored && "absolute inset-0",
-						"flex items-center justify-center rounded-md bg-background/40 duration-200 data-[closed]:opacity-0",
+						"flex items-center justify-center bg-background/40 duration-200 data-[closed]:opacity-0",
 					)}
 					style={{ width: `${props.width}px`, height: `${props.height}px` }}
 				>
