@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.17.0...server@v0.18.0) (2025-03-06)
+
+
+### Features
+
+* **server:** add new tests for attachments and embeds ([97d07c0](https://github.com/WerdoxDev/Huginn/commit/97d07c0e0ba54947f64031e3385da634e037224c))
+
 ## [0.17.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.16.0...server@v0.17.0) (2025-03-03)
 
 

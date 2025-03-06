@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.2](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.7.1...backend-shared@v0.7.2) (2025-03-06)
+
+
+### Bug Fixes
+
+* **backend-shared:** move test flag to test server preperation ([2626275](https://github.com/WerdoxDev/Huginn/commit/26262759add92946823b877b97953e5923fb3736))
+
 ## [0.7.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.7.0...backend-shared@v0.7.1) (2025-03-02)
 
 
