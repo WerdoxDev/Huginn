@@ -85,7 +85,7 @@ async fn send_notification(
     Toast::new("dev.huginn.desktop")
         .title(title)
         .text1(text)
-        .sound(Some(Sound::Default))
+        .sound(None)
         .duration(Duration::Short)
         .on_activated(move |_| {
             app.emit("notification-clicked", data.clone()).unwrap();

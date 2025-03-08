@@ -2,7 +2,7 @@ import { useHuginnWindow } from "@stores/windowStore";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { isPermissionGranted, requestPermission } from "@tauri-apps/plugin-notification";
-import { type ReactNode, createContext, useContext, useEffect } from "react";
+import { type ReactNode, createContext, useContext, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 
 type NotificationContextType = {
@@ -28,6 +28,7 @@ export async function initializeNotification() {
 export function NotificationProvider(props: { children?: ReactNode }) {
 	const huginnWindow = useHuginnWindow();
 	const navigate = useNavigate();
+	const canSend = useRef(true);
 
 	useEffect(() => {
 		if (huginnWindow.environment !== "desktop") {
@@ -50,7 +51,15 @@ export function NotificationProvider(props: { children?: ReactNode }) {
 	}, []);
 
 	function sendNotification(data: string, title: string, text: string, imagePath: string) {
+		if (!canSend.current) {
+			return;
+		}
+
 		invoke("send_notification", { data, title, text, imagePath });
+		canSend.current = false;
+		setTimeout(() => {
+			canSend.current = true;
+		}, 2000);
 	}
 
 	return (

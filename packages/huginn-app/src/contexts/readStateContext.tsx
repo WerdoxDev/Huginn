@@ -74,6 +74,8 @@ export function ReadStateProvider(props: { children?: ReactNode }) {
 		const unlisten = listenEvent("message_added", async (data) => {
 			if (!data.self && !data.visible) {
 				// console.log(await join(await resourceDir(), "resources/huginn-text.png"));
+				const audio = new Audio("/src/assets/notification.wav");
+				audio.play();
 				if (huginnWindow.environment === "desktop") {
 					sendNotification(
 						data.message.channelId,
