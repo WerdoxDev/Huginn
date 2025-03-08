@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.27.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.26.0...app@v0.27.0) (2025-03-06)
+
+
+### Features
+
+* **app:** add inverted border radius to messages + show user's username on hover ([f545309](https://github.com/WerdoxDev/Huginn/commit/f545309aa6410871632f27df8d46c8cf4069b5a8))
+
+
+### Bug Fixes
+
+* **app:** add consistent rounded corners for attachments and embeds ([70bbe96](https://github.com/WerdoxDev/Huginn/commit/70bbe9659b6c956b28ef67ff6fa7ac2dabfd7f88))
+
 ## [0.26.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.25.0...app@v0.26.0) (2025-03-03)
 
 
