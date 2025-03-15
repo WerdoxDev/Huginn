@@ -8,7 +8,7 @@ import {
 	type GatewayReadyData,
 	type GatewayResume,
 } from "@huginn/shared";
-import type { GatewayPayload, Snowflake } from "@huginn/shared";
+import type { GatewayDispatch, GatewayPayload, GatewayUpdateVoiceState, Snowflake } from "@huginn/shared";
 import { isOpcode } from "@huginn/shared";
 import type { HuginnClient } from ".";
 import { EventEmitterWithHistory } from "./event-emitter";
@@ -95,6 +95,24 @@ export class Gateway {
 		return true;
 	}
 
+	/**
+	 * Connects to a voice channel.
+	 * @param guildId can be set to null if you are connecting to a direct channel call.
+	 */
+	public async connectToVoice(guildId: Snowflake | null, channelId: Snowflake): Promise<void> {
+		const updateVoiceStateData: GatewayUpdateVoiceState = {
+			op: GatewayOperations.VOICE_STATE_UPDATE,
+			d: {
+				guildId: guildId,
+				channelId: channelId,
+				selfDeaf: false,
+				selfMute: false,
+			},
+		};
+
+		this.send(updateVoiceStateData);
+	}
+
 	private startListening() {
 		this.socket?.removeEventListener("open", this.onOpen);
 		this.socket?.removeEventListener("close", this.onClose);
@@ -153,21 +171,25 @@ export class Gateway {
 			return;
 		}
 
-		const data = JSON.parse(e.data);
+		const data: GatewayPayload = JSON.parse(e.data);
 
-		// Hello
-		if (isOpcode(data, GatewayOperations.HELLO)) {
-			await this.handleHello(data);
-			this.emit("hello", data.d);
-			// Dispatch
-		} else if (isOpcode(data, GatewayOperations.DISPATCH)) {
-			this.sequence = data.s;
-
-			if (data.t === "ready") {
-				this.handleReady(data.d as GatewayReadyData);
+		switch (data.op) {
+			case GatewayOperations.HELLO: {
+				const hello = data as GatewayHello;
+				await this.handleHello(hello);
+				this.emit("hello", hello.d);
+				break;
 			}
+			case GatewayOperations.DISPATCH: {
+				this.sequence = data.s;
+				const dispatch = data as GatewayDispatch;
 
-			this.emit(data.t, data.d);
+				if (dispatch.t === "ready") {
+					this.handleReady(dispatch.d as GatewayReadyData);
+				}
+
+				this.emit(dispatch.t, dispatch.d);
+			}
 		}
 
 		this.emit("message", data);
