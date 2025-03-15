@@ -221,7 +221,7 @@ describe("POST /api/channels/:channelId/messages", () => {
 
 		expect(result.embeds).toBeArray();
 		expect(result.embeds).toHaveLength(1);
-		expectEmbedExactSchema(result.embeds[0], undefined, "https://huginn.dev/huginn-meta.png", undefined, "image", undefined, {
+		expectEmbedExactSchema(result.embeds[0], "image", undefined, "https://huginn.dev/huginn-meta.png", undefined, undefined, {
 			url: "https://huginn.dev/huginn-meta.png",
 			width: 1150,
 			height: 609,

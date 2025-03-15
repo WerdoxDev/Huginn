@@ -309,10 +309,10 @@ export function expectAttachmentExactSchema(
 
 export function expectEmbedExactSchema(
 	embed: object,
+	type: APIEmbed["type"],
 	title?: string,
 	url?: string,
 	description?: string,
-	type?: APIEmbed["type"],
 	timestamp?: string,
 	thumbnail?: APIThumbnail,
 	video?: APIVideo,
@@ -320,6 +320,7 @@ export function expectEmbedExactSchema(
 	const parsedEmbed = embed as APIEmbed;
 
 	expect(parsedEmbed).toStrictEqual({
+		type,
 		...(parsedEmbed.title || title ? { title } : {}),
 		...(parsedEmbed.url || url ? { url } : {}),
 		...(parsedEmbed.description || description ? { description } : {}),

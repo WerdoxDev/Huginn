@@ -35,13 +35,13 @@ export async function verifyToken<IdentityToken extends boolean = false>(token: 
 			return { valid: false, payload: null };
 		}
 
-		const jwt = await jose.jwtVerify<TokenPayload>(token, secret);
+		const jwt = await jose.jwtVerify<IdentityToken extends false ? TokenPayload : IdentityTokenPayload>(token, secret);
 
 		if (!("id" in jwt.payload) && !("providerId" in jwt.payload)) {
 			return { valid: false, payload: null };
 		}
 
-		return { valid: true, payload: jwt.payload as IdentityToken extends false ? TokenPayload : IdentityTokenPayload };
+		return { valid: true, payload: jwt.payload };
 	} catch (e) {
 		return { valid: false, payload: null };
 	}

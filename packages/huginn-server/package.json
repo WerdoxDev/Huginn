@@ -8,11 +8,11 @@
 		"tailwind": "bunx tailwindcss -i ./src/routes/static/input.css -o ./src/routes/static/output.css --watch"
 	},
 	"dependencies": {
-		"@aws-sdk/client-s3": "^3.750.0",
+		"@aws-sdk/client-s3": "^3.758.0",
 		"@huginn/backend-shared": "workspace:*",
 		"@huginn/shared": "workspace:*",
-		"@prisma/client": "^6.4.0",
-		"@prisma/extension-optimize": "^1.1.4",
+		"@prisma/client": "^6.5.0",
+		"@prisma/extension-optimize": "^1.1.8",
 		"@std/collections": "npm:@jsr/std__collections",
 		"@std/encoding": "npm:@jsr/std__encoding",
 		"@std/media-types": "npm:@jsr/std__media-types",
@@ -25,7 +25,7 @@
 		"destr": "^2.0.3",
 		"fluent-ffmpeg": "^2.1.3",
 		"get-port-please": "^3.1.2",
-		"hono": "^4.7.2",
+		"hono": "^4.7.4",
 		"hono-sessions": "^0.7.1",
 		"jose": "^5.10.0",
 		"jsdom": "^25.0.1",
@@ -33,13 +33,13 @@
 		"magic-regexp": "^0.8.0",
 		"markdown-it": "^14.1.0",
 		"octokit": "^4.1.2",
-		"ohash": "^1.1.4",
+		"ohash": "^1.1.6",
 		"pathe": "^1.1.2",
-		"prisma": "^6.4.0",
+		"prisma": "^6.5.0",
 		"semver": "^7.7.1",
 		"sharp": "^0.33.5",
 		"zod": "^3.24.2",
-		"zod-form-data": "^2.0.5"
+		"zod-form-data": "^2.0.7"
 	},
 	"devDependencies": {
 		"@octokit/types": "^13.8.0"

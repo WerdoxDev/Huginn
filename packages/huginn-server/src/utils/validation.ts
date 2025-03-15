@@ -1,4 +1,4 @@
-import type { ErrorFactory } from "@huginn/backend-shared/src/error-factory";
+import type { ErrorFactory } from "@huginn/backend-shared";
 import { constants, type APIEmbed } from "@huginn/shared";
 import { Fields } from "@huginn/shared";
 import { prisma } from "#database";

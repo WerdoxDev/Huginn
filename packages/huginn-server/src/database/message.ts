@@ -71,11 +71,11 @@ export const messagesExtension = Prisma.defineExtension({
 						for (const embed of embeds) {
 							createdEmbeds.push(
 								await prisma.embed.createEmbed(
+									embed.type,
 									embed.title,
 									embed.description,
 									embed.url,
 									embed.timestamp,
-									embed.type,
 									embed.thumbnail,
 									embed.video,
 								),
@@ -138,11 +138,11 @@ export const messagesExtension = Prisma.defineExtension({
 						for (const embed of embeds) {
 							createdEmbeds.push(
 								await prisma.embed.createEmbed(
+									embed.type,
 									embed.title,
 									embed.description,
 									embed.url,
 									embed.timestamp,
-									embed.type,
 									embed.thumbnail,
 									embed.video,
 								),

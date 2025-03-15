@@ -1,5 +1,6 @@
-import { logGatewayClose, logGatewayOpen, logGatewayRecieve, logGatewaySend, logServerError } from "@huginn/backend-shared";
-import { constants, type APIReadStateWithoutUser, type UserSettings, WorkerID, merge } from "@huginn/shared";
+import { createVoiceToken } from "@huginn/backend-shared";
+import { logGatewayClose, logGatewayOpen, logGatewayRecieve, logGatewaySend, logServerError } from "@huginn/backend-shared/log-utils";
+import { constants, type APIReadStateWithoutUser, type GatewayUpdateVoiceState, type UserSettings, WorkerID, merge } from "@huginn/shared";
 import { GatewayCode } from "@huginn/shared";
 import {
 	type GatewayHeartbeat,
@@ -11,13 +12,13 @@ import {
 	type GatewayResume,
 } from "@huginn/shared";
 import { type Snowflake, snowflake } from "@huginn/shared";
-import { idFix, isOpcode } from "@huginn/shared";
+import { idFix } from "@huginn/shared";
 import type { Message, Peer } from "crossws";
 import { omitChannelRecipient, omitRelationshipUserIds, selectChannelRecipients, selectPrivateUser, selectRelationshipUser } from "#database/common";
 import { prisma } from "#database/index";
 import { verifyToken } from "#utils/token-factory";
 import type { ServerGatewayOptions } from "#utils/types";
-import { validateGatewayData } from "../utils/gateway-utils";
+import { dispatchToTopic, validateGatewayData } from "../utils/gateway-utils";
 import { ClientSession } from "./client-session";
 import { PresenceManager } from "./presence-manager";
 
@@ -81,21 +82,37 @@ export class ServerGateway {
 			const session = this.getSessionByPeerId(peer.id);
 			logGatewayRecieve(session?.data?.sessionId ?? peer.id, data, this.options.logHeartbeat);
 
-			// Identify
-			if (isOpcode(data, GatewayOperations.IDENTIFY)) {
-				await this.handleIdentify(peer, data);
-				// Resume
-			} else if (isOpcode(data, GatewayOperations.RESUME)) {
-				this.handleResume(peer, data);
-				// Heartbeat
-			} else if (isOpcode(data, GatewayOperations.HEARTBEAT)) {
-				this.handleHeartbeat(peer, data);
-				// -- Not authenticated --
-			} else if (!session?.data) {
+			let needsAuthentication = false;
+
+			switch (data.op) {
+				case GatewayOperations.IDENTIFY:
+					await this.handleIdentify(peer, data as GatewayIdentify);
+					break;
+				case GatewayOperations.HEARTBEAT:
+					this.handleHeartbeat(peer, data as GatewayHeartbeat);
+					break;
+				case GatewayOperations.RESUME:
+					await this.handleResume(peer, data as GatewayResume);
+					break;
+				default:
+					needsAuthentication = true;
+			}
+
+			if (needsAuthentication && !session?.data) {
 				peer.close(GatewayCode.NOT_AUTHENTICATED, "NOT_AUTHENTICATED");
 				return;
-			} else {
-				peer.close(GatewayCode.UNKNOWN_OPCODE, "UNKNOWN_OPCODE");
+			}
+
+			if (!needsAuthentication) {
+				return;
+			}
+
+			switch (data.op) {
+				case GatewayOperations.VOICE_STATE_UPDATE:
+					this.handleUpdateVoiceState(peer, data as GatewayUpdateVoiceState);
+					break;
+				default:
+					peer.close(GatewayCode.UNKNOWN_OPCODE, "UNKNOWN_OPCODE");
 			}
 		} catch (e) {
 			if (e instanceof SyntaxError) {
@@ -290,6 +307,20 @@ export class ServerGateway {
 
 		this.send(peer, resumedData);
 		this.presenceManeger.setClient(user, client, { status: "online" });
+	}
+
+	private async handleUpdateVoiceState(peer: Peer, data: GatewayUpdateVoiceState) {
+		const client = this.getSessionByPeerId(peer.id);
+		const user = client?.data?.user;
+
+		if (!client || !user) {
+			return;
+		}
+
+		dispatchToTopic(user.id, "voice_state_update", { userId: user.id, channelId: data.d.channelId, guildId: data.d.guildId });
+
+		const token = await createVoiceToken(user.id);
+		dispatchToTopic(user.id, "voice_server_update", { token, sessionId: snowflake.generateString(WorkerID.GATEWAY), hostname: "127.0.0.1" });
 	}
 
 	private deleteUninitializedClient(peerId: string) {

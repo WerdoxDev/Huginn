@@ -7,11 +7,11 @@ export const embedExtension = Prisma.defineExtension({
 	model: {
 		embed: {
 			async createEmbed(
+				type: string,
 				title?: string,
 				description?: string,
 				url?: string,
 				timestamp?: string,
-				type?: string,
 				thumbnail?: DBThumbnail,
 				video?: DBVideo,
 			) {
