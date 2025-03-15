@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import ffmpeg, { ffprobe } from "fluent-ffmpeg";
+import { ffprobe } from "fluent-ffmpeg";
 import type { Context, Hono, ValidationTargets } from "hono";
 import type { OnHandlerInterface } from "hono/types";
 import sharp from "sharp";

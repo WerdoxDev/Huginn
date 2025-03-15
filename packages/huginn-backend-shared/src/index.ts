@@ -7,3 +7,4 @@ export * from "./env-reader";
 export * from "./shared-handlers";
 export * from "./test-utils";
 export * from "./route-importer";
+export * from "./voice-utils";
