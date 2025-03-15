@@ -243,7 +243,7 @@ export type APIPostDefaultMessageJSONBody = {
 
 export type APIEmbed = {
 	title?: string;
-	type?: "rich" | "video" | "image" | (string & {});
+	type: "rich" | "video" | "image" | (string & {});
 	description?: string;
 	url?: string;
 	timestamp?: string;

@@ -3,22 +3,23 @@ import type { APIMessage, APIMessageUser, APIRelationshipWithoutOwner, APIUser, 
 import type { Snowflake } from "./snowflake";
 
 export enum GatewayOperations {
-	DISPATCH = 0,
-	HEARTBEAT = 1,
-	IDENTIFY = 2,
-	RESUME = 6,
-	INVALID_SESSION = 9,
-	HELLO = 10,
-	HEARTBEAT_ACK = 11,
+	HELLO = 0,
+	IDENTIFY = 1,
+	HEARTBEAT = 2,
+	HEARTBEAT_ACK = 3,
+	DISPATCH = 4,
+	RESUME = 5,
+	VOICE_STATE_UPDATE = 6,
 }
 
 export type GatewayOperationTypes = {
-	[GatewayOperations.DISPATCH]: GatewayDispatch;
+	[GatewayOperations.HELLO]: GatewayHello;
+	[GatewayOperations.IDENTIFY]: GatewayIdentify;
 	[GatewayOperations.HEARTBEAT]: GatewayHeartbeat;
 	[GatewayOperations.HEARTBEAT_ACK]: GatewayHeartbeatAck;
-	[GatewayOperations.HELLO]: GatewayHello;
+	[GatewayOperations.DISPATCH]: GatewayDispatch;
 	[GatewayOperations.RESUME]: GatewayResume;
-	[GatewayOperations.IDENTIFY]: GatewayIdentify;
+	[GatewayOperations.VOICE_STATE_UPDATE]: GatewayUpdateVoiceState;
 };
 
 export type GatewayEvents = {
@@ -44,6 +45,8 @@ export type GatewayEvents = {
 	user_update: GatewayUserUpdateData;
 	presence_update: GatewayPresenceUpdateData;
 	oauth_redirect: GatewayOAuthRedirectData;
+	voice_state_update: GatewayVoiceStateUpdateData;
+	voice_server_update: GatewayVoiceServerUpdateData;
 };
 
 export type GatewayPayload<Event extends keyof GatewayEvents | undefined = undefined> = {
@@ -102,8 +105,6 @@ export type GatewayIdentifyProperties = {
 	device: string;
 };
 
-// export type GatewayReady = DataPayload<"ready", GatewayReadyData>;
-
 export type GatewayReadyData = {
 	user: APIUser;
 	sessionId: Snowflake;
@@ -123,6 +124,18 @@ export type GatewayResumeData = {
 	token: string;
 	sessionId: Snowflake;
 	seq: number;
+};
+
+export type GatewayUpdateVoiceStateData = {
+	guildId: Snowflake | null;
+	channelId: Snowflake | null;
+	selfMute: boolean;
+	selfDeaf: boolean;
+};
+
+export type GatewayUpdateVoiceState = NonDispatchPayload & {
+	op: GatewayOperations.VOICE_STATE_UPDATE;
+	d: GatewayUpdateVoiceStateData;
 };
 
 // export type GatewayResumedData = DataPayload<"resumed", undefined>;
@@ -164,4 +177,16 @@ export type GatewayTypingStartData = {
 	channelId: Snowflake;
 	userId: Snowflake;
 	timestamp: number;
+};
+
+export type GatewayVoiceStateUpdateData = {
+	userId: Snowflake;
+	guildId: Snowflake | null;
+	channelId: Snowflake | null;
+};
+
+export type GatewayVoiceServerUpdateData = {
+	token: string;
+	sessionId: string;
+	hostname: string;
 };
