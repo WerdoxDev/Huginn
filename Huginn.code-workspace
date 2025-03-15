@@ -5,6 +5,10 @@
 			"path": "."
 		},
 		{
+			"name": "huginn-media",
+			"path": "packages/huginn-media"
+		},
+		{
 			"name": "huginn-server",
 			"path": "packages/huginn-server"
 		},
