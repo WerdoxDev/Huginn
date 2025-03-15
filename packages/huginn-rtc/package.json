@@ -1,0 +1,23 @@
+{
+	"name": "huginn-rtc",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"build": "tsc",
+		"start": "node dist/index.js",
+		"dev": "tsc & nodemon dist/index.js"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"@types/node": "^22.13.10",
+		"nodemon": "^3.1.9"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"crossws": "^0.3.4",
+		"mediasoup": "^3.15.5"
+	}
+}

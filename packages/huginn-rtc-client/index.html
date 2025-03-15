@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Bun MediaSoup SFU</title>
+   <style>
+      #videos {
+         display: flex;
+         flex-wrap: wrap;
+         gap: 10px;
+         justify-content: center;
+         align-items: center;
+         width: 100%;
+      }
+
+      video {
+         width: 320px;
+         height: 240px;
+         background-color: #222;
+         border-radius: 8px;
+      }
+
+      #localVideo {
+         border: 2px solid #3498db;
+      }
+
+      #remoteVideos video {
+         border: 2px solid #e74c3c;
+      }
+   </style>
+</head>
+
+<body>
+   <div id="videos">
+      <div>
+         <h3>Local Video</h3>
+         <video id="localVideo" autoplay playsinline muted></video>
+      </div>
+
+      <div>
+         <h3>Remote Videos</h3>
+         <div id="remoteVideos"></div>
+      </div>
+   </div>
+
+   <script type="module" src="src/main.ts"></script>
+</body>
+
+</html>
