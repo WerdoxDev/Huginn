@@ -10,7 +10,7 @@
 		"@huginn/backend-shared": "workspace:*",
 		"@huginn/shared": "workspace:*",
 		"consola": "^3.4.0",
-		"hono": "^4.7.2",
+		"hono": "^4.7.4",
 		"p-queue": "^8.1.0",
 		"pathe": "^1.1.2",
 		"sharp": "^0.33.5",
