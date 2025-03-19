@@ -31,6 +31,7 @@ export function PresenceProvider(props: { children?: ReactNode }) {
 	}
 
 	function onReady(d: GatewayReadyData) {
+		console.log("ready");
 		setPresences([]);
 		onPresenceUpdated({ user: d.user, status: client.gateway.readyData?.userSettings?.status || "offline" });
 

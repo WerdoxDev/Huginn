@@ -234,7 +234,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		<div className="relative h-full overflow-y-hidden">
 			<ChannelMessageLoadingIndicator isFetchingNextPage={isFetchingNextPage} isFetchingPreviousPage={isFetchingPreviousPage} />
 			<ChannelTypingIndicator channelId={props.channelId} />
-			<ol className="flex h-full flex-col overflow-y-scroll pr-0 pb-7" ref={scroll} onScroll={onScroll}>
+			<ol className="flex h-full flex-col overflow-x-hidden overflow-y-scroll pr-0 pb-7" ref={scroll} onScroll={onScroll}>
 				{scroll.current?.scrollHeight === scroll.current?.clientHeight && <div className="h-full shrink" />}
 				{sortedMessages.length === 0 && (
 					<div className="flex h-full w-full shrink-0 items-center justify-center">
@@ -281,7 +281,7 @@ function MessageWrapper(
 						props.lastRenderInfo ? "my-1" : "mb-1",
 					)}
 				>
-					<div className="-mr-10 absolute right-0 flex w-10 items-center justify-center rounded-l-md bg-error/75 py-1 font-bold text-white text-xs uppercase">
+					<div className="-mr-10 absolute right-0 z-10 flex w-10 items-center justify-center rounded-l-md bg-error/75 py-1 font-bold text-white text-xs uppercase">
 						new
 					</div>
 				</li>

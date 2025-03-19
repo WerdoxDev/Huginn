@@ -30,6 +30,7 @@ export function ReadStateProvider(props: { children?: ReactNode }) {
 	const huginnWindow = useHuginnWindow();
 
 	function onReady(d: GatewayReadyData) {
+		console.log("ready2");
 		setReadStates(
 			d.readStates.map((x) => ({
 				channelId: x.channelId,

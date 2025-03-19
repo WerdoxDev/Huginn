@@ -11,7 +11,7 @@ import type {
 	GatewayPresenceUpdateData,
 } from "@huginn/shared";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 
 export default function ChannelsProvider(props: { children?: ReactNode }) {
@@ -64,7 +64,7 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
 		queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (old) =>
 			old?.map((channel) => ({
 				...channel,
-				recipients: channel.recipients.map((recipient) => (recipient.id === user.id ? user : recipient)),
+				recipients: channel.recipients.map((recipient) => (recipient.id === user.id ? { ...recipient, ...user } : recipient)),
 			})),
 		);
 	}

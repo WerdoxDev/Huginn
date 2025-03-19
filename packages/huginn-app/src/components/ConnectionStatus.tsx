@@ -2,7 +2,7 @@ import { useClient } from "@contexts/apiContext";
 import { useUser } from "@contexts/userContext";
 import { ClientReadyState } from "@huginn/api";
 import clsx from "clsx";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 type Status = "connected" | "disconnected" | "unauthenticated" | "none";
 const statusTexts: Record<Status, string> = {
@@ -22,6 +22,7 @@ export default function ConnectionStatus() {
 
 	useEffect(() => {
 		function onReady() {
+			console.log("ready3");
 			setConnectionState("connected");
 		}
 

@@ -8,7 +8,7 @@ use tauri::menu::{Menu, MenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Emitter, Manager, WindowEvent};
 use tauri_plugin_updater::UpdaterExt;
-use tauri_winrt_notification::{Duration, IconCrop, Sound, Toast};
+use tauri_winrt_notification::{Duration, IconCrop, Toast};
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]

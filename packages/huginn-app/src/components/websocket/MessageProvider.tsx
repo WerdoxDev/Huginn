@@ -152,7 +152,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 				old && {
 					pageParams: old.pageParams,
 					pages: old.pages.map((messages) =>
-						messages.map((message) => (message.author.id === user.id ? { ...message, author: user } : message)),
+						messages.map((message) => (message.author.id === user.id ? { ...message, author: { ...message.author, ...user } } : message)),
 					),
 				},
 		);
