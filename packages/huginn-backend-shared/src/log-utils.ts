@@ -1,5 +1,5 @@
 import type { HuginnErrorData } from "@huginn/shared";
-import { GatewayOperations, type WebsocketPayload } from "@huginn/shared";
+import { GatewayOperations, type GatewayPayload } from "@huginn/shared";
 import { consola } from "consola";
 import { colors } from "consola/utils";
 import type { H3Error } from "h3";
@@ -102,7 +102,7 @@ export function logGatewayClose(code: number, reason: string): void {
 	consola.info(`${gatewayClose} (${codeText}) ${divider} ${reasonText}\n`);
 }
 
-export function logGatewayRecieve(id: string, data: WebsocketPayload, logHeartbeat: boolean): void {
+export function logGatewayRecieve(id: string, data: GatewayPayload, logHeartbeat: boolean): void {
 	if (data.op === GatewayOperations.HEARTBEAT && !logHeartbeat) {
 		return;
 	}
@@ -121,7 +121,7 @@ export function logGatewayRecieve(id: string, data: WebsocketPayload, logHeartbe
 	consola.info(`${gatewayRecieve} ${divider} ${idText} ${divider} ${opcodeText} (${opcodeNumberText}) ${divider} ${dataText}`);
 }
 
-export function logGatewaySend(topics: string | string[], data: WebsocketPayload, logHeartbeat: boolean): void {
+export function logGatewaySend(topics: string | string[], data: GatewayPayload, logHeartbeat: boolean): void {
 	if (data.op === GatewayOperations.HEARTBEAT_ACK && !logHeartbeat) {
 		return;
 	}
