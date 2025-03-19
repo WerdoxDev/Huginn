@@ -96,11 +96,7 @@ createRoute("PATCH", "/api/users/@me", verifyJwt(), validator("json", schema), a
 	// TODO: When guilds are a thing, this should send an update to users that are viewing that guild
 	dispatchToTopic(payload.id, "user_update", { ...updatedUser, token: accessToken, refreshToken });
 
-	gateway.presenceManeger.updateClientUser(updatedUser);
-	const presence = gateway.presenceManeger.getClient(payload.id);
-	if (presence) {
-		dispatchToTopic(`${payload.id}_presence`, "presence_update", presence);
-	}
+	gateway.presenceManeger.updateUserPresence(updatedUser);
 
 	const json: APIPatchCurrentUserResult = { ...updatedUser, token: accessToken, refreshToken };
 	return c.json(json, HttpCode.OK);

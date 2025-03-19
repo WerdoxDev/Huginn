@@ -9,11 +9,10 @@ import { prisma } from "#database/index";
 import type { ClientSessionInfo } from "#utils/types";
 
 export class ClientSession extends EventEmitter {
-	public data?: ClientSessionInfo;
+	public sessionInfo?: ClientSessionInfo;
 	public peer: Peer;
 
 	private sentMessages: Map<number, GatewayPayload>;
-	private subscribedTopics: Set<string>;
 	private hearbeatTimeout?: Timer;
 	public sequence?: number;
 
@@ -22,13 +21,12 @@ export class ClientSession extends EventEmitter {
 
 		this.peer = peer;
 		this.sentMessages = new Map();
-		this.subscribedTopics = new Set();
 
 		this.startHeartbeatTimeout();
 	}
 
-	public async initialize(data?: ClientSessionInfo) {
-		this.data = data;
+	public async initialize(sessionInfo?: ClientSessionInfo) {
+		this.sessionInfo = sessionInfo;
 		await this.subscribeClientEvents();
 
 		if (!this.hearbeatTimeout) {
@@ -47,22 +45,18 @@ export class ClientSession extends EventEmitter {
 	}
 
 	public subscribe(topic: string) {
-		if (!this.isSubscribed(topic)) {
-			this.subscribedTopics.add(topic);
-		}
+		this.peer.subscribe(topic);
 	}
 
 	public unsubscribe(topic: string) {
-		if (this.isSubscribed(topic)) {
-			this.subscribedTopics.delete(topic);
-		}
+		this.peer.unsubscribe(topic);
 	}
 
 	public isSubscribed(topic: string) {
-		return this.subscribedTopics.has(topic);
+		return this.peer.topics.has(topic);
 	}
 
-	public increaseSequence() {
+	public getIncreasedSequence() {
 		this.sequence = this.sequence !== undefined ? this.sequence + 1 : 0;
 		return this.sequence;
 	}
@@ -76,15 +70,15 @@ export class ClientSession extends EventEmitter {
 	}
 
 	public getSubscriptions() {
-		return this.subscribedTopics;
+		return this.peer.topics;
 	}
 
 	private async subscribeClientEvents() {
-		if (!this.data) {
+		if (!this.sessionInfo) {
 			throw new Error("Client session was not initialized");
 		}
 
-		const userId = this.data.user.id;
+		const userId = this.sessionInfo.user.id;
 		this.subscribe(userId);
 
 		const relationships = idFix(await prisma.relationship.getUserRelationships(userId, { select: { ...selectRelationshipUser, type: true } }));
@@ -115,7 +109,7 @@ export class ClientSession extends EventEmitter {
 		const tolerance = 3000;
 
 		this.hearbeatTimeout = setTimeout(() => {
-			this.emit("timeout", this.data);
+			this.emit("timeout", this.sessionInfo);
 			this.dispose();
 			this.peer.close(GatewayCode.SESSION_TIMEOUT, "SESSION_TIMEOUT");
 		}, constants.HEARTBEAT_INTERVAL + tolerance);

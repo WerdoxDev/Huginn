@@ -32,13 +32,13 @@ import { PresenceManager } from "./presence-manager";
 
 export class ServerGateway {
 	private readonly options: ServerGatewayOptions;
-	private clients: Map<string, ClientSession>;
+	private sessions: Map<string, ClientSession>;
 	private cancelledClientDisconnects: string[];
 	public presenceManeger: PresenceManager;
 
 	public constructor(options: ServerGatewayOptions) {
 		this.options = options;
-		this.clients = new Map<string, ClientSession>();
+		this.sessions = new Map<string, ClientSession>();
 		this.presenceManeger = new PresenceManager();
 		this.cancelledClientDisconnects = [];
 	}
@@ -49,7 +49,7 @@ export class ServerGateway {
 
 			// We create an uninitialized client only for oauth and keeping an eye for it's heartbeat
 			const client = new ClientSession(peer);
-			this.clients.set(peer.id, client);
+			this.sessions.set(peer.id, client);
 
 			const helloData: GatewayHello = { op: GatewayOperations.HELLO, d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL, peerId: peer.id } };
 			this.send(peer, helloData);
@@ -59,20 +59,18 @@ export class ServerGateway {
 	}
 
 	public async close(peer: Peer, event: { code?: number; reason?: string }) {
-		this.deleteUninitializedClient(peer.id);
+		const session = this.sessions.get(peer.id);
 
-		const client = this.getSessionByPeerId(peer.id);
-
-		if (client?.data) {
-			this.presenceManeger.removeClient(client.data.user.id);
+		if (session?.sessionInfo) {
+			this.presenceManeger.removeUserPresence(session.sessionInfo.user.id);
 		}
 
-		client?.dispose();
+		session?.dispose();
 
-		if (client?.data && event.code === GatewayCode.INVALID_SESSION) {
-			this.clients.delete(client.data.sessionId);
-		} else if (client?.data) {
-			this.queueClientDisconnect(client.data.sessionId);
+		if (session?.sessionInfo && event.code === GatewayCode.INVALID_SESSION) {
+			this.sessions.delete(peer.id);
+		} else if (session?.sessionInfo) {
+			this.queueClientDisconnect(peer.id);
 		}
 
 		logGatewayClose(event.code || 0, event.reason || "");
@@ -80,6 +78,7 @@ export class ServerGateway {
 
 	public async message(peer: Peer, message: Message) {
 		try {
+			peer.id;
 			const data: GatewayPayload = message.json();
 
 			if (!validateGatewayData(data)) {
@@ -87,8 +86,8 @@ export class ServerGateway {
 				return;
 			}
 
-			const session = this.getSessionByPeerId(peer.id);
-			logGatewayRecieve(session?.data?.sessionId ?? peer.id, data, this.options.logHeartbeat);
+			const session = this.sessions.get(peer.id);
+			logGatewayRecieve(peer.id, data, this.options.logHeartbeat);
 
 			let needsAuthentication = false;
 
@@ -106,7 +105,7 @@ export class ServerGateway {
 					needsAuthentication = true;
 			}
 
-			if (needsAuthentication && !session?.data) {
+			if (needsAuthentication && !session?.sessionInfo) {
 				peer.close(GatewayCode.NOT_AUTHENTICATED, "NOT_AUTHENTICATED");
 				return;
 			}
@@ -134,43 +133,33 @@ export class ServerGateway {
 	}
 
 	public subscribeSessionsToTopic(userId: Snowflake, topic: string) {
-		const sessions = Array.from(this.clients.entries())
-			.filter((x) => x[1].data?.user.id === userId)
-			.map((x) => x[1]);
-		for (const session of sessions) {
-			session.subscribe(topic);
-		}
-	}
-
-	public unsubscribeSessionsFromTopic(userId: Snowflake, topic: string) {
-		const sessions = Array.from(this.clients.entries())
-			.filter((x) => x[1].data?.user.id === userId)
-			.map((x) => x[1]);
-		for (const session of sessions) {
-			session.unsubscribe(topic);
-		}
-	}
-
-	public getSessionsCount() {
-		return this.clients.size;
-	}
-
-	public getSessionByPeerId(peerId: string) {
-		for (const [_sessionId, client] of this.clients) {
-			if (client.peer.id === peerId) {
-				return client;
+		for (const [sessionId, session] of this.sessions) {
+			if (session.sessionInfo?.user.id === userId) {
+				session.subscribe(topic);
 			}
 		}
 	}
 
+	public unsubscribeSessionsFromTopic(userId: Snowflake, topic: string) {
+		for (const [sessionId, session] of this.sessions) {
+			if (session.sessionInfo?.user.id === userId) {
+				session.unsubscribe(topic);
+			}
+		}
+	}
+
+	public getSessionsCount() {
+		return this.sessions.size;
+	}
+
 	public getSessionByKey(key: string) {
-		return this.clients.get(key);
+		return this.sessions.get(key);
 	}
 
 	public sendToTopic(topic: string, data: GatewayPayload) {
-		for (const client of this.clients.values()) {
+		for (const client of this.sessions.values()) {
 			if (client.isSubscribed(topic)) {
-				const newData = { ...data, s: client.increaseSequence() };
+				const newData = { ...data, s: client.getIncreasedSequence() };
 				client.addMessage(newData);
 				client.peer.send(JSON.stringify(newData));
 			}
@@ -178,7 +167,7 @@ export class ServerGateway {
 	}
 
 	private handleHeartbeat(peer: Peer, data: GatewayHeartbeat) {
-		const client = this.getSessionByPeerId(peer.id);
+		const client = this.sessions.get(peer.id);
 
 		// if (client && data.d !== client?.sequence) {
 		// 	peer.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
@@ -198,21 +187,20 @@ export class ServerGateway {
 			return;
 		}
 
-		if (this.getSessionByPeerId(peer.id) && !this.clients.get(peer.id)) {
+		if (this.sessions.get(peer.id)?.sessionInfo) {
 			peer.close(GatewayCode.ALREADY_AUTHENTICATED, "ALREADY_AUTHENTICATED");
 			return;
 		}
 
 		const user = idFix(await prisma.user.getById(payload.id, { select: selectPrivateUser }));
-		const sessionId = snowflake.generateString(WorkerID.GATEWAY);
 
-		// The uninitialized client is stored using it's peer_id instead of session_id
-		// We will delete this client and initialize a new one with proper session id
-		this.deleteUninitializedClient(peer.id);
+		const session = this.sessions.get(peer.id);
 
-		const client = new ClientSession(peer);
-		await client.initialize({ user, sessionId, ...data.d.properties });
-		this.clients.set(sessionId, client);
+		if (!session) {
+			throw new Error("session was null in handleIdentify");
+		}
+
+		await session.initialize({ user, sessionId: peer.id, ...data.d.properties });
 
 		// Relationships
 		const userRelationships = idFix(
@@ -225,7 +213,7 @@ export class ServerGateway {
 		);
 
 		// Presences
-		const presences = this.presenceManeger.getUserPresences(client);
+		const presences = this.presenceManeger.getUserPresences(session);
 
 		// Read states
 		const dbReadStates = idFix(await prisma.readState.getUserStates(user.id));
@@ -247,7 +235,7 @@ export class ServerGateway {
 			op: GatewayOperations.DISPATCH,
 			d: {
 				user,
-				sessionId: sessionId,
+				sessionId: peer.id,
 				privateChannels: userChannels,
 				relationships: userRelationships,
 				userSettings: settings,
@@ -255,12 +243,12 @@ export class ServerGateway {
 				readStates: finalReadStates,
 			},
 			t: "ready",
-			s: client.increaseSequence(),
+			s: session.getIncreasedSequence(),
 		};
 
 		this.send(peer, readyData);
 
-		this.presenceManeger.setClient(user, client, settings);
+		this.presenceManeger.setUserPresence(user, session, settings);
 	}
 
 	private async handleResume(peer: Peer, data: GatewayResume) {
@@ -271,32 +259,30 @@ export class ServerGateway {
 			return;
 		}
 
-		if (!this.clients.has(data.d.sessionId)) {
+		if (!this.sessions.has(data.d.sessionId)) {
 			peer.close(GatewayCode.INVALID_SESSION, "INVALID_SESSION");
 			return;
 		}
 
-		const client = this.clients.get(data.d.sessionId);
+		const session = this.sessions.get(data.d.sessionId);
 
-		if (!client) {
-			throw new Error("client was null in handleResume");
+		if (!session) {
+			throw new Error("session was null in handleResume");
 		}
 
-		if (client.sequence === undefined || data.d.seq > client.sequence) {
+		if (session.sequence === undefined || data.d.seq > session.sequence) {
 			peer.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
 			return;
 		}
 
 		const user = idFix(await prisma.user.getById(payload.id, { select: { id: true } }));
 
-		this.deleteUninitializedClient(peer.id);
-
-		client.peer = peer;
-		client.initialize(client.data);
+		session.peer = peer;
+		session.initialize(session.sessionInfo);
 
 		this.cancelledClientDisconnects.push(data.d.sessionId);
 
-		const messageQueue = client.getMessages();
+		const messageQueue = session.getMessages();
 
 		for (const [seq, _data] of messageQueue) {
 			if (seq <= data.d.seq) {
@@ -310,18 +296,18 @@ export class ServerGateway {
 			t: "resumed",
 			op: GatewayOperations.DISPATCH,
 			d: undefined,
-			s: client.increaseSequence(),
+			s: session.getIncreasedSequence(),
 		};
 
 		this.send(peer, resumedData);
-		this.presenceManeger.setClient(user, client, { status: "online" });
+		this.presenceManeger.setUserPresence(user, session, { status: "online" });
 	}
 
 	private async handleUpdateVoiceState(peer: Peer, data: GatewayUpdateVoiceState) {
-		const client = this.getSessionByPeerId(peer.id);
-		const user = client?.data?.user;
+		const session = this.sessions.get(peer.id);
+		const user = session?.sessionInfo?.user;
 
-		if (!client || !user) {
+		if (!session || !user) {
 			return;
 		}
 
@@ -331,12 +317,6 @@ export class ServerGateway {
 		dispatchToTopic(user.id, "voice_server_update", { token, sessionId: snowflake.generateString(WorkerID.GATEWAY), hostname: "127.0.0.1" });
 	}
 
-	private deleteUninitializedClient(peerId: string) {
-		const uninitializedClient = this.clients.get(peerId);
-		uninitializedClient?.dispose();
-		this.clients.delete(peerId);
-	}
-
 	private queueClientDisconnect(sessionId: Snowflake) {
 		setTimeout(() => {
 			if (this.cancelledClientDisconnects.includes(sessionId)) {
@@ -344,7 +324,7 @@ export class ServerGateway {
 				return;
 			}
 
-			this.clients.delete(sessionId);
+			this.sessions.delete(sessionId);
 		}, 1000 * 60);
 	}
 

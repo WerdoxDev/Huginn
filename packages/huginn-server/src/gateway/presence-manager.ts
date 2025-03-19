@@ -9,29 +9,27 @@ export class PresenceManager {
 		this.presences = new Map();
 	}
 
-	public setClient(user: PresenceUser, session: ClientSession, settings: UserSettings) {
-		const isOfficialClient = session.data?.browser === "Huginn Client";
+	public setUserPresence(user: PresenceUser, session: ClientSession, settings: UserSettings) {
 		const presence: UserPresence = {
-			user: pick(user, ["id", "avatar", "displayName", "flags", "username"]),
+			user: { id: user.id },
 			status: settings.status,
-			clientStatus: { desktop: isOfficialClient ? settings.status : undefined, web: !isOfficialClient ? settings.status : undefined },
 		};
 
-		const existing = this.presences.get(user.id);
-
-		this.presences.set(user.id, existing ? { ...presence, clientStatus: { ...existing.clientStatus, ...presence.clientStatus } } : presence);
+		this.presences.set(user.id, presence);
 
 		dispatchToTopic(`${user.id}_presence`, "presence_update", presence);
 	}
 
-	public updateClientUser(user: PresenceUser) {
-		const existing = this.presences.get(user.id);
-		if (existing) {
-			this.presences.set(user.id, { ...existing, user: pick(user, ["id", "avatar", "displayName", "flags", "username"]) });
+	public updateUserPresence(user: PresenceUser) {
+		const existingPresence = this.presences.get(user.id);
+		if (existingPresence) {
+			const newPresence = { ...existingPresence, user: pick(user, ["id", "avatar", "displayName", "flags", "username"]) };
+			this.presences.set(user.id, newPresence);
+			dispatchToTopic(`${user.id}_presence`, "presence_update", newPresence);
 		}
 	}
 
-	public removeClient(userId: Snowflake) {
+	public removeUserPresence(userId: Snowflake) {
 		dispatchToTopic(`${userId}_presence`, "presence_update", { user: { id: userId }, status: "offline" });
 		this.presences.delete(userId);
 	}
@@ -49,14 +47,14 @@ export class PresenceManager {
 		return presences;
 	}
 
-	public getClient(userId: Snowflake) {
+	public getSessionPresence(userId: Snowflake) {
 		return this.presences.get(userId);
 	}
 
-	public sendToUser(userId: Snowflake, userIdToSend: Snowflake, offlineStatus?: boolean) {
-		const presence: UserPresence | undefined = offlineStatus ? { user: { id: userIdToSend }, status: "offline" } : this.presences.get(userIdToSend);
+	public sendToUser(senderId: Snowflake, recieverId: Snowflake, offlineStatus?: boolean) {
+		const presence: UserPresence | undefined = offlineStatus ? { user: { id: recieverId }, status: "offline" } : this.presences.get(recieverId);
 		if (presence) {
-			dispatchToTopic(userId, "presence_update", presence);
+			dispatchToTopic(senderId, "presence_update", presence);
 		}
 	}
 }
