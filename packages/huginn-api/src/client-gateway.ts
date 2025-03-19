@@ -8,7 +8,7 @@ import {
 	type GatewayReadyData,
 	type GatewayResume,
 } from "@huginn/shared";
-import type { GatewayDispatch, GatewayUpdateVoiceState, Snowflake, WebsocketPayload } from "@huginn/shared";
+import type { GatewayDispatch, GatewayPayload, GatewayUpdateVoiceState, Snowflake } from "@huginn/shared";
 import { isOpcode } from "@huginn/shared";
 import type { HuginnClient } from ".";
 import { EventEmitterWithHistory } from "./event-emitter";
@@ -63,7 +63,7 @@ export class Gateway {
 			if (this.client.user && this.client.readyState === ClientReadyState.READY) {
 				r(true);
 			} else {
-				const onMessage = (data: WebsocketPayload) => {
+				const onMessage = (data: GatewayPayload) => {
 					if (isOpcode(data, GatewayOperations.HELLO)) {
 						this.sendIdentify();
 					}
@@ -172,7 +172,7 @@ export class Gateway {
 			return;
 		}
 
-		const data: WebsocketPayload = JSON.parse(e.data);
+		const data: GatewayPayload = JSON.parse(e.data);
 
 		switch (data.op) {
 			case GatewayOperations.HELLO: {

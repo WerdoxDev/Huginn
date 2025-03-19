@@ -1,4 +1,4 @@
-import type { WebsocketPayload } from "@huginn/shared";
+import type { GatewayPayload } from "@huginn/shared";
 import type { HuginnClient } from "./huginn-client";
 import type { VoiceOptions } from "./types";
 import { defaultClientOptions } from "./utils";
@@ -37,6 +37,6 @@ export class Voice {
 	}
 
 	private onMessage(e: MessageEvent) {
-		const data: WebsocketPayload = JSON.parse(e.data);
+		const data: GatewayPayload = JSON.parse(e.data);
 	}
 }
