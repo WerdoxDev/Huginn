@@ -1,5 +1,6 @@
 export * from "./api-types";
 export * from "./gateway-types";
+export * from "./voice-types";
 export * from "./rest-types";
 export * from "./cdn-types";
 export * from "./aws-types";

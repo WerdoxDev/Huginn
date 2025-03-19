@@ -25,6 +25,12 @@ export function APIProvider(props: { children?: ReactNode }) {
 						return new WebSocket(url);
 					},
 				},
+				voice: {
+					url: `http://localhost:3003/voice`,
+					createSocket(url) {
+						return new WebSocket(url);
+					},
+				},
 			});
 
 			client.gateway.connect();

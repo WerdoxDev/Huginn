@@ -1,6 +1,6 @@
 import type { ResponseLike, TokenPayload } from "@huginn/shared";
 import * as jose from "jose";
-import type { CDNOptions, GatewayOptions, RESTOptions } from "./types";
+import type { CDNOptions, GatewayOptions, RESTOptions, VoiceOptions } from "./types";
 
 export function decodeToken(token: string): [boolean, (TokenPayload & jose.JWTPayload) | null] {
 	try {
@@ -14,14 +14,15 @@ export function decodeToken(token: string): [boolean, (TokenPayload & jose.JWTPa
 
 export const defaultClientOptions = {
 	rest: {
-		api: "https://asgard.huginn.dev/api",
+		api: "https://midgard.huginn.dev/api",
 		authPrefix: "Bearer",
 		makeRequest(url, init) {
 			return defaultMakeRequest(url, init);
 		},
 	} as RESTOptions,
-	cdn: { url: "https://asgard.huginn.dev" } as CDNOptions,
-	gateway: { url: "wss://asgard.huginn.dev/gateway", log: false, intents: 0 } as GatewayOptions,
+	cdn: { url: "https://midgard.huginn.dev" } as CDNOptions,
+	gateway: { url: "wss://midgard.huginn.dev/gateway", log: false, intents: 0 } as GatewayOptions,
+	voice: { url: "wss://midgard.huginn.dev/voice" } as VoiceOptions,
 } as const;
 
 export async function defaultMakeRequest(url: string, init: RequestInit): Promise<ResponseLike> {

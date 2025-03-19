@@ -15,11 +15,3 @@ export function dispatchToTopic<K extends keyof GatewayEvents>(topics: string | 
 		gateway.sendToTopic(topics, data);
 	}
 }
-
-export function validateGatewayData(data: unknown): boolean {
-	if (data && typeof data === "object") {
-		return "op" in data;
-	}
-
-	return false;
-}

@@ -1,6 +1,15 @@
 import { createVoiceToken } from "@huginn/backend-shared";
 import { logGatewayClose, logGatewayOpen, logGatewayRecieve, logGatewaySend, logServerError } from "@huginn/backend-shared/log-utils";
-import { constants, type APIReadStateWithoutUser, type GatewayUpdateVoiceState, type UserSettings, WorkerID, merge } from "@huginn/shared";
+import {
+	constants,
+	type APIReadStateWithoutUser,
+	type GatewayPayload,
+	type GatewayUpdateVoiceState,
+	type UserSettings,
+	WorkerID,
+	merge,
+	validateGatewayData,
+} from "@huginn/shared";
 import { GatewayCode } from "@huginn/shared";
 import {
 	type GatewayHeartbeat,
@@ -8,7 +17,6 @@ import {
 	type GatewayHello,
 	type GatewayIdentify,
 	GatewayOperations,
-	type GatewayPayload,
 	type GatewayResume,
 } from "@huginn/shared";
 import { type Snowflake, snowflake } from "@huginn/shared";
@@ -18,7 +26,7 @@ import { omitChannelRecipient, omitRelationshipUserIds, selectChannelRecipients,
 import { prisma } from "#database/index";
 import { verifyToken } from "#utils/token-factory";
 import type { ServerGatewayOptions } from "#utils/types";
-import { dispatchToTopic, validateGatewayData } from "../utils/gateway-utils";
+import { dispatchToTopic } from "../utils/gateway-utils";
 import { ClientSession } from "./client-session";
 import { PresenceManager } from "./presence-manager";
 

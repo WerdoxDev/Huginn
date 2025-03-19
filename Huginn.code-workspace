@@ -5,8 +5,8 @@
 			"path": "."
 		},
 		{
-			"name": "huginn-media",
-			"path": "packages/huginn-media"
+			"name": "huginn-voice",
+			"path": "packages/huginn-voice"
 		},
 		{
 			"name": "huginn-server",

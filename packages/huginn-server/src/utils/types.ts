@@ -8,7 +8,6 @@ import type {
 	IdentityTokenPayload,
 	TokenPayload,
 } from "@huginn/shared";
-import type { Attachment } from "@prisma/client";
 import type { Session } from "hono-sessions";
 
 export type ServerGatewayOptions = {

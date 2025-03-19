@@ -12,6 +12,7 @@ import { RelationshipAPI } from "./rest-apis/relationship";
 import { UserAPI } from "./rest-apis/user";
 import { TokenHandler } from "./token-handler";
 import { defaultClientOptions } from "./utils";
+import { Voice } from "./voice";
 
 export class HuginnClient {
 	public readonly options: ClientOptions;
@@ -25,6 +26,7 @@ export class HuginnClient {
 	public oauth: OAuthAPI;
 	public common: CommonAPI;
 	public gateway: Gateway;
+	public voice: Voice;
 	public _internals: { rest: REST; cdn: CDN };
 
 	public user?: APIUser;
@@ -49,6 +51,7 @@ export class HuginnClient {
 		this.relationships = new RelationshipAPI(this.rest);
 		this.common = new CommonAPI(this.rest);
 		this.gateway = new Gateway(this, this.options.gateway);
+		this.voice = new Voice(this, this.options.voice);
 		this.oauth = new OAuthAPI(this.rest, this.gateway);
 	}
 

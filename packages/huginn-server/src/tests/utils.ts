@@ -7,11 +7,11 @@ import {
 	type GatewayIdentify,
 	type GatewayOperationTypes,
 	GatewayOperations,
-	type GatewayPayload,
 	type GatewayReadyData,
 	MessageType,
 	RelationshipType,
 	type Snowflake,
+	type WebsocketPayload,
 	WorkerID,
 	isOpcode,
 	snowflake,
@@ -114,9 +114,9 @@ export function testIsOpcode<O extends keyof GatewayOperationTypes>(data: unknow
 	return false;
 }
 
-export function testIsDispatch<Event extends keyof GatewayEvents>(data: unknown, eventType: Event): data is GatewayPayload<Event> {
+export function testIsDispatch<Event extends keyof GatewayEvents>(data: unknown, eventType: Event): data is WebsocketPayload<Event> {
 	if (testIsOpcode(data, GatewayOperations.DISPATCH)) {
-		let parsedData = data as GatewayPayload<Event>;
+		let parsedData = data as WebsocketPayload<Event>;
 		if (typeof data === "string") {
 			parsedData = JSON.parse(data as unknown as string);
 		}

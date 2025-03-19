@@ -4,6 +4,7 @@ export type ClientOptions = {
 	rest?: Partial<RESTOptions>;
 	cdn?: Partial<CDNOptions>;
 	gateway?: Partial<GatewayOptions>;
+	voice?: Partial<VoiceOptions>;
 };
 
 export type RESTOptions = {
@@ -21,6 +22,11 @@ export type GatewayOptions = {
 	log: boolean;
 	// TODO: Actually implement intents
 	intents: number;
+	createSocket(url: string): WebSocket;
+};
+
+export type VoiceOptions = {
+	url: string;
 	createSocket(url: string): WebSocket;
 };
 

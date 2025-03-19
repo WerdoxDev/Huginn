@@ -1,5 +1,5 @@
 {
-	"name": "huginn-media",
+	"name": "huginn-voice",
 	"type": "module",
 	"scripts": {
 		"dev": "tsx watch ./src/index.ts",
@@ -10,10 +10,14 @@
 		"crossws": "^0.3.4",
 		"hono": "^4.7.4",
 		"mediasoup": "^3.15.5",
-		"@huginn/backend-shared": "workspace:*"
+		"@huginn/backend-shared": "workspace:*",
+		"@huginn/shared": "workspace:*"
 	},
 	"devDependencies": {
 		"@types/node": "^20.11.17",
 		"tsx": "^4.7.1"
+	},
+	"imports": {
+		"#*": "./src/*.ts"
 	}
 }

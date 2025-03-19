@@ -54,7 +54,7 @@ export type GatewayPayload<Event extends keyof GatewayEvents | undefined = undef
 	s: number;
 } & (Event extends undefined ? { d?: unknown; t?: string } : { d: GatewayEvents[Extract<Event, keyof GatewayEvents>]; t: Event });
 
-export type NonDispatchPayload = Omit<GatewayPayload, "s" | "t">;
+export type NonDispatchGatewayPayload = Omit<GatewayPayload, "s" | "t">;
 
 // export type DataPayload<Event extends keyof GatewayEvents, D = unknown> = {
 // 	op: GatewayOperations.DISPATCH;
@@ -67,7 +67,7 @@ export type GatewayDispatch = {
 	d: GatewayEvents[keyof GatewayEvents];
 } & GatewayPayload;
 
-export type GatewayHello = NonDispatchPayload & {
+export type GatewayHello = NonDispatchGatewayPayload & {
 	op: GatewayOperations.HELLO;
 	d: GatewayHelloData;
 };
@@ -77,18 +77,18 @@ export type GatewayHelloData = {
 	peerId: string;
 };
 
-export type GatewayHeartbeat = NonDispatchPayload & {
+export type GatewayHeartbeat = NonDispatchGatewayPayload & {
 	op: GatewayOperations.HEARTBEAT;
 	d: GatewayHeartbeatData;
 };
 
 export type GatewayHeartbeatData = number | undefined;
 
-export type GatewayHeartbeatAck = NonDispatchPayload & {
+export type GatewayHeartbeatAck = NonDispatchGatewayPayload & {
 	op: GatewayOperations.HEARTBEAT_ACK;
 };
 
-export type GatewayIdentify = NonDispatchPayload & {
+export type GatewayIdentify = NonDispatchGatewayPayload & {
 	op: GatewayOperations.IDENTIFY;
 	d: GatewayIdentifyData;
 };
@@ -115,7 +115,7 @@ export type GatewayReadyData = {
 	readStates: APIReadStateWithoutUser[];
 };
 
-export type GatewayResume = NonDispatchPayload & {
+export type GatewayResume = NonDispatchGatewayPayload & {
 	op: GatewayOperations.RESUME;
 	d: GatewayResumeData;
 };
@@ -133,7 +133,7 @@ export type GatewayUpdateVoiceStateData = {
 	selfDeaf: boolean;
 };
 
-export type GatewayUpdateVoiceState = NonDispatchPayload & {
+export type GatewayUpdateVoiceState = NonDispatchGatewayPayload & {
 	op: GatewayOperations.VOICE_STATE_UPDATE;
 	d: GatewayUpdateVoiceStateData;
 };
