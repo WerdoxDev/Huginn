@@ -27,6 +27,7 @@ export type GatewayOptions = {
 
 export type VoiceOptions = {
 	url: string;
+	log: boolean;
 	createSocket(url: string): WebSocket;
 };
 

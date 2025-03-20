@@ -8,7 +8,14 @@ import {
 	type GatewayReadyData,
 	type GatewayResume,
 } from "@huginn/shared";
-import type { GatewayDispatch, GatewayPayload, GatewayUpdateVoiceState, Snowflake } from "@huginn/shared";
+import type {
+	GatewayDispatch,
+	GatewayPayload,
+	GatewayResumedData,
+	GatewayUpdateVoiceState,
+	GatewayVoiceServerUpdateData,
+	Snowflake,
+} from "@huginn/shared";
 import { isOpcode } from "@huginn/shared";
 import type { HuginnClient } from ".";
 import { EventEmitterWithHistory } from "./event-emitter";
@@ -22,11 +29,10 @@ export class Gateway {
 
 	public socket?: WebSocket;
 	public readyData?: GatewayReadyData;
-	public peerId?: string;
+	public sessionId?: Snowflake;
 
-	private heartbeatInterval?: ReturnType<typeof setTimeout>;
+	private heartbeatInterval?: ReturnType<typeof setInterval>;
 	private sequence?: number;
-	private sessionId?: Snowflake;
 
 	private emit<EventName extends keyof GatewayEvents>(eventName: EventName, eventArg: GatewayEvents[EventName]): void {
 		this.emitter.emit(eventName, eventArg);
@@ -111,7 +117,23 @@ export class Gateway {
 		};
 
 		this.send(updateVoiceStateData);
-		this.client.voice.connect();
+
+		const token = await new Promise<string>((resolve, reject) => {
+			const onMessage = (data: GatewayPayload) => {
+				if (isOpcode(data, GatewayOperations.DISPATCH)) {
+					if (data.t === "voice_server_update") {
+						const dispatch = data.d as GatewayVoiceServerUpdateData;
+						resolve(dispatch.token);
+
+						this.off("message", onMessage);
+					}
+				}
+			};
+
+			this.on("message", onMessage);
+		});
+
+		this.client.voice.connect(token);
 	}
 
 	private startListening() {
@@ -126,7 +148,7 @@ export class Gateway {
 
 	private onOpen(_e: Event) {
 		if (this.options.log) {
-			console.log("Gateway Connected!");
+			console.log("[Gateway] Connected");
 		}
 
 		this.emit("open", undefined);
@@ -134,7 +156,7 @@ export class Gateway {
 
 	private onClose(e: CloseEvent) {
 		if (this.options.log) {
-			console.log(`Gateway Closed with code: ${e.code}`);
+			console.log("[Gateway] Closed", e.code, e.reason);
 		}
 
 		this.stopHeartbeat();
@@ -185,6 +207,10 @@ export class Gateway {
 				this.sequence = data.s;
 				const dispatch = data as GatewayDispatch;
 
+				if (dispatch.t === "resumed") {
+					this.sessionId = (dispatch.d as GatewayResumedData).sessionId;
+				}
+
 				if (dispatch.t === "ready") {
 					this.handleReady(dispatch.d as GatewayReadyData);
 				}
@@ -203,7 +229,7 @@ export class Gateway {
 	}
 
 	private async handleHello(data: GatewayHello) {
-		this.peerId = data.d.peerId;
+		this.sessionId = data.d.sessionId;
 		this.startHeartbeat(data.d.heartbeatInterval);
 
 		if (this.sequence && this.sessionId) {
@@ -221,7 +247,6 @@ export class Gateway {
 	}
 
 	private handleReady(data: GatewayReadyData) {
-		this.sessionId = data.sessionId;
 		this.client.user = data.user;
 
 		this.readyData = data;
@@ -246,7 +271,7 @@ export class Gateway {
 		this.heartbeatInterval = setInterval(() => {
 			const data: GatewayHeartbeat = { op: GatewayOperations.HEARTBEAT, d: this.sequence };
 			if (this.options.log) {
-				console.log("Sending Heartbeat");
+				console.log("[Gateway] Sending Heartbeat");
 			}
 			this.send(data);
 		}, interval);

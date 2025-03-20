@@ -34,7 +34,7 @@ export class OAuthAPI {
 				url.searchParams.set("redirect_url", redirectUrl);
 			}
 			if (flow === "websocket") {
-				url.searchParams.set("peer_id", this.gateway.peerId ?? "");
+				url.searchParams.set("peer_id", this.gateway.sessionId ?? "");
 			}
 
 			return url.toString();
