@@ -1,3 +1,4 @@
+import { prisma } from "@huginn/backend-shared/database";
 import {
 	constants,
 	type APIChannelUser,
@@ -16,7 +17,6 @@ import {
 	isOpcode,
 	snowflake,
 } from "@huginn/shared";
-import { prisma } from "#database";
 import { envs } from "#setup";
 import { createTokens } from "#utils/token-factory";
 
@@ -49,13 +49,13 @@ export async function getReadyWebSocket(user?: TestUser) {
 		finalUser = (await createTestUsers(1))[0];
 	}
 
-	const ws = await getIdentifiedWebSocket(finalUser);
+	const { ws, sessionId } = await getIdentifiedWebSocket(finalUser);
 
-	const readyData = await new Promise<GatewayReadyData>((resolve, reject) => {
+	const readyData = await new Promise<GatewayReadyData & { sessionId: string }>((resolve, reject) => {
 		ws.onmessage = (event) => {
 			const data = JSON.parse(event.data);
 			if (testIsDispatch(data, "ready")) {
-				resolve(data.d);
+				resolve({ ...data.d, sessionId });
 			}
 		};
 
@@ -84,11 +84,12 @@ export async function getIdentifiedWebSocket(user?: TestUser) {
 		},
 	};
 
-	await new Promise((resolve, reject) => {
+	const sessionId = await new Promise<string>((resolve, reject) => {
 		ws.onmessage = (event) => {
-			if (testIsOpcode(event.data, GatewayOperations.HELLO)) {
+			const data = JSON.parse(event.data);
+			if (testIsOpcode(data, GatewayOperations.HELLO)) {
 				wsSend(ws, identifyData);
-				resolve(true);
+				resolve(data.d.sessionId);
 			}
 		};
 
@@ -98,7 +99,7 @@ export async function getIdentifiedWebSocket(user?: TestUser) {
 		};
 	});
 
-	return ws;
+	return { ws, sessionId };
 }
 
 export function testIsOpcode<O extends keyof GatewayOperationTypes>(data: unknown, opcode: O): data is GatewayOperationTypes[O] {

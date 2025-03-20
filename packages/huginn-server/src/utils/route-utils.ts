@@ -1,11 +1,11 @@
 import { unauthorized } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
 import type { IdentityTokenPayload, TokenPayload, Unpacked } from "@huginn/shared";
 import type { Endpoints } from "@octokit/types";
 import { createMiddleware } from "hono/factory";
 import { JSDOM } from "jsdom";
 import markdownit from "markdown-it";
 import * as semver from "semver";
-import { prisma } from "#database";
 import { octokit } from "#setup";
 import { envs } from "#setup";
 import { verifyToken } from "./token-factory";

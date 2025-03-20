@@ -1,4 +1,4 @@
-import { catchError, createRoute, forbidden, validator } from "@huginn/backend-shared";
+import { createRoute, forbidden, tryCatch, validator } from "@huginn/backend-shared";
 import { HttpCode } from "@huginn/shared";
 import { decodeBase64 } from "@std/encoding";
 import { z } from "zod";
@@ -18,7 +18,7 @@ createRoute("GET", "/api/auth/google", validator("query", querySchema), async (c
 
 	const { redirect_url, state, flow, peer_id } = c.req.valid("query");
 
-	const [error, decodedToken] = await catchError(() => new TextDecoder().decode(decodeBase64(state)).split(":"));
+	const [error, decodedToken] = await tryCatch(() => new TextDecoder().decode(decodeBase64(state)).split(":"));
 	if (error) {
 		return forbidden(c);
 	}

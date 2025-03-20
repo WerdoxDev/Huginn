@@ -1,4 +1,12 @@
 import { createVoiceToken } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
+import {
+	omitChannelRecipient,
+	omitRelationshipUserIds,
+	selectChannelRecipients,
+	selectPrivateUser,
+	selectRelationshipUser,
+} from "@huginn/backend-shared/database/common";
 import { logGatewayClose, logGatewayOpen, logGatewayRecieve, logGatewaySend, logServerError } from "@huginn/backend-shared/log-utils";
 import {
 	constants,
@@ -22,8 +30,6 @@ import {
 import { type Snowflake, snowflake } from "@huginn/shared";
 import { idFix } from "@huginn/shared";
 import type { Message, Peer } from "crossws";
-import { omitChannelRecipient, omitRelationshipUserIds, selectChannelRecipients, selectPrivateUser, selectRelationshipUser } from "#database/common";
-import { prisma } from "#database/index";
 import { verifyToken } from "#utils/token-factory";
 import type { ServerGatewayOptions } from "#utils/types";
 import { dispatchToTopic } from "../utils/gateway-utils";
@@ -51,7 +57,7 @@ export class ServerGateway {
 			const client = new ClientSession(peer);
 			this.sessions.set(peer.id, client);
 
-			const helloData: GatewayHello = { op: GatewayOperations.HELLO, d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL, peerId: peer.id } };
+			const helloData: GatewayHello = { op: GatewayOperations.HELLO, d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL, sessionId: peer.id } };
 			this.send(peer, helloData);
 		} catch (e) {
 			peer.close(GatewayCode.UNKNOWN, "UNKNOWN");
@@ -235,7 +241,6 @@ export class ServerGateway {
 			op: GatewayOperations.DISPATCH,
 			d: {
 				user,
-				sessionId: peer.id,
 				privateChannels: userChannels,
 				relationships: userRelationships,
 				userSettings: settings,
@@ -259,15 +264,11 @@ export class ServerGateway {
 			return;
 		}
 
-		if (!this.sessions.has(data.d.sessionId)) {
-			peer.close(GatewayCode.INVALID_SESSION, "INVALID_SESSION");
-			return;
-		}
-
 		const session = this.sessions.get(data.d.sessionId);
 
-		if (!session) {
-			throw new Error("session was null in handleResume");
+		if (!session || !session.sessionInfo) {
+			peer.close(GatewayCode.INVALID_SESSION, "INVALID_SESSION");
+			return;
 		}
 
 		if (session.sequence === undefined || data.d.seq > session.sequence) {
@@ -275,10 +276,15 @@ export class ServerGateway {
 			return;
 		}
 
-		const user = idFix(await prisma.user.getById(payload.id, { select: { id: true } }));
+		const user = idFix(await prisma.user.getById(payload.id, { select: selectPrivateUser }));
 
 		session.peer = peer;
-		session.initialize(session.sessionInfo);
+		await session.initialize({ ...session.sessionInfo, sessionId: peer.id, user });
+
+		// Add new peer
+		this.sessions.set(peer.id, session);
+		// Remove the old one
+		this.sessions.delete(data.d.sessionId);
 
 		this.cancelledClientDisconnects.push(data.d.sessionId);
 
@@ -295,7 +301,7 @@ export class ServerGateway {
 		const resumedData: GatewayPayload<"resumed"> = {
 			t: "resumed",
 			op: GatewayOperations.DISPATCH,
-			d: undefined,
+			d: { sessionId: peer.id },
 			s: session.getIncreasedSequence(),
 		};
 
@@ -314,7 +320,7 @@ export class ServerGateway {
 		dispatchToTopic(user.id, "voice_state_update", { userId: user.id, channelId: data.d.channelId, guildId: data.d.guildId });
 
 		const token = await createVoiceToken(user.id);
-		dispatchToTopic(user.id, "voice_server_update", { token, sessionId: snowflake.generateString(WorkerID.GATEWAY), hostname: "127.0.0.1" });
+		dispatchToTopic(user.id, "voice_server_update", { token, hostname: "127.0.0.1" });
 	}
 
 	private queueClientDisconnect(sessionId: Snowflake) {

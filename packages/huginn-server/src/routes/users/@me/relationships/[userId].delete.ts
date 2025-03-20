@@ -1,6 +1,6 @@
 import { createRoute } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
 import { HttpCode } from "@huginn/shared";
-import { prisma } from "#database";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { verifyJwt } from "#utils/route-utils";

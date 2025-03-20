@@ -1,10 +1,10 @@
-import { catchError, createErrorFactory, createHuginnError, createRoute, validator } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, createRoute, tryCatch, validator } from "@huginn/backend-shared";
+import { assertError, prisma } from "@huginn/backend-shared/database";
+import { selectRelationshipUser } from "@huginn/backend-shared/database/common";
 import { DBErrorType } from "@huginn/backend-shared/types";
 import { Errors, HttpCode, RelationshipType, type Snowflake, idFix, omit } from "@huginn/shared";
 import type { Context } from "hono";
 import { z } from "zod";
-import { assertError, prisma } from "#database";
-import { selectRelationshipUser } from "#database/common";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { verifyJwt } from "#utils/route-utils";
@@ -18,7 +18,7 @@ createRoute("POST", "/api/users/@me/relationships", verifyJwt(), validator("json
 		return createHuginnError(c, createErrorFactory(Errors.invalidFormBody()));
 	}
 
-	const [error, userId] = await catchError(async () => idFix(await prisma.user.getByUsername(body.username)).id);
+	const [error, userId] = await tryCatch(async () => idFix(await prisma.user.getByUsername(body.username)).id);
 
 	if (assertError(error, DBErrorType.NULL_USER)) {
 		return createHuginnError(c, createErrorFactory(Errors.noUserWithUsername()), HttpCode.NOT_FOUND);

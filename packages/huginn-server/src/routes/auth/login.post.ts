@@ -1,10 +1,10 @@
-import { catchError, createRoute, validator } from "@huginn/backend-shared";
+import { createRoute, tryCatch, validator } from "@huginn/backend-shared";
 import { createErrorFactory, createHuginnError } from "@huginn/backend-shared";
+import { assertError } from "@huginn/backend-shared/database";
+import { prisma } from "@huginn/backend-shared/database";
 import { DBErrorType } from "@huginn/backend-shared/types";
 import { constants, type APIPostLoginResult, Errors, Fields, HttpCode, idFix } from "@huginn/shared";
 import { z } from "zod";
-import { assertError } from "#database/error";
-import { prisma } from "#database/index";
 import { createTokens } from "#utils/token-factory";
 
 const schema = z.object({
@@ -16,7 +16,7 @@ const schema = z.object({
 createRoute("POST", "/api/auth/login", validator("json", schema), async (c) => {
 	const body = c.req.valid("json");
 
-	const [error, user] = await catchError(async () => idFix(await prisma.user.findByCredentials(body)));
+	const [error, user] = await tryCatch(async () => idFix(await prisma.user.findByCredentials(body)));
 
 	if (assertError(error, DBErrorType.NULL_USER)) {
 		return createHuginnError(

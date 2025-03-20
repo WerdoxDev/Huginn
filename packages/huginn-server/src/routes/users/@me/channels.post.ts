@@ -1,8 +1,8 @@
 import { createErrorFactory, createHuginnError, createRoute, validator } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
+import { selectChannelRecipients } from "@huginn/backend-shared/database/common";
 import { type APIPostDMChannelResult, ChannelType, Errors, HttpCode, idFix } from "@huginn/shared";
 import { z } from "zod";
-import { prisma } from "#database";
-import { selectChannelRecipients } from "#database/common";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { channelWithoutRecipient } from "#utils/helpers";

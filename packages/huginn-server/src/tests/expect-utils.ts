@@ -33,7 +33,7 @@ export function expectPrivateUserExactSchema(user: object) {
 
 export function expectUserExactSchema(
 	user: object,
-	id?: bigint,
+	id: bigint,
 	username?: string,
 	displayName?: string | null,
 	avatar?: string | null,
@@ -236,7 +236,11 @@ export function expectPresenceExactSchema(presence: object, user: TestUser, stat
 	expect(castedPresence.status).toBe(status);
 
 	if (status === "online") {
-		expectUserExactSchema(castedPresence.user, user.id, user.username, user.displayName, user.avatar, user.flags);
+		if (Object.keys(castedPresence.user).length === 1) {
+			expect(presence).toStrictEqual({ user: { id: user.id.toString() }, status: castedPresence.status });
+		} else {
+			expectUserExactSchema(castedPresence.user, user.id, user.username, user.displayName, user.avatar, user.flags);
+		}
 	} else if (status === "offline") {
 		expect(presence).toStrictEqual({ user: { id: user.id.toString() }, status: "offline" });
 	}

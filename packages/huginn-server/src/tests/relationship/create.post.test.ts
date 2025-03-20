@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { testHandler } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
 import { RelationshipType } from "@huginn/shared";
-import { prisma } from "#database";
 import { authHeader, createTestRelationships, createTestUsers } from "#tests/utils";
 
 describe("POST /users/@me/relationships", () => {

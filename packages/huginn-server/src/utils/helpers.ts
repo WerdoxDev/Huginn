@@ -1,6 +1,6 @@
+import { prisma } from "@huginn/backend-shared/database";
+import { omitMessageAuthorId, selectMessageDefaults } from "@huginn/backend-shared/database/common";
 import { type DirectChannel, type GatewayEvents, type MessageType, type Snowflake, idFix } from "@huginn/shared";
-import { prisma } from "#database";
-import { omitMessageAuthorId, selectMessageDefaults } from "#database/common";
 import { dispatchToTopic } from "./gateway-utils";
 import type { DBAttachment } from "./types";
 

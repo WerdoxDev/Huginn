@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { testHandler } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
 import { type APIPostDMChannelResult, ChannelType } from "@huginn/shared";
-import { prisma } from "#database";
 import { expectChannelExactRecipients, expectChannelExactSchema, expectReadStatesExactSchema } from "#tests/expect-utils";
 import { authHeader, createTestUsers, removeChannelLater } from "#tests/utils";
 

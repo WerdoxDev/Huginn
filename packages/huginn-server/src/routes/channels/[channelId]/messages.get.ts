@@ -1,8 +1,9 @@
 import { createRoute, missingAccess, validator } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
+import { selectMessageDefaults } from "@huginn/backend-shared/database/common";
 import { type APIGetChannelMessagesResult, HttpCode, idFix, nullToUndefined } from "@huginn/shared";
 import { z } from "zod";
-import { prisma } from "#database";
-import { selectMessageDefaults } from "#database/common";
+("@huginn/backend-shared/database/common");
 import { envs } from "#setup";
 import { getAttachmentUrl, verifyJwt } from "#utils/route-utils";
 

@@ -1,7 +1,7 @@
 import { createRoute } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
+import { omitRelationshipUserIds, selectRelationshipUser } from "@huginn/backend-shared/database/common";
 import { type APIGetUserRelationshipsResult, HttpCode, idFix } from "@huginn/shared";
-import { prisma } from "#database";
-import { omitRelationshipUserIds, selectRelationshipUser } from "#database/common";
 import { verifyJwt } from "#utils/route-utils";
 
 createRoute("GET", "/api/users/@me/relationships", verifyJwt(), async (c) => {

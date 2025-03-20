@@ -11,8 +11,6 @@
 		"@aws-sdk/client-s3": "^3.758.0",
 		"@huginn/backend-shared": "workspace:*",
 		"@huginn/shared": "workspace:*",
-		"@prisma/client": "^6.5.0",
-		"@prisma/extension-optimize": "^1.1.8",
 		"@std/collections": "npm:@jsr/std__collections",
 		"@std/encoding": "npm:@jsr/std__encoding",
 		"@std/media-types": "npm:@jsr/std__media-types",
@@ -35,7 +33,6 @@
 		"octokit": "^4.1.2",
 		"ohash": "^1.1.6",
 		"pathe": "^1.1.2",
-		"prisma": "^6.5.0",
 		"semver": "^7.7.1",
 		"sharp": "^0.33.5",
 		"zod": "^3.24.2",
@@ -45,7 +42,6 @@
 		"@octokit/types": "^13.8.0"
 	},
 	"imports": {
-		"#database": "./src/database/index.ts",
 		"#*": "./src/*.ts"
 	}
 }

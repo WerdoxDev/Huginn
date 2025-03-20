@@ -1,7 +1,7 @@
 import type { ErrorFactory } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
 import { constants, type APIEmbed } from "@huginn/shared";
 import { Fields } from "@huginn/shared";
-import { prisma } from "#database";
 
 export function validateEmail(email: string | undefined, errorObject: ErrorFactory) {
 	if (email && !email.match(constants.EMAIL_REGEX)) {

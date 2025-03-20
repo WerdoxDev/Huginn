@@ -1,8 +1,8 @@
 import { createErrorFactory, createHuginnError, createRoute, validator } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
+import { selectPrivateUser } from "@huginn/backend-shared/database/common";
 import { constants, type APIPatchCurrentUserResult, CDNRoutes, Errors, Fields, HttpCode, getFileHash, idFix, toArrayBuffer } from "@huginn/shared";
 import { z } from "zod";
-import { prisma } from "#database";
-import { selectPrivateUser } from "#database/common";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { verifyJwt } from "#utils/route-utils";

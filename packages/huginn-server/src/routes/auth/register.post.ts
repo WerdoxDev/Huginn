@@ -1,8 +1,8 @@
 import { createRoute, validator } from "@huginn/backend-shared";
 import { createErrorFactory, createHuginnError } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
 import { constants, type APIPostRegisterResult, Errors, HttpCode, idFix } from "@huginn/shared";
 import { z } from "zod";
-import { prisma } from "#database";
 import { createTokens } from "#utils/token-factory";
 import {
 	validateDisplayName,

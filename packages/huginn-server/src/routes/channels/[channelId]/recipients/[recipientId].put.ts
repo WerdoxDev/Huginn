@@ -1,7 +1,7 @@
 import { createRoute, missingAccess, singleError } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
+import { selectChannelRecipients } from "@huginn/backend-shared/database/common";
 import { ChannelType, Errors, HttpCode, MessageFlags, MessageType, idFix } from "@huginn/shared";
-import { prisma } from "#database";
-import { selectChannelRecipients } from "#database/common";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { dispatchChannel, dispatchMessage } from "#utils/helpers";

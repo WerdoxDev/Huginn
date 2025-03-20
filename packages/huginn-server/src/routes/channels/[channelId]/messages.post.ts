@@ -8,6 +8,8 @@ import {
 	missingAccess,
 	waitUntil,
 } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
+import { selectMessageDefaults } from "@huginn/backend-shared/database/common";
 import {
 	type APIMessage,
 	CDNRoutes,
@@ -24,8 +26,6 @@ import {
 import { safeDestr } from "destr";
 import { join } from "pathe";
 import { z } from "zod";
-import { prisma } from "#database";
-import { selectMessageDefaults } from "#database/common";
 import { envs } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { extractData, extractEmbedTags, extractLinks, getAttachmentUrl, verifyJwt } from "#utils/route-utils";

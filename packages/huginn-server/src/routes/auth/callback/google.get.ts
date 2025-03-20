@@ -2,9 +2,9 @@ import { createRoute, forbidden, validator } from "@huginn/backend-shared";
 import { constants, CDNRoutes, HttpCode, OAuthCode, WorkerID, getFileHash, idFix, snowflake } from "@huginn/shared";
 import { toSnakeCase } from "@std/text";
 
+import { prisma } from "@huginn/backend-shared/database";
 import consola from "consola";
 import { z } from "zod";
-import { prisma } from "#database";
 import { gateway } from "#setup";
 import { envs } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";

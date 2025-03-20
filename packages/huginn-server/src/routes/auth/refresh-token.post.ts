@@ -1,8 +1,8 @@
 import { createRoute, validator } from "@huginn/backend-shared";
 import { unauthorized } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
 import { constants, type APIPostRefreshTokenResult, HttpCode, idFix } from "@huginn/shared";
 import { z } from "zod";
-import { prisma } from "#database";
 import { REFRESH_TOKEN_SECRET_ENCODED, createTokens, verifyToken } from "#utils/token-factory";
 
 const schema = z.object({ refreshToken: z.string() });

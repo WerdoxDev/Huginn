@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { testHandler } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
 import { type APIPatchDMChannelResult, ChannelType, getFileHash, resolveImage, toArrayBuffer } from "@huginn/shared";
 import pathe from "pathe";
-import { prisma } from "#database";
 import { expectChannelExactRecipients, expectChannelExactSchema, expectReadStatesExactSchema } from "#tests/expect-utils";
 import { authHeader, createTestChannel, createTestUsers, isCDNRunning } from "#tests/utils";
 

@@ -1,7 +1,7 @@
 import { createRoute, missingAccess } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
+import { selectMessageDefaults } from "@huginn/backend-shared/database/common";
 import { type APIGetMessageByIdResult, HttpCode, idFix, nullToUndefined } from "@huginn/shared";
-import { prisma } from "#database";
-import { selectMessageDefaults } from "#database/common";
 import { verifyJwt } from "#utils/route-utils";
 
 createRoute("GET", "/api/channels/:channelId/messages/:messageId", verifyJwt(), async (c) => {

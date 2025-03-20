@@ -1,4 +1,6 @@
 import { createErrorFactory, createHuginnError, createRoute, unauthorized, validator } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
+import { selectPrivateUser } from "@huginn/backend-shared/database/common";
 import {
 	constants,
 	type APIPostOAuthConfirmResult,
@@ -13,8 +15,6 @@ import {
 	toArrayBuffer,
 } from "@huginn/shared";
 import { z } from "zod";
-import { prisma } from "#database";
-import { selectPrivateUser } from "#database/common";
 import { verifyJwt } from "#utils/route-utils";
 import { cdnUpload } from "#utils/server-request";
 import { createTokens } from "#utils/token-factory";

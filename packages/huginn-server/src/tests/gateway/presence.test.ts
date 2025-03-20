@@ -20,7 +20,7 @@ describe("Presence", () => {
 		// Fully connect user2
 		const { ws: ws2 } = await getReadyWebSocket(user2);
 
-		const ws = await getIdentifiedWebSocket(user);
+		const { ws } = await getIdentifiedWebSocket(user);
 
 		ws.onmessage = (event) => {
 			const data = JSON.parse(event.data);

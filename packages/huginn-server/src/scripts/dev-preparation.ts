@@ -1,5 +1,5 @@
+import { prisma } from "@huginn/backend-shared/database";
 import { MessageType, UserFlags, WorkerID, snowflake } from "@huginn/shared";
-import { prisma } from "#database";
 
 const users = ["user", "user2", "user3", "user4"];
 

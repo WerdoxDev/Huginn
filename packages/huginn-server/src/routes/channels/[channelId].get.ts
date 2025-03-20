@@ -1,7 +1,7 @@
 import { createRoute, missingAccess } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
+import { omitChannelRecipient, selectChannelRecipients } from "@huginn/backend-shared/database/common";
 import { type APIGetChannelByIdResult, ChannelType, HttpCode, idFix, merge, omit } from "@huginn/shared";
-import { prisma } from "#database";
-import { omitChannelRecipient, selectChannelRecipients } from "#database/common";
 import { verifyJwt } from "#utils/route-utils";
 
 createRoute("GET", "/api/channels/:channelId", verifyJwt(), async (c) => {

@@ -1,11 +1,11 @@
 import { EventEmitter } from "node:events";
+import { prisma } from "@huginn/backend-shared/database";
+import { omitChannelRecipient, selectChannelRecipients, selectRelationshipUser } from "@huginn/backend-shared/database/common";
 import { constants, RelationshipType, merge } from "@huginn/shared";
 import { GatewayCode } from "@huginn/shared";
 import type { GatewayPayload } from "@huginn/shared";
 import { idFix } from "@huginn/shared";
 import type { Peer } from "crossws";
-import { omitChannelRecipient, selectChannelRecipients, selectRelationshipUser } from "#database/common";
-import { prisma } from "#database/index";
 import type { ClientSessionInfo } from "#utils/types";
 
 export class ClientSession extends EventEmitter {
