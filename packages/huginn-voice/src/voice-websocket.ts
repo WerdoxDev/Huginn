@@ -1,12 +1,14 @@
-import { verifyVoiceToken } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
+import { selectPrivateUser } from "@huginn/backend-shared/database/common";
+import { verifyVoiceToken } from "@huginn/backend-shared/voice-utils";
 import {
 	constants,
 	GatewayCode,
-	type GatewayHello,
 	type VoiceHello,
 	type VoiceIdentify,
 	VoiceOperations,
 	type VoicePayload,
+	idFix,
 	validateGatewayData,
 } from "@huginn/shared";
 import type { Message, Peer } from "crossws";
@@ -54,10 +56,12 @@ export class VoiceWebSocket {
 			return;
 		}
 
-		// TODO: SESSION ID SHOULD BE VALIDATED FROM A SHARED DATABASE BETWEEN BOTH SERVERS
+		const user = idFix(await prisma.user.getById(payload.userId, { select: selectPrivateUser }));
 
 		const client = new ClientSession(peer);
-		await client.initialize({});
+		await client.initialize({ token: data.d.token, user });
+
+		console.log(user);
 	}
 
 	private send(peer: Peer, data: unknown) {

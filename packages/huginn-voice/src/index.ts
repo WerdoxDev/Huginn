@@ -1,10 +1,14 @@
 import type { Server } from "node:http";
 import { serve } from "@hono/node-server";
 import crossws from "crossws/adapters/node";
+import dotenv from "dotenv";
 import { Hono } from "hono";
 import mediasoup from "mediasoup";
 import type { Router, RtpCodecCapability, Worker } from "mediasoup/node/lib/types";
-import { VoiceWebSocket } from "./voice-websocket";
+
+dotenv.config();
+// TODO: DO SOMETHING ABOUT THIS LATER
+const vc = await import("./voice-websocket");
 
 const app = new Hono();
 
@@ -52,7 +56,7 @@ await runMediasoupWorker();
 
 app.get("/router/join/:id");
 
-export const voiceWebSocket = new VoiceWebSocket();
+export const voiceWebSocket = new vc.VoiceWebSocket();
 const ws = crossws({
 	hooks: {
 		open: voiceWebSocket.open.bind(voiceWebSocket),
