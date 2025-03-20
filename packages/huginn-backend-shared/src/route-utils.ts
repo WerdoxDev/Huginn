@@ -28,7 +28,7 @@ export function validator<T extends keyof ValidationTargets, S extends ZodSchema
 	});
 }
 
-export async function catchError<T>(fn: (() => Promise<T>) | (() => T)): Promise<[Error, null] | [null, T]> {
+export async function tryCatch<T>(fn: (() => Promise<T>) | (() => T)): Promise<[Error, null] | [null, T]> {
 	try {
 		return [null, await fn()];
 	} catch (e) {
