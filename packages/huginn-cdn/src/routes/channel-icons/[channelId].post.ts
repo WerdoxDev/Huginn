@@ -1,10 +1,10 @@
-import { catchError, createRoute, invalidFormBody } from "@huginn/backend-shared";
+import { createRoute, invalidFormBody, tryCatch } from "@huginn/backend-shared";
 import { HttpCode } from "@huginn/shared";
 import { storage } from "#setup";
 
 createRoute("POST", "/cdn/channel-icons/:channelId", async (c) => {
 	const { channelId } = c.req.param();
-	const [error, body] = await catchError(async () => await c.req.formData());
+	const [error, body] = await tryCatch(async () => await c.req.formData());
 
 	if (error) {
 		return invalidFormBody(c);
