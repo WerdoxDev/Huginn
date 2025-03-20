@@ -29,7 +29,7 @@ export type GatewayEvents = {
 	hello: GatewayHelloData;
 	identify: GatewayIdentifyData;
 	ready: GatewayReadyData;
-	resumed: undefined;
+	resumed: GatewayResumedData;
 	message_create: GatewayMessageCreateData;
 	message_delete: GatewayMessageDeleteData;
 	message_update: GatewayMessageUpdateData;
@@ -74,7 +74,7 @@ export type GatewayHello = NonDispatchGatewayPayload & {
 
 export type GatewayHelloData = {
 	heartbeatInterval: number;
-	peerId: string;
+	sessionId: string;
 };
 
 export type GatewayHeartbeat = NonDispatchGatewayPayload & {
@@ -107,7 +107,6 @@ export type GatewayIdentifyProperties = {
 
 export type GatewayReadyData = {
 	user: APIUser;
-	sessionId: Snowflake;
 	relationships: APIRelationshipWithoutOwner[];
 	privateChannels: DirectChannel[];
 	presences: UserPresence[];
@@ -122,8 +121,12 @@ export type GatewayResume = NonDispatchGatewayPayload & {
 
 export type GatewayResumeData = {
 	token: string;
-	sessionId: Snowflake;
+	sessionId: string;
 	seq: number;
+};
+
+export type GatewayResumedData = {
+	sessionId: string;
 };
 
 export type GatewayUpdateVoiceStateData = {
@@ -187,6 +190,5 @@ export type GatewayVoiceStateUpdateData = {
 
 export type GatewayVoiceServerUpdateData = {
 	token: string;
-	sessionId: string;
 	hostname: string;
 };

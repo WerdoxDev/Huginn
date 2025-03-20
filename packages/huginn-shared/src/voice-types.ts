@@ -1,4 +1,4 @@
-import type { Snowflake } from "@sapphire/snowflake";
+import type { Snowflake } from "./snowflake";
 
 export enum VoiceOperations {
 	HELLO = 0,
@@ -13,6 +13,19 @@ export type VoiceOperationTypes = {
 	[VoiceOperations.HELLO]: VoiceHello;
 	[VoiceOperations.IDENTIFY]: VoiceIdentify;
 	[VoiceOperations.READY]: VoiceReady;
+	[VoiceOperations.HEARTBEAT]: VoiceHeartbeat;
+	[VoiceOperations.HEARTBEAT_ACK]: VoiceHeartbeatAck;
+};
+
+export type VoiceHeartbeat = VoicePayload & {
+	op: VoiceOperations.HEARTBEAT;
+	d: VoiceHeartbeatData;
+};
+
+export type VoiceHeartbeatData = number | undefined;
+
+export type VoiceHeartbeatAck = VoicePayload & {
+	op: VoiceOperations.HEARTBEAT_ACK;
 };
 
 export type VoicePayload = {
@@ -34,7 +47,6 @@ export type VoiceIdentify = VoicePayload & {
 
 export type VoiceIdentifyData = {
 	token: string;
-	sessionId: Snowflake;
 	userId: Snowflake;
 };
 
