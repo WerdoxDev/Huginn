@@ -2,15 +2,15 @@
 	"name": "huginn-voice",
 	"type": "module",
 	"scripts": {
-		"dev": "tsx watch ./src/index.ts",
+		"dev": "dotenvx run -- tsx watch ./src/index.ts",
 		"bun-dev": "bun ./src/index.ts"
 	},
 	"dependencies": {
+		"@dotenvx/dotenvx": "^1.39.0",
 		"@hono/node-server": "^1.13.8",
 		"@huginn/backend-shared": "workspace:*",
 		"@huginn/shared": "workspace:*",
 		"crossws": "^0.3.4",
-		"dotenv": "^16.4.7",
 		"hono": "^4.7.4",
 		"mediasoup": "^3.15.5"
 	},

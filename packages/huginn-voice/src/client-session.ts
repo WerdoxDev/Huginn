@@ -9,7 +9,6 @@ export class ClientSession extends EventEmitter {
 	public sessionInfo?: ClientSessionInfo;
 	public peer: Peer;
 
-	private sentMessages: Map<number, GatewayPayload>;
 	private hearbeatTimeout?: NodeJS.Timeout;
 	public sequence?: number;
 
@@ -17,7 +16,6 @@ export class ClientSession extends EventEmitter {
 		super();
 
 		this.peer = peer;
-		this.sentMessages = new Map();
 
 		this.startHeartbeatTimeout();
 	}
@@ -56,14 +54,6 @@ export class ClientSession extends EventEmitter {
 	public getIncreasedSequence() {
 		this.sequence = this.sequence !== undefined ? this.sequence + 1 : 0;
 		return this.sequence;
-	}
-
-	public addMessage(data: GatewayPayload) {
-		this.sentMessages.set(data.s, data);
-	}
-
-	public getMessages() {
-		return this.sentMessages;
 	}
 
 	public getSubscriptions() {
