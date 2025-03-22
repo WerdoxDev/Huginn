@@ -173,14 +173,9 @@ export class ServerGateway {
 	}
 
 	private handleHeartbeat(peer: Peer, data: GatewayHeartbeat) {
-		const client = this.sessions.get(peer.id);
+		const session = this.sessions.get(peer.id);
 
-		// if (client && data.d !== client?.sequence) {
-		// 	peer.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
-		// 	return;
-		// }
-
-		client?.resetTimeout();
+		session?.resetTimeout();
 		const hearbeatAckData: GatewayHeartbeatAck = { op: GatewayOperations.HEARTBEAT_ACK };
 		this.send(peer, hearbeatAckData);
 	}
