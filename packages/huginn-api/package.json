@@ -10,6 +10,7 @@
 		"@huginn/shared": "workspace:*",
 		"@std/encoding": "npm:@jsr/std__encoding",
 		"jose": "^5.9.6",
+		"mediasoup-client": "^3.9.5",
 		"pathe": "^1.1.2"
 	},
 	"devDependencies": {

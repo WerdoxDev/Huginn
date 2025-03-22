@@ -133,7 +133,7 @@ export class Gateway {
 			this.on("message", onMessage);
 		});
 
-		this.client.voice.connect(token);
+		this.client.voice.connect(token, channelId, guildId);
 	}
 
 	private startListening() {

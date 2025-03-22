@@ -1,12 +1,5 @@
-import {
-	GatewayCode,
-	type Snowflake,
-	type VoiceHeartbeat,
-	type VoiceHello,
-	type VoiceIdentify,
-	VoiceOperations,
-	type VoicePayload,
-} from "@huginn/shared";
+import { GatewayCode, type Snowflake, type VoiceHelloData, VoiceOperations, type VoicePayload, type VoiceReadyData } from "@huginn/shared";
+import * as mediasoupClient from "mediasoup-client";
 import type { HuginnClient } from "./huginn-client";
 import type { VoiceOptions } from "./types";
 import { defaultClientOptions } from "./utils";
@@ -17,22 +10,28 @@ export class Voice {
 	private client: HuginnClient;
 	private heartbeatInterval?: ReturnType<typeof setInterval>;
 	private sequence?: number;
-	private token?: string;
+
+	private connectionInfo?: { token: string; channelId: Snowflake; guildId: Snowflake | null };
 
 	public constructor(client: HuginnClient, options?: Partial<VoiceOptions>) {
 		this.options = { ...defaultClientOptions.voice, ...options };
 		this.client = client;
 	}
 
-	public connect(token: string): void {
+	public connect(token: string, channelId: Snowflake, guildId: Snowflake | null): void {
+		if (this.socket) {
+			return;
+		}
+
 		this.socket = this.options.createSocket(this.options.url);
-		this.token = token;
+		this.connectionInfo = { token, channelId, guildId };
 		this.startListening();
 	}
 
 	public close(): void {
 		this.socket?.close(GatewayCode.INTENTIONAL_CLOSE);
 		this.sequence = undefined;
+		this.socket = undefined;
 	}
 
 	private startListening() {
@@ -64,25 +63,53 @@ export class Voice {
 
 		switch (data.op) {
 			case VoiceOperations.HELLO: {
-				const hello = data as VoiceHello;
+				const hello = data.d as VoiceHelloData;
 				await this.handleHello(hello);
 				break;
 			}
-			case VoiceOperations.READY:
+			case VoiceOperations.READY: {
+				const ready = data.d as VoiceReadyData;
+				await this.handleReady(ready);
+				break;
+			}
 		}
 	}
 
-	private async handleHello(data: VoiceHello) {
-		this.startHeartbeat(data.d.heartbeatInterval);
+	private async handleReady(data: VoiceReadyData) {
+		if (!this.connectionInfo) {
+			return;
+		}
 
-		if (!this.client.user || !this.token) {
+		const device = new mediasoupClient.Device();
+		await device.load({ routerRtpCapabilities: data.rtpCapabilities });
+
+		const createSendTransportData: VoicePayload<VoiceOperations.CREATE_TRANSPORT> = {
+			op: VoiceOperations.CREATE_TRANSPORT,
+			d: { channelId: this.connectionInfo?.channelId, direction: "send" },
+		};
+
+		const createRecvTransportData: VoicePayload<VoiceOperations.CREATE_TRANSPORT> = {
+			op: VoiceOperations.CREATE_TRANSPORT,
+			d: { channelId: this.connectionInfo?.channelId, direction: "recv" },
+		};
+
+		this.send(createSendTransportData);
+		this.send(createRecvTransportData);
+	}
+
+	private async handleHello(data: VoiceHelloData) {
+		this.startHeartbeat(data.heartbeatInterval);
+
+		if (!this.client.user || !this.connectionInfo) {
 			throw new Error("Client user or token was null when identifying voice websocket");
 		}
 
-		const identifyData: VoiceIdentify = {
+		const identifyData: VoicePayload<VoiceOperations.IDENTIFY> = {
 			op: VoiceOperations.IDENTIFY,
 			d: {
-				token: this.token,
+				token: this.connectionInfo.token,
+				channelId: this.connectionInfo.channelId,
+				guildId: this.connectionInfo.guildId,
 				userId: this.client.user.id as Snowflake,
 			},
 		};
@@ -92,7 +119,7 @@ export class Voice {
 
 	private startHeartbeat(interval: number) {
 		this.heartbeatInterval = setInterval(() => {
-			const data: VoiceHeartbeat = { op: VoiceOperations.HEARTBEAT, d: this.sequence };
+			const data: VoicePayload<VoiceOperations.HEARTBEAT> = { op: VoiceOperations.HEARTBEAT, d: this.sequence };
 			if (this.options.log) {
 				console.log("[Voice] Sending Heartbeat");
 			}

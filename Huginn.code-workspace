@@ -9,6 +9,14 @@
 			"path": "packages/huginn-voice"
 		},
 		{
+			"name": "huginn-rtc",
+			"path": "packages/huginn-rtc"
+		},
+		{
+			"name": "huginn-rtc-client",
+			"path": "packages/huginn-rtc-client"
+		},
+		{
 			"name": "huginn-server",
 			"path": "packages/huginn-server"
 		},
