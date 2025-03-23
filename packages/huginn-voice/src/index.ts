@@ -12,7 +12,7 @@ app.get("/router/join/:id");
 await runMediasoupWorker();
 
 export const voiceWebSocket = new VoiceWebSocket();
-const ws = crossws({
+export const ws = crossws({
 	hooks: {
 		open: voiceWebSocket.open.bind(voiceWebSocket),
 		close: voiceWebSocket.close.bind(voiceWebSocket),

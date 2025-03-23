@@ -66,6 +66,7 @@ export class ClientSession extends EventEmitter {
 		}
 
 		const userId = this.sessionInfo.user.id;
+		this.subscribe(this.peer.id);
 		this.subscribe(userId);
 	}
 
