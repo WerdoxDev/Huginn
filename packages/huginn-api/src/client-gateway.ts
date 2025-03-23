@@ -34,11 +34,7 @@ export class Gateway {
 	private heartbeatInterval?: ReturnType<typeof setInterval>;
 	private sequence?: number;
 
-	private emit<EventName extends keyof GatewayEvents>(eventName: EventName, eventArg: GatewayEvents[EventName]): void {
-		this.emitter.emit(eventName, eventArg);
-	}
-
-	on<EventName extends keyof GatewayEvents>(
+	public on<EventName extends keyof GatewayEvents>(
 		eventName: EventName,
 		handler: (eventArg: GatewayEvents[EventName]) => void,
 		withoutHistory?: boolean,
@@ -46,8 +42,12 @@ export class Gateway {
 		this.emitter.on(eventName, handler, withoutHistory);
 	}
 
-	off<EventName extends keyof GatewayEvents>(eventName: EventName, handler: (eventArg: GatewayEvents[EventName]) => void): void {
+	public off<EventName extends keyof GatewayEvents>(eventName: EventName, handler: (eventArg: GatewayEvents[EventName]) => void): void {
 		this.emitter.off(eventName, handler);
+	}
+
+	private emit<EventName extends keyof GatewayEvents>(eventName: EventName, eventArg: GatewayEvents[EventName]): void {
+		this.emitter.emit(eventName, eventArg);
 	}
 
 	public constructor(client: HuginnClient, options?: Partial<GatewayOptions>) {
