@@ -1,5 +1,6 @@
 import type { types } from "mediasoup";
 import type { DtlsParameters, IceCandidate, IceParameters } from "mediasoup/node/lib/WebRtcTransportTypes";
+import type { MediaKind, RtpCapabilities, RtpParameters } from "mediasoup/node/lib/rtpParametersTypes";
 import type { Snowflake } from "./snowflake";
 
 export enum VoiceOperations {
@@ -19,7 +20,7 @@ export enum VoiceOperations {
 	CONSUMER_CREATED = 13,
 	RESUME_CONSUMER = 14,
 	CONSUMER_RESUMED = 15,
-	PRODUCER_REMOVED = 16,
+	PEER_LEFT = 16,
 	DECODE_ERROR = 17,
 }
 
@@ -31,11 +32,33 @@ export type VoiceOperationDatas = {
 	[VoiceOperations.HEARTBEAT_ACK]: undefined;
 	[VoiceOperations.CREATE_TRANSPORT]: VoiceCreateTransportData;
 	[VoiceOperations.TRANSPORT_CREATED]: VoiceTransportCreatedData;
+	[VoiceOperations.CONNECT_TRANSPORT]: VoiceConnectTransportData;
+	[VoiceOperations.TRANSPORT_CONNECTED]: VoiceTransportConnectedData;
+	[VoiceOperations.PRODUCE]: VoiceProduceData;
+	[VoiceOperations.PRODUCER_CREATED]: VoiceProducerCreatedData;
+	[VoiceOperations.NEW_PRODUCER]: VoiceNewProducerData;
+	[VoiceOperations.CONSUME]: VoiceConsumeData;
+	[VoiceOperations.CONSUMER_CREATED]: VoiceConsumerCreatedData;
+	[VoiceOperations.RESUME_CONSUMER]: VoiceResumeConsumerData;
+	[VoiceOperations.CONSUMER_RESUMED]: VoiceConsumerResumedData;
+	[VoiceOperations.PEER_LEFT]: VoicePeerLeftData;
+};
+
+export type VoiceEvents = {
+	transport_ready: undefined;
+	producer_created: { consumerId: string; producerId: string; track: MediaStreamTrack };
+	producer_removed: { producerId: string };
 };
 
 export type VoicePayload<OP extends keyof VoiceOperationDatas | undefined = undefined> = {
 	op: OP extends undefined ? VoiceOperations : OP;
 	d: OP extends undefined ? VoiceOperationDatas[keyof VoiceOperationDatas] : VoiceOperationDatas[Exclude<OP, undefined>];
+};
+
+export type ProducerData = {
+	producerId: string;
+	producerPeerId: string;
+	kind: MediaKind;
 };
 
 export type VoiceHeartbeatData = number | undefined;
@@ -53,6 +76,7 @@ export type VoiceIdentifyData = {
 
 export type VoiceReadyData = {
 	rtpCapabilities: types.RtpCapabilities;
+	producers: ProducerData[];
 };
 
 export type VoiceCreateTransportData = {
@@ -69,4 +93,55 @@ export type VoiceTransportCreatedData = {
 		iceCandidates: IceCandidate[];
 		dtlsParameters: DtlsParameters;
 	};
+};
+
+export type VoiceConnectTransportData = {
+	channelId: Snowflake;
+	transportId: string;
+	dtlsParameters: DtlsParameters;
+};
+
+export type VoiceTransportConnectedData = {
+	transportId: string;
+};
+
+export type VoiceProduceData = {
+	channelId: string;
+	transportId: string;
+	kind: MediaKind;
+	rtpParameters: RtpParameters;
+};
+
+export type VoiceProducerCreatedData = {
+	producerId: string;
+};
+
+export type VoiceNewProducerData = ProducerData;
+
+export type VoiceConsumeData = {
+	channelId: Snowflake;
+	transportId: string;
+	producerId: string;
+	rtpCapabilities: RtpCapabilities;
+};
+
+export type VoiceConsumerCreatedData = {
+	consumerId: string;
+	producerId: string;
+	kind: MediaKind;
+	rtpParameters: RtpParameters;
+};
+
+export type VoiceResumeConsumerData = {
+	channelId: Snowflake;
+	consumerId: string;
+};
+
+export type VoiceConsumerResumedData = {
+	consumerId: string;
+};
+
+export type VoicePeerLeftData = {
+	peerId: string;
+	producerIds: string[];
 };
