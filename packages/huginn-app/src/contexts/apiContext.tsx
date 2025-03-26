@@ -26,7 +26,7 @@ export function APIProvider(props: { children?: ReactNode }) {
 					},
 				},
 				voice: {
-					url: `http://localhost:3003/voice`,
+					url: `http://192.168.178.51:3003/voice`,
 					log: true,
 					createSocket(url) {
 						return new WebSocket(url);

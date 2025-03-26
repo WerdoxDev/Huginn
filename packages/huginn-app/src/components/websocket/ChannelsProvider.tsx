@@ -67,6 +67,8 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
 				recipients: channel.recipients.map((recipient) => (recipient.id === user.id ? { ...recipient, ...user } : recipient)),
 			})),
 		);
+
+		console.log("setted");
 	}
 
 	useEffect(() => {

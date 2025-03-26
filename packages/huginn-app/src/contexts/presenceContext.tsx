@@ -63,7 +63,7 @@ export function usePresence(userId: Snowflake) {
 
 export function usePresences(userIds: Snowflake[]) {
 	const context = useContext(PresenceContext);
-	const presences = useMemo(() => context.filter((x) => userIds.includes(x.user.id)), [context]);
+	const presences = useMemo(() => context.filter((x) => userIds.includes(x.user.id)), [context, userIds]);
 
 	function getPresence(userId: Snowflake) {
 		return presences.find((x) => x.user.id === userId);

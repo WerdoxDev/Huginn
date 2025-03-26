@@ -1,7 +1,7 @@
 import { queryClient } from "@/root";
 import MessageBox from "@components/MessageBox";
 import ChannelMessages from "@components/channels/ChannelMessages";
-import ChannelVoice from "@components/channels/ChannelVoice";
+import DirectChannelCall from "@components/channels/DirectChannelCall";
 import HomeTopbar from "@components/channels/HomeTopbar";
 import RecipientsSidebar from "@components/channels/RecipientsSidebar";
 import { client, useClient } from "@contexts/apiContext";
@@ -51,7 +51,7 @@ export default function Component({ params: { channelId } }: Route.ComponentProp
 				<div className="h-0.5 flex-shrink-0 bg-white/10" />
 				<div className="flex h-full w-full overflow-hidden">
 					<div className="flex h-full w-full flex-col overflow-hidden">
-						<ChannelVoice />
+						<DirectChannelCall channelId={channelId} />
 						<ChannelMessages channelId={channelId} messages={messages.pages.flat()} />
 						<MessageBox messages={messages.pages.flat()} />
 					</div>
