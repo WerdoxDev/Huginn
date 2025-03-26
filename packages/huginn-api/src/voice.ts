@@ -30,7 +30,7 @@ export class Voice {
 	private sequence?: number;
 	private readonly emitter = new EventEmitterWithHistory();
 
-	private connectionInfo?: { token: string; channelId: Snowflake; guildId: Snowflake | null };
+	public connectionInfo?: { token: string; channelId: Snowflake; guildId: Snowflake | null };
 	private device?: mediasoupClient.Device;
 	private initialProducers?: ProducerData[];
 	private sendTransport?: Transport;
@@ -78,6 +78,10 @@ export class Voice {
 	public async startStreaming(videoTrack?: MediaStreamTrack, audioTrack?: MediaStreamTrack): Promise<void> {
 		if (videoTrack) {
 			const videoProducer = await this.sendTransport?.produce({ track: videoTrack });
+		}
+
+		if (audioTrack) {
+			const audioProducer = await this.sendTransport?.produce({ track: audioTrack });
 		}
 	}
 
@@ -182,7 +186,12 @@ export class Voice {
 
 		this.consumers.set(consumer.id, consumer);
 
-		this.emit("producer_created", { track: consumer.track, consumerId: data.consumerId, producerId: data.producerId });
+		this.emit("producer_created", {
+			track: consumer.track,
+			consumerId: data.consumerId,
+			producerId: data.producerId,
+			producerUserId: data.producerUserId,
+		});
 
 		const resumeConsumerData: VoicePayload<VoiceOperations.RESUME_CONSUMER> = {
 			op: VoiceOperations.RESUME_CONSUMER,
@@ -211,6 +220,10 @@ export class Voice {
 	}
 
 	private async handleTransportCreated(data: VoiceTransportCreatedData) {
+		if (!this.connectionInfo) {
+			return;
+		}
+
 		try {
 			if (data.direction === "send") {
 				this.sendTransport = this.device?.createSendTransport(data.params);
@@ -237,7 +250,7 @@ export class Voice {
 					callback({ id: "temp-id" });
 				});
 
-				this.emit("transport_ready", undefined);
+				this.emit("transport_ready", { channelId: this.connectionInfo.channelId });
 			} else if (data.direction === "recv") {
 				this.recvTransport = this.device?.createRecvTransport(data.params);
 
