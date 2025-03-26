@@ -1,7 +1,7 @@
 import { GatewayCode, type Snowflake } from "@huginn/shared";
 import type { Peer } from "crossws";
 import mediasoup from "mediasoup";
-import type { Router, RtpCodecCapability, Worker } from "mediasoup/node/lib/types";
+import type { Router, RtpCodecCapability, WebRtcServer, Worker } from "mediasoup/node/lib/types";
 import type { RouterType } from "#utils/types";
 
 export const routers = new Map<string, RouterType>();
@@ -21,10 +21,15 @@ const mediaCodecs: RtpCodecCapability[] = [
 ];
 
 let worker: Worker;
+let webRtcServer: WebRtcServer;
 
 export async function runMediasoupWorker() {
 	worker = await mediasoup.createWorker({
 		logLevel: "warn",
+	});
+
+	webRtcServer = await worker.createWebRtcServer({
+		listenInfos: [{ ip: "192.168.178.51", protocol: "udp", port: 44444 }],
 	});
 
 	console.log("mediasoup worker created");
@@ -54,14 +59,14 @@ export async function createRouter(channelId: Snowflake) {
 }
 
 export async function createTransport(router: Router) {
-	return await router.createWebRtcTransport({
-		listenIps: [
-			{ ip: "127.0.0.1", announcedIp: "127.0.0.1" }, // Use your server's public IP in production
-		],
+	const transport = await router.createWebRtcTransport({
+		webRtcServer: webRtcServer,
 		enableUdp: true,
-		enableTcp: true,
+		enableTcp: false,
 		preferUdp: true,
 	});
+
+	return transport;
 }
 
 export function verifyPeer(router: RouterType | undefined, peer: Peer, channelId: Snowflake): router is RouterType {

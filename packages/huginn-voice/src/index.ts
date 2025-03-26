@@ -7,8 +7,6 @@ import { VoiceWebSocket } from "./voice-websocket";
 
 const app = new Hono();
 
-app.get("/router/join/:id");
-
 await runMediasoupWorker();
 
 export const voiceWebSocket = new VoiceWebSocket();
@@ -23,10 +21,11 @@ export const ws = crossws({
 const server = serve(
 	{
 		fetch: app.fetch,
+		hostname: "192.168.178.51",
 		port: 3003,
 	},
 	(info) => {
-		console.log(`Server is running on http://localhost:${info.port}`);
+		console.log(`Server is running on http://${info.address}:${info.port}`);
 	},
 ) as Server;
 

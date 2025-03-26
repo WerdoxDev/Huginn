@@ -10,6 +10,7 @@ export type ClientSessionInfo = {
 
 export type RTCPeer = {
 	id: string;
+	userId: Snowflake;
 	transports: Map<string, { transport: Transport; direction: "send" | "recv" }>;
 	producers: Map<string, Producer>;
 	consumers: Map<string, Consumer>;

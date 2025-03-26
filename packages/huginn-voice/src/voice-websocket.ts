@@ -109,6 +109,8 @@ export class VoiceWebSocket {
 				return;
 			}
 
+			console.log(e);
+
 			peer.close(GatewayCode.UNKNOWN, "UNKNOWN");
 		}
 	}
@@ -145,7 +147,12 @@ export class VoiceWebSocket {
 		}
 
 		const rtcPeer = router.peers.get(peer.id);
+		const producerPeer = router.peers.values().find((x) => x.producers.values().find((y) => y.id === data.producerId));
 		const transportData = rtcPeer?.transports.get(data.transportId);
+
+		if (!rtcPeer || !producerPeer) {
+			return;
+		}
 
 		if (!transportData || transportData.direction !== "recv") {
 			console.log("transport null or wrong type");
@@ -162,7 +169,13 @@ export class VoiceWebSocket {
 
 		const consumerCreatedData: VoicePayload<VoiceOperations.CONSUMER_CREATED> = {
 			op: VoiceOperations.CONSUMER_CREATED,
-			d: { consumerId: consumer.id, producerId: data.producerId, kind: consumer.kind, rtpParameters: consumer.rtpParameters },
+			d: {
+				consumerId: consumer.id,
+				producerId: data.producerId,
+				kind: consumer.kind,
+				rtpParameters: consumer.rtpParameters,
+				producerUserId: producerPeer.userId,
+			},
 		};
 
 		this.send(peer, consumerCreatedData);
@@ -178,7 +191,7 @@ export class VoiceWebSocket {
 		const rtcPeer = router.peers.get(peer.id);
 		const transportData = rtcPeer?.transports.get(data.transportId);
 
-		if (!transportData || transportData.direction !== "send") {
+		if (!transportData || transportData.direction !== "send" || !rtcPeer) {
 			return;
 		}
 
@@ -189,7 +202,7 @@ export class VoiceWebSocket {
 			if (otherPeerId !== peer.id) {
 				const newProducerData: VoicePayload<VoiceOperations.NEW_PRODUCER> = {
 					op: VoiceOperations.NEW_PRODUCER,
-					d: { kind: data.kind, producerId: producer.id, producerPeerId: peer.id },
+					d: { kind: data.kind, producerId: producer.id, producerUserId: rtcPeer.userId },
 				};
 				ws.publish(otherPeerId, JSON.stringify(newProducerData));
 			}
@@ -235,6 +248,7 @@ export class VoiceWebSocket {
 		}
 
 		const transport = await createTransport(router.router);
+		console.log(JSON.stringify(transport.iceCandidates, null, 2));
 		const rtcPeer = router.peers.get(peer.id);
 		rtcPeer?.transports.set(transport.id, { transport, direction: data.direction });
 
@@ -272,11 +286,13 @@ export class VoiceWebSocket {
 
 		const router = await createRouter(data.channelId);
 
-		const rtcPeer: RTCPeer = { id: peer.id, consumers: new Map(), producers: new Map(), transports: new Map() };
+		const rtcPeer: RTCPeer = { id: peer.id, consumers: new Map(), producers: new Map(), transports: new Map(), userId: user.id };
 		router.peers.set(peer.id, rtcPeer);
 
 		const producers = Array.from(
-			router.peers.values().map((x) => Array.from(x.producers.values().map((y) => ({ producerId: y.id, producerPeerId: x.id, kind: y.kind })))),
+			router.peers
+				.values()
+				.map((x) => Array.from(x.producers.values().map((y) => ({ producerId: y.id, producerUserId: x.userId, kind: y.kind })))),
 		).flat();
 
 		const readyData: VoicePayload<VoiceOperations.READY> = {
