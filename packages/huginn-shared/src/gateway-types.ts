@@ -40,8 +40,8 @@ export type GatewayEvents = {
 	channel_create: GatewayDMChannelCreateData;
 	channel_update: GatewayDMChannelUpdateData;
 	channel_delete: GatewayDMChannelDeleteData;
-	channel_recipient_add: GatewayDMCHannelRecipientAddData;
-	channel_recipient_remove: GatewayDMCHannelRecipientRemoveData;
+	channel_recipient_add: GatewayDMChannelRecipientAddData;
+	channel_recipient_remove: GatewayDMCannelRecipientRemoveData;
 	user_update: GatewayUserUpdateData;
 	presence_update: GatewayPresenceUpdateData;
 	oauth_redirect: GatewayOAuthRedirectData;
@@ -164,8 +164,8 @@ export type GatewayRelationshipCreateData = APIRelationshipWithoutOwner;
 export type GatewayDMChannelCreateData = DirectChannel;
 export type GatewayDMChannelDeleteData = Omit<DirectChannel, "recipients">;
 export type GatewayDMChannelUpdateData = DirectChannel;
-export type GatewayDMCHannelRecipientAddData = { user: APIChannelUser; channelId: Snowflake };
-export type GatewayDMCHannelRecipientRemoveData = { user: APIChannelUser; channelId: Snowflake };
+export type GatewayDMChannelRecipientAddData = { user: APIChannelUser; channelId: Snowflake };
+export type GatewayDMCannelRecipientRemoveData = { user: APIChannelUser; channelId: Snowflake };
 export type GatewayUserUpdateData = APIUser & Tokens;
 export type GatewayPresenceUpdateData = UserPresence;
 
@@ -186,6 +186,10 @@ export type GatewayVoiceStateUpdateData = {
 	userId: Snowflake;
 	guildId: Snowflake | null;
 	channelId: Snowflake | null;
+	selfMute: boolean;
+	selfDeaf: boolean;
+	selfVideo: boolean;
+	selfStream: boolean;
 };
 
 export type GatewayVoiceServerUpdateData = {
