@@ -75,17 +75,21 @@ export default function Root() {
 	const [loaded, setLoaded] = useState(false);
 
 	useEffect(() => {
+		let cancelled = false;
 		let unlisten: Promise<() => void>;
 		let unlisten2: () => void;
 		initializeSettings().then(() => {
-			unlisten2 = initializeClient();
-			unlisten = initializeWindow().then((x) => {
-				setLoaded(true);
-				return x;
-			});
+			if (!cancelled) {
+				unlisten2 = initializeClient();
+				unlisten = initializeWindow().then((x) => {
+					setLoaded(true);
+					return x;
+				});
+			}
 		});
 
 		return () => {
+			cancelled = true;
 			unlisten?.then((f) => f());
 			unlisten2?.();
 		};

@@ -1,7 +1,6 @@
 import type { AppDirectChannel } from "@/types";
-import { useChannelName } from "@hooks/api-hooks/channelHooks";
+import { useChannelName, useSafeDeleteDMChannel } from "@hooks/api-hooks/channelHooks";
 import { useUsers } from "@hooks/api-hooks/userHooks";
-import { useSafeDeleteDMChannel } from "@hooks/useSafeDeleteDMChannel";
 import { ChannelType } from "@huginn/shared";
 import { getMessagesOptions } from "@lib/queries";
 import { useClient } from "@stores/apiStore";

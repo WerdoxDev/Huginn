@@ -26,6 +26,8 @@ const store = createStore(
 					const index = draft.users.findIndex((x) => x.id === user.id);
 					if (index !== -1) {
 						draft.users[index] = { ...draft.users[index], ...user };
+					} else {
+						draft.users.push(user as APIPublicUser);
 					}
 				}),
 			),
@@ -84,10 +86,28 @@ export function initializeClient() {
 		store.getState().updateUser(d);
 	});
 
+	const unlisten4 = client?.gateway.listen("channel_recipient_add", (d) => {
+		store.getState().updateUser(d.user);
+	});
+
+	const unlisten5 = client.gateway.listen("relationship_add", (d) => {
+		console.log(d);
+		store.getState().updateUser(d.user);
+	});
+
+	const unlisten6 = client.gateway.listen("channel_create", (d) => {
+		for (const user of d.recipients) {
+			store.getState().updateUser(user);
+		}
+	});
+
 	return () => {
 		unlisten?.();
 		unlisten2?.();
 		unlisten3?.();
+		unlisten4?.();
+		unlisten5?.();
+		unlisten6?.();
 	};
 }
 

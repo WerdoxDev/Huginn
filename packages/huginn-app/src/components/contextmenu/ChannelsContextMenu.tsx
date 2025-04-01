@@ -1,5 +1,4 @@
-import { useChannelName } from "@hooks/api-hooks/channelHooks";
-import { useSafeDeleteDMChannel } from "@hooks/useSafeDeleteDMChannel";
+import { useChannelName, useSafeDeleteDMChannel } from "@hooks/api-hooks/channelHooks";
 import { ChannelType } from "@huginn/shared";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";

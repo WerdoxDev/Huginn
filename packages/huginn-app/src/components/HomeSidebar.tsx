@@ -17,32 +17,29 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
 	const { updateModals } = useModals();
 	const { friendsNotificationsCount } = useReadStates();
 
-	// useEffect(() => {
-	// 	console.log(props.channels);
-	// }, [props.channels]);
+	const sortedChannels = useMemo(
+		() =>
+			props.channels?.toSorted((a, b) => {
+				if (a.lastMessageId && !b.lastMessageId) {
+					return moment(snowflake.getTimestamp(a.lastMessageId)).isBefore(snowflake.getTimestamp(b.id)) ? 1 : -1;
+				}
 
-	const sortedChannels = useMemo(() => {
-		console.log(props.channels);
-		return props.channels?.toSorted((a, b) => {
-			if (a.lastMessageId && !b.lastMessageId) {
-				return moment(snowflake.getTimestamp(a.lastMessageId)).isBefore(snowflake.getTimestamp(b.id)) ? 1 : -1;
-			}
+				if (!a.lastMessageId && b.lastMessageId) {
+					return moment(snowflake.getTimestamp(a.id)).isBefore(snowflake.getTimestamp(b.lastMessageId)) ? 1 : -1;
+				}
 
-			if (!a.lastMessageId && b.lastMessageId) {
-				return moment(snowflake.getTimestamp(a.id)).isBefore(snowflake.getTimestamp(b.lastMessageId)) ? 1 : -1;
-			}
+				if (!a.lastMessageId && !b.lastMessageId) {
+					return moment(snowflake.getTimestamp(a.id)).isBefore(snowflake.getTimestamp(b.id)) ? 1 : -1;
+				}
 
-			if (!a.lastMessageId && !b.lastMessageId) {
-				return moment(snowflake.getTimestamp(a.id)).isBefore(snowflake.getTimestamp(b.id)) ? 1 : -1;
-			}
+				if (a.lastMessageId && b.lastMessageId) {
+					return moment(snowflake.getTimestamp(a.lastMessageId)).isBefore(snowflake.getTimestamp(b.lastMessageId)) ? 1 : -1;
+				}
 
-			if (a.lastMessageId && b.lastMessageId) {
-				return moment(snowflake.getTimestamp(a.lastMessageId)).isBefore(snowflake.getTimestamp(b.lastMessageId)) ? 1 : -1;
-			}
-
-			return 0;
-		});
-	}, [props.channels]);
+				return 0;
+			}),
+		[props.channels],
+	);
 
 	return (
 		<nav

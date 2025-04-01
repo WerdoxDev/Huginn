@@ -1,7 +1,8 @@
 import type { TooltipOptions } from "@/types";
-import { useTooltip, TooltipContext, useTooltipContext } from "@contexts/tooltipContext";
+import { TooltipContext, useTooltip, useTooltipContext } from "@contexts/tooltipContext";
 import { useMergeRefs } from "@floating-ui/react";
 import { Portal, Transition } from "@headlessui/react";
+import clsx from "clsx";
 import { type HTMLProps, type ReactNode, type RefObject, cloneElement, isValidElement, useMemo } from "react";
 
 export default function Tooltip({ children, ...options }: { children: ReactNode } & TooltipOptions) {
@@ -47,6 +48,7 @@ function Trigger(props: HTMLProps<HTMLButtonElement> & { asChild?: boolean }) {
 function Content(props: HTMLProps<HTMLDivElement>) {
 	const context = useTooltipContext();
 	const ref = useMergeRefs([context.refs.setFloating, props.ref]);
+	context.placement;
 
 	const staticSide = useMemo(
 		() =>
@@ -71,7 +73,7 @@ function Content(props: HTMLProps<HTMLDivElement>) {
 		>
 			<Portal>
 				<div
-					className="z-10 rounded-md bg-zinc-900 px-2.5 py-1.5 text-base text-white/80 shadow-lg"
+					className="absolute z-10 rounded-md border border-background bg-zinc-900 px-2.5 py-1.5 text-base text-white/80 shadow-lg"
 					ref={ref}
 					style={{
 						...context.floatingStyles,
@@ -83,7 +85,13 @@ function Content(props: HTMLProps<HTMLDivElement>) {
 					<div
 						style={{ left: context.middlewareData.arrow?.x, top: context.middlewareData.arrow?.y, [staticSide]: "-5px" }}
 						ref={context.arrowRef}
-						className="-z-10 absolute h-2.5 w-2.5 rotate-45 bg-zinc-900"
+						className={clsx(
+							"absolute h-2.5 w-2.5 border-background border-t border-l bg-zinc-900",
+							context.placement.includes("bottom") && "rotate-45",
+							context.placement.includes("top") && "rotate-[-135deg]",
+							context.placement.includes("left") && "-rotate-[225deg]",
+							context.placement.includes("right") && "-rotate-45",
+						)}
 					/>
 				</div>
 			</Portal>

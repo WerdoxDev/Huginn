@@ -1,5 +1,4 @@
-import { useChannel, useChannelName, useChannelRecipients } from "@hooks/api-hooks/channelHooks";
-import useNavigateToChannel from "@hooks/useNavigateToChannel";
+import useNavigateToChannel, { useChannel, useChannelName, useChannelRecipients } from "@hooks/api-hooks/channelHooks";
 import { ChannelType, type Snowflake } from "@huginn/shared";
 import type { RefObject } from "react";
 import AttentionIndicator from "./AttentionIndicator";

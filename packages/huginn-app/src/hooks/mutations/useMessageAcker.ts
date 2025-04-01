@@ -1,5 +1,4 @@
 import type { AppMessage } from "@/types";
-import { useMessagesUtils } from "@hooks/useMessageUtils";
 import { type Snowflake, snowflake } from "@huginn/shared";
 import { useClient } from "@stores/apiStore";
 import { useChannelStore } from "@stores/channelStore";

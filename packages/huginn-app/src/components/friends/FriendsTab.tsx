@@ -2,6 +2,7 @@ import type { AppRelationship } from "@/types";
 import { TabPanel } from "@headlessui/react";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
+import { useLookup } from "@hooks/useLookup";
 import type { APIPublicUser, Snowflake, UserPresence } from "@huginn/shared";
 import { useEffect, useMemo } from "react";
 import FriendItem from "./FriendItem";
@@ -9,15 +10,9 @@ import FriendItem from "./FriendItem";
 export default function FriendsTab(props: { friends: AppRelationship[] | null; presences: UserPresence[]; text: string }) {
 	const mutation = useCreateDMChannel("create-dm-channel_other");
 
-	const userLookup = useUsers(props.friends?.map((x) => x.userId)).reduce<Record<Snowflake, APIPublicUser>>((acc, user) => {
-		acc[user.id] = user;
-		return acc;
-	}, {});
-
-	const presenceLookup = props.presences?.reduce<Record<Snowflake, UserPresence>>((acc, presence) => {
-		acc[presence.user.id] = presence;
-		return acc;
-	}, {});
+	const users = useUsers(props.friends?.map((x) => x.userId));
+	const userLookup = useLookup(users, (user) => user.id);
+	const presenceLookup = useLookup(props.presences, (presence) => presence.user.id);
 
 	const amount = useMemo(() => props.friends?.length ?? 0, [props.friends]);
 
