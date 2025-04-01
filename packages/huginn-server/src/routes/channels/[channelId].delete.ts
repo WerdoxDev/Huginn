@@ -17,6 +17,24 @@ createRoute("DELETE", "/api/channels/:channelId", verifyJwt(), async (c) => {
 		return missingAccess(c);
 	}
 
+	// Delete or leave the DM
+	const deletedChannel: APIDeleteDMChannelResult = idFix(
+		await prisma.channel.deleteDM(channelId, payload.id, { include: merge(selectChannelRecipients, omitChannelRecipient(payload.id)) }),
+	);
+
+	// Delete read state
+	await prisma.readState.deleteState(payload.id, deletedChannel.id);
+
+	// Dispatch channel delete event
+	dispatchToTopic(payload.id, "channel_delete", omit(deletedChannel, ["recipients"]));
+
+	// Dispatch channel recipient remove event
+	const removedRecipient = channel.recipients.find((x) => x.id === payload.id);
+	if (channel.type === ChannelType.GROUP_DM && removedRecipient) {
+		gateway.unsubscribeSessionsFromTopic(payload.id, channelId);
+		dispatchToTopic(channelId, "channel_recipient_remove", { channelId: channelId, user: removedRecipient });
+	}
+
 	// Transfer the old owner to a new one alphabetically
 	if (channel.ownerId === payload.id) {
 		const updatedChannel = idFix(
@@ -32,24 +50,6 @@ createRoute("DELETE", "/api/channels/:channelId", verifyJwt(), async (c) => {
 		for (const recipient of updatedChannel.recipients) {
 			dispatchChannel(updatedChannel, "channel_update", recipient.id);
 		}
-	}
-
-	// Delete or leave the DM
-	const deletedChannel: APIDeleteDMChannelResult = idFix(
-		await prisma.channel.deleteDM(channelId, payload.id, { include: merge(selectChannelRecipients, omitChannelRecipient(payload.id)) }),
-	);
-
-	// Delete read state
-	await prisma.readState.deleteState(payload.id, deletedChannel.id);
-
-	// Dispatch channel delete event
-	dispatchToTopic(payload.id, "channel_delete", omit(deletedChannel, ["recipients"]));
-
-	// Dispatch channel recipient remove event
-	const removedRecipient = channel.recipients.find((x) => x.id === payload.id);
-	if (channel.type === ChannelType.GROUP_DM && removedRecipient) {
-		dispatchToTopic(channelId, "channel_recipient_remove", { channelId: channelId, user: removedRecipient });
-		gateway.unsubscribeSessionsFromTopic(payload.id, channelId);
 	}
 
 	// Send a recipient remove message in group dm

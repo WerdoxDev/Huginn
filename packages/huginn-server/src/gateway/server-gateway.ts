@@ -41,12 +41,14 @@ export class ServerGateway {
 	private sessions: Map<string, ClientSession>;
 	private cancelledClientDisconnects: string[];
 	public presenceManeger: PresenceManager;
+	private voiceStates: Map<Snowflake, Snowflake>;
 
 	public constructor(options: ServerGatewayOptions) {
 		this.options = options;
-		this.sessions = new Map<string, ClientSession>();
+		this.sessions = new Map();
 		this.presenceManeger = new PresenceManager();
 		this.cancelledClientDisconnects = [];
+		this.voiceStates = new Map();
 	}
 
 	public open(peer: Peer) {
@@ -91,7 +93,6 @@ export class ServerGateway {
 				peer.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
 				return;
 			}
-
 			const session = this.sessions.get(peer.id);
 			logGatewayRecieve(peer.id, data, this.options.logHeartbeat);
 
@@ -312,7 +313,27 @@ export class ServerGateway {
 			return;
 		}
 
-		dispatchToTopic(user.id, "voice_state_update", { userId: user.id, channelId: data.d.channelId, guildId: data.d.guildId });
+		let channelId: Snowflake | undefined;
+
+		if (data.d.channelId) {
+			this.voiceStates.set(user.id, data.d.channelId);
+			channelId = data.d.channelId;
+		} else {
+			channelId = this.voiceStates.get(user.id);
+			this.voiceStates.delete(user.id);
+		}
+
+		if (channelId) {
+			dispatchToTopic(channelId, "voice_state_update", {
+				userId: user.id,
+				channelId: data.d.channelId,
+				guildId: data.d.guildId,
+				selfDeaf: false,
+				selfMute: false,
+				selfStream: false,
+				selfVideo: false,
+			});
+		}
 
 		const token = await createVoiceToken(user.id);
 		dispatchToTopic(user.id, "voice_server_update", { token, hostname: "127.0.0.1" });

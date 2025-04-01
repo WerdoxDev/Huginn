@@ -14,8 +14,8 @@ import {
 	type APIVideo,
 	ChannelType,
 	type DirectChannel,
-	type GatewayDMCHannelRecipientAddData,
-	type GatewayDMCHannelRecipientRemoveData,
+	type GatewayDMCannelRecipientRemoveData,
+	type GatewayDMChannelRecipientAddData,
 	type GatewayTypingStartData,
 	MessageType,
 	type PresenceStatus,
@@ -255,7 +255,7 @@ export function expectTypingExactSchema(typing: object, channelId?: bigint, user
 }
 
 export function expectRecipientModifyExactSchema(recipientModify: object, channelId?: bigint, user?: TestUser) {
-	const castedRecipientModify = recipientModify as GatewayDMCHannelRecipientAddData | GatewayDMCHannelRecipientRemoveData;
+	const castedRecipientModify = recipientModify as GatewayDMChannelRecipientAddData | GatewayDMCannelRecipientRemoveData;
 
 	expect(Object.keys(recipientModify).sort()).toStrictEqual(["channelId", "user"].sort());
 	if (channelId) expect(castedRecipientModify.channelId).toBe(channelId.toString());
