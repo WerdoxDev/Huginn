@@ -82,6 +82,12 @@ export class Voice {
 		this.socket?.close(GatewayCode.INTENTIONAL_CLOSE);
 		this.sequence = undefined;
 		this.socket = undefined;
+		this.consumers = new Map();
+		this.connectionInfo = undefined;
+		this.recvTransport = undefined;
+		this.sendTransport = undefined;
+		this.initialProducers = undefined;
+		this.device = undefined;
 	}
 
 	public async startStreaming(videoTrack?: MediaStreamTrack, audioTrack?: MediaStreamTrack): Promise<void> {

@@ -145,6 +145,20 @@ export class Gateway {
 		this.client.voice.connect(token, channelId, guildId);
 	}
 
+	public disconnectFromVoice(): void {
+		const updateVoiceStateData: GatewayUpdateVoiceState = {
+			op: GatewayOperations.VOICE_STATE_UPDATE,
+			d: {
+				channelId: null,
+				guildId: null,
+				selfDeaf: false,
+				selfMute: false,
+			},
+		};
+
+		this.send(updateVoiceStateData);
+	}
+
 	private startListening() {
 		this.socket?.removeEventListener("open", this.onOpen);
 		this.socket?.removeEventListener("close", this.onClose);
