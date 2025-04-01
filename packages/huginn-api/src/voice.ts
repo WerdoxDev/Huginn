@@ -49,6 +49,15 @@ export class Voice {
 		this.emitter.off(eventName, handler);
 	}
 
+	public listen<EventName extends keyof VoiceEvents>(
+		eventName: EventName,
+		handler: (eventArg: VoiceEvents[EventName]) => void,
+		withoutHistory?: boolean,
+	): () => void {
+		this.on(eventName, handler, withoutHistory);
+		return () => this.off(eventName, handler);
+	}
+
 	private emit<EventName extends keyof VoiceEvents>(eventName: EventName, eventArg: VoiceEvents[EventName]): void {
 		this.emitter.emit(eventName, eventArg);
 	}

@@ -46,6 +46,15 @@ export class Gateway {
 		this.emitter.off(eventName, handler);
 	}
 
+	public listen<EventName extends keyof GatewayEvents>(
+		eventName: EventName,
+		handler: (eventArg: GatewayEvents[EventName]) => void,
+		withoutHistory?: boolean,
+	): () => void {
+		this.on(eventName, handler, withoutHistory);
+		return () => this.off(eventName, handler);
+	}
+
 	private emit<EventName extends keyof GatewayEvents>(eventName: EventName, eventArg: GatewayEvents[EventName]): void {
 		this.emitter.emit(eventName, eventArg);
 	}
