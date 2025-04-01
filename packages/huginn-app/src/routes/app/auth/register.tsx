@@ -5,21 +5,21 @@ import LinkButton from "@components/button/LinkButton";
 import LoadingButton from "@components/button/LoadingButton";
 import HuginnInput from "@components/input/HuginnInput";
 import PasswordInput from "@components/input/PasswordInput";
-import { useClient } from "@contexts/apiContext";
-import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
+import { useAuthBackground } from "@contexts/authBackgroundContext";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useInputs } from "@hooks/useInputs";
 import { useOAuth } from "@hooks/useOAuth";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import type { APIPostRegisterJSONBody } from "@huginn/shared";
-import { useContext, useState, useEffect } from "react";
+import { useClient } from "@stores/apiStore";
+import { useEffect, useState } from "react";
 // import { usePostHog } from "posthog-js/react";
 
 export default function Register() {
 	const client = useClient();
 	// const posthog = usePostHog();
-	const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
+	const authBackground = useAuthBackground();
 	const initializeClient = useInitializeClient();
 	const startOAuth = useOAuth();
 
@@ -44,7 +44,7 @@ export default function Register() {
 				});
 			},
 			async onSuccess() {
-				setAuthBackgroundState(1);
+				authBackground.setState(1);
 				setHidden(true);
 
 				await initializeClient(undefined, undefined, "/channels/@me");
@@ -55,7 +55,7 @@ export default function Register() {
 	);
 
 	useEffect(() => {
-		setAuthBackgroundState(0);
+		authBackground.setState(0);
 	}, []);
 
 	async function register() {

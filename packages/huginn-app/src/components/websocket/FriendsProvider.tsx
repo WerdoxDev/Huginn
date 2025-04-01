@@ -1,8 +1,10 @@
-import { useClient } from "@contexts/apiContext";
-import { useReadStates } from "@contexts/readStateContext";
+import type { AppRelationship } from "@/types";
 import { type APIGetUserRelationshipsResult, RelationshipType } from "@huginn/shared";
 import type { APIRelationUser, GatewayPresenceUpdateData, GatewayReadyData, GatewayRelationshipCreateData } from "@huginn/shared";
 import type { Snowflake } from "@huginn/shared";
+import { convertToAppRelationship } from "@lib/utils";
+import { useClient } from "@stores/apiStore";
+import { useReadStates } from "@stores/readStatesStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useEffect } from "react";
 
@@ -51,14 +53,17 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
 	useEffect(() => {
 		client.gateway.on("relationship_add", onRelationshipCreated);
 		client.gateway.on("relationship_remove", onRelationshipDeleted);
-		client.gateway.on("presence_update", onPresenceUpdated);
+		// client.gateway.on("presence_update", onPresenceUpdated);
 
-		queryClient.setQueryData(["relationships"], client.gateway.readyData?.relationships);
+		queryClient.setQueryData<AppRelationship[]>(
+			["relationships"],
+			client.gateway.readyData?.relationships.map((x) => convertToAppRelationship(x)),
+		);
 
 		return () => {
 			client.gateway.off("relationship_add", onRelationshipCreated);
 			client.gateway.off("relationship_remove", onRelationshipDeleted);
-			client.gateway.off("presence_update", onPresenceUpdated);
+			// client.gateway.off("presence_update", onPresenceUpdated);
 		};
 	}, []);
 

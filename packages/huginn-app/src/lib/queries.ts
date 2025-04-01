@@ -1,17 +1,18 @@
-import type { AppChannelMessage } from "@/types";
+import type { AppMessage } from "@/types";
 import type { HuginnClient } from "@huginn/api";
-import { type APIGetUserChannelsResult, type Snowflake, resolveImage } from "@huginn/shared";
+import { type APIGetUserChannelsResult, type Snowflake, omit, resolveImage } from "@huginn/shared";
 import { type QueryClient, infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
+import { convertToAppDirectChannel, convertToAppMessage, convertToAppRelationship } from "./utils";
 
 export function getChannelsOptions(client: HuginnClient, guildId: Snowflake) {
 	return queryOptions({
 		queryKey: ["channels", guildId],
-		queryFn: () => {
+		queryFn: async () =>
 			// FIXME: This needs to change for when guilds are actually a thing
 			// if (guildId !== "@me") return undefined;
-			return client.channels.getAll();
-		},
-		initialData: () => client.gateway.readyData?.privateChannels,
+			(await client.channels.getAll()).map((x) => convertToAppDirectChannel(x)),
+
+		initialData: () => client.gateway.readyData?.privateChannels.map((x) => convertToAppDirectChannel(x)),
 	});
 }
 
@@ -26,7 +27,7 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
 				pageParam.before.toString() || undefined,
 				pageParam.after.toString() || undefined,
 			);
-			return messages.map((x) => ({ ...x, preview: false })) as AppChannelMessage[];
+			return messages.map((x) => convertToAppMessage(x));
 		},
 		getPreviousPageParam(first) {
 			const earliestMessage = first[0];
@@ -51,8 +52,8 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
 export function getRelationshipsOptions(client: HuginnClient) {
 	return queryOptions({
 		queryKey: ["relationships"],
-		queryFn: () => client.relationships.getAll(),
-		initialData: () => client.gateway.readyData?.relationships,
+		queryFn: async () => (await client.relationships.getAll()).map((x) => convertToAppRelationship(x)),
+		initialData: () => client.gateway.readyData?.relationships.map((x) => convertToAppRelationship(x)),
 	});
 }
 

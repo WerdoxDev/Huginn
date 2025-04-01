@@ -1,11 +1,20 @@
-import type { SettingsContextType } from "@contexts/settingsContext";
 import type { Placement } from "@floating-ui/react";
 import type { AddChannelRecipientMutationVars } from "@hooks/mutations/useAddChannelRecipient";
 import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMChannel";
 import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
 import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePatchDMChannel";
 import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRemoveChannelRecipient";
-import type { APIChannelUser, APIDefaultMessage, APIMessageUser, APIRelationUser, DirectChannel, RelationshipType, Snowflake } from "@huginn/shared";
+import type {
+	APIChannelUser,
+	APIDefaultMessage,
+	APIMessageUser,
+	APIRelationUser,
+	APIRelationshipWithoutOwner,
+	DirectChannel,
+	RelationshipType,
+	Snowflake,
+} from "@huginn/shared";
+import type { SettingsContextType } from "@stores/settingsStore";
 import type { ChangeEvent, HTMLInputTypeAttribute, ReactNode, RefObject } from "react";
 
 export type StatusCode = "none" | "default" | "error" | "success";
@@ -146,11 +155,11 @@ export type ContextMenuItemProps = {
 };
 
 export type ContextMenuRelationship = { user: APIRelationUser; type: RelationshipType };
-export type ContextMenuDMChannel = DirectChannel;
+export type ContextMenuDMChannel = AppDirectChannel;
 export type ContextMenuDMChannelRecipient = { channelId: Snowflake; recipient: APIChannelUser };
 
 export type MessageRenderInfo = {
-	message: AppChannelMessage;
+	message: AppMessage;
 	newMinute: boolean;
 	newDate: boolean;
 	newAuthor: boolean;
@@ -177,9 +186,12 @@ export type MutationKinds = {
 	"remove-relationship": Snowflake;
 };
 
-export type AppChannelMessage =
-	| { preview: true; id: Snowflake; timestamp: string; author: APIMessageUser; nonce?: number | string; content: string; channelId: Snowflake }
-	| ({ preview: false } & APIDefaultMessage);
+export type AppMessage =
+	| { preview: true; id: Snowflake; timestamp: string; authorId: Snowflake; nonce?: number | string; content: string; channelId: Snowflake }
+	| ({ preview: false } & Omit<APIDefaultMessage, "author"> & { authorId: Snowflake });
+
+export type AppDirectChannel = Omit<DirectChannel, "recipients"> & { recipientIds: Snowflake[] };
+export type AppRelationship = Omit<APIRelationshipWithoutOwner, "user"> & { userId: Snowflake };
 
 export type AppAttachment = {
 	id: number;

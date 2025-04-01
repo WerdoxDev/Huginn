@@ -1,4 +1,4 @@
-import { useClient } from "@contexts/apiContext";
+import { useClient } from "@stores/apiStore";
 import { useChannelStore } from "@stores/channelStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";

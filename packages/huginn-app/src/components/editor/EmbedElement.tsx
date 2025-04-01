@@ -1,7 +1,6 @@
 import type { EmbedElement as SlateEmbedElement } from "@/index";
 import ImagePreview from "@components/ImagePreview";
 import VideoPlayer from "@components/VideoPlayer";
-import { useModalsDispatch } from "@contexts/modalContext";
 import { constants, constrainImageSize } from "@huginn/shared";
 import { open } from "@tauri-apps/plugin-shell";
 import clsx from "clsx";

@@ -3,13 +3,13 @@ import AddFriendTab from "@components/friends/AddFriendTab";
 import FriendsTab from "@components/friends/FriendsTab";
 import FriendsTabItem from "@components/friends/FriendsTabItem";
 import PendingFriendsTab from "@components/friends/PendingFriendsTab";
-import { client, useClient } from "@contexts/apiContext";
-import { usePresences } from "@contexts/presenceContext";
 import { Tab, TabGroup, TabList, TabPanels } from "@headlessui/react";
 import { RelationshipType } from "@huginn/shared";
 import { getRelationshipsOptions } from "@lib/queries";
+import { client, useClient } from "@stores/apiStore";
+import { usePresences } from "@stores/presenceStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Fragment } from "react/jsx-runtime";
 
 export async function clientLoader() {
@@ -23,9 +23,9 @@ export default function Component() {
 	const { data: friends } = useSuspenseQuery(getRelationshipsOptions(client));
 
 	const allFriends = useMemo(() => friends?.filter((x) => x.type === RelationshipType.FRIEND), [friends]);
-	const { presences } = usePresences(allFriends?.map((x) => x.user.id) ?? []);
+	const { presences } = usePresences(allFriends?.map((x) => x.userId) ?? []);
 	const onlineFriends = useMemo(
-		() => friends?.filter((x) => x.type === RelationshipType.FRIEND && presences.some((y) => y.user.id === x.user.id && y.status === "online")),
+		() => friends?.filter((x) => x.type === RelationshipType.FRIEND && presences.some((y) => y.user.id === x.userId && y.status === "online")),
 		[allFriends, presences],
 	);
 

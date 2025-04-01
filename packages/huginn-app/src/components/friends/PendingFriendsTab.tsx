@@ -1,15 +1,22 @@
-import { useClient } from "@contexts/apiContext";
+import type { AppRelationship } from "@/types";
 import { TabPanel } from "@headlessui/react";
+import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
 import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship";
 import { type APIRelationshipWithoutOwner, RelationshipType } from "@huginn/shared";
-import type { Snowflake } from "@huginn/shared";
+import type { APIPublicUser, Snowflake } from "@huginn/shared";
+import { useClient } from "@stores/apiStore";
 import { useMemo } from "react";
 import FriendItem from "./FriendItem";
 
-export default function PendingFriendsTab(props: { friends: APIRelationshipWithoutOwner[] }) {
+export default function PendingFriendsTab(props: { friends: AppRelationship[] }) {
 	const createMutation = useCreateRelationship();
 	const removeMutation = useRemoveRelationship();
+
+	const userLookup = useUsers(props.friends?.map((x) => x.userId)).reduce<Record<Snowflake, APIPublicUser>>((acc, user) => {
+		acc[user.id] = user;
+		return acc;
+	}, {});
 
 	const pendingFriends = useMemo(
 		() => props.friends.filter((x) => x.type === RelationshipType.PENDING_INCOMING || x.type === RelationshipType.PENDING_OUTGOING),
@@ -33,7 +40,7 @@ export default function PendingFriendsTab(props: { friends: APIRelationshipWitho
 					<FriendItem
 						key={friend.id}
 						type={friend.type}
-						user={friend.user}
+						user={userLookup[friend.userId]}
 						onDenyOrCancel={denyOrCancelRelationship}
 						onAccept={acceptRelationship}
 					/>

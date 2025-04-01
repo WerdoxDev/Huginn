@@ -1,30 +1,28 @@
+import ImageSelector from "@components/ImageSelector";
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
-import ImageSelector from "@components/ImageSelector";
 import HuginnInput from "@components/input/HuginnInput";
-import { useClient } from "@contexts/apiContext";
-import { useEvent } from "@contexts/eventContext";
-import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
+import { useChannelName } from "@hooks/api-hooks/channelHooks";
 import { usePatchDMChannel } from "@hooks/mutations/usePatchDMChannel";
-import { useChannelName } from "@hooks/useChannelName";
 import { useInputs } from "@hooks/useInputs";
+import { listenEvent } from "@lib/eventHandler";
 import { getChannelIconOptions } from "@lib/queries";
+import { useClient } from "@stores/apiStore";
+import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function EditGroupModal() {
 	const client = useClient();
-	const { editGroup: modal } = useModals();
-	const modalsDispatch = useModalsDispatch();
-	const { listenEvent } = useEvent();
+	const { editGroup: modal, updateModals } = useModals();
 	const { inputsProps, setValue, handleErrors, values, validateValues, resetStatuses } = useInputs([{ name: "name", required: false }]);
 
 	const { data: originalIcon } = useQuery(getChannelIconOptions(modal.channel?.id, modal.channel?.icon, client));
 	const mutation = usePatchDMChannel(handleErrors);
 
-	const placeholderName = useChannelName(modal.channel?.recipients, null);
+	const placeholderName = useChannelName(modal.channel?.id);
 	const [iconData, setIconData] = useState<string | null | undefined>();
 
 	useEffect(() => {
@@ -48,7 +46,7 @@ export default function EditGroupModal() {
 	}, []);
 
 	function onSelected(data: string, mimeType: string) {
-		modalsDispatch({ imageCrop: { isOpen: true, originalImageData: data, mimeType: mimeType } });
+		updateModals({ imageCrop: { isOpen: true, originalImageData: data, mimeType: mimeType } });
 	}
 
 	function onDelete() {
@@ -67,11 +65,11 @@ export default function EditGroupModal() {
 			name: placeholderName === values.name.value ? null : values.name.value,
 			icon: originalIcon && !iconData ? null : originalIcon === iconData ? undefined : iconData,
 		});
-		modalsDispatch({ editGroup: { isOpen: false, channel: undefined } });
+		updateModals({ editGroup: { isOpen: false, channel: undefined } });
 	}
 
 	function close() {
-		modalsDispatch({ editGroup: { channel: undefined, isOpen: false } });
+		updateModals({ editGroup: { channel: undefined, isOpen: false } });
 	}
 
 	return (

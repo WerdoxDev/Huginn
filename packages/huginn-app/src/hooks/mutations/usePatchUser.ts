@@ -1,11 +1,11 @@
-import { useClient } from "@contexts/apiContext";
-import { useUser } from "@contexts/userContext";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { type APIPatchCurrentUserJSONBody, type APIPatchCurrentUserResult, type HuginnErrorData, omit } from "@huginn/shared";
+import { useClient } from "@stores/apiStore";
+import { useThisUser } from "@stores/userStore";
 
 export function usePatchUser(onSuccess?: (result: APIPatchCurrentUserResult) => void, handleErrors?: (errors: HuginnErrorData) => void) {
 	const client = useClient();
-	const { setUser } = useUser();
+	const { setUser } = useThisUser();
 
 	const mutation = useHuginnMutation(
 		{

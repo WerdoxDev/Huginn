@@ -1,7 +1,7 @@
 import type { MutationKinds } from "@/types";
-import { useClient } from "@contexts/apiContext";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import type { HuginnErrorData, Snowflake } from "@huginn/shared";
+import { useClient } from "@stores/apiStore";
 import { useNavigate } from "react-router";
 
 export type CreateDMChannelMutationVars = { recipients: Snowflake[]; name?: string; skipNavigation?: boolean };

@@ -1,40 +1,38 @@
-import type { AppChannelMessage } from "@/types";
-import { client } from "@contexts/apiContext";
-import { useEvent } from "@contexts/eventContext";
-import { useReadStates } from "@contexts/readStateContext";
-import { useUser } from "@contexts/userContext";
+import type { AppMessage } from "@/types";
+import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
-import { useCurrentChannel } from "@hooks/useCurrentChannel";
 import { type GatewayUserUpdateData, omit } from "@huginn/shared";
 import type {
 	APIGetUserChannelsResult,
-	APIMessage,
 	APIMessageUser,
 	GatewayMessageAckData,
 	GatewayMessageCreateData,
 	GatewayMessageUpdateData,
 	GatewayPresenceUpdateData,
-	Snowflake,
 } from "@huginn/shared";
+import { dispatchEvent } from "@lib/eventHandler";
+import { convertToAppMessage } from "@lib/utils";
+import { client } from "@stores/apiStore";
 import { useChannelStore } from "@stores/channelStore";
+import { useReadStates } from "@stores/readStatesStore";
+import { useThisUser } from "@stores/userStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { type InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useEffect } from "react";
 
 export default function MessageProvider(props: { children?: ReactNode }) {
 	const queryClient = useQueryClient();
-	const { dispatchEvent } = useEvent();
 	const currentChannel = useCurrentChannel();
 	const mutation = useCreateDMChannel("create-dm-channel_other");
 	const { currentVisibleMessages, updateLastMessageId } = useChannelStore();
-	const { user } = useUser();
+	const { user } = useThisUser();
 	const { addChannelToReadStates, setLatestReadMessage } = useReadStates();
 	const huginnWindow = useHuginnWindow();
 
 	async function onMessageCreated(d: GatewayMessageCreateData) {
 		const channels = queryClient.getQueryData<APIGetUserChannelsResult>(["channels", "@me"]);
 		const targetChannel = channels?.find((x) => x.id === d.channelId);
-		const newMessage: AppChannelMessage = { ...d, preview: false };
+		const newMessage: AppMessage = convertToAppMessage(d);
 
 		if (!targetChannel) {
 			await mutation.mutateAsync({ recipients: [d.author.id], skipNavigation: true });
@@ -52,7 +50,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 		let inLoadedQueryPage = false;
 		let inVisibleQueryPage = false;
 
-		queryClient.setQueryData<InfiniteData<AppChannelMessage[], { before: string; after: string }>>(["messages", d.channelId], (old) => {
+		queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", d.channelId], (old) => {
 			if (!old) return undefined;
 
 			const lastPage = old.pages[old.pages.length - 1];
@@ -73,6 +71,8 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 			return old;
 		});
 
+		console.log(queryClient.getQueryData(["messages", d.channelId]));
+
 		updateLastMessageId(queryClient, d.channelId, d.id);
 
 		dispatchEvent("message_added", {
@@ -90,7 +90,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 	async function onMessageUpdated(d: GatewayMessageUpdateData) {
 		const channels = queryClient.getQueryData<APIGetUserChannelsResult>(["channels", "@me"]);
 		const targetChannel = channels?.find((x) => x.id === d.channelId);
-		const updatedMessage: AppChannelMessage = { ...d, preview: false };
+		const updatedMessage: AppMessage = convertToAppMessage(d);
 
 		if (!targetChannel) {
 			return;
@@ -99,7 +99,7 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 		let inLoadedQueryPage = false;
 		let inVisibleQueryPage = false;
 
-		queryClient.setQueryData<InfiniteData<AppChannelMessage[], { before: string; after: string }>>(["messages", d.channelId], (old) => {
+		queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", d.channelId], (old) => {
 			if (!old) return undefined;
 
 			const lastPage = old.pages[old.pages.length - 1];
@@ -136,41 +136,19 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 
 	function onMessageAck(d: GatewayMessageAckData) {
 		if (currentChannel?.id !== d.channelId) {
-			setLatestReadMessage(d.channelId, d.messageId);
+			setLatestReadMessage(d.channelId, d.messageId, queryClient);
 		}
-	}
-
-	function onUserUpdated(data: GatewayUserUpdateData | GatewayPresenceUpdateData) {
-		const user = ("id" in data ? omit(data, ["system"]) : data.user) as APIMessageUser;
-		if ("status" in data && data.status === "offline") {
-			return;
-		}
-
-		queryClient.setQueriesData<InfiniteData<AppChannelMessage[], { before: string; after: string }>>(
-			{ queryKey: ["messages"] },
-			(old) =>
-				old && {
-					pageParams: old.pageParams,
-					pages: old.pages.map((messages) =>
-						messages.map((message) => (message.author.id === user.id ? { ...message, author: { ...message.author, ...user } } : message)),
-					),
-				},
-		);
 	}
 
 	useEffect(() => {
 		client.gateway.on("message_create", onMessageCreated);
 		client.gateway.on("message_update", onMessageUpdated);
 		client.gateway.on("message_ack", onMessageAck);
-		client.gateway.on("user_update", onUserUpdated);
-		client.gateway.on("presence_update", onUserUpdated);
 
 		return () => {
 			client.gateway.off("message_create", onMessageCreated);
 			client.gateway.off("message_update", onMessageUpdated);
 			client.gateway.off("message_ack", onMessageAck);
-			client.gateway.off("user_update", onUserUpdated);
-			client.gateway.off("presence_update", onUserUpdated);
 		};
 	}, [currentChannel, user, currentVisibleMessages, huginnWindow.focused]);
 

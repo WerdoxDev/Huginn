@@ -1,5 +1,18 @@
-import type { InputStatus, InputStatuses, InputValue, InputValues } from "@/types";
-import { HuginnAPIError, type HuginnError, type HuginnErrorData, type HuginnErrorGroupWrapper } from "@huginn/shared";
+import { queryClient } from "@/root";
+import type { AppDirectChannel, AppMessage, AppRelationship, InputStatus, InputStatuses, InputValue, InputValues } from "@/types";
+import {
+	type APIChannel,
+	type APIDefaultMessage,
+	type APIRelationshipWithoutOwner,
+	type DirectChannel,
+	HuginnAPIError,
+	type HuginnError,
+	type HuginnErrorData,
+	type HuginnErrorGroupWrapper,
+	type Snowflake,
+	omit,
+} from "@huginn/shared";
+import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import type { JSXElementConstructor, ReactNode } from "react";
 import { Children, isValidElement } from "react";
 import { APIMessages } from "./error-messages";
@@ -100,4 +113,21 @@ export function getFirstChildClosestToTop<E extends HTMLElement>(container: E) {
 export function getSizeText(size: number) {
 	const type = size >= 1000000 ? "mb" : "kb";
 	return `${(size / (type === "kb" ? 1000 : 1000000)).toFixed(2)} ${type === "kb" ? "KB" : "MB"}`;
+}
+
+export function getCurrentPageMessages(channelId: Snowflake, queryClient: QueryClient) {
+	const messages = queryClient.getQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", channelId]);
+	return messages?.pages.flat();
+}
+
+export function convertToAppDirectChannel(channel: DirectChannel): AppDirectChannel {
+	return { ...omit(channel, ["recipients"]), recipientIds: channel.recipients.map((x) => x.id) };
+}
+
+export function convertToAppRelationship(relationship: APIRelationshipWithoutOwner): AppRelationship {
+	return { ...omit(relationship, ["user"]), userId: relationship.user.id };
+}
+
+export function convertToAppMessage(message: APIDefaultMessage): AppMessage {
+	return { ...omit(message, ["author"]), authorId: message.author.id, preview: false };
 }

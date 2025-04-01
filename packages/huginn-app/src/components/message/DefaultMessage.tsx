@@ -1,9 +1,10 @@
 import type { MessageRendererProps } from "@/types";
 import UserAvatar from "@components/UserAvatar";
-import { useSettings } from "@contexts/settingsContext";
-import { useUser } from "@contexts/userContext";
+import { useUser } from "@hooks/api-hooks/userHooks";
 import { MessageFlags, type Snowflake, clamp, hasFlag } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
+import { useSettings } from "@stores/settingsStore";
+import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import moment from "moment";
 import { useLayoutEffect, useMemo, useState } from "react";
@@ -19,13 +20,15 @@ export default function DefaultMessage(
 		renderElement(props: RenderElementProps): React.JSX.Element;
 	},
 ) {
-	const { user } = useUser();
+	const { user } = useThisUser();
 	const settings = useSettings();
 
-	const isCompact = useMemo(() => settings.chatMode === "compact", [settings]);
+	// const isCompact = useMemo(() => settings.chatMode === "compact", [settings]);
 
 	const formattedTime = useMemo(() => moment(props.renderInfo.message?.timestamp).format("DD.MM.YYYY HH:mm"), [props.renderInfo.message]);
-	const isSelf = useMemo(() => props.renderInfo.message.author.id === user?.id, [props.renderInfo.message.author]);
+
+	const author = useUser(props.renderInfo.message.authorId);
+	const isSelf = useMemo(() => author?.id === user?.id, [author]);
 
 	const isLastExotic = useMemo(() => props.lastRenderInfo?.exoticType === true, [props.lastRenderInfo]);
 	const isSeparate = useMemo(() => props.renderInfo.newAuthor || props.renderInfo.newMinute || props.renderInfo.newDate, [props.renderInfo]);
@@ -121,15 +124,8 @@ export default function DefaultMessage(
 		>
 			{(isSeparate || isLastExotic) && (
 				<div className="flex items-center gap-x-2">
-					<UserAvatar
-						userId={props.renderInfo.message.author.id}
-						avatarHash={props.renderInfo.message.author.avatar}
-						statusSize="0.5rem"
-						size="1.75rem"
-					/>
-					<div className="text-sm text-text">
-						{isSelf ? "You" : (props.renderInfo.message.author.displayName ?? props.renderInfo.message.author.username)}
-					</div>
+					<UserAvatar userId={props.renderInfo.message.authorId} avatarHash={author?.avatar} statusSize="0.5rem" size="1.75rem" />
+					<div className="text-sm text-text">{isSelf ? "You" : (author?.displayName ?? author?.username)}</div>
 					{!props.renderInfo.message.preview &&
 					props.renderInfo.message.flags &&
 					hasFlag(props.renderInfo.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (

@@ -1,13 +1,13 @@
 import type { InputValues, MessageDetail, StatusCode } from "@/types";
-import { useClient } from "@contexts/apiContext";
-import { useUser } from "@contexts/userContext";
 import { constants } from "@huginn/shared";
 import { Fields } from "@huginn/shared";
-import { useState, useRef, useEffect } from "react";
+import { useClient } from "@stores/apiStore";
+import { useThisUser } from "@stores/userStore";
+import { useEffect, useRef, useState } from "react";
 
 export function useUniqueUsernameMessage(values: InputValues, resetInput: (inputName: string) => void, usernameField: string) {
 	const client = useClient();
-	const { user } = useUser();
+	const { user } = useThisUser();
 
 	const defaultMessage = "Please only use numbers, letters, _ or .";
 	const [message, setMessage] = useState<MessageDetail>({ text: defaultMessage, status: "default", visible: false });

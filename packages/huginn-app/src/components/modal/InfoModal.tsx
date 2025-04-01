@@ -1,16 +1,15 @@
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
-import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
+import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
-import { useMemo, useEffect } from "react";
+import { useEffect, useMemo } from "react";
 // import { usePostHog } from "posthog-js/react";
 
 export default function InfoModal() {
-	const { info: modal } = useModals();
-	const dispatch = useModalsDispatch();
+	const { info: modal, updateModals } = useModals();
 	// const posthog = usePostHog();
 
 	const mutationState = useMutationLatestState(modal.action?.confirm?.mutationKey);
@@ -74,7 +73,7 @@ export default function InfoModal() {
 				<HuginnButton
 					className="h-10 w-full bg-secondary"
 					onClick={() => {
-						if (!modal.action?.cancel?.callback) dispatch({ info: { isOpen: false } });
+						if (!modal.action?.cancel?.callback) updateModals({ info: { isOpen: false } });
 						else modal.action.cancel.callback();
 					}}
 				>
@@ -97,7 +96,7 @@ export default function InfoModal() {
 			{modal.closable && (
 				<ModalCloseButton
 					onClick={() => {
-						if (!modal.action?.cancel?.callback) dispatch({ info: { isOpen: false } });
+						if (!modal.action?.cancel?.callback) updateModals({ info: { isOpen: false } });
 						else modal.action.cancel.callback();
 					}}
 				/>

@@ -1,6 +1,6 @@
 import ModalErrorComponent from "@components/ModalErrorComponent";
-import { useModals, useModalsDispatch } from "@contexts/modalContext";
-import { useUser } from "@contexts/userContext";
+import { useModals } from "@stores/modalsStore";
+import { useThisUser } from "@stores/userStore";
 import { lazy } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import BaseModal from "./BaseModal";
@@ -15,37 +15,36 @@ const MagnifiedImageModal = lazy(() => import("./MagnifiedImageModal"));
 const NewsModal = lazy(() => import("./NewsModal"));
 
 export default function ModalsRenderer() {
-	const { user } = useUser();
-	const { createDM, addRecipient, editGroup, imageCrop, info, settings, magnifiedImage, news } = useModals();
-	const dispatch = useModalsDispatch();
+	const { user } = useThisUser();
+	const { createDM, addRecipient, editGroup, imageCrop, info, settings, magnifiedImage, news, updateModals } = useModals();
 
 	return (
 		<>
 			<ErrorBoundary FallbackComponent={ModalErrorComponent}>
-				<BaseModal renderChildren={<SettingsModal />} modal={settings} onClose={() => dispatch({ settings: { isOpen: false } })} />
-				<BaseModal renderChildren={<ImageCropModal />} modal={imageCrop} onClose={() => dispatch({ imageCrop: { isOpen: false } })} />
+				<BaseModal renderChildren={<SettingsModal />} modal={settings} onClose={() => updateModals({ settings: { isOpen: false } })} />
+				<BaseModal renderChildren={<ImageCropModal />} modal={imageCrop} onClose={() => updateModals({ imageCrop: { isOpen: false } })} />
 				<BaseModal
 					renderChildren={<MagnifiedImageModal />}
 					modal={magnifiedImage}
-					onClose={() => dispatch({ magnifiedImage: { isOpen: false } })}
+					onClose={() => updateModals({ magnifiedImage: { isOpen: false } })}
 					backgroundClassName="bg-black/70"
 				/>
-				<BaseModal renderChildren={<NewsModal />} modal={news} onClose={() => dispatch({ news: { isOpen: false } })} />
+				<BaseModal renderChildren={<NewsModal />} modal={news} onClose={() => updateModals({ news: { isOpen: false } })} />
 				{user && (
 					<>
-						<BaseModal renderChildren={<CreateDMModal />} onClose={() => dispatch({ createDM: { isOpen: false } })} modal={createDM} />
-						<BaseModal renderChildren={<EditGroupModal />} modal={editGroup} onClose={() => dispatch({ editGroup: { isOpen: false } })} />
+						<BaseModal renderChildren={<CreateDMModal />} onClose={() => updateModals({ createDM: { isOpen: false } })} modal={createDM} />
+						<BaseModal renderChildren={<EditGroupModal />} modal={editGroup} onClose={() => updateModals({ editGroup: { isOpen: false } })} />
 						<BaseModal
 							renderChildren={<AddRecipientModal />}
 							modal={addRecipient}
-							onClose={() => dispatch({ addRecipient: { isOpen: false } })}
+							onClose={() => updateModals({ addRecipient: { isOpen: false } })}
 						/>
 					</>
 				)}
 			</ErrorBoundary>
 			<BaseModal
 				modal={info}
-				onClose={() => (!info.action?.cancel ? info.closable && dispatch({ info: { isOpen: false } }) : info.action.cancel.callback())}
+				onClose={() => (!info.action?.cancel ? info.closable && updateModals({ info: { isOpen: false } }) : info.action.cancel.callback())}
 				renderChildren={<InfoModal />}
 			/>
 		</>

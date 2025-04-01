@@ -1,7 +1,7 @@
-import { usePresence } from "@contexts/presenceContext";
 import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import type { APIChannelUser, Snowflake } from "@huginn/shared";
 import { useContextMenu } from "@stores/contextMenuStore";
+import { usePresence } from "@stores/presenceStore";
 import clsx from "clsx";
 import LoadingIcon from "./LoadingIcon";
 import UserAvatar from "./UserAvatar";

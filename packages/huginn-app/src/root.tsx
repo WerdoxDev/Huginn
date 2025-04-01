@@ -1,15 +1,14 @@
 import RouteErrorComponent from "@components/RouteErrorComponent";
-import { client } from "@contexts/apiContext";
-import { EventProvider } from "@contexts/eventContext";
 import { HistoryProvider } from "@contexts/historyContext";
-import { SettingsProvider } from "@contexts/settingsContext";
+import { client, initializeClient } from "@stores/apiStore";
+import { initializeSettings } from "@stores/settingsStore";
 import { ThemeProvier } from "@stores/themeStore";
-import { HuginnWindowProvider } from "@stores/windowStore";
+import { initializeWindow } from "@stores/windowStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import highlightjs from "highlight.js/styles/atom-one-dark.css?url";
 // import { PostHogProvider } from "posthog-js/react";
 // import posthog from "posthog-js";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, redirect } from "react-router";
 import type { Route } from "./+types/root";
 import stylesheet from "./index.css?url";
@@ -73,20 +72,34 @@ export function Layout(props: { children: ReactNode }) {
 }
 
 export default function Root() {
+	const [loaded, setLoaded] = useState(false);
+
+	useEffect(() => {
+		let unlisten: Promise<() => void>;
+		let unlisten2: () => void;
+		initializeSettings().then(() => {
+			unlisten2 = initializeClient();
+			unlisten = initializeWindow().then((x) => {
+				setLoaded(true);
+				return x;
+			});
+		});
+
+		return () => {
+			unlisten?.then((f) => f());
+			unlisten2?.();
+		};
+	}, []);
 	return (
 		// <PostHogProvider client={posthogClient}>
 		<QueryClientProvider client={queryClient}>
-			<EventProvider>
-				<HistoryProvider>
-					<SettingsProvider>
-						<HuginnWindowProvider>
-							<ThemeProvier>
-								<Outlet />
-							</ThemeProvier>
-						</HuginnWindowProvider>
-					</SettingsProvider>
-				</HistoryProvider>
-			</EventProvider>
+			<HistoryProvider>
+				{loaded && (
+					<ThemeProvier>
+						<Outlet />
+					</ThemeProvier>
+				)}
+			</HistoryProvider>
 		</QueryClientProvider>
 		// </PostHogProvider>
 	);

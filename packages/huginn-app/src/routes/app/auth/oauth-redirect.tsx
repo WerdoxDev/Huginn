@@ -1,32 +1,31 @@
 import AnimatedMessage from "@components/AnimatedMessage";
 import AuthWrapper from "@components/AuthWrapper";
+import ImageSelector from "@components/ImageSelector";
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
-import ImageSelector from "@components/ImageSelector";
 import HuginnInput from "@components/input/HuginnInput";
-import { useClient } from "@contexts/apiContext";
-import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
-import { useEvent } from "@contexts/eventContext";
+import { useAuthBackground } from "@contexts/authBackgroundContext";
 import { useHistory } from "@contexts/historyContext";
-import { useModalsDispatch } from "@contexts/modalContext";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useInputs } from "@hooks/useInputs";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import type { APIPostOAuthConfirmJSONBody, IdentityTokenPayload } from "@huginn/shared";
+import { listenEvent } from "@lib/eventHandler";
 import { getUserAvatarOptions } from "@lib/queries";
+import { useClient } from "@stores/apiStore";
+import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
 import * as jose from "jose";
-import { useContext, useMemo, useState, useEffect } from "react";
-import { redirect, useNavigate, useSearchParams } from "react-router";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router";
 
 export default function Component() {
 	const client = useClient();
-	const { listenEvent } = useEvent();
 	const [search] = useSearchParams();
 	const navigate = useNavigate();
-	const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
-	const modalsDispatch = useModalsDispatch();
+	const authBackground = useAuthBackground();
+	const { updateModals } = useModals();
 	const initializeClient = useInitializeClient();
 	const history = useHistory();
 
@@ -54,7 +53,7 @@ export default function Component() {
 				}
 			},
 			async onSuccess(data) {
-				setAuthBackgroundState(1);
+				authBackground.setState(1);
 				setHidden(true);
 
 				await initializeClient(data?.token, data?.refreshToken, "/channels/@me");
@@ -67,7 +66,7 @@ export default function Component() {
 		async function tryAuthorize() {
 			if (search.has("access_token") || search.has("refresh_token")) {
 				try {
-					setAuthBackgroundState(1);
+					authBackground.setState(1);
 
 					await initializeClient(search.get("access_token") ?? "", search.get("refresh_token") ?? "", "/channels/@me");
 				} catch (e) {
@@ -76,7 +75,7 @@ export default function Component() {
 				}
 			} else {
 				setShouldRender(true);
-				setAuthBackgroundState(0);
+				authBackground.setState(0);
 			}
 		}
 
@@ -84,7 +83,7 @@ export default function Component() {
 			setAvatarData(e.croppedImageData);
 		});
 
-		modalsDispatch({ info: { isOpen: false } });
+		updateModals({ info: { isOpen: false } });
 		tryAuthorize();
 
 		return () => {
@@ -105,7 +104,7 @@ export default function Component() {
 	}
 
 	function onSelected(data: string, mimeType: string) {
-		modalsDispatch({
+		updateModals({
 			imageCrop: { isOpen: true, originalImageData: data, mimeType: mimeType },
 		});
 	}

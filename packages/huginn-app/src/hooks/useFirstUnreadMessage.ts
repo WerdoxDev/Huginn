@@ -1,16 +1,15 @@
-import type { AppChannelMessage } from "@/types";
-import { useEvent } from "@contexts/eventContext";
-import { useChannelReadState } from "@contexts/readStateContext";
-import { useUser } from "@contexts/userContext";
+import type { AppMessage } from "@/types";
 import { type Snowflake, snowflake } from "@huginn/shared";
+import { listenEvent } from "@lib/eventHandler";
+import { useChannelReadState } from "@stores/readStatesStore";
+import { useThisUser } from "@stores/userStore";
 import moment from "moment";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-export function useFirstUnreadMessage(channelId: Snowflake, sortedMessages: AppChannelMessage[]) {
-	const { user } = useUser();
+export function useFirstUnreadMessage(channelId: Snowflake, sortedMessages: AppMessage[]) {
+	const { user } = useThisUser();
 	const [firstUnreadMessageId, setFirstUnreadMessageId] = useState<Snowflake | undefined>(undefined);
 	const readState = useChannelReadState(channelId);
-	const { listenEvent } = useEvent();
 
 	useEffect(() => {
 		if (!readState?.lastReadMessageId) {
@@ -19,7 +18,7 @@ export function useFirstUnreadMessage(channelId: Snowflake, sortedMessages: AppC
 		}
 
 		const firstUnreadMessage = sortedMessages
-			.filter((x) => x.author.id !== user?.id)
+			.filter((x) => x.authorId !== user?.id)
 			.find((x) =>
 				moment(snowflake.getTimestamp(x.id)).isAfter(
 					readState.lastReadMessageId ? snowflake.getTimestamp(readState?.lastReadMessageId) : undefined,

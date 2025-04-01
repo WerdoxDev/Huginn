@@ -1,10 +1,9 @@
 import ModalCloseButton from "@components/button/ModalCloseButton";
-import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { DialogPanel } from "@headlessui/react";
+import { useModals } from "@stores/modalsStore";
 
 export default function NewsModal() {
-	const { news: modal } = useModals();
-	const dispatch = useModalsDispatch();
+	const { news: modal, updateModals } = useModals();
 
 	return (
 		<DialogPanel
@@ -15,7 +14,7 @@ export default function NewsModal() {
 				<div className="font-bold text-text text-xl">News</div>
 				<div className="text-text/80">19th December 2025</div>
 			</div>
-			<ModalCloseButton onClick={() => dispatch({ news: { isOpen: false } })} />
+			<ModalCloseButton onClick={() => updateModals({ news: { isOpen: false } })} />
 		</DialogPanel>
 	);
 }

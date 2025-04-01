@@ -1,7 +1,7 @@
-import { useClient } from "@contexts/apiContext";
 import type { Snowflake } from "@huginn/shared";
+import { useClient } from "@stores/apiStore";
 import { useMutation } from "@tanstack/react-query";
-import { useRef, type KeyboardEvent } from "react";
+import { type KeyboardEvent, useRef } from "react";
 
 function isPrintableKey(event: KeyboardEvent) {
 	const key = event.key;

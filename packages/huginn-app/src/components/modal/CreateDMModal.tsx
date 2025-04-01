@@ -2,21 +2,20 @@ import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import AddRecipientInput from "@components/input/AddRecipientInput";
 import HuginnInput from "@components/input/HuginnInput";
-import { useClient } from "@contexts/apiContext";
-import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
+import { useChannelName, useChannelNamePlaceholder } from "@hooks/api-hooks/channelHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
-import { useChannelName } from "@hooks/useChannelName";
 import { useInputs } from "@hooks/useInputs";
 import type { APIRelationUser } from "@huginn/shared";
 import { getRelationshipsOptions } from "@lib/queries";
+import { useClient } from "@stores/apiStore";
+import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 // import { usePostHog } from "posthog-js/react";
 
 export default function CreateDMModal() {
-	const { createDM: modal } = useModals();
-	const dispatch = useModalsDispatch();
+	const { createDM: modal, updateModals } = useModals();
 
 	const client = useClient();
 	// const posthog = usePostHog();
@@ -27,7 +26,7 @@ export default function CreateDMModal() {
 
 	const mutation = useCreateDMChannel("create-dm-channel_other", handleErrors);
 
-	const placeholderName = useChannelName(selectedUsers, null);
+	const placeholderName = useChannelNamePlaceholder(selectedUsers);
 
 	useEffect(() => {
 		if (modal.isOpen) {
@@ -49,7 +48,7 @@ export default function CreateDMModal() {
 	}
 
 	function close() {
-		dispatch({ createDM: { isOpen: false } });
+		updateModals({ createDM: { isOpen: false } });
 	}
 
 	async function findOrCreate() {

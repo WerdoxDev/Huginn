@@ -25,10 +25,11 @@ export async function initializeNotification() {
 	}
 }
 
+let canSend = true;
+
 export function NotificationProvider(props: { children?: ReactNode }) {
 	const huginnWindow = useHuginnWindow();
 	const navigate = useNavigate();
-	const canSend = useRef(true);
 
 	useEffect(() => {
 		if (huginnWindow.environment !== "desktop") {
@@ -50,23 +51,23 @@ export function NotificationProvider(props: { children?: ReactNode }) {
 		};
 	}, []);
 
-	function sendNotification(data: string, title: string, text: string, imagePath: string) {
-		if (!canSend.current) {
-			return;
-		}
-
-		invoke("send_notification", { data, title, text, imagePath });
-		canSend.current = false;
-		setTimeout(() => {
-			canSend.current = true;
-		}, 2000);
-	}
-
 	return (
 		<NotificationContext.Provider value={{ sendNotification: huginnWindow.environment === "desktop" ? sendNotification : () => {} }}>
 			{props.children}
 		</NotificationContext.Provider>
 	);
+}
+
+export function sendNotification(data: string, title: string, text: string, imagePath: string) {
+	if (!canSend) {
+		return;
+	}
+
+	invoke("send_notification", { data, title, text, imagePath });
+	canSend = false;
+	setTimeout(() => {
+		canSend = true;
+	}, 2000);
 }
 
 export function useNotification() {

@@ -1,19 +1,17 @@
 import HuginnButton from "@components/button/HuginnButton";
-import { useEvent } from "@contexts/eventContext";
-import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { DialogPanel } from "@headlessui/react";
+import { dispatchEvent } from "@lib/eventHandler";
+import { useModals } from "@stores/modalsStore";
 import "cropperjs/dist/cropper.css";
-import { useRef, useEffect } from "react";
+import { useEffect, useRef } from "react";
 // import { usePostHog } from "posthog-js/react";
 import Cropper, { type ReactCropperElement } from "react-cropper";
 import { SuperImageCropper } from "super-image-cropper";
 
 export default function ImageCropModal() {
-	const { imageCrop: modal } = useModals();
+	const { imageCrop: modal, updateModals } = useModals();
 	// const posthog = usePostHog();
-	const modalsDispatch = useModalsDispatch();
 	const cropperRef = useRef<ReactCropperElement>(null);
-	const { dispatchEvent } = useEvent();
 
 	async function confirm() {
 		if (cropperRef.current) {
@@ -33,7 +31,7 @@ export default function ImageCropModal() {
 			dispatchEvent("image_cropper_done", {
 				croppedImageData: data,
 			});
-			modalsDispatch({ imageCrop: { isOpen: false } });
+			updateModals({ imageCrop: { isOpen: false } });
 		}
 	}
 
@@ -75,7 +73,7 @@ export default function ImageCropModal() {
 			<div className="mx-5 my-1 text-text/60 italic">NOTE: zoom with scroll wheel</div>
 			<div className="flex w-full justify-end gap-x-2 bg-secondary p-5">
 				<HuginnButton
-					onClick={() => modalsDispatch({ imageCrop: { isOpen: false } })}
+					onClick={() => updateModals({ imageCrop: { isOpen: false } })}
 					className="h-10 w-20 shrink-0 decoration-white hover:underline"
 				>
 					Cancel

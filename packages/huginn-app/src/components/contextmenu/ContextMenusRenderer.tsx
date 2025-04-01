@@ -1,6 +1,6 @@
 import ModalErrorComponent from "@components/ModalErrorComponent";
-import { useUser } from "@contexts/userContext";
 import { useContextMenu } from "@stores/contextMenuStore";
+import { useThisUser } from "@stores/userStore";
 import { lazy } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import ContextMenu from "./ContextMenu";
@@ -11,7 +11,7 @@ const RelationshipContextMenu = lazy(() => import("./RelationshipContextMenu"));
 const RelationshipMoreContextMenu = lazy(() => import("./RelationshipMoreContextMenu"));
 
 export default function ContextMenusRenderer() {
-	const { user } = useUser();
+	const { user } = useThisUser();
 
 	const { context: dm_channel_context, close: dm_channel_close } = useContextMenu("dm_channel");
 	const { context: dm_channel_recipient_context, close: dm_channel_recipient_close } = useContextMenu("dm_channel_recipient");

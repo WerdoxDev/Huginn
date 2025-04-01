@@ -1,5 +1,5 @@
 import type { ColorTheme, ThemeType } from "@/types";
-import { useSettings } from "@contexts/settingsContext";
+import { useSettings } from "@stores/settingsStore";
 import { type ReactNode, createContext, useContext, useLayoutEffect } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";

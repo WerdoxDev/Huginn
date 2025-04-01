@@ -1,17 +1,16 @@
-import type { AppAttachment, AppChannelMessage } from "@/types";
-import { useClient } from "@contexts/apiContext";
-import { useEvent } from "@contexts/eventContext";
-import { useUser } from "@contexts/userContext";
+import type { AppAttachment, AppMessage } from "@/types";
 import { type MessageFlags, pick, snowflake } from "@huginn/shared";
 import { type Snowflake, WorkerID } from "@huginn/shared";
+import { dispatchEvent } from "@lib/eventHandler";
+import { useClient } from "@stores/apiStore";
 import { useChannelStore } from "@stores/channelStore";
+import { useThisUser } from "@stores/userStore";
 import { type InfiniteData, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useSendMessage() {
 	const client = useClient();
-	const { user } = useUser();
+	const { user } = useThisUser();
 	const queryClient = useQueryClient();
-	const { dispatchEvent } = useEvent();
 	const { setMessageUploadProgress, deleteMessageUploadProgress } = useChannelStore();
 
 	const mutation = useMutation({
@@ -26,13 +25,13 @@ export function useSendMessage() {
 
 			const nonce = client.generateNonce();
 
-			const previewMessage: AppChannelMessage = {
+			const previewMessage: AppMessage = {
 				preview: true,
 				id: snowflake.generateString(WorkerID.APP),
 				timestamp: new Date(Date.now()).toISOString(),
 				content: data.content,
 				channelId: data.channelId,
-				author: pick(user, ["id", "avatar", "displayName", "username", "flags"]),
+				authorId: user.id,
 				nonce: nonce,
 			};
 
@@ -43,7 +42,7 @@ export function useSendMessage() {
 			function onAbort() {
 				abortController.abort();
 
-				queryClient.setQueryData<InfiniteData<AppChannelMessage[], { before: string; after: string }>>(["messages", data.channelId], (old) => {
+				queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", data.channelId], (old) => {
 					if (!old) return undefined;
 
 					const lastPage = old.pages[old.pages.length - 1];
@@ -66,7 +65,7 @@ export function useSendMessage() {
 			}
 
 			// Add Preview Message
-			queryClient.setQueryData<InfiniteData<AppChannelMessage[], { before: string; after: string }>>(["messages", data.channelId], (old) => {
+			queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", data.channelId], (old) => {
 				if (!old) return undefined;
 
 				const lastPage = old.pages[old.pages.length - 1];

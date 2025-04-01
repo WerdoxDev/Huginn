@@ -1,13 +1,13 @@
-import { useModalsDispatch } from "@contexts/modalContext";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { useLogout } from "@hooks/useLogout";
 import type { APIUser } from "@huginn/shared";
+import { useModals } from "@stores/modalsStore";
 import { useMutation } from "@tanstack/react-query";
 import UserAvatar from "./UserAvatar";
 import Tooltip from "./tooltip/Tooltip";
 
 export default function UserInfo(props: { user: APIUser }) {
-	const modalsDispatch = useModalsDispatch();
+	const { updateModals } = useModals();
 	const logout = useLogout();
 
 	const mutation = useMutation({
@@ -18,7 +18,7 @@ export default function UserInfo(props: { user: APIUser }) {
 
 	function openSettings(e: React.MouseEvent) {
 		e.stopPropagation();
-		modalsDispatch({ settings: { isOpen: true } });
+		updateModals({ settings: { isOpen: true } });
 	}
 
 	return (

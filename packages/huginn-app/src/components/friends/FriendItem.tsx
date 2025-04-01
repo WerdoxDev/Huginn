@@ -5,7 +5,7 @@ import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import { type APIRelationUser, RelationshipType } from "@huginn/shared";
 import type { Snowflake, UserPresence } from "@huginn/shared";
 import { useContextMenu } from "@stores/contextMenuStore";
-import { type MouseEvent, useMemo } from "react";
+import { type MouseEvent, useEffect, useMemo } from "react";
 
 export default function FriendItem(props: {
 	type: RelationshipType;

@@ -1,6 +1,6 @@
-import { useClient } from "@contexts/apiContext";
-import { useUser } from "@contexts/userContext";
 import { ClientReadyState } from "@huginn/api";
+import { useClient } from "@stores/apiStore";
+import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 
@@ -14,7 +14,7 @@ const statusTexts: Record<Status, string> = {
 
 export default function ConnectionStatus() {
 	const client = useClient();
-	const { user } = useUser();
+	const { user } = useThisUser();
 
 	const [connectionState, setConnectionState] = useState<Status>(
 		client.gateway.socket?.readyState === 1 && user ? "connected" : client.gateway.socket?.readyState === 1 && !user ? "unauthenticated" : "none",

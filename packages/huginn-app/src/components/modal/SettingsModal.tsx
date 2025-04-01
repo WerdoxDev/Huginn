@@ -1,9 +1,9 @@
 import type { DeepPartial, SettingsTab, SettingsTabProps } from "@/types";
 import ModalCloseButton from "@components/button/ModalCloseButton";
-import { useClient } from "@contexts/apiContext";
-import { useModals, useModalsDispatch } from "@contexts/modalContext";
-import { type SettingsContextType, useSettings, useSettingsDispatcher } from "@contexts/settingsContext";
 import { DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import { useClient } from "@stores/apiStore";
+import { useModals } from "@stores/modalsStore";
+import { type SettingsContextType, useSettings } from "@stores/settingsStore";
 import clsx from "clsx";
 // import { usePostHog } from "posthog-js/react";
 import { Fragment, memo, useEffect, useState } from "react";
@@ -45,10 +45,8 @@ function useFlatTabs() {
 }
 
 export default function SettingsModal() {
-	const { settings: modal } = useModals();
+	const { settings: modal, updateModals } = useModals();
 	// const posthog = usePostHog();
-
-	const dispatch = useModalsDispatch();
 
 	const flatTabs = useFlatTabs();
 	const [currentTab, setCurrentTab] = useState(() => flatTabs[defaultTabIndex]?.text ?? "");
@@ -56,7 +54,6 @@ export default function SettingsModal() {
 	const settings = useSettings();
 	const [settingsValid, setSettingsValid] = useState(false);
 	const [modifiedSettings, setModifiedSettings] = useState<DeepPartial<SettingsContextType> | undefined>(undefined);
-	const settingsDispatch = useSettingsDispatcher();
 
 	useEffect(() => {
 		if (modal.isOpen) {
@@ -77,7 +74,7 @@ export default function SettingsModal() {
 	async function onSave() {
 		// TODO: THIS IS NOT CORRECTLY CHECKING
 		if (modifiedSettings && modifiedSettings !== settings) {
-			await settingsDispatch(modifiedSettings);
+			await settings.setSettings(modifiedSettings);
 		}
 	}
 
@@ -86,7 +83,7 @@ export default function SettingsModal() {
 			(modifiedSettings?.serverAddress && settings.serverAddress !== modifiedSettings.serverAddress) ||
 			(modifiedSettings?.cdnAddress && settings.cdnAddress !== modifiedSettings.cdnAddress)
 		) {
-			dispatch({
+			updateModals({
 				info: {
 					isOpen: true,
 					status: "default",
@@ -97,7 +94,7 @@ export default function SettingsModal() {
 							text: "Restart",
 							callback: async () => {
 								await onSave();
-								dispatch({ info: { isOpen: false } });
+								updateModals({ info: { isOpen: false } });
 								location.reload();
 							},
 						},
@@ -105,7 +102,7 @@ export default function SettingsModal() {
 							text: "Revert",
 							callback: () => {
 								setModifiedSettings({ ...settings });
-								dispatch({ info: { isOpen: false } });
+								updateModals({ info: { isOpen: false } });
 							},
 						},
 					},
@@ -146,7 +143,7 @@ export default function SettingsModal() {
 				</TabGroup>
 				<ModalCloseButton
 					onClick={() => {
-						dispatch({ settings: { isOpen: false } });
+						updateModals({ settings: { isOpen: false } });
 					}}
 				/>
 			</DialogPanel>

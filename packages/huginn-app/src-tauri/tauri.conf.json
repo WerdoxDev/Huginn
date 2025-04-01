@@ -74,7 +74,7 @@
 				"height": 300,
 				"resizable": false,
 				"decorations": false,
-            "visible": false,
+            "visible": true,
 				"url": "/splashscreen",
 				"label": "splashscreen",
 				"center": true,

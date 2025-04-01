@@ -1,10 +1,9 @@
-import type { AppChannelMessage, AttachmentType, HuginnToken } from "@/types";
-import { useEvent } from "@contexts/eventContext";
+import type { AppMessage, AttachmentType, HuginnToken } from "@/types";
+import { useChannelName, useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useSendMessage } from "@hooks/mutations/useSendMessage";
 import { useSendTyping } from "@hooks/mutations/useSendTyping";
-import { useChannelName } from "@hooks/useChannelName";
-import { useCurrentChannel } from "@hooks/useCurrentChannel";
 import { MessageFlags, isImageMediaType } from "@huginn/shared";
+import { dispatchEvent } from "@lib/eventHandler";
 import { markdownMainEditor } from "@lib/markdown-main";
 import { markdownSpoiler } from "@lib/markdown-spoiler";
 import { markdownUnderline } from "@lib/markdown-underline";
@@ -51,15 +50,14 @@ let cache: { text: string; decorations: Record<number, Range[]> } | undefined = 
 
 type AttachmentInputType = { name: string; type: string; arrayBuffer: () => Promise<ArrayBuffer> };
 
-export default function MessageBox(props: { messages: AppChannelMessage[] }) {
+export default function MessageBox(props: { messages: AppMessage[] }) {
 	const editor = useMemo(() => withReact(createEditor()), []);
 	const params = useParams();
 	const md = useMemo(() => new markdownit({ linkify: true }).use(markdownSpoiler).use(markdownUnderline).use(markdownMainEditor), []);
 	const editorRef = useRef<HTMLDivElement>(null);
 	const thisRef = useRef<HTMLDivElement>(null);
-	const { dispatchEvent } = useEvent();
 	const currentChannel = useCurrentChannel();
-	const channelName = useChannelName(currentChannel?.recipients, currentChannel?.name);
+	const channelName = useChannelName(currentChannel?.id);
 	const [attachments, setAttachments] = useState<AttachmentType[]>([]);
 	const [dragging, setDragging] = useState(false);
 	const huginnWindow = useHuginnWindow();

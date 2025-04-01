@@ -1,9 +1,9 @@
 import { queryClient } from "@/root";
 import HomeSidebar from "@components/HomeSidebar";
 import UserInfo from "@components/UserInfo";
-import { client, useClient } from "@contexts/apiContext";
-import { useUser } from "@contexts/userContext";
 import { getChannelsOptions } from "@lib/queries";
+import { client, useClient } from "@stores/apiStore";
+import { useThisUser } from "@stores/userStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Outlet } from "react-router";
 
@@ -15,7 +15,7 @@ export default function Layout() {
 	const client = useClient();
 	const { data } = useSuspenseQuery(getChannelsOptions(client, "@me"));
 
-	const { user } = useUser();
+	const { user } = useThisUser();
 
 	return (
 		//TODO: Abstract the 2 (navigation & content) parts to a central component for later use

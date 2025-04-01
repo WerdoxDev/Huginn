@@ -1,9 +1,12 @@
-import { useChannelName } from "@hooks/useChannelName";
-import { useCurrentChannel } from "@hooks/useCurrentChannel";
+import { useChannelName, useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 
 export default function DraggingIndicator(props: { isDragging: boolean }) {
 	const channel = useCurrentChannel();
-	const name = useChannelName(channel?.recipients, channel?.name);
+	const name = useChannelName(channel?.id);
+
+	if (!channel) {
+		return;
+	}
 
 	return (
 		props.isDragging && (

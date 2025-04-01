@@ -1,11 +1,11 @@
 // import { usePostHog } from "posthog-js/react";
-import { useClient } from "@contexts/apiContext";
-import { useUser } from "@contexts/userContext";
+import { useClient } from "@stores/apiStore";
+import { useThisUser } from "@stores/userStore";
 import { useNavigate } from "react-router";
 
 export function useInitializeClient() {
 	const client = useClient();
-	const { setUser } = useUser();
+	const store = useThisUser();
 	const navigate = useNavigate();
 	// const posthog = usePostHog();
 
@@ -16,7 +16,7 @@ export function useInitializeClient() {
 
 		await client.gateway.authenticate();
 
-		setUser(client.user);
+		store.setUser(client.user);
 
 		localStorage.setItem("access-token", client.tokenHandler.token ?? "");
 		localStorage.setItem("refresh-token", client.tokenHandler.refreshToken ?? "");

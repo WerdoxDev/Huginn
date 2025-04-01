@@ -1,44 +1,48 @@
-import { useClient } from "@contexts/apiContext";
-import { useModalsDispatch } from "@contexts/modalContext";
-import { useReadStates } from "@contexts/readStateContext";
+import type { AppDirectChannel } from "@/types";
 import { type APIGetUserChannelsResult, RelationshipType, snowflake } from "@huginn/shared";
+import { useClient } from "@stores/apiStore";
+import { useModals } from "@stores/modalsStore";
+import { useReadStates } from "@stores/readStatesStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import moment from "moment";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import AttentionIndicator from "./AttentionIndicator";
 import DirectMessageChannel from "./DirectMessageChannel";
 import RingLinkButton from "./button/RingLinkButton";
 import Tooltip from "./tooltip/Tooltip";
 
-export default function HomeSidebar(props: { channels?: APIGetUserChannelsResult }) {
+export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
 	const huginnWindow = useHuginnWindow();
-	const dispatch = useModalsDispatch();
+	const { updateModals } = useModals();
 	const { friendsNotificationsCount } = useReadStates();
 
-	const sortedChannels = useMemo(
-		() =>
-			props.channels?.toSorted((a, b) => {
-				if (a.lastMessageId && !b.lastMessageId) {
-					return moment(snowflake.getTimestamp(a.lastMessageId)).isBefore(snowflake.getTimestamp(b.id)) ? 1 : -1;
-				}
+	// useEffect(() => {
+	// 	console.log(props.channels);
+	// }, [props.channels]);
 
-				if (!a.lastMessageId && b.lastMessageId) {
-					return moment(snowflake.getTimestamp(a.id)).isBefore(snowflake.getTimestamp(b.lastMessageId)) ? 1 : -1;
-				}
+	const sortedChannels = useMemo(() => {
+		console.log(props.channels);
+		return props.channels?.toSorted((a, b) => {
+			if (a.lastMessageId && !b.lastMessageId) {
+				return moment(snowflake.getTimestamp(a.lastMessageId)).isBefore(snowflake.getTimestamp(b.id)) ? 1 : -1;
+			}
 
-				if (!a.lastMessageId && !b.lastMessageId) {
-					return moment(snowflake.getTimestamp(a.id)).isBefore(snowflake.getTimestamp(b.id)) ? 1 : -1;
-				}
+			if (!a.lastMessageId && b.lastMessageId) {
+				return moment(snowflake.getTimestamp(a.id)).isBefore(snowflake.getTimestamp(b.lastMessageId)) ? 1 : -1;
+			}
 
-				if (a.lastMessageId && b.lastMessageId) {
-					return moment(snowflake.getTimestamp(a.lastMessageId)).isBefore(snowflake.getTimestamp(b.lastMessageId)) ? 1 : -1;
-				}
+			if (!a.lastMessageId && !b.lastMessageId) {
+				return moment(snowflake.getTimestamp(a.id)).isBefore(snowflake.getTimestamp(b.id)) ? 1 : -1;
+			}
 
-				return 0;
-			}),
-		[props.channels],
-	);
+			if (a.lastMessageId && b.lastMessageId) {
+				return moment(snowflake.getTimestamp(a.lastMessageId)).isBefore(snowflake.getTimestamp(b.lastMessageId)) ? 1 : -1;
+			}
+
+			return 0;
+		});
+	}, [props.channels]);
 
 	return (
 		<nav
@@ -62,7 +66,7 @@ export default function HomeSidebar(props: { channels?: APIGetUserChannelsResult
 			<div className="mx-3.5 mt-6 mb-3.5 flex shrink-0 items-center justify-between text-xs">
 				<div className="font-medium text-text/70 uppercase hover:text-text/100">Direct Messages</div>
 				<Tooltip>
-					<Tooltip.Trigger onClick={() => dispatch({ createDM: { isOpen: true } })}>
+					<Tooltip.Trigger onClick={() => updateModals({ createDM: { isOpen: true } })}>
 						<IconMingcuteAddFill className="size-4 text-text/80 hover:text-text/100" />
 					</Tooltip.Trigger>
 					<Tooltip.Content>Create DM</Tooltip.Content>

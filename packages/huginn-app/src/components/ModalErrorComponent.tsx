@@ -1,15 +1,15 @@
-import { useModalsDispatch } from "@contexts/modalContext";
 import { useErrorHandler } from "@hooks/useServerErrorHandler";
+import { useModals } from "@stores/modalsStore";
 import { useEffect } from "react";
 import { useErrorBoundary } from "react-error-boundary";
 
 export default function ModalErrorComponent(props: { error: unknown }) {
 	const { resetBoundary } = useErrorBoundary();
-	const dispatch = useModalsDispatch();
+	const { updateModals } = useModals();
 	const handleError = useErrorHandler({
 		cancel: {
 			callback: () => {
-				dispatch({
+				updateModals({
 					info: { isOpen: false },
 					addRecipient: { isOpen: false },
 					settings: { isOpen: false },

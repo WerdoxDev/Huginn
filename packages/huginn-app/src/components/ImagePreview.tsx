@@ -1,5 +1,5 @@
-import { useModalsDispatch } from "@contexts/modalContext";
 import { Transition } from "@headlessui/react";
+import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
 import LoadingIcon from "./LoadingIcon";
@@ -16,7 +16,7 @@ export default function ImagePreview(props: {
 	const [loaded, setLoaded] = useState(false);
 	const [errored, setErrored] = useState(false);
 	const imgRef = useRef<HTMLImageElement>(null);
-	const dispatch = useModalsDispatch();
+	const { updateModals } = useModals();
 
 	useEffect(() => {
 		if (imgRef.current?.complete) {
@@ -34,7 +34,7 @@ export default function ImagePreview(props: {
 				src={`${props.url}${!props.disableQuery ? `?${new URLSearchParams({ format: "webp", width: props.width.toString(), height: props.height.toString() }).toString()}` : ""}`}
 				alt={props.filename}
 				onClick={() =>
-					dispatch({
+					updateModals({
 						magnifiedImage: {
 							isOpen: true,
 							url: props.url,

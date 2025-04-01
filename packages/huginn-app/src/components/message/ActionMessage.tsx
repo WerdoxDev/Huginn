@@ -1,10 +1,12 @@
 import type { MessageRendererProps } from "@/types";
+import { useUser } from "@hooks/api-hooks/userHooks";
 import { MessageType } from "@huginn/shared";
 import clsx from "clsx";
 import { useMemo } from "react";
 
 export default function ActionMessage(props: MessageRendererProps) {
-	const author = useMemo(() => props.renderInfo.message.author.displayName ?? props.renderInfo.message.author.username, [props.renderInfo]);
+	const author = useUser(props.renderInfo.message.authorId);
+	const authorName = useMemo(() => author?.displayName ?? author?.username, [props.renderInfo]);
 	const mention = useMemo(
 		() =>
 			!props.renderInfo.message.preview &&
@@ -31,7 +33,7 @@ export default function ActionMessage(props: MessageRendererProps) {
 			{type === MessageType.CHANNEL_ICON_CHANGED && <IconMingcutePic2Fill className="mr-4 size-5 text-text/80" />}
 			{type === MessageType.CHANNEL_OWNER_CHANGED && <IconMingcuteTransfer3Fill className="mr-4 size-5 text-accent" />}
 			<div>
-				<span className="font-bold">{author}</span>
+				<span className="font-bold">{authorName}</span>
 				{type === MessageType.CHANNEL_ICON_CHANGED && <span className="text-text"> changed the channel icon</span>}
 				{type === MessageType.CHANNEL_NAME_CHANGED &&
 					(!props.renderInfo.message.content ? (

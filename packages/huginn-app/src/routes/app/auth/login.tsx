@@ -4,8 +4,7 @@ import LinkButton from "@components/button/LinkButton";
 import LoadingButton from "@components/button/LoadingButton";
 import HuginnInput from "@components/input/HuginnInput";
 import PasswordInput from "@components/input/PasswordInput";
-import { useClient } from "@contexts/apiContext";
-import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
+import { useAuthBackground } from "@contexts/authBackgroundContext";
 import { useHistory } from "@contexts/historyContext";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
@@ -14,16 +13,17 @@ import { useOAuth } from "@hooks/useOAuth";
 import { useErrorHandler } from "@hooks/useServerErrorHandler";
 import { ClientReadyState } from "@huginn/api";
 import { type APIPostLoginJSONBody, HuginnAPIError } from "@huginn/shared";
-import { useContext, useState, useEffect } from "react";
+import { useClient } from "@stores/apiStore";
+import { useEffect, useState } from "react";
 // import { usePostHog } from "posthog-js/react";
-import { redirect, useNavigate, useSearchParams } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 
 export default function Login() {
 	// const posthog = usePostHog();
 	const client = useClient();
 	const handleServerError = useErrorHandler();
 	const initializeClient = useInitializeClient();
-	const { setState: setAuthBackgroundState } = useContext(AuthBackgroundContext);
+	const authBackground = useAuthBackground();
 	const navigate = useNavigate();
 	const [search] = useSearchParams();
 	const startOAuth = useOAuth();
@@ -55,7 +55,7 @@ export default function Login() {
 				});
 			},
 			async onSuccess() {
-				setAuthBackgroundState(1);
+				authBackground.setState(1);
 				setHidden(true);
 
 				await initializeClient(undefined, undefined, "/channels/@me");
@@ -72,7 +72,7 @@ export default function Login() {
 			const refreshToken = localStorage.getItem("refresh-token");
 			try {
 				if (refreshToken && history.lastPathname !== "/register") {
-					setAuthBackgroundState(1);
+					authBackground.setState(1);
 
 					await initializeClient(undefined, refreshToken, search.get("redirect") ?? "/channels/@me");
 
@@ -92,7 +92,7 @@ export default function Login() {
 
 		function unhide() {
 			setShouldRender(true);
-			setAuthBackgroundState(0);
+			authBackground.setState(0);
 		}
 
 		tryLogin();

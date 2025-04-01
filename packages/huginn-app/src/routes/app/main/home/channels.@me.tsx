@@ -1,10 +1,10 @@
-import QuickActionButton from "@components/button/QuickActionButton";
 import HuginnIcon from "@components/HuginnIcon";
-import { useModalsDispatch } from "@contexts/modalContext";
+import QuickActionButton from "@components/button/QuickActionButton";
+import { useModals } from "@stores/modalsStore";
 import { NavLink, useNavigate } from "react-router";
 
 export default function Component() {
-	const dispatch = useModalsDispatch();
+	const { updateModals } = useModals();
 	const navigate = useNavigate();
 
 	return (
@@ -28,7 +28,7 @@ export default function Component() {
 					</div>
 				</div>
 				<div className="flex gap-2">
-					<QuickActionButton onClick={() => dispatch({ createDM: { isOpen: true } })}>Create Direct Message</QuickActionButton>
+					<QuickActionButton onClick={() => updateModals({ createDM: { isOpen: true } })}>Create Direct Message</QuickActionButton>
 					<QuickActionButton onClick={() => navigate("/friends")}>Add a Friend</QuickActionButton>
 				</div>
 			</div>

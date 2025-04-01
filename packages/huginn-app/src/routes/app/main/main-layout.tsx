@@ -1,14 +1,14 @@
 import GuildsBar from "@components/GuildsBar";
 import WebsocketProviders from "@components/websocket/WebsocketProviders";
-import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
-import { useContext, useEffect } from "react";
+import { useAuthBackground } from "@contexts/authBackgroundContext";
+import { useEffect } from "react";
 import { Outlet } from "react-router";
 
 export default function Layout() {
-	const { setState: setBackgroundState } = useContext(AuthBackgroundContext);
+	const authBackground = useAuthBackground();
 
 	useEffect(() => {
-		setBackgroundState(2);
+		authBackground.setState(2);
 	}, []);
 
 	return (

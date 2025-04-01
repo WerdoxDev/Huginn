@@ -1,5 +1,7 @@
+import type { AppRelationship } from "@/types";
 import UserAvatar from "@components/UserAvatar";
 import { Checkbox } from "@headlessui/react";
+import { useUsers } from "@hooks/api-hooks/userHooks";
 import { type APIRelationUser, type APIRelationshipWithoutOwner, RelationshipType, type Snowflake } from "@huginn/shared";
 import { useMemo, useState } from "react";
 import ComboboxInput from "./ComboboxInput";
@@ -7,28 +9,23 @@ import HuginnInput from "./HuginnInput";
 
 export default function AddRecipientInput(props: {
 	label?: string;
-	relationships?: APIRelationshipWithoutOwner[];
+	relationships?: AppRelationship[];
 	onSelectionChanged?: (values: APIRelationUser[]) => void;
 }) {
 	const [query, setQuery] = useState("");
 
 	const [selectedUsers, setSelectedUsers] = useState<Snowflake[]>([]);
-	const selectedUsersDisplay = useMemo(
-		() => props.relationships?.filter((x) => selectedUsers.includes(x.user.id)).map((x) => x.user),
-		[props.relationships, selectedUsers],
-	);
+	const toAddUsers = useUsers(selectedUsers);
+	const relationshipUsers = useUsers(props.relationships?.filter((x) => x.type === RelationshipType.FRIEND).map((x) => x.userId));
 
 	const filteredUsers = useMemo(
-		() =>
-			props.relationships?.filter(
-				(x) => x.type === RelationshipType.FRIEND && (query ? x.user.displayName?.includes(query) || x.user.username.includes(query) : true),
-			),
-		[query, props.relationships],
+		() => relationshipUsers?.filter((x) => (query ? x.displayName?.includes(query) || x.username.includes(query) : true)),
+		[query, relationshipUsers],
 	);
 
 	function selectionChanged(values: Snowflake[]) {
 		setSelectedUsers(values);
-		props.onSelectionChanged?.(props.relationships?.filter((x) => values.includes(x.user.id)).map((x) => x.user) ?? []);
+		props.onSelectionChanged?.(relationshipUsers?.filter((x) => values.includes(x.id)) ?? []);
 	}
 
 	return (
@@ -43,7 +40,7 @@ export default function AddRecipientInput(props: {
 				<ComboboxInput.SelectionDisplay>
 					{({ toggleSelection }) => (
 						<div className="mx-2 mt-2 flex select-none flex-wrap gap-1">
-							{selectedUsersDisplay?.map((user) => (
+							{toAddUsers?.map((user) => (
 								<button type="button" onClick={() => toggleSelection(user.id)} key={user.id} className="rounded-sm bg-primary px-2 text-text">
 									{user.displayName ?? user.username}
 								</button>
@@ -62,12 +59,12 @@ export default function AddRecipientInput(props: {
 					)
 				)}
 				{filteredUsers?.map((x) => (
-					<ComboboxInput.Option value={x.user.id} key={x.user.id}>
-						<UserAvatar userId={x.user.id} avatarHash={x.user.avatar} />
-						<div className="overflow-hidden text-ellipsis text-nowrap text-text">{x.user.displayName ?? x.user.username}</div>
-						<div className="text-sm text-text/70">{x.user.username}</div>
+					<ComboboxInput.Option value={x.id} key={x.id}>
+						<UserAvatar userId={x.id} avatarHash={x.avatar} />
+						<div className="overflow-hidden text-ellipsis text-nowrap text-text">{x.displayName ?? x.username}</div>
+						<div className="text-sm text-text/70">{x.username}</div>
 						<Checkbox
-							checked={selectedUsers?.includes(x.user.id) ?? false}
+							checked={selectedUsers?.includes(x.id) ?? false}
 							className="ml-auto size-6 shrink-0 rounded-md border border-accent data-[checked]:bg-accent "
 						/>
 					</ComboboxInput.Option>

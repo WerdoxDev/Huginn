@@ -1,5 +1,4 @@
-import { useChannel } from "@hooks/useChannel";
-import { useChannelName } from "@hooks/useChannelName";
+import { useChannel, useChannelName, useChannelRecipients } from "@hooks/api-hooks/channelHooks";
 import useNavigateToChannel from "@hooks/useNavigateToChannel";
 import { ChannelType, type Snowflake } from "@huginn/shared";
 import type { RefObject } from "react";
@@ -10,8 +9,9 @@ import Tooltip from "./tooltip/Tooltip";
 
 export default function UnreadChannel(props: { channelId: Snowflake; unreadCount: number; className?: string; ref?: RefObject<HTMLDivElement> }) {
 	const channel = useChannel(props.channelId);
-	const channelName = useChannelName(channel?.recipients, channel?.name);
+	const channelName = useChannelName(channel?.id);
 	const navigateToChannel = useNavigateToChannel();
+	const { recipients } = useChannelRecipients(channel?.id);
 
 	if (!channel) {
 		return null;
@@ -21,7 +21,7 @@ export default function UnreadChannel(props: { channelId: Snowflake; unreadCount
 		<Tooltip placement="right">
 			<Tooltip.Trigger className="relative mt-3 flex items-center rounded-lg" onClick={() => navigateToChannel("@me", channel.id)}>
 				{channel.type === ChannelType.DM ? (
-					<UserAvatar userId={channel.recipients[0]?.id} avatarHash={channel.recipients[0]?.avatar} size="3rem" hideStatus />
+					<UserAvatar userId={recipients[0]?.id} avatarHash={recipients[0]?.avatar} size="3rem" hideStatus />
 				) : (
 					<ChannelIcon channelId={channel?.id} iconHash={channel?.icon} size="3rem" />
 				)}

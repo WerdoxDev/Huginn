@@ -1,3 +1,8 @@
-import { createContext } from "react";
+import { createStore, useStore } from "zustand";
+import { combine } from "zustand/middleware";
 
-export const AuthBackgroundContext = createContext({ state: 2, setState: (_state: number) => {} });
+const store = createStore(combine({ state: 2 }, (set) => ({ setState: (state: number) => set({ state }) })));
+
+export function useAuthBackground() {
+	return useStore(store);
+}

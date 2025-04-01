@@ -1,10 +1,10 @@
-import type { AppChannelMessage } from "@/types";
+import type { AppMessage } from "@/types";
 import type { Snowflake } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
 import moment from "moment";
 import { useEffect } from "react";
 
-export function useVisibleMessages(channelId: Snowflake, sortedMessages: AppChannelMessage[]) {
+export function useVisibleMessages(channelId: Snowflake, sortedMessages: AppMessage[]) {
 	const { addVisibleMessage, removeVisibleMessage, clearVisibleMessages } = useChannelStore();
 
 	function onMessageVisiblityChanged(messageId: Snowflake, isVisible: boolean) {

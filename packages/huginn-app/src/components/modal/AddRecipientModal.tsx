@@ -1,27 +1,26 @@
 import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import AddRecipientInput from "@components/input/AddRecipientInput";
-import { useClient } from "@contexts/apiContext";
-import { useModals, useModalsDispatch } from "@contexts/modalContext";
 import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
+import { useChannelRecipients } from "@hooks/api-hooks/channelHooks";
 import { useAddChannelRecipient } from "@hooks/mutations/useAddChannelRecipient";
-import { useChannelRecipients } from "@hooks/useChannelRecipients";
 import type { APIRelationUser } from "@huginn/shared";
 import { getRelationshipsOptions } from "@lib/queries";
+import { useClient } from "@stores/apiStore";
+import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 // import { usePostHog } from "posthog-js/react";
 
 export default function AddRecipientModal() {
-	const { addRecipient: modal } = useModals();
-	const dispatch = useModalsDispatch();
+	const { addRecipient: modal, updateModals } = useModals();
 	const client = useClient();
 
 	// const posthog = usePostHog();
 	const { data } = useQuery(getRelationshipsOptions(client));
 
 	const { recipients } = useChannelRecipients(modal.channelId, "@me");
-	const relationships = useMemo(() => data?.filter((x) => !recipients?.map((y) => y.id).includes(x.user.id)), [recipients, data]);
+	const relationships = useMemo(() => data?.filter((x) => !recipients?.map((y) => y.id).includes(x.userId)), [recipients, data]);
 
 	const [selectedUsers, setSelectedUsers] = useState<APIRelationUser[]>([]);
 
@@ -37,7 +36,7 @@ export default function AddRecipientModal() {
 	}, [modal.isOpen]);
 
 	function close() {
-		dispatch({ addRecipient: { isOpen: false } });
+		updateModals({ addRecipient: { isOpen: false } });
 	}
 
 	function onSelectionChanged(values: APIRelationUser[]) {

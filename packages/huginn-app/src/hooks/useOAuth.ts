@@ -1,7 +1,7 @@
-import { useClient } from "@contexts/apiContext";
-import { useEvent } from "@contexts/eventContext";
-import { useModalsDispatch } from "@contexts/modalContext";
 import type { GatewayOAuthRedirectData, OAuthType } from "@huginn/shared";
+import { listenEvent } from "@lib/eventHandler";
+import { useClient } from "@stores/apiStore";
+import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import { UserAttentionType, getCurrentWindow } from "@tauri-apps/api/window";
@@ -13,8 +13,7 @@ export function useOAuth() {
 	const client = useClient();
 	const navigate = useNavigate();
 	const huginnWindow = useHuginnWindow();
-	const { listenEvent } = useEvent();
-	const modalsDispatch = useModalsDispatch();
+	const { updateModals } = useModals();
 
 	let unlisten: UnlistenFn;
 
@@ -27,7 +26,7 @@ export function useOAuth() {
 		if (huginnWindow.environment === "browser") {
 			window.open(url, "_self");
 		} else {
-			modalsDispatch({
+			updateModals({
 				info: {
 					status: "default",
 					isOpen: true,
@@ -38,7 +37,7 @@ export function useOAuth() {
 						cancel: {
 							text: "Cancel",
 							callback: () => {
-								modalsDispatch({ info: { isOpen: false } });
+								updateModals({ info: { isOpen: false } });
 								unlistenOAuth();
 							},
 						},

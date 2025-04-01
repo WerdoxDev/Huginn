@@ -1,7 +1,7 @@
-import { useClient } from "@contexts/apiContext";
-import { usePresence } from "@contexts/presenceContext";
 import type { Snowflake } from "@huginn/shared";
 import { getUserAvatarOptions } from "@lib/queries";
+import { useClient } from "@stores/apiStore";
+import { usePresence } from "@stores/presenceStore";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useEffect, useState } from "react";

@@ -1,17 +1,19 @@
-import type { AppChannelMessage } from "@/types";
-import { useClient } from "@contexts/apiContext";
-import { useChannelReadState, useReadStates } from "@contexts/readStateContext";
-import { useUser } from "@contexts/userContext";
+import type { AppMessage } from "@/types";
+import { useMessagesUtils } from "@hooks/useMessageUtils";
 import { type Snowflake, snowflake } from "@huginn/shared";
+import { useClient } from "@stores/apiStore";
 import { useChannelStore } from "@stores/channelStore";
+import { useChannelReadState, useReadStates } from "@stores/readStatesStore";
+import { useThisUser } from "@stores/userStore";
 import { useHuginnWindow } from "@stores/windowStore";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import moment from "moment";
 import { useEffect } from "react";
 
-export function useMessageAcker(channelId: Snowflake, messages: AppChannelMessage[]) {
+export function useMessageAcker(channelId: Snowflake, messages: AppMessage[]) {
 	const client = useClient();
-	const { user } = useUser();
+	const queryClient = useQueryClient();
+	const { user } = useThisUser();
 	const readState = useChannelReadState(channelId);
 	const { currentVisibleMessages } = useChannelStore();
 	const { setLatestReadMessage } = useReadStates();
@@ -44,9 +46,9 @@ export function useMessageAcker(channelId: Snowflake, messages: AppChannelMessag
 			if (
 				(!readState?.lastReadMessageId ||
 					moment(snowflake.getTimestamp(readState.lastReadMessageId)).isBefore(snowflake.getTimestamp(latestMessage.id))) &&
-				user?.id !== latestMessage.author.id
+				user?.id !== latestMessage.authorId
 			) {
-				setLatestReadMessage(channelId, latestMessage.id);
+				setLatestReadMessage(channelId, latestMessage.id, queryClient);
 				await mutation.mutateAsync({ channelId: channelId, messageId: latestMessage.id });
 			}
 		}

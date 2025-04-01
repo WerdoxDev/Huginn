@@ -1,11 +1,10 @@
-import { useClient } from "@contexts/apiContext";
-import { useReadStates } from "@contexts/readStateContext";
-import { Transition } from "@headlessui/react";
 import { snowflake } from "@huginn/shared";
 import { getChannelsOptions } from "@lib/queries";
+import { useClient } from "@stores/apiStore";
+import { useReadStates } from "@stores/readStatesStore";
 import { useQuery } from "@tanstack/react-query";
 import moment from "moment";
-import { AnimatePresence, LayoutGroup, type Variants, motion } from "motion/react";
+import { AnimatePresence, type Variants, motion } from "motion/react";
 import { useMemo } from "react";
 import UnreadChannel from "./UnreadChannel";
 import GuildButton from "./button/GuildButton";

@@ -1,16 +1,15 @@
-import type { AppChannelMessage, MessageRenderInfo, MessageRendererProps } from "@/types";
+import type { AppMessage, MessageRenderInfo, MessageRendererProps } from "@/types";
 import MessageRenderer from "@components/message/MessageRenderer";
-import { useClient } from "@contexts/apiContext";
-import { useEvent } from "@contexts/eventContext";
+import { useChannelName, useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useMessageAcker } from "@hooks/mutations/useMessageAcker";
-import { useChannelName } from "@hooks/useChannelName";
-import { useCurrentChannel } from "@hooks/useCurrentChannel";
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { useFirstUnreadMessage } from "@hooks/useFirstUnreadMessage";
 import { useVisibleMessages } from "@hooks/useVisibleMessages";
 import { MessageType, type Snowflake, snowflake } from "@huginn/shared";
+import { listenEvent } from "@lib/eventHandler";
 import { getMessagesOptions } from "@lib/queries";
 import { getFirstChildClosestToTop } from "@lib/utils";
+import { useClient } from "@stores/apiStore";
 import { useChannelStore } from "@stores/channelStore";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import clsx from "clsx";
@@ -22,7 +21,7 @@ import ChannelTypingIndicator from "./ChannelTypingIndicator";
 const topScrollOffset = 100;
 const bottomScrollOffset = 100;
 
-export default function ChannelMessages(props: { channelId: Snowflake; messages: AppChannelMessage[] }) {
+export default function ChannelMessages(props: { channelId: Snowflake; messages: AppMessage[] }) {
 	const client = useClient();
 	const queryClient = useQueryClient();
 	// const { error, data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client, props.channelId));
@@ -44,7 +43,6 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
 	const { onMessageVisiblityChanged } = useVisibleMessages(props.channelId, sortedMessages);
 	const { setRef } = useDynamicRefs<HTMLLIElement>();
-	const { listenEvent } = useEvent();
 
 	useMessageAcker(props.channelId, props.messages);
 	const { firstUnreadMessageId } = useFirstUnreadMessage(props.channelId, sortedMessages);
@@ -62,7 +60,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	const lastSeenElement = useRef<{ messageId: Snowflake; height: number; distanceToTop: number }>(null);
 	const lastDirection = useRef<"up" | "down" | "none">("none");
 	const currentChannel = useCurrentChannel();
-	const channelName = useChannelName(currentChannel?.recipients, currentChannel?.name);
+	const channelName = useChannelName(currentChannel?.id);
 
 	async function onScroll() {
 		if (!scroll.current || sortedMessages.length === 0) return;
@@ -90,11 +88,11 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
 	function calculateMessageRenderInfos(): MessageRenderInfo[] {
 		const value = sortedMessages.map((message, i) => {
-			const lastMessage: AppChannelMessage | undefined = sortedMessages[i - 1];
+			const lastMessage: AppMessage | undefined = sortedMessages[i - 1];
 
 			const newDate = (lastMessage && !moment(message.timestamp).isSame(lastMessage?.timestamp, "date")) || (!lastMessage && !hasPreviousPage);
 			const newMinute = !moment(message.timestamp).isSame(lastMessage?.timestamp, "minute");
-			const newAuthor = message.author.id !== lastMessage?.author.id;
+			const newAuthor = message.authorId !== lastMessage?.authorId;
 			const exoticType = message.preview ? false : message.type !== MessageType.DEFAULT;
 			const unread = firstUnreadMessageId === message.id;
 
@@ -269,7 +267,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
 function MessageWrapper(
 	props: {
-		message: AppChannelMessage;
+		message: AppMessage;
 	} & MessageRendererProps,
 ) {
 	return (

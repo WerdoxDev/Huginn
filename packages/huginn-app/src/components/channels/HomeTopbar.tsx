@@ -1,18 +1,21 @@
+import type { AppDirectChannel } from "@/types";
 import ChannelIcon from "@components/ChannelIcon";
 import UserAvatar from "@components/UserAvatar";
 import Tooltip from "@components/tooltip/Tooltip";
-import { useClient } from "@contexts/apiContext";
-import { useUser } from "@contexts/userContext";
-import { useChannelName } from "@hooks/useChannelName";
-import { ChannelType, type DirectChannel } from "@huginn/shared";
+import { useChannelName } from "@hooks/api-hooks/channelHooks";
+import { useUsers } from "@hooks/api-hooks/userHooks";
+import { ChannelType } from "@huginn/shared";
+import { useClient } from "@stores/apiStore";
+import { useThisUser } from "@stores/userStore";
 import { useMemo } from "react";
 
-export default function HomeTopbar(props: { channel: DirectChannel; onRecipientsClick?: () => void }) {
-	const { user } = useUser();
+export default function HomeTopbar(props: { channel: AppDirectChannel; onRecipientsClick?: () => void }) {
+	const { user } = useThisUser();
 	const client = useClient();
-	const name = useChannelName(props.channel.recipients, props.channel.name);
+	const recipients = useUsers(props.channel.recipientIds);
+	const name = useChannelName(props.channel.id);
 
-	const otherUsers = useMemo(() => props.channel.recipients.filter((x) => x.id !== user?.id), [props.channel]);
+	const otherUsers = useMemo(() => recipients.filter((x) => x.id !== user?.id), [props.channel]);
 
 	async function startCall() {
 		await client.gateway.connectToVoice(null, props.channel.id);
@@ -28,7 +31,7 @@ export default function HomeTopbar(props: { channel: DirectChannel; onRecipients
 				)}
 				<Tooltip>
 					<Tooltip.Trigger className="text-text">{name}</Tooltip.Trigger>
-					{props.channel.recipients.length === 1 && <Tooltip.Content>{props.channel.recipients[0].username}</Tooltip.Content>}
+					{recipients.length === 1 && <Tooltip.Content>{recipients[0].username}</Tooltip.Content>}
 				</Tooltip>
 				<div className="ml-auto flex gap-x-5">
 					<Tooltip placement="top">

@@ -2,64 +2,67 @@ import AuthBackgroundSvg from "@components/AuthBackgroundSvg";
 import TitleBar from "@components/TitleBar";
 import ContextMenusRenderer from "@components/contextmenu/ContextMenusRenderer";
 import ModalsRenderer from "@components/modal/ModalsRenderer";
-import { APIProvider } from "@contexts/apiContext";
-import { AuthBackgroundContext } from "@contexts/authBackgroundContext";
-import { useEvent } from "@contexts/eventContext";
-import { ModalProvider, useModals, useModalsDispatch } from "@contexts/modalContext";
+import { useAuthBackground } from "@contexts/authBackgroundContext";
 import { NotificationProvider } from "@contexts/notificationContext";
-import { PresenceProvider } from "@contexts/presenceContext";
-import { ReadStateProvider } from "@contexts/readStateContext";
-import { TypingProvider } from "@contexts/typingContext";
-import { UserProvider } from "@contexts/userContext";
 import { useMainViewTransitionState } from "@hooks/useMainViewTransitionState";
+import { dispatchEvent } from "@lib/eventHandler";
 import { ContextMenuProvider } from "@stores/contextMenuStore";
+import { useModals } from "@stores/modalsStore";
+import { initializePresence } from "@stores/presenceStore";
+import { initializeReadStates } from "@stores/readStatesStore";
+import { initializeTyping } from "@stores/typingStore";
+import { initializeUser } from "@stores/userStore";
+import { initializeVoice } from "@stores/voiceStore";
 import { useHuginnWindow } from "@stores/windowStore";
+import { useQueryClient } from "@tanstack/react-query";
 import { listen } from "@tauri-apps/api/event";
 import clsx from "clsx";
 import { type ReactNode, useEffect, useState } from "react";
 import { Outlet } from "react-router";
 
 export default function Layout() {
-	const [backgroundState, setBackgroundState] = useState(2);
+	const authBackground = useAuthBackground();
 	const huginnWindow = useHuginnWindow();
 	const isTransitioning = useMainViewTransitionState();
+	const queryClient = useQueryClient();
+
+	useEffect(() => {
+		const unlisten = initializeUser();
+		const unlisten2 = initializeReadStates();
+		const unlisten3 = initializePresence();
+		const unlisten4 = initializeTyping();
+		const unlisten5 = initializeVoice(queryClient);
+
+		return () => {
+			unlisten();
+			unlisten2();
+			unlisten3();
+			unlisten4();
+			unlisten5();
+		};
+	}, []);
 
 	return (
-		<APIProvider>
-			<ModalProvider>
-				<ContextMenuProvider>
-					<UserProvider>
-						<PresenceProvider>
-							<NotificationProvider>
-								<ReadStateProvider>
-									<TypingProvider>
-										<MainRenderer>
-											<AuthBackgroundContext.Provider value={{ state: backgroundState, setState: setBackgroundState }}>
-												<div
-													className={clsx("absolute inset-0 bg-secondary", huginnWindow.environment === "desktop" && "top-6")}
-													style={isTransitioning ? { viewTransitionName: "auth" } : undefined}
-												>
-													<AuthBackgroundSvg state={backgroundState} />
-													<Outlet />
-												</div>
-											</AuthBackgroundContext.Provider>
-										</MainRenderer>
-									</TypingProvider>
-								</ReadStateProvider>
-							</NotificationProvider>
-						</PresenceProvider>
-					</UserProvider>
-				</ContextMenuProvider>
-			</ModalProvider>
-		</APIProvider>
+		<ContextMenuProvider>
+			<NotificationProvider>
+				<MainRenderer>
+					<div
+						className={clsx("absolute inset-0 bg-secondary", huginnWindow.environment === "desktop" && "top-6")}
+						style={isTransitioning ? { viewTransitionName: "auth" } : undefined}
+					>
+						<AuthBackgroundSvg state={authBackground.state} />
+						<Outlet />
+					</div>
+				</MainRenderer>
+			</NotificationProvider>
+		</ContextMenuProvider>
 	);
 }
 
 function MainRenderer(props: { children: ReactNode }) {
 	const huginnWindow = useHuginnWindow();
 
-	const dispatch = useModalsDispatch();
-	const { news } = useModals();
+	const { updateModals } = useModals();
 
 	useEffect(() => {
 		// dispatch({ news: { isOpen: true } });
@@ -84,17 +87,7 @@ function MainRenderer(props: { children: ReactNode }) {
 	);
 }
 
-// function AppMaximizedEvent() {
-// 	const dispatch = useWindowDispatch();
-// 	const huginnWindow = useWindow();
-
-// 	useEffect(() => {}, []);
-
-// 	return null;
-// }
-
 function AppOpenUrlEvent() {
-	const { dispatchEvent } = useEvent();
 	const huginnWindow = useHuginnWindow();
 
 	useEffect(() => {

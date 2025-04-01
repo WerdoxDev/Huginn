@@ -1,5 +1,5 @@
-import { useClient } from "@contexts/apiContext";
 import type { Snowflake } from "@huginn/shared";
+import { useClient } from "@stores/apiStore";
 import { useMutation } from "@tanstack/react-query";
 
 export type RemoveChannelRecipientMutationVars = { channelId: Snowflake; recipientId: Snowflake };

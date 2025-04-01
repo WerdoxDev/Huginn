@@ -1,28 +1,27 @@
 import type { SettingsTabProps } from "@/types";
 import AnimatedMessage from "@components/AnimatedMessage";
+import ImageSelector from "@components/ImageSelector";
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
-import ImageSelector from "@components/ImageSelector";
 import HuginnInput from "@components/input/HuginnInput";
 import PasswordInput from "@components/input/PasswordInput";
-import { useClient } from "@contexts/apiContext";
-import { useEvent } from "@contexts/eventContext";
-import { useModalsDispatch } from "@contexts/modalContext";
-import { useUser } from "@contexts/userContext";
 import { Transition } from "@headlessui/react";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useInputs } from "@hooks/useInputs";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import { omit } from "@huginn/shared";
+import { listenEvent } from "@lib/eventHandler";
 import { getUserAvatarOptions } from "@lib/queries";
+import { useClient } from "@stores/apiStore";
+import { useModals } from "@stores/modalsStore";
+import { useThisUser } from "@stores/userStore";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useMemo, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function SettingsProfileTab(_props: SettingsTabProps) {
 	const client = useClient();
-	const { user, setUser, tokenPayload } = useUser();
-	const { listenEvent } = useEvent();
-	const modalsDispatch = useModalsDispatch();
+	const { user, setUser, tokenPayload } = useThisUser();
+	const { updateModals } = useModals();
 
 	const { inputsProps, values, handleErrors, resetStatuses, resetInput, setValue } = useInputs([
 		{ name: "username", required: true, default: user?.username, lowercase: true },
@@ -88,7 +87,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 	}
 
 	function onSelected(data: string, mimeType: string) {
-		modalsDispatch({ imageCrop: { isOpen: true, originalImageData: data, mimeType: mimeType } });
+		updateModals({ imageCrop: { isOpen: true, originalImageData: data, mimeType: mimeType } });
 	}
 
 	function edit() {
