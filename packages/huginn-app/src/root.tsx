@@ -17,7 +17,7 @@ export const queryClient = new QueryClient({
 	defaultOptions: { queries: { refetchOnReconnect: false, refetchOnWindowFocus: false, refetchOnMount: false, staleTime: 60000 } },
 });
 
-// FIXME: Posthog seems to note work with react router just yet
+// FIXME: Posthog seems to not work with react router just yet
 // const posthogClient = posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_KEY, {
 // 	api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
 // 	person_profiles: "always",
@@ -36,21 +36,26 @@ export async function clientLoader({ request }: Route.ClientLoaderArgs) {
 	const pathname = new URL(request.url).pathname;
 	// posthog.capture("$pageview", { $current_url: window.origin + pathname });
 
-	if (pathname === "/splashscreen" || pathname === "/redirect") {
-		return;
-	}
-
-	if (pathname === "/") {
-		throw redirect("/login");
-	}
-
-	if (client?.isLoggedIn) {
-		return;
-	}
-	if (pathname !== "/login" && pathname !== "/register" && pathname !== "/oauth-redirect") {
+	if (pathname !== "/" && !client?.isLoggedIn) {
 		const search = new URLSearchParams({ redirect: pathname });
-		throw redirect(`/login?${search.toString()}`);
+		throw redirect(`/?${search.toString()}`);
 	}
+
+	// if (pathname === "/splashscreen" || pathname === "/redirect") {
+	// 	return;
+	// }
+
+	// if (pathname === "/") {
+	// 	throw redirect("/login");
+	// }
+
+	// if (client?.isLoggedIn) {
+	// 	return;
+	// }
+	// if (pathname !== "/login" && pathname !== "/register" && pathname !== "/oauth-redirect") {
+	// 	const search = new URLSearchParams({ redirect: pathname });
+	// throw redirect(`/login?${search.toString()}`);
+	// }
 }
 
 export function Layout(props: { children: ReactNode }) {

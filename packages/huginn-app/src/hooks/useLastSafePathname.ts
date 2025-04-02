@@ -9,6 +9,7 @@ export function useSafePathname() {
 	async function navigateBack() {
 		const safePathname = history.lastPathname?.includes(location.pathname) ? "/channels/@me" : history.lastPathname;
 
+		console.log("NAV");
 		await navigate(safePathname ?? "/");
 	}
 

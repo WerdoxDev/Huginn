@@ -6,7 +6,7 @@ use serde::Serialize;
 use serde_json::Value;
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
-use tauri::{AppHandle, Emitter, Manager, WindowEvent};
+use tauri::{AppHandle, Emitter, LogicalSize, Manager, WindowEvent};
 use tauri_plugin_updater::UpdaterExt;
 use tauri_winrt_notification::{Duration, IconCrop, Toast};
 
@@ -23,24 +23,6 @@ struct UpdateInfo<'a> {
     body: &'a Option<String>,
     current_version: &'a String,
     version: &'a String,
-}
-
-#[tauri::command]
-async fn close_splashscreen(app: AppHandle) {
-    // Hide splashscreen window
-    app.get_webview_window("splashscreen")
-        .expect("no window labeled 'splashscreen' found")
-        .hide()
-        .unwrap();
-}
-
-#[tauri::command]
-async fn open_splashscreen(app: AppHandle) {
-    // Show splashscreen window
-    app.get_webview_window("splashscreen")
-        .expect("no window labeled 'splashscreen' found")
-        .show()
-        .unwrap();
 }
 
 #[tauri::command]
@@ -61,6 +43,31 @@ async fn close_main(app: AppHandle) {
         .expect("no window labeled 'main' found")
         .hide()
         .unwrap();
+}
+
+#[tauri::command]
+async fn splashscreen_mode(app: AppHandle) {
+    let window = app
+        .get_webview_window("main")
+        .expect("no window labeled 'main' found");
+    let _ = window.set_resizable(false);
+    let _ = window.set_maximizable(false);
+    let _ = window.set_size(LogicalSize::new(300, 300));
+    let _ = window.center();
+}
+
+#[tauri::command]
+async fn main_mode(app: AppHandle) {
+    let window = app
+        .get_webview_window("main")
+        .expect("no window labeled 'main' found");
+    let _ = window.set_resizable(true);
+    let config = window.config();
+    let min_height = config.app.windows[0].min_height.unwrap();
+    let min_width = config.app.windows[0].min_width.unwrap();
+
+    let _ = window.set_size(LogicalSize::new(min_width, min_height));
+    let _ = window.center();
 }
 
 #[tauri::command]
@@ -115,6 +122,7 @@ async fn update(app: AppHandle, target: String) -> Result<(), tauri_plugin_updat
         .updater_builder()
         .endpoints(vec![update_endpoint.parse().expect("Invalid URL")])?
         .version_comparator(|current, update| update.version != current)
+        //   .version_comparator(|current, update| true)
         .target(target)
         .build()?
         .check()
@@ -210,10 +218,10 @@ pub fn run() {
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_cli::init())
         .invoke_handler(tauri::generate_handler![
-            close_splashscreen,
-            open_splashscreen,
             close_main,
             open_and_focus_main,
+            splashscreen_mode,
+            main_mode,
             check_update,
             send_notification
         ])

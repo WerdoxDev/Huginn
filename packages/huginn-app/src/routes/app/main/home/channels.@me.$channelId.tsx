@@ -30,6 +30,7 @@ export default function Component({ params: { channelId } }: Route.ComponentProp
 
 	useEffect(() => {
 		if (!channel) {
+			console.log("NOPE");
 			navigateBack();
 			return;
 		}

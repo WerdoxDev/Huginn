@@ -3,7 +3,6 @@ import { index, layout, route } from "@react-router/dev/routes";
 
 const routes: RouteConfig = [
 	index("routes/home.tsx"),
-	route("splashscreen", "routes/splashscreen.tsx"),
 	layout("routes/app/app-layout.tsx", [
 		layout("routes/app/auth/auth-layout.tsx", [
 			route("login", "routes/app/auth/login.tsx"),

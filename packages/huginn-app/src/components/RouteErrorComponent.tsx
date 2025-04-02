@@ -8,6 +8,7 @@ export default function RouteErrorComponent() {
 	const navigate = useNavigate();
 
 	useEffect(() => {
+		console.log(error);
 		handleError(error);
 		navigate(-1);
 	}, []);
