@@ -1,6 +1,6 @@
 {
 	"name": "@huginn/backend-shared",
-	"version": "0.7.2",
+	"version": "0.8.0",
 	"type": "module",
 	"dependencies": {
 		"@hono/zod-validator": "^0.4.3",
