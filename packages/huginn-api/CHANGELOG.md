@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.9.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.8.0...api@v0.9.0) (2025-04-04)
+
+
+### Features
+
+* **api:** add all event listeners for voice ([f15257e](https://github.com/WerdoxDev/Huginn/commit/f15257e857acbd86dd821d8e4637543893355dc9))
+* **api:** add full closing and voice disconnect gateway message ([548afd0](https://github.com/WerdoxDev/Huginn/commit/548afd0b6d0a4277fafc91c2b2b2d910cca3be69))
+* **api:** add initial functionality for voice ([207c807](https://github.com/WerdoxDev/Huginn/commit/207c8076cda418769d46e43113ba6491ebc9f1b6))
+* **api:** add listen function returning an unlisten ([3ba1de5](https://github.com/WerdoxDev/Huginn/commit/3ba1de5ad44e6686dd8efad6ee1351fc9ff78c07))
+* **api:** add transport creation ws requests ([d0d856f](https://github.com/WerdoxDev/Huginn/commit/d0d856ff8e959a8b27a6a8dd4f04ca054b6a2955))
+* **api:** add voice websocket identify sending ([d006ba1](https://github.com/WerdoxDev/Huginn/commit/d006ba14671eca4f2816589f282d552f3ab5411e))
+* **api:** voice event changes ([769d08e](https://github.com/WerdoxDev/Huginn/commit/769d08eb42efcce76eda96679df4f7f005dc5dd8))
+
+
+### Bug Fixes
+
+* **api:** revert type name change ([1f64c86](https://github.com/WerdoxDev/Huginn/commit/1f64c865ae4b00aab676678d35d045cd5937e5ae))
+
 ## [0.8.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.7.1...api@v0.8.0) (2025-03-02)
 
 

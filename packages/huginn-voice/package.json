@@ -22,5 +22,8 @@
 	"imports": {
 		"#*": "./src/*.ts"
 	},
-	"trustedDependencies": ["mediasoup"]
+	"trustedDependencies": [
+		"mediasoup"
+	],
+	"version": "1.0.0"
 }
