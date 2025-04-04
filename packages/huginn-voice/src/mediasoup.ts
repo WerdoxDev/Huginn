@@ -1,7 +1,9 @@
+import { env } from "node:process";
 import { GatewayCode, type Snowflake } from "@huginn/shared";
 import type { Peer } from "crossws";
 import mediasoup from "mediasoup";
 import type { Router, RtpCodecCapability, WebRtcServer, Worker } from "mediasoup/node/lib/types";
+import { envs } from "#index";
 import type { RouterType } from "#utils/types";
 
 export const routers = new Map<string, RouterType>();
@@ -29,7 +31,7 @@ export async function runMediasoupWorker() {
 	});
 
 	webRtcServer = await worker.createWebRtcServer({
-		listenInfos: [{ ip: "192.168.178.51", protocol: "udp", port: 44444 }],
+		listenInfos: [{ ip: envs.MEDIA_IP ?? "", announcedAddress: envs.MEDIA_ANNOUNCED_IP, protocol: "udp", port: Number(envs.MEDIA_PORT) }],
 	});
 
 	console.log("mediasoup worker created");

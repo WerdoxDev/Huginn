@@ -1,9 +1,12 @@
 import type { Server } from "node:http";
 import { serve } from "@hono/node-server";
+import { readEnv } from "@huginn/backend-shared/env-reader";
 import crossws from "crossws/adapters/node";
 import { Hono } from "hono";
 import { runMediasoupWorker } from "#mediasoup";
 import { VoiceWebSocket } from "./voice-websocket";
+
+export const envs = readEnv(["VOICE_HOST", "VOICE_PORT", "MEDIA_IP", "MEDIA_ANNOUNCED_IP", "MEDIA_PORT"] as const);
 
 const app = new Hono();
 
@@ -21,8 +24,8 @@ export const ws = crossws({
 const server = serve(
 	{
 		fetch: app.fetch,
-		hostname: "192.168.178.51",
-		port: 3003,
+		hostname: envs.VOICE_HOST,
+		port: Number(envs.VOICE_PORT),
 	},
 	(info) => {
 		console.log(`Server is running on http://${info.address}:${info.port}`);
