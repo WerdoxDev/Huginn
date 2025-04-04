@@ -25,7 +25,7 @@ export async function initializeWindow() {
 		maximized: globalThis.__TAURI_INTERNALS__ ? await getCurrentWebviewWindow().isMaximized() : true,
 		focused: document.hasFocus(),
 		matches: globalThis.__TAURI_INTERNALS__ ? await getMatches() : undefined,
-		window: getCurrentWebviewWindow(),
+		window: globalThis.__TAURI_INTERNALS__ ? getCurrentWebviewWindow() : undefined,
 	});
 
 	function onFocusChange(event: FocusEvent) {

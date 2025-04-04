@@ -1,3 +1,4 @@
+import { useHuginnWindow } from "@stores/windowStore";
 import { useMutation } from "@tanstack/react-query";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
@@ -15,6 +16,7 @@ type UpdateInfo = {
 };
 
 export function useUpdater(onFinished?: (wasAvailable: boolean) => void, onTry?: () => void, onFail?: () => void, onError?: () => void) {
+	const huginnWindow = useHuginnWindow();
 	const [progress, setProgress] = useState(0);
 	const [info, setInfo] = useState<UpdateInfo>();
 	const contentLength = useRef(0);
@@ -60,6 +62,10 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void, onTry?:
 	});
 
 	useEffect(() => {
+		if (huginnWindow.environment !== "desktop") {
+			return;
+		}
+
 		const unlistenProgress = listen<UpdateProgress>("update-progress", (event) => {
 			downloaded.current = event.payload.downloaded;
 			contentLength.current = event.payload.contentLength;
@@ -72,8 +78,8 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void, onTry?:
 		});
 
 		return () => {
-			unlistenProgress.then((f) => f());
-			unlistenFinished.then((f) => f());
+			unlistenProgress?.then((f) => f());
+			unlistenFinished?.then((f) => f());
 		};
 	}, []);
 

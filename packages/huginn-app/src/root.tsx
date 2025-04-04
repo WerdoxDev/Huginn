@@ -35,9 +35,16 @@ export const ErrorBoundary = RouteErrorComponent;
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
 	const pathname = new URL(request.url).pathname;
 	// posthog.capture("$pageview", { $current_url: window.origin + pathname });
+	const search = new URLSearchParams({ redirect: pathname });
+
+	// if (!window?.__TAURI_INTERNALS__) {
+	// 	if (pathname !== "/login" && !client?.isLoggedIn) {
+	// 		throw redirect(`/login?${search.toString()}`);
+	// 	}
+	// 	return;
+	// }
 
 	if (pathname !== "/" && !client?.isLoggedIn) {
-		const search = new URLSearchParams({ redirect: pathname });
 		throw redirect(`/?${search.toString()}`);
 	}
 

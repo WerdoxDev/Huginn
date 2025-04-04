@@ -7,7 +7,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { LogicalSize } from "@tauri-apps/api/dpi";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 const loadingStates = {
@@ -55,9 +55,8 @@ export default function Home() {
 		setLoadingState("checking_update");
 	}
 
-	function mainMode() {
-		console.log(search.toString(), "param");
-		navigate(`/login?${search.toString()}`);
+	async function mainMode() {
+		await navigate(`/login?${search.toString()}`);
 		invoke("main_mode");
 	}
 
@@ -74,6 +73,11 @@ export default function Home() {
 	}, [info]);
 
 	useEffect(() => {
+		if (huginnWindow.environment !== "desktop") {
+			navigate(`/login?${search.toString()}`);
+			return;
+		}
+
 		updateFinished.current = false;
 
 		if (huginnWindow.matches.args?.silent?.value !== true) {
@@ -88,9 +92,13 @@ export default function Home() {
 		});
 
 		return () => {
-			unlisten.then((f) => f());
+			unlisten?.then((f) => f());
 		};
 	}, []);
+
+	if (huginnWindow.environment !== "desktop") {
+		return;
+	}
 
 	return (
 		<div className="flex h-full w-full select-none rounded-xl bg-background" data-tauri-drag-region>
