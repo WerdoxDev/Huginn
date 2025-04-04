@@ -7,4 +7,5 @@
   reverse_proxy /gateway server:3004
 
   reverse_proxy /cdn* cdn:3002
+  reverse_proxy /voice* voice:3003
 }

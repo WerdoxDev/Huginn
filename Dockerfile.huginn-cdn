@@ -21,6 +21,7 @@ FROM base AS prerelease
 COPY --from=install /temp/deps/node_modules node_modules
 COPY . /src
 RUN rm -rf /src/packages/huginn-server
+RUN rm -rf /src/packages/huginn-voice
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

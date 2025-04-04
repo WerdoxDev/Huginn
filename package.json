@@ -1,19 +1,20 @@
 {
-  "name": "monorepo",
-  "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "@types/bun": "latest",
-    "release-please": "^16.15.0",
-    "typescript": "^5.7.2"
-  },
-  "private": "true",
-  "scripts": {
-    "bifrost": "cd packages/huginn-bifrost && bun start",
-    "server": "cd packages/huginn-server && bun start",
-    "cdn": "cd packages/huginn-cdn && bun start",
-    "tauri": " cd packages/huginn-app && bun run tauri-dev"
-  },
-  "type": "module",
-  "workspaces": ["packages/*"],
-  "trustedDependencies": ["mediasoup", "prisma", "sharp"]
+	"name": "monorepo",
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.4",
+		"@types/bun": "latest",
+		"release-please": "^16.15.0",
+		"typescript": "^5.7.2"
+	},
+	"private": "true",
+	"scripts": {
+		"bifrost": "cd packages/huginn-bifrost && bun start",
+		"server": "cd packages/huginn-server && bun start",
+		"cdn": "cd packages/huginn-cdn && bun start",
+		"voice": "cd packages/huginn-voice && npm run start",
+		"tauri": " cd packages/huginn-app && bun run tauri-dev"
+	},
+	"type": "module",
+	"workspaces": ["packages/*"],
+	"trustedDependencies": ["prisma", "sharp"]
 }

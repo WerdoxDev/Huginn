@@ -52,6 +52,27 @@ services:
         limits:
           memory: 2g
           cpus: "2.0"
+  voice:
+    image: ghcr.io/werdoxdev/huginn-voice:latest
+    environment:
+      - VOICE_HOST=0.0.0.0
+      - VOICE_PORT=3003
+      - MEDIA_IP=0.0.0.0
+      - MEDIA_ANNOUNCED_IP=79.253.155.139
+      - MEDIA_PORT=44444
+    ports:
+      - "44444:44444/udp"
+    secrets:
+      - backend_secrets
+    networks:
+      - caddy
+    depends_on:
+      - caddy
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+          cpus: "2.0"
 
 configs:
   caddy_config:
