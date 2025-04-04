@@ -12,6 +12,9 @@
 		"packages/huginn-server": {
 			"package-name": "server"
 		},
+		"packages/huginn-voice": {
+			"package-name": "voice"
+		},
 		"packages/huginn-cdn": {
 			"package-name": "cdn"
 		},
