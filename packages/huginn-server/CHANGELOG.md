@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.19.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.18.0...server@v0.19.0) (2025-04-04)
+
+
+### Features
+
+* **server:** add voice states and fix channel remove recipient event orders ([23239d7](https://github.com/WerdoxDev/Huginn/commit/23239d783f7245a1df65844e1d9d2eeabe9d051c))
+* **server:** fix some type imports + tests, and add voice state handling ([03c20c7](https://github.com/WerdoxDev/Huginn/commit/03c20c7834cf254d430e44ce2674e89eebd8d8e0))
+* **server:** make the server use only peer id as session id ([3bf9053](https://github.com/WerdoxDev/Huginn/commit/3bf9053834121efc4191ea341241f686d442fcc2))
+
 ## [0.18.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.17.0...server@v0.18.0) (2025-03-06)
 
 

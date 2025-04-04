@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.13.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.12.0...shared@v0.13.0) (2025-04-04)
+
+
+### Features
+
+* **shared:** add all missing voice gateway types ([9965509](https://github.com/WerdoxDev/Huginn/commit/99655096b1c8925fcc34c8429724efdafc248046))
+* **shared:** add api & gateway types for voice state updating ([090b790](https://github.com/WerdoxDev/Huginn/commit/090b79053fafab7591ce4c3867c775fac8a8a352))
+* **shared:** add new voice operation types ([12ae0b7](https://github.com/WerdoxDev/Huginn/commit/12ae0b7eee83c0443095beb5385f17df4abeb399))
+* **shared:** few type changes relating to voice ([fc3385c](https://github.com/WerdoxDev/Huginn/commit/fc3385c0a16669d0bb8a5e021d6a6c3b0b0bb231))
+
 ## [0.12.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.11.0...shared@v0.12.0) (2025-03-03)
 
 

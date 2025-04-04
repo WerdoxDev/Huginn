@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.8.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.7.2...backend-shared@v0.8.0) (2025-04-04)
+
+
+### Features
+
+* **backend-shared:** add voice token generation ([a76ef72](https://github.com/WerdoxDev/Huginn/commit/a76ef72b4045d395c1bc53847461efe436293ef6))
+* **backend-shared:** move all database handling to backend-shared ([d474a0b](https://github.com/WerdoxDev/Huginn/commit/d474a0b8741b0c4ffcadbf58e550e9acb74d855b))
+
+
+### Bug Fixes
+
+* **backend-shared:** revert name type changes ([ec72024](https://github.com/WerdoxDev/Huginn/commit/ec72024fa01d90f630be780dbae01d545c615447))
+
 ## [0.7.2](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.7.1...backend-shared@v0.7.2) (2025-03-06)
 
 
