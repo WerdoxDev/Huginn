@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.28.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.27.0...app@v0.28.0) (2025-04-04)
+
+
+### Features
+
+* **app:** add a start call button to HomeTopbar ([b6baebd](https://github.com/WerdoxDev/Huginn/commit/b6baebd694a2fffe3d17aad2a0d4ef476b09dd6d))
+* **app:** add custom notification sound ([06cd3f4](https://github.com/WerdoxDev/Huginn/commit/06cd3f4694850ed8d780ad2eafbd3c2e9c20cb82))
+* **app:** add fullish ui for voice with buttons and indicators ([0642df1](https://github.com/WerdoxDev/Huginn/commit/0642df1613d1e582b823ca3448cd53423be08860))
+* **app:** add very experimental video call ui ([1ac97d3](https://github.com/WerdoxDev/Huginn/commit/1ac97d37fa102cdc60b6c167b28bac95897a6d53))
+* **app:** merged splashscreen into the main window ([dad146b](https://github.com/WerdoxDev/Huginn/commit/dad146b66d7dc965c01adedce15eead683394594))
+* **app:** refactor all api related hooks and contexts to use stores instead ([05ea484](https://github.com/WerdoxDev/Huginn/commit/05ea4847e009865e75a2a03d077127ab97d9e338))
+* **app:** some progress on the voice ui ([594e62b](https://github.com/WerdoxDev/Huginn/commit/594e62bb5a152d8d346f08b0f29ed06ed4331a81))
+
+
+### Bug Fixes
+
+* **app:** fix new splashscreen giving errors in the browser ([72da35c](https://github.com/WerdoxDev/Huginn/commit/72da35cfe47d320c565e3f005557bc90f6732b50))
+* **app:** fix some websocket event issues ([fddc3e9](https://github.com/WerdoxDev/Huginn/commit/fddc3e965bb704906124a6e2e474ccf0e868a081))
+
 ## [0.27.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.26.0...app@v0.27.0) (2025-03-06)
 
 
