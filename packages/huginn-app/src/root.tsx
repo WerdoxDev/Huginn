@@ -44,7 +44,7 @@ export async function clientLoader({ request }: Route.ClientLoaderArgs) {
 	// 	return;
 	// }
 
-	if (pathname !== "/" && !client?.isLoggedIn) {
+	if (pathname !== "/" && pathname !== "/oauth-redirect" && !client?.isLoggedIn) {
 		throw redirect(`/?${search.toString()}`);
 	}
 

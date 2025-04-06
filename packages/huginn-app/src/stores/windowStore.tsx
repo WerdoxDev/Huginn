@@ -1,4 +1,5 @@
-import type { UnlistenFn } from "@tauri-apps/api/event";
+import { invoke } from "@tauri-apps/api/core";
+import { type UnlistenFn, listen } from "@tauri-apps/api/event";
 import { type WebviewWindow, getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { type CliMatches, getMatches } from "@tauri-apps/plugin-cli";
 import { createStore, useStore } from "zustand";
@@ -36,16 +37,22 @@ export async function initializeWindow() {
 	window.addEventListener("blur", onFocusChange);
 
 	let unlisten: UnlistenFn;
+	let unlisten2: UnlistenFn;
 	if (store.getState().environment === "desktop") {
 		const appWindow = getCurrentWebviewWindow();
 		unlisten = await appWindow.onResized(async () => {
 			const appMaximized = await appWindow.isMaximized();
 			store.setState({ maximized: appMaximized });
 		});
+
+		unlisten2 = await listen("tray-clicked", () => {
+			invoke("open_and_focus_main");
+		});
 	}
 
 	return () => {
 		unlisten();
+		unlisten2();
 		window.removeEventListener("focus", onFocusChange);
 		window.removeEventListener("blur", onFocusChange);
 	};

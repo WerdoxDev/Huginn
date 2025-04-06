@@ -62,7 +62,7 @@
 				"minHeight": 670,
 				"fullscreen": false,
 				"resizable": true,
-				"visible": true,
+				"visible": false,
 				"label": "main",
 				"decorations": false,
 				"transparent": false,

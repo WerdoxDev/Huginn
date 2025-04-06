@@ -80,20 +80,13 @@ export default function Home() {
 
 		updateFinished.current = false;
 
+		invoke("splashscreen_mode");
+
 		if (huginnWindow.matches.args?.silent?.value !== true) {
-			invoke("splashscreen_mode");
 			invoke("open_and_focus_main");
 		}
 
 		startUpdate();
-
-		const unlisten = listen("tray-clicked", () => {
-			invoke("open_and_focus_main");
-		});
-
-		return () => {
-			unlisten?.then((f) => f());
-		};
 	}, []);
 
 	if (huginnWindow.environment !== "desktop") {
