@@ -84,10 +84,10 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void, onTry?:
 	}, []);
 
 	async function checkAndDownload() {
-		// if (import.meta.env.DEV) {
-		// 	onFinished?.(true);
-		// 	return;
-		// }
+		if (import.meta.env.DEV) {
+			onFinished?.(false);
+			return;
+		}
 
 		if (!isChecking.current) {
 			isChecking.current = true;

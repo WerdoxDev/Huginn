@@ -39,7 +39,13 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		}
 
 		const localStream = await navigator.mediaDevices.getUserMedia({
-			audio: true,
+			audio: {
+				sampleRate: 48000,
+				channelCount: 2,
+				echoCancellation: false,
+				noiseSuppression: false,
+				autoGainControl: false,
+			},
 			video: false,
 		});
 
