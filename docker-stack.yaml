@@ -4,7 +4,7 @@ networks:
 
 services:
   caddy:
-    image: caddy:latest
+    image: ghcr.io/werdoxdev/caddy:latest
     configs:
       - source: caddy_config
         target: /etc/caddy/Caddyfile
@@ -13,7 +13,6 @@ services:
     volumes:
       - caddy_data:/data
       - caddy_config:/config
-    restart: unless-stopped
 
   server:
     image: ghcr.io/werdoxdev/huginn-server:latest
@@ -58,7 +57,7 @@ services:
       - VOICE_HOST=0.0.0.0
       - VOICE_PORT=3003
       - MEDIA_IP=0.0.0.0
-      - MEDIA_ANNOUNCED_IP=79.253.155.139
+      - MEDIA_ANNOUNCED_IP=midgard.huginn.dev
       - MEDIA_PORT=44444
     ports:
       - "44444:44444/udp"

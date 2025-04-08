@@ -1,5 +1,9 @@
 @echo off
 
+echo *> .dockerignore
+docker build -t ghcr.io/werdoxdev/caddy -f Dockerfile.caddy .
+git checkout .dockerignore
+
 echo **/huginn-cdn>> .dockerignore
 echo **/huginn-voice>> .dockerignore
 docker build -t ghcr.io/werdoxdev/huginn-server -f Dockerfile.huginn-server .
@@ -15,6 +19,7 @@ echo **/huginn-cdn>> .dockerignore
 docker build -t ghcr.io/werdoxdev/huginn-voice -f Dockerfile.huginn-voice .
 git checkout .dockerignore
 
+docker push ghcr.io/werdoxdev/caddy:latest
 docker push ghcr.io/werdoxdev/huginn-server:latest
 docker push ghcr.io/werdoxdev/huginn-cdn:latest
 docker push ghcr.io/werdoxdev/huginn-voice:latest
