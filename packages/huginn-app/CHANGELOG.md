@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.28.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.28.0...app@v0.28.1) (2025-04-06)
+
+
+### Bug Fixes
+
+* **app:** fix splashscreen not liking oauth and event listening outside ([0193390](https://github.com/WerdoxDev/Huginn/commit/0193390f8a99f8789b91efff7ca8b7ea161597e1))
+
 ## [0.28.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.27.0...app@v0.28.0) (2025-04-04)
 
 
