@@ -20,7 +20,7 @@ import * as jose from "jose";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
-export default function Component() {
+export default function OauthRedirect() {
 	const client = useClient();
 	const [search] = useSearchParams();
 	const navigate = useNavigate();

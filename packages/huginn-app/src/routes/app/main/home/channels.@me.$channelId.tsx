@@ -1,4 +1,4 @@
-import { queryClient } from "@/root";
+import { queryClient } from "@/main";
 import MessageBox from "@components/MessageBox";
 import ChannelMessages from "@components/channels/ChannelMessages";
 import DirectChannelCall from "@components/channels/DirectChannelCall";
@@ -11,13 +11,14 @@ import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
 import { client, useClient } from "@stores/apiStore";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import type { Route } from "./+types/channels.@me.$channelId";
+import { type LoaderFunctionArgs, useParams } from "react-router";
 
-export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-	return queryClient.ensureInfiniteQueryData(getMessagesOptions(queryClient, client, params.channelId));
+export async function channelWithIdLoader({ params }: LoaderFunctionArgs) {
+	return queryClient.ensureInfiniteQueryData(getMessagesOptions(queryClient, client, params.channelId as string));
 }
 
-export default function Component({ params: { channelId } }: Route.ComponentProps) {
+export default function ChannelWithId() {
+	const { channelId } = useParams() as { channelId: string };
 	const client = useClient();
 	const queryClient = useQueryClient();
 	const { error, data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client, channelId));

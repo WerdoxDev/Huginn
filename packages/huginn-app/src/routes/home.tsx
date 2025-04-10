@@ -3,11 +3,7 @@ import LoadingIcon from "@components/LoadingIcon";
 import { useCountdown } from "@hooks/useCountdown";
 import { useUpdater } from "@hooks/useUpdater";
 import { useHuginnWindow } from "@stores/windowStore";
-import { invoke } from "@tauri-apps/api/core";
-import { LogicalSize } from "@tauri-apps/api/dpi";
-import { listen } from "@tauri-apps/api/event";
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 const loadingStates = {
@@ -19,7 +15,7 @@ const loadingStates = {
 	none: "Invalid State",
 } as const;
 
-export default function Home() {
+export default function Index() {
 	const updateFinished = useRef(false);
 	const huginnWindow = useHuginnWindow();
 	const [search] = useSearchParams();
@@ -57,7 +53,8 @@ export default function Home() {
 
 	async function mainMode() {
 		await navigate(`/login?${search.toString()}`);
-		invoke("main_mode");
+		//TODO: MIGRATION
+		// invoke("main_mode");
 	}
 
 	useEffect(() => {
@@ -80,11 +77,14 @@ export default function Home() {
 
 		updateFinished.current = false;
 
-		invoke("splashscreen_mode");
+		//TODO: MIGRATION
+		// invoke("splashscreen_mode");
 
-		if (huginnWindow.matches.args?.silent?.value !== true) {
-			invoke("open_and_focus_main");
-		}
+		//TODO: MIGRATION
+		// if (huginnWindow.matches.args?.silent?.value !== true) {
+		// 	//TODO: MIGRATION
+		// 	// invoke("open_and_focus_main");
+		// }
 
 		startUpdate();
 	}, []);

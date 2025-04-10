@@ -1,6 +1,5 @@
 import type { LinkElement as SlateLinkElement } from "@/index";
 import { useHuginnWindow } from "@stores/windowStore";
-import { open } from "@tauri-apps/plugin-shell";
 import type { RenderElementProps } from "slate-react";
 
 export default function LinkElement(props: RenderElementProps) {
@@ -11,6 +10,7 @@ export default function LinkElement(props: RenderElementProps) {
 		<span
 			{...props.attributes}
 			className="relative inline-block cursor-pointer underline"
+			//TODO: MIGRATION
 			onClick={url ? () => (huginnWindow.environment === "desktop" ? open(url) : window.open(url)) : undefined}
 			title={url}
 		>

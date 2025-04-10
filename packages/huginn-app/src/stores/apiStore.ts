@@ -1,13 +1,9 @@
-import { queryClient } from "@/root";
-import type { AppDirectChannel } from "@/types";
 import { HuginnClient } from "@huginn/api";
-import type { APIPublicUser, APIUser, PresenceUser, Snowflake } from "@huginn/shared";
-import { type QueryClient, useQueryClient } from "@tanstack/react-query";
+import type { APIPublicUser, PresenceUser, Snowflake } from "@huginn/shared";
 import { produce } from "immer";
-import { type ReactNode, createContext, useContext, useMemo } from "react";
-import { createStore, useStore } from "zustand";
+import { createStore } from "zustand";
 import { combine } from "zustand/middleware";
-import { settingsStore, useSettings } from "./settingsStore";
+import { settingsStore } from "./settingsStore";
 
 // biome-ignore lint/style/noNonNullAssertion: <explanation>
 export let client: HuginnClient = undefined!;

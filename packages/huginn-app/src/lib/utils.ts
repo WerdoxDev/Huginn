@@ -1,7 +1,5 @@
-import { queryClient } from "@/root";
 import type { AppDirectChannel, AppMessage, AppRelationship, InputStatus, InputStatuses, InputValue, InputValues } from "@/types";
 import {
-	type APIChannel,
 	type APIDefaultMessage,
 	type APIRelationshipWithoutOwner,
 	type DirectChannel,

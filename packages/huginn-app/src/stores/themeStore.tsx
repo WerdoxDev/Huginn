@@ -137,10 +137,10 @@ function hexToRgb(hex: string) {
 }
 
 export function useTheme() {
-	const store = useContext(ThemeContext);
 	return useStore(store);
 }
 
-export function useThemeStore() {
-	return useContext(ThemeContext);
-}
+// export function useThemeStore() {
+// 	console.log(ThemeContext);
+// 	return useStore(ThemeContext);
+// }

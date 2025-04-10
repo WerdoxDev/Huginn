@@ -1,4 +1,4 @@
-import { queryClient } from "@/root";
+import { queryClient } from "@/main";
 import AddFriendTab from "@components/friends/AddFriendTab";
 import FriendsTab from "@components/friends/FriendsTab";
 import FriendsTabItem from "@components/friends/FriendsTabItem";
@@ -9,7 +9,7 @@ import { getRelationshipsOptions } from "@lib/queries";
 import { client, useClient } from "@stores/apiStore";
 import { usePresences } from "@stores/presenceStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { Fragment } from "react/jsx-runtime";
 
 export async function clientLoader() {
@@ -18,7 +18,7 @@ export async function clientLoader() {
 
 const tabs = ["Online", "All", "Pending"];
 
-export default function Component() {
+export default function Friends() {
 	const client = useClient();
 	const { data: friends } = useSuspenseQuery(getRelationshipsOptions(client));
 

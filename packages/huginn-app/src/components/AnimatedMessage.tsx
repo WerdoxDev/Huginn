@@ -1,6 +1,6 @@
 import type { StatusCode } from "@/types";
 import clsx from "clsx";
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function AnimatedMessage(props: { className?: string; status: StatusCode; visible: boolean; text: string }) {
 	const text = useRef<HTMLDivElement>(null);

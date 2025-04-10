@@ -1,10 +1,9 @@
 import { useMainViewTransitionState } from "@hooks/useMainViewTransitionState";
-import { useThemeStore } from "@stores/themeStore";
+import { useTheme } from "@stores/themeStore";
 import clsx from "clsx";
-import { useStore } from "zustand";
 
 export default function AuthBackgroundSvg(props: { state: number }) {
-	const fillColor = useStore(useThemeStore(), (state) => state.theme.accent2);
+	const fillColor = useTheme();
 	const isTransitioning = useMainViewTransitionState();
 
 	const path1 = {
@@ -32,14 +31,14 @@ export default function AuthBackgroundSvg(props: { state: number }) {
 				<title>animated-background</title>
 				<g transform="translate(960, 0)">
 					<path
-						fill={fillColor}
+						fill={fillColor.theme.accent2}
 						className="transition-all duration-500"
 						d={props.state === 0 ? path1.open : props.state === 1 ? path1.close : path1.initial}
 					/>
 				</g>
 				<g transform="translate(0, 540)">
 					<path
-						fill={fillColor}
+						fill={fillColor.theme.accent2}
 						className="transition-all duration-500"
 						d={props.state === 0 ? path2.open : props.state === 1 ? path2.close : path2.initial}
 					/>

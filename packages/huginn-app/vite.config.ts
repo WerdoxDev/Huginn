@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import * as path from "node:path";
 import { reactRouter } from "@react-router/dev/vite";
+import react from "@vitejs/plugin-react";
 import autoprefixer from "autoprefixer";
 // import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import { parseTOML } from "confbox";
@@ -16,21 +17,23 @@ const reactCompilerConfig = { target: "19" };
 
 // https://vitejs.dev/config/
 export default defineConfig({
+	base: "./",
 	plugins: [
 		// reactRouterDevTools(),
-		reactRouter(),
+		react({ jsxRuntime: "automatic" }),
+		// reactRouter(),
 		Icons({ compiler: "jsx" }),
 		AutoImport({
 			resolvers: [IconsResolver({ prefix: "Icon", extension: "jsx" })],
 			// dts: "./src/auto-imports.d.ts",
 		}),
-		babel({
-			filter: /\.[jt]sx?$/,
-			babelConfig: {
-				presets: ["@babel/preset-typescript"],
-				plugins: [["babel-plugin-react-compiler", reactCompilerConfig], "@babel/plugin-syntax-jsx"],
-			},
-		}),
+		// babel({
+		// 	filter: /\.[jt]sx?$/,
+		// 	babelConfig: {
+		// 		presets: ["@babel/preset-typescript"],
+		// 		plugins: [["babel-plugin-react-compiler", reactCompilerConfig], "@babel/plugin-syntax-jsx"],
+		// 	},
+		// }),
 	],
 
 	css: {
@@ -60,14 +63,17 @@ export default defineConfig({
 	server: {
 		strictPort: true,
 	},
-	// to access the Tauri environment variables set by the CLI with information about the current target
-	envPrefix: ["VITE_", "TAURI_ENV_*"],
 	build: {
-		// Tauri uses Chromium on Windows and WebKit on macOS and Linux
-		target: "esnext",
-		// don't minify for debug builds
-		minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
-		// produce sourcemaps for debug builds
-		sourcemap: !!process.env.TAURI_DEBUG,
+		outDir: "./dist",
 	},
+	// to access the Tauri environment variables set by the CLI with information about the current target
+	// envPrefix: ["VITE_", "TAURI_ENV_*"],
+	// build: {
+	// 	// Tauri uses Chromium on Windows and WebKit on macOS and Linux
+	// 	target: "esnext",
+	// 	// don't minify for debug builds
+	// 	minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
+	// 	// produce sourcemaps for debug builds
+	// 	sourcemap: !!process.env.TAURI_DEBUG,
+	// },
 });

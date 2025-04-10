@@ -1,8 +1,6 @@
-import { queryClient } from "@/root";
 import type { AppDirectChannel } from "@/types";
 import { useDeleteDMChannel } from "@hooks/mutations/useDeleteDMChannel";
 import { type APIGetUserChannelsResult, type APIPublicUser, ChannelType, type DirectChannel, type Snowflake } from "@huginn/shared";
-import { useClient } from "@stores/apiStore";
 import { useModals } from "@stores/modalsStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";

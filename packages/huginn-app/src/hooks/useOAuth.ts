@@ -3,9 +3,6 @@ import { listenEvent } from "@lib/eventHandler";
 import { useClient } from "@stores/apiStore";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
-import type { UnlistenFn } from "@tauri-apps/api/event";
-import { UserAttentionType, getCurrentWindow } from "@tauri-apps/api/window";
-import { open } from "@tauri-apps/plugin-shell";
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
 
@@ -15,7 +12,7 @@ export function useOAuth() {
 	const huginnWindow = useHuginnWindow();
 	const { updateModals } = useModals();
 
-	let unlisten: UnlistenFn;
+	let unlisten: () => void;
 
 	// Websocket
 
@@ -49,7 +46,8 @@ export function useOAuth() {
 	}
 
 	async function onOAuthRedirect(d: GatewayOAuthRedirectData) {
-		await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
+		//TODO: MIGRATION
+		// await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
 		await navigate(`/oauth-redirect?${new URLSearchParams({ ...d }).toString()}`, { viewTransition: true });
 		unlistenOAuth();
 	}
@@ -61,7 +59,8 @@ export function useOAuth() {
 		// Url scheme
 		unlisten = listenEvent("open_url", async (urls) => {
 			const url = new URL(urls[0]);
-			await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
+			//TODO: MIGRATION
+			// await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
 			await navigate(`/oauth-redirect?${url.searchParams.toString()}`, { viewTransition: true });
 			unlistenOAuth();
 		});

@@ -3,7 +3,6 @@ import { listenEvent } from "@lib/eventHandler";
 import { getCurrentPageMessages } from "@lib/utils";
 import { windowStore } from "@stores/windowStore";
 import type { QueryClient } from "@tanstack/react-query";
-import { join, resourceDir } from "@tauri-apps/api/path";
 import { produce } from "immer";
 import moment from "moment";
 import { useMemo } from "react";
@@ -85,7 +84,9 @@ export function initializeReadStates() {
 					data.message.channelId,
 					author?.username ?? "Unknown User",
 					data.message.content,
-					await join(await resourceDir(), "resources/huginn-text.png"),
+					"",
+					//TODO: MIGRATION
+					// await join(await resourceDir(), "resources/huginn-text.png"),
 				);
 			}
 			store.getState().increaseUnreadCount(data.message.channelId);

@@ -3,7 +3,7 @@ import QuickActionButton from "@components/button/QuickActionButton";
 import { useModals } from "@stores/modalsStore";
 import { NavLink, useNavigate } from "react-router";
 
-export default function Component() {
+export default function ChannelMe() {
 	const { updateModals } = useModals();
 	const navigate = useNavigate();
 

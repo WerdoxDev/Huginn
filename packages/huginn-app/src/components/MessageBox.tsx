@@ -19,13 +19,9 @@ import {
 	splitHighlightedTokens,
 } from "@lib/markdown-utils";
 import { useHuginnWindow } from "@stores/windowStore";
-import { getCurrentWebview } from "@tauri-apps/api/webview";
-import { readFile } from "@tauri-apps/plugin-fs";
 import clsx from "clsx";
 import hljs from "highlight.js";
 import markdownit from "markdown-it";
-import mime from "mime";
-import { normalize } from "pathe";
 import { type ClipboardEvent, type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useParams } from "react-router";
 import { type Descendant, Editor, Element, Node, type Path, type Range, createEditor } from "slate";
@@ -401,32 +397,33 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 			lastHeight = height;
 		});
 
-		const unlisten =
-			huginnWindow.environment === "desktop"
-				? getCurrentWebview().onDragDropEvent(async (e) => {
-						if (e.payload.type === "enter") {
-							setDragging(true);
-						} else if (e.payload.type === "leave") {
-							setDragging(false);
-						} else if (e.payload.type === "drop") {
-							const files: AttachmentInputType[] = [];
-							setDragging(false);
-							for (const path of e.payload.paths) {
-								const filename = normalize(path).split("/").pop();
-								const file = await readFile(path);
-								const type = mime.getType(filename);
+		// TODO: MIGRATION
+		// const unlisten =
+		// 	huginnWindow.environment === "desktop"
+		// 		? getCurrentWebview().onDragDropEvent(async (e) => {
+		// 				if (e.payload.type === "enter") {
+		// 					setDragging(true);
+		// 				} else if (e.payload.type === "leave") {
+		// 					setDragging(false);
+		// 				} else if (e.payload.type === "drop") {
+		// 					const files: AttachmentInputType[] = [];
+		// 					setDragging(false);
+		// 					for (const path of e.payload.paths) {
+		// 						const filename = normalize(path).split("/").pop();
+		// 						const file = await readFile(path);
+		// 						const type = mime.getType(filename);
 
-								if (!type) {
-									continue;
-								}
+		// 						if (!type) {
+		// 							continue;
+		// 						}
 
-								files.push({ name: filename, type: type, arrayBuffer: async () => file.buffer as ArrayBuffer });
-							}
+		// 						files.push({ name: filename, type: type, arrayBuffer: async () => file.buffer as ArrayBuffer });
+		// 					}
 
-							addAttachments(files);
-						}
-					})
-				: undefined;
+		// 					addAttachments(files);
+		// 				}
+		// 			})
+		// 		: undefined;
 		// const unlisten = listenEvent("files_dragged", (d) => {
 		// 	addAttachments(d.files);
 		// });
@@ -435,7 +432,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 
 		return () => {
 			resizeObserver.disconnect();
-			unlisten?.then((f) => f());
+			// unlisten?.then((f) => f());
 		};
 	}, []);
 

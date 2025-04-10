@@ -2,7 +2,6 @@ import type { EmbedElement as SlateEmbedElement } from "@/index";
 import ImagePreview from "@components/ImagePreview";
 import VideoPlayer from "@components/VideoPlayer";
 import { constants, constrainImageSize } from "@huginn/shared";
-import { open } from "@tauri-apps/plugin-shell";
 import clsx from "clsx";
 import { useMemo } from "react";
 import type { RenderElementProps } from "slate-react";
@@ -29,6 +28,7 @@ export default function EmbedElement(props: RenderElementProps) {
 				{title && (
 					<span
 						className={clsx(url && "cursor-pointer text-accent hover:underline", description ? "mb-1" : "mb-2")}
+						//TODO: MIGRATION
 						onClick={url ? () => open(url) : undefined}
 					>
 						{title}

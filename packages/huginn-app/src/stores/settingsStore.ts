@@ -1,6 +1,4 @@
 import type { ThemeType } from "@/types";
-import { appConfigDir } from "@tauri-apps/api/path";
-import { BaseDirectory, exists, mkdir, readFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 
@@ -27,8 +25,9 @@ export async function initializeSettings() {
 
 	if (globalThis.__TAURI_INTERNALS__) {
 		await tryCreateSettingsFile();
-		const fileContent = new TextDecoder().decode(await readFile(filePath, { baseDir: BaseDirectory.AppConfig }));
-		store.setState({ ...defaultValue, ...JSON.parse(fileContent) });
+		//TODO: MIGRATION
+		// const fileContent = new TextDecoder().decode(await readFile(filePath, { baseDir: BaseDirectory.AppConfig }));
+		// store.setState({ ...defaultValue, ...JSON.parse(fileContent) });
 		return;
 	}
 
@@ -64,26 +63,26 @@ const store = createStore(
 async function writeSettingsFile(settings: SettingsContextType) {
 	try {
 		console.log("WRITE", settings);
-		await writeTextFile(filePath, JSON.stringify(settings, null, 2), { baseDir: BaseDirectory.AppConfig });
+		//TODO: MIGRATION
+		// await writeTextFile(filePath, JSON.stringify(settings, null, 2), { baseDir: BaseDirectory.AppConfig });
 	} catch (e) {
 		console.error(e);
 	}
 }
 
 async function tryCreateSettingsFile() {
-	try {
-		const directory = await appConfigDir();
-
-		if (!(await exists(directory))) {
-			await mkdir(directory);
-		}
-
-		if (!(await exists(filePath, { baseDir: BaseDirectory.AppConfig }))) {
-			await writeSettingsFile(defaultValue);
-		}
-	} catch (e) {
-		console.error(e);
-	}
+	//TODO: MIGRATION
+	// try {
+	// 	const directory = await appConfigDir();
+	// 	if (!(await exists(directory))) {
+	// 		await mkdir(directory);
+	// 	}
+	// 	if (!(await exists(filePath, { baseDir: BaseDirectory.AppConfig }))) {
+	// 		await writeSettingsFile(defaultValue);
+	// 	}
+	// } catch (e) {
+	// 	console.error(e);
+	// }
 }
 
 export function useSettings() {

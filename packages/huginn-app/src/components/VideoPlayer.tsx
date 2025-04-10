@@ -1,7 +1,7 @@
 import { Transition } from "@headlessui/react";
 import { useProgressBar } from "@hooks/useProgressBar";
 import { formatSeconds } from "@huginn/shared";
-import { getCurrentWindow } from "@tauri-apps/api/window";
+// import { getCurrentWindow } from "@tauri-apps/api/window";
 import clsx from "clsx";
 import { type MouseEvent, useEffect, useRef, useState } from "react";
 import LoadingIcon from "./LoadingIcon";
@@ -110,10 +110,12 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 		if (document.fullscreenElement) {
 			document.exitFullscreen();
 			setFullscreen(false);
-			getCurrentWindow().setFullscreen(false);
+			//TODO: MIGRATION
+			// getCurrentWindow().setFullscreen(false);
 		} else {
 			containerRef.current?.requestFullscreen();
-			getCurrentWindow().setFullscreen(true);
+			//TODO: MIGRATION
+			// getCurrentWindow().setFullscreen(true);
 			setFullscreen(true);
 		}
 	}

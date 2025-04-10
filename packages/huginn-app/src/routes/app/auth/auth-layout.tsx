@@ -4,10 +4,9 @@ import { useAuthBackground } from "@contexts/authBackgroundContext";
 import { client } from "@stores/apiStore";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
-import { Outlet, redirect } from "react-router";
-import type { Route } from "./+types/auth-layout";
+import { type LoaderFunctionArgs, Outlet, redirect } from "react-router";
 
-export async function clientLoader({ request }: Route.ClientLoaderArgs) {
+export async function authLoader({ request }: LoaderFunctionArgs) {
 	const force = new URL(request.url).searchParams.get("force") === "1";
 
 	if (client?.isLoggedIn && !force) {
@@ -15,7 +14,7 @@ export async function clientLoader({ request }: Route.ClientLoaderArgs) {
 	}
 }
 
-export default function Layout() {
+export default function AuthLayout() {
 	const authBackground = useAuthBackground();
 
 	const { updateModals } = useModals();

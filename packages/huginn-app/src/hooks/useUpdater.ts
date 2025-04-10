@@ -1,7 +1,5 @@
 import { useHuginnWindow } from "@stores/windowStore";
 import { useMutation } from "@tanstack/react-query";
-import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef, useState } from "react";
 
 type UpdateProgress = {
@@ -27,28 +25,27 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void, onTry?:
 		async mutationFn() {
 			onTry?.();
 			const result = await new Promise<UpdateInfo | undefined>((res, rej) => {
-				const unlistenInfo = listen<UpdateInfo>("update-info", (event) => {
-					unlistenAll();
-					res(event.payload);
-				});
-				const unlistenNotAvailable = listen("update-not-available", () => {
-					unlistenAll();
-					onFinished?.(false);
-					res(undefined);
-				});
-				const unlistenFailed = listen("update-failed", () => {
-					unlistenAll();
-					onFail?.();
-					rej();
-				});
-
-				function unlistenAll() {
-					unlistenInfo.then((f) => f());
-					unlistenFailed.then((f) => f());
-					unlistenNotAvailable.then((f) => f());
-				}
-
-				invoke("check_update", { target: "windows" });
+				//TODO: MIGRATION
+				// const unlistenInfo = listen<UpdateInfo>("update-info", (event) => {
+				// 	unlistenAll();
+				// 	res(event.payload);
+				// });
+				// const unlistenNotAvailable = listen("update-not-available", () => {
+				// 	unlistenAll();
+				// 	onFinished?.(false);
+				// 	res(undefined);
+				// });
+				// const unlistenFailed = listen("update-failed", () => {
+				// 	unlistenAll();
+				// 	onFail?.();
+				// 	rej();
+				// });
+				// function unlistenAll() {
+				// 	unlistenInfo.then((f) => f());
+				// 	unlistenFailed.then((f) => f());
+				// 	unlistenNotAvailable.then((f) => f());
+				// }
+				// invoke("check_update", { target: "windows" });
 			});
 
 			setInfo(result);
@@ -66,21 +63,22 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void, onTry?:
 			return;
 		}
 
-		const unlistenProgress = listen<UpdateProgress>("update-progress", (event) => {
-			downloaded.current = event.payload.downloaded;
-			contentLength.current = event.payload.contentLength;
-			setProgress((downloaded.current / contentLength.current) * 100);
-		});
+		//TODO: MIGRATION
+		// const unlistenProgress = listen<UpdateProgress>("update-progress", (event) => {
+		// 	downloaded.current = event.payload.downloaded;
+		// 	contentLength.current = event.payload.contentLength;
+		// 	setProgress((downloaded.current / contentLength.current) * 100);
+		// });
 
-		const unlistenFinished = listen("update-finished", () => {
-			console.log("Update finished!");
-			onFinished?.(true);
-		});
+		// const unlistenFinished = listen("update-finished", () => {
+		// 	console.log("Update finished!");
+		// 	onFinished?.(true);
+		// });
 
-		return () => {
-			unlistenProgress?.then((f) => f());
-			unlistenFinished?.then((f) => f());
-		};
+		// return () => {
+		// 	unlistenProgress?.then((f) => f());
+		// 	unlistenFinished?.then((f) => f());
+		// };
 	}, []);
 
 	async function checkAndDownload() {

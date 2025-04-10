@@ -1,4 +1,4 @@
-import { queryClient } from "@/root";
+import { queryClient } from "@/main";
 import HomeSidebar from "@components/HomeSidebar";
 import UserInfo from "@components/UserInfo";
 import { getChannelsOptions } from "@lib/queries";
@@ -7,11 +7,11 @@ import { useThisUser } from "@stores/userStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Outlet } from "react-router";
 
-export async function clientLoader() {
+export async function homeLoader() {
 	return await queryClient.ensureQueryData(getChannelsOptions(client, "@me"));
 }
 
-export default function Layout() {
+export default function HomeLayout() {
 	const client = useClient();
 	const { data } = useSuspenseQuery(getChannelsOptions(client, "@me"));
 

@@ -15,12 +15,11 @@ import { initializeUser } from "@stores/userStore";
 import { initializeVoice } from "@stores/voiceStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useQueryClient } from "@tanstack/react-query";
-import { listen } from "@tauri-apps/api/event";
 import clsx from "clsx";
 import { type ReactNode, useEffect, useState } from "react";
 import { Outlet } from "react-router";
 
-export default function Layout() {
+export default function AppLayout() {
 	const authBackground = useAuthBackground();
 	const huginnWindow = useHuginnWindow();
 	const isTransitioning = useMainViewTransitionState();
@@ -92,13 +91,13 @@ function AppOpenUrlEvent() {
 
 	useEffect(() => {
 		if (huginnWindow.environment === "desktop") {
-			const unlisten = listen("deep-link://new-url", (event) => {
-				dispatchEvent("open_url", event.payload as string[]);
-			});
-
-			return () => {
-				unlisten.then((f) => f());
-			};
+			//TODO: MIGRATION
+			// const unlisten = listen("deep-link://new-url", (event) => {
+			// 	dispatchEvent("open_url", event.payload as string[]);
+			// });
+			// return () => {
+			// 	unlisten.then((f) => f());
+			// };
 		}
 	}, []);
 

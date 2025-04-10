@@ -1,19 +1,19 @@
-import LinkButton from "@components/button/LinkButton";
 import HuginnIcon from "@components/HuginnIcon";
+import LinkButton from "@components/button/LinkButton";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useQuery } from "@tanstack/react-query";
-import { getTauriVersion, getVersion } from "@tauri-apps/api/app";
-import { open } from "@tauri-apps/plugin-shell";
 
 export default function SettingsAboutTab() {
 	const huginnWindow = useHuginnWindow();
 	const { data: appData } = useQuery({
 		queryKey: ["app-data"],
 		queryFn: async () => {
-			const version = huginnWindow.environment === "desktop" ? await getVersion() : __APP_VERSION__;
-			const tauriVersion = huginnWindow.environment === "desktop" && (await getTauriVersion());
+			//TODO: MIGRATION
+			// const version = huginnWindow.environment === "desktop" ? await getVersion() : __APP_VERSION__;
+			// const tauriVersion = huginnWindow.environment === "desktop" && (await getTauriVersion());
 
-			return { version, tauriVersion };
+			//TODO: MIGRATION
+			return { version: "0", tauriVersion: "0" };
 		},
 	});
 	return (
@@ -35,6 +35,7 @@ export default function SettingsAboutTab() {
 				</div>
 				<div>
 					<span className="text-text/70">Github: </span>
+					{/* TODO: MIGRATION */}
 					<LinkButton onClick={() => open("https://github.com/WerdoxDev")} className="text-base">
 						https://github.com/WerdoxDev
 					</LinkButton>
