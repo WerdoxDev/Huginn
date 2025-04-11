@@ -44,7 +44,7 @@ function createWindow() {
 	}
 
 	// Open the DevTools.
-	mainWindow.webContents.openDevTools({ mode: "undocked" });
+	// mainWindow.webContents.openDevTools({ mode: "undocked"});
 
 	eventListeners(mainWindow);
 	configureTray(mainWindow);
