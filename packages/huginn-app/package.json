@@ -15,8 +15,8 @@
 		"preview": "vite preview",
 		"build": "bun run vite:build && bun run electron:build",
 		"vite:build": "cross-env NODE_ENV=production vite build",
-		"electron:build": "bun ./build.ts && electron-builder --config ./electron-builder-config.ts",
-		"electron:run": "bun ./build.ts && electron .",
+		"electron:build": "bun ./scripts/build.ts && electron-builder --config ./electron-builder-config.ts",
+		"electron:run": "bun ./scripts/build.ts && electron .",
 		"electron": "bun dev.ts"
 	},
 	"dependencies": {
