@@ -1,19 +1,15 @@
 import { describe, expect, test } from "bun:test";
 import pathe from "pathe";
+import { envs } from "#setup";
 import { FileStorage } from "#storage/file-storage";
 import { S3Storage } from "#storage/s3-storage";
 
-const storages = [new FileStorage(), new S3Storage()];
+const storages = [new FileStorage(envs.UPLOADS_DIR), new S3Storage()];
 
 for (const storage of storages) {
 	describe(`${storage.name} storage operations`, () => {
 		test("should return true when writing is successful", async () => {
-			const result = await storage.writeFile(
-				"avatars",
-				"storage-test",
-				"pixel.png",
-				await Bun.file(pathe.join(__dirname, "pixel.png")).arrayBuffer(),
-			);
+			const result = await storage.writeFile("avatars", "storage-test", "pixel.png", Bun.file(pathe.join(__dirname, "pixel.png")).stream());
 			expect(result).toBeTrue();
 		});
 

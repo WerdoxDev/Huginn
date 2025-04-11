@@ -1,21 +1,10 @@
 import HuginnIcon from "@components/HuginnIcon";
 import LinkButton from "@components/button/LinkButton";
 import { useHuginnWindow } from "@stores/windowStore";
-import { useQuery } from "@tanstack/react-query";
 
 export default function SettingsAboutTab() {
 	const huginnWindow = useHuginnWindow();
-	const { data: appData } = useQuery({
-		queryKey: ["app-data"],
-		queryFn: async () => {
-			//TODO: MIGRATION
-			// const version = huginnWindow.environment === "desktop" ? await getVersion() : __APP_VERSION__;
-			// const tauriVersion = huginnWindow.environment === "desktop" && (await getTauriVersion());
 
-			//TODO: MIGRATION
-			return { version: "0", tauriVersion: "0" };
-		},
-	});
 	return (
 		<div className="mt-5 w-full text-text">
 			<div className="mb-5 flex items-center gap-x-3">
@@ -35,21 +24,27 @@ export default function SettingsAboutTab() {
 				</div>
 				<div>
 					<span className="text-text/70">Github: </span>
-					{/* TODO: MIGRATION */}
-					<LinkButton onClick={() => open("https://github.com/WerdoxDev")} className="text-base">
+					<LinkButton
+						onClick={() =>
+							huginnWindow.environment === "desktop"
+								? window.electronAPI.openExteral("https://github.com/WerdoxDev")
+								: open("https://github.com/WerdoxDev")
+						}
+						className="text-base"
+					>
 						https://github.com/WerdoxDev
 					</LinkButton>
 				</div>
 				<div className="mt-2">
 					<span className="text-text/70">App version: </span>
-					{appData?.version}
+					{huginnWindow.version}
 				</div>
-				{huginnWindow.environment === "desktop" && (
+				{/* {huginnWindow.environment === "desktop" && (
 					<div>
 						<span className="text-text/70">Tauri version: </span>
 						{appData?.tauriVersion}
 					</div>
-				)}
+				)} */}
 			</div>
 		</div>
 	);

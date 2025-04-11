@@ -17,11 +17,13 @@ import { type LoaderFunctionArgs, Outlet, redirect } from "react-router";
 // });
 
 export async function rootLoader({ request }: LoaderFunctionArgs) {
+	console.log("loader");
 	const pathname = new URL(request.url).pathname;
 	// posthog.capture("$pageview", { $current_url: window.origin + pathname });
 	const search = new URLSearchParams({ redirect: pathname });
 
 	if (pathname !== "/" && pathname !== "/oauth-redirect" && !client?.isLoggedIn) {
+		console.log("redirect?");
 		throw redirect(`/?${search.toString()}`);
 	}
 }

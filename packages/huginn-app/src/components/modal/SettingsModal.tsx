@@ -3,7 +3,7 @@ import ModalCloseButton from "@components/button/ModalCloseButton";
 import { DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { useClient } from "@stores/apiStore";
 import { useModals } from "@stores/modalsStore";
-import { type SettingsContextType, useSettings } from "@stores/settingsStore";
+import { type AppSettings, useSettings } from "@stores/settingsStore";
 import clsx from "clsx";
 // import { usePostHog } from "posthog-js/react";
 import { Fragment, memo, useEffect, useState } from "react";
@@ -53,7 +53,7 @@ export default function SettingsModal() {
 
 	const settings = useSettings();
 	const [settingsValid, setSettingsValid] = useState(false);
-	const [modifiedSettings, setModifiedSettings] = useState<DeepPartial<SettingsContextType> | undefined>(undefined);
+	const [modifiedSettings, setModifiedSettings] = useState<DeepPartial<AppSettings> | undefined>(undefined);
 
 	useEffect(() => {
 		if (modal.isOpen) {
@@ -118,7 +118,7 @@ export default function SettingsModal() {
 		setCurrentTab(flatTabs[index]?.text ?? "");
 	}
 
-	function onSettingsChanged(value: DeepPartial<SettingsContextType>) {
+	function onSettingsChanged(value: DeepPartial<AppSettings>) {
 		setModifiedSettings((old) => ({ ...old, ...value }));
 	}
 
@@ -189,9 +189,9 @@ function SettingsTabs() {
 const TabComponent = memo(
 	(props: {
 		component: (props: SettingsTabProps) => React.JSX.Element;
-		onChange: (value: DeepPartial<SettingsContextType>) => void;
+		onChange: (value: DeepPartial<AppSettings>) => void;
 		onSave: () => Promise<void>;
-		settings: DeepPartial<SettingsContextType>;
+		settings: DeepPartial<AppSettings>;
 	}) => {
 		const Component = props.component;
 
@@ -201,9 +201,9 @@ const TabComponent = memo(
 );
 
 function SettingsPanels(props: {
-	settings: DeepPartial<SettingsContextType>;
+	settings: DeepPartial<AppSettings>;
 	currentTab: string;
-	onChange: (value: DeepPartial<SettingsContextType>) => void;
+	onChange: (value: DeepPartial<AppSettings>) => void;
 	onSave: () => Promise<void>;
 }) {
 	const flatTabs = useFlatTabs();

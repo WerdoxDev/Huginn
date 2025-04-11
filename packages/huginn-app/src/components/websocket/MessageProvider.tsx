@@ -71,8 +71,6 @@ export default function MessageProvider(props: { children?: ReactNode }) {
 			return old;
 		});
 
-		console.log(queryClient.getQueryData(["messages", d.channelId]));
-
 		updateLastMessageId(queryClient, d.channelId, d.id);
 
 		dispatchEvent("message_added", {

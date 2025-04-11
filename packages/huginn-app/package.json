@@ -1,6 +1,6 @@
 {
 	"name": "huginn-app-react",
-	"version": "0.29.0",
+	"version": "0.30.0",
 	"description": "Huginn Desktop Application",
 	"type": "module",
 	"repository": {
@@ -11,15 +11,16 @@
 		"name": "Matin Tat",
 		"url": "https://github.com/WerdoxDev"
 	},
-	"main": "./.vite/build/main.js",
+	"main": "./.vite/build/main.cjs",
 	"scripts": {
-		"dev": "vite",
+		"dev": "bun ./scripts/dev.ts",
 		"preview": "vite preview",
 		"build": "bun run vite:build && bun run electron:build",
+		"vite:dev": "vite",
 		"vite:build": "cross-env NODE_ENV=production vite build",
 		"electron:build": "bun ./scripts/build.ts && electron-builder --config ./electron-builder-config.ts",
 		"electron:run": "bun ./scripts/build.ts && electron .",
-		"electron": "bun dev.ts"
+		"build:fast": "bun run vite:build && bun ./scripts/build.ts && electron-builder --config ./electron-builder-config.ts -c.compression=store"
 	},
 	"dependencies": {
 		"@babel/plugin-syntax-jsx": "^7.25.9",

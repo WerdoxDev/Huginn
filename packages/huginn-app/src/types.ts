@@ -14,7 +14,7 @@ import type {
 	RelationshipType,
 	Snowflake,
 } from "@huginn/shared";
-import type { SettingsContextType } from "@stores/settingsStore";
+import type { AppSettings } from "@stores/settingsStore";
 import type { ChangeEvent, HTMLInputTypeAttribute, ReactNode, RefObject } from "react";
 
 export type StatusCode = "none" | "default" | "error" | "success";
@@ -102,8 +102,8 @@ export type SettingsTab = {
 };
 
 export type SettingsTabProps = {
-	settings: DeepPartial<SettingsContextType>;
-	onChange?: (value: DeepPartial<SettingsContextType>) => void;
+	settings: DeepPartial<AppSettings>;
+	onChange?: (value: DeepPartial<AppSettings>) => void;
 	onSave?: () => Promise<void>;
 };
 

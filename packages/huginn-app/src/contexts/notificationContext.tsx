@@ -10,7 +10,7 @@ const NotificationContext = createContext<NotificationContextType>({} as Notific
 // let permissionGranted = false;
 
 export async function initializeNotification() {
-	if (!window.__TAURI_INTERNALS__) {
+	if (!window.electronAPI) {
 		return;
 	}
 
@@ -37,17 +37,16 @@ export function NotificationProvider(props: { children?: ReactNode }) {
 		initializeNotification().then();
 
 		// Listen to click event and navigate user to the channel
-		//TODO: MIGRATION
-		// const unlisten = listen("notification-clicked", async (event) => {
-		// 	const data = event.payload as string;
-		// 	await invoke("open_and_focus_main");
-		// 	//TODO: THIS SHOULD CHANGE WHEN GUIDS ARE A THING
-		// 	await navigate(`/channels/@me/${data}`);
-		// });
+		const unlisten = window.electronAPI.onNotificationClick(async (_, payload) => {
+			window.electronAPI.showMain();
+			window.electronAPI.focusMain();
+			//TODO: THIS SHOULD CHANGE WHEN GUIDS ARE A THING
+			await navigate(`/channels/@me/${payload}`);
+		});
 
-		// return () => {
-		// 	unlisten.then((f) => f());
-		// };
+		return () => {
+			unlisten();
+		};
 	}, []);
 
 	return (
@@ -57,13 +56,12 @@ export function NotificationProvider(props: { children?: ReactNode }) {
 	);
 }
 
-export function sendNotification(data: string, title: string, text: string, imagePath: string) {
+export function sendNotification(payload: string, title: string, text: string, imagePath: string) {
 	if (!canSend) {
 		return;
 	}
 
-	//TODO: MIGRATION
-	// invoke("send_notification", { data, title, text, imagePath });
+	window.electronAPI.sendNotification(title, text, payload);
 	canSend = false;
 	setTimeout(() => {
 		canSend = true;

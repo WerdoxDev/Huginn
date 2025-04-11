@@ -41,13 +41,14 @@ export function useOAuth() {
 					},
 				},
 			});
-			open(url);
+			// openExternal
+			window.electronAPI.openExteral(url);
 		}
 	}
 
 	async function onOAuthRedirect(d: GatewayOAuthRedirectData) {
-		//TODO: MIGRATION
-		// await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
+		window.electronAPI.showMain();
+		window.electronAPI.focusMain();
 		await navigate(`/oauth-redirect?${new URLSearchParams({ ...d }).toString()}`, { viewTransition: true });
 		unlistenOAuth();
 	}
@@ -57,11 +58,11 @@ export function useOAuth() {
 		client.gateway.on("oauth_redirect", onOAuthRedirect, true);
 
 		// Url scheme
-		unlisten = listenEvent("open_url", async (urls) => {
-			const url = new URL(urls[0]);
+		unlisten = listenEvent("deep_link", async (url) => {
+			const actualUrl = new URL(url);
 			//TODO: MIGRATION
 			// await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
-			await navigate(`/oauth-redirect?${url.searchParams.toString()}`, { viewTransition: true });
+			await navigate(`/oauth-redirect?${actualUrl.searchParams.toString()}`, { viewTransition: true });
 			unlistenOAuth();
 		});
 	}

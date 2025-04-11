@@ -6,28 +6,22 @@ const store = createStore(
 		{
 			maximized: false,
 			focused: false,
-			environment: globalThis.__TAURI_INTERNALS__ ? "desktop" : "browser",
-			//TODO: MIGRATION
-			matches: {} /* as CliMatches*/,
-			window: {} /*as WebviewWindow*/,
+			environment: window.electronAPI ? "desktop" : "browser",
+			args: [] as string[],
+			version: "",
 		},
 		(set) => ({
 			setMaximized: (isMaximized: boolean) => set({ maximized: isMaximized }),
-			//TODO: MIGRATION
-			// setMatches: (matches: CliMatches) => set({ matches }),
 		}),
 	),
 );
 
 export async function initializeWindow() {
 	store.setState({
-		//TODO: MIGRATION
 		maximized: true,
 		focused: document.hasFocus(),
-		//TODO: MIGRATION
-		matches: undefined,
-		//TODO: MIGRATION
-		window: undefined,
+		args: window.electronAPI ? await window.electronAPI.getArgs() : undefined,
+		version: window.electronAPI ? await window.electronAPI.getVersion() : __APP_VERSION__,
 	});
 
 	function onFocusChange(event: FocusEvent) {

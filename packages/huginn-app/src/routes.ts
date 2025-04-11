@@ -1,6 +1,6 @@
 import RouteErrorComponent from "@components/RouteErrorComponent";
 import type { RouteConfig } from "@react-router/dev/routes";
-import { index, layout, route } from "@react-router/dev/routes";
+import { index } from "@react-router/dev/routes";
 import { createHashRouter } from "react-router";
 import Root, { rootLoader } from "./root";
 import AppLayout from "./routes/app/app-layout";
@@ -13,7 +13,7 @@ import ChannelWithId, { channelWithIdLoader } from "./routes/app/main/home/chann
 import Friends from "./routes/app/main/home/friends";
 import HomeLayout, { homeLoader } from "./routes/app/main/home/home-layout";
 import MainLayout from "./routes/app/main/main-layout";
-import Index from "./routes/home";
+import Index from "./routes/index";
 
 const routes: RouteConfig = [
 	index("routes/home.tsx"),

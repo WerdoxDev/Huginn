@@ -2,37 +2,34 @@ import type { ThemeType } from "@/types";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 
-export type SettingsContextType = {
+export type AppSettings = {
 	serverAddress: string;
 	cdnAddress: string;
 	theme: ThemeType;
 	chatMode?: "normal" | "compact";
 };
 
-const defaultValue: SettingsContextType = {
+const defaultValue: AppSettings = {
 	serverAddress: "https://midgard.huginn.dev",
 	cdnAddress: "https://midgard.huginn.dev",
 	theme: "pine green",
 	chatMode: "normal",
 };
 
-let filePath: string;
 let localStorageItem: string;
 
 export async function initializeSettings() {
-	filePath = "settings.json";
 	localStorageItem = "settings";
 
-	if (globalThis.__TAURI_INTERNALS__) {
-		await tryCreateSettingsFile();
-		//TODO: MIGRATION
-		// const fileContent = new TextDecoder().decode(await readFile(filePath, { baseDir: BaseDirectory.AppConfig }));
-		// store.setState({ ...defaultValue, ...JSON.parse(fileContent) });
+	if (window.electronAPI) {
+		await window.electronAPI.trySaveDefaultSettings(JSON.stringify(defaultValue));
+		const settings = await window.electronAPI.loadSettings();
+		store.setState({ ...defaultValue, ...settings });
 		return;
 	}
 
-	if (!globalThis.localStorage.getItem(localStorageItem)) {
-		globalThis.localStorage.setItem(localStorageItem, JSON.stringify(defaultValue));
+	if (!window.localStorage.getItem(localStorageItem)) {
+		window.localStorage.setItem(localStorageItem, JSON.stringify(defaultValue));
 	}
 	// biome-ignore lint/style/noNonNullAssertion: <explanation>
 	store.setState({ ...defaultValue, ...JSON.parse(globalThis.localStorage.getItem(localStorageItem)!) });
@@ -50,8 +47,9 @@ const store = createStore(
 				const newSettings = { ...get(), ...settings };
 				set(newSettings);
 
-				if (globalThis.__TAURI_INTERNALS__) {
-					await writeSettingsFile(newSettings);
+				console.log(newSettings);
+				if (window.electronAPI) {
+					await window.electronAPI.saveSettings(JSON.stringify(newSettings));
 				} else {
 					globalThis.localStorage.setItem(localStorageItem, JSON.stringify(newSettings));
 				}
@@ -59,31 +57,6 @@ const store = createStore(
 		}),
 	),
 );
-
-async function writeSettingsFile(settings: SettingsContextType) {
-	try {
-		console.log("WRITE", settings);
-		//TODO: MIGRATION
-		// await writeTextFile(filePath, JSON.stringify(settings, null, 2), { baseDir: BaseDirectory.AppConfig });
-	} catch (e) {
-		console.error(e);
-	}
-}
-
-async function tryCreateSettingsFile() {
-	//TODO: MIGRATION
-	// try {
-	// 	const directory = await appConfigDir();
-	// 	if (!(await exists(directory))) {
-	// 		await mkdir(directory);
-	// 	}
-	// 	if (!(await exists(filePath, { baseDir: BaseDirectory.AppConfig }))) {
-	// 		await writeSettingsFile(defaultValue);
-	// 	}
-	// } catch (e) {
-	// 	console.error(e);
-	// }
-}
 
 export function useSettings() {
 	return useStore(store);

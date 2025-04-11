@@ -18,7 +18,7 @@ export function useTimeout(callback: () => void, delay: number) {
 	const start = useCallback(() => {
 		cancel();
 		// if (delay) {
-		timeoutId.current = setTimeout(() => savedCallback.current(), delay);
+		timeoutId.current = window.setTimeout(() => savedCallback.current(), delay);
 	}, [delay, cancel]);
 
 	useEffect(() => {

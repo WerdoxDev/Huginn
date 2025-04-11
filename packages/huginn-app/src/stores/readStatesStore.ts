@@ -80,14 +80,7 @@ export function initializeReadStates() {
 			const audio = new Audio("/src/assets/notification.wav");
 			audio.play();
 			if (windowStore.getState().environment === "desktop") {
-				sendNotification(
-					data.message.channelId,
-					author?.username ?? "Unknown User",
-					data.message.content,
-					"",
-					//TODO: MIGRATION
-					// await join(await resourceDir(), "resources/huginn-text.png"),
-				);
+				sendNotification(data.message.channelId, author?.username ?? "Unknown User", data.message.content, "");
 			}
 			store.getState().increaseUnreadCount(data.message.channelId);
 		}

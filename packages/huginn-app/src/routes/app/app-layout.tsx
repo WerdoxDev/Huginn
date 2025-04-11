@@ -16,7 +16,7 @@ import { initializeVoice } from "@stores/voiceStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect } from "react";
 import { Outlet } from "react-router";
 
 export default function AppLayout() {
@@ -91,13 +91,12 @@ function AppOpenUrlEvent() {
 
 	useEffect(() => {
 		if (huginnWindow.environment === "desktop") {
-			//TODO: MIGRATION
-			// const unlisten = listen("deep-link://new-url", (event) => {
-			// 	dispatchEvent("open_url", event.payload as string[]);
-			// });
-			// return () => {
-			// 	unlisten.then((f) => f());
-			// };
+			const unlisten = window.electronAPI.onDeepLink((_, cmd) => {
+				dispatchEvent("deep_link", cmd);
+			});
+			return () => {
+				unlisten();
+			};
 		}
 	}, []);
 

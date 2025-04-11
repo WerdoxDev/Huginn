@@ -92,6 +92,14 @@ body,
 	animation: loading 1s infinite linear;
 }
 
+.drag-region{
+   app-region: drag;
+}
+
+.no-drag-region{
+   app-region: no-drag;
+}
+
 video::-webkit-media-controls {
    display: none !important;
  }

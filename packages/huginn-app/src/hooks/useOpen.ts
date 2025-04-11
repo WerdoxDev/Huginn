@@ -5,8 +5,7 @@ export function useOpen() {
 
 	function openUrl(url: string) {
 		if (huginnWindow.environment === "desktop") {
-			//TODO: MIGRATION
-			open(url);
+			window.electronAPI.openExteral(url);
 		} else {
 			window.open(url);
 		}

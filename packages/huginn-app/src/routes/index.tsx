@@ -45,7 +45,7 @@ export default function Index() {
 
 	const updateProgressText = useMemo(() => {
 		return `${(downloaded.current / 1024 / 1024).toFixed(2)}MB / ${(contentLength.current / 1024 / 1024).toFixed(2)}MB (${Math.ceil(progress)}%)`;
-	}, [downloaded.current, contentLength.current, progress]);
+	}, [progress]);
 
 	function startUpdate() {
 		setLoadingState("checking_update");
@@ -53,8 +53,7 @@ export default function Index() {
 
 	async function mainMode() {
 		await navigate(`/login?${search.toString()}`);
-		//TODO: MIGRATION
-		// invoke("main_mode");
+		window.electronAPI.mainMode();
 	}
 
 	useEffect(() => {
@@ -77,14 +76,11 @@ export default function Index() {
 
 		updateFinished.current = false;
 
-		//TODO: MIGRATION
-		// invoke("splashscreen_mode");
+		window.electronAPI.splashscreenMode();
 
-		//TODO: MIGRATION
-		// if (huginnWindow.matches.args?.silent?.value !== true) {
-		// 	//TODO: MIGRATION
-		// 	// invoke("open_and_focus_main");
-		// }
+		if (!huginnWindow.args.includes("--silent")) {
+			window.electronAPI.showMain();
+		}
 
 		startUpdate();
 	}, []);
@@ -94,18 +90,18 @@ export default function Index() {
 	}
 
 	return (
-		<div className="flex h-full w-full select-none rounded-xl bg-background" data-tauri-drag-region>
-			<div className="mt-16 flex w-full flex-col items-center" data-tauri-drag-region>
+		<div className="drag-region flex h-full w-full select-none rounded-xl bg-background">
+			<div className="mt-16 flex w-full flex-col items-center">
 				<HuginnIcon className="hover:-rotate-12 size-20 animate-pulse text-accent drop-shadow-[0px_0px_25px_rgb(var(--color-primary))] transition-all hover:scale-105 active:rotate-6" />
 				<div className="mt-4 font-bold text-text text-xl">Huginn</div>
 				<div className="mt-2 text-text/80">
 					<div className="flex items-center justify-center gap-x-2 text-center">
 						<span className="text-lg">
-							{loadingStates[loadingState]} <span className="font-bold">{loadingState === "updating" ? info?.version : ""}</span>
+							{loadingStates[loadingState]} <span className="font-bold ">{loadingState === "updating" ? info?.version : ""}</span>
 						</span>
 						{loadingState === "checking_update_failed" && <IconMingcuteAlertFill className="size-6 text-warning" />}
 						{loadingState === "cant_update" && <IconMingcuteAlertFill className="size-6 text-error" />}
-						{loadingState === "checking_update" && <LoadingIcon className="size-6" />}
+						{(loadingState === "checking_update" || (loadingState === "updating" && progress === 0)) && <LoadingIcon className="size-6" />}
 					</div>
 					{loadingState === "checking_update_failed" && <div className="mt-0 text-text/60">Retrying in {retryCountdown} seconds</div>}
 				</div>
@@ -119,7 +115,7 @@ export default function Index() {
 						</button>
 					</div>
 				)}
-				{loadingState === "updating" && (
+				{loadingState === "updating" && progress !== 0 && (
 					<div className="relative mt-3 h-6 w-56 rounded-md bg-secondary">
 						<div className="h-full rounded-md bg-accent" style={{ width: `${progress}%` }} />
 						<div className="absolute right-0 left-0 flex items-center justify-center">

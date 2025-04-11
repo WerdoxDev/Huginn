@@ -28,8 +28,7 @@ export default function EmbedElement(props: RenderElementProps) {
 				{title && (
 					<span
 						className={clsx(url && "cursor-pointer text-accent hover:underline", description ? "mb-1" : "mb-2")}
-						//TODO: MIGRATION
-						onClick={url ? () => open(url) : undefined}
+						onClick={url ? () => window.electronAPI.openExteral(url) : undefined}
 					>
 						{title}
 					</span>

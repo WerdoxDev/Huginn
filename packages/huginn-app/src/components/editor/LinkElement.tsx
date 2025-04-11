@@ -11,7 +11,7 @@ export default function LinkElement(props: RenderElementProps) {
 			{...props.attributes}
 			className="relative inline-block cursor-pointer underline"
 			//TODO: MIGRATION
-			onClick={url ? () => (huginnWindow.environment === "desktop" ? open(url) : window.open(url)) : undefined}
+			onClick={url ? () => (huginnWindow.environment === "desktop" ? window.electronAPI.openExteral(url) : window.open(url)) : undefined}
 			title={url}
 		>
 			<div className="">

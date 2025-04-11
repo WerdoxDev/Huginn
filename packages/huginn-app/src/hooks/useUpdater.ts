@@ -1,5 +1,6 @@
 import { useHuginnWindow } from "@stores/windowStore";
 import { useMutation } from "@tanstack/react-query";
+import type { UpdateInfo } from "electron-updater";
 import { useEffect, useRef, useState } from "react";
 
 type UpdateProgress = {
@@ -7,11 +8,11 @@ type UpdateProgress = {
 	contentLength: number;
 };
 
-type UpdateInfo = {
-	body: string;
-	currentVersion: string;
-	version: string;
-};
+// type UpdateInfo = {
+// 	body: string;
+// 	currentVersion: string;
+// 	version: string;
+// };
 
 export function useUpdater(onFinished?: (wasAvailable: boolean) => void, onTry?: () => void, onFail?: () => void, onError?: () => void) {
 	const huginnWindow = useHuginnWindow();
@@ -24,31 +25,36 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void, onTry?:
 		mutationKey: ["update"],
 		async mutationFn() {
 			onTry?.();
-			const result = await new Promise<UpdateInfo | undefined>((res, rej) => {
-				//TODO: MIGRATION
-				// const unlistenInfo = listen<UpdateInfo>("update-info", (event) => {
-				// 	unlistenAll();
-				// 	res(event.payload);
-				// });
-				// const unlistenNotAvailable = listen("update-not-available", () => {
-				// 	unlistenAll();
-				// 	onFinished?.(false);
-				// 	res(undefined);
-				// });
-				// const unlistenFailed = listen("update-failed", () => {
-				// 	unlistenAll();
-				// 	onFail?.();
-				// 	rej();
-				// });
-				// function unlistenAll() {
-				// 	unlistenInfo.then((f) => f());
-				// 	unlistenFailed.then((f) => f());
-				// 	unlistenNotAvailable.then((f) => f());
-				// }
-				// invoke("check_update", { target: "windows" });
-			});
-
-			setInfo(result);
+			// const result = await new Promise<UpdateInfo | undefined>((res, rej) => {
+			// 	//TODO: MIGRATION
+			// 	// const unlistenInfo = listen<UpdateInfo>("update-info", (event) => {
+			// 	// 	unlistenAll();
+			// 	// 	res(event.payload);
+			// 	// });
+			// 	// const unlistenNotAvailable = listen("update-not-available", () => {
+			// 	// 	unlistenAll();
+			// 	// 	onFinished?.(false);
+			// 	// 	res(undefined);
+			// 	// });
+			// 	// const unlistenFailed = listen("update-failed", () => {
+			// 	// 	unlistenAll();
+			// 	// 	onFail?.();
+			// 	// 	rej();
+			// 	// });
+			// 	// function unlistenAll() {
+			// 	// 	unlistenInfo.then((f) => f());
+			// 	// 	unlistenFailed.then((f) => f());
+			// 	// 	unlistenNotAvailable.then((f) => f());
+			// 	// }
+			// 	// invoke("check_update", { target: "windows" });
+			// });
+			const result = await window.electronAPI.checkUpdate();
+			if (!result || result.version === huginnWindow.version) {
+				onFinished?.(false);
+			} else {
+				window.electronAPI.downloadUpdate();
+				setInfo(result);
+			}
 		},
 		onError(error, variables, context) {
 			isChecking.current = false;
@@ -62,6 +68,16 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void, onTry?:
 		if (huginnWindow.environment !== "desktop") {
 			return;
 		}
+
+		const unlisten = window.electronAPI.onUpdateProgress((_, info) => {
+			downloaded.current = info.transferred;
+			contentLength.current = info.total;
+			setProgress(info.percent);
+		});
+
+		return () => {
+			unlisten();
+		};
 
 		//TODO: MIGRATION
 		// const unlistenProgress = listen<UpdateProgress>("update-progress", (event) => {
@@ -82,10 +98,10 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void, onTry?:
 	}, []);
 
 	async function checkAndDownload() {
-		if (import.meta.env.DEV) {
-			onFinished?.(false);
-			return;
-		}
+		// if (import.meta.env.DEV) {
+		// 	onFinished?.(false);
+		// 	return;
+		// }
 
 		if (!isChecking.current) {
 			isChecking.current = true;

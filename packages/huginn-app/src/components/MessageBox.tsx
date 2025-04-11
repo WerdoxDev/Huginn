@@ -397,42 +397,60 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 			lastHeight = height;
 		});
 
-		// TODO: MIGRATION
-		// const unlisten =
-		// 	huginnWindow.environment === "desktop"
-		// 		? getCurrentWebview().onDragDropEvent(async (e) => {
-		// 				if (e.payload.type === "enter") {
-		// 					setDragging(true);
-		// 				} else if (e.payload.type === "leave") {
-		// 					setDragging(false);
-		// 				} else if (e.payload.type === "drop") {
-		// 					const files: AttachmentInputType[] = [];
-		// 					setDragging(false);
-		// 					for (const path of e.payload.paths) {
-		// 						const filename = normalize(path).split("/").pop();
-		// 						const file = await readFile(path);
-		// 						const type = mime.getType(filename);
+		let dragCounter = 0;
 
-		// 						if (!type) {
-		// 							continue;
-		// 						}
+		function dragOver(e: DragEvent) {
+			e.preventDefault();
+		}
 
-		// 						files.push({ name: filename, type: type, arrayBuffer: async () => file.buffer as ArrayBuffer });
-		// 					}
+		function dragEnter(e: DragEvent) {
+			e.preventDefault();
+			dragCounter++;
+			setDragging(true);
+		}
 
-		// 					addAttachments(files);
-		// 				}
-		// 			})
-		// 		: undefined;
-		// const unlisten = listenEvent("files_dragged", (d) => {
-		// 	addAttachments(d.files);
-		// });
+		function dragLeave(e: DragEvent) {
+			e.preventDefault();
+			dragCounter--;
+			console.log(dragCounter);
+			if (dragCounter === 0) {
+				setDragging(false);
+			}
+		}
+
+		function drop(e: DragEvent) {
+			e.preventDefault();
+			console.log(e);
+
+			const files: AttachmentInputType[] = [];
+
+			setDragging(false);
+			dragCounter = 0;
+
+			if (!e.dataTransfer?.files) {
+				return;
+			}
+
+			for (const file of e.dataTransfer.files) {
+				files.push({ name: file.name, type: file.type, arrayBuffer: async () => await file.arrayBuffer() });
+			}
+
+			addAttachments(files);
+		}
+
+		document.addEventListener("dragover", dragOver);
+		document.addEventListener("dragenter", dragEnter);
+		document.addEventListener("dragleave", dragLeave);
+		document.addEventListener("drop", drop);
 
 		resizeObserver.observe(thisRef.current);
 
 		return () => {
 			resizeObserver.disconnect();
-			// unlisten?.then((f) => f());
+			document.removeEventListener("dragover", dragOver);
+			document.removeEventListener("dragenter", dragEnter);
+			document.removeEventListener("dragleave", dragLeave);
+			document.removeEventListener("drop", drop);
 		};
 	}, []);
 

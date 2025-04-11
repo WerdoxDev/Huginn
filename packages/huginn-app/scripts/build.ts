@@ -12,8 +12,8 @@ await build({
 		lib: {
 			entry: ["./electron/main.ts", "./electron/preload.ts"],
 			name: "main",
-			fileName: (_, entryName) => `${entryName}.js`,
-			formats: ["es"],
+			fileName: (_, entryName) => `${entryName}.cjs`,
+			formats: ["cjs"],
 		},
 		emptyOutDir: true,
 		minify: false,
