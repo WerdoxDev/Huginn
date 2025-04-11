@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.29.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.29.1...app@v0.29.2) (2025-04-11)
+
+
+### Bug Fixes
+
+* **app:** dont open dev tools ([fe089a4](https://github.com/WerdoxDev/Huginn/commit/fe089a41579039204fd25deafeb96ea17a85dd03))
+
 ## [0.29.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.29.0...app@v0.29.1) (2025-04-11)
 
 
