@@ -29,14 +29,7 @@
 			"package-name": "backend-shared"
 		},
 		"packages/huginn-app": {
-			"package-name": "app",
-			"extra-files": [
-				{
-					"type": "toml",
-					"path": "src-tauri/Cargo.toml",
-					"jsonpath": "$.package.version"
-				}
-			]
+			"package-name": "app2"
 		}
 	}
 }
