@@ -40,7 +40,7 @@ jobs:
       - name: publish app
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: cd packages/huginn-app && bun run scripts/deploy.ts
+        run: cd packages/huginn-app && bun run scripts/upload.ts
 
 
       # - name: install dependencies (ubuntu only)
