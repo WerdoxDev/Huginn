@@ -10,7 +10,7 @@ export default {
 		publish: {
 			provider: "generic",
 			url: "https://midgard.huginn.dev/api/update/${os}",
-			useMultipleRangeRequest: true,
+			useMultipleRangeRequest: false,
 		},
 		icon: "assets/icon.ico",
 	},
