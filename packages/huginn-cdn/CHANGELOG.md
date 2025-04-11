@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.10.3...cdn@v0.11.0) (2025-04-11)
+
+
+### Features
+
+* **app:** finish migration to electron ([13650fb](https://github.com/WerdoxDev/Huginn/commit/13650fbd6b1bfaf2eaff70f62974361ffbcc34c7))
+
 ## [0.10.3](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.10.2...cdn@v0.10.3) (2025-03-06)
 
 

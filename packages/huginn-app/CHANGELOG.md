@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.29.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.28.1...app@v0.29.0) (2025-04-11)
+
+
+### Features
+
+* **app:** electron github action [#1](https://github.com/WerdoxDev/Huginn/issues/1) ([df2f245](https://github.com/WerdoxDev/Huginn/commit/df2f245d3ab5cef4c16cb789379d19f1c67fadff))
+* **app:** electron github action [#2](https://github.com/WerdoxDev/Huginn/issues/2) ([da24cbe](https://github.com/WerdoxDev/Huginn/commit/da24cbe670889fbc87bee5caaad5224474b1510a))
+* **app:** finish migration to electron ([13650fb](https://github.com/WerdoxDev/Huginn/commit/13650fbd6b1bfaf2eaff70f62974361ffbcc34c7))
+* **app:** half baked electron migration ([9c92b90](https://github.com/WerdoxDev/Huginn/commit/9c92b90bd1a600a97041e19dcc990860e8d9a968))
+
+
+### Bug Fixes
+
+* **app:** use highest audio quality ([f0133b5](https://github.com/WerdoxDev/Huginn/commit/f0133b5cf9112d60fb5d029b3419e9baa8768ad5))
+* revert test versions back from electron migration ([d5c1fbc](https://github.com/WerdoxDev/Huginn/commit/d5c1fbcc184493bbcbe9dfcea3cefc3dc75ed904))
+
 ## [0.28.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.28.0...app@v0.28.1) (2025-04-06)
 
 
