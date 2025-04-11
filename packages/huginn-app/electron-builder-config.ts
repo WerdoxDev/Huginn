@@ -9,7 +9,7 @@ export default {
 		target: { target: "nsis", arch: ["x64"] },
 		publish: {
 			provider: "generic",
-			url: "http://localhost:3004/api/update/${os}",
+			url: "https://midgard.huginn.dev/api/update/${os}",
 			useMultipleRangeRequest: true,
 		},
 		icon: "assets/icon.ico",

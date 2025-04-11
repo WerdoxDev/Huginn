@@ -3,7 +3,7 @@ import LoadingIcon from "@components/LoadingIcon";
 import { useCountdown } from "@hooks/useCountdown";
 import { useUpdater } from "@hooks/useUpdater";
 import { useHuginnWindow } from "@stores/windowStore";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 const loadingStates = {
@@ -16,18 +16,14 @@ const loadingStates = {
 } as const;
 
 export default function Index() {
-	const updateFinished = useRef(false);
 	const huginnWindow = useHuginnWindow();
 	const [search] = useSearchParams();
 	const navigate = useNavigate();
 	const { startCountdown, countdown: retryCountdown } = useCountdown();
 	const { checkAndDownload, info, progress, contentLength, downloaded } = useUpdater(
-		(wasAvailable) => {
+		() => {
 			setLoadingState("loading");
-			if (!wasAvailable) {
-				mainMode();
-				updateFinished.current = true;
-			}
+			mainMode();
 		},
 		() => {
 			setLoadingState("checking_update");
@@ -74,8 +70,6 @@ export default function Index() {
 			return;
 		}
 
-		updateFinished.current = false;
-
 		window.electronAPI.splashscreenMode();
 
 		if (!huginnWindow.args.includes("--silent")) {
@@ -106,7 +100,7 @@ export default function Index() {
 					{loadingState === "checking_update_failed" && <div className="mt-0 text-text/60">Retrying in {retryCountdown} seconds</div>}
 				</div>
 				{loadingState === "cant_update" && (
-					<div className="absolute bottom-3 mt-4 flex w-full justify-between gap-x-2 px-3">
+					<div className="no-drag-region absolute bottom-3 mt-4 flex w-full justify-between gap-x-2 px-3">
 						<button type="button" className="w-full rounded-md bg-primary/50 py-1 text-white hover:bg-primary" onClick={startUpdate}>
 							Retry
 						</button>

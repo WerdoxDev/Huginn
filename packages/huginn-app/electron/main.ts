@@ -60,6 +60,9 @@ app.on("ready", async () => {
 	}
 
 	createWindow();
+
+	// Setup as Startup App
+	app.setLoginItemSettings({ openAtLogin: true, path: app.getPath("exe"), args: ["--silent"] });
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

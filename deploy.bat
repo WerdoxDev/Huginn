@@ -1,22 +1,22 @@
 @echo off
 
 echo *> .dockerignore
-docker build -t ghcr.io/werdoxdev/caddy -f Dockerfile.caddy .
+docker build -t ghcr.io/werdoxdev/caddy -f Dockerfile.caddy --progress=plain .
 git checkout .dockerignore
 
 echo **/huginn-cdn>> .dockerignore
 echo **/huginn-voice>> .dockerignore
-docker build -t ghcr.io/werdoxdev/huginn-server -f Dockerfile.huginn-server .
+docker build -t ghcr.io/werdoxdev/huginn-server -f Dockerfile.huginn-server --progress=plain .
 git checkout .dockerignore
 
 echo **/huginn-server>> .dockerignore
 echo **/huginn-voice>> .dockerignore
-docker build -t ghcr.io/werdoxdev/huginn-cdn -f Dockerfile.huginn-cdn .
+docker build -t ghcr.io/werdoxdev/huginn-cdn -f Dockerfile.huginn-cdn --progress=plain .
 git checkout .dockerignore
 
 echo **/huginn-server>> .dockerignore
 echo **/huginn-cdn>> .dockerignore
-docker build -t ghcr.io/werdoxdev/huginn-voice -f Dockerfile.huginn-voice .
+docker build -t ghcr.io/werdoxdev/huginn-voice -f Dockerfile.huginn-voice --progress=plain .
 git checkout .dockerignore
 
 docker push ghcr.io/werdoxdev/caddy:latest

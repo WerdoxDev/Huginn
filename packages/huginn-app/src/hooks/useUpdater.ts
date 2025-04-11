@@ -14,7 +14,7 @@ type UpdateProgress = {
 // 	version: string;
 // };
 
-export function useUpdater(onFinished?: (wasAvailable: boolean) => void, onTry?: () => void, onFail?: () => void, onError?: () => void) {
+export function useUpdater(onNotAvailable?: () => void, onTry?: () => void, onFail?: () => void, onError?: () => void) {
 	const huginnWindow = useHuginnWindow();
 	const [progress, setProgress] = useState(0);
 	const [info, setInfo] = useState<UpdateInfo>();
@@ -25,38 +25,16 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void, onTry?:
 		mutationKey: ["update"],
 		async mutationFn() {
 			onTry?.();
-			// const result = await new Promise<UpdateInfo | undefined>((res, rej) => {
-			// 	//TODO: MIGRATION
-			// 	// const unlistenInfo = listen<UpdateInfo>("update-info", (event) => {
-			// 	// 	unlistenAll();
-			// 	// 	res(event.payload);
-			// 	// });
-			// 	// const unlistenNotAvailable = listen("update-not-available", () => {
-			// 	// 	unlistenAll();
-			// 	// 	onFinished?.(false);
-			// 	// 	res(undefined);
-			// 	// });
-			// 	// const unlistenFailed = listen("update-failed", () => {
-			// 	// 	unlistenAll();
-			// 	// 	onFail?.();
-			// 	// 	rej();
-			// 	// });
-			// 	// function unlistenAll() {
-			// 	// 	unlistenInfo.then((f) => f());
-			// 	// 	unlistenFailed.then((f) => f());
-			// 	// 	unlistenNotAvailable.then((f) => f());
-			// 	// }
-			// 	// invoke("check_update", { target: "windows" });
-			// });
 			const result = await window.electronAPI.checkUpdate();
 			if (!result || result.version === huginnWindow.version) {
-				onFinished?.(false);
+				onNotAvailable?.();
 			} else {
 				window.electronAPI.downloadUpdate();
 				setInfo(result);
 			}
 		},
 		onError(error, variables, context) {
+			console.log(error);
 			isChecking.current = false;
 			onError?.();
 		},
@@ -78,31 +56,9 @@ export function useUpdater(onFinished?: (wasAvailable: boolean) => void, onTry?:
 		return () => {
 			unlisten();
 		};
-
-		//TODO: MIGRATION
-		// const unlistenProgress = listen<UpdateProgress>("update-progress", (event) => {
-		// 	downloaded.current = event.payload.downloaded;
-		// 	contentLength.current = event.payload.contentLength;
-		// 	setProgress((downloaded.current / contentLength.current) * 100);
-		// });
-
-		// const unlistenFinished = listen("update-finished", () => {
-		// 	console.log("Update finished!");
-		// 	onFinished?.(true);
-		// });
-
-		// return () => {
-		// 	unlistenProgress?.then((f) => f());
-		// 	unlistenFinished?.then((f) => f());
-		// };
 	}, []);
 
 	async function checkAndDownload() {
-		// if (import.meta.env.DEV) {
-		// 	onFinished?.(false);
-		// 	return;
-		// }
-
 		if (!isChecking.current) {
 			isChecking.current = true;
 			updateMutation.mutate();
