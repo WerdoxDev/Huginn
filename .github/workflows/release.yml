@@ -58,38 +58,4 @@ jobs:
       - name: publish app
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: cd packages/huginn-app && bun run scripts/deploy.ts
-
-
-      # - name: install dependencies (ubuntu only)
-      #   if: matrix.platform == 'ubuntu-22.04'
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-
-      # - name: setup bun
-      #   uses: oven-sh/setup-bun@v2
-
-      # - name: install Rust stable
-      #   uses: dtolnay/rust-toolchain@stable
-
-      # - name: Rust cache
-      #   uses: swatinem/rust-cache@v2
-      #   with:
-      #     workspaces: './packages/huginn-app/src-tauri -> target'
-
-      # - name: install frontend dependencies
-      #   run: cd packages/huginn-app && bun install
-
-      # - uses: tauri-apps/tauri-action@v0
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     TAURI_SIGNING_PRIVATE_KEY: ${{secrets.TAURI_SIGNING_PRIVATE_KEY}}
-      #     TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD}}
-      #   with:
-      #     projectPath: "packages/huginn-app"
-      #     tagName: app@v__VERSION__
-      #     releaseName: "app: v__VERSION__"
-      #     releaseDraft: false
-      #     prerelease: false
-      #     args: ${{ matrix.args }}
+        run: cd packages/huginn-app && bun run scripts/upload.ts
