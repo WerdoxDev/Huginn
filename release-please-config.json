@@ -29,7 +29,7 @@
 			"package-name": "backend-shared"
 		},
 		"packages/huginn-app": {
-			"package-name": "app2"
+			"package-name": "app"
 		}
 	}
 }

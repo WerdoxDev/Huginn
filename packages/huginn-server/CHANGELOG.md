@@ -1,12 +1,5 @@
 # Changelog
 
-## [0.20.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.19.0...server@v0.20.0) (2025-04-11)
-
-
-### Features
-
-* **app:** half baked electron migration ([9c92b90](https://github.com/WerdoxDev/Huginn/commit/9c92b90bd1a600a97041e19dcc990860e8d9a968))
-
 ## [0.19.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.18.0...server@v0.19.0) (2025-04-04)
 
 

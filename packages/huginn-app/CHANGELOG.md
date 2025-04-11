@@ -1,40 +1,5 @@
 # Changelog
 
-## [0.29.0](https://github.com/WerdoxDev/Huginn/compare/app2@v0.28.1...app2@v0.29.0) (2025-04-11)
-
-
-### Features
-
-* **app:** add a start call button to HomeTopbar ([b6baebd](https://github.com/WerdoxDev/Huginn/commit/b6baebd694a2fffe3d17aad2a0d4ef476b09dd6d))
-* **app:** add cancel button functionality to attachment sending ([a70cdcc](https://github.com/WerdoxDev/Huginn/commit/a70cdcc157250961fc59e1160d7016c0b594c637))
-* **app:** add custom notification sound ([06cd3f4](https://github.com/WerdoxDev/Huginn/commit/06cd3f4694850ed8d780ad2eafbd3c2e9c20cb82))
-* **app:** add embed image and video only rendering ([af32433](https://github.com/WerdoxDev/Huginn/commit/af3243303718f734962cf7fc9df4635d451f63ae))
-* **app:** add fullish ui for voice with buttons and indicators ([0642df1](https://github.com/WerdoxDev/Huginn/commit/0642df1613d1e582b823ca3448cd53423be08860))
-* **app:** add inverted border radius to messages + show user's username on hover ([f545309](https://github.com/WerdoxDev/Huginn/commit/f545309aa6410871632f27df8d46c8cf4069b5a8))
-* **app:** add much better update handling + video rendering ([ca04b73](https://github.com/WerdoxDev/Huginn/commit/ca04b73a61348f565469774c711e9adc37cfa6ce))
-* **app:** add partial audio control to VideoPlayer ([367a0b2](https://github.com/WerdoxDev/Huginn/commit/367a0b23cd8cb8a06d203906fb27b57b0fefdf5c))
-* **app:** add very experimental video call ui ([1ac97d3](https://github.com/WerdoxDev/Huginn/commit/1ac97d37fa102cdc60b6c167b28bac95897a6d53))
-* **app:** electron github action [#1](https://github.com/WerdoxDev/Huginn/issues/1) ([df2f245](https://github.com/WerdoxDev/Huginn/commit/df2f245d3ab5cef4c16cb789379d19f1c67fadff))
-* **app:** half baked electron migration ([9c92b90](https://github.com/WerdoxDev/Huginn/commit/9c92b90bd1a600a97041e19dcc990860e8d9a968))
-* **app:** hide message link when it's the only content ([c228acf](https://github.com/WerdoxDev/Huginn/commit/c228acfb3c2c4a0b6dd03a833abf08173999c10a))
-* **app:** make both embed and attachment use a consistent image / video component ([f231307](https://github.com/WerdoxDev/Huginn/commit/f231307c52decd911d7bb5aa50a493a999916ce7))
-* **app:** merged splashscreen into the main window ([dad146b](https://github.com/WerdoxDev/Huginn/commit/dad146b66d7dc965c01adedce15eead683394594))
-* **app:** refactor all api related hooks and contexts to use stores instead ([05ea484](https://github.com/WerdoxDev/Huginn/commit/05ea4847e009865e75a2a03d077127ab97d9e338))
-* **app:** some progress on the voice ui ([594e62b](https://github.com/WerdoxDev/Huginn/commit/594e62bb5a152d8d346f08b0f29ed06ed4331a81))
-
-
-### Bug Fixes
-
-* **app:** add consistent rounded corners for attachments and embeds ([70bbe96](https://github.com/WerdoxDev/Huginn/commit/70bbe9659b6c956b28ef67ff6fa7ac2dabfd7f88))
-* **app:** fix new splashscreen giving errors in the browser ([72da35c](https://github.com/WerdoxDev/Huginn/commit/72da35cfe47d320c565e3f005557bc90f6732b50))
-* **app:** fix some websocket event issues ([fddc3e9](https://github.com/WerdoxDev/Huginn/commit/fddc3e965bb704906124a6e2e474ccf0e868a081))
-* **app:** fix splashscreen not liking oauth and event listening outside ([0193390](https://github.com/WerdoxDev/Huginn/commit/0193390f8a99f8789b91efff7ca8b7ea161597e1))
-* **app:** fix updater not doing anything after success ([891d303](https://github.com/WerdoxDev/Huginn/commit/891d303d4c2341ebabad2812e5c1c4f4cf966023))
-* **app:** fix updating version text ([38226e5](https://github.com/WerdoxDev/Huginn/commit/38226e5c373ca7760b3902840376c97b204fe316))
-* **app:** fix VidePlayer progress handle offset ([fef3576](https://github.com/WerdoxDev/Huginn/commit/fef35762605b370b6fe8067a2d3db9981127c9b3))
-* **app:** use highest audio quality ([f0133b5](https://github.com/WerdoxDev/Huginn/commit/f0133b5cf9112d60fb5d029b3419e9baa8768ad5))
-* **app:** video timeline looks a bit weird at the beginning ([6f5cc0a](https://github.com/WerdoxDev/Huginn/commit/6f5cc0a0176367adae3b49e8d58a960163e018d6))
-
 ## [0.28.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.28.0...app@v0.28.1) (2025-04-06)
 
 

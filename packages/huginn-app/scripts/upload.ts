@@ -1,10 +1,9 @@
-// upload-to-release.ts
 import { version } from "../package.json";
+
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-// const GITHUB_TOKEN = ;
 const OWNER = "WerdoxDev";
 const REPO = "Huginn";
-const TAG = `app2@v${version}`;
+const TAG = `app@v${version}`;
 
 const FILES = [
 	{
