@@ -1,6 +1,6 @@
 {
 	"name": "@huginn/cdn",
-	"version": "0.10.3",
+	"version": "0.11.0",
 	"type": "module",
 	"scripts": {
 		"start": "bun src/index.ts",
