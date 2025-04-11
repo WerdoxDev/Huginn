@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.29.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.29.0...app@v0.29.1) (2025-04-11)
+
+
+### Bug Fixes
+
+* **app:** remove commented code + set startup app config ([af666e0](https://github.com/WerdoxDev/Huginn/commit/af666e098c43518b09829b96f43c62ef5e286bc7))
+
 ## [0.29.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.28.1...app@v0.29.0) (2025-04-11)
 
 
