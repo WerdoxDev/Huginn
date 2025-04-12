@@ -19,6 +19,7 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 	const [loaded, setLoaded] = useState(false);
 	const [errored, setErrored] = useState(false);
 	const [fullscreen, setFullscreen] = useState(false);
+	const mouseDownElement = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		const controller = new AbortController();
@@ -110,12 +111,8 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 		if (document.fullscreenElement) {
 			document.exitFullscreen();
 			setFullscreen(false);
-			//TODO: MIGRATION
-			// getCurrentWindow().setFullscreen(false);
 		} else {
 			containerRef.current?.requestFullscreen();
-			//TODO: MIGRATION
-			// getCurrentWindow().setFullscreen(true);
 			setFullscreen(true);
 		}
 	}
@@ -126,7 +123,6 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 			className="group/video relative flex overflow-hidden rounded-md"
 			onMouseUp={togglePlaying}
 		>
-			{/* biome-ignore lint/a11y/useMediaCaption: <explanation> */}
 			<video
 				width={fullscreen ? undefined : props.width}
 				height={fullscreen ? undefined : props.height}
@@ -153,7 +149,17 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 					"absolute inset-x-0 bottom-0 flex items-center gap-x-4 bg-tertiary/90 px-2 py-2 transition-[opacity,transform]",
 					playing && "translate-y-full opacity-0 group-hover/video:translate-y-0 group-hover/video:opacity-100",
 				)}
-				onMouseUp={(e) => e.stopPropagation()}
+				onMouseUp={(e) => {
+					const closest = mouseDownElement.current?.closest("#allow-click");
+					console.log(closest);
+					if (!closest) {
+						e.stopPropagation();
+					}
+					mouseDownElement.current = null;
+				}}
+				onMouseDown={(e) => {
+					mouseDownElement.current = e.target as HTMLDivElement;
+				}}
 			>
 				<button type="button" onClick={togglePlaying} className="shrink-0 text-white/80 hover:text-white">
 					{playing ? <IconMingcutePauseFill className="size-6" /> : <IconMingcutePlayFill className="size-6" />}
@@ -161,8 +167,8 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 				<div className="shrink-0 text-sm">
 					{formatSeconds(videoTime)} / {formatSeconds(videoDuration)}
 				</div>
-				<ProgressBar {...videoProgress} orientation="horizontal" onPercentageChange={setVideoPercentage} />
-				<VolumeBar {...audioProgress} onPercentageChange={setAudioPercentage} />
+				<ProgressBar id="allow-click" {...videoProgress} orientation="horizontal" onPercentageChange={setVideoPercentage} />
+				<VolumeBar id="allow-click" {...audioProgress} onPercentageChange={setAudioPercentage} />
 				<button type="button" className="shrink-0 text-white/80 hover:text-white" onClick={toggleFullscreen}>
 					{fullscreen ? <IconMingcuteFullscreenExitFill className="size-6" /> : <IconMingcuteFullscreenFill className="size-6" />}
 				</button>

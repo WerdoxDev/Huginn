@@ -19,6 +19,7 @@ export default function ProgressBar(props: ProgressBarProps) {
 		document.addEventListener(
 			"mouseup",
 			() => {
+				console.log("MOUSE UP");
 				props.setDragging(false);
 			},
 			{ signal: controller.signal },
@@ -56,6 +57,7 @@ export default function ProgressBar(props: ProgressBarProps) {
 
 	return (
 		<div
+			id={props.id}
 			className={clsx(
 				"group/progress relative flex h-2 cursor-pointer items-center rounded-md bg-white/20",
 				props.orientation === "vertical" ? "h-full flex-col justify-end" : "w-full",
@@ -63,6 +65,7 @@ export default function ProgressBar(props: ProgressBarProps) {
 			)}
 			onClick={(e) => setPercentageFromMouse(props.orientation === "horizontal" ? e.pageX : e.pageY)}
 			onMouseDown={(e) => {
+				console.log("true");
 				props.setDragging(true);
 				e.preventDefault();
 			}}

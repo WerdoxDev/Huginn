@@ -213,6 +213,7 @@ export type HuginnToken = {
 export type AttachmentType = { id: number; dataUrl?: string; arrayBuffer: ArrayBuffer; filename: string; description?: string; contentType: string };
 
 export type ProgressBarProps = {
+	id?: string;
 	orientation: "horizontal" | "vertical";
 	percentage: number;
 	bufferPercentage?: number;
