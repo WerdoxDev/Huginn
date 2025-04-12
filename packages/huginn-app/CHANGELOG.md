@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.29.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.29.2...app@v0.29.3) (2025-04-12)
+
+
+### Bug Fixes
+
+* **app:** disable multi range request for updater ([6a09215](https://github.com/WerdoxDev/Huginn/commit/6a092152c053158d05130cdfeb6ef2ad41598263))
+* **app:** video progress/volume bar not letting go ([ec540ad](https://github.com/WerdoxDev/Huginn/commit/ec540ad94948279e58f6ddbd9116b3bf70a6d0f5))
+
 ## [0.29.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.29.1...app@v0.29.2) (2025-04-11)
 
 
