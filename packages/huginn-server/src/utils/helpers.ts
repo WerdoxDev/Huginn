@@ -1,8 +1,7 @@
 import { prisma } from "@huginn/backend-shared/database";
-import { omitMessageAuthorId, selectMessageDefaults } from "@huginn/backend-shared/database/common";
+import { selectCallMessage, selectMessageDefaults } from "@huginn/backend-shared/database/common";
 import { type DirectChannel, type GatewayEvents, type MessageType, type Snowflake, idFix } from "@huginn/shared";
 import { dispatchToTopic } from "./gateway-utils";
-import type { DBAttachment } from "./types";
 
 export async function dispatchMessage(
 	authorId: Snowflake,
@@ -11,14 +10,17 @@ export async function dispatchMessage(
 	content?: string,
 	mentions?: Snowflake[],
 	flags?: number,
+	callParticipants?: Snowflake[],
 ) {
 	const message = idFix(
-		await prisma.message.createMessage(undefined, authorId, channelId, type, content, undefined, undefined, mentions, flags, {
-			select: selectMessageDefaults,
+		await prisma.message.createMessage(undefined, authorId, channelId, type, content, undefined, undefined, mentions, flags, callParticipants, {
+			select: callParticipants && callParticipants.length !== 0 ? selectCallMessage : selectMessageDefaults,
 		}),
 	);
 
 	dispatchToTopic(channelId, "message_create", { ...message, embeds: [], attachments: [] });
+
+	return message;
 }
 
 export function channelWithoutRecipient(channel: DirectChannel, recipientId: Snowflake) {

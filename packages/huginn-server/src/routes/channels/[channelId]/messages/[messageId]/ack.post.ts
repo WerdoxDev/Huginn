@@ -11,5 +11,5 @@ createRoute("POST", "/api/channels/:channelId/messages/:messageId/ack", verifyJw
 	await prisma.readState.updateLastRead(payload.id, channelId, messageId);
 	dispatchToTopic(payload.id, "message_ack", { channelId, messageId });
 
-	return c.newResponse(null, HttpCode.OK);
+	return c.newResponse(null, HttpCode.NO_CONTENT);
 });

@@ -189,6 +189,7 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 			processedEmbeds.length === 0 ? undefined : processedEmbeds,
 			undefined,
 			body.flags,
+			undefined,
 			{ select: selectMessageDefaults },
 		),
 	);
@@ -260,7 +261,7 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 			return;
 		}
 
-		const updatedMessage = idFix(await prisma.message.updateMessage(dbMessage.id, undefined, embeds, { select: selectMessageDefaults }));
+		const updatedMessage = idFix(await prisma.message.updateMessage(dbMessage.id, undefined, embeds, undefined, { select: selectMessageDefaults }));
 
 		dispatchToTopic(channelId, "message_update", {
 			...updatedMessage,

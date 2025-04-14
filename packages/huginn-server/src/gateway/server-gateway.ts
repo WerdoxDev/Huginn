@@ -14,7 +14,6 @@ import {
 	type GatewayPayload,
 	type GatewayUpdateVoiceState,
 	type UserSettings,
-	WorkerID,
 	merge,
 	validateGatewayData,
 } from "@huginn/shared";
@@ -27,7 +26,7 @@ import {
 	GatewayOperations,
 	type GatewayResume,
 } from "@huginn/shared";
-import { type Snowflake, snowflake } from "@huginn/shared";
+import type { Snowflake } from "@huginn/shared";
 import { idFix } from "@huginn/shared";
 import type { Message, Peer } from "crossws";
 import { verifyToken } from "#utils/token-factory";
@@ -35,20 +34,21 @@ import type { ServerGatewayOptions } from "#utils/types";
 import { dispatchToTopic } from "../utils/gateway-utils";
 import { ClientSession } from "./client-session";
 import { PresenceManager } from "./presence-manager";
+import { VoiceManager } from "./voice-manager";
 
 export class ServerGateway {
 	private readonly options: ServerGatewayOptions;
 	private sessions: Map<string, ClientSession>;
 	private cancelledClientDisconnects: string[];
 	public presenceManeger: PresenceManager;
-	private voiceStates: Map<Snowflake, Snowflake>;
+	public voiceManager: VoiceManager;
 
 	public constructor(options: ServerGatewayOptions) {
 		this.options = options;
 		this.sessions = new Map();
 		this.presenceManeger = new PresenceManager();
+		this.voiceManager = new VoiceManager();
 		this.cancelledClientDisconnects = [];
-		this.voiceStates = new Map();
 	}
 
 	public open(peer: Peer) {
@@ -71,6 +71,7 @@ export class ServerGateway {
 
 		if (session?.sessionInfo) {
 			this.presenceManeger.removeUserPresence(session.sessionInfo.user.id);
+			this.voiceManager.updateVoiceState(session.sessionInfo.user.id, null, null);
 		}
 
 		session?.dispose();
@@ -242,6 +243,8 @@ export class ServerGateway {
 				userSettings: settings,
 				presences,
 				readStates: finalReadStates,
+				callStates: this.voiceManager.getCallStates(userChannels.map((x) => x.id)),
+				voiceStates: this.voiceManager.getVoiceStates(userChannels.map((x) => x.id)),
 			},
 			t: "ready",
 			s: session.getIncreasedSequence(),
@@ -313,30 +316,12 @@ export class ServerGateway {
 			return;
 		}
 
-		let channelId: Snowflake | undefined;
+		this.voiceManager.updateVoiceState(user.id, data.d.channelId, data.d.guildId);
 
 		if (data.d.channelId) {
-			this.voiceStates.set(user.id, data.d.channelId);
-			channelId = data.d.channelId;
-		} else {
-			channelId = this.voiceStates.get(user.id);
-			this.voiceStates.delete(user.id);
+			const token = await createVoiceToken(user.id);
+			dispatchToTopic(user.id, "voice_server_update", { token });
 		}
-
-		if (channelId) {
-			dispatchToTopic(channelId, "voice_state_update", {
-				userId: user.id,
-				channelId: data.d.channelId,
-				guildId: data.d.guildId,
-				selfDeaf: false,
-				selfMute: false,
-				selfStream: false,
-				selfVideo: false,
-			});
-		}
-
-		const token = await createVoiceToken(user.id);
-		dispatchToTopic(user.id, "voice_server_update", { token, hostname: "127.0.0.1" });
 	}
 
 	private queueClientDisconnect(sessionId: Snowflake) {

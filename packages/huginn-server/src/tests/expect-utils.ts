@@ -14,9 +14,11 @@ import {
 	type APIVideo,
 	ChannelType,
 	type DirectChannel,
+	type GatewayCallState,
 	type GatewayDMCannelRecipientRemoveData,
 	type GatewayDMChannelRecipientAddData,
 	type GatewayTypingStartData,
+	type GatewayVoiceState,
 	MessageType,
 	type PresenceStatus,
 	RelationshipType,
@@ -332,5 +334,33 @@ export function expectEmbedExactSchema(
 		...(parsedEmbed.timestamp || timestamp ? { timestamp } : {}),
 		...(parsedEmbed.thumbnail || thumbnail ? { thumbnail } : {}),
 		...(parsedEmbed.video || video ? { video } : {}),
+	});
+}
+
+export function expectVoiceServerExactSchema(voiceServer: object) {
+	expect(Object.keys(voiceServer).sort()).toStrictEqual(["token"].sort());
+}
+
+export function expectVoiceStateExactSchema(voiceState: object, channelId: Snowflake | null, guildId: Snowflake | null, userId: Snowflake) {
+	const parsedVoiceState = voiceState as GatewayVoiceState;
+
+	expect(parsedVoiceState).toStrictEqual({
+		channelId,
+		guildId,
+		userId,
+		selfDeaf: parsedVoiceState.selfDeaf,
+		selfMute: parsedVoiceState.selfMute,
+		selfStream: parsedVoiceState.selfStream,
+		selfVideo: parsedVoiceState.selfVideo,
+	});
+}
+
+export function expectCallStateExactSchema(callState: object, channelId: Snowflake, messageId: Snowflake, ringing: Snowflake[]) {
+	const parsedCallState = callState as GatewayCallState;
+
+	expect(parsedCallState).toStrictEqual({
+		channelId,
+		messageId,
+		ringing,
 	});
 }

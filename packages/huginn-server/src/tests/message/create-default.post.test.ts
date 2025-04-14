@@ -199,10 +199,10 @@ describe("POST /api/channels/:channelId/messages", () => {
 				expect(data.d.embeds).toHaveLength(1);
 				expectEmbedExactSchema(
 					data.d.embeds[0],
+					"rich",
 					"Huginn - Norse Chat App",
 					"https://huginn.dev/",
 					"A fast, customizable chat app with a touch of Norse mythology.",
-					"rich",
 					undefined,
 					{ url: "https://huginn.dev/huginn-meta.png", width: 1150, height: 609 },
 				);
