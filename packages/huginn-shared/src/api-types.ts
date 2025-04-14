@@ -207,9 +207,12 @@ type APIBaseMessage = {
 	embeds: APIEmbed[];
 	pinned: boolean;
 	mentions: APIMessageUser[];
+	flags?: MessageFlags | null;
+	nonce?: number | string;
+	reactions?: string[];
 };
 
-export type APIMessage = APIDefaultMessage;
+export type APIMessage = APICallMessage | APIDefaultMessage;
 
 export enum MessageFlags {
 	NONE = 0,
@@ -228,10 +231,14 @@ export type APIDefaultMessage = {
 		| MessageType.CHANNEL_ICON_CHANGED
 		| MessageType.CHANNEL_NAME_CHANGED
 		| MessageType.CHANNEL_OWNER_CHANGED;
-	flags?: MessageFlags | null;
-	nonce?: number | string;
-	reactions?: string[];
 } & APIBaseMessage;
+
+export type APICallMessage = {
+	type: MessageType.CALL;
+	call: APIMessageCall;
+} & APIBaseMessage;
+
+export type APIMessageCall = { participants: Snowflake[]; endedTimestamp: Date | string | null };
 
 export type APIPostDefaultMessageJSONBody = {
 	content?: string;

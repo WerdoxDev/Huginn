@@ -163,7 +163,7 @@ export const Errors = {
 	invalidFormBody(): [string, JsonCode] {
 		return ["Invalid Form Body", JsonCode.INVALID_FORM_BODY];
 	},
-	unknownUser(userId?: Snowflake): [string, JsonCode] {
+	unknownUser(userId?: Snowflake | Snowflake[]): [string, JsonCode] {
 		return [`Unknown User (${userId})`, JsonCode.UNKNOWN_USER];
 	},
 	unknownChannel(channelId?: Snowflake): [string, JsonCode] {

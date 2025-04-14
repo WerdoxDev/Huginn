@@ -137,6 +137,14 @@ export const Routes = {
 	channelMessageAck(channelId: Snowflake, messageId: Snowflake): `/channels/${string}/messages/${string}/ack` {
 		return `/channels/${channelId}/messages/${messageId}/ack`;
 	},
+
+	/**
+	 * Route for:
+	 * - POST '/channels/{channel.id}/call/ring'
+	 */
+	channelRing(channelId: Snowflake): `/channels/${string}/call/ring` {
+		return `/channels/${channelId}/call/ring`;
+	},
 };
 
 export const CDNRoutes = {

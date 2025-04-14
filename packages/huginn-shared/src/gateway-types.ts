@@ -1,5 +1,5 @@
 import type { APIChannelUser, APIReadStateWithoutUser, DirectChannel, UserPresence, UserSettings } from "./api-types";
-import type { APIMessage, APIMessageUser, APIRelationshipWithoutOwner, APIUser, Tokens } from "./api-types";
+import type { APIMessage, APIRelationshipWithoutOwner, APIUser, Tokens } from "./api-types";
 import type { Snowflake } from "./snowflake";
 
 export enum GatewayOperations {
@@ -47,6 +47,9 @@ export type GatewayEvents = {
 	oauth_redirect: GatewayOAuthRedirectData;
 	voice_state_update: GatewayVoiceStateUpdateData;
 	voice_server_update: GatewayVoiceServerUpdateData;
+	call_create: GatewayCallCreateData;
+	call_update: GatewayCallUpdateData;
+	call_delete: GatewayCallDeleteData;
 };
 
 export type GatewayPayload<Event extends keyof GatewayEvents | undefined = undefined> = {
@@ -55,12 +58,6 @@ export type GatewayPayload<Event extends keyof GatewayEvents | undefined = undef
 } & (Event extends undefined ? { d?: unknown; t?: string } : { d: GatewayEvents[Extract<Event, keyof GatewayEvents>]; t: Event });
 
 export type NonDispatchGatewayPayload = Omit<GatewayPayload, "s" | "t">;
-
-// export type DataPayload<Event extends keyof GatewayEvents, D = unknown> = {
-// 	op: GatewayOperations.DISPATCH;
-// 	t: Event;
-// 	d: D;
-// } & BasePayload;
 
 export type GatewayDispatch = {
 	t: keyof GatewayEvents;
@@ -112,6 +109,8 @@ export type GatewayReadyData = {
 	presences: UserPresence[];
 	userSettings: UserSettings;
 	readStates: APIReadStateWithoutUser[];
+	callStates: GatewayCallState[];
+	voiceStates: GatewayVoiceState[];
 };
 
 export type GatewayResume = NonDispatchGatewayPayload & {
@@ -141,9 +140,8 @@ export type GatewayUpdateVoiceState = NonDispatchGatewayPayload & {
 	d: GatewayUpdateVoiceStateData;
 };
 
-// export type GatewayResumedData = DataPayload<"resumed", undefined>;
-export type GatewayMessageCreateData = Omit<APIMessage, "mentions"> & GatewayMessageEventExtraFields;
-export type GatewayMessageUpdateData = Omit<APIMessage, "mentions"> & GatewayMessageEventExtraFields;
+export type GatewayMessageCreateData = APIMessage & GatewayMessageEventExtraFields;
+export type GatewayMessageUpdateData = APIMessage & GatewayMessageEventExtraFields;
 export type GatewayMessageDeleteData = {
 	id: Snowflake;
 	channelId: Snowflake;
@@ -154,7 +152,6 @@ type GatewayMessageEventExtraFields = {
 	guildId?: Snowflake;
 	// TODO: Implement Guild Member
 	// member?:
-	mentions: APIMessageUser[];
 	// mentions: (APIUser & {member: Omit<APIGuildMember, "user">})[];
 };
 
@@ -182,7 +179,7 @@ export type GatewayTypingStartData = {
 	timestamp: number;
 };
 
-export type GatewayVoiceStateUpdateData = {
+export type GatewayVoiceState = {
 	userId: Snowflake;
 	guildId: Snowflake | null;
 	channelId: Snowflake | null;
@@ -192,7 +189,20 @@ export type GatewayVoiceStateUpdateData = {
 	selfStream: boolean;
 };
 
+export type GatewayVoiceStateUpdateData = GatewayVoiceState;
+export type GatewayCallState = {
+	ringing: Snowflake[];
+	messageId: Snowflake;
+	channelId: Snowflake;
+};
+
 export type GatewayVoiceServerUpdateData = {
 	token: string;
-	hostname: string;
+};
+
+export type GatewayCallCreateData = GatewayCallState;
+export type GatewayCallUpdateData = GatewayCallState;
+
+export type GatewayCallDeleteData = {
+	channelId: Snowflake;
 };

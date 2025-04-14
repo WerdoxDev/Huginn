@@ -33,4 +33,5 @@ export enum WorkerID {
 	EMBED = 9,
 	THUMBNAIL = 10,
 	ATTACHMENT = 11,
+	CALL = 12,
 }
