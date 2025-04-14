@@ -1,6 +1,8 @@
 import type { AppDirectChannel, AppMessage, AppRelationship, InputStatus, InputStatuses, InputValue, InputValues } from "@/types";
 import {
+	type APICallMessage,
 	type APIDefaultMessage,
+	type APIMessage,
 	type APIRelationshipWithoutOwner,
 	type DirectChannel,
 	HuginnAPIError,
@@ -126,6 +128,6 @@ export function convertToAppRelationship(relationship: APIRelationshipWithoutOwn
 	return { ...omit(relationship, ["user"]), userId: relationship.user.id };
 }
 
-export function convertToAppMessage(message: APIDefaultMessage): AppMessage {
+export function convertToAppMessage(message: APIMessage): AppMessage {
 	return { ...omit(message, ["author"]), authorId: message.author.id, preview: false };
 }

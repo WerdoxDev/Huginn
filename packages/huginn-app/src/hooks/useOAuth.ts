@@ -18,7 +18,12 @@ export function useOAuth() {
 
 	function startOAuth(type: OAuthType) {
 		listenOAuth();
-		const url = client.oauth.getOAuthURL(type, huginnWindow.environment === "browser" ? "browser" : "websocket", `${window.origin}/oauth-redirect`);
+		const url = client.oauth.getOAuthURL(
+			type,
+			huginnWindow.environment === "browser" ? "browser" : "websocket",
+			`${window.origin}/#/oauth-redirect`,
+		);
+		console.log(`${window.origin}/#/oauth-redirect`);
 
 		if (huginnWindow.environment === "browser") {
 			window.open(url, "_self");

@@ -7,6 +7,7 @@ import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRem
 import type {
 	APIChannelUser,
 	APIDefaultMessage,
+	APIMessage,
 	APIMessageUser,
 	APIRelationUser,
 	APIRelationshipWithoutOwner,
@@ -188,7 +189,7 @@ export type MutationKinds = {
 
 export type AppMessage =
 	| { preview: true; id: Snowflake; timestamp: string; authorId: Snowflake; nonce?: number | string; content: string; channelId: Snowflake }
-	| ({ preview: false } & Omit<APIDefaultMessage, "author"> & { authorId: Snowflake });
+	| ({ preview: false } & Omit<APIMessage, "author"> & { authorId: Snowflake });
 
 export type AppDirectChannel = Omit<DirectChannel, "recipients"> & { recipientIds: Snowflake[] };
 export type AppRelationship = Omit<APIRelationshipWithoutOwner, "user"> & { userId: Snowflake };

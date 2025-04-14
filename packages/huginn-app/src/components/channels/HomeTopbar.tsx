@@ -19,6 +19,7 @@ export default function HomeTopbar(props: { channel: AppDirectChannel; onRecipie
 
 	async function startCall() {
 		await client.gateway.connectToVoice(null, props.channel.id);
+		await client.channels.ring(props.channel.id, null);
 	}
 
 	return (

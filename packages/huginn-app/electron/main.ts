@@ -1,7 +1,6 @@
-import { access, readFile, stat, writeFile } from "node:fs/promises";
+import { access, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { AppSettings } from "@stores/settingsStore";
 import { BrowserWindow, Menu, Notification, Tray, app, ipcMain, shell } from "electron";
 import log from "electron-log/main";
 import { CancellationToken, autoUpdater } from "electron-updater";

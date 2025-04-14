@@ -3,8 +3,8 @@ import { TabPanel } from "@headlessui/react";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useLookup } from "@hooks/useLookup";
-import type { APIPublicUser, Snowflake, UserPresence } from "@huginn/shared";
-import { useEffect, useMemo } from "react";
+import type { Snowflake, UserPresence } from "@huginn/shared";
+import { useMemo } from "react";
 import FriendItem from "./FriendItem";
 
 export default function FriendsTab(props: { friends: AppRelationship[] | null; presences: UserPresence[]; text: string }) {

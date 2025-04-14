@@ -1,37 +1,37 @@
 import UserAvatar from "@components/UserAvatar";
 import Tooltip from "@components/tooltip/Tooltip";
 import { useChannel } from "@hooks/api-hooks/channelHooks";
-import { useUser, useUsers } from "@hooks/api-hooks/userHooks";
+import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useLookup } from "@hooks/useLookup";
-import type { APIPublicUser, Snowflake, VoiceEvents } from "@huginn/shared";
+import type { Snowflake, VoiceEvents } from "@huginn/shared";
 import { useClient } from "@stores/apiStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	const [show, setShow] = useState(false);
-	const { channelId, addRemoteSource, removeRemoteSource, connectedUsers, remoteSources, clearRemoteSources } = useVoiceStore();
+	const { channelId, addRemoteSource, removeRemoteSource, voiceStates, callStates, remoteSources, clearRemoteSources } = useVoiceStore();
 
 	const client = useClient();
 	const { user } = useThisUser();
 	const channel = useChannel(props.channelId);
 
-	const users = useUsers(connectedUsers.filter((x) => x.channelId === props.channelId).map((x) => x.userId));
+	const thisVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channelId), [voiceStates, props.channelId]);
+	const thisCallState = useMemo(() => callStates.find((x) => x.channelId === props.channelId), [callStates, props.channelId]);
+
+	const users = useUsers(Array.from(new Set([...(thisCallState?.ringing ?? []), ...thisVoiceStates.map((x) => x.userId)])));
 	const usersLookup = useLookup(users, (user) => user.id);
 
 	useEffect(() => {
-		setShow(users.length !== 0);
-	}, [users]);
-
-	useEffect(() => {
-		if (client.voice.connectionInfo?.channelId !== props.channelId) {
-			setShow(false);
-		} else {
+		console.log(users, thisCallState, thisVoiceStates);
+		if (users.length !== 0 && thisCallState) {
 			setShow(true);
+		} else {
+			setShow(false);
 		}
-	}, [props.channelId]);
+	}, [props.channelId, users]);
 
 	async function transportReady(d: VoiceEvents["transport_ready"]) {
 		if (!user) {
@@ -121,7 +121,16 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 							</div>
 						))
 					:} */}
-				{connectedUsers.map((x) => (
+				{thisCallState?.ringing.map((x) => (
+					<div
+						key={x}
+						className="flex flex-col items-center justify-center gap-y-3 rounded-xl bg-background/30 p-3 shadow-md transition-shadow hover:shadow-xl"
+					>
+						<UserAvatar userId={usersLookup[x].id} avatarHash={usersLookup[x].avatar} hideStatus size="5rem" />
+						<div className="text-text">{usersLookup[x].displayName ?? usersLookup[x].username}</div>
+					</div>
+				))}
+				{thisVoiceStates.map((x) => (
 					<div
 						key={x.userId}
 						className="flex flex-col items-center justify-center gap-y-3 rounded-xl bg-background p-3 shadow-md transition-shadow hover:shadow-xl"
@@ -146,7 +155,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 					))}
 			</div>
 			<div className="mb-2.5 flex shrink-0 items-center justify-center gap-x-2.5">
-				{channelId ? (
+				{channelId === props.channelId ? (
 					<>
 						<div className="flex gap-x-1 rounded-xl border border-background bg-tertiary p-1">
 							<Tooltip>

@@ -207,6 +207,7 @@ function MessageRenderer(props: MessageRendererProps) {
 					MessageType.CHANNEL_NAME_CHANGED,
 					MessageType.CHANNEL_ICON_CHANGED,
 					MessageType.CHANNEL_OWNER_CHANGED,
+					MessageType.CALL,
 				].includes(props.renderInfo.message.type) && <ActionMessage {...props} />}
 		</li>
 	);

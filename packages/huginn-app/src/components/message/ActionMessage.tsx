@@ -32,8 +32,10 @@ export default function ActionMessage(props: MessageRendererProps) {
 			{type === MessageType.CHANNEL_NAME_CHANGED && <IconMingcuteEdit2Fill className="mr-4 size-5 text-text/80" />}
 			{type === MessageType.CHANNEL_ICON_CHANGED && <IconMingcutePic2Fill className="mr-4 size-5 text-text/80" />}
 			{type === MessageType.CHANNEL_OWNER_CHANGED && <IconMingcuteTransfer3Fill className="mr-4 size-5 text-accent" />}
+			{type === MessageType.CALL && <IconMingcutePhoneFill className="mr-4 size-5 text-success" />}
 			<div>
 				<span className="font-bold">{authorName}</span>
+				{type === MessageType.CALL && <span> started a call</span>}
 				{type === MessageType.CHANNEL_ICON_CHANGED && <span className="text-text"> changed the channel icon</span>}
 				{type === MessageType.CHANNEL_NAME_CHANGED &&
 					(!props.renderInfo.message.content ? (

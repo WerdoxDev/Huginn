@@ -1,3 +1,4 @@
+import path from "node:path";
 import { HistoryProvider } from "@contexts/historyContext";
 import { client, initializeClient } from "@stores/apiStore";
 import { initializeSettings } from "@stores/settingsStore";
@@ -16,14 +17,15 @@ import { type LoaderFunctionArgs, Outlet, redirect } from "react-router";
 // 	capture_pageview: false,
 // });
 
+const findIndex = window.location.hash.indexOf("?");
+const initialPathname = window.location.hash.slice(0, findIndex === -1 ? undefined : findIndex);
+
 export async function rootLoader({ request }: LoaderFunctionArgs) {
-	console.log("loader");
 	const pathname = new URL(request.url).pathname;
 	// posthog.capture("$pageview", { $current_url: window.origin + pathname });
 	const search = new URLSearchParams({ redirect: pathname });
 
-	if (pathname !== "/" && pathname !== "/oauth-redirect" && !client?.isLoggedIn) {
-		console.log("redirect?");
+	if (`#${pathname}` === initialPathname && initialPathname !== "#/" && initialPathname !== "#/oauth-redirect" && !client?.isLoggedIn) {
 		throw redirect(`/?${search.toString()}`);
 	}
 }
