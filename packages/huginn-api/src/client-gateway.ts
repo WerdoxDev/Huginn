@@ -115,6 +115,10 @@ export class Gateway {
 	 * @param guildId can be set to null if you are connecting to a direct channel call.
 	 */
 	public async connectToVoice(guildId: Snowflake | null, channelId: Snowflake): Promise<void> {
+		if (this.client.voice.connectionInfo?.channelId !== channelId) {
+			this.client.voice.close();
+		}
+
 		const updateVoiceStateData: GatewayUpdateVoiceState = {
 			op: GatewayOperations.VOICE_STATE_UPDATE,
 			d: {

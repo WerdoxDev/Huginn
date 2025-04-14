@@ -89,4 +89,13 @@ export class ChannelAPI {
 	public async ackMessage(channelId: Snowflake, messageId: Snowflake): Promise<unknown> {
 		return this.rest.post(Routes.channelMessageAck(channelId, messageId), { auth: true });
 	}
+
+	/**
+	 *
+	 * @param recipients the individual recipients to ring. passing `null` will ring all recipients
+	 * @returns
+	 */
+	public async ring(channelId: Snowflake, recipients: Snowflake[] | null): Promise<unknown> {
+		return this.rest.post(Routes.channelRing(channelId), { auth: true, body: { recipients: recipients ?? null } });
+	}
 }
