@@ -1,6 +1,6 @@
 import { Errors, HttpCode, type HuginnErrorData, generateRandomString } from "@huginn/shared";
 import type { Context } from "hono";
-import { CDNErrorType, DBErrorType } from "../types";
+import { CDNErrorType, DBErrorType } from "#types";
 import { createErrorFactory } from "./error-factory";
 import { createHuginnError, isCDNError, isDBError } from "./errors";
 import { logReject, logRequest, logResponse, logServerError } from "./log-utils";

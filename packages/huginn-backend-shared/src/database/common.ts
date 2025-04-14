@@ -69,6 +69,11 @@ export const selectMessageDefaults = Prisma.validator<Prisma.MessageSelect>()({
 	flags: true,
 });
 
+export const selectCallMessage = Prisma.validator<Prisma.MessageSelect>()({
+	...selectMessageDefaults,
+	call: { select: { participants: { select: { id: true } }, endedTimestamp: true } },
+});
+
 export const selectRelationshipUser = Prisma.validator<Prisma.RelationshipSelect>()({
 	user: { select: selectPublicUser },
 });

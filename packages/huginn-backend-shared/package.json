@@ -19,7 +19,7 @@
 		".": "./src/index.ts",
 		"./*": "./src/*.ts",
 		"./database": "./src/database/index.ts",
-		"./types": "./types.ts"
+		"./types": "./src/types.ts"
 	},
 	"devDependencies": {
 		"@types/bun": "latest",
@@ -28,6 +28,6 @@
 	"imports": {
 		"#database": "./src/database/index.ts",
 		"#*": "./src/*.ts",
-		"#types": "./types.ts"
+		"#types": "./src/types.ts"
 	}
 }

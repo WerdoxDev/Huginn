@@ -27,6 +27,7 @@ model User {
    relatedRelationships Relationship[]     @relation("relation_user")
    identityProvider     IdentityProvider[]
    readStates           ReadState[]
+   participatedCalls    Call[]             @relation("participated_calls")
 }
 
 model Channel {
@@ -59,6 +60,7 @@ model Message {
    embeds              Embed[]
    attachments         Attachment[]
    reactions           String[]
+   call                Call?
    pinned              Boolean
    type                Int
    flags               Int          @db.SmallInt
@@ -66,6 +68,14 @@ model Message {
    lastMessageChannels Channel[]    @relation("channel_last_message")
 
    @@index([channelId])
+}
+
+model Call {
+   id             BigInt    @id
+   Message        Message   @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+   messageId      BigInt    @unique
+   participants   User[]    @relation("participated_calls")
+   endedTimestamp DateTime?
 }
 
 model Relationship {

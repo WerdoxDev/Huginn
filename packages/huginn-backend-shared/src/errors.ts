@@ -1,7 +1,7 @@
 import { Errors, HttpCode, type JsonCode } from "@huginn/shared";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import type { CDNErrorType, DBErrorType } from "../types";
+import type { CDNErrorType, DBErrorType } from "#types";
 import { type ErrorFactory, createErrorFactory } from "./error-factory";
 
 export class DBError extends Error {

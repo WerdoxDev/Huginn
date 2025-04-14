@@ -1,6 +1,6 @@
 import type { Snowflake } from "@huginn/shared";
 import { WorkerID, snowflake } from "@huginn/shared";
-import type { MessageType } from "@huginn/shared";
+import { MessageType } from "@huginn/shared";
 import { type Attachment, type Embed, Prisma } from "@prisma/client";
 import { type DBAttachment, type DBEmbed, DBErrorType } from "#types";
 import { assertExists, assertId, assertObj, prisma } from ".";
@@ -60,11 +60,13 @@ export const messagesExtension = Prisma.defineExtension({
 				embeds?: DBEmbed[],
 				mentions?: Snowflake[],
 				flags?: number,
+				callParticipants?: Snowflake[],
 				args?: Args,
 			) {
 				try {
 					const createdEmbeds: Embed[] = [];
 					const createdAttachments: Attachment[] = [];
+					const participantsConnect = callParticipants?.map((x) => ({ id: BigInt(x) }));
 
 					if (embeds) {
 						for (const embed of embeds) {
@@ -114,6 +116,16 @@ export const messagesExtension = Prisma.defineExtension({
 							pinned: false,
 							reactions: [],
 							flags: flags ?? 0,
+							call:
+								participantsConnect && participantsConnect.length !== 0 && type === MessageType.CALL
+									? {
+											create: {
+												id: snowflake.generate(WorkerID.CALL),
+												endedTimestamp: null,
+												participants: { connect: participantsConnect },
+											},
+										}
+									: undefined,
 						},
 						...args,
 					});
@@ -126,12 +138,23 @@ export const messagesExtension = Prisma.defineExtension({
 				} catch (e) {
 					await assertExists(e, "createDefaultMessage", DBErrorType.NULL_CHANNEL, [channelId]);
 					await assertExists(e, "createDefaultMessage", DBErrorType.NULL_USER, [authorId]);
+					console.log(callParticipants);
+					if (callParticipants) {
+						await assertExists(e, "createDefaultMessage", DBErrorType.NULL_USER, callParticipants);
+					}
 					throw e;
 				}
 			},
-			async updateMessage<Args extends Prisma.MessageDefaultArgs>(id: Snowflake, content?: string, embeds?: DBEmbed[], args?: Args) {
+			async updateMessage<Args extends Prisma.MessageDefaultArgs>(
+				id: Snowflake,
+				content?: string,
+				embeds?: DBEmbed[],
+				call?: { participants: Snowflake[]; setEndedTimestamp: boolean },
+				args?: Args,
+			) {
 				try {
 					const createdEmbeds: Embed[] = [];
+					const participantsConnect = call?.participants.map((x) => ({ id: BigInt(x) }));
 
 					if (embeds) {
 						for (const embed of embeds) {
@@ -155,6 +178,9 @@ export const messagesExtension = Prisma.defineExtension({
 							content: content,
 							embeds: embeds ? { set: createdEmbeds.map((x) => ({ id: x.id })) } : { set: [] },
 							editedTimestamp: new Date(),
+							call: call
+								? { update: { endedTimestamp: call.setEndedTimestamp ? new Date() : undefined, participants: { set: participantsConnect } } }
+								: undefined,
 						},
 						...args,
 					});

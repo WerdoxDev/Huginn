@@ -1,7 +1,7 @@
 import { WorkerID, snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
-import type { DBThumbnail, DBVideo } from "types";
 import { prisma } from "#database";
+import type { DBThumbnail, DBVideo } from "#types";
 
 export const embedExtension = Prisma.defineExtension({
 	model: {

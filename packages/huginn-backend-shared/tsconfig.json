@@ -5,5 +5,5 @@
 		"baseUrl": "./"
 		// "isolatedDeclarations": true
 	},
-	"include": ["src", "types.ts"]
+	"include": ["src"]
 }

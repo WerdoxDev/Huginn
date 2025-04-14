@@ -1,8 +1,8 @@
 import { DBError, isDBError } from "@huginn/backend-shared/errors";
-import { DBErrorType } from "@huginn/backend-shared/types";
 import type { Snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 import { prisma } from "#database";
+import { DBErrorType } from "#types";
 
 export function assertError(error: Error | null, type: DBErrorType) {
 	// let actualError = error;
