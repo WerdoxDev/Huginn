@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.8.0...backend-shared@v0.9.0) (2025-04-14)
+
+
+### Features
+
+* **backend-shared:** type changes + call message selection ([a01e8a3](https://github.com/WerdoxDev/Huginn/commit/a01e8a3f3c85775e7d2851ce55e4699c458882c9))
+
 ## [0.8.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.7.2...backend-shared@v0.8.0) (2025-04-04)
 
 

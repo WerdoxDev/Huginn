@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.9.0...api@v0.10.0) (2025-04-14)
+
+
+### Features
+
+* **api:** add call ringing request ([1bf2a3d](https://github.com/WerdoxDev/Huginn/commit/1bf2a3da4722e49d517dfe52b06b2acc2b9768ee))
+
 ## [0.9.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.8.0...api@v0.9.0) (2025-04-04)
 
 
