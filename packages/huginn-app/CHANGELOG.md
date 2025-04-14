@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.30.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.29.3...app@v0.30.0) (2025-04-14)
+
+
+### Features
+
+* **app:** better call management and persistent support ([acf0ad4](https://github.com/WerdoxDev/Huginn/commit/acf0ad4feb9ff8344f9c62d422d41e14f8ccf8cb))
+
 ## [0.29.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.29.2...app@v0.29.3) (2025-04-12)
 
 

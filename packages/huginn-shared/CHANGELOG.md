@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.13.0...shared@v0.14.0) (2025-04-14)
+
+
+### Features
+
+* **shared:** add call gateway types ([aea7fb9](https://github.com/WerdoxDev/Huginn/commit/aea7fb96c9dc82dad860dc32dd0766a4e785dc26))
+
 ## [0.13.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.12.0...shared@v0.13.0) (2025-04-04)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.20.1...server@v0.21.0) (2025-04-14)
+
+
+### Features
+
+* **server:** add call event sending + voice tests ([855e8c6](https://github.com/WerdoxDev/Huginn/commit/855e8c66c61f2ce5e2b32fefb8a990b5b45bc63b))
+
 ## [0.20.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.20.0...server@v0.20.1) (2025-04-11)
 
 
