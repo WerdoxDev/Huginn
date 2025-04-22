@@ -48,6 +48,7 @@ export type VoiceEvents = {
 	transport_ready: { channelId: Snowflake };
 	producer_created: { consumerId: string; producerId: string; track: MediaStreamTrack; producerUserId: Snowflake };
 	producer_removed: { producerId: string };
+	disconnected: undefined;
 };
 
 export type VoicePayload<OP extends keyof VoiceOperationDatas | undefined = undefined> = {

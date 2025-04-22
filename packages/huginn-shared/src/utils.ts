@@ -294,3 +294,7 @@ export function validateGatewayData(data: unknown): boolean {
 
 	return false;
 }
+
+export function remap(value: number, fromMin: number, fromMax: number, toMin = 0, toMax = 100): number {
+	return ((value - fromMin) * (toMax - toMin)) / (fromMax - fromMin) + toMin;
+}
