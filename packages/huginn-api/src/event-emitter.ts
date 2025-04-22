@@ -32,6 +32,10 @@ export class EventEmitterWithHistory {
 		}
 	}
 
+	offAll(event: string): void {
+		this.events[event] = [];
+	}
+
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	emit<T = any>(event: string, data: T): void {
 		// Notify all listeners

@@ -16,7 +16,7 @@ import {
 	type VoiceTransportCreatedData,
 } from "@huginn/shared";
 import * as mediasoupClient from "mediasoup-client";
-import type { Consumer, Transport } from "mediasoup-client/types";
+import type { Consumer, Producer, Transport } from "mediasoup-client/types";
 import { EventEmitterWithHistory } from "./event-emitter";
 import type { HuginnClient } from "./huginn-client";
 import type { VoiceOptions } from "./types";
@@ -30,6 +30,7 @@ export class Voice {
 	private sequence?: number;
 	private readonly emitter = new EventEmitterWithHistory();
 
+	public audioProducer?: Producer;
 	public connectionInfo?: { token: string; channelId: Snowflake; guildId: Snowflake | null };
 	private device?: mediasoupClient.Device;
 	private initialProducers?: ProducerData[];
@@ -92,11 +93,15 @@ export class Voice {
 
 	public async startStreaming(videoTrack?: MediaStreamTrack, audioTrack?: MediaStreamTrack): Promise<void> {
 		if (videoTrack) {
-			const videoProducer = await this.sendTransport?.produce({ track: videoTrack });
+			const videoProducer = await this.sendTransport?.produce({ track: videoTrack, disableTrackOnPause: false, zeroRtpOnPause: true });
 		}
 
 		if (audioTrack) {
-			const audioProducer = await this.sendTransport?.produce({ track: audioTrack });
+			this.audioProducer = await this.sendTransport?.produce({
+				track: audioTrack,
+				disableTrackOnPause: false,
+				zeroRtpOnPause: true,
+			});
 		}
 	}
 
@@ -122,6 +127,8 @@ export class Voice {
 		}
 
 		this.stopHeartbeat();
+
+		this.emit("disconnected", undefined);
 	}
 
 	private async onMessage(e: MessageEvent) {
