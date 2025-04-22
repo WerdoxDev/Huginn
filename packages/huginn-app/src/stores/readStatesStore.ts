@@ -1,5 +1,5 @@
 import { RelationshipType, type Snowflake, snowflake } from "@huginn/shared";
-import { listenEvent } from "@lib/eventHandler";
+import { listenEvent } from "@lib/event-handler";
 import { getCurrentPageMessages } from "@lib/utils";
 import { windowStore } from "@stores/windowStore";
 import type { QueryClient } from "@tanstack/react-query";

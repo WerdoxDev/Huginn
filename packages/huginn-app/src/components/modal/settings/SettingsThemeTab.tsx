@@ -1,4 +1,4 @@
-import type { DropboxItem, SettingsTabProps, ThemeType } from "@/types";
+import type { DropdownItem, SettingsTabProps, ThemeType } from "@/types";
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
 import MockDefaultMessage from "@components/message/MockDefaultMessage";
 import MockDefaultMessageCompact from "@components/message/MockDefaultMessageCompact";
@@ -9,7 +9,7 @@ function ThemeIcon(props: { color: string }) {
 	return <div className="h-6 w-6 rounded-md" style={{ background: props.color }} />;
 }
 
-const themes: DropboxItem[] = [
+const themes: DropdownItem[] = [
 	{ text: "Pine Green", value: "pine green", icon: <ThemeIcon color={pineGreenTheme.primary} /> },
 	{ text: "Cerulean", value: "cerulean", icon: <ThemeIcon color={ceruleanTheme.primary} /> },
 	{ text: "Eggplant", value: "eggplant", icon: <ThemeIcon color={eggplantTheme.primary} /> },
@@ -20,7 +20,7 @@ const themes: DropboxItem[] = [
 export default function SettingsThemeTab(props: SettingsTabProps) {
 	const { setTheme } = useTheme();
 
-	function onThemeChange(item: DropboxItem) {
+	function onThemeChange(item: DropdownItem) {
 		setTheme(item.value as ThemeType);
 		props.onChange?.({ theme: item.value as ThemeType });
 	}
@@ -44,7 +44,7 @@ export default function SettingsThemeTab(props: SettingsTabProps) {
 			<div className="flex flex-col">
 				<span className="mb-2 select-none font-medium text-text text-xs uppercase opacity-90">Chat Mode</span>
 				<div className="relative ml-2 flex w-max gap-x-5">
-					<div className="-m-2 absolute inset-0 rounded-2xl bg-black/50 flex justify-center items-center text-error font-bold text-2xl">
+					<div className="-m-2 absolute inset-0 flex items-center justify-center rounded-2xl bg-black/50 font-bold text-2xl text-error">
 						TEMPORARY DISABLED
 					</div>
 					<CompactModeOption isSelected={props.settings.chatMode === "normal"} onChange={onChatModeChange} />

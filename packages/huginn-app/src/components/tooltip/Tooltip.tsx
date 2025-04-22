@@ -15,9 +15,9 @@ export default function Tooltip({ children, ...options }: { children: ReactNode 
 function Trigger(props: HTMLProps<HTMLButtonElement> & { asChild?: boolean }) {
 	const context = useTooltipContext();
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	const childrenRef = (props.children as any).ref;
+	const childrenRef = (props.children as any)?.ref;
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	const childrenProps = (props.children as any).props;
+	const childrenProps = (props.children as any)?.props;
 	const ref = useMergeRefs([context.refs.setReference, props.ref, childrenRef]);
 
 	// `asChild` allows the user to pass any element as the anchor

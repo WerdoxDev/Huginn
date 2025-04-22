@@ -99,7 +99,7 @@ export type SettingsTab = {
 	auth?: boolean;
 	children?: Omit<SettingsTab, "children">[];
 	icon?: ReactNode;
-	component?: (props: SettingsTabProps) => React.JSX.Element;
+	component?: (props: SettingsTabProps) => React.JSX.Element | undefined;
 };
 
 export type SettingsTabProps = {
@@ -110,7 +110,7 @@ export type SettingsTabProps = {
 
 export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
 
-export type DropboxItem = {
+export type DropdownItem = {
 	text: string;
 	icon?: ReactNode;
 	value: string;

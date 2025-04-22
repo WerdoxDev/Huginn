@@ -1,5 +1,5 @@
 import type { GatewayTypingStartData, Snowflake } from "@huginn/shared";
-import { listenEvent } from "@lib/eventHandler";
+import { listenEvent } from "@lib/event-handler";
 import { produce } from "immer";
 import { useMemo } from "react";
 import { createStore, useStore } from "zustand";

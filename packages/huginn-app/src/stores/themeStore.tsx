@@ -107,7 +107,7 @@ const store = createStore(
 
 const ThemeContext = createContext<typeof store>({} as typeof store);
 
-export function ThemeProvier(props: { children?: ReactNode }) {
+export function ThemeProvider(props: { children?: ReactNode }) {
 	const settings = useSettings();
 
 	useLayoutEffect(() => {

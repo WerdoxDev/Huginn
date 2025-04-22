@@ -1,6 +1,6 @@
 import type { AppMessage } from "@/types";
 import { type Snowflake, snowflake } from "@huginn/shared";
-import { listenEvent } from "@lib/eventHandler";
+import { listenEvent } from "@lib/event-handler";
 import { useChannelReadState } from "@stores/readStatesStore";
 import { useThisUser } from "@stores/userStore";
 import moment from "moment";

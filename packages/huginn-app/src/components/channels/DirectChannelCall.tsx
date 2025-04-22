@@ -3,29 +3,74 @@ import Tooltip from "@components/tooltip/Tooltip";
 import { useChannel } from "@hooks/api-hooks/channelHooks";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useLookup } from "@hooks/useLookup";
-import type { Snowflake, VoiceEvents } from "@huginn/shared";
+import type { Snowflake } from "@huginn/shared";
+import { AudioLevelChecker } from "@lib/voice-client";
 import { useClient } from "@stores/apiStore";
+import { useSettings } from "@stores/settingsStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
+import { produce } from "immer";
 import { useEffect, useMemo, useState } from "react";
 
 export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	const [show, setShow] = useState(false);
-	const { channelId, addRemoteSource, removeRemoteSource, voiceStates, callStates, remoteSources, clearRemoteSources } = useVoiceStore();
+	const { channelId, voiceStates, callStates, remoteSources } = useVoiceStore();
 
 	const client = useClient();
+	const settings = useSettings();
 	const { user } = useThisUser();
 	const channel = useChannel(props.channelId);
+	const [speakingStates, setSpeakingStates] = useState<Array<{ userId: Snowflake; speaking: boolean }>>([]);
+	// const audioLevel = useAudioLevel();
 
 	const thisVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channelId), [voiceStates, props.channelId]);
 	const thisCallState = useMemo(() => callStates.find((x) => x.channelId === props.channelId), [callStates, props.channelId]);
 
 	const users = useUsers(Array.from(new Set([...(thisCallState?.ringing ?? []), ...thisVoiceStates.map((x) => x.userId)])));
 	const usersLookup = useLookup(users, (user) => user.id);
+	const usersSpeakingLookup = useLookup(speakingStates, (state) => state.userId);
 
 	useEffect(() => {
-		console.log(users, thisCallState, thisVoiceStates);
+		const audioLevels: AudioLevelChecker[] = [];
+		for (const remoteSource of remoteSources) {
+			const audioLevel = new AudioLevelChecker();
+			audioLevels.push(audioLevel);
+
+			audioLevel.startChecking(remoteSource.srcObject as MediaStream, settings.inputVolume);
+
+			audioLevel.on("audio-level", (db: number) => {
+				const speaking = db > (remoteSource.userId === user?.id ? settings.inputThreshold : Number.NEGATIVE_INFINITY);
+
+				setSpeakingStates(
+					produce((draft) => {
+						const changeIndex = draft.findIndex((x) => x.userId === remoteSource.userId);
+						if (changeIndex !== -1) {
+							draft[changeIndex].speaking = speaking;
+						} else {
+							draft.push({
+								userId: remoteSource.userId,
+								speaking: speaking,
+							});
+						}
+					}),
+				);
+			});
+		}
+
+		return () => {
+			for (const audioLevel of audioLevels) {
+				audioLevel.offAll("audio-level");
+				audioLevel.stopChecking();
+			}
+		};
+	}, [remoteSources, settings.inputThreshold]);
+
+	useEffect(() => {
+		console.log(speakingStates);
+	}, [speakingStates]);
+
+	useEffect(() => {
 		if (users.length !== 0 && thisCallState) {
 			setShow(true);
 		} else {
@@ -33,64 +78,16 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		}
 	}, [props.channelId, users]);
 
-	async function transportReady(d: VoiceEvents["transport_ready"]) {
-		if (!user) {
-			return;
-		}
-
-		const localStream = await navigator.mediaDevices.getUserMedia({
-			audio: {
-				sampleRate: 48000,
-				channelCount: 2,
-				echoCancellation: false,
-				noiseSuppression: false,
-				autoGainControl: false,
-			},
-			video: false,
-		});
-
-		// videoRef.current.srcObject = localStream;
-
-		addRemoteSource(user.id, "0", "0", "audio", localStream);
-		// setRemoteSources((old) => [...old, { consumerId: "0", producerId: "0", kind: "audio", srcObject: localStream, user: user }]);
-
-		const audioTrack = localStream.getAudioTracks()[0];
-		const videoTrack = localStream.getVideoTracks()[0];
-
-		await client.voice.startStreaming(undefined, audioTrack);
-	}
-
-	async function producerCreated(d: VoiceEvents["producer_created"]) {
-		const remoteStream = new MediaStream([d.track]);
-
-		addRemoteSource(d.producerUserId, d.consumerId, d.producerId, d.track.kind === "video" ? "video" : "audio", remoteStream);
-	}
-
-	function producerRemoved(d: { producerId: string }) {
-		removeRemoteSource(d.producerId);
-	}
+	function onAudioLevel(db: number) {}
 
 	function disconnect() {
 		client.voice.close();
 		client.gateway.disconnectFromVoice();
-		clearRemoteSources();
 	}
 
 	async function connect() {
 		await client.gateway.connectToVoice(null, props.channelId);
 	}
-
-	useEffect(() => {
-		client.voice.on("transport_ready", transportReady);
-		client.voice.on("producer_created", producerCreated);
-		client.voice.on("producer_removed", producerRemoved);
-
-		return () => {
-			client.voice.off("transport_ready", transportReady);
-			client.voice.off("producer_created", producerCreated);
-			client.voice.off("producer_removed", producerRemoved);
-		};
-	}, []);
 
 	if (!user) {
 		return;
@@ -133,13 +130,16 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 				{thisVoiceStates.map((x) => (
 					<div
 						key={x.userId}
-						className="flex flex-col items-center justify-center gap-y-3 rounded-xl bg-background p-3 shadow-md transition-shadow hover:shadow-xl"
+						className={clsx(
+							"flex flex-col items-center justify-center gap-y-3 rounded-xl bg-background p-3 shadow-md transition-shadow hover:shadow-xl",
+							usersSpeakingLookup[x.userId]?.speaking && "ring-2 ring-success",
+						)}
 					>
 						<UserAvatar userId={usersLookup[x.userId].id} avatarHash={usersLookup[x.userId].avatar} hideStatus size="5rem" />
 						<div className="text-text">{usersLookup[x.userId].displayName ?? usersLookup[x.userId].username}</div>
 					</div>
 				))}
-				{remoteSources
+				{/* {remoteSources
 					.filter((x) => x.kind === "audio" && x.userId !== user.id)
 					.map((x) => (
 						<audio
@@ -152,7 +152,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 							autoPlay
 							playsInline
 						/>
-					))}
+					))} */}
 			</div>
 			<div className="mb-2.5 flex shrink-0 items-center justify-center gap-x-2.5">
 				{channelId === props.channelId ? (

@@ -10,7 +10,7 @@ import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useInputs } from "@hooks/useInputs";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import { omit } from "@huginn/shared";
-import { listenEvent } from "@lib/eventHandler";
+import { listenEvent } from "@lib/event-handler";
 import { getUserAvatarOptions } from "@lib/queries";
 import { useClient } from "@stores/apiStore";
 import { useModals } from "@stores/modalsStore";

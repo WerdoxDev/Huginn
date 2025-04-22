@@ -5,7 +5,7 @@ import ModalsRenderer from "@components/modal/ModalsRenderer";
 import { useAuthBackground } from "@contexts/authBackgroundContext";
 import { NotificationProvider } from "@contexts/notificationContext";
 import { useMainViewTransitionState } from "@hooks/useMainViewTransitionState";
-import { dispatchEvent } from "@lib/eventHandler";
+import { dispatchEvent } from "@lib/event-handler";
 import { ContextMenuProvider } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
 import { initializePresence } from "@stores/presenceStore";

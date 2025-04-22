@@ -6,7 +6,7 @@ import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { useFirstUnreadMessage } from "@hooks/useFirstUnreadMessage";
 import { useVisibleMessages } from "@hooks/useVisibleMessages";
 import { MessageType, type Snowflake, snowflake } from "@huginn/shared";
-import { listenEvent } from "@lib/eventHandler";
+import { listenEvent } from "@lib/event-handler";
 import { getMessagesOptions } from "@lib/queries";
 import { getFirstChildClosestToTop } from "@lib/utils";
 import { useClient } from "@stores/apiStore";

@@ -81,5 +81,14 @@ declare global {
 	interface Window {
 		electronAPI: typeof electronAPI;
 	}
+
+	interface AudioContext {
+		setSinkId: (sinkId: string) => Promise<void>;
+		// setSinkId is undefined on FireFox by default
+	}
+
+	interface AudioContextOptions {
+		sinkId?: string;
+	}
 	// 	// }
 }

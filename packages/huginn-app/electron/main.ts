@@ -1,7 +1,7 @@
 import { access, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { BrowserWindow, Menu, Notification, Tray, app, ipcMain, shell } from "electron";
+import { BrowserWindow, Menu, Notification, Tray, app, ipcMain, shell, systemPreferences } from "electron";
 import log from "electron-log/main";
 import { CancellationToken, autoUpdater } from "electron-updater";
 

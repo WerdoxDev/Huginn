@@ -7,7 +7,7 @@ import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useChannelName } from "@hooks/api-hooks/channelHooks";
 import { usePatchDMChannel } from "@hooks/mutations/usePatchDMChannel";
 import { useInputs } from "@hooks/useInputs";
-import { listenEvent } from "@lib/eventHandler";
+import { listenEvent } from "@lib/event-handler";
 import { getChannelIconOptions } from "@lib/queries";
 import { useClient } from "@stores/apiStore";
 import { useModals } from "@stores/modalsStore";

@@ -10,7 +10,7 @@ import type {
 	GatewayMessageUpdateData,
 	GatewayPresenceUpdateData,
 } from "@huginn/shared";
-import { dispatchEvent } from "@lib/eventHandler";
+import { dispatchEvent } from "@lib/event-handler";
 import { convertToAppMessage } from "@lib/utils";
 import { client } from "@stores/apiStore";
 import { useChannelStore } from "@stores/channelStore";

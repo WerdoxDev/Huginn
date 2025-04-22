@@ -1,4 +1,5 @@
 import type { GatewayCallState, GatewayVoiceState, Snowflake } from "@huginn/shared";
+import { listenToVoiceEvents } from "@lib/voice-client";
 import { client } from "@stores/apiStore";
 import { userStore } from "@stores/userStore";
 import type { QueryClient } from "@tanstack/react-query";
@@ -16,7 +17,7 @@ const initialStore = () => ({
 
 type StoreType = ReturnType<typeof initialStore>;
 
-export const store = createStore(
+const store = createStore(
 	combine(initialStore(), (set) => ({
 		setVoiceChannel: (channelId?: Snowflake, guildId?: Snowflake) => set({ channelId, guildId }),
 		updateVoiceState: (
@@ -88,15 +89,20 @@ export function initializeVoice(queryClient: QueryClient) {
 		}
 	});
 
+	const unlisten6 = listenToVoiceEvents();
+
 	return () => {
 		unlisten();
 		unlisten2();
 		unlisten3();
 		unlisten4();
 		unlisten5();
+		unlisten6();
 	};
 }
 
 export function useVoiceStore() {
 	return useStore(store);
 }
+
+export const voiceStore = store;

@@ -1,5 +1,5 @@
 import type { GatewayOAuthRedirectData, OAuthType } from "@huginn/shared";
-import { listenEvent } from "@lib/eventHandler";
+import { listenEvent } from "@lib/event-handler";
 import { useClient } from "@stores/apiStore";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";

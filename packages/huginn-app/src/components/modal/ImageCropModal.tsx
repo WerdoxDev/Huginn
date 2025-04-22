@@ -1,6 +1,6 @@
 import HuginnButton from "@components/button/HuginnButton";
 import { DialogPanel } from "@headlessui/react";
-import { dispatchEvent } from "@lib/eventHandler";
+import { dispatchEvent } from "@lib/event-handler";
 import { useModals } from "@stores/modalsStore";
 import "cropperjs/dist/cropper.css";
 import { useEffect, useRef } from "react";

@@ -2,7 +2,7 @@ import path from "node:path";
 import { HistoryProvider } from "@contexts/historyContext";
 import { client, initializeClient } from "@stores/apiStore";
 import { initializeSettings } from "@stores/settingsStore";
-import { ThemeProvier } from "@stores/themeStore";
+import { ThemeProvider } from "@stores/themeStore";
 import { initializeWindow } from "@stores/windowStore";
 import { useEffect, useState } from "react";
 // import { PostHogProvider } from "posthog-js/react";
@@ -57,9 +57,9 @@ export default function Root() {
 		// <PostHogProvider client={posthogClient}>
 		<HistoryProvider>
 			{loaded && (
-				<ThemeProvier>
+				<ThemeProvider>
 					<Outlet />
-				</ThemeProvier>
+				</ThemeProvider>
 			)}
 		</HistoryProvider>
 		// </PostHogProvider>

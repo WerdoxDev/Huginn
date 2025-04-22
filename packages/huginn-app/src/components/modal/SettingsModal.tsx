@@ -9,6 +9,7 @@ import clsx from "clsx";
 import { Fragment, memo, useEffect, useState } from "react";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
+import SettingsAudioTab from "./settings/SettingsAudioTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
 
@@ -25,7 +26,7 @@ const tabs: SettingsTab[] = [
 		children: [
 			{ name: "theme", text: "Theme", icon: <IconMingcuteColorPickerFill />, component: SettingsThemeTab },
 			{ name: "notification", text: "Notification", icon: <IconMingcuteNotificationFill /> },
-			{ name: "audio", text: "Audio", icon: <IconMingcuteSpeakerFill /> },
+			{ name: "audio", text: "Audio", icon: <IconMingcuteSpeakerFill />, component: SettingsAudioTab },
 			{ name: "advanced", text: "Advanced", icon: <IconMingcuteServerFill />, component: SettingsAdvancedTab },
 		],
 	},
@@ -188,15 +189,13 @@ function SettingsTabs() {
 
 const TabComponent = memo(
 	(props: {
-		component: (props: SettingsTabProps) => React.JSX.Element;
+		component: (props: SettingsTabProps) => React.JSX.Element | undefined;
 		onChange: (value: DeepPartial<AppSettings>) => void;
 		onSave: () => Promise<void>;
 		settings: DeepPartial<AppSettings>;
 	}) => {
-		const Component = props.component;
-
-		if (!Component) return;
-		return <Component settings={props.settings} onChange={props.onChange} onSave={props.onSave} />;
+		if (!props.component) return;
+		return <props.component settings={props.settings} onChange={props.onChange} onSave={props.onSave} />;
 	},
 );
 
@@ -209,15 +208,17 @@ function SettingsPanels(props: {
 	const flatTabs = useFlatTabs();
 
 	return (
-		<TabPanels className="flex w-full flex-col p-5 pr-0 pb-0">
-			<div className="mb-5 shrink-0 text-text text-xl">{props.currentTab}</div>
+		<TabPanels className="flex w-full flex-col">
+			<div className="mt-5 mb-5 ml-5 shrink-0 text-text text-xl">{props.currentTab}</div>
 			{flatTabs.map((tab) => (
-				<TabPanel key={tab?.name} className="scroll-alternative h-full overflow-y-scroll pr-3">
-					{tab?.component ? (
-						<TabComponent onChange={props.onChange} onSave={props.onSave} settings={props.settings} component={tab.component} />
-					) : (
-						<span className="text-base text-text/50 italic">{tab?.name} (Soon...)</span>
-					)}
+				<TabPanel key={tab?.name} className="scroll-alternative h-full overflow-x-visible overflow-y-scroll pr-3">
+					<div className="ml-5">
+						{tab?.component ? (
+							<TabComponent onChange={props.onChange} onSave={props.onSave} settings={props.settings} component={tab.component} />
+						) : (
+							<span className="text-base text-text/50 italic">{tab?.name} (Soon...)</span>
+						)}
+					</div>
 				</TabPanel>
 			))}
 		</TabPanels>

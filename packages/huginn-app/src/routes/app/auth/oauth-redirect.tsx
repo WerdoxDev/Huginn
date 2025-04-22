@@ -11,7 +11,7 @@ import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useInputs } from "@hooks/useInputs";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import type { APIPostOAuthConfirmJSONBody, IdentityTokenPayload } from "@huginn/shared";
-import { listenEvent } from "@lib/eventHandler";
+import { listenEvent } from "@lib/event-handler";
 import { getUserAvatarOptions } from "@lib/queries";
 import { useClient } from "@stores/apiStore";
 import { useModals } from "@stores/modalsStore";

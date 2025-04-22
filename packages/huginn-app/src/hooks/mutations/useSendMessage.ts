@@ -1,7 +1,7 @@
 import type { AppAttachment, AppMessage } from "@/types";
 import { type MessageFlags, pick, snowflake } from "@huginn/shared";
 import { type Snowflake, WorkerID } from "@huginn/shared";
-import { dispatchEvent } from "@lib/eventHandler";
+import { dispatchEvent } from "@lib/event-handler";
 import { useClient } from "@stores/apiStore";
 import { useChannelStore } from "@stores/channelStore";
 import { useThisUser } from "@stores/userStore";

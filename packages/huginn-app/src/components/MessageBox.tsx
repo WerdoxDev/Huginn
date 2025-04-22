@@ -3,7 +3,7 @@ import { useChannelName, useCurrentChannel } from "@hooks/api-hooks/channelHooks
 import { useSendMessage } from "@hooks/mutations/useSendMessage";
 import { useSendTyping } from "@hooks/mutations/useSendTyping";
 import { MessageFlags, isImageMediaType } from "@huginn/shared";
-import { dispatchEvent } from "@lib/eventHandler";
+import { dispatchEvent } from "@lib/event-handler";
 import { markdownMainEditor } from "@lib/markdown-main";
 import { markdownSpoiler } from "@lib/markdown-spoiler";
 import { markdownUnderline } from "@lib/markdown-underline";
