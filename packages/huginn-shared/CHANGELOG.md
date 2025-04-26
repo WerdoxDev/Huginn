@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.14.0...shared@v0.15.0) (2025-04-26)
+
+
+### Features
+
+* **shared:** add remap util and disconnected event to voice ([d77e9e5](https://github.com/WerdoxDev/Huginn/commit/d77e9e58d9fb97781d7ebc3585f8864bc74a5a73))
+
 ## [0.14.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.13.0...shared@v0.14.0) (2025-04-14)
 
 

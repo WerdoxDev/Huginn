@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.11.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.10.0...api@v0.11.0) (2025-04-26)
+
+
+### Features
+
+* **api:** add offAll to history event emitter ([c6a156e](https://github.com/WerdoxDev/Huginn/commit/c6a156e55893bada378a45afdb5ea5bd659546ab))
+
+
+### Bug Fixes
+
+* **api:** replacing audio track is not working ([29343f2](https://github.com/WerdoxDev/Huginn/commit/29343f2a00ad4274493afc607421ff71eca6b5ab))
+
 ## [0.10.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.9.0...api@v0.10.0) (2025-04-14)
 
 
