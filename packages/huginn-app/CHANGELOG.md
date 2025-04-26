@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.31.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.30.0...app@v0.31.0) (2025-04-26)
+
+
+### Features
+
+* **app:** add audio input threshold + speaking indicator + voice cleanups ([92f4cfb](https://github.com/WerdoxDev/Huginn/commit/92f4cfb30c9acfcf2d01c1187ee72bbd59eb0e2c))
+* **app:** add audio settings + global voice state + audio level checking ([c933af6](https://github.com/WerdoxDev/Huginn/commit/c933af67bb9d618fc10eb73c054e2d25cc4ded10))
+
 ## [0.30.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.29.3...app@v0.30.0) (2025-04-14)
 
 
