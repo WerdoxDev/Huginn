@@ -13,7 +13,7 @@ export class AudioLevelChecker extends EventEmitterWithHistory {
 		this.isStopped = false;
 
 		this.audioContext = new AudioContext();
-		await this.audioContext.audioWorklet.addModule("src/lib/volume-processor.js");
+		await this.audioContext.audioWorklet.addModule(new URL("volume-processor.js", import.meta.url));
 
 		if (this.isStopped) {
 			this.stopChecking();
