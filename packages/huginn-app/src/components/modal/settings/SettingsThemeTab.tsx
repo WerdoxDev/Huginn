@@ -2,6 +2,7 @@ import type { DropdownItem, SettingsTabProps, ThemeType } from "@/types";
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
 import MockDefaultMessage from "@components/message/MockDefaultMessage";
 import MockDefaultMessageCompact from "@components/message/MockDefaultMessageCompact";
+import { useSettings } from "@stores/settingsStore";
 import { ceruleanTheme, charcoalTheme, coffeeTheme, eggplantTheme, pineGreenTheme, useTheme } from "@stores/themeStore";
 import clsx from "clsx";
 
@@ -18,6 +19,7 @@ const themes: DropdownItem[] = [
 ];
 
 export default function SettingsThemeTab(props: SettingsTabProps) {
+	const settings = useSettings();
 	const { setTheme } = useTheme();
 
 	function onThemeChange(item: DropdownItem) {
@@ -31,7 +33,7 @@ export default function SettingsThemeTab(props: SettingsTabProps) {
 
 	return (
 		<div className="flex flex-col gap-y-6">
-			<HuginnDropdown onChange={onThemeChange} defaultValue={themes.find((x) => x.value === props.settings.theme)}>
+			<HuginnDropdown onChange={onThemeChange} defaultValue={themes.find((x) => x.value === settings.theme)}>
 				<HuginnDropdown.Label>Color Theme</HuginnDropdown.Label>
 				<HuginnDropdown.List className="w-52">
 					<HuginnDropdown.ItemsWrapper className="w-52">
@@ -47,8 +49,8 @@ export default function SettingsThemeTab(props: SettingsTabProps) {
 					<div className="-m-2 absolute inset-0 flex items-center justify-center rounded-2xl bg-black/50 font-bold text-2xl text-error">
 						TEMPORARY DISABLED
 					</div>
-					<CompactModeOption isSelected={props.settings.chatMode === "normal"} onChange={onChatModeChange} />
-					<CompactModeOption representCompact isSelected={props.settings.chatMode === "compact"} onChange={onChatModeChange} />
+					<CompactModeOption isSelected={settings.chatMode === "normal"} onChange={onChatModeChange} />
+					<CompactModeOption representCompact isSelected={settings.chatMode === "compact"} onChange={onChatModeChange} />
 				</div>
 			</div>
 		</div>

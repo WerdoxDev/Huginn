@@ -49,15 +49,16 @@ export async function initializeSettings() {
 
 const store = createStore(
 	combine(initialStore(), (set, get) => ({
-		setSettings: async (settings: Partial<ReturnType<typeof get>>) => {
+		setSettings: (settings: Partial<AppSettings>) => {
 			const newSettings = { ...get(), ...settings };
 			set(newSettings);
-
-			console.log(newSettings);
+		},
+		saveSettings: async () => {
+			const settings = get();
 			if (window.electronAPI) {
-				await window.electronAPI.saveSettings(JSON.stringify(newSettings));
+				await window.electronAPI.saveSettings(JSON.stringify(settings));
 			} else {
-				globalThis.localStorage.setItem(localStorageItem, JSON.stringify(newSettings));
+				globalThis.localStorage.setItem(localStorageItem, JSON.stringify(settings));
 			}
 		},
 	})),

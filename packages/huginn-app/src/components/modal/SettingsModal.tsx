@@ -3,10 +3,10 @@ import ModalCloseButton from "@components/button/ModalCloseButton";
 import { DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { useClient } from "@stores/apiStore";
 import { useModals } from "@stores/modalsStore";
-import { type AppSettings, useSettings } from "@stores/settingsStore";
+import { type AppSettings, settingsStore, useSettings } from "@stores/settingsStore";
 import clsx from "clsx";
 // import { usePostHog } from "posthog-js/react";
-import { Fragment, memo, useEffect, useState } from "react";
+import { Fragment, memo, useEffect, useRef, useState } from "react";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
 import SettingsAudioTab from "./settings/SettingsAudioTab";
@@ -53,66 +53,34 @@ export default function SettingsModal() {
 	const [currentTab, setCurrentTab] = useState(() => flatTabs[defaultTabIndex]?.text ?? "");
 
 	const settings = useSettings();
+	const currentSettings = useRef({ ...settingsStore.getState() });
 	const [settingsValid, setSettingsValid] = useState(false);
-	const [modifiedSettings, setModifiedSettings] = useState<DeepPartial<AppSettings> | undefined>(undefined);
+	// const [modifiedSettings, setModifiedSettings] = useState<DeepPartial<AppSettings> | undefined>(undefined);
 
 	useEffect(() => {
 		if (modal.isOpen) {
-			setModifiedSettings({ ...settings });
+			// setModifiedSettings({ ...settings });
 			setCurrentTab(flatTabs[defaultTabIndex]?.text ?? "");
 			setSettingsValid(true);
+			// currentSettings.current = { ...settingsStore.getState() };
 			// posthog.capture("settings_modal_opened");
 		} else {
-			checkForChanges();
+			onSave();
 			// posthog.capture("settings_modal_closed");
 		}
 	}, [modal.isOpen]);
 
 	useEffect(() => {
-		checkForChanges();
+		onSave();
+		currentSettings.current = { ...settingsStore.getState() };
 	}, [currentTab]);
 
 	async function onSave() {
 		// TODO: THIS IS NOT CORRECTLY CHECKING
-		if (modifiedSettings && modifiedSettings !== settings) {
-			await settings.setSettings(modifiedSettings);
-		}
-	}
-
-	async function checkForChanges() {
-		if (
-			(modifiedSettings?.serverAddress && settings.serverAddress !== modifiedSettings.serverAddress) ||
-			(modifiedSettings?.cdnAddress && settings.cdnAddress !== modifiedSettings.cdnAddress)
-		) {
-			updateModals({
-				info: {
-					isOpen: true,
-					status: "default",
-					text: "Server or CDN address changed. The app should be restarted!",
-					title: "Hang on!",
-					action: {
-						confirm: {
-							text: "Restart",
-							callback: async () => {
-								await onSave();
-								updateModals({ info: { isOpen: false } });
-								location.reload();
-							},
-						},
-						cancel: {
-							text: "Revert",
-							callback: () => {
-								setModifiedSettings({ ...settings });
-								updateModals({ info: { isOpen: false } });
-							},
-						},
-					},
-					closable: false,
-				},
-			});
-		} else {
-			onSave();
-		}
+		// if (modifiedSettings && modifiedSettings !== settings) {
+		// await settings.setSettings(modifiedSettings);
+		await settings.saveSettings();
+		// }
 	}
 
 	function onTabChanged(index: number) {
@@ -120,7 +88,7 @@ export default function SettingsModal() {
 	}
 
 	function onSettingsChanged(value: DeepPartial<AppSettings>) {
-		setModifiedSettings((old) => ({ ...old, ...value }));
+		settings.setSettings(value);
 	}
 
 	return (
@@ -138,9 +106,7 @@ export default function SettingsModal() {
 							<SettingsTabs />
 						</TabList>
 					</div>
-					{settingsValid && modifiedSettings && (
-						<SettingsPanels currentTab={currentTab} settings={modifiedSettings} onChange={onSettingsChanged} onSave={onSave} />
-					)}
+					{<SettingsPanels currentTab={currentTab} onChange={onSettingsChanged} onSave={onSave} />}
 				</TabGroup>
 				<ModalCloseButton
 					onClick={() => {
@@ -192,15 +158,13 @@ const TabComponent = memo(
 		component: (props: SettingsTabProps) => React.JSX.Element | undefined;
 		onChange: (value: DeepPartial<AppSettings>) => void;
 		onSave: () => Promise<void>;
-		settings: DeepPartial<AppSettings>;
 	}) => {
 		if (!props.component) return;
-		return <props.component settings={props.settings} onChange={props.onChange} onSave={props.onSave} />;
+		return <props.component onChange={props.onChange} onSave={props.onSave} />;
 	},
 );
 
 function SettingsPanels(props: {
-	settings: DeepPartial<AppSettings>;
 	currentTab: string;
 	onChange: (value: DeepPartial<AppSettings>) => void;
 	onSave: () => Promise<void>;
@@ -214,7 +178,7 @@ function SettingsPanels(props: {
 				<TabPanel key={tab?.name} className="scroll-alternative h-full overflow-x-visible overflow-y-scroll pr-3">
 					<div className="ml-5">
 						{tab?.component ? (
-							<TabComponent onChange={props.onChange} onSave={props.onSave} settings={props.settings} component={tab.component} />
+							<TabComponent onChange={props.onChange} onSave={props.onSave} component={tab.component} />
 						) : (
 							<span className="text-base text-text/50 italic">{tab?.name} (Soon...)</span>
 						)}

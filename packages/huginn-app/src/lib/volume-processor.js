@@ -1,4 +1,10 @@
 class VolumeProcessor extends AudioWorkletProcessor {
+	constructor() {
+		super();
+		this._lastDb = 0; // Initialize it super low
+		this._smoothingFactor = 0.8; // Between 0 and 1. Higher = smoother but more delayed
+	}
+
 	process(inputs, outputs, parameters) {
 		const input = inputs[0];
 		if (input.length > 0) {
@@ -8,9 +14,18 @@ class VolumeProcessor extends AudioWorkletProcessor {
 				sum += samples[i] * samples[i];
 			}
 			const rms = Math.sqrt(sum / samples.length);
-			const db = 20 * Math.log10(rms);
+			let db = 20 * Math.log10(rms);
 
-			this.port.postMessage({ db });
+			// Handle -Infinity when rms is 0
+			if (!Number.isFinite(db)) {
+				db = -100;
+			}
+
+			// Apply smoothing
+			this._lastDb = this._smoothingFactor * this._lastDb + (1 - this._smoothingFactor) * db;
+			// console.log(this._lastDb);
+
+			this.port.postMessage({ db: this._lastDb });
 		}
 
 		return true;

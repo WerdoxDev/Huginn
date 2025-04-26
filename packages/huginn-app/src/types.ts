@@ -103,7 +103,6 @@ export type SettingsTab = {
 };
 
 export type SettingsTabProps = {
-	settings: DeepPartial<AppSettings>;
 	onChange?: (value: DeepPartial<AppSettings>) => void;
 	onSave?: () => Promise<void>;
 };

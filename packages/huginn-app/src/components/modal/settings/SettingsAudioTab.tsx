@@ -3,15 +3,19 @@ import HuginnDropdown from "@components/dropdown/HuginnDropdown";
 import GenericLabel from "@components/input/GenericLabel";
 import RangeInput from "@components/input/RangeInput";
 import { remap } from "@huginn/shared";
-import { AudioLevelChecker, getInputStream } from "@lib/voice-client";
+import { AudioLevelChecker, VoiceInputDevice } from "@lib/voice-client";
+import { useSettings } from "@stores/settingsStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 export default function SettingsAudioTab(props: SettingsTabProps) {
 	const { data } = useQuery({ queryFn: async () => await navigator.mediaDevices.enumerateDevices(), queryKey: ["media-devices"] });
+	const settings = useSettings();
 
 	const inputDevices = useMemo(() => data?.filter((x) => x.kind === "audioinput"), [data]);
 	const outputDevices = useMemo(() => data?.filter((x) => x.kind === "audiooutput"), [data]);
+	const audioLevel = useRef<AudioLevelChecker>(null);
+	const inputDevice = useRef<VoiceInputDevice>(null);
 	const _inputDb = useRef(0);
 
 	const [inputDb, setInputDb] = useState(0);
@@ -20,13 +24,23 @@ export default function SettingsAudioTab(props: SettingsTabProps) {
 	const [selectedOutput, setSelectedOutput] = useState<MediaDeviceInfo>();
 
 	useEffect(() => {
-		let audioLevel: AudioLevelChecker;
-
+		let cancelled = false;
 		async function runAudioChecker() {
-			audioLevel = new AudioLevelChecker();
-			const stream = await getInputStream();
-			audioLevel.startChecking(stream, props.settings.inputVolume ?? 1);
-			audioLevel.on("audio-level", onAudioLevel);
+			if (!selectedInput) {
+				return;
+			}
+
+			audioLevel.current = new AudioLevelChecker();
+			inputDevice.current = new VoiceInputDevice();
+			const stream = await inputDevice.current.getStream(selectedInput?.deviceId, settings.inputVolume);
+
+			// This is an async function so the component will probably unmount before it knows
+			if (cancelled) {
+				return;
+			}
+
+			audioLevel.current.startChecking(stream);
+			audioLevel.current.on("audio-level", onAudioLevel);
 		}
 		runAudioChecker();
 
@@ -35,19 +49,24 @@ export default function SettingsAudioTab(props: SettingsTabProps) {
 		}, 100);
 
 		return () => {
-			audioLevel.stopChecking();
-			audioLevel.off("audio-level", onAudioLevel);
+			cancelled = true;
 			clearInterval(interval);
+			audioLevel.current?.stopChecking();
+			audioLevel.current?.off("audio-level", onAudioLevel);
 		};
 	}, [selectedInput]);
+
+	useEffect(() => {
+		inputDevice.current?.setGain(settings.inputVolume);
+	}, [settings.inputVolume]);
 
 	useEffect(() => {
 		if (!data || !inputDevices || !outputDevices) {
 			return;
 		}
 
-		setSelectedInput(inputDevices?.find((x) => x.deviceId === props.settings.inputDeviceId) ?? inputDevices[0]);
-		setSelectedOutput(outputDevices?.find((x) => x.deviceId === props.settings.outputDeviceId) ?? outputDevices[0]);
+		setSelectedInput(inputDevices?.find((x) => x.deviceId === settings.inputDeviceId) ?? inputDevices[0]);
+		setSelectedOutput(outputDevices?.find((x) => x.deviceId === settings.outputDeviceId) ?? outputDevices[0]);
 	}, [data]);
 
 	useEffect(() => {
@@ -125,11 +144,11 @@ export default function SettingsAudioTab(props: SettingsTabProps) {
 			<div className="mt-8 flex gap-x-5">
 				<div className="w-full max-w-xs">
 					<GenericLabel>Input Volume</GenericLabel>
-					<RangeInput onChange={onInputVolumeChange} defaultValue={props.settings.inputVolume} />
+					<RangeInput onChange={onInputVolumeChange} defaultValue={settings.inputVolume} />
 				</div>
 				<div className="w-full max-w-xs">
 					<GenericLabel>Output Volume</GenericLabel>
-					<RangeInput onChange={onOutputVolumeChange} defaultValue={props.settings.outputVolume} maxValue={200} />
+					<RangeInput onChange={onOutputVolumeChange} defaultValue={settings.outputVolume} maxValue={200} />
 				</div>
 			</div>
 			<div className="mt-8 flex">
@@ -139,7 +158,7 @@ export default function SettingsAudioTab(props: SettingsTabProps) {
 						onChange={onInputThresholdChange}
 						backgroundClassName="bg-success/50"
 						fillClassName="bg-error"
-						defaultValue={remap(props.settings.inputThreshold ?? -100, -100, 0, 0, 100)}
+						defaultValue={remap(settings.inputThreshold ?? -100, -100, 0, 0, 100)}
 						getTooltipText={(percentage) => `${remap(percentage, 0, 100, -100, 0)}db`}
 					>
 						<div

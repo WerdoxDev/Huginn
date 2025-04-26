@@ -1,13 +1,19 @@
 import type { SettingsTabProps } from "@/types";
 import HuginnInput from "@components/input/HuginnInput";
 import { useInputs } from "@hooks/useInputs";
+import { useModals } from "@stores/modalsStore";
+import { useSettings } from "@stores/settingsStore";
 import { useEffect } from "react";
 
 export default function SettingsAdvancedTab(props: SettingsTabProps) {
+	const settings = useSettings();
+
 	const { values, validateValues, inputsProps, setValue } = useInputs([
-		{ name: "serverAddress", required: false, default: props.settings.serverAddress },
-		{ name: "cdnAddress", required: false, default: props.settings.cdnAddress },
+		{ name: "serverAddress", required: false, default: settings.serverAddress },
+		{ name: "cdnAddress", required: false, default: settings.cdnAddress },
 	]);
+
+	const { updateModals } = useModals();
 
 	function focusChanged(isFocused: boolean) {
 		if (isFocused) {
@@ -26,15 +32,43 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 	}
 
 	useEffect(() => {
-		if (validateValues() && props.onChange) {
-			if (props.settings.serverAddress !== values.serverAddress.value) {
-				props.onChange({ serverAddress: values.serverAddress.value });
+		return () => {
+			if (validateValues() && props.onChange) {
+				if (
+					(values.serverAddress.value && settings.serverAddress !== values.serverAddress.value) ||
+					(values.cdnAddress.value && settings.cdnAddress !== values.cdnAddress.value)
+				) {
+					updateModals({
+						info: {
+							isOpen: true,
+							status: "default",
+							text: "Server or CDN address changed. The app should be restarted!",
+							title: "Hang on!",
+							action: {
+								confirm: {
+									text: "Restart",
+									callback: async () => {
+										settings.setSettings({ cdnAddress: values.cdnAddress.value, serverAddress: values.serverAddress.value });
+										await settings.saveSettings();
+										updateModals({ info: { isOpen: false } });
+										location.reload();
+									},
+								},
+								cancel: {
+									text: "Revert",
+									callback: () => {
+										// currentSettings.current = { ...settingsStore.getState() };
+										updateModals({ info: { isOpen: false } });
+									},
+								},
+							},
+							closable: false,
+						},
+					});
+				}
 			}
-			if (props.settings.cdnAddress !== values.cdnAddress.value) {
-				props.onChange({ cdnAddress: values.cdnAddress.value });
-			}
-		}
-	}, [values]);
+		};
+	}, []);
 
 	return (
 		<div className="flex flex-col gap-y-10">

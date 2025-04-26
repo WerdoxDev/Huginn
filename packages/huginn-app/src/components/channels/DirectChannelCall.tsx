@@ -37,10 +37,10 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 			const audioLevel = new AudioLevelChecker();
 			audioLevels.push(audioLevel);
 
-			audioLevel.startChecking(remoteSource.srcObject as MediaStream, settings.inputVolume);
+			audioLevel.startChecking(remoteSource.srcObject as MediaStream);
 
 			audioLevel.on("audio-level", (db: number) => {
-				const speaking = db > (remoteSource.userId === user?.id ? settings.inputThreshold : Number.NEGATIVE_INFINITY);
+				const speaking = db > (remoteSource.userId === user?.id ? settings.inputThreshold : -100);
 
 				setSpeakingStates(
 					produce((draft) => {
@@ -64,11 +64,11 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 				audioLevel.stopChecking();
 			}
 		};
-	}, [remoteSources, settings.inputThreshold]);
+	}, [remoteSources, settings.inputThreshold, settings.inputVolume]);
 
-	useEffect(() => {
-		console.log(speakingStates);
-	}, [speakingStates]);
+	// useEffect(() => {
+	// 	console.log(speakingStates);
+	// }, [speakingStates]);
 
 	useEffect(() => {
 		if (users.length !== 0 && thisCallState) {

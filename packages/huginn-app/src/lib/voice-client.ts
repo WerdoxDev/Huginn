@@ -6,10 +6,9 @@ import { voiceStore } from "@stores/voiceStore";
 export class AudioLevelChecker extends EventEmitterWithHistory {
 	private audioContext: AudioContext | undefined;
 	private volumeNode: AudioWorkletNode | undefined;
-	private gainNode: GainNode | undefined;
 	private isStopped = false;
 
-	public async startChecking(stream: MediaStream, gain: number) {
+	public async startChecking(stream: MediaStream) {
 		this.stopChecking();
 		this.isStopped = false;
 
@@ -24,21 +23,22 @@ export class AudioLevelChecker extends EventEmitterWithHistory {
 		const source = this.audioContext.createMediaStreamSource(stream);
 		this.volumeNode = new AudioWorkletNode(this.audioContext, "volume-processor");
 
-		this.gainNode = this.audioContext.createGain();
-		source.connect(this.gainNode);
-		this.gainNode.gain.value = gain / 100;
-		this.gainNode.connect(this.volumeNode).connect(this.audioContext.destination);
+		source.connect(this.volumeNode).connect(this.audioContext.destination);
+		// this.gainNode = this.audioContext.createGain();
+		// source.connect(this.gainNode);
+		// this.gainNode.gain.value = volumePercentage / 100;
+		// this.gainNode.connect(this.volumeNode).connect(this.audioContext.destination);
 
 		this.volumeNode.port.onmessage = (event: MessageEvent<{ db: number }>) => {
 			this.emit("audio-level", event.data.db);
 		};
 	}
 
-	public setGain(gain: number) {
-		if (this.gainNode) {
-			this.gainNode.gain.value = gain / 100;
-		}
-	}
+	// public setGain(volumePercentage: number) {
+	// 	if (this.gainNode) {
+	// 		this.gainNode.gain.value = volumePercentage / 100;
+	// 	}
+	// }
 
 	public stopChecking() {
 		this.isStopped = true;
@@ -49,7 +49,51 @@ export class AudioLevelChecker extends EventEmitterWithHistory {
 	}
 }
 
-export const audioLevel = new AudioLevelChecker();
+export class VoiceInputDevice {
+	public currentStream?: MediaStream;
+	private gainNode?: GainNode;
+
+	public async getStream(deviceId: string, volumePercentage: number) {
+		// if (this.currentStream) {
+		// 	return this.currentStream;
+		// }
+
+		const stream = await navigator.mediaDevices.getUserMedia({
+			audio: {
+				deviceId: deviceId,
+				sampleRate: 48000,
+				channelCount: 2,
+				echoCancellation: false,
+				noiseSuppression: false,
+				autoGainControl: false,
+			},
+			video: false,
+		});
+
+		const audioContext = new AudioContext();
+		const source = audioContext.createMediaStreamSource(stream);
+		this.gainNode = audioContext.createGain();
+		this.gainNode.gain.value = volumePercentage / 100;
+
+		source.connect(this.gainNode);
+
+		const destination = audioContext.createMediaStreamDestination();
+		this.gainNode.connect(destination);
+
+		this.currentStream = destination.stream;
+		// this.currentStream = stream;
+		return this.currentStream;
+	}
+
+	public setGain(volumePercentage: number) {
+		if (this.gainNode) {
+			this.gainNode.gain.value = volumePercentage / 100;
+		}
+	}
+}
+
+const audioLevel = new AudioLevelChecker();
+let inputDevice: VoiceInputDevice;
 let inputThreshold = 0;
 
 export function listenToVoiceEvents() {
@@ -58,18 +102,17 @@ export function listenToVoiceEvents() {
 			return;
 		}
 
-		inputThreshold = settingsStore.getState().inputThreshold;
-		const stream = await getInputStream();
+		const settings = settingsStore.getState();
+		inputThreshold = settings.inputThreshold;
+		inputDevice = new VoiceInputDevice();
+		const stream = await inputDevice.getStream(settings.inputDeviceId, settings.inputVolume);
 
-		audioLevel.startChecking(stream, settingsStore.getState().inputVolume);
+		audioLevel.startChecking(stream);
 		audioLevel.on("audio-level", onAudioLevel);
 
 		voiceStore.getState().addRemoteSource(client.user.id, "0", "0", "audio", stream);
 
-		const audioTrack = stream.getAudioTracks()[0];
-		const videoTrack = stream.getVideoTracks()[0];
-
-		await client.voice.startStreaming(undefined, audioTrack);
+		await startVoiceStreaming();
 	});
 
 	const unlisten2 = client.voice.listen("producer_created", (d) => {
@@ -88,12 +131,16 @@ export function listenToVoiceEvents() {
 		voiceStore.getState().clearRemoteSources();
 	});
 
-	settingsStore.subscribe((s) => {
+	settingsStore.subscribe(async (s, old) => {
 		for (const audio of audioInstances) {
 			audio.gainNode.gain.value = s.outputVolume / 100;
 		}
 		inputThreshold = s.inputThreshold;
-		audioLevel.setGain(s.inputVolume);
+		inputDevice?.setGain(s.inputVolume);
+
+		if (s.inputDeviceId !== old.inputDeviceId) {
+			await startVoiceStreaming();
+		}
 	});
 
 	return () => {
@@ -104,26 +151,46 @@ export function listenToVoiceEvents() {
 	};
 }
 
-function onAudioLevel(db: number) {
-	if (db > inputThreshold) {
-		client.voice.audioProducer?.resume();
-	} else {
-		client.voice.audioProducer?.pause();
+async function startVoiceStreaming() {
+	if (!client.voice.connectionInfo) {
+		return;
 	}
+
+	const settings = settingsStore.getState();
+	const otherStream = await inputDevice.getStream(settings.inputDeviceId, settings.inputVolume);
+	const audioTrack = otherStream.getAudioTracks()[0];
+	const videoTrack = otherStream.getVideoTracks()[0];
+
+	await client.voice.startStreaming(undefined, audioTrack);
 }
 
-export async function getInputStream() {
-	return await navigator.mediaDevices.getUserMedia({
-		audio: {
-			deviceId: settingsStore.getState().inputDeviceId,
-			sampleRate: 48000,
-			channelCount: 2,
-			echoCancellation: false,
-			noiseSuppression: false,
-			autoGainControl: false,
-		},
-		video: false,
-	});
+const tolerance = 0;
+let timeout: number | undefined;
+let lastState = false;
+function onAudioLevel(db: number) {
+	if (db > inputThreshold) {
+		lastState = true;
+
+		if (timeout) {
+			return;
+		}
+
+		clearTimeout(timeout);
+		timeout = window.setTimeout(() => {
+			if (!lastState) {
+				console.log("PAUSE");
+				client.voice.audioProducer?.pause();
+			}
+			timeout = undefined;
+		}, 500);
+
+		if (client.voice.audioProducer?.paused) {
+			console.log("RESUME");
+			client.voice.audioProducer?.resume();
+		}
+	} else if (db <= inputThreshold - tolerance && !client.voice.audioProducer?.paused) {
+		lastState = false;
+	}
 }
 
 const audioInstances: Array<{ element: HTMLAudioElement; context: AudioContext; gainNode: GainNode; abortController: AbortController }> = [];
