@@ -93,15 +93,17 @@ export class Voice {
 
 	public async startStreaming(videoTrack?: MediaStreamTrack, audioTrack?: MediaStreamTrack): Promise<void> {
 		if (videoTrack) {
-			const videoProducer = await this.sendTransport?.produce({ track: videoTrack, disableTrackOnPause: false, zeroRtpOnPause: true });
+			const videoProducer = await this.sendTransport?.produce({ track: videoTrack, disableTrackOnPause: false, zeroRtpOnPause: false });
 		}
 
 		if (audioTrack) {
-			this.audioProducer = await this.sendTransport?.produce({
-				track: audioTrack,
-				disableTrackOnPause: false,
-				zeroRtpOnPause: true,
-			});
+			if (this.audioProducer) {
+				this.audioProducer.replaceTrack({ track: audioTrack });
+			} else {
+				this.audioProducer = await this.sendTransport?.produce({
+					track: audioTrack,
+				});
+			}
 		}
 	}
 
