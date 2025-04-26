@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.31.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.31.0...app@v0.31.1) (2025-04-26)
+
+
+### Bug Fixes
+
+* **app:** volume audio worklet url is not correct in build ([30a1a34](https://github.com/WerdoxDev/Huginn/commit/30a1a3484db446d1ff187604049c31604553f732))
+
 ## [0.31.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.30.0...app@v0.31.0) (2025-04-26)
 
 
