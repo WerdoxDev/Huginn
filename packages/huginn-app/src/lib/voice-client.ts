@@ -24,21 +24,11 @@ export class AudioLevelChecker extends EventEmitterWithHistory {
 		this.volumeNode = new AudioWorkletNode(this.audioContext, "volume-processor");
 
 		source.connect(this.volumeNode).connect(this.audioContext.destination);
-		// this.gainNode = this.audioContext.createGain();
-		// source.connect(this.gainNode);
-		// this.gainNode.gain.value = volumePercentage / 100;
-		// this.gainNode.connect(this.volumeNode).connect(this.audioContext.destination);
 
 		this.volumeNode.port.onmessage = (event: MessageEvent<{ db: number }>) => {
 			this.emit("audio-level", event.data.db);
 		};
 	}
-
-	// public setGain(volumePercentage: number) {
-	// 	if (this.gainNode) {
-	// 		this.gainNode.gain.value = volumePercentage / 100;
-	// 	}
-	// }
 
 	public stopChecking() {
 		this.isStopped = true;
@@ -54,10 +44,6 @@ export class VoiceInputDevice {
 	private gainNode?: GainNode;
 
 	public async getStream(deviceId: string, volumePercentage: number) {
-		// if (this.currentStream) {
-		// 	return this.currentStream;
-		// }
-
 		const stream = await navigator.mediaDevices.getUserMedia({
 			audio: {
 				deviceId: deviceId,
@@ -92,7 +78,7 @@ export class VoiceInputDevice {
 	}
 }
 
-const audioLevel = new AudioLevelChecker();
+// const audioLevel = new AudioLevelChecker();
 let inputDevice: VoiceInputDevice;
 let inputThreshold = 0;
 
@@ -107,31 +93,48 @@ export function listenToVoiceEvents() {
 		inputDevice = new VoiceInputDevice();
 		const stream = await inputDevice.getStream(settings.inputDeviceId, settings.inputVolume);
 
+		const audioLevel = new AudioLevelChecker();
 		audioLevel.startChecking(stream);
 		audioLevel.on("audio-level", onAudioLevel);
 
-		voiceStore.getState().addRemoteSource(client.user.id, "0", "0", "audio", stream);
+		voiceStore.getState().addRemoteSource(client.user.id, "0", "0", "audio", stream, audioLevel);
 
 		await startVoiceStreaming();
 	});
 
 	const unlisten2 = client.voice.listen("producer_created", (d) => {
 		const remoteStream = new MediaStream([d.track]);
-		voiceStore.getState().addRemoteSource(d.producerUserId, d.consumerId, d.producerId, d.track.kind === "video" ? "video" : "audio", remoteStream);
 
+		const audioLevel = new AudioLevelChecker();
+		audioLevel.startChecking(remoteStream);
+		audioLevel.on("audio-level", (db: number) => {
+			const voice = voiceStore.getState();
+			const speaking = db > -100;
+			// voiceStore.getState().updateSpeakingState(d.producerUserId, speaking);
+		});
+
+		voiceStore
+			.getState()
+			.addRemoteSource(d.producerUserId, d.consumerId, d.producerId, d.track.kind === "video" ? "video" : "audio", remoteStream, audioLevel);
 		playRemoteSources();
 	});
 
 	const unlisten3 = client.voice.listen("producer_removed", (d) => {
-		voiceStore.getState().removeRemoteSource(d.producerId);
+		const voice = voiceStore.getState();
+		const userId = voice.remoteSources.find((x) => x.producerId === d.producerId && x.kind === "audio")?.userId;
+
+		voice.removeRemoteSource(d.producerId);
+
+		if (userId) {
+			voice.removeSpeakingState(userId);
+		}
 	});
 
 	const unlisten4 = client.voice.listen("disconnected", () => {
-		audioLevel.stopChecking();
 		voiceStore.getState().clearRemoteSources();
 	});
 
-	settingsStore.subscribe(async (s, old) => {
+	const unlisten5 = settingsStore.subscribe(async (s, old) => {
 		for (const audio of audioInstances) {
 			audio.gainNode.gain.value = s.outputVolume / 100;
 		}
@@ -148,6 +151,7 @@ export function listenToVoiceEvents() {
 		unlisten2();
 		unlisten3();
 		unlisten4();
+		unlisten5();
 	};
 }
 
@@ -168,6 +172,7 @@ const tolerance = 0;
 let timeout: number | undefined;
 let lastState = false;
 function onAudioLevel(db: number) {
+	const userId = client.user?.id ?? "";
 	if (db > inputThreshold) {
 		lastState = true;
 
@@ -178,15 +183,15 @@ function onAudioLevel(db: number) {
 		clearTimeout(timeout);
 		timeout = window.setTimeout(() => {
 			if (!lastState) {
-				console.log("PAUSE");
 				client.voice.audioProducer?.pause();
+				// voiceStore.getState().updateSpeakingState(userId, false);
 			}
 			timeout = undefined;
 		}, 500);
 
 		if (client.voice.audioProducer?.paused) {
-			console.log("RESUME");
 			client.voice.audioProducer?.resume();
+			// voiceStore.getState().updateSpeakingState(userId, true);
 		}
 	} else if (db <= inputThreshold - tolerance && !client.voice.audioProducer?.paused) {
 		lastState = false;

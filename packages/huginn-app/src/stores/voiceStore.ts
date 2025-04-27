@@ -1,62 +1,101 @@
 import type { GatewayCallState, GatewayVoiceState, Snowflake } from "@huginn/shared";
-import { listenToVoiceEvents } from "@lib/voice-client";
+import { type AudioLevelChecker, listenToVoiceEvents } from "@lib/voice-client";
 import { client } from "@stores/apiStore";
 import { userStore } from "@stores/userStore";
 import type { QueryClient } from "@tanstack/react-query";
 import { produce } from "immer";
 import { createStore, useStore } from "zustand";
-import { combine } from "zustand/middleware";
+import { combine, devtools } from "zustand/middleware";
 
 const initialStore = () => ({
 	channelId: undefined as Snowflake | undefined,
 	guildId: undefined as Snowflake | undefined,
 	voiceStates: [] as Array<GatewayVoiceState>,
 	callStates: [] as Array<GatewayCallState>,
-	remoteSources: [] as Array<{ userId: Snowflake; consumerId: string; producerId: string; kind: "video" | "audio"; srcObject: MediaProvider }>,
+	remoteSources: [] as Array<{
+		userId: Snowflake;
+		consumerId: string;
+		producerId: string;
+		kind: "video" | "audio";
+		srcObject: MediaProvider;
+		audioLevel: AudioLevelChecker;
+	}>,
+	speakingStates: [] as Array<{ userId: Snowflake; speaking: boolean }>,
 });
 
 type StoreType = ReturnType<typeof initialStore>;
 
 const store = createStore(
-	combine(initialStore(), (set) => ({
-		setVoiceChannel: (channelId?: Snowflake, guildId?: Snowflake) => set({ channelId, guildId }),
-		updateVoiceState: (
-			channelId: Snowflake,
-			guildId: Snowflake | null,
-			userId: Snowflake,
-			selfMute: boolean,
-			selfDeaf: boolean,
-			selfStream: boolean,
-			selfVideo: boolean,
-		) =>
-			set(
-				produce((draft: StoreType) => {
-					const existingIndex = draft.voiceStates.findIndex((x) => x.userId === userId);
-					if (existingIndex !== -1) {
-						draft.voiceStates[existingIndex] = { channelId, userId, selfDeaf, selfMute, selfStream, selfVideo, guildId };
-					} else {
-						draft.voiceStates.push({ channelId, selfDeaf, selfMute, userId, selfStream, selfVideo, guildId });
-					}
-				}),
-			),
-		updateCallState: (channelId: Snowflake, messageId: Snowflake, ringing: Snowflake[]) =>
-			set(
-				produce((draft: StoreType) => {
-					const existingIndex = draft.callStates.findIndex((x) => x.channelId === channelId);
-					if (existingIndex !== -1) {
-						draft.callStates[existingIndex] = { channelId, messageId, ringing };
-					} else {
-						draft.callStates.push({ channelId, messageId, ringing });
-					}
-				}),
-			),
-		removeVoiceState: (userId: Snowflake) => set((state) => ({ voiceStates: state.voiceStates.filter((x) => x.userId !== userId) })),
-		removeCallState: (channelId: Snowflake) => set((state) => ({ callStates: state.callStates.filter((x) => x.channelId !== channelId) })),
-		addRemoteSource: (userId: Snowflake, consumerId: string, producerId: string, kind: "video" | "audio", srcObject: MediaProvider) =>
-			set((state) => ({ remoteSources: [...state.remoteSources, { consumerId, kind, producerId, userId, srcObject }] })),
-		removeRemoteSource: (producerId: string) => set((state) => ({ remoteSources: state.remoteSources.filter((x) => x.producerId !== producerId) })),
-		clearRemoteSources: () => set({ remoteSources: [] }),
-	})),
+	devtools(
+		combine(initialStore(), (set, get) => ({
+			setVoiceChannel: (channelId?: Snowflake, guildId?: Snowflake) => set({ channelId, guildId }),
+			updateVoiceState: (
+				channelId: Snowflake,
+				guildId: Snowflake | null,
+				userId: Snowflake,
+				selfMute: boolean,
+				selfDeaf: boolean,
+				selfStream: boolean,
+				selfVideo: boolean,
+			) =>
+				set(
+					produce((draft: StoreType) => {
+						const existingIndex = draft.voiceStates.findIndex((x) => x.userId === userId);
+						if (existingIndex !== -1) {
+							draft.voiceStates[existingIndex] = { channelId, userId, selfDeaf, selfMute, selfStream, selfVideo, guildId };
+						} else {
+							draft.voiceStates.push({ channelId, selfDeaf, selfMute, userId, selfStream, selfVideo, guildId });
+						}
+					}),
+				),
+			updateCallState: (channelId: Snowflake, messageId: Snowflake, ringing: Snowflake[]) =>
+				set(
+					produce((draft: StoreType) => {
+						const existingIndex = draft.callStates.findIndex((x) => x.channelId === channelId);
+						if (existingIndex !== -1) {
+							draft.callStates[existingIndex] = { channelId, messageId, ringing };
+						} else {
+							draft.callStates.push({ channelId, messageId, ringing });
+						}
+					}),
+				),
+			removeVoiceState: (userId: Snowflake) => set((state) => ({ voiceStates: state.voiceStates.filter((x) => x.userId !== userId) })),
+			removeCallState: (channelId: Snowflake) => set((state) => ({ callStates: state.callStates.filter((x) => x.channelId !== channelId) })),
+			addRemoteSource: (
+				userId: Snowflake,
+				consumerId: string,
+				producerId: string,
+				kind: "video" | "audio",
+				srcObject: MediaProvider,
+				audioLevel: AudioLevelChecker,
+			) => set((state) => ({ remoteSources: [...state.remoteSources, { consumerId, kind, producerId, userId, srcObject, audioLevel }] })),
+			removeRemoteSource: (producerId: string) => {
+				get()
+					.remoteSources.find((x) => x.producerId === producerId)
+					?.audioLevel.offAll("audio-level");
+				return set((state) => ({ remoteSources: state.remoteSources.filter((x) => x.producerId !== producerId) }));
+			},
+			clearRemoteSources: () => {
+				for (const remote of get().remoteSources) {
+					remote.audioLevel.offAll("audio-level");
+				}
+				set({ remoteSources: [] });
+			},
+			updateSpeakingState: (userId: Snowflake, speaking: boolean) =>
+				set(
+					produce((draft: StoreType) => {
+						const existingIndex = draft.speakingStates.findIndex((x) => x.userId === userId);
+						if (existingIndex !== -1) {
+							draft.speakingStates[existingIndex].speaking = speaking;
+						} else {
+							draft.speakingStates.push({ userId, speaking });
+						}
+					}),
+				),
+			removeSpeakingState: (userId: Snowflake) => set((state) => ({ speakingStates: state.speakingStates.filter((x) => x.userId !== userId) })),
+		})),
+		{ name: "Voice" },
+	),
 );
 
 export function initializeVoice(queryClient: QueryClient) {

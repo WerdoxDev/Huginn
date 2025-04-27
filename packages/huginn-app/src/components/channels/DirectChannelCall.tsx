@@ -15,14 +15,13 @@ import { useEffect, useMemo, useState } from "react";
 
 export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	const [show, setShow] = useState(false);
-	const { channelId, voiceStates, callStates, remoteSources } = useVoiceStore();
+	const { channelId, voiceStates, callStates, remoteSources, speakingStates } = useVoiceStore();
 
 	const client = useClient();
 	const settings = useSettings();
 	const { user } = useThisUser();
 	const channel = useChannel(props.channelId);
-	const [speakingStates, setSpeakingStates] = useState<Array<{ userId: Snowflake; speaking: boolean }>>([]);
-	// const audioLevel = useAudioLevel();
+	// const [speakingStates, setSpeakingStates] = useState<Array<{ userId: Snowflake; speaking: boolean }>>([]);
 
 	const thisVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channelId), [voiceStates, props.channelId]);
 	const thisCallState = useMemo(() => callStates.find((x) => x.channelId === props.channelId), [callStates, props.channelId]);
@@ -32,43 +31,35 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	const usersSpeakingLookup = useLookup(speakingStates, (state) => state.userId);
 
 	useEffect(() => {
-		const audioLevels: AudioLevelChecker[] = [];
-		for (const remoteSource of remoteSources) {
-			const audioLevel = new AudioLevelChecker();
-			audioLevels.push(audioLevel);
-
-			audioLevel.startChecking(remoteSource.srcObject as MediaStream);
-
-			audioLevel.on("audio-level", (db: number) => {
-				const speaking = db > (remoteSource.userId === user?.id ? settings.inputThreshold : -100);
-
-				setSpeakingStates(
-					produce((draft) => {
-						const changeIndex = draft.findIndex((x) => x.userId === remoteSource.userId);
-						if (changeIndex !== -1) {
-							draft[changeIndex].speaking = speaking;
-						} else {
-							draft.push({
-								userId: remoteSource.userId,
-								speaking: speaking,
-							});
-						}
-					}),
-				);
-			});
-		}
-
-		return () => {
-			for (const audioLevel of audioLevels) {
-				audioLevel.offAll("audio-level");
-				audioLevel.stopChecking();
-			}
-		};
+		// const audioLevels: AudioLevelChecker[] = [];
+		// for (const remoteSource of remoteSources) {
+		// 	const audioLevel = new AudioLevelChecker();
+		// 	audioLevels.push(audioLevel);
+		// 	audioLevel.startChecking(remoteSource.srcObject as MediaStream);
+		// 	audioLevel.on("audio-level", (db: number) => {
+		// 		const speaking = db > (remoteSource.userId === user?.id ? settings.inputThreshold : -100);
+		// 		setSpeakingStates(
+		// 			produce((draft) => {
+		// 				const changeIndex = draft.findIndex((x) => x.userId === remoteSource.userId);
+		// 				if (changeIndex !== -1) {
+		// 					draft[changeIndex].speaking = speaking;
+		// 				} else {
+		// 					draft.push({
+		// 						userId: remoteSource.userId,
+		// 						speaking: speaking,
+		// 					});
+		// 				}
+		// 			}),
+		// 		);
+		// 	});
+		// }
+		// return () => {
+		// 	for (const audioLevel of audioLevels) {
+		// 		audioLevel.offAll("audio-level");
+		// 		audioLevel.stopChecking();
+		// 	}
+		// };
 	}, [remoteSources, settings.inputThreshold, settings.inputVolume]);
-
-	// useEffect(() => {
-	// 	console.log(speakingStates);
-	// }, [speakingStates]);
 
 	useEffect(() => {
 		if (users.length !== 0 && thisCallState) {
@@ -77,8 +68,6 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 			setShow(false);
 		}
 	}, [props.channelId, users]);
-
-	function onAudioLevel(db: number) {}
 
 	function disconnect() {
 		client.voice.close();
