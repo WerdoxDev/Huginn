@@ -53,6 +53,7 @@
 			"*.md": "vscode.markdown.preview.editor"
 		},
 		"deno.enable": false,
-		"typescript.tsdk": "ROOT\\node_modules\\typescript\\lib"
+		"typescript.tsdk": "ROOT\\node_modules\\typescript\\lib",
+		"github-actions.workflows.pinned.workflows": ["ROOT/.github/workflows/release.yml"]
 	}
 }

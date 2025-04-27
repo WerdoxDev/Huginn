@@ -110,7 +110,7 @@ export function listenToVoiceEvents() {
 		audioLevel.on("audio-level", (db: number) => {
 			const voice = voiceStore.getState();
 			const speaking = db > -100;
-			// voiceStore.getState().updateSpeakingState(d.producerUserId, speaking);
+			voiceStore.getState().updateSpeakingState(d.producerUserId, speaking);
 		});
 
 		voiceStore
@@ -184,14 +184,14 @@ function onAudioLevel(db: number) {
 		timeout = window.setTimeout(() => {
 			if (!lastState) {
 				client.voice.audioProducer?.pause();
-				// voiceStore.getState().updateSpeakingState(userId, false);
+				voiceStore.getState().updateSpeakingState(userId, false);
 			}
 			timeout = undefined;
 		}, 500);
 
 		if (client.voice.audioProducer?.paused) {
 			client.voice.audioProducer?.resume();
-			// voiceStore.getState().updateSpeakingState(userId, true);
+			voiceStore.getState().updateSpeakingState(userId, true);
 		}
 	} else if (db <= inputThreshold - tolerance && !client.voice.audioProducer?.paused) {
 		lastState = false;
