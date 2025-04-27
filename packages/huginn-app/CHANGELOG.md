@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.31.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.31.2...app@v0.31.3) (2025-04-27)
+
+
+### Bug Fixes
+
+* **app:** speaking state is not updating ([08ce2d0](https://github.com/WerdoxDev/Huginn/commit/08ce2d036025a3051a497f8330fad33bab04ef79))
+
 ## [0.31.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.31.1...app@v0.31.2) (2025-04-27)
 
 
