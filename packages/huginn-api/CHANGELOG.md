@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.11.0...api@v0.11.1) (2025-04-27)
+
+
+### Bug Fixes
+
+* **api:** resetting voice class is not correct ([200a0ed](https://github.com/WerdoxDev/Huginn/commit/200a0ed1f0c845afab8bd761f4fb05b4bb503147))
+
 ## [0.11.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.10.0...api@v0.11.0) (2025-04-26)
 
 
