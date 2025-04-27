@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.31.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.31.1...app@v0.31.2) (2025-04-27)
+
+
+### Bug Fixes
+
+* **app:** add better speaking state management ([6cb415b](https://github.com/WerdoxDev/Huginn/commit/6cb415be47aac8767f95bc697999ad4e1738c18c))
+
 ## [0.31.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.31.0...app@v0.31.1) (2025-04-26)
 
 
