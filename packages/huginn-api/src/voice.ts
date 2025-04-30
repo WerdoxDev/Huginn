@@ -1,4 +1,5 @@
 import {
+	constants,
 	GatewayCode,
 	type ProducerData,
 	type Snowflake,
@@ -27,14 +28,15 @@ export class Voice {
 	private options: VoiceOptions;
 	private client: HuginnClient;
 	private heartbeatInterval?: ReturnType<typeof setInterval>;
+	private lastPingStart?: number;
 	private sequence?: number;
 	private readonly emitter = new EventEmitterWithHistory();
 
 	public audioProducer?: Producer;
 	public connectionInfo?: { token: string; channelId: Snowflake; guildId: Snowflake | null };
+	public sendTransport?: Transport;
 	private device?: mediasoupClient.Device;
 	private initialProducers?: ProducerData[];
-	private sendTransport?: Transport;
 	private recvTransport?: Transport;
 	private consumers: Map<string, Consumer>;
 
@@ -114,6 +116,8 @@ export class Voice {
 		if (this.options.log) {
 			console.log("[Voice] Connected");
 		}
+
+		this.emit("connected", undefined);
 	}
 
 	private onClose(e: CloseEvent) {
@@ -186,6 +190,10 @@ export class Voice {
 			case VoiceOperations.PEER_LEFT: {
 				const left = data.d as VoicePeerLeftData;
 				this.handlePeerLeft(left);
+				break;
+			}
+			case VoiceOperations.PONG: {
+				this.handlePong();
 				break;
 			}
 		}
@@ -326,6 +334,7 @@ export class Voice {
 
 		this.send(createSendTransportData);
 		this.send(createRecvTransportData);
+		this.sendPing();
 
 		this.initialProducers = data.producers;
 	}
@@ -348,6 +357,21 @@ export class Voice {
 		};
 
 		this.send(identifyData);
+	}
+
+	private handlePong() {
+		const rtt = Date.now() - (this.lastPingStart ?? 0);
+		this.emit("ping", { rtt });
+
+		setTimeout(() => {
+			this.sendPing();
+		}, constants.VOICE_CLIENT_PING_INTERVAL);
+	}
+
+	private sendPing() {
+		const pingData: VoicePayload<VoiceOperations.PING> = { op: VoiceOperations.PING, d: undefined };
+		this.lastPingStart = Date.now();
+		this.send(pingData);
 	}
 
 	private startHeartbeat(interval: number) {
