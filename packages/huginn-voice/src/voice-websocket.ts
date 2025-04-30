@@ -102,6 +102,9 @@ export class VoiceWebSocket {
 				case VoiceOperations.RESUME_CONSUMER:
 					await this.handleResumeConsumer(peer, data.d as VoiceResumeConsumerData);
 					break;
+				case VoiceOperations.PING:
+					this.handlePing(peer);
+					break;
 			}
 		} catch (e) {
 			if (e instanceof SyntaxError) {
@@ -309,6 +312,11 @@ export class VoiceWebSocket {
 		session?.resetTimeout();
 		const hearbeatAckData: VoicePayload<VoiceOperations.HEARTBEAT_ACK> = { op: VoiceOperations.HEARTBEAT_ACK, d: undefined };
 		this.send(peer, hearbeatAckData);
+	}
+
+	private handlePing(peer: Peer) {
+		const pongData: VoicePayload<VoiceOperations.PONG> = { op: VoiceOperations.PONG, d: undefined };
+		this.send(peer, pongData);
 	}
 
 	private send(peer: Peer, data: unknown) {
