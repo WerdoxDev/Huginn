@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.15.0...shared@v0.16.0) (2025-04-30)
+
+
+### Features
+
+* **shared:** add ping and pong voice operation types ([1f6b9d1](https://github.com/WerdoxDev/Huginn/commit/1f6b9d1f85a2f09babb8e24a6ff0cd0d6a977b00))
+
 ## [0.15.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.14.0...shared@v0.15.0) (2025-04-26)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.11.1...api@v0.12.0) (2025-04-30)
+
+
+### Features
+
+* **api:** handle sending and processing ping ([0674b89](https://github.com/WerdoxDev/Huginn/commit/0674b89cd65ece337b9a366166b412d681e7aaca))
+
 ## [0.11.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.11.0...api@v0.11.1) (2025-04-27)
 
 
