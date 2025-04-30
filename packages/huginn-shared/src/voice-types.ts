@@ -22,6 +22,8 @@ export enum VoiceOperations {
 	CONSUMER_RESUMED = 15,
 	PEER_LEFT = 16,
 	DECODE_ERROR = 17,
+	PING = 18,
+	PONG = 19,
 }
 
 export type VoiceOperationDatas = {
@@ -42,13 +44,17 @@ export type VoiceOperationDatas = {
 	[VoiceOperations.RESUME_CONSUMER]: VoiceResumeConsumerData;
 	[VoiceOperations.CONSUMER_RESUMED]: VoiceConsumerResumedData;
 	[VoiceOperations.PEER_LEFT]: VoicePeerLeftData;
+	[VoiceOperations.PING]: undefined;
+	[VoiceOperations.PONG]: undefined;
 };
 
 export type VoiceEvents = {
 	transport_ready: { channelId: Snowflake };
 	producer_created: { consumerId: string; producerId: string; track: MediaStreamTrack; producerUserId: Snowflake };
 	producer_removed: { producerId: string };
+	connected: undefined;
 	disconnected: undefined;
+	ping: { rtt: number };
 };
 
 export type VoicePayload<OP extends keyof VoiceOperationDatas | undefined = undefined> = {
