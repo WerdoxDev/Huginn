@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.32.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.32.0...app@v0.32.1) (2025-04-30)
+
+
+### Bug Fixes
+
+* **api:** voice server ip is incorrect ([1773d28](https://github.com/WerdoxDev/Huginn/commit/1773d289c3962c4935c418556a361bcb49321048))
+
 ## [0.32.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.31.3...app@v0.32.0) (2025-04-30)
 
 
