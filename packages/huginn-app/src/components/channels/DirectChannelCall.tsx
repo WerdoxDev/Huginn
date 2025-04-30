@@ -1,27 +1,19 @@
 import UserAvatar from "@components/UserAvatar";
 import Tooltip from "@components/tooltip/Tooltip";
-import { useChannel } from "@hooks/api-hooks/channelHooks";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useLookup } from "@hooks/useLookup";
 import type { Snowflake } from "@huginn/shared";
-import { AudioLevelChecker } from "@lib/voice-client";
 import { useClient } from "@stores/apiStore";
-import { useSettings } from "@stores/settingsStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
-import { produce } from "immer";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 
 export default function DirectChannelCall(props: { channelId: Snowflake }) {
-	const [show, setShow] = useState(false);
 	const { channelId, voiceStates, callStates, remoteSources, speakingStates } = useVoiceStore();
 
 	const client = useClient();
-	const settings = useSettings();
 	const { user } = useThisUser();
-	const channel = useChannel(props.channelId);
-	// const [speakingStates, setSpeakingStates] = useState<Array<{ userId: Snowflake; speaking: boolean }>>([]);
 
 	const thisVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channelId), [voiceStates, props.channelId]);
 	const thisCallState = useMemo(() => callStates.find((x) => x.channelId === props.channelId), [callStates, props.channelId]);
@@ -29,45 +21,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	const users = useUsers(Array.from(new Set([...(thisCallState?.ringing ?? []), ...thisVoiceStates.map((x) => x.userId)])));
 	const usersLookup = useLookup(users, (user) => user.id);
 	const usersSpeakingLookup = useLookup(speakingStates, (state) => state.userId);
-
-	useEffect(() => {
-		// const audioLevels: AudioLevelChecker[] = [];
-		// for (const remoteSource of remoteSources) {
-		// 	const audioLevel = new AudioLevelChecker();
-		// 	audioLevels.push(audioLevel);
-		// 	audioLevel.startChecking(remoteSource.srcObject as MediaStream);
-		// 	audioLevel.on("audio-level", (db: number) => {
-		// 		const speaking = db > (remoteSource.userId === user?.id ? settings.inputThreshold : -100);
-		// 		setSpeakingStates(
-		// 			produce((draft) => {
-		// 				const changeIndex = draft.findIndex((x) => x.userId === remoteSource.userId);
-		// 				if (changeIndex !== -1) {
-		// 					draft[changeIndex].speaking = speaking;
-		// 				} else {
-		// 					draft.push({
-		// 						userId: remoteSource.userId,
-		// 						speaking: speaking,
-		// 					});
-		// 				}
-		// 			}),
-		// 		);
-		// 	});
-		// }
-		// return () => {
-		// 	for (const audioLevel of audioLevels) {
-		// 		audioLevel.offAll("audio-level");
-		// 		audioLevel.stopChecking();
-		// 	}
-		// };
-	}, [remoteSources, settings.inputThreshold, settings.inputVolume]);
-
-	useEffect(() => {
-		if (users.length !== 0 && thisCallState) {
-			setShow(true);
-		} else {
-			setShow(false);
-		}
-	}, [props.channelId, users]);
+	const show = useMemo(() => users.length !== 0 && thisCallState, [props.channelId, users]);
 
 	function disconnect() {
 		client.voice.close();
@@ -78,17 +32,12 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		await client.gateway.connectToVoice(null, props.channelId);
 	}
 
-	if (!user) {
+	if (!user || !show) {
 		return;
 	}
 
 	return (
-		<div
-			className={clsx(
-				"z-10 m-2 mb-0 flex h-2/5 shrink-0 flex-col rounded-xl bg-black/60 shadow-lg shadow-tertiary/50 ring-2 ring-primary/70",
-				show ? "block" : "hidden",
-			)}
-		>
+		<div className="z-10 m-2 mb-0 flex h-2/5 shrink-0 flex-col rounded-xl bg-black/60 shadow-lg shadow-tertiary/50 ring-2 ring-primary/70">
 			<div className="flex h-full w-full shrink items-center justify-center gap-5">
 				{/* {remoteSources.some((x) => x.kind === "video")
 					? remoteSources.map((x) => (
@@ -174,7 +123,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 					<Tooltip>
 						<Tooltip.Trigger
 							onClick={connect}
-							className="rounded-xl bg-success/80 px-5 py-2.5 text-white transition-colors hover:bg-success/60"
+							className="rounded-xl bg-success-500/80 px-5 py-2.5 text-white transition-colors hover:bg-success-500/60"
 						>
 							<IconMingcutePhoneFill className="size-6" />
 						</Tooltip.Trigger>

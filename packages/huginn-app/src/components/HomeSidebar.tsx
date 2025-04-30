@@ -9,6 +9,7 @@ import moment from "moment";
 import { useEffect, useMemo } from "react";
 import AttentionIndicator from "./AttentionIndicator";
 import DirectMessageChannel from "./DirectMessageChannel";
+import VoiceStatus from "./VoiceStatus";
 import RingLinkButton from "./button/RingLinkButton";
 import Tooltip from "./tooltip/Tooltip";
 
@@ -74,6 +75,7 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
 					<DirectMessageChannel key={channel.id} channel={channel} />
 				))}
 			</ul>
+			<VoiceStatus />
 		</nav>
 	);
 }

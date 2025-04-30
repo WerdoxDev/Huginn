@@ -45,7 +45,7 @@ function Trigger(props: HTMLProps<HTMLButtonElement> & { asChild?: boolean }) {
 	);
 }
 
-function Content(props: HTMLProps<HTMLDivElement>) {
+function Content(props: { extraClassName?: string; arrowClassName?: string; extrastyle?: React.CSSProperties } & HTMLProps<HTMLDivElement>) {
 	const context = useTooltipContext();
 	const ref = useMergeRefs([context.refs.setFloating, props.ref]);
 	context.placement;
@@ -73,11 +73,15 @@ function Content(props: HTMLProps<HTMLDivElement>) {
 		>
 			<Portal>
 				<div
-					className="absolute z-10 rounded-md border border-background bg-zinc-900 px-2.5 py-1.5 text-base text-white/80 shadow-lg"
+					className={clsx(
+						"absolute z-10 rounded-md border border-background bg-zinc-900 px-2.5 py-1.5 text-base text-white/80 shadow-lg",
+						props.extraClassName,
+					)}
 					ref={ref}
 					style={{
 						...context.floatingStyles,
 						...props.style,
+						...props.extrastyle,
 					}}
 					{...context.getFloatingProps(props)}
 				>
@@ -86,6 +90,7 @@ function Content(props: HTMLProps<HTMLDivElement>) {
 						style={{ left: context.middlewareData.arrow?.x, top: context.middlewareData.arrow?.y, [staticSide]: "-5px" }}
 						ref={context.arrowRef}
 						className={clsx(
+							props.arrowClassName,
 							"absolute h-2.5 w-2.5 border-background border-t border-l bg-zinc-900",
 							context.placement.includes("bottom") && "rotate-45",
 							context.placement.includes("top") && "rotate-[-135deg]",

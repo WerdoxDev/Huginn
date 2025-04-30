@@ -18,7 +18,10 @@ export function useChannelName(channelId?: Snowflake): string {
 	const channel = useChannel(channelId);
 	const recipients = useUsers(channel?.recipientIds);
 
-	return useMemo(() => (channel?.name ? channel.name : recipients?.map((x) => x.displayName ?? x.username).join(", ")), [channelId, recipients]);
+	return useMemo(
+		() => (channel?.name ? channel.name : recipients?.map((x) => x.displayName ?? x.username).join(", ")),
+		[channelId, recipients, channel],
+	);
 }
 
 export function useChannelNamePlaceholder(recipients: APIPublicUser[]) {

@@ -56,5 +56,8 @@ declare global {
   const IconMingcuteVolumeFill: typeof import('~icons/mingcute/volume-fill.jsx')['default']
   const IconMingcuteVolumeMuteFill: typeof import('~icons/mingcute/volume-mute-fill.jsx')['default']
   const IconMingcuteWarningFill: typeof import('~icons/mingcute/warning-fill.jsx')['default']
+  const IconMingcuteWifiFill: typeof import('~icons/mingcute/wifi-fill.jsx')['default']
+  const IconMingcuteWifiLine: typeof import('~icons/mingcute/wifi-line.jsx')['default']
+  const IconMingcuteWifiOffLine: typeof import('~icons/mingcute/wifi-off-line.jsx')['default']
   const IconSolarSledgehammerBold: typeof import('~icons/solar/sledgehammer-bold.jsx')['default']
 }
