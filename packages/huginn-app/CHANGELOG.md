@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.32.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.31.3...app@v0.32.0) (2025-04-30)
+
+
+### Features
+
+* **app:** add voice status component ([3f5542c](https://github.com/WerdoxDev/Huginn/commit/3f5542c9f1ad2b127c0e88b33b39133bea3288fd))
+
 ## [0.31.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.31.2...app@v0.31.3) (2025-04-27)
 
 

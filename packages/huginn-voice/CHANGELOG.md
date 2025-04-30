@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.1.0...voice@v0.2.0) (2025-04-30)
+
+
+### Features
+
+* **voice:** add ping and pong message handling ([ffbf007](https://github.com/WerdoxDev/Huginn/commit/ffbf0073e27b15fe4465566df4735df934f1a0d7))
+
 ## 0.1.0 (2025-04-04)
 
 
