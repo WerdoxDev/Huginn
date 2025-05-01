@@ -114,7 +114,6 @@ function configureUpdater() {
 }
 
 function configureTray(mainWindow: BrowserWindow) {
-	console.log("TRAY");
 	const tray = new Tray(app.isPackaged ? path.join(process.resourcesPath, "assets", "icon.ico") : "./assets/icon.ico");
 	const contextMenu = Menu.buildFromTemplate([
 		{

@@ -1,3 +1,4 @@
+import notificationUrl from "@/assets/notification.wav";
 import { RelationshipType, type Snowflake, snowflake } from "@huginn/shared";
 import { listenEvent } from "@lib/event-handler";
 import { getCurrentPageMessages } from "@lib/utils";
@@ -77,7 +78,7 @@ export function initializeReadStates() {
 		if (!data.self && !data.visible) {
 			const author = apiStore.getState().users.find((x) => x.id === data.message.authorId);
 			// console.log(await join(await resourceDir(), "resources/huginn-text.png"));
-			const audio = new Audio("/src/assets/notification.wav");
+			const audio = new Audio(notificationUrl);
 			audio.play();
 			if (windowStore.getState().environment === "desktop") {
 				sendNotification(data.message.channelId, author?.username ?? "Unknown User", data.message.content, "");

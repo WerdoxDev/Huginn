@@ -11,6 +11,27 @@
 <body className="overflow-hidden">
    <div id="root"></div>
    <script type="module" src="/src/main.tsx"></script>
+
+   <script>
+      const myButton = document.getElementById("my-button");
+
+      let a = 5; // address 0x01
+      let b = 5; // address 0x02
+
+      myButton.addEventListener("click", () => {
+         console.log("HI!");
+      });
+
+      myButton.addEventListener("click", () => {
+         console.log("HI2!");
+      });
+
+      myButton.removeEventListener("click", () => {
+         console.log("HI!");
+      })
+
+
+   </script>
 </body>
 
 </html>
