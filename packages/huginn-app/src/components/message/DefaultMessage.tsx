@@ -1,114 +1,54 @@
-import type { MessageRendererProps } from "@/types";
 import UserAvatar from "@components/UserAvatar";
+import { MessageContext } from "@components/channels/ChannelMessages";
 import { useUser } from "@hooks/api-hooks/userHooks";
-import { MessageFlags, type Snowflake, clamp, hasFlag } from "@huginn/shared";
+import { MessageFlags, clamp, hasFlag } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
-import { useSettings } from "@stores/settingsStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import moment from "moment";
-import { useLayoutEffect, useMemo, useState } from "react";
+import { useContext, useLayoutEffect, useMemo, useState } from "react";
 import type { BaseEditor, Descendant } from "slate";
 import { Editable, type ReactEditor, type RenderElementProps, type RenderLeafProps, Slate } from "slate-react";
 import AttachmentUploadProgress from "./AttachmentUploadProgress";
 
-export default function DefaultMessage(
-	props: MessageRendererProps & {
-		initialValue: Descendant[];
-		editor: BaseEditor & ReactEditor;
-		renderLeaf(props: RenderLeafProps): React.JSX.Element;
-		renderElement(props: RenderElementProps): React.JSX.Element;
-	},
-) {
+export default function DefaultMessage(props: {
+	initialValue: Descendant[];
+	editor: BaseEditor & ReactEditor;
+	renderLeaf(props: RenderLeafProps): React.JSX.Element;
+	renderElement(props: RenderElementProps): React.JSX.Element;
+}) {
 	const { user } = useThisUser();
-	const settings = useSettings();
+	const context = useContext(MessageContext);
 
-	// const isCompact = useMemo(() => settings.chatMode === "compact", [settings]);
+	const formattedTime = useMemo(() => moment(context.renderInfo.message?.timestamp).format("DD.MM.YYYY HH:mm"), [context.renderInfo.message]);
 
-	const formattedTime = useMemo(() => moment(props.renderInfo.message?.timestamp).format("DD.MM.YYYY HH:mm"), [props.renderInfo.message]);
-
-	const author = useUser(props.renderInfo.message.authorId);
+	const author = useUser(context.renderInfo.message.authorId);
 	const isSelf = useMemo(() => author?.id === user?.id, [author]);
 
-	const isLastExotic = useMemo(() => props.lastRenderInfo?.exoticType === true, [props.lastRenderInfo]);
-	const isSeparate = useMemo(() => props.renderInfo.newAuthor || props.renderInfo.newMinute || props.renderInfo.newDate, [props.renderInfo]);
+	const isLastExotic = useMemo(() => context.lastRenderInfo?.exoticType === true, [context.lastRenderInfo]);
+	const isSeparate = useMemo(() => context.renderInfo.newAuthor || context.renderInfo.newMinute || context.renderInfo.newDate, [context.renderInfo]);
 	const isNextSeparate = useMemo(
-		() => props.nextRenderInfo?.newAuthor || props.nextRenderInfo?.newMinute || !props.nextRenderInfo || props.nextRenderInfo.exoticType,
-		[props.nextRenderInfo],
+		() => context.nextRenderInfo?.newAuthor || context.nextRenderInfo?.newMinute || !context.nextRenderInfo || context.nextRenderInfo.exoticType,
+		[context.nextRenderInfo],
 	);
 
 	const isNewDate = useMemo(
-		() => props.renderInfo.newDate || !props.lastRenderInfo || props.renderInfo.newDate,
-		[props.renderInfo, props.lastRenderInfo],
+		() => context.renderInfo.newDate || !context.lastRenderInfo || context.renderInfo.newDate,
+		[context.renderInfo, context.lastRenderInfo],
 	);
 
-	const isUnread = useMemo(() => props.renderInfo.unread, [props.renderInfo]);
+	const isUnread = useMemo(() => context.renderInfo.unread, [context.renderInfo]);
 
 	const [widths, setWidths] = useState<{ width: number; lastWidth: number; nextWidth: number }>({ width: 0, lastWidth: 0, nextWidth: 0 });
 
 	useLayoutEffect(() => {
-		const width = document.getElementById(`${props.renderInfo.message.id}_inner`)?.clientWidth || 0;
-		const lastWidth = document.getElementById(`${props.lastRenderInfo?.message.id}_inner`)?.clientWidth || 0;
-		const nextWidth = document.getElementById(`${props.nextRenderInfo?.message.id}_inner`)?.clientWidth || 0;
+		const width = document.getElementById(`${context.renderInfo.message.id}_inner`)?.clientWidth || 0;
+		const lastWidth = document.getElementById(`${context.lastRenderInfo?.message.id}_inner`)?.clientWidth || 0;
+		const nextWidth = document.getElementById(`${context.nextRenderInfo?.message.id}_inner`)?.clientWidth || 0;
 
 		setWidths({ width, lastWidth, nextWidth });
-	}, [props.renderInfo, props.lastRenderInfo, props.nextRenderInfo]);
+	}, [context.renderInfo, context.lastRenderInfo, context.nextRenderInfo]);
 
-	// return isCompact ? (
-	// 	<div
-	// 		className={clsx(
-	// 			"group flex flex-col items-start gap-y-2 p-2 pl-4 hover:bg-secondary",
-	// 			(isSeparate || isLastExotic) && "rounded-tr-lg",
-	// 			isNextSeparate && "rounded-br-lg",
-	// 			!isSeparate && !isLastExotic && "py-0",
-	// 			!isSeparate && !isLastExotic && !isUnread && "mt-0",
-	// 			!isNextSeparate && "pb-0",
-	// 			isSeparate && !isNewDate && !isUnread && "mt-1.5",
-	// 		)}
-	// 	>
-	// 		{(isSeparate || isLastExotic) && (
-	// 			<div className="flex items-center justify-center gap-x-2">
-	// 				<div className="text-sm text-text">
-	// 					{isSelf ? "You" : (props.renderInfo.message.author.displayName ?? props.renderInfo.message.author.username)}
-	// 				</div>
-	// 				{!props.renderInfo.message.preview &&
-	// 				props.renderInfo.message.flags &&
-	// 				hasFlag(props.renderInfo.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
-	// 					<IconMingcuteNotificationOffFill className="size-4 text-text" />
-	// 				) : null}
-	// 				<div className="text-text/50 text-xs">{formattedTime}</div>
-	// 			</div>
-	// 		)}
-	// 		<div className="flex gap-2">
-	// 			{(isSeparate || isLastExotic) && (
-	// 				<div className="flex gap-x-2 overflow-hidden">
-	// 					<UserAvatar
-	// 						userId={props.renderInfo.message.author.id}
-	// 						avatarHash={props.renderInfo.message.author.avatar}
-	// 						statusSize="0.5rem"
-	// 						size="1.75rem"
-	// 					/>
-	// 				</div>
-	// 			)}
-	// 			<div className={clsx("font-light text-white", !isSeparate && !isLastExotic && "ml-9")}>
-	// 				<MarkdownRenderer
-	// 					initialValue={props.initialValue}
-	// 					editor={props.editor}
-	// 					isNextSeparate={isNextSeparate}
-	// 					isPreview={props.renderInfo.message.preview}
-	// 					isSelf={isSelf}
-	// 					isSeparate={isSeparate}
-	// 					isLastExotic={isLastExotic}
-	// 					isUnread={isUnread}
-	// 					messageId={props.renderInfo.message.id}
-	// 					renderElement={props.renderElement}
-	// 					renderLeaf={props.renderLeaf}
-	// 					widths={widths}
-	// 				/>
-	// 			</div>
-	// 		</div>
-	// 	</div>
-	// ) : (
 	return (
 		<div
 			className={clsx(
@@ -124,26 +64,24 @@ export default function DefaultMessage(
 		>
 			{(isSeparate || isLastExotic) && (
 				<div className="flex items-center gap-x-2">
-					<UserAvatar userId={props.renderInfo.message.authorId} avatarHash={author?.avatar} statusSize="0.5rem" size="1.75rem" />
+					<UserAvatar userId={context.renderInfo.message.authorId} avatarHash={author?.avatar} statusSize="0.5rem" size="1.75rem" />
 					<div className="text-sm text-text">{isSelf ? "You" : (author?.displayName ?? author?.username)}</div>
-					{!props.renderInfo.message.preview &&
-					props.renderInfo.message.flags &&
-					hasFlag(props.renderInfo.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
+					{!context.renderInfo.message.preview &&
+					context.renderInfo.message.flags &&
+					hasFlag(context.renderInfo.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
 						<IconMingcuteNotificationOffFill className="size-4 text-text" />
 					) : null}
 					<div className="text-text/50 text-xs">{formattedTime}</div>
 				</div>
 			)}
 			<div className="font-light text-white">
-				<MarkdownRenderer
+				<SlateRenderer
 					initialValue={props.initialValue}
 					editor={props.editor}
 					isNextSeparate={isNextSeparate}
-					isPreview={props.renderInfo.message.preview}
 					isSelf={isSelf}
 					isSeparate={isSeparate}
 					isUnread={isUnread}
-					messageId={props.renderInfo.message.id}
 					isLastExotic={isLastExotic}
 					renderElement={props.renderElement}
 					renderLeaf={props.renderLeaf}
@@ -154,10 +92,8 @@ export default function DefaultMessage(
 	);
 }
 
-function MarkdownRenderer(props: {
+function SlateRenderer(props: {
 	editor: ReactEditor;
-	messageId: Snowflake;
-	isPreview: boolean;
 	initialValue: Descendant[];
 	renderLeaf(props: RenderLeafProps): React.JSX.Element;
 	renderElement(props: RenderElementProps): React.JSX.Element;
@@ -169,16 +105,15 @@ function MarkdownRenderer(props: {
 	isLastExotic: boolean;
 }) {
 	const { messageUploadProgress: messageUploadProgresses } = useChannelStore();
-	const progress = useMemo(() => messageUploadProgresses[props.messageId], [messageUploadProgresses]);
-	// console.log(props.widths.width - props.widths.nextWidth);
-	// const progress: UploadProgress = { filenames: ["asd.png"], percentage: 1, total: 10000 };
+	const context = useContext(MessageContext);
+	const progress = useMemo(() => messageUploadProgresses[context.renderInfo.message.id], [messageUploadProgresses]);
 
 	return (
 		<div
 			className={clsx(
 				"relative whitespace-break-spaces px-2.5 py-1.5 font-normal text-white [overflow-wrap:anywhere] group-hover:shadow-lg",
-				props.isPreview && "bg-primary/20 text-white/50",
-				props.isSelf && !props.isPreview ? "bg-primary/70 shadow-primary/70" : "bg-background shadow-background",
+				context.renderInfo.message.preview && "bg-primary/20 text-white/50",
+				props.isSelf && !context.renderInfo.message.preview ? "bg-primary/70 shadow-primary/70" : "bg-background shadow-background",
 				props.isUnread && !props.isSeparate && "!rounded-t-none",
 				(props.isSeparate || props.isLastExotic) && "!rounded-t-xl",
 				props.isNextSeparate && "!rounded-b-xl",
@@ -212,9 +147,15 @@ function MarkdownRenderer(props: {
 			{progress !== undefined ? (
 				<AttachmentUploadProgress progress={progress} />
 			) : (
-				<Slate editor={props.editor} initialValue={props.initialValue}>
+				<Slate
+					editor={props.editor}
+					initialValue={props.initialValue}
+					key={
+						!context.renderInfo.message.preview ? (context.renderInfo.message.editedTimestamp as string) : context.renderInfo.message.timestamp
+					}
+				>
 					<Editable
-						id={`${props.messageId}_inner`}
+						id={`${context.renderInfo.message.id}_inner`}
 						readOnly
 						renderLeaf={props.renderLeaf}
 						renderElement={props.renderElement}

@@ -1,10 +1,7 @@
-import { readFile } from "node:fs/promises";
 import * as path from "node:path";
-import { reactRouter } from "@react-router/dev/vite";
 import react from "@vitejs/plugin-react";
 import autoprefixer from "autoprefixer";
 // import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
-import { parseTOML } from "confbox";
 import tailwindcss from "tailwindcss";
 import AutoImport from "unplugin-auto-import/vite";
 import IconsResolver from "unplugin-icons/resolver";
@@ -13,7 +10,6 @@ import { defineConfig } from "vite";
 import babel from "vite-plugin-babel";
 import { version } from "./package.json";
 
-type CargoToml = { package: { version: string } };
 const reactCompilerConfig = { target: "19" };
 
 // https://vitejs.dev/config/

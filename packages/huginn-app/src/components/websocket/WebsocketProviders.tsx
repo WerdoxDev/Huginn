@@ -1,14 +1,14 @@
 import type { ReactNode } from "react";
 import ChannelsProvider from "./ChannelsProvider";
 import FriendsProvider from "./FriendsProvider";
-import MessageProvider from "./MessageProvider";
+import MessageWebsocketProvider from "./MessageWebsocketProvider";
 
 export default function WebsocketProviders(props: { children?: ReactNode }) {
 	return (
 		<ChannelsProvider>
-			<MessageProvider>
+			<MessageWebsocketProvider>
 				<FriendsProvider>{props.children}</FriendsProvider>
-			</MessageProvider>
+			</MessageWebsocketProvider>
 		</ChannelsProvider>
 	);
 }

@@ -1,29 +1,30 @@
-import type { MessageRendererProps } from "@/types";
+import { MessageContext } from "@components/channels/ChannelMessages";
 import { useUser } from "@hooks/api-hooks/userHooks";
 import { MessageType } from "@huginn/shared";
 import clsx from "clsx";
-import { useMemo } from "react";
+import { useContext, useMemo } from "react";
 
-export default function ActionMessage(props: MessageRendererProps) {
-	const author = useUser(props.renderInfo.message.authorId);
-	const authorName = useMemo(() => author?.displayName ?? author?.username, [props.renderInfo]);
+export default function ActionMessage() {
+	const context = useContext(MessageContext);
+	const author = useUser(context.renderInfo.message.authorId);
+	const authorName = useMemo(() => author?.displayName ?? author?.username, [context.renderInfo]);
 	const mention = useMemo(
 		() =>
-			!props.renderInfo.message.preview &&
-			(props.renderInfo.message.mentions?.[0]?.displayName ?? props.renderInfo.message.mentions?.[0]?.username),
-		[props.renderInfo],
+			!context.renderInfo.message.preview &&
+			(context.renderInfo.message.mentions?.[0]?.displayName ?? context.renderInfo.message.mentions?.[0]?.username),
+		[context.renderInfo],
 	);
 
-	const isLastExotic = useMemo(() => props.lastRenderInfo?.exoticType || !props.lastRenderInfo, [props.lastRenderInfo]);
-	const isNextExotic = useMemo(() => props.nextRenderInfo?.exoticType || !props.nextRenderInfo, [props.nextRenderInfo]);
-	const isUnread = useMemo(() => props.renderInfo.unread, [props.renderInfo]);
+	const isLastExotic = useMemo(() => context.lastRenderInfo?.exoticType || !context.lastRenderInfo, [context.lastRenderInfo]);
+	const isNextExotic = useMemo(() => context.nextRenderInfo?.exoticType || !context.nextRenderInfo, [context.nextRenderInfo]);
+	const isUnread = useMemo(() => context.renderInfo.unread, [context.renderInfo]);
 
-	const type = useMemo(() => !props.renderInfo.message.preview && props.renderInfo.message.type, [props.renderInfo]);
+	const type = useMemo(() => !context.renderInfo.message.preview && context.renderInfo.message.type, [context.renderInfo]);
 	return (
 		<div
 			className={clsx(
 				"flex items-center rounded-r-md py-0.5 pl-4 text-text hover:bg-secondary",
-				!isLastExotic && !props.renderInfo.newDate && !isUnread && "mt-1.5",
+				!isLastExotic && !context.renderInfo.newDate && !isUnread && "mt-1.5",
 				!isNextExotic && !isUnread && "mb-1.5",
 			)}
 		>
@@ -38,12 +39,12 @@ export default function ActionMessage(props: MessageRendererProps) {
 				{type === MessageType.CALL && <span> started a call</span>}
 				{type === MessageType.CHANNEL_ICON_CHANGED && <span className="text-text"> changed the channel icon</span>}
 				{type === MessageType.CHANNEL_NAME_CHANGED &&
-					(!props.renderInfo.message.content ? (
+					(!context.renderInfo.message.content ? (
 						<span className="text-text"> removed the channel name</span>
 					) : (
 						<>
 							<span className="text-text"> changed the chanel name: </span>
-							<span className="font-bold text-text">{props.renderInfo.message.content}</span>
+							<span className="font-bold text-text">{context.renderInfo.message.content}</span>
 						</>
 					))}
 				{mention ? (

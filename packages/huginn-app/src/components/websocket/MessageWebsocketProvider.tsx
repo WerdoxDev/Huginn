@@ -20,7 +20,7 @@ import { useHuginnWindow } from "@stores/windowStore";
 import { type InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useEffect } from "react";
 
-export default function MessageProvider(props: { children?: ReactNode }) {
+export default function MessageWebsocketProvider(props: { children?: ReactNode }) {
 	const queryClient = useQueryClient();
 	const currentChannel = useCurrentChannel();
 	const mutation = useCreateDMChannel("create-dm-channel_other");

@@ -1,5 +1,6 @@
 import type { CustomElement, ParagraphElement } from "@/index";
-import type { HuginnToken, MessageRendererProps } from "@/types";
+import type { HuginnToken } from "@/types";
+import { MessageContext } from "@components/channels/ChannelMessages";
 import AttachmentElement from "@components/editor/AttachmentElement";
 import CodeElement from "@components/editor/CodeElement";
 import EmbedElement from "@components/editor/EmbedElement";
@@ -13,9 +14,9 @@ import { markdownSpoiler } from "@lib/markdown-spoiler";
 import { markdownUnderline } from "@lib/markdown-underline";
 import { getSlateFormats, isCloseToken, isElementCloseToken, isElementOpenToken, isOpenToken, organizeTokens } from "@lib/markdown-utils";
 import markdownit from "markdown-it";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useContext, useEffect, useLayoutEffect, useMemo } from "react";
 import { type Descendant, type Editor, createEditor } from "slate";
-import { DefaultElement, type RenderElementProps, type RenderLeafProps, withReact } from "slate-react";
+import { DefaultElement, Editable, type RenderElementProps, type RenderLeafProps, Slate, withReact } from "slate-react";
 import ActionMessage from "./ActionMessage";
 import DefaultMessage from "./DefaultMessage";
 
@@ -28,9 +29,10 @@ const withHuginn = (editor: Editor) => {
 	return editor;
 };
 
-function MessageRenderer(props: MessageRendererProps) {
+function MessageRenderer() {
+	const context = useContext(MessageContext);
 	const editor = useMemo(() => withReact(withHuginn(createEditor())), []);
-	const isInView = useIsInView(props.ref);
+	const isInView = useIsInView(context.ref);
 	const md = useMemo(() => new markdownit({ linkify: true }).use(markdownSpoiler).use(markdownUnderline).use(markdownMainMessage), []);
 
 	const renderLeaf = useCallback((props: RenderLeafProps) => {
@@ -77,7 +79,7 @@ function MessageRenderer(props: MessageRendererProps) {
 	const initialValue = useMemo(() => {
 		let nodes: Descendant[] = [];
 
-		const result = md.parse(props.renderInfo.message.content, {});
+		const result = md.parse(context.renderInfo.message.content, {});
 		const tokens = organizeTokens(result);
 
 		let lineNode: ParagraphElement = { type: "paragraph", children: [] };
@@ -149,18 +151,18 @@ function MessageRenderer(props: MessageRendererProps) {
 			nodes.push(lineNode);
 		}
 
-		if (props.renderInfo.message.preview) {
+		if (context.renderInfo.message.preview) {
 			return nodes;
 		}
 
-		if (props.renderInfo.message.embeds.length === 1) {
-			const embed = props.renderInfo.message.embeds[0];
-			if ((embed.type === "image" || embed.type === "video") && embed.url === props.renderInfo.message.content) {
+		if (context.renderInfo.message.embeds.length === 1) {
+			const embed = context.renderInfo.message.embeds[0];
+			if ((embed.type === "image" || embed.type === "video") && embed.url === context.renderInfo.message.content) {
 				nodes = [];
 			}
 		}
 
-		for (const embed of props.renderInfo.message.embeds) {
+		for (const embed of context.renderInfo.message.embeds) {
 			nodes.push({
 				type: "embed",
 				thumbnail: embed.thumbnail,
@@ -172,7 +174,7 @@ function MessageRenderer(props: MessageRendererProps) {
 			});
 		}
 
-		for (const attachment of props.renderInfo.message.attachments) {
+		for (const attachment of context.renderInfo.message.attachments) {
 			nodes.push({
 				type: "attachment",
 				url: attachment.url,
@@ -187,20 +189,20 @@ function MessageRenderer(props: MessageRendererProps) {
 		}
 
 		return nodes;
-	}, []);
+	}, [context.renderInfo.message]);
 
 	useEffect(() => {
-		if (!props.renderInfo.message.preview) {
-			props.onVisibilityChanged(props.renderInfo.message.id, isInView);
+		if (!context.renderInfo.message.preview) {
+			context.onVisibilityChanged(context.renderInfo.message.id, isInView);
 		}
-	}, [isInView, props.renderInfo.message.preview]);
+	}, [isInView, context.renderInfo.message.preview]);
 
 	return (
-		<li className="group shrink-0 select-text" ref={props.ref} id={props.renderInfo.message.id}>
-			{(props.renderInfo.message.preview || [MessageType.DEFAULT].includes(props.renderInfo.message.type)) && (
-				<DefaultMessage {...props} initialValue={initialValue} editor={editor} renderElement={renderElement} renderLeaf={renderLeaf} />
+		<li className="group shrink-0 select-text" ref={context.ref} id={context.renderInfo.message.id}>
+			{(context.renderInfo.message.preview || [MessageType.DEFAULT].includes(context.renderInfo.message.type)) && (
+				<DefaultMessage initialValue={initialValue} editor={editor} renderElement={renderElement} renderLeaf={renderLeaf} />
 			)}
-			{!props.renderInfo.message.preview &&
+			{!context.renderInfo.message.preview &&
 				[
 					MessageType.RECIPIENT_ADD,
 					MessageType.RECIPIENT_REMOVE,
@@ -208,7 +210,7 @@ function MessageRenderer(props: MessageRendererProps) {
 					MessageType.CHANNEL_ICON_CHANGED,
 					MessageType.CHANNEL_OWNER_CHANGED,
 					MessageType.CALL,
-				].includes(props.renderInfo.message.type) && <ActionMessage {...props} />}
+				].includes(context.renderInfo.message.type) && <ActionMessage />}
 		</li>
 	);
 }

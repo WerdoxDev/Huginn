@@ -14,7 +14,8 @@ import { useChannelStore } from "@stores/channelStore";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import moment from "moment";
-import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { createContext, use, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import type { Descendant } from "slate";
 import ChannelMessageLoadingIndicator from "./ChannelMessageLoadingIndicator";
 import ChannelTypingIndicator from "./ChannelTypingIndicator";
 
@@ -29,7 +30,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		() =>
 			props.messages.toSorted((a, b) => {
 				if (a.preview !== b.preview) {
-					return a.preview ? 1 : -1; // Move true to the end
+					return a.preview ? 1 : -1; // Move previews to the end
 				}
 				return moment(snowflake.getTimestamp(a.id)).isAfter(snowflake.getTimestamp(b.id)) ? 1 : -1;
 			}),
@@ -209,6 +210,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		if (!scroll.current || sortedMessages.length === 0) return;
 
 		if (shouldScrollOnNextRender.current) {
+			console.log(shouldScrollOnNextRender.current);
 			scrollDown();
 			shouldScrollOnNextRender.current = false;
 		}
@@ -253,7 +255,6 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 					<MessageWrapper
 						ref={setRef(message.id)}
 						key={message.preview ? message.timestamp : message.id}
-						message={message}
 						renderInfo={messageRenderInfos[i]}
 						nextRenderInfo={messageRenderInfos[i + 1]}
 						lastRenderInfo={messageRenderInfos[i - 1]}
@@ -265,13 +266,20 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	);
 }
 
-function MessageWrapper(
-	props: {
-		message: AppMessage;
-	} & MessageRendererProps,
-) {
+export const MessageContext = createContext<{
+	renderInfo: MessageRenderInfo;
+	nextRenderInfo?: MessageRenderInfo;
+	lastRenderInfo?: MessageRenderInfo;
+	onVisibilityChanged: (messageId: Snowflake, visible: boolean) => void;
+	ref: React.RefObject<HTMLLIElement | null>;
+}>(
+	// biome-ignore lint/style/noNonNullAssertion: <explanation>
+	undefined!,
+);
+
+function MessageWrapper(props: MessageRendererProps) {
 	return (
-		<>
+		<MessageContext.Provider value={{ ...props }}>
 			{props.renderInfo.unread && !props.renderInfo.newDate && (
 				<li
 					className={clsx(
@@ -284,7 +292,7 @@ function MessageWrapper(
 					</div>
 				</li>
 			)}
-			{!props.message.preview && props.renderInfo.newDate && (
+			{!props.renderInfo.message.preview && props.renderInfo.newDate && (
 				<li
 					className={clsx(
 						"relative flex h-0 shrink-0 items-center justify-center text-center font-semibold text-xs",
@@ -295,7 +303,7 @@ function MessageWrapper(
 					)}
 				>
 					<span className={clsx("bg-tertiary px-2", props.renderInfo.unread && "ml-10")}>
-						{moment(props.message.timestamp).format("DD. MMMM YYYY")}
+						{moment(props.renderInfo.message.timestamp).format("DD. MMMM YYYY")}
 					</span>
 					{props.renderInfo.unread && (
 						<div className="-mr-8 absolute right-0 flex w-10 items-center justify-center rounded-l-md bg-error/75 py-1 font-bold text-white text-xs uppercase">
@@ -304,13 +312,7 @@ function MessageWrapper(
 					)}
 				</li>
 			)}
-			<MessageRenderer
-				ref={props.ref}
-				renderInfo={props.renderInfo}
-				nextRenderInfo={props.nextRenderInfo}
-				lastRenderInfo={props.lastRenderInfo}
-				onVisibilityChanged={props.onVisibilityChanged}
-			/>
-		</>
+			<MessageRenderer />
+		</MessageContext.Provider>
 	);
 }
