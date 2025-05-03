@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.32.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.32.1...app@v0.32.2) (2025-05-01)
+
+
+### Bug Fixes
+
+* **app:** notification sound is not playing ([d714b48](https://github.com/WerdoxDev/Huginn/commit/d714b48a06515c5749e27bc303c6a62f80bcef9d))
+
 ## [0.32.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.32.0...app@v0.32.1) (2025-04-30)
 
 
