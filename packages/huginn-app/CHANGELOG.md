@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.32.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.32.2...app@v0.32.3) (2025-05-05)
+
+
+### Bug Fixes
+
+* **app:** quarkyness with the scrolling down and up ([0b246be](https://github.com/WerdoxDev/Huginn/commit/0b246be597945c3584ef055917c9981036c76301))
+* **app:** scroll is not anchored to the bottom when user resizes the window ([5cdd72a](https://github.com/WerdoxDev/Huginn/commit/5cdd72a708e13123b6af375ca44bfaa467e0944f))
+
 ## [0.32.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.32.1...app@v0.32.2) (2025-05-01)
 
 
