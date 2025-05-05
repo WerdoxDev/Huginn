@@ -58,7 +58,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	const lastChannelId = useRef<Snowflake>(undefined);
 	const lastScrollTop = useRef<number>(undefined);
 	const lastDistanceToBottom = useRef<number>(undefined);
-	const lastSeenElement = useRef<{ messageId: Snowflake; height: number; distanceToTop: number }>(null);
+	const lastSeenElement = useRef<{ messageId: Snowflake; height: number; distanceToTop: number; distanceToBottom: number }>(null);
 	const lastDirection = useRef<"up" | "down" | "none">("none");
 	const currentChannel = useCurrentChannel();
 	const channelName = useChannelName(currentChannel?.id);
@@ -82,9 +82,10 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			!isFetchingNextPage &&
 			hasNextPage
 		) {
-			// listHasUpdated.current = false;
 			lastDirection.current = "down";
 			await fetchNextPage();
+
+			saveLastSeenMessage();
 		}
 	}
 
@@ -110,23 +111,21 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		}
 
 		scrollRef.current.scrollTo(0, scrollRef.current.scrollHeight);
-		// scroll.current.scrollTop = scroll.current.scrollHeight - scroll.current.clientHeight;
 	}
 
 	function saveLastSeenMessage() {
 		if (!scrollRef.current || !listRef.current) return;
 
-		// A little trick to preserve the distance between scroll rect top and selected element
-		const savedScrollTop = scrollRef.current.scrollTop;
-		scrollRef.current.scrollTop = 0;
-
-		const messageElement = getFirstChildClosestToTop(listRef.current) as HTMLLIElement;
+		const messageElement = (
+			lastDirection.current === "up" ? getFirstChildClosestToTop(listRef.current) : getFirstChildClosestToBottom(listRef.current)
+		) as HTMLLIElement;
 		if (!messageElement) return;
 
 		lastSeenElement.current = {
 			messageId: messageElement.id,
 			height: messageElement.clientHeight,
-			distanceToTop: savedScrollTop,
+			distanceToTop: scrollRef.current.scrollTop,
+			distanceToBottom: scrollRef.current.scrollHeight - scrollRef.current.scrollTop - scrollRef.current.clientHeight - 28,
 		};
 
 		console.log(messageElement.innerText, lastSeenElement.current.distanceToTop);
@@ -136,18 +135,17 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		if (!lastSeenElement.current || !scrollRef.current || !listRef.current) return;
 
 		const foundMessageElement = [...listRef.current.children].find((x) => x.id === lastSeenElement.current?.messageId) as HTMLLIElement;
-		const elementRect = foundMessageElement.getBoundingClientRect();
-		const scrollRect = scrollRef.current.getBoundingClientRect();
 
-		const offset = elementRect.top - scrollRect.top;
+		console.log(foundMessageElement);
+		foundMessageElement.scrollIntoView({ behavior: "instant", block: lastDirection.current === "up" ? "start" : "end" });
 		const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
-
-		scrollRef.current.scrollTop = offset + lastSeenElement.current.distanceToTop + heightDifference;
+		scrollRef.current.scrollTop +=
+			(lastDirection.current === "up" ? lastSeenElement.current.distanceToTop : -lastSeenElement.current.distanceToBottom) + heightDifference;
 	}
 
 	// Calculating scrolltop position after an upward fetch
 	useLayoutEffect(() => {
-		if (!lastSeenElement.current || lastDirection.current !== "up" || !scrollRef.current || lastChannelId.current !== props.channelId) {
+		if (!lastSeenElement.current || !scrollRef.current || lastChannelId.current !== props.channelId) {
 			return;
 		}
 
@@ -251,10 +249,9 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		<div className="relative h-full overflow-y-hidden">
 			<ChannelMessageLoadingIndicator isFetchingNextPage={isFetchingNextPage} isFetchingPreviousPage={isFetchingPreviousPage} />
 			<ChannelTypingIndicator channelId={props.channelId} />
-			<div className="h-full w-full overflow-x-hidden overflow-y-scroll" ref={scrollRef} onScroll={onScroll}>
+			<div className="h-full w-full overflow-x-hidden overflow-y-scroll [overflow-anchor:none]" ref={scrollRef} onScroll={onScroll}>
 				<div className="flex min-h-full flex-col justify-end">
 					<ol className="min-h-0 overflow-hidden pr-0 pb-7" ref={listRef}>
-						{/* {scroll.current?.scrollHeight === scroll.current?.clientHeight && <div className="h-full shrink" />} */}
 						{sortedMessages.length === 0 && (
 							<div className="flex h-full w-full shrink-0 items-center justify-center">
 								<div className="flex items-center justify-center gap-x-2 rounded-lg bg-background p-2 pr-3 text-text italic underline">
