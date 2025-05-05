@@ -110,6 +110,26 @@ export function getFirstChildClosestToTop<E extends HTMLElement>(container: E) {
 	return closestChild;
 }
 
+export function getFirstChildClosestToBottom<E extends HTMLElement>(container: E) {
+	const containerRect = container.getBoundingClientRect();
+	const containerBottom = containerRect.bottom;
+
+	let closestChild: Element | null = null;
+	let smallestDistance = Number.POSITIVE_INFINITY;
+
+	for (const child of container.children) {
+		const childRect = child.getBoundingClientRect();
+		const distanceFromBottom = Math.abs(childRect.bottom - containerBottom);
+
+		if (distanceFromBottom < smallestDistance) {
+			smallestDistance = distanceFromBottom;
+			closestChild = child;
+		}
+	}
+
+	return closestChild;
+}
+
 export function getSizeText(size: number) {
 	const type = size >= 1000000 ? "mb" : "kb";
 	return `${(size / (type === "kb" ? 1000 : 1000000)).toFixed(2)} ${type === "kb" ? "KB" : "MB"}`;

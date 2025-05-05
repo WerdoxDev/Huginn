@@ -1,4 +1,4 @@
-import { MessageContext } from "@components/channels/ChannelMessages";
+import { MessageContext } from "@contexts/messageProvider";
 import { useUser } from "@hooks/api-hooks/userHooks";
 import { MessageType } from "@huginn/shared";
 import clsx from "clsx";

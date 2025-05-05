@@ -19,7 +19,6 @@ export default function ProgressBar(props: ProgressBarProps) {
 		document.addEventListener(
 			"mouseup",
 			() => {
-				console.log("MOUSE UP");
 				props.setDragging(false);
 			},
 			{ signal: controller.signal },
@@ -65,7 +64,6 @@ export default function ProgressBar(props: ProgressBarProps) {
 			)}
 			onClick={(e) => setPercentageFromMouse(props.orientation === "horizontal" ? e.pageX : e.pageY)}
 			onMouseDown={(e) => {
-				console.log("true");
 				props.setDragging(true);
 				e.preventDefault();
 			}}

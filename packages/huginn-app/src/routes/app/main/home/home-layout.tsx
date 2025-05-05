@@ -8,7 +8,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Outlet } from "react-router";
 
 export async function homeLoader() {
-	return await queryClient.ensureQueryData(getChannelsOptions(client, "@me"));
+	return await queryClient?.ensureQueryData(getChannelsOptions(client, "@me"));
 }
 
 export default function HomeLayout() {

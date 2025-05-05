@@ -1,12 +1,12 @@
 import type { CustomElement, ParagraphElement } from "@/index";
 import type { HuginnToken } from "@/types";
-import { MessageContext } from "@components/channels/ChannelMessages";
 import AttachmentElement from "@components/editor/AttachmentElement";
 import CodeElement from "@components/editor/CodeElement";
 import EmbedElement from "@components/editor/EmbedElement";
 import LinkElement from "@components/editor/LinkElement";
 import MessageLeaf from "@components/editor/MessageLeaf";
 import SpoilerElement from "@components/editor/SpoilerElement";
+import { MessageContext } from "@contexts/messageProvider";
 import { useIsInView } from "@hooks/useIsInView";
 import { MessageType } from "@huginn/shared";
 import { markdownMainMessage } from "@lib/markdown-main";

@@ -1,5 +1,5 @@
 import UserAvatar from "@components/UserAvatar";
-import { MessageContext } from "@components/channels/ChannelMessages";
+import { MessageContext } from "@contexts/messageProvider";
 import { useUser } from "@hooks/api-hooks/userHooks";
 import { MessageFlags, clamp, hasFlag } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";

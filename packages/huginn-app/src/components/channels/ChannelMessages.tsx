@@ -1,5 +1,5 @@
-import type { AppMessage, MessageRenderInfo, MessageRendererProps } from "@/types";
-import MessageRenderer from "@components/message/MessageRenderer";
+import type { AppMessage, MessageRenderInfo } from "@/types";
+import { MessageProvider } from "@contexts/messageProvider";
 import { useChannelName, useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useMessageAcker } from "@hooks/mutations/useMessageAcker";
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
@@ -8,14 +8,12 @@ import { useVisibleMessages } from "@hooks/useVisibleMessages";
 import { MessageType, type Snowflake, snowflake } from "@huginn/shared";
 import { listenEvent } from "@lib/event-handler";
 import { getMessagesOptions } from "@lib/queries";
-import { getFirstChildClosestToTop } from "@lib/utils";
+import { getFirstChildClosestToBottom, getFirstChildClosestToTop } from "@lib/utils";
 import { useClient } from "@stores/apiStore";
 import { useChannelStore } from "@stores/channelStore";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
-import clsx from "clsx";
 import moment from "moment";
-import { createContext, use, useEffect, useLayoutEffect, useMemo, useRef } from "react";
-import type { Descendant } from "slate";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import ChannelMessageLoadingIndicator from "./ChannelMessageLoadingIndicator";
 import ChannelTypingIndicator from "./ChannelTypingIndicator";
 
@@ -53,8 +51,10 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		[sortedMessages, props.channelId, firstUnreadMessageId],
 	);
 
-	const scroll = useRef<HTMLOListElement>(null);
+	const scrollRef = useRef<HTMLDivElement>(null);
+	const listRef = useRef<HTMLOListElement>(null);
 	const shouldScrollOnNextRender = useRef(false);
+	const shouldAnchorToBottom = useRef(false);
 	const lastChannelId = useRef<Snowflake>(undefined);
 	const lastScrollTop = useRef<number>(undefined);
 	const lastDistanceToBottom = useRef<number>(undefined);
@@ -64,12 +64,13 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	const channelName = useChannelName(currentChannel?.id);
 
 	async function onScroll() {
-		if (!scroll.current || sortedMessages.length === 0) return;
+		if (!scrollRef.current || sortedMessages.length === 0) return;
+		lastScrollTop.current = scrollRef.current.scrollTop;
 
-		lastScrollTop.current = scroll.current.scrollTop;
+		shouldAnchorToBottom.current = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop <= 20;
 
 		// Scrolling up
-		if (scroll.current.scrollTop <= topScrollOffset && !isFetchingPreviousPage && hasPreviousPage) {
+		if (scrollRef.current.scrollTop <= topScrollOffset && !isFetchingPreviousPage && hasPreviousPage) {
 			lastDirection.current = "up";
 			await fetchPreviousPage();
 
@@ -77,7 +78,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		}
 		// Scrolling down
 		else if (
-			scroll.current.scrollHeight - scroll.current.clientHeight - scroll.current.scrollTop <= bottomScrollOffset &&
+			scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop <= bottomScrollOffset &&
 			!isFetchingNextPage &&
 			hasNextPage
 		) {
@@ -104,22 +105,22 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	}
 
 	function scrollDown() {
-		if (!scroll.current) {
+		if (!scrollRef.current) {
 			return;
 		}
 
-		scroll.current.scrollTo(0, scroll.current.scrollHeight);
+		scrollRef.current.scrollTo(0, scrollRef.current.scrollHeight);
 		// scroll.current.scrollTop = scroll.current.scrollHeight - scroll.current.clientHeight;
 	}
 
 	function saveLastSeenMessage() {
-		if (!scroll.current) return;
+		if (!scrollRef.current || !listRef.current) return;
 
 		// A little trick to preserve the distance between scroll rect top and selected element
-		const savedScrollTop = scroll.current.scrollTop;
-		scroll.current.scrollTop = 0;
+		const savedScrollTop = scrollRef.current.scrollTop;
+		scrollRef.current.scrollTop = 0;
 
-		const messageElement = getFirstChildClosestToTop(scroll.current) as HTMLLIElement;
+		const messageElement = getFirstChildClosestToTop(listRef.current) as HTMLLIElement;
 		if (!messageElement) return;
 
 		lastSeenElement.current = {
@@ -127,24 +128,26 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			height: messageElement.clientHeight,
 			distanceToTop: savedScrollTop,
 		};
+
+		console.log(messageElement.innerText, lastSeenElement.current.distanceToTop);
 	}
 
 	function scrollToLastSeenMessage() {
-		if (!lastSeenElement.current || !scroll.current) return;
+		if (!lastSeenElement.current || !scrollRef.current || !listRef.current) return;
 
-		const foundMessageElement = [...scroll.current.children].find((x) => x.id === lastSeenElement.current?.messageId) as HTMLLIElement;
+		const foundMessageElement = [...listRef.current.children].find((x) => x.id === lastSeenElement.current?.messageId) as HTMLLIElement;
 		const elementRect = foundMessageElement.getBoundingClientRect();
-		const scrollRect = scroll.current.getBoundingClientRect();
+		const scrollRect = scrollRef.current.getBoundingClientRect();
 
 		const offset = elementRect.top - scrollRect.top;
 		const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
 
-		scroll.current.scrollTop = offset + lastSeenElement.current.distanceToTop + heightDifference;
+		scrollRef.current.scrollTop = offset + lastSeenElement.current.distanceToTop + heightDifference;
 	}
 
 	// Calculating scrolltop position after an upward fetch
 	useLayoutEffect(() => {
-		if (!lastSeenElement.current || !scroll.current || lastDirection.current !== "up" || lastChannelId.current !== props.channelId) {
+		if (!lastSeenElement.current || lastDirection.current !== "up" || !scrollRef.current || lastChannelId.current !== props.channelId) {
 			return;
 		}
 
@@ -166,8 +169,8 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	// Listening for new messages
 	useEffect(() => {
 		const unlisten = listenEvent("message_added", (d) => {
-			if (!scroll.current || !d.inVisibleQueryPage) return;
-			const scrollOffset = scroll.current.scrollHeight - scroll.current.clientHeight - scroll.current.scrollTop;
+			if (!scrollRef.current || !d.inVisibleQueryPage) return;
+			const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
 
 			if (d.self || scrollOffset <= 50) {
 				shouldScrollOnNextRender.current = true;
@@ -175,8 +178,8 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		});
 
 		const unlisten2 = listenEvent("message_updated", (d) => {
-			if (!scroll.current || !d.inVisibleQueryPage) return;
-			const scrollOffset = scroll.current.scrollHeight - scroll.current.clientHeight - scroll.current.scrollTop;
+			if (!scrollRef.current || !d.inVisibleQueryPage) return;
+			const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
 
 			if (scrollOffset <= 50) {
 				shouldScrollOnNextRender.current = true;
@@ -195,9 +198,9 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
 		// checkForExtraSpace();
 		if (lastChannelId.current !== props.channelId) {
-			if (savedScrolls.has(props.channelId) && scroll.current) {
+			if (savedScrolls.has(props.channelId) && scrollRef.current) {
 				const newScroll = savedScrolls.get(props.channelId) ?? 0;
-				scroll.current.scrollTop = newScroll;
+				scrollRef.current.scrollTop = newScroll;
 			} else {
 				scrollDown();
 			}
@@ -207,7 +210,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
 	// Should scroll check
 	useEffect(() => {
-		if (!scroll.current || sortedMessages.length === 0) return;
+		if (!scrollRef.current || sortedMessages.length === 0) return;
 
 		if (shouldScrollOnNextRender.current) {
 			console.log(shouldScrollOnNextRender.current);
@@ -217,15 +220,29 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	}, [sortedMessages]);
 
 	useEffect(() => {
-		const unlisten = listenEvent("message_box_height_changed", (d) => {
-			if (!scroll.current) return;
+		if (!scrollRef.current) return;
 
-			if (scroll.current.scrollHeight - scroll.current.clientHeight - scroll.current.scrollTop >= 1) {
-				scroll.current.scrollTop += d.difference;
+		const unlisten = listenEvent("message_box_height_changed", (d) => {
+			if (!scrollRef.current) return;
+
+			if (scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop >= 1) {
+				scrollRef.current.scrollTop += d.difference;
 			}
 		});
 
+		const resizeObserver = new ResizeObserver((entries) => {
+			if (!scrollRef.current) return;
+			const scrollHeight = entries[0].target.scrollHeight;
+
+			if (shouldAnchorToBottom.current) {
+				scrollRef.current.scrollTo(0, scrollHeight);
+			}
+		});
+
+		resizeObserver.observe(scrollRef.current);
+
 		return () => {
+			resizeObserver.disconnect();
 			unlisten();
 		};
 	}, []);
@@ -234,85 +251,38 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		<div className="relative h-full overflow-y-hidden">
 			<ChannelMessageLoadingIndicator isFetchingNextPage={isFetchingNextPage} isFetchingPreviousPage={isFetchingPreviousPage} />
 			<ChannelTypingIndicator channelId={props.channelId} />
-			<ol className="flex h-full flex-col overflow-x-hidden overflow-y-scroll pr-0 pb-7" ref={scroll} onScroll={onScroll}>
-				{scroll.current?.scrollHeight === scroll.current?.clientHeight && <div className="h-full shrink" />}
-				{sortedMessages.length === 0 && (
-					<div className="flex h-full w-full shrink-0 items-center justify-center">
-						<div className="flex items-center justify-center gap-x-2 rounded-lg bg-background p-2 pr-3 text-text italic underline">
-							<IconMingcuteLookDownFill className="size-10" />
-							<span>Empty</span>
-						</div>
-					</div>
-				)}
-				{!hasPreviousPage && sortedMessages.length !== 0 && (
-					<div className="flex h-20 shrink-0 flex-col justify-center">
-						<div className="ml-10 text-text/70">
-							The beginning of your chat with <span className="font-bold text-text/100">{channelName}</span>
-						</div>
-					</div>
-				)}
-				{sortedMessages.map((message, i) => (
-					<MessageWrapper
-						ref={setRef(message.id)}
-						key={message.preview ? message.timestamp : message.id}
-						renderInfo={messageRenderInfos[i]}
-						nextRenderInfo={messageRenderInfos[i + 1]}
-						lastRenderInfo={messageRenderInfos[i - 1]}
-						onVisibilityChanged={onMessageVisiblityChanged}
-					/>
-				))}
-			</ol>
+			<div className="h-full w-full overflow-x-hidden overflow-y-scroll" ref={scrollRef} onScroll={onScroll}>
+				<div className="flex min-h-full flex-col justify-end">
+					<ol className="min-h-0 overflow-hidden pr-0 pb-7" ref={listRef}>
+						{/* {scroll.current?.scrollHeight === scroll.current?.clientHeight && <div className="h-full shrink" />} */}
+						{sortedMessages.length === 0 && (
+							<div className="flex h-full w-full shrink-0 items-center justify-center">
+								<div className="flex items-center justify-center gap-x-2 rounded-lg bg-background p-2 pr-3 text-text italic underline">
+									<IconMingcuteLookDownFill className="size-10" />
+									<span>Empty</span>
+								</div>
+							</div>
+						)}
+						{!hasPreviousPage && sortedMessages.length !== 0 && (
+							<div className="flex h-20 shrink-0 flex-col justify-center">
+								<div className="ml-10 text-text/70">
+									The beginning of your chat with <span className="font-bold text-text/100">{channelName}</span>
+								</div>
+							</div>
+						)}
+						{sortedMessages.map((message, i) => (
+							<MessageProvider
+								ref={setRef(message.id)}
+								key={message.preview ? message.timestamp : message.id}
+								renderInfo={messageRenderInfos[i]}
+								nextRenderInfo={messageRenderInfos[i + 1]}
+								lastRenderInfo={messageRenderInfos[i - 1]}
+								onVisibilityChanged={onMessageVisiblityChanged}
+							/>
+						))}
+					</ol>
+				</div>
+			</div>
 		</div>
-	);
-}
-
-export const MessageContext = createContext<{
-	renderInfo: MessageRenderInfo;
-	nextRenderInfo?: MessageRenderInfo;
-	lastRenderInfo?: MessageRenderInfo;
-	onVisibilityChanged: (messageId: Snowflake, visible: boolean) => void;
-	ref: React.RefObject<HTMLLIElement | null>;
-}>(
-	// biome-ignore lint/style/noNonNullAssertion: <explanation>
-	undefined!,
-);
-
-function MessageWrapper(props: MessageRendererProps) {
-	return (
-		<MessageContext.Provider value={{ ...props }}>
-			{props.renderInfo.unread && !props.renderInfo.newDate && (
-				<li
-					className={clsx(
-						"pointer-events-none relative mr-10 ml-2 flex h-px shrink-0 items-center justify-center bg-error/75",
-						props.lastRenderInfo ? "my-1" : "mb-1",
-					)}
-				>
-					<div className="-mr-10 absolute right-0 z-10 flex w-10 items-center justify-center rounded-l-md bg-error/75 py-1 font-bold text-white text-xs uppercase">
-						new
-					</div>
-				</li>
-			)}
-			{!props.renderInfo.message.preview && props.renderInfo.newDate && (
-				<li
-					className={clsx(
-						"relative flex h-0 shrink-0 items-center justify-center text-center font-semibold text-xs",
-						props.lastRenderInfo ? "my-5" : "mt-2 mb-5",
-						props.renderInfo.unread
-							? "mr-10 ml-2 text-error/100 [border-top:thin_solid_rgb(var(--color-error)/0.75)]"
-							: "mx-2 text-text/70 [border-top:thin_solid_rgb(var(--color-text)/0.25)]",
-					)}
-				>
-					<span className={clsx("bg-tertiary px-2", props.renderInfo.unread && "ml-10")}>
-						{moment(props.renderInfo.message.timestamp).format("DD. MMMM YYYY")}
-					</span>
-					{props.renderInfo.unread && (
-						<div className="-mr-8 absolute right-0 flex w-10 items-center justify-center rounded-l-md bg-error/75 py-1 font-bold text-white text-xs uppercase">
-							new
-						</div>
-					)}
-				</li>
-			)}
-			<MessageRenderer />
-		</MessageContext.Provider>
 	);
 }
