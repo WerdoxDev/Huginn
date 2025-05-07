@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.21.0...server@v0.21.1) (2025-05-05)
+
+
+### Bug Fixes
+
+* **server:** users can create duplicate calls by requesting ringing again ([ac9a2c4](https://github.com/WerdoxDev/Huginn/commit/ac9a2c4273c0fbb07e80a3a25761ae0b93eab90e))
+
 ## [0.21.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.20.1...server@v0.21.0) (2025-04-14)
 
 
