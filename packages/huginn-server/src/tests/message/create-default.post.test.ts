@@ -179,37 +179,41 @@ describe("POST /api/channels/:channelId/messages", () => {
 		expectAttachmentExactSchema(result.attachments[1], result.id, result.channelId, "pixel2.png", 1, 1, "test2");
 	});
 
-	test("should create an embed from message content when the request is successful", async (done) => {
-		const [user, user2] = await createTestUsers(2);
-		const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
+	test(
+		"should generate embeds from message content (any url) when the request is successful",
+		async (done) => {
+			const [user, user2] = await createTestUsers(2);
+			const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
 
-		const { ws } = await getReadyWebSocket(user);
+			const { ws } = await getReadyWebSocket(user);
 
-		const result = (await testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", {
-			content: "https://huginn.dev",
-		})) as APIPostDefaultMessageResult;
+			const result = (await testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", {
+				content: "https://huginn.dev",
+			})) as APIPostDefaultMessageResult;
 
-		expectMessageExactSchema(result, MessageType.DEFAULT, undefined, channel.id, user, "https://huginn.dev", undefined);
+			expectMessageExactSchema(result, MessageType.DEFAULT, undefined, channel.id, user, "https://huginn.dev", undefined);
 
-		ws.onmessage = (event) => {
-			const data = JSON.parse(event.data);
-			if (testIsDispatch(data, "message_update")) {
-				expect(data.d.id).toBe(result.id);
-				expect(data.d.embeds).toBeArray();
-				expect(data.d.embeds).toHaveLength(1);
-				expectEmbedExactSchema(
-					data.d.embeds[0],
-					"rich",
-					"Huginn - Norse Chat App",
-					"https://huginn.dev/",
-					"A fast, customizable chat app with a touch of Norse mythology.",
-					undefined,
-					{ url: "https://huginn.dev/huginn-meta.png", width: 1150, height: 609 },
-				);
-				done();
-			}
-		};
-	});
+			ws.onmessage = (event) => {
+				const data = JSON.parse(event.data);
+				if (testIsDispatch(data, "message_update")) {
+					expect(data.d.id).toBe(result.id);
+					expect(data.d.embeds).toBeArray();
+					expect(data.d.embeds).toHaveLength(1);
+					expectEmbedExactSchema(
+						data.d.embeds[0],
+						"rich",
+						"Huginn - Norse Chat App",
+						"https://huginn.dev/",
+						"A fast, customizable chat app with a touch of Norse mythology.",
+						undefined,
+						{ url: "https://huginn.dev/huginn-meta.png", width: 1150, height: 609 },
+					);
+					done();
+				}
+			};
+		},
+		{ timeout: 10000 },
+	);
 
 	test("should return a message with manually added embeds when the request is successful", async () => {
 		const [user, user2] = await createTestUsers(2);

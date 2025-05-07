@@ -28,7 +28,7 @@ import { join } from "pathe";
 import { z } from "zod";
 import { envs } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { extractData, extractEmbedTags, extractLinks, getAttachmentUrl, verifyJwt } from "#utils/route-utils";
+import { extractData, extractEmbedTags, extractLinks, getAttachmentUrl, processAttachments, processEmbeds, verifyJwt } from "#utils/route-utils";
 import { cdnUpload } from "#utils/server-request";
 import type { DBAttachment, DBEmbed } from "#utils/types";
 import { validateEmbeds } from "#utils/validation";
@@ -121,62 +121,10 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 
 	const messageId = snowflake.generate(WorkerID.MESSAGE);
 
-	const processedAttachments: DBAttachment[] = [];
-	if (body.attachments) {
-		for (const attachment of body.attachments) {
-			const file = files[`files[${attachment.id}]`];
-			const fileArrayBuffer = await file.arrayBuffer();
-
-			const name = (await cdnUpload(CDNRoutes.uploadAttachment(channelId, messageId.toString()), {
-				files: [{ data: fileArrayBuffer, name: file.name, contentType: file.type }],
-			})) as string;
-
-			let dimensions: { width: number; height: number } | undefined;
-			if (isImageMediaType(file.type)) {
-				dimensions = await getImageData(fileArrayBuffer);
-			}
-			if (isVideoMediaType(file.type)) {
-				dimensions = await getVideoData(join(envs.FFMPEG_TEMP_DIR, file.name), fileArrayBuffer);
-			}
-
-			processedAttachments.push({
-				contentType: file.type,
-				description: attachment.description,
-				size: file.size,
-				filename: file.name,
-				flags: 0,
-				width: dimensions?.width,
-				height: dimensions?.height,
-				url: `attachments/${channelId}/${messageId}/${name}`,
-			});
-		}
-	}
+	const processedAttachments = await processAttachments(body.attachments, files, channelId, messageId.toString());
 
 	// Fetch image data from embeds
-	const processedEmbeds: DBEmbed[] = [];
-	if (body.embeds) {
-		for (const embed of body.embeds) {
-			let thumbnailData: { width: number; height: number } | undefined;
-			if (embed.thumbnail && (!embed.thumbnail.width || !embed.thumbnail.height)) {
-				thumbnailData = await getImageData(embed.thumbnail.url);
-			}
-
-			processedEmbeds.push({
-				title: embed.title,
-				url: embed.url,
-				description: embed.description,
-				timestamp: embed.timestamp,
-				type: embed.type,
-				thumbnail: thumbnailData
-					? {
-							url: embed.thumbnail?.url ?? "",
-							width: embed.thumbnail?.width ?? thumbnailData.width ?? 0,
-							height: embed.thumbnail?.height ?? thumbnailData.height ?? 0,
-						}
-					: undefined,
-			});
-		}
-	}
+	const processedEmbeds = await processEmbeds(body.embeds);
 
 	const dbMessage = idFix(
 		await prisma.message.createMessage(
@@ -261,7 +209,9 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 			return;
 		}
 
-		const updatedMessage = idFix(await prisma.message.updateMessage(dbMessage.id, undefined, embeds, undefined, { select: selectMessageDefaults }));
+		const updatedMessage = idFix(
+			await prisma.message.updateMessage(dbMessage.id, undefined, embeds, undefined, undefined, { select: selectMessageDefaults }),
+		);
 
 		dispatchToTopic(channelId, "message_update", {
 			...updatedMessage,

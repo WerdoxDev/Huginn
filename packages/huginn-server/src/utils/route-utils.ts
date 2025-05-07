@@ -1,13 +1,25 @@
-import { unauthorized } from "@huginn/backend-shared";
+import { type DBAttachment, type DBEmbed, getImageData, getVideoData, unauthorized } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import type { IdentityTokenPayload, TokenPayload, Unpacked } from "@huginn/shared";
+import {
+	type APIEmbed,
+	type APIPostAttachmentJSONBody,
+	CDNRoutes,
+	type IdentityTokenPayload,
+	type Snowflake,
+	type TokenPayload,
+	type Unpacked,
+	isImageMediaType,
+	isVideoMediaType,
+} from "@huginn/shared";
 import type { Endpoints } from "@octokit/types";
 import { createMiddleware } from "hono/factory";
 import { JSDOM } from "jsdom";
 import markdownit from "markdown-it";
+import { join } from "pathe";
 import * as semver from "semver";
 import { octokit } from "#setup";
 import { envs } from "#setup";
+import { cdnUpload } from "./server-request";
 import { verifyToken } from "./token-factory";
 
 export function verifyJwt(identity?: boolean) {
@@ -181,4 +193,74 @@ export async function extractEmbedTags(response: Response): Promise<Record<strin
 
 export function getAttachmentUrl(url: string) {
 	return url;
+}
+
+export async function processEmbeds(embeds?: APIEmbed[]) {
+	// Fetch image data from embeds
+	const processedEmbeds: DBEmbed[] = [];
+	if (embeds) {
+		for (const embed of embeds) {
+			let thumbnailData: { width: number; height: number } | undefined;
+			if (embed.thumbnail && (!embed.thumbnail.width || !embed.thumbnail.height)) {
+				thumbnailData = await getImageData(embed.thumbnail.url);
+			}
+
+			processedEmbeds.push({
+				title: embed.title,
+				url: embed.url,
+				description: embed.description,
+				timestamp: embed.timestamp,
+				type: embed.type,
+				thumbnail: thumbnailData
+					? {
+							url: embed.thumbnail?.url ?? "",
+							width: embed.thumbnail?.width ?? thumbnailData.width ?? 0,
+							height: embed.thumbnail?.height ?? thumbnailData.height ?? 0,
+						}
+					: undefined,
+			});
+		}
+	}
+
+	return processedEmbeds;
+}
+
+export async function processAttachments(
+	attachments: APIPostAttachmentJSONBody[] | undefined,
+	files: Record<string, File>,
+	channelId: Snowflake,
+	messageId: Snowflake,
+) {
+	const processedAttachments: DBAttachment[] = [];
+	if (attachments) {
+		for (const attachment of attachments) {
+			const file = files[`files[${attachment.id}]`];
+			const fileArrayBuffer = await file.arrayBuffer();
+
+			const name = (await cdnUpload(CDNRoutes.uploadAttachment(channelId, messageId), {
+				files: [{ data: fileArrayBuffer, name: file.name, contentType: file.type }],
+			})) as string;
+
+			let dimensions: { width: number; height: number } | undefined;
+			if (isImageMediaType(file.type)) {
+				dimensions = await getImageData(fileArrayBuffer);
+			}
+			if (isVideoMediaType(file.type)) {
+				dimensions = await getVideoData(join(envs.FFMPEG_TEMP_DIR, file.name), fileArrayBuffer);
+			}
+
+			processedAttachments.push({
+				contentType: file.type,
+				description: attachment.description,
+				size: file.size,
+				filename: file.name,
+				flags: 0,
+				width: dimensions?.width,
+				height: dimensions?.height,
+				url: `attachments/${channelId}/${messageId}/${name}`,
+			});
+		}
+	}
+
+	return processedAttachments;
 }
