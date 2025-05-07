@@ -149,6 +149,7 @@ export const messagesExtension = Prisma.defineExtension({
 				id: Snowflake,
 				content?: string,
 				embeds?: DBEmbed[],
+				attachments?: DBAttachment[],
 				call?: { participants: Snowflake[]; setEndedTimestamp: boolean },
 				args?: Args,
 			) {
