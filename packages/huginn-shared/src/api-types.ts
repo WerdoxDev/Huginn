@@ -266,8 +266,8 @@ export type APIThumbnail = {
 
 export type APIVideo = {
 	url: string;
-	width?: number;
-	height?: number;
+	width: number;
+	height: number;
 };
 
 export type APIPostAttachmentJSONBody = {
@@ -289,6 +289,14 @@ export type APIAttachment = {
 };
 
 export type APIPostDefaultMessageResult = APIDefaultMessage;
+export type APIPatchMessageResult = APIDefaultMessage;
+
+export type APIPatchMessageJSONBody = {
+	content?: string;
+	embeds?: APIEmbed;
+	attachments?: APIPostAttachmentJSONBody[];
+};
+
 export type APIGetMessageByIdResult = APIMessage;
 export type APIGetChannelMessagesResult = APIMessage[];
 export type APIRelease = {
