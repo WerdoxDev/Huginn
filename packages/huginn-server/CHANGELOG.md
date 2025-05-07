@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.21.1...server@v0.22.0) (2025-05-07)
+
+
+### Features
+
+* **server:** add message editing route + extensive edit testing ([566b58d](https://github.com/WerdoxDev/Huginn/commit/566b58d9ca71c114a7c45009109942ca0ce03e91))
+
 ## [0.21.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.21.0...server@v0.21.1) (2025-05-05)
 
 

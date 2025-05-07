@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.16.0...shared@v0.17.0) (2025-05-07)
+
+
+### Features
+
+* **shared:** add message editing api types ([c04b6d4](https://github.com/WerdoxDev/Huginn/commit/c04b6d4f09ac9c90c16fa2a5bc650269fe58c434))
+
 ## [0.16.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.15.0...shared@v0.16.0) (2025-04-30)
 
 
