@@ -3,17 +3,6 @@ import { useMutation } from "@tanstack/react-query";
 import type { UpdateInfo } from "electron-updater";
 import { useEffect, useRef, useState } from "react";
 
-type UpdateProgress = {
-	downloaded: number;
-	contentLength: number;
-};
-
-// type UpdateInfo = {
-// 	body: string;
-// 	currentVersion: string;
-// 	version: string;
-// };
-
 export function useUpdater(onNotAvailable?: () => void, onTry?: () => void, onFail?: () => void, onError?: () => void) {
 	const huginnWindow = useHuginnWindow();
 	const [progress, setProgress] = useState(0);
@@ -25,7 +14,12 @@ export function useUpdater(onNotAvailable?: () => void, onTry?: () => void, onFa
 		mutationKey: ["update"],
 		async mutationFn() {
 			onTry?.();
+
 			const result = await window.electronAPI.checkUpdate();
+			if (result) {
+				localStorage.setItem("release-date", result?.releaseDate);
+			}
+
 			if (!result || result.version === huginnWindow.version) {
 				onNotAvailable?.();
 			} else {

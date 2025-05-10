@@ -22,26 +22,26 @@
 @font-face {
 	font-family: "Ubuntu Mono";
 	src: url("assets/UbuntuMono-Regular.ttf") format("TrueType");
-   font-style: normal;
+	font-style: normal;
 }
 
 @font-face {
 	font-family: "Ubuntu Mono";
 	src: url("assets/UbuntuMono-Bold.ttf") format("TrueType");
-   font-weight: bold;
+	font-weight: bold;
 }
 
 @font-face {
 	font-family: "Ubuntu Mono";
 	src: url("assets/UbuntuMono-Italic.ttf") format("TrueType");
-   font-style: italic;
+	font-style: italic;
 }
 
 @font-face {
 	font-family: "Ubuntu Mono";
 	src: url("assets/UbuntuMono-BoldItalic.ttf") format("TrueType");
-   font-weight: bold;
-   font-style: italic;
+	font-weight: bold;
+	font-style: italic;
 }
 
 :root {
@@ -92,22 +92,21 @@ body,
 	animation: loading 1s infinite linear;
 }
 
-.drag-region{
-   app-region: drag;
+.drag-region {
+	app-region: drag;
 }
 
-.no-drag-region{
-   app-region: no-drag;
+.no-drag-region {
+	app-region: no-drag;
 }
 
 video::-webkit-media-controls {
-   display: none !important;
- }
-
+	display: none !important;
+}
 
 ::-webkit-scrollbar {
 	@apply w-4;
-   @apply h-4;
+	@apply h-4;
 }
 
 ::-webkit-scrollbar-track {
@@ -127,27 +126,27 @@ video::-webkit-media-controls {
 }
 
 .scroll-alternative2::-webkit-scrollbar-track {
-   @apply bg-background/70 rounded-full border-4 border-transparent border-solid bg-clip-padding;
+	@apply bg-background/70 rounded-full border-4 border-transparent border-solid bg-clip-padding;
 }
 
 .scroll-alternative2::-webkit-scrollbar-thumb {
-   @apply bg-tertiary rounded-full border-4 border-transparent border-solid bg-clip-padding;
+	@apply bg-tertiary rounded-full border-4 border-transparent border-solid bg-clip-padding;
 }
 
-input[type="range"]{
-   appearance: none;
-   background: transparent;
-   cursor: pointer;
+input[type="range"] {
+	appearance: none;
+	background: transparent;
+	cursor: pointer;
 }
 
 input[type="range"]::-webkit-slider-runnable-track {
-   @apply h-1.5 bg-accent/50 hover:scale-y-125 transition-transform;
- }
+	@apply h-1.5 bg-accent/50 hover:scale-y-125 transition-transform;
+}
 
- input[type="range"]::-moz-range-track {
-   background: #053a5f;
-   height: 0.5rem;
- }
+input[type="range"]::-moz-range-track {
+	background: #053a5f;
+	height: 0.5rem;
+}
 
 input::-ms-reveal,
 input::-ms-clear {
@@ -186,139 +185,204 @@ input::-ms-clear {
 }
 
 @keyframes fade-in {
-   from {opacity: 0;}
+	from {
+		opacity: 0;
+	}
 }
 
-@keyframes fade-out{
-   to {opacity: 0;}
+@keyframes fade-out {
+	to {
+		opacity: 0;
+	}
 }
 
 @keyframes fade-in-bg {
-   from {@apply opacity-0}
+	/* from {@apply opacity-0} */
 }
 
-@keyframes fade-out{
-   to {opacity: 0;}
+@keyframes fade-out {
+	to {
+		opacity: 0;
+	}
 }
 
-
-@keyframes scale-down{
-   to {transform: scale(0.75, 0.75);}
+@keyframes scale-down {
+	to {
+		transform: scale(0.75, 0.75);
+	}
 }
 
-@keyframes scale-up{
-   from {transform: scale(0.75, 0.75);}
+@keyframes scale-up {
+	from {
+		transform: scale(0.75, 0.75);
+	}
 }
 
-@keyframes slide-to-right{
-   to {transform: translateX(100%);}
+@keyframes slide-to-right {
+	to {
+		transform: translateX(100%);
+	}
 }
 
-@keyframes slide-to-left{
-   to {transform: translateX(-100%);}
+@keyframes slide-to-left {
+	to {
+		transform: translateX(-100%);
+	}
 }
 
-@keyframes scale-up-large{
-   to {transform: scale(10,10);}
+@keyframes scale-up-large {
+	to {
+		transform: scale(10, 10);
+	}
 }
 
-@keyframes scale-down-large{
-   from {transform: scale(10,10);}
+@keyframes scale-down-large {
+	from {
+		transform: scale(10, 10);
+	}
 }
 
 ::view-transition-old(auth) {
-   animation: fade-out 500ms both;
-   mix-blend-mode: plus-lighter;
+	animation: fade-out 500ms both;
+	mix-blend-mode: plus-lighter;
 }
 
 ::view-transition-new(auth) {
-   animation: fade-in 500ms both;
-   mix-blend-mode: plus-lighter;
+	animation: fade-in 500ms both;
+	mix-blend-mode: plus-lighter;
 }
 
-::view-transition-old(auth-background){
-   display: none;
+::view-transition-old(auth-background) {
+	display: none;
 }
 
-::view-transition-new(auth-background){
-   animation: none;
+::view-transition-new(auth-background) {
+	animation: none;
 }
 
-#auth-form{
-   animation: fade-in 350ms both, scale-up 350ms both;
+#auth-form {
+	animation: fade-in 350ms both, scale-up 350ms both;
 }
 
-#auth-form-hidden{
-   animation: fade-out 250ms both, scale-down 250ms both;
+#auth-form-hidden {
+	animation: fade-out 250ms both, scale-down 250ms both;
 }
 
-html::view-transition-group(root),html::view-transition-new(root), html::view-transition-old(root){
-   animation: none;
+html::view-transition-group(root),
+html::view-transition-new(root),
+html::view-transition-old(root) {
+	animation: none;
 }
 
 ::view-transition-new(auth-login),
 ::view-transition-new(auth-register),
 ::view-transition-new(auth-oauth-redirect) {
-   animation: fade-in 350ms both, scale-up 350ms both;
+	animation: fade-in 350ms both, scale-up 350ms both;
 }
 
 ::view-transition-old(auth-login),
 ::view-transition-old(auth-register),
 ::view-transition-old(auth-oauth-redirect) {
-   animation: fade-out 250ms both, scale-down 250ms both;
+	animation: fade-out 250ms both, scale-down 250ms both;
 }
 
 .hljs-comment {
-   font-style: italic;
+	font-style: italic;
 }
 
 .hljs-keyword {
-   font-style: italic;
+	font-style: italic;
 }
 
 .hljs-emphasis {
-   font-style: italic;
+	font-style: italic;
 }
 
-
 .range-container {
-   width: 300px;
-   margin: 50px auto;
-   text-align: center;
- }
+	width: 300px;
+	margin: 50px auto;
+	text-align: center;
+}
 
- .range {
-   position: relative;
-   width: 100%;
-   height: 10px;
-   background-color: #eee;
-   border-radius: 5px;
-   cursor: pointer;
- }
+.range {
+	position: relative;
+	width: 100%;
+	height: 10px;
+	background-color: #eee;
+	border-radius: 5px;
+	cursor: pointer;
+}
 
- .range-track {
-   position: absolute;
-   left: 0;
-   top: 0;
-   height: 100%;
-   width: 50%; /* Initial value */
-   background-color: #4caf50;
-   border-radius: 5px;
- }
+.range-track {
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 100%;
+	width: 50%; /* Initial value */
+	background-color: #4caf50;
+	border-radius: 5px;
+}
 
- .range-thumb {
-   position: absolute;
-   top: 50%;
-   width: 20px;
-   height: 20px;
-   background-color: #fff;
-   border: 2px solid #4caf50;
-   border-radius: 50%;
-   transform: translate(-50%, -50%);
-   z-index: 1;
- }
+.range-thumb {
+	position: absolute;
+	top: 50%;
+	width: 20px;
+	height: 20px;
+	background-color: #fff;
+	border: 2px solid #4caf50;
+	border-radius: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 1;
+}
 
- .range-value {
-   margin-top: 10px;
-   font-size: 16px;
- }
+.range-value {
+	margin-top: 10px;
+	font-size: 16px;
+}
+
+.news-markdown {
+	@apply text-text/80;
+}
+.news-markdown h1 {
+	@apply text-2xl;
+}
+.news-markdown h2 {
+	@apply text-xl;
+}
+.news-markdown h3 {
+	@apply text-lg;
+}
+
+.news-markdown h1,
+.news-markdown h2,
+.news-markdown h3 {
+	@apply text-success flex items-center whitespace-nowrap uppercase;
+}
+
+.news-markdown h1::after,
+.news-markdown h2::after,
+.news-markdown h3::after {
+	content: "";
+	@apply h-0.5 w-full ml-2 bg-success/80;
+}
+
+.news-markdown img {
+	@apply rounded-lg shadow-md border-2 border-dashed border-white/50;
+}
+
+.news-markdown ul {
+	@apply ml-2;
+	list-style-type: disc;
+}
+
+.news-markdown li {
+	@apply ml-6;
+}
+
+.news-markdown li::marker {
+	@apply text-white/50 text-xl;
+}
+
+.news-markdown p:has(img) + h3 {
+	@apply mt-5;
+}

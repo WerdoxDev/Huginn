@@ -61,12 +61,6 @@ export default function AppLayout() {
 function MainRenderer(props: { children: ReactNode }) {
 	const huginnWindow = useHuginnWindow();
 
-	const { updateModals } = useModals();
-
-	useEffect(() => {
-		// dispatch({ news: { isOpen: true } });
-	}, []);
-
 	return (
 		<div className={`flex h-full flex-col overflow-hidden ${huginnWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
 			{window.location.pathname !== "/splashscreen" && huginnWindow.environment === "desktop" && <TitleBar />}
