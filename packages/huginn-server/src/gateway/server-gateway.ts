@@ -71,7 +71,7 @@ export class ServerGateway {
 
 		if (session?.sessionInfo) {
 			this.presenceManeger.removeUserPresence(session.sessionInfo.user.id);
-			this.voiceManager.updateVoiceState(session.sessionInfo.user.id, null, null);
+			this.voiceManager.updateVoiceState(session.sessionInfo.user.id, null, null, false, false);
 		}
 
 		session?.dispose();
@@ -316,9 +316,10 @@ export class ServerGateway {
 			return;
 		}
 
-		this.voiceManager.updateVoiceState(user.id, data.d.channelId, data.d.guildId);
+		const previousState = this.voiceManager.getVoiceState(user.id);
+		this.voiceManager.updateVoiceState(user.id, data.d.channelId, data.d.guildId, data.d.selfMute, data.d.selfDeaf);
 
-		if (data.d.channelId) {
+		if (previousState?.channelId !== data.d.channelId) {
 			const token = await createVoiceToken(user.id);
 			dispatchToTopic(user.id, "voice_server_update", { token });
 		}

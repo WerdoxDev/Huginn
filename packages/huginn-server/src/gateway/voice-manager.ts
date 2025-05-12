@@ -35,15 +35,15 @@ export class VoiceManager {
 		}
 	}
 
-	public updateVoiceState(userId: Snowflake, channelId: Snowflake | null, guildId: Snowflake | null) {
+	public updateVoiceState(userId: Snowflake, channelId: Snowflake | null, guildId: Snowflake | null, selfMute: boolean, selfDeaf: boolean) {
 		const sendChannelId = this.voiceStates.get(userId)?.channelId;
 
 		const voiceState: GatewayVoiceState = {
 			userId: userId,
 			channelId: channelId,
 			guildId: guildId,
-			selfDeaf: false,
-			selfMute: false,
+			selfMute: selfMute,
+			selfDeaf: selfDeaf,
 			selfStream: false,
 			selfVideo: false,
 		};
@@ -67,8 +67,7 @@ export class VoiceManager {
 
 		if (voiceState.channelId) {
 			dispatchToTopic(voiceState.channelId, "voice_state_update", voiceState);
-		}
-		if (sendChannelId) {
+		} else if (sendChannelId) {
 			dispatchToTopic(sendChannelId, "voice_state_update", voiceState);
 		}
 	}
@@ -95,6 +94,11 @@ export class VoiceManager {
 		}
 
 		return voiceStates;
+	}
+
+	public getVoiceState(userId: Snowflake) {
+		const voiceState = this.voiceStates.values().find((x) => x.userId === userId);
+		return voiceState;
 	}
 
 	private checkForEmptyCalls(channelId: Snowflake) {
