@@ -50,8 +50,9 @@ export type VoiceOperationDatas = {
 
 export type VoiceEvents = {
 	transport_ready: { channelId: Snowflake };
-	producer_created: { consumerId: string; producerId: string; track: MediaStreamTrack; producerUserId: Snowflake };
-	producer_removed: { producerId: string };
+	local_producer_created: { producerId: string };
+	consumer_created: { consumerId: string; producerId: string; track: MediaStreamTrack; producerUserId: Snowflake };
+	producer_removed: { producerId: string; userId: Snowflake };
 	connected: undefined;
 	disconnected: undefined;
 	ping: { rtt: number };
@@ -151,5 +152,6 @@ export type VoiceConsumerResumedData = {
 
 export type VoicePeerLeftData = {
 	peerId: string;
+	userId: Snowflake;
 	producerIds: string[];
 };
