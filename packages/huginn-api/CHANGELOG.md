@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.12.0...api@v0.13.0) (2025-05-12)
+
+
+### Features
+
+* **api:** add update voice state function and bunch of utility for muting/pausing media ([3fd4a13](https://github.com/WerdoxDev/Huginn/commit/3fd4a1319ed9da3dec36685439bcb401e39d2563))
+
 ## [0.12.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.11.1...api@v0.12.0) (2025-04-30)
 
 

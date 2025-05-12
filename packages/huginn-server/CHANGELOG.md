@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.22.0...server@v0.22.1) (2025-05-12)
+
+
+### Bug Fixes
+
+* **server:** actually pass the selfMute and selfDeaf parameters to the voice state update function ([e4b4229](https://github.com/WerdoxDev/Huginn/commit/e4b4229f92ca93f9de4de833d09c6add9ca1597c))
+
 ## [0.22.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.21.1...server@v0.22.0) (2025-05-07)
 
 

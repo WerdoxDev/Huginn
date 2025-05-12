@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.2.0...voice@v0.3.0) (2025-05-12)
+
+
+### Features
+
+* **voice:** send the userid of the user who left ([0ad7650](https://github.com/WerdoxDev/Huginn/commit/0ad76504b7c1f1898480b0b83df575f2ed22b560))
+
 ## [0.2.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.1.0...voice@v0.2.0) (2025-04-30)
 
 
