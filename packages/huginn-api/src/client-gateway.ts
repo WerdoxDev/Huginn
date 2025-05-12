@@ -161,6 +161,38 @@ export class Gateway {
 		};
 
 		this.send(updateVoiceStateData);
+
+		this.client.voice.close();
+	}
+
+	public updateVoiceState(selfMute: boolean, selfDeaf: boolean): void {
+		if (!this.client.voice.connectionInfo) {
+			return;
+		}
+
+		const updateVoiceStateData: GatewayUpdateVoiceState = {
+			op: GatewayOperations.VOICE_STATE_UPDATE,
+			d: {
+				guildId: this.client.voice.connectionInfo?.guildId,
+				channelId: this.client.voice.connectionInfo?.channelId,
+				selfMute: selfMute,
+				selfDeaf: selfDeaf,
+			},
+		};
+
+		this.client.gateway.send(updateVoiceStateData);
+
+		if (selfMute) {
+			this.client.voice.muteAudio();
+		} else {
+			this.client.voice.unmuteAudio();
+		}
+
+		if (selfDeaf) {
+			this.client.voice.muteConsumers();
+		} else {
+			this.client.voice.unmuteConsumers();
+		}
 	}
 
 	private startListening() {

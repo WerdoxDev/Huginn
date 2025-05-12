@@ -32,6 +32,7 @@ export class Voice {
 	private sequence?: number;
 	private readonly emitter = new EventEmitterWithHistory();
 
+	public localVoiceState: { audioPaused: boolean; audioMuted: boolean };
 	public audioProducer?: Producer;
 	public connectionInfo?: { token: string; channelId: Snowflake; guildId: Snowflake | null };
 	public sendTransport?: Transport;
@@ -67,6 +68,7 @@ export class Voice {
 
 	public constructor(client: HuginnClient, options?: Partial<VoiceOptions>) {
 		this.options = { ...defaultClientOptions.voice, ...options };
+		this.localVoiceState = { audioMuted: false, audioPaused: true };
 		this.client = client;
 		this.consumers = new Map();
 	}
@@ -88,7 +90,7 @@ export class Voice {
 
 	public async startStreaming(videoTrack?: MediaStreamTrack, audioTrack?: MediaStreamTrack): Promise<void> {
 		if (videoTrack) {
-			const videoProducer = await this.sendTransport?.produce({ track: videoTrack, disableTrackOnPause: false, zeroRtpOnPause: false });
+			const videoProducer = await this.sendTransport?.produce({ track: videoTrack });
 		}
 
 		if (audioTrack) {
@@ -98,6 +100,56 @@ export class Voice {
 				this.audioProducer = await this.sendTransport?.produce({
 					track: audioTrack,
 				});
+			}
+		}
+	}
+
+	public muteAudio(): void {
+		this.localVoiceState.audioMuted = true;
+		this.audioProducer?.pause();
+	}
+
+	public unmuteAudio(): void {
+		this.localVoiceState.audioMuted = false;
+		if (!this.localVoiceState.audioPaused && this.audioProducer?.paused) {
+			this.audioProducer?.resume();
+		}
+	}
+
+	public pauseMedia(type: "audio" | "video"): void {
+		if (type === "audio") {
+			this.localVoiceState.audioPaused = true;
+			if (!this.audioProducer?.paused) {
+				this.audioProducer?.pause();
+			}
+		}
+	}
+
+	public resumeMedia(type: "audio" | "video"): boolean {
+		if (type === "audio") {
+			this.localVoiceState.audioPaused = false;
+
+			if (!this.localVoiceState?.audioMuted && this.audioProducer?.paused) {
+				this.audioProducer.resume();
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public muteConsumers(): void {
+		for (const consumer of this.consumers.values()) {
+			if (!consumer.paused) {
+				consumer.pause();
+			}
+		}
+	}
+
+	public unmuteConsumers(): void {
+		for (const consumer of this.consumers.values()) {
+			if (consumer.paused) {
+				consumer.resume();
 			}
 		}
 	}
@@ -170,6 +222,7 @@ export class Voice {
 			case VoiceOperations.PRODUCER_CREATED: {
 				const created = data.d as VoiceProducerCreatedData;
 				console.log(`[Voice] Producer created ${created.producerId}`);
+				this.emit("local_producer_created", { producerId: created.producerId });
 				break;
 			}
 			case VoiceOperations.NEW_PRODUCER: {
@@ -200,12 +253,13 @@ export class Voice {
 	}
 
 	private handlePeerLeft(data: VoicePeerLeftData) {
+		console.log("left", data);
 		for (const producerId of data.producerIds) {
 			const consumer = Array.from(this.consumers.values()).find((c) => c.producerId === producerId);
 			if (consumer) {
 				consumer.close();
 				this.consumers.delete(consumer.id);
-				this.emit("producer_removed", { producerId });
+				this.emit("producer_removed", { producerId, userId: data.userId });
 			}
 		}
 	}
@@ -224,7 +278,7 @@ export class Voice {
 
 		this.consumers.set(consumer.id, consumer);
 
-		this.emit("producer_created", {
+		this.emit("consumer_created", {
 			track: consumer.track,
 			consumerId: data.consumerId,
 			producerId: data.producerId,
