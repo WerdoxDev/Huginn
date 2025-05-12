@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.33.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.32.3...app@v0.33.0) (2025-05-12)
+
+
+### Features
+
+* **app:** add news modal ([ff266a7](https://github.com/WerdoxDev/Huginn/commit/ff266a7d6bbb9105c1409e889b16ee01b0cc4681))
+* **app:** add voice muting and deafening functionality with fully working pausing & resuming ([ba2ddc2](https://github.com/WerdoxDev/Huginn/commit/ba2ddc24453b98d0e5104d77c64a01b3b9ba447a))
+
 ## [0.32.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.32.2...app@v0.32.3) (2025-05-05)
 
 

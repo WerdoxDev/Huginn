@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.1](https://github.com/WerdoxDev/Huginn/compare/shared@v0.17.0...shared@v0.17.1) (2025-05-12)
+
+
+### Bug Fixes
+
+* **shared:** a bit of name changes to make more sense ([3b21b4c](https://github.com/WerdoxDev/Huginn/commit/3b21b4cee876f3d008ad368dae9c2aee6b7896d1))
+
 ## [0.17.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.16.0...shared@v0.17.0) (2025-05-07)
 
 
