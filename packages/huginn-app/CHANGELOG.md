@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.33.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.33.0...app@v0.33.1) (2025-05-12)
+
+
+### Bug Fixes
+
+* **app:** voice server wrong url ([a027052](https://github.com/WerdoxDev/Huginn/commit/a0270520da8a3be5365a17309ae98d905e6d46ec))
+
 ## [0.33.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.32.3...app@v0.33.0) (2025-05-12)
 
 
