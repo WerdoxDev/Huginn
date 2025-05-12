@@ -8,11 +8,11 @@ import { NavLink } from "react-router";
 import Tooltip from "./tooltip/Tooltip";
 
 export default function VoiceStatus() {
-	const { channelId } = useVoiceStore();
+	const { voiceState } = useVoiceStore();
 	const client = useClient();
 	const { user } = useThisUser();
 	const [state, setState] = useState<"rtc" | "connected">("rtc");
-	const channelName = useChannelName(channelId);
+	const channelName = useChannelName(voiceState.channelId);
 	const [rtt, setRtt] = useState(0);
 
 	const latencyColor = useMemo(() => {
@@ -31,7 +31,7 @@ export default function VoiceStatus() {
 
 	useEffect(() => {
 		setState("rtc");
-	}, [channelId]);
+	}, [voiceState.channelId]);
 
 	useEffect(() => {
 		setState(client.voice.sendTransport ? "connected" : "rtc");
@@ -56,11 +56,10 @@ export default function VoiceStatus() {
 	}, []);
 
 	function disconnect() {
-		client.voice.close();
 		client.gateway.disconnectFromVoice();
 	}
 
-	if (!user || !channelId) {
+	if (!user || !voiceState.channelId) {
 		return;
 	}
 
@@ -83,7 +82,7 @@ export default function VoiceStatus() {
 							{state === "rtc" ? "RTC Signaling" : "Connected"}
 						</div>
 					</div>
-					<NavLink prefetch="intent" to={`/channels/@me/${channelId}`} className="ml-7 text-text/70 text-xs hover:underline">
+					<NavLink prefetch="intent" to={`/channels/@me/${voiceState.channelId}`} className="ml-7 text-text/70 text-xs hover:underline">
 						{channelName}
 					</NavLink>
 				</div>

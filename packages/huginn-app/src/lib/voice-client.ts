@@ -78,7 +78,6 @@ export class VoiceInputDevice {
 	}
 }
 
-// const audioLevel = new AudioLevelChecker();
 let inputDevice: VoiceInputDevice;
 let inputThreshold = 0;
 
@@ -102,13 +101,12 @@ export function listenToVoiceEvents() {
 		await startVoiceStreaming();
 	});
 
-	const unlisten2 = client.voice.listen("producer_created", (d) => {
+	const unlisten2 = client.voice.listen("consumer_created", (d) => {
 		const remoteStream = new MediaStream([d.track]);
 
 		const audioLevel = new AudioLevelChecker();
 		audioLevel.startChecking(remoteStream);
 		audioLevel.on("audio-level", (db: number) => {
-			const voice = voiceStore.getState();
 			const speaking = db > -100;
 			voiceStore.getState().updateSpeakingState(d.producerUserId, speaking);
 		});
@@ -132,6 +130,7 @@ export function listenToVoiceEvents() {
 
 	const unlisten4 = client.voice.listen("disconnected", () => {
 		voiceStore.getState().clearRemoteSources();
+		voiceStore.getState().clearSpeakingStates();
 	});
 
 	const unlisten5 = settingsStore.subscribe(async (s, old) => {
@@ -146,12 +145,24 @@ export function listenToVoiceEvents() {
 		}
 	});
 
+	// pause audio immidiately after the local producer is created
+	const unlisten6 = client.voice.listen("local_producer_created", (d) => {
+		if (client.voice.localVoiceState.audioPaused) {
+			client.voice.pauseMedia("audio");
+		}
+
+		if (client.voice.localVoiceState.audioMuted) {
+			client.voice.muteAudio();
+		}
+	});
+
 	return () => {
 		unlisten();
 		unlisten2();
 		unlisten3();
 		unlisten4();
 		unlisten5();
+		unlisten6();
 	};
 }
 
@@ -170,7 +181,7 @@ async function startVoiceStreaming() {
 
 const tolerance = 0;
 let timeout: number | undefined;
-let lastState = false;
+let lastState = true;
 function onAudioLevel(db: number) {
 	const userId = client.user?.id ?? "";
 	if (db > inputThreshold) {
@@ -183,17 +194,18 @@ function onAudioLevel(db: number) {
 		clearTimeout(timeout);
 		timeout = window.setTimeout(() => {
 			if (!lastState) {
-				client.voice.audioProducer?.pause();
+				client.voice.pauseMedia("audio");
 				voiceStore.getState().updateSpeakingState(userId, false);
 			}
 			timeout = undefined;
 		}, 500);
 
 		if (client.voice.audioProducer?.paused) {
-			client.voice.audioProducer?.resume();
-			voiceStore.getState().updateSpeakingState(userId, true);
+			if (client.voice.resumeMedia("audio")) {
+				voiceStore.getState().updateSpeakingState(userId, true);
+			}
 		}
-	} else if (db <= inputThreshold - tolerance && !client.voice.audioProducer?.paused) {
+	} else if (db <= inputThreshold - tolerance) {
 		lastState = false;
 	}
 }

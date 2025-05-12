@@ -1,7 +1,7 @@
 class VolumeProcessor extends AudioWorkletProcessor {
 	constructor() {
 		super();
-		this._lastDb = 0; // Initialize it super low
+		this._lastDb = -100; // Initialize it super low
 		this._smoothingFactor = 0.8; // Between 0 and 1. Higher = smoother but more delayed
 	}
 
@@ -26,6 +26,7 @@ class VolumeProcessor extends AudioWorkletProcessor {
 			// console.log(this._lastDb);
 
 			this.port.postMessage({ db: this._lastDb });
+			// this.port.postMessage({ db: db });
 		}
 
 		return true;

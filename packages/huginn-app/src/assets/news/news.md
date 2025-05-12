@@ -1,11 +1,9 @@
-### **Call Feature!**
+A very requested feature for calls... DRUM ROLLLLLLL
 
-- Group and direct channel calls
+...
 
-![call](news/call.png)
+### **Muting and Deafening**
 
-### **Audio Settings**
+- Mute or deafen yourself in a group call!
 
-- New **Audio** section in settings
-
-![audio](news/audio.png)
+![call](news/image.png)

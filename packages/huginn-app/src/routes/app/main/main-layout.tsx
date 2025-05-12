@@ -3,7 +3,7 @@ import WebsocketProviders from "@components/websocket/WebsocketProviders";
 import { useAuthBackground } from "@contexts/authBackgroundContext";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
-import { useEffect, useLayoutEffect } from "react";
+import { useEffect } from "react";
 import { Outlet, useViewTransitionState } from "react-router";
 
 export default function MainLayout() {

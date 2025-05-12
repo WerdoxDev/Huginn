@@ -211,7 +211,6 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		if (!scrollRef.current || sortedMessages.length === 0) return;
 
 		if (shouldScrollOnNextRender.current) {
-			console.log(shouldScrollOnNextRender.current);
 			scrollDown();
 			shouldScrollOnNextRender.current = false;
 		}

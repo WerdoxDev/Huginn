@@ -1,5 +1,5 @@
 import type { AppMessage } from "@/types";
-import type { HuginnClient } from "@huginn/api";
+import { ClientReadyState, type HuginnClient } from "@huginn/api";
 import { type APIGetUserChannelsResult, type Snowflake, omit, resolveImage } from "@huginn/shared";
 import { type QueryClient, infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { convertToAppDirectChannel, convertToAppMessage, convertToAppRelationship } from "./utils";

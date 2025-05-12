@@ -8,8 +8,7 @@ import { createStore, useStore } from "zustand";
 import { combine, devtools } from "zustand/middleware";
 
 const initialStore = () => ({
-	channelId: undefined as Snowflake | undefined,
-	guildId: undefined as Snowflake | undefined,
+	voiceState: {} as { channelId?: Snowflake; guildId?: Snowflake; selfMute: boolean; selfDeaf: boolean },
 	voiceStates: [] as Array<GatewayVoiceState>,
 	callStates: [] as Array<GatewayCallState>,
 	remoteSources: [] as Array<{
@@ -28,7 +27,10 @@ type StoreType = ReturnType<typeof initialStore>;
 const store = createStore(
 	devtools(
 		combine(initialStore(), (set, get) => ({
-			setVoiceChannel: (channelId?: Snowflake, guildId?: Snowflake) => set({ channelId, guildId }),
+			setVoiceChannel: (channelId?: Snowflake, guildId?: Snowflake) =>
+				set((state) => ({ voiceState: { ...state.voiceState, channelId, guildId } })),
+			updateSelfVoiceState: (selfMute: boolean, selfDeaf: boolean) =>
+				set((state) => ({ voiceState: { ...state.voiceState, selfMute, selfDeaf } })),
 			updateVoiceState: (
 				channelId: Snowflake,
 				guildId: Snowflake | null,
@@ -93,6 +95,7 @@ const store = createStore(
 					}),
 				),
 			removeSpeakingState: (userId: Snowflake) => set((state) => ({ speakingStates: state.speakingStates.filter((x) => x.userId !== userId) })),
+			clearSpeakingStates: () => set({ speakingStates: [] }),
 		})),
 		{ name: "Voice" },
 	),
@@ -118,9 +121,20 @@ export function initializeVoice(queryClient: QueryClient) {
 	});
 
 	const unlisten5 = client.gateway.listen("voice_state_update", (d) => {
+		// our user's voice state update
 		if (d.userId === userStore.getState().user?.id) {
 			store.getState().setVoiceChannel(d.channelId ?? undefined, d.guildId ?? undefined);
+			store.getState().updateSelfVoiceState(d.selfMute, d.selfDeaf);
+
+			// set speaking to false when we mute in the middle of speaking
+			if (d.selfMute) {
+				store.getState().updateSpeakingState(d.userId, false);
+				// set speaking to trye when we unmute in the middle of speaking
+			} else if (!client.voice.localVoiceState.audioPaused) {
+				store.getState().updateSpeakingState(d.userId, true);
+			}
 		}
+
 		if (d.channelId) {
 			store.getState().updateVoiceState(d.channelId, d.guildId, d.userId, d.selfMute, d.selfDeaf, d.selfVideo, d.selfStream);
 		} else {
