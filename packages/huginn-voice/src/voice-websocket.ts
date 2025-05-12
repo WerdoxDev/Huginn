@@ -56,7 +56,10 @@ export class VoiceWebSocket {
 			const producerIds = Array.from(rtcPeer.producers.values().map((x) => x.id));
 
 			for (const [otherPeerId] of router.peers) {
-				const peerLeftData: VoicePayload<VoiceOperations.PEER_LEFT> = { op: VoiceOperations.PEER_LEFT, d: { peerId: peer.id, producerIds } };
+				const peerLeftData: VoicePayload<VoiceOperations.PEER_LEFT> = {
+					op: VoiceOperations.PEER_LEFT,
+					d: { peerId: peer.id, producerIds, userId: rtcPeer.userId },
+				};
 				ws.publish(otherPeerId, JSON.stringify(peerLeftData));
 			}
 
