@@ -32,8 +32,10 @@ export class Voice {
 	private sequence?: number;
 	private readonly emitter = new EventEmitterWithHistory();
 
-	public localVoiceState: { audioPaused: boolean; audioMuted: boolean };
-	public audioProducer?: Producer;
+	public localVoiceState: { audioPaused: boolean; audioMuted: boolean; consumersMuted: boolean };
+	public micProducer?: Producer;
+	public cameraProducer?: Producer;
+	public screenShareProducers?: { video: Producer; audio?: Producer };
 	public connectionInfo?: { token: string; channelId: Snowflake; guildId: Snowflake | null };
 	public sendTransport?: Transport;
 	private device?: mediasoupClient.Device;
@@ -68,7 +70,7 @@ export class Voice {
 
 	public constructor(client: HuginnClient, options?: Partial<VoiceOptions>) {
 		this.options = { ...defaultClientOptions.voice, ...options };
-		this.localVoiceState = { audioMuted: false, audioPaused: true };
+		this.localVoiceState = { consumersMuted: false, audioMuted: false, audioPaused: true };
 		this.client = client;
 		this.consumers = new Map();
 	}
@@ -89,38 +91,90 @@ export class Voice {
 	}
 
 	public async startStreaming(videoTrack?: MediaStreamTrack, audioTrack?: MediaStreamTrack): Promise<void> {
+		if (!this.sendTransport) {
+			return;
+		}
+
 		if (videoTrack) {
-			const videoProducer = await this.sendTransport?.produce({ track: videoTrack });
+			this.cameraProducer = await this.sendTransport.produce({ track: videoTrack });
+			this.emit("local_producer_created", { producerId: this.cameraProducer.id });
 		}
 
 		if (audioTrack) {
-			if (this.audioProducer) {
-				this.audioProducer.replaceTrack({ track: audioTrack });
+			if (this.micProducer) {
+				this.micProducer.replaceTrack({ track: audioTrack });
 			} else {
-				this.audioProducer = await this.sendTransport?.produce({
+				this.micProducer = await this.sendTransport.produce({
 					track: audioTrack,
 				});
+
+				this.emit("local_producer_created", { producerId: this.micProducer.id });
 			}
 		}
 	}
 
+	public async startScreenSharing(videoTrack: MediaStreamTrack, audioTrack?: MediaStreamTrack): Promise<void> {
+		if (!this.sendTransport) {
+			return;
+		}
+
+		let videoProducer: Producer;
+		let audioProducer: Producer | undefined;
+
+		if (this.screenShareProducers?.video) {
+			await this.screenShareProducers.video.replaceTrack({ track: videoTrack });
+			videoProducer = this.screenShareProducers.video;
+		} else {
+			videoProducer = await this.sendTransport.produce({ track: videoTrack });
+		}
+
+		if (audioTrack) {
+			if (this.screenShareProducers?.audio) {
+				await this.screenShareProducers.audio.replaceTrack({ track: audioTrack });
+				audioProducer = this.screenShareProducers.audio;
+			} else {
+				audioProducer = await this.sendTransport.produce({ track: audioTrack });
+			}
+		}
+
+		// const audioProducer = audioTrack ? await this.sendTransport.produce({ track: audioTrack }) : undefined;
+
+		this.screenShareProducers = {
+			video: videoProducer,
+			audio: audioProducer,
+		};
+
+		this.emit("local_producer_created", { producerId: videoProducer.id });
+		// if (audioProducer) {
+		// 	this.emit("local_producer_created", { producerId: audioProducer?.id });
+		// }
+	}
+
+	public stopScreenSharing(): void {
+		this.screenShareProducers?.audio?.close();
+		this.screenShareProducers?.video.close();
+	}
+
 	public muteAudio(): void {
 		this.localVoiceState.audioMuted = true;
-		this.audioProducer?.pause();
+		this.micProducer?.pause();
+		this.emit("local_voice_state_changed", this.localVoiceState);
 	}
 
 	public unmuteAudio(): void {
 		this.localVoiceState.audioMuted = false;
-		if (!this.localVoiceState.audioPaused && this.audioProducer?.paused) {
-			this.audioProducer?.resume();
+		if (!this.localVoiceState.audioPaused && this.micProducer?.paused) {
+			this.micProducer?.resume();
+			this.emit("local_voice_state_changed", this.localVoiceState);
 		}
 	}
 
 	public pauseMedia(type: "audio" | "video"): void {
 		if (type === "audio") {
 			this.localVoiceState.audioPaused = true;
-			if (!this.audioProducer?.paused) {
-				this.audioProducer?.pause();
+			if (!this.micProducer?.paused) {
+				this.micProducer?.pause();
+				this.emit("local_voice_state_changed", this.localVoiceState);
 			}
 		}
 	}
@@ -129,8 +183,9 @@ export class Voice {
 		if (type === "audio") {
 			this.localVoiceState.audioPaused = false;
 
-			if (!this.localVoiceState?.audioMuted && this.audioProducer?.paused) {
-				this.audioProducer.resume();
+			if (!this.localVoiceState?.audioMuted && this.micProducer?.paused) {
+				this.micProducer.resume();
+				this.emit("local_voice_state_changed", this.localVoiceState);
 				return true;
 			}
 		}
@@ -144,6 +199,8 @@ export class Voice {
 				consumer.pause();
 			}
 		}
+		this.localVoiceState.consumersMuted = true;
+		this.emit("local_voice_state_changed", this.localVoiceState);
 	}
 
 	public unmuteConsumers(): void {
@@ -152,6 +209,8 @@ export class Voice {
 				consumer.resume();
 			}
 		}
+		this.localVoiceState.consumersMuted = false;
+		this.emit("local_voice_state_changed", this.localVoiceState);
 	}
 
 	private startListening() {
@@ -191,7 +250,7 @@ export class Voice {
 		this.recvTransport = undefined;
 		this.sendTransport = undefined;
 		this.initialProducers = undefined;
-		this.audioProducer = undefined;
+		this.micProducer = undefined;
 		this.device = undefined;
 	}
 
@@ -222,7 +281,6 @@ export class Voice {
 			case VoiceOperations.PRODUCER_CREATED: {
 				const created = data.d as VoiceProducerCreatedData;
 				console.log(`[Voice] Producer created ${created.producerId}`);
-				this.emit("local_producer_created", { producerId: created.producerId });
 				break;
 			}
 			case VoiceOperations.NEW_PRODUCER: {
@@ -250,6 +308,21 @@ export class Voice {
 				break;
 			}
 		}
+	}
+
+	private async waitForProducerCreated() {
+		return await new Promise<VoiceProducerCreatedData>((res) => {
+			const onMessage = (e: MessageEvent) => {
+				const data: VoicePayload = JSON.parse(e.data);
+
+				if (data.op === VoiceOperations.PRODUCER_CREATED) {
+					this.socket?.removeEventListener("message", onMessage);
+					res(data.d as VoiceProducerCreatedData);
+				}
+			};
+
+			this.socket?.addEventListener("message", onMessage.bind(this));
+		});
 	}
 
 	private handlePeerLeft(data: VoicePeerLeftData) {
@@ -339,7 +412,9 @@ export class Voice {
 					};
 
 					this.send(produceData);
-					callback({ id: "temp-id" });
+
+					const { producerId } = await this.waitForProducerCreated();
+					callback({ id: producerId });
 				});
 
 				this.emit("transport_ready", { channelId: this.connectionInfo.channelId });
