@@ -1,6 +1,6 @@
-import { createErrorFactory, createHuginnError, createRoute, missingAccess, validator } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, createRoute, missingAccess, validator, waitUntil } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
-import { Errors, HttpCode, MessageType, idFix } from "@huginn/shared";
+import { constants, Errors, HttpCode, MessageType, idFix } from "@huginn/shared";
 import { z } from "zod";
 import { gateway } from "#setup";
 import { dispatchMessage } from "#utils/helpers";
@@ -28,7 +28,6 @@ createRoute("POST", "/api/channels/:channelId/call/ring", verifyJwt(), validator
 	}
 
 	const callState = gateway.voiceManager.getCallStates([channel.id]);
-	console.log(callState);
 	if (callState.length > 0) {
 		return c.newResponse(null, HttpCode.NO_CONTENT);
 	}
@@ -39,6 +38,11 @@ createRoute("POST", "/api/channels/:channelId/call/ring", verifyJwt(), validator
 		message.id,
 		channel.recipients.map((x) => x.id),
 	);
+
+	waitUntil(c, async () => {
+		await new Promise((r) => setTimeout(r, constants.CALL_RINGING_TIMEOUT));
+		gateway.voiceManager.updateCall(channelId, []);
+	});
 
 	return c.newResponse(null, HttpCode.NO_CONTENT);
 });
