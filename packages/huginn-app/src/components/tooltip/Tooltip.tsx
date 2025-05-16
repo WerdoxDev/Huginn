@@ -71,35 +71,35 @@ function Content(props: { extraClassName?: string; arrowClassName?: string; extr
 			leaveFrom="opacity-100"
 			leaveTo="opacity-0"
 		>
-			<Portal>
+			{/* <Portal> */}
+			<div
+				className={clsx(
+					"absolute z-[999] rounded-md border border-background bg-zinc-900 px-2.5 py-1.5 text-base text-white/80 shadow-lg",
+					props.extraClassName,
+				)}
+				ref={ref}
+				style={{
+					...context.floatingStyles,
+					...props.style,
+					...props.extrastyle,
+				}}
+				{...context.getFloatingProps(props)}
+			>
+				{context.getFloatingProps(props).children as ReactNode}
 				<div
+					style={{ left: context.middlewareData.arrow?.x, top: context.middlewareData.arrow?.y, [staticSide]: "-5px" }}
+					ref={context.arrowRef}
 					className={clsx(
-						"absolute z-[999] rounded-md border border-background bg-zinc-900 px-2.5 py-1.5 text-base text-white/80 shadow-lg",
-						props.extraClassName,
+						props.arrowClassName,
+						"absolute h-2.5 w-2.5 border-background border-t border-l bg-zinc-900",
+						context.placement.includes("bottom") && "rotate-45",
+						context.placement.includes("top") && "rotate-[-135deg]",
+						context.placement.includes("left") && "-rotate-[225deg]",
+						context.placement.includes("right") && "-rotate-45",
 					)}
-					ref={ref}
-					style={{
-						...context.floatingStyles,
-						...props.style,
-						...props.extrastyle,
-					}}
-					{...context.getFloatingProps(props)}
-				>
-					{context.getFloatingProps(props).children as ReactNode}
-					<div
-						style={{ left: context.middlewareData.arrow?.x, top: context.middlewareData.arrow?.y, [staticSide]: "-5px" }}
-						ref={context.arrowRef}
-						className={clsx(
-							props.arrowClassName,
-							"absolute h-2.5 w-2.5 border-background border-t border-l bg-zinc-900",
-							context.placement.includes("bottom") && "rotate-45",
-							context.placement.includes("top") && "rotate-[-135deg]",
-							context.placement.includes("left") && "-rotate-[225deg]",
-							context.placement.includes("right") && "-rotate-45",
-						)}
-					/>
-				</div>
-			</Portal>
+				/>
+			</div>
+			{/* </Portal> */}
 		</Transition>
 	);
 }

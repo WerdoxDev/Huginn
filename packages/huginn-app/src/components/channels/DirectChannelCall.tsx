@@ -11,7 +11,7 @@ import { useThisUser } from "@stores/userStore";
 import { useVoiceStore, voiceStore } from "@stores/voiceStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 const minHeight = 250;
 const maxHeightPercentage = 60;
@@ -28,7 +28,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	const isResizing = useRef(false);
 	const [gridSize, setGridSize] = useState<{ elementWidth: number; elementHeight: number; rows: number; cols: number }>();
 	const [gridHeight, setGridHeight] = useState(250);
-	const { isFullscreen, toggleFullscreen } = useFullscreen();
+	const { isFullscreen, toggleFullscreen } = useFullscreen(containerRef);
 	const maximizedSourceId = useRef<string | undefined>(undefined);
 	const [maximizedSource, setMaximizedSource] = useState<Unpacked<typeof remoteSources> | undefined>(undefined);
 
@@ -63,6 +63,14 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 			{ signal: controller.signal },
 		);
 
+		document.addEventListener(
+			"fullscreenchange",
+			() => {
+				updateGridSize();
+			},
+			{ signal: controller.signal },
+		);
+
 		resizerRef.current?.addEventListener(
 			"mousedown",
 			(e) => {
@@ -80,7 +88,13 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 
 	useLayoutEffect(() => {
 		updateGridSize();
-	}, [remoteSources, voiceStates, gridHeight, thisCallState, maximizedSource]);
+	}, [remoteSources, voiceStates, gridHeight, thisCallState, maximizedSource, isFullscreen]);
+
+	useLayoutEffect(() => {
+		// if (isFullscreen) {
+		// }
+		updateGridSize();
+	}, [isFullscreen]);
 
 	function resize(e: MouseEvent) {
 		if (!gridRef.current || !isResizing.current) {
@@ -105,11 +119,44 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	}
 
 	function toggleMute() {
-		client.gateway.updateVoiceState(!voiceState.selfMute, false);
+		client.gateway.updateVoiceState(!voiceState.selfMute, false, voiceState.selfStream, voiceState.selfVideo);
 	}
 
 	function toggleDeafen() {
-		client.gateway.updateVoiceState(!voiceState.selfDeaf, !voiceState.selfDeaf);
+		client.gateway.updateVoiceState(!voiceState.selfDeaf, !voiceState.selfDeaf, voiceState.selfStream, voiceState.selfVideo);
+	}
+
+	async function screenshare() {
+		if (isFullscreen) {
+			toggleFullscreen();
+		}
+
+		if (huginnWindow.environment === "browser") {
+			const stream = await navigator.mediaDevices.getDisplayMedia({ audio: false, video: true });
+
+			client.gateway.updateVoiceState(voiceState.selfDeaf, voiceState.selfDeaf, true, voiceState.selfVideo);
+
+			await client.voice.startScreenSharing(stream.getVideoTracks()[0], stream.getAudioTracks()[0]);
+		} else {
+			updateModals({ screenshare: { isOpen: true } });
+		}
+	}
+
+	async function connect() {
+		await client.gateway.connectToVoice(null, props.channelId);
+	}
+
+	function maximizeSource(producerId: string) {
+		if (maximizedSource) {
+			maximizedSourceId.current = undefined;
+			setMaximizedSource(undefined);
+		} else {
+			maximizedSourceId.current = producerId;
+			const foundSource = remoteSources.find((x) => x.producerId === maximizedSourceId.current);
+			if (foundSource) {
+				setMaximizedSource(foundSource);
+			}
+		}
 	}
 
 	function updateGridSize() {
@@ -121,15 +168,14 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		const numBoxes = maximizedSourceId.current
 			? 1
 			: store.voiceStates.length + store.remoteSources.filter((x) => x.kind === "video").length + (thisCallState?.ringing.length ?? 0);
-		console.log(numBoxes);
 		const containerWidth = gridRef.current.clientWidth;
 		const containerHeight = gridRef.current.clientHeight;
-		const boxMargin = 12;
+		const boxMargin = !maximizedSourceId.current ? 12 : 0;
 		const padding = {
-			top: 12,
-			right: 20,
-			bottom: 64,
-			left: 20,
+			top: !maximizedSourceId.current ? 12 : 0,
+			right: !maximizedSourceId.current ? 20 : 0,
+			bottom: !maximizedSourceId.current ? 64 : 0,
+			left: !maximizedSourceId.current ? 20 : 0,
 		};
 		const aspectRatio = 16 / 9;
 
@@ -171,40 +217,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 			}
 		}
 
-		console.log(best);
-
 		setGridSize(best);
-		// setGridElementWidth(best.boxWidth);
-	}
-
-	async function screenshare() {
-		if (isFullscreen) {
-			toggleFullscreen();
-		}
-
-		if (huginnWindow.environment === "browser") {
-			const stream = await navigator.mediaDevices.getDisplayMedia({ audio: false, video: true });
-			await client.voice.startScreenSharing(stream.getVideoTracks()[0], stream.getAudioTracks()[0]);
-		} else {
-			updateModals({ screenShare: { isOpen: true } });
-		}
-	}
-
-	async function connect() {
-		await client.gateway.connectToVoice(null, props.channelId);
-	}
-
-	function maximizeSource(producerId: string) {
-		if (maximizedSource) {
-			maximizedSourceId.current = undefined;
-			setMaximizedSource(undefined);
-		} else {
-			maximizedSourceId.current = producerId;
-			const foundSource = remoteSources.find((x) => x.producerId === maximizedSourceId.current);
-			if (foundSource) {
-				setMaximizedSource(foundSource);
-			}
-		}
 	}
 
 	if (!user || !show) {
@@ -214,14 +227,14 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	return (
 		<div
 			className={clsx(
-				"flex shrink-0 flex-col gap-y-3 shadow-lg shadow-tertiary/50",
-				isFullscreen ? "fixed inset-0 z-50 rounded-none bg-black" : "relative z-10 m-2 mb-0 rounded-xl bg-black/60 ring-2 ring-primary/70",
+				"relative z-10 flex shrink-0 flex-col gap-y-3 overflow-hidden shadow-lg shadow-tertiary/50",
+				isFullscreen ? "rounded-none bg-tertiary" : "m-2 mb-0 rounded-xl bg-black/50 ring-2 ring-primary/70",
 			)}
 			ref={containerRef}
 		>
 			<div ref={resizerRef} className="-bottom-1 absolute inset-x-0 h-2 cursor-ns-resize" />
 			<div
-				className="flex w-full shrink flex-wrap items-center justify-center gap-3 px-5 py-2 pb-16"
+				className={clsx("flex w-full shrink flex-wrap content-center items-center justify-center gap-3", !maximizedSource && "px-5 py-2 pb-16")}
 				ref={gridRef}
 				style={{ height: !isFullscreen ? gridHeight : "100%" }}
 			>
@@ -230,6 +243,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 						.filter((x) => x.kind === "video")
 						.map((x) => (
 							<VoiceVideo
+								maximized={!!maximizedSource}
 								onClick={maximizeSource}
 								key={x.userId}
 								consumerId={x.consumerId}

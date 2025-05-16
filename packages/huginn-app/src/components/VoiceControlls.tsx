@@ -1,5 +1,4 @@
 import type { GatewayVoiceState } from "@huginn/shared";
-import { client } from "@stores/apiStore";
 import clsx from "clsx";
 import Tooltip from "./tooltip/Tooltip";
 
@@ -12,7 +11,7 @@ export default function VoiceControlls(props: {
 	onScreenshare: () => void;
 	onDisconnect: () => void;
 	onConnect: () => void;
-	onToggleFullscreen: () => void;
+	onToggleFullscreen: () => Promise<void>;
 }) {
 	return (
 		<div className="absolute inset-x-0 bottom-0 mb-2.5 flex shrink-0 items-center justify-center gap-x-2.5">

@@ -20,7 +20,7 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 	const [loaded, setLoaded] = useState(false);
 	const [errored, setErrored] = useState(false);
 	const mouseDownElement = useRef<HTMLDivElement>(null);
-	const { isFullscreen, toggleFullscreen } = useFullscreen();
+	const { isFullscreen, toggleFullscreen } = useFullscreen(containerRef);
 
 	useEffect(() => {
 		const controller = new AbortController();
@@ -111,8 +111,8 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 	return (
 		<div
 			ref={containerRef}
-			style={isFullscreen ? undefined : { width: `${props.width}px`, height: `${props.height}px` }}
-			className={clsx("group/video flex overflow-hidden rounded-md", isFullscreen ? "fixed inset-0 z-50" : "relative")}
+			style={{ width: `${props.width}px`, height: `${props.height}px` }}
+			className={clsx("group/video relative flex overflow-hidden rounded-md")}
 			onMouseUp={togglePlaying}
 		>
 			<video
@@ -143,7 +143,6 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 				)}
 				onMouseUp={(e) => {
 					const closest = mouseDownElement.current?.closest("#allow-click");
-					console.log(closest);
 					if (!closest) {
 						e.stopPropagation();
 					}

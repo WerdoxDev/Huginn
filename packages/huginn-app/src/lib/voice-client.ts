@@ -163,12 +163,10 @@ export function listenToVoiceEvents() {
 			client.voice.muteAudio();
 		}
 
-		if (client.voice.screenShareProducers && client.voice.screenShareProducers?.video.id === d.producerId) {
-			if (client.voice.screenShareProducers.video.track) {
-				console.log("CREATE VIDEO");
-				const stream = new MediaStream([client.voice.screenShareProducers.video.track]);
-				voiceStore.getState().addRemoteSource(client.user.id, undefined, d.producerId, "video", stream);
-			}
+		const videoProducer = client.voice.screenShareProducers?.video;
+		if (videoProducer?.id === d.producerId && videoProducer.track) {
+			const stream = new MediaStream([videoProducer.track]);
+			voiceStore.getState().addRemoteSource(client.user.id, undefined, d.producerId, "video", stream);
 		}
 	});
 
@@ -240,7 +238,7 @@ function playRemoteSources() {
 
 	// Re-add all
 	for (const remoteSource of voiceStore.getState().remoteSources) {
-		if (remoteSource.userId === client.user?.id || remoteSource.kind === "video") {
+		if (remoteSource.userId === client.user?.id || remoteSource.kind === "video" || !remoteSource.srcObject) {
 			continue;
 		}
 

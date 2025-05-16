@@ -144,7 +144,11 @@ export function initializeVoice(queryClient: QueryClient) {
 	const unlisten6 = listenToVoiceEvents();
 
 	const unlisten7 = client.voice.listen("local_voice_state_changed", (d) => {
-		voiceStore.getState().updateSelfVoiceState(d.audioMuted, d.consumersMuted, false, false);
+		if (!client.user) {
+			return;
+		}
+
+		voiceStore.getState().updateSelfVoiceState(d.audioMuted, d.consumersMuted, d.streaming, false);
 	});
 
 	return () => {

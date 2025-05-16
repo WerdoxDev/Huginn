@@ -1,19 +1,22 @@
 import type { DisplaySource } from "@/types";
 import DisplayPreview from "@components/DisplayPreview";
+import LoadingIcon from "@components/LoadingIcon";
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import { DialogPanel, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { useClient } from "@stores/apiStore";
 import { useModals } from "@stores/modalsStore";
+import { useVoiceStore } from "@stores/voiceStore";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 
 export default function ScreenShareModal() {
 	const client = useClient();
-	const { screenShare: modal, updateModals } = useModals();
-	const { data } = useQuery({
+	const { screenshare: modal, updateModals } = useModals();
+	const { voiceState } = useVoiceStore();
+	const { data, isLoading } = useQuery({
 		queryKey: ["display-sources"],
 		queryFn: async () => await window.electronAPI.getDisplaySources(),
 	});
@@ -21,23 +24,24 @@ export default function ScreenShareModal() {
 	const [selectedSource, setSelectedSource] = useState<DisplaySource | undefined>();
 	const [selectedQuality, setSelectedQuality] = useState(0);
 	const [selectedFramerate, setSelectedFramerate] = useState(0);
+	const [screensharePending, startTransition] = useTransition();
 
 	const screens = useMemo(() => data?.filter((x) => x.id.includes("screen")), [data]);
 	const applications = useMemo(() => data?.filter((x) => x.id.includes("window")), [data]);
 
 	useEffect(() => {
-		console.log(modal.isOpen);
-		if (modal.isOpen) {
-			// setSelectedSource(undefined);
+		if (!selectedSource) {
+			setSelectedQuality(0);
+			setSelectedFramerate(0);
 		}
-	}, [modal.isOpen]);
+	}, [selectedSource]);
 
 	function onSourceSelected(source: DisplaySource) {
 		setSelectedSource(source);
 	}
 
 	function close() {
-		updateModals({ screenShare: { isOpen: false } });
+		updateModals({ screenshare: { isOpen: false } });
 	}
 
 	async function stream() {
@@ -49,10 +53,13 @@ export default function ScreenShareModal() {
 
 		const framerate = selectedFramerate === 0 ? 15 : selectedFramerate === 1 ? 30 : selectedFramerate === 2 ? 60 : 15;
 
-		const stream = await navigator.mediaDevices.getDisplayMedia({ audio: false, video: { frameRate: framerate } });
-		await client.voice.startScreenSharing(stream.getVideoTracks()[0]);
+		client.gateway.updateVoiceState(voiceState.selfDeaf, voiceState.selfDeaf, true, voiceState.selfVideo);
 
-		close();
+		startTransition(async () => {
+			const stream = await navigator.mediaDevices.getDisplayMedia({ audio: false, video: { frameRate: framerate } });
+			await client.voice.startScreenSharing(stream.getVideoTracks()[0]);
+			close();
+		});
 	}
 
 	return (
@@ -88,16 +95,24 @@ export default function ScreenShareModal() {
 							</Tab>
 						</TabList>
 						<TabPanels className="scroll-alternative h-80 overflow-x-hidden overflow-y-scroll px-5 py-4 pr-1.5">
-							<TabPanel className="grid grid-cols-2 gap-5">
-								{screens?.map((x) => (
-									<DisplayPreview key={x.id} source={x} onSelect={onSourceSelected} />
-								))}
-							</TabPanel>
-							<TabPanel className="grid grid-cols-2 gap-5">
-								{applications?.map((x) => (
-									<DisplayPreview key={x.id} source={x} onSelect={onSourceSelected} />
-								))}
-							</TabPanel>
+							{isLoading ? (
+								<div className="flex h-full w-full items-center justify-center">
+									<LoadingIcon className="size-16" />
+								</div>
+							) : (
+								<>
+									<TabPanel className="grid grid-cols-2 gap-5">
+										{screens?.map((x) => (
+											<DisplayPreview key={x.id} source={x} onSelect={onSourceSelected} />
+										))}
+									</TabPanel>
+									<TabPanel className="grid grid-cols-2 gap-5">
+										{applications?.map((x) => (
+											<DisplayPreview key={x.id} source={x} onSelect={onSourceSelected} />
+										))}
+									</TabPanel>
+								</>
+							)}
 						</TabPanels>
 					</TabGroup>
 				) : (
@@ -217,9 +232,9 @@ export default function ScreenShareModal() {
 				<HuginnButton className="ml-auto h-10 w-20 decoration-white hover:underline" onClick={close}>
 					Cancel
 				</HuginnButton>
-				<HuginnButton className="h-10 w-24 bg-primary" onClick={stream} disabled={selectedSource === undefined}>
+				<LoadingButton loading={screensharePending} className="h-10 w-24 bg-primary" onClick={stream} disabled={selectedSource === undefined}>
 					Go Live
-				</HuginnButton>
+				</LoadingButton>
 			</div>
 			<ModalCloseButton onClick={close} />
 		</DialogPanel>
