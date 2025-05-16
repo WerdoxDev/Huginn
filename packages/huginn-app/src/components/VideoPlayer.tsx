@@ -1,4 +1,5 @@
 import { Transition } from "@headlessui/react";
+import { useFullscreen } from "@hooks/useFullscreen";
 import { useProgressBar } from "@hooks/useProgressBar";
 import { formatSeconds } from "@huginn/shared";
 // import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -18,8 +19,8 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 	const [videoTime, setVideoTime] = useState(0);
 	const [loaded, setLoaded] = useState(false);
 	const [errored, setErrored] = useState(false);
-	const [fullscreen, setFullscreen] = useState(false);
 	const mouseDownElement = useRef<HTMLDivElement>(null);
+	const { isFullscreen, toggleFullscreen } = useFullscreen();
 
 	useEffect(() => {
 		const controller = new AbortController();
@@ -107,26 +108,17 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 		}
 	}
 
-	function toggleFullscreen() {
-		if (document.fullscreenElement) {
-			document.exitFullscreen();
-			setFullscreen(false);
-		} else {
-			containerRef.current?.requestFullscreen();
-			setFullscreen(true);
-		}
-	}
 	return (
 		<div
 			ref={containerRef}
-			style={{ width: `${props.width}px`, height: `${props.height}px` }}
-			className="group/video relative flex overflow-hidden rounded-md"
+			style={isFullscreen ? undefined : { width: `${props.width}px`, height: `${props.height}px` }}
+			className={clsx("group/video flex overflow-hidden rounded-md", isFullscreen ? "fixed inset-0 z-50" : "relative")}
 			onMouseUp={togglePlaying}
 		>
 			<video
-				width={fullscreen ? undefined : props.width}
-				height={fullscreen ? undefined : props.height}
-				style={fullscreen ? undefined : { width: `${props.width}px`, height: `${props.height}px` }}
+				width={isFullscreen ? undefined : props.width}
+				height={isFullscreen ? undefined : props.height}
+				style={isFullscreen ? undefined : { width: `${props.width}px`, height: `${props.height}px` }}
 				src={props.url}
 				ref={videoRef}
 				onLoadedData={() => setLoaded(true)}
@@ -170,7 +162,7 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 				<ProgressBar id="allow-click" {...videoProgress} orientation="horizontal" onPercentageChange={setVideoPercentage} />
 				<VolumeBar id="allow-click" {...audioProgress} onPercentageChange={setAudioPercentage} />
 				<button type="button" className="shrink-0 text-white/80 hover:text-white" onClick={toggleFullscreen}>
-					{fullscreen ? <IconMingcuteFullscreenExitFill className="size-6" /> : <IconMingcuteFullscreenFill className="size-6" />}
+					{isFullscreen ? <IconMingcuteFullscreenExitFill className="size-6" /> : <IconMingcuteFullscreenFill className="size-6" />}
 				</button>
 			</div>
 		</div>

@@ -5,6 +5,7 @@ const store = createStore(
 	combine(
 		{
 			maximized: false,
+			fullscreen: false,
 			focused: false,
 			environment: window.electronAPI ? "desktop" : "browser",
 			args: [] as string[],
@@ -12,13 +13,15 @@ const store = createStore(
 		},
 		(set) => ({
 			setMaximized: (isMaximized: boolean) => set({ maximized: isMaximized }),
+			setFullscreen: (isFullscreen: boolean) => set({ fullscreen: isFullscreen }),
 		}),
 	),
 );
 
 export async function initializeWindow() {
 	store.setState({
-		maximized: true,
+		maximized: false,
+		fullscreen: false,
 		focused: document.hasFocus(),
 		args: window.electronAPI ? await window.electronAPI.getArgs() : undefined,
 		version: window.electronAPI ? await window.electronAPI.getVersion() : __APP_VERSION__,

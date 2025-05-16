@@ -5,6 +5,7 @@ import { combine } from "zustand/middleware";
 export type AppSettings = {
 	serverAddress: string;
 	cdnAddress: string;
+	voiceAddress: string;
 	theme: ThemeType;
 	chatMode?: "normal" | "compact";
 	inputDeviceId: string;
@@ -18,6 +19,7 @@ const initialStore = () =>
 	({
 		serverAddress: "https://midgard.huginn.dev",
 		cdnAddress: "https://midgard.huginn.dev",
+		voiceAddress: "https://midgard.huginn.dev",
 		theme: "pine green",
 		chatMode: "normal",
 		inputDeviceId: "",

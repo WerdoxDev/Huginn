@@ -1,3 +1,4 @@
+import type { DisplaySource } from "@/types";
 import type { AppSettings } from "@stores/settingsStore";
 import { contextBridge, ipcRenderer } from "electron";
 import type { ProgressInfo, UpdateInfo } from "electron-updater";
@@ -10,6 +11,7 @@ export const electronAPI = {
 	hideMain: () => ipcRenderer.send("window:hide-main"),
 	focusMain: () => ipcRenderer.send("window:focus-main"),
 	minimize: () => ipcRenderer.send("window:minimize"),
+	setFullscreen: (fullscreen: boolean) => ipcRenderer.send("window:set-fullscreen", fullscreen),
 	toggleMaximize: () => ipcRenderer.send("window:toggle-maximize"),
 	checkUpdate: () => ipcRenderer.invoke("update:check") as Promise<UpdateInfo | undefined>,
 	downloadUpdate: () => ipcRenderer.send("update:download"),
@@ -19,6 +21,8 @@ export const electronAPI = {
 	loadSettings: () => ipcRenderer.invoke("settings:load") as Promise<AppSettings>,
 	saveSettings: (settings: string) => ipcRenderer.invoke("settings:save", settings) as Promise<void>,
 	trySaveDefaultSettings: (settings: string) => ipcRenderer.invoke("settings:try-save-default", settings) as Promise<void>,
+	getDisplaySources: () => ipcRenderer.invoke("window:get-display-sources") as Promise<DisplaySource[]>,
+	setSelectedDisplaySource: (sourceId: string) => ipcRenderer.send("window:set-selected-display-source", sourceId),
 	onUpdateProgress: (callback: (_event: Electron.IpcRendererEvent, info: ProgressInfo) => void) => {
 		ipcRenderer.on("update:progress", callback);
 		return () => ipcRenderer.off("update:progress", callback);
@@ -30,6 +34,14 @@ export const electronAPI = {
 	onNotificationClick: (callback: (_event: Electron.IpcRendererEvent, payload: string) => void) => {
 		ipcRenderer.on("notification:clicked", callback);
 		return () => ipcRenderer.off("notification:clicked", callback);
+	},
+	onMaximizedChanged: (callback: (_event: Electron.IpcRendererEvent, isMaximized: boolean) => void) => {
+		ipcRenderer.on("window:is-maximized", callback);
+		return () => ipcRenderer.off("window:is-maximized", callback);
+	},
+	onFullscreenChanged: (callback: (_event: Electron.IpcRendererEvent, isFullscreen: boolean) => void) => {
+		ipcRenderer.on("window:is-fullscreen", callback);
+		return () => ipcRenderer.off("window:is-fullscreen", callback);
 	},
 };
 

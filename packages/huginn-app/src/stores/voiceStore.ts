@@ -8,16 +8,16 @@ import { createStore, useStore } from "zustand";
 import { combine, devtools } from "zustand/middleware";
 
 const initialStore = () => ({
-	voiceState: {} as { channelId?: Snowflake; guildId?: Snowflake; selfMute: boolean; selfDeaf: boolean },
+	voiceState: {} as GatewayVoiceState,
 	voiceStates: [] as Array<GatewayVoiceState>,
 	callStates: [] as Array<GatewayCallState>,
 	remoteSources: [] as Array<{
 		userId: Snowflake;
-		consumerId: string;
+		consumerId?: string;
 		producerId: string;
 		kind: "video" | "audio";
 		srcObject: MediaProvider;
-		audioLevel: AudioLevelChecker;
+		audioLevel?: AudioLevelChecker;
 	}>,
 	speakingStates: [] as Array<{ userId: Snowflake; speaking: boolean }>,
 });
@@ -28,9 +28,9 @@ const store = createStore(
 	devtools(
 		combine(initialStore(), (set, get) => ({
 			setVoiceChannel: (channelId?: Snowflake, guildId?: Snowflake) =>
-				set((state) => ({ voiceState: { ...state.voiceState, channelId, guildId } })),
-			updateSelfVoiceState: (selfMute: boolean, selfDeaf: boolean) =>
-				set((state) => ({ voiceState: { ...state.voiceState, selfMute, selfDeaf } })),
+				set((state) => ({ voiceState: { ...state.voiceState, channelId: channelId ?? null, guildId: guildId ?? null } })),
+			updateSelfVoiceState: (selfMute: boolean, selfDeaf: boolean, selfStream: boolean, selfVideo: boolean) =>
+				set((state) => ({ voiceState: { ...state.voiceState, selfMute, selfDeaf, selfStream, selfVideo } })),
 			updateVoiceState: (
 				channelId: Snowflake,
 				guildId: Snowflake | null,
@@ -65,21 +65,21 @@ const store = createStore(
 			removeCallState: (channelId: Snowflake) => set((state) => ({ callStates: state.callStates.filter((x) => x.channelId !== channelId) })),
 			addRemoteSource: (
 				userId: Snowflake,
-				consumerId: string,
+				consumerId: string | undefined,
 				producerId: string,
 				kind: "video" | "audio",
 				srcObject: MediaProvider,
-				audioLevel: AudioLevelChecker,
+				audioLevel?: AudioLevelChecker,
 			) => set((state) => ({ remoteSources: [...state.remoteSources, { consumerId, kind, producerId, userId, srcObject, audioLevel }] })),
 			removeRemoteSource: (producerId: string) => {
 				get()
 					.remoteSources.find((x) => x.producerId === producerId)
-					?.audioLevel.offAll("audio-level");
+					?.audioLevel?.offAll("audio-level");
 				return set((state) => ({ remoteSources: state.remoteSources.filter((x) => x.producerId !== producerId) }));
 			},
 			clearRemoteSources: () => {
 				for (const remote of get().remoteSources) {
-					remote.audioLevel.offAll("audio-level");
+					remote.audioLevel?.offAll("audio-level");
 				}
 				set({ remoteSources: [] });
 			},
@@ -124,12 +124,11 @@ export function initializeVoice(queryClient: QueryClient) {
 		// our user's voice state update
 		if (d.userId === userStore.getState().user?.id) {
 			store.getState().setVoiceChannel(d.channelId ?? undefined, d.guildId ?? undefined);
-			store.getState().updateSelfVoiceState(d.selfMute, d.selfDeaf);
 
 			// set speaking to false when we mute in the middle of speaking
 			if (d.selfMute) {
 				store.getState().updateSpeakingState(d.userId, false);
-				// set speaking to trye when we unmute in the middle of speaking
+				// set speaking to true when we unmute in the middle of speaking
 			} else if (!client.voice.localVoiceState.audioPaused) {
 				store.getState().updateSpeakingState(d.userId, true);
 			}
@@ -144,6 +143,10 @@ export function initializeVoice(queryClient: QueryClient) {
 
 	const unlisten6 = listenToVoiceEvents();
 
+	const unlisten7 = client.voice.listen("local_voice_state_changed", (d) => {
+		voiceStore.getState().updateSelfVoiceState(d.audioMuted, d.consumersMuted, false, false);
+	});
+
 	return () => {
 		unlisten();
 		unlisten2();
@@ -151,6 +154,7 @@ export function initializeVoice(queryClient: QueryClient) {
 		unlisten4();
 		unlisten5();
 		unlisten6();
+		unlisten7();
 	};
 }
 

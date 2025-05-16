@@ -1,27 +1,104 @@
-import UserAvatar from "@components/UserAvatar";
-import Tooltip from "@components/tooltip/Tooltip";
+import VoiceControlls from "@components/VoiceControlls";
+import VoiceUser from "@components/VoiceUser";
+import VoiceVideo from "@components/VoiceVideo";
 import { useUsers } from "@hooks/api-hooks/userHooks";
+import { useFullscreen } from "@hooks/useFullscreen";
 import { useLookup } from "@hooks/useLookup";
-import type { Snowflake } from "@huginn/shared";
+import type { Snowflake, Unpacked } from "@huginn/shared";
 import { useClient } from "@stores/apiStore";
+import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
-import { useVoiceStore } from "@stores/voiceStore";
+import { useVoiceStore, voiceStore } from "@stores/voiceStore";
+import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
-import { useMemo } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
+
+const minHeight = 250;
+const maxHeightPercentage = 60;
 
 export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	const { voiceState, voiceStates, callStates, remoteSources, speakingStates } = useVoiceStore();
+
+	const { updateModals } = useModals();
+	const huginnWindow = useHuginnWindow();
+
+	const containerRef = useRef<HTMLDivElement>(null);
+	const gridRef = useRef<HTMLDivElement>(null);
+	const resizerRef = useRef<HTMLDivElement>(null);
+	const isResizing = useRef(false);
+	const [gridSize, setGridSize] = useState<{ elementWidth: number; elementHeight: number; rows: number; cols: number }>();
+	const [gridHeight, setGridHeight] = useState(250);
+	const { isFullscreen, toggleFullscreen } = useFullscreen();
+	const maximizedSourceId = useRef<string | undefined>(undefined);
+	const [maximizedSource, setMaximizedSource] = useState<Unpacked<typeof remoteSources> | undefined>(undefined);
 
 	const client = useClient();
 	const { user } = useThisUser();
 
 	const thisVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channelId), [voiceStates, props.channelId]);
 	const thisCallState = useMemo(() => callStates.find((x) => x.channelId === props.channelId), [callStates, props.channelId]);
+	const isGridView = useMemo(() => remoteSources.some((x) => x.kind === "video"), [remoteSources]);
 
 	const users = useUsers(Array.from(new Set([...(thisCallState?.ringing ?? []), ...thisVoiceStates.map((x) => x.userId)])));
 	const usersLookup = useLookup(users, (user) => user.id);
 	const usersSpeakingLookup = useLookup(speakingStates, (state) => state.userId);
 	const show = useMemo(() => users.length !== 0 && thisCallState, [props.channelId, users]);
+
+	useLayoutEffect(() => {
+		const controller = new AbortController();
+
+		window.addEventListener(
+			"resize",
+			() => {
+				if (!gridRef.current) {
+					return;
+				}
+
+				updateGridSize();
+				const maxHeight = (window.innerHeight / 100) * maxHeightPercentage;
+				if (gridRef.current.clientHeight > maxHeight) {
+					setGridHeight(maxHeight);
+				}
+			},
+			{ signal: controller.signal },
+		);
+
+		resizerRef.current?.addEventListener(
+			"mousedown",
+			(e) => {
+				isResizing.current = true;
+				document.addEventListener("mousemove", resize);
+				document.addEventListener("mouseup", stopResize);
+			},
+			{ signal: controller.signal },
+		);
+
+		return () => {
+			controller.abort();
+		};
+	}, [show]);
+
+	useLayoutEffect(() => {
+		updateGridSize();
+	}, [remoteSources, voiceStates, gridHeight, thisCallState, maximizedSource]);
+
+	function resize(e: MouseEvent) {
+		if (!gridRef.current || !isResizing.current) {
+			return;
+		}
+
+		const maxHeight = (window.innerHeight / 100) * maxHeightPercentage;
+
+		const rect = gridRef.current.getBoundingClientRect();
+		const newHeight = Math.min(Math.max(e.clientY - rect.top + 2, minHeight), maxHeight);
+		setGridHeight(newHeight);
+	}
+
+	function stopResize() {
+		isResizing.current = false;
+		document.removeEventListener("mousemove", resize);
+		document.removeEventListener("mouseup", stopResize);
+	}
 
 	function disconnect() {
 		client.gateway.disconnectFromVoice();
@@ -35,8 +112,99 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		client.gateway.updateVoiceState(!voiceState.selfDeaf, !voiceState.selfDeaf);
 	}
 
+	function updateGridSize() {
+		if (!gridRef.current) {
+			return;
+		}
+
+		const store = voiceStore.getState();
+		const numBoxes = maximizedSourceId.current
+			? 1
+			: store.voiceStates.length + store.remoteSources.filter((x) => x.kind === "video").length + (thisCallState?.ringing.length ?? 0);
+		console.log(numBoxes);
+		const containerWidth = gridRef.current.clientWidth;
+		const containerHeight = gridRef.current.clientHeight;
+		const boxMargin = 12;
+		const padding = {
+			top: 12,
+			right: 20,
+			bottom: 64,
+			left: 20,
+		};
+		const aspectRatio = 16 / 9;
+
+		let best = {
+			elementWidth: 0,
+			elementHeight: 0,
+			rows: 0,
+			cols: 0,
+		};
+
+		for (let rows = 1; rows <= numBoxes; rows++) {
+			const cols = Math.ceil(numBoxes / rows);
+
+			// Total spacing from margins
+			const totalMarginX = (cols - 1) * boxMargin;
+			const totalMarginY = (rows - 1) * boxMargin;
+
+			// Usable space after subtracting padding and internal margins
+			const usableWidth = containerWidth - padding.left - padding.right - totalMarginX;
+			const usableHeight = containerHeight - padding.top - padding.bottom - totalMarginY;
+
+			// Max box size
+			let elementWidth = usableWidth / cols;
+			let elementHeight = elementWidth / aspectRatio;
+
+			// If height overflows, resize based on height instead
+			if (elementHeight > usableHeight / rows) {
+				elementHeight = usableHeight / rows;
+				elementWidth = elementHeight * aspectRatio;
+			}
+
+			if (elementWidth * elementHeight > best.elementWidth * best.elementHeight) {
+				best = {
+					elementWidth,
+					elementHeight,
+					rows,
+					cols,
+				};
+			}
+		}
+
+		console.log(best);
+
+		setGridSize(best);
+		// setGridElementWidth(best.boxWidth);
+	}
+
+	async function screenshare() {
+		if (isFullscreen) {
+			toggleFullscreen();
+		}
+
+		if (huginnWindow.environment === "browser") {
+			const stream = await navigator.mediaDevices.getDisplayMedia({ audio: false, video: true });
+			await client.voice.startScreenSharing(stream.getVideoTracks()[0], stream.getAudioTracks()[0]);
+		} else {
+			updateModals({ screenShare: { isOpen: true } });
+		}
+	}
+
 	async function connect() {
 		await client.gateway.connectToVoice(null, props.channelId);
+	}
+
+	function maximizeSource(producerId: string) {
+		if (maximizedSource) {
+			maximizedSourceId.current = undefined;
+			setMaximizedSource(undefined);
+		} else {
+			maximizedSourceId.current = producerId;
+			const foundSource = remoteSources.find((x) => x.producerId === maximizedSourceId.current);
+			if (foundSource) {
+				setMaximizedSource(foundSource);
+			}
+		}
 	}
 
 	if (!user || !show) {
@@ -44,118 +212,59 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	}
 
 	return (
-		<div className="z-10 m-2 mb-0 flex h-2/5 shrink-0 flex-col gap-y-3 rounded-xl bg-black/60 shadow-lg shadow-tertiary/50 ring-2 ring-primary/70">
-			<div className="flex h-full w-full shrink items-center justify-center gap-5">
-				{/* {remoteSources.some((x) => x.kind === "video")
-					? remoteSources.map((x) => (
-							<div key={x.consumerId} className="aspect-video max-h-full min-w-0">
-								<video
-									className="rounded-lg"
-									ref={(el) => {
-										if (el) {
-											el.srcObject = x.srcObject;
-										}
-									}}
-									autoPlay
-									playsInline
-									muted
-								/>
-							</div>
-						))
-					:} */}
-				{thisCallState?.ringing.map((x) => (
-					<div
-						key={x}
-						className="flex flex-col items-center justify-center gap-y-3 rounded-xl bg-background/30 p-3 shadow-md transition-shadow hover:shadow-xl"
-					>
-						<UserAvatar userId={usersLookup[x].id} avatarHash={usersLookup[x].avatar} hideStatus size="5rem" />
-						<div className="text-text">{usersLookup[x].displayName ?? usersLookup[x].username}</div>
-					</div>
-				))}
-				{thisVoiceStates.map((x) => (
-					<div
-						key={x.userId}
-						className={clsx(
-							"relative flex flex-col items-center justify-center gap-y-3 rounded-xl bg-background p-3 shadow-md transition-shadow hover:shadow-xl",
-							usersSpeakingLookup[x.userId]?.speaking && "ring-2 ring-success",
-						)}
-					>
-						<UserAvatar userId={usersLookup[x.userId].id} avatarHash={usersLookup[x.userId].avatar} hideStatus size="5rem" />
-						{(x.selfMute || x.selfDeaf) && (
-							<div className="-bottom-5 -left-2 absolute flex gap-x-2 rounded-lg bg-error p-1.5">
-								{x?.selfMute && <IconMingcuteMicOffFill className="size-4 text-white" />}
-								{x?.selfDeaf && <IconMingcuteVolumeOffFill className="size-4 text-white" />}
-							</div>
-						)}
-						<div className="text-text">{usersLookup[x.userId].displayName ?? usersLookup[x.userId].username}</div>
-					</div>
-				))}
-				{/* {remoteSources
-					.filter((x) => x.kind === "audio" && x.userId !== user.id)
-					.map((x) => (
-						<audio
-							key={x.consumerId}
-							ref={(el) => {
-								if (el) {
-									el.srcObject = x.srcObject;
-								}
-							}}
-							autoPlay
-							playsInline
+		<div
+			className={clsx(
+				"flex shrink-0 flex-col gap-y-3 shadow-lg shadow-tertiary/50",
+				isFullscreen ? "fixed inset-0 z-50 rounded-none bg-black" : "relative z-10 m-2 mb-0 rounded-xl bg-black/60 ring-2 ring-primary/70",
+			)}
+			ref={containerRef}
+		>
+			<div ref={resizerRef} className="-bottom-1 absolute inset-x-0 h-2 cursor-ns-resize" />
+			<div
+				className="flex w-full shrink flex-wrap items-center justify-center gap-3 px-5 py-2 pb-16"
+				ref={gridRef}
+				style={{ height: !isFullscreen ? gridHeight : "100%" }}
+			>
+				{isGridView &&
+					(maximizedSource ? [maximizedSource] : remoteSources)
+						.filter((x) => x.kind === "video")
+						.map((x) => (
+							<VoiceVideo
+								onClick={maximizeSource}
+								key={x.userId}
+								consumerId={x.consumerId}
+								producerId={x.producerId}
+								gridElementWidth={gridSize?.elementWidth ?? 0}
+								srcObject={x.srcObject}
+							/>
+						))}
+				{!maximizedSource &&
+					thisCallState?.ringing.map((x) => (
+						<VoiceUser key={x} ringing={true} gridElementWidth={gridSize?.elementWidth ?? 0} isGridView={isGridView} user={usersLookup[x]} />
+					))}
+				{!maximizedSource &&
+					thisVoiceStates.map((x) => (
+						<VoiceUser
+							key={x.userId}
+							gridElementWidth={gridSize?.elementWidth ?? 0}
+							isGridView={isGridView}
+							speaking={usersSpeakingLookup[x.userId]?.speaking}
+							user={usersLookup[x.userId]}
+							voiceState={x}
 						/>
-					))} */}
+					))}
 			</div>
-			<div className="mb-2.5 flex shrink-0 items-center justify-center gap-x-2.5">
-				{voiceState.channelId === props.channelId ? (
-					<>
-						<div className="flex gap-x-1 rounded-xl border border-background bg-tertiary p-1">
-							<Tooltip>
-								<Tooltip.Trigger
-									className={clsx(
-										"h-full w-full rounded-lg px-5 py-1.5 text-white transition-colors hover:bg-background",
-										voiceState.selfMute && "bg-error/80 hover:bg-error/60",
-									)}
-									onClick={toggleMute}
-								>
-									{voiceState.selfMute ? <IconMingcuteMicOffFill className="size-6" /> : <IconMingcuteMicFill className="size-6" />}
-								</Tooltip.Trigger>
-								<Tooltip.Content>Mute</Tooltip.Content>
-							</Tooltip>
-							<Tooltip>
-								<Tooltip.Trigger
-									className={clsx(
-										"h-full w-full rounded-lg px-5 py-1.5 text-white transition-colors hover:bg-background",
-										voiceState.selfDeaf && "bg-error/80 hover:bg-error/60",
-									)}
-									onClick={toggleDeafen}
-								>
-									{voiceState.selfDeaf ? <IconMingcuteVolumeOffFill className="size-6" /> : <IconMingcuteVolumeFill className="size-6" />}
-								</Tooltip.Trigger>
-								<Tooltip.Content>Deafen</Tooltip.Content>
-							</Tooltip>
-						</div>
-						<Tooltip>
-							<Tooltip.Trigger
-								onClick={disconnect}
-								className="rounded-xl bg-error/80 px-5 py-2.5 text-white transition-colors hover:bg-error/60"
-							>
-								<IconMingcutePhoneBlockFill className="size-6" />
-							</Tooltip.Trigger>
-							<Tooltip.Content>Disconnect</Tooltip.Content>
-						</Tooltip>
-					</>
-				) : (
-					<Tooltip>
-						<Tooltip.Trigger
-							onClick={connect}
-							className="rounded-xl bg-success/80 px-5 py-2.5 text-white transition-colors hover:bg-success/60"
-						>
-							<IconMingcutePhoneFill className="size-6" />
-						</Tooltip.Trigger>
-						<Tooltip.Content>Join</Tooltip.Content>
-					</Tooltip>
-				)}
-			</div>
+			<VoiceControlls
+				isFullscreen={isFullscreen}
+				isInVoice={voiceState.channelId === props.channelId}
+				onConnect={connect}
+				onDisconnect={disconnect}
+				onScreenshare={screenshare}
+				onToggleDeafen={toggleDeafen}
+				onToggleFullscreen={toggleFullscreen}
+				onToggleMute={toggleMute}
+				voiceState={voiceState}
+			/>
 		</div>
 	);
 }

@@ -47,7 +47,7 @@ export function initializeClient() {
 			},
 			voice: {
 				// url: `http://192.168.178.51:3003/voice`,
-				url: `https://midgard.huginn.dev/voice`,
+				url: `${settings.voiceAddress}/voice`,
 				log: true,
 				createSocket(url) {
 					return new WebSocket(url);

@@ -229,3 +229,9 @@ export type ProgressBarProps = {
 };
 
 export type UploadProgress = { filenames: string[]; percentage: number; total: number; onAbort?: () => void };
+
+export type DisplaySource = {
+	thumbnail: string;
+	name: string;
+	id: string;
+};

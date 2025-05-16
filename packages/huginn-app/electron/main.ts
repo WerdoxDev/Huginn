@@ -1,9 +1,10 @@
 import { access, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { BrowserWindow, Menu, Notification, Tray, app, ipcMain, shell, systemPreferences } from "electron";
+import { BrowserWindow, Menu, Notification, Tray, app, desktopCapturer, ipcMain, screen, session, shell } from "electron";
 import log from "electron-log/main";
 import { CancellationToken, autoUpdater } from "electron-updater";
+import { string } from "slate";
 
 const _dirname = typeof __dirname !== "undefined" ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 
@@ -28,6 +29,8 @@ function createWindow() {
 	const mainWindow = new BrowserWindow({
 		minWidth: 1200,
 		minHeight: 670,
+		fullscreen: false,
+		frame: false,
 		titleBarStyle: "hidden",
 		webPreferences: {
 			contextIsolation: true,
@@ -62,6 +65,12 @@ app.on("ready", async () => {
 
 	// Setup as Startup App
 	app.setLoginItemSettings({ openAtLogin: true, path: app.getPath("exe"), args: ["--silent"] });
+
+	session.defaultSession.setDisplayMediaRequestHandler(async (request, callback) => {
+		const sources = await desktopCapturer.getSources({ types: ["screen", "window"] });
+		const source = sources.find((x) => x.id === selectedSourceId);
+		callback({ video: source });
+	});
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -133,10 +142,34 @@ function configureTray(mainWindow: BrowserWindow) {
 	});
 }
 
+let selectedSourceId: string;
+
 function eventListeners(mainWindow: BrowserWindow) {
 	mainWindow.on("close", (e) => {
 		e.preventDefault();
 		mainWindow.hide();
+	});
+
+	mainWindow.on("maximize", () => {
+		mainWindow.webContents.send("window:is-maximized", true);
+	});
+
+	mainWindow.on("unmaximize", () => {
+		mainWindow.webContents.send("window:is-maximized", false);
+	});
+
+	mainWindow.on("restore", () => {
+		mainWindow.webContents.send("window:is-maximized", false);
+	});
+
+	mainWindow.on("enter-full-screen", () => {
+		mainWindow.webContents.send("window:is-maximized", true);
+		mainWindow.webContents.send("window:is-fullscreen", true);
+	});
+
+	mainWindow.on("leave-full-screen", () => {
+		mainWindow.webContents.send("window:is-maximized", false);
+		mainWindow.webContents.send("window:is-fullscreen", false);
 	});
 
 	ipcMain.handle("window:version", () => app.getVersion());
@@ -153,6 +186,10 @@ function eventListeners(mainWindow: BrowserWindow) {
 		mainWindow.setMinimumSize(1200, 670);
 		mainWindow.setSize(1200, 670);
 		mainWindow.center();
+	});
+
+	ipcMain.on("window:set-fullscreen", (_, fullscreen: boolean) => {
+		mainWindow.setFullScreen(fullscreen);
 	});
 
 	ipcMain.on("window:show-main", () => mainWindow.show());
@@ -237,6 +274,15 @@ function eventListeners(mainWindow: BrowserWindow) {
 		} catch (e) {
 			console.log("Error writing settings file:", e);
 		}
+	});
+
+	ipcMain.handle("window:get-display-sources", async () => {
+		const sources = await desktopCapturer.getSources({ types: ["screen", "window"] });
+		return sources.filter((x) => !x.thumbnail.isEmpty()).map((x) => ({ thumbnail: x.thumbnail.toDataURL(), id: x.id, name: x.name }));
+	});
+
+	ipcMain.on("window:set-selected-display-source", (_, sourceId: string) => {
+		selectedSourceId = sourceId;
 	});
 }
 

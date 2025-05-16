@@ -96,7 +96,9 @@ export function listenToVoiceEvents() {
 		audioLevel.startChecking(stream);
 		audioLevel.on("audio-level", onAudioLevel);
 
-		voiceStore.getState().addRemoteSource(client.user.id, "0", "0", "audio", stream, audioLevel);
+		if (client.voice.micProducer) {
+			voiceStore.getState().addRemoteSource(client.user.id, undefined, client.voice.micProducer.id, "audio", stream, audioLevel);
+		}
 
 		await startVoiceStreaming();
 	});
@@ -104,16 +106,18 @@ export function listenToVoiceEvents() {
 	const unlisten2 = client.voice.listen("consumer_created", (d) => {
 		const remoteStream = new MediaStream([d.track]);
 
-		const audioLevel = new AudioLevelChecker();
-		audioLevel.startChecking(remoteStream);
-		audioLevel.on("audio-level", (db: number) => {
-			const speaking = db > -100;
-			voiceStore.getState().updateSpeakingState(d.producerUserId, speaking);
-		});
+		if (d.track.kind === "audio") {
+			const audioLevel = new AudioLevelChecker();
+			audioLevel.startChecking(remoteStream);
+			audioLevel.on("audio-level", (db: number) => {
+				const speaking = db > -100;
+				voiceStore.getState().updateSpeakingState(d.producerUserId, speaking);
+			});
 
-		voiceStore
-			.getState()
-			.addRemoteSource(d.producerUserId, d.consumerId, d.producerId, d.track.kind === "video" ? "video" : "audio", remoteStream, audioLevel);
+			voiceStore.getState().addRemoteSource(d.producerUserId, d.consumerId, d.producerId, "audio", remoteStream, audioLevel);
+		} else {
+			voiceStore.getState().addRemoteSource(d.producerUserId, d.consumerId, d.producerId, "video", remoteStream);
+		}
 		playRemoteSources();
 	});
 
@@ -147,12 +151,24 @@ export function listenToVoiceEvents() {
 
 	// pause audio immidiately after the local producer is created
 	const unlisten6 = client.voice.listen("local_producer_created", (d) => {
+		if (!client.user) {
+			return;
+		}
+
 		if (client.voice.localVoiceState.audioPaused) {
 			client.voice.pauseMedia("audio");
 		}
 
 		if (client.voice.localVoiceState.audioMuted) {
 			client.voice.muteAudio();
+		}
+
+		if (client.voice.screenShareProducers && client.voice.screenShareProducers?.video.id === d.producerId) {
+			if (client.voice.screenShareProducers.video.track) {
+				console.log("CREATE VIDEO");
+				const stream = new MediaStream([client.voice.screenShareProducers.video.track]);
+				voiceStore.getState().addRemoteSource(client.user.id, undefined, d.producerId, "video", stream);
+			}
 		}
 	});
 
@@ -200,7 +216,7 @@ function onAudioLevel(db: number) {
 			timeout = undefined;
 		}, 500);
 
-		if (client.voice.audioProducer?.paused) {
+		if (client.voice.micProducer?.paused) {
 			if (client.voice.resumeMedia("audio")) {
 				voiceStore.getState().updateSpeakingState(userId, true);
 			}
@@ -224,7 +240,7 @@ function playRemoteSources() {
 
 	// Re-add all
 	for (const remoteSource of voiceStore.getState().remoteSources) {
-		if (remoteSource.userId === client.user?.id) {
+		if (remoteSource.userId === client.user?.id || remoteSource.kind === "video") {
 			continue;
 		}
 

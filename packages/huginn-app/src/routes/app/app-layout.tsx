@@ -46,7 +46,7 @@ export default function AppLayout() {
 			<NotificationProvider>
 				<MainRenderer>
 					<div
-						className={clsx("absolute inset-0 bg-secondary", huginnWindow.environment === "desktop" && "top-6")}
+						className={clsx("absolute inset-0 bg-secondary", huginnWindow.environment === "desktop" && !huginnWindow.fullscreen && "top-6")}
 						style={isTransitioning ? { viewTransitionName: "auth" } : undefined}
 					>
 						<AuthBackgroundSvg state={authBackground.state} />
@@ -61,38 +61,37 @@ export default function AppLayout() {
 function MainRenderer(props: { children: ReactNode }) {
 	const huginnWindow = useHuginnWindow();
 
-	return (
-		<div className={`flex h-full flex-col overflow-hidden ${huginnWindow.maximized ? "rounded-none" : "rounded-lg"}`}>
-			{window.location.pathname !== "/splashscreen" && huginnWindow.environment === "desktop" && <TitleBar />}
-			<div className="relative h-full w-full">
-				{props.children}
-				{/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
-				{huginnWindow.environment === "desktop" && (
-					<>
-						{/* <AppMaximizedEvent /> */}
-						<AppOpenUrlEvent />
-					</>
-				)}
-				<ModalsRenderer />
-				<ContextMenusRenderer />
-			</div>
-		</div>
-	);
-}
-
-function AppOpenUrlEvent() {
-	const huginnWindow = useHuginnWindow();
-
 	useEffect(() => {
 		if (huginnWindow.environment === "desktop") {
 			const unlisten = window.electronAPI.onDeepLink((_, cmd) => {
 				dispatchEvent("deep_link", cmd);
 			});
+
+			const unlisten2 = window.electronAPI.onMaximizedChanged((_, isMaximized) => {
+				huginnWindow.setMaximized(isMaximized);
+			});
+
+			const unlisten3 = window.electronAPI.onFullscreenChanged((_, isFullscreen) => {
+				huginnWindow.setFullscreen(isFullscreen);
+			});
+
 			return () => {
 				unlisten();
+				unlisten2();
+				unlisten3();
 			};
 		}
 	}, []);
 
-	return null;
+	return (
+		<div className={clsx("flex h-full flex-col overflow-hidden" /*, huginnWindow.maximized ? "rounded-none" : "rounded-lg"*/)}>
+			{window.location.pathname !== "/splashscreen" && huginnWindow.environment === "desktop" && <TitleBar />}
+			<div className="relative h-full w-full">
+				{props.children}
+				{/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
+				<ModalsRenderer />
+				<ContextMenusRenderer />
+			</div>
+		</div>
+	);
 }

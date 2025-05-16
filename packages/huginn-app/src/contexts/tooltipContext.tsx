@@ -46,15 +46,6 @@ export function useTooltip({ initialOpen = false, placement = "top", open: contr
 	const interactions = useInteractions([hover, focus, dismiss, role]);
 
 	return { open, setOpen, ...interactions, ...data, arrowRef };
-	// return React.useMemo(
-	//    () => ({
-	//       open,
-	//       setOpen,
-	//       ...interactions,
-	//       ...data,
-	//    }),
-	//    [open, setOpen, interactions, data],
-	// );
 }
 
 export function useTooltipContext() {

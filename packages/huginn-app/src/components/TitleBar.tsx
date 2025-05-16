@@ -23,6 +23,7 @@ export default function TitleBar(): ReactPortal {
 		<div
 			className={clsx(
 				"drag-region fixed top-0 right-0 left-0 z-10 flex h-6 shrink-0 select-none items-center overflow-hidden bg-background",
+				huginnWindow.fullscreen && "hidden",
 				// huginnWindow.maximized ? "rounded-t-none" : "rounded-t-lg",
 			)}
 		>

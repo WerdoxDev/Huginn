@@ -4,6 +4,7 @@ import { useThisUser } from "@stores/userStore";
 import { lazy } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import BaseModal from "./BaseModal";
+import ScreenShareModal from "./ScreenShareModal";
 
 const CreateDMModal = lazy(() => import("./CreateDMModal"));
 const SettingsModal = lazy(() => import("./SettingsModal"));
@@ -16,7 +17,7 @@ const NewsModal = lazy(() => import("./NewsModal"));
 
 export default function ModalsRenderer() {
 	const { user } = useThisUser();
-	const { createDM, addRecipient, editGroup, imageCrop, info, settings, magnifiedImage, news, updateModals } = useModals();
+	const { createDM, addRecipient, editGroup, imageCrop, info, settings, magnifiedImage, news, screenShare, updateModals } = useModals();
 
 	return (
 		<>
@@ -29,6 +30,7 @@ export default function ModalsRenderer() {
 					onClose={() => updateModals({ magnifiedImage: { isOpen: false } })}
 					backgroundClassName="bg-black/70"
 				/>
+				<BaseModal renderChildren={<ScreenShareModal />} modal={screenShare} onClose={() => updateModals({ screenShare: { isOpen: false } })} />
 				<BaseModal renderChildren={<NewsModal />} modal={news} onClose={() => updateModals({ news: { isOpen: false } })} />
 				{user && (
 					<>

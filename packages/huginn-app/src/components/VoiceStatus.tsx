@@ -3,7 +3,7 @@ import { useClient } from "@stores/apiStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router";
 import Tooltip from "./tooltip/Tooltip";
 
@@ -12,11 +12,11 @@ export default function VoiceStatus() {
 	const client = useClient();
 	const { user } = useThisUser();
 	const [state, setState] = useState<"rtc" | "connected">("rtc");
-	const channelName = useChannelName(voiceState.channelId);
+	const channelName = useChannelName(voiceState.channelId ?? undefined);
 	const [rtt, setRtt] = useState(0);
 
 	const latencyColor = useMemo(() => {
-		const minPing = 50;
+		const minPing = 100;
 		const maxPing = 2000;
 
 		if (rtt <= minPing) return "hsl(120, 100%, 73%)"; // green
