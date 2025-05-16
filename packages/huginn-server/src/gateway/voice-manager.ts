@@ -35,7 +35,15 @@ export class VoiceManager {
 		}
 	}
 
-	public updateVoiceState(userId: Snowflake, channelId: Snowflake | null, guildId: Snowflake | null, selfMute: boolean, selfDeaf: boolean) {
+	public updateVoiceState(
+		userId: Snowflake,
+		channelId: Snowflake | null,
+		guildId: Snowflake | null,
+		selfMute: boolean,
+		selfDeaf: boolean,
+		selfStream: boolean,
+		selfVideo: boolean,
+	) {
 		const sendChannelId = this.voiceStates.get(userId)?.channelId;
 
 		const voiceState: GatewayVoiceState = {
@@ -44,8 +52,8 @@ export class VoiceManager {
 			guildId: guildId,
 			selfMute: selfMute,
 			selfDeaf: selfDeaf,
-			selfStream: false,
-			selfVideo: false,
+			selfStream: selfStream,
+			selfVideo: selfVideo,
 		};
 
 		if (voiceState.channelId) {

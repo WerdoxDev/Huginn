@@ -71,15 +71,18 @@ export class ServerGateway {
 
 		if (session?.sessionInfo) {
 			this.presenceManeger.removeUserPresence(session.sessionInfo.user.id);
-			this.voiceManager.updateVoiceState(session.sessionInfo.user.id, null, null, false, false);
+			this.voiceManager.updateVoiceState(session.sessionInfo.user.id, null, null, false, false, false, false);
 		}
 
 		session?.dispose();
 
 		if (session?.sessionInfo && event.code === GatewayCode.INVALID_SESSION) {
 			this.sessions.delete(peer.id);
+			// If it still has a sessionInfo it can later be resumes
 		} else if (session?.sessionInfo) {
 			this.queueClientDisconnect(peer.id);
+		} else {
+			this.sessions.delete(peer.id);
 		}
 
 		logGatewayClose(event.code || 0, event.reason || "");
@@ -317,7 +320,15 @@ export class ServerGateway {
 		}
 
 		const previousState = this.voiceManager.getVoiceState(user.id);
-		this.voiceManager.updateVoiceState(user.id, data.d.channelId, data.d.guildId, data.d.selfMute, data.d.selfDeaf);
+		this.voiceManager.updateVoiceState(
+			user.id,
+			data.d.channelId,
+			data.d.guildId,
+			data.d.selfMute,
+			data.d.selfDeaf,
+			data.d.selfStream,
+			data.d.selfVideo,
+		);
 
 		if (previousState?.channelId !== data.d.channelId) {
 			const token = await createVoiceToken(user.id);
