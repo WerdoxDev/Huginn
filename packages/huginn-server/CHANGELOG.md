@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.2](https://github.com/WerdoxDev/Huginn/compare/server@v0.22.1...server@v0.22.2) (2025-05-16)
+
+
+### Bug Fixes
+
+* **server:** fix ringing not getting timedout ([115f931](https://github.com/WerdoxDev/Huginn/commit/115f9316d9cb60be260b158030fb43a64e5ad6d0))
+
 ## [0.22.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.22.0...server@v0.22.1) (2025-05-12)
 
 

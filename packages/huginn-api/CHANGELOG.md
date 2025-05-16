@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.13.0...api@v0.14.0) (2025-05-16)
+
+
+### Features
+
+* **api:** add screenshare in voice handling ([803cf93](https://github.com/WerdoxDev/Huginn/commit/803cf93778965f02fceec2dbd0fc69ae732a45b4))
+
 ## [0.13.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.12.0...api@v0.13.0) (2025-05-12)
 
 
