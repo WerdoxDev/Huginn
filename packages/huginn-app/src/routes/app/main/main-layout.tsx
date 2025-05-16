@@ -13,8 +13,10 @@ export default function MainLayout() {
 	const isTransitioning = useViewTransitionState("*");
 
 	useEffect(() => {
+		updateModals({ news: { isOpen: true } });
+
 		if (!isTransitioning && huginnWindow.version !== localStorage.getItem("version")) {
-			updateModals({ news: { isOpen: true } });
+			// updateModals({ news: { isOpen: true } });
 			localStorage.setItem("version", huginnWindow.version);
 		}
 	}, [isTransitioning]);

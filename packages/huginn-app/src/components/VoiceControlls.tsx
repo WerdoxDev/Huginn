@@ -52,7 +52,7 @@ export default function VoiceControlls(props: {
 							</Tooltip.Trigger>
 							<Tooltip.Content>Share Screen</Tooltip.Content>
 						</Tooltip>
-						<Tooltip>
+						{/* <Tooltip>
 							<Tooltip.Trigger
 								className={clsx("h-full w-full rounded-lg px-5 py-1.5 text-white transition-colors hover:bg-background")}
 								onClick={() => client.voice.stopScreenSharing()}
@@ -60,7 +60,7 @@ export default function VoiceControlls(props: {
 								<IconMingcuteMonitorFill className="size-6" />
 							</Tooltip.Trigger>
 							<Tooltip.Content>Share Screasden</Tooltip.Content>
-						</Tooltip>
+						</Tooltip> */}
 					</div>
 					<Tooltip>
 						<Tooltip.Trigger

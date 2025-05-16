@@ -1,9 +1,13 @@
-A very requested feature for calls... DRUM ROLLLLLLL
+An exciting day it is...
+Huginn finnaly has
 
 ...
 
-### **Muting and Deafening**
+### **Screensharing!**
 
-- Mute or deafen yourself in a group call!
+- Share any screen or window
+- Grid view
+- Focus a user's screenshare
+- Fullscreen support
 
 ![call](news/image.png)
