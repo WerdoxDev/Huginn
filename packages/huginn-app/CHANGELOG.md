@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.34.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.33.1...app@v0.34.0) (2025-05-16)
+
+
+### Features
+
+* **app:** add first iteration of screensharing ([0871e59](https://github.com/WerdoxDev/Huginn/commit/0871e5961446ba934e24c5ae6e312f229ce43f64))
+
 ## [0.33.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.33.0...app@v0.33.1) (2025-05-12)
 
 

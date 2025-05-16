@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.17.1...shared@v0.18.0) (2025-05-16)
+
+
+### Features
+
+* **shared:** add local voice state change event ([ed30092](https://github.com/WerdoxDev/Huginn/commit/ed3009283881ef9f8ce947c0843b18f3c752d980))
+
 ## [0.17.1](https://github.com/WerdoxDev/Huginn/compare/shared@v0.17.0...shared@v0.17.1) (2025-05-12)
 
 
