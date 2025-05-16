@@ -56,7 +56,7 @@ export type VoiceEvents = {
 	connected: undefined;
 	disconnected: undefined;
 	ping: { rtt: number };
-	local_voice_state_changed: { audioPaused: boolean; audioMuted: boolean; consumersMuted: boolean };
+	local_voice_state_changed: { audioPaused: boolean; audioMuted: boolean; consumersMuted: boolean; streaming: boolean };
 };
 
 export type VoicePayload<OP extends keyof VoiceOperationDatas | undefined = undefined> = {

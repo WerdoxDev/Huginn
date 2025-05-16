@@ -133,6 +133,8 @@ export type GatewayUpdateVoiceStateData = {
 	channelId: Snowflake | null;
 	selfMute: boolean;
 	selfDeaf: boolean;
+	selfStream: boolean;
+	selfVideo: boolean;
 };
 
 export type GatewayUpdateVoiceState = NonDispatchGatewayPayload & {
