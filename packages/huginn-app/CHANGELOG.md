@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.34.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.34.0...app@v0.34.1) (2025-05-16)
+
+
+### Bug Fixes
+
+* **app:** remove test button and update news.md ([df9517e](https://github.com/WerdoxDev/Huginn/commit/df9517e192d34c53a9f146ab3ac185867549c346))
+
 ## [0.34.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.33.1...app@v0.34.0) (2025-05-16)
 
 
