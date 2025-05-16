@@ -126,6 +126,8 @@ export class Gateway {
 				channelId: channelId,
 				selfDeaf: false,
 				selfMute: false,
+				selfStream: false,
+				selfVideo: false,
 			},
 		};
 
@@ -157,6 +159,8 @@ export class Gateway {
 				guildId: null,
 				selfDeaf: false,
 				selfMute: false,
+				selfStream: false,
+				selfVideo: false,
 			},
 		};
 
@@ -165,7 +169,7 @@ export class Gateway {
 		this.client.voice.close();
 	}
 
-	public updateVoiceState(selfMute: boolean, selfDeaf: boolean): void {
+	public updateVoiceState(selfMute: boolean, selfDeaf: boolean, selfStream: boolean, selfVideo: boolean): void {
 		if (!this.client.voice.connectionInfo) {
 			return;
 		}
@@ -177,6 +181,8 @@ export class Gateway {
 				channelId: this.client.voice.connectionInfo?.channelId,
 				selfMute: selfMute,
 				selfDeaf: selfDeaf,
+				selfStream: selfStream,
+				selfVideo: selfVideo,
 			},
 		};
 

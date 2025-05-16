@@ -32,7 +32,7 @@ export class Voice {
 	private sequence?: number;
 	private readonly emitter = new EventEmitterWithHistory();
 
-	public localVoiceState: { audioPaused: boolean; audioMuted: boolean; consumersMuted: boolean };
+	public localVoiceState: { audioPaused: boolean; audioMuted: boolean; consumersMuted: boolean; streaming: boolean };
 	public micProducer?: Producer;
 	public cameraProducer?: Producer;
 	public screenShareProducers?: { video: Producer; audio?: Producer };
@@ -70,7 +70,7 @@ export class Voice {
 
 	public constructor(client: HuginnClient, options?: Partial<VoiceOptions>) {
 		this.options = { ...defaultClientOptions.voice, ...options };
-		this.localVoiceState = { consumersMuted: false, audioMuted: false, audioPaused: true };
+		this.localVoiceState = { consumersMuted: false, audioMuted: false, audioPaused: true, streaming: false };
 		this.client = client;
 		this.consumers = new Map();
 	}
@@ -326,10 +326,9 @@ export class Voice {
 	}
 
 	private handlePeerLeft(data: VoicePeerLeftData) {
-		console.log("left", data);
 		for (const producerId of data.producerIds) {
 			const consumer = Array.from(this.consumers.values()).find((c) => c.producerId === producerId);
-			if (consumer) {
+			if (consumer && consumer.kind === "audio") {
 				consumer.close();
 				this.consumers.delete(consumer.id);
 				this.emit("producer_removed", { producerId, userId: data.userId });
