@@ -1,5 +1,47 @@
 # Changelog
 
+## [0.35.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.34.1...app@v0.35.0) (2025-05-16)
+
+
+### Features
+
+* **app:** add audio input threshold + speaking indicator + voice cleanups ([92f4cfb](https://github.com/WerdoxDev/Huginn/commit/92f4cfb30c9acfcf2d01c1187ee72bbd59eb0e2c))
+* **app:** add audio settings + global voice state + audio level checking ([c933af6](https://github.com/WerdoxDev/Huginn/commit/c933af67bb9d618fc10eb73c054e2d25cc4ded10))
+* **app:** add first iteration of screensharing ([0871e59](https://github.com/WerdoxDev/Huginn/commit/0871e5961446ba934e24c5ae6e312f229ce43f64))
+* **app:** add fullish ui for voice with buttons and indicators ([0642df1](https://github.com/WerdoxDev/Huginn/commit/0642df1613d1e582b823ca3448cd53423be08860))
+* **app:** add news modal ([ff266a7](https://github.com/WerdoxDev/Huginn/commit/ff266a7d6bbb9105c1409e889b16ee01b0cc4681))
+* **app:** add voice muting and deafening functionality with fully working pausing & resuming ([ba2ddc2](https://github.com/WerdoxDev/Huginn/commit/ba2ddc24453b98d0e5104d77c64a01b3b9ba447a))
+* **app:** add voice status component ([3f5542c](https://github.com/WerdoxDev/Huginn/commit/3f5542c9f1ad2b127c0e88b33b39133bea3288fd))
+* **app:** better call management and persistent support ([acf0ad4](https://github.com/WerdoxDev/Huginn/commit/acf0ad4feb9ff8344f9c62d422d41e14f8ccf8cb))
+* **app:** electron github action [#1](https://github.com/WerdoxDev/Huginn/issues/1) ([df2f245](https://github.com/WerdoxDev/Huginn/commit/df2f245d3ab5cef4c16cb789379d19f1c67fadff))
+* **app:** electron github action [#2](https://github.com/WerdoxDev/Huginn/issues/2) ([da24cbe](https://github.com/WerdoxDev/Huginn/commit/da24cbe670889fbc87bee5caaad5224474b1510a))
+* **app:** finish migration to electron ([13650fb](https://github.com/WerdoxDev/Huginn/commit/13650fbd6b1bfaf2eaff70f62974361ffbcc34c7))
+* **app:** half baked electron migration ([9c92b90](https://github.com/WerdoxDev/Huginn/commit/9c92b90bd1a600a97041e19dcc990860e8d9a968))
+* **app:** merged splashscreen into the main window ([dad146b](https://github.com/WerdoxDev/Huginn/commit/dad146b66d7dc965c01adedce15eead683394594))
+* **app:** refactor all api related hooks and contexts to use stores instead ([05ea484](https://github.com/WerdoxDev/Huginn/commit/05ea4847e009865e75a2a03d077127ab97d9e338))
+
+
+### Bug Fixes
+
+* **api:** voice server ip is incorrect ([1773d28](https://github.com/WerdoxDev/Huginn/commit/1773d289c3962c4935c418556a361bcb49321048))
+* **app:** add better speaking state management ([6cb415b](https://github.com/WerdoxDev/Huginn/commit/6cb415be47aac8767f95bc697999ad4e1738c18c))
+* **app:** disable multi range request for updater ([6a09215](https://github.com/WerdoxDev/Huginn/commit/6a092152c053158d05130cdfeb6ef2ad41598263))
+* **app:** dont open dev tools ([fe089a4](https://github.com/WerdoxDev/Huginn/commit/fe089a41579039204fd25deafeb96ea17a85dd03))
+* **app:** fix new splashscreen giving errors in the browser ([72da35c](https://github.com/WerdoxDev/Huginn/commit/72da35cfe47d320c565e3f005557bc90f6732b50))
+* **app:** fix splashscreen not liking oauth and event listening outside ([0193390](https://github.com/WerdoxDev/Huginn/commit/0193390f8a99f8789b91efff7ca8b7ea161597e1))
+* **app:** minor fullscreen fixes and better loading handling ([c9cb52f](https://github.com/WerdoxDev/Huginn/commit/c9cb52fe5ddbf184ec46b47f58c1dcc5afab7a4d))
+* **app:** notification sound is not playing ([d714b48](https://github.com/WerdoxDev/Huginn/commit/d714b48a06515c5749e27bc303c6a62f80bcef9d))
+* **app:** quarkyness with the scrolling down and up ([0b246be](https://github.com/WerdoxDev/Huginn/commit/0b246be597945c3584ef055917c9981036c76301))
+* **app:** remove commented code + set startup app config ([af666e0](https://github.com/WerdoxDev/Huginn/commit/af666e098c43518b09829b96f43c62ef5e286bc7))
+* **app:** remove test button and update news.md ([df9517e](https://github.com/WerdoxDev/Huginn/commit/df9517e192d34c53a9f146ab3ac185867549c346))
+* **app:** scroll is not anchored to the bottom when user resizes the window ([5cdd72a](https://github.com/WerdoxDev/Huginn/commit/5cdd72a708e13123b6af375ca44bfaa467e0944f))
+* **app:** speaking state is not updating ([08ce2d0](https://github.com/WerdoxDev/Huginn/commit/08ce2d036025a3051a497f8330fad33bab04ef79))
+* **app:** use highest audio quality ([f0133b5](https://github.com/WerdoxDev/Huginn/commit/f0133b5cf9112d60fb5d029b3419e9baa8768ad5))
+* **app:** video progress/volume bar not letting go ([ec540ad](https://github.com/WerdoxDev/Huginn/commit/ec540ad94948279e58f6ddbd9116b3bf70a6d0f5))
+* **app:** voice server wrong url ([a027052](https://github.com/WerdoxDev/Huginn/commit/a0270520da8a3be5365a17309ae98d905e6d46ec))
+* **app:** volume audio worklet url is not correct in build ([30a1a34](https://github.com/WerdoxDev/Huginn/commit/30a1a3484db446d1ff187604049c31604553f732))
+* revert test versions back from electron migration ([d5c1fbc](https://github.com/WerdoxDev/Huginn/commit/d5c1fbcc184493bbcbe9dfcea3cefc3dc75ed904))
+
 ## [0.34.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.34.0...app@v0.34.1) (2025-05-16)
 
 
