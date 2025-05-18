@@ -174,6 +174,8 @@ export class Gateway {
 			return;
 		}
 
+		console.log("UPDATING STREAM", selfStream);
+
 		const updateVoiceStateData: GatewayUpdateVoiceState = {
 			op: GatewayOperations.VOICE_STATE_UPDATE,
 			d: {
