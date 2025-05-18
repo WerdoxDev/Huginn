@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.3.0...voice@v0.4.0) (2025-05-18)
+
+
+### Features
+
+* **voice:** add producer closing ([7808791](https://github.com/WerdoxDev/Huginn/commit/780879159dea11a180b3187fc5db919a66053193))
+
 ## [0.3.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.2.0...voice@v0.3.0) (2025-05-12)
 
 
