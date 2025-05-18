@@ -44,9 +44,9 @@ const store = createStore(
 					produce((draft: StoreType) => {
 						const existingIndex = draft.voiceStates.findIndex((x) => x.userId === userId);
 						if (existingIndex !== -1) {
-							draft.voiceStates[existingIndex] = { channelId, userId, selfDeaf, selfMute, selfStream, selfVideo, guildId };
+							draft.voiceStates[existingIndex] = { guildId, channelId, userId, selfDeaf, selfMute, selfStream, selfVideo };
 						} else {
-							draft.voiceStates.push({ channelId, selfDeaf, selfMute, userId, selfStream, selfVideo, guildId });
+							draft.voiceStates.push({ guildId, channelId, selfDeaf, selfMute, userId, selfStream, selfVideo });
 						}
 					}),
 				),
@@ -77,6 +77,15 @@ const store = createStore(
 					?.audioLevel?.offAll("audio-level");
 				return set((state) => ({ remoteSources: state.remoteSources.filter((x) => x.producerId !== producerId) }));
 			},
+			updateRemoteSource: (producerId: string, srcObject: MediaProvider) =>
+				set(
+					produce((draft: StoreType) => {
+						const existingIndex = draft.remoteSources.findIndex((x) => x.producerId === producerId);
+						if (existingIndex !== -1) {
+							draft.remoteSources[existingIndex].srcObject = srcObject;
+						}
+					}),
+				),
 			clearRemoteSources: () => {
 				for (const remote of get().remoteSources) {
 					remote.audioLevel?.offAll("audio-level");
@@ -105,7 +114,6 @@ export function initializeVoice(queryClient: QueryClient) {
 	const unlisten = client.gateway.listen("ready", (d) => {
 		store.setState({ voiceStates: d.voiceStates });
 		store.setState({ callStates: d.callStates });
-		console.log(d);
 	});
 
 	const unlisten2 = client.gateway.listen("call_create", (d) => {
@@ -135,7 +143,7 @@ export function initializeVoice(queryClient: QueryClient) {
 		}
 
 		if (d.channelId) {
-			store.getState().updateVoiceState(d.channelId, d.guildId, d.userId, d.selfMute, d.selfDeaf, d.selfVideo, d.selfStream);
+			store.getState().updateVoiceState(d.channelId, d.guildId, d.userId, d.selfMute, d.selfDeaf, d.selfStream, d.selfVideo);
 		} else {
 			store.getState().removeVoiceState(d.userId);
 		}

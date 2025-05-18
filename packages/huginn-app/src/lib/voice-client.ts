@@ -121,7 +121,7 @@ export function listenToVoiceEvents() {
 		playRemoteSources();
 	});
 
-	const unlisten3 = client.voice.listen("producer_removed", (d) => {
+	const unlisten3 = client.voice.listen("producer_closed", (d) => {
 		const voice = voiceStore.getState();
 		const userId = voice.remoteSources.find((x) => x.producerId === d.producerId && x.kind === "audio")?.userId;
 
@@ -166,7 +166,12 @@ export function listenToVoiceEvents() {
 		const videoProducer = client.voice.screenShareProducers?.video;
 		if (videoProducer?.id === d.producerId && videoProducer.track) {
 			const stream = new MediaStream([videoProducer.track]);
-			voiceStore.getState().addRemoteSource(client.user.id, undefined, d.producerId, "video", stream);
+			const store = voiceStore.getState();
+			if (store.remoteSources.find((x) => x.producerId === videoProducer.id)) {
+				store.updateRemoteSource(videoProducer.id, stream);
+			} else {
+				store.addRemoteSource(client.user.id, undefined, d.producerId, "video", stream);
+			}
 		}
 	});
 

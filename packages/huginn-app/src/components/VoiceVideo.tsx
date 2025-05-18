@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { useEffect, useRef } from "react";
 import LoadingIcon from "./LoadingIcon";
 
 export default function VoiceVideo(props: {
@@ -6,9 +7,17 @@ export default function VoiceVideo(props: {
 	producerId?: string;
 	gridElementWidth: number;
 	srcObject?: MediaProvider;
-	maximized: boolean;
+	maximized?: boolean;
 	onClick: (producerId: string) => void;
 }) {
+	const videoRef = useRef<HTMLVideoElement>(null);
+
+	useEffect(() => {
+		if (videoRef.current) {
+			videoRef.current.srcObject = props.srcObject ?? null;
+		}
+	}, [props.srcObject]);
+
 	return (
 		<div
 			onClick={() => props.onClick(props.producerId ?? "")}
@@ -20,21 +29,7 @@ export default function VoiceVideo(props: {
 			)}
 			style={{ width: props.gridElementWidth }}
 		>
-			{!props.srcObject ? (
-				<LoadingIcon />
-			) : (
-				<video
-					className="h-full w-full"
-					ref={(el) => {
-						if (el && !el.srcObject) {
-							el.srcObject = props.srcObject ?? null;
-						}
-					}}
-					autoPlay
-					playsInline
-					muted
-				/>
-			)}
+			{!props.srcObject ? <LoadingIcon /> : <video className="h-full w-full" ref={videoRef} autoPlay playsInline muted />}
 		</div>
 	);
 }

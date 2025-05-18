@@ -52,12 +52,17 @@ export default function ScreenShareModal() {
 		window.electronAPI.setSelectedDisplaySource(selectedSource?.id);
 
 		const framerate = selectedFramerate === 0 ? 15 : selectedFramerate === 1 ? 30 : selectedFramerate === 2 ? 60 : 15;
-
-		client.gateway.updateVoiceState(voiceState.selfDeaf, voiceState.selfDeaf, true, voiceState.selfVideo);
+		const width = selectedQuality === 0 ? 640 : selectedQuality === 1 ? 1280 : selectedQuality === 2 ? 1920 : selectedQuality === 3 ? 2560 : 1280;
+		const height = selectedQuality === 0 ? 480 : selectedQuality === 1 ? 720 : selectedQuality === 2 ? 1080 : selectedQuality === 3 ? 2560 : 1440;
 
 		startTransition(async () => {
-			const stream = await navigator.mediaDevices.getDisplayMedia({ audio: false, video: { frameRate: framerate } });
-			await client.voice.startScreenSharing(stream.getVideoTracks()[0]);
+			const stream = await navigator.mediaDevices.getDisplayMedia({
+				audio: true,
+				video: { frameRate: framerate, width, height, aspectRatio: 16 / 9 },
+			});
+			await client.voice.startScreenSharing(stream.getVideoTracks()[0], stream.getAudioTracks()[0]);
+
+			client.gateway.updateVoiceState(voiceState.selfDeaf, voiceState.selfDeaf, true, voiceState.selfVideo);
 			close();
 		});
 	}

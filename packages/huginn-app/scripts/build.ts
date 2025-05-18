@@ -15,7 +15,7 @@ await build({
 			fileName: (_, entryName) => `${entryName}.cjs`,
 			formats: ["cjs"],
 		},
-		emptyOutDir: true,
+		emptyOutDir: false,
 		minify: false,
 		copyPublicDir: false,
 		outDir: ".vite/build",

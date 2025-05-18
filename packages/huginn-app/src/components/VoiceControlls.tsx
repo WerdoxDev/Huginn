@@ -1,4 +1,5 @@
 import type { GatewayVoiceState } from "@huginn/shared";
+import { useClient } from "@stores/apiStore";
 import clsx from "clsx";
 import Tooltip from "./tooltip/Tooltip";
 
@@ -13,6 +14,8 @@ export default function VoiceControlls(props: {
 	onConnect: () => void;
 	onToggleFullscreen: () => Promise<void>;
 }) {
+	const client = useClient();
+
 	return (
 		<div className="absolute inset-x-0 bottom-0 mb-2.5 flex shrink-0 items-center justify-center gap-x-2.5">
 			{props.isInVoice ? (
@@ -51,15 +54,15 @@ export default function VoiceControlls(props: {
 							</Tooltip.Trigger>
 							<Tooltip.Content>Share Screen</Tooltip.Content>
 						</Tooltip>
-						{/* <Tooltip>
+						<Tooltip>
 							<Tooltip.Trigger
 								className={clsx("h-full w-full rounded-lg px-5 py-1.5 text-white transition-colors hover:bg-background")}
 								onClick={() => client.voice.stopScreenSharing()}
 							>
 								<IconMingcuteMonitorFill className="size-6" />
 							</Tooltip.Trigger>
-							<Tooltip.Content>Share Screasden</Tooltip.Content>
-						</Tooltip> */}
+							<Tooltip.Content>Stop Sharing</Tooltip.Content>
+						</Tooltip>
 					</div>
 					<Tooltip>
 						<Tooltip.Trigger

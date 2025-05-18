@@ -37,12 +37,19 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 
 	const thisVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channelId), [voiceStates, props.channelId]);
 	const thisCallState = useMemo(() => callStates.find((x) => x.channelId === props.channelId), [callStates, props.channelId]);
-	const isGridView = useMemo(() => remoteSources.some((x) => x.kind === "video"), [remoteSources]);
+	const isGridView = useMemo(() => thisVoiceStates.some((x) => x.selfStream), [thisVoiceStates]);
 
 	const users = useUsers(Array.from(new Set([...(thisCallState?.ringing ?? []), ...thisVoiceStates.map((x) => x.userId)])));
 	const usersLookup = useLookup(users, (user) => user.id);
 	const usersSpeakingLookup = useLookup(speakingStates, (state) => state.userId);
 	const show = useMemo(() => users.length !== 0 && thisCallState, [props.channelId, users]);
+
+	useEffect(() => {
+		if (!voiceState.channelId) {
+			maximizedSourceId.current = undefined;
+			setMaximizedSource(undefined);
+		}
+	}, [voiceState]);
 
 	useLayoutEffect(() => {
 		const controller = new AbortController();
@@ -86,15 +93,18 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		};
 	}, [show]);
 
-	useLayoutEffect(() => {
-		updateGridSize();
-	}, [remoteSources, voiceStates, gridHeight, thisCallState, maximizedSource, isFullscreen]);
+	useEffect(() => {
+		client.voice.listen("producer_closed", (d) => {
+			if (d.producerId === maximizedSourceId.current) {
+				maximizedSourceId.current = undefined;
+				setMaximizedSource(undefined);
+			}
+		});
+	}, []);
 
 	useLayoutEffect(() => {
-		// if (isFullscreen) {
-		// }
 		updateGridSize();
-	}, [isFullscreen]);
+	}, [remoteSources, voiceStates, gridHeight, thisCallState, maximizedSource, isFullscreen, thisVoiceStates]);
 
 	function resize(e: MouseEvent) {
 		if (!gridRef.current || !isResizing.current) {
@@ -132,11 +142,10 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		}
 
 		if (huginnWindow.environment === "browser") {
-			const stream = await navigator.mediaDevices.getDisplayMedia({ audio: false, video: true });
-
-			client.gateway.updateVoiceState(voiceState.selfDeaf, voiceState.selfDeaf, true, voiceState.selfVideo);
-
+			const stream = await navigator.mediaDevices.getDisplayMedia({ audio: true, video: true });
 			await client.voice.startScreenSharing(stream.getVideoTracks()[0], stream.getAudioTracks()[0]);
+
+			client.gateway.updateVoiceState(voiceState.selfMute, voiceState.selfDeaf, true, voiceState.selfVideo);
 		} else {
 			updateModals({ screenshare: { isOpen: true } });
 		}
@@ -167,7 +176,10 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		const store = voiceStore.getState();
 		const numBoxes = maximizedSourceId.current
 			? 1
-			: store.voiceStates.length + store.remoteSources.filter((x) => x.kind === "video").length + (thisCallState?.ringing.length ?? 0);
+			: store.voiceStates.length +
+				store.remoteSources.filter((x) => x.kind === "video").length +
+				(thisCallState?.ringing.length ?? 0) +
+				(!voiceState.channelId ? thisVoiceStates.filter((x) => x.selfStream).length : 0);
 		const containerWidth = gridRef.current.clientWidth;
 		const containerHeight = gridRef.current.clientHeight;
 		const boxMargin = !maximizedSourceId.current ? 12 : 0;
@@ -239,8 +251,8 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 				style={{ height: !isFullscreen ? gridHeight : "100%" }}
 			>
 				{isGridView &&
-					(maximizedSource ? [maximizedSource] : remoteSources)
-						.filter((x) => x.kind === "video")
+					remoteSources
+						.filter((x) => (maximizedSource ? x.producerId === maximizedSource.producerId : x.kind === "video"))
 						.map((x) => (
 							<VoiceVideo
 								maximized={!!maximizedSource}
@@ -251,6 +263,25 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 								gridElementWidth={gridSize?.elementWidth ?? 0}
 								srcObject={x.srcObject}
 							/>
+						))}
+				{isGridView &&
+					!voiceState.channelId &&
+					thisVoiceStates
+						.filter((x) => x.selfStream)
+						.map((x) => (
+							<div
+								key={x.userId}
+								className="flex aspect-video items-center justify-center rounded-xl bg-background"
+								style={{ width: gridSize?.elementWidth ?? 0 }}
+							>
+								<button
+									onClick={connect}
+									type="button"
+									className="rounded-lg border border-text/80 bg-secondary px-4 py-2 text-text shadow-xl transition-colors hover:bg-tertiary"
+								>
+									Watch
+								</button>
+							</div>
 						))}
 				{!maximizedSource &&
 					thisCallState?.ringing.map((x) => (
