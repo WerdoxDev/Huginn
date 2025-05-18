@@ -24,6 +24,8 @@ export enum VoiceOperations {
 	DECODE_ERROR = 17,
 	PING = 18,
 	PONG = 19,
+	CLOSE_PRODUCER = 20,
+	PRODUCER_CLOSED = 21,
 }
 
 export type VoiceOperationDatas = {
@@ -46,13 +48,15 @@ export type VoiceOperationDatas = {
 	[VoiceOperations.PEER_LEFT]: VoicePeerLeftData;
 	[VoiceOperations.PING]: undefined;
 	[VoiceOperations.PONG]: undefined;
+	[VoiceOperations.CLOSE_PRODUCER]: VoiceCloseProducerData;
+	[VoiceOperations.PRODUCER_CLOSED]: VoiceProducerClosedData;
 };
 
 export type VoiceEvents = {
 	transport_ready: { channelId: Snowflake };
 	local_producer_created: { producerId: string };
 	consumer_created: { consumerId: string; producerId: string; track: MediaStreamTrack; producerUserId: Snowflake };
-	producer_removed: { producerId: string; userId: Snowflake };
+	producer_closed: { producerId: string; userId: Snowflake };
 	connected: undefined;
 	disconnected: undefined;
 	ping: { rtt: number };
@@ -155,4 +159,14 @@ export type VoicePeerLeftData = {
 	peerId: string;
 	userId: Snowflake;
 	producerIds: string[];
+};
+
+export type VoiceCloseProducerData = {
+	channelId: string;
+	producerId: string;
+};
+
+export type VoiceProducerClosedData = {
+	producerId: string;
+	userId: string;
 };
