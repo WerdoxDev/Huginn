@@ -17,7 +17,7 @@ const mediaCodecs: RtpCodecCapability[] = [
 	},
 	{
 		kind: "video",
-		mimeType: "video/VP8",
+		mimeType: "video/vp9",
 		clockRate: 90000,
 	},
 ];

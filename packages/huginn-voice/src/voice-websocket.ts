@@ -4,6 +4,7 @@ import { verifyVoiceToken } from "@huginn/backend-shared/voice-utils";
 import {
 	constants,
 	GatewayCode,
+	type VoiceCloseProducerData,
 	type VoiceConnectTransportData,
 	type VoiceConsumeData,
 	type VoiceCreateTransportData,
@@ -54,7 +55,6 @@ export class VoiceWebSocket {
 
 			router.peers.delete(peer.id);
 			const producerIds = Array.from(rtcPeer.producers.values().map((x) => x.id));
-
 			for (const [otherPeerId] of router.peers) {
 				const peerLeftData: VoicePayload<VoiceOperations.PEER_LEFT> = {
 					op: VoiceOperations.PEER_LEFT,
@@ -107,6 +107,9 @@ export class VoiceWebSocket {
 					break;
 				case VoiceOperations.PING:
 					this.handlePing(peer);
+					break;
+				case VoiceOperations.CLOSE_PRODUCER:
+					this.handleCloseProducer(peer, data.d as VoiceCloseProducerData);
 					break;
 			}
 		} catch (e) {
@@ -170,7 +173,12 @@ export class VoiceWebSocket {
 			return;
 		}
 
-		const consumer = await transportData.transport.consume({ producerId: data.producerId, rtpCapabilities: data.rtpCapabilities, paused: true });
+		const consumer = await transportData.transport.consume({
+			producerId: data.producerId,
+			rtpCapabilities: data.rtpCapabilities,
+			paused: true,
+		});
+
 		rtcPeer?.consumers.set(consumer.id, consumer);
 
 		const consumerCreatedData: VoicePayload<VoiceOperations.CONSUMER_CREATED> = {
@@ -202,6 +210,7 @@ export class VoiceWebSocket {
 		}
 
 		const producer = await transportData.transport.produce({ kind: data.kind, rtpParameters: data.rtpParameters });
+
 		rtcPeer?.producers.set(producer.id, producer);
 
 		for (const [otherPeerId] of router.peers) {
@@ -254,7 +263,6 @@ export class VoiceWebSocket {
 		}
 
 		const transport = await createTransport(router.router);
-		console.log(JSON.stringify(transport.iceCandidates, null, 2));
 		const rtcPeer = router.peers.get(peer.id);
 		rtcPeer?.transports.set(transport.id, { transport, direction: data.direction });
 
@@ -273,6 +281,33 @@ export class VoiceWebSocket {
 		};
 
 		this.send(peer, transportCreatedData);
+	}
+
+	private handleCloseProducer(peer: Peer, data: VoiceCloseProducerData) {
+		const router = routers.get(data.channelId);
+
+		if (!verifyPeer(router, peer, data.channelId)) {
+			return;
+		}
+
+		const rtcPeer = router.peers.get(peer.id);
+		const producer = rtcPeer?.producers.get(data.producerId);
+
+		if (!producer || !rtcPeer) {
+			return;
+		}
+
+		producer.close();
+		rtcPeer.producers.delete(producer.id);
+
+		const producerClosedData: VoicePayload<VoiceOperations.PRODUCER_CLOSED> = {
+			op: VoiceOperations.PRODUCER_CLOSED,
+			d: { producerId: producer.id, userId: rtcPeer?.userId },
+		};
+
+		for (const [otherPeerId] of router.peers) {
+			ws.publish(otherPeerId, JSON.stringify(producerClosedData));
+		}
 	}
 
 	private async handleIdentify(peer: Peer, data: VoiceIdentifyData) {
