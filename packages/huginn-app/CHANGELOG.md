@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.36.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.35.0...app@v0.36.0) (2025-05-18)
+
+
+### Features
+
+* **app:** add screenshare stopping and some state managerment fixes ([b2f6bc8](https://github.com/WerdoxDev/Huginn/commit/b2f6bc837041b0cc9aac033a12083155ca113778))
+
 ## [0.35.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.34.1...app@v0.35.0) (2025-05-16)
 
 
