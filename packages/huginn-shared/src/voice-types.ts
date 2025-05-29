@@ -54,8 +54,8 @@ export type VoiceOperationDatas = {
 
 export type VoiceEvents = {
 	transport_ready: { channelId: Snowflake };
-	local_producer_created: { producerId: string };
-	consumer_created: { consumerId: string; producerId: string; track: MediaStreamTrack; producerUserId: Snowflake };
+	local_producer_created: { producerId: string; kind: HMediaKind; track: MediaStreamTrack };
+	consumer_created: { consumerId: string; producerId: string; track: MediaStreamTrack; producerUserId: Snowflake; kind: HMediaKind };
 	producer_closed: { producerId: string; userId: Snowflake };
 	connected: undefined;
 	disconnected: undefined;
@@ -68,10 +68,14 @@ export type VoicePayload<OP extends keyof VoiceOperationDatas | undefined = unde
 	d: OP extends undefined ? VoiceOperationDatas[keyof VoiceOperationDatas] : VoiceOperationDatas[Exclude<OP, undefined>];
 };
 
+export type MediasoupAppData = { mediaKind: HMediaKind };
+
+export type HMediaKind = "microphone" | "screen_audio" | "screen_video" | "camera" | "unknown";
+
 export type ProducerData = {
 	producerId: string;
 	producerUserId: string;
-	kind: MediaKind;
+	kind: HMediaKind;
 };
 
 export type VoiceHeartbeatData = number | undefined;
@@ -121,7 +125,7 @@ export type VoiceTransportConnectedData = {
 export type VoiceProduceData = {
 	channelId: string;
 	transportId: string;
-	kind: MediaKind;
+	kind: HMediaKind;
 	rtpParameters: RtpParameters;
 };
 
@@ -142,7 +146,7 @@ export type VoiceConsumerCreatedData = {
 	consumerId: string;
 	producerId: string;
 	producerUserId: Snowflake;
-	kind: MediaKind;
+	kind: HMediaKind;
 	rtpParameters: RtpParameters;
 };
 

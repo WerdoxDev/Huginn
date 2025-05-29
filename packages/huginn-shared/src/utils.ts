@@ -1,6 +1,8 @@
+import type { MediaKind } from "mediasoup/node/lib/types";
 import { sha256 } from "ohash";
 import { fileTypes } from "./cdn-types";
 import type { GatewayOperationTypes } from "./gateway-types";
+import type { HMediaKind } from "./voice-types";
 
 export function pick<Data extends object, Keys extends keyof Data>(data: Data, keys: Keys[]): Pick<Data, Keys> {
 	const result = {} as Pick<Data, Keys>;
@@ -297,4 +299,17 @@ export function validateGatewayData(data: unknown): boolean {
 
 export function remap(value: number, fromMin: number, fromMax: number, toMin = 0, toMax = 100): number {
 	return ((value - fromMin) * (toMax - toMin)) / (fromMax - fromMin) + toMin;
+}
+
+export function convertToMediaKind(hMediaKind: HMediaKind): MediaKind | undefined {
+	switch (hMediaKind) {
+		case "camera":
+			return "video";
+		case "microphone":
+			return "audio";
+		case "screen_audio":
+			return "audio";
+		case "screen_video":
+			return "video";
+	}
 }
