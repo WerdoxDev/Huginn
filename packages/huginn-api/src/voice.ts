@@ -1,6 +1,8 @@
 import {
 	constants,
 	GatewayCode,
+	type HMediaKind,
+	type MediasoupAppData,
 	type ProducerData,
 	type Snowflake,
 	type VoiceConsumerCreatedData,
@@ -16,9 +18,10 @@ import {
 	type VoiceReadyData,
 	type VoiceTransportConnectedData,
 	type VoiceTransportCreatedData,
+	convertToMediaKind,
 } from "@huginn/shared";
 import * as mediasoupClient from "mediasoup-client";
-import type { Consumer, Producer, Transport } from "mediasoup-client/types";
+import type { Consumer, Producer, ProducerOptions, Transport } from "mediasoup-client/types";
 import { EventEmitterWithHistory } from "./event-emitter";
 import type { HuginnClient } from "./huginn-client";
 import type { VoiceOptions } from "./types";
@@ -34,15 +37,13 @@ export class Voice {
 	private readonly emitter = new EventEmitterWithHistory();
 
 	public localVoiceState: { audioPaused: boolean; audioMuted: boolean; consumersMuted: boolean; streaming: boolean; camera: boolean };
-	public micProducer?: Producer;
-	public cameraProducer?: Producer;
-	public screenShareProducers?: { video: Producer; audio?: Producer };
 	public connectionInfo?: { token: string; channelId: Snowflake; guildId: Snowflake | null };
-	public sendTransport?: Transport;
+	public sendTransport?: Transport<MediasoupAppData>;
+	public producers: Map<HMediaKind, Producer<MediasoupAppData>>;
 	private device?: mediasoupClient.Device;
 	private initialProducers?: ProducerData[];
 	private recvTransport?: Transport;
-	private consumers: Map<string, Consumer>;
+	private consumers: Map<string, Consumer<MediasoupAppData>>;
 
 	public on<EventName extends keyof VoiceEvents>(
 		eventName: EventName,
@@ -74,6 +75,7 @@ export class Voice {
 		this.localVoiceState = { consumersMuted: false, audioMuted: false, audioPaused: true, streaming: false, camera: false };
 		this.client = client;
 		this.consumers = new Map();
+		this.producers = new Map();
 	}
 
 	public connect(token: string, channelId: Snowflake, guildId: Snowflake | null): void {
@@ -97,125 +99,114 @@ export class Voice {
 		}
 
 		if (videoTrack) {
-			this.cameraProducer = await this.sendTransport.produce({
+			await this.openProducer("camera", {
 				track: videoTrack,
+				appData: { mediaKind: "camera" },
 			});
-			this.emit("local_producer_created", { producerId: this.cameraProducer.id });
 		}
 
+		const microphoneProducer = this.producers.get("microphone");
 		if (audioTrack) {
-			if (this.micProducer) {
-				this.micProducer.replaceTrack({ track: audioTrack });
+			if (microphoneProducer) {
+				microphoneProducer.replaceTrack({ track: audioTrack });
 			} else {
-				this.micProducer = await this.sendTransport.produce({
+				await this.openProducer("microphone", {
 					track: audioTrack,
+					appData: { mediaKind: "microphone" },
 				});
-
-				this.emit("local_producer_created", { producerId: this.micProducer.id });
 			}
 		}
 	}
 
-	public async startScreenSharing(videoTrack: MediaStreamTrack, audioTrack?: MediaStreamTrack): Promise<void> {
+	public async startScreensharing(videoTrack: MediaStreamTrack, audioTrack?: MediaStreamTrack): Promise<void> {
 		if (!this.sendTransport) {
 			return;
 		}
 
-		let newProducers = false;
-		let videoProducer: Producer;
-		let audioProducer: Producer | undefined;
+		videoTrack.onended = () => {
+			this.stopScreensharing();
+		};
 
-		if (this.screenShareProducers?.video) {
-			await this.screenShareProducers.video.replaceTrack({ track: videoTrack });
-			videoProducer = this.screenShareProducers.video;
+		const videoProducer = this.producers.get("screen_video");
+		const audioProducer = this.producers.get("screen_audio");
+
+		if (videoProducer) {
+			await videoProducer.replaceTrack({ track: videoTrack });
 		} else {
-			videoProducer = await this.sendTransport.produce({
+			await this.openProducer("screen_video", {
 				track: videoTrack,
+				appData: { mediaKind: "screen_video" },
 				encodings: [{ scalabilityMode: "L1T3" }],
 				codecOptions: { videoGoogleStartBitrate: 1000 },
 			});
-			newProducers = true;
 		}
 
 		if (audioTrack) {
-			if (this.screenShareProducers?.audio) {
-				await this.screenShareProducers.audio.replaceTrack({ track: audioTrack });
-				audioProducer = this.screenShareProducers.audio;
+			if (audioProducer) {
+				await audioProducer.replaceTrack({ track: audioTrack });
 			} else {
-				audioProducer = await this.sendTransport.produce({ track: audioTrack });
-				newProducers = true;
+				await this.openProducer("screen_audio", { track: audioTrack, appData: { mediaKind: "screen_audio" } });
 			}
 		}
-
-		// const audioProducer = audioTrack ? await this.sendTransport.produce({ track: audioTrack }) : undefined;
-
-		this.screenShareProducers = {
-			video: videoProducer,
-			audio: audioProducer,
-		};
-
-		if (newProducers) {
-		}
-		this.emit("local_producer_created", { producerId: videoProducer.id });
 
 		this.localVoiceState.streaming = true;
 		this.emit("local_voice_state_changed", this.localVoiceState);
-		// if (audioProducer) {
-		// 	this.emit("local_producer_created", { producerId: audioProducer?.id });
-		// }
 	}
 
-	public stopScreenSharing(): void {
-		if (!this.connectionInfo || !this.screenShareProducers) {
+	public stopScreensharing(): void {
+		if (!this.connectionInfo) {
+			return;
+		}
+		const videoProducer = this.producers.get("screen_video");
+		const audioProducer = this.producers.get("screen_audio");
+
+		// Screenshare must have a video. Audio is optional
+		if (!videoProducer) {
 			return;
 		}
 
-		const closeProducerData: VoicePayload<VoiceOperations.CLOSE_PRODUCER> = {
-			op: VoiceOperations.CLOSE_PRODUCER,
-			d: { channelId: this.connectionInfo.channelId, producerId: this.screenShareProducers.video.id },
-		};
+		this.closeProducer(videoProducer);
 
-		this.send(closeProducerData);
+		if (audioProducer) {
+			this.closeProducer(audioProducer);
+		}
 
 		this.client.gateway.updateVoiceState(this.localVoiceState.audioMuted, this.localVoiceState.consumersMuted, false, this.localVoiceState.camera);
 
-		this.localVoiceState.streaming = false;
-		this.emit("local_voice_state_changed", this.localVoiceState);
+		this.updateLocalVoiceState({ streaming: false });
 	}
 
-	public muteAudio(): void {
-		this.localVoiceState.audioMuted = true;
-		this.micProducer?.pause();
-		this.emit("local_voice_state_changed", this.localVoiceState);
-	}
-
-	public unmuteAudio(): void {
-		this.localVoiceState.audioMuted = false;
-		if (!this.localVoiceState.audioPaused && this.micProducer?.paused) {
-			this.micProducer?.resume();
-			this.emit("local_voice_state_changed", this.localVoiceState);
+	public muteMicrophone(): void {
+		this.updateLocalVoiceState({ audioMuted: true });
+		const producer = this.producers.get("microphone");
+		if (!producer?.paused) {
+			producer?.pause();
 		}
 	}
 
-	public pauseMedia(type: "audio" | "video"): void {
-		if (type === "audio") {
-			this.localVoiceState.audioPaused = true;
-			if (!this.micProducer?.paused) {
-				this.micProducer?.pause();
-				this.emit("local_voice_state_changed", this.localVoiceState);
-			}
+	public unmuteMicrophone(): void {
+		this.updateLocalVoiceState({ audioMuted: false });
+		const producer = this.producers.get("microphone");
+		if (!this.localVoiceState.audioPaused && producer?.paused) {
+			producer?.resume();
 		}
 	}
 
-	public resumeMedia(type: "audio" | "video"): boolean {
-		if (type === "audio") {
-			this.localVoiceState.audioPaused = false;
+	public pauseMicrophone(): void {
+		this.updateLocalVoiceState({ audioPaused: true });
+		const producer = this.producers.get("microphone");
+		if (!producer?.paused) {
+			producer?.pause();
+		}
+	}
 
-			if (!this.localVoiceState?.audioMuted && this.micProducer?.paused) {
-				this.micProducer.resume();
-				this.emit("local_voice_state_changed", this.localVoiceState);
-				return true;
-			}
+	public resumeMedia(): boolean {
+		this.updateLocalVoiceState({ audioPaused: false });
+
+		const producer = this.producers.get("microphone");
+		if (!this.localVoiceState?.audioMuted && producer?.paused) {
+			producer.resume();
+			return true;
 		}
 
 		return false;
@@ -227,8 +218,8 @@ export class Voice {
 				consumer.pause();
 			}
 		}
-		this.localVoiceState.consumersMuted = true;
-		this.emit("local_voice_state_changed", this.localVoiceState);
+
+		this.updateLocalVoiceState({ consumersMuted: true });
 	}
 
 	public unmuteConsumers(): void {
@@ -237,7 +228,49 @@ export class Voice {
 				consumer.resume();
 			}
 		}
-		this.localVoiceState.consumersMuted = false;
+
+		this.updateLocalVoiceState({ consumersMuted: false });
+	}
+
+	private async openProducer(kind: HMediaKind, options: ProducerOptions<MediasoupAppData>) {
+		if (!this.sendTransport || !options.track) {
+			return;
+		}
+
+		const producer = await this.sendTransport.produce<MediasoupAppData>(options);
+		this.producers.set(kind, producer);
+		this.emit("local_producer_created", { producerId: producer.id, kind: producer.appData.mediaKind, track: options.track });
+	}
+
+	private closeProducer(producer: Producer) {
+		if (!this.connectionInfo) {
+			return;
+		}
+
+		const closeProducerData: VoicePayload<VoiceOperations.CLOSE_PRODUCER> = {
+			op: VoiceOperations.CLOSE_PRODUCER,
+			d: { channelId: this.connectionInfo.channelId, producerId: producer.id },
+		};
+
+		this.send(closeProducerData);
+	}
+
+	private updateLocalVoiceState(voiceState: Partial<typeof this.localVoiceState>) {
+		if (voiceState.audioPaused !== undefined) {
+			this.localVoiceState.audioPaused = voiceState.audioPaused;
+		}
+		if (voiceState.audioMuted !== undefined) {
+			this.localVoiceState.audioMuted = voiceState.audioMuted;
+		}
+		if (voiceState.consumersMuted !== undefined) {
+			this.localVoiceState.consumersMuted = voiceState.consumersMuted;
+		}
+		if (voiceState.streaming !== undefined) {
+			this.localVoiceState.streaming = voiceState.streaming;
+		}
+		if (voiceState.camera !== undefined) {
+			this.localVoiceState.camera = voiceState.camera;
+		}
 		this.emit("local_voice_state_changed", this.localVoiceState);
 	}
 
@@ -274,13 +307,11 @@ export class Voice {
 		this.sequence = undefined;
 		this.socket = undefined;
 		this.consumers = new Map();
+		this.producers = new Map();
 		this.connectionInfo = undefined;
 		this.recvTransport = undefined;
 		this.sendTransport = undefined;
 		this.initialProducers = undefined;
-		this.micProducer = undefined;
-		this.cameraProducer = undefined;
-		this.screenShareProducers = undefined;
 		this.device = undefined;
 		this.localVoiceState = { audioPaused: true, audioMuted: false, consumersMuted: false, streaming: false, camera: false };
 	}
@@ -370,12 +401,15 @@ export class Voice {
 			return;
 		}
 
-		const consumer = await this.recvTransport.consume({
+		const consumer = await this.recvTransport.consume<MediasoupAppData>({
 			id: data.consumerId,
 			producerId: data.producerId,
 			rtpParameters: data.rtpParameters,
-			kind: data.kind,
+			kind: convertToMediaKind(data.kind),
+			appData: { mediaKind: data.kind },
 		});
+
+		console.log(consumer.appData, "APP DATA");
 
 		this.consumers.set(consumer.id, consumer);
 
@@ -384,6 +418,7 @@ export class Voice {
 			consumerId: data.consumerId,
 			producerId: data.producerId,
 			producerUserId: data.producerUserId,
+			kind: data.kind,
 		});
 
 		const resumeConsumerData: VoicePayload<VoiceOperations.RESUME_CONSUMER> = {
@@ -432,16 +467,25 @@ export class Voice {
 					callback();
 				});
 
-				this.sendTransport?.on("produce", async ({ kind, rtpParameters }, callback, errback) => {
+				this.sendTransport?.on("produce", async ({ kind, rtpParameters, appData }, callback, errback) => {
+					if (!this.connectionInfo || !this.sendTransport) {
+						return;
+					}
+
 					const produceData: VoicePayload<VoiceOperations.PRODUCE> = {
 						op: VoiceOperations.PRODUCE,
-						// biome-ignore lint/style/noNonNullAssertion: connectionInfo and sendTransport cannot be null here
-						d: { channelId: this.connectionInfo!.channelId, transportId: this.sendTransport!.id, kind, rtpParameters },
+						d: {
+							channelId: this.connectionInfo.channelId,
+							transportId: this.sendTransport.id,
+							kind: (appData as MediasoupAppData).mediaKind,
+							rtpParameters,
+						},
 					};
 
 					this.send(produceData);
 
 					const { producerId } = await this.waitForProducerCreated();
+
 					callback({ id: producerId });
 				});
 
@@ -478,17 +522,10 @@ export class Voice {
 			this.consumers.delete(consumer.id);
 		}
 
-		if (this.screenShareProducers?.video.id === data.producerId) {
-			this.screenShareProducers.video.close();
-		}
-
-		if (this.screenShareProducers?.audio?.id === data.producerId) {
-			this.screenShareProducers.audio.close();
-		}
-
-		if ((!this.screenShareProducers?.audio || this.screenShareProducers?.audio?.closed) && this.screenShareProducers?.video.closed) {
-			this.screenShareProducers = undefined;
-			console.log("CLOSED SCREEN SHARE");
+		const producer = Array.from(this.producers.entries()).find(([_, x]) => x.id === data.producerId);
+		if (producer) {
+			producer[1].close();
+			this.producers.delete(producer[0]);
 		}
 
 		this.emit("producer_closed", { producerId: data.producerId, userId: data.userId });

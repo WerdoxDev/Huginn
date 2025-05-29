@@ -14,6 +14,7 @@ import type {
 	GatewayResumedData,
 	GatewayUpdateVoiceState,
 	GatewayVoiceServerUpdateData,
+	GatewayVoiceStateUpdateData,
 	Snowflake,
 } from "@huginn/shared";
 import { isOpcode } from "@huginn/shared";
@@ -134,13 +135,25 @@ export class Gateway {
 		this.send(updateVoiceStateData);
 
 		const token = await new Promise<string>((resolve, reject) => {
+			let count = 0;
+			let token: string;
 			const onMessage = (data: GatewayPayload) => {
 				if (isOpcode(data, GatewayOperations.DISPATCH)) {
 					if (data.t === "voice_server_update") {
 						const dispatch = data.d as GatewayVoiceServerUpdateData;
-						resolve(dispatch.token);
+						token = dispatch.token;
 
+						count++;
+					} else if (data.t === "voice_state_update") {
+						const d = data.d as GatewayVoiceStateUpdateData;
+						if (d.userId === this.client.user?.id) {
+							count++;
+						}
+					}
+
+					if (count === 2) {
 						this.off("message", onMessage);
+						resolve(token);
 					}
 				}
 			};
@@ -174,8 +187,6 @@ export class Gateway {
 			return;
 		}
 
-		console.log("UPDATING STREAM", selfStream);
-
 		const updateVoiceStateData: GatewayUpdateVoiceState = {
 			op: GatewayOperations.VOICE_STATE_UPDATE,
 			d: {
@@ -191,9 +202,9 @@ export class Gateway {
 		this.client.gateway.send(updateVoiceStateData);
 
 		if (selfMute) {
-			this.client.voice.muteAudio();
+			this.client.voice.muteMicrophone();
 		} else {
-			this.client.voice.unmuteAudio();
+			this.client.voice.unmuteMicrophone();
 		}
 
 		if (selfDeaf) {
