@@ -3,6 +3,7 @@
 **/huginn-website
 **/node_modules
 
+**/huginn-app-bindings
 **/Dockerfile*
 **/docker-compose*
 **/.dockerignore
