@@ -4,6 +4,7 @@ import { verifyVoiceToken } from "@huginn/backend-shared/voice-utils";
 import {
 	constants,
 	GatewayCode,
+	type MediasoupAppData,
 	type VoiceCloseProducerData,
 	type VoiceConnectTransportData,
 	type VoiceConsumeData,
@@ -16,6 +17,7 @@ import {
 	idFix,
 	validateGatewayData,
 } from "@huginn/shared";
+import { convertToMediaKind } from "@huginn/shared";
 import type { Message, Peer } from "crossws";
 import { ws } from "#index";
 import { createRouter, createTransport, routers, verifyPeer } from "#mediasoup";
@@ -173,9 +175,10 @@ export class VoiceWebSocket {
 			return;
 		}
 
-		const consumer = await transportData.transport.consume({
+		const consumer = await transportData.transport.consume<MediasoupAppData>({
 			producerId: data.producerId,
 			rtpCapabilities: data.rtpCapabilities,
+			appData: producerPeer.producers.get(data.producerId)?.appData ?? { mediaKind: "unknown" },
 			paused: true,
 		});
 
@@ -186,7 +189,7 @@ export class VoiceWebSocket {
 			d: {
 				consumerId: consumer.id,
 				producerId: data.producerId,
-				kind: consumer.kind,
+				kind: consumer.appData.mediaKind,
 				rtpParameters: consumer.rtpParameters,
 				producerUserId: producerPeer.userId,
 			},
@@ -204,12 +207,18 @@ export class VoiceWebSocket {
 
 		const rtcPeer = router.peers.get(peer.id);
 		const transportData = rtcPeer?.transports.get(data.transportId);
+		const producerMediaKind = convertToMediaKind(data.kind);
 
-		if (!transportData || transportData.direction !== "send" || !rtcPeer) {
+		if (!transportData || transportData.direction !== "send" || !rtcPeer || !producerMediaKind) {
+			console.log("Can't produce");
 			return;
 		}
 
-		const producer = await transportData.transport.produce({ kind: data.kind, rtpParameters: data.rtpParameters });
+		const producer = await transportData.transport.produce({
+			kind: producerMediaKind,
+			rtpParameters: data.rtpParameters,
+			appData: { mediaKind: data.kind },
+		});
 
 		rtcPeer?.producers.set(producer.id, producer);
 
@@ -327,13 +336,19 @@ export class VoiceWebSocket {
 
 		const router = await createRouter(data.channelId);
 
-		const rtcPeer: RTCPeer = { id: peer.id, consumers: new Map(), producers: new Map(), transports: new Map(), userId: user.id };
+		const rtcPeer: RTCPeer = {
+			id: peer.id,
+			consumers: new Map(),
+			producers: new Map(),
+			transports: new Map(),
+			userId: user.id,
+		};
 		router.peers.set(peer.id, rtcPeer);
 
 		const producers = Array.from(
 			router.peers
 				.values()
-				.map((x) => Array.from(x.producers.values().map((y) => ({ producerId: y.id, producerUserId: x.userId, kind: y.kind })))),
+				.map((x) => Array.from(x.producers.values().map((y) => ({ producerId: y.id, producerUserId: x.userId, kind: y.appData.mediaKind })))),
 		).flat();
 
 		const readyData: VoicePayload<VoiceOperations.READY> = {
