@@ -9,9 +9,11 @@ import type {
 	APIDefaultMessage,
 	APIMessage,
 	APIMessageUser,
+	APIPublicUser,
 	APIRelationUser,
 	APIRelationshipWithoutOwner,
 	DirectChannel,
+	HMediaKind,
 	RelationshipType,
 	Snowflake,
 } from "@huginn/shared";
@@ -152,11 +154,13 @@ export type ContextMenuStateProps<T = unknown> = {
 export type ContextMenuItemProps = {
 	label: string;
 	disabled?: boolean;
+	preventClose?: boolean;
 };
 
 export type ContextMenuRelationship = { user: APIRelationUser; type: RelationshipType };
 export type ContextMenuDMChannel = AppDirectChannel;
 export type ContextMenuDMChannelRecipient = { channelId: Snowflake; recipient: APIChannelUser };
+export type ContextMenuVoiceUser = { user: APIPublicUser; producerId?: string; kind: HMediaKind };
 
 export type MessageRenderInfo = {
 	message: AppMessage;

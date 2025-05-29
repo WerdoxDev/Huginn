@@ -1,4 +1,5 @@
 import type { APIPublicUser, GatewayVoiceState } from "@huginn/shared";
+import { useContextMenu } from "@stores/contextMenuStore";
 import clsx from "clsx";
 import UserAvatar from "./UserAvatar";
 
@@ -9,13 +10,16 @@ export default function VoiceUser(props: {
 	ringing?: boolean;
 	isGridView: boolean;
 	gridElementWidth: number;
+	producerId?: string;
 }) {
+	const { open: openContextMenu } = useContextMenu("voice_user");
 	return (
 		<div
 			className={clsx(
-				"group relative flex shrink-0 flex-col items-center justify-center gap-y-1 rounded-xl shadow-md transition-shadow hover:shadow-xl",
+				"group relative flex shrink-0 cursor-pointer flex-col items-center justify-center gap-y-1 rounded-xl shadow-md transition-shadow hover:shadow-xl",
 				props.isGridView && "aspect-video p-0",
 			)}
+			onContextMenu={(e) => openContextMenu({ user: props.user, producerId: props.producerId, kind: "microphone" }, e)}
 			style={props.isGridView ? { width: props.gridElementWidth } : undefined}
 		>
 			<div

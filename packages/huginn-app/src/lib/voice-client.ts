@@ -1,7 +1,9 @@
 import { EventEmitterWithHistory } from "@huginn/api/src/event-emitter";
+import type { HMediaKind, Snowflake } from "@huginn/shared";
 import { client } from "@stores/apiStore";
 import { settingsStore } from "@stores/settingsStore";
 import { voiceStore } from "@stores/voiceStore";
+import { listenEvent } from "./event-handler";
 
 export class AudioLevelChecker extends EventEmitterWithHistory {
 	private audioContext: AudioContext | undefined;
@@ -78,6 +80,76 @@ export class VoiceInputDevice {
 	}
 }
 
+export class AudioSourcePlayer {
+	private gainNode: GainNode;
+	private audioContext: AudioContext;
+	private audioElement: HTMLAudioElement;
+	private abortController: AbortController;
+	public producerId: string;
+	public userId: Snowflake;
+	public kind: HMediaKind;
+
+	private globalGain: number;
+	private localGain?: number;
+
+	public constructor(srcObject: MediaProvider, producerId: string, userId: Snowflake, kind: HMediaKind, globalGain: number) {
+		this.globalGain = globalGain;
+		this.producerId = producerId;
+		this.userId = userId;
+		this.kind = kind;
+		this.abortController = new AbortController();
+
+		this.audioElement = document.createElement("audio");
+		this.audioElement.autoplay = false;
+		this.audioElement.srcObject = srcObject;
+
+		this.audioContext = new AudioContext({ sinkId: settingsStore.getState().outputDeviceId });
+		this.gainNode = this.audioContext.createGain();
+
+		this.audioElement.addEventListener(
+			"loadedmetadata",
+			(_e) => {
+				if (!this.audioElement.srcObject) return;
+
+				const audioSource = this.audioContext.createMediaStreamSource(this.audioElement.srcObject as MediaStream);
+				audioSource.connect(this.gainNode);
+				this.gainNode.connect(this.audioContext.destination);
+
+				this.abortController.abort();
+			},
+			{ signal: this.abortController.signal },
+		);
+	}
+
+	public stop() {
+		this.abortController.abort();
+		this.gainNode.disconnect();
+		this.audioContext.close();
+		this.audioElement.pause();
+		this.audioElement.srcObject = null;
+	}
+
+	public setGain(globalGain: number | undefined, localGain: number | undefined) {
+		if (globalGain) {
+			this.globalGain = globalGain;
+		}
+		if (localGain !== undefined) {
+			this.localGain = localGain;
+		}
+
+		if (this.localGain === undefined) {
+			this.localGain = 100;
+		}
+
+		this.gainNode.gain.value = (this.globalGain / 100) * (this.localGain / 100);
+		console.log(this.gainNode.gain.value, this.globalGain, this.localGain);
+	}
+
+	public setSinkId(deviceId: string) {
+		this.audioContext.setSinkId(deviceId);
+	}
+}
+
 let inputDevice: VoiceInputDevice;
 let inputThreshold = 0;
 
@@ -94,10 +166,11 @@ export function listenToVoiceEvents() {
 
 		const audioLevel = new AudioLevelChecker();
 		audioLevel.startChecking(stream);
-		audioLevel.on("audio-level", onAudioLevel);
+		audioLevel.on("audio-level", onLocalAudioLevel);
 
-		if (client.voice.micProducer) {
-			voiceStore.getState().addRemoteSource(client.user.id, undefined, client.voice.micProducer.id, "audio", stream, audioLevel);
+		const producer = client.voice.producers.get("microphone");
+		if (producer) {
+			voiceStore.getState().addRemoteSource(client.user.id, undefined, producer.id, producer.appData.mediaKind, stream, audioLevel);
 		}
 
 		await startVoiceStreaming();
@@ -106,29 +179,42 @@ export function listenToVoiceEvents() {
 	const unlisten2 = client.voice.listen("consumer_created", (d) => {
 		const remoteStream = new MediaStream([d.track]);
 
-		if (d.track.kind === "audio") {
-			const audioLevel = new AudioLevelChecker();
-			audioLevel.startChecking(remoteStream);
-			audioLevel.on("audio-level", (db: number) => {
-				const speaking = db > -100;
-				voiceStore.getState().updateSpeakingState(d.producerUserId, speaking);
-			});
+		const store = voiceStore.getState();
 
-			voiceStore.getState().addRemoteSource(d.producerUserId, d.consumerId, d.producerId, "audio", remoteStream, audioLevel);
+		if (d.track.kind === "audio") {
+			let audioLevel: AudioLevelChecker | undefined = undefined;
+			if (d.kind === "microphone") {
+				audioLevel = new AudioLevelChecker();
+				audioLevel.startChecking(remoteStream);
+				audioLevel.on("audio-level", (db: number) => {
+					// not -100 because it sometimes start at ~ -98
+					const speaking = db > -95;
+					store.updateSpeakingState(d.producerUserId, speaking);
+				});
+			}
+
+			store.addRemoteSource(d.producerUserId, d.consumerId, d.producerId, d.kind, remoteStream, audioLevel);
 		} else {
-			voiceStore.getState().addRemoteSource(d.producerUserId, d.consumerId, d.producerId, "video", remoteStream);
+			store.addRemoteSource(d.producerUserId, d.consumerId, d.producerId, d.kind, remoteStream);
 		}
-		playRemoteSources();
+
+		refreshRemoteSourcePlayers();
 	});
 
 	const unlisten3 = client.voice.listen("producer_closed", (d) => {
 		const voice = voiceStore.getState();
-		const userId = voice.remoteSources.find((x) => x.producerId === d.producerId && x.kind === "audio")?.userId;
 
 		voice.removeRemoteSource(d.producerId);
 
+		const userId = voice.remoteSources.find((x) => x.producerId === d.producerId && x.kind === "microphone")?.userId;
 		if (userId) {
 			voice.removeSpeakingState(userId);
+		}
+
+		const audioPlayerIndex = audioSourcePlayers.findIndex((x) => x.producerId === d.producerId);
+		if (audioPlayerIndex !== -1) {
+			audioSourcePlayers[audioPlayerIndex].stop();
+			audioSourcePlayers.splice(audioPlayerIndex, 1);
 		}
 	});
 
@@ -138,14 +224,30 @@ export function listenToVoiceEvents() {
 	});
 
 	const unlisten5 = settingsStore.subscribe(async (s, old) => {
-		for (const audio of audioInstances) {
-			audio.gainNode.gain.value = s.outputVolume / 100;
+		if (s.outputVolume !== old.outputVolume) {
+			for (const player of audioSourcePlayers) {
+				player.setGain(s.outputVolume, undefined);
+			}
 		}
-		inputThreshold = s.inputThreshold;
-		inputDevice?.setGain(s.inputVolume);
 
+		if (s.inputThreshold !== old.inputThreshold) {
+			inputThreshold = s.inputThreshold;
+		}
+
+		if (s.inputVolume !== old.inputVolume) {
+			inputDevice?.setGain(s.inputVolume);
+		}
+
+		// Start streaming with new input id
 		if (s.inputDeviceId !== old.inputDeviceId) {
 			await startVoiceStreaming();
+		}
+
+		// Play all remote sources through the new output id
+		if (s.outputDeviceId !== old.outputDeviceId) {
+			for (const player of audioSourcePlayers) {
+				player.setSinkId(s.outputDeviceId);
+			}
 		}
 	});
 
@@ -155,23 +257,43 @@ export function listenToVoiceEvents() {
 			return;
 		}
 
-		if (client.voice.localVoiceState.audioPaused) {
-			client.voice.pauseMedia("audio");
-		}
-
-		if (client.voice.localVoiceState.audioMuted) {
-			client.voice.muteAudio();
-		}
-
-		const videoProducer = client.voice.screenShareProducers?.video;
-		if (videoProducer?.id === d.producerId && videoProducer.track) {
-			const stream = new MediaStream([videoProducer.track]);
-			const store = voiceStore.getState();
-			if (store.remoteSources.find((x) => x.producerId === videoProducer.id)) {
-				store.updateRemoteSource(videoProducer.id, stream);
-			} else {
-				store.addRemoteSource(client.user.id, undefined, d.producerId, "video", stream);
+		if (d.kind === "microphone") {
+			if (client.voice.localVoiceState.audioPaused) {
+				client.voice.pauseMicrophone();
 			}
+
+			if (client.voice.localVoiceState.audioMuted) {
+				client.voice.muteMicrophone();
+			}
+		}
+
+		if (d.kind === "screen_video") {
+			const store = voiceStore.getState();
+			const stream = new MediaStream([d.track]);
+			if (store.remoteSources.find((x) => x.producerId === d.producerId)) {
+				store.updateRemoteSource(d.producerId, stream);
+			} else {
+				store.addRemoteSource(client.user.id, undefined, d.producerId, d.kind, stream);
+			}
+		}
+	});
+
+	const unlisten7 = listenEvent("voice_preference_changed", (d) => {
+		const store = voiceStore.getState();
+		const preference = store.voicePreferences.find((x) => x.userId === d.userId);
+		const microphonePlayer = audioSourcePlayers.find((x) => x.userId === d.userId && x.kind === "microphone");
+		const screensharePlayer = audioSourcePlayers.find((x) => x.userId === d.userId && x.kind === "screen_audio");
+
+		if (!preference || (!microphonePlayer && !screensharePlayer)) {
+			return;
+		}
+
+		if (microphonePlayer) {
+			console.log("SET MIC TO", preference.microphoneVolume);
+			microphonePlayer.setGain(undefined, preference.microphoneVolume);
+		}
+		if (screensharePlayer) {
+			screensharePlayer.setGain(undefined, preference.screenshareVolume);
 		}
 	});
 
@@ -182,6 +304,7 @@ export function listenToVoiceEvents() {
 		unlisten4();
 		unlisten5();
 		unlisten6();
+		unlisten7();
 	};
 }
 
@@ -201,7 +324,7 @@ async function startVoiceStreaming() {
 const tolerance = 0;
 let timeout: number | undefined;
 let lastState = true;
-function onAudioLevel(db: number) {
+function onLocalAudioLevel(db: number) {
 	const userId = client.user?.id ?? "";
 	if (db > inputThreshold) {
 		lastState = true;
@@ -213,14 +336,14 @@ function onAudioLevel(db: number) {
 		clearTimeout(timeout);
 		timeout = window.setTimeout(() => {
 			if (!lastState) {
-				client.voice.pauseMedia("audio");
+				client.voice.pauseMicrophone();
 				voiceStore.getState().updateSpeakingState(userId, false);
 			}
 			timeout = undefined;
 		}, 500);
 
-		if (client.voice.micProducer?.paused) {
-			if (client.voice.resumeMedia("audio")) {
+		if (client.voice.localVoiceState.audioPaused) {
+			if (client.voice.resumeMedia()) {
 				voiceStore.getState().updateSpeakingState(userId, true);
 			}
 		}
@@ -229,47 +352,43 @@ function onAudioLevel(db: number) {
 	}
 }
 
-const audioInstances: Array<{ element: HTMLAudioElement; context: AudioContext; gainNode: GainNode; abortController: AbortController }> = [];
-function playRemoteSources() {
+const audioSourcePlayers: AudioSourcePlayer[] = [];
+function refreshRemoteSourcePlayers() {
+	const settings = settingsStore.getState();
+	const voice = voiceStore.getState();
 	// Remove old ones
-	for (const audio of audioInstances) {
-		audio.abortController.abort();
-		audio.gainNode.disconnect();
-		audio.context.close();
-		audio.element.pause();
-		audio.element.srcObject = null;
+	for (const player of audioSourcePlayers) {
+		player.stop();
 	}
-	audioInstances.splice(0, audioInstances.length);
+	audioSourcePlayers.splice(0, audioSourcePlayers.length);
 
 	// Re-add all
-	for (const remoteSource of voiceStore.getState().remoteSources) {
-		if (remoteSource.userId === client.user?.id || remoteSource.kind === "video" || !remoteSource.srcObject) {
+	for (const remoteSource of voice.remoteSources) {
+		// "Video" sources are not audio
+		if (
+			remoteSource.userId === client.user?.id ||
+			remoteSource.kind === "camera" ||
+			remoteSource.kind === "screen_video" ||
+			!remoteSource.srcObject
+		) {
 			continue;
 		}
 
-		const audio = document.createElement("audio");
-		audio.autoplay = false;
-		audio.srcObject = remoteSource.srcObject;
-
-		const audioContext = new AudioContext({ sinkId: settingsStore.getState().outputDeviceId });
-		const gainNode = audioContext.createGain();
-
-		const controller = new AbortController();
-		audioInstances.push({ element: audio, context: audioContext, gainNode: gainNode, abortController: controller });
-
-		audio.addEventListener(
-			"loadedmetadata",
-			(e) => {
-				if (!audio.srcObject) return;
-
-				const audioSource = audioContext.createMediaStreamSource(audio.srcObject as MediaStream);
-				audioSource.connect(gainNode);
-				gainNode.connect(audioContext.destination);
-
-				gainNode.gain.value = 1;
-				controller.abort();
-			},
-			{ signal: controller.signal },
+		const sourcePlayer = new AudioSourcePlayer(
+			remoteSource.srcObject,
+			remoteSource.producerId,
+			remoteSource.userId,
+			remoteSource.kind,
+			settings.outputVolume,
 		);
+		audioSourcePlayers.push(sourcePlayer);
+
+		const preference = voice.voicePreferences.find((x) => x.userId === remoteSource.userId);
+
+		if (remoteSource.kind === "microphone") {
+			sourcePlayer.setGain(undefined, preference?.microphoneVolume);
+		} else if (remoteSource.kind === "screen_audio") {
+			sourcePlayer.setGain(undefined, preference?.screenshareVolume);
+		}
 	}
 }

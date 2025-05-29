@@ -4,6 +4,7 @@ import { useThisUser } from "@stores/userStore";
 import { lazy } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import ContextMenu from "./ContextMenu";
+import VoiceUserContextMenu from "./VoiceUserContextMenu";
 
 const ChannelsContextMenu = lazy(() => import("./ChannelsContextMenu"));
 const ChannelRecipientContextMenu = lazy(() => import("./ChannelRecipientContextMenu"));
@@ -17,6 +18,7 @@ export default function ContextMenusRenderer() {
 	const { context: dm_channel_recipient_context, close: dm_channel_recipient_close } = useContextMenu("dm_channel_recipient");
 	const { context: relationship_context, close: relationship_close } = useContextMenu("relationship");
 	const { context: relationship_more_context, close: relationship_more_close } = useContextMenu("relationship_more");
+	const { context: voice_user_context, close: voice_user_close } = useContextMenu("voice_user");
 
 	return (
 		<ErrorBoundary FallbackComponent={ModalErrorComponent}>
@@ -47,6 +49,13 @@ export default function ContextMenusRenderer() {
 						close={relationship_more_close}
 						isOpen={relationship_more_context?.isOpen}
 						position={relationship_more_context?.position}
+					/>
+
+					<ContextMenu
+						renderChildren={<VoiceUserContextMenu />}
+						close={voice_user_close}
+						isOpen={voice_user_context?.isOpen}
+						position={voice_user_context?.position}
 					/>
 				</>
 			)}

@@ -84,7 +84,7 @@ export default function Index() {
 	}
 
 	return (
-		<div className="drag-region flex h-full w-full select-none rounded-xl bg-background">
+		<div className="drag-region flex h-full w-full select-none bg-background">
 			<div className="mt-16 flex w-full flex-col items-center">
 				<HuginnIcon className="hover:-rotate-12 size-20 animate-pulse text-accent drop-shadow-[0px_0px_25px_rgb(var(--color-primary))] transition-all hover:scale-105 active:rotate-6" />
 				<div className="mt-4 font-bold text-text text-xl">Huginn</div>

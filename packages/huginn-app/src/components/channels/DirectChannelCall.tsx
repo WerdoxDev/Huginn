@@ -42,6 +42,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	const users = useUsers(Array.from(new Set([...(thisCallState?.ringing ?? []), ...thisVoiceStates.map((x) => x.userId)])));
 	const usersLookup = useLookup(users, (user) => user.id);
 	const usersSpeakingLookup = useLookup(speakingStates, (state) => state.userId);
+	const remoteSourcesLookup = useLookup(remoteSources, (source) => source.userId);
 	const show = useMemo(() => users.length !== 0 && thisCallState, [props.channelId, users]);
 
 	useEffect(() => {
@@ -143,7 +144,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 
 		if (huginnWindow.environment === "browser") {
 			const stream = await navigator.mediaDevices.getDisplayMedia({ audio: true, video: true });
-			await client.voice.startScreenSharing(stream.getVideoTracks()[0], stream.getAudioTracks()[0]);
+			await client.voice.startScreensharing(stream.getVideoTracks()[0], stream.getAudioTracks()[0]);
 
 			client.gateway.updateVoiceState(voiceState.selfMute, voiceState.selfDeaf, true, voiceState.selfVideo);
 		} else {
@@ -177,7 +178,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		const numBoxes = maximizedSourceId.current
 			? 1
 			: store.voiceStates.length +
-				store.remoteSources.filter((x) => x.kind === "video").length +
+				store.remoteSources.filter((x) => x.kind === "screen_video" || x.kind === "camera").length +
 				(thisCallState?.ringing.length ?? 0) +
 				(!voiceState.channelId ? thisVoiceStates.filter((x) => x.selfStream).length : 0);
 		const containerWidth = gridRef.current.clientWidth;
@@ -244,7 +245,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 			)}
 			ref={containerRef}
 		>
-			<div ref={resizerRef} className="-bottom-1 absolute inset-x-0 h-2 cursor-ns-resize" />
+			<div ref={resizerRef} className="-bottom-1 absolute inset-x-0 z-10 h-2 cursor-ns-resize" />
 			<div
 				className={clsx("flex w-full shrink flex-wrap content-center items-center justify-center gap-3", !maximizedSource && "px-5 py-2 pb-16")}
 				ref={gridRef}
@@ -252,9 +253,10 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 			>
 				{isGridView &&
 					remoteSources
-						.filter((x) => (maximizedSource ? x.producerId === maximizedSource.producerId : x.kind === "video"))
+						.filter((x) => (maximizedSource ? x.producerId === maximizedSource.producerId : x.kind === "screen_video" || x.kind === "camera"))
 						.map((x) => (
 							<VoiceVideo
+								user={usersLookup[x.userId]}
 								maximized={!!maximizedSource}
 								onClick={maximizeSource}
 								key={x.userId}
@@ -296,6 +298,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 							speaking={usersSpeakingLookup[x.userId]?.speaking}
 							user={usersLookup[x.userId]}
 							voiceState={x}
+							producerId={remoteSourcesLookup[x.userId]?.producerId}
 						/>
 					))}
 			</div>

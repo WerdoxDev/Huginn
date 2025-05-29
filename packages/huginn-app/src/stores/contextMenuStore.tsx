@@ -1,4 +1,10 @@
-import type { ContextMenuDMChannel, ContextMenuDMChannelRecipient, ContextMenuRelationship, ContextMenuStateProps } from "@/types";
+import type {
+	ContextMenuDMChannel,
+	ContextMenuDMChannelRecipient,
+	ContextMenuRelationship,
+	ContextMenuStateProps,
+	ContextMenuVoiceUser,
+} from "@/types";
 import { type MouseEvent, type ReactNode, createContext, useContext, useMemo } from "react";
 import { createStore, useStore } from "zustand";
 
@@ -7,6 +13,7 @@ const store = createStore(() => ({
 	dm_channel_recipient: undefined as ContextMenuStateProps<ContextMenuDMChannelRecipient> | undefined,
 	relationship_more: undefined as ContextMenuStateProps<ContextMenuRelationship> | undefined,
 	relationship: undefined as ContextMenuStateProps<ContextMenuRelationship> | undefined,
+	voice_user: undefined as ContextMenuStateProps<ContextMenuVoiceUser> | undefined,
 }));
 
 type ContextMenuTypes = ReturnType<typeof store.getState>;

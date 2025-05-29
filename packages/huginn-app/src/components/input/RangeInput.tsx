@@ -103,8 +103,13 @@ export default function RangeInput(props: {
 
 	return (
 		<div className={clsx("w-full", props.className)} draggable={false}>
-			<div className="relative flex h-8 cursor-pointer items-center" ref={rangeRef}>
-				<div className={clsx("absolute h-2 w-full overflow-hidden rounded-md bg-secondary px-1", props.backgroundClassName)}>
+			<div className="group relative flex h-8 cursor-pointer items-center" ref={rangeRef}>
+				<div
+					className={clsx(
+						"absolute h-1 w-full overflow-hidden rounded-md bg-secondary px-1 transition-[height] group-hover:h-2",
+						props.backgroundClassName,
+					)}
+				>
 					<div className={clsx("absolute left-0 h-full w-2 bg-accent", props.fillClassName)} />
 					<div className={clsx("relative top-0 left-0 h-full w-full bg-secondary", props.backgroundClassName)} ref={rangeTrackRef}>
 						<div
@@ -116,10 +121,12 @@ export default function RangeInput(props: {
 				</div>
 				<div className="relative mx-1 h-full w-full">
 					<Tooltip open={showTooltip}>
-						<Tooltip.Trigger
-							className="-translate-x-1/2 -translate-y-1/2 absolute top-1/2 h-5 w-5 cursor-w-resize rounded-full bg-white"
-							style={{ left: `${percentage / ((props.maxValue ?? 100) / 100)}%` }}
-						/>
+						<Tooltip.Trigger asChild>
+							<div
+								className="-translate-x-1/2 -translate-y-1/2 absolute top-1/2 h-4 w-4 cursor-w-resize rounded-full bg-white transition-[width,height] group-hover:h-5 group-hover:w-5"
+								style={{ left: `${percentage / ((props.maxValue ?? 100) / 100)}%` }}
+							/>
+						</Tooltip.Trigger>
 						<Tooltip.Content>{props.getTooltipText ? props.getTooltipText(percentage) : `${percentage}%`}</Tooltip.Content>
 					</Tooltip>
 				</div>

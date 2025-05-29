@@ -1,4 +1,4 @@
-import type { GatewayCallState, GatewayVoiceState, Snowflake } from "@huginn/shared";
+import type { GatewayCallState, GatewayVoiceState, HMediaKind, Snowflake } from "@huginn/shared";
 import { type AudioLevelChecker, listenToVoiceEvents } from "@lib/voice-client";
 import { client } from "@stores/apiStore";
 import { userStore } from "@stores/userStore";
@@ -15,11 +15,12 @@ const initialStore = () => ({
 		userId: Snowflake;
 		consumerId?: string;
 		producerId: string;
-		kind: "video" | "audio";
+		kind: HMediaKind;
 		srcObject: MediaProvider;
 		audioLevel?: AudioLevelChecker;
 	}>,
 	speakingStates: [] as Array<{ userId: Snowflake; speaking: boolean }>,
+	voicePreferences: [] as Array<{ userId: Snowflake; microphoneVolume: number; screenshareVolume: number }>,
 });
 
 type StoreType = ReturnType<typeof initialStore>;
@@ -67,7 +68,7 @@ const store = createStore(
 				userId: Snowflake,
 				consumerId: string | undefined,
 				producerId: string,
-				kind: "video" | "audio",
+				kind: HMediaKind,
 				srcObject: MediaProvider,
 				audioLevel?: AudioLevelChecker,
 			) => set((state) => ({ remoteSources: [...state.remoteSources, { consumerId, kind, producerId, userId, srcObject, audioLevel }] })),
@@ -105,6 +106,25 @@ const store = createStore(
 				),
 			removeSpeakingState: (userId: Snowflake) => set((state) => ({ speakingStates: state.speakingStates.filter((x) => x.userId !== userId) })),
 			clearSpeakingStates: () => set({ speakingStates: [] }),
+			updateVoicePreferences: (userId: Snowflake, update: { microphoneVolume?: number; screenshareVolume?: number }) =>
+				set(
+					produce((draft: StoreType) => {
+						const existingIndex = draft.voicePreferences.findIndex((x) => x.userId === userId);
+						if (existingIndex !== -1) {
+							draft.voicePreferences[existingIndex] = { ...draft.voicePreferences[existingIndex], ...update };
+						} else {
+							if (!update.microphoneVolume || !update.screenshareVolume) {
+								throw new Error("Creating new voice preference requires both microphone and screenshare volumes");
+							}
+
+							draft.voicePreferences.push({
+								userId,
+								microphoneVolume: update.microphoneVolume,
+								screenshareVolume: update.screenshareVolume,
+							});
+						}
+					}),
+				),
 		})),
 		{ name: "Voice" },
 	),
@@ -114,6 +134,9 @@ export function initializeVoice(queryClient: QueryClient) {
 	const unlisten = client.gateway.listen("ready", (d) => {
 		store.setState({ voiceStates: d.voiceStates });
 		store.setState({ callStates: d.callStates });
+
+		// TODO: Read each user's voice prefernece from local storage
+		store.setState({ voicePreferences: d.voiceStates.map((x) => ({ userId: x.userId, microphoneVolume: 100, screenshareVolume: 100 })) });
 	});
 
 	const unlisten2 = client.gateway.listen("call_create", (d) => {
@@ -129,23 +152,30 @@ export function initializeVoice(queryClient: QueryClient) {
 	});
 
 	const unlisten5 = client.gateway.listen("voice_state_update", (d) => {
+		const thisStore = store.getState();
+
 		// our user's voice state update
 		if (d.userId === userStore.getState().user?.id) {
-			store.getState().setVoiceChannel(d.channelId ?? undefined, d.guildId ?? undefined);
+			thisStore.setVoiceChannel(d.channelId ?? undefined, d.guildId ?? undefined);
 
 			// set speaking to false when we mute in the middle of speaking
 			if (d.selfMute) {
-				store.getState().updateSpeakingState(d.userId, false);
+				thisStore.updateSpeakingState(d.userId, false);
 				// set speaking to true when we unmute in the middle of speaking
 			} else if (!client.voice.localVoiceState.audioPaused) {
-				store.getState().updateSpeakingState(d.userId, true);
+				thisStore.updateSpeakingState(d.userId, true);
+			}
+		} else {
+			// create voice preference for new users
+			if (!thisStore.voicePreferences.some((x) => x.userId === d.userId)) {
+				thisStore.updateVoicePreferences(d.userId, { microphoneVolume: 100, screenshareVolume: 100 });
 			}
 		}
 
 		if (d.channelId) {
-			store.getState().updateVoiceState(d.channelId, d.guildId, d.userId, d.selfMute, d.selfDeaf, d.selfStream, d.selfVideo);
+			thisStore.updateVoiceState(d.channelId, d.guildId, d.userId, d.selfMute, d.selfDeaf, d.selfStream, d.selfVideo);
 		} else {
-			store.getState().removeVoiceState(d.userId);
+			thisStore.removeVoiceState(d.userId);
 		}
 	});
 

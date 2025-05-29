@@ -2,6 +2,7 @@ import type { TooltipOptions } from "@/types";
 import { TooltipContext, useTooltip, useTooltipContext } from "@contexts/tooltipContext";
 import { useMergeRefs } from "@floating-ui/react";
 import { Portal, Transition } from "@headlessui/react";
+import { omit } from "@huginn/shared";
 import clsx from "clsx";
 import { type HTMLProps, type ReactNode, type RefObject, cloneElement, isValidElement, useMemo } from "react";
 
@@ -26,7 +27,7 @@ function Trigger(props: HTMLProps<HTMLButtonElement> & { asChild?: boolean }) {
 			props.children,
 			context.getReferenceProps({
 				ref,
-				...props,
+				...omit(props, ["asChild", "children"]),
 				...childrenProps,
 				"data-state": context.open ? "open" : "closed",
 			}),

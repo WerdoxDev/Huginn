@@ -22,6 +22,7 @@ import {
 	useMergeRefs,
 	useRole,
 } from "@floating-ui/react";
+import { omit } from "@huginn/shared";
 import clsx from "clsx";
 import { type HTMLProps, type RefObject, Suspense, createContext, useContext, useEffect, useRef, useState } from "react";
 
@@ -207,7 +208,7 @@ function Item(props: ContextMenuItemProps & React.ButtonHTMLAttributes<HTMLButto
 
 	return (
 		<button
-			{...props}
+			{...omit(props, ["preventClose"])}
 			ref={useMergeRefs([item.ref, props.ref])}
 			type="button"
 			role="menuitem"
@@ -220,7 +221,10 @@ function Item(props: ContextMenuItemProps & React.ButtonHTMLAttributes<HTMLButto
 			{...menu.getItemProps({
 				onClick(event: React.MouseEvent<HTMLButtonElement>) {
 					props.onClick?.(event);
-					tree?.events.emit("click");
+
+					if (!props.preventClose) {
+						tree?.events.emit("click");
+					}
 				},
 				onFocus(event: React.FocusEvent<HTMLButtonElement>) {
 					props.onFocus?.(event);

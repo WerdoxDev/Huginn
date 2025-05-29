@@ -1,8 +1,11 @@
+import type { APIPublicUser } from "@huginn/shared";
+import { useContextMenu } from "@stores/contextMenuStore";
 import clsx from "clsx";
 import { useEffect, useRef } from "react";
 import LoadingIcon from "./LoadingIcon";
 
 export default function VoiceVideo(props: {
+	user: APIPublicUser;
 	consumerId?: string;
 	producerId?: string;
 	gridElementWidth: number;
@@ -10,6 +13,7 @@ export default function VoiceVideo(props: {
 	maximized?: boolean;
 	onClick: (producerId: string) => void;
 }) {
+	const { open: openContextMenu } = useContextMenu("voice_user");
 	const videoRef = useRef<HTMLVideoElement>(null);
 
 	useEffect(() => {
@@ -21,6 +25,7 @@ export default function VoiceVideo(props: {
 	return (
 		<div
 			onClick={() => props.onClick(props.producerId ?? "")}
+			onContextMenu={(e) => openContextMenu({ user: props.user, producerId: props.producerId, kind: "screen_audio" }, e)}
 			key={props.consumerId ?? props.producerId}
 			id={props.consumerId}
 			className={clsx(

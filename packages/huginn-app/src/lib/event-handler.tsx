@@ -1,5 +1,5 @@
 import type { AppMessage } from "@/types";
-import type { APIUser } from "@huginn/shared";
+import type { APIUser, Snowflake } from "@huginn/shared";
 
 type EventTypes = {
 	message_added: { message: AppMessage; inLoadedQueryPage: boolean; inVisibleQueryPage: boolean; visible: boolean; self: boolean };
@@ -8,7 +8,7 @@ type EventTypes = {
 	image_cropper_done: { croppedImageData: string };
 	deep_link: string;
 	message_box_height_changed: { difference: number };
-	voice_talking_state_update: { speaking: boolean };
+	voice_preference_changed: { userId: Snowflake };
 };
 
 type EventType = { type: keyof EventTypes; data: EventTypes[keyof EventTypes] };

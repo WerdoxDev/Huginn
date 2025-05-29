@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useEffect, useMemo, useState, useTransition } from "react";
 
-export default function ScreenShareModal() {
+export default function ScreenshareModal() {
 	const client = useClient();
 	const { screenshare: modal, updateModals } = useModals();
 	const { voiceState } = useVoiceStore();
@@ -60,9 +60,9 @@ export default function ScreenShareModal() {
 				audio: true,
 				video: { frameRate: framerate, width, height, aspectRatio: 16 / 9 },
 			});
-			await client.voice.startScreenSharing(stream.getVideoTracks()[0], stream.getAudioTracks()[0]);
+			await client.voice.startScreensharing(stream.getVideoTracks()[0], stream.getAudioTracks()[0]);
 
-			client.gateway.updateVoiceState(voiceState.selfDeaf, voiceState.selfDeaf, true, voiceState.selfVideo);
+			client.gateway.updateVoiceState(voiceState.selfMute, voiceState.selfDeaf, true, voiceState.selfVideo);
 			close();
 		});
 	}
