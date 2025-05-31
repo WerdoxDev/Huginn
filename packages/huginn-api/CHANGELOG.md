@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.15.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.14.0...api@v0.15.0) (2025-05-31)
+
+
+### Features
+
+* **api:** implement a much better management strategy for producers & consumers ([d56460b](https://github.com/WerdoxDev/Huginn/commit/d56460b5f3794a8c273a1732417462dd8dc7ad01))
+
+
+### Bug Fixes
+
+* **api:** temporary fix for changing stream black screen problem ([0317fcd](https://github.com/WerdoxDev/Huginn/commit/0317fcda3aea80fd1df1b0a8acfc3c0a5b290d69))
+
 ## [0.14.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.13.0...api@v0.14.0) (2025-05-16)
 
 

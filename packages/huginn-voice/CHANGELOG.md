@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.4.0...voice@v0.5.0) (2025-05-31)
+
+
+### Features
+
+* **voice:** add distinct producer & consumer types ([f32963d](https://github.com/WerdoxDev/Huginn/commit/f32963d843ea18908f197c4bc2afc9c4405d11a6))
+
 ## [0.4.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.3.0...voice@v0.4.0) (2025-05-18)
 
 

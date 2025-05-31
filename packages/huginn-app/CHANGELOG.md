@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.37.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.36.0...app@v0.37.0) (2025-05-31)
+
+
+### Features
+
+* **app:** add volume slider for individual users & screenshares ([f9573ea](https://github.com/WerdoxDev/Huginn/commit/f9573ea85d23dcf0fd24f693c3b5b6117ab1d54b))
+* **app:** better screensahre modal design + hidable voice controlls + better start/stop stream button ([85873d0](https://github.com/WerdoxDev/Huginn/commit/85873d03f79b5009d70a2077e16fcd15e72ad6d6))
+
 ## [0.36.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.35.0...app@v0.36.0) (2025-05-18)
 
 
