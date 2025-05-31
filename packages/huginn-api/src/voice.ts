@@ -132,6 +132,7 @@ export class Voice {
 
 		if (videoProducer) {
 			await videoProducer.replaceTrack({ track: videoTrack });
+			this.emit("local_producer_created", { kind: "screen_video", producerId: videoProducer.id, track: videoTrack });
 		} else {
 			await this.openProducer("screen_video", {
 				track: videoTrack,
@@ -149,8 +150,11 @@ export class Voice {
 			}
 		}
 
-		this.localVoiceState.streaming = true;
-		this.emit("local_voice_state_changed", this.localVoiceState);
+		if (audioProducer && !audioTrack) {
+			this.closeProducer(audioProducer.id);
+		}
+
+		this.updateLocalVoiceState({ streaming: true });
 	}
 
 	public stopScreensharing(): void {
@@ -165,10 +169,10 @@ export class Voice {
 			return;
 		}
 
-		this.closeProducer(videoProducer);
+		this.closeProducer(videoProducer.id);
 
 		if (audioProducer) {
-			this.closeProducer(audioProducer);
+			this.closeProducer(audioProducer.id);
 		}
 
 		this.client.gateway.updateVoiceState(this.localVoiceState.audioMuted, this.localVoiceState.consumersMuted, false, this.localVoiceState.camera);
@@ -242,14 +246,14 @@ export class Voice {
 		this.emit("local_producer_created", { producerId: producer.id, kind: producer.appData.mediaKind, track: options.track });
 	}
 
-	private closeProducer(producer: Producer) {
+	private closeProducer(producerId: string) {
 		if (!this.connectionInfo) {
 			return;
 		}
 
 		const closeProducerData: VoicePayload<VoiceOperations.CLOSE_PRODUCER> = {
 			op: VoiceOperations.CLOSE_PRODUCER,
-			d: { channelId: this.connectionInfo.channelId, producerId: producer.id },
+			d: { channelId: this.connectionInfo.channelId, producerId: producerId },
 		};
 
 		this.send(closeProducerData);
@@ -408,8 +412,6 @@ export class Voice {
 			kind: convertToMediaKind(data.kind),
 			appData: { mediaKind: data.kind },
 		});
-
-		console.log(consumer.appData, "APP DATA");
 
 		this.consumers.set(consumer.id, consumer);
 
