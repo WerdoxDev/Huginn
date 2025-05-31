@@ -141,7 +141,8 @@ export type TooltipOptions = {
 
 export type ContextMenuProps = {
 	label?: string;
-	renderChildren: ReactNode;
+	renderChildren?: ReactNode;
+	children?: ReactNode;
 	close?: () => void;
 } & ContextMenuStateProps;
 
@@ -155,6 +156,17 @@ export type ContextMenuItemProps = {
 	label: string;
 	disabled?: boolean;
 	preventClose?: boolean;
+};
+
+export type DropdownMenuProps = {
+	label: string;
+	nested?: boolean;
+	children?: ReactNode;
+};
+
+export type DropdownMenuItemProps = {
+	label: string;
+	disabled?: boolean;
 };
 
 export type ContextMenuRelationship = { user: APIRelationUser; type: RelationshipType };
@@ -236,6 +248,7 @@ export type UploadProgress = { filenames: string[]; percentage: number; total: n
 
 export type DisplaySource = {
 	thumbnail: string;
+	appIcon?: string;
 	name: string;
 	id: string;
 };

@@ -23,7 +23,7 @@ export default function RelationshipContextMenu() {
 				onClick={() => {
 					removeMutation.mutate(data.user.id);
 				}}
-				className="!text-error focus:!bg-error/80 focus:!text-white"
+				className="!text-error focus:!bg-error/10"
 			/>
 			<ContextMenu.Divider />
 			<ContextMenu.Item label="Copy User ID" onClick={() => navigator.clipboard.writeText(data.user.id)}>

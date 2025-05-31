@@ -4,12 +4,12 @@ import LoadingIcon from "@components/LoadingIcon";
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
-import { DialogPanel, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import { ScreenshareModalButton } from "@components/button/ScreenshareModalButton";
+import { Checkbox, DialogPanel, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { useClient } from "@stores/apiStore";
 import { useModals } from "@stores/modalsStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import { useQuery } from "@tanstack/react-query";
-import clsx from "clsx";
 import { useEffect, useMemo, useState, useTransition } from "react";
 
 export default function ScreenshareModal() {
@@ -19,11 +19,14 @@ export default function ScreenshareModal() {
 	const { data, isLoading } = useQuery({
 		queryKey: ["display-sources"],
 		queryFn: async () => await window.electronAPI.getDisplaySources(),
+		refetchInterval: 1000,
+		enabled: modal.isOpen,
 	});
 
 	const [selectedSource, setSelectedSource] = useState<DisplaySource | undefined>();
 	const [selectedQuality, setSelectedQuality] = useState(0);
 	const [selectedFramerate, setSelectedFramerate] = useState(0);
+	const [shareAudio, setShareAudio] = useState(false);
 	const [screensharePending, startTransition] = useTransition();
 
 	const screens = useMemo(() => data?.filter((x) => x.id.includes("screen")), [data]);
@@ -57,7 +60,7 @@ export default function ScreenshareModal() {
 
 		startTransition(async () => {
 			const stream = await navigator.mediaDevices.getDisplayMedia({
-				audio: true,
+				audio: shareAudio,
 				video: { frameRate: framerate, width, height, aspectRatio: 16 / 9 },
 			});
 			await client.voice.startScreensharing(stream.getVideoTracks()[0], stream.getAudioTracks()[0]);
@@ -70,7 +73,7 @@ export default function ScreenshareModal() {
 	return (
 		<DialogPanel
 			transition
-			className="w-full max-w-md transform overflow-hidden rounded-xl border-2 border-primary/50 bg-background py-5 pb-0 transition-[opacity_transform] duration-200 data-[closed]:scale-90"
+			className="w-full max-w-lg transform select-none overflow-hidden rounded-xl border-2 border-primary/50 bg-background py-5 pb-0 transition-[opacity_transform] duration-200 data-[closed]:scale-90"
 		>
 			<div className="flex flex-col gap-y-3 pb-5">
 				<div className="text-center font-bold text-2xl text-text">Share Screen</div>
@@ -80,26 +83,18 @@ export default function ScreenshareModal() {
 						: "Choose a screen or a specific application to share with others"}
 				</div>
 				{!selectedSource ? (
-					<TabGroup className="mt-5">
-						<TabList className="flex justify-center gap-x-10 text-text">
-							<Tab className="flex w-40 flex-col gap-y-3 text-text/80 data-[selected]:text-white">
-								{({ selected }) => (
-									<>
-										<div>Screens</div>
-										<div className={clsx("h-0.5", selected && "bg-white")} />
-									</>
-								)}
+					<TabGroup className="">
+						<TabList className="mx-3 flex items-center justify-center gap-x-1 rounded-lg bg-secondary p-1 text-text">
+							<Tab className="flex w-full items-center justify-center gap-x-2 rounded-md py-1 text-text/80 hover:bg-white/5 data-[selected]:bg-background data-[selected]:text-white">
+								<IconMingcuteMonitorFill className="size-5" />
+								<div>Screens</div>
 							</Tab>
-							<Tab className="flex w-40 flex-col gap-y-3 text-text/80 data-[selected]:text-white">
-								{({ selected }) => (
-									<>
-										<div>Applications</div>
-										<div className={clsx("h-0.5", selected && "bg-white")} />
-									</>
-								)}
+							<Tab className="flex w-full items-center justify-center gap-x-2 rounded-md py-1 text-text/80 hover:bg-white/5 data-[selected]:bg-background data-[selected]:text-white">
+								<IconMingcuteWebFill className="size-5" />
+								<div>Applications</div>
 							</Tab>
 						</TabList>
-						<TabPanels className="scroll-alternative h-80 overflow-x-hidden overflow-y-scroll px-5 py-4 pr-1.5">
+						<TabPanels className="scroll-alternative mt-3 h-80 overflow-x-hidden overflow-y-scroll px-5 py-1 pr-1.5">
 							{isLoading ? (
 								<div className="flex h-full w-full items-center justify-center">
 									<LoadingIcon className="size-16" />
@@ -143,87 +138,50 @@ export default function ScreenshareModal() {
 						<div className="flex flex-col gap-y-1.5">
 							<div className="text-text">Quality</div>
 							<div className="flex w-max justify-center gap-x-1 overflow-hidden rounded-md bg-tertiary p-1 text-sm">
-								<button
-									onClick={() => setSelectedQuality(0)}
-									className={clsx(
-										"rounded-sm px-2 py-1",
-										selectedQuality === 0 ? "bg-primary text-text" : "text-text/80 hover:bg-primary/70",
-									)}
-									type="button"
-								>
+								<ScreenshareModalButton onClick={() => setSelectedQuality(0)} selected={selectedQuality === 0}>
 									480
-								</button>
+								</ScreenshareModalButton>
 								<div className="w-0.5 bg-white/10" />
-								<button
-									onClick={() => setSelectedQuality(1)}
-									className={clsx(
-										"rounded-sm px-2 py-1",
-										selectedQuality === 1 ? "bg-primary text-text" : "text-text/80 hover:bg-primary/70",
-									)}
-									type="button"
-								>
+								<ScreenshareModalButton onClick={() => setSelectedQuality(1)} selected={selectedQuality === 1}>
 									720
-								</button>
+								</ScreenshareModalButton>
 								<div className="w-0.5 bg-white/10" />
-								<button
-									onClick={() => setSelectedQuality(2)}
-									className={clsx(
-										"rounded-sm px-2 py-1",
-										selectedQuality === 2 ? "bg-primary text-text" : "text-text/80 hover:bg-primary/70",
-									)}
-									type="button"
-								>
+								<ScreenshareModalButton onClick={() => setSelectedQuality(2)} selected={selectedQuality === 2}>
 									1080
-								</button>
+								</ScreenshareModalButton>
 								<div className="w-0.5 bg-white/10" />
-								<button
-									onClick={() => setSelectedQuality(3)}
-									className={clsx(
-										"rounded-sm px-2 py-1",
-										selectedQuality === 3 ? "bg-primary text-text" : "text-text/80 hover:bg-primary/70",
-									)}
-									type="button"
-								>
+								<ScreenshareModalButton onClick={() => setSelectedQuality(3)} selected={selectedQuality === 3}>
 									1440
-								</button>
+								</ScreenshareModalButton>
 							</div>
 						</div>
 						<div className="flex flex-col gap-y-1.5">
 							<div className="text-text">Framerate</div>
 							<div className="flex w-max justify-center gap-x-1 overflow-hidden rounded-md bg-tertiary p-1 text-sm">
-								<button
-									onClick={() => setSelectedFramerate(0)}
-									className={clsx(
-										"rounded-sm px-2 py-1",
-										selectedFramerate === 0 ? "bg-primary text-text" : "text-text/80 hover:bg-primary/70",
-									)}
-									type="button"
-								>
+								<ScreenshareModalButton onClick={() => setSelectedFramerate(0)} selected={selectedFramerate === 0}>
 									15
-								</button>
+								</ScreenshareModalButton>
 								<div className="w-0.5 bg-white/10" />
-								<button
-									onClick={() => setSelectedFramerate(1)}
-									className={clsx(
-										"rounded-sm px-2 py-1",
-										selectedFramerate === 1 ? "bg-primary text-text" : "text-text/80 hover:bg-primary/70",
-									)}
-									type="button"
-								>
+								<ScreenshareModalButton onClick={() => setSelectedFramerate(1)} selected={selectedFramerate === 1}>
 									30
-								</button>
+								</ScreenshareModalButton>
 								<div className="w-0.5 bg-white/10" />
-								<button
-									onClick={() => setSelectedFramerate(2)}
-									className={clsx(
-										"rounded-sm px-2 py-1",
-										selectedFramerate === 2 ? "bg-primary text-text" : "text-text/80 hover:bg-primary/70",
-									)}
-									type="button"
-								>
+								<ScreenshareModalButton onClick={() => setSelectedFramerate(2)} selected={selectedFramerate === 2}>
 									60
-								</button>
+								</ScreenshareModalButton>
 							</div>
+						</div>
+						<div className="mt-1 flex">
+							<Checkbox
+								checked={shareAudio}
+								onChange={setShareAudio}
+								className="group flex cursor-pointer items-center justify-center gap-x-2.5"
+							>
+								<div className="flex size-6 items-center justify-center rounded-md bg-secondary p-1 ring-1 ring-white/20 group-hover:bg-tertiary group-data-[checked]:bg-primary group-data-[checked]:ring-0">
+									<IconMingcuteCheckFill className="text-white opacity-0 group-data-[checked]:opacity-100" />
+								</div>
+								<div className="text-text">Share Audio</div>
+							</Checkbox>
 						</div>
 					</div>
 				)}

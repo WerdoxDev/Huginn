@@ -184,11 +184,11 @@ function Menu(props: ContextMenuProps & HTMLProps<HTMLButtonElement>) {
 								<FloatingFocusManager context={context} modal={false} initialFocus={isNested ? -1 : 0} returnFocus={!isNested}>
 									<div
 										ref={refs.setFloating}
-										className="z-20 flex min-w-28 flex-col gap-y-0.5 rounded-md bg-zinc-900 p-2 shadow-lg outline-none"
+										className="z-20 flex min-w-28 flex-col gap-y-0.5 rounded-lg bg-zinc-900 p-2.5 shadow-lg outline-none"
 										style={floatingStyles}
 										{...getFloatingProps()}
 									>
-										{props.renderChildren}
+										{props.renderChildren ?? props.children}
 									</div>
 								</FloatingFocusManager>
 							</Suspense>
@@ -213,7 +213,7 @@ function Item(props: ContextMenuItemProps & React.ButtonHTMLAttributes<HTMLButto
 			type="button"
 			role="menuitem"
 			className={clsx(
-				"flex items-center justify-between gap-x-5 rounded-sm px-2 py-1 text-start text-sm text-white/90 outline-none focus:bg-primary",
+				"flex items-center justify-between gap-x-5 rounded px-2 py-1.5 text-start text-sm text-white/90 outline-none focus:bg-secondary",
 				props.className,
 			)}
 			tabIndex={isActive ? 0 : -1}
@@ -253,7 +253,7 @@ export default function ContextMenu(props: ContextMenuProps) {
 }
 
 function Divider() {
-	return <div className="mx-1 my-0.5 h-0.5 bg-background" />;
+	return <div className="mx-1 my-2 h-px bg-background" />;
 }
 
 ContextMenu.Item = Item;

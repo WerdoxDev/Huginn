@@ -412,7 +412,6 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 		function dragLeave(e: DragEvent) {
 			e.preventDefault();
 			dragCounter--;
-			console.log(dragCounter);
 			if (dragCounter === 0) {
 				setDragging(false);
 			}
@@ -420,7 +419,6 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 
 		function drop(e: DragEvent) {
 			e.preventDefault();
-			console.log(e);
 
 			const files: AttachmentInputType[] = [];
 

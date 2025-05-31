@@ -1,13 +1,5 @@
-An exciting day it is...
-Huginn finnaly has
+### **New additions to calls!**
 
-...
-
-### **Screensharing!**
-
-- Share any screen or window
-- Grid view
-- Focus a user's screenshare
-- Fullscreen support
-
-![call](news/image.png)
+- **Refined** screenshare _UI_
+- Stream with **Audio** support
+- User / Stream **Audio volume** slider

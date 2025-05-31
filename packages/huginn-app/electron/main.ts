@@ -1,6 +1,7 @@
 import { access, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import type { DisplaySource } from "@/types";
 import { BrowserWindow, Menu, Notification, Tray, app, desktopCapturer, ipcMain, screen, session, shell } from "electron";
 import log from "electron-log/main";
 import { CancellationToken, autoUpdater } from "electron-updater";
@@ -277,8 +278,14 @@ function eventListeners(mainWindow: BrowserWindow) {
 	});
 
 	ipcMain.handle("window:get-display-sources", async () => {
-		const sources = await desktopCapturer.getSources({ types: ["screen", "window"] });
-		return sources.filter((x) => !x.thumbnail.isEmpty()).map((x) => ({ thumbnail: x.thumbnail.toDataURL(), id: x.id, name: x.name }));
+		const sources = await desktopCapturer.getSources({
+			types: ["screen", "window"],
+			fetchWindowIcons: true,
+			thumbnailSize: { width: 300, height: 300 },
+		});
+		return sources
+			.filter((x) => !x.thumbnail.isEmpty())
+			.map((x) => ({ thumbnail: x.thumbnail.toDataURL(), id: x.id, name: x.name, appIcon: x.appIcon?.toDataURL() }) as DisplaySource);
 	});
 
 	ipcMain.on("window:set-selected-display-source", (_, sourceId: string) => {

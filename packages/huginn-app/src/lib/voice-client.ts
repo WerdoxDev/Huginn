@@ -142,7 +142,6 @@ export class AudioSourcePlayer {
 		}
 
 		this.gainNode.gain.value = (this.globalGain / 100) * (this.localGain / 100);
-		console.log(this.gainNode.gain.value, this.globalGain, this.localGain);
 	}
 
 	public setSinkId(deviceId: string) {
@@ -289,7 +288,6 @@ export function listenToVoiceEvents() {
 		}
 
 		if (microphonePlayer) {
-			console.log("SET MIC TO", preference.microphoneVolume);
 			microphonePlayer.setGain(undefined, preference.microphoneVolume);
 		}
 		if (screensharePlayer) {

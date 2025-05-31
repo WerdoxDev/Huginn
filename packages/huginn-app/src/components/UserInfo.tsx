@@ -4,6 +4,7 @@ import type { APIUser } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
 import { useMutation } from "@tanstack/react-query";
 import UserAvatar from "./UserAvatar";
+import DropdownMenu from "./dropdown/DowndownMenu";
 import Tooltip from "./tooltip/Tooltip";
 
 export default function UserInfo(props: { user: APIUser }) {
@@ -23,8 +24,11 @@ export default function UserInfo(props: { user: APIUser }) {
 
 	return (
 		<section className="flex h-16 w-64 flex-shrink-0 flex-grow-0 items-center justify-center">
-			<Menu>
-				<MenuButton as="div" className="group flex w-full cursor-pointer items-center rounded-xl px-2 py-1 hover:bg-white hover:bg-opacity-5">
+			<DropdownMenu>
+				<DropdownMenu.Button
+					as="div"
+					className="group flex w-full cursor-pointer items-center rounded-xl px-2 py-1 hover:bg-white hover:bg-opacity-5"
+				>
 					<UserAvatar userId={props.user.id} avatarHash={props.user.avatar} className="mr-3 flex-shrink-0" />
 
 					<div className="flex w-full flex-col items-start gap-y-0.5">
@@ -43,41 +47,24 @@ export default function UserInfo(props: { user: APIUser }) {
 							<Tooltip.Content>User Settings</Tooltip.Content>
 						</Tooltip>
 					</div>
-				</MenuButton>
+				</DropdownMenu.Button>
 
-				<MenuItems
-					className="w-60 divide-y divide-secondary rounded-lg bg-zinc-900 shadow-lg outline-none transition [--anchor-gap:0.5rem] data-[closed]:scale-95 data-[closed]:opacity-0"
-					transition
-					anchor="top"
-				>
-					<div className="p-1.5">
-						<MenuItem>
-							<button
-								type="button"
-								className="flex w-full items-center gap-x-2.5 rounded-md px-2 py-2 text-error hover:bg-error/10"
-								onClick={() => {
-									mutation.mutate();
-								}}
-							>
-								<IconMingcuteExitFill className="h-5 w-5" />
-								<span className="text-sm">Logout</span>
-							</button>
-						</MenuItem>
-					</div>
-					<div className="p-1.5">
-						<MenuItem>
-							<button
-								onClick={() => navigator.clipboard.writeText(props.user.id)}
-								className="flex w-full items-center gap-x-2.5 rounded-md px-2 py-2 text-text hover:bg-secondary"
-								type="button"
-							>
-								<IconMingcuteIdcardFill className="h-5 w-5" />
-								<span className="text-sm">Copy User ID</span>
-							</button>
-						</MenuItem>
-					</div>
-				</MenuItems>
-			</Menu>
+				<DropdownMenu.Items className="w-60 [--anchor-gap:8px]" anchor="top">
+					<DropdownMenu.Item
+						label="Logout"
+						className="!text-error hover:!bg-error/10 py-2"
+						onClick={() => {
+							mutation.mutate();
+						}}
+					>
+						<IconMingcuteExitFill className="size-5" />
+					</DropdownMenu.Item>
+					<DropdownMenu.Divider />
+					<DropdownMenu.Item onClick={() => navigator.clipboard.writeText(props.user.id)} label="Copy User ID" className="py-2">
+						<IconMingcuteIdcardFill className="size-5" />
+					</DropdownMenu.Item>
+				</DropdownMenu.Items>
+			</DropdownMenu>
 		</section>
 	);
 }

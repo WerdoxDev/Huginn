@@ -3,6 +3,7 @@ import VoiceUser from "@components/VoiceUser";
 import VoiceVideo from "@components/VoiceVideo";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useFullscreen } from "@hooks/useFullscreen";
+import { useHover } from "@hooks/useHover";
 import { useLookup } from "@hooks/useLookup";
 import type { Snowflake, Unpacked } from "@huginn/shared";
 import { useClient } from "@stores/apiStore";
@@ -22,16 +23,6 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	const { updateModals } = useModals();
 	const huginnWindow = useHuginnWindow();
 
-	const containerRef = useRef<HTMLDivElement>(null);
-	const gridRef = useRef<HTMLDivElement>(null);
-	const resizerRef = useRef<HTMLDivElement>(null);
-	const isResizing = useRef(false);
-	const [gridSize, setGridSize] = useState<{ elementWidth: number; elementHeight: number; rows: number; cols: number }>();
-	const [gridHeight, setGridHeight] = useState(250);
-	const { isFullscreen, toggleFullscreen } = useFullscreen(containerRef);
-	const maximizedSourceId = useRef<string | undefined>(undefined);
-	const [maximizedSource, setMaximizedSource] = useState<Unpacked<typeof remoteSources> | undefined>(undefined);
-
 	const client = useClient();
 	const { user } = useThisUser();
 
@@ -44,6 +35,16 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	const usersSpeakingLookup = useLookup(speakingStates, (state) => state.userId);
 	const remoteSourcesLookup = useLookup(remoteSources, (source) => source.userId);
 	const show = useMemo(() => users.length !== 0 && thisCallState, [props.channelId, users]);
+
+	const [containerRef, showControlls] = useHover<HTMLDivElement>([user, show]);
+	const gridRef = useRef<HTMLDivElement>(null);
+	const resizerRef = useRef<HTMLDivElement>(null);
+	const isResizing = useRef(false);
+	const [gridSize, setGridSize] = useState<{ elementWidth: number; elementHeight: number; rows: number; cols: number }>();
+	const [gridHeight, setGridHeight] = useState(250);
+	const { isFullscreen, toggleFullscreen } = useFullscreen(containerRef);
+	const maximizedSourceId = useRef<string | undefined>(undefined);
+	const [maximizedSource, setMaximizedSource] = useState<Unpacked<typeof remoteSources> | undefined>(undefined);
 
 	useEffect(() => {
 		if (!voiceState.channelId) {
@@ -137,7 +138,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		client.gateway.updateVoiceState(!voiceState.selfDeaf, !voiceState.selfDeaf, voiceState.selfStream, voiceState.selfVideo);
 	}
 
-	async function screenshare() {
+	async function stream() {
 		if (isFullscreen) {
 			toggleFullscreen();
 		}
@@ -303,11 +304,13 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 					))}
 			</div>
 			<VoiceControlls
+				show={showControlls}
 				isFullscreen={isFullscreen}
 				isInVoice={voiceState.channelId === props.channelId}
 				onConnect={connect}
 				onDisconnect={disconnect}
-				onScreenshare={screenshare}
+				onStream={stream}
+				onEndStream={() => client.voice.stopScreensharing()}
 				onToggleDeafen={toggleDeafen}
 				onToggleFullscreen={toggleFullscreen}
 				onToggleMute={toggleMute}

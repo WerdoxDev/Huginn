@@ -17,7 +17,6 @@ export default function VoiceUserContextMenu() {
 		}
 
 		updateVoicePreferences(data.user.id, data.kind === "microphone" ? { microphoneVolume: value } : { screenshareVolume: value });
-		console.log("CHANGED TO", value);
 		dispatchEvent("voice_preference_changed", { userId: data.user.id });
 	}
 
