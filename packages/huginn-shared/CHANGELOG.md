@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.18.0...shared@v0.19.0) (2025-05-31)
+
+
+### Features
+
+* **shared:** add media kind ([abab18c](https://github.com/WerdoxDev/Huginn/commit/abab18c863bdfb4042ab9dc8209d27e282c50cc0))
+
 ## [0.18.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.17.1...shared@v0.18.0) (2025-05-16)
 
 
