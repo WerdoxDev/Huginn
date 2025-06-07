@@ -386,3 +386,7 @@ html::view-transition-old(root) {
 .news-markdown p:has(img) + h3 {
 	@apply mt-5;
 }
+
+div[data-floating-ui-portal] {
+	position: absolute;
+}

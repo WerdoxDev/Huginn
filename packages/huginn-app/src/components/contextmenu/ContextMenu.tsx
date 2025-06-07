@@ -179,7 +179,7 @@ function Menu(props: ContextMenuProps & HTMLProps<HTMLButtonElement>) {
 			>
 				<FloatingList elementsRef={elementsRef} labelsRef={labelsRef}>
 					{isOpen && (
-						<FloatingPortal>
+						<FloatingPortal root={props.parent ? props.parent : undefined}>
 							<Suspense>
 								<FloatingFocusManager context={context} modal={false} initialFocus={isNested ? -1 : 0} returnFocus={!isNested}>
 									<div
@@ -213,7 +213,7 @@ function Item(props: ContextMenuItemProps & React.ButtonHTMLAttributes<HTMLButto
 			type="button"
 			role="menuitem"
 			className={clsx(
-				"flex items-center justify-between gap-x-5 rounded px-2 py-1.5 text-start text-sm text-white/90 outline-none focus:bg-secondary",
+				"flex items-center justify-between gap-x-5 text-nowrap rounded px-2 py-1.5 text-start text-sm text-white/90 outline-none focus:bg-secondary",
 				props.className,
 			)}
 			tabIndex={isActive ? 0 : -1}

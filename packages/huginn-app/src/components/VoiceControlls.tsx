@@ -1,4 +1,4 @@
-import { Menu, MenuButton, MenuItem, MenuItems, Transition } from "@headlessui/react";
+import { Transition } from "@headlessui/react";
 import type { GatewayVoiceState } from "@huginn/shared";
 import { useClient } from "@stores/apiStore";
 import { useVoiceStore } from "@stores/voiceStore";

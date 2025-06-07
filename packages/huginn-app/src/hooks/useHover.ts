@@ -6,7 +6,6 @@ export function useHover<T extends HTMLElement>(deps?: DependencyList): [RefObje
 
 	useEffect(
 		() => {
-			console.log(ref.current);
 			const node = ref.current;
 			if (!node) return;
 

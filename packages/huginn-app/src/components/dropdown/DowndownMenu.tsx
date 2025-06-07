@@ -11,8 +11,8 @@ import {
 import clsx from "clsx";
 import type { ElementType, ReactNode } from "react";
 
-export default function DropdownMenu(props: MenuProps) {
-	return <Menu {...props} />;
+export default function DropdownMenu(props: MenuProps<"div">) {
+	return <Menu {...props} as="div" className={clsx("relative", props.className)} />;
 }
 
 function Button<T extends ElementType>(props: MenuButtonProps<T>) {
@@ -25,9 +25,12 @@ function Items(props: MenuItemsProps) {
 		<MenuItems
 			{...props}
 			modal={false}
+			anchor={false}
+			portal={false}
 			transition
 			className={clsx(
-				"z-20 flex min-w-28 flex-col gap-y-0.5 rounded-lg bg-zinc-900 p-2.5 shadow-lg outline-none transition data-[closed]:scale-95 data-[closed]:opacity-0",
+				"-translate-x-1/2 absolute left-1/2 z-[998] flex min-w-28 flex-col gap-y-0.5 rounded-lg bg-zinc-900 p-2.5 shadow-lg outline-none transition data-[closed]:scale-95 data-[closed]:opacity-0",
+				"[bottom:calc(100%_+_var(--anchor-gap))]",
 				props.className,
 			)}
 		/>
@@ -40,7 +43,7 @@ function Item(props: MenuItemProps<"button"> & { label: string }) {
 			as={"button"}
 			{...props}
 			className={clsx(
-				"flex items-center justify-between gap-x-5 rounded px-2 py-1.5 text-start text-sm text-white/90 outline-none hover:bg-secondary",
+				"flex items-center justify-between gap-x-5 text-nowrap rounded px-2 py-1.5 text-start text-sm text-white/90 outline-none hover:bg-secondary",
 				props.className,
 			)}
 		>

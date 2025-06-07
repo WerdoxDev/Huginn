@@ -23,8 +23,8 @@ export default function UserInfo(props: { user: APIUser }) {
 	}
 
 	return (
-		<section className="flex h-16 w-64 flex-shrink-0 flex-grow-0 items-center justify-center">
-			<DropdownMenu>
+		<div className="flex h-16 w-64 shrink-0 items-center">
+			<DropdownMenu className="flex w-full items-center justify-center">
 				<DropdownMenu.Button
 					as="div"
 					className="group flex w-full cursor-pointer items-center rounded-xl px-2 py-1 hover:bg-white hover:bg-opacity-5"
@@ -65,6 +65,6 @@ export default function UserInfo(props: { user: APIUser }) {
 					</DropdownMenu.Item>
 				</DropdownMenu.Items>
 			</DropdownMenu>
-		</section>
+		</div>
 	);
 }

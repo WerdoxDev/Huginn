@@ -1,7 +1,7 @@
 import ModalErrorComponent from "@components/ModalErrorComponent";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useThisUser } from "@stores/userStore";
-import { lazy } from "react";
+import { lazy, useEffect, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import ContextMenu from "./ContextMenu";
 import VoiceUserContextMenu from "./VoiceUserContextMenu";
@@ -13,12 +13,30 @@ const RelationshipMoreContextMenu = lazy(() => import("./RelationshipMoreContext
 
 export default function ContextMenusRenderer() {
 	const { user } = useThisUser();
+	const [parent, setParent] = useState<HTMLElement | null>(null);
 
 	const { context: dm_channel_context, close: dm_channel_close } = useContextMenu("dm_channel");
 	const { context: dm_channel_recipient_context, close: dm_channel_recipient_close } = useContextMenu("dm_channel_recipient");
 	const { context: relationship_context, close: relationship_close } = useContextMenu("relationship");
 	const { context: relationship_more_context, close: relationship_more_close } = useContextMenu("relationship_more");
 	const { context: voice_user_context, close: voice_user_close } = useContextMenu("voice_user");
+
+	useEffect(() => {
+		const controller = new AbortController();
+
+		document.addEventListener(
+			"fullscreenchange",
+			(e) => {
+				setParent(document.fullscreenElement as HTMLElement | null);
+				console.log(document.fullscreenElement);
+			},
+			{ signal: controller.signal },
+		);
+
+		return () => {
+			controller.abort();
+		};
+	}, []);
 
 	return (
 		<ErrorBoundary FallbackComponent={ModalErrorComponent}>
@@ -56,6 +74,7 @@ export default function ContextMenusRenderer() {
 						close={voice_user_close}
 						isOpen={voice_user_context?.isOpen}
 						position={voice_user_context?.position}
+						parent={parent}
 					/>
 				</>
 			)}

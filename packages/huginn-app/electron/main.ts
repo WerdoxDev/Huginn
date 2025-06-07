@@ -2,10 +2,9 @@ import { access, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { DisplaySource } from "@/types";
-import { BrowserWindow, Menu, Notification, Tray, app, desktopCapturer, ipcMain, screen, session, shell } from "electron";
+import { BrowserWindow, Menu, Notification, Tray, app, desktopCapturer, ipcMain, session, shell } from "electron";
 import log from "electron-log/main";
 import { CancellationToken, autoUpdater } from "electron-updater";
-import { string } from "slate";
 
 const _dirname = typeof __dirname !== "undefined" ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 
@@ -68,9 +67,13 @@ app.on("ready", async () => {
 	app.setLoginItemSettings({ openAtLogin: true, path: app.getPath("exe"), args: ["--silent"] });
 
 	session.defaultSession.setDisplayMediaRequestHandler(async (request, callback) => {
-		const sources = await desktopCapturer.getSources({ types: ["screen", "window"] });
+		const sources = await desktopCapturer.getSources({
+			types: ["screen", "window"],
+			thumbnailSize: { height: 0, width: 0 },
+			fetchWindowIcons: false,
+		});
 		const source = sources.find((x) => x.id === selectedSourceId);
-		callback({ video: source, audio: "loopbackWithMute" });
+		callback({ video: source, audio: "loopback", enableLocalEcho: false });
 	});
 });
 

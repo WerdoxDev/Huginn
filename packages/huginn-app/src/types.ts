@@ -150,6 +150,7 @@ export type ContextMenuStateProps<T = unknown> = {
 	contextData?: T;
 	isOpen?: boolean;
 	position?: [number, number];
+	parent?: HTMLElement | null;
 };
 
 export type ContextMenuItemProps = {
