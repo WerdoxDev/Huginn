@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.38.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.37.0...app@v0.38.0) (2025-06-08)
+
+
+### Features
+
+* **app:** add specific application audio loopback ([0214b2c](https://github.com/WerdoxDev/Huginn/commit/0214b2ce69e5ecd53f94a08a65777167fdf813ef))
+
+
+### Bug Fixes
+
+* **app:** context menu is not opening on fullscreen ([07f48f7](https://github.com/WerdoxDev/Huginn/commit/07f48f7328860fe5da0be7678048470500b0c67d))
+
 ## [0.37.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.36.0...app@v0.37.0) (2025-05-31)
 
 

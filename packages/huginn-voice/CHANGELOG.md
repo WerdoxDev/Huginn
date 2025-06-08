@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.5.0...voice@v0.6.0) (2025-06-08)
+
+
+### Features
+
+* **app:** add specific application audio loopback ([0214b2c](https://github.com/WerdoxDev/Huginn/commit/0214b2ce69e5ecd53f94a08a65777167fdf813ef))
+
 ## [0.5.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.4.0...voice@v0.5.0) (2025-05-31)
 
 
