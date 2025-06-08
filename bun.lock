@@ -22,7 +22,7 @@
     },
     "packages/huginn-api": {
       "name": "@huginn/api",
-      "version": "0.14.0",
+      "version": "0.15.0",
       "dependencies": {
         "@huginn/shared": "workspace:*",
         "@std/encoding": "npm:@jsr/std__encoding",
@@ -36,7 +36,7 @@
     },
     "packages/huginn-app": {
       "name": "huginn-app-react",
-      "version": "0.36.0",
+      "version": "0.37.0",
       "dependencies": {
         "@babel/plugin-syntax-jsx": "^7.25.9",
         "@floating-ui/react": "^0.26.28",
@@ -254,7 +254,7 @@
     },
     "packages/huginn-shared": {
       "name": "@huginn/shared",
-      "version": "0.18.0",
+      "version": "0.19.0",
       "dependencies": {
         "@sapphire/snowflake": "^3.5.3",
         "@std/encoding": "npm:@jsr/std__encoding",
@@ -268,7 +268,7 @@
     },
     "packages/huginn-voice": {
       "name": "@huginn/voice",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "dependencies": {
         "@dotenvx/dotenvx": "^1.39.0",
         "@hono/node-server": "^1.13.8",

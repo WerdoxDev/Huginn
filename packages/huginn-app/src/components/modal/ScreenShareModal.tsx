@@ -6,6 +6,7 @@ import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import { ScreenshareModalButton } from "@components/button/ScreenshareModalButton";
 import { Checkbox, DialogPanel, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import { getAudioFromLoopback, stopAudioLoopback } from "@lib/voice-client";
 import { useClient } from "@stores/apiStore";
 import { useModals } from "@stores/modalsStore";
 import { useVoiceStore } from "@stores/voiceStore";
@@ -16,10 +17,9 @@ export default function ScreenshareModal() {
 	const client = useClient();
 	const { screenshare: modal, updateModals } = useModals();
 	const { voiceState } = useVoiceStore();
-	const { data, isLoading } = useQuery({
+	const { data, isLoading, refetch } = useQuery({
 		queryKey: ["display-sources"],
 		queryFn: async () => await window.electronAPI.getDisplaySources(),
-		refetchInterval: 1000,
 		enabled: modal.isOpen,
 	});
 
@@ -31,6 +31,12 @@ export default function ScreenshareModal() {
 
 	const screens = useMemo(() => data?.filter((x) => x.id.includes("screen")), [data]);
 	const applications = useMemo(() => data?.filter((x) => x.id.includes("window")), [data]);
+
+	useEffect(() => {
+		if (modal.isOpen) {
+			refetch();
+		}
+	}, [modal.isOpen]);
 
 	useEffect(() => {
 		if (!selectedSource) {
@@ -56,14 +62,23 @@ export default function ScreenshareModal() {
 
 		const framerate = selectedFramerate === 0 ? 15 : selectedFramerate === 1 ? 30 : selectedFramerate === 2 ? 60 : 15;
 		const width = selectedQuality === 0 ? 640 : selectedQuality === 1 ? 1280 : selectedQuality === 2 ? 1920 : selectedQuality === 3 ? 2560 : 1280;
-		const height = selectedQuality === 0 ? 480 : selectedQuality === 1 ? 720 : selectedQuality === 2 ? 1080 : selectedQuality === 3 ? 2560 : 1440;
+		const height = selectedQuality === 0 ? 480 : selectedQuality === 1 ? 720 : selectedQuality === 2 ? 1080 : selectedQuality === 3 ? 2560 : 720;
 
 		startTransition(async () => {
 			const stream = await navigator.mediaDevices.getDisplayMedia({
 				audio: shareAudio,
 				video: { frameRate: framerate, width, height, aspectRatio: 16 / 9 },
 			});
-			await client.voice.startScreensharing(stream.getVideoTracks()[0], stream.getAudioTracks()[0]);
+
+			// Reset loopback even if we want to start a new one / end the last one
+			stopAudioLoopback();
+
+			let audioTrack = stream.getAudioTracks()[0];
+			if (!audioTrack && shareAudio) {
+				audioTrack = getAudioFromLoopback(selectedSource.name);
+			}
+
+			await client.voice.startScreensharing(stream.getVideoTracks()[0], audioTrack);
 
 			client.gateway.updateVoiceState(voiceState.selfMute, voiceState.selfDeaf, true, voiceState.selfVideo);
 			close();
@@ -187,9 +202,13 @@ export default function ScreenshareModal() {
 				)}
 			</div>
 			<div className="flex w-full items-center gap-x-2 bg-secondary p-5">
-				{selectedSource && (
+				{selectedSource ? (
 					<HuginnButton className="h-10 w-24 bg-background" onClick={() => setSelectedSource(undefined)}>
 						Back
+					</HuginnButton>
+				) : (
+					<HuginnButton className="h-10 w-24 bg-background" onClick={refetch}>
+						Refresh
 					</HuginnButton>
 				)}
 				<HuginnButton className="ml-auto h-10 w-20 decoration-white hover:underline" onClick={close}>

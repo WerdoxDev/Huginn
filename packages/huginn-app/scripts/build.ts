@@ -5,20 +5,20 @@ export const builtins = ["electron", ...builtinModules.flatMap((m) => [m, `node:
 export const external = [...builtins];
 
 await build({
-	configFile: false,
-	build: {
-		target: "es2022",
-		rollupOptions: { external },
-		lib: {
-			entry: ["./electron/main.ts", "./electron/preload.ts"],
-			name: "main",
-			fileName: (_, entryName) => `${entryName}.cjs`,
-			formats: ["cjs"],
-		},
-		emptyOutDir: false,
-		minify: false,
-		copyPublicDir: false,
-		outDir: ".vite/build",
-	},
-	clearScreen: false,
+   configFile: false,
+   build: {
+      target: "es2022",
+      rollupOptions: { external },
+      lib: {
+         entry: ["./electron/main.ts", "./electron/preload.ts"],
+         name: "main",
+         fileName: (_, entryName) => `${entryName}.cjs`,
+         formats: ["cjs"],
+      },
+      emptyOutDir: false,
+      minify: false,
+      copyPublicDir: false,
+      outDir: ".vite/build",
+   },
+   clearScreen: false,
 });
