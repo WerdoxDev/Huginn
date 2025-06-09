@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.15.0...api@v0.16.0) (2025-06-09)
+
+
+### Features
+
+* **app:** add voice screenshare fps, resolution and audio indicators ([9baca3a](https://github.com/WerdoxDev/Huginn/commit/9baca3aeb336c50a7bce19297282bb40ab1e9e9b))
+
 ## [0.15.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.14.0...api@v0.15.0) (2025-05-31)
 
 
