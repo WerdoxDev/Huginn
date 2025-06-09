@@ -10,7 +10,7 @@ import { getProcessIds, startAudioCapture, stopAudioCapture } from "./audio"
 // console.log(pids)
 // startAudioCapture()processes[0].ppid;
 
-const _dirname = typeof __dirname !== "undefined" ? __dirname : path.dirname(fileURLToPath(import.meta.url));
+export const _dirname = typeof __dirname !== "undefined" ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 
 configureUpdater();
 

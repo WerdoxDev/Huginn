@@ -67,7 +67,7 @@ export default function ScreenshareModal() {
 		startTransition(async () => {
 			const stream = await navigator.mediaDevices.getDisplayMedia({
 				audio: shareAudio,
-				video: { frameRate: framerate, width, height, aspectRatio: 16 / 9 },
+				video: { frameRate: { max: framerate }, width, height, aspectRatio: 16 / 9 },
 			});
 
 			// Reset loopback even if we want to start a new one / end the last one

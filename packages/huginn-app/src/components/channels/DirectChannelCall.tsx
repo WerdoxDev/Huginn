@@ -257,6 +257,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 						.filter((x) => (maximizedSource ? x.producerId === maximizedSource.producerId : x.kind === "screen_video" || x.kind === "camera"))
 						.map((x) => (
 							<VoiceVideo
+								kind={x.kind}
 								user={usersLookup[x.userId]}
 								maximized={!!maximizedSource}
 								onClick={maximizeSource}
