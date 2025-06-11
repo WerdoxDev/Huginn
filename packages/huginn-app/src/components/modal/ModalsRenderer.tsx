@@ -13,7 +13,7 @@ const AddRecipientModal = lazy(() => import("./AddRecipientModal"));
 const InfoModal = lazy(() => import("./InfoModal"));
 const MagnifiedImageModal = lazy(() => import("./MagnifiedImageModal"));
 const NewsModal = lazy(() => import("./NewsModal"));
-// const ScreenshareModal = lazy(() => import("./ScreenshareModal"));
+const ScreenshareModal = lazy(() => import("./ScreenshareModal"));
 
 export default function ModalsRenderer() {
 	const { user } = useThisUser();
@@ -30,7 +30,7 @@ export default function ModalsRenderer() {
 					onClose={() => updateModals({ magnifiedImage: { isOpen: false } })}
 					backgroundClassName="bg-black/70"
 				/>
-				{/* <BaseModal renderChildren={<ScreenshareModal />} modal={screenShare} onClose={() => updateModals({ screenshare: { isOpen: false } })} /> */}
+				<BaseModal renderChildren={<ScreenshareModal />} modal={screenShare} onClose={() => updateModals({ screenshare: { isOpen: false } })} />
 				<BaseModal renderChildren={<NewsModal />} modal={news} onClose={() => updateModals({ news: { isOpen: false } })} />
 				{user && (
 					<>
