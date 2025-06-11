@@ -4,7 +4,6 @@ import { useThisUser } from "@stores/userStore";
 import { lazy } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import BaseModal from "./BaseModal";
-import ScreenshareModal from "./ScreenshareModal";
 
 const CreateDMModal = lazy(() => import("./CreateDMModal"));
 const SettingsModal = lazy(() => import("./SettingsModal"));
@@ -14,6 +13,7 @@ const AddRecipientModal = lazy(() => import("./AddRecipientModal"));
 const InfoModal = lazy(() => import("./InfoModal"));
 const MagnifiedImageModal = lazy(() => import("./MagnifiedImageModal"));
 const NewsModal = lazy(() => import("./NewsModal"));
+const ScreenshareModal = lazy(() => import("./ScreenshareModal"));
 
 export default function ModalsRenderer() {
 	const { user } = useThisUser();

@@ -241,7 +241,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	return (
 		<div
 			className={clsx(
-				"relative z-10 flex shrink-0 flex-col gap-y-3 overflow-hidden shadow-lg shadow-tertiary/50",
+				"relative z-10 flex shrink-0 select-none flex-col gap-y-3 overflow-hidden shadow-lg shadow-tertiary/50",
 				isFullscreen ? "rounded-none bg-tertiary" : "m-2 mb-0 rounded-xl bg-black/50 ring-2 ring-primary/70",
 			)}
 			ref={containerRef}
