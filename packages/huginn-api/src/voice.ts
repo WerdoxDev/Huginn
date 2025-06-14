@@ -44,6 +44,7 @@ export class Voice {
    private device?: mediasoupClient.Device;
    private initialProducers?: ProducerData[];
    private recvTransport?: Transport;
+   private listeners: WeakMap<Producer, (newTrack: MediaStreamTrack | null) => void>;
 
    public on<EventName extends keyof VoiceEvents>(
       eventName: EventName,
@@ -76,6 +77,7 @@ export class Voice {
       this.client = client;
       this.consumers = new Map();
       this.producers = new Map();
+      this.listeners = new WeakMap();
    }
 
    public connect(token: string, channelId: Snowflake, guildId: Snowflake | null): void {
@@ -93,25 +95,25 @@ export class Voice {
       this.reset();
    }
 
-   public async startStreaming(videoTrack?: MediaStreamTrack, audioTrack?: MediaStreamTrack): Promise<void> {
+   public async startStreaming(cameraTrack?: MediaStreamTrack, microphoneTrack?: MediaStreamTrack): Promise<void> {
       if (!this.sendTransport || !this.client.user) {
          return;
       }
 
-      if (videoTrack) {
+      if (cameraTrack) {
          await this.openProducer("camera", {
-            track: videoTrack,
+            track: cameraTrack,
             appData: { mediaKind: "camera", userId: this.client.user.id },
          });
       }
 
       const microphoneProducer = this.producers.get("microphone");
-      if (audioTrack) {
+      if (microphoneTrack) {
          if (microphoneProducer) {
-            microphoneProducer.replaceTrack({ track: audioTrack });
+            microphoneProducer.replaceTrack({ track: microphoneTrack });
          } else {
             await this.openProducer("microphone", {
-               track: audioTrack,
+               track: microphoneTrack,
                appData: { mediaKind: "microphone", userId: this.client.user.id },
             });
          }
@@ -132,13 +134,13 @@ export class Voice {
 
       if (videoProducer) {
          await videoProducer.replaceTrack({ track: videoTrack });
-         this.emit("local_producer_created", { kind: "screen_video", producerId: videoProducer.id, track: videoTrack });
+         // this.emit("local_producer_created", { kind: "screen_video", producerId: videoProducer.id, track: videoTrack });
       } else {
          await this.openProducer("screen_video", {
             track: videoTrack,
             appData: { mediaKind: "screen_video", userId: this.client.user.id },
             encodings: [{ scalabilityMode: "L1T3" }],
-            codecOptions: { videoGoogleStartBitrate: 1000 },
+            codecOptions: { videoGoogleStartBitrate: 1000000, videoGoogleMinBitrate: 10000, videoGoogleMaxBitrate: 3000000 },
          });
       }
 
@@ -161,6 +163,7 @@ export class Voice {
       if (!this.connectionInfo) {
          return;
       }
+
       const videoProducer = this.producers.get("screen_video");
       const audioProducer = this.producers.get("screen_audio");
 
@@ -242,11 +245,18 @@ export class Voice {
       }
 
       const producer = await this.sendTransport.produce<MediasoupAppData>(options);
+
+      const listener = (newTrack: MediaStreamTrack | null) => this.emit("local_producer_changed", { kind, producerId: producer.id, track: newTrack });
+      producer.on("@replacetrack", listener);
+      this.listeners.set(producer, listener);
+
       this.producers.set(kind, producer);
       this.emit("local_producer_created", { producerId: producer.id, kind: producer.appData.mediaKind, track: options.track });
+
+      return producer;
    }
 
-   private closeProducer(producerId: string) {
+   public closeProducer(producerId: string) {
       if (!this.connectionInfo) {
          return;
       }
@@ -491,7 +501,7 @@ export class Voice {
                callback({ id: producerId });
             });
 
-            this.emit("transport_ready", { channelId: this.connectionInfo.channelId });
+            this.emit("send_transport_ready", { channelId: this.connectionInfo.channelId });
          } else if (data.direction === "recv") {
             this.recvTransport = this.device?.createRecvTransport(data.params);
 
@@ -526,6 +536,12 @@ export class Voice {
 
       const producer = Array.from(this.producers.entries()).find(([_, x]) => x.id === data.producerId);
       if (producer) {
+         const listener = this.listeners.get(producer[1]);
+         if (listener) {
+            console.log("LISTENER FOUND")
+            producer[1].off("@replacetrack", listener);
+         }
+
          producer[1].close();
          this.producers.delete(producer[0]);
       }
