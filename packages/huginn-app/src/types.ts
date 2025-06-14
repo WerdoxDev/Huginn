@@ -8,11 +8,13 @@ import type {
    APIChannelUser, APIMessage, APIPublicUser,
    APIRelationUser,
    APIRelationshipWithoutOwner,
+   DeepPartial,
    DirectChannel,
    HMediaKind,
    RelationshipType,
    Snowflake
 } from "@huginn/shared";
+import type { AudioLevelChecker } from "@lib/voice/audio-level-checker";
 import type { AppSettings } from "@stores/settingsStore";
 import type { ChangeEvent, HTMLInputTypeAttribute, ReactNode, RefObject } from "react";
 
@@ -104,8 +106,6 @@ export type SettingsTabProps = {
    onChange?: (value: DeepPartial<AppSettings>) => void;
    onSave?: () => Promise<void>;
 };
-
-export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
 
 export type DropdownItem = {
    text: string;
@@ -249,3 +249,14 @@ export type DisplaySource = {
    name: string;
    id: string;
 };
+
+export type RemoteSource = {
+   userId: Snowflake;
+   consumerId?: string;
+   producerId: string;
+   kind: HMediaKind;
+   srcObject: MediaProvider;
+   audioLevel?: AudioLevelChecker;
+}
+
+export type VoicePrereference = { userId: Snowflake; microphoneVolume: number; screenshareVolume: number }

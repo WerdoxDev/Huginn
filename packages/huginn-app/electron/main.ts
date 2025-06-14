@@ -187,7 +187,7 @@ function eventListeners(mainWindow: BrowserWindow) {
    ipcMain.on("window:splashscreen-mode", () => {
       mainWindow.setMinimumSize(300, 300);
       mainWindow.setSize(300, 300);
-      mainWindow.center();
+      // mainWindow.center();
       mainWindow.setResizable(false);
    });
 
@@ -195,7 +195,7 @@ function eventListeners(mainWindow: BrowserWindow) {
       mainWindow.setResizable(true);
       mainWindow.setMinimumSize(1200, 670);
       mainWindow.setSize(1200, 670);
-      mainWindow.center();
+      // mainWindow.center();
    });
 
    ipcMain.on("window:set-fullscreen", (_, fullscreen: boolean) => {

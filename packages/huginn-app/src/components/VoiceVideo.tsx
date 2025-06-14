@@ -21,6 +21,7 @@ export default function VoiceVideo(props: {
 	const { open: openContextMenu } = useContextMenu("voice_user");
 	const { remoteSources, voiceState } = useVoiceStore();
 	const videoRef = useRef<HTMLVideoElement>(null);
+	const frameCallbackHandleRef = useRef<number | null>(null);
 	const client = useClient();
 	const { user } = useThisUser();
 
@@ -41,16 +42,13 @@ export default function VoiceVideo(props: {
 	}, [props.srcObject]);
 
 	useEffect(() => {
-		console.log(remoteSources.find((x) => x.kind === "screen_audio" && x.userId === props.user.id));
-	}, [remoteSources]);
-
-	useEffect(() => {
 		if (!videoRef.current) {
 			return;
 		}
 
 		let frames = 0;
 		let start = performance.now();
+		let handle: number | undefined;
 
 		function countFrames(now: DOMHighResTimeStamp, metadata: VideoFrameCallbackMetadata) {
 			frames++;
@@ -62,15 +60,39 @@ export default function VoiceVideo(props: {
 				start = now;
 			}
 
-			videoRef.current?.requestVideoFrameCallback(countFrames);
+			frameCallbackHandleRef.current = videoRef.current?.requestVideoFrameCallback(countFrames) ?? null;
+		}
+
+		function startCounting() {
+			frames = 0;
+			start = performance.now();
+
+			frameCallbackHandleRef.current = videoRef.current?.requestVideoFrameCallback(countFrames) ?? null;
+		}
+
+		function stopCounting() {
+			if (frameCallbackHandleRef.current !== null) {
+				videoRef.current?.cancelVideoFrameCallback(frameCallbackHandleRef.current);
+				frameCallbackHandleRef.current = null;
+			}
 		}
 
 		videoRef.current.onloadedmetadata = () => {
-			videoRef.current?.requestVideoFrameCallback(countFrames);
+			stopCounting();
+			startCounting();
 		};
 
 		videoRef.current.onresize = () => {
 			setHeight(videoRef.current?.videoHeight ?? 0);
+		};
+
+		return () => {
+			stopCounting();
+
+			if (videoRef.current) {
+				videoRef.current.onloadedmetadata = null;
+				videoRef.current.onresize = null;
+			}
 		};
 	}, []);
 
@@ -86,7 +108,7 @@ export default function VoiceVideo(props: {
 			)}
 			style={{ width: props.gridElementWidth }}
 		>
-			<div className="absolute top-2 right-2 flex gap-x-2 rounded-lg bg-tertiary px-2 py-1 italic opacity-0 transition-opacity group-hover:opacity-100">
+			<div className="absolute top-2 right-2 flex gap-x-2 rounded-lg bg-tertiary px-2 py-1 italic transition-opacity group-hover:opacity-100">
 				{hasAudio ? <IconMingcuteVolumeFill className="text-success" /> : <IconMingcuteVolumeOffFill className="size-5 text-error" />}
 				<div className="font-bold text-sm text-white/90">
 					{height}

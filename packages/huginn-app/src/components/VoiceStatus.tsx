@@ -36,7 +36,7 @@ export default function VoiceStatus() {
 	useEffect(() => {
 		setState(client.voice.sendTransport ? "connected" : "rtc");
 
-		const unlisten = client.voice.listen("transport_ready", () => {
+		const unlisten = client.voice.listen("send_transport_ready", () => {
 			setState("connected");
 		});
 

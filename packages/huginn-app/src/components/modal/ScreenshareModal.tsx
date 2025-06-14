@@ -6,10 +6,9 @@ import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import { ScreenshareModalButton } from "@components/button/ScreenshareModalButton";
 import { Checkbox, DialogPanel, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import { getAudioFromLoopback, stopAudioLoopback } from "@lib/voice-client";
 import { useClient } from "@stores/apiStore";
 import { useModals } from "@stores/modalsStore";
-import { useVoiceStore } from "@stores/voiceStore";
+import { useVoiceStore, voiceClient } from "@stores/voiceStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, useTransition } from "react";
 
@@ -62,20 +61,29 @@ export default function ScreenshareModal() {
 
 		const framerate = selectedFramerate === 0 ? 15 : selectedFramerate === 1 ? 30 : selectedFramerate === 2 ? 60 : 15;
 		const width = selectedQuality === 0 ? 640 : selectedQuality === 1 ? 1280 : selectedQuality === 2 ? 1920 : selectedQuality === 3 ? 2560 : 1280;
-		const height = selectedQuality === 0 ? 480 : selectedQuality === 1 ? 720 : selectedQuality === 2 ? 1080 : selectedQuality === 3 ? 2560 : 720;
+		const height = selectedQuality === 0 ? 480 : selectedQuality === 1 ? 720 : selectedQuality === 2 ? 1080 : selectedQuality === 3 ? 1440 : 720;
 
 		startTransition(async () => {
+			const producer = client.voice.producers.get("screen_video");
+			producer?.track?.stop();
+
+			await new Promise((r) => setTimeout(r, 1000));
 			const stream = await navigator.mediaDevices.getDisplayMedia({
 				audio: shareAudio,
-				video: { frameRate: { max: framerate }, width, height, aspectRatio: 16 / 9 },
+				video: {
+					frameRate: { ideal: framerate },
+					width: { ideal: width },
+					height: { ideal: height },
+					aspectRatio: { ideal: 16 / 9 },
+				},
 			});
 
 			// Reset loopback even if we want to start a new one / end the last one
-			stopAudioLoopback();
+			voiceClient.stopAudioLoopback();
 
-			let audioTrack = stream.getAudioTracks()[0];
+			let audioTrack: MediaStreamTrack | undefined = stream.getAudioTracks()[0];
 			if (!audioTrack && shareAudio) {
-				audioTrack = getAudioFromLoopback(selectedSource.name);
+				audioTrack = voiceClient.getAudioTrackFromLoopback(selectedSource.name);
 			}
 
 			await client.voice.startScreensharing(stream.getVideoTracks()[0], audioTrack);

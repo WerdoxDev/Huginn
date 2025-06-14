@@ -2,8 +2,10 @@ import type { DropdownItem, SettingsTabProps } from "@/types";
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
 import GenericLabel from "@components/input/GenericLabel";
 import RangeInput from "@components/input/RangeInput";
+import { Checkbox } from "@headlessui/react";
 import { remap } from "@huginn/shared";
-import { AudioLevelChecker, VoiceInputDevice } from "@lib/voice-client";
+import { AudioLevelChecker } from "@lib/voice/audio-level-checker";
+import { VoiceInputDevice } from "@lib/voice/voice-input-device";
 import { useSettings } from "@stores/settingsStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -22,6 +24,7 @@ export default function SettingsAudioTab(props: SettingsTabProps) {
 
 	const [selectedInput, setSelectedInput] = useState<MediaDeviceInfo>();
 	const [selectedOutput, setSelectedOutput] = useState<MediaDeviceInfo>();
+	const [noiseSuppression, setNoiseSuppression] = useState(settings.noiseSuppression);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -30,16 +33,19 @@ export default function SettingsAudioTab(props: SettingsTabProps) {
 				return;
 			}
 
-			audioLevel.current = new AudioLevelChecker();
-			inputDevice.current = new VoiceInputDevice();
-			const stream = await inputDevice.current.getStream(selectedInput?.deviceId, settings.inputVolume);
+			if (!inputDevice.current) {
+				inputDevice.current = new VoiceInputDevice();
+			}
 
+			audioLevel.current = new AudioLevelChecker();
+			const stream = await inputDevice.current.getStream(selectedInput?.deviceId, settings.inputVolume, noiseSuppression);
 			// This is an async function so the component will probably unmount before it knows
 			if (cancelled) {
 				return;
 			}
 
 			audioLevel.current.startChecking(stream);
+			audioLevel.current.offAll("audio-level");
 			audioLevel.current.on("audio-level", onAudioLevel);
 		}
 		runAudioChecker();
@@ -54,7 +60,7 @@ export default function SettingsAudioTab(props: SettingsTabProps) {
 			audioLevel.current?.stopChecking();
 			audioLevel.current?.off("audio-level", onAudioLevel);
 		};
-	}, [selectedInput]);
+	}, [selectedInput, noiseSuppression]);
 
 	useEffect(() => {
 		inputDevice.current?.setGain(settings.inputVolume);
@@ -80,6 +86,10 @@ export default function SettingsAudioTab(props: SettingsTabProps) {
 			props.onChange?.({ outputDeviceId: selectedOutput?.deviceId });
 		}
 	}, [selectedOutput]);
+
+	useEffect(() => {
+		props.onChange?.({ noiseSuppression: noiseSuppression });
+	}, [noiseSuppression]);
 
 	function onAudioLevel(db: number) {
 		_inputDb.current = db;
@@ -167,6 +177,18 @@ export default function SettingsAudioTab(props: SettingsTabProps) {
 						/>
 					</RangeInput>
 				</div>
+			</div>
+			<div className="mt-5 flex">
+				<Checkbox
+					checked={noiseSuppression}
+					onChange={setNoiseSuppression}
+					className="group flex cursor-pointer items-center justify-center gap-x-2.5"
+				>
+					<div className="flex size-6 items-center justify-center rounded-md bg-secondary p-1 ring-1 ring-white/20 group-hover:bg-tertiary group-data-[checked]:bg-primary group-data-[checked]:ring-0">
+						<IconMingcuteCheckFill className="text-white opacity-0 group-data-[checked]:opacity-100" />
+					</div>
+					<div className="text-text">Noise Suppression</div>
+				</Checkbox>
 			</div>
 		</div>
 	);

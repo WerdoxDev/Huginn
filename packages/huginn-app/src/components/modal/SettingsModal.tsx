@@ -1,6 +1,7 @@
-import type { DeepPartial, SettingsTab, SettingsTabProps } from "@/types";
+import type { SettingsTab, SettingsTabProps } from "@/types";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import { DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import type { DeepPartial } from "@huginn/shared";
 import { useClient } from "@stores/apiStore";
 import { useModals } from "@stores/modalsStore";
 import { type AppSettings, settingsStore, useSettings } from "@stores/settingsStore";
