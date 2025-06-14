@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.40.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.39.0...app@v0.40.0) (2025-06-14)
+
+
+### Features
+
+* **app:** refactor voice client into a class & voice noise suppression toggle ([bdacc40](https://github.com/WerdoxDev/Huginn/commit/bdacc4042ab5d88613990b33c03aea3b1996fd95))
+
+
+### Bug Fixes
+
+* **app:** ScreenshareModal is not being lazy loaded ([3dff231](https://github.com/WerdoxDev/Huginn/commit/3dff231b5a3c8e874864011ef067b36b26df164c))
+* **app:** screensharemodal is using the wrong name in git ([6122a47](https://github.com/WerdoxDev/Huginn/commit/6122a475d3d1d1230bcf1aed46935e082438ea16))
+* **app:** testing a potential fix on vercel [#1](https://github.com/WerdoxDev/Huginn/issues/1) ([f34761f](https://github.com/WerdoxDev/Huginn/commit/f34761f73a0b638ae6c5638a3400358c1bc350bf))
+* **app:** testing a potential fix on vercel [#2](https://github.com/WerdoxDev/Huginn/issues/2) ([fa9be96](https://github.com/WerdoxDev/Huginn/commit/fa9be96ab621d39d61397604f59e1b28c5c8453d))
+
 ## [0.39.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.38.0...app@v0.39.0) (2025-06-09)
 
 

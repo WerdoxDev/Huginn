@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.20.0...shared@v0.21.0) (2025-06-14)
+
+
+### Features
+
+* **shared:** move deep partial to shared & add local_producer_change type ([9848454](https://github.com/WerdoxDev/Huginn/commit/984845413812b6dc3527b85bcff27220332e9327))
+
 ## [0.20.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.19.0...shared@v0.20.0) (2025-06-09)
 
 
