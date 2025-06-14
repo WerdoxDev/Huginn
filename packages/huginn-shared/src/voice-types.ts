@@ -53,8 +53,9 @@ export type VoiceOperationDatas = {
 };
 
 export type VoiceEvents = {
-   transport_ready: { channelId: Snowflake };
+   send_transport_ready: { channelId: Snowflake };
    local_producer_created: { producerId: string; kind: HMediaKind; track: MediaStreamTrack };
+   local_producer_changed: { producerId: string, kind: HMediaKind, track: MediaStreamTrack | null };
    consumer_created: { consumerId: string; producerId: string; track: MediaStreamTrack; producerUserId: Snowflake; kind: HMediaKind };
    producer_closed: { producerId: string; userId: Snowflake };
    connected: undefined;
