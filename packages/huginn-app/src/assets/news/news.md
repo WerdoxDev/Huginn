@@ -1,5 +1,4 @@
-### **New additions to calls!**
+### **New small features to voice**
 
-- **Refined** screenshare _UI_
-- Stream with **Audio** support
-- User / Stream **Audio volume** slider
+- Noise suppression toggle!
+- Fixed a bug with screenshare FPS and state
