@@ -220,6 +220,12 @@ export class VoiceWebSocket {
          appData: { mediaKind: data.kind, userId: rtcPeer.userId },
       });
 
+      // if (data.kind === "screen_video") {
+      //    setInterval(async () => {
+      //       console.log(await producer.getStats());
+      //    }, 100)
+      // }
+
       rtcPeer?.producers.set(producer.id, producer);
 
       for (const [otherPeerId] of router.peers) {
