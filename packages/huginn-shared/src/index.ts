@@ -13,3 +13,4 @@ export * from "./rest-utils";
 export * from "./http-error";
 export * from "./file-resolver";
 export * from "./huginn-error";
+export * from "./logger";
