@@ -5,6 +5,7 @@ import "./index.css";
 import router from "./routes";
 
 const root = document.getElementById("root");
+// enableLogs(["api:gateway", "api:voice"], ["api:voice-default", "api:gateway-send"]);
 
 export const queryClient = new QueryClient({
 	defaultOptions: { queries: { refetchOnReconnect: false, refetchOnWindowFocus: false, refetchOnMount: false, staleTime: 60000 } },

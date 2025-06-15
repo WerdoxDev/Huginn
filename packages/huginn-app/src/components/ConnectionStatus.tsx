@@ -22,7 +22,6 @@ export default function ConnectionStatus() {
 
 	useEffect(() => {
 		function onReady() {
-			console.log("ready3");
 			setConnectionState("connected");
 		}
 

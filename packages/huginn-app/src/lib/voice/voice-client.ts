@@ -223,7 +223,7 @@ export class VoiceClient {
             }, 700);
 
             if (client.voice.localVoiceState.audioPaused) {
-               if (client.voice.resumeMedia()) {
+               if (client.voice.resumeMicrophone()) {
                   voice.updateSpeakingState(userId, true);
                }
             }
