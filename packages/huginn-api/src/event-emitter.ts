@@ -1,54 +1,63 @@
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 type EventCallback<T = any> = (data: T) => void;
 
-export class EventEmitterWithHistory {
-	private events: { [event: string]: EventCallback[] } = {};
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	private queuedEvents: { [event: string]: any[] } = {}; // Cache for past events
+export class EventEmitterWithHistory<Events> {
+   private events: { [event in keyof Events]?: EventCallback<Events[event]>[] } = {};
+   private queuedEvents: { [event in keyof Events]?: Events[event][] } = {}; // Cache for past events
 
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	on<T = any>(event: string, listener: EventCallback<T>, withoutHistory?: boolean): void {
-		if (!this.events[event]) {
-			this.events[event] = [];
-		}
-		this.events[event].push(listener);
+   public on<EventName extends keyof Events>(
+      eventName: EventName,
+      handler: (eventArg: Events[EventName]) => void,
+      withoutHistory?: boolean,
+   ): void {
+      if (!this.events[eventName]) {
+         this.events[eventName] = [];
+      }
+      this.events[eventName]?.push(handler);
 
-		if (withoutHistory) {
-			this.queuedEvents[event] = [];
-		} // Process any queued events
-		else if (this.queuedEvents[event]) {
-			for (const data of this.queuedEvents[event]) {
-				listener(data);
-			}
+      if (withoutHistory) {
+         this.queuedEvents[eventName] = [];
+      } // Process any queued events
+      else if (this.queuedEvents[eventName]) {
+         for (const data of this.queuedEvents[eventName]) {
+            handler(data);
+         }
 
-			this.queuedEvents[event] = []; // Clear the queue
-		}
-	}
+         this.queuedEvents[eventName] = []; // Clear the queue
+      }
+   }
 
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	off<T = any>(event: string, listener: EventCallback<T>): void {
-		if (this.events[event]) {
-			this.events[event] = this.events[event].filter((l) => l !== listener);
-		}
-	}
+   public off<EventName extends keyof Events>(eventName: EventName, handler: (eventArg: Events[EventName]) => void): void {
+      if (this.events[eventName]) {
+         this.events[eventName] = this.events[eventName].filter((l) => l !== handler);
+      }
+   }
 
-	offAll(event: string): void {
-		this.events[event] = [];
-	}
+   public offAll<Eventname extends keyof Events>(eventName: Eventname): void {
+      this.events[eventName] = [];
+   }
 
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	emit<T = any>(event: string, data: T): void {
-		// Notify all listeners
-		if (this.events[event] && this.events[event].length > 0) {
-			for (const listener of this.events[event]) {
-				listener(data);
-			}
-		} else {
-			// No listeners yet, so queue the event
-			if (!this.queuedEvents[event]) {
-				this.queuedEvents[event] = [];
-			}
-			this.queuedEvents[event].push(data);
-		}
-	}
+   emit<EventName extends keyof Events>(eventName: EventName, eventArg: Events[EventName]): void {
+      // Notify all listeners
+      if (this.events[eventName] && this.events[eventName].length > 0) {
+         for (const listener of this.events[eventName]) {
+            listener(eventArg);
+         }
+      } else {
+         // No listeners yet, so queue the event
+         if (!this.queuedEvents[eventName]) {
+            this.queuedEvents[eventName] = [];
+         }
+         this.queuedEvents[eventName].push(eventArg);
+      }
+   }
+
+   public listen<EventName extends keyof Events>(
+      eventName: EventName,
+      handler: (eventArg: Events[EventName]) => void,
+      withoutHistory?: boolean,
+   ): () => void {
+      this.on(eventName, handler, withoutHistory);
+      return () => this.off(eventName, handler);
+   }
 }

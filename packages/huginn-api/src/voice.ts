@@ -19,6 +19,8 @@ import {
    type VoiceTransportConnectedData,
    type VoiceTransportCreatedData,
    convertToMediaKind,
+   error,
+   log,
 } from "@huginn/shared";
 import * as mediasoupClient from "mediasoup-client";
 import type { Consumer, Producer, ProducerOptions, Transport } from "mediasoup-client/types";
@@ -27,14 +29,14 @@ import type { HuginnClient } from "./huginn-client";
 import type { VoiceOptions } from "./types";
 import { defaultClientOptions } from "./utils";
 
-export class Voice {
+export class Voice extends EventEmitterWithHistory<VoiceEvents> {
    public socket?: WebSocket;
    private options: VoiceOptions;
    private client: HuginnClient;
    private heartbeatInterval?: ReturnType<typeof setInterval>;
+   private pingTimeout?: ReturnType<typeof setTimeout>;
    private lastPingStart?: number;
    private sequence?: number;
-   private readonly emitter = new EventEmitterWithHistory();
 
    public localVoiceState: { audioPaused: boolean; audioMuted: boolean; consumersMuted: boolean; streaming: boolean; camera: boolean };
    public connectionInfo?: { token: string; channelId: Snowflake; guildId: Snowflake | null };
@@ -46,32 +48,9 @@ export class Voice {
    private recvTransport?: Transport;
    private listeners: WeakMap<Producer, (newTrack: MediaStreamTrack | null) => void>;
 
-   public on<EventName extends keyof VoiceEvents>(
-      eventName: EventName,
-      handler: (eventArg: VoiceEvents[EventName]) => void,
-      withoutHistory?: boolean,
-   ): void {
-      this.emitter.on(eventName, handler, withoutHistory);
-   }
-
-   public off<EventName extends keyof VoiceEvents>(eventName: EventName, handler: (eventArg: VoiceEvents[EventName]) => void): void {
-      this.emitter.off(eventName, handler);
-   }
-
-   public listen<EventName extends keyof VoiceEvents>(
-      eventName: EventName,
-      handler: (eventArg: VoiceEvents[EventName]) => void,
-      withoutHistory?: boolean,
-   ): () => void {
-      this.on(eventName, handler, withoutHistory);
-      return () => this.off(eventName, handler);
-   }
-
-   private emit<EventName extends keyof VoiceEvents>(eventName: EventName, eventArg: VoiceEvents[EventName]): void {
-      this.emitter.emit(eventName, eventArg);
-   }
-
    public constructor(client: HuginnClient, options?: Partial<VoiceOptions>) {
+      super();
+
       this.options = { ...defaultClientOptions.voice, ...options };
       this.localVoiceState = { consumersMuted: false, audioMuted: false, audioPaused: true, streaming: false, camera: false };
       this.client = client;
@@ -85,20 +64,25 @@ export class Voice {
          return;
       }
 
+      log("api:voice", "api:voice-default", "connect", "cid:", channelId, "gid:", guildId)
+
       this.socket = this.options.createSocket(this.options.url);
       this.connectionInfo = { token, channelId, guildId };
       this.startListening();
    }
 
    public close(): void {
+      log("api:voice", "api:voice-default", "intentional close")
+
       this.socket?.close(GatewayCode.INTENTIONAL_CLOSE);
-      this.reset();
    }
 
    public async startStreaming(cameraTrack?: MediaStreamTrack, microphoneTrack?: MediaStreamTrack): Promise<void> {
       if (!this.sendTransport || !this.client.user) {
          return;
       }
+
+      log("api:voice", "api:voice-default", "start streaming");
 
       if (cameraTrack) {
          await this.openProducer("camera", {
@@ -124,6 +108,8 @@ export class Voice {
       if (!this.sendTransport || !this.client.user) {
          return;
       }
+
+      log("api:voice", "api:voice-default", "start screensharing");
 
       videoTrack.onended = () => {
          this.stopScreensharing();
@@ -164,6 +150,8 @@ export class Voice {
          return;
       }
 
+      log("api:voice", "api:voice-default", "stop screensharing");
+
       const videoProducer = this.producers.get("screen_video");
       const audioProducer = this.producers.get("screen_audio");
 
@@ -184,6 +172,8 @@ export class Voice {
    }
 
    public muteMicrophone(): void {
+      log("api:voice", "api:voice-media-state", "mute microphone");
+
       this.updateLocalVoiceState({ audioMuted: true });
       const producer = this.producers.get("microphone");
       if (!producer?.paused) {
@@ -192,6 +182,8 @@ export class Voice {
    }
 
    public unmuteMicrophone(): void {
+      log("api:voice", "api:voice-media-state", "unmute microphone");
+
       this.updateLocalVoiceState({ audioMuted: false });
       const producer = this.producers.get("microphone");
       if (!this.localVoiceState.audioPaused && producer?.paused) {
@@ -200,6 +192,8 @@ export class Voice {
    }
 
    public pauseMicrophone(): void {
+      log("api:voice", "api:voice-media-state", "pause microphone");
+
       this.updateLocalVoiceState({ audioPaused: true });
       const producer = this.producers.get("microphone");
       if (!producer?.paused) {
@@ -207,7 +201,9 @@ export class Voice {
       }
    }
 
-   public resumeMedia(): boolean {
+   public resumeMicrophone(): boolean {
+      log("api:voice", "api:voice-media-state", "resume microphone");
+
       this.updateLocalVoiceState({ audioPaused: false });
 
       const producer = this.producers.get("microphone");
@@ -220,6 +216,8 @@ export class Voice {
    }
 
    public muteConsumers(): void {
+      log("api:voice", "api:voice-media-state", "mute consumers");
+
       for (const consumer of this.consumers.values()) {
          if (!consumer.paused) {
             consumer.pause();
@@ -230,6 +228,8 @@ export class Voice {
    }
 
    public unmuteConsumers(): void {
+      log("api:voice", "api:voice-media-state", "unmute consumers");
+
       for (const consumer of this.consumers.values()) {
          if (consumer.paused) {
             consumer.resume();
@@ -244,6 +244,8 @@ export class Voice {
          return;
       }
 
+      log("api:voice", "api:voice-default", "open producer", "mk:", kind);
+
       const producer = await this.sendTransport.produce<MediasoupAppData>(options);
 
       const listener = (newTrack: MediaStreamTrack | null) => this.emit("local_producer_changed", { kind, producerId: producer.id, track: newTrack });
@@ -256,16 +258,19 @@ export class Voice {
       return producer;
    }
 
-   public closeProducer(producerId: string) {
+   private closeProducer(producerId: string) {
       if (!this.connectionInfo) {
          return;
       }
+
+      log("api:voice", "api:voice-default", "close producer", "id:", producerId);
 
       const closeProducerData: VoicePayload<VoiceOperations.CLOSE_PRODUCER> = {
          op: VoiceOperations.CLOSE_PRODUCER,
          d: { channelId: this.connectionInfo.channelId, producerId: producerId },
       };
 
+      log("api:voice", "api:voice-send", "close-producer", "id:", producerId);
       this.send(closeProducerData);
    }
 
@@ -289,6 +294,8 @@ export class Voice {
    }
 
    private startListening() {
+      log("api:voice", "api:voice-default", "start listening");
+
       this.socket?.removeEventListener("open", this.onOpen);
       this.socket?.removeEventListener("close", this.onClose);
       this.socket?.removeEventListener("message", this.onMessage);
@@ -299,25 +306,24 @@ export class Voice {
    }
 
    private onOpen(_e: Event) {
-      if (this.options.log) {
-         console.log("[Voice] Connected");
-      }
+      log("api:voice", "api:voice-default", "connected");
 
       this.emit("connected", undefined);
    }
 
    private onClose(e: CloseEvent) {
-      if (this.options.log) {
-         console.log("[Voice] Closed", e.code, e.reason);
-      }
+      log("api:voice", "api:voice-default", "closed", "c:", e.code, "r:", e.reason);
 
       this.stopHeartbeat();
+      this.stopPing();
       this.reset();
 
       this.emit("disconnected", undefined);
    }
 
    private reset() {
+      log("api:voice", "api:voice-default", "reset");
+
       this.sequence = undefined;
       this.socket = undefined;
       this.consumers = new Map();
@@ -335,42 +341,54 @@ export class Voice {
 
       switch (data.op) {
          case VoiceOperations.HELLO: {
-            await this.handleHello(data.d as VoiceHelloData);
+            const hello = data.d as VoiceHelloData;
+            await this.handleHello(hello);
+            log("api:voice", "api:voice-recv", "hello", "intrvl:", hello.heartbeatInterval);
             break;
          }
          case VoiceOperations.READY: {
+            const ready = data.d as VoiceReadyData
             await this.handleReady(data.d as VoiceReadyData);
+            log("api:voice", "api:voice-recv", "ready");
             break;
          }
          case VoiceOperations.TRANSPORT_CREATED: {
-            await this.handleTransportCreated(data.d as VoiceTransportCreatedData);
+            const created = data.d as VoiceTransportCreatedData
+            await this.handleTransportCreated(created);
+            log("api:voice", "api:voice-recv", "transport created", "id:", created.transportId, "dir:", created.direction);
             break;
          }
          case VoiceOperations.TRANSPORT_CONNECTED: {
             const connected = data.d as VoiceTransportConnectedData;
-            console.log(`[Voice] Transport connected ${connected.transportId}}`);
+            log("api:voice", "api:voice-recv", "transport connected", "id:", connected.transportId);
             break;
          }
          case VoiceOperations.PRODUCER_CREATED: {
             const created = data.d as VoiceProducerCreatedData;
-            console.log(`[Voice] Producer created ${created.producerId}`);
+            log("api:voice", "api:voice-recv", "producer created", "id:", created.producerId);
             break;
          }
          case VoiceOperations.NEW_PRODUCER: {
-            await this.handleNewProducer(data.d as VoiceNewProducerData);
+            const producer = data.d as VoiceNewProducerData;
+            await this.handleNewProducer(producer);
+            log("api:voice", "api:voice-recv", "new producer", "id:", producer.producerId, "uid:", producer.producerUserId);
             break;
          }
          case VoiceOperations.CONSUMER_CREATED: {
-            await this.handleConsumerCreated(data.d as VoiceConsumerCreatedData);
+            const created = data.d as VoiceConsumerCreatedData;
+            await this.handleConsumerCreated(created);
+            log("api:voice", "api:voice-recv", "consumer created", "cid:", created.consumerId, "pid:", created.producerId, "uid:", created.producerUserId);
             break;
          }
          case VoiceOperations.CONSUMER_RESUMED: {
             const resumed = data.d as VoiceConsumerResumedData;
-            console.log(`[Voice] Resumed consumer ${resumed.consumerId}`);
+            log("api:voice", "api:voice-recv", "resumed consumer", "id:", resumed.consumerId);
             break;
          }
          case VoiceOperations.PEER_LEFT: {
-            this.handlePeerLeft(data.d as VoicePeerLeftData);
+            const left = data.d as VoicePeerLeftData;
+            this.handlePeerLeft(left);
+            log("api:voice", "api:voice-recv", "peer left", "id:", left.peerId);
             break;
          }
          case VoiceOperations.PONG: {
@@ -378,7 +396,9 @@ export class Voice {
             break;
          }
          case VoiceOperations.PRODUCER_CLOSED: {
-            this.handleProducerClosed(data.d as VoiceProducerClosedData);
+            const closed = data.d as VoiceProducerClosedData;
+            this.handleProducerClosed(closed);
+            log("api:voice", "api:voice-recv", "producer closed", "id:", closed.producerId);
             break;
          }
       }
@@ -438,6 +458,7 @@ export class Voice {
          d: { channelId: this.connectionInfo.channelId, consumerId: data.consumerId },
       };
 
+      log("api:voice", "api:voice-send", "resume consumer", data.consumerId);
       this.send(resumeConsumerData);
    }
 
@@ -456,6 +477,7 @@ export class Voice {
          },
       };
 
+      log("api:voice", "api:voice-send", "consume", "pid:", data.producerId);
       this.send(consumeData);
    }
 
@@ -475,7 +497,9 @@ export class Voice {
                   d: { channelId: this.connectionInfo!.channelId, transportId: this.sendTransport!.id, dtlsParameters },
                };
 
+               log("api:voice", "api:voice-send", "connect transport", "id:", this.sendTransport?.id, "dir:", "send");
                this.send(connectTransportData);
+
                callback();
             });
 
@@ -494,6 +518,7 @@ export class Voice {
                   },
                };
 
+               log("api:voice", "api:voice-send", "produce", "mk:", appData.mediaKind);
                this.send(produceData);
 
                const { producerId } = await this.waitForProducerCreated();
@@ -512,7 +537,9 @@ export class Voice {
                   d: { channelId: this.connectionInfo!.channelId, transportId: this.recvTransport!.id, dtlsParameters },
                };
 
+               log("api:voice", "api:voice-send", "connect-transport", "id:", this.recvTransport?.id, "dir:", "recv");
                this.send(connectTransportData);
+
                callback();
             });
 
@@ -523,7 +550,7 @@ export class Voice {
             }
          }
       } catch (e) {
-         console.error("Failed to setup transport:", e);
+         error("api:voice", "Failed to setup transport", e);
       }
    }
 
@@ -538,7 +565,6 @@ export class Voice {
       if (producer) {
          const listener = this.listeners.get(producer[1]);
          if (listener) {
-            console.log("LISTENER FOUND")
             producer[1].off("@replacetrack", listener);
          }
 
@@ -567,8 +593,12 @@ export class Voice {
          d: { channelId: this.connectionInfo?.channelId, direction: "recv" },
       };
 
+      log("api:voice", "api:voice-send", "create send transport");
       this.send(createSendTransportData);
+
+      log("api:voice", "api:voice-send", "create recv transport");
       this.send(createRecvTransportData);
+
       this.sendPing();
 
       this.initialProducers = data.producers;
@@ -578,7 +608,8 @@ export class Voice {
       this.startHeartbeat(data.heartbeatInterval);
 
       if (!this.client.user || !this.connectionInfo) {
-         throw new Error("Client user or connection info was null when identifying voice websocket");
+         error("api:voice", "Client user or connection info was null when identifying voice websocket")
+         return;
       }
 
       const identifyData: VoicePayload<VoiceOperations.IDENTIFY> = {
@@ -591,6 +622,7 @@ export class Voice {
          },
       };
 
+      log("api:voice", "api:voice-send", "identify", "cid:", identifyData.d.channelId, "gid:", identifyData.d.guildId);
       this.send(identifyData);
    }
 
@@ -598,7 +630,9 @@ export class Voice {
       const rtt = Date.now() - (this.lastPingStart ?? 0);
       this.emit("ping", { rtt });
 
-      setTimeout(() => {
+      log("api:voice", "api:voice-ping", "pong", "now:", Date.now(), "rtt:", rtt);
+
+      this.pingTimeout = setTimeout(() => {
          this.sendPing();
       }, constants.VOICE_CLIENT_PING_INTERVAL);
    }
@@ -606,21 +640,30 @@ export class Voice {
    private sendPing() {
       const pingData: VoicePayload<VoiceOperations.PING> = { op: VoiceOperations.PING, d: undefined };
       this.lastPingStart = Date.now();
+
+      log("api:voice", "api:voice-ping", "ping", "start:", this.lastPingStart);
       this.send(pingData);
    }
 
    private startHeartbeat(interval: number) {
+      log("api:voice", "api:voice-heartbeat", "start heartbeat");
+
       this.heartbeatInterval = setInterval(() => {
          const data: VoicePayload<VoiceOperations.HEARTBEAT> = { op: VoiceOperations.HEARTBEAT, d: this.sequence };
-         if (this.options.log) {
-            console.log("[Voice] Sending Heartbeat");
-         }
+
+         log("api:voice", "api:voice-heartbeat", "heartbeat", "seq:", this.sequence);
          this.send(data);
       }, interval);
    }
 
    private stopHeartbeat() {
+      log("api:voice", "api:voice-heartbeat", "stop heartbeat");
       clearInterval(this.heartbeatInterval);
+   }
+
+   private stopPing() {
+      log("api:voice", "api:voice-ping", "stop ping");
+      clearTimeout(this.pingTimeout);
    }
 
    public send(data: unknown): void {
