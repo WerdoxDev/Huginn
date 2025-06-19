@@ -43,7 +43,7 @@ const sectionStyles: Partial<Record<LogSection | "default" | "error", string>> =
    "api:voice": 'color: white; background: #029687; padding: 1px 6px; border-radius: 4px;',
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+// biome-ignore lint/suspicious/noExplicitAny: any is used to be complient with console.log
 export function log(section: LogSection, level: LogLevel, ...args: any[]): void {
    if (!enabledSections.has(section) || !enabledLevels.has(level)) {
       return;
@@ -58,7 +58,7 @@ export function log(section: LogSection, level: LogLevel, ...args: any[]): void 
    console.log(formatString, ...stylesString, ...args);
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+// biome-ignore lint/suspicious/noExplicitAny: any is used to be complient with console.log
 export function error(section: LogSection, ...args: any[]): void {
    const levelStyle = levelStyles.default;
    const sectionStyle = sectionStyles[section] ?? sectionStyles.error;
