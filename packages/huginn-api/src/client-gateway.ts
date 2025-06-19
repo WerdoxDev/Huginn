@@ -1,15 +1,3 @@
-import {
-   GatewayCode,
-   type GatewayEvents,
-   type GatewayHeartbeat,
-   type GatewayHello,
-   type GatewayIdentify,
-   GatewayOperations,
-   type GatewayReadyData,
-   type GatewayResume,
-   error,
-   log,
-} from "@huginn/shared";
 import type {
    GatewayDispatch,
    GatewayPayload,
@@ -19,7 +7,18 @@ import type {
    GatewayVoiceStateUpdateData,
    Snowflake,
 } from "@huginn/shared";
-import { isOpcode } from "@huginn/shared";
+import {
+   error,
+   GatewayCode,
+   type GatewayEvents,
+   type GatewayHeartbeat,
+   type GatewayHello,
+   type GatewayIdentify,
+   GatewayOperations,
+   type GatewayReadyData,
+   type GatewayResume, isOpcode,
+   log
+} from "@huginn/shared";
 import type { HuginnClient } from ".";
 import { EventEmitterWithHistory } from "./event-emitter";
 import { ClientReadyState, type GatewayOptions } from "./types";
@@ -96,7 +95,7 @@ export class Gateway extends EventEmitterWithHistory<GatewayEvents> {
     * Connects to a voice channel.
     * @param guildId can be set to null if you are connecting to a direct channel call.
     */
-   public async connectToVoice(guildId: Snowflake | null, channelId: Snowflake): Promise<void> {
+   public async connectVoice(guildId: Snowflake | null, channelId: Snowflake): Promise<void> {
       log("api:gateway", "gateway:default", "connect to voice")
 
       if (this.client.voice.connectionInfo?.channelId !== channelId) {
@@ -118,7 +117,7 @@ export class Gateway extends EventEmitterWithHistory<GatewayEvents> {
       log("api:gateway", "gateway:send", "update voice state", "cid:", updateVoiceStateData.d.channelId, "gid:", updateVoiceStateData.d.guildId);
       this.send(updateVoiceStateData);
 
-      const token = await new Promise<string>((resolve, reject) => {
+      const token = await new Promise<string>((resolve, _reject) => {
          let count = 0;
          let token: string;
          const onMessage = (data: GatewayPayload) => {
@@ -148,7 +147,7 @@ export class Gateway extends EventEmitterWithHistory<GatewayEvents> {
       this.client.voice.connect(token, channelId, guildId);
    }
 
-   public disconnectFromVoice(): void {
+   public disconnectVoice(): void {
       log("api:gateway", "gateway:default", "disconnect from voice")
 
       const updateVoiceStateData: GatewayUpdateVoiceState = {

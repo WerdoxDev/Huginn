@@ -1,7 +1,10 @@
 import {
    constants,
+   convertToMediaKind,
+   error,
    GatewayCode,
    type HMediaKind,
+   log,
    type MediasoupAppData,
    type ProducerData,
    type Snowflake,
@@ -18,9 +21,6 @@ import {
    type VoiceReadyData,
    type VoiceTransportConnectedData,
    type VoiceTransportCreatedData,
-   convertToMediaKind,
-   error,
-   log,
 } from "@huginn/shared";
 import * as mediasoupClient from "mediasoup-client";
 import type { Consumer, Producer, ProducerOptions, Transport } from "mediasoup-client/types";
@@ -352,7 +352,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
          }
          case VoiceOperations.READY: {
             const ready = data.d as VoiceReadyData
-            await this.handleReady(data.d as VoiceReadyData);
+            await this.handleReady(ready);
             log("api:voice", "voice:recv", "ready");
             break;
          }
@@ -494,7 +494,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
          if (data.direction === "send") {
             this.sendTransport = this.device?.createSendTransport(data.params);
 
-            this.sendTransport?.on("connect", async ({ dtlsParameters }, callback, errback) => {
+            this.sendTransport?.on("connect", async ({ dtlsParameters }, callback, _errback) => {
                const connectTransportData: VoicePayload<VoiceOperations.CONNECT_TRANSPORT> = {
                   op: VoiceOperations.CONNECT_TRANSPORT,
                   // biome-ignore lint/style/noNonNullAssertion: connectionInfo and sendTransport cannot be null here
@@ -507,7 +507,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
                callback();
             });
 
-            this.sendTransport?.on("produce", async ({ kind, rtpParameters, appData }, callback, errback) => {
+            this.sendTransport?.on("produce", async ({ rtpParameters, appData }, callback, _errback) => {
                if (!this.connectionInfo || !this.sendTransport) {
                   return;
                }
@@ -534,7 +534,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
          } else if (data.direction === "recv") {
             this.recvTransport = this.device?.createRecvTransport(data.params);
 
-            this.recvTransport?.on("connect", async ({ dtlsParameters }, callback, errback) => {
+            this.recvTransport?.on("connect", async ({ dtlsParameters }, callback, _errback) => {
                const connectTransportData: VoicePayload<VoiceOperations.CONNECT_TRANSPORT> = {
                   op: VoiceOperations.CONNECT_TRANSPORT,
                   // biome-ignore lint/style/noNonNullAssertion: connectionInfo and recvTransport cannot be null here
