@@ -64,7 +64,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
          return;
       }
 
-      log("api:voice", "api:voice-default", "connect", "cid:", channelId, "gid:", guildId)
+      log("api:voice", "voice:default", "connect", "cid:", channelId, "gid:", guildId)
 
       this.socket = this.options.createSocket(this.options.url);
       this.connectionInfo = { token, channelId, guildId };
@@ -72,7 +72,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
    }
 
    public close(): void {
-      log("api:voice", "api:voice-default", "intentional close")
+      log("api:voice", "voice:default", "intentional close")
 
       this.socket?.close(GatewayCode.INTENTIONAL_CLOSE);
    }
@@ -82,7 +82,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
          return;
       }
 
-      log("api:voice", "api:voice-default", "start streaming");
+      log("api:voice", "voice:default", "start streaming");
 
       if (cameraTrack) {
          await this.openProducer("camera", {
@@ -109,7 +109,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
          return;
       }
 
-      log("api:voice", "api:voice-default", "start screensharing");
+      log("api:voice", "voice:default", "start screensharing");
 
       videoTrack.onended = () => {
          this.stopScreensharing();
@@ -150,7 +150,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
          return;
       }
 
-      log("api:voice", "api:voice-default", "stop screensharing");
+      log("api:voice", "voice:default", "stop screensharing");
 
       const videoProducer = this.producers.get("screen_video");
       const audioProducer = this.producers.get("screen_audio");
@@ -172,7 +172,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
    }
 
    public muteMicrophone(): void {
-      log("api:voice", "api:voice-media-state", "mute microphone");
+      log("api:voice", "voice:local-voice-state", "mute microphone");
 
       this.updateLocalVoiceState({ audioMuted: true });
       const producer = this.producers.get("microphone");
@@ -182,7 +182,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
    }
 
    public unmuteMicrophone(): void {
-      log("api:voice", "api:voice-media-state", "unmute microphone");
+      log("api:voice", "voice:local-voice-state", "unmute microphone");
 
       this.updateLocalVoiceState({ audioMuted: false });
       const producer = this.producers.get("microphone");
@@ -192,7 +192,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
    }
 
    public pauseMicrophone(): void {
-      log("api:voice", "api:voice-media-state", "pause microphone");
+      log("api:voice", "voice:local-voice-state", "pause microphone");
 
       this.updateLocalVoiceState({ audioPaused: true });
       const producer = this.producers.get("microphone");
@@ -202,7 +202,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
    }
 
    public resumeMicrophone(): boolean {
-      log("api:voice", "api:voice-media-state", "resume microphone");
+      log("api:voice", "voice:local-voice-state", "resume microphone");
 
       this.updateLocalVoiceState({ audioPaused: false });
 
@@ -216,7 +216,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
    }
 
    public muteConsumers(): void {
-      log("api:voice", "api:voice-media-state", "mute consumers");
+      log("api:voice", "voice:local-voice-state", "mute consumers");
 
       for (const consumer of this.consumers.values()) {
          if (!consumer.paused) {
@@ -228,7 +228,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
    }
 
    public unmuteConsumers(): void {
-      log("api:voice", "api:voice-media-state", "unmute consumers");
+      log("api:voice", "voice:local-voice-state", "unmute consumers");
 
       for (const consumer of this.consumers.values()) {
          if (consumer.paused) {
@@ -244,7 +244,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
          return;
       }
 
-      log("api:voice", "api:voice-default", "open producer", "mk:", kind);
+      log("api:voice", "voice:default", "open producer", "mk:", kind);
 
       const producer = await this.sendTransport.produce<MediasoupAppData>(options);
 
@@ -263,18 +263,21 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
          return;
       }
 
-      log("api:voice", "api:voice-default", "close producer", "id:", producerId);
+      log("api:voice", "voice:default", "close producer", "id:", producerId);
 
       const closeProducerData: VoicePayload<VoiceOperations.CLOSE_PRODUCER> = {
          op: VoiceOperations.CLOSE_PRODUCER,
          d: { channelId: this.connectionInfo.channelId, producerId: producerId },
       };
 
-      log("api:voice", "api:voice-send", "close-producer", "id:", producerId);
+      log("api:voice", "voice:send", "close-producer", "id:", producerId);
       this.send(closeProducerData);
    }
 
+   // TODO: Make this the primary function and then it will call smaller functions like muteMicrophone... Currently the reverse of this is happening.
    private updateLocalVoiceState(voiceState: Partial<typeof this.localVoiceState>) {
+      log("api:voice", "voice:local-voice-state", "update", "am:", voiceState.audioMuted, "ap:", voiceState.audioPaused, "cm:", voiceState.consumersMuted, "s:", voiceState.streaming)
+
       if (voiceState.audioPaused !== undefined) {
          this.localVoiceState.audioPaused = voiceState.audioPaused;
       }
@@ -290,11 +293,12 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
       if (voiceState.camera !== undefined) {
          this.localVoiceState.camera = voiceState.camera;
       }
+
       this.emit("local_voice_state_changed", this.localVoiceState);
    }
 
    private startListening() {
-      log("api:voice", "api:voice-default", "start listening");
+      log("api:voice", "voice:default", "start listening");
 
       this.socket?.removeEventListener("open", this.onOpen);
       this.socket?.removeEventListener("close", this.onClose);
@@ -306,13 +310,13 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
    }
 
    private onOpen(_e: Event) {
-      log("api:voice", "api:voice-default", "connected");
+      log("api:voice", "voice:default", "connected");
 
       this.emit("connected", undefined);
    }
 
    private onClose(e: CloseEvent) {
-      log("api:voice", "api:voice-default", "closed", "c:", e.code, "r:", e.reason);
+      log("api:voice", "voice:default", "closed", "c:", e.code, "r:", e.reason);
 
       this.stopHeartbeat();
       this.stopPing();
@@ -322,7 +326,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
    }
 
    private reset() {
-      log("api:voice", "api:voice-default", "reset");
+      log("api:voice", "voice:default", "reset");
 
       this.sequence = undefined;
       this.socket = undefined;
@@ -343,52 +347,52 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
          case VoiceOperations.HELLO: {
             const hello = data.d as VoiceHelloData;
             await this.handleHello(hello);
-            log("api:voice", "api:voice-recv", "hello", "intrvl:", hello.heartbeatInterval);
+            log("api:voice", "voice:recv", "hello", "intrvl:", hello.heartbeatInterval);
             break;
          }
          case VoiceOperations.READY: {
             const ready = data.d as VoiceReadyData
             await this.handleReady(data.d as VoiceReadyData);
-            log("api:voice", "api:voice-recv", "ready");
+            log("api:voice", "voice:recv", "ready");
             break;
          }
          case VoiceOperations.TRANSPORT_CREATED: {
             const created = data.d as VoiceTransportCreatedData
             await this.handleTransportCreated(created);
-            log("api:voice", "api:voice-recv", "transport created", "id:", created.transportId, "dir:", created.direction);
+            log("api:voice", "voice:recv", "transport created", "id:", created.transportId, "dir:", created.direction);
             break;
          }
          case VoiceOperations.TRANSPORT_CONNECTED: {
             const connected = data.d as VoiceTransportConnectedData;
-            log("api:voice", "api:voice-recv", "transport connected", "id:", connected.transportId);
+            log("api:voice", "voice:recv", "transport connected", "id:", connected.transportId);
             break;
          }
          case VoiceOperations.PRODUCER_CREATED: {
             const created = data.d as VoiceProducerCreatedData;
-            log("api:voice", "api:voice-recv", "producer created", "id:", created.producerId);
+            log("api:voice", "voice:recv", "producer created", "id:", created.producerId);
             break;
          }
          case VoiceOperations.NEW_PRODUCER: {
             const producer = data.d as VoiceNewProducerData;
             await this.handleNewProducer(producer);
-            log("api:voice", "api:voice-recv", "new producer", "id:", producer.producerId, "uid:", producer.producerUserId);
+            log("api:voice", "voice:recv", "new producer", "id:", producer.producerId, "uid:", producer.producerUserId);
             break;
          }
          case VoiceOperations.CONSUMER_CREATED: {
             const created = data.d as VoiceConsumerCreatedData;
             await this.handleConsumerCreated(created);
-            log("api:voice", "api:voice-recv", "consumer created", "cid:", created.consumerId, "pid:", created.producerId, "uid:", created.producerUserId);
+            log("api:voice", "voice:recv", "consumer created", "cid:", created.consumerId, "pid:", created.producerId, "uid:", created.producerUserId);
             break;
          }
          case VoiceOperations.CONSUMER_RESUMED: {
             const resumed = data.d as VoiceConsumerResumedData;
-            log("api:voice", "api:voice-recv", "resumed consumer", "id:", resumed.consumerId);
+            log("api:voice", "voice:recv", "resumed consumer", "id:", resumed.consumerId);
             break;
          }
          case VoiceOperations.PEER_LEFT: {
             const left = data.d as VoicePeerLeftData;
             this.handlePeerLeft(left);
-            log("api:voice", "api:voice-recv", "peer left", "id:", left.peerId);
+            log("api:voice", "voice:recv", "peer left", "id:", left.peerId);
             break;
          }
          case VoiceOperations.PONG: {
@@ -398,7 +402,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
          case VoiceOperations.PRODUCER_CLOSED: {
             const closed = data.d as VoiceProducerClosedData;
             this.handleProducerClosed(closed);
-            log("api:voice", "api:voice-recv", "producer closed", "id:", closed.producerId);
+            log("api:voice", "voice:recv", "producer closed", "id:", closed.producerId);
             break;
          }
       }
@@ -458,7 +462,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
          d: { channelId: this.connectionInfo.channelId, consumerId: data.consumerId },
       };
 
-      log("api:voice", "api:voice-send", "resume consumer", data.consumerId);
+      log("api:voice", "voice:send", "resume consumer", data.consumerId);
       this.send(resumeConsumerData);
    }
 
@@ -477,7 +481,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
          },
       };
 
-      log("api:voice", "api:voice-send", "consume", "pid:", data.producerId);
+      log("api:voice", "voice:send", "consume", "pid:", data.producerId);
       this.send(consumeData);
    }
 
@@ -497,7 +501,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
                   d: { channelId: this.connectionInfo!.channelId, transportId: this.sendTransport!.id, dtlsParameters },
                };
 
-               log("api:voice", "api:voice-send", "connect transport", "id:", this.sendTransport?.id, "dir:", "send");
+               log("api:voice", "voice:send", "connect transport", "id:", this.sendTransport?.id, "dir:", "send");
                this.send(connectTransportData);
 
                callback();
@@ -518,7 +522,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
                   },
                };
 
-               log("api:voice", "api:voice-send", "produce", "mk:", appData.mediaKind);
+               log("api:voice", "voice:send", "produce", "mk:", appData.mediaKind);
                this.send(produceData);
 
                const { producerId } = await this.waitForProducerCreated();
@@ -537,7 +541,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
                   d: { channelId: this.connectionInfo!.channelId, transportId: this.recvTransport!.id, dtlsParameters },
                };
 
-               log("api:voice", "api:voice-send", "connect-transport", "id:", this.recvTransport?.id, "dir:", "recv");
+               log("api:voice", "voice:send", "connect-transport", "id:", this.recvTransport?.id, "dir:", "recv");
                this.send(connectTransportData);
 
                callback();
@@ -593,10 +597,10 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
          d: { channelId: this.connectionInfo?.channelId, direction: "recv" },
       };
 
-      log("api:voice", "api:voice-send", "create send transport");
+      log("api:voice", "voice:send", "create send transport");
       this.send(createSendTransportData);
 
-      log("api:voice", "api:voice-send", "create recv transport");
+      log("api:voice", "voice:send", "create recv transport");
       this.send(createRecvTransportData);
 
       this.sendPing();
@@ -622,7 +626,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
          },
       };
 
-      log("api:voice", "api:voice-send", "identify", "cid:", identifyData.d.channelId, "gid:", identifyData.d.guildId);
+      log("api:voice", "voice:send", "identify", "cid:", identifyData.d.channelId, "gid:", identifyData.d.guildId);
       this.send(identifyData);
    }
 
@@ -630,7 +634,7 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
       const rtt = Date.now() - (this.lastPingStart ?? 0);
       this.emit("ping", { rtt });
 
-      log("api:voice", "api:voice-ping", "pong", "now:", Date.now(), "rtt:", rtt);
+      log("api:voice", "voice:ping", "pong", "now:", Date.now(), "rtt:", rtt);
 
       this.pingTimeout = setTimeout(() => {
          this.sendPing();
@@ -641,28 +645,30 @@ export class Voice extends EventEmitterWithHistory<VoiceEvents> {
       const pingData: VoicePayload<VoiceOperations.PING> = { op: VoiceOperations.PING, d: undefined };
       this.lastPingStart = Date.now();
 
-      log("api:voice", "api:voice-ping", "ping", "start:", this.lastPingStart);
+      log("api:voice", "voice:ping", "ping", "start:", this.lastPingStart);
       this.send(pingData);
    }
 
    private startHeartbeat(interval: number) {
-      log("api:voice", "api:voice-heartbeat", "start heartbeat");
+      log("api:voice", "voie:heartbeat", "start heartbeat");
 
       this.heartbeatInterval = setInterval(() => {
          const data: VoicePayload<VoiceOperations.HEARTBEAT> = { op: VoiceOperations.HEARTBEAT, d: this.sequence };
 
-         log("api:voice", "api:voice-heartbeat", "heartbeat", "seq:", this.sequence);
+         log("api:voice", "voie:heartbeat", "heartbeat", "seq:", this.sequence);
          this.send(data);
       }, interval);
    }
 
    private stopHeartbeat() {
-      log("api:voice", "api:voice-heartbeat", "stop heartbeat");
+      log("api:voice", "voie:heartbeat", "stop heartbeat");
+
       clearInterval(this.heartbeatInterval);
    }
 
    private stopPing() {
-      log("api:voice", "api:voice-ping", "stop ping");
+      log("api:voice", "voice:ping", "stop ping");
+
       clearTimeout(this.pingTimeout);
    }
 

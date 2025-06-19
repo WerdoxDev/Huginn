@@ -43,7 +43,7 @@ export class Gateway extends EventEmitterWithHistory<GatewayEvents> {
    }
 
    public connect(): void {
-      log("api:gateway", "api:gateway-default", "connect")
+      log("api:gateway", "gateway:default", "connect")
 
       this.socket = this.options.createSocket(this.options.url);
       this.startListening();
@@ -54,7 +54,7 @@ export class Gateway extends EventEmitterWithHistory<GatewayEvents> {
          return false;
       }
 
-      log("api:gateway", "api:gateway-default", "authenticate")
+      log("api:gateway", "gateway:default", "authenticate")
 
       const result = await new Promise((r) => {
          if (this.client.user && this.client.readyState === ClientReadyState.READY) {
@@ -97,7 +97,7 @@ export class Gateway extends EventEmitterWithHistory<GatewayEvents> {
     * @param guildId can be set to null if you are connecting to a direct channel call.
     */
    public async connectToVoice(guildId: Snowflake | null, channelId: Snowflake): Promise<void> {
-      log("api:gateway", "api:gateway-default", "connect to voice")
+      log("api:gateway", "gateway:default", "connect to voice")
 
       if (this.client.voice.connectionInfo?.channelId !== channelId) {
          this.client.voice.close();
@@ -115,7 +115,7 @@ export class Gateway extends EventEmitterWithHistory<GatewayEvents> {
          },
       };
 
-      log("api:gateway", "api:gateway-send", "update voice state", "cid:", updateVoiceStateData.d.channelId, "gid:", updateVoiceStateData.d.guildId);
+      log("api:gateway", "gateway:send", "update voice state", "cid:", updateVoiceStateData.d.channelId, "gid:", updateVoiceStateData.d.guildId);
       this.send(updateVoiceStateData);
 
       const token = await new Promise<string>((resolve, reject) => {
@@ -149,7 +149,7 @@ export class Gateway extends EventEmitterWithHistory<GatewayEvents> {
    }
 
    public disconnectFromVoice(): void {
-      log("api:gateway", "api:gateway-default", "disconnect from voice")
+      log("api:gateway", "gateway:default", "disconnect from voice")
 
       const updateVoiceStateData: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
@@ -163,7 +163,7 @@ export class Gateway extends EventEmitterWithHistory<GatewayEvents> {
          },
       };
 
-      log("api:gateway", "api:gateway-send", "update voice state to null");
+      log("api:gateway", "gateway:send", "update voice state to null");
       this.send(updateVoiceStateData);
 
       this.client.voice.close();
@@ -173,6 +173,8 @@ export class Gateway extends EventEmitterWithHistory<GatewayEvents> {
       if (!this.client.voice.connectionInfo) {
          return;
       }
+
+      log("api:gateway", "gateway:default", "update voice state", "sm:", selfMute, "sd:", selfDeaf, "ss:", selfStream, "sv:", selfVideo);
 
       const updateVoiceStateData: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
@@ -186,7 +188,7 @@ export class Gateway extends EventEmitterWithHistory<GatewayEvents> {
          },
       };
 
-      log("api:gateway", "api:gateway-send", "update voice state", "sm:", updateVoiceStateData.d.selfMute, "sd:", updateVoiceStateData.d.selfDeaf, "ss:", updateVoiceStateData.d.selfStream, "sv:", updateVoiceStateData.d.selfVideo);
+      log("api:gateway", "gateway:send", "update voice state", "sm:", updateVoiceStateData.d.selfMute, "sd:", updateVoiceStateData.d.selfDeaf, "ss:", updateVoiceStateData.d.selfStream, "sv:", updateVoiceStateData.d.selfVideo);
       this.send(updateVoiceStateData);
 
       if (selfMute) {
@@ -203,7 +205,7 @@ export class Gateway extends EventEmitterWithHistory<GatewayEvents> {
    }
 
    private startListening() {
-      log("api:gateway", "api:gateway-default", "start listening")
+      log("api:gateway", "gateway:default", "start listening")
 
       this.socket?.removeEventListener("open", this.onOpen);
       this.socket?.removeEventListener("close", this.onClose);
@@ -215,13 +217,13 @@ export class Gateway extends EventEmitterWithHistory<GatewayEvents> {
    }
 
    private onOpen(_e: Event) {
-      log("api:gateway", "api:gateway-default", "connected")
+      log("api:gateway", "gateway:default", "connected")
 
       this.emit("open", undefined);
    }
 
    private onClose(e: CloseEvent) {
-      log("api:gateway", "api:gateway-default", "closed", "c:", e.code, "r:", e.reason)
+      log("api:gateway", "gateway:default", "closed", "c:", e.code, "r:", e.reason)
 
       this.stopHeartbeat();
       this.emit("close", e.code);
@@ -237,7 +239,7 @@ export class Gateway extends EventEmitterWithHistory<GatewayEvents> {
 
    private async tryReconnect(event: CloseEvent) {
       setTimeout(async () => {
-         log("api:gateway", "api:gateway-default", "try reconnect");
+         log("api:gateway", "gateway:default", "try reconnect");
 
          this.client.readyState = ClientReadyState.RECONNECRING;
 
@@ -262,11 +264,15 @@ export class Gateway extends EventEmitterWithHistory<GatewayEvents> {
 
       const data: GatewayPayload = JSON.parse(e.data);
 
+      log("api:gateway", "gateway:recv-detail", "op:", data.op, "t:", data.t, "seq:", data.s, "d:", data.d)
+
       switch (data.op) {
          case GatewayOperations.HELLO: {
             const hello = data as GatewayHello;
             await this.handleHello(hello);
-            log("api:gateway", "api:gateway-recv", "hello", "intrvl:", hello.d.heartbeatInterval)
+
+            log("api:gateway", "gateway:recv", "hello", "intrvl:", hello.d.heartbeatInterval)
+
             this.emit("hello", hello.d);
             break;
          }
@@ -282,7 +288,7 @@ export class Gateway extends EventEmitterWithHistory<GatewayEvents> {
                this.handleReady(dispatch.d as GatewayReadyData);
             }
 
-            log("api:gateway", "api:gateway-dispatch", "t:", data.t, "seq:", data.s)
+            log("api:gateway", "gateway:dispatch", "t:", data.t, "seq:", data.s)
 
             this.emit(dispatch.t, dispatch.d);
          }
@@ -292,7 +298,7 @@ export class Gateway extends EventEmitterWithHistory<GatewayEvents> {
    }
 
    public close(): void {
-      log("api:gateway", "api:gateway-default", "intentional close")
+      log("api:gateway", "gateway:default", "intentional close")
 
       this.socket?.close(GatewayCode.INTENTIONAL_CLOSE);
       this.sequence = undefined;
@@ -313,7 +319,7 @@ export class Gateway extends EventEmitterWithHistory<GatewayEvents> {
             },
          };
 
-         log("api:gateway", "api:gateway-send", "resume", resumeData.d.seq);
+         log("api:gateway", "gateway:send", "resume", resumeData.d.seq);
          this.send(resumeData);
       }
    }
@@ -336,25 +342,29 @@ export class Gateway extends EventEmitterWithHistory<GatewayEvents> {
          },
       };
 
-      log("api:gateway", "api:gateway-send", "identify");
+      log("api:gateway", "gateway:send", "identify");
       this.send(identifyData);
    }
 
    private startHeartbeat(interval: number) {
+      log("api:gateway", "gateway:heartbeat", "start heartbeat");
+
       this.heartbeatInterval = setInterval(() => {
          const data: GatewayHeartbeat = { op: GatewayOperations.HEARTBEAT, d: this.sequence };
-         log("api:gateway", "api:gateway-heartbeat", "heartbeat");
+         log("api:gateway", "gateway:heartbeat", "heartbeat");
          this.send(data);
       }, interval);
-      log("api:gateway", "api:gateway-heartbeat", "start heartbeat");
    }
 
    private stopHeartbeat() {
+      log("api:gateway", "gateway:heartbeat", "stop heartbeat");
+
       clearInterval(this.heartbeatInterval);
-      log("api:gateway", "api:gateway-heartbeat", "stop heartbeat");
    }
 
    public send(data: unknown): void {
+      log("api:gateway", "gateway:send-detail", "d:", data);
+
       this.socket?.send(JSON.stringify(data));
    }
 }
