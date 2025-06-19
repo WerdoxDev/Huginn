@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.41.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.40.0...app@v0.41.0) (2025-06-19)
+
+
+### Features
+
+* **app:** add extensive logging for voice-store and voice-client ([6a3f4f2](https://github.com/WerdoxDev/Huginn/commit/6a3f4f241160a8cc07d43e45d1f97e0ad9836822))
+* **app:** migrate splashscreen and loading into a single place without resizing window ([750c14b](https://github.com/WerdoxDev/Huginn/commit/750c14b2b5dab37db1baf7218509730c22daf436))
+
+
+### Bug Fixes
+
+* **app:** new splashscreen is not rendering on web ([65e66a8](https://github.com/WerdoxDev/Huginn/commit/65e66a8c2a05b4275624f3c7eef7672d19766703))
+
 ## [0.40.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.39.0...app@v0.40.0) (2025-06-14)
 
 
