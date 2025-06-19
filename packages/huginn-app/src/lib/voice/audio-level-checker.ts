@@ -1,11 +1,14 @@
 import { EventEmitterWithHistory } from "@huginn/api/src/event-emitter";
+import { log } from "@huginn/shared";
 
-export class AudioLevelChecker extends EventEmitterWithHistory {
+export class AudioLevelChecker extends EventEmitterWithHistory<{ "audio-level": number }> {
    private audioContext: AudioContext | undefined;
    private volumeNode: AudioWorkletNode | undefined;
    private isStopped = false;
 
    public async startChecking(stream: MediaStream) {
+      log("app:audio-level-checker", "audio-level-checker:default", "start checking")
+
       this.stopChecking();
       this.isStopped = false;
 
@@ -28,6 +31,8 @@ export class AudioLevelChecker extends EventEmitterWithHistory {
    }
 
    public stopChecking() {
+      log("app:audio-level-checker", "audio-level-checker:default", "stop checking")
+
       this.isStopped = true;
       this.volumeNode?.disconnect();
       this.audioContext?.close();

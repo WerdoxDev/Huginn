@@ -1,4 +1,4 @@
-import type { HMediaKind, Snowflake } from "@huginn/shared";
+import { log, type HMediaKind, type Snowflake } from "@huginn/shared";
 import { settingsStore } from "@stores/settingsStore";
 
 export class AudioSourcePlayer {
@@ -14,6 +14,8 @@ export class AudioSourcePlayer {
    private localGain?: number;
 
    public constructor(srcObject: MediaProvider, producerId: string, userId: Snowflake, kind: HMediaKind, globalGain: number) {
+      log("app:audio-source-player", "audio-source-player:default", "initializing", "pid:", producerId, "uid:", userId, "mk:", kind, "gg:", globalGain)
+
       this.globalGain = globalGain;
       this.producerId = producerId;
       this.userId = userId;
@@ -43,6 +45,8 @@ export class AudioSourcePlayer {
    }
 
    public stop() {
+      log("app:audio-source-player", "audio-source-player:default", "stop")
+
       this.abortController.abort();
       this.gainNode.disconnect();
       this.audioContext.close();
@@ -51,6 +55,8 @@ export class AudioSourcePlayer {
    }
 
    public setGain(globalGain: number | undefined, localGain: number | undefined) {
+      log("app:audio-source-player", "audio-source-player:default", "set gain", "gg:", globalGain, "lg:", localGain)
+
       if (globalGain) {
          this.globalGain = globalGain;
       }
@@ -66,6 +72,8 @@ export class AudioSourcePlayer {
    }
 
    public setSinkId(deviceId: string) {
+      log("app:audio-source-player", "audio-source-player:default", "set sink id", "did:", deviceId)
+
       this.audioContext.setSinkId(deviceId);
    }
 }

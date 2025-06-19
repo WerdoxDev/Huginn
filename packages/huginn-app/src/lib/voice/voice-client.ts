@@ -1,4 +1,5 @@
 import type { RemoteSource, VoicePrereference } from "@/types";
+import { log } from "@huginn/shared";
 import { client } from "@stores/apiStore";
 import { settingsStore } from "@stores/settingsStore";
 import { voiceStore } from "@stores/voiceStore";
@@ -18,10 +19,14 @@ export class VoiceClient {
    }
 
    public listenToVoiceEvents() {
+      log("app:voice-client", "voice-client:default", "initializing");
+
       const unlisteners: Array<() => void> = [];
 
       // Get local mic stream when transport is ready
       unlisteners.push(client.voice.listen("send_transport_ready", async (d) => {
+         log("app:voice-client", "voice-client:voice-recv", "send transport ready", "cid:", d.channelId);
+
          if (!client.user?.id) {
             return;
          }
@@ -44,6 +49,8 @@ export class VoiceClient {
 
       // Add remote source when a new consumer is created
       unlisteners.push(client.voice.listen("consumer_created", async (d) => {
+         log("app:voice-client", "voice-client:voice-recv", "consumer created", "cid:", d.consumerId, "pid:", d.producerId, "uid:", d.producerUserId, "mk:", d.kind);
+
          const remoteStream = new MediaStream([d.track]);
 
          const voice = voiceStore.getState();
@@ -68,6 +75,8 @@ export class VoiceClient {
 
       // Remove remote source when a producer is closed
       unlisteners.push(client.voice.listen("producer_closed", (d) => {
+         log("app:voice-client", "voice-client:voice-recv", "producer closed", "pid:", d.producerId, "uid:", d.userId);
+
          const voice = voiceStore.getState();
 
          voice.removeRemoteSource(d.producerId);
@@ -94,13 +103,76 @@ export class VoiceClient {
 
       // Reset speaking and remote sources and stop audio loopback
       unlisteners.push(client.voice.listen("disconnected", () => {
+         log("app:voice-client", "voice-client:voice-recv", "disconnected");
+
          voiceStore.getState().clearRemoteSources();
          voiceStore.getState().clearSpeakingStates();
 
          this.stopAudioLoopback();
       }));
 
+      // pause audio immidiately after the local producer is created
+      unlisteners.push(client.voice.listen("local_producer_created", (d) => {
+         log("app:voice-client", "voice-client:voice-recv", "local producer created", "pid:", d.producerId, "mk:", d.kind);
+
+         if (!client.user) {
+            return;
+         }
+
+         if (d.kind === "microphone") {
+            if (client.voice.localVoiceState.audioPaused) {
+               client.voice.pauseMicrophone();
+            }
+
+            if (client.voice.localVoiceState.audioMuted) {
+               client.voice.muteMicrophone();
+            }
+         }
+
+         if (d.kind === "screen_video") {
+            const store = voiceStore.getState();
+            const stream = new MediaStream([d.track]);
+
+            store.addRemoteSource(client.user.id, undefined, d.producerId, d.kind, stream);
+         }
+      }));
+
+      // update local the remote source when it's changed
+      unlisteners.push(client.voice.listen("local_producer_changed", (d) => {
+         log("app:voice-client", "voice-client:voice-recv", "local producer changed", "pid:", d.producerId, "mk:", d.kind);
+
+         const store = voiceStore.getState();
+
+         if (d.kind === "screen_video" && d.track) {
+            const stream = new MediaStream([d.track]);
+            store.updateRemoteSource(d.producerId, stream);
+         }
+      }))
+
+      // update volume for stream and microphone audio of local consumers
+      unlisteners.push(listenEvent("voice_preference_changed", (d) => {
+         log("app:voice-client", "voice-client:emitter-recv", "voice preference changed", "uid:", d.userId);
+
+         const store = voiceStore.getState();
+         const preference = store.voicePreferences.find((x) => x.userId === d.userId);
+         const microphonePlayer = this.audioSourcePlayers.find((x) => x.userId === d.userId && x.kind === "microphone");
+         const screensharePlayer = this.audioSourcePlayers.find((x) => x.userId === d.userId && x.kind === "screen_audio");
+
+         if (!preference || (!microphonePlayer && !screensharePlayer)) {
+            return;
+         }
+
+         if (microphonePlayer) {
+            microphonePlayer.setGain(undefined, preference.microphoneVolume);
+         }
+         if (screensharePlayer) {
+            screensharePlayer.setGain(undefined, preference.screenshareVolume);
+         }
+      }));
+
       unlisteners.push(settingsStore.subscribe(async (s, old) => {
+         log("app:voice-client", "voice-client:settings-sub", "settings changed");
+
          if (s.outputVolume !== old.outputVolume) {
             for (const player of this.audioSourcePlayers) {
                player.setGain(s.outputVolume, undefined);
@@ -126,59 +198,9 @@ export class VoiceClient {
          }
       }));
 
-      // pause audio immidiately after the local producer is created
-      unlisteners.push(client.voice.listen("local_producer_created", (d) => {
-         if (!client.user) {
-            return;
-         }
-
-         if (d.kind === "microphone") {
-            if (client.voice.localVoiceState.audioPaused) {
-               client.voice.pauseMicrophone();
-            }
-
-            if (client.voice.localVoiceState.audioMuted) {
-               client.voice.muteMicrophone();
-            }
-         }
-
-         if (d.kind === "screen_video") {
-            const store = voiceStore.getState();
-            const stream = new MediaStream([d.track]);
-            store.addRemoteSource(client.user.id, undefined, d.producerId, d.kind, stream);
-         }
-      }));
-
-      // update local the remote source when it's changed
-      unlisteners.push(client.voice.listen("local_producer_changed", (d) => {
-         const store = voiceStore.getState();
-
-         if (d.kind === "screen_video" && d.track) {
-            const stream = new MediaStream([d.track]);
-            store.updateRemoteSource(d.producerId, stream);
-         }
-      }))
-
-      // update volume for stream and microphone audio of local consumers
-      unlisteners.push(listenEvent("voice_preference_changed", (d) => {
-         const store = voiceStore.getState();
-         const preference = store.voicePreferences.find((x) => x.userId === d.userId);
-         const microphonePlayer = this.audioSourcePlayers.find((x) => x.userId === d.userId && x.kind === "microphone");
-         const screensharePlayer = this.audioSourcePlayers.find((x) => x.userId === d.userId && x.kind === "screen_audio");
-
-         if (!preference || (!microphonePlayer && !screensharePlayer)) {
-            return;
-         }
-
-         if (microphonePlayer) {
-            microphonePlayer.setGain(undefined, preference.microphoneVolume);
-         }
-         if (screensharePlayer) {
-            screensharePlayer.setGain(undefined, preference.screenshareVolume);
-         }
-      }));
-
       return () => {
+         log("app:voice-client", "voice-client:default", "uninitializing");
+
          for (const unlisten of unlisteners) {
             unlisten();
          }
@@ -186,6 +208,8 @@ export class VoiceClient {
    }
 
    private async initLocalAudioLevel(inputDeviceId: string, inputVolume: number, noiseSuppression: boolean) {
+      log("app:voice-client", "voice-client:default", "initialize local audio level checker")
+
       if (!this.dummyInputDevice) {
          this.dummyInputDevice = new VoiceInputDevice();
       }
@@ -236,6 +260,8 @@ export class VoiceClient {
    }
 
    private async startAudioLevel(stream: MediaStream, producerId: string) {
+      log("app:voice-client", "voice-client:default", "start audio level checker", "pid:", producerId)
+
       const store = voiceStore.getState();
 
       const audioLevel = new AudioLevelChecker();
@@ -254,6 +280,8 @@ export class VoiceClient {
          return;
       }
 
+      log("app:voice-client", "voice-client:default", "initialize streaming", "did:", microphoneDeviceId, "vol:", microphoneVolume, "ns:", noiseSuppression)
+
       if (!this.inputDevice) {
          this.inputDevice = new VoiceInputDevice();
       }
@@ -269,6 +297,8 @@ export class VoiceClient {
     * Initializes all microphone and screen_audio players according to the remote sources
     */
    private initRemoteAudioSourcePlayers(remoteSources: RemoteSource[], voicePreferences: VoicePrereference[], outputVolume: number) {
+      log("app:voice-client", "voice-client:default", "initialize audio source players", "ovol:", outputVolume, "nres:", remoteSources.length);
+
       // Remove old players
       for (const player of this.audioSourcePlayers) {
          player.stop();
@@ -307,6 +337,8 @@ export class VoiceClient {
    }
 
    public getAudioTrackFromLoopback(sourceName: string) {
+      log("app:voice-client", "voice-client:default", "get audio track from loopback", "snam:", sourceName)
+
       if (!window.electronAPI) {
          return;
       }
@@ -345,6 +377,8 @@ export class VoiceClient {
 
 
    public stopAudioLoopback() {
+      log("app:voice-client", "voice-client:default", "stop audio loopback")
+
       if (window.electronAPI) {
          window.electronAPI.stopAudioLoopback();
          this.loopbackDataUnlisten?.();

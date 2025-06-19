@@ -108,7 +108,7 @@ export default function VoiceVideo(props: {
 			)}
 			style={{ width: props.gridElementWidth }}
 		>
-			<div className="absolute top-2 right-2 flex gap-x-2 rounded-lg bg-tertiary px-2 py-1 italic transition-opacity group-hover:opacity-100">
+			<div className="absolute top-2 right-2 flex gap-x-2 rounded-lg bg-tertiary px-2 py-1 italic opacity-0 transition-opacity group-hover:opacity-100">
 				{hasAudio ? <IconMingcuteVolumeFill className="text-success" /> : <IconMingcuteVolumeOffFill className="size-5 text-error" />}
 				<div className="font-bold text-sm text-white/90">
 					{height}

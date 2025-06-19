@@ -98,7 +98,6 @@ function MessageRenderer() {
 				const deepestNode = !currentPath.length ? lineNode : getNodeByPath(lineNode, currentPath);
 
 				if (isElementOpenToken(token)) {
-					// console.log(deepestNode);
 					if (token.type === "link_open") {
 						deepestNode.children.push({ type: "link", children: [], url: token.attrs?.[0][1] });
 					} else if (token.type === "spoiler_open") {

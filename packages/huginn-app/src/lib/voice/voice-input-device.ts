@@ -1,3 +1,5 @@
+import { log } from "@huginn/shared";
+
 export class VoiceInputDevice {
    private currentStream?: MediaStream;
    private gainNode?: GainNode;
@@ -6,6 +8,8 @@ export class VoiceInputDevice {
    private source?: MediaStreamAudioSourceNode
 
    public async getStream(deviceId: string, volumePercentage: number, noiseSuppression: boolean) {
+      log("app:voice-input-device", "voice-input-device:default", "get stream", "did:", deviceId, "vp:", volumePercentage, "ns:", noiseSuppression);
+
       const audioConstraints: MediaTrackConstraints = {
          deviceId: deviceId,
          sampleRate: 48000,
@@ -28,6 +32,7 @@ export class VoiceInputDevice {
 
          newConstraints = Object.assign(track.getSettings(), { echoCancellation: noiseSuppression, noiseSuppression: noiseSuppression } as MediaTrackConstraints,);
       }
+
       const newStream = await navigator.mediaDevices.getUserMedia({
          audio: newConstraints ?? audioConstraints,
       });
@@ -49,6 +54,8 @@ export class VoiceInputDevice {
    }
 
    public setGain(volumePercentage: number) {
+      log("app:voice-input-device", "voice-input-device:default", "set gain", "vp:", volumePercentage);
+
       if (this.gainNode) {
          this.gainNode.gain.value = volumePercentage / 100;
       }
