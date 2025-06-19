@@ -1,5 +1,13 @@
-type LogSection = "api:voice" | "api:gateway";
-type LogLevel = "none" | "api:voice-send" | "api:voice-recv" | "api:voice-heartbeat" | "api:voice-ping" | "api:voice-default" | "api:gateway-send" | "api:gateway-default" | "api:gateway-recv" | "api:gateway-dispatch" | "api:gateway-heartbeat" | "api:voice-media-state"
+type LogSection = "api:voice" | "api:gateway" | "app:voice-client" | "app:voice-store" | "app:audio-source-player" | "app:audio-level-checker" | "app:voice-input-device";
+
+type LogLevel = "none" | "voice:send" | "voice:recv" | "voie:heartbeat" | "voice:ping" |
+   "voice:default" | "gateway:send" | "gateway:send-detail" | "gateway:default" | "gateway:recv" |
+   "gateway:recv-detail" | "gateway:dispatch" | "gateway:heartbeat" | "voice:local-voice-state" |
+   "voice-client:default" | "voice-store:remote-sources" | "voice-store:speaking-state" |
+   "voice-store:voice-preferences" | "voice-store:voice-state" | "voice-store:call-state" |
+   "voice-store:default" | "voice-store:gateway-recv" | "voice-store:voice-recv" |
+   "voice-client:voice-recv" | "voice-client:emitter-recv" | "voice-client:settings-sub" |
+   "audio-source-player:default" | "audio-level-checker:default" | "voice-input-device:default"
 
 const enabledSections = new Set<LogSection>();
 const enabledLevels = new Set<LogLevel>();
@@ -33,7 +41,6 @@ const sectionStyles: Partial<Record<LogSection | "default" | "error", string>> =
    error: 'color: white; background: #DC3545; padding: 1px 6px; border-radius: 4px;',
    "api:gateway": 'color: white; background: #007BFF; padding: 1px 6px; border-radius: 4px;',
    "api:voice": 'color: white; background: #029687; padding: 1px 6px; border-radius: 4px;',
-   // "api:gateway": "color:lightblue;"
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
