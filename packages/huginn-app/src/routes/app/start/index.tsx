@@ -110,10 +110,6 @@ export default function Index() {
 		startUpdate();
 	}, []);
 
-	if (huginnWindow.environment !== "desktop") {
-		return;
-	}
-
 	return (
 		<StartWrapper shownId="" transitionName="start-index" className="!bg-transparent !shadow-none !w-auto !p-0">
 			<div className="flex w-full select-none flex-col items-center">
