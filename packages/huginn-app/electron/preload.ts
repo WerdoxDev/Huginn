@@ -1,12 +1,12 @@
-import type { DisplaySource } from "@/types";
 import type { AppSettings } from "@stores/settingsStore";
 import { contextBridge, ipcRenderer } from "electron";
 import type { ProgressInfo, UpdateInfo } from "electron-updater";
+import type { DisplaySource } from "@/types";
 
 export const electronAPI = {
    getVersion: () => ipcRenderer.invoke("window:version") as Promise<string>,
-   splashscreenMode: () => ipcRenderer.send("window:splashscreen-mode"),
-   mainMode: () => ipcRenderer.send("window:main-mode"),
+   // splashscreenMode: () => ipcRenderer.send("window:splashscreen-mode"),
+   // mainMode: () => ipcRenderer.send("window:main-mode"),
    showMain: () => ipcRenderer.send("window:show-main"),
    hideMain: () => ipcRenderer.send("window:hide-main"),
    focusMain: () => ipcRenderer.send("window:focus-main"),

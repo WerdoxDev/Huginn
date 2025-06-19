@@ -5,30 +5,34 @@ import { useNavigate } from "react-router";
 import { useHuginnMutation } from "./useHuginnMutation";
 
 export function useLogout() {
-	const queryClient = useQueryClient();
-	const client = useClient();
-	const navigate = useNavigate();
-	const { resetScrolls } = useChannelStore();
+   const queryClient = useQueryClient();
+   const client = useClient();
+   const navigate = useNavigate();
+   const { resetScrolls } = useChannelStore();
 
-	const mutation = useHuginnMutation({
-		async mutationFn() {
-			await client.logout();
-			client.gateway.connect();
-		},
-	});
+   const mutation = useHuginnMutation({
+      async mutationFn() {
+         await client.logout();
+         client.gateway.connect();
+      },
+   });
 
-	async function logout() {
-		localStorage.removeItem("refresh-token");
-		localStorage.removeItem("access-token");
+   async function logout() {
+      localStorage.removeItem("refresh-token");
+      localStorage.removeItem("access-token");
 
-		await navigate(`/login?${new URLSearchParams({ force: "1" }).toString()}`, { replace: true, viewTransition: true });
-		await mutation.mutateAsync();
+      if (client.voice.connectionInfo) {
+         client.gateway.disconnectVoice();
+      }
 
-		resetScrolls();
-		queryClient.removeQueries({ queryKey: ["channels"] });
-		queryClient.removeQueries({ queryKey: ["messages"] });
-		queryClient.removeQueries({ queryKey: ["relationships"] });
-	}
+      await navigate("/login", { replace: true, viewTransition: true });
+      await mutation.mutateAsync();
 
-	return logout;
+      resetScrolls();
+      queryClient.removeQueries({ queryKey: ["channels"] });
+      queryClient.removeQueries({ queryKey: ["messages"] });
+      queryClient.removeQueries({ queryKey: ["relationships"] });
+   }
+
+   return logout;
 }

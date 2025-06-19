@@ -1,14 +1,12 @@
-import type { RemoteSource, VoicePrereference } from "@/types";
-import { log, type GatewayCallState, type GatewayVoiceState, type HMediaKind, type Snowflake } from "@huginn/shared";
+import { type GatewayCallState, type GatewayVoiceState, type HMediaKind, log, type Snowflake } from "@huginn/shared";
 import type { AudioLevelChecker } from "@lib/voice/audio-level-checker";
 import { VoiceClient } from "@lib/voice/voice-client";
 import { client } from "@stores/apiStore";
 import { userStore } from "@stores/userStore";
-import type { QueryClient } from "@tanstack/react-query";
 import { produce } from "immer";
 import { createStore, useStore } from "zustand";
 import { combine, devtools } from "zustand/middleware";
-import { settingsStore } from "./settingsStore";
+import type { RemoteSource, VoicePrereference } from "@/types";
 
 const initialStore = () => ({
    voiceState: {} as GatewayVoiceState,
@@ -174,7 +172,7 @@ const store = createStore(
 
 export const voiceClient = new VoiceClient();
 
-export function initializeVoice(queryClient: QueryClient) {
+export function initializeVoice() {
    log("app:voice-store", "voice-store:default", "initializing");
 
    const unlisteners: Array<() => void> = [];

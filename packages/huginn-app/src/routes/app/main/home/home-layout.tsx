@@ -1,4 +1,3 @@
-import { queryClient } from "@/main";
 import HomeSidebar from "@components/HomeSidebar";
 import UserInfo from "@components/UserInfo";
 import { getChannelsOptions } from "@lib/queries";
@@ -6,6 +5,7 @@ import { client, useClient } from "@stores/apiStore";
 import { useThisUser } from "@stores/userStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Outlet } from "react-router";
+import { queryClient } from "@/main";
 
 export async function homeLoader() {
 	return await queryClient?.ensureQueryData(getChannelsOptions(client, "@me"));

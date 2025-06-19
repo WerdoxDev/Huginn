@@ -1,11 +1,11 @@
 import AnimatedMessage from "@components/AnimatedMessage";
-import AuthWrapper from "@components/AuthWrapper";
 import HuginnButton from "@components/button/HuginnButton";
 import LinkButton from "@components/button/LinkButton";
 import LoadingButton from "@components/button/LoadingButton";
 import HuginnInput from "@components/input/HuginnInput";
 import PasswordInput from "@components/input/PasswordInput";
-import { useAuthBackground } from "@contexts/authBackgroundContext";
+import StartWrapper from "@components/StartWrapper";
+import { useStartBackground } from "@contexts/authBackgroundContext";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useInputs } from "@hooks/useInputs";
@@ -19,7 +19,7 @@ import { useEffect, useState } from "react";
 export default function Register() {
 	const client = useClient();
 	// const posthog = usePostHog();
-	const authBackground = useAuthBackground();
+	const startBackground = useStartBackground();
 	const initializeClient = useInitializeClient();
 	const startOAuth = useOAuth();
 
@@ -30,7 +30,6 @@ export default function Register() {
 		{ name: "password", required: true },
 	]);
 
-	const [hidden, setHidden] = useState(false);
 	const { message: usernameMessageDetail, onFocusChanged } = useUniqueUsernameMessage(values, resetInput, "username");
 
 	const mutation = useHuginnMutation(
@@ -44,10 +43,7 @@ export default function Register() {
 				});
 			},
 			async onSuccess() {
-				authBackground.setState(1);
-				setHidden(true);
-
-				await initializeClient(undefined, undefined, "/channels/@me");
+				await initializeClient({ navigatePath: "/channels/@me" });
 				// posthog.capture("registered");
 			},
 		},
@@ -55,7 +51,7 @@ export default function Register() {
 	);
 
 	useEffect(() => {
-		authBackground.setState(0);
+		startBackground.setState(0);
 	}, []);
 
 	async function register() {
@@ -74,7 +70,7 @@ export default function Register() {
 	}
 
 	return (
-		<AuthWrapper hidden={hidden} onSubmit={register} transitionName="auth-register">
+		<StartWrapper onSubmit={register} transitionName="start-register">
 			<div className="flex w-full select-none flex-col items-center">
 				<div className="mb-1 font-medium text-2xl text-text">Welcome to Huginn!</div>
 				<div className="text-text opacity-70">We are very happy to have you here!</div>
@@ -144,6 +140,6 @@ export default function Register() {
 					</LinkButton>
 				</div>
 			</div>
-		</AuthWrapper>
+		</StartWrapper>
 	);
 }

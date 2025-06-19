@@ -1,36 +1,36 @@
 import HuginnIcon from "@components/HuginnIcon";
 import LoadingIcon from "@components/LoadingIcon";
-import { useCountdown } from "@hooks/useCountdown";
+import StartWrapper from "@components/StartWrapper";
+import { useStartBackground } from "@contexts/authBackgroundContext";
+import { useTryLogin } from "@hooks/useTryLogin";
 import { useUpdater } from "@hooks/useUpdater";
+import { client, useClient } from "@stores/apiStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 const loadingStates = {
-	loading: "Loading",
 	checking_update: "Checking for updates",
 	updating: "Updating to",
-	checking_update_failed: "Update failed",
 	cant_update: "Could not check for updates",
+	logging_in: "Logging in...",
+	welcome: () => `Welcome ${client.user?.displayName ?? client.user?.username}!`,
 	none: "Invalid State",
 } as const;
 
 export default function Index() {
 	const huginnWindow = useHuginnWindow();
 	const [search] = useSearchParams();
+	const startBackground = useStartBackground();
 	const navigate = useNavigate();
-	const { startCountdown, countdown: retryCountdown } = useCountdown();
+	const tryLogin = useTryLogin();
+	const client = useClient();
 	const { checkAndDownload, info, progress, contentLength, downloaded } = useUpdater(
-		() => {
-			setLoadingState("loading");
-			mainMode();
+		async () => {
+			await continueToLogin();
 		},
 		() => {
 			setLoadingState("checking_update");
-		},
-		() => {
-			setLoadingState("checking_update_failed");
-			startCountdown(3);
 		},
 		() => {
 			setLoadingState("cant_update");
@@ -47,9 +47,35 @@ export default function Index() {
 		setLoadingState("checking_update");
 	}
 
-	async function mainMode() {
-		await navigate(`/login?${search.toString()}`);
-		window.electronAPI.mainMode();
+	async function continueToLogin() {
+		await tryLogin({
+			async onError(e) {
+				await navigate({ pathname: "/login", search: `?${search.toString()}` }, { viewTransition: true });
+			},
+			onFound() {
+				startBackground.setState(1);
+				setLoadingState("logging_in");
+			},
+			async onNotFound() {
+				await navigate({ pathname: "/login", search: `?${search.toString()}` }, { viewTransition: true });
+			},
+			async onSuccessful() {
+				setLoadingState("welcome");
+				// await new Promise((r) => setTimeout(r, 1000));
+			},
+			navigatePath: { pathname: search.get("redirect") ?? "/channels/@me" },
+		});
+	}
+
+	async function navigateRedirect() {
+		const redirect = search.get("redirect");
+
+		startBackground.setState(1);
+		setLoadingState("logging_in");
+
+		if (redirect) {
+			await navigate({ pathname: redirect }, { viewTransition: true });
+		}
 	}
 
 	useEffect(() => {
@@ -65,12 +91,17 @@ export default function Index() {
 	}, [info]);
 
 	useEffect(() => {
-		if (huginnWindow.environment !== "desktop") {
-			navigate(`/login?${search.toString()}`);
+		startBackground.setState(0);
+
+		if (search.get("redirect") && client.isLoggedIn) {
+			navigateRedirect();
 			return;
 		}
 
-		window.electronAPI.splashscreenMode();
+		if (huginnWindow.environment !== "desktop") {
+			continueToLogin();
+			return;
+		}
 
 		if (!huginnWindow.args.includes("--silent")) {
 			window.electronAPI.showMain();
@@ -84,27 +115,29 @@ export default function Index() {
 	}
 
 	return (
-		<div className="drag-region flex h-full w-full select-none bg-background">
-			<div className="mt-16 flex w-full flex-col items-center">
-				<HuginnIcon className="hover:-rotate-12 size-20 animate-pulse text-accent drop-shadow-[0px_0px_25px_rgb(var(--color-primary))] transition-all hover:scale-105 active:rotate-6" />
+		<StartWrapper shownId="" transitionName="start-index" className="!bg-transparent !shadow-none !w-auto !p-0">
+			<div className="flex w-full select-none flex-col items-center">
+				<HuginnIcon
+					outlined
+					className="hover:-rotate-12 size-20 animate-pulse text-accent drop-shadow-[0px_0px_25px_rgb(var(--color-primary))] transition-all hover:scale-105 active:rotate-6"
+				/>
 				<div className="mt-4 font-bold text-text text-xl">Huginn</div>
 				<div className="mt-2 text-text/80">
 					<div className="flex items-center justify-center gap-x-2 text-center">
 						<span className="text-lg">
-							{loadingStates[loadingState]} <span className="font-bold ">{loadingState === "updating" ? info?.version : ""}</span>
+							{typeof loadingStates[loadingState] === "string" ? loadingStates[loadingState] : loadingStates[loadingState]()}{" "}
+							<span className="font-bold ">{loadingState === "updating" ? info?.version : ""}</span>
 						</span>
-						{loadingState === "checking_update_failed" && <IconMingcuteAlertFill className="size-6 text-warning" />}
 						{loadingState === "cant_update" && <IconMingcuteAlertFill className="size-6 text-error" />}
 						{(loadingState === "checking_update" || (loadingState === "updating" && progress === 0)) && <LoadingIcon className="size-6" />}
 					</div>
-					{loadingState === "checking_update_failed" && <div className="mt-0 text-text/60">Retrying in {retryCountdown} seconds</div>}
 				</div>
 				{loadingState === "cant_update" && (
-					<div className="no-drag-region absolute bottom-3 mt-4 flex w-full justify-between gap-x-2 px-3">
-						<button type="button" className="w-full rounded-md bg-primary/50 py-1 text-white hover:bg-primary" onClick={startUpdate}>
+					<div className="no-drag-region bottom-3 mt-4 flex w-full justify-between gap-x-2 ">
+						<button type="button" className="w-full rounded-md bg-primary py-1 text-white hover:bg-primary" onClick={startUpdate}>
 							Retry
 						</button>
-						<button type="button" className="w-full rounded-md bg-tertiary/50 py-1 text-white hover:bg-tertiary" onClick={mainMode}>
+						<button type="button" className="w-full rounded-md bg-tertiary py-1 text-white hover:bg-tertiary" onClick={continueToLogin}>
 							Continue
 						</button>
 					</div>
@@ -118,6 +151,6 @@ export default function Index() {
 					</div>
 				)}
 			</div>
-		</div>
+		</StartWrapper>
 	);
 }

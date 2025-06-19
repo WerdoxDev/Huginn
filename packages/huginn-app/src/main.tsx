@@ -32,10 +32,17 @@ enableLogs(["api:gateway"], ["gateway:send-detail", "gateway:recv-detail"]);
 // enableLogs(["api:gateway", "api:voice"], ["api:voice-default", "api:gateway-send"]);
 
 export const queryClient = new QueryClient({
-	defaultOptions: { queries: { refetchOnReconnect: false, refetchOnWindowFocus: false, refetchOnMount: false, staleTime: 60000 } },
+	defaultOptions: {
+		queries: {
+			refetchOnReconnect: false,
+			refetchOnWindowFocus: false,
+			refetchOnMount: false,
+			staleTime: 60000,
+		},
+	},
 });
 
-// biome-ignore lint/style/noNonNullAssertion: <explanation>
+// biome-ignore lint/style/noNonNullAssertion: react needs a non nullable root
 ReactDOM.createRoot(root!).render(
 	<QueryClientProvider client={queryClient}>
 		<RouterProvider router={router} />

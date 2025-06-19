@@ -1,10 +1,10 @@
 import AnimatedMessage from "@components/AnimatedMessage";
-import AuthWrapper from "@components/AuthWrapper";
-import ImageSelector from "@components/ImageSelector";
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
+import ImageSelector from "@components/ImageSelector";
 import HuginnInput from "@components/input/HuginnInput";
-import { useAuthBackground } from "@contexts/authBackgroundContext";
+import StartWrapper from "@components/StartWrapper";
+import { useStartBackground } from "@contexts/authBackgroundContext";
 import { useHistory } from "@contexts/historyContext";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
@@ -24,7 +24,7 @@ export default function OauthRedirect() {
 	const client = useClient();
 	const [search] = useSearchParams();
 	const navigate = useNavigate();
-	const authBackground = useAuthBackground();
+	const authBackground = useStartBackground();
 	const { updateModals } = useModals();
 	const initializeClient = useInitializeClient();
 	const history = useHistory();
@@ -39,7 +39,6 @@ export default function OauthRedirect() {
 		{ name: "displayName", required: false, default: decodedToken?.fullName },
 	]);
 
-	const [hidden, setHidden] = useState(false);
 	const [shouldRender, setShouldRender] = useState(false);
 	const { data: originalAvatar } = useQuery(getUserAvatarOptions(decodedToken?.providerUserId, decodedToken?.avatarHash, client));
 	const [avatarData, setAvatarData] = useState<string | null>(null);
@@ -53,10 +52,7 @@ export default function OauthRedirect() {
 				}
 			},
 			async onSuccess(data) {
-				authBackground.setState(1);
-				setHidden(true);
-
-				await initializeClient(data?.token, data?.refreshToken, "/channels/@me");
+				await initializeClient({ token: data?.token, refreshToken: data?.refreshToken, navigatePath: "/channels/@me" });
 			},
 		},
 		handleErrors,
@@ -66,11 +62,12 @@ export default function OauthRedirect() {
 		async function tryAuthorize() {
 			if (search.has("access_token") || search.has("refresh_token")) {
 				try {
-					authBackground.setState(1);
-
-					await initializeClient(search.get("access_token") ?? "", search.get("refresh_token") ?? "", "/channels/@me");
-				} catch (e) {
-					console.log(e);
+					await initializeClient({
+						token: search.get("access_token") ?? "",
+						refreshToken: search.get("refresh_token") ?? "",
+						navigatePath: "/channels/@me",
+					});
+				} catch (_e) {
 					await navigate("/");
 				}
 			} else {
@@ -123,7 +120,7 @@ export default function OauthRedirect() {
 
 	return (
 		shouldRender && (
-			<AuthWrapper hidden={hidden} transitionName="auth-oauth-redirect">
+			<StartWrapper transitionName="start-oauth-redirect">
 				{search.has("token") && (
 					<>
 						<div className="flex w-full select-none flex-col items-center">
@@ -171,7 +168,7 @@ export default function OauthRedirect() {
 						</div>
 					</>
 				)}
-			</AuthWrapper>
+			</StartWrapper>
 		)
 	);
 }

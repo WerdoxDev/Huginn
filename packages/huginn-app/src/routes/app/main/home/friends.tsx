@@ -1,4 +1,3 @@
-import { queryClient } from "@/main";
 import AddFriendTab from "@components/friends/AddFriendTab";
 import FriendsTab from "@components/friends/FriendsTab";
 import FriendsTabItem from "@components/friends/FriendsTabItem";
@@ -11,6 +10,7 @@ import { usePresences } from "@stores/presenceStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Fragment } from "react/jsx-runtime";
+import { queryClient } from "@/main";
 
 export async function clientLoader() {
 	return await queryClient.ensureQueryData(getRelationshipsOptions(client));

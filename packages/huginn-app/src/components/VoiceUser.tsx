@@ -1,5 +1,6 @@
 import type { APIPublicUser, GatewayVoiceState } from "@huginn/shared";
 import { useContextMenu } from "@stores/contextMenuStore";
+import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import UserAvatar from "./UserAvatar";
 
@@ -13,13 +14,17 @@ export default function VoiceUser(props: {
 	producerId?: string;
 }) {
 	const { open: openContextMenu } = useContextMenu("voice_user");
+	const { user } = useThisUser();
 	return (
-		<div
+		<button
 			className={clsx(
-				"group relative flex shrink-0 cursor-pointer flex-col items-center justify-center gap-y-1 rounded-xl shadow-md transition-shadow hover:shadow-xl",
+				"group relative flex shrink-0 flex-col items-center justify-center gap-y-1 rounded-xl shadow-md transition-shadow hover:shadow-xl",
 				props.isGridView && "aspect-video p-0",
 			)}
-			onContextMenu={(e) => openContextMenu({ user: props.user, producerId: props.producerId, kind: "microphone" }, e)}
+			type="button"
+			onContextMenu={
+				props.user.id !== user?.id ? (e) => openContextMenu({ user: props.user, producerId: props.producerId, kind: "microphone" }, e) : undefined
+			}
 			style={props.isGridView ? { width: props.gridElementWidth } : undefined}
 		>
 			<div
@@ -33,7 +38,12 @@ export default function VoiceUser(props: {
 				<UserAvatar userId={props.user.id} avatarHash={props.user.avatar} size={props.isGridView ? "5rem" : "4rem"} hideStatus />
 			</div>
 			<div className={clsx("absolute flex items-center gap-x-2", props.isGridView ? "bottom-2 left-2" : "-bottom-4 -left-1")}>
-				<div className={clsx("left-0 rounded-lg bg-tertiary px-2 py-1 text-white", props.isGridView ? "block" : "hidden")}>
+				<div
+					className={clsx(
+						"rounded-lg bg-tertiary px-2 py-1 text-white opacity-0 transition-opacity group-hover/wrapper:opacity-100",
+						props.isGridView ? "block" : "hidden",
+					)}
+				>
 					{props.user.displayName ?? props.user.username}
 				</div>
 				{(props.voiceState?.selfMute || props.voiceState?.selfDeaf) && (
@@ -51,6 +61,6 @@ export default function VoiceUser(props: {
 			>
 				{props.user.displayName ?? props.user.username}
 			</div>
-		</div>
+		</button>
 	);
 }

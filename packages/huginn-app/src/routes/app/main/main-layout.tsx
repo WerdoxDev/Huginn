@@ -1,13 +1,13 @@
 import GuildsBar from "@components/GuildsBar";
 import WebsocketProviders from "@components/websocket/WebsocketProviders";
-import { useAuthBackground } from "@contexts/authBackgroundContext";
+import { useStartBackground } from "@contexts/authBackgroundContext";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useEffect } from "react";
 import { Outlet, useViewTransitionState } from "react-router";
 
 export default function MainLayout() {
-	const authBackground = useAuthBackground();
+	const authBackground = useStartBackground();
 	const { updateModals } = useModals();
 	const huginnWindow = useHuginnWindow();
 	const isTransitioning = useViewTransitionState("*");

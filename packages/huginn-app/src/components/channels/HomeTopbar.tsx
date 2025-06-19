@@ -1,13 +1,13 @@
-import type { AppDirectChannel } from "@/types";
 import ChannelIcon from "@components/ChannelIcon";
-import UserAvatar from "@components/UserAvatar";
 import Tooltip from "@components/tooltip/Tooltip";
+import UserAvatar from "@components/UserAvatar";
 import { useChannelName } from "@hooks/api-hooks/channelHooks";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { ChannelType } from "@huginn/shared";
 import { useClient } from "@stores/apiStore";
 import { useThisUser } from "@stores/userStore";
 import { useMemo } from "react";
+import type { AppDirectChannel } from "@/types";
 
 export default function HomeTopbar(props: { channel: AppDirectChannel; onRecipientsClick?: () => void }) {
 	const { user } = useThisUser();
@@ -18,7 +18,7 @@ export default function HomeTopbar(props: { channel: AppDirectChannel; onRecipie
 	const otherUsers = useMemo(() => recipients.filter((x) => x.id !== user?.id), [props.channel]);
 
 	async function startCall() {
-		await client.gateway.connectToVoice(null, props.channel.id);
+		await client.gateway.connectVoice(null, props.channel.id);
 		await client.channels.ring(props.channel.id, null);
 	}
 

@@ -127,7 +127,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	}
 
 	function disconnect() {
-		client.gateway.disconnectFromVoice();
+		client.gateway.disconnectVoice();
 	}
 
 	function toggleMute() {
@@ -154,7 +154,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	}
 
 	async function connect() {
-		await client.gateway.connectToVoice(null, props.channelId);
+		await client.gateway.connectVoice(null, props.channelId);
 	}
 
 	function maximizeSource(producerId: string) {
@@ -241,7 +241,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	return (
 		<div
 			className={clsx(
-				"relative z-10 flex shrink-0 select-none flex-col gap-y-3 overflow-hidden shadow-lg shadow-tertiary/50",
+				"group/wrapper relative z-10 flex shrink-0 select-none flex-col gap-y-3 overflow-hidden shadow-lg shadow-tertiary/50",
 				isFullscreen ? "rounded-none bg-tertiary" : "m-2 mb-0 rounded-xl bg-black/50 ring-2 ring-primary/70",
 			)}
 			ref={containerRef}

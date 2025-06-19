@@ -1,4 +1,3 @@
-import type { AppMessage, MessageRenderInfo } from "@/types";
 import { MessageProvider } from "@contexts/messageProvider";
 import { useChannelName, useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useMessageAcker } from "@hooks/mutations/useMessageAcker";
@@ -14,6 +13,7 @@ import { useChannelStore } from "@stores/channelStore";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import moment from "moment";
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import type { AppMessage, MessageRenderInfo } from "@/types";
 import ChannelMessageLoadingIndicator from "./ChannelMessageLoadingIndicator";
 import ChannelTypingIndicator from "./ChannelTypingIndicator";
 
@@ -127,8 +127,6 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			distanceToTop: scrollRef.current.scrollTop,
 			distanceToBottom: scrollRef.current.scrollHeight - scrollRef.current.scrollTop - scrollRef.current.clientHeight - 28,
 		};
-
-		console.log(messageElement.innerText, lastSeenElement.current.distanceToTop);
 	}
 
 	function scrollToLastSeenMessage() {
@@ -136,7 +134,6 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
 		const foundMessageElement = [...listRef.current.children].find((x) => x.id === lastSeenElement.current?.messageId) as HTMLLIElement;
 
-		console.log(foundMessageElement);
 		foundMessageElement.scrollIntoView({ behavior: "instant", block: lastDirection.current === "up" ? "start" : "end" });
 		const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
 		scrollRef.current.scrollTop +=

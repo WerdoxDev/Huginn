@@ -1,4 +1,3 @@
-import path from "node:path";
 import { HistoryProvider } from "@contexts/historyContext";
 import { client, initializeClient } from "@stores/apiStore";
 import { initializeSettings } from "@stores/settingsStore";
@@ -23,10 +22,14 @@ const initialPathname = window.location.hash.slice(0, findIndex === -1 ? undefin
 export async function rootLoader({ request }: LoaderFunctionArgs) {
 	const pathname = new URL(request.url).pathname;
 	// posthog.capture("$pageview", { $current_url: window.origin + pathname });
+	const unallowedPaths = ["/login", "/register", "/oauth-redirect"];
 	const search = new URLSearchParams({ redirect: pathname });
 
-	if (`#${pathname}` === initialPathname && initialPathname !== "#/" && initialPathname !== "#/oauth-redirect" && !client?.isLoggedIn) {
+	if (`#${pathname}` === initialPathname && pathname !== "/" && !unallowedPaths.includes(pathname) && !client?.isLoggedIn) {
 		throw redirect(`/?${search.toString()}`);
+	}
+	if (`#${pathname}` === initialPathname && pathname !== "/" && !client?.isLoggedIn && unallowedPaths.includes(pathname)) {
+		throw redirect("/");
 	}
 }
 

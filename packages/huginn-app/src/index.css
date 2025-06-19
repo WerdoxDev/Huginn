@@ -54,8 +54,8 @@
 html,
 body,
 #root {
-	/* background-color: #262626; */
-	@apply h-full overscroll-none;
+	/* background-color: #060606; */
+	@apply h-full overscroll-none bg-secondary;
 }
 
 @keyframes blink {
@@ -196,16 +196,6 @@ input::-ms-clear {
 	}
 }
 
-@keyframes fade-in-bg {
-	/* from {@apply opacity-0} */
-}
-
-@keyframes fade-out {
-	to {
-		opacity: 0;
-	}
-}
-
 @keyframes scale-down {
 	to {
 		transform: scale(0.75, 0.75);
@@ -242,30 +232,27 @@ input::-ms-clear {
 	}
 }
 
-::view-transition-old(auth) {
+::view-transition-old(start) {
 	animation: fade-out 500ms both;
 	mix-blend-mode: plus-lighter;
 }
 
-::view-transition-new(auth) {
+::view-transition-new(start) {
 	animation: fade-in 500ms both;
 	mix-blend-mode: plus-lighter;
 }
 
-::view-transition-old(auth-background) {
+::view-transition-old(start-background) {
 	display: none;
 }
-
-::view-transition-new(auth-background) {
+::view-transition-new(start-background) {
 	animation: none;
 }
 
-#auth-form {
-	animation: fade-in 350ms both, scale-up 350ms both;
-}
-
-#auth-form-hidden {
-	animation: fade-out 250ms both, scale-down 250ms both;
+#start-form {
+	animation:
+		fade-in 350ms both,
+		scale-up 350ms both;
 }
 
 html::view-transition-group(root),
@@ -274,16 +261,32 @@ html::view-transition-old(root) {
 	animation: none;
 }
 
-::view-transition-new(auth-login),
-::view-transition-new(auth-register),
-::view-transition-new(auth-oauth-redirect) {
-	animation: fade-in 350ms both, scale-up 350ms both;
+::view-transition-new(start-login),
+::view-transition-new(start-register),
+::view-transition-new(start-oauth-redirect) {
+	animation:
+		fade-in 350ms both,
+		scale-up 350ms both;
 }
 
-::view-transition-old(auth-login),
-::view-transition-old(auth-register),
-::view-transition-old(auth-oauth-redirect) {
-	animation: fade-out 250ms both, scale-down 250ms both;
+::view-transition-old(start-login),
+::view-transition-old(start-register),
+::view-transition-old(start-oauth-redirect) {
+	animation:
+		fade-out 250ms both,
+		scale-down 250ms both;
+}
+
+::view-transition-new(start-index) {
+	animation:
+		fade-in 350ms both,
+		scale-up 350ms both;
+}
+
+::view-transition-old(start-index) {
+	animation:
+		fade-out 250ms both,
+		scale-down 250ms both;
 }
 
 .hljs-comment {

@@ -1,11 +1,11 @@
 import { access, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { DisplaySource } from "@/types";
-import { BrowserWindow, Menu, Notification, Tray, app, desktopCapturer, ipcMain, session, shell } from "electron";
+import { app, BrowserWindow, desktopCapturer, ipcMain, Menu, Notification, session, shell, Tray } from "electron";
 import log from "electron-log/main";
-import { CancellationToken, autoUpdater } from "electron-updater";
-import { getProcessIds, startAudioCapture, stopAudioCapture } from "./audio"
+import { autoUpdater, CancellationToken } from "electron-updater";
+import type { DisplaySource } from "@/types";
+import { getProcessIds, startAudioCapture, stopAudioCapture } from "./audio";
 
 // console.log(pids)
 // startAudioCapture()processes[0].ppid;
@@ -98,7 +98,7 @@ function configureUpdater() {
       log.error("UPDATE ERROR", e);
    });
 
-   autoUpdater.on("update-not-available", (e) => {
+   autoUpdater.on("update-not-available", () => {
       log.log("NOT AVAILABLE");
    });
 
@@ -106,15 +106,15 @@ function configureUpdater() {
       log.log("CHECKING");
    });
 
-   autoUpdater.on("update-cancelled", (e) => {
+   autoUpdater.on("update-cancelled", () => {
       log.log("cancel");
    });
 
-   autoUpdater.on("update-available", (e) => {
+   autoUpdater.on("update-available", () => {
       log.log("AVAILABLE!");
    });
 
-   autoUpdater.on("update-downloaded", (e) => {
+   autoUpdater.on("update-downloaded", () => {
       log.log("DOWNLOADED");
       autoUpdater.quitAndInstall(true, true);
    });
@@ -184,19 +184,19 @@ function eventListeners(mainWindow: BrowserWindow) {
 
    ipcMain.handle("window:version", () => app.getVersion());
 
-   ipcMain.on("window:splashscreen-mode", () => {
-      mainWindow.setMinimumSize(300, 300);
-      mainWindow.setSize(300, 300);
-      // mainWindow.center();
-      mainWindow.setResizable(false);
-   });
+   // ipcMain.on("window:splashscreen-mode", () => {
+   //    mainWindow.setMinimumSize(300, 300);
+   //    mainWindow.setSize(300, 300);
+   //    // mainWindow.center();
+   //    mainWindow.setResizable(false);
+   // });
 
-   ipcMain.on("window:main-mode", () => {
-      mainWindow.setResizable(true);
-      mainWindow.setMinimumSize(1200, 670);
-      mainWindow.setSize(1200, 670);
-      // mainWindow.center();
-   });
+   // ipcMain.on("window:main-mode", () => {
+   //    mainWindow.setResizable(true);
+   //    mainWindow.setMinimumSize(1200, 670);
+   //    mainWindow.setSize(1200, 670);
+   //    // mainWindow.center();
+   // });
 
    ipcMain.on("window:set-fullscreen", (_, fullscreen: boolean) => {
       mainWindow.setFullScreen(fullscreen);
@@ -224,7 +224,7 @@ function eventListeners(mainWindow: BrowserWindow) {
 
    ipcMain.handle("cli:get-args", () => process.argv);
 
-   app.on("second-instance", (event, commandLine, workingDirectory, additionalData) => {
+   app.on("second-instance", (_event, commandLine, _workingDirectory, _additionalData) => {
       const cmd = commandLine.pop();
 
       if (cmd?.startsWith("huginn://")) {
@@ -319,7 +319,7 @@ async function fileExists(path: string) {
    try {
       await access(path);
       return true;
-   } catch (e) {
+   } catch (_e) {
       return false;
    }
 }

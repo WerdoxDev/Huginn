@@ -1,13 +1,12 @@
-import type { ThemeType } from "@/types";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
+import type { ThemeType } from "@/types";
 
 export type AppSettings = {
    serverAddress: string;
    cdnAddress: string;
    voiceAddress: string;
    theme: ThemeType;
-   chatMode?: "normal" | "compact";
    inputDeviceId: string;
    outputDeviceId: string;
    inputVolume: number;
@@ -25,7 +24,6 @@ const initialStore = () =>
       cdnAddress: "https://midgard.huginn.dev",
       voiceAddress: "https://midgard.huginn.dev",
       theme: "pine green",
-      chatMode: "normal",
       inputDeviceId: "",
       outputDeviceId: "",
       inputThreshold: -50,
@@ -53,7 +51,7 @@ export async function initializeSettings() {
    if (!window.localStorage.getItem(localStorageItem)) {
       window.localStorage.setItem(localStorageItem, JSON.stringify(initialValue));
    }
-   // biome-ignore lint/style/noNonNullAssertion: <explanation>
+   // biome-ignore lint/style/noNonNullAssertion: the local storage item is checked before
    store.setState({ ...initialValue, ...JSON.parse(globalThis.localStorage.getItem(localStorageItem)!) });
 }
 

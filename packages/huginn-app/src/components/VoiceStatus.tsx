@@ -56,7 +56,7 @@ export default function VoiceStatus() {
 	}, []);
 
 	function disconnect() {
-		client.gateway.disconnectFromVoice();
+		client.gateway.disconnectVoice();
 	}
 
 	if (!user || !voiceState.channelId) {

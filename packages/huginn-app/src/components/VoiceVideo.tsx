@@ -48,9 +48,8 @@ export default function VoiceVideo(props: {
 
 		let frames = 0;
 		let start = performance.now();
-		let handle: number | undefined;
 
-		function countFrames(now: DOMHighResTimeStamp, metadata: VideoFrameCallbackMetadata) {
+		function countFrames(now: DOMHighResTimeStamp, _metadata: VideoFrameCallbackMetadata) {
 			frames++;
 			const elapsed = (now - start) / 1000;
 
@@ -97,11 +96,16 @@ export default function VoiceVideo(props: {
 	}, []);
 
 	return (
-		<div
+		<button
 			onClick={() => props.onClick(props.producerId ?? "")}
-			onContextMenu={(e) => openContextMenu({ user: props.user, producerId: props.producerId, kind: "screen_audio" }, e)}
+			onContextMenu={
+				props.user.id !== user?.id
+					? (e) => openContextMenu({ user: props.user, producerId: props.producerId, kind: "screen_audio" }, e)
+					: undefined
+			}
 			key={props.consumerId ?? props.producerId}
 			id={props.consumerId}
+			type="button"
 			className={clsx(
 				"group relative flex aspect-video shrink-0 cursor-pointer flex-col items-center justify-center overflow-hidden bg-tertiary",
 				!props.maximized && "rounded-xl",
@@ -116,7 +120,13 @@ export default function VoiceVideo(props: {
 					<span className="text-white/60"> FPS</span>
 				</div>
 			</div>
+			<div className="absolute bottom-2 left-2 flex items-center gap-x-2">
+				<div className="flex items-center justify-center gap-x-2 rounded-lg bg-tertiary px-2 py-1 text-white opacity-0 transition-opacity group-hover/wrapper:opacity-100">
+					<IconMingcuteMonitorFill className="size-5" />
+					{props.user.displayName ?? props.user.username}
+				</div>
+			</div>
 			{!props.srcObject ? <LoadingIcon /> : <video className="h-full w-full" ref={videoRef} autoPlay playsInline muted />}
-		</div>
+		</button>
 	);
 }

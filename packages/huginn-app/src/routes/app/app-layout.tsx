@@ -1,36 +1,33 @@
-import AuthBackgroundSvg from "@components/AuthBackgroundSvg";
-import TitleBar from "@components/TitleBar";
 import ContextMenusRenderer from "@components/contextmenu/ContextMenusRenderer";
 import ModalsRenderer from "@components/modal/ModalsRenderer";
-import { useAuthBackground } from "@contexts/authBackgroundContext";
+import StartBackgroundSvg from "@components/StartBackgroundSvg";
+import TitleBar from "@components/TitleBar";
+import { useStartBackground } from "@contexts/authBackgroundContext";
 import { NotificationProvider } from "@contexts/notificationContext";
 import { useMainViewTransitionState } from "@hooks/useMainViewTransitionState";
 import { dispatchEvent } from "@lib/event-handler";
 import { ContextMenuProvider } from "@stores/contextMenuStore";
-import { useModals } from "@stores/modalsStore";
 import { initializePresence } from "@stores/presenceStore";
 import { initializeReadStates } from "@stores/readStatesStore";
 import { initializeTyping } from "@stores/typingStore";
 import { initializeUser } from "@stores/userStore";
 import { initializeVoice } from "@stores/voiceStore";
 import { useHuginnWindow } from "@stores/windowStore";
-import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import { type ReactNode, useEffect } from "react";
 import { Outlet } from "react-router";
 
 export default function AppLayout() {
-	const authBackground = useAuthBackground();
+	const authBackground = useStartBackground();
 	const huginnWindow = useHuginnWindow();
-	const isTransitioning = useMainViewTransitionState();
-	const queryClient = useQueryClient();
+	const { isMainTransitioning } = useMainViewTransitionState();
 
 	useEffect(() => {
 		const unlisten = initializeUser();
 		const unlisten2 = initializeReadStates();
 		const unlisten3 = initializePresence();
 		const unlisten4 = initializeTyping();
-		const unlisten5 = initializeVoice(queryClient);
+		const unlisten5 = initializeVoice();
 
 		return () => {
 			unlisten();
@@ -47,9 +44,9 @@ export default function AppLayout() {
 				<MainRenderer>
 					<div
 						className={clsx("absolute inset-0 bg-secondary", huginnWindow.environment === "desktop" && !huginnWindow.fullscreen && "top-6")}
-						style={isTransitioning ? { viewTransitionName: "auth" } : undefined}
+						style={isMainTransitioning ? { viewTransitionName: "start" } : undefined}
 					>
-						<AuthBackgroundSvg state={authBackground.state} />
+						<StartBackgroundSvg state={authBackground.state} />
 						<Outlet />
 					</div>
 				</MainRenderer>

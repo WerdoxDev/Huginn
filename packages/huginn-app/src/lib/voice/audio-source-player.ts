@@ -1,4 +1,4 @@
-import { log, type HMediaKind, type Snowflake } from "@huginn/shared";
+import { type HMediaKind, log, type Snowflake } from "@huginn/shared";
 import { settingsStore } from "@stores/settingsStore";
 
 export class AudioSourcePlayer {

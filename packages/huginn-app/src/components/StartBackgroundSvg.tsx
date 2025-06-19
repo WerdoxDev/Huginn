@@ -2,9 +2,9 @@ import { useMainViewTransitionState } from "@hooks/useMainViewTransitionState";
 import { useTheme } from "@stores/themeStore";
 import clsx from "clsx";
 
-export default function AuthBackgroundSvg(props: { state: number }) {
+export default function StartBackgroundSvg(props: { state: number }) {
 	const fillColor = useTheme();
-	const isTransitioning = useMainViewTransitionState();
+	const { isMainTransitioning } = useMainViewTransitionState();
 
 	const path1 = {
 		close: "M0 540.8C-100.8 530.3 -201.6 519.7 -270.4 468.4C-339.2 417 -376 324.9 -415.7 240C-455.4 155.1 -498.1 77.6 -540.8 0L0 0Z",
@@ -26,7 +26,7 @@ export default function AuthBackgroundSvg(props: { state: number }) {
 				xmlns="http://www.w3.org/2000/svg"
 				version="1.1"
 				preserveAspectRatio="xMidYMid slice"
-				style={isTransitioning ? { viewTransitionName: "auth-background" } : undefined}
+				style={isMainTransitioning ? { viewTransitionName: "start-background" } : undefined}
 			>
 				<title>animated-background</title>
 				<g transform="translate(960, 0)">
