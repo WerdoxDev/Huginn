@@ -1,7 +1,7 @@
 {
 	"name": "monorepo",
 	"devDependencies": {
-		"@biomejs/biome": "^1.9.4",
+		"@biomejs/biome": "2.0.0",
 		"@types/bun": "latest",
 		"release-please": "^16.15.0",
 		"typescript": "^5.7.2"
