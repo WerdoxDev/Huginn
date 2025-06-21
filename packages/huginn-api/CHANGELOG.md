@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.16.0...api@v0.17.0) (2025-06-19)
+
+
+### Features
+
+* **api:** use extensive logging for gateway and voice + remove log option from gatway and voice ([dd99d78](https://github.com/WerdoxDev/Huginn/commit/dd99d7885acc448d4f807ed441461a198aac080c))
+
 ## [0.16.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.15.0...api@v0.16.0) (2025-06-09)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.21.0...shared@v0.22.0) (2025-06-19)
+
+
+### Features
+
+* **shared:** add extensive custom logging function ([0e4a05d](https://github.com/WerdoxDev/Huginn/commit/0e4a05d03fd11ed38b52b00c80bbdc4a0b5c41be))
+
 ## [0.21.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.20.0...shared@v0.21.0) (2025-06-14)
 
 
