@@ -1,22 +1,25 @@
 import { access, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { enableLogs, error, log } from "@huginn/shared";
+import { getActiveWindowProcessIds, startAudioCapture, stopAudioCapture } from "application-loopback"
 import { app, BrowserWindow, desktopCapturer, ipcMain, Menu, Notification, session, shell, Tray } from "electron";
-import log from "electron-log/main";
+import electronLog from "electron-log/main";
 import { autoUpdater, CancellationToken } from "electron-updater";
-import type { DisplaySource } from "@/types";
-import { getProcessIds, startAudioCapture, stopAudioCapture } from "./audio";
-
-// console.log(pids)
-// startAudioCapture()processes[0].ppid;
+import type { DisplaySource } from "@/types"
 
 export const _dirname = typeof __dirname !== "undefined" ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 
 configureUpdater();
 
+enableLogs(["app:electron"], ["electron:default", "electron:loopback", "electron:recv", "electron:send", "electron:updater"])
+
 if (process.defaultApp) {
    if (process.argv.length >= 2) {
-      app.setAsDefaultProtocolClient("huginn", process.execPath, [path.resolve(process.argv[1])]);
+      const args = process.argv[1];
+      log("app:electron", "electron:default", "set deep link", "exep:", process.execPath, "args:", args);
+
+      app.setAsDefaultProtocolClient("huginn", process.execPath, [path.resolve(args)]);
    }
 } else {
    app.setAsDefaultProtocolClient("huginn");
@@ -25,6 +28,8 @@ if (process.defaultApp) {
 const gotLock = app.requestSingleInstanceLock();
 
 if (!gotLock) {
+   log("app:electron", "electron:default", "exit because of lock");
+
    app.exit();
 }
 
@@ -33,6 +38,8 @@ function createWindow() {
    const mainWindow = new BrowserWindow({
       minWidth: 1200,
       minHeight: 670,
+      width: 1200,
+      height: 670,
       fullscreen: false,
       frame: false,
       titleBarStyle: "hidden",
@@ -44,9 +51,14 @@ function createWindow() {
    });
 
    if (process.env.VITE_DEV_SERVER_URL) {
+      log("app:electron", "electron:default", "load", "url:", process.env.VITE_DEV_SERVER_URL)
+
       mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
    } else {
-      mainWindow.loadFile(path.join(_dirname, "../../dist/index.html"));
+      const filePath = path.join(_dirname, "../../dist/index.html")
+      log("app:electron", "electron:default", "load", "url:", filePath)
+
+      mainWindow.loadFile(filePath);
    }
 
    // Open the DevTools.
@@ -60,6 +72,8 @@ function createWindow() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", async () => {
+   log("app:electron", "electron:recv", "app ready");
+
    // autoUpdater.quitAndInstall(true, true);
    if (!gotLock) {
       return;
@@ -68,6 +82,8 @@ app.on("ready", async () => {
    createWindow();
 
    // Setup as Startup App
+
+   log("app:electron", "electron:default", "set startup");
    app.setLoginItemSettings({ openAtLogin: true, path: app.getPath("exe"), args: ["--silent"] });
 });
 
@@ -75,12 +91,15 @@ app.on("ready", async () => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on("window-all-closed", () => {
+   log("app:electron", "electron:recv", "app all windows closed");
+
    if (process.platform !== "darwin") {
       app.quit();
    }
 });
 
 app.on("activate", () => {
+   log("app:electron", "electron:recv", "app activate");
    // On OS X it's common to re-create a window in the app when the
    // dock icon is clicked and there are no other windows open.
    if (BrowserWindow.getAllWindows().length === 0) {
@@ -89,38 +108,50 @@ app.on("activate", () => {
 });
 
 function configureUpdater() {
-   autoUpdater.logger = log;
+   log("app:electron", "electron:default", "configure updater");
+
+   autoUpdater.logger = electronLog;
    autoUpdater.autoInstallOnAppQuit = false;
    autoUpdater.allowDowngrade = true;
    autoUpdater.autoDownload = false;
 
    autoUpdater.on("error", (e) => {
-      log.error("UPDATE ERROR", e);
+      error("app:electron", "updater error:", e);
+
+      electronLog.error("UPDATE ERROR", e);
    });
 
    autoUpdater.on("update-not-available", () => {
-      log.log("NOT AVAILABLE");
+      log("app:electron", "electron:updater", "not available");
+
+      electronLog.log("NOT AVAILABLE");
    });
 
    autoUpdater.on("checking-for-update", () => {
-      log.log("CHECKING");
+      log("app:electron", "electron:updater", "check for update");
+      electronLog.log("CHECKING");
    });
 
    autoUpdater.on("update-cancelled", () => {
-      log.log("cancel");
+      log("app:electron", "electron:updater", "check for update");
+      electronLog.log("cancel");
    });
 
    autoUpdater.on("update-available", () => {
-      log.log("AVAILABLE!");
+      log("app:electron", "electron:updater", "available");
+      electronLog.log("AVAILABLE!");
    });
 
    autoUpdater.on("update-downloaded", () => {
-      log.log("DOWNLOADED");
+      log("app:electron", "electron:updater", "downloaded");
+      electronLog.log("DOWNLOADED");
       autoUpdater.quitAndInstall(true, true);
    });
 }
 
 function configureTray(mainWindow: BrowserWindow) {
+   log("app:electron", "electron:default", "configure tray");
+
    const tray = new Tray(app.isPackaged ? path.join(process.resourcesPath, "assets", "icon.ico") : "./assets/icon.ico");
    const contextMenu = Menu.buildFromTemplate([
       {
@@ -143,6 +174,8 @@ function configureTray(mainWindow: BrowserWindow) {
 let selectedSourceId: string;
 
 function eventListeners(mainWindow: BrowserWindow) {
+   log("app:electron", "electron:default", "listen to events");
+
    session.defaultSession.setDisplayMediaRequestHandler(async (request, callback) => {
       const sources = await desktopCapturer.getSources({
          types: ["screen", "window"],
@@ -156,33 +189,58 @@ function eventListeners(mainWindow: BrowserWindow) {
    });
 
    mainWindow.on("close", (e) => {
+      log("app:electron", "electron:recv", "close");
+
       e.preventDefault();
       mainWindow.hide();
    });
 
    mainWindow.on("maximize", () => {
+      log("app:electron", "electron:recv", "maximize");
+
+      log("app:electron", "electron:send", "window is maximized", true);
       mainWindow.webContents.send("window:is-maximized", true);
    });
 
    mainWindow.on("unmaximize", () => {
+      log("app:electron", "electron:recv", "unmaximize");
+
+      log("app:electron", "electron:send", "window is maximized", false);
       mainWindow.webContents.send("window:is-maximized", false);
    });
 
    mainWindow.on("restore", () => {
+      log("app:electron", "electron:recv", "restore");
+
+      log("app:electron", "electron:send", "window is maximized", false);
       mainWindow.webContents.send("window:is-maximized", false);
    });
 
    mainWindow.on("enter-full-screen", () => {
+      log("app:electron", "electron:recv", "enter full screen");
+
+      log("app:electron", "electron:send", "window is maximized", true);
       mainWindow.webContents.send("window:is-maximized", true);
+
+      log("app:electron", "electron:send", "window is fullscreen", true);
       mainWindow.webContents.send("window:is-fullscreen", true);
    });
 
    mainWindow.on("leave-full-screen", () => {
+      log("app:electron", "electron:recv", "leave full screen");
+
+      log("app:electron", "electron:send", "window is maximized", false);
       mainWindow.webContents.send("window:is-maximized", false);
+
+      log("app:electron", "electron:send", "window is fullscreen", false);
       mainWindow.webContents.send("window:is-fullscreen", false);
    });
 
-   ipcMain.handle("window:version", () => app.getVersion());
+   ipcMain.handle("window:version", () => {
+      log("app:electron", "electron:recv", "window version");
+
+      return app.getVersion()
+   });
 
    // ipcMain.on("window:splashscreen-mode", () => {
    //    mainWindow.setMinimumSize(300, 300);
@@ -199,35 +257,74 @@ function eventListeners(mainWindow: BrowserWindow) {
    // });
 
    ipcMain.on("window:set-fullscreen", (_, fullscreen: boolean) => {
+      log("app:electron", "electron:recv", "window set fullscreen");
+
       mainWindow.setFullScreen(fullscreen);
    });
 
-   ipcMain.on("window:show-main", () => mainWindow.show());
-   ipcMain.on("window:hide-main", () => mainWindow.hide());
-   ipcMain.on("window:focus-main", () => mainWindow.focus());
-   ipcMain.on("window:minimize", () => mainWindow.minimize());
-   ipcMain.on("window:toggle-maximize", () => (mainWindow.isMaximized() ? mainWindow.restore() : mainWindow.maximize()));
+   ipcMain.on("window:show-main", () => {
+      log("app:electron", "electron:recv", "window show main");
+
+      mainWindow.show()
+   });
+   ipcMain.on("window:hide-main", () => {
+      log("app:electron", "electron:recv", "window hide main");
+
+      mainWindow.hide()
+   });
+   ipcMain.on("window:focus-main", () => {
+      log("app:electron", "electron:recv", "window focus main");
+
+      mainWindow.focus()
+   });
+   ipcMain.on("window:minimize", () => {
+      log("app:electron", "electron:recv", "window minimize");
+
+      mainWindow.minimize()
+   });
+   ipcMain.on("window:toggle-maximize", () => {
+      log("app:electron", "electron:recv", "window toggle maximize");
+
+      if (mainWindow.isMaximized()) {
+         mainWindow.restore()
+      } else {
+         mainWindow.maximize()
+      }
+   });
 
    ipcMain.handle("update:check", async () => {
+      log("app:electron", "electron:recv", "update check");
+
       const result = await autoUpdater.checkForUpdates();
       return result?.updateInfo;
    });
 
    ipcMain.on("update:download", async () => {
+      log("app:electron", "electron:recv", "update download");
+
       const cancel = new CancellationToken();
       await autoUpdater.downloadUpdate(cancel);
    });
 
    autoUpdater.on("download-progress", (e) => {
+      log("app:electron", "electron:updater", "download progress");
+
       mainWindow.webContents.send("update:progress", e);
    });
 
-   ipcMain.handle("cli:get-args", () => process.argv);
+   ipcMain.handle("cli:get-args", () => {
+      log("app:electron", "electron:recv", "cli get args");
+
+      return process.argv
+   });
 
    app.on("second-instance", (_event, commandLine, _workingDirectory, _additionalData) => {
       const cmd = commandLine.pop();
 
+      log("app:electron", "electron:recv", "second instance", "cmd:", cmd);
+
       if (cmd?.startsWith("huginn://")) {
+         log("app:electron", "electron:send", "cli deep link", "cmd:", cmd);
          mainWindow.webContents.send("cli:deep-link", cmd);
       }
 
@@ -236,10 +333,14 @@ function eventListeners(mainWindow: BrowserWindow) {
    });
 
    ipcMain.on("shell:open-external", (_, url: string) => {
+      log("app:electron", "electron:recv", "shell open external", "url:", url);
+
       shell.openExternal(url);
    });
 
    ipcMain.on("notification:send", (_, data: { title: string; body: string; payload?: string }) => {
+      log("app:electron", "electron:recv", "notification send", "title:", data.title, "body:", data.body, "pld:", data.payload);
+
       const notification = new Notification({
          title: data.title,
          body: data.body,
@@ -248,7 +349,8 @@ function eventListeners(mainWindow: BrowserWindow) {
       });
 
       notification.on("click", () => {
-         console.log(data.payload);
+         log("app:electron", "electron:send", "notification clicked", "pld:", data.payload);
+
          mainWindow.webContents.send("notification:clicked", data.payload);
       });
 
@@ -257,6 +359,8 @@ function eventListeners(mainWindow: BrowserWindow) {
 
    const settingsPath = path.join(app.getPath("userData"), "settings.json");
    ipcMain.handle("settings:load", async () => {
+      log("app:electron", "electron:recv", "settings load");
+
       try {
          const fileContent = await readFile(settingsPath, { encoding: "utf-8" });
          return JSON.parse(fileContent);
@@ -267,6 +371,8 @@ function eventListeners(mainWindow: BrowserWindow) {
    });
 
    ipcMain.handle("settings:save", async (_, settings: string) => {
+      log("app:electron", "electron:recv", "settings save");
+
       try {
          await writeFile(settingsPath, JSON.stringify(JSON.parse(settings), null, 2));
       } catch (e) {
@@ -275,6 +381,8 @@ function eventListeners(mainWindow: BrowserWindow) {
    });
 
    ipcMain.handle("settings:try-save-default", async (_, settings: string) => {
+      log("app:electron", "electron:recv", "settings try save default");
+
       try {
          if (await fileExists(settingsPath)) {
             return;
@@ -287,6 +395,8 @@ function eventListeners(mainWindow: BrowserWindow) {
    });
 
    ipcMain.handle("window:get-display-sources", async () => {
+      log("app:electron", "electron:recv", "window get display sources");
+
       const sources = await desktopCapturer.getSources({
          types: ["screen", "window"],
          fetchWindowIcons: true,
@@ -298,20 +408,36 @@ function eventListeners(mainWindow: BrowserWindow) {
    });
 
    ipcMain.on("window:set-selected-display-source", (_, sourceId: string) => {
+      log("app:electron", "electron:recv", "window set selected display source", "sid:", sourceId);
+
       selectedSourceId = sourceId;
    });
 
+   let processId: string | undefined;
    ipcMain.on("audio:start-loopback", async (_, processTitle: string) => {
-      const processIds = await getProcessIds();
+      log("app:electron", "electron:recv", "audio start loopback", "ptit:", processTitle);
 
-      const processId = processIds.find(x => processTitle.includes(x.title))?.processId;
+      const processIds = await getActiveWindowProcessIds();
+
+      processId = processIds.find(x => processTitle.includes(x.title))?.processId;
       if (processId) {
-         startAudioCapture(processId, mainWindow);
+         log("app:electron", "electron:loopback", "start", "pid:", processId);
+         startAudioCapture(processId, {
+            onData(data) {
+               log("app:electron", "electron:loopback-send", "d:", data)
+               mainWindow.webContents.send("audio:loopback-data", data);
+            },
+         });
       }
    })
 
    ipcMain.on("audio:stop-loopback", () => {
-      stopAudioCapture();
+      log("app:electron", "electron:recv", "audio stop loopback", "pid:", processId);
+
+      if (processId) {
+         log("app:electron", "electron:loopback", "stop", "pid:", processId);
+         stopAudioCapture(processId);
+      }
    })
 }
 

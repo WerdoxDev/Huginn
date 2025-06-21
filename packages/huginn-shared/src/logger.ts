@@ -1,4 +1,4 @@
-type LogSection = "api:voice" | "api:gateway" | "app:voice-client" | "app:voice-store" | "app:audio-source-player" | "app:audio-level-checker" | "app:voice-input-device";
+type LogSection = "api:voice" | "api:gateway" | "app:voice-client" | "app:voice-store" | "app:audio-source-player" | "app:audio-level-checker" | "app:voice-input-device" | "app:electron";
 
 type LogLevel = "none" | "voice:send" | "voice:recv" | "voie:heartbeat" | "voice:ping" |
    "voice:default" | "gateway:send" | "gateway:send-detail" | "gateway:default" | "gateway:recv" |
@@ -7,7 +7,9 @@ type LogLevel = "none" | "voice:send" | "voice:recv" | "voie:heartbeat" | "voice
    "voice-store:voice-preferences" | "voice-store:voice-state" | "voice-store:call-state" |
    "voice-store:default" | "voice-store:gateway-recv" | "voice-store:voice-recv" |
    "voice-client:voice-recv" | "voice-client:emitter-recv" | "voice-client:settings-sub" |
-   "audio-source-player:default" | "audio-level-checker:default" | "voice-input-device:default"
+   "audio-source-player:default" | "audio-level-checker:default" | "voice-input-device:default" |
+   "electron:default" | "electron:send" | "electron:recv" | "electron:updater" | "electron:loopback-send" | "electron:loopback"
+
 
 const enabledSections = new Set<LogSection>();
 const enabledLevels = new Set<LogLevel>();

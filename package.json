@@ -1,7 +1,7 @@
 {
 	"name": "monorepo",
 	"devDependencies": {
-		"@biomejs/biome": "2.0.0",
+		"@biomejs/biome": "2.0.2",
 		"@types/bun": "latest",
 		"release-please": "^16.15.0",
 		"typescript": "^5.7.2"
@@ -15,6 +15,12 @@
 		"tauri": " cd packages/huginn-app && bun run tauri-dev"
 	},
 	"type": "module",
-	"workspaces": ["packages/*"],
-	"trustedDependencies": ["electron", "prisma", "sharp"]
+	"workspaces": [
+		"packages/*"
+	],
+	"trustedDependencies": [
+		"electron",
+		"prisma",
+		"sharp"
+	]
 }

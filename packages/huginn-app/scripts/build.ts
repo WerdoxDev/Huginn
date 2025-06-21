@@ -2,7 +2,7 @@ import { builtinModules } from "node:module";
 import { build } from "vite";
 
 export const builtins = ["electron", ...builtinModules.flatMap((m) => [m, `node:${m}`])];
-export const external = [...builtins];
+export const external = [...builtins, "application-loopback"];
 
 await build({
    configFile: false,
@@ -12,7 +12,7 @@ await build({
       lib: {
          entry: ["./electron/main.ts", "./electron/preload.ts"],
          name: "main",
-         fileName: (_, entryName) => `${entryName}.cjs`,
+         fileName: () => "[name].cjs",
          formats: ["cjs"],
       },
       emptyOutDir: false,
