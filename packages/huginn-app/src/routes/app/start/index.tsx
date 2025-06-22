@@ -49,7 +49,7 @@ export default function Index() {
 
 	async function continueToLogin() {
 		await tryLogin({
-			async onError(e) {
+			async onError() {
 				await navigate({ pathname: "/login", search: `?${search.toString()}` }, { viewTransition: true });
 			},
 			onFound() {
