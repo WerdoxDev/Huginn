@@ -8,7 +8,7 @@ export default function SpoilerElement(props: RenderElementProps) {
 	return (
 		<div
 			className={clsx(
-				"relative inline-block rounded-sm px-0.5 transition-colors",
+				"relative inline-block rounded-xs px-0.5 transition-colors",
 				hidden ? "cursor-pointer bg-tertiary text-tertiary" : "bg-white/20",
 			)}
 			onClick={() => {

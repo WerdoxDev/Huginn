@@ -14,8 +14,15 @@ export default function InfoModal() {
 
 	const mutationState = useMutationLatestState(modal.action?.confirm?.mutationKey);
 
+	const innerColor = useMemo(
+		() =>
+			modal.status === "default" ? "bg-warning/80" : modal.status === "error" ? "bg-error/80" : modal.status === "success" ? "bg-primary/80" : "",
+		[modal],
+	);
+
 	const backgroundColor = useMemo(
-		() => (modal.status === "default" ? "bg-warning" : modal.status === "error" ? "bg-error" : modal.status === "success" ? "bg-primary" : ""),
+		() =>
+			modal.status === "default" ? "bg-warning/20" : modal.status === "error" ? "bg-error/20" : modal.status === "success" ? "bg-primary/20" : "",
 		[modal],
 	);
 
@@ -49,13 +56,13 @@ export default function InfoModal() {
 		<DialogPanel
 			transition
 			className={clsx(
-				"w-full max-w-xs transform overflow-hidden rounded-xl border-2 bg-background p-5 transition-[opacity_transform] duration-200 data-[closed]:scale-90",
+				"w-full max-w-xs transform overflow-hidden rounded-xl border-2 bg-background p-5 transition-[opacity_transform] duration-200 data-closed:scale-90",
 				borderColor,
 			)}
 		>
 			<DialogTitle as="div" className="flex w-full flex-col items-center justify-center gap-y-5">
-				<div className={clsx("rounded-full bg-opacity-20 p-3", backgroundColor)}>
-					<div className={clsx("rounded-full bg-opacity-80 p-3", backgroundColor)}>
+				<div className={clsx("rounded-full p-3", backgroundColor)}>
+					<div className={clsx("rounded-full p-3", innerColor)}>
 						{modal.status === "error" && <IconMingcuteAlertLine className="h-8 w-8 text-white" />}
 						{modal.status === "default" && <IconMingcuteInformationLine className="h-8 w-8 text-white" />}
 					</div>

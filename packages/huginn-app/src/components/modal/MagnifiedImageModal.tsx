@@ -24,7 +24,7 @@ export default function MagnifiedImageModal() {
 	return (
 		<DialogPanel
 			transition
-			className="flex select-none flex-col items-center justify-center duration-200 data-[closed]:scale-75 data-[closed]:opacity-0"
+			className="flex select-none flex-col items-center justify-center duration-200 data-closed:scale-75 data-closed:opacity-0"
 		>
 			<div className="relative flex items-center justify-center" style={{ width: `${dimensions.width}px`, height: `${dimensions.height}px` }}>
 				<img
@@ -40,7 +40,7 @@ export default function MagnifiedImageModal() {
 					}}
 				/>
 				<Transition show={!loaded}>
-					<div className="absolute inset-0 flex items-center justify-center rounded-lg bg-background/40 duration-200 data-[closed]:opacity-0">
+					<div className="absolute inset-0 flex items-center justify-center rounded-lg bg-background/40 duration-200 data-closed:opacity-0">
 						<LoadingIcon className="size-16 " />
 					</div>
 				</Transition>

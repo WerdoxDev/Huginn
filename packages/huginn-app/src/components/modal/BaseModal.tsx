@@ -18,7 +18,7 @@ export default function BaseModal(props: {
 				open={props.modal.isOpen}
 				transition
 				onClose={props.onClose}
-				className="relative z-10 transition duration-200 data-[closed]:opacity-0"
+				className="relative z-10 transition duration-200 data-closed:opacity-0"
 			>
 				<ModalBackground className={props.backgroundClassName} />
 				<div className={clsx("fixed inset-0", huginnWindow.environment === "desktop" && "top-6")}>

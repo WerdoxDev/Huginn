@@ -13,7 +13,7 @@ export default function RingLink(props: LinkProps & { to: string }) {
 			className={clsx(
 				"rounded-full uppercase ring-[1.5px] ring-primary",
 				props.className,
-				isActive ? "bg-primary text-text" : "text-text/70 hover:bg-primary hover:text-text/100",
+				isActive ? "bg-primary text-text" : "text-text/70 hover:bg-primary hover:text-text",
 			)}
 		>
 			{props.children}

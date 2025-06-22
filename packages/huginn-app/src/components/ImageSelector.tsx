@@ -73,7 +73,7 @@ export default function ImageSelector(props: {
 					<Tooltip.Trigger
 						onClick={remove}
 						type="button"
-						className={clsx("group flex w-full justify-center rounded-r-md bg-error/10 py-1.5 hover:bg-error/100", props.deleteButtonClassName)}
+						className={clsx("group flex w-full justify-center rounded-r-md bg-error/10 py-1.5 hover:bg-error", props.deleteButtonClassName)}
 					>
 						<IconMingcuteDelete3Fill className="size-5 text-error group-hover:text-white" />
 					</Tooltip.Trigger>

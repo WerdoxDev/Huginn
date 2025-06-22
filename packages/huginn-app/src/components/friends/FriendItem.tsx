@@ -66,7 +66,7 @@ export default function FriendItem(props: {
 					<LoadingIcon className="size-10" />
 				</div>
 			)}
-			<div className="flex flex-shrink-0 items-center gap-x-2.5">
+			<div className="flex shrink-0 items-center gap-x-2.5">
 				{props.type === RelationshipType.PENDING_INCOMING || props.type === RelationshipType.PENDING_OUTGOING ? (
 					<>
 						{props.type === RelationshipType.PENDING_INCOMING && (

@@ -5,7 +5,7 @@ export function ScreenshareModalButton(props: { onClick: () => void; selected: b
 	return (
 		<button
 			onClick={props.onClick}
-			className={clsx("rounded-sm px-2 py-1", props.selected ? "bg-primary text-text" : "text-text/80 hover:bg-primary/70")}
+			className={clsx("cursor-pointer rounded-xs px-2 py-1", props.selected ? "bg-primary text-text" : "text-text/80 hover:bg-primary/70")}
 			type="button"
 		>
 			{props.children}

@@ -1,8 +1,7 @@
-import type { AppMessage, AttachmentType, HuginnToken } from "@/types";
 import { useChannelName, useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useSendMessage } from "@hooks/mutations/useSendMessage";
 import { useSendTyping } from "@hooks/mutations/useSendTyping";
-import { MessageFlags, isImageMediaType } from "@huginn/shared";
+import { isImageMediaType, MessageFlags } from "@huginn/shared";
 import { dispatchEvent } from "@lib/event-handler";
 import { markdownMainEditor } from "@lib/markdown-main";
 import { markdownSpoiler } from "@lib/markdown-spoiler";
@@ -24,8 +23,9 @@ import hljs from "highlight.js";
 import markdownit from "markdown-it";
 import { type ClipboardEvent, type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useParams } from "react-router";
-import { type Descendant, Editor, Element, Node, type Path, type Range, createEditor } from "slate";
+import { createEditor, type Descendant, Editor, Element, Node, type Path, type Range } from "slate";
 import { DefaultElement, Editable, type RenderElementProps, type RenderLeafProps, Slate, withReact } from "slate-react";
+import type { AppMessage, AttachmentType, HuginnToken } from "@/types";
 import AttachmentsPreview from "./AttachmentsPreview";
 import DraggingIndicator from "./DraggingIndicator";
 import EditorLeaf from "./editor/EditorLeaf";
@@ -467,7 +467,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 						<Tooltip.Trigger
 							onClick={addFiles}
 							type="button"
-							className="m-2 mr-2 flex shrink-0 cursor-pointer items-center rounded-full bg-background p-1.5 transition-all hover:bg-white hover:bg-opacity-20 hover:shadow-xl"
+							className="m-2 mr-2 flex shrink-0 cursor-pointer items-center rounded-full bg-background p-1.5 transition-all hover:bg-white/20 hover:shadow-xl"
 						>
 							<IconMingcuteAddFill name="gravity-ui:plus" className="h-5 w-5 text-text" />
 						</Tooltip.Trigger>
@@ -479,7 +479,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 								onPaste={onPaste}
 								ref={editorRef}
 								placeholder={`Message ${channelName}`}
-								className="h-full whitespace-break-spaces py-3 font-light text-white leading-[24px] caret-white outline-none"
+								className="h-full whitespace-break-spaces py-3 font-light text-white leading-[24px] caret-white outline-hidden"
 								renderLeaf={renderLeaf}
 								renderElement={renderElement}
 								decorate={decorate}

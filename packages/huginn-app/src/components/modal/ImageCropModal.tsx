@@ -46,14 +46,14 @@ export default function ImageCropModal() {
 	return (
 		<DialogPanel
 			transition
-			className="flex transform flex-col overflow-hidden rounded-xl border-2 border-primary/50 bg-background transition-[opacity_transform] duration-200 data-[closed]:scale-90"
+			className="flex transform flex-col overflow-hidden rounded-xl border-2 border-primary/50 bg-background transition-[opacity_transform] duration-200 data-closed:scale-90"
 		>
-			<div className="m-5 mb-0 flex h-[30rem] w-[30rem] items-center justify-center rounded-lg bg-black/50">
+			<div className="m-5 mb-0 flex h-120 w-120 items-center justify-center rounded-lg bg-black/50">
 				<Cropper
 					ref={cropperRef}
 					src={modal.originalImageData}
 					initialAspectRatio={1}
-					className="h-[30rem] w-[30rem]"
+					className="h-120 w-120"
 					aspectRatio={1}
 					movable={true}
 					unselectable="off"

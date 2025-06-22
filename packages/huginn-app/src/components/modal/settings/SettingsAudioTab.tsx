@@ -129,7 +129,7 @@ export default function SettingsAudioTab(props: SettingsTabProps) {
 				>
 					<HuginnDropdown.Label>Input Device</HuginnDropdown.Label>
 					<HuginnDropdown.List className="w-full">
-						<HuginnDropdown.ItemsWrapper className="scroll-alternative2 !overflow-y-scroll w-80 pr-0">
+						<HuginnDropdown.ItemsWrapper className="scroll-alternative2 overflow-y-scroll! w-80 pr-0">
 							{inputDevices?.map((x) => (
 								<HuginnDropdown.Item key={x.deviceId} item={{ text: x.label, value: x.deviceId }} />
 							))}
@@ -143,7 +143,7 @@ export default function SettingsAudioTab(props: SettingsTabProps) {
 				>
 					<HuginnDropdown.Label>Output Device</HuginnDropdown.Label>
 					<HuginnDropdown.List className="w-full">
-						<HuginnDropdown.ItemsWrapper className="scroll-alternative2 !overflow-y-scroll w-80 pr-0">
+						<HuginnDropdown.ItemsWrapper className="scroll-alternative2 overflow-y-scroll! w-80 pr-0">
 							{outputDevices?.map((x) => (
 								<HuginnDropdown.Item key={x.deviceId} item={{ text: x.label, value: x.deviceId }} />
 							))}
@@ -162,7 +162,7 @@ export default function SettingsAudioTab(props: SettingsTabProps) {
 				</div>
 			</div>
 			<div className="mt-8 flex">
-				<div className="w-full max-w-[41.25rem]">
+				<div className="w-full max-w-165">
 					<GenericLabel>Input Threshold</GenericLabel>
 					<RangeInput
 						onChange={onInputThresholdChange}
@@ -184,8 +184,8 @@ export default function SettingsAudioTab(props: SettingsTabProps) {
 					onChange={setNoiseSuppression}
 					className="group flex cursor-pointer items-center justify-center gap-x-2.5"
 				>
-					<div className="flex size-6 items-center justify-center rounded-md bg-secondary p-1 ring-1 ring-white/20 group-hover:bg-tertiary group-data-[checked]:bg-primary group-data-[checked]:ring-0">
-						<IconMingcuteCheckFill className="text-white opacity-0 group-data-[checked]:opacity-100" />
+					<div className="flex size-6 items-center justify-center rounded-md bg-secondary p-1 ring-1 ring-white/20 group-hover:bg-tertiary group-data-checked:bg-primary group-data-checked:ring-0">
+						<IconMingcuteCheckFill className="text-white opacity-0 group-data-checked:opacity-100" />
 					</div>
 					<div className="text-text">Noise Suppression</div>
 				</Checkbox>

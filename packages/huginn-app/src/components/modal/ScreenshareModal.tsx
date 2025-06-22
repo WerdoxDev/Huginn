@@ -96,7 +96,7 @@ export default function ScreenshareModal() {
 	return (
 		<DialogPanel
 			transition
-			className="w-full max-w-lg transform select-none overflow-hidden rounded-xl border-2 border-primary/50 bg-background py-5 pb-0 transition-[opacity_transform] duration-200 data-[closed]:scale-90"
+			className="w-full max-w-lg transform select-none overflow-hidden rounded-xl border-2 border-primary/50 bg-background py-5 pb-0 transition-[opacity_transform] duration-200 data-closed:scale-90"
 		>
 			<div className="flex flex-col gap-y-3 pb-5">
 				<div className="text-center font-bold text-2xl text-text">Share Screen</div>
@@ -108,11 +108,11 @@ export default function ScreenshareModal() {
 				{!selectedSource ? (
 					<TabGroup className="">
 						<TabList className="mx-3 flex items-center justify-center gap-x-1 rounded-lg bg-secondary p-1 text-text">
-							<Tab className="flex w-full items-center justify-center gap-x-2 rounded-md py-1 text-text/80 hover:bg-white/5 data-[selected]:bg-background data-[selected]:text-white">
+							<Tab className="flex w-full items-center justify-center gap-x-2 rounded-md py-1 text-text/80 hover:bg-white/5 data-selected:bg-background data-selected:text-white">
 								<IconMingcuteMonitorFill className="size-5" />
 								<div>Screens</div>
 							</Tab>
-							<Tab className="flex w-full items-center justify-center gap-x-2 rounded-md py-1 text-text/80 hover:bg-white/5 data-[selected]:bg-background data-[selected]:text-white">
+							<Tab className="flex w-full items-center justify-center gap-x-2 rounded-md py-1 text-text/80 hover:bg-white/5 data-selected:bg-background data-selected:text-white">
 								<IconMingcuteWebFill className="size-5" />
 								<div>Applications</div>
 							</Tab>
@@ -200,8 +200,8 @@ export default function ScreenshareModal() {
 								onChange={setShareAudio}
 								className="group flex cursor-pointer items-center justify-center gap-x-2.5"
 							>
-								<div className="flex size-6 items-center justify-center rounded-md bg-secondary p-1 ring-1 ring-white/20 group-hover:bg-tertiary group-data-[checked]:bg-primary group-data-[checked]:ring-0">
-									<IconMingcuteCheckFill className="text-white opacity-0 group-data-[checked]:opacity-100" />
+								<div className="flex size-6 items-center justify-center rounded-md bg-secondary p-1 ring-1 ring-white/20 group-hover:bg-tertiary group-data-checked:bg-primary group-data-checked:ring-0">
+									<IconMingcuteCheckFill className="text-white opacity-0 group-data-checked:opacity-100" />
 								</div>
 								<div className="text-text">Share Audio</div>
 							</Checkbox>

@@ -1,8 +1,7 @@
 import * as path from "node:path";
-import react from "@vitejs/plugin-react";
-import autoprefixer from "autoprefixer";
 // import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
-import tailwindcss from "tailwindcss";
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
 import AutoImport from "unplugin-auto-import/vite";
 import IconsResolver from "unplugin-icons/resolver";
 import Icons from "unplugin-icons/vite";
@@ -31,13 +30,8 @@ export default defineConfig({
             plugins: [["babel-plugin-react-compiler", reactCompilerConfig], "@babel/plugin-syntax-jsx"],
          },
       }),
+      tailwindcss()
    ],
-
-   css: {
-      postcss: {
-         plugins: [tailwindcss, autoprefixer],
-      },
-   },
 
    define: {
       __APP_VERSION__: JSON.stringify(version.toString()),

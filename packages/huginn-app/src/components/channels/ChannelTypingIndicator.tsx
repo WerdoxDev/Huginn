@@ -29,7 +29,7 @@ export default function ChannelTypingIndicator(props: { channelId: Snowflake }) 
 
 	return (
 		<Transition show={channelTypings.length > 0 && channelId === props.channelId}>
-			<div className="pointer-events-none absolute right-5 bottom-0 left-0 z-10 flex h-8 items-end bg-gradient-to-t from-50% from-tertiary to-transparent pb-1 pl-4 text-sm transition-opacity data-[closed]:opacity-0 ">
+			<div className="pointer-events-none absolute right-5 bottom-0 left-0 z-10 flex h-8 items-end bg-linear-to-t from-50% from-tertiary to-transparent pb-1 pl-4 text-sm transition-opacity data-closed:opacity-0 ">
 				<span className="font-bold text-text">{recipientsText}&nbsp;</span>
 				{count === 1 && <span className="text-text/70">is typing</span>}
 				{count > 1 && <span className="text-text/70">are typing</span>}

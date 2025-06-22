@@ -1,7 +1,7 @@
 import UserAvatar from "@components/UserAvatar";
 import { MessageContext } from "@contexts/messageProvider";
 import { useUser } from "@hooks/api-hooks/userHooks";
-import { MessageFlags, clamp, hasFlag } from "@huginn/shared";
+import { clamp, hasFlag, MessageFlags } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
@@ -111,12 +111,12 @@ function SlateRenderer(props: {
 	return (
 		<div
 			className={clsx(
-				"relative whitespace-break-spaces px-2.5 py-1.5 font-normal text-white [overflow-wrap:anywhere] group-hover:shadow-lg",
+				"wrap-anywhere relative whitespace-break-spaces px-2.5 py-1.5 font-normal text-white group-hover:shadow-sm",
 				context.renderInfo.message.preview && "bg-primary/20 text-white/50",
-				props.isSelf && !context.renderInfo.message.preview ? "bg-primary/70 shadow-primary/70" : "bg-background shadow-background",
-				props.isUnread && !props.isSeparate && "!rounded-t-none",
-				(props.isSeparate || props.isLastExotic) && "!rounded-t-xl",
-				props.isNextSeparate && "!rounded-b-xl",
+				props.isSelf && !context.renderInfo.message.preview ? "bg-primary/70" : "bg-background shadow-background",
+				props.isUnread && !props.isSeparate && "rounded-t-none!",
+				(props.isSeparate || props.isLastExotic) && "rounded-t-xl!",
+				props.isNextSeparate && "rounded-b-xl!",
 			)}
 			style={{
 				borderBottomRightRadius: `${clamp((props.widths.width - props.widths.nextWidth) / 2, 0, 12)}px`,

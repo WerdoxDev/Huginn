@@ -78,7 +78,7 @@ export default function VoiceStatus() {
 							)}
 							<Tooltip.Content extrastyle={{ color: latencyColor }}>{rtt} ms</Tooltip.Content>
 						</Tooltip>
-						<div className={clsx("font-bold text-sm transition-colors", state === "rtc" && "!text-warning")} style={{ color: latencyColor }}>
+						<div className={clsx("font-bold text-sm transition-colors", state === "rtc" && "text-warning!")} style={{ color: latencyColor }}>
 							{state === "rtc" ? "RTC Signaling" : "Connected"}
 						</div>
 					</div>

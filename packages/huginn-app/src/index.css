@@ -1,6 +1,41 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@theme {
+  --font-*: initial;
+  --font-noto: Noto Sans, sans-serif;
+  --font-ubuntu: Ubuntu Mono, monospace;
+}
+
+@theme inline {
+  --color-background: rgb(var(--tcolor-background));
+  --color-secondary: rgb(var(--tcolor-secondary));
+  --color-tertiary: rgb(var(--tcolor-tertiary));
+  --color-primary: rgb(var(--tcolor-primary));
+  --color-accent: rgb(var(--tcolor-accent));
+  --color-accent2: rgb(var(--tcolor-accent2));
+  --color-success: rgb(var(--tcolor-success));
+  --color-text: rgb(var(--tcolor-text));
+  --color-error: rgb(var(--tcolor-error));
+  --color-warning: rgb(var(--tcolor-warning));
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
 
 @font-face {
 	font-family: "Noto Sans";

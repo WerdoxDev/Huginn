@@ -259,7 +259,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 						{!hasPreviousPage && sortedMessages.length !== 0 && (
 							<div className="flex h-20 shrink-0 flex-col justify-center">
 								<div className="ml-10 text-text/70">
-									The beginning of your chat with <span className="font-bold text-text/100">{channelName}</span>
+									The beginning of your chat with <span className="font-bold text-text">{channelName}</span>
 								</div>
 							</div>
 						)}

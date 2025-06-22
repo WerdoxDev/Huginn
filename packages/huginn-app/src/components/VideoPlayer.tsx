@@ -128,7 +128,7 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 				<div
 					className={clsx(
 						!errored && "absolute inset-0",
-						"flex items-center justify-center bg-background/40 duration-200 data-[closed]:opacity-0",
+						"flex items-center justify-center bg-background/40 duration-200 data-closed:opacity-0",
 					)}
 					style={{ width: `${props.width}px`, height: `${props.height}px` }}
 				>

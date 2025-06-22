@@ -15,12 +15,12 @@ export default function AddFriendInput(
 						? "ring-error"
 						: props.status.code === "success"
 							? "ring-success"
-							: "ring-transparent has-[:focus]:ring-primary",
+							: "ring-transparent has-focus:ring-primary",
 				)}
 			>
-				<input className="w-full bg-secondary text-text placeholder-text/50 outline-none" placeholder="e.g: Werdox" onChange={props.onChange} />
+				<input className="w-full bg-secondary text-text placeholder-text/50 outline-hidden" placeholder="e.g: Werdox" onChange={props.onChange} />
 				<LoadingButton
-					iconClassName="!size-6"
+					iconClassName="size-6!"
 					loading={props.loading}
 					className="h-8 w-64 whitespace-nowrap rounded-md bg-primary font-medium text-sm"
 					disabled={props.disabled}

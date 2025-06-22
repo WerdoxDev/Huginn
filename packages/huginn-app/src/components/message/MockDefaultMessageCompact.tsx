@@ -35,10 +35,10 @@ export default function MockDefaultMessageCompact(props: {
 				<div className={clsx("overflow-hidden font-light text-white", !props.separate && "ml-9")}>
 					<div
 						className={clsx(
-							"px-2.5 py-1.5 font-normal text-white [overflow-wrap:anywhere]",
+							"px-2.5 py-1.5 font-normal text-white wrap-anywhere",
 							props.separate && "rounded-t-xl",
 							props.self ? "bg-primary/70" : "bg-background",
-							props.end && "!rounded-b-xl",
+							props.end && "rounded-b-xl!",
 						)}
 						style={{ borderTopRightRadius: props.roundedTop, borderBottomRightRadius: props.roundedBottom }}
 					>

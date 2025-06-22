@@ -16,7 +16,7 @@ export default function LinkElement(props: RenderElementProps) {
 		>
 			<div className="">
 				{props.children}
-				<div className="-mx-0.5 absolute inset-0 rounded-sm hover:bg-text/20" />
+				<div className="-mx-0.5 absolute inset-0 rounded-xs hover:bg-text/20" />
 			</div>
 		</span>
 	);

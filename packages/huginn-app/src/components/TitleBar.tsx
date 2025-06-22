@@ -27,7 +27,7 @@ export default function TitleBar(): ReactPortal {
 				// huginnWindow.maximized ? "rounded-t-none" : "rounded-t-lg",
 			)}
 		>
-			<div className="pointer-events-none mx-3.5 flex-shrink-0 font-medium text-text text-xs uppercase">Huginn</div>
+			<div className="pointer-events-none mx-3.5 shrink-0 font-medium text-text text-xs uppercase">Huginn</div>
 			<ConnectionStatus />
 			<div className="no-drag-region ml-auto flex h-full gap-x-1">
 				<button type="button" className="flex h-full w-8 items-center justify-center hover:bg-secondary" onClick={minimize}>

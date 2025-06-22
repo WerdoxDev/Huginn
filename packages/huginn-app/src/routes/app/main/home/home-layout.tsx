@@ -21,7 +21,7 @@ export default function HomeLayout() {
 		//TODO: Abstract the 2 (navigation & content) parts to a central component for later use
 		<div className="flex h-full w-full flex-col overflow-hidden">
 			<div className="flex h-full">
-				<div className="flex w-64 flex-shrink-0 flex-col">
+				<div className="flex w-64 shrink-0 flex-col">
 					<HomeSidebar channels={data} />
 					{user && <UserInfo user={user} />}
 				</div>

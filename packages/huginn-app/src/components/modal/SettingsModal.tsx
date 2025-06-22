@@ -1,4 +1,3 @@
-import type { SettingsTab, SettingsTabProps } from "@/types";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import { DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import type { DeepPartial } from "@huginn/shared";
@@ -8,6 +7,7 @@ import { type AppSettings, settingsStore, useSettings } from "@stores/settingsSt
 import clsx from "clsx";
 // import { usePostHog } from "posthog-js/react";
 import { Fragment, memo, useEffect, useRef, useState } from "react";
+import type { SettingsTab, SettingsTabProps } from "@/types";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
 import SettingsAudioTab from "./settings/SettingsAudioTab";
@@ -96,7 +96,7 @@ export default function SettingsModal() {
 		<div className="h-full w-full p-10">
 			<DialogPanel
 				transition
-				className="h-full transform rounded-xl border-2 border-primary/50 bg-background transition-[opacity_transform] duration-200 data-[closed]:scale-90"
+				className="h-full transform rounded-xl border-2 border-primary/50 bg-background transition-[opacity_transform] duration-200 data-closed:scale-90"
 			>
 				<TabGroup className="flex h-full w-full" vertical defaultIndex={defaultTabIndex} onChange={onTabChanged}>
 					<div className="h-full rounded-l-xl bg-secondary/50">
@@ -136,8 +136,8 @@ function SettingsTabs() {
 											<button
 												type="button"
 												className={clsx(
-													"flex w-full items-center gap-x-2 rounded-md px-2 py-1.5 text-left text-base text-text outline-none",
-													selected ? "bg-white/20 text-opacity-100" : "text-opacity-70 hover:bg-white/10 hover:text-opacity-100",
+													"flex w-full cursor-pointer items-center gap-x-2 rounded-md px-2 py-1.5 text-left text-base text-text outline-hidden",
+													selected ? "bg-white/20 text-text/100" : "text-text/70 hover:bg-white/10 hover:text-text/100",
 												)}
 											>
 												{child.icon}
@@ -165,11 +165,7 @@ const TabComponent = memo(
 	},
 );
 
-function SettingsPanels(props: {
-	currentTab: string;
-	onChange: (value: DeepPartial<AppSettings>) => void;
-	onSave: () => Promise<void>;
-}) {
+function SettingsPanels(props: { currentTab: string; onChange: (value: DeepPartial<AppSettings>) => void; onSave: () => Promise<void> }) {
 	const flatTabs = useFlatTabs();
 
 	return (

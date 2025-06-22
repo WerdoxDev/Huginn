@@ -17,7 +17,7 @@ export default function NewsModal() {
 	return (
 		<DialogPanel
 			transition
-			className="relative w-full max-w-lg rounded-xl border-2 border-primary/50 bg-background transition-[opacity_transform] duration-200 data-[closed]:scale-90"
+			className="relative w-full max-w-lg rounded-xl border-2 border-primary/50 bg-background transition-[opacity_transform] duration-200 data-closed:scale-90"
 		>
 			<div className="flex flex-col">
 				<div className="p-5 pb-0">
@@ -28,7 +28,7 @@ export default function NewsModal() {
 				</div>
 				<div className="mt-5 mb-4 h-0.5 w-full bg-primary/50" />
 				<div
-					className="news-markdown flex max-h-[30rem] flex-col gap-y-2 overflow-y-auto p-5 pt-0 pb-5"
+					className="news-markdown flex max-h-120 flex-col gap-y-2 overflow-y-auto p-5 pt-0 pb-5"
 					//  biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
 					dangerouslySetInnerHTML={{ __html: html }}
 				/>

@@ -133,7 +133,7 @@ export default function OauthRedirect() {
 								onDelete={onDelete}
 								onSelected={onSelected}
 								size="7.5rem"
-								className="!bg-background shadow-xl transition-shadow group-hover/wrapper:shadow-2xl"
+								className="bg-background! shadow-xl transition-shadow group-hover/wrapper:shadow-2xl"
 								editButtonClassName="bg-secondary"
 							/>
 						</div>

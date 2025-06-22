@@ -1,10 +1,10 @@
-import type { TooltipOptions } from "@/types";
 import { TooltipContext, useTooltip, useTooltipContext } from "@contexts/tooltipContext";
 import { useMergeRefs } from "@floating-ui/react";
-import { Portal, Transition } from "@headlessui/react";
+import { Transition } from "@headlessui/react";
 import { omit } from "@huginn/shared";
 import clsx from "clsx";
-import { type HTMLProps, type ReactNode, type RefObject, cloneElement, isValidElement, useMemo } from "react";
+import { cloneElement, type HTMLProps, isValidElement, type ReactNode, useMemo } from "react";
+import type { TooltipOptions } from "@/types";
 
 export default function Tooltip({ children, ...options }: { children: ReactNode } & TooltipOptions) {
 	// This can accept any props as options, e.g. `placement`,
@@ -15,9 +15,9 @@ export default function Tooltip({ children, ...options }: { children: ReactNode 
 
 function Trigger(props: HTMLProps<HTMLButtonElement> & { asChild?: boolean }) {
 	const context = useTooltipContext();
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	// biome-ignore lint/suspicious/noExplicitAny: no explanation
 	const childrenRef = (props.children as any)?.ref;
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	// biome-ignore lint/suspicious/noExplicitAny: no explanation
 	const childrenProps = (props.children as any)?.props;
 	const ref = useMergeRefs([context.refs.setReference, props.ref, childrenRef]);
 
@@ -40,6 +40,7 @@ function Trigger(props: HTMLProps<HTMLButtonElement> & { asChild?: boolean }) {
 			// The user can style the trigger based on the state
 			data-state={context.open ? "open" : "closed"}
 			{...context.getReferenceProps(props)}
+			className={clsx("cursor-pointer", context.getReferenceProps(props)?.className as string)}
 		>
 			{props.children}
 		</button>
@@ -75,7 +76,7 @@ function Content(props: { extraClassName?: string; arrowClassName?: string; extr
 			{/* <Portal> */}
 			<div
 				className={clsx(
-					"absolute z-[999] rounded-md border border-background bg-zinc-900 px-2.5 py-1.5 text-base text-white/80 shadow-lg",
+					"absolute z-999 rounded-md border border-background bg-zinc-900 px-2.5 py-1.5 text-base text-white/80 shadow-lg",
 					props.extraClassName,
 				)}
 				ref={ref}
@@ -95,7 +96,7 @@ function Content(props: { extraClassName?: string; arrowClassName?: string; extr
 						"absolute h-2.5 w-2.5 border-background border-t border-l bg-zinc-900",
 						context.placement.includes("bottom") && "rotate-45",
 						context.placement.includes("top") && "rotate-[-135deg]",
-						context.placement.includes("left") && "-rotate-[225deg]",
+						context.placement.includes("left") && "-rotate-225",
 						context.placement.includes("right") && "-rotate-45",
 					)}
 				/>

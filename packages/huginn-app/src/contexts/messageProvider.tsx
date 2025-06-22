@@ -1,9 +1,9 @@
-import type { MessageRenderInfo, MessageRendererProps } from "@/types";
 import MessageRenderer from "@components/message/MessageRenderer";
 import type { Snowflake } from "@huginn/shared";
 import clsx from "clsx";
 import moment from "moment";
 import { createContext } from "react";
+import type { MessageRendererProps, MessageRenderInfo } from "@/types";
 
 export const MessageContext = createContext<{
 	renderInfo: MessageRenderInfo;
@@ -37,8 +37,8 @@ export function MessageProvider(props: MessageRendererProps) {
 						"relative flex h-0 shrink-0 items-center justify-center text-center font-semibold text-xs",
 						props.lastRenderInfo ? "my-5" : "mt-2 mb-5",
 						props.renderInfo.unread
-							? "mr-10 ml-2 text-error/100 [border-top:thin_solid_rgb(var(--color-error)/0.75)]"
-							: "mx-2 text-text/70 [border-top:thin_solid_rgb(var(--color-text)/0.25)]",
+							? "mr-10 ml-2 text-error [border-top:thin_solid_color-mix(in_oklab,rgb(var(--tcolor-error))_75%,transparent)]"
+							: "mx-2 text-text/70 [border-top:thin_solid_color-mix(in_oklab,rgb(var(--tcolor-text))_25%,transparent)]",
 					)}
 				>
 					<span className={clsx("bg-tertiary px-2", props.renderInfo.unread && "ml-10")}>

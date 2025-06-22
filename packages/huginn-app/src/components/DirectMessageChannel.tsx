@@ -1,4 +1,3 @@
-import type { AppDirectChannel } from "@/types";
 import { useChannelName, useSafeDeleteDMChannel } from "@hooks/api-hooks/channelHooks";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { ChannelType } from "@huginn/shared";
@@ -9,6 +8,7 @@ import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useMemo } from "react";
 import { NavLink, useParams } from "react-router";
+import type { AppDirectChannel } from "@/types";
 import ChannelIcon from "./ChannelIcon";
 import LoadingIcon from "./LoadingIcon";
 import UserAvatar from "./UserAvatar";
@@ -35,10 +35,7 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
 			onContextMenu={(e) => {
 				openContextMenu(props.channel, e);
 			}}
-			className={clsx(
-				"group -mr-2 relative cursor-pointer rounded-md hover:bg-background active:bg-white active:bg-opacity-10",
-				selected && "bg-white bg-opacity-10",
-			)}
+			className={clsx("group -mr-2 relative cursor-pointer rounded-md hover:bg-background active:bg-white/10", selected && "bg-white/10")}
 			onClick={props.onSelected}
 		>
 			<NavLink prefetch="intent" className="flex items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>
@@ -66,13 +63,13 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
 			{!isLoading ? (
 				<button
 					type="button"
-					className="group/close invisible absolute top-3.5 right-2 bottom-3.5 flex-shrink-0 group-hover:visible"
+					className="group/close invisible absolute top-3.5 right-2 bottom-3.5 shrink-0 group-hover:visible"
 					onClick={tryMutate}
 				>
-					<IconMingcuteCloseFill className="text-text/50 group-hover/close:text-text/100" />
+					<IconMingcuteCloseFill className="text-text/50 group-hover/close:text-text" />
 				</button>
 			) : (
-				<div className="absolute top-3.5 right-2 bottom-3.5 flex flex-shrink-0 items-center justify-center">
+				<div className="absolute top-3.5 right-2 bottom-3.5 flex shrink-0 items-center justify-center">
 					<LoadingIcon className="size-7" />
 				</div>
 			)}

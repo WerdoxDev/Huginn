@@ -21,11 +21,11 @@ export default function ChannelRecipient(props: { channelId: Snowflake; isOwner:
 				avatarHash={props.recipient.avatar}
 				className={clsx((!presence || presence?.status === "offline") && "opacity-30", "group-hover/recipient:opacity-100")}
 			/>
-			<div className={clsx(presence?.status === "online" ? "text-text/70" : "text-text/30", "group-hover/recipient:text-text/100")}>
+			<div className={clsx(presence?.status === "online" ? "text-text/70" : "text-text/30", "group-hover/recipient:text-text")}>
 				{props.recipient.displayName ?? props.recipient.username}
 			</div>
 			{state?.status === "pending" && state?.variables?.recipients.some((x) => x === props.recipient.id) ? (
-				<div className="absolute top-3.5 right-2 bottom-3.5 flex flex-shrink-0 items-center justify-center">
+				<div className="absolute top-3.5 right-2 bottom-3.5 flex shrink-0 items-center justify-center">
 					<LoadingIcon className="size-7" />
 				</div>
 			) : (

@@ -1,8 +1,8 @@
-import type { ColorTheme, ThemeType } from "@/types";
 import { useSettings } from "@stores/settingsStore";
-import { type ReactNode, createContext, useContext, useLayoutEffect } from "react";
+import { createContext, type ReactNode, useContext, useLayoutEffect } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
+import type { ColorTheme, ThemeType } from "@/types";
 
 export const ceruleanTheme: ColorTheme = {
 	background: "#303030",
@@ -119,16 +119,16 @@ export function ThemeProvider(props: { children?: ReactNode }) {
 
 function setColorProperty(theme: ColorTheme) {
 	const style = document.documentElement.style;
-	style.setProperty("--color-background", hexToRgb(theme.background));
-	style.setProperty("--color-secondary", hexToRgb(theme.secondary));
-	style.setProperty("--color-tertiary", hexToRgb(theme.tertiary));
-	style.setProperty("--color-primary", hexToRgb(theme.primary));
-	style.setProperty("--color-accent", hexToRgb(theme.accent));
-	style.setProperty("--color-accent2", hexToRgb(theme.accent2));
-	style.setProperty("--color-success", hexToRgb(theme.success));
-	style.setProperty("--color-text", hexToRgb(theme.text));
-	style.setProperty("--color-error", hexToRgb(theme.error));
-	style.setProperty("--color-warning", hexToRgb(theme.warning));
+	style.setProperty("--tcolor-background", hexToRgb(theme.background));
+	style.setProperty("--tcolor-secondary", hexToRgb(theme.secondary));
+	style.setProperty("--tcolor-tertiary", hexToRgb(theme.tertiary));
+	style.setProperty("--tcolor-primary", hexToRgb(theme.primary));
+	style.setProperty("--tcolor-accent", hexToRgb(theme.accent));
+	style.setProperty("--tcolor-accent2", hexToRgb(theme.accent2));
+	style.setProperty("--tcolor-success", hexToRgb(theme.success));
+	style.setProperty("--tcolor-text", hexToRgb(theme.text));
+	style.setProperty("--tcolor-error", hexToRgb(theme.error));
+	style.setProperty("--tcolor-warning", hexToRgb(theme.warning));
 }
 
 function hexToRgb(hex: string) {

@@ -53,7 +53,7 @@ function Item(props: { value: unknown; children?: ReactNode; className?: string 
 	return (
 		<div
 			className={clsx(
-				"-mr-2 flex cursor-pointer select-none items-center gap-x-2 rounded-sm px-2 py-1 outline-none hover:bg-background",
+				"-mr-2 flex cursor-pointer select-none items-center gap-x-2 rounded-xs px-2 py-1 outline-hidden hover:bg-background",
 				props.className,
 			)}
 			onClick={() => {

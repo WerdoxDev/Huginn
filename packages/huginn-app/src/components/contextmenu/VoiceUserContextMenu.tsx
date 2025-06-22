@@ -29,7 +29,7 @@ export default function VoiceUserContextMenu() {
 			{data.kind === "microphone" && (
 				<ContextMenu.Item
 					label="Volume"
-					className="!items-start focus:!bg-inherit mt-1 min-w-40 cursor-default flex-col gap-y-1 px-1"
+					className="items-start! focus:bg-inherit! mt-1 min-w-40 cursor-default flex-col gap-y-1 px-1"
 					preventClose
 				>
 					<RangeInput minValue={0} maxValue={200} defaultValue={preference?.microphoneVolume} onChange={onChange} />
@@ -38,7 +38,7 @@ export default function VoiceUserContextMenu() {
 			{data.kind === "screen_audio" && (
 				<ContextMenu.Item
 					label="Stream Volume"
-					className="!items-start focus:!bg-inherit mt-1 min-w-40 cursor-default flex-col gap-y-1 px-1"
+					className="items-start! focus:bg-inherit! mt-1 min-w-40 cursor-default flex-col gap-y-1 px-1"
 					preventClose
 				>
 					<RangeInput minValue={0} maxValue={200} defaultValue={preference?.screenshareVolume} onChange={onChange} />

@@ -48,7 +48,7 @@ export default function ChannelWithId() {
 		channel && (
 			<div className="flex h-full flex-col">
 				<HomeTopbar channel={channel} onRecipientsClick={onRecipientsClick} />
-				<div className="h-0.5 flex-shrink-0 bg-white/10" />
+				<div className="h-0.5 shrink-0 bg-white/10" />
 				<div className="flex h-full w-full overflow-hidden">
 					<div className="flex h-full w-full flex-col overflow-hidden">
 						<DirectChannelCall channelId={channelId} />
@@ -64,7 +64,7 @@ export default function ChannelWithId() {
 						/>
 					)}
 				</div>
-				<div className="absolute bottom-0 flex h-16 w-full flex-shrink-0 bg-background" />
+				<div className="absolute bottom-0 flex h-16 w-full shrink-0 bg-background" />
 			</div>
 		)
 	);

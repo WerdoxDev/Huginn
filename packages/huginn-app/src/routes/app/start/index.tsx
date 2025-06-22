@@ -111,7 +111,7 @@ export default function Index() {
 	}, []);
 
 	return (
-		<StartWrapper shownId="" transitionName="start-index" className="!bg-transparent !shadow-none !w-auto !p-0">
+		<StartWrapper shownId="" transitionName="start-index" className="bg-transparent! shadow-none! w-auto! p-0!">
 			<div className="flex w-full select-none flex-col items-center">
 				<HuginnIcon
 					outlined

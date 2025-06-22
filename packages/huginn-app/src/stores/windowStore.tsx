@@ -32,7 +32,7 @@ export async function initializeWindow() {
 	}
 
 	window.addEventListener("focus", onFocusChange);
-	window.addEventListener("blur", onFocusChange);
+	window.addEventListener("blur-sm", onFocusChange);
 
 	//TODO: MIGRATION
 	// let unlisten: UnlistenFn;
@@ -53,7 +53,7 @@ export async function initializeWindow() {
 		// unlisten();
 		// unlisten2();
 		window.removeEventListener("focus", onFocusChange);
-		window.removeEventListener("blur", onFocusChange);
+		window.removeEventListener("blur-sm", onFocusChange);
 	};
 }
 

@@ -24,7 +24,7 @@ export default function VoiceControlls(props: {
 
 	return (
 		<Transition show={props.show}>
-			<div className="absolute inset-x-0 bottom-0 mb-2.5 flex shrink-0 items-center justify-center gap-x-2.5 transition data-[closed]:opacity-0">
+			<div className="absolute inset-x-0 bottom-0 mb-2.5 flex shrink-0 items-center justify-center gap-x-2.5 transition data-closed:opacity-0">
 				{props.isInVoice ? (
 					<>
 						<div className="flex gap-x-1 rounded-xl border border-background bg-tertiary p-1">
@@ -64,7 +64,7 @@ export default function VoiceControlls(props: {
 									<Tooltip.Trigger
 										className={clsx(
 											"flex h-full items-center justify-center rounded-lg text-white transition-colors",
-											voiceState.selfStream ? "!w-[38px] rounded-r-none bg-accent/20 hover:bg-accent/40" : "w-16 hover:bg-background",
+											voiceState.selfStream ? "w-[38px]! rounded-r-none bg-accent/20 hover:bg-accent/40" : "w-16 hover:bg-background",
 										)}
 										onClick={() => (voiceState.selfStream ? props.onEndStream() : props.onStream())}
 									>
@@ -80,7 +80,7 @@ export default function VoiceControlls(props: {
 											}
 										</DropdownMenu.Button>
 										<DropdownMenu.Items anchor="top" className="border border-background [--anchor-gap:16px]">
-											<DropdownMenu.Item className="!text-error hover:!bg-error/10" label="End Stream" onClick={props.onEndStream} />
+											<DropdownMenu.Item className="text-error! hover:bg-error/10!" label="End Stream" onClick={props.onEndStream} />
 											<DropdownMenu.Item label="Change Stream" onClick={props.onStream}>
 												<IconMingcuteTransfer3Fill />
 											</DropdownMenu.Item>

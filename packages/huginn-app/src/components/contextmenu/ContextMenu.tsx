@@ -150,7 +150,7 @@ function Menu(props: ContextMenuProps & HTMLProps<HTMLButtonElement>) {
 					role="menuitem"
 					data-open={isOpen ? "" : undefined}
 					data-focus-inside={hasFocusInside ? "" : undefined}
-					className="rounded-sm px-2 py-1 text-start text-sm text-white/90 outline-none focus:bg-primary"
+					className="rounded-xs px-2 py-1 text-start text-sm text-white/90 outline-hidden focus:bg-primary"
 					{...getReferenceProps(
 						parent.getItemProps({
 							...props,
@@ -184,7 +184,7 @@ function Menu(props: ContextMenuProps & HTMLProps<HTMLButtonElement>) {
 								<FloatingFocusManager context={context} modal={false} initialFocus={isNested ? -1 : 0} returnFocus={!isNested}>
 									<div
 										ref={refs.setFloating}
-										className="z-20 flex min-w-28 flex-col gap-y-0.5 rounded-lg bg-zinc-900 p-2.5 shadow-lg outline-none"
+										className="z-20 flex min-w-28 flex-col gap-y-0.5 rounded-lg bg-zinc-900 p-2.5 shadow-lg outline-hidden"
 										style={floatingStyles}
 										{...getFloatingProps()}
 									>
@@ -213,7 +213,7 @@ function Item(props: ContextMenuItemProps & React.ButtonHTMLAttributes<HTMLButto
 			type="button"
 			role="menuitem"
 			className={clsx(
-				"flex items-center justify-between gap-x-5 text-nowrap rounded px-2 py-1.5 text-start text-sm text-white/90 outline-none focus:bg-secondary",
+				"flex items-center justify-between gap-x-5 text-nowrap rounded-sm px-2 py-1.5 text-start text-sm text-white/90 outline-hidden focus:bg-secondary",
 				props.className,
 			)}
 			tabIndex={isActive ? 0 : -1}

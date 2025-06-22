@@ -28,7 +28,7 @@ export default function StartLayout() {
 						updateModals({ settings: { isOpen: true } });
 					}}
 				>
-					<IconMingcuteSettings5Fill className="h-6 w-6 text-white/80 transition-all hover:rotate-[60deg]" />
+					<IconMingcuteSettings5Fill className="h-6 w-6 text-white/80 transition-all hover:rotate-60" />
 				</button>
 			)}
 			{/* <div className="absolute top-10 left-10 flex flex-col items-center justify-center gap-y-5 rounded-xl bg-background p-5 shadow-xl">

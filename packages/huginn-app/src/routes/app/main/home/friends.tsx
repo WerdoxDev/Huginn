@@ -32,7 +32,7 @@ export default function Friends() {
 	return (
 		<div className="flex h-full flex-col">
 			<TabGroup as={Fragment} defaultIndex={friends.length === 0 ? 3 : 0}>
-				<div className="flex h-[4.75rem] flex-shrink-0 items-center bg-tertiary px-6">
+				<div className="flex h-19 shrink-0 items-center bg-tertiary px-6">
 					<TabList className="mr-5 flex justify-center gap-x-5">
 						<div className="flex items-center justify-center gap-x-2.5 text-text">
 							<IconMingcuteGroup2Fill className="size-6" />
@@ -47,7 +47,7 @@ export default function Friends() {
 							{({ selected }) => (
 								<button
 									type="button"
-									className={`rounded-md px-2 outline-none ${
+									className={`rounded-md px-2 outline-hidden ${
 										selected
 											? "pointer-events-none bg-primary text-text"
 											: "text-text ring-1 ring-primary hover:bg-primary hover:text-text hover:ring-0"
@@ -59,7 +59,7 @@ export default function Friends() {
 						</Tab>
 					</TabList>
 				</div>
-				<div className="h-0.5 flex-shrink-0 bg-white/10" />
+				<div className="h-0.5 shrink-0 bg-white/10" />
 				<TabPanels className="h-full p-5">
 					<FriendsTab friends={onlineFriends} presences={presences} text="Online" />
 					<FriendsTab friends={allFriends} presences={presences} text="All Friends" />
@@ -67,7 +67,7 @@ export default function Friends() {
 					<AddFriendTab />
 				</TabPanels>
 			</TabGroup>
-			<div className="flex h-16 w-full flex-shrink-0 bg-background" />
+			<div className="flex h-16 w-full shrink-0 bg-background" />
 		</div>
 	);
 }

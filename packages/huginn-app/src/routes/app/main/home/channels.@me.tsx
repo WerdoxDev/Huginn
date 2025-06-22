@@ -32,7 +32,7 @@ export default function ChannelMe() {
 					<QuickActionButton onClick={() => navigate("/friends")}>Add a Friend</QuickActionButton>
 				</div>
 			</div>
-			<div className="flex h-16 w-full flex-shrink-0 bg-background" />
+			<div className="flex h-16 w-full shrink-0 bg-background" />
 		</div>
 	);
 }

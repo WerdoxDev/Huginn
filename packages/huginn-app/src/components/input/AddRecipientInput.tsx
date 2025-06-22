@@ -36,12 +36,12 @@ export default function AddRecipientInput(props: {
 			onChange={(e) => setQuery(e.target.value)}
 		>
 			<HuginnInput.Label className="mb-2" text={props.label ?? "Members"} />
-			<HuginnInput.Wrapper border="left" className="!items-start flex-col">
+			<HuginnInput.Wrapper border="left" className="items-start! flex-col">
 				<ComboboxInput.SelectionDisplay>
 					{({ toggleSelection }) => (
 						<div className="mx-2 mt-2 flex select-none flex-wrap gap-1">
 							{toAddUsers?.map((user) => (
-								<button type="button" onClick={() => toggleSelection(user.id)} key={user.id} className="rounded-sm bg-primary px-2 text-text">
+								<button type="button" onClick={() => toggleSelection(user.id)} key={user.id} className="rounded-xs bg-primary px-2 text-text">
 									{user.displayName ?? user.username}
 								</button>
 							))}
@@ -65,7 +65,7 @@ export default function AddRecipientInput(props: {
 						<div className="text-sm text-text/70">{x.username}</div>
 						<Checkbox
 							checked={selectedUsers?.includes(x.id) ?? false}
-							className="ml-auto size-6 shrink-0 rounded-md border border-accent data-[checked]:bg-accent "
+							className="ml-auto size-6 shrink-0 rounded-md border border-accent data-checked:bg-accent "
 						/>
 					</ComboboxInput.Option>
 				))}

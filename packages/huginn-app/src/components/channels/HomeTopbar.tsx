@@ -23,7 +23,7 @@ export default function HomeTopbar(props: { channel: AppDirectChannel; onRecipie
 	}
 
 	return (
-		<div className="flex h-[4.75rem] flex-shrink-0 items-center bg-tertiary px-6">
+		<div className="flex h-19 shrink-0 items-center bg-tertiary px-6">
 			<div className="flex w-full items-center">
 				{props.channel.type === ChannelType.DM ? (
 					<UserAvatar userId={otherUsers[0]?.id} avatarHash={otherUsers[0]?.avatar} className="mr-3" />

@@ -14,7 +14,7 @@ export default function RelationshipMoreContextMenu() {
 			onClick={() => {
 				removeMutation.mutate(data.user.id);
 			}}
-			className="!text-error focus:!bg-error/10"
+			className="text-error! focus:bg-error/10!"
 		/>
 	);
 }

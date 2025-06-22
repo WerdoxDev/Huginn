@@ -126,7 +126,7 @@ export default function Login() {
 					<span>GitHub</span>
 				</HuginnButton>
 			</div>
-			<div className="my-7 flex h-0 w-full select-none items-center justify-center text-center font-semibold text-text/70 text-xs [border-top:thin_solid_rgb(var(--color-text)/0.25)]">
+			<div className="my-7 flex h-0 w-full select-none items-center justify-center text-center font-semibold text-text/70 text-xs [border-top:thin_solid_color-mix(in_oklab,rgb(var(--tcolor-text))_25%,transparent)]">
 				<span className="bg-background px-2">or</span>
 			</div>
 			<div className="w-full">
