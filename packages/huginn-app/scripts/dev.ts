@@ -2,7 +2,7 @@ import { spawn } from "bun";
 
 try {
    const frontend = spawn(["bun", "run", "vite:dev"], { stdin: "inherit", stdout: "pipe", cwd: process.cwd() });
-   let electron: Bun.Subprocess | undefined = undefined;
+   let electron: Bun.Subprocess | undefined;
    const decoder = new TextDecoder();
    for await (const chunk of frontend.stdout) {
       const line = decoder.decode(chunk);

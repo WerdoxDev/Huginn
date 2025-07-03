@@ -6,7 +6,7 @@ import { userStore } from "@stores/userStore";
 import { produce } from "immer";
 import { createStore, useStore } from "zustand";
 import { combine, devtools } from "zustand/middleware";
-import type { RemoteSource, VoicePrereference } from "@/types";
+import type { RemoteSource, VoicePreference } from "@/types";
 
 const initialStore = () => ({
    voiceState: {} as GatewayVoiceState,
@@ -14,7 +14,7 @@ const initialStore = () => ({
    callStates: [] as Array<GatewayCallState>,
    remoteSources: [] as RemoteSource[],
    speakingStates: [] as Array<{ userId: Snowflake; speaking: boolean }>,
-   voicePreferences: [] as VoicePrereference[],
+   voicePreferences: [] as VoicePreference[],
 });
 
 type StoreType = ReturnType<typeof initialStore>;
@@ -23,12 +23,12 @@ const store = createStore(
    devtools(
       combine(initialStore(), (set, get) => ({
          setVoiceChannel: (channelId?: Snowflake, guildId?: Snowflake) => {
-            log("app:voice-store", "voice-store:voice-state", "set channel", "cid:", channelId, "gid:", guildId)
+            log("app:voice-store", "voice-state", "set channel", "cid:", channelId, "gid:", guildId)
 
             return set((state) => ({ voiceState: { ...state.voiceState, channelId: channelId ?? null, guildId: guildId ?? null } }))
          },
          updateSelfVoiceState: (selfMute: boolean, selfDeaf: boolean, selfStream: boolean, selfVideo: boolean) => {
-            log("app:voice-store", "voice-store:voice-state", "update self", "sm:", selfMute, "sd:", selfDeaf, "ss:", selfStream, "sv:", selfVideo)
+            log("app:voice-store", "voice-state", "update self", "sm:", selfMute, "sd:", selfDeaf, "ss:", selfStream, "sv:", selfVideo)
 
             return set((state) => ({ voiceState: { ...state.voiceState, selfMute, selfDeaf, selfStream, selfVideo } }))
          },
@@ -41,7 +41,7 @@ const store = createStore(
             selfStream: boolean,
             selfVideo: boolean,
          ) => {
-            log("app:voice-store", "voice-store:voice-state", "update", "cid:", channelId, "gid:", guildId, "uid:", userId, "sm:", selfMute, "sd:", selfDeaf, "ss:", selfStream, "sv:", selfVideo)
+            log("app:voice-store", "voice-state", "update", "cid:", channelId, "gid:", guildId, "uid:", userId, "sm:", selfMute, "sd:", selfDeaf, "ss:", selfStream, "sv:", selfVideo)
 
             return set(
                produce((draft: StoreType) => {
@@ -55,12 +55,12 @@ const store = createStore(
             )
          },
          removeVoiceState: (userId: Snowflake) => {
-            log("app:voice-store", "voice-store:voice-state", "remote", "uid:", userId)
+            log("app:voice-store", "voice-state", "remote", "uid:", userId)
 
             return set((state) => ({ voiceStates: state.voiceStates.filter((x) => x.userId !== userId) }))
          },
          updateCallState: (channelId: Snowflake, messageId: Snowflake, ringing: Snowflake[]) => {
-            log("app:voice-store", "voice-store:call-state", "update", "cid:", channelId, "mid:", messageId, "ring:", ringing.join(","))
+            log("app:voice-store", "call-state", "update", "cid:", channelId, "mid:", messageId, "ring:", ringing.join(","))
 
             return set(
                produce((draft: StoreType) => {
@@ -74,7 +74,7 @@ const store = createStore(
             )
          },
          removeCallState: (channelId: Snowflake) => {
-            log("app:voice-store", "voice-store:call-state", "remove", "cid:", channelId)
+            log("app:voice-store", "call-state", "remove", "cid:", channelId)
 
             return set((state) => ({ callStates: state.callStates.filter((x) => x.channelId !== channelId) }))
          },
@@ -86,12 +86,12 @@ const store = createStore(
             srcObject: MediaProvider,
             audioLevel?: AudioLevelChecker,
          ) => set((state) => {
-            log("app:voice-store", "voice-store:remote-sources", "add", "pid:", producerId, "cid:", consumerId, "uid:", userId, "mk:", kind)
+            log("app:voice-store", "remote-sources", "add", "pid:", producerId, "cid:", consumerId, "uid:", userId, "mk:", kind)
 
             return ({ remoteSources: [...state.remoteSources, { consumerId, kind, producerId, userId, srcObject, audioLevel }] })
          }),
          removeRemoteSource: (producerId: string) => {
-            log("app:voice-store", "voice-store:remote-sources", "remove", "pid:", producerId)
+            log("app:voice-store", "remote-sources", "remove", "pid:", producerId)
 
             get()
                .remoteSources.find((x) => x.producerId === producerId)
@@ -99,7 +99,7 @@ const store = createStore(
             return set((state) => ({ remoteSources: state.remoteSources.filter((x) => x.producerId !== producerId) }));
          },
          updateRemoteSource: (producerId: string, srcObject: MediaProvider) => {
-            log("app:voice-store", "voice-store:remote-sources", "update", "pid:", producerId)
+            log("app:voice-store", "remote-sources", "update", "pid:", producerId)
 
             return set(
                produce((draft: StoreType) => {
@@ -111,7 +111,7 @@ const store = createStore(
             )
          },
          clearRemoteSources: () => {
-            log("app:voice-store", "voice-store:remote-sources", "clear")
+            log("app:voice-store", "remote-sources", "clear")
 
             for (const remote of get().remoteSources) {
                remote.audioLevel?.offAll("audio-level");
@@ -120,7 +120,7 @@ const store = createStore(
             set({ remoteSources: [] });
          },
          updateSpeakingState: (userId: Snowflake, speaking: boolean) => {
-            log("app:voice-store", "voice-store:speaking-state", "update", "uid:", userId, "spk:", speaking)
+            log("app:voice-store", "speaking-state", "update", "uid:", userId, "spk:", speaking)
 
             return set(
                produce((draft: StoreType) => {
@@ -134,17 +134,17 @@ const store = createStore(
             )
          },
          removeSpeakingState: (userId: Snowflake) => {
-            log("app:voice-store", "voice-store:speaking-state", "remove", "uid:", userId);
+            log("app:voice-store", "speaking-state", "remove", "uid:", userId);
 
             return set((state) => ({ speakingStates: state.speakingStates.filter((x) => x.userId !== userId) }))
          },
          clearSpeakingStates: () => {
-            log("app:voice-store", "voice-store:speaking-state", "clear")
+            log("app:voice-store", "speaking-state", "clear")
 
             return set({ speakingStates: [] });
          },
          updateVoicePreferences: (userId: Snowflake, update: { microphoneVolume?: number; screenshareVolume?: number }) => {
-            log("app:voice-store", "voice-store:voice-preferences", "update", "uid:", userId, "mvol:", update.microphoneVolume, "svol:", update.screenshareVolume)
+            log("app:voice-store", "voice-preferences", "update", "uid:", userId, "mvol:", update.microphoneVolume, "svol:", update.screenshareVolume)
 
             return set(
                produce((draft: StoreType) => {
@@ -173,40 +173,40 @@ const store = createStore(
 export const voiceClient = new VoiceClient();
 
 export function initializeVoice() {
-   log("app:voice-store", "voice-store:default", "initializing");
+   log("app:voice-store", "default", "initializing");
 
    const unlisteners: Array<() => void> = [];
 
    unlisteners.push(client.gateway.listen("ready", (d) => {
-      log("app:voice-store", "voice-store:gateway-recv", "ready");
+      log("app:voice-store", "gateway-recv", "ready");
 
       store.setState({ voiceStates: d.voiceStates });
       store.setState({ callStates: d.callStates });
 
-      // TODO: Read each user's voice prefernece from local storage
+      // TODO: Read each user's voice preference from local storage
       store.setState({ voicePreferences: d.voiceStates.map((x) => ({ userId: x.userId, microphoneVolume: 100, screenshareVolume: 100 })) });
    }));
 
    unlisteners.push(client.gateway.listen("call_create", (d) => {
-      log("app:voice-store", "voice-store:gateway-recv", "call create", "cid:", d.channelId, "mid:", d.messageId, "ring:", d.ringing.join(","));
+      log("app:voice-store", "gateway-recv", "call create", "cid:", d.channelId, "mid:", d.messageId, "ring:", d.ringing.join(","));
 
       store.getState().updateCallState(d.channelId, d.messageId, d.ringing);
    }));
 
    unlisteners.push(client.gateway.listen("call_update", (d) => {
-      log("app:voice-store", "voice-store:gateway-recv", "call update", "cid:", d.channelId, "mid:", d.messageId, "ring:", d.ringing.join(","));
+      log("app:voice-store", "gateway-recv", "call update", "cid:", d.channelId, "mid:", d.messageId, "ring:", d.ringing.join(","));
 
       store.getState().updateCallState(d.channelId, d.messageId, d.ringing);
    }));
 
    unlisteners.push(client.gateway.listen("call_delete", (d) => {
-      log("app:voice-store", "voice-store:gateway-recv", "call delete", "cid:", d.channelId);
+      log("app:voice-store", "gateway-recv", "call delete", "cid:", d.channelId);
 
       store.getState().removeCallState(d.channelId);
    }));
 
    unlisteners.push(client.gateway.listen("voice_state_update", (d) => {
-      log("app:voice-store", "voice-store:gateway-recv", "update", "cid:", d.channelId, "gid:", d.guildId, "uid:", d.userId, "sm:", d.selfMute, "sd:", d.selfDeaf, "ss:", d.selfStream, "sv:", d.selfVideo)
+      log("app:voice-store", "gateway-recv", "voice state update", "cid:", d.channelId, "gid:", d.guildId, "uid:", d.userId, "sm:", d.selfMute, "sd:", d.selfDeaf, "ss:", d.selfStream, "sv:", d.selfVideo)
 
       const thisStore = store.getState();
 
@@ -214,13 +214,14 @@ export function initializeVoice() {
       if (d.userId === userStore.getState().user?.id) {
          thisStore.setVoiceChannel(d.channelId ?? undefined, d.guildId ?? undefined);
 
-         // set speaking to false when we mute in the middle of speaking
-         if (d.selfMute) {
-            thisStore.updateSpeakingState(d.userId, false);
-            // set speaking to true when we unmute in the middle of speaking
-         } else if (!client.voice.localVoiceState.audioPaused) {
-            thisStore.updateSpeakingState(d.userId, true);
-         }
+         // // set speaking to false when we mute in the middle of speaking
+         // if (d.selfMute) {
+         //    thisStore.updateSpeakingState(d.userId, false);
+         //    // set speaking to true when we unmute in the middle of speaking
+         // } else if (!client.voice.localVoiceState.audioPaused) {
+         //    console.log("TRUE");
+         //    thisStore.updateSpeakingState(d.userId, true);
+         // }
       } else {
          // create voice preference for new users
          if (!thisStore.voicePreferences.some((x) => x.userId === d.userId)) {
@@ -238,17 +239,27 @@ export function initializeVoice() {
    unlisteners.push(voiceClient.listenToVoiceEvents());
 
    unlisteners.push(client.voice.listen("local_voice_state_changed", (d) => {
-      log("app:voice-store", "voice-store:voice-recv", "update", "am:", d.audioMuted, "ap:", d.audioPaused, "cm:", d.consumersMuted, "s:", d.streaming)
+      log("app:voice-store", "voice-recv", "update", "am:", d.audioMuted, "ap:", d.audioPaused, "cm:", d.consumersMuted, "s:", d.streaming)
 
       if (!client.user) {
          return;
+      }
+
+      // If we have a mic producer, manage it's state
+      const producer = client.voice.producers.get("microphone");
+      if (producer) {
+         if (d.audioMuted || d.audioPaused) {
+            voiceStore.getState().updateSpeakingState(client.user.id, false);
+         } else if (!d.audioMuted && !d.audioPaused) {
+            voiceStore.getState().updateSpeakingState(client.user.id, true);
+         }
       }
 
       voiceStore.getState().updateSelfVoiceState(d.audioMuted, d.consumersMuted, d.streaming, false);
    }));
 
    return () => {
-      log("app:voice-store", "voice-store:default", "uninitialize");
+      log("app:voice-store", "default", "uninitialize");
 
       for (const unlisten of unlisteners) {
          unlisten();

@@ -1,6 +1,6 @@
-import type { ProgressBarProps } from "@/types";
 import clsx from "clsx";
 import { useEffect, useRef } from "react";
+import type { ProgressBarProps } from "@/types";
 
 export default function ProgressBar(props: ProgressBarProps) {
 	const progressRef = useRef<HTMLDivElement>(null);
@@ -58,7 +58,7 @@ export default function ProgressBar(props: ProgressBarProps) {
 		<div
 			id={props.id}
 			className={clsx(
-				"group/progress relative flex h-2 cursor-pointer items-center rounded-md bg-white/20",
+				"group/progress relative flex h-2 cursor-pointer items-center rounded-md bg-white/20 shadow",
 				props.orientation === "vertical" ? "h-full flex-col justify-end" : "w-full",
 				props.className,
 			)}

@@ -9,9 +9,9 @@ import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useInputs } from "@hooks/useInputs";
 import { useOAuth } from "@hooks/useOAuth";
-import { type APIPostLoginJSONBody } from "@huginn/shared";
+import type { APIPostLoginJSONBody } from "@huginn/shared";
 import { useClient } from "@stores/apiStore";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 // import { usePostHog } from "posthog-js/react";
 
 export default function Login() {
@@ -64,26 +64,6 @@ export default function Login() {
 	);
 
 	useEffect(() => {
-		// tryLogin({
-		// 	onFound() {
-		// 		startBackground.setState(1);
-		// 	},
-		// 	onSuccessful() {
-		// 		unhide();
-		// 	},
-		// 	onNotFound() {
-		// 		unhide();
-		// 	},
-		// 	async onError() {
-		// 		await navigate("/login", { viewTransition: true });
-		// 		unhide();
-		// 	},
-		// 	navigatePath: {
-		// 		pathname: "/",
-		// 		search: `?${new URLSearchParams({ redirect: "/channels/@me", "skip-check": "1" }).toString()}`,
-		// 	},
-		// });
-
 		startBackground.setState(0);
 	}, []);
 

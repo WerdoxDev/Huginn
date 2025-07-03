@@ -63,7 +63,7 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
 			{!isLoading ? (
 				<button
 					type="button"
-					className="group/close invisible absolute top-3.5 right-2 bottom-3.5 shrink-0 group-hover:visible"
+					className="group/close invisible absolute top-3.5 right-2 bottom-3.5 shrink-0 cursor-pointer group-hover:visible"
 					onClick={tryMutate}
 				>
 					<IconMingcuteCloseFill className="text-text/50 group-hover/close:text-text" />

@@ -1,4 +1,4 @@
-import VoiceControlls from "@components/VoiceControlls";
+import VoiceControls from "@components/VoiceControls";
 import VoiceUser from "@components/VoiceUser";
 import VoiceVideo from "@components/VoiceVideo";
 import { useUsers } from "@hooks/api-hooks/userHooks";
@@ -36,7 +36,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	const remoteSourcesLookup = useLookup(remoteSources, (source) => source.userId);
 	const show = useMemo(() => users.length !== 0 && thisCallState, [props.channelId, users]);
 
-	const [containerRef, showControlls] = useHover<HTMLDivElement>([user, show]);
+	const [containerRef, showControls] = useHover<HTMLDivElement>([user, show]);
 	const gridRef = useRef<HTMLDivElement>(null);
 	const resizerRef = useRef<HTMLDivElement>(null);
 	const isResizing = useRef(false);
@@ -82,7 +82,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 
 		resizerRef.current?.addEventListener(
 			"mousedown",
-			(e) => {
+			() => {
 				isResizing.current = true;
 				document.addEventListener("mousemove", resize);
 				document.addEventListener("mouseup", stopResize);
@@ -254,7 +254,11 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 			>
 				{isGridView &&
 					remoteSources
-						.filter((x) => (maximizedSource ? x.producerId === maximizedSource.producerId : x.kind === "screen_video" || x.kind === "camera"))
+						.filter(
+							(x) =>
+								!!usersLookup[x.userId] &&
+								(maximizedSource ? x.producerId === maximizedSource.producerId : x.kind === "screen_video" || x.kind === "camera"),
+						)
 						.map((x) => (
 							<VoiceVideo
 								kind={x.kind}
@@ -304,8 +308,8 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 						/>
 					))}
 			</div>
-			<VoiceControlls
-				show={showControlls}
+			<VoiceControls
+				show={showControls}
 				isFullscreen={isFullscreen}
 				isInVoice={voiceState.channelId === props.channelId}
 				onConnect={connect}

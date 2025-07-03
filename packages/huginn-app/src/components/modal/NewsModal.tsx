@@ -1,10 +1,10 @@
-import news from "@/assets/news/news.md?raw";
 import { DialogPanel } from "@headlessui/react";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import markdownit from "markdown-it";
 import moment from "moment";
 import { useMemo } from "react";
+import news from "@/assets/news/news.md?raw";
 
 export default function NewsModal() {
 	const { news: modal, updateModals } = useModals();

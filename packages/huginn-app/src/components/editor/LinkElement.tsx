@@ -1,6 +1,6 @@
-import type { LinkElement as SlateLinkElement } from "@/index";
 import { useHuginnWindow } from "@stores/windowStore";
 import type { RenderElementProps } from "slate-react";
+import type { LinkElement as SlateLinkElement } from "@/index";
 
 export default function LinkElement(props: RenderElementProps) {
 	const huginnWindow = useHuginnWindow();
@@ -11,7 +11,7 @@ export default function LinkElement(props: RenderElementProps) {
 			{...props.attributes}
 			className="relative inline-block cursor-pointer underline"
 			//TODO: MIGRATION
-			onClick={url ? () => (huginnWindow.environment === "desktop" ? window.electronAPI.openExteral(url) : window.open(url)) : undefined}
+			onClick={url ? () => (huginnWindow.environment === "desktop" ? window.electronAPI.openExternal(url) : window.open(url)) : undefined}
 			title={url}
 		>
 			<div className="">

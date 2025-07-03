@@ -93,7 +93,7 @@ export default function Index() {
 	useEffect(() => {
 		startBackground.setState(0);
 
-		if (search.get("redirect") && client.isLoggedIn) {
+		if (search.get("redirect") && client.gateway.status === "authenticated") {
 			navigateRedirect();
 			return;
 		}

@@ -45,9 +45,9 @@ export default function MagnifiedImageModal() {
 					</div>
 				</Transition>
 			</div>
-			<div className="mt-1 cursor-pointer text-text hover:underline" onClick={() => openUrl(modal.url)}>
+			<button type="button" className="mt-1 cursor-pointer text-text hover:underline" onClick={() => openUrl(modal.url)}>
 				Open original
-			</div>
+			</button>
 		</DialogPanel>
 	);
 }

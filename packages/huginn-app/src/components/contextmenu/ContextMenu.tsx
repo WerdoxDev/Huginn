@@ -1,11 +1,10 @@
-import type { ContextMenuItemProps, ContextMenuProps } from "@/types";
 import {
+	autoUpdate,
 	FloatingFocusManager,
 	FloatingList,
 	FloatingNode,
 	FloatingPortal,
 	FloatingTree,
-	autoUpdate,
 	flip,
 	offset,
 	safePolygon,
@@ -24,7 +23,8 @@ import {
 } from "@floating-ui/react";
 import { omit } from "@huginn/shared";
 import clsx from "clsx";
-import { type HTMLProps, type RefObject, Suspense, createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, type HTMLProps, type RefObject, Suspense, useContext, useEffect, useRef, useState } from "react";
+import type { ContextMenuItemProps, ContextMenuProps } from "@/types";
 
 const Context = createContext<{
 	getItemProps: (userProps?: React.HTMLProps<HTMLElement>) => Record<string, unknown>;
@@ -213,7 +213,7 @@ function Item(props: ContextMenuItemProps & React.ButtonHTMLAttributes<HTMLButto
 			type="button"
 			role="menuitem"
 			className={clsx(
-				"flex items-center justify-between gap-x-5 text-nowrap rounded-sm px-2 py-1.5 text-start text-sm text-white/90 outline-hidden focus:bg-secondary",
+				"flex cursor-pointer items-center justify-between gap-x-5 text-nowrap rounded-sm px-2 py-1.5 text-start text-sm text-white/90 outline-hidden focus:bg-secondary",
 				props.className,
 			)}
 			tabIndex={isActive ? 0 : -1}

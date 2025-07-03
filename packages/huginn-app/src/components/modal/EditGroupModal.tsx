@@ -1,7 +1,7 @@
-import ImageSelector from "@components/ImageSelector";
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
+import ImageSelector from "@components/ImageSelector";
 import HuginnInput from "@components/input/HuginnInput";
 import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useChannelName } from "@hooks/api-hooks/channelHooks";
@@ -75,7 +75,7 @@ export default function EditGroupModal() {
 	return (
 		<DialogPanel
 			transition
-			className="w-full max-w-lg transform overflow-hidden rounded-xl border-2 border-primary bg-background transition-[opacity_transform] duration-200 data-closed:scale-90"
+			className="relative w-full max-w-lg transform overflow-hidden rounded-xl border-2 border-primary bg-background transition-[opacity_transform] duration-200 data-closed:scale-90"
 		>
 			<DialogTitle className="mt-5 flex items-center justify-center gap-x-1.5">
 				<div className="font-medium text-2xl text-text">Edit Group</div>

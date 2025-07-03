@@ -1,16 +1,16 @@
-import type { DisplaySource } from "@/types";
-import DisplayPreview from "@components/DisplayPreview";
-import LoadingIcon from "@components/LoadingIcon";
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import { ScreenshareModalButton } from "@components/button/ScreenshareModalButton";
+import DisplayPreview from "@components/DisplayPreview";
+import LoadingIcon from "@components/LoadingIcon";
 import { Checkbox, DialogPanel, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { useClient } from "@stores/apiStore";
 import { useModals } from "@stores/modalsStore";
 import { useVoiceStore, voiceClient } from "@stores/voiceStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, useTransition } from "react";
+import type { DisplaySource } from "@/types";
 
 export default function ScreenshareModal() {
 	const client = useClient();
@@ -96,7 +96,7 @@ export default function ScreenshareModal() {
 	return (
 		<DialogPanel
 			transition
-			className="w-full max-w-lg transform select-none overflow-hidden rounded-xl border-2 border-primary/50 bg-background py-5 pb-0 transition-[opacity_transform] duration-200 data-closed:scale-90"
+			className="relative w-full max-w-lg transform select-none overflow-hidden rounded-xl border-2 border-primary/50 bg-background py-5 pb-0 transition-[opacity_transform] duration-200 data-closed:scale-90"
 		>
 			<div className="flex flex-col gap-y-3 pb-5">
 				<div className="text-center font-bold text-2xl text-text">Share Screen</div>
@@ -108,11 +108,11 @@ export default function ScreenshareModal() {
 				{!selectedSource ? (
 					<TabGroup className="">
 						<TabList className="mx-3 flex items-center justify-center gap-x-1 rounded-lg bg-secondary p-1 text-text">
-							<Tab className="flex w-full items-center justify-center gap-x-2 rounded-md py-1 text-text/80 hover:bg-white/5 data-selected:bg-background data-selected:text-white">
+							<Tab className="flex w-full cursor-pointer items-center justify-center gap-x-2 rounded-md py-1 text-text/80 hover:bg-white/5 data-selected:bg-background data-selected:text-white">
 								<IconMingcuteMonitorFill className="size-5" />
 								<div>Screens</div>
 							</Tab>
-							<Tab className="flex w-full items-center justify-center gap-x-2 rounded-md py-1 text-text/80 hover:bg-white/5 data-selected:bg-background data-selected:text-white">
+							<Tab className="flex w-full cursor-pointer items-center justify-center gap-x-2 rounded-md py-1 text-text/80 hover:bg-white/5 data-selected:bg-background data-selected:text-white">
 								<IconMingcuteWebFill className="size-5" />
 								<div>Applications</div>
 							</Tab>

@@ -1,10 +1,10 @@
-import type { EmbedElement as SlateEmbedElement } from "@/index";
 import ImagePreview from "@components/ImagePreview";
 import VideoPlayer from "@components/VideoPlayer";
 import { constants, constrainImageSize } from "@huginn/shared";
 import clsx from "clsx";
 import { useMemo } from "react";
 import type { RenderElementProps } from "slate-react";
+import type { EmbedElement as SlateEmbedElement } from "@/index";
 
 export default function EmbedElement(props: RenderElementProps) {
 	const { url, description, title, thumbnail, video } = props.element as SlateEmbedElement;
@@ -28,7 +28,7 @@ export default function EmbedElement(props: RenderElementProps) {
 				{title && (
 					<span
 						className={clsx(url && "cursor-pointer text-accent hover:underline", description ? "mb-1" : "mb-2")}
-						onClick={url ? () => window.electronAPI.openExteral(url) : undefined}
+						onClick={url ? () => window.electronAPI.openExternal(url) : undefined}
 					>
 						{title}
 					</span>

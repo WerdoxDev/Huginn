@@ -6,7 +6,6 @@ import AutoImport from "unplugin-auto-import/vite";
 import IconsResolver from "unplugin-icons/resolver";
 import Icons from "unplugin-icons/vite";
 import { defineConfig } from "vite";
-import babel from "vite-plugin-babel";
 import { version } from "./package.json";
 
 const reactCompilerConfig = { target: "19" };
@@ -16,20 +15,25 @@ export default defineConfig({
    base: "./",
    plugins: [
       // reactRouterDevTools(),
-      react({ jsxRuntime: "automatic" }),
+      react({
+         jsxRuntime: "automatic", babel: {
+            presets: ["@babel/preset-typescript"],
+            plugins: [["babel-plugin-react-compiler", reactCompilerConfig], "@babel/plugin-syntax-jsx"],
+         }
+      }),
       // reactRouter(),
       Icons({ compiler: "jsx" }),
       AutoImport({
          resolvers: [IconsResolver({ prefix: "Icon", extension: "jsx" })],
          // dts: "./src/auto-imports.d.ts",
       }),
-      babel({
-         filter: /\.[jt]sx?$/,
-         babelConfig: {
-            presets: ["@babel/preset-typescript"],
-            plugins: [["babel-plugin-react-compiler", reactCompilerConfig], "@babel/plugin-syntax-jsx"],
-         },
-      }),
+      // babel({
+      //    filter: /\.[jt]sx?$/,
+      //    babelConfig: {
+      //       presets: ["@babel/preset-typescript"],
+      //       plugins: [["babel-plugin-react-compiler", reactCompilerConfig], "@babel/plugin-syntax-jsx"],
+      //    },
+      // }),
       tailwindcss()
    ],
 

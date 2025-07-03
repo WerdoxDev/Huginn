@@ -8,7 +8,7 @@ export class VoiceInputDevice {
    private source?: MediaStreamAudioSourceNode
 
    public async getStream(deviceId: string, volumePercentage: number, noiseSuppression: boolean) {
-      log("app:voice-input-device", "voice-input-device:default", "get stream", "did:", deviceId, "vp:", volumePercentage, "ns:", noiseSuppression);
+      log("app:voice-input-device", "default", "get stream", "did:", deviceId, "vp:", volumePercentage, "ns:", noiseSuppression);
 
       const audioConstraints: MediaTrackConstraints = {
          deviceId: deviceId,
@@ -54,7 +54,7 @@ export class VoiceInputDevice {
    }
 
    public setGain(volumePercentage: number) {
-      log("app:voice-input-device", "voice-input-device:default", "set gain", "vp:", volumePercentage);
+      log("app:voice-input-device", "default", "set gain", "vp:", volumePercentage);
 
       if (this.gainNode) {
          this.gainNode.gain.value = volumePercentage / 100;

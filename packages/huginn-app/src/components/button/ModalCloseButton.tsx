@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 export default function ModalCloseButton(props: { children?: ReactNode; onClick: () => void }) {
 	return (
 		<button
-			className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-md bg-secondary hover:bg-tertiary"
+			className="absolute top-2 right-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-md bg-secondary hover:bg-tertiary"
 			onClick={props.onClick}
 			type="button"
 		>

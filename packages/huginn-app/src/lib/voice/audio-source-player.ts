@@ -14,7 +14,7 @@ export class AudioSourcePlayer {
    private localGain?: number;
 
    public constructor(srcObject: MediaProvider, producerId: string, userId: Snowflake, kind: HMediaKind, globalGain: number) {
-      log("app:audio-source-player", "audio-source-player:default", "initializing", "pid:", producerId, "uid:", userId, "mk:", kind, "gg:", globalGain)
+      log("app:audio-source-player", "default", "initializing", "pid:", producerId, "uid:", userId, "mk:", kind, "gg:", globalGain)
 
       this.globalGain = globalGain;
       this.producerId = producerId;
@@ -45,7 +45,7 @@ export class AudioSourcePlayer {
    }
 
    public stop() {
-      log("app:audio-source-player", "audio-source-player:default", "stop")
+      log("app:audio-source-player", "default", "stop")
 
       this.abortController.abort();
       this.gainNode.disconnect();
@@ -55,7 +55,7 @@ export class AudioSourcePlayer {
    }
 
    public setGain(globalGain: number | undefined, localGain: number | undefined) {
-      log("app:audio-source-player", "audio-source-player:default", "set gain", "gg:", globalGain, "lg:", localGain)
+      log("app:audio-source-player", "default", "set gain", "gg:", globalGain, "lg:", localGain)
 
       if (globalGain) {
          this.globalGain = globalGain;
@@ -72,7 +72,7 @@ export class AudioSourcePlayer {
    }
 
    public setSinkId(deviceId: string) {
-      log("app:audio-source-player", "audio-source-player:default", "set sink id", "did:", deviceId)
+      log("app:audio-source-player", "default", "set sink id", "did:", deviceId)
 
       this.audioContext.setSinkId(deviceId);
    }

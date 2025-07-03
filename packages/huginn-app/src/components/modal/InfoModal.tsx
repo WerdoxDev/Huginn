@@ -56,7 +56,7 @@ export default function InfoModal() {
 		<DialogPanel
 			transition
 			className={clsx(
-				"w-full max-w-xs transform overflow-hidden rounded-xl border-2 bg-background p-5 transition-[opacity_transform] duration-200 data-closed:scale-90",
+				"relative w-full max-w-xs transform overflow-hidden rounded-xl border-2 bg-background p-5 transition-[opacity_transform] duration-200 data-closed:scale-90",
 				borderColor,
 			)}
 		>

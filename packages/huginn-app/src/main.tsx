@@ -6,30 +6,34 @@ import { enableLogs } from "@huginn/shared";
 import router from "./routes";
 
 const root = document.getElementById("root");
-// enableLogs(["api:gateway", "api:voice"], ["voice:default", "gateway:default"]);
+// enableLogs(["api:gateway", "api:voice"], ["default", "default"]);
 // enableLogs(
 // 	["app:audio-level-checker", "app:audio-source-player", "app:voice-client", "app:voice-input-device", "app:voice-store", "api:voice"],
 // 	[
-// 		"voice:local-voice-state",
-// 		"audio-level-checker:default",
-// 		"audio-source-player:default",
-// 		"voice-client:default",
-// 		"voice-client:emitter-recv",
-// 		"voice-store:voice-state",
-// 		"voice-store:voice-recv",
-// 		"voice-store:voice-preferences",
-// 		"voice-store:speaking-state",
-// 		"voice-store:remote-sources",
-// 		"voice-store:gateway-recv",
-// 		"voice-store:default",
-// 		"voice-store:call-state",
-// 		"voice-input-device:default",
-// 		"voice-client:settings-sub",
-// 		"voice-client:voice-recv",
+// 		"local-voice-state",
+// 		"default",
+// 		"default",
+// 		"default",
+// 		"emitter-recv",
+// 		"voice-state",
+// 		"voice-recv",
+// 		"voice-preferences",
+// 		"speaking-state",
+// 		"remote-sources",
+// 		"gateway-recv",
+// 		"default",
+// 		"call-state",
+// 		"default",
+// 		"settings-sub",
+// 		"voice-recv",
 // 	],
 // );
-enableLogs(["api:gateway"], ["gateway:send-detail", "gateway:recv-detail"]);
-// enableLogs(["api:gateway", "api:voice"], ["api:voice-default", "api:gateway-send"]);
+enableLogs({
+	"api:voice": ["default", "send", "recv", "heartbeat", "local-voice-state"],
+	"api:gateway": ["default", "send", "recv"],
+	"api:client": ["ready-state"],
+	"app:api-client": ["default"],
+});
 
 export const queryClient = new QueryClient({
 	defaultOptions: {

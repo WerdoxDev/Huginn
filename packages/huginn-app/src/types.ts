@@ -6,8 +6,8 @@ import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePatchDMChan
 import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRemoveChannelRecipient";
 import type {
    APIChannelUser, APIMessage, APIPublicUser,
-   APIRelationUser,
    APIRelationshipWithoutOwner,
+   APIRelationUser,
    DeepPartial,
    DirectChannel,
    HMediaKind,
@@ -259,4 +259,4 @@ export type RemoteSource = {
    audioLevel?: AudioLevelChecker;
 }
 
-export type VoicePrereference = { userId: Snowflake; microphoneVolume: number; screenshareVolume: number }
+export type VoicePreference = { userId: Snowflake; microphoneVolume: number; screenshareVolume: number }

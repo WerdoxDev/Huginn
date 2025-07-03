@@ -6,7 +6,7 @@ import clsx from "clsx";
 import DropdownMenu from "./dropdown/DowndownMenu";
 import Tooltip from "./tooltip/Tooltip";
 
-export default function VoiceControlls(props: {
+export default function VoiceControls(props: {
 	show: boolean;
 	isInVoice: boolean;
 	isFullscreen: boolean;

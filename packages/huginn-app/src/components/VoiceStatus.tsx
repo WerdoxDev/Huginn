@@ -44,7 +44,7 @@ export default function VoiceStatus() {
 			setState("rtc");
 		});
 
-		const unlisten3 = client.voice.listen("ping", (d) => {
+		const unlisten3 = client.voice.listen("pong", (d) => {
 			setRtt(d.rtt);
 		});
 

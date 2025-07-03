@@ -17,7 +17,6 @@ import {
 	organizeTokens,
 	splitHighlightedTokens,
 } from "@lib/markdown-utils";
-import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import hljs from "highlight.js";
 import markdownit from "markdown-it";
@@ -42,7 +41,7 @@ const initialValue: Descendant[] = [
 	},
 ];
 
-let cache: { text: string; decorations: Record<number, Range[]> } | undefined = undefined;
+let cache: { text: string; decorations: Record<number, Range[]> } | undefined;
 
 type AttachmentInputType = { name: string; type: string; arrayBuffer: () => Promise<ArrayBuffer> };
 
@@ -56,8 +55,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 	const channelName = useChannelName(currentChannel?.id);
 	const [attachments, setAttachments] = useState<AttachmentType[]>([]);
 	const [dragging, setDragging] = useState(false);
-	const huginnWindow = useHuginnWindow();
-	const [isPending, startTransition] = useTransition();
+	const [_isPending, startTransition] = useTransition();
 	// const cache = useRef<{ text: string; decorations: Map<number, Range[]> }>(undefined);
 
 	const sendMessageMutation = useSendMessage();
@@ -76,7 +74,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 			Editor.nodes(editor, {
 				at: [],
 				mode: "highest",
-				match: (node, path) => Element.isElement(node),
+				match: (node, _path) => Element.isElement(node),
 			}),
 		);
 
@@ -216,7 +214,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 		return decorations;
 	}
 
-	function decorate([node, path]: [Node, Path]) {
+	function decorate([_node, path]: [Node, Path]) {
 		const ranges = calculateRanges();
 
 		if (path[0] in ranges) {

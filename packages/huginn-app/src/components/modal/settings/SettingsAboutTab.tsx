@@ -1,5 +1,5 @@
-import HuginnIcon from "@components/HuginnIcon";
 import LinkButton from "@components/button/LinkButton";
+import HuginnIcon from "@components/HuginnIcon";
 import { useHuginnWindow } from "@stores/windowStore";
 
 export default function SettingsAboutTab() {
@@ -27,7 +27,7 @@ export default function SettingsAboutTab() {
 					<LinkButton
 						onClick={() =>
 							huginnWindow.environment === "desktop"
-								? window.electronAPI.openExteral("https://github.com/WerdoxDev")
+								? window.electronAPI.openExternal("https://github.com/WerdoxDev")
 								: open("https://github.com/WerdoxDev")
 						}
 						className="text-base"

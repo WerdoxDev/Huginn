@@ -25,10 +25,10 @@ export async function rootLoader({ request }: LoaderFunctionArgs) {
 	const unallowedPaths = ["/login", "/register", "/oauth-redirect"];
 	const search = new URLSearchParams({ redirect: pathname });
 
-	if (`#${pathname}` === initialPathname && pathname !== "/" && !unallowedPaths.includes(pathname) && !client?.isLoggedIn) {
+	if (`#${pathname}` === initialPathname && pathname !== "/" && !unallowedPaths.includes(pathname) && client?.gateway.status !== "authenticated") {
 		throw redirect(`/?${search.toString()}`);
 	}
-	if (`#${pathname}` === initialPathname && pathname !== "/" && !client?.isLoggedIn && unallowedPaths.includes(pathname)) {
+	if (`#${pathname}` === initialPathname && pathname !== "/" && client?.gateway.status !== "authenticated" && unallowedPaths.includes(pathname)) {
 		throw redirect("/");
 	}
 }
