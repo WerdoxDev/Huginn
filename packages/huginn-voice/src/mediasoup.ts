@@ -1,8 +1,8 @@
-import { env } from "node:process";
 import { GatewayCode, type Snowflake } from "@huginn/shared";
 import type { Peer } from "crossws";
 import mediasoup from "mediasoup";
 import type { Router, RtpCodecCapability, WebRtcServer, Worker } from "mediasoup/node/lib/types";
+import type { ClientSession } from "#client-session";
 import { envs } from "#index";
 import type { RouterType } from "#utils/types";
 
@@ -71,15 +71,15 @@ export async function createTransport(router: Router) {
    return transport;
 }
 
-export function verifyPeer(router: RouterType | undefined, peer: Peer, channelId: Snowflake): router is RouterType {
+export function verifyPeer(router: RouterType | undefined, session: ClientSession, channelId: Snowflake): router is RouterType {
    if (!router || router.channelId !== channelId) {
       return false;
    }
 
-   const peerExists = router.peers.has(peer.id);
+   const peerExists = router.peers.has(session.sessionId);
 
    if (!peerExists) {
-      peer.close(GatewayCode.NOT_AUTHENTICATED, "NOT_AUTHENTICATED");
+      session.peer.close(GatewayCode.NOT_AUTHENTICATED, "NOT_AUTHENTICATED");
    }
 
    return peerExists;
