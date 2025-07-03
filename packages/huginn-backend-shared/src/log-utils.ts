@@ -2,7 +2,6 @@ import type { HuginnErrorData } from "@huginn/shared";
 import { GatewayOperations, type GatewayPayload } from "@huginn/shared";
 import { consola } from "consola";
 import { colors } from "consola/utils";
-import type { H3Error } from "h3";
 
 const divider = colors.gray(">");
 const startText = colors.bold(colors.gray("START"));
@@ -11,7 +10,7 @@ const requestDataText = colors.bold(colors.gray("REQUEST DATA"));
 const responseDataText = colors.bold(colors.gray("RESPONSE DATA"));
 const gatewayOpen = colors.bold(colors.cyan("GATEWAY OPEN"));
 const gatewayClose = colors.bold(colors.red("GATEWAY CLOSE"));
-const gatewayRecieve = colors.bold(colors.gray("GATEWAY RECIEVE"));
+const gatewayReceive = colors.bold(colors.gray("GATEWAY RECEIVE"));
 const gatewaySend = colors.bold(colors.gray("GATEWAY SEND"));
 const getFile = colors.bold(colors.green("GET FILE"));
 const writeFile = colors.bold(colors.magenta("WRITE FILE"));
@@ -19,173 +18,173 @@ const notFoundFile = colors.bold(colors.red("FILE NOT FOUND"));
 const cdn = colors.bold(colors.gray("CDN REQUEST"));
 
 export function logServerError(path: string, e: Error): void {
-	consola.box(`${colors.bold(colors.red("Server Error:"))} ${colors.green(path.length > 100 ? `${path.slice(0, 100)}...` : path)}\n`, e);
+   consola.box(`${colors.bold(colors.red("Server Error:"))} ${colors.green(path.length > 100 ? `${path.slice(0, 100)}...` : path)}\n`, e);
 }
 
 export function logReject(path: string, method: string, time: string, id?: string, error?: HuginnErrorData | string, status?: number): void {
-	const rejectText = colors.bold(colors.red("Rejected"));
-	const methodText = colors.bold(colors.red(method));
-	const pathText = colors.green(path);
-	const statusText = status ? colors.bold(colors.red(` ${status} `)) : " ";
-	const idText = colors.yellow(id ?? "unknown");
-	const timeText = colors.gray(`${time}ms`);
-	let errorText: string = colors.red("Unknown Error");
+   const rejectText = colors.bold(colors.red("Rejected"));
+   const methodText = colors.bold(colors.red(method));
+   const pathText = colors.green(path);
+   const statusText = status ? colors.bold(colors.red(` ${status} `)) : " ";
+   const idText = colors.yellow(id ?? "unknown");
+   const timeText = colors.gray(`${time}ms`);
+   let errorText: string = colors.red("Unknown Error");
 
-	if (typeof error === "string") {
-		errorText = colors.red(error);
-	} else if (typeof error === "object") {
-		errorText = colors.red(`${error?.message ?? "Unknown Error"} (${colors.bold(error?.code)})`);
-	}
+   if (typeof error === "string") {
+      errorText = colors.red(error);
+   } else if (typeof error === "object") {
+      errorText = colors.red(`${error?.message ?? "Unknown Error"} (${colors.bold(error?.code)})`);
+   }
 
-	consola.fail(
-		`${idText} ${divider} ${endText} ${divider} ${rejectText} (${methodText}) ${divider} ${pathText} ${divider}${statusText}${errorText} ${timeText}\n`,
-	);
+   consola.fail(
+      `${idText} ${divider} ${endText} ${divider} ${rejectText} (${methodText}) ${divider} ${pathText} ${divider}${statusText}${errorText} ${timeText}\n`,
+   );
 }
 
 export function logResponse(path: string, status: number, time: string, id?: string, data?: unknown): void {
-	logData(path, responseDataText, id, data);
+   logData(path, responseDataText, id, data);
 
-	const responseText = colors.bold(colors.magenta("Response"));
-	const statusText = colors.bold(colors.magenta(status));
-	const pathText = colors.green(path);
-	const idText = colors.yellow(id ?? "unknown");
-	const timeText = colors.gray(`${time}ms`);
+   const responseText = colors.bold(colors.magenta("Response"));
+   const statusText = colors.bold(colors.magenta(status));
+   const pathText = colors.green(path);
+   const idText = colors.yellow(id ?? "unknown");
+   const timeText = colors.gray(`${time}ms`);
 
-	consola.success(`${idText} ${divider} ${endText} ${divider} ${responseText} (${statusText}) ${divider} ${pathText} ${timeText}\n`);
+   consola.success(`${idText} ${divider} ${endText} ${divider} ${responseText} (${statusText}) ${divider} ${pathText} ${timeText}\n`);
 }
 
 export function logRequest(path: string, method: string, id?: string, data?: unknown): void {
-	const pathText = colors.green(path);
-	const methodText = colors.bold(colors.cyan(method));
-	const requestText = colors.bold(colors.cyan("Request"));
-	const idText = colors.yellow(id ?? "unknown");
-	consola.info(`${idText} ${divider} ${startText} ${divider} ${requestText} (${methodText}) ${divider} ${pathText}`);
-	logData(path, requestDataText, id, data);
+   const pathText = colors.green(path);
+   const methodText = colors.bold(colors.cyan(method));
+   const requestText = colors.bold(colors.cyan("Request"));
+   const idText = colors.yellow(id ?? "unknown");
+   consola.info(`${idText} ${divider} ${startText} ${divider} ${requestText} (${methodText}) ${divider} ${pathText}`);
+   logData(path, requestDataText, id, data);
 }
 
 export function logData(path: string, text: string, id?: string, data?: unknown): void {
-	if (!data) {
-		return;
-	}
+   if (!data) {
+      return;
+   }
 
-	const dataString = JSON.stringify(data);
+   const dataString = JSON.stringify(data);
 
-	if (!dataString) {
-		return;
-	}
+   if (!dataString) {
+      return;
+   }
 
-	const pathText = colors.green(path);
-	const idText = colors.yellow(id ?? "unknown");
-	let dataText = colors.gray(data instanceof ReadableStream ? "File Data" : dataString);
+   const pathText = colors.green(path);
+   const idText = colors.yellow(id ?? "unknown");
+   let dataText = colors.gray(data instanceof ReadableStream ? "File Data" : dataString);
 
-	// Check if it's a message
-	if (data !== null && typeof data === "object" && "content" in data) {
-		const content = (data.content as string).replaceAll("\n", " \\n ");
-		dataText = colors.gray(`${colors.underline("Formatted")} > ${content}`);
-	}
-	// Normal data
-	else if (dataString.length > 100) {
-		dataText = colors.gray("Data Too Long");
-	}
+   // Check if it's a message
+   if (data !== null && typeof data === "object" && "content" in data) {
+      const content = (data.content as string).replaceAll("\n", " \\n ");
+      dataText = colors.gray(`${colors.underline("Formatted")} > ${content}`);
+   }
+   // Normal data
+   else if (dataString.length > 100) {
+      dataText = colors.gray("Data Too Long");
+   }
 
-	consola.info(`${idText} ${divider} ${text} ${divider} ${pathText} ${divider} ${dataText}`);
+   consola.info(`${idText} ${divider} ${text} ${divider} ${pathText} ${divider} ${dataText}`);
 }
 
 export function logGatewayOpen(address?: string): void {
-	consola.info(`${gatewayOpen} ${address ?? "(unknown address)"}\n`);
+   consola.info(`${gatewayOpen} ${address ?? "(unknown address)"}\n`);
 }
 
 export function logGatewayClose(code: number, reason: string): void {
-	const codeText = colors.red(code);
-	const reasonText = colors.gray(reason === "" ? "No reason" : reason);
+   const codeText = colors.red(code);
+   const reasonText = colors.gray(reason === "" ? "No reason" : reason);
 
-	consola.info(`${gatewayClose} (${codeText}) ${divider} ${reasonText}\n`);
+   consola.info(`${gatewayClose} (${codeText}) ${divider} ${reasonText}\n`);
 }
 
-export function logGatewayRecieve(id: string, data: GatewayPayload, logHeartbeat: boolean): void {
-	if (data.op === GatewayOperations.HEARTBEAT && !logHeartbeat) {
-		return;
-	}
+// export function logGatewayReceive(id: string | undefined, data: GatewayPayload, logHeartbeat: boolean): void {
+//    if (data.op === GatewayOperations.HEARTBEAT && !logHeartbeat) {
+//       return;
+//    }
 
-	const idText = colors.yellow(id);
+//    const idText = colors.yellow(id ?? "unknown");
 
-	const opcodeText = colors.yellow(opcodeToText(data.op));
-	const opcodeNumberText = colors.yellow(data.op);
+//    const opcodeText = colors.yellow(opcodeToText(data.op));
+//    const opcodeNumberText = colors.yellow(data.op);
 
-	let dataText = colors.gray(JSON.stringify(data.d));
+//    let dataText = colors.gray(JSON.stringify(data.d));
 
-	if (dataText.length > 100) {
-		dataText = colors.gray("Data Too Long");
-	}
+//    if (dataText.length > 100) {
+//       dataText = colors.gray("Data Too Long");
+//    }
 
-	consola.info(`${gatewayRecieve} ${divider} ${idText} ${divider} ${opcodeText} (${opcodeNumberText}) ${divider} ${dataText}`);
-}
+//    consola.info(`${gatewayReceive} ${divider} ${idText} ${divider} ${opcodeText} (${opcodeNumberText}) ${divider} ${dataText}`);
+// }
 
-export function logGatewaySend(topics: string | string[], data: GatewayPayload, logHeartbeat: boolean): void {
-	if (data.op === GatewayOperations.HEARTBEAT_ACK && !logHeartbeat) {
-		return;
-	}
+// export function logGatewaySend(topics: string | string[], data: GatewayPayload, logHeartbeat: boolean): void {
+//    if (data.op === GatewayOperations.HEARTBEAT_ACK && !logHeartbeat) {
+//       return;
+//    }
 
-	const topicText = colors.green(Array.isArray(topics) ? topics.join(", ") : topics);
+//    const topicText = colors.green(Array.isArray(topics) ? topics.join(", ") : topics);
 
-	const opcodeText = colors.blue(data.t ? `${data.t} ${divider} ${opcodeToText(data.op)}` : opcodeToText(data.op));
-	const opcodeNumberText = colors.blue(data.op);
+//    const opcodeText = colors.blue(data.t ? `${data.t} ${divider} ${opcodeToText(data.op)}` : opcodeToText(data.op));
+//    const opcodeNumberText = colors.blue(data.op);
 
-	let dataText = colors.gray(JSON.stringify(data.d) || "null");
+//    let dataText = colors.gray(JSON.stringify(data.d) || "null");
 
-	if (dataText.length > 100) {
-		dataText = colors.gray("Data Too Long");
-	}
+//    if (dataText.length > 100) {
+//       dataText = colors.gray("Data Too Long");
+//    }
 
-	consola.info(`${gatewaySend} ${divider} ${topicText} ${divider} ${opcodeText} (${opcodeNumberText}) ${divider} ${dataText}`);
-}
+//    consola.info(`${gatewaySend} ${divider} ${topicText} ${divider} ${opcodeText} (${opcodeNumberText}) ${divider} ${dataText}`);
+// }
 
 export function logGetFile(category: string, subDirectory: string, name: string): void {
-	const categoryText = colors.blue(category);
-	const nameText = colors.green(name);
-	const subDirectoryText = colors.green(subDirectory);
+   const categoryText = colors.blue(category);
+   const nameText = colors.green(name);
+   const subDirectoryText = colors.green(subDirectory);
 
-	consola.info(`${getFile} ${divider} ${categoryText} ${divider} ${subDirectoryText} ${divider} ${nameText}`);
+   consola.info(`${getFile} ${divider} ${categoryText} ${divider} ${subDirectoryText} ${divider} ${nameText}`);
 }
 
 export function logWriteFile(category: string, subDirectory: string, name: string): void {
-	const categoryText = colors.blue(category);
-	const nameText = colors.green(name);
-	const subDirectoryText = colors.green(subDirectory);
+   const categoryText = colors.blue(category);
+   const nameText = colors.green(name);
+   const subDirectoryText = colors.green(subDirectory);
 
-	consola.info(`${writeFile} ${divider} ${categoryText} ${divider} ${subDirectoryText} ${divider} ${nameText}`);
+   consola.info(`${writeFile} ${divider} ${categoryText} ${divider} ${subDirectoryText} ${divider} ${nameText}`);
 }
 
 export function logFileNotFound(category: string, subDirectory: string, name: string): void {
-	const categoryText = colors.blue(category);
-	const nameText = colors.green(name);
-	const subDirectoryText = colors.green(subDirectory);
+   const categoryText = colors.blue(category);
+   const nameText = colors.green(name);
+   const subDirectoryText = colors.green(subDirectory);
 
-	consola.info(`${notFoundFile} ${divider} ${categoryText} ${divider} ${subDirectoryText} ${divider} ${nameText}`);
+   consola.info(`${notFoundFile} ${divider} ${categoryText} ${divider} ${subDirectoryText} ${divider} ${nameText}`);
 }
 
 export function logCDNRequest(path: string, method: string): void {
-	const pathText = colors.green(path);
-	const methodText = colors.bold(colors.green(method));
-	consola.info(`${cdn} ${divider} (${methodText}) ${divider} ${pathText}`);
+   const pathText = colors.green(path);
+   const methodText = colors.bold(colors.green(method));
+   consola.info(`${cdn} ${divider} (${methodText}) ${divider} ${pathText}`);
 }
 
 function opcodeToText(opcode: GatewayOperations) {
-	switch (opcode) {
-		case GatewayOperations.DISPATCH:
-			return "Dispatch";
-		case GatewayOperations.HEARTBEAT:
-			return "Heartbeat";
-		case GatewayOperations.HEARTBEAT_ACK:
-			return "HeartbeatAck";
-		case GatewayOperations.HELLO:
-			return "Hello";
-		case GatewayOperations.IDENTIFY:
-			return "Identify";
-		case GatewayOperations.RESUME:
-			return "Resume";
+   switch (opcode) {
+      case GatewayOperations.DISPATCH:
+         return "Dispatch";
+      case GatewayOperations.HEARTBEAT:
+         return "Heartbeat";
+      case GatewayOperations.HEARTBEAT_ACK:
+         return "HeartbeatAck";
+      case GatewayOperations.HELLO:
+         return "Hello";
+      case GatewayOperations.IDENTIFY:
+         return "Identify";
+      case GatewayOperations.RESUME:
+         return "Resume";
 
-		default:
-			return "Unknown";
-	}
+      default:
+         return "Unknown";
+   }
 }

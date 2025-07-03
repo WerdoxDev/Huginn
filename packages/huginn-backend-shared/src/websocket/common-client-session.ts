@@ -1,0 +1,104 @@
+import { type APIUser, constants, error, GatewayCode, log, type Snowflake } from "@huginn/shared";
+import type { Peer } from "crossws";
+
+export abstract class CommonClientSession<Payload, Properties = undefined> {
+   public sessionId: Snowflake;
+   public peer: Peer;
+   public properties?: Properties;
+   public user?: APIUser;
+
+   public isStale = false;
+   public sequence?: number;
+
+   private heartbeatTimeout?: NodeJS.Timeout;
+   private sentMessages: Map<number, Payload>;
+
+   public get authenticated() {
+      return !!this.user;
+   }
+
+   public constructor(peer: Peer, sessionId: Snowflake) {
+      this.peer = peer;
+      this.sessionId = sessionId;
+      this.sentMessages = new Map();
+
+      this.resetHeartbeatTimeout();
+   }
+
+   public async initialize(user: APIUser, properties: Properties) {
+      log("shared:client-session", "default", "initialize", "uid:", user.id);
+
+      this.user = user;
+      this.properties = properties;
+
+      await this.subscribeToTopics();
+   }
+
+   public subscribe(topic: string) {
+      log("shared:client-session", "subscriptions", "subscribe", topic);
+
+      this.peer.subscribe(topic);
+   }
+
+   public unsubscribe(topic: string) {
+      log("shared:client-session", "subscriptions", "unsubscribe", topic);
+
+      this.peer.unsubscribe(topic);
+   }
+
+   public isSubscribed(topic: string) {
+      return this.peer.topics.has(topic);
+   }
+
+   public getSubscriptions() {
+      return this.peer.topics;
+   }
+
+   public getIncreasedSequence() {
+      this.sequence = this.sequence !== undefined ? this.sequence + 1 : 0;
+      return this.sequence;
+   }
+
+   public addMessage(sequence: number, data: Payload) {
+      this.sentMessages.set(sequence, data);
+   }
+
+   public getMessages() {
+      return this.sentMessages;
+   }
+
+   public stopHeartbeatTimeout() {
+      if (this.heartbeatTimeout) {
+         clearTimeout(this.heartbeatTimeout);
+      }
+   }
+
+   public resetHeartbeatTimeout() {
+      this.stopHeartbeatTimeout();
+
+      const tolerance = 3000;
+
+      this.heartbeatTimeout = setTimeout(() => {
+         this.peer.close(GatewayCode.SESSION_TIMEOUT, "SESSION_TIMEOUT");
+         this.stopHeartbeatTimeout();
+      }, constants.HEARTBEAT_INTERVAL + tolerance)
+   }
+
+   public async subscribeToTopics() {
+      log("shared:client-session", "subscriptions", "subscribe to defaults", "sid:", this.sessionId);
+
+      if (!this.authenticated || !this.user) {
+         error("shared:client-session", "Client session is not authenticated");
+         return;
+      }
+
+      const userId = this.user.id;
+      this.subscribe(this.peer.id);
+      this.subscribe(this.sessionId);
+      this.subscribe(userId);
+
+      await this.subscribeToTopicsExtra();
+   }
+
+   public abstract subscribeToTopicsExtra(): Promise<void> | void;
+}
