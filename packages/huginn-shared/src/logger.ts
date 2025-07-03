@@ -1,53 +1,79 @@
-type LogSection = "api:voice" | "api:gateway" | "app:voice-client" | "app:voice-store" | "app:audio-source-player" | "app:audio-level-checker" | "app:voice-input-device" | "app:electron";
+type LogValuesMap = {
+   "api:voice": "send" | "recv" | "heartbeat" | "ping" | "default" | "local-voice-state";
+   "api:gateway": "send" | "send-detail" | "default" | "recv" | "recv-detail" | "dispatch" | "heartbeat";
+   "api:client": "ready-state";
+   "app:api-client": "default";
+   "app:voice-client": "default" | "voice-recv" | "emitter-recv" | "settings-sub";
+   "app:voice-store": "remote-sources" | "speaking-state" | "voice-preferences" | "voice-state" | "call-state" | "default" | "gateway-recv" | "voice-recv";
+   "app:audio-source-player": "default";
+   "app:audio-level-checker": "default";
+   "app:voice-input-device": "default";
+   "app:electron": "default" | "send" | "recv" | "updater" | "loopback-send" | "loopback";
+   "server:gateway": "default" | "send" | "recv" | "heartbeat";
+   "voice:websocket": "default" | "recv";
+   // "server:client-session": "default"|"subscriptions"|"heartbeat";
+   "shared:websocket": "default" | "subscriptions";
+   "shared:client-session": "default" | "subscriptions" | "heartbeat";
+};
 
-type LogLevel = "none" | "voice:send" | "voice:recv" | "voie:heartbeat" | "voice:ping" |
-   "voice:default" | "gateway:send" | "gateway:send-detail" | "gateway:default" | "gateway:recv" |
-   "gateway:recv-detail" | "gateway:dispatch" | "gateway:heartbeat" | "voice:local-voice-state" |
-   "voice-client:default" | "voice-store:remote-sources" | "voice-store:speaking-state" |
-   "voice-store:voice-preferences" | "voice-store:voice-state" | "voice-store:call-state" |
-   "voice-store:default" | "voice-store:gateway-recv" | "voice-store:voice-recv" |
-   "voice-client:voice-recv" | "voice-client:emitter-recv" | "voice-client:settings-sub" |
-   "audio-source-player:default" | "audio-level-checker:default" | "voice-input-device:default" |
-   "electron:default" | "electron:send" | "electron:recv" | "electron:updater" | "electron:loopback-send" | "electron:loopback"
+// type Logs = typeof logs;
+type LogKeys = keyof LogValuesMap;
+type LogValuesFor<K extends LogKeys> = LogValuesMap[K];
 
+const enabledSections = new Map<LogKeys, Set<LogValuesMap[LogKeys]>>();
+// const enabledSections = new Set<string>();
+// const enabledLevels = new Set<string>();
 
-const enabledSections = new Set<LogSection>();
-const enabledLevels = new Set<LogLevel>();
-
-export function enableLogs(sections: LogSection[], levels: LogLevel[]): void {
-   for (const section of sections) {
-      enabledSections.add(section);
-   }
-   for (const level of levels) {
-      enabledLevels.add(level);
+export function enableLogs<T extends Partial<{ [K in LogKeys]: LogValuesMap[K][] }>>(sections: T): void {
+   for (const [section, levels] of Object.entries(sections) as [LogKeys, string[]][]) {
+      if (enabledSections.has(section)) {
+         const existing = enabledSections.get(section);
+         for (const level of levels) {
+            existing?.add(level as LogValuesFor<typeof section>);
+         }
+      } else {
+         enabledSections.set(section, new Set(levels as LogValuesFor<typeof section>[]));
+      }
    }
 }
 
-export function disableLogs(sections: LogSection[], levels: LogLevel[]): void {
-   for (const section of sections) {
-      enabledSections.delete(section);
-   }
-   for (const level of levels) {
-      enabledLevels.delete(level);
+export function disableLogs<K extends LogKeys>(sections: Record<K, LogValuesFor<K>[]>): void {
+   for (const entry of Object.entries(sections)) {
+      const section = entry[0] as LogKeys;
+      const levels = entry[1] as LogValuesFor<K>[];
+
+      if (!enabledSections.has(section)) {
+         return;
+      }
+
+      const existingSection = enabledSections.get(section);
+      for (const level of levels) {
+         existingSection?.delete(level);
+      }
+
+      if (existingSection?.size === 0) {
+         enabledSections.delete(section);
+      }
    }
 }
 
-const levelStyles: Partial<Record<LogLevel | "default", string>> = {
+const levelStyles: Partial<Record<LogValuesFor<LogKeys> | "default", string>> = {
    default: 'color: green',
    // debug: 'color: white; background: #666; padding: 1px 6px; border-radius: 4px;',
    // warn: 'color: black; background: #FFC107; padding: 1px 6px; border-radius: 4px;',
 };
 
-const sectionStyles: Partial<Record<LogSection | "default" | "error", string>> = {
+const sectionStyles: Partial<Record<LogKeys | "default" | "error", string>> = {
    default: 'color: black; background: white; padding: 1px 6px; border-radius: 4px;',
    error: 'color: white; background: #DC3545; padding: 1px 6px; border-radius: 4px;',
    "api:gateway": 'color: white; background: #007BFF; padding: 1px 6px; border-radius: 4px;',
    "api:voice": 'color: white; background: #029687; padding: 1px 6px; border-radius: 4px;',
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: any is used to be complient with console.log
-export function log(section: LogSection, level: LogLevel, ...args: any[]): void {
-   if (!enabledSections.has(section) || !enabledLevels.has(level)) {
+// biome-ignore lint/suspicious/noExplicitAny: any is used to be compliant with console.log
+export function log<K extends LogKeys>(section: K, level: LogValuesFor<K>, ...args: any[]): void {
+   const existingSections = enabledSections.get(section);
+   if (!existingSections || !existingSections.has(level)) {
       return;
    }
 
@@ -60,8 +86,8 @@ export function log(section: LogSection, level: LogLevel, ...args: any[]): void 
    console.log(formatString, ...stylesString, ...args);
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: any is used to be complient with console.log
-export function error(section: LogSection, ...args: any[]): void {
+// biome-ignore lint/suspicious/noExplicitAny: any is used to be compliant with console.log
+export function error(section: LogKeys, ...args: any[]): void {
    const levelStyle = levelStyles.default;
    const sectionStyle = sectionStyles[section] ?? sectionStyles.error;
 
