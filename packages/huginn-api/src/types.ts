@@ -28,10 +28,3 @@ export type VoiceOptions = {
    url: string;
    createSocket(url: string): WebSocket;
 };
-
-export enum ClientReadyState {
-   NONE = 0,
-   INITIALIZING = 1,
-   READY = 2,
-   RECONNECRING = 3,
-}

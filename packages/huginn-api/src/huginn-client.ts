@@ -1,8 +1,9 @@
 import type { APIPostLoginResult, APIPostRegisterResult, APIUser, LoginCredentials, RegisterUser, Tokens } from "@huginn/shared";
-import { type Snowflake, WorkerID, snowflake } from "@huginn/shared";
-import { type ClientOptions, ClientReadyState } from ".";
+import { type Snowflake, snowflake, WorkerID } from "@huginn/shared";
+import { decodeJwt } from "jose";
+import type { ClientOptions } from ".";
 import { CDN } from "./cdn";
-import { Gateway } from "./client-gateway";
+import { Gateway } from "./gateway";
 import { REST } from "./rest";
 import { AuthAPI } from "./rest-apis/auth";
 import { ChannelAPI } from "./rest-apis/channel";
@@ -15,119 +16,126 @@ import { defaultClientOptions } from "./utils";
 import { Voice } from "./voice";
 
 export class HuginnClient {
-	public readonly options: ClientOptions;
-	private rest: REST;
-	public cdn: CDN;
-	public tokenHandler: TokenHandler;
-	public users: UserAPI;
-	public relationships: RelationshipAPI;
-	public auth: AuthAPI;
-	public channels: ChannelAPI;
-	public oauth: OAuthAPI;
-	public common: CommonAPI;
-	public gateway: Gateway;
-	public voice: Voice;
-	public _internals: { rest: REST; cdn: CDN };
+   public readonly options: ClientOptions;
+   private rest: REST;
+   public cdn: CDN;
+   public tokenHandler: TokenHandler;
+   public users: UserAPI;
+   public relationships: RelationshipAPI;
+   public auth: AuthAPI;
+   public channels: ChannelAPI;
+   public oauth: OAuthAPI;
+   public common: CommonAPI;
+   public gateway: Gateway;
+   public voice: Voice;
+   public _internals: { rest: REST; cdn: CDN };
 
-	public user?: APIUser;
+   public user?: APIUser;
 
-	public readyState: ClientReadyState = ClientReadyState.NONE;
+   constructor(options?: Partial<ClientOptions>) {
+      this.options = {
+         ...defaultClientOptions,
+         ...options,
+      };
 
-	constructor(options?: Partial<ClientOptions>) {
-		this.options = {
-			...defaultClientOptions,
-			...options,
-		};
+      this.tokenHandler = new TokenHandler(this);
+      this.rest = new REST(this, this.options.rest);
+      this.cdn = new CDN(this.options.cdn);
 
-		this.tokenHandler = new TokenHandler(this);
-		this.rest = new REST(this, this.options.rest);
-		this.cdn = new CDN(this.options.cdn);
+      this._internals = { rest: this.rest, cdn: this.cdn };
 
-		this._internals = { rest: this.rest, cdn: this.cdn };
+      this.auth = new AuthAPI(this.rest);
+      this.users = new UserAPI(this.rest);
+      this.channels = new ChannelAPI(this.rest);
+      this.relationships = new RelationshipAPI(this.rest);
+      this.common = new CommonAPI(this.rest);
+      this.gateway = new Gateway(this, this.options.gateway);
+      this.voice = new Voice(this, this.options.voice);
+      this.oauth = new OAuthAPI(this.rest, this.gateway);
+   }
 
-		this.auth = new AuthAPI(this.rest);
-		this.users = new UserAPI(this.rest);
-		this.channels = new ChannelAPI(this.rest);
-		this.relationships = new RelationshipAPI(this.rest);
-		this.common = new CommonAPI(this.rest);
-		this.gateway = new Gateway(this, this.options.gateway);
-		this.voice = new Voice(this, this.options.voice);
-		this.oauth = new OAuthAPI(this.rest, this.gateway);
-	}
+   async initializeWithToken(tokens: Partial<Tokens>): Promise<{ status: boolean, retryable: boolean }> {
+      let tokenValid = false;
+      let refreshTokenValid = false;
 
-	async initializeWithToken(tokens: Partial<Tokens>): Promise<void> {
-		try {
-			this.readyState = ClientReadyState.INITIALIZING;
-			if (tokens.token) {
-				this.tokenHandler.token = tokens.token;
-				if (tokens.refreshToken) {
-					this.tokenHandler.refreshToken = tokens.refreshToken;
-				}
-			} else if (tokens.refreshToken) {
-				const newTokens = await this.auth.refreshToken({ refreshToken: tokens.refreshToken });
-				this.tokenHandler.refreshToken = newTokens.refreshToken;
-				this.tokenHandler.token = newTokens.token;
-			}
-		} catch (e) {
-			this.user = undefined;
-			this.tokenHandler.token = undefined;
-			this.tokenHandler.refreshToken = undefined;
+      try {
+         if (tokens.token) {
+            const expireDate = (decodeJwt(tokens.token).exp ?? 0) * 1000;
 
-			this.readyState = ClientReadyState.NONE;
+            // Token expired
+            tokenValid = expireDate >= Date.now();
 
-			throw e;
-		}
-	}
+            if (tokenValid) {
+               this.tokenHandler.token = tokens.token;
+               // if (tokens.refreshToken) {
+               //    this.tokenHandler.refreshToken = tokens.refreshToken;
+               // }
+            }
+         }
 
-	public async login(credentials: LoginCredentials): Promise<APIPostLoginResult> {
-		try {
-			this.readyState = ClientReadyState.INITIALIZING;
-			const result = await this.auth.login(credentials);
+         if (tokens.refreshToken) {
+            const newTokens = await this.auth.refreshToken({ refreshToken: tokens.refreshToken });
+            this.tokenHandler.refreshToken = newTokens.refreshToken;
+            this.tokenHandler.token = newTokens.token;
+            refreshTokenValid = true;
+         }
 
-			this.tokenHandler.token = result.token;
-			this.tokenHandler.refreshToken = result.refreshToken;
+         // No tokens was passed or some validation went wrong
+         if (!tokenValid && !refreshTokenValid) {
+            return { status: false, retryable: false };
+         }
 
-			return result;
-		} catch (e) {
-			this.readyState = ClientReadyState.NONE;
-			throw e;
-		}
-	}
+         return { status: true, retryable: true };
+      } catch (e) {
+         this.user = undefined;
+         this.tokenHandler.refreshToken = undefined;
 
-	public async register(user: RegisterUser): Promise<APIPostRegisterResult> {
-		try {
-			this.readyState = ClientReadyState.INITIALIZING;
-			const result = await this.auth.register(user);
+         if (e instanceof TypeError && e.message.toLowerCase().includes("fail")) {
+            // A network error can happen almost with no delay. So having this little delay helps with not having 9999 requests a second
+            await new Promise((r) => setTimeout(r, 1000));
+            return { status: false, retryable: true };
+         }
 
-			this.tokenHandler.token = result.token;
-			this.tokenHandler.refreshToken = result.refreshToken;
+         // If only refresh token failed, You can still use the access token
+         if (tokenValid) {
+            return { status: true, retryable: true };
+         }
 
-			return result;
-		} catch (e) {
-			this.readyState = ClientReadyState.NONE;
-			throw e;
-		}
-	}
+         this.tokenHandler.token = undefined;
 
-	public async logout(): Promise<void> {
-		try {
-			this.readyState = ClientReadyState.NONE;
-			await this.auth.logout();
-		} catch (e) {
-			console.log(e);
-		}
+         return { status: false, retryable: false };
+      }
+   }
 
-		this.tokenHandler.token = undefined;
-		this.user = undefined;
-		this.gateway.close();
-	}
+   public async login(credentials: LoginCredentials): Promise<APIPostLoginResult> {
+      const result = await this.auth.login(credentials);
 
-	public get isLoggedIn(): boolean {
-		return this.readyState === ClientReadyState.READY;
-	}
+      this.tokenHandler.token = result.token;
+      this.tokenHandler.refreshToken = result.refreshToken;
 
-	public generateNonce(): Snowflake {
-		const nonce = snowflake.generateString(WorkerID.API);
-		return nonce;
-	}
+      return result;
+   }
+
+   public async register(user: RegisterUser): Promise<APIPostRegisterResult> {
+      const result = await this.auth.register(user);
+
+      this.tokenHandler.token = result.token;
+      this.tokenHandler.refreshToken = result.refreshToken;
+
+      return result;
+   }
+
+   public async logout(): Promise<void> {
+      await this.auth.logout();
+
+
+      this.tokenHandler.token = undefined;
+      this.user = undefined;
+      this.gateway.close();
+   }
+
+   public generateNonce(): Snowflake {
+      const nonce = snowflake.generateString(WorkerID.API);
+      return nonce;
+   }
 }
