@@ -8,8 +8,11 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-REM Run cloc and exclude node_modules
-cloc --exclude-dir=node_modules,src-tauri .
+REM Run cloc per file and output to count.csv
+@REM cloc --vcs=git --by-file --csv --out=count.csv .
+
+@REM Run cloc normally
+cloc --vcs=git .
 
 REM Exit the script
 exit /b 0

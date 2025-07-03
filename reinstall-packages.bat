@@ -14,6 +14,6 @@ for /d /r . %%d in (node_modules) do (
 )
 
 echo All "node_modules" folders have been deleted.
-echo Installing packages...
-powershell -Command "bun i"
-pause
+@REM echo Installing packages...
+@REM powershell -Command "bun i"
+@REM pause
