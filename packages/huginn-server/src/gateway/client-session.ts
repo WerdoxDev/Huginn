@@ -1,117 +1,43 @@
-import { EventEmitter } from "node:events";
+import { CommonClientSession } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { omitChannelRecipient, selectChannelRecipients, selectRelationshipUser } from "@huginn/backend-shared/database/common";
-import { constants, RelationshipType, merge } from "@huginn/shared";
-import { GatewayCode } from "@huginn/shared";
-import type { GatewayPayload } from "@huginn/shared";
-import { idFix } from "@huginn/shared";
-import type { Peer } from "crossws";
-import type { ClientSessionInfo } from "#utils/types";
+import type { GatewayIdentifyProperties, GatewayPayload } from "@huginn/shared";
+import { idFix, merge, RelationshipType } from "@huginn/shared";
 
-export class ClientSession extends EventEmitter {
-	public sessionInfo?: ClientSessionInfo;
-	public peer: Peer;
+export class ClientSession extends CommonClientSession<GatewayPayload, GatewayIdentifyProperties> {
+   public get authenticated(): boolean {
+      return !!this.user && !!this.properties;
+   }
 
-	private sentMessages: Map<number, GatewayPayload>;
-	private hearbeatTimeout?: Timer;
-	public sequence?: number;
+   public async subscribeToTopicsExtra() {
+      if (!this.sessionId || !this.user) {
+         throw new Error("Client session was not initialized");
+      }
 
-	public constructor(peer: Peer) {
-		super();
+      const userId = this.user?.id;
+      this.subscribe(userId);
 
-		this.peer = peer;
-		this.sentMessages = new Map();
+      const relationships = idFix(await prisma.relationship.getUserRelationships(userId, { select: { ...selectRelationshipUser, type: true } }));
+      const channels = idFix(
+         await prisma.channel.getUserChannels(userId, true, {
+            select: { ...merge(selectChannelRecipients, omitChannelRecipient(userId)), id: true },
+         }),
+      );
 
-		this.startHeartbeatTimeout();
-	}
+      const publicUserIds = [...new Set([...relationships.map((x) => x.user.id), ...channels.flatMap((x) => x.recipients).map((x) => x.id)])];
+      const presenceUserIds = [...new Set([...relationships.filter((x) => x.type === RelationshipType.FRIEND).map((x) => x.user.id)])];
 
-	public async initialize(sessionInfo?: ClientSessionInfo) {
-		this.sessionInfo = sessionInfo;
-		await this.subscribeClientEvents();
+      for (const channel of channels) {
+         this.subscribe(channel.id);
+      }
 
-		if (!this.hearbeatTimeout) {
-			this.startHeartbeatTimeout();
-		}
-	}
+      // Users from Relationships
+      for (const userId of publicUserIds) {
+         this.subscribe(`${userId}_public`);
+      }
 
-	public resetTimeout() {
-		clearTimeout(this.hearbeatTimeout);
-		this.startHeartbeatTimeout();
-	}
-
-	public dispose() {
-		clearTimeout(this.hearbeatTimeout);
-		this.removeAllListeners();
-	}
-
-	public subscribe(topic: string) {
-		this.peer.subscribe(topic);
-	}
-
-	public unsubscribe(topic: string) {
-		this.peer.unsubscribe(topic);
-	}
-
-	public isSubscribed(topic: string) {
-		return this.peer.topics.has(topic);
-	}
-
-	public getIncreasedSequence() {
-		this.sequence = this.sequence !== undefined ? this.sequence + 1 : 0;
-		return this.sequence;
-	}
-
-	public addMessage(data: GatewayPayload) {
-		this.sentMessages.set(data.s, data);
-	}
-
-	public getMessages() {
-		return this.sentMessages;
-	}
-
-	public getSubscriptions() {
-		return this.peer.topics;
-	}
-
-	private async subscribeClientEvents() {
-		if (!this.sessionInfo) {
-			throw new Error("Client session was not initialized");
-		}
-
-		const userId = this.sessionInfo.user.id;
-		this.subscribe(userId);
-
-		const relationships = idFix(await prisma.relationship.getUserRelationships(userId, { select: { ...selectRelationshipUser, type: true } }));
-		const channels = idFix(
-			await prisma.channel.getUserChannels(userId, true, {
-				select: { ...merge(selectChannelRecipients, omitChannelRecipient(userId)), id: true },
-			}),
-		);
-
-		const publicUserIds = [...new Set([...relationships.map((x) => x.user.id), ...channels.flatMap((x) => x.recipients).map((x) => x.id)])];
-		const presenceUserIds = [...new Set([...relationships.filter((x) => x.type === RelationshipType.FRIEND).map((x) => x.user.id)])];
-
-		for (const channel of channels) {
-			this.subscribe(channel.id);
-		}
-
-		// Users from Relationships
-		for (const userId of publicUserIds) {
-			this.subscribe(`${userId}_public`);
-		}
-
-		for (const userId of presenceUserIds) {
-			this.subscribe(`${userId}_presence`);
-		}
-	}
-
-	private startHeartbeatTimeout() {
-		const tolerance = 3000;
-
-		this.hearbeatTimeout = setTimeout(() => {
-			this.emit("timeout", this.sessionInfo);
-			this.dispose();
-			this.peer.close(GatewayCode.SESSION_TIMEOUT, "SESSION_TIMEOUT");
-		}, constants.HEARTBEAT_INTERVAL + tolerance);
-	}
+      for (const userId of presenceUserIds) {
+         this.subscribe(`${userId}_presence`);
+      }
+   }
 }

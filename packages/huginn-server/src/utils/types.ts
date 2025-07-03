@@ -1,30 +1,24 @@
 import type {
-	APIEmbed,
-	APIPostAttachmentJSONBody,
-	APIThumbnail,
-	APIUser,
-	APIVideo,
-	GatewayIdentifyProperties,
-	IdentityTokenPayload,
-	TokenPayload,
+   APIEmbed,
+   APIPostAttachmentJSONBody,
+   APIThumbnail, APIVideo, IdentityTokenPayload,
+   Snowflake,
+   TokenPayload
 } from "@huginn/shared";
 import type { Session } from "hono-sessions";
 
 export type ServerGatewayOptions = {
-	logHeartbeat: boolean;
+   logHeartbeat: boolean;
 };
 
-export type ClientSessionInfo = {
-	sessionId: string;
-	user: APIUser;
-} & GatewayIdentifyProperties;
+export type ClientSessionState = "unauthenticated" | "authenticated";
 
 export type AppVersionInfo = {
-	version: string;
-	pub_date: string;
-	url: string;
-	signature: string;
-	notes: string;
+   version: string;
+   pub_date: string;
+   url: string;
+   signature: string;
+   notes: string;
 };
 
 export type DBEmbed = Omit<APIEmbed, "thumbnail" | "video"> & { thumbnail?: DBThumbnail; video?: DBVideo };
@@ -32,19 +26,25 @@ export type DBThumbnail = Required<APIThumbnail>;
 export type DBVideo = Required<APIVideo>;
 
 export type DBAttachment = Omit<APIPostAttachmentJSONBody, "id"> & {
-	contentType: string;
-	size: number;
-	url: string;
-	height?: number;
-	width?: number;
-	flags: number;
+   contentType: string;
+   size: number;
+   url: string;
+   height?: number;
+   width?: number;
+   flags: number;
 };
 
 declare module "hono" {
-	interface ContextVariableMap {
-		tokenPayload: TokenPayload;
-		identityTokenPayload: IdentityTokenPayload;
-		token: string;
-		session: Session;
-	}
+   interface ContextVariableMap {
+      tokenPayload: TokenPayload;
+      identityTokenPayload: IdentityTokenPayload;
+      token: string;
+      session: Session;
+   }
+}
+
+declare module "crossws" {
+   interface PeerContext {
+      sessionId: Snowflake;
+   }
 }

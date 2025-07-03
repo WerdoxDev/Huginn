@@ -2,11 +2,11 @@ import crossws from "crossws/adapters/bun";
 import { gateway } from "#setup";
 
 const ws = crossws({
-	hooks: {
-		open: gateway.open.bind(gateway),
-		close: gateway.close.bind(gateway),
-		message: gateway.message.bind(gateway),
-	},
+   hooks: {
+      open: gateway._internalOnOpen.bind(gateway),
+      close: gateway._internalOnClose.bind(gateway),
+      message: gateway._internalOnMessage.bind(gateway),
+   },
 });
 
 export { ws };

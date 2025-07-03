@@ -6,14 +6,14 @@ import { dispatchToTopic } from "#utils/gateway-utils";
 import { verifyJwt } from "#utils/route-utils";
 
 createRoute("POST", "/api/channels/:channelId/typing", verifyJwt(), async (c) => {
-	const payload = c.get("tokenPayload");
-	const { channelId } = c.req.param();
+   const payload = c.get("tokenPayload");
+   const { channelId } = c.req.param();
 
-	const channel = idFix(await prisma.channel.getById(channelId, { select: merge(selectChannelRecipients, omitChannelRecipient(payload.id)) }));
+   const channel = idFix(await prisma.channel.getById(channelId, { select: merge(selectChannelRecipients, omitChannelRecipient(payload.id)) }));
 
-	for (const recipient of channel.recipients) {
-		dispatchToTopic(recipient.id, "typying_start", { channelId, userId: payload.id, timestamp: Date.now() });
-	}
+   for (const recipient of channel.recipients) {
+      dispatchToTopic(recipient.id, "typing_start", { channelId, userId: payload.id, timestamp: Date.now() });
+   }
 
-	return c.newResponse(null, HttpCode.NO_CONTENT);
+   return c.newResponse(null, HttpCode.NO_CONTENT);
 });
