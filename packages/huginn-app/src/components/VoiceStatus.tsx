@@ -1,4 +1,5 @@
 import { useChannelName } from "@hooks/api-hooks/channelHooks";
+import type { WebsocketStatus } from "@huginn/shared";
 import { useClient } from "@stores/apiStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore } from "@stores/voiceStore";
@@ -7,11 +8,19 @@ import { useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router";
 import Tooltip from "./tooltip/Tooltip";
 
+const statusTexts: Record<WebsocketStatus, string> = {
+	connected: "RTC Signalling...",
+	authenticated: "Connected",
+	connecting: "RTC Signalling...",
+	reconnecting: "Reconnecting...",
+	disconnected: "Disconnected",
+};
+
 export default function VoiceStatus() {
 	const { voiceState } = useVoiceStore();
 	const client = useClient();
 	const { user } = useThisUser();
-	const [state, setState] = useState<"rtc" | "connected">("rtc");
+	const [status, setStatus] = useState<WebsocketStatus>(client.voice.status);
 	const channelName = useChannelName(voiceState.channelId ?? undefined);
 	const [rtt, setRtt] = useState(0);
 
@@ -29,34 +38,38 @@ export default function VoiceStatus() {
 		return `hsl(${hue}, 100%, 73%)`;
 	}, [rtt]);
 
-	useEffect(() => {
-		setState("rtc");
-	}, [voiceState.channelId]);
+	// useEffect(() => {
+	// 	setState("rtc");
+	// }, [voiceState.channelId]);
 
 	useEffect(() => {
-		setState(client.voice.sendTransport ? "connected" : "rtc");
-
-		const unlisten = client.voice.listen("send_transport_ready", () => {
-			setState("connected");
+		const unlisten = client.voice.listen("status_changed", (status) => {
+			console.log(status, "STATUS");
+			setStatus(status);
 		});
+		// setState(client.voice.sendTransport ? "connected" : "rtc");
 
-		const unlisten2 = client.voice.listen("connected", () => {
-			setState("rtc");
-		});
+		// const unlisten = client.voice.listen("send_transport_ready", () => {
+		// 	setState("connected");
+		// });
 
-		const unlisten3 = client.voice.listen("pong", (d) => {
-			setRtt(d.rtt);
-		});
+		// const unlisten2 = client.voice.listen("connected", () => {
+		// 	setState("rtc");
+		// });
+
+		// const unlisten3 = client.voice.listen("pong", (d) => {
+		// 	setRtt(d.rtt);
+		// });
 
 		return () => {
 			unlisten();
-			unlisten2();
-			unlisten3();
+			// unlisten2();
+			// unlisten3();
 		};
 	}, []);
 
-	function disconnect() {
-		client.gateway.disconnectVoice();
+	async function disconnect() {
+		await client.gateway.disconnectVoice();
 	}
 
 	if (!user || !voiceState.channelId) {
@@ -69,17 +82,30 @@ export default function VoiceStatus() {
 				<div className="flex flex-col">
 					<div className="flex items-center gap-x-1">
 						<Tooltip>
-							{state === "rtc" ? (
-								<IconMingcuteWifiOffLine className="size-6 text-warning" />
+							{status !== "authenticated" ? (
+								<IconMingcuteWifiOffLine
+									className={clsx(
+										"size-6",
+										(status === "connecting" || status === "reconnecting" || status === "connected") && "text-warning",
+										status === "disconnected" && "text-error",
+									)}
+								/>
 							) : (
 								<Tooltip.Trigger className="cursor-default">
 									<IconMingcuteWifiLine className="size-6 text-success transition-colors" style={{ color: latencyColor }} />
 								</Tooltip.Trigger>
 							)}
-							<Tooltip.Content extrastyle={{ color: latencyColor }}>{rtt} ms</Tooltip.Content>
+							<Tooltip.Content extraStyle={{ color: latencyColor }}>{rtt} ms</Tooltip.Content>
 						</Tooltip>
-						<div className={clsx("font-bold text-sm transition-colors", state === "rtc" && "text-warning!")} style={{ color: latencyColor }}>
-							{state === "rtc" ? "RTC Signaling" : "Connected"}
+						<div
+							className={clsx(
+								"font-bold text-sm transition-colors",
+								(status === "connecting" || status === "reconnecting" || status === "connected") && "!text-warning",
+								status === "disconnected" && "!text-error",
+							)}
+							style={{ color: latencyColor }}
+						>
+							{statusTexts[status]}
 						</div>
 					</div>
 					<NavLink prefetch="intent" to={`/channels/@me/${voiceState.channelId}`} className="ml-7 text-text/70 text-xs hover:underline">

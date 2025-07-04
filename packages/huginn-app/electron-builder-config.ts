@@ -15,10 +15,11 @@ export default {
       icon: "assets/icon.ico",
    },
    artifactName: "${productName}_${version}_${arch}-setup.${ext}",
-   files: ["dist/**/*", "!dist/electron", "!node_modules/**/*", ".vite/build/**/*"],
+   files: ["dist/**/*", "!dist/electron", "!node_modules/**/*", ".electron/**/*"],
    directories: {
       output: "dist/electron",
    },
    icon: "assets/icon.ico",
-   extraResources: ["assets", "cpp/executables"],
+   extraResources: ["assets", { from: "node_modules/application-loopback/bin", to: "node_modules/application-loopback/bin" }],
+   asarUnpack: ["**/application-loopback/bin"]
 } as Configuration;

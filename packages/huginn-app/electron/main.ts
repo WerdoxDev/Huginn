@@ -56,7 +56,7 @@ function createWindow() {
 
       mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
    } else {
-      const filePath = path.join(_dirname, "../../dist/index.html")
+      const filePath = path.join(_dirname, "../dist/index.html")
       log("app:electron", "default", "load", "url:", filePath)
 
       mainWindow.loadFile(filePath);
