@@ -2,6 +2,7 @@ import type { types } from "mediasoup";
 import type { RtpCapabilities, RtpParameters } from "mediasoup/node/lib/rtpParametersTypes";
 import type { DtlsParameters, IceCandidate, IceParameters } from "mediasoup/node/lib/WebRtcTransportTypes";
 import type { Snowflake } from "./snowflake";
+import type { WebsocketStatus } from "./websocket-types";
 
 export enum VoiceOperations {
    HELLO = 0,
@@ -59,6 +60,7 @@ export type VoiceEvents = {
    open: undefined,
    close: number;
    hello: VoiceHelloData,
+   status_changed: WebsocketStatus,
    identify: VoiceIdentifyData,
    ready: VoiceReadyData,
    create_transport: VoiceCreateTransportData,
