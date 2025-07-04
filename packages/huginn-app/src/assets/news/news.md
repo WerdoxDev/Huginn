@@ -1,4 +1,5 @@
-### **New small features to voice**
+### **Voice && Connection Bug Fixes**
 
-- Noise suppression toggle!
-- Fixed a bug with screenshare FPS and state
+- Auto voice reconnecting
+- Login info is now properly retained. Eliminating the need to login again most of the times.
+- Bunch of code refactoring (you won't see a difference :P)
