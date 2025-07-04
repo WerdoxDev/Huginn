@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.42.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.42.0...app@v0.42.1) (2025-07-04)
+
+
+### Bug Fixes
+
+* **app:** add forgotten updated news.md ([0c5fa4b](https://github.com/WerdoxDev/Huginn/commit/0c5fa4b774685d670dc70843621d269afd8a7ca8))
+
 ## [0.42.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.41.0...app@v0.42.0) (2025-07-04)
 
 
