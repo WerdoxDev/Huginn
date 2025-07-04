@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.22.0...shared@v0.23.0) (2025-07-04)
+
+
+### Features
+
+* **shared:** make gateway/voice types way more strong + new logger implementation with type checking ([c93e84b](https://github.com/WerdoxDev/Huginn/commit/c93e84bf675bd5ca15b1a7df03fe027d6b121365))
+
 ## [0.22.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.21.0...shared@v0.22.0) (2025-06-19)
 
 
