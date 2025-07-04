@@ -36,6 +36,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
       this._status = newStatus;
       this.emit("status_changed", newStatus);
    }
+
    public get status() {
       return this._status;
    }

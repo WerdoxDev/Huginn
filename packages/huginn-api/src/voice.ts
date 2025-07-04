@@ -46,7 +46,15 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
    private recvTransport?: Transport;
    private listeners: WeakMap<Producer, (newTrack: MediaStreamTrack | null) => void>;
 
-   public status: WebsocketStatus = "disconnected";
+   private _status: WebsocketStatus = "disconnected";
+   public set status(newStatus: WebsocketStatus) {
+      this._status = newStatus;
+      this.emit("status_changed", newStatus);
+   }
+
+   public get status() {
+      return this._status;
+   }
 
    public constructor(client: HuginnClient, options?: Partial<VoiceOptions>) {
       super();
@@ -74,7 +82,52 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
    public close(): void {
       log("api:voice", "default", "intentional close")
 
+      // We set this so it won't try to reconnect again. (it will log it but will fail to do so)
+      this.connectionInfo = undefined;
+
       this.socket?.close(GatewayCode.INTENTIONAL_CLOSE);
+   }
+
+   private onOpen(_e: Event) {
+      log("api:voice", "default", "connected");
+
+      this.status = "connected";
+      this.emit("connected", undefined);
+   }
+
+   private onClose(e: CloseEvent) {
+      log("api:voice", "default", "closed", "c:", e.code, "r:", e.reason);
+
+      this.status = "disconnected";
+      this.stopHeartbeat();
+      this.stopPing();
+      this.reset();
+
+      this.emit("disconnected", undefined);
+
+      // Completely reset by setting connection info to undefined
+      if (e.code === GatewayCode.INTENTIONAL_CLOSE) {
+         this.connectionInfo = undefined;
+         return;
+      }
+
+      this.tryReconnect();
+   }
+
+   private tryReconnect() {
+      setTimeout(async () => {
+         log("api:voice", "default", "try reconnect");
+
+         // If we are able to reconnect
+         if (this.connectionInfo) {
+            this.status = "reconnecting";
+
+            if (this.client.gateway.status !== "authenticated") {
+               await this.client.gateway.waitForEvents(["ready", "resumed"], true);
+            }
+            await this.client.gateway.connectVoice(this.connectionInfo.guildId, this.connectionInfo.channelId, this.connectionInfo.token)
+         }
+      }, 2000);
    }
 
    public async startStreaming(cameraTrack?: MediaStreamTrack, microphoneTrack?: MediaStreamTrack): Promise<void> {
@@ -274,48 +327,6 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       this.socket?.addEventListener("open", this.onOpen.bind(this));
       this.socket?.addEventListener("close", this.onClose.bind(this));
       this.socket?.addEventListener("message", this.onMessage.bind(this));
-   }
-
-   private onOpen(_e: Event) {
-      log("api:voice", "default", "connected");
-
-      this.status = "connected";
-      this.emit("connected", undefined);
-   }
-
-   private onClose(e: CloseEvent) {
-      log("api:voice", "default", "closed", "c:", e.code, "r:", e.reason);
-
-      this.status = "disconnected";
-      this.stopHeartbeat();
-      this.stopPing();
-      this.reset();
-
-      this.emit("disconnected", undefined);
-
-      // Completely reset by setting connection info to undefined
-      if (e.code === GatewayCode.INTENTIONAL_CLOSE) {
-         this.connectionInfo = undefined;
-         return;
-      }
-
-      this.tryReconnect();
-   }
-
-   private tryReconnect() {
-      setTimeout(async () => {
-         log("api:voice", "default", "try reconnect");
-
-         this.status = "reconnecting";
-
-         // If we are able to reconnect
-         if (this.connectionInfo) {
-            if (this.client.gateway.status !== "authenticated") {
-               await this.client.gateway.waitForEvents(["ready", "resumed"], true);
-            }
-            await this.client.gateway.connectVoice(this.connectionInfo.guildId, this.connectionInfo.channelId, this.connectionInfo.token)
-         }
-      }, 2000);
    }
 
    private reset() {

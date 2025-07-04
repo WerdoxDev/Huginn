@@ -33,6 +33,7 @@ dist-ssr
 *.local
 *.tsbuildinfo
 *.build.tsbuildinfo
+.electron
 
 # Editor directories and files
 .vscode/*
