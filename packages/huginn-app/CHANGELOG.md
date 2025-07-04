@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.42.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.42.1...app@v0.42.2) (2025-07-04)
+
+
+### Bug Fixes
+
+* **app:** update application-loopback to fix build problem ([a89be59](https://github.com/WerdoxDev/Huginn/commit/a89be595126575cf642dc2ecdb4b46bde198b65b))
+
 ## [0.42.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.42.0...app@v0.42.1) (2025-07-04)
 
 
