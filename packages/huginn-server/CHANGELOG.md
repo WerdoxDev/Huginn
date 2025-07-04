@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.22.2...server@v0.23.0) (2025-07-04)
+
+
+### Features
+
+* **server:** use new shared websocket and client-session implementation ([8b4ca03](https://github.com/WerdoxDev/Huginn/commit/8b4ca03912f8fb68ffdea35761b5e835916e0dd5))
+
 ## [0.22.2](https://github.com/WerdoxDev/Huginn/compare/server@v0.22.1...server@v0.22.2) (2025-05-16)
 
 

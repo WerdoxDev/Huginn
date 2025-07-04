@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.9.0...backend-shared@v0.10.0) (2025-07-04)
+
+
+### Features
+
+* **backend-shared:** add shared websocket and client-session implementation ([1c7413e](https://github.com/WerdoxDev/Huginn/commit/1c7413ea0d80f539ec2525600bdbe65e75721553))
+
 ## [0.9.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.8.0...backend-shared@v0.9.0) (2025-04-14)
 
 
