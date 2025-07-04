@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.18.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.17.0...api@v0.18.0) (2025-07-04)
+
+
+### Features
+
+* **api:** add much better state tracking and initialization strategy to voice and gateway ([92e8e6e](https://github.com/WerdoxDev/Huginn/commit/92e8e6e40d78d1cea2ebe03b7d7d0e3dd622bcc9))
+* **api:** add voice websocket status change event ([c569dae](https://github.com/WerdoxDev/Huginn/commit/c569daebb3ac503121ff84cc774ca38fb5abf074))
+
 ## [0.17.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.16.0...api@v0.17.0) (2025-06-19)
 
 

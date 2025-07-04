@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.7.0...voice@v0.8.0) (2025-07-04)
+
+
+### Features
+
+* **voice:** use new shared websocket implementation + bunch of renames ([fc89f9e](https://github.com/WerdoxDev/Huginn/commit/fc89f9e955984276d18a7243b726cd827b13b629))
+
 ## [0.7.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.6.0...voice@v0.7.0) (2025-06-09)
 
 

@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.42.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.41.0...app@v0.42.0) (2025-07-04)
+
+
+### Features
+
+* **app:** refactor entire initialization method and fix bunch of state checking errors ([8208eea](https://github.com/WerdoxDev/Huginn/commit/8208eeafc955dc415276631bfaeb5a5b8798e1fd))
+
+
+### Bug Fixes
+
+* **app:** electron build is not correctly bundling application-loopback package ([de7fd89](https://github.com/WerdoxDev/Huginn/commit/de7fd89bc943303d4a1911a76ab79fa9c4817cf0))
+* **app:** start background svg is to small on close state ([e5c4bcf](https://github.com/WerdoxDev/Huginn/commit/e5c4bcfb8af4ea410f9ef836ef1c7830757db091))
+
 ## [0.41.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.40.0...app@v0.41.0) (2025-06-19)
 
 
