@@ -196,7 +196,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
          t: "resumed",
          op: GatewayOperations.DISPATCH,
          d: undefined,
-         s: session.getIncreasedSequence(),
+         s: result.oldSession.getIncreasedSequence(),
       };
 
       this.send(result.oldSession.peer, resumedData);
@@ -224,7 +224,8 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
          data.selfVideo,
       );
 
-      if (previousState?.channelId !== data.channelId) {
+      // If the new place is a valid channel and is not the same as before
+      if (data.channelId && previousState?.channelId !== data.channelId) {
          const token = await createVoiceToken(userId);
          dispatchToTopic(userId, "voice_server_update", { token });
       }
