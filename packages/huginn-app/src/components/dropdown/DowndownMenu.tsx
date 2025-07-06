@@ -17,7 +17,7 @@ export default function DropdownMenu(props: MenuProps<"div">) {
 
 function Button<T extends ElementType>(props: MenuButtonProps<T>) {
 	// @ts-ignore
-	return <MenuButton {...props} />;
+	return <MenuButton {...props} className={clsx("cursor-pointer", props.className)} />;
 }
 
 function Items(props: MenuItemsProps) {

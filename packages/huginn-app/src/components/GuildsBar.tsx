@@ -4,11 +4,11 @@ import { useClient } from "@stores/apiStore";
 import { useReadStates } from "@stores/readStatesStore";
 import { useQuery } from "@tanstack/react-query";
 import moment from "moment";
-import { AnimatePresence, type Variants, motion } from "motion/react";
+import { AnimatePresence, motion, type Variants } from "motion/react";
 import { useMemo } from "react";
-import UnreadChannel from "./UnreadChannel";
 import GuildButton from "./button/GuildButton";
 import HomeButton from "./button/HomeButton";
+import UnreadChannel from "./UnreadChannel";
 
 export default function GuildsBar() {
 	const client = useClient();

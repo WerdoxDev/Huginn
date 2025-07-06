@@ -20,6 +20,6 @@ export default {
       output: "dist/electron",
    },
    icon: "assets/icon.ico",
-   extraResources: ["assets", { from: "node_modules/application-loopback/bin", to: "node_modules/application-loopback/bin" }],
+   extraResources: ["assets", { from: "../../node_modules/application-loopback/bin", to: "node_modules/application-loopback/bin" }],
    asarUnpack: ["**/application-loopback/bin"]
 } as Configuration;

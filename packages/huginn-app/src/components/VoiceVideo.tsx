@@ -1,11 +1,11 @@
-import { useUser } from "@hooks/api-hooks/userHooks";
 import type { APIPublicUser, HMediaKind } from "@huginn/shared";
 import { useClient } from "@stores/apiStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { motion, type Transition, type Variants } from "motion/react";
+import { type RefObject, useEffect, useMemo, useRef, useState } from "react";
 import LoadingIcon from "./LoadingIcon";
 
 export default function VoiceVideo(props: {
@@ -15,11 +15,13 @@ export default function VoiceVideo(props: {
 	kind: HMediaKind;
 	gridElementWidth: number;
 	srcObject?: MediaProvider;
-	maximized?: boolean;
+	isMaximized?: boolean;
+	isResizing?: boolean;
 	onClick: (producerId: string) => void;
+	ref?: RefObject<HTMLButtonElement>;
 }) {
 	const { open: openContextMenu } = useContextMenu("voice_user");
-	const { remoteSources, voiceState } = useVoiceStore();
+	const { remoteSources, localVoiceState: voiceState } = useVoiceStore();
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const frameCallbackHandleRef = useRef<number | null>(null);
 	const client = useClient();
@@ -95,38 +97,60 @@ export default function VoiceVideo(props: {
 		};
 	}, []);
 
+	const transition: Transition = { type: "spring", bounce: 0, damping: 26, stiffness: 200 };
+
+	const variants: Variants = {
+		visible: {
+			scale: 1,
+			opacity: 1,
+			transition,
+		},
+		hidden: { scale: 0, opacity: 0, transition },
+		exit: { scale: 0, opacity: 0, transition },
+	};
+
 	return (
-		<button
+		<motion.button
+			layout={!props.isResizing}
+			variants={variants}
+			initial="hidden"
+			animate="visible"
+			exit="exit"
+			transition={transition}
+			ref={props.ref}
 			onClick={() => props.onClick(props.producerId ?? "")}
+			style={{ width: props.gridElementWidth }}
 			onContextMenu={
 				props.user.id !== user?.id
 					? (e) => openContextMenu({ user: props.user, producerId: props.producerId, kind: "screen_audio" }, e)
 					: undefined
 			}
-			key={props.consumerId ?? props.producerId}
 			id={props.consumerId}
 			type="button"
 			className={clsx(
 				"group relative flex aspect-video shrink-0 cursor-pointer flex-col items-center justify-center overflow-hidden bg-tertiary",
-				!props.maximized && "rounded-xl",
+				!props.isMaximized && "rounded-xl border-2 border-background",
 			)}
-			style={{ width: props.gridElementWidth }}
 		>
-			<div className="absolute top-2 right-2 flex gap-x-2 rounded-lg bg-tertiary px-2 py-1 italic opacity-0 transition-opacity group-hover:opacity-100">
+			<motion.div
+				layout={!props.isResizing ? "position" : false}
+				transition={transition}
+				className="absolute top-2 right-2 flex gap-x-2 rounded-lg bg-tertiary px-2 py-1 italic opacity-0 transition-opacity group-hover:opacity-100"
+			>
 				{hasAudio ? <IconMingcuteVolumeFill className="text-success" /> : <IconMingcuteVolumeOffFill className="size-5 text-error" />}
 				<div className="font-bold text-sm text-white/90">
 					{height}
 					<span className="text-white/60">P</span> {estimateFps}
 					<span className="text-white/60"> FPS</span>
 				</div>
-			</div>
-			<div className="absolute bottom-2 left-2 flex items-center gap-x-2">
+			</motion.div>
+			<motion.div layout={!props.isResizing ? "position" : false} transition={transition} className="absolute bottom-2 left-2 flex gap-x-2">
 				<div className="flex items-center justify-center gap-x-2 rounded-lg bg-tertiary px-2 py-1 text-white opacity-0 transition-opacity group-hover/wrapper:opacity-100">
 					<IconMingcuteMonitorFill className="size-5" />
 					{props.user.displayName ?? props.user.username}
 				</div>
-			</div>
+			</motion.div>
 			{!props.srcObject ? <LoadingIcon /> : <video className="h-full w-full" ref={videoRef} autoPlay playsInline muted />}
-		</button>
+		</motion.button>
 	);
 }

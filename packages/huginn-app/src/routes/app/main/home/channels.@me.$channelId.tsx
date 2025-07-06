@@ -1,9 +1,8 @@
-import { queryClient } from "@/main";
-import MessageBox from "@components/MessageBox";
 import ChannelMessages from "@components/channels/ChannelMessages";
 import DirectChannelCall from "@components/channels/DirectChannelCall";
-import HomeTopbar from "@components/channels/HomeTopbar";
+import HomeTopBar from "@components/channels/HomeTopbar";
 import RecipientsSidebar from "@components/channels/RecipientsSidebar";
+import MessageBox from "@components/MessageBox";
 import { useSafePathname } from "@hooks/useLastSafePathname";
 import { useErrorHandler } from "@hooks/useServerErrorHandler";
 import { ChannelType } from "@huginn/shared";
@@ -12,6 +11,7 @@ import { client, useClient } from "@stores/apiStore";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { type LoaderFunctionArgs, useParams } from "react-router";
+import { queryClient } from "@/main";
 
 export async function channelWithIdLoader({ params }: LoaderFunctionArgs) {
 	return queryClient.ensureInfiniteQueryData(getMessagesOptions(queryClient, client, params.channelId as string));
@@ -47,7 +47,7 @@ export default function ChannelWithId() {
 	return (
 		channel && (
 			<div className="flex h-full flex-col">
-				<HomeTopbar channel={channel} onRecipientsClick={onRecipientsClick} />
+				<HomeTopBar channel={channel} onRecipientsClick={onRecipientsClick} />
 				<div className="h-0.5 shrink-0 bg-white/10" />
 				<div className="flex h-full w-full overflow-hidden">
 					<div className="flex h-full w-full flex-col overflow-hidden">

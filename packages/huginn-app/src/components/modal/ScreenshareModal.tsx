@@ -15,7 +15,7 @@ import type { DisplaySource } from "@/types";
 export default function ScreenshareModal() {
 	const client = useClient();
 	const { screenshare: modal, updateModals } = useModals();
-	const { voiceState } = useVoiceStore();
+	const { localVoiceState: voiceState } = useVoiceStore();
 	const { data, isLoading, refetch } = useQuery({
 		queryKey: ["display-sources"],
 		queryFn: async () => await window.electronAPI.getDisplaySources(),
@@ -87,8 +87,6 @@ export default function ScreenshareModal() {
 			}
 
 			await client.voice.startScreensharing(stream.getVideoTracks()[0], audioTrack);
-
-			client.gateway.updateVoiceState(voiceState.selfMute, voiceState.selfDeaf, true, voiceState.selfVideo);
 			close();
 		});
 	}

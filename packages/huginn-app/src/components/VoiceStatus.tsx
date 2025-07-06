@@ -17,7 +17,7 @@ const statusTexts: Record<WebsocketStatus, string> = {
 };
 
 export default function VoiceStatus() {
-	const { voiceState } = useVoiceStore();
+	const { localVoiceState: voiceState } = useVoiceStore();
 	const client = useClient();
 	const { user } = useThisUser();
 	const [status, setStatus] = useState<WebsocketStatus>(client.voice.status);
@@ -38,32 +38,18 @@ export default function VoiceStatus() {
 		return `hsl(${hue}, 100%, 73%)`;
 	}, [rtt]);
 
-	// useEffect(() => {
-	// 	setState("rtc");
-	// }, [voiceState.channelId]);
-
 	useEffect(() => {
 		const unlisten = client.voice.listen("status_changed", (status) => {
-			console.log(status, "STATUS");
 			setStatus(status);
 		});
-		// setState(client.voice.sendTransport ? "connected" : "rtc");
 
-		// const unlisten = client.voice.listen("send_transport_ready", () => {
-		// 	setState("connected");
-		// });
-
-		// const unlisten2 = client.voice.listen("connected", () => {
-		// 	setState("rtc");
-		// });
-
-		// const unlisten3 = client.voice.listen("pong", (d) => {
-		// 	setRtt(d.rtt);
-		// });
+		const unlisten2 = client.voice.listen("pong", (d) => {
+			setRtt(d.rtt);
+		});
 
 		return () => {
 			unlisten();
-			// unlisten2();
+			unlisten2();
 			// unlisten3();
 		};
 	}, []);
@@ -95,7 +81,7 @@ export default function VoiceStatus() {
 									<IconMingcuteWifiLine className="size-6 text-success transition-colors" style={{ color: latencyColor }} />
 								</Tooltip.Trigger>
 							)}
-							<Tooltip.Content extraStyle={{ color: latencyColor }}>{rtt} ms</Tooltip.Content>
+							<Tooltip.Content extrastyle={{ color: latencyColor }}>{rtt} ms</Tooltip.Content>
 						</Tooltip>
 						<div
 							className={clsx(

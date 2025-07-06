@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { useEffect, useState } from "react";
 
 const statusTexts: Record<WebsocketStatus, string> = {
-	connected: "Connected",
+	connected: "Not Authenticated",
 	authenticated: "Authenticated",
 	connecting: "Connecting...",
 	reconnecting: "Reconnecting...",
@@ -31,9 +31,9 @@ export default function ConnectionStatus() {
 			<div
 				className={clsx(
 					"h-2 w-2 rounded-full",
-					(status === "connected" || status === "connecting" || status === "authenticated") && "bg-success",
+					status === "authenticated" && "bg-success",
 					(status === "disconnected" || status === "reconnecting") && "bg-error",
-					status === "reconnecting" && "bg-warning",
+					(status === "reconnecting" || status === "connecting" || status === "connected") && "bg-warning",
 				)}
 			/>
 			<span className="font-medium text-text/80 text-xs uppercase">{statusTexts[status]}</span>

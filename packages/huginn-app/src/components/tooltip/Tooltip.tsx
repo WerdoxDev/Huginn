@@ -47,7 +47,7 @@ function Trigger(props: HTMLProps<HTMLButtonElement> & { asChild?: boolean }) {
 	);
 }
 
-function Content(props: { extraClassName?: string; arrowClassName?: string; extraStyle?: React.CSSProperties } & HTMLProps<HTMLDivElement>) {
+function Content(props: { extraClassName?: string; arrowClassName?: string; extrastyle?: React.CSSProperties } & HTMLProps<HTMLDivElement>) {
 	const context = useTooltipContext();
 	const ref = useMergeRefs([context.refs.setFloating, props.ref]);
 	context.placement;
@@ -83,7 +83,7 @@ function Content(props: { extraClassName?: string; arrowClassName?: string; extr
 				style={{
 					...context.floatingStyles,
 					...props.style,
-					...props.extraStyle,
+					...props.extrastyle,
 				}}
 				{...context.getFloatingProps(props)}
 			>

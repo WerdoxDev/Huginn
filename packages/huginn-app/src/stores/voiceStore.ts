@@ -9,7 +9,7 @@ import { combine, devtools } from "zustand/middleware";
 import type { RemoteSource, VoicePreference } from "@/types";
 
 const initialStore = () => ({
-   voiceState: {} as GatewayVoiceState,
+   localVoiceState: {} as GatewayVoiceState,
    voiceStates: [] as Array<GatewayVoiceState>,
    callStates: [] as Array<GatewayCallState>,
    remoteSources: [] as RemoteSource[],
@@ -25,12 +25,12 @@ const store = createStore(
          setVoiceChannel: (channelId?: Snowflake, guildId?: Snowflake) => {
             log("app:voice-store", "voice-state", "set channel", "cid:", channelId, "gid:", guildId)
 
-            return set((state) => ({ voiceState: { ...state.voiceState, channelId: channelId ?? null, guildId: guildId ?? null } }))
+            return set((state) => ({ localVoiceState: { ...state.localVoiceState, channelId: channelId ?? null, guildId: guildId ?? null } }))
          },
-         updateSelfVoiceState: (selfMute: boolean, selfDeaf: boolean, selfStream: boolean, selfVideo: boolean) => {
+         updateLocalVoiceState: (selfMute: boolean, selfDeaf: boolean, selfStream: boolean, selfVideo: boolean) => {
             log("app:voice-store", "voice-state", "update self", "sm:", selfMute, "sd:", selfDeaf, "ss:", selfStream, "sv:", selfVideo)
 
-            return set((state) => ({ voiceState: { ...state.voiceState, selfMute, selfDeaf, selfStream, selfVideo } }))
+            return set((state) => ({ localVoiceState: { ...state.localVoiceState, selfMute, selfDeaf, selfStream, selfVideo } }))
          },
          updateVoiceState: (
             channelId: Snowflake,
@@ -211,17 +211,9 @@ export function initializeVoice() {
       const thisStore = store.getState();
 
       // our user's voice state update
-      if (d.userId === userStore.getState().user?.id) {
+      if (d.userId === client.user?.id) {
          thisStore.setVoiceChannel(d.channelId ?? undefined, d.guildId ?? undefined);
-
-         // // set speaking to false when we mute in the middle of speaking
-         // if (d.selfMute) {
-         //    thisStore.updateSpeakingState(d.userId, false);
-         //    // set speaking to true when we unmute in the middle of speaking
-         // } else if (!client.voice.localVoiceState.audioPaused) {
-         //    console.log("TRUE");
-         //    thisStore.updateSpeakingState(d.userId, true);
-         // }
+         client.voice.updateLocalVoiceState({ audioMuted: d.selfMute, consumersMuted: d.selfDeaf, streaming: d.selfStream, camera: d.selfVideo });
       } else {
          // create voice preference for new users
          if (!thisStore.voicePreferences.some((x) => x.userId === d.userId)) {
@@ -245,17 +237,19 @@ export function initializeVoice() {
          return;
       }
 
+      const thisStore = store.getState();
+
       // If we have a mic producer, manage it's state
       const producer = client.voice.producers.get("microphone");
       if (producer) {
          if (d.audioMuted || d.audioPaused) {
-            voiceStore.getState().updateSpeakingState(client.user.id, false);
+            thisStore.updateSpeakingState(client.user.id, false);
          } else if (!d.audioMuted && !d.audioPaused) {
-            voiceStore.getState().updateSpeakingState(client.user.id, true);
+            thisStore.updateSpeakingState(client.user.id, true);
          }
       }
 
-      voiceStore.getState().updateSelfVoiceState(d.audioMuted, d.consumersMuted, d.streaming, false);
+      thisStore.updateLocalVoiceState(d.audioMuted, d.consumersMuted, d.streaming, false);
    }));
 
    return () => {

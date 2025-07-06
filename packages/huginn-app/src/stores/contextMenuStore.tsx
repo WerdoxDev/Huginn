@@ -1,3 +1,5 @@
+import { createContext, type MouseEvent, type ReactNode, useContext, useMemo } from "react";
+import { createStore, useStore } from "zustand";
 import type {
 	ContextMenuDMChannel,
 	ContextMenuDMChannelRecipient,
@@ -5,8 +7,6 @@ import type {
 	ContextMenuStateProps,
 	ContextMenuVoiceUser,
 } from "@/types";
-import { type MouseEvent, type ReactNode, createContext, useContext, useMemo } from "react";
-import { createStore, useStore } from "zustand";
 
 const store = createStore(() => ({
 	dm_channel: undefined as ContextMenuStateProps<ContextMenuDMChannel> | undefined,

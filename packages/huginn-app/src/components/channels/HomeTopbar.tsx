@@ -9,7 +9,7 @@ import { useThisUser } from "@stores/userStore";
 import { useMemo } from "react";
 import type { AppDirectChannel } from "@/types";
 
-export default function HomeTopbar(props: { channel: AppDirectChannel; onRecipientsClick?: () => void }) {
+export default function HomeTopBar(props: { channel: AppDirectChannel; onRecipientsClick?: () => void }) {
 	const { user } = useThisUser();
 	const client = useClient();
 	const recipients = useUsers(props.channel.recipientIds);

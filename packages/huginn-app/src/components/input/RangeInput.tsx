@@ -19,9 +19,16 @@ export default function RangeInput(props: {
 	const isDragging = useRef(false);
 	const isHovering = useRef(false);
 	const [showTooltip, setShowTooltip] = useState(false);
+	const lastPercentage = useRef(percentage);
 
 	useEffect(() => {
-		props.onChange?.(percentage);
+		if (lastPercentage.current !== percentage) {
+			console.log("CHANGE");
+			props.onChange?.(percentage);
+			lastPercentage.current = percentage;
+		}
+
+		console.log(lastPercentage.current, percentage);
 	}, [percentage]);
 
 	useEffect(() => {

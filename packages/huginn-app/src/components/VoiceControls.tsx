@@ -20,7 +20,7 @@ export default function VoiceControls(props: {
 	onToggleFullscreen: () => Promise<void>;
 }) {
 	const client = useClient();
-	const { voiceState } = useVoiceStore();
+	const { localVoiceState: voiceState } = useVoiceStore();
 
 	return (
 		<Transition show={props.show}>

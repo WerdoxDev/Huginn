@@ -1,4 +1,5 @@
 import VoiceControls from "@components/VoiceControls";
+import VoicePreviewVideo from "@components/VoicePreviewVideo";
 import VoiceUser from "@components/VoiceUser";
 import VoiceVideo from "@components/VoiceVideo";
 import { useUsers } from "@hooks/api-hooks/userHooks";
@@ -12,13 +13,14 @@ import { useThisUser } from "@stores/userStore";
 import { useVoiceStore, voiceStore } from "@stores/voiceStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
+import { AnimatePresence } from "motion/react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 const minHeight = 250;
 const maxHeightPercentage = 60;
 
 export default function DirectChannelCall(props: { channelId: Snowflake }) {
-	const { voiceState, voiceStates, callStates, remoteSources, speakingStates } = useVoiceStore();
+	const { localVoiceState: voiceState, voiceStates, callStates, remoteSources, speakingStates } = useVoiceStore();
 
 	const { updateModals } = useModals();
 	const huginnWindow = useHuginnWindow();
@@ -34,12 +36,12 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	const usersLookup = useLookup(users, (user) => user.id);
 	const usersSpeakingLookup = useLookup(speakingStates, (state) => state.userId);
 	const remoteSourcesLookup = useLookup(remoteSources, (source) => source.userId);
-	const show = useMemo(() => users.length !== 0 && thisCallState, [props.channelId, users]);
+	const isShown = useMemo(() => users.length !== 0 && thisCallState, [props.channelId, users]);
 
-	const [containerRef, showControls] = useHover<HTMLDivElement>([user, show]);
+	const [containerRef, showControls] = useHover<HTMLDivElement>([user, isShown]);
 	const gridRef = useRef<HTMLDivElement>(null);
 	const resizerRef = useRef<HTMLDivElement>(null);
-	const isResizing = useRef(false);
+	const [isResizing, setIsResizing] = useState(false);
 	const [gridSize, setGridSize] = useState<{ elementWidth: number; elementHeight: number; rows: number; cols: number }>();
 	const [gridHeight, setGridHeight] = useState(250);
 	const { isFullscreen, toggleFullscreen } = useFullscreen(containerRef);
@@ -83,9 +85,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		resizerRef.current?.addEventListener(
 			"mousedown",
 			() => {
-				isResizing.current = true;
-				document.addEventListener("mousemove", resize);
-				document.addEventListener("mouseup", stopResize);
+				setIsResizing(true);
 			},
 			{ signal: controller.signal },
 		);
@@ -93,7 +93,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		return () => {
 			controller.abort();
 		};
-	}, [show]);
+	}, [isShown]);
 
 	useEffect(() => {
 		client.voice.listen("producer_closed", (d) => {
@@ -108,8 +108,20 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		updateGridSize();
 	}, [remoteSources, voiceStates, gridHeight, thisCallState, maximizedSource, isFullscreen, thisVoiceStates]);
 
+	useEffect(() => {
+		const controller = new AbortController();
+		if (isResizing) {
+			document.addEventListener("mousemove", resize, { signal: controller.signal });
+			document.addEventListener("mouseup", stopResize, { signal: controller.signal });
+		}
+
+		return () => {
+			controller.abort();
+		};
+	}, [isResizing]);
+
 	function resize(e: MouseEvent) {
-		if (!gridRef.current || !isResizing.current) {
+		if (!gridRef.current || !isResizing) {
 			return;
 		}
 
@@ -121,9 +133,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	}
 
 	function stopResize() {
-		isResizing.current = false;
-		document.removeEventListener("mousemove", resize);
-		document.removeEventListener("mouseup", stopResize);
+		setIsResizing(false);
 	}
 
 	function disconnect() {
@@ -146,8 +156,6 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		if (huginnWindow.environment === "browser") {
 			const stream = await navigator.mediaDevices.getDisplayMedia({ audio: true, video: true });
 			await client.voice.startScreensharing(stream.getVideoTracks()[0], stream.getAudioTracks()[0]);
-
-			client.gateway.updateVoiceState(voiceState.selfMute, voiceState.selfDeaf, true, voiceState.selfVideo);
 		} else {
 			updateModals({ screenshare: { isOpen: true } });
 		}
@@ -234,7 +242,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		setGridSize(best);
 	}
 
-	if (!user || !show) {
+	if (!user || !isShown) {
 		return;
 	}
 
@@ -252,61 +260,65 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 				ref={gridRef}
 				style={{ height: !isFullscreen ? gridHeight : "100%" }}
 			>
-				{isGridView &&
-					remoteSources
-						.filter(
-							(x) =>
-								!!usersLookup[x.userId] &&
-								(maximizedSource ? x.producerId === maximizedSource.producerId : x.kind === "screen_video" || x.kind === "camera"),
-						)
-						.map((x) => (
-							<VoiceVideo
-								kind={x.kind}
-								user={usersLookup[x.userId]}
-								maximized={!!maximizedSource}
-								onClick={maximizeSource}
-								key={x.userId}
-								consumerId={x.consumerId}
-								producerId={x.producerId}
+				<AnimatePresence mode="popLayout">
+					{isGridView &&
+						remoteSources
+							.filter(
+								(x) =>
+									!!usersLookup[x.userId] &&
+									(maximizedSource ? x.producerId === maximizedSource.producerId : x.kind === "screen_video" || x.kind === "camera"),
+							)
+							.map((x) => (
+								<VoiceVideo
+									key={`${x.userId}-video`}
+									kind={x.kind}
+									user={usersLookup[x.userId]}
+									isMaximized={!!maximizedSource}
+									onClick={maximizeSource}
+									consumerId={x.consumerId}
+									producerId={x.producerId}
+									gridElementWidth={gridSize?.elementWidth ?? 0}
+									srcObject={x.srcObject}
+									isResizing={isResizing}
+								/>
+							))}
+					{isGridView &&
+						!voiceState.channelId &&
+						thisVoiceStates
+							.filter((x) => x.selfStream)
+							.map((x) => (
+								<VoicePreviewVideo
+									key={`${x.userId}-video-preview`}
+									gridElementWidth={gridSize?.elementWidth ?? 0}
+									userId={x.userId}
+									onClick={connect}
+								/>
+							))}
+					{!maximizedSource &&
+						thisCallState?.ringing.map((x) => (
+							<VoiceUser
+								key={x}
+								isRinging={true}
 								gridElementWidth={gridSize?.elementWidth ?? 0}
-								srcObject={x.srcObject}
+								isGridView={isGridView}
+								user={usersLookup[x]}
+								isResizing={isResizing}
 							/>
 						))}
-				{isGridView &&
-					!voiceState.channelId &&
-					thisVoiceStates
-						.filter((x) => x.selfStream)
-						.map((x) => (
-							<div
+					{!maximizedSource &&
+						thisVoiceStates.map((x) => (
+							<VoiceUser
 								key={x.userId}
-								className="flex aspect-video items-center justify-center rounded-xl bg-background"
-								style={{ width: gridSize?.elementWidth ?? 0 }}
-							>
-								<button
-									onClick={connect}
-									type="button"
-									className="rounded-lg border border-text/80 bg-secondary px-4 py-2 text-text shadow-xl transition-colors hover:bg-tertiary"
-								>
-									Watch
-								</button>
-							</div>
+								gridElementWidth={gridSize?.elementWidth ?? 0}
+								isGridView={isGridView}
+								isSpeaking={usersSpeakingLookup[x.userId]?.speaking}
+								user={usersLookup[x.userId]}
+								voiceState={x}
+								producerId={remoteSourcesLookup[x.userId]?.producerId}
+								isResizing={isResizing}
+							/>
 						))}
-				{!maximizedSource &&
-					thisCallState?.ringing.map((x) => (
-						<VoiceUser key={x} ringing={true} gridElementWidth={gridSize?.elementWidth ?? 0} isGridView={isGridView} user={usersLookup[x]} />
-					))}
-				{!maximizedSource &&
-					thisVoiceStates.map((x) => (
-						<VoiceUser
-							key={x.userId}
-							gridElementWidth={gridSize?.elementWidth ?? 0}
-							isGridView={isGridView}
-							speaking={usersSpeakingLookup[x.userId]?.speaking}
-							user={usersLookup[x.userId]}
-							voiceState={x}
-							producerId={remoteSourcesLookup[x.userId]?.producerId}
-						/>
-					))}
+				</AnimatePresence>
 			</div>
 			<VoiceControls
 				show={showControls}
