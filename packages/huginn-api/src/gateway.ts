@@ -76,7 +76,6 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
       this.stopHeartbeat();
       this.emit("close", e.code);
 
-
       // Completely reset if it was intentionally closed
       if (e.code === GatewayCode.INTENTIONAL_CLOSE) {
          this.readyData = undefined;
@@ -102,8 +101,10 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
 
          this.connect();
 
-         // Only authenticate if it was previously authenticated
+         console.log(this.client.user, this.sessionId);
+         // Only authenticate if session was closed and it was previously authenticated
          if (this.client.user && !this.sessionId) {
+            await this.waitForEvents(["hello"]);
             await this.authenticate();
          }
       }, 2000);
@@ -114,6 +115,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
 
       // Already authenticated
       if (this.status === "authenticated") {
+         console.log("AUTHED");
          return { authenticated: true, retryable: false };
       }
 
@@ -256,7 +258,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
       log("api:gateway", "send", "update voice state", "sm:", updateVoiceStateData.d.selfMute, "sd:", updateVoiceStateData.d.selfDeaf, "ss:", updateVoiceStateData.d.selfStream, "sv:", updateVoiceStateData.d.selfVideo);
       this.send(updateVoiceStateData);
 
-      this.client.voice.updateLocalVoiceState({ audioMuted: selfMute, consumersMuted: selfDeaf })
+      this.client.voice.updateLocalVoiceState({ audioMuted: selfMute, consumersMuted: selfDeaf, streaming: selfStream, camera: selfVideo })
    }
 
    private startListening() {
@@ -314,8 +316,9 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
 
       this.startHeartbeat(data.d.heartbeatInterval / 2);
 
+      console.log(this.sequence, this.sessionId)
       // We already had a session so we try to resume it
-      if (this.sequence && this.sessionId) {
+      if (this.sequence !== undefined && this.sessionId) {
          const resumeData: GatewayResume = {
             op: GatewayOperations.RESUME,
             d: {

@@ -1,19 +1,23 @@
 // Bun Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Client should have correct defualt options: client default options 1`] = `
+`;
+
+exports[`Client should have correct default options: client default options 1`] = `
 {
   "cdn": {
-    "url": "https://asgard.huginn.dev",
+    "url": "https://midgard.huginn.dev",
   },
   "gateway": {
     "intents": 0,
-    "log": false,
-    "url": "wss://asgard.huginn.dev/gateway",
+    "url": "wss://midgard.huginn.dev/gateway",
   },
   "rest": {
-    "api": "https://asgard.huginn.dev/api",
+    "api": "https://midgard.huginn.dev/api",
     "authPrefix": "Bearer",
     "makeRequest": [Function: makeRequest],
+  },
+  "voice": {
+    "url": "wss://midgard.huginn.dev/voice",
   },
 }
 `;

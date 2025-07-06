@@ -195,7 +195,8 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          this.closeProducer(audioProducer.id);
       }
 
-      this.updateLocalVoiceState({ streaming: true });
+      this.client.gateway.updateVoiceState(this.localVoiceState.audioMuted, this.localVoiceState.consumersMuted, true, this.localVoiceState.camera);
+      // this.updateLocalVoiceState({ streaming: true });
    }
 
    public stopScreensharing(): void {
@@ -220,8 +221,6 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       }
 
       this.client.gateway.updateVoiceState(this.localVoiceState.audioMuted, this.localVoiceState.consumersMuted, false, this.localVoiceState.camera);
-
-      this.updateLocalVoiceState({ streaming: false });
    }
 
    private async openProducer(kind: HMediaKind, options: ProducerOptions<MediasoupAppData>) {
