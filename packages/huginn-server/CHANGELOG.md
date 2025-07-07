@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.23.0...server@v0.23.1) (2025-07-07)
+
+
+### Bug Fixes
+
+* **server:** resume is not sending a seq number continuing the old session + bug in voice server dispatch ([47aa045](https://github.com/WerdoxDev/Huginn/commit/47aa045a782df3ec2f1722492b5a11a746ae93b3))
+
 ## [0.23.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.22.2...server@v0.23.0) (2025-07-04)
 
 

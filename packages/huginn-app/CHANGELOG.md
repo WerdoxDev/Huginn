@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.43.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.42.2...app@v0.43.0) (2025-07-07)
+
+
+### Features
+
+* **app:** add animations to voice ui ([b272ec1](https://github.com/WerdoxDev/Huginn/commit/b272ec10b309b2db8f1388b5007c2b9cdf6ef8b3))
+
 ## [0.42.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.42.1...app@v0.42.2) (2025-07-04)
 
 
