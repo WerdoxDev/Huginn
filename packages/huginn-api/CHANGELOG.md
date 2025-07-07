@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.18.0...api@v0.18.1) (2025-07-07)
+
+
+### Bug Fixes
+
+* **api:** slightly update tests + bug in reconnecting ([ca8869a](https://github.com/WerdoxDev/Huginn/commit/ca8869a70681e482d9001234cd719fafc1e15217))
+
 ## [0.18.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.17.0...api@v0.18.0) (2025-07-04)
 
 
