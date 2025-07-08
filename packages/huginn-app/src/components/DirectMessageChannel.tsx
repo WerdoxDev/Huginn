@@ -35,7 +35,7 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
 			onContextMenu={(e) => {
 				openContextMenu(props.channel, e);
 			}}
-			className={clsx("group -mr-2 relative cursor-pointer rounded-md hover:bg-background active:bg-white/10", selected && "bg-white/10")}
+			className={clsx("group -mr-2 relative cursor-pointer rounded-md hover:bg-surface active:bg-white/10", selected && "bg-white/10")}
 			onClick={props.onSelected}
 		>
 			<NavLink prefetch="intent" className="flex items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>

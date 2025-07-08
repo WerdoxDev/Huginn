@@ -6,7 +6,7 @@ export default function DisplayPreview(props: { source: DisplaySource; onSelect:
 			<img
 				src={props.source.thumbnail}
 				alt={props.source.id}
-				className="aspect-video w-full rounded-lg object-cover transition-all group-hover:ring-2 group-hover:ring-primary"
+				className="aspect-video w-full rounded-lg object-cover transition-all group-hover:ring-2 group-hover:ring-primary-700"
 			/>
 			<div className="flex items-center gap-x-2">
 				{props.source.appIcon ? (

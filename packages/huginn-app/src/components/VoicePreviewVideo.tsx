@@ -30,13 +30,13 @@ export default function VoicePreviewVideo(props: {
 			animate="visible"
 			exit="exit"
 			ref={props.ref}
-			className="flex aspect-video items-center justify-center rounded-xl bg-background"
+			className="flex aspect-video items-center justify-center rounded-xl bg-surface"
 			style={{ width: props.gridElementWidth }}
 		>
 			<button
 				onClick={props.onClick}
 				type="button"
-				className="cursor-pointer rounded-lg border border-text/80 bg-secondary px-4 py-2 text-text shadow-xl transition-colors hover:bg-tertiary"
+				className="cursor-pointer rounded-lg border border-text/80 bg-surface-alt px-4 py-2 text-text shadow-xl transition-colors hover:bg-surface-deep"
 			>
 				Watch
 			</button>

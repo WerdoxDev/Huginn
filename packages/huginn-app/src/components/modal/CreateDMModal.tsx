@@ -63,7 +63,7 @@ export default function CreateDMModal() {
 		<>
 			<DialogPanel
 				transition
-				className="relative w-full max-w-md transform overflow-hidden rounded-xl border-2 border-primary bg-background transition-[opacity_transform] duration-200 data-closed:scale-90"
+				className="relative w-full max-w-md transform overflow-hidden rounded-xl border-2 border-primary-700 bg-surface transition-[opacity_transform] duration-200 data-closed:scale-90"
 			>
 				<DialogTitle className="flex items-center justify-center gap-x-1.5">
 					<div className="mt-5 font-medium text-2xl text-text">Create Direct Message</div>
@@ -83,10 +83,10 @@ export default function CreateDMModal() {
 
 					<AddRecipientInput relationships={data} onSelectionChanged={onSelectionChanged} />
 				</div>
-				<div className="bg-secondary p-5">
+				<div className="bg-surface-alt p-5">
 					<LoadingButton
 						loading={mutation.isPending}
-						className="h-10 w-full bg-primary"
+						className="h-10 w-full bg-primary-700"
 						onClick={findOrCreate}
 						disabled={selectedUsers.length === 0}
 					>

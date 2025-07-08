@@ -13,8 +13,8 @@ export default function SettingsAboutTab() {
 			</div>
 			<div>
 				<span>A simple, yet playful chat application to make chatting,</span> <span className="text-text/70">well... </span>
-				<span className="font-bold">FUN!</span> Inspired by <span className="text-success/90">Norse mythology</span>, it captures the spirit of{" "}
-				<span className="font-bold text-accent">Huginn</span>, one of <span className="text-error">Odin's</span> ravens, symbolizing thought and
+				<span className="font-bold">FUN!</span> Inspired by <span className="text-positive-100">Norse mythology</span>, it captures the spirit of{" "}
+				<span className="font-bold text-primary-500">Huginn</span>, one of <span className="text-negative-100">Odin's</span> ravens, symbolizing thought and
 				<span>memory.</span>
 			</div>
 			<div className="mt-10">

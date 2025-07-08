@@ -100,7 +100,7 @@ function Wrapper(props: {
 		<div
 			className={clsx(
 				props.className,
-				!props.headless && "flex w-full items-center rounded-md bg-secondary",
+				!props.headless && "flex w-full items-center rounded-md bg-surface-alt",
 				hasBorder &&
 					((props.border === "top" && "border-t-4") ||
 						(props.border === "bottom" && "border-b-4") ||
@@ -122,19 +122,19 @@ function Label(props: { children?: ReactNode; headless?: boolean; className?: st
 			htmlFor={inputContext.id}
 			className={clsx(
 				!props.headless && "select-none font-medium text-xs uppercase opacity-90",
-				inputContext.status.code === "none" ? "text-text" : "text-error",
+				inputContext.status.code === "none" ? "text-text" : "text-negative-100",
 				props.className,
 			)}
 		>
 			{props.text}
 			{!props.hideAdditional &&
 				(inputContext.status.text ? (
-					<span className={clsx("text-error", inputContext.status.text && "font-normal normal-case italic")}>
+					<span className={clsx("text-negative-100", inputContext.status.text && "font-normal normal-case italic")}>
 						<span className="px-0.5">-</span>
 						{inputContext.status.text}
 					</span>
 				) : (
-					inputContext.required && <span className="pl-0.5 text-error">*</span>
+					inputContext.required && <span className="pl-0.5 text-negative-100">*</span>
 				))}
 		</label>
 	);

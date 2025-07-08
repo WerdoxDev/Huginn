@@ -51,12 +51,12 @@ export default function ImagePreview(props: {
 				<div
 					className={clsx(
 						!errored && "absolute inset-0",
-						"flex items-center justify-center rounded-md bg-background/40 duration-200 data-closed:opacity-0",
+						"flex items-center justify-center rounded-md bg-surface/40 duration-200 data-closed:opacity-0",
 					)}
 					style={{ width: `${props.width}px`, height: `${props.height}px` }}
 				>
 					{!loaded && !errored && <LoadingIcon className="size-16" />}
-					{errored && <IconMingcuteWarningFill className="size-16 text-error" />}
+					{errored && <IconMingcuteWarningFill className="size-16 text-negative-100" />}
 				</div>
 			</Transition>
 		</>

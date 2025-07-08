@@ -75,7 +75,7 @@ export default function EditGroupModal() {
 	return (
 		<DialogPanel
 			transition
-			className="relative w-full max-w-lg transform overflow-hidden rounded-xl border-2 border-primary bg-background transition-[opacity_transform] duration-200 data-closed:scale-90"
+			className="relative w-full max-w-lg transform overflow-hidden rounded-xl border-2 border-primary-700 bg-surface transition-[opacity_transform] duration-200 data-closed:scale-90"
 		>
 			<DialogTitle className="mt-5 flex items-center justify-center gap-x-1.5">
 				<div className="font-medium text-2xl text-text">Edit Group</div>
@@ -90,11 +90,11 @@ export default function EditGroupModal() {
 					</HuginnInput.Wrapper>
 				</HuginnInput>
 			</div>
-			<div className="flex w-full items-center justify-end gap-x-2 bg-secondary p-5">
+			<div className="flex w-full items-center justify-end gap-x-2 bg-surface-alt p-5">
 				<HuginnButton className="h-10 w-20 decoration-white hover:underline" onClick={close}>
 					Cancel
 				</HuginnButton>
-				<LoadingButton loading={mutation.isPending} className="h-10 w-36 bg-primary" onClick={edit}>
+				<LoadingButton loading={mutation.isPending} className="h-10 w-36 bg-primary-700" onClick={edit}>
 					Save
 				</LoadingButton>
 			</div>

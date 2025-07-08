@@ -94,7 +94,7 @@ export default function ScreenshareModal() {
 	return (
 		<DialogPanel
 			transition
-			className="relative w-full max-w-lg transform select-none overflow-hidden rounded-xl border-2 border-primary/50 bg-background py-5 pb-0 transition-[opacity_transform] duration-200 data-closed:scale-90"
+			className="relative w-full max-w-lg transform select-none overflow-hidden rounded-xl border-2 border-primary-800 bg-surface py-5 pb-0 transition-[opacity_transform] duration-200 data-closed:scale-90"
 		>
 			<div className="flex flex-col gap-y-3 pb-5">
 				<div className="text-center font-bold text-2xl text-text">Share Screen</div>
@@ -105,12 +105,12 @@ export default function ScreenshareModal() {
 				</div>
 				{!selectedSource ? (
 					<TabGroup className="">
-						<TabList className="mx-3 flex items-center justify-center gap-x-1 rounded-lg bg-secondary p-1 text-text">
-							<Tab className="flex w-full cursor-pointer items-center justify-center gap-x-2 rounded-md py-1 text-text/80 hover:bg-white/5 data-selected:bg-background data-selected:text-white">
+						<TabList className="mx-3 flex items-center justify-center gap-x-1 rounded-lg bg-surface-alt p-1 text-text">
+							<Tab className="flex w-full cursor-pointer items-center justify-center gap-x-2 rounded-md py-1 text-text/80 hover:bg-primary-900/20 data-selected:bg-primary-900  data-selected:text-white">
 								<IconMingcuteMonitorFill className="size-5" />
 								<div>Screens</div>
 							</Tab>
-							<Tab className="flex w-full cursor-pointer items-center justify-center gap-x-2 rounded-md py-1 text-text/80 hover:bg-white/5 data-selected:bg-background data-selected:text-white">
+							<Tab className="flex w-full cursor-pointer items-center justify-center gap-x-2 rounded-md py-1 text-text/80 hover:bg-primary-900/20 data-selected:bg-primary-900  data-selected:text-white">
 								<IconMingcuteWebFill className="size-5" />
 								<div>Applications</div>
 							</Tab>
@@ -137,10 +137,10 @@ export default function ScreenshareModal() {
 						</TabPanels>
 					</TabGroup>
 				) : (
-					<div className="mx-5 mt-5 flex flex-col gap-y-4 rounded-lg border border-primary p-5">
+					<div className="mx-5 mt-5 flex flex-col gap-y-4 rounded-lg border border-primary-700 p-5">
 						<div className="flex flex-col gap-y-1.5 text-text">
 							<div className="">Streaming</div>
-							<div className="flex w-full items-center rounded-lg bg-tertiary p-2 px-2">
+							<div className="flex w-full items-center rounded-lg bg-surface-deep p-2 px-2">
 								{selectedSource.id.includes("window") ? (
 									<IconMingcuteWebFill className="mr-2 size-7 shrink-0 text-text/80" />
 								) : (
@@ -148,7 +148,7 @@ export default function ScreenshareModal() {
 								)}
 								<div className="mr-2 overflow-hidden text-ellipsis whitespace-nowrap text-white">{selectedSource.name}</div>
 								<button
-									className="ml-auto shrink-0 rounded-md bg-background px-3 py-1 text-sm transition-colors hover:bg-white/20"
+									className="ml-auto shrink-0 rounded-md bg-surface px-3 py-1 text-sm transition-colors hover:bg-white/20"
 									type="button"
 									onClick={() => setSelectedSource(undefined)}
 								>
@@ -158,7 +158,7 @@ export default function ScreenshareModal() {
 						</div>
 						<div className="flex flex-col gap-y-1.5">
 							<div className="text-text">Quality</div>
-							<div className="flex w-max justify-center gap-x-1 overflow-hidden rounded-md bg-tertiary p-1 text-sm">
+							<div className="flex w-max justify-center gap-x-1 overflow-hidden rounded-md bg-surface-deep p-1 text-sm">
 								<ScreenshareModalButton onClick={() => setSelectedQuality(0)} selected={selectedQuality === 0}>
 									480
 								</ScreenshareModalButton>
@@ -178,7 +178,7 @@ export default function ScreenshareModal() {
 						</div>
 						<div className="flex flex-col gap-y-1.5">
 							<div className="text-text">Framerate</div>
-							<div className="flex w-max justify-center gap-x-1 overflow-hidden rounded-md bg-tertiary p-1 text-sm">
+							<div className="flex w-max justify-center gap-x-1 overflow-hidden rounded-md bg-surface-deep p-1 text-sm">
 								<ScreenshareModalButton onClick={() => setSelectedFramerate(0)} selected={selectedFramerate === 0}>
 									15
 								</ScreenshareModalButton>
@@ -198,7 +198,7 @@ export default function ScreenshareModal() {
 								onChange={setShareAudio}
 								className="group flex cursor-pointer items-center justify-center gap-x-2.5"
 							>
-								<div className="flex size-6 items-center justify-center rounded-md bg-secondary p-1 ring-1 ring-white/20 group-hover:bg-tertiary group-data-checked:bg-primary group-data-checked:ring-0">
+								<div className="flex size-6 items-center justify-center rounded-md bg-surface-alt p-1 ring-1 ring-white/20 group-hover:bg-surface-deep group-data-checked:bg-primary-700 group-data-checked:ring-0">
 									<IconMingcuteCheckFill className="text-white opacity-0 group-data-checked:opacity-100" />
 								</div>
 								<div className="text-text">Share Audio</div>
@@ -207,20 +207,20 @@ export default function ScreenshareModal() {
 					</div>
 				)}
 			</div>
-			<div className="flex w-full items-center gap-x-2 bg-secondary p-5">
+			<div className="flex w-full items-center gap-x-2 bg-surface-alt p-5">
 				{selectedSource ? (
-					<HuginnButton className="h-10 w-24 bg-background" onClick={() => setSelectedSource(undefined)}>
+					<HuginnButton className="h-10 w-24 bg-surface" onClick={() => setSelectedSource(undefined)}>
 						Back
 					</HuginnButton>
 				) : (
-					<HuginnButton className="h-10 w-24 bg-background" onClick={refetch}>
+					<HuginnButton className="h-10 w-24 bg-surface" onClick={refetch}>
 						Refresh
 					</HuginnButton>
 				)}
 				<HuginnButton className="ml-auto h-10 w-20 decoration-white hover:underline" onClick={close}>
 					Cancel
 				</HuginnButton>
-				<LoadingButton loading={screensharePending} className="h-10 w-24 bg-primary" onClick={stream} disabled={selectedSource === undefined}>
+				<LoadingButton loading={screensharePending} className="h-10 w-24 bg-primary-700" onClick={stream} disabled={selectedSource === undefined}>
 					Go Live
 				</LoadingButton>
 			</div>

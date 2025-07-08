@@ -1,11 +1,11 @@
 import LoadingIcon from "@components/LoadingIcon";
-import UserAvatar from "@components/UserAvatar";
 import Tooltip from "@components/tooltip/Tooltip";
+import UserAvatar from "@components/UserAvatar";
 import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
-import { type APIRelationUser, RelationshipType } from "@huginn/shared";
 import type { Snowflake, UserPresence } from "@huginn/shared";
+import { type APIRelationUser, RelationshipType } from "@huginn/shared";
 import { useContextMenu } from "@stores/contextMenuStore";
-import { type MouseEvent, useEffect, useMemo } from "react";
+import { type MouseEvent, useMemo } from "react";
 
 export default function FriendItem(props: {
 	type: RelationshipType;
@@ -44,8 +44,9 @@ export default function FriendItem(props: {
 	);
 
 	return (
+		// biome-ignore lint/a11y/noStaticElementInteractions: there is an inner button
 		<div
-			className="group relative flex cursor-pointer items-center justify-between overflow-hidden rounded-xl p-3 hover:bg-secondary"
+			className="group relative flex cursor-pointer items-center justify-between overflow-hidden rounded-xl p-3 hover:bg-surface-alt"
 			onContextMenu={(e: MouseEvent<HTMLDivElement>) => {
 				openRelationship({ user: props.user, type: props.type }, e);
 			}}
@@ -72,7 +73,7 @@ export default function FriendItem(props: {
 						{props.type === RelationshipType.PENDING_INCOMING && (
 							<Tooltip>
 								<Tooltip.Trigger
-									className="rounded-full bg-background/50 p-2 text-text/80 hover:text-primary group-hover:bg-background"
+									className="rounded-full bg-surface/50 p-2 text-text/80 hover:text-primary-700 group-hover:bg-surface"
 									onClick={(e) => {
 										e.stopPropagation();
 										props.onAccept?.(props.user.id);
@@ -85,7 +86,7 @@ export default function FriendItem(props: {
 						)}
 						<Tooltip>
 							<Tooltip.Trigger
-								className="rounded-full bg-background/50 p-2 text-text/80 hover:text-error group-hover:bg-background"
+								className="rounded-full bg-surface/50 p-2 text-text/80 hover:text-negative-100 group-hover:bg-surface"
 								onClick={() => props.onDenyOrCancel?.(props.user.id)}
 							>
 								<IconMingcuteCloseFill className="size-5" />
@@ -101,7 +102,7 @@ export default function FriendItem(props: {
 									e.stopPropagation();
 									props.onMessage?.(props.user.id);
 								}}
-								className="rounded-full bg-background/50 p-2 text-text/80 hover:text-text active:bg-white/20"
+								className="rounded-full bg-surface/50 p-2 text-text/80 hover:text-text active:bg-white/20"
 							>
 								<IconMingcuteMessage1Fill className="size-5" />
 							</Tooltip.Trigger>
@@ -113,7 +114,7 @@ export default function FriendItem(props: {
 									e.stopPropagation();
 									openRelationshipMore({ user: props.user, type: props.type }, e);
 								}}
-								className="rounded-full bg-background/50 p-2 text-text/80 hover:text-text active:bg-white/20"
+								className="rounded-full bg-surface/50 p-2 text-text/80 hover:text-text active:bg-white/20"
 							>
 								<IconMingcuteMore2Fill className="size-5" />
 							</Tooltip.Trigger>

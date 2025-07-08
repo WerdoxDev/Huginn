@@ -23,11 +23,11 @@ export default function EmbedElement(props: RenderElementProps) {
 	return (
 		<div {...props.attributes} contentEditable={false} style={{ maxWidth: `${constants.EMBED_MEDIA_MAX_WIDTH + 16}px` }}>
 			<div
-				className={clsx("mt-1 mb-1 flex max-w-md flex-col items-start", !barebone && "rounded-lg border-background border-l-4 bg-tertiary p-2")}
+				className={clsx("mt-1 mb-1 flex max-w-md flex-col items-start", !barebone && "rounded-lg border-surface border-l-4 bg-surface-deep p-2")}
 			>
 				{title && (
 					<span
-						className={clsx(url && "cursor-pointer text-accent hover:underline", description ? "mb-1" : "mb-2")}
+						className={clsx(url && "cursor-pointer text-primary-500 hover:underline", description ? "mb-1" : "mb-2")}
 						onClick={url ? () => window.electronAPI.openExternal(url) : undefined}
 					>
 						{title}

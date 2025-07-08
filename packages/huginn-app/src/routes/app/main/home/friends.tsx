@@ -8,6 +8,7 @@ import { getRelationshipsOptions } from "@lib/queries";
 import { client, useClient } from "@stores/apiStore";
 import { usePresences } from "@stores/presenceStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import clsx from "clsx";
 import { useMemo } from "react";
 import { Fragment } from "react/jsx-runtime";
 import { queryClient } from "@/main";
@@ -32,7 +33,7 @@ export default function Friends() {
 	return (
 		<div className="flex h-full flex-col">
 			<TabGroup as={Fragment} defaultIndex={friends.length === 0 ? 3 : 0}>
-				<div className="flex h-19 shrink-0 items-center bg-tertiary px-6">
+				<div className="flex h-19 shrink-0 items-center bg-surface-deep px-6">
 					<TabList className="mr-5 flex justify-center gap-x-5">
 						<div className="flex items-center justify-center gap-x-2.5 text-text">
 							<IconMingcuteGroup2Fill className="size-6" />
@@ -47,11 +48,12 @@ export default function Friends() {
 							{({ selected }) => (
 								<button
 									type="button"
-									className={`rounded-md px-2 outline-hidden ${
+									className={clsx(
+										"cursor-pointer rounded-md px-2 outline-hidden",
 										selected
-											? "pointer-events-none bg-primary text-text"
-											: "text-text ring-1 ring-primary hover:bg-primary hover:text-text hover:ring-0"
-									}`}
+											? "pointer-events-none bg-primary-700 text-text"
+											: "text-text ring-1 ring-primary-700 hover:bg-primary-700 hover:text-text hover:ring-0",
+									)}
 								>
 									Add Friend
 								</button>
@@ -67,7 +69,7 @@ export default function Friends() {
 					<AddFriendTab />
 				</TabPanels>
 			</TabGroup>
-			<div className="flex h-16 w-full shrink-0 bg-background" />
+			<div className="flex h-16 w-full shrink-0 bg-surface" />
 		</div>
 	);
 }

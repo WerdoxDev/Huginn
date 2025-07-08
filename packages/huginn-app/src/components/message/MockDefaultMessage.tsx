@@ -13,7 +13,7 @@ export default function MockDefaultMessage(props: {
 	return (
 		<div
 			className={clsx(
-				"flex flex-col items-start gap-y-2 p-2 hover:bg-secondary",
+				"flex flex-col items-start gap-y-2 p-2 hover:bg-surface-alt",
 				props.separate && "rounded-t-lg pb-0",
 				!props.separate && "mt-0.5 py-0",
 				props.end && "rounded-b-lg",
@@ -33,7 +33,7 @@ export default function MockDefaultMessage(props: {
 					className={clsx(
 						"px-2.5 py-1.5 font-normal text-white wrap-anywhere",
 						props.separate && "rounded-t-xl",
-						props.self ? "bg-primary/70" : "bg-background",
+						props.self ? "bg-primary-800" : "bg-surface",
 						props.end && "rounded-b-xl!",
 					)}
 					style={{ borderTopRightRadius: props.roundedTop, borderBottomRightRadius: props.roundedBottom }}

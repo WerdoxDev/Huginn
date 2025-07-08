@@ -28,7 +28,7 @@ function ToggleButton(props: { className?: string }) {
 	return (
 		<button
 			className={clsx(
-				"flex h-full w-11 shrink-0 select-none items-center justify-center border-l-2 border-l-background text-sm text-text",
+				"flex h-full w-11 shrink-0 select-none items-center justify-center border-l-2 border-l-surface text-sm text-text",
 				props.className,
 			)}
 			type="button"

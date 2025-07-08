@@ -27,7 +27,7 @@ export default function MainLayout() {
 
 	return (
 		<div className="absolute inset-0 overflow-hidden">
-			<div className="flex h-full w-full select-none bg-background">
+			<div className="flex h-full w-full select-none bg-surface">
 				<WebsocketProviders>
 					<GuildsBar />
 					<Outlet />

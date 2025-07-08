@@ -52,7 +52,7 @@ export default function DefaultMessage(props: {
 	return (
 		<div
 			className={clsx(
-				"group flex flex-col items-start gap-y-2 p-2 pl-4 hover:bg-secondary",
+				"group flex flex-col items-start gap-y-2 p-2 pl-4 hover:bg-surface-alt",
 				!isSelf && "pl-6",
 				(isSeparate || isLastExotic) && "rounded-tr-lg",
 				isNextSeparate && "rounded-br-lg",
@@ -112,8 +112,8 @@ function SlateRenderer(props: {
 		<div
 			className={clsx(
 				"wrap-anywhere relative whitespace-break-spaces px-2.5 py-1.5 font-normal text-white group-hover:shadow-sm",
-				context.renderInfo.message.preview && "bg-primary/20 text-white/50",
-				props.isSelf && !context.renderInfo.message.preview ? "bg-primary/70" : "bg-background shadow-background",
+				context.renderInfo.message.preview && "bg-primary-900 text-white/50",
+				props.isSelf && !context.renderInfo.message.preview ? "bg-primary-800" : "bg-surface shadow-surface",
 				props.isUnread && !props.isSeparate && "rounded-t-none!",
 				(props.isSeparate || props.isLastExotic) && "rounded-t-xl!",
 				props.isNextSeparate && "rounded-b-xl!",

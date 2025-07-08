@@ -14,6 +14,7 @@ const statusTexts: Record<WebsocketStatus, string> = {
 	connecting: "RTC Signalling...",
 	reconnecting: "Reconnecting...",
 	disconnected: "Disconnected",
+	none: "Connecting...",
 };
 
 export default function VoiceStatus() {
@@ -64,7 +65,7 @@ export default function VoiceStatus() {
 
 	return (
 		<div className="w-full p-1">
-			<div className="flex h-full w-full items-center rounded-lg bg-background p-2">
+			<div className="flex h-full w-full items-center rounded-lg bg-surface p-2">
 				<div className="flex flex-col">
 					<div className="flex items-center gap-x-1">
 						<Tooltip>
@@ -72,13 +73,13 @@ export default function VoiceStatus() {
 								<IconMingcuteWifiOffLine
 									className={clsx(
 										"size-6",
-										(status === "connecting" || status === "reconnecting" || status === "connected") && "text-warning",
-										status === "disconnected" && "text-error",
+										(status === "connecting" || status === "reconnecting" || status === "connected") && "text-caution",
+										status === "disconnected" && "text-negative-100",
 									)}
 								/>
 							) : (
 								<Tooltip.Trigger className="cursor-default">
-									<IconMingcuteWifiLine className="size-6 text-success transition-colors" style={{ color: latencyColor }} />
+									<IconMingcuteWifiLine className="size-6 text-positive-100 transition-colors" style={{ color: latencyColor }} />
 								</Tooltip.Trigger>
 							)}
 							<Tooltip.Content extrastyle={{ color: latencyColor }}>{rtt} ms</Tooltip.Content>
@@ -86,8 +87,8 @@ export default function VoiceStatus() {
 						<div
 							className={clsx(
 								"font-bold text-sm transition-colors",
-								(status === "connecting" || status === "reconnecting" || status === "connected") && "!text-warning",
-								status === "disconnected" && "!text-error",
+								(status === "connecting" || status === "reconnecting" || status === "connected") && "!text-caution",
+								status === "disconnected" && "!text-negative-100",
 							)}
 							style={{ color: latencyColor }}
 						>
@@ -100,7 +101,7 @@ export default function VoiceStatus() {
 				</div>
 				<div className="ml-auto flex">
 					<Tooltip>
-						<Tooltip.Trigger onClick={disconnect} className="group rounded-lg p-1.5 text-white transition-colors hover:bg-error/70">
+						<Tooltip.Trigger onClick={disconnect} className="group rounded-lg p-1.5 text-white transition-colors hover:bg-negative-300">
 							<IconMingcutePhoneBlockFill className="group-hover:-rotate-12 size-5 transition-transform" />
 						</Tooltip.Trigger>
 						<Tooltip.Content>Disconnect</Tooltip.Content>

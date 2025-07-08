@@ -31,7 +31,7 @@ export function useOAuth() {
       } else {
          updateModals({
             info: {
-               status: "default",
+               status: "info",
                isOpen: true,
                title: "Check your browser!",
                text: "Please check your browser and continue there",

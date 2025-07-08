@@ -4,17 +4,18 @@ import { useContextMenu } from "@stores/contextMenuStore";
 import { usePresence } from "@stores/presenceStore";
 import clsx from "clsx";
 import LoadingIcon from "./LoadingIcon";
-import UserAvatar from "./UserAvatar";
 import Tooltip from "./tooltip/Tooltip";
+import UserAvatar from "./UserAvatar";
 
 export default function ChannelRecipient(props: { channelId: Snowflake; isOwner: boolean; recipient: APIChannelUser }) {
 	const presence = usePresence(props.recipient.id);
 	const { open: openContextMenu } = useContextMenu("dm_channel_recipient");
 	const state = useMutationLatestState("create-dm-channel_recipient");
 	return (
-		<div
+		<button
 			onContextMenu={(e) => openContextMenu({ channelId: props.channelId, recipient: props.recipient }, e)}
-			className="group/recipient relative flex items-center gap-x-3 rounded-lg p-1.5 hover:cursor-pointer hover:bg-background"
+			type="button"
+			className="group/recipient relative flex cursor-pointer items-center gap-x-3 rounded-lg p-1.5 hover:bg-surface"
 		>
 			<UserAvatar
 				userId={props.recipient.id}
@@ -31,13 +32,13 @@ export default function ChannelRecipient(props: { channelId: Snowflake; isOwner:
 			) : (
 				props.isOwner && (
 					<Tooltip>
-						<Tooltip.Trigger className="mr-2 ml-auto text-success">
+						<Tooltip.Trigger className="mr-2 ml-auto text-positive-100">
 							<IconSolarSledgehammerBold className="size-5" />
 						</Tooltip.Trigger>
 						<Tooltip.Content>Channel Owner</Tooltip.Content>
 					</Tooltip>
 				)
 			)}
-		</div>
+		</button>
 	);
 }

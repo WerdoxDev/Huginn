@@ -1,17 +1,17 @@
-import type { AppRelationship } from "@/types";
+import type { GatewayRelationshipCreateData, Snowflake } from "@huginn/shared";
 import { RelationshipType } from "@huginn/shared";
-import type { GatewayRelationshipCreateData } from "@huginn/shared";
-import type { Snowflake } from "@huginn/shared";
 import { convertToAppRelationship } from "@lib/utils";
-import { useClient } from "@stores/apiStore";
+import { useAPI, useClient } from "@stores/apiStore";
 import { useReadStates } from "@stores/readStatesStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { produce } from "immer";
 import { type ReactNode, useEffect } from "react";
+import type { AppRelationship } from "@/types";
 
 export default function FriendsProvider(props: { children?: ReactNode }) {
 	const client = useClient();
 	const queryClient = useQueryClient();
+	const api = useAPI();
 	const { setFriendsNotificationsCount } = useReadStates();
 
 	function onRelationshipCreated(d: GatewayRelationshipCreateData) {
@@ -42,7 +42,7 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
 
 		queryClient.setQueryData<AppRelationship[]>(
 			["relationships"],
-			client.gateway.readyData?.relationships.map((x) => convertToAppRelationship(x)),
+			api.readyData?.relationships.map((x) => convertToAppRelationship(x)),
 		);
 
 		return () => {

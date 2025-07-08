@@ -43,7 +43,7 @@ export default function AppLayout() {
 			<NotificationProvider>
 				<MainRenderer>
 					<div
-						className={clsx("absolute inset-0 bg-secondary", huginnWindow.environment === "desktop" && !huginnWindow.fullscreen && "top-6")}
+						className={clsx("absolute inset-0 bg-surface-alt", huginnWindow.environment === "desktop" && !huginnWindow.fullscreen && "top-6")}
 						style={isMainTransitioning ? { viewTransitionName: "start" } : undefined}
 					>
 						<StartBackgroundSvg state={authBackground.state} />

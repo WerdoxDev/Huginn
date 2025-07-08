@@ -7,16 +7,49 @@
 }
 
 @theme inline {
-  --color-background: rgb(var(--tcolor-background));
-  --color-secondary: rgb(var(--tcolor-secondary));
-  --color-tertiary: rgb(var(--tcolor-tertiary));
-  --color-primary: rgb(var(--tcolor-primary));
-  --color-accent: rgb(var(--tcolor-accent));
-  --color-accent2: rgb(var(--tcolor-accent2));
-  --color-success: rgb(var(--tcolor-success));
+  --color-surface: rgb(var(--tcolor-surface));
+  --color-surface-alt: rgb(var(--tcolor-surface-alt));
+  --color-surface-deep: rgb(var(--tcolor-surface-deep));
+
+  --color-primary-300: rgb(var(--tcolor-primary-300));
+  --color-primary-400: rgb(var(--tcolor-primary-400));
+  --color-primary-500: rgb(var(--tcolor-primary-500));
+  --color-primary-600: rgb(var(--tcolor-primary-600));
+  --color-primary-700: rgb(var(--tcolor-primary-700));
+  --color-primary-800: rgb(var(--tcolor-primary-800));
+  --color-primary-900: rgb(var(--tcolor-primary-900));
+
+  --color-positive-100: rgb(var(--tcolor-positive-100));
+  --color-positive-200: rgb(var(--tcolor-positive-200));
+  --color-positive-300: rgb(var(--tcolor-positive-300));
+  --color-positive-400: rgb(var(--tcolor-positive-400));
+  --color-positive-500: rgb(var(--tcolor-positive-500));
+  --color-positive-600: rgb(var(--tcolor-positive-600));
+  --color-positive-700: rgb(var(--tcolor-positive-700));
+  --color-positive-800: rgb(var(--tcolor-positive-800));
+  --color-positive-900: rgb(var(--tcolor-positive-900));
+
+  --color-negative-100: rgb(var(--tcolor-negative-100));
+  --color-negative-200: rgb(var(--tcolor-negative-200));
+  --color-negative-300: rgb(var(--tcolor-negative-300));
+  --color-negative-400: rgb(var(--tcolor-negative-400));
+  --color-negative-500: rgb(var(--tcolor-negative-500));
+  --color-negative-600: rgb(var(--tcolor-negative-600));
+  --color-negative-700: rgb(var(--tcolor-negative-700));
+  --color-negative-800: rgb(var(--tcolor-negative-800));
+  --color-negative-900: rgb(var(--tcolor-negative-900));
+
+  --color-caution-100: rgb(var(--tcolor-caution-100));
+  --color-caution-200: rgb(var(--tcolor-caution-200));
+  --color-caution-300: rgb(var(--tcolor-caution-300));
+  --color-caution-400: rgb(var(--tcolor-caution-400));
+  --color-caution-500: rgb(var(--tcolor-caution-500));
+  --color-caution-600: rgb(var(--tcolor-caution-600));
+  --color-caution-700: rgb(var(--tcolor-caution-700));
+  --color-caution-800: rgb(var(--tcolor-caution-800));
+  --color-caution-900: rgb(var(--tcolor-caution-900));
+
   --color-text: rgb(var(--tcolor-text));
-  --color-error: rgb(var(--tcolor-error));
-  --color-warning: rgb(var(--tcolor-warning));
 }
 
 /*
@@ -90,7 +123,7 @@ html,
 body,
 #root {
 	/* background-color: #060606; */
-	@apply h-full overscroll-none bg-secondary;
+	@apply h-full overscroll-none bg-surface-alt;
 }
 
 @keyframes blink {
@@ -145,27 +178,27 @@ video::-webkit-media-controls {
 }
 
 ::-webkit-scrollbar-track {
-	@apply bg-background rounded-full border-4 border-transparent border-solid bg-clip-padding;
+	@apply bg-surface rounded-full border-4 border-transparent border-solid bg-clip-padding;
 }
 
 ::-webkit-scrollbar-thumb {
-	@apply bg-secondary rounded-full border-4 border-transparent border-solid bg-clip-padding;
+	@apply bg-surface-alt rounded-full border-4 border-transparent border-solid bg-clip-padding;
 }
 
 .scroll-alternative::-webkit-scrollbar-track {
-	@apply bg-secondary/70 rounded-full border-4 border-transparent border-solid bg-clip-padding;
+	@apply bg-surface-alt/70 rounded-full border-4 border-transparent border-solid bg-clip-padding;
 }
 
 .scroll-alternative::-webkit-scrollbar-thumb {
-	@apply bg-tertiary rounded-full border-4 border-transparent border-solid bg-clip-padding;
+	@apply bg-surface-deep rounded-full border-4 border-transparent border-solid bg-clip-padding;
 }
 
 .scroll-alternative2::-webkit-scrollbar-track {
-	@apply bg-background/70 rounded-full border-4 border-transparent border-solid bg-clip-padding;
+	@apply bg-surface/70 rounded-full border-4 border-transparent border-solid bg-clip-padding;
 }
 
 .scroll-alternative2::-webkit-scrollbar-thumb {
-	@apply bg-tertiary rounded-full border-4 border-transparent border-solid bg-clip-padding;
+	@apply bg-surface-deep rounded-full border-4 border-transparent border-solid bg-clip-padding;
 }
 
 input[type="range"] {
@@ -175,7 +208,7 @@ input[type="range"] {
 }
 
 input[type="range"]::-webkit-slider-runnable-track {
-	@apply h-1.5 bg-accent/50 hover:scale-y-125 transition-transform;
+	@apply h-1.5 bg-primary-500/50 hover:scale-y-125 transition-transform;
 }
 
 input[type="range"]::-moz-range-track {
@@ -277,10 +310,10 @@ input::-ms-clear {
 	mix-blend-mode: plus-lighter;
 }
 
-::view-transition-old(start-background) {
+::view-transition-old(start-surface) {
 	display: none;
 }
-::view-transition-new(start-background) {
+::view-transition-new(start-surface) {
 	animation: none;
 }
 
@@ -394,14 +427,14 @@ html::view-transition-old(root) {
 .news-markdown h1,
 .news-markdown h2,
 .news-markdown h3 {
-	@apply text-success flex items-center whitespace-nowrap uppercase;
+	@apply text-positive-100 flex items-center whitespace-nowrap uppercase;
 }
 
 .news-markdown h1::after,
 .news-markdown h2::after,
 .news-markdown h3::after {
 	content: "";
-	@apply h-0.5 w-full ml-2 bg-success/80;
+	@apply h-0.5 w-full ml-2 bg-positive-100;
 }
 
 .news-markdown img {

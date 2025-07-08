@@ -4,7 +4,7 @@ import { getSizeText } from "@lib/utils";
 
 export default function AttachmentUploadProgress(props: { progress: UploadProgress }) {
 	return (
-		<div className="my-1 flex w-[24rem] items-center gap-x-2 rounded-lg bg-secondary px-2 py-3">
+		<div className="my-1 flex w-[24rem] items-center gap-x-2 rounded-lg bg-surface-alt px-2 py-3">
 			<IconMingcuteFileFill className="size-10 shrink-0 text-white/50" />
 			<div className="flex w-full flex-col justify-center gap-y-2 overflow-hidden">
 				<div className="flex gap-x-1">
@@ -23,8 +23,8 @@ export default function AttachmentUploadProgress(props: { progress: UploadProgre
 						</div>
 					)}
 				</div>
-				<div className="h-2 w-full overflow-hidden rounded-full bg-tertiary">
-					<div style={{ width: `${props.progress.percentage}%` }} className="h-full bg-accent/80 transition-[width]" />
+				<div className="h-2 w-full overflow-hidden rounded-full bg-surface-deep">
+					<div style={{ width: `${props.progress.percentage}%` }} className="h-full bg-primary-400 transition-[width]" />
 				</div>
 			</div>
 			<Tooltip>

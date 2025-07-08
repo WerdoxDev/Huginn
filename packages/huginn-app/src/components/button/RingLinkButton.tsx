@@ -11,9 +11,9 @@ export default function RingLink(props: LinkProps & { to: string }) {
 		<NavLink
 			{...props}
 			className={clsx(
-				"rounded-full uppercase ring-[1.5px] ring-primary",
+				"rounded-full uppercase ring-[1.5px] ring-primary-700",
 				props.className,
-				isActive ? "bg-primary text-text" : "text-text/70 hover:bg-primary hover:text-text",
+				isActive ? "bg-primary-700 text-text" : "text-text/70 hover:bg-primary-700 hover:text-text",
 			)}
 		>
 			{props.children}

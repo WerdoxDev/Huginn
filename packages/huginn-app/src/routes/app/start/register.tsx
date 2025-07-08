@@ -80,7 +80,7 @@ export default function Register() {
 					onClick={() => startOAuth("google")}
 					type="button"
 					innerClassName="flex items-center justify-center gap-x-2"
-					className="w-full rounded-lg border-2 border-accent2 bg-secondary py-2 text-text transition-all hover:shadow-lg"
+					className="w-full rounded-lg border-2 border-primary-700 bg-surface-alt py-2 text-text transition-all hover:shadow-lg"
 				>
 					<IconLogosGoogleIcon className="size-5" />
 					<span>Google</span>
@@ -88,14 +88,14 @@ export default function Register() {
 				<HuginnButton
 					type="button"
 					innerClassName="flex items-center justify-center gap-x-2"
-					className="w-full rounded-lg border-2 border-accent2 bg-secondary py-2 text-text transition-all hover:shadow-lg"
+					className="w-full rounded-lg border-2 border-primary-700 bg-surface-alt py-2 text-text transition-all hover:shadow-lg"
 				>
 					<IconLogosGithubIcon className="size-5 text-white [&>path]:fill-white" />
 					<span>GitHub</span>
 				</HuginnButton>
 			</div>
-			<div className="my-7 flex h-0 w-full select-none items-center justify-center text-center font-semibold text-text/70 text-xs [border-top:thin_solid_color-mix(in_oklab,rgb(var(--tcolor-text))_25%,transparent)]">
-				<span className="bg-background px-2">or</span>
+			<div className="my-7 flex h-0 w-full select-none items-center justify-center border-t border-t-text/25 text-center font-semibold text-text/70 text-xs">
+				<span className="bg-surface px-2">or</span>
 			</div>
 			<div className="w-full">
 				<div className="flex items-end justify-center gap-x-2">
@@ -129,7 +129,7 @@ export default function Register() {
 					</HuginnInput.Wrapper>
 				</PasswordInput>
 
-				<LoadingButton loading={!mutation.isIdle && mutation.isPending} className="h-10 w-full bg-primary" type="submit">
+				<LoadingButton loading={!mutation.isIdle && mutation.isPending} className="h-10 w-full bg-primary-700" type="submit">
 					Register
 				</LoadingButton>
 

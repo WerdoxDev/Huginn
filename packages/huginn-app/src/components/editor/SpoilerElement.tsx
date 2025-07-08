@@ -9,7 +9,7 @@ export default function SpoilerElement(props: RenderElementProps) {
 		<div
 			className={clsx(
 				"relative inline-block rounded-xs px-0.5 transition-colors",
-				hidden ? "cursor-pointer bg-tertiary text-tertiary" : "bg-white/20",
+				hidden ? "cursor-pointer bg-surface-deep text-surface-deep" : "bg-white/20",
 			)}
 			onClick={() => {
 				setHidden(false);

@@ -51,8 +51,8 @@ export default function VoiceUser(props: {
 			className={clsx(
 				"group relative flex shrink-0 flex-col items-center justify-center gap-y-1 shadow-md transition-shadow hover:shadow-xl",
 				props.isGridView && "aspect-video p-0",
-				props.isSpeaking && "ring-2 ring-success",
-				props.isRinging ? "bg-background/50" : "bg-background",
+				props.isSpeaking && "ring-2 ring-positive-100",
+				props.isRinging ? "bg-surface/50" : "bg-surface",
 			)}
 			style={{ width: props.isGridView ? props.gridElementWidth : "auto", borderRadius: "12px" }}
 			type="button"
@@ -72,7 +72,7 @@ export default function VoiceUser(props: {
 			>
 				<div
 					className={clsx(
-						"flex h-7 items-center justify-center gap-x-2 rounded-lg bg-error/80",
+						"flex h-7 items-center justify-center gap-x-2 rounded-lg bg-negative-300",
 						(props.voiceState?.selfMute || props.voiceState?.selfDeaf) && "mr-2 p-1",
 					)}
 				>
@@ -80,7 +80,7 @@ export default function VoiceUser(props: {
 					{props.voiceState?.selfDeaf && <IconMingcuteVolumeOffFill className="size-5" />}
 				</div>
 				{props.isGridView && (
-					<div className="rounded-lg bg-tertiary px-2 py-0.5 opacity-0 transition-opacity group-hover/wrapper:opacity-100">
+					<div className="rounded-lg bg-surface-deep px-2 py-0.5 opacity-0 transition-opacity group-hover/wrapper:opacity-100">
 						{props.user.displayName ?? props.user.username}
 					</div>
 				)}

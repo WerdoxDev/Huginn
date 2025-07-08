@@ -4,16 +4,18 @@ import type { HuginnButtonProps } from "@/types";
 
 export default function HuginnButton(props: HuginnButtonProps) {
 	const styleClassNames = useMemo(
-		() =>
-			props.className?.includes("bg-primary")
-				? "hover:bg-primary/80 focus:bg-primary/80 enabled:active:bg-primary/50 disabled:bg-primary/50"
-				: props.className?.includes("bg-background")
-					? "hover:bg-background/80 focus:bg-background/80 enabled:active:bg-background/50 disabled:bg-background/50"
-					: props.className?.includes("bg-secondary")
-						? "hover:bg-secondary/80 focus:bg-secondary/80 enabled:active:bg-secondary/50 disabled:bg-secondary/50"
-						: props.className?.includes("bg-tertiary")
-							? "hover:bg-tertiary/80 focus:bg-tertiary/80 enabled:active:bg-tertiary/50 disabled:bg-tertiary/50"
-							: "",
+		() =>{
+         const split = props.className?.split(" ");
+			return split?.includes("bg-primary-700")
+				? "hover:bg-primary-800 focus:bg-primary-800 enabled:active:bg-primary-900 disabled:bg-primary-900"
+				: split?.includes("bg-surface")
+					? "hover:bg-surface/80 focus:bg-surface/80 enabled:active:bg-surface/50 disabled:bg-surface/50"
+					: split?.includes("bg-surface-alt")
+						? "hover:bg-surface-alt/80 focus:bg-surface-alt/80 enabled:active:bg-surface-alt/50 disabled:bg-surface-alt/50"
+						: split?.includes("bg-surface-deep")
+							? "hover:bg-surface-deep/80 focus:bg-surface-deep/80 enabled:active:bg-surface-deep/50 disabled:bg-surface-deep/50"
+							: ""
+                     },
 		[props.className],
 	);
 	return (

@@ -27,10 +27,10 @@ export default function EditorLeaf(props: RenderLeafProps) {
 					props.leaf.underline && "underline",
 					props.leaf.spoiler && "rounded-xs px-0.5",
 					props.leaf.spoiler && "bg-white/20",
-					props.leaf.link && "text-accent",
+					props.leaf.link && "text-primary-500",
 					props.leaf.codeToken,
 					props.leaf.codeToken && "font-ubuntu text-sm",
-					props.leaf.codeLanguage && "text-accent",
+					props.leaf.codeLanguage && "text-primary-500",
 				)}
 				spellCheck={!props.leaf.codeToken}
 				{...props.attributes}

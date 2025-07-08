@@ -26,19 +26,19 @@ export default function StartBackgroundSvg(props: { state: number }) {
 				xmlns="http://www.w3.org/2000/svg"
 				version="1.1"
 				preserveAspectRatio="xMidYMid slice"
-				style={isMainTransitioning ? { viewTransitionName: "start-background" } : undefined}
+				style={isMainTransitioning ? { viewTransitionName: "start-surface" } : undefined}
 			>
-				<title>animated-background</title>
+				<title>animated-surface</title>
 				<g transform="translate(960, 0)">
 					<path
-						fill={fillColor.theme.accent2}
+						fill={fillColor.theme["primary-700"]}
 						className="transition-all duration-500"
 						d={props.state === 0 ? path1.open : props.state === 1 ? path1.close : path1.initial}
 					/>
 				</g>
 				<g transform="translate(0, 540)">
 					<path
-						fill={fillColor.theme.accent2}
+						fill={fillColor.theme["primary-700"]}
 						className="transition-all duration-500"
 						d={props.state === 0 ? path2.open : props.state === 1 ? path2.close : path2.initial}
 					/>

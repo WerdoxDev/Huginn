@@ -17,7 +17,7 @@ export default function CodeElement(props: RenderElementProps) {
 	}
 
 	return (
-		<div {...props.attributes} contentEditable={false} className="relative my-1 rounded-md bg-secondary font-ubuntu">
+		<div {...props.attributes} contentEditable={false} className="relative my-1 rounded-md bg-surface-alt font-ubuntu">
 			{!isCopied ? (
 				<IconMingcuteCopy2Fill
 					onClick={copyToClipboard}

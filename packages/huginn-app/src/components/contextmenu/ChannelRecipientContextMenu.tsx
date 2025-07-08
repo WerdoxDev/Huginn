@@ -35,7 +35,7 @@ export default function ChannelRecipientContextMenu() {
 									owner: data.recipient.id,
 								});
 							}}
-							className="text-error! focus:bg-error/10!"
+							className="text-negative-100! focus:bg-negative-100/10!"
 						/>
 					)}
 					{user.id === ownerId && (
@@ -47,7 +47,7 @@ export default function ChannelRecipientContextMenu() {
 									recipientId: data.recipient.id,
 								});
 							}}
-							className="text-error! focus:bg-error/10!"
+							className="text-negative-100! focus:bg-negative-100/10!"
 						/>
 					)}
 					<ContextMenu.Divider />

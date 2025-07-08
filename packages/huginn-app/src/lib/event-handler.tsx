@@ -1,10 +1,9 @@
+import type { Snowflake } from "@huginn/shared";
 import type { AppMessage } from "@/types";
-import type { APIUser, Snowflake } from "@huginn/shared";
 
 type EventTypes = {
 	message_added: { message: AppMessage; inLoadedQueryPage: boolean; inVisibleQueryPage: boolean; visible: boolean; self: boolean };
 	message_updated: { message: AppMessage; inLoadedQueryPage: boolean; inVisibleQueryPage: boolean; visible: boolean; self: boolean };
-	user_updated: APIUser;
 	image_cropper_done: { croppedImageData: string };
 	deep_link: string;
 	message_box_height_changed: { difference: number };

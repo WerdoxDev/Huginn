@@ -77,7 +77,7 @@ export default function ProgressBar(props: ProgressBarProps) {
 				}}
 			/>
 			<div
-				className="absolute rounded-md bg-accent"
+				className="absolute rounded-md bg-primary-500"
 				style={{
 					width: props.orientation === "horizontal" ? `${props.percentage}%` : "100%",
 					height: props.orientation === "vertical" ? `${props.percentage}%` : "100%",

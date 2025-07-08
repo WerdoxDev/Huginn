@@ -16,7 +16,7 @@ export default function AttachmentsPreview(props: { attachments: AttachmentType[
 
 	return (
 		<Transition show={props.attachments.length !== 0}>
-			<div className="data h-[238px] overflow-hidden rounded-xl rounded-b-none border-2 border-background border-b-0 bg-tertiary px-2.5 py-2.5 pb-0 duration-200 data-closed:h-0 data-closed:py-0 data-closed:opacity-0">
+			<div className="data h-[238px] overflow-hidden rounded-xl rounded-b-none border-2 border-surface border-b-0 bg-surface-deep px-2.5 py-2.5 pb-0 duration-200 data-closed:h-0 data-closed:py-0 data-closed:opacity-0">
 				<div className="scroll-alternative-x relative flex h-full gap-x-5 overflow-y-hidden overflow-x-scroll px-2.5 py-2.5 pb-0">
 					<AnimatePresence mode="popLayout">
 						{props.attachments.map((x) => (
@@ -28,23 +28,23 @@ export default function AttachmentsPreview(props: { attachments: AttachmentType[
 								initial="hidden"
 								animate="visible"
 								exit="exit"
-								className="relative flex h-48 w-48 shrink-0 flex-col rounded-lg bg-background p-2"
+								className="relative flex h-48 w-48 shrink-0 flex-col rounded-lg bg-surface p-2"
 							>
-								<div className="-top-2 -right-2 absolute overflow-hidden rounded-md bg-background shadow-xl">
+								<div className="-top-2 -right-2 absolute overflow-hidden rounded-md bg-surface shadow-xl">
 									<Tooltip>
-										<Tooltip.Trigger className="p-1.5 hover:bg-secondary/50">
+										<Tooltip.Trigger className="p-1.5 hover:bg-surface-alt/50">
 											<IconMingcuteEdit2Fill className="size-5 text-text" />
 										</Tooltip.Trigger>
 										<Tooltip.Content>Edit</Tooltip.Content>
 									</Tooltip>
 									<Tooltip>
-										<Tooltip.Trigger className="p-1.5 hover:bg-secondary/50" onClick={() => props.onRemove(x.id)}>
-											<IconMingcuteDelete2Fill className="size-5 text-error" />
+										<Tooltip.Trigger className="p-1.5 hover:bg-surface-alt/50" onClick={() => props.onRemove(x.id)}>
+											<IconMingcuteDelete2Fill className="size-5 text-negative-100" />
 										</Tooltip.Trigger>
 										<Tooltip.Content>Delete</Tooltip.Content>
 									</Tooltip>
 								</div>
-								<div className="flex h-full min-h-0 items-center justify-center rounded-md bg-secondary">
+								<div className="flex h-full min-h-0 items-center justify-center rounded-md bg-surface-alt">
 									{x.dataUrl ? (
 										<img className="max-h-full max-w-full" loading="lazy" src={x.dataUrl} alt={x.filename} />
 									) : (

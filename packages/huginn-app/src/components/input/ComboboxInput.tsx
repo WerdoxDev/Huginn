@@ -44,7 +44,7 @@ function SelectionDisplay(props: { children: ((props: { toggleSelection(value: u
 }
 
 function OptionWrapper(props: { children?: ReactNode }) {
-	return <div className="scroll-alternative2 mt-2 h-40 overflow-y-scroll rounded-md bg-secondary p-2">{props.children}</div>;
+	return <div className="scroll-alternative2 mt-2 h-40 overflow-y-scroll rounded-md bg-surface-alt p-2">{props.children}</div>;
 }
 
 function Item(props: { value: unknown; children?: ReactNode; className?: string }) {
@@ -53,7 +53,7 @@ function Item(props: { value: unknown; children?: ReactNode; className?: string 
 	return (
 		<div
 			className={clsx(
-				"-mr-2 flex cursor-pointer select-none items-center gap-x-2 rounded-xs px-2 py-1 outline-hidden hover:bg-background",
+				"-mr-2 flex cursor-pointer select-none items-center gap-x-2 rounded-xs px-2 py-1 outline-hidden hover:bg-surface",
 				props.className,
 			)}
 			onClick={() => {

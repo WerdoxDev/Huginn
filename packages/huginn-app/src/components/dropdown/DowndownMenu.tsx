@@ -43,7 +43,7 @@ function Item(props: MenuItemProps<"button"> & { label: string }) {
 			as={"button"}
 			{...props}
 			className={clsx(
-				"flex cursor-pointer items-center justify-between gap-x-5 text-nowrap rounded-sm px-2 py-1.5 text-start text-sm text-white/90 outline-hidden hover:bg-secondary",
+				"flex cursor-pointer items-center justify-between gap-x-5 text-nowrap rounded-sm px-2 py-1.5 text-start text-sm text-white/90 outline-hidden hover:bg-surface-alt",
 				props.className,
 			)}
 		>
@@ -54,7 +54,7 @@ function Item(props: MenuItemProps<"button"> & { label: string }) {
 }
 
 function Divider() {
-	return <div className="mx-2 my-2 h-px bg-background" />;
+	return <div className="mx-2 my-2 h-px bg-surface" />;
 }
 
 DropdownMenu.Divider = Divider;

@@ -10,9 +10,9 @@ import { Fragment, memo, useEffect, useRef, useState } from "react";
 import type { SettingsTab, SettingsTabProps } from "@/types";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
-import SettingsAudioTab from "./settings/SettingsAudioTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
+import SettingsVoiceTab from "./settings/SettingsVoiceTab";
 
 const tabs: SettingsTab[] = [
 	{
@@ -27,7 +27,7 @@ const tabs: SettingsTab[] = [
 		children: [
 			{ name: "theme", text: "Theme", icon: <IconMingcuteColorPickerFill />, component: SettingsThemeTab },
 			{ name: "notification", text: "Notification", icon: <IconMingcuteNotificationFill /> },
-			{ name: "audio", text: "Audio", icon: <IconMingcuteSpeakerFill />, component: SettingsAudioTab },
+			{ name: "voice", text: "Audio & Video", icon: <IconMingcuteSpeakerFill />, component: SettingsVoiceTab },
 			{ name: "advanced", text: "Advanced", icon: <IconMingcuteServerFill />, component: SettingsAdvancedTab },
 		],
 	},
@@ -96,10 +96,10 @@ export default function SettingsModal() {
 		<div className="h-full w-full p-10">
 			<DialogPanel
 				transition
-				className="relative h-full transform rounded-xl border-2 border-primary/50 bg-background transition-[opacity_transform] duration-200 data-closed:scale-90"
+				className="relative h-full transform rounded-xl border-2 border-primary-800 bg-surface transition-[opacity_transform] duration-200 data-closed:scale-90"
 			>
 				<TabGroup className="flex h-full w-full" vertical defaultIndex={defaultTabIndex} onChange={onTabChanged}>
-					<div className="h-full rounded-l-xl bg-secondary/50">
+					<div className="h-full rounded-l-xl bg-surface-alt/50">
 						<TabList className="flex h-full w-48 select-none flex-col py-2">
 							<DialogTitle className="mx-5 my-3 flex items-center justify-start gap-x-1.5">
 								<div className="font-medium text-2xl text-text">Settings</div>

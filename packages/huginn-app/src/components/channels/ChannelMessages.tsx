@@ -250,7 +250,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 					<ol className="min-h-0 overflow-hidden pr-0 pb-7" ref={listRef}>
 						{sortedMessages.length === 0 && (
 							<div className="flex h-full w-full shrink-0 items-center justify-center">
-								<div className="flex items-center justify-center gap-x-2 rounded-lg bg-background p-2 pr-3 text-text italic underline">
+								<div className="flex items-center justify-center gap-x-2 rounded-lg bg-surface p-2 pr-3 text-text italic underline">
 									<IconMingcuteLookDownFill className="size-10" />
 									<span>Empty</span>
 								</div>

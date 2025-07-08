@@ -49,21 +49,21 @@ export default function ImageSelector(props: {
 	}
 
 	return (
-		<div className={clsx("flex w-max shrink-0 flex-col rounded-lg bg-secondary p-3", props.className)}>
+		<div className={clsx("flex w-max shrink-0 flex-col rounded-lg bg-surface-alt p-3", props.className)}>
 			{props.children}
-			<div onClick={openFileDialog} className="group relative cursor-pointer overflow-hidden rounded-full bg-black">
+			<button type="button" onClick={openFileDialog} className="group relative cursor-pointer overflow-hidden rounded-full bg-black">
 				{props.data ? (
 					<img alt="editing-user-avatar" className="object-cover" style={{ width: size, height: size }} src={props.data} />
 				) : (
-					<div className="bg-primary" style={{ width: size, height: size }} />
+					<div className="bg-primary-700" style={{ width: size, height: size }} />
 				)}
-			</div>
+			</button>
 			<div className={clsx("mt-3 flex w-full items-center justify-center gap-x-0.5", props.buttonsClassName)}>
 				<Tooltip>
 					<Tooltip.Trigger
 						onClick={openFileDialog}
 						type="button"
-						className={clsx("flex w-full justify-center rounded-l-md bg-background py-1.5 hover:bg-primary", props.editButtonClassName)}
+						className={clsx("flex w-full justify-center rounded-l-md bg-surface py-1.5 hover:bg-primary-700", props.editButtonClassName)}
 					>
 						<IconMingcuteEdit2Fill className="size-5 text-white" />
 					</Tooltip.Trigger>
@@ -73,12 +73,15 @@ export default function ImageSelector(props: {
 					<Tooltip.Trigger
 						onClick={remove}
 						type="button"
-						className={clsx("group flex w-full justify-center rounded-r-md bg-error/10 py-1.5 hover:bg-error", props.deleteButtonClassName)}
+						className={clsx(
+							"group flex w-full justify-center rounded-r-md bg-negative-100/10 py-1.5 hover:bg-negative-400",
+							props.deleteButtonClassName,
+						)}
 					>
-						<IconMingcuteDelete3Fill className="size-5 text-error group-hover:text-white" />
+						<IconMingcuteDelete3Fill className="size-5 text-negative-100 group-hover:text-white" />
 					</Tooltip.Trigger>
 					<Tooltip.Content>
-						<span className="text-error">Delete</span>
+						<span className="text-negative-100">Delete</span>
 					</Tooltip.Content>
 				</Tooltip>
 			</div>

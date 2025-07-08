@@ -23,17 +23,17 @@ export default function ActionMessage() {
 	return (
 		<div
 			className={clsx(
-				"flex items-center rounded-r-md py-0.5 pl-4 text-text hover:bg-secondary",
+				"flex items-center rounded-r-md py-0.5 pl-4 text-text hover:bg-surface-alt",
 				!isLastExotic && !context.renderInfo.newDate && !isUnread && "mt-1.5",
 				!isNextExotic && !isUnread && "mb-1.5",
 			)}
 		>
-			{type === MessageType.RECIPIENT_REMOVE && <IconMingcuteArrowLeftFill className="mr-4 size-5 text-error" />}
-			{type === MessageType.RECIPIENT_ADD && <IconMingcuteArrowRightFill className="mr-4 size-5 text-success" />}
+			{type === MessageType.RECIPIENT_REMOVE && <IconMingcuteArrowLeftFill className="mr-4 size-5 text-negative-100" />}
+			{type === MessageType.RECIPIENT_ADD && <IconMingcuteArrowRightFill className="mr-4 size-5 text-positive-100" />}
 			{type === MessageType.CHANNEL_NAME_CHANGED && <IconMingcuteEdit2Fill className="mr-4 size-5 text-text/80" />}
 			{type === MessageType.CHANNEL_ICON_CHANGED && <IconMingcutePic2Fill className="mr-4 size-5 text-text/80" />}
-			{type === MessageType.CHANNEL_OWNER_CHANGED && <IconMingcuteTransfer3Fill className="mr-4 size-5 text-accent" />}
-			{type === MessageType.CALL && <IconMingcutePhoneFill className="mr-4 size-5 text-success" />}
+			{type === MessageType.CHANNEL_OWNER_CHANGED && <IconMingcuteTransfer3Fill className="mr-4 size-5 text-primary-500" />}
+			{type === MessageType.CALL && <IconMingcutePhoneFill className="mr-4 size-5 text-positive-100" />}
 			<div>
 				<span className="font-bold">{authorName}</span>
 				{type === MessageType.CALL && <span> started a call</span>}
@@ -56,7 +56,7 @@ export default function ActionMessage() {
 						{type === MessageType.CHANNEL_OWNER_CHANGED && (
 							<span className="text-text/50">
 								{" "}
-								to <span className="text-accent">Channel Owner</span>
+								to <span className="text-primary-500">Channel Owner</span>
 							</span>
 						)}
 					</>

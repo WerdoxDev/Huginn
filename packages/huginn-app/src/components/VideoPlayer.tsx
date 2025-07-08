@@ -109,6 +109,7 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 	}
 
 	return (
+		// biome-ignore lint/a11y/noStaticElementInteractions: This is only mouseup
 		<div
 			ref={containerRef}
 			style={{ width: `${props.width}px`, height: `${props.height}px` }}
@@ -126,19 +127,17 @@ export default function VideoPlayer(props: { url: string; width: number; height:
 			/>
 			<Transition show={!loaded || errored}>
 				<div
-					className={clsx(
-						!errored && "absolute inset-0",
-						"flex items-center justify-center bg-background/40 duration-200 data-closed:opacity-0",
-					)}
+					className={clsx(!errored && "absolute inset-0", "flex items-center justify-center bg-surface/40 duration-200 data-closed:opacity-0")}
 					style={{ width: `${props.width}px`, height: `${props.height}px` }}
 				>
 					{!loaded && !errored && <LoadingIcon className="size-16" />}
-					{errored && <IconMingcuteWarningFill className="size-16 text-error" />}
+					{errored && <IconMingcuteWarningFill className="size-16 text-negative-100" />}
 				</div>
 			</Transition>
+			{/** biome-ignore lint/a11y/noStaticElementInteractions: This is not interactive*/}
 			<div
 				className={clsx(
-					"absolute inset-x-0 bottom-0 flex items-center gap-x-4 bg-tertiary/90 px-2 py-2 transition-[opacity,transform]",
+					"absolute inset-x-0 bottom-0 flex items-center gap-x-4 bg-surface-deep/90 px-2 py-2 transition-[opacity,transform]",
 					playing && "translate-y-full opacity-0 group-hover/video:translate-y-0 group-hover/video:opacity-100",
 				)}
 				onMouseUp={(e) => {

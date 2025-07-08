@@ -25,7 +25,7 @@ export default function HomeLayout() {
 					<HomeSidebar channels={data} />
 					{user && <UserInfo user={user} />}
 				</div>
-				<div className="relative w-full overflow-hidden bg-tertiary">
+				<div className="relative w-full overflow-hidden bg-surface-deep">
 					<Outlet />
 				</div>
 			</div>

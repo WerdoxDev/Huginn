@@ -1,7 +1,7 @@
 import { HuginnClient } from "@huginn/api";
-import type { APIPublicUser, PresenceUser, Snowflake } from "@huginn/shared";
+import type { APIPublicUser, GatewayReadyData, PresenceUser, Snowflake } from "@huginn/shared";
 import { produce } from "immer";
-import { createStore } from "zustand";
+import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 import { settingsStore } from "./settingsStore";
 
@@ -10,6 +10,7 @@ export let client: HuginnClient = undefined!;
 
 const initialStore = () => ({
    users: [] as APIPublicUser[],
+   readyData: undefined as GatewayReadyData | undefined
 });
 
 type StoreType = ReturnType<typeof initialStore>;
@@ -27,6 +28,7 @@ const store = createStore(
                }
             }),
          ),
+      setReadyData: (data: GatewayReadyData) => set({ readyData: data })
    })),
 );
 
@@ -57,6 +59,8 @@ export function initializeClient() {
    }
 
    const unlisten = client?.gateway.listen("ready", (d) => {
+      store.getState().setReadyData(d);
+
       const channelUsers = d.privateChannels.flatMap((x) => x.recipients);
       const relationUsers = d.relationships.map((x) => x.user);
       // const presenceUsers = d.presences.map((x) => x.user);
@@ -108,6 +112,10 @@ export function initializeClient() {
 
 export function useClient() {
    return client;
+}
+
+export function useAPI() {
+   return useStore(store);
 }
 
 export const apiStore = store;

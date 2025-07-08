@@ -16,25 +16,25 @@ export default function InfoModal() {
 
 	const innerColor = useMemo(
 		() =>
-			modal.status === "default" ? "bg-warning/80" : modal.status === "error" ? "bg-error/80" : modal.status === "success" ? "bg-primary/80" : "",
+			modal.status === "info" ? "bg-caution-200" : modal.status === "error" ? "bg-negative-200" : modal.status === "success" ? "bg-positive-400" : "",
 		[modal],
 	);
 
 	const backgroundColor = useMemo(
 		() =>
-			modal.status === "default" ? "bg-warning/20" : modal.status === "error" ? "bg-error/20" : modal.status === "success" ? "bg-primary/20" : "",
+			modal.status === "info" ? "bg-caution-600" : modal.status === "error" ? "bg-negative-600" : modal.status === "success" ? "bg-positive-800" : "",
 		[modal],
 	);
 
 	const borderColor = useMemo(
 		() =>
-			modal.status === "default"
-				? "border-warning/50"
+			modal.status === "info"
+				? "border-caution-300"
 				: modal.status === "error"
-					? "border-error/50"
+					? "border-negative-300"
 					: modal.status === "success"
-						? "border-success/50"
-						: "border-primary/50",
+						? "border-positive-500"
+						: "border-primary-800",
 		[modal],
 	);
 
@@ -56,7 +56,7 @@ export default function InfoModal() {
 		<DialogPanel
 			transition
 			className={clsx(
-				"relative w-full max-w-xs transform overflow-hidden rounded-xl border-2 bg-background p-5 transition-[opacity_transform] duration-200 data-closed:scale-90",
+				"relative w-full max-w-xs transform overflow-hidden rounded-xl border-2 bg-surface p-5 transition-[opacity_transform] duration-200 data-closed:scale-90",
 				borderColor,
 			)}
 		>
@@ -64,7 +64,8 @@ export default function InfoModal() {
 				<div className={clsx("rounded-full p-3", backgroundColor)}>
 					<div className={clsx("rounded-full p-3", innerColor)}>
 						{modal.status === "error" && <IconMingcuteAlertLine className="h-8 w-8 text-white" />}
-						{modal.status === "default" && <IconMingcuteInformationLine className="h-8 w-8 text-white" />}
+						{modal.status === "info" && <IconMingcuteInformationLine className="h-8 w-8 text-white" />}
+                  {modal.status === "success" && <IconMingcuteCheckFill className="h-8 w-8 text-white" />}
 					</div>
 				</div>
 				<div className="text-center font-medium text-lg text-white">{modal.title}</div>
@@ -72,13 +73,13 @@ export default function InfoModal() {
 			<Description className="mt-1 flex items-center justify-center" as="div">
 				<div className="text-center text-text/90">
 					{formattedText}
-					{errorCode && <span className="text-nowrap text-error italic opacity-90">{errorCode}</span>}
+					{errorCode && <span className="text-nowrap text-negative-100 italic opacity-90">{errorCode}</span>}
 				</div>
 			</Description>
 
 			<div className="mt-5 flex items-center justify-end gap-x-2">
 				<HuginnButton
-					className="h-10 w-full bg-secondary"
+					className="h-10 w-full bg-surface-alt"
 					onClick={() => {
 						if (!modal.action?.cancel?.callback) updateModals({ info: { isOpen: false } });
 						else modal.action.cancel.callback();
@@ -90,7 +91,7 @@ export default function InfoModal() {
 				{modal.action?.confirm && (
 					<LoadingButton
 						loading={mutationState?.status === "pending"}
-						className="h-10 w-full bg-primary text-text"
+						className="h-10 w-full bg-primary-700 text-text"
 						onClick={() => {
 							modal.action?.confirm?.callback();
 						}}

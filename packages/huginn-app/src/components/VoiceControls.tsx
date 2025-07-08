@@ -27,12 +27,12 @@ export default function VoiceControls(props: {
 			<div className="absolute inset-x-0 bottom-0 mb-2.5 flex shrink-0 items-center justify-center gap-x-2.5 transition data-closed:opacity-0">
 				{props.isInVoice ? (
 					<>
-						<div className="flex gap-x-1 rounded-xl border border-background bg-tertiary p-1">
+						<div className="flex gap-x-1 rounded-xl border border-surface bg-surface-deep p-1">
 							<Tooltip>
 								<Tooltip.Trigger
 									className={clsx(
-										"h-full w-full rounded-lg px-5 py-1.5 text-white transition-[border-radius_background-color] hover:bg-background",
-										props.voiceState.selfMute && "bg-error/80 hover:bg-error/60",
+										"h-full w-full rounded-lg px-5 py-1.5 text-white transition-[border-radius_background-color] hover:bg-surface",
+										props.voiceState.selfMute && "bg-negative-300 hover:!bg-negative-500",
 										voiceState.selfDeaf && voiceState.selfMute && "rounded-r-none",
 									)}
 									onClick={props.onToggleMute}
@@ -44,8 +44,8 @@ export default function VoiceControls(props: {
 							<Tooltip>
 								<Tooltip.Trigger
 									className={clsx(
-										"h-full w-full rounded-lg px-5 py-1.5 text-white transition-[border-radius_background-color] hover:bg-background",
-										props.voiceState.selfDeaf && "bg-error/80 hover:bg-error/60",
+										"h-full w-full rounded-lg px-5 py-1.5 text-white transition-[border-radius_background-color] hover:bg-surface",
+										props.voiceState.selfDeaf && "bg-negative-300 hover:!bg-negative-500",
 										voiceState.selfDeaf && voiceState.selfMute && "rounded-l-none",
 									)}
 									onClick={props.onToggleDeafen}
@@ -58,13 +58,13 @@ export default function VoiceControls(props: {
 								</Tooltip.Trigger>
 								<Tooltip.Content>Deafen</Tooltip.Content>
 							</Tooltip>
-							<div className="mx-0.5 my-1 w-0.5 shrink-0 bg-background" />
+							<div className="mx-0.5 my-1 w-0.5 shrink-0 bg-surface" />
 							<div className="flex">
 								<Tooltip>
 									<Tooltip.Trigger
 										className={clsx(
 											"flex h-full items-center justify-center rounded-lg text-white transition-colors",
-											voiceState.selfStream ? "w-[38px]! rounded-r-none bg-accent/20 hover:bg-accent/40" : "w-16 hover:bg-background",
+											voiceState.selfStream ? "!w-[38px] rounded-r-none bg-primary-900 hover:bg-primary-700" : "w-16 hover:bg-surface",
 										)}
 										onClick={() => (voiceState.selfStream ? props.onEndStream() : props.onStream())}
 									>
@@ -74,13 +74,13 @@ export default function VoiceControls(props: {
 								</Tooltip>
 								{voiceState.selfStream && (
 									<DropdownMenu>
-										<DropdownMenu.Button className="ml-0.5 flex h-full items-center justify-center rounded-r-lg bg-accent/20 px-1 transition-colors hover:bg-accent/40">
+										<DropdownMenu.Button className="ml-0.5 flex h-full items-center justify-center rounded-r-lg bg-primary-900 px-1 transition-colors hover:bg-primary-700">
 											{({ open }) =>
 												open ? <IconMingcuteUpFill className="size-4 text-text" /> : <IconMingcuteDownFill className="size-4 text-text" />
 											}
 										</DropdownMenu.Button>
-										<DropdownMenu.Items anchor="top" className="border border-background [--anchor-gap:16px]">
-											<DropdownMenu.Item className="text-error! hover:bg-error/10!" label="End Stream" onClick={props.onEndStream} />
+										<DropdownMenu.Items anchor="top" className="border border-surface [--anchor-gap:16px]">
+											<DropdownMenu.Item className="!text-negative-100 hover:!bg-negative-500" label="End Stream" onClick={props.onEndStream} />
 											<DropdownMenu.Item label="Change Stream" onClick={props.onStream}>
 												<IconMingcuteTransfer3Fill />
 											</DropdownMenu.Item>
@@ -90,7 +90,7 @@ export default function VoiceControls(props: {
 							</div>
 							{/* <Tooltip>
 							<Tooltip.Trigger
-								className={clsx("h-full w-full rounded-lg px-5 py-1.5 text-white transition-colors hover:bg-background")}
+								className={clsx("h-full w-full rounded-lg px-5 py-1.5 text-white transition-colors hover:bg-surface")}
 								onClick={() => client.voice.stopScreensharing()}
 							>
 								<IconMingcuteMonitorFill className="size-6" />
@@ -101,7 +101,7 @@ export default function VoiceControls(props: {
 						<Tooltip>
 							<Tooltip.Trigger
 								onClick={props.onDisconnect}
-								className="rounded-xl bg-error/80 px-5 py-2.5 text-white transition-colors hover:bg-error/60"
+								className="rounded-xl bg-negative-300 px-5 py-2.5 text-white transition-colors hover:bg-negative-500"
 							>
 								<IconMingcutePhoneBlockFill className="size-6" />
 							</Tooltip.Trigger>
@@ -112,7 +112,7 @@ export default function VoiceControls(props: {
 					<Tooltip>
 						<Tooltip.Trigger
 							onClick={props.onConnect}
-							className="rounded-xl bg-success/80 px-5 py-2.5 text-white transition-colors hover:bg-success/60"
+							className="rounded-xl bg-positive-400 px-5 py-2.5 text-white transition-colors hover:bg-positive-500 focus:bg-positive-600"
 						>
 							<IconMingcutePhoneFill className="size-6" />
 						</Tooltip.Trigger>

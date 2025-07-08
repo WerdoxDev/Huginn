@@ -47,7 +47,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 					updateModals({
 						info: {
 							isOpen: true,
-							status: "default",
+							status: "info",
 							text: "Server or CDN or Voice address changed. The app should be restarted!",
 							title: "Hang on!",
 							action: {

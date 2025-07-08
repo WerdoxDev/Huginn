@@ -12,7 +12,6 @@ export function useTryLogin() {
    const handleServerError = useErrorHandler();
 
    async function tryLogin(options: { onFound?: () => void, onNotFound?: () => void, onSuccessful?: () => Promise<void> | void, onError?: (e: unknown) => void, navigatePath?: To }) {
-      console.log(client.gateway.status)
       if (client.gateway.status === "authenticated") return;
 
       const token = localStorage.getItem("access-token") ?? undefined;
@@ -28,7 +27,6 @@ export function useTryLogin() {
 
          // If token is expired | gateway couldn't authenticate | client couldn't refresh token, basically token is invalid? delete. Network problem? RETRY!
          if (!lastStatus.retryable && !lastStatus.status) {
-            console.log("FAIL");
             // localStorage.removeItem("refresh-token");
             // localStorage.removeItem("access-token");
             options.onError?.(undefined);

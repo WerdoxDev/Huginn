@@ -133,8 +133,8 @@ export default function OauthRedirect() {
 								onDelete={onDelete}
 								onSelected={onSelected}
 								size="7.5rem"
-								className="bg-background! shadow-xl transition-shadow group-hover/wrapper:shadow-2xl"
-								editButtonClassName="bg-secondary"
+								className="bg-surface! shadow-xl transition-shadow group-hover/wrapper:shadow-2xl"
+								editButtonClassName="bg-surface-alt"
 							/>
 						</div>
 						<div className="mt-5 flex w-full flex-col">
@@ -154,13 +154,13 @@ export default function OauthRedirect() {
 							</HuginnInput>
 						</div>
 						<div className="mt-5 flex w-full gap-x-2">
-							<HuginnButton className="w-full bg-secondary" onClick={abort}>
+							<HuginnButton className="w-full bg-surface-alt" onClick={abort}>
 								Abort
 							</HuginnButton>
 							<LoadingButton
 								onClick={confirm}
 								loading={!mutation.isIdle && mutation.isPending}
-								className="h-10 w-full bg-primary"
+								className="h-10 w-full bg-primary-700"
 								type="submit"
 							>
 								Confirm

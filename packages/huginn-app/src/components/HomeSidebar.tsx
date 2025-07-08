@@ -45,7 +45,7 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
 	return (
 		<nav
 			className={clsx(
-				"flex h-full flex-col overflow-hidden rounded-l-xl bg-secondary ",
+				"flex h-full flex-col overflow-hidden rounded-l-xl bg-surface-alt ",
 				huginnWindow.environment === "browser" && "rounded-tl-none",
 			)}
 		>

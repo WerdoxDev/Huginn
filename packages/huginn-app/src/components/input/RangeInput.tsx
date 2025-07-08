@@ -111,16 +111,11 @@ export default function RangeInput(props: {
 	return (
 		<div className={clsx("w-full", props.className)} draggable={false}>
 			<div className="group relative flex h-8 cursor-pointer items-center" ref={rangeRef}>
-				<div
-					className={clsx(
-						"absolute h-1 w-full overflow-hidden rounded-md bg-secondary px-1 transition-[height] group-hover:h-2",
-						props.backgroundClassName,
-					)}
-				>
-					<div className={clsx("absolute left-0 h-full w-2 bg-accent", props.fillClassName)} />
-					<div className={clsx("relative top-0 left-0 h-full w-full bg-secondary", props.backgroundClassName)} ref={rangeTrackRef}>
+				<div className={clsx("absolute h-1 px-1 w-full overflow-hidden rounded-md bg-surface-alt transition-[height] group-hover:h-2", props.backgroundClassName)}>
+					<div className={clsx("absolute left-0 h-full w-2 bg-primary-500", props.fillClassName)} />
+					<div className={clsx("relative top-0 left-0 h-full w-full bg-surface-alt", props.backgroundClassName)} ref={rangeTrackRef}>
 						<div
-							className={clsx("h-full bg-accent", props.fillClassName)}
+							className={clsx("h-full bg-primary-500", props.fillClassName)}
 							style={{ width: `${percentage / ((props.maxValue ?? 100) / 100)}%` }}
 						/>
 					</div>

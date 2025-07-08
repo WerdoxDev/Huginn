@@ -53,13 +53,13 @@ function List(props: { className?: string; children?: ReactNode }) {
 	const dropdownContext = useContext(DropdownContext);
 
 	return (
-		<div className={clsx("w-52 rounded-lg bg-secondary", props.className)}>
+		<div className={clsx("w-52 rounded-lg bg-surface-alt", props.className)}>
 			<Listbox value={dropdownContext.selected} onChange={dropdownContext.onChange}>
 				{({ open, value }) => (
 					<>
 						<ListboxButton className="relative flex w-full cursor-pointer select-none items-center justify-between overflow-hidden p-2 text-white outline-hidden">
 							<span className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-left">{value?.text}</span>
-							<IconMingcuteDownFill className={clsx("h-6 w-6 shrink-0 text-accent transition-transform", open && "rotate-180")} />
+							<IconMingcuteDownFill className={clsx("h-6 w-6 shrink-0 text-primary-500 transition-transform", open && "rotate-180")} />
 						</ListboxButton>
 						{props.children}
 					</>
@@ -76,7 +76,7 @@ function ItemsWrapper(props: { className?: string; children?: ReactNode }) {
 			anchor="bottom"
 			transition
 			className={clsx(
-				"flex flex-col gap-y-0.5 rounded-lg bg-secondary p-1 outline-hidden transition [--anchor-gap:0.25rem] [--anchor-padding:1rem] data-closed:translate-y-5 data-closed:opacity-0",
+				"flex flex-col gap-y-0.5 rounded-lg bg-surface-alt p-1 outline-hidden transition [--anchor-gap:0.25rem] [--anchor-padding:1rem] data-closed:translate-y-5 data-closed:opacity-0",
 				props.className,
 			)}
 		>
@@ -89,7 +89,7 @@ function Item(props: { item: DropdownItem; children?: ReactNode }) {
 	return (
 		<ListboxOption
 			value={props.item}
-			className="group flex cursor-pointer items-center gap-x-1.5 rounded-md p-1.5 text-white data-focus:bg-background data-selected:bg-background/50"
+			className="group flex cursor-pointer items-center gap-x-1.5 rounded-md p-1.5 text-white data-focus:bg-surface data-selected:bg-surface/50"
 		>
 			{props.item.icon}
 			{props.item.text}

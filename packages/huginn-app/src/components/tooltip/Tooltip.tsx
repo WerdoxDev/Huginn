@@ -76,7 +76,7 @@ function Content(props: { extraClassName?: string; arrowClassName?: string; extr
 			{/* <Portal> */}
 			<div
 				className={clsx(
-					"absolute z-999 rounded-md border border-background bg-zinc-900 px-2.5 py-1.5 text-base text-white/80 shadow-lg",
+					"absolute z-999 rounded-md border border-surface bg-zinc-900 px-2.5 py-1.5 text-base text-white/80 shadow-lg",
 					props.extraClassName,
 				)}
 				ref={ref}
@@ -93,7 +93,7 @@ function Content(props: { extraClassName?: string; arrowClassName?: string; extr
 					ref={context.arrowRef}
 					className={clsx(
 						props.arrowClassName,
-						"absolute h-2.5 w-2.5 border-background border-t border-l bg-zinc-900",
+						"absolute h-2.5 w-2.5 border-surface border-t border-l bg-zinc-900",
 						context.placement.includes("bottom") && "rotate-45",
 						context.placement.includes("top") && "rotate-[-135deg]",
 						context.placement.includes("left") && "-rotate-225",

@@ -11,11 +11,11 @@ function ThemeIcon(props: { color: string }) {
 }
 
 const themes: DropdownItem[] = [
-	{ text: "Pine Green", value: "pine green", icon: <ThemeIcon color={pineGreenTheme.primary} /> },
-	{ text: "Cerulean", value: "cerulean", icon: <ThemeIcon color={ceruleanTheme.primary} /> },
-	{ text: "Eggplant", value: "eggplant", icon: <ThemeIcon color={eggplantTheme.primary} /> },
-	{ text: "Coffee", value: "coffee", icon: <ThemeIcon color={coffeeTheme.primary} /> },
-	{ text: "Charcoal", value: "charcoal", icon: <ThemeIcon color={charcoalTheme.primary} /> },
+	{ text: "Pine Green", value: "pine green", icon: <ThemeIcon color={pineGreenTheme["primary-500"]} /> },
+	{ text: "Cerulean", value: "cerulean", icon: <ThemeIcon color={ceruleanTheme["primary-500"]} /> },
+	{ text: "Eggplant", value: "eggplant", icon: <ThemeIcon color={eggplantTheme["primary-500"]} /> },
+	{ text: "Coffee", value: "coffee", icon: <ThemeIcon color={coffeeTheme["primary-500"]} /> },
+	{ text: "Charcoal", value: "charcoal", icon: <ThemeIcon color={charcoalTheme["primary-500"]} /> },
 ];
 
 export default function SettingsThemeTab(props: SettingsTabProps) {

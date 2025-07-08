@@ -9,7 +9,7 @@ type DefaultModal = { isOpen: boolean };
 const initialStore = () => ({
    settings: { isOpen: false } as DefaultModal,
    info: { isOpen: false, status: "none", title: "", text: "", closable: true } as DefaultModal & {
-      status: StatusCode;
+      status: "info" | "success" | "error" | "none";
       text: string;
       title: string;
       action?: {

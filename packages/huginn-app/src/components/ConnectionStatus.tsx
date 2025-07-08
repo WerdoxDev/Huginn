@@ -9,6 +9,7 @@ const statusTexts: Record<WebsocketStatus, string> = {
 	connecting: "Connecting...",
 	reconnecting: "Reconnecting...",
 	disconnected: "Disconnected",
+	none: "Connecting...",
 };
 
 export default function ConnectionStatus() {
@@ -31,9 +32,9 @@ export default function ConnectionStatus() {
 			<div
 				className={clsx(
 					"h-2 w-2 rounded-full",
-					status === "authenticated" && "bg-success",
-					(status === "disconnected" || status === "reconnecting") && "bg-error",
-					(status === "reconnecting" || status === "connecting" || status === "connected") && "bg-warning",
+					status === "authenticated" && "bg-positive-100",
+					(status === "disconnected" || status === "reconnecting") && "bg-negative-100",
+					(status === "reconnecting" || status === "connecting" || status === "connected") && "bg-caution-100",
 				)}
 			/>
 			<span className="font-medium text-text/80 text-xs uppercase">{statusTexts[status]}</span>

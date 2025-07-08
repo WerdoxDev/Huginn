@@ -111,11 +111,11 @@ export default function Index() {
 	}, []);
 
 	return (
-		<StartWrapper shownId="" transitionName="start-index" className="bg-transparent! shadow-none! w-auto! p-0!">
+		<StartWrapper transitionName="start-index" className="!w-auto !bg-transparent !p-0 !shadow-none">
 			<div className="flex w-full select-none flex-col items-center">
 				<HuginnIcon
 					outlined
-					className="hover:-rotate-12 size-20 animate-pulse text-accent drop-shadow-[0px_0px_25px_rgb(var(--color-primary))] transition-all hover:scale-105 active:rotate-6"
+					className="hover:-rotate-12 size-20 animate-pulse text-primary-500 drop-shadow-[0px_0px_25px_rgb(var(--color-primary-700))] transition-all hover:scale-105 active:rotate-6"
 				/>
 				<div className="mt-4 font-bold text-text text-xl">Huginn</div>
 				<div className="mt-2 text-text/80">
@@ -124,25 +124,25 @@ export default function Index() {
 							{typeof loadingStates[loadingState] === "string" ? loadingStates[loadingState] : loadingStates[loadingState]()}{" "}
 							<span className="font-bold ">{loadingState === "updating" ? info?.version : ""}</span>
 						</span>
-						{loadingState === "cant_update" && <IconMingcuteAlertFill className="size-6 text-error" />}
+						{loadingState === "cant_update" && <IconMingcuteAlertFill className="size-6 text-negative-100" />}
 						{(loadingState === "checking_update" || (loadingState === "updating" && progress === 0)) && <LoadingIcon className="size-6" />}
 					</div>
 				</div>
 				{loadingState === "cant_update" && (
 					<div className="no-drag-region bottom-3 mt-4 flex w-full justify-between gap-x-2 ">
-						<button type="button" className="w-full rounded-md bg-primary py-1 text-white hover:bg-primary" onClick={startUpdate}>
+						<button type="button" className="w-full rounded-md bg-primary-700 py-1 text-white hover:bg-primary-700" onClick={startUpdate}>
 							Retry
 						</button>
-						<button type="button" className="w-full rounded-md bg-tertiary py-1 text-white hover:bg-tertiary" onClick={continueToLogin}>
+						<button type="button" className="w-full rounded-md bg-surface-deep py-1 text-white hover:bg-surface-deep" onClick={continueToLogin}>
 							Continue
 						</button>
 					</div>
 				)}
 				{loadingState === "updating" && progress !== 0 && (
-					<div className="relative mt-3 h-6 w-56 rounded-md bg-secondary">
-						<div className="h-full rounded-md bg-accent" style={{ width: `${progress}%` }} />
+					<div className="relative mt-3 h-6 w-56 rounded-md bg-surface-deep">
+						<div className="h-full rounded-md bg-primary-500" style={{ width: `${progress}%` }} />
 						<div className="absolute right-0 left-0 flex items-center justify-center">
-							<div className="rounded-b-md bg-secondary px-2 py-1 text-text/50 text-xs">{updateProgressText}</div>
+							<div className="rounded-b-md bg-surface-alt px-2 py-1 text-text/50 text-xs">{updateProgressText}</div>
 						</div>
 					</div>
 				)}

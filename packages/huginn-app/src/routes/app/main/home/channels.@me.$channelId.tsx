@@ -1,6 +1,6 @@
 import ChannelMessages from "@components/channels/ChannelMessages";
 import DirectChannelCall from "@components/channels/DirectChannelCall";
-import HomeTopBar from "@components/channels/HomeTopbar";
+import HomeTopBar from "@components/channels/HomeTopBar";
 import RecipientsSidebar from "@components/channels/RecipientsSidebar";
 import MessageBox from "@components/MessageBox";
 import { useSafePathname } from "@hooks/useLastSafePathname";
@@ -64,7 +64,7 @@ export default function ChannelWithId() {
 						/>
 					)}
 				</div>
-				<div className="absolute bottom-0 flex h-16 w-full shrink-0 bg-background" />
+				<div className="absolute bottom-0 flex h-16 w-full shrink-0 bg-surface" />
 			</div>
 		)
 	);

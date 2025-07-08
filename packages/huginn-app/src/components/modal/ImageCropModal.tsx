@@ -46,7 +46,7 @@ export default function ImageCropModal() {
 	return (
 		<DialogPanel
 			transition
-			className="flex transform flex-col overflow-hidden rounded-xl border-2 border-primary/50 bg-background transition-[opacity_transform] duration-200 data-closed:scale-90"
+			className="flex transform flex-col overflow-hidden rounded-xl border-2 border-primary-800 bg-surface transition-[opacity_transform] duration-200 data-closed:scale-90"
 		>
 			<div className="m-5 mb-0 flex h-120 w-120 items-center justify-center rounded-lg bg-black/50">
 				<Cropper
@@ -71,14 +71,14 @@ export default function ImageCropModal() {
 				/>
 			</div>
 			<div className="mx-5 my-1 text-text/60 italic">NOTE: zoom with scroll wheel</div>
-			<div className="flex w-full justify-end gap-x-2 bg-secondary p-5">
+			<div className="flex w-full justify-end gap-x-2 bg-surface-alt p-5">
 				<HuginnButton
 					onClick={() => updateModals({ imageCrop: { isOpen: false } })}
 					className="h-10 w-20 shrink-0 decoration-white hover:underline"
 				>
 					Cancel
 				</HuginnButton>
-				<HuginnButton onClick={confirm} className="h-10 w-36 bg-primary text-text">
+				<HuginnButton onClick={confirm} className="h-10 w-36 bg-primary-700 text-text">
 					Confirm
 				</HuginnButton>
 			</div>

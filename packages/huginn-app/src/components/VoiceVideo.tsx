@@ -128,16 +128,16 @@ export default function VoiceVideo(props: {
 			id={props.consumerId}
 			type="button"
 			className={clsx(
-				"group relative flex aspect-video shrink-0 cursor-pointer flex-col items-center justify-center overflow-hidden bg-tertiary",
-				!props.isMaximized && "rounded-xl border-2 border-background",
+				"group relative flex aspect-video shrink-0 cursor-pointer flex-col items-center justify-center overflow-hidden bg-surface-deep",
+				!props.isMaximized && "rounded-xl border-2 border-surface",
 			)}
 		>
 			<motion.div
 				layout={!props.isResizing ? "position" : false}
 				transition={transition}
-				className="absolute top-2 right-2 flex gap-x-2 rounded-lg bg-tertiary px-2 py-1 italic opacity-0 transition-opacity group-hover:opacity-100"
+				className="absolute top-2 right-2 flex gap-x-2 rounded-lg bg-surface-deep px-2 py-1 italic opacity-0 transition-opacity group-hover:opacity-100"
 			>
-				{hasAudio ? <IconMingcuteVolumeFill className="text-success" /> : <IconMingcuteVolumeOffFill className="size-5 text-error" />}
+				{hasAudio ? <IconMingcuteVolumeFill className="text-positive-100" /> : <IconMingcuteVolumeOffFill className="size-5 text-negative-100" />}
 				<div className="font-bold text-sm text-white/90">
 					{height}
 					<span className="text-white/60">P</span> {estimateFps}
@@ -145,7 +145,7 @@ export default function VoiceVideo(props: {
 				</div>
 			</motion.div>
 			<motion.div layout={!props.isResizing ? "position" : false} transition={transition} className="absolute bottom-2 left-2 flex gap-x-2">
-				<div className="flex items-center justify-center gap-x-2 rounded-lg bg-tertiary px-2 py-1 text-white opacity-0 transition-opacity group-hover/wrapper:opacity-100">
+				<div className="flex items-center justify-center gap-x-2 rounded-lg bg-surface-deep px-2 py-1 text-white opacity-0 transition-opacity group-hover/wrapper:opacity-100">
 					<IconMingcuteMonitorFill className="size-5" />
 					{props.user.displayName ?? props.user.username}
 				</div>

@@ -43,7 +43,7 @@ export default function GuildsBar() {
 	};
 
 	return (
-		<nav className="flex h-full w-19 shrink-0 flex-col bg-background p-3.5">
+		<nav className="flex h-full w-19 shrink-0 flex-col bg-surface p-3.5">
 			<HomeButton />
 			<div className="flex flex-col items-center justify-center">
 				<AnimatePresence mode="popLayout">

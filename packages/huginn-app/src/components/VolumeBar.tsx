@@ -57,7 +57,7 @@ export default function VolumeBar(props: Omit<ProgressBarProps, "orientation">) 
 			</button>
 			{(audioHovering || props.dragging) && (
 				<div
-					className="absolute bottom-10 h-24 w-4 rounded-lg bg-tertiary/90 p-1"
+					className="absolute bottom-10 h-24 w-4 rounded-lg bg-surface-deep/90 p-1"
 					onMouseEnter={cancelAudioHoverTimeout}
 					onMouseLeave={startAudioHoverTimeout}
 				>

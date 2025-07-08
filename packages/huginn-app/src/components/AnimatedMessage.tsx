@@ -12,8 +12,8 @@ export default function AnimatedMessage(props: { className?: string; status: Sta
 
 	useEffect(() => {
 		if (props.status === "default") setTextColor("text-text/80");
-		else if (props.status === "error") setTextColor("text-error");
-		else if (props.status === "success") setTextColor("text-success");
+		else if (props.status === "error") setTextColor("text-negative-100");
+		else if (props.status === "success") setTextColor("text-positive-100");
 	}, [props.status]);
 
 	useEffect(() => {

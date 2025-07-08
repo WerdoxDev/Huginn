@@ -35,7 +35,7 @@ export default function UserInfo(props: { user: APIUser }) {
 					<div className="flex shrink-0 gap-x-1">
 						<Tooltip>
 							<Tooltip.Trigger
-								className="group/setting rounded-lg p-1 hover:bg-background"
+								className="group/setting rounded-lg p-1 hover:bg-surface"
 								onClick={openSettings}
 								onMouseDown={(e) => e.stopPropagation()}
 							>
@@ -49,7 +49,7 @@ export default function UserInfo(props: { user: APIUser }) {
 				<DropdownMenu.Items className="w-60 [--anchor-gap:8px]" anchor="top">
 					<DropdownMenu.Item
 						label="Logout"
-						className="text-error! hover:bg-error/10! py-2"
+						className="!text-negative-100 hover:!bg-negative-100/10 py-2"
 						onClick={() => {
 							mutation.mutate();
 						}}
