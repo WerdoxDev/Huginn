@@ -36,7 +36,7 @@ createRoute("GET", "/api/auth/callback/google", validator("query", querySchema),
    const redirect_url = session.get("redirect_url");
    const sessionState = session.get("state");
    const flow = session.get("flow");
-   const peer_id = session.get("peer_id");
+   const session_id = session.get("session_id");
 
    if (sessionState !== state || !state) {
       consola.info("Session state mismatch");
@@ -84,7 +84,7 @@ createRoute("GET", "/api/auth/callback/google", validator("query", querySchema),
 
          // Dispatch to whoever is subbed to the state topic of this authentication
          dispatchToTopic(state, "oauth_redirect", { access_token: accessToken, refresh_token: refreshToken });
-         gateway.getSessionByPeerId(peer_id)?.unsubscribe(state);
+         gateway.getSessionBySessionId(session_id)?.unsubscribe(state);
 
          const searchParam = new URLSearchParams({ flow, access_token: accessToken, refresh_token: refreshToken });
          const redirectUrl = `${flow === "browser" ? redirect_url : `${host}/redirect.html`}?${searchParam.toString()}`;
@@ -131,7 +131,7 @@ createRoute("GET", "/api/auth/callback/google", validator("query", querySchema),
       );
 
       dispatchToTopic(state, "oauth_redirect", { token: token });
-      gateway.getSessionByPeerId(peer_id)?.unsubscribe(state);
+      gateway.getSessionBySessionId(session_id)?.unsubscribe(state);
 
       const searchParam = new URLSearchParams({ flow, token });
       const redirectUrl = `${flow === "browser" ? redirect_url : `${host}/redirect.html`}?${searchParam.toString()}`;

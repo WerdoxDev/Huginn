@@ -8,7 +8,7 @@ const querySchema = z.object({
    redirect_url: z.optional(z.string()),
    state: z.string(),
    flow: z.string(),
-   peer_id: z.optional(z.string()),
+   session_id: z.optional(z.string()),
 });
 
 createRoute("GET", "/api/auth/google", validator("query", querySchema), async (c) => {
@@ -16,7 +16,7 @@ createRoute("GET", "/api/auth/google", validator("query", querySchema), async (c
       return c.newResponse(null, HttpCode.NOT_IMPLEMENTED);
    }
 
-   const { redirect_url, state, flow, peer_id } = c.req.valid("query");
+   const { redirect_url, state, flow, session_id } = c.req.valid("query");
 
    const [error, decodedToken] = await tryCatch(() => new TextDecoder().decode(decodeBase64(state)).split(":"));
    if (error) {
@@ -42,10 +42,10 @@ createRoute("GET", "/api/auth/google", validator("query", querySchema), async (c
    session.set("state", state);
    session.set("redirect_url", redirect_url);
    session.set("flow", flow);
-   session.set("peer_id", peer_id);
+   session.set("session_id", session_id);
 
-   if (flow === "websocket" && peer_id) {
-      gateway.getSessionByPeerId(peer_id)?.subscribe(state);
+   if (flow === "websocket" && session_id) {
+      gateway.getSessionBySessionId(session_id)?.subscribe(state);
    }
 
    const host = envs.REDIRECT_HOST;
