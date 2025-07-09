@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.18.1...api@v0.19.0) (2025-07-09)
+
+
+### Features
+
+* **api:** add bunch of tests for gateway and voice + some bug fixes ([dbd10ae](https://github.com/WerdoxDev/Huginn/commit/dbd10ae1cb08a3688587adb6d3f3748761d3133d))
+
 ## [0.18.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.18.0...api@v0.18.1) (2025-07-07)
 
 
