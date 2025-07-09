@@ -44,7 +44,20 @@ describe("REST", () => {
          files: [{ data: data!, name: "test" }],
       });
 
-      expect(resolvedRequest).toMatchSnapshot("body file auto contentType");
+      expect(resolvedRequest).toMatchInlineSnapshot(`
+        {
+          "fetchOptions": {
+            "body": FormData (entries) FormData FormData {
+              "files[0]": File (182 bytes) {
+                name: "test"
+              },
+            },
+            "headers": {},
+            "method": "POST",
+          },
+          "url": "https://test.com/test",
+        }
+      `);
    });
 
    test("should correctly parse response", async () => {

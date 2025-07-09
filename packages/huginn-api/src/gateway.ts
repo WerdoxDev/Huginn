@@ -12,8 +12,7 @@ import {
    type GatewayIdentify,
    GatewayOperations,
    type GatewayReadyData,
-   type GatewayResume, isOpcode,
-   log
+   type GatewayResume, log
 } from "@huginn/shared";
 import type { HuginnClient } from ".";
 import type { GatewayOptions } from "./types";
@@ -25,14 +24,13 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
    private readonly client: HuginnClient;
 
    public socket?: WebSocket;
-   public readyData?: GatewayReadyData;
    public sessionId?: Snowflake;
 
    private heartbeatInterval?: ReturnType<typeof setInterval>;
    private sequence?: number;
 
-   private _status: WebsocketStatus = "disconnected";
-   public set status(newStatus: WebsocketStatus) {
+   private _status: WebsocketStatus = "none";
+   private set status(newStatus: WebsocketStatus) {
       this._status = newStatus;
       this.emit("status_changed", newStatus);
    }
@@ -58,8 +56,6 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
       log("api:gateway", "default", "intentional close")
 
       this.socket?.close(GatewayCode.INTENTIONAL_CLOSE);
-      this.sequence = undefined;
-      this.sessionId = undefined;
    }
 
    private onOpen(_e: Event) {
@@ -76,21 +72,16 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
       this.stopHeartbeat();
       this.emit("close", e.code);
 
-      // Completely reset if it was intentionally closed
-      if (e.code === GatewayCode.INTENTIONAL_CLOSE) {
-         this.readyData = undefined;
-         this.sequence = undefined;
-         this.sessionId = undefined;
-         return;
-      }
-
-      // Only reset sequence and session id if it was invalid. (readyData can still be defined)
-      if (e.code === GatewayCode.INVALID_SESSION) {
+      // Completely reset if it was intentionally closed or session was invalid
+      if (e.code === GatewayCode.INTENTIONAL_CLOSE || e.code === GatewayCode.INVALID_SESSION) {
          this.sequence = undefined;
          this.sessionId = undefined;
       }
 
-      this.tryReconnect();
+      // Don't reconnect if it was intentionally closed
+      if (e.code !== GatewayCode.INTENTIONAL_CLOSE) {
+         this.tryReconnect();
+      }
    }
 
    private async tryReconnect() {
@@ -101,7 +92,6 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
 
          this.connect();
 
-         console.log(this.client.user, this.sessionId);
          // Only authenticate if session was closed and it was previously authenticated
          if (this.client.user && !this.sessionId) {
             await this.waitForEvents(["hello"]);
@@ -115,19 +105,22 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
 
       // Already authenticated
       if (this.status === "authenticated") {
-         console.log("AUTHED");
-         return { authenticated: true, retryable: false };
+         return { authenticated: true, retryable: true };
       }
 
-      // Socket is opened/ is opening, but haven't gotten "hello" yet
+      // Socket is opened or is opening after a disconnect, but haven't gotten "hello" yet
       if (this.status === "connecting" || this.status === "disconnected") {
          await this.waitForEvents(["hello"]);
          this.sendIdentify();
-
       }
       // "hello" is already received
       else if (this.status === "connected") {
          this.sendIdentify();
+      }
+
+      // Not even opened once
+      if (this.status === "none") {
+         throw new Error("Gateway is never connected");
       }
 
       const results = await this.waitForEvents(["ready", "close"], true);
@@ -140,19 +133,14 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
          return { authenticated: false, retryable: true };
       }
 
-      return { authenticated: true, retryable: false };
-
-      // // the socket was closed
-      // if (this.status === "disconnected") {
-      //    return;
-      // }
+      return { authenticated: true, retryable: true };
    }
 
    /**
     * Connects to a voice channel.
     * @param guildId can be set to null if you are connecting to a direct channel call.
     */
-   public async connectVoice(guildId: Snowflake | null, channelId: Snowflake, token?: string): Promise<void> {
+   public async connectVoice(guildId: Snowflake | null, channelId: Snowflake, token?: string): Promise<boolean> {
       log("api:gateway", "default", "connect to voice")
 
       if (this.client.voice.connectionInfo?.channelId !== channelId) {
@@ -196,10 +184,12 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
       }
 
       if (!receivedToken) {
-         return;
+         return false;
       }
 
       this.client.voice.connect(receivedToken, channelId, guildId);
+
+      return true;
    }
 
    public async disconnectVoice(): Promise<void> {
@@ -222,18 +212,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
 
       this.client.voice.close();
 
-      await new Promise<void>((resolve, _reject) => {
-         const onMessage = (data: GatewayPayload) => {
-            if (isOpcode(data, GatewayOperations.DISPATCH)) {
-               if (data.t === "voice_state_update") {
-                  this.off("message", onMessage);
-                  resolve();
-               }
-            }
-         };
-
-         this.on("message", onMessage);
-      });
+      await this.waitForEvents(["voice_state_update"]);
    }
 
    public updateVoiceState(selfMute: boolean, selfDeaf: boolean, selfStream: boolean, selfVideo: boolean): void {
@@ -316,7 +295,6 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
 
       this.startHeartbeat(data.d.heartbeatInterval / 2);
 
-      console.log(this.sequence, this.sessionId)
       // We already had a session so we try to resume it
       if (this.sequence !== undefined && this.sessionId) {
          const resumeData: GatewayResume = {
@@ -343,8 +321,6 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
    private handleReady(data: GatewayReadyData) {
       this.status = "authenticated";
       this.client.user = data.user;
-
-      this.readyData = data;
    }
 
    private sendIdentify() {
@@ -380,6 +356,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
    public send(data: unknown): void {
       log("api:gateway", "send-detail", "d:", data);
 
+      this.emit("send", data as GatewayPayload);
       this.socket?.send(JSON.stringify(data));
    }
 }

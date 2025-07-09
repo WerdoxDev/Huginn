@@ -51,22 +51,29 @@ export class HuginnClient {
       this.oauth = new OAuthAPI(this.rest, this.gateway);
    }
 
+   /**
+    * Validates and sets tokens in the tokenHandler class instance
+    * @param tokens An object with access and refresh tokens
+    * @returns An status object indicating if initialization was successful with the provided tokens and wether or not it can be retried in case of a failure
+    */
    async initializeWithToken(tokens: Partial<Tokens>): Promise<{ status: boolean, retryable: boolean }> {
       let tokenValid = false;
       let refreshTokenValid = false;
 
       try {
          if (tokens.token) {
-            const expireDate = (decodeJwt(tokens.token).exp ?? 0) * 1000;
+            // decodeJwt can throw by it self. We don't want that to return a false status immediately
+            try {
+               const expireDate = (decodeJwt(tokens.token).exp ?? 0) * 1000;
 
-            // Token expired
-            tokenValid = expireDate >= Date.now();
+               // Token expired
+               tokenValid = expireDate >= Date.now();
 
-            if (tokenValid) {
-               this.tokenHandler.token = tokens.token;
-               // if (tokens.refreshToken) {
-               //    this.tokenHandler.refreshToken = tokens.refreshToken;
-               // }
+               if (tokenValid) {
+                  this.tokenHandler.token = tokens.token;
+               }
+            } catch (_e) {
+               tokenValid = false;
             }
          }
 
@@ -87,6 +94,7 @@ export class HuginnClient {
          this.user = undefined;
          this.tokenHandler.refreshToken = undefined;
 
+         // If the error is network related. Like not having network. "Failed to connect..."
          if (e instanceof TypeError && e.message.toLowerCase().includes("fail")) {
             // A network error can happen almost with no delay. So having this little delay helps with not having 9999 requests a second
             await new Promise((r) => setTimeout(r, 1000));
@@ -125,10 +133,11 @@ export class HuginnClient {
    public async logout(): Promise<void> {
       await this.auth.logout();
 
-
       this.tokenHandler.token = undefined;
+      this.tokenHandler.refreshToken = undefined;
       this.user = undefined;
       this.gateway.close();
+      this.voice.close();
    }
 
    public generateNonce(): Snowflake {

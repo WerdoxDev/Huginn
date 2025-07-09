@@ -3,8 +3,7 @@ import {
    convertToMediaKind,
    error,
    GatewayCode,
-   type HMediaKind,
-   log,
+   type HMediaKind, log,
    type MediasoupAppData,
    type ProducerData,
    type Snowflake,
@@ -20,12 +19,22 @@ import {
    type VoiceProducerClosedData, type VoiceReadyData, type VoiceTransportCreatedData,
    type WebsocketStatus
 } from "@huginn/shared";
+// import wrtc from "@roamhq/wrtc";
 import * as mediasoupClient from "mediasoup-client";
 import type { Consumer, Producer, ProducerOptions, Transport } from "mediasoup-client/types";
 import type { HuginnClient } from "./huginn-client";
 import type { VoiceOptions } from "./types";
 import { defaultClientOptions } from "./utils";
 import { SharedWebsocket } from "./websocket";
+
+// if (!isBrowser()) {
+//    globalThis.RTCPeerConnection = wrtc.RTCPeerConnection;
+//    globalThis.RTCSessionDescription = wrtc.RTCSessionDescription;
+//    globalThis.RTCIceCandidate = wrtc.RTCIceCandidate;
+
+//    // If needed:
+//    globalThis.MediaStream = wrtc.MediaStream;
+// }
 
 export class Voice extends SharedWebsocket<VoiceEvents> {
    public socket?: WebSocket;
@@ -46,8 +55,8 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
    private recvTransport?: Transport;
    private listeners: WeakMap<Producer, (newTrack: MediaStreamTrack | null) => void>;
 
-   private _status: WebsocketStatus = "disconnected";
-   public set status(newStatus: WebsocketStatus) {
+   private _status: WebsocketStatus = "none";
+   private set status(newStatus: WebsocketStatus) {
       this._status = newStatus;
       this.emit("status_changed", newStatus);
    }
@@ -68,7 +77,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
    }
 
    public connect(token: string, channelId: Snowflake, guildId: Snowflake | null): void {
-      if (this.status !== "disconnected" && this.status !== "reconnecting") {
+      if (this.status !== "disconnected" && this.status !== "reconnecting" && this.status !== "none") {
          return;
       }
 
@@ -79,6 +88,11 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       this.startListening();
    }
 
+   /**
+    * This function is called from gateway's disconnectVoice()
+    *
+    * Do not call this only by it self. Update the voice state to a null channel and guild id and THEN close voice
+    */
    public close(): void {
       log("api:voice", "default", "intentional close")
 
@@ -91,8 +105,8 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
    private onOpen(_e: Event) {
       log("api:voice", "default", "connected");
 
-      this.status = "connected";
-      this.emit("connected", undefined);
+      this.status = "connecting";
+      this.emit("open", undefined);
    }
 
    private onClose(e: CloseEvent) {
@@ -103,7 +117,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       this.stopPing();
       this.reset();
 
-      this.emit("disconnected", undefined);
+      this.emit("close", e.code);
 
       // Completely reset by setting connection info to undefined
       if (e.code === GatewayCode.INTENTIONAL_CLOSE) {
@@ -406,33 +420,6 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       }
    }
 
-   /**
-       * Waits for all or any of the specified dispatch events to be received.
-       * @param events Array of event types to wait for (matches the `t` property).
-       * @param waitForAny If true, resolves when any one event is received. Otherwise, waits for all.
-       */
-   public async waitForDispatch(
-      events: (keyof VoiceEvents)[],
-      waitForAny?: boolean
-   ): Promise<void> {
-      if (waitForAny) {
-         await Promise.race(events.map(x => new Promise<void>((resolve) => {
-            const unlisten = this.listen(x, () => {
-               unlisten();
-               resolve();
-            })
-         })))
-      }
-      else {
-         await Promise.allSettled(events.map(x => new Promise<void>((resolve) => {
-            const unlisten = this.listen(x, () => {
-               unlisten();
-               resolve();
-            })
-         })))
-      }
-   }
-
    private handlePeerLeft(data: VoicePeerLeftData) {
       for (const producerId of data.producerIds) {
          const consumer = Array.from(this.consumers.values()).find((c) => c.producerId === producerId);
@@ -628,6 +615,8 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
    }
 
    private async handleHello(data: VoiceHelloData) {
+      this.status = "connected";
+
       this.startHeartbeat(data.heartbeatInterval);
 
       if (!this.client.user || !this.connectionInfo) {
