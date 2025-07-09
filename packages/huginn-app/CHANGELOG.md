@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.44.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.43.0...app@v0.44.0) (2025-07-09)
+
+
+### Features
+
+* **app:** add much better color variety + a little refreshed colors ([bc01817](https://github.com/WerdoxDev/Huginn/commit/bc018178bfe6f1a645cd2a2c8f72df8f32c0e9a6))
+
+
+### Bug Fixes
+
+* **app:** few html bugs + rename disconnected to close for voice events ([232d356](https://github.com/WerdoxDev/Huginn/commit/232d3568fc3126bdbd95560de0f974c4f4bca601))
+
 ## [0.43.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.42.2...app@v0.43.0) (2025-07-07)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.2](https://github.com/WerdoxDev/Huginn/compare/server@v0.23.1...server@v0.23.2) (2025-07-09)
+
+
+### Bug Fixes
+
+* **server:** google is still using old peer id ([8de20ff](https://github.com/WerdoxDev/Huginn/commit/8de20ffd44e1e9799c753d9a782f8896b8eb85dc))
+
 ## [0.23.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.23.0...server@v0.23.1) (2025-07-07)
 
 

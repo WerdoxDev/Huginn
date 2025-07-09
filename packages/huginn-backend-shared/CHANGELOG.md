@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.10.0...backend-shared@v0.10.1) (2025-07-09)
+
+
+### Bug Fixes
+
+* **backend-shared:** rename function in shared websocket ([57a7126](https://github.com/WerdoxDev/Huginn/commit/57a71260c7f5f5a11f0e50234c5e64a79b0f1108))
+
 ## [0.10.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.9.0...backend-shared@v0.10.0) (2025-07-04)
 
 
