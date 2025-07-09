@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.44.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.44.0...app@v0.44.1) (2025-07-09)
+
+
+### Bug Fixes
+
+* **app:** forcing app release ([0dce31a](https://github.com/WerdoxDev/Huginn/commit/0dce31a9b1ccbfac1e84244dc6aaa36ef9a61b2a))
+
 ## [0.44.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.43.0...app@v0.44.0) (2025-07-09)
 
 
