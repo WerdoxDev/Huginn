@@ -83,8 +83,6 @@ export type VoiceEvents = {
    send_transport_ready: { channelId: Snowflake };
    local_producer_created: { producerId: string; kind: HMediaKind; track: MediaStreamTrack };
    local_producer_changed: { producerId: string, kind: HMediaKind, track: MediaStreamTrack | null };
-   connected: undefined;
-   disconnected: undefined;
    local_voice_state_changed: { audioPaused: boolean; audioMuted: boolean; consumersMuted: boolean; streaming: boolean };
 };
 

@@ -24,6 +24,7 @@ export type GatewayOperationTypes = {
 
 export type GatewayEvents = {
    message: GatewayPayload;
+   send: GatewayPayload;
    open: undefined;
    close: number;
    status_changed: WebsocketStatus;

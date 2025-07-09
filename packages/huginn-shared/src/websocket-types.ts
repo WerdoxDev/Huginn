@@ -1,1 +1,1 @@
-export type WebsocketStatus = "disconnected" | "connecting" | "connected" | "authenticated" | "reconnecting";
+export type WebsocketStatus = "disconnected" | "connecting" | "connected" | "authenticated" | "reconnecting" | "none";
