@@ -5,9 +5,7 @@ import { verifyVoiceToken } from "@huginn/backend-shared/voice-utils";
 import {
    constants, convertToMediaKind,
    GatewayCode,
-   idFix,
-   log,
-   type MediasoupAppData,
+   idFix, type MediasoupAppData,
    type VoiceCloseProducerData,
    type VoiceConnectTransportData,
    type VoiceConsumeData,
@@ -18,11 +16,7 @@ import {
    VoiceOperations,
    type VoicePayload,
    type VoicePong,
-   type VoiceProduceData,
-   type VoiceResume,
-   type VoiceResumeConsumerData,
-   type VoiceResumeData,
-   WorkerID,
+   type VoiceProduceData, type VoiceResumeConsumerData, WorkerID
 } from "@huginn/shared";
 import { ws } from "#index";
 import { createRouter, createTransport, routers, verifyPeer } from "#mediasoup";
