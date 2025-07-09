@@ -12,9 +12,9 @@ export default function ChannelRecipient(props: { channelId: Snowflake; isOwner:
 	const { open: openContextMenu } = useContextMenu("dm_channel_recipient");
 	const state = useMutationLatestState("create-dm-channel_recipient");
 	return (
-		<button
+		// biome-ignore lint/a11y/noStaticElementInteractions: It has an inner tooltip button
+		<div
 			onContextMenu={(e) => openContextMenu({ channelId: props.channelId, recipient: props.recipient }, e)}
-			type="button"
 			className="group/recipient relative flex cursor-pointer items-center gap-x-3 rounded-lg p-1.5 hover:bg-surface"
 		>
 			<UserAvatar
@@ -39,6 +39,6 @@ export default function ChannelRecipient(props: { channelId: Snowflake; isOwner:
 					</Tooltip>
 				)
 			)}
-		</button>
+		</div>
 	);
 }

@@ -102,7 +102,7 @@ export class VoiceClient {
       }));
 
       // Reset speaking and remote sources and stop audio loopback
-      unlisteners.push(client.voice.listen("disconnected", () => {
+      unlisteners.push(client.voice.listen("close", () => {
          log("app:voice-client", "voice-recv", "disconnected");
 
          voiceStore.getState().clearRemoteSources();
