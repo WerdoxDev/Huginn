@@ -50,7 +50,7 @@ jobs:
           bun-version: latest
 
       - name: install frontend dependencies
-        run: cd packages/huginn-app && bun install
+        run: cd packages/huginn-app && MEDIASOUP_WORKER_BINARY=true bun install --ignore-scripts
 
       - name: build app
         run: cd packages/huginn-app && bun run build
