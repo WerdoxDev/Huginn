@@ -106,9 +106,9 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
       return this.sessions.size;
    }
 
-   public getSessionByPeerId(peerId: string) {
+   public getSessionBySessionId(sessionId: string) {
       for (const session of this.sessions.values()) {
-         if (session.peer.id === peerId) {
+         if (session.sessionId === sessionId) {
             return session;
          }
       }
