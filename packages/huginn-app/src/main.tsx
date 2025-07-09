@@ -29,6 +29,7 @@ const root = document.getElementById("root");
 // 		"voice-recv",
 // 	],
 // );
+
 enableLogs({
 	"api:voice": ["default", "send", "recv", "heartbeat", "local-voice-state"],
 	"api:gateway": ["default", "send", "recv"],
