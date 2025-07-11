@@ -1,49 +1,90 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.0.0/schema.json",
-	"vcs": {
-		"enabled": false,
-		"clientKind": "git",
-		"useIgnoreFile": false
-	},
-	"files": {
-		"ignoreUnknown": false,
-		"includes": ["**"]
-	},
-	"formatter": {
-		"enabled": true,
-		"indentStyle": "tab",
-		"lineWidth": 150,
-		"indentWidth": 3,
-		"lineEnding": "crlf",
-		"includes": ["**", "!**/packages/huginn-app/src-tauri/**/*", "!**/packages/huginn-app/dist/**/*"]
-	},
-	"assist": { "actions": { "source": { "organizeImports": "on" } } },
-	"linter": {
-		"enabled": true,
-		"rules": {
-			"recommended": true,
-			"correctness": { "useExhaustiveDependencies": "off" },
-			"a11y": { "useKeyWithClickEvents": "off", "useMediaCaption": "off" },
-			"nursery": { "useSortedClasses": { "fix": "safe", "level": "info", "options": {} } },
-			"style": {
-				"noParameterAssign": "off",
-				"useAsConstAssertion": "error",
-				"useDefaultParameterLast": "error",
-				"useEnumInitializers": "error",
-				"useSelfClosingElements": "error",
-				"useSingleVarDeclarator": "error",
-				"noUnusedTemplateLiteral": "error",
-				"useNumberNamespace": "error",
-				"noInferrableTypes": "error",
-				"noUselessElse": "error"
-			}
-		},
-		"includes": ["**", "!**/packages/huginn-app/src-tauri/**/*", "!**/packages/huginn-app/dist/**/*", "!**/routeTree.gen.ts"]
-	},
-	"overrides": [{ "includes": ["**/packages/huginn-api/src/tests/**/*"], "linter": { "rules": { "style": { "noNonNullAssertion": "off" } } } }],
-	"javascript": {
-		"formatter": {
-			"quoteStyle": "double"
-		}
-	}
+   "$schema": "https://biomejs.dev/schemas/2.0.0/schema.json",
+   "vcs": {
+      "enabled": false,
+      "clientKind": "git",
+      "useIgnoreFile": false
+   },
+   "files": {
+      "ignoreUnknown": false,
+      "includes": [
+         "**"
+      ]
+   },
+   "formatter": {
+      "enabled": true,
+      "indentStyle": "tab",
+      "lineWidth": 150,
+      "indentWidth": 3,
+      "lineEnding": "crlf",
+      "includes": [
+         "**",
+         "!**/packages/huginn-app/src-tauri/**/*",
+         "!**/packages/huginn-app/dist/**/*"
+      ]
+   },
+   "assist": {
+      "actions": {
+         "source": {
+            "organizeImports": "on"
+         }
+      }
+   },
+   "linter": {
+      "enabled": true,
+      "rules": {
+         "recommended": true,
+         "correctness": {
+            "useExhaustiveDependencies": "off"
+         },
+         "a11y": {
+            "useKeyWithClickEvents": "off",
+            "useMediaCaption": "off"
+         },
+         "nursery": {
+            "useSortedClasses": {
+               "fix": "safe",
+               "level": "info",
+               "options": {}
+            }
+         },
+         "style": {
+            "noParameterAssign": "off",
+            "useAsConstAssertion": "error",
+            "useDefaultParameterLast": "error",
+            "useEnumInitializers": "error",
+            "useSelfClosingElements": "error",
+            "useSingleVarDeclarator": "error",
+            "noUnusedTemplateLiteral": "error",
+            "useNumberNamespace": "error",
+            "noInferrableTypes": "error",
+            "noUselessElse": "error"
+         }
+      },
+      "includes": [
+         "**",
+         "!**/packages/huginn-app/src-tauri/**/*",
+         "!**/packages/huginn-app/dist/**/*",
+         "!**/routeTree.gen.ts"
+      ]
+   },
+   "overrides": [
+      {
+         "includes": [
+            "**/packages/huginn-api/src/tests/**/*"
+         ],
+         "linter": {
+            "rules": {
+               "style": {
+                  "noNonNullAssertion": "off"
+               }
+            }
+         }
+      }
+   ],
+   "javascript": {
+      "formatter": {
+         "quoteStyle": "double"
+      }
+   }
 }
