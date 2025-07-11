@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.19.0...api@v0.19.1) (2025-07-11)
+
+
+### Bug Fixes
+
+* **api:** logout should wait for gateway to close ([e5c3644](https://github.com/WerdoxDev/Huginn/commit/e5c3644d627f7f3625773691b4c3ae9989335b78))
+
 ## [0.19.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.18.1...api@v0.19.0) (2025-07-09)
 
 
