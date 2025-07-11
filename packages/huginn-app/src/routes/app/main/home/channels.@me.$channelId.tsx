@@ -31,7 +31,6 @@ export default function ChannelWithId() {
 
 	useEffect(() => {
 		if (!channel) {
-			console.log("NOPE");
 			navigateBack();
 			return;
 		}

@@ -1,15 +1,7 @@
 import { useStartBackground } from "@contexts/authBackgroundContext";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
-import { type LoaderFunctionArgs, Outlet } from "react-router";
-
-export async function startLoader({ request }: LoaderFunctionArgs) {
-	// const force = new URL(request.url).searchParams.get("skip-check") === "1";
-	// console.log(request.url);
-	// if (client?.isLoggedIn && !force) {
-	// 	throw redirect("/channels/@me");
-	// }
-}
+import { Outlet } from "react-router";
 
 export default function StartLayout() {
 	const startBackground = useStartBackground();

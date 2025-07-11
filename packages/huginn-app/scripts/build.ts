@@ -15,7 +15,7 @@ await build({
    target: "es2022",
    minify: false,
    clean: true,
-   noExternal: isProd ? noExternal : undefined,
+   noExternal: isProd ? noExternal : ["@huginn/shared"],
    // configFile: false,
    // build: {
    //    target: "es2022",

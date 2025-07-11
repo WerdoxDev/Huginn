@@ -15,8 +15,11 @@ export default function MainLayout() {
 	useEffect(() => {
 		// updateModals({ news: { isOpen: true } });
 
-		if (!isTransitioning && huginnWindow.version !== localStorage.getItem("version")) {
+		const version = localStorage.getItem("version");
+		if (version && !isTransitioning && huginnWindow.version !== version) {
 			updateModals({ news: { isOpen: true } });
+			localStorage.setItem("version", huginnWindow.version);
+		} else if (!version) {
 			localStorage.setItem("version", huginnWindow.version);
 		}
 	}, [isTransitioning]);

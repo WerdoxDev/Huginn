@@ -1,14 +1,18 @@
 import { access, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { enableLogs, error, log } from "@huginn/shared";
-import { getActiveWindowProcessIds, startAudioCapture, stopAudioCapture } from "application-loopback";
+import { getActiveWindowProcessIds, getLoopbackBinaryPath, getProcessListBinaryPath, setExecutablesRoot, startAudioCapture, stopAudioCapture } from "application-loopback";
 import { app, BrowserWindow, desktopCapturer, ipcMain, Menu, Notification, session, shell, Tray } from "electron";
 import electronLog from "electron-log/main";
 import { autoUpdater, CancellationToken } from "electron-updater";
 import type { DisplaySource } from "@/types";
 
-// const _dirname = typeof __dirname !== "undefined" ? __dirname : path.dirname(fileURLToPath(import.meta.url));
-const _dirname = __dirname;
+// application-loopback executable path when packaged
+if (app.isPackaged) {
+   setExecutablesRoot(path.resolve(__dirname, "..", "..", "bin"));
+   console.log(getLoopbackBinaryPath());
+   console.log(getProcessListBinaryPath());
+}
 
 configureUpdater();
 
@@ -46,7 +50,7 @@ function createWindow() {
       webPreferences: {
          contextIsolation: true,
          nodeIntegration: true,
-         preload: path.join(_dirname, "preload.cjs"),
+         preload: path.join(__dirname, "preload.cjs"),
       },
       show: false,
    });
@@ -56,7 +60,7 @@ function createWindow() {
 
       mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
    } else {
-      const filePath = path.join(_dirname, "../dist/index.html")
+      const filePath = path.join(__dirname, "../dist/index.html")
       log("app:electron", "default", "load", "url:", filePath)
 
       mainWindow.loadFile(filePath);

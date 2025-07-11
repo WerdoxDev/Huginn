@@ -25,8 +25,8 @@ export function useLogout() {
          client.gateway.disconnectVoice();
       }
 
-      await navigate("/login", { replace: true, viewTransition: true });
       await mutation.mutateAsync();
+      await navigate("/login", { replace: true, viewTransition: true });
 
       resetScrolls();
       queryClient.removeQueries({ queryKey: ["channels"] });

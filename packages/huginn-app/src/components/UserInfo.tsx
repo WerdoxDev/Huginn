@@ -1,4 +1,3 @@
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { useLogout } from "@hooks/useLogout";
 import type { APIUser } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";

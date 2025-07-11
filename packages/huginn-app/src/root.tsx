@@ -16,23 +16,6 @@ import { type LoaderFunctionArgs, Outlet, redirect } from "react-router";
 // 	capture_pageview: false,
 // });
 
-const findIndex = window.location.hash.indexOf("?");
-const initialPathname = window.location.hash.slice(0, findIndex === -1 ? undefined : findIndex);
-
-export async function rootLoader({ request }: LoaderFunctionArgs) {
-	const pathname = new URL(request.url).pathname;
-	// posthog.capture("$pageview", { $current_url: window.origin + pathname });
-	const unallowedPaths = ["/login", "/register", "/oauth-redirect"];
-	const search = new URLSearchParams({ redirect: pathname });
-
-	if (`#${pathname}` === initialPathname && pathname !== "/" && !unallowedPaths.includes(pathname) && client?.gateway.status !== "authenticated") {
-		throw redirect(`/?${search.toString()}`);
-	}
-	if (`#${pathname}` === initialPathname && pathname !== "/" && client?.gateway.status !== "authenticated" && unallowedPaths.includes(pathname)) {
-		throw redirect("/");
-	}
-}
-
 export default function Root() {
 	const [loaded, setLoaded] = useState(false);
 
