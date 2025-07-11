@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.45.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.44.1...app@v0.45.0) (2025-07-11)
+
+
+### Features
+
+* **app:** add few playwright tests + much better loader for initialization ([eb6e3de](https://github.com/WerdoxDev/Huginn/commit/eb6e3defba3e951923126b9dcbd208b144d25ba3))
+
+
+### Bug Fixes
+
+* **app:** go back to vite 7 rollup + some visual bug fixes ([072488d](https://github.com/WerdoxDev/Huginn/commit/072488dd405c365c90daea8acda409357faf4c30))
+
 ## [0.44.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.44.0...app@v0.44.1) (2025-07-09)
 
 
