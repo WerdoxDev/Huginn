@@ -34,7 +34,7 @@ export default function ConnectionStatus() {
 					"h-2 w-2 rounded-full",
 					status === "authenticated" && "bg-positive-100",
 					(status === "disconnected" || status === "reconnecting") && "bg-negative-100",
-					(status === "reconnecting" || status === "connecting" || status === "connected") && "bg-caution-100",
+					(status === "reconnecting" || status === "connecting" || status === "connected" || status === "none") && "bg-caution-100",
 				)}
 			/>
 			<span className="font-medium text-text/80 text-xs uppercase">{statusTexts[status]}</span>

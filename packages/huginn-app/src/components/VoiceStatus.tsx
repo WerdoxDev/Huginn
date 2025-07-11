@@ -73,7 +73,7 @@ export default function VoiceStatus() {
 								<IconMingcuteWifiOffLine
 									className={clsx(
 										"size-6",
-										(status === "connecting" || status === "reconnecting" || status === "connected") && "text-caution",
+										(status === "connecting" || status === "reconnecting" || status === "connected") && "text-caution-100",
 										status === "disconnected" && "text-negative-100",
 									)}
 								/>
@@ -87,7 +87,7 @@ export default function VoiceStatus() {
 						<div
 							className={clsx(
 								"font-bold text-sm transition-colors",
-								(status === "connecting" || status === "reconnecting" || status === "connected") && "!text-caution",
+								(status === "connecting" || status === "reconnecting" || status === "connected") && "!text-caution-100",
 								status === "disconnected" && "!text-negative-100",
 							)}
 							style={{ color: latencyColor }}

@@ -21,25 +21,15 @@ export default defineConfig({
             plugins: [["babel-plugin-react-compiler", reactCompilerConfig], "@babel/plugin-syntax-jsx"],
          }
       }),
-      // reactRouter(),
       Icons({ compiler: "jsx" }),
       AutoImport({
          resolvers: [IconsResolver({ prefix: "Icon", extension: "jsx" })],
-         // dts: "./src/auto-imports.d.ts",
       }),
-      // babel({
-      //    filter: /\.[jt]sx?$/,
-      //    babelConfig: {
-      //       presets: ["@babel/preset-typescript"],
-      //       plugins: [["babel-plugin-react-compiler", reactCompilerConfig], "@babel/plugin-syntax-jsx"],
-      //    },
-      // }),
       tailwindcss()
    ],
 
    define: {
       __APP_VERSION__: JSON.stringify(version.toString()),
-      // __APP_VERSION__: JSON.stringify((parseTOML(await Bun.file("src-tauri/Cargo.toml").text()) as CargoToml).package.version),
    },
 
    resolve: {
@@ -54,21 +44,8 @@ export default defineConfig({
    },
    // prevent vite from obscuring rust errors
    clearScreen: false,
-   // Tauri expects a fixed port, fail if that port is not available
-   server: {
-      // strictPort: true,
-   },
    build: {
       target: "esnext",
       outDir: "./dist",
    },
-   // to access the Tauri environment variables set by the CLI with information about the current target
-   // build: {
-   // 	// Tauri uses Chromium on Windows and WebKit on macOS and Linux
-   // 	target: "esnext",
-   // 	// don't minify for debug builds
-   // 	minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
-   // 	// produce sourcemaps for debug builds
-   // 	sourcemap: !!process.env.TAURI_DEBUG,
-   // },
 });

@@ -4,6 +4,9 @@ import { build } from "tsdown";
 export const builtins = ["electron", ...builtinModules.flatMap((m) => [m, `node:${m}`])];
 export const external = [...builtins];
 
+const isProd = process.argv.includes("--prod");
+const noExternal = ["@huginn/shared", "@std/encoding", "electron-log/main", "electron-updater", "application-loopback"]
+
 await build({
    entry: ["./electron/main.ts", "./electron/preload.ts"],
    format: ["cjs"],
@@ -12,7 +15,7 @@ await build({
    target: "es2022",
    minify: false,
    clean: true,
-   noExternal: ["@huginn/shared", "@std/encoding", "application-loopback", "electron-log/main", "electron-updater"],
+   noExternal: isProd ? noExternal : undefined,
    // configFile: false,
    // build: {
    //    target: "es2022",
