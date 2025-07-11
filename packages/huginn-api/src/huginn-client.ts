@@ -138,6 +138,7 @@ export class HuginnClient {
       this.user = undefined;
       this.gateway.close();
       this.voice.close();
+      await this.gateway.waitForEvents(["close"]);
    }
 
    public generateNonce(): Snowflake {
