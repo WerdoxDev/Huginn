@@ -40,7 +40,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
 	const { savedScrolls, saveScroll } = useChannelStore();
 
-	const { onMessageVisiblityChanged } = useVisibleMessages(props.channelId, sortedMessages);
+	const { onMessageVisibilityChanged } = useVisibleMessages(props.channelId, sortedMessages);
 	const { setRef } = useDynamicRefs<HTMLLIElement>();
 
 	useMessageAcker(props.channelId, props.messages);
@@ -60,6 +60,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 	const lastDistanceToBottom = useRef<number>(undefined);
 	const lastSeenElement = useRef<{ messageId: Snowflake; height: number; distanceToTop: number; distanceToBottom: number }>(null);
 	const lastDirection = useRef<"up" | "down" | "none">("none");
+	const isResizing = useRef(false);
 	const currentChannel = useCurrentChannel();
 	const channelName = useChannelName(currentChannel?.id);
 
@@ -67,7 +68,12 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 		if (!scrollRef.current || sortedMessages.length === 0) return;
 		lastScrollTop.current = scrollRef.current.scrollTop;
 
-		shouldAnchorToBottom.current = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop <= 20;
+		// This is to not reevaluate wether or not we are at the bottom when we scroll because of anchoring on resize
+		if (!isResizing.current) {
+			shouldAnchorToBottom.current = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop <= 20;
+		} else {
+			isResizing.current = false;
+		}
 
 		// Scrolling up
 		if (scrollRef.current.scrollTop <= topScrollOffset && !isFetchingPreviousPage && hasPreviousPage) {
@@ -140,7 +146,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			(lastDirection.current === "up" ? lastSeenElement.current.distanceToTop : -lastSeenElement.current.distanceToBottom) + heightDifference;
 	}
 
-	// Calculating scrolltop position after an upward fetch
+	// Calculating scroll top position after an upward fetch
 	useLayoutEffect(() => {
 		if (!lastSeenElement.current || !scrollRef.current || lastChannelId.current !== props.channelId) {
 			return;
@@ -229,6 +235,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 			const scrollHeight = entries[0].target.scrollHeight;
 
 			if (shouldAnchorToBottom.current) {
+				isResizing.current = true;
 				scrollRef.current.scrollTo(0, scrollHeight);
 			}
 		});
@@ -270,7 +277,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 								renderInfo={messageRenderInfos[i]}
 								nextRenderInfo={messageRenderInfos[i + 1]}
 								lastRenderInfo={messageRenderInfos[i - 1]}
-								onVisibilityChanged={onMessageVisiblityChanged}
+								onVisibilityChanged={onMessageVisibilityChanged}
 							/>
 						))}
 					</ol>

@@ -1,5 +1,3 @@
-import type { CustomElement, ParagraphElement } from "@/index";
-import type { HuginnToken } from "@/types";
 import AttachmentElement from "@components/editor/AttachmentElement";
 import CodeElement from "@components/editor/CodeElement";
 import EmbedElement from "@components/editor/EmbedElement";
@@ -14,9 +12,11 @@ import { markdownSpoiler } from "@lib/markdown-spoiler";
 import { markdownUnderline } from "@lib/markdown-underline";
 import { getSlateFormats, isCloseToken, isElementCloseToken, isElementOpenToken, isOpenToken, organizeTokens } from "@lib/markdown-utils";
 import markdownit from "markdown-it";
-import { useCallback, useContext, useEffect, useLayoutEffect, useMemo } from "react";
-import { type Descendant, type Editor, createEditor } from "slate";
-import { DefaultElement, Editable, type RenderElementProps, type RenderLeafProps, Slate, withReact } from "slate-react";
+import { useCallback, useContext, useEffect, useMemo } from "react";
+import { createEditor, type Descendant, type Editor } from "slate";
+import { DefaultElement, type RenderElementProps, type RenderLeafProps, withReact } from "slate-react";
+import type { CustomElement, ParagraphElement } from "@/index";
+import type { HuginnToken } from "@/types";
 import ActionMessage from "./ActionMessage";
 import DefaultMessage from "./DefaultMessage";
 
