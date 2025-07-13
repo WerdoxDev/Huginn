@@ -6,7 +6,7 @@ import { Hono } from "hono";
 import { runMediasoupWorker } from "#mediasoup";
 import { VoiceWebsocket } from "./voice-websocket";
 
-export const envs = readEnv(["VOICE_HOST", "VOICE_PORT", "MEDIA_IP", "MEDIA_ANNOUNCED_IP", "MEDIA_PORT"] as const);
+export const envs = readEnv(["VOICE_HOST", "VOICE_PORT", "MEDIA_IP", "MEDIA_ANNOUNCED_HOSTNAMES", "MEDIA_PORT"] as const);
 
 const app = new Hono();
 

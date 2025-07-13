@@ -30,8 +30,12 @@ export async function runMediasoupWorker() {
       logLevel: "warn",
    });
 
+   const announcedHostnames = envs.MEDIA_ANNOUNCED_HOSTNAMES?.split(",").map(x => x.trim());
+
    webRtcServer = await worker.createWebRtcServer({
-      listenInfos: [{ ip: envs.MEDIA_IP ?? "", announcedAddress: envs.MEDIA_ANNOUNCED_IP, protocol: "udp", port: Number(envs.MEDIA_PORT) }],
+      listenInfos: announcedHostnames ? announcedHostnames?.map(x => (
+         { ip: envs.MEDIA_IP ?? "", announcedAddress: x, protocol: "udp", port: Number(envs.MEDIA_PORT) }
+      )) : [{ ip: envs.MEDIA_IP ?? "", protocol: "udp", port: Number(envs.MEDIA_PORT) }],
    });
 
    console.log("mediasoup worker created");
