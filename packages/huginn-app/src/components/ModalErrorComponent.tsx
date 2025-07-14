@@ -1,4 +1,4 @@
-import { useErrorHandler } from "@hooks/useServerErrorHandler";
+import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useModals } from "@stores/modalsStore";
 import { useEffect } from "react";
 import { useErrorBoundary } from "react-error-boundary";

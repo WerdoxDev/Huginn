@@ -13,7 +13,7 @@ import { useOAuth } from "@hooks/useOAuth";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import type { APIPostRegisterJSONBody } from "@huginn/shared";
 import { useClient } from "@stores/apiStore";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 // import { usePostHog } from "posthog-js/react";
 
 export default function Register() {
@@ -129,7 +129,7 @@ export default function Register() {
 					</HuginnInput.Wrapper>
 				</PasswordInput>
 
-				<LoadingButton loading={!mutation.isIdle && mutation.isPending} className="h-10 w-full bg-primary-700" type="submit">
+				<LoadingButton loading={!mutation.isIdle && mutation.isPending} className="h-10 w-full" color="primary" type="submit">
 					Register
 				</LoadingButton>
 

@@ -154,13 +154,14 @@ export default function OauthRedirect() {
 							</HuginnInput>
 						</div>
 						<div className="mt-5 flex w-full gap-x-2">
-							<HuginnButton className="w-full bg-surface-alt" onClick={abort}>
+							<HuginnButton className="w-full" color="surface-alt" onClick={abort}>
 								Abort
 							</HuginnButton>
 							<LoadingButton
 								onClick={confirm}
 								loading={!mutation.isIdle && mutation.isPending}
-								className="h-10 w-full bg-primary-700"
+								className="h-10 w-full"
+								color="primary"
 								type="submit"
 							>
 								Confirm

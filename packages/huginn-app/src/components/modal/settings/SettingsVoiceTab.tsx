@@ -115,7 +115,7 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
 		props.onChange?.({ inputThreshold: value - 100 });
 	}
 
-	if (!data) {
+	if (!selectedInput || !selectedOutput) {
 		return;
 	}
 

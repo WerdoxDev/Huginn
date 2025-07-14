@@ -92,7 +92,8 @@ export default function Login() {
 					onClick={() => startOAuth("google")}
 					type="button"
 					innerClassName="flex items-center justify-center gap-x-2"
-					className="w-full rounded-lg border-2 border-primary-700 bg-surface-alt py-2 text-text transition-all hover:shadow-lg"
+					className="w-full rounded-lg border-2 border-primary-700 py-2 text-text transition-all hover:shadow-lg"
+					color="surface-alt"
 				>
 					<IconLogosGoogleIcon className="size-5" />
 					<span>Google</span>
@@ -100,7 +101,8 @@ export default function Login() {
 				<HuginnButton
 					type="button"
 					innerClassName="flex items-center justify-center gap-x-2"
-					className="w-full rounded-lg border-2 border-primary-700 bg-surface-alt py-2 text-text transition-all hover:shadow-lg"
+					className="w-full rounded-lg border-2 border-primary-700 py-2 text-text transition-all hover:shadow-lg"
+					color="surface-alt"
 				>
 					<IconLogosGithubIcon className="size-5 text-white [&>path]:fill-white" />
 					<span>GitHub</span>
@@ -127,7 +129,7 @@ export default function Login() {
 
 				{/* <LinkButton className="mt-1 mb-5 text-sm">Forgot your password?</LinkButton> */}
 
-				<LoadingButton loading={!mutation.isIdle && mutation.isPending} className="mt-5 h-10 w-full bg-primary-700" type="submit">
+				<LoadingButton loading={!mutation.isIdle && mutation.isPending} className="mt-5 h-10 w-full" color="primary" type="submit">
 					Login
 				</LoadingButton>
 

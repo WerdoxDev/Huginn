@@ -1,14 +1,7 @@
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
-import MockDefaultMessage from "@components/message/MockDefaultMessage";
-import MockDefaultMessageCompact from "@components/message/MockDefaultMessageCompact";
 import { useSettings } from "@stores/settingsStore";
 import { ceruleanTheme, charcoalTheme, coffeeTheme, eggplantTheme, pineGreenTheme, useTheme } from "@stores/themeStore";
-import clsx from "clsx";
 import type { DropdownItem, SettingsTabProps, ThemeType } from "@/types";
-
-function ThemeIcon(props: { color: string }) {
-	return <div className="h-6 w-6 rounded-md" style={{ background: props.color }} />;
-}
 
 const themes: DropdownItem[] = [
 	{ text: "Pine Green", value: "pine green", icon: <ThemeIcon color={pineGreenTheme["primary-500"]} /> },
@@ -41,4 +34,8 @@ export default function SettingsThemeTab(props: SettingsTabProps) {
 			</HuginnDropdown>
 		</div>
 	);
+}
+
+function ThemeIcon(props: { color: string }) {
+	return <div className="h-6 w-6 rounded-md" style={{ background: props.color }} />;
 }

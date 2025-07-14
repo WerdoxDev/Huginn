@@ -1,8 +1,8 @@
-import type { MutationKinds, StatusCode } from "@/types";
 import type { APIChannel, DeepPartial, Snowflake } from "@huginn/shared";
 import { produce } from "immer";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
+import type { MutationKinds } from "@/types";
 
 type DefaultModal = { isOpen: boolean };
 
@@ -57,6 +57,8 @@ const store = createStore(
          ),
    })),
 );
+
+export const modalsStore = store;
 
 export function useModals() {
    return useStore(store);

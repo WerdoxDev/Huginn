@@ -23,7 +23,6 @@ const bottomScrollOffset = 100;
 export default function ChannelMessages(props: { channelId: Snowflake; messages: AppMessage[] }) {
 	const client = useClient();
 	const queryClient = useQueryClient();
-	// const { error, data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client, props.channelId));
 	const sortedMessages = useMemo(
 		() =>
 			props.messages.toSorted((a, b) => {

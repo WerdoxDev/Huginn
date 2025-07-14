@@ -1,17 +1,12 @@
 import type { Snowflake } from "@huginn/shared";
 import { getChannelIconOptions } from "@lib/queries";
 import { useClient } from "@stores/apiStore";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import LoadingIcon from "./LoadingIcon";
 
-export default function ChannelIcon(props: {
-	channelId: Snowflake;
-	iconHash?: string | null;
-	size?: string;
-	className?: string;
-}) {
+export default function ChannelIcon(props: { channelId: Snowflake; iconHash?: string | null; size?: string; className?: string }) {
 	const client = useClient();
 	const { data: icon, isLoading } = useQuery(getChannelIconOptions(props.channelId, props.iconHash, client));
 

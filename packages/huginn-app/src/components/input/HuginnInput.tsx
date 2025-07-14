@@ -1,18 +1,19 @@
-import type { HuginnInputProps, InputStatus } from "@/types";
 import { useInputBorder } from "@hooks/useInputBorder";
-import { WorkerID, snowflake } from "@huginn/shared";
+import { snowflake, WorkerID } from "@huginn/shared";
 import clsx from "clsx";
 import {
 	type ChangeEvent,
+	createContext,
 	type HTMLInputTypeAttribute,
 	type ReactNode,
 	type RefObject,
-	createContext,
 	useContext,
+	useEffect,
 	useLayoutEffect,
 	useRef,
 	useState,
 } from "react";
+import type { HuginnInputProps, InputStatus } from "@/types";
 
 const InputContext = createContext<{
 	id: string;
@@ -87,12 +88,7 @@ function Input(props: { headless?: boolean; className?: string; lowercase?: bool
 	);
 }
 
-function Wrapper(props: {
-	className?: string;
-	headless?: boolean;
-	border?: "left" | "right" | "top" | "bottom";
-	children?: ReactNode;
-}) {
+function Wrapper(props: { className?: string; headless?: boolean; border?: "left" | "right" | "top" | "bottom"; children?: ReactNode }) {
 	const inputContext = useContext(InputContext);
 	const { hasBorder, borderColor } = useInputBorder(inputContext.status);
 
@@ -114,9 +110,11 @@ function Wrapper(props: {
 	);
 }
 
-function Label(props: { children?: ReactNode; headless?: boolean; className?: string; text: string; hideAdditional?: boolean }) {
+function Label(props: { children?: ReactNode; headless?: boolean; className?: string; text: string; hideStatus?: boolean }) {
 	const inputContext = useContext(InputContext);
-
+	useEffect(() => {
+		console.log(inputContext);
+	}, []);
 	return (
 		<label
 			htmlFor={inputContext.id}
@@ -127,7 +125,7 @@ function Label(props: { children?: ReactNode; headless?: boolean; className?: st
 			)}
 		>
 			{props.text}
-			{!props.hideAdditional &&
+			{!props.hideStatus &&
 				(inputContext.status.text ? (
 					<span className={clsx("text-negative-100", inputContext.status.text && "font-normal normal-case italic")}>
 						<span className="px-0.5">-</span>

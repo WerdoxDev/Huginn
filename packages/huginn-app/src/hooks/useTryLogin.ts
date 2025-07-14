@@ -2,8 +2,8 @@ import { useHistory } from "@contexts/historyContext";
 import { HuginnAPIError } from "@huginn/shared";
 import { useClient } from "@stores/apiStore";
 import type { To } from "react-router";
+import { useErrorHandler } from "./useErrorHandler";
 import { useInitializeClient } from "./useInitializeClient";
-import { useErrorHandler } from "./useServerErrorHandler";
 
 export function useTryLogin() {
    const client = useClient();

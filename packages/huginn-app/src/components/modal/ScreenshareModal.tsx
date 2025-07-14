@@ -7,7 +7,7 @@ import LoadingIcon from "@components/LoadingIcon";
 import { Checkbox, DialogPanel, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { useClient } from "@stores/apiStore";
 import { useModals } from "@stores/modalsStore";
-import { useVoiceStore, voiceClient } from "@stores/voiceStore";
+import { voiceClient } from "@stores/voiceStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import type { DisplaySource } from "@/types";
@@ -15,7 +15,6 @@ import type { DisplaySource } from "@/types";
 export default function ScreenshareModal() {
 	const client = useClient();
 	const { screenshare: modal, updateModals } = useModals();
-	const { localVoiceState: voiceState } = useVoiceStore();
 	const { data, isLoading, refetch } = useQuery({
 		queryKey: ["display-sources"],
 		queryFn: async () => await window.electronAPI.getDisplaySources(),
@@ -209,18 +208,24 @@ export default function ScreenshareModal() {
 			</div>
 			<div className="flex w-full items-center gap-x-2 bg-surface-alt p-5">
 				{selectedSource ? (
-					<HuginnButton className="h-10 w-24 bg-surface" onClick={() => setSelectedSource(undefined)}>
+					<HuginnButton className="h-10 w-24" color="surface" onClick={() => setSelectedSource(undefined)}>
 						Back
 					</HuginnButton>
 				) : (
-					<HuginnButton className="h-10 w-24 bg-surface" onClick={refetch}>
+					<HuginnButton className="h-10 w-24" color="surface" onClick={refetch}>
 						Refresh
 					</HuginnButton>
 				)}
 				<HuginnButton className="ml-auto h-10 w-20 decoration-white hover:underline" onClick={close}>
 					Cancel
 				</HuginnButton>
-				<LoadingButton loading={screensharePending} className="h-10 w-24 bg-primary-700" onClick={stream} disabled={selectedSource === undefined}>
+				<LoadingButton
+					loading={screensharePending}
+					className="h-10 w-24"
+					color="primary"
+					onClick={stream}
+					disabled={selectedSource === undefined}
+				>
 					Go Live
 				</LoadingButton>
 			</div>

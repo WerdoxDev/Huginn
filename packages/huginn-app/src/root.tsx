@@ -1,12 +1,12 @@
 import { HistoryProvider } from "@contexts/historyContext";
-import { client, initializeClient } from "@stores/apiStore";
+import { initializeClient } from "@stores/apiStore";
 import { initializeSettings } from "@stores/settingsStore";
 import { ThemeProvider } from "@stores/themeStore";
 import { initializeWindow } from "@stores/windowStore";
 import { useEffect, useState } from "react";
 // import { PostHogProvider } from "posthog-js/react";
 // import posthog from "posthog-js";
-import { type LoaderFunctionArgs, Outlet, redirect } from "react-router";
+import { Outlet } from "react-router";
 
 // FIXME: Posthog seems to not work with react router just yet
 // const posthogClient = posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_KEY, {

@@ -1,4 +1,4 @@
-import { useErrorHandler } from "@hooks/useServerErrorHandler";
+import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useEffect } from "react";
 import { Outlet, useNavigate, useRouteError } from "react-router";
 

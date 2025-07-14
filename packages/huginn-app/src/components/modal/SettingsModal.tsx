@@ -170,7 +170,7 @@ function SettingsPanels(props: { currentTab: string; onChange: (value: DeepParti
 
 	return (
 		<TabPanels className="flex w-full flex-col">
-			<div className="mt-5 mb-5 ml-5 shrink-0 text-text text-xl">{props.currentTab}</div>
+			<div className="mt-5 mb-5 ml-5 shrink-0 text-text text-xl select-none">{props.currentTab}</div>
 			{flatTabs.map((tab) => (
 				<TabPanel key={tab?.name} className="scroll-alternative h-full overflow-x-visible overflow-y-scroll pr-3">
 					<div className="ml-5">

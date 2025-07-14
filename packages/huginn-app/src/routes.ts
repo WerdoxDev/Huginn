@@ -17,7 +17,6 @@ import StartLayout from "./routes/app/start/start-layout";
 function mainLoader({ request }: LoaderFunctionArgs) {
    const url = new URL(request.url);
    const pathname = url.pathname;
-   console.log("HERE");
 
    const search = new URLSearchParams({ redirect: pathname });
    if (client?.gateway.status !== "authenticated") {
@@ -26,10 +25,6 @@ function mainLoader({ request }: LoaderFunctionArgs) {
 }
 
 function startLoader({ request }: LoaderFunctionArgs) {
-   const url = new URL(request.url);
-   const pathname = url.pathname;
-   console.log(url.search);
-
    if (client?.gateway.status === "authenticated") {
       throw redirect("/channels/@me");
    }
