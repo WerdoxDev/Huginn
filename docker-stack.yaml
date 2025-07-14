@@ -57,7 +57,7 @@ services:
       - VOICE_HOST=0.0.0.0
       - VOICE_PORT=3003
       - MEDIA_IP=0.0.0.0
-      - MEDIA_ANNOUNCED_HOSTNAMES=midgard.huginn.dev,midgard2.huginn.dev
+      - MEDIA_ANNOUNCED_HOSTNAMES=midgard.huginn.dev
       - MEDIA_PORT=44444
     ports:
       - "44444:44444/udp"
