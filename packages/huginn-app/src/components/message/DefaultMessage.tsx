@@ -113,10 +113,10 @@ function SlateRenderer(props: {
 			className={clsx(
 				"wrap-anywhere relative whitespace-break-spaces px-2.5 py-1.5 font-normal text-white group-hover:shadow-sm",
 				context.renderInfo.message.preview && "bg-primary-900 text-white/50",
-				props.isSelf && !context.renderInfo.message.preview ? "bg-primary-800" : "bg-surface shadow-surface",
-				props.isUnread && !props.isSeparate && "rounded-t-none!",
-				(props.isSeparate || props.isLastExotic) && "rounded-t-xl!",
-				props.isNextSeparate && "rounded-b-xl!",
+				props.isSelf && !context.renderInfo.message.preview ? "bg-primary-800" : "bg-surface",
+				props.isUnread && !props.isSeparate && "!rounded-t-none",
+				(props.isSeparate || props.isLastExotic) && "!rounded-t-xl",
+				props.isNextSeparate && "!rounded-b-xl",
 			)}
 			style={{
 				borderBottomRightRadius: `${clamp((props.widths.width - props.widths.nextWidth) / 2, 0, 12)}px`,
@@ -126,7 +126,10 @@ function SlateRenderer(props: {
 			{!props.isSeparate && props.widths.lastWidth > props.widths.width && (
 				<div className="-right-10 absolute top-0 h-10 w-10 overflow-hidden">
 					<div
-						className="h-full w-full overflow-hidden [box-shadow:0_-20px_0_0_var(--tw-shadow-color)]"
+						className={clsx(
+							"h-full w-full overflow-hidden",
+							props.isSelf ? "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-primary-800))]" : "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-surface))]",
+						)}
 						style={{
 							borderTopLeftRadius: `${clamp((props.widths.lastWidth - props.widths.width) / 2, 0, 12)}px`,
 						}}
@@ -136,7 +139,10 @@ function SlateRenderer(props: {
 			{!props.isNextSeparate && props.widths.nextWidth > props.widths.width && (
 				<div className="-right-10 absolute bottom-0 h-10 w-10 overflow-hidden">
 					<div
-						className="h-full w-full overflow-hidden [box-shadow:0_20px_0_0_var(--tw-shadow-color)]"
+						className={clsx(
+							"h-full w-full overflow-hidden",
+							props.isSelf ? "[box-shadow:0_20px_0_0_rgb(var(--tcolor-primary-800))]" : "[box-shadow:0_20px_0_0_rgb(var(--tcolor-surface))]",
+						)}
 						style={{
 							borderBottomLeftRadius: `${clamp((props.widths.nextWidth - props.widths.width) / 2, 0, 12)}px`,
 						}}
