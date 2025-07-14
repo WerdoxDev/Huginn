@@ -9,6 +9,7 @@ type LogValuesMap = {
    "app:audio-level-checker": "default";
    "app:voice-input-device": "default";
    "app:electron": "default" | "send" | "recv" | "updater" | "loopback-send" | "loopback";
+   "app:settings-store": "default";
    "server:gateway": "default" | "send" | "recv" | "heartbeat";
    "voice:websocket": "default" | "recv";
    // "server:client-session": "default"|"subscriptions"|"heartbeat";
