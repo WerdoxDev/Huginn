@@ -36,7 +36,9 @@ export default function UserInfo(props: { user: APIUser }) {
 							<Tooltip.Trigger
 								className="group/setting rounded-lg p-1 hover:bg-surface"
 								onClick={openSettings}
-								onMouseDown={(e) => e.stopPropagation()}
+								onPointerDown={(e) => {
+									e.stopPropagation();
+								}}
 							>
 								<IconMingcuteSettings5Fill className="size-6 text-white/80 transition-all group-hover/setting:rotate-60" />
 							</Tooltip.Trigger>
