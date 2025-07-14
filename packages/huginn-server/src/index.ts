@@ -20,8 +20,6 @@ import { envs } from "#setup";
 const app = new Hono().use(cors());
 setAppInstance(app);
 
-const store = new CookieStore();
-
 app.notFound((c) => {
    return notFound(c);
 });
@@ -39,13 +37,15 @@ app.onError((error, c) => {
    return handleServerError(error, c);
 });
 
+const store = new CookieStore();
+
 app.all(
    "*",
    sessionMiddleware({
       store,
       encryptionKey: envs.SESSION_PASSWORD,
       expireAfterSeconds: 900,
-      cookieOptions: { sameSite: "Lax", path: "/", httpOnly: true },
+      cookieOptions: { sameSite: "Lax", path: "/", httpOnly: false },
    }),
 );
 
