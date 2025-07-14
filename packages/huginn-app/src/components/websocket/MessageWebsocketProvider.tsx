@@ -1,15 +1,6 @@
-import type { AppMessage } from "@/types";
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
-import { type GatewayUserUpdateData, omit } from "@huginn/shared";
-import type {
-	APIGetUserChannelsResult,
-	APIMessageUser,
-	GatewayMessageAckData,
-	GatewayMessageCreateData,
-	GatewayMessageUpdateData,
-	GatewayPresenceUpdateData,
-} from "@huginn/shared";
+import type { APIGetUserChannelsResult, GatewayMessageAckData, GatewayMessageCreateData, GatewayMessageUpdateData } from "@huginn/shared";
 import { dispatchEvent } from "@lib/event-handler";
 import { convertToAppMessage } from "@lib/utils";
 import { client } from "@stores/apiStore";
@@ -19,6 +10,7 @@ import { useThisUser } from "@stores/userStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { type InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useEffect } from "react";
+import type { AppMessage } from "@/types";
 
 export default function MessageWebsocketProvider(props: { children?: ReactNode }) {
 	const queryClient = useQueryClient();
@@ -139,14 +131,14 @@ export default function MessageWebsocketProvider(props: { children?: ReactNode }
 	}
 
 	useEffect(() => {
-		client.gateway.on("message_create", onMessageCreated);
-		client.gateway.on("message_update", onMessageUpdated);
-		client.gateway.on("message_ack", onMessageAck);
+		client?.gateway.on("message_create", onMessageCreated);
+		client?.gateway.on("message_update", onMessageUpdated);
+		client?.gateway.on("message_ack", onMessageAck);
 
 		return () => {
-			client.gateway.off("message_create", onMessageCreated);
-			client.gateway.off("message_update", onMessageUpdated);
-			client.gateway.off("message_ack", onMessageAck);
+			client?.gateway.off("message_create", onMessageCreated);
+			client?.gateway.off("message_update", onMessageUpdated);
+			client?.gateway.off("message_ack", onMessageAck);
 		};
 	}, [currentChannel, user, currentVisibleMessages, huginnWindow.focused]);
 

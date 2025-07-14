@@ -30,11 +30,11 @@ export default function AppLayout() {
 		const unlisten5 = initializeVoice();
 
 		return () => {
-			unlisten();
-			unlisten2();
-			unlisten3();
-			unlisten4();
-			unlisten5();
+			unlisten?.();
+			unlisten2?.();
+			unlisten3?.();
+			unlisten4?.();
+			unlisten5?.();
 		};
 	}, []);
 

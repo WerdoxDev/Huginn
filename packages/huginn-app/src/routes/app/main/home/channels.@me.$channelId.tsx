@@ -3,8 +3,8 @@ import DirectChannelCall from "@components/channels/DirectChannelCall";
 import HomeTopBar from "@components/channels/HomeTopBar";
 import RecipientsSidebar from "@components/channels/RecipientsSidebar";
 import MessageBox from "@components/MessageBox";
+import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useSafePathname } from "@hooks/useLastSafePathname";
-import { useErrorHandler } from "@hooks/useServerErrorHandler";
 import { ChannelType } from "@huginn/shared";
 import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
 import { client, useClient } from "@stores/apiStore";
@@ -14,6 +14,10 @@ import { type LoaderFunctionArgs, useParams } from "react-router";
 import { queryClient } from "@/main";
 
 export async function channelWithIdLoader({ params }: LoaderFunctionArgs) {
+	if (!client) {
+		return;
+	}
+
 	return queryClient.ensureInfiniteQueryData(getMessagesOptions(queryClient, client, params.channelId as string));
 }
 

@@ -14,6 +14,10 @@ import { Fragment } from "react/jsx-runtime";
 import { queryClient } from "@/main";
 
 export async function clientLoader() {
+	if (!client) {
+		return;
+	}
+
 	return await queryClient.ensureQueryData(getRelationshipsOptions(client));
 }
 

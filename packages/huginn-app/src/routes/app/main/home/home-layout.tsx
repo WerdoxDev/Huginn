@@ -8,6 +8,10 @@ import { Outlet } from "react-router";
 import { queryClient } from "@/main";
 
 export async function homeLoader() {
+	if (!client) {
+		return;
+	}
+
 	return await queryClient?.ensureQueryData(getChannelsOptions(client, "@me"));
 }
 

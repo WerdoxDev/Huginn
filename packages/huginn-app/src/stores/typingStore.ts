@@ -49,6 +49,10 @@ function startTimeout(userId: Snowflake, channelId: Snowflake) {
 }
 
 export function initializeTyping() {
+   if (!client) {
+      return;
+   }
+
    const unlisten = client.gateway.listen("typing_start", (d) => {
       store.getState().updateTyping(d);
    });

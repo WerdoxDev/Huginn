@@ -57,11 +57,11 @@ export function getRelationshipsOptions(client: HuginnClient) {
    });
 }
 
-export function getUserAvatarOptions(userId: Snowflake | undefined, avatarHash: string | null | undefined, client: HuginnClient) {
+export function getUserAvatarOptions(userId: Snowflake | undefined, avatarHash: string | null | undefined, client?: HuginnClient) {
    return queryOptions({
       queryKey: ["avatar", userId, avatarHash],
       async queryFn() {
-         if (!userId || !avatarHash) {
+         if (!userId || !avatarHash || !client) {
             return null;
          }
 
@@ -71,11 +71,11 @@ export function getUserAvatarOptions(userId: Snowflake | undefined, avatarHash: 
    });
 }
 
-export function getChannelIconOptions(channelId: Snowflake | undefined, iconHash: string | null | undefined, client: HuginnClient) {
+export function getChannelIconOptions(channelId: Snowflake | undefined, iconHash: string | null | undefined, client?: HuginnClient) {
    return queryOptions({
       queryKey: ["channel-icon", channelId, iconHash],
       async queryFn() {
-         if (!channelId || !iconHash) {
+         if (!channelId || !iconHash || !client) {
             return null;
          }
 

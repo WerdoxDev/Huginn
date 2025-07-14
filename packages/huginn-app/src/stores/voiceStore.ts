@@ -2,7 +2,6 @@ import { type GatewayCallState, type GatewayVoiceState, type HMediaKind, log, ty
 import type { AudioLevelChecker } from "@lib/voice/audio-level-checker";
 import { VoiceClient } from "@lib/voice/voice-client";
 import { client } from "@stores/apiStore";
-import { userStore } from "@stores/userStore";
 import { produce } from "immer";
 import { createStore, useStore } from "zustand";
 import { combine, devtools } from "zustand/middleware";
@@ -175,7 +174,11 @@ export const voiceClient = new VoiceClient();
 export function initializeVoice() {
    log("app:voice-store", "default", "initializing");
 
-   const unlisteners: Array<() => void> = [];
+   const unlisteners: Array<(() => void) | undefined> = [];
+
+   if (!client) {
+      return;
+   }
 
    unlisteners.push(client.gateway.listen("ready", (d) => {
       log("app:voice-store", "gateway-recv", "ready");
@@ -211,7 +214,7 @@ export function initializeVoice() {
       const thisStore = store.getState();
 
       // our user's voice state update
-      if (d.userId === client.user?.id) {
+      if (d.userId === client?.user?.id) {
          thisStore.setVoiceChannel(d.channelId ?? undefined, d.guildId ?? undefined);
          client.voice.updateLocalVoiceState({ audioMuted: d.selfMute, consumersMuted: d.selfDeaf, streaming: d.selfStream, camera: d.selfVideo });
       } else {
@@ -233,7 +236,7 @@ export function initializeVoice() {
    unlisteners.push(client.voice.listen("local_voice_state_changed", (d) => {
       log("app:voice-store", "voice-recv", "update", "am:", d.audioMuted, "ap:", d.audioPaused, "cm:", d.consumersMuted, "s:", d.streaming)
 
-      if (!client.user) {
+      if (!client?.user) {
          return;
       }
 
@@ -256,7 +259,7 @@ export function initializeVoice() {
       log("app:voice-store", "default", "uninitialize");
 
       for (const unlisten of unlisteners) {
-         unlisten();
+         unlisten?.();
       }
    };
 }

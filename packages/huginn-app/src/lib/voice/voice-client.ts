@@ -21,13 +21,17 @@ export class VoiceClient {
    public listenToVoiceEvents() {
       log("app:voice-client", "default", "initializing");
 
-      const unlisteners: Array<() => void> = [];
+      const unlisteners: Array<(() => void) | undefined> = [];
+
+      if (!client) {
+         return;
+      }
 
       // Get local mic stream when transport is ready
       unlisteners.push(client.voice.listen("send_transport_ready", async (d) => {
          log("app:voice-client", "voice-recv", "send transport ready", "cid:", d.channelId);
 
-         if (!client.user?.id) {
+         if (!client?.user?.id) {
             return;
          }
 
@@ -89,7 +93,7 @@ export class VoiceClient {
             }
 
             // Stop loopback capture
-            if (producer.kind === "screen_video" && producer.userId === client.user?.id) {
+            if (producer.kind === "screen_video" && producer.userId === client?.user?.id) {
                this.stopAudioLoopback();
             }
          }
@@ -115,7 +119,7 @@ export class VoiceClient {
       unlisteners.push(client.voice.listen("local_producer_created", (d) => {
          log("app:voice-client", "voice-recv", "local producer created", "pid:", d.producerId, "mk:", d.kind);
 
-         if (!client.user) {
+         if (!client?.user) {
             return;
          }
 
@@ -199,7 +203,7 @@ export class VoiceClient {
          log("app:voice-client", "default", "uninitializing");
 
          for (const unlisten of unlisteners) {
-            unlisten();
+            unlisten?.();
          }
       };
    }
@@ -224,7 +228,7 @@ export class VoiceClient {
       function onLocalAudioLevel(db: number) {
          const settings = settingsStore.getState();
 
-         const userId = client.user?.id ?? "";
+         const userId = client?.user?.id ?? "";
          if (db > settings.inputThreshold) {
             const voice = voiceStore.getState();
 
@@ -237,14 +241,14 @@ export class VoiceClient {
             clearTimeout(timeout);
             timeout = window.setTimeout(() => {
                if (!lastState) {
-                  client.voice.updateLocalVoiceState({ audioPaused: true });
+                  client?.voice.updateLocalVoiceState({ audioPaused: true });
                   // client.voice.pauseMicrophone();
                   voice.updateSpeakingState(userId, false);
                }
                timeout = undefined;
             }, 700);
 
-            if (client.voice.localVoiceState.audioPaused) {
+            if (client?.voice.localVoiceState.audioPaused) {
                client.voice.updateLocalVoiceState({ audioPaused: false });
 
                if (!client.voice.localVoiceState.audioMuted) {
@@ -276,7 +280,7 @@ export class VoiceClient {
    }
 
    private async initStreaming(microphoneDeviceId: string, microphoneVolume: number, noiseSuppression: boolean) {
-      if (!client.voice.connectionInfo) {
+      if (!client?.voice.connectionInfo) {
          return;
       }
 
@@ -309,7 +313,7 @@ export class VoiceClient {
       for (const remoteSource of remoteSources) {
          // "Video" sources are not audio
          if (
-            remoteSource.userId === client.user?.id ||
+            remoteSource.userId === client?.user?.id ||
             remoteSource.kind === "camera" ||
             remoteSource.kind === "screen_video" ||
             !remoteSource.srcObject

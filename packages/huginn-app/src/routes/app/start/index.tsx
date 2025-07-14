@@ -14,7 +14,7 @@ const loadingStates = {
 	updating: "Updating to",
 	cant_update: "Could not check for updates",
 	logging_in: "Logging in...",
-	welcome: () => `Welcome ${client.user?.displayName ?? client.user?.username}!`,
+	welcome: () => `Welcome ${client?.user?.displayName ?? client?.user?.username}!`,
 	none: "Invalid State",
 } as const;
 

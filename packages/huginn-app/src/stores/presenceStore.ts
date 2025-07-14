@@ -28,6 +28,10 @@ const store = createStore(
 );
 
 export function initializePresence() {
+   if (!client) {
+      return;
+   }
+
    const unlisten = client.gateway.listen("ready", (d) => {
       store.setState({ presences: [] });
       store.getState().updatePresence({ user: d.user, status: apiStore.getState().readyData?.userSettings?.status || "offline" });
