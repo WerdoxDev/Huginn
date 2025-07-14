@@ -29,9 +29,12 @@ export function useLogout() {
       await navigate("/login", { replace: true, viewTransition: true });
 
       resetScrolls();
-      queryClient.removeQueries({ queryKey: ["channels"] });
-      queryClient.removeQueries({ queryKey: ["messages"] });
-      queryClient.removeQueries({ queryKey: ["relationships"] });
+
+      setTimeout(() => {
+         queryClient.removeQueries({ queryKey: ["channels"] });
+         queryClient.removeQueries({ queryKey: ["messages"] });
+         queryClient.removeQueries({ queryKey: ["relationships"] });
+      }, 0)
    }
 
    return logout;
