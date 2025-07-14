@@ -66,7 +66,7 @@ export default function AddRecipientModal() {
 				<AddRecipientInput label="New Members" relationships={relationships} onSelectionChanged={onSelectionChanged} />
 			</div>
 			<div className="bg-surface-alt p-5">
-				<LoadingButton loading={mutation.isPending} className="h-10 w-full bg-primary-700" onClick={add} disabled={selectedUsers.length === 0}>
+				<LoadingButton loading={mutation.isPending} className="h-10 w-full" color="primary" onClick={add} disabled={selectedUsers.length === 0}>
 					Add
 				</LoadingButton>
 			</div>

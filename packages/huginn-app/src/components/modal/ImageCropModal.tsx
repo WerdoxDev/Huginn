@@ -78,7 +78,7 @@ export default function ImageCropModal() {
 				>
 					Cancel
 				</HuginnButton>
-				<HuginnButton onClick={confirm} className="h-10 w-36 bg-primary-700 text-text">
+				<HuginnButton onClick={confirm} className="h-10 w-36 text-text" color="primary">
 					Confirm
 				</HuginnButton>
 			</div>

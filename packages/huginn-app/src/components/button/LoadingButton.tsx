@@ -1,6 +1,6 @@
-import type { HuginnButtonProps } from "@/types";
 import { omit } from "@huginn/shared";
 import clsx from "clsx";
+import type { HuginnButtonProps } from "@/types";
 import HuginnButton from "./HuginnButton";
 
 export default function LoadingButton(props: HuginnButtonProps & { loading: boolean; iconClassName?: string }) {

@@ -3,7 +3,7 @@ import ModalCloseButton from "@components/button/ModalCloseButton";
 import AddRecipientInput from "@components/input/AddRecipientInput";
 import HuginnInput from "@components/input/HuginnInput";
 import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
-import { useChannelName, useChannelNamePlaceholder } from "@hooks/api-hooks/channelHooks";
+import { useChannelNamePlaceholder } from "@hooks/api-hooks/channelHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useInputs } from "@hooks/useInputs";
 import type { APIRelationUser } from "@huginn/shared";
@@ -60,41 +60,40 @@ export default function CreateDMModal() {
 		close();
 	}
 	return (
-		<>
-			<DialogPanel
-				transition
-				className="relative w-full max-w-md transform overflow-hidden rounded-xl border-2 border-primary-700 bg-surface transition-[opacity_transform] duration-200 data-closed:scale-90"
-			>
-				<DialogTitle className="flex items-center justify-center gap-x-1.5">
-					<div className="mt-5 font-medium text-2xl text-text">Create Direct Message</div>
-				</DialogTitle>
-				<Description className="mx-5 mt-1 text-center text-text/70">Select your fellow warrior(s) to share a tale with!</Description>
-				<div className="flex flex-col gap-y-5 p-6">
-					<HuginnInput
-						{...inputsProps.name}
-						placeholder={selectedUsers.length > 1 ? placeholderName : "Select 2 or more members"}
-						disabled={selectedUsers.length < 2}
-					>
-						<HuginnInput.Label className="mb-2" text="Group Name" />
-						<HuginnInput.Wrapper>
-							<HuginnInput.Input />
-						</HuginnInput.Wrapper>
-					</HuginnInput>
+		<DialogPanel
+			transition
+			className="relative w-full max-w-md transform overflow-hidden rounded-xl border-2 border-primary-700 bg-surface transition-[opacity_transform] duration-200 data-closed:scale-90"
+		>
+			<DialogTitle className="flex items-center justify-center gap-x-1.5">
+				<div className="mt-5 font-medium text-2xl text-text">Create Direct Message</div>
+			</DialogTitle>
+			<Description className="mx-5 mt-1 text-center text-text/70">Select your fellow warrior(s) to share a tale with!</Description>
+			<div className="flex flex-col gap-y-5 p-6">
+				<HuginnInput
+					{...inputsProps.name}
+					placeholder={selectedUsers.length > 1 ? placeholderName : "Select 2 or more members"}
+					disabled={selectedUsers.length < 2}
+				>
+					<HuginnInput.Label className="mb-2" text="Group Name" />
+					<HuginnInput.Wrapper>
+						<HuginnInput.Input />
+					</HuginnInput.Wrapper>
+				</HuginnInput>
 
-					<AddRecipientInput relationships={data} onSelectionChanged={onSelectionChanged} />
-				</div>
-				<div className="bg-surface-alt p-5">
-					<LoadingButton
-						loading={mutation.isPending}
-						className="h-10 w-full bg-primary-700"
-						onClick={findOrCreate}
-						disabled={selectedUsers.length === 0}
-					>
-						Find or Create
-					</LoadingButton>
-				</div>
-				<ModalCloseButton onClick={close} />
-			</DialogPanel>
-		</>
+				<AddRecipientInput relationships={data} onSelectionChanged={onSelectionChanged} />
+			</div>
+			<div className="bg-surface-alt p-5">
+				<LoadingButton
+					loading={mutation.isPending}
+					className="h-10 w-full"
+					color="primary"
+					onClick={findOrCreate}
+					disabled={selectedUsers.length === 0}
+				>
+					Find or Create
+				</LoadingButton>
+			</div>
+			<ModalCloseButton onClick={close} />
+		</DialogPanel>
 	);
 }

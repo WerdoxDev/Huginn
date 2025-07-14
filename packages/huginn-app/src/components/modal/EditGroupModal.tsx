@@ -94,7 +94,7 @@ export default function EditGroupModal() {
 				<HuginnButton className="h-10 w-20 decoration-white hover:underline" onClick={close}>
 					Cancel
 				</HuginnButton>
-				<LoadingButton loading={mutation.isPending} className="h-10 w-36 bg-primary-700" onClick={edit}>
+				<LoadingButton loading={mutation.isPending} className="h-10 w-36" color="primary" onClick={edit}>
 					Save
 				</LoadingButton>
 			</div>

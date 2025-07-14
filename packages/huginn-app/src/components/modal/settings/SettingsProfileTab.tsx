@@ -180,7 +180,8 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 						loading={mutation.isPending}
 						disabled={!modified && !avatarModified}
 						onClick={edit}
-						className="!rounded-lg w-36 shrink-0 bg-primary-700 disabled:bg-primary-800"
+						className="!rounded-lg w-36 shrink-0"
+						color="primary"
 					>
 						Save changes
 					</LoadingButton>

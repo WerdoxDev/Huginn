@@ -16,13 +16,25 @@ export default function InfoModal() {
 
 	const innerColor = useMemo(
 		() =>
-			modal.status === "info" ? "bg-caution-200" : modal.status === "error" ? "bg-negative-200" : modal.status === "success" ? "bg-positive-400" : "",
+			modal.status === "info"
+				? "bg-caution-200"
+				: modal.status === "error"
+					? "bg-negative-200"
+					: modal.status === "success"
+						? "bg-positive-400"
+						: "",
 		[modal],
 	);
 
 	const backgroundColor = useMemo(
 		() =>
-			modal.status === "info" ? "bg-caution-600" : modal.status === "error" ? "bg-negative-600" : modal.status === "success" ? "bg-positive-800" : "",
+			modal.status === "info"
+				? "bg-caution-600"
+				: modal.status === "error"
+					? "bg-negative-600"
+					: modal.status === "success"
+						? "bg-positive-800"
+						: "",
 		[modal],
 	);
 
@@ -65,7 +77,7 @@ export default function InfoModal() {
 					<div className={clsx("rounded-full p-3", innerColor)}>
 						{modal.status === "error" && <IconMingcuteAlertLine className="h-8 w-8 text-white" />}
 						{modal.status === "info" && <IconMingcuteInformationLine className="h-8 w-8 text-white" />}
-                  {modal.status === "success" && <IconMingcuteCheckFill className="h-8 w-8 text-white" />}
+						{modal.status === "success" && <IconMingcuteCheckFill className="h-8 w-8 text-white" />}
 					</div>
 				</div>
 				<div className="text-center font-medium text-lg text-white">{modal.title}</div>
@@ -79,7 +91,8 @@ export default function InfoModal() {
 
 			<div className="mt-5 flex items-center justify-end gap-x-2">
 				<HuginnButton
-					className="h-10 w-full bg-surface-alt"
+					className="h-10 w-full"
+					color="surface-alt"
 					onClick={() => {
 						if (!modal.action?.cancel?.callback) updateModals({ info: { isOpen: false } });
 						else modal.action.cancel.callback();
@@ -91,7 +104,8 @@ export default function InfoModal() {
 				{modal.action?.confirm && (
 					<LoadingButton
 						loading={mutationState?.status === "pending"}
-						className="h-10 w-full bg-primary-700 text-text"
+						className="h-10 w-full text-text"
+						color="primary"
 						onClick={() => {
 							modal.action?.confirm?.callback();
 						}}
