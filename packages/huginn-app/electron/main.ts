@@ -1,7 +1,7 @@
 import { access, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { enableLogs, error, log } from "@huginn/shared";
-import { getActiveWindowProcessIds, getLoopbackBinaryPath, getProcessListBinaryPath, setExecutablesRoot, startAudioCapture, stopAudioCapture } from "application-loopback";
+import { getActiveWindowProcessIds, setExecutablesRoot, startAudioCapture, stopAudioCapture } from "application-loopback";
 import { app, BrowserWindow, desktopCapturer, ipcMain, Menu, Notification, session, shell, Tray } from "electron";
 import electronLog from "electron-log/main";
 import { autoUpdater, CancellationToken } from "electron-updater";
@@ -10,8 +10,6 @@ import type { DisplaySource } from "@/types";
 // application-loopback executable path when packaged
 if (app.isPackaged) {
    setExecutablesRoot(path.resolve(__dirname, "..", "..", "bin"));
-   console.log(getLoopbackBinaryPath());
-   console.log(getProcessListBinaryPath());
 }
 
 configureUpdater();
@@ -114,7 +112,7 @@ app.on("activate", () => {
 
 function configureUpdater() {
    log("app:electron", "default", "configure updater");
-
+   // autoUpdater.setFeedURL({ useMultipleRangeRequest: false, url: "", provider: "generic" })
    autoUpdater.logger = electronLog;
    autoUpdater.autoInstallOnAppQuit = false;
    autoUpdater.allowDowngrade = true;
@@ -311,6 +309,12 @@ function eventListeners(mainWindow: BrowserWindow) {
       await autoUpdater.downloadUpdate(cancel);
    });
 
+   ipcMain.on("update:set-url", (_, url: string) => {
+      log("app:electron", "updater", "set url", "u:", url);
+
+      autoUpdater.setFeedURL({ provider: "generic", url, useMultipleRangeRequest: false });
+   })
+
    autoUpdater.on("download-progress", (e) => {
       log("app:electron", "updater", "download progress");
 
@@ -370,7 +374,7 @@ function eventListeners(mainWindow: BrowserWindow) {
          const fileContent = await readFile(settingsPath, { encoding: "utf-8" });
          return JSON.parse(fileContent);
       } catch (e) {
-         console.log("Error reading settings file:", e);
+         error("app:electron", "Error reading settings file: ", e)
          return {};
       }
    });
@@ -381,7 +385,7 @@ function eventListeners(mainWindow: BrowserWindow) {
       try {
          await writeFile(settingsPath, JSON.stringify(JSON.parse(settings), null, 2));
       } catch (e) {
-         console.log("Error writing settings file:", e);
+         error("app:electron", "Error writing settings file: ", e)
       }
    });
 
@@ -395,7 +399,7 @@ function eventListeners(mainWindow: BrowserWindow) {
 
          await writeFile(settingsPath, JSON.stringify(JSON.parse(settings), null, 2));
       } catch (e) {
-         console.log("Error writing settings file:", e);
+         error("app:electron", "Error writing settings file: ", e)
       }
    });
 

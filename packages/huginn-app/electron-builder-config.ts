@@ -7,11 +7,6 @@ export default {
    compression: "store",
    win: {
       target: { target: "nsis", arch: ["x64"] },
-      publish: {
-         provider: "generic",
-         url: "https://midgard.huginn.dev/api/update/${os}",
-         useMultipleRangeRequest: false,
-      },
       icon: "assets/icon.ico",
    },
    artifactName: "${productName}_${version}_${arch}-setup.${ext}",

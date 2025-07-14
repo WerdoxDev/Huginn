@@ -1,11 +1,17 @@
+import { error } from "@huginn/shared";
+import { messages } from "@lib/error-messages";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 import type { ThemeType } from "@/types";
+import { apiStore } from "./apiStore";
+import { modalsStore } from "./modalsStore";
 
 export type AppSettings = {
-   serverAddress: string;
-   cdnAddress: string;
-   voiceAddress: string;
+   apiHostname: string;
+   cdnHostname: string;
+   voiceHostname: string;
+   externalUrl: string;
+   hostnameMode: "manual" | "external"
    theme: ThemeType;
    inputDeviceId: string;
    outputDeviceId: string;
@@ -20,9 +26,11 @@ export type AppSettings = {
 
 const initialStore = () =>
    ({
-      serverAddress: "https://midgard.huginn.dev",
-      cdnAddress: "https://midgard.huginn.dev",
-      voiceAddress: "https://midgard.huginn.dev",
+      apiHostname: "https://midgard.huginn.dev",
+      cdnHostname: "https://midgard.huginn.dev",
+      voiceHostname: "https://midgard.huginn.dev",
+      hostnameMode: "manual",
+      externalUrl: "",
       theme: "pine green",
       inputDeviceId: "",
       outputDeviceId: "",
@@ -45,14 +53,32 @@ export async function initializeSettings() {
       await window.electronAPI.trySaveDefaultSettings(JSON.stringify(initialValue));
       const settings = await window.electronAPI.loadSettings();
       store.setState({ ...initialValue, ...settings });
-      return;
+   } else if (!window.localStorage.getItem(localStorageItem)) {
+      window.localStorage.setItem(localStorageItem, JSON.stringify(initialValue));
+      // biome-ignore lint/style/noNonNullAssertion: the local storage item is checked before
+      store.setState({ ...initialValue, ...JSON.parse(globalThis.localStorage.getItem(localStorageItem)!) });
    }
 
-   if (!window.localStorage.getItem(localStorageItem)) {
-      window.localStorage.setItem(localStorageItem, JSON.stringify(initialValue));
+   const thisStore = store.getState();
+   if (thisStore.hostnameMode === "manual") {
+      apiStore.setState({ hostnames: { api: thisStore.apiHostname, cdn: thisStore.cdnHostname, voice: thisStore.voiceHostname } });
+   } else {
+      let response: Response | undefined;
+      try {
+         response = (await fetch(thisStore.externalUrl, { cache: "no-cache" }));
+         const json = await response?.json();
+         apiStore.setState({ hostnames: { api: json.api, cdn: json.cdn, voice: json.voice } });
+      } catch (e) {
+         error("app:settings-store", "Error fetching external hostnames", e);
+
+         modalsStore.getState().updateModals({ info: { isOpen: true, ...messages.externalUrlError(), status: "error" } })
+      }
    }
-   // biome-ignore lint/style/noNonNullAssertion: the local storage item is checked before
-   store.setState({ ...initialValue, ...JSON.parse(globalThis.localStorage.getItem(localStorageItem)!) });
+
+   if (window.electronAPI) {
+      const url = `${apiStore.getState().hostnames.api}/api/update/win`;
+      window.electronAPI.setUpdateUrl(url);
+   }
 }
 
 const store = createStore(

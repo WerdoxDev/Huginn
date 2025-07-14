@@ -3,12 +3,15 @@ import type { APIPublicUser, GatewayReadyData, PresenceUser, Snowflake } from "@
 import { produce } from "immer";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
-import { settingsStore } from "./settingsStore";
 
-// biome-ignore lint/style/noNonNullAssertion: as an initialization this needs to be undefined!
-export let client: HuginnClient = undefined!;
+export let client: HuginnClient | undefined = undefined;
 
 const initialStore = () => ({
+   hostnames: {
+      api: "",
+      cdn: "",
+      voice: ""
+   },
    users: [] as APIPublicUser[],
    readyData: undefined as GatewayReadyData | undefined
 });
@@ -33,14 +36,13 @@ const store = createStore(
 );
 
 export function initializeClient() {
-   const settings = settingsStore.getState();
-
+   const thisStore = store.getState();
    if (!window.location.pathname.includes("splashscreen") && client === undefined) {
       client = new HuginnClient({
-         rest: { api: `${settings.serverAddress}/api` },
-         cdn: { url: `${settings.cdnAddress}/cdn` },
+         rest: { api: `${thisStore.hostnames.api}/api` },
+         cdn: { url: `${thisStore.hostnames.cdn}/cdn` },
          gateway: {
-            url: `${settings.serverAddress}/gateway`,
+            url: `${thisStore.hostnames.api}/gateway`,
             intents: 0,
             createSocket(url) {
                return new WebSocket(url);
@@ -48,7 +50,7 @@ export function initializeClient() {
          },
          voice: {
             // url: `http://192.168.178.51:3003/voice`,
-            url: `${settings.voiceAddress}/voice`,
+            url: `${thisStore.hostnames.voice}/voice`,
             createSocket(url) {
                return new WebSocket(url);
             },
@@ -89,12 +91,12 @@ export function initializeClient() {
       store.getState().updateUser(d.user);
    });
 
-   const unlisten5 = client.gateway.listen("relationship_add", (d) => {
+   const unlisten5 = client?.gateway.listen("relationship_add", (d) => {
       console.log(d);
       store.getState().updateUser(d.user);
    });
 
-   const unlisten6 = client.gateway.listen("channel_create", (d) => {
+   const unlisten6 = client?.gateway.listen("channel_create", (d) => {
       for (const user of d.recipients) {
          store.getState().updateUser(user);
       }
@@ -111,7 +113,8 @@ export function initializeClient() {
 }
 
 export function useClient() {
-   return client;
+   // biome-ignore lint/style/noNonNullAssertion: This cannot be null
+   return client!;
 }
 
 export function useAPI() {

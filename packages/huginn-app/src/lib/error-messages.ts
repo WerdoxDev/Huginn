@@ -1,6 +1,6 @@
 import { JsonCode } from "@huginn/shared";
 
-export const Messages = {
+export const messages = {
    connectionLostError() {
       return {
          title: "Connection Error",
@@ -16,6 +16,12 @@ export const Messages = {
    appError() {
       return { title: "App Failure", text: "A raven brings ill news: our app has encountered a fearsome error. (OdinBeard)" };
    },
+   externalUrlError() {
+      return {
+         title: "External Hostname Failure",
+         text: "A distant realm cannot be reached; the external URL has failed to respond. (ExternalBroken)",
+      };
+   }
 };
 
 export const APIMessages = {

@@ -1,14 +1,14 @@
-import type { AttachmentElement as SlateAttachmentElement } from "@/index";
 import ImagePreview from "@components/ImagePreview";
-import VideoPlayer from "@components/VideoPlayer";
 import Tooltip from "@components/tooltip/Tooltip";
+import VideoPlayer from "@components/VideoPlayer";
 import { useOpen } from "@hooks/useOpen";
-import { constants, changeUrlBase, constrainImageSize, isImageMediaType, isVideoMediaType } from "@huginn/shared";
+import { changeUrlBase, constants, constrainImageSize, isImageMediaType, isVideoMediaType } from "@huginn/shared";
 import { getSizeText } from "@lib/utils";
 import { useSettings } from "@stores/settingsStore";
 import clsx from "clsx";
 import { useMemo } from "react";
 import type { RenderElementProps } from "slate-react";
+import type { AttachmentElement as SlateAttachmentElement } from "@/index";
 
 export default function AttachmentElement(props: RenderElementProps) {
 	const { contentType, url, description, size, width, height, filename } = props.element as SlateAttachmentElement;
@@ -18,11 +18,11 @@ export default function AttachmentElement(props: RenderElementProps) {
 		[width, height],
 	);
 	const settings = useSettings();
-	const basedUrl = useMemo(() => changeUrlBase(url, `${settings.cdnAddress}/cdn`), [url]);
+	const basedUrl = useMemo(() => changeUrlBase(url, `${settings.cdnHostname}/cdn`), [url]);
 
 	return (
 		<div {...props.attributes} contentEditable={false}>
-			<div className="relative mt-1 mb-1 flex flex-col items-start">
+			<div className="relative my-1 flex flex-col items-start">
 				{description && <span className={clsx("text-sm")}>{description}</span>}
 				{isImageMediaType(contentType) ? (
 					<ImagePreview
@@ -39,12 +39,13 @@ export default function AttachmentElement(props: RenderElementProps) {
 					<div className="flex w-[24rem] items-center gap-x-2 rounded-lg bg-surface-alt px-2 py-3">
 						<IconMingcuteFileFill className="size-10 shrink-0" />
 						<div className="flex w-full flex-col justify-center gap-y-0.5 overflow-hidden rounded-lg px-2.5">
-							<div
-								className="cursor-pointer overflow-hidden text-ellipsis text-nowrap text-primary-500 text-sm hover:underline"
+							<button
+								type="button"
+								className="cursor-pointer overflow-hidden text-ellipsis text-nowrap text-left text-primary-500 text-sm hover:underline"
 								onClick={() => openUrl(basedUrl)}
 							>
 								{filename}
-							</div>
+							</button>
 							<div className="text-white/50 text-xs">{getSizeText(size)}</div>
 						</div>
 						<Tooltip>

@@ -15,6 +15,7 @@ export const electronAPI = {
    toggleMaximize: () => ipcRenderer.send("window:toggle-maximize"),
    checkUpdate: () => ipcRenderer.invoke("update:check") as Promise<UpdateInfo | undefined>,
    downloadUpdate: () => ipcRenderer.send("update:download"),
+   setUpdateUrl: (url: string) => ipcRenderer.send("update:set-url", url),
    getArgs: () => ipcRenderer.invoke("cli:get-args") as Promise<string[]>,
    openExternal: (url: string) => ipcRenderer.send("shell:open-external", url),
    sendNotification: (title: string, body: string, payload?: string) => ipcRenderer.send("notification:send", { title, body, payload }),
