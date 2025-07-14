@@ -76,6 +76,7 @@ export type HuginnButtonProps = {
    className?: string;
    disabled?: boolean;
    innerClassName?: string;
+   color?: "primary" | "surface-deep" | "surface-alt" | "surface"
    onClick?: () => void;
 };
 
