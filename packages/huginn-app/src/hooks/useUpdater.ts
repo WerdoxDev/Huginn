@@ -3,17 +3,17 @@ import { useMutation } from "@tanstack/react-query";
 import type { UpdateInfo } from "electron-updater";
 import { useEffect, useRef, useState } from "react";
 
-export function useUpdater(onNotAvailable?: () => void | Promise<void>, onTry?: () => void, onError?: () => void) {
+export function useUpdater(options: { onNotAvailable?: () => void | Promise<void>, onError?: () => void, onUpdating?: () => void }) {
    const huginnWindow = useHuginnWindow();
    const [progress, setProgress] = useState(0);
-   const [info, setInfo] = useState<UpdateInfo>();
+   const [updateInfo, setUpdateInfo] = useState<UpdateInfo>();
    const contentLength = useRef(0);
    const downloaded = useRef(0);
    const isChecking = useRef(false);
    const updateMutation = useMutation({
       mutationKey: ["update"],
       async mutationFn() {
-         onTry?.();
+         // options.onTry?.();
 
          const result = await window.electronAPI.checkUpdate();
          if (result) {
@@ -21,16 +21,17 @@ export function useUpdater(onNotAvailable?: () => void | Promise<void>, onTry?: 
          }
 
          if (!result || result.version === huginnWindow.version) {
-            await onNotAvailable?.();
+            await options.onNotAvailable?.();
          } else {
             window.electronAPI.downloadUpdate();
-            setInfo(result);
+            setUpdateInfo(result);
+            options.onUpdating?.();
          }
       },
       onError(error) {
          console.log(error);
          isChecking.current = false;
-         onError?.();
+         options.onError?.();
       },
       retry: 2,
       retryDelay: 3000,
@@ -59,5 +60,5 @@ export function useUpdater(onNotAvailable?: () => void | Promise<void>, onTry?: 
       }
    }
 
-   return { checkAndDownload, info, progress, contentLength, downloaded };
+   return { checkAndDownload, updateInfo, progress, contentLength, downloaded };
 }
