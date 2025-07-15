@@ -1,5 +1,4 @@
 import { HistoryProvider } from "@contexts/historyContext";
-import { initializeClient } from "@stores/apiStore";
 import { initializeSettings } from "@stores/settingsStore";
 import { ThemeProvider } from "@stores/themeStore";
 import { initializeWindow } from "@stores/windowStore";
@@ -22,21 +21,20 @@ export default function Root() {
 	useEffect(() => {
 		let cancelled = false;
 		let unlisten: Promise<() => void>;
-		let unlisten2: () => void;
 		initializeSettings().then(() => {
-			if (!cancelled) {
-				unlisten2 = initializeClient();
-				unlisten = initializeWindow().then((x) => {
-					setLoaded(true);
-					return x;
-				});
+			if (cancelled) {
+				return;
 			}
+			// unlisten2 = initializeClient();
+			unlisten = initializeWindow().then((x) => {
+				setLoaded(true);
+				return x;
+			});
 		});
 
 		return () => {
 			cancelled = true;
 			unlisten?.then((f) => f());
-			unlisten2?.();
 		};
 	}, []);
 	return (
