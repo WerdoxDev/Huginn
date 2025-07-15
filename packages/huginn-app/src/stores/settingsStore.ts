@@ -49,11 +49,15 @@ export async function initializeSettings() {
       await window.electronAPI.trySaveDefaultSettings(JSON.stringify(initialValue));
       const settings = await window.electronAPI.loadSettings();
       store.setState({ ...initialValue, ...settings });
-   } else if (!window.localStorage.getItem(localStorageItem)) {
-      window.localStorage.setItem(localStorageItem, JSON.stringify(initialValue));
-      // biome-ignore lint/style/noNonNullAssertion: the local storage item is checked before
-      store.setState({ ...initialValue, ...JSON.parse(globalThis.localStorage.getItem(localStorageItem)!) });
+      return;
    }
+
+   if (!window.localStorage.getItem(localStorageItem)) {
+      window.localStorage.setItem(localStorageItem, JSON.stringify(initialValue));
+   }
+
+   // biome-ignore lint/style/noNonNullAssertion: the local storage item is checked before
+   store.setState({ ...initialValue, ...JSON.parse(globalThis.localStorage.getItem(localStorageItem)!) });
 }
 
 const store = createStore(

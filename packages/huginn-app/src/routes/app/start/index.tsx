@@ -60,7 +60,7 @@ export default function Index() {
 		},
 	});
 
-	const [state, dispatch] = useReducer(reducer, { current: "none", status: "none", error: "TESS", text: "" });
+	const [state, dispatch] = useReducer(reducer, { current: "none", status: "none", error: undefined, text: "" });
 
 	const updateProgressText = useMemo(() => {
 		return `${(downloaded.current / 1024 / 1024).toFixed(2)}MB / ${(contentLength.current / 1024 / 1024).toFixed(2)}MB (${Math.ceil(progress)}%)`;
@@ -111,8 +111,12 @@ export default function Index() {
 				case "none": {
 					if (settings.hostnameSource === "external") {
 						setFetchHostnames();
-					} else {
+					} else if (huginnWindow.environment === "desktop") {
 						setCheckUpdate();
+					} else {
+						setHostnamesFromSettings();
+						initializeClient();
+						setConnect();
 					}
 					break;
 				}
@@ -148,7 +152,7 @@ export default function Index() {
 	useEffect(() => {
 		startBackground.setState(0);
 
-		if (!huginnWindow.args.includes("--silent")) {
+		if (huginnWindow.environment === "desktop" && !huginnWindow.args.includes("--silent")) {
 			window.electronAPI.showMain();
 		}
 	}, []);

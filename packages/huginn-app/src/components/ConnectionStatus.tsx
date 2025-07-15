@@ -6,8 +6,8 @@ import { useEffect, useState } from "react";
 const statusTexts: Record<WebsocketStatus, string> = {
 	connected: "Connected - Not Authenticated",
 	authenticated: "Connected - Authenticated",
-	connecting: "Connecting...",
-	reconnecting: "Reconnecting...",
+	connecting: "Connecting",
+	reconnecting: "Reconnecting",
 	disconnected: "Disconnected",
 	none: "Connecting...",
 };
@@ -44,7 +44,7 @@ export default function ConnectionStatus() {
 				)}
 			/>
 			<span className="font-medium text-text/80 text-xs uppercase">{status ? statusTexts[status] : "Not Initialized"}</span>
-			{clientStore.isInitialized && status !== "authenticated" && status !== "connected" && (
+			{clientStore.isInitialized && (status === "connecting" || status === "reconnecting") && (
 				<span className="font-medium text-text/80 text-xs uppercase">via {clientStore.hostnames.api}</span>
 			)}
 		</div>
