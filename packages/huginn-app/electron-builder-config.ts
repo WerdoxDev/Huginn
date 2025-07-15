@@ -8,6 +8,11 @@ export default {
    win: {
       target: { target: "nsis", arch: ["x64"] },
       icon: "assets/icon.ico",
+      publish: {
+         provider: "generic",
+         url: "https://midgard.huginn.dev/api/update/${os}",
+         useMultipleRangeRequest: false
+      }
    },
    artifactName: "${productName}_${version}_${arch}-setup.${ext}",
    files: ["dist/**/*", "!dist/electron", "!node_modules/**/*", ".electron/**/*"],
