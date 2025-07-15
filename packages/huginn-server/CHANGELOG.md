@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.3](https://github.com/WerdoxDev/Huginn/compare/server@v0.23.2...server@v0.23.3) (2025-07-15)
+
+
+### Bug Fixes
+
+* **server:** update packages + remove https only from session ([11b1269](https://github.com/WerdoxDev/Huginn/commit/11b1269f3337914a1db205854dd0ffd60895f148))
+
 ## [0.23.2](https://github.com/WerdoxDev/Huginn/compare/server@v0.23.1...server@v0.23.2) (2025-07-09)
 
 
