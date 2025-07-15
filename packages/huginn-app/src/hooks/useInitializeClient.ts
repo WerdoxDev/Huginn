@@ -1,6 +1,6 @@
 // import { usePostHog } from "posthog-js/react";
 import { log } from "@huginn/shared";
-import { useClient } from "@stores/apiStore";
+import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { type To, useNavigate } from "react-router";
 

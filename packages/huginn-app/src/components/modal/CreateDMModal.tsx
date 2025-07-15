@@ -8,7 +8,7 @@ import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useInputs } from "@hooks/useInputs";
 import type { APIRelationUser } from "@huginn/shared";
 import { getRelationshipsOptions } from "@lib/queries";
-import { useClient } from "@stores/apiStore";
+import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";

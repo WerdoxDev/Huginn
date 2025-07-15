@@ -4,7 +4,7 @@ import StartWrapper from "@components/StartWrapper";
 import { useStartBackground } from "@contexts/authBackgroundContext";
 import { useTryLogin } from "@hooks/useTryLogin";
 import { useUpdater } from "@hooks/useUpdater";
-import { client, useClient } from "@stores/apiStore";
+import { client } from "@stores/clientStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";

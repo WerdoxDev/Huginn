@@ -1,5 +1,5 @@
 import type { APIPublicUser, HMediaKind } from "@huginn/shared";
-import { useClient } from "@stores/apiStore";
+import { useClient } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore } from "@stores/voiceStore";

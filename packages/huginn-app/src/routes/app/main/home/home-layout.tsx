@@ -1,7 +1,7 @@
 import HomeSidebar from "@components/HomeSidebar";
 import UserInfo from "@components/UserInfo";
 import { getChannelsOptions } from "@lib/queries";
-import { client, useClient } from "@stores/apiStore";
+import { client, useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Outlet } from "react-router";

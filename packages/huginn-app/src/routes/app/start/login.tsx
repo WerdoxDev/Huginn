@@ -10,7 +10,7 @@ import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useInputs } from "@hooks/useInputs";
 import { useOAuth } from "@hooks/useOAuth";
 import type { APIPostLoginJSONBody } from "@huginn/shared";
-import { useClient } from "@stores/apiStore";
+import { useClient } from "@stores/clientStore";
 import { useEffect } from "react";
 // import { usePostHog } from "posthog-js/react";
 

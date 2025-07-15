@@ -1,6 +1,6 @@
 import { snowflake } from "@huginn/shared";
 import { getChannelsOptions } from "@lib/queries";
-import { useClient } from "@stores/apiStore";
+import { useClient } from "@stores/clientStore";
 import { useReadStates } from "@stores/readStatesStore";
 import { useQuery } from "@tanstack/react-query";
 import moment from "moment";

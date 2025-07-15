@@ -1,7 +1,7 @@
 import { type GatewayCallState, type GatewayVoiceState, type HMediaKind, log, type Snowflake } from "@huginn/shared";
 import type { AudioLevelChecker } from "@lib/voice/audio-level-checker";
 import { VoiceClient } from "@lib/voice/voice-client";
-import { client } from "@stores/apiStore";
+import { client } from "@stores/clientStore";
 import { produce } from "immer";
 import { createStore, useStore } from "zustand";
 import { combine, devtools } from "zustand/middleware";

@@ -7,7 +7,7 @@ import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useSafePathname } from "@hooks/useLastSafePathname";
 import { ChannelType } from "@huginn/shared";
 import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
-import { client, useClient } from "@stores/apiStore";
+import { client, useClient } from "@stores/clientStore";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { type LoaderFunctionArgs, useParams } from "react-router";

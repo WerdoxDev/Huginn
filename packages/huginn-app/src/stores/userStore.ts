@@ -2,7 +2,7 @@ import type { APIUser, TokenPayload } from "@huginn/shared";
 import * as jose from "jose";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
-import { client } from "./apiStore";
+import { client } from "./clientStore";
 
 const store = createStore(
    combine(

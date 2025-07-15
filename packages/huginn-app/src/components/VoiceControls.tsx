@@ -1,6 +1,6 @@
 import { Transition } from "@headlessui/react";
 import type { GatewayVoiceState } from "@huginn/shared";
-import { useClient } from "@stores/apiStore";
+import { useClient } from "@stores/clientStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
 import DropdownMenu from "./dropdown/DowndownMenu";
@@ -80,7 +80,11 @@ export default function VoiceControls(props: {
 											}
 										</DropdownMenu.Button>
 										<DropdownMenu.Items anchor="top" className="border border-surface [--anchor-gap:16px]">
-											<DropdownMenu.Item className="!text-negative-100 hover:!bg-negative-500" label="End Stream" onClick={props.onEndStream} />
+											<DropdownMenu.Item
+												className="!text-negative-100 hover:!bg-negative-500"
+												label="End Stream"
+												onClick={props.onEndStream}
+											/>
 											<DropdownMenu.Item label="Change Stream" onClick={props.onStream}>
 												<IconMingcuteTransfer3Fill />
 											</DropdownMenu.Item>

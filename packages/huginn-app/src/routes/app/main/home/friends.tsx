@@ -5,7 +5,7 @@ import PendingFriendsTab from "@components/friends/PendingFriendsTab";
 import { Tab, TabGroup, TabList, TabPanels } from "@headlessui/react";
 import { RelationshipType } from "@huginn/shared";
 import { getRelationshipsOptions } from "@lib/queries";
-import { client, useClient } from "@stores/apiStore";
+import { client, useClient } from "@stores/clientStore";
 import { usePresences } from "@stores/presenceStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import clsx from "clsx";

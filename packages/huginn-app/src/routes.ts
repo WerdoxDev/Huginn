@@ -1,5 +1,5 @@
 import RouteErrorComponent from "@components/RouteErrorComponent";
-import { client } from "@stores/apiStore";
+import { client } from "@stores/clientStore";
 import { createHashRouter, type LoaderFunctionArgs, redirect } from "react-router";
 import Root from "./root";
 import AppLayout from "./routes/app/app-layout";

@@ -2,7 +2,7 @@ import { useChannelName, useSafeDeleteDMChannel } from "@hooks/api-hooks/channel
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { ChannelType } from "@huginn/shared";
 import { getMessagesOptions } from "@lib/queries";
-import { useClient } from "@stores/apiStore";
+import { useClient } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";

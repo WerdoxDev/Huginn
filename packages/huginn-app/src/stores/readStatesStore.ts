@@ -10,7 +10,7 @@ import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 import notificationUrl from "@/assets/notification.wav";
 import { sendNotification } from "../contexts/notificationContext";
-import { apiStore, client } from "./apiStore";
+import { client, clientStore } from "./clientStore";
 
 export type ContextReadState = { channelId: Snowflake; lastReadMessageId?: Snowflake; unreadCount: number };
 
@@ -80,7 +80,7 @@ export function initializeReadStates() {
 
    const unlisten2 = listenEvent("message_added", async (data) => {
       if (!data.self && !data.visible) {
-         const author = apiStore.getState().users.find((x) => x.id === data.message.authorId);
+         const author = clientStore.getState().users.find((x) => x.id === data.message.authorId);
          // console.log(await join(await resourceDir(), "resources/huginn-text.png"));
          const audio = new Audio(notificationUrl);
          audio.play();

@@ -5,7 +5,7 @@ import { ScreenshareModalButton } from "@components/button/ScreenshareModalButto
 import DisplayPreview from "@components/DisplayPreview";
 import LoadingIcon from "@components/LoadingIcon";
 import { Checkbox, DialogPanel, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import { useClient } from "@stores/apiStore";
+import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { voiceClient } from "@stores/voiceStore";
 import { useQuery } from "@tanstack/react-query";

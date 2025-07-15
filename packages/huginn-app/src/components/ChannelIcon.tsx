@@ -1,6 +1,6 @@
 import type { Snowflake } from "@huginn/shared";
 import { getChannelIconOptions } from "@lib/queries";
-import { useClient } from "@stores/apiStore";
+import { useClient } from "@stores/clientStore";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useEffect, useState } from "react";

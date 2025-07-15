@@ -1,5 +1,5 @@
-import { useClient } from "@stores/apiStore";
 import { useChannelStore } from "@stores/channelStore";
+import { useClient } from "@stores/clientStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { useHuginnMutation } from "./useHuginnMutation";

@@ -1,7 +1,7 @@
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import { DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import type { DeepPartial } from "@huginn/shared";
-import { useClient } from "@stores/apiStore";
+import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { type AppSettings, settingsStore, useSettings } from "@stores/settingsStore";
 import clsx from "clsx";

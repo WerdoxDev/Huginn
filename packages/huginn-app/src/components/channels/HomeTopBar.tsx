@@ -4,7 +4,7 @@ import UserAvatar from "@components/UserAvatar";
 import { useChannelName } from "@hooks/api-hooks/channelHooks";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { ChannelType } from "@huginn/shared";
-import { useClient } from "@stores/apiStore";
+import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useMemo } from "react";
 import type { AppDirectChannel } from "@/types";

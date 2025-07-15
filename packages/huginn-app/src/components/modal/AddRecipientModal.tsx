@@ -6,7 +6,7 @@ import { useChannelRecipients } from "@hooks/api-hooks/channelHooks";
 import { useAddChannelRecipient } from "@hooks/mutations/useAddChannelRecipient";
 import type { APIRelationUser } from "@huginn/shared";
 import { getRelationshipsOptions } from "@lib/queries";
-import { useClient } from "@stores/apiStore";
+import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";

@@ -12,7 +12,7 @@ import { useInputs } from "@hooks/useInputs";
 import { useOAuth } from "@hooks/useOAuth";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import type { APIPostRegisterJSONBody } from "@huginn/shared";
-import { useClient } from "@stores/apiStore";
+import { useClient } from "@stores/clientStore";
 import { useEffect } from "react";
 // import { usePostHog } from "posthog-js/react";
 

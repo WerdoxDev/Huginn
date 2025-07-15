@@ -4,7 +4,7 @@ import { produce } from "immer";
 import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
-import { client } from "./apiStore";
+import { client } from "./clientStore";
 
 const initialStore = () => ({
    typings: [] as Array<GatewayTypingStartData & { timeout: number }>,

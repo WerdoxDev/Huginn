@@ -1,5 +1,5 @@
 import type { WebsocketStatus } from "@huginn/shared";
-import { useClient } from "@stores/apiStore";
+import { useClient, useClientStore } from "@stores/clientStore";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 

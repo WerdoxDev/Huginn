@@ -1,6 +1,6 @@
 import type { HuginnClient } from "@huginn/api";
 import { type APIGetUserChannelsResult, resolveImage, type Snowflake } from "@huginn/shared";
-import { apiStore } from "@stores/apiStore";
+import { clientStore } from "@stores/clientStore";
 import { infiniteQueryOptions, type QueryClient, queryOptions } from "@tanstack/react-query";
 import { convertToAppDirectChannel, convertToAppMessage, convertToAppRelationship } from "./utils";
 
@@ -12,7 +12,7 @@ export function getChannelsOptions(client: HuginnClient, guildId: Snowflake) {
          // if (guildId !== "@me") return undefined;
          (await client.channels.getAll()).map((x) => convertToAppDirectChannel(x)),
 
-      initialData: () => apiStore.getState().readyData?.privateChannels.map((x) => convertToAppDirectChannel(x)),
+      initialData: () => clientStore.getState().readyData?.privateChannels.map((x) => convertToAppDirectChannel(x)),
    });
 }
 
@@ -53,7 +53,7 @@ export function getRelationshipsOptions(client: HuginnClient) {
    return queryOptions({
       queryKey: ["relationships"],
       queryFn: async () => (await client.relationships.getAll()).map((x) => convertToAppRelationship(x)),
-      initialData: () => apiStore.getState().readyData?.relationships.map((x) => convertToAppRelationship(x)),
+      initialData: () => clientStore.getState().readyData?.relationships.map((x) => convertToAppRelationship(x)),
    });
 }
 

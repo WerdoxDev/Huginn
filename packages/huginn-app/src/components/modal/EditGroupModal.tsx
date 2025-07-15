@@ -9,7 +9,7 @@ import { usePatchDMChannel } from "@hooks/mutations/usePatchDMChannel";
 import { useInputs } from "@hooks/useInputs";
 import { listenEvent } from "@lib/event-handler";
 import { getChannelIconOptions } from "@lib/queries";
-import { useClient } from "@stores/apiStore";
+import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";

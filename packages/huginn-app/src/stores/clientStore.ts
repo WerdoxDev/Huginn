@@ -117,8 +117,8 @@ export function useClient() {
    return client!;
 }
 
-export function useAPI() {
+export function useClientStore() {
    return useStore(store);
 }
 
-export const apiStore = store;
+export const clientStore = store;

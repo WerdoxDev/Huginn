@@ -1,5 +1,5 @@
 import { log } from "@huginn/shared";
-import { client } from "@stores/apiStore";
+import { client } from "@stores/clientStore";
 import { settingsStore } from "@stores/settingsStore";
 import { voiceStore } from "@stores/voiceStore";
 import type { RemoteSource, VoicePreference } from "@/types";

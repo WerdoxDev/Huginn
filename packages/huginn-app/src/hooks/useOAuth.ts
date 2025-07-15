@@ -1,6 +1,6 @@
 import type { GatewayOAuthRedirectData, OAuthType } from "@huginn/shared";
 import { listenEvent } from "@lib/event-handler";
-import { useClient } from "@stores/apiStore";
+import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useEffect, useRef } from "react";

@@ -1,6 +1,6 @@
 import type { Snowflake } from "@huginn/shared";
 import { getUserAvatarOptions } from "@lib/queries";
-import { useClient } from "@stores/apiStore";
+import { useClient } from "@stores/clientStore";
 import { usePresence } from "@stores/presenceStore";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";

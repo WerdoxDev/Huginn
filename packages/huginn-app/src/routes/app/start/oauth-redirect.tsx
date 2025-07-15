@@ -13,7 +13,7 @@ import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import type { APIPostOAuthConfirmJSONBody, IdentityTokenPayload } from "@huginn/shared";
 import { listenEvent } from "@lib/event-handler";
 import { getUserAvatarOptions } from "@lib/queries";
-import { useClient } from "@stores/apiStore";
+import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
 import * as jose from "jose";

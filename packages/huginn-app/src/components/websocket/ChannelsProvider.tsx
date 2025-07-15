@@ -1,20 +1,17 @@
-import type { AppDirectChannel } from "@/types";
 import type {
-	APIChannelUser,
-	APIGetUserChannelsResult,
 	GatewayDMCannelRecipientRemoveData,
 	GatewayDMChannelCreateData,
 	GatewayDMChannelDeleteData,
 	GatewayDMChannelRecipientAddData,
 	GatewayDMChannelUpdateData,
-	GatewayPresenceUpdateData,
 } from "@huginn/shared";
 import { convertToAppDirectChannel } from "@lib/utils";
-import { useClient } from "@stores/apiStore";
+import { useClient } from "@stores/clientStore";
 import { useReadStates } from "@stores/readStatesStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
+import type { AppDirectChannel } from "@/types";
 
 export default function ChannelsProvider(props: { children?: ReactNode }) {
 	const client = useClient();

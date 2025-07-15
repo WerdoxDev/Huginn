@@ -3,7 +3,7 @@ import { produce } from "immer";
 import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
-import { apiStore, client } from "./apiStore";
+import { client, clientStore } from "./clientStore";
 
 const initialStore = () => ({
    presences: [] as GatewayPresenceUpdateData[],
@@ -34,7 +34,7 @@ export function initializePresence() {
 
    const unlisten = client.gateway.listen("ready", (d) => {
       store.setState({ presences: [] });
-      store.getState().updatePresence({ user: d.user, status: apiStore.getState().readyData?.userSettings?.status || "offline" });
+      store.getState().updatePresence({ user: d.user, status: clientStore.getState().readyData?.userSettings?.status || "offline" });
 
       if (d.presences) {
          for (const presence of d.presences) {

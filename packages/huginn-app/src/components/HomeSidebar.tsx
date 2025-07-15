@@ -1,17 +1,16 @@
-import type { AppDirectChannel } from "@/types";
-import { type APIGetUserChannelsResult, RelationshipType, snowflake } from "@huginn/shared";
-import { useClient } from "@stores/apiStore";
+import { snowflake } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
 import { useReadStates } from "@stores/readStatesStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import moment from "moment";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
+import type { AppDirectChannel } from "@/types";
 import AttentionIndicator from "./AttentionIndicator";
-import DirectMessageChannel from "./DirectMessageChannel";
-import VoiceStatus from "./VoiceStatus";
 import RingLinkButton from "./button/RingLinkButton";
+import DirectMessageChannel from "./DirectMessageChannel";
 import Tooltip from "./tooltip/Tooltip";
+import VoiceStatus from "./VoiceStatus";
 
 export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
 	const huginnWindow = useHuginnWindow();

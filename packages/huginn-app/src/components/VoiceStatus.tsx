@@ -1,6 +1,6 @@
 import { useChannelName } from "@hooks/api-hooks/channelHooks";
 import type { WebsocketStatus } from "@huginn/shared";
-import { useClient } from "@stores/apiStore";
+import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
