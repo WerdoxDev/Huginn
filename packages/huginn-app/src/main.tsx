@@ -34,7 +34,7 @@ enableLogs({
 	"api:voice": ["default", "send", "recv", "heartbeat", "local-voice-state"],
 	"api:gateway": ["default", "send", "recv"],
 	"api:client": ["ready-state"],
-	"app:api-client": ["default"],
+	"app:client-store": ["default"],
 });
 
 export const queryClient = new QueryClient({
