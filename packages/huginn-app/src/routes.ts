@@ -32,7 +32,7 @@ function startLoader({ request }: LoaderFunctionArgs) {
       throw redirect("/channels/@me");
    }
 
-   if (!client && pathname !== "/") {
+   if (!client && pathname !== "/" && pathname !== "/oauth-redirect") {
       throw redirect("/");
    }
 }

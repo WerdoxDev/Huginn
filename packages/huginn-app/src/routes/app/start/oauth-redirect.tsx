@@ -61,15 +61,11 @@ export default function OauthRedirect() {
 	useEffect(() => {
 		async function tryAuthorize() {
 			if (search.has("access_token") || search.has("refresh_token")) {
-				try {
-					await initializeClient({
-						token: search.get("access_token") ?? "",
-						refreshToken: search.get("refresh_token") ?? "",
-						navigatePath: "/channels/@me",
-					});
-				} catch (_e) {
-					await navigate("/");
-				}
+				localStorage.setItem("access-token", search.get("access_token") ?? "");
+
+				localStorage.setItem("refresh-token", search.get("refresh_token") ?? "");
+
+				await navigate("/");
 			} else {
 				setShouldRender(true);
 				authBackground.setState(0);
