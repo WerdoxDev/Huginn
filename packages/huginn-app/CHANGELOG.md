@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.46.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.45.0...app@v0.46.0) (2025-07-15)
+
+
+### Features
+
+* **app:** add ability to use external url to fetch hostnames for api,cdn,voice ([b6e40d6](https://github.com/WerdoxDev/Huginn/commit/b6e40d6decc68453e939a771fec0a1aabaaf0152))
+
+
+### Bug Fixes
+
+* **app:** case-sensitive file rename ([e161b0e](https://github.com/WerdoxDev/Huginn/commit/e161b0e1d051dfc3b59ddff98da92c2cd2169404))
+* **app:** inset rounded corners are not working with new tailwind v4 ([37c59ae](https://github.com/WerdoxDev/Huginn/commit/37c59ae59fc3ebceb24a6596d4a4f59ad87f305e))
+* **app:** logging out from a channel causes an error ([b0ecb47](https://github.com/WerdoxDev/Huginn/commit/b0ecb47a79acf6a27648463a57948d318f396cd2))
+* **app:** make initial global client instance undefinable ([de361bf](https://github.com/WerdoxDev/Huginn/commit/de361bfba4ffcd0fd2eac91a25c1976456e84c3b))
+* **app:** oauth should set tokens and go back to index ([6863371](https://github.com/WerdoxDev/Huginn/commit/686337119d5c6606ad1b7482c2d861db5b4141a1))
+* **app:** propagation issue with user info component ([bee74c5](https://github.com/WerdoxDev/Huginn/commit/bee74c5f0a8616ed9ecf26cd5aa1c7348ece7c6e))
+* **app:** scroll anchoring problem when opening recipients sidebar ([af7b7fc](https://github.com/WerdoxDev/Huginn/commit/af7b7fc0a7f855523cd9a0d83ad1e990de00b1b4))
+* **app:** some issues after client was moved to index ([be53a63](https://github.com/WerdoxDev/Huginn/commit/be53a63a06ed0c15ca776d9cbe148995eeceaf9a))
+* **app:** visual bugs + browser errors with new initialization ([9e29803](https://github.com/WerdoxDev/Huginn/commit/9e29803919073a467fa806fee2b3ce66112c81dd))
+
 ## [0.45.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.44.1...app@v0.45.0) (2025-07-11)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.8.0...voice@v0.9.0) (2025-07-15)
+
+
+### Features
+
+* **voice:** add multiple hostname support ([f053bbd](https://github.com/WerdoxDev/Huginn/commit/f053bbd5b351762a87da3b6966d5b142b86044db))
+
 ## [0.8.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.7.0...voice@v0.8.0) (2025-07-04)
 
 
