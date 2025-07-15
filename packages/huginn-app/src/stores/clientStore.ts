@@ -1,8 +1,9 @@
 import { HuginnClient } from "@huginn/api";
-import type { APIPublicUser, GatewayReadyData, PresenceUser, Snowflake } from "@huginn/shared";
+import { type APIPublicUser, error, type GatewayReadyData, log, type PresenceUser, type Snowflake } from "@huginn/shared";
 import { produce } from "immer";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
+import { settingsStore } from "./settingsStore";
 
 export let client: HuginnClient | undefined = undefined;
 
@@ -13,7 +14,8 @@ const initialStore = () => ({
       voice: ""
    },
    users: [] as APIPublicUser[],
-   readyData: undefined as GatewayReadyData | undefined
+   readyData: undefined as GatewayReadyData | undefined,
+   isInitialized: false,
 });
 
 type StoreType = ReturnType<typeof initialStore>;
@@ -35,9 +37,38 @@ const store = createStore(
    })),
 );
 
+export async function setHostnamesFromExternal() {
+   log("app:client-store", "default", "set hostnames from external");
+
+   const settings = settingsStore.getState();
+   let response: Response | undefined;
+
+   try {
+      response = (await fetch(settings.externalHostnamesUrl, { cache: "no-cache" }));
+      const json = await response?.json();
+      store.setState({ hostnames: { api: json.api, cdn: json.cdn, voice: json.voice } });
+      return true;
+   } catch (e) {
+      error("app:client-store", "Error fetching external hostnames", e);
+
+      return false;
+      // const modals = modalsStore.getState();
+      // modals.updateModals({ info: { isOpen: true, ...messages.externalHostnamesError(), status: "error", action: { cancel: { text: "Close", callback: () => modals.updateModals({ info: { isOpen: false } }) }, confirm: { text: "Open Settings", callback: () => modals.updateModals({ info: { isOpen: false }, settings: { isOpen: true } }) } }, closable: true } })
+   }
+}
+
+export function setHostnamesFromSettings() {
+   log("app:client-store", "default", "set hostnames from settings");
+
+   const settings = settingsStore.getState();
+   store.setState({ hostnames: { api: settings.apiHostname, cdn: settings.cdnHostname, voice: settings.voiceHostname } });
+}
+
 export function initializeClient() {
+   log("app:client-store", "default", "initialize client");
+
    const thisStore = store.getState();
-   if (!window.location.pathname.includes("splashscreen") && client === undefined) {
+   if (client === undefined) {
       client = new HuginnClient({
          rest: { api: `${thisStore.hostnames.api}/api` },
          cdn: { url: `${thisStore.hostnames.cdn}/cdn` },
@@ -58,6 +89,13 @@ export function initializeClient() {
       });
 
       client.gateway.connect();
+   } else {
+      return;
+   }
+
+   if (window.electronAPI && thisStore.hostnames.api) {
+      const url = `${thisStore.hostnames.api}/api/update/win`;
+      window.electronAPI.setUpdateUrl(url);
    }
 
    const unlisten = client?.gateway.listen("ready", (d) => {
@@ -101,6 +139,8 @@ export function initializeClient() {
          store.getState().updateUser(user);
       }
    });
+
+   store.setState({ isInitialized: true });
 
    return () => {
       unlisten?.();
