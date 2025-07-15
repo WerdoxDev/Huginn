@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.46.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.46.0...app@v0.46.1) (2025-07-15)
+
+
+### Bug Fixes
+
+* **app:** electron builder needs a publish config ([b593327](https://github.com/WerdoxDev/Huginn/commit/b5933277610c535af2cdcd6d463e78ccef705ce1))
+
 ## [0.46.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.45.0...app@v0.46.0) (2025-07-15)
 
 
