@@ -112,9 +112,6 @@ function Wrapper(props: { className?: string; headless?: boolean; border?: "left
 
 function Label(props: { children?: ReactNode; headless?: boolean; className?: string; text: string; hideStatus?: boolean }) {
 	const inputContext = useContext(InputContext);
-	useEffect(() => {
-		console.log(inputContext);
-	}, []);
 	return (
 		<label
 			htmlFor={inputContext.id}

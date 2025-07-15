@@ -1,17 +1,20 @@
 import { useHistory } from "@contexts/historyContext";
-import { HuginnAPIError } from "@huginn/shared";
-import { useClient } from "@stores/clientStore";
+import { useClient, useClientStore } from "@stores/clientStore";
+import { useCallback } from "react";
 import type { To } from "react-router";
-import { useErrorHandler } from "./useErrorHandler";
 import { useInitializeClient } from "./useInitializeClient";
 
 export function useTryLogin() {
    const client = useClient();
+   const clientStore = useClientStore();
    const history = useHistory();
    const initializeClient = useInitializeClient();
-   const handleServerError = useErrorHandler();
 
-   async function tryLogin(options: { onFound?: () => void, onNotFound?: () => void, onSuccessful?: () => Promise<void> | void, onError?: (e: unknown) => void, navigatePath?: To }) {
+   const tryLogin = useCallback(async (options: { onFound?: () => void, onNotFound?: () => void, onSuccessful?: () => Promise<void> | void, onError?: (e: unknown) => void, navigatePath?: To }) => {
+      if (!clientStore.isInitialized) {
+         return;
+      }
+
       if (client.gateway.status === "authenticated") return;
 
       const token = localStorage.getItem("access-token") ?? undefined;
@@ -27,8 +30,8 @@ export function useTryLogin() {
 
          // If token is expired | gateway couldn't authenticate | client couldn't refresh token, basically token is invalid? delete. Network problem? RETRY!
          if (!lastStatus.retryable && !lastStatus.status) {
-            // localStorage.removeItem("refresh-token");
-            // localStorage.removeItem("access-token");
+            localStorage.removeItem("refresh-token");
+            localStorage.removeItem("access-token");
             options.onError?.(undefined);
             //TODO: Handle server error somehow
             // if (e instanceof HuginnAPIError && e.status >= 500) {
@@ -40,7 +43,7 @@ export function useTryLogin() {
       } else {
          options.onNotFound?.();
       }
-   }
+   }, [clientStore.isInitialized])
 
    return tryLogin;
 }

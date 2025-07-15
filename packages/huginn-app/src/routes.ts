@@ -19,14 +19,21 @@ function mainLoader({ request }: LoaderFunctionArgs) {
    const pathname = url.pathname;
 
    const search = new URLSearchParams({ redirect: pathname });
-   if (client?.gateway.status !== "authenticated") {
+   if (!client || client?.gateway.status !== "authenticated") {
       throw redirect(`/?${search}`);
    }
 }
 
 function startLoader({ request }: LoaderFunctionArgs) {
+   const url = new URL(request.url);
+   const pathname = url.pathname;
+
    if (client?.gateway.status === "authenticated") {
       throw redirect("/channels/@me");
+   }
+
+   if (!client && pathname !== "/") {
+      throw redirect("/");
    }
 }
 

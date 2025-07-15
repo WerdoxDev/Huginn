@@ -43,7 +43,7 @@ const defaultTabIndex = 0;
 function useFlatTabs() {
 	const client = useClient();
 
-	return tabs.filter((x) => x.children && (client.gateway.status === "authenticated" || !x?.auth)).flatMap((x) => x.children);
+	return tabs.filter((x) => x.children && (client?.gateway.status === "authenticated" || !x?.auth)).flatMap((x) => x.children);
 }
 
 export default function SettingsModal() {
@@ -126,7 +126,7 @@ function SettingsTabs() {
 		<div className="flex h-full w-full flex-col gap-y-1 overflow-y-auto">
 			{tabs.map(
 				(tab, i) =>
-					(client.gateway.status === "authenticated" || !tab.auth) && (
+					(client?.gateway.status === "authenticated" || !tab.auth) && (
 						<Fragment key={tab.name}>
 							<div className={clsx("mb-1 w-full px-2.5 text-left text-text/50 text-xs uppercase", i === 0 ? "mt-2" : "mt-4")}>{tab.text}</div>
 							{tab.children?.map((child) => (

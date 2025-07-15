@@ -6,7 +6,7 @@ import { useSettings } from "@stores/settingsStore";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import type { DropdownItem, SettingsTabProps } from "@/types";
 
-const hostnameModes: DropdownItem[] = [
+const hostnameSources: DropdownItem[] = [
 	{ text: "Manual", value: "manual", icon: <IconMingcuteText2Fill className="size-6 text-text" /> },
 	{ text: "External", value: "external", icon: <IconMingcuteWifiFill className="size-6 text-text" /> },
 ] as const;
@@ -18,11 +18,11 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 		{ name: "apiHostname", required: false, default: settings.apiHostname },
 		{ name: "cdnHostname", required: false, default: settings.cdnHostname },
 		{ name: "voiceHostname", required: false, default: settings.voiceHostname },
-		{ name: "externalUrl", required: false, default: settings.externalUrl },
+		{ name: "externalUrl", required: false, default: settings.externalHostnamesUrl },
 	]);
 
-	const [hostnameMode, setHostnameMode] = useState<typeof settings.hostnameMode>(settings.hostnameMode);
-	const _hostnameMode = useRef(hostnameMode);
+	const [hostnameSource, setHostnameMode] = useState<typeof settings.hostnameSource>(settings.hostnameSource);
+	const _hostnameSource = useRef(hostnameSource);
 	const { updateModals } = useModals();
 
 	function focusChanged(isFocused: boolean) {
@@ -46,12 +46,12 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 	}
 
 	function hostnameModeChanged(item: DropdownItem) {
-		setHostnameMode(item.value as typeof settings.hostnameMode);
+		setHostnameMode(item.value as typeof settings.hostnameSource);
 	}
 
 	useEffect(() => {
-		_hostnameMode.current = hostnameMode;
-	}, [hostnameMode]);
+		_hostnameSource.current = hostnameSource;
+	}, [hostnameSource]);
 
 	useEffect(() => {
 		return () => {
@@ -60,14 +60,14 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 					(values.apiHostname.value && settings.apiHostname !== values.apiHostname.value) ||
 					(values.cdnHostname.value && settings.cdnHostname !== values.cdnHostname.value) ||
 					(values.voiceHostname.value && settings.voiceHostname !== values.voiceHostname.value) ||
-					(values.externalUrl.value && settings.externalUrl !== values.externalUrl.value) ||
-					_hostnameMode.current !== settings.hostnameMode
+					(values.externalUrl.value && settings.externalHostnamesUrl !== values.externalUrl.value) ||
+					_hostnameSource.current !== settings.hostnameSource
 				) {
 					updateModals({
 						info: {
 							isOpen: true,
 							status: "info",
-							text: "Server hostnames changed. The app should be restarted!",
+							text: "Hostnames changed. The app should be restarted!",
 							title: "Hang on!",
 							action: {
 								confirm: {
@@ -77,8 +77,8 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 											cdnHostname: values.cdnHostname.value,
 											apiHostname: values.apiHostname.value,
 											voiceHostname: values.voiceHostname.value,
-											externalUrl: values.externalUrl.value,
-											hostnameMode: _hostnameMode.current,
+											externalHostnamesUrl: values.externalUrl.value,
+											hostnameSource: _hostnameSource.current,
 										});
 										await settings.saveSettings();
 										updateModals({ info: { isOpen: false } });
@@ -102,17 +102,17 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 
 	return (
 		<div className="flex flex-col gap-y-5">
-			<HuginnDropdown onChange={hostnameModeChanged} defaultValue={hostnameModes.find((x) => x.value === hostnameMode)}>
-				<HuginnDropdown.Label>Hostnames Mode</HuginnDropdown.Label>
+			<HuginnDropdown onChange={hostnameModeChanged} defaultValue={hostnameSources.find((x) => x.value === hostnameSource)}>
+				<HuginnDropdown.Label>Hostname Source</HuginnDropdown.Label>
 				<HuginnDropdown.List>
 					<HuginnDropdown.ItemsWrapper className="w-52">
-						{hostnameModes.map((x) => (
+						{hostnameSources.map((x) => (
 							<HuginnDropdown.Item key={x.value} item={x} />
 						))}
 					</HuginnDropdown.ItemsWrapper>
 				</HuginnDropdown.List>
 			</HuginnDropdown>
-			{hostnameMode === "manual" ? (
+			{hostnameSource === "manual" ? (
 				<div>
 					<div className="mb-2 select-none font-medium text-text text-xs uppercase opacity-90">Server Hostnames</div>
 					<HuginnInput className="w-80" type="text" placeholder="API hostname" {...inputsProps.apiHostname} onFocusChanged={focusChanged}>
@@ -142,8 +142,8 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 				</div>
 			) : (
 				<div>
-					<HuginnInput className="w-md" type="text" placeholder="External URL" {...inputsProps.externalUrl}>
-						<HuginnInput.Label className="mb-2" text="External URL" />
+					<HuginnInput className="w-md" type="text" placeholder="External Hostnames URL" {...inputsProps.externalUrl}>
+						<HuginnInput.Label className="mb-2" text="External Hostnames URL" />
 						<div className="flex items-center">
 							<HuginnInput.Wrapper>
 								<HuginnInput.Input />

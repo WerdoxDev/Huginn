@@ -6,6 +6,7 @@ import { useStartBackground } from "@contexts/authBackgroundContext";
 import { NotificationProvider } from "@contexts/notificationContext";
 import { useMainViewTransitionState } from "@hooks/useMainViewTransitionState";
 import { dispatchEvent } from "@lib/event-handler";
+import { useClientStore } from "@stores/clientStore";
 import { ContextMenuProvider } from "@stores/contextMenuStore";
 import { initializePresence } from "@stores/presenceStore";
 import { initializeReadStates } from "@stores/readStatesStore";
@@ -19,24 +20,27 @@ import { Outlet } from "react-router";
 
 export default function AppLayout() {
 	const authBackground = useStartBackground();
+	const clientStore = useClientStore();
 	const huginnWindow = useHuginnWindow();
 	const { isMainTransitioning } = useMainViewTransitionState();
 
 	useEffect(() => {
-		const unlisten = initializeUser();
-		const unlisten2 = initializeReadStates();
-		const unlisten3 = initializePresence();
-		const unlisten4 = initializeTyping();
-		const unlisten5 = initializeVoice();
+		const unlisteners: Array<(() => void) | undefined> = [];
 
-		return () => {
-			unlisten?.();
-			unlisten2?.();
-			unlisten3?.();
-			unlisten4?.();
-			unlisten5?.();
-		};
-	}, []);
+		if (clientStore.isInitialized) {
+			unlisteners.push(initializeUser());
+			unlisteners.push(initializeReadStates());
+			unlisteners.push(initializePresence());
+			unlisteners.push(initializeTyping());
+			unlisteners.push(initializeVoice());
+
+			return () => {
+				for (const unlisten of unlisteners) {
+					unlisten?.();
+				}
+			};
+		}
+	}, [clientStore.isInitialized]);
 
 	return (
 		<ContextMenuProvider>
