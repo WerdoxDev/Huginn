@@ -2,14 +2,13 @@ type LogValuesMap = {
    "api:voice": "send" | "recv" | "heartbeat" | "ping" | "default" | "local-voice-state";
    "api:gateway": "send" | "send-detail" | "default" | "recv" | "recv-detail" | "dispatch" | "heartbeat";
    "api:client": "ready-state";
-   "app:api-client": "default";
+   "app:client-store": "default";
    "app:voice-client": "default" | "voice-recv" | "emitter-recv" | "settings-sub";
    "app:voice-store": "remote-sources" | "speaking-state" | "voice-preferences" | "voice-state" | "call-state" | "default" | "gateway-recv" | "voice-recv";
    "app:audio-source-player": "default";
    "app:audio-level-checker": "default";
    "app:voice-input-device": "default";
    "app:electron": "default" | "send" | "recv" | "updater" | "loopback-send" | "loopback";
-   "app:settings-store": "default";
    "server:gateway": "default" | "send" | "recv" | "heartbeat";
    "voice:websocket": "default" | "recv";
    // "server:client-session": "default"|"subscriptions"|"heartbeat";
