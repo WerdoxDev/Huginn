@@ -38,7 +38,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 			setValue("apiHostname", apiHostname.slice(0, -1));
 		}
 		if (cdnHostname.endsWith("/")) {
-			setValue("cdnAddress", cdnHostname.slice(0, -1));
+			setValue("cdnHostname", cdnHostname.slice(0, -1));
 		}
 		if (voiceHostname.endsWith("/")) {
 			setValue("voiceHostname", voiceHostname.slice(0, -1));
