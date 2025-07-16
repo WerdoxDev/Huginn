@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.2](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.10.1...backend-shared@v0.10.2) (2025-07-16)
+
+
+### Bug Fixes
+
+* **backend-shared:** use constants for voice token expire time ([96a3f06](https://github.com/WerdoxDev/Huginn/commit/96a3f065c8112dd9f9c832dd9d0019e5c91b5487))
+
 ## [0.10.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.10.0...backend-shared@v0.10.1) (2025-07-09)
 
 
