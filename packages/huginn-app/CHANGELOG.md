@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.46.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.46.1...app@v0.46.2) (2025-07-16)
+
+
+### Bug Fixes
+
+* **app:** fix typo ([4f587e6](https://github.com/WerdoxDev/Huginn/commit/4f587e69f4f9e6b6de4089e8914a3580ad43c007))
+* **app:** some ui issues and local voice state changes ([8619b73](https://github.com/WerdoxDev/Huginn/commit/8619b73ce926e4e6a94180551eed296176303fa1))
+
 ## [0.46.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.46.0...app@v0.46.1) (2025-07-15)
 
 
