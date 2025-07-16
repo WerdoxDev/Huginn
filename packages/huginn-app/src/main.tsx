@@ -7,6 +7,16 @@ import { enableLogs } from "@huginn/shared";
 import router from "./routes";
 
 const root = document.getElementById("root");
+
+// document.addEventListener("keypress", (e) => {
+// 	console.log(e.key);
+// 	if (e.key === "\\") {
+// 		client?.gateway.socket?.close();
+// 	}
+// 	if (e.key === "]") {
+// 		client?.voice.socket?.close();
+// 	}
+// });
 // enableLogs(["api:gateway", "api:voice"], ["default", "default"]);
 // enableLogs(
 // 	["app:audio-level-checker", "app:audio-source-player", "app:voice-client", "app:voice-input-device", "app:voice-store", "api:voice"],

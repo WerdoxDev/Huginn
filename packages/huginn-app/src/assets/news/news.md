@@ -1,3 +1,3 @@
-### **Voice Animations**
+### **Bug fixes**
 
-- Added smooth some animations to voice calls
+- Fixed some bugs related to reconnecting

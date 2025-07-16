@@ -6,6 +6,7 @@ import { useUsers } from "@hooks/api-hooks/userHooks";
 import { ChannelType } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
+import { useVoiceStore } from "@stores/voiceStore";
 import { useMemo } from "react";
 import type { AppDirectChannel } from "@/types";
 
@@ -13,12 +14,13 @@ export default function HomeTopBar(props: { channel: AppDirectChannel; onRecipie
 	const { user } = useThisUser();
 	const client = useClient();
 	const recipients = useUsers(props.channel.recipientIds);
+	const { localVoiceState } = useVoiceStore();
 	const name = useChannelName(props.channel.id);
 
 	const otherUsers = useMemo(() => recipients.filter((x) => x.id !== user?.id), [props.channel]);
 
 	async function startCall() {
-		await client.gateway.connectVoice(null, props.channel.id);
+		await client.gateway.connectVoice(null, props.channel.id, { selfMute: localVoiceState.selfMute, selfDeaf: localVoiceState.selfDeaf });
 		await client.channels.ring(props.channel.id, null);
 	}
 

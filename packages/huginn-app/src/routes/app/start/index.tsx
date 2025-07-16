@@ -50,7 +50,7 @@ export default function Index() {
 
 	const { checkAndDownload, updateInfo, progress, contentLength, downloaded } = useUpdater({
 		async onNotAvailable() {
-			setConnect();
+			await setConnect();
 		},
 		onError() {
 			dispatch({ type: "FAIL", error: "Could not check for updates" });
@@ -93,7 +93,10 @@ export default function Index() {
 		dispatch({ type: "SET", step: "fetch_hostnames", text: "Fetching external hostnames..." });
 	}
 
-	function setConnect() {
+	async function setConnect() {
+		if (client?.gateway.status === "connected") {
+			await continueToLogin();
+		}
 		dispatch({ type: "SET", step: "connect", text: "Connecting..." });
 	}
 
@@ -116,7 +119,7 @@ export default function Index() {
 					} else {
 						setHostnamesFromSettings();
 						initializeClient();
-						setConnect();
+						await setConnect();
 					}
 					break;
 				}
@@ -128,7 +131,7 @@ export default function Index() {
 						initializeClient();
 
 						if (huginnWindow.environment !== "desktop") {
-							setConnect();
+							await setConnect();
 						} else {
 							setCheckUpdate();
 						}

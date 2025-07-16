@@ -20,7 +20,7 @@ const minHeight = 250;
 const maxHeightPercentage = 60;
 
 export default function DirectChannelCall(props: { channelId: Snowflake }) {
-	const { localVoiceState: voiceState, voiceStates, callStates, remoteSources, speakingStates } = useVoiceStore();
+	const { localVoiceState, voiceStates, callStates, remoteSources, speakingStates } = useVoiceStore();
 
 	const { updateModals } = useModals();
 	const huginnWindow = useHuginnWindow();
@@ -28,7 +28,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	const client = useClient();
 	const { user } = useThisUser();
 
-	const thisVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channelId), [voiceStates, props.channelId]);
+	const thisVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channelId), [voiceStates, props.channelId, localVoiceState]);
 	const thisCallState = useMemo(() => callStates.find((x) => x.channelId === props.channelId), [callStates, props.channelId]);
 	const isGridView = useMemo(() => thisVoiceStates.some((x) => x.selfStream), [thisVoiceStates]);
 
@@ -49,11 +49,11 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	const [maximizedSource, setMaximizedSource] = useState<Unpacked<typeof remoteSources> | undefined>(undefined);
 
 	useEffect(() => {
-		if (!voiceState.channelId) {
+		if (!localVoiceState.channelId) {
 			maximizedSourceId.current = undefined;
 			setMaximizedSource(undefined);
 		}
-	}, [voiceState]);
+	}, [localVoiceState]);
 
 	useLayoutEffect(() => {
 		const controller = new AbortController();
@@ -140,12 +140,17 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		client.gateway.disconnectVoice();
 	}
 
-	function toggleMute() {
-		client.gateway.updateVoiceState(!voiceState.selfMute, false, voiceState.selfStream, voiceState.selfVideo);
+	async function toggleMute() {
+		await client.gateway.updateVoiceState(!localVoiceState.selfMute, false, localVoiceState.selfStream, localVoiceState.selfVideo);
 	}
 
-	function toggleDeafen() {
-		client.gateway.updateVoiceState(!voiceState.selfDeaf, !voiceState.selfDeaf, voiceState.selfStream, voiceState.selfVideo);
+	async function toggleDeafen() {
+		await client.gateway.updateVoiceState(
+			!localVoiceState.selfDeaf,
+			!localVoiceState.selfDeaf,
+			localVoiceState.selfStream,
+			localVoiceState.selfVideo,
+		);
 	}
 
 	async function stream() {
@@ -162,7 +167,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	}
 
 	async function connect() {
-		await client.gateway.connectVoice(null, props.channelId);
+		await client.gateway.connectVoice(null, props.channelId, { selfMute: localVoiceState.selfMute, selfDeaf: localVoiceState.selfDeaf });
 	}
 
 	function maximizeSource(producerId: string) {
@@ -189,7 +194,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 			: store.voiceStates.length +
 				store.remoteSources.filter((x) => x.kind === "screen_video" || x.kind === "camera").length +
 				(thisCallState?.ringing.length ?? 0) +
-				(!voiceState.channelId ? thisVoiceStates.filter((x) => x.selfStream).length : 0);
+				(!localVoiceState.channelId ? thisVoiceStates.filter((x) => x.selfStream).length : 0);
 		const containerWidth = gridRef.current.clientWidth;
 		const containerHeight = gridRef.current.clientHeight;
 		const boxMargin = !maximizedSourceId.current ? 12 : 0;
@@ -283,7 +288,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 								/>
 							))}
 					{isGridView &&
-						!voiceState.channelId &&
+						!localVoiceState.channelId &&
 						thisVoiceStates
 							.filter((x) => x.selfStream)
 							.map((x) => (
@@ -323,7 +328,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 			<VoiceControls
 				show={showControls}
 				isFullscreen={isFullscreen}
-				isInVoice={voiceState.channelId === props.channelId}
+				isInVoice={localVoiceState.channelId === props.channelId}
 				onConnect={connect}
 				onDisconnect={disconnect}
 				onStream={stream}
@@ -331,7 +336,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 				onToggleDeafen={toggleDeafen}
 				onToggleFullscreen={toggleFullscreen}
 				onToggleMute={toggleMute}
-				voiceState={voiceState}
+				voiceState={localVoiceState}
 			/>
 		</div>
 	);

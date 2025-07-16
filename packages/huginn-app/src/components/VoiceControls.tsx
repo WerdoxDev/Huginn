@@ -1,6 +1,5 @@
 import { Transition } from "@headlessui/react";
 import type { GatewayVoiceState } from "@huginn/shared";
-import { useClient } from "@stores/clientStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
 import DropdownMenu from "./dropdown/DowndownMenu";
@@ -19,7 +18,6 @@ export default function VoiceControls(props: {
 	onConnect: () => void;
 	onToggleFullscreen: () => Promise<void>;
 }) {
-	const client = useClient();
 	const { localVoiceState: voiceState } = useVoiceStore();
 
 	return (
@@ -32,7 +30,7 @@ export default function VoiceControls(props: {
 								<Tooltip.Trigger
 									className={clsx(
 										"h-full w-full rounded-lg px-5 py-1.5 text-white transition-[border-radius_background-color] hover:bg-surface",
-										props.voiceState.selfMute && "bg-negative-300 hover:!bg-negative-500",
+										props.voiceState.selfMute && "hover:!bg-negative-500 bg-negative-300",
 										voiceState.selfDeaf && voiceState.selfMute && "rounded-r-none",
 									)}
 									onClick={props.onToggleMute}
@@ -45,7 +43,7 @@ export default function VoiceControls(props: {
 								<Tooltip.Trigger
 									className={clsx(
 										"h-full w-full rounded-lg px-5 py-1.5 text-white transition-[border-radius_background-color] hover:bg-surface",
-										props.voiceState.selfDeaf && "bg-negative-300 hover:!bg-negative-500",
+										props.voiceState.selfDeaf && "hover:!bg-negative-500 bg-negative-300",
 										voiceState.selfDeaf && voiceState.selfMute && "rounded-l-none",
 									)}
 									onClick={props.onToggleDeafen}
@@ -81,7 +79,7 @@ export default function VoiceControls(props: {
 										</DropdownMenu.Button>
 										<DropdownMenu.Items anchor="top" className="border border-surface [--anchor-gap:16px]">
 											<DropdownMenu.Item
-												className="!text-negative-100 hover:!bg-negative-500"
+												className="!text-negative-100 hover:!bg-negative-100/10"
 												label="End Stream"
 												onClick={props.onEndStream}
 											/>
@@ -92,15 +90,6 @@ export default function VoiceControls(props: {
 									</DropdownMenu>
 								)}
 							</div>
-							{/* <Tooltip>
-							<Tooltip.Trigger
-								className={clsx("h-full w-full rounded-lg px-5 py-1.5 text-white transition-colors hover:bg-surface")}
-								onClick={() => client.voice.stopScreensharing()}
-							>
-								<IconMingcuteMonitorFill className="size-6" />
-							</Tooltip.Trigger>
-							<Tooltip.Content>Stop Sharing</Tooltip.Content>
-						</Tooltip> */}
 						</div>
 						<Tooltip>
 							<Tooltip.Trigger

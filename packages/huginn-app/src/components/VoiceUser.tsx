@@ -3,7 +3,7 @@ import { useContextMenu } from "@stores/contextMenuStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import { motion, type Transition, type Variants } from "motion/react";
-import { type RefObject, useEffect, useState } from "react";
+import type { RefObject } from "react";
 import UserAvatar from "./UserAvatar";
 
 export default function VoiceUser(props: {
@@ -19,7 +19,6 @@ export default function VoiceUser(props: {
 }) {
 	const { open: openContextMenu } = useContextMenu("voice_user");
 	const { user } = useThisUser();
-	const [isAnimating, setIsAnimating] = useState(false);
 
 	const transition: Transition = { type: "spring", bounce: 0, damping: 26, stiffness: 200 };
 
@@ -33,14 +32,8 @@ export default function VoiceUser(props: {
 		exit: { scale: 0, opacity: 0, transition },
 	};
 
-	useEffect(() => {
-		console.log(isAnimating, props.isResizing);
-	}, [isAnimating, props.isResizing]);
-
 	return (
 		<motion.button
-			onLayoutAnimationStart={() => setIsAnimating(true)}
-			onLayoutAnimationComplete={() => setIsAnimating(false)}
 			layout={!props.isResizing}
 			variants={variants}
 			initial="hidden"

@@ -216,7 +216,7 @@ export function initializeVoice() {
       // our user's voice state update
       if (d.userId === client?.user?.id) {
          thisStore.setVoiceChannel(d.channelId ?? undefined, d.guildId ?? undefined);
-         client.voice.updateLocalVoiceState({ audioMuted: d.selfMute, consumersMuted: d.selfDeaf, streaming: d.selfStream, camera: d.selfVideo });
+         // client.voice.updateLocalVoiceState({ audioMuted: d.selfMute, consumersMuted: d.selfDeaf, streaming: d.selfStream, camera: d.selfVideo });
       } else {
          // create voice preference for new users
          if (!thisStore.voicePreferences.some((x) => x.userId === d.userId)) {
