@@ -109,7 +109,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       this.emit("open", undefined);
    }
 
-   private onClose(e: CloseEvent) {
+   private async onClose(e: CloseEvent) {
       log("api:voice", "default", "closed", "c:", e.code, "r:", e.reason);
 
       this.status = "disconnected";
@@ -125,10 +125,10 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          return;
       }
 
-      this.tryReconnect();
+      this.tryReconnect(e);
    }
 
-   private tryReconnect() {
+   private tryReconnect(e: CloseEvent) {
       setTimeout(async () => {
          log("api:voice", "default", "try reconnect");
 
@@ -139,7 +139,10 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
             if (this.client.gateway.status !== "authenticated") {
                await this.client.gateway.waitForEvents(["ready", "resumed"], true);
             }
-            await this.client.gateway.connectVoice(this.connectionInfo.guildId, this.connectionInfo.channelId, this.connectionInfo.token)
+
+            // If we had a token failure last time, don't include a token to get a new one.
+            const token = e.code === GatewayCode.AUTHENTICATION_FAILED ? undefined : this.connectionInfo.token;
+            await this.client.gateway.connectVoice(this.connectionInfo.guildId, this.connectionInfo.channelId, { selfDeaf: this.localVoiceState.consumersMuted, selfMute: this.localVoiceState.audioMuted }, token, !token)
          }
       }, 2000);
    }
@@ -168,6 +171,11 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
                appData: { mediaKind: "microphone", userId: this.client.user.id },
             });
          }
+
+         if (this.localVoiceState.audioMuted) {
+            this.producers.get("microphone")?.pause();
+         }
+         console.log(this.producers.get("microphone")?.paused);
       }
    }
 
@@ -178,8 +186,8 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
 
       log("api:voice", "default", "start screensharing");
 
-      videoTrack.onended = () => {
-         this.stopScreensharing();
+      videoTrack.onended = async () => {
+         await this.stopScreensharing();
       };
 
       const videoProducer = this.producers.get("screen_video");
@@ -209,11 +217,10 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          this.closeProducer(audioProducer.id);
       }
 
-      this.client.gateway.updateVoiceState(this.localVoiceState.audioMuted, this.localVoiceState.consumersMuted, true, this.localVoiceState.camera);
-      // this.updateLocalVoiceState({ streaming: true });
+      await this.client.gateway.updateVoiceState(this.localVoiceState.audioMuted, this.localVoiceState.consumersMuted, true, this.localVoiceState.camera);
    }
 
-   public stopScreensharing(): void {
+   public async stopScreensharing(): Promise<void> {
       if (!this.connectionInfo) {
          return;
       }
@@ -234,7 +241,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          this.closeProducer(audioProducer.id);
       }
 
-      this.client.gateway.updateVoiceState(this.localVoiceState.audioMuted, this.localVoiceState.consumersMuted, false, this.localVoiceState.camera);
+      await this.client.gateway.updateVoiceState(this.localVoiceState.audioMuted, this.localVoiceState.consumersMuted, false, this.localVoiceState.camera);
    }
 
    private async openProducer(kind: HMediaKind, options: ProducerOptions<MediasoupAppData>) {
@@ -273,9 +280,10 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       this.send(closeProducerData);
    }
 
-   // TODO: Make this the primary function and then it will call smaller functions like muteMicrophone... Currently the reverse of this is happening.
    public updateLocalVoiceState(voiceState: Partial<typeof this.localVoiceState>): void {
       if (voiceState.audioPaused !== undefined) {
+         log("api:voice", "local-voice-state", "set audio paused:", voiceState.audioPaused);
+
          this.localVoiceState.audioPaused = voiceState.audioPaused;
 
          const producer = this.producers.get("microphone");
@@ -287,10 +295,10 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
             this.localVoiceState.audioPaused = false;
             // return true;
          }
-
-         log("api:voice", "local-voice-state", "audio paused:", this.localVoiceState.audioPaused);
       }
       if (voiceState.audioMuted !== undefined) {
+         log("api:voice", "local-voice-state", "set audio muted:", voiceState.audioMuted);
+
          this.localVoiceState.audioMuted = voiceState.audioMuted;
 
          const producer = this.producers.get("microphone");
@@ -299,10 +307,10 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          } else if (voiceState.audioMuted === false && !this.localVoiceState.audioPaused && producer?.paused) {
             producer?.resume();
          }
-
-         log("api:voice", "local-voice-state", "audio muted:", this.localVoiceState.audioMuted);
       }
       if (voiceState.consumersMuted !== undefined) {
+         log("api:voice", "local-voice-state", "set consumers muted:", voiceState.consumersMuted);
+
          this.localVoiceState.consumersMuted = voiceState.consumersMuted;
 
          for (const consumer of this.consumers.values()) {
@@ -312,21 +320,20 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
                consumer.resume();
             }
          }
-
-         log("api:voice", "local-voice-state", "consumers muted:", this.localVoiceState.consumersMuted);
       }
       if (voiceState.streaming !== undefined) {
-         this.localVoiceState.streaming = voiceState.streaming;
+         log("api:voice", "local-voice-state", "set streaming:", voiceState.streaming);
 
-         log("api:voice", "local-voice-state", "streaming:", this.localVoiceState.streaming);
+         this.localVoiceState.streaming = voiceState.streaming;
       }
       if (voiceState.camera !== undefined) {
-         this.localVoiceState.camera = voiceState.camera;
+         log("api:voice", "local-voice-state", "set camera:", voiceState.camera);
 
-         log("api:voice", "local-voice-state", "camera:", this.localVoiceState.camera);
+         this.localVoiceState.camera = voiceState.camera;
       }
 
       log("api:voice", "local-voice-state", "update", "am:", this.localVoiceState.audioMuted, "ap:", this.localVoiceState.audioPaused, "cm:", this.localVoiceState.consumersMuted, "s:", this.localVoiceState.streaming)
+
       this.emit("local_voice_state_changed", this.localVoiceState);
    }
 
@@ -344,9 +351,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
 
    private reset() {
       log("api:voice", "default", "reset");
-      // this.sequence = undefined;
-      // this.socket = undefined;
-      this.localVoiceState = { audioPaused: false, audioMuted: false, consumersMuted: false, streaming: false, camera: false };
+
       this.sequence = undefined;
 
       this.recvTransport?.close();
@@ -443,6 +448,10 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          kind: convertToMediaKind(data.kind),
          appData: { mediaKind: data.kind, userId: data.producerUserId },
       });
+
+      if (this.localVoiceState.consumersMuted) {
+         consumer.pause();
+      }
 
       this.consumers.set(consumer.id, consumer);
 
@@ -624,18 +633,17 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          return;
       }
 
-      const identifyData: VoiceIdentify = {
+      const identify: VoiceIdentify = {
          op: VoiceOperations.IDENTIFY,
          d: {
             token: this.connectionInfo.token,
             channelId: this.connectionInfo.channelId,
             guildId: this.connectionInfo.guildId,
-            userId: this.client.user.id as Snowflake,
          },
       };
 
-      log("api:voice", "send", "identify", "cid:", identifyData.d.channelId, "gid:", identifyData.d.guildId);
-      this.send(identifyData);
+      log("api:voice", "send", "identify", "cid:", identify.d.channelId, "gid:", identify.d.guildId, "tkn:", identify.d.token);
+      this.send(identify);
    }
 
    private handlePong() {
