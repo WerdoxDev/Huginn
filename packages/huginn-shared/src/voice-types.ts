@@ -162,7 +162,6 @@ export type VoiceIdentifyData = {
    token: string;
    channelId: Snowflake;
    guildId: Snowflake | null;
-   userId: Snowflake;
 };
 
 export type VoicePing = {
