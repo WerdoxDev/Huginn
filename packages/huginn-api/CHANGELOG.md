@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.2](https://github.com/WerdoxDev/Huginn/compare/api@v0.19.1...api@v0.19.2) (2025-07-16)
+
+
+### Bug Fixes
+
+* **api:** issue with voice and gateway reconnecting ([026d442](https://github.com/WerdoxDev/Huginn/commit/026d442da424eb82b3a1095cb3d9e90162b1456a))
+
 ## [0.19.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.19.0...api@v0.19.1) (2025-07-11)
 
 

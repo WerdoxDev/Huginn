@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.1](https://github.com/WerdoxDev/Huginn/compare/shared@v0.23.0...shared@v0.23.1) (2025-07-16)
+
+
+### Bug Fixes
+
+* **shared:** add voice token expire time to constants ([a44bcf3](https://github.com/WerdoxDev/Huginn/commit/a44bcf354c47ef252c86f469a3bd57bb7c5417a6))
+
 ## [0.23.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.22.0...shared@v0.23.0) (2025-07-04)
 
 
