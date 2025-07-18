@@ -83,7 +83,7 @@ export type VoiceEvents = {
    send_transport_ready: { channelId: Snowflake };
    local_producer_created: { producerId: string; kind: HMediaKind; track: MediaStreamTrack };
    local_producer_changed: { producerId: string, kind: HMediaKind, track: MediaStreamTrack | null };
-   local_voice_state_changed: { audioPaused: boolean; audioMuted: boolean; consumersMuted: boolean; streaming: boolean };
+   local_voice_state_changed: { audioPaused: boolean; audioMuted: boolean; consumersMuted: boolean; streaming: boolean, camera: boolean };
 };
 
 export type VoicePayload<Event extends keyof VoiceEvents | undefined = undefined> = Event extends undefined ? {
