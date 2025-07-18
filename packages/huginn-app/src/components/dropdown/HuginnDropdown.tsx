@@ -37,7 +37,7 @@ export default function HuginnDropdown(props: {
 	}, [props.forceSelected]);
 
 	useEffect(() => {
-		if (!selected) {
+		if (!selected || selected.value !== props.defaultValue?.value) {
 			setSelected(props.defaultValue);
 		}
 	}, [props.defaultValue]);
@@ -77,7 +77,7 @@ function ItemsWrapper(props: { className?: string; children?: ReactNode }) {
 			anchor="bottom"
 			transition
 			className={clsx(
-				"flex flex-col gap-y-0.5 rounded-lg bg-surface-alt p-1 outline outline-primary-800 transition [--anchor-gap:0.25rem] [--anchor-padding:1rem] data-closed:translate-y-5 data-closed:opacity-0",
+				"scroll-alternative2 !overflow-y-scroll flex flex-col gap-y-0.5 rounded-lg bg-surface-alt p-1 pr-0 outline outline-primary-800 transition [--anchor-gap:0.25rem] [--anchor-padding:1rem] data-closed:translate-y-5 data-closed:opacity-0",
 				props.className,
 			)}
 		>

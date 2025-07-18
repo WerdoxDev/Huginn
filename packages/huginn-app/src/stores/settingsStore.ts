@@ -11,6 +11,7 @@ export type AppSettings = {
    theme: ThemeType;
    inputDeviceId: string;
    outputDeviceId: string;
+   videoDeviceId: string;
    inputVolume: number;
    outputVolume: number;
    inputThreshold: number;
@@ -30,6 +31,7 @@ const initialStore = () =>
       theme: "pine green",
       inputDeviceId: "",
       outputDeviceId: "",
+      videoDeviceId: "",
       inputThreshold: -50,
       inputVolume: 100,
       outputVolume: 100,

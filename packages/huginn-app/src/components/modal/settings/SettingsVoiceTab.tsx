@@ -1,8 +1,10 @@
+import HuginnButton from "@components/button/HuginnButton";
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
+import HuginnTab from "@components/HuginnTab";
 import GenericLabel from "@components/input/GenericLabel";
 import RangeInput from "@components/input/RangeInput";
-import { Checkbox, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import { remap } from "@huginn/shared";
+import { Checkbox } from "@headlessui/react";
+import { clamp, remap } from "@huginn/shared";
 import { AudioLevelChecker } from "@lib/voice/audio-level-checker";
 import { VoiceInputDevice } from "@lib/voice/voice-input-device";
 import { useSettings } from "@stores/settingsStore";
@@ -16,15 +18,29 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
 
 	const inputDevices = useMemo(() => data?.filter((x) => x.kind === "audioinput"), [data]);
 	const outputDevices = useMemo(() => data?.filter((x) => x.kind === "audiooutput"), [data]);
+	const videoDevices = useMemo(() => data?.filter((x) => x.kind === "videoinput"), [data]);
+
+	const inputDeviceOptions = useMemo<DropdownItem[]>(() => inputDevices?.map((x) => ({ text: x.label, value: x.deviceId })) ?? [], [inputDevices]);
+	const outputDeviceOptions = useMemo<DropdownItem[]>(
+		() => outputDevices?.map((x) => ({ text: x.label, value: x.deviceId })) ?? [],
+		[outputDevices],
+	);
+	const videoDeviceOptions = useMemo<DropdownItem[]>(() => videoDevices?.map((x) => ({ text: x.label, value: x.deviceId })) ?? [], [videoDevices]);
+	// const selectedInputDevice
+
 	const audioLevel = useRef<AudioLevelChecker>(null);
 	const inputDevice = useRef<VoiceInputDevice>(null);
+	const videoRef = useRef<HTMLVideoElement>(null);
+	const videoStream = useRef<MediaStream>(null);
 	const _inputDb = useRef(0);
 
 	const [inputDb, setInputDb] = useState(0);
 
 	const [selectedInput, setSelectedInput] = useState<MediaDeviceInfo>();
 	const [selectedOutput, setSelectedOutput] = useState<MediaDeviceInfo>();
+	const [selectedVideo, setSelectedVideo] = useState<MediaDeviceInfo>();
 	const [noiseSuppression, setNoiseSuppression] = useState(settings.noiseSuppression);
+	const [isTestingVideo, setIsTestingVideo] = useState(false);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -67,12 +83,13 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
 	}, [settings.inputVolume]);
 
 	useEffect(() => {
-		if (!data || !inputDevices || !outputDevices) {
+		if (!data || !inputDevices || !outputDevices || !videoDevices) {
 			return;
 		}
 
 		setSelectedInput(inputDevices?.find((x) => x.deviceId === settings.inputDeviceId) ?? inputDevices[0]);
 		setSelectedOutput(outputDevices?.find((x) => x.deviceId === settings.outputDeviceId) ?? outputDevices[0]);
+		setSelectedVideo(videoDevices?.find((x) => x.deviceId === settings.videoDeviceId) ?? videoDevices[0]);
 	}, [data]);
 
 	useEffect(() => {
@@ -88,11 +105,28 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
 	}, [selectedOutput]);
 
 	useEffect(() => {
+		if (selectedOutput) {
+			props.onChange?.({ videoDeviceId: selectedVideo?.deviceId });
+
+			if (isTestingVideo) {
+				startVideoTest();
+			}
+		}
+	}, [selectedVideo]);
+
+	useEffect(() => {
 		props.onChange?.({ noiseSuppression: noiseSuppression });
 	}, [noiseSuppression]);
 
+	useEffect(() => {
+		return () => {
+			console.log("HI?");
+			stopVideoTest();
+		};
+	}, []);
+
 	function onAudioLevel(db: number) {
-		_inputDb.current = db;
+		_inputDb.current = clamp(db, -100, 100);
 	}
 
 	function onInputChange(value: DropdownItem) {
@@ -101,6 +135,10 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
 
 	function onOutputChange(value: DropdownItem) {
 		setSelectedOutput(outputDevices?.find((x) => x.deviceId === value.value));
+	}
+
+	function onVideoChange(value: DropdownItem) {
+		setSelectedVideo(videoDevices?.find((x) => x.deviceId === value.value));
 	}
 
 	function onInputVolumeChange(value: number) {
@@ -115,36 +153,70 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
 		props.onChange?.({ inputThreshold: value - 100 });
 	}
 
-	if (!selectedInput || !selectedOutput) {
+	function onTabChange(_index: number) {
+		stopVideoTest();
+	}
+
+	function stopVideoTest() {
+		if (videoRef.current) {
+			videoRef.current.srcObject = null;
+		}
+
+		if (videoStream.current) {
+			videoStream.current.getVideoTracks()[0].stop();
+		}
+
+		setIsTestingVideo(false);
+	}
+
+	async function startVideoTest() {
+		if (!selectedVideo || !videoRef.current) {
+			return;
+		}
+
+		setIsTestingVideo(true);
+		const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: selectedVideo.deviceId, frameRate: 60 } });
+		videoRef.current.srcObject = stream;
+		const video = stream.getVideoTracks()[0];
+		videoStream.current = stream;
+		video.onended = () => {
+			stopVideoTest();
+		};
+	}
+
+	if (!data || !selectedInput || !selectedOutput) {
 		return;
 	}
+	// if (!data) {
+	// 	return;
+	// }
 
 	return (
 		<div className="flex flex-col">
-			<TabGroup>
-				<TabList className="flex w-max items-center justify-center gap-x-1 rounded-lg bg-surface-alt p-1 text-text">
-					<Tab className="flex cursor-pointer items-center justify-center gap-x-2 rounded-md px-5 py-1 text-text/80 hover:bg-primary-900/20 data-selected:bg-primary-900 data-selected:text-white">
+			<HuginnTab onChange={onTabChange}>
+				<HuginnTab.TabList className="w-max" tabClassName="px-5 py-1">
+					<HuginnTab.Tab>
 						<IconMingcuteVolumeFill className="size-5" />
 						<div>Audio</div>
-					</Tab>
-					<Tab className="flex cursor-pointer items-center justify-center gap-x-2 rounded-md px-5 py-1 text-text/80 hover:bg-primary-900/20 data-selected:bg-primary-900 data-selected:text-white">
+					</HuginnTab.Tab>
+					<HuginnTab.Tab>
 						<IconMingcuteCamera2Fill className="size-5" />
 						<div>Video</div>
-					</Tab>
-				</TabList>
-				<TabPanels className="mt-5">
-					<TabPanel>
+					</HuginnTab.Tab>
+				</HuginnTab.TabList>
+				<HuginnTab.TabPanels className="mt-5">
+					<HuginnTab.TabPanel>
 						<div className="flex gap-x-5">
 							<HuginnDropdown
 								className="w-full max-w-xs"
 								onChange={onInputChange}
-								defaultValue={selectedInput ? { text: selectedInput?.label, value: selectedInput?.deviceId } : undefined}
+								defaultValue={inputDeviceOptions.find((x) => x.value === selectedInput?.deviceId)}
 							>
 								<HuginnDropdown.Label>Input Device</HuginnDropdown.Label>
 								<HuginnDropdown.List className="w-full">
-									<HuginnDropdown.ItemsWrapper className="scroll-alternative2 overflow-y-scroll! w-80 pr-0">
-										{inputDevices?.map((x) => (
-											<HuginnDropdown.Item key={x.deviceId} item={{ text: x.label, value: x.deviceId }} />
+									<HuginnDropdown.ItemsWrapper className="w-80">
+										{inputDeviceOptions?.map((x) => (
+											<HuginnDropdown.Item key={x.value} item={x} />
 										))}
 									</HuginnDropdown.ItemsWrapper>
 								</HuginnDropdown.List>
@@ -152,13 +224,13 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
 							<HuginnDropdown
 								className="w-full max-w-xs"
 								onChange={onOutputChange}
-								defaultValue={selectedOutput ? { text: selectedOutput?.label, value: selectedOutput?.deviceId } : undefined}
+								defaultValue={outputDeviceOptions.find((x) => x.value === selectedOutput?.deviceId)}
 							>
 								<HuginnDropdown.Label>Output Device</HuginnDropdown.Label>
 								<HuginnDropdown.List className="w-full">
-									<HuginnDropdown.ItemsWrapper className="scroll-alternative2 overflow-y-scroll! w-80 pr-0">
-										{outputDevices?.map((x) => (
-											<HuginnDropdown.Item key={x.deviceId} item={{ text: x.label, value: x.deviceId }} />
+									<HuginnDropdown.ItemsWrapper className="w-80">
+										{outputDeviceOptions?.map((x) => (
+											<HuginnDropdown.Item key={x.value} item={x} />
 										))}
 									</HuginnDropdown.ItemsWrapper>
 								</HuginnDropdown.List>
@@ -203,10 +275,34 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
 								<div className="text-text">Noise Suppression</div>
 							</Checkbox>
 						</div>
-					</TabPanel>
-					<TabPanel>HI </TabPanel>
-				</TabPanels>
-			</TabGroup>
+					</HuginnTab.TabPanel>
+					<HuginnTab.TabPanel className="flex flex-col gap-y-5">
+						<HuginnDropdown
+							className="w-full max-w-xs"
+							onChange={onVideoChange}
+							defaultValue={videoDeviceOptions.find((x) => x.value === selectedVideo?.deviceId)}
+						>
+							<HuginnDropdown.Label>Video Device</HuginnDropdown.Label>
+							<HuginnDropdown.List className="w-full">
+								<HuginnDropdown.ItemsWrapper className=" w-80">
+									{videoDeviceOptions?.map((x) => (
+										<HuginnDropdown.Item key={x.value} item={x} />
+									))}
+								</HuginnDropdown.ItemsWrapper>
+							</HuginnDropdown.List>
+						</HuginnDropdown>
+						<div className="relative flex aspect-video max-w-md items-center justify-center overflow-hidden rounded-lg bg-surface-deep shadow-lg">
+							{!isTestingVideo && (
+								<HuginnButton color="primary" className="absolute px-4 py-2" onClick={startVideoTest}>
+									Test Video
+								</HuginnButton>
+							)}
+
+							<video ref={videoRef} autoPlay playsInline muted className="w-full" />
+						</div>
+					</HuginnTab.TabPanel>
+				</HuginnTab.TabPanels>
+			</HuginnTab>
 		</div>
 	);
 }

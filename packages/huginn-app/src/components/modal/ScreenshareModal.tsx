@@ -3,6 +3,7 @@ import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import { ScreenshareModalButton } from "@components/button/ScreenshareModalButton";
 import DisplayPreview from "@components/DisplayPreview";
+import HuginnTab from "@components/HuginnTab";
 import LoadingIcon from "@components/LoadingIcon";
 import { Checkbox, DialogPanel, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { useClient } from "@stores/clientStore";
@@ -103,38 +104,41 @@ export default function ScreenshareModal() {
 						: "Choose a screen or a specific application to share with others"}
 				</div>
 				{!selectedSource ? (
-					<TabGroup className="">
-						<TabList className="mx-3 flex items-center justify-center gap-x-1 rounded-lg bg-surface-alt p-1 text-text">
-							<Tab className="flex w-full cursor-pointer items-center justify-center gap-x-2 rounded-md py-1 text-text/80 hover:bg-primary-900/20 data-selected:bg-primary-900  data-selected:text-white">
+					<HuginnTab>
+						<HuginnTab.TabList className="mx-3" tabClassName="w-full py-1">
+							<HuginnTab.Tab>
 								<IconMingcuteMonitorFill className="size-5" />
 								<div>Screens</div>
-							</Tab>
-							<Tab className="flex w-full cursor-pointer items-center justify-center gap-x-2 rounded-md py-1 text-text/80 hover:bg-primary-900/20 data-selected:bg-primary-900  data-selected:text-white">
+							</HuginnTab.Tab>
+							<HuginnTab.Tab>
 								<IconMingcuteWebFill className="size-5" />
 								<div>Applications</div>
-							</Tab>
-						</TabList>
-						<TabPanels className="scroll-alternative mt-3 h-80 overflow-x-hidden overflow-y-scroll px-5 py-1 pr-1.5">
+							</HuginnTab.Tab>
+						</HuginnTab.TabList>
+						<HuginnTab.TabPanels
+							className="scroll-alternative mt-3 h-80 overflow-x-hidden overflow-y-scroll px-5 py-1 pr-1.5"
+							panelClassName="grid grid-cols-2 gap-5"
+						>
 							{isLoading ? (
 								<div className="flex h-full w-full items-center justify-center">
 									<LoadingIcon className="size-16" />
 								</div>
 							) : (
 								<>
-									<TabPanel className="grid grid-cols-2 gap-5">
+									<HuginnTab.TabPanel>
 										{screens?.map((x) => (
 											<DisplayPreview key={x.id} source={x} onSelect={onSourceSelected} />
 										))}
-									</TabPanel>
-									<TabPanel className="grid grid-cols-2 gap-5">
+									</HuginnTab.TabPanel>
+									<HuginnTab.TabPanel>
 										{applications?.map((x) => (
 											<DisplayPreview key={x.id} source={x} onSelect={onSourceSelected} />
 										))}
-									</TabPanel>
+									</HuginnTab.TabPanel>
 								</>
 							)}
-						</TabPanels>
-					</TabGroup>
+						</HuginnTab.TabPanels>
+					</HuginnTab>
 				) : (
 					<div className="mx-5 mt-5 flex flex-col gap-y-4 rounded-lg border border-primary-700 p-5">
 						<div className="flex flex-col gap-y-1.5 text-text">
