@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.20.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.19.2...api@v0.20.0) (2025-07-18)
+
+
+### Features
+
+* **api:** add separate voice and camera streaming functions ([818312b](https://github.com/WerdoxDev/Huginn/commit/818312b8185cee8485a1b811bf7eb009078f3043))
+
 ## [0.19.2](https://github.com/WerdoxDev/Huginn/compare/api@v0.19.1...api@v0.19.2) (2025-07-16)
 
 
