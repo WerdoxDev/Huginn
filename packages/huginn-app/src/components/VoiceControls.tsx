@@ -14,6 +14,8 @@ export default function VoiceControls(props: {
 	onToggleDeafen: () => void;
 	onStream: () => void;
 	onEndStream: () => void;
+	onVideo: () => void;
+	onStopVideo: () => void;
 	onDisconnect: () => void;
 	onConnect: () => void;
 	onToggleFullscreen: () => Promise<void>;
@@ -57,38 +59,56 @@ export default function VoiceControls(props: {
 								<Tooltip.Content>Deafen</Tooltip.Content>
 							</Tooltip>
 							<div className="mx-0.5 my-1 w-0.5 shrink-0 bg-surface" />
-							<div className="flex">
+							<div className="flex gap-x-1">
+								<div className="flex">
+									<Tooltip>
+										<Tooltip.Trigger
+											className={clsx(
+												"flex h-full items-center justify-center rounded-lg text-white transition-colors",
+												voiceState.selfStream ? "!w-[38px] rounded-r-none bg-primary-900 hover:bg-primary-700" : "w-16 hover:bg-surface",
+											)}
+											onClick={() => (voiceState.selfStream ? props.onEndStream() : props.onStream())}
+										>
+											<IconMingcuteMonitorFill className="size-6" />
+										</Tooltip.Trigger>
+										<Tooltip.Content>{voiceState.selfStream ? "End Stream" : "Start Stream"}</Tooltip.Content>
+									</Tooltip>
+									{voiceState.selfStream && (
+										<DropdownMenu>
+											<DropdownMenu.Button className="ml-0.5 flex h-full items-center justify-center rounded-r-lg bg-primary-900 px-1 transition-colors hover:bg-primary-700">
+												{({ open }) =>
+													open ? (
+														<IconMingcuteUpFill className="size-4 text-text" />
+													) : (
+														<IconMingcuteDownFill className="size-4 text-text" />
+													)
+												}
+											</DropdownMenu.Button>
+											<DropdownMenu.Items anchor="top" className="border border-surface [--anchor-gap:16px]">
+												<DropdownMenu.Item
+													className="!text-negative-100 hover:!bg-negative-100/10"
+													label="End Stream"
+													onClick={props.onEndStream}
+												/>
+												<DropdownMenu.Item label="Change Stream" onClick={props.onStream}>
+													<IconMingcuteTransfer3Fill />
+												</DropdownMenu.Item>
+											</DropdownMenu.Items>
+										</DropdownMenu>
+									)}
+								</div>
 								<Tooltip>
 									<Tooltip.Trigger
 										className={clsx(
-											"flex h-full items-center justify-center rounded-lg text-white transition-colors",
-											voiceState.selfStream ? "!w-[38px] rounded-r-none bg-primary-900 hover:bg-primary-700" : "w-16 hover:bg-surface",
+											"flex h-full w-16 items-center justify-center rounded-lg text-white transition-colors",
+											voiceState.selfVideo ? "bg-primary-900 hover:bg-primary-700" : "hover:bg-surface",
 										)}
-										onClick={() => (voiceState.selfStream ? props.onEndStream() : props.onStream())}
+										onClick={() => (voiceState.selfVideo ? props.onStopVideo() : props.onVideo())}
 									>
-										<IconMingcuteMonitorFill className="size-6" />
+										<IconMingcuteCamera2Fill className="size-6" />
 									</Tooltip.Trigger>
-									<Tooltip.Content>{voiceState.selfStream ? "End Stream" : "Start Stream"}</Tooltip.Content>
+									<Tooltip.Content>{voiceState.selfVideo ? "Turn off camera" : "Turn on camera"}</Tooltip.Content>
 								</Tooltip>
-								{voiceState.selfStream && (
-									<DropdownMenu>
-										<DropdownMenu.Button className="ml-0.5 flex h-full items-center justify-center rounded-r-lg bg-primary-900 px-1 transition-colors hover:bg-primary-700">
-											{({ open }) =>
-												open ? <IconMingcuteUpFill className="size-4 text-text" /> : <IconMingcuteDownFill className="size-4 text-text" />
-											}
-										</DropdownMenu.Button>
-										<DropdownMenu.Items anchor="top" className="border border-surface [--anchor-gap:16px]">
-											<DropdownMenu.Item
-												className="!text-negative-100 hover:!bg-negative-100/10"
-												label="End Stream"
-												onClick={props.onEndStream}
-											/>
-											<DropdownMenu.Item label="Change Stream" onClick={props.onStream}>
-												<IconMingcuteTransfer3Fill />
-											</DropdownMenu.Item>
-										</DropdownMenu.Items>
-									</DropdownMenu>
-								)}
 							</div>
 						</div>
 						<Tooltip>

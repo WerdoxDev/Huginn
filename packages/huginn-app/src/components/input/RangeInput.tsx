@@ -23,12 +23,9 @@ export default function RangeInput(props: {
 
 	useEffect(() => {
 		if (lastPercentage.current !== percentage) {
-			console.log("CHANGE");
 			props.onChange?.(percentage);
 			lastPercentage.current = percentage;
 		}
-
-		console.log(lastPercentage.current, percentage);
 	}, [percentage]);
 
 	useEffect(() => {
@@ -111,7 +108,12 @@ export default function RangeInput(props: {
 	return (
 		<div className={clsx("w-full", props.className)} draggable={false}>
 			<div className="group relative flex h-8 cursor-pointer items-center" ref={rangeRef}>
-				<div className={clsx("absolute h-1 px-1 w-full overflow-hidden rounded-md bg-surface-alt transition-[height] group-hover:h-2", props.backgroundClassName)}>
+				<div
+					className={clsx(
+						"absolute h-1 w-full overflow-hidden rounded-md bg-surface-alt px-1 transition-[height] group-hover:h-2",
+						props.backgroundClassName,
+					)}
+				>
 					<div className={clsx("absolute left-0 h-full w-2 bg-primary-500", props.fillClassName)} />
 					<div className={clsx("relative top-0 left-0 h-full w-full bg-surface-alt", props.backgroundClassName)} ref={rangeTrackRef}>
 						<div

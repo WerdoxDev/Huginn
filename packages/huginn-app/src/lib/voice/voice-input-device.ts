@@ -19,7 +19,7 @@ export class VoiceInputDevice {
          autoGainControl: false,
       }
 
-      let newConstraints: MediaTrackConstraints | undefined;
+      // let newConstraints: MediaTrackConstraints | undefined;
 
       if (this.currentStream) {
          this.gainNode?.disconnect();
@@ -30,11 +30,11 @@ export class VoiceInputDevice {
          const track = this.currentStream.getAudioTracks()[0];
          track.stop();
 
-         newConstraints = Object.assign(track.getSettings(), { echoCancellation: noiseSuppression, noiseSuppression: noiseSuppression } as MediaTrackConstraints,);
+         // newConstraints = Object.assign(track.getSettings(), { deviceId: deviceId, echoCancellation: noiseSuppression, noiseSuppression: noiseSuppression } as MediaTrackConstraints,);
       }
 
       const newStream = await navigator.mediaDevices.getUserMedia({
-         audio: newConstraints ?? audioConstraints,
+         audio: audioConstraints,
       });
 
       this.currentStream = newStream;

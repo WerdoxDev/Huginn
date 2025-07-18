@@ -9,6 +9,7 @@ import { useLookup } from "@hooks/useLookup";
 import type { Snowflake, Unpacked } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
+import { useSettings } from "@stores/settingsStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore, voiceStore } from "@stores/voiceStore";
 import { useHuginnWindow } from "@stores/windowStore";
@@ -27,10 +28,11 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 
 	const client = useClient();
 	const { user } = useThisUser();
+	const settings = useSettings();
 
 	const thisVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channelId), [voiceStates, props.channelId, localVoiceState]);
 	const thisCallState = useMemo(() => callStates.find((x) => x.channelId === props.channelId), [callStates, props.channelId]);
-	const isGridView = useMemo(() => thisVoiceStates.some((x) => x.selfStream), [thisVoiceStates]);
+	const isGridView = useMemo(() => thisVoiceStates.some((x) => x.selfStream || x.selfVideo), [thisVoiceStates]);
 
 	const users = useUsers(Array.from(new Set([...(thisCallState?.ringing ?? []), ...thisVoiceStates.map((x) => x.userId)])));
 	const usersLookup = useLookup(users, (user) => user.id);
@@ -153,7 +155,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		);
 	}
 
-	async function stream() {
+	async function startStream() {
 		if (isFullscreen) {
 			toggleFullscreen();
 		}
@@ -164,6 +166,12 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		} else {
 			updateModals({ screenshare: { isOpen: true } });
 		}
+	}
+
+	async function startVideo() {
+		const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: settings.videoDeviceId, frameRate: 30 } });
+		const track = stream.getVideoTracks()[0];
+		await client.voice.startCamera(track);
 	}
 
 	async function connect() {
@@ -275,7 +283,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 							)
 							.map((x) => (
 								<VoiceVideo
-									key={`${x.userId}-video`}
+									key={`${x.userId}-${x.kind}`}
 									kind={x.kind}
 									user={usersLookup[x.userId]}
 									isMaximized={!!maximizedSource}
@@ -331,8 +339,10 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 				isInVoice={localVoiceState.channelId === props.channelId}
 				onConnect={connect}
 				onDisconnect={disconnect}
-				onStream={stream}
+				onStream={startStream}
 				onEndStream={() => client.voice.stopScreensharing()}
+				onVideo={startVideo}
+				onStopVideo={() => client.voice.stopCamera()}
 				onToggleDeafen={toggleDeafen}
 				onToggleFullscreen={toggleFullscreen}
 				onToggleMute={toggleMute}

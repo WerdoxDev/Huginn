@@ -252,7 +252,7 @@ export function initializeVoice() {
          }
       }
 
-      thisStore.updateLocalVoiceState(d.audioMuted, d.consumersMuted, d.streaming, false);
+      thisStore.updateLocalVoiceState(d.audioMuted, d.consumersMuted, d.streaming, d.camera);
    }));
 
    return () => {

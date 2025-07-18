@@ -173,8 +173,7 @@ video::-webkit-media-controls {
 }
 
 ::-webkit-scrollbar {
-	@apply w-4;
-	@apply h-4;
+	@apply w-4 h-4;
 }
 
 ::-webkit-scrollbar-track {
@@ -186,19 +185,19 @@ video::-webkit-media-controls {
 }
 
 .scroll-alternative::-webkit-scrollbar-track {
-	@apply bg-surface-alt/70 rounded-full border-4 border-transparent border-solid bg-clip-padding;
+	@apply bg-surface-alt/70;
 }
 
 .scroll-alternative::-webkit-scrollbar-thumb {
-	@apply bg-surface-deep rounded-full border-4 border-transparent border-solid bg-clip-padding;
+	@apply bg-surface-deep;
 }
 
 .scroll-alternative2::-webkit-scrollbar-track {
-	@apply bg-surface/70 rounded-full border-4 border-transparent border-solid bg-clip-padding;
+	@apply bg-surface/70;
 }
 
 .scroll-alternative2::-webkit-scrollbar-thumb {
-	@apply bg-surface-deep rounded-full border-4 border-transparent border-solid bg-clip-padding;
+	@apply bg-surface-deep;
 }
 
 input[type="range"] {

@@ -131,9 +131,10 @@ export class VoiceClient {
             store.updateSpeakingState(client.user.id, false);
          }
 
-         if (d.kind === "screen_video") {
+         if (d.kind === "screen_video" || d.kind === "camera") {
             const stream = new MediaStream([d.track]);
 
+            console.log("HI");
             store.addRemoteSource(client.user.id, undefined, d.producerId, d.kind, stream);
          }
       }));
@@ -292,9 +293,8 @@ export class VoiceClient {
 
       const otherStream = await this.inputDevice.getStream(microphoneDeviceId, microphoneVolume, noiseSuppression);
       const audioTrack = otherStream.getAudioTracks()[0];
-      const videoTrack = otherStream.getVideoTracks()[0];
 
-      await client.voice.startStreaming(undefined, audioTrack);
+      await client.voice.startMicrophone(audioTrack);
    }
 
    /**
