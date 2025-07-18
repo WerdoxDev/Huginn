@@ -147,36 +147,60 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       }, 2000);
    }
 
-   public async startStreaming(cameraTrack?: MediaStreamTrack, microphoneTrack?: MediaStreamTrack): Promise<void> {
+   public async startMicrophone(microphoneTrack: MediaStreamTrack): Promise<void> {
       if (!this.sendTransport || !this.client.user) {
          return;
       }
 
-      log("api:voice", "default", "start streaming");
+      log("api:voice", "default", "start microphone");
 
-      if (cameraTrack) {
-         await this.openProducer("camera", {
-            track: cameraTrack,
-            appData: { mediaKind: "camera", userId: this.client.user.id },
+      const microphoneProducer = this.producers.get("microphone");
+      if (microphoneProducer) {
+         microphoneProducer.replaceTrack({ track: microphoneTrack });
+      } else {
+         await this.openProducer("microphone", {
+            track: microphoneTrack,
+            appData: { mediaKind: "microphone", userId: this.client.user.id },
          });
       }
 
-      const microphoneProducer = this.producers.get("microphone");
-      if (microphoneTrack) {
-         if (microphoneProducer) {
-            microphoneProducer.replaceTrack({ track: microphoneTrack });
-         } else {
-            await this.openProducer("microphone", {
-               track: microphoneTrack,
-               appData: { mediaKind: "microphone", userId: this.client.user.id },
-            });
-         }
-
-         if (this.localVoiceState.audioMuted) {
-            this.producers.get("microphone")?.pause();
-         }
-         console.log(this.producers.get("microphone")?.paused);
+      // Mute the microphone producer immediately when local voice state is audio muted
+      if (this.localVoiceState.audioMuted) {
+         this.producers.get("microphone")?.pause();
       }
+   }
+
+   public async startCamera(cameraTrack: MediaStreamTrack): Promise<void> {
+      if (!this.sendTransport || !this.client.user) {
+         return;
+      }
+
+      log("api:voice", "default", "start camera");
+
+      await this.openProducer("camera", {
+         track: cameraTrack,
+         appData: { mediaKind: "camera", userId: this.client.user.id },
+      });
+
+      await this.client.gateway.updateVoiceState(this.localVoiceState.audioMuted, this.localVoiceState.consumersMuted, this.localVoiceState.streaming, true);
+   }
+
+   public async stopCamera(): Promise<void> {
+      if (!this.connectionInfo) {
+         return;
+      }
+
+      log("api:voice", "default", "stop camera");
+
+      const cameraProducer = this.producers.get("camera");
+
+      if (!cameraProducer) {
+         return;
+      }
+
+      this.closeProducer(cameraProducer.id);
+
+      await this.client.gateway.updateVoiceState(this.localVoiceState.audioMuted, this.localVoiceState.consumersMuted, this.localVoiceState.streaming, false);
    }
 
    public async startScreensharing(videoTrack: MediaStreamTrack, audioTrack?: MediaStreamTrack): Promise<void> {
@@ -332,7 +356,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          this.localVoiceState.camera = voiceState.camera;
       }
 
-      log("api:voice", "local-voice-state", "update", "am:", this.localVoiceState.audioMuted, "ap:", this.localVoiceState.audioPaused, "cm:", this.localVoiceState.consumersMuted, "s:", this.localVoiceState.streaming)
+      log("api:voice", "local-voice-state", "update", "am:", this.localVoiceState.audioMuted, "ap:", this.localVoiceState.audioPaused, "cm:", this.localVoiceState.consumersMuted, "s:", this.localVoiceState.streaming, "c:", this.localVoiceState.camera)
 
       this.emit("local_voice_state_changed", this.localVoiceState);
    }
