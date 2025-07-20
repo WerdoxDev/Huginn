@@ -318,7 +318,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
 
       const data: GatewayPayload = JSON.parse(e.data);
 
-      log("api:gateway", "recv-detail", "op:", data.op, "t:", "t" in data && data.t, "seq:", "s" in data && data.s, "d:", "d" in data && data.d)
+      log("api:gateway", "recv-detail", "op:", data.op, "t:", "t" in data && data.t, "seq:", "s" in data && data.s, "d:", "d" in data && JSON.stringify(data.d))
 
       switch (data.op) {
          case GatewayOperations.HELLO: {
@@ -412,7 +412,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
    }
 
    public send(data: unknown): void {
-      log("api:gateway", "send-detail", "d:", data);
+      log("api:gateway", "send-detail", "d:", JSON.stringify(data));
 
       this.emit("send", data as GatewayPayload);
       this.socket?.send(JSON.stringify(data));
