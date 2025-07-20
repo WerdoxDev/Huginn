@@ -6,7 +6,7 @@ import { useVoiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
 import { useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router";
-import Tooltip from "./tooltip/Tooltip";
+import Tooltip from "../tooltip/Tooltip";
 
 const statusTexts: Record<WebsocketStatus, string> = {
 	connected: "RTC Signalling...",

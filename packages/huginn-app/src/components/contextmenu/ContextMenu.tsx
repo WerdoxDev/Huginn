@@ -213,7 +213,10 @@ function Item(props: ContextMenuItemProps & React.ButtonHTMLAttributes<HTMLButto
 			type="button"
 			role="menuitem"
 			className={clsx(
-				"flex cursor-pointer items-center justify-between gap-x-5 text-nowrap rounded-sm px-2 py-1.5 text-start text-sm text-white/90 outline-hidden focus:bg-surface-alt",
+				"flex cursor-pointer items-center justify-between gap-x-5 text-nowrap rounded-sm px-2 py-1.5 text-start text-sm outline-hidden",
+				!props.color || props.color === "default"
+					? "text-white/90 focus:bg-surface-alt"
+					: props.color === "negative" && "text-negative-100 focus:bg-negative-100/10",
 				props.className,
 			)}
 			tabIndex={isActive ? 0 : -1}

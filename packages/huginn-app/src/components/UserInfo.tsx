@@ -50,7 +50,7 @@ export default function UserInfo(props: { user: APIUser }) {
 				<DropdownMenu.Items className="w-60 [--anchor-gap:8px]" anchor="top">
 					<DropdownMenu.Item
 						label="Logout"
-						className="!text-negative-100 hover:!bg-negative-100/10 py-2"
+						color="negative"
 						onClick={() => {
 							mutation.mutate();
 						}}
@@ -58,7 +58,7 @@ export default function UserInfo(props: { user: APIUser }) {
 						<IconMingcuteExitFill className="size-5" />
 					</DropdownMenu.Item>
 					<DropdownMenu.Divider />
-					<DropdownMenu.Item onClick={() => navigator.clipboard.writeText(props.user.id)} label="Copy User ID" className="py-2">
+					<DropdownMenu.Item onClick={() => navigator.clipboard.writeText(props.user.id)} label="Copy User ID">
 						<IconMingcuteIdcardFill className="size-5" />
 					</DropdownMenu.Item>
 				</DropdownMenu.Items>

@@ -41,7 +41,9 @@ const root = document.getElementById("root");
 // );
 
 enableLogs({
-	"api:voice": ["default", "send", "recv", "heartbeat", "local-voice-state"],
+	"api:voice": ["default", "send", "recv", "heartbeat"],
+	"app:voice-store": ["remote-sources"],
+	"app:voice-client": ["voice-recv"],
 	"api:gateway": ["default", "send", "recv"],
 	"api:client": ["ready-state"],
 	"app:client-store": ["default"],

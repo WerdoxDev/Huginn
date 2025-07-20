@@ -1,0 +1,77 @@
+import RangeInput from "@components/input/RangeInput";
+import { dispatchEvent } from "@lib/event-handler";
+import { useClient } from "@stores/clientStore";
+import { useContextMenu } from "@stores/contextMenuStore";
+import { useVoiceStore, voiceClient } from "@stores/voiceStore";
+import { useMemo } from "react";
+import ContextMenu from "./ContextMenu";
+
+export default function VoiceElementContextMenu() {
+	const { data } = useContextMenu("voice_element");
+	const client = useClient();
+	const { updateVoicePreferences, voicePreferences, remoteSources } = useVoiceStore();
+
+	const preference = useMemo(() => voicePreferences.find((x) => x.userId === data?.user.id), [voicePreferences]);
+
+	const hasAudio = useMemo(
+		() => data?.kind === "screen_video" && remoteSources.some((x) => x.kind === "screen_audio" && x.userId === data.user.id),
+		[remoteSources, data],
+	);
+
+	const isWatching = useMemo(() => remoteSources.some((x) => x.producerId === data?.producerId && data.consumerId), [data, remoteSources]);
+
+	function onChange(value: number) {
+		if (!data) {
+			return;
+		}
+
+		updateVoicePreferences(data.user.id, data.kind === "microphone" ? { microphoneVolume: value } : { screenshareVolume: value });
+		dispatchEvent("voice_preference_changed", { userId: data.user.id });
+	}
+
+	async function watch() {
+		if (!data) {
+			return;
+		}
+
+		if (client.voice.status === "authenticated") {
+			await voiceClient.watchStream(data.user.id);
+		} else {
+			await voiceClient.connectAndWatchStream(null, data?.channelId, data?.user.id);
+		}
+	}
+
+	if (!data || !preference) return;
+
+	return (
+		<>
+			{data.kind === "microphone" && (
+				<ContextMenu.Item
+					label="Volume"
+					className="!items-start focus:!bg-inherit mt-1 min-w-40 cursor-default flex-col gap-y-1 px-1"
+					preventClose
+				>
+					<RangeInput minValue={0} maxValue={200} defaultValue={preference?.microphoneVolume} onChange={onChange} />
+				</ContextMenu.Item>
+			)}
+			{data.kind === "screen_video" && (
+				<>
+					{isWatching ? (
+						<ContextMenu.Item label="Stop Watching" color="negative" onClick={() => voiceClient.unwatchStream(data.user.id)} />
+					) : (
+						<ContextMenu.Item label="Watch" onClick={watch} />
+					)}
+					{hasAudio && (
+						<ContextMenu.Item
+							label="Stream Volume"
+							className="!items-start focus:!bg-inherit mt-1 min-w-40 cursor-default flex-col gap-y-1 px-1"
+							preventClose
+						>
+							<RangeInput minValue={0} maxValue={200} defaultValue={preference?.screenshareVolume} onChange={onChange} />
+						</ContextMenu.Item>
+					)}
+				</>
+			)}
+		</>
+	);
+}

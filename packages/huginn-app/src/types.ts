@@ -187,6 +187,7 @@ export type ContextMenuItemProps = {
    label: string;
    disabled?: boolean;
    preventClose?: boolean;
+   color?: "default" | "negative"
 };
 
 export type DropdownMenuProps = {
@@ -203,7 +204,7 @@ export type DropdownMenuItemProps = {
 export type ContextMenuRelationship = { user: APIRelationUser; type: RelationshipType };
 export type ContextMenuDMChannel = AppDirectChannel;
 export type ContextMenuDMChannelRecipient = { channelId: Snowflake; recipient: APIChannelUser };
-export type ContextMenuVoiceUser = { user: APIPublicUser; producerId?: string; kind: HMediaKind };
+export type ContextMenuVoiceElement = { user: APIPublicUser; producerId?: string; consumerId?: string; kind: HMediaKind, channelId: Snowflake };
 
 export type MessageRenderInfo = {
    message: AppMessage;
@@ -289,7 +290,7 @@ export type RemoteSource = {
    consumerId?: string;
    producerId: string;
    kind: HMediaKind;
-   srcObject: MediaProvider;
+   srcObject?: MediaProvider;
    audioLevel?: AudioLevelChecker;
 }
 

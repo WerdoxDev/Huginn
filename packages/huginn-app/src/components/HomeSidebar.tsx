@@ -10,7 +10,7 @@ import AttentionIndicator from "./AttentionIndicator";
 import RingLinkButton from "./button/RingLinkButton";
 import DirectMessageChannel from "./DirectMessageChannel";
 import Tooltip from "./tooltip/Tooltip";
-import VoiceStatus from "./VoiceStatus";
+import VoiceStatus from "./voice/VoiceStatus";
 
 export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
 	const huginnWindow = useHuginnWindow();

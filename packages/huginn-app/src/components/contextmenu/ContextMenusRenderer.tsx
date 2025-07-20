@@ -4,7 +4,7 @@ import { useThisUser } from "@stores/userStore";
 import { lazy, useEffect, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import ContextMenu from "./ContextMenu";
-import VoiceUserContextMenu from "./VoiceUserContextMenu";
+import VoiceElementContextMenu from "./VoiceElementContextMenu";
 
 const ChannelsContextMenu = lazy(() => import("./ChannelsContextMenu"));
 const ChannelRecipientContextMenu = lazy(() => import("./ChannelRecipientContextMenu"));
@@ -19,16 +19,15 @@ export default function ContextMenusRenderer() {
 	const { context: dm_channel_recipient_context, close: dm_channel_recipient_close } = useContextMenu("dm_channel_recipient");
 	const { context: relationship_context, close: relationship_close } = useContextMenu("relationship");
 	const { context: relationship_more_context, close: relationship_more_close } = useContextMenu("relationship_more");
-	const { context: voice_user_context, close: voice_user_close } = useContextMenu("voice_user");
+	const { context: voice_element_context, close: voice_user_close } = useContextMenu("voice_element");
 
 	useEffect(() => {
 		const controller = new AbortController();
 
 		document.addEventListener(
 			"fullscreenchange",
-			(e) => {
+			(_e) => {
 				setParent(document.fullscreenElement as HTMLElement | null);
-				console.log(document.fullscreenElement);
 			},
 			{ signal: controller.signal },
 		);
@@ -70,10 +69,10 @@ export default function ContextMenusRenderer() {
 					/>
 
 					<ContextMenu
-						renderChildren={<VoiceUserContextMenu />}
+						renderChildren={<VoiceElementContextMenu />}
 						close={voice_user_close}
-						isOpen={voice_user_context?.isOpen}
-						position={voice_user_context?.position}
+						isOpen={voice_element_context?.isOpen}
+						position={voice_element_context?.position}
 						parent={parent}
 					/>
 				</>

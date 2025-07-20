@@ -82,13 +82,15 @@ const store = createStore(
             consumerId: string | undefined,
             producerId: string,
             kind: HMediaKind,
-            srcObject: MediaProvider,
+            srcObject?: MediaProvider,
             audioLevel?: AudioLevelChecker,
-         ) => set((state) => {
+         ) => {
             log("app:voice-store", "remote-sources", "add", "pid:", producerId, "cid:", consumerId, "uid:", userId, "mk:", kind)
 
-            return ({ remoteSources: [...state.remoteSources, { consumerId, kind, producerId, userId, srcObject, audioLevel }] })
-         }),
+            return set((state) =>
+               ({ remoteSources: [...state.remoteSources, { consumerId, kind, producerId, userId, srcObject, audioLevel }] })
+            )
+         },
          removeRemoteSource: (producerId: string) => {
             log("app:voice-store", "remote-sources", "remove", "pid:", producerId)
 
@@ -97,14 +99,18 @@ const store = createStore(
                ?.audioLevel?.offAll("audio-level");
             return set((state) => ({ remoteSources: state.remoteSources.filter((x) => x.producerId !== producerId) }));
          },
-         updateRemoteSource: (producerId: string, srcObject: MediaProvider) => {
+         updateRemoteSource: (producerId: string, options: { consumerId?: string | null, srcObject?: MediaProvider | null, audioLevel?: AudioLevelChecker | null }) => {
             log("app:voice-store", "remote-sources", "update", "pid:", producerId)
 
             return set(
                produce((draft: StoreType) => {
                   const existingIndex = draft.remoteSources.findIndex((x) => x.producerId === producerId);
                   if (existingIndex !== -1) {
-                     draft.remoteSources[existingIndex].srcObject = srcObject;
+                     const existing = draft.remoteSources[existingIndex];
+
+                     if ("srcObject" in options) existing.srcObject = options.srcObject ?? undefined;
+                     if ("audioLevel" in options) existing.audioLevel = options.audioLevel ?? undefined;
+                     if ("consumerId" in options) existing.consumerId = options.consumerId ?? undefined;
                   }
                }),
             )
@@ -163,7 +169,7 @@ const store = createStore(
                   }
                }),
             )
-         }
+         },
       })),
       { name: "Voice" },
    ),

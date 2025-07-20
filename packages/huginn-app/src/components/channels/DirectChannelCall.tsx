@@ -1,7 +1,5 @@
 import VoiceControls from "@components/VoiceControls";
-import VoicePreviewVideo from "@components/VoicePreviewVideo";
-import VoiceUser from "@components/VoiceUser";
-import VoiceVideo from "@components/VoiceVideo";
+import VoiceElement from "@components/voice/VoiceElement";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useFullscreen } from "@hooks/useFullscreen";
 import { useHover } from "@hooks/useHover";
@@ -11,7 +9,7 @@ import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useSettings } from "@stores/settingsStore";
 import { useThisUser } from "@stores/userStore";
-import { useVoiceStore, voiceStore } from "@stores/voiceStore";
+import { useVoiceStore, voiceClient, voiceStore } from "@stores/voiceStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { AnimatePresence } from "motion/react";
@@ -35,9 +33,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	const isGridView = useMemo(() => thisVoiceStates.some((x) => x.selfStream || x.selfVideo), [thisVoiceStates]);
 
 	const users = useUsers(Array.from(new Set([...(thisCallState?.ringing ?? []), ...thisVoiceStates.map((x) => x.userId)])));
-	const usersLookup = useLookup(users, (user) => user.id);
 	const usersSpeakingLookup = useLookup(speakingStates, (state) => state.userId);
-	const remoteSourcesLookup = useLookup(remoteSources, (source) => source.userId);
 	const isShown = useMemo(() => users.length !== 0 && thisCallState, [props.channelId, users]);
 
 	const [containerRef, showControls] = useHover<HTMLDivElement>([user, isShown]);
@@ -174,8 +170,12 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		await client.voice.startCamera(track);
 	}
 
-	async function connect() {
-		await client.gateway.connectVoice(null, props.channelId, { selfMute: localVoiceState.selfMute, selfDeaf: localVoiceState.selfDeaf });
+	async function watchStream(userId: Snowflake) {
+		if (client.voice.status === "authenticated") {
+			await voiceClient.watchStream(userId);
+		} else {
+			await voiceClient.connectAndWatchStream(null, props.channelId, userId);
+		}
 	}
 
 	function maximizeSource(producerId: string) {
@@ -184,7 +184,9 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 			setMaximizedSource(undefined);
 		} else {
 			maximizedSourceId.current = producerId;
-			const foundSource = remoteSources.find((x) => x.producerId === maximizedSourceId.current);
+			const foundSource = remoteSources.find(
+				(x) => x.producerId === maximizedSourceId.current && (x.kind === "screen_video" || x.kind === "camera"),
+			);
 			if (foundSource) {
 				setMaximizedSource(foundSource);
 			}
@@ -199,10 +201,16 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		const store = voiceStore.getState();
 		const numBoxes = maximizedSourceId.current
 			? 1
-			: store.voiceStates.length +
-				store.remoteSources.filter((x) => x.kind === "screen_video" || x.kind === "camera").length +
-				(thisCallState?.ringing.length ?? 0) +
-				(!localVoiceState.channelId ? thisVoiceStates.filter((x) => x.selfStream).length : 0);
+			: // People in voice
+				store.voiceStates.length +
+				// Streams
+				store.voiceStates.filter((x) => x.selfStream).length +
+				// Cameras
+				// store.voiceStates.filter((x) => x.selfVideo).length +
+				// People getting ringed
+				(thisCallState?.ringing.length ?? 0);
+		//
+
 		const containerWidth = gridRef.current.clientWidth;
 		const containerHeight = gridRef.current.clientHeight;
 		const boxMargin = !maximizedSourceId.current ? 12 : 0;
@@ -274,60 +282,73 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 				style={{ height: !isFullscreen ? gridHeight : "100%" }}
 			>
 				<AnimatePresence mode="popLayout">
+					{thisVoiceStates
+						.filter((x) => x.selfStream && !remoteSources.some((y) => y.userId === x.userId && y.kind === "screen_video"))
+						.map((x) => (
+							<VoiceElement
+								remoteSource={{ kind: "screen_video", producerId: "", userId: x.userId }}
+								key={`${x.userId}-screen_video`}
+								gridElementWidth={gridSize?.elementWidth ?? 0}
+								userId={x.userId}
+								channelId={props.channelId}
+								// onClick={maximizeSource}
+								onWatch={watchStream}
+								isResizing={isResizing}
+								isGridView={isGridView}
+								isMaximized={!!maximizedSource}
+								voiceState={x}
+							/>
+						))}
 					{isGridView &&
 						remoteSources
-							.filter(
-								(x) =>
-									!!usersLookup[x.userId] &&
-									(maximizedSource ? x.producerId === maximizedSource.producerId : x.kind === "screen_video" || x.kind === "camera"),
-							)
+							.filter((x) => x.kind === "screen_video" && (maximizedSource ? x.producerId === maximizedSource.producerId : true))
 							.map((x) => (
-								<VoiceVideo
+								<VoiceElement
 									key={`${x.userId}-${x.kind}`}
-									kind={x.kind}
-									user={usersLookup[x.userId]}
+									remoteSource={x}
+									userId={x.userId}
+									channelId={props.channelId}
 									isMaximized={!!maximizedSource}
 									onClick={maximizeSource}
-									consumerId={x.consumerId}
-									producerId={x.producerId}
+									onWatch={watchStream}
 									gridElementWidth={gridSize?.elementWidth ?? 0}
-									srcObject={x.srcObject}
 									isResizing={isResizing}
+									isGridView={isGridView}
 								/>
 							))}
-					{isGridView &&
-						!localVoiceState.channelId &&
-						thisVoiceStates
-							.filter((x) => x.selfStream)
-							.map((x) => (
-								<VoicePreviewVideo
-									key={`${x.userId}-video-preview`}
-									gridElementWidth={gridSize?.elementWidth ?? 0}
-									userId={x.userId}
-									onClick={connect}
-								/>
-							))}
+					{thisVoiceStates
+						.filter((x) =>
+							maximizedSource
+								? remoteSources.some((y) => y.userId === x.userId && y.kind === "camera" && maximizedSource.kind === "camera")
+								: true,
+						)
+						.map((x) => (
+							<VoiceElement
+								key={`${x.userId}-element`}
+								gridElementWidth={gridSize?.elementWidth ?? 0}
+								remoteSource={
+									remoteSources.find((y) => y.userId === x.userId && y.kind === "camera") ??
+									remoteSources.find((y) => y.userId === x.userId && y.kind === "microphone")
+								}
+								userId={x.userId}
+								channelId={props.channelId}
+								onClick={maximizeSource}
+								isResizing={isResizing}
+								isGridView={isGridView}
+								isSpeaking={usersSpeakingLookup[x.userId]?.speaking}
+								isMaximized={!!maximizedSource}
+								voiceState={x}
+							/>
+						))}
 					{!maximizedSource &&
 						thisCallState?.ringing.map((x) => (
-							<VoiceUser
+							<VoiceElement
 								key={x}
 								isRinging={true}
 								gridElementWidth={gridSize?.elementWidth ?? 0}
 								isGridView={isGridView}
-								user={usersLookup[x]}
-								isResizing={isResizing}
-							/>
-						))}
-					{!maximizedSource &&
-						thisVoiceStates.map((x) => (
-							<VoiceUser
-								key={x.userId}
-								gridElementWidth={gridSize?.elementWidth ?? 0}
-								isGridView={isGridView}
-								isSpeaking={usersSpeakingLookup[x.userId]?.speaking}
-								user={usersLookup[x.userId]}
-								voiceState={x}
-								producerId={remoteSourcesLookup[x.userId]?.producerId}
+								userId={x}
+								channelId={props.channelId}
 								isResizing={isResizing}
 							/>
 						))}
@@ -337,7 +358,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 				show={showControls}
 				isFullscreen={isFullscreen}
 				isInVoice={localVoiceState.channelId === props.channelId}
-				onConnect={connect}
+				onConnect={() => voiceClient.connect(null, props.channelId)}
 				onDisconnect={disconnect}
 				onStream={startStream}
 				onEndStream={() => client.voice.stopScreensharing()}

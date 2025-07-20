@@ -37,13 +37,16 @@ function Items(props: MenuItemsProps) {
 	);
 }
 
-function Item(props: MenuItemProps<"button"> & { label: string }) {
+function Item(props: MenuItemProps<"button"> & { label: string; color?: "default" | "negative" }) {
 	return (
 		<MenuItem
 			as={"button"}
 			{...props}
 			className={clsx(
-				"flex cursor-pointer items-center justify-between gap-x-5 text-nowrap rounded-sm px-2 py-1.5 text-start text-sm text-white/90 outline-hidden hover:bg-surface-alt",
+				"flex cursor-pointer items-center justify-between gap-x-5 text-nowrap rounded-sm px-2 py-1.5 text-start text-sm outline-hidden ",
+				!props.color || props.color === "default"
+					? "text-white/90 hover:bg-surface-alt"
+					: props.color === "negative" && "text-negative-100 hover:bg-negative-100/10",
 				props.className,
 			)}
 		>

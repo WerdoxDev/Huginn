@@ -15,11 +15,7 @@ export default function ChannelsContextMenu() {
 
 	return (
 		<>
-			<ContextMenu.Item
-				label={data.type === ChannelType.DM ? "Close DM" : "Leave Group"}
-				onClick={tryMutate}
-				className="text-negative-100! focus:bg-negative-100/10!"
-			/>
+			<ContextMenu.Item label={data.type === ChannelType.DM ? "Close DM" : "Leave Group"} onClick={tryMutate} color="negative" />
 			{data.type === ChannelType.GROUP_DM && (
 				<ContextMenu.Item label="Edit Channel" onClick={() => updateModals({ editGroup: { isOpen: true, channel: data } })}>
 					<IconMingcuteEdit2Fill />
