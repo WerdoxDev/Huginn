@@ -30,6 +30,10 @@ services:
       - caddy
     depends_on:
       - caddy
+    volumes:
+      - type: bind
+        source: /var/lib/huginn-logs
+        target: /src/packages/huginn-server/logs
     deploy:
       resources:
         limits:
