@@ -7,6 +7,7 @@ import {
    type MediasoupAppData,
    type ProducerData,
    type Snowflake,
+   type VoiceConsumerClosedData,
    type VoiceConsumerCreatedData, type VoiceEvents,
    type VoiceHeartbeat,
    type VoiceHelloData,
@@ -219,7 +220,6 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
 
       if (videoProducer) {
          await videoProducer.replaceTrack({ track: videoTrack });
-         // this.emit("local_producer_created", { kind: "screen_video", producerId: videoProducer.id, track: videoTrack });
       } else {
          await this.openProducer("screen_video", {
             track: videoTrack,
@@ -268,40 +268,26 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       await this.client.gateway.updateVoiceState(this.localVoiceState.audioMuted, this.localVoiceState.consumersMuted, false, this.localVoiceState.camera);
    }
 
-   private async openProducer(kind: HMediaKind, options: ProducerOptions<MediasoupAppData>) {
-      if (!this.sendTransport || !options.track) {
+   public consumeProducer(producerId: string): void {
+      if (!this.connectionInfo || !this.recvTransport || !this.device) {
          return;
       }
 
-      log("api:voice", "default", "open producer", "mk:", kind);
+      log("api:voice", "default", "consume producer", "pid:", producerId);
 
-      const producer = await this.sendTransport.produce<MediasoupAppData>(options);
-
-      const listener = (newTrack: MediaStreamTrack | null) => this.emit("local_producer_changed", { kind, producerId: producer.id, track: newTrack });
-      producer.on("@replacetrack", listener);
-      this.listeners.set(producer, listener);
-
-      this.producers.set(kind, producer);
-      this.emit("local_producer_created", { producerId: producer.id, kind: producer.appData.mediaKind, track: options.track });
-
-      return producer;
-   }
-
-   private closeProducer(producerId: string) {
-      if (!this.connectionInfo) {
-         return;
-      }
-
-      log("api:voice", "default", "close producer", "id:", producerId);
-
-      const closeProducerData: VoicePayload = {
+      const consumeData: VoicePayload = {
          op: VoiceOperations.DISPATCH,
-         t: "close_producer",
-         d: { channelId: this.connectionInfo.channelId, producerId: producerId },
+         t: "consume",
+         d: {
+            channelId: this.connectionInfo.channelId,
+            producerId: producerId,
+            rtpCapabilities: this.device.rtpCapabilities,
+            transportId: this.recvTransport.id,
+         },
       };
 
-      log("api:voice", "send", "close-producer", "id:", producerId);
-      this.send(closeProducerData);
+      log("api:voice", "send", "consume", "pid:", producerId);
+      this.send(consumeData);
    }
 
    public updateLocalVoiceState(voiceState: Partial<typeof this.localVoiceState>): void {
@@ -359,6 +345,59 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       log("api:voice", "local-voice-state", "update", "am:", this.localVoiceState.audioMuted, "ap:", this.localVoiceState.audioPaused, "cm:", this.localVoiceState.consumersMuted, "s:", this.localVoiceState.streaming, "c:", this.localVoiceState.camera)
 
       this.emit("local_voice_state_changed", this.localVoiceState);
+   }
+
+   public closeConsumer(consumerId: string): void {
+      if (!this.connectionInfo) {
+         return;
+      }
+
+      log("api:voice", "default", "close consumer", "id:", consumerId);
+
+      const closeConsumerData: VoicePayload = {
+         op: VoiceOperations.DISPATCH,
+         t: "close_consumer",
+         d: { channelId: this.connectionInfo.channelId, consumerId: consumerId }
+      }
+
+      log("api:voice", "send", "close-consumer", "id:", consumerId);
+      this.send(closeConsumerData);
+   }
+
+   private async openProducer(kind: HMediaKind, options: ProducerOptions<MediasoupAppData>) {
+      if (!this.sendTransport || !options.track) {
+         return;
+      }
+
+      log("api:voice", "default", "open producer", "mk:", kind);
+
+      const producer = await this.sendTransport.produce<MediasoupAppData>(options);
+
+      const listener = (newTrack: MediaStreamTrack | null) => this.emit("local_producer_changed", { kind, producerId: producer.id, track: newTrack });
+      producer.on("@replacetrack", listener);
+      this.listeners.set(producer, listener);
+
+      this.producers.set(kind, producer);
+      this.emit("local_producer_created", { producerId: producer.id, kind: producer.appData.mediaKind, track: options.track });
+
+      return producer;
+   }
+
+   private closeProducer(producerId: string) {
+      if (!this.connectionInfo) {
+         return;
+      }
+
+      log("api:voice", "default", "close producer", "id:", producerId);
+
+      const closeProducerData: VoicePayload = {
+         op: VoiceOperations.DISPATCH,
+         t: "close_producer",
+         d: { channelId: this.connectionInfo.channelId, producerId: producerId },
+      };
+
+      log("api:voice", "send", "close-producer", "id:", producerId);
+      this.send(closeProducerData);
    }
 
    private startListening() {
@@ -424,7 +463,6 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
                   break;
                case "new_producer":
                   log("api:voice", "recv", "new producer", "id:", data.d.producerId, "uid:", data.d.producerUserId);
-                  await this.handleNewProducer(data.d);
                   break;
                case "consumer_created":
                   log("api:voice", "recv", "consumer created", "cid:", data.d.consumerId, "pid:", data.d.producerId, "uid:", data.d.producerUserId);
@@ -440,6 +478,10 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
                case "producer_closed":
                   log("api:voice", "recv", "producer closed", "id:", data.d.producerId);
                   this.handleProducerClosed(data.d);
+                  break;
+               case "consumer_closed":
+                  log("api:voice", "recv", "consumer closed", "id:", data.d.consumerId);
+                  this.handleConsumerClosed(data.d);
                   break;
             }
 
@@ -495,26 +537,6 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
 
       log("api:voice", "send", "resume consumer", data.consumerId);
       this.send(resumeConsumerData);
-   }
-
-   private async handleNewProducer(data: VoiceNewProducerData) {
-      if (!this.connectionInfo || !this.device || !this.recvTransport) {
-         return;
-      }
-
-      const consumeData: VoicePayload = {
-         op: VoiceOperations.DISPATCH,
-         t: "consume",
-         d: {
-            channelId: this.connectionInfo.channelId,
-            producerId: data.producerId,
-            rtpCapabilities: this.device?.rtpCapabilities,
-            transportId: this.recvTransport.id,
-         },
-      };
-
-      log("api:voice", "send", "consume", "pid:", data.producerId);
-      this.send(consumeData);
    }
 
    private async handleTransportCreated(data: VoiceTransportCreatedData) {
@@ -582,11 +604,14 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
                callback();
             });
 
+            // Emit all initial producers as "new producers"
             if (this.initialProducers) {
                for (const producer of this.initialProducers) {
-                  await this.handleNewProducer(producer);
+                  this.emit("new_producer", producer);
                }
             }
+
+            this.emit("recv_transport_ready", { channelId: this.connectionInfo.channelId });
          }
       } catch (e) {
          error("api:voice", "Failed to setup transport", e);
@@ -610,8 +635,14 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          producer[1].close();
          this.producers.delete(producer[0]);
       }
+   }
 
-      this.emit("producer_closed", { producerId: data.producerId, userId: data.userId });
+   private handleConsumerClosed(data: VoiceConsumerClosedData) {
+      const consumer = this.consumers.get(data.consumerId);
+      if (consumer) {
+         consumer.close();
+         this.consumers.delete(data.consumerId);
+      }
    }
 
    private async handleReady(data: VoiceReadyData) {
