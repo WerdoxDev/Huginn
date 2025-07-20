@@ -11,11 +11,12 @@ import { useInputs } from "@hooks/useInputs";
 import { useOAuth } from "@hooks/useOAuth";
 import type { APIPostLoginJSONBody } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
+import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
 // import { usePostHog } from "posthog-js/react";
 
 export default function Login() {
-	// const posthog = usePostHog();
+	const posthog = usePostHog();
 	const client = useClient();
 	const initializeClient = useInitializeClient();
 	const startBackground = useStartBackground();
@@ -44,20 +45,11 @@ export default function Login() {
 				});
 			},
 			async onSuccess() {
-				// setHidden(true);
-
-				// startBackground.setState(1);
-				// await initializeClient(undefined, undefined, {
-				// 	pathname: "/",
-				// 	search: `?${new URLSearchParams({ redirect: "/channels/@me" }).toString()}`,
-				// });
-				// setHidden(true);
 				await initializeClient({
 					navigatePath: {
 						pathname: "/channels/@me",
 					},
 				});
-				// posthog?.capture("logged_in", null);
 			},
 		},
 		handleErrors,
@@ -68,6 +60,8 @@ export default function Login() {
 	}, []);
 
 	async function login() {
+		posthog.capture("login:login_button_click");
+
 		if (!validateValues()) {
 			return;
 		}

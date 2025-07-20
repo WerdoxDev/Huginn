@@ -3,7 +3,9 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router";
 import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
-import { enableLogs } from "@huginn/shared";
+import { enableLogs, type LogArgs, setOnLog } from "@huginn/shared";
+import { client } from "@stores/clientStore";
+import { PostHogProvider } from "posthog-js/react";
 import router from "./routes";
 
 const root = document.getElementById("root");
@@ -17,28 +19,6 @@ const root = document.getElementById("root");
 // 		client?.voice.socket?.close();
 // 	}
 // });
-// enableLogs(["api:gateway", "api:voice"], ["default", "default"]);
-// enableLogs(
-// 	["app:audio-level-checker", "app:audio-source-player", "app:voice-client", "app:voice-input-device", "app:voice-store", "api:voice"],
-// 	[
-// 		"local-voice-state",
-// 		"default",
-// 		"default",
-// 		"default",
-// 		"emitter-recv",
-// 		"voice-state",
-// 		"voice-recv",
-// 		"voice-preferences",
-// 		"speaking-state",
-// 		"remote-sources",
-// 		"gateway-recv",
-// 		"default",
-// 		"call-state",
-// 		"default",
-// 		"settings-sub",
-// 		"voice-recv",
-// 	],
-// );
 
 enableLogs({
 	"api:voice": ["default", "send", "recv", "heartbeat"],
@@ -48,6 +28,19 @@ enableLogs({
 	"api:client": ["ready-state"],
 	"app:client-store": ["default"],
 });
+
+const logs: Array<{ section: string; level: string; args: LogArgs[] }> = [];
+
+setOnLog(async (section, level, ...args) => {
+	logs.push({ section, level, args });
+});
+
+setInterval(async () => {
+	if (logs.length !== 0) {
+		await client?.log.sendLog(logs);
+		logs.splice(0, logs.length);
+	}
+}, 5000);
 
 export const queryClient = new QueryClient({
 	defaultOptions: {

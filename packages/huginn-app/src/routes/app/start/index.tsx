@@ -9,6 +9,7 @@ import { initializeClient, setHostnamesFromExternal, setHostnamesFromSettings, u
 import { useSettings } from "@stores/settingsStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
+import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useReducer } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
@@ -45,6 +46,7 @@ export default function Index() {
 	const settings = useSettings();
 	const [search] = useSearchParams();
 	const startBackground = useStartBackground();
+	const posthog = usePostHog();
 	const navigate = useNavigate();
 	const tryLogin = useTryLogin();
 
@@ -97,10 +99,13 @@ export default function Index() {
 		if (client?.gateway.status === "connected") {
 			await continueToLogin();
 		}
+
 		dispatch({ type: "SET", step: "connect", text: "Connecting..." });
 	}
 
 	function retry() {
+		posthog.capture("start:retry_button_click", { state: state.current });
+
 		if (state.current === "fetch_hostnames") {
 			setFetchHostnames();
 		} else if (state.current === "check_update") {

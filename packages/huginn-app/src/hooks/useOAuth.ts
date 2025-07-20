@@ -3,6 +3,7 @@ import { listenEvent } from "@lib/event-handler";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
+import { usePostHog } from "posthog-js/react";
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 
@@ -11,6 +12,7 @@ export function useOAuth() {
    const navigate = useNavigate();
    const huginnWindow = useHuginnWindow();
    const { updateModals } = useModals();
+   const posthog = usePostHog();
 
    const unlisten = useRef<() => void>(null);
    // let unlisten: () => void;
@@ -18,6 +20,8 @@ export function useOAuth() {
    // Websocket
 
    function startOAuth(type: OAuthType) {
+      posthog.capture("oauth:oauth_flow_start", { type: type });
+
       listenOAuth();
       const url = client.oauth.getOAuthURL(
          type,

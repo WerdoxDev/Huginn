@@ -1,5 +1,6 @@
 import ContextMenusRenderer from "@components/contextmenu/ContextMenusRenderer";
 import ModalsRenderer from "@components/modal/ModalsRenderer";
+import PHProvider from "@components/PHProvider";
 import StartBackgroundSvg from "@components/StartBackgroundSvg";
 import TitleBar from "@components/TitleBar";
 import { useStartBackground } from "@contexts/authBackgroundContext";
@@ -51,7 +52,10 @@ export default function AppLayout() {
 						style={isMainTransitioning ? { viewTransitionName: "start" } : undefined}
 					>
 						<StartBackgroundSvg state={authBackground.state} />
-						<Outlet />
+
+						<PHProvider>
+							<Outlet />
+						</PHProvider>
 					</div>
 				</MainRenderer>
 			</NotificationProvider>

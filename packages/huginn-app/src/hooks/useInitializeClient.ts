@@ -2,6 +2,7 @@
 import { error, log } from "@huginn/shared";
 import { useClient, useClientStore } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
+import { usePostHog } from "posthog-js/react";
 import { useCallback } from "react";
 import { type To, useNavigate } from "react-router";
 
@@ -9,6 +10,7 @@ export function useInitializeClient() {
    const client = useClient();
    const clientStore = useClientStore();
    const store = useThisUser();
+   const posthog = usePostHog();
    const navigate = useNavigate();
 
    const initialize = useCallback(async (options: { token?: string, refreshToken?: string, navigatePath?: To, onSuccessful?: () => Promise<void> | void }): Promise<{ status: boolean, retryable: boolean }> => {
@@ -33,11 +35,11 @@ export function useInitializeClient() {
             new Promise<undefined>((res) => setTimeout(() => res(undefined), 10000))
          ]);
 
-         log("app:client-store", "default", "authenticate", "r:", result);
+         log("app:client-store", "default", "authenticate", "a:", result?.authenticated, "r:", result?.retryable);
 
          // !result means it was timed out
          if (!result || !result.authenticated) {
-            log("app:client-store", "default", "initialize failed. timed out", "r:", result);
+            log("app:client-store", "default", "initialize failed. timed out", "a:", result?.authenticated, "r:", result?.retryable);
 
             // If !result then it was just timed out. Meaning it's retryable. Otherwise what ever authenticate() returns
             return { status: false, retryable: result?.retryable !== undefined ? result.retryable : true };
@@ -48,7 +50,7 @@ export function useInitializeClient() {
          localStorage.setItem("access-token", client.tokenHandler.token ?? "");
          localStorage.setItem("refresh-token", client.tokenHandler.refreshToken ?? "");
 
-         // posthog.identify(client.user?.id, { username: client.user?.username, displayName: client.user?.displayName, email: client.user?.email });
+         posthog.identify(client.user?.id, { username: client.user?.username, displayName: client.user?.displayName, email: client.user?.email });
 
          await options.onSuccessful?.();
 

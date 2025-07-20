@@ -4,6 +4,7 @@ import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
+import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router";
 import Tooltip from "../tooltip/Tooltip";
@@ -24,6 +25,7 @@ export default function VoiceStatus() {
 	const [status, setStatus] = useState<WebsocketStatus>(client.voice.status);
 	const channelName = useChannelName(voiceState.channelId ?? undefined);
 	const [rtt, setRtt] = useState(0);
+	const posthog = usePostHog();
 
 	const latencyColor = useMemo(() => {
 		const minPing = 100;
@@ -51,11 +53,11 @@ export default function VoiceStatus() {
 		return () => {
 			unlisten();
 			unlisten2();
-			// unlisten3();
 		};
 	}, []);
 
 	async function disconnect() {
+		posthog.capture("voice:status_disconnect_button_click");
 		await client.gateway.disconnectVoice();
 	}
 
@@ -73,7 +75,8 @@ export default function VoiceStatus() {
 								<IconMingcuteWifiOffLine
 									className={clsx(
 										"size-6",
-										(status === "connecting" || status === "reconnecting" || status === "connected") && "text-caution-100",
+										(status === "connecting" || status === "reconnecting" || status === "connected" || status === "none") &&
+											"text-caution-100",
 										status === "disconnected" && "text-negative-100",
 									)}
 								/>
@@ -87,7 +90,7 @@ export default function VoiceStatus() {
 						<div
 							className={clsx(
 								"font-bold text-sm transition-colors",
-								(status === "connecting" || status === "reconnecting" || status === "connected") && "!text-caution-100",
+								(status === "connecting" || status === "reconnecting" || status === "connected" || status === "none") && "!text-caution-100",
 								status === "disconnected" && "!text-negative-100",
 							)}
 							style={{ color: latencyColor }}

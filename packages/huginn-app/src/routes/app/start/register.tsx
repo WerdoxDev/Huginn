@@ -13,12 +13,13 @@ import { useOAuth } from "@hooks/useOAuth";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import type { APIPostRegisterJSONBody } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
+import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
 // import { usePostHog } from "posthog-js/react";
 
 export default function Register() {
 	const client = useClient();
-	// const posthog = usePostHog();
+	const posthog = usePostHog();
 	const startBackground = useStartBackground();
 	const initializeClient = useInitializeClient();
 	const startOAuth = useOAuth();
@@ -55,6 +56,8 @@ export default function Register() {
 	}, []);
 
 	async function register() {
+		posthog.capture("register:register_button_click");
+
 		if (!validateValues()) {
 			return;
 		}

@@ -8,7 +8,9 @@ import { useSafePathname } from "@hooks/useLastSafePathname";
 import { ChannelType } from "@huginn/shared";
 import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
 import { client, useClient } from "@stores/clientStore";
+import { voiceClient } from "@stores/voiceStore";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { usePostHog } from "posthog-js/react";
 import { useEffect, useState } from "react";
 import { type LoaderFunctionArgs, useParams } from "react-router";
 import { queryClient } from "@/main";
@@ -28,6 +30,7 @@ export default function ChannelWithId() {
 	const { error, data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client, channelId));
 	const channel = useSuspenseQuery(getChannelsOptions(client, "@me")).data?.find((x: { id: string }) => x.id === channelId);
 	const { navigateBack } = useSafePathname();
+	const posthog = usePostHog();
 
 	const handleServerError = useErrorHandler();
 
@@ -44,13 +47,25 @@ export default function ChannelWithId() {
 	}, [error]);
 
 	function onRecipientsClick() {
+		posthog.capture("channel:recipients_button_click");
 		setRecipientsVisible((prev) => !prev);
+	}
+
+	async function onCallClick() {
+		posthog.capture("channel:call_button_click");
+
+		if (!channel) {
+			return;
+		}
+
+		await voiceClient.connect(null, channel.id);
+		await client.channels.ring(channel.id, null);
 	}
 
 	return (
 		channel && (
 			<div className="flex h-full flex-col">
-				<HomeTopBar channel={channel} onRecipientsClick={onRecipientsClick} />
+				<HomeTopBar channel={channel} onRecipientsClick={onRecipientsClick} onCallClick={onCallClick} />
 				<div className="h-0.5 shrink-0 bg-white/10" />
 				<div className="flex h-full w-full overflow-hidden">
 					<div className="flex h-full w-full flex-col overflow-hidden">

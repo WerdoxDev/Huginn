@@ -9,6 +9,7 @@ import { client, useClient } from "@stores/clientStore";
 import { usePresences } from "@stores/presenceStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import clsx from "clsx";
+import { usePostHog } from "posthog-js/react";
 import { useMemo } from "react";
 import { Fragment } from "react/jsx-runtime";
 import { queryClient } from "@/main";
@@ -26,6 +27,7 @@ const tabs = ["Online", "All", "Pending"];
 export default function Friends() {
 	const client = useClient();
 	const { data: friends } = useSuspenseQuery(getRelationshipsOptions(client));
+	const posthog = usePostHog();
 
 	const allFriends = useMemo(() => friends?.filter((x) => x.type === RelationshipType.FRIEND), [friends]);
 	const { presences } = usePresences(allFriends?.map((x) => x.userId) ?? []);
@@ -34,9 +36,13 @@ export default function Friends() {
 		[allFriends, presences],
 	);
 
+	function onTabChange(index: number) {
+		posthog.capture(`friends:${tabs[index].toLowerCase()}_tab_view`);
+	}
+
 	return (
 		<div className="flex h-full flex-col">
-			<TabGroup as={Fragment} defaultIndex={friends.length === 0 ? 3 : 0}>
+			<TabGroup as={Fragment} defaultIndex={friends.length === 0 ? 3 : 0} onChange={onTabChange}>
 				<div className="flex h-19 shrink-0 items-center bg-surface-deep px-6">
 					<TabList className="mr-5 flex justify-center gap-x-5">
 						<div className="flex items-center justify-center gap-x-2.5 text-text">

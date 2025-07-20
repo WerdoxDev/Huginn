@@ -13,6 +13,7 @@ import { useVoiceStore, voiceClient, voiceStore } from "@stores/voiceStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { AnimatePresence } from "motion/react";
+import { usePostHog } from "posthog-js/react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 const minHeight = 250;
@@ -27,6 +28,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	const client = useClient();
 	const { user } = useThisUser();
 	const settings = useSettings();
+	const posthog = usePostHog();
 
 	const thisVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channelId), [voiceStates, props.channelId, localVoiceState]);
 	const thisCallState = useMemo(() => callStates.find((x) => x.channelId === props.channelId), [callStates, props.channelId]);
@@ -135,14 +137,19 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	}
 
 	function disconnect() {
+		posthog.capture("voice:disconnect_button_click");
 		client.gateway.disconnectVoice();
 	}
 
 	async function toggleMute() {
+		posthog.capture("voice:toggle_mute_button_click");
+
 		await client.gateway.updateVoiceState(!localVoiceState.selfMute, false, localVoiceState.selfStream, localVoiceState.selfVideo);
 	}
 
 	async function toggleDeafen() {
+		posthog.capture("voice:toggle_deafen_button_click");
+
 		await client.gateway.updateVoiceState(
 			!localVoiceState.selfDeaf,
 			!localVoiceState.selfDeaf,
@@ -152,6 +159,8 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	}
 
 	async function startStream() {
+		posthog.capture("voice:screen_share_button_click");
+
 		if (isFullscreen) {
 			toggleFullscreen();
 		}
@@ -165,6 +174,8 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	}
 
 	async function startVideo() {
+		posthog.capture("voice:video_button_click");
+
 		const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: settings.videoDeviceId, frameRate: 30 } });
 		const track = stream.getVideoTracks()[0];
 		await client.voice.startCamera(track);

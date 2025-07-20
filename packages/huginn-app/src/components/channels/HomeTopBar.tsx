@@ -10,18 +10,13 @@ import { useVoiceStore, voiceClient } from "@stores/voiceStore";
 import { useMemo } from "react";
 import type { AppDirectChannel } from "@/types";
 
-export default function HomeTopBar(props: { channel: AppDirectChannel; onRecipientsClick?: () => void }) {
+export default function HomeTopBar(props: { channel: AppDirectChannel; onRecipientsClick?: () => void; onCallClick?: () => void }) {
 	const { user } = useThisUser();
 	const client = useClient();
 	const recipients = useUsers(props.channel.recipientIds);
 	const name = useChannelName(props.channel.id);
 
 	const otherUsers = useMemo(() => recipients.filter((x) => x.id !== user?.id), [props.channel]);
-
-	async function startCall() {
-		await voiceClient.connect(null, props.channel.id);
-		await client.channels.ring(props.channel.id, null);
-	}
 
 	return (
 		<div className="flex h-19 shrink-0 items-center bg-surface-deep px-6">
@@ -37,7 +32,7 @@ export default function HomeTopBar(props: { channel: AppDirectChannel; onRecipie
 				</Tooltip>
 				<div className="ml-auto flex gap-x-5">
 					<Tooltip placement="top">
-						<Tooltip.Trigger className="text-text/80 hover:text-text" onClick={startCall}>
+						<Tooltip.Trigger className="text-text/80 hover:text-text" onClick={props.onCallClick}>
 							<IconMingcutePhoneCallFill className="size-6" />
 						</Tooltip.Trigger>
 						<Tooltip.Content>Start Call</Tooltip.Content>

@@ -17,6 +17,7 @@ import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
 import * as jose from "jose";
+import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
@@ -27,6 +28,7 @@ export default function OauthRedirect() {
 	const authBackground = useStartBackground();
 	const { updateModals } = useModals();
 	const initializeClient = useInitializeClient();
+	const posthog = usePostHog();
 	const history = useHistory();
 
 	const decodedToken = useMemo(
@@ -103,10 +105,13 @@ export default function OauthRedirect() {
 	}
 
 	async function abort() {
+		posthog.capture("oauth:abort_button_click");
 		await navigate(history.lastPathname ?? "/", { viewTransition: true });
 	}
 
 	async function confirm() {
+		posthog.capture("oauth:confirm_button_click");
+
 		await mutation.mutateAsync({
 			avatar: avatarData,
 			displayName: values.displayName.value,
