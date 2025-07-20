@@ -6,6 +6,7 @@ import {
    constants, convertToMediaKind,
    GatewayCode,
    idFix, type MediasoupAppData,
+   type VoiceCloseConsumerData,
    type VoiceCloseProducerData,
    type VoiceConnectTransportData,
    type VoiceConsumeData,
@@ -97,6 +98,9 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                   break;
                case "close_producer":
                   this.handleCloseProducer(session, data.d);
+                  break;
+               case "close_consumer":
+                  this.handleCloseConsumer(session, data.d);
                   break;
             }
             break;
@@ -307,13 +311,40 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       const producerClosedData: VoicePayload = {
          op: VoiceOperations.DISPATCH,
          t: "producer_closed",
-         d: { producerId: producer.id, userId: rtcPeer?.userId },
+         d: { producerId: producer.id, userId: rtcPeer.userId },
          s: session.getIncreasedSequence()
       };
 
       for (const [otherPeerId] of router.peers) {
          ws.publish(otherPeerId, JSON.stringify(producerClosedData));
       }
+   }
+
+   private handleCloseConsumer(session: ClientSession, data: VoiceCloseConsumerData) {
+      const router = routers.get(data.channelId);
+
+      if (!verifyPeer(router, session, data.channelId)) {
+         return;
+      }
+
+      const rtcPeer = router.peers.get(session.sessionId);
+      const consumer = rtcPeer?.consumers.get(data.consumerId)
+
+      if (!consumer || !rtcPeer) {
+         return;
+      }
+
+      consumer?.close();
+      rtcPeer.consumers.delete(consumer?.id);
+
+      const consumerClosedData: VoicePayload = {
+         op: VoiceOperations.DISPATCH,
+         t: "consumer_closed",
+         d: { consumerId: consumer.id, userId: rtcPeer.userId },
+         s: session.getIncreasedSequence()
+      }
+
+      this.send(session.peer, consumerClosedData);
    }
 
    private async handleIdentify(session: ClientSession, data: VoiceIdentifyData) {
