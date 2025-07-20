@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.24.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.23.1...shared@v0.24.0) (2025-07-20)
+
+
+### Features
+
+* **shared:** add close consumer types ([56b2f87](https://github.com/WerdoxDev/Huginn/commit/56b2f878fafb30645c20efa2bd71616fa057eb3e))
+* **shared:** add log route + event handlers for logger ([69dc33d](https://github.com/WerdoxDev/Huginn/commit/69dc33da323a72875100ef0ac575dda2e64c28d5))
+
 ## [0.23.1](https://github.com/WerdoxDev/Huginn/compare/shared@v0.23.0...shared@v0.23.1) (2025-07-16)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.24.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.23.3...server@v0.24.0) (2025-07-20)
+
+
+### Features
+
+* **server:** add log capturing route ([2187c39](https://github.com/WerdoxDev/Huginn/commit/2187c39e2f497353dec63f5caec3e974b8034611))
+
 ## [0.23.3](https://github.com/WerdoxDev/Huginn/compare/server@v0.23.2...server@v0.23.3) (2025-07-15)
 
 

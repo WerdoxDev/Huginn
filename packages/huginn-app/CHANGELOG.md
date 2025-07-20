@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.48.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.47.0...app@v0.48.0) (2025-07-20)
+
+
+### Features
+
+* **app:** add basic posthog event capturing (wip) ([a42d688](https://github.com/WerdoxDev/Huginn/commit/a42d688bd8873133d8131f704a0b2a82f0c763a8))
+* **app:** add screenshare watch/unwatch + much better voice element handling ([ac57890](https://github.com/WerdoxDev/Huginn/commit/ac57890fb17b7e226bc78c4bc4ef6238585180f7))
+
 ## [0.47.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.46.2...app@v0.47.0) (2025-07-18)
 
 
