@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.9.0...voice@v0.10.0) (2025-07-20)
+
+
+### Features
+
+* **voice:** add close consumer handling ([12ddb13](https://github.com/WerdoxDev/Huginn/commit/12ddb137baa58ae43464bb52f66ea16c87467964))
+
 ## [0.9.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.8.0...voice@v0.9.0) (2025-07-15)
 
 

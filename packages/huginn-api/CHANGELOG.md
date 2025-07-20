@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.21.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.20.0...api@v0.21.0) (2025-07-20)
+
+
+### Features
+
+* **api:** add close consumer handling ([0fc9ab3](https://github.com/WerdoxDev/Huginn/commit/0fc9ab35af11de145788ef019465a6b3ab951679))
+* **api:** add log sending ([cdaf64c](https://github.com/WerdoxDev/Huginn/commit/cdaf64c671c387818d6a10ea9998da968b2f7001))
+
 ## [0.20.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.19.2...api@v0.20.0) (2025-07-18)
 
 
