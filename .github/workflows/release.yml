@@ -40,6 +40,9 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     if: ${{needs.release-please.outputs.app_release_created == 'true'}}
+    env:
+      VITE_PUBLIC_POSTHOG_HOST: ${{secrets.VITE_PUBLIC_POSTHOG_HOST}}
+      VITE_PUBLIC_POSTHOG_KEY: ${{secrets.VITE_PUBLIC_POSTHOG_KEY}}
 
     steps:
       - uses: actions/checkout@v4
