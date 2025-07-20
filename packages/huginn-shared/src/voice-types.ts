@@ -77,10 +77,13 @@ export type VoiceEvents = {
    peer_left: VoicePeerLeftData,
    close_producer: VoiceCloseProducerData,
    producer_closed: VoiceProducerClosedData,
+   close_consumer: VoiceCloseConsumerData;
+   consumer_closed: VoiceConsumerClosedData;
    pong: { rtt: number };
 
    local_consumer_created: { consumerId: string; producerId: string; track: MediaStreamTrack; producerUserId: Snowflake; kind: HMediaKind };
    send_transport_ready: { channelId: Snowflake };
+   recv_transport_ready: { channelId: Snowflake };
    local_producer_created: { producerId: string; kind: HMediaKind; track: MediaStreamTrack };
    local_producer_changed: { producerId: string, kind: HMediaKind, track: MediaStreamTrack | null };
    local_voice_state_changed: { audioPaused: boolean; audioMuted: boolean; consumersMuted: boolean; streaming: boolean, camera: boolean };
@@ -129,7 +132,7 @@ export type HMediaKind = "microphone" | "screen_audio" | "screen_video" | "camer
 
 export type ProducerData = {
    producerId: string;
-   producerUserId: string;
+   producerUserId: Snowflake;
    kind: HMediaKind;
 };
 
@@ -204,7 +207,7 @@ export type VoiceTransportConnectedData = {
 };
 
 export type VoiceProduceData = {
-   channelId: string;
+   channelId: Snowflake;
    transportId: string;
    kind: HMediaKind;
    rtpParameters: RtpParameters;
@@ -241,13 +244,13 @@ export type VoiceConsumerResumedData = {
 };
 
 export type VoicePeerLeftData = {
-   sessionId: string;
+   sessionId: Snowflake;
    userId: Snowflake;
    producerIds: string[];
 };
 
 export type VoiceCloseProducerData = {
-   channelId: string;
+   channelId: Snowflake;
    producerId: string;
 };
 
@@ -255,3 +258,13 @@ export type VoiceProducerClosedData = {
    producerId: string;
    userId: string;
 };
+
+export type VoiceCloseConsumerData = {
+   channelId: Snowflake;
+   consumerId: string;
+}
+
+export type VoiceConsumerClosedData = {
+   consumerId: string;
+   userId: Snowflake;
+}
