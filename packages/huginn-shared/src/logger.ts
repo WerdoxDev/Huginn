@@ -4,14 +4,13 @@ type LogValuesMap = {
    "api:client": "ready-state";
    "app:client-store": "default";
    "app:voice-client": "default" | "voice-recv" | "emitter-recv" | "settings-sub";
-   "app:voice-store": "remote-sources" | "speaking-state" | "voice-preferences" | "voice-state" | "call-state" | "default" | "gateway-recv" | "voice-recv";
+   "app:voice-store": "remote-sources" | "speaking-state" | "voice-preferences" | "voice-state" | "call-state" | "default" | "gateway-recv" | "voice-recv" | "available-producers";
    "app:audio-source-player": "default";
    "app:audio-level-checker": "default";
    "app:voice-input-device": "default";
    "app:electron": "default" | "send" | "recv" | "updater" | "loopback-send" | "loopback";
    "server:gateway": "default" | "send" | "recv" | "heartbeat";
    "voice:websocket": "default" | "recv";
-   // "server:client-session": "default"|"subscriptions"|"heartbeat";
    "shared:websocket": "default" | "subscriptions";
    "shared:client-session": "default" | "subscriptions" | "heartbeat";
 };
@@ -19,10 +18,25 @@ type LogValuesMap = {
 // type Logs = typeof logs;
 type LogKeys = keyof LogValuesMap;
 type LogValuesFor<K extends LogKeys> = LogValuesMap[K];
+export type LogArgs = string | number | boolean | null | undefined | unknown;
 
 const enabledSections = new Map<LogKeys, Set<LogValuesMap[LogKeys]>>();
-// const enabledSections = new Set<string>();
-// const enabledLevels = new Set<string>();
+
+const levelStyles: Partial<Record<LogValuesFor<LogKeys> | "default", string>> = {
+   default: 'color: green',
+   // debug: 'color: white; background: #666; padding: 1px 6px; border-radius: 4px;',
+   // warn: 'color: black; background: #FFC107; padding: 1px 6px; border-radius: 4px;',
+};
+
+const sectionStyles: Partial<Record<LogKeys | "default" | "error", string>> = {
+   default: 'color: black; background: white; padding: 1px 6px; border-radius: 4px;',
+   error: 'color: white; background: #DC3545; padding: 1px 6px; border-radius: 4px;',
+   "api:gateway": 'color: white; background: #007BFF; padding: 1px 6px; border-radius: 4px;',
+   "api:voice": 'color: white; background: #029687; padding: 1px 6px; border-radius: 4px;',
+}
+
+let onLog: ((section: string, level: string, ...args: LogArgs[]) => void) | undefined;
+let onError: ((section: string, ...args: LogArgs[]) => void) | undefined;
 
 export function enableLogs<T extends Partial<{ [K in LogKeys]: LogValuesMap[K][] }>>(sections: T): void {
    for (const [section, levels] of Object.entries(sections) as [LogKeys, string[]][]) {
@@ -57,21 +71,15 @@ export function disableLogs<K extends LogKeys>(sections: Record<K, LogValuesFor<
    }
 }
 
-const levelStyles: Partial<Record<LogValuesFor<LogKeys> | "default", string>> = {
-   default: 'color: green',
-   // debug: 'color: white; background: #666; padding: 1px 6px; border-radius: 4px;',
-   // warn: 'color: black; background: #FFC107; padding: 1px 6px; border-radius: 4px;',
-};
-
-const sectionStyles: Partial<Record<LogKeys | "default" | "error", string>> = {
-   default: 'color: black; background: white; padding: 1px 6px; border-radius: 4px;',
-   error: 'color: white; background: #DC3545; padding: 1px 6px; border-radius: 4px;',
-   "api:gateway": 'color: white; background: #007BFF; padding: 1px 6px; border-radius: 4px;',
-   "api:voice": 'color: white; background: #029687; padding: 1px 6px; border-radius: 4px;',
+export function setOnLog(func: typeof onLog): void {
+   onLog = func;
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: any is used to be compliant with console.log
-export function log<K extends LogKeys>(section: K, level: LogValuesFor<K>, ...args: any[]): void {
+export function setOnError(func: typeof onError): void {
+   onError = func;
+}
+
+export function log<K extends LogKeys>(section: K, level: LogValuesFor<K>, ...args: LogArgs[]): void {
    const existingSections = enabledSections.get(section);
    if (!existingSections || !existingSections.has(level)) {
       return;
@@ -83,15 +91,18 @@ export function log<K extends LogKeys>(section: K, level: LogValuesFor<K>, ...ar
    const formatString = `%c${section}%c [${level}]`;
    const stylesString = [sectionStyle, levelStyle];
 
+   onLog?.(section, level, ...args);
+
    console.log(formatString, ...stylesString, ...args);
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: any is used to be compliant with console.log
-export function error(section: LogKeys, ...args: any[]): void {
+export function error(section: LogKeys, ...args: LogArgs[]): void {
    const levelStyle = levelStyles.default;
    const sectionStyle = sectionStyles[section] ?? sectionStyles.error;
 
    const formatString = `%c${section}%c [error]`;
+
+   onError?.(section, ...args)
 
    console.error(formatString, sectionStyle, levelStyle, ...args)
 }
