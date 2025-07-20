@@ -53,7 +53,6 @@ export default function VoiceElement(props: {
 	}
 
 	function onContextMenu(e: MouseEvent<HTMLDivElement>) {
-		console.log(props.remoteSource?.kind, props.userId === thisUser?.id, !user, !props.remoteSource);
 		if (props.userId === thisUser?.id || !user || !props.remoteSource) {
 			return;
 		}
@@ -104,7 +103,7 @@ export default function VoiceElement(props: {
 			className={clsx(
 				"group/element relative flex shrink-0 flex-col items-center justify-center gap-y-1 shadow-md transition-shadow hover:shadow-xl",
 				props.isGridView && "aspect-video overflow-hidden p-0",
-				props.isSpeaking && "ring-2 ring-positive-100",
+				props.isSpeaking && "!ring-2 !ring-positive-100",
 				props.isRinging ? "bg-surface/50" : "bg-surface",
 				!props.isMaximized && "ring-2 ring-surface",
 			)}
