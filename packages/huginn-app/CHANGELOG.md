@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.47.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.46.2...app@v0.47.0) (2025-07-18)
+
+
+### Features
+
+* **app:** add camera settings + camera preview + shared tab component ([0f0c04c](https://github.com/WerdoxDev/Huginn/commit/0f0c04c28d9eaba8bf7ac1e5767980aef41167ee))
+* **app:** add camera streaming feature ([48c2a76](https://github.com/WerdoxDev/Huginn/commit/48c2a7677736f3fbaa832bf4da2dfee35119df9d))
+
 ## [0.46.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.46.1...app@v0.46.2) (2025-07-16)
 
 
