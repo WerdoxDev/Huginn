@@ -98,6 +98,7 @@ export default function Index() {
 	async function setConnect() {
 		if (client?.gateway.status === "connected") {
 			await continueToLogin();
+			return;
 		}
 
 		dispatch({ type: "SET", step: "connect", text: "Connecting..." });
@@ -167,7 +168,7 @@ export default function Index() {
 
 	useEffect(() => {
 		let unlisten: () => void;
-		if (clientStore.isInitialized) {
+		if (state.current === "connect" && clientStore.isInitialized) {
 			unlisten = client.gateway.listen("status_changed", async (status) => {
 				if (status === "connected") {
 					await continueToLogin();
@@ -178,7 +179,7 @@ export default function Index() {
 		return () => {
 			unlisten?.();
 		};
-	}, [clientStore.isInitialized]);
+	}, [clientStore.isInitialized, state.current]);
 
 	return (
 		<StartWrapper transitionName="start-index" className="!w-auto !bg-transparent !p-0 !shadow-none">
