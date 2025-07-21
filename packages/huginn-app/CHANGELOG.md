@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.48.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.48.0...app@v0.48.1) (2025-07-21)
+
+
+### Bug Fixes
+
+* **app:** user speaking style is not applied correctly ([005b6be](https://github.com/WerdoxDev/Huginn/commit/005b6be4178dcec089b973251cab994dc812d2d4))
+
 ## [0.48.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.47.0...app@v0.48.0) (2025-07-20)
 
 
