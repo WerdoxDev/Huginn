@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.48.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.48.1...app@v0.48.2) (2025-07-21)
+
+
+### Bug Fixes
+
+* **app:** fix updating screen logic and event listeners for update/connect steps ([ccd5b5e](https://github.com/WerdoxDev/Huginn/commit/ccd5b5ebf3b12d9b93992ce5f94676e00c3c6201))
+
 ## [0.48.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.48.0...app@v0.48.1) (2025-07-21)
 
 
