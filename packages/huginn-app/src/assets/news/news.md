@@ -1,3 +1,3 @@
-### **Bug fixes**
+### What's new?
 
-- Fixed some bugs related to reconnecting
+- Fixed: Your speaking style now shows up correctly!
