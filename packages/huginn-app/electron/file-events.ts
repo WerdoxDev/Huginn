@@ -1,10 +1,10 @@
 import { access, constants, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { error, log } from "@huginn/shared";
 import { app, type BrowserWindow, ipcMain } from "electron";
-import pathe from "pathe";
 
 function getPath(name: string) {
-   return pathe.join(app.getPath("userData"), `${name}.json`);
+   return path.join(app.getPath("userData"), `${name}.json`);
 }
 
 export function listenToEvents(_mainWindow: BrowserWindow) {
