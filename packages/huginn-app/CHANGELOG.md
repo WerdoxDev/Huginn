@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.49.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.48.2...app@v0.49.0) (2025-07-22)
+
+
+### Features
+
+* **app:** make audio volume not linear ([f3de1dc](https://github.com/WerdoxDev/Huginn/commit/f3de1dc4573b47e417ff55bc585fa4c303c1485d))
+* **app:** voice preference saves now + much better file/localstorage handling ([efdbed4](https://github.com/WerdoxDev/Huginn/commit/efdbed415a8be2fa8c14217f66de8f78a0b2ad95))
+
 ## [0.48.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.48.1...app@v0.48.2) (2025-07-21)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.21.0...api@v0.21.1) (2025-07-22)
+
+
+### Bug Fixes
+
+* **api:** gateway is not reauthenticating when session is invalid ([54bdab2](https://github.com/WerdoxDev/Huginn/commit/54bdab29c615b51fd3fe323d65690f447fdde217))
+
 ## [0.21.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.20.0...api@v0.21.0) (2025-07-20)
 
 
