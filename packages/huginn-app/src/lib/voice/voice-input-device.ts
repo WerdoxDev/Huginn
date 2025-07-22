@@ -43,7 +43,7 @@ export class VoiceInputDevice {
       this.source = this.audioContext.createMediaStreamSource(this.currentStream);
 
       this.gainNode = this.audioContext.createGain();
-      this.gainNode.gain.value = volumePercentage / 100;
+      this.setGain(volumePercentage);
 
       this.source.connect(this.gainNode);
 

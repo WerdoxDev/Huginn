@@ -33,7 +33,6 @@ export function initializePresence() {
    }
 
    const unlisten = client.gateway.listen("ready", (d) => {
-      console.log("SET AGAIN", d.presences.length);
       store.setState({ presences: [] });
       store.getState().updatePresence({ user: d.user, status: clientStore.getState().readyData?.userSettings?.status || "offline" });
 

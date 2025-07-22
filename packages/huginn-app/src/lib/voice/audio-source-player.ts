@@ -10,13 +10,12 @@ export class AudioSourcePlayer {
    public userId: Snowflake;
    public kind: HMediaKind;
 
-   private globalGain: number;
+   private globalGain?: number;
    private localGain?: number;
 
-   public constructor(srcObject: MediaProvider, producerId: string, userId: Snowflake, kind: HMediaKind, globalGain: number) {
-      log("app:audio-source-player", "default", "initializing", "pid:", producerId, "uid:", userId, "mk:", kind, "gg:", globalGain)
+   public constructor(srcObject: MediaProvider, producerId: string, userId: Snowflake, kind: HMediaKind, globalGainPercent: number) {
+      log("app:audio-source-player", "default", "initializing", "pid:", producerId, "uid:", userId, "mk:", kind, "ggp:", globalGainPercent)
 
-      this.globalGain = globalGain;
       this.producerId = producerId;
       this.userId = userId;
       this.kind = kind;
@@ -28,6 +27,8 @@ export class AudioSourcePlayer {
 
       this.audioContext = new AudioContext({ sinkId: settingsStore.getState().local.outputDeviceId });
       this.gainNode = this.audioContext.createGain();
+
+      this.setGain(globalGainPercent, undefined);
 
       this.audioElement.addEventListener(
          "loadedmetadata",
@@ -54,21 +55,27 @@ export class AudioSourcePlayer {
       this.audioElement.srcObject = null;
    }
 
-   public setGain(globalGain: number | undefined, localGain: number | undefined) {
-      log("app:audio-source-player", "default", "set gain", "gg:", globalGain, "lg:", localGain)
+   public setGain(globalGainPercent: number | undefined, localGainPercent: number | undefined) {
+      log("app:audio-source-player", "default", "set gain", "gg:", globalGainPercent, "lg:", localGainPercent)
 
-      if (globalGain) {
-         this.globalGain = globalGain;
+      if (globalGainPercent) {
+         this.globalGain = (globalGainPercent / 100) ** 2.3219;
       }
-      if (localGain !== undefined) {
-         this.localGain = localGain;
+      if (localGainPercent !== undefined) {
+         this.localGain = (localGainPercent / 100) ** 2.3219;
       }
 
       if (this.localGain === undefined) {
-         this.localGain = 100;
+         this.localGain = 1;
       }
 
-      this.gainNode.gain.value = (this.globalGain / 100) * (this.localGain / 100);
+      if (this.globalGain === undefined) {
+         this.globalGain = 1;
+      }
+
+      this.gainNode.gain.value = (this.globalGain) * (this.localGain);
+
+      console.log(this.gainNode.gain.value, this.globalGain, this.localGain)
    }
 
    public setSinkId(deviceId: string) {
