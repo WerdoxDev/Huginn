@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.49.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.49.0...app@v0.49.1) (2025-07-22)
+
+
+### Bug Fixes
+
+* **app:** pathe is used instead of path ([e88a07b](https://github.com/WerdoxDev/Huginn/commit/e88a07b09d94b78b81ef0043c08778c96ce764d1))
+
 ## [0.49.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.48.2...app@v0.49.0) (2025-07-22)
 
 
