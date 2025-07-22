@@ -93,10 +93,8 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
          this.connect();
 
          if (this.client.user) {
-            await this.waitForEvents(["hello"]);
-
             // Only authenticate if session was closed (can't resume) and it was previously authenticated
-            if (!this.sessionId) {
+            if (this.sessionId === undefined) {
                await this.authenticate();
             }
 
@@ -110,10 +108,6 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
                await this.connectVoice(this.client.voice.connectionInfo.guildId, this.client.voice.connectionInfo.channelId, { selfDeaf: this.client.voice.localVoiceState.consumersMuted, selfMute: this.client.voice.localVoiceState.audioMuted });
             }
          }
-
-         if (this.client.user) {
-
-         }
       }, 2000);
    }
 
@@ -126,7 +120,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
       }
 
       // Socket is opened or is opening after a disconnect, but haven't gotten "hello" yet
-      if (this.status === "connecting" || this.status === "disconnected") {
+      if (this.status === "connecting" || this.status === "disconnected" || this.status === "reconnecting") {
          await this.waitForEvents(["hello"]);
          this.sendIdentify();
       }
