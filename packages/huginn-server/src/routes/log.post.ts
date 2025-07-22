@@ -20,8 +20,9 @@ createRoute("POST", "/api/log", validator("json", schema), async (c) => {
    const dateDir = `${year}-${month}-${day}`;
    const logDir = pathe.resolve(import.meta.dir, "..", "..", "logs", payload?.id || "anonymous", dateDir);
    const logFile = pathe.join(logDir, `${hour}.txt`);
+   const formatted = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false })
 
-   const logLines = `${body.logs.map(x => `(${x.section}) [${x.level}] ${x.args.join(" ")}`).join("\n")}\n`;
+   const logLines = `${formatted}\n ${body.logs.map(x => `(${x.section}) [${x.level}] ${x.args.join(" ")}`).join("\n")}\n`;
 
    await mkdir(logDir, { recursive: true });
    await appendFile(logFile, logLines);
