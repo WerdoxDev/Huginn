@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.24.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.24.0...server@v0.24.1) (2025-07-22)
+
+
+### Bug Fixes
+
+* **server:** add time to log ([e1bca9f](https://github.com/WerdoxDev/Huginn/commit/e1bca9f9d1dd643eb0b93a156dc261fa817f56be))
+
 ## [0.24.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.23.3...server@v0.24.0) (2025-07-20)
 
 
