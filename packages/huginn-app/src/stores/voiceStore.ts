@@ -1,4 +1,6 @@
 import { type GatewayCallState, type GatewayVoiceState, type HMediaKind, log, type Snowflake } from "@huginn/shared";
+import { dispatchEvent } from "@lib/event-handler";
+import { loadFile, saveFile } from "@lib/file-manager";
 import type { AudioLevelChecker } from "@lib/voice/audio-level-checker";
 import { VoiceClient } from "@lib/voice/voice-client";
 import { client } from "@stores/clientStore";
@@ -151,7 +153,7 @@ const store = createStore(
          updateVoicePreferences: (userId: Snowflake, update: { microphoneVolume?: number; screenshareVolume?: number }) => {
             log("app:voice-store", "voice-preferences", "update", "uid:", userId, "mvol:", update.microphoneVolume, "svol:", update.screenshareVolume)
 
-            return set(
+            set(
                produce((draft: StoreType) => {
                   const existingIndex = draft.voicePreferences.findIndex((x) => x.userId === userId);
                   if (existingIndex !== -1) {
@@ -169,7 +171,12 @@ const store = createStore(
                   }
                }),
             )
+
+            dispatchEvent("voice_preference_changed", { userId: userId });
          },
+         saveVoicePreferences: async () => {
+            saveFile("voice-preferences", get().voicePreferences);
+         }
       })),
       { name: "Voice" },
    ),
@@ -186,14 +193,17 @@ export function initializeVoice() {
       return;
    }
 
-   unlisteners.push(client.gateway.listen("ready", (d) => {
+   unlisteners.push(client.gateway.listen("ready", async (d) => {
       log("app:voice-store", "gateway-recv", "ready");
 
       store.setState({ voiceStates: d.voiceStates });
       store.setState({ callStates: d.callStates });
 
       // TODO: Read each user's voice preference from local storage
-      store.setState({ voicePreferences: d.voiceStates.map((x) => ({ userId: x.userId, microphoneVolume: 100, screenshareVolume: 100 })) });
+
+      const preferences = await loadFile("voice-preferences", []);
+      const finalPreferences = d.voiceStates.map((x) => preferences.find(y => y.userId === x.userId) ?? ({ userId: x.userId, microphoneVolume: 100, screenshareVolume: 100 }));
+      store.setState({ voicePreferences: finalPreferences })
    }));
 
    unlisteners.push(client.gateway.listen("call_create", (d) => {

@@ -1,4 +1,3 @@
-import { access, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { enableLogs, error, log } from "@huginn/shared";
 import { getActiveWindowProcessIds, setExecutablesRoot, startAudioCapture, stopAudioCapture } from "application-loopback";
@@ -6,6 +5,7 @@ import { app, BrowserWindow, desktopCapturer, ipcMain, Menu, Notification, sessi
 import electronLog from "electron-log/main";
 import { autoUpdater, CancellationToken } from "electron-updater";
 import type { DisplaySource } from "@/types";
+import * as fileEvents from "./file-events";
 
 // application-loopback executable path when packaged
 if (app.isPackaged) {
@@ -67,7 +67,7 @@ function createWindow() {
    // Open the DevTools.
    // mainWindow.webContents.openDevTools({ mode: "undocked"});
 
-   eventListeners(mainWindow);
+   listenToEvents(mainWindow);
    configureTray(mainWindow);
 }
 
@@ -176,8 +176,10 @@ function configureTray(mainWindow: BrowserWindow) {
 
 let selectedSourceId: string;
 
-function eventListeners(mainWindow: BrowserWindow) {
+function listenToEvents(mainWindow: BrowserWindow) {
    log("app:electron", "default", "listen to events");
+
+   fileEvents.listenToEvents(mainWindow);
 
    session.defaultSession.setDisplayMediaRequestHandler(async (request, callback) => {
       const sources = await desktopCapturer.getSources({
@@ -366,43 +368,6 @@ function eventListeners(mainWindow: BrowserWindow) {
       notification.show();
    });
 
-   const settingsPath = path.join(app.getPath("userData"), "settings.json");
-   ipcMain.handle("settings:load", async () => {
-      log("app:electron", "recv", "settings load");
-
-      try {
-         const fileContent = await readFile(settingsPath, { encoding: "utf-8" });
-         return JSON.parse(fileContent);
-      } catch (e) {
-         error("app:electron", "Error reading settings file: ", e)
-         return {};
-      }
-   });
-
-   ipcMain.handle("settings:save", async (_, settings: string) => {
-      log("app:electron", "recv", "settings save");
-
-      try {
-         await writeFile(settingsPath, JSON.stringify(JSON.parse(settings), null, 2));
-      } catch (e) {
-         error("app:electron", "Error writing settings file: ", e)
-      }
-   });
-
-   ipcMain.handle("settings:try-save-default", async (_, settings: string) => {
-      log("app:electron", "recv", "settings try save default");
-
-      try {
-         if (await fileExists(settingsPath)) {
-            return;
-         }
-
-         await writeFile(settingsPath, JSON.stringify(JSON.parse(settings), null, 2));
-      } catch (e) {
-         error("app:electron", "Error writing settings file: ", e)
-      }
-   });
-
    ipcMain.handle("window:get-display-sources", async () => {
       log("app:electron", "recv", "window get display sources");
 
@@ -448,13 +413,4 @@ function eventListeners(mainWindow: BrowserWindow) {
          stopAudioCapture(processId);
       }
    })
-}
-
-async function fileExists(path: string) {
-   try {
-      await access(path);
-      return true;
-   } catch (_e) {
-      return false;
-   }
 }

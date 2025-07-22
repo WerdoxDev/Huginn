@@ -26,7 +26,7 @@ export class AudioSourcePlayer {
       this.audioElement.autoplay = false;
       this.audioElement.srcObject = srcObject;
 
-      this.audioContext = new AudioContext({ sinkId: settingsStore.getState().outputDeviceId });
+      this.audioContext = new AudioContext({ sinkId: settingsStore.getState().local.outputDeviceId });
       this.gainNode = this.audioContext.createGain();
 
       this.audioElement.addEventListener(

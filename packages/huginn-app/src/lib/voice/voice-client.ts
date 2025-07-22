@@ -38,10 +38,10 @@ export class VoiceClient {
          const settings = settingsStore.getState();
 
          // Initialize audio level checking with a dummy stream to avoid causing an infinite mute on the actual "send" mic stream
-         const { audioLevel, stream: micStream } = await this.initLocalAudioLevel(settings.inputDeviceId, settings.inputVolume, settings.noiseSuppression);
+         const { audioLevel, stream: micStream } = await this.initLocalAudioLevel(settings.local.inputDeviceId, settings.local.inputVolume, settings.local.noiseSuppression);
 
          // Initialize the actual audio sending stream
-         await this.initMicrophone(settings.inputDeviceId, settings.inputVolume, settings.noiseSuppression);
+         await this.initMicrophone(settings.local.inputDeviceId, settings.local.inputVolume, settings.local.noiseSuppression);
 
          // Add local microphone remote source
          const producer = client.voice.producers.get("microphone");
@@ -74,7 +74,7 @@ export class VoiceClient {
 
          // Initialize remote audio source players (updatedVoice is because getState only returns an snapshot and doesn't change)
          const updatedVoice = voiceStore.getState();
-         this.initRemoteAudioSourcePlayers(updatedVoice.remoteSources, updatedVoice.voicePreferences, settings.outputVolume);
+         this.initRemoteAudioSourcePlayers(updatedVoice.remoteSources, updatedVoice.voicePreferences, settings.local.outputVolume);
       }));
 
       unlisteners.push(client.voice.listen("new_producer", (d) => {
@@ -197,30 +197,32 @@ export class VoiceClient {
          }
       }));
 
-      unlisteners.push(settingsStore.subscribe(async (s, old) => {
+      unlisteners.push(settingsStore.subscribe(async (s, o) => {
          log("app:voice-client", "settings-sub", "settings changed");
 
-         if (s.outputVolume !== old.outputVolume) {
+         const current = s.local;
+         const old = o.local;
+         if (current.outputVolume !== old.outputVolume) {
             for (const player of this.audioSourcePlayers) {
-               player.setGain(s.outputVolume, undefined);
+               player.setGain(current.outputVolume, undefined);
             }
          }
 
-         if (s.inputVolume !== old.inputVolume) {
-            this.inputDevice?.setGain(s.inputVolume);
-            this.dummyInputDevice?.setGain(s.inputVolume);
+         if (current.inputVolume !== old.inputVolume) {
+            this.inputDevice?.setGain(current.inputVolume);
+            this.dummyInputDevice?.setGain(current.inputVolume);
          }
 
          // Start streaming with new input id
-         if (s.inputDeviceId !== old.inputDeviceId || s.noiseSuppression !== old.noiseSuppression) {
-            await this.initMicrophone(s.inputDeviceId, s.inputVolume, s.noiseSuppression);
-            await this.initLocalAudioLevel(s.inputDeviceId, s.inputVolume, s.noiseSuppression);
+         if (current.inputDeviceId !== old.inputDeviceId || current.noiseSuppression !== old.noiseSuppression) {
+            await this.initMicrophone(current.inputDeviceId, current.inputVolume, current.noiseSuppression);
+            await this.initLocalAudioLevel(current.inputDeviceId, current.inputVolume, current.noiseSuppression);
          }
 
          // Change all remote source's output device id
-         if (s.outputDeviceId !== old.outputDeviceId) {
+         if (current.outputDeviceId !== old.outputDeviceId) {
             for (const player of this.audioSourcePlayers) {
-               player.setSinkId(s.outputDeviceId);
+               player.setSinkId(current.outputDeviceId);
             }
          }
       }));
@@ -255,7 +257,7 @@ export class VoiceClient {
          const settings = settingsStore.getState();
 
          const userId = client?.user?.id ?? "";
-         if (db > settings.inputThreshold) {
+         if (db > settings.local.inputThreshold) {
             const voice = voiceStore.getState();
 
             lastState = true;
@@ -281,7 +283,7 @@ export class VoiceClient {
                   voice.updateSpeakingState(userId, true);
                }
             }
-         } else if (db <= settings.inputThreshold - tolerance) {
+         } else if (db <= settings.local.inputThreshold - tolerance) {
             lastState = false;
          }
       }

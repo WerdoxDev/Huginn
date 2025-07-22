@@ -24,7 +24,7 @@ enableLogs({
 	"api:voice": ["default", "send", "recv", "heartbeat"],
 	"app:voice-store": ["remote-sources"],
 	"app:voice-client": ["voice-recv"],
-	"api:gateway": ["default", "send", "recv"],
+	"api:gateway": ["default", "send", "recv", "heartbeat"],
 	"api:client": ["ready-state"],
 	"app:client-store": ["default"],
 });
@@ -52,6 +52,15 @@ export const queryClient = new QueryClient({
 		},
 	},
 });
+
+let lastTime = performance.now();
+let count = 0;
+setInterval(() => {
+	const currentTime = performance.now();
+	console.log(count, currentTime - lastTime);
+	count++;
+	lastTime = currentTime;
+}, 1000);
 
 // biome-ignore lint/style/noNonNullAssertion: react needs a non nullable root
 ReactDOM.createRoot(root!).render(

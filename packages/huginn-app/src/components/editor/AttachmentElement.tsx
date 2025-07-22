@@ -18,7 +18,7 @@ export default function AttachmentElement(props: RenderElementProps) {
 		[width, height],
 	);
 	const settings = useSettings();
-	const basedUrl = useMemo(() => changeUrlBase(url, `${settings.cdnHostname}/cdn`), [url]);
+	const basedUrl = useMemo(() => changeUrlBase(url, `${settings.local.cdnHostname}/cdn`), [url]);
 
 	return (
 		<div {...props.attributes} contentEditable={false}>

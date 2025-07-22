@@ -176,7 +176,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	async function startVideo() {
 		posthog.capture("voice:video_button_click");
 
-		const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: settings.videoDeviceId, frameRate: 30 } });
+		const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: settings.local.videoDeviceId, frameRate: 30 } });
 		const track = stream.getVideoTracks()[0];
 		await client.voice.startCamera(track);
 	}

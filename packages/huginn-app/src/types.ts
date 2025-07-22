@@ -15,7 +15,6 @@ import type {
    Snowflake
 } from "@huginn/shared";
 import type { AudioLevelChecker } from "@lib/voice/audio-level-checker";
-import type { AppSettings } from "@stores/settingsStore";
 import type { ChangeEvent, HTMLInputTypeAttribute, ReactNode, RefObject } from "react";
 
 export type StatusCode = "none" | "default" | "error" | "success";
@@ -295,3 +294,22 @@ export type RemoteSource = {
 }
 
 export type VoicePreference = { userId: Snowflake; microphoneVolume: number; screenshareVolume: number }
+
+export type AppSettings = {
+   apiHostname: string;
+   cdnHostname: string;
+   voiceHostname: string;
+   externalHostnamesUrl: string;
+   hostnameSource: "manual" | "external"
+   theme: ThemeType;
+   inputDeviceId: string;
+   outputDeviceId: string;
+   videoDeviceId: string;
+   inputVolume: number;
+   outputVolume: number;
+   inputThreshold: number;
+   noiseSuppression: boolean,
+   screenshareFramerate: number;
+   screenshareResolution: number;
+   screenshareAudio: boolean;
+};

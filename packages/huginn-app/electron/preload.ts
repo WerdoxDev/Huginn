@@ -1,12 +1,9 @@
-import type { AppSettings } from "@stores/settingsStore";
 import { contextBridge, ipcRenderer } from "electron";
 import type { ProgressInfo, UpdateInfo } from "electron-updater";
 import type { DisplaySource } from "@/types";
 
 export const electronAPI = {
    getVersion: () => ipcRenderer.invoke("window:version") as Promise<string>,
-   // splashscreenMode: () => ipcRenderer.send("window:splashscreen-mode"),
-   // mainMode: () => ipcRenderer.send("window:main-mode"),
    showMain: () => ipcRenderer.send("window:show-main"),
    hideMain: () => ipcRenderer.send("window:hide-main"),
    focusMain: () => ipcRenderer.send("window:focus-main"),
@@ -19,9 +16,9 @@ export const electronAPI = {
    getArgs: () => ipcRenderer.invoke("cli:get-args") as Promise<string[]>,
    openExternal: (url: string) => ipcRenderer.send("shell:open-external", url),
    sendNotification: (title: string, body: string, payload?: string) => ipcRenderer.send("notification:send", { title, body, payload }),
-   loadSettings: () => ipcRenderer.invoke("settings:load") as Promise<AppSettings>,
-   saveSettings: (settings: string) => ipcRenderer.invoke("settings:save", settings) as Promise<void>,
-   trySaveDefaultSettings: (settings: string) => ipcRenderer.invoke("settings:try-save-default", settings) as Promise<void>,
+   loadFile: (name: string) => ipcRenderer.invoke("file:load", name) as Promise<unknown>,
+   saveFile: (name: string, content: unknown) => ipcRenderer.invoke("file:save", name, content) as Promise<void>,
+   fileExists: (name: string) => ipcRenderer.invoke("file:exists", name) as Promise<boolean>,
    getDisplaySources: () => ipcRenderer.invoke("window:get-display-sources") as Promise<DisplaySource[]>,
    setSelectedDisplaySource: (sourceId: string) => ipcRenderer.send("window:set-selected-display-source", sourceId),
    startAudioLoopback: (processTitle: string) => ipcRenderer.send("audio:start-loopback", processTitle),

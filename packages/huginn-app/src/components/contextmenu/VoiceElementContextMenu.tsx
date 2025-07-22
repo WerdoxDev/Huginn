@@ -1,15 +1,14 @@
 import RangeInput from "@components/input/RangeInput";
-import { dispatchEvent } from "@lib/event-handler";
 import { useClient } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useVoiceStore, voiceClient } from "@stores/voiceStore";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import ContextMenu from "./ContextMenu";
 
 export default function VoiceElementContextMenu() {
 	const { data } = useContextMenu("voice_element");
 	const client = useClient();
-	const { updateVoicePreferences, voicePreferences, remoteSources } = useVoiceStore();
+	const { updateVoicePreferences, voicePreferences, remoteSources, saveVoicePreferences } = useVoiceStore();
 
 	const preference = useMemo(() => voicePreferences.find((x) => x.userId === data?.user.id), [voicePreferences]);
 
@@ -26,7 +25,6 @@ export default function VoiceElementContextMenu() {
 		}
 
 		updateVoicePreferences(data.user.id, data.kind === "microphone" ? { microphoneVolume: value } : { screenshareVolume: value });
-		dispatchEvent("voice_preference_changed", { userId: data.user.id });
 	}
 
 	async function watch() {
@@ -40,6 +38,12 @@ export default function VoiceElementContextMenu() {
 			await voiceClient.connectAndWatchStream(null, data?.channelId, data?.user.id);
 		}
 	}
+
+	useEffect(() => {
+		return () => {
+			saveVoicePreferences();
+		};
+	}, []);
 
 	if (!data || !preference) return;
 

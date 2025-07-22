@@ -1,28 +1,11 @@
+import { fileExists, loadFile, saveFile } from "@lib/file-manager";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
-import type { ThemeType } from "@/types";
-
-export type AppSettings = {
-   apiHostname: string;
-   cdnHostname: string;
-   voiceHostname: string;
-   externalHostnamesUrl: string;
-   hostnameSource: "manual" | "external"
-   theme: ThemeType;
-   inputDeviceId: string;
-   outputDeviceId: string;
-   videoDeviceId: string;
-   inputVolume: number;
-   outputVolume: number;
-   inputThreshold: number;
-   noiseSuppression: boolean,
-   screenshareFramerate: number;
-   screenshareResolution: number;
-   screenshareAudio: boolean;
-};
+import type { AppSettings } from "@/types";
 
 const initialStore = () =>
-   ({
+({
+   local: {
       apiHostname: "https://midgard.huginn.dev",
       cdnHostname: "https://midgard.huginn.dev",
       voiceHostname: "https://midgard.huginn.dev",
@@ -39,42 +22,28 @@ const initialStore = () =>
       screenshareFramerate: 0,
       screenshareResolution: 0,
       screenshareAudio: false
-   }) as AppSettings;
-
-let localStorageItem: string;
+   } as AppSettings
+});
 
 export async function initializeSettings() {
-   localStorageItem = "settings";
    const initialValue = initialStore();
 
-   if (window.electronAPI) {
-      await window.electronAPI.trySaveDefaultSettings(JSON.stringify(initialValue));
-      const settings = await window.electronAPI.loadSettings();
-      store.setState({ ...initialValue, ...settings });
-      return;
+   const exists = await fileExists("settings");
+   if (!exists) {
+      await saveFile("settings", initialValue.local);
    }
 
-   if (!window.localStorage.getItem(localStorageItem)) {
-      window.localStorage.setItem(localStorageItem, JSON.stringify(initialValue));
-   }
-
-   // biome-ignore lint/style/noNonNullAssertion: the local storage item is checked before
-   store.setState({ ...initialValue, ...JSON.parse(globalThis.localStorage.getItem(localStorageItem)!) });
+   const settings = await loadFile("settings", undefined);
+   store.setState({ local: settings });
 }
 
 const store = createStore(
    combine(initialStore(), (set, get) => ({
-      setSettings: (settings: Partial<AppSettings>) => {
-         const newSettings = { ...get(), ...settings }
-         set({ ...newSettings });
-      },
+      setSettings: (settings: Partial<AppSettings>) =>
+         set((state) => ({ local: { ...state.local, ...settings } })),
       saveSettings: async () => {
          const settings = get();
-         if (window.electronAPI) {
-            await window.electronAPI.saveSettings(JSON.stringify(settings));
-         } else {
-            globalThis.localStorage.setItem(localStorageItem, JSON.stringify(settings));
-         }
+         await saveFile("settings", { ...settings.local });
       },
    })),
 );

@@ -15,13 +15,13 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 	const settings = useSettings();
 
 	const { values, validateValues, inputsProps, setValue } = useInputs([
-		{ name: "apiHostname", required: false, default: settings.apiHostname },
-		{ name: "cdnHostname", required: false, default: settings.cdnHostname },
-		{ name: "voiceHostname", required: false, default: settings.voiceHostname },
-		{ name: "externalUrl", required: false, default: settings.externalHostnamesUrl },
+		{ name: "apiHostname", required: false, default: settings.local.apiHostname },
+		{ name: "cdnHostname", required: false, default: settings.local.cdnHostname },
+		{ name: "voiceHostname", required: false, default: settings.local.voiceHostname },
+		{ name: "externalUrl", required: false, default: settings.local.externalHostnamesUrl },
 	]);
 
-	const [hostnameSource, setHostnameMode] = useState<typeof settings.hostnameSource>(settings.hostnameSource);
+	const [hostnameSource, setHostnameMode] = useState<typeof settings.local.hostnameSource>(settings.local.hostnameSource);
 	const _hostnameSource = useRef(hostnameSource);
 	const { updateModals } = useModals();
 
@@ -46,7 +46,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 	}
 
 	function hostnameModeChanged(item: DropdownItem) {
-		setHostnameMode(item.value as typeof settings.hostnameSource);
+		setHostnameMode(item.value as typeof settings.local.hostnameSource);
 	}
 
 	useEffect(() => {
@@ -57,11 +57,11 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 		return () => {
 			if (validateValues() && props.onChange) {
 				if (
-					(values.apiHostname.value && settings.apiHostname !== values.apiHostname.value) ||
-					(values.cdnHostname.value && settings.cdnHostname !== values.cdnHostname.value) ||
-					(values.voiceHostname.value && settings.voiceHostname !== values.voiceHostname.value) ||
-					(values.externalUrl.value && settings.externalHostnamesUrl !== values.externalUrl.value) ||
-					_hostnameSource.current !== settings.hostnameSource
+					(values.apiHostname.value && settings.local.apiHostname !== values.apiHostname.value) ||
+					(values.cdnHostname.value && settings.local.cdnHostname !== values.cdnHostname.value) ||
+					(values.voiceHostname.value && settings.local.voiceHostname !== values.voiceHostname.value) ||
+					(values.externalUrl.value && settings.local.externalHostnamesUrl !== values.externalUrl.value) ||
+					_hostnameSource.current !== settings.local.hostnameSource
 				) {
 					updateModals({
 						info: {

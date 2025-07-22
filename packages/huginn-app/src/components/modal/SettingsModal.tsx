@@ -3,11 +3,11 @@ import { DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels }
 import type { DeepPartial } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
-import { type AppSettings, settingsStore, useSettings } from "@stores/settingsStore";
+import { settingsStore, useSettings } from "@stores/settingsStore";
 import clsx from "clsx";
 // import { usePostHog } from "posthog-js/react";
 import { Fragment, memo, useEffect, useRef, useState } from "react";
-import type { SettingsTab, SettingsTabProps } from "@/types";
+import type { AppSettings, SettingsTab, SettingsTabProps } from "@/types";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";

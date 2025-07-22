@@ -44,7 +44,7 @@ export async function setHostnamesFromExternal() {
    let response: Response | undefined;
 
    try {
-      response = (await fetch(settings.externalHostnamesUrl, { cache: "no-cache" }));
+      response = (await fetch(settings.local.externalHostnamesUrl, { cache: "no-cache" }));
       const json = await response?.json();
       store.setState({ hostnames: { api: json.api, cdn: json.cdn, voice: json.voice } });
       return true;
@@ -61,7 +61,7 @@ export function setHostnamesFromSettings() {
    log("app:client-store", "default", "set hostnames from settings");
 
    const settings = settingsStore.getState();
-   store.setState({ hostnames: { api: settings.apiHostname, cdn: settings.cdnHostname, voice: settings.voiceHostname } });
+   store.setState({ hostnames: { api: settings.local.apiHostname, cdn: settings.local.cdnHostname, voice: settings.local.voiceHostname } });
 }
 
 export function initializeClient() {

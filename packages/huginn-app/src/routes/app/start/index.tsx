@@ -118,7 +118,7 @@ export default function Index() {
 		async function decideState() {
 			switch (state.current) {
 				case "none": {
-					if (settings.hostnameSource === "external") {
+					if (settings.local.hostnameSource === "external") {
 						setFetchHostnames();
 					} else if (huginnWindow.environment === "desktop") {
 						setCheckUpdate();
@@ -203,7 +203,7 @@ export default function Index() {
 					<div className="flex items-center justify-center gap-x-2 text-center">
 						<span className="text-lg">
 							{state.error ?? state.text}
-							<span className="font-bold ">{state.current === "update" ? updateInfo?.version : ""}</span>
+							<span className="font-bold "> {state.current === "update" ? updateInfo?.version : ""}</span>
 						</span>
 						{/* {state.status === "error" && <IconMingcuteAlertFill className="size-6 text-negative-100" />} */}
 						{(state.current === "check_update" ||
