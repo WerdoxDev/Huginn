@@ -310,6 +310,6 @@ export type AppSettings = {
    inputThreshold: number;
    noiseSuppression: boolean,
    screenshareFramerate: number;
-   screenshareResolution: number;
+   screenshareQuality: number;
    screenshareAudio: boolean;
 };

@@ -327,8 +327,8 @@ export class VoiceClient {
    /**
     * Initializes all microphone and screen_audio players according to the remote sources
     */
-   private initRemoteAudioSourcePlayers(remoteSources: RemoteSource[], voicePreferences: VoicePreference[], outputVolume: number) {
-      log("app:voice-client", "default", "initialize audio source players", "ovol:", outputVolume, "nres:", remoteSources.length);
+   private initRemoteAudioSourcePlayers(remoteSources: RemoteSource[], voicePreferences: VoicePreference[], outputVolumePercent: number) {
+      log("app:voice-client", "default", "initialize audio source players", "ovol:", outputVolumePercent, "nres:", remoteSources.length);
 
       // Remove old players
       for (const player of this.audioSourcePlayers) {
@@ -353,7 +353,7 @@ export class VoiceClient {
             remoteSource.producerId,
             remoteSource.userId,
             remoteSource.kind,
-            outputVolume
+            outputVolumePercent
          );
          this.audioSourcePlayers.push(sourcePlayer);
 

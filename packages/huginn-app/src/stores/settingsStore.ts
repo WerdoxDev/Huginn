@@ -20,7 +20,7 @@ const initialStore = () =>
       outputVolume: 100,
       noiseSuppression: true,
       screenshareFramerate: 0,
-      screenshareResolution: 0,
+      screenshareQuality: 0,
       screenshareAudio: false
    } as AppSettings
 });

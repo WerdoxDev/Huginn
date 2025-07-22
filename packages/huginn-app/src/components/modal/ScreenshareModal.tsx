@@ -5,9 +5,10 @@ import { ScreenshareModalButton } from "@components/button/ScreenshareModalButto
 import DisplayPreview from "@components/DisplayPreview";
 import HuginnTab from "@components/HuginnTab";
 import LoadingIcon from "@components/LoadingIcon";
-import { Checkbox, DialogPanel, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import { Checkbox, DialogPanel } from "@headlessui/react";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
+import { useSettings } from "@stores/settingsStore";
 import { voiceClient } from "@stores/voiceStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, useTransition } from "react";
@@ -22,10 +23,12 @@ export default function ScreenshareModal() {
 		enabled: modal.isOpen,
 	});
 
+	const settings = useSettings();
+
 	const [selectedSource, setSelectedSource] = useState<DisplaySource | undefined>();
-	const [selectedQuality, setSelectedQuality] = useState(0);
-	const [selectedFramerate, setSelectedFramerate] = useState(0);
-	const [shareAudio, setShareAudio] = useState(false);
+	const [selectedQuality, setSelectedQuality] = useState(settings.local.screenshareQuality);
+	const [selectedFramerate, setSelectedFramerate] = useState(settings.local.screenshareFramerate);
+	const [shareAudio, setShareAudio] = useState(settings.local.screenshareAudio);
 	const [screensharePending, startTransition] = useTransition();
 
 	const screens = useMemo(() => data?.filter((x) => x.id.includes("screen")), [data]);
@@ -33,16 +36,18 @@ export default function ScreenshareModal() {
 
 	useEffect(() => {
 		if (modal.isOpen) {
+			setSelectedQuality(settings.local.screenshareQuality);
+			setSelectedFramerate(settings.local.screenshareFramerate);
+			setShareAudio(settings.local.screenshareAudio);
 			refetch();
 		}
-	}, [modal.isOpen]);
 
-	useEffect(() => {
-		if (!selectedSource) {
-			setSelectedQuality(0);
-			setSelectedFramerate(0);
+		if (!modal.isOpen) {
+			console.log(selectedQuality);
+			settings.setSettings({ screenshareQuality: selectedQuality, screenshareFramerate: selectedFramerate, screenshareAudio: shareAudio });
+			settings.saveSettings();
 		}
-	}, [selectedSource]);
+	}, [modal.isOpen]);
 
 	function onSourceSelected(source: DisplaySource) {
 		setSelectedSource(source);

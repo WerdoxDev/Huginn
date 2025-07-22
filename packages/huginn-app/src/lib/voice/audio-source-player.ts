@@ -74,8 +74,6 @@ export class AudioSourcePlayer {
       }
 
       this.gainNode.gain.value = (this.globalGain) * (this.localGain);
-
-      console.log(this.gainNode.gain.value, this.globalGain, this.localGain)
    }
 
    public setSinkId(deviceId: string) {

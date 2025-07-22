@@ -53,14 +53,14 @@ export const queryClient = new QueryClient({
 	},
 });
 
-let lastTime = performance.now();
-let count = 0;
-setInterval(() => {
-	const currentTime = performance.now();
-	console.log(count, currentTime - lastTime);
-	count++;
-	lastTime = currentTime;
-}, 1000);
+// let lastTime = performance.now();
+// let count = 0;
+// setInterval(() => {
+// 	const currentTime = performance.now();
+// 	console.log(count, currentTime - lastTime);
+// 	count++;
+// 	lastTime = currentTime;
+// }, 1000);
 
 // biome-ignore lint/style/noNonNullAssertion: react needs a non nullable root
 ReactDOM.createRoot(root!).render(
