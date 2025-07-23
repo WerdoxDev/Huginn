@@ -348,10 +348,10 @@ export function expectVoiceStateExactSchema(voiceState: object, channelId: Snowf
       channelId,
       guildId,
       userId,
-      selfDeaf: parsedVoiceState.selfDeaf,
-      selfMute: parsedVoiceState.selfMute,
-      selfStream: parsedVoiceState.selfStream,
-      selfVideo: parsedVoiceState.selfVideo,
+      isAudioDeafened: parsedVoiceState.isAudioDeafened,
+      isAudioMuted: parsedVoiceState.isAudioMuted,
+      isStreaming: parsedVoiceState.isStreaming,
+      isCameraOn: parsedVoiceState.isCameraOn,
    });
 }
 

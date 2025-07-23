@@ -34,38 +34,22 @@ export class VoiceManager {
       }
    }
 
-   public updateVoiceState(
-      userId: Snowflake,
-      channelId: Snowflake | null,
-      guildId: Snowflake | null,
-      selfMute: boolean,
-      selfDeaf: boolean,
-      selfStream: boolean,
-      selfVideo: boolean,
-   ) {
-      const sendChannelId = this.voiceStates.get(userId)?.channelId;
+   public updateVoiceState(options: GatewayVoiceState) {
+      const sendChannelId = this.voiceStates.get(options.userId)?.channelId;
 
-      const voiceState: GatewayVoiceState = {
-         userId: userId,
-         channelId: channelId,
-         guildId: guildId,
-         selfMute: selfMute,
-         selfDeaf: selfDeaf,
-         selfStream: selfStream,
-         selfVideo: selfVideo,
-      };
+      const voiceState: GatewayVoiceState = { ...options };
 
       if (voiceState.channelId) {
-         this.voiceStates.set(userId, voiceState);
+         this.voiceStates.set(options.userId, voiceState);
          const callState = this.callStates.get(voiceState.channelId);
-         if (callState?.ringing.includes(userId)) {
+         if (callState?.ringing.includes(options.userId)) {
             this.updateCall(
                voiceState.channelId,
-               callState.ringing.filter((x) => x !== userId),
+               callState.ringing.filter((x) => x !== options.userId),
             );
          }
       } else if (sendChannelId) {
-         this.voiceStates.delete(userId);
+         this.voiceStates.delete(options.userId);
       }
 
       if (sendChannelId) {

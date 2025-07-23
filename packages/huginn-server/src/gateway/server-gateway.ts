@@ -54,7 +54,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
 
       if (session.authenticated && session.user) {
          this.presenceManager.removeUserPresence(session.user.id);
-         this.voiceManager.updateVoiceState(session.user.id, null, null, false, false, false, false);
+         this.voiceManager.updateVoiceState({ userId: session.user.id, channelId: null, guildId: null, isAudioDeafened: false, isAudioMuted: false, isCameraOn: false, isStreaming: false });
       }
    }
 
@@ -207,22 +207,14 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       const session = this.sessions.get(peer.context.sessionId);
       const userId = session?.user?.id;
 
-      log("server:gateway", "recv", "update voice state", "pid:", peer.id, "uid:", userId, "sm:", data.selfMute, "sd:", data.selfDeaf, "ss:", data.selfStream, "sv:", data.selfVideo);
+      log("server:gateway", "recv", "update voice state", "pid:", peer.id, "uid:", userId, "sm:", data.isAudioMuted, "sd:", data.isAudioDeafened, "ss:", data.isStreaming, "sv:", data.isCameraOn);
 
       if (!session || !userId) {
          return;
       }
 
       const previousState = this.voiceManager.getVoiceState(userId);
-      this.voiceManager.updateVoiceState(
-         userId,
-         data.channelId,
-         data.guildId,
-         data.selfMute,
-         data.selfDeaf,
-         data.selfStream,
-         data.selfVideo,
-      );
+      this.voiceManager.updateVoiceState({ userId, ...data });
 
       // If the new place is a valid channel and is not the same as before
       if (data.channelId && previousState?.channelId !== data.channelId) {
