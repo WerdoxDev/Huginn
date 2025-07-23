@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.49.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.49.1...app@v0.49.2) (2025-07-23)
+
+
+### Bug Fixes
+
+* **app:** fix a few big voice bugs + bunch of voice state name changes ([87daad5](https://github.com/WerdoxDev/Huginn/commit/87daad5d6c69fc12afb494f623cb5fa806d63f5e))
+
 ## [0.49.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.49.0...app@v0.49.1) (2025-07-22)
 
 
