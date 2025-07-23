@@ -307,9 +307,9 @@ export function convertToMediaKind(hMediaKind: HMediaKind): MediaKind | undefine
          return "video";
       case "microphone":
          return "audio";
-      case "screen_audio":
+      case "stream_audio":
          return "audio";
-      case "screen_video":
+      case "stream_video":
          return "video";
    }
 }

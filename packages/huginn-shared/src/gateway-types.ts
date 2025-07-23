@@ -138,11 +138,7 @@ export type GatewayResumeData = {
 export type GatewayUpdateVoiceStateData = {
    guildId: Snowflake | null;
    channelId: Snowflake | null;
-   selfMute: boolean;
-   selfDeaf: boolean;
-   selfStream: boolean;
-   selfVideo: boolean;
-};
+} & GatewayVoiceStateFlags;
 
 export type GatewayUpdateVoiceState = {
    op: GatewayOperations.VOICE_STATE_UPDATE;
@@ -192,11 +188,14 @@ export type GatewayVoiceState = {
    userId: Snowflake;
    guildId: Snowflake | null;
    channelId: Snowflake | null;
-   selfMute: boolean;
-   selfDeaf: boolean;
-   selfVideo: boolean;
-   selfStream: boolean;
-};
+} & GatewayVoiceStateFlags;
+
+export type GatewayVoiceStateFlags = {
+   isAudioMuted: boolean;
+   isAudioDeafened: boolean;
+   isStreaming: boolean;
+   isCameraOn: boolean;
+}
 
 export type GatewayVoiceStateUpdateData = GatewayVoiceState;
 export type GatewayCallState = {

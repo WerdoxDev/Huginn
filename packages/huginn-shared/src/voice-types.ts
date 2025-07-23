@@ -86,7 +86,7 @@ export type VoiceEvents = {
    recv_transport_ready: { channelId: Snowflake };
    local_producer_created: { producerId: string; kind: HMediaKind; track: MediaStreamTrack };
    local_producer_changed: { producerId: string, kind: HMediaKind, track: MediaStreamTrack | null };
-   local_voice_state_changed: { audioPaused: boolean; audioMuted: boolean; consumersMuted: boolean; streaming: boolean, camera: boolean };
+   local_voice_state_changed: LocalVoiceState;
 };
 
 export type VoicePayload<Event extends keyof VoiceEvents | undefined = undefined> = Event extends undefined ? {
@@ -128,7 +128,7 @@ export type VoiceDispatch = {
 
 export type MediasoupAppData = { mediaKind: HMediaKind, userId: Snowflake };
 
-export type HMediaKind = "microphone" | "screen_audio" | "screen_video" | "camera" | "unknown";
+export type HMediaKind = "microphone" | "stream_audio" | "stream_video" | "camera" | "unknown";
 
 export type ProducerData = {
    producerId: string;
@@ -268,3 +268,5 @@ export type VoiceConsumerClosedData = {
    consumerId: string;
    userId: Snowflake;
 }
+
+export type LocalVoiceState = { isAudioPaused: boolean; isAudioMuted: boolean; isAudioDeafened: boolean; isStreaming: boolean; isCameraOn: boolean }
