@@ -3,7 +3,7 @@ import {
    convertToMediaKind,
    error,
    GatewayCode,
-   type HMediaKind, log,
+   type HMediaKind, type LocalVoiceState, log,
    type MediasoupAppData,
    type ProducerData,
    type Snowflake,
@@ -46,7 +46,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
    private lastPingStart?: number;
    private sequence?: number;
 
-   public localVoiceState: { audioPaused: boolean; audioMuted: boolean; consumersMuted: boolean; streaming: boolean; camera: boolean };
+   public localVoiceState: LocalVoiceState;
    public connectionInfo?: { token: string; channelId: Snowflake; guildId: Snowflake | null };
    public sendTransport?: Transport<MediasoupAppData>;
    public producers: Map<HMediaKind, Producer<MediasoupAppData>>;
@@ -70,7 +70,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       super();
 
       this.options = { ...defaultClientOptions.voice, ...options };
-      this.localVoiceState = { consumersMuted: false, audioMuted: false, audioPaused: false, streaming: false, camera: false };
+      this.localVoiceState = { isAudioDeafened: false, isAudioMuted: false, isAudioPaused: false, isStreaming: false, isCameraOn: false };
       this.client = client;
       this.consumers = new Map();
       this.producers = new Map();
@@ -143,7 +143,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
 
             // If we had a token failure last time, don't include a token to get a new one.
             const token = e.code === GatewayCode.AUTHENTICATION_FAILED ? undefined : this.connectionInfo.token;
-            await this.client.gateway.connectVoice(this.connectionInfo.guildId, this.connectionInfo.channelId, { selfDeaf: this.localVoiceState.consumersMuted, selfMute: this.localVoiceState.audioMuted }, token, !token)
+            await this.client.gateway.connectVoice(this.connectionInfo.guildId, this.connectionInfo.channelId, { isAudioDeafened: this.localVoiceState.isAudioDeafened, isAudioMuted: this.localVoiceState.isAudioMuted }, token, !token)
          }
       }, 2000);
    }
@@ -166,7 +166,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       }
 
       // Mute the microphone producer immediately when local voice state is audio muted
-      if (this.localVoiceState.audioMuted) {
+      if (this.localVoiceState.isAudioMuted) {
          this.producers.get("microphone")?.pause();
       }
    }
@@ -183,7 +183,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          appData: { mediaKind: "camera", userId: this.client.user.id },
       });
 
-      await this.client.gateway.updateVoiceState(this.localVoiceState.audioMuted, this.localVoiceState.consumersMuted, this.localVoiceState.streaming, true);
+      await this.client.gateway.updateVoiceState({ isAudioDeafened: this.localVoiceState.isAudioDeafened, isAudioMuted: this.localVoiceState.isAudioMuted, isCameraOn: true, isStreaming: this.localVoiceState.isStreaming });
    }
 
    public async stopCamera(): Promise<void> {
@@ -195,35 +195,33 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
 
       const cameraProducer = this.producers.get("camera");
 
-      if (!cameraProducer) {
-         return;
+      if (cameraProducer) {
+         await this.closeProducer(cameraProducer.id);
       }
 
-      this.closeProducer(cameraProducer.id);
-
-      await this.client.gateway.updateVoiceState(this.localVoiceState.audioMuted, this.localVoiceState.consumersMuted, this.localVoiceState.streaming, false);
+      await this.client.gateway.updateVoiceState({ isAudioDeafened: this.localVoiceState.isAudioDeafened, isAudioMuted: this.localVoiceState.isAudioMuted, isCameraOn: false, isStreaming: this.localVoiceState.isStreaming });
    }
 
-   public async startScreensharing(videoTrack: MediaStreamTrack, audioTrack?: MediaStreamTrack): Promise<void> {
+   public async startStreaming(videoTrack: MediaStreamTrack, audioTrack?: MediaStreamTrack): Promise<void> {
       if (!this.sendTransport || !this.client.user) {
          return;
       }
 
-      log("api:voice", "default", "start screensharing");
+      log("api:voice", "default", "start streaming");
 
       videoTrack.onended = async () => {
-         await this.stopScreensharing();
+         await this.stopStreaming();
       };
 
-      const videoProducer = this.producers.get("screen_video");
-      const audioProducer = this.producers.get("screen_audio");
+      const videoProducer = this.producers.get("stream_video");
+      const audioProducer = this.producers.get("stream_audio");
 
       if (videoProducer) {
          await videoProducer.replaceTrack({ track: videoTrack });
       } else {
-         await this.openProducer("screen_video", {
+         await this.openProducer("stream_video", {
             track: videoTrack,
-            appData: { mediaKind: "screen_video", userId: this.client.user.id },
+            appData: { mediaKind: "stream_video", userId: this.client.user.id },
             encodings: [{ scalabilityMode: "L1T3" }],
             codecOptions: { videoGoogleStartBitrate: 1000000, videoGoogleMinBitrate: 10000, videoGoogleMaxBitrate: 3000000 },
          });
@@ -233,42 +231,40 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          if (audioProducer) {
             await audioProducer.replaceTrack({ track: audioTrack });
          } else {
-            await this.openProducer("screen_audio", { track: audioTrack, appData: { mediaKind: "screen_audio", userId: this.client.user.id } });
+            await this.openProducer("stream_audio", { track: audioTrack, appData: { mediaKind: "stream_audio", userId: this.client.user.id } });
          }
       }
 
       if (audioProducer && !audioTrack) {
-         this.closeProducer(audioProducer.id);
+         await this.closeProducer(audioProducer.id);
       }
 
-      await this.client.gateway.updateVoiceState(this.localVoiceState.audioMuted, this.localVoiceState.consumersMuted, true, this.localVoiceState.camera);
+      await this.client.gateway.updateVoiceState({ isAudioDeafened: this.localVoiceState.isAudioDeafened, isAudioMuted: this.localVoiceState.isAudioMuted, isCameraOn: this.localVoiceState.isCameraOn, isStreaming: true });
    }
 
-   public async stopScreensharing(): Promise<void> {
+   public async stopStreaming(): Promise<void> {
       if (!this.connectionInfo) {
          return;
       }
 
       log("api:voice", "default", "stop screensharing");
 
-      const videoProducer = this.producers.get("screen_video");
-      const audioProducer = this.producers.get("screen_audio");
+      const videoProducer = this.producers.get("stream_video");
+      const audioProducer = this.producers.get("stream_audio");
 
       // Screenshare must have a video. Audio is optional
-      if (!videoProducer) {
-         return;
+      if (videoProducer) {
+         await this.closeProducer(videoProducer.id);
       }
-
-      this.closeProducer(videoProducer.id);
 
       if (audioProducer) {
-         this.closeProducer(audioProducer.id);
+         await this.closeProducer(audioProducer.id);
       }
 
-      await this.client.gateway.updateVoiceState(this.localVoiceState.audioMuted, this.localVoiceState.consumersMuted, false, this.localVoiceState.camera);
+      await this.client.gateway.updateVoiceState({ isAudioDeafened: this.localVoiceState.isAudioDeafened, isAudioMuted: this.localVoiceState.isAudioMuted, isCameraOn: this.localVoiceState.isCameraOn, isStreaming: false });
    }
 
-   public consumeProducer(producerId: string): void {
+   public async consumeProducer(producerId: string): Promise<void> {
       if (!this.connectionInfo || !this.recvTransport || !this.device) {
          return;
       }
@@ -288,61 +284,69 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
 
       log("api:voice", "send", "consume", "pid:", producerId);
       this.send(consumeData);
+
+      let consumed = false;
+      while (!consumed) {
+         const { data } = await this.waitForEvents(["consumer_created"], true);
+         if (data.producerId === producerId) {
+            consumed = true;
+         }
+      }
    }
 
    public updateLocalVoiceState(voiceState: Partial<typeof this.localVoiceState>): void {
-      if (voiceState.audioPaused !== undefined) {
-         log("api:voice", "local-voice-state", "set audio paused:", voiceState.audioPaused);
+      if (voiceState.isAudioPaused !== undefined) {
+         log("api:voice", "local-voice-state", "set audio paused:", voiceState.isAudioPaused);
 
-         this.localVoiceState.audioPaused = voiceState.audioPaused;
+         this.localVoiceState.isAudioPaused = voiceState.isAudioPaused;
 
          const producer = this.producers.get("microphone");
-         if (voiceState.audioPaused === true && !producer?.paused) {
+         if (voiceState.isAudioPaused === true && !producer?.paused) {
             producer?.pause();
-            this.localVoiceState.audioPaused = true;
-         } else if (voiceState.audioPaused === false && !this.localVoiceState?.audioMuted && producer?.paused) {
+            this.localVoiceState.isAudioPaused = true;
+         } else if (voiceState.isAudioPaused === false && !this.localVoiceState?.isAudioMuted && producer?.paused) {
             producer.resume();
-            this.localVoiceState.audioPaused = false;
+            this.localVoiceState.isAudioPaused = false;
             // return true;
          }
       }
-      if (voiceState.audioMuted !== undefined) {
-         log("api:voice", "local-voice-state", "set audio muted:", voiceState.audioMuted);
+      if (voiceState.isAudioMuted !== undefined) {
+         log("api:voice", "local-voice-state", "set audio muted:", voiceState.isAudioMuted);
 
-         this.localVoiceState.audioMuted = voiceState.audioMuted;
+         this.localVoiceState.isAudioMuted = voiceState.isAudioMuted;
 
          const producer = this.producers.get("microphone");
-         if (voiceState.audioMuted === true && !producer?.paused) {
+         if (voiceState.isAudioMuted === true && !producer?.paused) {
             producer?.pause();
-         } else if (voiceState.audioMuted === false && !this.localVoiceState.audioPaused && producer?.paused) {
+         } else if (voiceState.isAudioMuted === false && !this.localVoiceState.isAudioPaused && producer?.paused) {
             producer?.resume();
          }
       }
-      if (voiceState.consumersMuted !== undefined) {
-         log("api:voice", "local-voice-state", "set consumers muted:", voiceState.consumersMuted);
+      if (voiceState.isAudioDeafened !== undefined) {
+         log("api:voice", "local-voice-state", "set audio deafened:", voiceState.isAudioDeafened);
 
-         this.localVoiceState.consumersMuted = voiceState.consumersMuted;
+         this.localVoiceState.isAudioDeafened = voiceState.isAudioDeafened;
 
          for (const consumer of this.consumers.values()) {
-            if (voiceState.consumersMuted === true && !consumer.paused && (consumer.appData.mediaKind === "screen_audio" || consumer.appData.mediaKind === "microphone")) {
+            if (voiceState.isAudioDeafened === true && !consumer.paused && (consumer.appData.mediaKind === "stream_audio" || consumer.appData.mediaKind === "microphone")) {
                consumer.pause();
-            } else if (voiceState.consumersMuted === false && consumer.paused) {
+            } else if (voiceState.isAudioDeafened === false && consumer.paused) {
                consumer.resume();
             }
          }
       }
-      if (voiceState.streaming !== undefined) {
-         log("api:voice", "local-voice-state", "set streaming:", voiceState.streaming);
+      if (voiceState.isStreaming !== undefined) {
+         log("api:voice", "local-voice-state", "set streaming:", voiceState.isStreaming);
 
-         this.localVoiceState.streaming = voiceState.streaming;
+         this.localVoiceState.isStreaming = voiceState.isStreaming;
       }
-      if (voiceState.camera !== undefined) {
-         log("api:voice", "local-voice-state", "set camera:", voiceState.camera);
+      if (voiceState.isCameraOn !== undefined) {
+         log("api:voice", "local-voice-state", "set camera on:", voiceState.isCameraOn);
 
-         this.localVoiceState.camera = voiceState.camera;
+         this.localVoiceState.isCameraOn = voiceState.isCameraOn;
       }
 
-      log("api:voice", "local-voice-state", "update", "am:", this.localVoiceState.audioMuted, "ap:", this.localVoiceState.audioPaused, "cm:", this.localVoiceState.consumersMuted, "s:", this.localVoiceState.streaming, "c:", this.localVoiceState.camera)
+      log("api:voice", "local-voice-state", "update", "am:", this.localVoiceState.isAudioMuted, "ap:", this.localVoiceState.isAudioPaused, "ad:", this.localVoiceState.isAudioDeafened, "s:", this.localVoiceState.isStreaming, "co:", this.localVoiceState.isCameraOn)
 
       this.emit("local_voice_state_changed", this.localVoiceState);
    }
@@ -369,6 +373,11 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          return;
       }
 
+      const existingProducer = this.producers.get(kind);
+      if (existingProducer) {
+         await this.closeProducer(existingProducer.id)
+      }
+
       log("api:voice", "default", "open producer", "mk:", kind);
 
       const producer = await this.sendTransport.produce<MediasoupAppData>(options);
@@ -383,7 +392,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       return producer;
    }
 
-   private closeProducer(producerId: string) {
+   private async closeProducer(producerId: string) {
       if (!this.connectionInfo) {
          return;
       }
@@ -398,6 +407,14 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
 
       log("api:voice", "send", "close-producer", "id:", producerId);
       this.send(closeProducerData);
+
+      let closed = false;
+      while (!closed) {
+         const { data } = await this.waitForEvents(["producer_closed"], true);
+         if (data.producerId === producerId) {
+            closed = true;
+         }
+      }
    }
 
    private startListening() {
@@ -473,7 +490,6 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
                   break;
                case "peer_left":
                   log("api:voice", "recv", "peer left", "id:", data.d.sessionId);
-                  this.handlePeerLeft(data.d);
                   break;
                case "producer_closed":
                   log("api:voice", "recv", "producer closed", "id:", data.d.producerId);
@@ -491,17 +507,6 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       }
    }
 
-   private handlePeerLeft(data: VoicePeerLeftData) {
-      for (const producerId of data.producerIds) {
-         const consumer = Array.from(this.consumers.values()).find((c) => c.producerId === producerId);
-         if (consumer) {
-            consumer.close();
-            this.consumers.delete(consumer.id);
-            this.emit("producer_closed", { producerId, userId: data.userId });
-         }
-      }
-   }
-
    private async handleConsumerCreated(data: VoiceConsumerCreatedData) {
       if (!this.recvTransport || !this.connectionInfo) {
          return;
@@ -515,7 +520,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          appData: { mediaKind: data.kind, userId: data.producerUserId },
       });
 
-      if (this.localVoiceState.consumersMuted) {
+      if (this.localVoiceState.isAudioDeafened) {
          consumer.pause();
       }
 

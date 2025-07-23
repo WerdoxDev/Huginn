@@ -1,6 +1,6 @@
 import type {
    GatewayPayload,
-   GatewayUpdateVoiceState, GatewayUpdateVoiceStateData, Snowflake,
+   GatewayUpdateVoiceState, GatewayUpdateVoiceStateData, GatewayVoiceState, GatewayVoiceStateFlags, Snowflake,
    WebsocketStatus
 } from "@huginn/shared";
 import {
@@ -105,7 +105,8 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
                   await this.waitForEvents(["resumed", "ready"], true);
                }
 
-               await this.connectVoice(this.client.voice.connectionInfo.guildId, this.client.voice.connectionInfo.channelId, { selfDeaf: this.client.voice.localVoiceState.consumersMuted, selfMute: this.client.voice.localVoiceState.audioMuted });
+               await this.connectVoice(this.client.voice.connectionInfo.guildId, this.client.voice.connectionInfo.channelId,
+                  { isAudioDeafened: this.client.voice.localVoiceState.isAudioDeafened, isAudioMuted: this.client.voice.localVoiceState.isAudioMuted });
             }
          }
       }, 2000);
@@ -154,7 +155,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
     * @param token if a token is already available, it will use that to connect the voice websocket (use with caution)
     * @param resetFirst it will send a null channel voice state update first and then updates to the channel id and connects voice websocket
     */
-   public async connectVoice(guildId: Snowflake | null, channelId: Snowflake, voiceState?: { selfDeaf: boolean, selfMute: boolean }, token?: string, resetFirst?: boolean): Promise<boolean> {
+   public async connectVoice(guildId: Snowflake | null, channelId: Snowflake, voiceState?: Omit<GatewayVoiceStateFlags, "isStreaming" | "isCameraOn">, token?: string, resetFirst?: boolean): Promise<boolean> {
       log("api:gateway", "default", "connect to voice")
 
       if (this.client.voice.connectionInfo?.channelId !== channelId) {
@@ -168,10 +169,10 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
             d: {
                guildId: null,
                channelId: null,
-               selfDeaf: false,
-               selfMute: false,
-               selfStream: false,
-               selfVideo: false,
+               isAudioDeafened: false,
+               isAudioMuted: false,
+               isStreaming: false,
+               isCameraOn: false,
             },
          };
 
@@ -186,10 +187,10 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
          d: {
             guildId: guildId,
             channelId: channelId,
-            selfDeaf: voiceState?.selfDeaf ?? false,
-            selfMute: voiceState?.selfMute ?? false,
-            selfStream: false,
-            selfVideo: false,
+            isAudioDeafened: voiceState?.isAudioDeafened ?? false,
+            isAudioMuted: voiceState?.isAudioMuted ?? false,
+            isStreaming: false,
+            isCameraOn: false,
          },
       };
 
@@ -227,7 +228,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
          await this.client.voice.waitForEvents(["ready"]);
       }
 
-      this.client.voice.updateLocalVoiceState({ streaming: false, camera: false })
+      this.client.voice.updateLocalVoiceState({ isStreaming: false, isCameraOn: false })
 
       return true;
    }
@@ -240,10 +241,10 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
          d: {
             channelId: null,
             guildId: null,
-            selfDeaf: false,
-            selfMute: false,
-            selfStream: false,
-            selfVideo: false,
+            isAudioDeafened: false,
+            isAudioMuted: false,
+            isStreaming: false,
+            isCameraOn: false,
          },
       };
 
@@ -255,8 +256,8 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
       await this.waitForEvents(["voice_state_update"]);
    }
 
-   public async updateVoiceState(selfMute: boolean, selfDeaf: boolean, selfStream: boolean, selfVideo: boolean): Promise<void> {
-      log("api:gateway", "default", "update voice state", "sm:", selfMute, "sd:", selfDeaf, "ss:", selfStream, "sv:", selfVideo);
+   public async updateVoiceState(options: GatewayVoiceStateFlags): Promise<void> {
+      log("api:gateway", "default", "update voice state", "am:", options.isAudioMuted, "ad:", options.isAudioDeafened, "s:", options.isStreaming, "co:", options.isCameraOn);
 
       if (!this.client.voice.connectionInfo || this.client.voice.status !== "authenticated" || this.status !== "authenticated") {
          return;
@@ -267,29 +268,28 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
          d: {
             guildId: this.client.voice.connectionInfo?.guildId,
             channelId: this.client.voice.connectionInfo?.channelId,
-            selfMute: selfMute,
-            selfDeaf: selfDeaf,
-            selfStream: selfStream,
-            selfVideo: selfVideo,
+            ...options
          },
       };
 
-      log("api:gateway", "send", "update voice state", "sm:", updateVoiceStateData.d.selfMute, "sd:", updateVoiceStateData.d.selfDeaf, "ss:", updateVoiceStateData.d.selfStream, "sv:", updateVoiceStateData.d.selfVideo);
+      log("api:gateway", "send", "update voice state", "am:", updateVoiceStateData.d.isAudioMuted, "ad:", updateVoiceStateData.d.isAudioDeafened, "s:", updateVoiceStateData.d.isStreaming, "co:", updateVoiceStateData.d.isCameraOn);
       this.send(updateVoiceStateData);
+
+      //1. We first update local voice state to immediately fire an even
+      this.client.voice.updateLocalVoiceState({ ...options })
 
       let updatedVoiceState: GatewayUpdateVoiceStateData | undefined;
       while (!updatedVoiceState) {
          const event = await this.waitForEvents(["voice_state_update"], true);
 
          // There might be another user's voice state update coming right as we update our own
-         if (event.data.userId !== this.client.user?.id) {
-            continue;
+         if (event.data.userId === this.client.user?.id) {
+            updatedVoiceState = event.data
          }
-
-         updatedVoiceState = event.data
       }
 
-      this.client.voice.updateLocalVoiceState({ audioMuted: updatedVoiceState.selfMute, consumersMuted: updatedVoiceState.selfDeaf, streaming: updatedVoiceState.selfStream, camera: updatedVoiceState.selfVideo })
+      //2. Then we sync it with what we got from the server
+      this.client.voice.updateLocalVoiceState({ ...options })
    }
 
    private startListening() {

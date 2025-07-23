@@ -139,9 +139,11 @@ export class HuginnClient {
       this.tokenHandler.token = undefined;
       this.tokenHandler.refreshToken = undefined;
       this.user = undefined;
-      this.gateway.close();
+      if (this.gateway.status !== "disconnected" && this.gateway.status !== "none" && this.gateway.status !== "reconnecting") {
+         this.gateway.close();
+         await this.gateway.waitForEvents(["close"]);
+      }
       this.voice.close();
-      await this.gateway.waitForEvents(["close"]);
    }
 
    public generateNonce(): Snowflake {
