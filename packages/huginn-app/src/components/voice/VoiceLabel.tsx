@@ -23,18 +23,26 @@ export function VoiceLabel(props: {
 				<div
 					className={clsx(
 						"flex h-8 items-center justify-center gap-x-2 rounded-lg bg-negative-300",
-						(props.voiceState?.selfMute || props.voiceState?.selfDeaf) && "mr-2 px-2 py-1",
+						(props.voiceState?.isAudioMuted ||
+							props.voiceState?.isAudioDeafened) &&
+							"mr-2 px-2 py-1",
 					)}
 				>
-					{props.voiceState?.selfMute && <IconMingcuteMicOffFill className="size-5" />}
-					{props.voiceState?.selfDeaf && <IconMingcuteVolumeOffFill className="size-5" />}
+					{props.voiceState?.isAudioMuted && (
+						<IconMingcuteMicOffFill className="size-5" />
+					)}
+					{props.voiceState?.isAudioDeafened && (
+						<IconMingcuteVolumeOffFill className="size-5" />
+					)}
 				</div>
 				{props.isGridView && (
 					<div className="flex items-center justify-center gap-x-2 rounded-lg bg-surface-deep px-2 py-1 text-white opacity-0 transition-opacity group-hover/wrapper:opacity-100">
-						{props.kind === "screen_video" ? (
+						{props.kind === "stream_video" ? (
 							<IconMingcuteMonitorFill className="size-5" />
 						) : (
-							props.kind === "camera" && <IconMingcuteCamera2Fill className="size-5" />
+							props.kind === "camera" && (
+								<IconMingcuteCamera2Fill className="size-5" />
+							)
 						)}
 						{user?.displayName ?? user?.username}
 					</div>

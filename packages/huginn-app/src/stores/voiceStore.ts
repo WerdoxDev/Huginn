@@ -1,4 +1,4 @@
-import { type GatewayCallState, type GatewayVoiceState, type HMediaKind, log, type Snowflake } from "@huginn/shared";
+import { type GatewayCallState, type GatewayVoiceState, type GatewayVoiceStateFlags, type HMediaKind, log, type Snowflake } from "@huginn/shared";
 import { dispatchEvent } from "@lib/event-handler";
 import { loadFile, saveFile } from "@lib/file-manager";
 import type { AudioLevelChecker } from "@lib/voice/audio-level-checker";
@@ -28,29 +28,22 @@ const store = createStore(
 
             return set((state) => ({ localVoiceState: { ...state.localVoiceState, channelId: channelId ?? null, guildId: guildId ?? null } }))
          },
-         updateLocalVoiceState: (selfMute: boolean, selfDeaf: boolean, selfStream: boolean, selfVideo: boolean) => {
-            log("app:voice-store", "voice-state", "update self", "sm:", selfMute, "sd:", selfDeaf, "ss:", selfStream, "sv:", selfVideo)
+         updateLocalVoiceState: (options: GatewayVoiceStateFlags) => {
+            log("app:voice-store", "voice-state", "update self", "am:", options.isAudioMuted, "ad:", options.isAudioDeafened, "ss:", options.isStreaming, "co:", options.isCameraOn)
 
-            return set((state) => ({ localVoiceState: { ...state.localVoiceState, selfMute, selfDeaf, selfStream, selfVideo } }))
+            return set((state) => ({ localVoiceState: { ...state.localVoiceState, isAudioMuted: options.isAudioMuted, isAudioDeafened: options.isAudioDeafened, isStreaming: options.isStreaming, isCameraOn: options.isCameraOn } }))
          },
-         updateVoiceState: (
-            channelId: Snowflake,
-            guildId: Snowflake | null,
-            userId: Snowflake,
-            selfMute: boolean,
-            selfDeaf: boolean,
-            selfStream: boolean,
-            selfVideo: boolean,
+         updateVoiceState: (options: GatewayVoiceState
          ) => {
-            log("app:voice-store", "voice-state", "update", "cid:", channelId, "gid:", guildId, "uid:", userId, "sm:", selfMute, "sd:", selfDeaf, "ss:", selfStream, "sv:", selfVideo)
+            log("app:voice-store", "voice-state", "update", "cid:", options.channelId, "gid:", options.guildId, "uid:", options.userId, "mm:", options.isAudioMuted, "ad:", options.isAudioDeafened, "s:", options.isStreaming, "co:", options.isCameraOn)
 
             return set(
                produce((draft: StoreType) => {
-                  const existingIndex = draft.voiceStates.findIndex((x) => x.userId === userId);
+                  const existingIndex = draft.voiceStates.findIndex((x) => x.userId === options.userId);
                   if (existingIndex !== -1) {
-                     draft.voiceStates[existingIndex] = { guildId, channelId, userId, selfDeaf, selfMute, selfStream, selfVideo };
+                     draft.voiceStates[existingIndex] = { ...options };
                   } else {
-                     draft.voiceStates.push({ guildId, channelId, selfDeaf, selfMute, userId, selfStream, selfVideo });
+                     draft.voiceStates.push({ ...options });
                   }
                }),
             )
@@ -199,8 +192,6 @@ export function initializeVoice() {
       store.setState({ voiceStates: d.voiceStates });
       store.setState({ callStates: d.callStates });
 
-      // TODO: Read each user's voice preference from local storage
-
       const preferences = await loadFile("voice-preferences", []);
       const finalPreferences = d.voiceStates.map((x) => preferences.find(y => y.userId === x.userId) ?? ({ userId: x.userId, microphoneVolume: 100, screenshareVolume: 100 }));
       store.setState({ voicePreferences: finalPreferences })
@@ -225,14 +216,13 @@ export function initializeVoice() {
    }));
 
    unlisteners.push(client.gateway.listen("voice_state_update", (d) => {
-      log("app:voice-store", "gateway-recv", "voice state update", "cid:", d.channelId, "gid:", d.guildId, "uid:", d.userId, "sm:", d.selfMute, "sd:", d.selfDeaf, "ss:", d.selfStream, "sv:", d.selfVideo)
+      log("app:voice-store", "gateway-recv", "voice state update", "cid:", d.channelId, "gid:", d.guildId, "uid:", d.userId, "mm:", d.isAudioMuted, "ad:", d.isAudioDeafened, "s:", d.isStreaming, "co:", d.isCameraOn)
 
       const thisStore = store.getState();
 
       // our user's voice state update
       if (d.userId === client?.user?.id) {
          thisStore.setVoiceChannel(d.channelId ?? undefined, d.guildId ?? undefined);
-         // client.voice.updateLocalVoiceState({ audioMuted: d.selfMute, consumersMuted: d.selfDeaf, streaming: d.selfStream, camera: d.selfVideo });
       } else {
          // create voice preference for new users
          if (!thisStore.voicePreferences.some((x) => x.userId === d.userId)) {
@@ -241,7 +231,7 @@ export function initializeVoice() {
       }
 
       if (d.channelId) {
-         thisStore.updateVoiceState(d.channelId, d.guildId, d.userId, d.selfMute, d.selfDeaf, d.selfStream, d.selfVideo);
+         thisStore.updateVoiceState(d);
       } else {
          thisStore.removeVoiceState(d.userId);
       }
@@ -250,7 +240,7 @@ export function initializeVoice() {
    unlisteners.push(voiceClient.listenToVoiceEvents());
 
    unlisteners.push(client.voice.listen("local_voice_state_changed", (d) => {
-      log("app:voice-store", "voice-recv", "update", "am:", d.audioMuted, "ap:", d.audioPaused, "cm:", d.consumersMuted, "s:", d.streaming)
+      log("app:voice-store", "voice-recv", "update", "am:", d.isAudioMuted, "ap:", d.isAudioPaused, "cm:", d.isAudioDeafened, "s:", d.isStreaming)
 
       if (!client?.user) {
          return;
@@ -261,14 +251,14 @@ export function initializeVoice() {
       // If we have a mic producer, manage it's state
       const producer = client.voice.producers.get("microphone");
       if (producer) {
-         if (d.audioMuted || d.audioPaused) {
+         if (d.isAudioMuted || d.isAudioPaused) {
             thisStore.updateSpeakingState(client.user.id, false);
-         } else if (!d.audioMuted && !d.audioPaused) {
+         } else if (!d.isAudioMuted && !d.isAudioPaused) {
             thisStore.updateSpeakingState(client.user.id, true);
          }
       }
 
-      thisStore.updateLocalVoiceState(d.audioMuted, d.consumersMuted, d.streaming, d.camera);
+      thisStore.updateLocalVoiceState({ isAudioDeafened: d.isAudioDeafened, isCameraOn: d.isCameraOn, isAudioMuted: d.isAudioMuted, isStreaming: d.isStreaming });
    }));
 
    return () => {

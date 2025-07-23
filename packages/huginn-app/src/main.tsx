@@ -5,10 +5,7 @@ import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
 import { enableLogs, type LogArgs, setOnLog } from "@huginn/shared";
 import { client } from "@stores/clientStore";
-import { PostHogProvider } from "posthog-js/react";
 import router from "./routes";
-
-const root = document.getElementById("root");
 
 // document.addEventListener("keypress", (e) => {
 // 	console.log(e.key);
@@ -21,10 +18,12 @@ const root = document.getElementById("root");
 // });
 
 enableLogs({
-	"api:voice": ["default", "send", "recv", "heartbeat"],
-	"app:voice-store": ["remote-sources"],
-	"app:voice-client": ["voice-recv"],
-	"api:gateway": ["default", "send", "recv", "heartbeat"],
+	// "api:voice": ["default", "send", "recv", "heartbeat"],
+	"api:voice": ["default", "recv", "local-voice-state"],
+	// "app:voice-store": ["remote-sources"],
+	// "app:voice-client": ["voice-recv"],
+	// "api:gateway": ["default", "send", "recv", "heartbeat"],
+	"api:gateway": ["default", "recv"],
 	"api:client": ["ready-state"],
 	"app:client-store": ["default"],
 });
@@ -62,6 +61,7 @@ export const queryClient = new QueryClient({
 // 	lastTime = currentTime;
 // }, 1000);
 
+const root = document.getElementById("root");
 // biome-ignore lint/style/noNonNullAssertion: react needs a non nullable root
 ReactDOM.createRoot(root!).render(
 	<QueryClientProvider client={queryClient}>

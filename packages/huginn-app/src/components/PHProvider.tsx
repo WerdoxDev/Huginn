@@ -6,7 +6,7 @@ posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_KEY, {
 	api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
 	defaults: "2025-05-24",
 	capture_exceptions: true,
-	debug: import.meta.env.DEV,
+	// debug: import.meta.env.DEV,
 	before_send: (event: CaptureResult | null): CaptureResult | null => {
 		if (event?.properties?.$current_url) {
 			// parse the URL

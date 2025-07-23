@@ -12,16 +12,14 @@ export default function VoiceControls(props: {
 	voiceState: GatewayVoiceState;
 	onToggleMute: () => void;
 	onToggleDeafen: () => void;
-	onStream: () => void;
-	onEndStream: () => void;
-	onVideo: () => void;
-	onStopVideo: () => void;
+	onStartStreaming: () => void;
+	onEndStreaming: () => void;
+	onStartCamera: () => void;
+	onStopCamera: () => void;
 	onDisconnect: () => void;
 	onConnect: () => void;
 	onToggleFullscreen: () => Promise<void>;
 }) {
-	const { localVoiceState: voiceState } = useVoiceStore();
-
 	return (
 		<Transition show={props.show}>
 			<div className="absolute inset-x-0 bottom-0 mb-2.5 flex shrink-0 items-center justify-center gap-x-2.5 transition data-closed:opacity-0">
@@ -32,12 +30,16 @@ export default function VoiceControls(props: {
 								<Tooltip.Trigger
 									className={clsx(
 										"h-full w-full rounded-lg px-5 py-1.5 text-white transition-[border-radius_background-color] hover:bg-surface",
-										props.voiceState.selfMute && "hover:!bg-negative-500 bg-negative-300",
-										voiceState.selfDeaf && voiceState.selfMute && "rounded-r-none",
+										props.voiceState.isAudioMuted && "hover:!bg-negative-500 bg-negative-300",
+										props.voiceState.isAudioDeafened && props.voiceState.isAudioMuted && "rounded-r-none",
 									)}
 									onClick={props.onToggleMute}
 								>
-									{props.voiceState.selfMute ? <IconMingcuteMicOffFill className="size-6" /> : <IconMingcuteMicFill className="size-6" />}
+									{props.voiceState.isAudioMuted ? (
+										<IconMingcuteMicOffFill className="size-6" />
+									) : (
+										<IconMingcuteMicFill className="size-6" />
+									)}
 								</Tooltip.Trigger>
 								<Tooltip.Content>Mute</Tooltip.Content>
 							</Tooltip>
@@ -45,12 +47,12 @@ export default function VoiceControls(props: {
 								<Tooltip.Trigger
 									className={clsx(
 										"h-full w-full rounded-lg px-5 py-1.5 text-white transition-[border-radius_background-color] hover:bg-surface",
-										props.voiceState.selfDeaf && "hover:!bg-negative-500 bg-negative-300",
-										voiceState.selfDeaf && voiceState.selfMute && "rounded-l-none",
+										props.voiceState.isAudioDeafened && "hover:!bg-negative-500 bg-negative-300",
+										props.voiceState.isAudioDeafened && props.voiceState.isAudioMuted && "rounded-l-none",
 									)}
 									onClick={props.onToggleDeafen}
 								>
-									{props.voiceState.selfDeaf ? (
+									{props.voiceState.isAudioDeafened ? (
 										<IconMingcuteVolumeOffFill className="size-6" />
 									) : (
 										<IconMingcuteVolumeFill className="size-6" />
@@ -65,15 +67,17 @@ export default function VoiceControls(props: {
 										<Tooltip.Trigger
 											className={clsx(
 												"flex h-full items-center justify-center rounded-lg text-white transition-colors",
-												voiceState.selfStream ? "!w-[38px] rounded-r-none bg-primary-900 hover:bg-primary-700" : "w-16 hover:bg-surface",
+												props.voiceState.isStreaming
+													? "!w-[38px] rounded-r-none bg-primary-900 hover:bg-primary-700"
+													: "w-16 hover:bg-surface",
 											)}
-											onClick={() => (voiceState.selfStream ? props.onEndStream() : props.onStream())}
+											onClick={() => (props.voiceState.isStreaming ? props.onEndStreaming() : props.onStartStreaming())}
 										>
 											<IconMingcuteMonitorFill className="size-6" />
 										</Tooltip.Trigger>
-										<Tooltip.Content>{voiceState.selfStream ? "End Stream" : "Start Stream"}</Tooltip.Content>
+										<Tooltip.Content>{props.voiceState.isStreaming ? "End Stream" : "Start Stream"}</Tooltip.Content>
 									</Tooltip>
-									{voiceState.selfStream && (
+									{props.voiceState.isStreaming && (
 										<DropdownMenu>
 											<DropdownMenu.Button className="ml-0.5 flex h-full items-center justify-center rounded-r-lg bg-primary-900 px-1 transition-colors hover:bg-primary-700">
 												{({ open }) =>
@@ -85,8 +89,8 @@ export default function VoiceControls(props: {
 												}
 											</DropdownMenu.Button>
 											<DropdownMenu.Items anchor="top" className="border border-surface [--anchor-gap:16px]">
-												<DropdownMenu.Item color="negative" label="End Stream" onClick={props.onEndStream} />
-												<DropdownMenu.Item label="Change Stream" onClick={props.onStream}>
+												<DropdownMenu.Item color="negative" label="End Stream" onClick={props.onEndStreaming} />
+												<DropdownMenu.Item label="Change Stream" onClick={props.onStartStreaming}>
 													<IconMingcuteTransfer3Fill />
 												</DropdownMenu.Item>
 											</DropdownMenu.Items>
@@ -97,13 +101,13 @@ export default function VoiceControls(props: {
 									<Tooltip.Trigger
 										className={clsx(
 											"flex h-full w-16 items-center justify-center rounded-lg text-white transition-colors",
-											voiceState.selfVideo ? "bg-primary-900 hover:bg-primary-700" : "hover:bg-surface",
+											props.voiceState.isCameraOn ? "bg-primary-900 hover:bg-primary-700" : "hover:bg-surface",
 										)}
-										onClick={() => (voiceState.selfVideo ? props.onStopVideo() : props.onVideo())}
+										onClick={() => (props.voiceState.isCameraOn ? props.onStopCamera() : props.onStartCamera())}
 									>
 										<IconMingcuteCamera2Fill className="size-6" />
 									</Tooltip.Trigger>
-									<Tooltip.Content>{voiceState.selfVideo ? "Turn off camera" : "Turn on camera"}</Tooltip.Content>
+									<Tooltip.Content>{props.voiceState.isCameraOn ? "Turn off camera" : "Turn on camera"}</Tooltip.Content>
 								</Tooltip>
 							</div>
 						</div>

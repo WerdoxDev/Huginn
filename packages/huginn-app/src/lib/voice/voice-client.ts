@@ -94,8 +94,6 @@ export class VoiceClient {
 
          const voice = voiceStore.getState();
 
-         voice.removeRemoteSource(d.producerId);
-
          const producer = voice.remoteSources.find((x) => x.producerId === d.producerId);
          if (producer) {
 
@@ -104,10 +102,12 @@ export class VoiceClient {
             }
 
             // Stop loopback capture
-            if (producer.kind === "screen_video" && producer.userId === client?.user?.id) {
+            if (producer.kind === "stream_video" && producer.userId === client?.user?.id) {
                this.stopAudioLoopback();
             }
          }
+
+         voice.removeRemoteSource(d.producerId);
 
          const audioPlayerIndex = this.audioSourcePlayers.findIndex((x) => x.producerId === d.producerId);
          if (audioPlayerIndex !== -1) {
@@ -153,11 +153,11 @@ export class VoiceClient {
 
          // Pause the microphone as soon as it's opened
          if (d.kind === "microphone") {
-            client.voice.updateLocalVoiceState({ audioPaused: true })
+            client.voice.updateLocalVoiceState({ isAudioPaused: true })
             voice.updateSpeakingState(client.user.id, false);
          }
 
-         if (d.kind === "screen_video" || d.kind === "camera") {
+         if (d.kind === "stream_video" || d.kind === "camera") {
             const stream = new MediaStream([d.track]);
 
             voice.addRemoteSource(client.user.id, undefined, d.producerId, d.kind, stream);
@@ -170,7 +170,7 @@ export class VoiceClient {
 
          const store = voiceStore.getState();
 
-         if (d.kind === "screen_video" && d.track) {
+         if (d.kind === "stream_video" && d.track) {
             const stream = new MediaStream([d.track]);
             store.updateRemoteSource(d.producerId, { srcObject: stream });
          }
@@ -183,7 +183,7 @@ export class VoiceClient {
          const store = voiceStore.getState();
          const preference = store.voicePreferences.find((x) => x.userId === d.userId);
          const microphonePlayer = this.audioSourcePlayers.find((x) => x.userId === d.userId && x.kind === "microphone");
-         const screensharePlayer = this.audioSourcePlayers.find((x) => x.userId === d.userId && x.kind === "screen_audio");
+         const screensharePlayer = this.audioSourcePlayers.find((x) => x.userId === d.userId && x.kind === "stream_audio");
 
          if (!preference || (!microphonePlayer && !screensharePlayer)) {
             return;
@@ -269,17 +269,17 @@ export class VoiceClient {
             clearTimeout(timeout);
             timeout = window.setTimeout(() => {
                if (!lastState) {
-                  client?.voice.updateLocalVoiceState({ audioPaused: true });
+                  client?.voice.updateLocalVoiceState({ isAudioPaused: true });
                   // client.voice.pauseMicrophone();
                   voice.updateSpeakingState(userId, false);
                }
                timeout = undefined;
             }, 700);
 
-            if (client?.voice.localVoiceState.audioPaused) {
-               client.voice.updateLocalVoiceState({ audioPaused: false });
+            if (client?.voice.localVoiceState.isAudioPaused) {
+               client.voice.updateLocalVoiceState({ isAudioPaused: false });
 
-               if (!client.voice.localVoiceState.audioMuted) {
+               if (!client.voice.localVoiceState.isAudioMuted) {
                   voice.updateSpeakingState(userId, true);
                }
             }
@@ -325,7 +325,7 @@ export class VoiceClient {
    }
 
    /**
-    * Initializes all microphone and screen_audio players according to the remote sources
+    * Initializes all microphone and stream_audio players according to the remote sources
     */
    private initRemoteAudioSourcePlayers(remoteSources: RemoteSource[], voicePreferences: VoicePreference[], outputVolumePercent: number) {
       log("app:voice-client", "default", "initialize audio source players", "ovol:", outputVolumePercent, "nres:", remoteSources.length);
@@ -342,7 +342,7 @@ export class VoiceClient {
          if (
             remoteSource.userId === client?.user?.id ||
             remoteSource.kind === "camera" ||
-            remoteSource.kind === "screen_video" ||
+            remoteSource.kind === "stream_video" ||
             !remoteSource.srcObject
          ) {
             continue;
@@ -361,7 +361,7 @@ export class VoiceClient {
 
          if (remoteSource.kind === "microphone") {
             sourcePlayer.setGain(undefined, preference?.microphoneVolume);
-         } else if (remoteSource.kind === "screen_audio") {
+         } else if (remoteSource.kind === "stream_audio") {
             sourcePlayer.setGain(undefined, preference?.screenshareVolume);
          }
       }
@@ -371,10 +371,10 @@ export class VoiceClient {
       log("app:voice-client", "default", "connect", "cid:", channelId)
 
       const voice = voiceStore.getState();
-      await client?.gateway.connectVoice(guildId, channelId, { selfMute: voice.localVoiceState.selfMute, selfDeaf: voice.localVoiceState.selfDeaf });
+      await client?.gateway.connectVoice(guildId, channelId, { isAudioMuted: voice.localVoiceState.isAudioMuted, isAudioDeafened: voice.localVoiceState.isAudioDeafened });
    }
 
-   public async watchStream(userId: Snowflake) {
+   public async watchScreenshare(userId: Snowflake) {
       if (!client) {
          return;
       }
@@ -383,19 +383,19 @@ export class VoiceClient {
 
       const voice = voiceStore.getState();
 
-      const videoProducerId = voice.remoteSources.find((x) => x.kind === "screen_video" && x.userId === userId)?.producerId;;
-      const audioProducerId = voice.remoteSources.find((x) => x.kind === "screen_audio" && x.userId === userId)?.producerId;
+      const videoProducerId = voice.remoteSources.find((x) => x.kind === "stream_video" && x.userId === userId)?.producerId;;
+      const audioProducerId = voice.remoteSources.find((x) => x.kind === "stream_audio" && x.userId === userId)?.producerId;
 
       if (videoProducerId) {
-         client?.voice.consumeProducer(videoProducerId);
+         await client?.voice.consumeProducer(videoProducerId);
 
          if (audioProducerId) {
-            client?.voice.consumeProducer(audioProducerId);
+            await client?.voice.consumeProducer(audioProducerId);
          }
       }
    }
 
-   public async unwatchStream(userId: Snowflake) {
+   public async unwatchScreenshare(userId: Snowflake) {
       if (!client) {
          return;
       }
@@ -404,8 +404,8 @@ export class VoiceClient {
 
       const voice = voiceStore.getState();
 
-      const videoConsumerId = voice.remoteSources.find((x) => x.kind === "screen_video" && x.userId === userId)?.consumerId;
-      const audioConsumerId = voice.remoteSources.find((x) => x.kind === "screen_audio" && x.userId === userId)?.consumerId;
+      const videoConsumerId = voice.remoteSources.find((x) => x.kind === "stream_video" && x.userId === userId)?.consumerId;
+      const audioConsumerId = voice.remoteSources.find((x) => x.kind === "stream_audio" && x.userId === userId)?.consumerId;
 
       if (videoConsumerId) client.voice.closeConsumer(videoConsumerId);
       if (audioConsumerId) client.voice.closeConsumer(audioConsumerId);
@@ -427,8 +427,8 @@ export class VoiceClient {
          }
 
          const { data: ready } = await client.voice.waitForEvents(["ready"], true);
-         videoProducerId = ready.producers.find(x => x.kind === "screen_video" && x.producerUserId === userId)?.producerId;
-         audioProducerId = ready.producers.find(x => x.kind === "screen_audio" && x.producerUserId === userId)?.producerId;
+         videoProducerId = ready.producers.find(x => x.kind === "stream_video" && x.producerUserId === userId)?.producerId;
+         audioProducerId = ready.producers.find(x => x.kind === "stream_audio" && x.producerUserId === userId)?.producerId;
          unlisten();
       });
       await this.connect(guildId, channelId);

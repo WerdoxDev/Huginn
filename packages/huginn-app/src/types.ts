@@ -304,7 +304,7 @@ export type AppSettings = {
    theme: ThemeType;
    inputDeviceId: string;
    outputDeviceId: string;
-   videoDeviceId: string;
+   cameraDeviceId: string;
    inputVolume: number;
    outputVolume: number;
    inputThreshold: number;

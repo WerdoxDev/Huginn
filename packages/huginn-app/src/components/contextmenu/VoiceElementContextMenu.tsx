@@ -13,7 +13,7 @@ export default function VoiceElementContextMenu() {
 	const preference = useMemo(() => voicePreferences.find((x) => x.userId === data?.user.id), [voicePreferences]);
 
 	const hasAudio = useMemo(
-		() => data?.kind === "screen_video" && remoteSources.some((x) => x.kind === "screen_audio" && x.userId === data.user.id),
+		() => data?.kind === "stream_video" && remoteSources.some((x) => x.kind === "stream_audio" && x.userId === data.user.id),
 		[remoteSources, data],
 	);
 
@@ -33,7 +33,7 @@ export default function VoiceElementContextMenu() {
 		}
 
 		if (client.voice.status === "authenticated") {
-			await voiceClient.watchStream(data.user.id);
+			await voiceClient.watchScreenshare(data.user.id);
 		} else {
 			await voiceClient.connectAndWatchStream(null, data?.channelId, data?.user.id);
 		}
@@ -58,10 +58,10 @@ export default function VoiceElementContextMenu() {
 					<RangeInput minValue={0} maxValue={200} defaultValue={preference?.microphoneVolume} onChange={onChange} />
 				</ContextMenu.Item>
 			)}
-			{data.kind === "screen_video" && (
+			{data.kind === "stream_video" && (
 				<>
 					{isWatching ? (
-						<ContextMenu.Item label="Stop Watching" color="negative" onClick={() => voiceClient.unwatchStream(data.user.id)} />
+						<ContextMenu.Item label="Stop Watching" color="negative" onClick={() => voiceClient.unwatchScreenshare(data.user.id)} />
 					) : (
 						<ContextMenu.Item label="Watch" onClick={watch} />
 					)}

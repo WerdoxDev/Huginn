@@ -19,7 +19,7 @@ export default function VoiceVideoStats(props: {
 			transition={props.transition}
 			className="absolute top-2 right-2 flex gap-x-2 rounded-lg bg-surface-deep px-2 py-1 italic opacity-0 transition-opacity group-hover/element:opacity-100"
 		>
-			{props.kind === "screen_video" &&
+			{props.kind === "stream_video" &&
 				(props.hasAudio ? (
 					<IconMingcuteVolumeFill className="text-positive-100" />
 				) : (

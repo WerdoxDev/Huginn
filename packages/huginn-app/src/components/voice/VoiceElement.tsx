@@ -36,12 +36,12 @@ export default function VoiceElement(props: {
 
 	const hasAudio = useMemo(
 		() =>
-			remoteSources.find((x) => x.kind === "screen_audio" && x.userId === props.userId) !== undefined ||
-			(client.voice.producers.get("screen_audio") !== undefined && thisUser?.id === props.userId),
+			remoteSources.find((x) => x.kind === "stream_audio" && x.userId === props.userId) !== undefined ||
+			(client.voice.producers.get("stream_audio") !== undefined && thisUser?.id === props.userId),
 		[remoteSources, voiceState],
 	);
 
-	const isVideo = useMemo(() => props.remoteSource?.kind === "camera" || props.remoteSource?.kind === "screen_video", [props.remoteSource]);
+	const isVideo = useMemo(() => props.remoteSource?.kind === "camera" || props.remoteSource?.kind === "stream_video", [props.remoteSource]);
 	const isPreview = useMemo(
 		() => isVideo && !props.remoteSource?.srcObject && !props.remoteSource?.consumerId,
 		[props.remoteSource?.srcObject, props.remoteSource?.consumerId, isVideo],
@@ -75,7 +75,12 @@ export default function VoiceElement(props: {
 		}
 	}, [props.remoteSource?.srcObject]);
 
-	const transition: Transition = { type: "spring", bounce: 0, damping: 26, stiffness: 200 };
+	const transition: Transition = {
+		type: "spring",
+		bounce: 0,
+		damping: 26,
+		stiffness: 200,
+	};
 
 	const variants: Variants = {
 		visible: {
@@ -97,7 +102,10 @@ export default function VoiceElement(props: {
 			transition={transition}
 			ref={props.ref}
 			onClick={() => props.onClick?.(props.remoteSource?.producerId ?? "")}
-			style={{ width: props.isGridView ? props.gridElementWidth : "auto", borderRadius: props.isMaximized ? "0px" : "12px" }}
+			style={{
+				width: props.isGridView ? props.gridElementWidth : "auto",
+				borderRadius: props.isMaximized ? "0px" : "12px",
+			}}
 			onContextMenu={onContextMenu}
 			id={props.remoteSource?.consumerId}
 			className={clsx(

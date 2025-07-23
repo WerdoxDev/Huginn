@@ -14,7 +14,7 @@ const initialStore = () =>
       theme: "pine green",
       inputDeviceId: "",
       outputDeviceId: "",
-      videoDeviceId: "",
+      cameraDeviceId: "",
       inputThreshold: -50,
       inputVolume: 100,
       outputVolume: 100,
