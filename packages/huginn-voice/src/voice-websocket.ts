@@ -48,6 +48,11 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             transportData.transport.close();
          }
 
+         // Send producer_closed for all of the user producers
+         for (const producer of rtcPeer.producers.values()) {
+            this.handleCloseProducer(session, { channelId: router.channelId, producerId: producer.id })
+         }
+
          router.peers.delete(session.sessionId);
          const producerIds = Array.from(rtcPeer.producers.values().map((x) => x.id));
          for (const [otherPeerId] of router.peers) {
@@ -205,12 +210,6 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          appData: { mediaKind: data.kind, userId: rtcPeer.userId },
       });
 
-      // if (data.kind === "screen_video") {
-      //    setInterval(async () => {
-      //       console.log(await producer.getStats());
-      //    }, 100)
-      // }
-
       rtcPeer?.producers.set(producer.id, producer);
 
       for (const [otherSessionId] of router.peers) {
@@ -315,8 +314,17 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          s: session.getIncreasedSequence()
       };
 
-      for (const [otherPeerId] of router.peers) {
+      for (const [otherPeerId, otherPeer] of router.peers) {
          ws.publish(otherPeerId, JSON.stringify(producerClosedData));
+
+         for (const consumer of otherPeer.consumers.values().filter(x => x.producerId === data.producerId)) {
+            const otherSession = this.sessions.get(otherPeer.sessionId);
+            if (!otherSession) {
+               continue;
+            }
+
+            this.handleCloseConsumer(otherSession, { channelId: data.channelId, consumerId: consumer.id })
+         }
       }
    }
 
