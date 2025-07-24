@@ -202,36 +202,38 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       await this.client.gateway.updateVoiceState({ isAudioDeafened: this.localVoiceState.isAudioDeafened, isAudioMuted: this.localVoiceState.isAudioMuted, isCameraOn: false, isStreaming: this.localVoiceState.isStreaming });
    }
 
-   public async startStreaming(videoTrack: MediaStreamTrack, audioTrack?: MediaStreamTrack): Promise<void> {
+   public async startStream(videoTrack?: MediaStreamTrack, audioTrack?: MediaStreamTrack): Promise<void> {
       if (!this.sendTransport || !this.client.user) {
          return;
       }
 
-      log("api:voice", "default", "start streaming");
-
-      videoTrack.onended = async () => {
-         await this.stopStreaming();
-      };
+      log("api:voice", "default", "start stream");
 
       const videoProducer = this.producers.get("stream_video");
       const audioProducer = this.producers.get("stream_audio");
 
-      if (videoProducer) {
-         await videoProducer.replaceTrack({ track: videoTrack });
-      } else {
-         await this.openProducer("stream_video", {
-            track: videoTrack,
-            appData: { mediaKind: "stream_video", userId: this.client.user.id },
-            encodings: [{ scalabilityMode: "L1T3" }],
-            codecOptions: { videoGoogleStartBitrate: 1000000, videoGoogleMinBitrate: 10000, videoGoogleMaxBitrate: 3000000 },
-         });
+      if (videoTrack) {
+         videoTrack.onended = async () => {
+            await this.stopStream();
+         };
+
+         if (videoProducer) {
+            await videoProducer.replaceTrack({ track: videoTrack });
+         } else {
+            await this.openProducer("stream_video", {
+               track: videoTrack,
+               appData: { mediaKind: "stream_video", userId: this.client.user.id },
+               encodings: [{ scalabilityMode: "L1T3" }],
+               codecOptions: { videoGoogleStartBitrate: 1000000, videoGoogleMinBitrate: 10000, videoGoogleMaxBitrate: 3000000 },
+            });
+         }
       }
 
       if (audioTrack) {
          if (audioProducer) {
             await audioProducer.replaceTrack({ track: audioTrack });
          } else {
-            await this.openProducer("stream_audio", { track: audioTrack, appData: { mediaKind: "stream_audio", userId: this.client.user.id } });
+            await this.openProducer("stream_audio", { track: audioTrack, appData: { mediaKind: "stream_audio", userId: this.client.user.id }, codecOptions: { opusStereo: true, opusMaxAverageBitrate: 1000000 } });
          }
       }
 
@@ -239,15 +241,19 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          await this.closeProducer(audioProducer.id);
       }
 
+      if (videoProducer && !videoTrack) {
+         await this.closeProducer(videoProducer.id);
+      }
+
       await this.client.gateway.updateVoiceState({ isAudioDeafened: this.localVoiceState.isAudioDeafened, isAudioMuted: this.localVoiceState.isAudioMuted, isCameraOn: this.localVoiceState.isCameraOn, isStreaming: true });
    }
 
-   public async stopStreaming(): Promise<void> {
+   public async stopStream(): Promise<void> {
       if (!this.connectionInfo) {
          return;
       }
 
-      log("api:voice", "default", "stop screensharing");
+      log("api:voice", "default", "stop stream");
 
       const videoProducer = this.producers.get("stream_video");
       const audioProducer = this.producers.get("stream_audio");
