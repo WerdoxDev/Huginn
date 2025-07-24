@@ -1,8 +1,4 @@
 
 
 ### ✨ Features
-- **Screenshare settings** now persist between sessions.
-- **Voice preference** is now saved.
-- **Audio volume** is now non-linear for a more natural sound.
-
----
+- **Audio Stream** A new kind of audio-only streaming with a nice visualizer.
