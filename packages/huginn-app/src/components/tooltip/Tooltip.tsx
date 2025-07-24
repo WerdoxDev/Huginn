@@ -76,7 +76,7 @@ function Content(props: { extraClassName?: string; arrowClassName?: string; extr
 			{/* <Portal> */}
 			<div
 				className={clsx(
-					"absolute z-999 rounded-md border border-surface bg-zinc-900 px-2.5 py-1.5 text-base text-white/80 shadow-lg",
+					"absolute z-999 whitespace-nowrap rounded-md border border-surface bg-zinc-900 px-2.5 py-1.5 text-base text-white/80 shadow-lg",
 					props.extraClassName,
 				)}
 				ref={ref}

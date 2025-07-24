@@ -1,6 +1,7 @@
+import type { Window } from "application-loopback";
 import { contextBridge, ipcRenderer } from "electron";
 import type { ProgressInfo, UpdateInfo } from "electron-updater";
-import type { DisplaySource } from "@/types";
+import type { AudioSource, DisplaySource } from "@/types";
 
 export const electronAPI = {
    getVersion: () => ipcRenderer.invoke("window:version") as Promise<string>,
@@ -20,9 +21,10 @@ export const electronAPI = {
    saveFile: (name: string, content: unknown) => ipcRenderer.invoke("file:save", name, content) as Promise<void>,
    fileExists: (name: string) => ipcRenderer.invoke("file:exists", name) as Promise<boolean>,
    getDisplaySources: () => ipcRenderer.invoke("window:get-display-sources") as Promise<DisplaySource[]>,
+   getAudioSources: () => ipcRenderer.invoke("window:get-audio-sources") as Promise<AudioSource[]>,
    setSelectedDisplaySource: (sourceId: string) => ipcRenderer.send("window:set-selected-display-source", sourceId),
-   startAudioLoopback: (processTitle: string) => ipcRenderer.send("audio:start-loopback", processTitle),
-   stopAudioLoopback: () => ipcRenderer.send("audio:stop-loopback"),
+   startAudioLoopback: (processTitle?: string, processId?: string) => ipcRenderer.send("audio:start-loopback", processTitle, processId),
+   stopAudioLoopback: () => ipcRenderer.invoke("audio:stop-loopback") as Promise<void>,
    onUpdateProgress: (callback: (_event: Electron.IpcRendererEvent, info: ProgressInfo) => void) => {
       ipcRenderer.on("update:progress", callback);
       return () => ipcRenderer.off("update:progress", callback);

@@ -14,10 +14,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import type { DisplaySource } from "@/types";
 
-export default function ScreenshareModal() {
+export default function ScreenShareModal() {
 	const client = useClient();
-	const { screenshare: modal, updateModals } = useModals();
-	const { data, isLoading, refetch } = useQuery({
+	const { screenShare: modal, updateModals } = useModals();
+	const { data, isFetching, isLoading, refetch } = useQuery({
 		queryKey: ["display-sources"],
 		queryFn: async () => await window.electronAPI.getDisplaySources(),
 		enabled: modal.isOpen,
@@ -26,28 +26,28 @@ export default function ScreenshareModal() {
 	const settings = useSettings();
 
 	const [selectedSource, setSelectedSource] = useState<DisplaySource | undefined>();
-	const [selectedQuality, setSelectedQuality] = useState(settings.local.screenshareQuality);
-	const [selectedFramerate, setSelectedFramerate] = useState(settings.local.screenshareFramerate);
-	const [shareAudio, setShareAudio] = useState(settings.local.screenshareAudio);
-	const [screensharePending, startTransition] = useTransition();
+	const [selectedQuality, setSelectedQuality] = useState(settings.local.screenShareQuality);
+	const [selectedFramerate, setSelectedFramerate] = useState(settings.local.screenShareFramerate);
+	const [shareAudio, setShareAudio] = useState(settings.local.screenShareAudio);
+	const [screenSharePending, startTransition] = useTransition();
 
 	const screens = useMemo(() => data?.filter((x) => x.id.includes("screen")), [data]);
 	const applications = useMemo(() => data?.filter((x) => x.id.includes("window")), [data]);
 
 	useEffect(() => {
 		if (modal.isOpen) {
-			setSelectedQuality(settings.local.screenshareQuality);
-			setSelectedFramerate(settings.local.screenshareFramerate);
-			setShareAudio(settings.local.screenshareAudio);
+			setSelectedQuality(settings.local.screenShareQuality);
+			setSelectedFramerate(settings.local.screenShareFramerate);
+			setShareAudio(settings.local.screenShareAudio);
 			refetch();
 		}
 
 		if (!modal.isOpen) {
 			console.log(selectedQuality);
 			settings.setSettings({
-				screenshareQuality: selectedQuality,
-				screenshareFramerate: selectedFramerate,
-				screenshareAudio: shareAudio,
+				screenShareQuality: selectedQuality,
+				screenShareFramerate: selectedFramerate,
+				screenShareAudio: shareAudio,
 			});
 			settings.saveSettings();
 		}
@@ -58,7 +58,7 @@ export default function ScreenshareModal() {
 	}
 
 	function close() {
-		updateModals({ screenshare: { isOpen: false } });
+		updateModals({ screenShare: { isOpen: false } });
 	}
 
 	async function stream() {
@@ -88,14 +88,14 @@ export default function ScreenshareModal() {
 			});
 
 			// Reset loopback even if we want to start a new one / end the last one
-			voiceClient.stopAudioLoopback();
+			await voiceClient.stopAudioLoopback();
 
 			let audioTrack: MediaStreamTrack | undefined = stream.getAudioTracks()[0];
 			if (!audioTrack && shareAudio) {
 				audioTrack = voiceClient.getAudioTrackFromLoopback(selectedSource.name);
 			}
 
-			await client.voice.startStreaming(stream.getVideoTracks()[0], audioTrack);
+			await client.voice.startStream(stream.getVideoTracks()[0], audioTrack);
 			close();
 		});
 	}
@@ -225,15 +225,15 @@ export default function ScreenshareModal() {
 						Back
 					</HuginnButton>
 				) : (
-					<HuginnButton className="h-10 w-24" color="surface" onClick={refetch}>
+					<LoadingButton className="h-10 w-24" color="surface" onClick={refetch} loading={isFetching}>
 						Refresh
-					</HuginnButton>
+					</LoadingButton>
 				)}
 				<HuginnButton className="ml-auto h-10 w-20 decoration-white hover:underline" onClick={close}>
 					Cancel
 				</HuginnButton>
 				<LoadingButton
-					loading={screensharePending}
+					loading={screenSharePending}
 					className="h-10 w-24"
 					color="primary"
 					onClick={stream}

@@ -2,7 +2,12 @@ import type { DisplaySource } from "@/types";
 
 export default function DisplayPreview(props: { source: DisplaySource; onSelect: (source: DisplaySource) => void }) {
 	return (
-		<div className="group flex cursor-pointer select-none flex-col gap-y-2 " draggable={false} onClick={() => props.onSelect(props.source)}>
+		<button
+			type="button"
+			className="group flex cursor-pointer select-none flex-col gap-y-2 "
+			draggable={false}
+			onClick={() => props.onSelect(props.source)}
+		>
 			<img
 				src={props.source.thumbnail}
 				alt={props.source.id}
@@ -16,6 +21,6 @@ export default function DisplayPreview(props: { source: DisplaySource; onSelect:
 				)}
 				<div className="overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm text-white">{props.source.name}</div>
 			</div>
-		</div>
+		</button>
 	);
 }

@@ -39,7 +39,8 @@ const initialStore = () => ({
       filename?: string;
    },
    news: { isOpen: false, html: "" } as DefaultModal & { html: string },
-   screenshare: { isOpen: false } as DefaultModal,
+   screenShare: { isOpen: false } as DefaultModal,
+   streamAudio: { isOpen: false } as DefaultModal,
 });
 
 type StoreType = ReturnType<typeof initialStore>;

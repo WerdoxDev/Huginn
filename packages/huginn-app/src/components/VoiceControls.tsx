@@ -1,7 +1,7 @@
 import { Transition } from "@headlessui/react";
 import type { GatewayVoiceState } from "@huginn/shared";
-import { useVoiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
+import { useMemo } from "react";
 import DropdownMenu from "./dropdown/DowndownMenu";
 import Tooltip from "./tooltip/Tooltip";
 
@@ -12,8 +12,10 @@ export default function VoiceControls(props: {
 	voiceState: GatewayVoiceState;
 	onToggleMute: () => void;
 	onToggleDeafen: () => void;
-	onStartStreaming: () => void;
-	onEndStreaming: () => void;
+	onStartScreenShare: () => void;
+	onStartAudioStream: () => void;
+	onEndStream: () => void;
+	onChangeStream: () => void;
 	onStartCamera: () => void;
 	onStopCamera: () => void;
 	onDisconnect: () => void;
@@ -62,41 +64,13 @@ export default function VoiceControls(props: {
 							</Tooltip>
 							<div className="mx-0.5 my-1 w-0.5 shrink-0 bg-surface" />
 							<div className="flex gap-x-1">
-								<div className="flex">
-									<Tooltip>
-										<Tooltip.Trigger
-											className={clsx(
-												"flex h-full items-center justify-center rounded-lg text-white transition-colors",
-												props.voiceState.isStreaming
-													? "!w-[38px] rounded-r-none bg-primary-900 hover:bg-primary-700"
-													: "w-16 hover:bg-surface",
-											)}
-											onClick={() => (props.voiceState.isStreaming ? props.onEndStreaming() : props.onStartStreaming())}
-										>
-											<IconMingcuteMonitorFill className="size-6" />
-										</Tooltip.Trigger>
-										<Tooltip.Content>{props.voiceState.isStreaming ? "End Stream" : "Start Stream"}</Tooltip.Content>
-									</Tooltip>
-									{props.voiceState.isStreaming && (
-										<DropdownMenu>
-											<DropdownMenu.Button className="ml-0.5 flex h-full items-center justify-center rounded-r-lg bg-primary-900 px-1 transition-colors hover:bg-primary-700">
-												{({ open }) =>
-													open ? (
-														<IconMingcuteUpFill className="size-4 text-text" />
-													) : (
-														<IconMingcuteDownFill className="size-4 text-text" />
-													)
-												}
-											</DropdownMenu.Button>
-											<DropdownMenu.Items anchor="top" className="border border-surface [--anchor-gap:16px]">
-												<DropdownMenu.Item color="negative" label="End Stream" onClick={props.onEndStreaming} />
-												<DropdownMenu.Item label="Change Stream" onClick={props.onStartStreaming}>
-													<IconMingcuteTransfer3Fill />
-												</DropdownMenu.Item>
-											</DropdownMenu.Items>
-										</DropdownMenu>
-									)}
-								</div>
+								<StreamButton
+									voiceState={props.voiceState}
+									onStartScreenShare={props.onStartScreenShare}
+									onStartAudioStream={props.onStartAudioStream}
+									onEndStream={props.onEndStream}
+									onChangeStream={props.onChangeStream}
+								/>
 								<Tooltip>
 									<Tooltip.Trigger
 										className={clsx(
@@ -140,5 +114,64 @@ export default function VoiceControls(props: {
 				</Tooltip>
 			</div>
 		</Transition>
+	);
+}
+
+function StreamButton(props: {
+	voiceState: GatewayVoiceState;
+	onStartScreenShare?: () => void;
+	onStartAudioStream?: () => void;
+	onEndStream?: () => void;
+	onChangeStream?: () => void;
+}) {
+	const isStreaming = useMemo(() => props.voiceState.isStreaming, [props.voiceState]);
+
+	return isStreaming ? (
+		<div className="flex">
+			<Tooltip>
+				<Tooltip.Trigger
+					className="flex w-[38px] items-center justify-center rounded-lg rounded-r-none bg-primary-900 text-white transition-colors hover:bg-primary-700"
+					onClick={props.onEndStream}
+				>
+					<IconMingcuteCloseFill className="size-6" />
+				</Tooltip.Trigger>
+				<Tooltip.Content>End Stream</Tooltip.Content>
+			</Tooltip>
+			<DropdownMenu>
+				<DropdownMenu.Button className="ml-0.5 flex h-full items-center justify-center rounded-r-lg bg-primary-900 px-1 transition-colors hover:bg-primary-700">
+					{({ open }) => (open ? <IconMingcuteUpFill className="size-4 text-text" /> : <IconMingcuteDownFill className="size-4 text-text" />)}
+				</DropdownMenu.Button>
+				<DropdownMenu.Items anchor="top" className="border border-surface [--anchor-gap:16px]">
+					<DropdownMenu.Item color="negative" label="End Stream" onClick={props.onEndStream} />
+					<DropdownMenu.Item label="Change Stream" onClick={props.onChangeStream}>
+						<IconMingcuteTransfer3Fill />
+					</DropdownMenu.Item>
+				</DropdownMenu.Items>
+			</DropdownMenu>
+		</div>
+	) : (
+		<DropdownMenu>
+			<Tooltip>
+				<Tooltip.Trigger
+					asChild
+					className="flex h-full w-16 items-center justify-center rounded-lg text-white transition-colors hover:bg-surface"
+				>
+					<DropdownMenu.Button>
+						<IconMingcuteMonitorFill className="size-5 shrink-0" />
+						<div className="text-sm text-white/50">/</div>
+						<IconMingcuteVolumeFill className="size-5 shrink-0" />
+					</DropdownMenu.Button>
+				</Tooltip.Trigger>
+				<Tooltip.Content>Start Stream</Tooltip.Content>
+			</Tooltip>
+			<DropdownMenu.Items anchor="top" className="border border-surface [--anchor-gap:16px]">
+				<DropdownMenu.Item label="Screen Share" onClick={props.onStartScreenShare}>
+					<IconMingcuteMonitorFill />
+				</DropdownMenu.Item>
+				<DropdownMenu.Item label="Audio Stream" onClick={props.onStartAudioStream}>
+					<IconMingcuteVolumeFill />
+				</DropdownMenu.Item>
+			</DropdownMenu.Items>
+		</DropdownMenu>
 	);
 }

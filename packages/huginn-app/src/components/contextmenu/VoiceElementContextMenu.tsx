@@ -13,7 +13,9 @@ export default function VoiceElementContextMenu() {
 	const preference = useMemo(() => voicePreferences.find((x) => x.userId === data?.user.id), [voicePreferences]);
 
 	const hasAudio = useMemo(
-		() => data?.kind === "stream_video" && remoteSources.some((x) => x.kind === "stream_audio" && x.userId === data.user.id),
+		() =>
+			(data?.kind === "stream_video" && remoteSources.some((x) => x.kind === "stream_audio" && x.userId === data.user.id)) ||
+			data?.kind === "stream_audio",
 		[remoteSources, data],
 	);
 
@@ -24,7 +26,7 @@ export default function VoiceElementContextMenu() {
 			return;
 		}
 
-		updateVoicePreferences(data.user.id, data.kind === "microphone" ? { microphoneVolume: value } : { screenshareVolume: value });
+		updateVoicePreferences(data.user.id, data.kind === "microphone" ? { microphoneVolume: value } : { screenShareVolume: value });
 	}
 
 	async function watch() {
@@ -58,10 +60,14 @@ export default function VoiceElementContextMenu() {
 					<RangeInput minValue={0} maxValue={200} defaultValue={preference?.microphoneVolume} onChange={onChange} />
 				</ContextMenu.Item>
 			)}
-			{data.kind === "stream_video" && (
+			{(data.kind === "stream_video" || data.kind === "stream_audio") && (
 				<>
 					{isWatching ? (
-						<ContextMenu.Item label="Stop Watching" color="negative" onClick={() => voiceClient.unconsumeStream(data.user.id)} />
+						<ContextMenu.Item
+							label={data.kind === "stream_video" ? "Stop Watching" : "Stop Listening"}
+							color="negative"
+							onClick={() => voiceClient.unconsumeStream(data.user.id)}
+						/>
 					) : (
 						<ContextMenu.Item label="Watch" onClick={watch} />
 					)}
@@ -71,7 +77,7 @@ export default function VoiceElementContextMenu() {
 							className="!items-start focus:!bg-inherit mt-1 min-w-40 cursor-default flex-col gap-y-1 px-1"
 							preventClose
 						>
-							<RangeInput minValue={0} maxValue={200} defaultValue={preference?.screenshareVolume} onChange={onChange} />
+							<RangeInput minValue={0} maxValue={200} defaultValue={preference?.screenShareVolume} onChange={onChange} />
 						</ContextMenu.Item>
 					)}
 				</>

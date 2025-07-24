@@ -143,8 +143,8 @@ const store = createStore(
 
             return set({ speakingStates: [] });
          },
-         updateVoicePreferences: (userId: Snowflake, update: { microphoneVolume?: number; screenshareVolume?: number }) => {
-            log("app:voice-store", "voice-preferences", "update", "uid:", userId, "mvol:", update.microphoneVolume, "svol:", update.screenshareVolume)
+         updateVoicePreferences: (userId: Snowflake, update: { microphoneVolume?: number; screenShareVolume?: number }) => {
+            log("app:voice-store", "voice-preferences", "update", "uid:", userId, "mvol:", update.microphoneVolume, "svol:", update.screenShareVolume)
 
             set(
                produce((draft: StoreType) => {
@@ -152,14 +152,14 @@ const store = createStore(
                   if (existingIndex !== -1) {
                      draft.voicePreferences[existingIndex] = { ...draft.voicePreferences[existingIndex], ...update };
                   } else {
-                     if (!update.microphoneVolume || !update.screenshareVolume) {
-                        throw new Error("Creating new voice preference requires both microphone and screenshare volumes");
+                     if (!update.microphoneVolume || !update.screenShareVolume) {
+                        throw new Error("Creating new voice preference requires both microphone and screen share volumes");
                      }
 
                      draft.voicePreferences.push({
                         userId,
                         microphoneVolume: update.microphoneVolume,
-                        screenshareVolume: update.screenshareVolume,
+                        screenShareVolume: update.screenShareVolume,
                      });
                   }
                }),
@@ -193,7 +193,7 @@ export function initializeVoice() {
       store.setState({ callStates: d.callStates });
 
       const preferences = await loadFile("voice-preferences", []);
-      const finalPreferences = d.voiceStates.map((x) => preferences.find(y => y.userId === x.userId) ?? ({ userId: x.userId, microphoneVolume: 100, screenshareVolume: 100 }));
+      const finalPreferences = d.voiceStates.map((x) => preferences.find(y => y.userId === x.userId) ?? ({ userId: x.userId, microphoneVolume: 100, screenShareVolume: 100 }));
       store.setState({ voicePreferences: finalPreferences })
    }));
 
@@ -226,7 +226,7 @@ export function initializeVoice() {
       } else {
          // create voice preference for new users
          if (!thisStore.voicePreferences.some((x) => x.userId === d.userId)) {
-            thisStore.updateVoicePreferences(d.userId, { microphoneVolume: 100, screenshareVolume: 100 });
+            thisStore.updateVoicePreferences(d.userId, { microphoneVolume: 100, screenShareVolume: 100 });
          }
       }
 

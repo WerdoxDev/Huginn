@@ -11,6 +11,7 @@ import clsx from "clsx";
 import { motion, type Transition, type Variants } from "motion/react";
 import { type MouseEvent, type RefObject, useEffect, useMemo, useRef, useState } from "react";
 import type { RemoteSource } from "@/types";
+import VoiceAudioVisualizer from "./VoiceAudioVisualizer";
 import { VoiceLabel } from "./VoiceLabel";
 import VoiceVideoStats from "./VoiceVideoStats";
 
@@ -26,7 +27,7 @@ export default function VoiceElement(props: {
 	isSpeaking?: boolean;
 	voiceState?: GatewayVoiceState;
 	onClick?: (producerId: string) => void;
-	onWatch?: (userId: Snowflake) => void;
+	onConsume?: (userId: Snowflake) => void;
 	ref?: RefObject<HTMLDivElement>;
 }) {
 	const { open: openContextMenu } = useContextMenu("voice_element");
@@ -47,20 +48,22 @@ export default function VoiceElement(props: {
 	);
 
 	const isVideo = useMemo(() => props.remoteSource?.kind === "camera" || props.remoteSource?.kind === "stream_video", [props.remoteSource]);
+	const isAudio = useMemo(() => props.remoteSource?.kind === "stream_audio", [props.remoteSource]);
 	const isStream = useMemo(() => props.remoteSource?.kind === "stream_video" || props.remoteSource?.kind === "stream_audio", [props.remoteSource]);
+	const isUnknown = useMemo(() => props.remoteSource?.kind === "unknown", [props.remoteSource]);
 	const isPreview = useMemo(
-		() => isVideo && !props.remoteSource?.consumerId && props.userId !== thisUser?.id,
-		[props.remoteSource?.srcObject, props.remoteSource?.consumerId, isVideo],
+		() => (isVideo || isAudio || props.remoteSource?.kind === "unknown") && !props.remoteSource?.consumerId && props.userId !== thisUser?.id,
+		[props.remoteSource?.srcObject, props.remoteSource?.consumerId, isVideo, isAudio],
 	);
 
 	const isLoadingStream = useMemo(
-		() => consumeState?.variables?.userId === props.userId && isStream && (consumeState.status === "pending" || !isVideoMetaLoaded),
+		() => consumeState?.variables?.userId === props.userId && isStream && (consumeState.status === "pending" || (isVideo && !isVideoMetaLoaded)),
 		[consumeState?.status, isVideoMetaLoaded, isStream],
 	);
 
-	function watch(e: MouseEvent) {
+	function consume(e: MouseEvent) {
 		e.stopPropagation();
-		props.onWatch?.(props.userId);
+		props.onConsume?.(props.userId);
 	}
 
 	function onContextMenu(e: MouseEvent<HTMLDivElement>) {
@@ -136,7 +139,7 @@ export default function VoiceElement(props: {
 				!props.isMaximized && "ring-2 ring-surface",
 			)}
 		>
-			{!isVideo && (
+			{!isVideo && !isAudio && !isStream && !isPreview && (
 				<div className={clsx("p-5", props.isRinging && "animate-pulse", props.isGridView && "flex h-full w-full items-center justify-center")}>
 					<motion.div layout={!props.isResizing} transition={transition}>
 						<UserAvatar userId={props.userId} avatarHash={user?.avatar} size={props.isGridView ? "5rem" : "4rem"} hideStatus />
@@ -169,20 +172,21 @@ export default function VoiceElement(props: {
 				isPreview && (
 					<button
 						className="group/watch flex h-full w-full cursor-pointer items-center justify-center bg-black/80 transition-colors hover:bg-black/60"
-						onClick={watch}
+						onClick={consume}
 						type="button"
 					>
 						<motion.div
 							layout={!props.isResizing ? "position" : false}
 							transition={transition}
-							className="rounded-xl bg-surface px-3 py-1.5 text-text transition-colors"
+							className="rounded-lg bg-surface px-3 py-1.5 text-text transition-colors"
 						>
-							Watch Stream
+							{isUnknown ? "Join Stream" : isVideo ? "Watch Stream" : isAudio ? "Listen to Stream" : ""}
 						</motion.div>
 					</button>
 				)
 			)}
 			{!isPreview && isVideo && <video className="h-full w-full" ref={videoRef} autoPlay playsInline muted />}
+			{!isPreview && isAudio && <VoiceAudioVisualizer srcObject={props.remoteSource?.srcObject} />}
 		</motion.div>
 	);
 }

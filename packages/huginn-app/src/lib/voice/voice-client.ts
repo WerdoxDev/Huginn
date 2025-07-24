@@ -67,7 +67,6 @@ export class VoiceClient {
             voice.updateRemoteSource(d.producerId, { consumerId: d.consumerId, srcObject: remoteStream, audioLevel });
          } else {
             voice.updateRemoteSource(d.producerId, { consumerId: d.consumerId, srcObject: remoteStream });
-            // voice.addRemoteSource(d.producerUserId, d.consumerId, d.producerId, d.kind, remoteStream);
          }
 
          const settings = settingsStore.getState();
@@ -95,7 +94,7 @@ export class VoiceClient {
       }))
 
       // Remove remote source when a producer is closed
-      unlisteners.push(client.voice.listen("producer_closed", (d) => {
+      unlisteners.push(client.voice.listen("producer_closed", async (d) => {
          log("app:voice-client", "voice-recv", "producer closed", "pid:", d.producerId, "uid:", d.userId);
 
          const voice = voiceStore.getState();
@@ -109,7 +108,7 @@ export class VoiceClient {
 
             // Stop loopback capture
             if (producer.kind === "stream_video" && producer.userId === client?.user?.id) {
-               this.stopAudioLoopback();
+               await this.stopAudioLoopback();
             }
          }
 
@@ -137,14 +136,14 @@ export class VoiceClient {
       }))
 
       // Reset speaking and remote sources and stop audio loopback
-      unlisteners.push(client.voice.listen("close", () => {
+      unlisteners.push(client.voice.listen("close", async () => {
          log("app:voice-client", "voice-recv", "disconnected");
 
          const voice = voiceStore.getState();
          voice.clearRemoteSources();
          voice.clearSpeakingStates();
 
-         this.stopAudioLoopback();
+         await this.stopAudioLoopback();
       }));
 
       // pause audio immediately after the local producer is created
@@ -168,6 +167,12 @@ export class VoiceClient {
 
             voice.addRemoteSource(client.user.id, undefined, d.producerId, d.kind, stream);
          }
+
+         // If are streaming audio and we don't have a video stream
+         if (d.kind === "stream_audio" && !voice.remoteSources.some(x => x.userId === client?.user?.id && x.kind === "stream_video")) {
+            const stream = new MediaStream([d.track]);
+            voice.addRemoteSource(client.user.id, undefined, d.producerId, d.kind, stream);
+         }
       }));
 
       // update local the remote source when it's changed
@@ -176,7 +181,7 @@ export class VoiceClient {
 
          const store = voiceStore.getState();
 
-         if (d.kind === "stream_video" && d.track) {
+         if ((d.kind === "stream_video" || d.kind === "stream_audio") && d.track) {
             const stream = new MediaStream([d.track]);
             store.updateRemoteSource(d.producerId, { srcObject: stream });
          }
@@ -189,17 +194,17 @@ export class VoiceClient {
          const store = voiceStore.getState();
          const preference = store.voicePreferences.find((x) => x.userId === d.userId);
          const microphonePlayer = this.audioSourcePlayers.find((x) => x.userId === d.userId && x.kind === "microphone");
-         const screensharePlayer = this.audioSourcePlayers.find((x) => x.userId === d.userId && x.kind === "stream_audio");
+         const screenSharePlayer = this.audioSourcePlayers.find((x) => x.userId === d.userId && x.kind === "stream_audio");
 
-         if (!preference || (!microphonePlayer && !screensharePlayer)) {
+         if (!preference || (!microphonePlayer && !screenSharePlayer)) {
             return;
          }
 
          if (microphonePlayer) {
             microphonePlayer.setGain(undefined, preference.microphoneVolume);
          }
-         if (screensharePlayer) {
-            screensharePlayer.setGain(undefined, preference.screenshareVolume);
+         if (screenSharePlayer) {
+            screenSharePlayer.setGain(undefined, preference.screenShareVolume);
          }
       }));
 
@@ -368,7 +373,7 @@ export class VoiceClient {
          if (remoteSource.kind === "microphone") {
             sourcePlayer.setGain(undefined, preference?.microphoneVolume);
          } else if (remoteSource.kind === "stream_audio") {
-            sourcePlayer.setGain(undefined, preference?.screenshareVolume);
+            sourcePlayer.setGain(undefined, preference?.screenShareVolume);
          }
       }
    }
@@ -394,10 +399,10 @@ export class VoiceClient {
 
       if (videoProducerId) {
          await client?.voice.consumeProducer(videoProducerId);
+      }
 
-         if (audioProducerId) {
-            await client?.voice.consumeProducer(audioProducerId);
-         }
+      if (audioProducerId) {
+         await client?.voice.consumeProducer(audioProducerId);
       }
    }
 
@@ -442,22 +447,22 @@ export class VoiceClient {
       await client.voice.waitForEvents(["recv_transport_ready"]);
 
       if (videoProducerId) {
-         client?.voice.consumeProducer(videoProducerId);
+         await client?.voice.consumeProducer(videoProducerId);
+      }
 
-         if (audioProducerId) {
-            client?.voice.consumeProducer(audioProducerId);
-         }
+      if (audioProducerId) {
+         await client?.voice.consumeProducer(audioProducerId);
       }
    }
 
-   public getAudioTrackFromLoopback(sourceName: string) {
-      log("app:voice-client", "default", "get audio track from loopback", "snam:", sourceName)
+   public getAudioTrackFromLoopback(processTitle?: string, processId?: string) {
+      log("app:voice-client", "default", "get audio track from loopback", "ptit:", processTitle, "pid:", processId)
 
       if (!window.electronAPI) {
          return;
       }
 
-      window.electronAPI.startAudioLoopback(sourceName);
+      window.electronAPI.startAudioLoopback(processTitle, processId);
 
       const { sampleRate, numChannels } = { sampleRate: 48000, numChannels: 2 };
       /* @ts-ignore */
@@ -490,11 +495,11 @@ export class VoiceClient {
    }
 
 
-   public stopAudioLoopback() {
+   public async stopAudioLoopback() {
       log("app:voice-client", "default", "stop audio loopback")
 
       if (window.electronAPI) {
-         window.electronAPI.stopAudioLoopback();
+         await window.electronAPI.stopAudioLoopback();
          this.loopbackDataUnlisten?.();
       }
    }

@@ -286,6 +286,12 @@ export type DisplaySource = {
    id: string;
 };
 
+export type AudioSource = {
+   appIcon?: string;
+   name: string;
+   processId: string;
+}
+
 export type RemoteSource = {
    userId: Snowflake;
    consumerId?: string;
@@ -295,7 +301,7 @@ export type RemoteSource = {
    audioLevel?: AudioLevelChecker;
 }
 
-export type VoicePreference = { userId: Snowflake; microphoneVolume: number; screenshareVolume: number }
+export type VoicePreference = { userId: Snowflake; microphoneVolume: number; screenShareVolume: number }
 
 export type AppSettings = {
    apiHostname: string;
@@ -311,7 +317,7 @@ export type AppSettings = {
    outputVolume: number;
    inputThreshold: number;
    noiseSuppression: boolean,
-   screenshareFramerate: number;
-   screenshareQuality: number;
-   screenshareAudio: boolean;
+   screenShareFramerate: number;
+   screenShareQuality: number;
+   screenShareAudio: boolean;
 };

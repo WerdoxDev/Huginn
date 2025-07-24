@@ -1,10 +1,10 @@
 import path from "node:path";
-import { enableLogs, error, log } from "@huginn/shared";
+import { enableLogs, error, findClosestString, log } from "@huginn/shared";
 import { getActiveWindowProcessIds, setExecutablesRoot, startAudioCapture, stopAudioCapture } from "application-loopback";
 import { app, BrowserWindow, desktopCapturer, ipcMain, Menu, Notification, session, shell, Tray } from "electron";
 import electronLog from "electron-log/main";
 import { autoUpdater, CancellationToken } from "electron-updater";
-import type { DisplaySource } from "@/types";
+import type { AudioSource, DisplaySource } from "@/types";
 import * as fileEvents from "./file-events";
 
 // application-loopback executable path when packaged
@@ -381,36 +381,71 @@ function listenToEvents(mainWindow: BrowserWindow) {
          .map((x) => ({ thumbnail: x.thumbnail.toDataURL(), id: x.id, name: x.name, appIcon: x.appIcon?.toDataURL() }) as DisplaySource);
    });
 
+   ipcMain.handle("window:get-audio-sources", async () => {
+      log("app:electron", "recv", "window get audio sources");
+
+      const sources = await desktopCapturer.getSources({
+         types: ["window"],
+         fetchWindowIcons: true,
+         thumbnailSize: { width: 300, height: 300 },
+      });
+      const processes = await getActiveWindowProcessIds();
+
+      console.log(sources.map(x => x.name));
+      console.log(processes.map(x => x.title));
+
+      return sources
+         .map(source => {
+            const closestProcessTitle = findClosestString(source.name, processes.map(x => x.title));
+            const process = processes.find(x => x.title === closestProcessTitle);
+            return process ? {
+               processId: process.processId,
+               name: source.name,
+               appIcon: source.appIcon?.toDataURL()
+            } : null;
+         })
+         .filter((x) => x !== null && !sources[0].thumbnail.isEmpty()) as AudioSource[];
+   })
+
    ipcMain.on("window:set-selected-display-source", (_, sourceId: string) => {
       log("app:electron", "recv", "window set selected display source", "sid:", sourceId);
 
       selectedSourceId = sourceId;
    });
 
-   let processId: string | undefined;
-   ipcMain.on("audio:start-loopback", async (_, processTitle: string) => {
-      log("app:electron", "recv", "audio start loopback", "ptit:", processTitle);
+   let previousProcessId: string | undefined;
+   ipcMain.on("audio:start-loopback", async (_, processTitle?: string, processId?: string) => {
+      log("app:electron", "recv", "audio start loopback", "ptit:", processTitle, "pid:", processId);
 
-      const processIds = await getActiveWindowProcessIds();
+      let foundProcessId: string | undefined;
+      if (processTitle) {
+         const processIds = await getActiveWindowProcessIds();
+         foundProcessId = processIds.find(x => processTitle.toLowerCase().includes(x.title.toLowerCase()))?.processId;
+      } else if (processId) {
+         foundProcessId = processId;
+      }
 
-      processId = processIds.find(x => processTitle.includes(x.title))?.processId;
-      if (processId) {
-         log("app:electron", "loopback", "start", "pid:", processId);
-         startAudioCapture(processId, {
+      if (foundProcessId) {
+         log("app:electron", "loopback", "start", "pid:", foundProcessId);
+
+         startAudioCapture(foundProcessId, {
             onData(data) {
                log("app:electron", "loopback-send", "d:", data)
+
                mainWindow.webContents.send("audio:loopback-data", data);
             },
          });
+
+         previousProcessId = foundProcessId;
       }
    })
 
-   ipcMain.on("audio:stop-loopback", () => {
-      log("app:electron", "recv", "audio stop loopback", "pid:", processId);
+   ipcMain.handle("audio:stop-loopback", () => {
+      log("app:electron", "recv", "audio stop loopback", "pid:", previousProcessId);
 
-      if (processId) {
-         log("app:electron", "loopback", "stop", "pid:", processId);
-         stopAudioCapture(processId);
+      if (previousProcessId) {
+         log("app:electron", "loopback", "stop", "pid:", previousProcessId);
+         stopAudioCapture(previousProcessId);
       }
    })
 }
