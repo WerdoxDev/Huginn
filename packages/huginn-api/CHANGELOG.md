@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.21.1...api@v0.22.0) (2025-07-24)
+
+
+### Features
+
+* **api:** add support for audio only streaming ([4030d55](https://github.com/WerdoxDev/Huginn/commit/4030d55074d14f3377e3cef311fe75c8bb76dcc2))
+
 ## [0.21.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.21.0...api@v0.21.1) (2025-07-22)
 
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.50.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.49.2...app@v0.50.0) (2025-07-24)
+
+
+### Features
+
+* **app:** add audio only stream with visualizer ([b16170d](https://github.com/WerdoxDev/Huginn/commit/b16170dc5c5dd541efc5078ed42cba893db08b43))
+
+
+### Bug Fixes
+
+* **app:** adding audio to a video stream won't get consumed + some ui fixes ([d4cc08a](https://github.com/WerdoxDev/Huginn/commit/d4cc08a5a29114cf0e895335d23e0c9265cfd0e4))
+
 ## [0.49.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.49.1...app@v0.49.2) (2025-07-23)
 
 
