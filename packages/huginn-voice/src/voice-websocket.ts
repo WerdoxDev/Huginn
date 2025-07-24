@@ -348,7 +348,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       const consumerClosedData: VoicePayload = {
          op: VoiceOperations.DISPATCH,
          t: "consumer_closed",
-         d: { consumerId: consumer.id, userId: rtcPeer.userId },
+         d: { consumerId: consumer.id, producerId: consumer.producerId, userId: rtcPeer.userId },
          s: session.getIncreasedSequence()
       }
 
