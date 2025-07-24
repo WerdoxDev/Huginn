@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.25.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.24.0...shared@v0.25.0) (2025-07-24)
+
+
+### Features
+
+* **shared:** add string comparison utility ([2260d63](https://github.com/WerdoxDev/Huginn/commit/2260d6326df63d143c8d3ea5c1a477dbe208bc56))
+
 ## [0.24.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.23.1...shared@v0.24.0) (2025-07-20)
 
 
