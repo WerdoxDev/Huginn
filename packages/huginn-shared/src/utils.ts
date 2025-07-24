@@ -315,3 +315,40 @@ export function convertToMediaKind(hMediaKind: HMediaKind): MediaKind | undefine
 }
 
 export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
+
+function levenshtein(a: string, b: string) {
+   const dp = Array.from({ length: a.length + 1 }, () =>
+      Array(b.length + 1).fill(0)
+   );
+
+   for (let i = 0; i <= a.length; i++) dp[i][0] = i;
+   for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+
+   for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= b.length; j++) {
+         const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+         dp[i][j] = Math.min(
+            dp[i - 1][j] + 1,
+            dp[i][j - 1] + 1,
+            dp[i - 1][j - 1] + cost
+         );
+      }
+   }
+
+   return dp[a.length][b.length];
+}
+
+export function findClosestString(target: string, candidates: string[]): string {
+   let closest = candidates[0];
+   let minDistance = levenshtein(target, closest);
+
+   for (let i = 1; i < candidates.length; i++) {
+      const distance = levenshtein(target, candidates[i]);
+      if (distance < minDistance) {
+         minDistance = distance;
+         closest = candidates[i];
+      }
+   }
+
+   return closest;
+}
