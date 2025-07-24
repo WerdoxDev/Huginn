@@ -265,6 +265,7 @@ export type VoiceCloseConsumerData = {
 }
 
 export type VoiceConsumerClosedData = {
+   producerId: string
    consumerId: string;
    userId: Snowflake;
 }
