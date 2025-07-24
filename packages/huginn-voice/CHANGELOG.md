@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.10.0...voice@v0.10.1) (2025-07-23)
+
+
+### Bug Fixes
+
+* **voice:** producers of a closed connection should be sent to be closed for others ([a8526ff](https://github.com/WerdoxDev/Huginn/commit/a8526ff5dd385ad592f8ad94272ce6f87fa11a6b))
+
 ## [0.10.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.9.0...voice@v0.10.0) (2025-07-20)
 
 
