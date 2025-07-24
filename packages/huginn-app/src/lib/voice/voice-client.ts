@@ -80,11 +80,17 @@ export class VoiceClient {
       unlisteners.push(client.voice.listen("new_producer", (d) => {
          log("app:voice-client", "voice-recv", "new producer", "pid:", d.producerId, "uid:", d.producerUserId, "mk:", d.kind);
 
+         const voice = voiceStore.getState();
+
          if (d.kind === "camera" || d.kind === "microphone") {
             client?.voice.consumeProducer(d.producerId);
          }
 
-         const voice = voiceStore.getState();
+         // If a stream_video exists from this user and we are watching it, consume the audio when it's available
+         if (d.kind === "stream_audio" && voice.remoteSources.some(x => x.userId === d.producerUserId && x.kind === "stream_video" && x.consumerId)) {
+            client?.voice.consumeProducer(d.producerId)
+         }
+
          voice.addRemoteSource(d.producerUserId, undefined, d.producerId, d.kind, undefined, undefined);
       }))
 
@@ -374,12 +380,12 @@ export class VoiceClient {
       await client?.gateway.connectVoice(guildId, channelId, { isAudioMuted: voice.localVoiceState.isAudioMuted, isAudioDeafened: voice.localVoiceState.isAudioDeafened });
    }
 
-   public async watchScreenshare(userId: Snowflake) {
+   public async consumeStream(userId: Snowflake) {
       if (!client) {
          return;
       }
 
-      log("app:voice-client", "default", "watch stream", "uid:", userId)
+      log("app:voice-client", "default", "consume stream", "uid:", userId)
 
       const voice = voiceStore.getState();
 
@@ -395,12 +401,12 @@ export class VoiceClient {
       }
    }
 
-   public async unwatchScreenshare(userId: Snowflake) {
+   public async unconsumeStream(userId: Snowflake) {
       if (!client) {
          return;
       }
 
-      log("app:voice-client", "default", "unwatch stream", "uid:", userId)
+      log("app:voice-client", "default", "unconsume stream", "uid:", userId)
 
       const voice = voiceStore.getState();
 
@@ -411,8 +417,8 @@ export class VoiceClient {
       if (audioConsumerId) client.voice.closeConsumer(audioConsumerId);
    }
 
-   public async connectAndWatchStream(guildId: Snowflake | null, channelId: Snowflake, userId: Snowflake) {
-      log("app:voice-client", "default", "connect and watch stream", "cid:", channelId, "uid:", userId)
+   public async connectAndConsumeStream(guildId: Snowflake | null, channelId: Snowflake, userId: Snowflake) {
+      log("app:voice-client", "default", "connect and consume stream", "cid:", channelId, "uid:", userId)
 
       if (!client) {
          return;

@@ -33,9 +33,9 @@ export default function VoiceElementContextMenu() {
 		}
 
 		if (client.voice.status === "authenticated") {
-			await voiceClient.watchScreenshare(data.user.id);
+			await voiceClient.consumeStream(data.user.id);
 		} else {
-			await voiceClient.connectAndWatchStream(null, data?.channelId, data?.user.id);
+			await voiceClient.connectAndConsumeStream(null, data?.channelId, data?.user.id);
 		}
 	}
 
@@ -61,7 +61,7 @@ export default function VoiceElementContextMenu() {
 			{data.kind === "stream_video" && (
 				<>
 					{isWatching ? (
-						<ContextMenu.Item label="Stop Watching" color="negative" onClick={() => voiceClient.unwatchScreenshare(data.user.id)} />
+						<ContextMenu.Item label="Stop Watching" color="negative" onClick={() => voiceClient.unconsumeStream(data.user.id)} />
 					) : (
 						<ContextMenu.Item label="Watch" onClick={watch} />
 					)}

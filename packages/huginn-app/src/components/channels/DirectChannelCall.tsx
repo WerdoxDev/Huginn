@@ -4,9 +4,9 @@ import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useFullscreen } from "@hooks/useFullscreen";
 import { useHover } from "@hooks/useHover";
 import { useLookup } from "@hooks/useLookup";
+import { useConsumeStream } from "@hooks/voice/useConsumeStream";
 import { useStartCamera } from "@hooks/voice/useStartCamera";
 import { useUpdateVoiceState } from "@hooks/voice/useUpdateVoiceState";
-import { useWatchScreenshare } from "@hooks/voice/useWatchScreenshare";
 import type { Snowflake, Unpacked } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
@@ -34,7 +34,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 	const posthog = usePostHog();
 
 	const startCameraMutation = useStartCamera();
-	const watchScreenshareMutation = useWatchScreenshare();
+	const consumeStreamMutation = useConsumeStream();
 	const updateVoiceStateMutation = useUpdateVoiceState();
 
 	const thisVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channelId), [voiceStates, props.channelId, localVoiceState]);
@@ -115,8 +115,16 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 			}
 		});
 
+		const unlisten2 = client.voice.listen("consumer_closed", (d) => {
+			if (d.producerId === maximizedSourceId.current) {
+				maximizedSourceId.current = undefined;
+				setMaximizedSource(undefined);
+			}
+		});
+
 		return () => {
 			unlisten();
+			unlisten2();
 		};
 	}, []);
 
@@ -209,12 +217,12 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		}
 	}
 
-	async function watchStream(userId: Snowflake) {
+	async function consumeStream(userId: Snowflake) {
 		posthog.capture("voice:watch_screenshare_button_click", { userId });
 
-		console.log(watchScreenshareMutation.isPending);
-		if (!watchScreenshareMutation.isPending) {
-			watchScreenshareMutation.mutate({
+		console.log(consumeStreamMutation.isPending);
+		if (!consumeStreamMutation.isPending) {
+			consumeStreamMutation.mutate({
 				guildId: null,
 				channelId: props.channelId,
 				userId,
@@ -339,7 +347,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 								userId={x.userId}
 								channelId={props.channelId}
 								// onClick={maximizeSource}
-								onWatch={watchStream}
+								onWatch={consumeStream}
 								isResizing={isResizing}
 								isGridView={isGridView}
 								isMaximized={!!maximizedSource}
@@ -358,7 +366,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 									channelId={props.channelId}
 									isMaximized={!!maximizedSource}
 									onClick={maximizeSource}
-									onWatch={watchStream}
+									onWatch={consumeStream}
 									gridElementWidth={gridSize?.elementWidth ?? 0}
 									isResizing={isResizing}
 									isGridView={isGridView}

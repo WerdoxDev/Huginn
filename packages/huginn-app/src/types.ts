@@ -4,6 +4,7 @@ import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMCh
 import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
 import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePatchDMChannel";
 import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRemoveChannelRecipient";
+import type { ConsumeStreamMutationVars } from "@hooks/voice/useConsumeStream";
 import type {
    APIChannelUser, APIMessage, APIPublicUser,
    APIRelationshipWithoutOwner,
@@ -231,6 +232,7 @@ export type MutationKinds = {
    "add-channel-recipient": AddChannelRecipientMutationVars;
    "create-relationship": CreateRelationshipMutationVars;
    "remove-relationship": Snowflake;
+   "consume-stream": ConsumeStreamMutationVars
 };
 
 export type AppMessage =
