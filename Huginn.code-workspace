@@ -21,10 +21,6 @@
 			"path": "packages/huginn-backend-shared"
 		},
 		{
-			"name": "huginn-bifrost",
-			"path": "packages/huginn-bifrost"
-		},
-		{
 			"name": "huginn-api",
 			"path": "packages/huginn-api"
 		},
@@ -54,6 +50,7 @@
 		},
 		"deno.enable": false,
 		"typescript.tsdk": "ROOT\\node_modules\\typescript\\lib",
-		"github-actions.workflows.pinned.workflows": ["ROOT/.github/workflows/release.yml"]
+		"github-actions.workflows.pinned.workflows": ["ROOT/.github/workflows/release.yml"],
+		"oxc.enable": true
 	}
 }
