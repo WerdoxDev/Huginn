@@ -11,12 +11,8 @@ import {
    type VoiceConsumerCreatedData, type VoiceEvents,
    type VoiceHeartbeat,
    type VoiceHelloData,
-   type VoiceIdentify,
-   type VoiceNewProducerData,
-   VoiceOperations,
-   type VoicePayload,
-   type VoicePeerLeftData,
-   type VoicePing,
+   type VoiceIdentify, VoiceOperations,
+   type VoicePayload, type VoicePing,
    type VoiceProducerClosedData, type VoiceReadyData, type VoiceTransportCreatedData,
    type WebsocketStatus
 } from "@huginn/shared";

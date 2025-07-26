@@ -75,7 +75,8 @@ export class HuginnClient {
                if (tokenValid) {
                   this.tokenHandler.token = tokens.token;
                }
-            } catch (_e) {
+               // oxlint-disable-next-line no-unused-vars
+            } catch (e) {
                tokenValid = false;
             }
          }

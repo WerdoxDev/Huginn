@@ -1,6 +1,6 @@
 import type {
    GatewayPayload,
-   GatewayUpdateVoiceState, GatewayUpdateVoiceStateData, GatewayVoiceState, GatewayVoiceStateFlags, Snowflake,
+   GatewayUpdateVoiceState, GatewayUpdateVoiceStateData, GatewayVoiceStateFlags, Snowflake,
    WebsocketStatus
 } from "@huginn/shared";
 import {

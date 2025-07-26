@@ -7,6 +7,7 @@ export function decodeToken(token: string): [boolean, (TokenPayload & jose.JWTPa
       const jwt = jose.decodeJwt<TokenPayload>(token);
 
       return [true, jwt];
+      // oxlint-disable-next-line no-unused-vars
    } catch (e) {
       return [false, null];
    }
