@@ -67,6 +67,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 		cols: number;
 	}>();
 	const [gridHeight, setGridHeight] = useState(250);
+	const [isRecvTransportReady, setIsRecvTransportReady] = useState(false);
 	const { isFullscreen, toggleFullscreen: onToggleFullscreen } = useFullscreen(containerRef);
 	const maximizedSourceId = useRef<string | undefined>(undefined);
 	const [maximizedSource, setMaximizedSource] = useState<Unpacked<typeof remoteSources> | undefined>(undefined);
@@ -133,9 +134,20 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 			}
 		});
 
+		// This is to determine when we "technically" get all the voice remote sources added to our state to switch to the VoiceElements that are for when we are "connected"
+		const unlisten3 = client.voice.listen("recv_transport_ready", () => {
+			setIsRecvTransportReady(true);
+		});
+
+		const unlisten4 = client.voice.listen("close", () => {
+			setIsRecvTransportReady(false);
+		});
+
 		return () => {
 			unlisten();
 			unlisten2();
+			unlisten3();
+			unlisten4();
 		};
 	}, []);
 
@@ -370,26 +382,28 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 			>
 				<AnimatePresence mode="popLayout">
 					{/* Watchable Streams whens not connected */}
-					{thisVoiceStates
-						.filter((x) => x.isStreaming && !streamAudioRemoteSources[x.userId] && !streamVideoRemoteSources[x.userId])
-						.map((x) => (
-							<VoiceElement
-								remoteSource={{
-									kind: "unknown",
-									producerId: "",
-									userId: x.userId,
-								}}
-								key={`${x.userId}-stream`}
-								gridElementWidth={gridSize?.elementWidth ?? 0}
-								userId={x.userId}
-								channelId={props.channelId}
-								onConsume={consumeStream}
-								isResizing={isResizing}
-								isGridView={isGridView}
-								isMaximized={!!maximizedSource}
-								voiceState={x}
-							/>
-						))}
+					{!isRecvTransportReady &&
+						thisVoiceStates
+							.filter(
+								(x) => x.userId !== user.id && x.isStreaming && !streamAudioRemoteSources[x.userId] && !streamVideoRemoteSources[x.userId],
+							)
+							.map((x) => (
+								<VoiceElement
+									remoteSource={{
+										kind: "unknown",
+										producerId: "",
+										userId: x.userId,
+									}}
+									key={`${x.userId}-stream`}
+									gridElementWidth={gridSize?.elementWidth ?? 0}
+									userId={x.userId}
+									channelId={props.channelId}
+									onConsume={consumeStream}
+									isResizing={isResizing}
+									isGridView={isGridView}
+									isMaximized={!!maximizedSource}
+								/>
+							))}
 					{/* Watching/Watchable Streams when connected */}
 					{isGridView &&
 						remoteSources

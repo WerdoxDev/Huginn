@@ -8,7 +8,7 @@ import { useContextMenu } from "@stores/contextMenuStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
-import { motion, type Transition, type Variants } from "motion/react";
+import { motion, type Transition, usePresence, type Variants } from "motion/react";
 import { type MouseEvent, type RefObject, useEffect, useMemo, useRef, useState } from "react";
 import type { RemoteSource } from "@/types";
 import VoiceAudioVisualizer from "./VoiceAudioVisualizer";
@@ -36,6 +36,7 @@ export default function VoiceElement(props: {
 	const client = useClient();
 	const { user: thisUser } = useThisUser();
 	const user = useUser(props.userId);
+	const [isPresent] = usePresence();
 
 	const [isVideoMetaLoaded, setIsVideoMetaLoaded] = useState(false);
 	const consumeState = useMutationLatestState("consume-stream");
@@ -84,8 +85,12 @@ export default function VoiceElement(props: {
 	}
 
 	useEffect(() => {
-		console.log(consumeState?.status);
-	}, [consumeState]);
+		console.log(isPresent);
+	}, [isPresent]);
+
+	useEffect(() => {
+		console.log(isVideo, isAudio, isStream, isUnknown, isPreview, props.voiceState);
+	}, [isVideo, isAudio, isStream, isUnknown, isPreview, props.voiceState]);
 
 	useEffect(() => {
 		if (videoRef.current) {
@@ -186,7 +191,9 @@ export default function VoiceElement(props: {
 				)
 			)}
 			{!isPreview && isVideo && <video className="h-full w-full" ref={videoRef} autoPlay playsInline muted />}
-			{!isPreview && isAudio && <VoiceAudioVisualizer srcObject={props.remoteSource?.srcObject} />}
+			{!isPreview && isAudio && (
+				<VoiceAudioVisualizer srcObject={props.remoteSource?.srcObject} transition={transition} isResizing={props.isResizing} />
+			)}
 		</motion.div>
 	);
 }
