@@ -1,5 +1,4 @@
 import { GatewayCode, type Snowflake } from "@huginn/shared";
-import type { Peer } from "crossws";
 import mediasoup from "mediasoup";
 import type { Router, RtpCodecCapability, WebRtcServer, Worker } from "mediasoup/node/lib/types";
 import type { ClientSession } from "#client-session";
