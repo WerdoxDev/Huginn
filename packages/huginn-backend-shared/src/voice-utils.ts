@@ -17,6 +17,7 @@ export async function verifyVoiceToken(token: string) {
    try {
       const jwt = await jose.jwtVerify<{ userId: Snowflake }>(token, VOICE_TOKEN_SECRET_ENCODED);
       return { valid: true, payload: jwt.payload };
+      // oxlint-disable-next-line no-unused-vars
    } catch (e) {
       return { valid: false };
    }

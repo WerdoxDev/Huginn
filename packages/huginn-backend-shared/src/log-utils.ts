@@ -1,5 +1,4 @@
 import type { HuginnErrorData } from "@huginn/shared";
-import { GatewayOperations, type GatewayPayload } from "@huginn/shared";
 import { consola } from "consola";
 import { colors } from "consola/utils";
 
@@ -10,8 +9,6 @@ const requestDataText = colors.bold(colors.gray("REQUEST DATA"));
 const responseDataText = colors.bold(colors.gray("RESPONSE DATA"));
 const gatewayOpen = colors.bold(colors.cyan("GATEWAY OPEN"));
 const gatewayClose = colors.bold(colors.red("GATEWAY CLOSE"));
-const gatewayReceive = colors.bold(colors.gray("GATEWAY RECEIVE"));
-const gatewaySend = colors.bold(colors.gray("GATEWAY SEND"));
 const getFile = colors.bold(colors.green("GET FILE"));
 const writeFile = colors.bold(colors.magenta("WRITE FILE"));
 const notFoundFile = colors.bold(colors.red("FILE NOT FOUND"));
@@ -167,24 +164,4 @@ export function logCDNRequest(path: string, method: string): void {
    const pathText = colors.green(path);
    const methodText = colors.bold(colors.green(method));
    consola.info(`${cdn} ${divider} (${methodText}) ${divider} ${pathText}`);
-}
-
-function opcodeToText(opcode: GatewayOperations) {
-   switch (opcode) {
-      case GatewayOperations.DISPATCH:
-         return "Dispatch";
-      case GatewayOperations.HEARTBEAT:
-         return "Heartbeat";
-      case GatewayOperations.HEARTBEAT_ACK:
-         return "HeartbeatAck";
-      case GatewayOperations.HELLO:
-         return "Hello";
-      case GatewayOperations.IDENTIFY:
-         return "Identify";
-      case GatewayOperations.RESUME:
-         return "Resume";
-
-      default:
-         return "Unknown";
-   }
 }
