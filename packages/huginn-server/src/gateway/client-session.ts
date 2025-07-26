@@ -25,7 +25,7 @@ export class ClientSession extends CommonClientSession<GatewayPayload, GatewayId
       );
 
       const publicUserIds = [...new Set([...relationships.map((x) => x.user.id), ...channels.flatMap((x) => x.recipients).map((x) => x.id)])];
-      const presenceUserIds = [...new Set([...relationships.filter((x) => x.type === RelationshipType.FRIEND).map((x) => x.user.id)])];
+      const presenceUserIds = [...new Set(relationships.filter((x) => x.type === RelationshipType.FRIEND).map((x) => x.user.id))];
 
       for (const channel of channels) {
          this.subscribe(channel.id);

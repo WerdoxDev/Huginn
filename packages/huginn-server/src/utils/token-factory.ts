@@ -1,6 +1,6 @@
 import type { IdentityTokenPayload, Snowflake, TokenPayload } from "@huginn/shared";
-import * as jose from "jose";
 import { tokenInvalidator } from "#setup";
+import * as jose from "jose";
 
 export const ACCESS_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.ACCESS_TOKEN_SECRET ?? "");
 export const REFRESH_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.REFRESH_TOKEN_SECRET ?? "");
@@ -42,7 +42,8 @@ export async function verifyToken<IdentityToken extends boolean = false>(token: 
       }
 
       return { valid: true, payload: jwt.payload };
-   } catch (_e) {
+      // oxlint-disable-next-line no-unused-vars
+   } catch (e) {
       return { valid: false, payload: null };
    }
 }

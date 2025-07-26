@@ -12,34 +12,34 @@ import { validateChannelName } from "#utils/validation";
 const schema = z.object({ name: z.optional(z.string()), recipients: z.array(z.string()).nonempty() });
 
 createRoute("POST", "/api/users/@me/channels", verifyJwt(), validator("json", schema), async (c) => {
-	const payload = c.get("tokenPayload");
-	const body = c.req.valid("json");
+   const payload = c.get("tokenPayload");
+   const body = c.req.valid("json");
 
-	const formError = createErrorFactory(Errors.invalidFormBody());
+   const formError = createErrorFactory(Errors.invalidFormBody());
 
-	validateChannelName(body.name, formError);
+   validateChannelName(body.name, formError);
 
-	if (formError.hasErrors()) {
-		return createHuginnError(c, formError);
-	}
+   if (formError.hasErrors()) {
+      return createHuginnError(c, formError);
+   }
 
-	// Create dm
-	const createdChannel: APIPostDMChannelResult = idFix(
-		await prisma.channel.createDM(payload.id, body.recipients, body.name, { include: selectChannelRecipients }),
-	);
+   // Create dm
+   const createdChannel: APIPostDMChannelResult = idFix(
+      await prisma.channel.createDM(payload.id, body.recipients, body.name, { include: selectChannelRecipients }),
+   );
 
-	// Subscribe topics, dispatch channel create event, create read state
-	for (const recipientId of [...createdChannel.recipients.map((x) => x.id)]) {
-		const channel: APIPostDMChannelResult = { ...createdChannel, recipients: createdChannel.recipients.filter((x) => x.id !== recipientId) };
-		gateway.subscribeSessionsToTopic(recipientId, createdChannel.id);
+   // Subscribe topics, dispatch channel create event, create read state
+   for (const recipientId of createdChannel.recipients.map((x) => x.id)) {
+      const channel: APIPostDMChannelResult = { ...createdChannel, recipients: createdChannel.recipients.filter((x) => x.id !== recipientId) };
+      gateway.subscribeSessionsToTopic(recipientId, createdChannel.id);
 
-		if (channel.type === ChannelType.GROUP_DM || recipientId === payload.id) {
-			dispatchToTopic(recipientId, "channel_create", channel);
-		}
+      if (channel.type === ChannelType.GROUP_DM || recipientId === payload.id) {
+         dispatchToTopic(recipientId, "channel_create", channel);
+      }
 
-		// TODO: OPTIMIZE THIS: This can be a single query call with createMany
-		await prisma.readState.createState(recipientId, createdChannel.id);
-	}
+      // TODO: OPTIMIZE THIS: This can be a single query call with createMany
+      await prisma.readState.createState(recipientId, createdChannel.id);
+   }
 
-	return c.json(channelWithoutRecipient(createdChannel, payload.id) as APIPostDMChannelResult, HttpCode.CREATED);
+   return c.json(channelWithoutRecipient(createdChannel, payload.id) as APIPostDMChannelResult, HttpCode.CREATED);
 });

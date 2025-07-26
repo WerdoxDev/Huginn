@@ -44,7 +44,8 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
 
          log("server:gateway", "send", "hello", "intrvl:", helloData.d.heartbeatInterval, "sid:", session.sessionId);
          this.send(session.peer, helloData);
-      } catch (_e) {
+         // oxlint-disable-next-line no-unused-vars
+      } catch (e) {
          session.peer.close(GatewayCode.UNKNOWN, "UNKNOWN");
       }
    }
