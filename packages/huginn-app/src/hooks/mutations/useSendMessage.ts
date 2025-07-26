@@ -1,4 +1,4 @@
-import { type MessageFlags, pick, type Snowflake, snowflake, WorkerID } from "@huginn/shared";
+import { type MessageFlags, type Snowflake, snowflake, WorkerID } from "@huginn/shared";
 import { dispatchEvent } from "@lib/event-handler";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
@@ -48,13 +48,11 @@ export function useSendMessage() {
 
                return {
                   ...old,
-                  pages: [
-                     ...old.pages.toSpliced(
-                        old.pages.length - 1,
-                        1,
-                        lastPage.filter((x) => x.id !== previewMessage.id),
-                     ),
-                  ],
+                  pages: old.pages.toSpliced(
+                     old.pages.length - 1,
+                     1,
+                     lastPage.filter((x) => x.id !== previewMessage.id),
+                  ),
                };
             });
          }
@@ -71,7 +69,7 @@ export function useSendMessage() {
 
             return {
                ...old,
-               pages: [...old.pages.toSpliced(old.pages.length - 1, 1, [...lastPage, previewMessage])],
+               pages: old.pages.toSpliced(old.pages.length - 1, 1, [...lastPage, previewMessage]),
             };
          });
 
@@ -101,7 +99,7 @@ export function useSendMessage() {
             ),
          };
       },
-      onSuccess(data, variables, context) {
+      onSuccess(data) {
          if (data?.previewMessage) {
             deleteMessageUploadProgress(data.previewMessage.id);
          }

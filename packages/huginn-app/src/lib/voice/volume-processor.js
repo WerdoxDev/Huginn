@@ -5,7 +5,7 @@ class VolumeProcessor extends AudioWorkletProcessor {
       this._smoothingFactor = 0.8; // Between 0 and 1. Higher = smoother but more delayed
    }
 
-   process(inputs, outputs, parameters) {
+   process(inputs) {
       const input = inputs[0];
       if (input.length > 0) {
          const samples = input[0];

@@ -8,7 +8,6 @@ import {
 	type ReactNode,
 	type RefObject,
 	useContext,
-	useEffect,
 	useLayoutEffect,
 	useRef,
 	useState,

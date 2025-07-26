@@ -55,7 +55,7 @@ export default function SettingsModal() {
 
 	const settings = useSettings();
 	const currentSettings = useRef({ ...settingsStore.getState() });
-	const [settingsValid, setSettingsValid] = useState(false);
+	const [_settingsValid, setSettingsValid] = useState(false);
 	// const [modifiedSettings, setModifiedSettings] = useState<DeepPartial<AppSettings> | undefined>(undefined);
 
 	useEffect(() => {

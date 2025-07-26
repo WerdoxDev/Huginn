@@ -2,7 +2,7 @@ import type { AppRelationship } from "@/types";
 import UserAvatar from "@components/UserAvatar";
 import { Checkbox } from "@headlessui/react";
 import { useUsers } from "@hooks/api-hooks/userHooks";
-import { type APIRelationUser, type APIRelationshipWithoutOwner, RelationshipType, type Snowflake } from "@huginn/shared";
+import { type APIRelationUser, RelationshipType, type Snowflake } from "@huginn/shared";
 import { useMemo, useState } from "react";
 import ComboboxInput from "./ComboboxInput";
 import HuginnInput from "./HuginnInput";
@@ -41,7 +41,12 @@ export default function AddRecipientInput(props: {
 					{({ toggleSelection }) => (
 						<div className="mx-2 mt-2 flex select-none flex-wrap gap-1">
 							{toAddUsers?.map((user) => (
-								<button type="button" onClick={() => toggleSelection(user.id)} key={user.id} className="rounded-xs bg-primary-700 px-2 text-text">
+								<button
+									type="button"
+									onClick={() => toggleSelection(user.id)}
+									key={user.id}
+									className="rounded-xs bg-primary-700 px-2 text-text"
+								>
 									{user.displayName ?? user.username}
 								</button>
 							))}

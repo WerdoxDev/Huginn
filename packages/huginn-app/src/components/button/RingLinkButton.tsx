@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useMemo, type ReactNode } from "react";
+import { useMemo } from "react";
 import { type LinkProps, NavLink } from "react-router";
 import { useLocation } from "react-router";
 

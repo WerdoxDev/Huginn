@@ -28,7 +28,7 @@ export function useChannelNamePlaceholder(recipients: APIPublicUser[]) {
    return useMemo(() => recipients.map((x) => x.displayName ?? x.username).join(", "), [recipients]);
 }
 
-export function useChannelRecipients(channelId?: Snowflake, guildId?: Snowflake) {
+export function useChannelRecipients(channelId?: Snowflake, _guildId?: Snowflake) {
    const channel = useChannel(channelId);
    const recipients = useUsers(channel?.recipientIds);
 

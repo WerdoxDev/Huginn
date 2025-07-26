@@ -1,6 +1,6 @@
 import { useMainViewTransitionState } from "@hooks/useMainViewTransitionState";
 import clsx from "clsx";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useState } from "react";
 
 export default function StartWrapper(props: {
 	className?: string;

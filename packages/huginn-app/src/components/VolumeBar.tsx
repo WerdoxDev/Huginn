@@ -1,5 +1,4 @@
 import type { ProgressBarProps } from "@/types";
-import { useProgressBar } from "@hooks/useProgressBar";
 import { useTimeout } from "@hooks/useTimeout";
 import { type MouseEvent, useRef, useState } from "react";
 import ProgressBar from "./ProgressBar";

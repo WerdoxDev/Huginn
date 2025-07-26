@@ -13,14 +13,6 @@ export async function initializeNotification() {
 	if (!window.electronAPI) {
 		return;
 	}
-
-	//TODO: MIGRATION
-	// permissionGranted = await isPermissionGranted();
-
-	// if (!permissionGranted) {
-	// 	const permission = await requestPermission();
-	// 	permissionGranted = permission === "granted";
-	// }
 }
 
 let canSend = true;
@@ -56,7 +48,7 @@ export function NotificationProvider(props: { children?: ReactNode }) {
 	);
 }
 
-export function sendNotification(payload: string, title: string, text: string, imagePath: string) {
+export function sendNotification(payload: string, title: string, text: string, _imagePath: string) {
 	if (!canSend) {
 		return;
 	}

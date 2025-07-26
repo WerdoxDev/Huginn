@@ -1,8 +1,8 @@
-import { remap } from "@huginn/shared";
 import { hexToRgbObject, useTheme } from "@stores/themeStore";
-import clsx from "clsx";
-import { motion, type Transition } from "motion/react";
+import { type Transition, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import clsx from "clsx";
+import { remap } from "@huginn/shared";
 
 export default function VoiceAudioVisualizer(props: { srcObject?: MediaProvider; transition: Transition; isResizing?: boolean }) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -29,18 +29,11 @@ export default function VoiceAudioVisualizer(props: { srcObject?: MediaProvider;
 
 		const audioContext = new AudioContext();
 		const analyser = audioContext.createAnalyser();
-		// analyser.maxDecibels = 0;
-		// analyser.minDecibels = -90;
 		analyser.smoothingTimeConstant = 0.85;
 		analyser.fftSize = 256;
 
 		const source = audioContext.createMediaStreamSource(props.srcObject as MediaStream);
-		// const gain = audioContext.createGain();
-		// distortion.oversample = "4x";
-		// gain.gain.value = 5;
 		source.connect(analyser);
-		// gain.connect(analyser);
-		// analyser.connect(audioContext.destination);
 
 		const bufferLength = analyser.frequencyBinCount;
 		const dataArray = new Uint8Array(bufferLength);

@@ -36,7 +36,8 @@ export function listenToEvents(_mainWindow: BrowserWindow) {
       try {
          await access(getPath(name), constants.R_OK | constants.W_OK);
          return true;
-      } catch (_e) {
+         // oxlint-disable-next-line no-unused-vars
+      } catch (e) {
          return false
       }
    })

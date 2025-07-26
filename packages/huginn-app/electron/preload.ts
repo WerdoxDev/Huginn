@@ -1,4 +1,3 @@
-import type { Window } from "application-loopback";
 import { contextBridge, ipcRenderer } from "electron";
 import type { ProgressInfo, UpdateInfo } from "electron-updater";
 import type { AudioSource, DisplaySource } from "@/types";

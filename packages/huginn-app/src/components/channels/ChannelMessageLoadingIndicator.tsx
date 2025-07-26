@@ -1,6 +1,5 @@
 import LoadingDot from "@components/LoadingDot";
 import { Transition } from "@headlessui/react";
-import clsx from "clsx";
 
 export default function ChannelMessageLoadingIndicator(props: { isFetchingNextPage: boolean; isFetchingPreviousPage: boolean }) {
 	return (

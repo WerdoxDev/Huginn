@@ -56,7 +56,7 @@ export default function MessageWebsocketProvider(props: { children?: ReactNode }
 
 				return {
 					...old,
-					pages: [...old.pages.toSpliced(old.pages.length - 1, 1, [...lastPage.filter((x) => !x.nonce || x.nonce !== d.nonce), newMessage])],
+					pages: old.pages.toSpliced(old.pages.length - 1, 1, [...lastPage.filter((x) => !x.nonce || x.nonce !== d.nonce), newMessage]),
 				};
 			}
 
@@ -103,7 +103,7 @@ export default function MessageWebsocketProvider(props: { children?: ReactNode }
 
 				return {
 					...old,
-					pages: [...old.pages.toSpliced(old.pages.length - 1, 1, [...lastPage.filter((x) => x.id !== d.id), updatedMessage])],
+					pages: old.pages.toSpliced(old.pages.length - 1, 1, [...lastPage.filter((x) => x.id !== d.id), updatedMessage]),
 				};
 			}
 

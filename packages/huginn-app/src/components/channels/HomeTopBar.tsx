@@ -4,15 +4,12 @@ import UserAvatar from "@components/UserAvatar";
 import { useChannelName } from "@hooks/api-hooks/channelHooks";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { ChannelType } from "@huginn/shared";
-import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
-import { useVoiceStore, voiceClient } from "@stores/voiceStore";
 import { useMemo } from "react";
 import type { AppDirectChannel } from "@/types";
 
 export default function HomeTopBar(props: { channel: AppDirectChannel; onRecipientsClick?: () => void; onCallClick?: () => void }) {
 	const { user } = useThisUser();
-	const client = useClient();
 	const recipients = useUsers(props.channel.recipientIds);
 	const name = useChannelName(props.channel.id);
 
