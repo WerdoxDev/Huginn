@@ -27,7 +27,7 @@ export function omit<Obj extends object, Keys extends keyof Obj>(obj: Obj, keys:
 export function omitArray<Obj extends object, Keys extends keyof Obj>(obj: Obj[], keys: Keys[]): Omit<Obj, (typeof keys)[number]>[] {
    const result = [];
 
-   for (const copyObj of [...obj]) {
+   for (const copyObj of obj) {
       const modifiedObj = { ...copyObj };
       for (const key of keys) {
          delete modifiedObj[key];
@@ -231,6 +231,7 @@ export function isVideoMediaType(type: string): boolean {
 export function isBrowser(): boolean {
    try {
       return globalThis === window;
+      // oxlint-disable-next-line no-unused-vars
    } catch (e) {
       return false;
    }

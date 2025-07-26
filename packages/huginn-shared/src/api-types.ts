@@ -328,8 +328,8 @@ export enum MessageType {
    CHANNEL_ICON_CHANGED = 5,
    CHANNEL_PINNED_MESSAGE = 6,
    CHANNEL_OWNER_CHANGED = 7,
-   USER_JOIN = 7,
-   REPLY = 8,
+   USER_JOIN = 8,
+   REPLY = 9,
 }
 //#endregion
 
