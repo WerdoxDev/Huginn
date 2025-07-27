@@ -1,15 +1,20 @@
 import type { Snowflake } from "@huginn/shared";
-import { clientStore } from "@stores/clientStore";
-import { useMemo } from "react";
-import { useStore } from "zustand";
+import { getUserOptions } from "@lib/queries";
+import { useClient } from "@stores/clientStore";
+import { useSuspenseQueries, useSuspenseQuery } from "@tanstack/react-query";
 
 export function useUser(id: Snowflake) {
-   const thisStore = useStore(clientStore);
-   return useMemo(() => thisStore.users.find((x) => x.id === id), [thisStore.users, id]);
+   const client = useClient();
+   const { data } = useSuspenseQuery(getUserOptions(client, id));
+
+   return data;
 }
 
 export function useUsers(ids?: Snowflake[]) {
-   const thisStore = useStore(clientStore);
+   const client = useClient();
+   const queries = useSuspenseQueries({ queries: ids?.map((x) => getUserOptions(client, x)) ?? [] });
+
+   const users = queries.map((x) => x.data);
    // console.log(ids);
-   return useMemo(() => thisStore.users.filter((x) => ids?.includes(x.id)), [thisStore.users, ids]);
+   return users;
 }

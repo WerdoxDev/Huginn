@@ -1,9 +1,9 @@
 import { HuginnClient } from "@huginn/api";
-import { type APIPublicUser, error, type GatewayReadyData, log, type PresenceUser, type Snowflake } from "@huginn/shared";
-import { produce } from "immer";
+import { type APIPublicUser, error, type GatewayReadyData, log, type Snowflake } from "@huginn/shared";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 import { settingsStore } from "./settingsStore";
+import { updateUser } from "@lib/query-utils";
 
 export let client: HuginnClient | undefined = undefined;
 
@@ -11,9 +11,8 @@ const initialStore = () => ({
    hostnames: {
       api: "",
       cdn: "",
-      voice: ""
+      voice: "",
    },
-   users: [] as APIPublicUser[],
    readyData: undefined as GatewayReadyData | undefined,
    isInitialized: false,
 });
@@ -22,18 +21,18 @@ type StoreType = ReturnType<typeof initialStore>;
 
 const store = createStore(
    combine(initialStore(), (set) => ({
-      updateUser: (user: PresenceUser) =>
-         set(
-            produce((draft: StoreType) => {
-               const index = draft.users.findIndex((x) => x.id === user.id);
-               if (index !== -1) {
-                  draft.users[index] = { ...draft.users[index], ...user };
-               } else {
-                  draft.users.push(user as APIPublicUser);
-               }
-            }),
-         ),
-      setReadyData: (data: GatewayReadyData) => set({ readyData: data })
+      // updateUser: (user: PresenceUser) =>
+      //    set(
+      //       produce((draft: StoreType) => {
+      //          const index = draft.users.findIndex((x) => x.id === user.id);
+      //          if (index !== -1) {
+      //             draft.users[index] = { ...draft.users[index], ...user };
+      //          } else {
+      //             draft.users.push(user as APIPublicUser);
+      //          }
+      //       }),
+      //    ),
+      setReadyData: (data: GatewayReadyData) => set({ readyData: data }),
    })),
 );
 
@@ -44,7 +43,7 @@ export async function setHostnamesFromExternal() {
    let response: Response | undefined;
 
    try {
-      response = (await fetch(settings.local.externalHostnamesUrl, { cache: "no-cache" }));
+      response = await fetch(settings.local.externalHostnamesUrl, { cache: "no-cache" });
       const json = await response?.json();
       store.setState({ hostnames: { api: json.api, cdn: json.cdn, voice: json.voice } });
       return true;
@@ -114,29 +113,30 @@ export function initializeClient() {
 
       userMap.set(d.user.id, d.user);
 
-      store.setState({ users: Array.from(userMap.values()) });
+      for (const [_userId, user] of userMap) {
+         updateUser(user);
+      }
    });
 
    const unlisten2 = client?.gateway.listen("presence_update", (d) => {
-      store.getState().updateUser(d.user);
+      updateUser(d.user);
    });
 
    const unlisten3 = client?.gateway.listen("user_update", (d) => {
-      store.getState().updateUser(d);
+      updateUser(d);
    });
 
    const unlisten4 = client?.gateway.listen("channel_recipient_add", (d) => {
-      store.getState().updateUser(d.user);
+      updateUser(d.user);
    });
 
    const unlisten5 = client?.gateway.listen("relationship_add", (d) => {
-      console.log(d);
-      store.getState().updateUser(d.user);
+      updateUser(d.user);
    });
 
    const unlisten6 = client?.gateway.listen("channel_create", (d) => {
       for (const user of d.recipients) {
-         store.getState().updateUser(user);
+         updateUser(user);
       }
    });
 

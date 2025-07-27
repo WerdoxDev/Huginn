@@ -1,13 +1,14 @@
-import { access, constants, readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { error, log } from "@huginn/shared";
-import { app, type BrowserWindow, ipcMain } from "electron";
+import { app, ipcMain } from "electron";
+import { fileExists } from "./utils";
 
 function getPath(name: string) {
    return path.join(app.getPath("userData"), `${name}.json`);
 }
 
-export function listenToEvents(_mainWindow: BrowserWindow) {
+export function listenToEvents() {
    ipcMain.handle("file:load", async (_, name: string) => {
       log("app:electron", "recv", "file load", "n:", name);
 
@@ -15,7 +16,7 @@ export function listenToEvents(_mainWindow: BrowserWindow) {
          const fileContent = await readFile(getPath(name), { encoding: "utf-8" });
          return JSON.parse(fileContent);
       } catch (e) {
-         error("app:electron", "Error reading file: ", e)
+         error("app:electron", "Error reading file: ", e);
          return {};
       }
    });
@@ -26,19 +27,13 @@ export function listenToEvents(_mainWindow: BrowserWindow) {
       try {
          await writeFile(getPath(name), JSON.stringify(content, null, 2));
       } catch (e) {
-         error("app:electron", "Error writing file: ", e)
+         error("app:electron", "Error writing file: ", e);
       }
    });
 
    ipcMain.handle("file:exists", async (_, name: string) => {
       log("app:electron", "recv", "file exists", "n:", name);
 
-      try {
-         await access(getPath(name), constants.R_OK | constants.W_OK);
-         return true;
-         // oxlint-disable-next-line no-unused-vars
-      } catch (e) {
-         return false
-      }
-   })
+      return await fileExists(getPath(name));
+   });
 }

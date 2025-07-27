@@ -4,6 +4,13 @@ import { clientStore } from "@stores/clientStore";
 import { infiniteQueryOptions, type QueryClient, queryOptions } from "@tanstack/react-query";
 import { convertToAppDirectChannel, convertToAppMessage, convertToAppRelationship } from "./utils";
 
+export function getUserOptions(client: HuginnClient, userId: Snowflake) {
+   return queryOptions({
+      queryKey: ["user", userId],
+      queryFn: async () => await client.users.get(userId),
+   });
+}
+
 export function getChannelsOptions(client: HuginnClient, guildId: Snowflake) {
    return queryOptions({
       queryKey: ["channels", guildId],

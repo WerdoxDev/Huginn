@@ -1,4 +1,4 @@
-import { RelationshipType, type Snowflake, snowflake } from "@huginn/shared";
+import { ChannelType, RelationshipType, type Snowflake, snowflake } from "@huginn/shared";
 import { listenEvent } from "@lib/event-handler";
 import { getCurrentPageMessages } from "@lib/utils";
 import { windowStore } from "@stores/windowStore";
@@ -8,9 +8,10 @@ import moment from "moment";
 import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
-import notificationUrl from "@/assets/notification.wav";
+import notificationUrl from "@/assets/sounds/notification.wav";
 import { sendNotification } from "../contexts/notificationContext";
-import { client, clientStore } from "./clientStore";
+import { client } from "./clientStore";
+import { findChannel, getChannelName, getChannelRecipients, getChannels, getUser } from "@lib/query-utils";
 
 export type ContextReadState = { channelId: Snowflake; lastReadMessageId?: Snowflake; unreadCount: number };
 
@@ -80,13 +81,20 @@ export function initializeReadStates() {
 
    const unlisten2 = listenEvent("message_added", async (data) => {
       if (!data.self && !data.visible) {
-         const author = clientStore.getState().users.find((x) => x.id === data.message.authorId);
-         // console.log(await join(await resourceDir(), "resources/huginn-text.png"));
+         const author = getUser(data.message.authorId);
+         const channel = findChannel(getChannels(), data.message.channelId);
+         const recipients = getChannelRecipients(data.message.channelId);
+         const channelName = getChannelName(channel?.name, recipients);
+
+         if (windowStore.getState().environment === "desktop") {
+            const username = author?.username ?? "Unknown User";
+            const title = username + (channel?.type === ChannelType.GROUP_DM ? ` - ${channelName}` : "");
+            sendNotification(data.message.channelId, title, data.message.content, author?.avatar ?? undefined);
+         }
+
          const audio = new Audio(notificationUrl);
          audio.play();
-         if (windowStore.getState().environment === "desktop") {
-            sendNotification(data.message.channelId, author?.username ?? "Unknown User", data.message.content, "");
-         }
+
          store.getState().increaseUnreadCount(data.message.channelId);
       }
    });

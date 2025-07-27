@@ -4,22 +4,22 @@ export default {
    productName: "Huginn",
    appId: "dev.huginn.desktop",
    electronLanguages: ["en-US"],
-   compression: "store",
+   compression: "maximum",
    win: {
       target: { target: "nsis", arch: ["x64"] },
       icon: "assets/icon.ico",
       publish: {
          provider: "generic",
          url: "https://midgard.huginn.dev/api/update/${os}",
-         useMultipleRangeRequest: false
-      }
+         useMultipleRangeRequest: false,
+      },
    },
    artifactName: "${productName}_${version}_${arch}-setup.${ext}",
-   files: ["dist/**/*", "!dist/electron", "!node_modules/**/*", ".electron/**/*"],
+   files: ["dist/**/*", "!dist/electron", "!node_modules", "node_modules/sharp/**/*", "node_modules/@img/**/*", ".electron/**/*"],
    directories: {
       output: "dist/electron",
    },
    icon: "assets/icon.ico",
    extraResources: ["assets", { from: "../../node_modules/application-loopback/bin", to: "bin" }],
-   asarUnpack: ["bin"]
+   asarUnpack: ["bin", "**/node_modules/sharp/**/*", "**/node_modules/@img/**/*"],
 } as Configuration;

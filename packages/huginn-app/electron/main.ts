@@ -1,11 +1,12 @@
 import path from "node:path";
 import { enableLogs, error, findClosestString, log } from "@huginn/shared";
 import { getActiveWindowProcessIds, setExecutablesRoot, startAudioCapture, stopAudioCapture } from "application-loopback";
-import { app, BrowserWindow, desktopCapturer, ipcMain, Menu, Notification, session, shell, Tray } from "electron";
+import { app, BrowserWindow, desktopCapturer, ipcMain, Menu, nativeImage, Notification, session, shell, Tray } from "electron";
 import electronLog from "electron-log/main";
 import { autoUpdater, CancellationToken } from "electron-updater";
 import type { AudioSource, DisplaySource } from "@/types";
 import * as fileEvents from "./file-events";
+import * as cacheEvents from "./cache-events";
 
 // application-loopback executable path when packaged
 if (app.isPackaged) {
@@ -14,7 +15,7 @@ if (app.isPackaged) {
 
 configureUpdater();
 
-enableLogs({ "app:electron": ["default", "loopback", "recv", "send", "updater"] })
+enableLogs({ "app:electron": ["default", "loopback", "recv", "send", "updater"] });
 
 if (process.defaultApp) {
    if (process.argv.length >= 2) {
@@ -54,12 +55,12 @@ function createWindow() {
    });
 
    if (process.env.VITE_DEV_SERVER_URL) {
-      log("app:electron", "default", "load", "url:", process.env.VITE_DEV_SERVER_URL)
+      log("app:electron", "default", "load", "url:", process.env.VITE_DEV_SERVER_URL);
 
       mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
    } else {
-      const filePath = path.join(__dirname, "../dist/index.html")
-      log("app:electron", "default", "load", "url:", filePath)
+      const filePath = path.join(__dirname, "../dist/index.html");
+      log("app:electron", "default", "load", "url:", filePath);
 
       mainWindow.loadFile(filePath);
    }
@@ -179,7 +180,8 @@ let selectedSourceId: string;
 function listenToEvents(mainWindow: BrowserWindow) {
    log("app:electron", "default", "listen to events");
 
-   fileEvents.listenToEvents(mainWindow);
+   fileEvents.listenToEvents();
+   cacheEvents.listenToEvents();
 
    session.defaultSession.setDisplayMediaRequestHandler(async (request, callback) => {
       const sources = await desktopCapturer.getSources({
@@ -189,7 +191,7 @@ function listenToEvents(mainWindow: BrowserWindow) {
       });
       const source = sources.find((x) => x.id === selectedSourceId);
 
-      const audio = (request.audioRequested && source?.id.includes("screen")) ? "loopback" : undefined;
+      const audio = request.audioRequested && source?.id.includes("screen") ? "loopback" : undefined;
       callback({ video: source, ...(audio ? { audio: audio } : {}), enableLocalEcho: false });
    });
 
@@ -244,7 +246,7 @@ function listenToEvents(mainWindow: BrowserWindow) {
    ipcMain.handle("window:version", () => {
       log("app:electron", "recv", "window version");
 
-      return app.getVersion()
+      return app.getVersion();
    });
 
    // ipcMain.on("window:splashscreen-mode", () => {
@@ -270,30 +272,30 @@ function listenToEvents(mainWindow: BrowserWindow) {
    ipcMain.on("window:show-main", () => {
       log("app:electron", "recv", "window show main");
 
-      mainWindow.show()
+      mainWindow.show();
    });
    ipcMain.on("window:hide-main", () => {
       log("app:electron", "recv", "window hide main");
 
-      mainWindow.hide()
+      mainWindow.hide();
    });
    ipcMain.on("window:focus-main", () => {
       log("app:electron", "recv", "window focus main");
 
-      mainWindow.focus()
+      mainWindow.focus();
    });
    ipcMain.on("window:minimize", () => {
       log("app:electron", "recv", "window minimize");
 
-      mainWindow.minimize()
+      mainWindow.minimize();
    });
    ipcMain.on("window:toggle-maximize", () => {
       log("app:electron", "recv", "window toggle maximize");
 
       if (mainWindow.isMaximized()) {
-         mainWindow.restore()
+         mainWindow.restore();
       } else {
-         mainWindow.maximize()
+         mainWindow.maximize();
       }
    });
 
@@ -315,7 +317,7 @@ function listenToEvents(mainWindow: BrowserWindow) {
       log("app:electron", "updater", "set url", "u:", url);
 
       autoUpdater.setFeedURL({ provider: "generic", url, useMultipleRangeRequest: false });
-   })
+   });
 
    autoUpdater.on("download-progress", (e) => {
       log("app:electron", "updater", "download progress");
@@ -326,7 +328,7 @@ function listenToEvents(mainWindow: BrowserWindow) {
    ipcMain.handle("cli:get-args", () => {
       log("app:electron", "recv", "cli get args");
 
-      return process.argv
+      return process.argv;
    });
 
    app.on("second-instance", (_event, commandLine, _workingDirectory, _additionalData) => {
@@ -349,13 +351,20 @@ function listenToEvents(mainWindow: BrowserWindow) {
       shell.openExternal(url);
    });
 
-   ipcMain.on("notification:send", (_, data: { title: string; body: string; payload?: string }) => {
+   ipcMain.on("notification:send", (_, data: { title: string; body: string; payload?: string; icon?: string }) => {
       log("app:electron", "recv", "notification send", "title:", data.title, "body:", data.body, "pld:", data.payload);
+
+      const icon = data.icon
+         ? nativeImage.createFromPath(path.join(cacheEvents.cacheDir, `${data.icon}.png`))
+         : app.isPackaged
+           ? path.join(process.resourcesPath, "assets", "icon.ico")
+           : "./assets/icon.ico";
 
       const notification = new Notification({
          title: data.title,
          body: data.body,
-         icon: app.isPackaged ? path.join(process.resourcesPath, "assets", "icon.ico") : "./assets/icon.ico",
+         icon: icon,
+
          silent: true,
       });
 
@@ -391,21 +400,26 @@ function listenToEvents(mainWindow: BrowserWindow) {
       });
       const processes = await getActiveWindowProcessIds();
 
-      console.log(sources.map(x => x.name));
-      console.log(processes.map(x => x.title));
+      console.log(sources.map((x) => x.name));
+      console.log(processes.map((x) => x.title));
 
       return sources
-         .map(source => {
-            const closestProcessTitle = findClosestString(source.name, processes.map(x => x.title));
-            const process = processes.find(x => x.title === closestProcessTitle);
-            return process ? {
-               processId: process.processId,
-               name: source.name,
-               appIcon: source.appIcon?.toDataURL()
-            } : null;
+         .map((source) => {
+            const closestProcessTitle = findClosestString(
+               source.name,
+               processes.map((x) => x.title),
+            );
+            const process = processes.find((x) => x.title === closestProcessTitle);
+            return process
+               ? {
+                    processId: process.processId,
+                    name: source.name,
+                    appIcon: source.appIcon?.toDataURL(),
+                 }
+               : null;
          })
          .filter((x) => x !== null && !sources[0].thumbnail.isEmpty()) as AudioSource[];
-   })
+   });
 
    ipcMain.on("window:set-selected-display-source", (_, sourceId: string) => {
       log("app:electron", "recv", "window set selected display source", "sid:", sourceId);
@@ -420,7 +434,7 @@ function listenToEvents(mainWindow: BrowserWindow) {
       let foundProcessId: string | undefined;
       if (processTitle) {
          const processIds = await getActiveWindowProcessIds();
-         foundProcessId = processIds.find(x => processTitle.toLowerCase().includes(x.title.toLowerCase()))?.processId;
+         foundProcessId = processIds.find((x) => processTitle.toLowerCase().includes(x.title.toLowerCase()))?.processId;
       } else if (processId) {
          foundProcessId = processId;
       }
@@ -430,7 +444,7 @@ function listenToEvents(mainWindow: BrowserWindow) {
 
          startAudioCapture(foundProcessId, {
             onData(data) {
-               log("app:electron", "loopback-send", "d:", data)
+               log("app:electron", "loopback-send", "d:", data);
 
                mainWindow.webContents.send("audio:loopback-data", data);
             },
@@ -438,7 +452,7 @@ function listenToEvents(mainWindow: BrowserWindow) {
 
          previousProcessId = foundProcessId;
       }
-   })
+   });
 
    ipcMain.handle("audio:stop-loopback", () => {
       log("app:electron", "recv", "audio stop loopback", "pid:", previousProcessId);
@@ -447,5 +461,5 @@ function listenToEvents(mainWindow: BrowserWindow) {
          log("app:electron", "loopback", "stop", "pid:", previousProcessId);
          stopAudioCapture(previousProcessId);
       }
-   })
+   });
 }

@@ -1,27 +1,26 @@
-import type { AppDirectChannel } from "@/types";
 import { useDeleteDMChannel } from "@hooks/mutations/useDeleteDMChannel";
 import { type APIGetUserChannelsResult, type APIPublicUser, ChannelType, type DirectChannel, type Snowflake } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useUsers } from "./userHooks";
+import { findChannel, getChannelName } from "@lib/query-utils";
+import { getChannelsOptions } from "@lib/queries";
+import { useClient } from "@stores/clientStore";
 
-export function useChannel(channelId?: Snowflake) {
-   const queryClient = useQueryClient();
-   const channels = queryClient.getQueryData<AppDirectChannel[]>(["channels", "@me"]);
+export function useChannel(channelId?: Snowflake, guildId = "@me") {
+   const client = useClient();
+   const { data } = useQuery(getChannelsOptions(client, guildId));
 
-   return useMemo(() => channels?.find((x) => x.id === channelId), [channels, channelId]);
+   return useMemo(() => findChannel(data, channelId), [data, channelId]);
 }
 
 export function useChannelName(channelId?: Snowflake): string {
    const channel = useChannel(channelId);
    const recipients = useUsers(channel?.recipientIds);
 
-   return useMemo(
-      () => (channel?.name ? channel.name : recipients?.map((x) => x.displayName ?? x.username).join(", ")),
-      [channelId, recipients, channel],
-   );
+   return useMemo(() => getChannelName(channel?.name, recipients), [channelId, recipients, channel]);
 }
 
 export function useChannelNamePlaceholder(recipients: APIPublicUser[]) {
