@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.51.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.50.1...app@v0.51.0) (2025-07-27)
+
+
+### Features
+
+* **app:** add proper notification images + new sounds for leaving, entering and notification ([8760d36](https://github.com/WerdoxDev/Huginn/commit/8760d369483b2b8de627406ee5f9c29fdedce13a))
+
+
+### Bug Fixes
+
+* **app:** add no audio indicator + visual fixes for leaving voice channel ([dddda51](https://github.com/WerdoxDev/Huginn/commit/dddda517b4002704904fb5ca92af82c5db9489bc))
+
 ## [0.50.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.50.0...app@v0.50.1) (2025-07-24)
 
 
