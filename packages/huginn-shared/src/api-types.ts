@@ -59,7 +59,6 @@ export type Tokens = {
    refreshToken: string;
 };
 
-export type APIGetUserResult = APIUser;
 export type APIGetCurrentUserResult = APIUser;
 export type APIGetUserByIdResult = APIPublicUser;
 
@@ -225,12 +224,12 @@ export enum MessageFlags {
 
 export type APIDefaultMessage = {
    type:
-   | MessageType.DEFAULT
-   | MessageType.RECIPIENT_ADD
-   | MessageType.RECIPIENT_REMOVE
-   | MessageType.CHANNEL_ICON_CHANGED
-   | MessageType.CHANNEL_NAME_CHANGED
-   | MessageType.CHANNEL_OWNER_CHANGED;
+      | MessageType.DEFAULT
+      | MessageType.RECIPIENT_ADD
+      | MessageType.RECIPIENT_REMOVE
+      | MessageType.CHANNEL_ICON_CHANGED
+      | MessageType.CHANNEL_NAME_CHANGED
+      | MessageType.CHANNEL_OWNER_CHANGED;
 } & APIBaseMessage;
 
 export type APICallMessage = {
