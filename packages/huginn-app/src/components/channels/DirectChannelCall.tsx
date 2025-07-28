@@ -415,7 +415,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
                         const hasAudioStream = x.producerId === streamAudioRemoteSources[x.userId]?.producerId;
                         const hasVideoStream = x.producerId === streamVideoRemoteSources[x.userId]?.producerId;
 
-                        return hasVideoStream || (hasAudioStream && !hasVideoStream);
+                        return hasVideoStream || (hasAudioStream && !streamVideoRemoteSources[x.userId]);
                      })
                      .map((x) => (
                         <VoiceElement
