@@ -1,7 +1,11 @@
 import type {
    GatewayPayload,
-   GatewayUpdateVoiceState, GatewayUpdateVoiceStateData, GatewayVoiceStateFlags, Snowflake,
-   WebsocketStatus
+   GatewayUpdateVoiceState,
+   GatewayUpdateVoiceStateData,
+   GatewayVoiceState,
+   GatewayVoiceStateFlags,
+   Snowflake,
+   WebsocketStatus,
 } from "@huginn/shared";
 import {
    error,
@@ -12,7 +16,8 @@ import {
    type GatewayIdentify,
    GatewayOperations,
    type GatewayReadyData,
-   type GatewayResume, log
+   type GatewayResume,
+   log,
 } from "@huginn/shared";
 import type { HuginnClient } from ".";
 import type { GatewayOptions } from "./types";
@@ -46,27 +51,27 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
    }
 
    public connect(): void {
-      log("api:gateway", "default", "connect")
+      log("api:gateway", "default", "connect");
 
       this.socket = this.options.createSocket(this.options.url);
       this.startListening();
    }
 
    public close(): void {
-      log("api:gateway", "default", "intentional close")
+      log("api:gateway", "default", "intentional close");
 
       this.socket?.close(GatewayCode.INTENTIONAL_CLOSE);
    }
 
    private onOpen(_e: Event) {
-      log("api:gateway", "default", "connected")
+      log("api:gateway", "default", "connected");
 
-      this.status = "connecting"
+      this.status = "connecting";
       this.emit("open", undefined);
    }
 
    private onClose(e: CloseEvent) {
-      log("api:gateway", "default", "closed", "c:", e.code, "r:", e.reason)
+      log("api:gateway", "default", "closed", "c:", e.code, "r:", e.reason);
 
       this.status = "disconnected";
       this.stopHeartbeat();
@@ -105,15 +110,17 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
                   await this.waitForEvents(["resumed", "ready"], true);
                }
 
-               await this.connectVoice(this.client.voice.connectionInfo.guildId, this.client.voice.connectionInfo.channelId,
-                  { isAudioDeafened: this.client.voice.localVoiceState.isAudioDeafened, isAudioMuted: this.client.voice.localVoiceState.isAudioMuted });
+               await this.connectVoice(this.client.voice.connectionInfo.guildId, this.client.voice.connectionInfo.channelId, {
+                  isAudioDeafened: this.client.voice.localVoiceState.isAudioDeafened,
+                  isAudioMuted: this.client.voice.localVoiceState.isAudioMuted,
+               });
             }
          }
       }, 2000);
    }
 
-   public async authenticate(): Promise<{ authenticated: boolean, retryable: boolean }> {
-      log("api:gateway", "default", "authenticate")
+   public async authenticate(): Promise<{ authenticated: boolean; retryable: boolean }> {
+      log("api:gateway", "default", "authenticate");
 
       // Already authenticated
       if (this.status === "authenticated") {
@@ -155,10 +162,16 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
     * @param token if a token is already available, it will use that to connect the voice websocket (use with caution)
     * @param resetFirst it will send a null channel voice state update first and then updates to the channel id and connects voice websocket
     */
-   public async connectVoice(guildId: Snowflake | null, channelId: Snowflake, voiceState?: Omit<GatewayVoiceStateFlags, "isStreaming" | "isCameraOn">, token?: string, resetFirst?: boolean): Promise<boolean> {
-      log("api:gateway", "default", "connect to voice")
+   public async connectVoice(
+      guildId: Snowflake | null,
+      channelId: Snowflake,
+      voiceState?: Omit<GatewayVoiceStateFlags, "isStreaming" | "isCameraOn">,
+      token?: string,
+      resetFirst?: boolean,
+   ): Promise<boolean> {
+      log("api:gateway", "default", "connect to voice");
 
-      if (this.client.voice.connectionInfo?.channelId !== channelId) {
+      if (this.client.voice.connectionInfo && this.client.voice.connectionInfo?.channelId !== channelId) {
          this.client.voice.close();
       }
 
@@ -228,13 +241,13 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
          await this.client.voice.waitForEvents(["ready"]);
       }
 
-      this.client.voice.updateLocalVoiceState({ isStreaming: false, isCameraOn: false })
+      this.client.voice.updateLocalVoiceState({ isStreaming: false, isCameraOn: false });
 
       return true;
    }
 
    public async disconnectVoice(): Promise<void> {
-      log("api:gateway", "default", "disconnect from voice")
+      log("api:gateway", "default", "disconnect from voice");
 
       const updateVoiceStateData: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
@@ -257,7 +270,19 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
    }
 
    public async updateVoiceState(options: GatewayVoiceStateFlags): Promise<void> {
-      log("api:gateway", "default", "update voice state", "am:", options.isAudioMuted, "ad:", options.isAudioDeafened, "s:", options.isStreaming, "co:", options.isCameraOn);
+      log(
+         "api:gateway",
+         "default",
+         "update voice state",
+         "am:",
+         options.isAudioMuted,
+         "ad:",
+         options.isAudioDeafened,
+         "s:",
+         options.isStreaming,
+         "co:",
+         options.isCameraOn,
+      );
 
       if (!this.client.voice.connectionInfo || this.client.voice.status !== "authenticated" || this.status !== "authenticated") {
          return;
@@ -268,32 +293,44 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
          d: {
             guildId: this.client.voice.connectionInfo?.guildId,
             channelId: this.client.voice.connectionInfo?.channelId,
-            ...options
+            ...options,
          },
       };
 
-      log("api:gateway", "send", "update voice state", "am:", updateVoiceStateData.d.isAudioMuted, "ad:", updateVoiceStateData.d.isAudioDeafened, "s:", updateVoiceStateData.d.isStreaming, "co:", updateVoiceStateData.d.isCameraOn);
+      log(
+         "api:gateway",
+         "send",
+         "update voice state",
+         "am:",
+         updateVoiceStateData.d.isAudioMuted,
+         "ad:",
+         updateVoiceStateData.d.isAudioDeafened,
+         "s:",
+         updateVoiceStateData.d.isStreaming,
+         "co:",
+         updateVoiceStateData.d.isCameraOn,
+      );
       this.send(updateVoiceStateData);
 
       //1. We first update local voice state to immediately fire an even
-      this.client.voice.updateLocalVoiceState({ ...options })
+      this.client.voice.updateLocalVoiceState({ ...options });
 
-      let updatedVoiceState: GatewayUpdateVoiceStateData | undefined;
-      while (!updatedVoiceState) {
-         const event = await this.waitForEvents(["voice_state_update"], true);
+      //2. Wait for the voice state to actually get updated
+      const updatedVoiceState = await new Promise<GatewayVoiceState>((r) => {
+         const unlisten = this.listen("voice_state_update", (d) => {
+            if (d.userId === this.client.user?.id) {
+               unlisten();
+               r(d);
+            }
+         });
+      });
 
-         // There might be another user's voice state update coming right as we update our own
-         if (event.data.userId === this.client.user?.id) {
-            updatedVoiceState = event.data
-         }
-      }
-
-      //2. Then we sync it with what we got from the server
-      this.client.voice.updateLocalVoiceState({ ...options })
+      //3. Then we sync it with what we got from the server
+      this.client.voice.updateLocalVoiceState({ ...updatedVoiceState });
    }
 
    private startListening() {
-      log("api:gateway", "default", "start listening")
+      log("api:gateway", "default", "start listening");
 
       this.socket?.removeEventListener("open", this.onOpen);
       this.socket?.removeEventListener("close", this.onClose);
@@ -306,24 +343,35 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
 
    private async onMessage(e: MessageEvent) {
       if (typeof e.data !== "string") {
-         error("api:gateway", "Non string messages are not yet supported")
+         error("api:gateway", "Non string messages are not yet supported");
          return;
       }
 
       const data: GatewayPayload = JSON.parse(e.data);
 
-      log("api:gateway", "recv-detail", "op:", data.op, "t:", "t" in data && data.t, "seq:", "s" in data && data.s, "d:", "d" in data && JSON.stringify(data.d))
+      log(
+         "api:gateway",
+         "recv-detail",
+         "op:",
+         data.op,
+         "t:",
+         "t" in data && data.t,
+         "seq:",
+         "s" in data && data.s,
+         "d:",
+         "d" in data && JSON.stringify(data.d),
+      );
 
       switch (data.op) {
          case GatewayOperations.HELLO: {
-            log("api:gateway", "recv", "hello", "intrvl:", data.d.heartbeatInterval)
+            log("api:gateway", "recv", "hello", "intrvl:", data.d.heartbeatInterval);
 
             await this.handleHello(data);
             this.emit("hello", data.d);
             break;
          }
          case GatewayOperations.DISPATCH: {
-            log("api:gateway", "dispatch", "t:", data.t, "seq:", data.s)
+            log("api:gateway", "dispatch", "t:", data.t, "seq:", data.s);
 
             this.sequence = data.s;
 

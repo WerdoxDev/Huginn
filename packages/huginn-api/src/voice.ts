@@ -3,18 +3,25 @@ import {
    convertToMediaKind,
    error,
    GatewayCode,
-   type HMediaKind, type LocalVoiceState, log,
+   type HMediaKind,
+   type LocalVoiceState,
+   log,
    type MediasoupAppData,
    type ProducerData,
    type Snowflake,
    type VoiceConsumerClosedData,
-   type VoiceConsumerCreatedData, type VoiceEvents,
+   type VoiceConsumerCreatedData,
+   type VoiceEvents,
    type VoiceHeartbeat,
    type VoiceHelloData,
-   type VoiceIdentify, VoiceOperations,
-   type VoicePayload, type VoicePing,
-   type VoiceProducerClosedData, type VoiceReadyData, type VoiceTransportCreatedData,
-   type WebsocketStatus
+   type VoiceIdentify,
+   VoiceOperations,
+   type VoicePayload,
+   type VoicePing,
+   type VoiceProducerClosedData,
+   type VoiceReadyData,
+   type VoiceTransportCreatedData,
+   type WebsocketStatus,
 } from "@huginn/shared";
 // import wrtc from "@roamhq/wrtc";
 import * as mediasoupClient from "mediasoup-client";
@@ -45,11 +52,11 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
    public localVoiceState: LocalVoiceState;
    public connectionInfo?: { token: string; channelId: Snowflake; guildId: Snowflake | null };
    public sendTransport?: Transport<MediasoupAppData>;
+   public recvTransport?: Transport;
    public producers: Map<HMediaKind, Producer<MediasoupAppData>>;
    public consumers: Map<string, Consumer<MediasoupAppData>>;
    private device?: mediasoupClient.Device;
    private initialProducers?: ProducerData[];
-   private recvTransport?: Transport;
    private listeners: WeakMap<Producer, (newTrack: MediaStreamTrack | null) => void>;
 
    private _status: WebsocketStatus = "none";
@@ -78,7 +85,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          return;
       }
 
-      log("api:voice", "default", "connect", "cid:", channelId, "gid:", guildId)
+      log("api:voice", "default", "connect", "cid:", channelId, "gid:", guildId);
 
       this.socket = this.options.createSocket(this.options.url);
       this.connectionInfo = { token, channelId, guildId };
@@ -91,7 +98,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
     * Do not call this only by it self. Update the voice state to a null channel and guild id and THEN close voice
     */
    public close(): void {
-      log("api:voice", "default", "intentional close")
+      log("api:voice", "default", "intentional close");
 
       // We set this so it won't try to reconnect again. (it will log it but will fail to do so)
       this.connectionInfo = undefined;
@@ -139,7 +146,13 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
 
             // If we had a token failure last time, don't include a token to get a new one.
             const token = e.code === GatewayCode.AUTHENTICATION_FAILED ? undefined : this.connectionInfo.token;
-            await this.client.gateway.connectVoice(this.connectionInfo.guildId, this.connectionInfo.channelId, { isAudioDeafened: this.localVoiceState.isAudioDeafened, isAudioMuted: this.localVoiceState.isAudioMuted }, token, !token)
+            await this.client.gateway.connectVoice(
+               this.connectionInfo.guildId,
+               this.connectionInfo.channelId,
+               { isAudioDeafened: this.localVoiceState.isAudioDeafened, isAudioMuted: this.localVoiceState.isAudioMuted },
+               token,
+               !token,
+            );
          }
       }, 2000);
    }
@@ -179,7 +192,12 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          appData: { mediaKind: "camera", userId: this.client.user.id },
       });
 
-      await this.client.gateway.updateVoiceState({ isAudioDeafened: this.localVoiceState.isAudioDeafened, isAudioMuted: this.localVoiceState.isAudioMuted, isCameraOn: true, isStreaming: this.localVoiceState.isStreaming });
+      await this.client.gateway.updateVoiceState({
+         isAudioDeafened: this.localVoiceState.isAudioDeafened,
+         isAudioMuted: this.localVoiceState.isAudioMuted,
+         isCameraOn: true,
+         isStreaming: this.localVoiceState.isStreaming,
+      });
    }
 
    public async stopCamera(): Promise<void> {
@@ -195,7 +213,12 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          await this.closeProducer(cameraProducer.id);
       }
 
-      await this.client.gateway.updateVoiceState({ isAudioDeafened: this.localVoiceState.isAudioDeafened, isAudioMuted: this.localVoiceState.isAudioMuted, isCameraOn: false, isStreaming: this.localVoiceState.isStreaming });
+      await this.client.gateway.updateVoiceState({
+         isAudioDeafened: this.localVoiceState.isAudioDeafened,
+         isAudioMuted: this.localVoiceState.isAudioMuted,
+         isCameraOn: false,
+         isStreaming: this.localVoiceState.isStreaming,
+      });
    }
 
    public async startStream(videoTrack?: MediaStreamTrack, audioTrack?: MediaStreamTrack): Promise<void> {
@@ -229,7 +252,11 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          if (audioProducer) {
             await audioProducer.replaceTrack({ track: audioTrack });
          } else {
-            await this.openProducer("stream_audio", { track: audioTrack, appData: { mediaKind: "stream_audio", userId: this.client.user.id }, codecOptions: { opusStereo: true, opusMaxAverageBitrate: 1000000 } });
+            await this.openProducer("stream_audio", {
+               track: audioTrack,
+               appData: { mediaKind: "stream_audio", userId: this.client.user.id },
+               codecOptions: { opusStereo: true, opusMaxAverageBitrate: 1000000 },
+            });
          }
       }
 
@@ -241,7 +268,12 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          await this.closeProducer(videoProducer.id);
       }
 
-      await this.client.gateway.updateVoiceState({ isAudioDeafened: this.localVoiceState.isAudioDeafened, isAudioMuted: this.localVoiceState.isAudioMuted, isCameraOn: this.localVoiceState.isCameraOn, isStreaming: true });
+      await this.client.gateway.updateVoiceState({
+         isAudioDeafened: this.localVoiceState.isAudioDeafened,
+         isAudioMuted: this.localVoiceState.isAudioMuted,
+         isCameraOn: this.localVoiceState.isCameraOn,
+         isStreaming: true,
+      });
    }
 
    public async stopStream(): Promise<void> {
@@ -263,7 +295,12 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          await this.closeProducer(audioProducer.id);
       }
 
-      await this.client.gateway.updateVoiceState({ isAudioDeafened: this.localVoiceState.isAudioDeafened, isAudioMuted: this.localVoiceState.isAudioMuted, isCameraOn: this.localVoiceState.isCameraOn, isStreaming: false });
+      await this.client.gateway.updateVoiceState({
+         isAudioDeafened: this.localVoiceState.isAudioDeafened,
+         isAudioMuted: this.localVoiceState.isAudioMuted,
+         isCameraOn: this.localVoiceState.isCameraOn,
+         isStreaming: false,
+      });
    }
 
    public async consumeProducer(producerId: string): Promise<void> {
@@ -287,13 +324,14 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       log("api:voice", "send", "consume", "pid:", producerId);
       this.send(consumeData);
 
-      let consumed = false;
-      while (!consumed) {
-         const { data } = await this.waitForEvents(["consumer_created"], true);
-         if (data.producerId === producerId) {
-            consumed = true;
-         }
-      }
+      await new Promise<void>((r) => {
+         const unlisten = this.listen("consumer_created", (d) => {
+            if (d.producerId === producerId) {
+               unlisten();
+               r();
+            }
+         });
+      });
    }
 
    public updateLocalVoiceState(voiceState: Partial<typeof this.localVoiceState>): void {
@@ -330,7 +368,11 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          this.localVoiceState.isAudioDeafened = voiceState.isAudioDeafened;
 
          for (const consumer of this.consumers.values()) {
-            if (voiceState.isAudioDeafened === true && !consumer.paused && (consumer.appData.mediaKind === "stream_audio" || consumer.appData.mediaKind === "microphone")) {
+            if (
+               voiceState.isAudioDeafened === true &&
+               !consumer.paused &&
+               (consumer.appData.mediaKind === "stream_audio" || consumer.appData.mediaKind === "microphone")
+            ) {
                consumer.pause();
             } else if (voiceState.isAudioDeafened === false && consumer.paused) {
                consumer.resume();
@@ -348,7 +390,21 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          this.localVoiceState.isCameraOn = voiceState.isCameraOn;
       }
 
-      log("api:voice", "local-voice-state", "update", "am:", this.localVoiceState.isAudioMuted, "ap:", this.localVoiceState.isAudioPaused, "ad:", this.localVoiceState.isAudioDeafened, "s:", this.localVoiceState.isStreaming, "co:", this.localVoiceState.isCameraOn)
+      log(
+         "api:voice",
+         "local-voice-state",
+         "update",
+         "am:",
+         this.localVoiceState.isAudioMuted,
+         "ap:",
+         this.localVoiceState.isAudioPaused,
+         "ad:",
+         this.localVoiceState.isAudioDeafened,
+         "s:",
+         this.localVoiceState.isStreaming,
+         "co:",
+         this.localVoiceState.isCameraOn,
+      );
 
       this.emit("local_voice_state_changed", this.localVoiceState);
    }
@@ -363,8 +419,8 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       const closeConsumerData: VoicePayload = {
          op: VoiceOperations.DISPATCH,
          t: "close_consumer",
-         d: { channelId: this.connectionInfo.channelId, consumerId: consumerId }
-      }
+         d: { channelId: this.connectionInfo.channelId, consumerId: consumerId },
+      };
 
       log("api:voice", "send", "close-consumer", "id:", consumerId);
       this.send(closeConsumerData);
@@ -377,7 +433,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
 
       const existingProducer = this.producers.get(kind);
       if (existingProducer) {
-         await this.closeProducer(existingProducer.id)
+         await this.closeProducer(existingProducer.id);
       }
 
       log("api:voice", "default", "open producer", "mk:", kind);
@@ -410,13 +466,14 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       log("api:voice", "send", "close-producer", "id:", producerId);
       this.send(closeProducerData);
 
-      let closed = false;
-      while (!closed) {
-         const { data } = await this.waitForEvents(["producer_closed"], true);
-         if (data.producerId === producerId) {
-            closed = true;
-         }
-      }
+      await new Promise<void>((r) => {
+         const unlisten = this.listen("producer_closed", (d) => {
+            if (d.producerId === producerId) {
+               unlisten();
+               r();
+            }
+         });
+      });
    }
 
    private startListening() {
@@ -691,7 +748,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       this.startHeartbeat(data.heartbeatInterval);
 
       if (!this.client.user || !this.connectionInfo) {
-         error("api:voice", "Client user or connection info was null when identifying voice websocket")
+         error("api:voice", "Client user or connection info was null when identifying voice websocket");
          return;
       }
 

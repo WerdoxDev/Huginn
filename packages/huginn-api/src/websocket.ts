@@ -14,43 +14,36 @@ export class SharedWebsocket<Events> extends EventEmitter<Events> {
     */
    public async waitForEvents<K extends keyof Events, WaitForAny extends boolean>(
       events: K[],
-      waitForAny?: WaitForAny
-   ): Promise<
-      WaitForAny extends true
-      ? { event: K; data: Events[K] }
-      : Array<{ event: K; data: Events[K] }>
-   > {
+      waitForAny?: WaitForAny,
+   ): Promise<WaitForAny extends true ? { event: K; data: Events[K] } : Array<{ event: K; data: Events[K] }>> {
       if (waitForAny) {
          const result = await Promise.race(
-            events.map(event =>
-               new Promise<{ event: K; data: Events[K] }>(resolve => {
+            events.map(
+               (event) =>
+                  new Promise<{ event: K; data: Events[K] }>((resolve) => {
+                     const unlisten = this.listen(event, (data: Events[K]) => {
+                        unlisten();
+                        resolve({ event, data });
+                     });
+                  }),
+            ),
+         );
+
+         return result as WaitForAny extends true ? { event: K; data: Events[K] } : Array<{ event: K; data: Events[K] }>;
+      }
+
+      const results = await Promise.all(
+         events.map(
+            (event) =>
+               new Promise<{ event: K; data: Events[K] }>((resolve) => {
                   const unlisten = this.listen(event, (data: Events[K]) => {
                      unlisten();
                      resolve({ event, data });
                   });
-               })
-            )
-         );
-
-         return result as WaitForAny extends true
-            ? { event: K; data: Events[K] }
-            : Array<{ event: K; data: Events[K] }>;
-      }
-
-      const results = await Promise.all(
-         events.map(event =>
-            new Promise<{ event: K; data: Events[K] }>(resolve => {
-               const unlisten = this.listen(event, (data: Events[K]) => {
-                  unlisten();
-                  resolve({ event, data });
-               });
-            })
-         )
+               }),
+         ),
       );
 
-      return results as WaitForAny extends true
-         ? { event: K; data: Events[K] }
-         : Array<{ event: K; data: Events[K] }>;
-
+      return results as WaitForAny extends true ? { event: K; data: Events[K] } : Array<{ event: K; data: Events[K] }>;
    }
 }
