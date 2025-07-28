@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.22.0...api@v0.22.1) (2025-07-28)
+
+
+### Bug Fixes
+
+* **api:** consume producer hangs when consumers are created fast enough ([a64c3c0](https://github.com/WerdoxDev/Huginn/commit/a64c3c0c448767386b21bcad131f231a73960905))
+
 ## [0.22.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.21.1...api@v0.22.0) (2025-07-24)
 
 
