@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.51.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.51.1...app@v0.51.2) (2025-07-28)
+
+
+### Bug Fixes
+
+* **app:** video stream is doubled when it also has audio ([3f13bb0](https://github.com/WerdoxDev/Huginn/commit/3f13bb09383290426f1020bfde848e632d2f6777))
+
 ## [0.51.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.51.0...app@v0.51.1) (2025-07-28)
 
 
