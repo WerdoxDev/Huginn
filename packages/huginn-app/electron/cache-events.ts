@@ -3,6 +3,7 @@ import { app, ipcMain } from "electron";
 import path from "node:path";
 import { fileExists } from "./utils";
 import sharp from "sharp";
+import { mkdir } from "node:fs/promises";
 
 export const cacheDir = path.join(app.getPath("userData"), "web-cache");
 
@@ -11,6 +12,8 @@ export function listenToEvents() {
       log("app:electron", "recv", "cache save avatar", "h:", hash);
 
       const filePath = path.join(cacheDir, `${hash}.png`);
+
+      await mkdir(cacheDir, { recursive: true });
       if (await fileExists(filePath)) {
          return;
       }

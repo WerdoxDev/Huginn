@@ -315,15 +315,18 @@ export function initializeVoice() {
             thisStore.removeVoiceState(d.userId);
          }
 
-         if (client?.voice.connectionInfo?.channelId) {
-            // New user joining a call and we are already in a call
-            if (!thisStore.voiceStates.some((x) => x.userId === d.userId)) {
-               const audio = new Audio(voiceEnterUrl);
-               audio.play();
-            } else {
-               const audio = new Audio(voiceLeaveUrl);
-               audio.play();
-            }
+         const lastState = thisStore.voiceStates.find((x) => x.userId === d.userId);
+         const currentState = voiceStore.getState().voiceStates.find((x) => x.userId === d.userId);
+
+         // User was not here and just joined the call
+         if (lastState?.channelId !== thisStore.localVoiceState.channelId && currentState?.channelId === thisStore.localVoiceState.channelId) {
+            const audio = new Audio(voiceEnterUrl);
+            audio.play();
+         }
+         // User is no longer here but was here before
+         else if (currentState?.channelId !== thisStore.localVoiceState.channelId && lastState?.channelId === thisStore.localVoiceState.channelId) {
+            const audio = new Audio(voiceLeaveUrl);
+            audio.play();
          }
       }),
    );

@@ -18,38 +18,38 @@ import router from "./routes";
 // });
 
 enableLogs({
-	// "api:voice": ["default", "send", "recv", "heartbeat"],
-	"api:voice": ["default", "recv", "local-voice-state"],
-	// "app:voice-store": ["remote-sources"],
-	// "app:voice-client": ["voice-recv"],
-	// "api:gateway": ["default", "send", "recv", "heartbeat"],
-	"api:gateway": ["default", "recv"],
-	"api:client": ["ready-state"],
-	"app:client-store": ["default"],
+   // "api:voice": ["default", "send", "recv", "heartbeat"],
+   "api:voice": ["default", "recv"],
+   "app:voice-store": ["remote-sources", "default"],
+   "app:voice-client": ["voice-recv", "default"],
+   // "api:gateway": ["default", "send", "recv", "heartbeat"],
+   "api:gateway": ["default", "recv"],
+   "api:client": ["ready-state"],
+   "app:client-store": ["default"],
 });
 
 const logs: Array<{ section: string; level: string; args: LogArgs[] }> = [];
 
 setOnLog(async (section, level, ...args) => {
-	logs.push({ section, level, args });
+   logs.push({ section, level, args });
 });
 
 setInterval(async () => {
-	if (logs.length !== 0) {
-		await client?.log.sendLog(logs);
-		logs.splice(0, logs.length);
-	}
+   if (logs.length !== 0) {
+      await client?.log.sendLog(logs);
+      logs.splice(0, logs.length);
+   }
 }, 5000);
 
 export const queryClient = new QueryClient({
-	defaultOptions: {
-		queries: {
-			refetchOnReconnect: false,
-			refetchOnWindowFocus: false,
-			refetchOnMount: false,
-			staleTime: 60000,
-		},
-	},
+   defaultOptions: {
+      queries: {
+         refetchOnReconnect: false,
+         refetchOnWindowFocus: false,
+         refetchOnMount: false,
+         staleTime: 60000,
+      },
+   },
 });
 
 // let lastTime = performance.now();
@@ -64,7 +64,7 @@ export const queryClient = new QueryClient({
 const root = document.getElementById("root");
 // biome-ignore lint/style/noNonNullAssertion: react needs a non nullable root
 ReactDOM.createRoot(root!).render(
-	<QueryClientProvider client={queryClient}>
-		<RouterProvider router={router} />
-	</QueryClientProvider>,
+   <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+   </QueryClientProvider>,
 );
