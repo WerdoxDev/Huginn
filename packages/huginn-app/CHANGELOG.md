@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.51.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.51.0...app@v0.51.1) (2025-07-28)
+
+
+### Bug Fixes
+
+* **app:** few stream viewing + sound bug fixes ([cae4bfd](https://github.com/WerdoxDev/Huginn/commit/cae4bfd62c7c73b21890d440aff75f89eff911ed))
+
 ## [0.51.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.50.1...app@v0.51.0) (2025-07-27)
 
 
