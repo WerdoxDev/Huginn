@@ -2,7 +2,8 @@ import type { types } from "mediasoup";
 import type { RtpCapabilities, RtpParameters } from "mediasoup/node/lib/rtpParametersTypes";
 import type { DtlsParameters, IceCandidate, IceParameters } from "mediasoup/node/lib/WebRtcTransportTypes";
 import type { Snowflake } from "./snowflake";
-import type { WebsocketStatus } from "./websocket-types";
+
+export type VoiceStatus = "disconnected" | "connecting" | "connected" | "authenticated" | "reconnecting" | "rtc_ready" | "none";
 
 export enum VoiceOperations {
    HELLO = 0,
@@ -56,27 +57,27 @@ export type VoiceOperationTypes = {
 };
 
 export type VoiceEvents = {
-   message: VoicePayload,
-   open: undefined,
+   message: VoicePayload;
+   open: undefined;
    close: number;
-   hello: VoiceHelloData,
-   status_changed: WebsocketStatus,
-   identify: VoiceIdentifyData,
-   ready: VoiceReadyData,
-   create_transport: VoiceCreateTransportData,
-   transport_created: VoiceTransportCreatedData,
-   connect_transport: VoiceConnectTransportData,
-   transport_connected: VoiceTransportConnectedData,
-   produce: VoiceProduceData,
-   producer_created: VoiceProducerCreatedData,
-   new_producer: VoiceNewProducerData,
-   consume: VoiceConsumeData,
-   consumer_created: VoiceConsumerCreatedData,
-   resume_consumer: VoiceResumeConsumerData,
-   consumer_resumed: VoiceConsumerResumedData,
-   peer_left: VoicePeerLeftData,
-   close_producer: VoiceCloseProducerData,
-   producer_closed: VoiceProducerClosedData,
+   hello: VoiceHelloData;
+   status_changed: VoiceStatus;
+   identify: VoiceIdentifyData;
+   ready: VoiceReadyData;
+   create_transport: VoiceCreateTransportData;
+   transport_created: VoiceTransportCreatedData;
+   connect_transport: VoiceConnectTransportData;
+   transport_connected: VoiceTransportConnectedData;
+   produce: VoiceProduceData;
+   producer_created: VoiceProducerCreatedData;
+   new_producer: VoiceNewProducerData;
+   consume: VoiceConsumeData;
+   consumer_created: VoiceConsumerCreatedData;
+   resume_consumer: VoiceResumeConsumerData;
+   consumer_resumed: VoiceConsumerResumedData;
+   peer_left: VoicePeerLeftData;
+   close_producer: VoiceCloseProducerData;
+   producer_closed: VoiceProducerClosedData;
    close_consumer: VoiceCloseConsumerData;
    consumer_closed: VoiceConsumerClosedData;
    pong: { rtt: number };
@@ -85,21 +86,27 @@ export type VoiceEvents = {
    send_transport_ready: { channelId: Snowflake };
    recv_transport_ready: { channelId: Snowflake };
    local_producer_created: { producerId: string; kind: HMediaKind; track: MediaStreamTrack };
-   local_producer_changed: { producerId: string, kind: HMediaKind, track: MediaStreamTrack | null };
+   local_producer_changed: { producerId: string; kind: HMediaKind; track: MediaStreamTrack | null };
    local_voice_state_changed: LocalVoiceState;
 };
 
-export type VoicePayload<Event extends keyof VoiceEvents | undefined = undefined> = Event extends undefined ? {
-   [K in keyof VoiceOperationTypes]: VoiceOperationTypes[K]["op"] extends VoiceOperations.DISPATCH ? VoiceDispatch : {
-      op: K;
-      // biome-ignore lint/complexity/noBannedTypes: it's required here
-   } & ("d" extends keyof VoiceOperationTypes[K] ? { d: VoiceOperationTypes[K]["d"] } : {}) & ("s" extends keyof VoiceOperationTypes[K] ? { s?: number } : {}) & ("t" extends keyof VoiceOperationTypes[K] ? { t: string } : {});
-}[keyof VoiceOperationTypes] : {
-   op: VoiceOperations.DISPATCH;
-   s?: number;
-   d: VoiceEvents[Extract<Event, keyof VoiceEvents>];
-   t: Event;
-};
+export type VoicePayload<Event extends keyof VoiceEvents | undefined = undefined> = Event extends undefined
+   ? {
+        [K in keyof VoiceOperationTypes]: VoiceOperationTypes[K]["op"] extends VoiceOperations.DISPATCH
+           ? VoiceDispatch
+           : {
+                op: K;
+                // biome-ignore lint/complexity/noBannedTypes: it's required here
+             } & ("d" extends keyof VoiceOperationTypes[K] ? { d: VoiceOperationTypes[K]["d"] } : {}) &
+                ("s" extends keyof VoiceOperationTypes[K] ? { s?: number } : {}) &
+                ("t" extends keyof VoiceOperationTypes[K] ? { t: string } : {});
+     }[keyof VoiceOperationTypes]
+   : {
+        op: VoiceOperations.DISPATCH;
+        s?: number;
+        d: VoiceEvents[Extract<Event, keyof VoiceEvents>];
+        t: Event;
+     };
 
 // export type VoicePayload<Op extends keyof VoiceOperationTypes | undefined = undefined> =
 //    Op extends keyof VoiceOperationTypes
@@ -126,7 +133,7 @@ export type VoiceDispatch = {
 //    d: OP extends undefined ? VoiceOperationTypes[keyof VoiceOperationTypes] : VoiceOperationTypes[Exclude<OP, undefined>];
 // };
 
-export type MediasoupAppData = { mediaKind: HMediaKind, userId: Snowflake };
+export type MediasoupAppData = { mediaKind: HMediaKind; userId: Snowflake };
 
 export type HMediaKind = "microphone" | "stream_audio" | "stream_video" | "camera" | "unknown";
 
@@ -150,7 +157,7 @@ export type VoiceHeartbeatAck = {
 export type VoiceHello = {
    op: VoiceOperations.HELLO;
    d: VoiceHelloData;
-}
+};
 
 export type VoiceHelloData = {
    heartbeatInterval: number;
@@ -169,11 +176,11 @@ export type VoiceIdentifyData = {
 
 export type VoicePing = {
    op: VoiceOperations.PING;
-}
+};
 
 export type VoicePong = {
    op: VoiceOperations.PONG;
-}
+};
 
 export type VoiceReadyData = {
    rtpCapabilities: types.RtpCapabilities;
@@ -215,6 +222,7 @@ export type VoiceProduceData = {
 
 export type VoiceProducerCreatedData = {
    producerId: string;
+   kind: HMediaKind;
 };
 
 export type VoiceNewProducerData = ProducerData;
@@ -262,12 +270,12 @@ export type VoiceProducerClosedData = {
 export type VoiceCloseConsumerData = {
    channelId: Snowflake;
    consumerId: string;
-}
+};
 
 export type VoiceConsumerClosedData = {
-   producerId: string
+   producerId: string;
    consumerId: string;
    userId: Snowflake;
-}
+};
 
-export type LocalVoiceState = { isAudioPaused: boolean; isAudioMuted: boolean; isAudioDeafened: boolean; isStreaming: boolean; isCameraOn: boolean }
+export type LocalVoiceState = { isAudioPaused: boolean; isAudioMuted: boolean; isAudioDeafened: boolean; isStreaming: boolean; isCameraOn: boolean };

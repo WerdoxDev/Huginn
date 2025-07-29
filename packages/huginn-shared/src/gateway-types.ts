@@ -1,6 +1,17 @@
-import type { APIChannelUser, APIMessage, APIReadStateWithoutUser, APIRelationshipWithoutOwner, APIUser, DirectChannel, Tokens, UserPresence, UserSettings } from "./api-types";
+import type {
+   APIChannelUser,
+   APIMessage,
+   APIReadStateWithoutUser,
+   APIRelationshipWithoutOwner,
+   APIUser,
+   DirectChannel,
+   Tokens,
+   UserPresence,
+   UserSettings,
+} from "./api-types";
 import type { Snowflake } from "./snowflake";
-import type { WebsocketStatus } from "./websocket-types";
+
+export type GatewayStatus = "disconnected" | "connecting" | "connected" | "authenticated" | "reconnecting" | "none";
 
 export enum GatewayOperations {
    HELLO = 0,
@@ -27,7 +38,7 @@ export type GatewayEvents = {
    send: GatewayPayload;
    open: undefined;
    close: number;
-   status_changed: WebsocketStatus;
+   status_changed: GatewayStatus;
    hello: GatewayHelloData;
    identify: GatewayIdentifyData;
    ready: GatewayReadyData;
@@ -54,17 +65,23 @@ export type GatewayEvents = {
    call_delete: GatewayCallDeleteData;
 };
 
-export type GatewayPayload<Event extends keyof GatewayEvents | undefined = undefined> = Event extends undefined ? {
-   [K in keyof GatewayOperationTypes]: GatewayOperationTypes[K]["op"] extends GatewayOperations.DISPATCH ? GatewayDispatch : {
-      op: K;
-      // biome-ignore lint/complexity/noBannedTypes: it's required here
-   } & ("d" extends keyof GatewayOperationTypes[K] ? { d: GatewayOperationTypes[K]["d"] } : {}) & ("s" extends keyof GatewayOperationTypes[K] ? { s: number } : {}) & ("t" extends keyof GatewayOperationTypes[K] ? { t: string } : {});
-}[keyof GatewayOperationTypes] : {
-   op: GatewayOperations.DISPATCH;
-   s: number;
-   d: GatewayEvents[Extract<Event, keyof GatewayEvents>];
-   t: Event;
-};
+export type GatewayPayload<Event extends keyof GatewayEvents | undefined = undefined> = Event extends undefined
+   ? {
+        [K in keyof GatewayOperationTypes]: GatewayOperationTypes[K]["op"] extends GatewayOperations.DISPATCH
+           ? GatewayDispatch
+           : {
+                op: K;
+                // biome-ignore lint/complexity/noBannedTypes: it's required here
+             } & ("d" extends keyof GatewayOperationTypes[K] ? { d: GatewayOperationTypes[K]["d"] } : {}) &
+                ("s" extends keyof GatewayOperationTypes[K] ? { s: number } : {}) &
+                ("t" extends keyof GatewayOperationTypes[K] ? { t: string } : {});
+     }[keyof GatewayOperationTypes]
+   : {
+        op: GatewayOperations.DISPATCH;
+        s: number;
+        d: GatewayEvents[Extract<Event, keyof GatewayEvents>];
+        t: Event;
+     };
 
 export type GatewayDispatch = {
    [K in keyof GatewayEvents]: {
@@ -195,7 +212,7 @@ export type GatewayVoiceStateFlags = {
    isAudioDeafened: boolean;
    isStreaming: boolean;
    isCameraOn: boolean;
-}
+};
 
 export type GatewayVoiceStateUpdateData = GatewayVoiceState;
 export type GatewayCallState = {
