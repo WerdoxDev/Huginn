@@ -3,9 +3,11 @@ import { prisma } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
 import { verifyVoiceToken } from "@huginn/backend-shared/voice-utils";
 import {
-   constants, convertToMediaKind,
+   constants,
+   convertToMediaKind,
    GatewayCode,
-   idFix, type MediasoupAppData,
+   idFix,
+   type MediasoupAppData,
    type VoiceCloseConsumerData,
    type VoiceCloseProducerData,
    type VoiceConnectTransportData,
@@ -17,7 +19,9 @@ import {
    VoiceOperations,
    type VoicePayload,
    type VoicePong,
-   type VoiceProduceData, type VoiceResumeConsumerData, WorkerID
+   type VoiceProduceData,
+   type VoiceResumeConsumerData,
+   WorkerID,
 } from "@huginn/shared";
 import { ws } from "#index";
 import { createRouter, createTransport, routers, verifyPeer } from "#mediasoup";
@@ -50,7 +54,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
 
          // Send producer_closed for all of the user producers
          for (const producer of rtcPeer.producers.values()) {
-            this.handleCloseProducer(session, { channelId: router.channelId, producerId: producer.id })
+            this.handleCloseProducer(session, { channelId: router.channelId, producerId: producer.id });
          }
 
          router.peers.delete(session.sessionId);
@@ -60,7 +64,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                op: VoiceOperations.DISPATCH,
                t: "peer_left",
                d: { sessionId: session.sessionId, producerIds, userId: rtcPeer.userId },
-               s: session.getIncreasedSequence()
+               s: session.getIncreasedSequence(),
             };
             ws.publish(otherPeerId, JSON.stringify(peerLeftData));
          }
@@ -132,7 +136,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          op: VoiceOperations.DISPATCH,
          t: "consumer_resumed",
          d: { consumerId: data.consumerId },
-         s: session.getIncreasedSequence()
+         s: session.getIncreasedSequence(),
       };
 
       this.send(session.peer, consumerResumedData);
@@ -182,7 +186,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             rtpParameters: consumer.rtpParameters,
             producerUserId: producerPeer.userId,
          },
-         s: session.getIncreasedSequence()
+         s: session.getIncreasedSequence(),
       };
 
       this.send(session.peer, consumerCreatedData);
@@ -218,7 +222,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                op: VoiceOperations.DISPATCH,
                t: "new_producer",
                d: { kind: data.kind, producerId: producer.id, producerUserId: rtcPeer.userId },
-               s: session.getIncreasedSequence()
+               s: session.getIncreasedSequence(),
             };
             ws.publish(otherSessionId, JSON.stringify(newProducerData));
          }
@@ -227,8 +231,8 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       const producerCreatedData: VoicePayload = {
          op: VoiceOperations.DISPATCH,
          t: "producer_created",
-         d: { producerId: producer.id },
-         s: session.getIncreasedSequence()
+         d: { producerId: producer.id, kind: producer.appData.mediaKind },
+         s: session.getIncreasedSequence(),
       };
 
       this.send(session.peer, producerCreatedData);
@@ -254,7 +258,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          op: VoiceOperations.DISPATCH,
          t: "transport_connected",
          d: { transportId: transportData.transport.id },
-         s: session.getIncreasedSequence()
+         s: session.getIncreasedSequence(),
       };
 
       this.send(session.peer, transportConnectedData);
@@ -284,7 +288,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                dtlsParameters: transport.dtlsParameters,
             },
          },
-         s: session.getIncreasedSequence()
+         s: session.getIncreasedSequence(),
       };
 
       this.send(session.peer, transportCreatedData);
@@ -311,19 +315,19 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          op: VoiceOperations.DISPATCH,
          t: "producer_closed",
          d: { producerId: producer.id, userId: rtcPeer.userId },
-         s: session.getIncreasedSequence()
+         s: session.getIncreasedSequence(),
       };
 
       for (const [otherPeerId, otherPeer] of router.peers) {
          ws.publish(otherPeerId, JSON.stringify(producerClosedData));
 
-         for (const consumer of otherPeer.consumers.values().filter(x => x.producerId === data.producerId)) {
+         for (const consumer of otherPeer.consumers.values().filter((x) => x.producerId === data.producerId)) {
             const otherSession = this.sessions.get(otherPeer.sessionId);
             if (!otherSession) {
                continue;
             }
 
-            this.handleCloseConsumer(otherSession, { channelId: data.channelId, consumerId: consumer.id })
+            this.handleCloseConsumer(otherSession, { channelId: data.channelId, consumerId: consumer.id });
          }
       }
    }
@@ -336,7 +340,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       }
 
       const rtcPeer = router.peers.get(session.sessionId);
-      const consumer = rtcPeer?.consumers.get(data.consumerId)
+      const consumer = rtcPeer?.consumers.get(data.consumerId);
 
       if (!consumer || !rtcPeer) {
          return;
@@ -349,8 +353,8 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          op: VoiceOperations.DISPATCH,
          t: "consumer_closed",
          d: { consumerId: consumer.id, producerId: consumer.producerId, userId: rtcPeer.userId },
-         s: session.getIncreasedSequence()
-      }
+         s: session.getIncreasedSequence(),
+      };
 
       this.send(session.peer, consumerClosedData);
    }
@@ -388,7 +392,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          op: VoiceOperations.DISPATCH,
          t: "ready",
          d: { rtpCapabilities: router.router.rtpCapabilities, producers },
-         s: session.getIncreasedSequence()
+         s: session.getIncreasedSequence(),
       };
 
       this.send(session.peer, readyData);
