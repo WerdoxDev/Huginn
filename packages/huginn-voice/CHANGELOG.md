@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.2](https://github.com/WerdoxDev/Huginn/compare/voice@v0.10.1...voice@v0.10.2) (2025-07-29)
+
+
+### Bug Fixes
+
+* **voice:** send producer kind when it's created ([c17b3c9](https://github.com/WerdoxDev/Huginn/commit/c17b3c98fcf7f538a508c625f30d101178c5d077))
+
 ## [0.10.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.10.0...voice@v0.10.1) (2025-07-23)
 
 
