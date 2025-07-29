@@ -44,7 +44,7 @@ function Item(props: MenuItemProps<"button"> & { label: string; color?: "default
          {...props}
          onClick={(e) => {
             // VERY WEIRD BUG THAT IS ONLY FIXED WITH THIS
-            if (e.detail === 0) {
+            if (e.detail === 1) {
                props.onClick?.(e);
             }
          }}

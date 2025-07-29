@@ -12,7 +12,8 @@ import voiceEnterUrl from "@/assets/sounds/voice-enter.wav";
 import voiceLeaveUrl from "@/assets/sounds/voice-leave.wav";
 
 const initialStore = () => ({
-   localVoiceState: {} as GatewayVoiceState,
+   voiceChannel: { guildId: null, channelId: null } as { guildId: Snowflake | null; channelId: Snowflake | null },
+   localVoiceState: {} as GatewayVoiceStateFlags,
    voiceStates: [] as Array<GatewayVoiceState>,
    callStates: [] as Array<GatewayCallState>,
    remoteSources: [] as RemoteSource[],
@@ -26,9 +27,9 @@ const store = createStore(
    devtools(
       combine(initialStore(), (set, get) => ({
          setVoiceChannel: (channelId?: Snowflake, guildId?: Snowflake) => {
-            log("app:voice-store", "voice-state", "set channel", "cid:", channelId, "gid:", guildId);
+            log("app:voice-store", "voice-state", "set voice channel", "cid:", channelId, "gid:", guildId);
 
-            return set((state) => ({ localVoiceState: { ...state.localVoiceState, channelId: channelId ?? null, guildId: guildId ?? null } }));
+            return set({ voiceChannel: { channelId: channelId ?? null, guildId: guildId ?? null } });
          },
          updateLocalVoiceState: (options: GatewayVoiceStateFlags) => {
             log(
@@ -45,15 +46,14 @@ const store = createStore(
                options.isCameraOn,
             );
 
-            return set((state) => ({
+            return set({
                localVoiceState: {
-                  ...state.localVoiceState,
                   isAudioMuted: options.isAudioMuted,
                   isAudioDeafened: options.isAudioDeafened,
                   isStreaming: options.isStreaming,
                   isCameraOn: options.isCameraOn,
                },
-            }));
+            });
          },
          updateVoiceState: (options: GatewayVoiceState) => {
             log(
@@ -319,12 +319,12 @@ export function initializeVoice() {
          const currentState = voiceStore.getState().voiceStates.find((x) => x.userId === d.userId);
 
          // User was not here and just joined the call
-         if (lastState?.channelId !== thisStore.localVoiceState.channelId && currentState?.channelId === thisStore.localVoiceState.channelId) {
+         if (lastState?.channelId !== thisStore.voiceChannel.channelId && currentState?.channelId === thisStore.voiceChannel.channelId) {
             const audio = new Audio(voiceEnterUrl);
             audio.play();
          }
          // User is no longer here but was here before
-         else if (currentState?.channelId !== thisStore.localVoiceState.channelId && lastState?.channelId === thisStore.localVoiceState.channelId) {
+         else if (currentState?.channelId !== thisStore.voiceChannel.channelId && lastState?.channelId === thisStore.voiceChannel.channelId) {
             const audio = new Audio(voiceLeaveUrl);
             audio.play();
          }

@@ -11,23 +11,18 @@ export function useConsumeStream() {
    const mutation = useMutation({
       mutationKey: ["consume-stream"],
       async mutationFn(data: ConsumeStreamMutationVars) {
-         console.log("START");
-         if (client.voice.connectionInfo && !client.voice.recvTransport) {
-            console.log("WAITING");
-            await client.voice.waitForEvents(["recv_transport_ready"]);
+         // It's connecting...
+         if (client.voice.status !== "rtc_ready" && client.voice.connectionInfo?.channelId === data.channelId) {
+            await client.voice.waitForEvents(["ready"]);
+         }
+         // Not connected. So connect...
+         else if (!client.voice.connectionInfo || client.voice.connectionInfo.channelId !== data.channelId) {
+            await voiceClient.connect(data.guildId, data.channelId);
          }
 
-         console.log("DONE WAITING");
+         console.log(client.voice.status);
 
-         if (client.voice.status === "authenticated") {
-            console.log("CONSUME");
-            await voiceClient.consumeStream(data.userId);
-            console.log("FINISH CONSUME");
-         } else {
-            console.log("CONNECT CONSUME");
-            await voiceClient.connectAndConsumeStream(data.guildId, data.channelId, data.userId);
-            console.log("FINISH CONNECT CONSUME");
-         }
+         await voiceClient.consumeStream(data.userId);
       },
    });
 

@@ -1,5 +1,5 @@
 import { Transition } from "@headlessui/react";
-import type { GatewayVoiceState } from "@huginn/shared";
+import type { GatewayVoiceStateFlags } from "@huginn/shared";
 import clsx from "clsx";
 import { useMemo } from "react";
 import DropdownMenu from "./dropdown/DowndownMenu";
@@ -9,7 +9,7 @@ export default function VoiceControls(props: {
    show: boolean;
    isInVoice: boolean;
    isFullscreen: boolean;
-   voiceState: GatewayVoiceState;
+   voiceState: GatewayVoiceStateFlags;
    onToggleMute: () => void;
    onToggleDeafen: () => void;
    onStartScreenShare: () => void;
@@ -118,7 +118,7 @@ export default function VoiceControls(props: {
 }
 
 function StreamButton(props: {
-   voiceState: GatewayVoiceState;
+   voiceState: GatewayVoiceStateFlags;
    onStartScreenShare?: () => void;
    onStartAudioStream?: () => void;
    onEndStream?: () => void;

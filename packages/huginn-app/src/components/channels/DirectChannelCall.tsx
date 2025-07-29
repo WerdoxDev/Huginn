@@ -8,7 +8,7 @@ import { useConsumeStream } from "@hooks/voice/useConsumeStream";
 import { useStartCamera } from "@hooks/voice/useStartCamera";
 import { useUpdateVoiceState } from "@hooks/voice/useUpdateVoiceState";
 import type { Snowflake, Unpacked } from "@huginn/shared";
-import { useClient } from "@stores/clientStore";
+import { useClient, useClientStore } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useSettings } from "@stores/settingsStore";
 import { useThisUser } from "@stores/userStore";
@@ -23,7 +23,8 @@ const minHeight = 250;
 const maxHeightPercentage = 60;
 
 export default function DirectChannelCall(props: { channelId: Snowflake }) {
-   const { localVoiceState, voiceStates, callStates, remoteSources, speakingStates } = useVoiceStore();
+   const { localVoiceState, voiceStates, callStates, remoteSources, speakingStates, voiceChannel } = useVoiceStore();
+   const { voiceStatus } = useClientStore();
 
    const { updateModals } = useModals();
    const huginnWindow = useHuginnWindow();
@@ -67,13 +68,12 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       cols: number;
    }>();
    const [gridHeight, setGridHeight] = useState(250);
-   const [isRecvTransportReady, setIsRecvTransportReady] = useState(false);
    const { isFullscreen, toggleFullscreen: onToggleFullscreen } = useFullscreen(containerRef);
    const maximizedSourceId = useRef<string | undefined>(undefined);
    const [maximizedSource, setMaximizedSource] = useState<Unpacked<typeof remoteSources> | undefined>(undefined);
 
    useEffect(() => {
-      if (!localVoiceState.channelId) {
+      if (!voiceChannel.channelId) {
          maximizedSourceId.current = undefined;
          setMaximizedSource(undefined);
       }
@@ -134,20 +134,9 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
          }
       });
 
-      // This is to determine when we "technically" get all the voice remote sources added to our state to switch to the VoiceElements that are for when we are "connected"
-      const unlisten3 = client.voice.listen("recv_transport_ready", () => {
-         setIsRecvTransportReady(true);
-      });
-
-      const unlisten4 = client.voice.listen("close", () => {
-         setIsRecvTransportReady(false);
-      });
-
       return () => {
          unlisten();
          unlisten2();
-         unlisten3();
-         unlisten4();
       };
    }, []);
 
@@ -269,7 +258,6 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    async function onConsumeStream(userId: Snowflake) {
       posthog.capture("voice:watch_stream_button_click", { userId });
 
-      console.log(consumeStreamMutation.isPending);
       if (!consumeStreamMutation.isPending) {
          consumeStreamMutation.mutate({
             guildId: null,
@@ -280,14 +268,19 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    }
 
    function maximizeSource(producerId: string) {
+      const foundSource = remoteSources.find(
+         (x) => x.producerId === producerId && (x.kind === "stream_video" || x.kind === "camera" || x.kind === "stream_audio"),
+      );
+
+      if (!foundSource) {
+         return;
+      }
+
       if (maximizedSource) {
          maximizedSourceId.current = undefined;
          setMaximizedSource(undefined);
       } else {
-         maximizedSourceId.current = producerId;
-         const foundSource = remoteSources.find(
-            (x) => x.producerId === maximizedSourceId.current && (x.kind === "stream_video" || x.kind === "camera" || x.kind === "stream_audio"),
-         );
+         maximizedSourceId.current = foundSource.producerId;
          if (foundSource) {
             setMaximizedSource(foundSource);
          }
@@ -382,18 +375,13 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
          >
             <AnimatePresence mode="popLayout">
                {/* Watchable Streams whens not connected */}
-               {!isRecvTransportReady &&
+               {(voiceStatus !== "rtc_ready" || voiceChannel.channelId !== props.channelId) &&
                   thisVoiceStates
                      .filter(
                         (x) => x.userId !== user.id && x.isStreaming && !streamAudioRemoteSources[x.userId] && !streamVideoRemoteSources[x.userId],
                      )
                      .map((x) => (
                         <VoiceElement
-                           remoteSource={{
-                              kind: "unknown",
-                              producerId: "",
-                              userId: x.userId,
-                           }}
                            key={`${x.userId}-stream`}
                            gridElementWidth={gridSize?.elementWidth ?? 0}
                            userId={x.userId}
@@ -402,6 +390,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
                            isResizing={isResizing}
                            isGridView={isGridView}
                            isMaximized={!!maximizedSource}
+                           isUnknown
                         />
                      ))}
                {/* Watching/Watchable Streams when connected */}
@@ -409,7 +398,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
                   remoteSources
                      .filter((x) => {
                         if (maximizedSource) {
-                           return x.producerId === maximizedSource.producerId;
+                           return x.producerId === maximizedSource.producerId && maximizedSource.kind !== "camera";
                         }
 
                         const hasAudioStream = x.producerId === streamAudioRemoteSources[x.userId]?.producerId;
@@ -461,7 +450,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
                   thisCallState?.ringing.map((x) => (
                      <VoiceElement
                         key={x}
-                        isRinging={true}
+                        isRinging
                         gridElementWidth={gridSize?.elementWidth ?? 0}
                         isGridView={isGridView}
                         userId={x}
@@ -474,7 +463,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
          <VoiceControls
             show={showControls}
             isFullscreen={isFullscreen}
-            isInVoice={localVoiceState.channelId === props.channelId}
+            isInVoice={voiceChannel.channelId === props.channelId}
             onConnect={() => voiceClient.connect(null, props.channelId)}
             onDisconnect={onDisconnect}
             onStartScreenShare={onStartScreenShare}

@@ -3,19 +3,16 @@ import UserAvatar from "@components/UserAvatar";
 import { useUser } from "@hooks/api-hooks/userHooks";
 import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import type { GatewayVoiceState, Snowflake } from "@huginn/shared";
-import { useClient } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
-import { motion, type Transition, usePresence, type Variants } from "motion/react";
+import { motion, type Transition, type Variants } from "motion/react";
 import { type MouseEvent, type RefObject, useEffect, useMemo, useRef, useState } from "react";
 import type { RemoteSource } from "@/types";
 import VoiceAudioVisualizer from "./VoiceAudioVisualizer";
 import { VoiceLabel } from "./VoiceLabel";
 import VoiceVideoStats from "./VoiceVideoStats";
-import { useMutationState, type MutationState } from "@tanstack/react-query";
-import type { ConsumeStreamMutationVars } from "@hooks/voice/useConsumeStream";
 
 export default function VoiceElement(props: {
    userId: Snowflake;
@@ -27,6 +24,7 @@ export default function VoiceElement(props: {
    isGridView?: boolean;
    isRinging?: boolean;
    isSpeaking?: boolean;
+   isUnknown?: boolean;
    voiceState?: GatewayVoiceState;
    onClick?: (producerId: string) => void;
    onConsume?: (userId: Snowflake) => void;
@@ -35,27 +33,21 @@ export default function VoiceElement(props: {
    const { open: openContextMenu } = useContextMenu("voice_element");
    const { remoteSources } = useVoiceStore();
    const videoRef = useRef<HTMLVideoElement>(null);
-   const client = useClient();
    const { user: thisUser } = useThisUser();
    const user = useUser(props.userId);
 
    const [isVideoMetaLoaded, setIsVideoMetaLoaded] = useState(false);
    const consumeState = useMutationLatestState("consume-stream", ({ state: { variables } }) => variables?.userId === props.userId);
 
-   const hasAudio = useMemo(
-      () =>
-         remoteSources.find((x) => x.kind === "stream_audio" && x.userId === props.userId) !== undefined ||
-         (client.voice.producers.get("stream_audio") !== undefined && thisUser?.id === props.userId),
-      [remoteSources, props.voiceState],
-   );
+   const hasAudio = useMemo(() => remoteSources.some((x) => x.kind === "stream_audio" && x.userId === props.userId), [remoteSources]);
 
    const isVideo = useMemo(() => props.remoteSource?.kind === "camera" || props.remoteSource?.kind === "stream_video", [props.remoteSource]);
    const isAudio = useMemo(() => props.remoteSource?.kind === "stream_audio", [props.remoteSource]);
    const isStream = useMemo(() => props.remoteSource?.kind === "stream_video" || props.remoteSource?.kind === "stream_audio", [props.remoteSource]);
-   const isUnknown = useMemo(() => props.remoteSource?.kind === "unknown", [props.remoteSource]);
+   // const isUnknown = useMemo(() => !props.remoteSource && !props.isRinging, [props.remoteSource]);
    const isPreview = useMemo(
-      () => (isVideo || isAudio || props.remoteSource?.kind === "unknown") && !props.remoteSource?.consumerId && props.userId !== thisUser?.id,
-      [props.remoteSource?.srcObject, props.remoteSource?.consumerId, isVideo, isAudio],
+      () => (isVideo || isAudio || props.isUnknown) && !props.remoteSource?.consumerId && props.userId !== thisUser?.id,
+      [props.remoteSource?.srcObject, props.remoteSource?.consumerId, isVideo, isAudio, props.isUnknown],
    );
 
    const isLoadingStream = useMemo(
@@ -86,14 +78,9 @@ export default function VoiceElement(props: {
    }
 
    useEffect(() => {
-      console.log(consumeState);
-   }, [consumeState?.status]);
-
-   useEffect(() => {
       if (videoRef.current) {
          setIsVideoMetaLoaded(false);
          videoRef.current.onloadedmetadata = () => {
-            console.log("LOADED");
             setIsVideoMetaLoaded(true);
          };
          videoRef.current.srcObject = props.remoteSource?.srcObject ?? null;
@@ -183,7 +170,7 @@ export default function VoiceElement(props: {
                      transition={transition}
                      className="bg-surface text-text rounded-lg px-3 py-1.5 transition-colors"
                   >
-                     {isUnknown ? "Join Stream" : isVideo ? "Watch Stream" : isAudio ? "Listen to Stream" : ""}
+                     {props.isUnknown ? "Join Stream" : isVideo ? "Watch Stream" : isAudio ? "Listen to Stream" : ""}
                   </motion.div>
                </button>
             )

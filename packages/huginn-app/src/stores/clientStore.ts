@@ -1,5 +1,5 @@
 import { HuginnClient } from "@huginn/api";
-import { type APIPublicUser, error, type GatewayReadyData, log, type Snowflake } from "@huginn/shared";
+import { type APIPublicUser, error, type GatewayReadyData, type GatewayStatus, log, type Snowflake, type VoiceStatus } from "@huginn/shared";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 import { settingsStore } from "./settingsStore";
@@ -13,6 +13,8 @@ const initialStore = () => ({
       cdn: "",
       voice: "",
    },
+   voiceStatus: undefined as VoiceStatus | undefined,
+   gatewayStatus: undefined as GatewayStatus | undefined,
    readyData: undefined as GatewayReadyData | undefined,
    isInitialized: false,
 });
@@ -21,17 +23,8 @@ type StoreType = ReturnType<typeof initialStore>;
 
 const store = createStore(
    combine(initialStore(), (set) => ({
-      // updateUser: (user: PresenceUser) =>
-      //    set(
-      //       produce((draft: StoreType) => {
-      //          const index = draft.users.findIndex((x) => x.id === user.id);
-      //          if (index !== -1) {
-      //             draft.users[index] = { ...draft.users[index], ...user };
-      //          } else {
-      //             draft.users.push(user as APIPublicUser);
-      //          }
-      //       }),
-      //    ),
+      setGatewayStatus: (status: GatewayStatus) => set({ gatewayStatus: status }),
+      setVoiceStatus: (status: VoiceStatus) => set({ voiceStatus: status }),
       setReadyData: (data: GatewayReadyData) => set({ readyData: data }),
    })),
 );
@@ -51,8 +44,6 @@ export async function setHostnamesFromExternal() {
       error("app:client-store", "Error fetching external hostnames", e);
 
       return false;
-      // const modals = modalsStore.getState();
-      // modals.updateModals({ info: { isOpen: true, ...messages.externalHostnamesError(), status: "error", action: { cancel: { text: "Close", callback: () => modals.updateModals({ info: { isOpen: false } }) }, confirm: { text: "Open Settings", callback: () => modals.updateModals({ info: { isOpen: false }, settings: { isOpen: true } }) } }, closable: true } })
    }
 }
 
@@ -97,58 +88,72 @@ export function initializeClient() {
       window.electronAPI.setUpdateUrl(url);
    }
 
-   const unlisten = client?.gateway.listen("ready", (d) => {
-      store.getState().setReadyData(d);
+   const unlisteners: Array<(() => void) | undefined> = [];
 
-      const channelUsers = d.privateChannels.flatMap((x) => x.recipients);
-      const relationUsers = d.relationships.map((x) => x.user);
-      // const presenceUsers = d.presences.map((x) => x.user);
+   unlisteners.push(
+      client?.gateway.listen("ready", (d) => {
+         store.getState().setReadyData(d);
 
-      const userSources = [channelUsers, relationUsers].flat();
-      const userMap = new Map<Snowflake, APIPublicUser>();
+         const channelUsers = d.privateChannels.flatMap((x) => x.recipients);
+         const relationUsers = d.relationships.map((x) => x.user);
+         // const presenceUsers = d.presences.map((x) => x.user);
 
-      for (const user of userSources) {
-         userMap.set(user.id, { ...userMap.get(user.id), ...user });
-      }
+         const userSources = [channelUsers, relationUsers].flat();
+         const userMap = new Map<Snowflake, APIPublicUser>();
 
-      userMap.set(d.user.id, d.user);
+         for (const user of userSources) {
+            userMap.set(user.id, { ...userMap.get(user.id), ...user });
+         }
 
-      for (const [_userId, user] of userMap) {
-         updateUser(user);
-      }
-   });
+         userMap.set(d.user.id, d.user);
 
-   const unlisten2 = client?.gateway.listen("presence_update", (d) => {
-      updateUser(d.user);
-   });
+         for (const [_userId, user] of userMap) {
+            updateUser(user);
+         }
+      }),
+   );
 
-   const unlisten3 = client?.gateway.listen("user_update", (d) => {
-      updateUser(d);
-   });
+   unlisteners.push(
+      client?.gateway.listen("presence_update", (d) => {
+         updateUser(d.user);
+      }),
+   );
 
-   const unlisten4 = client?.gateway.listen("channel_recipient_add", (d) => {
-      updateUser(d.user);
-   });
+   unlisteners.push(
+      client?.gateway.listen("user_update", (d) => {
+         updateUser(d);
+      }),
+   );
 
-   const unlisten5 = client?.gateway.listen("relationship_add", (d) => {
-      updateUser(d.user);
-   });
+   unlisteners.push(
+      client?.gateway.listen("channel_recipient_add", (d) => {
+         updateUser(d.user);
+      }),
+   );
 
-   const unlisten6 = client?.gateway.listen("channel_create", (d) => {
-      for (const user of d.recipients) {
-         updateUser(user);
-      }
-   });
+   unlisteners.push(
+      client?.gateway.listen("relationship_add", (d) => {
+         updateUser(d.user);
+      }),
+   );
+
+   unlisteners.push(
+      client?.gateway.listen("channel_create", (d) => {
+         for (const user of d.recipients) {
+            updateUser(user);
+         }
+      }),
+   );
+
+   unlisteners.push(client.gateway.listen("status_changed", (status) => store.getState().setGatewayStatus(status)));
+   unlisteners.push(client.voice.listen("status_changed", (status) => store.getState().setVoiceStatus(status)));
 
    store.setState({ isInitialized: true });
 
    return () => {
-      unlisten?.();
-      unlisten2?.();
-      unlisten3?.();
-      unlisten4?.();
-      unlisten5?.();
-      unlisten6?.();
+      for (const unlisten of unlisteners) {
+         unlisten?.();
+      }
    };
 }
 
