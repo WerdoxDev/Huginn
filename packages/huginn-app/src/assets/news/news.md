@@ -1,4 +1,3 @@
+### 🔧 Fixes
 
-
-### ✨ Features
-- **Audio Stream** A new kind of audio-only streaming with a nice visualizer.
+- Lots of voice visual fixes and better stability
