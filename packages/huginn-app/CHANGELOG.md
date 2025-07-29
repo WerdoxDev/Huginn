@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.51.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.51.2...app@v0.51.3) (2025-07-29)
+
+
+### Bug Fixes
+
+* **app:** bunch of more fixes to voice visuals ([61c386c](https://github.com/WerdoxDev/Huginn/commit/61c386c540d16d8e6daab8f9e822608af804c6ac))
+* **app:** update news ([c3baed2](https://github.com/WerdoxDev/Huginn/commit/c3baed2e6398ab337a3efec7eac3b638679504d4))
+
 ## [0.51.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.51.1...app@v0.51.2) (2025-07-28)
 
 
