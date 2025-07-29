@@ -19,26 +19,17 @@ import {
    type VoicePayload,
    type VoicePing,
    type VoiceProducerClosedData,
+   type VoiceProducerCreatedData,
    type VoiceReadyData,
+   type VoiceStatus,
    type VoiceTransportCreatedData,
-   type WebsocketStatus,
 } from "@huginn/shared";
-// import wrtc from "@roamhq/wrtc";
 import * as mediasoupClient from "mediasoup-client";
 import type { Consumer, Producer, ProducerOptions, Transport } from "mediasoup-client/types";
 import type { HuginnClient } from "./huginn-client";
 import type { VoiceOptions } from "./types";
 import { defaultClientOptions } from "./utils";
 import { SharedWebsocket } from "./websocket";
-
-// if (!isBrowser()) {
-//    globalThis.RTCPeerConnection = wrtc.RTCPeerConnection;
-//    globalThis.RTCSessionDescription = wrtc.RTCSessionDescription;
-//    globalThis.RTCIceCandidate = wrtc.RTCIceCandidate;
-
-//    // If needed:
-//    globalThis.MediaStream = wrtc.MediaStream;
-// }
 
 export class Voice extends SharedWebsocket<VoiceEvents> {
    public socket?: WebSocket;
@@ -59,8 +50,8 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
    private initialProducers?: ProducerData[];
    private listeners: WeakMap<Producer, (newTrack: MediaStreamTrack | null) => void>;
 
-   private _status: WebsocketStatus = "none";
-   private set status(newStatus: WebsocketStatus) {
+   private _status: VoiceStatus = "none";
+   private set status(newStatus: VoiceStatus) {
       this._status = newStatus;
       this.emit("status_changed", newStatus);
    }
@@ -260,13 +251,10 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          }
       }
 
-      if (audioProducer && !audioTrack) {
-         await this.closeProducer(audioProducer.id);
-      }
-
-      if (videoProducer && !videoTrack) {
-         await this.closeProducer(videoProducer.id);
-      }
+      await Promise.allSettled([
+         audioProducer && !audioTrack && this.closeProducer(audioProducer.id),
+         videoProducer && !videoTrack && this.closeProducer(videoProducer.id),
+      ]);
 
       await this.client.gateway.updateVoiceState({
          isAudioDeafened: this.localVoiceState.isAudioDeafened,
@@ -286,14 +274,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       const videoProducer = this.producers.get("stream_video");
       const audioProducer = this.producers.get("stream_audio");
 
-      // Screenshare must have a video. Audio is optional
-      if (videoProducer) {
-         await this.closeProducer(videoProducer.id);
-      }
-
-      if (audioProducer) {
-         await this.closeProducer(audioProducer.id);
-      }
+      await Promise.allSettled([videoProducer && this.closeProducer(videoProducer.id), audioProducer && this.closeProducer(audioProducer.id)]);
 
       await this.client.gateway.updateVoiceState({
          isAudioDeafened: this.localVoiceState.isAudioDeafened,
@@ -612,7 +593,12 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
          if (data.direction === "send") {
             this.sendTransport = this.device?.createSendTransport(data.params);
 
-            this.sendTransport?.on("connect", async ({ dtlsParameters }, callback, _errback) => {
+            this.sendTransport?.on("connect", async ({ dtlsParameters }, callback, errback) => {
+               if (!this.connectionInfo) {
+                  errback(new Error("Connection info is undefined"));
+                  return;
+               }
+
                const connectTransportData: VoicePayload = {
                   op: VoiceOperations.DISPATCH,
                   t: "connect_transport",
@@ -623,13 +609,26 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
                log("api:voice", "send", "connect transport", "id:", this.sendTransport?.id, "dir:", "send");
                this.send(connectTransportData);
 
+               // Wait for the transport to get connected
+               await new Promise<void>((r) => {
+                  const unlisten = this.listen("transport_connected", (d) => {
+                     if (d.transportId === this.sendTransport?.id) {
+                        unlisten();
+                        r();
+                     }
+                  });
+               });
+
                callback();
             });
 
-            this.sendTransport?.on("produce", async ({ rtpParameters, appData }, callback, _errback) => {
+            this.sendTransport?.on("produce", async ({ rtpParameters, appData }, callback, errback) => {
                if (!this.connectionInfo || !this.sendTransport) {
+                  errback(new Error("Connection info or send transport is undefined"));
                   return;
                }
+
+               const kind = (appData as MediasoupAppData).mediaKind;
 
                const produceData: VoicePayload = {
                   op: VoiceOperations.DISPATCH,
@@ -637,7 +636,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
                   d: {
                      channelId: this.connectionInfo.channelId,
                      transportId: this.sendTransport.id,
-                     kind: (appData as MediasoupAppData).mediaKind,
+                     kind: kind,
                      rtpParameters,
                   },
                };
@@ -645,16 +644,29 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
                log("api:voice", "send", "produce", "mk:", appData.mediaKind);
                this.send(produceData);
 
-               const result = await this.waitForEvents(["producer_created"], true);
+               // Wait for the producer to be created
+               const result = await new Promise<VoiceProducerCreatedData>((r) => {
+                  const unlisten = this.listen("producer_created", (d) => {
+                     if (d.kind === kind) {
+                        unlisten();
+                        r(d);
+                     }
+                  });
+               });
 
-               callback({ id: result.data.producerId });
+               callback({ id: result.producerId });
             });
 
             this.emit("send_transport_ready", { channelId: this.connectionInfo.channelId });
          } else if (data.direction === "recv") {
             this.recvTransport = this.device?.createRecvTransport(data.params);
 
-            this.recvTransport?.on("connect", async ({ dtlsParameters }, callback, _errback) => {
+            this.recvTransport?.on("connect", async ({ dtlsParameters }, callback, errback) => {
+               if (!this.connectionInfo) {
+                  errback(new Error("Connection info is undefined"));
+                  return;
+               }
+
                const connectTransportData: VoicePayload = {
                   op: VoiceOperations.DISPATCH,
                   t: "connect_transport",
@@ -665,8 +677,20 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
                log("api:voice", "send", "connect-transport", "id:", this.recvTransport?.id, "dir:", "recv");
                this.send(connectTransportData);
 
+               // Wait for the transport to get connected
+               await new Promise<void>((r) => {
+                  const unlisten = this.listen("transport_connected", (d) => {
+                     if (d.transportId === this.recvTransport?.id) {
+                        unlisten();
+                        r();
+                     }
+                  });
+               });
+
                callback();
             });
+
+            this.emit("recv_transport_ready", { channelId: this.connectionInfo.channelId });
 
             // Emit all initial producers as "new producers"
             if (this.initialProducers) {
@@ -674,8 +698,6 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
                   this.emit("new_producer", producer);
                }
             }
-
-            this.emit("recv_transport_ready", { channelId: this.connectionInfo.channelId });
          }
       } catch (e) {
          error("api:voice", "Failed to setup transport", e);
@@ -715,6 +737,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       }
 
       this.status = "authenticated";
+      this.initialProducers = data.producers;
 
       this.device = new mediasoupClient.Device();
       await this.device.load({ routerRtpCapabilities: data.rtpCapabilities });
@@ -737,9 +760,26 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       log("api:voice", "send", "create recv transport");
       this.send(createRecvTransportData);
 
-      this.sendPing();
+      // Wait for the transport ready events
+      let recvTransportReady = false;
+      let sendTransportReady = false;
+      await new Promise<void>((r) => {
+         const unlisten = this.listen("transport_created", (d) => {
+            if (d.transportId === this.sendTransport?.id) {
+               sendTransportReady = true;
+            } else if (d.transportId === this.recvTransport?.id) {
+               recvTransportReady = true;
+            }
 
-      this.initialProducers = data.producers;
+            if (sendTransportReady && recvTransportReady) {
+               unlisten();
+               this.status = "rtc_ready";
+               r();
+            }
+         });
+      });
+
+      this.sendPing();
    }
 
    private async handleHello(data: VoiceHelloData) {

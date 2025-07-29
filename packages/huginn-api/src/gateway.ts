@@ -1,12 +1,4 @@
-import type {
-   GatewayPayload,
-   GatewayUpdateVoiceState,
-   GatewayUpdateVoiceStateData,
-   GatewayVoiceState,
-   GatewayVoiceStateFlags,
-   Snowflake,
-   WebsocketStatus,
-} from "@huginn/shared";
+import type { GatewayPayload, GatewayStatus, GatewayUpdateVoiceState, GatewayVoiceState, GatewayVoiceStateFlags, Snowflake } from "@huginn/shared";
 import {
    error,
    GatewayCode,
@@ -18,6 +10,7 @@ import {
    type GatewayReadyData,
    type GatewayResume,
    log,
+   omit,
 } from "@huginn/shared";
 import type { HuginnClient } from ".";
 import type { GatewayOptions } from "./types";
@@ -34,8 +27,8 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
    private heartbeatInterval?: ReturnType<typeof setInterval>;
    private sequence?: number;
 
-   private _status: WebsocketStatus = "none";
-   private set status(newStatus: WebsocketStatus) {
+   private _status: GatewayStatus = "none";
+   private set status(newStatus: GatewayStatus) {
       this._status = newStatus;
       this.emit("status_changed", newStatus);
    }
@@ -104,7 +97,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
             }
 
             // If we were connected to a voice channel, update the voice state again
-            if (this.client.voice.connectionInfo && this.client.voice.status === "authenticated") {
+            if (this.client.voice.connectionInfo && this.client.voice.status === "rtc_ready") {
                // @ts-ignore It thinks when setting status to "reconnecting" here, it will stay like that
                if (this.status !== "authenticated") {
                   await this.waitForEvents(["resumed", "ready"], true);
@@ -237,7 +230,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
 
       this.client.voice.connect(receivedToken, channelId, guildId);
 
-      if (this.client.voice.status !== "authenticated") {
+      if (this.client.voice.status !== "rtc_ready") {
          await this.client.voice.waitForEvents(["ready"]);
       }
 
@@ -284,7 +277,8 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
          options.isCameraOn,
       );
 
-      if (!this.client.voice.connectionInfo || this.client.voice.status !== "authenticated" || this.status !== "authenticated") {
+      // If we are not ready to update voice state yet, return
+      if (!this.client.voice.connectionInfo || this.client.voice.status !== "rtc_ready" || this.status !== "authenticated") {
          return;
       }
 
@@ -326,7 +320,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
       });
 
       //3. Then we sync it with what we got from the server
-      this.client.voice.updateLocalVoiceState({ ...updatedVoiceState });
+      this.client.voice.updateLocalVoiceState({ ...omit(updatedVoiceState, ["channelId", "channelId", "userId"]) });
    }
 
    private startListening() {
