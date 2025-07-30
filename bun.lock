@@ -16,7 +16,7 @@
     },
     "packages/huginn-api": {
       "name": "@huginn/api",
-      "version": "0.22.0",
+      "version": "0.22.1",
       "dependencies": {
         "@huginn/shared": "workspace:*",
         "@std/encoding": "npm:@jsr/std__encoding",
@@ -30,7 +30,7 @@
     },
     "packages/huginn-app": {
       "name": "huginn-app-react",
-      "version": "0.50.1",
+      "version": "0.51.2",
       "dependencies": {
         "@babel/plugin-syntax-jsx": "^7.27.1",
         "@floating-ui/react": "^0.26.28",

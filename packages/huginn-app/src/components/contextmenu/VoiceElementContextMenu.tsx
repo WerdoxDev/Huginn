@@ -1,14 +1,16 @@
 import RangeInput from "@components/input/RangeInput";
-import { useClient } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useVoiceStore, voiceClient } from "@stores/voiceStore";
 import { useEffect, useMemo } from "react";
 import ContextMenu from "./ContextMenu";
+import { useConsumeStream } from "@hooks/voice/useConsumeStream";
+import { usePostHog } from "posthog-js/react";
 
 export default function VoiceElementContextMenu() {
    const { data } = useContextMenu("voice_element");
-   const client = useClient();
+   const posthog = usePostHog();
    const { updateVoicePreferences, voicePreferences, remoteSources, saveVoicePreferences } = useVoiceStore();
+   const consumeStreamMutation = useConsumeStream();
 
    const preference = useMemo(() => voicePreferences.find((x) => x.userId === data?.user.id), [voicePreferences]);
 
@@ -26,7 +28,7 @@ export default function VoiceElementContextMenu() {
          return;
       }
 
-      updateVoicePreferences(data.user.id, data.kind === "microphone" ? { microphoneVolume: value } : { screenShareVolume: value });
+      updateVoicePreferences(data.user.id, data.kind === "microphone" ? { microphoneVolume: value } : { streamVolume: value });
    }
 
    async function watch() {
@@ -34,10 +36,14 @@ export default function VoiceElementContextMenu() {
          return;
       }
 
-      if (client.voice.status === "rtc_ready") {
-         await voiceClient.consumeStream(data.user.id);
-      } else {
-         await voiceClient.connectAndConsumeStream(null, data?.channelId, data?.user.id);
+      posthog.capture("voice:watch_stream_context_button_click", { userId: data.user.id });
+
+      if (!consumeStreamMutation.isPending) {
+         consumeStreamMutation.mutate({
+            guildId: null,
+            channelId: data.channelId,
+            userId: data.user.id,
+         });
       }
    }
 
@@ -77,7 +83,7 @@ export default function VoiceElementContextMenu() {
                      className="mt-1 min-w-40 cursor-default flex-col !items-start gap-y-1 px-1 focus:!bg-inherit"
                      preventClose
                   >
-                     <RangeInput minValue={0} maxValue={200} defaultValue={preference?.screenShareVolume} onChange={onChange} />
+                     <RangeInput minValue={0} maxValue={200} defaultValue={preference?.streamVolume} onChange={onChange} />
                   </ContextMenu.Item>
                )}
             </>

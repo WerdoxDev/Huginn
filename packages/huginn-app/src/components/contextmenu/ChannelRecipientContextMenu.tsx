@@ -7,55 +7,55 @@ import { useThisUser } from "@stores/userStore";
 import ContextMenu from "./ContextMenu";
 
 export default function ChannelRecipientContextMenu() {
-	const { data } = useContextMenu("dm_channel_recipient");
-	const { user } = useThisUser();
-	const deleteMutation = useRemoveChannelRecipient();
-	const createMutation = useCreateDMChannel("create-dm-channel_recipient");
-	const editMutation = usePatchDMChannel();
-	const { ownerId } = useChannelRecipients(data?.channelId, "@me");
+   const { data } = useContextMenu("dm_channel_recipient");
+   const { user } = useThisUser();
+   const deleteMutation = useRemoveChannelRecipient();
+   const createMutation = useCreateDMChannel("create-dm-channel_recipient");
+   const editMutation = usePatchDMChannel();
+   const { ownerId } = useChannelRecipients(data?.channelId, "@me");
 
-	if (!data || !user) return;
+   if (!data || !user) return;
 
-	return (
-		<>
-			{data.recipient.id !== user.id && (
-				<>
-					<ContextMenu.Item
-						label="Message"
-						onClick={() => {
-							createMutation.mutate({ recipients: [data.recipient.id] });
-						}}
-					/>
-					{user.id === ownerId && (
-						<ContextMenu.Item
-							label="Promote to Owner"
-							onClick={() => {
-								editMutation.mutate({
-									channelId: data.channelId,
-									owner: data.recipient.id,
-								});
-							}}
-							color="negative"
-						/>
-					)}
-					{user.id === ownerId && (
-						<ContextMenu.Item
-							label="Remove Member"
-							onClick={() => {
-								deleteMutation.mutate({
-									channelId: data.channelId,
-									recipientId: data.recipient.id,
-								});
-							}}
-							color="negative"
-						/>
-					)}
-					<ContextMenu.Divider />
-				</>
-			)}
-			<ContextMenu.Item label="Copy User ID" onClick={() => navigator.clipboard.writeText(data.recipient.id)}>
-				<IconMingcuteIdcardFill />
-			</ContextMenu.Item>
-		</>
-	);
+   return (
+      <>
+         {data.recipient.id !== user.id && (
+            <>
+               <ContextMenu.Item
+                  label="Message"
+                  onClick={() => {
+                     createMutation.mutate({ recipients: [data.recipient.id] });
+                  }}
+               />
+               {user.id === ownerId && (
+                  <ContextMenu.Item
+                     label="Promote to Owner"
+                     onClick={() => {
+                        editMutation.mutate({
+                           channelId: data.channelId,
+                           owner: data.recipient.id,
+                        });
+                     }}
+                     color="negative"
+                  />
+               )}
+               {user.id === ownerId && (
+                  <ContextMenu.Item
+                     label="Remove Member"
+                     onClick={() => {
+                        deleteMutation.mutate({
+                           channelId: data.channelId,
+                           recipientId: data.recipient.id,
+                        });
+                     }}
+                     color="negative"
+                  />
+               )}
+               <ContextMenu.Divider />
+            </>
+         )}
+         <ContextMenu.Item label="Copy User ID" onClick={() => navigator.clipboard.writeText(data.recipient.id)}>
+            <IconMingcuteIdcardFill />
+         </ContextMenu.Item>
+      </>
+   );
 }

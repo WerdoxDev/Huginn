@@ -183,33 +183,23 @@ const store = createStore(
 
             return set({ speakingStates: [] });
          },
-         updateVoicePreferences: (userId: Snowflake, update: { microphoneVolume?: number; screenShareVolume?: number }) => {
-            log(
-               "app:voice-store",
-               "voice-preferences",
-               "update",
-               "uid:",
-               userId,
-               "mvol:",
-               update.microphoneVolume,
-               "svol:",
-               update.screenShareVolume,
-            );
+         updateVoicePreferences: (userId: Snowflake, options: { microphoneVolume?: number; streamVolume?: number }) => {
+            log("app:voice-store", "voice-preferences", "update", "uid:", userId, "mvol:", options.microphoneVolume, "svol:", options.streamVolume);
 
             set(
                produce((draft: StoreType) => {
                   const existingIndex = draft.voicePreferences.findIndex((x) => x.userId === userId);
                   if (existingIndex !== -1) {
-                     draft.voicePreferences[existingIndex] = { ...draft.voicePreferences[existingIndex], ...update };
+                     draft.voicePreferences[existingIndex] = { ...draft.voicePreferences[existingIndex], ...options };
                   } else {
-                     if (!update.microphoneVolume || !update.screenShareVolume) {
+                     if (!options.microphoneVolume || !options.streamVolume) {
                         throw new Error("Creating new voice preference requires both microphone and screen share volumes");
                      }
 
                      draft.voicePreferences.push({
                         userId,
-                        microphoneVolume: update.microphoneVolume,
-                        screenShareVolume: update.screenShareVolume,
+                        microphoneVolume: options.microphoneVolume,
+                        streamVolume: options.streamVolume,
                      });
                   }
                }),
@@ -244,10 +234,7 @@ export function initializeVoice() {
          store.setState({ callStates: d.callStates });
 
          const preferences = await loadFile("voice-preferences", []);
-         const finalPreferences = d.voiceStates.map(
-            (x) => preferences.find((y) => y.userId === x.userId) ?? { userId: x.userId, microphoneVolume: 100, screenShareVolume: 100 },
-         );
-         store.setState({ voicePreferences: finalPreferences });
+         store.setState({ voicePreferences: preferences });
       }),
    );
 
@@ -305,7 +292,7 @@ export function initializeVoice() {
          } else {
             // create voice preference for new users
             if (!thisStore.voicePreferences.some((x) => x.userId === d.userId)) {
-               thisStore.updateVoicePreferences(d.userId, { microphoneVolume: 100, screenShareVolume: 100 });
+               thisStore.updateVoicePreferences(d.userId, { microphoneVolume: 100, streamVolume: 100 });
             }
          }
 
@@ -316,15 +303,21 @@ export function initializeVoice() {
          }
 
          const lastState = thisStore.voiceStates.find((x) => x.userId === d.userId);
-         const currentState = voiceStore.getState().voiceStates.find((x) => x.userId === d.userId);
+         const currentStore = voiceStore.getState();
+         const currentState = currentStore.voiceStates.find((x) => x.userId === d.userId);
+         const currentChannel = currentStore.voiceChannel;
 
          // User was not here and just joined the call
-         if (lastState?.channelId !== thisStore.voiceChannel.channelId && currentState?.channelId === thisStore.voiceChannel.channelId) {
+         if ((!lastState || lastState.channelId !== currentState?.channelId) && currentState?.channelId === currentChannel.channelId) {
             const audio = new Audio(voiceEnterUrl);
             audio.play();
          }
+
          // User is no longer here but was here before
-         else if (currentState?.channelId !== thisStore.voiceChannel.channelId && lastState?.channelId === thisStore.voiceChannel.channelId) {
+         else if (
+            (!currentState || currentState.channelId !== lastState?.channelId) &&
+            (lastState?.channelId === currentChannel.channelId || d.userId === client?.user?.id)
+         ) {
             const audio = new Audio(voiceLeaveUrl);
             audio.play();
          }

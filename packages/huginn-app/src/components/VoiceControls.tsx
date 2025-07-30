@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { useMemo } from "react";
 import DropdownMenu from "./dropdown/DowndownMenu";
 import Tooltip from "./tooltip/Tooltip";
+import { useHuginnWindow } from "@stores/windowStore";
 
 export default function VoiceControls(props: {
    show: boolean;
@@ -23,7 +24,7 @@ export default function VoiceControls(props: {
    onToggleFullscreen: () => Promise<void>;
 }) {
    return (
-      <Transition show={props.show}>
+      <Transition show={true}>
          <div className="data-closed:opacity-0 absolute inset-x-0 bottom-0 mb-2.5 flex shrink-0 items-center justify-center gap-x-2.5 transition">
             {props.isInVoice ? (
                <>
@@ -125,6 +126,7 @@ function StreamButton(props: {
    onChangeStream?: () => void;
 }) {
    const isStreaming = useMemo(() => props.voiceState.isStreaming, [props.voiceState]);
+   const huginnWindow = useHuginnWindow();
 
    return isStreaming ? (
       <div className="flex">
@@ -168,7 +170,7 @@ function StreamButton(props: {
             <DropdownMenu.Item label="Screen Share" onClick={props.onStartScreenShare}>
                <IconMingcuteMonitorFill />
             </DropdownMenu.Item>
-            <DropdownMenu.Item label="Audio Stream" onClick={props.onStartAudioStream}>
+            <DropdownMenu.Item label="Audio Stream" onClick={props.onStartAudioStream} disabled={huginnWindow.environment !== "desktop"}>
                <IconMingcuteVolumeFill />
             </DropdownMenu.Item>
          </DropdownMenu.Items>

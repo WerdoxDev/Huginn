@@ -8,6 +8,7 @@ import {
    type MenuItemsProps,
    type MenuProps,
 } from "@headlessui/react";
+import { omit } from "@huginn/shared";
 import clsx from "clsx";
 import { useEffect, type ElementType, type ReactNode } from "react";
 
@@ -41,18 +42,19 @@ function Item(props: MenuItemProps<"button"> & { label: string; color?: "default
    return (
       <MenuItem
          as="button"
-         {...props}
+         {...omit(props, ["color", "label"])}
          onClick={(e) => {
             // VERY WEIRD BUG THAT IS ONLY FIXED WITH THIS
             if (e.detail === 1) {
                props.onClick?.(e);
             }
          }}
+         disabled={props.disabled}
          className={clsx(
-            "outline-hidden flex cursor-pointer items-center justify-between gap-x-5 text-nowrap rounded-sm px-2 py-1.5 text-start text-sm",
+            "outline-hidden data-disabled:cursor-not-allowed data-disabled:hover:!bg-transparent flex cursor-pointer items-center justify-between gap-x-5 text-nowrap rounded-sm px-2 py-1.5 text-start text-sm",
             !props.color || props.color === "default"
-               ? "hover:bg-surface-alt text-white/90"
-               : props.color === "negative" && "text-negative-100 hover:bg-negative-100/10",
+               ? "hover:enabled:bg-surface-alt data-disabled:text-white/50 text-white/90"
+               : props.color === "negative" && "text-negative-100 hover:enabled:bg-negative-100/10 data-disabled:text-negative-100/50",
             props.className,
          )}
       >

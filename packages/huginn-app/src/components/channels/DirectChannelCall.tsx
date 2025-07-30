@@ -69,15 +69,19 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    }>();
    const [gridHeight, setGridHeight] = useState(250);
    const { isFullscreen, toggleFullscreen: onToggleFullscreen } = useFullscreen(containerRef);
-   const maximizedSourceId = useRef<string | undefined>(undefined);
+   // const maximizedSourceId = useRef<string | undefined>(undefined);
    const [maximizedSource, setMaximizedSource] = useState<Unpacked<typeof remoteSources> | undefined>(undefined);
 
    useEffect(() => {
       if (!voiceChannel.channelId) {
-         maximizedSourceId.current = undefined;
+         // maximizedSourceId.current = undefined;
          setMaximizedSource(undefined);
       }
    }, [localVoiceState]);
+
+   useEffect(() => {
+      setMaximizedSource(undefined);
+   }, [props.channelId]);
 
    useLayoutEffect(() => {
       const controller = new AbortController();
@@ -90,6 +94,12 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
             }
 
             updateGridSize();
+
+            // When we exit fullscreen, the element is still here. Which we can use to detect we are exiting fullscreen and should not fiddle with the height
+            if (document.fullscreenElement) {
+               return;
+            }
+
             const maxHeight = (window.innerHeight / 100) * maxHeightPercentage;
             if (gridRef.current.clientHeight > maxHeight) {
                setGridHeight(maxHeight);
@@ -117,19 +127,19 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       return () => {
          controller.abort();
       };
-   }, [isShown]);
+   }, [isShown, maximizedSource]);
 
    useEffect(() => {
       const unlisten = client.voice.listen("producer_closed", (d) => {
-         if (d.producerId === maximizedSourceId.current) {
-            maximizedSourceId.current = undefined;
+         if (d.producerId === maximizedSource?.producerId) {
+            // maximizedSourceId.current = undefined;
             setMaximizedSource(undefined);
          }
       });
 
       const unlisten2 = client.voice.listen("consumer_closed", (d) => {
-         if (d.producerId === maximizedSourceId.current) {
-            maximizedSourceId.current = undefined;
+         if (d.producerId === maximizedSource?.producerId) {
+            // maximizedSourceId.current = undefined;
             setMaximizedSource(undefined);
          }
       });
@@ -138,7 +148,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
          unlisten();
          unlisten2();
       };
-   }, []);
+   }, [maximizedSource]);
 
    useLayoutEffect(() => {
       updateGridSize();
@@ -277,10 +287,10 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       }
 
       if (maximizedSource) {
-         maximizedSourceId.current = undefined;
+         // maximizedSourceId.current = undefined;
          setMaximizedSource(undefined);
       } else {
-         maximizedSourceId.current = foundSource.producerId;
+         // maximizedSourceId.current = foundSource.producerId;
          if (foundSource) {
             setMaximizedSource(foundSource);
          }
@@ -293,7 +303,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       }
 
       const store = voiceStore.getState();
-      const numBoxes = maximizedSourceId.current
+      const numBoxes = maximizedSource?.producerId
          ? 1
          : // People in voice
            store.voiceStates.length +
@@ -305,12 +315,12 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 
       const containerWidth = gridRef.current.clientWidth;
       const containerHeight = gridRef.current.clientHeight;
-      const boxMargin = !maximizedSourceId.current ? 12 : 0;
+      const boxMargin = !maximizedSource?.producerId ? 12 : 0;
       const padding = {
-         top: !maximizedSourceId.current ? 12 : 0,
-         right: !maximizedSourceId.current ? 20 : 0,
-         bottom: !maximizedSourceId.current ? 64 : 0,
-         left: !maximizedSourceId.current ? 20 : 0,
+         top: !maximizedSource?.producerId ? 12 : 0,
+         right: !maximizedSource?.producerId ? 20 : 0,
+         bottom: !maximizedSource?.producerId ? 64 : 0,
+         left: !maximizedSource?.producerId ? 20 : 0,
       };
       const aspectRatio = 16 / 9;
 
@@ -395,6 +405,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
                      ))}
                {/* Watching/Watchable Streams when connected */}
                {isGridView &&
+                  voiceChannel.channelId === props.channelId &&
                   remoteSources
                      .filter((x) => {
                         if (maximizedSource) {

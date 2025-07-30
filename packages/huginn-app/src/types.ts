@@ -6,14 +6,16 @@ import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePatchDMChan
 import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRemoveChannelRecipient";
 import type { ConsumeStreamMutationVars } from "@hooks/voice/useConsumeStream";
 import type {
-   APIChannelUser, APIMessage, APIPublicUser,
+   APIChannelUser,
+   APIMessage,
+   APIPublicUser,
    APIRelationshipWithoutOwner,
    APIRelationUser,
    DeepPartial,
    DirectChannel,
    HMediaKind,
    RelationshipType,
-   Snowflake
+   Snowflake,
 } from "@huginn/shared";
 import type { AudioLevelChecker } from "@lib/voice/audio-level-checker";
 import type { ChangeEvent, HTMLInputTypeAttribute, ReactNode, RefObject } from "react";
@@ -76,7 +78,7 @@ export type HuginnButtonProps = {
    className?: string;
    disabled?: boolean;
    innerClassName?: string;
-   color?: "primary" | "surface-deep" | "surface-alt" | "surface"
+   color?: "primary" | "surface-deep" | "surface-alt" | "surface";
    onClick?: () => void;
 };
 
@@ -115,7 +117,7 @@ export type DropdownItem = {
 };
 
 export type ColorTheme = {
-   "surface": string;
+   surface: string;
    "surface-alt": string;
    "surface-deep": string;
 
@@ -157,7 +159,7 @@ export type ColorTheme = {
    "caution-800": string;
    "caution-900": string;
 
-   "text": string;
+   text: string;
 };
 
 export type ThemeType = "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal";
@@ -187,7 +189,7 @@ export type ContextMenuItemProps = {
    label: string;
    disabled?: boolean;
    preventClose?: boolean;
-   color?: "default" | "negative"
+   color?: "default" | "negative";
 };
 
 export type DropdownMenuProps = {
@@ -204,7 +206,7 @@ export type DropdownMenuItemProps = {
 export type ContextMenuRelationship = { user: APIRelationUser; type: RelationshipType };
 export type ContextMenuDMChannel = AppDirectChannel;
 export type ContextMenuDMChannelRecipient = { channelId: Snowflake; recipient: APIChannelUser };
-export type ContextMenuVoiceElement = { user: APIPublicUser; producerId?: string; consumerId?: string; kind: HMediaKind, channelId: Snowflake };
+export type ContextMenuVoiceElement = { user: APIPublicUser; producerId?: string; consumerId?: string; kind: HMediaKind; channelId: Snowflake };
 
 export type MessageRenderInfo = {
    message: AppMessage;
@@ -232,7 +234,7 @@ export type MutationKinds = {
    "add-channel-recipient": AddChannelRecipientMutationVars;
    "create-relationship": CreateRelationshipMutationVars;
    "remove-relationship": Snowflake;
-   "consume-stream": ConsumeStreamMutationVars
+   "consume-stream": ConsumeStreamMutationVars;
 };
 
 export type AppMessage =
@@ -290,7 +292,7 @@ export type AudioSource = {
    appIcon?: string;
    name: string;
    processId: string;
-}
+};
 
 export type RemoteSource = {
    userId: Snowflake;
@@ -299,16 +301,16 @@ export type RemoteSource = {
    kind: HMediaKind;
    srcObject?: MediaProvider;
    audioLevel?: AudioLevelChecker;
-}
+};
 
-export type VoicePreference = { userId: Snowflake; microphoneVolume: number; screenShareVolume: number }
+export type VoicePreference = { userId: Snowflake; microphoneVolume: number; streamVolume: number };
 
 export type AppSettings = {
    apiHostname: string;
    cdnHostname: string;
    voiceHostname: string;
    externalHostnamesUrl: string;
-   hostnameSource: "manual" | "external"
+   hostnameSource: "manual" | "external";
    theme: ThemeType;
    inputDeviceId: string;
    outputDeviceId: string;
@@ -316,7 +318,7 @@ export type AppSettings = {
    inputVolume: number;
    outputVolume: number;
    inputThreshold: number;
-   noiseSuppression: boolean,
+   noiseSuppression: boolean;
    screenShareFramerate: number;
    screenShareQuality: number;
    screenShareAudio: boolean;

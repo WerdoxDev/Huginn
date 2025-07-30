@@ -232,7 +232,7 @@ export class VoiceClient {
                microphonePlayer.setGain(undefined, preference.microphoneVolume);
             }
             if (screenSharePlayer) {
-               screenSharePlayer.setGain(undefined, preference.screenShareVolume);
+               screenSharePlayer.setGain(undefined, preference.streamVolume);
             }
          }),
       );
@@ -404,7 +404,7 @@ export class VoiceClient {
          if (remoteSource.kind === "microphone") {
             sourcePlayer.setGain(undefined, preference?.microphoneVolume);
          } else if (remoteSource.kind === "stream_audio") {
-            sourcePlayer.setGain(undefined, preference?.screenShareVolume);
+            sourcePlayer.setGain(undefined, preference?.streamVolume);
          }
       }
    }

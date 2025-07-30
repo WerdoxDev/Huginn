@@ -75,7 +75,8 @@ export default function VoiceStatus() {
                                  voiceStatus === "reconnecting" ||
                                  voiceStatus === "connected" ||
                                  voiceStatus === "none" ||
-                                 voiceStatus === "authenticated") &&
+                                 voiceStatus === "authenticated" ||
+                                 !voiceStatus) &&
                                  "text-caution-100",
                               voiceStatus === "disconnected" && "text-negative-100",
                            )}
@@ -94,13 +95,14 @@ export default function VoiceStatus() {
                            voiceStatus === "reconnecting" ||
                            voiceStatus === "connected" ||
                            voiceStatus === "none" ||
-                           voiceStatus === "authenticated") &&
+                           voiceStatus === "authenticated" ||
+                           !voiceStatus) &&
                            "!text-caution-100",
                         voiceStatus === "disconnected" && "!text-negative-100",
                      )}
                      style={{ color: latencyColor }}
                   >
-                     {voiceStatus ? statusTexts[voiceStatus] : "Not Initialized"}
+                     {statusTexts[voiceStatus ?? "none"]}
                   </div>
                </div>
                <NavLink prefetch="intent" to={`/channels/@me/${voiceChannel.channelId}`} className="text-text/70 ml-7 text-xs hover:underline">
