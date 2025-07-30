@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.2](https://github.com/WerdoxDev/Huginn/compare/api@v0.22.1...api@v0.22.2) (2025-07-29)
+
+
+### Bug Fixes
+
+* **api:** add a new status type to voice for better status tracking + some promise fixes ([998fed9](https://github.com/WerdoxDev/Huginn/commit/998fed9aa52e4d12b859975f1055463ca164a9a3))
+
 ## [0.22.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.22.0...api@v0.22.1) (2025-07-28)
 
 
