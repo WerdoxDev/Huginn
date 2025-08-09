@@ -9,47 +9,47 @@ import { type ReactNode, useEffect } from "react";
 import type { AppRelationship } from "@/types";
 
 export default function FriendsProvider(props: { children?: ReactNode }) {
-	const client = useClient();
-	const queryClient = useQueryClient();
-	const api = useClientStore();
-	const { setFriendsNotificationsCount } = useReadStates();
+   const client = useClient();
+   const queryClient = useQueryClient();
+   const api = useClientStore();
+   const { setFriendsNotificationsCount } = useReadStates();
 
-	function onRelationshipCreated(d: GatewayRelationshipCreateData) {
-		const friends = queryClient.getQueryData<AppRelationship[]>(["relationships"]);
-		if (!friends) return;
+   function onRelationshipCreated(d: GatewayRelationshipCreateData) {
+      const friends = queryClient.getQueryData<AppRelationship[]>(["relationships"]);
+      if (!friends) return;
 
-		const newFriends = produce(friends, (draft) => {
-			const changedIndex = draft.findIndex((x) => x.id === d.id && x.type !== d.type);
-			if (changedIndex !== -1) {
-				draft[changedIndex].type = d.type;
-			} else {
-				draft.push(convertToAppRelationship(d));
-			}
-		});
+      const newFriends = produce(friends, (draft) => {
+         const changedIndex = draft.findIndex((x) => x.id === d.id && x.type !== d.type);
+         if (changedIndex !== -1) {
+            draft[changedIndex].type = d.type;
+         } else {
+            draft.push(convertToAppRelationship(d));
+         }
+      });
 
-		queryClient.setQueryData<AppRelationship[]>(["relationships"], newFriends);
-		setFriendsNotificationsCount(newFriends?.filter((x) => x.type === RelationshipType.PENDING_INCOMING).length ?? 0);
-	}
+      queryClient.setQueryData<AppRelationship[]>(["relationships"], newFriends);
+      setFriendsNotificationsCount(newFriends?.filter((x) => x.type === RelationshipType.PENDING_INCOMING).length ?? 0);
+   }
 
-	function onRelationshipDeleted(userId: Snowflake) {
-		const newFriends = queryClient.setQueryData<AppRelationship[]>(["relationships"], (old) => old?.filter((x) => x.userId !== userId));
-		setFriendsNotificationsCount(newFriends?.filter((x) => x.type === RelationshipType.PENDING_INCOMING).length ?? 0);
-	}
+   function onRelationshipDeleted(userId: Snowflake) {
+      const newFriends = queryClient.setQueryData<AppRelationship[]>(["relationships"], (old) => old?.filter((x) => x.userId !== userId));
+      setFriendsNotificationsCount(newFriends?.filter((x) => x.type === RelationshipType.PENDING_INCOMING).length ?? 0);
+   }
 
-	useEffect(() => {
-		client.gateway.on("relationship_add", onRelationshipCreated);
-		client.gateway.on("relationship_remove", onRelationshipDeleted);
+   useEffect(() => {
+      client?.gateway.on("relationship_add", onRelationshipCreated);
+      client?.gateway.on("relationship_remove", onRelationshipDeleted);
 
-		queryClient.setQueryData<AppRelationship[]>(
-			["relationships"],
-			api.readyData?.relationships.map((x) => convertToAppRelationship(x)),
-		);
+      queryClient.setQueryData<AppRelationship[]>(
+         ["relationships"],
+         api.readyData?.relationships.map((x) => convertToAppRelationship(x)),
+      );
 
-		return () => {
-			client.gateway.off("relationship_add", onRelationshipCreated);
-			client.gateway.off("relationship_remove", onRelationshipDeleted);
-		};
-	}, []);
+      return () => {
+         client?.gateway.off("relationship_add", onRelationshipCreated);
+         client?.gateway.off("relationship_remove", onRelationshipDeleted);
+      };
+   }, []);
 
-	return props.children;
+   return props.children;
 }

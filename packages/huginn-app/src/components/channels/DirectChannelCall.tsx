@@ -5,14 +5,13 @@ import { useFullscreen } from "@hooks/useFullscreen";
 import { useHover } from "@hooks/useHover";
 import { useLookup } from "@hooks/useLookup";
 import { useConsumeStream } from "@hooks/voice/useConsumeStream";
-import { useStartCamera } from "@hooks/voice/useStartCamera";
-import { useUpdateVoiceState } from "@hooks/voice/useUpdateVoiceState";
+import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 import type { Snowflake, Unpacked } from "@huginn/shared";
 import { useClient, useClientStore } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useSettings } from "@stores/settingsStore";
 import { useThisUser } from "@stores/userStore";
-import { useVoiceStore, voiceClient, voiceStore } from "@stores/voiceStore";
+import { useVoiceStore, voiceStore } from "@stores/voiceStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { AnimatePresence } from "motion/react";
@@ -24,19 +23,15 @@ const maxHeightPercentage = 60;
 
 export default function DirectChannelCall(props: { channelId: Snowflake }) {
    const { localVoiceState, voiceStates, callStates, remoteSources, speakingStates, voiceChannel } = useVoiceStore();
+   const { connect, changeStream, disconnect, startAudioStream, startCamera, startScreenShare, toggleDeafen, toggleMute, endCamera, endStream } =
+      useVoiceUtils();
    const { voiceStatus } = useClientStore();
-
-   const { updateModals } = useModals();
-   const huginnWindow = useHuginnWindow();
 
    const client = useClient();
    const { user } = useThisUser();
-   const settings = useSettings();
    const posthog = usePostHog();
 
-   const startCameraMutation = useStartCamera();
    const consumeStreamMutation = useConsumeStream();
-   const updateVoiceStateMutation = useUpdateVoiceState();
 
    const thisVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channelId), [voiceStates, props.channelId, localVoiceState]);
    const thisCallState = useMemo(() => callStates.find((x) => x.channelId === props.channelId), [callStates, props.channelId]);
@@ -55,7 +50,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       (x) => x.kind === "stream_audio",
    );
 
-   const isShown = useMemo(() => users.length !== 0 && thisCallState, [props.channelId, users]);
+   const isShown = useMemo(() => users.length !== 0 && thisCallState, [props.channelId, users, thisCallState]);
 
    const [containerRef, showControls] = useHover<HTMLDivElement>([user, isShown]);
    const gridRef = useRef<HTMLDivElement>(null);
@@ -68,13 +63,12 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       cols: number;
    }>();
    const [gridHeight, setGridHeight] = useState(250);
-   const { isFullscreen, toggleFullscreen: onToggleFullscreen } = useFullscreen(containerRef);
+   const { isFullscreen, toggleFullscreen } = useFullscreen();
    // const maximizedSourceId = useRef<string | undefined>(undefined);
    const [maximizedSource, setMaximizedSource] = useState<Unpacked<typeof remoteSources> | undefined>(undefined);
 
    useEffect(() => {
       if (!voiceChannel.channelId) {
-         // maximizedSourceId.current = undefined;
          setMaximizedSource(undefined);
       }
    }, [localVoiceState]);
@@ -130,23 +124,21 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    }, [isShown, maximizedSource]);
 
    useEffect(() => {
-      const unlisten = client.voice.listen("producer_closed", (d) => {
+      const unlisten = client?.voice.listen("producer_closed", (d) => {
          if (d.producerId === maximizedSource?.producerId) {
-            // maximizedSourceId.current = undefined;
             setMaximizedSource(undefined);
          }
       });
 
-      const unlisten2 = client.voice.listen("consumer_closed", (d) => {
+      const unlisten2 = client?.voice.listen("consumer_closed", (d) => {
          if (d.producerId === maximizedSource?.producerId) {
-            // maximizedSourceId.current = undefined;
             setMaximizedSource(undefined);
          }
       });
 
       return () => {
-         unlisten();
-         unlisten2();
+         unlisten?.();
+         unlisten2?.();
       };
    }, [maximizedSource]);
 
@@ -186,85 +178,6 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       setIsResizing(false);
    }
 
-   function onDisconnect() {
-      posthog.capture("voice:disconnect_button_click");
-      client.gateway.disconnectVoice();
-   }
-
-   function onToggleMute() {
-      posthog.capture("voice:toggle_mute_button_click");
-
-      updateVoiceStateMutation.mutate({
-         isAudioMuted: !localVoiceState.isAudioMuted,
-         isAudioDeafened: false,
-         isStreaming: localVoiceState.isStreaming,
-         isCameraOn: localVoiceState.isCameraOn,
-      });
-   }
-
-   function onToggleDeafen() {
-      posthog.capture("voice:toggle_deafen_button_click");
-
-      updateVoiceStateMutation.mutate({
-         isAudioMuted: !localVoiceState.isAudioDeafened,
-         isAudioDeafened: !localVoiceState.isAudioDeafened,
-         isStreaming: localVoiceState.isStreaming,
-         isCameraOn: localVoiceState.isCameraOn,
-      });
-   }
-
-   async function onStartScreenShare() {
-      posthog.capture("voice:screen_share_button_click");
-
-      if (isFullscreen) {
-         onToggleFullscreen();
-      }
-
-      if (huginnWindow.environment === "browser") {
-         const stream = await navigator.mediaDevices.getDisplayMedia({
-            audio: true,
-            video: true,
-         });
-         await client.voice.startStream(stream.getVideoTracks()[0], stream.getAudioTracks()[0]);
-      } else {
-         updateModals({ screenShare: { isOpen: true } });
-      }
-   }
-
-   function onStartAudioStream() {
-      posthog.capture("voice:stream_audio_button_click");
-
-      if (isFullscreen) {
-         onToggleFullscreen();
-      }
-
-      if (huginnWindow.environment !== "desktop") {
-         return;
-      }
-
-      updateModals({ streamAudio: { isOpen: true } });
-   }
-
-   function onChangeStream() {
-      const audioRemoteSource = remoteSources.find((x) => x.userId === user?.id && x.kind === "stream_audio");
-      const videoRemoteSource = remoteSources.find((x) => x.userId === user?.id && x.kind === "stream_video");
-
-      // Pure audio stream
-      if (audioRemoteSource && !videoRemoteSource) {
-         onStartAudioStream();
-      } else {
-         onStartScreenShare();
-      }
-   }
-
-   function onStartCamera() {
-      posthog.capture("voice:video_button_click");
-
-      if (!startCameraMutation.isPending) {
-         startCameraMutation.mutate({ deviceId: settings.local.cameraDeviceId });
-      }
-   }
-
    async function onConsumeStream(userId: Snowflake) {
       posthog.capture("voice:watch_stream_button_click", { userId });
 
@@ -287,10 +200,8 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       }
 
       if (maximizedSource) {
-         // maximizedSourceId.current = undefined;
          setMaximizedSource(undefined);
       } else {
-         // maximizedSourceId.current = foundSource.producerId;
          if (foundSource) {
             setMaximizedSource(foundSource);
          }
@@ -372,8 +283,8 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    return (
       <div
          className={clsx(
-            "group/wrapper shadow-surface-deep/50 relative z-10 flex shrink-0 select-none flex-col gap-y-3 overflow-hidden shadow-lg",
-            isFullscreen ? "bg-surface-deep rounded-none" : "ring-primary-800 m-2 mb-0 rounded-xl bg-black/50 ring-2",
+            "group/wrapper shadow-surface-deep/50 z-10 flex shrink-0 select-none flex-col gap-y-3 overflow-hidden shadow-lg",
+            isFullscreen ? "bg-surface-deep z-997 fixed inset-0 rounded-none" : "ring-primary-800 relative m-2 mb-0 rounded-xl bg-black/50 ring-2",
          )}
          ref={containerRef}
       >
@@ -472,20 +383,20 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
             </AnimatePresence>
          </div>
          <VoiceControls
-            show={showControls}
+            show={showControls || !isGridView}
             isFullscreen={isFullscreen}
             isInVoice={voiceChannel.channelId === props.channelId}
-            onConnect={() => voiceClient.connect(null, props.channelId)}
-            onDisconnect={onDisconnect}
-            onStartScreenShare={onStartScreenShare}
-            onStartAudioStream={onStartAudioStream}
-            onStartCamera={onStartCamera}
-            onStopCamera={() => client.voice.stopCamera()}
-            onEndStream={() => client.voice.stopStream()}
-            onChangeStream={onChangeStream}
-            onToggleDeafen={onToggleDeafen}
-            onToggleFullscreen={onToggleFullscreen}
-            onToggleMute={onToggleMute}
+            onConnect={() => connect(props.channelId)}
+            onDisconnect={disconnect}
+            onStartScreenShare={startScreenShare}
+            onStartAudioStream={startAudioStream}
+            onStartCamera={startCamera}
+            onStopCamera={endCamera}
+            onEndStream={endStream}
+            onChangeStream={changeStream}
+            onToggleDeafen={toggleDeafen}
+            onToggleFullscreen={toggleFullscreen}
+            onToggleMute={toggleMute}
             voiceState={localVoiceState}
          />
       </div>

@@ -15,9 +15,9 @@ export function useCreateRelationship(
          mutationKey: ["create-relationship"],
          async mutationFn(data: CreateRelationshipMutationVars) {
             if (data.username) {
-               await client.relationships.createRelationship({ username: data.username });
+               await client?.relationships.createRelationship({ username: data.username });
             } else if (data.userId) {
-               await client.relationships.createRelationshipByUserId(data.userId);
+               await client?.relationships.createRelationshipByUserId(data.userId);
             }
          },
          onSuccess(_, variables) {

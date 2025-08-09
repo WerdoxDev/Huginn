@@ -17,10 +17,10 @@ export function useCreateDMChannel(
       {
          mutationKey: [key],
          async mutationFn(data: CreateDMChannelMutationVars) {
-            return await client.channels.createDM({ recipients: data.recipients, name: data.name });
+            return await client?.channels.createDM({ recipients: data.recipients, name: data.name });
          },
          async onSuccess(data, variables) {
-            if (!variables.skipNavigation) await navigate(`/channels/@me/${data.id}`);
+            if (!variables.skipNavigation) await navigate(`/channels/@me/${data?.id}`);
          },
       },
       handleErrors,

@@ -10,7 +10,7 @@ export function useAddChannelRecipient() {
    const mutation = useMutation({
       mutationKey: ["add-channel-recipient"],
       async mutationFn(data: AddChannelRecipientMutationVars) {
-         return await client.channels.addRecipient(data.channelId, data.recipientId);
+         return await client?.channels.addRecipient(data.channelId, data.recipientId);
       },
    });
 

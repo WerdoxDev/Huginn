@@ -10,7 +10,7 @@ import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 import notificationUrl from "@/assets/sounds/notification.wav";
 import { sendNotification } from "../contexts/notificationContext";
-import { client } from "./clientStore";
+import { clientStore } from "./clientStore";
 import { findChannel, getChannelName, getChannelRecipients, getChannels, getUser } from "@lib/query-utils";
 
 export type ContextReadState = { channelId: Snowflake; lastReadMessageId?: Snowflake; unreadCount: number };
@@ -64,6 +64,8 @@ const store = createStore(
 );
 
 export function initializeReadStates() {
+   const client = clientStore.getState().client;
+
    if (!client) {
       return;
    }

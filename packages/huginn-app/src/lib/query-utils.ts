@@ -1,4 +1,4 @@
-import { queryClient as client } from "@/main";
+import { queryClient as client } from "@/root";
 import type { AppDirectChannel } from "@/types";
 import type { APIPublicUser, PresenceUser, Snowflake } from "@huginn/shared";
 

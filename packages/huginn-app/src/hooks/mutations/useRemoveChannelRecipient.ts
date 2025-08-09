@@ -10,7 +10,7 @@ export function useRemoveChannelRecipient() {
    const mutation = useMutation({
       mutationKey: ["remove-channel-recipient"],
       async mutationFn(data: RemoveChannelRecipientMutationVars) {
-         return await client.channels.removeRecipient(data.channelId, data.recipientId);
+         return await client?.channels.removeRecipient(data.channelId, data.recipientId);
       },
    });
 

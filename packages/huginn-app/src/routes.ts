@@ -1,5 +1,5 @@
 import RouteErrorComponent from "@components/RouteErrorComponent";
-import { client } from "@stores/clientStore";
+import { clientStore } from "@stores/clientStore";
 import { createHashRouter, type LoaderFunctionArgs, redirect } from "react-router";
 import Root from "./root";
 import AppLayout from "./routes/app/app-layout";
@@ -14,20 +14,31 @@ import OauthRedirect from "./routes/app/start/oauth-redirect";
 import Register from "./routes/app/start/register";
 import StartLayout from "./routes/app/start/start-layout";
 
-function mainLoader({ request }: LoaderFunctionArgs) {
+async function mainLoader({ request }: LoaderFunctionArgs) {
    const url = new URL(request.url);
    const pathname = url.pathname;
 
    const search = new URLSearchParams({ redirect: pathname });
+
+   // await new Promise((r) => setTimeout(r, 1000));
+   // try {
+   const client = clientStore.getState().client;
    if (!client || client?.gateway.status !== "authenticated") {
       throw redirect(`/?${search}`);
    }
+   // oxlint-disable-next-line no-unused-vars
+   // } catch (e) {
+   //    throw redirect(`/?${search}`);
+   // }
 }
 
-function startLoader({ request }: LoaderFunctionArgs) {
+async function startLoader({ request }: LoaderFunctionArgs) {
    const url = new URL(request.url);
    const pathname = url.pathname;
 
+   // await new Promise((r) => setTimeout(r, 1000));
+
+   const client = clientStore.getState().client;
    if (client?.gateway.status === "authenticated") {
       throw redirect("/channels/@me");
    }
@@ -51,7 +62,7 @@ const router = createHashRouter([
                   children: [
                      {
                         path: "/",
-                        Component: Index
+                        Component: Index,
                      },
                      {
                         path: "/login",

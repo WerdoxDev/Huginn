@@ -32,6 +32,10 @@ export function useUniqueUsernameMessage(values: InputValues, resetInput: (input
    }
 
    async function checkForUniqueUsername(value: string) {
+      if (!client) {
+         return;
+      }
+
       const result = await client.common.uniqueUsername({ username: value });
 
       if (result.taken) {

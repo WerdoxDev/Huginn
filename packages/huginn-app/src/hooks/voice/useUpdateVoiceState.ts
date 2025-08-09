@@ -8,10 +8,10 @@ export function useUpdateVoiceState() {
    const mutation = useMutation({
       mutationKey: ["update-voice-state"],
       async mutationFn(data: GatewayVoiceStateFlags) {
-         await client.gateway.updateVoiceState(data);
+         await client?.gateway.updateVoiceState(data);
       },
-      scope: { id: "update-voice-state" }
-   })
+      scope: { id: "update-voice-state" },
+   });
 
    return mutation;
 }

@@ -19,174 +19,178 @@ import { useEffect, useMemo, useState } from "react";
 import type { SettingsTabProps } from "@/types";
 
 export default function SettingsProfileTab(_props: SettingsTabProps) {
-	const client = useClient();
-	const { user, setUser, tokenPayload } = useThisUser();
-	const { updateModals } = useModals();
+   const client = useClient();
+   const { user, setUser, tokenPayload } = useThisUser();
+   const { updateModals } = useModals();
 
-	const { inputsProps, values, handleErrors, resetStatuses, resetInput, setValue } = useInputs([
-		{ name: "username", required: true, default: user?.username, lowercase: true },
-		{ name: "displayName", required: false, default: user?.displayName },
-		{ name: "password", required: false },
-		{ name: "newPassword", required: false },
-	]);
+   const { inputsProps, values, handleErrors, resetStatuses, resetInput, setValue } = useInputs([
+      { name: "username", required: true, default: user?.username, lowercase: true },
+      { name: "displayName", required: false, default: user?.displayName },
+      { name: "password", required: false },
+      { name: "newPassword", required: false },
+   ]);
 
-	const { data: originalAvatar } = useQuery(getUserAvatarOptions(user?.id, user?.avatar, client));
-	const [avatarData, setAvatarData] = useState<string | null | undefined>(() => originalAvatar);
+   const { data: originalAvatar } = useQuery(getUserAvatarOptions(user?.id, user?.avatar, client));
+   const [avatarData, setAvatarData] = useState<string | null | undefined>(() => originalAvatar);
 
-	const { message: usernameMessageDetail, onFocusChanged, onChanged } = useUniqueUsernameMessage(values, resetInput, "username");
+   const { message: usernameMessageDetail, onFocusChanged, onChanged } = useUniqueUsernameMessage(values, resetInput, "username");
 
-	const mutation = usePatchUser((result) => {
-		client.tokenHandler.token = result.token;
-		client.tokenHandler.refreshToken = result.refreshToken;
-		setUser(omit(result, ["refreshToken", "token"]));
+   const mutation = usePatchUser((result) => {
+      if (!client) {
+         return;
+      }
 
-		setValue("password", "");
-		setValue("newPassword", "");
-		resetStatuses();
+      client.tokenHandler.token = result.token;
+      client.tokenHandler.refreshToken = result.refreshToken;
+      setUser(omit(result, ["refreshToken", "token"]));
 
-		onChanged(values.username.value, result.username);
-		onFocusChanged(false);
-	}, handleErrors);
+      setValue("password", "");
+      setValue("newPassword", "");
+      resetStatuses();
 
-	const [avatarModified, setAvatarModified] = useState(false);
-	const [modified, setModified] = useState(false);
+      onChanged(values.username.value, result.username);
+      onFocusChanged(false);
+   }, handleErrors);
 
-	useMemo(() => {
-		const displayName = !user?.displayName ? "" : user.displayName;
-		setModified(values.username.value !== user?.username || values.displayName.value !== displayName || values.newPassword.value !== "");
-	}, [values, user]);
+   const [avatarModified, setAvatarModified] = useState(false);
+   const [modified, setModified] = useState(false);
 
-	useEffect(() => {
-		if (originalAvatar) {
-			setAvatarData(originalAvatar);
-		}
-	}, [originalAvatar]);
+   useMemo(() => {
+      const displayName = !user?.displayName ? "" : user.displayName;
+      setModified(values.username.value !== user?.username || values.displayName.value !== displayName || values.newPassword.value !== "");
+   }, [values, user]);
 
-	useEffect(() => {
-		const unlisten = client.gateway.listen("user_update", (_e) => {
-			console.log("CHANGED");
-			setModified(false);
-			setAvatarModified(false);
-		});
+   useEffect(() => {
+      if (originalAvatar) {
+         setAvatarData(originalAvatar);
+      }
+   }, [originalAvatar]);
 
-		const unlisten2 = listenEvent("image_cropper_done", (e) => {
-			setAvatarData(e.croppedImageData);
-			setAvatarModified(true);
-		});
+   useEffect(() => {
+      const unlisten = client?.gateway.listen("user_update", (_e) => {
+         console.log("CHANGED");
+         setModified(false);
+         setAvatarModified(false);
+      });
 
-		return () => {
-			unlisten();
-			unlisten2();
-		};
-	}, []);
+      const unlisten2 = listenEvent("image_cropper_done", (e) => {
+         setAvatarData(e.croppedImageData);
+         setAvatarModified(true);
+      });
 
-	function onDelete() {
-		if (avatarData) {
-			setAvatarData(null);
-			setAvatarModified(true);
-		}
-	}
+      return () => {
+         unlisten?.();
+         unlisten2();
+      };
+   }, []);
 
-	function onSelected(data: string, mimeType: string) {
-		updateModals({ imageCrop: { isOpen: true, originalImageData: data, mimeType: mimeType } });
-	}
+   function onDelete() {
+      if (avatarData) {
+         setAvatarData(null);
+         setAvatarModified(true);
+      }
+   }
 
-	function edit() {
-		mutation.mutate({
-			displayName: values.displayName.value,
-			username: values.username.value === user?.username ? undefined : values.username.value,
-			password: values.password.value,
-			newPassword: values.newPassword.value,
-			avatar: originalAvatar && !avatarData ? null : originalAvatar === avatarData ? undefined : avatarData,
-		});
-	}
+   function onSelected(data: string, mimeType: string) {
+      updateModals({ imageCrop: { isOpen: true, originalImageData: data, mimeType: mimeType } });
+   }
 
-	function revert() {
-		if (!user) {
-			return;
-		}
+   function edit() {
+      mutation.mutate({
+         displayName: values.displayName.value,
+         username: values.username.value === user?.username ? undefined : values.username.value,
+         password: values.password.value,
+         newPassword: values.newPassword.value,
+         avatar: originalAvatar && !avatarData ? null : originalAvatar === avatarData ? undefined : avatarData,
+      });
+   }
 
-		setAvatarData(originalAvatar);
-		setValue("username", user.username);
-		setValue("displayName", user.displayName);
-		setValue("password", "");
-		setValue("newPassword", "");
-		resetStatuses();
+   function revert() {
+      if (!user) {
+         return;
+      }
 
-		onFocusChanged(false);
+      setAvatarData(originalAvatar);
+      setValue("username", user.username);
+      setValue("displayName", user.displayName);
+      setValue("password", "");
+      setValue("newPassword", "");
+      resetStatuses();
 
-		setAvatarModified(false);
-		setModified(false);
-	}
+      onFocusChanged(false);
 
-	return (
-		<>
-			<div className="flex items-start gap-x-5">
-				<ImageSelector data={avatarData} onDelete={onDelete} onSelected={onSelected} className="p-4" buttonsClassName="mt-4">
-					<div className="mb-4 font-semibold text-text">Profile Picture</div>
-				</ImageSelector>
-				<div className="flex w-full max-w-xs flex-col gap-y-2">
-					<div className="rounded-lg bg-surface-alt p-4">
-						<div className="mb-4 font-semibold text-text">Personal Information</div>
-						<div className="flex flex-col gap-y-5">
-							<HuginnInput {...inputsProps.username} onFocusChanged={onFocusChanged}>
-								<HuginnInput.Label text="Username" className="mb-2" />
-								<HuginnInput.Wrapper className="bg-surface!" border="left">
-									<HuginnInput.Input />
-								</HuginnInput.Wrapper>
-								<AnimatedMessage className="mt-1" {...usernameMessageDetail} />
-							</HuginnInput>
+      setAvatarModified(false);
+      setModified(false);
+   }
 
-							<HuginnInput placeholder={user?.username} {...inputsProps.displayName}>
-								<HuginnInput.Label text="Display Name" className="mb-2" />
-								<HuginnInput.Wrapper className="bg-surface!" border="left">
-									<HuginnInput.Input />
-								</HuginnInput.Wrapper>
-							</HuginnInput>
-						</div>
-					</div>
-				</div>
-				{!tokenPayload?.isOAuth && (
-					<div className="flex w-full max-w-xs flex-col gap-y-2">
-						<div className="rounded-lg bg-surface-alt p-4">
-							<div className="mb-4 font-semibold text-text">Security</div>
-							<div className="flex flex-col gap-y-5 ">
-								<PasswordInput {...inputsProps.password} type="password">
-									<HuginnInput.Label text="Current Password" className="mb-2" />
-									<HuginnInput.Wrapper className="bg-surface!" border="left">
-										<HuginnInput.Input />
-										<PasswordInput.ToggleButton className="border-l-surface-alt" />
-									</HuginnInput.Wrapper>
-								</PasswordInput>
-								<PasswordInput {...inputsProps.newPassword} type="password">
-									<HuginnInput.Label text="New Password" className="mb-2" />
-									<HuginnInput.Wrapper className="bg-surface!" border="left">
-										<HuginnInput.Input />
-										<PasswordInput.ToggleButton className="border-l-surface-alt" />
-									</HuginnInput.Wrapper>
-								</PasswordInput>
-							</div>
-						</div>
-					</div>
-				)}
-			</div>
-			<Transition show={modified || avatarModified}>
-				<div className="absolute right-9 bottom-5 left-53 flex transform justify-end gap-x-2 rounded-xl border-2 border-primary-800 bg-surface-alt p-2 shadow-xs transition data-closed:translate-y-10 data-closed:opacity-0">
-					<div className="ml-2 w-full self-center text-text ">You have unsaved changes!</div>
-					<HuginnButton onClick={revert} className="w-20 shrink-0 py-2 decoration-white hover:underline">
-						Revert
-					</HuginnButton>
-					<LoadingButton
-						loading={mutation.isPending}
-						disabled={!modified && !avatarModified}
-						onClick={edit}
-						className="!rounded-lg w-36 shrink-0"
-						color="primary"
-					>
-						Save changes
-					</LoadingButton>
-				</div>
-			</Transition>
-		</>
-	);
+   return (
+      <>
+         <div className="flex items-start gap-x-5">
+            <ImageSelector data={avatarData} onDelete={onDelete} onSelected={onSelected} className="p-4" buttonsClassName="mt-4">
+               <div className="text-text mb-4 font-semibold">Profile Picture</div>
+            </ImageSelector>
+            <div className="flex w-full max-w-xs flex-col gap-y-2">
+               <div className="bg-surface-alt rounded-lg p-4">
+                  <div className="text-text mb-4 font-semibold">Personal Information</div>
+                  <div className="flex flex-col gap-y-5">
+                     <HuginnInput {...inputsProps.username} onFocusChanged={onFocusChanged}>
+                        <HuginnInput.Label text="Username" className="mb-2" />
+                        <HuginnInput.Wrapper className="bg-surface!" border="left">
+                           <HuginnInput.Input />
+                        </HuginnInput.Wrapper>
+                        <AnimatedMessage className="mt-1" {...usernameMessageDetail} />
+                     </HuginnInput>
+
+                     <HuginnInput placeholder={user?.username} {...inputsProps.displayName}>
+                        <HuginnInput.Label text="Display Name" className="mb-2" />
+                        <HuginnInput.Wrapper className="bg-surface!" border="left">
+                           <HuginnInput.Input />
+                        </HuginnInput.Wrapper>
+                     </HuginnInput>
+                  </div>
+               </div>
+            </div>
+            {!tokenPayload?.isOAuth && (
+               <div className="flex w-full max-w-xs flex-col gap-y-2">
+                  <div className="bg-surface-alt rounded-lg p-4">
+                     <div className="text-text mb-4 font-semibold">Security</div>
+                     <div className="flex flex-col gap-y-5">
+                        <PasswordInput {...inputsProps.password} type="password">
+                           <HuginnInput.Label text="Current Password" className="mb-2" />
+                           <HuginnInput.Wrapper className="bg-surface!" border="left">
+                              <HuginnInput.Input />
+                              <PasswordInput.ToggleButton className="border-l-surface-alt" />
+                           </HuginnInput.Wrapper>
+                        </PasswordInput>
+                        <PasswordInput {...inputsProps.newPassword} type="password">
+                           <HuginnInput.Label text="New Password" className="mb-2" />
+                           <HuginnInput.Wrapper className="bg-surface!" border="left">
+                              <HuginnInput.Input />
+                              <PasswordInput.ToggleButton className="border-l-surface-alt" />
+                           </HuginnInput.Wrapper>
+                        </PasswordInput>
+                     </div>
+                  </div>
+               </div>
+            )}
+         </div>
+         <Transition show={modified || avatarModified}>
+            <div className="left-53 border-primary-800 bg-surface-alt shadow-xs data-closed:translate-y-10 data-closed:opacity-0 absolute bottom-5 right-9 flex transform justify-end gap-x-2 rounded-xl border-2 p-2 transition">
+               <div className="text-text ml-2 w-full self-center">You have unsaved changes!</div>
+               <HuginnButton onClick={revert} className="w-20 shrink-0 py-2 decoration-white hover:underline">
+                  Revert
+               </HuginnButton>
+               <LoadingButton
+                  loading={mutation.isPending}
+                  disabled={!modified && !avatarModified}
+                  onClick={edit}
+                  className="w-36 shrink-0 !rounded-lg"
+                  color="primary"
+               >
+                  Save changes
+               </LoadingButton>
+            </div>
+         </Transition>
+      </>
+   );
 }

@@ -14,15 +14,10 @@ export function useSendMessage() {
 
    const mutation = useMutation({
       mutationKey: ["send-message"],
-      async mutationFn(data: {
-         channelId: Snowflake;
-         content: string;
-         flags: MessageFlags;
-         attachments: AppAttachment[];
-      }) {
+      async mutationFn(data: { channelId: Snowflake; content: string; flags: MessageFlags; attachments: AppAttachment[] }) {
          if (!user) return;
 
-         const nonce = client.generateNonce();
+         const nonce = client?.generateNonce();
 
          const previewMessage: AppMessage = {
             preview: true,
@@ -77,7 +72,7 @@ export function useSendMessage() {
 
          return {
             previewMessage,
-            message: await client.channels.createMessage(
+            message: await client?.channels.createMessage(
                data.channelId,
                {
                   attachments: data.attachments.map((x) => ({ id: x.id, filename: x.filename, description: x.description })),
@@ -88,12 +83,12 @@ export function useSendMessage() {
                data.attachments.map((x) => ({ data: x.data, name: x.filename, contentType: x.contentType })),
                data.attachments.length
                   ? (event) =>
-                     setMessageUploadProgress(previewMessage.id, {
-                        percentage: (event.loaded / event.total) * 100,
-                        filenames,
-                        total: event.total,
-                        onAbort,
-                     })
+                       setMessageUploadProgress(previewMessage.id, {
+                          percentage: (event.loaded / event.total) * 100,
+                          filenames,
+                          total: event.total,
+                          onAbort,
+                       })
                   : undefined,
                abortController.signal,
             ),

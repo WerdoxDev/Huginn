@@ -11,9 +11,9 @@ export function useStartCamera() {
             video: { deviceId: data.deviceId, frameRate: 30 },
          });
          const track = stream.getVideoTracks()[0];
-         await client.voice.startCamera(track);
+         await client?.voice.startCamera(track);
       },
-   })
+   });
 
    return mutation;
 }

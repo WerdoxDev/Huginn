@@ -6,6 +6,7 @@ export function useErrorHandler(action?: ReturnType<typeof useModals>["info"]["a
    const { updateModals } = useModals();
 
    function handleError(error: unknown) {
+      console.log(error);
       if (error instanceof HTTPError) {
          if (error.status === 500) {
             updateModals({ info: { isOpen: true, ...messages.serverError(), status: "error", action: action } });

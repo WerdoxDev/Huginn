@@ -11,7 +11,7 @@ import { useClient } from "@stores/clientStore";
 
 export function useChannel(channelId?: Snowflake, guildId = "@me") {
    const client = useClient();
-   const { data } = useQuery(getChannelsOptions(client, guildId));
+   const { data } = useQuery(getChannelsOptions(client!, guildId));
 
    return useMemo(() => findChannel(data, channelId), [data, channelId]);
 }

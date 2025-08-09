@@ -16,124 +16,124 @@ import { useEffect } from "react";
 // import { usePostHog } from "posthog-js/react";
 
 export default function Login() {
-	const posthog = usePostHog();
-	const client = useClient();
-	const initializeClient = useInitializeClient();
-	const startBackground = useStartBackground();
-	const startOAuth = useOAuth();
+   const posthog = usePostHog();
+   const client = useClient();
+   const initializeClient = useInitializeClient();
+   const startBackground = useStartBackground();
+   const startOAuth = useOAuth();
 
-	const { inputsProps, values, resetStatuses, handleErrors, validateValues } = useInputs([
-		{
-			name: "login",
-			required: true,
-			default: undefined,
-		},
-		{
-			name: "password",
-			required: true,
-			default: undefined,
-		},
-	]);
+   const { inputsProps, values, resetStatuses, handleErrors, validateValues } = useInputs([
+      {
+         name: "login",
+         required: true,
+         default: undefined,
+      },
+      {
+         name: "password",
+         required: true,
+         default: undefined,
+      },
+   ]);
 
-	const mutation = useHuginnMutation(
-		{
-			async mutationFn(credentials: APIPostLoginJSONBody) {
-				await client.login({
-					username: credentials.username,
-					email: credentials.email,
-					password: credentials.password,
-				});
-			},
-			async onSuccess() {
-				await initializeClient({
-					navigatePath: {
-						pathname: "/channels/@me",
-					},
-				});
-			},
-		},
-		handleErrors,
-	);
+   const mutation = useHuginnMutation(
+      {
+         async mutationFn(credentials: APIPostLoginJSONBody) {
+            await client?.login({
+               username: credentials.username,
+               email: credentials.email,
+               password: credentials.password,
+            });
+         },
+         async onSuccess() {
+            await initializeClient({
+               navigatePath: {
+                  pathname: "/channels/@me",
+               },
+            });
+         },
+      },
+      handleErrors,
+   );
 
-	useEffect(() => {
-		startBackground.setState(0);
-	}, []);
+   useEffect(() => {
+      startBackground.setState(0);
+   }, []);
 
-	async function login() {
-		posthog.capture("login:login_button_click");
+   async function login() {
+      posthog.capture("login:login_button_click");
 
-		if (!validateValues()) {
-			return;
-		}
+      if (!validateValues()) {
+         return;
+      }
 
-		await mutation.mutateAsync({
-			username: values.login.value,
-			email: values.login.value,
-			password: values.password.value,
-		});
+      await mutation.mutateAsync({
+         username: values.login.value,
+         email: values.login.value,
+         password: values.password.value,
+      });
 
-		resetStatuses();
-	}
+      resetStatuses();
+   }
 
-	return (
-		<StartWrapper onSubmit={login} transitionName="start-login">
-			<div className="flex w-full select-none flex-col items-center">
-				<div className="mb-1 font-medium text-2xl text-text">Welcome back!</div>
-				<div className="text-text/70">It's very good to see you again!</div>
-			</div>
-			<div className="mt-5 flex w-full gap-x-2">
-				<HuginnButton
-					onClick={() => startOAuth("google")}
-					type="button"
-					innerClassName="flex items-center justify-center gap-x-2"
-					className="w-full rounded-lg border-2 border-primary-700 py-2 text-text transition-all hover:shadow-lg"
-					color="surface-alt"
-				>
-					<IconLogosGoogleIcon className="size-5" />
-					<span>Google</span>
-				</HuginnButton>
-				<HuginnButton
-					type="button"
-					innerClassName="flex items-center justify-center gap-x-2"
-					className="w-full rounded-lg border-2 border-primary-700 py-2 text-text transition-all hover:shadow-lg"
-					color="surface-alt"
-				>
-					<IconLogosGithubIcon className="size-5 text-white [&>path]:fill-white" />
-					<span>GitHub</span>
-				</HuginnButton>
-			</div>
-			<div className="my-7 flex h-0 w-full select-none items-center justify-center border-t border-t-text/25 text-center font-semibold text-text/70 text-xs">
-				<span className="bg-surface px-2">or</span>
-			</div>
-			<div className="w-full">
-				<HuginnInput className="mb-5" {...inputsProps.login}>
-					<HuginnInput.Label className="mb-2" text="Email or Username" />
-					<HuginnInput.Wrapper border="left">
-						<HuginnInput.Input className="lowercase" />
-					</HuginnInput.Wrapper>
-				</HuginnInput>
+   return (
+      <StartWrapper onSubmit={login} transitionName="start-login">
+         <div className="flex w-full select-none flex-col items-center">
+            <div className="text-text mb-1 text-2xl font-medium">Welcome back!</div>
+            <div className="text-text/70">It's very good to see you again!</div>
+         </div>
+         <div className="mt-5 flex w-full gap-x-2">
+            <HuginnButton
+               onClick={() => startOAuth("google")}
+               type="button"
+               innerClassName="flex items-center justify-center gap-x-2"
+               className="border-primary-700 text-text w-full rounded-lg border-2 py-2 transition-all hover:shadow-lg"
+               color="surface-alt"
+            >
+               <IconLogosGoogleIcon className="size-5" />
+               <span>Google</span>
+            </HuginnButton>
+            <HuginnButton
+               type="button"
+               innerClassName="flex items-center justify-center gap-x-2"
+               className="border-primary-700 text-text w-full rounded-lg border-2 py-2 transition-all hover:shadow-lg"
+               color="surface-alt"
+            >
+               <IconLogosGithubIcon className="size-5 text-white [&>path]:fill-white" />
+               <span>GitHub</span>
+            </HuginnButton>
+         </div>
+         <div className="border-t-text/25 text-text/70 my-7 flex h-0 w-full select-none items-center justify-center border-t text-center text-xs font-semibold">
+            <span className="bg-surface px-2">or</span>
+         </div>
+         <div className="w-full">
+            <HuginnInput className="mb-5" {...inputsProps.login}>
+               <HuginnInput.Label className="mb-2" text="Email or Username" />
+               <HuginnInput.Wrapper border="left">
+                  <HuginnInput.Input className="lowercase" />
+               </HuginnInput.Wrapper>
+            </HuginnInput>
 
-				<PasswordInput {...inputsProps.password}>
-					<HuginnInput.Label className="mb-2" text="Password" />
-					<HuginnInput.Wrapper border="left">
-						<HuginnInput.Input />
-						<PasswordInput.ToggleButton />
-					</HuginnInput.Wrapper>
-				</PasswordInput>
+            <PasswordInput {...inputsProps.password}>
+               <HuginnInput.Label className="mb-2" text="Password" />
+               <HuginnInput.Wrapper border="left">
+                  <HuginnInput.Input />
+                  <PasswordInput.ToggleButton />
+               </HuginnInput.Wrapper>
+            </PasswordInput>
 
-				{/* <LinkButton className="mt-1 mb-5 text-sm">Forgot your password?</LinkButton> */}
+            {/* <LinkButton className="mt-1 mb-5 text-sm">Forgot your password?</LinkButton> */}
 
-				<LoadingButton loading={!mutation.isIdle && mutation.isPending} className="mt-5 h-10 w-full" color="primary" type="submit">
-					Login
-				</LoadingButton>
+            <LoadingButton loading={!mutation.isIdle && mutation.isPending} className="mt-5 h-10 w-full" color="primary" type="submit">
+               Login
+            </LoadingButton>
 
-				<div className="mt-3 flex select-none items-center">
-					<span className="text-sm text-text opacity-70"> Don't have an account? </span>
-					<LinkButton to="/register" className="ml-1 text-sm" viewTransition>
-						Register
-					</LinkButton>
-				</div>
-			</div>
-		</StartWrapper>
-	);
+            <div className="mt-3 flex select-none items-center">
+               <span className="text-text text-sm opacity-70"> Don't have an account? </span>
+               <LinkButton to="/register" className="ml-1 text-sm" viewTransition>
+                  Register
+               </LinkButton>
+            </div>
+         </div>
+      </StartWrapper>
+   );
 }

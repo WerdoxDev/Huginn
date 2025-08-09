@@ -53,7 +53,7 @@ export function useSendTyping() {
       mutationKey: ["send-typing"],
       async mutationFn(data: { channelId: Snowflake }) {
          if (canSend.current) {
-            client.channels.typing(data.channelId);
+            client?.channels.typing(data.channelId);
 
             canSend.current = false;
             clearTimeout(timeout.current);

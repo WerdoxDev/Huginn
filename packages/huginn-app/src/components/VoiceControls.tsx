@@ -1,10 +1,11 @@
 import { Transition } from "@headlessui/react";
 import type { GatewayVoiceStateFlags } from "@huginn/shared";
 import clsx from "clsx";
-import { useMemo } from "react";
 import DropdownMenu from "./dropdown/DowndownMenu";
 import Tooltip from "./tooltip/Tooltip";
-import { useHuginnWindow } from "@stores/windowStore";
+import VoiceControlButton from "./button/VoiceControlButton";
+import StreamButton from "./button/StreamButton";
+import { useState } from "react";
 
 export default function VoiceControls(props: {
    show: boolean;
@@ -23,46 +24,42 @@ export default function VoiceControls(props: {
    onConnect: () => void;
    onToggleFullscreen: () => Promise<void>;
 }) {
+   const [forceShow, setForceShow] = useState(false);
+
+   function onStreamButtonOpenChanged(isOpen: boolean) {
+      setForceShow(isOpen);
+   }
+
    return (
-      <Transition show={true}>
+      <Transition show={props.show || forceShow}>
          <div className="data-closed:opacity-0 absolute inset-x-0 bottom-0 mb-2.5 flex shrink-0 items-center justify-center gap-x-2.5 transition">
             {props.isInVoice ? (
                <>
                   <div className="border-surface bg-surface-deep flex gap-x-1 rounded-xl border p-1">
-                     <Tooltip>
-                        <Tooltip.Trigger
-                           className={clsx(
-                              "hover:bg-surface h-full w-full rounded-lg px-5 py-1.5 text-white transition-[border-radius_background-color]",
-                              props.voiceState.isAudioMuted && "hover:!bg-negative-500 bg-negative-300",
-                              props.voiceState.isAudioDeafened && props.voiceState.isAudioMuted && "rounded-r-none",
-                           )}
-                           onClick={props.onToggleMute}
-                        >
-                           {props.voiceState.isAudioMuted ? (
-                              <IconMingcuteMicOffFill className="size-6" />
-                           ) : (
-                              <IconMingcuteMicFill className="size-6" />
-                           )}
-                        </Tooltip.Trigger>
-                        <Tooltip.Content>Mute</Tooltip.Content>
-                     </Tooltip>
-                     <Tooltip>
-                        <Tooltip.Trigger
-                           className={clsx(
-                              "hover:bg-surface h-full w-full rounded-lg px-5 py-1.5 text-white transition-[border-radius_background-color]",
-                              props.voiceState.isAudioDeafened && "hover:!bg-negative-500 bg-negative-300",
-                              props.voiceState.isAudioDeafened && props.voiceState.isAudioMuted && "rounded-l-none",
-                           )}
-                           onClick={props.onToggleDeafen}
-                        >
-                           {props.voiceState.isAudioDeafened ? (
-                              <IconMingcuteVolumeOffFill className="size-6" />
-                           ) : (
-                              <IconMingcuteVolumeFill className="size-6" />
-                           )}
-                        </Tooltip.Trigger>
-                        <Tooltip.Content>Deafen</Tooltip.Content>
-                     </Tooltip>
+                     <VoiceControlButton
+                        activeColor="negative"
+                        activeHoverColor="negative"
+                        isActive={props.voiceState.isAudioMuted}
+                        onClick={props.onToggleMute}
+                        tooltip="Mute"
+                        className={clsx(props.voiceState.isAudioDeafened && props.voiceState.isAudioMuted && "rounded-r-none")}
+                     >
+                        {props.voiceState.isAudioMuted ? <IconMingcuteMicOffFill className="size-6" /> : <IconMingcuteMicFill className="size-6" />}
+                     </VoiceControlButton>
+                     <VoiceControlButton
+                        activeColor="negative"
+                        activeHoverColor="negative"
+                        isActive={props.voiceState.isAudioDeafened}
+                        onClick={props.onToggleDeafen}
+                        tooltip="Deafen"
+                        className={clsx(props.voiceState.isAudioDeafened && props.voiceState.isAudioMuted && "rounded-l-none")}
+                     >
+                        {props.voiceState.isAudioDeafened ? (
+                           <IconMingcuteVolumeOffFill className="size-6" />
+                        ) : (
+                           <IconMingcuteVolumeFill className="size-6" />
+                        )}
+                     </VoiceControlButton>
                      <div className="bg-surface mx-0.5 my-1 w-0.5 shrink-0" />
                      <div className="flex gap-x-1">
                         <StreamButton
@@ -71,41 +68,57 @@ export default function VoiceControls(props: {
                            onStartAudioStream={props.onStartAudioStream}
                            onEndStream={props.onEndStream}
                            onChangeStream={props.onChangeStream}
-                        />
-                        <Tooltip>
-                           <Tooltip.Trigger
+                           onOpenChanged={onStreamButtonOpenChanged}
+                           anchor={{ gap: "12px", to: "top" }}
+                        >
+                           <VoiceControlButton
                               className={clsx(
-                                 "flex h-full w-16 items-center justify-center rounded-lg text-white transition-colors",
-                                 props.voiceState.isCameraOn ? "bg-primary-900 hover:bg-primary-700" : "hover:bg-surface",
+                                 "flex h-full items-center justify-center",
+                                 props.voiceState.isStreaming ? "w-[38px] rounded-r-none !p-0" : "w-16",
                               )}
-                              onClick={() => (props.voiceState.isCameraOn ? props.onStopCamera() : props.onStartCamera())}
+                              activeHoverColor="negative"
+                              activeColor="primary"
+                              isActive={props.voiceState.isStreaming}
+                              tooltip={props.voiceState.isStreaming ? "End Stream" : "Start Stream"}
+                              onClick={props.voiceState.isStreaming ? props.onEndStream : undefined}
+                              asChild={!props.voiceState.isStreaming}
                            >
-                              <IconMingcuteCamera2Fill className="size-6" />
-                           </Tooltip.Trigger>
-                           <Tooltip.Content>{props.voiceState.isCameraOn ? "Turn off camera" : "Turn on camera"}</Tooltip.Content>
-                        </Tooltip>
+                              {props.voiceState.isStreaming ? (
+                                 <IconMingcuteCloseFill className="size-6" />
+                              ) : (
+                                 <DropdownMenu.Button>
+                                    <IconMingcuteMonitorFill className="size-5 shrink-0" />
+                                    <div className="text-sm text-white/50">/</div>
+                                    <IconMingcuteVolumeFill className="size-5 shrink-0" />
+                                 </DropdownMenu.Button>
+                              )}
+                           </VoiceControlButton>
+                        </StreamButton>
+                        <VoiceControlButton
+                           activeColor="primary"
+                           activeHoverColor="negative"
+                           isActive={props.voiceState.isCameraOn}
+                           onClick={() => (props.voiceState.isCameraOn ? props.onStopCamera() : props.onStartCamera())}
+                           tooltip={props.voiceState.isCameraOn ? "Turn off camera" : "Turn on camera"}
+                        >
+                           <IconMingcuteCamera2Fill className="size-6" />
+                        </VoiceControlButton>
                      </div>
                   </div>
-                  <Tooltip>
-                     <Tooltip.Trigger
-                        onClick={props.onDisconnect}
-                        className="bg-negative-300 hover:bg-negative-500 rounded-xl px-5 py-2.5 text-white transition-colors"
-                     >
-                        <IconMingcutePhoneBlockFill className="size-6" />
-                     </Tooltip.Trigger>
-                     <Tooltip.Content>Disconnect</Tooltip.Content>
-                  </Tooltip>
+                  <VoiceControlButton
+                     color="negative"
+                     hoverColor="negative"
+                     onClick={props.onDisconnect}
+                     tooltip="Disconnect"
+                     className="rounded-xl px-5 py-2.5"
+                  >
+                     <IconMingcutePhoneBlockFill className="size-6" />
+                  </VoiceControlButton>
                </>
             ) : (
-               <Tooltip>
-                  <Tooltip.Trigger
-                     onClick={props.onConnect}
-                     className="bg-positive-400 hover:bg-positive-500 focus:bg-positive-600 rounded-xl px-5 py-2.5 text-white transition-colors"
-                  >
-                     <IconMingcutePhoneFill className="size-6" />
-                  </Tooltip.Trigger>
-                  <Tooltip.Content>Join</Tooltip.Content>
-               </Tooltip>
+               <VoiceControlButton color="positive" onClick={props.onConnect} tooltip="Join" className="rounded-xl px-5 py-2.5">
+                  <IconMingcutePhoneFill className="size-6" />
+               </VoiceControlButton>
             )}
             <Tooltip>
                <Tooltip.Trigger onClick={props.onToggleFullscreen} className="text-text/60 hover:text-text absolute bottom-1 right-3 size-7">
@@ -115,65 +128,5 @@ export default function VoiceControls(props: {
             </Tooltip>
          </div>
       </Transition>
-   );
-}
-
-function StreamButton(props: {
-   voiceState: GatewayVoiceStateFlags;
-   onStartScreenShare?: () => void;
-   onStartAudioStream?: () => void;
-   onEndStream?: () => void;
-   onChangeStream?: () => void;
-}) {
-   const isStreaming = useMemo(() => props.voiceState.isStreaming, [props.voiceState]);
-   const huginnWindow = useHuginnWindow();
-
-   return isStreaming ? (
-      <div className="flex">
-         <Tooltip>
-            <Tooltip.Trigger
-               className="bg-primary-900 hover:bg-primary-700 flex w-[38px] items-center justify-center rounded-lg rounded-r-none text-white transition-colors"
-               onClick={props.onEndStream}
-            >
-               <IconMingcuteCloseFill className="size-6" />
-            </Tooltip.Trigger>
-            <Tooltip.Content>End Stream</Tooltip.Content>
-         </Tooltip>
-         <DropdownMenu>
-            <DropdownMenu.Button className="bg-primary-900 hover:bg-primary-700 ml-0.5 flex h-full items-center justify-center rounded-r-lg px-1 transition-colors">
-               {({ open }) => (open ? <IconMingcuteUpFill className="text-text size-4" /> : <IconMingcuteDownFill className="text-text size-4" />)}
-            </DropdownMenu.Button>
-            <DropdownMenu.Items anchor="top" className="border-surface border [--anchor-gap:16px]">
-               <DropdownMenu.Item color="negative" label="End Stream" onClick={props.onEndStream} />
-               <DropdownMenu.Item label="Change Stream" onClick={props.onChangeStream}>
-                  <IconMingcuteTransfer3Fill />
-               </DropdownMenu.Item>
-            </DropdownMenu.Items>
-         </DropdownMenu>
-      </div>
-   ) : (
-      <DropdownMenu>
-         <Tooltip>
-            <Tooltip.Trigger
-               asChild
-               className="hover:bg-surface flex h-full w-16 items-center justify-center rounded-lg text-white transition-colors"
-            >
-               <DropdownMenu.Button>
-                  <IconMingcuteMonitorFill className="size-5 shrink-0" />
-                  <div className="text-sm text-white/50">/</div>
-                  <IconMingcuteVolumeFill className="size-5 shrink-0" />
-               </DropdownMenu.Button>
-            </Tooltip.Trigger>
-            <Tooltip.Content>Start Stream</Tooltip.Content>
-         </Tooltip>
-         <DropdownMenu.Items anchor="top" className="border-surface border [--anchor-gap:16px]">
-            <DropdownMenu.Item label="Screen Share" onClick={props.onStartScreenShare}>
-               <IconMingcuteMonitorFill />
-            </DropdownMenu.Item>
-            <DropdownMenu.Item label="Audio Stream" onClick={props.onStartAudioStream} disabled={huginnWindow.environment !== "desktop"}>
-               <IconMingcuteVolumeFill />
-            </DropdownMenu.Item>
-         </DropdownMenu.Items>
-      </DropdownMenu>
    );
 }

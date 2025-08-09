@@ -14,65 +14,65 @@ import LoadingIcon from "./LoadingIcon";
 import UserAvatar from "./UserAvatar";
 
 export default function DirectMessageChannel(props: { channel: AppDirectChannel; onSelected?: () => void }) {
-	const client = useClient();
-	const queryClient = useQueryClient();
-	const { isLoading } = useInfiniteQuery(getMessagesOptions(queryClient, client, props.channel.id, false));
-	const { open: openContextMenu } = useContextMenu("dm_channel");
+   const client = useClient();
+   const queryClient = useQueryClient();
+   const { isLoading } = useInfiniteQuery(getMessagesOptions(queryClient, client!, props.channel.id, false));
+   const { open: openContextMenu } = useContextMenu("dm_channel");
 
-	// useEffect(() => {
-	// 	console.log(props.channel);
-	// }, [props.channel]);
+   // useEffect(() => {
+   // 	console.log(props.channel);
+   // }, [props.channel]);
 
-	const recipients = useUsers(props.channel.recipientIds);
-	const { channelId } = useParams();
-	const selected = useMemo(() => channelId === props.channel?.id, [channelId, props.channel]);
-	const name = useChannelName(props.channel.id);
+   const recipients = useUsers(props.channel.recipientIds);
+   const { channelId } = useParams();
+   const selected = useMemo(() => channelId === props.channel?.id, [channelId, props.channel]);
+   const name = useChannelName(props.channel.id);
 
-	const { tryMutate } = useSafeDeleteDMChannel(props.channel.id, props.channel.type, name);
+   const { tryMutate } = useSafeDeleteDMChannel(props.channel.id, props.channel.type, name);
 
-	return (
-		<li
-			onContextMenu={(e) => {
-				openContextMenu(props.channel, e);
-			}}
-			className={clsx("group -mr-2 relative cursor-pointer rounded-md hover:bg-surface active:bg-white/10", selected && "bg-white/10")}
-			onClick={props.onSelected}
-		>
-			<NavLink prefetch="intent" className="flex items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>
-				{props.channel.type === ChannelType.DM ? (
-					<UserAvatar userId={recipients[0]?.id} avatarHash={recipients[0]?.avatar} className="mr-3" />
-				) : (
-					<ChannelIcon channelId={props.channel?.id} iconHash={props.channel?.icon} className="mr-3" />
-				)}
-				<div className="flex w-full flex-col justify-center overflow-hidden">
-					<div
-						className={clsx(
-							"mr-8 overflow-hidden text-ellipsis text-nowrap text-sm text-text group-hover:opacity-100",
-							selected ? "opacity-100" : "opacity-70",
-						)}
-					>
-						{name}
-					</div>
-					{props.channel.type === ChannelType.GROUP_DM && (
-						<div className={clsx("text-text text-xs group-hover:opacity-70", selected ? "opacity-70" : "opacity-50")}>
-							{recipients.length + 1} Members
-						</div>
-					)}
-				</div>
-			</NavLink>
-			{!isLoading ? (
-				<button
-					type="button"
-					className="group/close invisible absolute top-3.5 right-2 bottom-3.5 shrink-0 cursor-pointer group-hover:visible"
-					onClick={tryMutate}
-				>
-					<IconMingcuteCloseFill className="text-text/50 group-hover/close:text-text" />
-				</button>
-			) : (
-				<div className="absolute top-3.5 right-2 bottom-3.5 flex shrink-0 items-center justify-center">
-					<LoadingIcon className="size-7" />
-				</div>
-			)}
-		</li>
-	);
+   return (
+      <li
+         onContextMenu={(e) => {
+            openContextMenu(props.channel, e);
+         }}
+         className={clsx("hover:bg-surface group relative -mr-2 cursor-pointer rounded-md active:bg-white/10", selected && "bg-white/10")}
+         onClick={props.onSelected}
+      >
+         <NavLink prefetch="intent" className="flex items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>
+            {props.channel.type === ChannelType.DM ? (
+               <UserAvatar userId={recipients[0].id} avatarHash={recipients[0]?.avatar} className="mr-3" />
+            ) : (
+               <ChannelIcon channelId={props.channel?.id} iconHash={props.channel?.icon} className="mr-3" />
+            )}
+            <div className="flex w-full flex-col justify-center overflow-hidden">
+               <div
+                  className={clsx(
+                     "text-text mr-8 overflow-hidden text-ellipsis text-nowrap text-sm group-hover:opacity-100",
+                     selected ? "opacity-100" : "opacity-70",
+                  )}
+               >
+                  {name}
+               </div>
+               {props.channel.type === ChannelType.GROUP_DM && (
+                  <div className={clsx("text-text text-xs group-hover:opacity-70", selected ? "opacity-70" : "opacity-50")}>
+                     {recipients.length + 1} Members
+                  </div>
+               )}
+            </div>
+         </NavLink>
+         {!isLoading ? (
+            <button
+               type="button"
+               className="group/close invisible absolute bottom-3.5 right-2 top-3.5 shrink-0 cursor-pointer group-hover:visible"
+               onClick={tryMutate}
+            >
+               <IconMingcuteCloseFill className="text-text/50 group-hover/close:text-text" />
+            </button>
+         ) : (
+            <div className="absolute bottom-3.5 right-2 top-3.5 flex shrink-0 items-center justify-center">
+               <LoadingIcon className="size-7" />
+            </div>
+         )}
+      </li>
+   );
 }

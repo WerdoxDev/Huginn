@@ -5,8 +5,6 @@ import { combine } from "zustand/middleware";
 import { settingsStore } from "./settingsStore";
 import { updateUser } from "@lib/query-utils";
 
-export let client: HuginnClient | undefined = undefined;
-
 const initialStore = () => ({
    hostnames: {
       api: "",
@@ -17,9 +15,10 @@ const initialStore = () => ({
    gatewayStatus: undefined as GatewayStatus | undefined,
    readyData: undefined as GatewayReadyData | undefined,
    isInitialized: false,
+   client: undefined as HuginnClient | undefined,
 });
 
-type StoreType = ReturnType<typeof initialStore>;
+// type StoreType = ReturnType<typeof initialStore>;
 
 const store = createStore(
    combine(initialStore(), (set) => ({
@@ -57,31 +56,35 @@ export function setHostnamesFromSettings() {
 export function initializeClient() {
    log("app:client-store", "default", "initialize client");
 
-   const thisStore = store.getState();
-   if (client === undefined) {
-      client = new HuginnClient({
-         rest: { api: `${thisStore.hostnames.api}/api` },
-         cdn: { url: `${thisStore.hostnames.cdn}/cdn` },
-         gateway: {
-            url: `${thisStore.hostnames.api}/gateway`,
-            intents: 0,
-            createSocket(url) {
-               return new WebSocket(url);
+   let thisStore = store.getState();
+   if (thisStore.client === undefined) {
+      store.setState({
+         client: new HuginnClient({
+            rest: { api: `${thisStore.hostnames.api}/api` },
+            cdn: { url: `${thisStore.hostnames.cdn}/cdn` },
+            gateway: {
+               url: `${thisStore.hostnames.api}/gateway`,
+               intents: 0,
+               createSocket(url) {
+                  return new WebSocket(url);
+               },
             },
-         },
-         voice: {
-            // url: `http://192.168.178.51:3003/voice`,
-            url: `${thisStore.hostnames.voice}/voice`,
-            createSocket(url) {
-               return new WebSocket(url);
+            voice: {
+               // url: `http://192.168.178.51:3003/voice`,
+               url: `${thisStore.hostnames.voice}/voice`,
+               createSocket(url) {
+                  return new WebSocket(url);
+               },
             },
-         },
+         }),
       });
 
-      client.gateway.connect();
+      store.getState().client?.gateway.connect();
    } else {
       return;
    }
+
+   thisStore = store.getState();
 
    if (window.electronAPI && thisStore.hostnames.api) {
       const url = `${thisStore.hostnames.api}/api/update/win`;
@@ -91,7 +94,7 @@ export function initializeClient() {
    const unlisteners: Array<(() => void) | undefined> = [];
 
    unlisteners.push(
-      client?.gateway.listen("ready", (d) => {
+      thisStore.client?.gateway.listen("ready", (d) => {
          store.getState().setReadyData(d);
 
          const channelUsers = d.privateChannels.flatMap((x) => x.recipients);
@@ -114,39 +117,39 @@ export function initializeClient() {
    );
 
    unlisteners.push(
-      client?.gateway.listen("presence_update", (d) => {
+      thisStore.client?.gateway.listen("presence_update", (d) => {
          updateUser(d.user);
       }),
    );
 
    unlisteners.push(
-      client?.gateway.listen("user_update", (d) => {
+      thisStore.client?.gateway.listen("user_update", (d) => {
          updateUser(d);
       }),
    );
 
    unlisteners.push(
-      client?.gateway.listen("channel_recipient_add", (d) => {
+      thisStore.client?.gateway.listen("channel_recipient_add", (d) => {
          updateUser(d.user);
       }),
    );
 
    unlisteners.push(
-      client?.gateway.listen("relationship_add", (d) => {
+      thisStore.client?.gateway.listen("relationship_add", (d) => {
          updateUser(d.user);
       }),
    );
 
    unlisteners.push(
-      client?.gateway.listen("channel_create", (d) => {
+      thisStore.client?.gateway.listen("channel_create", (d) => {
          for (const user of d.recipients) {
             updateUser(user);
          }
       }),
    );
 
-   unlisteners.push(client.gateway.listen("status_changed", (status) => store.getState().setGatewayStatus(status)));
-   unlisteners.push(client.voice.listen("status_changed", (status) => store.getState().setVoiceStatus(status)));
+   unlisteners.push(thisStore.client?.gateway.listen("status_changed", (status) => store.getState().setGatewayStatus(status)));
+   unlisteners.push(thisStore.client?.voice.listen("status_changed", (status) => store.getState().setVoiceStatus(status)));
 
    store.setState({ isInitialized: true });
 
@@ -159,7 +162,7 @@ export function initializeClient() {
 
 export function useClient() {
    // biome-ignore lint/style/noNonNullAssertion: This cannot be null
-   return client!;
+   return useStore(store, (selector) => selector.client);
 }
 
 export function useClientStore() {

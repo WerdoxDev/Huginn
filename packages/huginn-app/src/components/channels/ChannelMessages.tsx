@@ -35,7 +35,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    );
 
    const { data, fetchNextPage, fetchPreviousPage, isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
-      useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client, props.channelId));
+      useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, props.channelId));
 
    const { savedScrolls, saveScroll } = useChannelStore();
 

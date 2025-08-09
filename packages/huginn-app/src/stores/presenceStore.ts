@@ -3,7 +3,7 @@ import { produce } from "immer";
 import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
-import { client, clientStore } from "./clientStore";
+import { clientStore } from "./clientStore";
 
 const initialStore = () => ({
    presences: [] as GatewayPresenceUpdateData[],
@@ -28,6 +28,8 @@ const store = createStore(
 );
 
 export function initializePresence() {
+   const client = clientStore.getState().client;
+
    if (!client) {
       return;
    }

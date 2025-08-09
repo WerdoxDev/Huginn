@@ -12,8 +12,8 @@ export function useLogout() {
 
    const mutation = useHuginnMutation({
       async mutationFn() {
-         await client.logout();
-         client.gateway.connect();
+         await client?.logout();
+         client?.gateway.connect();
       },
    });
 
@@ -21,7 +21,7 @@ export function useLogout() {
       localStorage.removeItem("refresh-token");
       localStorage.removeItem("access-token");
 
-      if (client.voice.connectionInfo) {
+      if (client?.voice.connectionInfo) {
          client.gateway.disconnectVoice();
       }
 
@@ -34,7 +34,7 @@ export function useLogout() {
          queryClient.removeQueries({ queryKey: ["channels"] });
          queryClient.removeQueries({ queryKey: ["messages"] });
          queryClient.removeQueries({ queryKey: ["relationships"] });
-      }, 0)
+      }, 0);
    }
 
    return logout;

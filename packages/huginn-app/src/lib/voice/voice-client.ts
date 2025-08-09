@@ -1,5 +1,5 @@
 import { log, type Snowflake } from "@huginn/shared";
-import { client } from "@stores/clientStore";
+import { clientStore } from "@stores/clientStore";
 import { settingsStore } from "@stores/settingsStore";
 import { voiceStore } from "@stores/voiceStore";
 import type { RemoteSource, VoicePreference } from "@/types";
@@ -12,6 +12,7 @@ export class VoiceClient {
    private audioSourcePlayers: AudioSourcePlayer[];
    private inputDevice?: VoiceInputDevice;
    private dummyInputDevice?: VoiceInputDevice;
+   private isConnecting = false;
    private loopbackDataUnlisten?: () => void;
 
    public constructor() {
@@ -21,6 +22,7 @@ export class VoiceClient {
    public listenToVoiceEvents() {
       log("app:voice-client", "default", "initializing");
 
+      const client = clientStore.getState().client;
       const unlisteners: Array<(() => void) | undefined> = [];
 
       if (!client) {
@@ -296,6 +298,7 @@ export class VoiceClient {
       let timeout: number | undefined;
       let lastState = true;
       function onLocalAudioLevel(db: number) {
+         const client = clientStore.getState().client;
          const settings = settingsStore.getState();
 
          const userId = client?.user?.id ?? "";
@@ -350,6 +353,8 @@ export class VoiceClient {
    }
 
    private async initMicrophone(microphoneDeviceId: string, microphoneVolume: number, noiseSuppression: boolean) {
+      const client = clientStore.getState().client;
+
       if (!client?.voice.connectionInfo) {
          return;
       }
@@ -371,6 +376,8 @@ export class VoiceClient {
     */
    private initRemoteAudioSourcePlayers(remoteSources: RemoteSource[], voicePreferences: VoicePreference[], outputVolumePercent: number) {
       log("app:voice-client", "default", "initialize audio source players", "ovol:", outputVolumePercent, "nres:", remoteSources.length);
+
+      const client = clientStore.getState().client;
 
       // Remove old players
       for (const player of this.audioSourcePlayers) {
@@ -410,16 +417,29 @@ export class VoiceClient {
    }
 
    public async connect(guildId: Snowflake | null, channelId: Snowflake) {
+      const client = clientStore.getState().client;
+
+      if (this.isConnecting || client?.voice.connectionInfo) {
+         return;
+      }
+
       log("app:voice-client", "default", "connect", "cid:", channelId, "gid:", guildId);
 
+      this.isConnecting = true;
+
       const voice = voiceStore.getState();
+
       await client?.gateway.connectVoice(guildId, channelId, {
          isAudioMuted: voice.localVoiceState.isAudioMuted,
          isAudioDeafened: voice.localVoiceState.isAudioDeafened,
       });
+
+      this.isConnecting = false;
    }
 
    public async consumeStream(userId: Snowflake) {
+      const client = clientStore.getState().client;
+
       if (!client) {
          return;
       }
@@ -430,7 +450,6 @@ export class VoiceClient {
 
       const videoProducerId = voice.remoteSources.find((x) => x.kind === "stream_video" && x.userId === userId)?.producerId;
       const audioProducerId = voice.remoteSources.find((x) => x.kind === "stream_audio" && x.userId === userId)?.producerId;
-      console.log(videoProducerId, audioProducerId);
 
       if (videoProducerId) {
          await client?.voice.consumeProducer(videoProducerId);
@@ -442,6 +461,8 @@ export class VoiceClient {
    }
 
    public async unconsumeStream(userId: Snowflake) {
+      const client = clientStore.getState().client;
+
       if (!client) {
          return;
       }

@@ -72,7 +72,7 @@ export default function ScreenShareModal() {
       const height = selectedQuality === 0 ? 480 : selectedQuality === 1 ? 720 : selectedQuality === 2 ? 1080 : selectedQuality === 3 ? 1440 : 720;
 
       startTransition(async () => {
-         const producer = client.voice.producers.get("stream_video");
+         const producer = client?.voice.producers.get("stream_video");
          producer?.track?.stop();
 
          await new Promise((r) => setTimeout(r, 1000));
@@ -94,7 +94,7 @@ export default function ScreenShareModal() {
             audioTrack = voiceClient.getAudioTrackFromLoopback(selectedSource.name);
          }
 
-         await client.voice.startStream(stream.getVideoTracks()[0], audioTrack);
+         await client?.voice.startStream(stream.getVideoTracks()[0], audioTrack);
          close();
       });
    }

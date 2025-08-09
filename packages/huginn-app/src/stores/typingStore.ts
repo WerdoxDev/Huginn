@@ -4,7 +4,7 @@ import { produce } from "immer";
 import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
-import { client } from "./clientStore";
+import { clientStore } from "./clientStore";
 
 const initialStore = () => ({
    typings: [] as Array<GatewayTypingStartData & { timeout: number }>,
@@ -49,6 +49,7 @@ function startTimeout(userId: Snowflake, channelId: Snowflake) {
 }
 
 export function initializeTyping() {
+   const client = clientStore.getState().client;
    if (!client) {
       return;
    }

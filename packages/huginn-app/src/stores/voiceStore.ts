@@ -3,7 +3,7 @@ import { dispatchEvent } from "@lib/event-handler";
 import { loadFile, saveFile } from "@lib/file-manager";
 import type { AudioLevelChecker } from "@lib/voice/audio-level-checker";
 import { VoiceClient } from "@lib/voice/voice-client";
-import { client } from "@stores/clientStore";
+import { clientStore } from "@stores/clientStore";
 import { produce } from "immer";
 import { createStore, useStore } from "zustand";
 import { combine, devtools } from "zustand/middleware";
@@ -220,6 +220,7 @@ export const voiceClient = new VoiceClient();
 export function initializeVoice() {
    log("app:voice-store", "default", "initializing");
 
+   const client = clientStore.getState().client;
    const unlisteners: Array<(() => void) | undefined> = [];
 
    if (!client) {

@@ -5,8 +5,8 @@ import { app, BrowserWindow, desktopCapturer, ipcMain, Menu, nativeImage, Notifi
 import electronLog from "electron-log/main";
 import { autoUpdater, CancellationToken } from "electron-updater";
 import type { AudioSource, DisplaySource } from "@/types";
-import * as fileEvents from "./file-events";
-import * as cacheEvents from "./cache-events";
+import * as fileController from "./file-controller";
+import * as cacheController from "./cache-controller";
 
 // application-loopback executable path when packaged
 if (app.isPackaged) {
@@ -180,8 +180,8 @@ let selectedSourceId: string;
 function listenToEvents(mainWindow: BrowserWindow) {
    log("app:electron", "default", "listen to events");
 
-   fileEvents.listenToEvents();
-   cacheEvents.listenToEvents();
+   fileController.listenToEvents();
+   cacheController.listenToEvents();
 
    session.defaultSession.setDisplayMediaRequestHandler(async (request, callback) => {
       const sources = await desktopCapturer.getSources({
@@ -355,7 +355,7 @@ function listenToEvents(mainWindow: BrowserWindow) {
       log("app:electron", "recv", "notification send", "title:", data.title, "body:", data.body, "pld:", data.payload);
 
       const icon = data.icon
-         ? nativeImage.createFromPath(path.join(cacheEvents.cacheDir, `${data.icon}.png`))
+         ? nativeImage.createFromPath(path.join(cacheController.cacheDir, `${data.icon}.png`))
          : app.isPackaged
            ? path.join(process.resourcesPath, "assets", "icon.ico")
            : "./assets/icon.ico";

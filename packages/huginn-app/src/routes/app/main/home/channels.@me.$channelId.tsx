@@ -7,83 +7,83 @@ import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useSafePathname } from "@hooks/useLastSafePathname";
 import { ChannelType } from "@huginn/shared";
 import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
-import { client, useClient } from "@stores/clientStore";
+import { clientStore, useClient } from "@stores/clientStore";
 import { voiceClient } from "@stores/voiceStore";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useState } from "react";
 import { type LoaderFunctionArgs, useParams } from "react-router";
-import { queryClient } from "@/main";
+import { queryClient } from "@/root";
 
 export async function channelWithIdLoader({ params }: LoaderFunctionArgs) {
-	if (!client) {
-		return;
-	}
+   const client = clientStore.getState().client;
+   if (!client) {
+      return;
+   }
 
-	return queryClient.ensureInfiniteQueryData(getMessagesOptions(queryClient, client, params.channelId as string));
+   return queryClient.ensureInfiniteQueryData(getMessagesOptions(queryClient, client, params.channelId as string));
 }
 
 export default function ChannelWithId() {
-	const { channelId } = useParams() as { channelId: string };
-	const client = useClient();
-	const queryClient = useQueryClient();
-	const { error, data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client, channelId));
-	const channel = useSuspenseQuery(getChannelsOptions(client, "@me")).data?.find((x: { id: string }) => x.id === channelId);
-	const { navigateBack } = useSafePathname();
-	const posthog = usePostHog();
+   const { channelId } = useParams() as { channelId: string };
+   const client = useClient();
+   const queryClient = useQueryClient();
+   const { error, data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, channelId));
+   const channel = useSuspenseQuery(getChannelsOptions(client!, "@me")).data?.find((x: { id: string }) => x.id === channelId);
+   const { navigateBack } = useSafePathname();
+   const posthog = usePostHog();
 
-	const handleServerError = useErrorHandler();
+   const handleServerError = useErrorHandler();
 
-	const [recipientsVisible, setRecipientsVisible] = useState(true);
+   const [recipientsVisible, setRecipientsVisible] = useState(true);
 
-	useEffect(() => {
-		if (!channel) {
-			navigateBack();
-			return;
-		}
-		if (error) {
-			handleServerError(error);
-		}
-	}, [error]);
+   useEffect(() => {
+      if (!channel) {
+         navigateBack();
+         return;
+      }
+      if (error) {
+         handleServerError(error);
+      }
+   }, [error]);
 
-	function onRecipientsClick() {
-		posthog.capture("channel:recipients_button_click");
-		setRecipientsVisible((prev) => !prev);
-	}
+   function onRecipientsClick() {
+      posthog.capture("channel:recipients_button_click");
+      setRecipientsVisible((prev) => !prev);
+   }
 
-	async function onCallClick() {
-		posthog.capture("channel:call_button_click");
+   async function onCallClick() {
+      posthog.capture("channel:call_button_click");
 
-		if (!channel) {
-			return;
-		}
+      if (!channel) {
+         return;
+      }
 
-		await voiceClient.connect(null, channel.id);
-		await client.channels.ring(channel.id, null);
-	}
+      await Promise.allSettled([voiceClient.connect(null, channel.id), client?.channels.ring(channel.id, null)]);
+   }
 
-	return (
-		channel && (
-			<div className="flex h-full flex-col">
-				<HomeTopBar channel={channel} onRecipientsClick={onRecipientsClick} onCallClick={onCallClick} />
-				<div className="h-0.5 shrink-0 bg-white/10" />
-				<div className="flex h-full w-full overflow-hidden">
-					<div className="flex h-full w-full flex-col overflow-hidden">
-						<DirectChannelCall channelId={channelId} />
-						<ChannelMessages channelId={channelId} messages={messages.pages.flat()} />
-						<MessageBox messages={messages.pages.flat()} />
-					</div>
-					{channel.type === ChannelType.GROUP_DM && channel.ownerId && (
-						<RecipientsSidebar
-							channelId={channel.id}
-							recipientIds={channel.recipientIds}
-							ownerId={channel.ownerId}
-							visible={recipientsVisible}
-						/>
-					)}
-				</div>
-				<div className="absolute bottom-0 flex h-16 w-full shrink-0 bg-surface" />
-			</div>
-		)
-	);
+   return (
+      channel && (
+         <div className="flex h-full flex-col">
+            <HomeTopBar channel={channel} onRecipientsClick={onRecipientsClick} onCallClick={onCallClick} />
+            <div className="h-0.5 shrink-0 bg-white/10" />
+            <div className="flex h-full w-full overflow-hidden">
+               <div className="flex h-full w-full flex-col overflow-hidden">
+                  <DirectChannelCall channelId={channelId} />
+                  <ChannelMessages channelId={channelId} messages={messages.pages.flat()} />
+                  <MessageBox messages={messages.pages.flat()} />
+               </div>
+               {channel.type === ChannelType.GROUP_DM && channel.ownerId && (
+                  <RecipientsSidebar
+                     channelId={channel.id}
+                     recipientIds={channel.recipientIds}
+                     ownerId={channel.ownerId}
+                     visible={recipientsVisible}
+                  />
+               )}
+            </div>
+            <div className="bg-surface absolute bottom-0 flex h-16 w-full shrink-0" />
+         </div>
+      )
+   );
 }

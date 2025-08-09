@@ -11,9 +11,13 @@ export function usePatchUser(onSuccess?: (result: APIPatchCurrentUserResult) => 
       {
          mutationKey: ["patch-user"],
          async mutationFn(data: APIPatchCurrentUserJSONBody) {
-            return await client.users.edit(data);
+            return await client?.users.edit(data);
          },
          onSuccess(result) {
+            if (!result) {
+               return;
+            }
+
             onSuccess?.(result);
             const data = omit(result, ["token", "refreshToken"]);
 

@@ -5,16 +5,17 @@ import PendingFriendsTab from "@components/friends/PendingFriendsTab";
 import { Tab, TabGroup, TabList, TabPanels } from "@headlessui/react";
 import { RelationshipType } from "@huginn/shared";
 import { getRelationshipsOptions } from "@lib/queries";
-import { client, useClient } from "@stores/clientStore";
+import { clientStore, useClient } from "@stores/clientStore";
 import { usePresences } from "@stores/presenceStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
 import { useMemo } from "react";
 import { Fragment } from "react/jsx-runtime";
-import { queryClient } from "@/main";
+import { queryClient } from "@/root";
 
 export async function clientLoader() {
+   const client = clientStore.getState().client;
    if (!client) {
       return;
    }
@@ -26,7 +27,7 @@ const tabs = ["Online", "All", "Pending"];
 
 export default function Friends() {
    const client = useClient();
-   const { data: friends } = useSuspenseQuery(getRelationshipsOptions(client));
+   const { data: friends } = useSuspenseQuery(getRelationshipsOptions(client!));
    const posthog = usePostHog();
 
    const allFriends = useMemo(() => friends?.filter((x) => x.type === RelationshipType.FRIEND), [friends]);

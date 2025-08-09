@@ -20,7 +20,7 @@ export function useMessageAcker(channelId: Snowflake, messages: AppMessage[]) {
 
    const mutation = useMutation({
       async mutationFn(data: { channelId: Snowflake; messageId: Snowflake }) {
-         await client.channels.ackMessage(data.channelId, data.messageId);
+         await client?.channels.ackMessage(data.channelId, data.messageId);
       },
    });
 

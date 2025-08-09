@@ -16,16 +16,17 @@ export default defineConfig({
    plugins: [
       // reactRouterDevTools(),
       react({
-         jsxRuntime: "automatic", babel: {
+         jsxRuntime: "automatic",
+         babel: {
             presets: ["@babel/preset-typescript"],
             plugins: [["babel-plugin-react-compiler", reactCompilerConfig], "@babel/plugin-syntax-jsx"],
-         }
+         },
       }),
       Icons({ compiler: "jsx" }),
       AutoImport({
          resolvers: [IconsResolver({ prefix: "Icon", extension: "jsx" })],
       }),
-      tailwindcss()
+      tailwindcss(),
    ],
 
    define: {
@@ -42,7 +43,6 @@ export default defineConfig({
          "@stores": path.join(__dirname, "./src/stores"),
       },
    },
-   // prevent vite from obscuring rust errors
    clearScreen: false,
    build: {
       target: "esnext",

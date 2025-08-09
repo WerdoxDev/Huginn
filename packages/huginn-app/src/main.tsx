@@ -1,10 +1,10 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import ReactDOM from "react-dom/client";
+import { QueryClient } from "@tanstack/react-query";
+import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router";
 import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
 import { enableLogs, type LogArgs, setOnLog } from "@huginn/shared";
-import { client } from "@stores/clientStore";
+// import { clientStore } from "@stores/clientStore";
 import router from "./routes";
 
 // document.addEventListener("keypress", (e) => {
@@ -34,23 +34,12 @@ setOnLog(async (section, level, ...args) => {
    logs.push({ section, level, args });
 });
 
-setInterval(async () => {
-   if (logs.length !== 0) {
-      await client?.log.sendLog(logs);
-      logs.splice(0, logs.length);
-   }
-}, 5000);
-
-export const queryClient = new QueryClient({
-   defaultOptions: {
-      queries: {
-         refetchOnReconnect: false,
-         refetchOnWindowFocus: false,
-         refetchOnMount: false,
-         staleTime: 60000,
-      },
-   },
-});
+// setInterval(async () => {
+//    if (logs.length !== 0) {
+//       await clientStore.getState().client?.log.sendLog(logs);
+//       logs.splice(0, logs.length);
+//    }
+// }, 5000);
 
 // let lastTime = performance.now();
 // let count = 0;
@@ -61,10 +50,4 @@ export const queryClient = new QueryClient({
 // 	lastTime = currentTime;
 // }, 1000);
 
-const root = document.getElementById("root");
-// biome-ignore lint/style/noNonNullAssertion: react needs a non nullable root
-ReactDOM.createRoot(root!).render(
-   <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-   </QueryClientProvider>,
-);
+createRoot(document.getElementById("root")!).render(<RouterProvider router={router} />);

@@ -20,6 +20,10 @@ export function useOAuth() {
    // Websocket
 
    function startOAuth(type: OAuthType) {
+      if (!client) {
+         return;
+      }
+
       posthog.capture("oauth:oauth_flow_start", { type: type });
 
       listenOAuth();
@@ -28,7 +32,6 @@ export function useOAuth() {
          huginnWindow.environment === "browser" ? "browser" : "websocket",
          `${window.origin}/#/oauth-redirect`,
       );
-      console.log(`${window.origin}/#/oauth-redirect`);
 
       if (huginnWindow.environment === "browser") {
          window.open(url, "_self");
@@ -65,7 +68,7 @@ export function useOAuth() {
 
    function listenOAuth() {
       unlistenOAuth();
-      client.gateway.on("oauth_redirect", onOAuthRedirect);
+      client?.gateway.on("oauth_redirect", onOAuthRedirect);
 
       // Url scheme
       unlisten.current = listenEvent("deep_link", async (url) => {
@@ -85,7 +88,7 @@ export function useOAuth() {
 
    function unlistenOAuth() {
       unlisten.current?.();
-      client.gateway.off("oauth_redirect", onOAuthRedirect);
+      client?.gateway.off("oauth_redirect", onOAuthRedirect);
    }
 
    return startOAuth;
