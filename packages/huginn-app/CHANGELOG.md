@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.51.4](https://github.com/WerdoxDev/Huginn/compare/app@v0.51.3...app@v0.51.4) (2025-07-30)
+
+
+### Bug Fixes
+
+* **app:** bunch of more bug fixes related to voice ([8f561de](https://github.com/WerdoxDev/Huginn/commit/8f561de88de053b92490ae1e63978d73b269a225))
+
 ## [0.51.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.51.2...app@v0.51.3) (2025-07-29)
 
 
