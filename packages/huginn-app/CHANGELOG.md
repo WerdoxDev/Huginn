@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.51.5](https://github.com/WerdoxDev/Huginn/compare/app@v0.51.4...app@v0.51.5) (2025-08-09)
+
+
+### Bug Fixes
+
+* **app:** visual bug fixes + bunch of client cleanup for dev ([9cff6e4](https://github.com/WerdoxDev/Huginn/commit/9cff6e4db0d93a7c60c79d8634f4304bc49cfd67))
+
 ## [0.51.4](https://github.com/WerdoxDev/Huginn/compare/app@v0.51.3...app@v0.51.4) (2025-07-30)
 
 
