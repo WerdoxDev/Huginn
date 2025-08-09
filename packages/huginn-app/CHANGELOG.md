@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.51.6](https://github.com/WerdoxDev/Huginn/compare/app@v0.51.5...app@v0.51.6) (2025-08-09)
+
+
+### Bug Fixes
+
+* **app:** add comment to force a build ([47563a1](https://github.com/WerdoxDev/Huginn/commit/47563a180bc9b809bed56c8c7e66257892371467))
+
 ## [0.51.5](https://github.com/WerdoxDev/Huginn/compare/app@v0.51.4...app@v0.51.5) (2025-08-09)
 
 
