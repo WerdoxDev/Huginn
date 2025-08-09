@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.3](https://github.com/WerdoxDev/Huginn/compare/api@v0.22.2...api@v0.22.3) (2025-08-09)
+
+
+### Bug Fixes
+
+* **api:** some small promise fixes ([33bd375](https://github.com/WerdoxDev/Huginn/commit/33bd375839257d499d8a457a9e5352c64364abb6))
+
 ## [0.22.2](https://github.com/WerdoxDev/Huginn/compare/api@v0.22.1...api@v0.22.2) (2025-07-29)
 
 
