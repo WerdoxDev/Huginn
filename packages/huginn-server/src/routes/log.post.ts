@@ -4,7 +4,10 @@ import pathe from "pathe";
 import z from "zod";
 import { verifyToken } from "#utils/token-factory";
 
-const schema = z.object({ token: z.optional(z.string()), logs: z.array(z.object({ section: z.string(), level: z.string(), args: z.array(z.any()) })) })
+const schema = z.object({
+   token: z.optional(z.string()),
+   logs: z.array(z.object({ section: z.string(), level: z.string(), args: z.array(z.any()) })),
+});
 
 createRoute("POST", "/api/log", validator("json", schema), async (c) => {
    const body = c.req.valid("json");
@@ -13,19 +16,25 @@ createRoute("POST", "/api/log", validator("json", schema), async (c) => {
    const now = new Date();
 
    const year = now.getFullYear();
-   const month = String(now.getMonth() + 1).padStart(2, '0');
-   const day = String(now.getDate()).padStart(2, '0');
-   const hour = String(now.getHours()).padStart(2, '0');
+   const month = String(now.getMonth() + 1).padStart(2, "0");
+   const day = String(now.getDate()).padStart(2, "0");
+   const hour = String(now.getHours()).padStart(2, "0");
 
    const dateDir = `${year}-${month}-${day}`;
    const logDir = pathe.resolve(import.meta.dir, "..", "..", "logs", payload?.id || "anonymous", dateDir);
    const logFile = pathe.join(logDir, `${hour}.txt`);
-   const formatted = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false })
+   const formatted = now.toLocaleTimeString("de-DE", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+      timeZone: "Europe/Berlin",
+   });
 
-   const logLines = `${formatted}\n ${body.logs.map(x => `(${x.section}) [${x.level}] ${x.args.join(" ")}`).join("\n")}\n`;
+   const logLines = `${formatted}\n ${body.logs.map((x) => `(${x.section}) [${x.level}] ${x.args.join(" ")}`).join("\n")}\n`;
 
    await mkdir(logDir, { recursive: true });
    await appendFile(logFile, logLines);
 
    return c.newResponse(null, 200);
-})
+});
