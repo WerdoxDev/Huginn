@@ -41,7 +41,6 @@ export default function DropdownMenu(props: MenuProps<"div"> & { onOpenChanged?:
                !buttonRef.current.contains(e.target as HTMLElement)
             ) {
                setIsOpen(false);
-               console.log("SET FALSE");
             }
          },
          { signal: controller.signal },

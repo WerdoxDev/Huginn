@@ -116,7 +116,7 @@ export default function VoiceControls(props: {
                   </VoiceControlButton>
                </>
             ) : (
-               <VoiceControlButton color="positive" onClick={props.onConnect} tooltip="Join" className="rounded-xl px-5 py-2.5">
+               <VoiceControlButton color="positive" hoverColor="positive" onClick={props.onConnect} tooltip="Join" className="rounded-xl px-5 py-2.5">
                   <IconMingcutePhoneFill className="size-6" />
                </VoiceControlButton>
             )}

@@ -419,7 +419,7 @@ export class VoiceClient {
    public async connect(guildId: Snowflake | null, channelId: Snowflake) {
       const client = clientStore.getState().client;
 
-      if (this.isConnecting || client?.voice.connectionInfo) {
+      if (this.isConnecting || client?.voice.connectionInfo?.channelId === channelId) {
          return;
       }
 
