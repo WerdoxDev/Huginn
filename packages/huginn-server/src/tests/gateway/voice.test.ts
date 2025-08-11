@@ -26,7 +26,7 @@ describe("Voice", () => {
       const data: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
          d: { channelId: channel.id.toString(), guildId: null, isAudioDeafened: false, isAudioMuted: false, isStreaming: false, isCameraOn: false },
-      }
+      };
 
       wsSend(ws, data);
 
@@ -105,7 +105,7 @@ describe("Voice", () => {
       const data: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
          d: { channelId: channel.id.toString(), guildId: null, isAudioDeafened: false, isAudioMuted: false, isStreaming: false, isCameraOn: false },
-      }
+      };
 
       wsSend(ws, data);
 
@@ -135,12 +135,12 @@ describe("Voice", () => {
       const data: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
          d: { channelId: channel.id.toString(), guildId: null, isAudioDeafened: false, isAudioMuted: false, isStreaming: false, isCameraOn: false },
-      }
+      };
 
       const data2: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
          d: { channelId: null, guildId: null, isAudioDeafened: false, isAudioMuted: false, isStreaming: false, isCameraOn: false },
-      }
+      };
 
       wsSend(ws, data);
 
@@ -177,12 +177,12 @@ describe("Voice", () => {
       const data: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
          d: { channelId: channel.id.toString(), guildId: null, isAudioDeafened: false, isAudioMuted: false, isStreaming: false, isCameraOn: false },
-      }
+      };
 
       const data2: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
          d: { channelId: null, guildId: null, isAudioDeafened: false, isAudioMuted: false, isStreaming: false, isCameraOn: false },
-      }
+      };
 
       wsSend(ws, data);
 
@@ -209,7 +209,6 @@ describe("Voice", () => {
       const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
 
       const { ws } = await getReadyWebSocket(user);
-      // const tryDone = multiDone(done, 4);
 
       let messageId: Snowflake;
       ws.onmessage = (event) => {
@@ -224,8 +223,7 @@ describe("Voice", () => {
       const data: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
          d: { channelId: channel.id.toString(), guildId: null, isAudioDeafened: false, isAudioMuted: false, isStreaming: false, isCameraOn: false },
-      }
-
+      };
 
       wsSend(ws, data);
 
@@ -244,5 +242,51 @@ describe("Voice", () => {
             done();
          }
       };
+   });
+
+   test("should first send a null VOICE_STATE_UPDATE when user changes to another channel", async (done) => {
+      const [user, user2] = await createTestUsers(2);
+
+      const channel = await createTestChannel(undefined, ChannelType.GROUP_DM, user.id, user2.id);
+      const channel2 = await createTestChannel(undefined, ChannelType.GROUP_DM, user.id, user2.id);
+
+      const { ws } = await getReadyWebSocket(user);
+      const { ws: ws2 } = await getReadyWebSocket(user2);
+      const tryDone = multiDone(done, 3);
+
+      let updateCount = 0;
+      ws2.onmessage = (event) => {
+         const data = JSON.parse(event.data);
+
+         // Check if it's the correct channel the first time.
+         if (testIsDispatch(data, "voice_state_update")) {
+            expectVoiceStateExactSchema(
+               data.d,
+               updateCount === 0 ? channel.id.toString() : updateCount === 1 ? null : channel2.id.toString(),
+               null,
+               user.id.toString(),
+            );
+            updateCount++;
+            tryDone();
+         }
+      };
+
+      // First join the channel voice
+      const data: GatewayUpdateVoiceState = {
+         op: GatewayOperations.VOICE_STATE_UPDATE,
+         d: { channelId: channel.id.toString(), guildId: null, isAudioDeafened: false, isAudioMuted: false, isStreaming: false, isCameraOn: false },
+      };
+
+      wsSend(ws, data);
+
+      await new Promise((r) => setTimeout(r, 500));
+
+      // Then join another channel without leaving the last one
+      const data2: GatewayUpdateVoiceState = {
+         op: GatewayOperations.VOICE_STATE_UPDATE,
+         d: { channelId: channel2.id.toString(), guildId: null, isAudioDeafened: false, isAudioMuted: false, isStreaming: false, isCameraOn: false },
+      };
+
+      wsSend(ws, data2);
    });
 });
