@@ -336,6 +336,7 @@ export type PresenceStatus = "offline" | "online" | "dnd" | "idle";
 export type UserPresence = {
    user: PresenceUser;
    status: PresenceStatus;
+   activeSessions: Snowflake[];
 };
 
 export type PresenceUser = Partial<APIPublicUser> & { id: Snowflake };

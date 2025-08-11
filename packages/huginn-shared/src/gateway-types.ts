@@ -205,6 +205,7 @@ export type GatewayVoiceState = {
    userId: Snowflake;
    guildId: Snowflake | null;
    channelId: Snowflake | null;
+   sessionId: Snowflake;
 } & GatewayVoiceStateFlags;
 
 export type GatewayVoiceStateFlags = {
