@@ -36,7 +36,11 @@ export function initializePresence() {
 
    const unlisten = client.gateway.listen("ready", (d) => {
       store.setState({ presences: [] });
-      store.getState().updatePresence({ user: d.user, status: clientStore.getState().readyData?.userSettings?.status || "offline" });
+      store.getState().updatePresence({
+         user: d.user,
+         status: clientStore.getState().readyData?.userSettings?.status || "offline",
+         activeSessions: [client.gateway.sessionId!],
+      });
 
       if (d.presences) {
          for (const presence of d.presences) {

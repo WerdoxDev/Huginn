@@ -1,21 +1,21 @@
-import { QueryClient } from "@tanstack/react-query";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router";
 import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
-import { enableLogs, type LogArgs, setOnLog } from "@huginn/shared";
-// import { clientStore } from "@stores/clientStore";
+import { enableLogs, type LogArgs, setIsRaw, setOnLog } from "@huginn/shared";
+import { clientStore } from "@stores/clientStore";
 import router from "./routes";
 
-// document.addEventListener("keypress", (e) => {
-// 	console.log(e.key);
-// 	if (e.key === "\\") {
-// 		client?.gateway.socket?.close();
-// 	}
-// 	if (e.key === "]") {
-// 		client?.voice.socket?.close();
-// 	}
-// });
+if (import.meta.env.DEV) {
+   document.addEventListener("keypress", (e) => {
+      if (e.key === "\\") {
+         clientStore.getState().client?.gateway.socket?.close();
+      }
+      if (e.key === "]") {
+         clientStore.getState().client?.voice.socket?.close();
+      }
+   });
+}
 
 enableLogs({
    // "api:voice": ["default", "send", "recv", "heartbeat"],
@@ -27,6 +27,8 @@ enableLogs({
    "api:client": ["ready-state"],
    "app:client-store": ["default"],
 });
+
+setIsRaw(import.meta?.env?.PROD ?? false);
 
 const logs: Array<{ section: string; level: string; args: LogArgs[] }> = [];
 

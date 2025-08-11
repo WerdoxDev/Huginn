@@ -288,7 +288,7 @@ export function initializeVoice() {
          const thisStore = store.getState();
 
          // our user's voice state update
-         if (d.userId === client?.user?.id) {
+         if (d.userId === client?.user?.id && d.sessionId === client.gateway.sessionId) {
             thisStore.setVoiceChannel(d.channelId ?? undefined, d.guildId ?? undefined);
          } else {
             // create voice preference for new users
