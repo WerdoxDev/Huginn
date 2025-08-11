@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.4](https://github.com/WerdoxDev/Huginn/compare/api@v0.22.3...api@v0.22.4) (2025-08-11)
+
+
+### Bug Fixes
+
+* **api:** gateway should disconnect voice if a null voice state from server is received ([1a77d14](https://github.com/WerdoxDev/Huginn/commit/1a77d140df6580da30255a3c02b6a88d23f78c30))
+
 ## [0.22.3](https://github.com/WerdoxDev/Huginn/compare/api@v0.22.2...api@v0.22.3) (2025-08-09)
 
 
