@@ -387,6 +387,13 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
                this.handleReady(data.d);
             }
 
+            // Maybe the server or we sent an update to disconnect from the voice. We should close voice websocket just in case
+            if (data.t === "voice_state_update") {
+               if (!data.d.channelId && data.d.userId === this.client.user?.id) {
+                  this.client.voice.close();
+               }
+            }
+
             this.emit(data.t, data.d);
          }
       }
