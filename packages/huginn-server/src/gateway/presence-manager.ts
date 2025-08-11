@@ -3,58 +3,83 @@ import { dispatchToTopic } from "#utils/gateway-utils";
 import type { ClientSession } from "./client-session";
 
 export class PresenceManager {
-	private presences: Map<Snowflake, UserPresence>;
+   private presences: Map<Snowflake, UserPresence>;
 
-	public constructor() {
-		this.presences = new Map();
-	}
+   public constructor() {
+      this.presences = new Map();
+   }
 
-	public setUserPresence(user: PresenceUser, session: ClientSession, settings: UserSettings) {
-		const presence: UserPresence = {
-			user: { id: user.id },
-			status: settings.status,
-		};
+   public setUserPresence(user: PresenceUser, session: ClientSession, settings: UserSettings) {
+      const existingPresence = this.presences.get(user.id);
 
-		this.presences.set(user.id, presence);
+      const presence: UserPresence = {
+         user: { id: user.id },
+         status: existingPresence?.status ?? settings.status,
+         activeSessions: [...(existingPresence?.activeSessions ?? []), session.sessionId],
+      };
 
-		dispatchToTopic(`${user.id}_presence`, "presence_update", presence);
-	}
+      this.presences.set(user.id, presence);
 
-	public updateUserPresence(user: PresenceUser) {
-		const existingPresence = this.presences.get(user.id);
-		if (existingPresence) {
-			const newPresence = { ...existingPresence, user: pick(user, ["id", "avatar", "displayName", "flags", "username"]) };
-			this.presences.set(user.id, newPresence);
-			dispatchToTopic(`${user.id}_presence`, "presence_update", newPresence);
-		}
-	}
+      dispatchToTopic(`${user.id}_presence`, "presence_update", presence);
+   }
 
-	public removeUserPresence(userId: Snowflake) {
-		dispatchToTopic(`${userId}_presence`, "presence_update", { user: { id: userId }, status: "offline" });
-		this.presences.delete(userId);
-	}
+   public updateUserPresence(user: PresenceUser) {
+      const existingPresence = this.presences.get(user.id);
+      if (existingPresence) {
+         const newPresence = { ...existingPresence, user: pick(user, ["id", "avatar", "displayName", "flags", "username"]) };
+         this.presences.set(user.id, newPresence);
+         dispatchToTopic(`${user.id}_presence`, "presence_update", newPresence);
+      }
+   }
 
-	public getUserPresences(session: ClientSession) {
-		const subscriptions = session.getSubscriptions();
+   public removeUserPresence(userId: Snowflake, session: ClientSession) {
+      const presence = this.presences.get(userId);
 
-		const presences: UserPresence[] = [];
-		for (const [id, presence] of this.presences) {
-			if (subscriptions.has(`${id}_presence`)) {
-				presences.push(presence);
-			}
-		}
+      if (!presence) {
+         return;
+      }
 
-		return presences;
-	}
+      const newActiveSessions = presence.activeSessions.filter((x) => x !== session.sessionId);
 
-	public getSessionPresence(userId: Snowflake) {
-		return this.presences.get(userId);
-	}
+      dispatchToTopic(`${userId}_presence`, "presence_update", {
+         user: { id: userId },
+         status: newActiveSessions.length === 0 ? "offline" : presence.status,
+         activeSessions: newActiveSessions,
+      });
 
-	public sendToUser(senderId: Snowflake, recieverId: Snowflake, offlineStatus?: boolean) {
-		const presence: UserPresence | undefined = offlineStatus ? { user: { id: recieverId }, status: "offline" } : this.presences.get(recieverId);
-		if (presence) {
-			dispatchToTopic(senderId, "presence_update", presence);
-		}
-	}
+      // it's length being 0 means it's the only session. So we can easily remove it
+      if (newActiveSessions.length === 0) {
+         this.presences.delete(userId);
+      }
+      // Otherwise update the active sessions
+      else {
+         this.presences.set(userId, { ...presence, activeSessions: newActiveSessions });
+      }
+   }
+
+   public getUserPresences(session: ClientSession) {
+      const subscriptions = session.getSubscriptions();
+
+      const presences: UserPresence[] = [];
+      for (const [id, presence] of this.presences) {
+         if (subscriptions.has(`${id}_presence`)) {
+            presences.push(presence);
+         }
+      }
+
+      return presences;
+   }
+
+   public getSessionPresence(userId: Snowflake) {
+      return this.presences.get(userId);
+   }
+
+   public sendToUser(senderId: Snowflake, receiverId: Snowflake, offlineStatus?: boolean) {
+      const presence: UserPresence | undefined = offlineStatus
+         ? { user: { id: receiverId }, status: "offline", activeSessions: [] }
+         : this.presences.get(receiverId);
+      if (presence) {
+         dispatchToTopic(senderId, "presence_update", presence);
+      }
+   }
 }

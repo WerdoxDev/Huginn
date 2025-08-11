@@ -17,14 +17,14 @@ import {
    isOpcode,
    snowflake,
 } from "@huginn/shared";
-import { envs } from "#setup";
+import { envs, gateway } from "#setup";
 import { createTokens } from "#utils/token-factory";
 
 export const isCDNRunning = await checkCDNRunning();
 export type TestUser = Omit<APIUser, "id"> & { id: bigint; accessToken: string; refreshToken: string };
 
 const connectedWebsockets: WebSocket[] = [];
-const currentIndecies = { users: 0, channels: 0, relationships: 0, messages: 0 };
+const currentIndexes = { users: 0, channels: 0, relationships: 0, messages: 0 };
 
 const removeUsersQueue: bigint[] = [];
 const removeChannelsQueue: bigint[] = [];
@@ -64,7 +64,7 @@ export async function getReadyWebSocket(user?: TestUser) {
       };
    });
 
-   return { ws, readyData, user: finalUser };
+   return { ws, readyData, user: finalUser, sessionId };
 }
 
 export async function getIdentifiedWebSocket(user?: TestUser) {
@@ -168,7 +168,7 @@ export async function createTestUsers(amount: number) {
 
    const users = [];
    for (let i = 0; i < amount; i++) {
-      const index = currentIndecies.users + i;
+      const index = currentIndexes.users + i;
       users.push({
          id: snowflake.generate(WorkerID.TESTING),
          username: `test${index}`,
@@ -179,7 +179,7 @@ export async function createTestUsers(amount: number) {
       });
    }
 
-   currentIndecies.users += amount;
+   currentIndexes.users += amount;
 
    const createdUsers = await prisma.user.createManyAndReturn({ data: users });
 
@@ -226,6 +226,8 @@ export async function createTestRelationships(userId: bigint, user2Id: bigint, f
    });
 
    const [userRelationship, user2Relationship] = await prisma.$transaction([relationship, relationship2]);
+   gateway.subscribeSessionsToTopic(userId.toString(), `${user2Id}_presence`);
+   gateway.subscribeSessionsToTopic(user2Id.toString(), `${userId}_presence`);
 
    const t1 = performance.now();
    timeSpent.createRelationships += t1 - t0;

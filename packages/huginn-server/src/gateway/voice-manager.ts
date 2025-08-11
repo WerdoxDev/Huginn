@@ -35,7 +35,8 @@ export class VoiceManager {
    }
 
    public updateVoiceState(options: GatewayVoiceState) {
-      const previousChannelId = this.voiceStates.get(options.userId)?.channelId;
+      const previousState = this.voiceStates.get(options.userId);
+      const previousChannelId = previousState?.channelId;
 
       const voiceState: GatewayVoiceState = { ...options };
 
@@ -62,8 +63,13 @@ export class VoiceManager {
 
       // If the current channel is valid, send the state update to that channel
       if (voiceState.channelId) {
+         // The user is joining with a new session
+         if (previousState && voiceState.sessionId !== previousState?.sessionId) {
+            dispatchToTopic(previousState.sessionId, "voice_state_update", { ...previousState, channelId: null, guildId: null });
+         }
+
          // If the user is entering a new channel, send a null state to the previous one
-         if (voiceState.channelId !== previousChannelId && previousChannelId) {
+         if (previousChannelId && voiceState.channelId !== previousChannelId) {
             dispatchToTopic(previousChannelId, "voice_state_update", { ...voiceState, channelId: null, guildId: null });
          }
 

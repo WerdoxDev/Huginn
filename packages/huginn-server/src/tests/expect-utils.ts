@@ -233,18 +233,18 @@ export function expectRelationshipExactSchema(
    expect(handled, `Relationship with the type of ${type} was not handled`).toBeTrue();
 }
 
-export function expectPresenceExactSchema(presence: object, user: TestUser, status: PresenceStatus) {
+export function expectPresenceExactSchema(presence: object, user: TestUser, status: PresenceStatus, activeSessions: Snowflake[]) {
    const castedPresence = presence as UserPresence;
    expect(castedPresence.status).toBe(status);
 
    if (status === "online") {
       if (Object.keys(castedPresence.user).length === 1) {
-         expect(presence).toStrictEqual({ user: { id: user.id.toString() }, status: castedPresence.status });
+         expect(presence).toStrictEqual({ user: { id: user.id.toString() }, status: castedPresence.status, activeSessions });
       } else {
          expectUserExactSchema(castedPresence.user, user.id, user.username, user.displayName, user.avatar, user.flags);
       }
    } else if (status === "offline") {
-      expect(presence).toStrictEqual({ user: { id: user.id.toString() }, status: "offline" });
+      expect(presence).toStrictEqual({ user: { id: user.id.toString() }, status: "offline", activeSessions });
    }
 }
 
@@ -341,13 +341,20 @@ export function expectVoiceServerExactSchema(voiceServer: object) {
    expect(Object.keys(voiceServer).sort()).toStrictEqual(["token"].sort());
 }
 
-export function expectVoiceStateExactSchema(voiceState: object, channelId: Snowflake | null, guildId: Snowflake | null, userId: Snowflake) {
+export function expectVoiceStateExactSchema(
+   voiceState: object,
+   channelId: Snowflake | null,
+   guildId: Snowflake | null,
+   userId: Snowflake,
+   sessionId: Snowflake,
+) {
    const parsedVoiceState = voiceState as GatewayVoiceState;
 
    expect(parsedVoiceState).toStrictEqual({
       channelId,
       guildId,
       userId,
+      sessionId,
       isAudioDeafened: parsedVoiceState.isAudioDeafened,
       isAudioMuted: parsedVoiceState.isAudioMuted,
       isStreaming: parsedVoiceState.isStreaming,

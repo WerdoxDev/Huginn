@@ -19,7 +19,7 @@ describe("Voice", () => {
 
       const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
 
-      const { ws } = await getReadyWebSocket(user);
+      const { ws, sessionId } = await getReadyWebSocket(user);
       const { ws: ws2 } = await getReadyWebSocket(user2);
       const tryDone = multiDone(done, 3);
 
@@ -37,7 +37,7 @@ describe("Voice", () => {
             tryDone();
          }
          if (testIsDispatch(data, "voice_state_update")) {
-            expectVoiceStateExactSchema(data.d, channel.id.toString(), null, user.id.toString());
+            expectVoiceStateExactSchema(data.d, channel.id.toString(), null, user.id.toString(), sessionId);
             tryDone();
          }
       };
@@ -46,7 +46,7 @@ describe("Voice", () => {
       ws2.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "voice_state_update")) {
-            expectVoiceStateExactSchema(data.d, channel.id.toString(), null, user.id.toString());
+            expectVoiceStateExactSchema(data.d, channel.id.toString(), null, user.id.toString(), sessionId);
             tryDone();
          }
       };
@@ -158,17 +158,17 @@ describe("Voice", () => {
       const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
 
       const { ws } = await getReadyWebSocket(user);
-      const { ws: ws2 } = await getReadyWebSocket(user2);
+      const { ws: ws2, sessionId } = await getReadyWebSocket(user2);
       const tryDone = multiDone(done, 4);
 
       ws.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "voice_state_update")) {
             if (data.d.userId === user2.id.toString() && data.d.channelId) {
-               expectVoiceStateExactSchema(data.d, channel.id.toString(), null, user2.id.toString());
+               expectVoiceStateExactSchema(data.d, channel.id.toString(), null, user2.id.toString(), sessionId);
                tryDone();
             } else if (data.d.userId === user2.id.toString() && !data.d.channelId) {
-               expectVoiceStateExactSchema(data.d, null, null, user2.id.toString());
+               expectVoiceStateExactSchema(data.d, null, null, user2.id.toString(), sessionId);
                tryDone();
             }
          }
@@ -208,7 +208,7 @@ describe("Voice", () => {
 
       const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
 
-      const { ws } = await getReadyWebSocket(user);
+      const { ws, sessionId } = await getReadyWebSocket(user);
 
       let messageId: Snowflake;
       ws.onmessage = (event) => {
@@ -237,7 +237,7 @@ describe("Voice", () => {
          if (testIsDispatch(data, "ready")) {
             expect(data.d.voiceStates).toHaveLength(1);
             expect(data.d.callStates).toHaveLength(1);
-            expectVoiceStateExactSchema(data.d.voiceStates[0], channel.id.toString(), null, user.id.toString());
+            expectVoiceStateExactSchema(data.d.voiceStates[0], channel.id.toString(), null, user.id.toString(), sessionId);
             expectCallStateExactSchema(data.d.callStates[0], channel.id.toString(), messageId, [user2.id.toString()]);
             done();
          }
@@ -250,7 +250,7 @@ describe("Voice", () => {
       const channel = await createTestChannel(undefined, ChannelType.GROUP_DM, user.id, user2.id);
       const channel2 = await createTestChannel(undefined, ChannelType.GROUP_DM, user.id, user2.id);
 
-      const { ws } = await getReadyWebSocket(user);
+      const { ws, sessionId } = await getReadyWebSocket(user);
       const { ws: ws2 } = await getReadyWebSocket(user2);
       const tryDone = multiDone(done, 3);
 
@@ -265,6 +265,7 @@ describe("Voice", () => {
                updateCount === 0 ? channel.id.toString() : updateCount === 1 ? null : channel2.id.toString(),
                null,
                user.id.toString(),
+               sessionId,
             );
             updateCount++;
             tryDone();

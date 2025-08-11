@@ -9,13 +9,21 @@ import {
 } from "@huginn/backend-shared/database/common";
 import {
    type APIReadStateWithoutUser,
-   constants, GatewayCode, type GatewayHeartbeatAck,
+   constants,
+   GatewayCode,
+   type GatewayHeartbeatAck,
    type GatewayHeartbeatData,
-   type GatewayHello, type GatewayIdentifyData,
+   type GatewayHello,
+   type GatewayIdentifyData,
    GatewayOperations,
-   type GatewayPayload, type GatewayResumeData, type GatewayUpdateVoiceStateData, idFix,
+   type GatewayPayload,
+   type GatewayResumeData,
+   type GatewayUpdateVoiceStateData,
+   idFix,
    log,
-   merge, type UserSettings, WorkerID
+   merge,
+   type UserSettings,
+   WorkerID,
 } from "@huginn/shared";
 import type { Peer } from "crossws";
 import { verifyToken } from "#utils/token-factory";
@@ -39,8 +47,10 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       log("server:gateway", "default", "open", "sid:", session.sessionId);
 
       try {
-
-         const helloData: GatewayHello = { op: GatewayOperations.HELLO, d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL, sessionId: session.sessionId } };
+         const helloData: GatewayHello = {
+            op: GatewayOperations.HELLO,
+            d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL, sessionId: session.sessionId },
+         };
 
          log("server:gateway", "send", "hello", "intrvl:", helloData.d.heartbeatInterval, "sid:", session.sessionId);
          this.send(session.peer, helloData);
@@ -54,13 +64,39 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       log("server:gateway", "default", "close", "sid:", session.sessionId, "code:", event.code, "res:", event.reason);
 
       if (session.authenticated && session.user) {
-         this.presenceManager.removeUserPresence(session.user.id);
-         this.voiceManager.updateVoiceState({ userId: session.user.id, channelId: null, guildId: null, isAudioDeafened: false, isAudioMuted: false, isCameraOn: false, isStreaming: false });
+         this.presenceManager.removeUserPresence(session.user.id, session);
+
+         const voiceState = this.voiceManager.getVoiceState(session.user.id);
+         if (voiceState?.sessionId === session.sessionId) {
+            this.voiceManager.updateVoiceState({
+               userId: session.user.id,
+               sessionId: session.sessionId,
+               channelId: null,
+               guildId: null,
+               isAudioDeafened: false,
+               isAudioMuted: false,
+               isCameraOn: false,
+               isStreaming: false,
+            });
+         }
       }
    }
 
    public async onMessage(session: ClientSession, data: GatewayPayload) {
-      log("server:gateway", "recv", "sid:", session?.sessionId, "uid:", session?.user?.id, "op:", data.op, "t:", "t" in data && data.t, "s:", "s" in data && data.s);
+      log(
+         "server:gateway",
+         "recv",
+         "sid:",
+         session?.sessionId,
+         "uid:",
+         session?.user?.id,
+         "op:",
+         data.op,
+         "t:",
+         "t" in data && data.t,
+         "s:",
+         "s" in data && data.s,
+      );
 
       let needsAuthentication = false;
 
@@ -173,7 +209,6 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       };
 
       this.send(session.peer, readyData);
-
       this.presenceManager.setUserPresence(user, session, settings);
    }
 
@@ -208,19 +243,35 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       const session = this.sessions.get(peer.context.sessionId);
       const userId = session?.user?.id;
 
-      log("server:gateway", "recv", "update voice state", "pid:", peer.id, "uid:", userId, "sm:", data.isAudioMuted, "sd:", data.isAudioDeafened, "ss:", data.isStreaming, "sv:", data.isCameraOn);
+      log(
+         "server:gateway",
+         "recv",
+         "update voice state",
+         "pid:",
+         peer.id,
+         "uid:",
+         userId,
+         "sm:",
+         data.isAudioMuted,
+         "sd:",
+         data.isAudioDeafened,
+         "ss:",
+         data.isStreaming,
+         "sv:",
+         data.isCameraOn,
+      );
 
       if (!session || !userId) {
          return;
       }
 
       const previousState = this.voiceManager.getVoiceState(userId);
-      this.voiceManager.updateVoiceState({ userId, ...data });
+      this.voiceManager.updateVoiceState({ userId, ...data, sessionId: session.sessionId });
 
       // If the new place is a valid channel and is not the same as before
-      if (data.channelId && previousState?.channelId !== data.channelId) {
+      if (data.channelId && (previousState?.channelId !== data.channelId || previousState.sessionId !== session.sessionId)) {
          const token = await createVoiceToken(userId);
-         dispatchToTopic(userId, "voice_server_update", { token });
+         dispatchToTopic(session.sessionId, "voice_server_update", { token });
       }
    }
 }
