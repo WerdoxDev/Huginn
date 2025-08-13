@@ -1,12 +1,13 @@
 import path from "node:path";
 import { enableLogs, error, findClosestString, log } from "@huginn/shared";
 import { getActiveWindowProcessIds, setExecutablesRoot, startAudioCapture, stopAudioCapture } from "application-loopback";
-import { app, BrowserWindow, desktopCapturer, ipcMain, Menu, nativeImage, Notification, session, shell, Tray } from "electron";
+import { app, BrowserWindow, desktopCapturer, globalShortcut, ipcMain, Menu, nativeImage, Notification, session, shell, Tray } from "electron";
 import electronLog from "electron-log/main";
 import { autoUpdater, CancellationToken } from "electron-updater";
 import type { AudioSource, DisplaySource } from "@/types";
 import * as fileController from "./file-controller";
 import * as cacheController from "./cache-controller";
+import * as keybindsController from "./keybinds-controller";
 
 // application-loopback executable path when packaged
 if (app.isPackaged) {
@@ -86,7 +87,6 @@ app.on("ready", async () => {
    createWindow();
 
    // Setup as Startup App
-
    log("app:electron", "default", "set startup");
    app.setLoginItemSettings({ openAtLogin: true, path: app.getPath("exe"), args: ["--silent"] });
 });
@@ -182,6 +182,7 @@ function listenToEvents(mainWindow: BrowserWindow) {
 
    fileController.listenToEvents();
    cacheController.listenToEvents();
+   keybindsController.listenToEvents(mainWindow);
 
    session.defaultSession.setDisplayMediaRequestHandler(async (request, callback) => {
       const sources = await desktopCapturer.getSources({
@@ -399,9 +400,6 @@ function listenToEvents(mainWindow: BrowserWindow) {
          thumbnailSize: { width: 300, height: 300 },
       });
       const processes = await getActiveWindowProcessIds();
-
-      console.log(sources.map((x) => x.name));
-      console.log(processes.map((x) => x.title));
 
       return sources
          .map((source) => {

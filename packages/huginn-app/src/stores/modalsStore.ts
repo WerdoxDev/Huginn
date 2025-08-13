@@ -7,8 +7,8 @@ import type { MutationKinds } from "@/types";
 type DefaultModal = { isOpen: boolean };
 
 const initialStore = () => ({
-   settings: { isOpen: false } as DefaultModal,
-   info: { isOpen: false, status: "none", title: "", text: "", closable: true } as DefaultModal & {
+   settings: { isOpen: false, isClosable: true } as DefaultModal & { isClosable: boolean },
+   info: { isOpen: false, status: "none", title: "", text: "", isClosable: true } as DefaultModal & {
       status: "info" | "success" | "error" | "none";
       text: string;
       title: string;
@@ -23,7 +23,7 @@ const initialStore = () => ({
             callback: () => void;
          };
       };
-      closable: boolean;
+      isClosable: boolean;
    },
    imageCrop: { isOpen: false, originalImageData: "", mimeType: "" } as DefaultModal & {
       originalImageData: string;

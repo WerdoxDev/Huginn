@@ -1,6 +1,10 @@
-import type { AppSettings, VoicePreference } from "@/types";
+import type { AppSettings, Keybind, VoicePreference } from "@/types";
 
-export type FileMap = { "settings": AppSettings, "voice-preferences": VoicePreference[] }
+export type FileMap = {
+   settings: AppSettings;
+   "voice-preferences": VoicePreference[];
+   keybinds: Keybind[];
+};
 export type FileType = keyof FileMap;
 
 export async function loadFile<T extends FileType, I>(type: T, initial: I): Promise<FileMap[T] | I> {
@@ -9,7 +13,7 @@ export async function loadFile<T extends FileType, I>(type: T, initial: I): Prom
          return initial;
       }
 
-      return await window.electronAPI.loadFile(type) as FileMap[T];
+      return (await window.electronAPI.loadFile(type)) as FileMap[T];
    }
 
    const item = localStorage.getItem(type);
@@ -33,5 +37,5 @@ export async function fileExists<T extends FileType>(type: T) {
       return await window.electronAPI.fileExists(type);
    }
 
-   return !!localStorage.getItem(type)
+   return !!localStorage.getItem(type);
 }

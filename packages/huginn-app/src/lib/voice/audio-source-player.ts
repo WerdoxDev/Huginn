@@ -1,5 +1,5 @@
 import { type HMediaKind, log, type Snowflake } from "@huginn/shared";
-import { settingsStore } from "@stores/settingsStore";
+import { filesStore } from "@stores/filesStore";
 
 export class AudioSourcePlayer {
    private gainNode: GainNode;
@@ -14,7 +14,7 @@ export class AudioSourcePlayer {
    private localGain?: number;
 
    public constructor(srcObject: MediaProvider, producerId: string, userId: Snowflake, kind: HMediaKind, globalGainPercent: number) {
-      log("app:audio-source-player", "default", "initializing", "pid:", producerId, "uid:", userId, "mk:", kind, "ggp:", globalGainPercent)
+      log("app:audio-source-player", "default", "initializing", "pid:", producerId, "uid:", userId, "mk:", kind, "ggp:", globalGainPercent);
 
       this.producerId = producerId;
       this.userId = userId;
@@ -25,7 +25,7 @@ export class AudioSourcePlayer {
       this.audioElement.autoplay = false;
       this.audioElement.srcObject = srcObject;
 
-      this.audioContext = new AudioContext({ sinkId: settingsStore.getState().local.outputDeviceId });
+      this.audioContext = new AudioContext({ sinkId: filesStore.getState().settings.outputDeviceId });
       this.gainNode = this.audioContext.createGain();
 
       this.setGain(globalGainPercent, undefined);
@@ -46,7 +46,7 @@ export class AudioSourcePlayer {
    }
 
    public stop() {
-      log("app:audio-source-player", "default", "stop")
+      log("app:audio-source-player", "default", "stop");
 
       this.abortController.abort();
       this.gainNode.disconnect();
@@ -56,7 +56,7 @@ export class AudioSourcePlayer {
    }
 
    public setGain(globalGainPercent: number | undefined, localGainPercent: number | undefined) {
-      log("app:audio-source-player", "default", "set gain", "gg:", globalGainPercent, "lg:", localGainPercent)
+      log("app:audio-source-player", "default", "set gain", "gg:", globalGainPercent, "lg:", localGainPercent);
 
       if (globalGainPercent) {
          this.globalGain = (globalGainPercent / 100) ** 2.3219;
@@ -73,11 +73,11 @@ export class AudioSourcePlayer {
          this.globalGain = 1;
       }
 
-      this.gainNode.gain.value = (this.globalGain) * (this.localGain);
+      this.gainNode.gain.value = this.globalGain * this.localGain;
    }
 
    public setSinkId(deviceId: string) {
-      log("app:audio-source-player", "default", "set sink id", "did:", deviceId)
+      log("app:audio-source-player", "default", "set sink id", "did:", deviceId);
 
       this.audioContext.setSinkId(deviceId);
    }

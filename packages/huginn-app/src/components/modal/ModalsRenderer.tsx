@@ -17,40 +17,44 @@ const NewsModal = lazy(() => import("./NewsModal"));
 const ScreenShareModal = lazy(() => import("./ScreenShareModal"));
 
 export default function ModalsRenderer() {
-	const { user } = useThisUser();
-	const { createDM, addRecipient, editGroup, imageCrop, info, settings, magnifiedImage, news, screenShare, streamAudio, updateModals } = useModals();
+   const { user } = useThisUser();
+   const { createDM, addRecipient, editGroup, imageCrop, info, settings, magnifiedImage, news, screenShare, streamAudio, updateModals } = useModals();
 
-	return (
-		<>
-			<ErrorBoundary FallbackComponent={ModalErrorComponent}>
-				<BaseModal renderChildren={<SettingsModal />} modal={settings} onClose={() => updateModals({ settings: { isOpen: false } })} />
-				<BaseModal renderChildren={<ImageCropModal />} modal={imageCrop} onClose={() => updateModals({ imageCrop: { isOpen: false } })} />
-				<BaseModal
-					renderChildren={<MagnifiedImageModal />}
-					modal={magnifiedImage}
-					onClose={() => updateModals({ magnifiedImage: { isOpen: false } })}
-					backgroundClassName="bg-black/70"
-				/>
-				<BaseModal renderChildren={<ScreenShareModal />} modal={screenShare} onClose={() => updateModals({ screenShare: { isOpen: false } })} />
-				<BaseModal renderChildren={<StreamAudioModal />} modal={streamAudio} onClose={() => updateModals({ streamAudio: { isOpen: false } })} />
-				<BaseModal renderChildren={<NewsModal />} modal={news} onClose={() => updateModals({ news: { isOpen: false } })} />
-				{user && (
-					<>
-						<BaseModal renderChildren={<CreateDMModal />} onClose={() => updateModals({ createDM: { isOpen: false } })} modal={createDM} />
-						<BaseModal renderChildren={<EditGroupModal />} modal={editGroup} onClose={() => updateModals({ editGroup: { isOpen: false } })} />
-						<BaseModal
-							renderChildren={<AddRecipientModal />}
-							modal={addRecipient}
-							onClose={() => updateModals({ addRecipient: { isOpen: false } })}
-						/>
-					</>
-				)}
-			</ErrorBoundary>
-			<BaseModal
-				modal={info}
-				onClose={() => (!info.action?.cancel ? info.closable && updateModals({ info: { isOpen: false } }) : info.action.cancel.callback())}
-				renderChildren={<InfoModal />}
-			/>
-		</>
-	);
+   return (
+      <>
+         <ErrorBoundary FallbackComponent={ModalErrorComponent}>
+            <BaseModal
+               renderChildren={<SettingsModal />}
+               modal={settings}
+               onClose={() => settings.isClosable && updateModals({ settings: { isOpen: false } })}
+            />
+            <BaseModal renderChildren={<ImageCropModal />} modal={imageCrop} onClose={() => updateModals({ imageCrop: { isOpen: false } })} />
+            <BaseModal
+               renderChildren={<MagnifiedImageModal />}
+               modal={magnifiedImage}
+               onClose={() => updateModals({ magnifiedImage: { isOpen: false } })}
+               backgroundClassName="bg-black/70"
+            />
+            <BaseModal renderChildren={<ScreenShareModal />} modal={screenShare} onClose={() => updateModals({ screenShare: { isOpen: false } })} />
+            <BaseModal renderChildren={<StreamAudioModal />} modal={streamAudio} onClose={() => updateModals({ streamAudio: { isOpen: false } })} />
+            <BaseModal renderChildren={<NewsModal />} modal={news} onClose={() => updateModals({ news: { isOpen: false } })} />
+            {user && (
+               <>
+                  <BaseModal renderChildren={<CreateDMModal />} onClose={() => updateModals({ createDM: { isOpen: false } })} modal={createDM} />
+                  <BaseModal renderChildren={<EditGroupModal />} modal={editGroup} onClose={() => updateModals({ editGroup: { isOpen: false } })} />
+                  <BaseModal
+                     renderChildren={<AddRecipientModal />}
+                     modal={addRecipient}
+                     onClose={() => updateModals({ addRecipient: { isOpen: false } })}
+                  />
+               </>
+            )}
+         </ErrorBoundary>
+         <BaseModal
+            modal={info}
+            onClose={() => (!info.action?.cancel ? info.isClosable && updateModals({ info: { isOpen: false } }) : info.action.cancel.callback())}
+            renderChildren={<InfoModal />}
+         />
+      </>
+   );
 }

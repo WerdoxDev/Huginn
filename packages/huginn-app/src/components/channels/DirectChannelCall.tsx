@@ -9,7 +9,7 @@ import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 import type { Snowflake, Unpacked } from "@huginn/shared";
 import { useClient, useClientStore } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
-import { useSettings } from "@stores/settingsStore";
+import { useFilesStore } from "@stores/filesStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore, voiceStore } from "@stores/voiceStore";
 import { useHuginnWindow } from "@stores/windowStore";

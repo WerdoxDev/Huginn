@@ -1,6 +1,6 @@
 import { log, type Snowflake } from "@huginn/shared";
 import { clientStore } from "@stores/clientStore";
-import { settingsStore } from "@stores/settingsStore";
+import { filesStore } from "@stores/filesStore";
 import { voiceStore } from "@stores/voiceStore";
 import type { RemoteSource, VoicePreference } from "@/types";
 import { listenEvent } from "../event-handler";
@@ -38,17 +38,17 @@ export class VoiceClient {
                return;
             }
 
-            const settings = settingsStore.getState();
+            const settings = filesStore.getState();
 
             // Initialize audio level checking with a dummy stream to avoid causing an infinite mute on the actual "send" mic stream
             const { audioLevel, stream: micStream } = await this.initLocalAudioLevel(
-               settings.local.inputDeviceId,
-               settings.local.inputVolume,
-               settings.local.noiseSuppression,
+               settings.settings.inputDeviceId,
+               settings.settings.inputVolume,
+               settings.settings.noiseSuppression,
             );
 
             // Initialize the actual audio sending stream
-            await this.initMicrophone(settings.local.inputDeviceId, settings.local.inputVolume, settings.local.noiseSuppression);
+            await this.initMicrophone(settings.settings.inputDeviceId, settings.settings.inputVolume, settings.settings.noiseSuppression);
 
             // Add local microphone remote source
             const producer = client.voice.producers.get("microphone");
@@ -90,11 +90,11 @@ export class VoiceClient {
                voice.updateRemoteSource(d.producerId, { consumerId: d.consumerId, srcObject: remoteStream });
             }
 
-            const settings = settingsStore.getState();
+            const files = filesStore.getState();
 
             // Initialize remote audio source players (updatedVoice is because getState only returns an snapshot and doesn't change)
             const updatedVoice = voiceStore.getState();
-            this.initRemoteAudioSourcePlayers(updatedVoice.remoteSources, updatedVoice.voicePreferences, settings.local.outputVolume);
+            this.initRemoteAudioSourcePlayers(updatedVoice.remoteSources, files.voicePreferences, files.settings.outputVolume);
          }),
       );
 
@@ -221,7 +221,7 @@ export class VoiceClient {
          listenEvent("voice_preference_changed", (d) => {
             log("app:voice-client", "emitter-recv", "voice preference changed", "uid:", d.userId);
 
-            const store = voiceStore.getState();
+            const store = filesStore.getState();
             const preference = store.voicePreferences.find((x) => x.userId === d.userId);
             const microphonePlayer = this.audioSourcePlayers.find((x) => x.userId === d.userId && x.kind === "microphone");
             const screenSharePlayer = this.audioSourcePlayers.find((x) => x.userId === d.userId && x.kind === "stream_audio");
@@ -240,11 +240,11 @@ export class VoiceClient {
       );
 
       unlisteners.push(
-         settingsStore.subscribe(async (s, o) => {
+         filesStore.subscribe(async (s, o) => {
             log("app:voice-client", "settings-sub", "settings changed");
 
-            const current = s.local;
-            const old = o.local;
+            const current = s.settings;
+            const old = o.settings;
             if (current.outputVolume !== old.outputVolume) {
                for (const player of this.audioSourcePlayers) {
                   player.setGain(current.outputVolume, undefined);
@@ -299,10 +299,10 @@ export class VoiceClient {
       let lastState = true;
       function onLocalAudioLevel(db: number) {
          const client = clientStore.getState().client;
-         const settings = settingsStore.getState();
+         const settings = filesStore.getState();
 
          const userId = client?.user?.id ?? "";
-         if (db > settings.local.inputThreshold) {
+         if (db > settings.settings.inputThreshold) {
             const voice = voiceStore.getState();
 
             lastState = true;
@@ -328,7 +328,7 @@ export class VoiceClient {
                   voice.updateSpeakingState(userId, true);
                }
             }
-         } else if (db <= settings.local.inputThreshold - tolerance) {
+         } else if (db <= settings.settings.inputThreshold - tolerance) {
             lastState = false;
          }
       }

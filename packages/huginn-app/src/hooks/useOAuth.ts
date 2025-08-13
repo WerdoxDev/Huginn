@@ -42,7 +42,7 @@ export function useOAuth() {
                isOpen: true,
                title: "Check your browser!",
                text: "Please check your browser and continue there",
-               closable: false,
+               isClosable: false,
                action: {
                   cancel: {
                      text: "Cancel",

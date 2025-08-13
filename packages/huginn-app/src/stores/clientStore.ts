@@ -2,7 +2,7 @@ import { HuginnClient } from "@huginn/api";
 import { type APIPublicUser, error, type GatewayReadyData, type GatewayStatus, log, type Snowflake, type VoiceStatus } from "@huginn/shared";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
-import { settingsStore } from "./settingsStore";
+import { filesStore } from "./filesStore";
 import { updateUser } from "@lib/query-utils";
 
 const initialStore = () => ({
@@ -31,11 +31,11 @@ const store = createStore(
 export async function setHostnamesFromExternal() {
    log("app:client-store", "default", "set hostnames from external");
 
-   const settings = settingsStore.getState();
+   const settings = filesStore.getState();
    let response: Response | undefined;
 
    try {
-      response = await fetch(settings.local.externalHostnamesUrl, { cache: "no-cache" });
+      response = await fetch(settings.settings.externalHostnamesUrl, { cache: "no-cache" });
       const json = await response?.json();
       store.setState({ hostnames: { api: json.api, cdn: json.cdn, voice: json.voice } });
       return true;
@@ -49,8 +49,8 @@ export async function setHostnamesFromExternal() {
 export function setHostnamesFromSettings() {
    log("app:client-store", "default", "set hostnames from settings");
 
-   const settings = settingsStore.getState();
-   store.setState({ hostnames: { api: settings.local.apiHostname, cdn: settings.local.cdnHostname, voice: settings.local.voiceHostname } });
+   const settings = filesStore.getState();
+   store.setState({ hostnames: { api: settings.settings.apiHostname, cdn: settings.settings.cdnHostname, voice: settings.settings.voiceHostname } });
 }
 
 export function initializeClient() {

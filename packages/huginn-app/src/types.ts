@@ -323,3 +323,7 @@ export type AppSettings = {
    screenShareQuality: number;
    screenShareAudio: boolean;
 };
+
+export type Keybind = { type: KeybindType; combination: string[]; isEnabled: boolean };
+
+export type KeybindType = "toggle_mute" | "toggle_deafen";

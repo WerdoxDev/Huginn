@@ -1,3 +1,4 @@
-### 🔧 Fixes
+### 🚀 New Feature
 
-- Lots of voice visual fixes and better stability
+- Added Keybinds to settings!
+- Keybinds can be customized and enabled/disabled at any time

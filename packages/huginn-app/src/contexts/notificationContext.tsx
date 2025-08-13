@@ -21,7 +21,7 @@ export function NotificationProvider(props: { children?: ReactNode }) {
       }
 
       // Listen to click event and navigate user to the channel
-      const unlisten = window.electronAPI.onNotificationClick(async (_, payload) => {
+      const unlisten = window.electronAPI.onNotificationClicked(async (_, payload) => {
          window.electronAPI.showMain();
          window.electronAPI.focusMain();
          //TODO: THIS SHOULD CHANGE WHEN GUIDS ARE A THING

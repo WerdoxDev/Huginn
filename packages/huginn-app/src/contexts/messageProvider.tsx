@@ -11,10 +11,7 @@ export const MessageContext = createContext<{
    lastRenderInfo?: MessageRenderInfo;
    onVisibilityChanged: (messageId: Snowflake, visible: boolean) => void;
    ref: React.RefObject<HTMLLIElement | null>;
-}>(
-   // biome-ignore lint/style/noNonNullAssertion: The initialization must be with undefined
-   undefined!,
-);
+}>(undefined!);
 
 export function MessageProvider(props: MessageRendererProps) {
    return (

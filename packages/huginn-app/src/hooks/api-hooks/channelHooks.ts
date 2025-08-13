@@ -67,7 +67,7 @@ export function useSafeDeleteDMChannel(channelId?: Snowflake, channelType?: Dire
          updateModals({
             info: {
                isOpen: true,
-               closable: true,
+               isClosable: true,
                title: `Leaving "${channelName}"`,
                status: "info",
                text: `Are you sure you want to leave ${channelName}? You cannot enter the group unless you are invited again.`,

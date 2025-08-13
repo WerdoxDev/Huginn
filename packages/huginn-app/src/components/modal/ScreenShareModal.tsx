@@ -8,7 +8,7 @@ import LoadingIcon from "@components/LoadingIcon";
 import { Checkbox, DialogPanel } from "@headlessui/react";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
-import { useSettings } from "@stores/settingsStore";
+import { useFilesStore } from "@stores/filesStore";
 import { voiceClient } from "@stores/voiceStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, useTransition } from "react";
@@ -23,12 +23,12 @@ export default function ScreenShareModal() {
       enabled: modal.isOpen,
    });
 
-   const settings = useSettings();
+   const files = useFilesStore();
 
    const [selectedSource, setSelectedSource] = useState<DisplaySource | undefined>();
-   const [selectedQuality, setSelectedQuality] = useState(settings.local.screenShareQuality);
-   const [selectedFramerate, setSelectedFramerate] = useState(settings.local.screenShareFramerate);
-   const [shareAudio, setShareAudio] = useState(settings.local.screenShareAudio);
+   const [selectedQuality, setSelectedQuality] = useState(files.settings.screenShareQuality);
+   const [selectedFramerate, setSelectedFramerate] = useState(files.settings.screenShareFramerate);
+   const [shareAudio, setShareAudio] = useState(files.settings.screenShareAudio);
    const [screenSharePending, startTransition] = useTransition();
 
    const screens = useMemo(() => data?.filter((x) => x.id.includes("screen")), [data]);
@@ -36,19 +36,19 @@ export default function ScreenShareModal() {
 
    useEffect(() => {
       if (modal.isOpen) {
-         setSelectedQuality(settings.local.screenShareQuality);
-         setSelectedFramerate(settings.local.screenShareFramerate);
-         setShareAudio(settings.local.screenShareAudio);
+         setSelectedQuality(files.settings.screenShareQuality);
+         setSelectedFramerate(files.settings.screenShareFramerate);
+         setShareAudio(files.settings.screenShareAudio);
          refetch();
       }
 
       if (!modal.isOpen) {
-         settings.setSettings({
+         files.setSettings({
             screenShareQuality: selectedQuality,
             screenShareFramerate: selectedFramerate,
             screenShareAudio: shareAudio,
          });
-         settings.saveSettings();
+         files.saveSettings();
       }
    }, [modal.isOpen]);
 

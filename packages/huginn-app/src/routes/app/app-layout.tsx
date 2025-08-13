@@ -20,6 +20,7 @@ import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { type ReactNode, useEffect } from "react";
 import { Outlet } from "react-router";
+import KeybindsProvider from "@contexts/keybindsProvider";
 
 export default function AppLayout() {
    const authBackground = useStartBackground();
@@ -47,25 +48,27 @@ export default function AppLayout() {
 
    return (
       <QueryClientProvider client={queryClient}>
-         <ContextMenuProvider>
-            <NotificationProvider>
-               <MainRenderer>
-                  <div
-                     className={clsx(
-                        "bg-surface-alt absolute inset-0",
-                        huginnWindow.environment === "desktop" && !huginnWindow.fullscreen && "top-6",
-                     )}
-                     style={isMainTransitioning ? { viewTransitionName: "start" } : undefined}
-                  >
-                     <StartBackgroundSvg state={authBackground.state} />
+         <KeybindsProvider>
+            <ContextMenuProvider>
+               <NotificationProvider>
+                  <MainRenderer>
+                     <div
+                        className={clsx(
+                           "bg-surface-alt absolute inset-0",
+                           huginnWindow.environment === "desktop" && !huginnWindow.fullscreen && "top-6",
+                        )}
+                        style={isMainTransitioning ? { viewTransitionName: "start" } : undefined}
+                     >
+                        <StartBackgroundSvg state={authBackground.state} />
 
-                     <PHProvider>
-                        <Outlet />
-                     </PHProvider>
-                  </div>
-               </MainRenderer>
-            </NotificationProvider>
-         </ContextMenuProvider>
+                        <PHProvider>
+                           <Outlet />
+                        </PHProvider>
+                     </div>
+                  </MainRenderer>
+               </NotificationProvider>
+            </ContextMenuProvider>
+         </KeybindsProvider>
       </QueryClientProvider>
    );
 }

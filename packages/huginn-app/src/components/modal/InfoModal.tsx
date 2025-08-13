@@ -9,120 +9,120 @@ import { useEffect, useMemo } from "react";
 // import { usePostHog } from "posthog-js/react";
 
 export default function InfoModal() {
-	const { info: modal, updateModals } = useModals();
-	// const posthog = usePostHog();
+   const { info: modal, updateModals } = useModals();
+   // const posthog = usePostHog();
 
-	const mutationState = useMutationLatestState(modal.action?.confirm?.mutationKey);
+   const mutationState = useMutationLatestState(modal.action?.confirm?.mutationKey);
 
-	const innerColor = useMemo(
-		() =>
-			modal.status === "info"
-				? "bg-caution-200"
-				: modal.status === "error"
-					? "bg-negative-200"
-					: modal.status === "success"
-						? "bg-positive-400"
-						: "",
-		[modal],
-	);
+   const innerColor = useMemo(
+      () =>
+         modal.status === "info"
+            ? "bg-caution-200"
+            : modal.status === "error"
+              ? "bg-negative-200"
+              : modal.status === "success"
+                ? "bg-positive-400"
+                : "",
+      [modal],
+   );
 
-	const backgroundColor = useMemo(
-		() =>
-			modal.status === "info"
-				? "bg-caution-600"
-				: modal.status === "error"
-					? "bg-negative-600"
-					: modal.status === "success"
-						? "bg-positive-800"
-						: "",
-		[modal],
-	);
+   const backgroundColor = useMemo(
+      () =>
+         modal.status === "info"
+            ? "bg-caution-600"
+            : modal.status === "error"
+              ? "bg-negative-600"
+              : modal.status === "success"
+                ? "bg-positive-800"
+                : "",
+      [modal],
+   );
 
-	const borderColor = useMemo(
-		() =>
-			modal.status === "info"
-				? "border-caution-300"
-				: modal.status === "error"
-					? "border-negative-300"
-					: modal.status === "success"
-						? "border-positive-500"
-						: "border-primary-800",
-		[modal],
-	);
+   const borderColor = useMemo(
+      () =>
+         modal.status === "info"
+            ? "border-caution-300"
+            : modal.status === "error"
+              ? "border-negative-300"
+              : modal.status === "success"
+                ? "border-positive-500"
+                : "border-primary-800",
+      [modal],
+   );
 
-	const errorCode = useMemo(() => modal.text.match(/\([A-Za-z0-9]+\)/g)?.[0] ?? "", [modal.text]);
+   const errorCode = useMemo(() => modal.text.match(/\([A-Za-z0-9]+\)/g)?.[0] ?? "", [modal.text]);
 
-	const formattedText = useMemo(() => {
-		return modal.text.replace(/\([A-Za-z0-9]+\)/g, "");
-	}, [modal.text]);
+   const formattedText = useMemo(() => {
+      return modal.text.replace(/\([A-Za-z0-9]+\)/g, "");
+   }, [modal.text]);
 
-	useEffect(() => {
-		if (modal.isOpen) {
-			// posthog.capture("info_modal_opened", { title: modal.title, text: modal.text, status: modal.status });
-		} else {
-			// posthog.capture("info_modal_closed");
-		}
-	}, [modal.isOpen]);
+   useEffect(() => {
+      if (modal.isOpen) {
+         // posthog.capture("info_modal_opened", { title: modal.title, text: modal.text, status: modal.status });
+      } else {
+         // posthog.capture("info_modal_closed");
+      }
+   }, [modal.isOpen]);
 
-	return (
-		<DialogPanel
-			transition
-			className={clsx(
-				"relative w-full max-w-xs transform overflow-hidden rounded-xl border-2 bg-surface p-5 transition-[opacity_transform] duration-200 data-closed:scale-90",
-				borderColor,
-			)}
-		>
-			<DialogTitle as="div" className="flex w-full flex-col items-center justify-center gap-y-5">
-				<div className={clsx("rounded-full p-3", backgroundColor)}>
-					<div className={clsx("rounded-full p-3", innerColor)}>
-						{modal.status === "error" && <IconMingcuteAlertLine className="h-8 w-8 text-white" />}
-						{modal.status === "info" && <IconMingcuteInformationLine className="h-8 w-8 text-white" />}
-						{modal.status === "success" && <IconMingcuteCheckFill className="h-8 w-8 text-white" />}
-					</div>
-				</div>
-				<div className="text-center font-medium text-lg text-white">{modal.title}</div>
-			</DialogTitle>
-			<Description className="mt-1 flex items-center justify-center" as="div">
-				<div className="text-center text-text/90">
-					{formattedText}
-					{errorCode && <span className="text-nowrap text-negative-100 italic opacity-90">{errorCode}</span>}
-				</div>
-			</Description>
+   return (
+      <DialogPanel
+         transition
+         className={clsx(
+            "bg-surface data-closed:scale-90 relative w-full max-w-xs transform overflow-hidden rounded-xl border-2 p-5 transition-[opacity_transform] duration-200",
+            borderColor,
+         )}
+      >
+         <DialogTitle as="div" className="flex w-full flex-col items-center justify-center gap-y-5">
+            <div className={clsx("rounded-full p-3", backgroundColor)}>
+               <div className={clsx("rounded-full p-3", innerColor)}>
+                  {modal.status === "error" && <IconMingcuteAlertLine className="h-8 w-8 text-white" />}
+                  {modal.status === "info" && <IconMingcuteInformationLine className="h-8 w-8 text-white" />}
+                  {modal.status === "success" && <IconMingcuteCheckFill className="h-8 w-8 text-white" />}
+               </div>
+            </div>
+            <div className="text-center text-lg font-medium text-white">{modal.title}</div>
+         </DialogTitle>
+         <Description className="mt-1 flex items-center justify-center" as="div">
+            <div className="text-text/90 text-center">
+               {formattedText}
+               {errorCode && <span className="text-negative-100 text-nowrap italic opacity-90">{errorCode}</span>}
+            </div>
+         </Description>
 
-			<div className="mt-5 flex items-center justify-end gap-x-2">
-				<HuginnButton
-					className="h-10 w-full"
-					color="surface-alt"
-					onClick={() => {
-						if (!modal.action?.cancel?.callback) updateModals({ info: { isOpen: false } });
-						else modal.action.cancel.callback();
-					}}
-				>
-					{modal.action?.cancel?.text ?? "Close"}
-				</HuginnButton>
+         <div className="mt-5 flex items-center justify-end gap-x-2">
+            <HuginnButton
+               className="h-10 w-full"
+               color="surface-alt"
+               onClick={() => {
+                  if (!modal.action?.cancel?.callback) updateModals({ info: { isOpen: false } });
+                  else modal.action.cancel.callback();
+               }}
+            >
+               {modal.action?.cancel?.text ?? "Close"}
+            </HuginnButton>
 
-				{modal.action?.confirm && (
-					<LoadingButton
-						loading={mutationState?.status === "pending"}
-						className="h-10 w-full text-text"
-						color="primary"
-						onClick={() => {
-							modal.action?.confirm?.callback();
-						}}
-					>
-						{modal.action.confirm.text}
-					</LoadingButton>
-				)}
-			</div>
+            {modal.action?.confirm && (
+               <LoadingButton
+                  loading={mutationState?.status === "pending"}
+                  className="text-text h-10 w-full"
+                  color="primary"
+                  onClick={() => {
+                     modal.action?.confirm?.callback();
+                  }}
+               >
+                  {modal.action.confirm.text}
+               </LoadingButton>
+            )}
+         </div>
 
-			{modal.closable && (
-				<ModalCloseButton
-					onClick={() => {
-						if (!modal.action?.cancel?.callback) updateModals({ info: { isOpen: false } });
-						else modal.action.cancel.callback();
-					}}
-				/>
-			)}
-		</DialogPanel>
-	);
+         {modal.isClosable && (
+            <ModalCloseButton
+               onClick={() => {
+                  if (!modal.action?.cancel?.callback) updateModals({ info: { isOpen: false } });
+                  else modal.action.cancel.callback();
+               }}
+            />
+         )}
+      </DialogPanel>
+   );
 }

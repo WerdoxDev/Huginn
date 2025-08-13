@@ -1,5 +1,5 @@
 import { HistoryProvider } from "@contexts/historyContext";
-import { initializeSettings } from "@stores/settingsStore";
+import { initializeFiles } from "@stores/filesStore";
 import { ThemeProvider } from "@stores/themeStore";
 import { initializeWindow } from "@stores/windowStore";
 import { useEffect, useState } from "react";
@@ -23,7 +23,7 @@ export default function Root() {
    useEffect(() => {
       let cancelled = false;
       let unlisten: Promise<() => void>;
-      initializeSettings().then(() => {
+      initializeFiles().then(() => {
          if (cancelled) {
             return;
          }

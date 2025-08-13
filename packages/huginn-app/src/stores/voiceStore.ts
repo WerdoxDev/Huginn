@@ -10,6 +10,7 @@ import { combine, devtools } from "zustand/middleware";
 import type { RemoteSource, VoicePreference } from "@/types";
 import voiceEnterUrl from "@/assets/sounds/voice-enter.wav";
 import voiceLeaveUrl from "@/assets/sounds/voice-leave.wav";
+import { filesStore } from "./filesStore";
 
 const initialStore = () => ({
    voiceChannel: { guildId: null, channelId: null } as { guildId: Snowflake | null; channelId: Snowflake | null },
@@ -18,7 +19,6 @@ const initialStore = () => ({
    callStates: [] as Array<GatewayCallState>,
    remoteSources: [] as RemoteSource[],
    speakingStates: [] as Array<{ userId: Snowflake; speaking: boolean }>,
-   voicePreferences: [] as VoicePreference[],
 });
 
 type StoreType = ReturnType<typeof initialStore>;
@@ -183,33 +183,6 @@ const store = createStore(
 
             return set({ speakingStates: [] });
          },
-         updateVoicePreferences: (userId: Snowflake, options: { microphoneVolume?: number; streamVolume?: number }) => {
-            log("app:voice-store", "voice-preferences", "update", "uid:", userId, "mvol:", options.microphoneVolume, "svol:", options.streamVolume);
-
-            set(
-               produce((draft: StoreType) => {
-                  const existingIndex = draft.voicePreferences.findIndex((x) => x.userId === userId);
-                  if (existingIndex !== -1) {
-                     draft.voicePreferences[existingIndex] = { ...draft.voicePreferences[existingIndex], ...options };
-                  } else {
-                     if (!options.microphoneVolume || !options.streamVolume) {
-                        throw new Error("Creating new voice preference requires both microphone and screen share volumes");
-                     }
-
-                     draft.voicePreferences.push({
-                        userId,
-                        microphoneVolume: options.microphoneVolume,
-                        streamVolume: options.streamVolume,
-                     });
-                  }
-               }),
-            );
-
-            dispatchEvent("voice_preference_changed", { userId: userId });
-         },
-         saveVoicePreferences: async () => {
-            saveFile("voice-preferences", get().voicePreferences);
-         },
       })),
       { name: "Voice" },
    ),
@@ -233,9 +206,6 @@ export function initializeVoice() {
 
          store.setState({ voiceStates: d.voiceStates });
          store.setState({ callStates: d.callStates });
-
-         const preferences = await loadFile("voice-preferences", []);
-         store.setState({ voicePreferences: preferences });
       }),
    );
 
@@ -292,8 +262,9 @@ export function initializeVoice() {
             thisStore.setVoiceChannel(d.channelId ?? undefined, d.guildId ?? undefined);
          } else {
             // create voice preference for new users
-            if (!thisStore.voicePreferences.some((x) => x.userId === d.userId)) {
-               thisStore.updateVoicePreferences(d.userId, { microphoneVolume: 100, streamVolume: 100 });
+            const files = filesStore.getState();
+            if (!files.voicePreferences.some((x) => x.userId === d.userId)) {
+               files.updateVoicePreferences(d.userId, { microphoneVolume: 100, streamVolume: 100 });
             }
          }
 
