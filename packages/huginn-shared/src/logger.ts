@@ -7,13 +7,13 @@ type LogValuesMap = {
    "app:voice-store":
       | "remote-sources"
       | "speaking-state"
-      | "voice-preferences"
       | "voice-state"
       | "call-state"
       | "default"
       | "gateway-recv"
       | "voice-recv"
       | "available-producers";
+   "app:files-store": "voice-preferences";
    "app:audio-source-player": "default";
    "app:audio-level-checker": "default";
    "app:voice-input-device": "default";
