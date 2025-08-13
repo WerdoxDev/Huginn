@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.24.2](https://github.com/WerdoxDev/Huginn/compare/server@v0.24.1...server@v0.24.2) (2025-08-11)
+
+
+### Bug Fixes
+
+* **server:** directly changing voice chat is not sending null state to previous channel ([9ad0189](https://github.com/WerdoxDev/Huginn/commit/9ad01893f0f443543b46266993022c02c4a506a0))
+* **server:** log time is not based on Germany ([9e802a3](https://github.com/WerdoxDev/Huginn/commit/9e802a33325f54467ab4a3e4c2a8927cac759297))
+* **server:** multi session presence is not working + multi session voice state not working ([3b1f1a3](https://github.com/WerdoxDev/Huginn/commit/3b1f1a35b19dfa9856915df1049401b63a0ac5cd))
+
 ## [0.24.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.24.0...server@v0.24.1) (2025-07-22)
 
 

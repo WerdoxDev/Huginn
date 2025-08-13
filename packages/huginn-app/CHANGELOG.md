@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.51.7](https://github.com/WerdoxDev/Huginn/compare/app@v0.51.6...app@v0.51.7) (2025-08-11)
+
+
+### Bug Fixes
+
+* **app:** joining a call when already in a call not working ([e5b22bb](https://github.com/WerdoxDev/Huginn/commit/e5b22bbbd51e02c66bea09773d1d05d9de383c31))
+* **app:** multi session voice state and presence handling ([41489a2](https://github.com/WerdoxDev/Huginn/commit/41489a2aaebbf57f5fe01bfa4feb939bd16a6538))
+
 ## [0.51.6](https://github.com/WerdoxDev/Huginn/compare/app@v0.51.5...app@v0.51.6) (2025-08-09)
 
 
