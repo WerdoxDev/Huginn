@@ -1,6 +1,6 @@
 import { createRoute, forbidden, validator } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { CDNRoutes, constants, getFileHash, HttpCode, idFix, OAuthCode, snowflake, WorkerID } from "@huginn/shared";
+import { CDNRoutes, constants, getFileHash, HttpCode, OAuthCode, snowflake, WorkerID } from "@huginn/shared";
 import { toSnakeCase } from "@std/text";
 import consola from "consola";
 import { z } from "zod";
@@ -72,12 +72,12 @@ createRoute("GET", "/api/auth/callback/google", validator("query", querySchema),
          token: response.access_token,
       });
 
-      const identityProvider = idFix(await prisma.identityProvider.findUnique({ where: { providerUserId: googleUser.id } }));
+      const identityProvider = await prisma.identityProvider.findUnique({ where: { providerUserId: googleUser.id } });
 
       // Identity provider exists and is completed
       if (identityProvider?.completed && identityProvider?.userId) {
          const [accessToken, refreshToken] = await createTokens(
-            { id: identityProvider.userId, isOAuth: true },
+            { id: identityProvider.userId.toString(), isOAuth: true },
             constants.ACCESS_TOKEN_EXPIRE_TIME,
             constants.REFRESH_TOKEN_EXPIRE_TIME,
          );

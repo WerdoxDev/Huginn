@@ -1,12 +1,13 @@
 import { createErrorFactory, createHuginnError, createRoute, invalidFormBody, missingAccess, missingPermission } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectMessageDefaults } from "@huginn/backend-shared/database/common";
-import { type APIMessage, Errors, HttpCode, idFix, nullToUndefined } from "@huginn/shared";
+import { type APIMessage, Errors, HttpCode, nullToUndefined } from "@huginn/shared";
 import { safeDestr } from "destr";
 import { z } from "zod";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { processEmbeds, verifyJwt } from "#utils/route-utils";
 import { validateEmbeds } from "#utils/validation";
+import { filterMessage } from "#utils/helpers";
 
 const jsonSchema = z.object({
    content: z.optional(z.string()),
@@ -67,12 +68,12 @@ createRoute("PATCH", "/api/channels/:channelId/messages/:messageId", verifyJwt()
    const { channelId, messageId } = c.req.param();
 
    // Check permission
-   const channel = idFix(await prisma.channel.getById(channelId, { select: { id: true } }));
+   const channel = await prisma.channel.getById(channelId, { select: { id: true } });
    if (!(await prisma.user.hasChannel(payload.id, channel.id))) {
       return missingAccess(c);
    }
 
-   const messageToCheck = idFix(await prisma.message.getById(channelId, messageId, { select: { author: { select: { id: true } } } }));
+   const messageToCheck = await prisma.message.getById(channelId, messageId, { select: { author: { select: { id: true } } } });
    if (messageToCheck.author.id !== payload.id) {
       return missingPermission(c);
    }
@@ -90,11 +91,13 @@ createRoute("PATCH", "/api/channels/:channelId/messages/:messageId", verifyJwt()
 
    const processedEmbeds = await processEmbeds(body.embeds);
 
-   const dbMessage = idFix(
-      await prisma.message.updateMessage(messageId, body.content, processedEmbeds, undefined, undefined, { select: selectMessageDefaults }),
+   const dbMessage = await prisma.message.updateMessage(
+      messageId,
+      { content: body.content, embeds: processedEmbeds },
+      { select: selectMessageDefaults },
    );
 
-   const message: APIMessage = { ...dbMessage, embeds: nullToUndefined(dbMessage.embeds), attachments: nullToUndefined(dbMessage.attachments) };
+   const message: APIMessage = filterMessage(dbMessage);
    dispatchToTopic(channelId, "message_update", message);
 
    return c.json(message, HttpCode.OK);

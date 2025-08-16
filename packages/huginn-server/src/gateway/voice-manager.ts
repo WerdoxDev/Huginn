@@ -1,18 +1,24 @@
-import type { GatewayCallState, GatewayVoiceState, Snowflake } from "@huginn/shared";
+import { type GatewayCallState, type GatewayVoiceState, type Snowflake } from "@huginn/shared";
 import { dispatchToTopic } from "#utils/gateway-utils";
+import { prisma } from "@huginn/backend-shared/database/index";
+import { selectMessageCall, selectMessageDefaults } from "@huginn/backend-shared/database/common";
+import { filterMessage } from "#utils/helpers";
 
 export class VoiceManager {
    private callStates: Map<Snowflake, GatewayCallState>;
    private voiceStates: Map<Snowflake, GatewayVoiceState>;
+   private callParticipants: Map<Snowflake, Snowflake[]>;
 
    public constructor() {
       this.callStates = new Map();
       this.voiceStates = new Map();
+      this.callParticipants = new Map();
    }
 
-   public addCall(channelId: Snowflake, messageId: Snowflake, ringing: Snowflake[]) {
+   public addCall(channelId: Snowflake, messageId: Snowflake, initiatorId: Snowflake, ringing: Snowflake[]) {
       const callState: GatewayCallState = { channelId, messageId, ringing };
       this.callStates.set(channelId, callState);
+      this.callParticipants.set(channelId, [initiatorId]);
 
       dispatchToTopic(channelId, "call_create", callState);
    }
@@ -26,11 +32,23 @@ export class VoiceManager {
       }
    }
 
-   public deleteCall(channelId: Snowflake) {
-      if (this.callStates.has(channelId)) {
-         this.callStates.delete(channelId);
-
+   public async deleteCall(channelId: Snowflake) {
+      const callState = this.callStates.get(channelId);
+      if (callState) {
          dispatchToTopic(channelId, "call_delete", { channelId });
+
+         const participants = this.callParticipants.get(channelId);
+         if (participants) {
+            const updatedMessage = await prisma.message.updateMessage(
+               callState.messageId,
+               { call: { participants: participants, setEndedTimestamp: true } },
+               { select: selectMessageDefaults },
+            );
+
+            dispatchToTopic(channelId, "message_update", filterMessage(updatedMessage));
+         }
+
+         this.callStates.delete(channelId);
       }
    }
 
@@ -49,6 +67,12 @@ export class VoiceManager {
                voiceState.channelId,
                callState.ringing.filter((x) => x !== options.userId),
             );
+         }
+
+         // Add the participant to the call
+         const participants = this.callParticipants.get(voiceState.channelId);
+         if (participants) {
+            this.callParticipants.set(voiceState.channelId, [...participants.filter((x) => x !== voiceState.userId), voiceState.userId]);
          }
       }
       // Otherwise if it previously was valid set update user voice state channel id to null

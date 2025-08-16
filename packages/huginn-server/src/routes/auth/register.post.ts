@@ -1,58 +1,58 @@
 import { createRoute, validator } from "@huginn/backend-shared";
 import { createErrorFactory, createHuginnError } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { constants, type APIPostRegisterResult, Errors, HttpCode, idFix } from "@huginn/shared";
+import { constants, type APIPostRegisterResult, Errors, HttpCode } from "@huginn/shared";
 import { z } from "zod";
 import { createTokens } from "#utils/token-factory";
 import {
-	validateDisplayName,
-	validateEmail,
-	validateEmailUnique,
-	validatePassword,
-	validateUsername,
-	validateUsernameUnique,
+   validateDisplayName,
+   validateEmail,
+   validateEmailUnique,
+   validatePassword,
+   validateUsername,
+   validateUsernameUnique,
 } from "#utils/validation";
 
 const schema = z.object({
-	username: z.string(),
-	displayName: z.nullable(z.string()),
-	email: z.string(),
-	password: z.string(),
+   username: z.string(),
+   displayName: z.nullable(z.string()),
+   email: z.string(),
+   password: z.string(),
 });
 
 createRoute("POST", "/api/auth/register", validator("json", schema), async (c) => {
-	const body = c.req.valid("json");
-	body.username = body.username.toLowerCase();
+   const body = c.req.valid("json");
+   body.username = body.username.toLowerCase();
 
-	const formError = createErrorFactory(Errors.invalidFormBody());
+   const formError = createErrorFactory(Errors.invalidFormBody());
 
-	validateUsername(body.username, formError);
-	validateDisplayName(body.displayName, formError);
-	validatePassword(body.password, formError);
-	validateEmail(body.email, formError);
+   validateUsername(body.username, formError);
+   validateDisplayName(body.displayName, formError);
+   validatePassword(body.password, formError);
+   validateEmail(body.email, formError);
 
-	if (formError.hasErrors()) {
-		return createHuginnError(c, formError);
-	}
+   if (formError.hasErrors()) {
+      return createHuginnError(c, formError);
+   }
 
-	const databaseError = createErrorFactory(Errors.invalidFormBody());
+   const databaseError = createErrorFactory(Errors.invalidFormBody());
 
-	await validateUsernameUnique(body.username, databaseError);
-	await validateEmailUnique(body.email, databaseError);
+   await validateUsernameUnique(body.username, databaseError);
+   await validateEmailUnique(body.email, databaseError);
 
-	if (databaseError.hasErrors()) {
-		return createHuginnError(c, databaseError);
-	}
+   if (databaseError.hasErrors()) {
+      return createHuginnError(c, databaseError);
+   }
 
-	const user = idFix(await prisma.user.registerNew(body));
+   const user = await prisma.user.registerNew(body);
 
-	const [accessToken, refreshToken] = await createTokens(
-		{ id: user.id, isOAuth: false },
-		constants.ACCESS_TOKEN_EXPIRE_TIME,
-		constants.REFRESH_TOKEN_EXPIRE_TIME,
-	);
+   const [accessToken, refreshToken] = await createTokens(
+      { id: user.id, isOAuth: false },
+      constants.ACCESS_TOKEN_EXPIRE_TIME,
+      constants.REFRESH_TOKEN_EXPIRE_TIME,
+   );
 
-	const json: APIPostRegisterResult = { ...user, token: accessToken, refreshToken: refreshToken };
+   const json: APIPostRegisterResult = { ...user, token: accessToken, refreshToken: refreshToken };
 
-	return c.json(json, HttpCode.CREATED);
+   return c.json(json, HttpCode.CREATED);
 });

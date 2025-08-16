@@ -1,9 +1,10 @@
 import { createRoute, missingAccess, validator } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { selectMessageDefaults } from "@huginn/backend-shared/database/common";
-import { type APIGetChannelMessagesResult, HttpCode, idFix, nullToUndefined } from "@huginn/shared";
+import { selectMessageCall, selectMessageDefaults } from "@huginn/backend-shared/database/common";
+import { HttpCode, type APIGetChannelMessagesResult } from "@huginn/shared";
 import { z } from "zod";
-import { getAttachmentUrl, verifyJwt } from "#utils/route-utils";
+import { verifyJwt } from "#utils/route-utils";
+import { filterMessage } from "#utils/helpers";
 ("@huginn/backend-shared/database/common");
 
 const querySchema = z.object({ limit: z.optional(z.string()), before: z.optional(z.string()), after: z.optional(z.string()) });
@@ -16,18 +17,17 @@ createRoute("GET", "/api/channels/:channelId/messages", verifyJwt(), validator("
    const before = query.before;
    const after = query.after;
 
-   const channel = idFix(await prisma.channel.getById(channelId, { select: { id: true } }));
+   const channel = await prisma.channel.getById(channelId, { select: { id: true } });
 
    if (!(await prisma.user.hasChannel(payload.id, channel.id))) {
       return missingAccess(c);
    }
 
-   const dbMessages = idFix(await prisma.message.getMessages(channelId, limit, before, after, { select: selectMessageDefaults }));
-   const messages: APIGetChannelMessagesResult = dbMessages.map((x) => ({
-      ...x,
-      embeds: nullToUndefined(x.embeds),
-      attachments: nullToUndefined(x.attachments.map((x) => ({ ...x, url: getAttachmentUrl(x.url) }))),
-   }));
+   const dbMessages = await prisma.message.getMessages(channelId, limit, before, after, {
+      select: { ...selectMessageDefaults, ...selectMessageCall },
+   });
+
+   const messages: APIGetChannelMessagesResult = dbMessages.map((x) => filterMessage(x));
 
    return c.json(messages, HttpCode.OK);
 });

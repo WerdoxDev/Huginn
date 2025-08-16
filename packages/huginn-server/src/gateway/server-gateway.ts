@@ -19,7 +19,6 @@ import {
    type GatewayPayload,
    type GatewayResumeData,
    type GatewayUpdateVoiceStateData,
-   idFix,
    log,
    merge,
    type UserSettings,
@@ -155,7 +154,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
          return;
       }
 
-      const user = idFix(await prisma.user.getById(payload.id, { select: selectPrivateUser }));
+      const user = await prisma.user.getById(payload.id, { select: selectPrivateUser });
 
       if (!session) {
          throw new Error("session was null in handleIdentify");
@@ -164,20 +163,21 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       await session.initialize(user, { ...data.properties });
 
       // Relationships
-      const userRelationships = idFix(
-         await prisma.relationship.getUserRelationships(user.id, { include: selectRelationshipUser, omit: omitRelationshipUserIds }),
-      );
+      const userRelationships = await prisma.relationship.getUserRelationships(user.id, {
+         include: selectRelationshipUser,
+         omit: omitRelationshipUserIds,
+      });
 
       // Channels
-      const userChannels = idFix(
-         await prisma.channel.getUserChannels(user.id, false, { include: merge(selectChannelRecipients, omitChannelRecipient(user.id)) }),
-      );
+      const userChannels = await prisma.channel.getUserChannels(user.id, false, {
+         include: merge(selectChannelRecipients, omitChannelRecipient(user.id)),
+      });
 
       // Presences
       const presences = this.presenceManager.getUserPresences(session);
 
       // Read states
-      const dbReadStates = idFix(await prisma.readState.getUserStates(user.id));
+      const dbReadStates = await prisma.readState.getUserStates(user.id);
       const finalReadStates: APIReadStateWithoutUser[] = [];
 
       for (const readState of dbReadStates) {

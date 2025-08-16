@@ -2,7 +2,7 @@ import { CommonClientSession } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { omitChannelRecipient, selectChannelRecipients, selectRelationshipUser } from "@huginn/backend-shared/database/common";
 import type { GatewayIdentifyProperties, GatewayPayload } from "@huginn/shared";
-import { idFix, merge, RelationshipType } from "@huginn/shared";
+import { merge, RelationshipType } from "@huginn/shared";
 
 export class ClientSession extends CommonClientSession<GatewayPayload, GatewayIdentifyProperties> {
    public get authenticated(): boolean {
@@ -17,13 +17,10 @@ export class ClientSession extends CommonClientSession<GatewayPayload, GatewayId
       const userId = this.user?.id;
       this.subscribe(userId);
 
-      const relationships = idFix(await prisma.relationship.getUserRelationships(userId, { select: { ...selectRelationshipUser, type: true } }));
-      const channels = idFix(
-         await prisma.channel.getUserChannels(userId, true, {
-            select: { ...merge(selectChannelRecipients, omitChannelRecipient(userId)), id: true },
-         }),
-      );
-
+      const relationships = await prisma.relationship.getUserRelationships(userId, { select: { ...selectRelationshipUser, type: true } });
+      const channels = await prisma.channel.getUserChannels(userId, true, {
+         select: { ...merge(selectChannelRecipients, omitChannelRecipient(userId)), id: true },
+      });
       const publicUserIds = [...new Set([...relationships.map((x) => x.user.id), ...channels.flatMap((x) => x.recipients).map((x) => x.id)])];
       const presenceUserIds = [...new Set(relationships.filter((x) => x.type === RelationshipType.FRIEND).map((x) => x.user.id))];
 

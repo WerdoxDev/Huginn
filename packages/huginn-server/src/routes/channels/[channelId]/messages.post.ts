@@ -10,25 +10,16 @@ import {
 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectMessageDefaults } from "@huginn/backend-shared/database/common";
-import {
-   type APIMessage, Errors,
-   HttpCode,
-   MessageType,
-   WorkerID,
-   idFix,
-   isImageMediaType,
-   isVideoMediaType,
-   nullToUndefined,
-   snowflake
-} from "@huginn/shared";
+import { type APIMessage, Errors, HttpCode, MessageType, WorkerID, isImageMediaType, isVideoMediaType, snowflake } from "@huginn/shared";
 import { safeDestr } from "destr";
 import { join } from "pathe";
 import { z } from "zod";
 import { envs } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { extractData, extractEmbedTags, extractLinks, getAttachmentUrl, processAttachments, processEmbeds, verifyJwt } from "#utils/route-utils";
+import { extractData, extractEmbedTags, extractLinks, processAttachments, processEmbeds, verifyJwt } from "#utils/route-utils";
 import type { DBEmbed } from "#utils/types";
 import { validateEmbeds } from "#utils/validation";
+import { filterMessage } from "#utils/helpers";
 
 const jsonSchema = z.object({
    content: z.optional(z.string()),
@@ -93,7 +84,7 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
    const { channelId } = c.req.param();
 
    // Check permission
-   const channel = idFix(await prisma.channel.getById(channelId, { select: { id: true } }));
+   const channel = await prisma.channel.getById(channelId, { select: { id: true } });
    if (!(await prisma.user.hasChannel(payload.id, channel.id))) {
       return missingAccess(c);
    }
@@ -123,29 +114,23 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
    // Fetch image data from embeds
    const processedEmbeds = await processEmbeds(body.embeds);
 
-   const dbMessage = idFix(
-      await prisma.message.createMessage(
-         messageId,
-         payload.id,
+   const dbMessage = await prisma.message.createMessage(
+      {
+         id: messageId,
+         authorId: payload.id,
          channelId,
-         MessageType.DEFAULT,
-         body.content,
-         processedAttachments,
-         processedEmbeds.length === 0 ? undefined : processedEmbeds,
-         undefined,
-         body.flags,
-         undefined,
-         { select: selectMessageDefaults },
-      ),
+         type: MessageType.DEFAULT,
+         content: body.content,
+         attachments: processedAttachments,
+         embeds: processedEmbeds.length === 0 ? undefined : processedEmbeds,
+         flags: body.flags,
+      },
+      { select: selectMessageDefaults },
    );
 
    // dbMessage.attachments[0].
 
-   const message: APIMessage = {
-      ...dbMessage,
-      embeds: nullToUndefined(dbMessage.embeds),
-      attachments: nullToUndefined(dbMessage.attachments.map((x) => ({ ...x, url: getAttachmentUrl(x.url) }))),
-   };
+   const message: APIMessage = filterMessage(dbMessage);
    message.nonce = body.nonce;
 
    dispatchToTopic(channelId, "message_create", message);
@@ -206,15 +191,9 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
          return;
       }
 
-      const updatedMessage = idFix(
-         await prisma.message.updateMessage(dbMessage.id, undefined, embeds, undefined, undefined, { select: selectMessageDefaults }),
-      );
+      const updatedMessage = await prisma.message.updateMessage(dbMessage.id, { embeds }, { select: selectMessageDefaults });
 
-      dispatchToTopic(channelId, "message_update", {
-         ...updatedMessage,
-         embeds: nullToUndefined(updatedMessage.embeds),
-         attachments: nullToUndefined(updatedMessage.attachments.map((x) => ({ ...x, url: getAttachmentUrl(x.url) }))),
-      });
+      dispatchToTopic(channelId, "message_update", filterMessage(updatedMessage));
    });
 
    return c.json(message, HttpCode.CREATED);

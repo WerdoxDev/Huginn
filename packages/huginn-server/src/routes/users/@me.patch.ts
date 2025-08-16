@@ -1,7 +1,7 @@
 import { createErrorFactory, createHuginnError, createRoute, validator } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
-import { type APIPatchCurrentUserResult, CDNRoutes, constants, Errors, Fields, getFileHash, HttpCode, idFix, toArrayBuffer } from "@huginn/shared";
+import { type APIPatchCurrentUserResult, CDNRoutes, constants, Errors, Fields, getFileHash, HttpCode, toArrayBuffer } from "@huginn/shared";
 import { z } from "zod";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
@@ -48,7 +48,7 @@ createRoute("PATCH", "/api/users/@me", verifyJwt(), validator("json", schema), a
 
    const databaseError = createErrorFactory(Errors.invalidFormBody());
 
-   const user = idFix(await prisma.user.getById(payload.id, { select: { id: true, password: true } }));
+   const user = await prisma.user.getById(payload.id, { select: { id: true, password: true } });
    validateCorrectPassword(body.password, user.password, databaseError);
 
    await validateUsernameUnique(body.username, databaseError);
@@ -73,18 +73,16 @@ createRoute("PATCH", "/api/users/@me", verifyJwt(), validator("json", schema), a
       avatarHash = null;
    }
 
-   const updatedUser = idFix(
-      await prisma.user.edit(
-         payload.id,
-         {
-            email: body.email,
-            username: body.username?.toLowerCase(),
-            displayName: !body.displayName && body.displayName !== undefined ? null : body.displayName,
-            avatar: avatarHash,
-            password: body.newPassword ? body.newPassword : undefined,
-         },
-         { select: selectPrivateUser },
-      ),
+   const updatedUser = await prisma.user.edit(
+      payload.id,
+      {
+         email: body.email,
+         username: body.username?.toLowerCase(),
+         displayName: !body.displayName && body.displayName !== undefined ? null : body.displayName,
+         avatar: avatarHash,
+         password: body.newPassword ? body.newPassword : undefined,
+      },
+      { select: selectPrivateUser },
    );
 
    const [accessToken, refreshToken] = await createTokens(

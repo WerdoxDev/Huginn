@@ -2,7 +2,7 @@ import { createErrorFactory, createHuginnError, createRoute, tryCatch, validator
 import { assertError, prisma } from "@huginn/backend-shared/database";
 import { selectRelationshipUser } from "@huginn/backend-shared/database/common";
 import { DBErrorType } from "@huginn/backend-shared/types";
-import { Errors, HttpCode, idFix, omit, RelationshipType, type Snowflake } from "@huginn/shared";
+import { Errors, HttpCode, omit, RelationshipType, type Snowflake } from "@huginn/shared";
 import type { Context } from "hono";
 import { z } from "zod";
 import { gateway } from "#setup";
@@ -18,7 +18,7 @@ createRoute("POST", "/api/users/@me/relationships", verifyJwt(), validator("json
       return createHuginnError(c, createErrorFactory(Errors.invalidFormBody()));
    }
 
-   const [error, userId] = await tryCatch(async () => idFix(await prisma.user.getByUsername(body.username)).id);
+   const [error, userId] = await tryCatch(async () => (await prisma.user.getByUsername(body.username)).id);
 
    if (assertError(error, DBErrorType.NULL_USER)) {
       return createHuginnError(c, createErrorFactory(Errors.noUserWithUsername()), HttpCode.NOT_FOUND);
@@ -46,9 +46,10 @@ export async function relationshipPost(c: Context, userId: Snowflake) {
          type: RelationshipType.PENDING_OUTGOING,
       }))
    ) {
-      const relationships = idFix(
-         await prisma.relationship.createRelationship(payload.id, userId, { include: { ...selectRelationshipUser }, omit: { userId: true } }),
-      );
+      const relationships = await prisma.relationship.createRelationship(payload.id, userId, {
+         include: { ...selectRelationshipUser },
+         omit: { userId: true },
+      });
 
       const relationshipOwner = relationships.find((x) => x.ownerId === payload.id);
       const relationshipUser = relationships.find((x) => x.ownerId === userId);

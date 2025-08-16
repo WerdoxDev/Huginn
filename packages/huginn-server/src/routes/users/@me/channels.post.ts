@@ -1,7 +1,7 @@
 import { createErrorFactory, createHuginnError, createRoute, validator } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectChannelRecipients } from "@huginn/backend-shared/database/common";
-import { type APIPostDMChannelResult, ChannelType, Errors, HttpCode, idFix } from "@huginn/shared";
+import { type APIPostDMChannelResult, ChannelType, Errors, HttpCode } from "@huginn/shared";
 import { z } from "zod";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
@@ -24,9 +24,9 @@ createRoute("POST", "/api/users/@me/channels", verifyJwt(), validator("json", sc
    }
 
    // Create dm
-   const createdChannel: APIPostDMChannelResult = idFix(
-      await prisma.channel.createDM(payload.id, body.recipients, body.name, { include: selectChannelRecipients }),
-   );
+   const createdChannel: APIPostDMChannelResult = await prisma.channel.createDirectChannel(payload.id, body.recipients, body.name, {
+      include: selectChannelRecipients,
+   });
 
    // Subscribe topics, dispatch channel create event, create read state
    for (const recipientId of createdChannel.recipients.map((x) => x.id)) {
