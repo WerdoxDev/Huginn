@@ -1,4 +1,5 @@
-### 🚀 New Feature
+### 🚀 New Features
 
-- Added Keybinds to settings!
-- Keybinds can be customized and enabled/disabled at any time
+- Added right click menu to messages
+- Added call ended time and people who participated
+- Added _very_ experimental message editing function (use with caution)
