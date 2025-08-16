@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.53.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.52.0...app@v0.53.0) (2025-08-16)
+
+
+### Features
+
+* **app:** add message editing + better scroll down + message visual changes + call message participants ([55deccf](https://github.com/WerdoxDev/Huginn/commit/55deccf873d8370c579fcc8ddf9b443cfd2d8f5d))
+
 ## [0.52.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.51.7...app@v0.52.0) (2025-08-13)
 
 

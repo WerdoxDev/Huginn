@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.22.4...api@v0.23.0) (2025-08-16)
+
+
+### Features
+
+* **api:** add message edit function ([fd5a691](https://github.com/WerdoxDev/Huginn/commit/fd5a69117706940c34c5db3125dfa6926109042c))
+
 ## [0.22.4](https://github.com/WerdoxDev/Huginn/compare/api@v0.22.3...api@v0.22.4) (2025-08-11)
 
 

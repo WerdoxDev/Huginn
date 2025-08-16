@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.25.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.24.2...server@v0.25.0) (2025-08-16)
+
+
+### Features
+
+* **server:** add embed generation to message editing ([6daf6cf](https://github.com/WerdoxDev/Huginn/commit/6daf6cf2900788e133c6cc10df9f1b677b23eee0))
+* **server:** centralized message dispatching + remove need for idFix + call end timestamp update ([47ebde8](https://github.com/WerdoxDev/Huginn/commit/47ebde8b8b863d5acfffb435d66327330de1b4d6))
+
 ## [0.24.2](https://github.com/WerdoxDev/Huginn/compare/server@v0.24.1...server@v0.24.2) (2025-08-11)
 
 
