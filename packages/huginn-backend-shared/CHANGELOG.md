@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.10.2...backend-shared@v0.11.0) (2025-08-16)
+
+
+### Features
+
+* **backend-shared:** include idFix on database layer ([f931d80](https://github.com/WerdoxDev/Huginn/commit/f931d8031bcd3cb21574584ab7e6a896e1277a59))
+
 ## [0.10.2](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.10.1...backend-shared@v0.10.2) (2025-07-16)
 
 
