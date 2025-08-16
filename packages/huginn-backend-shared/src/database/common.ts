@@ -53,11 +53,16 @@ export const selectMessageAttachments = Prisma.validator<Prisma.MessageSelect>()
    },
 });
 
+export const selectMessageCall = Prisma.validator<Prisma.MessageSelect>()({
+   call: { select: { participants: { select: { id: true } }, endedTimestamp: true } },
+});
+
 export const selectMessageDefaults = Prisma.validator<Prisma.MessageSelect>()({
    ...selectMessageAuthor,
    ...selectMessageMentions,
    ...selectMessageEmbeds,
    ...selectMessageAttachments,
+   ...selectMessageCall,
    channelId: true,
    content: true,
    timestamp: true,
@@ -69,10 +74,7 @@ export const selectMessageDefaults = Prisma.validator<Prisma.MessageSelect>()({
    flags: true,
 });
 
-export const selectCallMessage = Prisma.validator<Prisma.MessageSelect>()({
-   ...selectMessageDefaults,
-   call: { select: { participants: { select: { id: true } }, endedTimestamp: true } },
-});
+// export const selectAllMessage = { ...selectMessageDefaults, ...selectMessageCall };
 
 export const selectRelationshipUser = Prisma.validator<Prisma.RelationshipSelect>()({
    user: { select: selectPublicUser },

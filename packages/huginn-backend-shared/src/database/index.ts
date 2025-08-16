@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient, type Message } from "@prisma/client";
 import { withOptimize } from "@prisma/extension-optimize";
 import { assertExtension } from "./assert";
 import { attachmentExtension } from "./attachment";
@@ -14,28 +14,28 @@ import { userExtension } from "./user";
 export const prismaBase = new PrismaClient().$extends(withOptimize({ apiKey: process.env.OPTIMIZE_API_KEY ?? "", enable: false }));
 
 export const prisma = prismaBase
-	.$extends({
-		model: {
-			$allModels: {
-				async exists<T>(this: T, where: Prisma.Args<T, "findFirst">["where"]) {
-					const context = Prisma.getExtensionContext(this);
+   .$extends({
+      model: {
+         $allModels: {
+            async exists<T>(this: T, where: Prisma.Args<T, "findFirst">["where"]) {
+               const context = Prisma.getExtensionContext(this);
 
-					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-					const result = await (context as any).count({ where });
-					return result !== 0;
-				},
-			},
-		},
-	})
-	.$extends(assertExtension)
-	.$extends(authExtension)
-	.$extends(userExtension)
-	.$extends(channelExtension)
-	.$extends(messagesExtension)
-	.$extends(relationshipExtension)
-	.$extends(readStateExtension)
-	.$extends(embedExtension)
-	.$extends(attachmentExtension);
+               // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+               const result = await (context as any).count({ where });
+               return result !== 0;
+            },
+         },
+      },
+   })
+   .$extends(assertExtension)
+   .$extends(authExtension)
+   .$extends(userExtension)
+   .$extends(channelExtension)
+   .$extends(messagesExtension)
+   .$extends(relationshipExtension)
+   .$extends(readStateExtension)
+   .$extends(embedExtension)
+   .$extends(attachmentExtension);
 
 // let longest = 0;
 // prismaBase.$on("query", (e) => {
@@ -49,3 +49,4 @@ export const prisma = prismaBase
 // });
 
 export * from "./error";
+export { Prisma, type Message };

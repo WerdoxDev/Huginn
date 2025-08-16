@@ -1,5 +1,5 @@
 import { DBErrorType } from "@huginn/backend-shared/types";
-import { ChannelType, type Snowflake, WorkerID, snowflake } from "@huginn/shared";
+import { type BigIntToString, ChannelType, type Snowflake, WorkerID, idFix, snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 import { assertExists, prisma } from ".";
 import { assertId, assertObj } from "./error";
@@ -12,7 +12,7 @@ export const channelExtension = Prisma.defineExtension({
             const channel = await prisma.channel.findUnique({ where: { id: BigInt(id) }, ...args });
 
             assertObj("getById", channel, DBErrorType.NULL_CHANNEL, id);
-            return channel as Prisma.ChannelGetPayload<Args>;
+            return idFix(channel) as BigIntToString<Prisma.ChannelGetPayload<Args>>;
          },
          async getUserChannels<Args extends Prisma.ChannelDefaultArgs>(userId: Snowflake, includeDeleted: boolean, args?: Args) {
             try {
@@ -38,15 +38,20 @@ export const channelExtension = Prisma.defineExtension({
                const channels = [...groupChannels, ...dmChannels];
 
                assertObj("getUserChannels", channels, DBErrorType.NULL_CHANNEL);
-               return channels as Prisma.ChannelGetPayload<Args>[];
+               return idFix(channels) as BigIntToString<Prisma.ChannelGetPayload<Args>[]>;
             } catch (e) {
                await assertExists(e, "getUserChannels", DBErrorType.NULL_USER, [userId]);
                throw e;
             }
          },
-         async createDM<Args extends Prisma.ChannelDefaultArgs>(initiatorId: Snowflake, recipients: Snowflake[], name?: string, args?: Args) {
+         async createDirectChannel<Args extends Prisma.ChannelDefaultArgs>(
+            initiatorId: Snowflake,
+            recipients: Snowflake[],
+            name?: string,
+            args?: Args,
+         ) {
             try {
-               let channel: unknown | undefined;
+               let channel;
                const isGroup = recipients.length > 1;
                const recipientsConnect = [{ id: BigInt(initiatorId) }, ...recipients.map((x) => ({ id: BigInt(x) }))];
 
@@ -94,7 +99,7 @@ export const channelExtension = Prisma.defineExtension({
                }
 
                assertObj("createDM", channel, DBErrorType.NULL_CHANNEL);
-               return channel as Prisma.ChannelGetPayload<Args>;
+               return idFix(channel) as BigIntToString<Prisma.ChannelGetPayload<Args>>;
             } catch (e) {
                await assertExists(e, "createDM", DBErrorType.NULL_USER, [initiatorId, ...recipients]);
                throw e;
@@ -115,7 +120,7 @@ export const channelExtension = Prisma.defineExtension({
                });
 
                assertObj("editDM", updatedChannel, DBErrorType.NULL_CHANNEL);
-               return updatedChannel as Prisma.ChannelGetPayload<Args>;
+               return idFix(updatedChannel) as BigIntToString<Prisma.ChannelGetPayload<Args>>;
             } catch (e) {
                await assertExists(e, "editDM", DBErrorType.NULL_CHANNEL, [channelId]);
                await assertExists(e, "editDM", DBErrorType.NULL_USER, [owner]);
@@ -131,7 +136,7 @@ export const channelExtension = Prisma.defineExtension({
                });
 
                assertObj("addRecipient", updatedChannel, DBErrorType.NULL_CHANNEL);
-               return updatedChannel as Prisma.ChannelGetPayload<Args>;
+               return idFix(updatedChannel) as BigIntToString<Prisma.ChannelGetPayload<Args>>;
             } catch (e) {
                await assertExists(e, "addRecipient", DBErrorType.NULL_CHANNEL, [channelId]);
                await assertExists(e, "addRecipient", DBErrorType.NULL_USER, [recipientId]);
@@ -147,7 +152,7 @@ export const channelExtension = Prisma.defineExtension({
                });
 
                assertObj("removeRecipient", updatedChannel, DBErrorType.NULL_CHANNEL);
-               return updatedChannel as Prisma.ChannelGetPayload<Args>;
+               return idFix(updatedChannel) as BigIntToString<Prisma.ChannelGetPayload<Args>>;
             } catch (e) {
                await assertExists(e, "removeRecipient", DBErrorType.NULL_CHANNEL, [channelId]);
                await assertExists(e, "removeRecipient", DBErrorType.NULL_USER, [recipientId]);
@@ -176,7 +181,7 @@ export const channelExtension = Prisma.defineExtension({
                }
 
                assertObj("deleteDM", editedChannel, DBErrorType.NULL_CHANNEL);
-               return editedChannel as Prisma.ChannelGetPayload<Args>;
+               return idFix(editedChannel) as BigIntToString<Prisma.ChannelGetPayload<Args>>;
             } catch (e) {
                await assertExists(e, "deleteDM", DBErrorType.NULL_CHANNEL, [channelId]);
                await assertExists(e, "deleteDM", DBErrorType.NULL_USER, [userId]);

@@ -27,11 +27,12 @@ export type DBAttachment = Omit<APIPostAttachmentJSONBody, "id"> & {
    flags: number;
 };
 
+export type DBCall = { endedTimestamp?: Date; participants: Snowflake[] };
+
 export type WebsocketOptions = {
    workerId: WorkerID;
    sessionDeleteTimeout: number;
-
-}
+};
 
 declare module "hono" {
    interface ContextVariableMap {
