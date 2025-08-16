@@ -6,7 +6,6 @@ import {
    constants,
    convertToMediaKind,
    GatewayCode,
-   idFix,
    type MediasoupAppData,
    type VoiceCloseConsumerData,
    type VoiceCloseProducerData,
@@ -367,7 +366,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          return;
       }
 
-      const user = idFix(await prisma.user.getById(payload.userId, { select: selectPrivateUser }));
+      const user = await prisma.user.getById(payload.userId, { select: selectPrivateUser });
 
       await session.initialize(user, { token: data.token, user, channelId: data.channelId, guildId: data.guildId });
 
