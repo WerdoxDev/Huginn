@@ -5,15 +5,16 @@ import RecipientsSidebar from "@components/channels/RecipientsSidebar";
 import MessageBox from "@components/MessageBox";
 import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useSafePathname } from "@hooks/useLastSafePathname";
-import { ChannelType } from "@huginn/shared";
+import { ChannelType, snowflake } from "@huginn/shared";
 import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
 import { clientStore, useClient } from "@stores/clientStore";
 import { voiceClient } from "@stores/voiceStore";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { usePostHog } from "posthog-js/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { type LoaderFunctionArgs, useParams } from "react-router";
 import { queryClient } from "@/root";
+import moment from "moment";
 
 export async function channelWithIdLoader({ params }: LoaderFunctionArgs) {
    const client = clientStore.getState().client;
@@ -36,6 +37,17 @@ export default function ChannelWithId() {
    const handleServerError = useErrorHandler();
 
    const [recipientsVisible, setRecipientsVisible] = useState(true);
+
+   const sortedMessages = useMemo(
+      () =>
+         messages.pages.flat().toSorted((a, b) => {
+            if (a.isPreview !== b.isPreview) {
+               return a.isPreview ? 1 : -1; // Move previews to the end
+            }
+            return moment(snowflake.getTimestamp(a.id)).isAfter(snowflake.getTimestamp(b.id)) ? 1 : -1;
+         }),
+      [messages],
+   );
 
    useEffect(() => {
       if (!channel) {
@@ -70,8 +82,8 @@ export default function ChannelWithId() {
             <div className="flex h-full w-full overflow-hidden">
                <div className="flex h-full w-full flex-col overflow-hidden">
                   <DirectChannelCall channelId={channelId} />
-                  <ChannelMessages channelId={channelId} messages={messages.pages.flat()} />
-                  <MessageBox messages={messages.pages.flat()} />
+                  <ChannelMessages channelId={channelId} messages={sortedMessages} />
+                  <MessageBox messages={sortedMessages} />
                </div>
                {channel.type === ChannelType.GROUP_DM && channel.ownerId && (
                   <RecipientsSidebar

@@ -99,7 +99,7 @@ export default function VoiceStatus() {
                               <IconMingcuteWifiLine className="text-positive-100 size-6 transition-colors" style={{ color: latencyColor }} />
                            </Tooltip.Trigger>
                         )}
-                        <Tooltip.Content extrastyle={{ color: latencyColor }}>{rtt} ms</Tooltip.Content>
+                        <Tooltip.Content extraStyle={{ color: latencyColor }}>{rtt} ms</Tooltip.Content>
                      </Tooltip>
                      <div
                         className={clsx(

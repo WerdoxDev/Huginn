@@ -23,7 +23,11 @@ export default function ConnectionStatus() {
                "h-2 w-2 rounded-full",
                gatewayStatus === "authenticated" && "bg-positive-100",
                (gatewayStatus === "disconnected" || gatewayStatus === "reconnecting") && "bg-negative-100",
-               (gatewayStatus === "reconnecting" || gatewayStatus === "connecting" || gatewayStatus === "none" || !clientStore.isInitialized) &&
+               (gatewayStatus === "reconnecting" ||
+                  gatewayStatus === "connecting" ||
+                  gatewayStatus === "none" ||
+                  !clientStore.isInitialized ||
+                  !gatewayStatus) &&
                   "bg-caution-100",
                gatewayStatus === "connected" && "bg-positive-400",
             )}

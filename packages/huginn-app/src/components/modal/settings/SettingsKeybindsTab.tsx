@@ -93,7 +93,6 @@ function KeybindDisplay(props: {
 
             const normalized = normalizeKey(e.key);
 
-            console.log(normalized);
             if (normalized === "Escape") {
                setIsEditing(false);
                props.onChange(props.type, [], props.isEnabled);

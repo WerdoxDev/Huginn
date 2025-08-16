@@ -1,5 +1,5 @@
 import type { Keybind, KeybindType } from "@/types";
-import { log } from "@huginn/shared";
+import { error, log } from "@huginn/shared";
 import { globalShortcut, ipcMain, type BrowserWindow } from "electron";
 
 function normalizeCombination(combination: string[]) {
@@ -20,7 +20,7 @@ function normalizeCombination(combination: string[]) {
 let _isEnabled = true;
 
 export function listenToEvents(mainWindow: BrowserWindow) {
-   ipcMain.on("keybinds:update", (_, keybinds: Keybind[]) => {
+   ipcMain.handle("keybinds:update", (_, keybinds: Keybind[]) => {
       log("app:electron", "recv", "keybinds update");
 
       globalShortcut.unregisterAll();
@@ -31,16 +31,22 @@ export function listenToEvents(mainWindow: BrowserWindow) {
          }
 
          const accelerator = normalizeCombination(keybind.combination).join("+");
-         console.log(accelerator);
-         globalShortcut.register(accelerator, () => {
-            if (!_isEnabled) {
-               return;
-            }
+         try {
+            globalShortcut.register(accelerator, () => {
+               if (!_isEnabled) {
+                  return;
+               }
 
-            log("app:electron", "send", "keybind fire", "type:", keybind.type);
-            mainWindow.webContents.send("keybinds:fired", keybind.type);
-         });
+               log("app:electron", "send", "keybind fire", "type:", keybind.type);
+               mainWindow.webContents.send("keybinds:fired", keybind.type);
+            });
+         } catch (e) {
+            error("app:electron", e);
+            return false;
+         }
       }
+
+      return true;
    });
 
    ipcMain.on("keybinds:set-enabled", (_, isEnabled: boolean) => {

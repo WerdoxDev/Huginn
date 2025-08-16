@@ -20,6 +20,9 @@ import {
    useListNavigation,
    useMergeRefs,
    useRole,
+   detectOverflow,
+   type MiddlewareState,
+   size,
 } from "@floating-ui/react";
 import { omit } from "@huginn/shared";
 import clsx from "clsx";
@@ -56,12 +59,34 @@ function Menu(props: ContextMenuProps & HTMLProps<HTMLButtonElement>) {
 
    const isNested = parentId != null;
 
+   const middleware = {
+      name: "middleware",
+      async fn(state: MiddlewareState) {
+         const overflow = await detectOverflow(state, { padding: 5 });
+         console.log(overflow);
+         return {};
+      },
+   };
+
    const { floatingStyles, refs, context } = useFloating<HTMLButtonElement>({
       nodeId,
       open: isOpen,
       onOpenChange: setIsOpen,
       placement: isNested ? "right-start" : "bottom-start",
-      middleware: [offset({ mainAxis: isNested ? 12 : 0, alignmentAxis: 0 }), flip(), shift({ padding: 10 })],
+      middleware: [
+         offset({ mainAxis: isNested ? 12 : 0, alignmentAxis: 0 }),
+         flip(),
+         shift({ padding: 10 }),
+         size({
+            apply({ availableWidth, availableHeight, elements }) {
+               Object.assign(elements.floating.style, {
+                  maxWidth: `${Math.max(0, availableWidth)}px`,
+                  maxHeight: `${Math.max(0, availableHeight)}px`,
+               });
+            },
+            padding: 5,
+         }),
+      ],
       whileElementsMounted: autoUpdate,
    });
 
@@ -184,7 +209,7 @@ function Menu(props: ContextMenuProps & HTMLProps<HTMLButtonElement>) {
                         <FloatingFocusManager context={context} modal={false} initialFocus={isNested ? -1 : 0} returnFocus={!isNested}>
                            <div
                               ref={refs.setFloating}
-                              className="outline-hidden z-998 flex min-w-28 flex-col gap-y-0.5 rounded-lg bg-zinc-900 p-2.5 shadow-lg"
+                              className="outline-hidden z-998 scroll-alternative2 flex min-w-28 flex-col gap-y-0.5 overflow-y-auto rounded-lg bg-zinc-900 p-2.5 shadow-lg"
                               style={floatingStyles}
                               {...getFloatingProps()}
                            >
@@ -213,7 +238,7 @@ function Item(props: ContextMenuItemProps & React.ButtonHTMLAttributes<HTMLButto
          type="button"
          role="menuitem"
          className={clsx(
-            "outline-hidden flex cursor-pointer items-center justify-between gap-x-5 text-nowrap rounded-sm px-2 py-1.5 text-start text-sm disabled:cursor-not-allowed",
+            "outline-hidden flex shrink-0 cursor-pointer items-center justify-between gap-x-5 text-nowrap rounded-sm px-2 py-1.5 text-start text-sm disabled:cursor-not-allowed",
             !props.color || props.color === "default"
                ? "focus:bg-surface-alt text-white/90 disabled:text-white/50"
                : props.color === "negative" && "text-negative-100 focus:bg-negative-100/10 disabled:text-negative-100/50",
@@ -256,7 +281,7 @@ export default function ContextMenu(props: ContextMenuProps) {
 }
 
 function Divider() {
-   return <div className="bg-surface mx-1 my-2 h-px" />;
+   return <div className="bg-surface mx-1 my-2 h-px shrink-0" />;
 }
 
 ContextMenu.Item = Item;

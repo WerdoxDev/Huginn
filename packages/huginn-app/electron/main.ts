@@ -51,6 +51,7 @@ function createWindow() {
          contextIsolation: true,
          nodeIntegration: true,
          preload: path.join(__dirname, "preload.cjs"),
+         backgroundThrottling: false,
       },
       show: false,
    });

@@ -3,32 +3,20 @@ import { useSendMessage } from "@hooks/mutations/useSendMessage";
 import { useSendTyping } from "@hooks/mutations/useSendTyping";
 import { isImageMediaType, MessageFlags } from "@huginn/shared";
 import { dispatchEvent } from "@lib/event-handler";
-import { markdownMainEditor } from "@lib/markdown-main";
-import { markdownSpoiler } from "@lib/markdown-spoiler";
-import { markdownUnderline } from "@lib/markdown-underline";
-import {
-   getCodeLanguage,
-   getHighlightedLineTokens,
-   getSlateFormats,
-   getTokenLength,
-   hasMarkup,
-   isCloseToken,
-   isOpenToken,
-   organizeTokens,
-   splitHighlightedTokens,
-} from "@lib/markdown-utils";
 import clsx from "clsx";
-import hljs from "highlight.js";
-import markdownit from "markdown-it";
-import { type ClipboardEvent, type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { type ClipboardEvent, type KeyboardEvent, useEffect, useRef, useState, useTransition } from "react";
 import { useParams } from "react-router";
-import { createEditor, type Descendant, Editor, Element, Node, type Path, type Range } from "slate";
-import { DefaultElement, Editable, type RenderElementProps, type RenderLeafProps, Slate, withReact } from "slate-react";
-import type { AppMessage, AttachmentType, HuginnToken } from "@/types";
+import { type Descendant, Editor, Node } from "slate";
+import { Editable, Slate } from "slate-react";
+import type { AppMessage, AttachmentType } from "@/types";
 import AttachmentsPreview from "./AttachmentsPreview";
 import DraggingIndicator from "./DraggingIndicator";
-import EditorLeaf from "./editor/EditorLeaf";
 import Tooltip from "./tooltip/Tooltip";
+import { useChannelStore } from "@stores/channelStore";
+import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
+import { useEditMessage } from "@hooks/mutations/useEditMessage";
+
+type AttachmentInputType = { name: string; type: string; arrayBuffer: () => Promise<ArrayBuffer> };
 
 const initialValue: Descendant[] = [
    {
@@ -41,194 +29,40 @@ const initialValue: Descendant[] = [
    },
 ];
 
-let cache: { text: string; decorations: Record<number, Range[]> } | undefined;
-
-type AttachmentInputType = { name: string; type: string; arrayBuffer: () => Promise<ArrayBuffer> };
-
 export default function MessageBox(props: { messages: AppMessage[] }) {
-   const editor = useMemo(() => withReact(createEditor()), []);
    const params = useParams();
-   const md = useMemo(() => new markdownit({ linkify: true }).use(markdownSpoiler).use(markdownUnderline).use(markdownMainEditor), []);
    const editorRef = useRef<HTMLDivElement>(null);
-   const thisRef = useRef<HTMLDivElement>(null);
+   const containerRef = useRef<HTMLDivElement>(null);
    const currentChannel = useCurrentChannel();
    const channelName = useChannelName(currentChannel?.id);
    const [attachments, setAttachments] = useState<AttachmentType[]>([]);
    const [dragging, setDragging] = useState(false);
    const [_isPending, startTransition] = useTransition();
-   // const cache = useRef<{ text: string; decorations: Map<number, Range[]> }>(undefined);
+   const { setEditingMessageId, currentEditingMessageId } = useChannelStore();
+   const { decorate, editor, renderElement, renderLeaf } = usePreviewMessageRenderer();
 
    const sendMessageMutation = useSendMessage();
+   const editMessageMutation = useEditMessage();
    const { reset: resetTyping, mutate: sendTypingMutate } = useSendTyping();
 
-   const renderLeaf = useCallback((props: RenderLeafProps) => {
-      return <EditorLeaf {...props} />;
-   }, []);
-
-   const renderElement = useCallback((props: RenderElementProps) => {
-      return <DefaultElement {...props} />;
-   }, []);
-
-   function getAllChildren() {
-      const children = Array.from(
-         Editor.nodes(editor, {
-            at: [],
-            mode: "highest",
-            match: (node, _path) => Element.isElement(node),
-         }),
-      );
-
-      return children;
-   }
-
-   function calculateRanges() {
-      const decorations: Record<number, Range[]> = {};
-      const children = getAllChildren();
-
-      const text = children.map((x) => Node.string(x[0])).join("\n");
-
-      if (cache?.text === text) {
-         return { ...cache.decorations };
-      }
-
-      const result = md.parse(text, {});
-      // console.log(result);
-      const tokens = organizeTokens(result);
-
-      // console.log(tokens);
-
-      for (const [i, lineTokens] of tokens.entries()) {
-         const child = children.find((x) => x[1][0] === i);
-         if (!child) {
-            continue;
-         }
-
-         const ranges: Range[] = [];
-         const path = child[1];
-
-         let index = 0;
-         const currentOpenedTokens: HuginnToken[] = [];
-         let currentLinkHref: string | undefined;
-
-         for (const token of lineTokens) {
-            if (token.type === "fence" && token.map) {
-               const highlighted = hljs.highlight(token.content, { language: getCodeLanguage(token.info) ?? "md" });
-               const parser = new DOMParser();
-
-               const doc = parser.parseFromString(highlighted.value, "text/html");
-
-               let tokens: Array<{ type: string; content: string | null }> = [];
-
-               function parseNode(node: ChildNode): Array<{ type: string; content: string | null }> | { type: string; content: string | null } {
-                  if (node.nodeType === window.Node.ELEMENT_NODE) {
-                     const tokenType = (node as HTMLElement)?.className; // e.g., "hljs-keyword", "hljs-string"
-
-                     const onlyHasText = Array.from(node.childNodes).every((child) => child.nodeType === window.Node.TEXT_NODE);
-
-                     if (!onlyHasText) {
-                        return Array.from(node.childNodes)
-                           .flatMap(parseNode)
-                           .map((token: { type: string; content: string | null }) => ({
-                              type: token.type,
-                              content: token.content,
-                           }));
-                     }
-
-                     return { type: tokenType, content: node.textContent };
-                  }
-
-                  if (node.nodeType === window.Node.TEXT_NODE) {
-                     return [{ type: "text", content: node.textContent }];
-                  }
-
-                  return [];
-               }
-
-               tokens = Array.from(doc.body.childNodes).flatMap((node) => parseNode(node));
-
-               tokens = splitHighlightedTokens(tokens);
-               tokens = getHighlightedLineTokens(tokens, i - (token.map[0] + 1));
-
-               let codeIndex = 0;
-               for (const token of tokens) {
-                  ranges.push({
-                     anchor: { path, offset: codeIndex },
-                     focus: { path, offset: codeIndex + (token.content?.length ?? 0) },
-                     codeToken: token.type,
-                  });
-                  codeIndex += token.content?.length ?? 0;
-               }
-
-               continue;
-            }
-
-            const currentTokenEnd = currentLinkHref?.length ?? getTokenLength(token);
-
-            if (isOpenToken(token) || isCloseToken(token)) {
-               if (hasMarkup(token.markup)) {
-                  ranges.push({
-                     mark: true,
-                     anchor: { path, offset: index },
-                     focus: { path, offset: index + currentTokenEnd },
-                  });
-               }
-
-               if (isOpenToken(token)) {
-                  currentOpenedTokens.push(token);
-               } else if (isCloseToken(token)) {
-                  currentOpenedTokens.pop();
-               }
-
-               if (token.type === "fence_open" && getCodeLanguage(token.info)) {
-                  ranges.push({
-                     codeLanguage: true,
-                     anchor: { path, offset: index + 3 },
-                     focus: { path, offset: index + 3 + token.info.length },
-                  });
-               }
-            }
-
-            // Links have an special href which include the actual whole link instead of the normalized one
-            if (token.type === "link_open") {
-               currentLinkHref = token.attrs?.[0]?.[1];
-               index += currentTokenEnd;
-               continue;
-            }
-
-            if (token.content) {
-               ranges.push({
-                  ...getSlateFormats(currentOpenedTokens),
-                  anchor: { path, offset: index },
-                  focus: { path, offset: index + currentTokenEnd },
-               });
-               currentLinkHref = undefined;
-            }
-            index += currentTokenEnd;
-         }
-
-         decorations[i] = ranges;
-      }
-
-      cache = { text, decorations: decorations };
-
-      return decorations;
-   }
-
-   function decorate([_node, path]: [Node, Path]) {
-      const ranges = calculateRanges();
-
-      if (path[0] in ranges) {
-         return [...ranges[path[0]]];
-      }
-
-      return [];
-   }
-
-   function onKeyDown(event: KeyboardEvent) {
-      if (!event.shiftKey && event.code === "Enter") {
+   function onEditorKeyDown(event: KeyboardEvent) {
+      // Edit
+      if (event.key === "ArrowUp" && editor.string([]) === "") {
+         setEditingMessageId(props.messages[props.messages.length - 1].id);
          event.preventDefault();
-         const flags: MessageFlags = event.ctrlKey ? MessageFlags.SUPPRESS_NOTIFICATIONS : MessageFlags.NONE;
-         sendMessage(flags);
+      }
+
+      if (!event.shiftKey && event.code === "Enter") {
+         // Edit message
+         if (currentEditingMessageId) {
+            editMessage();
+         }
+         // Send message
+         else {
+            const flags: MessageFlags = event.ctrlKey ? MessageFlags.SUPPRESS_NOTIFICATIONS : MessageFlags.NONE;
+            sendMessage(flags);
+         }
+         event.preventDefault();
       }
 
       if (event.ctrlKey && event.key === "b" && editor.selection) {
@@ -304,7 +138,27 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       });
 
       resetTyping();
+      clearEditor();
+   }
 
+   function editMessage() {
+      const content = serialize(editor.children);
+      if (!content || !currentEditingMessageId) {
+         return;
+      }
+
+      editMessageMutation.mutate({ channelId: params.channelId ?? "", messageId: currentEditingMessageId, content });
+
+      clearEditor();
+      setEditingMessageId(undefined);
+   }
+
+   function endEditMessage() {
+      clearEditor();
+      setEditingMessageId(undefined);
+   }
+
+   function clearEditor() {
       editor.delete({
          at: {
             anchor: Editor.start(editor, []),
@@ -375,19 +229,19 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    }
 
    // This is to match the updating of channel messages and message box in a single frame so that upon rendering a new preview message,
-   // the attachments are also cleared. So eveything happens in one frame.
+   // the attachments are also cleared. So everything happens in one frame.
    useEffect(() => {
       setAttachments([]);
    }, [props.messages]);
 
-   // Focus on the messagebox when we change channel
+   // Focus on the message box when we change channel
    useEffect(() => {
       editorRef.current?.focus();
    }, [currentChannel?.id]);
 
    useEffect(() => {
-      if (!thisRef.current) return;
-      let lastHeight = thisRef.current.clientHeight;
+      if (!containerRef.current) return;
+      let lastHeight = containerRef.current.clientHeight;
 
       const resizeObserver = new ResizeObserver((entries) => {
          const height = entries[0].target.clientHeight;
@@ -395,93 +249,150 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
          lastHeight = height;
       });
 
+      resizeObserver.observe(containerRef.current);
+
+      const controller = new AbortController();
+
+      window.addEventListener(
+         "keydown",
+         (e) => {
+            console.log(e.key);
+            if (e.key === "Escape" && currentEditingMessageId) {
+               endEditMessage();
+            }
+         },
+         { signal: controller.signal },
+      );
+
+      document.addEventListener(
+         "dragover",
+         (e) => {
+            e.preventDefault();
+         },
+         { signal: controller.signal },
+      );
+
       let dragCounter = 0;
+      document.addEventListener(
+         "dragenter",
+         (e) => {
+            e.preventDefault();
+            dragCounter++;
+            setDragging(true);
+         },
+         { signal: controller.signal },
+      );
 
-      function dragOver(e: DragEvent) {
-         e.preventDefault();
-      }
+      document.addEventListener(
+         "dragleave",
+         (e) => {
+            e.preventDefault();
+            dragCounter--;
+            if (dragCounter === 0) {
+               setDragging(false);
+            }
+         },
+         { signal: controller.signal },
+      );
 
-      function dragEnter(e: DragEvent) {
-         e.preventDefault();
-         dragCounter++;
-         setDragging(true);
-      }
+      document.addEventListener(
+         "drop",
+         (e) => {
+            e.preventDefault();
 
-      function dragLeave(e: DragEvent) {
-         e.preventDefault();
-         dragCounter--;
-         if (dragCounter === 0) {
+            const files: AttachmentInputType[] = [];
+
             setDragging(false);
-         }
-      }
+            dragCounter = 0;
 
-      function drop(e: DragEvent) {
-         e.preventDefault();
+            if (!e.dataTransfer?.files) {
+               return;
+            }
 
-         const files: AttachmentInputType[] = [];
+            for (const file of e.dataTransfer.files) {
+               files.push({ name: file.name, type: file.type, arrayBuffer: async () => await file.arrayBuffer() });
+            }
 
-         setDragging(false);
-         dragCounter = 0;
-
-         if (!e.dataTransfer?.files) {
-            return;
-         }
-
-         for (const file of e.dataTransfer.files) {
-            files.push({ name: file.name, type: file.type, arrayBuffer: async () => await file.arrayBuffer() });
-         }
-
-         addAttachments(files);
-      }
-
-      document.addEventListener("dragover", dragOver);
-      document.addEventListener("dragenter", dragEnter);
-      document.addEventListener("dragleave", dragLeave);
-      document.addEventListener("drop", drop);
-
-      resizeObserver.observe(thisRef.current);
+            addAttachments(files);
+         },
+         { signal: controller.signal },
+      );
 
       return () => {
          resizeObserver.disconnect();
-         document.removeEventListener("dragover", dragOver);
-         document.removeEventListener("dragenter", dragEnter);
-         document.removeEventListener("dragleave", dragLeave);
-         document.removeEventListener("drop", drop);
+         controller.abort();
       };
-   }, []);
+   }, [currentEditingMessageId]);
+
+   useEffect(() => {
+      if (!currentEditingMessageId) {
+         return;
+      }
+
+      const message = props.messages.find((x) => x.id === currentEditingMessageId);
+
+      if (!message) {
+         return;
+      }
+
+      editor.withoutNormalizing(() => {
+         const lines = message.content.split("\n");
+         editor.children = lines.map((x) => ({ type: "paragraph", children: [{ text: x }] }));
+      });
+
+      editor.normalize({ force: true });
+      editor.select(editor.end([]));
+
+      editorRef.current?.focus();
+   }, [currentEditingMessageId]);
 
    return (
-      <div className="bottom-0 z-10 flex-col px-5 py-1.5" ref={thisRef}>
+      <div className="bottom-0 z-10 flex-col px-5 py-1.5" ref={containerRef}>
+         {currentEditingMessageId && (
+            <div className="bg-primary-900 flex items-center gap-x-2 rounded-t-lg px-2 py-2 text-white">
+               <IconMingcuteEdit2Fill />
+               <div>Editing</div>
+               <div className="text-sm text-white/50">(ESC to cancel)</div>
+               <button className="bg-negative-100 hover:bg-negative-200 ml-auto cursor-pointer rounded-full p-1" onClick={endEditMessage}>
+                  <IconMingcuteCloseFill className="size-4" />
+               </button>
+            </div>
+         )}
          <DraggingIndicator isDragging={dragging} />
          <AttachmentsPreview attachments={attachments} onRemove={removeAttachment} />
          <form className="w-full">
             <div
                className={clsx(
                   "border-surface bg-surface-deep flex h-full items-start rounded-3xl border-2 transition-[border-radius]",
-                  attachments.length && "rounded-t-none",
+                  (attachments.length || currentEditingMessageId) && "rounded-t-none",
                )}
             >
-               <Tooltip>
-                  <Tooltip.Trigger
-                     onClick={addFiles}
-                     type="button"
-                     className="bg-surface m-2 mr-2 flex shrink-0 cursor-pointer items-center rounded-full p-1.5 transition-all hover:bg-white/20 hover:shadow-xl"
-                  >
-                     <IconMingcuteAddFill name="gravity-ui:plus" className="text-text h-5 w-5" />
-                  </Tooltip.Trigger>
-                  <Tooltip.Content>Upload Files</Tooltip.Content>
-               </Tooltip>
+               {!currentEditingMessageId && (
+                  <Tooltip>
+                     <Tooltip.Trigger
+                        onClick={addFiles}
+                        type="button"
+                        className="bg-surface m-2 mr-2 flex shrink-0 cursor-pointer items-center rounded-full p-1.5 transition-all hover:bg-white/20 enabled:hover:shadow-xl"
+                     >
+                        <IconMingcuteAddFill name="gravity-ui:plus" className="text-text size-5" />
+                     </Tooltip.Trigger>
+                     <Tooltip.Content>Upload Files</Tooltip.Content>
+                  </Tooltip>
+               )}
                <div className="h-full w-full overflow-hidden">
                   <Slate editor={editor} initialValue={initialValue}>
                      <Editable
                         onPaste={onPaste}
                         ref={editorRef}
                         placeholder={`Message ${channelName}`}
-                        className="outline-hidden h-full whitespace-break-spaces py-3 font-light leading-[24px] text-white caret-white"
+                        className={clsx(
+                           "outline-hidden h-full whitespace-break-spaces py-3 font-light leading-[24px] text-white caret-white",
+                           currentEditingMessageId && "pl-3",
+                        )}
                         renderLeaf={renderLeaf}
                         renderElement={renderElement}
                         decorate={decorate}
-                        onKeyDown={onKeyDown}
+                        onKeyDown={onEditorKeyDown}
                         renderPlaceholder={({ children, attributes }) => <div {...attributes}>{children}</div>}
                         disableDefaultStyles
                      />

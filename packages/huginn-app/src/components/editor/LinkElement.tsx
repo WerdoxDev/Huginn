@@ -1,23 +1,28 @@
-import { useHuginnWindow } from "@stores/windowStore";
 import type { RenderElementProps } from "slate-react";
 import type { LinkElement as SlateLinkElement } from "@/index";
+import { useContextMenu } from "@stores/contextMenuStore";
+import { MessageContext } from "@contexts/messageProvider";
+import { useContext } from "react";
+import { useOpen } from "@hooks/useOpen";
 
 export default function LinkElement(props: RenderElementProps) {
-	const huginnWindow = useHuginnWindow();
-	const { url } = props.element as SlateLinkElement;
+   const { openUrl } = useOpen();
+   const { url } = props.element as SlateLinkElement;
+   const { open } = useContextMenu("message");
+   const context = useContext(MessageContext);
 
-	return (
-		<span
-			{...props.attributes}
-			className="relative inline-block cursor-pointer underline"
-			//TODO: MIGRATION
-			onClick={url ? () => (huginnWindow.environment === "desktop" ? window.electronAPI.openExternal(url) : window.open(url)) : undefined}
-			title={url}
-		>
-			<div className="">
-				{props.children}
-				<div className="-mx-0.5 absolute inset-0 rounded-xs hover:bg-text/20" />
-			</div>
-		</span>
-	);
+   return (
+      <span
+         onContextMenu={(e) => open({ message: context.message, url }, e)}
+         {...props.attributes}
+         className="relative inline-block cursor-pointer underline"
+         onClick={() => (url ? openUrl(url) : undefined)}
+         title={url}
+      >
+         <div>
+            {props.children}
+            <div className="rounded-xs hover:bg-text/20 absolute inset-0 -mx-0.5" />
+         </div>
+      </span>
+   );
 }

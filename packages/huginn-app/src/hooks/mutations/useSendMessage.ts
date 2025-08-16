@@ -20,7 +20,7 @@ export function useSendMessage() {
          const nonce = client?.generateNonce();
 
          const previewMessage: AppMessage = {
-            preview: true,
+            isPreview: true,
             id: snowflake.generateString(WorkerID.APP),
             timestamp: new Date(Date.now()).toISOString(),
             content: data.content,

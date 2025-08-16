@@ -1,64 +1,81 @@
 import { Transition } from "@headlessui/react";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import LoadingIcon from "./LoadingIcon";
+import { useContextMenu } from "@stores/contextMenuStore";
+import { MessageContext } from "@contexts/messageProvider";
 
 export default function ImagePreview(props: {
-	url: string;
-	width: number;
-	height: number;
-	originalWidth: number;
-	originalHeight: number;
-	filename?: string;
-	disableQuery?: boolean;
+   url: string;
+   width: number;
+   height: number;
+   originalWidth: number;
+   originalHeight: number;
+   filename?: string;
+   disableQuery?: boolean;
 }) {
-	const [loaded, setLoaded] = useState(false);
-	const [errored, setErrored] = useState(false);
-	const imgRef = useRef<HTMLImageElement>(null);
-	const { updateModals } = useModals();
+   const [isLoaded, setIsLoaded] = useState(false);
+   const [hasError, setHasError] = useState(false);
+   const [useCors, setUseCors] = useState(false);
+   const imgRef = useRef<HTMLImageElement>(null);
+   const { updateModals } = useModals();
+   const { open } = useContextMenu("message");
+   const context = useContext(MessageContext);
 
-	useEffect(() => {
-		if (imgRef.current?.complete) {
-			setLoaded(true);
-		}
-	}, []);
+   useEffect(() => {
+      if (imgRef.current?.complete) {
+         setIsLoaded(true);
+      }
+   }, []);
 
-	return (
-		<>
-			<img
-				onError={() => setErrored(true)}
-				loading="lazy"
-				onLoad={() => setLoaded(true)}
-				ref={imgRef}
-				src={`${props.url}${!props.disableQuery ? `?${new URLSearchParams({ format: "webp", width: props.width.toString(), height: props.height.toString() }).toString()}` : ""}`}
-				alt={props.filename}
-				onClick={() =>
-					updateModals({
-						magnifiedImage: {
-							isOpen: true,
-							url: props.url,
-							width: props.originalWidth,
-							height: props.originalHeight,
-							filename: props.filename,
-						},
-					})
-				}
-				className={clsx("cursor-pointer overflow-hidden rounded-md object-contain", errored && "hidden")}
-				style={{ width: `${props.width}px`, height: `${props.height}px` }}
-			/>
-			<Transition show={!loaded || errored}>
-				<div
-					className={clsx(
-						!errored && "absolute inset-0",
-						"flex items-center justify-center rounded-md bg-surface/40 duration-200 data-closed:opacity-0",
-					)}
-					style={{ width: `${props.width}px`, height: `${props.height}px` }}
-				>
-					{!loaded && !errored && <LoadingIcon className="size-16" />}
-					{errored && <IconMingcuteWarningFill className="size-16 text-negative-100" />}
-				</div>
-			</Transition>
-		</>
-	);
+   function onLoad() {
+      setIsLoaded(true);
+      setHasError(false);
+   }
+
+   function onError() {
+      setHasError(true);
+      setUseCors(true);
+   }
+
+   return (
+      <>
+         <img
+            crossOrigin={useCors ? undefined : "anonymous"}
+            onContextMenu={(e) => open({ message: context.message, imgRef }, e)}
+            onError={onError}
+            loading="lazy"
+            onLoad={onLoad}
+            ref={imgRef}
+            src={`${props.url}${!props.disableQuery ? `?${new URLSearchParams({ format: "webp", width: props.width.toString(), height: props.height.toString() }).toString()}` : ""}`}
+            alt={props.filename}
+            onClick={() =>
+               updateModals({
+                  magnifiedImage: {
+                     isOpen: true,
+                     url: props.url,
+                     width: props.originalWidth,
+                     height: props.originalHeight,
+                     filename: props.filename,
+                  },
+               })
+            }
+            className={clsx("cursor-pointer overflow-hidden rounded-md object-contain", hasError && "hidden")}
+            style={{ width: `${props.width}px`, height: `${props.height}px` }}
+         />
+         <Transition show={!isLoaded || hasError}>
+            <div
+               className={clsx(
+                  !hasError && "absolute inset-0",
+                  "bg-surface/40 data-closed:opacity-0 flex items-center justify-center rounded-md duration-200",
+               )}
+               style={{ width: `${props.width}px`, height: `${props.height}px` }}
+            >
+               {!isLoaded && !hasError && <LoadingIcon className="size-16" />}
+               {hasError && <IconMingcuteWarningFill className="text-negative-100 size-16" />}
+            </div>
+         </Transition>
+      </>
+   );
 }

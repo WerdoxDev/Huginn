@@ -32,7 +32,8 @@ export const electronAPI = {
    saveAvatarToCache: (data: string, hash: string) => ipcRenderer.invoke("cache:save-avatar", data, hash) as Promise<void>,
 
    // Keybinds
-   updateKeybinds: (keybinds: Array<{ type: KeybindType; combination: string[] }>) => ipcRenderer.send("keybinds:update", keybinds),
+   updateKeybinds: (keybinds: Array<{ type: KeybindType; combination: string[] }>) =>
+      ipcRenderer.invoke("keybinds:update", keybinds) as Promise<boolean>,
    setKeybindsEnabled: (isEnabled: boolean) => ipcRenderer.send("keybinds:set-enabled", isEnabled),
    onKeybindFired: (callback: (_event: Electron.IpcRendererEvent, type: KeybindType) => void) => {
       ipcRenderer.on("keybinds:fired", callback);

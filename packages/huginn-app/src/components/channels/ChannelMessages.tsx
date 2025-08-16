@@ -4,7 +4,7 @@ import { useMessageAcker } from "@hooks/mutations/useMessageAcker";
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { useFirstUnreadMessage } from "@hooks/useFirstUnreadMessage";
 import { useVisibleMessages } from "@hooks/useVisibleMessages";
-import { MessageType, type Snowflake, snowflake } from "@huginn/shared";
+import { MessageType, type Snowflake } from "@huginn/shared";
 import { listenEvent } from "@lib/event-handler";
 import { getMessagesOptions } from "@lib/queries";
 import { getFirstChildClosestToBottom, getFirstChildClosestToTop } from "@lib/utils";
@@ -13,9 +13,11 @@ import { useClient } from "@stores/clientStore";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import moment from "moment";
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
-import type { AppMessage, MessageRenderInfo } from "@/types";
+import type { AppMessage, ProcessedMessage } from "@/types";
 import ChannelMessageLoadingIndicator from "./ChannelMessageLoadingIndicator";
 import ChannelTypingIndicator from "./ChannelTypingIndicator";
+import { useMessageDiff } from "@hooks/useMessageDiff";
+import { useThisUser } from "@stores/userStore";
 
 const topScrollOffset = 100;
 const bottomScrollOffset = 100;
@@ -23,36 +25,29 @@ const bottomScrollOffset = 100;
 export default function ChannelMessages(props: { channelId: Snowflake; messages: AppMessage[] }) {
    const client = useClient();
    const queryClient = useQueryClient();
-   const sortedMessages = useMemo(
-      () =>
-         props.messages.toSorted((a, b) => {
-            if (a.preview !== b.preview) {
-               return a.preview ? 1 : -1; // Move previews to the end
-            }
-            return moment(snowflake.getTimestamp(a.id)).isAfter(snowflake.getTimestamp(b.id)) ? 1 : -1;
-         }),
-      [props.messages],
-   );
+   const { user } = useThisUser();
 
    const { data, fetchNextPage, fetchPreviousPage, isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
       useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, props.channelId));
 
-   const { savedScrolls, saveScroll } = useChannelStore();
+   const { savedScrolls, saveScroll, currentEditingMessageId } = useChannelStore();
 
-   const { onMessageVisibilityChanged } = useVisibleMessages(props.channelId, sortedMessages);
-   const { setRef } = useDynamicRefs<HTMLLIElement>();
+   const { onMessageVisibilityChanged } = useVisibleMessages(props.channelId, props.messages);
+   const { setRef, getRef } = useDynamicRefs<HTMLLIElement>();
 
    useMessageAcker(props.channelId, props.messages);
-   const { firstUnreadMessageId } = useFirstUnreadMessage(props.channelId, sortedMessages);
+   const { firstUnreadMessageId } = useFirstUnreadMessage(props.channelId, props.messages);
 
-   const messageRenderInfos = useMemo<MessageRenderInfo[]>(
-      () => calculateMessageRenderInfos(),
-      [sortedMessages, props.channelId, firstUnreadMessageId],
+   const processedMessages = useMemo<ProcessedMessage[]>(
+      () => processMessages(props.messages),
+      [props.messages, props.channelId, firstUnreadMessageId, currentEditingMessageId],
    );
+
+   useMessageDiff(processedMessages, { onMessageAdd, onMessageUpdate });
 
    const scrollRef = useRef<HTMLDivElement>(null);
    const listRef = useRef<HTMLOListElement>(null);
-   const shouldScrollOnNextRender = useRef(false);
+   const shouldScrollToLastSeen = useRef(false);
    const shouldAnchorToBottom = useRef(false);
    const lastChannelId = useRef<Snowflake>(undefined);
    const lastScrollTop = useRef<number>(undefined);
@@ -64,7 +59,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    const channelName = useChannelName(currentChannel?.id);
 
    async function onScroll() {
-      if (!scrollRef.current || sortedMessages.length === 0) return;
+      if (!scrollRef.current || props.messages.length === 0) return;
       lastScrollTop.current = scrollRef.current.scrollTop;
 
       // This is to not reevaluate wether or not we are at the bottom when we scroll because of anchoring on resize
@@ -94,17 +89,18 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       }
    }
 
-   function calculateMessageRenderInfos(): MessageRenderInfo[] {
-      const value = sortedMessages.map((message, i) => {
-         const lastMessage: AppMessage | undefined = sortedMessages[i - 1];
+   function processMessages(messages: AppMessage[]): ProcessedMessage[] {
+      const value = messages.map((message, i) => {
+         const lastMessage: AppMessage | undefined = props.messages[i - 1];
 
-         const newDate = (lastMessage && !moment(message.timestamp).isSame(lastMessage?.timestamp, "date")) || (!lastMessage && !hasPreviousPage);
-         const newMinute = !moment(message.timestamp).isSame(lastMessage?.timestamp, "minute");
-         const newAuthor = message.authorId !== lastMessage?.authorId;
-         const exoticType = message.preview ? false : message.type !== MessageType.DEFAULT;
-         const unread = firstUnreadMessageId === message.id;
+         const hasNewDate = (lastMessage && !moment(message.timestamp).isSame(lastMessage?.timestamp, "date")) || (!lastMessage && !hasPreviousPage);
+         const hasNewMinute = !lastMessage || moment(message.timestamp).diff(moment(lastMessage.timestamp), "minutes") >= 5;
+         const hasNewAuthor = message.authorId !== lastMessage?.authorId;
+         const isExoticType = message.isPreview ? false : message.type !== MessageType.DEFAULT;
+         const isUnread = firstUnreadMessageId === message.id;
+         const isEditing = currentEditingMessageId === message.id;
 
-         return { message, newMinute, newDate, newAuthor, exoticType, unread };
+         return { ...message, hasNewMinute, hasNewDate, hasNewAuthor, isExoticType, isUnread, isEditing };
       });
 
       return value;
@@ -132,10 +128,12 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
          distanceToTop: scrollRef.current.scrollTop,
          distanceToBottom: scrollRef.current.scrollHeight - scrollRef.current.scrollTop - scrollRef.current.clientHeight - 28,
       };
+
+      shouldScrollToLastSeen.current = true;
    }
 
    function scrollToLastSeenMessage() {
-      if (!lastSeenElement.current || !scrollRef.current || !listRef.current) return;
+      if (!lastSeenElement.current || !scrollRef.current || !listRef.current || !shouldScrollToLastSeen.current) return;
 
       const foundMessageElement = [...listRef.current.children].find((x) => x.id === lastSeenElement.current?.messageId) as HTMLLIElement;
 
@@ -143,6 +141,28 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
       scrollRef.current.scrollTop +=
          (lastDirection.current === "up" ? lastSeenElement.current.distanceToTop : -lastSeenElement.current.distanceToBottom) + heightDifference;
+
+      shouldScrollToLastSeen.current = false;
+   }
+
+   function onMessageAdd(message: ProcessedMessage) {
+      if (!scrollRef.current) return;
+      const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
+      const messageHeight = getRef(message.id)?.current.clientHeight ?? 0;
+
+      if (message.authorId === user?.id || scrollOffset - messageHeight <= 50) {
+         scrollDown();
+      }
+   }
+
+   function onMessageUpdate(message: ProcessedMessage) {
+      if (!scrollRef.current) return;
+      const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
+      const messageHeight = getRef(message.id)?.current.clientHeight ?? 0;
+
+      if (message.authorId === user?.id || scrollOffset - messageHeight <= 50) {
+         scrollDown();
+      }
    }
 
    // Calculating scroll top position after an upward fetch
@@ -166,37 +186,10 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       };
    }, [props.channelId]);
 
-   // Listening for new messages
-   useEffect(() => {
-      const unlisten = listenEvent("message_added", (d) => {
-         if (!scrollRef.current || !d.inVisibleQueryPage) return;
-         const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
-
-         if (d.self || scrollOffset <= 50) {
-            shouldScrollOnNextRender.current = true;
-         }
-      });
-
-      const unlisten2 = listenEvent("message_updated", (d) => {
-         if (!scrollRef.current || !d.inVisibleQueryPage) return;
-         const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
-
-         if (scrollOffset <= 50) {
-            shouldScrollOnNextRender.current = true;
-         }
-      });
-
-      return () => {
-         unlisten();
-         unlisten2();
-      };
-   }, [props.channelId]);
-
    // Scrolling to saved scroll
    useEffect(() => {
-      if (sortedMessages.length === 0) return;
+      if (props.messages.length === 0) return;
 
-      // checkForExtraSpace();
       if (lastChannelId.current !== props.channelId) {
          if (savedScrolls.has(props.channelId) && scrollRef.current) {
             const newScroll = savedScrolls.get(props.channelId) ?? 0;
@@ -206,17 +199,17 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
          }
          lastChannelId.current = props.channelId;
       }
-   }, [sortedMessages]);
+   }, [props.messages]);
 
    // Should scroll check
    useEffect(() => {
-      if (!scrollRef.current || sortedMessages.length === 0) return;
+      if (!scrollRef.current || props.messages.length === 0) return;
 
-      if (shouldScrollOnNextRender.current) {
+      if (shouldScrollToLastSeen.current) {
          scrollDown();
-         shouldScrollOnNextRender.current = false;
+         shouldScrollToLastSeen.current = false;
       }
-   }, [sortedMessages]);
+   }, [props.messages]);
 
    useEffect(() => {
       if (!scrollRef.current) return;
@@ -254,7 +247,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
          <div className="h-full w-full overflow-x-hidden overflow-y-scroll [overflow-anchor:none]" ref={scrollRef} onScroll={onScroll}>
             <div className="flex min-h-full flex-col justify-end">
                <ol className="min-h-0 overflow-hidden pb-7 pr-0" ref={listRef}>
-                  {sortedMessages.length === 0 && (
+                  {props.messages.length === 0 && (
                      <div className="flex h-full w-full shrink-0 items-center justify-center">
                         <div className="bg-surface text-text flex items-center justify-center gap-x-2 rounded-lg p-2 pr-3 italic underline">
                            <IconMingcuteLookDownFill className="size-10" />
@@ -262,20 +255,20 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
                         </div>
                      </div>
                   )}
-                  {!hasPreviousPage && sortedMessages.length !== 0 && (
+                  {!hasPreviousPage && props.messages.length !== 0 && (
                      <div className="flex h-20 shrink-0 flex-col justify-center">
                         <div className="text-text/70 ml-10">
                            The beginning of your chat with <span className="text-text font-bold">{channelName}</span>
                         </div>
                      </div>
                   )}
-                  {sortedMessages.map((message, i) => (
+                  {processedMessages.map((x, i) => (
                      <MessageProvider
-                        ref={setRef(message.id)}
-                        key={message.preview ? message.timestamp : message.id}
-                        renderInfo={messageRenderInfos[i]}
-                        nextRenderInfo={messageRenderInfos[i + 1]}
-                        lastRenderInfo={messageRenderInfos[i - 1]}
+                        ref={setRef(x.id)}
+                        key={x.isPreview ? x.timestamp : x.id}
+                        message={x}
+                        nextMessage={processedMessages[i + 1]}
+                        lastMessage={processedMessages[i - 1]}
                         onVisibilityChanged={onMessageVisibilityChanged}
                      />
                   ))}

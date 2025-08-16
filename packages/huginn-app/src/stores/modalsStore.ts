@@ -56,6 +56,9 @@ const store = createStore(
                }
             }),
          ),
+      showError: (text: string) => {
+         store.getState().updateModals({ info: { status: "error", title: "Oops!", text, isOpen: true } });
+      },
    })),
 );
 

@@ -47,7 +47,7 @@ function Trigger(props: HTMLProps<HTMLButtonElement> & { asChild?: boolean }) {
    );
 }
 
-function Content(props: { extraClassName?: string; arrowClassName?: string; extrastyle?: React.CSSProperties } & HTMLProps<HTMLDivElement>) {
+function Content(props: { arrowClassName?: string; extraStyle?: React.CSSProperties } & HTMLProps<HTMLDivElement>) {
    const context = useTooltipContext();
    const ref = useMergeRefs([context.refs.setFloating, props.ref]);
    context.placement;
@@ -77,15 +77,15 @@ function Content(props: { extraClassName?: string; arrowClassName?: string; extr
             <div
                className={clsx(
                   "z-999 border-surface absolute whitespace-nowrap rounded-md border bg-zinc-900 px-2.5 py-1.5 text-base text-white/80 shadow-lg",
-                  props.extraClassName,
+                  props.className,
                )}
                ref={ref}
                style={{
                   ...context.floatingStyles,
                   ...props.style,
-                  ...props.extrastyle,
+                  ...props.extraStyle,
                }}
-               {...context.getFloatingProps(props)}
+               {...omit(context.getFloatingProps(props), ["className", "extraStyle"])}
             >
                {context.getFloatingProps(props).children as ReactNode}
                <div

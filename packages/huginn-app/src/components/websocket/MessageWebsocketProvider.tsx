@@ -25,7 +25,7 @@ export default function MessageWebsocketProvider(props: { children?: ReactNode }
    async function onMessageCreated(d: GatewayMessageCreateData) {
       const channels = queryClient.getQueryData<APIGetUserChannelsResult>(["channels", "@me"]);
       const targetChannel = channels?.find((x) => x.id === d.channelId);
-      const newMessage: AppMessage = convertToAppMessage(d);
+      const newMessage: AppMessage = convertToAppMessage(d, "websocket");
 
       if (!targetChannel) {
          await mutation.mutateAsync({ recipients: [d.author.id], skipNavigation: true });
@@ -81,7 +81,7 @@ export default function MessageWebsocketProvider(props: { children?: ReactNode }
    async function onMessageUpdated(d: GatewayMessageUpdateData) {
       const channels = queryClient.getQueryData<APIGetUserChannelsResult>(["channels", "@me"]);
       const targetChannel = channels?.find((x) => x.id === d.channelId);
-      const updatedMessage: AppMessage = convertToAppMessage(d);
+      const updatedMessage: AppMessage = convertToAppMessage(d, "websocket");
 
       if (!targetChannel) {
          return;

@@ -34,7 +34,7 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
             pageParam.before.toString() || undefined,
             pageParam.after.toString() || undefined,
          );
-         return messages.map((x) => convertToAppMessage(x));
+         return messages.map((x) => convertToAppMessage(x, "fetch"));
       },
       getPreviousPageParam(first) {
          const earliestMessage = first[0];
@@ -46,7 +46,7 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
 
          const latestMessage = last[last.length - 1];
 
-         return !latestMessage?.preview && latestMessage && (!targetChannel || targetChannel.lastMessageId !== latestMessage.id)
+         return !latestMessage?.isPreview && latestMessage && (!targetChannel || targetChannel.lastMessageId !== latestMessage.id)
             ? { after: latestMessage.id, before: "" }
             : undefined;
       },

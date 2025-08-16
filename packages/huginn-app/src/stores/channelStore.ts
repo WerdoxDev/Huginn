@@ -8,8 +8,10 @@ export const useChannelStore = create(
    combine(
       {
          savedScrolls: new Map<Snowflake, number>(),
+
          currentVisibleMessages: [] as Array<{ messageId: Snowflake; messageTimestamp: number; channelId: Snowflake }>,
-         messageUploadProgress: {} as Record<Snowflake, UploadProgress>,
+         messageUploadProgresses: {} as Record<Snowflake, UploadProgress>,
+         currentEditingMessageId: undefined as Snowflake | undefined,
       },
       (set) => ({
          saveScroll: (channelId: Snowflake, scroll: number) => set((state) => ({ savedScrolls: new Map(state.savedScrolls).set(channelId, scroll) })),
@@ -37,11 +39,12 @@ export const useChannelStore = create(
             });
          },
          setMessageUploadProgress: (previewMessageId: Snowflake, progress: UploadProgress) =>
-            set((state) => ({ messageUploadProgress: { ...state.messageUploadProgress, [previewMessageId]: progress } })),
+            set((state) => ({ messageUploadProgresses: { ...state.messageUploadProgresses, [previewMessageId]: progress } })),
          deleteMessageUploadProgress: (previewMessageId: Snowflake) =>
             set((state) => ({
-               messageUploadProgress: Object.fromEntries(Object.entries(state.messageUploadProgress).filter(([id]) => id !== previewMessageId)),
+               messageUploadProgresses: Object.fromEntries(Object.entries(state.messageUploadProgresses).filter(([id]) => id !== previewMessageId)),
             })),
+         setEditingMessageId: (messageId: Snowflake | undefined) => set({ currentEditingMessageId: messageId }),
       }),
    ),
 );

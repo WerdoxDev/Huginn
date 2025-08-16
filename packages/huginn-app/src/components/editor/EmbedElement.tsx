@@ -7,47 +7,47 @@ import type { RenderElementProps } from "slate-react";
 import type { EmbedElement as SlateEmbedElement } from "@/index";
 
 export default function EmbedElement(props: RenderElementProps) {
-	const { url, description, title, thumbnail, video } = props.element as SlateEmbedElement;
-	const barebone = useMemo(() => description === undefined && title === undefined && (thumbnail || video), [description, title, thumbnail, video]);
-	const dimensions = useMemo(
-		() =>
-			constrainImageSize(
-				thumbnail?.width ?? video?.width ?? 0,
-				thumbnail?.height ?? video?.height ?? 0,
-				constants.EMBED_MEDIA_MAX_WIDTH,
-				constants.EMBED_MEDIA_MAX_HEIGHT,
-			),
-		[thumbnail, video],
-	);
+   const { url, description, title, thumbnail, video } = props.element as SlateEmbedElement;
+   const barebone = useMemo(() => description === undefined && title === undefined && (thumbnail || video), [description, title, thumbnail, video]);
+   const dimensions = useMemo(
+      () =>
+         constrainImageSize(
+            thumbnail?.width ?? video?.width ?? 0,
+            thumbnail?.height ?? video?.height ?? 0,
+            constants.EMBED_MEDIA_MAX_WIDTH,
+            constants.EMBED_MEDIA_MAX_HEIGHT,
+         ),
+      [thumbnail, video],
+   );
 
-	return (
-		<div {...props.attributes} contentEditable={false} style={{ maxWidth: `${constants.EMBED_MEDIA_MAX_WIDTH + 16}px` }}>
-			<div
-				className={clsx("mt-1 mb-1 flex max-w-md flex-col items-start", !barebone && "rounded-lg border-surface border-l-4 bg-surface-deep p-2")}
-			>
-				{title && (
-					<span
-						className={clsx(url && "cursor-pointer text-primary-500 hover:underline", description ? "mb-1" : "mb-2")}
-						onClick={url ? () => window.electronAPI.openExternal(url) : undefined}
-					>
-						{title}
-					</span>
-				)}
-				{description && <span className={clsx("text-sm", thumbnail && "mb-2")}>{description}</span>}
-				<div className="relative">
-					{thumbnail && (
-						<ImagePreview
-							width={dimensions.width}
-							height={dimensions.height}
-							originalWidth={thumbnail.width ?? 0}
-							originalHeight={thumbnail.height ?? 0}
-							url={thumbnail.url}
-							disableQuery
-						/>
-					)}
-					{video && <VideoPlayer url={video.url} width={dimensions.width} height={dimensions.height} />}
-				</div>
-			</div>
-		</div>
-	);
+   return (
+      <div {...props.attributes} contentEditable={false} style={{ maxWidth: `${constants.EMBED_MEDIA_MAX_WIDTH + 16}px` }}>
+         <div
+            className={clsx("mb-1 mt-1 flex max-w-md flex-col items-start", !barebone && "border-surface bg-surface-deep rounded-lg border-l-4 p-2")}
+         >
+            {title && (
+               <span
+                  className={clsx(url && "text-primary-500 cursor-pointer hover:underline", description ? "mb-1" : "mb-2")}
+                  onClick={url ? () => window.electronAPI.openExternal(url) : undefined}
+               >
+                  {title}
+               </span>
+            )}
+            {description && <span className={clsx("text-sm", thumbnail && "mb-2")}>{description}</span>}
+            <div className="relative">
+               {thumbnail && (
+                  <ImagePreview
+                     width={dimensions.width}
+                     height={dimensions.height}
+                     originalWidth={thumbnail.width ?? 0}
+                     originalHeight={thumbnail.height ?? 0}
+                     url={thumbnail.url}
+                     disableQuery
+                  />
+               )}
+               {video && <VideoPlayer url={video.url} width={dimensions.width} height={dimensions.height} />}
+            </div>
+         </div>
+      </div>
+   );
 }

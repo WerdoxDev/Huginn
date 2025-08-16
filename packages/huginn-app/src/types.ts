@@ -6,8 +6,9 @@ import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePatchDMChan
 import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRemoveChannelRecipient";
 import type { ConsumeStreamMutationVars } from "@hooks/voice/useConsumeStream";
 import type {
+   APICallMessage,
    APIChannelUser,
-   APIMessage,
+   APIDefaultMessage,
    APIPublicUser,
    APIRelationshipWithoutOwner,
    APIRelationUser,
@@ -207,20 +208,21 @@ export type ContextMenuRelationship = { user: APIRelationUser; type: Relationshi
 export type ContextMenuDMChannel = AppDirectChannel;
 export type ContextMenuDMChannelRecipient = { channelId: Snowflake; recipient: APIChannelUser };
 export type ContextMenuVoiceElement = { user: APIPublicUser; producerId?: string; consumerId?: string; kind: HMediaKind; channelId: Snowflake };
+export type ContextMenuMessage = { message: AppMessage; url?: string; imgRef?: RefObject<HTMLImageElement | null> };
 
-export type MessageRenderInfo = {
-   message: AppMessage;
-   newMinute: boolean;
-   newDate: boolean;
-   newAuthor: boolean;
-   exoticType: boolean;
-   unread: boolean;
+export type ProcessedMessage = AppMessage & {
+   hasNewMinute: boolean;
+   hasNewDate: boolean;
+   hasNewAuthor: boolean;
+   isExoticType: boolean;
+   isUnread: boolean;
+   isEditing: boolean;
 };
 
 export type MessageRendererProps = {
-   renderInfo: MessageRenderInfo;
-   nextRenderInfo?: MessageRenderInfo;
-   lastRenderInfo?: MessageRenderInfo;
+   message: ProcessedMessage;
+   nextMessage?: ProcessedMessage;
+   lastMessage?: ProcessedMessage;
    onVisibilityChanged: (messageId: Snowflake, visible: boolean) => void;
    ref: RefObject<HTMLLIElement | null>;
 };
@@ -238,8 +240,11 @@ export type MutationKinds = {
 };
 
 export type AppMessage =
-   | { preview: true; id: Snowflake; timestamp: string; authorId: Snowflake; nonce?: number | string; content: string; channelId: Snowflake }
-   | ({ preview: false } & Omit<APIMessage, "author"> & { authorId: Snowflake });
+   | { isPreview: true; id: Snowflake; timestamp: string; authorId: Snowflake; nonce?: number | string; content: string; channelId: Snowflake }
+   | ({ isPreview: false } & (Omit<APICallMessage, "author"> | Omit<APIDefaultMessage, "author">) & {
+           authorId: Snowflake;
+           source: "websocket" | "fetch";
+        });
 
 export type AppDirectChannel = Omit<DirectChannel, "recipients"> & { recipientIds: Snowflake[] };
 export type AppRelationship = Omit<APIRelationshipWithoutOwner, "user"> & { userId: Snowflake };

@@ -7,8 +7,9 @@ import {
    type HuginnError,
    type HuginnErrorData,
    type HuginnErrorGroupWrapper,
+   MessageType,
    type Snowflake,
-   omit
+   omit,
 } from "@huginn/shared";
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import type { JSXElementConstructor, ReactNode } from "react";
@@ -146,6 +147,11 @@ export function convertToAppRelationship(relationship: APIRelationshipWithoutOwn
    return { ...omit(relationship, ["user"]), userId: relationship.user.id };
 }
 
-export function convertToAppMessage(message: APIMessage): AppMessage {
-   return { ...omit(message, ["author"]), authorId: message.author.id, preview: false };
+export function convertToAppMessage(message: APIMessage, source: "websocket" | "fetch"): AppMessage {
+   return {
+      ...(message.type === MessageType.CALL ? omit(message, ["author"]) : omit(message, ["author"])),
+      authorId: message.author.id,
+      isPreview: false,
+      source,
+   };
 }
