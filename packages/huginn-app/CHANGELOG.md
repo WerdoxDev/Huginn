@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.52.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.51.7...app@v0.52.0) (2025-08-13)
+
+
+### Features
+
+* **app:** add keybinds ([c99a3e2](https://github.com/WerdoxDev/Huginn/commit/c99a3e29c6305c8f47093cd266e3ce320048b6c9))
+
 ## [0.51.7](https://github.com/WerdoxDev/Huginn/compare/app@v0.51.6...app@v0.51.7) (2025-08-11)
 
 
