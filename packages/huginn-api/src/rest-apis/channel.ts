@@ -6,11 +6,14 @@ import type {
    APIGetUserChannelsResult,
    APIPatchDMChannelJSONBody,
    APIPatchDMChannelResult,
+   APIPatchMessageJSONBody,
+   APIPatchMessageResult,
    APIPostDefaultMessageJSONBody,
    APIPostDefaultMessageResult,
    APIPostDMChannelJSONBody,
    APIPostDMChannelResult,
-   RawFile, Snowflake
+   RawFile,
+   Snowflake,
 } from "@huginn/shared";
 import { Routes, resolveImage } from "@huginn/shared";
 import type { REST } from "../rest";
@@ -79,6 +82,10 @@ export class ChannelAPI {
          files,
          xhr: { enabled: true, onUploadProgress, signal },
       }) as Promise<APIPostDefaultMessageResult>;
+   }
+
+   public async editMessage(channelId: Snowflake, messageId: Snowflake, body: APIPatchMessageJSONBody): Promise<APIPatchMessageResult> {
+      return this.rest.patch(Routes.channelMessage(channelId, messageId), { body, auth: true }) as Promise<APIPatchMessageResult>;
    }
 
    public async typing(channelId: Snowflake): Promise<unknown> {
