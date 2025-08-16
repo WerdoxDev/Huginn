@@ -194,6 +194,60 @@ export function getAttachmentUrl(url: string) {
    return url;
 }
 
+export async function generateEmbedsFromContent(content?: string) {
+   const embeds: DBEmbed[] = [];
+   const links = extractLinks(content);
+   for (const link of links) {
+      const { contentType, response } = await extractData(link);
+
+      if (contentType && isImageMediaType(contentType)) {
+         const thumbnailData = await getImageData(await response.arrayBuffer());
+         embeds.push({
+            type: "image",
+            url: response.url,
+            thumbnail: { width: thumbnailData?.width ?? 0, height: thumbnailData?.height ?? 0, url: response.url },
+         });
+         continue;
+      }
+
+      if (contentType && isVideoMediaType(contentType)) {
+         const videoData = await getVideoData(join(envs.FFMPEG_TEMP_DIR, "output"), await response.arrayBuffer());
+         embeds.push({
+            type: "video",
+            url: response.url,
+            video: { width: videoData?.width ?? 0, height: videoData?.height ?? 0, url: response.url },
+         });
+         continue;
+      }
+
+      const metadata = await extractEmbedTags(response);
+      const keys = Object.keys(metadata);
+
+      // If we only have a url, don't do anything
+      if (metadata.url && keys.length === 1) {
+         return;
+      }
+
+      if (keys.length > 0) {
+         // Fetch image data from embed
+         let thumbnailData: { width: number; height: number } | undefined;
+         if (metadata.image) {
+            thumbnailData = await getImageData(metadata.image);
+         }
+
+         embeds.push({
+            type: "rich",
+            title: metadata.title,
+            url: metadata.url,
+            description: metadata.description,
+            thumbnail: thumbnailData ? { url: metadata.image, width: thumbnailData.width ?? 0, height: thumbnailData.height ?? 0 } : undefined,
+         });
+      }
+   }
+
+   return embeds;
+}
+
 export async function processEmbeds(embeds?: APIEmbed[]) {
    // Fetch image data from embeds
    const processedEmbeds: DBEmbed[] = [];

@@ -1,11 +1,19 @@
-import { createErrorFactory, createHuginnError, createRoute, invalidFormBody, missingAccess, missingPermission } from "@huginn/backend-shared";
+import {
+   createErrorFactory,
+   createHuginnError,
+   createRoute,
+   invalidFormBody,
+   missingAccess,
+   missingPermission,
+   waitUntil,
+} from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectMessageDefaults } from "@huginn/backend-shared/database/common";
 import { type APIMessage, Errors, HttpCode, nullToUndefined } from "@huginn/shared";
 import { safeDestr } from "destr";
 import { z } from "zod";
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { processEmbeds, verifyJwt } from "#utils/route-utils";
+import { generateEmbedsFromContent, processEmbeds, verifyJwt } from "#utils/route-utils";
 import { validateEmbeds } from "#utils/validation";
 import { filterMessage } from "#utils/helpers";
 
@@ -99,6 +107,19 @@ createRoute("PATCH", "/api/channels/:channelId/messages/:messageId", verifyJwt()
 
    const message: APIMessage = filterMessage(dbMessage);
    dispatchToTopic(channelId, "message_update", message);
+
+   // Embed generation from urls inside the message content
+   waitUntil(c, async () => {
+      const embeds = await generateEmbedsFromContent(body.content);
+
+      if (!embeds?.length) {
+         return;
+      }
+
+      const updatedMessage = await prisma.message.updateMessage(dbMessage.id, { embeds }, { select: selectMessageDefaults });
+
+      dispatchToTopic(channelId, "message_update", filterMessage(updatedMessage));
+   });
 
    return c.json(message, HttpCode.OK);
 });
