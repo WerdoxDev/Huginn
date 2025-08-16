@@ -13,6 +13,7 @@ type LogValuesMap = {
       | "gateway-recv"
       | "voice-recv"
       | "available-producers";
+   "app:general": "messages";
    "app:files-store": "voice-preferences";
    "app:audio-source-player": "default";
    "app:audio-level-checker": "default";

@@ -45,16 +45,16 @@ export function omitArray<Obj extends object, Keys extends keyof Obj>(obj: Obj[]
 
 type DeepMerge<T, U> = {
    [K in keyof T | keyof U]: K extends keyof U
-   ? U[K] extends object
-   ? K extends keyof T
-   ? T[K] extends object
-   ? DeepMerge<T[K], U[K]>
-   : U[K]
-   : U[K]
-   : U[K]
-   : K extends keyof T
-   ? T[K]
-   : never;
+      ? U[K] extends object
+         ? K extends keyof T
+            ? T[K] extends object
+               ? DeepMerge<T[K], U[K]>
+               : U[K]
+            : U[K]
+         : U[K]
+      : K extends keyof T
+        ? T[K]
+        : never;
 };
 
 function isObject(item: unknown): item is Record<string, unknown> {
@@ -90,15 +90,15 @@ export function merge<T extends object[]>(...objects: T): DeepMerge<T[0], T[1]> 
    return objects.reduce((acc, obj) => deepMerge(acc, obj), {}) as DeepMerge<T[0], T[1]>;
 }
 
-type BigIntToString<T> = T extends bigint
+export type BigIntToString<T> = T extends bigint
    ? string
    : T extends Date
-   ? Date
-   : T extends (infer U)[]
-   ? BigIntToString<U>[]
-   : T extends object
-   ? { [K in keyof T]: BigIntToString<T[K]> }
-   : T;
+     ? Date
+     : T extends (infer U)[]
+       ? BigIntToString<U>[]
+       : T extends object
+         ? { [K in keyof T]: BigIntToString<T[K]> }
+         : T;
 
 export function idFix<T>(obj: T): BigIntToString<T> {
    if (Array.isArray(obj)) {
@@ -198,6 +198,7 @@ export function nullToUndefined<T>(obj: T): NullToUndefined<T> {
    if (Array.isArray(obj)) {
       return obj.map(nullToUndefined) as NullToUndefined<T>;
    }
+
    if (obj && typeof obj === "object") {
       return Object.fromEntries(
          Object.entries(obj)
@@ -205,6 +206,7 @@ export function nullToUndefined<T>(obj: T): NullToUndefined<T> {
             .map(([key, value]) => [key, nullToUndefined(value)]), // Recursively process nested objects
       ) as NullToUndefined<T>;
    }
+
    return obj as NullToUndefined<T>;
 }
 
@@ -318,9 +320,7 @@ export function convertToMediaKind(hMediaKind: HMediaKind): MediaKind | undefine
 export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
 
 function levenshtein(a: string, b: string) {
-   const dp = Array.from({ length: a.length + 1 }, () =>
-      Array(b.length + 1).fill(0)
-   );
+   const dp = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
 
    for (let i = 0; i <= a.length; i++) dp[i][0] = i;
    for (let j = 0; j <= b.length; j++) dp[0][j] = j;
@@ -328,11 +328,7 @@ function levenshtein(a: string, b: string) {
    for (let i = 1; i <= a.length; i++) {
       for (let j = 1; j <= b.length; j++) {
          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-         dp[i][j] = Math.min(
-            dp[i - 1][j] + 1,
-            dp[i][j - 1] + 1,
-            dp[i - 1][j - 1] + cost
-         );
+         dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
       }
    }
 
