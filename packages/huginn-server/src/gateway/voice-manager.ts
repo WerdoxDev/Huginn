@@ -1,7 +1,7 @@
 import { type GatewayCallState, type GatewayVoiceState, type Snowflake } from "@huginn/shared";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { prisma } from "@huginn/backend-shared/database/index";
-import { selectMessageCall, selectMessageDefaults } from "@huginn/backend-shared/database/common";
+import { selectMessageDefaults } from "@huginn/backend-shared/database/common";
 import { filterMessage } from "#utils/helpers";
 
 export class VoiceManager {
@@ -30,6 +30,8 @@ export class VoiceManager {
 
          dispatchToTopic(channelId, "call_update", callState);
       }
+
+      this.checkForEmptyCall(channelId);
    }
 
    public async deleteCall(channelId: Snowflake) {
@@ -82,7 +84,7 @@ export class VoiceManager {
 
       // If the user was previously in a different call, check if it's empty now
       if (previousChannelId && voiceState.channelId !== previousChannelId) {
-         this.checkForEmptyCalls(previousChannelId);
+         this.checkForEmptyCall(previousChannelId);
       }
 
       // If the current channel is valid, send the state update to that channel
@@ -134,7 +136,7 @@ export class VoiceManager {
       return voiceState;
    }
 
-   private checkForEmptyCalls(channelId: Snowflake) {
+   private checkForEmptyCall(channelId: Snowflake) {
       if (!Array.from(this.voiceStates.values()).some((x) => x.channelId === channelId)) {
          this.deleteCall(channelId);
       }
