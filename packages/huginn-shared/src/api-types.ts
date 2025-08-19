@@ -207,7 +207,7 @@ type APIBaseMessage = {
    pinned: boolean;
    mentions: APIMessageUser[];
    flags?: MessageFlags | null;
-   nonce?: number | string;
+   nonce?: string;
    reactions?: string[];
 };
 
