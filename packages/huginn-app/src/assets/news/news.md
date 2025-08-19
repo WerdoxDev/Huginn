@@ -1,5 +1,4 @@
-### 🚀 New Features
+### 🔧 Big Fixes
 
-- Added right click menu to messages
-- Added call ended time and people who participated
-- Added _very_ experimental message editing function (use with caution)
+- Lots of bug fixes related to message editing and scrolling behaviors!
+- Voice right click menu should no longer be empty (ever!)
