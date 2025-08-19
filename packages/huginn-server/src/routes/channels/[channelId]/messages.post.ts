@@ -1,31 +1,11 @@
-import {
-   createErrorFactory,
-   createHuginnError,
-   createRoute,
-   getImageData,
-   getVideoData,
-   invalidFormBody,
-   missingAccess,
-   waitUntil,
-} from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, createRoute, invalidFormBody, missingAccess, waitUntil } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectMessageDefaults } from "@huginn/backend-shared/database/common";
-import { type APIMessage, Errors, HttpCode, MessageType, WorkerID, isImageMediaType, isVideoMediaType, snowflake } from "@huginn/shared";
+import { type APIMessage, Errors, HttpCode, MessageType, WorkerID, snowflake } from "@huginn/shared";
 import { safeDestr } from "destr";
-import { join } from "pathe";
 import { z } from "zod";
-import { envs } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
-import {
-   extractData,
-   extractEmbedTags,
-   extractLinks,
-   generateEmbedsFromContent,
-   processAttachments,
-   processEmbeds,
-   verifyJwt,
-} from "#utils/route-utils";
-import type { DBEmbed } from "#utils/types";
+import { generateEmbedsFromContent, processAttachments, processEmbeds, verifyJwt } from "#utils/route-utils";
 import { validateEmbeds } from "#utils/validation";
 import { filterMessage } from "#utils/helpers";
 
@@ -45,7 +25,7 @@ const jsonSchema = z.object({
       ),
    ),
    flags: z.optional(z.number()),
-   nonce: z.optional(z.union([z.number(), z.string()])),
+   nonce: z.optional(z.string()),
 });
 
 const formSchema = z.object({
