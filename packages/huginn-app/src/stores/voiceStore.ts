@@ -260,12 +260,6 @@ export function initializeVoice() {
          // our user's voice state update
          if (d.userId === client?.user?.id && d.sessionId === client.gateway.sessionId) {
             thisStore.setVoiceChannel(d.channelId ?? undefined, d.guildId ?? undefined);
-         } else {
-            // create voice preference for new users
-            const files = filesStore.getState();
-            if (!files.voicePreferences.some((x) => x.userId === d.userId)) {
-               files.updateVoicePreferences(d.userId, { microphoneVolume: 100, streamVolume: 100 });
-            }
          }
 
          if (d.channelId) {

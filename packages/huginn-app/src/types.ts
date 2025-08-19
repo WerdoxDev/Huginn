@@ -240,7 +240,7 @@ export type MutationKinds = {
 };
 
 export type AppMessage =
-   | { isPreview: true; id: Snowflake; timestamp: string; authorId: Snowflake; nonce?: number | string; content: string; channelId: Snowflake }
+   | { isPreview: true; id: Snowflake; timestamp: string; authorId: Snowflake; nonce?: string; content: string; channelId: Snowflake }
    | ({ isPreview: false } & (Omit<APICallMessage, "author"> | Omit<APIDefaultMessage, "author">) & {
            authorId: Snowflake;
            source: "websocket" | "fetch";
@@ -284,7 +284,13 @@ export type ProgressBarProps = {
    className?: string;
 };
 
-export type UploadProgress = { filenames: string[]; percentage: number; total: number; onAbort?: () => void };
+export type UploadProgress = {
+   messageId: Snowflake;
+   filenames: string[];
+   percentage: number;
+   total: number;
+   onAbort?: () => void;
+};
 
 export type DisplaySource = {
    thumbnail: string;

@@ -1,50 +1,63 @@
 import type { UploadProgress } from "@/types";
 import type { APIGetUserChannelsResult, Snowflake } from "@huginn/shared";
 import type { QueryClient } from "@tanstack/react-query";
+import { produce } from "immer";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 
+const initialStore = () => ({
+   savedScrolls: new Map<Snowflake, number>(),
+   currentVisibleMessages: [] as Array<{ messageId: Snowflake; messageTimestamp: number; channelId: Snowflake }>,
+   messageUploadProgresses: [] as UploadProgress[],
+   currentEditingMessageId: undefined as Snowflake | undefined,
+   messageBoxHeight: 0,
+});
+
+type StoreType = ReturnType<typeof initialStore>;
+
 export const useChannelStore = create(
-   combine(
-      {
-         savedScrolls: new Map<Snowflake, number>(),
+   combine(initialStore(), (set) => ({
+      saveScroll: (channelId: Snowflake, scroll: number) => set((state) => ({ savedScrolls: new Map(state.savedScrolls).set(channelId, scroll) })),
+      resetScrolls: () => set({ savedScrolls: new Map() }),
+      addVisibleMessage: (id: Snowflake, timestamp: number, channelId: Snowflake) =>
+         set((state) => ({
+            currentVisibleMessages: [
+               ...state.currentVisibleMessages.filter((x) => x.messageId !== id),
+               { messageId: id, messageTimestamp: timestamp, channelId: channelId },
+            ],
+         })),
+      removeVisibleMessage: (id: Snowflake) =>
+         set((state) => ({
+            currentVisibleMessages: state.currentVisibleMessages.filter((x) => x.messageId !== id),
+         })),
+      clearVisibleMessages: () => set({ currentVisibleMessages: [] }),
+      updateLastMessageId: (queryClient: QueryClient, channelId: Snowflake, messageId: Snowflake) => {
+         queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (data) => {
+            if (!data) return undefined;
 
-         currentVisibleMessages: [] as Array<{ messageId: Snowflake; messageTimestamp: number; channelId: Snowflake }>,
-         messageUploadProgresses: {} as Record<Snowflake, UploadProgress>,
-         currentEditingMessageId: undefined as Snowflake | undefined,
+            const channel = data.find((x) => x.id === channelId);
+            if (!channel) return data;
+
+            return [{ ...channel, lastMessageId: messageId }, ...data.filter((x) => x.id !== channelId)];
+         });
       },
-      (set) => ({
-         saveScroll: (channelId: Snowflake, scroll: number) => set((state) => ({ savedScrolls: new Map(state.savedScrolls).set(channelId, scroll) })),
-         resetScrolls: () => set({ savedScrolls: new Map() }),
-         addVisibleMessage: (id: Snowflake, timestamp: number, channelId: Snowflake) =>
-            set((state) => ({
-               currentVisibleMessages: [
-                  ...state.currentVisibleMessages.filter((x) => x.messageId !== id),
-                  { messageId: id, messageTimestamp: timestamp, channelId: channelId },
-               ],
-            })),
-         removeVisibleMessage: (id: Snowflake) =>
-            set((state) => ({
-               currentVisibleMessages: state.currentVisibleMessages.filter((x) => x.messageId !== id),
-            })),
-         clearVisibleMessages: () => set({ currentVisibleMessages: [] }),
-         updateLastMessageId: (queryClient: QueryClient, channelId: Snowflake, messageId: Snowflake) => {
-            queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (data) => {
-               if (!data) return undefined;
-
-               const channel = data.find((x) => x.id === channelId);
-               if (!channel) return data;
-
-               return [{ ...channel, lastMessageId: messageId }, ...data.filter((x) => x.id !== channelId)];
-            });
-         },
-         setMessageUploadProgress: (previewMessageId: Snowflake, progress: UploadProgress) =>
-            set((state) => ({ messageUploadProgresses: { ...state.messageUploadProgresses, [previewMessageId]: progress } })),
-         deleteMessageUploadProgress: (previewMessageId: Snowflake) =>
-            set((state) => ({
-               messageUploadProgresses: Object.fromEntries(Object.entries(state.messageUploadProgresses).filter(([id]) => id !== previewMessageId)),
-            })),
-         setEditingMessageId: (messageId: Snowflake | undefined) => set({ currentEditingMessageId: messageId }),
-      }),
-   ),
+      updateMessageUploadProgress: (progress: UploadProgress) =>
+         set(
+            produce((draft: StoreType) => {
+               const existingIndex = draft.messageUploadProgresses.findIndex((x) => x.messageId === progress.messageId);
+               if (existingIndex !== -1) {
+                  draft.messageUploadProgresses[existingIndex] = progress;
+               } else {
+                  console.log("adding", progress);
+                  draft.messageUploadProgresses.push(progress);
+               }
+            }),
+         ),
+      removeMessageUploadProgress: (messageId: Snowflake) =>
+         set((state) => ({
+            messageUploadProgresses: state.messageUploadProgresses.filter((x) => x.messageId !== messageId),
+         })),
+      setEditingMessageId: (messageId: Snowflake | undefined) => set({ currentEditingMessageId: messageId }),
+      setMessageBoxHeight: (height: number) => set({ messageBoxHeight: height }),
+   })),
 );

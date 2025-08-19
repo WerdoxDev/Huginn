@@ -5,7 +5,6 @@ import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { useFirstUnreadMessage } from "@hooks/useFirstUnreadMessage";
 import { useVisibleMessages } from "@hooks/useVisibleMessages";
 import { MessageType, type Snowflake } from "@huginn/shared";
-import { listenEvent } from "@lib/event-handler";
 import { getMessagesOptions } from "@lib/queries";
 import { getFirstChildClosestToBottom, getFirstChildClosestToTop } from "@lib/utils";
 import { useChannelStore } from "@stores/channelStore";
@@ -16,8 +15,9 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import type { AppMessage, ProcessedMessage } from "@/types";
 import ChannelMessageLoadingIndicator from "./ChannelMessageLoadingIndicator";
 import ChannelTypingIndicator from "./ChannelTypingIndicator";
-import { useMessageDiff } from "@hooks/useMessageDiff";
+import { useMessageDiff, type ChangeType } from "@hooks/useMessageDiff";
 import { useThisUser } from "@stores/userStore";
+import { usePrevious } from "@hooks/usePrevious";
 
 const topScrollOffset = 100;
 const bottomScrollOffset = 100;
@@ -30,7 +30,16 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    const { data, fetchNextPage, fetchPreviousPage, isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
       useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, props.channelId));
 
-   const { savedScrolls, saveScroll, currentEditingMessageId } = useChannelStore();
+   const {
+      savedScrolls,
+      saveScroll,
+      currentEditingMessageId,
+      messageBoxHeight,
+      currentVisibleMessages,
+      removeMessageUploadProgress,
+      messageUploadProgresses,
+   } = useChannelStore();
+   const previousMessageBoxHeight = usePrevious(messageBoxHeight);
 
    const { onMessageVisibilityChanged } = useVisibleMessages(props.channelId, props.messages);
    const { setRef, getRef } = useDynamicRefs<HTMLLIElement>();
@@ -145,6 +154,34 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       shouldScrollToLastSeen.current = false;
    }
 
+   function scrollIntoViewMinimal(element: HTMLElement) {
+      if (!scrollRef.current) {
+         return;
+      }
+
+      const rect = element.getBoundingClientRect();
+      const containerRect = scrollRef.current.getBoundingClientRect();
+
+      // Element is above visible area
+      if (rect.top < containerRect.top) {
+         const scrollTop = scrollRef.current.scrollTop;
+         const offset = rect.top - containerRect.top;
+         scrollRef.current.scrollTo({
+            top: scrollTop + offset - 10,
+            behavior: "instant",
+         });
+      }
+      // Element is below visible area
+      else if (rect.bottom > containerRect.bottom) {
+         const scrollTop = scrollRef.current.scrollTop;
+         const offset = rect.bottom - containerRect.bottom;
+         scrollRef.current.scrollTo({
+            top: scrollTop + offset + 10,
+            behavior: "instant",
+         });
+      }
+   }
+
    function onMessageAdd(message: ProcessedMessage) {
       if (!scrollRef.current) return;
       const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
@@ -155,15 +192,42 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       }
    }
 
-   function onMessageUpdate(message: ProcessedMessage) {
+   function onMessageUpdate(previousMessage: ProcessedMessage, message: ProcessedMessage, changeType: ChangeType, _isVisible: boolean) {
       if (!scrollRef.current) return;
-      const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
-      const messageHeight = getRef(message.id)?.current.clientHeight ?? 0;
+      const messageRef = getRef(message.id)?.current;
 
-      if (message.authorId === user?.id || scrollOffset - messageHeight <= 50) {
+      if (changeType === "preview") {
+         removeMessageUploadProgress(previousMessage.id);
+      }
+
+      if (changeType === "edit" && messageRef) {
+         scrollIntoViewMinimal(messageRef);
+         return;
+      }
+
+      const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
+      const messageHeight = messageRef?.clientHeight ?? 0;
+
+      if (scrollOffset - messageHeight <= 50) {
          scrollDown();
       }
    }
+
+   useEffect(() => {
+      if (!scrollRef.current) return;
+
+      if (scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop >= 1) {
+         scrollRef.current.scrollTop += messageBoxHeight - (previousMessageBoxHeight ?? 0);
+      }
+
+      // Try to keep the editing message in viewport if it's even slightly visible
+      if (currentEditingMessageId && currentVisibleMessages.some((x) => x.messageId === currentEditingMessageId)) {
+         const messageRef = getRef(currentEditingMessageId);
+         if (messageRef) {
+            scrollIntoViewMinimal(messageRef.current);
+         }
+      }
+   }, [messageBoxHeight]);
 
    // Calculating scroll top position after an upward fetch
    useLayoutEffect(() => {
@@ -201,33 +265,18 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       }
    }, [props.messages]);
 
-   // Should scroll check
-   useEffect(() => {
-      if (!scrollRef.current || props.messages.length === 0) return;
-
-      if (shouldScrollToLastSeen.current) {
-         scrollDown();
-         shouldScrollToLastSeen.current = false;
-      }
-   }, [props.messages]);
-
    useEffect(() => {
       if (!scrollRef.current) return;
-
-      const unlisten = listenEvent("message_box_height_changed", (d) => {
-         if (!scrollRef.current) return;
-
-         if (scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop >= 1) {
-            scrollRef.current.scrollTop += d.difference;
-         }
-      });
 
       const resizeObserver = new ResizeObserver((entries) => {
          if (!scrollRef.current) return;
          const scrollHeight = entries[0].target.scrollHeight;
 
+         // This is to not set "isResizing" when we are already at the bottom
+         const alreadyAtBottom = scrollRef.current.scrollTop + scrollRef.current.clientHeight >= scrollRef.current.scrollHeight;
+
          if (shouldAnchorToBottom.current) {
-            isResizing.current = true;
+            isResizing.current = !alreadyAtBottom;
             scrollRef.current.scrollTo(0, scrollHeight);
          }
       });
@@ -236,7 +285,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
       return () => {
          resizeObserver.disconnect();
-         unlisten();
+         // unlisten();
       };
    }, []);
 

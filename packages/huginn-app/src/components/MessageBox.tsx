@@ -15,6 +15,7 @@ import Tooltip from "./tooltip/Tooltip";
 import { useChannelStore } from "@stores/channelStore";
 import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
 import { useEditMessage } from "@hooks/mutations/useEditMessage";
+import { useThisUser } from "@stores/userStore";
 
 type AttachmentInputType = { name: string; type: string; arrayBuffer: () => Promise<ArrayBuffer> };
 
@@ -38,8 +39,9 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    const [attachments, setAttachments] = useState<AttachmentType[]>([]);
    const [dragging, setDragging] = useState(false);
    const [_isPending, startTransition] = useTransition();
-   const { setEditingMessageId, currentEditingMessageId } = useChannelStore();
+   const { setEditingMessageId, currentEditingMessageId, setMessageBoxHeight } = useChannelStore();
    const { decorate, editor, renderElement, renderLeaf } = usePreviewMessageRenderer();
+   const { user } = useThisUser();
 
    const sendMessageMutation = useSendMessage();
    const editMessageMutation = useEditMessage();
@@ -48,7 +50,8 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    function onEditorKeyDown(event: KeyboardEvent) {
       // Edit
       if (event.key === "ArrowUp" && editor.string([]) === "") {
-         setEditingMessageId(props.messages[props.messages.length - 1].id);
+         const lastEditableMessage = props.messages.findLast((x) => x.authorId === user?.id);
+         setEditingMessageId(lastEditableMessage?.id);
          event.preventDefault();
       }
 
@@ -245,7 +248,10 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 
       const resizeObserver = new ResizeObserver((entries) => {
          const height = entries[0].target.clientHeight;
-         dispatchEvent("message_box_height_changed", { difference: height - lastHeight });
+
+         setMessageBoxHeight(height);
+         // setMessageBoxHeightDifference(height - lastHeight);
+         // dispatchEvent("message_box_height_changed", { difference: height - lastHeight });
          lastHeight = height;
       });
 

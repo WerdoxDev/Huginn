@@ -82,6 +82,23 @@ export function useMessageRenderer(message: ProcessedMessage) {
       const currentPath: number[] = [];
       const currentOpenedTokens: HuginnToken[] = [];
 
+      // Render attachments
+      if (!message.isPreview) {
+         for (const attachment of message.attachments) {
+            nodes.push({
+               type: "attachment",
+               url: attachment.url,
+               description: attachment.description,
+               children: [{ text: "" }],
+               height: attachment?.height,
+               width: attachment?.width,
+               size: attachment.size,
+               contentType: attachment.contentType,
+               filename: attachment.filename,
+            });
+         }
+      }
+
       for (const lineTokens of tokens) {
          if (lineTokens.length === 0) {
             lineNode.children.push({ text: "" });
@@ -157,6 +174,7 @@ export function useMessageRenderer(message: ProcessedMessage) {
          }
       }
 
+      // Render embeds
       for (const embed of message.embeds) {
          nodes.push({
             type: "embed",
@@ -166,20 +184,6 @@ export function useMessageRenderer(message: ProcessedMessage) {
             description: embed.description,
             title: embed.title,
             children: [{ text: "" }],
-         });
-      }
-
-      for (const attachment of message.attachments) {
-         nodes.push({
-            type: "attachment",
-            url: attachment.url,
-            description: attachment.description,
-            children: [{ text: "" }],
-            height: attachment?.height,
-            width: attachment?.width,
-            size: attachment.size,
-            contentType: attachment.contentType,
-            filename: attachment.filename,
          });
       }
 

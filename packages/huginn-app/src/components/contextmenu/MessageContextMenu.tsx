@@ -4,12 +4,14 @@ import { useOpen } from "@hooks/useOpen";
 import { useModals } from "@stores/modalsStore";
 import { error } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
+import { useThisUser } from "@stores/userStore";
 
 export default function MessageContextMenu() {
    const { data } = useContextMenu("message");
    const { openUrl } = useOpen();
    const { showError } = useModals();
    const { setEditingMessageId } = useChannelStore();
+   const { user } = useThisUser();
 
    function copyImage() {
       const img = data?.imgRef?.current;
@@ -53,9 +55,11 @@ export default function MessageContextMenu() {
 
    return (
       <>
-         <ContextMenu.Item label="Edit Message" onClick={() => setEditingMessageId(data.message.id)}>
-            <IconMingcuteEdit2Fill />
-         </ContextMenu.Item>
+         {data.message.authorId === user?.id && (
+            <ContextMenu.Item label="Edit Message" onClick={() => setEditingMessageId(data.message.id)}>
+               <IconMingcuteEdit2Fill />
+            </ContextMenu.Item>
+         )}
          <ContextMenu.Item label="Reply (soon)" disabled>
             <IconMingcuteCornerUpLeftFill />
          </ContextMenu.Item>

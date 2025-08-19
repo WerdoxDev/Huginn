@@ -12,6 +12,7 @@ import { Editable, ReactEditor, type RenderElementProps, type RenderLeafProps, S
 import AttachmentUploadProgress from "./AttachmentUploadProgress";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useMessageRenderer } from "@hooks/useMessageRenderer";
+import type { UploadProgress } from "@/types";
 
 export default function DefaultMessage() {
    const { user } = useThisUser();
@@ -29,6 +30,8 @@ export default function DefaultMessage() {
    const isSeparate = useMemo(() => context.message.hasNewAuthor || context.message.hasNewMinute || context.message.hasNewDate, [context.message]);
    const isEditing = useMemo(() => context.message.isEditing, [context.message]);
    const isEdited = useMemo(() => !context.message.isPreview && context.message.editedTimestamp !== null, [context.message]);
+   const isPreview = useMemo(() => context.message.isPreview, [context.message]);
+   const isNextPreview = useMemo(() => context.nextMessage?.isPreview, [context.nextMessage]);
    const isNextSeparate = useMemo(
       () => context.nextMessage?.hasNewAuthor || context.nextMessage?.hasNewMinute || !context.nextMessage || context.nextMessage.isExoticType,
       [context.nextMessage],
@@ -83,13 +86,15 @@ export default function DefaultMessage() {
                isSeparate={isSeparate}
                isUnread={isUnread}
                isLastExotic={isLastExotic}
+               isPreview={isPreview}
+               isNextPreview={isNextPreview}
                renderElement={renderElement}
                renderLeaf={renderLeaf}
                widths={widths}
             />
             <div className="ml-2.5 mt-2.5 flex h-full shrink-0 select-none items-center justify-center gap-x-2">
-               {isEdited && <div className="text-xs text-white/50">(edited)</div>}
                {isEditing && <div className="text-positive-100 text-xs font-semibold uppercase">editing</div>}
+               {isEdited && <div className="text-xs text-white/50">(edited)</div>}
                {!isSeparate && !isLastExotic && <div className="text-text/50 text-xs opacity-0 group-hover:opacity-100">{formattedTime}</div>}
             </div>
          </div>
@@ -106,12 +111,15 @@ function SlateRenderer(props: {
    isSelf: boolean;
    isUnread: boolean;
    isSeparate: boolean;
+   isNextPreview?: boolean;
    isNextSeparate: boolean;
    isLastExotic: boolean;
+   isPreview: boolean;
 }) {
    const { messageUploadProgresses } = useChannelStore();
    const context = useContext(MessageContext);
-   const progress = useMemo(() => messageUploadProgresses[context.message.id], [messageUploadProgresses]);
+   const progress = useMemo(() => messageUploadProgresses.find((x) => x.messageId === context.message.id), [messageUploadProgresses]);
+   // const progress: UploadProgress = { filenames: ["asd"], messageId: "asd", percentage: 0, total: 1000 };
 
    return (
       <div
@@ -128,7 +136,7 @@ function SlateRenderer(props: {
             borderTopRightRadius: `${clamp((props.widths.width - props.widths.lastWidth) / 2, 0, 12)}px`,
          }}
       >
-         {!props.isSeparate && props.widths.lastWidth > props.widths.width && (
+         {!props.isPreview && !props.isSeparate && props.widths.lastWidth > props.widths.width && (
             <div className="absolute -right-10 top-0 h-10 w-10 overflow-hidden">
                <div
                   className={clsx(
@@ -141,7 +149,7 @@ function SlateRenderer(props: {
                />
             </div>
          )}
-         {!props.isNextSeparate && props.widths.nextWidth > props.widths.width && (
+         {props.isNextPreview === false && !props.isNextSeparate && props.widths.nextWidth > props.widths.width && (
             <div className="absolute -right-10 bottom-0 h-10 w-10 overflow-hidden">
                <div
                   className={clsx(

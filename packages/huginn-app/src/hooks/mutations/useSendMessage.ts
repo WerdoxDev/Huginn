@@ -10,7 +10,7 @@ export function useSendMessage() {
    const client = useClient();
    const { user } = useThisUser();
    const queryClient = useQueryClient();
-   const { setMessageUploadProgress, deleteMessageUploadProgress } = useChannelStore();
+   const { updateMessageUploadProgress } = useChannelStore();
 
    const mutation = useMutation({
       mutationKey: ["send-message"],
@@ -53,7 +53,7 @@ export function useSendMessage() {
          }
 
          if (data.attachments.length) {
-            setMessageUploadProgress(previewMessage.id, { percentage: 0, filenames, total: 0, onAbort });
+            updateMessageUploadProgress({ messageId: previewMessage.id, percentage: 0, filenames, total: 0, onAbort });
          }
 
          // Add Preview Message
@@ -83,7 +83,8 @@ export function useSendMessage() {
                data.attachments.map((x) => ({ data: x.data, name: x.filename, contentType: x.contentType })),
                data.attachments.length
                   ? (event) =>
-                       setMessageUploadProgress(previewMessage.id, {
+                       updateMessageUploadProgress({
+                          messageId: previewMessage.id,
                           percentage: (event.loaded / event.total) * 100,
                           filenames,
                           total: event.total,
@@ -93,11 +94,6 @@ export function useSendMessage() {
                abortController.signal,
             ),
          };
-      },
-      onSuccess(data) {
-         if (data?.previewMessage) {
-            deleteMessageUploadProgress(data.previewMessage.id);
-         }
       },
    });
 

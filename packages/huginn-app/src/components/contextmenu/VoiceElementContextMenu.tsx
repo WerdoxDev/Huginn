@@ -12,7 +12,7 @@ export default function VoiceElementContextMenu() {
    const { data } = useContextMenu("voice_element");
    const posthog = usePostHog();
    const { remoteSources } = useVoiceStore();
-   const { updateVoicePreferences, voicePreferences, saveVoicePreferences } = useFilesStore();
+   const { updateVoicePreferences, voicePreferences } = useFilesStore();
    const consumeStreamMutation = useConsumeStream();
 
    const preference = useMemo(() => voicePreferences.find((x) => x.userId === data?.user.id), [voicePreferences]);

@@ -16,7 +16,7 @@ export default function MessageWebsocketProvider(props: { children?: ReactNode }
    const queryClient = useQueryClient();
    const currentChannel = useCurrentChannel();
    const mutation = useCreateDMChannel("create-dm-channel_other");
-   const { currentVisibleMessages, updateLastMessageId } = useChannelStore();
+   const { currentVisibleMessages, updateLastMessageId, messageUploadProgresses } = useChannelStore();
    const { user } = useThisUser();
    const { addChannelToReadStates, setLatestReadMessage } = useReadStates();
    const huginnWindow = useHuginnWindow();
@@ -141,7 +141,7 @@ export default function MessageWebsocketProvider(props: { children?: ReactNode }
          client?.gateway.off("message_update", onMessageUpdated);
          client?.gateway.off("message_ack", onMessageAck);
       };
-   }, [currentChannel, user, currentVisibleMessages, huginnWindow.focused]);
+   }, [currentChannel, user, currentVisibleMessages, huginnWindow.focused, messageUploadProgresses]);
 
    return props.children;
 }

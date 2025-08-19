@@ -19,11 +19,10 @@ if (import.meta.env.DEV) {
 
 enableLogs({
    // "api:voice": ["default", "send", "recv", "heartbeat"],
-   "api:voice": ["default", "recv"],
+   "api:voice": ["default", "recv", "heartbeat"],
    "app:voice-store": ["remote-sources", "default"],
    "app:voice-client": ["voice-recv", "default"],
-   // "api:gateway": ["default", "send", "recv", "heartbeat"],
-   "api:gateway": ["default", "recv"],
+   "api:gateway": ["default", "recv", "heartbeat"],
    "api:client": ["ready-state"],
    "app:client-store": ["default"],
 });
@@ -36,12 +35,12 @@ setOnLog(async (section, level, ...args) => {
    logs.push({ section, level, args });
 });
 
-// setInterval(async () => {
-//    if (logs.length !== 0) {
-//       await clientStore.getState().client?.log.sendLog(logs);
-//       logs.splice(0, logs.length);
-//    }
-// }, 5000);
+setInterval(async () => {
+   if (logs.length !== 0) {
+      await clientStore.getState().client?.log.sendLog(logs);
+      logs.splice(0, logs.length);
+   }
+}, 5000);
 
 // let lastTime = performance.now();
 // let count = 0;

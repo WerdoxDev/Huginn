@@ -1,4 +1,4 @@
-import { log, type Snowflake } from "@huginn/shared";
+import { error, log, type Snowflake } from "@huginn/shared";
 import { clientStore } from "@stores/clientStore";
 import { filesStore } from "@stores/filesStore";
 import { voiceStore } from "@stores/voiceStore";
@@ -114,6 +114,14 @@ export class VoiceClient {
                voice.remoteSources.some((x) => x.userId === d.producerUserId && x.kind === "stream_video" && x.consumerId)
             ) {
                client?.voice.consumeProducer(d.producerId);
+            }
+
+            // create voice preference for new users
+            if (d.kind === "microphone" || d.kind === "stream_audio") {
+               const files = filesStore.getState();
+               if (!files.voicePreferences.some((x) => x.userId === d.producerUserId)) {
+                  files.updateVoicePreferences(d.producerUserId, { microphoneVolume: 100, streamVolume: 100 });
+               }
             }
 
             voice.addRemoteSource(d.producerUserId, undefined, d.producerId, d.kind, undefined, undefined);
@@ -407,6 +415,10 @@ export class VoiceClient {
          this.audioSourcePlayers.push(sourcePlayer);
 
          const preference = voicePreferences.find((x) => x.userId === remoteSource.userId);
+
+         if (!preference) {
+            error("app:voice-client", `Voice preference for ${remoteSource.userId} was undefined`);
+         }
 
          if (remoteSource.kind === "microphone") {
             sourcePlayer.setGain(undefined, preference?.microphoneVolume);
