@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.53.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.53.0...app@v0.53.1) (2025-08-19)
+
+
+### Bug Fixes
+
+* **app:** bunch of bug fixes related to message editing and scrolling + voice preference saving bug ([3e3291f](https://github.com/WerdoxDev/Huginn/commit/3e3291f93c7a87caee70c0ad4be6c1f311dbbc5d))
+
 ## [0.53.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.52.0...app@v0.53.0) (2025-08-16)
 
 
