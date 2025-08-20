@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.53.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.53.1...app@v0.53.2) (2025-08-20)
+
+
+### Bug Fixes
+
+* **app:** loopback should get process id by using closest title search + log types ([965a25e](https://github.com/WerdoxDev/Huginn/commit/965a25ef419ebecafde54498bb40b146335ef580))
+
 ## [0.53.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.53.0...app@v0.53.1) (2025-08-19)
 
 
