@@ -6,7 +6,7 @@ import { verifyToken } from "#utils/token-factory";
 
 const schema = z.object({
    token: z.optional(z.string()),
-   logs: z.array(z.object({ section: z.string(), level: z.string(), args: z.array(z.any()) })),
+   logs: z.array(z.object({ type: z.string(), section: z.string(), level: z.optional(z.string()), args: z.array(z.any()) })),
 });
 
 createRoute("POST", "/api/log", validator("json", schema), async (c) => {
@@ -31,7 +31,7 @@ createRoute("POST", "/api/log", validator("json", schema), async (c) => {
       timeZone: "Europe/Berlin",
    });
 
-   const logLines = `${formatted}\n ${body.logs.map((x) => `(${x.section}) [${x.level}] ${x.args.join(" ")}`).join("\n")}\n`;
+   const logLines = `${formatted}\n ${body.logs.map((x) => `${x.type === "error" ? "ERROR: " : ""}(${x.section}) [${x.level}] ${x.args.join(" ")}`).join("\n")}\n`;
 
    await mkdir(logDir, { recursive: true });
    await appendFile(logFile, logLines);
