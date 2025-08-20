@@ -1,11 +1,9 @@
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
-import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { useHuginnMutation } from "./useHuginnMutation";
 
 export function useLogout() {
-   const queryClient = useQueryClient();
    const client = useClient();
    const navigate = useNavigate();
    const { resetScrolls } = useChannelStore();
@@ -29,12 +27,6 @@ export function useLogout() {
       await navigate("/login", { replace: true, viewTransition: true });
 
       resetScrolls();
-
-      setTimeout(() => {
-         queryClient.removeQueries({ queryKey: ["channels"] });
-         queryClient.removeQueries({ queryKey: ["messages"] });
-         queryClient.removeQueries({ queryKey: ["relationships"] });
-      }, 0);
    }
 
    return logout;
