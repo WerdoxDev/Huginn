@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.25.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.25.0...server@v0.25.1) (2025-08-19)
+
+
+### Bug Fixes
+
+* **server:** calls should be checked when updated ([c0b1978](https://github.com/WerdoxDev/Huginn/commit/c0b197882ba77edb1e08c5b7ddd1ec92cf15e090))
+* **server:** nonce should only be string ([6c4eaf4](https://github.com/WerdoxDev/Huginn/commit/6c4eaf49dc095b391b98562f63b18e239038ed4c))
+
 ## [0.25.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.24.2...server@v0.25.0) (2025-08-16)
 
 
