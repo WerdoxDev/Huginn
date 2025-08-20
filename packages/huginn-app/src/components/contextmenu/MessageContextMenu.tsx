@@ -5,6 +5,8 @@ import { useModals } from "@stores/modalsStore";
 import { error } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { useThisUser } from "@stores/userStore";
+import { useDeleteMessage } from "@hooks/mutations/useDeleteMessage";
+import { useMemo } from "react";
 
 export default function MessageContextMenu() {
    const { data } = useContextMenu("message");
@@ -12,6 +14,9 @@ export default function MessageContextMenu() {
    const { showError } = useModals();
    const { setEditingMessageId } = useChannelStore();
    const { user } = useThisUser();
+   const deleteMessageMutation = useDeleteMessage();
+
+   const isAuthor = useMemo(() => data?.message.authorId === user?.id, [user, data]);
 
    function copyImage() {
       const img = data?.imgRef?.current;
@@ -49,13 +54,21 @@ export default function MessageContextMenu() {
       }
    }
 
+   function deleteMessage() {
+      if (deleteMessageMutation.isPending || !data) {
+         return;
+      }
+
+      deleteMessageMutation.mutate({ channelId: data.message.channelId, messageId: data.message.id });
+   }
+
    if (!data) {
       return;
    }
 
    return (
       <>
-         {data.message.authorId === user?.id && (
+         {isAuthor && (
             <ContextMenu.Item label="Edit Message" onClick={() => setEditingMessageId(data.message.id)}>
                <IconMingcuteEdit2Fill />
             </ContextMenu.Item>
@@ -73,10 +86,14 @@ export default function MessageContextMenu() {
          <ContextMenu.Item label="Pin Message (soon)" disabled>
             <IconMingcutePinFill />
          </ContextMenu.Item>
-         <ContextMenu.Divider />
-         <ContextMenu.Item color="negative" label="Delete Message (soon)" disabled>
-            <IconMingcuteDelete3Fill />
-         </ContextMenu.Item>
+         {isAuthor && (
+            <>
+               <ContextMenu.Divider />
+               <ContextMenu.Item color="negative" label="Delete Message" onClick={deleteMessage}>
+                  <IconMingcuteDelete3Fill />
+               </ContextMenu.Item>
+            </>
+         )}
          {data.imgRef?.current && (
             <>
                <ContextMenu.Divider />

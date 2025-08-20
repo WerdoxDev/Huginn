@@ -21,8 +21,6 @@ export default function StartLayout() {
          <div className="absolute flex h-full w-full items-center justify-center">
             <Outlet />
          </div>
-         {/* {startBackground.state !== 2 && (
-			)} */}
          <button
             type="button"
             className="hover:bg-surface absolute bottom-2.5 right-2.5 z-10 cursor-pointer rounded-lg p-1 transition-all"
@@ -32,9 +30,6 @@ export default function StartLayout() {
          >
             <IconMingcuteSettings5Fill className="hover:rotate-60 h-6 w-6 text-white/80 transition-all" />
          </button>
-         {/* <div className="absolute top-10 left-10 flex flex-col items-center justify-center gap-y-5 rounded-xl bg-surface p-5 shadow-xl">
-				<HuginnIcon overrideTheme="text" className="hover:-rotate-12 size-20 text-primary-500 transition-transform hover:scale-105 active:rotate-6" />
-			</div> */}
       </div>
    );
 }

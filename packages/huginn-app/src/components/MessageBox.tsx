@@ -244,15 +244,11 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 
    useEffect(() => {
       if (!containerRef.current) return;
-      let lastHeight = containerRef.current.clientHeight;
 
       const resizeObserver = new ResizeObserver((entries) => {
          const height = entries[0].target.clientHeight;
 
          setMessageBoxHeight(height);
-         // setMessageBoxHeightDifference(height - lastHeight);
-         // dispatchEvent("message_box_height_changed", { difference: height - lastHeight });
-         lastHeight = height;
       });
 
       resizeObserver.observe(containerRef.current);
@@ -262,7 +258,6 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       window.addEventListener(
          "keydown",
          (e) => {
-            console.log(e.key);
             if (e.key === "Escape" && currentEditingMessageId) {
                endEditMessage();
             }
