@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.26.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.25.1...server@v0.26.0) (2025-08-20)
+
+
+### Features
+
+* **server:** add message delete ([cf451e1](https://github.com/WerdoxDev/Huginn/commit/cf451e1548207a302b3d7d37b645d7783fd05504))
+
 ## [0.25.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.25.0...server@v0.25.1) (2025-08-19)
 
 
