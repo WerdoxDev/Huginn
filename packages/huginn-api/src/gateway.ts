@@ -98,12 +98,15 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
 
             // If we were connected to a voice channel, update the voice state again
             if (this.client.voice.connectionInfo && this.client.voice.status === "rtc_ready") {
+               // We need to make a copy because the server will send a null voice state when we disconnect and we don't want that to disconnect us
+               const connectionInfo = { ...this.client.voice.connectionInfo };
+
                // @ts-ignore It thinks when setting status to "reconnecting" here, it will stay like that
                if (this.status !== "authenticated") {
                   await this.waitForEvents(["resumed", "ready"], true);
                }
 
-               await this.connectVoice(this.client.voice.connectionInfo.guildId, this.client.voice.connectionInfo.channelId, {
+               await this.connectVoice(connectionInfo.guildId, connectionInfo.channelId, {
                   isAudioDeafened: this.client.voice.localVoiceState.isAudioDeafened,
                   isAudioMuted: this.client.voice.localVoiceState.isAudioMuted,
                });
@@ -164,9 +167,14 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
    ): Promise<boolean> {
       log("api:gateway", "default", "connect to voice");
 
+      console.log("0");
+
       if (this.client.voice.connectionInfo && this.client.voice.connectionInfo?.channelId !== channelId) {
+         console.log("CLOSING BRO");
          this.client.voice.close();
       }
+
+      console.log("1");
 
       // This is useful for when voice was disconnected and the token is no longer valid. The server won't send a new token unless it's a new channel or guild
       if (disconnectIfConnected) {
@@ -195,6 +203,8 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
          });
       }
 
+      console.log("2");
+
       const updateVoiceStateData: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
          d: {
@@ -211,6 +221,8 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
       this.send(updateVoiceStateData);
 
       let receivedToken: string | undefined = token;
+
+      console.log("3", receivedToken);
 
       if (!receivedToken) {
          const promise1 = new Promise<void>((r) => {
@@ -232,6 +244,8 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
 
          await Promise.allSettled([promise1, promise2]);
       }
+
+      console.log("4", receivedToken);
 
       if (!receivedToken) {
          return false;
