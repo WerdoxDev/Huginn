@@ -202,6 +202,36 @@ export const messagesExtension = Prisma.defineExtension({
                throw e;
             }
          },
+         async deleteById<Args extends Prisma.MessageDefaultArgs>(id: Snowflake, channelId: Snowflake, args?: Args) {
+            try {
+               const channel = await prisma.channel.getById(channelId, { select: { lastMessageId: true } });
+               if (channel.lastMessageId === id) {
+                  const lastMessage = await prisma.message.findMany({
+                     where: { channelId: BigInt(channelId) },
+                     skip: 1,
+                     take: -1,
+                     cursor: { id: BigInt(id) },
+                     select: { id: true },
+                  });
+
+                  console.log(lastMessage);
+
+                  await prisma.channel.update({
+                     where: { id: BigInt(channelId) },
+                     data: { lastMessageId: lastMessage[0]?.id ?? null },
+                     select: { id: true },
+                  });
+               }
+
+               const deletedMessage = await prisma.message.delete({ where: { id: BigInt(id) }, ...args });
+
+               assertObj("deleteMessage", deletedMessage, DBErrorType.NULL_MESSAGE);
+               return idFix(deletedMessage) as BigIntToString<Prisma.MessageGetPayload<Args>>;
+            } catch (e) {
+               await assertExists(e, "deleteMessage", DBErrorType.NULL_MESSAGE, [id]);
+               throw e;
+            }
+         },
       },
    },
 });
