@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router";
 import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
-import { enableLogs, type LogArgs, setIsRaw, setOnLog } from "@huginn/shared";
+import { type APIPostLogJSONBody, enableLogs, setIsRaw, setOnError, setOnLog } from "@huginn/shared";
 import { clientStore } from "@stores/clientStore";
 import router from "./routes";
 
@@ -29,10 +29,14 @@ enableLogs({
 
 setIsRaw(import.meta?.env?.PROD ?? false);
 
-const logs: Array<{ section: string; level: string; args: LogArgs[] }> = [];
+const logs: APIPostLogJSONBody = [];
 
-setOnLog(async (section, level, ...args) => {
-   logs.push({ section, level, args });
+setOnLog((section, level, ...args) => {
+   logs.push({ type: "log", section, level, args });
+});
+
+setOnError((section, ...args) => {
+   logs.push({ type: "error", section, args });
 });
 
 setInterval(async () => {

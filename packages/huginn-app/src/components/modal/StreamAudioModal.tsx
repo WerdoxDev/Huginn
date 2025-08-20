@@ -43,7 +43,7 @@ export default function StreamAudioModal() {
          // Reset loopback even if we want to start a new one / end the last one
          await voiceClient.stopAudioLoopback();
 
-         const audioTrack = voiceClient.getAudioTrackFromLoopback(undefined, selectedSource.processId);
+         const audioTrack = await voiceClient.getAudioTrackFromLoopback(undefined, selectedSource.processId);
 
          await client?.voice.startStream(undefined, audioTrack);
          close();

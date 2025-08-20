@@ -427,13 +427,17 @@ function listenToEvents(mainWindow: BrowserWindow) {
    });
 
    let previousProcessId: string | undefined;
-   ipcMain.on("audio:start-loopback", async (_, processTitle?: string, processId?: string) => {
+   ipcMain.handle("audio:start-loopback", async (_, processTitle?: string, processId?: string) => {
       log("app:electron", "recv", "audio start loopback", "ptit:", processTitle, "pid:", processId);
 
       let foundProcessId: string | undefined;
       if (processTitle) {
          const processIds = await getActiveWindowProcessIds();
-         foundProcessId = processIds.find((x) => processTitle.toLowerCase().includes(x.title.toLowerCase()))?.processId;
+         const closestProcessTitle = findClosestString(
+            processTitle,
+            processIds.map((x) => x.title),
+         );
+         foundProcessId = processIds.find((x) => closestProcessTitle === x.title)?.processId;
       } else if (processId) {
          foundProcessId = processId;
       }
@@ -450,6 +454,11 @@ function listenToEvents(mainWindow: BrowserWindow) {
          });
 
          previousProcessId = foundProcessId;
+         return true;
+      } else {
+         error("app:electron", `Couldn't find process with title: ${processTitle}`);
+
+         return false;
       }
    });
 

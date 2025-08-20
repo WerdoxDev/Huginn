@@ -490,14 +490,19 @@ export class VoiceClient {
       if (audioConsumerId) client.voice.closeConsumer(audioConsumerId);
    }
 
-   public getAudioTrackFromLoopback(processTitle?: string, processId?: string) {
+   public async getAudioTrackFromLoopback(processTitle?: string, processId?: string) {
       log("app:voice-client", "default", "get audio track from loopback", "ptit:", processTitle, "pid:", processId);
 
       if (!window.electronAPI) {
          return;
       }
 
-      window.electronAPI.startAudioLoopback(processTitle, processId);
+      const result = await window.electronAPI.startAudioLoopback(processTitle, processId);
+
+      if (!result) {
+         error("app:voice-client", `Process audio loopback with title: ${processTitle} or id: ${processId} wasn't successful`);
+         return;
+      }
 
       const { sampleRate, numChannels } = { sampleRate: 48000, numChannels: 2 };
       /* @ts-ignore */

@@ -91,7 +91,7 @@ export default function ScreenShareModal() {
 
          let audioTrack: MediaStreamTrack | undefined = stream.getAudioTracks()[0];
          if (!audioTrack && shareAudio) {
-            audioTrack = voiceClient.getAudioTrackFromLoopback(selectedSource.name);
+            audioTrack = await voiceClient.getAudioTrackFromLoopback(selectedSource.name);
          }
 
          await client?.voice.startStream(stream.getVideoTracks()[0], audioTrack);

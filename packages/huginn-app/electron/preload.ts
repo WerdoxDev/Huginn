@@ -19,7 +19,8 @@ export const electronAPI = {
    setSelectedDisplaySource: (sourceId: string) => ipcRenderer.send("window:set-selected-display-source", sourceId),
 
    // Loopback
-   startAudioLoopback: (processTitle?: string, processId?: string) => ipcRenderer.send("audio:start-loopback", processTitle, processId),
+   startAudioLoopback: (processTitle?: string, processId?: string) =>
+      ipcRenderer.invoke("audio:start-loopback", processTitle, processId) as Promise<boolean>,
    stopAudioLoopback: () => ipcRenderer.invoke("audio:stop-loopback") as Promise<void>,
    onLoopbackData: (callback: (_event: Electron.IpcRendererEvent, data: Uint8Array) => void) => {
       ipcRenderer.on("audio:loopback-data", callback);
