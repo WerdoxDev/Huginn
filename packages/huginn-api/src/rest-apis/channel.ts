@@ -88,6 +88,10 @@ export class ChannelAPI {
       return this.rest.patch(Routes.channelMessage(channelId, messageId), { body, auth: true }) as Promise<APIPatchMessageResult>;
    }
 
+   public async deleteMessage(channelId: Snowflake, messageId: Snowflake): Promise<unknown> {
+      return this.rest.delete(Routes.channelMessage(channelId, messageId), { auth: true });
+   }
+
    public async typing(channelId: Snowflake): Promise<unknown> {
       return this.rest.post(Routes.channelTyping(channelId), { auth: true });
    }
