@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.11.0...backend-shared@v0.12.0) (2025-08-20)
+
+
+### Features
+
+* **backend-shared:** add delete message by id to db ([c8b9009](https://github.com/WerdoxDev/Huginn/commit/c8b9009ab65b545677e8ffa8118c71d82c6afb6c))
+
 ## [0.11.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.10.2...backend-shared@v0.11.0) (2025-08-16)
 
 

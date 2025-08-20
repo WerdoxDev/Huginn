@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.24.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.23.0...api@v0.24.0) (2025-08-20)
+
+
+### Features
+
+* **api:** add message delete routes ([58de9df](https://github.com/WerdoxDev/Huginn/commit/58de9df7621d232c59dbfbae7529a0ef5933aaac))
+
+
+### Bug Fixes
+
+* **api:** reconnect to voice after gateway disconnect not working ([6a35632](https://github.com/WerdoxDev/Huginn/commit/6a356328fffa36cf7d7c126fd8a92ea7e4173d81))
+
 ## [0.23.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.22.4...api@v0.23.0) (2025-08-16)
 
 

@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.54.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.53.2...app@v0.54.0) (2025-08-20)
+
+
+### Features
+
+* **app:** add delete message functionality ([36dd5c9](https://github.com/WerdoxDev/Huginn/commit/36dd5c96315b154bb621517a3925652367376035))
+* **app:** add voice disconnected indicator ([3fe348c](https://github.com/WerdoxDev/Huginn/commit/3fe348c799fa8c235f88b73e5ba91065dccd3307))
+
+
+### Bug Fixes
+
+* **app:** logout not working correctly ([30aa284](https://github.com/WerdoxDev/Huginn/commit/30aa2843b5309cf66a128d49aad2e66852a85281))
+
 ## [0.53.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.53.1...app@v0.53.2) (2025-08-20)
 
 
