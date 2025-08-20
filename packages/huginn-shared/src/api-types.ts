@@ -1,4 +1,4 @@
-import type { Merge } from "@huginn/shared";
+import type { LogArgs, Merge } from "@huginn/shared";
 import type { Snowflake } from "./snowflake";
 
 export type LoginCredentials = APIPostLoginJSONBody;
@@ -356,3 +356,5 @@ export type APIReadState = {
 };
 
 export type APIReadStateWithoutUser = Omit<APIReadState, "userId">;
+
+export type APIPostLogJSONBody = Array<{ type: "log" | "error"; section: string; level?: string; args: LogArgs[] }>;
