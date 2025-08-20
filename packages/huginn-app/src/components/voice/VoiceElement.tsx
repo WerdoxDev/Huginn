@@ -13,6 +13,8 @@ import type { RemoteSource } from "@/types";
 import VoiceAudioVisualizer from "./VoiceAudioVisualizer";
 import { VoiceLabel } from "./VoiceLabel";
 import VoiceVideoStats from "./VoiceVideoStats";
+import { useClientStore } from "@stores/clientStore";
+import Tooltip from "@components/tooltip/Tooltip";
 
 export default function VoiceElement(props: {
    userId: Snowflake;
@@ -32,6 +34,7 @@ export default function VoiceElement(props: {
 }) {
    const { open: openContextMenu } = useContextMenu("voice_element");
    const { remoteSources } = useVoiceStore();
+   const { voiceStatus } = useClientStore();
    const videoRef = useRef<HTMLVideoElement>(null);
    const { user: thisUser } = useThisUser();
    const user = useUser(props.userId);
@@ -48,6 +51,11 @@ export default function VoiceElement(props: {
    const isPreview = useMemo(
       () => (isVideo || isAudio || props.isUnknown) && !props.remoteSource?.consumerId && props.userId !== thisUser?.id,
       [props.remoteSource?.srcObject, props.remoteSource?.consumerId, isVideo, isAudio, props.isUnknown],
+   );
+
+   const isDisconnected = useMemo(
+      () => voiceStatus === "rtc_ready" && props.userId !== thisUser?.id && !props.remoteSource && !props.isRinging,
+      [voiceStatus, props.remoteSource],
    );
 
    const isLoadingStream = useMemo(
@@ -129,6 +137,14 @@ export default function VoiceElement(props: {
             !props.isMaximized && "ring-surface ring-2",
          )}
       >
+         {isDisconnected && (
+            <Tooltip>
+               <Tooltip.Content>Disconnected</Tooltip.Content>
+               <Tooltip.Trigger className="absolute left-0.5 top-0.5">
+                  <IconMingcuteWifiOffLine className="text-caution-100 size-7" />
+               </Tooltip.Trigger>
+            </Tooltip>
+         )}
          {!isVideo && !isAudio && !isStream && !isPreview && (
             <div className={clsx("p-5", props.isRinging && "animate-pulse", props.isGridView && "flex h-full w-full items-center justify-center")}>
                <motion.div layout={!props.isResizing} transition={transition}>

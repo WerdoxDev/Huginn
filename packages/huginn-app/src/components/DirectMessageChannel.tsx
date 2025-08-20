@@ -19,10 +19,6 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
    const { isLoading } = useInfiniteQuery(getMessagesOptions(queryClient, client!, props.channel.id, false));
    const { open: openContextMenu } = useContextMenu("dm_channel");
 
-   // useEffect(() => {
-   // 	console.log(props.channel);
-   // }, [props.channel]);
-
    const recipients = useUsers(props.channel.recipientIds);
    const { channelId } = useParams();
    const selected = useMemo(() => channelId === props.channel?.id, [channelId, props.channel]);

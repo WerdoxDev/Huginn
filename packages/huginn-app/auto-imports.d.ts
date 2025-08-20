@@ -72,6 +72,7 @@ declare global {
   const IconMingcuteWebFill: typeof import('~icons/mingcute/web-fill.jsx')['default']
   const IconMingcuteWifiFill: typeof import('~icons/mingcute/wifi-fill.jsx')['default']
   const IconMingcuteWifiLine: typeof import('~icons/mingcute/wifi-line.jsx')['default']
+  const IconMingcuteWifiOffFill: typeof import('~icons/mingcute/wifi-off-fill.jsx')['default']
   const IconMingcuteWifiOffLine: typeof import('~icons/mingcute/wifi-off-line.jsx')['default']
   const IconSolarSledgehammerBold: typeof import('~icons/solar/sledgehammer-bold.jsx')['default']
 }
