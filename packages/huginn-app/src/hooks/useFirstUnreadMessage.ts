@@ -13,7 +13,6 @@ export function useFirstUnreadMessage(channelId: Snowflake, sortedMessages: AppM
 
 	useEffect(() => {
 		if (!readState?.lastReadMessageId) {
-			setFirstUnreadMessageId(sortedMessages[sortedMessages.length - (readState?.unreadCount ?? 1)]?.id);
 			return;
 		}
 
