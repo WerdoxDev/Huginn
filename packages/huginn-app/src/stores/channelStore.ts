@@ -31,16 +31,6 @@ export const useChannelStore = create(
             currentVisibleMessages: state.currentVisibleMessages.filter((x) => x.messageId !== id),
          })),
       clearVisibleMessages: () => set({ currentVisibleMessages: [] }),
-      updateLastMessageId: (queryClient: QueryClient, channelId: Snowflake, messageId: Snowflake) => {
-         queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (data) => {
-            if (!data) return undefined;
-
-            const channel = data.find((x) => x.id === channelId);
-            if (!channel) return data;
-
-            return [{ ...channel, lastMessageId: messageId }, ...data.filter((x) => x.id !== channelId)];
-         });
-      },
       updateMessageUploadProgress: (progress: UploadProgress) =>
          set(
             produce((draft: StoreType) => {

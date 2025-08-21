@@ -1,6 +1,6 @@
 import { queryClient as client } from "@/root";
 import type { AppDirectChannel } from "@/types";
-import type { APIPublicUser, PresenceUser, Snowflake } from "@huginn/shared";
+import type { APIGetUserChannelsResult, APIPublicUser, PresenceUser, Snowflake } from "@huginn/shared";
 
 export function updateUser(user: PresenceUser, queryClient = client) {
    queryClient.setQueryData<PresenceUser>(["user", user.id], (old) => (old ? { ...old, ...user } : user));
@@ -28,4 +28,15 @@ export function getChannelRecipients(channelId: Snowflake, queryClient = client)
    const recipients = channel?.recipientIds.map((x) => getUser(x, queryClient));
 
    return recipients ?? [];
+}
+
+export function updateChannelLastMessageId(channelId: Snowflake, messageId: Snowflake, queryClient = client) {
+   queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (data) => {
+      if (!data) return undefined;
+
+      const channel = data.find((x) => x.id === channelId);
+      if (!channel) return data;
+
+      return [{ ...channel, lastMessageId: messageId }, ...data.filter((x) => x.id !== channelId)];
+   });
 }
