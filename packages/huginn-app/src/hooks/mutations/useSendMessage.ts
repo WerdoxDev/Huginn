@@ -5,6 +5,7 @@ import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { type InfiniteData, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AppAttachment, AppMessage } from "@/types";
+import { findChannel, getChannels } from "@lib/query-utils";
 
 export function useSendMessage() {
    const client = useClient();
@@ -56,16 +57,23 @@ export function useSendMessage() {
             updateMessageUploadProgress({ messageId: previewMessage.id, percentage: 0, filenames, total: 0, onAbort });
          }
 
+         const targetChannel = findChannel(getChannels(undefined, queryClient), data.channelId);
+
          // Add Preview Message
          queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", data.channelId], (old) => {
             if (!old) return undefined;
 
             const lastPage = old.pages[old.pages.length - 1];
+            const lastParams = old.pageParams[old.pageParams.length - 1];
 
-            return {
-               ...old,
-               pages: old.pages.toSpliced(old.pages.length - 1, 1, [...lastPage, previewMessage]),
-            };
+            if (!lastParams.before && (!lastParams.after || lastPage.some((x) => x.id === targetChannel?.lastMessageId))) {
+               return {
+                  ...old,
+                  pages: old.pages.toSpliced(old.pages.length - 1, 1, [...lastPage, previewMessage]),
+               };
+            }
+
+            return old;
          });
 
          dispatchEvent("message_added", { message: previewMessage, inLoadedQueryPage: true, visible: true, self: true, inVisibleQueryPage: true });
@@ -83,13 +91,13 @@ export function useSendMessage() {
                data.attachments.map((x) => ({ data: x.data, name: x.filename, contentType: x.contentType })),
                data.attachments.length
                   ? (event) =>
-                       updateMessageUploadProgress({
-                          messageId: previewMessage.id,
-                          percentage: (event.loaded / event.total) * 100,
-                          filenames,
-                          total: event.total,
-                          onAbort,
-                       })
+                     updateMessageUploadProgress({
+                        messageId: previewMessage.id,
+                        percentage: (event.loaded / event.total) * 100,
+                        filenames,
+                        total: event.total,
+                        onAbort,
+                     })
                   : undefined,
                abortController.signal,
             ),
