@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.12.0...backend-shared@v0.12.1) (2025-08-22)
+
+
+### Bug Fixes
+
+* **backend-shared:** read state is not correctly updating when message is deleted ([b9c00f6](https://github.com/WerdoxDev/Huginn/commit/b9c00f6da0e2ac6801953ca8da9bd1a9d71035e1))
+
 ## [0.12.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.11.0...backend-shared@v0.12.0) (2025-08-20)
 
 
