@@ -29,7 +29,7 @@ const store = createStore(
          const messages = getCurrentPageMessages(channelId, queryClient);
          if (!messages || !messages.some((x) => x.id === messageId)) return;
 
-         const unreadCount = messages.filter((x) => moment(snowflake.getTimestamp(x.id)).isAfter(snowflake.getTimestamp(messageId))).length;
+         const unreadCount = messages.filter((x) => BigInt(x.id) > BigInt(messageId)).length;
 
          set(
             produce((draft: StoreType) => {

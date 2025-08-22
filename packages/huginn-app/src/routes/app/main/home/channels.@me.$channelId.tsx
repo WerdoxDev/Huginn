@@ -44,7 +44,11 @@ export default function ChannelWithId() {
             if (a.isPreview !== b.isPreview) {
                return a.isPreview ? 1 : -1; // Move previews to the end
             }
-            return moment(snowflake.getTimestamp(a.id)).isAfter(snowflake.getTimestamp(b.id)) ? 1 : -1;
+
+            // Server does send message already sorted but when we edit a message in the app, it gets pushed to the end of the list. So we need to sort here as well
+            const x = BigInt(a.id);
+            const y = BigInt(b.id);
+            return x < y ? -1 : x > y ? 1 : 0;
          }),
       [messages],
    );

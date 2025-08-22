@@ -1,6 +1,5 @@
 import type { UploadProgress } from "@/types";
-import type { APIGetUserChannelsResult, Snowflake } from "@huginn/shared";
-import type { QueryClient } from "@tanstack/react-query";
+import type { Snowflake } from "@huginn/shared";
 import { produce } from "immer";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";

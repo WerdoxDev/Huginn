@@ -11,7 +11,7 @@ export function useSendMessage() {
    const client = useClient();
    const { user } = useThisUser();
    const queryClient = useQueryClient();
-   const { updateMessageUploadProgress } = useChannelStore();
+   const { updateMessageUploadProgress, removeMessageUploadProgress } = useChannelStore();
 
    const mutation = useMutation({
       mutationKey: ["send-message"],
@@ -91,13 +91,13 @@ export function useSendMessage() {
                data.attachments.map((x) => ({ data: x.data, name: x.filename, contentType: x.contentType })),
                data.attachments.length
                   ? (event) =>
-                     updateMessageUploadProgress({
-                        messageId: previewMessage.id,
-                        percentage: (event.loaded / event.total) * 100,
-                        filenames,
-                        total: event.total,
-                        onAbort,
-                     })
+                       updateMessageUploadProgress({
+                          messageId: previewMessage.id,
+                          percentage: (event.loaded / event.total) * 100,
+                          filenames,
+                          total: event.total,
+                          onAbort,
+                       })
                   : undefined,
                abortController.signal,
             ),

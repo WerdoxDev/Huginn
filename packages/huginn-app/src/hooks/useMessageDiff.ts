@@ -14,7 +14,7 @@ export function useMessageDiff(
    },
 ) {
    const previousMessages = usePrevious(messages);
-   const { currentVisibleMessages } = useChannelStore();
+   const { currentVisibleMessages, messageUploadProgresses } = useChannelStore();
 
    useEffect(() => {
       if (!previousMessages) {

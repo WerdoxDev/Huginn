@@ -30,8 +30,14 @@ export function useMessageAcker(channelId: Snowflake, messages: AppMessage[]) {
       }
 
       async function trySendAck() {
-         const latestMessageId = currentVisibleMessages.toSorted((a, b) => a.messageTimestamp - b.messageTimestamp)[currentVisibleMessages.length - 1]
-            ?.messageId;
+         const latestMessageId = currentVisibleMessages
+            .toSorted((a, b) => {
+               const x = BigInt(a.messageId);
+               const y = BigInt(b.messageId);
+               return x < y ? -1 : x > y ? 1 : 0;
+            })
+            .at(-1)?.messageId;
+
          if (!latestMessageId) {
             return;
          }
@@ -43,8 +49,7 @@ export function useMessageAcker(channelId: Snowflake, messages: AppMessage[]) {
 
          // if the latest message is from the user or the message is older than the last read message, don't send an ack
          if (
-            (!readState?.lastReadMessageId ||
-               moment(snowflake.getTimestamp(readState.lastReadMessageId)).isBefore(snowflake.getTimestamp(latestMessage.id))) &&
+            (!readState?.lastReadMessageId || BigInt(readState.lastReadMessageId) < BigInt(latestMessageId)) &&
             user?.id !== latestMessage.authorId
          ) {
             setLatestReadMessage(channelId, latestMessage.id, queryClient);
