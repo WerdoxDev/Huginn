@@ -123,6 +123,9 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
 
    dispatchToTopic(channelId, "message_create", message);
 
+   // update read state to be the new created message
+   await prisma.readState.updateLastRead(payload.id, channelId, message.id);
+
    // Embed generation from urls inside the message content
    waitUntil(c, async () => {
       const embeds = await generateEmbedsFromContent(body.content);
