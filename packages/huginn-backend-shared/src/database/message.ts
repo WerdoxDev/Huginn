@@ -38,6 +38,7 @@ export const messagesExtension = Prisma.defineExtension({
                const messages = await prisma.message.findMany({
                   where: { channelId: BigInt(channelId) },
                   ...args,
+                  orderBy: { id: "asc" },
                   cursor: cursor ? { id: BigInt(cursor) } : undefined,
                   skip: direction === "none" ? undefined : 1,
                   take: (direction === "forward" ? 1 : -1) * limit,
@@ -204,26 +205,35 @@ export const messagesExtension = Prisma.defineExtension({
          },
          async deleteById<Args extends Prisma.MessageDefaultArgs>(id: Snowflake, channelId: Snowflake, args?: Args) {
             try {
-               const channel = await prisma.channel.getById(channelId, { select: { lastMessageId: true } });
-               if (channel.lastMessageId === id) {
-                  const lastMessage = await prisma.message.findMany({
-                     where: { channelId: BigInt(channelId) },
-                     skip: 1,
-                     take: -1,
-                     cursor: { id: BigInt(id) },
-                     select: { id: true },
-                  });
+               let deletedMessage: Prisma.MessageGetPayload<Args> | undefined;
 
-                  console.log(lastMessage);
+               await prisma.$transaction(async (tx) => {
+                  const channel = await tx.channel.getById(channelId, { select: { lastMessageId: true } });
+                  if (channel.lastMessageId === id) {
+                     const lastMessage = await tx.message.findFirst({
+                        where: { channelId: BigInt(channelId), id: { not: BigInt(id) } },
+                        orderBy: { id: "desc" },
+                        select: { id: true, authorId: true },
+                     });
 
-                  await prisma.channel.update({
-                     where: { id: BigInt(channelId) },
-                     data: { lastMessageId: lastMessage[0]?.id ?? null },
-                     select: { id: true },
-                  });
-               }
+                     console.log(lastMessage);
 
-               const deletedMessage = await prisma.message.delete({ where: { id: BigInt(id) }, ...args });
+                     // If this is null it means the channel has no messages anymore
+                     if (lastMessage) {
+                        await tx.channel.update({
+                           where: { id: BigInt(channelId) },
+                           data: { lastMessageId: lastMessage.id },
+                        });
+
+                        await tx.readState.updateMany({
+                           where: { channelId: BigInt(channelId), lastReadMessageId: BigInt(id) },
+                           data: { lastReadMessageId: lastMessage.id },
+                        });
+                     }
+                  }
+
+                  deletedMessage = (await tx.message.delete({ where: { id: BigInt(id) }, ...args })) as Prisma.MessageGetPayload<Args>;
+               });
 
                assertObj("deleteMessage", deletedMessage, DBErrorType.NULL_MESSAGE);
                return idFix(deletedMessage) as BigIntToString<Prisma.MessageGetPayload<Args>>;

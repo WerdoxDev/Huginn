@@ -1,5 +1,5 @@
 import { DBErrorType } from "@huginn/backend-shared/types";
-import { type BigIntToString, idFix, type Snowflake, snowflake } from "@huginn/shared";
+import { type BigIntToString, idFix, type Snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import consola from "consola";
@@ -64,7 +64,7 @@ export const readStateExtension = Prisma.defineExtension({
                const olderExists = await prisma.readState.exists({
                   userId: BigInt(userId),
                   channelId: BigInt(channelId),
-                  OR: [{ lastReadMessage: null }, { lastReadMessage: { timestamp: { lt: new Date(snowflake.getTimestamp(lastReadMessageId)) } } }],
+                  OR: [{ lastReadMessage: null }, { lastReadMessage: { id: { lt: BigInt(lastReadMessageId) } } }],
                });
 
                if (!olderExists) {
@@ -74,7 +74,7 @@ export const readStateExtension = Prisma.defineExtension({
                const updatedReadState = await prisma.readState.update({
                   where: {
                      channelId_userId: { userId: BigInt(userId), channelId: BigInt(channelId) },
-                     OR: [{ lastReadMessage: null }, { lastReadMessage: { timestamp: { lt: new Date(snowflake.getTimestamp(lastReadMessageId)) } } }],
+                     OR: [{ lastReadMessage: null }, { lastReadMessage: { id: { lt: BigInt(lastReadMessageId) } } }],
                   },
                   data: { lastReadMessage: { connect: { id: BigInt(lastReadMessageId) } } },
                });
@@ -95,11 +95,14 @@ export const readStateExtension = Prisma.defineExtension({
          async countUnreadMessages(userId: Snowflake, channelId: Snowflake) {
             const readState = await prisma.readState.getByUserAndChannelId(userId, channelId);
 
-            const unreadCount =
-               (await prisma.message.count({
-                  where: { channelId: BigInt(channelId), author: { id: { not: BigInt(userId) } } },
-                  cursor: readState.lastReadMessageId ? { id: BigInt(readState.lastReadMessageId) } : undefined,
-               })) - 1;
+            const potentialUnreadMessages = await prisma.message.findMany({
+               where: { channelId: BigInt(channelId) },
+               skip: 1,
+               cursor: readState.lastReadMessageId ? { id: BigInt(readState.lastReadMessageId) } : undefined,
+               select: { id: true, authorId: true },
+            });
+
+            const unreadCount = potentialUnreadMessages.filter((x) => x.authorId !== BigInt(userId)).length;
 
             return unreadCount < 0 ? 0 : unreadCount;
          },
