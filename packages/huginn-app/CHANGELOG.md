@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.54.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.54.0...app@v0.54.1) (2025-08-22)
+
+
+### Bug Fixes
+
+* **app:** bunch of scrolling and read state bug fixes ([99108de](https://github.com/WerdoxDev/Huginn/commit/99108de643ede737d0f7d50d413f78fba83b88be))
+* **app:** last message of any channel is always getting flagged as unseen ([0a4384e](https://github.com/WerdoxDev/Huginn/commit/0a4384ee9648323ace061531975af3211552e0bd))
+* **app:** little visual improvement + message should not rerender when not preview ([fd74f1b](https://github.com/WerdoxDev/Huginn/commit/fd74f1bb71d22e99779c711b04c4a567b20dfbcc))
+* **app:** sent messages in an invisible query page should not be added to query data ([dec8724](https://github.com/WerdoxDev/Huginn/commit/dec8724d2feffe058d31d7b7fed83d9719aca8f3))
+
 ## [0.54.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.53.2...app@v0.54.0) (2025-08-20)
 
 

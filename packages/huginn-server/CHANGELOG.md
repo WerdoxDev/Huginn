@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.26.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.26.0...server@v0.26.1) (2025-08-22)
+
+
+### Bug Fixes
+
+* **server:** set user's last read message when it sends a new message ([69510b9](https://github.com/WerdoxDev/Huginn/commit/69510b948b563bbc1d4bb20c583a06540d2c4960))
+
 ## [0.26.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.25.1...server@v0.26.0) (2025-08-20)
 
 
