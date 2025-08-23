@@ -11,7 +11,8 @@ export const constants = {
    EMAIL_REGEX:
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/ as RegExp,
    USERNAME_REGEX: /^[a-zA-Z0-9_.]*$/ as RegExp,
-   HEARTBEAT_INTERVAL: 20000,
+   HEARTBEAT_INTERVAL: 40000,
+   HEARTBEAT_TOLERANCE: 15000,
    ALLOWED_IMAGE_SIZES: [16, 32, 64, 128, 256, 512, 1_024, 2_048, 4_096] as const,
    ALLOWED_IMAGE_FORMATS: ["webp", "png", "jpg", "jpeg", "gif"] as const,
    ALLOWED_VIDEO_FORMATS: ["gifv", "mp4", "webm"] as const,

@@ -95,6 +95,8 @@ export function setOnError(func: typeof onError): void {
 }
 
 export function log<K extends LogKeys>(section: K, level: LogValuesFor<K>, ...args: LogArgs[]): void {
+   onLog?.(section, level, ...args);
+
    const existingSections = enabledSections.get(section);
    if (!existingSections || !existingSections.has(level)) {
       return;
@@ -106,8 +108,6 @@ export function log<K extends LogKeys>(section: K, level: LogValuesFor<K>, ...ar
    const formatString = `%c${section}%c [${level}]`;
    const stylesString = [sectionStyle, levelStyle];
 
-   onLog?.(section, level, ...args);
-
    if (_isRaw) {
       console.log(section, level, ...args);
    } else {
@@ -116,12 +116,12 @@ export function log<K extends LogKeys>(section: K, level: LogValuesFor<K>, ...ar
 }
 
 export function error(section: LogKeys, ...args: LogArgs[]): void {
+   onError?.(section, ...args);
+
    const levelStyle = levelStyles.default;
    const sectionStyle = sectionStyles[section] ?? sectionStyles.error;
 
    const formatString = `%c${section}%c [error]`;
-
-   onError?.(section, ...args);
 
    if (_isRaw) {
       console.error(section, ...args);

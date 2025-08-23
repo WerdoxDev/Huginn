@@ -11,7 +11,7 @@ import type {
 } from "./api-types";
 import type { Snowflake } from "./snowflake";
 
-export type GatewayStatus = "disconnected" | "connecting" | "connected" | "authenticated" | "reconnecting" | "none";
+export type GatewayStatus = "disconnected" | "connecting" | "connected" | "authenticated" | "reconnecting" | "none" | "opening";
 
 export enum GatewayOperations {
    HELLO = 0,
