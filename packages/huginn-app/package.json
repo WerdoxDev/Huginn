@@ -1,6 +1,6 @@
 {
    "name": "huginn-app-react",
-   "version": "0.54.1",
+   "version": "0.54.2",
    "description": "Huginn Desktop Application",
    "type": "module",
    "repository": {

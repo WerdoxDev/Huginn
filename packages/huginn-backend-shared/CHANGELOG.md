@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.2](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.12.1...backend-shared@v0.12.2) (2025-08-23)
+
+
+### Bug Fixes
+
+* **backend-shared:** add tolerance to heartbeat ([d985e82](https://github.com/WerdoxDev/Huginn/commit/d985e823ff08b9ac42d34783daef022e4e5b2880))
+
 ## [0.12.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.12.0...backend-shared@v0.12.1) (2025-08-22)
 
 
