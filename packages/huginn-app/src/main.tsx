@@ -19,6 +19,7 @@ if (import.meta.env.DEV) {
 
 enableLogs({
    // "api:voice": ["default", "send", "recv", "heartbeat"],
+   "app:audio-source-player": ["default"],
    "api:voice": ["default", "recv", "heartbeat"],
    "app:voice-store": ["remote-sources", "default"],
    "app:voice-client": ["voice-recv", "default"],
