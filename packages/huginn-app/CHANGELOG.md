@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.54.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.54.2...app@v0.54.3) (2025-08-23)
+
+
+### Bug Fixes
+
+* **app:** add bunch computed values to users and channels + notification body for every message type ([0224dd9](https://github.com/WerdoxDev/Huginn/commit/0224dd95c7edc9581ec04a306c4cc58348edff9b))
+
 ## [0.54.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.54.1...app@v0.54.2) (2025-08-23)
 
 
