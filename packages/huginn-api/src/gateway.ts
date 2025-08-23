@@ -44,10 +44,16 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
    }
 
    public connect(): void {
+      if (this.status === "opening" || this.socket) {
+         return;
+      }
+
       log("api:gateway", "default", "connect");
 
       this.socket = this.options.createSocket(this.options.url);
       this.startListening();
+
+      this.status = "opening";
    }
 
    public close(): void {
@@ -67,6 +73,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
       log("api:gateway", "default", "closed", "c:", e.code, "r:", e.reason);
 
       this.status = "disconnected";
+      this.socket = undefined;
       this.stopHeartbeat();
       this.emit("close", e.code);
 
@@ -96,23 +103,54 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
                await this.authenticate();
             }
 
-            // If we were connected to a voice channel, update the voice state again
-            if (this.client.voice.connectionInfo && this.client.voice.status === "rtc_ready") {
-               // We need to make a copy because the server will send a null voice state when we disconnect and we don't want that to disconnect us
-               const connectionInfo = { ...this.client.voice.connectionInfo };
-
-               // @ts-ignore It thinks when setting status to "reconnecting" here, it will stay like that
-               if (this.status !== "authenticated") {
-                  await this.waitForEvents(["resumed", "ready"], true);
-               }
-
-               await this.connectVoice(connectionInfo.guildId, connectionInfo.channelId, {
-                  isAudioDeafened: this.client.voice.localVoiceState.isAudioDeafened,
-                  isAudioMuted: this.client.voice.localVoiceState.isAudioMuted,
-               });
-            }
+            await this.tryReconnectVoice();
          }
       }, 2000);
+   }
+
+   private async tryReconnectVoice() {
+      log("api:gateway", "default", "try reconnect voice");
+
+      // If we were not connected to a voice channel do nothing
+      if (!this.client.voice.connectionInfo || this.client.voice.status !== "rtc_ready") {
+         return;
+      }
+
+      if (this.status !== "connected") {
+         await this.waitForEvents(["hello"]);
+      }
+
+      // We need to make a copy because the server will send a null voice state when we disconnect and we don't want that to disconnect us
+      const connectionInfo = { ...this.client.voice.connectionInfo };
+
+      let callStillExists = true;
+      if (this.status !== "authenticated") {
+         // If we are about to reconnect, check for any call_delete from the resumed messages
+         if (this.sequence !== undefined && this.sessionId) {
+            const unlisten = this.listen("call_delete", (d) => {
+               if (d.channelId === connectionInfo.channelId) {
+                  unlisten();
+                  callStillExists = false;
+               }
+            });
+
+            await this.waitForEvents(["resumed"]);
+            unlisten();
+         } else {
+            await this.waitForEvents(["ready"]);
+         }
+      }
+
+      // If the call was removed since we disconnected, do nothing
+      if (!callStillExists) {
+         await this.disconnectVoice();
+         return;
+      }
+
+      await this.connectVoice(connectionInfo.guildId, connectionInfo.channelId, {
+         isAudioDeafened: this.client.voice.localVoiceState.isAudioDeafened,
+         isAudioMuted: this.client.voice.localVoiceState.isAudioMuted,
+      });
    }
 
    public async authenticate(): Promise<{ authenticated: boolean; retryable: boolean }> {
@@ -124,7 +162,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
       }
 
       // Socket is opened or is opening after a disconnect, but haven't gotten "hello" yet
-      if (this.status === "connecting" || this.status === "disconnected" || this.status === "reconnecting") {
+      if (this.status === "connecting" || this.status === "disconnected" || this.status === "reconnecting" || this.status === "opening") {
          await this.waitForEvents(["hello"]);
          this.sendIdentify();
       }
@@ -165,16 +203,11 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
       token?: string,
       disconnectIfConnected?: boolean,
    ): Promise<boolean> {
-      log("api:gateway", "default", "connect to voice");
-
-      console.log("0");
+      log("api:gateway", "default", "connect to voice", "dic:", disconnectIfConnected);
 
       if (this.client.voice.connectionInfo && this.client.voice.connectionInfo?.channelId !== channelId) {
-         console.log("CLOSING BRO");
          this.client.voice.close();
       }
-
-      console.log("1");
 
       // This is useful for when voice was disconnected and the token is no longer valid. The server won't send a new token unless it's a new channel or guild
       if (disconnectIfConnected) {
@@ -203,8 +236,6 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
          });
       }
 
-      console.log("2");
-
       const updateVoiceStateData: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
          d: {
@@ -221,8 +252,6 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
       this.send(updateVoiceStateData);
 
       let receivedToken: string | undefined = token;
-
-      console.log("3", receivedToken);
 
       if (!receivedToken) {
          const promise1 = new Promise<void>((r) => {
@@ -245,8 +274,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
          await Promise.allSettled([promise1, promise2]);
       }
 
-      console.log("4", receivedToken);
-
+      console.log("HERE?");
       if (!receivedToken) {
          return false;
       }
@@ -402,8 +430,10 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
             }
 
             // Maybe the server or we sent an update to disconnect from the voice. We should close voice websocket just in case
-            if (data.t === "voice_state_update") {
+            // We also check if we are authenticated. so any disconnects from resuming shouldn't count
+            if (data.t === "voice_state_update" && this.status === "authenticated") {
                if (!data.d.channelId && data.d.userId === this.client.user?.id) {
+                  log("api:gateway", "default", "server voice state update says close voice");
                   this.client.voice.close();
                }
             }
@@ -418,7 +448,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
    private async handleHello(data: GatewayHello) {
       this.status = "connected";
 
-      this.startHeartbeat(data.d.heartbeatInterval / 2);
+      this.startHeartbeat(data.d.heartbeatInterval);
 
       // We already had a session so we try to resume it
       if (this.sequence !== undefined && this.sessionId) {

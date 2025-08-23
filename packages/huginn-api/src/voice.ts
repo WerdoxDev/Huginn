@@ -72,7 +72,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
    }
 
    public connect(token: string, channelId: Snowflake, guildId: Snowflake | null): void {
-      if (this.status !== "disconnected" && this.status !== "reconnecting" && this.status !== "none") {
+      if (this.status === "opening" || this.socket) {
          return;
       }
 
@@ -81,6 +81,8 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       this.socket = this.options.createSocket(this.options.url);
       this.connectionInfo = { token, channelId, guildId };
       this.startListening();
+
+      this.status = "opening";
    }
 
    /**
@@ -473,6 +475,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       log("api:voice", "default", "reset");
 
       this.sequence = undefined;
+      this.socket = undefined;
 
       this.recvTransport?.close();
       this.sendTransport?.close();
