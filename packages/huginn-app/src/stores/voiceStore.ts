@@ -257,6 +257,11 @@ export function initializeVoice() {
 
          const thisStore = store.getState();
 
+         //TODO: A BETTER WAY IS TO NOT SET USER VC STATUS TI DISCONNECT DIRECTLY AFTER GATEWAY DISCONNECT
+         if (d.userId === client.user?.id && client.gateway.status !== "authenticated" && d.sessionId === client.gateway.sessionId) {
+            return;
+         }
+
          // our user's voice state update
          if (d.userId === client?.user?.id && d.sessionId === client.gateway.sessionId) {
             thisStore.setVoiceChannel(d.channelId ?? undefined, d.guildId ?? undefined);
@@ -282,7 +287,7 @@ export function initializeVoice() {
          // User is no longer here but was here before
          else if (
             (!currentState || currentState.channelId !== lastState?.channelId) &&
-            (lastState?.channelId === currentChannel.channelId || d.userId === client?.user?.id)
+            (lastState?.channelId === currentChannel.channelId || (d.userId === client?.user?.id && d.sessionId === client.gateway.sessionId))
          ) {
             const audio = new Audio(voiceLeaveUrl);
             audio.play();
