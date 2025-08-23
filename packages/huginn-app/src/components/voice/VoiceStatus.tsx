@@ -15,14 +15,15 @@ import VoiceControlButton from "@components/button/VoiceControlButton";
 import DropdownMenu from "@components/dropdown/DowndownMenu";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 
-const statusTexts: Record<VoiceStatus, string> = {
-   connected: "RTC Signalling...",
-   authenticated: "RTC Signalling...",
-   connecting: "RTC Signalling...",
-   reconnecting: "Reconnecting...",
-   disconnected: "Disconnected",
-   none: "Connecting...",
-   rtc_ready: "Connected",
+const statuses: Record<VoiceStatus, { text: string; color?: string }> = {
+   connected: { text: "RTC Signalling...", color: "!text-caution-100" },
+   authenticated: { text: "RTC Signalling...", color: "!text-caution-100" },
+   connecting: { text: "RTC Signalling...", color: "!text-caution-100" },
+   reconnecting: { text: "Reconnecting...", color: "!text-negative-100" },
+   disconnected: { text: "Disconnected", color: "!text-negative-100" },
+   opening: { text: "Connecting...", color: "!text-caution-100" },
+   none: { text: "Connecting...", color: "!text-caution-100" },
+   rtc_ready: { text: "Connected" },
 };
 
 export default function VoiceStatus() {
@@ -81,19 +82,7 @@ export default function VoiceStatus() {
                   <div className="flex items-center gap-x-1">
                      <Tooltip>
                         {voiceStatus !== "rtc_ready" ? (
-                           <IconMingcuteWifiOffLine
-                              className={clsx(
-                                 "size-6",
-                                 (voiceStatus === "connecting" ||
-                                    voiceStatus === "reconnecting" ||
-                                    voiceStatus === "connected" ||
-                                    voiceStatus === "none" ||
-                                    voiceStatus === "authenticated" ||
-                                    !voiceStatus) &&
-                                    "text-caution-100",
-                                 voiceStatus === "disconnected" && "text-negative-100",
-                              )}
-                           />
+                           <IconMingcuteWifiOffLine className={clsx("size-6", statuses[voiceStatus ?? "none"].color)} />
                         ) : (
                            <Tooltip.Trigger className="cursor-default">
                               <IconMingcuteWifiLine className="text-positive-100 size-6 transition-colors" style={{ color: latencyColor }} />
@@ -102,20 +91,10 @@ export default function VoiceStatus() {
                         <Tooltip.Content extraStyle={{ color: latencyColor }}>{rtt} ms</Tooltip.Content>
                      </Tooltip>
                      <div
-                        className={clsx(
-                           "text-sm font-bold transition-colors",
-                           (voiceStatus === "connecting" ||
-                              voiceStatus === "reconnecting" ||
-                              voiceStatus === "connected" ||
-                              voiceStatus === "none" ||
-                              voiceStatus === "authenticated" ||
-                              !voiceStatus) &&
-                              "!text-caution-100",
-                           voiceStatus === "disconnected" && "!text-negative-100",
-                        )}
+                        className={clsx("text-sm font-bold transition-colors", voiceStatus && statuses[voiceStatus].color)}
                         style={{ color: latencyColor }}
                      >
-                        {statusTexts[voiceStatus ?? "none"]}
+                        {statuses[voiceStatus ?? "none"].text}
                      </div>
                   </div>
                   <NavLink prefetch="intent" to={`/channels/@me/${voiceChannel.channelId}`} className="text-text/70 ml-7 text-xs hover:underline">
