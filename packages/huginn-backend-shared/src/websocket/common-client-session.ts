@@ -76,12 +76,10 @@ export abstract class CommonClientSession<Payload, Properties = undefined> {
    public resetHeartbeatTimeout() {
       this.stopHeartbeatTimeout();
 
-      const tolerance = 3000;
-
       this.heartbeatTimeout = setTimeout(() => {
          this.peer.close(GatewayCode.SESSION_TIMEOUT, "SESSION_TIMEOUT");
          this.stopHeartbeatTimeout();
-      }, constants.HEARTBEAT_INTERVAL + tolerance)
+      }, constants.HEARTBEAT_INTERVAL + constants.HEARTBEAT_TOLERANCE);
    }
 
    public async subscribeToTopics() {
