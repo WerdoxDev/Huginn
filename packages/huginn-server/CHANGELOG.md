@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.26.2](https://github.com/WerdoxDev/Huginn/compare/server@v0.26.1...server@v0.26.2) (2025-08-23)
+
+
+### Bug Fixes
+
+* **server:** potentially fix server log time zone problem ([ad153f7](https://github.com/WerdoxDev/Huginn/commit/ad153f79115a172561f5b8cafeca157fed26c9c5))
+
 ## [0.26.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.26.0...server@v0.26.1) (2025-08-22)
 
 

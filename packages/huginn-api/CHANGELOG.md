@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.24.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.24.0...api@v0.24.1) (2025-08-23)
+
+
+### Bug Fixes
+
+* **api:** few undetected edge case connection scenarios ([2314998](https://github.com/WerdoxDev/Huginn/commit/2314998bf71b8dc8e3e0e789da324f834d2ec69d))
+
 ## [0.24.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.23.0...api@v0.24.0) (2025-08-20)
 
 
