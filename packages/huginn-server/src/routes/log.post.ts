@@ -15,10 +15,12 @@ createRoute("POST", "/api/log", validator("json", schema), async (c) => {
 
    const now = new Date();
 
-   const year = now.getFullYear();
-   const month = String(now.getMonth() + 1).padStart(2, "0");
-   const day = String(now.getDate()).padStart(2, "0");
-   const hour = String(now.getHours()).padStart(2, "0");
+   const berlin = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Berlin" }));
+
+   const year = berlin.getFullYear();
+   const month = String(berlin.getMonth() + 1).padStart(2, "0");
+   const day = String(berlin.getDate()).padStart(2, "0");
+   const hour = String(berlin.getHours()).padStart(2, "0");
 
    const dateDir = `${year}-${month}-${day}`;
    const logDir = pathe.resolve(import.meta.dir, "..", "..", "logs", payload?.id || "anonymous", dateDir);
