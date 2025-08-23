@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.54.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.54.1...app@v0.54.2) (2025-08-23)
+
+
+### Bug Fixes
+
+* **app:** temporary visual fix for voice when gateway disconnects ([8d63046](https://github.com/WerdoxDev/Huginn/commit/8d63046d013b1cdc770b003af2de33f9fc307eff))
+
 ## [0.54.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.54.0...app@v0.54.1) (2025-08-22)
 
 
