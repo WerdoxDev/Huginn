@@ -1,4 +1,3 @@
-### 🚀 New Features!
+### 🔧 Bug Fixes
 
-- Message deleting is now implemented!
-- Some bug fixes related to screensharing...
+- Voice disconnection rate should now be way less
