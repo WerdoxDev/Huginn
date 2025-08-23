@@ -1,4 +1,4 @@
-import { useChannelName, useSafeDeleteDMChannel } from "@hooks/api-hooks/channelHooks";
+import { useSafeDeleteDMChannel } from "@hooks/api-hooks/channelHooks";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { ChannelType } from "@huginn/shared";
 import { getMessagesOptions } from "@lib/queries";
@@ -22,9 +22,9 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
    const recipients = useUsers(props.channel.recipientIds);
    const { channelId } = useParams();
    const selected = useMemo(() => channelId === props.channel?.id, [channelId, props.channel]);
-   const name = useChannelName(props.channel.id);
+   // const name = useChannelName(props.channel.id);
 
-   const { tryMutate } = useSafeDeleteDMChannel(props.channel.id, props.channel.type, name);
+   const { tryMutate } = useSafeDeleteDMChannel(props.channel.id, props.channel.type, props.channel.name);
 
    return (
       <li
@@ -47,7 +47,7 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
                      selected ? "opacity-100" : "opacity-70",
                   )}
                >
-                  {name}
+                  {props.channel.name}
                </div>
                {props.channel.type === ChannelType.GROUP_DM && (
                   <div className={clsx("text-text text-xs group-hover:opacity-70", selected ? "opacity-70" : "opacity-50")}>

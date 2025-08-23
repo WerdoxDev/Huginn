@@ -1,7 +1,7 @@
 import path from "node:path";
 import { enableLogs, error, findClosestString, log } from "@huginn/shared";
 import { getActiveWindowProcessIds, setExecutablesRoot, startAudioCapture, stopAudioCapture } from "application-loopback";
-import { app, BrowserWindow, desktopCapturer, globalShortcut, ipcMain, Menu, nativeImage, Notification, session, shell, Tray } from "electron";
+import { app, BrowserWindow, desktopCapturer, ipcMain, Menu, nativeImage, Notification, session, shell, Tray } from "electron";
 import electronLog from "electron-log/main";
 import { autoUpdater, CancellationToken } from "electron-updater";
 import type { AudioSource, DisplaySource } from "@/types";

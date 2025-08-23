@@ -21,7 +21,7 @@ export default function ChannelTypingIndicator(props: { channelId: Snowflake }) 
          return lastValue.current;
       }
 
-      const recipientsText = channelTypings.map((x) => x?.displayName ?? x?.username).join(", ");
+      const recipientsText = channelTypings.map((x) => x?.displayName).join(", ");
 
       lastValue.current = { count: channelTypings.length, recipientsText, channelId: props.channelId };
       return lastValue.current;

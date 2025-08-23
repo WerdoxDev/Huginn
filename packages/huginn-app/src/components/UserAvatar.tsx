@@ -31,7 +31,7 @@ export default function UserAvatar(props: {
       }
 
       if (avatar && props.avatarHash) {
-         window.electronAPI.saveAvatarToCache(avatar, props.avatarHash);
+         window.electronAPI.saveHashImageToCache(avatar, props.avatarHash);
       }
    }, [avatar]);
 

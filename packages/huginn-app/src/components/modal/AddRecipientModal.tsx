@@ -1,10 +1,10 @@
+import type { AppUser } from "@/types";
 import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import AddRecipientInput from "@components/input/AddRecipientInput";
 import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useChannelRecipients } from "@hooks/api-hooks/channelHooks";
 import { useAddChannelRecipient } from "@hooks/mutations/useAddChannelRecipient";
-import type { APIRelationUser } from "@huginn/shared";
 import { getRelationshipsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
@@ -22,7 +22,7 @@ export default function AddRecipientModal() {
    const { recipients } = useChannelRecipients(modal.channelId, "@me");
    const relationships = useMemo(() => data?.filter((x) => !recipients?.map((y) => y?.id).includes(x.userId)), [recipients, data]);
 
-   const [selectedUsers, setSelectedUsers] = useState<APIRelationUser[]>([]);
+   const [selectedUsers, setSelectedUsers] = useState<AppUser[]>([]);
 
    const mutation = useAddChannelRecipient();
 
@@ -39,7 +39,7 @@ export default function AddRecipientModal() {
       updateModals({ addRecipient: { isOpen: false } });
    }
 
-   function onSelectionChanged(values: APIRelationUser[]) {
+   function onSelectionChanged(values: AppUser[]) {
       setSelectedUsers(values);
    }
 

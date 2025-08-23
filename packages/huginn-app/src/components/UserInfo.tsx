@@ -1,5 +1,4 @@
 import { useLogout } from "@hooks/useLogout";
-import type { APIUser } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
 import { useMutation } from "@tanstack/react-query";
 import DropdownMenu from "./dropdown/DowndownMenu";
@@ -7,8 +6,8 @@ import UserAvatar from "./UserAvatar";
 import UserActionButton from "./button/UserActionButton";
 import { useVoiceStore } from "@stores/voiceStore";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
-
-export default function UserInfo(props: { user: APIUser }) {
+import type { AppUser } from "@/types";
+export default function UserInfo(props: { user: AppUser }) {
    const { updateModals } = useModals();
    const logout = useLogout();
    const { localVoiceState } = useVoiceStore();
@@ -31,7 +30,7 @@ export default function UserInfo(props: { user: APIUser }) {
                <UserAvatar userId={props.user.id} avatarHash={props.user.avatar} className="mr-3 shrink-0" />
 
                <div className="flex w-full flex-col items-start gap-y-0.5">
-                  <div className="text-text text-sm">{props.user.displayName ?? props.user.username}</div>
+                  <div className="text-text text-sm">{props.user.displayName}</div>
                   <div className="text-text/70 text-xs">Online</div>
                </div>
                <div className="flex shrink-0 items-center gap-x-1">

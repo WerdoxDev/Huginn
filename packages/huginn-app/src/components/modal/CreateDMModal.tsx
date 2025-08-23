@@ -1,3 +1,4 @@
+import type { AppUser } from "@/types";
 import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import AddRecipientInput from "@components/input/AddRecipientInput";
@@ -6,7 +7,6 @@ import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useChannelNamePlaceholder } from "@hooks/api-hooks/channelHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useInputs } from "@hooks/useInputs";
-import type { APIRelationUser } from "@huginn/shared";
 import { getRelationshipsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
@@ -21,7 +21,7 @@ export default function CreateDMModal() {
    // const posthog = usePostHog();
    const { data } = useQuery(getRelationshipsOptions(client!));
 
-   const [selectedUsers, setSelectedUsers] = useState<APIRelationUser[]>([]);
+   const [selectedUsers, setSelectedUsers] = useState<AppUser[]>([]);
    const { inputsProps, setValue, values, validateValues, handleErrors } = useInputs([{ name: "name", required: false }]);
 
    const mutation = useCreateDMChannel("create-dm-channel_other", handleErrors);
@@ -43,7 +43,7 @@ export default function CreateDMModal() {
       }
    }, [selectedUsers]);
 
-   function onSelectionChanged(values: APIRelationUser[]) {
+   function onSelectionChanged(values: AppUser[]) {
       setSelectedUsers(values);
    }
 

@@ -1,5 +1,5 @@
 import { MessageProvider } from "@contexts/messageProvider";
-import { useChannelName, useCurrentChannel } from "@hooks/api-hooks/channelHooks";
+import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useMessageAcker } from "@hooks/mutations/useMessageAcker";
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { useFirstUnreadMessage } from "@hooks/useFirstUnreadMessage";
@@ -30,15 +30,8 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    const { data, fetchNextPage, fetchPreviousPage, isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
       useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, props.channelId));
 
-   const {
-      savedScrolls,
-      saveScroll,
-      currentEditingMessageId,
-      messageBoxHeight,
-      currentVisibleMessages,
-      removeMessageUploadProgress,
-      messageUploadProgresses,
-   } = useChannelStore();
+   const { savedScrolls, saveScroll, currentEditingMessageId, messageBoxHeight, currentVisibleMessages, removeMessageUploadProgress } =
+      useChannelStore();
    const previousMessageBoxHeight = usePrevious(messageBoxHeight);
 
    const { onMessageVisibilityChanged } = useVisibleMessages(props.channelId, props.messages);
@@ -65,7 +58,6 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    const lastDirection = useRef<"up" | "down" | "none">("none");
    const isResizing = useRef(false);
    const currentChannel = useCurrentChannel();
-   const channelName = useChannelName(currentChannel?.id);
 
    async function onScroll() {
       if (!scrollRef.current || props.messages.length === 0) return;
@@ -304,7 +296,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
                   {!hasPreviousPage && props.messages.length !== 0 && (
                      <div className="flex h-20 shrink-0 flex-col justify-center">
                         <div className="text-text/70 ml-10">
-                           The beginning of your chat with <span className="text-text font-bold">{channelName}</span>
+                           The beginning of your chat with <span className="text-text font-bold">{currentChannel?.name}</span>
                         </div>
                      </div>
                   )}

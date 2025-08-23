@@ -30,7 +30,7 @@ export const electronAPI = {
    },
 
    // Cache
-   saveAvatarToCache: (data: string, hash: string) => ipcRenderer.invoke("cache:save-avatar", data, hash) as Promise<void>,
+   saveHashImageToCache: (data: string, hash: string) => ipcRenderer.invoke("cache:save-hash-image", data, hash) as Promise<void>,
 
    // Keybinds
    updateKeybinds: (keybinds: Array<{ type: KeybindType; combination: string[] }>) =>

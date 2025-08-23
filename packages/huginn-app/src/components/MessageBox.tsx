@@ -1,8 +1,7 @@
-import { useChannelName, useCurrentChannel } from "@hooks/api-hooks/channelHooks";
+import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useSendMessage } from "@hooks/mutations/useSendMessage";
 import { useSendTyping } from "@hooks/mutations/useSendTyping";
 import { isImageMediaType, MessageFlags, MessageType } from "@huginn/shared";
-import { dispatchEvent } from "@lib/event-handler";
 import clsx from "clsx";
 import { type ClipboardEvent, type KeyboardEvent, useEffect, useRef, useState, useTransition } from "react";
 import { useParams } from "react-router";
@@ -35,7 +34,6 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    const editorRef = useRef<HTMLDivElement>(null);
    const containerRef = useRef<HTMLDivElement>(null);
    const currentChannel = useCurrentChannel();
-   const channelName = useChannelName(currentChannel?.id);
    const [attachments, setAttachments] = useState<AttachmentType[]>([]);
    const [dragging, setDragging] = useState(false);
    const [_isPending, startTransition] = useTransition();
@@ -385,7 +383,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                      <Editable
                         onPaste={onPaste}
                         ref={editorRef}
-                        placeholder={`Message ${channelName}`}
+                        placeholder={`Message ${currentChannel?.name}`}
                         className={clsx(
                            "outline-hidden h-full whitespace-break-spaces py-3 font-light leading-[24px] text-white caret-white",
                            currentEditingMessageId && "pl-3",

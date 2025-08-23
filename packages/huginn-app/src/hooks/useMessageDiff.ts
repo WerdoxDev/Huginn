@@ -14,7 +14,7 @@ export function useMessageDiff(
    },
 ) {
    const previousMessages = usePrevious(messages);
-   const { currentVisibleMessages, messageUploadProgresses } = useChannelStore();
+   const { currentVisibleMessages } = useChannelStore();
 
    useEffect(() => {
       if (!previousMessages) {
@@ -24,7 +24,7 @@ export function useMessageDiff(
       const latestMessage = messages[messages.length - 1];
 
       // Check if a new message is visible at the bottom
-      if (messages.length > (previousMessages?.length ?? 0) && latestMessage.id !== previousMessages[previousMessages.length - 1].id) {
+      if (messages.length > (previousMessages?.length ?? 0) && latestMessage.id !== previousMessages[previousMessages.length - 1]?.id) {
          // Check if the message is preview (sent by us) or from realtime websocket (not fetching)
          if (latestMessage.isPreview || latestMessage.source === "websocket") {
             options.onMessageAdd?.(latestMessage);

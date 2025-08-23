@@ -1,13 +1,14 @@
 import { useDeleteDMChannel } from "@hooks/mutations/useDeleteDMChannel";
-import { type APIGetUserChannelsResult, type APIPublicUser, ChannelType, type DirectChannel, type Snowflake } from "@huginn/shared";
+import { type APIGetUserChannelsResult, ChannelType, type DirectChannel, type Snowflake } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useUsers } from "./userHooks";
-import { findChannel, getChannelName } from "@lib/query-utils";
+import { findChannel } from "@lib/query-utils";
 import { getChannelsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
+import type { AppUser } from "@/types";
 
 export function useChannel(channelId?: Snowflake, guildId = "@me") {
    const client = useClient();
@@ -16,15 +17,15 @@ export function useChannel(channelId?: Snowflake, guildId = "@me") {
    return useMemo(() => findChannel(data, channelId), [data, channelId]);
 }
 
-export function useChannelName(channelId?: Snowflake): string {
-   const channel = useChannel(channelId);
-   const recipients = useUsers(channel?.recipientIds);
+// export function useChannelName(channelId?: Snowflake): string {
+//    const channel = useChannel(channelId);
+//    const recipients = useUsers(channel?.recipientIds);
 
-   return useMemo(() => getChannelName(channel?.name, recipients), [channelId, recipients, channel]);
-}
+//    return useMemo(() => getChannelName(channel?.name, recipients), [channelId, recipients, channel]);
+// }
 
-export function useChannelNamePlaceholder(recipients: APIPublicUser[]) {
-   return useMemo(() => recipients.map((x) => x.displayName ?? x.username).join(", "), [recipients]);
+export function useChannelNamePlaceholder(recipients: AppUser[]) {
+   return useMemo(() => recipients.map((x) => x.displayName).join(", "), [recipients]);
 }
 
 export function useChannelRecipients(channelId?: Snowflake, _guildId?: Snowflake) {

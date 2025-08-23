@@ -4,7 +4,6 @@ import ModalCloseButton from "@components/button/ModalCloseButton";
 import ImageSelector from "@components/ImageSelector";
 import HuginnInput from "@components/input/HuginnInput";
 import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
-import { useChannelName } from "@hooks/api-hooks/channelHooks";
 import { usePatchDMChannel } from "@hooks/mutations/usePatchDMChannel";
 import { useInputs } from "@hooks/useInputs";
 import { listenEvent } from "@lib/event-handler";
@@ -15,90 +14,89 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 export default function EditGroupModal() {
-	const client = useClient();
-	const { editGroup: modal, updateModals } = useModals();
-	const { inputsProps, setValue, handleErrors, values, validateValues, resetStatuses } = useInputs([{ name: "name", required: false }]);
+   const client = useClient();
+   const { editGroup: modal, updateModals } = useModals();
+   const { inputsProps, setValue, handleErrors, values, validateValues, resetStatuses } = useInputs([{ name: "name", required: false }]);
 
-	const { data: originalIcon } = useQuery(getChannelIconOptions(modal.channel?.id, modal.channel?.icon, client));
-	const mutation = usePatchDMChannel(handleErrors);
+   const { data: originalIcon } = useQuery(getChannelIconOptions(modal.channel?.id, modal.channel?.icon, client));
+   const mutation = usePatchDMChannel(handleErrors);
 
-	const placeholderName = useChannelName(modal.channel?.id);
-	const [iconData, setIconData] = useState<string | null | undefined>();
+   const [iconData, setIconData] = useState<string | null | undefined>();
 
-	useEffect(() => {
-		if (!modal.channel) {
-			return;
-		}
+   useEffect(() => {
+      if (!modal.channel?.name) {
+         return;
+      }
 
-		setValue("name", modal.channel.name ?? placeholderName);
-		setIconData(originalIcon);
-		resetStatuses();
-	}, [modal]);
+      setValue("name", modal.channel.name);
+      setIconData(originalIcon);
+      resetStatuses();
+   }, [modal]);
 
-	useEffect(() => {
-		const unlisten = listenEvent("image_cropper_done", (e) => {
-			setIconData(e.croppedImageData);
-		});
+   useEffect(() => {
+      const unlisten = listenEvent("image_cropper_done", (e) => {
+         setIconData(e.croppedImageData);
+      });
 
-		return () => {
-			unlisten();
-		};
-	}, []);
+      return () => {
+         unlisten();
+      };
+   }, []);
 
-	function onSelected(data: string, mimeType: string) {
-		updateModals({ imageCrop: { isOpen: true, originalImageData: data, mimeType: mimeType } });
-	}
+   function onSelected(data: string, mimeType: string) {
+      updateModals({ imageCrop: { isOpen: true, originalImageData: data, mimeType: mimeType } });
+   }
 
-	function onDelete() {
-		if (iconData) {
-			setIconData(null);
-		}
-	}
+   function onDelete() {
+      if (iconData) {
+         setIconData(null);
+      }
+   }
 
-	async function edit() {
-		if (!modal.channel || !validateValues()) {
-			return;
-		}
+   async function edit() {
+      if (!modal.channel || !validateValues()) {
+         return;
+      }
 
-		await mutation.mutateAsync({
-			channelId: modal.channel?.id,
-			name: placeholderName === values.name.value ? null : values.name.value,
-			icon: originalIcon && !iconData ? null : originalIcon === iconData ? undefined : iconData,
-		});
-		updateModals({ editGroup: { isOpen: false, channel: undefined } });
-	}
+      await mutation.mutateAsync({
+         channelId: modal.channel?.id,
+         name: modal.channel.name === values.name.value ? null : values.name.value,
+         icon: originalIcon && !iconData ? null : originalIcon === iconData ? undefined : iconData,
+      });
+      updateModals({ editGroup: { isOpen: false, channel: undefined } });
+   }
 
-	function close() {
-		updateModals({ editGroup: { channel: undefined, isOpen: false } });
-	}
+   function close() {
+      updateModals({ editGroup: { channel: undefined, isOpen: false } });
+   }
 
-	return (
-		<DialogPanel
-			transition
-			className="relative w-full max-w-lg transform overflow-hidden rounded-xl border-2 border-primary-700 bg-surface transition-[opacity_transform] duration-200 data-closed:scale-90"
-		>
-			<DialogTitle className="mt-5 flex items-center justify-center gap-x-1.5">
-				<div className="font-medium text-2xl text-text">Edit Group</div>
-			</DialogTitle>
-			<Description className="mx-5 mt-1 text-center text-text/70">Modify this group to exactly fit your needs!</Description>
-			<div className="flex gap-x-5 p-5">
-				<ImageSelector data={iconData} onSelected={onSelected} onDelete={onDelete} />
-				<HuginnInput {...inputsProps.name} className="mt-2 w-full" placeholder={placeholderName}>
-					<HuginnInput.Label className="mb-2" text="Group Name" />
-					<HuginnInput.Wrapper>
-						<HuginnInput.Input />
-					</HuginnInput.Wrapper>
-				</HuginnInput>
-			</div>
-			<div className="flex w-full items-center justify-end gap-x-2 bg-surface-alt p-5">
-				<HuginnButton className="h-10 w-20 decoration-white hover:underline" onClick={close}>
-					Cancel
-				</HuginnButton>
-				<LoadingButton loading={mutation.isPending} className="h-10 w-36" color="primary" onClick={edit}>
-					Save
-				</LoadingButton>
-			</div>
-			<ModalCloseButton onClick={close} />
-		</DialogPanel>
-	);
+   return (
+      <DialogPanel
+         transition
+         className="border-primary-700 bg-surface data-closed:scale-90 relative w-full max-w-lg transform overflow-hidden rounded-xl border-2 transition-[opacity_transform] duration-200"
+      >
+         <DialogTitle className="mt-5 flex items-center justify-center gap-x-1.5">
+            <div className="text-text text-2xl font-medium">Edit Group</div>
+         </DialogTitle>
+         <Description className="text-text/70 mx-5 mt-1 text-center">Modify this group to exactly fit your needs!</Description>
+         <div className="flex gap-x-5 p-5">
+            <ImageSelector data={iconData} onSelected={onSelected} onDelete={onDelete} />
+            <HuginnInput {...inputsProps.name} className="mt-2 w-full" placeholder={modal.channel?.name}>
+               <HuginnInput.Label className="mb-2" text="Group Name" />
+               <HuginnInput.Wrapper>
+                  <HuginnInput.Input />
+               </HuginnInput.Wrapper>
+            </HuginnInput>
+         </div>
+         <div className="bg-surface-alt flex w-full items-center justify-end gap-x-2 p-5">
+            <HuginnButton className="h-10 w-20 decoration-white hover:underline" onClick={close}>
+               Cancel
+            </HuginnButton>
+            <LoadingButton loading={mutation.isPending} className="h-10 w-36" color="primary" onClick={edit}>
+               Save
+            </LoadingButton>
+         </div>
+         <ModalCloseButton onClick={close} />
+      </DialogPanel>
+   );
 }

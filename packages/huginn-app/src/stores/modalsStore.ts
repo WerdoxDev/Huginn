@@ -1,8 +1,8 @@
-import type { APIChannel, DeepPartial, Snowflake } from "@huginn/shared";
+import type { DeepPartial, Snowflake } from "@huginn/shared";
 import { produce } from "immer";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
-import type { MutationKinds } from "@/types";
+import type { AppDirectChannel, MutationKinds } from "@/types";
 
 type DefaultModal = { isOpen: boolean };
 
@@ -30,7 +30,7 @@ const initialStore = () => ({
       mimeType: string;
    },
    createDM: { isOpen: false } as DefaultModal,
-   editGroup: { isOpen: false } as DefaultModal & { channel?: APIChannel },
+   editGroup: { isOpen: false } as DefaultModal & { channel?: AppDirectChannel },
    addRecipient: { isOpen: false, channelId: "" } as DefaultModal & { channelId: Snowflake },
    magnifiedImage: { isOpen: false, url: "", filename: "", width: 0, height: 0 } as DefaultModal & {
       url: string;

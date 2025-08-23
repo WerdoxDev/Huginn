@@ -1,17 +1,16 @@
-import { ChannelType, RelationshipType, type Snowflake, snowflake } from "@huginn/shared";
+import { ChannelType, MessageType, RelationshipType, type Snowflake } from "@huginn/shared";
 import { listenEvent } from "@lib/event-handler";
 import { getCurrentPageMessages } from "@lib/utils";
 import { windowStore } from "@stores/windowStore";
 import type { QueryClient } from "@tanstack/react-query";
 import { produce } from "immer";
-import moment from "moment";
 import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 import notificationUrl from "@/assets/sounds/notification.wav";
 import { sendNotification } from "../contexts/notificationContext";
 import { clientStore } from "./clientStore";
-import { findChannel, getChannelName, getChannelRecipients, getChannels, getUser } from "@lib/query-utils";
+import { findChannel, getChannels, getUser, getUsers } from "@lib/query-utils";
 
 export type ContextReadState = { channelId: Snowflake; lastReadMessageId?: Snowflake; unreadCount: number };
 
@@ -82,16 +81,46 @@ export function initializeReadStates() {
    });
 
    const unlisten2 = listenEvent("message_added", async (data) => {
-      if (!data.self && !data.visible) {
+      if (!data.self && !data.visible && !data.message.isPreview) {
          const author = getUser(data.message.authorId);
+         const mentions = getUsers(data.message.mentions);
          const channel = findChannel(getChannels(), data.message.channelId);
-         const recipients = getChannelRecipients(data.message.channelId);
-         const channelName = getChannelName(channel?.name, recipients);
 
          if (windowStore.getState().environment === "desktop") {
-            const username = author?.username ?? "Unknown User";
-            const title = username + (channel?.type === ChannelType.GROUP_DM ? ` - ${channelName}` : "");
-            sendNotification(data.message.channelId, title, data.message.content, author?.avatar ?? undefined);
+            let content;
+            const username = author?.displayName ?? "Unknown User";
+            console.log(author);
+            const title = username + (channel?.type === ChannelType.GROUP_DM ? ` - ${channel.name}` : "");
+
+            switch (data.message.type) {
+               case MessageType.DEFAULT:
+                  if (content) {
+                     content = data.message.content;
+                  } else if (data.message.attachments.length !== 0) {
+                     content = `Uploaded ${data.message.attachments[0].filename}`;
+                  }
+                  break;
+               case MessageType.RECIPIENT_ADD:
+                  content = `${username} added ${mentions[0].displayName}`;
+                  break;
+               case MessageType.RECIPIENT_REMOVE:
+                  content = `${username} removed ${mentions[0].displayName}`;
+                  break;
+               case MessageType.CALL:
+                  content = `${username} started a call`;
+                  break;
+               case MessageType.CHANNEL_NAME_CHANGED:
+                  content = `${username} changed the channel name to ${data.message.content}`;
+                  break;
+               case MessageType.CHANNEL_ICON_CHANGED:
+                  content = `${username} changed the channel icon`;
+                  break;
+               case MessageType.CHANNEL_OWNER_CHANGED:
+                  content = `${username} promoted ${mentions[0].displayName} to Channel Owner`;
+                  break;
+            }
+
+            sendNotification(data.message.channelId, title, content ?? "", author?.avatar ?? channel?.icon ?? undefined);
          }
 
          const audio = new Audio(notificationUrl);

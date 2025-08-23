@@ -2,12 +2,12 @@ import type { HuginnClient } from "@huginn/api";
 import { type APIGetUserChannelsResult, resolveImage, type Snowflake } from "@huginn/shared";
 import { clientStore } from "@stores/clientStore";
 import { infiniteQueryOptions, type QueryClient, queryOptions } from "@tanstack/react-query";
-import { convertToAppDirectChannel, convertToAppMessage, convertToAppRelationship } from "./utils";
+import { convertToAppDirectChannel, convertToAppMessage, convertToAppRelationship, convertToAppUser } from "./utils";
 
 export function getUserOptions(client: HuginnClient, userId: Snowflake) {
    return queryOptions({
       queryKey: ["user", userId],
-      queryFn: async () => await client.users.get(userId),
+      queryFn: async () => convertToAppUser(await client.users.get(userId)),
    });
 }
 

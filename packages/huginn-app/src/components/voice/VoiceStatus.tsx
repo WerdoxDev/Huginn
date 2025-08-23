@@ -1,5 +1,4 @@
 import type { VoiceStatus } from "@huginn/shared";
-import { useChannelName } from "@hooks/api-hooks/channelHooks";
 import { useClient, useClientStore } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore } from "@stores/voiceStore";
@@ -8,12 +7,12 @@ import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router";
 import Tooltip from "../tooltip/Tooltip";
-import { useUpdateVoiceState } from "@hooks/voice/useUpdateVoiceState";
 import UserActionButton from "@components/button/UserActionButton";
 import StreamButton from "@components/button/StreamButton";
 import VoiceControlButton from "@components/button/VoiceControlButton";
 import DropdownMenu from "@components/dropdown/DowndownMenu";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
+import { useChannel } from "@hooks/api-hooks/channelHooks";
 
 const statuses: Record<VoiceStatus, { text: string; color?: string }> = {
    connected: { text: "RTC Signalling...", color: "!text-caution-100" },
@@ -32,7 +31,7 @@ export default function VoiceStatus() {
    const { startAudioStream, startScreenShare, changeStream, endStream, startCamera, endCamera } = useVoiceUtils();
    const client = useClient();
    const { user } = useThisUser();
-   const channelName = useChannelName(voiceChannel.channelId ?? undefined);
+   const channel = useChannel(voiceChannel.channelId ?? undefined);
    const [rtt, setRtt] = useState(0);
    const posthog = usePostHog();
    const { localVoiceState } = useVoiceStore();
@@ -98,7 +97,7 @@ export default function VoiceStatus() {
                      </div>
                   </div>
                   <NavLink prefetch="intent" to={`/channels/@me/${voiceChannel.channelId}`} className="text-text/70 ml-7 text-xs hover:underline">
-                     {channelName}
+                     {channel?.name}
                   </NavLink>
                </div>
                <div className="ml-auto flex gap-x-1">

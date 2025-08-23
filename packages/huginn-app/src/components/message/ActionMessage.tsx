@@ -11,8 +11,8 @@ export default function ActionMessage() {
 
    const message = useMemo(() => context.message, [context.message]);
    const author = useUser(message.authorId);
-   const authorName = useMemo(() => author?.displayName ?? author?.username, [context.message]);
-   const mention = useMemo(() => !message.isPreview && (message.mentions?.[0]?.displayName ?? message.mentions?.[0]?.username), [context.message]);
+   const authorName = useMemo(() => author?.displayName, [context.message]);
+   const mentionUsers = useUsers(!message.isPreview ? message.mentions : undefined);
    const formattedFullTime = useMemo(() => moment(context.message?.timestamp).format("DD.MM.YYYY HH:mm"), [context.message]);
 
    const isLastExotic = useMemo(() => context.lastMessage?.isExoticType || !context.lastMessage, [context.lastMessage]);
@@ -73,7 +73,7 @@ export default function ActionMessage() {
                         <div className="flex gap-x-1.5">
                            {callParticipants.map((x) => (
                               <div key={x.id} className="bg-surface rounded-sm px-1">
-                                 {x.displayName ?? x.username}
+                                 {x.displayName}
                               </div>
                            ))}
                         </div>
@@ -91,12 +91,12 @@ export default function ActionMessage() {
                      <span className="text-text font-bold">{message.content}</span>
                   </>
                ))}
-            {mention ? (
+            {mentionUsers[0] ? (
                <>
                   {type === MessageType.RECIPIENT_ADD && <span className="text-text/50"> added </span>}
                   {type === MessageType.RECIPIENT_REMOVE && <span className="text-text/50"> removed </span>}
                   {type === MessageType.CHANNEL_OWNER_CHANGED && <span className="text-text/50"> promoted </span>}
-                  <span className="font-bold">{mention}</span>
+                  <span className="font-bold">{mentionUsers[0].displayName}</span>
                   {type === MessageType.CHANNEL_OWNER_CHANGED && (
                      <span className="text-text/50">
                         {" "}

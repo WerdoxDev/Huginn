@@ -70,7 +70,7 @@ export default function DefaultMessage() {
          {(isSeparate || isLastExotic) && (
             <div className="flex items-center gap-x-2">
                <UserAvatar userId={context.message.authorId} avatarHash={author?.avatar} statusSize="0.5rem" size="1.75rem" />
-               <div className="text-text text-sm">{isSelf ? "You" : (author?.displayName ?? author?.username)}</div>
+               <div className="text-text text-sm">{isSelf ? "You" : author?.displayName}</div>
                {!context.message.isPreview && context.message.flags && hasFlag(context.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
                   <IconMingcuteNotificationOffFill className="text-text size-4" />
                ) : null}

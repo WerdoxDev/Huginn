@@ -7,14 +7,12 @@ import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRem
 import type { ConsumeStreamMutationVars } from "@hooks/voice/useConsumeStream";
 import type {
    APICallMessage,
-   APIChannelUser,
    APIDefaultMessage,
-   APIPublicUser,
    APIRelationshipWithoutOwner,
-   APIRelationUser,
    DeepPartial,
    DirectChannel,
    HMediaKind,
+   PresenceUser,
    RelationshipType,
    Snowflake,
 } from "@huginn/shared";
@@ -204,10 +202,10 @@ export type DropdownMenuItemProps = {
    disabled?: boolean;
 };
 
-export type ContextMenuRelationship = { user: APIRelationUser; type: RelationshipType };
+export type ContextMenuRelationship = { user: AppUser; type: RelationshipType };
 export type ContextMenuDMChannel = AppDirectChannel;
-export type ContextMenuDMChannelRecipient = { channelId: Snowflake; recipient: APIChannelUser };
-export type ContextMenuVoiceElement = { user: APIPublicUser; producerId?: string; consumerId?: string; kind: HMediaKind; channelId: Snowflake };
+export type ContextMenuDMChannelRecipient = { channelId: Snowflake; recipient: AppUser };
+export type ContextMenuVoiceElement = { user: AppUser; producerId?: string; consumerId?: string; kind: HMediaKind; channelId: Snowflake };
 export type ContextMenuMessage = { message: AppMessage; url?: string; imgRef?: RefObject<HTMLImageElement | null> };
 
 export type ProcessedMessage = AppMessage & {
@@ -239,14 +237,21 @@ export type MutationKinds = {
    "consume-stream": ConsumeStreamMutationVars;
 };
 
+export type AppUser = PresenceUser & { displayName?: string; originalDisplayName?: string | null };
+
 export type AppMessage =
    | { isPreview: true; id: Snowflake; timestamp: string; authorId: Snowflake; nonce?: string; content: string; channelId: Snowflake }
-   | ({ isPreview: false } & (Omit<APICallMessage, "author"> | Omit<APIDefaultMessage, "author">) & {
+   | ({ isPreview: false } & (Omit<APICallMessage, "author" | "mentions"> | Omit<APIDefaultMessage, "author" | "mentions">) & {
            authorId: Snowflake;
+           mentions: Snowflake[];
            source: "websocket" | "fetch";
         });
 
-export type AppDirectChannel = Omit<DirectChannel, "recipients"> & { recipientIds: Snowflake[] };
+export type AppDirectChannel = Omit<DirectChannel, "recipients"> & {
+   recipientIds: Snowflake[];
+   name: string;
+   originalName?: string | null;
+};
 export type AppRelationship = Omit<APIRelationshipWithoutOwner, "user"> & { userId: Snowflake };
 
 export type AppAttachment = {

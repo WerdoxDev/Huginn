@@ -1,16 +1,13 @@
 import { type GatewayCallState, type GatewayVoiceState, type GatewayVoiceStateFlags, type HMediaKind, log, type Snowflake } from "@huginn/shared";
-import { dispatchEvent } from "@lib/event-handler";
-import { loadFile, saveFile } from "@lib/file-manager";
 import type { AudioLevelChecker } from "@lib/voice/audio-level-checker";
 import { VoiceClient } from "@lib/voice/voice-client";
 import { clientStore } from "@stores/clientStore";
 import { produce } from "immer";
 import { createStore, useStore } from "zustand";
 import { combine, devtools } from "zustand/middleware";
-import type { RemoteSource, VoicePreference } from "@/types";
+import type { RemoteSource } from "@/types";
 import voiceEnterUrl from "@/assets/sounds/voice-enter.wav";
 import voiceLeaveUrl from "@/assets/sounds/voice-leave.wav";
-import { filesStore } from "./filesStore";
 
 const initialStore = () => ({
    voiceChannel: { guildId: null, channelId: null } as { guildId: Snowflake | null; channelId: Snowflake | null },

@@ -6,13 +6,13 @@ import sharp from "sharp";
 import { mkdir } from "node:fs/promises";
 
 export const cacheDir = path.join(app.getPath("userData"), "web-cache");
-const cachedAvatars = new Set<string>();
+const cachedHashes = new Set<string>();
 
 export function listenToEvents() {
-   ipcMain.handle("cache:save-avatar", async (_, data: string, hash: string) => {
-      log("app:electron", "recv", "cache save avatar", "h:", hash);
+   ipcMain.handle("cache:save-hash-image", async (_, data: string, hash: string) => {
+      log("app:electron", "recv", "cache save hash image", "h:", hash);
 
-      if (cachedAvatars.has(hash)) {
+      if (cachedHashes.has(hash)) {
          return;
       }
 
@@ -26,6 +26,6 @@ export function listenToEvents() {
       const buffer = toArrayBuffer(data);
       await sharp(buffer).resize(256, 256).png().toFile(filePath);
 
-      cachedAvatars.add(hash);
+      cachedHashes.add(hash);
    });
 }

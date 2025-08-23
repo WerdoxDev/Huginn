@@ -1,22 +1,36 @@
 import { queryClient as client } from "@/root";
-import type { AppDirectChannel } from "@/types";
-import type { APIGetUserChannelsResult, APIPublicUser, PresenceUser, Snowflake } from "@huginn/shared";
+import type { AppDirectChannel, AppUser } from "@/types";
+import type { APIGetUserChannelsResult, PresenceUser, Snowflake } from "@huginn/shared";
+import { convertToAppUser } from "./utils";
 
 export function updateUser(user: PresenceUser, queryClient = client) {
-   queryClient.setQueryData<PresenceUser>(["user", user.id], (old) => (old ? { ...old, ...user } : user));
+   queryClient.setQueryData<AppUser>(["user", user.id], (old) => (old ? convertToAppUser({ ...old, ...user }) : convertToAppUser(user)));
 }
 
 export function getUser(userId: Snowflake, queryClient = client) {
-   return queryClient.getQueryData<APIPublicUser>(["user", userId]);
+   return queryClient.getQueryData<AppUser>(["user", userId]);
 }
 
-export function getChannelName(channelName: string | null | undefined, recipients: (APIPublicUser | undefined)[]) {
-   return channelName ? channelName : recipients?.map((x) => x?.displayName ?? x?.username).join(", ");
+export function getUsers(userIds: Snowflake[], queryClient = client) {
+   return queryClient
+      .getQueriesData<AppUser>({ queryKey: ["user"] })
+      .map(([_, data]) => data)
+      .filter((user): user is AppUser => !!user && userIds.includes(user.id));
 }
 
 export function getChannels(guildId = "@me", queryClient = client) {
    const channels = queryClient.getQueryData<AppDirectChannel[]>(["channels", guildId]);
    return channels;
+}
+
+export function getChannelComputedName(channel: AppDirectChannel, recipientIds: Snowflake[], queryClient = client) {
+   const recipients = getUsers(recipientIds, queryClient);
+
+   return channel.originalName === undefined
+      ? undefined
+      : channel.originalName === null
+        ? recipients.map((x) => x.displayName).join(", ")
+        : channel.originalName;
 }
 
 export function findChannel(channels: AppDirectChannel[] | undefined, channelId: Snowflake | undefined) {
@@ -25,7 +39,7 @@ export function findChannel(channels: AppDirectChannel[] | undefined, channelId:
 
 export function getChannelRecipients(channelId: Snowflake, queryClient = client) {
    const channel = findChannel(getChannels("@me", queryClient), channelId);
-   const recipients = channel?.recipientIds.map((x) => getUser(x, queryClient));
+   const recipients = getUsers(channel?.recipientIds ?? [], queryClient);
 
    return recipients ?? [];
 }

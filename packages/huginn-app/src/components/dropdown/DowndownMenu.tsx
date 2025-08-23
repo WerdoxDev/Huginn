@@ -57,7 +57,7 @@ export default function DropdownMenu(props: MenuProps<"div"> & { onOpenChanged?:
 
    return (
       <DropdownContext.Provider value={{ isOpen, setIsOpen, itemsRef, buttonRef }}>
-         <Menu {...props} as="div" className={clsx("relative", props.className)} />
+         <Menu {...omit(props, ["onOpenChanged"])} as="div" className={clsx("relative", props.className)} />
       </DropdownContext.Provider>
    );
 }

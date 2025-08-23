@@ -25,7 +25,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 
    const { inputsProps, values, handleErrors, resetStatuses, resetInput, setValue } = useInputs([
       { name: "username", required: true, default: user?.username, lowercase: true },
-      { name: "displayName", required: false, default: user?.displayName },
+      { name: "displayName", required: false, default: user?.originalDisplayName },
       { name: "password", required: false },
       { name: "newPassword", required: false },
    ]);
@@ -56,7 +56,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
    const [modified, setModified] = useState(false);
 
    useMemo(() => {
-      const displayName = !user?.displayName ? "" : user.displayName;
+      const displayName = !user?.originalDisplayName ? "" : user.originalDisplayName;
       setModified(values.username.value !== user?.username || values.displayName.value !== displayName || values.newPassword.value !== "");
    }, [values, user]);
 
@@ -106,13 +106,13 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
    }
 
    function revert() {
-      if (!user) {
+      if (!user?.originalDisplayName || !user.username) {
          return;
       }
 
       setAvatarData(originalAvatar);
       setValue("username", user.username);
-      setValue("displayName", user.displayName);
+      setValue("displayName", user.originalDisplayName);
       setValue("password", "");
       setValue("newPassword", "");
       resetStatuses();

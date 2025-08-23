@@ -12,6 +12,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import type { AppDirectChannel } from "@/types";
+import { getChannelComputedName } from "@lib/query-utils";
 
 export default function ChannelsProvider(props: { children?: ReactNode }) {
    const client = useClient();
@@ -46,15 +47,32 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
 
    function onChannelRecipientAdded(d: GatewayDMChannelRecipientAddData) {
       queryClient.setQueryData<AppDirectChannel[]>(["channels", "@me"], (old) =>
-         old?.map((channel) => (channel.id === d.channelId ? { ...channel, recipientIds: [...channel.recipientIds, d.user.id] } : channel)),
+         old?.map((channel) => {
+            if (channel.id !== d.channelId) {
+               return channel;
+            }
+
+            const recipientIds = [...channel.recipientIds, d.user.id];
+            return {
+               ...channel,
+               recipientIds,
+               // This may not always work due to the new user "possibly" not being added to the list just yet
+               name: getChannelComputedName(channel, recipientIds) ?? "",
+            };
+         }),
       );
    }
 
    function onChannelRecipientRemoved(d: GatewayDMCannelRecipientRemoveData) {
       queryClient.setQueryData<AppDirectChannel[]>(["channels", "@me"], (old) =>
-         old?.map((channel) =>
-            channel.id === d.channelId ? { ...channel, recipientIds: channel.recipientIds.filter((x) => x !== d.user.id) } : channel,
-         ),
+         old?.map((channel) => {
+            if (channel.id !== d.channelId) {
+               return channel;
+            }
+
+            const recipientIds = channel.recipientIds.filter((x) => x !== d.user.id);
+            return { ...channel, recipientIds, name: getChannelComputedName(channel, recipientIds) ?? "" };
+         }),
       );
    }
 

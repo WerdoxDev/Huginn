@@ -1,13 +1,15 @@
-import type { AppDirectChannel, AppMessage, AppRelationship, InputStatus, InputStatuses, InputValue, InputValues } from "@/types";
+import type { AppDirectChannel, AppMessage, AppRelationship, AppUser, InputStatus, InputStatuses, InputValue, InputValues } from "@/types";
 import {
    type APIMessage,
    type APIRelationshipWithoutOwner,
+   ChannelType,
    type DirectChannel,
    HuginnAPIError,
    type HuginnError,
    type HuginnErrorData,
    type HuginnErrorGroupWrapper,
    MessageType,
+   type PresenceUser,
    type Snowflake,
    omit,
 } from "@huginn/shared";
@@ -140,7 +142,21 @@ export function getCurrentPageMessages(channelId: Snowflake, queryClient: QueryC
 }
 
 export function convertToAppDirectChannel(channel: DirectChannel): AppDirectChannel {
-   return { ...omit(channel, ["recipients"]), recipientIds: channel.recipients.map((x) => x.id) };
+   const name =
+      channel.type === ChannelType.DM
+         ? (channel.recipients[0].displayName ?? channel.recipients[0].username)
+         : channel.type === ChannelType.GROUP_DM
+           ? !channel.name
+              ? channel.recipients.map((x) => x.displayName ?? x.username).join(", ")
+              : channel.name
+           : "";
+
+   return {
+      ...omit(channel, ["recipients"]),
+      recipientIds: channel.recipients.map((x) => x.id),
+      name,
+      originalName: channel.name,
+   };
 }
 
 export function convertToAppRelationship(relationship: APIRelationshipWithoutOwner): AppRelationship {
@@ -149,9 +165,14 @@ export function convertToAppRelationship(relationship: APIRelationshipWithoutOwn
 
 export function convertToAppMessage(message: APIMessage, source: "websocket" | "fetch"): AppMessage {
    return {
-      ...(message.type === MessageType.CALL ? omit(message, ["author"]) : omit(message, ["author"])),
+      ...(message.type === MessageType.CALL ? omit(message, ["author", "mentions"]) : omit(message, ["author", "mentions"])),
       authorId: message.author.id,
+      mentions: message.mentions.map((x) => x.id),
       isPreview: false,
       source,
    };
+}
+
+export function convertToAppUser(user: PresenceUser): AppUser {
+   return { ...user, displayName: user?.displayName ?? user?.username, originalDisplayName: user.displayName };
 }
