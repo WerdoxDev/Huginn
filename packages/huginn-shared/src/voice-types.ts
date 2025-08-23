@@ -3,7 +3,7 @@ import type { RtpCapabilities, RtpParameters } from "mediasoup/node/lib/rtpParam
 import type { DtlsParameters, IceCandidate, IceParameters } from "mediasoup/node/lib/WebRtcTransportTypes";
 import type { Snowflake } from "./snowflake";
 
-export type VoiceStatus = "disconnected" | "connecting" | "connected" | "authenticated" | "reconnecting" | "rtc_ready" | "none";
+export type VoiceStatus = "disconnected" | "connecting" | "connected" | "authenticated" | "reconnecting" | "rtc_ready" | "none" | "opening";
 
 export enum VoiceOperations {
    HELLO = 0,
