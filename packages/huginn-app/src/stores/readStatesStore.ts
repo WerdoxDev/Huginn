@@ -89,7 +89,6 @@ export function initializeReadStates() {
          if (windowStore.getState().environment === "desktop") {
             let content;
             const username = author?.displayName ?? "Unknown User";
-            console.log(author);
             const title = username + (channel?.type === ChannelType.GROUP_DM ? ` - ${channel.name}` : "");
 
             switch (data.message.type) {
