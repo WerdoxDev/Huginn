@@ -31,7 +31,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
       peer.context.sessionId = sessionId;
       const session = this.createSession(peer, sessionId);
 
-      await this.onOpen(session);
+      session.enqueue(() => this.onOpen(session));
    }
 
    public async _internalOnClose(peer: Peer, event: { code?: number; reason?: string }) {
@@ -41,7 +41,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
          return;
       }
 
-      await this.onClose(session, event);
+      await session.enqueue(() => this.onClose(session, event));
 
       session.stopHeartbeatTimeout();
 
@@ -70,14 +70,20 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
             return;
          }
 
-         await this.onMessage(session, data);
-      } catch (e) {
-         error("shared:websocket", e);
-         if (e instanceof SyntaxError) {
-            peer.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
-            return;
-         }
+         session.enqueue(
+            () => this.onMessage(session, data),
+            (e) => {
+               error("shared:websocket", "Error in onMessage:", e);
+               if (e instanceof SyntaxError) {
+                  peer.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
+                  return;
+               }
 
+               peer.close(GatewayCode.UNKNOWN, "UNKNOWN");
+            },
+         );
+         // oxlint-disable-next-line no-unused-vars
+      } catch (e) {
          peer.close(GatewayCode.UNKNOWN, "UNKNOWN");
       }
    }

@@ -12,6 +12,7 @@ export abstract class CommonClientSession<Payload, Properties = undefined> {
 
    private heartbeatTimeout?: NodeJS.Timeout;
    private sentMessages: Map<number, Payload>;
+   private queue: Promise<void> = Promise.resolve();
 
    public get authenticated() {
       return !!this.user;
@@ -99,4 +100,14 @@ export abstract class CommonClientSession<Payload, Properties = undefined> {
    }
 
    public abstract subscribeToTopicsExtra(): Promise<void> | void;
+
+   public enqueue(fn: () => Promise<void> | void, onError?: (e: any) => void) {
+      const result = this.queue.then(() => fn());
+      this.queue = result.catch((e) => {
+         error("shared:client-session", "Error in enqueued function: ", e);
+         onError?.(e);
+      });
+
+      return result;
+   }
 }
