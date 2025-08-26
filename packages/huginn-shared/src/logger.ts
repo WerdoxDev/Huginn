@@ -19,7 +19,8 @@ type LogValuesMap = {
    "app:audio-level-checker": "default";
    "app:voice-input-device": "default";
    "app:electron": "default" | "send" | "recv" | "updater" | "loopback-send" | "loopback";
-   "server:gateway": "default" | "send" | "recv" | "heartbeat";
+   "server:gateway": "default" | "send" | "recv" | "heartbeat" | "detail-identify";
+   "server:presence-manager": "default" | "send" | "detail";
    "voice:websocket": "default" | "recv";
    "shared:websocket": "default" | "subscriptions";
    "shared:client-session": "default" | "subscriptions" | "heartbeat";
