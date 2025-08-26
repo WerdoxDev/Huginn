@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.12.2...backend-shared@v0.13.0) (2025-08-26)
+
+
+### Features
+
+* **backend-shared:** add message queueing for share websocket ([563d4f7](https://github.com/WerdoxDev/Huginn/commit/563d4f72667f5f06713f073978806a164f0df119))
+
 ## [0.12.2](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.12.1...backend-shared@v0.12.2) (2025-08-23)
 
 
