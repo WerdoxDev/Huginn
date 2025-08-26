@@ -4,8 +4,10 @@ import consola from "consola";
 import { Octokit } from "octokit";
 import { ServerGateway } from "#gateway/server-gateway";
 import { TokenInvalidator } from "#utils/token-invalidator";
+import { enableLogs } from "@huginn/shared";
 
 // enableLogs({ "server:gateway": ["recv"] })
+enableLogs({ "server:gateway": ["default", "detail-identify"], "server:presence-manager": ["default", "detail"] });
 
 export const envs = readEnv([
    "ACCESS_TOKEN_SECRET",

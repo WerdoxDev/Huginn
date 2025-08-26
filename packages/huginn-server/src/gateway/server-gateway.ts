@@ -60,7 +60,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
    }
 
    public async onClose(session: ClientSession, event: { code?: number; reason?: string }) {
-      log("server:gateway", "default", "close", "sid:", session.sessionId, "code:", event.code, "res:", event.reason);
+      log("server:gateway", "default", "close", "sid:", session.sessionId, "auth:", session.authenticated, "code:", event.code, "res:", event.reason);
 
       if (session.authenticated && session.user) {
          this.presenceManager.removeUserPresence(session.user.id, session);
@@ -143,6 +143,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       const { valid, payload } = await verifyToken(data.token);
 
       log("server:gateway", "recv", "identify", "tkn:", data.token, "valid:", valid);
+      log("server:gateway", "detail-identify", "start", "sid:", session.sessionId);
 
       if (!valid || !payload) {
          session.peer.close(GatewayCode.AUTHENTICATION_FAILED, "AUTHENTICATION_FAILED");
@@ -210,6 +211,8 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
 
       this.send(session.peer, readyData);
       this.presenceManager.setUserPresence(user, session, settings);
+
+      log("server:gateway", "detail-identify", "end", "sid:", session.sessionId);
    }
 
    private async handleResume(session: ClientSession, data: GatewayResumeData) {
