@@ -15,6 +15,7 @@ import type {
    PresenceUser,
    RelationshipType,
    Snowflake,
+   UserPresence,
 } from "@huginn/shared";
 import type { AudioLevelChecker } from "@lib/voice/audio-level-checker";
 import type { ChangeEvent, HTMLInputTypeAttribute, ReactNode, RefObject } from "react";
@@ -238,6 +239,8 @@ export type MutationKinds = {
 };
 
 export type AppUser = PresenceUser & { displayName?: string; originalDisplayName?: string | null };
+
+export type AppPresence = Omit<UserPresence, "user"> & { userId: Snowflake };
 
 export type AppMessage =
    | { isPreview: true; id: Snowflake; timestamp: string; authorId: Snowflake; nonce?: string; content: string; channelId: Snowflake }

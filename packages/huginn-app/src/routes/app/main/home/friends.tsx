@@ -33,7 +33,7 @@ export default function Friends() {
    const allFriends = useMemo(() => friends?.filter((x) => x.type === RelationshipType.FRIEND), [friends]);
    const { presences } = usePresences(allFriends?.map((x) => x.userId) ?? []);
    const onlineFriends = useMemo(
-      () => friends?.filter((x) => x.type === RelationshipType.FRIEND && presences.some((y) => y.user.id === x.userId && y.status === "online")),
+      () => friends?.filter((x) => x.type === RelationshipType.FRIEND && presences.some((y) => y.userId === x.userId && y.status === "online")),
       [allFriends, presences],
    );
 

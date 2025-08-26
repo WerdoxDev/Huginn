@@ -6,7 +6,7 @@ import { useClient } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { NavLink, useParams } from "react-router";
 import type { AppDirectChannel } from "@/types";
 import ChannelIcon from "./ChannelIcon";

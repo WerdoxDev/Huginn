@@ -1,9 +1,9 @@
-import type { AppUser } from "@/types";
+import type { AppPresence, AppUser } from "@/types";
 import LoadingIcon from "@components/LoadingIcon";
 import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
 import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
-import type { Snowflake, UserPresence } from "@huginn/shared";
+import type { Snowflake } from "@huginn/shared";
 import { RelationshipType } from "@huginn/shared";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { type MouseEvent, useMemo } from "react";
@@ -11,7 +11,7 @@ import { type MouseEvent, useMemo } from "react";
 export default function FriendItem(props: {
    type: RelationshipType;
    user: AppUser;
-   presence?: UserPresence;
+   presence?: AppPresence;
    onAccept?: (userId: Snowflake) => void;
    onDenyOrCancel?: (userId: Snowflake) => void;
    onMessage?: (userId: Snowflake) => void;

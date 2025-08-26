@@ -1,18 +1,18 @@
-import type { AppRelationship } from "@/types";
+import type { AppPresence, AppRelationship } from "@/types";
 import { TabPanel } from "@headlessui/react";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useLookup } from "@hooks/useLookup";
-import type { Snowflake, UserPresence } from "@huginn/shared";
+import type { Snowflake } from "@huginn/shared";
 import { useMemo } from "react";
 import FriendItem from "./FriendItem";
 
-export default function FriendsTab(props: { friends: AppRelationship[] | null; presences: UserPresence[]; text: string }) {
+export default function FriendsTab(props: { friends: AppRelationship[] | null; presences: AppPresence[]; text: string }) {
    const mutation = useCreateDMChannel("create-dm-channel_other");
 
    const users = useUsers(props.friends?.map((x) => x.userId));
    const userLookup = useLookup(users, (user) => user.id);
-   const presenceLookup = useLookup(props.presences, (presence) => presence.user.id);
+   const presenceLookup = useLookup(props.presences, (presence) => presence.userId);
 
    const amount = useMemo(() => props.friends?.length ?? 0, [props.friends]);
 

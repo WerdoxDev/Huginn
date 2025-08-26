@@ -1,12 +1,14 @@
-import type { GatewayPresenceUpdateData, Snowflake, UserPresence } from "@huginn/shared";
+import type { Snowflake, UserPresence } from "@huginn/shared";
 import { produce } from "immer";
 import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 import { clientStore } from "./clientStore";
+import type { AppPresence } from "@/types";
+import { convertToAppPresence } from "@lib/utils";
 
 const initialStore = () => ({
-   presences: [] as GatewayPresenceUpdateData[],
+   presences: [] as AppPresence[],
 });
 
 type StoreType = ReturnType<typeof initialStore>;
@@ -16,11 +18,11 @@ const store = createStore(
       updatePresence: (presence: UserPresence) =>
          set(
             produce((draft: StoreType) => {
-               const existingIndex = draft.presences.findIndex((x) => x.user.id === presence.user.id);
+               const existingIndex = draft.presences.findIndex((x) => x.userId === presence.user.id);
                if (existingIndex !== -1) {
-                  draft.presences[existingIndex] = { ...draft.presences[existingIndex], ...presence };
+                  draft.presences[existingIndex] = { ...draft.presences[existingIndex], ...convertToAppPresence(presence) };
                } else {
-                  draft.presences.push(presence);
+                  draft.presences.push(convertToAppPresence(presence));
                }
             }),
          ),
@@ -62,15 +64,15 @@ export function initializePresence() {
 export function usePresence(userId: Snowflake) {
    const thisStore = useStore(store);
 
-   return useMemo(() => thisStore.presences.find((x) => x.user.id === userId), [thisStore.presences]);
+   return useMemo(() => thisStore.presences.find((x) => x.userId === userId), [thisStore.presences, userId]);
 }
 
 export function usePresences(userIds: Snowflake[]) {
    const thisStore = useStore(store);
-   const presences = useMemo(() => thisStore.presences.filter((x) => userIds.includes(x.user.id)), [thisStore.presences, userIds]);
+   const presences = useMemo(() => thisStore.presences.filter((x) => userIds.includes(x.userId)), [thisStore.presences, userIds]);
 
    function getPresence(userId: Snowflake) {
-      return presences.find((x) => x.user.id === userId);
+      return presences.find((x) => x.userId === userId);
    }
 
    return { presences, getPresence };

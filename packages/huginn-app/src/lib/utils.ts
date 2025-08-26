@@ -1,4 +1,14 @@
-import type { AppDirectChannel, AppMessage, AppRelationship, AppUser, InputStatus, InputStatuses, InputValue, InputValues } from "@/types";
+import type {
+   AppDirectChannel,
+   AppMessage,
+   AppPresence,
+   AppRelationship,
+   AppUser,
+   InputStatus,
+   InputStatuses,
+   InputValue,
+   InputValues,
+} from "@/types";
 import {
    type APIMessage,
    type APIRelationshipWithoutOwner,
@@ -11,6 +21,7 @@ import {
    MessageType,
    type PresenceUser,
    type Snowflake,
+   type UserPresence,
    omit,
 } from "@huginn/shared";
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
@@ -175,4 +186,8 @@ export function convertToAppMessage(message: APIMessage, source: "websocket" | "
 
 export function convertToAppUser(user: PresenceUser): AppUser {
    return { ...user, displayName: user?.displayName ?? user?.username, originalDisplayName: user.displayName };
+}
+
+export function convertToAppPresence(presence: UserPresence): AppPresence {
+   return { ...omit(presence, ["user"]), userId: presence.user.id };
 }

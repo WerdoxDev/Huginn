@@ -11,7 +11,7 @@ export default function HomeTopBar(props: { channel: AppDirectChannel; onRecipie
    const { user } = useThisUser();
    const recipients = useUsers(props.channel.recipientIds);
 
-   const otherUsers = useMemo(() => recipients.filter((x) => x.id !== user?.id), [props.channel]);
+   const otherUsers = useMemo(() => recipients.filter((x) => x.id !== user?.id), [recipients]);
 
    return (
       <div className="h-19 bg-surface-deep flex shrink-0 items-center px-6">
