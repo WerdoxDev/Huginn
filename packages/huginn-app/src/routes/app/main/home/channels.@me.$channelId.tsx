@@ -90,12 +90,7 @@ export default function ChannelWithId() {
                   <MessageBox messages={sortedMessages} />
                </div>
                {channel.type === ChannelType.GROUP_DM && channel.ownerId && (
-                  <RecipientsSidebar
-                     channelId={channel.id}
-                     recipientIds={channel.recipientIds}
-                     ownerId={channel.ownerId}
-                     visible={recipientsVisible}
-                  />
+                  <RecipientsSidebar channelId={channel.id} recipientIds={channel.recipientIds} ownerId={channel.ownerId} show={recipientsVisible} />
                )}
             </div>
             <div className="bg-surface absolute bottom-0 flex h-16 w-full shrink-0" />

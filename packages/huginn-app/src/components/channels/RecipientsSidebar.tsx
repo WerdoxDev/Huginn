@@ -9,7 +9,7 @@ import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import { useMemo } from "react";
 
-export default function RecipientsSidebar(props: { channelId: Snowflake; recipientIds: Snowflake[]; ownerId: Snowflake; visible: boolean }) {
+export default function RecipientsSidebar(props: { channelId: Snowflake; recipientIds: Snowflake[]; ownerId: Snowflake; show: boolean }) {
    const { user } = useThisUser();
    const { updateModals } = useModals();
    const patchState = useMutationLatestState("patch-dm-channel");
@@ -32,7 +32,7 @@ export default function RecipientsSidebar(props: { channelId: Snowflake; recipie
    );
 
    return (
-      <Transition show={props.visible}>
+      <Transition show={props.show}>
          <div className="w-58 data-closed:w-0 data-closed:scale-0 data-closed:opacity-0 group relative mb-16 shrink-0 transition-all duration-200">
             <div className="bg-surface-alt ring-primary-800 group-data-closed:ring-0 absolute inset-0 m-2 ml-1 flex flex-col gap-y-2 overflow-hidden rounded-xl p-2 shadow-lg ring-2 transition-all duration-700">
                <div className="text-text/70 ml-2 mt-1 text-xs uppercase">Members - {sortedRecipients.length}</div>

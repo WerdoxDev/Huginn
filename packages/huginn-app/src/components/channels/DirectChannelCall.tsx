@@ -61,7 +61,6 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    }>();
    const [gridHeight, setGridHeight] = useState(250);
    const { isFullscreen, toggleFullscreen } = useFullscreen();
-   // const maximizedSourceId = useRef<string | undefined>(undefined);
    const [maximizedSource, setMaximizedSource] = useState<Unpacked<typeof remoteSources> | undefined>(undefined);
 
    useEffect(() => {
