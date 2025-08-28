@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.54.4](https://github.com/WerdoxDev/Huginn/compare/app@v0.54.3...app@v0.54.4) (2025-08-26)
+
+
+### Bug Fixes
+
+* **app:** make presences only have userId + presences visual bug ([6a980b4](https://github.com/WerdoxDev/Huginn/commit/6a980b4795eae7fd1e513e0e96393d554b1afc9d))
+
 ## [0.54.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.54.2...app@v0.54.3) (2025-08-23)
 
 
