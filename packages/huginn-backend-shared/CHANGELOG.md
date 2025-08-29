@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.13.0...backend-shared@v0.14.0) (2025-08-29)
+
+
+### Features
+
+* **backend-shared:** add settings table and prisma helpers ([4ad8a24](https://github.com/WerdoxDev/Huginn/commit/4ad8a2429b29e738b70a0fc56f311784acbe1cb2))
+
 ## [0.13.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.12.2...backend-shared@v0.13.0) (2025-08-26)
 
 

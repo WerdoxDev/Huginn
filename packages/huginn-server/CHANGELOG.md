@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.27.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.26.2...server@v0.27.0) (2025-08-29)
+
+
+### Features
+
+* **server:** add experimental server settings implementation ([4d35d9a](https://github.com/WerdoxDev/Huginn/commit/4d35d9a6a2f9befdaedfcfcd09f9050116623f57))
+
 ## [0.26.2](https://github.com/WerdoxDev/Huginn/compare/server@v0.26.1...server@v0.26.2) (2025-08-23)
 
 

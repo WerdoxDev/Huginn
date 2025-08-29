@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.25.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.24.1...api@v0.25.0) (2025-08-29)
+
+
+### Features
+
+* **api:** add settings editing api ([3bd9749](https://github.com/WerdoxDev/Huginn/commit/3bd97491d38d50e4fb7b47823d9e68f675892dd2))
+
 ## [0.24.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.24.0...api@v0.24.1) (2025-08-23)
 
 
