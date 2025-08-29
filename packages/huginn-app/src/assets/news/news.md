@@ -1,4 +1,4 @@
-### 🔧 Bug Fixes
+### 🚀 Custom Status!
 
-- Voice disconnection rate should now be way less
-- Notifications now show much more meaningful content
+- You can now choose your presence status in the app!
+- Some settings like theme is now synced across devices!
