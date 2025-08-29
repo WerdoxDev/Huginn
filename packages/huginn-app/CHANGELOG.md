@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.55.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.55.0...app@v0.55.1) (2025-08-29)
+
+
+### Bug Fixes
+
+* **app:** update news.md ([f8415a5](https://github.com/WerdoxDev/Huginn/commit/f8415a5ff5f22be33a2d9e8e8d561fb987b5774d))
+
 ## [0.55.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.54.4...app@v0.55.0) (2025-08-29)
 
 
