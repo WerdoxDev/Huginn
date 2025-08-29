@@ -7,8 +7,7 @@ import clsx from "clsx";
 import { useEffect, useState } from "react";
 import LoadingIcon from "./LoadingIcon";
 import { useHuginnWindow } from "@stores/windowStore";
-import { useUser } from "@hooks/api-hooks/userHooks";
-import { getUser } from "@lib/query-utils";
+import { presenceStatuses } from "@lib/utils";
 
 export default function UserAvatar(props: {
    userId: Snowflake;
@@ -25,12 +24,6 @@ export default function UserAvatar(props: {
 
    const presence = usePresence(props.userId);
    const [hasErrors, setHasErrors] = useState(false);
-
-   useEffect(() => {
-      if (presence && presence.activeSessions.length > 1) {
-         console.log(presence?.activeSessions, getUser(presence.userId));
-      }
-   }, [presence]);
 
    useEffect(() => {
       setHasErrors(false);
@@ -63,7 +56,7 @@ export default function UserAvatar(props: {
             <div
                className={clsx(
                   "absolute bottom-0 right-0 rounded-full",
-                  presence ? (presence.status === "online" ? "bg-positive-100" : "bg-transparent") : "bg-transparent",
+                  presence?.status && presence.status !== "offline" ? presenceStatuses[presence.status].color : "bg-transparent",
                )}
                style={{ width: statusSize, height: statusSize }}
             />

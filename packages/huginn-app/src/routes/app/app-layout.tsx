@@ -2,7 +2,7 @@ import { queryClient } from "@/root";
 import { QueryClientProvider } from "@tanstack/react-query";
 import ContextMenusRenderer from "@components/contextmenu/ContextMenusRenderer";
 import ModalsRenderer from "@components/modal/ModalsRenderer";
-import PHProvider from "@components/PHProvider";
+import PHProvider from "@contexts/PHProvider";
 import StartBackgroundSvg from "@components/StartBackgroundSvg";
 import TitleBar from "@components/TitleBar";
 import { useStartBackground } from "@contexts/authBackgroundContext";
@@ -20,7 +20,8 @@ import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { type ReactNode, useEffect } from "react";
 import { Outlet } from "react-router";
-import KeybindsProvider from "@contexts/keybindsProvider";
+import KeybindsProvider from "@contexts/KeybindsProvider";
+import SettingsProvider from "@contexts/SettingsProvider";
 
 export default function AppLayout() {
    const authBackground = useStartBackground();
@@ -48,27 +49,29 @@ export default function AppLayout() {
 
    return (
       <QueryClientProvider client={queryClient}>
-         <KeybindsProvider>
-            <ContextMenuProvider>
-               <NotificationProvider>
-                  <MainRenderer>
-                     <div
-                        className={clsx(
-                           "bg-surface-alt absolute inset-0",
-                           huginnWindow.environment === "desktop" && !huginnWindow.fullscreen && "top-6",
-                        )}
-                        style={isMainTransitioning ? { viewTransitionName: "start" } : undefined}
-                     >
-                        <StartBackgroundSvg state={authBackground.state} />
+         <SettingsProvider>
+            <KeybindsProvider>
+               <ContextMenuProvider>
+                  <NotificationProvider>
+                     <MainRenderer>
+                        <div
+                           className={clsx(
+                              "bg-surface-alt absolute inset-0",
+                              huginnWindow.environment === "desktop" && !huginnWindow.fullscreen && "top-6",
+                           )}
+                           style={isMainTransitioning ? { viewTransitionName: "start" } : undefined}
+                        >
+                           <StartBackgroundSvg state={authBackground.state} />
 
-                        <PHProvider>
-                           <Outlet />
-                        </PHProvider>
-                     </div>
-                  </MainRenderer>
-               </NotificationProvider>
-            </ContextMenuProvider>
-         </KeybindsProvider>
+                           <PHProvider>
+                              <Outlet />
+                           </PHProvider>
+                        </div>
+                     </MainRenderer>
+                  </NotificationProvider>
+               </ContextMenuProvider>
+            </KeybindsProvider>
+         </SettingsProvider>
       </QueryClientProvider>
    );
 }

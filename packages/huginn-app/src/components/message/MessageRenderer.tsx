@@ -1,4 +1,4 @@
-import { MessageContext } from "@contexts/messageProvider";
+import { MessageContext } from "@contexts/MessageProvider";
 import { useIsInView } from "@hooks/useIsInView";
 import { MessageType } from "@huginn/shared";
 import { useContext, useEffect } from "react";

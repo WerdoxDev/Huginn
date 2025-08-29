@@ -1,4 +1,4 @@
-import { MessageContext } from "@contexts/messageProvider";
+import { MessageContext } from "@contexts/MessageProvider";
 import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
 import clsx from "clsx";
 import { useContext, useMemo, useRef } from "react";

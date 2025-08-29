@@ -19,6 +19,7 @@ import {
    type HuginnErrorData,
    type HuginnErrorGroupWrapper,
    MessageType,
+   type PresenceStatus,
    type PresenceUser,
    type Snowflake,
    type UserPresence,
@@ -191,3 +192,10 @@ export function convertToAppUser(user: PresenceUser): AppUser {
 export function convertToAppPresence(presence: UserPresence): AppPresence {
    return { ...omit(presence, ["user"]), userId: presence.user.id };
 }
+
+export const presenceStatuses: Record<PresenceStatus, { text: string; color: string }> = {
+   offline: { text: "Offline", color: "bg-white/50" },
+   dnd: { text: "Do Not Disturb", color: "bg-negative-100" },
+   idle: { text: "Idle", color: "bg-caution-100" },
+   online: { text: "Online", color: "bg-positive-100" },
+} as const;

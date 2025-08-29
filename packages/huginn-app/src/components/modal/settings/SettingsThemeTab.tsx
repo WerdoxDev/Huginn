@@ -13,10 +13,10 @@ const themes: DropdownItem[] = [
 
 export default function SettingsThemeTab(props: SettingsTabProps) {
    const settings = useFilesStore();
-   const { setTheme } = useTheme();
+   // const { setTheme } = useTheme();
 
    function onThemeChange(item: DropdownItem) {
-      setTheme(item.value as ThemeType);
+      // setTheme(item.value as ThemeType);
       props.onChange?.({ theme: item.value as ThemeType });
    }
 

@@ -1,5 +1,5 @@
-import DropdownMenu from "@components/dropdown/DowndownMenu";
-import { type MenuItemsProps } from "@headlessui/react";
+import { DropdownMenu, type DropdownAnchor } from "@components/dropdown/DropdownMenu";
+import type { Placement } from "@floating-ui/react";
 import type { GatewayVoiceStateFlags } from "@huginn/shared";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
@@ -15,13 +15,13 @@ export default function StreamButton(props: {
    onChangeStream?: () => void;
    onOpenChanged?: (isOpen: boolean) => void;
    hideArrow?: boolean;
-   anchor?: MenuItemsProps["anchor"];
+   anchor?: DropdownAnchor;
 }) {
    const isStreaming = useMemo(() => props.voiceState.isStreaming, [props.voiceState]);
    const huginnWindow = useHuginnWindow();
 
    return isStreaming ? (
-      <DropdownMenu onOpenChanged={props.onOpenChanged} className={clsx("flex", props.className)}>
+      <DropdownMenu anchor={props.anchor} onOpenChanged={props.onOpenChanged} className={clsx("flex", props.className)}>
          {props.children}
          {!props.hideArrow && (
             <DropdownMenu.Button className="bg-primary-800 hover:bg-primary-600 ml-0.5 flex h-full items-center justify-center rounded-r-lg px-1 transition-colors">
@@ -30,7 +30,7 @@ export default function StreamButton(props: {
                }
             </DropdownMenu.Button>
          )}
-         <DropdownMenu.Items anchor={props.anchor ?? "top"} className="border-surface border">
+         <DropdownMenu.Items className="border-surface border">
             <DropdownMenu.Item color="negative" label="End Stream" onClick={props.onEndStream} />
             <DropdownMenu.Item label="Change Stream" onClick={props.onChangeStream}>
                <IconMingcuteTransfer3Fill />
@@ -38,9 +38,9 @@ export default function StreamButton(props: {
          </DropdownMenu.Items>
       </DropdownMenu>
    ) : (
-      <DropdownMenu onOpenChanged={props.onOpenChanged} className={props.className}>
+      <DropdownMenu anchor={props.anchor} onOpenChanged={props.onOpenChanged} className={props.className}>
          {props.children}
-         <DropdownMenu.Items anchor={props.anchor ?? "top"} className="border-surface border">
+         <DropdownMenu.Items className="border-surface border">
             <DropdownMenu.Item label="Screen Share" onClick={props.onStartScreenShare}>
                <IconMingcuteMonitorFill />
             </DropdownMenu.Item>

@@ -6,7 +6,7 @@ import { useContext, useMemo } from "react";
 import type { RenderElementProps } from "slate-react";
 import type { EmbedElement as SlateEmbedElement } from "@/index";
 import { useContextMenu } from "@stores/contextMenuStore";
-import { MessageContext } from "@contexts/messageProvider";
+import { MessageContext } from "@contexts/MessageProvider";
 
 export default function EmbedElement(props: RenderElementProps) {
    const { url, description, title, thumbnail, video } = props.element as SlateEmbedElement;

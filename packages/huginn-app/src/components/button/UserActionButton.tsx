@@ -43,6 +43,9 @@ export default function UserActionButton(props: {
             onPointerDown={(e) => {
                e.stopPropagation();
             }}
+            onMouseDown={(e) => {
+               e.stopPropagation();
+            }}
             className={clsx(
                "group rounded-lg p-1.5 text-white transition-colors",
                colors[(props.isActive && props.activeColor ? props.activeColor : props.color) ?? "none"],

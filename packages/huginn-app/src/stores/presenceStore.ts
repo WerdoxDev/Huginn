@@ -1,4 +1,4 @@
-import type { Snowflake, UserPresence } from "@huginn/shared";
+import { type Snowflake } from "@huginn/shared";
 import { produce } from "immer";
 import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
@@ -15,14 +15,17 @@ type StoreType = ReturnType<typeof initialStore>;
 
 const store = createStore(
    combine(initialStore(), (set) => ({
-      updatePresence: (presence: UserPresence) =>
+      updatePresence: (userId: Snowflake, options: Partial<AppPresence>) =>
          set(
             produce((draft: StoreType) => {
-               const existingIndex = draft.presences.findIndex((x) => x.userId === presence.user.id);
+               const existingIndex = draft.presences.findIndex((x) => x.userId === userId);
                if (existingIndex !== -1) {
-                  draft.presences[existingIndex] = { ...draft.presences[existingIndex], ...convertToAppPresence(presence) };
+                  draft.presences[existingIndex] = {
+                     ...draft.presences[existingIndex],
+                     ...options,
+                  };
                } else {
-                  draft.presences.push(convertToAppPresence(presence));
+                  draft.presences.push(options as AppPresence);
                }
             }),
          ),
@@ -38,21 +41,21 @@ export function initializePresence() {
 
    const unlisten = client.gateway.listen("ready", (d) => {
       store.setState({ presences: [] });
-      store.getState().updatePresence({
-         user: d.user,
-         status: clientStore.getState().readyData?.userSettings?.status || "offline",
+      store.getState().updatePresence(d.user.id, {
+         userId: d.user.id,
+         status: d.userSettings.status || "online",
          activeSessions: [client.gateway.sessionId!],
       });
 
       if (d.presences) {
          for (const presence of d.presences) {
-            store.getState().updatePresence(presence);
+            store.getState().updatePresence(presence.user.id, convertToAppPresence(presence));
          }
       }
    });
 
    const unlisten2 = client.gateway.listen("presence_update", (d) => {
-      store.getState().updatePresence(d);
+      store.getState().updatePresence(d.user.id, convertToAppPresence(d));
    });
 
    return () => {
@@ -61,7 +64,7 @@ export function initializePresence() {
    };
 }
 
-export function usePresence(userId: Snowflake) {
+export function usePresence(userId?: Snowflake) {
    const thisStore = useStore(store);
 
    return useMemo(() => thisStore.presences.find((x) => x.userId === userId), [thisStore.presences, userId]);
@@ -76,4 +79,8 @@ export function usePresences(userIds: Snowflake[]) {
    }
 
    return { presences, getPresence };
+}
+
+export function usePresenceStore() {
+   return useStore(store);
 }

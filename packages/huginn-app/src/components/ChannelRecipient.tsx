@@ -23,7 +23,7 @@ export default function ChannelRecipient(props: { channelId: Snowflake; isOwner:
             avatarHash={props.recipient.avatar}
             className={clsx((!presence || presence?.status === "offline") && "opacity-30", "group-hover/recipient:opacity-100")}
          />
-         <div className={clsx(presence?.status === "online" ? "text-text/70" : "text-text/30", "group-hover/recipient:text-text")}>
+         <div className={clsx(presence && presence.status !== "offline" ? "text-text/70" : "text-text/30", "group-hover/recipient:text-text")}>
             {props.recipient.displayName}
          </div>
          {state?.status === "pending" && state?.variables?.recipients.some((x) => x === props.recipient.id) ? (

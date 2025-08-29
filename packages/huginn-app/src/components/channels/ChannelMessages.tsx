@@ -1,4 +1,4 @@
-import { MessageProvider } from "@contexts/messageProvider";
+import { MessageProvider } from "@contexts/MessageProvider";
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useMessageAcker } from "@hooks/mutations/useMessageAcker";
 import { useDynamicRefs } from "@hooks/useDynamicRefs";

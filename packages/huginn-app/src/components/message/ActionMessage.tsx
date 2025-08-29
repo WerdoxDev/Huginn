@@ -1,5 +1,5 @@
 import Tooltip from "@components/tooltip/Tooltip";
-import { MessageContext } from "@contexts/messageProvider";
+import { MessageContext } from "@contexts/MessageProvider";
 import { useUser, useUsers } from "@hooks/api-hooks/userHooks";
 import { MessageType } from "@huginn/shared";
 import clsx from "clsx";

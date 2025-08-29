@@ -10,9 +10,9 @@ import Tooltip from "../tooltip/Tooltip";
 import UserActionButton from "@components/button/UserActionButton";
 import StreamButton from "@components/button/StreamButton";
 import VoiceControlButton from "@components/button/VoiceControlButton";
-import DropdownMenu from "@components/dropdown/DowndownMenu";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 import { useChannel } from "@hooks/api-hooks/channelHooks";
+import { DropdownMenu } from "@components/dropdown/DropdownMenu";
 
 const statuses: Record<VoiceStatus, { text: string; color?: string }> = {
    connected: { text: "RTC Signalling...", color: "!text-caution-100" },
@@ -109,7 +109,7 @@ export default function VoiceStatus() {
             <div className="flex w-full gap-x-2">
                <StreamButton
                   voiceState={localVoiceState}
-                  anchor={{ gap: "8px" }}
+                  anchor={{ placement: "top", gap: 4 }}
                   onChangeStream={changeStream}
                   onEndStream={endStream}
                   onStartAudioStream={startAudioStream}

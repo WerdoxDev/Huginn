@@ -248,11 +248,11 @@ const store = createStore(
 const ThemeContext = createContext<typeof store>({} as typeof store);
 
 export function ThemeProvider(props: { children?: ReactNode }) {
-   const settings = useFilesStore();
+   const files = useFilesStore();
 
    useLayoutEffect(() => {
-      store.getState().setTheme(settings.settings.theme);
-   }, []);
+      store.getState().setTheme(files.settings.theme);
+   }, [files.settings.theme]);
 
    return <ThemeContext.Provider value={store}>{props.children}</ThemeContext.Provider>;
 }

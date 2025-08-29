@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { useContext, useEffect, useRef, useState } from "react";
 import LoadingIcon from "./LoadingIcon";
 import { useContextMenu } from "@stores/contextMenuStore";
-import { MessageContext } from "@contexts/messageProvider";
+import { MessageContext } from "@contexts/MessageProvider";
 
 export default function ImagePreview(props: {
    url: string;

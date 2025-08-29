@@ -1,12 +1,12 @@
 import { Transition } from "@headlessui/react";
 import type { GatewayVoiceStateFlags } from "@huginn/shared";
 import clsx from "clsx";
-import DropdownMenu from "./dropdown/DowndownMenu";
 import Tooltip from "./tooltip/Tooltip";
 import VoiceControlButton from "./button/VoiceControlButton";
 import StreamButton from "./button/StreamButton";
 import { useEffect, useState, type RefObject } from "react";
 import { useHover } from "@hooks/useHover";
+import { DropdownMenu } from "./dropdown/DropdownMenu";
 
 export default function VoiceControls(props: {
    show: boolean;
@@ -99,7 +99,7 @@ export default function VoiceControls(props: {
                         onEndStream={props.onEndStream}
                         onChangeStream={props.onChangeStream}
                         onOpenChanged={onStreamButtonOpenChanged}
-                        anchor={{ gap: "12px", to: "top" }}
+                        anchor={{ placement: "top", gap: 12 }}
                      >
                         <VoiceControlButton
                            className={clsx(

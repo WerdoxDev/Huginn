@@ -1,5 +1,14 @@
 import { HuginnClient } from "@huginn/api";
-import { type APIPublicUser, error, type GatewayReadyData, type GatewayStatus, log, type Snowflake, type VoiceStatus } from "@huginn/shared";
+import {
+   type APIPublicUser,
+   error,
+   type GatewayReadyData,
+   type GatewayStatus,
+   log,
+   type Snowflake,
+   type UserSettings,
+   type VoiceStatus,
+} from "@huginn/shared";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 import { filesStore } from "./filesStore";
@@ -15,18 +24,13 @@ const initialStore = () => ({
    gatewayStatus: undefined as GatewayStatus | undefined,
    readyData: undefined as GatewayReadyData | undefined,
    isInitialized: false,
+   userSettings: undefined as UserSettings | undefined,
    client: undefined as HuginnClient | undefined,
 });
 
 // type StoreType = ReturnType<typeof initialStore>;
 
-const store = createStore(
-   combine(initialStore(), (set) => ({
-      setGatewayStatus: (status: GatewayStatus) => set({ gatewayStatus: status }),
-      setVoiceStatus: (status: VoiceStatus) => set({ voiceStatus: status }),
-      setReadyData: (data: GatewayReadyData) => set({ readyData: data }),
-   })),
-);
+const store = createStore(combine(initialStore(), (set) => ({})));
 
 export async function setHostnamesFromExternal() {
    log("app:client-store", "default", "set hostnames from external");
@@ -95,7 +99,7 @@ export function initializeClient() {
 
    unlisteners.push(
       thisStore.client?.gateway.listen("ready", (d) => {
-         store.getState().setReadyData(d);
+         store.setState({ readyData: d, userSettings: d.userSettings });
 
          const channelUsers = d.privateChannels.flatMap((x) => x.recipients);
          const relationUsers = d.relationships.map((x) => x.user);
@@ -148,8 +152,14 @@ export function initializeClient() {
       }),
    );
 
-   unlisteners.push(thisStore.client?.gateway.listen("status_changed", (status) => store.getState().setGatewayStatus(status)));
-   unlisteners.push(thisStore.client?.voice.listen("status_changed", (status) => store.getState().setVoiceStatus(status)));
+   unlisteners.push(
+      thisStore.client?.gateway.listen("settings_update", (d) => {
+         store.setState((state) => ({ userSettings: state.userSettings ? { ...state.userSettings, ...d } : undefined }));
+      }),
+   );
+
+   unlisteners.push(thisStore.client?.gateway.listen("status_changed", (status) => store.setState({ gatewayStatus: status })));
+   unlisteners.push(thisStore.client?.voice.listen("status_changed", (status) => store.setState({ voiceStatus: status })));
 
    store.setState({ isInitialized: true });
 

@@ -1,7 +1,7 @@
 import type { RenderElementProps } from "slate-react";
 import type { LinkElement as SlateLinkElement } from "@/index";
 import { useContextMenu } from "@stores/contextMenuStore";
-import { MessageContext } from "@contexts/messageProvider";
+import { MessageContext } from "@contexts/MessageProvider";
 import { useContext } from "react";
 import { useOpen } from "@hooks/useOpen";
 

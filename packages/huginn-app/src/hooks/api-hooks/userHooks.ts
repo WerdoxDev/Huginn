@@ -3,7 +3,7 @@ import { getUserOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useSuspenseQueries, useSuspenseQuery } from "@tanstack/react-query";
 
-export function useUser(id?: Snowflake) {
+export function useUser(id: Snowflake) {
    const client = useClient();
    const { data } = useSuspenseQuery(getUserOptions(client!, id));
    return data;
