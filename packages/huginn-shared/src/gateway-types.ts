@@ -5,6 +5,7 @@ import type {
    APIRelationshipWithoutOwner,
    APIUser,
    DirectChannel,
+   PresenceStatus,
    Tokens,
    UserPresence,
    UserSettings,
@@ -21,6 +22,7 @@ export enum GatewayOperations {
    DISPATCH = 4,
    RESUME = 5,
    VOICE_STATE_UPDATE = 6,
+   PRESENCE_UPDATE = 7,
 }
 
 export type GatewayOperationTypes = {
@@ -29,6 +31,7 @@ export type GatewayOperationTypes = {
    [GatewayOperations.HEARTBEAT]: GatewayHeartbeat;
    [GatewayOperations.HEARTBEAT_ACK]: GatewayHeartbeatAck;
    [GatewayOperations.DISPATCH]: GatewayDispatch;
+   [GatewayOperations.PRESENCE_UPDATE]: GatewayUpdatePresence;
    [GatewayOperations.VOICE_STATE_UPDATE]: GatewayUpdateVoiceState;
    [GatewayOperations.RESUME]: GatewayResume;
 };
@@ -63,6 +66,7 @@ export type GatewayEvents = {
    call_create: GatewayCallCreateData;
    call_update: GatewayCallUpdateData;
    call_delete: GatewayCallDeleteData;
+   settings_update: GatewaySettingsUpdateData;
 };
 
 export type GatewayPayload<Event extends keyof GatewayEvents | undefined = undefined> = Event extends undefined
@@ -232,3 +236,14 @@ export type GatewayCallUpdateData = GatewayCallState;
 export type GatewayCallDeleteData = {
    channelId: Snowflake;
 };
+
+export type GatewayUpdatePresence = {
+   op: GatewayOperations.PRESENCE_UPDATE;
+   d: GatewayUpdatePresenceData;
+};
+
+export type GatewayUpdatePresenceData = {
+   status: PresenceStatus;
+};
+
+export type GatewaySettingsUpdateData = Partial<UserSettings>;

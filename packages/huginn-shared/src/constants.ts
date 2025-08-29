@@ -1,3 +1,5 @@
+import type { UserSettings } from ".";
+
 export const constants = {
    USERNAME_MIN_LENGTH: 4,
    USERNAME_MAX_LENGTH: 20,
@@ -23,4 +25,9 @@ export const constants = {
    EMBED_MEDIA_MAX_HEIGHT: 300,
    VOICE_CLIENT_PING_INTERVAL: 2000,
    CALL_RINGING_TIMEOUT: 10000,
+};
+
+export const defaultServerSettings: UserSettings = {
+   status: "online",
+   theme: undefined,
 };

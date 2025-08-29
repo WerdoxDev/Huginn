@@ -91,6 +91,14 @@ export const Routes = {
 
    /**
     * Route for:
+    * - PATCH '/users/@me/settings'
+    */
+   userSettings() {
+      return `/users/@me/settings` as const;
+   },
+
+   /**
+    * Route for:
     * - GET '/channels/{channel.id}'
     */
    channel(id: Snowflake): `/channels/${string}` {
@@ -151,8 +159,8 @@ export const Routes = {
     * - POST '/log'
     */
    log(): "/log" {
-      return "/log"
-   }
+      return "/log";
+   },
 };
 
 export const CDNRoutes = {

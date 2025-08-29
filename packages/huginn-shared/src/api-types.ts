@@ -342,6 +342,7 @@ export type UserPresence = {
 export type PresenceUser = Partial<APIPublicUser> & { id: Snowflake };
 
 export type UserSettings = {
+   theme?: "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal";
    status: PresenceStatus;
 };
 
@@ -358,3 +359,6 @@ export type APIReadState = {
 export type APIReadStateWithoutUser = Omit<APIReadState, "userId">;
 
 export type APIPostLogJSONBody = Array<{ type: "log" | "error"; section: string; level?: string; args: LogArgs[] }>;
+
+export type APIPatchUserSettingsJSONBody = Partial<UserSettings>;
+export type APIPatchUserSettingsResult = UserSettings;
