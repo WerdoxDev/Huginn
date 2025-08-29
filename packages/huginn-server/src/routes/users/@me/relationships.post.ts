@@ -1,4 +1,4 @@
-import { createErrorFactory, createHuginnError, createRoute, tryCatch, validator } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, createRoute, invalidFormBody, singleError, tryCatch, validator } from "@huginn/backend-shared";
 import { assertError, prisma } from "@huginn/backend-shared/database";
 import { selectRelationshipUser } from "@huginn/backend-shared/database/common";
 import { DBErrorType } from "@huginn/backend-shared/types";
@@ -15,13 +15,13 @@ createRoute("POST", "/api/users/@me/relationships", verifyJwt(), validator("json
    const body = c.req.valid("json");
 
    if (!body.username) {
-      return createHuginnError(c, createErrorFactory(Errors.invalidFormBody()));
+      return invalidFormBody(c);
    }
 
    const [error, userId] = await tryCatch(async () => (await prisma.user.getByUsername(body.username)).id);
 
    if (assertError(error, DBErrorType.NULL_USER)) {
-      return createHuginnError(c, createErrorFactory(Errors.noUserWithUsername()), HttpCode.NOT_FOUND);
+      return singleError(c, Errors.noUserWithUsername(), HttpCode.NOT_FOUND);
    }
    if (error) throw error;
 
@@ -32,11 +32,11 @@ export async function relationshipPost(c: Context, userId: Snowflake) {
    const payload = c.get("tokenPayload");
 
    if (userId === payload.id) {
-      return createHuginnError(c, createErrorFactory(Errors.relationshipSelfRequest()), HttpCode.BAD_REQUEST);
+      return singleError(c, Errors.relationshipSelfRequest(), HttpCode.BAD_REQUEST);
    }
 
    if (await prisma.relationship.exists({ ownerId: BigInt(payload.id), userId: BigInt(userId), type: RelationshipType.FRIEND })) {
-      return createHuginnError(c, createErrorFactory(Errors.relationshipExists()), HttpCode.BAD_REQUEST);
+      return singleError(c, Errors.relationshipExists(), HttpCode.BAD_REQUEST);
    }
 
    if (

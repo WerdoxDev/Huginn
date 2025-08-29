@@ -233,18 +233,26 @@ export function expectRelationshipExactSchema(
    expect(handled, `Relationship with the type of ${type} was not handled`).toBeTrue();
 }
 
-export function expectPresenceExactSchema(presence: object, user: TestUser, status: PresenceStatus, activeSessions: Snowflake[]) {
+export function expectPresenceExactSchema(
+   presence: object,
+   user: TestUser,
+   status: PresenceStatus,
+   activeSessions: Snowflake[],
+   expectFullUser: boolean,
+) {
    const castedPresence = presence as UserPresence;
    expect(castedPresence.status).toBe(status);
+   // expect(castedPresence.activeSessions).toBe(activeSessions);
 
-   if (status === "online") {
-      if (Object.keys(castedPresence.user).length === 1) {
-         expect(presence).toStrictEqual({ user: { id: user.id.toString() }, status: castedPresence.status, activeSessions });
-      } else {
-         expectUserExactSchema(castedPresence.user, user.id, user.username, user.displayName, user.avatar, user.flags);
-      }
-   } else if (status === "offline") {
+   if (status === "offline") {
       expect(presence).toStrictEqual({ user: { id: user.id.toString() }, status: "offline", activeSessions });
+      return;
+   }
+
+   if (expectFullUser) {
+      expectUserExactSchema(castedPresence.user, user.id, user.username, user.displayName, user.avatar, user.flags);
+   } else {
+      expect(presence).toStrictEqual({ user: { id: user.id.toString() }, status: castedPresence.status, activeSessions });
    }
 }
 

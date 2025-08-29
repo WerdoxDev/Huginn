@@ -9,7 +9,9 @@ import {
    getReadyWebSocket,
    multiDone,
    testIsDispatch,
+   wsSend,
 } from "#tests/utils";
+import { GatewayOperations, type APIPatchCurrentUserJSONBody, type GatewayPayload } from "@huginn/shared";
 
 describe("Presence", () => {
    test("should send relationship presences with the websocket ready message", async (done) => {
@@ -27,7 +29,7 @@ describe("Presence", () => {
          if (testIsDispatch(data, "ready")) {
             // user2's presence should be sent to user
             expect(data.d.presences).toHaveLength(1);
-            expectPresenceExactSchema(data.d.presences[0], user2, "online", [sessionId]);
+            expectPresenceExactSchema(data.d.presences[0], user2, "online", [sessionId], false);
             done();
          }
       };
@@ -46,7 +48,7 @@ describe("Presence", () => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "presence_update")) {
             // user2's presence should be sent to user
-            expectPresenceExactSchema(data.d, user2, "online", [sessionId]);
+            expectPresenceExactSchema(data.d, user2, "online", [sessionId], false);
             done();
          }
       };
@@ -70,7 +72,7 @@ describe("Presence", () => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "presence_update") && data.d.status === "offline") {
             // user2's presence should be sent to user
-            expectPresenceExactSchema(data.d, user2, "offline", []);
+            expectPresenceExactSchema(data.d, user2, "offline", [], false);
             done();
          }
       };
@@ -90,7 +92,7 @@ describe("Presence", () => {
       ws.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "presence_update")) {
-            expectPresenceExactSchema(data.d, user2, "online", [sessionId2]);
+            expectPresenceExactSchema(data.d, user2, "online", [sessionId2], false);
             tryDone();
          }
       };
@@ -98,7 +100,7 @@ describe("Presence", () => {
       ws2.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "presence_update")) {
-            expectPresenceExactSchema(data.d, user, "online", [sessionId]);
+            expectPresenceExactSchema(data.d, user, "online", [sessionId], false);
             tryDone();
          }
       };
@@ -118,7 +120,7 @@ describe("Presence", () => {
       ws.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "presence_update")) {
-            expectPresenceExactSchema(data.d, user2, "offline", []);
+            expectPresenceExactSchema(data.d, user2, "offline", [], false);
             tryDone();
          }
       };
@@ -126,7 +128,7 @@ describe("Presence", () => {
       ws2.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "presence_update")) {
-            expectPresenceExactSchema(data.d, user, "offline", []);
+            expectPresenceExactSchema(data.d, user, "offline", [], false);
             tryDone();
          }
       };
@@ -152,6 +154,7 @@ describe("Presence", () => {
                user,
                updateCount === 2 ? "offline" : "online",
                updateCount === 0 ? [sessionId1, sessionId1_2] : updateCount === 1 ? [sessionId1_2] : [],
+               false,
             );
             tryDone();
             updateCount++;
@@ -164,5 +167,45 @@ describe("Presence", () => {
       ws1.close();
       await new Promise((r) => setTimeout(r, 500));
       ws1_2.close();
+   });
+
+   test("should send a presence_update to other subscribed users when a user is updated", async (done) => {
+      const [user, user2] = await createTestUsers(2);
+
+      const { sessionId: sessionId1 } = await getReadyWebSocket(user);
+      const { ws: ws2 } = await getReadyWebSocket(user2);
+      await createTestRelationships(user.id, user2.id, true);
+
+      ws2.onmessage = (event) => {
+         const data = JSON.parse(event.data);
+         if (testIsDispatch(data, "presence_update")) {
+            expectPresenceExactSchema(data.d, { ...user, displayName: "test-edited" }, "online", [sessionId1], true);
+            done();
+         }
+      };
+
+      const edit: APIPatchCurrentUserJSONBody = { displayName: "test-edited" };
+      await testHandler("/api/users/@me", authHeader(user.accessToken), "PATCH", edit);
+
+      // const presenceUpdateData: GatewayPayload = { op: GatewayOperations.PRESENCE_UPDATE, d: { status: "dnd" } };
+   });
+
+   test("should send a presence_update to other subscribed users when a user changes their presence status", async (done) => {
+      const [user, user2] = await createTestUsers(2);
+
+      const { ws: ws1, sessionId: sessionId1 } = await getReadyWebSocket(user);
+      const { ws: ws2 } = await getReadyWebSocket(user2);
+      await createTestRelationships(user.id, user2.id, true);
+
+      ws2.onmessage = (event) => {
+         const data = JSON.parse(event.data);
+         if (testIsDispatch(data, "presence_update")) {
+            expectPresenceExactSchema(data.d, user, "dnd", [sessionId1], false);
+            done();
+         }
+      };
+
+      const updateData: GatewayPayload = { op: GatewayOperations.PRESENCE_UPDATE, d: { status: "dnd" } };
+      wsSend(ws1, updateData);
    });
 });

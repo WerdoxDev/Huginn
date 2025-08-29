@@ -18,13 +18,13 @@ import {
    GatewayOperations,
    type GatewayPayload,
    type GatewayResumeData,
+   type GatewayUpdatePresenceData,
    type GatewayUpdateVoiceStateData,
    log,
    merge,
    type UserSettings,
    WorkerID,
 } from "@huginn/shared";
-import type { Peer } from "crossws";
 import { verifyToken } from "#utils/token-factory";
 import { dispatchToTopic } from "../utils/gateway-utils";
 import { ClientSession } from "./client-session";
@@ -124,7 +124,10 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
 
       switch (data.op) {
          case GatewayOperations.VOICE_STATE_UPDATE:
-            this.handleUpdateVoiceState(session.peer, data.d);
+            this.handleUpdateVoiceState(session, data.d);
+            break;
+         case GatewayOperations.PRESENCE_UPDATE:
+            this.handleUpdatePresence(session, data.d);
             break;
          default:
             session.peer.close(GatewayCode.UNKNOWN_OPCODE, "UNKNOWN_OPCODE");
@@ -190,8 +193,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       }
 
       // Settings
-      //TODO: ADD ACTUAL PROPER SETTINGS
-      const settings: UserSettings = { status: "online" };
+      const settings = await prisma.settings.getOrCreateSettings(user.id);
 
       const readyData: GatewayPayload<"ready"> = {
          op: GatewayOperations.DISPATCH,
@@ -210,7 +212,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       };
 
       this.send(session.peer, readyData);
-      this.presenceManager.setUserPresence(user, session, settings);
+      this.presenceManager.setUserPresence(user.id, session, settings);
 
       log("server:gateway", "detail-identify", "end", "sid:", session.sessionId);
    }
@@ -238,12 +240,13 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
          s: result.oldSession.getIncreasedSequence(),
       };
 
+      const settings = await prisma.settings.getOrCreateSettings(result.user.id);
+
       this.send(result.oldSession.peer, resumedData);
-      this.presenceManager.setUserPresence(result.user, result.oldSession, { status: "online" });
+      this.presenceManager.setUserPresence(result.user.id, result.oldSession, settings);
    }
 
-   private async handleUpdateVoiceState(peer: Peer, data: GatewayUpdateVoiceStateData) {
-      const session = this.sessions.get(peer.context.sessionId);
+   private async handleUpdateVoiceState(session: ClientSession, data: GatewayUpdateVoiceStateData) {
       const userId = session?.user?.id;
 
       log(
@@ -251,7 +254,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
          "recv",
          "update voice state",
          "pid:",
-         peer.id,
+         session.peer.id,
          "uid:",
          userId,
          "sm:",
@@ -275,6 +278,19 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       if (data.channelId && (previousState?.channelId !== data.channelId || previousState.sessionId !== session.sessionId)) {
          const token = await createVoiceToken(userId);
          dispatchToTopic(session.sessionId, "voice_server_update", { token });
+      }
+   }
+
+   private async handleUpdatePresence(session: ClientSession, data: GatewayUpdatePresenceData) {
+      const userId = session.user?.id;
+
+      log("server:gateway", "recv", "update presence", "sid:", session.sessionId, "uid:", userId, "sts:", data.status);
+
+      if (userId) {
+         this.presenceManager.updateUserPresence(userId, undefined, data.status);
+
+         await prisma.settings.updateSettings(userId, { status: data.status });
+         dispatchToTopic(userId, "settings_update", { status: data.status });
       }
    }
 }

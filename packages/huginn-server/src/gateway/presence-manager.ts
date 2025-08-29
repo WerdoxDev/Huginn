@@ -1,42 +1,50 @@
-import { type PresenceUser, type Snowflake, type UserPresence, type UserSettings, log, pick } from "@huginn/shared";
+import { type PresenceStatus, type PresenceUser, type Snowflake, type UserPresence, type UserSettings, log, omit, pick } from "@huginn/shared";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import type { ClientSession } from "./client-session";
+import type { ServerUserPresence } from "@huginn/backend-shared";
 
 export class PresenceManager {
-   private presences: Map<Snowflake, UserPresence>;
+   private presences: Map<Snowflake, ServerUserPresence>;
 
    public constructor() {
       this.presences = new Map();
    }
 
-   public setUserPresence(user: PresenceUser, session: ClientSession, settings: UserSettings) {
-      log("server:presence-manager", "default", "set", "uid:", user.id, "sid:", session.sessionId, "sts:", settings.status);
+   public setUserPresence(userId: Snowflake, session: ClientSession, settings: UserSettings) {
+      log("server:presence-manager", "default", "set", "uid:", userId, "sid:", session.sessionId, "sts:", settings.status);
 
-      const existingPresence = this.presences.get(user.id);
+      const existingPresence = this.presences.get(userId);
 
-      const presence: UserPresence = {
-         user: { id: user.id },
+      const presence: ServerUserPresence = {
+         userId: userId,
          status: existingPresence?.status ?? settings.status,
          activeSessions: [...(existingPresence?.activeSessions ?? []).filter((x) => x !== session.sessionId), session.sessionId],
       };
 
-      log("server:presence-manager", "detail", "active sessions", "uid:", user.id, presence.activeSessions.join(", "));
+      log("server:presence-manager", "detail", "active sessions", "uid:", userId, presence.activeSessions.join(", "));
 
-      this.presences.set(user.id, presence);
+      this.presences.set(userId, presence);
 
-      dispatchToTopic(`${user.id}_presence`, "presence_update", presence);
+      if (presence.status !== "offline") {
+         log("server:presence-manager", "send", "presence_update", "uid:", userId, "sts:", presence.status);
+         dispatchToTopic(`${userId}_presence`, "presence_update", this.convertToGatewayPresence(presence, { id: userId }));
+      }
    }
 
-   public updateUserPresence(user: PresenceUser) {
-      log("server:presence-manager", "default", "update", "uid:", user.id);
+   public updateUserPresence(userId: Snowflake, user?: PresenceUser, status?: PresenceStatus) {
+      log("server:presence-manager", "default", "update", "uid:", userId);
 
-      const existingPresence = this.presences.get(user.id);
+      const existingPresence = this.presences.get(userId);
       if (existingPresence) {
-         const newPresence = { ...existingPresence, user: pick(user, ["id", "avatar", "displayName", "flags", "username"]) };
-         this.presences.set(user.id, newPresence);
+         const newPresence: ServerUserPresence = {
+            ...existingPresence,
+            userId: userId,
+            status: status ?? existingPresence.status,
+         };
+         this.presences.set(userId, newPresence);
 
-         log("server:presence-manager", "send", "presence_update", "uid:", user.id, "sts:", newPresence.status);
-         dispatchToTopic(`${user.id}_presence`, "presence_update", newPresence);
+         log("server:presence-manager", "send", "presence_update", "uid:", userId, "sts:", newPresence.status);
+         dispatchToTopic(`${userId}_presence`, "presence_update", this.convertToGatewayPresence(newPresence, user ?? { id: userId }));
       }
    }
 
@@ -52,12 +60,15 @@ export class PresenceManager {
       const newActiveSessions = presence.activeSessions.filter((x) => x !== session.sessionId);
       const newStatus = newActiveSessions.length === 0 ? "offline" : presence.status;
 
-      log("server:presence-manager", "send", "presence_update", "uid:", userId, "nsts:", newStatus);
-      dispatchToTopic(`${userId}_presence`, "presence_update", {
-         user: { id: userId },
-         status: newStatus,
-         activeSessions: newActiveSessions,
-      });
+      // Only send the user presence to others if it's not already set to offline. This is to keep a user who set their status to offline be no different than an actual offline user
+      if (presence.status !== "offline") {
+         log("server:presence-manager", "send", "presence_update", "uid:", userId, "nsts:", newStatus);
+         dispatchToTopic(`${userId}_presence`, "presence_update", {
+            user: { id: userId },
+            status: newStatus,
+            activeSessions: newActiveSessions,
+         });
+      }
 
       // it's length being 0 means it's the only session. So we can easily remove it
       if (newActiveSessions.length === 0) {
@@ -77,7 +88,7 @@ export class PresenceManager {
       const presences: UserPresence[] = [];
       for (const [id, presence] of this.presences) {
          if (subscriptions.has(`${id}_presence`)) {
-            presences.push(presence);
+            presences.push(this.convertToGatewayPresence(presence, { id: presence.userId }));
          }
       }
 
@@ -88,13 +99,17 @@ export class PresenceManager {
       return this.presences.get(userId);
    }
 
-   public sendToUser(senderId: Snowflake, receiverId: Snowflake, offlineStatus?: boolean) {
-      const presence: UserPresence | undefined = offlineStatus
-         ? { user: { id: receiverId }, status: "offline", activeSessions: [] }
-         : this.presences.get(receiverId);
+   public sendToUser(whomToSendId: Snowflake, targetId: Snowflake, offlineStatus?: boolean) {
+      const presence: ServerUserPresence | undefined = offlineStatus
+         ? { userId: targetId, status: "offline", activeSessions: [] }
+         : this.presences.get(targetId);
       if (presence) {
-         log("server:presence-manager", "send", "to user", "seid:", senderId, "rid:", receiverId, "osts:", offlineStatus);
-         dispatchToTopic(senderId, "presence_update", presence);
+         log("server:presence-manager", "send", "to user", "wid:", whomToSendId, "tid:", targetId, "osts:", offlineStatus);
+         dispatchToTopic(whomToSendId, "presence_update", this.convertToGatewayPresence(presence, { id: targetId }));
       }
+   }
+
+   public convertToGatewayPresence(presence: ServerUserPresence, user: PresenceUser): UserPresence {
+      return { ...omit(presence, ["userId"]), user: pick(user, ["id", "avatar", "displayName", "flags", "username"]) };
    }
 }
