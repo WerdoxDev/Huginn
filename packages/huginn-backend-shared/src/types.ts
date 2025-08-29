@@ -1,4 +1,4 @@
-import type { APIEmbed, APIPostAttachmentJSONBody, APIThumbnail, APIVideo, Snowflake, WorkerID } from "@huginn/shared";
+import type { APIEmbed, APIPostAttachmentJSONBody, APIThumbnail, APIVideo, Snowflake, UserPresence, WorkerID } from "@huginn/shared";
 
 export enum DBErrorType {
    INVALID_ID = "INVALID_ID",
@@ -7,6 +7,7 @@ export enum DBErrorType {
    NULL_MESSAGE = "NULL_MESSAGE",
    NULL_RELATIONSHIP = "NULL_RELATIONSHIP",
    NULL_READ_STATE = "NULL_READ_STATE",
+   NULL_SETTINGS = "NULL_SETTINGS",
 }
 
 export enum CDNErrorType {
@@ -26,6 +27,8 @@ export type DBAttachment = Omit<APIPostAttachmentJSONBody, "id"> & {
    width?: number;
    flags: number;
 };
+
+export type ServerUserPresence = Omit<UserPresence, "user"> & { userId: Snowflake };
 
 export type DBCall = { endedTimestamp?: Date; participants: Snowflake[] };
 

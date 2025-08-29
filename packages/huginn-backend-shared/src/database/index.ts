@@ -9,6 +9,7 @@ import { messagesExtension } from "./message";
 import { readStateExtension } from "./readState";
 import { relationshipExtension } from "./relationship";
 import { userExtension } from "./user";
+import { settingsExtension } from "./settings";
 
 // export const prismaBase = new PrismaClient({ omit: { user: { password: true } } }).$extends({
 export const prismaBase = new PrismaClient().$extends(withOptimize({ apiKey: process.env.OPTIMIZE_API_KEY ?? "", enable: false }));
@@ -35,7 +36,8 @@ export const prisma = prismaBase
    .$extends(relationshipExtension)
    .$extends(readStateExtension)
    .$extends(embedExtension)
-   .$extends(attachmentExtension);
+   .$extends(attachmentExtension)
+   .$extends(settingsExtension);
 
 // let longest = 0;
 // prismaBase.$on("query", (e) => {
