@@ -1,4 +1,12 @@
-import type { GatewayPayload, GatewayStatus, GatewayUpdateVoiceState, GatewayVoiceState, GatewayVoiceStateFlags, Snowflake } from "@huginn/shared";
+import type {
+   GatewayPayload,
+   GatewayStatus,
+   GatewayUpdatePresenceData,
+   GatewayUpdateVoiceState,
+   GatewayVoiceState,
+   GatewayVoiceStateFlags,
+   Snowflake,
+} from "@huginn/shared";
 import {
    error,
    GatewayCode,
@@ -334,7 +342,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
          return;
       }
 
-      const updateVoiceStateData: GatewayUpdateVoiceState = {
+      const updateVoiceStateData: GatewayPayload = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
          d: {
             guildId: this.client.voice.connectionInfo?.guildId,
@@ -373,6 +381,19 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
 
       //3. Then we sync it with what we got from the server
       this.client.voice.updateLocalVoiceState({ ...omit(updatedVoiceState, ["channelId", "channelId", "userId"]) });
+   }
+
+   public async updatePresence(options: GatewayUpdatePresenceData): Promise<void> {
+      log("api:gateway", "default", "update presence", "sts:", options.status);
+
+      if (this.status !== "authenticated") {
+         return;
+      }
+
+      const updatePresenceData: GatewayPayload = { op: GatewayOperations.PRESENCE_UPDATE, d: { status: options.status } };
+
+      log("api:gateway", "send", "update presence", "sts:", options.status);
+      this.send(updatePresenceData);
    }
 
    private startListening() {

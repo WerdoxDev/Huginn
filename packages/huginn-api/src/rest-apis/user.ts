@@ -3,6 +3,8 @@ import {
    type APIGetUserByIdResult,
    type APIPatchCurrentUserJSONBody,
    type APIPatchCurrentUserResult,
+   type APIPatchUserSettingsJSONBody,
+   type APIPatchUserSettingsResult,
    Routes,
    type Snowflake,
    resolveImage,
@@ -27,5 +29,9 @@ export class UserAPI {
    public async edit(body: APIPatchCurrentUserJSONBody): Promise<APIPatchCurrentUserResult> {
       const resolvedBody: APIPatchCurrentUserJSONBody = { ...body, avatar: body.avatar && (await resolveImage(body.avatar)) };
       return this.rest.patch(Routes.user("@me"), { body: resolvedBody, auth: true }) as Promise<APIPatchCurrentUserResult>;
+   }
+
+   public async editSettings(body: APIPatchUserSettingsJSONBody): Promise<APIPatchUserSettingsResult> {
+      return this.rest.patch(Routes.userSettings(), { body, auth: true }) as Promise<APIPatchUserSettingsResult>;
    }
 }
