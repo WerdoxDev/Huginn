@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.55.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.54.4...app@v0.55.0) (2025-08-29)
+
+
+### Features
+
+* **app:** add status choosing + server setting editing ([b6cf773](https://github.com/WerdoxDev/Huginn/commit/b6cf773c554debd368254e1df1777037da4a5786))
+
+
+### Bug Fixes
+
+* **app:** hide voice controls after no mouse activity ([ec8546e](https://github.com/WerdoxDev/Huginn/commit/ec8546e2a6d74db0a7eb1c4e562aff41328f0710))
+
 ## [0.54.4](https://github.com/WerdoxDev/Huginn/compare/app@v0.54.3...app@v0.54.4) (2025-08-26)
 
 
