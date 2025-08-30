@@ -70,20 +70,16 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
             return;
          }
 
-         session.enqueue(
-            () => this.onMessage(session, data),
-            (e) => {
-               error("shared:websocket", "Error in onMessage:", e);
-               if (e instanceof SyntaxError) {
-                  peer.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
-                  return;
-               }
-
-               peer.close(GatewayCode.UNKNOWN, "UNKNOWN");
-            },
-         );
+         session.enqueue(() => this.onMessage(session, data));
          // oxlint-disable-next-line no-unused-vars
       } catch (e) {
+         error("shared:websocket", "Error in onMessage:", e);
+
+         if (e instanceof SyntaxError) {
+            peer.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
+            return;
+         }
+
          peer.close(GatewayCode.UNKNOWN, "UNKNOWN");
       }
    }

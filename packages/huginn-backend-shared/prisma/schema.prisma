@@ -159,7 +159,7 @@ model Attachment {
 }
 
 model Settings {
-   user   User   @relation(fields: [userId], references: [id])
+   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    userId BigInt @id @unique
    json   Json
 }
