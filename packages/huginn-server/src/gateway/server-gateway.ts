@@ -288,9 +288,6 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
 
       if (userId) {
          this.presenceManager.updateUserPresence(userId, undefined, data.status);
-
-         await prisma.settings.updateSettings(userId, { status: data.status });
-         dispatchToTopic(userId, "settings_update", { status: data.status });
       }
    }
 }
