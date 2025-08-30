@@ -1,7 +1,24 @@
 import { describe, expect, test } from "bun:test";
-import { GatewayCode, type GatewayIdentify, GatewayOperations, type GatewayResume } from "@huginn/shared";
+import { ChannelType, GatewayCode, type GatewayIdentify, GatewayOperations, type GatewayResume, RelationshipType } from "@huginn/shared";
 import { gateway } from "#setup";
-import { createTestUsers, getReadyWebSocket, getWebSocket, testIsDispatch, testIsOpcode, wsSend } from "#tests/utils";
+import {
+   createTestChannel,
+   createTestRelationships,
+   createTestUsers,
+   getIdentifiedWebSocket,
+   getReadyWebSocket,
+   getWebSocket,
+   testIsDispatch,
+   testIsOpcode,
+   wsSend,
+} from "#tests/utils";
+import {
+   expectChannelExactRecipients,
+   expectChannelExactSchema,
+   expectRelationshipExactSchema,
+   expectUserExactSchema,
+   expectUserSettingsExactSchema,
+} from "#tests/expect-utils";
 
 describe("Connection", () => {
    test("should close the websocket with code 4001 (UNKNOWN_OPCODE) when the sent message has an unknown op code", async (done) => {
@@ -176,6 +193,27 @@ describe("Connection", () => {
          if (testIsOpcode(event.data, GatewayOperations.DISPATCH)) {
             expect(data.d).toBe(received);
             received++;
+         }
+      };
+   });
+
+   test("should send ready to client when identifying is successful", async (done) => {
+      const [user, user2] = await createTestUsers(2);
+      await createTestRelationships(user.id, user2.id, true);
+      const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
+      const { ws } = await getIdentifiedWebSocket(user);
+
+      ws.onmessage = (event) => {
+         const data = JSON.parse(event.data);
+         if (testIsDispatch(data, "ready")) {
+            expect(data.d.privateChannels).toHaveLength(1);
+            expect(data.d.relationships).toHaveLength(1);
+            expectChannelExactSchema(data.d.privateChannels[0], ChannelType.DM, channel.id, undefined, undefined, undefined, false);
+            expectChannelExactRecipients(data.d.privateChannels[0], [user2]);
+            expectRelationshipExactSchema(data.d.relationships[0], RelationshipType.FRIEND);
+            expectUserExactSchema(data.d.user, user.id, user.username, user.displayName, user.avatar, user.flags, user.email, user.password, false);
+            expectUserSettingsExactSchema(data.d.userSettings, { status: "online" });
+            done();
          }
       };
    });

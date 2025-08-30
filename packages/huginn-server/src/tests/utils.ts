@@ -93,8 +93,7 @@ export async function getIdentifiedWebSocket(user?: TestUser) {
          }
       };
 
-      ws.onclose = ({ code, reason }) => {
-         console.log(reason);
+      ws.onclose = ({ code }) => {
          reject(code);
       };
    });

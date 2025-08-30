@@ -24,6 +24,7 @@ import {
    RelationshipType,
    type Snowflake,
    type UserPresence,
+   type UserSettings,
 } from "@huginn/shared";
 import { containsId, type TestUser } from "./utils";
 
@@ -378,4 +379,10 @@ export function expectCallStateExactSchema(callState: object, channelId: Snowfla
       messageId,
       ringing,
    });
+}
+
+export function expectUserSettingsExactSchema(userSettings: object, expectedSettings: UserSettings) {
+   const parsedUserSettings = userSettings as UserSettings;
+
+   expect(parsedUserSettings).toStrictEqual(expectedSettings);
 }
