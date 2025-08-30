@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.27.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.27.0...server@v0.27.1) (2025-08-30)
+
+
+### Bug Fixes
+
+* **server:** update presence should not update user settings ([be6d99c](https://github.com/WerdoxDev/Huginn/commit/be6d99c34d3b8d704a0c902c686dfbd99c312f98))
+
 ## [0.27.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.26.2...server@v0.27.0) (2025-08-29)
 
 

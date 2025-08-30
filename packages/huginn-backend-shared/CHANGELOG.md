@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.14.0...backend-shared@v0.14.1) (2025-08-30)
+
+
+### Bug Fixes
+
+* **backend-shared:** settings should be cascaded when user is deleted ([b3dc711](https://github.com/WerdoxDev/Huginn/commit/b3dc711c5f5c6c19579a4168bd8372118cb26c54))
+
 ## [0.14.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.13.0...backend-shared@v0.14.0) (2025-08-29)
 
 
