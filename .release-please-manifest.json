@@ -5,6 +5,6 @@
 	"packages/huginn-bifrost": "0.4.1",
 	"packages/huginn-shared": "0.25.1",
 	"packages/huginn-backend-shared": "0.14.0",
-	"packages/huginn-app": "0.55.0",
+	"packages/huginn-app": "0.55.1",
 	"packages/huginn-voice": "0.10.2"
 }
