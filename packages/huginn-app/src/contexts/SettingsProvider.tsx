@@ -2,7 +2,6 @@ import { useEditSettings } from "@hooks/mutations/useEditSettings";
 import { usePrevious } from "@hooks/usePrevious";
 import { useClientStore } from "@stores/clientStore";
 import { useFilesStore } from "@stores/filesStore";
-import { usePresenceStore } from "@stores/presenceStore";
 import { useThisUser } from "@stores/userStore";
 import { useEffect, type ReactNode } from "react";
 
@@ -12,7 +11,6 @@ export default function SettingsProvider(props: { children?: ReactNode }) {
    const { userSettings } = useClientStore();
    const previousSettings = usePrevious(settings);
    const editSettingsMutation = useEditSettings();
-   const { updatePresence } = usePresenceStore();
 
    useEffect(() => {
       if (settings.theme !== previousSettings?.theme) {
@@ -33,8 +31,6 @@ export default function SettingsProvider(props: { children?: ReactNode }) {
          setSettings({ theme: userSettings.theme });
          saveSettings();
       }
-
-      updatePresence(user.id, { status: userSettings.status });
    }, [userSettings]);
 
    useEffect(() => {});

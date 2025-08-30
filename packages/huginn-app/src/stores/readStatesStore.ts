@@ -7,10 +7,10 @@ import { produce } from "immer";
 import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
-import notificationUrl from "@/assets/sounds/notification.wav";
 import { sendNotification } from "../contexts/notificationContext";
 import { clientStore } from "./clientStore";
 import { findChannel, getChannels, getUser, getUsers } from "@lib/query-utils";
+import { playAudio } from "@lib/audio-player";
 
 export type ContextReadState = { channelId: Snowflake; lastReadMessageId?: Snowflake; unreadCount: number };
 
@@ -93,7 +93,7 @@ export function initializeReadStates() {
 
             switch (data.message.type) {
                case MessageType.DEFAULT:
-                  if (content) {
+                  if (data.message.content) {
                      content = data.message.content;
                   } else if (data.message.attachments.length !== 0) {
                      content = `Uploaded ${data.message.attachments[0].filename}`;
@@ -122,8 +122,7 @@ export function initializeReadStates() {
             sendNotification(data.message.channelId, title, content ?? "", author?.avatar ?? channel?.icon ?? undefined);
          }
 
-         const audio = new Audio(notificationUrl);
-         audio.play();
+         playAudio("notification", true);
 
          store.getState().increaseUnreadCount(data.message.channelId);
       }

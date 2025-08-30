@@ -6,8 +6,7 @@ import { produce } from "immer";
 import { createStore, useStore } from "zustand";
 import { combine, devtools } from "zustand/middleware";
 import type { RemoteSource } from "@/types";
-import voiceEnterUrl from "@/assets/sounds/voice-enter.wav";
-import voiceLeaveUrl from "@/assets/sounds/voice-leave.wav";
+import { playAudio } from "@lib/audio-player";
 
 const initialStore = () => ({
    voiceChannel: { guildId: null, channelId: null } as { guildId: Snowflake | null; channelId: Snowflake | null },
@@ -277,8 +276,7 @@ export function initializeVoice() {
 
          // User was not here and just joined the call
          if ((!lastState || lastState.channelId !== currentState?.channelId) && currentState?.channelId === currentChannel.channelId) {
-            const audio = new Audio(voiceEnterUrl);
-            audio.play();
+            playAudio("voice-enter");
          }
 
          // User is no longer here but was here before
@@ -286,8 +284,7 @@ export function initializeVoice() {
             (!currentState || currentState.channelId !== lastState?.channelId) &&
             (lastState?.channelId === currentChannel.channelId || (d.userId === client?.user?.id && d.sessionId === client.gateway.sessionId))
          ) {
-            const audio = new Audio(voiceLeaveUrl);
-            audio.play();
+            playAudio("voice-leave");
          }
       }),
    );

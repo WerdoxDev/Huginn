@@ -1,3 +1,4 @@
+import { presenceStore } from "@stores/presenceStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { type ReactNode, createContext, useContext, useEffect } from "react";
 import { useNavigate } from "react-router";
@@ -8,8 +9,6 @@ type NotificationContextType = {
 
 const NotificationContext = createContext<NotificationContextType>({} as NotificationContextType);
 // let permissionGranted = false;
-
-let canSend = true;
 
 export function NotificationProvider(props: { children?: ReactNode }) {
    const huginnWindow = useHuginnWindow();
@@ -24,7 +23,7 @@ export function NotificationProvider(props: { children?: ReactNode }) {
       const unlisten = window.electronAPI.onNotificationClicked(async (_, payload) => {
          window.electronAPI.showMain();
          window.electronAPI.focusMain();
-         //TODO: THIS SHOULD CHANGE WHEN GUIDS ARE A THING
+         //TODO: THIS SHOULD CHANGE WHEN GUILDS ARE A THING
          await navigate(`/channels/@me/${payload}`);
       });
 
@@ -40,8 +39,12 @@ export function NotificationProvider(props: { children?: ReactNode }) {
    );
 }
 
+let canSend = true;
+
 export function sendNotification(payload: string, title: string, text: string, icon?: string) {
-   if (!canSend) {
+   const thisPresence = presenceStore.getState().thisPresence;
+
+   if (!canSend || thisPresence.status === "dnd") {
       return;
    }
 

@@ -9,6 +9,7 @@ import { convertToAppPresence } from "@lib/utils";
 
 const initialStore = () => ({
    presences: [] as AppPresence[],
+   thisPresence: {} as AppPresence,
 });
 
 type StoreType = ReturnType<typeof initialStore>;
@@ -40,16 +41,20 @@ export function initializePresence() {
    }
 
    const unlisten = client.gateway.listen("ready", (d) => {
+      const thisStore = store.getState();
       store.setState({ presences: [] });
-      store.getState().updatePresence(d.user.id, {
+
+      const presence: AppPresence = {
          userId: d.user.id,
          status: d.userSettings.status || "online",
          activeSessions: [client.gateway.sessionId!],
-      });
+      };
+      thisStore.updatePresence(d.user.id, presence);
+      store.setState({ thisPresence: presence });
 
       if (d.presences) {
          for (const presence of d.presences) {
-            store.getState().updatePresence(presence.user.id, convertToAppPresence(presence));
+            thisStore.updatePresence(presence.user.id, convertToAppPresence(presence));
          }
       }
    });
@@ -58,9 +63,19 @@ export function initializePresence() {
       store.getState().updatePresence(d.user.id, convertToAppPresence(d));
    });
 
+   const unlisten3 = client.gateway.listen("settings_update", (d) => {
+      if (!d.status || !client.user) {
+         return;
+      }
+
+      store.setState((state) => ({ thisPresence: { ...state.thisPresence, status: d.status! } }));
+      store.getState().updatePresence(client.user.id, { status: d.status! });
+   });
+
    return () => {
       unlisten();
       unlisten2();
+      unlisten3();
    };
 }
 
@@ -81,6 +96,4 @@ export function usePresences(userIds: Snowflake[]) {
    return { presences, getPresence };
 }
 
-export function usePresenceStore() {
-   return useStore(store);
-}
+export const presenceStore = store;
