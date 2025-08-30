@@ -383,7 +383,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
       this.client.voice.updateLocalVoiceState({ ...omit(updatedVoiceState, ["channelId", "channelId", "userId"]) });
    }
 
-   public async updatePresence(options: GatewayUpdatePresenceData): Promise<void> {
+   public updatePresence(options: GatewayUpdatePresenceData): void {
       log("api:gateway", "default", "update presence", "sts:", options.status);
 
       if (this.status !== "authenticated") {
