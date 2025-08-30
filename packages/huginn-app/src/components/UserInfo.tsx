@@ -12,6 +12,8 @@ import { useClient } from "@stores/clientStore";
 import { presenceStatuses } from "@lib/utils";
 import clsx from "clsx";
 import { usePresence, usePresenceStore } from "@stores/presenceStore";
+import { useEditSettings } from "@hooks/mutations/useEditSettings";
+
 export default function UserInfo(props: { user: AppUser }) {
    const { updateModals } = useModals();
    const client = useClient();
@@ -20,6 +22,7 @@ export default function UserInfo(props: { user: AppUser }) {
    const { toggleDeafen, toggleMute } = useVoiceUtils();
    const presence = usePresence(props.user.id);
    const { updatePresence } = usePresenceStore();
+   const editSettingsMutation = useEditSettings();
 
    const logoutMutation = useMutation({
       async mutationFn() {
@@ -34,6 +37,7 @@ export default function UserInfo(props: { user: AppUser }) {
    function setStatus(status: PresenceStatus) {
       client?.gateway.updatePresence({ status });
       updatePresence(props.user.id, { status });
+      editSettingsMutation.mutate({ status });
    }
 
    return (
