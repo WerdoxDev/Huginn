@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.55.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.55.1...app@v0.55.2) (2025-08-30)
+
+
+### Bug Fixes
+
+* **app:** dnd status should be respected for not playing audio ([bfd173b](https://github.com/WerdoxDev/Huginn/commit/bfd173b60876f71005ea6bd22ef45140d9657d1b))
+* **app:** updating presence should trigger a settings save manually ([0ba7e7b](https://github.com/WerdoxDev/Huginn/commit/0ba7e7b9ce11325b46982ce71c7cade6af25150c))
+
 ## [0.55.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.55.0...app@v0.55.1) (2025-08-29)
 
 
