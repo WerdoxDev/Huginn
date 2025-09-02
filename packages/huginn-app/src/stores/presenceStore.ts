@@ -63,13 +63,13 @@ export function initializePresence() {
       store.getState().updatePresence(d.user.id, convertToAppPresence(d));
    });
 
-   const unlisten3 = client.gateway.listen("settings_update", (d) => {
+   const unlisten3 = client.gateway.listen("session_update", (d) => {
       if (!d.status || !client.user) {
          return;
       }
 
-      store.setState((state) => ({ thisPresence: { ...state.thisPresence, status: d.status! } }));
-      store.getState().updatePresence(client.user.id, { status: d.status! });
+      store.setState((state) => ({ thisPresence: { ...state.thisPresence, status: d.status } }));
+      store.getState().updatePresence(client.user.id, { status: d.status });
    });
 
    return () => {
