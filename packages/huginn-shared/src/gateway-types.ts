@@ -67,6 +67,7 @@ export type GatewayEvents = {
    call_update: GatewayCallUpdateData;
    call_delete: GatewayCallDeleteData;
    settings_update: GatewaySettingsUpdateData;
+   session_update: GatewaySessionUpdateData;
 };
 
 export type GatewayPayload<Event extends keyof GatewayEvents | undefined = undefined> = Event extends undefined
@@ -247,3 +248,7 @@ export type GatewayUpdatePresenceData = {
 };
 
 export type GatewaySettingsUpdateData = Partial<UserSettings>;
+
+export type GatewaySessionUpdateData = {
+   status: PresenceStatus;
+};
