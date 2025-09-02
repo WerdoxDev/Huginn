@@ -1,0 +1,24 @@
+{
+   "name": "native-addon",
+   "version": "1.0.0",
+   "description": "",
+   "type": "module",
+   "main": "dist/index.cjs",
+   "types": "index.d.ts",
+   "scripts": {
+      "build": "node-gyp configure && node-gyp build",
+      "bundle": "tsdown"
+   },
+   "keywords": [],
+   "author": "",
+   "license": "ISC",
+   "dependencies": {
+      "bindings": "^1.5.0",
+      "node-addon-api": "^8.5.0",
+      "node-gyp-build": "^4.8.4",
+      "tsdown": "^0.14.2"
+   },
+   "devDependencies": {
+      "@types/bindings": "^1.5.5"
+   }
+}

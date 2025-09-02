@@ -5,7 +5,7 @@ export const builtins = ["electron", ...builtinModules.flatMap((m) => [m, `node:
 export const external = [...builtins];
 
 const isProd = process.argv.includes("--prod");
-const noExternal = ["@huginn/shared", "@std/encoding", "electron-log/main", "electron-updater", "application-loopback", "sharp"];
+const noExternal = ["@huginn/shared", "@std/encoding", "electron-log/main", "electron-updater", "sharp"];
 
 await build({
    entry: ["./electron/main.ts", "./electron/preload.ts"],
@@ -16,21 +16,4 @@ await build({
    minify: false,
    clean: true,
    noExternal: isProd ? noExternal : ["@huginn/shared"],
-   // configFile: false,
-   // build: {
-   //    target: "es2022",
-   //    rollupOptions: {
-   //       external,
-   //    },
-   //    lib: {
-   //       entry: ["./electron/main.ts", "./electron/preload.ts"],
-   //       // fileName: () => "[name].cjs",
-   //       formats: ["cjs"],
-   //    },
-   //    minify: false,
-   //    emptyOutDir: true,
-   //    copyPublicDir: false,
-   //    outDir: ".vite/build",
-   // },
-   // clearScreen: false,
 });
