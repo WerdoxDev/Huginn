@@ -26,8 +26,7 @@ export class PresenceManager {
       this.presences.set(userId, presence);
 
       if (presence.status !== "offline") {
-         log("server:presence-manager", "send", "presence_update", "uid:", userId, "sts:", presence.status);
-         dispatchToTopic(`${userId}_presence`, "presence_update", this.convertToGatewayPresence(presence, { id: userId }));
+         this.sendPresenceUpdate(`${userId}_presence`, presence, { id: userId });
       }
    }
 
@@ -43,8 +42,8 @@ export class PresenceManager {
          };
          this.presences.set(userId, newPresence);
 
-         log("server:presence-manager", "send", "presence_update", "uid:", userId, "sts:", newPresence.status);
-         dispatchToTopic(`${userId}_presence`, "presence_update", this.convertToGatewayPresence(newPresence, user ?? { id: userId }));
+         this.sendPresenceUpdate(`${userId}_presence`, newPresence, user ?? { id: userId });
+         this.sendSessionUpdate(userId, newPresence);
       }
    }
 
@@ -62,12 +61,8 @@ export class PresenceManager {
 
       // Only send the user presence to others if it's not already set to offline. This is to keep a user who set their status to offline be no different than an actual offline user
       if (presence.status !== "offline") {
-         log("server:presence-manager", "send", "presence_update", "uid:", userId, "nsts:", newStatus);
-         dispatchToTopic(`${userId}_presence`, "presence_update", {
-            user: { id: userId },
-            status: newStatus,
-            activeSessions: newActiveSessions,
-         });
+         const newPresence: ServerUserPresence = { userId, status: newStatus, activeSessions: newActiveSessions };
+         this.sendPresenceUpdate(`${userId}_presence`, newPresence, { id: userId });
       }
 
       // it's length being 0 means it's the only session. So we can easily remove it
@@ -104,12 +99,21 @@ export class PresenceManager {
          ? { userId: targetId, status: "offline", activeSessions: [] }
          : this.presences.get(targetId);
       if (presence) {
-         log("server:presence-manager", "send", "to user", "wid:", whomToSendId, "tid:", targetId, "osts:", offlineStatus);
-         dispatchToTopic(whomToSendId, "presence_update", this.convertToGatewayPresence(presence, { id: targetId }));
+         this.sendPresenceUpdate(whomToSendId, presence, { id: targetId });
       }
    }
 
    public convertToGatewayPresence(presence: ServerUserPresence, user: PresenceUser): UserPresence {
       return { ...omit(presence, ["userId"]), user: pick(user, ["id", "avatar", "displayName", "flags", "username"]) };
+   }
+
+   private sendPresenceUpdate(topic: string, presence: ServerUserPresence, user: PresenceUser) {
+      log("server:presence-manager", "send", "presence_update", "to:", topic, "uid:", user.id, "sts:", presence.status);
+      dispatchToTopic(topic, "presence_update", this.convertToGatewayPresence(presence, user));
+   }
+
+   private sendSessionUpdate(userId: Snowflake, presence: ServerUserPresence) {
+      log("server:presence-manager", "send", "session_update", "uid:", userId, "sts:", presence.status);
+      dispatchToTopic(userId, "session_update", { status: presence.status });
    }
 }

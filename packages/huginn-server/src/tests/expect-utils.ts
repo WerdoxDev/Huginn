@@ -17,6 +17,7 @@ import {
    type GatewayCallState,
    type GatewayDMCannelRecipientRemoveData,
    type GatewayDMChannelRecipientAddData,
+   type GatewaySessionUpdateData,
    type GatewayTypingStartData,
    type GatewayVoiceState,
    MessageType,
@@ -385,4 +386,10 @@ export function expectUserSettingsExactSchema(userSettings: object, expectedSett
    const parsedUserSettings = userSettings as UserSettings;
 
    expect(parsedUserSettings).toStrictEqual(expectedSettings);
+}
+
+export function expectSessionUpdateExactSchema(sessionUpdate: object, expectedSessionUpdate: GatewaySessionUpdateData) {
+   const parsedSessionUpdate = sessionUpdate as GatewaySessionUpdateData;
+
+   expect(parsedSessionUpdate).toStrictEqual(expectedSessionUpdate);
 }

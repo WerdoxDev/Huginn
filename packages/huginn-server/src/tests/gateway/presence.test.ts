@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { testHandler } from "@huginn/backend-shared";
-import { expectPresenceExactSchema } from "#tests/expect-utils";
+import { expectPresenceExactSchema, expectSessionUpdateExactSchema } from "#tests/expect-utils";
 import {
    authHeader,
    createTestRelationships,
@@ -186,8 +186,6 @@ describe("Presence", () => {
 
       const edit: APIPatchCurrentUserJSONBody = { displayName: "test-edited" };
       await testHandler("/api/users/@me", authHeader(user.accessToken), "PATCH", edit);
-
-      // const presenceUpdateData: GatewayPayload = { op: GatewayOperations.PRESENCE_UPDATE, d: { status: "dnd" } };
    });
 
    test("should send a presence_update to other subscribed users when a user changes their presence status", async (done) => {
@@ -202,6 +200,26 @@ describe("Presence", () => {
          if (testIsDispatch(data, "presence_update")) {
             expectPresenceExactSchema(data.d, user, "dnd", [sessionId1], false);
             done();
+         }
+      };
+
+      const updateData: GatewayPayload = { op: GatewayOperations.PRESENCE_UPDATE, d: { status: "dnd" } };
+      wsSend(ws1, updateData);
+   });
+
+   test("should send a session_update to all sessions when presence is updated", async (done) => {
+      const [user] = await createTestUsers(1);
+
+      const { ws: ws1 } = await getReadyWebSocket(user);
+      const { ws: ws2 } = await getReadyWebSocket(user);
+
+      const tryDone = multiDone(done, 2);
+
+      ws1.onmessage = ws2.onmessage = (event) => {
+         const data = JSON.parse(event.data);
+         if (testIsDispatch(data, "session_update")) {
+            expectSessionUpdateExactSchema(data.d, { status: "dnd" });
+            tryDone();
          }
       };
 
