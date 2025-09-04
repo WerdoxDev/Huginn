@@ -1,7 +1,6 @@
-import { CommonWebsocket } from "@huginn/backend-shared";
+import { CommonWebsocket, verifyToken } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
-import { verifyVoiceToken } from "@huginn/backend-shared/voice-utils";
 import {
    constants,
    convertToMediaKind,
@@ -359,7 +358,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
    }
 
    private async handleIdentify(session: ClientSession, data: VoiceIdentifyData) {
-      const { valid, payload } = await verifyVoiceToken(data.token);
+      const { valid, payload } = await verifyToken("voice", data.token);
 
       if (!valid || !payload) {
          session.peer.close(GatewayCode.AUTHENTICATION_FAILED, "AUTHENTICATION_FAILED");
