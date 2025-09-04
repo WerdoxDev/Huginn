@@ -1,10 +1,10 @@
-import type { ResponseLike, TokenPayload } from "@huginn/shared";
+import type { ResponseLike, UserTokenPayload } from "@huginn/shared";
 import * as jose from "jose";
 import type { CDNOptions, GatewayOptions, RESTOptions, VoiceOptions } from "./types";
 
-export function decodeToken(token: string): [boolean, (TokenPayload & jose.JWTPayload) | null] {
+export function decodeToken(token: string): [boolean, (UserTokenPayload & jose.JWTPayload) | null] {
    try {
-      const jwt = jose.decodeJwt<TokenPayload>(token);
+      const jwt = jose.decodeJwt<UserTokenPayload>(token);
 
       return [true, jwt];
       // oxlint-disable-next-line no-unused-vars
