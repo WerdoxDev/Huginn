@@ -1,4 +1,4 @@
-import { createRoute, forbidden, validator } from "@huginn/backend-shared";
+import { createRoute, createToken, forbidden, validator } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { CDNRoutes, constants, getFileHash, HttpCode, OAuthCode, snowflake, WorkerID } from "@huginn/shared";
 import { toSnakeCase } from "@std/text";
@@ -7,7 +7,6 @@ import { z } from "zod";
 import { envs, gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { cdnUpload, serverFetch } from "#utils/server-request";
-import { createTokens } from "#utils/token-factory";
 
 const querySchema = z.object({ code: z.optional(z.string()), error: z.optional(z.string()), state: z.optional(z.string()) });
 
@@ -76,11 +75,8 @@ createRoute("GET", "/api/auth/callback/google", validator("query", querySchema),
 
       // Identity provider exists and is completed
       if (identityProvider?.completed && identityProvider?.userId) {
-         const [accessToken, refreshToken] = await createTokens(
-            { id: identityProvider.userId.toString(), isOAuth: true },
-            constants.ACCESS_TOKEN_EXPIRE_TIME,
-            constants.REFRESH_TOKEN_EXPIRE_TIME,
-         );
+         const accessToken = await createToken("user-access", { id: identityProvider.userId.toString(), isOAuth: true }, constants.ACCESS_TOKEN_EXPIRE_TIME);
+         const refreshToken = await createToken("user-refresh", { id: identityProvider.userId.toString() }, constants.REFRESH_TOKEN_EXPIRE_TIME);
 
          // Dispatch to whoever is subbed to the state topic of this authentication
          dispatchToTopic(state, "oauth_redirect", { access_token: accessToken, refresh_token: refreshToken });
@@ -116,19 +112,15 @@ createRoute("GET", "/api/auth/callback/google", validator("query", querySchema),
          )[0];
       }
 
-      // Create an identity token
-      const [token] = await createTokens(
-         {
-            providerId: upsertedIdentityProvider.id.toString(),
-            providerUserId: upsertedIdentityProvider.providerUserId,
-            email: googleUser.email,
-            username: toSnakeCase(googleUser.name),
-            fullName: googleUser.name,
-            avatarHash: avatarHash,
-         },
-         constants.IDENTITY_TOKEN_EXPIRE_TIME,
-         "",
-      );
+      // Create an oauth token
+      const token = await createToken("oauth", {
+         providerId: upsertedIdentityProvider.id.toString(),
+         providerUserId: upsertedIdentityProvider.providerUserId,
+         email: googleUser.email,
+         username: toSnakeCase(googleUser.name),
+         fullName: googleUser.name,
+         avatarHash: avatarHash,
+      }, constants.OAUTH_TOKEN_EXPIRE_TIME)
 
       dispatchToTopic(state, "oauth_redirect", { token: token });
       gateway.getSessionBySessionId(session_id)?.unsubscribe(state);

@@ -1,11 +1,10 @@
-import { createRoute, tryCatch, validator } from "@huginn/backend-shared";
+import { createRoute, createToken, tryCatch, validator } from "@huginn/backend-shared";
 import { createErrorFactory, createHuginnError } from "@huginn/backend-shared";
 import { assertError } from "@huginn/backend-shared/database";
 import { prisma } from "@huginn/backend-shared/database";
 import { DBErrorType } from "@huginn/backend-shared/types";
 import { constants, type APIPostLoginResult, Errors, Fields, HttpCode } from "@huginn/shared";
 import { z } from "zod";
-import { createTokens } from "#utils/token-factory";
 
 const schema = z.object({
    username: z.optional(z.string()),
@@ -26,11 +25,8 @@ createRoute("POST", "/api/auth/login", validator("json", schema), async (c) => {
    }
    if (error) throw error;
 
-   const [accessToken, refreshToken] = await createTokens(
-      { id: user.id, isOAuth: false },
-      constants.ACCESS_TOKEN_EXPIRE_TIME,
-      constants.REFRESH_TOKEN_EXPIRE_TIME,
-   );
+   const accessToken = await createToken("user-access", { id: user.id, isOAuth: true }, constants.ACCESS_TOKEN_EXPIRE_TIME);
+   const refreshToken = await createToken("user-refresh", { id: user.id }, constants.REFRESH_TOKEN_EXPIRE_TIME);
 
    const json: APIPostLoginResult = { ...user, token: accessToken, refreshToken: refreshToken };
    return c.json(json, HttpCode.OK);

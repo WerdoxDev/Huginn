@@ -3,7 +3,6 @@ import { readEnv } from "@huginn/backend-shared";
 import consola from "consola";
 import { Octokit } from "octokit";
 import { ServerGateway } from "#gateway/server-gateway";
-import { TokenInvalidator } from "#utils/token-invalidator";
 import { enableLogs } from "@huginn/shared";
 
 // enableLogs({ "server:gateway": ["recv"] })
@@ -45,7 +44,6 @@ if (!envs.POSTGRESQL_URL) {
 }
 
 export const gateway = new ServerGateway();
-export const tokenInvalidator = new TokenInvalidator();
 export const octokit: Octokit = new Octokit({ auth: envs.GITHUB_TOKEN });
 export const s3 = new S3Client({
    region: envs.AWS_REGION,

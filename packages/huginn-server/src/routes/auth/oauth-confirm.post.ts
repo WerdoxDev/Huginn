@@ -1,4 +1,4 @@
-import { createErrorFactory, createHuginnError, createRoute, unauthorized, validator } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, createRoute, createToken, unauthorized, validator } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
 import {
@@ -17,7 +17,7 @@ import {
 import { z } from "zod";
 import { verifyJwt } from "#utils/route-utils";
 import { cdnUpload } from "#utils/server-request";
-import { createTokens } from "#utils/token-factory";
+// import { createTokens } from "#utils/token-factory";
 import { validateDisplayName, validateUsername, validateUsernameUnique } from "#utils/validation";
 
 const schema = z.object({ username: z.string(), displayName: z.nullable(z.string()), avatar: z.nullable(z.string()) });
@@ -83,11 +83,8 @@ createRoute("POST", "/api/auth/oauth-confirm", verifyJwt(true), validator("json"
 
    await prisma.identityProvider.update({ where: { providerUserId: payload.providerUserId }, data: { userId: BigInt(user.id), completed: true } });
 
-   const [accessToken, refreshToken] = await createTokens(
-      { id: user.id, isOAuth: true },
-      constants.ACCESS_TOKEN_EXPIRE_TIME,
-      constants.REFRESH_TOKEN_EXPIRE_TIME,
-   );
+   const accessToken = await createToken("user-access", { id: user.id, isOAuth: true }, constants.ACCESS_TOKEN_EXPIRE_TIME);
+   const refreshToken = await createToken("user-refresh", { id: user.id }, constants.REFRESH_TOKEN_EXPIRE_TIME);
 
    const json: APIPostOAuthConfirmResult = { ...user, token: accessToken, refreshToken: refreshToken };
    return c.json(json, HttpCode.CREATED);

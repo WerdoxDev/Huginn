@@ -1,9 +1,9 @@
 import type {
    APIEmbed,
    APIPostAttachmentJSONBody,
-   APIThumbnail, APIVideo, IdentityTokenPayload,
+   APIThumbnail, APIVideo, OAuthTokenPayload,
    Snowflake,
-   TokenPayload
+   UserTokenPayload
 } from "@huginn/shared";
 import type { Session } from "hono-sessions";
 
@@ -36,8 +36,8 @@ export type DBAttachment = Omit<APIPostAttachmentJSONBody, "id"> & {
 
 declare module "hono" {
    interface ContextVariableMap {
-      tokenPayload: TokenPayload;
-      identityTokenPayload: IdentityTokenPayload;
+      tokenPayload: UserTokenPayload;
+      identityTokenPayload: OAuthTokenPayload;
       token: string;
       session: Session;
    }

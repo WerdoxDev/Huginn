@@ -1,9 +1,8 @@
-import { createRoute, validator } from "@huginn/backend-shared";
+import { createRoute, createToken, validator } from "@huginn/backend-shared";
 import { createErrorFactory, createHuginnError } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { constants, type APIPostRegisterResult, Errors, HttpCode } from "@huginn/shared";
 import { z } from "zod";
-import { createTokens } from "#utils/token-factory";
 import {
    validateDisplayName,
    validateEmail,
@@ -46,11 +45,8 @@ createRoute("POST", "/api/auth/register", validator("json", schema), async (c) =
 
    const user = await prisma.user.registerNew(body);
 
-   const [accessToken, refreshToken] = await createTokens(
-      { id: user.id, isOAuth: false },
-      constants.ACCESS_TOKEN_EXPIRE_TIME,
-      constants.REFRESH_TOKEN_EXPIRE_TIME,
-   );
+   const accessToken = await createToken("user-access", { id: user.id, isOAuth: false }, constants.ACCESS_TOKEN_EXPIRE_TIME);
+   const refreshToken = await createToken("user-refresh", { id: user.id }, constants.REFRESH_TOKEN_EXPIRE_TIME);
 
    const json: APIPostRegisterResult = { ...user, token: accessToken, refreshToken: refreshToken };
 
