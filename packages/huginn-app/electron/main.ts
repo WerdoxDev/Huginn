@@ -8,6 +8,9 @@ import type { AudioSource, DisplaySource } from "@/types";
 import * as fileController from "./file-controller";
 import * as cacheController from "./cache-controller";
 import * as keybindsController from "./keybinds-controller";
+
+import test from "native-addon";
+console.log(test.helloWorld("HI"));
 // application-loopback executable path when packaged
 if (app.isPackaged) {
    setExecutablesRoot(path.resolve(__dirname, "..", "..", "app.asar.unpacked", "node_modules", "application-loopback", "bin"));

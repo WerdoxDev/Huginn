@@ -1,10 +1,11 @@
 {
   "targets": [
     {
-      "target_name": "my_addon",
+      "target_name": "huginn_addon",
       "sources": [
-        "src/my_addon.cc",
-        "src/cpp_code.cc"
+        "src/huginn_addon.cc",
+        "src/icon_util.cc",
+        "src/file_util.cc"
       ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",
@@ -16,6 +17,9 @@
       "defines": [
         "NODE_ADDON_API_CPP_EXCEPTIONS"
       ],
+      "libraries":[
+         "-lCrypt32",   # for Base64 encode
+      ],
       "cflags!": ["-fno-exceptions"],
       "cflags_cc!": ["-fno-exceptions"],
       "xcode_settings": {
@@ -25,7 +29,7 @@
       },
       "msvs_settings": {
         "VCCLCompilerTool": {
-          "ExceptionHandling": 1
+          "ExceptionHandling": 1,
         }
       }
     }

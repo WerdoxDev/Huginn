@@ -1,4 +1,10 @@
 import binding from "bindings";
 
-const native = binding({ bindings: "my_addon", module_root: "native-addon" });
-export default new native.MyAddon();
+const addon = binding({
+   try: [
+      ["build", "Release", "huginn_addon.node"],
+      ["native-addon", "build", "Release", "huginn_addon.node"],
+   ],
+});
+
+export default addon;
