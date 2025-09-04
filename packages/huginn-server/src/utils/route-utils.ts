@@ -1,4 +1,4 @@
-import { type DBAttachment, type DBEmbed, getImageData, getVideoData, unauthorized, verifyToken } from "@huginn/backend-shared";
+import { type DBAttachment, type DBEmbed, getImageData, getVideoData, type TokenType, unauthorized, verifyToken } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import {
    type APIEmbed,
@@ -21,7 +21,7 @@ import { octokit } from "#setup";
 import { envs } from "#setup";
 import { cdnUpload } from "./server-request";
 
-export function verifyJwt(identity?: boolean) {
+export function verifyJwt(type: TokenType = "user-access") {
    return createMiddleware(async (c, next) => {
       const bearer = c.req.header("Authorization");
 
@@ -31,21 +31,24 @@ export function verifyJwt(identity?: boolean) {
 
       const token = bearer.split(" ")[1];
 
-      const { valid, payload } = await verifyToken(token);
+      const { valid, payload } = await verifyToken(type, token);
 
       if (!valid || !payload) {
          return unauthorized(c);
       }
 
-      if (!identity && !(await prisma.user.exists({ id: BigInt((payload as UserTokenPayload).id) }))) {
-         return unauthorized(c);
+      // We may have deleted the user form the db
+      if ((["user-access", "user-refresh"] as TokenType[]).includes(type)) {
+         if (!(await prisma.user.exists({ id: BigInt((payload as UserTokenPayload).id) }))) {
+            return unauthorized(c);
+         }
       }
 
       c.set("token", token);
 
-      if (identity) {
-         c.set("identityTokenPayload", payload as unknown as OAuthTokenPayload);
-      } else {
+      if (type === "oauth") {
+         c.set("oauthTokenPayload", payload as unknown as OAuthTokenPayload);
+      } else if (type === "user-access") {
          c.set("tokenPayload", payload as unknown as UserTokenPayload);
       }
 
@@ -262,10 +265,10 @@ export async function processEmbeds(embeds?: APIEmbed[]) {
             type: embed.type,
             thumbnail: thumbnailData
                ? {
-                  url: embed.thumbnail?.url ?? "",
-                  width: embed.thumbnail?.width ?? thumbnailData.width ?? 0,
-                  height: embed.thumbnail?.height ?? thumbnailData.height ?? 0,
-               }
+                    url: embed.thumbnail?.url ?? "",
+                    width: embed.thumbnail?.width ?? thumbnailData.width ?? 0,
+                    height: embed.thumbnail?.height ?? thumbnailData.height ?? 0,
+                 }
                : undefined,
          });
       }

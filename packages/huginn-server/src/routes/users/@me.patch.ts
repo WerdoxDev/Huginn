@@ -1,4 +1,4 @@
-import { createErrorFactory, createHuginnError, createRoute, validator } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, createRoute, createToken, validator } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
 import { type APIPatchCurrentUserResult, CDNRoutes, constants, Errors, Fields, getFileHash, HttpCode, toArrayBuffer } from "@huginn/shared";
@@ -7,7 +7,6 @@ import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { verifyJwt } from "#utils/route-utils";
 import { cdnUpload } from "#utils/server-request";
-import { createTokens } from "#utils/token-factory";
 import {
    validateCorrectPassword,
    validateDisplayName,
@@ -85,11 +84,8 @@ createRoute("PATCH", "/api/users/@me", verifyJwt(), validator("json", schema), a
       { select: selectPrivateUser },
    );
 
-   const [accessToken, refreshToken] = await createTokens(
-      { id: payload.id, isOAuth: payload.isOAuth },
-      constants.ACCESS_TOKEN_EXPIRE_TIME,
-      constants.REFRESH_TOKEN_EXPIRE_TIME,
-   );
+   const accessToken = await createToken("user-access", { id: payload.id, isOAuth: payload.isOAuth }, constants.ACCESS_TOKEN_EXPIRE_TIME);
+   const refreshToken = await createToken("user-refresh", { id: payload.id }, constants.REFRESH_TOKEN_EXPIRE_TIME);
 
    // TODO: When guilds are a thing, this should send an update to users that are viewing that guild
    dispatchToTopic(payload.id, "user_update", { ...updatedUser, token: accessToken, refreshToken });

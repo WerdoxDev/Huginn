@@ -22,8 +22,8 @@ import { validateDisplayName, validateUsername, validateUsernameUnique } from "#
 
 const schema = z.object({ username: z.string(), displayName: z.nullable(z.string()), avatar: z.nullable(z.string()) });
 
-createRoute("POST", "/api/auth/oauth-confirm", verifyJwt(true), validator("json", schema), async (c) => {
-   const payload = c.get("identityTokenPayload");
+createRoute("POST", "/api/auth/oauth-confirm", verifyJwt("oauth"), validator("json", schema), async (c) => {
+   const payload = c.get("oauthTokenPayload");
    const body = c.req.valid("json");
 
    const identityProvider = await prisma.identityProvider.findUnique({ where: { id: BigInt(payload.providerId) } });

@@ -1,4 +1,4 @@
-import { CommonWebsocket, createVoiceToken } from "@huginn/backend-shared";
+import { CommonWebsocket, createToken, verifyToken } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import {
    omitChannelRecipient,
@@ -22,10 +22,8 @@ import {
    type GatewayUpdateVoiceStateData,
    log,
    merge,
-   type UserSettings,
    WorkerID,
 } from "@huginn/shared";
-import { verifyToken } from "#utils/token-factory";
 import { dispatchToTopic } from "../utils/gateway-utils";
 import { ClientSession } from "./client-session";
 import { PresenceManager } from "./presence-manager";
@@ -143,7 +141,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
    }
 
    private async handleIdentify(session: ClientSession, data: GatewayIdentifyData) {
-      const { valid, payload } = await verifyToken(data.token);
+      const { valid, payload } = await verifyToken("user-access", data.token);
 
       log("server:gateway", "recv", "identify", "tkn:", data.token, "valid:", valid);
       log("server:gateway", "detail-identify", "start", "sid:", session.sessionId);
@@ -218,7 +216,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
    }
 
    private async handleResume(session: ClientSession, data: GatewayResumeData) {
-      const { valid, payload } = await verifyToken(data.token);
+      const { valid, payload } = await verifyToken("user-access", data.token);
 
       log("server:gateway", "recv", "resume", "dsid:", data.sessionId, "seq:", data.seq, "valid:", valid);
 
@@ -276,7 +274,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
 
       // If the new place is a valid channel and is not the same as before
       if (data.channelId && (previousState?.channelId !== data.channelId || previousState.sessionId !== session.sessionId)) {
-         const token = await createVoiceToken(userId);
+         const token = await createToken("voice", { userId });
          dispatchToTopic(session.sessionId, "voice_server_update", { token });
       }
    }

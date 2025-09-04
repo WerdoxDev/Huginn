@@ -25,7 +25,7 @@ createRoute("POST", "/api/auth/login", validator("json", schema), async (c) => {
    }
    if (error) throw error;
 
-   const accessToken = await createToken("user-access", { id: user.id, isOAuth: true }, constants.ACCESS_TOKEN_EXPIRE_TIME);
+   const accessToken = await createToken("user-access", { id: user.id, isOAuth: false }, constants.ACCESS_TOKEN_EXPIRE_TIME);
    const refreshToken = await createToken("user-refresh", { id: user.id }, constants.REFRESH_TOKEN_EXPIRE_TIME);
 
    const json: APIPostLoginResult = { ...user, token: accessToken, refreshToken: refreshToken };

@@ -9,9 +9,6 @@ import { enableLogs } from "@huginn/shared";
 enableLogs({ "server:gateway": ["default", "detail-identify"], "server:presence-manager": ["default", "detail"] });
 
 export const envs = readEnv([
-   "ACCESS_TOKEN_SECRET",
-   "REFRESH_TOKEN_SECRET",
-   "VOICE_TOKEN_SECRET",
    "POSTGRESQL_URL",
    "CDN_LOCAL_URL",
    "SERVER_HOST",

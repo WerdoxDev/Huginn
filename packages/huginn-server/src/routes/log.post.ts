@@ -1,8 +1,7 @@
 import { appendFile, mkdir } from "node:fs/promises";
-import { createRoute, validator } from "@huginn/backend-shared";
+import { createRoute, validator, verifyToken } from "@huginn/backend-shared";
 import pathe from "pathe";
 import z from "zod";
-import { verifyToken } from "#utils/token-factory";
 
 const schema = z.object({
    token: z.optional(z.string()),
@@ -11,7 +10,7 @@ const schema = z.object({
 
 createRoute("POST", "/api/log", validator("json", schema), async (c) => {
    const body = c.req.valid("json");
-   const { payload } = await verifyToken(body.token ?? "");
+   const { payload } = await verifyToken("user-access", body.token ?? "");
 
    const now = new Date();
 
