@@ -27,5 +27,5 @@
 		"noPropertyAccessFromIndexSignature": false,
 		"incremental": false
 	},
-	"include": ["js", "index.d.ts"],
+	"include": ["js", "index.d.ts", "js/test.ts"],
 }

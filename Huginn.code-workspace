@@ -51,6 +51,10 @@
 		"deno.enable": false,
 		"typescript.tsdk": "ROOT\\node_modules\\typescript\\lib",
 		"github-actions.workflows.pinned.workflows": ["ROOT/.github/workflows/release.yml"],
-		"oxc.enable": true
+      "oxc.enable": true,
+      "files.associations": {
+         "iostream": "cpp",
+         "iosfwd": "cpp"
+      }
 	}
 }
