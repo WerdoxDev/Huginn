@@ -1,44 +1,63 @@
-#include <node_api.h>
+#include <napi.h>
 #include <string>
-#include "../include/icon_util.h"
-#include "../include/file_util.h"
+#include "icon_util.h"
+#include "file_util.h"
 #include <iostream>
 
-class HuginnAddon : public Napi::ObjectWrap<HuginnAddon>
+Napi::Value GetFileSHA256(const Napi::CallbackInfo &info)
 {
-public:
-   static Napi::Object Init(Napi::Env env, Napi::Object exports)
+   Napi::Env env = info.Env();
+
+   if (info.Length() != 1)
    {
-
-      Napi::Function func = DefineClass(env, "HuginnAddon", {InstanceMethod("helloWorld", &HuginnAddon::HelloWorld)});
-
-      Napi::FunctionReference *constructor = new Napi::FunctionReference();
-      *constructor = Napi::Persistent(func);
-      env.SetInstanceData(constructor);
-
-      exports.Set("HuginnAddon", func);
-      return exports;
+      Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
+      return env.Null();
    }
 
-   HuginnAddon(const Napi::CallbackInfo &info)
-       : Napi::ObjectWrap<HuginnAddon>(info) {}
-
-private:
-   Napi::Value HelloWorld(const Napi::CallbackInfo &info)
+   if (!info[0].IsString())
    {
-      Napi::Env env = info.Env();
-
-      const std::wstring exePath = L"C:\\Users\\matin\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe";
-
-      std::string hash = file_util::GetFileSHA256(exePath);
-
-      return Napi::String::New(env, hash);
+      Napi::TypeError::New(env, "Wrong arguments").ThrowAsJavaScriptException();
+      return env.Null();
    }
-};
+
+   const std::u16string filepath_u16 = info[0].As<Napi::String>().Utf16Value();
+   std::wstring filepath(filepath_u16.begin(), filepath_u16.end());
+
+   std::string hash = file_util::GetFileSHA256(filepath);
+
+   return Napi::String::New(env, hash);
+}
+
+Napi::Value GetExeLargeIcon(const Napi::CallbackInfo &info)
+{
+   Napi::Env env = info.Env();
+
+   if (info.Length() != 1)
+   {
+      Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
+      return env.Null();
+   }
+
+   if (!info[0].IsString())
+   {
+      Napi::TypeError::New(env, "Wrong arguments").ThrowAsJavaScriptException();
+      return env.Null();
+   }
+
+   const std::u16string exePath_u16 = info[0].As<Napi::String>().Utf16Value();
+   std::wstring exePath(exePath_u16.begin(), exePath_u16.end());
+
+   HICON hIcon = icon_util::GetExeLargeIcon(exePath);
+   std::string base64 = icon_util::HICONToBase64Png(hIcon);
+
+   return Napi::String::New(env, base64);
+}
 
 Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
-   return HuginnAddon::Init(env, exports);
+   exports.Set(Napi::String::New(env, "getFileSha256"), Napi::Function::New(env, GetFileSHA256));
+   exports.Set(Napi::String::New(env, "getExeLargeIcon"), Napi::Function::New(env, GetExeLargeIcon));
+   return exports;
 }
 
 NODE_API_MODULE(huginn_addon, Init)

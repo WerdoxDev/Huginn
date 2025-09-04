@@ -1,9 +1,10 @@
 import binding from "bindings";
 
-let native;
-if (process.env.NODE_ENV === "production") {
-   native = binding({ bindings: "huginn_addon", module_root: "native-addon" });
-} else {
-   native = binding("huginn_addon");
-}
-export default new native.HuginnAddon();
+const addon = binding({
+   try: [
+      ["build", "Release", "huginn_addon.node"],
+      ["native-addon", "build", "Release", "huginn_addon.node"],
+   ],
+});
+
+export default addon;

@@ -1,7 +1,7 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-   entry: ["js/index.ts", "js/test.ts"],
+   entry: ["js/*.ts"],
    format: ["cjs"],
    minify: true,
    dts: false,

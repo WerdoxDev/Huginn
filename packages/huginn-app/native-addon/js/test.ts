@@ -1,6 +1,8 @@
 import addon from "./index";
 
 const t0 = performance.now();
-const result = addon.helloWorld("THIS IS A TEST");
+const path = "C:\\Users\\matin\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe";
+const hash = addon.getFileSha256(path);
+const icon = addon.getExeLargeIcon(path);
 const t1 = performance.now();
-console.log(result, t1 - t0);
+console.log(hash, icon, t1 - t0);

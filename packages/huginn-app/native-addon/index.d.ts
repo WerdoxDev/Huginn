@@ -1,3 +1,4 @@
 declare module "native-addon" {
-   export function helloWorld(input: string): string;
+   export function getFileSha256(filepath: string): string;
+   export function getExeLargeIcon(exePath: string): string;
 }

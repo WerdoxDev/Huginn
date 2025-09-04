@@ -54,7 +54,8 @@
       "oxc.enable": true,
       "files.associations": {
          "iostream": "cpp",
-         "iosfwd": "cpp"
+         "iosfwd": "cpp",
+         "xstring": "cpp"
       }
 	}
 }

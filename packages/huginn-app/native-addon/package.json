@@ -6,20 +6,25 @@
    "main": "dist/index.cjs",
    "types": "index.d.ts",
    "scripts": {
-      "build": "node-gyp configure && node-gyp build",
-      "clean": "node-gyp clean",
-      "bundle": "tsdown"
+      "compile": "cmake-js compile",
+      "clean": "cmake-js clean",
+      "build": "bun run compile && tsdown"
    },
    "keywords": [],
    "author": "",
    "license": "ISC",
    "dependencies": {
       "bindings": "^1.5.0",
+      "cmake-js": "^7.3.1",
       "node-addon-api": "^8.5.0",
-      "node-gyp-build": "^4.8.4",
       "tsdown": "^0.14.2"
    },
    "devDependencies": {
       "@types/bindings": "^1.5.5"
+   },
+   "binary": {
+      "napi_versions": [
+         8
+      ]
    }
 }
