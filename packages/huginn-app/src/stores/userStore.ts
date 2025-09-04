@@ -1,4 +1,4 @@
-import type { APIUser, TokenPayload } from "@huginn/shared";
+import type { APIUser, UserTokenPayload } from "@huginn/shared";
 import * as jose from "jose";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
@@ -10,7 +10,7 @@ const store = createStore(
    combine(
       {
          user: undefined as AppUser | undefined,
-         tokenPayload: undefined as TokenPayload | undefined,
+         tokenPayload: undefined as UserTokenPayload | undefined,
       },
       (set) => ({
          setUser: (user?: APIUser) => set({ user: user ? convertToAppUser(user) : undefined }),
@@ -26,7 +26,7 @@ export function initializeUser() {
 
    const unlisten = client.gateway.listen("user_update", (d) => {
       store.getState().setUser(d);
-      store.setState({ tokenPayload: client?.tokenHandler.token ? (jose.decodeJwt(client?.tokenHandler.token) as TokenPayload) : undefined });
+      store.setState({ tokenPayload: client?.tokenHandler.token ? (jose.decodeJwt(client?.tokenHandler.token) as UserTokenPayload) : undefined });
    });
 
    return () => {
