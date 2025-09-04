@@ -6,12 +6,12 @@ export type RegisterUser = APIPostRegisterJSONBody;
 
 export type DirectChannel = Merge<APIDMChannel, APIGroupDMChannel>;
 
-export type TokenPayload = {
+export type UserTokenPayload = {
    id: Snowflake;
    isOAuth: boolean;
 };
 
-export type IdentityTokenPayload = {
+export type OAuthTokenPayload = {
    providerId: Snowflake;
    providerUserId: Snowflake;
    username: string;
@@ -224,12 +224,12 @@ export enum MessageFlags {
 
 export type APIDefaultMessage = {
    type:
-      | MessageType.DEFAULT
-      | MessageType.RECIPIENT_ADD
-      | MessageType.RECIPIENT_REMOVE
-      | MessageType.CHANNEL_ICON_CHANGED
-      | MessageType.CHANNEL_NAME_CHANGED
-      | MessageType.CHANNEL_OWNER_CHANGED;
+   | MessageType.DEFAULT
+   | MessageType.RECIPIENT_ADD
+   | MessageType.RECIPIENT_REMOVE
+   | MessageType.CHANNEL_ICON_CHANGED
+   | MessageType.CHANNEL_NAME_CHANGED
+   | MessageType.CHANNEL_OWNER_CHANGED;
 } & APIBaseMessage;
 
 export type APICallMessage = {
