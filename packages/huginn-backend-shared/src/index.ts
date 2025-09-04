@@ -7,7 +7,6 @@ export * from "./route-utils";
 export * from "./shared-handlers";
 export * from "./test-utils";
 export * from "./types";
-export * from "./voice-utils";
 export * from "./websocket/common-client-session";
 export * from "./websocket/common-websocket";
 export * from "./token-factory";
