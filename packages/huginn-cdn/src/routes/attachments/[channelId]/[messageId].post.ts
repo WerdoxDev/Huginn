@@ -1,24 +1,22 @@
-import { createRoute, invalidFormBody, tryCatch } from "@huginn/backend-shared";
+import { createRoute, invalidFormBody, tryCatch, verifyJwt } from "@huginn/backend-shared";
 import { HttpCode } from "@huginn/shared";
 import { storage } from "#setup";
 
-createRoute("POST", "/cdn/attachments/:channelId/:messageId", async (c) => {
-	const { channelId, messageId } = c.req.param();
-	const [error, body] = await tryCatch(async () => await c.req.formData());
+createRoute("POST", "/cdn/attachments/:channelId/:messageId", verifyJwt("cdn"), async (c) => {
+   const { channelId, messageId } = c.req.param();
+   const [error, body] = await tryCatch(async () => await c.req.formData());
 
-	if (error) {
-		return invalidFormBody(c);
-	}
+   if (error) {
+      return invalidFormBody(c);
+   }
 
-	const file = body.get("files[0]");
+   const file = body.get("files[0]");
 
-	if (!body || !file || !(file instanceof File)) {
-		return invalidFormBody(c);
-	}
+   if (!body || !file || !(file instanceof File)) {
+      return invalidFormBody(c);
+   }
 
-	// const arrayBuffer = await Bun.readableStreamToArrayBuffer(file.stream());
-	// console.log(arrayBuffer.byteLength);
-	await storage.writeFile("attachments", `${channelId}/${messageId}`, file.name, file.stream());
+   await storage.writeFile("attachments", `${channelId}/${messageId}`, file.name, file.stream());
 
-	return c.text(file.name, HttpCode.CREATED);
+   return c.text(file.name, HttpCode.CREATED);
 });

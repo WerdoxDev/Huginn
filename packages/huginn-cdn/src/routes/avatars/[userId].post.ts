@@ -1,8 +1,8 @@
-import { createRoute, invalidFormBody, tryCatch } from "@huginn/backend-shared";
+import { createRoute, invalidFormBody, tryCatch, verifyJwt } from "@huginn/backend-shared";
 import { HttpCode } from "@huginn/shared";
 import { storage } from "#setup";
 
-createRoute("POST", "/cdn/avatars/:userId", async (c) => {
+createRoute("POST", "/cdn/avatars/:userId", verifyJwt("cdn"), async (c) => {
    const { userId } = c.req.param();
    const [error, body] = await tryCatch(async () => await c.req.formData());
 
