@@ -1,9 +1,8 @@
-import { createRoute, missingAccess, validator } from "@huginn/backend-shared";
+import { createRoute, missingAccess, validator, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectMessageCall, selectMessageDefaults } from "@huginn/backend-shared/database/common";
 import { HttpCode, type APIGetChannelMessagesResult } from "@huginn/shared";
 import { z } from "zod";
-import { verifyJwt } from "#utils/route-utils";
 import { filterMessage } from "#utils/helpers";
 ("@huginn/backend-shared/database/common");
 

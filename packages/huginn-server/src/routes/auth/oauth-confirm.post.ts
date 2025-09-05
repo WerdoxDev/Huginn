@@ -1,4 +1,4 @@
-import { createErrorFactory, createHuginnError, createRoute, createToken, unauthorized, validator } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, createRoute, createToken, unauthorized, validator, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
 import {
@@ -15,7 +15,6 @@ import {
    toArrayBuffer,
 } from "@huginn/shared";
 import { z } from "zod";
-import { verifyJwt } from "#utils/route-utils";
 import { cdnUpload } from "#utils/server-request";
 // import { createTokens } from "#utils/token-factory";
 import { validateDisplayName, validateUsername, validateUsernameUnique } from "#utils/validation";

@@ -1,11 +1,10 @@
-import { createRoute, invalidateToken } from "@huginn/backend-shared";
+import { createRoute, invalidateToken, verifyJwt } from "@huginn/backend-shared";
 import { HttpCode } from "@huginn/shared";
-import { verifyJwt } from "#utils/route-utils";
 
 createRoute("POST", "/api/auth/logout", verifyJwt(), async (c) => {
-	const token = c.get("token");
+   const token = c.get("token");
 
-	invalidateToken(token);
+   invalidateToken(token);
 
-	return c.newResponse(null, HttpCode.NO_CONTENT);
+   return c.newResponse(null, HttpCode.NO_CONTENT);
 });

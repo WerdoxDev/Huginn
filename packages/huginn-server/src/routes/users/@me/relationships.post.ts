@@ -1,4 +1,13 @@
-import { createErrorFactory, createHuginnError, createRoute, invalidFormBody, singleError, tryCatch, validator } from "@huginn/backend-shared";
+import {
+   createErrorFactory,
+   createHuginnError,
+   createRoute,
+   invalidFormBody,
+   singleError,
+   tryCatch,
+   validator,
+   verifyJwt,
+} from "@huginn/backend-shared";
 import { assertError, prisma } from "@huginn/backend-shared/database";
 import { selectRelationshipUser } from "@huginn/backend-shared/database/common";
 import { DBErrorType } from "@huginn/backend-shared/types";
@@ -7,7 +16,6 @@ import type { Context } from "hono";
 import { z } from "zod";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { verifyJwt } from "#utils/route-utils";
 
 const schema = z.object({ username: z.string() });
 

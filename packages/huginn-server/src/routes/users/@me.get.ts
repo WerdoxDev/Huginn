@@ -1,8 +1,7 @@
-import { createRoute } from "@huginn/backend-shared";
+import { createRoute, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
 import { type APIGetCurrentUserResult, HttpCode } from "@huginn/shared";
-import { verifyJwt } from "#utils/route-utils";
 
 createRoute("GET", "/api/users/@me", verifyJwt(), async (c) => {
    const payload = c.get("tokenPayload");

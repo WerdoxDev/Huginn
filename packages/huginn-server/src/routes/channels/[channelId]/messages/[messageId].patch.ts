@@ -5,15 +5,16 @@ import {
    invalidFormBody,
    missingAccess,
    missingPermission,
+   verifyJwt,
    waitUntil,
 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectMessageDefaults } from "@huginn/backend-shared/database/common";
-import { type APIMessage, Errors, HttpCode, nullToUndefined } from "@huginn/shared";
+import { type APIMessage, Errors, HttpCode } from "@huginn/shared";
 import { safeDestr } from "destr";
 import { z } from "zod";
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { generateEmbedsFromContent, processEmbeds, verifyJwt } from "#utils/route-utils";
+import { generateEmbedsFromContent, processEmbeds } from "#utils/route-utils";
 import { validateEmbeds } from "#utils/validation";
 import { filterMessage } from "#utils/helpers";
 

@@ -1,10 +1,9 @@
-import { createErrorFactory, createHuginnError, createRoute, missingPermission, validator } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, createRoute, missingPermission, validator, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectChannelRecipients } from "@huginn/backend-shared/database/common";
 import { CDNRoutes, Errors, HttpCode, MessageFlags, MessageType, getFileHash, toArrayBuffer } from "@huginn/shared";
 import { z } from "zod";
 import { channelWithoutRecipient, dispatchChannel, dispatchMessage } from "#utils/helpers";
-import { verifyJwt } from "#utils/route-utils";
 import { cdnUpload } from "#utils/server-request";
 import { validateChannelName } from "#utils/validation";
 ("@huginn/backend-shared/database/common");

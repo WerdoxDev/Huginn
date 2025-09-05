@@ -1,11 +1,10 @@
-import { createRoute, missingAccess, missingPermission, singleError } from "@huginn/backend-shared";
+import { createRoute, missingAccess, missingPermission, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectChannelRecipients } from "@huginn/backend-shared/database/common";
 import { ChannelType, Errors, HttpCode, MessageFlags, MessageType } from "@huginn/shared";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { dispatchMessage } from "#utils/helpers";
-import { verifyJwt } from "#utils/route-utils";
 
 createRoute("DELETE", "/api/channels/:channelId/recipients/:recipientId", verifyJwt(), async (c) => {
    const payload = c.get("tokenPayload");

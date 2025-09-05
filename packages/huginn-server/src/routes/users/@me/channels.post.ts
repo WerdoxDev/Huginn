@@ -1,4 +1,4 @@
-import { createErrorFactory, createHuginnError, createRoute, validator } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, createRoute, validator, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectChannelRecipients } from "@huginn/backend-shared/database/common";
 import { type APIPostDMChannelResult, ChannelType, Errors, HttpCode } from "@huginn/shared";
@@ -6,7 +6,6 @@ import { z } from "zod";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { channelWithoutRecipient } from "#utils/helpers";
-import { verifyJwt } from "#utils/route-utils";
 import { validateChannelName } from "#utils/validation";
 
 const schema = z.object({ name: z.optional(z.string()), recipients: z.array(z.string()).nonempty() });

@@ -1,11 +1,10 @@
-import { createRoute, missingAccess, singleError } from "@huginn/backend-shared";
+import { createRoute, missingAccess, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectChannelRecipients } from "@huginn/backend-shared/database/common";
 import { ChannelType, Errors, HttpCode, MessageFlags, MessageType } from "@huginn/shared";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { dispatchChannel, dispatchMessage } from "#utils/helpers";
-import { verifyJwt } from "#utils/route-utils";
 
 createRoute("PUT", "/api/channels/:channelId/recipients/:recipientId", verifyJwt(), async (c) => {
    const payload = c.get("tokenPayload");

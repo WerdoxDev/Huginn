@@ -1,11 +1,11 @@
-import { createErrorFactory, createHuginnError, createRoute, invalidFormBody, missingAccess, waitUntil } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, createRoute, invalidFormBody, missingAccess, verifyJwt, waitUntil } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectMessageDefaults } from "@huginn/backend-shared/database/common";
 import { type APIMessage, Errors, HttpCode, MessageType, WorkerID, snowflake } from "@huginn/shared";
 import { safeDestr } from "destr";
 import { z } from "zod";
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { generateEmbedsFromContent, processAttachments, processEmbeds, verifyJwt } from "#utils/route-utils";
+import { generateEmbedsFromContent, processAttachments, processEmbeds } from "#utils/route-utils";
 import { validateEmbeds } from "#utils/validation";
 import { filterMessage } from "#utils/helpers";
 

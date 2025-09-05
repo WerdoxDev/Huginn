@@ -1,6 +1,5 @@
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { verifyJwt } from "#utils/route-utils";
-import { createRoute, missingAccess, missingPermission } from "@huginn/backend-shared";
+import { createRoute, missingAccess, missingPermission, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
 import { HttpCode } from "@huginn/shared";
 

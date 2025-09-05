@@ -1,10 +1,9 @@
-import { createErrorFactory, createHuginnError, createRoute, missingAccess, validator, waitUntil } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, createRoute, missingAccess, validator, verifyJwt, waitUntil } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
 import { constants, Errors, HttpCode } from "@huginn/shared";
 import { z } from "zod";
 import { gateway } from "#setup";
 import { dispatchCallMessage } from "#utils/helpers";
-import { verifyJwt } from "#utils/route-utils";
 
 const schema = z.object({ recipients: z.nullable(z.array(z.string())) });
 

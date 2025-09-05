@@ -1,8 +1,7 @@
-import { createRoute, missingAccess } from "@huginn/backend-shared";
+import { createRoute, missingAccess, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { omitChannelRecipient, selectChannelRecipients } from "@huginn/backend-shared/database/common";
 import { type APIGetChannelByIdResult, ChannelType, HttpCode, merge, omit } from "@huginn/shared";
-import { verifyJwt } from "#utils/route-utils";
 
 createRoute("GET", "/api/channels/:channelId", verifyJwt(), async (c) => {
    const payload = c.get("tokenPayload");

@@ -21,41 +21,6 @@ import { octokit } from "#setup";
 import { envs } from "#setup";
 import { cdnUpload } from "./server-request";
 
-export function verifyJwt(type: TokenType = "user-access") {
-   return createMiddleware(async (c, next) => {
-      const bearer = c.req.header("Authorization");
-
-      if (!bearer) {
-         return unauthorized(c);
-      }
-
-      const token = bearer.split(" ")[1];
-
-      const { valid, payload } = await verifyToken(type, token);
-
-      if (!valid || !payload) {
-         return unauthorized(c);
-      }
-
-      // We may have deleted the user form the db
-      if ((["user-access", "user-refresh"] as TokenType[]).includes(type)) {
-         if (!(await prisma.user.exists({ id: BigInt((payload as UserTokenPayload).id) }))) {
-            return unauthorized(c);
-         }
-      }
-
-      c.set("token", token);
-
-      if (type === "oauth") {
-         c.set("oauthTokenPayload", payload as unknown as OAuthTokenPayload);
-      } else if (type === "user-access") {
-         c.set("tokenPayload", payload as unknown as UserTokenPayload);
-      }
-
-      await next();
-   });
-}
-
 export function getWindowsAssetUrl(release?: Unpacked<Endpoints["GET /repos/{owner}/{repo}/releases"]["response"]["data"]>) {
    return release?.assets.find((x) => x.name.endsWith("setup.exe"))?.browser_download_url;
 }
