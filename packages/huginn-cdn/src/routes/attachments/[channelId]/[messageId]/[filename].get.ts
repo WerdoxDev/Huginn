@@ -1,14 +1,16 @@
-import { createRoute, fileNotFound, validator, waitUntil } from "@huginn/backend-shared";
+import { createRoute, fileNotFound, unauthorized, validator, waitUntil } from "@huginn/backend-shared";
 import { HttpCode, type ImageFormats, fileTypes, isImageMediaType, isVideoMediaType } from "@huginn/shared";
 import type { S3Stats } from "bun";
 import { StreamingApi } from "hono/utils/stream";
 import { z } from "zod";
-import { cacheStorage, storage } from "#setup";
+import { cacheStorage, envs, storage } from "#setup";
 import { extractFileInfo, transformImage } from "#utils/file-utils";
 import { getCacheDir } from "#utils/route-utils";
 
 // const querySchema = z.object({ token: z.string(), expires: z.string() });
 const querySchema = z.object({
+   hm: z.string(),
+   ex: z.string(),
    format: z.optional(z.string()),
    quality: z.optional(z.string()),
    width: z.optional(z.string()),
@@ -16,6 +18,21 @@ const querySchema = z.object({
 });
 
 createRoute("GET", "/cdn/attachments/:channelId/:messageId/:filename", validator("query", querySchema), async (c) => {
+   const { hm, ex } = c.req.valid("query");
+   const hasher = new Bun.CryptoHasher("sha256", envs.CDN_HMAC_SECRET);
+   const path = c.req.path.replace("/cdn/", "");
+   hasher.update(`${path}:${ex}`);
+   const expectedSignature = hasher.digest("hex");
+
+   if (expectedSignature !== hm) {
+      return fileNotFound(c);
+   }
+
+   const now = Math.floor(Date.now() / 1000);
+   if (Number(ex) < now) {
+      return fileNotFound(c);
+   }
+
    const { format, quality, width, height } = c.req.valid("query");
    const { channelId, messageId, filename } = c.req.param();
    const { mimeType } = extractFileInfo(filename);

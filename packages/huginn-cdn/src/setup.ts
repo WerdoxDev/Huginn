@@ -5,17 +5,18 @@ import { S3Storage } from "#storage/s3-storage";
 import type { Storage } from "#storage/storage";
 
 export const envs = readEnv([
-	"CDN_HOST",
-	"CDN_PORT",
-	"CERTIFICATE_PATH",
-	"PRIVATE_KEY_PATH",
-	"PASSPHRASE",
-	"AWS_REGION",
-	"AWS_KEY_ID",
-	"AWS_SECRET_KEY",
-	"AWS_BUCKET",
-	{ key: "UPLOADS_DIR", default: pathe.resolve(import.meta.dir, "../uploads") },
-	{ key: "CACHE_DIR", default: pathe.resolve(import.meta.dir, "../cache") },
+   "CDN_HOST",
+   "CDN_PORT",
+   "CERTIFICATE_PATH",
+   "PRIVATE_KEY_PATH",
+   "PASSPHRASE",
+   "AWS_REGION",
+   "AWS_KEY_ID",
+   "AWS_SECRET_KEY",
+   "AWS_BUCKET",
+   { key: "UPLOADS_DIR", default: pathe.resolve(import.meta.dir, "../uploads") },
+   { key: "CACHE_DIR", default: pathe.resolve(import.meta.dir, "../cache") },
+   "CDN_HMAC_SECRET",
 ] as const);
 
 export const CERT_FILE = envs.CERTIFICATE_PATH && Bun.file(envs.CERTIFICATE_PATH);
