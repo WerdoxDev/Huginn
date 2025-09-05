@@ -1,7 +1,17 @@
 import { Prisma, prisma } from "@huginn/backend-shared/database";
 import { selectMessageDefaults } from "@huginn/backend-shared/database/common";
-import { type BigIntToString, type DirectChannel, type GatewayEvents, MessageType, nullToUndefined, omit, type Snowflake } from "@huginn/shared";
+import {
+   type BigIntToString,
+   constants,
+   type DirectChannel,
+   type GatewayEvents,
+   MessageType,
+   nullToUndefined,
+   omit,
+   type Snowflake,
+} from "@huginn/shared";
 import { dispatchToTopic } from "./gateway-utils";
+import { envs } from "#setup";
 
 export async function dispatchMessage(options: {
    authorId: Snowflake;
@@ -57,10 +67,21 @@ export function dispatchChannel(
 }
 
 export function filterMessage<T extends BigIntToString<Prisma.MessageGetPayload<{ select: typeof selectMessageDefaults }>>>(message: T) {
+   const ttlSeconds = constants.CDN_HMAC_EXPIRE_TIME;
+   const expiry = Math.floor(Date.now() / 1000) + ttlSeconds;
+
+   const signedAttachments = message.attachments.map((x) => {
+      const hasher = new Bun.CryptoHasher("sha256", envs.CDN_HMAC_SECRET);
+      hasher.update(`${x.url}:${expiry}`);
+      const signature = hasher.digest("hex");
+
+      return { ...x, url: `${x.url}?ex=${expiry}&hm=${signature}` };
+   });
+
    return {
       ...omit(message, ["call"]),
       ...(message.call ? { call: { endedTimestamp: message.call.endedTimestamp, participants: message.call.participants.map((x) => x.id) } } : {}),
       embeds: nullToUndefined(message.embeds),
-      attachments: nullToUndefined(message.attachments),
+      attachments: nullToUndefined(signedAttachments),
    };
 }

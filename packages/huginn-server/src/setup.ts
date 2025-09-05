@@ -29,6 +29,7 @@ export const envs = readEnv([
    "SESSION_PASSWORD",
    "ALLOWED_ORIGINS",
    "REDIRECT_HOST",
+   "CDN_HMAC_SECRET",
    { key: "FFMPEG_TEMP_DIR", default: "./ffmpeg" },
 ] as const);
 
