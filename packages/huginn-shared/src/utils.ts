@@ -261,21 +261,42 @@ export function constrainImageSize(width: number, height: number, maxWidth: numb
 export function changeUrlBase(url: string, newBase: string): string {
    try {
       const newBaseUrl = new URL(newBase); // Ensure newBase is a valid URL
-
       let oldUrl: URL;
+
       try {
          oldUrl = new URL(url); // Check if oldUrl is absolute
-         oldUrl.pathname = oldUrl.pathname.replace(newBaseUrl.pathname, "");
-         oldUrl.pathname = newBaseUrl.pathname.replace(/\/$/, "") + oldUrl.pathname; // Preserve newBase's path
-         oldUrl = new URL(oldUrl.pathname, newBaseUrl);
-      } catch {
-         // If oldUrl is relative, ensure correct path joining
-         const newUrl = url.replace(/^\/+/, ""); // Remove leading slashes
-         newBaseUrl.pathname = `${newBaseUrl.pathname.replace(/\/$/, "")}/${newUrl}`; // Append correctly
-         oldUrl = newBaseUrl;
-      }
 
-      return oldUrl.toString();
+         // Preserve the original search params, hash, etc.
+         const searchParams = oldUrl.search;
+         const hash = oldUrl.hash;
+
+         // Handle the pathname
+         oldUrl.pathname = oldUrl.pathname.replace(newBaseUrl.pathname, "");
+         const newPathname = newBaseUrl.pathname.replace(/\/$/, "") + oldUrl.pathname;
+
+         // Create new URL with preserved components
+         const resultUrl = new URL(newPathname, newBaseUrl);
+         resultUrl.search = searchParams; // Preserve search params
+         resultUrl.hash = hash; // Preserve hash
+
+         return resultUrl.toString();
+      } catch {
+         // If oldUrl is relative, parse it as a relative URL to extract components
+         const tempUrl = new URL(url, "http://temp"); // Use temporary base to parse relative URL
+         const searchParams = tempUrl.search;
+         const hash = tempUrl.hash;
+
+         // Handle the pathname part only
+         const pathOnly = url.split("?")[0].split("#")[0]; // Get just the path part
+         const newUrl = pathOnly.replace(/^\/+/, ""); // Remove leading slashes
+         newBaseUrl.pathname = `${newBaseUrl.pathname.replace(/\/$/, "")}/${newUrl}`;
+
+         // Restore search params and hash
+         newBaseUrl.search = searchParams;
+         newBaseUrl.hash = hash;
+
+         return newBaseUrl.toString();
+      }
    } catch (error) {
       console.error("Invalid URL:", error);
       return url;

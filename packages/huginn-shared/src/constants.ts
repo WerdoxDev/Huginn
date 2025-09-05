@@ -11,6 +11,7 @@ export const constants = {
    REFRESH_TOKEN_EXPIRE_TIME: "14d",
    VOICE_TOKEN_EXPIRE_TIME: "1h",
    CDN_TOKEN_EXPIRE_TIME: "10mins",
+   CDN_HMAC_EXPIRE_TIME: 86400,
    EMAIL_REGEX:
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/ as RegExp,
    USERNAME_REGEX: /^[a-zA-Z0-9_.]*$/ as RegExp,
