@@ -48,7 +48,7 @@ export default function ImagePreview(props: {
             loading="lazy"
             onLoad={onLoad}
             ref={imgRef}
-            src={`${props.url}${!props.disableQuery ? `?${new URLSearchParams({ format: "webp", width: props.width.toString(), height: props.height.toString() }).toString()}` : ""}`}
+            src={`${props.url}${!props.disableQuery ? `&${new URLSearchParams({ format: "webp", width: props.width.toString(), height: props.height.toString() }).toString()}` : ""}`}
             alt={props.filename}
             onClick={() =>
                updateModals({
