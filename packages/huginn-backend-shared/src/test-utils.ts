@@ -2,7 +2,9 @@ import { HTTPError, HuginnAPIError, type HuginnErrorData } from "@huginn/shared"
 import type { Hono } from "hono";
 import { join } from "pathe";
 
-export async function prepareServer() {
+let _hostname = "";
+export async function prepareServer(hostname: string) {
+   _hostname = hostname;
    process.env.TEST = JSON.stringify(true);
    (await import(join(process.cwd(), "src", "index"))).app as Hono;
 }
@@ -28,7 +30,7 @@ export async function testHandler(
 
    // let response: Response;
    // try {
-   const response = await fetch(new URL(path, "http://localhost:3004"), {
+   const response = await fetch(new URL(path, _hostname), {
       headers: finalHeaders,
       method,
       // oxlint-disable-next-line no-invalid-fetch-options

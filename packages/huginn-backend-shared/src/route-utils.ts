@@ -2,9 +2,13 @@ import { zValidator } from "@hono/zod-validator";
 import ffmpeg from "fluent-ffmpeg";
 import type { Context, Hono, ValidationTargets } from "hono";
 import type { OnHandlerInterface } from "hono/types";
+import { createMiddleware } from "hono/factory";
 import sharp from "sharp";
 import type { ZodSchema } from "zod";
-import { invalidFormBody, notFound } from "./errors";
+import { invalidFormBody, notFound, unauthorized } from "./errors";
+import { verifyToken, type TokenType } from "#token-factory";
+import { prisma } from "#database";
+import type { UserTokenPayload, OAuthTokenPayload } from "@huginn/shared";
 
 let appInstance: Hono;
 
@@ -18,6 +22,41 @@ const createRoute: OnHandlerInterface = (method, path: string, ...handlers) => {
 };
 
 export { createRoute };
+
+export function verifyJwt(type: TokenType = "user-access") {
+   return createMiddleware(async (c, next) => {
+      const bearer = c.req.header("Authorization");
+
+      if (!bearer) {
+         return unauthorized(c);
+      }
+
+      const token = bearer.split(" ")[1];
+
+      const { valid, payload } = await verifyToken(type, token);
+
+      if (!valid || !payload) {
+         return unauthorized(c);
+      }
+
+      // We may have deleted the user form the db
+      if ((["user-access", "user-refresh"] as TokenType[]).includes(type)) {
+         if (!(await prisma.user.exists({ id: BigInt((payload as UserTokenPayload).id) }))) {
+            return unauthorized(c);
+         }
+      }
+
+      c.set("token", token);
+
+      if (type === "oauth") {
+         c.set("oauthTokenPayload", payload as unknown as OAuthTokenPayload);
+      } else if (type === "user-access") {
+         c.set("tokenPayload", payload as unknown as UserTokenPayload);
+      }
+
+      await next();
+   });
+}
 
 // @ts-ignore
 export function validator<T extends keyof ValidationTargets, S extends ZodSchema>(target: T, schema: S) {

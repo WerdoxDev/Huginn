@@ -1,34 +1,34 @@
 {
-	"name": "@huginn/backend-shared",
-	"version": "0.14.1",
-	"type": "module",
-	"dependencies": {
-		"@hono/zod-validator": "^0.4.3",
-		"@prisma/extension-optimize": "^1.1.8",
-		"@sapphire/snowflake": "^3.5.5",
-		"@types/fluent-ffmpeg": "^2.1.27",
-		"consola": "^3.4.2",
-		"fluent-ffmpeg": "^2.1.3",
-		"jose": "^6.0.12",
-		"pathe": "^2.0.3",
-		"prisma": "^6.14.0",
-		"sharp": "^0.33.5",
-		"zod": "^3.25.76"
-	},
-	"exports": {
-		".": "./src/index.ts",
-		"./*": "./src/*.ts",
-		"./database": "./src/database/index.ts",
-		"./types": "./src/types.ts"
-	},
-	"devDependencies": {
-		"@types/bun": "latest",
-		"crossws": "^0.4.1",
-		"hono": "^4.9.1"
-	},
-	"imports": {
-		"#database": "./src/database/index.ts",
-		"#*": "./src/*.ts",
-		"#types": "./src/types.ts"
-	}
+   "name": "@huginn/backend-shared",
+   "version": "0.14.1",
+   "type": "module",
+   "dependencies": {
+      "@hono/zod-validator": "^0.4.3",
+      "@prisma/extension-optimize": "^1.1.8",
+      "@sapphire/snowflake": "^3.5.5",
+      "@types/fluent-ffmpeg": "^2.1.27",
+      "consola": "^3.4.2",
+      "fluent-ffmpeg": "^2.1.3",
+      "jose": "^6.0.12",
+      "pathe": "^2.0.3",
+      "prisma": "^6.14.0",
+      "sharp": "^0.33.5",
+      "zod": "^3.25.76",
+      "hono": "^4.9.6"
+   },
+   "exports": {
+      ".": "./src/index.ts",
+      "./*": "./src/*.ts",
+      "./database": "./src/database/index.ts",
+      "./types": "./src/types.ts"
+   },
+   "devDependencies": {
+      "@types/bun": "latest",
+      "crossws": "^0.4.1"
+   },
+   "imports": {
+      "#database": "./src/database/index.ts",
+      "#*": "./src/*.ts",
+      "#types": "./src/types.ts"
+   }
 }
