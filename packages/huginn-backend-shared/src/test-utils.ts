@@ -28,8 +28,6 @@ export async function testHandler(
       }
    }
 
-   // let response: Response;
-   // try {
    const response = await fetch(new URL(path, _hostname), {
       headers: finalHeaders,
       method,
@@ -37,9 +35,6 @@ export async function testHandler(
       body: finalBody as BodyInit,
       redirect: "manual",
    });
-   // } catch (e) {
-   // 	response = e as Response;
-   // }
 
    let responseBody: unknown;
    const headersMap = new Map(response.headers);
