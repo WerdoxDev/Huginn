@@ -15,6 +15,7 @@ import { UserAPI } from "./rest-apis/user";
 import { TokenHandler } from "./token-handler";
 import { defaultClientOptions } from "./utils";
 import { Voice } from "./voice";
+import { ApplicationAPI } from "./rest-apis/application";
 
 export class HuginnClient {
    public readonly options: ClientOptions;
@@ -27,6 +28,7 @@ export class HuginnClient {
    public channels: ChannelAPI;
    public oauth: OAuthAPI;
    public log: LogAPI;
+   public applications: ApplicationAPI;
    public common: CommonAPI;
    public gateway: Gateway;
    public voice: Voice;
@@ -47,6 +49,7 @@ export class HuginnClient {
       this.users = new UserAPI(this.rest);
       this.channels = new ChannelAPI(this.rest);
       this.relationships = new RelationshipAPI(this.rest);
+      this.applications = new ApplicationAPI(this.rest);
       this.common = new CommonAPI(this.rest);
       this.gateway = new Gateway(this, this.options.gateway);
       this.voice = new Voice(this, this.options.voice);
@@ -59,7 +62,7 @@ export class HuginnClient {
     * @param tokens An object with access and refresh tokens
     * @returns An status object indicating if initialization was successful with the provided tokens and wether or not it can be retried in case of a failure
     */
-   async initializeWithToken(tokens: Partial<Tokens>): Promise<{ status: boolean, retryable: boolean }> {
+   async initializeWithToken(tokens: Partial<Tokens>): Promise<{ status: boolean; retryable: boolean }> {
       let tokenValid = false;
       let refreshTokenValid = false;
 
