@@ -2,7 +2,6 @@ import path from "node:path";
 import { enableLogs, error, findClosestString, log } from "@huginn/shared";
 import { getActiveWindowProcessIds, setExecutablesRoot, startAudioCapture, stopAudioCapture } from "application-loopback";
 import { app, BrowserWindow, desktopCapturer, ipcMain, Menu, nativeImage, Notification, session, shell, Tray } from "electron";
-import electronLog from "electron-log/main";
 import { autoUpdater, CancellationToken } from "electron-updater";
 import type { AudioSource, DisplaySource } from "@/types";
 import * as fileController from "./file-controller";
@@ -115,41 +114,32 @@ app.on("activate", () => {
 function configureUpdater() {
    log("app:electron", "default", "configure updater");
    // autoUpdater.setFeedURL({ useMultipleRangeRequest: false, url: "", provider: "generic" })
-   autoUpdater.logger = electronLog;
    autoUpdater.autoInstallOnAppQuit = false;
    autoUpdater.allowDowngrade = true;
    autoUpdater.autoDownload = false;
 
    autoUpdater.on("error", (e) => {
       error("app:electron", "updater error:", e);
-
-      electronLog.error("UPDATE ERROR", e);
    });
 
    autoUpdater.on("update-not-available", () => {
       log("app:electron", "updater", "not available");
-
-      electronLog.log("NOT AVAILABLE");
    });
 
    autoUpdater.on("checking-for-update", () => {
       log("app:electron", "updater", "check for update");
-      electronLog.log("CHECKING");
    });
 
    autoUpdater.on("update-cancelled", () => {
       log("app:electron", "updater", "check for update");
-      electronLog.log("cancel");
    });
 
    autoUpdater.on("update-available", () => {
       log("app:electron", "updater", "available");
-      electronLog.log("AVAILABLE!");
    });
 
    autoUpdater.on("update-downloaded", () => {
       log("app:electron", "updater", "downloaded");
-      electronLog.log("DOWNLOADED");
       autoUpdater.quitAndInstall(true, true);
    });
 }

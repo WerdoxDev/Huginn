@@ -29,10 +29,6 @@
 			"path": "packages/huginn-app"
 		},
 		{
-			"name": "huginn-bundler",
-			"path": "packages/huginn-bundler"
-		},
-		{
 			"name": "huginn-shared",
 			"path": "packages/huginn-shared"
 		},
@@ -55,7 +51,9 @@
       "files.associations": {
          "iostream": "cpp",
          "iosfwd": "cpp",
-         "xstring": "cpp"
+         "xstring": "cpp",
+         "map": "cpp",
+         "xtree": "cpp"
       }
 	}
 }
