@@ -224,12 +224,12 @@ export enum MessageFlags {
 
 export type APIDefaultMessage = {
    type:
-   | MessageType.DEFAULT
-   | MessageType.RECIPIENT_ADD
-   | MessageType.RECIPIENT_REMOVE
-   | MessageType.CHANNEL_ICON_CHANGED
-   | MessageType.CHANNEL_NAME_CHANGED
-   | MessageType.CHANNEL_OWNER_CHANGED;
+      | MessageType.DEFAULT
+      | MessageType.RECIPIENT_ADD
+      | MessageType.RECIPIENT_REMOVE
+      | MessageType.CHANNEL_ICON_CHANGED
+      | MessageType.CHANNEL_NAME_CHANGED
+      | MessageType.CHANNEL_OWNER_CHANGED;
 } & APIBaseMessage;
 
 export type APICallMessage = {
@@ -362,3 +362,17 @@ export type APIPostLogJSONBody = Array<{ type: "log" | "error"; section: string;
 
 export type APIPatchUserSettingsJSONBody = Partial<UserSettings>;
 export type APIPatchUserSettingsResult = UserSettings;
+
+export type APIKnownApplication = {
+   id: number;
+   name: string;
+   exeName: string;
+   updatedAt: Date | string | null;
+   createdAt: Date | string;
+   deletedAt: Date | string | null;
+};
+
+export type APIGetKnownApplicationsResult = {
+   lastUpdated: string;
+   applications: APIKnownApplication[];
+};

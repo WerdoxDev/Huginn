@@ -158,8 +158,17 @@ export const Routes = {
     * Route for
     * - POST '/log'
     */
-   log(): "/log" {
-      return "/log";
+   log() {
+      return "/log" as const;
+   },
+
+   /**
+    * Route for
+    * - GET  "/applications/known"
+    * - POST "/applications/known"
+    */
+   knownApplications() {
+      return "/applications/known" as const;
    },
 };
 
