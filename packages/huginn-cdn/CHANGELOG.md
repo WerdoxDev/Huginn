@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.12.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.11.0...cdn@v0.12.0) (2025-09-06)
+
+
+### Features
+
+* **cdn:** add attachment hmac verification ([711a552](https://github.com/WerdoxDev/Huginn/commit/711a552e2334831c84728c3eb02db5fe35dc7d7d))
+* **cdn:** add better tests + upload authentication ([756d4f1](https://github.com/WerdoxDev/Huginn/commit/756d4f144c26e3cfc654b109fc8af66d70121681))
+
 ## [0.11.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.10.3...cdn@v0.11.0) (2025-04-11)
 
 

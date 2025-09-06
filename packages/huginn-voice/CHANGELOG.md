@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.3](https://github.com/WerdoxDev/Huginn/compare/voice@v0.10.2...voice@v0.10.3) (2025-09-06)
+
+
+### Bug Fixes
+
+* **voice:** use new verifyToken ([ffde1f7](https://github.com/WerdoxDev/Huginn/commit/ffde1f742566d5ba7ea753c1f6acd060729f306e))
+
 ## [0.10.2](https://github.com/WerdoxDev/Huginn/compare/voice@v0.10.1...voice@v0.10.2) (2025-07-29)
 
 
