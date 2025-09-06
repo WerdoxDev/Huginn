@@ -1,4 +1,3 @@
-### 🚀 Custom Status!
+### 🌑 _Blood Moon_
 
-- You can now choose your presence status in the app!
-- Some settings like theme is now synced across devices!
+- Added Scarlet theme
