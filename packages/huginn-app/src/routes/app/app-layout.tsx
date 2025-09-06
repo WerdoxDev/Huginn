@@ -22,6 +22,7 @@ import { type ReactNode, useEffect } from "react";
 import { Outlet } from "react-router";
 import KeybindsProvider from "@contexts/KeybindsProvider";
 import SettingsProvider from "@contexts/SettingsProvider";
+import { initializeFilesWithClient } from "@stores/filesStore";
 
 export default function AppLayout() {
    const authBackground = useStartBackground();
@@ -38,6 +39,7 @@ export default function AppLayout() {
          unlisteners.push(initializePresence());
          unlisteners.push(initializeTyping());
          unlisteners.push(initializeVoice());
+         unlisteners.push(initializeFilesWithClient());
 
          return () => {
             for (const unlisten of unlisteners) {
