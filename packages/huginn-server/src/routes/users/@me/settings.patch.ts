@@ -5,7 +5,7 @@ import { HttpCode, type APIPatchUserSettingsResult } from "@huginn/shared";
 import z from "zod";
 
 const schema = z.object({
-   theme: z.optional(z.enum(["eggplant", "cerulean", "pine green", "coffee", "charcoal"])),
+   theme: z.optional(z.enum(["eggplant", "cerulean", "pine green", "coffee", "charcoal", "scarlet"])),
    status: z.optional(z.enum(["offline", "online", "dnd", "idle"])),
 });
 

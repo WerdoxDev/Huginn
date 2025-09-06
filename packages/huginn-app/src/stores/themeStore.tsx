@@ -209,6 +209,47 @@ export const charcoalTheme: ColorTheme = {
    text: "#EBEBD3",
 };
 
+export const scarletTheme: ColorTheme = {
+   surface: "#303030",
+   "surface-alt": "#262626",
+   "surface-deep": "#1f1f1f",
+   "primary-300": "#ff9f70",
+   "primary-400": "#ff6b37",
+   "primary-500": "#ff400a",
+   "primary-600": "#f02a06",
+   "primary-700": "#c71b07",
+   "primary-800": "#9e170e",
+   "primary-900": "#7f170f",
+   "positive-100": "#76ff7a",
+   "positive-200": "#6ae66e",
+   "positive-300": "#5ecc62",
+   "positive-400": "#53b355",
+   "positive-500": "#479949",
+   "positive-600": "#3b803d",
+   "positive-700": "#2f6631",
+   "positive-800": "#234c25",
+   "positive-900": "#183318",
+   "negative-100": "#fa8072",
+   "negative-200": "#e17367",
+   "negative-300": "#c8665b",
+   "negative-400": "#af5a50",
+   "negative-500": "#964d44",
+   "negative-600": "#7d4039",
+   "negative-700": "#64332e",
+   "negative-800": "#4b2622",
+   "negative-900": "#321a17",
+   "caution-100": "#ed9121",
+   "caution-200": "#d5831e",
+   "caution-300": "#be741a",
+   "caution-400": "#a66617",
+   "caution-500": "#8e5714",
+   "caution-600": "#774911",
+   "caution-700": "#5f3a0d",
+   "caution-800": "#472b0a",
+   "caution-900": "#2f1d07",
+   text: "#EBEBD3",
+};
+
 const store = createStore(
    combine(
       {
@@ -235,8 +276,11 @@ const store = createStore(
                   case "charcoal":
                      theme = charcoalTheme;
                      break;
+                  case "scarlet":
+                     theme = scarletTheme;
+                     break;
                   default:
-                     theme = charcoalTheme;
+                     theme = ceruleanTheme;
                }
                setColorProperty(theme);
                return { themeType: type, theme };

@@ -342,7 +342,7 @@ export type UserPresence = {
 export type PresenceUser = Partial<APIPublicUser> & { id: Snowflake };
 
 export type UserSettings = {
-   theme?: "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal";
+   theme?: "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal" | "scarlet";
    status: PresenceStatus;
 };
 

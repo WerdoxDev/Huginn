@@ -1,6 +1,6 @@
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
 import { useFilesStore } from "@stores/filesStore";
-import { ceruleanTheme, charcoalTheme, coffeeTheme, eggplantTheme, pineGreenTheme, useTheme } from "@stores/themeStore";
+import { ceruleanTheme, charcoalTheme, coffeeTheme, eggplantTheme, pineGreenTheme, scarletTheme } from "@stores/themeStore";
 import type { DropdownItem, SettingsTabProps, ThemeType } from "@/types";
 
 const themes: DropdownItem[] = [
@@ -9,6 +9,7 @@ const themes: DropdownItem[] = [
    { text: "Eggplant", value: "eggplant", icon: <ThemeIcon color={eggplantTheme["primary-500"]} /> },
    { text: "Coffee", value: "coffee", icon: <ThemeIcon color={coffeeTheme["primary-500"]} /> },
    { text: "Charcoal", value: "charcoal", icon: <ThemeIcon color={charcoalTheme["primary-500"]} /> },
+   { text: "Scarlet", value: "scarlet", icon: <ThemeIcon color={scarletTheme["primary-500"]} /> },
 ];
 
 export default function SettingsThemeTab(props: SettingsTabProps) {

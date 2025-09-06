@@ -162,7 +162,7 @@ export type ColorTheme = {
    text: string;
 };
 
-export type ThemeType = "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal";
+export type ThemeType = "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal" | "scarlet";
 
 export type TooltipOptions = {
    initialOpen?: boolean;
