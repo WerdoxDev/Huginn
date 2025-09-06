@@ -82,3 +82,12 @@ export const selectRelationshipUser = Prisma.validator<Prisma.RelationshipSelect
 
 export const omitMessageAuthorId = Prisma.validator<Prisma.MessageOmit>()({ authorId: true });
 export const omitRelationshipUserIds = Prisma.validator<Prisma.RelationshipOmit>()({ userId: true, ownerId: true });
+
+export const selectKnownApplication = Prisma.validator<Prisma.KnownApplicationsSelect>()({
+   id: true,
+   createdAt: true,
+   deletedAt: true,
+   exeName: true,
+   name: true,
+   updatedAt: true,
+});

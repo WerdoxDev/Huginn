@@ -10,6 +10,7 @@ import { readStateExtension } from "./readState";
 import { relationshipExtension } from "./relationship";
 import { userExtension } from "./user";
 import { settingsExtension } from "./settings";
+import { knownApplicationsExtension } from "./knownApplication";
 
 // export const prismaBase = new PrismaClient({ omit: { user: { password: true } } }).$extends({
 export const prismaBase = new PrismaClient().$extends(withOptimize({ apiKey: process.env.OPTIMIZE_API_KEY ?? "", enable: false }));
@@ -21,7 +22,6 @@ export const prisma = prismaBase
             async exists<T>(this: T, where: Prisma.Args<T, "findFirst">["where"]) {
                const context = Prisma.getExtensionContext(this);
 
-               // biome-ignore lint/suspicious/noExplicitAny: <explanation>
                const result = await (context as any).count({ where });
                return result !== 0;
             },
@@ -37,7 +37,8 @@ export const prisma = prismaBase
    .$extends(readStateExtension)
    .$extends(embedExtension)
    .$extends(attachmentExtension)
-   .$extends(settingsExtension);
+   .$extends(settingsExtension)
+   .$extends(knownApplicationsExtension);
 
 // let longest = 0;
 // prismaBase.$on("query", (e) => {

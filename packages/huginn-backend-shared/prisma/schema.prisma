@@ -10,25 +10,26 @@ datasource db {
 }
 
 model User {
-   id                   BigInt             @id
-   username             String             @unique
-   displayName          String?
-   email                String             @unique
-   avatar               String?
-   password             String?
-   flags                Int                @db.SmallInt
-   system               Boolean            @default(false)
-   includedChannels     Channel[]          @relation("channel_recipients")
-   ownedChannels        Channel[]          @relation("channel_owner")
-   tempDeletedChannels  Channel[]          @relation("channel_temp_deleted")
-   messages             Message[]
-   mentionedMessages    Message[]          @relation("message_mentions")
-   relationships        Relationship[]     @relation("relation_owner")
-   relatedRelationships Relationship[]     @relation("relation_user")
-   identityProvider     IdentityProvider[]
-   readStates           ReadState[]
-   participatedCalls    Call[]             @relation("participated_calls")
-   settings             Settings?
+   id                      BigInt              @id
+   username                String              @unique
+   displayName             String?
+   email                   String              @unique
+   avatar                  String?
+   password                String?
+   flags                   Int                 @db.SmallInt
+   system                  Boolean             @default(false)
+   includedChannels        Channel[]           @relation("channel_recipients")
+   ownedChannels           Channel[]           @relation("channel_owner")
+   tempDeletedChannels     Channel[]           @relation("channel_temp_deleted")
+   messages                Message[]
+   mentionedMessages       Message[]           @relation("message_mentions")
+   relationships           Relationship[]      @relation("relation_owner")
+   relatedRelationships    Relationship[]      @relation("relation_user")
+   identityProvider        IdentityProvider[]
+   readStates              ReadState[]
+   participatedCalls       Call[]              @relation("participated_calls")
+   settings                Settings?
+   contributedApplications KnownApplications[]
 }
 
 model Channel {
@@ -162,4 +163,17 @@ model Settings {
    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    userId BigInt @id @unique
    json   Json
+}
+
+model KnownApplications {
+   id            Int       @id @default(autoincrement())
+   name          String
+   exeName       String
+   contributor   User?     @relation(fields: [contributorId], references: [id])
+   contributorId BigInt?
+   createdAt     DateTime  @default(now())
+   updatedAt     DateTime? @updatedAt
+   deletedAt     DateTime?
+
+   @@index([name])
 }
