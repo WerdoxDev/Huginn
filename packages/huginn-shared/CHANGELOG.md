@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.26.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.25.1...shared@v0.26.0) (2025-09-06)
+
+
+### Features
+
+* **app:** add scarlet theme + update old icons ([fb8ea1c](https://github.com/WerdoxDev/Huginn/commit/fb8ea1cee75db53a29d9ff451f107a08ce3369a2))
+* **shared:** add types for known games route ([e77af2d](https://github.com/WerdoxDev/Huginn/commit/e77af2dc8f4d71ec92aefac5f5f3ee0a73304107))
+
+
+### Bug Fixes
+
+* **shared:** fix changeurlbase function not keeping search arams + new constant ([074c9f6](https://github.com/WerdoxDev/Huginn/commit/074c9f6ca234cc68ee0ec2900e2f746bb92b4dfd))
+
 ## [0.25.1](https://github.com/WerdoxDev/Huginn/compare/shared@v0.25.0...shared@v0.25.1) (2025-08-19)
 
 

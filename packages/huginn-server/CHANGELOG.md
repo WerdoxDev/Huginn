@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.28.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.27.1...server@v0.28.0) (2025-09-06)
+
+
+### Features
+
+* **app:** add scarlet theme + update old icons ([fb8ea1c](https://github.com/WerdoxDev/Huginn/commit/fb8ea1cee75db53a29d9ff451f107a08ce3369a2))
+* **server:** add a separate session_update for all presence updates for multi session ([2564a80](https://github.com/WerdoxDev/Huginn/commit/2564a80cb43386f03760faa25e245e17253dca46))
+* **server:** add route for getting all known applications ([431fedb](https://github.com/WerdoxDev/Huginn/commit/431fedbdf21559d6f6348ec8e4ccba932f9cc76f))
+* **server:** sign attachment url with a secret ([019f14d](https://github.com/WerdoxDev/Huginn/commit/019f14d53eb0b8e1e939247fba97070b8369c254))
+
+
+### Bug Fixes
+
+* **server:** use new token factory from backend shared (wip) ([f2fdc04](https://github.com/WerdoxDev/Huginn/commit/f2fdc040f29333e670d0ea4b3b1afdacd7e485b4))
+
 ## [0.27.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.27.0...server@v0.27.1) (2025-08-30)
 
 
