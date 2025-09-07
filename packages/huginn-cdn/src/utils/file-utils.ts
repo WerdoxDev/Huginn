@@ -85,7 +85,7 @@ export async function transformImage(
       }
 
       if (format) {
-         s = s.toFormat(format, { lossless: quality === 100, quality: quality !== 100 && !Number.isNaN(quality) ? quality : undefined });
+         s = s.toFormat(format, { lossless: !quality || quality === 100, quality: quality !== 100 && !Number.isNaN(quality) ? quality : undefined });
       }
 
       const finalStream = nodeReadable.pipe(s).pipe(nodeWritable);

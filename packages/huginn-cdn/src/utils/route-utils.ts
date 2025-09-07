@@ -32,8 +32,6 @@ export async function tryResolveImage(c: Context, category: FileCategory, subDir
       }
    });
 
-   console.log(hash, mimeType);
-
    return c.body(readable1, HttpCode.OK, { "Content-Type": mimeType });
 }
 
