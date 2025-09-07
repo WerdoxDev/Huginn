@@ -15,6 +15,7 @@ type LogValuesMap = {
       | "available-producers";
    "app:general": "messages";
    "app:files-store": "voice-preferences";
+   "app:presence-store": "default";
    "app:audio-source-player": "default";
    "app:audio-level-checker": "default";
    "app:voice-input-device": "default";

@@ -170,6 +170,14 @@ export const Routes = {
    knownApplications() {
       return "/applications/known" as const;
    },
+
+   /**
+    * Route for
+    * - POST "/applications/icon"
+    */
+   applicationIcon() {
+      return "/applications/icon" as const;
+   },
 };
 
 export const CDNRoutes = {
@@ -195,5 +203,9 @@ export const CDNRoutes = {
     */
    uploadAttachment(channelId: Snowflake, messageId: Snowflake): `/attachments/${string}/${string}` {
       return `/attachments/${channelId}/${messageId}`;
+   },
+
+   uploadApplicationIcon(applicationId?: number): `/application-icons/${string}` | `/application-icons` {
+      return applicationId ? `/application-icons/${applicationId}` : "/application-icons";
    },
 };

@@ -336,6 +336,7 @@ export type PresenceStatus = "offline" | "online" | "dnd" | "idle";
 export type UserPresence = {
    user: PresenceUser;
    status: PresenceStatus;
+   activities: Activity[];
    activeSessions: Snowflake[];
 };
 
@@ -344,6 +345,20 @@ export type PresenceUser = Partial<APIPublicUser> & { id: Snowflake };
 export type UserSettings = {
    theme?: "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal" | "scarlet";
    status: PresenceStatus;
+};
+
+export enum ActivityType {
+   PLAYING = 0,
+   LISTENING = 1,
+}
+
+export type Activity = {
+   name: string;
+   type: ActivityType;
+   createdAt: number;
+   startedAt?: number;
+   applicationId?: number;
+   iconUrl?: string;
 };
 
 export type OAuthType = "google" | "github";
@@ -376,3 +391,10 @@ export type APIGetKnownApplicationsResult = {
    lastUpdated: string;
    applications: APIKnownApplication[];
 };
+
+export type APIPostApplicationIconJSONBody = {
+   icon: string;
+   applicationId?: number;
+};
+
+export type APIPostApplicationIconResult = string;

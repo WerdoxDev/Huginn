@@ -1,4 +1,5 @@
 import type {
+   Activity,
    APIChannelUser,
    APIMessage,
    APIReadStateWithoutUser,
@@ -245,10 +246,12 @@ export type GatewayUpdatePresence = {
 
 export type GatewayUpdatePresenceData = {
    status: PresenceStatus;
+   activities: Activity[];
 };
 
 export type GatewaySettingsUpdateData = Partial<UserSettings>;
 
 export type GatewaySessionUpdateData = {
    status: PresenceStatus;
+   activities: Activity[];
 };
