@@ -390,7 +390,10 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
          return;
       }
 
-      const updatePresenceData: GatewayPayload = { op: GatewayOperations.PRESENCE_UPDATE, d: { status: options.status } };
+      const updatePresenceData: GatewayPayload = {
+         op: GatewayOperations.PRESENCE_UPDATE,
+         d: { status: options.status, activities: options.activities },
+      };
 
       log("api:gateway", "send", "update presence", "sts:", options.status);
       this.send(updatePresenceData);
