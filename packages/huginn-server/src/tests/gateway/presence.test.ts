@@ -203,7 +203,7 @@ describe("Presence", () => {
          }
       };
 
-      const updateData: GatewayPayload = { op: GatewayOperations.PRESENCE_UPDATE, d: { status: "dnd" } };
+      const updateData: GatewayPayload = { op: GatewayOperations.PRESENCE_UPDATE, d: { status: "dnd", activities: [] } };
       wsSend(ws1, updateData);
    });
 
@@ -223,7 +223,7 @@ describe("Presence", () => {
          }
       };
 
-      const updateData: GatewayPayload = { op: GatewayOperations.PRESENCE_UPDATE, d: { status: "dnd" } };
+      const updateData: GatewayPayload = { op: GatewayOperations.PRESENCE_UPDATE, d: { status: "dnd", activities: [] } };
       wsSend(ws1, updateData);
    });
 });

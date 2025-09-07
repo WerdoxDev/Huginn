@@ -1,4 +1,14 @@
-import { type PresenceStatus, type PresenceUser, type Snowflake, type UserPresence, type UserSettings, log, omit, pick } from "@huginn/shared";
+import {
+   type Activity,
+   type PresenceStatus,
+   type PresenceUser,
+   type Snowflake,
+   type UserPresence,
+   type UserSettings,
+   log,
+   omit,
+   pick,
+} from "@huginn/shared";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import type { ClientSession } from "./client-session";
 import type { ServerUserPresence } from "@huginn/backend-shared";
@@ -18,6 +28,7 @@ export class PresenceManager {
       const presence: ServerUserPresence = {
          userId: userId,
          status: existingPresence?.status ?? settings.status,
+         activities: [],
          activeSessions: [...(existingPresence?.activeSessions ?? []).filter((x) => x !== session.sessionId), session.sessionId],
       };
 
@@ -30,7 +41,7 @@ export class PresenceManager {
       }
    }
 
-   public updateUserPresence(userId: Snowflake, user?: PresenceUser, status?: PresenceStatus) {
+   public updateUserPresence(userId: Snowflake, user?: PresenceUser, status?: PresenceStatus, activities?: Activity[]) {
       log("server:presence-manager", "default", "update", "uid:", userId);
 
       const existingPresence = this.presences.get(userId);
@@ -39,6 +50,7 @@ export class PresenceManager {
             ...existingPresence,
             userId: userId,
             status: status ?? existingPresence.status,
+            activities: activities ? activities : existingPresence.activities,
          };
          this.presences.set(userId, newPresence);
 
@@ -61,7 +73,7 @@ export class PresenceManager {
 
       // Only send the user presence to others if it's not already set to offline. This is to keep a user who set their status to offline be no different than an actual offline user
       if (presence.status !== "offline") {
-         const newPresence: ServerUserPresence = { userId, status: newStatus, activeSessions: newActiveSessions };
+         const newPresence: ServerUserPresence = { userId, status: newStatus, activeSessions: newActiveSessions, activities: [] };
          this.sendPresenceUpdate(`${userId}_presence`, newPresence, { id: userId });
       }
 
@@ -96,7 +108,7 @@ export class PresenceManager {
 
    public sendToUser(whomToSendId: Snowflake, targetId: Snowflake, offlineStatus?: boolean) {
       const presence: ServerUserPresence | undefined = offlineStatus
-         ? { userId: targetId, status: "offline", activeSessions: [] }
+         ? { userId: targetId, status: "offline", activeSessions: [], activities: [] }
          : this.presences.get(targetId);
       if (presence) {
          this.sendPresenceUpdate(whomToSendId, presence, { id: targetId });
@@ -114,6 +126,6 @@ export class PresenceManager {
 
    private sendSessionUpdate(userId: Snowflake, presence: ServerUserPresence) {
       log("server:presence-manager", "send", "session_update", "uid:", userId, "sts:", presence.status);
-      dispatchToTopic(userId, "session_update", { status: presence.status });
+      dispatchToTopic(userId, "session_update", { status: presence.status, activities: presence.activities });
    }
 }

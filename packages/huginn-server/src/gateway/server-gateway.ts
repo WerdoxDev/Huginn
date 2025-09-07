@@ -285,7 +285,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       log("server:gateway", "recv", "update presence", "sid:", session.sessionId, "uid:", userId, "sts:", data.status);
 
       if (userId) {
-         this.presenceManager.updateUserPresence(userId, undefined, data.status);
+         this.presenceManager.updateUserPresence(userId, undefined, data.status, data.activities);
       }
    }
 }
