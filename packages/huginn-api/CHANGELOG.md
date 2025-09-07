@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.26.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.25.0...api@v0.26.0) (2025-09-06)
+
+
+### Features
+
+* **api:** add Applications api ([36079db](https://github.com/WerdoxDev/Huginn/commit/36079dbfb80944e0102b2f3586650dc60009d11f))
+
 ## [0.25.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.24.1...api@v0.25.0) (2025-08-29)
 
 

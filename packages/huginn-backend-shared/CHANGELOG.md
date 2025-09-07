@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.15.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.14.1...backend-shared@v0.15.0) (2025-09-06)
+
+
+### Features
+
+* **backend-shared:** add db application models and functions ([ea9cdec](https://github.com/WerdoxDev/Huginn/commit/ea9cdecacf8b8541e2e241d828aa2ed68c8cef9d))
+* **backend-shared:** move token-factory to backend shared ([24e2d16](https://github.com/WerdoxDev/Huginn/commit/24e2d161ebfc88bf2dcdc4e3746e923a8ece9e53))
+
 ## [0.14.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.14.0...backend-shared@v0.14.1) (2025-08-30)
 
 

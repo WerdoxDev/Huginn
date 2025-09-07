@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.56.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.55.2...app@v0.56.0) (2025-09-06)
+
+
+### Features
+
+* **app:** a first implementation with some icon and file utilities ([daf1570](https://github.com/WerdoxDev/Huginn/commit/daf1570a1c62ad9a5c390d855f645f313dc97f71))
+* **app:** add better bundling + native module testing ([428f6a5](https://github.com/WerdoxDev/Huginn/commit/428f6a5c1ae0fdaf5a2f48efcf3cedf4ee38c294))
+* **app:** add cmakejs instead of node-gyp ([1e7c0a8](https://github.com/WerdoxDev/Huginn/commit/1e7c0a89439641f2e028df6855c12eb2f8b467cf))
+* **app:** add scarlet theme + update old icons ([fb8ea1c](https://github.com/WerdoxDev/Huginn/commit/fb8ea1cee75db53a29d9ff451f107a08ce3369a2))
+* **app:** fetch known games with last updated field for delta updates ([713af71](https://github.com/WerdoxDev/Huginn/commit/713af71873ce513cb0f512e03b53f4322c16f2a8))
+* **app:** lots of cleanup and napi function changes ([4422bc2](https://github.com/WerdoxDev/Huginn/commit/4422bc2f0b0d1ce0407c6467677065ad8656062e))
+* **app:** native addon window utility ([293072e](https://github.com/WerdoxDev/Huginn/commit/293072e52bc68ac84604d60644c6aba1a9ed4e4e))
+
+
+### Bug Fixes
+
+* **app:** app should listen for session_update not settings_update ([95be693](https://github.com/WerdoxDev/Huginn/commit/95be693406996d0b2aca03aeda67aa30577a4a7b))
+* **app:** image preview search wrong is wrong ([3cdef4e](https://github.com/WerdoxDev/Huginn/commit/3cdef4ec5a3b45bd8cb231977fb2df5848cec75c))
+
 ## [0.55.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.55.1...app@v0.55.2) (2025-08-30)
 
 
