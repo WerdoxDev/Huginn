@@ -11,7 +11,7 @@ import type { PresenceStatus } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
 import { presenceStatuses } from "@lib/utils";
 import clsx from "clsx";
-import { usePresence } from "@stores/presenceStore";
+import { usePresence, usePresenceStore } from "@stores/presenceStore";
 import { useEditSettings } from "@hooks/mutations/useEditSettings";
 
 export default function UserInfo(props: { user: AppUser }) {
@@ -21,6 +21,7 @@ export default function UserInfo(props: { user: AppUser }) {
    const { localVoiceState } = useVoiceStore();
    const { toggleDeafen, toggleMute } = useVoiceUtils();
    const presence = usePresence(props.user.id);
+   const { thisPresence } = usePresenceStore();
    const editSettingsMutation = useEditSettings();
 
    const logoutMutation = useMutation({
@@ -34,7 +35,7 @@ export default function UserInfo(props: { user: AppUser }) {
    }
 
    function setStatus(status: PresenceStatus) {
-      client?.gateway.updatePresence({ status });
+      client?.gateway.updatePresence({ status, activities: thisPresence.activities });
       editSettingsMutation.mutate({ status });
    }
 

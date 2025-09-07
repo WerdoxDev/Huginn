@@ -7,6 +7,7 @@ import type { AudioSource, DisplaySource } from "@/types";
 import * as fileController from "./file-controller";
 import * as cacheController from "./cache-controller";
 import * as keybindsController from "./keybinds-controller";
+import native from "native-addon";
 
 // application-loopback executable path when packaged
 if (app.isPackaged) {
@@ -459,5 +460,20 @@ function listenToEvents(mainWindow: BrowserWindow) {
          log("app:electron", "loopback", "stop", "pid:", previousProcessId);
          stopAudioCapture(previousProcessId);
       }
+   });
+
+   ipcMain.handle("native:get-open-applications", () => {
+      log("app:electron", "recv", "native get open applications");
+
+      const applications = native.enumerateOpenApplications();
+
+      return applications;
+   });
+
+   ipcMain.handle("native:get-exe-large-icon", (_, exePath: string) => {
+      log("app:electron", "recv", "native get exe large icon", "exp:", exePath);
+
+      const icon = native.getExeLargeIcon(exePath);
+      return icon;
    });
 }

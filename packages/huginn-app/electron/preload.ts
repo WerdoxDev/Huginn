@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { ProgressInfo, UpdateInfo } from "electron-updater";
 import type { AudioSource, DisplaySource, KeybindType } from "@/types";
+import type { AppInfo } from "native-addon";
 
 export const electronAPI = {
    getVersion: () => ipcRenderer.invoke("window:version") as Promise<string>,
@@ -75,6 +76,10 @@ export const electronAPI = {
       ipcRenderer.on("window:is-fullscreen", callback);
       return () => ipcRenderer.off("window:is-fullscreen", callback);
    },
+
+   // Native
+   getOpenApplications: () => ipcRenderer.invoke("native:get-open-applications") as Promise<AppInfo[]>,
+   getExeLargeIcon: (exePath: string) => ipcRenderer.invoke("native:get-exe-large-icon", exePath) as Promise<string>,
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

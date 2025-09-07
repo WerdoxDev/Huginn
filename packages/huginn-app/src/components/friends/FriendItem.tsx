@@ -1,10 +1,12 @@
 import type { AppPresence, AppUser } from "@/types";
+import ActivityPreview from "@components/ActivityPreview";
 import LoadingIcon from "@components/LoadingIcon";
 import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
 import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import type { Snowflake } from "@huginn/shared";
 import { RelationshipType } from "@huginn/shared";
+import { presenceStatuses } from "@lib/utils";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { type MouseEvent, useMemo } from "react";
 
@@ -30,19 +32,19 @@ export default function FriendItem(props: {
       [createChannelState, createRelationshipState, removeRelationshipState],
    );
 
-   const presenceText = useMemo(
-      () =>
-         !props.presence
-            ? "Offline"
-            : props.presence?.status === "online"
-              ? "Online"
-              : props.presence?.status === "offline"
-                ? "Offline"
-                : props.presence?.status === "idle"
-                  ? "Idle"
-                  : "Do not disturb",
-      [props.presence],
-   );
+   // const presenceText = useMemo(
+   //    () =>
+   //       !props.presence
+   //          ? "Offline"
+   //          : props.presence?.status === "online"
+   //            ? "Online"
+   //            : props.presence?.status === "offline"
+   //              ? "Offline"
+   //              : props.presence?.status === "idle"
+   //                ? "Idle"
+   //                : "Do not disturb",
+   //    [props.presence],
+   // );
 
    return (
       // biome-ignore lint/a11y/noStaticElementInteractions: there is an inner button
@@ -58,9 +60,15 @@ export default function FriendItem(props: {
       >
          <div className="flex">
             <UserAvatar userId={props.user.id} avatarHash={props.user.avatar} className="mr-3" />
-            <div className="flex flex-col items-start">
-               <span className="text-text font-semibold">{props.user.displayName}</span>
-               <span className="text-text/50 text-sm">{presenceText}</span>
+            <div className="flex flex-col overflow-hidden">
+               <div className="text-text font-semibold">{props.user.displayName}</div>
+               <div className="text-text/50 text-sm">
+                  {props.presence && props.presence?.activities.length !== 0 ? (
+                     <ActivityPreview presence={props.presence} />
+                  ) : (
+                     presenceStatuses[props.presence?.status ?? "offline"].text
+                  )}
+               </div>
             </div>
          </div>
          {loading && (

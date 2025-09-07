@@ -12,6 +12,8 @@ import type { AppDirectChannel } from "@/types";
 import ChannelIcon from "./ChannelIcon";
 import LoadingIcon from "./LoadingIcon";
 import UserAvatar from "./UserAvatar";
+import { usePresence } from "@stores/presenceStore";
+import ActivityPreview from "./ActivityPreview";
 
 export default function DirectMessageChannel(props: { channel: AppDirectChannel; onSelected?: () => void }) {
    const client = useClient();
@@ -20,9 +22,9 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
    const { open: openContextMenu } = useContextMenu("dm_channel");
 
    const recipients = useUsers(props.channel.recipientIds);
+   const presence = usePresence(recipients[0]?.id);
    const { channelId } = useParams();
    const selected = useMemo(() => channelId === props.channel?.id, [channelId, props.channel]);
-   // const name = useChannelName(props.channel.id);
 
    const { tryMutate } = useSafeDeleteDMChannel(props.channel.id, props.channel.type, props.channel.name);
 
@@ -31,10 +33,10 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
          onContextMenu={(e) => {
             openContextMenu(props.channel, e);
          }}
-         className={clsx("hover:bg-surface group relative -mr-2 cursor-pointer rounded-md active:bg-white/10", selected && "bg-white/10")}
+         className={clsx("hover:bg-surface group relative -mr-1 flex cursor-pointer rounded-md active:bg-white/10", selected && "bg-white/10")}
          onClick={props.onSelected}
       >
-         <NavLink prefetch="intent" className="flex items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>
+         <NavLink prefetch="intent" className="flex w-full min-w-0 shrink items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>
             {props.channel.type === ChannelType.DM ? (
                <UserAvatar userId={recipients[0].id} avatarHash={recipients[0]?.avatar} className="mr-3" />
             ) : (
@@ -50,22 +52,21 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
                   {props.channel.name}
                </div>
                {props.channel.type === ChannelType.GROUP_DM && (
-                  <div className={clsx("text-text text-xs group-hover:opacity-70", selected ? "opacity-70" : "opacity-50")}>
+                  <div className={clsx("text-text text-xs group-hover:opacity-100", selected ? "opacity-100" : "opacity-50")}>
                      {recipients.length + 1} Members
                   </div>
+               )}
+               {props.channel.type === ChannelType.DM && (
+                  <ActivityPreview presence={presence} className={clsx("group-hover:opacity-100", selected ? "opacity-100" : "opacity-50")} />
                )}
             </div>
          </NavLink>
          {!isLoading ? (
-            <button
-               type="button"
-               className="group/close invisible absolute bottom-3.5 right-2 top-3.5 shrink-0 cursor-pointer group-hover:visible"
-               onClick={tryMutate}
-            >
+            <button type="button" className="group/close mr-2 hidden shrink-0 cursor-pointer group-hover:block" onClick={tryMutate}>
                <IconMingcuteCloseFill className="text-text/50 group-hover/close:text-text" />
             </button>
          ) : (
-            <div className="absolute bottom-3.5 right-2 top-3.5 flex shrink-0 items-center justify-center">
+            <div className="mr-2 flex shrink-0 items-center justify-center">
                <LoadingIcon className="size-7" />
             </div>
          )}

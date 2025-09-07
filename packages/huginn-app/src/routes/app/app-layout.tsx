@@ -34,12 +34,12 @@ export default function AppLayout() {
       const unlisteners: Array<(() => void) | undefined> = [];
 
       if (clientStore.isInitialized) {
+         unlisteners.push(initializeFilesWithClient());
          unlisteners.push(initializeUser());
          unlisteners.push(initializeReadStates());
          unlisteners.push(initializePresence());
          unlisteners.push(initializeTyping());
          unlisteners.push(initializeVoice());
-         unlisteners.push(initializeFilesWithClient());
 
          return () => {
             for (const unlisten of unlisteners) {

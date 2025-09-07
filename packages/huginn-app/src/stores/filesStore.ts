@@ -67,6 +67,7 @@ export function initializeFilesWithClient() {
       if (!knownApplicationsExists) {
          const result = await client?.applications.getKnown();
          await saveFile("known-applications", result);
+         store.setState({ knownApplications: result });
       } else {
          const file = await loadFile("known-applications", undefined)!;
          const result = await client?.applications.getKnown(new Date(file?.lastUpdated ?? ""));
@@ -81,7 +82,6 @@ export function initializeFilesWithClient() {
 
             // Remove the application if it's deleted in the new list
             if (application.deletedAt) {
-               console.log("delete", application.id);
                file.applications = file.applications.filter((x) => x.id !== application.id);
                continue;
             }
@@ -99,6 +99,7 @@ export function initializeFilesWithClient() {
          file.lastUpdated = result.lastUpdated;
 
          await saveFile("known-applications", file);
+         store.setState({ knownApplications: file });
       }
    });
 

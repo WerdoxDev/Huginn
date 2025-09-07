@@ -7,13 +7,13 @@ import LoadingIcon from "./LoadingIcon";
 import Tooltip from "./tooltip/Tooltip";
 import UserAvatar from "./UserAvatar";
 import type { AppUser } from "@/types";
+import ActivityPreview from "./ActivityPreview";
 
 export default function ChannelRecipient(props: { channelId: Snowflake; isOwner: boolean; recipient: AppUser }) {
    const presence = usePresence(props.recipient.id);
    const { open: openContextMenu } = useContextMenu("dm_channel_recipient");
    const state = useMutationLatestState("create-dm-channel_recipient");
    return (
-      // biome-ignore lint/a11y/noStaticElementInteractions: It has an inner tooltip button
       <div
          onContextMenu={(e) => openContextMenu({ channelId: props.channelId, recipient: props.recipient }, e)}
          className="group/recipient hover:bg-surface relative flex cursor-pointer items-center gap-x-3 rounded-lg p-1.5"
@@ -23,8 +23,16 @@ export default function ChannelRecipient(props: { channelId: Snowflake; isOwner:
             avatarHash={props.recipient.avatar}
             className={clsx((!presence || presence?.status === "offline") && "opacity-30", "group-hover/recipient:opacity-100")}
          />
-         <div className={clsx(presence && presence.status !== "offline" ? "text-text/70" : "text-text/30", "group-hover/recipient:text-text")}>
-            {props.recipient.displayName}
+         <div className="flex flex-col overflow-hidden">
+            <div
+               className={clsx(
+                  presence && presence.status !== "offline" ? "text-text/70" : "text-text/30",
+                  "group-hover/recipient:text-text text-sm",
+               )}
+            >
+               {props.recipient.displayName}
+            </div>
+            <ActivityPreview presence={presence} className="opacity-50 group-hover/recipient:opacity-100" />
          </div>
          {state?.status === "pending" && state?.variables?.recipients.some((x) => x === props.recipient.id) ? (
             <div className="absolute bottom-3.5 right-2 top-3.5 flex shrink-0 items-center justify-center">

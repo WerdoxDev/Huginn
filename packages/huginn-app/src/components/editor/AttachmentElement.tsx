@@ -17,8 +17,8 @@ export default function AttachmentElement(props: RenderElementProps) {
       () => constrainImageSize(width ?? 0, height ?? 0, constants.ATTACHMENT_MEDIA_MAX_WIDTH, constants.ATTACHMENT_MEDIA_MAX_HEIGHT),
       [width, height],
    );
-   const settings = useFilesStore();
-   const basedUrl = useMemo(() => changeUrlBase(url, `${settings.settings.cdnHostname}/cdn`), [url]);
+   const { settings } = useFilesStore();
+   const basedUrl = useMemo(() => changeUrlBase(url, `${settings.cdnHostname}/cdn`), [url]);
 
    return (
       <div {...props.attributes} contentEditable={false}>

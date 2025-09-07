@@ -13,13 +13,18 @@ namespace icon_util
    HICON GetExeLargeIcon(const std::wstring &exePath)
    {
       HICON hIcon = NULL;
-      ExtractIconExW(exePath.c_str(), 0, &hIcon, NULL, 1);
+      UINT result = ExtractIconExW(exePath.c_str(), 0, &hIcon, NULL, 1);
 
       return hIcon;
    }
 
    std::string HICONToBase64Png(HICON hIcon)
    {
+      if (hIcon == NULL)
+      {
+         return "";
+      }
+
       GdiplusStartupInput gdiplusStartupInput;
       ULONG_PTR gdiplusToken;
       GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
