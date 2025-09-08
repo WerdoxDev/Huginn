@@ -26,6 +26,7 @@ enableLogs({
    "api:gateway": ["default", "recv", "heartbeat"],
    "api:client": ["ready-state"],
    "app:client-store": ["default"],
+   "app:presence-store": ["default"],
 });
 
 setIsRaw(import.meta?.env?.PROD ?? false);

@@ -1,4 +1,4 @@
-import { ActivityType, error, type Snowflake } from "@huginn/shared";
+import { ActivityType, error, log, type Snowflake } from "@huginn/shared";
 import { produce } from "immer";
 import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
@@ -87,6 +87,7 @@ export function initializePresence() {
 
 let activityInterval: number;
 function startCheckingForActivity() {
+   log("app:presence-store", "default", "start activity checking");
    if (windowStore.getState().environment !== "desktop") {
       return;
    }
@@ -96,6 +97,7 @@ function startCheckingForActivity() {
    }
 
    activityInterval = window.setInterval(async () => {
+      log("app:presence-store", "default", "check activity");
       try {
          const presence = store.getState().thisPresence;
          const client = clientStore.getState().client;
@@ -106,8 +108,6 @@ function startCheckingForActivity() {
 
          const knownApplications = filesStore.getState().knownApplications.applications;
          const openApplications = await window.electronAPI.getOpenApplications();
-
-         console.log(openApplications);
 
          const match = openApplications.flatMap((x) => {
             const exeName = x.exePath.split(/[/\\]+/).pop();
@@ -129,9 +129,10 @@ function startCheckingForActivity() {
 
          // The detected game is already added
          if (presence.activities[0]?.name === match.known.name) {
-            console.log("EXISTS");
             return;
          }
+
+         log("app:presence-store", "default", "new activity", "kid:", match.known.id, "kn:", match.known.name);
 
          const icon = await window.electronAPI.getExeLargeIcon(match.detected.exePath, match.detected.processId);
          let iconHash;
