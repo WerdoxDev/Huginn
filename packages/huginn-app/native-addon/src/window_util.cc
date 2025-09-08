@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <appmodel.h>
+#include <iostream>
 
 #pragma comment(lib, "psapi.lib")
 
@@ -20,9 +22,88 @@ namespace window_util
       return result;
    }
 
-   std::wstring GetExecutablePath(DWORD processId)
+   std::vector<wchar_t> GetFullName(HANDLE hProcess)
+   {
+      UINT32 length = 0;
+      LONG rc = GetPackageFullName(hProcess, &length, nullptr);
+
+      std::vector<wchar_t> packageName(length);
+      rc = GetPackageFullName(hProcess, &length, packageName.data());
+      return packageName;
+   }
+
+   std::wstring GetPackagePath(HANDLE hProcess)
+   {
+      std::wstring packagePath = L"";
+      // Get process ID
+      DWORD processId = GetProcessId(hProcess);
+      if (processId == 0)
+      {
+         return packagePath;
+      }
+
+      // Get package full name from process
+      UINT32 packageFullNameLength = 0;
+      LONG ret = GetPackageFullName(hProcess, &packageFullNameLength, nullptr);
+
+      if (ret != ERROR_INSUFFICIENT_BUFFER)
+      {
+         return packagePath;
+      }
+
+      auto packageFullName = std::make_unique<wchar_t[]>(packageFullNameLength);
+      ret = GetPackageFullName(hProcess, &packageFullNameLength, packageFullName.get());
+
+      if (ret != ERROR_SUCCESS)
+      {
+         return packagePath;
+      }
+
+      // Get package info
+      PACKAGE_INFO_REFERENCE packageInfoRef;
+      ret = OpenPackageInfoByFullName(packageFullName.get(), 0, &packageInfoRef);
+
+      if (ret != ERROR_SUCCESS)
+      {
+         return packagePath;
+      }
+
+      UINT32 bufferLength = 0;
+      UINT32 count = 0;
+
+      // Get buffer size
+      ret = GetPackageInfo(packageInfoRef, PACKAGE_FILTER_HEAD, &bufferLength, nullptr, &count);
+
+      if (ret == ERROR_INSUFFICIENT_BUFFER && bufferLength > 0)
+      {
+         auto buffer = std::make_unique<BYTE[]>(bufferLength);
+         ret = GetPackageInfo(packageInfoRef, PACKAGE_FILTER_HEAD, &bufferLength, buffer.get(), &count);
+
+         if (ret == ERROR_SUCCESS && count > 0)
+         {
+            PACKAGE_INFO *packageInfo = reinterpret_cast<PACKAGE_INFO *>(buffer.get());
+
+            if (packageInfo[0].path)
+            {
+               packagePath = packageInfo[0].path;
+
+               std::wcout << packagePath << std::endl;
+            }
+         }
+      }
+
+      ClosePackageInfo(packageInfoRef);
+      return packagePath;
+   }
+
+   HANDLE GetHandle(DWORD processId)
    {
       HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processId);
+      return hProcess;
+   }
+
+   std::wstring GetExecutablePath(HANDLE hProcess)
+   {
       if (hProcess == NULL)
       {
          return L"";
@@ -80,7 +161,8 @@ namespace window_util
       GetWindowThreadProcessId(hwnd, &processId);
 
       // Get executable path
-      std::wstring exePath = GetExecutablePath(processId);
+      HANDLE hProcess = GetHandle(processId);
+      std::wstring exePath = GetExecutablePath(hProcess);
 
       // Skip if we couldn't get the exe path
       if (exePath.empty())

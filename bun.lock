@@ -16,7 +16,7 @@
     },
     "packages/huginn-api": {
       "name": "@huginn/api",
-      "version": "0.25.0",
+      "version": "0.26.0",
       "dependencies": {
         "@huginn/shared": "workspace:*",
         "@std/encoding": "npm:@jsr/std__encoding",
@@ -30,7 +30,7 @@
     },
     "packages/huginn-app": {
       "name": "huginn-app-react",
-      "version": "0.55.2",
+      "version": "0.56.0",
       "dependencies": {
         "@floating-ui/react": "^0.26.28",
         "@headlessui/react": "^2.2.7",
@@ -103,7 +103,7 @@
     },
     "packages/huginn-backend-shared": {
       "name": "@huginn/backend-shared",
-      "version": "0.14.1",
+      "version": "0.15.0",
       "dependencies": {
         "@hono/zod-validator": "^0.4.3",
         "@prisma/client": "^6.15.0",
@@ -126,7 +126,7 @@
     },
     "packages/huginn-cdn": {
       "name": "@huginn/cdn",
-      "version": "0.11.0",
+      "version": "0.12.0",
       "dependencies": {
         "@huginn/backend-shared": "workspace:*",
         "@huginn/shared": "workspace:*",
@@ -143,7 +143,7 @@
     },
     "packages/huginn-server": {
       "name": "@huginn/server",
-      "version": "0.27.1",
+      "version": "0.28.0",
       "dependencies": {
         "@aws-sdk/client-s3": "^3.844.0",
         "@huginn/backend-shared": "workspace:*",
@@ -182,7 +182,7 @@
     },
     "packages/huginn-shared": {
       "name": "@huginn/shared",
-      "version": "0.25.1",
+      "version": "0.26.0",
       "dependencies": {
         "@sapphire/snowflake": "^3.5.3",
         "@std/encoding": "npm:@jsr/std__encoding",
@@ -196,7 +196,7 @@
     },
     "packages/huginn-voice": {
       "name": "@huginn/voice",
-      "version": "0.10.2",
+      "version": "0.10.3",
       "dependencies": {
         "@dotenvx/dotenvx": "^1.39.0",
         "@hono/node-server": "^1.13.8",

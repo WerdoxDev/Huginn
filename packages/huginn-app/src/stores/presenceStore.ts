@@ -107,6 +107,8 @@ function startCheckingForActivity() {
          const knownApplications = filesStore.getState().knownApplications.applications;
          const openApplications = await window.electronAPI.getOpenApplications();
 
+         console.log(openApplications);
+
          const match = openApplications.flatMap((x) => {
             const exeName = x.exePath.split(/[/\\]+/).pop();
             const known = knownApplications?.find((y) => y.exeName === exeName);
@@ -131,7 +133,7 @@ function startCheckingForActivity() {
             return;
          }
 
-         const icon = await window.electronAPI.getExeLargeIcon(match.detected.exePath);
+         const icon = await window.electronAPI.getExeLargeIcon(match.detected.exePath, match.detected.processId);
          let iconHash;
          if (icon) {
             iconHash = await client.applications.uploadIcon({ icon });

@@ -1,10 +1,11 @@
 #include <napi.h>
 #include <string>
-#include "icon_util.h"
-#include "file_util.h"
-#include "window_util.h"
+#include <windows.h>
 #include <iostream>
 #include <map>
+#include "file_util.h"
+#include "window_util.h"
+#include "icon_util.h"
 
 Napi::Value GetFileSHA256(const Napi::CallbackInfo &info)
 {
@@ -34,13 +35,13 @@ Napi::Value GetExeLargeIcon(const Napi::CallbackInfo &info)
 {
    Napi::Env env = info.Env();
 
-   if (info.Length() != 1)
+   if (info.Length() != 2)
    {
       Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
       return env.Null();
    }
 
-   if (!info[0].IsString())
+   if (!info[0].IsString() || !info[1].IsNumber())
    {
       Napi::TypeError::New(env, "Wrong arguments").ThrowAsJavaScriptException();
       return env.Null();
@@ -49,10 +50,32 @@ Napi::Value GetExeLargeIcon(const Napi::CallbackInfo &info)
    const std::u16string exePath_u16 = info[0].As<Napi::String>().Utf16Value();
    std::wstring exePath(exePath_u16.begin(), exePath_u16.end());
 
-   HICON hIcon = icon_util::GetExeLargeIcon(exePath);
-   std::string base64 = icon_util::HICONToBase64Png(hIcon);
+   DWORD processId = info[1].As<Napi::Number>().Uint32Value();
 
-   return Napi::String::New(env, base64);
+   HANDLE hProcess = window_util::GetHandle(processId);
+
+   HICON hIcon = icon_util::GetExeLargeIcon(exePath);
+
+   if (hIcon != NULL)
+   {
+      std::string base64 = icon_util::HICONToBase64Png(hIcon);
+      return Napi::String::New(env, base64);
+   }
+   else
+   {
+      std::wstring packagePath = window_util::GetPackagePath(hProcess);
+      std::vector<std::string> searchFilesNames = {"Square44x44Logo.png"};
+      fs::path path(packagePath);
+      auto found = file_util::FindFiles(path, searchFilesNames);
+
+      if (found.size() > 0)
+      {
+         std::string base64 = icon_util::PngToBase64Png(found[0]);
+         return Napi::String::New(env, base64);
+      }
+   }
+
+   return Napi::String::New(env, "");
 }
 
 Napi::Value EnumerateOpenApplications(const Napi::CallbackInfo &info)

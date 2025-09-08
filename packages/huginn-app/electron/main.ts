@@ -470,10 +470,10 @@ function listenToEvents(mainWindow: BrowserWindow) {
       return applications;
    });
 
-   ipcMain.handle("native:get-exe-large-icon", (_, exePath: string) => {
+   ipcMain.handle("native:get-exe-large-icon", (_, exePath: string, processId: number) => {
       log("app:electron", "recv", "native get exe large icon", "exp:", exePath);
 
-      const icon = native.getExeLargeIcon(exePath);
+      const icon = native.getExeLargeIcon(exePath, processId);
       return icon;
    });
 }

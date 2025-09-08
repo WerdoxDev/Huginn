@@ -79,7 +79,7 @@ export const electronAPI = {
 
    // Native
    getOpenApplications: () => ipcRenderer.invoke("native:get-open-applications") as Promise<AppInfo[]>,
-   getExeLargeIcon: (exePath: string) => ipcRenderer.invoke("native:get-exe-large-icon", exePath) as Promise<string>,
+   getExeLargeIcon: (exePath: string, processId: number) => ipcRenderer.invoke("native:get-exe-large-icon", exePath, processId) as Promise<string>,
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);
