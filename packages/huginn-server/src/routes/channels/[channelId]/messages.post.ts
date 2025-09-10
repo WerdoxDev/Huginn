@@ -102,7 +102,7 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
    // Fetch image data from embeds
    const processedEmbeds = await processEmbeds(body.embeds);
 
-   const dbMessage = await prisma.message.createMessage(
+   const dbMessage = await prisma.message.createOne(
       {
          id: messageId,
          authorId: payload.id,

@@ -1,27 +1,21 @@
+import { filterChannel } from "#utils/helpers";
 import { createRoute, missingAccess, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { omitChannelRecipient, selectChannelRecipients } from "@huginn/backend-shared/database/common";
-import { type APIGetChannelByIdResult, ChannelType, HttpCode, merge, omit } from "@huginn/shared";
+import { omitChannelRecipient, selectChannelDefaults } from "@huginn/backend-shared/database/common";
+import { type APIGetChannelByIdResult, HttpCode, merge } from "@huginn/shared";
 
 createRoute("GET", "/api/channels/:channelId", verifyJwt(), async (c) => {
    const payload = c.get("tokenPayload");
    const { channelId } = c.req.param();
 
-   const channel: APIGetChannelByIdResult = await prisma.channel.getById(channelId, {
-      include: merge(selectChannelRecipients, omitChannelRecipient(payload.id)),
+   const channel = await prisma.channel.getById(channelId, {
+      select: merge(selectChannelDefaults, omitChannelRecipient(payload.id)),
    });
 
    if (!(await prisma.user.hasChannel(payload.id, channelId))) {
       return missingAccess(c);
    }
 
-   let finalChannel: APIGetChannelByIdResult;
-
-   if (channel.type === ChannelType.DM) {
-      finalChannel = omit(channel, ["icon", "name", "ownerId"]);
-   } else {
-      finalChannel = channel;
-   }
-
-   return c.json(finalChannel, HttpCode.OK);
+   const json: APIGetChannelByIdResult = filterChannel(channel);
+   return c.json(json, HttpCode.OK);
 });

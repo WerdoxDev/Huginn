@@ -1,10 +1,10 @@
 import { createRoute, missingAccess, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { omitChannelRecipient, selectChannelRecipients } from "@huginn/backend-shared/database/common";
+import { omitChannelRecipient, selectChannelDefaults, selectChannelRecipients } from "@huginn/backend-shared/database/common";
 import { type APIDeleteDMChannelResult, ChannelType, HttpCode, MessageFlags, MessageType, merge, omit } from "@huginn/shared";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { dispatchChannel, dispatchMessage } from "#utils/helpers";
+import { dispatchChannel, dispatchMessage, filterChannel } from "#utils/helpers";
 
 createRoute("DELETE", "/api/channels/:channelId", verifyJwt(), async (c) => {
    const payload = c.get("tokenPayload");
@@ -17,14 +17,15 @@ createRoute("DELETE", "/api/channels/:channelId", verifyJwt(), async (c) => {
    }
 
    // Delete or leave the DM
-   const deletedChannel: APIDeleteDMChannelResult = await prisma.channel.deleteDM(channelId, payload.id, {
-      include: merge(selectChannelRecipients, omitChannelRecipient(payload.id)),
+   const deletedChannel = await prisma.channel.deleteDM(channelId, payload.id, {
+      select: merge(selectChannelDefaults, omitChannelRecipient(payload.id)),
    });
+   const filteredChannel: APIDeleteDMChannelResult = filterChannel(deletedChannel);
    // Delete read state
    await prisma.readState.deleteState(payload.id, deletedChannel.id);
 
    // Dispatch channel delete event
-   dispatchToTopic(payload.id, "channel_delete", omit(deletedChannel, ["recipients"]));
+   dispatchToTopic(payload.id, "channel_delete", omit(filteredChannel, ["recipients"]));
 
    // Dispatch channel recipient remove event
    const removedRecipient = channel.recipients.find((x) => x.id === payload.id);
@@ -45,15 +46,17 @@ createRoute("DELETE", "/api/channels/:channelId", verifyJwt(), async (c) => {
          undefined,
          undefined,
          channel.recipients.filter((x) => x.id !== payload.id).toSorted((a, b) => (a.username > b.username ? 1 : -1))[0].id,
-         { include: merge(selectChannelRecipients, omitChannelRecipient(payload.id)) },
+         { select: merge(selectChannelDefaults, omitChannelRecipient(payload.id)) },
       );
 
+      // Send out updated owner id to everyone except our user
+      const filteredChannel: APIDeleteDMChannelResult = filterChannel(updatedChannel);
       for (const recipient of updatedChannel.recipients) {
-         dispatchChannel(updatedChannel, "channel_update", recipient.id);
+         dispatchChannel(filteredChannel, "channel_update", recipient.id);
       }
 
-      return c.json(updatedChannel, HttpCode.OK);
+      return c.json(filteredChannel, HttpCode.OK);
    }
 
-   return c.json(deletedChannel, HttpCode.OK);
+   return c.json(filteredChannel, HttpCode.OK);
 });

@@ -10,7 +10,7 @@ createRoute("GET", "/api/applications/known", verifyJwt(), validator("query", qu
    const { since } = c.req.valid("query");
 
    const sinceDate = since ? new Date(Number(since)) : undefined;
-   const knownApplications = await prisma.knownApplications.getAll(sinceDate, { select: selectKnownApplication });
+   const knownApplications = await prisma.knownApplication.getAll(sinceDate, { select: selectKnownApplication });
 
    const json: APIGetKnownApplicationsResult = { lastUpdated: new Date().toISOString(), applications: knownApplications };
    return c.json(json, HttpCode.OK);

@@ -3,7 +3,7 @@ import { prisma } from "@huginn/backend-shared/database";
 import {
    omitChannelRecipient,
    omitRelationshipUserIds,
-   selectChannelRecipients,
+   selectChannelDefaults,
    selectPrivateUser,
    selectRelationshipUser,
 } from "@huginn/backend-shared/database/common";
@@ -28,6 +28,7 @@ import { dispatchToTopic } from "../utils/gateway-utils";
 import { ClientSession } from "./client-session";
 import { PresenceManager } from "./presence-manager";
 import { VoiceManager } from "./voice-manager";
+import { filterChannel } from "#utils/helpers";
 
 export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload> {
    public presenceManager: PresenceManager;
@@ -172,7 +173,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
 
       // Channels
       const userChannels = await prisma.channel.getUserChannels(user.id, false, {
-         include: merge(selectChannelRecipients, omitChannelRecipient(user.id)),
+         select: merge(selectChannelDefaults, omitChannelRecipient(user.id)),
       });
 
       // Presences
@@ -197,7 +198,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
          op: GatewayOperations.DISPATCH,
          d: {
             user,
-            privateChannels: userChannels,
+            privateChannels: userChannels.map((x) => filterChannel(x)),
             relationships: userRelationships,
             userSettings: settings,
             presences,

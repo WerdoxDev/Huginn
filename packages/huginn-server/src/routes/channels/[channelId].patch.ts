@@ -1,9 +1,9 @@
 import { createErrorFactory, createHuginnError, createRoute, missingPermission, validator, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { selectChannelRecipients } from "@huginn/backend-shared/database/common";
+import { selectChannelDefaults } from "@huginn/backend-shared/database/common";
 import { CDNRoutes, Errors, HttpCode, MessageFlags, MessageType, getFileHash, toArrayBuffer } from "@huginn/shared";
 import { z } from "zod";
-import { channelWithoutRecipient, dispatchChannel, dispatchMessage } from "#utils/helpers";
+import { channelWithoutRecipient, dispatchChannel, dispatchMessage, filterChannel } from "#utils/helpers";
 import { cdnUpload } from "#utils/server-request";
 import { validateChannelName } from "#utils/validation";
 ("@huginn/backend-shared/database/common");
@@ -47,10 +47,10 @@ createRoute("PATCH", "/api/channels/:channelId", verifyJwt(), validator("json", 
       channelIconHash = null;
    }
 
-   const updatedChannel = await prisma.channel.editDM(channelId, body.name, channelIconHash, body.owner, { include: selectChannelRecipients });
+   const updatedChannel = await prisma.channel.editDM(channelId, body.name, channelIconHash, body.owner, { select: selectChannelDefaults });
 
    for (const recipient of updatedChannel.recipients) {
-      dispatchChannel(updatedChannel, "channel_update", recipient.id);
+      dispatchChannel(filterChannel(updatedChannel), "channel_update", recipient.id);
    }
 
    if (channel.name !== updatedChannel.name) {
@@ -77,5 +77,5 @@ createRoute("PATCH", "/api/channels/:channelId", verifyJwt(), validator("json", 
       });
    }
 
-   return c.json(channelWithoutRecipient(updatedChannel, payload.id), HttpCode.OK);
+   return c.json(channelWithoutRecipient(filterChannel(updatedChannel), payload.id), HttpCode.OK);
 });

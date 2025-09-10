@@ -30,17 +30,17 @@ for (const user of users) {
 
 for (const user of createdUsers) {
    for (const otherUser of createdUsers.filter((x) => x.id !== user.id)) {
-      await prisma.relationship.createRelationship(user.id.toString(), otherUser.id.toString());
+      await prisma.relationship.createOne(user.id.toString(), otherUser.id.toString());
    }
 }
 
-const channel = await prisma.channel.createDirectChannel(
+const channel = await prisma.channel.createDirect(
    createdUsers[0].id.toString(),
    createdUsers.slice(1).map((x) => x.id.toString()),
 );
 
 for (let i = 0; i < 200; i++) {
-   await prisma.message.createMessage({
+   await prisma.message.createOne({
       authorId: createdUsers[0].id.toString(),
       channelId: channel.id.toString(),
       type: MessageType.DEFAULT,
@@ -75,9 +75,9 @@ await prisma.channel.create({
 });
 
 const userIds = createdUsers.map((x) => x.id.toString());
-const testChannel = await prisma.channel.createDirectChannel(userIds[0], [userIds[1], userIds[2], userIds[3]], "TESTING", { select: { id: true } });
+const testChannel = await prisma.channel.createDirect(userIds[0], [userIds[1], userIds[2], userIds[3]], "TESTING", { select: { id: true } });
 
-const testMessages: Parameters<typeof prisma.message.createMessage>[0][] = [
+const testMessages: Parameters<typeof prisma.message.createOne>[0][] = [
    // Day 1 (January 1st) - Initial conversation
    {
       authorId: userIds[0],
@@ -334,5 +334,5 @@ const testMessages: Parameters<typeof prisma.message.createMessage>[0][] = [
 ];
 
 for (const messageData of testMessages) {
-   await prisma.message.createMessage(messageData);
+   await prisma.message.createOne(messageData);
 }

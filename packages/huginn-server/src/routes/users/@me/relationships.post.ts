@@ -1,13 +1,4 @@
-import {
-   createErrorFactory,
-   createHuginnError,
-   createRoute,
-   invalidFormBody,
-   singleError,
-   tryCatch,
-   validator,
-   verifyJwt,
-} from "@huginn/backend-shared";
+import { createRoute, invalidFormBody, singleError, tryCatch, validator, verifyJwt } from "@huginn/backend-shared";
 import { assertError, prisma } from "@huginn/backend-shared/database";
 import { selectRelationshipUser } from "@huginn/backend-shared/database/common";
 import { DBErrorType } from "@huginn/backend-shared/types";
@@ -54,7 +45,7 @@ export async function relationshipPost(c: Context, userId: Snowflake) {
          type: RelationshipType.PENDING_OUTGOING,
       }))
    ) {
-      const relationships = await prisma.relationship.createRelationship(payload.id, userId, {
+      const relationships = await prisma.relationship.createOne(payload.id, userId, {
          include: { ...selectRelationshipUser },
          omit: { userId: true },
       });

@@ -9,7 +9,6 @@ import { enableLogs } from "@huginn/shared";
 enableLogs({ "server:gateway": ["default", "detail-identify"], "server:presence-manager": ["default", "detail"] });
 
 export const envs = readEnv([
-   "POSTGRESQL_URL",
    "CDN_LOCAL_URL",
    "SERVER_HOST",
    "SERVER_PORT",
@@ -35,11 +34,6 @@ export const envs = readEnv([
 
 export const CERT_FILE = envs.CERTIFICATE_PATH && Bun.file(envs.CERTIFICATE_PATH);
 export const KEY_FILE = envs.PRIVATE_KEY_PATH && Bun.file(envs.PRIVATE_KEY_PATH);
-
-if (!envs.POSTGRESQL_URL) {
-   consola.error("Database config is not set correctly!");
-   process.exit();
-}
 
 export const gateway = new ServerGateway();
 export const octokit: Octokit = new Octokit({ auth: envs.GITHUB_TOKEN });

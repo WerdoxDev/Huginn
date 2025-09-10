@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeAll } from "bun:test";
 import { prepareServer } from "@huginn/backend-shared";
-import { disconnectWebSockets, removeChannels, removeUsers } from "./utils";
+import { disconnectWebSockets, removeChannels, removeUsers, timeSpent } from "./utils";
 
 beforeAll(async () => {
    await prepareServer("http://localhost:3004");
@@ -19,5 +19,5 @@ afterAll(async () => {
       console.error(e);
    }
    console.log("END CLEANUP");
-   // console.log(timeSpent);
+   console.log(timeSpent);
 });

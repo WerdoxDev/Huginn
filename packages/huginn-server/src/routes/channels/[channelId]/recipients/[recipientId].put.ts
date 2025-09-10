@@ -1,6 +1,6 @@
 import { createRoute, missingAccess, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { selectChannelRecipients } from "@huginn/backend-shared/database/common";
+import { selectChannelDefaults } from "@huginn/backend-shared/database/common";
 import { ChannelType, Errors, HttpCode, MessageFlags, MessageType } from "@huginn/shared";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
@@ -10,7 +10,7 @@ createRoute("PUT", "/api/channels/:channelId/recipients/:recipientId", verifyJwt
    const payload = c.get("tokenPayload");
    const { channelId, recipientId } = c.req.param();
 
-   const channel = await prisma.channel.getById(channelId, { select: { ...selectChannelRecipients, type: true } });
+   const channel = await prisma.channel.getById(channelId, { select: { type: true, recipients: { select: { id: true } } } });
    if (channel.type !== ChannelType.GROUP_DM) {
       return singleError(c, Errors.invalidChannelType());
    }
@@ -23,7 +23,7 @@ createRoute("PUT", "/api/channels/:channelId/recipients/:recipientId", verifyJwt
       return c.newResponse(null, HttpCode.NO_CONTENT);
    }
 
-   const updatedChannel = await prisma.channel.addRecipient(channelId, recipientId, { include: selectChannelRecipients });
+   const updatedChannel = await prisma.channel.addRecipient(channelId, recipientId, { select: selectChannelDefaults });
 
    // Create read state
    await prisma.readState.createState(recipientId, channelId);

@@ -1,13 +1,19 @@
 import { Prisma, prisma } from "@huginn/backend-shared/database";
-import { selectMessageDefaults } from "@huginn/backend-shared/database/common";
+import { selectChannelDefaults, selectMessageDefaults, type ChannelPayload, type MessagePayload } from "@huginn/backend-shared/database/common";
 import {
+   type APIChannel,
+   type APIDMChannel,
+   type APIGroupDMChannel,
+   type APIGuildCategoryChannel,
    type BigIntToString,
+   ChannelType,
    constants,
    type DirectChannel,
    type GatewayEvents,
    MessageType,
    nullToUndefined,
    omit,
+   pick,
    type Snowflake,
 } from "@huginn/shared";
 import { dispatchToTopic } from "./gateway-utils";
@@ -21,7 +27,7 @@ export async function dispatchMessage(options: {
    mentions?: Snowflake[];
    flags?: number;
 }) {
-   const message = await prisma.message.createMessage(
+   const message = await prisma.message.createOne(
       {
          authorId: options.authorId,
          channelId: options.channelId,
@@ -39,7 +45,7 @@ export async function dispatchMessage(options: {
 }
 
 export async function dispatchCallMessage(options: { authorId: Snowflake; channelId: Snowflake }) {
-   const message = await prisma.message.createMessage(
+   const message = await prisma.message.createOne(
       {
          authorId: options.authorId,
          channelId: options.channelId,
@@ -66,7 +72,7 @@ export function dispatchChannel(
    dispatchToTopic(userId, topic, channelWithoutRecipient(channel, userId));
 }
 
-export function filterMessage<T extends BigIntToString<Prisma.MessageGetPayload<{ select: typeof selectMessageDefaults }>>>(message: T) {
+export function filterMessage<T extends MessagePayload<{ select: typeof selectMessageDefaults }>>(message: T) {
    const ttlSeconds = constants.CDN_HMAC_EXPIRE_TIME;
    const expiry = Math.floor(Date.now() / 1000) + ttlSeconds;
 
@@ -84,4 +90,16 @@ export function filterMessage<T extends BigIntToString<Prisma.MessageGetPayload<
       embeds: nullToUndefined(message.embeds),
       attachments: nullToUndefined(signedAttachments),
    };
+}
+
+export function filterChannel<T extends ChannelPayload<{ select: typeof selectChannelDefaults }>>(channel: T) {
+   if (channel.type === ChannelType.DM) {
+      return pick(channel, ["id", "lastMessageId", "recipients", "type"]);
+   }
+
+   if (channel.type === ChannelType.GROUP_DM) {
+      return pick(channel, ["id", "icon", "name", "lastMessageId", "recipients", "type", "ownerId"]);
+   }
+
+   return channel;
 }
