@@ -1,11 +1,11 @@
-import { WorkerID, snowflake } from "@huginn/shared";
+import { WorkerID, idFix, snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
-import { prisma } from "#database";
+import { prisma, type AttachmentArgs, type AttachmentPayload } from "#database";
 
 export const attachmentExtension = Prisma.defineExtension({
    model: {
       attachment: {
-         async createAttachment<Args extends Prisma.AttachmentDefaultArgs>(
+         async createOne(
             filename: string,
             contentType: string,
             size: number,
@@ -14,7 +14,6 @@ export const attachmentExtension = Prisma.defineExtension({
             width?: number,
             height?: number,
             description?: string,
-            args?: Args,
          ) {
             const attachment = await prisma.attachment.create({
                data: {
@@ -28,10 +27,9 @@ export const attachmentExtension = Prisma.defineExtension({
                   height,
                   flags,
                },
-               ...args,
             });
 
-            return attachment as Prisma.AttachmentGetPayload<Args>;
+            return attachment;
          },
       },
    },

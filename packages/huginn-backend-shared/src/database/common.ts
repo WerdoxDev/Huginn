@@ -1,5 +1,29 @@
-import { type Snowflake } from "@huginn/shared";
+import { merge, type BigIntToString, type Snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
+
+export type UserArgs = Prisma.UserDefaultArgs;
+export type UserPayload<Args extends UserArgs | undefined> = BigIntToString<Prisma.UserGetPayload<Args>>;
+
+export type AttachmentArgs = Prisma.AttachmentDefaultArgs;
+export type AttachmentPayload<Args extends AttachmentArgs | undefined> = BigIntToString<Prisma.AttachmentGetPayload<Args>>;
+
+export type ChannelArgs = Prisma.ChannelDefaultArgs;
+export type ChannelPayload<Args extends ChannelArgs | undefined> = BigIntToString<Prisma.ChannelGetPayload<Args>>;
+
+export type MessageArgs = Prisma.MessageDefaultArgs;
+export type MessagePayload<Args extends MessageArgs | undefined> = BigIntToString<Prisma.MessageGetPayload<Args>>;
+
+export type EmbedArgs = Prisma.EmbedDefaultArgs;
+export type EmbedPayload<Args extends EmbedArgs | undefined> = BigIntToString<Prisma.EmbedGetPayload<Args>>;
+
+export type RelationshipArgs = Prisma.RelationshipDefaultArgs;
+export type RelationshipPayload<Args extends RelationshipArgs | undefined> = BigIntToString<Prisma.RelationshipGetPayload<Args>>;
+
+export type ReadStateArgs = Prisma.ReadStateDefaultArgs;
+export type ReadStatePayload<Args extends ReadStateArgs | undefined> = BigIntToString<Prisma.ReadStateGetPayload<Args>>;
+
+export type KnownApplicationArgs = Prisma.KnownApplicationDefaultArgs;
+export type KnownApplicationPayload<Args extends KnownApplicationArgs | undefined> = Prisma.KnownApplicationGetPayload<Args>;
 
 export const selectPublicUser = Prisma.validator<Prisma.UserSelect>()({
    id: true,
@@ -19,12 +43,22 @@ export const selectPrivateUser = Prisma.validator<Prisma.UserSelect>()({
    password: true,
 });
 
-export const selectChannelRecipients = Prisma.validator<Prisma.ChannelInclude>()({
+export const selectChannelRecipients = Prisma.validator<Prisma.ChannelSelect>()({
    recipients: { select: { id: true, avatar: true, displayName: true, flags: true, username: true } },
 });
 
 export const omitChannelRecipient = (id: Snowflake) =>
    Prisma.validator<Prisma.ChannelSelect>()({ recipients: { where: { id: { not: BigInt(id) } } } });
+
+export const selectChannelDefaults = Prisma.validator<Prisma.ChannelSelect>()({
+   ...selectChannelRecipients,
+   id: true,
+   type: true,
+   icon: true,
+   name: true,
+   ownerId: true,
+   lastMessageId: true,
+});
 
 export const selectMessageAuthor = Prisma.validator<Prisma.MessageSelect>()({
    author: { select: selectPublicUser },
@@ -83,7 +117,7 @@ export const selectRelationshipUser = Prisma.validator<Prisma.RelationshipSelect
 export const omitMessageAuthorId = Prisma.validator<Prisma.MessageOmit>()({ authorId: true });
 export const omitRelationshipUserIds = Prisma.validator<Prisma.RelationshipOmit>()({ userId: true, ownerId: true });
 
-export const selectKnownApplication = Prisma.validator<Prisma.KnownApplicationsSelect>()({
+export const selectKnownApplication = Prisma.validator<Prisma.KnownApplicationSelect>()({
    id: true,
    createdAt: true,
    deletedAt: true,

@@ -3,35 +3,33 @@ import { WorkerID, idFix, snowflake } from "@huginn/shared";
 import { MessageType } from "@huginn/shared";
 import { type Attachment, type Embed, Prisma } from "@prisma/client";
 import { type DBAttachment, type DBCall, type DBEmbed, DBErrorType } from "#types";
-import { assertExists, assertId, assertObj, prisma } from ".";
+import { assertExists, assertId, assertObj, prisma, type MessageArgs, type MessagePayload } from ".";
 
 export const messagesExtension = Prisma.defineExtension({
    model: {
       message: {
-         async getById<Args extends Prisma.MessageDefaultArgs>(channelId: Snowflake, messageId: Snowflake, args?: Args) {
+         async getById<Args extends MessageArgs>(channelId: Snowflake, messageId: Snowflake, args?: Args) {
+            const methodName = "message.getById";
             try {
-               assertId("getById", channelId, messageId);
+               assertId(methodName, channelId, messageId);
                const message = await prisma.message.findUnique({
                   where: { channelId: BigInt(channelId), id: BigInt(messageId) },
                   ...args,
                });
 
-               assertObj("getById", message, DBErrorType.NULL_MESSAGE, messageId);
-               return idFix(message) as BigIntToString<Prisma.MessageGetPayload<Args>>;
+               assertObj(methodName, message, DBErrorType.NULL_MESSAGE, messageId);
+               return idFix(message) as MessagePayload<Args>;
             } catch (e) {
-               await assertExists(e, "getById", DBErrorType.NULL_CHANNEL, [channelId]);
-               await assertExists(e, "getById", DBErrorType.NULL_MESSAGE, [messageId]);
+               await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
+               await assertExists(e, methodName, DBErrorType.NULL_MESSAGE, [messageId]);
                throw e;
             }
          },
-         async getMessages<Args extends Prisma.MessageDefaultArgs>(
-            channelId: Snowflake,
-            limit: number,
-            before?: Snowflake,
-            after?: Snowflake,
-            args?: Args,
-         ) {
+         async getMessages<Args extends MessageArgs>(channelId: Snowflake, limit: number, before?: Snowflake, after?: Snowflake, args?: Args) {
+            const methodName = "message.getMessages";
             try {
+               assertId(methodName, channelId);
+
                const cursor = after ?? before;
                const direction = after ? "forward" : before ? "backward" : "none";
 
@@ -44,14 +42,14 @@ export const messagesExtension = Prisma.defineExtension({
                   take: (direction === "forward" ? 1 : -1) * limit,
                });
 
-               assertObj("getMessages", messages, DBErrorType.NULL_MESSAGE);
+               assertObj(methodName, messages, DBErrorType.NULL_MESSAGE);
                return idFix(messages) as BigIntToString<Prisma.MessageGetPayload<Args>[]>;
             } catch (e) {
-               await assertExists(e, "getMessages", DBErrorType.NULL_CHANNEL, [channelId]);
+               await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                throw e;
             }
          },
-         async createMessage<Args extends Prisma.MessageDefaultArgs>(
+         async createOne<Args extends MessageArgs>(
             options: {
                id?: bigint;
                authorId: Snowflake;
@@ -67,7 +65,10 @@ export const messagesExtension = Prisma.defineExtension({
             },
             args?: Args,
          ) {
+            const methodName = "message.createMessage";
             try {
+               assertId(methodName, options.authorId, options.channelId);
+
                const createdEmbeds: Embed[] = [];
                const createdAttachments: Attachment[] = [];
                const participantsConnect = options.call?.participants?.map((x) => ({ id: BigInt(x) }));
@@ -75,7 +76,7 @@ export const messagesExtension = Prisma.defineExtension({
                if (options.embeds) {
                   for (const embed of options.embeds) {
                      createdEmbeds.push(
-                        await prisma.embed.createEmbed(
+                        await prisma.embed.createOne(
                            embed.type,
                            embed.title,
                            embed.description,
@@ -91,7 +92,7 @@ export const messagesExtension = Prisma.defineExtension({
                if (options.attachments) {
                   for (const attachment of options.attachments) {
                      createdAttachments.push(
-                        await prisma.attachment.createAttachment(
+                        await prisma.attachment.createOne(
                            attachment.filename,
                            attachment.contentType,
                            attachment.size,
@@ -137,18 +138,18 @@ export const messagesExtension = Prisma.defineExtension({
                // Has select none with {id : true}
                await prisma.channel.update({ where: { id: BigInt(options.channelId) }, data: { lastMessageId: message.id }, select: { id: true } });
 
-               assertObj("createMessage", message, DBErrorType.NULL_MESSAGE);
-               return idFix(message) as BigIntToString<Prisma.MessageGetPayload<Args>>;
+               assertObj(methodName, message, DBErrorType.NULL_MESSAGE);
+               return idFix(message) as MessagePayload<Args>;
             } catch (e) {
-               await assertExists(e, "createMessage", DBErrorType.NULL_CHANNEL, [options.channelId]);
-               await assertExists(e, "createMessage", DBErrorType.NULL_USER, [options.authorId]);
+               await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [options.channelId]);
+               await assertExists(e, methodName, DBErrorType.NULL_USER, [options.authorId]);
                if (options.call?.participants) {
-                  await assertExists(e, "createMessage", DBErrorType.NULL_USER, options.call.participants);
+                  await assertExists(e, methodName, DBErrorType.NULL_USER, options.call.participants);
                }
                throw e;
             }
          },
-         async updateMessage<Args extends Prisma.MessageDefaultArgs>(
+         async updateMessage<Args extends MessageArgs>(
             id: Snowflake,
             options: {
                content?: string;
@@ -158,14 +159,16 @@ export const messagesExtension = Prisma.defineExtension({
             },
             args?: Args,
          ) {
+            const methodName = "message.updateMessage";
             try {
+               assertId(methodName, id);
                const createdEmbeds: Embed[] = [];
                const participantsConnect = options.call?.participants.map((x) => ({ id: BigInt(x) }));
 
                if (options.embeds) {
                   for (const embed of options.embeds) {
                      createdEmbeds.push(
-                        await prisma.embed.createEmbed(
+                        await prisma.embed.createOne(
                            embed.type,
                            embed.title,
                            embed.description,
@@ -196,15 +199,18 @@ export const messagesExtension = Prisma.defineExtension({
                   ...args,
                });
 
-               assertObj("updateMessage", message, DBErrorType.NULL_MESSAGE);
-               return idFix(message) as BigIntToString<Prisma.MessageGetPayload<Args>>;
+               assertObj(methodName, message, DBErrorType.NULL_MESSAGE);
+               return idFix(message) as MessagePayload<Args>;
             } catch (e) {
-               await assertExists(e, "updateMessage", DBErrorType.NULL_MESSAGE, [id]);
+               await assertExists(e, methodName, DBErrorType.NULL_MESSAGE, [id]);
                throw e;
             }
          },
-         async deleteById<Args extends Prisma.MessageDefaultArgs>(id: Snowflake, channelId: Snowflake, args?: Args) {
+         async deleteById<Args extends MessageArgs>(id: Snowflake, channelId: Snowflake, args?: Args) {
+            const methodName = "message.deleteById";
             try {
+               assertId(methodName, id, channelId);
+
                let deletedMessage: Prisma.MessageGetPayload<Args> | undefined;
 
                await prisma.$transaction(async (tx) => {
@@ -235,10 +241,10 @@ export const messagesExtension = Prisma.defineExtension({
                   deletedMessage = (await tx.message.delete({ where: { id: BigInt(id) }, ...args })) as Prisma.MessageGetPayload<Args>;
                });
 
-               assertObj("deleteMessage", deletedMessage, DBErrorType.NULL_MESSAGE);
-               return idFix(deletedMessage) as BigIntToString<Prisma.MessageGetPayload<Args>>;
+               assertObj(methodName, deletedMessage, DBErrorType.NULL_MESSAGE);
+               return idFix(deletedMessage) as MessagePayload<Args>;
             } catch (e) {
-               await assertExists(e, "deleteMessage", DBErrorType.NULL_MESSAGE, [id]);
+               await assertExists(e, methodName, DBErrorType.NULL_MESSAGE, [id]);
                throw e;
             }
          },

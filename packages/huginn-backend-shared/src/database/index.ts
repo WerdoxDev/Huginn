@@ -2,7 +2,6 @@ import { Prisma, PrismaClient, type Message } from "@prisma/client";
 import { withOptimize } from "@prisma/extension-optimize";
 import { assertExtension } from "./assert";
 import { attachmentExtension } from "./attachment";
-import { authExtension } from "./auth";
 import { channelExtension } from "./channel";
 import { embedExtension } from "./embed";
 import { messagesExtension } from "./message";
@@ -10,7 +9,7 @@ import { readStateExtension } from "./readState";
 import { relationshipExtension } from "./relationship";
 import { userExtension } from "./user";
 import { settingsExtension } from "./settings";
-import { knownApplicationsExtension } from "./knownApplication";
+import { knownApplicationExtension } from "./knownApplication";
 
 // export const prismaBase = new PrismaClient({ omit: { user: { password: true } } }).$extends({
 export const prismaBase = new PrismaClient().$extends(withOptimize({ apiKey: process.env.OPTIMIZE_API_KEY ?? "", enable: false }));
@@ -29,7 +28,6 @@ export const prisma = prismaBase
       },
    })
    .$extends(assertExtension)
-   .$extends(authExtension)
    .$extends(userExtension)
    .$extends(channelExtension)
    .$extends(messagesExtension)
@@ -38,7 +36,7 @@ export const prisma = prismaBase
    .$extends(embedExtension)
    .$extends(attachmentExtension)
    .$extends(settingsExtension)
-   .$extends(knownApplicationsExtension);
+   .$extends(knownApplicationExtension);
 
 // let longest = 0;
 // prismaBase.$on("query", (e) => {
@@ -52,4 +50,5 @@ export const prisma = prismaBase
 // });
 
 export * from "./error";
+export * from "./common";
 export { Prisma, type Message };

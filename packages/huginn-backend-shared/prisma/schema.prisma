@@ -4,32 +4,31 @@ generator client {
 }
 
 datasource db {
-   provider  = "postgresql"
-   url       = env("POSTGRESQL_URL")
-   directUrl = env("POSTGRESQL_DIRECT_URL")
+   provider = "postgresql"
+   url      = env("POSTGRESQL_URL")
 }
 
 model User {
-   id                      BigInt              @id
-   username                String              @unique
+   id                      BigInt             @id
+   username                String             @unique
    displayName             String?
-   email                   String              @unique
+   email                   String             @unique
    avatar                  String?
    password                String?
-   flags                   Int                 @db.SmallInt
-   system                  Boolean             @default(false)
-   includedChannels        Channel[]           @relation("channel_recipients")
-   ownedChannels           Channel[]           @relation("channel_owner")
-   tempDeletedChannels     Channel[]           @relation("channel_temp_deleted")
+   flags                   Int                @db.SmallInt
+   system                  Boolean            @default(false)
+   includedChannels        Channel[]          @relation("channel_recipients")
+   ownedChannels           Channel[]          @relation("channel_owner")
+   tempDeletedChannels     Channel[]          @relation("channel_temp_deleted")
    messages                Message[]
-   mentionedMessages       Message[]           @relation("message_mentions")
-   relationships           Relationship[]      @relation("relation_owner")
-   relatedRelationships    Relationship[]      @relation("relation_user")
+   mentionedMessages       Message[]          @relation("message_mentions")
+   relationships           Relationship[]     @relation("relation_owner")
+   relatedRelationships    Relationship[]     @relation("relation_user")
    identityProvider        IdentityProvider[]
    readStates              ReadState[]
-   participatedCalls       Call[]              @relation("participated_calls")
+   participatedCalls       Call[]             @relation("participated_calls")
    settings                Settings?
-   contributedApplications KnownApplications[]
+   contributedApplications KnownApplication[]
 }
 
 model Channel {
@@ -165,7 +164,7 @@ model Settings {
    json   Json
 }
 
-model KnownApplications {
+model KnownApplication {
    id            Int       @id @default(autoincrement())
    name          String
    exeName       String

@@ -6,8 +6,9 @@ export const settingsExtension = Prisma.defineExtension({
    model: {
       settings: {
          async getOrCreateSettings(userId: Snowflake) {
+            const methodName = "settings.getOrCreateSettings";
             try {
-               assertId("getOrCreateSettings", userId);
+               assertId(methodName, userId);
 
                const exists = await prisma.settings.exists({ userId: BigInt(userId) });
 
@@ -21,29 +22,30 @@ export const settingsExtension = Prisma.defineExtension({
                   settings = await prisma.settings.findUnique({ where: { userId: BigInt(userId) }, select: { json: true } });
                }
 
-               assertObj("getOrCreateSettings", settings, DBErrorType.NULL_SETTINGS);
+               assertObj(methodName, settings, DBErrorType.NULL_SETTINGS);
 
                return settings?.json as UserSettings;
             } catch (e) {
-               await assertExists(e, "getOrCreateSettings", DBErrorType.NULL_USER, [userId.toString()]);
+               await assertExists(e, methodName, DBErrorType.NULL_USER, [userId.toString()]);
                throw e;
             }
          },
-         async updateSettings(userId: Snowflake, settings: APIPatchUserSettingsJSONBody) {
+         async updateSettings(userId: Snowflake, options: APIPatchUserSettingsJSONBody) {
+            const methodName = "settings.getOrCreateSettings";
             try {
-               assertId("updateSettings", userId);
+               assertId(methodName, userId);
 
                const currentSettings = await prisma.settings.getOrCreateSettings(userId);
                const updatedSettings = await prisma.settings.update({
                   where: { userId: BigInt(userId) },
-                  data: { json: { ...currentSettings, ...settings } },
+                  data: { json: { ...currentSettings, ...options } },
                   select: { json: true },
                });
-               assertObj("updateSettings", settings, DBErrorType.NULL_SETTINGS);
+               assertObj(methodName, options, DBErrorType.NULL_SETTINGS);
 
                return updatedSettings.json as UserSettings;
             } catch (e) {
-               await assertExists(e, "updateSettings", DBErrorType.NULL_USER, [userId.toString()]);
+               await assertExists(e, methodName, DBErrorType.NULL_USER, [userId.toString()]);
                throw e;
             }
          },

@@ -32,8 +32,8 @@ export function assertObj(methodName: string, obj: unknown, errorType: DBErrorTy
    }
 }
 
-export function assertCondition(methodName: string, shouldAssert: boolean, errorType: DBErrorType, cause?: string) {
-   if (shouldAssert) {
+export function assertCondition(methodName: string, shouldThrow: boolean, errorType: DBErrorType, cause?: string) {
+   if (shouldThrow) {
       throw new DBError(methodName, errorType, cause);
    }
 }
