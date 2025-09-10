@@ -4,7 +4,8 @@
    "type": "module",
    "dependencies": {
       "@hono/zod-validator": "^0.4.3",
-      "@prisma/client": "^6.15.0",
+      "@prisma/adapter-pg": "^6.16.0",
+      "@prisma/client": "^6.16.0",
       "@prisma/extension-optimize": "^1.1.8",
       "@sapphire/snowflake": "^3.5.5",
       "@types/fluent-ffmpeg": "^2.1.27",
@@ -13,7 +14,7 @@
       "hono": "^4.9.6",
       "jose": "^6.0.12",
       "pathe": "^2.0.3",
-      "prisma": "^6.15.0",
+      "prisma": "^6.16.0",
       "sharp": "^0.33.5",
       "zod": "^3.25.76"
    },

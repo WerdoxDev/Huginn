@@ -1,5 +1,5 @@
-import { merge, type BigIntToString, type Snowflake } from "@huginn/shared";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "#database";
+import { type BigIntToString, type Snowflake } from "@huginn/shared";
 
 export type UserArgs = Prisma.UserDefaultArgs;
 export type UserPayload<Args extends UserArgs | undefined> = BigIntToString<Prisma.UserGetPayload<Args>>;

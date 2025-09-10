@@ -1,6 +1,6 @@
-import { WorkerID, idFix, snowflake } from "@huginn/shared";
+import { WorkerID, snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
-import { prisma, type AttachmentArgs, type AttachmentPayload } from "#database";
+import { prisma } from "#database";
 
 export const attachmentExtension = Prisma.defineExtension({
    model: {

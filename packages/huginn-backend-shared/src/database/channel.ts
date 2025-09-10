@@ -1,7 +1,6 @@
 import { DBErrorType } from "@huginn/backend-shared/types";
-import { type BigIntToString, ChannelType, type Snowflake, WorkerID, idFix, snowflake } from "@huginn/shared";
-import { Prisma } from "@prisma/client";
-import { assertExists, prisma, type ChannelArgs, type ChannelPayload } from ".";
+import { ChannelType, type Snowflake, WorkerID, idFix, snowflake } from "@huginn/shared";
+import { assertExists, Prisma, prisma, type ChannelArgs, type ChannelPayload } from ".";
 import { assertId, assertObj } from "./error";
 
 export const channelExtension = Prisma.defineExtension({
