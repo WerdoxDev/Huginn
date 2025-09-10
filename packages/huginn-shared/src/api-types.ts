@@ -154,7 +154,7 @@ export type APIChannel = {
 
 export type APIDMChannel = {
    type: ChannelType.DM;
-   lastMessageId?: Snowflake | null;
+   lastMessageId: Snowflake | null;
    recipients: APIChannelUser[];
 } & APIBaseChannel;
 
@@ -163,8 +163,15 @@ export type APIGroupDMChannel = {
    name: string;
    icon: string | null;
    ownerId: Snowflake;
-   lastMessageId?: Snowflake | null;
+   lastMessageId: Snowflake | null;
    recipients: APIChannelUser[];
+} & APIBaseChannel;
+
+export type APIGuildCategoryChannel = {
+   type: ChannelType.GUILD_CATEGORY;
+   // guildId: Snowflake;
+   // position: number;
+   name: string;
 } & APIBaseChannel;
 
 export enum ChannelType {
