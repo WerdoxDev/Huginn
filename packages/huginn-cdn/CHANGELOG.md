@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.12.0...cdn@v0.13.0) (2025-09-14)
+
+
+### Features
+
+* **cdn:** add application icon uploading and getting routes ([1de047d](https://github.com/WerdoxDev/Huginn/commit/1de047d86d248a5053667d3f3546de74746b2c89))
+
 ## [0.12.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.11.0...cdn@v0.12.0) (2025-09-06)
 
 
