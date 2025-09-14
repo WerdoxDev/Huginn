@@ -340,7 +340,7 @@ export function convertToMediaKind(hMediaKind: HMediaKind): MediaKind | undefine
 
 export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
 
-function levenshtein(a: string, b: string) {
+function levenshteinDistance(a: string, b: string): number {
    const dp = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
 
    for (let i = 0; i <= a.length; i++) dp[i][0] = i;
@@ -356,17 +356,30 @@ function levenshtein(a: string, b: string) {
    return dp[a.length][b.length];
 }
 
-export function findClosestString(target: string, candidates: string[]): string {
-   let closest = candidates[0];
-   let minDistance = levenshtein(target, closest);
+export function findClosestString(target: string, candidates: string[]): { match: string | null; similarity: number } {
+   if (!candidates.length) return { match: null, similarity: 0 };
+
+   let bestMatch = candidates[0];
+   let bestSimilarity = calculateSimilarity(target, candidates[0]);
 
    for (let i = 1; i < candidates.length; i++) {
-      const distance = levenshtein(target, candidates[i]);
-      if (distance < minDistance) {
-         minDistance = distance;
-         closest = candidates[i];
+      const similarity = calculateSimilarity(target, candidates[i]);
+      if (similarity > bestSimilarity) {
+         bestSimilarity = similarity;
+         bestMatch = candidates[i];
       }
    }
 
-   return closest;
+   return {
+      match: bestMatch,
+      similarity: bestSimilarity,
+   };
+}
+
+export function calculateSimilarity(string1: string, string2: string): number {
+   const maxLength = Math.max(string1.length, string2.length);
+   if (maxLength === 0) return 100;
+
+   const distance = levenshteinDistance(string1.toLowerCase(), string2.toLowerCase());
+   return Math.round(((maxLength - distance) / maxLength) * 100);
 }
