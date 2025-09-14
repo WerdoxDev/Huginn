@@ -164,14 +164,16 @@ model Settings {
 }
 
 model KnownApplication {
-   id            Int       @id @default(autoincrement())
-   name          String
-   exeName       String
-   contributor   User?     @relation(fields: [contributorId], references: [id])
-   contributorId BigInt?
-   createdAt     DateTime  @default(now())
-   updatedAt     DateTime? @updatedAt
-   deletedAt     DateTime?
+   id                  Int       @id @default(autoincrement())
+   name                String
+   exeName             String
+   igdbId              Int?
+   contributor         User?     @relation(fields: [contributorId], references: [id])
+   contributorId       BigInt?
+   createdAt           DateTime  @default(now())
+   updatedAt           DateTime? @updatedAt
+   deletedAt           DateTime?
+   commandLinePatterns String[]
 
    @@index([name])
 }

@@ -23,7 +23,7 @@ export type ReadStateArgs = Prisma.ReadStateDefaultArgs;
 export type ReadStatePayload<Args extends ReadStateArgs | undefined> = BigIntToString<Prisma.ReadStateGetPayload<Args>>;
 
 export type KnownApplicationArgs = Prisma.KnownApplicationDefaultArgs;
-export type KnownApplicationPayload<Args extends KnownApplicationArgs | undefined> = Prisma.KnownApplicationGetPayload<Args>;
+export type KnownApplicationPayload<Args extends KnownApplicationArgs | undefined> = BigIntToString<Prisma.KnownApplicationGetPayload<Args>>;
 
 export const selectPublicUser = Prisma.validator<Prisma.UserSelect>()({
    id: true,
@@ -124,4 +124,7 @@ export const selectKnownApplication = Prisma.validator<Prisma.KnownApplicationSe
    exeName: true,
    name: true,
    updatedAt: true,
+   contributorId: true,
+   igdbId: true,
+   commandLinePatterns: true,
 });
