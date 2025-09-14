@@ -1,6 +1,7 @@
 import type { DropdownItem, SettingsTabProps } from "@/types";
 import LoadingButton from "@components/button/LoadingButton";
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
+import Tooltip from "@components/tooltip/Tooltip";
 import { useSubmitKnownApplication } from "@hooks/mutations/useSubmitKnownApplication";
 import { JsonCode } from "@huginn/shared";
 import { APIMessages } from "@lib/error-messages";
@@ -106,7 +107,14 @@ export default function SettingsActivityTab(_props: SettingsTabProps) {
                title: "Success!",
                text: (
                   <div>
-                     Congratulations! <span className="font-semibold">{result?.name}</span> got verified by Huginn! Thank you for your contribution
+                     <p>Congratulations! The application got verified by Huginn under these names:</p>
+                     <div className="mt-1 space-y-1">
+                        {result?.names.map((x, i) => (
+                           <div key={i} className="font-semibold">
+                              {x}
+                           </div>
+                        ))}
+                     </div>
                   </div>
                ),
                isOpen: true,
@@ -182,8 +190,20 @@ export default function SettingsActivityTab(_props: SettingsTabProps) {
                   <div className="text-text/80">No applications contributed...</div>
                ) : (
                   contributedApplications.map((x) => (
-                     <div className="flex" key={x.id}>
-                        <div className="text-white">{x.name}</div>
+                     <div className="flex items-center gap-x-2" key={x.id}>
+                        <div className="text-white">{x.names[0]}</div>
+                        {x.names.length > 1 && (
+                           <Tooltip>
+                              <Tooltip.Trigger className="bg-surface rounded-md p-1">
+                                 <IconMingcuteMore1Fill className="text-text size-5" />
+                              </Tooltip.Trigger>
+                              <Tooltip.Content>
+                                 {x.names.slice(1).map((y) => (
+                                    <div className="text-white">{y}</div>
+                                 ))}
+                              </Tooltip.Content>
+                           </Tooltip>
+                        )}
                         <div className="ml-auto text-white/70">{moment(x.createdAt).format("DD.MM.YYYY")}</div>
                      </div>
                   ))

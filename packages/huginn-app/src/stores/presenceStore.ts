@@ -113,7 +113,7 @@ function startCheckingForActivity() {
          const match = openApplications.flatMap((x) => {
             const exeName = x.exePath.split(/[/\\]+/).pop();
             const exeKnown = knownApplications?.find((y) => y.exeName === exeName);
-            const nameKnown = knownApplications?.find((y) => y.name === x.windowTitle);
+            const nameKnown = knownApplications?.find((y) => y.names.includes(x.windowTitle));
             const cmdLineMatch = exeKnown?.commandLinePatterns.every((y) => x.cmdLine.includes(y));
             return (nameKnown || exeKnown) && (cmdLineMatch === undefined ? true : cmdLineMatch)
                ? [{ detected: x, known: exeKnown ?? nameKnown }]
@@ -133,11 +133,11 @@ function startCheckingForActivity() {
          }
 
          // The detected game is already added
-         if (presence.activities[0]?.name === match.known.name) {
+         if (match.known.names.includes(presence.activities[0]?.name)) {
             return;
          }
 
-         log("app:presence-store", "default", "new activity", "kid:", match.known.id, "kn:", match.known.name);
+         log("app:presence-store", "default", "new activity", "kid:", match.known.id, "kn:", match.known.names);
 
          const info = await window.electronAPI.getApplicationInfo(match.detected.exePath, match.detected.processId);
          let iconHash;
@@ -148,7 +148,7 @@ function startCheckingForActivity() {
          client.gateway.updatePresence({
             activities: [
                {
-                  name: match.known.name,
+                  name: match.known.names[0],
                   type: ActivityType.PLAYING,
                   createdAt: new Date().getTime(),
                   iconUrl: iconHash ? `application-icons/${iconHash}.webp` : undefined,
