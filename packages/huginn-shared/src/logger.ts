@@ -32,7 +32,8 @@ type LogKeys = keyof LogValuesMap;
 type LogValuesFor<K extends LogKeys> = LogValuesMap[K];
 export type LogArgs = string | number | boolean | null | undefined | unknown;
 
-const enabledSections = new Map<LogKeys, Set<LogValuesMap[LogKeys]>>();
+const enabledLogs = new Map<LogKeys, Set<LogValuesMap[LogKeys]>>();
+const excludedEventLogs = new Map<LogKeys, Set<LogValuesMap[LogKeys]>>();
 
 const levelStyles: Partial<Record<LogValuesFor<LogKeys> | "default", string>> = {
    default: "color: green",
@@ -53,13 +54,26 @@ let _isRaw = false;
 
 export function enableLogs<T extends Partial<{ [K in LogKeys]: LogValuesMap[K][] }>>(sections: T): void {
    for (const [section, levels] of Object.entries(sections) as [LogKeys, string[]][]) {
-      if (enabledSections.has(section)) {
-         const existing = enabledSections.get(section);
+      if (enabledLogs.has(section)) {
+         const existing = enabledLogs.get(section);
          for (const level of levels) {
             existing?.add(level as LogValuesFor<typeof section>);
          }
       } else {
-         enabledSections.set(section, new Set(levels as LogValuesFor<typeof section>[]));
+         enabledLogs.set(section, new Set(levels as LogValuesFor<typeof section>[]));
+      }
+   }
+}
+
+export function excludeEventLogs<T extends Partial<{ [K in LogKeys]: LogValuesMap[K][] }>>(sections: T): void {
+   for (const [section, levels] of Object.entries(sections) as [LogKeys, string[]][]) {
+      if (excludedEventLogs.has(section)) {
+         const existing = excludedEventLogs.get(section);
+         for (const level of levels) {
+            existing?.add(level as LogValuesFor<typeof section>);
+         }
+      } else {
+         excludedEventLogs.set(section, new Set(levels as LogValuesFor<typeof section>[]));
       }
    }
 }
@@ -69,17 +83,17 @@ export function disableLogs<K extends LogKeys>(sections: Record<K, LogValuesFor<
       const section = entry[0] as LogKeys;
       const levels = entry[1] as LogValuesFor<K>[];
 
-      if (!enabledSections.has(section)) {
+      if (!enabledLogs.has(section)) {
          return;
       }
 
-      const existingSection = enabledSections.get(section);
+      const existingSection = enabledLogs.get(section);
       for (const level of levels) {
          existingSection?.delete(level);
       }
 
       if (existingSection?.size === 0) {
-         enabledSections.delete(section);
+         enabledLogs.delete(section);
       }
    }
 }
@@ -97,9 +111,12 @@ export function setOnError(func: typeof onError): void {
 }
 
 export function log<K extends LogKeys>(section: K, level: LogValuesFor<K>, ...args: LogArgs[]): void {
-   onLog?.(section, level, ...args);
+   const excludedSections = excludedEventLogs.get(section);
+   if (!excludedSections || !excludedSections.has(level)) {
+      onLog?.(section, level, ...args);
+   }
 
-   const existingSections = enabledSections.get(section);
+   const existingSections = enabledLogs.get(section);
    if (!existingSections || !existingSections.has(level)) {
       return;
    }
