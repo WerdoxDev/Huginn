@@ -52,6 +52,11 @@ jobs:
            with:
               bun-version: latest
 
+         - name: install frontend dependencies
+           env:
+              MEDIASOUP_WORKER_BINARY: true
+           run: cd packages/huginn-app && bun install --ignore-scripts
+
          - name: setup cmake
            uses: jwlawson/actions-setup-cmake@v2
            with:
@@ -59,11 +64,6 @@ jobs:
 
          - name: compile native-addon
            run: cd packages/native-addon && bun run build
-
-         - name: install frontend dependencies
-           env:
-              MEDIASOUP_WORKER_BINARY: true
-           run: cd packages/huginn-app && bun install --ignore-scripts
 
          - name: build app
            run: cd packages/huginn-app && bun run build
