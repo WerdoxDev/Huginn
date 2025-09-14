@@ -74,8 +74,9 @@ export function initializePresence() {
          return;
       }
 
-      store.setState((state) => ({ thisPresence: { ...state.thisPresence, status: d.status, activities: d.activities } }));
-      store.getState().updatePresence(client.user.id, { status: d.status, activities: d.activities });
+      const presence = convertToAppPresence({ user: { id: client.user.id }, activeSessions: [], activities: d.activities, status: d.status });
+      store.setState((state) => ({ thisPresence: { ...state.thisPresence, status: presence.status, activities: presence.activities } }));
+      store.getState().updatePresence(client.user.id, { status: presence.status, activities: presence.activities });
    });
 
    return () => {
@@ -111,8 +112,13 @@ function startCheckingForActivity() {
 
          const match = openApplications.flatMap((x) => {
             const exeName = x.exePath.split(/[/\\]+/).pop();
-            const known = knownApplications?.find((y) => y.exeName === exeName);
-            return known ? [{ detected: x, known }] : [];
+            const exeKnown = knownApplications?.find((y) => y.exeName === exeName);
+            const nameKnown = knownApplications?.find((y) => y.name === x.windowTitle);
+            const cmdLineMatch = exeKnown?.commandLinePatterns.every((y) => x.cmdLine.includes(y));
+            console.log(exeName, nameKnown, cmdLineMatch);
+            return (nameKnown || exeKnown) && (cmdLineMatch === undefined ? true : cmdLineMatch)
+               ? [{ detected: x, known: exeKnown ?? nameKnown }]
+               : [];
          })[0];
 
          if (!match?.detected || !match?.known) {
@@ -134,10 +140,10 @@ function startCheckingForActivity() {
 
          log("app:presence-store", "default", "new activity", "kid:", match.known.id, "kn:", match.known.name);
 
-         const icon = await window.electronAPI.getExeLargeIcon(match.detected.exePath, match.detected.processId);
+         const info = await window.electronAPI.getApplicationInfo(match.detected.exePath, match.detected.processId);
          let iconHash;
-         if (icon) {
-            iconHash = await client.applications.uploadIcon({ icon });
+         if (info.icon) {
+            iconHash = await client.applications.uploadIcon({ icon: info.icon });
          }
 
          client.gateway.updatePresence({

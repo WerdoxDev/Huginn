@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router";
 import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
-import { type APIPostLogJSONBody, enableLogs, setIsRaw, setOnError, setOnLog } from "@huginn/shared";
+import { type APIPostLogJSONBody, enableLogs, excludeEventLogs, setIsRaw, setOnError, setOnLog } from "@huginn/shared";
 import { clientStore } from "@stores/clientStore";
 import router from "./routes";
 
@@ -28,6 +28,8 @@ enableLogs({
    "app:client-store": ["default"],
    "app:presence-store": ["default"],
 });
+
+excludeEventLogs({ "app:voice-store": ["speaking-state"] });
 
 setIsRaw(import.meta?.env?.PROD ?? false);
 

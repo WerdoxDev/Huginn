@@ -23,12 +23,15 @@ import {
    type PresenceUser,
    type Snowflake,
    type UserPresence,
+   changeUrlBase,
    omit,
 } from "@huginn/shared";
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import type { JSXElementConstructor, ReactNode } from "react";
 import { Children, isValidElement } from "react";
 import { APIMessages } from "./error-messages";
+import { filesStore } from "@stores/filesStore";
+import { clientStore } from "@stores/clientStore";
 
 export const requiredFieldError: InputStatus = { code: "error", text: "Required" };
 
@@ -89,7 +92,7 @@ export function filterChildrenOfType(children: ReactNode, type: JSXElementConstr
    return Children.toArray(children).filter((child) => isValidElement(child) && typeof child.type === "function" && child.type.name === type.name);
 }
 
-export function isWorthyHuginnError(error: Error): error is HuginnAPIError {
+export function isWorthyHuginnError(error: unknown): error is HuginnAPIError {
    if (error instanceof HuginnAPIError) {
       return true;
    }
@@ -190,7 +193,9 @@ export function convertToAppUser(user: PresenceUser): AppUser {
 }
 
 export function convertToAppPresence(presence: UserPresence): AppPresence {
-   return { ...omit(presence, ["user"]), userId: presence.user.id };
+   const cdn = `${clientStore.getState().hostnames.cdn}/cdn`;
+   const activities = presence.activities.map((x) => ({ ...x, iconUrl: x.iconUrl ? changeUrlBase(x.iconUrl, cdn) : undefined }));
+   return { ...omit(presence, ["user"]), userId: presence.user.id, activities };
 }
 
 export const presenceStatuses: Record<PresenceStatus, { text: string; color: string }> = {

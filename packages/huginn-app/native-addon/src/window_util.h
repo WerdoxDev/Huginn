@@ -6,10 +6,11 @@
 
 namespace window_util
 {
-   struct AppInfo
+   struct ProcessInfo
    {
       std::wstring exePath;
       std::wstring windowTitle;
+      std::wstring cmdLine;
       DWORD processId;
    };
 
@@ -18,5 +19,5 @@ namespace window_util
    std::wstring GetPackagePath(HANDLE hProcess);
    HANDLE GetHandle(DWORD processId);
    std::vector<wchar_t> GetFullName(HANDLE hProcess);
-   std::map<DWORD, AppInfo> EnumerateApplications();
+   std::map<DWORD, ProcessInfo> EnumerateApplications();
 }

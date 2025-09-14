@@ -7,7 +7,7 @@ import type { AudioSource, DisplaySource } from "@/types";
 import * as fileController from "./file-controller";
 import * as cacheController from "./cache-controller";
 import * as keybindsController from "./keybinds-controller";
-import native from "native-addon";
+import native, { type AppInfo } from "native-addon";
 
 // application-loopback executable path when packaged
 if (app.isPackaged) {
@@ -395,11 +395,11 @@ function listenToEvents(mainWindow: BrowserWindow) {
 
       return sources
          .map((source) => {
-            const closestProcessTitle = findClosestString(
+            const bestTitleMatch = findClosestString(
                source.name,
                processes.map((x) => x.title),
             );
-            const process = processes.find((x) => x.title === closestProcessTitle);
+            const process = processes.find((x) => x.title === bestTitleMatch.match);
             return process
                ? {
                     processId: process.processId,
@@ -424,11 +424,11 @@ function listenToEvents(mainWindow: BrowserWindow) {
       let foundProcessId: string | undefined;
       if (processTitle) {
          const processIds = await getActiveWindowProcessIds();
-         const closestProcessTitle = findClosestString(
+         const bestTitleMatch = findClosestString(
             processTitle,
             processIds.map((x) => x.title),
          );
-         foundProcessId = processIds.find((x) => closestProcessTitle === x.title)?.processId;
+         foundProcessId = processIds.find((x) => x.title === bestTitleMatch.match)?.processId;
       } else if (processId) {
          foundProcessId = processId;
       }
@@ -465,15 +465,16 @@ function listenToEvents(mainWindow: BrowserWindow) {
    ipcMain.handle("native:get-open-applications", () => {
       log("app:electron", "recv", "native get open applications");
 
-      const applications = native.enumerateOpenApplications();
+      const applications = native.getOpenApplications();
 
       return applications;
    });
 
-   ipcMain.handle("native:get-exe-large-icon", (_, exePath: string, processId: number) => {
-      log("app:electron", "recv", "native get exe large icon", "exp:", exePath);
+   const applicationIconCache = new cacheController.CacheStorage<number, AppInfo>(600);
+   ipcMain.handle("native:get-application-info", async (_, exePath: string, processId: number) => {
+      log("app:electron", "recv", "native get application info", "exp:", exePath, "pid:", processId);
 
-      const icon = native.getExeLargeIcon(exePath, processId);
-      return icon;
+      const info = await applicationIconCache.cacheOrGet(processId, async () => await native.getApplicationInfo(exePath, processId));
+      return info;
    });
 }

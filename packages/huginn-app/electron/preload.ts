@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { ProgressInfo, UpdateInfo } from "electron-updater";
 import type { AudioSource, DisplaySource, KeybindType } from "@/types";
-import type { AppInfo } from "native-addon";
+import type { AppInfo, ProcessInfo } from "native-addon";
 
 export const electronAPI = {
    getVersion: () => ipcRenderer.invoke("window:version") as Promise<string>,
@@ -78,8 +78,9 @@ export const electronAPI = {
    },
 
    // Native
-   getOpenApplications: () => ipcRenderer.invoke("native:get-open-applications") as Promise<AppInfo[]>,
-   getExeLargeIcon: (exePath: string, processId: number) => ipcRenderer.invoke("native:get-exe-large-icon", exePath, processId) as Promise<string>,
+   getOpenApplications: () => ipcRenderer.invoke("native:get-open-applications") as Promise<ProcessInfo[]>,
+   getApplicationInfo: (exePath: string, processId: number) =>
+      ipcRenderer.invoke("native:get-application-info", exePath, processId) as Promise<AppInfo>,
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

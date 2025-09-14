@@ -50,10 +50,10 @@ export default function InfoModal() {
       [modal],
    );
 
-   const errorCode = useMemo(() => modal.text.match(/\([A-Za-z0-9]+\)/g)?.[0] ?? "", [modal.text]);
+   const errorCode = useMemo(() => (typeof modal.text === "string" && modal.text.match(/\([A-Za-z0-9]+\)/g)?.[0]) ?? "", [modal.text]);
 
    const formattedText = useMemo(() => {
-      return modal.text.replace(/\([A-Za-z0-9]+\)/g, "");
+      return typeof modal.text === "string" ? modal.text.replace(/\([A-Za-z0-9]+\)/g, "") : modal.text;
    }, [modal.text]);
 
    useEffect(() => {

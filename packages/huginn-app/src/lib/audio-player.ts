@@ -9,7 +9,6 @@ const urls: Record<AudioType, string> = { "voice-enter": voiceEnterUrl, "voice-l
 
 export function playAudio(type: AudioType, respectStatus?: boolean) {
    const thisPresence = presenceStore.getState().thisPresence;
-   console.log(thisPresence);
    if (thisPresence.status === "dnd" && respectStatus) {
       return;
    }

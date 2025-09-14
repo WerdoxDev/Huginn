@@ -217,7 +217,7 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
                      <HuginnDropdown
                         className="w-full max-w-xs"
                         onChange={onInputChange}
-                        defaultValue={inputDeviceOptions.find((x) => x.value === selectedInput?.deviceId)}
+                        value={inputDeviceOptions.find((x) => x.value === selectedInput?.deviceId)}
                      >
                         <HuginnDropdown.Label>Input Device</HuginnDropdown.Label>
                         <HuginnDropdown.List className="w-full">
@@ -231,7 +231,7 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
                      <HuginnDropdown
                         className="w-full max-w-xs"
                         onChange={onOutputChange}
-                        defaultValue={outputDeviceOptions.find((x) => x.value === selectedOutput?.deviceId)}
+                        value={outputDeviceOptions.find((x) => x.value === selectedOutput?.deviceId)}
                      >
                         <HuginnDropdown.Label>Output Device</HuginnDropdown.Label>
                         <HuginnDropdown.List className="w-full">
@@ -280,7 +280,7 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
                   <HuginnDropdown
                      className="w-full max-w-xs"
                      onChange={onCameraChange}
-                     defaultValue={cameraDeviceOptions.find((x) => x.value === selectedCamera?.deviceId)}
+                     value={cameraDeviceOptions.find((x) => x.value === selectedCamera?.deviceId)}
                   >
                      <HuginnDropdown.Label>Video Device</HuginnDropdown.Label>
                      <HuginnDropdown.List className="w-full">

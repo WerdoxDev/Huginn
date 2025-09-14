@@ -23,7 +23,7 @@ export default function SettingsThemeTab(props: SettingsTabProps) {
 
    return (
       <div className="flex flex-col gap-y-6">
-         <HuginnDropdown onChange={onThemeChange} defaultValue={themes.find((x) => x.value === settings.settings.theme)}>
+         <HuginnDropdown onChange={onThemeChange} value={themes.find((x) => x.value === settings.settings.theme)}>
             <HuginnDropdown.Label>Color Theme</HuginnDropdown.Label>
             <HuginnDropdown.List className="w-52">
                <HuginnDropdown.ItemsWrapper className="w-52">

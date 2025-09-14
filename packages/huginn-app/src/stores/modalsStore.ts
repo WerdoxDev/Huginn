@@ -3,6 +3,7 @@ import { produce } from "immer";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 import type { AppDirectChannel, MutationKinds } from "@/types";
+import type { ReactNode } from "react";
 
 type DefaultModal = { isOpen: boolean };
 
@@ -10,7 +11,7 @@ const initialStore = () => ({
    settings: { isOpen: false, isClosable: true } as DefaultModal & { isClosable: boolean },
    info: { isOpen: false, status: "none", title: "", text: "", isClosable: true } as DefaultModal & {
       status: "info" | "success" | "error" | "none";
-      text: string;
+      text: ReactNode;
       title: string;
       action?: {
          cancel?: {

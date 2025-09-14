@@ -14,6 +14,7 @@ import SettingsProfileTab from "./settings/SettingsProfileTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
 import SettingsVoiceTab from "./settings/SettingsVoiceTab";
 import SettingsKeybindsTab from "./settings/SettingsKeybindsTab";
+import SettingsActivityTab from "./settings/SettingsActivityTab";
 
 const tabs: SettingsTab[] = [
    {
@@ -30,6 +31,7 @@ const tabs: SettingsTab[] = [
          { name: "notification", text: "Notification", icon: <IconMingcuteNotificationFill /> },
          { name: "voice", text: "Audio & Video", icon: <IconMingcuteSpeakerFill />, component: SettingsVoiceTab },
          { name: "keybind", text: "Keybinds", icon: <IconMingcuteHotkeyFill />, component: SettingsKeybindsTab },
+         { name: "activity", text: "Activity", icon: <IconMingcuteGame2Fill />, component: SettingsActivityTab },
          { name: "advanced", text: "Advanced", icon: <IconMingcuteServerFill />, component: SettingsAdvancedTab },
       ],
    },
@@ -174,7 +176,7 @@ function SettingsPanels(props: { currentTab: string; onChange: (value: DeepParti
       <TabPanels className="flex w-full flex-col">
          <div className="text-text mb-5 ml-5 mt-5 shrink-0 select-none text-xl">{props.currentTab}</div>
          {flatTabs.map((tab) => (
-            <TabPanel key={tab?.name} className="scroll-alternative h-full overflow-x-visible overflow-y-scroll pr-3">
+            <TabPanel key={tab?.name} className="scroll-alternative h-full overflow-x-visible overflow-y-scroll pb-5 pr-3">
                <div className="ml-5">
                   {tab?.component ? (
                      <TabComponent onChange={props.onChange} onSave={props.onSave} component={tab.component} />

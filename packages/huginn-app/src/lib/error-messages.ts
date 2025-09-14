@@ -21,4 +21,5 @@ export const messages = {
 export const APIMessages = {
    [JsonCode.USERNAME_NOT_FOUND]: "Hmm, no user with that username was found!",
    [JsonCode.RELATION_SELF_REQUEST]: "Hmm, you are trying to send a friend request to yourself!",
+   [JsonCode.KNOWN_APPLICATION_EXISTS]: "The application you are trying to submit is already verified!",
 };

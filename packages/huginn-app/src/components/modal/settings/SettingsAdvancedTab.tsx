@@ -102,7 +102,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 
    return (
       <div className="flex flex-col gap-y-5">
-         <HuginnDropdown onChange={hostnameModeChanged} defaultValue={hostnameSources.find((x) => x.value === hostnameSource)}>
+         <HuginnDropdown onChange={hostnameModeChanged} value={hostnameSources.find((x) => x.value === hostnameSource)}>
             <HuginnDropdown.Label>Hostname Source</HuginnDropdown.Label>
             <HuginnDropdown.List>
                <HuginnDropdown.ItemsWrapper className="w-52">

@@ -6,6 +6,7 @@
 #include <map>
 #include <appmodel.h>
 #include <iostream>
+#include <winternl.h>
 
 #pragma comment(lib, "psapi.lib")
 
@@ -86,8 +87,6 @@ namespace window_util
             if (packageInfo[0].path)
             {
                packagePath = packageInfo[0].path;
-
-               std::wcout << packagePath << std::endl;
             }
          }
       }
@@ -129,64 +128,102 @@ namespace window_util
       return L"";
    }
 
+   typedef NTSTATUS(NTAPI *PNtQueryInformationProcess)(
+       HANDLE, PROCESSINFOCLASS, PVOID, ULONG, PULONG);
+
+   std::wstring GetProcessCommandLine(DWORD pid)
+   {
+      HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
+      if (!hProc)
+         return L"";
+
+      HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
+      auto NtQueryInformationProcess =
+          (PNtQueryInformationProcess)GetProcAddress(hNtDll, "NtQueryInformationProcess");
+
+      PROCESS_BASIC_INFORMATION pbi;
+      NtQueryInformationProcess(hProc, ProcessBasicInformation, &pbi, sizeof(pbi), nullptr);
+
+      PEB peb;
+      ReadProcessMemory(hProc, pbi.PebBaseAddress, &peb, sizeof(peb), nullptr);
+
+      RTL_USER_PROCESS_PARAMETERS params;
+      ReadProcessMemory(hProc, peb.ProcessParameters, &params, sizeof(params), nullptr);
+
+      std::wstring cmdLine(params.CommandLine.Length / sizeof(wchar_t), L'\0');
+      ReadProcessMemory(hProc, params.CommandLine.Buffer, &cmdLine[0], params.CommandLine.Length, nullptr);
+
+      CloseHandle(hProc);
+      return cmdLine;
+   }
+
    BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
    {
-      std::vector<AppInfo> *apps = reinterpret_cast<std::vector<AppInfo> *>(lParam);
+      std::vector<ProcessInfo> *apps = reinterpret_cast<std::vector<ProcessInfo> *>(lParam);
 
-      // Check if window is visible
       if (!IsWindowVisible(hwnd))
       {
          return TRUE;
       }
 
-      // Get window title
       int titleLength = GetWindowTextLengthW(hwnd);
       if (titleLength == 0)
       {
          return TRUE;
       }
 
+      // Skip if not a main window (has owner or parent)
+      if (GetWindow(hwnd, GW_OWNER) != NULL)
+      {
+         return TRUE;
+      }
+
+      LONG_PTR exStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+      if (exStyle & WS_EX_TOOLWINDOW)
+         return TRUE;
+
       std::wstring windowTitle(titleLength + 1, 0);
       GetWindowTextW(hwnd, &windowTitle[0], titleLength + 1);
       windowTitle.resize(titleLength);
 
-      // Skip empty titles
       if (windowTitle.empty())
       {
          return TRUE;
       }
 
-      // Get process ID
       DWORD processId;
       GetWindowThreadProcessId(hwnd, &processId);
 
-      // Get executable path
       HANDLE hProcess = GetHandle(processId);
       std::wstring exePath = GetExecutablePath(hProcess);
 
-      // Skip if we couldn't get the exe path
       if (exePath.empty())
       {
          return TRUE;
       }
 
-      // Add to results
-      AppInfo app;
+      std::wstring cmdLine = GetProcessCommandLine(processId);
+
+      // std::cout << WideToUtf8(cmdLine) << std::endl;
+      // std::this_thread::sleep_for(std::chrono::milliseconds(250));
+
+      ProcessInfo app;
       app.exePath = exePath;
       app.windowTitle = windowTitle;
       app.processId = processId;
+      app.cmdLine = cmdLine;
       apps->push_back(app);
 
       return TRUE;
    }
 
-   std::map<DWORD, AppInfo> EnumerateApplications()
+   std::map<DWORD, ProcessInfo> EnumerateApplications()
    {
-      std::vector<AppInfo> apps;
+      std::vector<ProcessInfo> apps;
 
       EnumWindows(EnumWindowsProc, reinterpret_cast<LPARAM>(&apps));
 
-      std::map<DWORD, AppInfo> uniqueApps;
+      std::map<DWORD, ProcessInfo> uniqueApps;
       for (const auto &app : apps)
       {
          auto it = uniqueApps.find(app.processId);

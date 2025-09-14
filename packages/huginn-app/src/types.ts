@@ -78,7 +78,7 @@ export type HuginnButtonProps = {
    className?: string;
    disabled?: boolean;
    innerClassName?: string;
-   color?: "primary" | "surface-deep" | "surface-alt" | "surface";
+   color?: "primary" | "surface-deep" | "surface-alt" | "surface" | "positive";
    onClick?: () => void;
 };
 
@@ -111,6 +111,7 @@ export type SettingsTabProps = {
 };
 
 export type DropdownItem = {
+   id?: number;
    text: string;
    icon?: ReactNode;
    value: string;

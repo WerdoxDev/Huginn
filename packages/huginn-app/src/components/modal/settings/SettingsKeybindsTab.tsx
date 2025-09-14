@@ -43,6 +43,7 @@ export default function SettingsKeybindsTab() {
                />
             ))}
          </div>
+         <div className="text-text mt-2 select-none text-xs font-medium italic opacity-70">*Keybinds are disabled while you are in this page</div>
       </div>
    );
 }

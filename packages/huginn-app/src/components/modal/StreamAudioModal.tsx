@@ -75,7 +75,7 @@ export default function StreamAudioModal() {
                         onClick={() => setSelectedSource(x)}
                      >
                         <img src={x.appIcon} alt={x.processId} className="aspect-square size-6" />
-                        <div className="text-text">{x.name}</div>
+                        <div className="text-text wrap-anywhere">{x.name}</div>
                      </button>
                   ))
                )}

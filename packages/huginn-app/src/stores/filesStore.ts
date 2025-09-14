@@ -63,49 +63,64 @@ export function initializeFilesWithClient() {
    const client = clientStore.getState().client;
 
    const unlisten = client?.gateway.listen("ready", async () => {
-      const knownApplicationsExists = await fileExists("known-applications");
-      if (!knownApplicationsExists) {
-         const result = await client?.applications.getKnown();
-         await saveFile("known-applications", result);
-         store.setState({ knownApplications: result });
-      } else {
-         const file = await loadFile("known-applications", undefined)!;
-         const result = await client?.applications.getKnown(new Date(file?.lastUpdated ?? ""));
-
-         if (!file) {
-            error("app:files-store", "File store should not have been null here");
-            return;
-         }
-
-         for (const application of result.applications) {
-            const existingIndex = file?.applications.findIndex((x) => x.id === application.id);
-
-            // Remove the application if it's deleted in the new list
-            if (application.deletedAt) {
-               file.applications = file.applications.filter((x) => x.id !== application.id);
-               continue;
-            }
-
-            // Update any updated applications
-            if (existingIndex !== -1) {
-               file.applications[existingIndex] = application;
-            }
-            // Add any new ones
-            else {
-               file.applications.push(application);
-            }
-         }
-
-         file.lastUpdated = result.lastUpdated;
-
-         await saveFile("known-applications", file);
-         store.setState({ knownApplications: file });
-      }
+      await updateKnownApplications();
    });
 
    return () => {
       unlisten?.();
    };
+}
+
+export async function updateKnownApplications() {
+   const client = clientStore.getState().client;
+
+   if (!client) {
+      return;
+   }
+
+   const knownApplicationsExists = await fileExists("known-applications");
+   if (!knownApplicationsExists) {
+      const result = await client.applications.getKnown();
+      for (const application of result.applications) {
+         delete application.deletedAt;
+      }
+      await saveFile("known-applications", result);
+      store.setState({ knownApplications: result });
+   } else {
+      const file = await loadFile("known-applications", undefined)!;
+      const result = await client?.applications.getKnown(new Date(file?.lastUpdated ?? ""));
+
+      if (!file) {
+         error("app:files-store", "Known applications file should not have been null here");
+         return;
+      }
+
+      for (const application of result.applications) {
+         const existingIndex = file?.applications.findIndex((x) => x.id === application.id);
+
+         // Remove the application if it's deleted in the new list
+         if (application.deletedAt) {
+            file.applications = file.applications.filter((x) => x.id !== application.id);
+            continue;
+         }
+
+         delete application.deletedAt;
+
+         // Update any updated applications
+         if (existingIndex !== -1) {
+            file.applications[existingIndex] = application;
+         }
+         // Add any new ones
+         else {
+            file.applications.push(application);
+         }
+      }
+
+      file.lastUpdated = result.lastUpdated;
+
+      await saveFile("known-applications", file);
+      store.setState({ knownApplications: file });
+   }
 }
 
 const store = createStore(

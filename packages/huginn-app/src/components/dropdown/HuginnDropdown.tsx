@@ -5,109 +5,101 @@ import { createContext, type ReactNode, useContext, useEffect, useState } from "
 import type { DropdownItem } from "@/types";
 
 const DropdownContext = createContext<{
-	id: string;
-	selected?: DropdownItem;
-	defaultValue?: DropdownItem;
-	onChange?: (value: DropdownItem) => void;
+   id: string;
+   selected?: DropdownItem;
+   defaultValue?: DropdownItem;
+   onChange?: (value: DropdownItem) => void;
 }>({
-	id: "",
+   id: "",
 });
 
 export default function HuginnDropdown(props: {
-	children?: ReactNode;
-	className?: string;
-	defaultValue?: DropdownItem;
-	onChange?: (value: DropdownItem) => void;
-	forceSelected?: DropdownItem;
+   children?: ReactNode;
+   className?: string;
+   value?: DropdownItem;
+   onChange?: (value: DropdownItem) => void;
 }) {
-	const [id, _setId] = useState(() => snowflake.generateString(WorkerID.APP));
-	const [selected, setSelected] = useState<DropdownItem | undefined>(props.forceSelected ?? props.defaultValue);
+   const [id, _setId] = useState(() => snowflake.generateString(WorkerID.APP));
+   // const [selected, setSelected] = useState<DropdownItem | undefined>(props.value);
 
-	function onChange(value: DropdownItem) {
-		if (!props.forceSelected) {
-			setSelected(value);
-		}
-		props.onChange?.(value);
-	}
+   function onChange(value: DropdownItem) {
+      // setSelected(value);
+      props.onChange?.(value);
+   }
 
-	useEffect(() => {
-		if (props.forceSelected) {
-			setSelected(props.forceSelected);
-		}
-	}, [props.forceSelected]);
+   useEffect(() => {
+      // setSelected(props.value);
+   }, [props.value]);
 
-	useEffect(() => {
-		if (!selected || selected.value !== props.defaultValue?.value) {
-			setSelected(props.defaultValue);
-		}
-	}, [props.defaultValue]);
-
-	return (
-		<DropdownContext.Provider value={{ id: id, selected: selected, onChange: onChange, defaultValue: props.defaultValue }}>
-			<div className={clsx("flex flex-col", props.className)}>{props.children}</div>
-		</DropdownContext.Provider>
-	);
+   return (
+      <DropdownContext.Provider value={{ id: id, selected: props.value, onChange: onChange, defaultValue: props.value }}>
+         <div className={clsx("flex flex-col", props.className)}>{props.children}</div>
+      </DropdownContext.Provider>
+   );
 }
 
-function List(props: { className?: string; children?: ReactNode }) {
-	const dropdownContext = useContext(DropdownContext);
+function List(props: { className?: string; children?: ReactNode; onClick?: () => void; placeholder?: string }) {
+   const dropdownContext = useContext(DropdownContext);
 
-	return (
-		<div className={clsx("w-52 rounded-lg bg-surface-alt", props.className)}>
-			<Listbox value={dropdownContext.selected} onChange={dropdownContext.onChange}>
-				{({ open, value }) => (
-					<div>
-						<ListboxButton className="relative flex w-full cursor-pointer select-none items-center gap-x-1.5 overflow-hidden p-2 text-white outline-hidden">
-							{value?.icon}
-							<span className="overflow-hidden text-ellipsis whitespace-nowrap text-left">{value?.text}</span>
-							<IconMingcuteDownFill className={clsx("ml-auto h-6 w-6 shrink-0 text-primary-500 transition-transform", open && "rotate-180")} />
-						</ListboxButton>
-						{props.children}
-					</div>
-				)}
-			</Listbox>
-		</div>
-	);
+   return (
+      <div className={clsx("bg-surface-alt w-52 rounded-lg", props.className)}>
+         <Listbox value={dropdownContext.selected ?? { text: props.placeholder, value: "", icon: undefined }} onChange={dropdownContext.onChange}>
+            {({ open, value }) => (
+               <div>
+                  <ListboxButton
+                     onClick={props.onClick}
+                     className="outline-hidden relative flex w-full cursor-pointer select-none items-center gap-x-1.5 overflow-hidden p-2 text-white"
+                  >
+                     {value?.icon}
+                     <span className="overflow-hidden text-ellipsis whitespace-nowrap text-left">{value?.text}</span>
+                     <IconMingcuteDownFill className={clsx("text-primary-500 ml-auto h-6 w-6 shrink-0 transition-transform", open && "rotate-180")} />
+                  </ListboxButton>
+                  {props.children}
+               </div>
+            )}
+         </Listbox>
+      </div>
+   );
 }
 
 function ItemsWrapper(props: { className?: string; children?: ReactNode }) {
-	return (
-		<ListboxOptions
-			modal={false}
-			anchor="bottom"
-			transition
-			className={clsx(
-				"scroll-alternative2 !overflow-y-scroll flex flex-col gap-y-0.5 rounded-lg bg-surface-alt p-1 pr-0 outline outline-primary-800 transition [--anchor-gap:0.25rem] [--anchor-padding:1rem] data-closed:translate-y-5 data-closed:opacity-0",
-				props.className,
-			)}
-		>
-			{props.children}
-		</ListboxOptions>
-	);
+   return (
+      <ListboxOptions
+         modal={false}
+         anchor="bottom"
+         transition
+         className={clsx(
+            "scroll-alternative2 bg-surface-alt outline-primary-800 data-closed:translate-y-5 data-closed:opacity-0 flex flex-col gap-y-0.5 !overflow-y-scroll rounded-lg p-1 pr-0 outline transition [--anchor-gap:0.25rem] [--anchor-padding:1rem]",
+            props.className,
+         )}
+      >
+         {props.children}
+      </ListboxOptions>
+   );
 }
 
 function Item(props: { item: DropdownItem; children?: ReactNode }) {
-	return (
-		<ListboxOption
-			value={props.item}
-			className="group flex cursor-pointer items-center gap-x-1.5 rounded-md p-1.5 text-white data-focus:bg-surface data-selected:bg-surface/50"
-		>
-			{props.item.icon}
-			{props.item.text}
-			{props.children}
-			<IconMingcuteCheckFill className="invisible ml-auto size-5 shrink-0 text-primary-500 group-data-selected:visible" />
-		</ListboxOption>
-	);
+   return (
+      <ListboxOption
+         value={props.item}
+         className="data-focus:bg-surface data-selected:bg-surface/50 group flex cursor-pointer items-center gap-x-2 rounded-md p-1.5 text-white"
+      >
+         {props.item.icon}
+         <span className="wrap-anywhere">{props.item.text}</span>
+         {props.children}
+         <IconMingcuteCheckFill className="text-primary-500 group-data-selected:visible invisible ml-auto size-5 shrink-0" />
+      </ListboxOption>
+   );
 }
 
 function Label(props: { children?: ReactNode }) {
-	const dropdownContext = useContext(DropdownContext);
+   const dropdownContext = useContext(DropdownContext);
 
-	return (
-		<label htmlFor={dropdownContext.id} className="mb-2 select-none font-medium text-text text-xs uppercase opacity-90">
-			{props.children}
-		</label>
-	);
+   return (
+      <label htmlFor={dropdownContext.id} className="text-text mb-2 select-none text-xs font-medium uppercase opacity-90">
+         {props.children}
+      </label>
+   );
 }
 
 HuginnDropdown.Label = Label;

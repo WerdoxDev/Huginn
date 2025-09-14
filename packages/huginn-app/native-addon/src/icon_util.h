@@ -5,7 +5,12 @@
 
 namespace icon_util
 {
-   HICON GetExeLargeIcon(const std::wstring &exePath);
-   std::string HICONToBase64Png(HICON hIcon);
-   std::string PngToBase64Png(const std::wstring pngPath);
+   HICON GetExeHICON(const std::wstring &exePath);
+   HICON GetProcessHICON(DWORD processId);
+   std::string GetPngFileBase64(const std::wstring pngPath);
+   std::string GetExeIconBase64(const std::wstring &exePath);
+   std::string GetProcessIconBase64(DWORD processId);
+
+   std::string base64_encode(const std::vector<BYTE> &data);
+   std::vector<BYTE> HICONToPngData(HICON hIcon);
 }
