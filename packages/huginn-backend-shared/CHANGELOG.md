@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.16.0...backend-shared@v0.16.1) (2025-09-14)
+
+
+### Bug Fixes
+
+* **backend-shared:** change known application to use new name string ([f6dfdec](https://github.com/WerdoxDev/Huginn/commit/f6dfdec830c6ae220018e92d547083b833ee79dc))
+
 ## [0.16.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.15.0...backend-shared@v0.16.0) (2025-09-14)
 
 

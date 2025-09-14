@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.57.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.57.1...app@v0.57.2) (2025-09-14)
+
+
+### Bug Fixes
+
+* **app:** support multiple known application names ([6e13d82](https://github.com/WerdoxDev/Huginn/commit/6e13d820b689810139d2516d432d787e5c392823))
+
 ## [0.57.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.57.0...app@v0.57.1) (2025-09-14)
 
 

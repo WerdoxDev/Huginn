@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.29.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.29.0...server@v0.29.1) (2025-09-14)
+
+
+### Bug Fixes
+
+* **server:** better igdb search ([6bea4c2](https://github.com/WerdoxDev/Huginn/commit/6bea4c270d21a0b49d6869c71be38fccafa96d62))
+* **server:** update app detection ([ad0d87e](https://github.com/WerdoxDev/Huginn/commit/ad0d87e191f2c86d6dc917044b9d562dc544e9ec))
+
 ## [0.29.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.28.0...server@v0.29.0) (2025-09-14)
 
 
