@@ -1,11 +1,13 @@
-import { Prisma, prisma } from "@huginn/backend-shared/database";
-import { selectChannelDefaults, selectMessageDefaults, type ChannelPayload, type MessagePayload } from "@huginn/backend-shared/database/common";
+import { prisma } from "@huginn/backend-shared/database";
 import {
-   type APIChannel,
-   type APIDMChannel,
-   type APIGroupDMChannel,
-   type APIGuildCategoryChannel,
-   type BigIntToString,
+   selectChannelDefaults,
+   selectKnownApplication,
+   selectMessageDefaults,
+   type ChannelPayload,
+   type KnownApplicationPayload,
+   type MessagePayload,
+} from "@huginn/backend-shared/database/common";
+import {
    ChannelType,
    constants,
    type DirectChannel,
@@ -86,7 +88,9 @@ export function filterMessage<T extends MessagePayload<{ select: typeof selectMe
 
    return {
       ...omit(message, ["call"]),
-      ...(message.call ? { call: { endedTimestamp: message.call.endedTimestamp, participants: message.call.participants.map((x) => x.id) } } : {}),
+      ...(message.call !== null && {
+         call: { endedTimestamp: message.call.endedTimestamp, participants: message.call.participants.map((x) => x.id) },
+      }),
       embeds: nullToUndefined(message.embeds),
       attachments: nullToUndefined(signedAttachments),
    };
@@ -102,4 +106,12 @@ export function filterChannel<T extends ChannelPayload<{ select: typeof selectCh
    }
 
    return channel;
+}
+
+export function filterKnownApplication<T extends KnownApplicationPayload<{ select: typeof selectKnownApplication }>>(knownApplication: T) {
+   return {
+      ...omit(knownApplication, ["igdbId", "contributorId"]),
+      ...(knownApplication.contributorId !== null && { contributorId: knownApplication.contributorId }),
+      ...(knownApplication.igdbId !== null && { igdbId: knownApplication.igdbId }),
+   };
 }

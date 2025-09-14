@@ -30,6 +30,8 @@ export const envs = readEnv([
    "REDIRECT_HOST",
    "CDN_HMAC_SECRET",
    { key: "FFMPEG_TEMP_DIR", default: "./ffmpeg" },
+   "IGDB_CLIENT_ID",
+   "IGDB_CLIENT_SECRET",
 ] as const);
 
 export const CERT_FILE = envs.CERTIFICATE_PATH && Bun.file(envs.CERTIFICATE_PATH);

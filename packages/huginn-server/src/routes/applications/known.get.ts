@@ -1,3 +1,4 @@
+import { filterKnownApplication } from "#utils/helpers";
 import { createRoute, validator, verifyJwt } from "@huginn/backend-shared";
 import { selectKnownApplication } from "@huginn/backend-shared/database/common";
 import { prisma } from "@huginn/backend-shared/database/index";
@@ -12,6 +13,9 @@ createRoute("GET", "/api/applications/known", verifyJwt(), validator("query", qu
    const sinceDate = since ? new Date(Number(since)) : undefined;
    const knownApplications = await prisma.knownApplication.getAll(sinceDate, { select: selectKnownApplication });
 
-   const json: APIGetKnownApplicationsResult = { lastUpdated: new Date().toISOString(), applications: knownApplications };
+   const json: APIGetKnownApplicationsResult = {
+      lastUpdated: new Date().toISOString(),
+      applications: knownApplications.map((x) => filterKnownApplication(x)),
+   };
    return c.json(json, HttpCode.OK);
 });
