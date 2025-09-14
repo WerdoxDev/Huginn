@@ -1,15 +1,13 @@
 import { envs } from "#setup";
 import { filterKnownApplication } from "#utils/helpers";
 import { serverFetch } from "#utils/server-request";
-import { createRoute, notFound, singleError, validator, verifyJwt } from "@huginn/backend-shared";
+import type { TwitchOAuthResult, IGDBSearchResult } from "#utils/types";
+import { createRoute, invalidFormBody, notFound, singleError, validator, verifyJwt } from "@huginn/backend-shared";
 import { prisma, selectKnownApplication } from "@huginn/backend-shared/database/index";
 import { constants, Errors, findClosestString, HttpCode, type APIPostKnownApplicationResult } from "@huginn/shared";
 import z from "zod";
 
 const schema = z.object({ windowTitle: z.string(), exePath: z.string() });
-
-type TwitchOAuthResult = { access_token: string; expires_in: number };
-type IGDBSearchResult = { id: number; name: string; rating: number; url: string; alternative_names: Array<{ name: string }> };
 
 createRoute("POST", "/api/applications/known", verifyJwt(), validator("json", schema), async (c) => {
    const body = c.req.valid("json");
@@ -17,7 +15,11 @@ createRoute("POST", "/api/applications/known", verifyJwt(), validator("json", sc
    const exeName = body.exePath.split(/[/\\]+/).pop();
    const title = body.windowTitle.trim();
 
-   if (await prisma.knownApplication.exists({ name: title })) {
+   if (!exeName) {
+      return invalidFormBody(c);
+   }
+
+   if (await prisma.knownApplication.exists({ names: { has: title }, exeName: exeName })) {
       return singleError(c, Errors.knownApplicationExists());
    }
 
@@ -40,7 +42,7 @@ createRoute("POST", "/api/applications/known", verifyJwt(), validator("json", sc
 
    for (const search of searchResult) {
       searchableNames.push({ id: search.id, name: search.name });
-      if (search.alternative_names.length !== 0) {
+      if (search.alternative_names && search.alternative_names.length !== 0) {
          searchableNames.push(...search.alternative_names.map((x) => ({ id: search.id, name: x.name })));
       }
    }
@@ -51,16 +53,12 @@ createRoute("POST", "/api/applications/known", verifyJwt(), validator("json", sc
    );
 
    if (bestMatch.similarity >= constants.KNOWN_APPLICATION_SIMILARITY_THRESHOLD) {
-      const name = bestMatch.match;
-
-      if (!name || !exeName) {
-         return notFound(c);
-      }
-
       const resultMatch = searchableNames.find((x) => x.name === bestMatch.match);
 
+      const names = searchableNames.filter((x) => x.id === resultMatch?.id).map((x) => x.name);
+
       const createdKnownApplication = await prisma.knownApplication.createOne(
-         { name, exeName, contributorId: payload.id, igdbId: resultMatch?.id, isActive: true },
+         { names, exeName, contributorId: payload.id, igdbId: resultMatch?.id, isActive: true },
          { select: selectKnownApplication },
       );
 
@@ -69,7 +67,7 @@ createRoute("POST", "/api/applications/known", verifyJwt(), validator("json", sc
    } else {
       // Create an inactive field just to have user submissions recorded
       await prisma.knownApplication.createOne(
-         { name: title, exeName: exeName ?? "", contributorId: payload.id, isActive: false },
+         { names: [title], exeName: exeName ?? "", contributorId: payload.id, isActive: false },
          { select: selectKnownApplication },
       );
    }

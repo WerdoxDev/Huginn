@@ -28,6 +28,9 @@ export type DBAttachment = Omit<APIPostAttachmentJSONBody, "id"> & {
    flags: number;
 };
 
+export type TwitchOAuthResult = { access_token: string; expires_in: number };
+export type IGDBSearchResult = { id: number; name: string; rating: number; url: string; alternative_names?: Array<{ name: string }> };
+
 declare module "hono" {
    interface ContextVariableMap {
       tokenPayload: UserTokenPayload;
