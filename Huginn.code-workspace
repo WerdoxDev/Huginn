@@ -28,6 +28,10 @@
 			"name": "huginn-app",
 			"path": "packages/huginn-app"
 		},
+      {
+			"name": "native-addon",
+			"path": "packages/native-addon"
+		},
 		{
 			"name": "huginn-shared",
 			"path": "packages/huginn-shared"

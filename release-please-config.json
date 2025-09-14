@@ -1,35 +1,38 @@
 {
-	"release-type": "node",
-	"include-component-in-tag": true,
-	"tag-separator": "@",
-	"include-v-in-tag": true,
-	"separate-pull-requests": false,
-	"commit-search-depth": 100,
-	"initial-version": "0.1.0",
-	"packages": {
-		"packages/huginn-api": {
-			"package-name": "api"
-		},
-		"packages/huginn-server": {
-			"package-name": "server"
-		},
-		"packages/huginn-voice": {
-			"package-name": "voice"
-		},
-		"packages/huginn-cdn": {
-			"package-name": "cdn"
-		},
-		"packages/huginn-bifrost": {
-			"package-name": "bifrost"
-		},
-		"packages/huginn-shared": {
-			"package-name": "shared"
-		},
-		"packages/huginn-backend-shared": {
-			"package-name": "backend-shared"
-		},
-		"packages/huginn-app": {
-			"package-name": "app"
-		}
-	}
+   "release-type": "node",
+   "include-component-in-tag": true,
+   "tag-separator": "@",
+   "include-v-in-tag": true,
+   "separate-pull-requests": false,
+   "commit-search-depth": 100,
+   "initial-version": "0.1.0",
+   "packages": {
+      "packages/huginn-api": {
+         "package-name": "api"
+      },
+      "packages/huginn-server": {
+         "package-name": "server"
+      },
+      "packages/huginn-voice": {
+         "package-name": "voice"
+      },
+      "packages/huginn-cdn": {
+         "package-name": "cdn"
+      },
+      "packages/huginn-bifrost": {
+         "package-name": "bifrost"
+      },
+      "packages/huginn-shared": {
+         "package-name": "shared"
+      },
+      "packages/huginn-backend-shared": {
+         "package-name": "backend-shared"
+      },
+      "packages/huginn-app": {
+         "package-name": "app"
+      },
+      "packages/native-addon": {
+         "package-name": "native-addon"
+      }
+   }
 }
