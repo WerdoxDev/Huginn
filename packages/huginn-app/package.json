@@ -48,7 +48,7 @@
       "mime": "^4.0.7",
       "moment": "^2.30.1",
       "motion": "^11.18.2",
-      "native-addon": "file:./native-addon",
+      "native-addon": "workspace:*",
       "pathe": "^2.0.3",
       "posthog-js": "^1.258.5",
       "react": "^19.1.1",
