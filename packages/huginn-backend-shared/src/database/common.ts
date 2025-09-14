@@ -122,7 +122,7 @@ export const selectKnownApplication = Prisma.validator<Prisma.KnownApplicationSe
    createdAt: true,
    deletedAt: true,
    exeName: true,
-   name: true,
+   names: true,
    updatedAt: true,
    contributorId: true,
    igdbId: true,

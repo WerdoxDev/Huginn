@@ -165,7 +165,7 @@ model Settings {
 
 model KnownApplication {
    id                  Int       @id @default(autoincrement())
-   name                String
+   names               String[]
    exeName             String
    igdbId              Int?
    contributor         User?     @relation(fields: [contributorId], references: [id])
@@ -176,5 +176,5 @@ model KnownApplication {
    commandLinePatterns String[]
    active              Boolean   @default(false)
 
-   @@index([name])
+   @@index([names])
 }

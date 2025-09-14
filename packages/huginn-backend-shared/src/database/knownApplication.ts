@@ -18,7 +18,7 @@ export const knownApplicationExtension = Prisma.defineExtension({
             return idFix(knownApplications) as KnownApplicationPayload<Args>[];
          },
          async createOne<Args extends KnownApplicationArgs>(
-            options: { name: string; exeName: string; contributorId?: Snowflake; igdbId?: number; isActive: boolean },
+            options: { names: string[]; exeName: string; contributorId?: Snowflake; igdbId?: number; isActive: boolean },
             args?: Args,
          ) {
             const methodName = "knownApplication.createOne";
@@ -26,7 +26,7 @@ export const knownApplicationExtension = Prisma.defineExtension({
                assertId(methodName, options.contributorId);
                const knownApplication = await prisma.knownApplication.create({
                   data: {
-                     name: options.name,
+                     names: options.names,
                      exeName: options.exeName,
                      contributorId: options.contributorId ? BigInt(options.contributorId) : undefined,
                      createdAt: new Date(),
