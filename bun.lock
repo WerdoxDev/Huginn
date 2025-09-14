@@ -3517,7 +3517,7 @@
 
     "huginn-app-react/@types/bun": ["@types/bun@1.2.21", "", { "dependencies": { "bun-types": "1.2.21" } }, "sha512-NiDnvEqmbfQ6dmZ3EeUO577s4P5bf4HCTXtI6trMc6f6RzirY5IrF3aIookuSpyslFzrnvv2lmEWv5HyC1X79A=="],
 
-    "huginn-app-react/native-addon": ["native-addon@file:packages/huginn-app/native-addon", { "dependencies": { "bindings": "^1.5.0", "cmake-js": "^7.3.1", "node-addon-api": "^8.5.0", "tsdown": "^0.14.2" }, "devDependencies": { "@types/bindings": "^1.5.5" } }],
+    "huginn-app-react/native-addon": ["native-addon@file:packages/huginn-app/native-addon", { "dependencies": { "bindings": "^1.5.0", "cmake-js": "^7.3.1", "fast-xml-parser": "^5.2.5", "node-addon-api": "^8.5.0", "tsdown": "^0.14.2" }, "devDependencies": { "@types/bindings": "^1.5.5" } }],
 
     "huginn-app-react/pathe": ["pathe@2.0.3", "", {}, "sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w=="],
 
