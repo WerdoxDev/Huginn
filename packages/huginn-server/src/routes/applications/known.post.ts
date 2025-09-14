@@ -9,7 +9,7 @@ import z from "zod";
 const schema = z.object({ windowTitle: z.string(), exePath: z.string() });
 
 type TwitchOAuthResult = { access_token: string; expires_in: number };
-type IGDBSearchResult = { id: number; name: string; rating: number; url: string };
+type IGDBSearchResult = { id: number; name: string; rating: number; url: string; alternative_names: Array<{ name: string }> };
 
 createRoute("POST", "/api/applications/known", verifyJwt(), validator("json", schema), async (c) => {
    const body = c.req.valid("json");
@@ -25,20 +25,29 @@ createRoute("POST", "/api/applications/known", verifyJwt(), validator("json", sc
    const result: TwitchOAuthResult = await serverFetch("https://id.twitch.tv/oauth2/token", "POST", { query: search });
    const token = result.access_token;
 
-   const searchResult: IGDBSearchResult[] = await serverFetch("https://api.igdb.com/v4/games", "POST", {
+   let searchResult: IGDBSearchResult[] = await serverFetch("https://api.igdb.com/v4/games", "POST", {
       headers: { "Client-ID": envs.IGDB_CLIENT_ID! },
       auth: true,
       token: token,
       body: `
-      fields id,name,rating,url;
-      where name ~ *"${title}"*;
-      sort rating desc;
+      fields id,name,rating,url,alternative_names.name,game_type;
+      search "${title}";
+      where platforms = [6];
       `,
    });
 
+   const searchableNames: Array<{ id: number; name: string }> = [];
+
+   for (const search of searchResult) {
+      searchableNames.push({ id: search.id, name: search.name });
+      if (search.alternative_names.length !== 0) {
+         searchableNames.push(...search.alternative_names.map((x) => ({ id: search.id, name: x.name })));
+      }
+   }
+
    const bestMatch = findClosestString(
       title,
-      searchResult.map((x) => x.name),
+      searchableNames.map((x) => x.name),
    );
 
    if (bestMatch.similarity >= constants.KNOWN_APPLICATION_SIMILARITY_THRESHOLD) {
@@ -48,15 +57,21 @@ createRoute("POST", "/api/applications/known", verifyJwt(), validator("json", sc
          return notFound(c);
       }
 
-      const resultMatch = searchResult.find((x) => x.name === bestMatch.match);
+      const resultMatch = searchableNames.find((x) => x.name === bestMatch.match);
 
       const createdKnownApplication = await prisma.knownApplication.createOne(
-         { name, exeName, contributorId: payload.id, igdbId: resultMatch?.id },
+         { name, exeName, contributorId: payload.id, igdbId: resultMatch?.id, isActive: true },
          { select: selectKnownApplication },
       );
 
       const json: APIPostKnownApplicationResult = filterKnownApplication(createdKnownApplication);
       return c.json(json, HttpCode.CREATED);
+   } else {
+      // Create an inactive field just to have user submissions recorded
+      await prisma.knownApplication.createOne(
+         { name: title, exeName: exeName ?? "", contributorId: payload.id, isActive: false },
+         { select: selectKnownApplication },
+      );
    }
 
    return notFound(c);
