@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.16.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.15.0...backend-shared@v0.16.0) (2025-09-14)
+
+
+### Features
+
+* **backend-shared:** add new fields for known application ([62574a7](https://github.com/WerdoxDev/Huginn/commit/62574a73598b5029b82b88e815561534e0fb4853))
+* **backend-shared:** some db optimization and better dx ([5206eac](https://github.com/WerdoxDev/Huginn/commit/5206eacdb3786e80c55562e07ea4d9663a535075))
+
 ## [0.15.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.14.1...backend-shared@v0.15.0) (2025-09-06)
 
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.29.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.28.0...server@v0.29.0) (2025-09-14)
+
+
+### Features
+
+* **server:** add filterChannel util to pick the correct keys from a channel depending on its type ([281e4f6](https://github.com/WerdoxDev/Huginn/commit/281e4f6a0ed60362eace957ad1f0f936e05c1b3b))
+* **server:** add known application post with igdb detection and formatting ([10d6cf7](https://github.com/WerdoxDev/Huginn/commit/10d6cf7b2ab0dbfcf3b2286eaf320c17fde717c6))
+* **server:** add presence activity + application icon uploading ([dc7231d](https://github.com/WerdoxDev/Huginn/commit/dc7231d01d1e307f8718ed10578b300f527a9b47))
+
+
+### Bug Fixes
+
+* **server:** updating read state should not be part of the waiting for message.post ([640666e](https://github.com/WerdoxDev/Huginn/commit/640666e66639233560ee8306f87acd877f952e78))
+
 ## [0.28.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.27.1...server@v0.28.0) (2025-09-06)
 
 

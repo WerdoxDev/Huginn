@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.57.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.56.0...app@v0.57.0) (2025-09-14)
+
+
+### Features
+
+* **app:** add activity updating + first iteration activity preview UI ([f7051ca](https://github.com/WerdoxDev/Huginn/commit/f7051ca5b642cdcfd91afce1b37b672e936bb4b4))
+* **app:** add settings activity + activity contribution tab + much better native addon icon detection ([d7e6799](https://github.com/WerdoxDev/Huginn/commit/d7e6799f5987b938d1ba9692f0affa7178d3db5b))
+* **app:** Icon from xbox apps are now extracted as well ([70fa9f9](https://github.com/WerdoxDev/Huginn/commit/70fa9f94c12da9e097176f2a3aac00f9b8d3ce9e))
+* **native-addon:** move addon code to separate package ([41f7641](https://github.com/WerdoxDev/Huginn/commit/41f7641bd3a4ad71ffa272676b9e12efa03d9ad9))
+
+
+### Bug Fixes
+
+* **app:** add moment to noExternal ([e34ace6](https://github.com/WerdoxDev/Huginn/commit/e34ace6dcd998c39f2117a116e8e78f62adedd2c))
+
 ## [0.56.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.55.2...app@v0.56.0) (2025-09-06)
 
 
