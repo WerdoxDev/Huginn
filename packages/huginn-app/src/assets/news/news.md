@@ -1,3 +1,4 @@
-### 🌑 _Blood Moon_
+### 🌑 **ACTIVITIES**
 
-- Added Scarlet theme
+- Added Activity detection
+- Added Activity submission system
