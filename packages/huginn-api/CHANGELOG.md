@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.27.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.26.0...api@v0.27.0) (2025-09-14)
+
+
+### Features
+
+* **api:** add presence activity support + application icon uploading method ([86cf932](https://github.com/WerdoxDev/Huginn/commit/86cf9325235d496ebf424a4a3b64cecf56d2d5df))
+* **api:** add submit known application method ([281385a](https://github.com/WerdoxDev/Huginn/commit/281385afba6d3adccf6ff3cd3dad239c2c1ab4cd))
+
 ## [0.26.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.25.0...api@v0.26.0) (2025-09-06)
 
 

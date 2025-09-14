@@ -63,7 +63,7 @@ jobs:
               cmake-version: "4.x.x"
 
          - name: compile native-addon
-           run: cd packages/native-addon && bun run build
+           run: cd packages/native-addon && bun install && bun run build
 
          - name: build app
            run: cd packages/huginn-app && bun run build

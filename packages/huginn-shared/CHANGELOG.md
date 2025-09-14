@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.27.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.26.0...shared@v0.27.0) (2025-09-14)
+
+
+### Features
+
+* **shared:** add activity types and cdn application icon routes ([1f76a43](https://github.com/WerdoxDev/Huginn/commit/1f76a43123ac1535c17ef1d4da8777af843874dc))
+* **shared:** add api types for post KnownApplication + new constant and errors ([2000e28](https://github.com/WerdoxDev/Huginn/commit/2000e28d528a6f14328597469605f7087e2d0249))
+* **shared:** add list of excluded logs for onLog event ([229c4d1](https://github.com/WerdoxDev/Huginn/commit/229c4d184f7a858e7f53b94c8515ddba5a1abee9))
+* **shared:** add string similarity percentage util ([f8eb1c3](https://github.com/WerdoxDev/Huginn/commit/f8eb1c3089fe3171b6567aed2a4a4b945eeb2953))
+
+
+### Bug Fixes
+
+* **shared:** lastmessageid for group and dm should not be undefinable ([053a7d3](https://github.com/WerdoxDev/Huginn/commit/053a7d313b1d5d5c49417c16273f91f7943a59ad))
+
 ## [0.26.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.25.1...shared@v0.26.0) (2025-09-06)
 
 

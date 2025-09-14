@@ -1,3 +1,4 @@
+//
 import path from "node:path";
 import { enableLogs, error, findClosestString, log } from "@huginn/shared";
 import { getActiveWindowProcessIds, setExecutablesRoot, startAudioCapture, stopAudioCapture } from "application-loopback";
