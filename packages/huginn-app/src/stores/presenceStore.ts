@@ -115,7 +115,6 @@ function startCheckingForActivity() {
             const exeKnown = knownApplications?.find((y) => y.exeName === exeName);
             const nameKnown = knownApplications?.find((y) => y.name === x.windowTitle);
             const cmdLineMatch = exeKnown?.commandLinePatterns.every((y) => x.cmdLine.includes(y));
-            console.log(exeName, nameKnown, cmdLineMatch);
             return (nameKnown || exeKnown) && (cmdLineMatch === undefined ? true : cmdLineMatch)
                ? [{ detected: x, known: exeKnown ?? nameKnown }]
                : [];
