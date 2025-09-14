@@ -387,7 +387,7 @@ export type APIPatchUserSettingsResult = UserSettings;
 
 export type APIKnownApplication = {
    id: number;
-   name: string;
+   names: string[];
    exeName: string;
    commandLinePatterns: string[];
    updatedAt: Date | string | null;
