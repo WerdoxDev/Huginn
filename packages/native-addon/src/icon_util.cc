@@ -150,20 +150,13 @@ namespace icon_util
    {
       std::vector<BYTE> pngData;
 
-      if (!hIcon)
-      {
-         return pngData;
-      }
-
       // Initialize GDI+
       Gdiplus::GdiplusStartupInput gdiplusStartupInput;
       ULONG_PTR gdiplusToken;
       if (Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL) != Gdiplus::Ok)
-      {
          return pngData;
-      }
 
-      // Get icon dimensions
+      // Get icon info
       ICONINFO iconInfo;
       if (!GetIconInfo(hIcon, &iconInfo))
       {
@@ -171,32 +164,45 @@ namespace icon_util
          return pngData;
       }
 
-      BITMAP bmp;
-      GetObject(iconInfo.hbmColor ? iconInfo.hbmColor : iconInfo.hbmMask, sizeof(BITMAP), &bmp);
-      int width = bmp.bmWidth;
-      int height = abs(bmp.bmHeight);
-
-      // Create GDI+ bitmap with proper alpha channel
-      Gdiplus::Bitmap *bitmap = new Gdiplus::Bitmap(width, height, PixelFormat32bppARGB);
-
-      if (!bitmap || bitmap->GetLastStatus() != Gdiplus::Ok)
+      // RAII wrapper for cleanup
+      struct Cleanup
       {
-         if (bitmap)
-            delete bitmap;
-         if (iconInfo.hbmColor)
-            DeleteObject(iconInfo.hbmColor);
-         if (iconInfo.hbmMask)
-            DeleteObject(iconInfo.hbmMask);
-         Gdiplus::GdiplusShutdown(gdiplusToken);
+         HBITMAP hbmColor, hbmMask;
+         ULONG_PTR token;
+         ~Cleanup()
+         {
+            if (hbmColor)
+               DeleteObject(hbmColor);
+            if (hbmMask)
+               DeleteObject(hbmMask);
+            Gdiplus::GdiplusShutdown(token);
+         }
+      } cleanup = {iconInfo.hbmColor, iconInfo.hbmMask, gdiplusToken};
+
+      // Get bitmap dimensions
+      BITMAP bmp;
+      if (!GetObject(iconInfo.hbmColor ? iconInfo.hbmColor : iconInfo.hbmMask, sizeof(BITMAP), &bmp))
+         return pngData;
+
+      const int width = bmp.bmWidth;
+      const int height = iconInfo.hbmColor ? bmp.bmHeight : bmp.bmHeight / 2;
+      const int pixelCount = width * height;
+      const int stride = width * 4;
+
+      // Create device contexts with RAII cleanup
+      HDC hdcScreen = GetDC(NULL);
+      if (!hdcScreen)
+         return pngData;
+
+      HDC hdcMem = CreateCompatibleDC(hdcScreen);
+      if (!hdcMem)
+      {
+         ReleaseDC(NULL, hdcScreen);
          return pngData;
       }
 
-      // Create compatible DC for drawing with proper alpha handling
-      HDC hdcScreen = GetDC(NULL);
-      HDC hdcMem = CreateCompatibleDC(hdcScreen);
-
-      // Create 32-bit DIB section for alpha channel preservation
-      BITMAPINFO bmi = {0};
+      // Create a 32-bit DIB for the icon
+      BITMAPINFO bmi = {};
       bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
       bmi.bmiHeader.biWidth = width;
       bmi.bmiHeader.biHeight = -height; // Top-down DIB
@@ -204,89 +210,127 @@ namespace icon_util
       bmi.bmiHeader.biBitCount = 32;
       bmi.bmiHeader.biCompression = BI_RGB;
 
-      void *pBits = nullptr;
-      HBITMAP hBmp = CreateDIBSection(hdcMem, &bmi, DIB_RGB_COLORS, &pBits, NULL, 0);
+      BYTE *pBits = nullptr;
+      HBITMAP hBitmap = CreateDIBSection(hdcMem, &bmi, DIB_RGB_COLORS, (void **)&pBits, NULL, 0);
 
-      if (hBmp && pBits)
+      bool success = false;
+      if (hBitmap && pBits)
       {
-         // Clear DIB with transparent background (all zeros = transparent)
-         memset(pBits, 0, width * height * 4);
+         HBITMAP hOldBitmap = (HBITMAP)SelectObject(hdcMem, hBitmap);
 
-         HBITMAP hOldBmp = (HBITMAP)SelectObject(hdcMem, hBmp);
+         // Clear to transparent
+         ZeroMemory(pBits, stride * height);
 
-         // Draw icon with proper alpha blending
-         DrawIconEx(hdcMem, 0, 0, hIcon, width, height, 0, NULL, DI_NORMAL);
-
-         // Copy pixel data from DIB to GDI+ bitmap
-         Gdiplus::BitmapData bitmapData;
-         Gdiplus::Rect rect(0, 0, width, height);
-
-         if (bitmap->LockBits(&rect, Gdiplus::ImageLockModeWrite, PixelFormat32bppARGB, &bitmapData) == Gdiplus::Ok)
+         // Draw the icon
+         if (DrawIconEx(hdcMem, 0, 0, hIcon, width, height, 0, NULL, DI_NORMAL))
          {
-            // Direct memory copy from DIB to GDI+ bitmap
-            BYTE *srcPtr = (BYTE *)pBits;
-            BYTE *dstPtr = (BYTE *)bitmapData.Scan0;
+            DWORD *pixels = (DWORD *)pBits;
 
-            for (int y = 0; y < height; y++)
+            // Check if icon has proper alpha channel
+            bool hasAlphaChannel = false;
+            for (int i = 0; i < pixelCount; i++)
             {
-               memcpy(dstPtr + y * bitmapData.Stride, srcPtr + y * width * 4, width * 4);
+               BYTE alpha = (pixels[i] >> 24) & 0xFF;
+               if (alpha > 0 && alpha < 255)
+               {
+                  hasAlphaChannel = true;
+                  break;
+               }
             }
 
-            bitmap->UnlockBits(&bitmapData);
-
-            // Create memory stream for PNG output
-            IStream *stream = nullptr;
-            if (CreateStreamOnHGlobal(NULL, TRUE, &stream) == S_OK && stream)
+            // Apply mask-based transparency if no alpha channel detected
+            if (!hasAlphaChannel && iconInfo.hbmMask)
             {
-               // Get PNG encoder CLSID
-               CLSID pngClsid;
-               if (CLSIDFromString(L"{557cf406-1a04-11d3-9a73-0000f81ef32e}", &pngClsid) == NOERROR)
+               HDC hdcMask = CreateCompatibleDC(hdcScreen);
+               if (hdcMask)
                {
-                  // Save bitmap as PNG
-                  if (bitmap->Save(stream, &pngClsid) == Gdiplus::Ok)
+                  BYTE *maskBits = nullptr;
+                  HBITMAP hMaskBitmap = CreateDIBSection(hdcMask, &bmi, DIB_RGB_COLORS, (void **)&maskBits, NULL, 0);
+
+                  if (hMaskBitmap && maskBits)
                   {
-                     // Get stream size and read data
-                     STATSTG stats;
-                     if (stream->Stat(&stats, STATFLAG_NONAME) == S_OK)
+                     HBITMAP hOldMask = (HBITMAP)SelectObject(hdcMask, hMaskBitmap);
+
+                     HDC hdcOrigMask = CreateCompatibleDC(hdcScreen);
+                     if (hdcOrigMask)
                      {
-                        DWORD size = stats.cbSize.LowPart;
-                        pngData.resize(size);
+                        HBITMAP hOldOrigMask = (HBITMAP)SelectObject(hdcOrigMask, iconInfo.hbmMask);
 
-                        LARGE_INTEGER li = {0};
-                        stream->Seek(li, STREAM_SEEK_SET, NULL);
-
-                        DWORD bytesRead = 0;
-                        stream->Read(pngData.data(), size, &bytesRead);
-
-                        if (bytesRead != size)
+                        if (BitBlt(hdcMask, 0, 0, width, height, hdcOrigMask, 0, 0, SRCCOPY))
                         {
-                           pngData.clear(); // Failed to read complete data
+                           // Apply mask: black pixels in mask = opaque, white = transparent
+                           DWORD *maskPixels = (DWORD *)maskBits;
+                           for (int i = 0; i < pixelCount; i++)
+                           {
+                              BYTE maskValue = maskPixels[i] & 0xFF;
+                              BYTE alpha = (maskValue == 0) ? 255 : 0;
+                              pixels[i] = (pixels[i] & 0x00FFFFFF) | (alpha << 24);
+                           }
+                           success = true;
+                        }
+
+                        SelectObject(hdcOrigMask, hOldOrigMask);
+                        DeleteDC(hdcOrigMask);
+                     }
+
+                     SelectObject(hdcMask, hOldMask);
+                     DeleteObject(hMaskBitmap);
+                  }
+                  DeleteDC(hdcMask);
+               }
+            }
+            else
+            {
+               // Clean up zero-alpha pixels for icons with alpha channel
+               for (int i = 0; i < pixelCount; i++)
+               {
+                  if ((pixels[i] & 0xFF000000) == 0)
+                     pixels[i] = 0;
+               }
+               success = true;
+            }
+
+            // Create GDI+ bitmap and save to PNG
+            if (success)
+            {
+               Gdiplus::Bitmap bitmap(width, height, stride, PixelFormat32bppARGB, pBits);
+
+               if (bitmap.GetLastStatus() == Gdiplus::Ok)
+               {
+                  IStream *stream = nullptr;
+                  if (SUCCEEDED(CreateStreamOnHGlobal(NULL, TRUE, &stream)))
+                  {
+                     // Use pre-defined PNG CLSID
+                     static const CLSID pngClsid = {0x557cf406, 0x1a04, 0x11d3, {0x9a, 0x73, 0x00, 0x00, 0xf8, 0x1e, 0xf3, 0x2e}};
+
+                     if (bitmap.Save(stream, &pngClsid) == Gdiplus::Ok)
+                     {
+                        STATSTG stats;
+                        if (SUCCEEDED(stream->Stat(&stats, STATFLAG_NONAME)) && stats.cbSize.HighPart == 0)
+                        {
+                           DWORD size = stats.cbSize.LowPart;
+                           pngData.resize(size);
+
+                           LARGE_INTEGER zero = {};
+                           if (SUCCEEDED(stream->Seek(zero, STREAM_SEEK_SET, NULL)))
+                           {
+                              DWORD bytesRead;
+                              stream->Read(pngData.data(), size, &bytesRead);
+                           }
                         }
                      }
+                     stream->Release();
                   }
                }
-               stream->Release();
             }
          }
 
-         // Cleanup DIB resources
-         SelectObject(hdcMem, hOldBmp);
-         DeleteObject(hBmp);
+         SelectObject(hdcMem, hOldBitmap);
+         DeleteObject(hBitmap);
       }
 
-      // Cleanup GDI resources
       DeleteDC(hdcMem);
       ReleaseDC(NULL, hdcScreen);
-
-      // Cleanup icon info
-      if (iconInfo.hbmColor)
-         DeleteObject(iconInfo.hbmColor);
-      if (iconInfo.hbmMask)
-         DeleteObject(iconInfo.hbmMask);
-
-      // Cleanup GDI+ resources
-      delete bitmap;
-      Gdiplus::GdiplusShutdown(gdiplusToken);
 
       return pngData;
    }
