@@ -69,6 +69,7 @@ export enum JsonCode {
    USERNAME_NOT_FOUND = 3001,
    RELATION_SELF_REQUEST = 3002,
    RELATION_EXISTS = 3003,
+   KNOWN_APPLICATION_EXISTS = 3004,
 }
 
 export enum GatewayCode {
@@ -198,5 +199,8 @@ export const Errors = {
    },
    invalidId(id?: string): [string, JsonCode] {
       return [`"${id}" is not a valid Snowflake`, JsonCode.INVALID_ID];
+   },
+   knownApplicationExists(): [string, JsonCode] {
+      return ["Known application with the specified name already exists", JsonCode.KNOWN_APPLICATION_EXISTS];
    },
 };

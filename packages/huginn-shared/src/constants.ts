@@ -27,6 +27,7 @@ export const constants = {
    EMBED_MEDIA_MAX_HEIGHT: 300,
    VOICE_CLIENT_PING_INTERVAL: 2000,
    CALL_RINGING_TIMEOUT: 10000,
+   KNOWN_APPLICATION_SIMILARITY_THRESHOLD: 90,
 };
 
 export const defaultServerSettings: UserSettings = {

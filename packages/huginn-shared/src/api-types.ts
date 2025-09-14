@@ -389,9 +389,12 @@ export type APIKnownApplication = {
    id: number;
    name: string;
    exeName: string;
+   commandLinePatterns: string[];
    updatedAt: Date | string | null;
    createdAt: Date | string;
-   deletedAt: Date | string | null;
+   deletedAt?: Date | string | null;
+   contributorId?: Snowflake;
+   igdbId?: number;
 };
 
 export type APIGetKnownApplicationsResult = {
@@ -404,4 +407,11 @@ export type APIPostApplicationIconJSONBody = {
    applicationId?: number;
 };
 
+export type APIPostKnownApplicationJSONBody = {
+   windowTitle: string;
+   exePath: string;
+};
+
 export type APIPostApplicationIconResult = string;
+
+export type APIPostKnownApplicationResult = APIKnownApplication;
