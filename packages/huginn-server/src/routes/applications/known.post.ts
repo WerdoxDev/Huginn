@@ -13,14 +13,12 @@ createRoute("POST", "/api/applications/known", verifyJwt(), validator("json", sc
    const body = c.req.valid("json");
    const payload = c.get("tokenPayload");
    const exeName = body.exePath.split(/[/\\]+/).pop();
-   const title = body.windowTitle.trim();
+
+   let title = body.windowTitle.trim();
+   title = title.replace(/[\u00A9\u00AE\u2120\u2122\u2117\u1F12E\u1F12F]/g, "");
 
    if (!exeName) {
       return invalidFormBody(c);
-   }
-
-   if (await prisma.knownApplication.exists({ names: { has: title }, exeName: exeName })) {
-      return singleError(c, Errors.knownApplicationExists());
    }
 
    const search = new URLSearchParams({ client_id: envs.IGDB_CLIENT_ID!, client_secret: envs.IGDB_CLIENT_SECRET!, grant_type: "client_credentials" });
@@ -34,7 +32,7 @@ createRoute("POST", "/api/applications/known", verifyJwt(), validator("json", sc
       body: `
       fields id,name,rating,url,alternative_names.name,game_type;
       search "${title}";
-      where platforms = [6];
+      where platforms = (6,53);
       `,
    });
 
@@ -45,6 +43,10 @@ createRoute("POST", "/api/applications/known", verifyJwt(), validator("json", sc
       if (search.alternative_names && search.alternative_names.length !== 0) {
          searchableNames.push(...search.alternative_names.map((x) => ({ id: search.id, name: x.name })));
       }
+   }
+
+   if (await prisma.knownApplication.exists({ names: { hasSome: searchableNames.map((x) => x.name) }, exeName: exeName })) {
+      return singleError(c, Errors.knownApplicationExists());
    }
 
    const bestMatch = findClosestString(
