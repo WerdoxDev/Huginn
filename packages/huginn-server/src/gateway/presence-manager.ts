@@ -39,6 +39,8 @@ export class PresenceManager {
       if (presence.status !== "offline") {
          this.sendPresenceUpdate(`${userId}_presence`, presence, { id: userId });
       }
+
+      this.sendSessionUpdate(userId, presence);
    }
 
    public updateUserPresence(userId: Snowflake, user?: PresenceUser, status?: PresenceStatus, activities?: Activity[]) {
@@ -71,7 +73,7 @@ export class PresenceManager {
       const newActiveSessions = presence.activeSessions.filter((x) => x !== session.sessionId);
       const newStatus = newActiveSessions.length === 0 ? "offline" : presence.status;
 
-      // Only send the user presence to others if it's not already set to offline. This is to keep a user who set their status to offline be no different than an actual offline user
+      // Only send the user presence to others if it's not already set to offline. This is to keep a user who set their status to offline to be no different than an actual offline user
       if (presence.status !== "offline") {
          const newPresence: ServerUserPresence = { userId, status: newStatus, activeSessions: newActiveSessions, activities: [] };
          this.sendPresenceUpdate(`${userId}_presence`, newPresence, { id: userId });
@@ -83,7 +85,9 @@ export class PresenceManager {
       }
       // Otherwise update the active sessions
       else {
-         this.presences.set(userId, { ...presence, activeSessions: newActiveSessions });
+         const newPresence: ServerUserPresence = { ...presence, activeSessions: newActiveSessions };
+         this.presences.set(userId, newPresence);
+         this.sendSessionUpdate(userId, newPresence);
       }
 
       log("server:presence-manager", "detail", "active sessions", "uid:", userId, this.presences.get(userId)?.activeSessions.join(", "));
@@ -126,6 +130,10 @@ export class PresenceManager {
 
    private sendSessionUpdate(userId: Snowflake, presence: ServerUserPresence) {
       log("server:presence-manager", "send", "session_update", "uid:", userId, "sts:", presence.status);
-      dispatchToTopic(userId, "session_update", { status: presence.status, activities: presence.activities });
+      dispatchToTopic(userId, "session_update", {
+         status: presence.status,
+         activities: presence.activities,
+         activeSessions: presence.activeSessions,
+      });
    }
 }
