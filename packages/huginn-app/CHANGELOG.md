@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.58.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.57.2...app@v0.58.0) (2025-09-16)
+
+
+### Features
+
+* **app:** add custom activity + separate tabs for submission and custom ([981459a](https://github.com/WerdoxDev/Huginn/commit/981459a4af7cee4b9e0e5177c9af510225fffb7f))
+
 ## [0.57.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.57.1...app@v0.57.2) (2025-09-14)
 
 
