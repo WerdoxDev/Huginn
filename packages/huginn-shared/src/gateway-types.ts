@@ -254,4 +254,5 @@ export type GatewaySettingsUpdateData = Partial<UserSettings>;
 export type GatewaySessionUpdateData = {
    status: PresenceStatus;
    activities: Activity[];
+   activeSessions: Snowflake[];
 };
