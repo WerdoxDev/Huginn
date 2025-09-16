@@ -111,7 +111,6 @@ export type SettingsTabProps = {
 };
 
 export type DropdownItem = {
-   id?: number;
    text: string;
    icon?: ReactNode;
    value: string;
@@ -347,3 +346,10 @@ export type AppSettings = {
 export type Keybind = { type: KeybindType; combination: string[]; isEnabled: boolean };
 
 export type KeybindType = "toggle_mute" | "toggle_deafen";
+
+export type CustomApplication = {
+   title: string;
+   exePath: string;
+   isEnabled: boolean;
+   lastOpened?: number;
+};

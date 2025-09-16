@@ -1,7 +1,7 @@
 import { fileExists, loadFile, saveFile } from "@lib/file-manager";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
-import type { AppSettings, Keybind, VoicePreference } from "@/types";
+import type { AppSettings, CustomApplication, Keybind, VoicePreference } from "@/types";
 import { error, log, type APIGetKnownApplicationsResult, type Snowflake } from "@huginn/shared";
 import { produce } from "immer";
 import { dispatchEvent } from "@lib/event-handler";
@@ -32,6 +32,7 @@ const initialStore = () => ({
    ] as Keybind[],
    voicePreferences: [] as VoicePreference[],
    knownApplications: {} as APIGetKnownApplicationsResult,
+   customApplications: [] as CustomApplication[],
 });
 
 type StoreType = ReturnType<typeof initialStore>;
@@ -57,6 +58,9 @@ export async function initializeFiles() {
 
    const keybinds = await loadFile("keybinds", []);
    store.setState({ keybinds: keybinds });
+
+   const customApplications = await loadFile("custom-applications", []);
+   store.setState({ customApplications: customApplications });
 }
 
 export function initializeFilesWithClient() {
@@ -159,6 +163,10 @@ const store = createStore(
          );
 
          dispatchEvent("voice_preference_changed", { userId: userId });
+      },
+      setCustomApplications: (customApplications: CustomApplication[]) => set({ customApplications }),
+      saveCustomApplications: async () => {
+         await saveFile("custom-applications", get().customApplications);
       },
    })),
 );

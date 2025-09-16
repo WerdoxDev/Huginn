@@ -43,7 +43,11 @@ function List(props: { className?: string; children?: ReactNode; onClick?: () =>
 
    return (
       <div className={clsx("bg-surface-alt w-52 rounded-lg", props.className)}>
-         <Listbox value={dropdownContext.selected ?? { text: props.placeholder, value: "", icon: undefined }} onChange={dropdownContext.onChange}>
+         <Listbox
+            value={dropdownContext.selected ?? { text: props.placeholder, value: "", icon: undefined }}
+            by="value"
+            onChange={dropdownContext.onChange}
+         >
             {({ open, value }) => (
                <div>
                   <ListboxButton

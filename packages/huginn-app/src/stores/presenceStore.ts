@@ -1,13 +1,14 @@
-import { ActivityType, error, log, type Snowflake } from "@huginn/shared";
+import { ActivityType, error, log, type APIKnownApplication, type Snowflake } from "@huginn/shared";
 import { produce } from "immer";
 import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 import { clientStore } from "./clientStore";
-import type { AppPresence } from "@/types";
+import type { AppPresence, CustomApplication } from "@/types";
 import { convertToAppPresence } from "@lib/utils";
 import { filesStore } from "./filesStore";
 import { windowStore } from "./windowStore";
+import type { ProcessInfo } from "native-addon";
 
 const initialStore = () => ({
    presences: [] as AppPresence[],
@@ -108,36 +109,39 @@ function startCheckingForActivity() {
          }
 
          const knownApplications = filesStore.getState().knownApplications.applications;
+         const customApplications = filesStore.getState().customApplications;
          const openApplications = await window.electronAPI.getOpenApplications();
 
-         const match = openApplications.flatMap((x) => {
-            const exeName = x.exePath.split(/[/\\]+/).pop();
-            const exeKnown = knownApplications?.find((y) => y.exeName === exeName);
-            const nameKnown = knownApplications?.find((y) => y.names.includes(x.windowTitle));
-            const cmdLineMatch = exeKnown?.commandLinePatterns.every((y) => x.cmdLine.includes(y));
-            return (nameKnown || exeKnown) && (cmdLineMatch === undefined ? true : cmdLineMatch)
-               ? [{ detected: x, known: exeKnown ?? nameKnown }]
-               : [];
-         })[0];
+         const knownMatch = detectKnownApplication(openApplications, knownApplications);
+         const customMatch = detectCustomApplication(openApplications, customApplications);
 
-         if (!match?.detected || !match?.known) {
-            // User was previously playing but not anymore
+         if (!knownMatch && !customMatch) {
+            // Nothing detected -> clear presence if it was set before
             if (presence.activities.length !== 0) {
                client.gateway.updatePresence({
                   activities: [],
                   status: presence.status,
                });
             }
-
             return;
          }
 
-         // The detected game is already added
-         if (match.known.names.includes(presence.activities[0]?.name)) {
-            return;
+         const match: { detected: ProcessInfo; custom?: CustomApplication; known?: APIKnownApplication } = knownMatch ?? customMatch;
+
+         // Skip if we already have the activity
+         if (presence.activities[0]) {
+            if (match.known) {
+               if (match.known.id === presence.activities[0].applicationId) {
+                  return;
+               }
+            } else if (match.custom) {
+               if (match.custom.title === presence.activities[0].name) {
+                  return;
+               }
+            }
          }
 
-         log("app:presence-store", "default", "new activity", "kid:", match.known.id, "kn:", match.known.names);
+         log("app:presence-store", "default", "new activity", "kid:", match.known?.id, "kn:", match.known?.names, "ctit:", match.custom?.title, "cexe:", match.custom?.exePath);
 
          const info = await window.electronAPI.getApplicationInfo(match.detected.exePath, match.detected.processId);
          let iconHash;
@@ -148,10 +152,11 @@ function startCheckingForActivity() {
          client.gateway.updatePresence({
             activities: [
                {
-                  name: match.known.names[0],
+                  name: match.known?.names[0] ?? match.custom?.title ?? "Unknown",
                   type: ActivityType.PLAYING,
                   createdAt: new Date().getTime(),
                   iconUrl: iconHash ? `application-icons/${iconHash}.webp` : undefined,
+                  applicationId: match.known?.id,
                },
             ],
             status: presence.status,
@@ -160,6 +165,27 @@ function startCheckingForActivity() {
          error("app:presence-store", "Error when checking activity:", e);
       }
    }, 5000);
+}
+
+function detectKnownApplication(applications: ProcessInfo[], knownApplications: APIKnownApplication[]) {
+   const match = applications.flatMap((x) => {
+      const exeName = x.exePath.split(/[/\\]+/).pop();
+      const exeKnown = knownApplications?.find((y) => y.exeName === exeName);
+      const nameKnown = knownApplications?.find((y) => y.names.includes(x.windowTitle));
+      const cmdLineMatch = exeKnown?.commandLinePatterns.every((y) => x.cmdLine.includes(y));
+      return (nameKnown || exeKnown) && (cmdLineMatch === undefined ? true : cmdLineMatch) ? [{ detected: x, known: exeKnown! ?? nameKnown! }] : [];
+   })[0];
+
+   return match;
+}
+
+function detectCustomApplication(applications: ProcessInfo[], customApplications: CustomApplication[]) {
+   const match = applications.flatMap((x) => {
+      const found = customApplications?.find((y) => y.exePath === x.exePath);
+      return found ? [{ detected: x, custom: found }] : [];
+   })[0];
+
+   return match;
 }
 
 export function usePresence(userId?: Snowflake) {

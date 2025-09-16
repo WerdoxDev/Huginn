@@ -14,7 +14,8 @@ import SettingsProfileTab from "./settings/SettingsProfileTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
 import SettingsVoiceTab from "./settings/SettingsVoiceTab";
 import SettingsKeybindsTab from "./settings/SettingsKeybindsTab";
-import SettingsActivityTab from "./settings/SettingsActivityTab";
+import SettingsSubmissionTab from "./settings/SettingsSubmissionTab";
+import SettingsCustomTab from "./settings/SettingsCustomTab";
 
 const tabs: SettingsTab[] = [
    {
@@ -31,8 +32,15 @@ const tabs: SettingsTab[] = [
          { name: "notification", text: "Notification", icon: <IconMingcuteNotificationFill /> },
          { name: "voice", text: "Audio & Video", icon: <IconMingcuteSpeakerFill />, component: SettingsVoiceTab },
          { name: "keybind", text: "Keybinds", icon: <IconMingcuteHotkeyFill />, component: SettingsKeybindsTab },
-         { name: "activity", text: "Activity", icon: <IconMingcuteGame2Fill />, component: SettingsActivityTab },
          { name: "advanced", text: "Advanced", icon: <IconMingcuteServerFill />, component: SettingsAdvancedTab },
+      ],
+   },
+   {
+      name: "activity",
+      text: "Activity",
+      children: [
+         { name: "submissions", text: "Submission", icon: <IconMingcuteChecksFill />, component: SettingsSubmissionTab },
+         { name: "custom", text: "Custom", icon: <IconMingcuteEmptyBoxFill />, component: SettingsCustomTab },
       ],
    },
    {
@@ -104,7 +112,7 @@ export default function SettingsModal() {
          >
             <TabGroup className="flex h-full w-full" vertical defaultIndex={defaultTabIndex} onChange={onTabChanged}>
                <div className="bg-surface-alt/50 h-full rounded-l-xl">
-                  <TabList className="flex h-full w-48 select-none flex-col py-2">
+                  <TabList className="flex h-full select-none flex-col py-2">
                      <DialogTitle className="mx-5 my-3 flex items-center justify-start gap-x-1.5">
                         <div className="text-text text-2xl font-medium">Settings</div>
                      </DialogTitle>
@@ -140,11 +148,11 @@ function SettingsTabs() {
                                  <button
                                     type="button"
                                     className={clsx(
-                                       "text-text outline-hidden flex w-full cursor-pointer items-center gap-x-2 rounded-md px-2 py-1.5 text-left text-base",
+                                       "text-text outline-hidden flex w-full cursor-pointer items-center gap-x-2 whitespace-nowrap rounded-md px-2 py-1.5 text-left text-base",
                                        selected ? "text-text/100 bg-white/20" : "text-text/70 hover:text-text/100 hover:bg-white/10",
                                     )}
                                  >
-                                    {child.icon}
+                                    <div className="shrink-0">{child.icon}</div>
                                     <span>{child.text}</span>
                                  </button>
                               )}

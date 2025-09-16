@@ -1,4 +1,4 @@
-import type { AppSettings, Keybind, VoicePreference } from "@/types";
+import type { AppSettings, CustomApplication, Keybind, VoicePreference } from "@/types";
 import type { APIGetKnownApplicationsResult } from "@huginn/shared";
 
 export type FileMap = {
@@ -6,6 +6,7 @@ export type FileMap = {
    "voice-preferences": VoicePreference[];
    keybinds: Keybind[];
    "known-applications": APIGetKnownApplicationsResult;
+   "custom-applications": CustomApplication[];
 };
 export type FileType = keyof FileMap;
 

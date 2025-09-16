@@ -39,7 +39,7 @@ export default function AttachmentsPreview(props: { attachments: AttachmentType[
                            </Tooltip>
                            <Tooltip>
                               <Tooltip.Trigger className="hover:bg-surface-alt/50 p-1.5" onClick={() => props.onRemove(x.id)}>
-                                 <IconMingcuteDelete2Fill className="text-negative-100 size-5" />
+                                 <IconMingcuteDelete3Fill className="text-negative-100 size-5" />
                               </Tooltip.Trigger>
                               <Tooltip.Content>Delete</Tooltip.Content>
                            </Tooltip>
