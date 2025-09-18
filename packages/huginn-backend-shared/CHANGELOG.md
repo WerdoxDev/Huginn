@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.16.1...backend-shared@v0.17.0) (2025-09-18)
+
+
+### Features
+
+* **backend-shared:** add message reference to schema + create message references ([7826110](https://github.com/WerdoxDev/Huginn/commit/7826110a08678f5e7ac82511ba3b6ae20ceff532))
+
 ## [0.16.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.16.0...backend-shared@v0.16.1) (2025-09-14)
 
 
