@@ -218,7 +218,28 @@ type APIBaseMessage = {
    reactions?: string[];
 };
 
-export type APIMessage = APICallMessage | APIDefaultMessage;
+export type APIDefaultMessage = APIBaseMessage & {
+   type:
+      | MessageType.DEFAULT
+      | MessageType.RECIPIENT_ADD
+      | MessageType.RECIPIENT_REMOVE
+      | MessageType.CHANNEL_ICON_CHANGED
+      | MessageType.CHANNEL_NAME_CHANGED
+      | MessageType.CHANNEL_OWNER_CHANGED;
+};
+
+export type APICallMessage = APIBaseMessage & {
+   type: MessageType.CALL;
+   call: APIMessageCall;
+};
+
+export type APIReplyMessage = APIBaseMessage & {
+   type: MessageType.REPLY;
+   messageReference: APIMessageReference;
+   referencedMessage?: APIMessage | null;
+};
+
+export type APIMessage = APICallMessage | APIDefaultMessage | APIReplyMessage;
 
 export enum MessageFlags {
    NONE = 0,
@@ -229,29 +250,27 @@ export enum MessageFlags {
    LOADING = 1 << 4,
 }
 
-export type APIDefaultMessage = {
-   type:
-      | MessageType.DEFAULT
-      | MessageType.RECIPIENT_ADD
-      | MessageType.RECIPIENT_REMOVE
-      | MessageType.CHANNEL_ICON_CHANGED
-      | MessageType.CHANNEL_NAME_CHANGED
-      | MessageType.CHANNEL_OWNER_CHANGED;
-} & APIBaseMessage;
-
-export type APICallMessage = {
-   type: MessageType.CALL;
-   call: APIMessageCall;
-} & APIBaseMessage;
-
 export type APIMessageCall = { participants: Snowflake[]; endedTimestamp: Date | string | null };
 
-export type APIPostDefaultMessageJSONBody = {
+export type APIPostMessageJSONBody = {
    content?: string;
    attachments?: APIPostAttachmentJSONBody[];
    embeds?: APIEmbed[];
    flags?: MessageFlags;
    nonce?: number | string;
+   messageReference?: APIPostMessageReferenceJSONBody;
+};
+
+export enum MessageReferenceType {
+   DEFAULT = 0,
+}
+
+export type APIPostMessageReferenceJSONBody = APIMessageReference;
+
+export type APIMessageReference = {
+   type: MessageReferenceType;
+   messageId: Snowflake;
+   channelId: Snowflake;
 };
 
 export type APIEmbed = {
@@ -294,7 +313,7 @@ export type APIAttachment = {
    flags: number;
 };
 
-export type APIPostDefaultMessageResult = APIDefaultMessage;
+export type APIPostMessageResult = APIMessage;
 export type APIPatchMessageResult = APIDefaultMessage;
 
 export type APIPatchMessageJSONBody = {

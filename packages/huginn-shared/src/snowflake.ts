@@ -34,5 +34,6 @@ export enum WorkerID {
    THUMBNAIL = 10,
    ATTACHMENT = 11,
    CALL = 12,
-   VOICE = 13
+   VOICE = 13,
+   MESSAGE_REFERENCE = 14,
 }
