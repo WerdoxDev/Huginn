@@ -31,18 +31,19 @@ model User {
 }
 
 model Channel {
-   id                 BigInt      @id
+   id                 BigInt             @id
    icon               String?
    lastMessageId      BigInt?
-   lastMessage        Message?    @relation("channel_last_message", fields: [lastMessageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+   lastMessage        Message?           @relation("channel_last_message", fields: [lastMessageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
    name               String?
-   owner              User?       @relation("channel_owner", fields: [ownerId], references: [id])
+   owner              User?              @relation("channel_owner", fields: [ownerId], references: [id])
    ownerId            BigInt?
-   recipients         User[]      @relation("channel_recipients")
+   recipients         User[]             @relation("channel_recipients")
    messages           Message[]
    type               Int
-   tempDeletedByUsers User[]      @relation("channel_temp_deleted")
+   tempDeletedByUsers User[]             @relation("channel_temp_deleted")
    readStates         ReadState[]
+   messageReferences  MessageReference[]
 
    @@index([type])
 }
@@ -67,12 +68,15 @@ model Message {
    lastReadMessages    ReadState[]
    lastMessageChannels Channel[]    @relation("channel_last_message")
 
+   messageReference  MessageReference?  @relation("message_referrer")
+   referringMessages MessageReference[] @relation("message_reference")
+
    @@index([channelId])
 }
 
 model Call {
    id             BigInt    @id
-   Message        Message   @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+   message        Message   @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    messageId      BigInt    @unique
    participants   User[]    @relation("participated_calls")
    endedTimestamp DateTime?
@@ -177,4 +181,20 @@ model KnownApplication {
    active              Boolean   @default(false)
 
    @@index([names])
+}
+
+model MessageReference {
+   id   BigInt @id
+   type Int
+
+   referrerMessage   Message @relation("message_referrer", fields: [referrerMessageId], references: [id])
+   referrerMessageId BigInt  @unique
+
+   message   Message? @relation("message_reference", fields: [messageId], references: [id])
+   messageId BigInt?
+
+   channel   Channel @relation(fields: [channelId], references: [id])
+   channelId BigInt
+
+   @@index([referrerMessageId])
 }

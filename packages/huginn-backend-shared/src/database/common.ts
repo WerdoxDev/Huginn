@@ -23,7 +23,9 @@ export type ReadStateArgs = Prisma.ReadStateDefaultArgs;
 export type ReadStatePayload<Args extends ReadStateArgs | undefined> = BigIntToString<Prisma.ReadStateGetPayload<Args>>;
 
 export type KnownApplicationArgs = Prisma.KnownApplicationDefaultArgs;
-export type KnownApplicationPayload<Args extends KnownApplicationArgs | undefined> = BigIntToString<Prisma.KnownApplicationGetPayload<Args>>;
+export type KnownApplicationPayload<Args extends KnownApplicationArgs | undefined> = BigIntToString<
+   Prisma.KnownApplicationGetPayload<Args>
+>;
 
 export const selectPublicUser = Prisma.validator<Prisma.UserSelect>()({
    id: true,
@@ -83,7 +85,17 @@ export const selectMessageEmbeds = Prisma.validator<Prisma.MessageSelect>()({
 
 export const selectMessageAttachments = Prisma.validator<Prisma.MessageSelect>()({
    attachments: {
-      select: { id: true, contentType: true, description: true, filename: true, flags: true, height: true, size: true, url: true, width: true },
+      select: {
+         id: true,
+         contentType: true,
+         description: true,
+         filename: true,
+         flags: true,
+         height: true,
+         size: true,
+         url: true,
+         width: true,
+      },
    },
 });
 
@@ -92,11 +104,6 @@ export const selectMessageCall = Prisma.validator<Prisma.MessageSelect>()({
 });
 
 export const selectMessageDefaults = Prisma.validator<Prisma.MessageSelect>()({
-   ...selectMessageAuthor,
-   ...selectMessageMentions,
-   ...selectMessageEmbeds,
-   ...selectMessageAttachments,
-   ...selectMessageCall,
    channelId: true,
    content: true,
    timestamp: true,
@@ -106,6 +113,37 @@ export const selectMessageDefaults = Prisma.validator<Prisma.MessageSelect>()({
    id: true,
    reactions: true,
    flags: true,
+});
+
+export const selectMessageReference = Prisma.validator<Prisma.MessageSelect>()({
+   messageReference: {
+      select: {
+         channelId: true,
+         messageId: true,
+         type: true,
+         message: {
+            select: {
+               ...selectMessageAuthor,
+               ...selectMessageMentions,
+               ...selectMessageEmbeds,
+               ...selectMessageAttachments,
+               ...selectMessageCall,
+               ...selectMessageDefaults,
+               messageReference: { select: { channelId: true, messageId: true, type: true } },
+            },
+         },
+      },
+   },
+});
+
+export const selectAllMessage = Prisma.validator<Prisma.MessageSelect>()({
+   ...selectMessageAuthor,
+   ...selectMessageMentions,
+   ...selectMessageEmbeds,
+   ...selectMessageAttachments,
+   ...selectMessageCall,
+   ...selectMessageReference,
+   ...selectMessageDefaults,
 });
 
 // export const selectAllMessage = { ...selectMessageDefaults, ...selectMessageCall };
