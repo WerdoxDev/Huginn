@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.29.2](https://github.com/WerdoxDev/Huginn/compare/server@v0.29.1...server@v0.29.2) (2025-09-16)
+
+
+### Bug Fixes
+
+* **server:** sanitize game title to remove trademark ([eddd7cd](https://github.com/WerdoxDev/Huginn/commit/eddd7cd6cd348289a4cfb5b72110e0c715ac964a))
+* **server:** session_update should be sent when adding and removing sessions too ([4f15a5c](https://github.com/WerdoxDev/Huginn/commit/4f15a5c78d3c71b57e5845be15b17e9e77fdcfeb))
+
 ## [0.29.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.29.0...server@v0.29.1) (2025-09-14)
 
 
