@@ -38,6 +38,7 @@ const tabs: SettingsTab[] = [
    {
       name: "activity",
       text: "Activity",
+      auth: true,
       children: [
          { name: "submissions", text: "Submission", icon: <IconMingcuteChecksFill />, component: SettingsSubmissionTab },
          { name: "custom", text: "Custom", icon: <IconMingcuteEmptyBoxFill />, component: SettingsCustomTab },
@@ -167,11 +168,7 @@ function SettingsTabs() {
 }
 
 const TabComponent = memo(
-   (props: {
-      component: (props: SettingsTabProps) => React.JSX.Element | undefined;
-      onChange: (value: DeepPartial<AppSettings>) => void;
-      onSave: () => Promise<void>;
-   }) => {
+   (props: { component: (props: SettingsTabProps) => React.JSX.Element | undefined; onChange: (value: DeepPartial<AppSettings>) => void; onSave: () => Promise<void> }) => {
       if (!props.component) return;
       return <props.component onChange={props.onChange} onSave={props.onSave} />;
    },

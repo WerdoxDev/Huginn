@@ -30,8 +30,15 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    const { data, fetchNextPage, fetchPreviousPage, isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
       useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, props.channelId));
 
-   const { savedScrolls, saveScroll, currentEditingMessageId, messageBoxHeight, currentVisibleMessages, removeMessageUploadProgress } =
-      useChannelStore();
+   const {
+      savedScrolls,
+      saveScroll,
+      currentEditingMessageId,
+      currentReplyingMessageId,
+      messageBoxHeight,
+      currentVisibleMessages,
+      removeMessageUploadProgress,
+   } = useChannelStore();
    const previousMessageBoxHeight = usePrevious(messageBoxHeight);
 
    const { onMessageVisibilityChanged } = useVisibleMessages(props.channelId, props.messages);
@@ -42,7 +49,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
    const processedMessages = useMemo<ProcessedMessage[]>(
       () => processMessages(props.messages),
-      [props.messages, props.channelId, firstUnreadMessageId, currentEditingMessageId],
+      [props.messages, props.channelId, firstUnreadMessageId, currentEditingMessageId, currentReplyingMessageId],
    );
 
    useMessageDiff(processedMessages, { onMessageAdd, onMessageUpdate });
@@ -94,14 +101,28 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       const value = messages.map((message, i) => {
          const lastMessage: AppMessage | undefined = props.messages[i - 1];
 
-         const hasNewDate = (lastMessage && !moment(message.timestamp).isSame(lastMessage?.timestamp, "date")) || (!lastMessage && !hasPreviousPage);
+         const hasNewDate =
+            (lastMessage && !moment(message.timestamp).isSame(lastMessage?.timestamp, "date")) || (!lastMessage && !hasPreviousPage);
          const hasNewMinute = !lastMessage || moment(message.timestamp).diff(moment(lastMessage.timestamp), "minutes") >= 5;
          const hasNewAuthor = message.authorId !== lastMessage?.authorId;
-         const isExoticType = message.isPreview ? false : message.type !== MessageType.DEFAULT;
+         const isActionType = message.isPreview
+            ? false
+            : [
+                 MessageType.RECIPIENT_ADD,
+                 MessageType.RECIPIENT_REMOVE,
+                 MessageType.CHANNEL_ICON_CHANGED,
+                 MessageType.CHANNEL_NAME_CHANGED,
+                 MessageType.CHANNEL_OWNER_CHANGED,
+                 MessageType.CHANNEL_PINNED_MESSAGE,
+                 MessageType.CALL,
+              ].includes(message.type);
+         const isReplyType =
+            (message.isPreview && message.referencedMessage) || (!message.isPreview && message.type === MessageType.REPLY) ? true : false;
          const isUnread = firstUnreadMessageId === message.id;
          const isEditing = currentEditingMessageId === message.id;
+         const isReplying = currentReplyingMessageId === message.id;
 
-         return { ...message, hasNewMinute, hasNewDate, hasNewAuthor, isExoticType, isUnread, isEditing };
+         return { ...message, hasNewMinute, hasNewDate, hasNewAuthor, isActionType, isUnread, isEditing, isReplyType, isReplying };
       });
 
       return value;
@@ -141,7 +162,8 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       foundMessageElement.scrollIntoView({ behavior: "instant", block: lastDirection.current === "up" ? "start" : "end" });
       const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
       scrollRef.current.scrollTop +=
-         (lastDirection.current === "up" ? lastSeenElement.current.distanceToTop : -lastSeenElement.current.distanceToBottom) + heightDifference;
+         (lastDirection.current === "up" ? lastSeenElement.current.distanceToTop : -lastSeenElement.current.distanceToBottom) +
+         heightDifference;
 
       shouldScrollToLastSeen.current = false;
    }

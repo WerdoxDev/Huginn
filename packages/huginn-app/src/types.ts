@@ -9,6 +9,7 @@ import type {
    APICallMessage,
    APIDefaultMessage,
    APIRelationshipWithoutOwner,
+   APIReplyMessage,
    DeepPartial,
    DirectChannel,
    HMediaKind,
@@ -213,9 +214,11 @@ export type ProcessedMessage = AppMessage & {
    hasNewMinute: boolean;
    hasNewDate: boolean;
    hasNewAuthor: boolean;
-   isExoticType: boolean;
+   isActionType: boolean;
+   isReplyType: boolean;
    isUnread: boolean;
    isEditing: boolean;
+   isReplying: boolean;
 };
 
 export type MessageRendererProps = {
@@ -242,13 +245,29 @@ export type AppUser = PresenceUser & { displayName?: string; originalDisplayName
 
 export type AppPresence = Omit<UserPresence, "user"> & { userId: Snowflake };
 
-export type AppMessage =
-   | { isPreview: true; id: Snowflake; timestamp: string; authorId: Snowflake; nonce?: string; content: string; channelId: Snowflake }
-   | ({ isPreview: false } & (Omit<APICallMessage, "author" | "mentions"> | Omit<APIDefaultMessage, "author" | "mentions">) & {
-           authorId: Snowflake;
-           mentions: Snowflake[];
-           source: "websocket" | "fetch";
-        });
+type PreviewAppMessage = {
+   isPreview: true;
+   id: Snowflake;
+   timestamp: string;
+   authorId: Snowflake;
+   nonce?: string;
+   content: string;
+   channelId: Snowflake;
+   referencedMessage?: AppMessage | null;
+};
+
+type ProcessedAppMessage = {
+   isPreview: false;
+   authorId: Snowflake;
+   mentions: Snowflake[];
+   source: "websocket" | "fetch";
+} & (
+   | Omit<APICallMessage, "author" | "mentions">
+   | Omit<APIDefaultMessage, "author" | "mentions">
+   | (Omit<APIReplyMessage, "author" | "mentions" | "referencedMessage"> & { referencedMessage?: AppMessage | null })
+);
+
+export type AppMessage = PreviewAppMessage | ProcessedAppMessage;
 
 export type AppDirectChannel = Omit<DirectChannel, "recipients"> & {
    recipientIds: Snowflake[];
@@ -274,7 +293,14 @@ export type HuginnToken = {
    attrs: Array<[string, string]> | null;
 };
 
-export type AttachmentType = { id: number; dataUrl?: string; arrayBuffer: ArrayBuffer; filename: string; description?: string; contentType: string };
+export type AttachmentType = {
+   id: number;
+   dataUrl?: string;
+   arrayBuffer: ArrayBuffer;
+   filename: string;
+   description?: string;
+   contentType: string;
+};
 
 export type ProgressBarProps = {
    id?: string;

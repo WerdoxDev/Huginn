@@ -4,16 +4,15 @@ import { markdownSpoiler } from "@lib/markdown-spoiler";
 import { markdownUnderline } from "@lib/markdown-underline";
 import { organizeTokens, isElementOpenToken, isElementCloseToken, isOpenToken, isCloseToken, getSlateFormats } from "@lib/markdown-utils";
 import { useCallback, useMemo } from "react";
-import { createEditor, type Descendant, type Editor } from "slate";
-import { withReact, type RenderLeafProps, type RenderElementProps, DefaultElement } from "slate-react";
-import type { CustomElement, ParagraphElement } from "..";
+import { Editor, createEditor, type Descendant } from "slate";
+import { withReact, type RenderLeafProps, type RenderElementProps } from "slate-react";
 import markdownit from "markdown-it";
 import MessageLeaf from "@components/editor/MessageLeaf";
-import EmbedElement from "@components/editor/EmbedElement";
 import SpoilerElement from "@components/editor/SpoilerElement";
 import LinkElement from "@components/editor/LinkElement";
 import CodeElement from "@components/editor/CodeElement";
-import AttachmentElement from "@components/editor/AttachmentElement";
+import DefaultElement from "@components/editor/DefaultElement";
+import type { CustomElement, ParagraphElement } from "..";
 import InlineCodeElement from "@components/editor/InlineCodeElement";
 
 const withHuginn = (editor: Editor) => {
@@ -26,7 +25,7 @@ const withHuginn = (editor: Editor) => {
    return editor;
 };
 
-export function useMessageRenderer(message: AppMessage) {
+export function useReplyRenderer(message: AppMessage) {
    const editor = useMemo(() => withReact(withHuginn(createEditor())), []);
    const md = useMemo(() => new markdownit({ linkify: true }).use(markdownSpoiler).use(markdownUnderline).use(markdownMainMessage), []);
 
@@ -38,10 +37,6 @@ export function useMessageRenderer(message: AppMessage) {
    );
 
    const renderElement = useCallback((props: RenderElementProps) => {
-      if (props.element.type === "embed") {
-         return <EmbedElement {...props} />;
-      }
-
       if (props.element.type === "spoiler") {
          return <SpoilerElement {...props} />;
       }
@@ -56,10 +51,6 @@ export function useMessageRenderer(message: AppMessage) {
 
       if (props.element.type === "code_inline") {
          return <InlineCodeElement {...props} />;
-      }
-
-      if (props.element.type === "attachment") {
-         return <AttachmentElement {...props} />;
       }
 
       return <DefaultElement {...props} />;
@@ -81,29 +72,13 @@ export function useMessageRenderer(message: AppMessage) {
    const initialValue = useMemo(() => {
       let nodes: Descendant[] = [];
 
-      const result = md.parse(message.content, {});
+      const content = message.content.replaceAll("\n", " ").replaceAll(/```(?:\S*)?/g, "`");
+      const result = md.parse(content, {});
       const tokens = organizeTokens(result);
 
       let lineNode: ParagraphElement = { type: "paragraph", children: [] };
       const currentPath: number[] = [];
       const currentOpenedTokens: HuginnToken[] = [];
-
-      // Render attachments
-      if (!message.isPreview) {
-         for (const attachment of message.attachments) {
-            nodes.push({
-               type: "attachment",
-               url: attachment.url,
-               description: attachment.description,
-               children: [{ text: "" }],
-               height: attachment?.height,
-               width: attachment?.width,
-               size: attachment.size,
-               contentType: attachment.contentType,
-               filename: attachment.filename,
-            });
-         }
-      }
 
       for (const lineTokens of tokens) {
          if (lineTokens.length === 0) {
@@ -173,26 +148,6 @@ export function useMessageRenderer(message: AppMessage) {
 
       if (message.isPreview) {
          return nodes;
-      }
-
-      if (message.embeds.length === 1) {
-         const embed = message.embeds[0];
-         if ((embed.type === "image" || embed.type === "video") && embed.url === message.content) {
-            nodes = [];
-         }
-      }
-
-      // Render embeds
-      for (const embed of message.embeds) {
-         nodes.push({
-            type: "embed",
-            thumbnail: embed.thumbnail,
-            video: embed.video,
-            url: embed.url,
-            description: embed.description,
-            title: embed.title,
-            children: [{ text: "" }],
-         });
       }
 
       return nodes;

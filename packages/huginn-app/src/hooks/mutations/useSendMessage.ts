@@ -1,24 +1,32 @@
-import { type MessageFlags, type Snowflake, snowflake, WorkerID } from "@huginn/shared";
+import { type APIPostMessageReferenceJSONBody, type MessageFlags, type Snowflake, snowflake, WorkerID } from "@huginn/shared";
 import { dispatchEvent } from "@lib/event-handler";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { type InfiniteData, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AppAttachment, AppMessage } from "@/types";
-import { findChannel, getChannels } from "@lib/query-utils";
+import { findChannel, getChannels, getMessage } from "@lib/query-utils";
 
 export function useSendMessage() {
    const client = useClient();
    const { user } = useThisUser();
    const queryClient = useQueryClient();
-   const { updateMessageUploadProgress, removeMessageUploadProgress } = useChannelStore();
+   const { updateMessageUploadProgress } = useChannelStore();
 
    const mutation = useMutation({
       mutationKey: ["send-message"],
-      async mutationFn(data: { channelId: Snowflake; content: string; flags: MessageFlags; attachments: AppAttachment[] }) {
+      async mutationFn(data: {
+         channelId: Snowflake;
+         content: string;
+         flags: MessageFlags;
+         attachments: AppAttachment[];
+         messageReference?: APIPostMessageReferenceJSONBody;
+      }) {
          if (!user) return;
 
          const nonce = client?.generateNonce();
+
+         const referencedMessage = getMessage(data.channelId, data.messageReference?.messageId, queryClient);
 
          const previewMessage: AppMessage = {
             isPreview: true,
@@ -28,6 +36,7 @@ export function useSendMessage() {
             channelId: data.channelId,
             authorId: user.id,
             nonce: nonce,
+            referencedMessage,
          };
 
          const filenames = data.attachments.map((x) => x.filename);
@@ -76,7 +85,13 @@ export function useSendMessage() {
             return old;
          });
 
-         dispatchEvent("message_added", { message: previewMessage, inLoadedQueryPage: true, visible: true, self: true, inVisibleQueryPage: true });
+         dispatchEvent("message_added", {
+            message: previewMessage,
+            inLoadedQueryPage: true,
+            visible: true,
+            self: true,
+            inVisibleQueryPage: true,
+         });
 
          return {
             previewMessage,
@@ -87,6 +102,7 @@ export function useSendMessage() {
                   content: data.content,
                   flags: data.flags,
                   nonce: nonce,
+                  messageReference: data.messageReference,
                },
                data.attachments.map((x) => ({ data: x.data, name: x.filename, contentType: x.contentType })),
                data.attachments.length

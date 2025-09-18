@@ -15,8 +15,8 @@ export default function ActionMessage() {
    const mentionUsers = useUsers(!message.isPreview ? message.mentions : undefined);
    const formattedFullTime = useMemo(() => moment(context.message?.timestamp).format("DD.MM.YYYY HH:mm"), [context.message]);
 
-   const isLastExotic = useMemo(() => context.lastMessage?.isExoticType || !context.lastMessage, [context.lastMessage]);
-   const isNextExotic = useMemo(() => context.nextMessage?.isExoticType || !context.nextMessage, [context.nextMessage]);
+   const isLastAction = useMemo(() => context.lastMessage?.isActionType || !context.lastMessage, [context.lastMessage]);
+   const isNextAction = useMemo(() => context.nextMessage?.isActionType || !context.nextMessage, [context.nextMessage]);
    const isUnread = useMemo(() => context.message.isUnread, [context.message]);
 
    const type = useMemo(() => !message.isPreview && message.type, [context.message]);
@@ -51,8 +51,8 @@ export default function ActionMessage() {
       <div
          className={clsx(
             "text-text hover:bg-surface-alt flex items-center rounded-r-md py-0.5 pl-4",
-            !isLastExotic && !context.message.hasNewDate && !isUnread && "mt-1.5",
-            !isNextExotic && !isUnread && "mb-1.5",
+            !isLastAction && !context.message.hasNewDate && !isUnread && "mt-1.5",
+            !isNextAction && !isUnread && "mb-1.5",
          )}
       >
          {type === MessageType.RECIPIENT_REMOVE && <IconMingcuteArrowLeftFill className="text-negative-100 mr-4 size-5" />}
@@ -66,7 +66,9 @@ export default function ActionMessage() {
             {type === MessageType.CALL && (
                <Tooltip>
                   <Tooltip.Trigger className="ml-1 !cursor-default">
-                     <span className="text-text/50">started a call{call?.endedTimestamp ? ` that lasted ${formatCallDuration()}` : ""}.</span>
+                     <span className="text-text/50">
+                        started a call{call?.endedTimestamp ? ` that lasted ${formatCallDuration()}` : ""}.
+                     </span>
                   </Tooltip.Trigger>
                   {call?.endedTimestamp && call.participants.length !== 0 && (
                      <Tooltip.Content className="!px-1.5 !py-1.5">

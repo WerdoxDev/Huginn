@@ -12,7 +12,7 @@ export default function MessageContextMenu() {
    const { data } = useContextMenu("message");
    const { openUrl } = useOpen();
    const { showError } = useModals();
-   const { setEditingMessageId } = useChannelStore();
+   const { setEditingMessageId, setReplyingMessageId } = useChannelStore();
    const { user } = useThisUser();
    const deleteMessageMutation = useDeleteMessage();
 
@@ -73,7 +73,7 @@ export default function MessageContextMenu() {
                <IconMingcuteEdit2Fill />
             </ContextMenu.Item>
          )}
-         <ContextMenu.Item label="Reply (soon)" disabled>
+         <ContextMenu.Item label="Reply" onClick={() => setReplyingMessageId(data.message.id)}>
             <IconMingcuteCornerUpLeftFill />
          </ContextMenu.Item>
          <ContextMenu.Divider />

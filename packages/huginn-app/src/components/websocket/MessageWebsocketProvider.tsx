@@ -1,11 +1,13 @@
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
-import type {
-   APIGetUserChannelsResult,
-   GatewayMessageAckData,
-   GatewayMessageCreateData,
-   GatewayMessageDeleteData,
-   GatewayMessageUpdateData,
+import {
+   MessageType,
+   omit,
+   type APIGetUserChannelsResult,
+   type GatewayMessageAckData,
+   type GatewayMessageCreateData,
+   type GatewayMessageDeleteData,
+   type GatewayMessageUpdateData,
 } from "@huginn/shared";
 import { dispatchEvent } from "@lib/event-handler";
 import { convertToAppMessage } from "@lib/utils";
@@ -18,6 +20,7 @@ import { type ReactNode, useEffect } from "react";
 import type { AppMessage } from "@/types";
 import { useClient } from "@stores/clientStore";
 import { findChannel, getChannels, updateChannelLastMessageId } from "@lib/query-utils";
+import { produce } from "immer";
 
 export default function MessageWebsocketProvider(props: { children?: ReactNode }) {
    const queryClient = useQueryClient();
@@ -50,26 +53,28 @@ export default function MessageWebsocketProvider(props: { children?: ReactNode }
       let inLoadedQueryPage = false;
       let inVisibleQueryPage = false;
 
-      queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", d.channelId], (old) => {
-         if (!old) return undefined;
+      queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(
+         ["messages", d.channelId],
+         produce((draft) => {
+            if (!draft) return;
 
-         const lastPage = old.pages[old.pages.length - 1];
-         const lastParams = old.pageParams[old.pageParams.length - 1];
-         // See if the message can be appended to the current page
-         if (!lastParams.before && (!lastParams.after || lastPage.some((x) => x.id === targetChannel?.lastMessageId))) {
-            inLoadedQueryPage = true;
-            if (targetChannel.id === currentChannel?.id) {
-               inVisibleQueryPage = true;
+            const lastPage = draft.pages[draft.pages.length - 1];
+            const lastParams = draft.pageParams[draft.pageParams.length - 1];
+
+            // See if the message can be appended to the current page
+            if (!lastParams.before && (!lastParams.after || lastPage.some((x) => x.id === targetChannel?.lastMessageId))) {
+               inLoadedQueryPage = true;
+               if (targetChannel.id === currentChannel?.id) {
+                  inVisibleQueryPage = true;
+               }
+
+               // Filter out messages with matching nonce and add the new message
+               const lastPageIndex = draft.pages.length - 1;
+               draft.pages[lastPageIndex] = lastPage.filter((x) => !x.nonce || x.nonce !== d.nonce);
+               draft.pages[lastPageIndex].push(newMessage);
             }
-
-            return {
-               ...old,
-               pages: old.pages.toSpliced(old.pages.length - 1, 1, [...lastPage.filter((x) => !x.nonce || x.nonce !== d.nonce), newMessage]),
-            };
-         }
-
-         return old;
-      });
+         }),
+      );
 
       updateChannelLastMessageId(d.channelId, d.id, queryClient);
 
@@ -97,35 +102,41 @@ export default function MessageWebsocketProvider(props: { children?: ReactNode }
       let inLoadedQueryPage = false;
       let inVisibleQueryPage = false;
 
-      queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", d.channelId], (old) => {
-         if (!old) return undefined;
+      queryClient.setQueryData<InfiniteData<AppMessage[]>>(
+         ["messages", d.channelId],
+         produce((draft) => {
+            if (!draft) return;
 
-         const lastPage = old.pages[old.pages.length - 1];
-         const lastParams = old.pageParams[old.pageParams.length - 1];
-         // See if the message can be appended to the current page
-         if (!lastParams.before && (!lastParams.after || lastPage.some((x) => x.id === targetChannel?.lastMessageId))) {
+            const targetPageIndex = draft.pages.findIndex((x) => x.find((y) => y.id === d.id));
+            if (targetPageIndex === -1) {
+               return;
+            }
+
             inLoadedQueryPage = true;
-            if (targetChannel.id === currentChannel?.id) {
+            if (currentChannel?.id === targetChannel.id) {
                inVisibleQueryPage = true;
             }
 
-            return {
-               ...old,
-               pages: old.pages.toSpliced(old.pages.length - 1, 1, [...lastPage.filter((x) => x.id !== d.id), updatedMessage]),
-            };
-         }
+            for (const page of draft.pages) {
+               for (const message of page) {
+                  if (!message.isPreview && message.type === MessageType.REPLY && message.referencedMessage?.id === d.id) {
+                     if (!updatedMessage.isPreview && updatedMessage.type === MessageType.REPLY) {
+                        message.referencedMessage = omit(updatedMessage, ["referencedMessage"]);
+                     } else {
+                        message.referencedMessage = updatedMessage;
+                     }
+                  }
+               }
+            }
 
-         return old;
-      });
-
-      updateChannelLastMessageId(d.channelId, d.id, queryClient);
+            const targetMessageIndex = draft.pages[targetPageIndex].findIndex((x) => x.id === d.id);
+            draft.pages[targetPageIndex][targetMessageIndex] = updatedMessage;
+         }),
+      );
 
       dispatchEvent("message_updated", {
          message: updatedMessage,
-         visible:
-            currentChannel?.id === d.channelId &&
-            currentVisibleMessages.some((x) => x.messageId === currentChannel.lastMessageId) &&
-            huginnWindow.focused,
+         visible: currentChannel?.id === d.channelId && currentVisibleMessages.some((x) => x.messageId === d.id) && huginnWindow.focused,
          inLoadedQueryPage: inLoadedQueryPage,
          inVisibleQueryPage: inVisibleQueryPage,
          self: d.author.id === user?.id,
@@ -147,10 +158,7 @@ export default function MessageWebsocketProvider(props: { children?: ReactNode }
       const channel = findChannel(getChannels(undefined, queryClient), d.channelId);
 
       if (channel?.lastMessageId === d.id) {
-         const lastMessageId = queryClient
-            .getQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", d.channelId])
-            ?.pages.at(-1)
-            ?.at(-1)?.id;
+         const lastMessageId = queryClient.getQueryData<InfiniteData<AppMessage[]>>(["messages", d.channelId])?.pages.at(-1)?.at(-1)?.id;
 
          if (lastMessageId) {
             updateChannelLastMessageId(d.channelId, lastMessageId, queryClient);

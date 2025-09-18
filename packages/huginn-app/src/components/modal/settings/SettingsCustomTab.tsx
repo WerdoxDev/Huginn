@@ -1,15 +1,13 @@
-import type { CustomApplication, DropdownItem, SettingsTabProps } from "@/types";
+import type { DropdownItem, SettingsTabProps } from "@/types";
 import HuginnButton from "@components/button/HuginnButton";
 import CustomApplicationItem from "@components/CustomApplicationItem";
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
-import Tooltip from "@components/tooltip/Tooltip";
 import { useElapsedTime } from "@hooks/useElapsedTime";
 import { useFilesStore } from "@stores/filesStore";
 import { useModals } from "@stores/modalsStore";
 import { usePresenceStore } from "@stores/presenceStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
-import moment from "moment";
 import type { ProcessInfo } from "native-addon";
 import { useEffect, useMemo, useState } from "react";
 

@@ -6,7 +6,7 @@ import { useClient } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { NavLink, useParams } from "react-router";
 import type { AppDirectChannel } from "@/types";
 import ChannelIcon from "./ChannelIcon";
@@ -33,7 +33,10 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
          onContextMenu={(e) => {
             openContextMenu(props.channel, e);
          }}
-         className={clsx("hover:bg-surface group relative -mr-1 flex cursor-pointer rounded-md active:bg-white/10", selected && "bg-white/10")}
+         className={clsx(
+            "hover:bg-surface group relative -mr-1 flex cursor-pointer rounded-md active:bg-white/10",
+            selected && "bg-white/10",
+         )}
          onClick={props.onSelected}
       >
          <NavLink prefetch="intent" className="flex w-full min-w-0 shrink items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>
@@ -57,7 +60,10 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
                   </div>
                )}
                {props.channel.type === ChannelType.DM && (
-                  <ActivityPreview presence={presence} className={clsx("group-hover:opacity-100", selected ? "opacity-100" : "opacity-50")} />
+                  <ActivityPreview
+                     presence={presence}
+                     className={clsx("group-hover:opacity-100", selected ? "opacity-100" : "opacity-50")}
+                  />
                )}
             </div>
          </NavLink>

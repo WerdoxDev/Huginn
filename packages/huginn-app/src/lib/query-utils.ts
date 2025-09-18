@@ -1,7 +1,8 @@
 import { queryClient as client } from "@/root";
-import type { AppDirectChannel, AppUser } from "@/types";
+import type { AppDirectChannel, AppMessage, AppUser } from "@/types";
 import type { APIGetUserChannelsResult, PresenceUser, Snowflake } from "@huginn/shared";
 import { convertToAppUser } from "./utils";
+import type { InfiniteData } from "@tanstack/react-query";
 
 export function updateUser(user: PresenceUser, queryClient = client) {
    queryClient.setQueryData<AppUser>(["user", user.id], (old) => (old ? convertToAppUser({ ...old, ...user }) : convertToAppUser(user)));
@@ -53,4 +54,14 @@ export function updateChannelLastMessageId(channelId: Snowflake, messageId: Snow
 
       return [{ ...channel, lastMessageId: messageId }, ...data.filter((x) => x.id !== channelId)];
    });
+}
+
+export function getCurrentPageMessages(channelId: Snowflake, queryClient = client) {
+   const messages = queryClient.getQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", channelId]);
+   return messages?.pages.flat();
+}
+
+export function getMessage(channelId: Snowflake, messageId?: Snowflake, queryClient = client) {
+   const messages = queryClient.getQueryData<InfiniteData<AppMessage>>(["messages", channelId]);
+   return messages?.pages.flatMap((x) => x).find((x) => x.id === messageId);
 }

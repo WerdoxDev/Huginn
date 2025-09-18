@@ -1,11 +1,10 @@
-import { type Snowflake, snowflake } from "@huginn/shared";
+import { type Snowflake } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
 import { useChannelReadState, useReadStates } from "@stores/readStatesStore";
 import { useThisUser } from "@stores/userStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import moment from "moment";
 import { useEffect } from "react";
 import type { AppMessage } from "@/types";
 
@@ -30,7 +29,7 @@ export function useMessageAcker(channelId: Snowflake, messages: AppMessage[]) {
       }
 
       async function trySendAck() {
-         const latestMessageId = currentVisibleMessages
+         const latestVisibleMessageId = currentVisibleMessages
             .toSorted((a, b) => {
                const x = BigInt(a.messageId);
                const y = BigInt(b.messageId);
@@ -38,22 +37,22 @@ export function useMessageAcker(channelId: Snowflake, messages: AppMessage[]) {
             })
             .at(-1)?.messageId;
 
-         if (!latestMessageId) {
+         if (!latestVisibleMessageId) {
             return;
          }
 
-         const latestMessage = messages.find((x) => x.id === latestMessageId);
-         if (!latestMessage) {
+         const latestVisibleMessage = messages.find((x) => x.id === latestVisibleMessageId);
+         if (!latestVisibleMessage) {
             return;
          }
 
          // if the latest message is from the user or the message is older than the last read message, don't send an ack
          if (
-            (!readState?.lastReadMessageId || BigInt(readState.lastReadMessageId) < BigInt(latestMessageId)) &&
-            user?.id !== latestMessage.authorId
+            (!readState?.lastReadMessageId || BigInt(readState.lastReadMessageId) < BigInt(latestVisibleMessageId)) &&
+            user?.id !== latestVisibleMessage.authorId
          ) {
-            setLatestReadMessage(channelId, latestMessage.id, queryClient);
-            await mutation.mutateAsync({ channelId: channelId, messageId: latestMessage.id });
+            setLatestReadMessage(channelId, latestVisibleMessage.id, queryClient);
+            await mutation.mutateAsync({ channelId: channelId, messageId: latestVisibleMessage.id });
          }
       }
 

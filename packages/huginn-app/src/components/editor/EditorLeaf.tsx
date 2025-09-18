@@ -17,7 +17,8 @@ export default function EditorLeaf(props: RenderLeafProps) {
       props.leaf.spoiler ||
       props.leaf.link ||
       props.leaf.codeToken ||
-      props.leaf.codeLanguage
+      props.leaf.codeLanguage ||
+      props.leaf.inlineCode
    ) {
       return (
          <span
@@ -25,8 +26,9 @@ export default function EditorLeaf(props: RenderLeafProps) {
                props.leaf.bold && "font-bold",
                props.leaf.italic && "italic",
                props.leaf.underline && "underline",
-               props.leaf.spoiler && "rounded-xs px-0.5",
+               props.leaf.spoiler && "rounded-sm px-0.5",
                props.leaf.spoiler && "bg-white/20",
+               props.leaf.inlineCode && "bg-surface font-ubuntu rounded-sm px-0.5 py-0.5",
                props.leaf.link && "text-primary-500",
                props.leaf.codeToken,
                props.leaf.codeToken && "font-ubuntu text-sm",

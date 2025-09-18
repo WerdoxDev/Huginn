@@ -9,6 +9,7 @@ const initialStore = () => ({
    currentVisibleMessages: [] as Array<{ messageId: Snowflake; messageTimestamp: number; channelId: Snowflake }>,
    messageUploadProgresses: [] as UploadProgress[],
    currentEditingMessageId: undefined as Snowflake | undefined,
+   currentReplyingMessageId: undefined as Snowflake | undefined,
    messageBoxHeight: 0,
 });
 
@@ -16,7 +17,8 @@ type StoreType = ReturnType<typeof initialStore>;
 
 export const useChannelStore = create(
    combine(initialStore(), (set) => ({
-      saveScroll: (channelId: Snowflake, scroll: number) => set((state) => ({ savedScrolls: new Map(state.savedScrolls).set(channelId, scroll) })),
+      saveScroll: (channelId: Snowflake, scroll: number) =>
+         set((state) => ({ savedScrolls: new Map(state.savedScrolls).set(channelId, scroll) })),
       resetScrolls: () => set({ savedScrolls: new Map() }),
       addVisibleMessage: (id: Snowflake, timestamp: number, channelId: Snowflake) =>
          set((state) => ({
@@ -47,6 +49,7 @@ export const useChannelStore = create(
             messageUploadProgresses: state.messageUploadProgresses.filter((x) => x.messageId !== messageId),
          })),
       setEditingMessageId: (messageId: Snowflake | undefined) => set({ currentEditingMessageId: messageId }),
+      setReplyingMessageId: (messageId: Snowflake | undefined) => set({ currentReplyingMessageId: messageId }),
       setMessageBoxHeight: (height: number) => set({ messageBoxHeight: height }),
    })),
 );

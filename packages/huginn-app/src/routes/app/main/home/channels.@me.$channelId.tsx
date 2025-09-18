@@ -5,7 +5,7 @@ import RecipientsSidebar from "@components/channels/RecipientsSidebar";
 import MessageBox from "@components/MessageBox";
 import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useSafePathname } from "@hooks/useLastSafePathname";
-import { ChannelType, snowflake } from "@huginn/shared";
+import { ChannelType } from "@huginn/shared";
 import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
 import { clientStore, useClient } from "@stores/clientStore";
 import { voiceClient } from "@stores/voiceStore";
@@ -14,7 +14,6 @@ import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useState } from "react";
 import { type LoaderFunctionArgs, useParams } from "react-router";
 import { queryClient } from "@/root";
-import moment from "moment";
 
 export async function channelWithIdLoader({ params }: LoaderFunctionArgs) {
    const client = clientStore.getState().client;
@@ -64,18 +63,18 @@ export default function ChannelWithId() {
    }, [error]);
 
    function onRecipientsClick() {
-      posthog.capture("channel:recipients_button_click");
       setRecipientsVisible((prev) => !prev);
+      posthog.capture("channel:recipients_button_click");
    }
 
    async function onCallClick() {
-      posthog.capture("channel:call_button_click");
-
       if (!channel) {
          return;
       }
 
       await Promise.allSettled([voiceClient.connect(null, channel.id), client?.channels.ring(channel.id, null)]);
+
+      posthog.capture("channel:call_button_click");
    }
 
    return (

@@ -1,6 +1,5 @@
 import { ChannelType, MessageType, RelationshipType, type Snowflake } from "@huginn/shared";
 import { listenEvent } from "@lib/event-handler";
-import { getCurrentPageMessages } from "@lib/utils";
 import { windowStore } from "@stores/windowStore";
 import type { QueryClient } from "@tanstack/react-query";
 import { produce } from "immer";
@@ -9,7 +8,7 @@ import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 import { sendNotification } from "../contexts/notificationContext";
 import { clientStore } from "./clientStore";
-import { findChannel, getChannels, getUser, getUsers } from "@lib/query-utils";
+import { findChannel, getChannels, getCurrentPageMessages, getUser, getUsers } from "@lib/query-utils";
 import { playAudio } from "@lib/audio-player";
 
 export type ContextReadState = { channelId: Snowflake; lastReadMessageId?: Snowflake; unreadCount: number };

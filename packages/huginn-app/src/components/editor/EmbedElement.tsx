@@ -7,12 +7,17 @@ import type { RenderElementProps } from "slate-react";
 import type { EmbedElement as SlateEmbedElement } from "@/index";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { MessageContext } from "@contexts/MessageProvider";
+import { useOpen } from "@hooks/useOpen";
 
 export default function EmbedElement(props: RenderElementProps) {
    const { url, description, title, thumbnail, video } = props.element as SlateEmbedElement;
    const { open } = useContextMenu("message");
+   const { openUrl } = useOpen();
    const context = useContext(MessageContext);
-   const barebone = useMemo(() => description === undefined && title === undefined && (thumbnail || video), [description, title, thumbnail, video]);
+   const barebone = useMemo(
+      () => description === undefined && title === undefined && (thumbnail || video),
+      [description, title, thumbnail, video],
+   );
    const dimensions = useMemo(
       () =>
          constrainImageSize(
@@ -31,7 +36,7 @@ export default function EmbedElement(props: RenderElementProps) {
                <span
                   onContextMenu={(e) => open({ message: context.message, url }, e)}
                   className={clsx(url && "text-primary-500 cursor-pointer hover:underline", description ? "mb-1" : "mb-2")}
-                  onClick={url ? () => window.electronAPI.openExternal(url) : undefined}
+                  onClick={url ? () => openUrl(url) : undefined}
                >
                   {title}
                </span>

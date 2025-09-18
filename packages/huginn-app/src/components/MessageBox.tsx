@@ -1,7 +1,7 @@
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useSendMessage } from "@hooks/mutations/useSendMessage";
 import { useSendTyping } from "@hooks/mutations/useSendTyping";
-import { isImageMediaType, MessageFlags, MessageType } from "@huginn/shared";
+import { isImageMediaType, MessageFlags, MessageReferenceType, MessageType } from "@huginn/shared";
 import clsx from "clsx";
 import { type ClipboardEvent, type KeyboardEvent, useEffect, useRef, useState, useTransition } from "react";
 import { useParams } from "react-router";
@@ -15,6 +15,7 @@ import { useChannelStore } from "@stores/channelStore";
 import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
 import { useEditMessage } from "@hooks/mutations/useEditMessage";
 import { useThisUser } from "@stores/userStore";
+import ReplyingPreview from "./ReplyingPreview";
 
 type AttachmentInputType = { name: string; type: string; arrayBuffer: () => Promise<ArrayBuffer> };
 
@@ -37,7 +38,8 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    const [attachments, setAttachments] = useState<AttachmentType[]>([]);
    const [dragging, setDragging] = useState(false);
    const [_isPending, startTransition] = useTransition();
-   const { setEditingMessageId, currentEditingMessageId, setMessageBoxHeight } = useChannelStore();
+   const { setEditingMessageId, currentEditingMessageId, setReplyingMessageId, currentReplyingMessageId, setMessageBoxHeight } =
+      useChannelStore();
    const { decorate, editor, renderElement, renderLeaf } = usePreviewMessageRenderer();
    const { user } = useThisUser();
 
@@ -48,7 +50,9 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    function onEditorKeyDown(event: KeyboardEvent) {
       // Edit
       if (event.key === "ArrowUp" && editor.string([]) === "") {
-         const lastEditableMessage = props.messages.findLast((x) => x.authorId === user?.id && !x.isPreview && x.type === MessageType.DEFAULT);
+         const lastEditableMessage = props.messages.findLast(
+            (x) => x.authorId === user?.id && !x.isPreview && x.type === MessageType.DEFAULT,
+         );
          setEditingMessageId(lastEditableMessage?.id);
          event.preventDefault();
       }
@@ -104,7 +108,10 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
             editor.insertText(mark, { at: { offset: startOffset, path: path } });
 
             editor.insertText(mark, { at: { offset: endOffset + markLength, path: path } });
-            editor.select({ anchor: { offset: startOffset + markLength, path: path }, focus: { offset: endOffset + markLength, path: path } });
+            editor.select({
+               anchor: { offset: startOffset + markLength, path: path },
+               focus: { offset: endOffset + markLength, path: path },
+            });
             return;
          }
 
@@ -125,8 +132,10 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
          return;
       }
 
+      const channelId = params.channelId ?? "";
+
       sendMessageMutation.mutate({
-         channelId: params.channelId ?? "",
+         channelId: channelId,
          content,
          flags,
          attachments: attachments.map((x) => ({
@@ -136,7 +145,14 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
             filename: x.filename,
             description: x.description,
          })),
+         messageReference: currentReplyingMessageId
+            ? { messageId: currentReplyingMessageId, channelId: channelId, type: MessageReferenceType.DEFAULT }
+            : undefined,
       });
+
+      if (currentReplyingMessageId) {
+         setReplyingMessageId(undefined);
+      }
 
       resetTyping();
       clearEditor();
@@ -154,9 +170,13 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       setEditingMessageId(undefined);
    }
 
-   function endEditMessage() {
+   function cancelEditMessage() {
       clearEditor();
       setEditingMessageId(undefined);
+   }
+
+   function cancelReplyMessage() {
+      setReplyingMessageId(undefined);
    }
 
    function clearEditor() {
@@ -238,6 +258,8 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    // Focus on the message box when we change channel
    useEffect(() => {
       editorRef.current?.focus();
+      setReplyingMessageId(undefined);
+      setEditingMessageId(undefined);
    }, [currentChannel?.id]);
 
    useEffect(() => {
@@ -256,8 +278,13 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       window.addEventListener(
          "keydown",
          (e) => {
-            if (e.key === "Escape" && currentEditingMessageId) {
-               endEditMessage();
+            if (e.key === "Escape") {
+               if (currentEditingMessageId) {
+                  cancelEditMessage();
+               }
+               if (currentReplyingMessageId) {
+                  cancelReplyMessage();
+               }
             }
          },
          { signal: controller.signal },
@@ -321,7 +348,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
          resizeObserver.disconnect();
          controller.abort();
       };
-   }, [currentEditingMessageId]);
+   }, [currentEditingMessageId, currentReplyingMessageId]);
 
    useEffect(() => {
       if (!currentEditingMessageId) {
@@ -345,6 +372,14 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       editorRef.current?.focus();
    }, [currentEditingMessageId]);
 
+   useEffect(() => {
+      if (!currentReplyingMessageId) {
+         return;
+      }
+
+      editorRef.current?.focus();
+   });
+
    return (
       <div className="bottom-0 z-10 flex-col px-5 py-1.5" ref={containerRef}>
          {currentEditingMessageId && (
@@ -352,10 +387,16 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                <IconMingcuteEdit2Fill />
                <div>Editing</div>
                <div className="text-sm text-white/50">(ESC to cancel)</div>
-               <button className="bg-negative-100 hover:bg-negative-200 ml-auto cursor-pointer rounded-full p-1" onClick={endEditMessage}>
+               <button
+                  className="bg-negative-100 hover:bg-negative-200 ml-auto cursor-pointer rounded-full p-1"
+                  onClick={cancelEditMessage}
+               >
                   <IconMingcuteCloseFill className="size-4" />
                </button>
             </div>
+         )}
+         {currentReplyingMessageId && (
+            <ReplyingPreview channelId={params.channelId!} messageId={currentReplyingMessageId} onCancel={cancelReplyMessage} />
          )}
          <DraggingIndicator isDragging={dragging} />
          <AttachmentsPreview attachments={attachments} onRemove={removeAttachment} />
@@ -363,7 +404,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
             <div
                className={clsx(
                   "border-surface bg-surface-deep flex h-full items-start rounded-3xl border-2 transition-[border-radius]",
-                  (attachments.length || currentEditingMessageId) && "rounded-t-none",
+                  (attachments.length || currentEditingMessageId || currentReplyingMessageId) && "rounded-t-none",
                )}
             >
                {!currentEditingMessageId && (
@@ -400,7 +441,11 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                <div className="ml-2 flex h-8 gap-x-2 p-2">
                   <div className="bg-surface h-8 w-8 rounded-full" />
                   <div className="bg-surface h-8 w-8 rounded-full" />
-                  <button className="bg-primary-700 h-8 w-8 rounded-full p-0.5" type="button" onClick={() => sendMessage(MessageFlags.NONE)}>
+                  <button
+                     className="bg-primary-700 h-8 w-8 rounded-full p-0.5"
+                     type="button"
+                     onClick={() => sendMessage(MessageFlags.NONE)}
+                  >
                      <IconLetsIconsSendHorFill className="text-text size-full" />
                   </button>
                </div>

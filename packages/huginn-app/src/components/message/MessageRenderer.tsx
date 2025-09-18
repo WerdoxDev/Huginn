@@ -4,7 +4,6 @@ import { MessageType } from "@huginn/shared";
 import { useContext, useEffect } from "react";
 import ActionMessage from "./ActionMessage";
 import DefaultMessage from "./DefaultMessage";
-import EditMessage from "./EditMessage";
 
 function MessageRenderer() {
    const context = useContext(MessageContext);
@@ -19,7 +18,7 @@ function MessageRenderer() {
    return (
       <li className="group shrink-0 select-text" ref={context.ref} id={context.message.id}>
          {/* {context.message.isEditing && <EditMessage />} */}
-         {(context.message.isPreview || [MessageType.DEFAULT].includes(context.message.type)) && <DefaultMessage />}
+         {(context.message.isPreview || [MessageType.DEFAULT, MessageType.REPLY].includes(context.message.type)) && <DefaultMessage />}
          {!context.message.isPreview &&
             [
                MessageType.RECIPIENT_ADD,
@@ -27,6 +26,7 @@ function MessageRenderer() {
                MessageType.CHANNEL_NAME_CHANGED,
                MessageType.CHANNEL_ICON_CHANGED,
                MessageType.CHANNEL_OWNER_CHANGED,
+               MessageType.CHANNEL_PINNED_MESSAGE,
                MessageType.CALL,
             ].includes(context.message.type) && <ActionMessage />}
       </li>

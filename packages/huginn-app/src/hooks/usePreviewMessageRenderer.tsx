@@ -17,7 +17,7 @@ import {
 import hljs from "highlight.js";
 import markdownit from "markdown-it";
 import { useCallback, useMemo } from "react";
-import { createEditor, Editor, Element, Node, Path, Range, type Descendant } from "slate";
+import { createEditor, Editor, Element, Node, Path, Range } from "slate";
 import { DefaultElement, withReact, type RenderElementProps, type RenderLeafProps } from "slate-react";
 
 let cache: { text: string; decorations: Record<number, Range[]> } | undefined;
@@ -57,10 +57,7 @@ export function usePreviewMessageRenderer() {
       }
 
       const result = md.parse(text, {});
-      // console.log(result);
       const tokens = organizeTokens(result);
-
-      // console.log(tokens);
 
       for (const [i, lineTokens] of tokens.entries()) {
          const child = children.find((x) => x[1][0] === i);
@@ -84,7 +81,9 @@ export function usePreviewMessageRenderer() {
 
                let tokens: Array<{ type: string; content: string | null }> = [];
 
-               function parseNode(node: ChildNode): Array<{ type: string; content: string | null }> | { type: string; content: string | null } {
+               function parseNode(
+                  node: ChildNode,
+               ): Array<{ type: string; content: string | null }> | { type: string; content: string | null } {
                   if (node.nodeType === window.Node.ELEMENT_NODE) {
                      const tokenType = (node as HTMLElement)?.className; // e.g., "hljs-keyword", "hljs-string"
 
@@ -160,11 +159,13 @@ export function usePreviewMessageRenderer() {
                continue;
             }
 
+            console.log(token.type);
+            const indexOffset = currentOpenedTokens.some((x) => x.type.includes("code")) ? 1 : 0;
             if (token.content) {
                ranges.push({
                   ...getSlateFormats(currentOpenedTokens),
-                  anchor: { path, offset: index },
-                  focus: { path, offset: index + currentTokenEnd },
+                  anchor: { path, offset: index - indexOffset },
+                  focus: { path, offset: index + currentTokenEnd + indexOffset },
                });
                currentLinkHref = undefined;
             }

@@ -21,22 +21,20 @@ import {
    MessageType,
    type PresenceStatus,
    type PresenceUser,
-   type Snowflake,
    type UserPresence,
    changeUrlBase,
    omit,
 } from "@huginn/shared";
-import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import type { JSXElementConstructor, ReactNode } from "react";
 import { Children, isValidElement } from "react";
 import { APIMessages } from "./error-messages";
-import { filesStore } from "@stores/filesStore";
 import { clientStore } from "@stores/clientStore";
 
 export const requiredFieldError: InputStatus = { code: "error", text: "Required" };
 
 export function getInputCurrentStatus(field: InputValue, fieldName: string, errorStatuses: InputStatuses): InputStatus {
-   const newStatus: InputStatus = !field.value && field.required ? requiredFieldError : errorStatuses[fieldName] || { code: "none", text: "" };
+   const newStatus: InputStatus =
+      !field.value && field.required ? requiredFieldError : errorStatuses[fieldName] || { code: "none", text: "" };
 
    return newStatus;
 }
@@ -89,7 +87,9 @@ export function doStatusesHaveErrors(statuses: InputStatuses, exclude?: InputSta
 }
 
 export function filterChildrenOfType(children: ReactNode, type: JSXElementConstructor<never>) {
-   return Children.toArray(children).filter((child) => isValidElement(child) && typeof child.type === "function" && child.type.name === type.name);
+   return Children.toArray(children).filter(
+      (child) => isValidElement(child) && typeof child.type === "function" && child.type.name === type.name,
+   );
 }
 
 export function isWorthyHuginnError(error: unknown): error is HuginnAPIError {
@@ -151,11 +151,6 @@ export function getSizeText(size: number) {
    return `${(size / (type === "kb" ? 1000 : 1000000)).toFixed(2)} ${type === "kb" ? "KB" : "MB"}`;
 }
 
-export function getCurrentPageMessages(channelId: Snowflake, queryClient: QueryClient) {
-   const messages = queryClient.getQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", channelId]);
-   return messages?.pages.flat();
-}
-
 export function convertToAppDirectChannel(channel: DirectChannel): AppDirectChannel {
    const name =
       channel.type === ChannelType.DM
@@ -179,8 +174,12 @@ export function convertToAppRelationship(relationship: APIRelationshipWithoutOwn
 }
 
 export function convertToAppMessage(message: APIMessage, source: "websocket" | "fetch"): AppMessage {
+   const { author: _, mentions: __, ...rest } = message;
    return {
-      ...(message.type === MessageType.CALL ? omit(message, ["author", "mentions"]) : omit(message, ["author", "mentions"])),
+      ...(message.type === MessageType.REPLY ? omit(message, ["referencedMessage", "author", "mentions"]) : rest),
+      ...(message.type === MessageType.REPLY
+         ? { referencedMessage: message.referencedMessage ? convertToAppMessage(message.referencedMessage, source) : undefined }
+         : {}),
       authorId: message.author.id,
       mentions: message.mentions.map((x) => x.id),
       isPreview: false,

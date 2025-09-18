@@ -2,7 +2,8 @@ import type Token from "markdown-it/lib/token.mjs";
 import type { HuginnToken } from "@/types";
 
 export function hasMarkup(markup: string) {
-   return markup && markup !== "linkify";
+   // Backticks are not considered markdown
+   return markup && markup !== "linkify" && markup !== "`";
 }
 
 export function getTokenLength(token: HuginnToken) {
@@ -21,11 +22,11 @@ export function isCloseToken(token: HuginnToken) {
 }
 
 export function isElementOpenToken(token: HuginnToken) {
-   return ["link_open", "spoiler_open", "fence_open"].includes(token.type);
+   return ["link_open", "spoiler_open", "fence_open", "code_open"].includes(token.type);
 }
 
 export function isElementCloseToken(token: HuginnToken) {
-   return ["link_close", "spoiler_close", "fence_close"].includes(token.type);
+   return ["link_close", "spoiler_close", "fence_close", "code_close"].includes(token.type);
 }
 
 export function getSlateFormats(openedTokens: HuginnToken[]) {
@@ -35,6 +36,7 @@ export function getSlateFormats(openedTokens: HuginnToken[]) {
       underline: openedTokens.some((x) => x?.type === "underline_open"),
       spoiler: openedTokens.some((x) => x?.type === "spoiler_open"),
       link: openedTokens.some((x) => x?.type === "link_open"),
+      inlineCode: openedTokens.some((x) => x?.type === "code_open"),
    };
 }
 
@@ -66,17 +68,23 @@ export function organizeTokens(tokens: Token[]) {
       }
 
       if (token.type === "fence" && token.map) {
-         lines.push([{ content: token.content, type: "fence_open", info: token.info, markup: token.markup, map: token.map, attrs: token.attrs }]);
+         lines.push([
+            { content: token.content, type: "fence_open", info: token.info, markup: token.markup, map: token.map, attrs: token.attrs },
+         ]);
          const numberOfNewLines = (token.content.match(/\n/g) ?? []).length;
          const hasHangingNewLine = token.content.lastIndexOf("\n") + 1 === token.content.length;
          const contentLength = hasHangingNewLine ? numberOfNewLines : token.content !== "" ? numberOfNewLines + 1 : 0;
 
          for (let i = 0; i < contentLength; i++) {
-            lines.push([{ content: token.content, markup: token.markup, type: token.type, info: token.info, map: token.map, attrs: token.attrs }]);
+            lines.push([
+               { content: token.content, markup: token.markup, type: token.type, info: token.info, map: token.map, attrs: token.attrs },
+            ]);
          }
 
          if (hasHangingNewLine) {
-            lines.push([{ content: token.content, type: "fence_close", info: token.info, markup: token.markup, map: token.map, attrs: token.attrs }]);
+            lines.push([
+               { content: token.content, type: "fence_close", info: token.info, markup: token.markup, map: token.map, attrs: token.attrs },
+            ]);
          }
       }
 
@@ -88,6 +96,24 @@ export function organizeTokens(tokens: Token[]) {
                // Push the current line and start a new line
                lines.push(currentLine);
                currentLine = [];
+            } else if (inlineToken.type === "code_inline") {
+               currentLine.push({
+                  type: "code_open",
+                  content: "",
+                  markup: inlineToken.markup,
+                  info: "",
+                  map: null,
+                  attrs: null,
+               });
+               currentLine.push({ type: "text", content: inlineToken.content, attrs: null, info: "", map: null, markup: "" });
+               currentLine.push({
+                  type: "code_close",
+                  content: "",
+                  markup: inlineToken.markup,
+                  info: "",
+                  map: null,
+                  attrs: null,
+               });
             } else {
                // Add inline tokens to the current line
                currentLine.push({
