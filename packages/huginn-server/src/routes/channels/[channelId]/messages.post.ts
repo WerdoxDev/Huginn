@@ -1,6 +1,14 @@
-import { createErrorFactory, createHuginnError, createRoute, invalidFormBody, missingAccess, verifyJwt, waitUntil } from "@huginn/backend-shared";
+import {
+   createErrorFactory,
+   createHuginnError,
+   createRoute,
+   invalidFormBody,
+   missingAccess,
+   verifyJwt,
+   waitUntil,
+} from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { selectMessageDefaults } from "@huginn/backend-shared/database/common";
+import { selectAllMessage } from "@huginn/backend-shared/database/common";
 import { type APIMessage, Errors, HttpCode, MessageType, WorkerID, snowflake } from "@huginn/shared";
 import { safeDestr } from "destr";
 import { z } from "zod";
@@ -24,6 +32,7 @@ const jsonSchema = z.object({
          }),
       ),
    ),
+   messageReference: z.optional(z.object({ type: z.number(), messageId: z.string(), channelId: z.string() })),
    flags: z.optional(z.number()),
    nonce: z.optional(z.string()),
 });
@@ -107,16 +116,15 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
          id: messageId,
          authorId: payload.id,
          channelId,
-         type: MessageType.DEFAULT,
+         type: body.messageReference ? MessageType.REPLY : MessageType.DEFAULT,
          content: body.content,
          attachments: processedAttachments,
+         messageReference: body.messageReference,
          embeds: processedEmbeds.length === 0 ? undefined : processedEmbeds,
          flags: body.flags,
       },
-      { select: selectMessageDefaults },
+      { select: selectAllMessage },
    );
-
-   // dbMessage.attachments[0].
 
    const message: APIMessage = filterMessage(dbMessage);
    message.nonce = body.nonce;
@@ -134,7 +142,7 @@ createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) 
          return;
       }
 
-      const updatedMessage = await prisma.message.updateMessage(dbMessage.id, { embeds }, { select: selectMessageDefaults });
+      const updatedMessage = await prisma.message.updateMessage(dbMessage.id, { embeds }, { select: selectAllMessage });
 
       dispatchToTopic(channelId, "message_update", filterMessage(updatedMessage));
    });

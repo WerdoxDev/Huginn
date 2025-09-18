@@ -9,7 +9,7 @@ import {
    waitUntil,
 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { selectMessageDefaults } from "@huginn/backend-shared/database/common";
+import { selectAllMessage } from "@huginn/backend-shared/database/common";
 import { type APIMessage, Errors, HttpCode } from "@huginn/shared";
 import { safeDestr } from "destr";
 import { z } from "zod";
@@ -103,7 +103,7 @@ createRoute("PATCH", "/api/channels/:channelId/messages/:messageId", verifyJwt()
    const dbMessage = await prisma.message.updateMessage(
       messageId,
       { content: body.content, embeds: processedEmbeds },
-      { select: selectMessageDefaults },
+      { select: selectAllMessage },
    );
 
    const message: APIMessage = filterMessage(dbMessage);
@@ -117,7 +117,7 @@ createRoute("PATCH", "/api/channels/:channelId/messages/:messageId", verifyJwt()
          return;
       }
 
-      const updatedMessage = await prisma.message.updateMessage(dbMessage.id, { embeds }, { select: selectMessageDefaults });
+      const updatedMessage = await prisma.message.updateMessage(dbMessage.id, { embeds }, { select: selectAllMessage });
 
       dispatchToTopic(channelId, "message_update", filterMessage(updatedMessage));
    });

@@ -1,7 +1,7 @@
 import { type GatewayCallState, type GatewayVoiceState, type Snowflake } from "@huginn/shared";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { prisma } from "@huginn/backend-shared/database/index";
-import { selectMessageDefaults } from "@huginn/backend-shared/database/common";
+import { selectAllMessage } from "@huginn/backend-shared/database/common";
 import { filterMessage } from "#utils/helpers";
 
 export class VoiceManager {
@@ -44,7 +44,7 @@ export class VoiceManager {
             const updatedMessage = await prisma.message.updateMessage(
                callState.messageId,
                { call: { participants: participants, setEndedTimestamp: true } },
-               { select: selectMessageDefaults },
+               { select: selectAllMessage },
             );
 
             dispatchToTopic(channelId, "message_update", filterMessage(updatedMessage));

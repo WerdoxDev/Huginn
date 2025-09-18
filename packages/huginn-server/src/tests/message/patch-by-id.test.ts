@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { testHandler } from "@huginn/backend-shared";
-import { type APIPatchMessageResult, type APIPostDefaultMessageResult, ChannelType, MessageType } from "@huginn/shared";
+import { type APIPatchMessageResult, type APIPostMessageResult, ChannelType, MessageType } from "@huginn/shared";
 import { expectMessageExactSchema } from "#tests/expect-utils";
 import { authHeader, createTestChannel, createTestMessages, createTestUsers, getReadyWebSocket, testIsDispatch } from "#tests/utils";
 
@@ -10,7 +10,9 @@ describe("PATCH /api/channels/:channelId/messages/:messageId", () => {
       const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
       const [message] = await createTestMessages(channel.id, user.id, 1);
 
-      const result = testHandler(`/api/channels/${channel.id}/messages/invalid`, authHeader(user.accessToken), "PATCH", { content: "test" });
+      const result = testHandler(`/api/channels/${channel.id}/messages/invalid`, authHeader(user.accessToken), "PATCH", {
+         content: "test",
+      });
       expect(result).rejects.toThrow("Snowflake"); // Invalid id
 
       const result2 = testHandler(`/api/channels/${channel.id}/messages/000000000000000000`, authHeader(user.accessToken), "PATCH", {
@@ -33,11 +35,15 @@ describe("PATCH /api/channels/:channelId/messages/:messageId", () => {
       expect(result).rejects.toThrow("Unauthorized");
 
       // User does not have the channel
-      const result2 = testHandler(`/api/channels/${channel.id}/messages/${message.id}`, authHeader(user3.accessToken), "PATCH", { content: "test" });
+      const result2 = testHandler(`/api/channels/${channel.id}/messages/${message.id}`, authHeader(user3.accessToken), "PATCH", {
+         content: "test",
+      });
       expect(result2).rejects.toThrow("Missing Access");
 
       // User is not the message author
-      const result3 = testHandler(`/api/channels/${channel.id}/messages/${message.id}`, authHeader(user.accessToken), "PATCH", { content: "test" });
+      const result3 = testHandler(`/api/channels/${channel.id}/messages/${message.id}`, authHeader(user.accessToken), "PATCH", {
+         content: "test",
+      });
       expect(result3).rejects.toThrow("Missing Permission");
    });
 
@@ -63,7 +69,7 @@ describe("PATCH /api/channels/:channelId/messages/:messageId", () => {
 
          const result = (await testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", {
             content: "https://huginn.dev",
-         })) as APIPostDefaultMessageResult;
+         })) as APIPostMessageResult;
 
          let isDone = false;
          ws.onmessage = async (event) => {
@@ -77,9 +83,14 @@ describe("PATCH /api/channels/:channelId/messages/:messageId", () => {
                expect(data.d.embeds).toHaveLength(1);
 
                isDone = true;
-               const result2 = (await testHandler(`/api/channels/${channel.id}/messages/${data.d.id}`, authHeader(user.accessToken), "PATCH", {
-                  embeds: [],
-               })) as APIPatchMessageResult;
+               const result2 = (await testHandler(
+                  `/api/channels/${channel.id}/messages/${data.d.id}`,
+                  authHeader(user.accessToken),
+                  "PATCH",
+                  {
+                     embeds: [],
+                  },
+               )) as APIPatchMessageResult;
 
                expect(result2.embeds).toBeArray();
                expect(result2.embeds).toHaveLength(0);

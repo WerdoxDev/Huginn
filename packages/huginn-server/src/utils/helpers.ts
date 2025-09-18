@@ -2,12 +2,14 @@ import { prisma } from "@huginn/backend-shared/database";
 import {
    selectChannelDefaults,
    selectKnownApplication,
-   selectMessageDefaults,
+   selectAllMessage,
    type ChannelPayload,
    type KnownApplicationPayload,
    type MessagePayload,
 } from "@huginn/backend-shared/database/common";
 import {
+   type APIMessageCall,
+   type APIMessageReference,
    ChannelType,
    constants,
    type DirectChannel,
@@ -38,7 +40,7 @@ export async function dispatchMessage(options: {
          mentions: options.mentions,
          flags: options.flags,
       },
-      { select: selectMessageDefaults },
+      { select: selectAllMessage },
    );
 
    dispatchToTopic(options.channelId, "message_create", filterMessage(message));
@@ -54,7 +56,7 @@ export async function dispatchCallMessage(options: { authorId: Snowflake; channe
          type: MessageType.CALL,
          call: { participants: [options.authorId] },
       },
-      { select: selectMessageDefaults },
+      { select: selectAllMessage },
    );
 
    dispatchToTopic(options.channelId, "message_create", filterMessage(message));
@@ -74,7 +76,7 @@ export function dispatchChannel(
    dispatchToTopic(userId, topic, channelWithoutRecipient(channel, userId));
 }
 
-export function filterMessage<T extends MessagePayload<{ select: typeof selectMessageDefaults }>>(message: T) {
+export function filterMessage<T extends MessagePayload<{ select: typeof selectAllMessage }>>(message: T) {
    const ttlSeconds = constants.CDN_HMAC_EXPIRE_TIME;
    const expiry = Math.floor(Date.now() / 1000) + ttlSeconds;
 
@@ -87,9 +89,15 @@ export function filterMessage<T extends MessagePayload<{ select: typeof selectMe
    });
 
    return {
-      ...omit(message, ["call"]),
+      ...omit(message, ["call", "messageReference"]),
       ...(message.call !== null && {
-         call: { endedTimestamp: message.call.endedTimestamp, participants: message.call.participants.map((x) => x.id) },
+         call: { endedTimestamp: message.call.endedTimestamp, participants: message.call.participants.map((x) => x.id) } as APIMessageCall,
+      }),
+      ...(message.messageReference !== null && {
+         messageReference: omit(message.messageReference, ["message"]) as APIMessageReference,
+      }),
+      ...(message.messageReference?.message !== undefined && {
+         referencedMessage: !message.messageReference.message ? null : message.messageReference?.message,
       }),
       embeds: nullToUndefined(message.embeds),
       attachments: nullToUndefined(signedAttachments),

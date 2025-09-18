@@ -1,6 +1,6 @@
 import { createRoute, missingAccess, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { selectMessageDefaults } from "@huginn/backend-shared/database/common";
+import { selectAllMessage } from "@huginn/backend-shared/database/common";
 import { type APIGetMessageByIdResult, HttpCode } from "@huginn/shared";
 import { filterMessage } from "#utils/helpers";
 
@@ -12,7 +12,7 @@ createRoute("GET", "/api/channels/:channelId/messages/:messageId", verifyJwt(), 
       return missingAccess(c);
    }
 
-   const dbMessage = await prisma.message.getById(channelId, messageId, { select: selectMessageDefaults });
+   const dbMessage = await prisma.message.getById(channelId, messageId, { select: selectAllMessage });
    const message: APIGetMessageByIdResult = filterMessage(dbMessage);
 
    return c.json(message, HttpCode.OK);
