@@ -8,8 +8,8 @@ import type {
    APIPatchDMChannelResult,
    APIPatchMessageJSONBody,
    APIPatchMessageResult,
-   APIPostDefaultMessageJSONBody,
-   APIPostDefaultMessageResult,
+   APIPostMessageJSONBody,
+   APIPostMessageResult,
    APIPostDMChannelJSONBody,
    APIPostDMChannelResult,
    RawFile,
@@ -37,7 +37,12 @@ export class ChannelAPI {
       return this.rest.get(Routes.channelMessage(channelId, messageId), { auth: true }) as Promise<APIGetMessageByIdResult>;
    }
 
-   public async getMessages(channelId: Snowflake, limit?: number, before?: Snowflake, after?: Snowflake): Promise<APIGetChannelMessagesResult> {
+   public async getMessages(
+      channelId: Snowflake,
+      limit?: number,
+      before?: Snowflake,
+      after?: Snowflake,
+   ): Promise<APIGetChannelMessagesResult> {
       return this.rest.get(Routes.channelMessages(channelId), {
          auth: true,
          query: new URLSearchParams({
@@ -71,17 +76,17 @@ export class ChannelAPI {
 
    public async createMessage(
       channelId: Snowflake,
-      body: APIPostDefaultMessageJSONBody,
+      body: APIPostMessageJSONBody,
       files?: RawFile[],
       onUploadProgress?: (event: ProgressEvent) => void,
       signal?: AbortSignal,
-   ): Promise<APIPostDefaultMessageResult> {
+   ): Promise<APIPostMessageResult> {
       return this.rest.post(Routes.channelMessages(channelId), {
          body,
          auth: true,
          files,
          xhr: { enabled: true, onUploadProgress, signal },
-      }) as Promise<APIPostDefaultMessageResult>;
+      }) as Promise<APIPostMessageResult>;
    }
 
    public async editMessage(channelId: Snowflake, messageId: Snowflake, body: APIPatchMessageJSONBody): Promise<APIPatchMessageResult> {
