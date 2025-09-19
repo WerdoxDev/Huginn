@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.59.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.59.0...app@v0.59.1) (2025-09-19)
+
+
+### Bug Fixes
+
+* **app:** move message rendering to custom renderer instead of slate ([0da38af](https://github.com/WerdoxDev/Huginn/commit/0da38af81c676409145c77ddba9c52eac0fd9243))
+* **app:** much better avatar and channel icon loading and caching ([9d076b1](https://github.com/WerdoxDev/Huginn/commit/9d076b103c6b827761c9e2b51a3758f2e2d9ee0a))
+
 ## [0.59.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.58.0...app@v0.59.0) (2025-09-18)
 
 
