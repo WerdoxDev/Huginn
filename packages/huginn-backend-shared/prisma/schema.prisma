@@ -57,6 +57,7 @@ model Message {
    content             String
    timestamp           DateTime
    editedTimestamp     DateTime?
+   deletedTimestamp    DateTime?
    mentions            User[]       @relation("message_mentions")
    embeds              Embed[]
    attachments         Attachment[]

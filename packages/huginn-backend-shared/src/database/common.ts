@@ -113,6 +113,7 @@ export const selectMessageDefaults = Prisma.validator<Prisma.MessageSelect>()({
    id: true,
    reactions: true,
    flags: true,
+   deletedTimestamp: false,
 });
 
 export const selectMessageReference = Prisma.validator<Prisma.MessageSelect>()({

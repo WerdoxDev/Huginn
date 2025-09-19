@@ -16,9 +16,8 @@ export const channelExtension = Prisma.defineExtension({
          },
          async getUserChannels<Args extends ChannelArgs>(userId: Snowflake, includeDeleted: boolean, args?: Args) {
             const methodName = "channel.getUserChannels";
+            assertId(methodName, userId);
             try {
-               assertId(methodName, userId);
-
                const channels = await prisma.channel.findMany({
                   where: {
                      recipients: { some: { id: BigInt(userId) } },
@@ -26,26 +25,6 @@ export const channelExtension = Prisma.defineExtension({
                   },
                   ...args,
                });
-
-               // const dmChannels = await prisma.channel.findMany({
-               //    where: {
-               //       recipients: { some: { id: BigInt(userId) } },
-               //       type: ChannelType.DM,
-               //    },
-               //    ...args,
-               //    omit: args?.select ? undefined : { icon: true, name: true, ownerId: true },
-               // });
-
-               // const groupChannels = await prisma.channel.findMany({
-               //    where: {
-               //       recipients: { some: { id: BigInt(userId) } },
-               //       type: ChannelType.GROUP_DM,
-               //       tempDeletedByUsers: !includeDeleted ? { none: { id: BigInt(userId) } } : undefined,
-               //    },
-               //    ...args,
-               // });
-
-               // const channels = [...groupChannels, ...dmChannels];
 
                assertObj(methodName, channels, DBErrorType.NULL_CHANNEL);
                return idFix(channels) as ChannelPayload<Args>[];
@@ -56,16 +35,18 @@ export const channelExtension = Prisma.defineExtension({
          },
          async createDirect<Args extends ChannelArgs>(initiatorId: Snowflake, recipients: Snowflake[], name?: string, args?: Args) {
             const methodName = "channel.createDirect";
+            assertId(methodName, initiatorId, ...recipients);
             try {
-               assertId(methodName, initiatorId, ...recipients);
-
                let channel;
                const isGroup = recipients.length > 1;
                const recipientsConnect = [{ id: BigInt(initiatorId) }, ...recipients.map((x) => ({ id: BigInt(x) }))];
 
                // See if we got a channel where all recipients are either initiator or first recipient
                const existingChannel = await prisma.channel.findFirst({
-                  where: { recipients: { every: { OR: [{ id: BigInt(recipients[0]) }, { id: BigInt(initiatorId) }] } }, type: ChannelType.DM },
+                  where: {
+                     recipients: { every: { OR: [{ id: BigInt(recipients[0]) }, { id: BigInt(initiatorId) }] } },
+                     type: ChannelType.DM,
+                  },
                   select: { id: true },
                });
 
@@ -99,11 +80,16 @@ export const channelExtension = Prisma.defineExtension({
                throw e;
             }
          },
-         async editDM<Args extends ChannelArgs>(channelId: Snowflake, name?: string | null, icon?: string | null, owner?: Snowflake, args?: Args) {
+         async editDM<Args extends ChannelArgs>(
+            channelId: Snowflake,
+            name?: string | null,
+            icon?: string | null,
+            owner?: Snowflake,
+            args?: Args,
+         ) {
             const methodName = "channel.editDM";
+            assertId(methodName, channelId);
             try {
-               assertId(methodName, channelId);
-
                const updatedChannel = await prisma.channel.update({
                   where: { id: BigInt(channelId), type: ChannelType.GROUP_DM },
                   data: { icon: icon, name: name, owner: owner ? { connect: { id: BigInt(owner) } } : undefined },
@@ -120,9 +106,8 @@ export const channelExtension = Prisma.defineExtension({
          },
          async addRecipient<Args extends ChannelArgs>(channelId: Snowflake, recipientId: Snowflake, args?: Args) {
             const methodName = "channel.addRecipient";
+            assertId(methodName, channelId);
             try {
-               assertId(methodName, channelId);
-
                const updatedChannel = await prisma.channel.update({
                   where: { id: BigInt(channelId), type: ChannelType.GROUP_DM },
                   data: { recipients: { connect: { id: BigInt(recipientId) } } },
@@ -158,8 +143,8 @@ export const channelExtension = Prisma.defineExtension({
          },
          async deleteDM<Args extends ChannelArgs>(channelId: Snowflake, userId: Snowflake, args?: Args) {
             const methodName = "channel.deleteDM";
+            assertId(methodName, channelId);
             try {
-               assertId(methodName, channelId);
                const channel = await prisma.channel.getById(channelId, { select: { type: true } });
 
                let editedChannel: unknown | undefined;

@@ -13,7 +13,7 @@ export const messagesExtension = Prisma.defineExtension({
             assertId(methodName, channelId, messageId);
             try {
                const message = await prisma.message.findUnique({
-                  where: { channelId: BigInt(channelId), id: BigInt(messageId) },
+                  where: { channelId: BigInt(channelId), id: BigInt(messageId), deletedTimestamp: null },
                   ...args,
                });
 
@@ -39,7 +39,7 @@ export const messagesExtension = Prisma.defineExtension({
                const direction = after ? "forward" : before ? "backward" : "none";
 
                const messages = await prisma.message.findMany({
-                  where: { channelId: BigInt(channelId) },
+                  where: { channelId: BigInt(channelId), deletedTimestamp: null },
                   ...args,
                   orderBy: { id: "asc" },
                   cursor: cursor ? { id: BigInt(cursor) } : undefined,
@@ -213,7 +213,7 @@ export const messagesExtension = Prisma.defineExtension({
                }
 
                const message = await prisma.message.update({
-                  where: { id: BigInt(id) },
+                  where: { id: BigInt(id), deletedTimestamp: null },
                   data: {
                      content: options.content,
                      embeds: options.embeds ? { set: createdEmbeds.map((x) => ({ id: x.id })) } : { set: [] },
@@ -247,12 +247,10 @@ export const messagesExtension = Prisma.defineExtension({
                   const channel = await tx.channel.getById(channelId, { select: { lastMessageId: true } });
                   if (channel.lastMessageId === id) {
                      const lastMessage = await tx.message.findFirst({
-                        where: { channelId: BigInt(channelId), id: { not: BigInt(id) } },
+                        where: { channelId: BigInt(channelId), id: { not: BigInt(id) }, deletedTimestamp: null },
                         orderBy: { id: "desc" },
-                        select: { id: true, authorId: true },
+                        select: { id: true },
                      });
-
-                     console.log(lastMessage);
 
                      // If this is null it means the channel has no messages anymore
                      if (lastMessage) {
@@ -268,13 +266,18 @@ export const messagesExtension = Prisma.defineExtension({
                      }
                   }
 
-                  deletedMessage = (await tx.message.delete({ where: { id: BigInt(id) }, ...args })) as Prisma.MessageGetPayload<Args>;
+                  deletedMessage = (await tx.message.update({
+                     where: { id: BigInt(id), channelId: BigInt(channelId), deletedTimestamp: null },
+                     data: { deletedTimestamp: new Date() },
+                     ...args,
+                  })) as Prisma.MessageGetPayload<Args>;
                });
 
                assertObj(methodName, deletedMessage, DBErrorType.NULL_MESSAGE);
                return idFix(deletedMessage) as MessagePayload<Args>;
             } catch (e) {
                await assertExists(e, methodName, DBErrorType.NULL_MESSAGE, [id]);
+               await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                throw e;
             }
          },
