@@ -32,7 +32,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
       return current; // Returns the children array at the final path
    }
 
-   function tokenRenderer(node: Descendant, index: number, parentKey?: string) {
+   function childrenRenderer(node: Descendant, index: number, parentKey?: string) {
       const key = parentKey
          ? Element.isElement(node)
             ? parentKey + `-${node.type}-${index}`
@@ -42,7 +42,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
            : "";
 
       if (Element.isElement(node) && !excludeElements?.includes(node.type)) {
-         const children = node.children.map((node, index) => tokenRenderer(node, index, key));
+         const children = node.children.map((node, index) => childrenRenderer(node, index, key));
 
          switch (node.type) {
             case "paragraph":
@@ -103,6 +103,8 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
             });
          }
       }
+
+      console.log(tokens);
 
       for (const lineTokens of tokens) {
          if (lineTokens.length === 0) {
@@ -198,7 +200,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
    }, [message]);
 
    const children = useMemo(() => {
-      return nodes.map((node, index) => tokenRenderer(node, index));
+      return nodes.map((node, index) => childrenRenderer(node, index));
    }, [nodes]);
 
    return { children };

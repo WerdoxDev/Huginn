@@ -159,7 +159,6 @@ export function usePreviewMessageRenderer() {
                continue;
             }
 
-            console.log(token.type);
             const indexOffset = currentOpenedTokens.some((x) => x.type.includes("code")) ? 1 : 0;
             if (token.content) {
                ranges.push({
