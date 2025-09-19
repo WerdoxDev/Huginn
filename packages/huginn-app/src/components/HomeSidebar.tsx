@@ -1,9 +1,7 @@
-import { snowflake } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
 import { useReadStates } from "@stores/readStatesStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
-import moment from "moment";
 import { useMemo } from "react";
 import type { AppDirectChannel } from "@/types";
 import AttentionIndicator from "./AttentionIndicator";
@@ -20,23 +18,12 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
    const sortedChannels = useMemo(
       () =>
          props.channels?.toSorted((a, b) => {
-            if (a.lastMessageId && !b.lastMessageId) {
-               return moment(snowflake.getTimestamp(a.lastMessageId)).isBefore(snowflake.getTimestamp(b.id)) ? 1 : -1;
-            }
+            const aId = BigInt(a.lastMessageId || a.id);
+            const bId = BigInt(b.lastMessageId || b.id);
 
-            if (!a.lastMessageId && b.lastMessageId) {
-               return moment(snowflake.getTimestamp(a.id)).isBefore(snowflake.getTimestamp(b.lastMessageId)) ? 1 : -1;
-            }
-
-            if (!a.lastMessageId && !b.lastMessageId) {
-               return moment(snowflake.getTimestamp(a.id)).isBefore(snowflake.getTimestamp(b.id)) ? 1 : -1;
-            }
-
-            if (a.lastMessageId && b.lastMessageId) {
-               return moment(snowflake.getTimestamp(a.lastMessageId)).isBefore(snowflake.getTimestamp(b.lastMessageId)) ? 1 : -1;
-            }
-
-            return 0;
+            // Sort in descending order (newest first)
+            // For ascending order (oldest first), swap the comparison
+            return aId > bId ? -1 : aId < bId ? 1 : 0;
          }),
       [props.channels],
    );

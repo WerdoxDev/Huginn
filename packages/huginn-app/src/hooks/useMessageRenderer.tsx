@@ -104,8 +104,6 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
          }
       }
 
-      console.log(tokens);
-
       for (const lineTokens of tokens) {
          if (lineTokens.length === 0) {
             lineNode.children.push({ text: "" });

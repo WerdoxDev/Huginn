@@ -2,7 +2,6 @@ import { contextBridge, ipcRenderer } from "electron";
 import type { ProgressInfo, UpdateInfo } from "electron-updater";
 import type { AudioSource, DisplaySource, KeybindType } from "@/types";
 import type { AppInfo, ProcessInfo } from "native-addon";
-import type { Snowflake } from "@huginn/shared";
 
 export const electronAPI = {
    getVersion: () => ipcRenderer.invoke("window:version") as Promise<string>,

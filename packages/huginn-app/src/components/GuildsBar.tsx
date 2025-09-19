@@ -1,9 +1,7 @@
-import { snowflake } from "@huginn/shared";
 import { getChannelsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useReadStates } from "@stores/readStatesStore";
 import { useQuery } from "@tanstack/react-query";
-import moment from "moment";
 import { AnimatePresence, motion, type Variants } from "motion/react";
 import { useMemo } from "react";
 import GuildButton from "./button/GuildButton";
@@ -24,7 +22,7 @@ export default function GuildsBar() {
                const bChannel = channels?.find((x) => x.id === b.channelId);
 
                if (aChannel?.lastMessageId && bChannel?.lastMessageId) {
-                  return moment(snowflake.getTimestamp(aChannel.lastMessageId)).isBefore(snowflake.getTimestamp(bChannel.lastMessageId)) ? 1 : -1;
+                  return BigInt(aChannel.lastMessageId) < BigInt(bChannel.lastMessageId) ? 1 : -1;
                }
 
                return 0;

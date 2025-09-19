@@ -1,6 +1,5 @@
 import clsx from "clsx";
 import { useState, type ReactNode } from "react";
-import type { RenderElementProps } from "slate-react";
 
 export default function SpoilerElement(props: { children?: ReactNode }) {
    const [hidden, setHidden] = useState(true);

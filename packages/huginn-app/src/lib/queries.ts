@@ -44,7 +44,7 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
          const channels: APIGetUserChannelsResult | undefined = queryClient.getQueryData(["channels", "@me"]);
          const targetChannel = channels?.find((x) => x.id === channelId);
 
-         const latestMessage = last[last.length - 1];
+         const latestMessage = last.at(-1);
 
          return !latestMessage?.isPreview && latestMessage && (!targetChannel || targetChannel.lastMessageId !== latestMessage.id)
             ? { after: latestMessage.id, before: "" }

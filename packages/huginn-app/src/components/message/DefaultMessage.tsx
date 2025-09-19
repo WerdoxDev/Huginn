@@ -6,25 +6,11 @@ import { useChannelStore } from "@stores/channelStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import moment from "moment";
-import { useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useContext, useLayoutEffect, useMemo, useState } from "react";
 import AttachmentUploadProgress from "./AttachmentUploadProgress";
 import { useContextMenu } from "@stores/contextMenuStore";
-import type { AppMessage, HuginnToken } from "@/types";
-import { useReplyRenderer } from "@hooks/useReplyRenderer";
-import markdownit from "markdown-it";
-import { markdownMainMessage } from "@lib/markdown-main";
-import { markdownSpoiler } from "@lib/markdown-spoiler";
-import { markdownUnderline } from "@lib/markdown-underline";
-import { organizeTokens } from "@lib/markdown-utils";
+import type { AppMessage } from "@/types";
 import { useMessageRenderer } from "@hooks/useMessageRenderer";
-import { Editor, Element, type Descendant } from "slate";
-import SpoilerElement from "@components/editor/SpoilerElement";
-import MessageLeaf from "@components/editor/MessageLeaf";
-import LinkElement from "@components/editor/LinkElement";
-import CodeElement from "@components/editor/CodeElement";
-import InlineCodeElement from "@components/editor/InlineCodeElement";
-import AttachmentElement from "@components/editor/AttachmentElement";
-import EmbedElement from "@components/editor/EmbedElement";
 
 export default function DefaultMessage() {
    const { user } = useThisUser();
