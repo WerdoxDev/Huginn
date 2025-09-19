@@ -199,7 +199,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    function onMessageAdd(message: ProcessedMessage) {
       if (!scrollRef.current) return;
       const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
-      const messageHeight = getRef(message.id)?.current.clientHeight ?? 0;
+      const messageHeight = getRef(message.id)?.current?.clientHeight ?? 0;
 
       if (message.authorId === user?.id || scrollOffset - messageHeight <= 50) {
          scrollDown();
@@ -237,7 +237,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       // Try to keep the editing message in viewport if it's even slightly visible
       if (currentEditingMessageId && currentVisibleMessages.some((x) => x.messageId === currentEditingMessageId)) {
          const messageRef = getRef(currentEditingMessageId);
-         if (messageRef) {
+         if (messageRef.current) {
             scrollIntoViewMinimal(messageRef.current);
          }
       }

@@ -7,33 +7,44 @@ import { getSizeText } from "@lib/utils";
 import { useFilesStore } from "@stores/filesStore";
 import clsx from "clsx";
 import { useMemo } from "react";
-import type { RenderElementProps } from "slate-react";
-import type { AttachmentElement as SlateAttachmentElement } from "@/index";
 
-export default function AttachmentElement(props: RenderElementProps) {
-   const { contentType, url, description, size, width, height, filename } = props.element as SlateAttachmentElement;
+export default function AttachmentElement(props: {
+   description?: string;
+   url: string;
+   width?: number;
+   height?: number;
+   filename: string;
+   size: number;
+   contentType: string;
+}) {
    const { openUrl } = useOpen();
    const dimensions = useMemo(
-      () => constrainImageSize(width ?? 0, height ?? 0, constants.ATTACHMENT_MEDIA_MAX_WIDTH, constants.ATTACHMENT_MEDIA_MAX_HEIGHT),
-      [width, height],
+      () =>
+         constrainImageSize(
+            props.width ?? 0,
+            props.height ?? 0,
+            constants.ATTACHMENT_MEDIA_MAX_WIDTH,
+            constants.ATTACHMENT_MEDIA_MAX_HEIGHT,
+         ),
+      [props.width, props.height],
    );
    const { settings } = useFilesStore();
-   const basedUrl = useMemo(() => changeUrlBase(url, `${settings.cdnHostname}/cdn`), [url]);
+   const basedUrl = useMemo(() => changeUrlBase(props.url, `${settings.cdnHostname}/cdn`), [props.url]);
 
    return (
-      <div {...props.attributes} contentEditable={false}>
+      <div contentEditable={false}>
          <div className="relative my-1 flex flex-col items-start">
-            {description && <span className={clsx("text-sm")}>{description}</span>}
-            {isImageMediaType(contentType) ? (
+            {props.description && <span className={clsx("text-sm")}>{props.description}</span>}
+            {isImageMediaType(props.contentType) ? (
                <ImagePreview
-                  filename={filename}
+                  filename={props.filename}
                   width={dimensions.width}
                   height={dimensions.height}
-                  originalWidth={width ?? 0}
-                  originalHeight={height ?? 0}
+                  originalWidth={props.width ?? 0}
+                  originalHeight={props.height ?? 0}
                   url={basedUrl}
                />
-            ) : isVideoMediaType(contentType) ? (
+            ) : isVideoMediaType(props.contentType) ? (
                <VideoPlayer url={basedUrl} width={dimensions.width} height={dimensions.height} />
             ) : (
                <div className="bg-surface-alt flex w-[24rem] items-center gap-x-2 rounded-lg px-2 py-3">
@@ -44,9 +55,9 @@ export default function AttachmentElement(props: RenderElementProps) {
                         className="text-primary-500 cursor-pointer overflow-hidden text-ellipsis text-nowrap text-left text-sm hover:underline"
                         onClick={() => openUrl(basedUrl)}
                      >
-                        {filename}
+                        {props.filename}
                      </button>
-                     <div className="text-xs text-white/50">{getSizeText(size)}</div>
+                     <div className="text-xs text-white/50">{getSizeText(props.size)}</div>
                   </div>
                   <Tooltip>
                      <Tooltip.Trigger className="mx-2" onClick={() => openUrl(basedUrl)}>

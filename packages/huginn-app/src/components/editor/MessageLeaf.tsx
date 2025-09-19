@@ -1,25 +1,17 @@
+import type { FormattedText } from "@/index";
 import clsx from "clsx";
-import type { RenderLeafProps } from "slate-react";
+import type { ReactNode } from "react";
 
-export default function MessageLeaf(props: RenderLeafProps) {
-   if (props.leaf.mark) {
+export default function MessageLeaf(props: { children?: ReactNode } & FormattedText) {
+   if (props.mark) {
+      return <span className="text-white/50">{props.children}</span>;
+   }
+
+   if (props.bold || props.italic || props.underline) {
       return (
-         <span className="text-white/50" {...props.attributes}>
-            {props.children}
-         </span>
+         <span className={clsx(props.bold && "font-bold", props.italic && "italic", props.underline && "underline")}>{props.children}</span>
       );
    }
 
-   if (props.leaf.bold || props.leaf.italic || props.leaf.underline) {
-      return (
-         <span
-            className={clsx(props.leaf.bold && "font-bold", props.leaf.italic && "italic", props.leaf.underline && "underline")}
-            {...props.attributes}
-         >
-            {props.children}
-         </span>
-      );
-   }
-
-   return <span {...props.attributes}>{props.children}</span>;
+   return <span>{props.children}</span>;
 }

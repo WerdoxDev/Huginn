@@ -68,7 +68,7 @@ type TextFormats = {
    codeToken?: string;
    codeLanguage?: boolean;
 };
-type FormattedText = { text: string } & TextFormats;
+export type FormattedText = { text: string } & TextFormats;
 
 type CustomText = FormattedText;
 type CustomRange = BaseRange & TextFormats & { text?: string };

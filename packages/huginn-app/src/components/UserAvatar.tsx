@@ -33,24 +33,32 @@ export default function UserAvatar(props: {
       }
 
       if (avatar && props.avatarHash) {
-         window.electronAPI.saveHashImageToCache(avatar, props.avatarHash);
+         // window.electronAPI.saveHashImageToCache(avatar, props.avatarHash);
       }
    }, [avatar]);
 
    const { size = "2.25rem", statusSize = "0.75rem", className } = props;
    return (
       <div className={clsx("relative shrink-0", className)} style={{ width: size, height: size }}>
-         {isLoading && (
+         {/* {isLoading && (
             <div className="bg-primary-900 absolute inset-0 flex items-center justify-center rounded-full">
                <LoadingIcon className="size-5" />
             </div>
-         )}
+         )} */}
          {avatar && !hasErrors ? (
-            <img alt="user-avatar" src={avatar} onError={() => setHasErrors(true)} className="h-full w-full rounded-full object-cover" />
+            <img
+               alt="user-avatar"
+               src={avatar}
+               onError={() => setHasErrors(true)}
+               loading="lazy"
+               className="h-full w-full rounded-full object-cover"
+            />
          ) : !hasErrors && !avatar && !isLoading ? (
             <div className="bg-primary-700 h-full w-full rounded-full" />
          ) : (
-            hasErrors && <div className="bg-negative-400 text-text flex h-full w-full items-center justify-center rounded-full font-bold">!</div>
+            hasErrors && (
+               <div className="bg-negative-400 text-text flex h-full w-full items-center justify-center rounded-full font-bold">!</div>
+            )
          )}
          {!props.hideStatus && (
             <div

@@ -2,7 +2,7 @@ import MessageRenderer from "@components/message/MessageRenderer";
 import type { Snowflake } from "@huginn/shared";
 import clsx from "clsx";
 import moment from "moment";
-import { createContext } from "react";
+import { createContext, useEffect } from "react";
 import type { MessageRendererProps, ProcessedMessage } from "@/types";
 
 export const MessageContext = createContext<{

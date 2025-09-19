@@ -3,9 +3,8 @@ import { markdownMainMessage } from "@lib/markdown-main";
 import { markdownSpoiler } from "@lib/markdown-spoiler";
 import { markdownUnderline } from "@lib/markdown-underline";
 import { organizeTokens, isElementOpenToken, isElementCloseToken, isOpenToken, isCloseToken, getSlateFormats } from "@lib/markdown-utils";
-import { useCallback, useMemo } from "react";
-import { createEditor, type Descendant, type Editor } from "slate";
-import { withReact, type RenderLeafProps, type RenderElementProps, DefaultElement } from "slate-react";
+import { useMemo } from "react";
+import { Element, Text, type Descendant } from "slate";
 import type { CustomElement, ParagraphElement } from "..";
 import markdownit from "markdown-it";
 import MessageLeaf from "@components/editor/MessageLeaf";
@@ -15,55 +14,10 @@ import LinkElement from "@components/editor/LinkElement";
 import CodeElement from "@components/editor/CodeElement";
 import AttachmentElement from "@components/editor/AttachmentElement";
 import InlineCodeElement from "@components/editor/InlineCodeElement";
+import clsx from "clsx";
 
-const withHuginn = (editor: Editor) => {
-   const { isInline, isVoid } = editor;
-
-   editor.isInline = (element) =>
-      element.type === "spoiler" || element.type === "link" || element.type === "code_inline" ? true : isInline(element);
-   editor.isVoid = (element) => (element.type === "embed" ? true : isVoid(element));
-
-   return editor;
-};
-
-export function useMessageRenderer(message: AppMessage) {
-   const editor = useMemo(() => withReact(withHuginn(createEditor())), []);
+export function useMessageRenderer(message: AppMessage, excludeElements?: CustomElement["type"][], noWrapping?: boolean) {
    const md = useMemo(() => new markdownit({ linkify: true }).use(markdownSpoiler).use(markdownUnderline).use(markdownMainMessage), []);
-
-   const renderLeaf = useCallback(
-      (props: RenderLeafProps) => {
-         return <MessageLeaf {...props} />;
-      },
-      [message],
-   );
-
-   const renderElement = useCallback((props: RenderElementProps) => {
-      if (props.element.type === "embed") {
-         return <EmbedElement {...props} />;
-      }
-
-      if (props.element.type === "spoiler") {
-         return <SpoilerElement {...props} />;
-      }
-
-      if (props.element.type === "link") {
-         return <LinkElement {...props} />;
-      }
-
-      if (props.element.type === "code") {
-         return <CodeElement {...props} />;
-      }
-
-      if (props.element.type === "code_inline") {
-         return <InlineCodeElement {...props} />;
-      }
-
-      if (props.element.type === "attachment") {
-         return <AttachmentElement {...props} />;
-      }
-
-      return <DefaultElement {...props} />;
-   }, []);
 
    function getNodeByPath(rootNode: CustomElement, path: number[]) {
       let current = rootNode;
@@ -78,7 +32,52 @@ export function useMessageRenderer(message: AppMessage) {
       return current; // Returns the children array at the final path
    }
 
-   const initialValue = useMemo(() => {
+   function tokenRenderer(node: Descendant, index: number, parentKey?: string) {
+      const key = parentKey
+         ? Element.isElement(node)
+            ? parentKey + `-${node.type}-${index}`
+            : parentKey + `-text-${index}`
+         : Element.isElement(node)
+           ? `${message.id}_${node.type}-${index}`
+           : "";
+
+      if (Element.isElement(node) && !excludeElements?.includes(node.type)) {
+         const children = node.children.map((node, index) => tokenRenderer(node, index, key));
+
+         switch (node.type) {
+            case "paragraph":
+               return (
+                  <div key={key} className={clsx("w-full overflow-hidden text-ellipsis", noWrapping && "whitespace-nowrap")}>
+                     {children}
+                  </div>
+               );
+            case "spoiler":
+               return <SpoilerElement key={key}>{children}</SpoilerElement>;
+            case "link":
+               return (
+                  <LinkElement url={node.url} key={key}>
+                     {children}
+                  </LinkElement>
+               );
+            case "code":
+               return <CodeElement code={node.code} language={node.language} key={key} />;
+            case "code_inline":
+               return <InlineCodeElement key={key}>{children}</InlineCodeElement>;
+            case "attachment":
+               return <AttachmentElement {...node} key={key} />;
+            case "embed":
+               return <EmbedElement {...node} key={key} />;
+         }
+      } else if (Text.isText(node)) {
+         return (
+            <MessageLeaf {...node} key={key}>
+               {node.text}
+            </MessageLeaf>
+         );
+      }
+   }
+
+   const nodes = useMemo(() => {
       let nodes: Descendant[] = [];
 
       const result = md.parse(message.content, {});
@@ -198,5 +197,9 @@ export function useMessageRenderer(message: AppMessage) {
       return nodes;
    }, [message]);
 
-   return { editor, renderElement, renderLeaf, initialValue };
+   const children = useMemo(() => {
+      return nodes.map((node, index) => tokenRenderer(node, index));
+   }, [nodes]);
+
+   return { children };
 }

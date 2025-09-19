@@ -1,23 +1,19 @@
-import type { RenderElementProps } from "slate-react";
-import type { LinkElement as SlateLinkElement } from "@/index";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { MessageContext } from "@contexts/MessageProvider";
-import { useContext } from "react";
+import { useContext, type ReactNode } from "react";
 import { useOpen } from "@hooks/useOpen";
 
-export default function LinkElement(props: RenderElementProps) {
+export default function LinkElement(props: { children?: ReactNode; url?: string }) {
    const { openUrl } = useOpen();
-   const { url } = props.element as SlateLinkElement;
    const { open } = useContextMenu("message");
    const context = useContext(MessageContext);
 
    return (
       <span
-         onContextMenu={(e) => open({ message: context.message, url }, e)}
-         {...props.attributes}
+         onContextMenu={(e) => open({ message: context.message, url: props.url }, e)}
          className="relative inline-block cursor-pointer underline"
-         onClick={() => (url ? openUrl(url) : undefined)}
-         title={url}
+         onClick={() => (props.url ? openUrl(props.url) : undefined)}
+         title={props.url}
       >
          <div>
             {props.children}

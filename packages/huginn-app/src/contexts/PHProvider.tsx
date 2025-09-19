@@ -7,6 +7,7 @@ posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_KEY, {
    ui_host: "https://eu.posthog.com",
    defaults: "2025-05-24",
    capture_exceptions: true,
+   disable_session_recording: true,
    // debug: import.meta.env.DEV,
    before_send: (event: CaptureResult | null): CaptureResult | null => {
       if (event?.properties?.$current_url) {

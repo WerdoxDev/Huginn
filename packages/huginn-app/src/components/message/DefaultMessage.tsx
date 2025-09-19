@@ -7,12 +7,24 @@ import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import moment from "moment";
 import { useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
-import { Editable, Slate } from "slate-react";
 import AttachmentUploadProgress from "./AttachmentUploadProgress";
 import { useContextMenu } from "@stores/contextMenuStore";
-import { useMessageRenderer } from "@hooks/useMessageRenderer";
-import type { AppMessage } from "@/types";
+import type { AppMessage, HuginnToken } from "@/types";
 import { useReplyRenderer } from "@hooks/useReplyRenderer";
+import markdownit from "markdown-it";
+import { markdownMainMessage } from "@lib/markdown-main";
+import { markdownSpoiler } from "@lib/markdown-spoiler";
+import { markdownUnderline } from "@lib/markdown-underline";
+import { organizeTokens } from "@lib/markdown-utils";
+import { useMessageRenderer } from "@hooks/useMessageRenderer";
+import { Editor, Element, type Descendant } from "slate";
+import SpoilerElement from "@components/editor/SpoilerElement";
+import MessageLeaf from "@components/editor/MessageLeaf";
+import LinkElement from "@components/editor/LinkElement";
+import CodeElement from "@components/editor/CodeElement";
+import InlineCodeElement from "@components/editor/InlineCodeElement";
+import AttachmentElement from "@components/editor/AttachmentElement";
+import EmbedElement from "@components/editor/EmbedElement";
 
 export default function DefaultMessage() {
    const { user } = useThisUser();
@@ -23,44 +35,33 @@ export default function DefaultMessage() {
    const formattedTime = useMemo(() => moment(context.message?.timestamp).format("HH:mm"), [context.message]);
 
    const author = useUser(context.message.authorId);
-   const isSelf = useMemo(() => author?.id === user?.id, [author]);
+   const isSelf = author?.id === user?.id;
 
-   const referencedMessage = useMemo(
-      () =>
-         (context.message.isPreview && context.message.referencedMessage) ||
-         (!context.message.isPreview && context.message.type === MessageType.REPLY)
-            ? context.message.referencedMessage
-            : undefined,
-      [context.message],
-   );
+   const referencedMessage =
+      (context.message.isPreview && context.message.referencedMessage) ||
+      (!context.message.isPreview && context.message.type === MessageType.REPLY)
+         ? context.message.referencedMessage
+         : undefined;
 
-   const isLastAction = useMemo(() => context.lastMessage?.isActionType === true, [context.lastMessage]);
-   const isSeparate = useMemo(
-      () => context.message.hasNewAuthor || context.message.hasNewMinute || context.message.hasNewDate || context.message.isReplyType,
-      [context.message],
-   );
-   const isEditing = useMemo(() => context.message.isEditing, [context.message]);
-   const isReplying = useMemo(() => context.message.isReplying, [context.message]);
-   const isEdited = useMemo(() => !context.message.isPreview && context.message.editedTimestamp !== null, [context.message]);
-   const isPreview = useMemo(() => context.message.isPreview, [context.message]);
-   const isNextPreview = useMemo(() => context.nextMessage?.isPreview, [context.nextMessage]);
-   const isNextSeparate = useMemo(
-      () =>
-         !context.nextMessage ||
-         context.nextMessage?.hasNewAuthor ||
-         context.nextMessage?.hasNewMinute ||
-         context.nextMessage?.hasNewDate ||
-         context.nextMessage?.isActionType ||
-         context.nextMessage?.isReplyType,
-      [context.nextMessage],
-   );
+   const isLastAction = context.lastMessage?.isActionType === true;
+   const isSeparate =
+      context.message.hasNewAuthor || context.message.hasNewMinute || context.message.hasNewDate || context.message.isReplyType;
+   const isEditing = context.message.isEditing;
+   const isReplying = context.message.isReplying;
+   const isEdited = !context.message.isPreview && context.message.editedTimestamp !== null;
+   const isPreview = context.message.isPreview;
+   const isNextPreview = context.nextMessage?.isPreview;
+   const isNextSeparate =
+      !context.nextMessage ||
+      context.nextMessage?.hasNewAuthor ||
+      context.nextMessage?.hasNewMinute ||
+      context.nextMessage?.hasNewDate ||
+      context.nextMessage?.isActionType ||
+      context.nextMessage?.isReplyType;
 
-   const isNewDate = useMemo(
-      () => context.message.hasNewDate || !context.lastMessage || context.message.hasNewDate,
-      [context.message, context.lastMessage],
-   );
+   const isNewDate = context.message.hasNewDate || !context.lastMessage || context.message.hasNewDate;
 
-   const isUnread = useMemo(() => context.message.isUnread, [context.message]);
+   const isUnread = context.message.isUnread;
 
    const [widths, setWidths] = useState<{ width: number; lastWidth: number; nextWidth: number }>({ width: 0, lastWidth: 0, nextWidth: 0 });
 
@@ -128,12 +129,16 @@ export default function DefaultMessage() {
 }
 
 function ReplyRenderer(props: { referencedMessage: AppMessage }) {
-   const { editor, initialValue, renderElement, renderLeaf } = useReplyRenderer(props.referencedMessage);
-   const user = useUser(props.referencedMessage.authorId);
+   const message = useMemo<AppMessage>(
+      () => ({
+         ...props.referencedMessage,
+         content: props.referencedMessage.content.replaceAll("\n", " ").replaceAll(/```(?:\S*)?/g, "`"),
+      }),
+      [props.referencedMessage],
+   );
 
-   useEffect(() => {
-      console.log(props.referencedMessage.content);
-   }, [props.referencedMessage]);
+   const { children } = useMessageRenderer(message, ["attachment", "code", "embed"], true);
+   const user = useUser(props.referencedMessage.authorId);
 
    if (props.referencedMessage.isPreview) {
       return;
@@ -147,24 +152,7 @@ function ReplyRenderer(props: { referencedMessage: AppMessage }) {
                <UserAvatar userId={user.id} avatarHash={user.avatar} size="1.25rem" hideStatus />
                <div className="text-text/80 text-xs">{user.displayName}</div>
             </div>
-            {props.referencedMessage.content && (
-               <div className="overflow-hidden text-sm text-white">
-                  <Slate
-                     editor={editor}
-                     initialValue={initialValue}
-                     key={(props.referencedMessage.editedTimestamp ?? props.referencedMessage.timestamp) as string}
-                  >
-                     <Editable
-                        id={`${props.referencedMessage.id}_reply_inner`}
-                        className="w-full overflow-hidden text-ellipsis whitespace-nowrap"
-                        readOnly
-                        renderLeaf={renderLeaf}
-                        renderElement={renderElement}
-                        disableDefaultStyles
-                     />
-                  </Slate>
-               </div>
-            )}
+            {props.referencedMessage.content && <div className="overflow-hidden text-sm text-white">{children}</div>}
             {(props.referencedMessage.attachments.length !== 0 || props.referencedMessage.embeds.length !== 0) && (
                <IconMingcutePhotoAlbum2Fill className="text-text" />
             )}
@@ -186,7 +174,7 @@ function DefaultRenderer(props: {
    const { messageUploadProgresses } = useChannelStore();
    const context = useContext(MessageContext);
    const progress = useMemo(() => messageUploadProgresses.find((x) => x.messageId === context.message.id), [messageUploadProgresses]);
-   const { editor, initialValue, renderElement, renderLeaf } = useMessageRenderer(context.message);
+   const { children } = useMessageRenderer(context.message);
 
    return (
       <div
@@ -234,23 +222,9 @@ function DefaultRenderer(props: {
                />
             </div>
          )}
-         {progress !== undefined && props.isPreview ? (
-            <AttachmentUploadProgress progress={progress} />
-         ) : (
-            <Slate
-               editor={editor}
-               initialValue={initialValue}
-               key={!context.message.isPreview ? (context.message.editedTimestamp as string) : context.message.timestamp}
-            >
-               <Editable
-                  id={`${context.message.id}_inner`}
-                  readOnly
-                  renderLeaf={renderLeaf}
-                  renderElement={renderElement}
-                  disableDefaultStyles
-               />
-            </Slate>
-         )}
+         <div id={`${context.message.id}_inner`}>
+            {progress !== undefined && props.isPreview ? <AttachmentUploadProgress progress={progress} /> : children}
+         </div>
       </div>
    );
 }
