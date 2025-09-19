@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.59.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.58.0...app@v0.59.0) (2025-09-18)
+
+
+### Features
+
+* **app:** add message replying + bunch of query mutation bug fixes ([104ab04](https://github.com/WerdoxDev/Huginn/commit/104ab04956f06264fe8c49c0b7f7aaf02335b50a))
+
 ## [0.58.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.57.2...app@v0.58.0) (2025-09-16)
 
 

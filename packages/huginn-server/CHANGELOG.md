@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.30.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.29.2...server@v0.30.0) (2025-09-18)
+
+
+### Features
+
+* **server:** add message replying + referenced message fetching ([af91768](https://github.com/WerdoxDev/Huginn/commit/af917687bc6c9dcb3c86bece9ade2ed450a87d1e))
+
 ## [0.29.2](https://github.com/WerdoxDev/Huginn/compare/server@v0.29.1...server@v0.29.2) (2025-09-16)
 
 
