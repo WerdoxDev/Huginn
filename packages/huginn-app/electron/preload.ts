@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import type { ProgressInfo, UpdateInfo } from "electron-updater";
 import type { AudioSource, DisplaySource, KeybindType } from "@/types";
 import type { AppInfo, ProcessInfo } from "native-addon";
+import type { Snowflake } from "@huginn/shared";
 
 export const electronAPI = {
    getVersion: () => ipcRenderer.invoke("window:version") as Promise<string>,
@@ -31,7 +32,7 @@ export const electronAPI = {
    },
 
    // Cache
-   saveHashImageToCache: (data: string, hash: string) => ipcRenderer.invoke("cache:save-hash-image", data, hash) as Promise<void>,
+   saveImageToCache: (url: string, hash: string) => ipcRenderer.invoke("cache:save-image", url, hash) as Promise<void>,
 
    // Keybinds
    updateKeybinds: (keybinds: Array<{ type: KeybindType; combination: string[] }>) =>

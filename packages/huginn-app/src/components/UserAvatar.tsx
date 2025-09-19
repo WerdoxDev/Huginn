@@ -1,13 +1,11 @@
 import type { Snowflake } from "@huginn/shared";
-import { getUserAvatarOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { usePresence } from "@stores/presenceStore";
-import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import LoadingIcon from "./LoadingIcon";
-import { useHuginnWindow } from "@stores/windowStore";
 import { presenceStatuses } from "@lib/utils";
+import { useHuginnWindow } from "@stores/windowStore";
 
 export default function UserAvatar(props: {
    userId: Snowflake;
@@ -19,44 +17,65 @@ export default function UserAvatar(props: {
    test?: boolean;
 }) {
    const client = useClient();
+   const imgRef = useRef<HTMLImageElement>(null);
    const huginnWindow = useHuginnWindow();
-   const { data: avatar, isLoading } = useQuery(getUserAvatarOptions(props.userId, props.avatarHash, client));
 
    const presence = usePresence(props.userId);
-   const [hasErrors, setHasErrors] = useState(false);
+   const [hasError, setHasError] = useState(false);
+   const [isLoaded, setIsLoaded] = useState(false);
+
+   function onLoad() {
+      setIsLoaded(true);
+      setHasError(false);
+   }
+
+   function onError() {
+      setHasError(true);
+   }
 
    useEffect(() => {
-      setHasErrors(false);
+      setHasError(false);
+
+      if (imgRef.current?.complete) {
+         setIsLoaded(true);
+      } else {
+         setIsLoaded(false);
+      }
 
       if (huginnWindow.environment !== "desktop") {
          return;
       }
 
-      if (avatar && props.avatarHash) {
-         // window.electronAPI.saveHashImageToCache(avatar, props.avatarHash);
+      if (props.avatarHash && client) {
+         window.electronAPI.saveImageToCache(
+            client.cdn.avatar(props.userId, props.avatarHash, { size: 256, format: "png" }),
+            props.avatarHash,
+         );
       }
-   }, [avatar]);
+   }, [props.avatarHash]);
 
    const { size = "2.25rem", statusSize = "0.75rem", className } = props;
    return (
       <div className={clsx("relative shrink-0", className)} style={{ width: size, height: size }}>
-         {/* {isLoading && (
+         {!isLoaded && props.avatarHash && (
             <div className="bg-primary-900 absolute inset-0 flex items-center justify-center rounded-full">
                <LoadingIcon className="size-5" />
             </div>
-         )} */}
-         {avatar && !hasErrors ? (
+         )}
+         {props.avatarHash ? (
             <img
+               ref={imgRef}
+               onLoad={onLoad}
+               onError={onError}
                alt="user-avatar"
-               src={avatar}
-               onError={() => setHasErrors(true)}
+               src={client?.cdn.avatar(props.userId, props.avatarHash)}
                loading="lazy"
                className="h-full w-full rounded-full object-cover"
             />
-         ) : !hasErrors && !avatar && !isLoading ? (
+         ) : !hasError && !props.avatarHash && !isLoaded ? (
             <div className="bg-primary-700 h-full w-full rounded-full" />
          ) : (
-            hasErrors && (
+            hasError && (
                <div className="bg-negative-400 text-text flex h-full w-full items-center justify-center rounded-full font-bold">!</div>
             )
          )}

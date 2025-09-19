@@ -1,34 +1,39 @@
-import { log, toArrayBuffer } from "@huginn/shared";
+import { log } from "@huginn/shared";
 import { app, ipcMain } from "electron";
 import path from "node:path";
 import { fileExists } from "./utils";
-import sharp from "sharp";
 import { mkdir } from "node:fs/promises";
 import moment from "moment";
-import { Console } from "node:console";
+import { writeFile, readdir } from "node:fs/promises";
 
 export const cacheDir = path.join(app.getPath("userData"), "web-cache");
-const cachedHashes = new Set<string>();
+const cachedKeys = new Set<string>();
 
-export function listenToEvents() {
-   ipcMain.handle("cache:save-hash-image", async (_, data: string, hash: string) => {
-      log("app:electron", "recv", "cache save hash image", "h:", hash);
+export async function listenToEvents() {
+   const files = await readdir(cacheDir);
+   for (const file of files) {
+      const key = file.replace(/\.[^/.]+$/, "");
+      cachedKeys.add(key);
+   }
 
-      if (cachedHashes.has(hash)) {
+   ipcMain.handle("cache:save-image", async (_, url: string, key: string) => {
+      log("app:electron", "recv", "cache save image", "url:", url, "key:", key);
+
+      if (cachedKeys.has(key)) {
          return;
       }
 
-      const filePath = path.join(cacheDir, `${hash}.png`);
+      const filePath = path.join(cacheDir, `${key}.png`);
 
       await mkdir(cacheDir, { recursive: true });
       if (await fileExists(filePath)) {
          return;
       }
 
-      const buffer = toArrayBuffer(data);
-      await sharp(buffer).resize(256, 256).png().toFile(filePath);
+      const buffer = await (await fetch(url)).arrayBuffer();
+      await writeFile(filePath, Buffer.from(buffer));
 
-      cachedHashes.add(hash);
+      cachedKeys.add(key);
    });
 }
 

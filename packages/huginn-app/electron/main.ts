@@ -39,7 +39,7 @@ if (!gotLock) {
    app.exit();
 }
 
-function createWindow() {
+async function createWindow() {
    // Create the browser window.
    const mainWindow = new BrowserWindow({
       minWidth: 1200,
@@ -72,7 +72,7 @@ function createWindow() {
    // Open the DevTools.
    // mainWindow.webContents.openDevTools({ mode: "undocked"});
 
-   listenToEvents(mainWindow);
+   await listenToEvents(mainWindow);
    configureTray(mainWindow);
 }
 
@@ -87,7 +87,7 @@ app.on("ready", async () => {
       return;
    }
 
-   createWindow();
+   await createWindow();
 
    // Setup as Startup App
    log("app:electron", "default", "set startup");
@@ -171,11 +171,11 @@ function configureTray(mainWindow: BrowserWindow) {
 
 let selectedSourceId: string;
 
-function listenToEvents(mainWindow: BrowserWindow) {
+async function listenToEvents(mainWindow: BrowserWindow) {
    log("app:electron", "default", "listen to events");
 
    fileController.listenToEvents();
-   cacheController.listenToEvents();
+   await cacheController.listenToEvents();
    keybindsController.listenToEvents(mainWindow);
 
    session.defaultSession.setDisplayMediaRequestHandler(async (request, callback) => {
