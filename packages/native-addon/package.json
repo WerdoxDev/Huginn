@@ -3,12 +3,11 @@
    "version": "0.1.1",
    "description": "",
    "type": "module",
-   "main": "dist/index.cjs",
-   "types": "dist/index.d.cts",
+   "main": "./js/index.ts",
    "scripts": {
       "compile": "cmake-js compile",
       "clean": "cmake-js clean",
-      "build": "bun run compile && tsdown"
+      "build": "bun run compile"
    },
    "keywords": [],
    "author": "",
@@ -17,8 +16,7 @@
       "bindings": "^1.5.0",
       "cmake-js": "^7.3.1",
       "fast-xml-parser": "^5.2.5",
-      "node-addon-api": "^8.5.0",
-      "tsdown": "^0.14.2"
+      "node-addon-api": "^8.5.0"
    },
    "devDependencies": {
       "@types/bindings": "^1.5.5"
