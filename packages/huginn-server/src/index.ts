@@ -9,7 +9,7 @@ import {
 } from "@huginn/backend-shared";
 import consola from "consola";
 import { Hono } from "hono";
-import { serveStatic } from "hono/bun";
+import { getConnInfo, serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
 import { showRoutes } from "hono/dev";
 import { createMiddleware } from "hono/factory";

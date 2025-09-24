@@ -2,7 +2,6 @@ import fs from "node:fs/promises";
 import { createRoute, validator } from "@huginn/backend-shared";
 import pathe from "pathe";
 import z from "zod";
-import { getConnInfo } from "hono/bun";
 import { CacheStorage } from "@huginn/shared";
 
 const schema = z.object({
@@ -12,8 +11,8 @@ const schema = z.object({
          platform: z.string(),
          arch: z.string(),
          version: z.string(),
+         release: z.string(),
          appVersion: z.string(),
-         locale: z.string(),
       }),
    ),
    timestamp: z.string(),
@@ -28,19 +27,22 @@ const schema = z.object({
    ),
 });
 
-type GeoData = { country?: string; city?: string; timezone?: string };
+type GeoData = { ip?: string; country?: string; city?: string; region?: string; timezone?: string; org?: string };
 const ipCache = new CacheStorage<string, GeoData>(undefined);
 
 createRoute("POST", "/api/log", validator("json", schema), async (c) => {
    const body = c.req.valid("json");
 
-   const ip = getConnInfo(c).remote.address;
+   const ip = c.req.header("X-Real-IP");
+
    let geoData: GeoData | undefined;
    if (ip) {
       geoData = await ipCache.cacheOrGet(ip, async () => {
          const data = await (await fetch(`https://ipapi.co/${ip}/json`)).json();
-         return data as GeoData;
+
+         return { country: data?.country, city: data?.city, timezone: data?.timezone, region: data?.region, org: data?.org };
       });
+      geoData.ip = ip;
    }
 
    const maxFileSize = 10 * 1024 * 1024;
@@ -73,10 +75,7 @@ createRoute("POST", "/api/log", validator("json", schema), async (c) => {
       clientId: body.clientId,
       systemInfo: body.systemInfo,
       timestamp: body.timestamp,
-      ip: ip,
-      country: geoData?.country,
-      city: geoData?.city,
-      timezone: geoData?.timezone,
+      geoData,
       logs: body.logs,
    };
 
