@@ -9,9 +9,10 @@ const noExternal = ["@huginn/shared", "native-addon", "@std/encoding", "electron
 
 await build({
    entry: ["./electron/main.ts", "./electron/preload.ts"],
-   format: ["cjs"],
+   format: ["esm"],
    external: external,
    outDir: ".electron",
+   fixedExtension: true,
    target: "es2022",
    minify: false,
    clean: true,

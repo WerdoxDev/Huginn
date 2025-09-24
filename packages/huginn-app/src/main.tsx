@@ -2,9 +2,11 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router";
 import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
-import { type APIPostLogJSONBody, enableLogs, excludeEventLogs, setIsRaw, setOnError, setOnLog } from "@huginn/shared";
 import { clientStore } from "@stores/clientStore";
 import router from "./routes";
+import { logger } from "@huginn/shared";
+import { RemoteLogger } from "../shared/remote-logger";
+import { initializeStorage, storageStore } from "@stores/storageStore";
 
 if (import.meta.env.DEV) {
    document.addEventListener("keypress", (e) => {
@@ -17,7 +19,7 @@ if (import.meta.env.DEV) {
    });
 }
 
-enableLogs({
+logger.enableLogs({
    // "api:voice": ["default", "send", "recv", "heartbeat"],
    "app:audio-source-player": ["default"],
    "api:voice": ["default", "recv", "heartbeat"],
@@ -29,26 +31,30 @@ enableLogs({
    "app:presence-store": ["default"],
 });
 
-excludeEventLogs({ "app:voice-store": ["speaking-state"] });
+logger.excludeEventLogs({ "app:voice-store": ["speaking-state"], "api:voice": ["local-voice-state"] });
+logger.setIsRaw(import.meta?.env?.PROD ?? false);
+let _remoteLogger: RemoteLogger;
 
-setIsRaw(import.meta?.env?.PROD ?? false);
+await initializeStorage();
 
-const logs: APIPostLogJSONBody = [];
+if (window.electronAPI) {
+   logger.setOnLog((section, level, ...args) => window.electronAPI.addToLogBuffer("log", section, level, ...args));
+   logger.setOnError((section, ...args) => window.electronAPI.addToLogBuffer("error", section, undefined, ...args));
+} else {
+   const thisStore = storageStore.getState();
+   const settings = thisStore.getCachedValue("settings");
+   const clientInfo = thisStore.getCachedValue("client-info");
+   const endpoint = new URL("/api/log", settings.apiHostname).toString();
+   // oxlint-disable-next-line no-import-assign
+   _remoteLogger = new RemoteLogger(logger, endpoint, clientInfo.id);
+}
 
-setOnLog((section, level, ...args) => {
-   logs.push({ type: "log", section, level, args });
-});
-
-setOnError((section, ...args) => {
-   logs.push({ type: "error", section, args });
-});
-
-setInterval(async () => {
-   if (logs.length !== 0) {
-      await clientStore.getState().client?.log.sendLog(logs);
-      logs.splice(0, logs.length);
-   }
-}, 5000);
+// setInterval(async () => {
+//    if (logs.length !== 0) {
+//       await clientStore.getState().client?.log.sendLog(logs);
+//       logs.splice(0, logs.length);
+//    }
+// }, 5000);
 
 // let lastTime = performance.now();
 // let count = 0;

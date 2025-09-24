@@ -6,7 +6,7 @@ import { useStartBackground } from "@contexts/authBackgroundContext";
 import { useTryLogin } from "@hooks/useTryLogin";
 import { useUpdater } from "@hooks/useUpdater";
 import { initializeClient, setHostnamesFromExternal, setHostnamesFromSettings, useClient, useClientStore } from "@stores/clientStore";
-import { useFilesStore } from "@stores/filesStore";
+import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
@@ -43,7 +43,7 @@ export default function Index() {
    const huginnWindow = useHuginnWindow();
    const clientStore = useClientStore();
    const client = useClient();
-   const settings = useFilesStore();
+   const settings = useStorage("settings");
    const [search] = useSearchParams();
    const startBackground = useStartBackground();
    const posthog = usePostHog();
@@ -118,7 +118,7 @@ export default function Index() {
       async function decideState() {
          switch (state.current) {
             case "none": {
-               if (settings.settings.hostnameSource === "external") {
+               if (settings.hostnameSource === "external") {
                   setFetchHostnames();
                } else if (huginnWindow.environment === "desktop") {
                   setCheckUpdate();

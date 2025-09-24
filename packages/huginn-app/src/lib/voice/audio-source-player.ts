@@ -1,5 +1,5 @@
 import { type HMediaKind, log, type Snowflake } from "@huginn/shared";
-import { filesStore } from "@stores/filesStore";
+import { storageStore } from "@stores/storageStore";
 
 export class AudioSourcePlayer {
    private gainNode: GainNode;
@@ -25,7 +25,7 @@ export class AudioSourcePlayer {
       this.audioElement.autoplay = false;
       this.audioElement.srcObject = srcObject;
 
-      this.audioContext = new AudioContext({ sinkId: filesStore.getState().settings.outputDeviceId });
+      this.audioContext = new AudioContext({ sinkId: storageStore.getState().getCachedValue("settings").outputDeviceId });
       this.gainNode = this.audioContext.createGain();
 
       this.setGain(globalGainPercent, undefined);

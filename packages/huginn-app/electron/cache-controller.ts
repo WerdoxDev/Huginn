@@ -1,9 +1,8 @@
 import { log } from "@huginn/shared";
 import { app, ipcMain } from "electron";
 import path from "node:path";
-import { fileExists } from "./utils";
+import { exists } from "./utils";
 import { mkdir } from "node:fs/promises";
-import moment from "moment";
 import { writeFile, readdir } from "node:fs/promises";
 
 export const cacheDir = path.join(app.getPath("userData"), "web-cache");
@@ -26,7 +25,7 @@ export async function listenToEvents() {
       const filePath = path.join(cacheDir, `${key}.png`);
 
       await mkdir(cacheDir, { recursive: true });
-      if (await fileExists(filePath)) {
+      if (await exists(filePath)) {
          return;
       }
 
@@ -35,26 +34,4 @@ export async function listenToEvents() {
 
       cachedKeys.add(key);
    });
-}
-
-export class CacheStorage<K, V> {
-   private _storage = new Map<K, { cachedTime: number; value: V }>();
-   private _cacheTime: number;
-
-   public constructor(cacheTime: number) {
-      this._cacheTime = cacheTime;
-   }
-
-   public async cacheOrGet(key: K, getter: (() => V) | (() => Promise<V>)): Promise<V> {
-      const now = new Date();
-      const existing = this._storage.get(key);
-
-      if (existing && moment(now).diff(existing.cachedTime, "seconds") <= this._cacheTime) {
-         return existing.value;
-      } else {
-         const item = await getter();
-         this._storage.set(key, { cachedTime: now.getTime(), value: item });
-         return item;
-      }
-   }
 }

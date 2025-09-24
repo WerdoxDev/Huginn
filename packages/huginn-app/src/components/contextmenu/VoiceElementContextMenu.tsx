@@ -5,15 +5,16 @@ import { useEffect, useMemo } from "react";
 import ContextMenu from "./ContextMenu";
 import { useConsumeStream } from "@hooks/voice/useConsumeStream";
 import { usePostHog } from "posthog-js/react";
-import { useFilesStore } from "@stores/filesStore";
-import { saveFile } from "@lib/file-manager";
+import { useStorage, useStorageStore } from "@stores/storageStore";
 
 export default function VoiceElementContextMenu() {
    const { data } = useContextMenu("voice_element");
    const posthog = usePostHog();
    const { remoteSources } = useVoiceStore();
-   const { updateVoicePreferences, voicePreferences } = useFilesStore();
    const consumeStreamMutation = useConsumeStream();
+
+   const { updateVoicePreferences, setFromCachedValue } = useStorageStore();
+   const voicePreferences = useStorage("voice-preferences");
 
    const preference = useMemo(() => voicePreferences.find((x) => x.userId === data?.user.id), [voicePreferences]);
 
@@ -52,7 +53,7 @@ export default function VoiceElementContextMenu() {
 
    useEffect(() => {
       return () => {
-         saveFile("voice-preferences", voicePreferences);
+         setFromCachedValue("voice-preferences");
       };
    }, []);
 

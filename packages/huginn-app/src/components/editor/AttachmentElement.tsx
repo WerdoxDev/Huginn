@@ -4,7 +4,7 @@ import VideoPlayer from "@components/VideoPlayer";
 import { useOpen } from "@hooks/useOpen";
 import { changeUrlBase, constants, constrainImageSize, isImageMediaType, isVideoMediaType } from "@huginn/shared";
 import { getSizeText } from "@lib/utils";
-import { useFilesStore } from "@stores/filesStore";
+import { useStorage } from "@stores/storageStore";
 import clsx from "clsx";
 import { useMemo } from "react";
 
@@ -28,7 +28,7 @@ export default function AttachmentElement(props: {
          ),
       [props.width, props.height],
    );
-   const { settings } = useFilesStore();
+   const settings = useStorage("settings");
    const basedUrl = useMemo(() => changeUrlBase(props.url, `${settings.cdnHostname}/cdn`), [props.url]);
 
    return (

@@ -1,18 +1,25 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { ProgressInfo, UpdateInfo } from "electron-updater";
-import type { AudioSource, DisplaySource, KeybindType } from "@/types";
+import type { AudioSource, DisplaySource, FileMap, FileType, KeybindType, LoadFileResult, SaveFileResult } from "@/types";
 import type { AppInfo, ProcessInfo } from "native-addon";
+import type { LogArgs } from "@huginn/shared";
 
 export const electronAPI = {
+   // Window
    getVersion: () => ipcRenderer.invoke("window:version") as Promise<string>,
    showMain: () => ipcRenderer.send("window:show-main"),
    hideMain: () => ipcRenderer.send("window:hide-main"),
    focusMain: () => ipcRenderer.send("window:focus-main"),
+   relaunch: () => ipcRenderer.send("window:relaunch"),
 
    // File management
-   loadFile: (name: string) => ipcRenderer.invoke("file:load", name) as Promise<unknown>,
-   saveFile: (name: string, content: unknown) => ipcRenderer.invoke("file:save", name, content) as Promise<void>,
-   fileExists: (name: string) => ipcRenderer.invoke("file:exists", name) as Promise<boolean>,
+   loadFile: <K extends FileType>(type: K) => ipcRenderer.invoke("file:load", type) as Promise<LoadFileResult<K>>,
+   saveFile: <K extends FileType>(type: K, data: FileMap[K]) => ipcRenderer.invoke("file:save", type, data) as Promise<SaveFileResult>,
+   // fileExists: (name: string) => ipcRenderer.invoke("file:exists", name) as Promise<boolean>,
+
+   // Logger
+   addToLogBuffer: (type: "log" | "error", section: string, level: string | undefined, ...args: LogArgs[]) =>
+      ipcRenderer.send("logger:add-to-buffer", type, section, level, ...args),
 
    // Display & Audio source
    getDisplaySources: () => ipcRenderer.invoke("window:get-display-sources") as Promise<DisplaySource[]>,

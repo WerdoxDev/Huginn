@@ -1,9 +1,11 @@
 import LinkButton from "@components/button/LinkButton";
 import HuginnIcon from "@components/HuginnIcon";
+import { useStorage } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
 
 export default function SettingsAboutTab() {
    const huginnWindow = useHuginnWindow();
+   const clientInfo = useStorage("client-info");
 
    return (
       <div className="text-text mt-5 w-full">
@@ -13,9 +15,9 @@ export default function SettingsAboutTab() {
          </div>
          <div>
             <span>A simple, yet playful chat application to make chatting,</span> <span className="text-text/70">well... </span>
-            <span className="font-bold">FUN!</span> Inspired by <span className="text-positive-100">Norse mythology</span>, it captures the spirit of{" "}
-            <span className="text-primary-500 font-bold">Huginn</span>, one of <span className="text-negative-100">Odin's</span> ravens, symbolizing
-            thought and
+            <span className="font-bold">FUN!</span> Inspired by <span className="text-positive-100">Norse mythology</span>, it captures the
+            spirit of <span className="text-primary-500 font-bold">Huginn</span>, one of <span className="text-negative-100">Odin's</span>{" "}
+            ravens, symbolizing thought and
             <span> memory.</span>
          </div>
          <div className="mt-10">
@@ -39,6 +41,10 @@ export default function SettingsAboutTab() {
             <div className="mt-2">
                <span className="text-text/70">App version: </span>
                {huginnWindow.version}
+            </div>
+            <div>
+               <span className="text-text/70">Client ID: </span>
+               {clientInfo.id}
             </div>
          </div>
       </div>

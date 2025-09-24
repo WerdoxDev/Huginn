@@ -1,4 +1,4 @@
-import type { Keybind, KeybindType } from "@/types";
+import type { Keybind } from "@/types";
 import { error, log } from "@huginn/shared";
 import { globalShortcut, ipcMain, type BrowserWindow } from "electron";
 

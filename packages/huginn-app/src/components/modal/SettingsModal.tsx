@@ -3,10 +3,10 @@ import { DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels }
 import type { DeepPartial } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
-import { filesStore, useFilesStore } from "@stores/filesStore";
+import { useStorage, useStorageStore } from "@stores/storageStore";
 import clsx from "clsx";
 // import { usePostHog } from "posthog-js/react";
-import { Fragment, memo, useEffect, useRef, useState } from "react";
+import { Fragment, memo, useEffect, useState } from "react";
 import type { AppSettings, SettingsTab, SettingsTabProps } from "@/types";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
@@ -66,8 +66,8 @@ export default function SettingsModal() {
    const flatTabs = useFlatTabs();
    const [currentTab, setCurrentTab] = useState(() => flatTabs[defaultTabIndex]?.text ?? "");
 
-   const files = useFilesStore();
-   const currentSettings = useRef({ ...filesStore.getState() });
+   const settings = useStorage("settings");
+   const { setValue, updateSettings } = useStorageStore();
    const [_settingsValid, setSettingsValid] = useState(false);
    // const [modifiedSettings, setModifiedSettings] = useState<DeepPartial<AppSettings> | undefined>(undefined);
 
@@ -86,14 +86,14 @@ export default function SettingsModal() {
 
    useEffect(() => {
       onSave();
-      currentSettings.current = { ...filesStore.getState() };
    }, [currentTab]);
 
    async function onSave() {
       // TODO: THIS IS NOT CORRECTLY CHECKING
       // if (modifiedSettings && modifiedSettings !== settings) {
       // await settings.setSettings(modifiedSettings);
-      await files.saveSettings();
+      setValue("settings", settings);
+      // await files.saveSettings();
       // }
    }
 
@@ -102,7 +102,7 @@ export default function SettingsModal() {
    }
 
    function onSettingsChanged(value: DeepPartial<AppSettings>) {
-      files.setSettings(value);
+      updateSettings(value);
    }
 
    return (
@@ -141,7 +141,9 @@ function SettingsTabs() {
             (tab, i) =>
                (client?.gateway.status === "authenticated" || !tab.auth) && (
                   <Fragment key={tab.name}>
-                     <div className={clsx("text-text/50 mb-1 w-full px-2.5 text-left text-xs uppercase", i === 0 ? "mt-2" : "mt-4")}>{tab.text}</div>
+                     <div className={clsx("text-text/50 mb-1 w-full px-2.5 text-left text-xs uppercase", i === 0 ? "mt-2" : "mt-4")}>
+                        {tab.text}
+                     </div>
                      {tab.children?.map((child) => (
                         <div className="w-full px-2" key={child.name}>
                            <Tab as={Fragment}>
@@ -168,7 +170,11 @@ function SettingsTabs() {
 }
 
 const TabComponent = memo(
-   (props: { component: (props: SettingsTabProps) => React.JSX.Element | undefined; onChange: (value: DeepPartial<AppSettings>) => void; onSave: () => Promise<void> }) => {
+   (props: {
+      component: (props: SettingsTabProps) => React.JSX.Element | undefined;
+      onChange: (value: DeepPartial<AppSettings>) => void;
+      onSave: () => Promise<void>;
+   }) => {
       if (!props.component) return;
       return <props.component onChange={props.onChange} onSave={props.onSave} />;
    },

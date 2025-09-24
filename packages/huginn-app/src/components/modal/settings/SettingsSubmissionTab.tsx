@@ -6,7 +6,7 @@ import { useSubmitKnownApplication } from "@hooks/mutations/useSubmitKnownApplic
 import { JsonCode } from "@huginn/shared";
 import { APIMessages } from "@lib/error-messages";
 import { isWorthyHuginnError } from "@lib/utils";
-import { useFilesStore } from "@stores/filesStore";
+import { useStorage } from "@stores/storageStore";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import { useHuginnWindow } from "@stores/windowStore";
@@ -18,7 +18,7 @@ type OpenApplication = ProcessInfo & { displayName?: string; icon?: string };
 
 export default function SettingsSubmissionTab(_props: SettingsTabProps) {
    const [openApplications, setOpenApplications] = useState<OpenApplication[]>([]);
-   const { knownApplications } = useFilesStore();
+   const knownApplications = useStorage("known-applications");
    const [selectedApplication, setSelectedApplication] = useState<DropdownItem>();
    const submitMutation = useSubmitKnownApplication();
    const { user } = useThisUser();
@@ -116,7 +116,8 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
                   title: "Sorry!",
                   text: (
                      <div>
-                        Huginn was not able to verify <span className="font-semibold">{application.displayName ?? application.windowTitle}</span> :(
+                        Huginn was not able to verify{" "}
+                        <span className="font-semibold">{application.displayName ?? application.windowTitle}</span> :(
                      </div>
                   ),
                   isOpen: true,
@@ -144,7 +145,13 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
                         </HuginnDropdown.ItemsWrapper>
                      </HuginnDropdown.List>
                   </HuginnDropdown>
-                  <LoadingButton loading={submitMutation.isPending} onClick={submit} color="primary" className="h-8" disabled={!selectedApplication}>
+                  <LoadingButton
+                     loading={submitMutation.isPending}
+                     onClick={submit}
+                     color="primary"
+                     className="h-8"
+                     disabled={!selectedApplication}
+                  >
                      Submit
                   </LoadingButton>
                </div>

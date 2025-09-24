@@ -1,79 +1,98 @@
-//
-//
 import path from "node:path";
-import { enableLogs, error, findClosestString, log } from "@huginn/shared";
+import { CacheStorage, error, findClosestString, log, logger, type LogArgs } from "@huginn/shared";
 import { getActiveWindowProcessIds, setExecutablesRoot, startAudioCapture, stopAudioCapture } from "application-loopback";
-import { app, BrowserWindow, desktopCapturer, ipcMain, Menu, nativeImage, Notification, session, shell, Tray } from "electron";
-import { autoUpdater, CancellationToken } from "electron-updater";
+import { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu, nativeImage, Notification, session, shell, Tray } from "electron";
+import updater from "electron-updater";
 import type { AudioSource, DisplaySource } from "@/types";
-import * as fileController from "./file-controller";
+import * as file from "./file-controller";
 import * as cacheController from "./cache-controller";
 import * as keybindsController from "./keybinds-controller";
 import native, { type AppInfo } from "native-addon";
+import { RemoteLogger } from "../shared/remote-logger";
+import { randomUUID } from "node:crypto";
+
+const { autoUpdater, CancellationToken } = updater;
+
+const fileController = new file.FileController();
+await fileController.tryMigrate();
 
 // application-loopback executable path when packaged
 if (app.isPackaged) {
-   setExecutablesRoot(path.resolve(__dirname, "..", "..", "app.asar.unpacked", "node_modules", "application-loopback", "bin"));
+   setExecutablesRoot(path.resolve(import.meta.dirname, "..", "..", "app.asar.unpacked", "node_modules", "application-loopback", "bin"));
 }
 
+await setupClientInfo();
 configureUpdater();
+const remoteLogger = await setupLogger();
 
-enableLogs({ "app:electron": ["default", "loopback", "recv", "send", "updater"] });
+let gotLock: boolean;
+try {
+   if (process.defaultApp) {
+      if (process.argv.length >= 2) {
+         const args = process.argv[1];
+         log("app:electron", "default", "set deep link", "exep:", process.execPath, "args:", args);
 
-if (process.defaultApp) {
-   if (process.argv.length >= 2) {
-      const args = process.argv[1];
-      log("app:electron", "default", "set deep link", "exep:", process.execPath, "args:", args);
-
-      app.setAsDefaultProtocolClient("huginn", process.execPath, [path.resolve(args)]);
+         app.setAsDefaultProtocolClient("huginn", process.execPath, [path.resolve(args)]);
+      }
+   } else {
+      app.setAsDefaultProtocolClient("huginn");
    }
-} else {
-   app.setAsDefaultProtocolClient("huginn");
-}
 
-const gotLock = app.requestSingleInstanceLock();
+   gotLock = app.requestSingleInstanceLock();
 
-if (!gotLock) {
-   log("app:electron", "default", "exit because of lock");
+   if (!gotLock) {
+      dialog.showErrorBox(
+         "Already running",
+         "Huginn is already running! If you believe this is false, check your task-manager for any dead processes named 'Huginn'",
+      );
 
-   app.exit();
+      log("app:electron", "default", "exit because of lock");
+
+      app.exit();
+   }
+} catch (e) {
+   error("app:electron", "default protocol register or single instance lock failed:", e);
 }
 
 async function createWindow() {
-   // Create the browser window.
-   const mainWindow = new BrowserWindow({
-      minWidth: 1200,
-      minHeight: 670,
-      width: 1200,
-      height: 670,
-      fullscreen: false,
-      frame: false,
-      titleBarStyle: "hidden",
-      webPreferences: {
-         contextIsolation: true,
-         nodeIntegration: true,
-         preload: path.join(__dirname, "preload.cjs"),
-         backgroundThrottling: false,
-      },
-      show: false,
-   });
+   try {
+      // Create the browser window.
+      const mainWindow = new BrowserWindow({
+         minWidth: 1200,
+         minHeight: 670,
+         width: 1200,
+         height: 670,
+         fullscreen: false,
+         frame: false,
+         titleBarStyle: "hidden",
+         webPreferences: {
+            contextIsolation: true,
+            nodeIntegration: true,
+            preload: path.join(import.meta.dirname, "preload.mjs"),
+            backgroundThrottling: false,
+         },
+         show: false,
+      });
 
-   if (process.env.VITE_DEV_SERVER_URL) {
-      log("app:electron", "default", "load", "url:", process.env.VITE_DEV_SERVER_URL);
+      if (process.env.VITE_DEV_SERVER_URL) {
+         log("app:electron", "default", "load", "url:", process.env.VITE_DEV_SERVER_URL);
 
-      mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
-   } else {
-      const filePath = path.join(__dirname, "../dist/index.html");
-      log("app:electron", "default", "load", "url:", filePath);
+         mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
+      } else {
+         const filePath = path.join(import.meta.dirname, "../dist/index.html");
+         log("app:electron", "default", "load", "url:", filePath);
 
-      mainWindow.loadFile(filePath);
+         mainWindow.loadFile(filePath);
+      }
+
+      // Open the DevTools.
+      // mainWindow.webContents.openDevTools({ mode: "undocked"});
+
+      await listenToEvents(mainWindow);
+      configureTray(mainWindow);
+   } catch (e) {
+      error("app:electron", "window creation failed:", e);
    }
-
-   // Open the DevTools.
-   // mainWindow.webContents.openDevTools({ mode: "undocked"});
-
-   await listenToEvents(mainWindow);
-   configureTray(mainWindow);
 }
 
 // This method will be called when Electron has finished
@@ -115,36 +134,40 @@ app.on("activate", () => {
 });
 
 function configureUpdater() {
-   log("app:electron", "default", "configure updater");
-   // autoUpdater.setFeedURL({ useMultipleRangeRequest: false, url: "", provider: "generic" })
-   autoUpdater.autoInstallOnAppQuit = false;
-   autoUpdater.allowDowngrade = true;
-   autoUpdater.autoDownload = false;
+   try {
+      log("app:electron", "default", "configure updater");
+      // autoUpdater.setFeedURL({ useMultipleRangeRequest: false, url: "", provider: "generic" })
+      autoUpdater.autoInstallOnAppQuit = false;
+      autoUpdater.allowDowngrade = true;
+      autoUpdater.autoDownload = false;
 
-   autoUpdater.on("error", (e) => {
-      error("app:electron", "updater error:", e);
-   });
+      autoUpdater.on("error", (e) => {
+         error("app:electron", "updater error:", e);
+      });
 
-   autoUpdater.on("update-not-available", () => {
-      log("app:electron", "updater", "not available");
-   });
+      autoUpdater.on("update-not-available", () => {
+         log("app:electron", "updater", "not available");
+      });
 
-   autoUpdater.on("checking-for-update", () => {
-      log("app:electron", "updater", "check for update");
-   });
+      autoUpdater.on("checking-for-update", () => {
+         log("app:electron", "updater", "check for update");
+      });
 
-   autoUpdater.on("update-cancelled", () => {
-      log("app:electron", "updater", "check for update");
-   });
+      autoUpdater.on("update-cancelled", () => {
+         log("app:electron", "updater", "check for update");
+      });
 
-   autoUpdater.on("update-available", () => {
-      log("app:electron", "updater", "available");
-   });
+      autoUpdater.on("update-available", () => {
+         log("app:electron", "updater", "available");
+      });
 
-   autoUpdater.on("update-downloaded", () => {
-      log("app:electron", "updater", "downloaded");
-      autoUpdater.quitAndInstall(true, true);
-   });
+      autoUpdater.on("update-downloaded", () => {
+         log("app:electron", "updater", "downloaded");
+         autoUpdater.quitAndInstall(true, true);
+      });
+   } catch (e) {
+      error("app:electron", "updater config failed:", e);
+   }
 }
 
 function configureTray(mainWindow: BrowserWindow) {
@@ -174,7 +197,7 @@ let selectedSourceId: string;
 async function listenToEvents(mainWindow: BrowserWindow) {
    log("app:electron", "default", "listen to events");
 
-   fileController.listenToEvents();
+   file.listenToEvents(fileController);
    await cacheController.listenToEvents();
    keybindsController.listenToEvents(mainWindow);
 
@@ -419,6 +442,13 @@ async function listenToEvents(mainWindow: BrowserWindow) {
       selectedSourceId = sourceId;
    });
 
+   ipcMain.on("window:relaunch", () => {
+      log("app:electron", "recv", "relaunch");
+
+      app.relaunch();
+      app.exit();
+   });
+
    let previousProcessId: string | undefined;
    ipcMain.handle("audio:start-loopback", async (_, processTitle?: string, processId?: string) => {
       log("app:electron", "recv", "audio start loopback", "ptit:", processTitle, "pid:", processId);
@@ -472,11 +502,42 @@ async function listenToEvents(mainWindow: BrowserWindow) {
       return applications;
    });
 
-   const applicationIconCache = new cacheController.CacheStorage<number, AppInfo>(600);
+   const applicationIconCache = new CacheStorage<number, AppInfo>(600);
    ipcMain.handle("native:get-application-info", async (_, exePath: string, processId: number) => {
       log("app:electron", "recv", "native get application info", "exp:", exePath, "pid:", processId);
 
       const info = await applicationIconCache.cacheOrGet(processId, async () => await native.getApplicationInfo(exePath, processId));
       return info;
    });
+
+   ipcMain.on("logger:add-to-buffer", (_, type: "log" | "error", section: string, level: string | undefined, ...args: LogArgs[]) => {
+      remoteLogger?.addToBuffer(type, section, level, ...args);
+   });
+}
+
+async function setupLogger() {
+   try {
+      const {
+         data: { apiHostname },
+      } = await fileController.loadFile("settings");
+
+      const { data: info } = await fileController.loadFile("client-info");
+      const endpoint = new URL("/api/log", apiHostname).toString();
+      logger.enableLogs({ "app:electron": ["default", "loopback", "recv", "send", "updater", "file-controller"] });
+      return new RemoteLogger(logger, endpoint, info.id);
+   } catch (e) {
+      error("app:electron", "logger setup failed:", e);
+   }
+}
+
+async function setupClientInfo() {
+   try {
+      const value = await fileController.loadFile("client-info");
+      if (value.created || !value.data.id) {
+         value.data.id = randomUUID();
+         await fileController.saveFile("client-info", value.data);
+      }
+   } catch (e) {
+      error("app:electron", "client info setup failed:", e);
+   }
 }

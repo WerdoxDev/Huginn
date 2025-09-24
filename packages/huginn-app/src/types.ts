@@ -8,6 +8,7 @@ import type { ConsumeStreamMutationVars } from "@hooks/voice/useConsumeStream";
 import type {
    APICallMessage,
    APIDefaultMessage,
+   APIGetKnownApplicationsResult,
    APIRelationshipWithoutOwner,
    APIReplyMessage,
    DeepPartial,
@@ -378,4 +379,30 @@ export type CustomApplication = {
    exePath: string;
    isEnabled: boolean;
    lastOpened?: number;
+};
+
+export type ClientInfo = {
+   id: string;
+};
+
+export type FileMap = {
+   settings: AppSettings;
+   "voice-preferences": VoicePreference[];
+   keybinds: Keybind[];
+   "known-applications": APIGetKnownApplicationsResult;
+   "custom-applications": CustomApplication[];
+   "client-info": ClientInfo;
+};
+export type FileType = keyof FileMap;
+
+export type LoadFileResult<K extends FileType> = {
+   success: boolean;
+   data: FileMap[K];
+   created: boolean;
+   error?: string;
+};
+
+export type SaveFileResult = {
+   success: boolean;
+   error?: string;
 };

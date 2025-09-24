@@ -1,13 +1,14 @@
 import { useEditSettings } from "@hooks/mutations/useEditSettings";
 import { usePrevious } from "@hooks/usePrevious";
 import { useClientStore } from "@stores/clientStore";
-import { useFilesStore } from "@stores/filesStore";
+import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useThisUser } from "@stores/userStore";
 import { useEffect, type ReactNode } from "react";
 
 export default function SettingsProvider(props: { children?: ReactNode }) {
    const { user } = useThisUser();
-   const { settings, saveSettings, setSettings } = useFilesStore();
+   const settings = useStorage("settings");
+   const { setValue } = useStorageStore();
    const { userSettings } = useClientStore();
    const previousSettings = usePrevious(settings);
    const editSettingsMutation = useEditSettings();
@@ -28,8 +29,7 @@ export default function SettingsProvider(props: { children?: ReactNode }) {
       }
 
       if (userSettings.theme) {
-         setSettings({ theme: userSettings.theme });
-         saveSettings();
+         setValue("settings", { ...settings, theme: userSettings.theme });
       }
    }, [userSettings]);
 

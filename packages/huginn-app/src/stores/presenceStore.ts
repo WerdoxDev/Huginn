@@ -6,7 +6,7 @@ import { combine } from "zustand/middleware";
 import { clientStore } from "./clientStore";
 import type { AppPresence, CustomApplication } from "@/types";
 import { convertToAppPresence } from "@lib/utils";
-import { filesStore } from "./filesStore";
+import { storageStore } from "./storageStore";
 import { windowStore } from "./windowStore";
 import type { ProcessInfo } from "native-addon";
 
@@ -75,7 +75,12 @@ export function initializePresence() {
          return;
       }
 
-      const presence = convertToAppPresence({ user: { id: client.user.id }, activeSessions: [], activities: d.activities, status: d.status });
+      const presence = convertToAppPresence({
+         user: { id: client.user.id },
+         activeSessions: [],
+         activities: d.activities,
+         status: d.status,
+      });
       store.setState((state) => ({ thisPresence: { ...state.thisPresence, status: presence.status, activities: presence.activities } }));
       store.getState().updatePresence(client.user.id, { status: presence.status, activities: presence.activities });
    });
@@ -108,8 +113,8 @@ function startCheckingForActivity() {
             return;
          }
 
-         const knownApplications = filesStore.getState().knownApplications.applications;
-         const customApplications = filesStore.getState().customApplications;
+         const knownApplications = storageStore.getState().getCachedValue("known-applications").applications;
+         const customApplications = storageStore.getState().getCachedValue("custom-applications");
          const openApplications = await window.electronAPI.getOpenApplications();
 
          const knownMatch = detectKnownApplication(openApplications, knownApplications);
@@ -141,7 +146,19 @@ function startCheckingForActivity() {
             }
          }
 
-         log("app:presence-store", "default", "new activity", "kid:", match.known?.id, "kn:", match.known?.names, "ctit:", match.custom?.title, "cexe:", match.custom?.exePath);
+         log(
+            "app:presence-store",
+            "default",
+            "new activity",
+            "kid:",
+            match.known?.id,
+            "kn:",
+            match.known?.names,
+            "ctit:",
+            match.custom?.title,
+            "cexe:",
+            match.custom?.exePath,
+         );
 
          const info = await window.electronAPI.getApplicationInfo(match.detected.exePath, match.detected.processId);
          let iconHash;
@@ -173,7 +190,9 @@ function detectKnownApplication(applications: ProcessInfo[], knownApplications: 
       const exeKnown = knownApplications?.find((y) => y.exeName === exeName);
       const nameKnown = knownApplications?.find((y) => y.names.includes(x.windowTitle));
       const cmdLineMatch = exeKnown?.commandLinePatterns.every((y) => x.cmdLine.includes(y));
-      return (nameKnown || exeKnown) && (cmdLineMatch === undefined ? true : cmdLineMatch) ? [{ detected: x, known: exeKnown! ?? nameKnown! }] : [];
+      return (nameKnown || exeKnown) && (cmdLineMatch === undefined ? true : cmdLineMatch)
+         ? [{ detected: x, known: exeKnown! ?? nameKnown! }]
+         : [];
    })[0];
 
    return match;

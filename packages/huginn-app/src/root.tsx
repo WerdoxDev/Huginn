@@ -1,5 +1,4 @@
 import { HistoryProvider } from "@contexts/historyContext";
-import { initializeFiles } from "@stores/filesStore";
 import { ThemeProvider } from "@stores/themeStore";
 import { initializeWindow } from "@stores/windowStore";
 import { useEffect, useState } from "react";
@@ -21,26 +20,16 @@ export default function Root() {
    const [loaded, setLoaded] = useState(false);
 
    useEffect(() => {
-      let cancelled = false;
-      let unlisten: Promise<() => void>;
-      initializeFiles().then(() => {
-         if (cancelled) {
-            return;
-         }
-         // unlisten2 = initializeClient();
-         unlisten = initializeWindow().then((x) => {
-            setLoaded(true);
-            return x;
-         });
+      const unlisten = initializeWindow().then((x) => {
+         setLoaded(true);
+         return x;
       });
 
       return () => {
-         cancelled = true;
          unlisten?.then((f) => f());
       };
    }, []);
    return (
-      // <PostHogProvider client={posthogClient}>
       <HistoryProvider>
          {loaded && (
             <ThemeProvider>
@@ -48,6 +37,5 @@ export default function Root() {
             </ThemeProvider>
          )}
       </HistoryProvider>
-      // </PostHogProvider>
    );
 }

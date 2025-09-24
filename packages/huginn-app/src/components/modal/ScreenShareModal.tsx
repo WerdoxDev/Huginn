@@ -8,7 +8,7 @@ import LoadingIcon from "@components/LoadingIcon";
 import { Checkbox, DialogPanel } from "@headlessui/react";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
-import { useFilesStore } from "@stores/filesStore";
+import { useStorage, useStorageStore } from "@stores/storageStore";
 import { voiceClient } from "@stores/voiceStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, useTransition } from "react";
@@ -23,12 +23,13 @@ export default function ScreenShareModal() {
       enabled: modal.isOpen,
    });
 
-   const files = useFilesStore();
+   const settings = useStorage("settings");
+   const { setValue } = useStorageStore();
 
    const [selectedSource, setSelectedSource] = useState<DisplaySource | undefined>();
-   const [selectedQuality, setSelectedQuality] = useState(files.settings.screenShareQuality);
-   const [selectedFramerate, setSelectedFramerate] = useState(files.settings.screenShareFramerate);
-   const [shareAudio, setShareAudio] = useState(files.settings.screenShareAudio);
+   const [selectedQuality, setSelectedQuality] = useState(settings.screenShareQuality);
+   const [selectedFramerate, setSelectedFramerate] = useState(settings.screenShareFramerate);
+   const [shareAudio, setShareAudio] = useState(settings.screenShareAudio);
    const [screenSharePending, startTransition] = useTransition();
 
    const screens = useMemo(() => data?.filter((x) => x.id.includes("screen")), [data]);
@@ -36,19 +37,19 @@ export default function ScreenShareModal() {
 
    useEffect(() => {
       if (modal.isOpen) {
-         setSelectedQuality(files.settings.screenShareQuality);
-         setSelectedFramerate(files.settings.screenShareFramerate);
-         setShareAudio(files.settings.screenShareAudio);
+         setSelectedQuality(settings.screenShareQuality);
+         setSelectedFramerate(settings.screenShareFramerate);
+         setShareAudio(settings.screenShareAudio);
          refetch();
       }
 
       if (!modal.isOpen) {
-         files.setSettings({
+         setValue("settings", {
+            ...settings,
             screenShareQuality: selectedQuality,
             screenShareFramerate: selectedFramerate,
             screenShareAudio: shareAudio,
          });
-         files.saveSettings();
       }
    }, [modal.isOpen]);
 
@@ -68,8 +69,10 @@ export default function ScreenShareModal() {
       window.electronAPI.setSelectedDisplaySource(selectedSource?.id);
 
       const framerate = selectedFramerate === 0 ? 15 : selectedFramerate === 1 ? 30 : selectedFramerate === 2 ? 60 : 15;
-      const width = selectedQuality === 0 ? 640 : selectedQuality === 1 ? 1280 : selectedQuality === 2 ? 1920 : selectedQuality === 3 ? 2560 : 1280;
-      const height = selectedQuality === 0 ? 480 : selectedQuality === 1 ? 720 : selectedQuality === 2 ? 1080 : selectedQuality === 3 ? 1440 : 720;
+      const width =
+         selectedQuality === 0 ? 640 : selectedQuality === 1 ? 1280 : selectedQuality === 2 ? 1920 : selectedQuality === 3 ? 2560 : 1280;
+      const height =
+         selectedQuality === 0 ? 480 : selectedQuality === 1 ? 720 : selectedQuality === 2 ? 1080 : selectedQuality === 3 ? 1440 : 720;
 
       startTransition(async () => {
          const producer = client?.voice.producers.get("stream_video");

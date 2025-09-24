@@ -22,7 +22,7 @@ import { type ReactNode, useEffect } from "react";
 import { Outlet } from "react-router";
 import KeybindsProvider from "@contexts/KeybindsProvider";
 import SettingsProvider from "@contexts/SettingsProvider";
-import { initializeFilesWithClient } from "@stores/filesStore";
+import { initializeStorage2 } from "@stores/storageStore";
 
 export default function AppLayout() {
    const authBackground = useStartBackground();
@@ -34,7 +34,7 @@ export default function AppLayout() {
       const unlisteners: Array<(() => void) | undefined> = [];
 
       if (clientStore.isInitialized) {
-         unlisteners.push(initializeFilesWithClient());
+         unlisteners.push(initializeStorage2());
          unlisteners.push(initializeUser());
          unlisteners.push(initializeReadStates());
          unlisteners.push(initializePresence());

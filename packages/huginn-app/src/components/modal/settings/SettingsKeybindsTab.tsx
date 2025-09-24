@@ -1,7 +1,7 @@
 import type { KeybindType } from "@/types";
 import HuginnCheckbox from "@components/HuginnCheckbox";
 import Tooltip from "@components/tooltip/Tooltip";
-import { useFilesStore } from "@stores/filesStore";
+import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
 import { useEffect, useMemo, useState } from "react";
@@ -12,13 +12,13 @@ const keybindsTexts: Record<KeybindType, string> = {
 };
 
 export default function SettingsKeybindsTab() {
-   const { keybinds, saveKeybinds, setKeybinds } = useFilesStore();
+   const keybinds = useStorage("keybinds");
+   const { setValue } = useStorageStore();
 
    const sortedKeybinds = useMemo(() => keybinds.toSorted((a, b) => a.type.localeCompare(b.type)), [keybinds]);
 
-   function onChange(type: KeybindType, combination: string[], isEnabled: boolean) {
-      setKeybinds([...keybinds.filter((x) => x.type !== type), { type, combination, isEnabled }]);
-      saveKeybinds();
+   async function onChange(type: KeybindType, combination: string[], isEnabled: boolean) {
+      await setValue("keybinds", [...keybinds.filter((x) => x.type !== type), { type, combination, isEnabled }]);
    }
 
    useEffect(() => {
@@ -43,7 +43,9 @@ export default function SettingsKeybindsTab() {
                />
             ))}
          </div>
-         <div className="text-text mt-2 select-none text-xs font-medium italic opacity-70">*Keybinds are disabled while you are in this page</div>
+         <div className="text-text mt-2 select-none text-xs font-medium italic opacity-70">
+            *Keybinds are disabled while you are in this page
+         </div>
       </div>
    );
 }

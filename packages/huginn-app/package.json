@@ -11,7 +11,7 @@
       "name": "Matin Tat",
       "url": "https://github.com/WerdoxDev"
    },
-   "main": "./.electron/main.cjs",
+   "main": "./.electron/main.mjs",
    "scripts": {
       "dev": "bun ./scripts/dev.ts",
       "preview": "vite preview",

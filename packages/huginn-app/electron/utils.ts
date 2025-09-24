@@ -1,8 +1,8 @@
 import { access, constants } from "node:fs/promises";
 
-export async function fileExists(filePath: string) {
+export async function exists(path: string) {
    try {
-      await access(filePath, constants.R_OK | constants.W_OK);
+      await access(path, constants.R_OK | constants.W_OK);
       return true;
       // oxlint-disable-next-line no-unused-vars
    } catch (e) {

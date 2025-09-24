@@ -3,7 +3,7 @@ import HuginnButton from "@components/button/HuginnButton";
 import CustomApplicationItem from "@components/CustomApplicationItem";
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
 import { useElapsedTime } from "@hooks/useElapsedTime";
-import { useFilesStore } from "@stores/filesStore";
+import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useModals } from "@stores/modalsStore";
 import { usePresenceStore } from "@stores/presenceStore";
 import { useHuginnWindow } from "@stores/windowStore";
@@ -20,7 +20,8 @@ export default function SettingsCustomTab(_props: SettingsTabProps) {
    const huginnWindow = useHuginnWindow();
    const { updateModals } = useModals();
    const targetActivity = thisPresence.activities[0];
-   const { customApplications, setCustomApplications, saveCustomApplications } = useFilesStore();
+   const customApplications = useStorage("custom-applications");
+   const { setValue } = useStorageStore();
 
    const { getFormattedDuration } = useElapsedTime(targetActivity?.createdAt);
 
@@ -30,7 +31,11 @@ export default function SettingsCustomTab(_props: SettingsTabProps) {
             id: Math.random(),
             value: x.processId.toString(),
             text: x.windowTitle,
-            icon: x.icon ? <img src={x.icon} className="aspect-square size-6 shrink-0" /> : <div className="size-6 shrink-0 rounded-sm bg-white/50" />,
+            icon: x.icon ? (
+               <img src={x.icon} className="aspect-square size-6 shrink-0" />
+            ) : (
+               <div className="size-6 shrink-0 rounded-sm bg-white/50" />
+            ),
          })),
       [openApplications],
    );
@@ -77,13 +82,17 @@ export default function SettingsCustomTab(_props: SettingsTabProps) {
          return;
       }
 
-      setCustomApplications([...customApplications, { exePath: application.exePath, title: application.windowTitle, isEnabled: true }]);
-      await saveCustomApplications();
+      await setValue("custom-applications", [
+         ...customApplications,
+         { exePath: application.exePath, title: application.windowTitle, isEnabled: true },
+      ]);
    }
 
    async function deleteApplication(exePath: string) {
-      setCustomApplications(customApplications.filter((x) => x.exePath !== exePath));
-      await saveCustomApplications();
+      await setValue(
+         "custom-applications",
+         customApplications.filter((x) => x.exePath !== exePath),
+      );
    }
 
    async function editApplication(exePath: string, title: string) {
@@ -95,8 +104,7 @@ export default function SettingsCustomTab(_props: SettingsTabProps) {
       }
 
       target.title = title;
-      setCustomApplications(applications);
-      await saveCustomApplications();
+      await setValue("custom-applications", applications);
    }
 
    return (
@@ -146,7 +154,9 @@ export default function SettingsCustomTab(_props: SettingsTabProps) {
                {customApplications.length === 0 ? (
                   <div className="text-text/80">No custom applications registered...</div>
                ) : (
-                  customApplications.map((x) => <CustomApplicationItem key={x.exePath} application={x} onDelete={deleteApplication} onTitleChanged={editApplication} />)
+                  customApplications.map((x) => (
+                     <CustomApplicationItem key={x.exePath} application={x} onDelete={deleteApplication} onTitleChanged={editApplication} />
+                  ))
                )}
             </div>
          </div>

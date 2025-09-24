@@ -6,7 +6,7 @@ import RangeInput from "@components/input/RangeInput";
 import { clamp, remap } from "@huginn/shared";
 import { AudioLevelChecker } from "@lib/voice/audio-level-checker";
 import { VoiceInputDevice } from "@lib/voice/voice-input-device";
-import { useFilesStore } from "@stores/filesStore";
+import { useStorage } from "@stores/storageStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { DropdownItem, SettingsTabProps } from "@/types";
@@ -17,13 +17,16 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
       queryFn: async () => await navigator.mediaDevices.enumerateDevices(),
       queryKey: ["media-devices"],
    });
-   const settings = useFilesStore();
+   const settings = useStorage("settings");
 
    const inputDevices = useMemo(() => data?.filter((x) => x.kind === "audioinput"), [data]);
    const outputDevices = useMemo(() => data?.filter((x) => x.kind === "audiooutput"), [data]);
    const cameraDevices = useMemo(() => data?.filter((x) => x.kind === "videoinput"), [data]);
 
-   const inputDeviceOptions = useMemo<DropdownItem[]>(() => inputDevices?.map((x) => ({ text: x.label, value: x.deviceId })) ?? [], [inputDevices]);
+   const inputDeviceOptions = useMemo<DropdownItem[]>(
+      () => inputDevices?.map((x) => ({ text: x.label, value: x.deviceId })) ?? [],
+      [inputDevices],
+   );
    const outputDeviceOptions = useMemo<DropdownItem[]>(
       () => outputDevices?.map((x) => ({ text: x.label, value: x.deviceId })) ?? [],
       [outputDevices],
@@ -45,7 +48,7 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
    const [selectedInput, setSelectedInput] = useState<MediaDeviceInfo>();
    const [selectedOutput, setSelectedOutput] = useState<MediaDeviceInfo>();
    const [selectedCamera, setSelectedCamera] = useState<MediaDeviceInfo>();
-   const [noiseSuppression, setNoiseSuppression] = useState(settings.settings.noiseSuppression);
+   const [noiseSuppression, setNoiseSuppression] = useState(settings.noiseSuppression);
    const [isTestingCamera, setIsTestingVideo] = useState(false);
 
    useEffect(() => {
@@ -60,7 +63,7 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
          }
 
          audioLevel.current = new AudioLevelChecker();
-         const stream = await inputDevice.current.getStream(selectedInput?.deviceId, settings.settings.inputVolume, noiseSuppression);
+         const stream = await inputDevice.current.getStream(selectedInput?.deviceId, settings.inputVolume, noiseSuppression);
          // This is an async function so the component will probably unmount before it knows
          if (cancelled) {
             return;
@@ -85,17 +88,17 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
    }, [selectedInput, noiseSuppression]);
 
    useEffect(() => {
-      inputDevice.current?.setGain(settings.settings.inputVolume);
-   }, [settings.settings.inputVolume]);
+      inputDevice.current?.setGain(settings.inputVolume);
+   }, [settings.inputVolume]);
 
    useEffect(() => {
       if (!data || !inputDevices || !outputDevices || !cameraDevices) {
          return;
       }
 
-      setSelectedInput(inputDevices?.find((x) => x.deviceId === settings.settings.inputDeviceId) ?? inputDevices[0]);
-      setSelectedOutput(outputDevices?.find((x) => x.deviceId === settings.settings.outputDeviceId) ?? outputDevices[0]);
-      setSelectedCamera(cameraDevices?.find((x) => x.deviceId === settings.settings.cameraDeviceId) ?? cameraDevices[0]);
+      setSelectedInput(inputDevices?.find((x) => x.deviceId === settings.inputDeviceId) ?? inputDevices[0]);
+      setSelectedOutput(outputDevices?.find((x) => x.deviceId === settings.outputDeviceId) ?? outputDevices[0]);
+      setSelectedCamera(cameraDevices?.find((x) => x.deviceId === settings.cameraDeviceId) ?? cameraDevices[0]);
    }, [data]);
 
    useEffect(() => {
@@ -246,11 +249,11 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
                   <div className="mt-5 flex gap-x-5">
                      <div className="w-full max-w-xs">
                         <GenericLabel>Input Volume</GenericLabel>
-                        <RangeInput onChange={onInputVolumeChange} defaultValue={settings.settings.inputVolume} />
+                        <RangeInput onChange={onInputVolumeChange} defaultValue={settings.inputVolume} />
                      </div>
                      <div className="w-full max-w-xs">
                         <GenericLabel>Output Volume</GenericLabel>
-                        <RangeInput onChange={onOutputVolumeChange} defaultValue={settings.settings.outputVolume} maxValue={200} />
+                        <RangeInput onChange={onOutputVolumeChange} defaultValue={settings.outputVolume} maxValue={200} />
                      </div>
                   </div>
                   <div className="mt-5 flex">
@@ -260,7 +263,7 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
                            onChange={onInputThresholdChange}
                            backgroundClassName="!bg-positive-400"
                            fillClassName="!bg-negative-100"
-                           defaultValue={remap(settings.settings.inputThreshold ?? -100, -100, 0, 0, 100)}
+                           defaultValue={remap(settings.inputThreshold ?? -100, -100, 0, 0, 100)}
                            getTooltipText={(percentage) => `${remap(percentage, 0, 100, -100, 0)}db`}
                         >
                            <div

@@ -7,13 +7,13 @@ import { useHuginnWindow } from "@stores/windowStore";
 import { useModals } from "@stores/modalsStore";
 import type { Snowflake } from "@huginn/shared";
 import { useStartCamera } from "./useStartCamera";
-import { useFilesStore } from "@stores/filesStore";
+import { useStorage } from "@stores/storageStore";
 import { useThisUser } from "@stores/userStore";
 
 export function useVoiceUtils() {
    const { localVoiceState, remoteSources } = useVoiceStore();
    const { user } = useThisUser();
-   const settings = useFilesStore();
+   const settings = useStorage("settings");
    const client = useClient();
    const posthog = usePostHog();
    const updateVoiceStateMutation = useUpdateVoiceState();
@@ -91,7 +91,7 @@ export function useVoiceUtils() {
       posthog.capture("voice:camera_button_click");
 
       if (!startCameraMutation.isPending) {
-         startCameraMutation.mutate({ deviceId: settings.settings.cameraDeviceId });
+         startCameraMutation.mutate({ deviceId: settings.cameraDeviceId });
       }
    }
 
@@ -115,5 +115,16 @@ export function useVoiceUtils() {
       client?.voice.stopCamera();
    }
 
-   return { connect, disconnect, startCamera, startAudioStream, startScreenShare, changeStream, endStream, endCamera, toggleDeafen, toggleMute };
+   return {
+      connect,
+      disconnect,
+      startCamera,
+      startAudioStream,
+      startScreenShare,
+      changeStream,
+      endStream,
+      endCamera,
+      toggleDeafen,
+      toggleMute,
+   };
 }

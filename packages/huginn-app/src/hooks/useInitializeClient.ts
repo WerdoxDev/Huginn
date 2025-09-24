@@ -1,6 +1,7 @@
 // import { usePostHog } from "posthog-js/react";
 import { error, log } from "@huginn/shared";
 import { useClient, useClientStore } from "@stores/clientStore";
+import { useStorage } from "@stores/storageStore";
 import { useThisUser } from "@stores/userStore";
 import { usePostHog } from "posthog-js/react";
 import { useCallback } from "react";
@@ -11,6 +12,7 @@ export function useInitializeClient() {
    const clientStore = useClientStore();
    const store = useThisUser();
    const posthog = usePostHog();
+   const clientInfo = useStorage("client-info");
    const navigate = useNavigate();
 
    const initialize = useCallback(
@@ -25,7 +27,7 @@ export function useInitializeClient() {
          }
 
          try {
-            log("app:client-store", "default", "initialize start", "t:", options.token, "rt:", options.refreshToken);
+            log("app:client-store", "default", "initialize start");
 
             if (options.token || options.refreshToken) {
                const result = await client?.initializeWithToken({ token: options.token, refreshToken: options.refreshToken });
@@ -60,6 +62,7 @@ export function useInitializeClient() {
                username: client?.user?.username,
                displayName: client?.user?.displayName,
                email: client?.user?.email,
+               clientId: clientInfo.id,
             });
 
             await options.onSuccessful?.();

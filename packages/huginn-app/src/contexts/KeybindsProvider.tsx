@@ -1,6 +1,6 @@
 import { usePrevious } from "@hooks/usePrevious";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
-import { useFilesStore } from "@stores/filesStore";
+import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useModals } from "@stores/modalsStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import { useEffect, type ReactNode } from "react";
@@ -8,7 +8,8 @@ import { useEffect, type ReactNode } from "react";
 export default function KeybindsProvider(props: { children?: ReactNode }) {
    const { toggleDeafen, toggleMute } = useVoiceUtils();
    const { localVoiceState } = useVoiceStore();
-   const { keybinds, setKeybinds, saveKeybinds } = useFilesStore();
+   const keybinds = useStorage("keybinds");
+   const { setValue } = useStorageStore();
    const { showError } = useModals();
    const previousKeybinds = usePrevious(keybinds);
 
@@ -40,8 +41,7 @@ export default function KeybindsProvider(props: { children?: ReactNode }) {
                showError("Due to software limitations, you can't use this Keybind!");
 
                if (previousKeybinds) {
-                  setKeybinds(previousKeybinds);
-                  saveKeybinds();
+                  setValue("keybinds", previousKeybinds);
                }
             }
          });

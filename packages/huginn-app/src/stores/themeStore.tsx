@@ -1,4 +1,4 @@
-import { useFilesStore } from "@stores/filesStore";
+import { useStorage, useStorageStore } from "@stores/storageStore";
 import { createContext, type ReactNode, useLayoutEffect } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
@@ -292,11 +292,11 @@ const store = createStore(
 const ThemeContext = createContext<typeof store>({} as typeof store);
 
 export function ThemeProvider(props: { children?: ReactNode }) {
-   const files = useFilesStore();
+   const settings = useStorage("settings");
 
    useLayoutEffect(() => {
-      store.getState().setTheme(files.settings.theme);
-   }, [files.settings.theme]);
+      store.getState().setTheme(settings.theme);
+   }, [settings.theme]);
 
    return <ThemeContext.Provider value={store}>{props.children}</ThemeContext.Provider>;
 }

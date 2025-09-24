@@ -1,6 +1,6 @@
 import { error, log, type Snowflake } from "@huginn/shared";
 import { clientStore } from "@stores/clientStore";
-import { filesStore } from "@stores/filesStore";
+import { storageStore } from "@stores/storageStore";
 import { voiceStore } from "@stores/voiceStore";
 import type { RemoteSource, VoicePreference } from "@/types";
 import { listenEvent } from "../event-handler";
@@ -38,22 +38,24 @@ export class VoiceClient {
                return;
             }
 
-            const settings = filesStore.getState();
+            const settings = storageStore.getState().getCachedValue("settings");
 
             // Initialize audio level checking with a dummy stream to avoid causing an infinite mute on the actual "send" mic stream
             const { audioLevel, stream: micStream } = await this.initLocalAudioLevel(
-               settings.settings.inputDeviceId,
-               settings.settings.inputVolume,
-               settings.settings.noiseSuppression,
+               settings.inputDeviceId,
+               settings.inputVolume,
+               settings.noiseSuppression,
             );
 
             // Initialize the actual audio sending stream
-            await this.initMicrophone(settings.settings.inputDeviceId, settings.settings.inputVolume, settings.settings.noiseSuppression);
+            await this.initMicrophone(settings.inputDeviceId, settings.inputVolume, settings.noiseSuppression);
 
             // Add local microphone remote source
             const producer = client.voice.producers.get("microphone");
             if (producer) {
-               voiceStore.getState().addRemoteSource(client.user.id, undefined, producer.id, producer.appData.mediaKind, micStream, audioLevel);
+               voiceStore
+                  .getState()
+                  .addRemoteSource(client.user.id, undefined, producer.id, producer.appData.mediaKind, micStream, audioLevel);
             }
          }),
       );
@@ -90,11 +92,13 @@ export class VoiceClient {
                voice.updateRemoteSource(d.producerId, { consumerId: d.consumerId, srcObject: remoteStream });
             }
 
-            const files = filesStore.getState();
+            const storage = storageStore.getState();
+            const voicePreferences = storage.getCachedValue("voice-preferences");
+            const settings = storage.getCachedValue("settings");
 
             // Initialize remote audio source players (updatedVoice is because getState only returns an snapshot and doesn't change)
             const updatedVoice = voiceStore.getState();
-            this.initRemoteAudioSourcePlayers(updatedVoice.remoteSources, files.voicePreferences, files.settings.outputVolume);
+            this.initRemoteAudioSourcePlayers(updatedVoice.remoteSources, voicePreferences, settings.outputVolume);
          }),
       );
 
@@ -118,9 +122,12 @@ export class VoiceClient {
 
             // create voice preference for new users
             if (d.kind === "microphone" || d.kind === "stream_audio") {
-               const files = filesStore.getState();
-               if (!files.voicePreferences.some((x) => x.userId === d.producerUserId)) {
-                  files.updateVoicePreferences(d.producerUserId, { microphoneVolume: 100, streamVolume: 100 });
+               const storage = storageStore.getState();
+               const voicePreferences = storage.getCachedValue("voice-preferences");
+
+               if (!voicePreferences.some((x) => x.userId === d.producerUserId)) {
+                  storage.updateVoicePreferences(d.producerUserId, { microphoneVolume: 100, streamVolume: 100 });
+                  storage.setFromCachedValue("voice-preferences");
                }
             }
 
@@ -229,8 +236,8 @@ export class VoiceClient {
          listenEvent("voice_preference_changed", (d) => {
             log("app:voice-client", "emitter-recv", "voice preference changed", "uid:", d.userId);
 
-            const store = filesStore.getState();
-            const preference = store.voicePreferences.find((x) => x.userId === d.userId);
+            const voicePreferences = storageStore.getState().getCachedValue("voice-preferences");
+            const preference = voicePreferences.find((x) => x.userId === d.userId);
             const microphonePlayer = this.audioSourcePlayers.find((x) => x.userId === d.userId && x.kind === "microphone");
             const screenSharePlayer = this.audioSourcePlayers.find((x) => x.userId === d.userId && x.kind === "stream_audio");
 
@@ -248,11 +255,11 @@ export class VoiceClient {
       );
 
       unlisteners.push(
-         filesStore.subscribe(async (s, o) => {
+         storageStore.subscribe(async (s, o) => {
             log("app:voice-client", "settings-sub", "settings changed");
 
-            const current = s.settings;
-            const old = o.settings;
+            const current = s.getCachedValue("settings");
+            const old = o.getCachedValue("settings");
             if (current.outputVolume !== old.outputVolume) {
                for (const player of this.audioSourcePlayers) {
                   player.setGain(current.outputVolume, undefined);
@@ -307,10 +314,10 @@ export class VoiceClient {
       let lastState = true;
       function onLocalAudioLevel(db: number) {
          const client = clientStore.getState().client;
-         const settings = filesStore.getState();
+         const settings = storageStore.getState().getCachedValue("settings");
 
          const userId = client?.user?.id ?? "";
-         if (db > settings.settings.inputThreshold) {
+         if (db > settings.inputThreshold) {
             const voice = voiceStore.getState();
 
             lastState = true;
@@ -336,7 +343,7 @@ export class VoiceClient {
                   voice.updateSpeakingState(userId, true);
                }
             }
-         } else if (db <= settings.settings.inputThreshold - tolerance) {
+         } else if (db <= settings.inputThreshold - tolerance) {
             lastState = false;
          }
       }
@@ -367,7 +374,17 @@ export class VoiceClient {
          return;
       }
 
-      log("app:voice-client", "default", "initialize streaming", "did:", microphoneDeviceId, "vol:", microphoneVolume, "ns:", noiseSuppression);
+      log(
+         "app:voice-client",
+         "default",
+         "initialize streaming",
+         "did:",
+         microphoneDeviceId,
+         "vol:",
+         microphoneVolume,
+         "ns:",
+         noiseSuppression,
+      );
 
       if (!this.inputDevice) {
          this.inputDevice = new VoiceInputDevice();

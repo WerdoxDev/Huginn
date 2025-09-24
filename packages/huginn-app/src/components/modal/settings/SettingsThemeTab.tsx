@@ -1,5 +1,5 @@
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
-import { useFilesStore } from "@stores/filesStore";
+import { useStorage } from "@stores/storageStore";
 import { ceruleanTheme, charcoalTheme, coffeeTheme, eggplantTheme, pineGreenTheme, scarletTheme } from "@stores/themeStore";
 import type { DropdownItem, SettingsTabProps, ThemeType } from "@/types";
 
@@ -13,8 +13,7 @@ const themes: DropdownItem[] = [
 ];
 
 export default function SettingsThemeTab(props: SettingsTabProps) {
-   const settings = useFilesStore();
-   // const { setTheme } = useTheme();
+   const settings = useStorage("settings");
 
    function onThemeChange(item: DropdownItem) {
       // setTheme(item.value as ThemeType);
@@ -23,7 +22,7 @@ export default function SettingsThemeTab(props: SettingsTabProps) {
 
    return (
       <div className="flex flex-col gap-y-6">
-         <HuginnDropdown onChange={onThemeChange} value={themes.find((x) => x.value === settings.settings.theme)}>
+         <HuginnDropdown onChange={onThemeChange} value={themes.find((x) => x.value === settings.theme)}>
             <HuginnDropdown.Label>Color Theme</HuginnDropdown.Label>
             <HuginnDropdown.List className="w-52">
                <HuginnDropdown.ItemsWrapper className="w-52">

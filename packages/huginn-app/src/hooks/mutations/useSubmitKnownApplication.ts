@@ -1,6 +1,6 @@
 import type { APIPostKnownApplicationJSONBody } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
-import { updateKnownApplications } from "@stores/filesStore";
+import { updateKnownApplications } from "@stores/storageStore";
 import { useMutation } from "@tanstack/react-query";
 
 export function useSubmitKnownApplication() {
