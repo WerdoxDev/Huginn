@@ -1,7 +1,7 @@
 import { error, type LogArgs, type Logger } from "@huginn/shared";
 
 type LogEntry = { type: "log" | "error"; timestamp: string; section: string; level?: string; args: LogArgs[] };
-type SystemInfo = { platform: string; arch: string; version: string; appVersion: string; locale: string };
+type SystemInfo = { platform: string; arch: string; version: string; appVersion: string; release: string };
 
 export class RemoteLogger {
    private logger: Logger;
@@ -79,9 +79,9 @@ export class RemoteLogger {
       this.systemInfo = {
          platform: os.platform(),
          arch: os.arch(),
+         release: os.release(),
          version: os.version(),
          appVersion: app.getVersion(),
-         locale: app.getLocale(),
       };
    }
 }
