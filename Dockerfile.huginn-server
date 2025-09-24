@@ -13,6 +13,7 @@ COPY packages/huginn-backend-shared/package.json /temp/deps/packages/huginn-back
 COPY packages/huginn-shared/package.json /temp/deps/packages/huginn-shared/package.json
 COPY packages/huginn-server/package.json /temp/deps/packages/huginn-server/package.json
 RUN cd /temp/deps && bun install
+RUN apk add --no-cache ffmpeg
 # RUN ls -lah /temp/deps && tree /temp/deps
 
 # copy node_modules from temp directory
@@ -20,9 +21,6 @@ RUN cd /temp/deps && bun install
 FROM base AS prerelease
 COPY --from=install /temp/deps/node_modules node_modules
 COPY . /src
-RUN rm -rf /src/packages/huginn-cdn
-RUN rm -rf /src/packages/huginn-voice
-RUN apk add --no-cache ffmpeg
 RUN cd packages/huginn-backend-shared && bunx prisma generate
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

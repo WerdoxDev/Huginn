@@ -20,8 +20,6 @@ RUN cd /temp/deps && bun install
 FROM base AS prerelease
 COPY --from=install /temp/deps/node_modules node_modules
 COPY . /src
-RUN rm -rf /src/packages/huginn-server
-RUN rm -rf /src/packages/huginn-voice
 RUN cd packages/huginn-backend-shared && bunx prisma generate
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

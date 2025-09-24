@@ -1,9 +1,12 @@
+**/huginn-cdn
+**/huginn-voice
+**/huginn-api
 **/huginn-app
 **/huginn-bundler
 **/huginn-website
 **/node_modules
+**/native-addon
 
-**/huginn-app-bindings
 **/Dockerfile*
 **/docker-compose*
 **/.dockerignore
