@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.60.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.59.1...app@v0.60.0) (2025-09-24)
+
+
+### Features
+
+* **app:** convert storage management to a way more robust solution. ([88aacb6](https://github.com/WerdoxDev/Huginn/commit/88aacb671944199f08d50685c6870ab6751a913a))
+
+
+### Bug Fixes
+
+* **app:** add shims to tsdown to fix __filename ([5a24ff7](https://github.com/WerdoxDev/Huginn/commit/5a24ff7bd6a104106136f16f2eceb364b16b96aa))
+* **app:** little tweaks in logger ([d3357d2](https://github.com/WerdoxDev/Huginn/commit/d3357d28b8274948bb744617e9820816535ee2fe))
+
 ## [0.59.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.59.0...app@v0.59.1) (2025-09-19)
 
 

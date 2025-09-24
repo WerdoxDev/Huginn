@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.1.1...native-addon@v0.1.2) (2025-09-24)
+
+
+### Bug Fixes
+
+* **native-addon:** remove tsdown in favour of native bun workspace module ([fd56b85](https://github.com/WerdoxDev/Huginn/commit/fd56b8525b0863004856c76ec31925a00929887a))
+
 ## [0.1.1](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.1.0...native-addon@v0.1.1) (2025-09-14)
 
 

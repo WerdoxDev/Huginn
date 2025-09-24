@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.28.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.27.0...shared@v0.28.0) (2025-09-24)
+
+
+### Features
+
+* **shared:** convert logger to class + add cache storage class ([616d53c](https://github.com/WerdoxDev/Huginn/commit/616d53c44049b111d7faa0c156cd835f7bd2d88c))
+
 ## [0.27.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.26.0...shared@v0.27.0) (2025-09-14)
 
 
