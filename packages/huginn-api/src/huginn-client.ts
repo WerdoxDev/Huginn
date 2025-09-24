@@ -8,7 +8,6 @@ import { REST } from "./rest";
 import { AuthAPI } from "./rest-apis/auth";
 import { ChannelAPI } from "./rest-apis/channel";
 import { CommonAPI } from "./rest-apis/common";
-import { LogAPI } from "./rest-apis/log";
 import { OAuthAPI } from "./rest-apis/oauth";
 import { RelationshipAPI } from "./rest-apis/relationship";
 import { UserAPI } from "./rest-apis/user";
@@ -27,7 +26,6 @@ export class HuginnClient {
    public auth: AuthAPI;
    public channels: ChannelAPI;
    public oauth: OAuthAPI;
-   public log: LogAPI;
    public applications: ApplicationAPI;
    public common: CommonAPI;
    public gateway: Gateway;
@@ -54,7 +52,6 @@ export class HuginnClient {
       this.gateway = new Gateway(this, this.options.gateway);
       this.voice = new Voice(this, this.options.voice);
       this.oauth = new OAuthAPI(this.rest, this.gateway);
-      this.log = new LogAPI(this.rest, this);
    }
 
    /**
