@@ -1,12 +1,11 @@
 import { S3Client } from "@aws-sdk/client-s3";
 import { readEnv } from "@huginn/backend-shared";
-import consola from "consola";
 import { Octokit } from "octokit";
 import { ServerGateway } from "#gateway/server-gateway";
-import { enableLogs } from "@huginn/shared";
+import { logger } from "@huginn/shared";
 
 // enableLogs({ "server:gateway": ["recv"] })
-enableLogs({ "server:gateway": ["default", "detail-identify"], "server:presence-manager": ["default", "detail"] });
+logger.enableLogs({ "server:gateway": ["default", "detail-identify"], "server:presence-manager": ["default", "detail"] });
 
 export const envs = readEnv([
    "CDN_LOCAL_URL",

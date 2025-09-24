@@ -1,41 +1,89 @@
-import { appendFile, mkdir } from "node:fs/promises";
-import { createRoute, validator, verifyToken } from "@huginn/backend-shared";
+import fs from "node:fs/promises";
+import { createRoute, validator } from "@huginn/backend-shared";
 import pathe from "pathe";
 import z from "zod";
+import { getConnInfo } from "hono/bun";
+import { CacheStorage } from "@huginn/shared";
 
 const schema = z.object({
-   token: z.optional(z.string()),
-   logs: z.array(z.object({ type: z.string(), section: z.string(), level: z.optional(z.string()), args: z.array(z.any()) })),
+   clientId: z.string(),
+   systemInfo: z.optional(
+      z.object({
+         platform: z.string(),
+         arch: z.string(),
+         version: z.string(),
+         appVersion: z.string(),
+         locale: z.string(),
+      }),
+   ),
+   timestamp: z.string(),
+   logs: z.array(
+      z.object({
+         type: z.string(),
+         timestamp: z.string(),
+         section: z.string(),
+         level: z.optional(z.string()),
+         args: z.array(z.any()),
+      }),
+   ),
 });
+
+type GeoData = { country?: string; city?: string; timezone?: string };
+const ipCache = new CacheStorage<string, GeoData>(undefined);
 
 createRoute("POST", "/api/log", validator("json", schema), async (c) => {
    const body = c.req.valid("json");
-   const { payload } = await verifyToken("user-access", body.token ?? "");
 
-   const now = new Date();
+   const ip = getConnInfo(c).remote.address;
+   let geoData: GeoData | undefined;
+   if (ip) {
+      geoData = await ipCache.cacheOrGet(ip, async () => {
+         const data = await (await fetch(`https://ipapi.co/${ip}/json`)).json();
+         return data as GeoData;
+      });
+   }
 
-   const berlin = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Berlin" }));
+   const maxFileSize = 10 * 1024 * 1024;
 
-   const year = berlin.getFullYear();
-   const month = String(berlin.getMonth() + 1).padStart(2, "0");
-   const day = String(berlin.getDate()).padStart(2, "0");
-   const hour = String(berlin.getHours()).padStart(2, "0");
+   let fileIndex = 1;
+   let currentFile;
+   const logsDir = pathe.resolve(import.meta.dir, "..", "..", "logs", new Date().toISOString().split("T")[0]);
 
-   const dateDir = `${year}-${month}-${day}`;
-   const logDir = pathe.resolve(import.meta.dir, "..", "..", "logs", payload?.id || "anonymous", dateDir);
-   const logFile = pathe.join(logDir, `${hour}.txt`);
-   const formatted = now.toLocaleTimeString("de-DE", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-      timeZone: "Europe/Berlin",
-   });
+   while (true) {
+      currentFile = pathe.join(logsDir, `${body.clientId}-${fileIndex}.json`);
+      try {
+         const stats = await fs.stat(currentFile);
 
-   const logLines = `${formatted}\n ${body.logs.map((x) => `${x.type === "error" ? "ERROR: " : ""}(${x.section}) [${x.level}] ${x.args.join(" ")}`).join("\n")}\n`;
+         // this file hasn't reached the maximum yet so we'll append to it
+         if (stats.size < maxFileSize) {
+            break;
+         }
 
-   await mkdir(logDir, { recursive: true });
-   await appendFile(logFile, logLines);
+         fileIndex++;
+         // oxlint-disable-next-line no-unused-vars
+      } catch (e) {
+         // the file doesn't exist so we'll create it
+         await fs.mkdir(logsDir, { recursive: true });
+         await fs.writeFile(currentFile, "[]", "utf-8");
+         break;
+      }
+   }
+
+   const logData = {
+      clientId: body.clientId,
+      systemInfo: body.systemInfo,
+      timestamp: body.timestamp,
+      ip: ip,
+      country: geoData?.country,
+      city: geoData?.city,
+      timezone: geoData?.timezone,
+      logs: body.logs,
+   };
+
+   const existingData = await fs.readFile(currentFile, "utf-8").catch(() => "[]");
+   const existingLogs = JSON.parse(existingData);
+   const updatedLogs = [...existingLogs, logData];
+   await fs.writeFile(currentFile, JSON.stringify(updatedLogs, null, 2));
 
    return c.newResponse(null, 200);
 });
