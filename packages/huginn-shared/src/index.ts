@@ -14,3 +14,4 @@ export * from "./routes";
 export * from "./snowflake";
 export * from "./utils";
 export * from "./voice-types";
+export * from "./cache-storage";

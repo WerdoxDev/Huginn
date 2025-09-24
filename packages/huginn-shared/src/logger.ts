@@ -19,7 +19,7 @@ type LogValuesMap = {
    "app:audio-source-player": "default";
    "app:audio-level-checker": "default";
    "app:voice-input-device": "default";
-   "app:electron": "default" | "send" | "recv" | "updater" | "loopback-send" | "loopback";
+   "app:electron": "default" | "send" | "recv" | "updater" | "loopback-send" | "loopback" | "file-controller";
    "server:gateway": "default" | "send" | "recv" | "heartbeat" | "detail-identify";
    "server:presence-manager": "default" | "send" | "detail";
    "voice:websocket": "default" | "recv";
@@ -31,9 +31,6 @@ type LogValuesMap = {
 type LogKeys = keyof LogValuesMap;
 type LogValuesFor<K extends LogKeys> = LogValuesMap[K];
 export type LogArgs = string | number | boolean | null | undefined | unknown;
-
-const enabledLogs = new Map<LogKeys, Set<LogValuesMap[LogKeys]>>();
-const excludedEventLogs = new Map<LogKeys, Set<LogValuesMap[LogKeys]>>();
 
 const levelStyles: Partial<Record<LogValuesFor<LogKeys> | "default", string>> = {
    default: "color: green",
@@ -48,103 +45,118 @@ const sectionStyles: Partial<Record<LogKeys | "default" | "error", string>> = {
    "api:voice": "color: white; background: #029687; padding: 1px 6px; border-radius: 4px;",
 };
 
-let onLog: ((section: string, level: string, ...args: LogArgs[]) => void) | undefined;
-let onError: ((section: string, ...args: LogArgs[]) => void) | undefined;
-let _isRaw = false;
-
-export function enableLogs<T extends Partial<{ [K in LogKeys]: LogValuesMap[K][] }>>(sections: T): void {
-   for (const [section, levels] of Object.entries(sections) as [LogKeys, string[]][]) {
-      if (enabledLogs.has(section)) {
-         const existing = enabledLogs.get(section);
-         for (const level of levels) {
-            existing?.add(level as LogValuesFor<typeof section>);
-         }
-      } else {
-         enabledLogs.set(section, new Set(levels as LogValuesFor<typeof section>[]));
-      }
-   }
-}
-
-export function excludeEventLogs<T extends Partial<{ [K in LogKeys]: LogValuesMap[K][] }>>(sections: T): void {
-   for (const [section, levels] of Object.entries(sections) as [LogKeys, string[]][]) {
-      if (excludedEventLogs.has(section)) {
-         const existing = excludedEventLogs.get(section);
-         for (const level of levels) {
-            existing?.add(level as LogValuesFor<typeof section>);
-         }
-      } else {
-         excludedEventLogs.set(section, new Set(levels as LogValuesFor<typeof section>[]));
-      }
-   }
-}
-
-export function disableLogs<K extends LogKeys>(sections: Record<K, LogValuesFor<K>[]>): void {
-   for (const entry of Object.entries(sections)) {
-      const section = entry[0] as LogKeys;
-      const levels = entry[1] as LogValuesFor<K>[];
-
-      if (!enabledLogs.has(section)) {
-         return;
-      }
-
-      const existingSection = enabledLogs.get(section);
-      for (const level of levels) {
-         existingSection?.delete(level);
-      }
-
-      if (existingSection?.size === 0) {
-         enabledLogs.delete(section);
-      }
-   }
-}
-
-export function setIsRaw(isRaw: boolean): void {
-   _isRaw = isRaw;
-}
-
-export function setOnLog(func: typeof onLog): void {
-   onLog = func;
-}
-
-export function setOnError(func: typeof onError): void {
-   onError = func;
-}
-
 export function log<K extends LogKeys>(section: K, level: LogValuesFor<K>, ...args: LogArgs[]): void {
-   const excludedSections = excludedEventLogs.get(section);
-   if (!excludedSections || !excludedSections.has(level)) {
-      onLog?.(section, level, ...args);
-   }
-
-   const existingSections = enabledLogs.get(section);
-   if (!existingSections || !existingSections.has(level)) {
-      return;
-   }
-
-   const sectionStyle = sectionStyles[section] ?? sectionStyles.default;
-   const levelStyle = levelStyles[level] ?? levelStyles.default;
-
-   const formatString = `%c${section}%c [${level}]`;
-   const stylesString = [sectionStyle, levelStyle];
-
-   if (_isRaw) {
-      console.log(section, level, ...args);
-   } else {
-      console.log(formatString, ...stylesString, ...args);
-   }
+   logger.log(section, level, ...args);
 }
 
 export function error(section: LogKeys, ...args: LogArgs[]): void {
-   onError?.(section, ...args);
+   logger.error(section, ...args);
+}
 
-   const levelStyle = levelStyles.default;
-   const sectionStyle = sectionStyles[section] ?? sectionStyles.error;
+export class Logger {
+   private enabledLogs = new Map<LogKeys, Set<LogValuesMap[LogKeys]>>();
+   private excludedEventLogs = new Map<LogKeys, Set<LogValuesMap[LogKeys]>>();
+   private isRaw = false;
 
-   const formatString = `%c${section}%c [error]`;
+   private onLog: ((section: string, level: string, ...args: LogArgs[]) => void) | undefined;
+   private onError: ((section: string, ...args: LogArgs[]) => void) | undefined;
 
-   if (_isRaw) {
-      console.error(section, ...args);
-   } else {
-      console.error(formatString, sectionStyle, levelStyle, ...args);
+   public enableLogs<T extends Partial<{ [K in LogKeys]: LogValuesMap[K][] }>>(sections: T): void {
+      for (const [section, levels] of Object.entries(sections) as [LogKeys, string[]][]) {
+         if (this.enabledLogs.has(section)) {
+            const existing = this.enabledLogs.get(section);
+            for (const level of levels) {
+               existing?.add(level as LogValuesFor<typeof section>);
+            }
+         } else {
+            this.enabledLogs.set(section, new Set(levels as LogValuesFor<typeof section>[]));
+         }
+      }
+   }
+
+   public disableLogs<K extends LogKeys>(sections: Record<K, LogValuesFor<K>[]>): void {
+      for (const entry of Object.entries(sections)) {
+         const section = entry[0] as LogKeys;
+         const levels = entry[1] as LogValuesFor<K>[];
+
+         if (!this.enabledLogs.has(section)) {
+            return;
+         }
+
+         const existingSection = this.enabledLogs.get(section);
+         for (const level of levels) {
+            existingSection?.delete(level);
+         }
+
+         if (existingSection?.size === 0) {
+            this.enabledLogs.delete(section);
+         }
+      }
+   }
+
+   public excludeEventLogs<T extends Partial<{ [K in LogKeys]: LogValuesMap[K][] }>>(sections: T): void {
+      for (const [section, levels] of Object.entries(sections) as [LogKeys, string[]][]) {
+         if (this.excludedEventLogs.has(section)) {
+            const existing = this.excludedEventLogs.get(section);
+            for (const level of levels) {
+               existing?.add(level as LogValuesFor<typeof section>);
+            }
+         } else {
+            this.excludedEventLogs.set(section, new Set(levels as LogValuesFor<typeof section>[]));
+         }
+      }
+   }
+
+   public setIsRaw(isRaw: boolean): void {
+      this.isRaw = isRaw;
+   }
+
+   public setOnLog(func: typeof this.onLog): void {
+      this.onLog = func;
+   }
+
+   public setOnError(func: typeof this.onError): void {
+      this.onError = func;
+   }
+
+   public log<K extends LogKeys>(section: K, level: LogValuesFor<K>, ...args: LogArgs[]): void {
+      const excludedSections = this.excludedEventLogs.get(section);
+      if (!excludedSections || !excludedSections.has(level)) {
+         this.onLog?.(section, level, ...args);
+      }
+
+      const existingSections = this.enabledLogs.get(section);
+      if (!existingSections || !existingSections.has(level)) {
+         return;
+      }
+
+      const sectionStyle = sectionStyles[section] ?? sectionStyles.default;
+      const levelStyle = levelStyles[level] ?? levelStyles.default;
+
+      const formatString = `%c${section}%c [${level}]`;
+      const stylesString = [sectionStyle, levelStyle];
+
+      if (this.isRaw) {
+         console.log(section, level, ...args);
+      } else {
+         console.log(formatString, ...stylesString, ...args);
+      }
+   }
+
+   public error(section: LogKeys, ...args: LogArgs[]): void {
+      this.onError?.(section, ...args);
+
+      const levelStyle = levelStyles.default;
+      const sectionStyle = sectionStyles[section] ?? sectionStyles.error;
+
+      const formatString = `%c${section}%c [error]`;
+
+      if (this.isRaw) {
+         console.error(section, ...args);
+      } else {
+         console.error(formatString, sectionStyle, levelStyle, ...args);
+      }
    }
 }
+
+export const logger: Logger = new Logger();
