@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.31.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.30.0...server@v0.31.0) (2025-09-24)
+
+
+### Features
+
+* **server:** add much better log route with geodata and systeminfo ([123afd2](https://github.com/WerdoxDev/Huginn/commit/123afd250d1e1504efc4c23518a576c3d90e3e72))
+
+
+### Bug Fixes
+
+* **server:** request ip is not received correctly ([3fefefa](https://github.com/WerdoxDev/Huginn/commit/3fefefac0d6c8f2ae7bff3a8f290078eda45d6a8))
+
 ## [0.30.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.29.2...server@v0.30.0) (2025-09-18)
 
 
