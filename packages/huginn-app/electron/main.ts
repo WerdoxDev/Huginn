@@ -445,7 +445,7 @@ async function listenToEvents(mainWindow: BrowserWindow) {
    ipcMain.on("window:relaunch", () => {
       log("app:electron", "recv", "relaunch");
 
-      app.relaunch();
+      app.relaunch({ args: [] });
       app.exit();
    });
 
