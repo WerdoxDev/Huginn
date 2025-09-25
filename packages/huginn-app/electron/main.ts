@@ -21,6 +21,7 @@ if (app.isPackaged) {
    setExecutablesRoot(path.resolve(import.meta.dirname, "..", "..", "app.asar.unpacked", "node_modules", "application-loopback", "bin"));
 }
 
+app.commandLine.appendSwitch("no-proxy-server");
 await setupClientInfo();
 configureUpdater();
 const remoteLogger = await setupLogger();
@@ -445,8 +446,12 @@ async function listenToEvents(mainWindow: BrowserWindow) {
    ipcMain.on("window:relaunch", () => {
       log("app:electron", "recv", "relaunch");
 
-      app.relaunch({ args: [] });
-      app.exit();
+      if (app.isPackaged) {
+         app.relaunch({ args: process.argv.filter((x) => !x.includes("silent")) });
+         app.exit();
+      } else {
+         mainWindow.webContents.reload();
+      }
    });
 
    let previousProcessId: string | undefined;

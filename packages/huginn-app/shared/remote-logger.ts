@@ -57,8 +57,6 @@ export class RemoteLogger {
       const logsToSend = [...this.logBuffer];
       this.logBuffer = [];
 
-      console.log(this.systemInfo);
-
       try {
          const body = {
             clientId: this.clientId,

@@ -18,5 +18,5 @@ await build({
    minify: false,
    clean: true,
    shims: true,
-   noExternal: isProd ? noExternal : ["@huginn/shared"],
+   noExternal: isProd ? noExternal : ["@huginn/shared", "native-addon"],
 });
