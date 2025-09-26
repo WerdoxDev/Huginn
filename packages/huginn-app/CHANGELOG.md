@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.60.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.60.0...app@v0.60.1) (2025-09-25)
+
+
+### Bug Fixes
+
+* **app:** ignore proxy for app ([99c6f93](https://github.com/WerdoxDev/Huginn/commit/99c6f93fce675d51ce9257a5b8160403ba3e0c98))
+* **app:** quick fix to launch app without silent arg on relaunch ([2afb54a](https://github.com/WerdoxDev/Huginn/commit/2afb54adfcdd1d250b95c8c7ffce4e77a390d7f4))
+
 ## [0.60.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.59.1...app@v0.60.0) (2025-09-24)
 
 
