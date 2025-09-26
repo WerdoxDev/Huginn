@@ -118,7 +118,6 @@ export async function updateKnownApplications() {
    }
 
    const value = await storage.loadFile("known-applications");
-   console.log(value);
    if (value.created) {
       const knownApplications = await client.applications.getKnown();
       for (const application of knownApplications.applications) {

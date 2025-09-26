@@ -34,8 +34,6 @@ export function useVoiceUtils() {
    function toggleMute() {
       posthog.capture("voice:toggle_mute_button_click");
 
-      console.log(localVoiceState.isAudioMuted);
-
       updateVoiceStateMutation.mutate({
          isAudioMuted: !localVoiceState.isAudioMuted,
          isAudioDeafened: false,

@@ -475,7 +475,7 @@ async function listenToEvents(mainWindow: BrowserWindow) {
 
          startAudioCapture(foundProcessId, {
             onData(data) {
-               log("app:electron", "loopback-send", "d:", data);
+               // log("app:electron", "loopback-send", "d:", data);
 
                mainWindow.webContents.send("audio:loopback-data", data);
             },
