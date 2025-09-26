@@ -22,7 +22,7 @@ if (import.meta.env.DEV) {
 logger.enableLogs({
    // "api:voice": ["default", "send", "recv", "heartbeat"],
    "app:audio-source-player": ["default"],
-   "api:voice": ["default", "recv", "heartbeat"],
+   "api:voice": ["default", "recv", "heartbeat", "transport"],
    "app:voice-store": ["remote-sources", "default"],
    "app:voice-client": ["voice-recv", "default"],
    "api:gateway": ["default", "recv", "heartbeat"],
