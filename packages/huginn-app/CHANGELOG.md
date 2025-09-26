@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.60.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.60.1...app@v0.60.2) (2025-09-26)
+
+
+### Bug Fixes
+
+* **app:** loopback data should not be logged ([9b5d0f5](https://github.com/WerdoxDev/Huginn/commit/9b5d0f59cfb6aa1eea5e9ac2b5536848cfd5cf58))
+
 ## [0.60.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.60.0...app@v0.60.1) (2025-09-25)
 
 
