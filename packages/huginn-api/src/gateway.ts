@@ -282,7 +282,6 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
          await Promise.allSettled([promise1, promise2]);
       }
 
-      console.log("HERE?");
       if (!receivedToken) {
          return false;
       }

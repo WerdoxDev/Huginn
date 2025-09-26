@@ -276,7 +276,10 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       const videoProducer = this.producers.get("stream_video");
       const audioProducer = this.producers.get("stream_audio");
 
-      await Promise.allSettled([videoProducer && this.closeProducer(videoProducer.id), audioProducer && this.closeProducer(audioProducer.id)]);
+      await Promise.allSettled([
+         videoProducer && this.closeProducer(videoProducer.id),
+         audioProducer && this.closeProducer(audioProducer.id),
+      ]);
 
       await this.client.gateway.updateVoiceState({
          isAudioDeafened: this.localVoiceState.isAudioDeafened,
@@ -423,7 +426,8 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
 
       const producer = await this.sendTransport.produce<MediasoupAppData>(options);
 
-      const listener = (newTrack: MediaStreamTrack | null) => this.emit("local_producer_changed", { kind, producerId: producer.id, track: newTrack });
+      const listener = (newTrack: MediaStreamTrack | null) =>
+         this.emit("local_producer_changed", { kind, producerId: producer.id, track: newTrack });
       producer.on("@replacetrack", listener);
       this.listeners.set(producer, listener);
 
@@ -525,7 +529,17 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
                   log("api:voice", "recv", "new producer", "id:", data.d.producerId, "uid:", data.d.producerUserId);
                   break;
                case "consumer_created":
-                  log("api:voice", "recv", "consumer created", "cid:", data.d.consumerId, "pid:", data.d.producerId, "uid:", data.d.producerUserId);
+                  log(
+                     "api:voice",
+                     "recv",
+                     "consumer created",
+                     "cid:",
+                     data.d.consumerId,
+                     "pid:",
+                     data.d.producerId,
+                     "uid:",
+                     data.d.producerUserId,
+                  );
                   await this.handleConsumerCreated(data.d);
                   break;
                case "consumer_resumed":
@@ -595,6 +609,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       try {
          if (data.direction === "send") {
             this.sendTransport = this.device?.createSendTransport(data.params);
+            this.handleTransportEvents(this.sendTransport);
 
             this.sendTransport?.on("connect", async ({ dtlsParameters }, callback, errback) => {
                if (!this.connectionInfo) {
@@ -663,6 +678,7 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
             this.emit("send_transport_ready", { channelId: this.connectionInfo.channelId });
          } else if (data.direction === "recv") {
             this.recvTransport = this.device?.createRecvTransport(data.params);
+            this.handleTransportEvents(this.recvTransport);
 
             this.recvTransport?.on("connect", async ({ dtlsParameters }, callback, errback) => {
                if (!this.connectionInfo) {
@@ -817,6 +833,18 @@ export class Voice extends SharedWebsocket<VoiceEvents> {
       this.pingTimeout = setTimeout(() => {
          this.sendPing();
       }, constants.VOICE_CLIENT_PING_INTERVAL);
+   }
+
+   private handleTransportEvents(transport?: Transport) {
+      transport?.on("connectionstatechange", (e) => {
+         log("api:voice", "transport", "connection state changed", "dir:", transport.direction, "stt:", e);
+      });
+      transport?.on("icecandidateerror", (e) => {
+         error("api:voice", "ice candidate error", "dir:", transport.direction, "txt:", e.errorText, "code:", e.errorCode);
+      });
+      transport?.on("icegatheringstatechange", (e) => {
+         log("api:voice", "transport", "ice gatherings changed", "dir:", transport.direction, "stt:", e);
+      });
    }
 
    private sendPing() {
