@@ -1,5 +1,5 @@
 type LogValuesMap = {
-   "api:voice": "send" | "recv" | "heartbeat" | "ping" | "default" | "local-voice-state";
+   "api:voice": "send" | "recv" | "heartbeat" | "ping" | "default" | "local-voice-state" | "transport";
    "api:gateway": "send" | "send-detail" | "default" | "recv" | "recv-detail" | "dispatch" | "heartbeat";
    "api:client": "ready-state";
    "app:client-store": "default";
