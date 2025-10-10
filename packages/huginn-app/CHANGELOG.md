@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.60.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.60.2...app@v0.60.3) (2025-09-26)
+
+
+### Bug Fixes
+
+* **app:** enable voice transport logs ([dccdd3e](https://github.com/WerdoxDev/Huginn/commit/dccdd3e94069514a4697aa2c808091e3ffda1051))
+
 ## [0.60.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.60.1...app@v0.60.2) (2025-09-26)
 
 
