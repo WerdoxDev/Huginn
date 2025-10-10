@@ -20,7 +20,6 @@ createRoute("POST", "/cdn/application-icons/:applicationId?", verifyJwt("cdn"), 
 
    const fileStream = file.stream();
    const { name } = extractFileInfo(file.name);
-   console.log(file.name);
 
    const { readable, writable } = new TransformStream();
    const stream = new StreamingApi(writable, readable);

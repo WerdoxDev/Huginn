@@ -10,9 +10,7 @@ services:
         target: /etc/caddy/Caddyfile
     networks:
       - caddy
-    volumes:
-      - caddy_data:/data
-      - caddy_config:/config
+
 
   server:
     image: ghcr.io/werdoxdev/huginn-server:latest
