@@ -198,7 +198,7 @@ export const Errors = {
       return [`Invalid Recipient (${recipientId})`, JsonCode.INVALID_RECIPIENT];
    },
    invalidId(id?: string): [string, JsonCode] {
-      return [`"${id}" is not a valid Snowflake`, JsonCode.INVALID_ID];
+      return [`'${id}' is not a valid Snowflake`, JsonCode.INVALID_ID];
    },
    knownApplicationExists(): [string, JsonCode] {
       return ["Known application with the specified name already exists", JsonCode.KNOWN_APPLICATION_EXISTS];
