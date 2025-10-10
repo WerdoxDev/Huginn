@@ -1,25 +1,35 @@
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { createRoute, invalidFormBody, validator, verifyJwt } from "@huginn/backend-shared";
+import { elysia, verifyJwt2 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
-import { HttpCode, type APIPatchUserSettingsResult } from "@huginn/shared";
-import z from "zod";
+import { type APIPatchUserSettingsResult } from "@huginn/shared";
+import Elysia, { t } from "elysia";
 
-const schema = z.object({
-   theme: z.optional(z.enum(["eggplant", "cerulean", "pine green", "coffee", "charcoal", "scarlet"])),
-   status: z.optional(z.enum(["offline", "online", "dnd", "idle"])),
+const schema = t.Object({
+   theme: t.Optional(
+      t.Union([
+         t.Literal("eggplant"),
+         t.Literal("cerulean"),
+         t.Literal("pine green"),
+         t.Literal("coffee"),
+         t.Literal("charcoal"),
+         t.Literal("scarlet"),
+      ]),
+   ),
+   status: t.Optional(t.Union([t.Literal("offline"), t.Literal("online"), t.Literal("dnd"), t.Literal("idle")])),
 });
 
-createRoute("PATCH", "/api/users/@me/settings", verifyJwt(), validator("json", schema), async (c) => {
-   const payload = c.get("tokenPayload");
-   const body = c.req.valid("json");
+export const patchUserSettings = new Elysia().use(verifyJwt2()).patch(
+   "/api/users/@me/settings",
+   async ({ body, tokenPayload, status }) => {
+      if (Object.keys(body).length === 0) {
+         return elysia.invalidBody(status);
+      }
 
-   if (Object.keys(body).length === 0) {
-      return invalidFormBody(c);
-   }
+      const updatedSettings: APIPatchUserSettingsResult = await prisma.settings.updateSettings(tokenPayload.id, body);
 
-   const updatedSettings: APIPatchUserSettingsResult = await prisma.settings.updateSettings(payload.id, body);
+      dispatchToTopic(tokenPayload.id, "settings_update", body);
 
-   dispatchToTopic(payload.id, "settings_update", body);
-
-   return c.json(updatedSettings, HttpCode.OK);
-});
+      return status("OK", updatedSettings);
+   },
+   { body: schema },
+);

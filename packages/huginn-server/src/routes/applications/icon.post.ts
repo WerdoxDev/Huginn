@@ -1,20 +1,22 @@
 import { cdnUpload } from "#utils/server-request";
-import { createRoute, invalidFormBody, validator, verifyJwt } from "@huginn/backend-shared";
-import { CDNRoutes, getFileHash, HttpCode, toArrayBuffer, type APIPostApplicationIconResult } from "@huginn/shared";
-import z from "zod";
+import { elysia, verifyJwt2 } from "@huginn/backend-shared";
+import { CDNRoutes, getFileHash, toArrayBuffer, type APIPostApplicationIconResult } from "@huginn/shared";
+import Elysia, { t } from "elysia";
 
-const schema = z.object({ icon: z.string(), applicationId: z.optional(z.number()) });
+const schema = t.Object({ icon: t.String(), applicationId: t.Optional(t.Number()) });
 
-createRoute("POST", "/api/applications/icon", verifyJwt(), validator("json", schema), async (c) => {
-   const body = c.req.valid("json");
+export const postApplicationIcon = new Elysia().use(verifyJwt2()).post(
+   "/api/applications/icon",
+   async ({ body, status }) => {
+      if (!body.icon) {
+         return elysia.invalidBody(status);
+      }
 
-   if (!body.icon) {
-      return invalidFormBody(c);
-   }
+      const data = toArrayBuffer(body.icon);
+      const hash = getFileHash(data);
+      await cdnUpload(CDNRoutes.uploadApplicationIcon(body.applicationId), { files: [{ data: data, name: hash }] });
 
-   const data = toArrayBuffer(body.icon);
-   const hash = getFileHash(data);
-   await cdnUpload(CDNRoutes.uploadApplicationIcon(body.applicationId), { files: [{ data: data, name: hash }] });
-
-   return c.text(hash as APIPostApplicationIconResult, HttpCode.CREATED);
-});
+      return status("Created", hash as APIPostApplicationIconResult);
+   },
+   { body: schema },
+);

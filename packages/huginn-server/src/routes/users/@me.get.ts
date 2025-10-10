@@ -1,12 +1,11 @@
-import { createRoute, verifyJwt } from "@huginn/backend-shared";
+import { verifyJwt2 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
-import { type APIGetCurrentUserResult, HttpCode } from "@huginn/shared";
+import { type APIGetCurrentUserResult } from "@huginn/shared";
+import Elysia from "elysia";
 
-createRoute("GET", "/api/users/@me", verifyJwt(), async (c) => {
-   const payload = c.get("tokenPayload");
+export const getMe = new Elysia().use(verifyJwt2()).get("/api/users/@me", async ({ tokenPayload, status }) => {
+   const user: APIGetCurrentUserResult = await prisma.user.getById(tokenPayload.id, { select: selectPrivateUser });
 
-   const user: APIGetCurrentUserResult = await prisma.user.getById(payload.id, { select: selectPrivateUser });
-
-   return c.json(user, HttpCode.OK);
+   return status("OK", user);
 });

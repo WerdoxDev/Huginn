@@ -1,19 +1,19 @@
-import { createRoute } from "@huginn/backend-shared";
-import { type APIGetAllReleasesResult, HttpCode } from "@huginn/shared";
+import { type APIGetAllReleasesResult } from "@huginn/shared";
 import { getAllAppReleases, getAppPackageVersion, getWindowsAssetUrl } from "#utils/route-utils";
+import Elysia from "elysia";
 
-createRoute("GET", "/api/all-releases", async (c) => {
-	const releases = await getAllAppReleases();
+export const getAllReleases = new Elysia().get("/api/all-releases", async ({ status }) => {
+   const releases = await getAllAppReleases();
 
-	const json: APIGetAllReleasesResult = releases.map((release) => {
-		return {
-			version: getAppPackageVersion(release.tag_name),
-			date: release.published_at ?? "",
-			windowsSetupUrl: getWindowsAssetUrl(release),
-			url: release.url,
-			description: release.body === null ? undefined : release.body,
-		};
-	});
+   const json: APIGetAllReleasesResult = releases.map((release) => {
+      return {
+         version: getAppPackageVersion(release.tag_name),
+         date: release.published_at ?? "",
+         windowsSetupUrl: getWindowsAssetUrl(release),
+         url: release.url,
+         description: release.body === null ? undefined : release.body,
+      };
+   });
 
-	return c.json(json, HttpCode.OK);
+   return status("OK", json);
 });

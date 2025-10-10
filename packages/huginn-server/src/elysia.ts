@@ -1,0 +1,123 @@
+import { getAllReleases } from "#routes/all-releases.get";
+import { postApplicationIcon } from "#routes/applications/icon.post";
+import { getKnownApplications } from "#routes/applications/known.get";
+import { postKnownApplication } from "#routes/applications/known.post";
+import { getGoogleCallback } from "#routes/auth/callback/google.get";
+import { getGoogle } from "#routes/auth/google.get";
+import { postLogin } from "#routes/auth/login.post";
+import { postLogout } from "#routes/auth/logout.post";
+import { postOauthConfirm } from "#routes/auth/oauth-confirm.post";
+import { postRefreshToken } from "#routes/auth/refresh-token.post";
+import { postRegister } from "#routes/auth/register.post";
+import { deleteChannel } from "#routes/channels/[channelId].delete";
+import { getChannel } from "#routes/channels/[channelId].get";
+import { patchChannel } from "#routes/channels/[channelId].patch";
+import { postCallRing } from "#routes/channels/[channelId]/call/ring.post";
+import { getChannelMessages } from "#routes/channels/[channelId]/messages.get";
+import { postChannelMessage } from "#routes/channels/[channelId]/messages.post";
+import { deleteMessage } from "#routes/channels/[channelId]/messages/[messageId].delete";
+import { getMessage } from "#routes/channels/[channelId]/messages/[messageId].get";
+import { patchMessage } from "#routes/channels/[channelId]/messages/[messageId].patch";
+import { postAckMessage } from "#routes/channels/[channelId]/messages/[messageId]/ack.post";
+import { deleteChannelRecipient } from "#routes/channels/[channelId]/recipients/[recipientId].delete";
+import { putChannelRecipient } from "#routes/channels/[channelId]/recipients/[recipientId].put";
+import { postTyping } from "#routes/channels/[channelId]/typing.post";
+import { getLatestRelease } from "#routes/latest-release.get";
+import { postLog } from "#routes/log.post";
+import { getOnlineUsers } from "#routes/online-users.get";
+import { postUniqueUsername } from "#routes/unique-username.post";
+import { getUpdate } from "#routes/update.get";
+import { getMe } from "#routes/users/@me.get";
+import { patchMe } from "#routes/users/@me.patch";
+import { getUserChannels } from "#routes/users/@me/channels.get";
+import { postUserChannel } from "#routes/users/@me/channels.post";
+import { getUserRelationships } from "#routes/users/@me/relationships.get";
+import { postUserRelationship } from "#routes/users/@me/relationships.post";
+import { deleteUserRelationship } from "#routes/users/@me/relationships/[userId].delete";
+import { getUserRelationship } from "#routes/users/@me/relationships/[userId].get";
+import { putUserRelationship } from "#routes/users/@me/relationships/[userId].put";
+import { patchUserSettings } from "#routes/users/@me/settings.patch";
+import { getUser } from "#routes/users/[userId].get";
+import { envs } from "#setup";
+import { elysia } from "@huginn/backend-shared";
+import Elysia from "elysia";
+import { getIndex } from "./routes";
+import { staticPlugin } from "@elysiajs/static";
+import { cors } from "@elysiajs/cors";
+import consola from "consola";
+
+export const main = new Elysia({
+   cookie: { secrets: envs.SESSION_PASSWORD, sign: ["oauth"], httpOnly: true, sameSite: "lax", secure: true, path: "/", maxAge: 60 * 5 },
+})
+   .use(cors())
+   .use(staticPlugin({ prefix: "" }))
+   .onError(({ error, code, status, path, request }) => {
+      consola.box(path, request.method, error);
+      if (code === "UNKNOWN") {
+         const returnedError = elysia.serverOnError(error, status);
+         // console.log(returnedError);
+         if (returnedError) {
+            return returnedError;
+         }
+      } else if (code === "VALIDATION" || code === "PARSE") {
+         return elysia.invalidBody(status);
+      } else if (code === "INTERNAL_SERVER_ERROR") {
+         return elysia.serverError(status);
+      }
+
+      return elysia.serverError(status);
+   })
+   // user
+   .use(getUserChannels)
+   .use(postUserChannel)
+   .use(getUserRelationships)
+   .use(postUserRelationship)
+   .use(getUser)
+   .use(getMe)
+   .use(patchMe)
+   .use(patchUserSettings)
+   .use(deleteUserRelationship)
+   .use(getUserRelationship)
+   .use(putUserRelationship)
+
+   // channel
+   .use(postChannelMessage)
+   .use(getChannelMessages)
+   .use(deleteChannel)
+   .use(getChannel)
+   .use(patchChannel)
+   .use(deleteChannelRecipient)
+   .use(putChannelRecipient)
+
+   // message
+   .use(patchMessage)
+   .use(postAckMessage)
+   .use(deleteMessage)
+   .use(getMessage)
+   .use(postTyping)
+
+   // call
+   .use(postCallRing)
+
+   // auth
+   .use(postLogin)
+   .use(postRegister)
+   .use(postLogout)
+   .use(postOauthConfirm)
+   .use(postRefreshToken)
+   .use(getGoogle)
+   .use(getGoogleCallback)
+
+   // applications
+   .use(postApplicationIcon)
+   .use(postKnownApplication)
+   .use(getKnownApplications)
+
+   // misc
+   .use(getAllReleases)
+   .use(getLatestRelease)
+   .use(getOnlineUsers)
+   .use(postUniqueUsername)
+   .use(getUpdate)
+   .use(postLog)
+   .use(getIndex);

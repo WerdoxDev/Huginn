@@ -1,126 +1,100 @@
-import {
-   createErrorFactory,
-   createHuginnError,
-   createRoute,
-   invalidFormBody,
-   missingAccess,
-   missingPermission,
-   verifyJwt,
-   waitUntil,
-} from "@huginn/backend-shared";
+import { createErrorFactory, elysia, verifyJwt2 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectAllMessage } from "@huginn/backend-shared/database/common";
-import { type APIMessage, Errors, HttpCode } from "@huginn/shared";
-import { safeDestr } from "destr";
-import { z } from "zod";
+import { type APIMessage, Errors } from "@huginn/shared";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { generateEmbedsFromContent, processEmbeds } from "#utils/route-utils";
 import { validateEmbeds } from "#utils/validation";
 import { filterMessage } from "#utils/helpers";
+import Elysia, { t } from "elysia";
 
-const jsonSchema = z.object({
-   content: z.optional(z.string()),
-   attachments: z.optional(z.array(z.object({ id: z.number(), description: z.optional(z.string()), filename: z.string() }))),
-   embeds: z.optional(
-      z.array(
-         z.object({
-            type: z.enum(["rich", "image", "video"]),
-            title: z.optional(z.string()),
-            url: z.optional(z.string()),
-            description: z.optional(z.string()),
-            timestamp: z.optional(z.string()),
-            thumbnail: z.optional(z.object({ url: z.string(), width: z.optional(z.number()), height: z.optional(z.number()) })),
+const schema = t.Object({
+   content: t.Optional(t.String()),
+   attachments: t.Optional(t.Array(t.Object({ id: t.Number(), description: t.Optional(t.String()), filename: t.String() }))),
+   embeds: t.Optional(
+      t.Array(
+         t.Object({
+            type: t.Union([t.Literal("rich"), t.Literal("image"), t.Literal("video")]),
+            title: t.Optional(t.String()),
+            url: t.Optional(t.String()),
+            description: t.Optional(t.String()),
+            timestamp: t.Optional(t.String()),
+            thumbnail: t.Optional(t.Object({ url: t.String(), width: t.Optional(t.Number()), height: t.Optional(t.Number()) })),
          }),
       ),
    ),
+   payload_json: t.Optional(t.String({ minLength: 1 })),
+   files: t.Optional(t.Nullable(t.Record(t.String(), t.File()))),
 });
 
-const formSchema = z.object({
-   payload_json: z.string().nonempty(),
-   files: z.record(z.string(), z.instanceof(File)),
-});
-
-createRoute("PATCH", "/api/channels/:channelId/messages/:messageId", verifyJwt(), async (c) => {
-   let body: z.infer<typeof jsonSchema>;
-   const contentType = c.req.header("Content-Type");
-
-   if (contentType?.includes("application/json")) {
-      const result = jsonSchema.safeParse(await c.req.json());
-
-      if (!result.success) {
-         return invalidFormBody(c);
-      }
-
-      body = result.data;
-   } else if (contentType?.includes("multipart/form-data")) {
-      const formData = await c.req.parseBody();
-      const formFiles: Record<string, File> = {};
-      for (const key of Object.keys(formData)) {
-         if (key.startsWith("files[")) {
-            formFiles[key] = formData[key] as File;
+export const patchMessage = new Elysia()
+   .use(verifyJwt2())
+   .state("message", undefined as APIMessage | undefined)
+   .patch(
+      "/api/channels/:channelId/messages/:messageId",
+      async ({ tokenPayload, params: { channelId, messageId }, status, body, store }) => {
+         // Check permission
+         const channel = await prisma.channel.getById(channelId, { select: { id: true } });
+         if (!(await prisma.user.hasChannel(tokenPayload.id, channel.id))) {
+            return elysia.missingAccess(status);
          }
-      }
 
-      const formResult = formSchema.safeParse({ ...formData, files: formFiles });
-      const jsonResult = jsonSchema.safeParse(safeDestr(formData.payload_json as string));
+         const messageToCheck = await prisma.message.getById(channelId, messageId, { select: { author: { select: { id: true } } } });
+         if (messageToCheck.author.id !== tokenPayload.id) {
+            return elysia.missingPermission(status);
+         }
 
-      if (!formResult.success || !jsonResult.success) {
-         return invalidFormBody(c);
-      }
+         // Body must have either content, attachment or embeds
+         if (!body.content && !body.attachments && !body.embeds) {
+            return elysia.invalidBody(status);
+         }
 
-      body = jsonResult.data;
-   } else {
-      return invalidFormBody(c);
-   }
+         // Validate embeds
+         const formError = createErrorFactory(Errors.invalidFormBody());
+         if (body.embeds && !validateEmbeds(body.embeds, formError)) {
+            return elysia.createHuginnError(formError, status);
+         }
 
-   const payload = c.get("tokenPayload");
-   const { channelId, messageId } = c.req.param();
+         const processedEmbeds = await processEmbeds(body.embeds);
 
-   // Check permission
-   const channel = await prisma.channel.getById(channelId, { select: { id: true } });
-   if (!(await prisma.user.hasChannel(payload.id, channel.id))) {
-      return missingAccess(c);
-   }
+         const dbMessage = await prisma.message.updateMessage(
+            messageId,
+            { content: body.content, embeds: processedEmbeds },
+            { select: selectAllMessage },
+         );
 
-   const messageToCheck = await prisma.message.getById(channelId, messageId, { select: { author: { select: { id: true } } } });
-   if (messageToCheck.author.id !== payload.id) {
-      return missingPermission(c);
-   }
+         const message: APIMessage = filterMessage(dbMessage);
+         store.message = message;
+         dispatchToTopic(channelId, "message_update", message);
 
-   // Body must have either content, attachment or embeds
-   if (!body.content && !body.attachments && !body.embeds) {
-      return invalidFormBody(c);
-   }
+         return status("OK", message);
+      },
+      {
+         body: schema,
+         async afterResponse({ body, params: { channelId }, store: { message } }) {
+            if (!message) {
+               return;
+            }
 
-   // Validate embeds
-   const formError = createErrorFactory(Errors.invalidFormBody());
-   if (body.embeds && !validateEmbeds(body.embeds, formError)) {
-      return createHuginnError(c, formError);
-   }
+            // Embed generation from urls inside the message content
+            const embeds = await generateEmbedsFromContent(body.content);
 
-   const processedEmbeds = await processEmbeds(body.embeds);
+            if (!embeds?.length) {
+               return;
+            }
 
-   const dbMessage = await prisma.message.updateMessage(
-      messageId,
-      { content: body.content, embeds: processedEmbeds },
-      { select: selectAllMessage },
+            const updatedMessage = await prisma.message.updateMessage(message.id, { embeds }, { select: selectAllMessage });
+
+            dispatchToTopic(channelId, "message_update", filterMessage(updatedMessage));
+         },
+         transform(ctx) {
+            const contentType = ctx.headers["content-type"];
+            if (contentType?.includes("multipart/form-data") && ctx.body.payload_json) {
+               const { payload_json, ...rest } = ctx.body;
+               const json = JSON.parse(payload_json);
+               const files = Object.keys(rest).length !== 0 ? { files: rest } : {};
+               ctx.body = { ...json, ...files };
+            }
+         },
+      },
    );
-
-   const message: APIMessage = filterMessage(dbMessage);
-   dispatchToTopic(channelId, "message_update", message);
-
-   // Embed generation from urls inside the message content
-   waitUntil(c, async () => {
-      const embeds = await generateEmbedsFromContent(body.content);
-
-      if (!embeds?.length) {
-         return;
-      }
-
-      const updatedMessage = await prisma.message.updateMessage(dbMessage.id, { embeds }, { select: selectAllMessage });
-
-      dispatchToTopic(channelId, "message_update", filterMessage(updatedMessage));
-   });
-
-   return c.json(message, HttpCode.OK);
-});

@@ -1,8 +1,7 @@
-import { createRoute, createToken, validator } from "@huginn/backend-shared";
-import { createErrorFactory, createHuginnError } from "@huginn/backend-shared";
+import { createToken, elysia } from "@huginn/backend-shared";
+import { createErrorFactory } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { constants, type APIPostRegisterResult, Errors, HttpCode } from "@huginn/shared";
-import { z } from "zod";
+import { constants, type APIPostRegisterResult, Errors } from "@huginn/shared";
 import {
    validateDisplayName,
    validateEmail,
@@ -11,44 +10,48 @@ import {
    validateUsername,
    validateUsernameUnique,
 } from "#utils/validation";
+import Elysia, { t } from "elysia";
 
-const schema = z.object({
-   username: z.string(),
-   displayName: z.nullable(z.string()),
-   email: z.string(),
-   password: z.string(),
+const schema = t.Object({
+   username: t.String(),
+   displayName: t.Nullable(t.String()),
+   email: t.String(),
+   password: t.String(),
 });
 
-createRoute("POST", "/api/auth/register", validator("json", schema), async (c) => {
-   const body = c.req.valid("json");
-   body.username = body.username.toLowerCase();
+export const postRegister = new Elysia().post(
+   "/api/auth/register",
+   async ({ status, body }) => {
+      body.username = body.username.toLowerCase();
 
-   const formError = createErrorFactory(Errors.invalidFormBody());
+      const formError = createErrorFactory(Errors.invalidFormBody());
 
-   validateUsername(body.username, formError);
-   validateDisplayName(body.displayName, formError);
-   validatePassword(body.password, formError);
-   validateEmail(body.email, formError);
+      validateUsername(body.username, formError);
+      validateDisplayName(body.displayName, formError);
+      validatePassword(body.password, formError);
+      validateEmail(body.email, formError);
 
-   if (formError.hasErrors()) {
-      return createHuginnError(c, formError);
-   }
+      if (formError.hasErrors()) {
+         return elysia.createHuginnError(formError, status);
+      }
 
-   const databaseError = createErrorFactory(Errors.invalidFormBody());
+      const databaseError = createErrorFactory(Errors.invalidFormBody());
 
-   await validateUsernameUnique(body.username, databaseError);
-   await validateEmailUnique(body.email, databaseError);
+      await validateUsernameUnique(body.username, databaseError);
+      await validateEmailUnique(body.email, databaseError);
 
-   if (databaseError.hasErrors()) {
-      return createHuginnError(c, databaseError);
-   }
+      if (databaseError.hasErrors()) {
+         return elysia.createHuginnError(databaseError, status);
+      }
 
-   const user = await prisma.user.createOne(body);
+      const user = await prisma.user.createOne(body);
 
-   const accessToken = await createToken("user-access", { id: user.id, isOAuth: false }, constants.ACCESS_TOKEN_EXPIRE_TIME);
-   const refreshToken = await createToken("user-refresh", { id: user.id }, constants.REFRESH_TOKEN_EXPIRE_TIME);
+      const accessToken = await createToken("user-access", { id: user.id, isOAuth: false }, constants.ACCESS_TOKEN_EXPIRE_TIME);
+      const refreshToken = await createToken("user-refresh", { id: user.id }, constants.REFRESH_TOKEN_EXPIRE_TIME);
 
-   const json: APIPostRegisterResult = { ...user, token: accessToken, refreshToken: refreshToken };
+      const json: APIPostRegisterResult = { ...user, token: accessToken, refreshToken: refreshToken };
 
-   return c.json(json, HttpCode.CREATED);
-});
+      return status("Created", json);
+   },
+   { body: schema },
+);

@@ -1,21 +1,21 @@
 import { filterChannel } from "#utils/helpers";
-import { createRoute, missingAccess, verifyJwt } from "@huginn/backend-shared";
+import { elysia, verifyJwt2 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { omitChannelRecipient, selectChannelDefaults } from "@huginn/backend-shared/database/common";
-import { type APIGetChannelByIdResult, HttpCode, merge } from "@huginn/shared";
+import { type APIGetChannelByIdResult, merge } from "@huginn/shared";
+import Elysia from "elysia";
 
-createRoute("GET", "/api/channels/:channelId", verifyJwt(), async (c) => {
-   const payload = c.get("tokenPayload");
-   const { channelId } = c.req.param();
+export const getChannel = new Elysia()
+   .use(verifyJwt2())
+   .get("/api/channels/:channelId", async ({ status, params: { channelId }, tokenPayload }) => {
+      const channel = await prisma.channel.getById(channelId, {
+         select: merge(selectChannelDefaults, omitChannelRecipient(tokenPayload.id)),
+      });
 
-   const channel = await prisma.channel.getById(channelId, {
-      select: merge(selectChannelDefaults, omitChannelRecipient(payload.id)),
+      if (!(await prisma.user.hasChannel(tokenPayload.id, channelId))) {
+         return elysia.missingAccess(status);
+      }
+
+      const json: APIGetChannelByIdResult = filterChannel(channel);
+      return status("OK", json);
    });
-
-   if (!(await prisma.user.hasChannel(payload.id, channelId))) {
-      return missingAccess(c);
-   }
-
-   const json: APIGetChannelByIdResult = filterChannel(channel);
-   return c.json(json, HttpCode.OK);
-});

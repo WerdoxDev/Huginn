@@ -1,22 +1,21 @@
-import { type APIGetLatestReleaseResult, HttpCode } from "@huginn/shared";
-
-import { createRoute } from "@huginn/backend-shared";
+import { type APIGetLatestReleaseResult } from "@huginn/shared";
 import { getAllAppReleases, getAppPackageVersion, getWindowsAssetUrl } from "#utils/route-utils";
+import Elysia from "elysia";
 
-createRoute("GET", "/api/latest-release", async (c) => {
-	const releases = await getAllAppReleases();
+export const getLatestRelease = new Elysia().get("/api/latest-release", async ({ status }) => {
+   const releases = await getAllAppReleases();
 
-	const [latestRelease] = releases;
+   const [latestRelease] = releases;
 
-	const releaseWindowsSetupUrl = getWindowsAssetUrl(latestRelease);
+   const releaseWindowsSetupUrl = getWindowsAssetUrl(latestRelease);
 
-	const json: APIGetLatestReleaseResult = latestRelease && {
-		version: getAppPackageVersion(latestRelease.tag_name),
-		date: latestRelease.published_at ?? "",
-		windowsSetupUrl: releaseWindowsSetupUrl,
-		url: latestRelease.url,
-		description: latestRelease.body === null ? undefined : latestRelease.body,
-	};
+   const json: APIGetLatestReleaseResult = latestRelease && {
+      version: getAppPackageVersion(latestRelease.tag_name),
+      date: latestRelease.published_at ?? "",
+      windowsSetupUrl: releaseWindowsSetupUrl,
+      url: latestRelease.url,
+      description: latestRelease.body === null ? undefined : latestRelease.body,
+   };
 
-	return c.json(json, HttpCode.OK);
+   return status("OK", json);
 });

@@ -29,6 +29,15 @@ const currentIndexes = { users: 0, channels: 0, relationships: 0, messages: 0 };
 const removeUsersQueue: bigint[] = [];
 const removeChannelsQueue: bigint[] = [];
 
+export async function handle<P extends Promise<any>>(promise: P) {
+   const result = await promise;
+   if (result.error) {
+      throw result.error.value.message;
+   }
+
+   return result as Awaited<P>;
+}
+
 export async function getWebSocket() {
    const ws = new WebSocket("ws://localhost:3004/gateway");
    connectedWebsockets.push(ws);
@@ -131,6 +140,10 @@ export function testIsDispatch<Event extends keyof GatewayEvents>(data: unknown,
 
 export function authHeader(token: string) {
    return { Authorization: `Bearer ${token}` };
+}
+
+export function authHeader2(token: string) {
+   return { headers: { Authorization: `Bearer ${token}` } };
 }
 
 export async function resolveAll(...promises: Promise<unknown>[]) {

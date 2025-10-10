@@ -1,26 +1,25 @@
-import { createRoute, verifyJwt } from "@huginn/backend-shared";
+import { verifyJwt2 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { HttpCode } from "@huginn/shared";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
+import Elysia from "elysia";
 
-createRoute("DELETE", "/api/users/@me/relationships/:userId", verifyJwt(), async (c) => {
-   const payload = c.get("tokenPayload");
-   const { userId } = c.req.param();
+export const deleteUserRelationship = new Elysia()
+   .use(verifyJwt2())
+   .delete("/api/users/@me/relationships/:userId", async ({ tokenPayload, params: { userId }, status }) => {
+      await prisma.relationship.deleteByUserId(tokenPayload.id, userId);
 
-   await prisma.relationship.deleteByUserId(payload.id, userId);
+      dispatchToTopic(tokenPayload.id, "relationship_remove", userId);
+      dispatchToTopic(userId, "relationship_remove", tokenPayload.id);
 
-   dispatchToTopic(payload.id, "relationship_remove", userId);
-   dispatchToTopic(userId, "relationship_remove", payload.id);
+      gateway.presenceManager.sendToUser(tokenPayload.id, userId, true);
+      gateway.presenceManager.sendToUser(userId, tokenPayload.id, true);
 
-   gateway.presenceManager.sendToUser(payload.id, userId, true);
-   gateway.presenceManager.sendToUser(userId, payload.id, true);
+      gateway.unsubscribeSessionsFromTopic(tokenPayload.id, `${userId}_public`);
+      gateway.unsubscribeSessionsFromTopic(tokenPayload.id, `${userId}_presence`);
 
-   gateway.unsubscribeSessionsFromTopic(payload.id, `${userId}_public`);
-   gateway.unsubscribeSessionsFromTopic(payload.id, `${userId}_presence`);
+      gateway.unsubscribeSessionsFromTopic(userId, `${tokenPayload.id}_public`);
+      gateway.unsubscribeSessionsFromTopic(userId, `${tokenPayload.id}_presence`);
 
-   gateway.unsubscribeSessionsFromTopic(userId, `${payload.id}_public`);
-   gateway.unsubscribeSessionsFromTopic(userId, `${payload.id}_presence`);
-
-   return c.newResponse(null, HttpCode.NO_CONTENT);
-});
+      return status("No Content");
+   });

@@ -1,20 +1,20 @@
-import { createRoute, verifyJwt } from "@huginn/backend-shared";
+import { verifyJwt2 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { omitChannelRecipient } from "@huginn/backend-shared/database/common";
-import { HttpCode, merge } from "@huginn/shared";
+import { merge } from "@huginn/shared";
 import { dispatchToTopic } from "#utils/gateway-utils";
+import { Elysia } from "elysia";
 
-createRoute("POST", "/api/channels/:channelId/typing", verifyJwt(), async (c) => {
-   const payload = c.get("tokenPayload");
-   const { channelId } = c.req.param();
+export const postTyping = new Elysia()
+   .use(verifyJwt2())
+   .post("/api/channels/:channelId/typing", async ({ params: { channelId }, tokenPayload, status }) => {
+      const channel = await prisma.channel.getById(channelId, {
+         select: merge({ recipients: { select: { id: true } } }, omitChannelRecipient(tokenPayload.id)),
+      });
 
-   const channel = await prisma.channel.getById(channelId, {
-      select: merge({ recipients: { select: { id: true } } }, omitChannelRecipient(payload.id)),
+      for (const recipient of channel.recipients) {
+         dispatchToTopic(recipient.id, "typing_start", { channelId, userId: tokenPayload.id, timestamp: Date.now() });
+      }
+
+      return status("No Content");
    });
-
-   for (const recipient of channel.recipients) {
-      dispatchToTopic(recipient.id, "typing_start", { channelId, userId: payload.id, timestamp: Date.now() });
-   }
-
-   return c.newResponse(null, HttpCode.NO_CONTENT);
-});

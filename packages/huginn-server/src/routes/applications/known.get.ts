@@ -1,21 +1,24 @@
 import { filterKnownApplication } from "#utils/helpers";
-import { createRoute, validator, verifyJwt } from "@huginn/backend-shared";
+import { verifyJwt2 } from "@huginn/backend-shared";
 import { selectKnownApplication } from "@huginn/backend-shared/database/common";
 import { prisma } from "@huginn/backend-shared/database/index";
-import { HttpCode, type APIGetKnownApplicationsResult } from "@huginn/shared";
-import z from "zod";
+import { type APIGetKnownApplicationsResult } from "@huginn/shared";
+import Elysia, { t } from "elysia";
 
-const querySchema = z.object({ since: z.optional(z.string()) });
+const querySchema = t.Object({ since: t.Optional(t.Number()) });
 
-createRoute("GET", "/api/applications/known", verifyJwt(), validator("query", querySchema), async (c) => {
-   const { since } = c.req.valid("query");
+export const getKnownApplications = new Elysia().use(verifyJwt2()).get(
+   "/api/applications/known",
+   async ({ status, query: { since } }) => {
+      const sinceDate = since ? new Date(since) : undefined;
+      const knownApplications = await prisma.knownApplication.getAll(sinceDate, { select: selectKnownApplication });
 
-   const sinceDate = since ? new Date(Number(since)) : undefined;
-   const knownApplications = await prisma.knownApplication.getAll(sinceDate, { select: selectKnownApplication });
+      const json: APIGetKnownApplicationsResult = {
+         lastUpdated: new Date().toISOString(),
+         applications: knownApplications.map((x) => filterKnownApplication(x)),
+      };
 
-   const json: APIGetKnownApplicationsResult = {
-      lastUpdated: new Date().toISOString(),
-      applications: knownApplications.map((x) => filterKnownApplication(x)),
-   };
-   return c.json(json, HttpCode.OK);
-});
+      return status("OK", json);
+   },
+   { query: querySchema },
+);

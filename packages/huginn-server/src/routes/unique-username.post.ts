@@ -1,15 +1,16 @@
-import { createRoute, validator } from "@huginn/backend-shared";
-import { type APIPostUniqueUsernameResult, HttpCode } from "@huginn/shared";
-import { z } from "zod";
+import { type APIPostUniqueUsernameResult } from "@huginn/shared";
 import { validateUsernameUnique } from "#utils/validation";
+import Elysia, { t } from "elysia";
 
-const schema = z.object({ username: z.string() });
+const schema = t.Object({ username: t.String() });
 
-createRoute("POST", "/api/unique-username", validator("json", schema), async (c) => {
-	const body = c.req.valid("json");
+export const postUniqueUsername = new Elysia().post(
+   "/api/unique-username",
+   async ({ status, body }) => {
+      const isUnique = await validateUsernameUnique(body.username.toLowerCase());
+      const json: APIPostUniqueUsernameResult = { taken: !isUnique };
 
-	const isUnique = await validateUsernameUnique(body.username.toLowerCase());
-	const json: APIPostUniqueUsernameResult = { taken: !isUnique };
-
-	return c.json(json, HttpCode.OK);
-});
+      return status("OK", json);
+   },
+   { body: schema },
+);

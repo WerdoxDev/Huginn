@@ -1,4 +1,4 @@
-import { createErrorFactory, createHuginnError, createRoute, createToken, unauthorized, validator, verifyJwt } from "@huginn/backend-shared";
+import { createErrorFactory, createToken, elysia, verifyJwt2 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
 import {
@@ -6,7 +6,6 @@ import {
    type APIPostOAuthConfirmResult,
    CDNRoutes,
    Errors,
-   HttpCode,
    UserFlags,
    WorkerID,
    getFileHash,
@@ -14,77 +13,81 @@ import {
    snowflake,
    toArrayBuffer,
 } from "@huginn/shared";
-import { z } from "zod";
 import { cdnUpload } from "#utils/server-request";
 // import { createTokens } from "#utils/token-factory";
 import { validateDisplayName, validateUsername, validateUsernameUnique } from "#utils/validation";
+import Elysia, { t } from "elysia";
 
-const schema = z.object({ username: z.string(), displayName: z.nullable(z.string()), avatar: z.nullable(z.string()) });
+const schema = t.Object({ username: t.String(), displayName: t.Nullable(t.String()), avatar: t.Nullable(t.String()) });
 
-createRoute("POST", "/api/auth/oauth-confirm", verifyJwt("oauth"), validator("json", schema), async (c) => {
-   const payload = c.get("oauthTokenPayload");
-   const body = c.req.valid("json");
+export const postOauthConfirm = new Elysia().use(verifyJwt2("oauth")).post(
+   "/api/auth/oauth-confirm",
+   async ({ body, status, tokenPayload }) => {
+      const identityProvider = await prisma.identityProvider.findUnique({ where: { id: BigInt(tokenPayload.providerId) } });
 
-   const identityProvider = await prisma.identityProvider.findUnique({ where: { id: BigInt(payload.providerId) } });
+      if (!identityProvider) {
+         return elysia.unauthorized(status);
+      }
 
-   if (!identityProvider) {
-      return unauthorized(c);
-   }
+      const formError = createErrorFactory(Errors.invalidFormBody());
 
-   const formError = createErrorFactory(Errors.invalidFormBody());
+      validateUsername(body.username, formError);
+      validateDisplayName(body.displayName, formError);
 
-   validateUsername(body.username, formError);
-   validateDisplayName(body.displayName, formError);
+      if (formError.hasErrors()) {
+         return elysia.createHuginnError(formError, status);
+      }
 
-   if (formError.hasErrors()) {
-      return createHuginnError(c, formError);
-   }
+      const databaseError = createErrorFactory(Errors.invalidFormBody());
 
-   const databaseError = createErrorFactory(Errors.invalidFormBody());
+      if (!(await validateUsernameUnique(body.username, databaseError))) {
+         return elysia.createHuginnError(databaseError, status);
+      }
 
-   if (!(await validateUsernameUnique(body.username, databaseError))) {
-      return createHuginnError(c, databaseError);
-   }
+      const newUserId = snowflake.generateString(WorkerID.AUTH);
 
-   const newUserId = snowflake.generateString(WorkerID.AUTH);
+      // null means no avatar, other values are set
+      let avatarHash: string | null = null;
+      if (body.avatar !== null) {
+         const data = toArrayBuffer(body.avatar);
+         avatarHash = getFileHash(data);
 
-   // null means no avatar, other values are set
-   let avatarHash: string | null = null;
-   if (body.avatar !== null) {
-      const data = toArrayBuffer(body.avatar);
-      avatarHash = getFileHash(data);
+         avatarHash = (
+            await cdnUpload<string>(CDNRoutes.uploadAvatar(newUserId), {
+               files: [{ data: data, name: avatarHash }],
+            })
+         ).split(".")[0];
+      } else if (body.avatar === null) {
+         avatarHash = null;
+      }
 
-      avatarHash = (
-         await cdnUpload<string>(CDNRoutes.uploadAvatar(newUserId), {
-            files: [{ data: data, name: avatarHash }],
-         })
-      ).split(".")[0];
-   } else if (body.avatar === null) {
-      avatarHash = null;
-   }
+      //TODO: PUT THIS IN USER MODEL UTILS
+      const user = idFix(
+         await prisma.user.create({
+            data: {
+               id: BigInt(newUserId),
+               email: tokenPayload.email,
+               username: body.username,
+               displayName: body.displayName,
+               avatar: avatarHash,
+               flags: UserFlags.NONE,
+               password: null,
+               system: false,
+            },
+            select: selectPrivateUser,
+         }),
+      );
 
-   //TODO: PUT THIS IN USER MODEL UTILS
-   const user = idFix(
-      await prisma.user.create({
-         data: {
-            id: BigInt(newUserId),
-            email: payload.email,
-            username: body.username,
-            displayName: body.displayName,
-            avatar: avatarHash,
-            flags: UserFlags.NONE,
-            password: null,
-            system: false,
-         },
-         select: selectPrivateUser,
-      }),
-   );
+      await prisma.identityProvider.update({
+         where: { providerUserId: tokenPayload.providerUserId },
+         data: { userId: BigInt(user.id), completed: true },
+      });
 
-   await prisma.identityProvider.update({ where: { providerUserId: payload.providerUserId }, data: { userId: BigInt(user.id), completed: true } });
+      const accessToken = await createToken("user-access", { id: user.id, isOAuth: true }, constants.ACCESS_TOKEN_EXPIRE_TIME);
+      const refreshToken = await createToken("user-refresh", { id: user.id }, constants.REFRESH_TOKEN_EXPIRE_TIME);
 
-   const accessToken = await createToken("user-access", { id: user.id, isOAuth: true }, constants.ACCESS_TOKEN_EXPIRE_TIME);
-   const refreshToken = await createToken("user-refresh", { id: user.id }, constants.REFRESH_TOKEN_EXPIRE_TIME);
-
-   const json: APIPostOAuthConfirmResult = { ...user, token: accessToken, refreshToken: refreshToken };
-   return c.json(json, HttpCode.CREATED);
-});
+      const json: APIPostOAuthConfirmResult = { ...user, token: accessToken, refreshToken: refreshToken };
+      return status("Created", json);
+   },
+   { body: schema },
+);

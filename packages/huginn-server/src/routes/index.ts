@@ -1,5 +1,5 @@
-import { createRoute } from "@huginn/backend-shared";
+import Elysia, { status } from "elysia";
 
-createRoute("GET", "/api", (c) => {
-	return c.text("API Home");
+export const getIndex = new Elysia().get("/", () => {
+   return status("OK", "API Home");
 });

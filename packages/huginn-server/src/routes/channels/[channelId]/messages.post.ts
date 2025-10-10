@@ -1,151 +1,126 @@
-import {
-   createErrorFactory,
-   createHuginnError,
-   createRoute,
-   invalidFormBody,
-   missingAccess,
-   verifyJwt,
-   waitUntil,
-} from "@huginn/backend-shared";
+import { createErrorFactory, elysia, tryCatch, verifyJwt2 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectAllMessage } from "@huginn/backend-shared/database/common";
-import { type APIMessage, Errors, HttpCode, MessageType, WorkerID, snowflake } from "@huginn/shared";
-import { safeDestr } from "destr";
-import { z } from "zod";
+import { type APIMessage, Errors, MessageType, WorkerID, snowflake } from "@huginn/shared";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { generateEmbedsFromContent, processAttachments, processEmbeds } from "#utils/route-utils";
 import { validateEmbeds } from "#utils/validation";
 import { filterMessage } from "#utils/helpers";
+import Elysia, { t } from "elysia";
 
-const jsonSchema = z.object({
-   content: z.optional(z.string()),
-   attachments: z.optional(z.array(z.object({ id: z.number(), description: z.optional(z.string()), filename: z.string() }))),
-   embeds: z.optional(
-      z.array(
-         z.object({
-            type: z.enum(["rich", "image", "video"]),
-            title: z.optional(z.string()),
-            url: z.optional(z.string()),
-            description: z.optional(z.string()),
-            timestamp: z.optional(z.string()),
-            thumbnail: z.optional(z.object({ url: z.string(), width: z.optional(z.number()), height: z.optional(z.number()) })),
+const schema = t.Object({
+   content: t.Optional(t.String()),
+   attachments: t.Optional(t.Array(t.Object({ id: t.Number(), description: t.Optional(t.String()), filename: t.String() }))),
+   embeds: t.Optional(
+      t.Array(
+         t.Object({
+            type: t.Union([t.Literal("rich"), t.Literal("image"), t.Literal("video")]),
+            title: t.Optional(t.String()),
+            url: t.Optional(t.String()),
+            description: t.Optional(t.String()),
+            timestamp: t.Optional(t.String()),
+            thumbnail: t.Optional(t.Object({ url: t.String(), width: t.Optional(t.Number()), height: t.Optional(t.Number()) })),
          }),
       ),
    ),
-   messageReference: z.optional(z.object({ type: z.number(), messageId: z.string(), channelId: z.string() })),
-   flags: z.optional(z.number()),
-   nonce: z.optional(z.string()),
+   messageReference: t.Optional(t.Object({ type: t.Number(), messageId: t.String(), channelId: t.String() })),
+   flags: t.Optional(t.Number()),
+   nonce: t.Optional(t.String()),
+   payload_json: t.Optional(t.String({ minLength: 1 })),
+   files: t.Optional(t.Nullable(t.Record(t.String(), t.File()))),
 });
 
-const formSchema = z.object({
-   payload_json: z.string().nonempty(),
-   files: z.record(z.string(), z.instanceof(File)),
-});
-
-createRoute("POST", "/api/channels/:channelId/messages", verifyJwt(), async (c) => {
-   let body: z.infer<typeof jsonSchema>;
-   let files: Record<string, File> = {};
-   const contentType = c.req.header("Content-Type");
-
-   if (contentType?.includes("application/json")) {
-      const result = jsonSchema.safeParse(await c.req.json());
-
-      if (!result.success) {
-         return invalidFormBody(c);
-      }
-
-      body = result.data;
-   } else if (contentType?.includes("multipart/form-data")) {
-      const formData = await c.req.parseBody();
-      const formFiles: Record<string, File> = {};
-      for (const key of Object.keys(formData)) {
-         if (key.startsWith("files[")) {
-            formFiles[key] = formData[key] as File;
+export const postChannelMessage = new Elysia()
+   .use(verifyJwt2())
+   .state("message", undefined as APIMessage | undefined)
+   .post(
+      "/api/channels/:channelId/messages",
+      async ({ params: { channelId }, body, tokenPayload, status, store }) => {
+         // Check permission
+         const channel = await prisma.channel.getById(channelId, { select: { id: true } });
+         if (!(await prisma.user.hasChannel(tokenPayload.id, channel.id))) {
+            return elysia.missingAccess(status);
          }
-      }
 
-      const formResult = formSchema.safeParse({ ...formData, files: formFiles });
-      const jsonResult = jsonSchema.safeParse(safeDestr(formData.payload_json as string));
+         // Body must have either content, attachment or embeds
+         if (!body.content && !body.attachments && !body.embeds) {
+            return elysia.invalidBody(status);
+         }
 
-      if (!formResult.success || !jsonResult.success) {
-         return invalidFormBody(c);
-      }
+         // Validate embeds
+         const formError = createErrorFactory(Errors.invalidFormBody());
+         if (body.embeds && !validateEmbeds(body.embeds, formError)) {
+            return elysia.createHuginnError(formError, status, "Bad Request");
+         }
 
-      body = jsonResult.data;
-      files = formResult.data.files;
-   } else {
-      return invalidFormBody(c);
-   }
+         // Validate attachments
+         if (body.attachments && body.files) {
+            for (const [i, attachment] of body.attachments.entries()) {
+               if (!(`files[${attachment.id}]` in body.files) || body.files[`files[${i}]`]?.name !== attachment.filename)
+                  return elysia.invalidBody(status);
+            }
+         }
 
-   const payload = c.get("tokenPayload");
-   const { channelId } = c.req.param();
+         const messageId = snowflake.generate(WorkerID.MESSAGE);
 
-   // Check permission
-   const channel = await prisma.channel.getById(channelId, { select: { id: true } });
-   if (!(await prisma.user.hasChannel(payload.id, channel.id))) {
-      return missingAccess(c);
-   }
+         const processedAttachments = await processAttachments(body.attachments, body.files, channelId, messageId.toString());
 
-   // Body must have either content, attachment or embeds
-   if (!body.content && !body.attachments && !body.embeds) {
-      return invalidFormBody(c);
-   }
+         // Fetch image data from embeds
+         const processedEmbeds = await processEmbeds(body.embeds);
 
-   // Validate embeds
-   const formError = createErrorFactory(Errors.invalidFormBody());
-   if (body.embeds && !validateEmbeds(body.embeds, formError)) {
-      return createHuginnError(c, formError);
-   }
+         const dbMessage = await prisma.message.createOne(
+            {
+               id: messageId,
+               authorId: tokenPayload.id,
+               channelId,
+               type: body.messageReference ? MessageType.REPLY : MessageType.DEFAULT,
+               content: body.content,
+               attachments: processedAttachments,
+               messageReference: body.messageReference,
+               embeds: processedEmbeds.length === 0 ? undefined : processedEmbeds,
+               flags: body.flags,
+            },
+            { select: selectAllMessage },
+         );
 
-   // Validate attachments
-   if (body.attachments) {
-      for (const [i, attachment] of body.attachments.entries()) {
-         if (!(`files[${attachment.id}]` in files) || files[`files[${i}]`].name !== attachment.filename) return invalidFormBody(c);
-      }
-   }
+         const message: APIMessage = filterMessage(dbMessage);
+         message.nonce = body.nonce;
+         store.message = message;
 
-   const messageId = snowflake.generate(WorkerID.MESSAGE);
+         dispatchToTopic(channelId, "message_create", message);
 
-   const processedAttachments = await processAttachments(body.attachments, files, channelId, messageId.toString());
-
-   // Fetch image data from embeds
-   const processedEmbeds = await processEmbeds(body.embeds);
-
-   const dbMessage = await prisma.message.createOne(
-      {
-         id: messageId,
-         authorId: payload.id,
-         channelId,
-         type: body.messageReference ? MessageType.REPLY : MessageType.DEFAULT,
-         content: body.content,
-         attachments: processedAttachments,
-         messageReference: body.messageReference,
-         embeds: processedEmbeds.length === 0 ? undefined : processedEmbeds,
-         flags: body.flags,
+         return status("Created", message);
       },
-      { select: selectAllMessage },
+      {
+         body: schema,
+         async afterResponse({ tokenPayload, params: { channelId }, body, store: { message } }) {
+            if (!message || !tokenPayload) {
+               return;
+            }
+
+            // update read state to be the new created message
+            // try catch here is to ignore any errors.
+            await tryCatch(() => prisma.readState.updateLastRead(tokenPayload.id, channelId, message.id));
+
+            // Embed generation from urls inside the message content
+            const embeds = await generateEmbedsFromContent(body.content);
+
+            if (!embeds?.length) {
+               return;
+            }
+
+            const updatedMessage = await prisma.message.updateMessage(message.id, { embeds }, { select: selectAllMessage });
+
+            dispatchToTopic(channelId, "message_update", filterMessage(updatedMessage));
+         },
+         transform(ctx) {
+            const contentType = ctx.headers["content-type"];
+            if (contentType?.includes("multipart/form-data") && ctx.body.payload_json) {
+               const { payload_json, ...rest } = ctx.body;
+               const json = JSON.parse(payload_json);
+               const files = Object.keys(rest).length !== 0 ? { files: rest } : {};
+               ctx.body = { ...json, ...files };
+            }
+         },
+      },
    );
-
-   const message: APIMessage = filterMessage(dbMessage);
-   message.nonce = body.nonce;
-
-   dispatchToTopic(channelId, "message_create", message);
-
-   waitUntil(c, async () => {
-      // update read state to be the new created message
-      await prisma.readState.updateLastRead(payload.id, channelId, message.id);
-
-      // Embed generation from urls inside the message content
-      const embeds = await generateEmbedsFromContent(body.content);
-
-      if (!embeds?.length) {
-         return;
-      }
-
-      const updatedMessage = await prisma.message.updateMessage(dbMessage.id, { embeds }, { select: selectAllMessage });
-
-      dispatchToTopic(channelId, "message_update", filterMessage(updatedMessage));
-   });
-
-   return c.json(message, HttpCode.CREATED);
-});

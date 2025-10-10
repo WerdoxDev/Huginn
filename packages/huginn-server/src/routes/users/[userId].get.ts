@@ -1,12 +1,11 @@
-import { createRoute, verifyJwt } from "@huginn/backend-shared";
+import { verifyJwt2 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectPublicUser } from "@huginn/backend-shared/database/common";
-import { type APIPublicUser, HttpCode } from "@huginn/shared";
+import { type APIPublicUser } from "@huginn/shared";
+import Elysia from "elysia";
 
-createRoute("GET", "/api/users/:userId", verifyJwt(), async (c) => {
-   const { userId } = c.req.param();
-
+export const getUser = new Elysia().use(verifyJwt2()).get("/api/users/:userId", async ({ params: { userId }, status }) => {
    const user: APIPublicUser = await prisma.user.getById(userId, { select: selectPublicUser });
 
-   return c.json(user, HttpCode.OK);
+   return status("OK", user);
 });

@@ -1,33 +1,44 @@
-import { createRoute, createToken, tryCatch, validator } from "@huginn/backend-shared";
-import { createErrorFactory, createHuginnError } from "@huginn/backend-shared";
+import { createToken, elysia, tryCatch } from "@huginn/backend-shared";
+import { createErrorFactory } from "@huginn/backend-shared";
 import { assertError } from "@huginn/backend-shared/database";
 import { prisma } from "@huginn/backend-shared/database";
 import { DBErrorType } from "@huginn/backend-shared/types";
-import { constants, type APIPostLoginResult, Errors, Fields, HttpCode } from "@huginn/shared";
-import { z } from "zod";
+import { constants, type APIPostLoginResult, Errors, Fields } from "@huginn/shared";
+import Elysia, { t } from "elysia";
 
-const schema = z.object({
-   username: z.optional(z.string()),
-   email: z.optional(z.string()),
-   password: z.string(),
-});
+export const postLogin = new Elysia().post(
+   "/api/auth/login",
+   async ({ body, status }) => {
+      if (!body.email && !body.username) {
+         return elysia.invalidBody(status);
+      }
 
-createRoute("POST", "/api/auth/login", validator("json", schema), async (c) => {
-   const body = c.req.valid("json");
+      const [error, user] = await tryCatch(async () => await prisma.user.findByCredentials(body));
 
-   const [error, user] = await tryCatch(async () => await prisma.user.findByCredentials(body));
+      if (assertError(error, DBErrorType.NULL_USER)) {
+         return status(
+            402,
+            createErrorFactory(Errors.invalidFormBody())
+               .addError("login", Fields.invalidLogin())
+               .addError("password", Fields.invalidLogin())
+               .toObject(),
+         );
+      }
+      if (error) {
+         throw error;
+      }
 
-   if (assertError(error, DBErrorType.NULL_USER)) {
-      return createHuginnError(
-         c,
-         createErrorFactory(Errors.invalidFormBody()).addError("login", Fields.invalidLogin()).addError("password", Fields.invalidLogin()),
-      );
-   }
-   if (error) throw error;
+      const accessToken = await createToken("user-access", { id: user.id, isOAuth: false }, constants.ACCESS_TOKEN_EXPIRE_TIME);
+      const refreshToken = await createToken("user-refresh", { id: user.id }, constants.REFRESH_TOKEN_EXPIRE_TIME);
 
-   const accessToken = await createToken("user-access", { id: user.id, isOAuth: false }, constants.ACCESS_TOKEN_EXPIRE_TIME);
-   const refreshToken = await createToken("user-refresh", { id: user.id }, constants.REFRESH_TOKEN_EXPIRE_TIME);
-
-   const json: APIPostLoginResult = { ...user, token: accessToken, refreshToken: refreshToken };
-   return c.json(json, HttpCode.OK);
-});
+      const json: APIPostLoginResult = { ...user, token: accessToken, refreshToken: refreshToken };
+      return status(200, json);
+   },
+   {
+      body: t.Object({
+         username: t.Optional(t.String()),
+         email: t.Optional(t.String()),
+         password: t.String(),
+      }),
+   },
+);

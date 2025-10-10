@@ -1,4 +1,12 @@
-import { type DBAttachment, type DBEmbed, getImageData, getVideoData, type TokenType, unauthorized, verifyToken } from "@huginn/backend-shared";
+import {
+   type DBAttachment,
+   type DBEmbed,
+   getImageData,
+   getVideoData,
+   type TokenType,
+   unauthorized,
+   verifyToken,
+} from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import {
    type APIEmbed,
@@ -204,7 +212,9 @@ export async function generateEmbedsFromContent(content?: string) {
             title: metadata.title,
             url: metadata.url,
             description: metadata.description,
-            thumbnail: thumbnailData ? { url: metadata.image, width: thumbnailData.width ?? 0, height: thumbnailData.height ?? 0 } : undefined,
+            thumbnail: thumbnailData
+               ? { url: metadata.image, width: thumbnailData.width ?? 0, height: thumbnailData.height ?? 0 }
+               : undefined,
          });
       }
    }
@@ -244,12 +254,12 @@ export async function processEmbeds(embeds?: APIEmbed[]) {
 
 export async function processAttachments(
    attachments: APIPostAttachmentJSONBody[] | undefined,
-   files: Record<string, File>,
+   files: Record<string, File> | undefined | null,
    channelId: Snowflake,
    messageId: Snowflake,
 ) {
    const processedAttachments: DBAttachment[] = [];
-   if (attachments) {
+   if (attachments && files) {
       for (const attachment of attachments) {
          const file = files[`files[${attachment.id}]`];
          const fileArrayBuffer = await file.arrayBuffer();

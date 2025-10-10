@@ -1,7 +1,6 @@
-import { createRoute } from "@huginn/backend-shared";
-import { HttpCode } from "@huginn/shared";
 import { gateway } from "#setup";
+import Elysia from "elysia";
 
-createRoute("GET", "/api/online-users", async (c) => {
-	return c.json({ count: gateway.getSessionsCount() }, HttpCode.OK);
+export const getOnlineUsers = new Elysia().get("/api/online-users", async ({ status }) => {
+   return status("OK", { count: gateway.getSessionsCount() });
 });

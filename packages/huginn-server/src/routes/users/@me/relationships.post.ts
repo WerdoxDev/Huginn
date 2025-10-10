@@ -1,74 +1,69 @@
-import { createRoute, invalidFormBody, singleError, tryCatch, validator, verifyJwt } from "@huginn/backend-shared";
+import { elysia, tryCatch, verifyJwt2 } from "@huginn/backend-shared";
 import { assertError, prisma } from "@huginn/backend-shared/database";
 import { selectRelationshipUser } from "@huginn/backend-shared/database/common";
 import { DBErrorType } from "@huginn/backend-shared/types";
-import { Errors, HttpCode, omit, RelationshipType, type Snowflake } from "@huginn/shared";
-import type { Context } from "hono";
-import { z } from "zod";
+import { Errors, omit, RelationshipType, type Snowflake } from "@huginn/shared";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
+import Elysia, { t } from "elysia";
 
-const schema = z.object({ username: z.string() });
+const schema = t.Object({ username: t.String({ minLength: 1 }) });
 
-createRoute("POST", "/api/users/@me/relationships", verifyJwt(), validator("json", schema), async (c) => {
-   const body = c.req.valid("json");
+export const postUserRelationship = new Elysia().use(verifyJwt2()).post(
+   "/api/users/@me/relationships",
+   async ({ body, tokenPayload, status }) => {
+      const [error, userId] = await tryCatch(async () => (await prisma.user.getByUsername(body.username)).id);
 
-   if (!body.username) {
-      return invalidFormBody(c);
-   }
+      if (assertError(error, DBErrorType.NULL_USER)) {
+         return elysia.singleError(Errors.noUserWithUsername(), status, "Not Found");
+      }
+      if (error) throw error;
 
-   const [error, userId] = await tryCatch(async () => (await prisma.user.getByUsername(body.username)).id);
+      if (userId === tokenPayload.id) {
+         return elysia.singleError(Errors.relationshipSelfRequest(), status, "Bad Request");
+      }
 
-   if (assertError(error, DBErrorType.NULL_USER)) {
-      return singleError(c, Errors.noUserWithUsername(), HttpCode.NOT_FOUND);
-   }
-   if (error) throw error;
+      if (await prisma.relationship.exists({ ownerId: BigInt(tokenPayload.id), userId: BigInt(userId), type: RelationshipType.FRIEND })) {
+         return elysia.singleError(Errors.relationshipExists(), status, "Bad Request");
+      }
 
-   return relationshipPost(c, userId);
-});
+      await createRelationship(tokenPayload.id, userId);
 
-export async function relationshipPost(c: Context, userId: Snowflake) {
-   const payload = c.get("tokenPayload");
+      return status("No Content");
+   },
+   { body: schema },
+);
 
-   if (userId === payload.id) {
-      return singleError(c, Errors.relationshipSelfRequest(), HttpCode.BAD_REQUEST);
-   }
-
-   if (await prisma.relationship.exists({ ownerId: BigInt(payload.id), userId: BigInt(userId), type: RelationshipType.FRIEND })) {
-      return singleError(c, Errors.relationshipExists(), HttpCode.BAD_REQUEST);
-   }
-
+export async function createRelationship(payloadId: Snowflake, userId: Snowflake) {
    if (
       !(await prisma.relationship.exists({
-         ownerId: BigInt(payload.id),
+         ownerId: BigInt(payloadId),
          userId: BigInt(userId),
          type: RelationshipType.PENDING_OUTGOING,
       }))
    ) {
-      const relationships = await prisma.relationship.createOne(payload.id, userId, {
+      const relationships = await prisma.relationship.createOne(payloadId, userId, {
          include: { ...selectRelationshipUser },
          omit: { userId: true },
       });
 
-      const relationshipOwner = relationships.find((x) => x.ownerId === payload.id);
+      const relationshipOwner = relationships.find((x) => x.ownerId === payloadId);
       const relationshipUser = relationships.find((x) => x.ownerId === userId);
 
       if (relationshipOwner && relationshipUser) {
-         dispatchToTopic(payload.id, "relationship_add", omit(relationshipOwner, ["ownerId"]));
+         dispatchToTopic(payloadId, "relationship_add", omit(relationshipOwner, ["ownerId"]));
          dispatchToTopic(userId, "relationship_add", omit(relationshipUser, ["ownerId"]));
 
-         gateway.subscribeSessionsToTopic(payload.id, `${userId}_public`);
-         gateway.subscribeSessionsToTopic(userId, `${payload.id}_public`);
+         gateway.subscribeSessionsToTopic(payloadId, `${userId}_public`);
+         gateway.subscribeSessionsToTopic(userId, `${payloadId}_public`);
 
          if (relationshipOwner.type === RelationshipType.FRIEND && relationshipUser.type === RelationshipType.FRIEND) {
-            gateway.subscribeSessionsToTopic(payload.id, `${userId}_presence`);
-            gateway.subscribeSessionsToTopic(userId, `${payload.id}_presence`);
+            gateway.subscribeSessionsToTopic(payloadId, `${userId}_presence`);
+            gateway.subscribeSessionsToTopic(userId, `${payloadId}_presence`);
 
-            gateway.presenceManager.sendToUser(payload.id, userId);
-            gateway.presenceManager.sendToUser(userId, payload.id);
+            gateway.presenceManager.sendToUser(payloadId, userId);
+            gateway.presenceManager.sendToUser(userId, payloadId);
          }
       }
    }
-
-   return c.newResponse(null, HttpCode.NO_CONTENT);
 }

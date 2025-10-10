@@ -1,14 +1,14 @@
-import { createRoute, verifyJwt } from "@huginn/backend-shared";
+import { verifyJwt2 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { omitRelationshipUserIds, selectRelationshipUser } from "@huginn/backend-shared/database/common";
-import { type APIGetUserRelationshipsResult, HttpCode } from "@huginn/shared";
-createRoute("GET", "/api/users/@me/relationships", verifyJwt(), async (c) => {
-   const payload = c.get("tokenPayload");
+import { type APIGetUserRelationshipsResult } from "@huginn/shared";
+import Elysia from "elysia";
 
-   const relationships: APIGetUserRelationshipsResult = await prisma.relationship.getUserRelationships(payload.id, {
+export const getUserRelationships = new Elysia().use(verifyJwt2()).get("/api/users/@me/relationships", async ({ tokenPayload, status }) => {
+   const relationships: APIGetUserRelationshipsResult = await prisma.relationship.getUserRelationships(tokenPayload.id, {
       include: selectRelationshipUser,
       omit: omitRelationshipUserIds,
    });
 
-   return c.json(relationships, HttpCode.OK);
+   return status("OK", relationships);
 });

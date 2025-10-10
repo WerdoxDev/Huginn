@@ -1,29 +1,30 @@
-import { createRoute, createToken, validator, verifyToken } from "@huginn/backend-shared";
-import { unauthorized } from "@huginn/backend-shared";
+import { createToken, elysia, verifyToken } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { constants, type APIPostRefreshTokenResult, HttpCode } from "@huginn/shared";
-import { z } from "zod";
+import { constants, type APIPostRefreshTokenResult } from "@huginn/shared";
+import Elysia, { t } from "elysia";
 
-const schema = z.object({ refreshToken: z.string() });
+const schema = t.Object({ refreshToken: t.String() });
 
-createRoute("POST", "/api/auth/refresh-token", validator("json", schema), async (c) => {
-   const body = c.req.valid("json");
+export const postRefreshToken = new Elysia().post(
+   "/api/auth/refresh-token",
+   async ({ body, status }) => {
+      const { valid, payload } = await verifyToken("user-refresh", body.refreshToken);
 
-   const { valid, payload } = await verifyToken("user-refresh", body.refreshToken);
+      if (!valid || !payload) {
+         return elysia.unauthorized(status);
+      }
 
-   if (!valid || !payload) {
-      return unauthorized(c);
-   }
+      const user = await prisma.user.getById(payload.id, { select: { id: true } });
 
-   const user = await prisma.user.getById(payload.id, { select: { id: true } });
+      const accessToken = await createToken(
+         "user-access",
+         { id: user.id, isOAuth: await prisma.identityProvider.exists({ userId: BigInt(user.id) }) },
+         constants.ACCESS_TOKEN_EXPIRE_TIME,
+      );
+      const refreshToken = await createToken("user-refresh", { id: user.id }, constants.REFRESH_TOKEN_EXPIRE_TIME);
 
-   const accessToken = await createToken(
-      "user-access",
-      { id: user.id, isOAuth: await prisma.identityProvider.exists({ userId: BigInt(user.id) }) },
-      constants.ACCESS_TOKEN_EXPIRE_TIME,
-   );
-   const refreshToken = await createToken("user-refresh", { id: user.id }, constants.REFRESH_TOKEN_EXPIRE_TIME);
-
-   const json: APIPostRefreshTokenResult = { token: accessToken, refreshToken };
-   return c.json(json, HttpCode.OK);
-});
+      const json: APIPostRefreshTokenResult = { token: accessToken, refreshToken };
+      return status("OK", json);
+   },
+   { body: schema },
+);

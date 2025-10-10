@@ -1,44 +1,50 @@
-import { createRoute, missingAccess, singleError, verifyJwt } from "@huginn/backend-shared";
+import { elysia, verifyJwt2 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectChannelDefaults } from "@huginn/backend-shared/database/common";
-import { ChannelType, Errors, HttpCode, MessageFlags, MessageType } from "@huginn/shared";
+import { ChannelType, Errors, MessageFlags, MessageType } from "@huginn/shared";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { dispatchChannel, dispatchMessage } from "#utils/helpers";
+import { Elysia } from "elysia";
 
-createRoute("PUT", "/api/channels/:channelId/recipients/:recipientId", verifyJwt(), async (c) => {
-   const payload = c.get("tokenPayload");
-   const { channelId, recipientId } = c.req.param();
+export const putChannelRecipient = new Elysia()
+   .use(verifyJwt2())
+   .put("/api/channels/:channelId/recipients/:recipientId", async ({ params: { channelId, recipientId }, status, tokenPayload }) => {
+      const channel = await prisma.channel.getById(channelId, { select: { type: true, recipients: { select: { id: true } } } });
+      if (channel.type !== ChannelType.GROUP_DM) {
+         return elysia.singleError(Errors.invalidChannelType(), status, "Bad Request");
+      }
 
-   const channel = await prisma.channel.getById(channelId, { select: { type: true, recipients: { select: { id: true } } } });
-   if (channel.type !== ChannelType.GROUP_DM) {
-      return singleError(c, Errors.invalidChannelType());
-   }
+      if (!channel.recipients.find((x) => x.id === tokenPayload.id)) {
+         return elysia.missingAccess(status);
+      }
 
-   if (!channel.recipients.find((x) => x.id === payload.id)) {
-      return missingAccess(c);
-   }
+      if (channel.recipients.find((x) => x.id === recipientId)) {
+         return status("No Content");
+      }
 
-   if (channel.recipients.find((x) => x.id === recipientId)) {
-      return c.newResponse(null, HttpCode.NO_CONTENT);
-   }
+      const updatedChannel = await prisma.channel.addRecipient(channelId, recipientId, { select: selectChannelDefaults });
 
-   const updatedChannel = await prisma.channel.addRecipient(channelId, recipientId, { select: selectChannelDefaults });
+      // Create read state
+      await prisma.readState.createState(recipientId, channelId);
 
-   // Create read state
-   await prisma.readState.createState(recipientId, channelId);
+      // Dispatch recipient add event
+      const addedRecipient = updatedChannel.recipients.find((x) => x.id === recipientId);
+      if (addedRecipient) {
+         dispatchToTopic(channelId, "channel_recipient_add", { channelId: channelId, user: addedRecipient });
+      }
 
-   // Dispatch recipient add event
-   const addedRecipient = updatedChannel.recipients.find((x) => x.id === recipientId);
-   if (addedRecipient) {
-      dispatchToTopic(channelId, "channel_recipient_add", { channelId: channelId, user: addedRecipient });
-   }
+      // Dispatch channel create event
+      gateway.subscribeSessionsToTopic(recipientId, channelId);
+      dispatchChannel(updatedChannel, "channel_create", recipientId);
 
-   // Dispatch channel create event
-   gateway.subscribeSessionsToTopic(recipientId, channelId);
-   dispatchChannel(updatedChannel, "channel_create", recipientId);
+      await dispatchMessage({
+         authorId: tokenPayload.id,
+         channelId,
+         type: MessageType.RECIPIENT_ADD,
+         mentions: [recipientId],
+         flags: MessageFlags.NONE,
+      });
 
-   await dispatchMessage({ authorId: payload.id, channelId, type: MessageType.RECIPIENT_ADD, mentions: [recipientId], flags: MessageFlags.NONE });
-
-   return c.newResponse(null, HttpCode.NO_CONTENT);
-});
+      return status("No Content");
+   });

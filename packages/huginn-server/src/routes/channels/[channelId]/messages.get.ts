@@ -1,32 +1,27 @@
-import { createRoute, missingAccess, validator, verifyJwt } from "@huginn/backend-shared";
+import { elysia, verifyJwt2 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectAllMessage } from "@huginn/backend-shared/database/common";
-import { HttpCode, type APIGetChannelMessagesResult } from "@huginn/shared";
-import { z } from "zod";
+import { type APIGetChannelMessagesResult } from "@huginn/shared";
 import { filterMessage } from "#utils/helpers";
-("@huginn/backend-shared/database/common");
+import Elysia, { t } from "elysia";
 
-const querySchema = z.object({ limit: z.optional(z.string()), before: z.optional(z.string()), after: z.optional(z.string()) });
+export const getChannelMessages = new Elysia().use(verifyJwt2()).get(
+   "/api/channels/:channelId/messages",
+   async ({ query: { after, before, limit }, params: { channelId }, tokenPayload, status }) => {
+      const channel = await prisma.channel.getById(channelId, { select: { id: true } });
+      limit = limit ?? 50;
 
-createRoute("GET", "/api/channels/:channelId/messages", verifyJwt(), validator("query", querySchema), async (c) => {
-   const payload = c.get("tokenPayload");
-   const query = c.req.valid("query");
-   const { channelId } = c.req.param();
-   const limit = Number(query.limit) || 50;
-   const before = query.before;
-   const after = query.after;
+      if (!(await prisma.user.hasChannel(tokenPayload.id, channel.id))) {
+         return elysia.missingAccess(status);
+      }
 
-   const channel = await prisma.channel.getById(channelId, { select: { id: true } });
+      const dbMessages = await prisma.message.getMessages(channelId, limit, before, after, {
+         select: selectAllMessage,
+      });
 
-   if (!(await prisma.user.hasChannel(payload.id, channel.id))) {
-      return missingAccess(c);
-   }
+      const messages: APIGetChannelMessagesResult = dbMessages.map((x) => filterMessage(x));
 
-   const dbMessages = await prisma.message.getMessages(channelId, limit, before, after, {
-      select: selectAllMessage,
-   });
-
-   const messages: APIGetChannelMessagesResult = dbMessages.map((x) => filterMessage(x));
-
-   return c.json(messages, HttpCode.OK);
-});
+      return status("OK", messages);
+   },
+   { query: t.Object({ limit: t.Optional(t.Number()), before: t.Optional(t.String()), after: t.Optional(t.String()) }) },
+);

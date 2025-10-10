@@ -1,5 +1,6 @@
 import { expect } from "bun:test";
 import {
+   type Activity,
    type APIAttachment,
    type APIChannelUser,
    type APIEmbed,
@@ -190,7 +191,9 @@ export function expectMessageExactSchema(
       }
       if (mentions) {
          expect(castedMessage.mentions.sort()).toStrictEqual(
-            mentions.map((x) => ({ id: x.id.toString(), avatar: x.avatar, displayName: x.displayName, flags: x.flags, username: x.username })).sort(),
+            mentions
+               .map((x) => ({ id: x.id.toString(), avatar: x.avatar, displayName: x.displayName, flags: x.flags, username: x.username }))
+               .sort(),
          );
       }
       expect(Object.keys(castedMessage.author).sort()).toStrictEqual(["id", "username", "displayName", "flags", "avatar"].sort());
@@ -241,20 +244,21 @@ export function expectPresenceExactSchema(
    status: PresenceStatus,
    activeSessions: Snowflake[],
    expectFullUser: boolean,
+   activities: Activity[],
 ) {
    const castedPresence = presence as UserPresence;
    expect(castedPresence.status).toBe(status);
    // expect(castedPresence.activeSessions).toBe(activeSessions);
 
    if (status === "offline") {
-      expect(presence).toStrictEqual({ user: { id: user.id.toString() }, status: "offline", activeSessions });
+      expect(presence).toStrictEqual({ user: { id: user.id.toString() }, status: "offline", activeSessions, activities: [] });
       return;
    }
 
    if (expectFullUser) {
       expectUserExactSchema(castedPresence.user, user.id, user.username, user.displayName, user.avatar, user.flags);
    } else {
-      expect(presence).toStrictEqual({ user: { id: user.id.toString() }, status: castedPresence.status, activeSessions });
+      expect(presence).toStrictEqual({ user: { id: user.id.toString() }, status: castedPresence.status, activeSessions, activities });
    }
 }
 

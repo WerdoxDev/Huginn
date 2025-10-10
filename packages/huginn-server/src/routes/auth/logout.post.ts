@@ -1,10 +1,7 @@
-import { createRoute, invalidateToken, verifyJwt } from "@huginn/backend-shared";
-import { HttpCode } from "@huginn/shared";
+import { invalidateToken, verifyJwt2 } from "@huginn/backend-shared";
+import Elysia from "elysia";
 
-createRoute("POST", "/api/auth/logout", verifyJwt(), async (c) => {
-   const token = c.get("token");
-
+export const postLogout = new Elysia().use(verifyJwt2()).post("/api/auth/logout", async ({ status, token }) => {
    invalidateToken(token);
-
-   return c.newResponse(null, HttpCode.NO_CONTENT);
+   return status("No Content");
 });

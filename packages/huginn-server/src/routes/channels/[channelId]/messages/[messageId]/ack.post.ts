@@ -1,14 +1,13 @@
-import { createRoute, verifyJwt } from "@huginn/backend-shared";
+import { verifyJwt2 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { HttpCode } from "@huginn/shared";
 import { dispatchToTopic } from "#utils/gateway-utils";
+import Elysia from "elysia";
 
-createRoute("POST", "/api/channels/:channelId/messages/:messageId/ack", verifyJwt(), async (c) => {
-   const payload = c.get("tokenPayload");
-   const { channelId, messageId } = c.req.param();
+export const postAckMessage = new Elysia()
+   .use(verifyJwt2())
+   .post("/api/channels/:channelId/messages/:messageId/ack", async ({ params: { channelId, messageId }, status, tokenPayload }) => {
+      await prisma.readState.updateLastRead(tokenPayload.id, channelId, messageId);
+      dispatchToTopic(tokenPayload.id, "message_ack", { channelId, messageId });
 
-   await prisma.readState.updateLastRead(payload.id, channelId, messageId);
-   dispatchToTopic(payload.id, "message_ack", { channelId, messageId });
-
-   return c.newResponse(null, HttpCode.NO_CONTENT);
-});
+      return status("No Content");
+   });

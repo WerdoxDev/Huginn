@@ -1,19 +1,19 @@
-import { createRoute, missingAccess, verifyJwt } from "@huginn/backend-shared";
+import { elysia, verifyJwt2 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectAllMessage } from "@huginn/backend-shared/database/common";
-import { type APIGetMessageByIdResult, HttpCode } from "@huginn/shared";
+import { type APIGetMessageByIdResult } from "@huginn/shared";
 import { filterMessage } from "#utils/helpers";
+import Elysia from "elysia";
 
-createRoute("GET", "/api/channels/:channelId/messages/:messageId", verifyJwt(), async (c) => {
-   const payload = c.get("tokenPayload");
-   const { channelId, messageId } = c.req.param();
+export const getMessage = new Elysia()
+   .use(verifyJwt2())
+   .get("/api/channels/:channelId/messages/:messageId", async ({ tokenPayload, params: { channelId, messageId }, status }) => {
+      if (!(await prisma.user.hasChannel(tokenPayload.id, channelId))) {
+         return elysia.missingAccess(status);
+      }
 
-   if (!(await prisma.user.hasChannel(payload.id, channelId))) {
-      return missingAccess(c);
-   }
+      const dbMessage = await prisma.message.getById(channelId, messageId, { select: selectAllMessage });
+      const message: APIGetMessageByIdResult = filterMessage(dbMessage);
 
-   const dbMessage = await prisma.message.getById(channelId, messageId, { select: selectAllMessage });
-   const message: APIGetMessageByIdResult = filterMessage(dbMessage);
-
-   return c.json(message, HttpCode.OK);
-});
+      return status("OK", message);
+   });

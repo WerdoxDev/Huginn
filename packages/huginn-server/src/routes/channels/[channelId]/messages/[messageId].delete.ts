@@ -1,26 +1,24 @@
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { createRoute, missingAccess, missingPermission, verifyJwt } from "@huginn/backend-shared";
+import { elysia, verifyJwt2 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
-import { HttpCode } from "@huginn/shared";
+import Elysia from "elysia";
 
-createRoute("DELETE", "/api/channels/:channelId/messages/:messageId", verifyJwt(), async (c) => {
-   const payload = c.get("tokenPayload");
-   const messageId = c.req.param("messageId");
-   const channelId = c.req.param("channelId");
+export const deleteMessage = new Elysia()
+   .use(verifyJwt2())
+   .delete("/api/channels/:channelId/messages/:messageId", async ({ params: { channelId, messageId }, tokenPayload, status }) => {
+      // Check permission
+      const channel = await prisma.channel.getById(channelId, { select: { id: true } });
+      if (!(await prisma.user.hasChannel(tokenPayload.id, channel.id))) {
+         return elysia.missingAccess(status);
+      }
 
-   // Check permission
-   const channel = await prisma.channel.getById(channelId, { select: { id: true } });
-   if (!(await prisma.user.hasChannel(payload.id, channel.id))) {
-      return missingAccess(c);
-   }
+      const messageToCheck = await prisma.message.getById(channelId, messageId, { select: { author: { select: { id: true } } } });
+      if (messageToCheck.author.id !== tokenPayload.id) {
+         return elysia.missingPermission(status);
+      }
 
-   const messageToCheck = await prisma.message.getById(channelId, messageId, { select: { author: { select: { id: true } } } });
-   if (messageToCheck.author.id !== payload.id) {
-      return missingPermission(c);
-   }
+      const deletedMessage = await prisma.message.deleteById(messageId, channelId, { select: { id: true, channelId: true } });
+      dispatchToTopic(channelId, "message_delete", { id: deletedMessage.id, channelId: deletedMessage.channelId });
 
-   const deletedMessage = await prisma.message.deleteById(messageId, channelId, { select: { id: true, channelId: true } });
-   dispatchToTopic(channelId, "message_delete", { id: deletedMessage.id, channelId: deletedMessage.channelId });
-
-   return c.newResponse(null, HttpCode.NO_CONTENT);
-});
+      return status("No Content");
+   });
