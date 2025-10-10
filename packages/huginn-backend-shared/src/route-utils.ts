@@ -6,14 +6,21 @@ import { createMiddleware } from "hono/factory";
 import sharp from "sharp";
 import type { ZodSchema } from "zod";
 import { invalidFormBody, notFound, unauthorized } from "./errors";
-import { verifyToken, type TokenType } from "#token-factory";
+import { verifyToken, type TokenPayload, type TokenType } from "#token-factory";
 import { prisma } from "#database";
-import type { UserTokenPayload, OAuthTokenPayload } from "@huginn/shared";
+import type { UserTokenPayload, OAuthTokenPayload, Tokens } from "@huginn/shared";
+import Elysia from "elysia";
+import { bearer } from "@elysiajs/bearer";
+import { elysia } from "#index";
 
 let appInstance: Hono;
 
 export function setAppInstance(app: Hono): void {
    appInstance = app;
+}
+
+export function getAppInstance(): Hono {
+   return appInstance;
 }
 
 // @ts-ignore
@@ -131,4 +138,40 @@ export async function getVideoData(filePath: string, source: ArrayBuffer) {
    } catch (e) {
       console.log(e);
    }
+}
+
+export function verifyJwt2<Type extends TokenType = "user-access">(type?: Type) {
+   return new Elysia().derive({ as: "scoped" }, async ({ headers, status }) => {
+      const authorization = headers["authorization"];
+      const token = authorization?.split(" ")[1];
+
+      if (!token) {
+         return elysia.unauthorized(status);
+      }
+
+      const { valid, payload } = await verifyToken(type ?? "user-access", token);
+
+      if (!valid || !payload) {
+         return elysia.unauthorized(status);
+      }
+
+      // We may have deleted the user form the db
+      if ((["user-access", "user-refresh"] as TokenType[]).includes(type ?? "user-access")) {
+         if (!(await prisma.user.exists({ id: BigInt((payload as UserTokenPayload).id) }))) {
+            return elysia.unauthorized(status);
+         }
+      }
+
+      return { token: token, tokenPayload: payload as TokenPayload<Type> };
+
+      // c.set("token", token);
+
+      // if (type === "oauth") {
+      //    return {oauthTokenPayload: payload};
+      //    // c.set("oauthTokenPayload", payload as unknown as OAuthTokenPayload);
+      // } else if (type === "user-access") {
+
+      //    c.set("tokenPayload", payload as unknown as UserTokenPayload);
+      // }
+   });
 }

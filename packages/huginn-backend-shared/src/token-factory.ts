@@ -8,7 +8,7 @@ export const CDN_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.CDN
 export const VOICE_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.VOICE_TOKEN_SECRET ?? "");
 
 export type TokenType = "user-access" | "user-refresh" | "oauth" | "cdn" | "voice";
-type TokenPayload<Type extends TokenType> = Type extends "user-access"
+export type TokenPayload<Type extends TokenType> = Type extends "user-access"
    ? UserTokenPayload
    : Type extends "user-refresh"
      ? { id: Snowflake }

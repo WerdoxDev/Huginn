@@ -10,3 +10,4 @@ export * from "./types";
 export * from "./websocket/common-client-session";
 export * from "./websocket/common-websocket";
 export * from "./token-factory";
+export * as elysia from "./elysia-errors";
