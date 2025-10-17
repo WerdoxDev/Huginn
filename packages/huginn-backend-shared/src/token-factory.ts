@@ -18,7 +18,7 @@ export type TokenPayload<Type extends TokenType> = Type extends "user-access"
          ? { userId: Snowflake }
          : any;
 
-const tokenSecrets: Record<TokenType, Uint8Array<ArrayBuffer>> = {
+const tokenSecrets: Record<TokenType, Uint8Array<ArrayBufferLike>> = {
    "user-access": ACCESS_TOKEN_SECRET_ENCODED,
    "user-refresh": REFRESH_TOKEN_SECRET_ENCODED,
    cdn: CDN_TOKEN_SECRET_ENCODED,

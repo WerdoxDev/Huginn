@@ -1,7 +1,7 @@
 import { createErrorFactory, type ErrorFactory } from "#error-factory";
-import { isDBError } from "#errors";
-import { DBErrorType } from "#types";
-import { Errors, JsonCode, type HuginnErrorData } from "@huginn/shared";
+import { isCDNError, isDBError } from "#errors";
+import { CDNErrorType, DBErrorType } from "#types";
+import { Errors, HttpCode, JsonCode, type HuginnErrorData } from "@huginn/shared";
 import type { Context, ElysiaCustomStatusResponse, InvertedStatusMap, StatusMap } from "elysia";
 
 export function createHuginnError<Code extends keyof InvertedStatusMap | keyof StatusMap = "Bad Request">(
@@ -40,6 +40,10 @@ export function forbidden(status: Context["status"]) {
    return createHuginnError(createErrorFactory(Errors.forbidden()), status, "Forbidden");
 }
 
+export function fileNotFound(status: Context["status"]) {
+   return createHuginnError(createErrorFactory(Errors.fileNotFound()), status, "Not Found");
+}
+
 export function singleError<Code extends keyof InvertedStatusMap | keyof StatusMap = "OK">(
    error: [string, JsonCode],
    status: Context["status"],
@@ -65,6 +69,19 @@ export function serverOnError(error: Readonly<Error>, status: Context["status"])
    }
    if (error.isErrorType(DBErrorType.NULL_MESSAGE)) {
       return createHuginnError(createErrorFactory(Errors.unknownMessage(error.cause)), status, "Not Found");
+   }
+
+   return;
+}
+
+export function cdnOnError(error: Readonly<Error>, status: Context["status"]) {
+   if (!isCDNError(error)) return;
+
+   if (error.isErrorType(CDNErrorType.FILE_NOT_FOUND)) {
+      return createHuginnError(createErrorFactory(Errors.fileNotFound()), status, "Not Found");
+   }
+   if (error.isErrorType(CDNErrorType.INVALID_FILE_FORMAT)) {
+      return createHuginnError(createErrorFactory(Errors.invalidFileFormat()), status, "Bad Request");
    }
 
    return;

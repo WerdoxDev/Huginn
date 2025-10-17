@@ -3,6 +3,7 @@
    "version": "0.17.0",
    "type": "module",
    "dependencies": {
+      "@huginn/shared": "workspace:*",
       "@elysiajs/bearer": "^1.4.1",
       "@hono/zod-validator": "^0.4.3",
       "@prisma/adapter-pg": "^6.16.0",
