@@ -1,12 +1,12 @@
 import { HTTPError, HuginnAPIError, type HuginnErrorData } from "@huginn/shared";
-import type { Hono } from "hono";
+import type { BodyInit } from "bun";
 import { join } from "pathe";
 
 let _hostname = "";
 export async function prepareServer(hostname: string) {
    _hostname = hostname;
    process.env.TEST = JSON.stringify(true);
-   (await import(join(process.cwd(), "src", "index"))).app as Hono;
+   await import(join(process.cwd(), "src", "index"));
 }
 
 export async function testHandler(

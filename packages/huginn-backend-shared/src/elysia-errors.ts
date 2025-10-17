@@ -1,8 +1,55 @@
 import { createErrorFactory, type ErrorFactory } from "#error-factory";
-import { isCDNError, isDBError } from "#errors";
 import { CDNErrorType, DBErrorType } from "#types";
-import { Errors, HttpCode, JsonCode, type HuginnErrorData } from "@huginn/shared";
+import { Errors, JsonCode, type HuginnErrorData } from "@huginn/shared";
 import type { Context, ElysiaCustomStatusResponse, InvertedStatusMap, StatusMap } from "elysia";
+
+export class DBError extends Error {
+   public constructor(
+      public callerName: string,
+      public type: DBErrorType,
+      public cause?: string,
+   ) {
+      super(`Unhandled Database Error => ${callerName} => ${type}: ${cause ? `(${cause})` : ""}`, {
+         cause: cause,
+      });
+   }
+
+   isErrorType(type: DBErrorType): boolean {
+      return this.type === type;
+   }
+}
+
+export class CDNError extends Error {
+   public constructor(
+      public callerName: string,
+      public type: CDNErrorType,
+      public cause?: string,
+   ) {
+      super(`Unhandled CDN Error => ${callerName} => ${type}: ${cause ? `(${cause})` : ""}`, {
+         cause: cause,
+      });
+   }
+
+   isErrorType(type: CDNErrorType): boolean {
+      return this.type === type;
+   }
+}
+
+export function isDBError(object: unknown): object is DBError {
+   if (object !== null && typeof object === "object" && object instanceof DBError) {
+      return true;
+   }
+
+   return false;
+}
+
+export function isCDNError(object: unknown): object is CDNError {
+   if (object !== null && typeof object === "object" && object instanceof CDNError) {
+      return true;
+   }
+
+   return false;
+}
 
 export function createHuginnError<Code extends keyof InvertedStatusMap | keyof StatusMap = "Bad Request">(
    errorFactory: ErrorFactory,

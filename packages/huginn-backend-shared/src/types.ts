@@ -38,14 +38,6 @@ export type WebsocketOptions = {
    sessionDeleteTimeout: number;
 };
 
-declare module "hono" {
-   interface ContextVariableMap {
-      id: string;
-      startTime: number;
-      waitUntilPromises?: (() => Promise<unknown>)[];
-   }
-}
-
 declare module "crossws" {
    interface PeerContext {
       sessionId: Snowflake;
