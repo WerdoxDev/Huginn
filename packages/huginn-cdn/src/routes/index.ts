@@ -1,5 +1,3 @@
-import { createRoute } from "@huginn/backend-shared";
+import Elysia from "elysia";
 
-createRoute("GET", "/cdn", (c) => {
-	return c.text("CDN Home");
-});
+export const getIndex = new Elysia().get("/", ({ status }) => status("OK", "CDN Home"));

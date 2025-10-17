@@ -1,5 +1,5 @@
 import { storage } from "#setup";
-import { elysia, tryCatch } from "@huginn/backend-shared";
+import { fileNotFound, tryCatch } from "@huginn/backend-shared";
 import Elysia, { StatusMap } from "elysia";
 
 // Param 1 can be both applicationId or iconHash since it's optional
@@ -12,7 +12,7 @@ export const getApplicationIcon = new Elysia().get(
       const [error, file] = await tryCatch(async () => await storage.getFile("application-icons", applicationId ?? "", iconHash));
 
       if (!file || error) {
-         return elysia.fileNotFound(status);
+         return fileNotFound(status);
       }
 
       return new Response(file, { status: StatusMap["OK"], headers: { "content-type": "image/webp" } });

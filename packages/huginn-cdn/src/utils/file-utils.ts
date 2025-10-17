@@ -1,11 +1,11 @@
 import { Readable, Writable } from "node:stream";
-import { CDNError } from "@huginn/backend-shared";
 import { CDNErrorType } from "@huginn/backend-shared/types";
 import { type FileContentTypes, type ImageFormats, fileTypes } from "@huginn/shared";
 import PQueue from "p-queue";
 import sharp from "sharp";
 import { storage } from "#setup";
 import type { FileCategory, FileInfo } from "./types";
+import { CDNError } from "@huginn/backend-shared";
 
 const queue = new PQueue({ concurrency: 1 });
 

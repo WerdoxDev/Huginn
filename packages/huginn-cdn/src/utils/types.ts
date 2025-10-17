@@ -8,10 +8,3 @@ export type FileInfo = {
 };
 
 export type FileCategory = "avatars" | "channel-icons" | "attachments" | "application-icons";
-
-declare module "hono" {
-   interface ContextVariableMap {
-      id: string;
-      startTime: number;
-   }
-}

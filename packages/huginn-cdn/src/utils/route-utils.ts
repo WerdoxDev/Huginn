@@ -20,17 +20,10 @@ export async function tryResolveImage(category: FileCategory, subDirectory: stri
 
    const { readable, writable } = new TransformStream();
 
-   const result = await transformImage(otherFile, writable, format as ImageFormats);
+   await transformImage(otherFile, writable, format as ImageFormats);
    const [readable1, readable2] = readable.tee();
 
-   // waitUntil(c, async () => {
-   //    if (result) {
-   //       await storage.writeFile(category, subDirectory, hash, readable2);
-   //    }
-   // });
-   return { readable: readable1, mimeType };
-
-   // return c.body(readable1, HttpCode.OK, { "Content-Type": mimeType });
+   return { readable: readable1, cacheReadable: readable2, mimeType };
 }
 
 export function getCacheDir(format?: string, quality?: number, width?: number, height?: number) {

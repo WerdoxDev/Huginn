@@ -1,4 +1,4 @@
-import { elysia, globalPlugin } from "@huginn/backend-shared";
+import { fileNotFound, globalPlugin } from "@huginn/backend-shared";
 import { type ImageFormats, fileTypes, isImageMediaType, isVideoMediaType } from "@huginn/shared";
 import type { S3Stats } from "bun";
 import { cacheStorage, envs, storage } from "#setup";
@@ -32,12 +32,12 @@ export const getMessageAttachment = new Elysia().use(globalPlugin).get(
       const expectedSignature = hasher.digest("hex");
 
       if (expectedSignature !== hm) {
-         return elysia.fileNotFound(status);
+         return fileNotFound(status);
       }
 
       const now = Math.floor(Date.now() / 1000);
       if (ex < now) {
-         return elysia.fileNotFound(status);
+         return fileNotFound(status);
       }
 
       const { mimeType } = extractFileInfo(filename);
@@ -46,7 +46,7 @@ export const getMessageAttachment = new Elysia().use(globalPlugin).get(
       if (isVideoMediaType(mimeType)) {
          const head = (await storage.stat("attachments", `${channelId}/${messageId}`, filename)) as S3Stats;
          if (!head) {
-            return elysia.fileNotFound(status);
+            return fileNotFound(status);
          }
 
          const range = headers["range"];
@@ -85,7 +85,7 @@ export const getMessageAttachment = new Elysia().use(globalPlugin).get(
       const file = await storage.getFile("attachments", `${channelId}/${messageId}`, filename);
 
       if (!file) {
-         return elysia.fileNotFound(status);
+         return fileNotFound(status);
       }
 
       if ((format || quality || width || height) && isImageMediaType(mimeType)) {

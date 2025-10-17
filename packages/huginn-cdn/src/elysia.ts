@@ -7,9 +7,10 @@ import { getUserAvatar } from "#routes/avatars/[userId]/[avatarHash].get";
 import { postChannelIcon } from "#routes/channel-icons/[channelId].post";
 import { getChannelIcon } from "#routes/channel-icons/[channelId]/[iconHash].get";
 import cors from "@elysiajs/cors";
-import { elysia, globalPlugin } from "@huginn/backend-shared";
+import { cdnOnError, globalPlugin, invalidBody, serverError } from "@huginn/backend-shared";
 import consola from "consola";
 import Elysia from "elysia";
+import { getIndex } from "./routes";
 
 export const main = new Elysia()
    .use(cors())
@@ -17,24 +18,25 @@ export const main = new Elysia()
    .onError(({ error, code, status, path, request }) => {
       consola.box(path, request.method, error);
       if (code === "UNKNOWN") {
-         const returnedError = elysia.cdnOnError(error, status);
+         const returnedError = cdnOnError(error, status);
          // console.log(returnedError);
          if (returnedError) {
             return returnedError;
          }
       } else if (code === "VALIDATION" || code === "PARSE") {
-         return elysia.invalidBody(status);
+         return invalidBody(status);
       } else if (code === "INTERNAL_SERVER_ERROR") {
-         return elysia.serverError(status);
+         return serverError(status);
       }
 
-      return elysia.serverError(status);
+      return serverError(status);
    })
    .onAfterResponse(async ({ global }) => {
       if (global.waitUntilPromises) {
          await Promise.allSettled(global.waitUntilPromises.map((x) => x()) ?? []);
       }
    })
+   .use(getIndex)
    .use(getApplicationIcon)
    .use(postApplicationIcon)
    .use(getMessageAttachment)

@@ -1,17 +1,17 @@
 import { storage } from "#setup";
 import { extractFileInfo, transformImage } from "#utils/file-utils";
-import { elysia, verifyJwt2 } from "@huginn/backend-shared";
+import { invalidBody, verifyJwt } from "@huginn/backend-shared";
 import Elysia, { t } from "elysia";
 
 const schema = t.Object({ files: t.Record(t.String(), t.File()) });
 
-export const postApplicationIcon = new Elysia().use(verifyJwt2("cdn")).post(
+export const postApplicationIcon = new Elysia().use(verifyJwt("cdn")).post(
    "/cdn/application-icons/:applicationId?",
    async ({ body, status, params: { applicationId } }) => {
       const file = body.files[0];
 
       if (!file) {
-         return elysia.invalidBody(status);
+         return invalidBody(status);
       }
 
       const fileStream = file.stream();
