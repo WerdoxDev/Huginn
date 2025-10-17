@@ -1,4 +1,4 @@
-import { createErrorFactory, elysia, tryCatch, verifyJwt2 } from "@huginn/backend-shared";
+import { createErrorFactory, elysia, globalPlugin, tryCatch, verifyJwt2 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectAllMessage } from "@huginn/backend-shared/database/common";
 import { type APIMessage, Errors, MessageType, WorkerID, snowflake } from "@huginn/shared";
@@ -31,11 +31,11 @@ const schema = t.Object({
 });
 
 export const postChannelMessage = new Elysia()
+   .use(globalPlugin)
    .use(verifyJwt2())
-   .state("message", undefined as APIMessage | undefined)
    .post(
       "/api/channels/:channelId/messages",
-      async ({ params: { channelId }, body, tokenPayload, status, store }) => {
+      async ({ params: { channelId }, body, tokenPayload, status, global }) => {
          // Check permission
          const channel = await prisma.channel.getById(channelId, { select: { id: true } });
          if (!(await prisma.user.hasChannel(tokenPayload.id, channel.id))) {
@@ -85,21 +85,9 @@ export const postChannelMessage = new Elysia()
 
          const message: APIMessage = filterMessage(dbMessage);
          message.nonce = body.nonce;
-         store.message = message;
-
          dispatchToTopic(channelId, "message_create", message);
 
-         return status("Created", message);
-      },
-      {
-         body: schema,
-         async afterResponse({ tokenPayload, params: { channelId }, body, store: { message } }) {
-            if (!message || !tokenPayload) {
-               return;
-            }
-
-            // update read state to be the new created message
-            // try catch here is to ignore any errors.
+         global.waitUntil(async () => {
             await tryCatch(() => prisma.readState.updateLastRead(tokenPayload.id, channelId, message.id));
 
             // Embed generation from urls inside the message content
@@ -112,7 +100,12 @@ export const postChannelMessage = new Elysia()
             const updatedMessage = await prisma.message.updateMessage(message.id, { embeds }, { select: selectAllMessage });
 
             dispatchToTopic(channelId, "message_update", filterMessage(updatedMessage));
-         },
+         });
+
+         return status("Created", message);
+      },
+      {
+         body: schema,
          transform(ctx) {
             const contentType = ctx.headers["content-type"];
             if (contentType?.includes("multipart/form-data") && ctx.body.payload_json) {

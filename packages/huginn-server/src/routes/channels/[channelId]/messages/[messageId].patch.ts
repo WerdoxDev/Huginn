@@ -1,4 +1,4 @@
-import { createErrorFactory, elysia, verifyJwt2 } from "@huginn/backend-shared";
+import { createErrorFactory, elysia, globalPlugin, verifyJwt2 } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectAllMessage } from "@huginn/backend-shared/database/common";
 import { type APIMessage, Errors } from "@huginn/shared";
@@ -29,10 +29,10 @@ const schema = t.Object({
 
 export const patchMessage = new Elysia()
    .use(verifyJwt2())
-   .state("message", undefined as APIMessage | undefined)
+   .use(globalPlugin)
    .patch(
       "/api/channels/:channelId/messages/:messageId",
-      async ({ tokenPayload, params: { channelId, messageId }, status, body, store }) => {
+      async ({ tokenPayload, params: { channelId, messageId }, status, body, global }) => {
          // Check permission
          const channel = await prisma.channel.getById(channelId, { select: { id: true } });
          if (!(await prisma.user.hasChannel(tokenPayload.id, channel.id))) {
@@ -64,18 +64,9 @@ export const patchMessage = new Elysia()
          );
 
          const message: APIMessage = filterMessage(dbMessage);
-         store.message = message;
          dispatchToTopic(channelId, "message_update", message);
 
-         return status("OK", message);
-      },
-      {
-         body: schema,
-         async afterResponse({ body, params: { channelId }, store: { message } }) {
-            if (!message) {
-               return;
-            }
-
+         global.waitUntil(async () => {
             // Embed generation from urls inside the message content
             const embeds = await generateEmbedsFromContent(body.content);
 
@@ -86,7 +77,12 @@ export const patchMessage = new Elysia()
             const updatedMessage = await prisma.message.updateMessage(message.id, { embeds }, { select: selectAllMessage });
 
             dispatchToTopic(channelId, "message_update", filterMessage(updatedMessage));
-         },
+         });
+
+         return status("OK", message);
+      },
+      {
+         body: schema,
          transform(ctx) {
             const contentType = ctx.headers["content-type"];
             if (contentType?.includes("multipart/form-data") && ctx.body.payload_json) {

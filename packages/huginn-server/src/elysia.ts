@@ -39,7 +39,7 @@ import { putUserRelationship } from "#routes/users/@me/relationships/[userId].pu
 import { patchUserSettings } from "#routes/users/@me/settings.patch";
 import { getUser } from "#routes/users/[userId].get";
 import { envs } from "#setup";
-import { elysia } from "@huginn/backend-shared";
+import { elysia, globalPlugin } from "@huginn/backend-shared";
 import Elysia from "elysia";
 import { getIndex } from "./routes";
 import { staticPlugin } from "@elysiajs/static";
@@ -51,6 +51,7 @@ export const main = new Elysia({
 })
    .use(cors())
    .use(staticPlugin({ prefix: "" }))
+   .use(globalPlugin)
    .onError(({ error, code, status, path, request }) => {
       consola.box(path, request.method, error);
       if (code === "UNKNOWN") {
@@ -66,6 +67,11 @@ export const main = new Elysia({
       }
 
       return elysia.serverError(status);
+   })
+   .onAfterResponse(async ({ global }) => {
+      if (global.waitUntilPromises) {
+         await Promise.allSettled(global.waitUntilPromises.map((x) => x()) ?? []);
+      }
    })
    // user
    .use(getUserChannels)
