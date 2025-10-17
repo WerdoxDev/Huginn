@@ -278,4 +278,10 @@ export type VoiceConsumerClosedData = {
    userId: Snowflake;
 };
 
-export type LocalVoiceState = { isAudioPaused: boolean; isAudioMuted: boolean; isAudioDeafened: boolean; isStreaming: boolean; isCameraOn: boolean };
+export type LocalVoiceState = {
+   isAudioPaused: boolean;
+   isAudioMuted: boolean;
+   isAudioDeafened: boolean;
+   isStreaming: boolean;
+   isCameraOn: boolean;
+};

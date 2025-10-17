@@ -1,5 +1,5 @@
-import type { ResolvedFile } from "@huginn/shared";
 import { decodeBase64, encodeBase64 } from "@std/encoding";
+import type { ResolvedFile } from ".";
 
 /**
  * Resolves a base64 data url string, URL, file path, to a base64 data url string

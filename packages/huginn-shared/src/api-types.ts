@@ -1,4 +1,4 @@
-import type { LogArgs, Merge } from "@huginn/shared";
+import type { Merge } from ".";
 import type { Snowflake } from "./snowflake";
 
 export type LoginCredentials = APIPostLoginJSONBody;
