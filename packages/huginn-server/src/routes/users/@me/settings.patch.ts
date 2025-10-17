@@ -1,5 +1,5 @@
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { elysia, verifyJwt2 } from "@huginn/backend-shared";
+import { invalidBody, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
 import { type APIPatchUserSettingsResult } from "@huginn/shared";
 import Elysia, { t } from "elysia";
@@ -18,11 +18,11 @@ const schema = t.Object({
    status: t.Optional(t.Union([t.Literal("offline"), t.Literal("online"), t.Literal("dnd"), t.Literal("idle")])),
 });
 
-export const patchUserSettings = new Elysia().use(verifyJwt2()).patch(
+export const patchUserSettings = new Elysia().use(verifyJwt()).patch(
    "/api/users/@me/settings",
    async ({ body, tokenPayload, status }) => {
       if (Object.keys(body).length === 0) {
-         return elysia.invalidBody(status);
+         return invalidBody(status);
       }
 
       const updatedSettings: APIPatchUserSettingsResult = await prisma.settings.updateSettings(tokenPayload.id, body);

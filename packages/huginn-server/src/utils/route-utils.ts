@@ -1,26 +1,14 @@
-import {
-   type DBAttachment,
-   type DBEmbed,
-   getImageData,
-   getVideoData,
-   type TokenType,
-   unauthorized,
-   verifyToken,
-} from "@huginn/backend-shared";
-import { prisma } from "@huginn/backend-shared/database";
+import { type DBAttachment, type DBEmbed, getImageData, getVideoData } from "@huginn/backend-shared";
 import {
    type APIEmbed,
    type APIPostAttachmentJSONBody,
    CDNRoutes,
-   type OAuthTokenPayload,
    type Snowflake,
-   type UserTokenPayload,
    type Unpacked,
    isImageMediaType,
    isVideoMediaType,
 } from "@huginn/shared";
 import type { Endpoints } from "@octokit/types";
-import { createMiddleware } from "hono/factory";
 import { JSDOM } from "jsdom";
 import markdownit from "markdown-it";
 import { join } from "pathe";

@@ -1,4 +1,4 @@
-import { createToken, elysia, tryCatch } from "@huginn/backend-shared";
+import { createToken, invalidBody, tryCatch } from "@huginn/backend-shared";
 import { createErrorFactory } from "@huginn/backend-shared";
 import { assertError } from "@huginn/backend-shared/database";
 import { prisma } from "@huginn/backend-shared/database";
@@ -10,7 +10,7 @@ export const postLogin = new Elysia().post(
    "/api/auth/login",
    async ({ body, status }) => {
       if (!body.email && !body.username) {
-         return elysia.invalidBody(status);
+         return invalidBody(status);
       }
 
       const [error, user] = await tryCatch(async () => await prisma.user.findByCredentials(body));

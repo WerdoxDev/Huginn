@@ -1,4 +1,4 @@
-import { createErrorFactory, elysia, verifyJwt2 } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectChannelDefaults } from "@huginn/backend-shared/database/common";
 import { type APIPostDMChannelResult, ChannelType, Errors } from "@huginn/shared";
@@ -10,7 +10,7 @@ import Elysia, { t } from "elysia";
 
 const schema = t.Object({ name: t.Optional(t.String()), recipients: t.Array(t.String(), { minItems: 1 }) });
 
-export const postUserChannel = new Elysia().use(verifyJwt2()).post(
+export const postUserChannel = new Elysia().use(verifyJwt()).post(
    "/api/users/@me/channels",
    async ({ body, tokenPayload, status }) => {
       const formError = createErrorFactory(Errors.invalidFormBody());
@@ -18,7 +18,7 @@ export const postUserChannel = new Elysia().use(verifyJwt2()).post(
       validateChannelName(body.name, formError);
 
       if (formError.hasErrors()) {
-         return elysia.createHuginnError(formError, status);
+         return createHuginnError(formError, status);
       }
 
       // Create dm

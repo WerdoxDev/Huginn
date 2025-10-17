@@ -1,4 +1,12 @@
-import { createErrorFactory, elysia, globalPlugin, tryCatch, verifyJwt2 } from "@huginn/backend-shared";
+import {
+   createErrorFactory,
+   createHuginnError,
+   globalPlugin,
+   invalidBody,
+   missingAccess,
+   tryCatch,
+   verifyJwt,
+} from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectAllMessage } from "@huginn/backend-shared/database/common";
 import { type APIMessage, Errors, MessageType, WorkerID, snowflake } from "@huginn/shared";
@@ -32,32 +40,32 @@ const schema = t.Object({
 
 export const postChannelMessage = new Elysia()
    .use(globalPlugin)
-   .use(verifyJwt2())
+   .use(verifyJwt())
    .post(
       "/api/channels/:channelId/messages",
       async ({ params: { channelId }, body, tokenPayload, status, global }) => {
          // Check permission
          const channel = await prisma.channel.getById(channelId, { select: { id: true } });
          if (!(await prisma.user.hasChannel(tokenPayload.id, channel.id))) {
-            return elysia.missingAccess(status);
+            return missingAccess(status);
          }
 
          // Body must have either content, attachment or embeds
          if (!body.content && !body.attachments && !body.embeds) {
-            return elysia.invalidBody(status);
+            return invalidBody(status);
          }
 
          // Validate embeds
          const formError = createErrorFactory(Errors.invalidFormBody());
          if (body.embeds && !validateEmbeds(body.embeds, formError)) {
-            return elysia.createHuginnError(formError, status, "Bad Request");
+            return createHuginnError(formError, status, "Bad Request");
          }
 
          // Validate attachments
          if (body.attachments && body.files) {
             for (const [i, attachment] of body.attachments.entries()) {
                if (!(`files[${attachment.id}]` in body.files) || body.files[`files[${i}]`]?.name !== attachment.filename)
-                  return elysia.invalidBody(status);
+                  return invalidBody(status);
             }
          }
 

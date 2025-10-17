@@ -1,4 +1,4 @@
-import { createErrorFactory, createToken, elysia, verifyJwt2 } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, createToken, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
 import { type APIPatchCurrentUserResult, CDNRoutes, constants, Errors, Fields, getFileHash, toArrayBuffer } from "@huginn/shared";
@@ -25,7 +25,7 @@ const schema = t.Object({
    newPassword: t.Optional(t.String()),
 });
 
-export const patchMe = new Elysia().use(verifyJwt2()).patch(
+export const patchMe = new Elysia().use(verifyJwt()).patch(
    "/api/users/@me",
    async ({ body, tokenPayload, status }) => {
       const formError = createErrorFactory(Errors.invalidFormBody());
@@ -40,7 +40,7 @@ export const patchMe = new Elysia().use(verifyJwt2()).patch(
       }
 
       if (formError.hasErrors()) {
-         return elysia.createHuginnError(formError, status);
+         return createHuginnError(formError, status);
       }
 
       const databaseError = createErrorFactory(Errors.invalidFormBody());
@@ -52,7 +52,7 @@ export const patchMe = new Elysia().use(verifyJwt2()).patch(
       await validateEmailUnique(body.email, databaseError);
 
       if (databaseError.hasErrors()) {
-         return elysia.createHuginnError(databaseError, status);
+         return createHuginnError(databaseError, status);
       }
 
       // Undefined means no change, null means delete, other values are set

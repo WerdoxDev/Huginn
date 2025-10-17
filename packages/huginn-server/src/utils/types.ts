@@ -1,5 +1,4 @@
-import type { APIEmbed, APIPostAttachmentJSONBody, APIThumbnail, APIVideo, OAuthTokenPayload, Snowflake, UserTokenPayload } from "@huginn/shared";
-import type { Session } from "hono-sessions";
+import type { APIEmbed, APIPostAttachmentJSONBody, APIThumbnail, APIVideo, Snowflake } from "@huginn/shared";
 
 export type ServerGatewayOptions = {
    logHeartbeat: boolean;
@@ -30,15 +29,6 @@ export type DBAttachment = Omit<APIPostAttachmentJSONBody, "id"> & {
 
 export type TwitchOAuthResult = { access_token: string; expires_in: number };
 export type IGDBSearchResult = { id: number; name: string; rating: number; url: string; alternative_names?: Array<{ name: string }> };
-
-declare module "hono" {
-   interface ContextVariableMap {
-      tokenPayload: UserTokenPayload;
-      oauthTokenPayload: OAuthTokenPayload;
-      token: string;
-      session: Session;
-   }
-}
 
 declare module "crossws" {
    interface PeerContext {

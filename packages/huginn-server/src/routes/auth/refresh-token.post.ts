@@ -1,4 +1,4 @@
-import { createToken, elysia, verifyToken } from "@huginn/backend-shared";
+import { createToken, unauthorized, verifyToken } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { constants, type APIPostRefreshTokenResult } from "@huginn/shared";
 import Elysia, { t } from "elysia";
@@ -11,7 +11,7 @@ export const postRefreshToken = new Elysia().post(
       const { valid, payload } = await verifyToken("user-refresh", body.refreshToken);
 
       if (!valid || !payload) {
-         return elysia.unauthorized(status);
+         return unauthorized(status);
       }
 
       const user = await prisma.user.getById(payload.id, { select: { id: true } });

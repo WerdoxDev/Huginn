@@ -1,4 +1,4 @@
-import { createErrorFactory, createToken, elysia, verifyJwt2 } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, createToken, unauthorized, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
 import {
@@ -20,13 +20,13 @@ import Elysia, { t } from "elysia";
 
 const schema = t.Object({ username: t.String(), displayName: t.Nullable(t.String()), avatar: t.Nullable(t.String()) });
 
-export const postOauthConfirm = new Elysia().use(verifyJwt2("oauth")).post(
+export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
    "/api/auth/oauth-confirm",
    async ({ body, status, tokenPayload }) => {
       const identityProvider = await prisma.identityProvider.findUnique({ where: { id: BigInt(tokenPayload.providerId) } });
 
       if (!identityProvider) {
-         return elysia.unauthorized(status);
+         return unauthorized(status);
       }
 
       const formError = createErrorFactory(Errors.invalidFormBody());
@@ -35,13 +35,13 @@ export const postOauthConfirm = new Elysia().use(verifyJwt2("oauth")).post(
       validateDisplayName(body.displayName, formError);
 
       if (formError.hasErrors()) {
-         return elysia.createHuginnError(formError, status);
+         return createHuginnError(formError, status);
       }
 
       const databaseError = createErrorFactory(Errors.invalidFormBody());
 
       if (!(await validateUsernameUnique(body.username, databaseError))) {
-         return elysia.createHuginnError(databaseError, status);
+         return createHuginnError(databaseError, status);
       }
 
       const newUserId = snowflake.generateString(WorkerID.AUTH);

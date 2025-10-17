@@ -1,4 +1,4 @@
-import { elysia, verifyJwt2 } from "@huginn/backend-shared";
+import { missingAccess, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { omitChannelRecipient, selectChannelDefaults, selectChannelRecipients } from "@huginn/backend-shared/database/common";
 import { type APIDeleteDMChannelResult, ChannelType, MessageFlags, MessageType, merge, omit } from "@huginn/shared";
@@ -8,12 +8,12 @@ import { dispatchChannel, dispatchMessage, filterChannel } from "#utils/helpers"
 import Elysia from "elysia";
 
 export const deleteChannel = new Elysia()
-   .use(verifyJwt2())
+   .use(verifyJwt())
    .delete("/api/channels/:channelId", async ({ params: { channelId }, status, tokenPayload }) => {
       const channel = await prisma.channel.getById(channelId, { select: { ...selectChannelRecipients, type: true, ownerId: true } });
 
       if (!(await prisma.user.hasChannel(tokenPayload.id, channelId))) {
-         return elysia.missingAccess(status);
+         return missingAccess(status);
       }
 
       // Delete or leave the DM

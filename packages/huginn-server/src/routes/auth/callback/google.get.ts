@@ -1,4 +1,4 @@
-import { createToken, elysia } from "@huginn/backend-shared";
+import { createToken, forbidden } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { CDNRoutes, constants, getFileHash, OAuthCode, snowflake, WorkerID } from "@huginn/shared";
 import { toSnakeCase } from "@std/text";
@@ -38,7 +38,7 @@ export const getGoogleCallback = new Elysia().get(
 
       if (cookie_state !== state || !state) {
          consola.info("Cookie state mismatch");
-         return elysia.forbidden(status);
+         return forbidden(status);
       }
 
       const host = envs.REDIRECT_HOST;
@@ -62,7 +62,7 @@ export const getGoogleCallback = new Elysia().get(
          // Return 'Forbidden' if can't get the token
          if ("error" in response) {
             consola.info("Error in response", response);
-            return elysia.forbidden(status);
+            return forbidden(status);
          }
 
          // Use the token to fetch the google user
@@ -155,7 +155,7 @@ export const getGoogleCallback = new Elysia().get(
       }
       if (error || !state) {
          consola.info("Error or no state");
-         return elysia.forbidden(status);
+         return forbidden(status);
       }
    },
    {

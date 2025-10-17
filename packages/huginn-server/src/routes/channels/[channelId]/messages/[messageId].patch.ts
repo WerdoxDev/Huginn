@@ -1,4 +1,12 @@
-import { createErrorFactory, elysia, globalPlugin, verifyJwt2 } from "@huginn/backend-shared";
+import {
+   createErrorFactory,
+   createHuginnError,
+   globalPlugin,
+   invalidBody,
+   missingAccess,
+   missingPermission,
+   verifyJwt,
+} from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectAllMessage } from "@huginn/backend-shared/database/common";
 import { type APIMessage, Errors } from "@huginn/shared";
@@ -28,7 +36,7 @@ const schema = t.Object({
 });
 
 export const patchMessage = new Elysia()
-   .use(verifyJwt2())
+   .use(verifyJwt())
    .use(globalPlugin)
    .patch(
       "/api/channels/:channelId/messages/:messageId",
@@ -36,23 +44,23 @@ export const patchMessage = new Elysia()
          // Check permission
          const channel = await prisma.channel.getById(channelId, { select: { id: true } });
          if (!(await prisma.user.hasChannel(tokenPayload.id, channel.id))) {
-            return elysia.missingAccess(status);
+            return missingAccess(status);
          }
 
          const messageToCheck = await prisma.message.getById(channelId, messageId, { select: { author: { select: { id: true } } } });
          if (messageToCheck.author.id !== tokenPayload.id) {
-            return elysia.missingPermission(status);
+            return missingPermission(status);
          }
 
          // Body must have either content, attachment or embeds
          if (!body.content && !body.attachments && !body.embeds) {
-            return elysia.invalidBody(status);
+            return invalidBody(status);
          }
 
          // Validate embeds
          const formError = createErrorFactory(Errors.invalidFormBody());
          if (body.embeds && !validateEmbeds(body.embeds, formError)) {
-            return elysia.createHuginnError(formError, status);
+            return createHuginnError(formError, status);
          }
 
          const processedEmbeds = await processEmbeds(body.embeds);

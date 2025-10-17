@@ -1,15 +1,15 @@
 import { cdnUpload } from "#utils/server-request";
-import { elysia, verifyJwt2 } from "@huginn/backend-shared";
+import { invalidBody, verifyJwt } from "@huginn/backend-shared";
 import { CDNRoutes, getFileHash, toArrayBuffer, type APIPostApplicationIconResult } from "@huginn/shared";
 import Elysia, { t } from "elysia";
 
 const schema = t.Object({ icon: t.String(), applicationId: t.Optional(t.Number()) });
 
-export const postApplicationIcon = new Elysia().use(verifyJwt2()).post(
+export const postApplicationIcon = new Elysia().use(verifyJwt()).post(
    "/api/applications/icon",
    async ({ body, status }) => {
       if (!body.icon) {
-         return elysia.invalidBody(status);
+         return invalidBody(status);
       }
 
       const data = toArrayBuffer(body.icon);

@@ -1,11 +1,11 @@
 import { filterChannel } from "#utils/helpers";
-import { verifyJwt2 } from "@huginn/backend-shared";
+import { verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { omitChannelRecipient, selectChannelDefaults } from "@huginn/backend-shared/database/common";
 import { type APIGetUserChannelsResult, merge } from "@huginn/shared";
 import Elysia from "elysia";
 
-export const getUserChannels = new Elysia().use(verifyJwt2()).get("/api/users/@me/channels", async ({ tokenPayload, status }) => {
+export const getUserChannels = new Elysia().use(verifyJwt()).get("/api/users/@me/channels", async ({ tokenPayload, status }) => {
    const channels = await prisma.channel.getUserChannels(tokenPayload.id, false, {
       select: merge(selectChannelDefaults, omitChannelRecipient(tokenPayload.id)),
    });

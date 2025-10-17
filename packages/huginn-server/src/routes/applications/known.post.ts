@@ -2,14 +2,14 @@ import { envs } from "#setup";
 import { filterKnownApplication } from "#utils/helpers";
 import { serverFetch } from "#utils/server-request";
 import type { TwitchOAuthResult, IGDBSearchResult } from "#utils/types";
-import { elysia, verifyJwt2 } from "@huginn/backend-shared";
+import { invalidBody, notFound, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma, selectKnownApplication } from "@huginn/backend-shared/database/index";
 import { constants, Errors, findClosestString, type APIPostKnownApplicationResult } from "@huginn/shared";
 import Elysia, { t } from "elysia";
 
 const schema = t.Object({ windowTitle: t.String(), exePath: t.String() });
 
-export const postKnownApplication = new Elysia().use(verifyJwt2()).post(
+export const postKnownApplication = new Elysia().use(verifyJwt()).post(
    "/api/applications/known",
    async ({ body, status, tokenPayload }) => {
       const exeName = body.exePath.split(/[/\\]+/).pop();
@@ -18,7 +18,7 @@ export const postKnownApplication = new Elysia().use(verifyJwt2()).post(
       title = title.replace(/[\u00A9\u00AE\u2120\u2122\u2117\u1F12E\u1F12F]/g, "");
 
       if (!exeName) {
-         return elysia.invalidBody(status);
+         return invalidBody(status);
       }
 
       const search = new URLSearchParams({
@@ -50,7 +50,7 @@ export const postKnownApplication = new Elysia().use(verifyJwt2()).post(
       }
 
       if (await prisma.knownApplication.exists({ names: { hasSome: searchableNames.map((x) => x.name) }, exeName: exeName })) {
-         return elysia.singleError(Errors.knownApplicationExists(), status);
+         return singleError(Errors.knownApplicationExists(), status);
       }
 
       const bestMatch = findClosestString(
@@ -78,7 +78,7 @@ export const postKnownApplication = new Elysia().use(verifyJwt2()).post(
          );
       }
 
-      return elysia.notFound(status);
+      return notFound(status);
    },
    { body: schema },
 );

@@ -1,4 +1,4 @@
-import { elysia, verifyJwt2 } from "@huginn/backend-shared";
+import { missingAccess, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectChannelDefaults } from "@huginn/backend-shared/database/common";
 import { ChannelType, Errors, MessageFlags, MessageType } from "@huginn/shared";
@@ -8,15 +8,15 @@ import { dispatchChannel, dispatchMessage } from "#utils/helpers";
 import { Elysia } from "elysia";
 
 export const putChannelRecipient = new Elysia()
-   .use(verifyJwt2())
+   .use(verifyJwt())
    .put("/api/channels/:channelId/recipients/:recipientId", async ({ params: { channelId, recipientId }, status, tokenPayload }) => {
       const channel = await prisma.channel.getById(channelId, { select: { type: true, recipients: { select: { id: true } } } });
       if (channel.type !== ChannelType.GROUP_DM) {
-         return elysia.singleError(Errors.invalidChannelType(), status, "Bad Request");
+         return singleError(Errors.invalidChannelType(), status, "Bad Request");
       }
 
       if (!channel.recipients.find((x) => x.id === tokenPayload.id)) {
-         return elysia.missingAccess(status);
+         return missingAccess(status);
       }
 
       if (channel.recipients.find((x) => x.id === recipientId)) {

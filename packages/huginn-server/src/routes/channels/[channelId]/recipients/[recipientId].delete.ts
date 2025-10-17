@@ -1,4 +1,4 @@
-import { elysia, verifyJwt2 } from "@huginn/backend-shared";
+import { missingAccess, missingPermission, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectChannelRecipients } from "@huginn/backend-shared/database/common";
 import { ChannelType, Errors, MessageFlags, MessageType } from "@huginn/shared";
@@ -8,25 +8,25 @@ import { dispatchMessage } from "#utils/helpers";
 import { Elysia } from "elysia";
 
 export const deleteChannelRecipient = new Elysia()
-   .use(verifyJwt2())
+   .use(verifyJwt())
    .delete("/api/channels/:channelId/recipients/:recipientId", async ({ params: { channelId, recipientId }, status, tokenPayload }) => {
       await prisma.user.assertUsersExist("/channels/:channelId/recipients/:recipientId", [recipientId]);
 
       const channel = await prisma.channel.getById(channelId, { select: { ...selectChannelRecipients, type: true, ownerId: true } });
       if (!channel.recipients.find((x) => x.id === tokenPayload.id)) {
-         return elysia.missingAccess(status);
+         return missingAccess(status);
       }
 
       if (channel.type !== ChannelType.GROUP_DM) {
-         return elysia.singleError(Errors.invalidChannelType(), status, "Bad Request");
+         return singleError(Errors.invalidChannelType(), status, "Bad Request");
       }
 
       if (channel.ownerId !== tokenPayload.id) {
-         return elysia.missingPermission(status);
+         return missingPermission(status);
       }
 
       if (!channel.recipients.find((x) => x.id === recipientId)) {
-         return elysia.singleError(Errors.invalidRecipient(recipientId), status, "Not Found");
+         return singleError(Errors.invalidRecipient(recipientId), status, "Not Found");
       }
 
       const updatedChannel = await prisma.channel.removeRecipient(channelId, recipientId);

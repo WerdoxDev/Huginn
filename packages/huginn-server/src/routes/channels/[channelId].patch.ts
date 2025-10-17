@@ -1,4 +1,4 @@
-import { createErrorFactory, elysia, verifyJwt2 } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, missingPermission, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectChannelDefaults } from "@huginn/backend-shared/database/common";
 import { CDNRoutes, Errors, MessageFlags, MessageType, getFileHash, toArrayBuffer } from "@huginn/shared";
@@ -13,7 +13,7 @@ const schema = t.Object({
    owner: t.Optional(t.String()),
 });
 
-export const patchChannel = new Elysia().use(verifyJwt2()).patch(
+export const patchChannel = new Elysia().use(verifyJwt()).patch(
    "/api/channels/:channelId",
    async ({ params: { channelId }, status, body, tokenPayload }) => {
       const formError = createErrorFactory(Errors.invalidFormBody());
@@ -21,13 +21,13 @@ export const patchChannel = new Elysia().use(verifyJwt2()).patch(
       validateChannelName(body.name, formError);
 
       if (formError.hasErrors()) {
-         return elysia.createHuginnError(formError, status);
+         return createHuginnError(formError, status);
       }
 
       const channel = await prisma.channel.getById(channelId, { select: { name: true, icon: true, ownerId: true } });
 
       if (body.owner && channel.ownerId !== tokenPayload.id) {
-         return elysia.missingPermission(status);
+         return missingPermission(status);
       }
 
       let channelIconHash: string | undefined | null = undefined;

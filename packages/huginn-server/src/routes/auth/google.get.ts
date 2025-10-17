@@ -1,4 +1,4 @@
-import { elysia, tryCatch } from "@huginn/backend-shared";
+import { forbidden, tryCatch } from "@huginn/backend-shared";
 import { decodeBase64 } from "@std/encoding";
 import { envs, gateway } from "#setup";
 import Elysia, { t } from "elysia";
@@ -19,22 +19,22 @@ export const getGoogle = new Elysia().get(
 
       const [error, decodedToken] = await tryCatch(() => new TextDecoder().decode(decodeBase64(state)).split(":"));
       if (error) {
-         return elysia.forbidden(status);
+         return forbidden(status);
       }
 
       const [timestamp, randomValue] = decodedToken;
       if (!timestamp || !randomValue || randomValue.length !== 16) {
-         return elysia.forbidden(status);
+         return forbidden(status);
       }
 
       // If timestamp is not within a 5 minute window
       if (Date.now() - Number(timestamp) > 5 * 60 * 1000) {
-         return elysia.forbidden(status);
+         return forbidden(status);
       }
 
       const allowedOrigins = envs.ALLOWED_ORIGINS?.split(",");
       if (redirect_url && !allowedOrigins?.some((x) => redirect_url.includes(x))) {
-         return elysia.forbidden(status);
+         return forbidden(status);
       }
 
       oauth.value = { state, redirect_url, flow, session_id };

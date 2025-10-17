@@ -1,4 +1,4 @@
-import { createToken, elysia } from "@huginn/backend-shared";
+import { createHuginnError, createToken } from "@huginn/backend-shared";
 import { createErrorFactory } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { constants, type APIPostRegisterResult, Errors } from "@huginn/shared";
@@ -32,7 +32,7 @@ export const postRegister = new Elysia().post(
       validateEmail(body.email, formError);
 
       if (formError.hasErrors()) {
-         return elysia.createHuginnError(formError, status);
+         return createHuginnError(formError, status);
       }
 
       const databaseError = createErrorFactory(Errors.invalidFormBody());
@@ -41,7 +41,7 @@ export const postRegister = new Elysia().post(
       await validateEmailUnique(body.email, databaseError);
 
       if (databaseError.hasErrors()) {
-         return elysia.createHuginnError(databaseError, status);
+         return createHuginnError(databaseError, status);
       }
 
       const user = await prisma.user.createOne(body);

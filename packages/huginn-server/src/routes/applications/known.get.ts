@@ -1,5 +1,5 @@
 import { filterKnownApplication } from "#utils/helpers";
-import { verifyJwt2 } from "@huginn/backend-shared";
+import { verifyJwt } from "@huginn/backend-shared";
 import { selectKnownApplication } from "@huginn/backend-shared/database/common";
 import { prisma } from "@huginn/backend-shared/database/index";
 import { type APIGetKnownApplicationsResult } from "@huginn/shared";
@@ -7,7 +7,7 @@ import Elysia, { t } from "elysia";
 
 const querySchema = t.Object({ since: t.Optional(t.Number()) });
 
-export const getKnownApplications = new Elysia().use(verifyJwt2()).get(
+export const getKnownApplications = new Elysia().use(verifyJwt()).get(
    "/api/applications/known",
    async ({ status, query: { since } }) => {
       const sinceDate = since ? new Date(since) : undefined;

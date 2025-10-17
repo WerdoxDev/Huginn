@@ -1,4 +1,4 @@
-import { elysia, verifyJwt2 } from "@huginn/backend-shared";
+import { missingAccess, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
 import { constants, Errors } from "@huginn/shared";
 import { gateway } from "#setup";
@@ -7,7 +7,7 @@ import Elysia, { t } from "elysia";
 
 const schema = t.Object({ recipients: t.Nullable(t.Array(t.String())) });
 
-export const postCallRing = new Elysia().use(verifyJwt2()).post(
+export const postCallRing = new Elysia().use(verifyJwt()).post(
    "/api/channels/:channelId/call/ring",
    async ({ body, params: { channelId }, status, tokenPayload }) => {
       const channel = await prisma.channel.getById(channelId, {
@@ -15,11 +15,11 @@ export const postCallRing = new Elysia().use(verifyJwt2()).post(
       });
 
       if (!(await prisma.user.hasChannel(tokenPayload.id, channelId))) {
-         return elysia.missingAccess(status);
+         return missingAccess(status);
       }
 
       if (body.recipients && !body.recipients?.every((x) => channel.recipients.some((y) => y.id === x))) {
-         return elysia.singleError(Errors.unknownUser(body.recipients), status);
+         return singleError(Errors.unknownUser(body.recipients), status);
       }
 
       const callState = gateway.voiceManager.getCallStates([channel.id]);

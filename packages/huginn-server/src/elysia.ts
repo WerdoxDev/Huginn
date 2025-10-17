@@ -39,7 +39,7 @@ import { putUserRelationship } from "#routes/users/@me/relationships/[userId].pu
 import { patchUserSettings } from "#routes/users/@me/settings.patch";
 import { getUser } from "#routes/users/[userId].get";
 import { envs } from "#setup";
-import { elysia, globalPlugin } from "@huginn/backend-shared";
+import { globalPlugin, invalidBody, serverError, serverOnError } from "@huginn/backend-shared";
 import Elysia from "elysia";
 import { getIndex } from "./routes";
 import { staticPlugin } from "@elysiajs/static";
@@ -55,18 +55,18 @@ export const main = new Elysia({
    .onError(({ error, code, status, path, request }) => {
       consola.box(path, request.method, error);
       if (code === "UNKNOWN") {
-         const returnedError = elysia.serverOnError(error, status);
+         const returnedError = serverOnError(error, status);
          // console.log(returnedError);
          if (returnedError) {
             return returnedError;
          }
       } else if (code === "VALIDATION" || code === "PARSE") {
-         return elysia.invalidBody(status);
+         return invalidBody(status);
       } else if (code === "INTERNAL_SERVER_ERROR") {
-         return elysia.serverError(status);
+         return serverError(status);
       }
 
-      return elysia.serverError(status);
+      return serverError(status);
    })
    .onAfterResponse(async ({ global }) => {
       if (global.waitUntilPromises) {

@@ -1,11 +1,11 @@
-import { verifyJwt2 } from "@huginn/backend-shared";
+import { verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import Elysia from "elysia";
 
 export const deleteUserRelationship = new Elysia()
-   .use(verifyJwt2())
+   .use(verifyJwt())
    .delete("/api/users/@me/relationships/:userId", async ({ tokenPayload, params: { userId }, status }) => {
       await prisma.relationship.deleteByUserId(tokenPayload.id, userId);
 
