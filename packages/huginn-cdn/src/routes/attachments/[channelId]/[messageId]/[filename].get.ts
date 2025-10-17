@@ -1,109 +1,126 @@
-import { createRoute, fileNotFound, unauthorized, validator, waitUntil } from "@huginn/backend-shared";
-import { HttpCode, type ImageFormats, fileTypes, isImageMediaType, isVideoMediaType } from "@huginn/shared";
+import { elysia, globalPlugin } from "@huginn/backend-shared";
+import { type ImageFormats, fileTypes, isImageMediaType, isVideoMediaType } from "@huginn/shared";
 import type { S3Stats } from "bun";
-import { StreamingApi } from "hono/utils/stream";
-import { z } from "zod";
 import { cacheStorage, envs, storage } from "#setup";
 import { extractFileInfo, transformImage } from "#utils/file-utils";
 import { getCacheDir } from "#utils/route-utils";
+import Elysia, { StatusMap, t } from "elysia";
 
-// const querySchema = z.object({ token: z.string(), expires: z.string() });
-const querySchema = z.object({
-   hm: z.string(),
-   ex: z.string(),
-   format: z.optional(z.string()),
-   quality: z.optional(z.string()),
-   width: z.optional(z.string()),
-   height: z.optional(z.string()),
+const querySchema = t.Object({
+   hm: t.String(),
+   ex: t.Number(),
+   format: t.Optional(t.String()),
+   quality: t.Optional(t.Number({ minimum: 0, maximum: 100 })),
+   width: t.Optional(t.Number()),
+   height: t.Optional(t.Number()),
 });
 
-createRoute("GET", "/cdn/attachments/:channelId/:messageId/:filename", validator("query", querySchema), async (c) => {
-   const { hm, ex } = c.req.valid("query");
-   const hasher = new Bun.CryptoHasher("sha256", envs.CDN_HMAC_SECRET);
-   const path = c.req.path.replace("/cdn/", "");
-   hasher.update(`${path}:${ex}`);
-   const expectedSignature = hasher.digest("hex");
+export const getMessageAttachment = new Elysia().use(globalPlugin).get(
+   "/cdn/attachments/:channelId/:messageId/:filename",
+   async ({
+      query: { ex, hm, format, height, quality, width },
+      status,
+      path,
+      params: { channelId, filename, messageId },
+      headers,
+      global,
+   }) => {
+      const hasher = new Bun.CryptoHasher("sha256", envs.CDN_HMAC_SECRET);
 
-   if (expectedSignature !== hm) {
-      return fileNotFound(c);
-   }
+      const hashPath = path.replace("/cdn/", "");
+      hasher.update(`${hashPath}:${ex}`);
+      const expectedSignature = hasher.digest("hex");
 
-   const now = Math.floor(Date.now() / 1000);
-   if (Number(ex) < now) {
-      return fileNotFound(c);
-   }
-
-   const { format, quality, width, height } = c.req.valid("query");
-   const { channelId, messageId, filename } = c.req.param();
-   const { mimeType } = extractFileInfo(filename);
-
-   // Video files with range require getting a specific range of bytes from the video
-   if (isVideoMediaType(mimeType)) {
-      const head = (await storage.stat("attachments", `${channelId}/${messageId}`, filename)) as S3Stats;
-      if (!head) {
-         return fileNotFound(c);
+      if (expectedSignature !== hm) {
+         return elysia.fileNotFound(status);
       }
 
-      const range = c.req.header("Range");
-      if (range) {
-         const parts = range.replace(/bytes=/, "").split("-");
-         const start = Number.parseInt(parts[0], 10);
-         const end = parts[1] ? Number.parseInt(parts[1], 10) : (head.size ?? 0) - 1;
-         const chunkSize = end - start + 1;
-         const file = await storage.getFile("attachments", `${channelId}/${messageId}`, filename, start, end);
+      const now = Math.floor(Date.now() / 1000);
+      if (ex < now) {
+         return elysia.fileNotFound(status);
+      }
 
-         if (file) {
-            return c.body(file, HttpCode.PARTIAL_CONTENT, {
-               "Content-Type": mimeType,
-               "Content-Range": `bytes ${start}-${end}/${head.size}`,
-               "Accept-Ranges": "bytes",
-               "Content-Length": chunkSize.toString(),
-            });
+      const { mimeType } = extractFileInfo(filename);
+
+      // Video files with range require getting a specific range of bytes from the video
+      if (isVideoMediaType(mimeType)) {
+         const head = (await storage.stat("attachments", `${channelId}/${messageId}`, filename)) as S3Stats;
+         if (!head) {
+            return elysia.fileNotFound(status);
+         }
+
+         const range = headers["range"];
+         if (range) {
+            const parts = range.replace(/bytes=/, "").split("-");
+            const start = Number.parseInt(parts[0], 10);
+            const end = parts[1] ? Number.parseInt(parts[1], 10) : (head.size ?? 0) - 1;
+            const chunkSize = end - start + 1;
+            const file = await storage.getFile("attachments", `${channelId}/${messageId}`, filename, start, end);
+
+            if (file) {
+               return new Response(file, {
+                  status: StatusMap["Partial Content"],
+                  headers: {
+                     "content-type": mimeType,
+                     "content-range": `bytes ${start}-${end}/${head.size}`,
+                     "accept-ranges": "bytes",
+                     "content-length": chunkSize.toString(),
+                  },
+               });
+            }
          }
       }
-   }
 
-   const cacheDir = getCacheDir(format, Number(quality), Number(width), Number(height));
+      const cacheDir = getCacheDir(format, quality, width, height);
 
-   // We don't cache an image without any modifiers
-   if ((format || quality || width || height) && isImageMediaType(mimeType)) {
-      const cachedFile = await cacheStorage.getFile("attachments", `${channelId}/${messageId}/${cacheDir}`, filename);
+      // We don't cache an image without any modifiers
+      if ((format || quality || width || height) && isImageMediaType(mimeType)) {
+         const cachedFile = await cacheStorage.getFile("attachments", `${channelId}/${messageId}/${cacheDir}`, filename);
 
-      if (cachedFile) {
-         console.log("hit cache");
-         return c.body(cachedFile, HttpCode.OK, { "Content-Type": mimeType });
+         if (cachedFile) {
+            return new Response(cachedFile, { status: StatusMap["OK"], headers: { "content-type": mimeType } });
+         }
       }
-   }
 
-   const file = await storage.getFile("attachments", `${channelId}/${messageId}`, filename);
+      const file = await storage.getFile("attachments", `${channelId}/${messageId}`, filename);
 
-   if (!file) {
-      return fileNotFound(c);
-   }
+      if (!file) {
+         return elysia.fileNotFound(status);
+      }
 
-   if ((format || quality || width || height) && isImageMediaType(mimeType)) {
-      const { readable, writable } = new TransformStream();
-      const stream = new StreamingApi(writable, readable);
+      if ((format || quality || width || height) && isImageMediaType(mimeType)) {
+         const { readable, writable } = new TransformStream();
 
-      const result = await transformImage(
-         file as ReadableStream,
-         stream,
-         Object.entries(fileTypes).find((x) => x[1] === mimeType)?.[0] as ImageFormats,
-         Number(quality),
-         Number(width),
-         Number(height),
-      );
-      const [readable1, readable2] = stream.responseReadable.tee();
+         await transformImage(
+            file as ReadableStream,
+            writable,
+            Object.entries(fileTypes).find((x) => x[1] === mimeType)?.[0] as ImageFormats,
+            quality,
+            width,
+            height,
+         );
 
-      // Write the image in cache
-      waitUntil(c, async () => {
-         if (result) {
+         const [readable1, readable2] = readable.tee();
+
+         global.waitUntil(async () => {
+            // if (readable2) {
             await cacheStorage.writeFile("attachments", `${channelId}/${messageId}/${cacheDir}`, filename, readable2);
-         }
-      });
+            // }
+         });
 
-      return c.body(readable1, HttpCode.OK, { "Content-Type": format ? fileTypes[format as ImageFormats] : mimeType });
-   }
+         // Write the image in cache
+         // waitUntil(c, async () => {
+         // });
 
-   return c.body(file, HttpCode.OK, { "Content-Type": mimeType });
-});
+         return new Response(readable1, {
+            status: StatusMap["OK"],
+            headers: { "content-type": format ? fileTypes[format as ImageFormats] : mimeType },
+         });
+      }
+
+      return new Response(file, { status: StatusMap["OK"], headers: { "content-type": mimeType } });
+   },
+   {
+      query: querySchema,
+   },
+);

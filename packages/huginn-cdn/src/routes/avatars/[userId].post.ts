@@ -1,22 +1,21 @@
-import { createRoute, invalidFormBody, tryCatch, verifyJwt } from "@huginn/backend-shared";
-import { HttpCode } from "@huginn/shared";
+import { elysia, verifyJwt2 } from "@huginn/backend-shared";
 import { storage } from "#setup";
+import Elysia, { t } from "elysia";
 
-createRoute("POST", "/cdn/avatars/:userId", verifyJwt("cdn"), async (c) => {
-   const { userId } = c.req.param();
-   const [error, body] = await tryCatch(async () => await c.req.formData());
+const schema = t.Object({ files: t.Record(t.String(), t.File()) });
 
-   if (error) {
-      return invalidFormBody(c);
-   }
+export const postUserAvatar = new Elysia().use(verifyJwt2("cdn")).post(
+   "/cdn/avatars/:userId",
+   async ({ body, status, params: { userId } }) => {
+      const file = body.files[0];
 
-   const file = body.get("files[0]");
+      if (!file) {
+         return elysia.invalidBody(status);
+      }
 
-   if (!body || !file || !(file instanceof File)) {
-      return invalidFormBody(c);
-   }
+      await storage.writeFile("avatars", userId, file.name, file.stream());
 
-   await storage.writeFile("avatars", userId, file.name, file.stream());
-
-   return c.text(file.name, HttpCode.CREATED);
-});
+      return status("Created", file.name);
+   },
+   { body: schema },
+);

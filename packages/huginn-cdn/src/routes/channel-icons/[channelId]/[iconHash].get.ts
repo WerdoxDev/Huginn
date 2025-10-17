@@ -1,8 +1,8 @@
-import { createRoute } from "@huginn/backend-shared";
 import { tryResolveImage } from "#utils/route-utils";
+import Elysia, { StatusMap } from "elysia";
 
-createRoute("GET", "/cdn/channel-icons/:channelId/:iconHash", async (c) => {
-	const { iconHash, channelId } = c.req.param();
+export const getChannelIcon = new Elysia().get("/cdn/channel-icons/:channelId/:iconHash", async ({ params: { channelId, iconHash } }) => {
+   const { mimeType, readable } = await tryResolveImage("channel-icons", channelId, iconHash);
 
-	return tryResolveImage(c, "channel-icons", channelId, iconHash);
+   return new Response(readable, { status: StatusMap["OK"], headers: { "content-type": mimeType } });
 });

@@ -2,7 +2,6 @@ import { Readable, Writable } from "node:stream";
 import { CDNError } from "@huginn/backend-shared";
 import { CDNErrorType } from "@huginn/backend-shared/types";
 import { type FileContentTypes, type ImageFormats, fileTypes } from "@huginn/shared";
-import type { StreamingApi } from "hono/utils/stream";
 import PQueue from "p-queue";
 import sharp from "sharp";
 import { storage } from "#setup";
@@ -52,53 +51,82 @@ export async function findImageByName(category: FileCategory, subDirectory: stri
 
 export async function transformImage(
    input: ReadableStream,
-   output: StreamingApi,
+   output: WritableStream,
    format?: ImageFormats,
    quality?: number,
    width?: number,
    height?: number,
-): Promise<boolean> {
-   return (await queue.add(() => {
-      const reader = input.getReader();
+): Promise<void> {
+   return await queue.add(() => {
+      const nodeWritable = bunWritableToNode(output);
+      const nodeReadable = bunReadableToNode(input);
 
-      const nodeWritable = new Writable({
-         async write(chunk: Buffer, _encoding, cb) {
-            await output.write(chunk);
-            cb();
-         },
-      });
-
-      const nodeReadable = new Readable({
-         async read() {
-            const { done, value } = await reader.read();
-            if (done) {
-               this.push(null);
-            } else {
-               this.push(value);
-            }
-         },
-      });
-
-      let s = sharp();
+      let sharpInstance = sharp();
       if ((width && !Number.isNaN(width)) || (height && !Number.isNaN(height))) {
-         s = s.resize({ width, height });
+         sharpInstance = sharpInstance.resize({ width, height });
       }
 
       if (format) {
-         s = s.toFormat(format, { lossless: !quality || quality === 100, quality: quality !== 100 && !Number.isNaN(quality) ? quality : undefined });
+         sharpInstance = sharpInstance.toFormat(format, {
+            lossless: !quality || quality === 100,
+            quality: quality !== 100 && !Number.isNaN(quality) ? quality : undefined,
+         });
       }
 
-      const finalStream = nodeReadable.pipe(s).pipe(nodeWritable);
+      nodeReadable.pipe(sharpInstance).pipe(nodeWritable);
+   });
+}
 
-      return new Promise<boolean>((res, rej) => {
-         if (!finalStream) {
-            rej(new CDNError("transformImage", CDNErrorType.INVALID_FILE_FORMAT));
-            output.close();
+function bunReadableToNode(input: ReadableStream) {
+   const reader = input.getReader();
+   const nodeReadable = new Readable({ read() {} });
+
+   (async () => {
+      try {
+         while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+               break;
+            }
+            nodeReadable.push(value);
          }
-         finalStream?.on("finish", () => {
-            res(true);
-            output.close();
-         });
-      });
-   })) as boolean;
+         nodeReadable.push(null);
+      } catch (err) {
+         nodeReadable.destroy(err as Error);
+      }
+   })();
+
+   return nodeReadable;
+}
+
+function bunWritableToNode(input: WritableStream) {
+   const writer = input.getWriter();
+
+   return new Writable({
+      async write(chunk, encoding, callback) {
+         try {
+            await writer.write(chunk);
+            callback();
+         } catch (err) {
+            callback(err as Error);
+         }
+      },
+      async final(callback) {
+         try {
+            await writer.close();
+            callback();
+         } catch (err) {
+            callback(err as Error);
+         }
+      },
+      destroy(error, callback) {
+         try {
+            if (error) {
+               writer.abort(error);
+            }
+            // oxlint-disable-next-line no-unused-vars
+         } catch (e) {}
+         callback();
+      },
+   });
 }

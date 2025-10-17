@@ -1,22 +1,21 @@
-import { createRoute, invalidFormBody, tryCatch, verifyJwt } from "@huginn/backend-shared";
-import { HttpCode } from "@huginn/shared";
+import { elysia, verifyJwt2 } from "@huginn/backend-shared";
 import { storage } from "#setup";
+import Elysia, { t } from "elysia";
 
-createRoute("POST", "/cdn/channel-icons/:channelId", verifyJwt("cdn"), async (c) => {
-   const { channelId } = c.req.param();
-   const [error, body] = await tryCatch(async () => await c.req.formData());
+const schema = t.Object({ files: t.Record(t.String(), t.File()) });
 
-   if (error) {
-      return invalidFormBody(c);
-   }
+export const postChannelIcon = new Elysia().use(verifyJwt2("cdn")).post(
+   "/cdn/channel-icons/:channelId",
+   async ({ body, status, params: { channelId } }) => {
+      const file = body.files[0];
 
-   const file = body.get("files[0]");
+      if (!file) {
+         return elysia.invalidBody(status);
+      }
 
-   if (!body || !file || !(file instanceof File)) {
-      return invalidFormBody(c);
-   }
+      await storage.writeFile("channel-icons", channelId, file.name, file.stream());
 
-   await storage.writeFile("channel-icons", channelId, file.name, file.stream());
-
-   return c.text(file.name, HttpCode.CREATED);
-});
+      return status("Created", file.name);
+   },
+   { body: schema },
+);
