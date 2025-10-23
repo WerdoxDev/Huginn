@@ -3,12 +3,14 @@ import { extractFileInfo, transformImage } from "#utils/file-utils";
 import { invalidBody, verifyJwt } from "@huginn/backend-shared";
 import Elysia, { t } from "elysia";
 
-const schema = t.Object({ files: t.Record(t.String(), t.File()) });
+const schema = t.Record(t.String(), t.File());
 
 export const postApplicationIcon = new Elysia().use(verifyJwt("cdn")).post(
    "/cdn/application-icons/:applicationId?",
    async ({ body, status, params: { applicationId } }) => {
-      const file = body.files[0];
+      console.log(body);
+      return;
+      const file = body["files[0]"];
 
       if (!file) {
          return invalidBody(status);
@@ -25,5 +27,7 @@ export const postApplicationIcon = new Elysia().use(verifyJwt("cdn")).post(
 
       return status("Created", name);
    },
-   { body: schema },
+   {
+      // body: schema,
+   },
 );
