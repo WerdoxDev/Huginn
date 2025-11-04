@@ -14,15 +14,23 @@ if (import.meta.env.DEV) {
          clientStore.getState().client?.gateway.socket?.close();
       }
       if (e.key === "]") {
-         clientStore.getState().client?.voice.socket?.close();
+         clientStore.getState().client?.voice.signaling.socket?.close();
       }
    });
 }
 
+window.addEventListener("unhandledrejection", (d) => {
+   console.log(d);
+});
+
 logger.enableLogs({
    // "api:voice": ["default", "send", "recv", "heartbeat"],
    "app:audio-source-player": ["default"],
-   "api:voice": ["default", "recv", "heartbeat", "transport"],
+   "api:voice": ["default"],
+   "api:voice-manager": ["default"],
+   "api:voice-device": ["default"],
+   "api:voice-signaling": ["heartbeat"],
+   "api:voice-transport": ["default"],
    "app:voice-store": ["remote-sources", "default"],
    "app:voice-client": ["voice-recv", "default"],
    "api:gateway": ["default", "recv", "heartbeat"],
@@ -31,7 +39,7 @@ logger.enableLogs({
    "app:presence-store": ["default"],
 });
 
-logger.excludeEventLogs({ "app:voice-store": ["speaking-state"], "api:voice": ["local-voice-state"] });
+logger.excludeEventLogs({ "app:voice-store": ["speaking-state"] });
 logger.setIsRaw(import.meta?.env?.PROD ?? false);
 let _remoteLogger: RemoteLogger;
 

@@ -13,7 +13,7 @@ import {
    ChannelType,
    constants,
    type DirectChannel,
-   type GatewayEvents,
+   type GatewayWebsocketEvents,
    MessageType,
    nullToUndefined,
    omit,
@@ -70,7 +70,7 @@ export function channelWithoutRecipient(channel: DirectChannel, recipientId: Sno
 
 export function dispatchChannel(
    channel: DirectChannel,
-   topic: keyof Pick<GatewayEvents, "channel_create" | "channel_update" | "channel_delete">,
+   topic: keyof Pick<GatewayWebsocketEvents, "channel_create" | "channel_update" | "channel_delete">,
    userId: Snowflake,
 ) {
    dispatchToTopic(userId, topic, channelWithoutRecipient(channel, userId));

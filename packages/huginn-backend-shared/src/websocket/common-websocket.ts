@@ -17,6 +17,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
    public abstract onOpen(session: ClientSession): Promise<void> | void;
    public abstract onClose(session: ClientSession, event: { code?: number; reason?: string }): Promise<void> | void;
    public abstract onMessage(session: ClientSession, data: Payload): Promise<void> | void;
+   public abstract onDeleteSession?(session: ClientSession): Promise<void> | void;
 
    public constructor(options: WebsocketOptions, clientSessionConstructor: ClientSessionConstructor<ClientSession>) {
       this.options = options;
@@ -130,13 +131,14 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
    private queueSessionDelete(sessionId: Snowflake) {
       log("shared:websocket", "default", "queue session delete", "wid:", this.options.workerId, "sid:", sessionId);
 
-      setTimeout(() => {
+      setTimeout(async () => {
          const session = this.sessions.get(sessionId);
 
-         if (session && !session.isStale) {
+         if (!session || !session.isStale) {
             return;
          }
 
+         await this.onDeleteSession?.(session);
          this.deleteSession(sessionId);
       }, this.options.sessionDeleteTimeout);
    }

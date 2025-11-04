@@ -191,9 +191,7 @@ export function expectMessageExactSchema(
       }
       if (mentions) {
          expect(castedMessage.mentions.sort()).toStrictEqual(
-            mentions
-               .map((x) => ({ id: x.id.toString(), avatar: x.avatar, displayName: x.displayName, flags: x.flags, username: x.username }))
-               .sort(),
+            mentions.map((x) => ({ id: x.id.toString(), avatar: x.avatar, displayName: x.displayName, flags: x.flags, username: x.username })).sort(),
          );
       }
       expect(Object.keys(castedMessage.author).sort()).toStrictEqual(["id", "username", "displayName", "flags", "avatar"].sort());
@@ -371,7 +369,8 @@ export function expectVoiceStateExactSchema(
       sessionId,
       isAudioDeafened: parsedVoiceState.isAudioDeafened,
       isAudioMuted: parsedVoiceState.isAudioMuted,
-      isStreaming: parsedVoiceState.isStreaming,
+      isScreenSharing: parsedVoiceState.isScreenSharing,
+      isAudioStreaming: parsedVoiceState.isAudioStreaming,
       isCameraOn: parsedVoiceState.isCameraOn,
    });
 }

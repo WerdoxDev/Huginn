@@ -1,33 +1,28 @@
-import { Transition } from "@headlessui/react";
-import type { GatewayVoiceStateFlags } from "@huginn/shared";
+import type { Snowflake } from "@huginn/shared";
 import clsx from "clsx";
 import Tooltip from "./tooltip/Tooltip";
 import VoiceControlButton from "./button/VoiceControlButton";
 import StreamButton from "./button/StreamButton";
-import { useEffect, useState, type RefObject } from "react";
+import { useEffect, useState } from "react";
 import { useHover } from "@hooks/useHover";
 import { DropdownMenu } from "./dropdown/DropdownMenu";
+import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
+import { useVoiceStore } from "@stores/voiceStore";
+import { useClient } from "@stores/clientStore";
 
 export default function VoiceControls(props: {
    show: boolean;
    isInVoice: boolean;
    isFullscreen: boolean;
-   voiceState: GatewayVoiceStateFlags;
-   onToggleMute: () => void;
-   onToggleDeafen: () => void;
-   onStartScreenShare: () => void;
-   onStartAudioStream: () => void;
-   onEndStream: () => void;
-   onChangeStream: () => void;
-   onStartCamera: () => void;
-   onStopCamera: () => void;
-   onDisconnect: () => void;
-   onConnect: () => void;
+   channelId: Snowflake;
    onToggleFullscreen: () => Promise<void>;
 }) {
+   const client = useClient();
    const [forceShow, setForceShow] = useState(false);
    const [isMoving, setIsMoving] = useState(false);
    const [ref, isHovering] = useHover<HTMLDivElement>();
+   const { toggleDeafen, toggleMute, closeCamera, changeStream, openCamera, openAudioStream, closeStream, openScreenShare } = useVoiceUtils();
+   const { voiceState } = useVoiceStore();
 
    useEffect(() => {
       const controller = new AbortController();
@@ -55,6 +50,14 @@ export default function VoiceControls(props: {
       setForceShow(isOpen);
    }
 
+   async function onConnect() {
+      await client?.voiceManager.connectVoice(null, props.channelId);
+   }
+
+   async function onDisconnect() {
+      await client?.voiceManager.disconnectVoice();
+   }
+
    return (
       <div
          className={clsx(
@@ -69,51 +72,47 @@ export default function VoiceControls(props: {
                   <VoiceControlButton
                      activeColor="negative"
                      activeHoverColor="negative"
-                     isActive={props.voiceState.isAudioMuted}
-                     onClick={props.onToggleMute}
+                     isActive={voiceState.isAudioMuted}
+                     onClick={toggleMute}
                      tooltip="Mute"
-                     className={clsx(props.voiceState.isAudioDeafened && props.voiceState.isAudioMuted && "rounded-r-none")}
+                     className={clsx(voiceState.isAudioDeafened && voiceState.isAudioMuted && "rounded-r-none")}
                   >
-                     {props.voiceState.isAudioMuted ? <IconMingcuteMicOffFill className="size-6" /> : <IconMingcuteMicFill className="size-6" />}
+                     {voiceState.isAudioMuted ? <IconMingcuteMicOffFill className="size-6" /> : <IconMingcuteMicFill className="size-6" />}
                   </VoiceControlButton>
                   <VoiceControlButton
                      activeColor="negative"
                      activeHoverColor="negative"
-                     isActive={props.voiceState.isAudioDeafened}
-                     onClick={props.onToggleDeafen}
+                     isActive={voiceState.isAudioDeafened}
+                     onClick={toggleDeafen}
                      tooltip="Deafen"
-                     className={clsx(props.voiceState.isAudioDeafened && props.voiceState.isAudioMuted && "rounded-l-none")}
+                     className={clsx(voiceState.isAudioDeafened && voiceState.isAudioMuted && "rounded-l-none")}
                   >
-                     {props.voiceState.isAudioDeafened ? (
-                        <IconMingcuteVolumeOffFill className="size-6" />
-                     ) : (
-                        <IconMingcuteVolumeFill className="size-6" />
-                     )}
+                     {voiceState.isAudioDeafened ? <IconMingcuteVolumeOffFill className="size-6" /> : <IconMingcuteVolumeFill className="size-6" />}
                   </VoiceControlButton>
                   <div className="bg-surface mx-0.5 my-1 w-0.5 shrink-0" />
                   <div className="flex gap-x-1">
                      <StreamButton
-                        voiceState={props.voiceState}
-                        onStartScreenShare={props.onStartScreenShare}
-                        onStartAudioStream={props.onStartAudioStream}
-                        onEndStream={props.onEndStream}
-                        onChangeStream={props.onChangeStream}
+                        voiceState={voiceState}
+                        onOpenScreenShare={openScreenShare}
+                        onOpenAudioStream={openAudioStream}
+                        onCloseStream={closeStream}
+                        onChangeStream={changeStream}
                         onOpenChanged={onStreamButtonOpenChanged}
                         anchor={{ placement: "top", gap: 12 }}
                      >
                         <VoiceControlButton
                            className={clsx(
                               "flex h-full items-center justify-center",
-                              props.voiceState.isStreaming ? "w-[38px] rounded-r-none !p-0" : "w-16",
+                              voiceState.isAudioStreaming || voiceState.isScreenSharing ? "p-0! w-[38px] rounded-r-none" : "w-16",
                            )}
                            activeHoverColor="negative"
                            activeColor="primary"
-                           isActive={props.voiceState.isStreaming}
-                           tooltip={props.voiceState.isStreaming ? "End Stream" : "Start Stream"}
-                           onClick={props.voiceState.isStreaming ? props.onEndStream : undefined}
-                           asChild={!props.voiceState.isStreaming}
+                           isActive={voiceState.isAudioStreaming || voiceState.isScreenSharing}
+                           tooltip={voiceState.isAudioStreaming || voiceState.isScreenSharing ? "End Stream" : "Start Stream"}
+                           onClick={voiceState.isAudioStreaming || voiceState.isScreenSharing ? closeStream : undefined}
+                           asChild={!voiceState.isAudioStreaming && !voiceState.isScreenSharing}
                         >
-                           {props.voiceState.isStreaming ? (
+                           {voiceState.isAudioStreaming || voiceState.isScreenSharing ? (
                               <IconMingcuteCloseFill className="size-6" />
                            ) : (
                               <DropdownMenu.Button>
@@ -127,9 +126,9 @@ export default function VoiceControls(props: {
                      <VoiceControlButton
                         activeColor="primary"
                         activeHoverColor="negative"
-                        isActive={props.voiceState.isCameraOn}
-                        onClick={() => (props.voiceState.isCameraOn ? props.onStopCamera() : props.onStartCamera())}
-                        tooltip={props.voiceState.isCameraOn ? "Turn off camera" : "Turn on camera"}
+                        isActive={voiceState.isCameraOn}
+                        onClick={() => (voiceState.isCameraOn ? closeCamera() : openCamera())}
+                        tooltip={voiceState.isCameraOn ? "Turn off camera" : "Turn on camera"}
                      >
                         <IconMingcuteCamera2Fill className="size-6" />
                      </VoiceControlButton>
@@ -138,7 +137,7 @@ export default function VoiceControls(props: {
                <VoiceControlButton
                   color="negative"
                   hoverColor="negative"
-                  onClick={props.onDisconnect}
+                  onClick={onDisconnect}
                   tooltip="Disconnect"
                   className="rounded-xl px-5 py-2.5"
                >
@@ -146,7 +145,7 @@ export default function VoiceControls(props: {
                </VoiceControlButton>
             </>
          ) : (
-            <VoiceControlButton color="positive" hoverColor="positive" onClick={props.onConnect} tooltip="Join" className="rounded-xl px-5 py-2.5">
+            <VoiceControlButton color="positive" hoverColor="positive" onClick={onConnect} tooltip="Join" className="rounded-xl px-5 py-2.5">
                <IconMingcutePhoneFill className="size-6" />
             </VoiceControlButton>
          )}

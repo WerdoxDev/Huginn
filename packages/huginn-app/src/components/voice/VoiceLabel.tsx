@@ -1,25 +1,13 @@
 import { useUser } from "@hooks/api-hooks/userHooks";
-import type { GatewayVoiceState, HMediaKind, Snowflake } from "@huginn/shared";
+import type { GatewayVoiceState, Snowflake } from "@huginn/shared";
 import clsx from "clsx";
-import { motion, type Transition } from "motion/react";
 
-export function VoiceLabel(props: {
-   isResizing?: boolean;
-   isGridView?: boolean;
-   kind?: HMediaKind;
-   transition: Transition;
-   userId: Snowflake;
-   voiceState?: GatewayVoiceState;
-}) {
+export function VoiceLabel(props: { isGridView?: boolean; userId: Snowflake; voiceState?: GatewayVoiceState }) {
    const user = useUser(props.userId);
 
    return (
       <>
-         <motion.div
-            layout={!props.isResizing ? "position" : false}
-            transition={props.transition}
-            className="absolute bottom-2 left-2 z-10 flex overflow-hidden text-white"
-         >
+         <div className="absolute bottom-2 left-2 z-10 flex overflow-hidden text-white">
             <div
                className={clsx(
                   "bg-negative-300 flex h-8 items-center justify-center gap-x-2 rounded-lg",
@@ -31,27 +19,25 @@ export function VoiceLabel(props: {
             </div>
             {props.isGridView && (
                <div className="bg-surface-deep flex items-center justify-center gap-x-2 rounded-lg px-2 py-1 text-white opacity-0 transition-opacity group-hover/wrapper:opacity-100">
-                  {props.kind === "stream_video" ? (
+                  {props.voiceState?.isScreenSharing ? (
                      <IconMingcuteMonitorFill className="size-5" />
-                  ) : props.kind === "stream_audio" ? (
+                  ) : props.voiceState?.isAudioStreaming ? (
                      <IconMingcuteVolumeFill className="size-5" />
                   ) : (
-                     props.kind === "camera" && <IconMingcuteCamera2Fill className="size-5" />
+                     props.voiceState?.isCameraOn && <IconMingcuteCamera2Fill className="size-5" />
                   )}
                   {user?.displayName}
                </div>
             )}
-         </motion.div>
+         </div>
          {!props.isGridView && (
-            <motion.div
-               layout={!props.isResizing}
-               transition={props.transition}
+            <div
                className={clsx(
                   "text-text absolute -bottom-10 w-full overflow-hidden text-ellipsis text-nowrap text-center opacity-0 transition-opacity group-hover/element:opacity-100",
                )}
             >
                {user?.displayName}
-            </motion.div>
+            </div>
          )}
       </>
    );

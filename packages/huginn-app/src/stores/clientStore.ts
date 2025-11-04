@@ -1,17 +1,9 @@
-import { HuginnClient } from "@huginn/api";
-import {
-   type APIPublicUser,
-   error,
-   type GatewayReadyData,
-   type GatewayStatus,
-   log,
-   type Snowflake,
-   type UserSettings,
-   type VoiceStatus,
-} from "@huginn/shared";
+import { HuginnClient, type VoiceStatus } from "@huginn/api";
+import { type APIPublicUser, error, type GatewayReadyData, type GatewayStatus, log, type Snowflake, type UserSettings } from "@huginn/shared";
 import { createStore, useStore } from "zustand";
 import { storageStore } from "./storageStore";
 import { updateUser } from "@lib/query-utils";
+import { VoiceBridge } from "@lib/voice/voice-bridge";
 
 const initialStore = () => ({
    hostnames: {
@@ -24,7 +16,7 @@ const initialStore = () => ({
    readyData: undefined as GatewayReadyData | undefined,
    isInitialized: false,
    userSettings: undefined as UserSettings | undefined,
-   client: undefined as HuginnClient | undefined,
+   client: undefined as HuginnClient<VoiceBridge> | undefined,
 });
 
 // type StoreType = ReturnType<typeof initialStore>;
@@ -63,26 +55,26 @@ export function initializeClient() {
 
    let thisStore = store.getState();
    if (thisStore.client === undefined) {
-      store.setState({
-         client: new HuginnClient({
-            rest: { api: `${thisStore.hostnames.api}/api` },
-            cdn: { url: `${thisStore.hostnames.cdn}/cdn` },
-            gateway: {
-               url: `${thisStore.hostnames.api}/gateway`,
-               intents: 0,
-               createSocket(url) {
-                  return new WebSocket(url);
-               },
+      const client = new HuginnClient({
+         rest: { api: `${thisStore.hostnames.api}/api` },
+         cdn: { url: `${thisStore.hostnames.cdn}/cdn` },
+         gateway: {
+            url: `${thisStore.hostnames.api}/gateway`,
+            intents: 0,
+            createSocket(url) {
+               return new WebSocket(url);
             },
-            voice: {
-               // url: `http://192.168.178.51:3003/voice`,
-               url: `${thisStore.hostnames.voice}/voice`,
-               createSocket(url) {
-                  return new WebSocket(url);
-               },
+         },
+         voice: {
+            class: VoiceBridge,
+            // url: `http://192.168.178.51:3003/voice`,
+            url: `${thisStore.hostnames.voice}/voice`,
+            createSocket(url) {
+               return new WebSocket(url);
             },
-         }),
+         },
       });
+      store.setState({ client });
 
       store.getState().client?.gateway.connect();
    } else {

@@ -1,9 +1,6 @@
 import { createStore, useStore } from "zustand";
-import { combine } from "zustand/middleware";
+import { combine, subscribeWithSelector } from "zustand/middleware";
 import type { AppSettings, ClientInfo, FileMap, FileType } from "@/types";
-import { log, type Snowflake } from "@huginn/shared";
-import { produce } from "immer";
-import { dispatchEvent } from "@lib/event-handler";
 import { clientStore } from "./clientStore";
 import { StorageController } from "@lib/storage-controller";
 
@@ -16,64 +13,31 @@ const initialStore = () => ({
 type StoreType = ReturnType<typeof initialStore>;
 
 const store = createStore(
-   combine(initialStore(), (set, get) => ({
-      getValue: async <K extends FileType>(type: K) => {
-         const value = await storage.loadFile(type);
-         set((state) => ({ cache: { ...state.cache, [type]: value.data } }));
-         return value.data as FileMap[K];
-      },
-      getCachedValue: <K extends FileType>(type: K) => get().cache[type] as FileMap[K],
-      setValue: async <K extends FileType>(type: K, data: FileMap[K]) => {
-         await storage.saveFile(type, data);
-         set((state) => ({ cache: { ...state.cache, [type]: data } }));
-      },
-      setCachedValue: <K extends FileType>(type: K, data: FileMap[K]) => {
-         set((state) => ({ cache: { ...state.cache, [type]: data } }));
-      },
-      setFromCachedValue: async (type: FileType) => {
-         const cache = get().cache[type];
-         await storage.saveFile(type, cache);
-      },
-      updateSettings: (update: Partial<AppSettings>) => {
-         const cache = get().cache["settings"];
-         set((state) => ({ cache: { ...state.cache, settings: { ...cache, ...update } } }));
-      },
-      updateVoicePreferences: (userId: Snowflake, options: { microphoneVolume?: number; streamVolume?: number }) => {
-         log(
-            "app:files-store",
-            "voice-preferences",
-            "update",
-            "uid:",
-            userId,
-            "mvol:",
-            options.microphoneVolume,
-            "svol:",
-            options.streamVolume,
-         );
-
-         set(
-            produce((draft: StoreType) => {
-               const cache = draft.cache["voice-preferences"];
-               const existingIndex = cache.findIndex((x) => x.userId === userId);
-               if (existingIndex !== -1) {
-                  cache[existingIndex] = { ...cache[existingIndex], ...options };
-               } else {
-                  if (!options.microphoneVolume || !options.streamVolume) {
-                     throw new Error("Creating new voice preference requires both microphone and screen share volumes");
-                  }
-
-                  cache.push({
-                     userId,
-                     microphoneVolume: options.microphoneVolume,
-                     streamVolume: options.streamVolume,
-                  });
-               }
-            }),
-         );
-
-         dispatchEvent("voice_preference_changed", { userId: userId });
-      },
-   })),
+   subscribeWithSelector(
+      combine(initialStore(), (set, get) => ({
+         getValue: async <K extends FileType>(type: K) => {
+            const value = await storage.loadFile(type);
+            set((state) => ({ cache: { ...state.cache, [type]: value.data } }));
+            return value.data as FileMap[K];
+         },
+         getCachedValue: <K extends FileType>(type: K) => get().cache[type] as FileMap[K],
+         setValue: async <K extends FileType>(type: K, data: FileMap[K]) => {
+            await storage.saveFile(type, data);
+            set((state) => ({ cache: { ...state.cache, [type]: data } }));
+         },
+         setCachedValue: <K extends FileType>(type: K, data: FileMap[K]) => {
+            set((state) => ({ cache: { ...state.cache, [type]: data } }));
+         },
+         saveFromCachedValue: async (type: FileType) => {
+            const cache = get().cache[type];
+            await storage.saveFile(type, cache);
+         },
+         updateSettings: (update: Partial<AppSettings>) => {
+            const cache = get().cache["settings"];
+            set((state) => ({ cache: { ...state.cache, settings: { ...cache, ...update } } }));
+         },
+      })),
+   ),
 );
 
 export async function initializeStorage() {
@@ -163,4 +127,5 @@ export function useStorage<K extends FileType>(type: K) {
    return useStore(store, (state) => state.cache[type] as FileMap[K]);
 }
 
+export type StorageStoreType = ReturnType<typeof useStorageStore>;
 export const storageStore = store;

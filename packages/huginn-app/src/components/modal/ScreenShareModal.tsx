@@ -9,7 +9,6 @@ import { Checkbox, DialogPanel } from "@headlessui/react";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
-import { voiceClient } from "@stores/voiceStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import type { DisplaySource } from "@/types";
@@ -58,10 +57,10 @@ export default function ScreenShareModal() {
    }
 
    function close() {
-      updateModals({ screenShare: { isOpen: false } });
+      updateModals({ screenShare: { isOpen: false, callback: undefined } });
    }
 
-   async function stream() {
+   async function start() {
       if (!selectedSource) {
          return;
       }
@@ -69,16 +68,15 @@ export default function ScreenShareModal() {
       window.electronAPI.setSelectedDisplaySource(selectedSource?.id);
 
       const framerate = selectedFramerate === 0 ? 15 : selectedFramerate === 1 ? 30 : selectedFramerate === 2 ? 60 : 15;
-      const width =
-         selectedQuality === 0 ? 640 : selectedQuality === 1 ? 1280 : selectedQuality === 2 ? 1920 : selectedQuality === 3 ? 2560 : 1280;
-      const height =
-         selectedQuality === 0 ? 480 : selectedQuality === 1 ? 720 : selectedQuality === 2 ? 1080 : selectedQuality === 3 ? 1440 : 720;
+      const width = selectedQuality === 0 ? 640 : selectedQuality === 1 ? 1280 : selectedQuality === 2 ? 1920 : selectedQuality === 3 ? 2560 : 1280;
+      const height = selectedQuality === 0 ? 480 : selectedQuality === 1 ? 720 : selectedQuality === 2 ? 1080 : selectedQuality === 3 ? 1440 : 720;
 
       startTransition(async () => {
-         const producer = client?.voice.producers.get("stream_video");
+         // This is to prevent Electron from giving the same video track back
+         const producer = client?.voice.transport.getProducer("stream_video");
          producer?.track?.stop();
-
          await new Promise((r) => setTimeout(r, 1000));
+
          const stream = await navigator.mediaDevices.getDisplayMedia({
             audio: shareAudio,
             video: {
@@ -89,15 +87,7 @@ export default function ScreenShareModal() {
             },
          });
 
-         // Reset loopback even if we want to start a new one / end the last one
-         await voiceClient.stopAudioLoopback();
-
-         let audioTrack: MediaStreamTrack | undefined = stream.getAudioTracks()[0];
-         if (!audioTrack && shareAudio) {
-            audioTrack = await voiceClient.getAudioTrackFromLoopback(selectedSource.name);
-         }
-
-         await client?.voice.startStream(stream.getVideoTracks()[0], audioTrack);
+         modal.callback?.(stream, shareAudio, selectedSource.name);
          close();
       });
    }
@@ -234,13 +224,7 @@ export default function ScreenShareModal() {
             <HuginnButton className="ml-auto h-10 w-20 decoration-white hover:underline" onClick={close}>
                Cancel
             </HuginnButton>
-            <LoadingButton
-               loading={screenSharePending}
-               className="h-10 w-24"
-               color="primary"
-               onClick={stream}
-               disabled={selectedSource === undefined}
-            >
+            <LoadingButton loading={screenSharePending} className="h-10 w-24" color="primary" onClick={start} disabled={selectedSource === undefined}>
                Go Live
             </LoadingButton>
          </div>

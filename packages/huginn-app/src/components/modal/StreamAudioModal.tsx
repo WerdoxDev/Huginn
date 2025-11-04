@@ -5,7 +5,7 @@ import LoadingIcon from "@components/LoadingIcon";
 import { DialogPanel } from "@headlessui/react";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
-import { voiceClient } from "@stores/voiceStore";
+// import { voiceClient } from "@stores/voiceStore";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useEffect, useState, useTransition } from "react";
@@ -31,7 +31,7 @@ export default function StreamAudioModal() {
    }, [modal.isOpen]);
 
    function close() {
-      updateModals({ streamAudio: { isOpen: false } });
+      updateModals({ streamAudio: { isOpen: false, callback: undefined } });
    }
 
    async function stream() {
@@ -40,12 +40,7 @@ export default function StreamAudioModal() {
       }
 
       startTransition(async () => {
-         // Reset loopback even if we want to start a new one / end the last one
-         await voiceClient.stopAudioLoopback();
-
-         const audioTrack = await voiceClient.getAudioTrackFromLoopback(undefined, selectedSource.processId);
-
-         await client?.voice.startStream(undefined, audioTrack);
+         modal.callback?.(selectedSource.processId);
          close();
       });
    }

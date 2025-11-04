@@ -1,38 +1,39 @@
 import RangeInput from "@components/input/RangeInput";
 import { useContextMenu } from "@stores/contextMenuStore";
-import { useVoiceStore, voiceClient } from "@stores/voiceStore";
 import { useEffect, useMemo } from "react";
 import ContextMenu from "./ContextMenu";
-import { useConsumeStream } from "@hooks/voice/useConsumeStream";
-import { usePostHog } from "posthog-js/react";
 import { useStorage, useStorageStore } from "@stores/storageStore";
+import { useClient } from "@stores/clientStore";
+import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 
 export default function VoiceElementContextMenu() {
    const { data } = useContextMenu("voice_element");
-   const posthog = usePostHog();
-   const { remoteSources } = useVoiceStore();
-   const consumeStreamMutation = useConsumeStream();
+   const client = useClient();
+   const { consumeStream } = useVoiceUtils();
 
-   const { updateVoicePreferences, setFromCachedValue } = useStorageStore();
+   const { saveFromCachedValue: setFromCachedValue } = useStorageStore();
    const voicePreferences = useStorage("voice-preferences");
 
    const preference = useMemo(() => voicePreferences.find((x) => x.userId === data?.user.id), [voicePreferences]);
 
    const hasAudio = useMemo(
       () =>
-         (data?.kind === "stream_video" && remoteSources.some((x) => x.kind === "stream_audio" && x.userId === data.user.id)) ||
-         data?.kind === "stream_audio",
-      [remoteSources, data],
+         (data?.secondMediaSource?.kind === "stream_audio" && data.secondMediaSource?.type === "consuming") ||
+         (data?.mediaSource.kind === "stream_audio" && data.mediaSource.type === "consuming"),
+      [data],
    );
 
-   const isWatching = useMemo(() => remoteSources.some((x) => x.producerId === data?.producerId && data.consumerId), [data, remoteSources]);
+   const isConsuming = useMemo(() => (!data ? false : client?.voice.transport.getConsumer(data.user.id, data.mediaSource.kind)), [data]);
 
    function onChange(value: number) {
       if (!data) {
          return;
       }
 
-      updateVoicePreferences(data.user.id, data.kind === "microphone" ? { microphoneVolume: value } : { streamVolume: value });
+      client?.voice.updateVoicePreference(
+         data.user.id,
+         data.mediaSource.kind === "microphone" ? { microphoneVolume: value } : { streamVolume: value },
+      );
    }
 
    async function watch() {
@@ -40,15 +41,7 @@ export default function VoiceElementContextMenu() {
          return;
       }
 
-      posthog.capture("voice:watch_stream_context_button_click", { userId: data.user.id });
-
-      if (!consumeStreamMutation.isPending) {
-         consumeStreamMutation.mutate({
-            guildId: null,
-            channelId: data.channelId,
-            userId: data.user.id,
-         });
-      }
+      await consumeStream(data.user.id);
    }
 
    useEffect(() => {
@@ -61,30 +54,30 @@ export default function VoiceElementContextMenu() {
 
    return (
       <>
-         {data.kind === "microphone" && (
+         {data.mediaSource.kind === "microphone" && (
             <ContextMenu.Item
                label="Volume"
-               className="mt-1 min-w-40 cursor-default flex-col !items-start gap-y-1 px-1 focus:!bg-inherit"
+               className="items-start! focus:bg-inherit! mt-1 min-w-40 cursor-default flex-col gap-y-1 px-1"
                preventClose
             >
                <RangeInput minValue={0} maxValue={200} defaultValue={preference?.microphoneVolume} onChange={onChange} />
             </ContextMenu.Item>
          )}
-         {(data.kind === "stream_video" || data.kind === "stream_audio") && (
+         {(data.mediaSource.kind === "stream_video" || data.mediaSource.kind === "stream_audio") && (
             <>
-               {isWatching ? (
+               {isConsuming ? (
                   <ContextMenu.Item
-                     label={data.kind === "stream_video" ? "Stop Watching" : "Stop Listening"}
+                     label={data.mediaSource.kind === "stream_video" ? "Stop Watching" : "Stop Listening"}
                      color="negative"
-                     onClick={() => voiceClient.unconsumeStream(data.user.id)}
+                     onClick={() => client?.voice.transport.closeConsumer(data.mediaSource.consumerId!)}
                   />
                ) : (
-                  <ContextMenu.Item label="Watch" onClick={watch} />
+                  <ContextMenu.Item label={data.mediaSource.kind === "stream_video" ? "Watch" : "Listen"} onClick={watch} />
                )}
                {hasAudio && (
                   <ContextMenu.Item
                      label="Stream Volume"
-                     className="mt-1 min-w-40 cursor-default flex-col !items-start gap-y-1 px-1 focus:!bg-inherit"
+                     className="items-start! focus:bg-inherit! mt-1 min-w-40 cursor-default flex-col gap-y-1 px-1"
                      preventClose
                   >
                      <RangeInput minValue={0} maxValue={200} defaultValue={preference?.streamVolume} onChange={onChange} />

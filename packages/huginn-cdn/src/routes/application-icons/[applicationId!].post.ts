@@ -8,8 +8,6 @@ const schema = t.Record(t.String(), t.File());
 export const postApplicationIcon = new Elysia().use(verifyJwt("cdn")).post(
    "/cdn/application-icons/:applicationId?",
    async ({ body, status, params: { applicationId } }) => {
-      console.log(body);
-      return;
       const file = body["files[0]"];
 
       if (!file) {
@@ -28,6 +26,6 @@ export const postApplicationIcon = new Elysia().use(verifyJwt("cdn")).post(
       return status("Created", name);
    },
    {
-      // body: schema,
+      body: schema,
    },
 );

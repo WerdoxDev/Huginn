@@ -1,5 +1,4 @@
 import { DropdownMenu, type DropdownAnchor } from "@components/dropdown/DropdownMenu";
-import type { Placement } from "@floating-ui/react";
 import type { GatewayVoiceStateFlags } from "@huginn/shared";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
@@ -9,15 +8,15 @@ export default function StreamButton(props: {
    children?: ReactNode;
    className?: string;
    voiceState: GatewayVoiceStateFlags;
-   onStartScreenShare?: () => void;
-   onStartAudioStream?: () => void;
-   onEndStream?: () => void;
+   onOpenScreenShare?: () => void;
+   onOpenAudioStream?: () => void;
+   onCloseStream?: () => void;
    onChangeStream?: () => void;
    onOpenChanged?: (isOpen: boolean) => void;
    hideArrow?: boolean;
    anchor?: DropdownAnchor;
 }) {
-   const isStreaming = useMemo(() => props.voiceState.isStreaming, [props.voiceState]);
+   const isStreaming = useMemo(() => props.voiceState.isScreenSharing || props.voiceState.isAudioStreaming, [props.voiceState]);
    const huginnWindow = useHuginnWindow();
 
    return isStreaming ? (
@@ -31,7 +30,7 @@ export default function StreamButton(props: {
             </DropdownMenu.Button>
          )}
          <DropdownMenu.Items className="border-surface border">
-            <DropdownMenu.Item color="negative" label="End Stream" onClick={props.onEndStream} />
+            <DropdownMenu.Item color="negative" label="End Stream" onClick={props.onCloseStream} />
             <DropdownMenu.Item label="Change Stream" onClick={props.onChangeStream}>
                <IconMingcuteTransfer3Fill />
             </DropdownMenu.Item>
@@ -41,10 +40,10 @@ export default function StreamButton(props: {
       <DropdownMenu anchor={props.anchor} onOpenChanged={props.onOpenChanged} className={props.className}>
          {props.children}
          <DropdownMenu.Items className="border-surface border">
-            <DropdownMenu.Item label="Screen Share" onClick={props.onStartScreenShare}>
+            <DropdownMenu.Item label="Screen Share" onClick={props.onOpenScreenShare}>
                <IconMingcuteMonitorFill />
             </DropdownMenu.Item>
-            <DropdownMenu.Item label="Audio Stream" onClick={props.onStartAudioStream} disabled={huginnWindow.environment !== "desktop"}>
+            <DropdownMenu.Item label="Audio Stream" onClick={props.onOpenAudioStream} disabled={huginnWindow.environment !== "desktop"}>
                <IconMingcuteVolumeFill />
             </DropdownMenu.Item>
          </DropdownMenu.Items>

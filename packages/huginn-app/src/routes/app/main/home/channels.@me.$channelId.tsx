@@ -8,7 +8,6 @@ import { useSafePathname } from "@hooks/useLastSafePathname";
 import { ChannelType } from "@huginn/shared";
 import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
 import { clientStore, useClient } from "@stores/clientStore";
-import { voiceClient } from "@stores/voiceStore";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useState } from "react";
@@ -72,7 +71,8 @@ export default function ChannelWithId() {
          return;
       }
 
-      await Promise.allSettled([voiceClient.connect(null, channel.id), client?.channels.ring(channel.id, null)]);
+      await client?.voiceManager.connectVoice(null, channel.id);
+      await client?.channels.ring(channel.id, null);
 
       posthog.capture("channel:call_button_click");
    }

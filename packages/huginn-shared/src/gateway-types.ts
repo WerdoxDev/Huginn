@@ -37,7 +37,7 @@ export type GatewayOperationTypes = {
    [GatewayOperations.RESUME]: GatewayResume;
 };
 
-export type GatewayEvents = {
+export type GatewayWebsocketEvents = {
    message: GatewayPayload;
    send: GatewayPayload;
    open: undefined;
@@ -71,7 +71,7 @@ export type GatewayEvents = {
    session_update: GatewaySessionUpdateData;
 };
 
-export type GatewayPayload<Event extends keyof GatewayEvents | undefined = undefined> = Event extends undefined
+export type GatewayPayload<Event extends keyof GatewayWebsocketEvents | undefined = undefined> = Event extends undefined
    ? {
         [K in keyof GatewayOperationTypes]: GatewayOperationTypes[K]["op"] extends GatewayOperations.DISPATCH
            ? GatewayDispatch
@@ -85,18 +85,18 @@ export type GatewayPayload<Event extends keyof GatewayEvents | undefined = undef
    : {
         op: GatewayOperations.DISPATCH;
         s: number;
-        d: GatewayEvents[Extract<Event, keyof GatewayEvents>];
+        d: GatewayWebsocketEvents[Extract<Event, keyof GatewayWebsocketEvents>];
         t: Event;
      };
 
 export type GatewayDispatch = {
-   [K in keyof GatewayEvents]: {
+   [K in keyof GatewayWebsocketEvents]: {
       op: GatewayOperations.DISPATCH;
       s: number;
       t: K;
-      d: GatewayEvents[K];
+      d: GatewayWebsocketEvents[K];
    };
-}[keyof GatewayEvents];
+}[keyof GatewayWebsocketEvents];
 
 export type GatewayHello = {
    op: GatewayOperations.HELLO;
@@ -217,7 +217,8 @@ export type GatewayVoiceState = {
 export type GatewayVoiceStateFlags = {
    isAudioMuted: boolean;
    isAudioDeafened: boolean;
-   isStreaming: boolean;
+   isScreenSharing: boolean;
+   isAudioStreaming: boolean;
    isCameraOn: boolean;
 };
 

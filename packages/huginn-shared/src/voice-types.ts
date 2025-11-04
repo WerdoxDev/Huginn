@@ -3,8 +3,6 @@ import type { RtpCapabilities, RtpParameters } from "mediasoup/node/lib/rtpParam
 import type { DtlsParameters, IceCandidate, IceParameters } from "mediasoup/node/lib/WebRtcTransportTypes";
 import type { Snowflake } from "./snowflake";
 
-export type VoiceStatus = "disconnected" | "connecting" | "connected" | "authenticated" | "reconnecting" | "rtc_ready" | "none" | "opening";
-
 export enum VoiceOperations {
    HELLO = 0,
    IDENTIFY = 1,
@@ -58,30 +56,11 @@ export type VoiceOperationTypes = {
 
 export type VoiceEvents = {
    message: VoicePayload;
-   open: undefined;
-   close: number;
-   hello: VoiceHelloData;
-   status_changed: VoiceStatus;
-   identify: VoiceIdentifyData;
-   ready: VoiceReadyData;
-   create_transport: VoiceCreateTransportData;
-   transport_created: VoiceTransportCreatedData;
-   connect_transport: VoiceConnectTransportData;
-   transport_connected: VoiceTransportConnectedData;
-   produce: VoiceProduceData;
-   producer_created: VoiceProducerCreatedData;
-   new_producer: VoiceNewProducerData;
-   consume: VoiceConsumeData;
-   consumer_created: VoiceConsumerCreatedData;
-   resume_consumer: VoiceResumeConsumerData;
-   consumer_resumed: VoiceConsumerResumedData;
-   peer_left: VoicePeerLeftData;
-   close_producer: VoiceCloseProducerData;
-   producer_closed: VoiceProducerClosedData;
-   close_consumer: VoiceCloseConsumerData;
-   consumer_closed: VoiceConsumerClosedData;
-   pong: { rtt: number };
 
+   connected: undefined;
+   disconnected: number;
+
+   // status_changed: VoiceStatus;
    local_consumer_created: { consumerId: string; producerId: string; track: MediaStreamTrack; producerUserId: Snowflake; kind: HMediaKind };
    send_transport_ready: { channelId: Snowflake };
    recv_transport_ready: { channelId: Snowflake };
@@ -90,7 +69,30 @@ export type VoiceEvents = {
    local_voice_state_changed: LocalVoiceState;
 };
 
-export type VoicePayload<Event extends keyof VoiceEvents | undefined = undefined> = Event extends undefined
+export type VoiceWebsocketEvents = {
+   hello: VoiceHelloData;
+   identify: VoiceIdentifyData;
+   ready: VoiceReadyData;
+   transport_created: VoiceTransportCreatedData;
+   transport_connected: VoiceTransportConnectedData;
+   producer_created: VoiceProducerCreatedData;
+   new_producer: VoiceNewProducerData;
+   consumer_created: VoiceConsumerCreatedData;
+   consumer_resumed: VoiceConsumerResumedData;
+   peer_left: VoicePeerLeftData;
+   producer_closed: VoiceProducerClosedData;
+   consumer_closed: VoiceConsumerClosedData;
+
+   create_transport: VoiceCreateTransportData;
+   connect_transport: VoiceConnectTransportData;
+   produce: VoiceProduceData;
+   consume: VoiceConsumeData;
+   resume_consumer: VoiceResumeConsumerData;
+   close_producer: VoiceCloseProducerData;
+   close_consumer: VoiceCloseConsumerData;
+};
+
+export type VoicePayload<Event extends keyof VoiceWebsocketEvents | undefined = undefined> = Event extends undefined
    ? {
         [K in keyof VoiceOperationTypes]: VoiceOperationTypes[K]["op"] extends VoiceOperations.DISPATCH
            ? VoiceDispatch
@@ -104,7 +106,7 @@ export type VoicePayload<Event extends keyof VoiceEvents | undefined = undefined
    : {
         op: VoiceOperations.DISPATCH;
         s?: number;
-        d: VoiceEvents[Extract<Event, keyof VoiceEvents>];
+        d: VoiceWebsocketEvents[Extract<Event, keyof VoiceWebsocketEvents>];
         t: Event;
      };
 
@@ -120,13 +122,13 @@ export type VoicePayload<Event extends keyof VoiceEvents | undefined = undefined
 //    }[keyof VoiceOperationTypes];
 
 export type VoiceDispatch = {
-   [K in keyof VoiceEvents]: {
+   [K in keyof VoiceWebsocketEvents]: {
       op: VoiceOperations.DISPATCH;
       s?: number;
       t: K;
-      d: VoiceEvents[K];
+      d: VoiceWebsocketEvents[K];
    };
-}[keyof VoiceEvents];
+}[keyof VoiceWebsocketEvents];
 
 // export type VoicePayload<OP extends keyof VoiceOperationTypes | undefined = undefined> = {
 //    op: OP extends undefined ? VoiceOperations : OP;
@@ -139,7 +141,7 @@ export type HMediaKind = "microphone" | "stream_audio" | "stream_video" | "camer
 
 export type ProducerData = {
    producerId: string;
-   producerUserId: Snowflake;
+   userId: Snowflake;
    kind: HMediaKind;
 };
 
@@ -264,6 +266,7 @@ export type VoiceCloseProducerData = {
 
 export type VoiceProducerClosedData = {
    producerId: string;
+   kind: HMediaKind;
    userId: string;
 };
 
@@ -280,8 +283,12 @@ export type VoiceConsumerClosedData = {
 
 export type LocalVoiceState = {
    isAudioPaused: boolean;
-   isAudioMuted: boolean;
-   isAudioDeafened: boolean;
-   isStreaming: boolean;
-   isCameraOn: boolean;
 };
+
+// export type LocalVoiceState = {
+//    isAudioPaused: boolean;
+//    isAudioMuted: boolean;
+//    isAudioDeafened: boolean;
+//    isStreaming: boolean;
+//    isCameraOn: boolean;
+// };

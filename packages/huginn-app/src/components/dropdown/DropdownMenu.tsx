@@ -285,10 +285,10 @@ function Item(props: HTMLProps<HTMLButtonElement> & { label: string; color?: "de
          ref={props.isNested ? useMergeRefs([triggerProps.ref, props.ref]) : useMergeRefs([item.ref, props.ref])}
          type="button"
          className={clsx(
-            "data-disabled:cursor-not-allowed data-disabled:hover:!bg-transparent flex cursor-pointer items-center justify-between gap-x-5 text-nowrap rounded-sm px-2 py-2 text-start text-sm outline-none",
+            "disabled:hover:bg-transparent! flex cursor-pointer items-center justify-between gap-x-5 text-nowrap rounded-sm px-2 py-2 text-start text-sm outline-none disabled:cursor-not-allowed",
             !props.color || props.color === "default"
-               ? "hover:enabled:bg-surface-alt data-disabled:text-white/50 text-white/90"
-               : props.color === "negative" && "text-negative-100 hover:enabled:bg-negative-100/10 data-disabled:text-negative-100/50",
+               ? "hover:enabled:bg-surface-alt text-white/90 disabled:text-white/50"
+               : props.color === "negative" && "text-negative-100 hover:enabled:bg-negative-100/10 disabled:text-negative-100/50",
             props.className,
          )}
          tabIndex={isActive ? 0 : -1}

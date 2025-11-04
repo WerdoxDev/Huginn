@@ -9,11 +9,11 @@
 	"dependencies": {
 		"@huginn/shared": "workspace:*",
 		"@std/encoding": "npm:@jsr/std__encoding",
-		"jose": "^5.9.6",
-		"mediasoup-client": "^3.9.5",
+		"jose": "^5.10.0",
+		"mediasoup-client": "^3.17.1",
 		"pathe": "^1.1.2"
 	},
 	"devDependencies": {
-		"@types/bun": "^1.1.14"
+		"@types/bun": "^1.3.1"
 	}
 }

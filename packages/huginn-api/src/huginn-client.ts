@@ -1,7 +1,7 @@
 import type { APIPostLoginResult, APIPostRegisterResult, APIUser, LoginCredentials, RegisterUser, Tokens } from "@huginn/shared";
 import { type Snowflake, snowflake, WorkerID } from "@huginn/shared";
 import { decodeJwt } from "jose";
-import type { ClientOptions } from ".";
+import type { ClientOptions, VoiceConstructor } from ".";
 import { CDN } from "./cdn";
 import { Gateway } from "./gateway";
 import { REST } from "./rest";
@@ -13,11 +13,12 @@ import { RelationshipAPI } from "./rest-apis/relationship";
 import { UserAPI } from "./rest-apis/user";
 import { TokenHandler } from "./token-handler";
 import { defaultClientOptions } from "./utils";
-import { Voice } from "./voice";
 import { ApplicationAPI } from "./rest-apis/application";
+import { Voice } from "./voice";
+import { VoiceManager } from "./voice-manager";
 
-export class HuginnClient {
-   public readonly options: ClientOptions;
+export class HuginnClient<V extends Voice = Voice> {
+   public readonly options: ClientOptions<V>;
    private rest: REST;
    public cdn: CDN;
    public tokenHandler: TokenHandler;
@@ -29,13 +30,14 @@ export class HuginnClient {
    public applications: ApplicationAPI;
    public common: CommonAPI;
    public gateway: Gateway;
-   public voice: Voice;
+   public voice: V;
+   public voiceManager: VoiceManager;
 
    public user?: APIUser;
 
-   constructor(options?: Partial<ClientOptions>) {
+   constructor(options?: Partial<ClientOptions<V>>) {
       this.options = {
-         ...defaultClientOptions,
+         ...(defaultClientOptions as ClientOptions<V>),
          ...options,
       };
 
@@ -50,7 +52,12 @@ export class HuginnClient {
       this.applications = new ApplicationAPI(this.rest);
       this.common = new CommonAPI(this.rest);
       this.gateway = new Gateway(this, this.options.gateway);
-      this.voice = new Voice(this, this.options.voice);
+
+      const VoiceClass = options?.voice?.class ?? (Voice as VoiceConstructor<V>);
+      this.voice = new VoiceClass(this, this.options.voice);
+
+      this.voiceManager = new VoiceManager<V>(this.gateway, this.voice);
+
       this.oauth = new OAuthAPI(this.rest, this.gateway);
    }
 
@@ -140,15 +147,21 @@ export class HuginnClient {
       this.tokenHandler.token = undefined;
       this.tokenHandler.refreshToken = undefined;
       this.user = undefined;
+      this.voice.signaling.close();
       if (this.gateway.status !== "disconnected" && this.gateway.status !== "none" && this.gateway.status !== "reconnecting") {
          this.gateway.close();
          await this.gateway.waitForEvents(["close"]);
       }
-      this.voice.close();
    }
 
    public generateNonce(): Snowflake {
       const nonce = snowflake.generateString(WorkerID.API);
       return nonce;
+   }
+
+   public checkUser(): asserts this is this & { user: APIUser } {
+      if (!this.user) {
+         throw new Error("Client user is null");
+      }
    }
 }

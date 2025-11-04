@@ -383,3 +383,17 @@ export function calculateSimilarity(string1: string, string2: string): number {
    const distance = levenshteinDistance(string1.toLowerCase(), string2.toLowerCase());
    return Math.round(((maxLength - distance) / maxLength) * 100);
 }
+
+/**
+ * finds the properties that differ in both objects and only returns those properties from "a"
+ * NOTE: only works with shallow objects. So no nested objects
+ */
+export function diff<T extends Record<string, any>>(a: T, b: T): Partial<T> {
+   const result = {} as Partial<T>;
+   for (const key in a) {
+      if (a[key] !== b[key]) {
+         result[key] = a[key];
+      }
+   }
+   return result;
+}

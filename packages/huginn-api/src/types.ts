@@ -1,10 +1,11 @@
-import type { ResponseLike } from "@huginn/shared";
+import type { ResponseLike, Snowflake } from "@huginn/shared";
+import type { Voice } from "./voice";
 
-export type ClientOptions = {
+export type ClientOptions<V extends Voice> = {
    rest?: Partial<RESTOptions>;
    cdn?: Partial<CDNOptions>;
    gateway?: Partial<GatewayOptions>;
-   voice?: Partial<VoiceOptions>;
+   voice?: Partial<VoiceOptions<V>>;
 };
 
 export type RESTOptions = {
@@ -24,7 +25,13 @@ export type GatewayOptions = {
    createSocket(url: string): WebSocket;
 };
 
-export type VoiceOptions = {
+export type VoiceConstructor<V extends Voice> = new (...args: ConstructorParameters<typeof Voice>) => V;
+
+export type VoiceOptions<V extends Voice = Voice> = {
+   class: VoiceConstructor<V>;
    url: string;
    createSocket(url: string): WebSocket;
 };
+
+export type VoiceConnectionData = { token: string; channelId: Snowflake; guildId: Snowflake | null };
+export type VoiceStatus = "idle" | "connecting" | "signaling" | "disconnected" | "ready";

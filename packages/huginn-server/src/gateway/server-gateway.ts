@@ -74,11 +74,14 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
                isAudioDeafened: false,
                isAudioMuted: false,
                isCameraOn: false,
-               isStreaming: false,
+               isAudioStreaming: false,
+               isScreenSharing: false,
             });
          }
       }
    }
+
+   public onDeleteSession(session: ClientSession): Promise<void> | void {}
 
    public async onMessage(session: ClientSession, data: GatewayPayload) {
       log(
@@ -247,24 +250,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
 
    private async handleUpdateVoiceState(session: ClientSession, data: GatewayUpdateVoiceStateData) {
       const userId = session?.user?.id;
-
-      log(
-         "server:gateway",
-         "recv",
-         "update voice state",
-         "pid:",
-         session.peer.id,
-         "uid:",
-         userId,
-         "sm:",
-         data.isAudioMuted,
-         "sd:",
-         data.isAudioDeafened,
-         "ss:",
-         data.isStreaming,
-         "sv:",
-         data.isCameraOn,
-      );
+      log("server:gateway", "recv", "update voice state", "pid:", session.peer.id, "uid:", userId);
 
       if (!session || !userId) {
          return;

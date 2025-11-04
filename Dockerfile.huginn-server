@@ -1,6 +1,6 @@
 # use the official Bun image
 # see all versions at https://hub.docker.com/r/oven/bun/tags
-FROM oven/bun:1.2.18-alpine AS base
+FROM oven/bun:1.3.0-alpine AS base
 LABEL org.opencontainers.image.source=https://github.com/werdoxdev/huginn
 WORKDIR /src
 
@@ -20,6 +20,9 @@ RUN apk add --no-cache ffmpeg
 # then copy all (non-ignored) project files into the image
 FROM base AS prerelease
 COPY --from=install /temp/deps/node_modules node_modules
+COPY --from=install /temp/deps/packages/huginn-backend-shared/node_modules packages/huginn-backend-shared/node_modules
+COPY --from=install /temp/deps/packages/huginn-shared/node_modules packages/huginn-shared/node_modules
+COPY --from=install /temp/deps/packages/huginn-server/node_modules packages/huginn-server/node_modules
 COPY . /src
 RUN cd packages/huginn-backend-shared && bunx prisma generate
 COPY entrypoint.sh /entrypoint.sh

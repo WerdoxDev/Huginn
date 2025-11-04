@@ -17,8 +17,7 @@ type StoreType = ReturnType<typeof initialStore>;
 
 export const useChannelStore = create(
    combine(initialStore(), (set) => ({
-      saveScroll: (channelId: Snowflake, scroll: number) =>
-         set((state) => ({ savedScrolls: new Map(state.savedScrolls).set(channelId, scroll) })),
+      saveScroll: (channelId: Snowflake, scroll: number) => set((state) => ({ savedScrolls: new Map(state.savedScrolls).set(channelId, scroll) })),
       resetScrolls: () => set({ savedScrolls: new Map() }),
       addVisibleMessage: (id: Snowflake, timestamp: number, channelId: Snowflake) =>
          set((state) => ({

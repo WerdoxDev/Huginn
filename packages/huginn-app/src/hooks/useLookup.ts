@@ -1,6 +1,10 @@
 import { useMemo } from "react";
 
-export function useLookup<T, K extends string | number>(items: T[] | undefined, keyFn: (item: T) => K, predicate?: (item: T) => boolean): Record<K, T> {
+export function useLookup<T, K extends string | number>(
+   items: T[] | undefined,
+   keyFn: (item: T) => K,
+   predicate?: (item: T) => boolean,
+): Record<K, T> {
    return useMemo(
       () =>
          ((predicate ? items?.filter(predicate) : items) ?? []).reduce(
@@ -10,6 +14,6 @@ export function useLookup<T, K extends string | number>(items: T[] | undefined, 
             },
             {} as Record<K, T>,
          ),
-      [items],
+      [items, keyFn, predicate],
    );
 }

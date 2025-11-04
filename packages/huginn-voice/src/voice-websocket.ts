@@ -6,6 +6,7 @@ import {
    convertToMediaKind,
    GatewayCode,
    type MediasoupAppData,
+   type ProducerData,
    type VoiceCloseConsumerData,
    type VoiceCloseProducerData,
    type VoiceConnectTransportData,
@@ -219,7 +220,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             const newProducerData: VoicePayload = {
                op: VoiceOperations.DISPATCH,
                t: "new_producer",
-               d: { kind: data.kind, producerId: producer.id, producerUserId: rtcPeer.userId },
+               d: { kind: data.kind, producerId: producer.id, userId: rtcPeer.userId },
                s: session.getIncreasedSequence(),
             };
             ws.publish(otherSessionId, JSON.stringify(newProducerData));
@@ -312,7 +313,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       const producerClosedData: VoicePayload = {
          op: VoiceOperations.DISPATCH,
          t: "producer_closed",
-         d: { producerId: producer.id, userId: rtcPeer.userId },
+         d: { producerId: producer.id, userId: rtcPeer.userId, kind: producer.appData.mediaKind },
          s: session.getIncreasedSequence(),
       };
 
@@ -383,7 +384,9 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       const producers = Array.from(
          router.peers
             .values()
-            .map((x) => Array.from(x.producers.values().map((y) => ({ producerId: y.id, producerUserId: x.userId, kind: y.appData.mediaKind })))),
+            .map((x) =>
+               Array.from(x.producers.values().map((y) => ({ producerId: y.id, userId: x.userId, kind: y.appData.mediaKind }) as ProducerData)),
+            ),
       ).flat();
 
       const readyData: VoicePayload = {

@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { DropdownItem, SettingsTabProps } from "@/types";
 import HuginnCheckbox from "@components/HuginnCheckbox";
+import { useClient } from "@stores/clientStore";
 
 export default function SettingsVoiceTab(props: SettingsTabProps) {
    const { data } = useQuery({
@@ -18,15 +19,13 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
       queryKey: ["media-devices"],
    });
    const settings = useStorage("settings");
+   const client = useClient();
 
    const inputDevices = useMemo(() => data?.filter((x) => x.kind === "audioinput"), [data]);
    const outputDevices = useMemo(() => data?.filter((x) => x.kind === "audiooutput"), [data]);
    const cameraDevices = useMemo(() => data?.filter((x) => x.kind === "videoinput"), [data]);
 
-   const inputDeviceOptions = useMemo<DropdownItem[]>(
-      () => inputDevices?.map((x) => ({ text: x.label, value: x.deviceId })) ?? [],
-      [inputDevices],
-   );
+   const inputDeviceOptions = useMemo<DropdownItem[]>(() => inputDevices?.map((x) => ({ text: x.label, value: x.deviceId })) ?? [], [inputDevices]);
    const outputDeviceOptions = useMemo<DropdownItem[]>(
       () => outputDevices?.map((x) => ({ text: x.label, value: x.deviceId })) ?? [],
       [outputDevices],
@@ -54,12 +53,12 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
    useEffect(() => {
       let cancelled = false;
       async function runAudioChecker() {
-         if (!selectedInput) {
+         if (!selectedInput || !client) {
             return;
          }
 
          if (!inputDevice.current) {
-            inputDevice.current = new VoiceInputDevice();
+            inputDevice.current = new VoiceInputDevice(client);
          }
 
          audioLevel.current = new AudioLevelChecker();
@@ -261,8 +260,8 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
                         <GenericLabel>Input Threshold</GenericLabel>
                         <RangeInput
                            onChange={onInputThresholdChange}
-                           backgroundClassName="!bg-positive-400"
-                           fillClassName="!bg-negative-100"
+                           backgroundClassName="bg-positive-400!"
+                           fillClassName="bg-negative-100!"
                            defaultValue={remap(settings.inputThreshold ?? -100, -100, 0, 0, 100)}
                            getTooltipText={(percentage) => `${remap(percentage, 0, 100, -100, 0)}db`}
                         >

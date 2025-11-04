@@ -4,7 +4,6 @@ import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMCh
 import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
 import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePatchDMChannel";
 import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRemoveChannelRecipient";
-import type { ConsumeStreamMutationVars } from "@hooks/voice/useConsumeStream";
 import type {
    APICallMessage,
    APIDefaultMessage,
@@ -14,6 +13,7 @@ import type {
    DeepPartial,
    DirectChannel,
    HMediaKind,
+   MediasoupAppData,
    PresenceUser,
    RelationshipType,
    Snowflake,
@@ -208,7 +208,7 @@ export type DropdownMenuItemProps = {
 export type ContextMenuRelationship = { user: AppUser; type: RelationshipType };
 export type ContextMenuDMChannel = AppDirectChannel;
 export type ContextMenuDMChannelRecipient = { channelId: Snowflake; recipient: AppUser };
-export type ContextMenuVoiceElement = { user: AppUser; producerId?: string; consumerId?: string; kind: HMediaKind; channelId: Snowflake };
+export type ContextMenuVoiceElement = { user: AppUser; channelId: Snowflake; mediaSource: MediaSource; secondMediaSource?: MediaSource };
 export type ContextMenuMessage = { message: AppMessage; url?: string; imgRef?: RefObject<HTMLImageElement | null> };
 
 export type ProcessedMessage = AppMessage & {
@@ -239,7 +239,6 @@ export type MutationKinds = {
    "add-channel-recipient": AddChannelRecipientMutationVars;
    "create-relationship": CreateRelationshipMutationVars;
    "remove-relationship": Snowflake;
-   "consume-stream": ConsumeStreamMutationVars;
 };
 
 export type AppUser = PresenceUser & { displayName?: string; originalDisplayName?: string | null };
@@ -340,15 +339,6 @@ export type AudioSource = {
    processId: string;
 };
 
-export type RemoteSource = {
-   userId: Snowflake;
-   consumerId?: string;
-   producerId: string;
-   kind: HMediaKind;
-   srcObject?: MediaProvider;
-   audioLevel?: AudioLevelChecker;
-};
-
 export type VoicePreference = { userId: Snowflake; microphoneVolume: number; streamVolume: number };
 
 export type AppSettings = {
@@ -405,4 +395,15 @@ export type LoadFileResult<K extends FileType> = {
 export type SaveFileResult = {
    success: boolean;
    error?: string;
+};
+
+export type ConsumerAppData = MediasoupAppData & { audioLevel?: AudioLevelChecker };
+
+export type MediaSource = {
+   consumerId?: string;
+   producerId?: string;
+   track?: MediaStreamTrack | null;
+   kind: HMediaKind;
+   userId: Snowflake;
+   type: "consuming" | "consumable" | "producing";
 };

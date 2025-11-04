@@ -44,14 +44,14 @@ export function useVideoDetails(videoRef: RefObject<HTMLVideoElement | null>, sr
          startCounting();
          // Set initial height when video loads
          setHeight(video?.videoHeight ?? 0);
-      };
+      }
 
       function handleResize() {
          setHeight(video?.videoHeight ?? 0);
-      };
+      }
 
-      video.addEventListener('loadedmetadata', handleLoadedMetadata);
-      video.addEventListener('resize', handleResize);
+      video.addEventListener("loadedmetadata", handleLoadedMetadata);
+      video.addEventListener("resize", handleResize);
 
       if (video.readyState >= 1) {
          setHeight(video.videoHeight);
@@ -62,8 +62,8 @@ export function useVideoDetails(videoRef: RefObject<HTMLVideoElement | null>, sr
 
       return () => {
          stopCounting();
-         video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-         video.removeEventListener('resize', handleResize);
+         video.removeEventListener("loadedmetadata", handleLoadedMetadata);
+         video.removeEventListener("resize", handleResize);
       };
    }, [srcObject, videoRef]);
 

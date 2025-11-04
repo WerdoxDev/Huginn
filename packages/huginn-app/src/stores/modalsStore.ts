@@ -40,8 +40,10 @@ const initialStore = () => ({
       filename?: string;
    },
    news: { isOpen: false, html: "" } as DefaultModal & { html: string },
-   screenShare: { isOpen: false } as DefaultModal,
-   streamAudio: { isOpen: false } as DefaultModal,
+   screenShare: { isOpen: false, callback: undefined } as DefaultModal & {
+      callback?: (stream: MediaStream, shareAudio: boolean, sourceName: string) => void;
+   },
+   streamAudio: { isOpen: false, callback: undefined } as DefaultModal & { callback?: (sourceProcessId: string) => void },
 });
 
 type StoreType = ReturnType<typeof initialStore>;

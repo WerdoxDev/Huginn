@@ -33,8 +33,7 @@ import { clientStore } from "@stores/clientStore";
 export const requiredFieldError: InputStatus = { code: "error", text: "Required" };
 
 export function getInputCurrentStatus(field: InputValue, fieldName: string, errorStatuses: InputStatuses): InputStatus {
-   const newStatus: InputStatus =
-      !field.value && field.required ? requiredFieldError : errorStatuses[fieldName] || { code: "none", text: "" };
+   const newStatus: InputStatus = !field.value && field.required ? requiredFieldError : errorStatuses[fieldName] || { code: "none", text: "" };
 
    return newStatus;
 }
@@ -87,9 +86,7 @@ export function doStatusesHaveErrors(statuses: InputStatuses, exclude?: InputSta
 }
 
 export function filterChildrenOfType(children: ReactNode, type: JSXElementConstructor<never>) {
-   return Children.toArray(children).filter(
-      (child) => isValidElement(child) && typeof child.type === "function" && child.type.name === type.name,
-   );
+   return Children.toArray(children).filter((child) => isValidElement(child) && typeof child.type === "function" && child.type.name === type.name);
 }
 
 export function isWorthyHuginnError(error: unknown): error is HuginnAPIError {
@@ -203,3 +200,29 @@ export const presenceStatuses: Record<PresenceStatus, { text: string; color: str
    idle: { text: "Idle", color: "bg-caution-100" },
    online: { text: "Online", color: "bg-positive-100" },
 } as const;
+
+export function getMediaErrorMessage(e: unknown, type: "camera" | "screen") {
+   if (!(e instanceof DOMException)) {
+      return "An unexpected error occurred. Please try again.";
+   }
+
+   switch (e.name) {
+      case "NotAllowedError":
+         return type === "camera"
+            ? "Huginn doesn't have access to your camera. Please allow it and try again."
+            : "Huginn doesn't have access to your screen. Please allow it and try again.";
+      case "NotFoundError":
+         return type === "camera" ? "No camera was found" : "No screens or windows were found";
+      case "AbortError":
+         return type === "camera" ? "Camera access was canceled before it started." : "Screen sharing was canceled before it started.";
+      case "NotReadableError":
+         return type === "camera"
+            ? "Your system prevented access to your camera. Try restarting your browser."
+            : "Your system prevented screen sharing. Try restarting your browser.";
+      case "SecurityError":
+         return "Your browser blocked this action for security reasons. Try restarting your browser.";
+
+      default:
+         return "An unexpected error occurred. Please try again.";
+   }
+}

@@ -1,12 +1,4 @@
-import {
-   createErrorFactory,
-   createHuginnError,
-   globalPlugin,
-   invalidBody,
-   missingAccess,
-   tryCatch,
-   verifyJwt,
-} from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, globalPlugin, invalidBody, missingAccess, tryCatch, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectAllMessage } from "@huginn/backend-shared/database/common";
 import { type APIMessage, Errors, MessageType, WorkerID, snowflake } from "@huginn/shared";
@@ -64,8 +56,7 @@ export const postChannelMessage = new Elysia()
          // Validate attachments
          if (body.attachments && body.files) {
             for (const [i, attachment] of body.attachments.entries()) {
-               if (!(`files[${attachment.id}]` in body.files) || body.files[`files[${i}]`]?.name !== attachment.filename)
-                  return invalidBody(status);
+               if (!(`files[${attachment.id}]` in body.files) || body.files[`files[${i}]`]?.name !== attachment.filename) return invalidBody(status);
             }
          }
 

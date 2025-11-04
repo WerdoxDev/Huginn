@@ -45,6 +45,11 @@ import { getIndex } from "./routes";
 import { staticPlugin } from "@elysiajs/static";
 import { cors } from "@elysiajs/cors";
 import consola from "consola";
+import { opentelemetry } from "@elysiajs/opentelemetry";
+import { BatchSpanProcessor, ConsoleSpanExporter } from "@opentelemetry/sdk-trace-node";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
+
+console.log(envs.AXIOM_DATASET, envs.AXIOM_TOKEN);
 
 export const main = new Elysia({
    cookie: { secrets: envs.SESSION_PASSWORD, sign: ["oauth"], httpOnly: true, sameSite: "lax", secure: true, path: "/", maxAge: 60 * 5 },
@@ -52,6 +57,21 @@ export const main = new Elysia({
    .use(cors())
    .use(staticPlugin({ prefix: "" }))
    .use(globalPlugin)
+   .use(
+      opentelemetry({
+         spanProcessors: [
+            new BatchSpanProcessor(
+               new OTLPTraceExporter({
+                  url: "https://api.axiom.co/v1/traces",
+                  headers: {
+                     Authorization: `Bearer ${envs.AXIOM_TOKEN}`,
+                     "X-Axiom-Dataset": envs.AXIOM_DATASET,
+                  },
+               }),
+            ),
+         ],
+      }),
+   )
    .onError(({ error, code, status, path, request }) => {
       consola.box(path, request.method, error);
       if (code === "UNKNOWN") {

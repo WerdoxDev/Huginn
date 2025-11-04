@@ -116,8 +116,7 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
                   title: "Sorry!",
                   text: (
                      <div>
-                        Huginn was not able to verify{" "}
-                        <span className="font-semibold">{application.displayName ?? application.windowTitle}</span> :(
+                        Huginn was not able to verify <span className="font-semibold">{application.displayName ?? application.windowTitle}</span> :(
                      </div>
                   ),
                   isOpen: true,
@@ -137,7 +136,7 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
                      Not seeing what you're doing? Try adding it here. And if your application gets verified, We'll show your contribution!
                   </div>
                   <HuginnDropdown onChange={onApplicationChanged} value={selectedApplication}>
-                     <HuginnDropdown.List className="bg-surface-deep w-full !rounded-md" placeholder="Select an application">
+                     <HuginnDropdown.List className="bg-surface-deep rounded-md! w-full" placeholder="Select an application">
                         <HuginnDropdown.ItemsWrapper className="w-(--button-width)">
                            {applicationOptions.map((x) => (
                               <HuginnDropdown.Item key={x.value} item={x} />
@@ -145,13 +144,7 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
                         </HuginnDropdown.ItemsWrapper>
                      </HuginnDropdown.List>
                   </HuginnDropdown>
-                  <LoadingButton
-                     loading={submitMutation.isPending}
-                     onClick={submit}
-                     color="primary"
-                     className="h-8"
-                     disabled={!selectedApplication}
-                  >
+                  <LoadingButton loading={submitMutation.isPending} onClick={submit} color="primary" className="h-8" disabled={!selectedApplication}>
                      Submit
                   </LoadingButton>
                </div>

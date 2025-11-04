@@ -13,8 +13,8 @@ export class AudioSourcePlayer {
    private globalGain?: number;
    private localGain?: number;
 
-   public constructor(srcObject: MediaProvider, producerId: string, userId: Snowflake, kind: HMediaKind, globalGainPercent: number) {
-      log("app:audio-source-player", "default", "initializing", "pid:", producerId, "uid:", userId, "mk:", kind, "ggp:", globalGainPercent);
+   public constructor(srcObject: MediaProvider, producerId: string, userId: Snowflake, kind: HMediaKind) {
+      log("app:audio-source-player", "default", "initializing", "pid:", producerId, "uid:", userId, "mk:", kind);
 
       this.producerId = producerId;
       this.userId = userId;
@@ -27,8 +27,6 @@ export class AudioSourcePlayer {
 
       this.audioContext = new AudioContext({ sinkId: storageStore.getState().getCachedValue("settings").outputDeviceId });
       this.gainNode = this.audioContext.createGain();
-
-      this.setGain(globalGainPercent, undefined);
 
       this.audioElement.addEventListener(
          "loadedmetadata",

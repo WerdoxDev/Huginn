@@ -7,7 +7,7 @@ import { useEffect, type ReactNode } from "react";
 
 export default function KeybindsProvider(props: { children?: ReactNode }) {
    const { toggleDeafen, toggleMute } = useVoiceUtils();
-   const { localVoiceState } = useVoiceStore();
+   const { voiceState: localVoiceState } = useVoiceStore();
    const keybinds = useStorage("keybinds");
    const { setValue } = useStorageStore();
    const { showError } = useModals();

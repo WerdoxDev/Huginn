@@ -18,7 +18,7 @@ export default function UserInfo(props: { user: AppUser }) {
    const { updateModals } = useModals();
    const client = useClient();
    const logout = useLogout();
-   const { localVoiceState } = useVoiceStore();
+   const { voiceState: localVoiceState } = useVoiceStore();
    const { toggleDeafen, toggleMute } = useVoiceUtils();
    const presence = usePresence(props.user.id);
    const { thisPresence } = usePresenceStore();

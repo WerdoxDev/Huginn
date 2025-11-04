@@ -4,7 +4,7 @@ import {
    type APIChannelUser,
    type APIUser,
    type ChannelType,
-   type GatewayEvents,
+   type GatewayWebsocketEvents,
    type GatewayIdentify,
    type GatewayOperationTypes,
    GatewayOperations,
@@ -123,7 +123,7 @@ export function testIsOpcode<O extends keyof GatewayOperationTypes>(data: unknow
    return false;
 }
 
-export function testIsDispatch<Event extends keyof GatewayEvents>(data: unknown, eventType: Event): data is GatewayPayload<Event> {
+export function testIsDispatch<Event extends keyof GatewayWebsocketEvents>(data: unknown, eventType: Event): data is GatewayPayload<Event> {
    if (testIsOpcode(data, GatewayOperations.DISPATCH)) {
       let parsedData = data as GatewayPayload<Event>;
       if (typeof data === "string") {

@@ -6,7 +6,7 @@ import { useStartBackground } from "@contexts/authBackgroundContext";
 import { useTryLogin } from "@hooks/useTryLogin";
 import { useUpdater } from "@hooks/useUpdater";
 import { initializeClient, setHostnamesFromExternal, setHostnamesFromSettings, useClient, useClientStore } from "@stores/clientStore";
-import { useStorage, useStorageStore } from "@stores/storageStore";
+import { useStorage } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
@@ -117,7 +117,7 @@ export default function Index() {
    useEffect(() => {
       async function decideState() {
          switch (state.current) {
-            case "none": {
+            case "none":
                if (settings.hostnameSource === "external") {
                   setFetchHostnames();
                } else if (huginnWindow.environment === "desktop") {
@@ -128,8 +128,8 @@ export default function Index() {
                   await setConnect();
                }
                break;
-            }
-            case "fetch_hostnames": {
+
+            case "fetch_hostnames":
                const result = await setHostnamesFromExternal();
                if (!result) {
                   dispatch({ type: "FAIL", error: "Failed to fetch external hostnames!" });
@@ -143,19 +143,18 @@ export default function Index() {
                   }
                }
                break;
-            }
-            case "check_update": {
+
+            case "check_update":
                if (!client) {
                   setHostnamesFromSettings();
                   initializeClient();
                }
                await checkAndDownload();
                break;
-            }
          }
       }
 
-      decideState();
+      decideState().catch(console.error);
    }, [state.current]);
 
    useEffect(() => {

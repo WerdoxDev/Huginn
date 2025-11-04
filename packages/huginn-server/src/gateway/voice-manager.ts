@@ -82,11 +82,6 @@ export class VoiceManager {
          this.voiceStates.delete(options.userId);
       }
 
-      // If the user was previously in a different call, check if it's empty now
-      if (previousChannelId && voiceState.channelId !== previousChannelId) {
-         this.checkForEmptyCall(previousChannelId);
-      }
-
       // If the current channel is valid, send the state update to that channel
       if (voiceState.channelId) {
          // The user is joining with a new session
@@ -104,6 +99,11 @@ export class VoiceManager {
       // Otherwise if it was previously valid, send the user's null state to that channel
       else if (previousChannelId) {
          dispatchToTopic(previousChannelId, "voice_state_update", voiceState);
+      }
+
+      // If the user was previously in a different call, check if it's empty now
+      if (previousChannelId && voiceState.channelId !== previousChannelId) {
+         this.checkForEmptyCall(previousChannelId);
       }
    }
 

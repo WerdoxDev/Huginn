@@ -1,9 +1,15 @@
 type LogValuesMap = {
-   "api:voice": "send" | "recv" | "heartbeat" | "ping" | "default" | "local-voice-state" | "transport";
+   "api:voice": "default";
+   "api:voice-signaling": "default" | "recv" | "recv-detail" | "send" | "send-detail" | "ping" | "heartbeat";
+   "api:voice-transport": "default" | "voice-state";
+   "api:voice-device": "default";
+   "api:voice-screen-share": "default";
    "api:gateway": "send" | "send-detail" | "default" | "recv" | "recv-detail" | "dispatch" | "heartbeat";
+   "api:gateway-voice": "default";
+   "api:voice-manager": "default";
    "api:client": "ready-state";
    "app:client-store": "default";
-   "app:voice-client": "default" | "voice-recv" | "emitter-recv" | "settings-sub";
+   "app:voice-bridge": "default" | "voice-preference";
    "app:voice-store":
       | "remote-sources"
       | "speaking-state"
@@ -14,7 +20,6 @@ type LogValuesMap = {
       | "voice-recv"
       | "available-producers";
    "app:general": "messages";
-   "app:files-store": "voice-preferences";
    "app:presence-store": "default";
    "app:audio-source-player": "default";
    "app:audio-level-checker": "default";

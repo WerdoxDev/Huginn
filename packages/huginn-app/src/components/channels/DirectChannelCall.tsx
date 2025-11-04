@@ -1,17 +1,18 @@
+import type { MediaSource } from "@/types";
+import LoadingIcon from "@components/LoadingIcon";
 import VoiceControls from "@components/VoiceControls";
 import VoiceElement from "@components/voice/VoiceElement";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useFullscreen } from "@hooks/useFullscreen";
 import { useHover } from "@hooks/useHover";
 import { useLookup } from "@hooks/useLookup";
-import { useConsumeStream } from "@hooks/voice/useConsumeStream";
+import { useMediaSources } from "@hooks/voice/useMediaSources";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 import type { Snowflake, Unpacked } from "@huginn/shared";
-import { useClient, useClientStore } from "@stores/clientStore";
+import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore, voiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
-import { AnimatePresence } from "motion/react";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
@@ -19,35 +20,39 @@ const minHeight = 250;
 const maxHeightPercentage = 60;
 
 export default function DirectChannelCall(props: { channelId: Snowflake }) {
-   const { localVoiceState, voiceStates, callStates, remoteSources, speakingStates, voiceChannel } = useVoiceStore();
-   const { connect, changeStream, disconnect, startAudioStream, startCamera, startScreenShare, toggleDeafen, toggleMute, endCamera, endStream } =
-      useVoiceUtils();
-   const { voiceStatus } = useClientStore();
+   const { voiceConnection, voiceState, voiceStates, callStates, speakingStates } = useVoiceStore();
+   const { consumeStream } = useVoiceUtils();
 
    const client = useClient();
    const { user } = useThisUser();
    const posthog = usePostHog();
 
-   const consumeStreamMutation = useConsumeStream();
+   const mediaSources = useMediaSources();
 
-   const thisVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channelId), [voiceStates, props.channelId, localVoiceState]);
+   const thisVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channelId), [voiceStates, props.channelId]);
    const thisCallState = useMemo(() => callStates.find((x) => x.channelId === props.channelId), [callStates, props.channelId]);
-   const isGridView = useMemo(() => thisVoiceStates.some((x) => x.isStreaming || x.isCameraOn), [thisVoiceStates]);
+   const isGridView = useMemo(() => thisVoiceStates.some((x) => x.isAudioStreaming || x.isScreenSharing || x.isCameraOn), [thisVoiceStates]);
 
-   const users = useUsers(Array.from(new Set([...(thisCallState?.ringing ?? []), ...thisVoiceStates.map((x) => x.userId)])));
    const usersSpeakingLookup = useLookup(speakingStates, (state) => state.userId);
-   const streamVideoRemoteSources = useLookup(
-      remoteSources,
-      (x) => x.userId,
-      (x) => x.kind === "stream_video",
-   );
-   const streamAudioRemoteSources = useLookup(
-      remoteSources,
-      (x) => x.userId,
-      (x) => x.kind === "stream_audio",
-   );
 
-   const isShown = useMemo(() => users.length !== 0 && thisCallState, [props.channelId, users, thisCallState]);
+   const { cameraSources, microphoneSources, streamAudioSources, streamVideoSources } = useMemo(() => {
+      const streamVideoSources: Record<Snowflake, MediaSource> = {};
+      const streamAudioSources: Record<Snowflake, MediaSource> = {};
+      const microphoneSources: Record<Snowflake, MediaSource> = {};
+      const cameraSources: Record<Snowflake, MediaSource> = {};
+
+      for (const mediaSource of mediaSources) {
+         if (mediaSource.kind === "camera") cameraSources[mediaSource.userId] = mediaSource;
+         if (mediaSource.kind === "microphone") microphoneSources[mediaSource.userId] = mediaSource;
+         if (mediaSource.kind === "stream_audio") streamAudioSources[mediaSource.userId] = mediaSource;
+         if (mediaSource.kind === "stream_video") streamVideoSources[mediaSource.userId] = mediaSource;
+      }
+
+      return { streamVideoSources, streamAudioSources, microphoneSources, cameraSources };
+   }, [mediaSources]);
+
+   const isShown = useMemo(() => thisVoiceStates.length !== 0, [thisVoiceStates]);
+   const isLoading = useMemo(() => !thisCallState, [thisCallState]);
 
    const [containerRef, showControls] = useHover<HTMLDivElement>([user, isShown]);
    const gridRef = useRef<HTMLDivElement>(null);
@@ -61,13 +66,13 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    }>();
    const [gridHeight, setGridHeight] = useState(250);
    const { isFullscreen, toggleFullscreen } = useFullscreen();
-   const [maximizedSource, setMaximizedSource] = useState<Unpacked<typeof remoteSources> | undefined>(undefined);
+   const [maximizedSource, setMaximizedSource] = useState<Unpacked<typeof mediaSources> | undefined>(undefined);
 
    useEffect(() => {
-      if (!voiceChannel.channelId) {
+      if (!voiceConnection.channelId) {
          setMaximizedSource(undefined);
       }
-   }, [localVoiceState]);
+   }, [voiceState]);
 
    useEffect(() => {
       setMaximizedSource(undefined);
@@ -85,7 +90,8 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 
             updateGridSize();
 
-            // When we exit fullscreen, the element is still here. Which we can use to detect we are exiting fullscreen and should not fiddle with the height
+            // When we exit fullscreen, the element is still here.
+            // Which we can use to detect we are exiting fullscreen and should not fiddle with the height
             if (document.fullscreenElement) {
                return;
             }
@@ -120,14 +126,14 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    }, [isShown, maximizedSource]);
 
    useEffect(() => {
-      const unlisten = client?.voice.listen("producer_closed", (d) => {
-         if (d.producerId === maximizedSource?.producerId) {
+      const unlisten = client?.voice.transport.listen("producer_closed", (d) => {
+         if (d.id === maximizedSource?.producerId) {
             setMaximizedSource(undefined);
          }
       });
 
-      const unlisten2 = client?.voice.listen("consumer_closed", (d) => {
-         if (d.producerId === maximizedSource?.producerId) {
+      const unlisten2 = client?.voice.transport.listen("consumer_closed", (d) => {
+         if (d.id === maximizedSource?.producerId) {
             setMaximizedSource(undefined);
          }
       });
@@ -140,7 +146,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 
    useLayoutEffect(() => {
       updateGridSize();
-   }, [remoteSources, gridHeight, thisCallState, maximizedSource, isFullscreen, thisVoiceStates, isGridView]);
+   }, [mediaSources, gridHeight, thisCallState, maximizedSource, isFullscreen, thisVoiceStates, isGridView]);
 
    useEffect(() => {
       const controller = new AbortController();
@@ -174,20 +180,8 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       setIsResizing(false);
    }
 
-   async function onConsumeStream(userId: Snowflake) {
-      posthog.capture("voice:watch_stream_button_click", { userId });
-
-      if (!consumeStreamMutation.isPending) {
-         consumeStreamMutation.mutate({
-            guildId: null,
-            channelId: props.channelId,
-            userId,
-         });
-      }
-   }
-
    function maximizeSource(producerId: string) {
-      const foundSource = remoteSources.find(
+      const foundSource = mediaSources.find(
          (x) => x.producerId === producerId && (x.kind === "stream_video" || x.kind === "camera" || x.kind === "stream_audio"),
       );
 
@@ -215,7 +209,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
          : // People in voice
            store.voiceStates.length +
            // Streams
-           store.voiceStates.filter((x) => x.isStreaming).length +
+           store.voiceStates.filter((x) => x.isAudioStreaming || x.isScreenSharing).length +
            // People getting ringed
            (thisCallState?.ringing.length ?? 0);
       //
@@ -261,8 +255,8 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 
          if (elementWidth * elementHeight > best.elementWidth * best.elementHeight) {
             best = {
-               elementWidth,
-               elementHeight,
+               elementWidth: Math.floor(elementWidth),
+               elementHeight: Math.floor(elementHeight),
                rows,
                cols,
             };
@@ -286,115 +280,136 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       >
          <div ref={resizerRef} className="absolute inset-x-0 -bottom-1 z-10 h-2 cursor-ns-resize" />
          <div
-            className={clsx("flex w-full shrink flex-wrap content-center items-center justify-center gap-3", !maximizedSource && "px-5 py-2 pb-16")}
+            className={clsx(
+               "flex w-full shrink flex-wrap content-center items-center justify-center gap-3",
+               !maximizedSource && "px-5 py-2",
+               !isLoading && !maximizedSource && "pb-16",
+            )}
             ref={gridRef}
             style={{ height: !isFullscreen ? gridHeight : "100%" }}
          >
-            <AnimatePresence mode="popLayout">
-               {/* Watchable Streams whens not connected */}
-               {(voiceStatus !== "rtc_ready" || voiceChannel.channelId !== props.channelId) &&
-                  thisVoiceStates
-                     .filter(
-                        (x) => x.userId !== user.id && x.isStreaming && !streamAudioRemoteSources[x.userId] && !streamVideoRemoteSources[x.userId],
+            {isLoading ? (
+               <LoadingIcon className="size-16" />
+            ) : (
+               <>
+                  {/* Watchable Streams whens not connected */}
+                  {thisVoiceStates
+                     .filter((x) => x.isAudioStreaming || x.isScreenSharing)
+                     .map((x) => (
+                        <VoiceElement
+                           type="stream"
+                           key={`${x.userId}-stream`}
+                           gridElementWidth={gridSize?.elementWidth ?? 0}
+                           gridElementHeight={gridSize?.elementHeight ?? 0}
+                           userId={x.userId}
+                           channelId={props.channelId}
+                           onConsume={consumeStream}
+                           isConnected={voiceConnection.channelId === props.channelId}
+                           isResizing={isResizing}
+                           isGridView={isGridView}
+                           isMaximized={!!maximizedSource}
+                           mediaSource={streamVideoSources[x.userId] ?? streamAudioSources[x.userId]}
+                           secondMediaSource={streamVideoSources[x.userId] && streamAudioSources[x.userId]}
+                           voiceState={x}
+                           onClick={voiceConnection.channelId === props.channelId ? maximizeSource : undefined}
+                        />
+                     ))}
+                  {/* Watching/Watchable Streams when connected */}
+                  {/* {isGridView &&
+               voiceConnection.channelId === props.channelId &&
+               mediaSources
+                  .filter((x) => {
+                     if (maximizedSource) {
+                        return x.producerId === maximizedSource.producerId && maximizedSource.kind !== "camera";
+                     }
+
+                     const hasAudioStream = x.producerId === streamAudioSources[x.userId]?.producerId;
+                     const hasVideoStream = x.producerId === streamVideoSources[x.userId]?.producerId;
+
+                     return hasVideoStream || (hasAudioStream && !streamVideoSources[x.userId]);
+                  })
+                  .map((x) => (
+                     <VoiceElement
+                        type="stream"
+                        key={`${x.userId}-stream`}
+                        mediaSource={x}
+                        userId={x.userId}
+                        channelId={props.channelId}
+                        isMaximized={!!maximizedSource}
+                        onClick={maximizeSource}
+                        onConsume={consumeStream}
+                        gridElementWidth={gridSize?.elementWidth ?? 0}
+                        gridElementHeight={gridSize?.elementHeight ?? 0}
+                        isResizing={isResizing}
+                        isGridView={isGridView}
+                        voiceState={voiceStatesLookup[x.userId]}
+                     />
+                  ))} */}
+                  {/* Normals user / cameras */}
+                  {thisVoiceStates
+                     .filter((x) =>
+                        maximizedSource
+                           ? mediaSources.some((y) => y.userId === x.userId && y.kind === "camera" && maximizedSource.kind === "camera")
+                           : true,
                      )
                      .map((x) => (
                         <VoiceElement
-                           key={`${x.userId}-stream`}
+                           type="normal"
+                           key={`${x.userId}-element`}
                            gridElementWidth={gridSize?.elementWidth ?? 0}
+                           gridElementHeight={gridSize?.elementHeight ?? 0}
+                           mediaSource={cameraSources[x.userId] ?? microphoneSources[x.userId]}
                            userId={x.userId}
                            channelId={props.channelId}
-                           onConsume={onConsumeStream}
-                           isResizing={isResizing}
-                           isGridView={isGridView}
-                           isMaximized={!!maximizedSource}
-                           isUnknown
-                        />
-                     ))}
-               {/* Watching/Watchable Streams when connected */}
-               {isGridView &&
-                  voiceChannel.channelId === props.channelId &&
-                  remoteSources
-                     .filter((x) => {
-                        if (maximizedSource) {
-                           return x.producerId === maximizedSource.producerId && maximizedSource.kind !== "camera";
-                        }
-
-                        const hasAudioStream = x.producerId === streamAudioRemoteSources[x.userId]?.producerId;
-                        const hasVideoStream = x.producerId === streamVideoRemoteSources[x.userId]?.producerId;
-
-                        return hasVideoStream || (hasAudioStream && !streamVideoRemoteSources[x.userId]);
-                     })
-                     .map((x) => (
-                        <VoiceElement
-                           key={`${x.userId}-stream`}
-                           remoteSource={x}
-                           userId={x.userId}
-                           channelId={props.channelId}
-                           isMaximized={!!maximizedSource}
                            onClick={maximizeSource}
-                           onConsume={onConsumeStream}
-                           gridElementWidth={gridSize?.elementWidth ?? 0}
                            isResizing={isResizing}
                            isGridView={isGridView}
+                           isSpeaking={usersSpeakingLookup[x.userId]?.speaking}
+                           isMaximized={!!maximizedSource}
+                           isConnected={voiceConnection.channelId === props.channelId}
+                           voiceState={x}
                         />
                      ))}
-               {/* Normals user / cameras */}
-               {thisVoiceStates
-                  .filter((x) =>
-                     maximizedSource
-                        ? remoteSources.some((y) => y.userId === x.userId && y.kind === "camera" && maximizedSource.kind === "camera")
-                        : true,
-                  )
-                  .map((x) => (
-                     <VoiceElement
-                        key={`${x.userId}-element`}
-                        gridElementWidth={gridSize?.elementWidth ?? 0}
-                        remoteSource={
-                           remoteSources.find((y) => y.userId === x.userId && y.kind === "camera") ??
-                           remoteSources.find((y) => y.userId === x.userId && y.kind === "microphone")
-                        }
-                        userId={x.userId}
-                        channelId={props.channelId}
-                        onClick={maximizeSource}
-                        isResizing={isResizing}
-                        isGridView={isGridView}
-                        isSpeaking={usersSpeakingLookup[x.userId]?.speaking}
-                        isMaximized={!!maximizedSource}
-                        voiceState={x}
-                     />
-                  ))}
-               {/* Ringing Users */}
-               {!maximizedSource &&
-                  thisCallState?.ringing.map((x) => (
-                     <VoiceElement
-                        key={x}
-                        isRinging
-                        gridElementWidth={gridSize?.elementWidth ?? 0}
-                        isGridView={isGridView}
-                        userId={x}
-                        channelId={props.channelId}
-                        isResizing={isResizing}
-                     />
-                  ))}
-            </AnimatePresence>
+                  {/* Ringing Users */}
+                  {!maximizedSource &&
+                     thisCallState?.ringing.map((x) => (
+                        <VoiceElement
+                           type="normal"
+                           key={x}
+                           isRinging
+                           gridElementWidth={gridSize?.elementWidth ?? 0}
+                           gridElementHeight={gridSize?.elementHeight ?? 0}
+                           isGridView={isGridView}
+                           userId={x}
+                           channelId={props.channelId}
+                           isConnected={voiceConnection.channelId === props.channelId}
+                           isResizing={isResizing}
+                        />
+                     ))}
+               </>
+            )}
          </div>
-         <VoiceControls
-            show={showControls || !isGridView}
-            isFullscreen={isFullscreen}
-            isInVoice={voiceChannel.channelId === props.channelId}
-            onConnect={() => connect(props.channelId)}
-            onDisconnect={disconnect}
-            onStartScreenShare={startScreenShare}
-            onStartAudioStream={startAudioStream}
-            onStartCamera={startCamera}
-            onStopCamera={endCamera}
-            onEndStream={endStream}
-            onChangeStream={changeStream}
-            onToggleDeafen={toggleDeafen}
-            onToggleFullscreen={toggleFullscreen}
-            onToggleMute={toggleMute}
-            voiceState={localVoiceState}
-         />
+         {!isLoading && (
+            <VoiceControls
+               show={showControls || !isGridView}
+               isFullscreen={isFullscreen}
+               isInVoice={voiceConnection.channelId === props.channelId}
+               channelId={props.channelId}
+               onToggleFullscreen={toggleFullscreen}
+               // onConnect={() => connect(props.channelId)}
+               // onDisconnect={disconnect}
+               // onStartScreenShare={startScreenShare}
+               // onStartAudioStream={startAudioStream}
+               // onStartCamera={startCamera}
+               // onStopCamera={endCamera}
+               // onEndStream={endStream}
+               // onChangeStream={changeStream}
+               // onToggleDeafen={toggleDeafen}
+               // onToggleFullscreen={toggleFullscreen}
+               // onToggleMute={toggleMute}
+               // voiceState={voiceState}
+            />
+         )}
       </div>
    );
 }

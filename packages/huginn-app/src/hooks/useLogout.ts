@@ -19,8 +19,8 @@ export function useLogout() {
       localStorage.removeItem("refresh-token");
       localStorage.removeItem("access-token");
 
-      if (client?.voice.connectionInfo) {
-         client.gateway.disconnectVoice();
+      if (client?.voice.status !== "idle") {
+         await client?.voiceManager.disconnectVoice();
       }
 
       await mutation.mutateAsync();

@@ -31,6 +31,8 @@ export const envs = readEnv([
    { key: "FFMPEG_TEMP_DIR", default: "./ffmpeg" },
    "IGDB_CLIENT_ID",
    "IGDB_CLIENT_SECRET",
+   "AXIOM_TOKEN",
+   "AXIOM_DATASET",
 ] as const);
 
 export const CERT_FILE = envs.CERTIFICATE_PATH && Bun.file(envs.CERTIFICATE_PATH);

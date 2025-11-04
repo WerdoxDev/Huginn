@@ -134,7 +134,7 @@ export default function SettingsCustomTab(_props: SettingsTabProps) {
                <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3">
                   <div className="text-text/80 text-sm">Add a custom application to be shown on your profile as your activity</div>
                   <HuginnDropdown onChange={onApplicationChanged} value={selectedApplication}>
-                     <HuginnDropdown.List className="bg-surface-deep w-full !rounded-md" placeholder="Select an application">
+                     <HuginnDropdown.List className="bg-surface-deep rounded-md! w-full" placeholder="Select an application">
                         <HuginnDropdown.ItemsWrapper className="w-(--button-width)">
                            {applicationOptions.map((x) => (
                               <HuginnDropdown.Item key={x.value} item={x} />

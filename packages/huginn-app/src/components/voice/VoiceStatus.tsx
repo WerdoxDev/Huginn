@@ -1,4 +1,3 @@
-import type { VoiceStatus } from "@huginn/shared";
 import { useClient, useClientStore } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore } from "@stores/voiceStore";
@@ -13,28 +12,34 @@ import VoiceControlButton from "@components/button/VoiceControlButton";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 import { useChannel } from "@hooks/api-hooks/channelHooks";
 import { DropdownMenu } from "@components/dropdown/DropdownMenu";
+import type { VoiceStatus } from "@huginn/api";
 
 const statuses: Record<VoiceStatus, { text: string; color?: string }> = {
-   connected: { text: "RTC Signalling...", color: "!text-caution-100" },
-   authenticated: { text: "RTC Signalling...", color: "!text-caution-100" },
-   connecting: { text: "RTC Signalling...", color: "!text-caution-100" },
-   reconnecting: { text: "Reconnecting...", color: "!text-negative-100" },
+   // // connected: { text: "RTC Signalling...", color: "!text-caution-100" },
+   // authenticated: { text: "RTC Signalling...", color: "!text-caution-100" },
+   // connecting: { text: "RTC Signalling...", color: "!text-caution-100" },
+   // reconnecting: { text: "Reconnecting...", color: "!text-negative-100" },
+   // disconnected: { text: "Disconnected", color: "!text-negative-100" },
+   // opening: { text: "Connecting...", color: "!text-caution-100" },
+   // none: { text: "Connecting...", color: "!text-caution-100" },
+   // rtc_ready: { text: "Connected" },
    disconnected: { text: "Disconnected", color: "!text-negative-100" },
-   opening: { text: "Connecting...", color: "!text-caution-100" },
-   none: { text: "Connecting...", color: "!text-caution-100" },
-   rtc_ready: { text: "Connected" },
+   idle: { text: "Connecting...", color: "!text-caution-100" },
+   connecting: { text: "Connecting...", color: "!text-caution-100" },
+   ready: { text: "Connected" },
+   signaling: { text: "RTC Signalling...", color: "!text-caution-100" },
 };
 
 export default function VoiceStatus() {
-   const { voiceChannel } = useVoiceStore();
+   const { voiceConnection } = useVoiceStore();
    const { voiceStatus } = useClientStore();
-   const { startAudioStream, startScreenShare, changeStream, endStream, startCamera, endCamera } = useVoiceUtils();
+   const { changeStream, openCamera, closeStream, openAudioStream, openScreenShare, closeCamera } = useVoiceUtils();
    const client = useClient();
    const { user } = useThisUser();
-   const channel = useChannel(voiceChannel.channelId ?? undefined);
+   const channel = useChannel(voiceConnection.channelId ?? undefined);
    const [rtt, setRtt] = useState(0);
    const posthog = usePostHog();
-   const { localVoiceState } = useVoiceStore();
+   const { voiceState } = useVoiceStore();
 
    const latencyColor = useMemo(() => {
       const minPing = 100;
@@ -55,7 +60,7 @@ export default function VoiceStatus() {
          return;
       }
 
-      const unlisten2 = client.voice.listen("pong", (d) => {
+      const unlisten2 = client.voice.signaling.listen("pong", (d) => {
          setRtt(d.rtt);
       });
 
@@ -66,10 +71,10 @@ export default function VoiceStatus() {
 
    async function onDisconnect() {
       posthog.capture("voice:status_disconnect_button_click");
-      await client?.gateway.disconnectVoice();
+      await client?.voiceManager.disconnectVoice();
    }
 
-   if (!user || !voiceChannel.channelId) {
+   if (!user || !voiceConnection.channelId) {
       return;
    }
 
@@ -80,8 +85,8 @@ export default function VoiceStatus() {
                <div className="flex flex-col">
                   <div className="flex items-center gap-x-1">
                      <Tooltip>
-                        {voiceStatus !== "rtc_ready" ? (
-                           <IconMingcuteWifiOffLine className={clsx("size-6", statuses[voiceStatus ?? "none"].color)} />
+                        {voiceStatus !== "ready" ? (
+                           <IconMingcuteWifiOffLine className={clsx("size-6", statuses[voiceStatus ?? "idle"].color)} />
                         ) : (
                            <Tooltip.Trigger className="cursor-default">
                               <IconMingcuteWifiLine className="text-positive-100 size-6 transition-colors" style={{ color: latencyColor }} />
@@ -93,10 +98,10 @@ export default function VoiceStatus() {
                         className={clsx("text-sm font-bold transition-colors", voiceStatus && statuses[voiceStatus].color)}
                         style={{ color: latencyColor }}
                      >
-                        {statuses[voiceStatus ?? "none"].text}
+                        {statuses[voiceStatus ?? "idle"].text}
                      </div>
                   </div>
-                  <NavLink prefetch="intent" to={`/channels/@me/${voiceChannel.channelId}`} className="text-text/70 ml-7 text-xs hover:underline">
+                  <NavLink prefetch="intent" to={`/channels/@me/${voiceConnection.channelId}`} className="text-text/70 ml-7 text-xs hover:underline">
                      {channel?.name}
                   </NavLink>
                </div>
@@ -108,12 +113,12 @@ export default function VoiceStatus() {
             </div>
             <div className="flex w-full gap-x-2">
                <StreamButton
-                  voiceState={localVoiceState}
+                  voiceState={voiceState}
                   anchor={{ placement: "top", gap: 4 }}
                   onChangeStream={changeStream}
-                  onEndStream={endStream}
-                  onStartAudioStream={startAudioStream}
-                  onStartScreenShare={startScreenShare}
+                  onCloseStream={closeStream}
+                  onOpenAudioStream={openAudioStream}
+                  onOpenScreenShare={openScreenShare}
                   hideArrow
                   className="w-full"
                >
@@ -122,10 +127,10 @@ export default function VoiceStatus() {
                      activeColor="primary"
                      activeHoverColor="primary"
                      hoverColor="surface-deep"
-                     isActive={localVoiceState.isStreaming}
+                     isActive={voiceState.isAudioStreaming || voiceState.isScreenSharing}
                      asChild
-                     tooltip={localVoiceState.isStreaming ? "Stream Options" : "Start Stream"}
-                     className={clsx("flex h-9 w-full items-center justify-center rounded-md !px-0")}
+                     tooltip={voiceState.isAudioStreaming || voiceState.isScreenSharing ? "Stream Options" : "Start Stream"}
+                     className={clsx("px-0! flex h-9 w-full items-center justify-center rounded-md")}
                   >
                      <DropdownMenu.Button>
                         <IconMingcuteMonitorFill className="size-5 shrink-0" />
@@ -139,10 +144,10 @@ export default function VoiceStatus() {
                   activeColor="primary"
                   activeHoverColor="negative"
                   hoverColor="surface-deep"
-                  isActive={localVoiceState.isCameraOn}
-                  onClick={() => (localVoiceState.isCameraOn ? endCamera() : startCamera())}
-                  tooltip={localVoiceState.isCameraOn ? "Turn off camera" : "Turn on camera"}
-                  className={clsx("flex h-9 w-full items-center justify-center rounded-md !px-0")}
+                  isActive={voiceState.isCameraOn}
+                  onClick={() => (voiceState.isCameraOn ? closeCamera() : openCamera())}
+                  tooltip={voiceState.isCameraOn ? "Turn off camera" : "Turn on camera"}
+                  className={clsx("px-0! flex h-9 w-full items-center justify-center rounded-md")}
                >
                   <IconMingcuteCamera2Fill className="size-6" />
                </VoiceControlButton>

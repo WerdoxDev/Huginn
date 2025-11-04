@@ -2,7 +2,7 @@ import { HistoryProvider } from "@contexts/historyContext";
 import { ThemeProvider } from "@stores/themeStore";
 import { initializeWindow } from "@stores/windowStore";
 import { useEffect, useState } from "react";
-import { QueryClient } from "@tanstack/query-core";
+import { QueryClient } from "@tanstack/react-query";
 import { Outlet } from "react-router";
 
 export const queryClient = new QueryClient({

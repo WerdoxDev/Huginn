@@ -1,7 +1,7 @@
 import path from "node:path";
 import { CacheStorage, error, findClosestString, log, logger, type LogArgs } from "@huginn/shared";
 import { getActiveWindowProcessIds, setExecutablesRoot, startAudioCapture, stopAudioCapture } from "application-loopback";
-import { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu, nativeImage, Notification, session, shell, Tray } from "electron";
+import { app, BrowserWindow, desktopCapturer, ipcMain, Menu, nativeImage, Notification, session, shell, Tray } from "electron";
 import updater from "electron-updater";
 import type { AudioSource, DisplaySource } from "@/types";
 import * as file from "./file-controller";
@@ -42,10 +42,10 @@ try {
    gotLock = app.requestSingleInstanceLock();
 
    if (!gotLock) {
-      dialog.showErrorBox(
-         "Already running",
-         "Huginn is already running! If you believe this is false, check your task-manager for any dead processes named 'Huginn'",
-      );
+      // dialog.showErrorBox(
+      //    "Already running",
+      //    "Huginn is already running! If you believe this is false, check your task-manager for any dead processes named 'Huginn'",
+      // );
 
       log("app:electron", "default", "exit because of lock");
 

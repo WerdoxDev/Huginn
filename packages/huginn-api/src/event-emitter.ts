@@ -1,5 +1,5 @@
 // biome-ignore lint/suspicious/noExplicitAny: required here
-type EventCallback<T = any> = (data: T) => void;
+type EventCallback<T = any> = ((data: T) => void) | ((data: T) => Promise<void>);
 
 export class EventEmitter<Events> {
    private events: { [event in keyof Events]?: EventCallback<Events[event]>[] } = {};
@@ -42,7 +42,14 @@ export class EventEmitter<Events> {
       // Notify all listeners
       if (this.events[eventName] && this.events[eventName].length > 0) {
          for (const listener of this.events[eventName]) {
-            listener(eventArg);
+            try {
+               const result = listener(eventArg);
+               if (result instanceof Promise) {
+                  result.catch((err) => console.error(err));
+               }
+            } catch (e) {
+               console.error(e);
+            }
          }
       }
       // } else {

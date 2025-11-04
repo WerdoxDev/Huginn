@@ -10,7 +10,7 @@ import type {
 import {
    error,
    GatewayCode,
-   type GatewayEvents,
+   type GatewayWebsocketEvents,
    type GatewayHeartbeat,
    type GatewayHello,
    type GatewayIdentify,
@@ -18,14 +18,17 @@ import {
    type GatewayReadyData,
    type GatewayResume,
    log,
-   omit,
 } from "@huginn/shared";
-import type { HuginnClient } from ".";
+import { type HuginnClient } from ".";
 import type { GatewayOptions } from "./types";
 import { defaultClientOptions } from "./utils";
 import { SharedWebsocket } from "./websocket";
 
-export class Gateway extends SharedWebsocket<GatewayEvents> {
+type Events = {
+   reconnected: undefined;
+} & GatewayWebsocketEvents;
+
+export class Gateway extends SharedWebsocket<Events> {
    public readonly options: GatewayOptions;
    private readonly client: HuginnClient;
 
@@ -109,57 +112,60 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
             // Only authenticate if session was closed (can't resume) and it was previously authenticated
             if (this.sessionId === undefined) {
                await this.authenticate();
+            } else {
+               await this.waitForEvents(["resumed"]);
             }
-
-            await this.tryReconnectVoice();
+            // await this.tryReconnectVoice();
          }
+
+         this.emit("reconnected", undefined);
       }, 2000);
    }
 
-   private async tryReconnectVoice() {
-      log("api:gateway", "default", "try reconnect voice");
+   // private async tryReconnectVoice() {
+   //    log("api:gateway", "default", "try reconnect voice");
 
-      // If we were not connected to a voice channel do nothing
-      if (!this.client.voice.connectionInfo || this.client.voice.status !== "rtc_ready") {
-         return;
-      }
+   //    // If we were not connected to a voice channel do nothing
+   //    if (!this.client.voice.connectionInfo || this.client.voice.status !== "rtc_ready") {
+   //       return;
+   //    }
 
-      if (this.status !== "connected") {
-         await this.waitForEvents(["hello"]);
-      }
+   //    if (this.status !== "connected") {
+   //       await this.waitForEvents(["hello"]);
+   //    }
 
-      // We need to make a copy because the server will send a null voice state when we disconnect and we don't want that to disconnect us
-      const connectionInfo = { ...this.client.voice.connectionInfo };
+   //    // We need to make a copy because the server will send a null voice state when we disconnect and we don't want that to disconnect us
+   //    const connectionInfo = { ...this.client.voice.connectionInfo };
 
-      let callStillExists = true;
-      if (this.status !== "authenticated") {
-         // If we are about to reconnect, check for any call_delete from the resumed messages
-         if (this.sequence !== undefined && this.sessionId) {
-            const unlisten = this.listen("call_delete", (d) => {
-               if (d.channelId === connectionInfo.channelId) {
-                  unlisten();
-                  callStillExists = false;
-               }
-            });
+   //    let callStillExists = true;
+   //    if (this.status !== "authenticated") {
+   //       // If we are about to reconnect, check for any call_delete from the resumed messages
+   //       if (this.sequence !== undefined && this.sessionId) {
+   //          const unlisten = this.listen("call_delete", (d) => {
+   //             if (d.channelId === connectionInfo.channelId) {
+   //                unlisten();
+   //                callStillExists = false;
+   //             }
+   //          });
 
-            await this.waitForEvents(["resumed"]);
-            unlisten();
-         } else {
-            await this.waitForEvents(["ready"]);
-         }
-      }
+   //          await this.waitForEvents(["resumed"]);
+   //          unlisten();
+   //       } else {
+   //          await this.waitForEvents(["ready"]);
+   //       }
+   //    }
 
-      // If the call was removed since we disconnected, do nothing
-      if (!callStillExists) {
-         await this.disconnectVoice();
-         return;
-      }
+   //    // If the call was removed since we disconnected, do nothing
+   //    if (!callStillExists) {
+   //       await this.disconnectVoice();
+   //       return;
+   //    }
 
-      await this.connectVoice(connectionInfo.guildId, connectionInfo.channelId, {
-         isAudioDeafened: this.client.voice.localVoiceState.isAudioDeafened,
-         isAudioMuted: this.client.voice.localVoiceState.isAudioMuted,
-      });
-   }
+   //    await this.connectVoice(connectionInfo.guildId, connectionInfo.channelId, {
+   //       isAudioDeafened: this.client.voice.localVoiceState.isAudioDeafened,
+   //       isAudioMuted: this.client.voice.localVoiceState.isAudioMuted,
+   //    });
+   // }
 
    public async authenticate(): Promise<{ authenticated: boolean; retryable: boolean }> {
       log("api:gateway", "default", "authenticate");
@@ -197,108 +203,50 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
       return { authenticated: true, retryable: true };
    }
 
-   /**
-    * Connects to a voice channel.
-    * @param guildId can be set to null if you are connecting to a direct channel call.
-    * @param channelId the channel to connect to
-    * @param token if a token is already available, it will use that to connect the voice websocket (use with caution)
-    * @param disconnectIfConnected it will send a null channel voice state update first and then updates to the channel id and connects voice websocket
-    */
-   public async connectVoice(
-      guildId: Snowflake | null,
-      channelId: Snowflake,
-      voiceState?: Omit<GatewayVoiceStateFlags, "isStreaming" | "isCameraOn">,
-      token?: string,
-      disconnectIfConnected?: boolean,
-   ): Promise<boolean> {
-      log("api:gateway", "default", "connect to voice", "dic:", disconnectIfConnected);
-
-      if (this.client.voice.connectionInfo && this.client.voice.connectionInfo?.channelId !== channelId) {
-         this.client.voice.close();
-      }
-
-      // This is useful for when voice was disconnected and the token is no longer valid. The server won't send a new token unless it's a new channel or guild
-      if (disconnectIfConnected) {
-         const updateVoiceStateData: GatewayUpdateVoiceState = {
-            op: GatewayOperations.VOICE_STATE_UPDATE,
-            d: {
-               guildId: null,
-               channelId: null,
-               isAudioDeafened: false,
-               isAudioMuted: false,
-               isStreaming: false,
-               isCameraOn: false,
-            },
-         };
-
-         log("api:gateway", "send", "update voice state", "cid:", updateVoiceStateData.d.channelId, "gid:", updateVoiceStateData.d.guildId);
-         this.send(updateVoiceStateData);
-
-         await new Promise<void>((r) => {
-            const unlisten = this.listen("voice_state_update", (d) => {
-               if (d.userId === this.client.user?.id && !d.channelId) {
-                  unlisten();
-                  r();
-               }
-            });
-         });
-      }
-
+   public async getVoiceToken(guildId: Snowflake | null, channelId: Snowflake, voiceState?: GatewayVoiceStateFlags): Promise<string | undefined> {
       const updateVoiceStateData: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
          d: {
             guildId: guildId,
             channelId: channelId,
-            isAudioDeafened: voiceState?.isAudioDeafened ?? false,
-            isAudioMuted: voiceState?.isAudioMuted ?? false,
-            isStreaming: false,
+            isAudioDeafened: false,
+            isAudioMuted: false,
             isCameraOn: false,
+            isAudioStreaming: false,
+            isScreenSharing: false,
+            ...voiceState,
          },
       };
 
-      log("api:gateway", "send", "update voice state", "cid:", updateVoiceStateData.d.channelId, "gid:", updateVoiceStateData.d.guildId);
       this.send(updateVoiceStateData);
 
-      let receivedToken: string | undefined = token;
+      const promise1 = new Promise<string>((r) => {
+         const unlisten = this.listen("voice_server_update", (d) => {
+            unlisten();
+            r(d.token);
+         });
+      });
 
-      if (!receivedToken) {
-         const promise1 = new Promise<void>((r) => {
-            const unlisten = this.listen("voice_server_update", (d) => {
-               receivedToken = d.token;
-               unlisten();
+      const promise2 = new Promise<void>((r) => {
+         const unlisten2 = this.listen("voice_state_update", (d) => {
+            if (d.userId === this.client.user?.id && d.channelId) {
+               unlisten2();
                r();
-            });
+            }
          });
+      });
 
-         const promise2 = new Promise<void>((r) => {
-            const unlisten2 = this.listen("voice_state_update", (d) => {
-               if (d.userId === this.client.user?.id && d.channelId) {
-                  unlisten2();
-                  r();
-               }
-            });
-         });
+      const [token, _] = await Promise.allSettled([promise1, promise2]);
 
-         await Promise.allSettled([promise1, promise2]);
+      if (token.status === "fulfilled") {
+         return token.value;
       }
 
-      if (!receivedToken) {
-         return false;
-      }
-
-      this.client.voice.connect(receivedToken, channelId, guildId);
-
-      if (this.client.voice.status !== "rtc_ready") {
-         await this.client.voice.waitForEvents(["ready"]);
-      }
-
-      this.client.voice.updateLocalVoiceState({ isStreaming: false, isCameraOn: false });
-
-      return true;
+      return undefined;
    }
 
-   public async disconnectVoice(): Promise<void> {
-      log("api:gateway", "default", "disconnect from voice");
+   public async sendDefaultVoiceState(): Promise<void> {
+      log("api:gateway", "default", "send default voice state");
 
       const updateVoiceStateData: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
@@ -307,69 +255,42 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
             guildId: null,
             isAudioDeafened: false,
             isAudioMuted: false,
-            isStreaming: false,
+            isAudioStreaming: false,
+            isScreenSharing: false,
             isCameraOn: false,
          },
       };
 
-      log("api:gateway", "send", "update voice state to null");
       this.send(updateVoiceStateData);
 
-      this.client.voice.close();
-
-      await this.waitForEvents(["voice_state_update"]);
+      await new Promise<void>((r) => {
+         const unlisten = this.listen("voice_state_update", (d) => {
+            if (d.userId === this.client.user?.id) {
+               unlisten();
+               r();
+            }
+         });
+      });
    }
 
-   public async updateVoiceState(options: GatewayVoiceStateFlags): Promise<void> {
-      log(
-         "api:gateway",
-         "default",
-         "update voice state",
-         "am:",
-         options.isAudioMuted,
-         "ad:",
-         options.isAudioDeafened,
-         "s:",
-         options.isStreaming,
-         "co:",
-         options.isCameraOn,
-      );
+   public async sendUpdateVoiceState(options: GatewayVoiceStateFlags, channelId: Snowflake, guildId: Snowflake | null): Promise<GatewayVoiceState> {
+      log("api:gateway", "default", "update voice state", "opts:", JSON.stringify(options));
 
-      // If we are not ready to update voice state yet, just set the local voice state and return
-      if (!this.client.voice.connectionInfo || this.client.voice.status !== "rtc_ready" || this.status !== "authenticated") {
-         this.client.voice.updateLocalVoiceState({ ...options });
-         return;
-      }
+      // // If we are not ready to update voice state yet, just set the local voice state and return
+      // if (!this.client.voice.connectionInfo || this.client.voice.status !== "rtc_ready" || this.status !== "authenticated") {
+      //    this.client.voice.updateLocalVoiceState({ ...options });
+      //    return;
+      // }
 
       const updateVoiceStateData: GatewayPayload = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
-         d: {
-            guildId: this.client.voice.connectionInfo?.guildId,
-            channelId: this.client.voice.connectionInfo?.channelId,
-            ...options,
-         },
+         d: { channelId, guildId, ...options },
       };
 
-      log(
-         "api:gateway",
-         "send",
-         "update voice state",
-         "am:",
-         updateVoiceStateData.d.isAudioMuted,
-         "ad:",
-         updateVoiceStateData.d.isAudioDeafened,
-         "s:",
-         updateVoiceStateData.d.isStreaming,
-         "co:",
-         updateVoiceStateData.d.isCameraOn,
-      );
+      log("api:gateway", "send", "update voice state", "opts:", JSON.stringify(updateVoiceStateData.d));
       this.send(updateVoiceStateData);
 
-      //1. We first update local voice state to immediately fire an even
-      this.client.voice.updateLocalVoiceState({ ...options });
-
-      //2. Wait for the voice state to actually get updated
-      const updatedVoiceState = await new Promise<GatewayVoiceState>((r) => {
+      const confirmed = await new Promise<GatewayVoiceState>((r) => {
          const unlisten = this.listen("voice_state_update", (d) => {
             if (d.userId === this.client.user?.id) {
                unlisten();
@@ -378,8 +299,7 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
          });
       });
 
-      //3. Then we sync it with what we got from the server
-      this.client.voice.updateLocalVoiceState({ ...omit(updatedVoiceState, ["channelId", "channelId", "userId"]) });
+      return confirmed;
    }
 
    public updatePresence(options: GatewayUpdatePresenceData): void {
@@ -444,22 +364,23 @@ export class Gateway extends SharedWebsocket<GatewayEvents> {
 
             this.sequence = data.s;
 
-            if (data.t === "resumed") {
-               this.handleResumed();
-            }
-
-            if (data.t === "ready") {
-               this.handleReady(data.d);
+            switch (data.t) {
+               case "ready":
+                  this.handleReady(data.d);
+                  break;
+               case "resumed":
+                  this.handleResumed();
+                  break;
             }
 
             // Maybe the server or we sent an update to disconnect from the voice. We should close voice websocket just in case
             // We also check if we are authenticated. so any disconnects from resuming shouldn't count
-            if (data.t === "voice_state_update" && this.status === "authenticated") {
-               if (!data.d.channelId && data.d.userId === this.client.user?.id) {
-                  log("api:gateway", "default", "server voice state update says close voice");
-                  this.client.voice.close();
-               }
-            }
+            // if (data.t === "voice_state_update" && this.status === "authenticated") {
+            //    if (!data.d.channelId && data.d.userId === this.client.user?.id) {
+            //       log("api:gateway", "default", "server voice state update says close voice");
+            //       this.client.voice.signaling.close();
+            //    }
+            // }
 
             this.emit(data.t, data.d);
          }

@@ -117,6 +117,7 @@
 	-webkit-font-smoothing: none;
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
+   interpolate-size: allow-keywords;
 }
 
 html,

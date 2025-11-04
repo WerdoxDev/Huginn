@@ -25,7 +25,15 @@ describe("Voice", () => {
 
       const data: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
-         d: { channelId: channel.id.toString(), guildId: null, isAudioDeafened: false, isAudioMuted: false, isStreaming: false, isCameraOn: false },
+         d: {
+            channelId: channel.id.toString(),
+            guildId: null,
+            isAudioDeafened: false,
+            isAudioMuted: false,
+            isScreenSharing: false,
+            isAudioStreaming: false,
+            isCameraOn: false,
+         },
       };
 
       wsSend(ws, data);
@@ -104,7 +112,15 @@ describe("Voice", () => {
 
       const data: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
-         d: { channelId: channel.id.toString(), guildId: null, isAudioDeafened: false, isAudioMuted: false, isStreaming: false, isCameraOn: false },
+         d: {
+            channelId: channel.id.toString(),
+            guildId: null,
+            isAudioDeafened: false,
+            isAudioMuted: false,
+            isAudioStreaming: false,
+            isScreenSharing: false,
+            isCameraOn: false,
+         },
       };
 
       wsSend(ws, data);
@@ -134,12 +150,28 @@ describe("Voice", () => {
 
       const data: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
-         d: { channelId: channel.id.toString(), guildId: null, isAudioDeafened: false, isAudioMuted: false, isStreaming: false, isCameraOn: false },
+         d: {
+            channelId: channel.id.toString(),
+            guildId: null,
+            isAudioDeafened: false,
+            isAudioMuted: false,
+            isAudioStreaming: false,
+            isScreenSharing: false,
+            isCameraOn: false,
+         },
       };
 
       const data2: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
-         d: { channelId: null, guildId: null, isAudioDeafened: false, isAudioMuted: false, isStreaming: false, isCameraOn: false },
+         d: {
+            channelId: null,
+            guildId: null,
+            isAudioDeafened: false,
+            isAudioMuted: false,
+            isAudioStreaming: false,
+            isScreenSharing: false,
+            isCameraOn: false,
+         },
       };
 
       wsSend(ws, data);
@@ -176,12 +208,28 @@ describe("Voice", () => {
 
       const data: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
-         d: { channelId: channel.id.toString(), guildId: null, isAudioDeafened: false, isAudioMuted: false, isStreaming: false, isCameraOn: false },
+         d: {
+            channelId: channel.id.toString(),
+            guildId: null,
+            isAudioDeafened: false,
+            isAudioMuted: false,
+            isAudioStreaming: false,
+            isScreenSharing: false,
+            isCameraOn: false,
+         },
       };
 
       const data2: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
-         d: { channelId: null, guildId: null, isAudioDeafened: false, isAudioMuted: false, isStreaming: false, isCameraOn: false },
+         d: {
+            channelId: null,
+            guildId: null,
+            isAudioDeafened: false,
+            isAudioMuted: false,
+            isAudioStreaming: false,
+            isScreenSharing: false,
+            isCameraOn: false,
+         },
       };
 
       wsSend(ws, data);
@@ -222,7 +270,15 @@ describe("Voice", () => {
 
       const data: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
-         d: { channelId: channel.id.toString(), guildId: null, isAudioDeafened: false, isAudioMuted: false, isStreaming: false, isCameraOn: false },
+         d: {
+            channelId: channel.id.toString(),
+            guildId: null,
+            isAudioDeafened: false,
+            isAudioMuted: false,
+            isAudioStreaming: false,
+            isScreenSharing: false,
+            isCameraOn: false,
+         },
       };
 
       wsSend(ws, data);
@@ -275,7 +331,15 @@ describe("Voice", () => {
       // First join the channel voice
       const data: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
-         d: { channelId: channel.id.toString(), guildId: null, isAudioDeafened: false, isAudioMuted: false, isStreaming: false, isCameraOn: false },
+         d: {
+            channelId: channel.id.toString(),
+            guildId: null,
+            isAudioDeafened: false,
+            isAudioMuted: false,
+            isAudioStreaming: false,
+            isScreenSharing: false,
+            isCameraOn: false,
+         },
       };
 
       wsSend(ws, data);
@@ -285,7 +349,15 @@ describe("Voice", () => {
       // Then join another channel without leaving the last one
       const data2: GatewayUpdateVoiceState = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
-         d: { channelId: channel2.id.toString(), guildId: null, isAudioDeafened: false, isAudioMuted: false, isStreaming: false, isCameraOn: false },
+         d: {
+            channelId: channel2.id.toString(),
+            guildId: null,
+            isAudioDeafened: false,
+            isAudioMuted: false,
+            isAudioStreaming: false,
+            isScreenSharing: false,
+            isCameraOn: false,
+         },
       };
 
       wsSend(ws, data2);
