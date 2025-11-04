@@ -67,7 +67,6 @@ export function initializeClient() {
          },
          voice: {
             class: VoiceBridge,
-            // url: `http://192.168.178.51:3003/voice`,
             url: `${thisStore.hostnames.voice}/voice`,
             createSocket(url) {
                return new WebSocket(url);
@@ -75,8 +74,6 @@ export function initializeClient() {
          },
       });
       store.setState({ client });
-
-      store.getState().client?.gateway.connect();
    } else {
       return;
    }

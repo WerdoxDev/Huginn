@@ -109,7 +109,7 @@ export class VoiceBridge extends Voice {
       }
 
       // Stop loopback capture
-      if (data.kind === "stream_audio" && data.userId === this.client?.user?.id) {
+      if (data.kind === "stream_audio" && data.userId === this.client?.currentUser?.id) {
          await this.stopAudioLoopback();
       }
 
@@ -128,7 +128,7 @@ export class VoiceBridge extends Voice {
       // Pause the microphone as soon as it's opened
       if (producer.appData.mediaKind === "microphone") {
          this.client.voiceManager.voiceState.updateLocalVoiceState({ isAudioPaused: true });
-         store.updateSpeakingState(this.client.user.id, false);
+         store.updateSpeakingState(this.client.currentUser.id, false);
       }
    }
 

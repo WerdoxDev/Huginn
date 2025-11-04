@@ -71,18 +71,22 @@ export function initializePresence() {
    });
 
    const unlisten3 = client.gateway.listen("session_update", (d) => {
-      if (!d.status || !client.user) {
+      if (!d.status || !client.currentUser) {
          return;
       }
 
       const presence = convertToAppPresence({
-         user: { id: client.user.id },
+         user: { id: client.currentUser.id },
          activeSessions: [],
          activities: d.activities,
          status: d.status,
       });
       store.setState((state) => ({ thisPresence: { ...state.thisPresence, status: presence.status, activities: presence.activities } }));
-      store.getState().updatePresence(client.user.id, { status: presence.status, activities: presence.activities });
+      store.getState().updatePresence(client.currentUser.id, { status: presence.status, activities: presence.activities });
+   });
+
+   const unlisten4 = client.gateway.listen("disconnected", () => {
+      stopCheckingForActivity();
    });
 
    return () => {
@@ -92,16 +96,14 @@ export function initializePresence() {
    };
 }
 
-let activityInterval: number;
+let activityInterval: number | undefined;
 function startCheckingForActivity() {
    log("app:presence-store", "default", "start activity checking");
    if (windowStore.getState().environment !== "desktop") {
       return;
    }
 
-   if (activityInterval) {
-      window.clearInterval(activityInterval);
-   }
+   stopCheckingForActivity();
 
    activityInterval = window.setInterval(async () => {
       log("app:presence-store", "default", "check activity");
@@ -109,7 +111,7 @@ function startCheckingForActivity() {
          const presence = store.getState().thisPresence;
          const client = clientStore.getState().client;
 
-         if (!client) {
+         if (!client?.gateway.isAuthenticated) {
             return;
          }
 
@@ -184,15 +186,20 @@ function startCheckingForActivity() {
    }, 5000);
 }
 
+function stopCheckingForActivity() {
+   if (activityInterval) {
+      clearInterval(activityInterval);
+      activityInterval = undefined;
+   }
+}
+
 function detectKnownApplication(applications: ProcessInfo[], knownApplications: APIKnownApplication[]) {
    const match = applications.flatMap((x) => {
       const exeName = x.exePath.split(/[/\\]+/).pop();
       const exeKnown = knownApplications?.find((y) => y.exeName === exeName);
       const nameKnown = knownApplications?.find((y) => y.names.includes(x.windowTitle));
       const cmdLineMatch = exeKnown?.commandLinePatterns.every((y) => x.cmdLine.includes(y));
-      return (nameKnown || exeKnown) && (cmdLineMatch === undefined ? true : cmdLineMatch)
-         ? [{ detected: x, known: exeKnown! ?? nameKnown! }]
-         : [];
+      return (nameKnown || exeKnown) && (cmdLineMatch === undefined ? true : cmdLineMatch) ? [{ detected: x, known: exeKnown! ?? nameKnown! }] : [];
    })[0];
 
    return match;

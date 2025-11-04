@@ -140,12 +140,12 @@ export function initializeVoice() {
          const thisStore = store.getState();
 
          //TODO: A BETTER WAY IS TO NOT SET USER VC STATUS TI DISCONNECT DIRECTLY AFTER GATEWAY DISCONNECT
-         if (d.userId === client.user?.id && client.gateway.status !== "authenticated" && d.sessionId === client.gateway.sessionId) {
+         if (d.userId === client.currentUser?.id && client.gateway.status !== "authenticated" && d.sessionId === client.gateway.sessionId) {
             return;
          }
 
          // our user's voice state update
-         if (d.userId === client?.user?.id && d.sessionId === client.gateway.sessionId) {
+         if (d.userId === client?.currentUser?.id && d.sessionId === client.gateway.sessionId) {
             store.setState({ voiceConnection: { channelId: d.channelId, guildId: d.guildId, sessionId: d.sessionId, userId: d.userId } });
          }
 
@@ -166,7 +166,7 @@ export function initializeVoice() {
          // User is no longer here but was here before
          else if (
             (!currentState || currentState.channelId !== lastState?.channelId) &&
-            (lastState?.channelId === currentState.channelId || (d.userId === client?.user?.id && d.sessionId === client.gateway.sessionId))
+            (lastState?.channelId === currentState.channelId || (d.userId === client?.currentUser?.id && d.sessionId === client.gateway.sessionId))
          ) {
             playAudio("voice-leave");
          }

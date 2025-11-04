@@ -110,7 +110,7 @@ export class VoiceInputDevice {
       function onLocalAudioLevel(client: HuginnClient, db: number) {
          const settings = storageStore.getState().getCachedValue("settings");
 
-         const userId = client?.user?.id ?? "";
+         const userId = client?.currentUser?.id ?? "";
          if (db > settings.inputThreshold) {
             const voice = voiceStore.getState();
 

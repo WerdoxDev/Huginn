@@ -1,6 +1,7 @@
 // import { usePostHog } from "posthog-js/react";
+import type { InitializationStatus } from "@huginn/api";
 import { error, log } from "@huginn/shared";
-import { useClient, useClientStore } from "@stores/clientStore";
+import { useClient } from "@stores/clientStore";
 import { useStorage } from "@stores/storageStore";
 import { useThisUser } from "@stores/userStore";
 import { usePostHog } from "posthog-js/react";
@@ -9,7 +10,6 @@ import { type To, useNavigate } from "react-router";
 
 export function useInitializeClient() {
    const client = useClient();
-   const clientStore = useClientStore();
    const store = useThisUser();
    const posthog = usePostHog();
    const clientInfo = useStorage("client-info");
@@ -20,69 +20,52 @@ export function useInitializeClient() {
          token?: string;
          refreshToken?: string;
          navigatePath?: To;
-         onSuccessful?: () => Promise<void> | void;
-      }): Promise<{ status: boolean; retryable: boolean }> => {
-         if (!clientStore.isInitialized) {
-            return { status: false, retryable: true };
-         }
-
+         onSuccess?: () => Promise<void> | void;
+      }): Promise<InitializationStatus> => {
          try {
+            if (!client) throw new Error("Client was undefined when initializing");
+
             log("app:client-store", "default", "initialize start");
 
-            if (options.token || options.refreshToken) {
-               const result = await client?.initializeWithToken({ token: options.token, refreshToken: options.refreshToken });
-               if (!result?.status) {
-                  log("app:client-store", "default", "token initialize failed");
+            const result = await client.connect({ tokens: { token: options.token, refreshToken: options.refreshToken }, timeout: 10000 });
 
-                  return { status: false, retryable: result?.retryable ?? true };
-               }
+            log("app:client-store", "default", "initialize result:", result?.result);
+
+            if (!result.success) {
+               log("app:client-store", "default", "initialize failed:", result?.result);
+               return result;
             }
 
-            const result = await Promise.race([
-               client?.gateway.authenticate(),
-               new Promise<undefined>((res) => setTimeout(() => res(undefined), 10000)),
-            ]);
+            store.setUser(client?.currentUser);
 
-            log("app:client-store", "default", "authenticate", "a:", result?.authenticated, "r:", result?.retryable);
-
-            // !result means it was timed out
-            if (!result || !result.authenticated) {
-               log("app:client-store", "default", "initialize failed. timed out", "a:", result?.authenticated, "r:", result?.retryable);
-
-               // If !result then it was just timed out. Meaning it's retryable. Otherwise what ever authenticate() returns
-               return { status: false, retryable: result?.retryable !== undefined ? result.retryable : true };
+            if (client.tokenHandler.token) {
+               localStorage.setItem("access-token", client.tokenHandler.token);
+            }
+            if (client.tokenHandler.refreshToken) {
+               localStorage.setItem("refresh-token", client.tokenHandler.refreshToken);
             }
 
-            store.setUser(client?.user);
-
-            localStorage.setItem("access-token", client?.tokenHandler.token ?? "");
-            localStorage.setItem("refresh-token", client?.tokenHandler.refreshToken ?? "");
-
-            posthog.identify(client?.user?.id, {
-               username: client?.user?.username,
-               displayName: client?.user?.displayName,
-               email: client?.user?.email,
+            posthog.identify(client?.currentUser?.id, {
+               username: client?.currentUser?.username,
+               displayName: client?.currentUser?.displayName,
+               email: client?.currentUser?.email,
                clientId: clientInfo.id,
             });
 
-            await options.onSuccessful?.();
+            await options.onSuccess?.();
 
             if (options.navigatePath) {
                await navigate(options.navigatePath, { viewTransition: true, replace: true });
             }
 
-            log("app:client-store", "default", "initialized");
-
-            return { status: true, retryable: false };
+            log("app:client-store", "default", "initialize finished");
+            return result;
          } catch (e) {
             error("app:client-store", "Failed to initialize", e);
-
-            log("app:client-store", "default", "initialize failed. caught");
-
-            return { status: false, retryable: false };
+            return { result: "authentication_failed", retryable: false, success: false };
          }
       },
-      [clientStore.isInitialized],
+      [client, store, posthog, navigate, clientInfo.id],
    );
 
    return initialize;

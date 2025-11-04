@@ -3,9 +3,9 @@ import HuginnIcon from "@components/HuginnIcon";
 import LoadingIcon from "@components/LoadingIcon";
 import StartWrapper from "@components/StartWrapper";
 import { useStartBackground } from "@contexts/authBackgroundContext";
-import { useTryLogin } from "@hooks/useTryLogin";
+import { useConnect } from "@hooks/useConnect";
 import { useUpdater } from "@hooks/useUpdater";
-import { initializeClient, setHostnamesFromExternal, setHostnamesFromSettings, useClient, useClientStore } from "@stores/clientStore";
+import { initializeClient, setHostnamesFromExternal, setHostnamesFromSettings, useClient } from "@stores/clientStore";
 import { useStorage } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
@@ -13,7 +13,7 @@ import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useReducer } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
-type Step = "none" | "fetch_hostnames" | "check_update" | "connect" | "update" | "login" | "welcome";
+type Step = "none" | "fetch_hostnames" | "check_update" | "connect" | "update" | "welcome";
 
 type State = {
    current: Step;
@@ -41,14 +41,13 @@ function reducer(state: State, action: Action): State {
 
 export default function Index() {
    const huginnWindow = useHuginnWindow();
-   const clientStore = useClientStore();
    const client = useClient();
    const settings = useStorage("settings");
    const [search] = useSearchParams();
    const startBackground = useStartBackground();
    const posthog = usePostHog();
    const navigate = useNavigate();
-   const tryLogin = useTryLogin();
+   const connect = useConnect();
 
    const { checkAndDownload, updateInfo, progress, contentLength, downloaded } = useUpdater({
       async onNotAvailable() {
@@ -68,23 +67,33 @@ export default function Index() {
       return `${(downloaded.current / 1024 / 1024).toFixed(2)}MB / ${(contentLength.current / 1024 / 1024).toFixed(2)}MB (${Math.ceil(progress)}%)`;
    }, [progress]);
 
-   async function continueToLogin() {
-      await tryLogin({
-         async onError() {
-            await navigate({ pathname: "/login", search: `?${search.toString()}` }, { viewTransition: true });
-         },
-         onFound() {
-            startBackground.setState(1);
-            dispatch({ type: "SET", step: "login", text: "Logging in..." });
-         },
-         async onNotFound() {
-            await navigate({ pathname: "/login", search: `?${search.toString()}` }, { viewTransition: true });
-         },
-         async onSuccessful() {
-            dispatch({ type: "SET", step: "welcome", text: `Welcome ${client?.user?.displayName ?? client?.user?.username}!` });
-         },
-         navigatePath: { pathname: search.get("redirect") ?? "/channels/@me" },
-      });
+   async function tryConnect() {
+      startBackground.setState(1);
+      const result = await connect();
+      if (result.success) {
+         dispatch({ type: "SET", step: "welcome", text: `Welcome ${client?.currentUser?.displayName ?? client?.currentUser?.username}!` });
+         await navigate({ pathname: search.get("redirect") ?? "/channels/@me" }, { replace: true, viewTransition: true });
+      } else if (result.retryable) {
+         dispatch({ type: "FAIL", error: "Failed to connect..." });
+         startBackground.setState(0);
+      } else {
+         await navigate({ pathname: "/login", search: `?${search.toString()}` }, { replace: true, viewTransition: true });
+      }
+
+      // await tryLogin({
+      //    async onError() {
+      //       await navigate({ pathname: "/login", search: `?${search.toString()}` }, { viewTransition: true });
+      //    },
+      //    onFound() {
+      //       startBackground.setState(1);
+      //       dispatch({ type: "SET", step: "login", text: "Logging in..." });
+      //    },
+      //    async onNotFound() {
+      //       await navigate({ pathname: "/login", search: `?${search.toString()}` }, { viewTransition: true });
+      //    },
+      //    async onSuccessful() {},
+      //    navigatePath: { pathname: search.get("redirect") ?? "/channels/@me" },
+      // });
    }
 
    function setCheckUpdate() {
@@ -96,25 +105,25 @@ export default function Index() {
    }
 
    async function setConnect() {
-      if (client?.gateway.status === "connected") {
-         await continueToLogin();
-         return;
-      }
-
       dispatch({ type: "SET", step: "connect", text: "Connecting..." });
    }
 
-   function retry() {
+   async function retry() {
       posthog.capture("start:retry_button_click", { state: state.current });
 
       if (state.current === "fetch_hostnames") {
          setFetchHostnames();
       } else if (state.current === "check_update") {
          setCheckUpdate();
+      } else if (state.current === "connect") {
+         setConnect();
       }
    }
 
    useEffect(() => {
+      if (state.error) {
+         return;
+      }
       async function decideState() {
          switch (state.current) {
             case "none":
@@ -151,11 +160,14 @@ export default function Index() {
                }
                await checkAndDownload();
                break;
+            case "connect":
+               await tryConnect();
+               break;
          }
       }
 
       decideState().catch(console.error);
-   }, [state.current]);
+   }, [state]);
 
    useEffect(() => {
       startBackground.setState(0);
@@ -165,23 +177,8 @@ export default function Index() {
       }
    }, []);
 
-   useEffect(() => {
-      let unlisten: (() => void) | undefined;
-      if (state.current === "connect" && clientStore.isInitialized) {
-         unlisten = client?.gateway.listen("status_changed", async (status) => {
-            if (status === "connected") {
-               await continueToLogin();
-            }
-         });
-      }
-
-      return () => {
-         unlisten?.();
-      };
-   }, [clientStore.isInitialized, state.current]);
-
    return (
-      <StartWrapper transitionName="start-index" className="!w-auto !bg-transparent !p-0 !shadow-none">
+      <StartWrapper transitionName="start-index" className="w-auto! bg-transparent! p-0! shadow-none!">
          <div className="flex w-full select-none flex-col items-center">
             {state.status === "error" ? (
                <div className="bg-negative-600 rounded-full p-3">
@@ -219,7 +216,7 @@ export default function Index() {
                      Retry
                   </HuginnButton>
                   {state.current === "check_update" && (
-                     <HuginnButton color="surface-deep" type="button" className="w-32 rounded-md py-1" onClick={continueToLogin}>
+                     <HuginnButton color="surface-deep" type="button" className="w-32 rounded-md py-1" onClick={setConnect}>
                         Continue
                      </HuginnButton>
                   )}
