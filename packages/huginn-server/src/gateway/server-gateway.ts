@@ -64,24 +64,43 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       if (session.authenticated && session.user) {
          this.presenceManager.removeUserPresence(session.user.id, session);
 
-         const voiceState = this.voiceManager.getVoiceState(session.user.id);
-         if (voiceState?.sessionId === session.sessionId) {
-            this.voiceManager.updateVoiceState({
-               userId: session.user.id,
-               sessionId: session.sessionId,
-               channelId: null,
-               guildId: null,
-               isAudioDeafened: false,
-               isAudioMuted: false,
-               isCameraOn: false,
-               isAudioStreaming: false,
-               isScreenSharing: false,
-            });
-         }
+         // const voiceState = this.voiceManager.getVoiceState(session.user.id);
+         // if (voiceState?.sessionId === session.sessionId) {
+         //    this.voiceManager.updateVoiceState({
+         //       userId: session.user.id,
+         //       sessionId: session.sessionId,
+         //       channelId: null,
+         //       guildId: null,
+         //       isAudioDeafened: false,
+         //       isAudioMuted: false,
+         //       isCameraOn: false,
+         //       isAudioStreaming: false,
+         //       isScreenSharing: false,
+         //    });
+         // }
       }
    }
 
-   public onDeleteSession(session: ClientSession): Promise<void> | void {}
+   public onDeleteSession(session: ClientSession): Promise<void> | void {
+      if (!session.authenticated || !session.user) {
+         return;
+      }
+
+      const voiceState = this.voiceManager.getVoiceState(session.user.id);
+      if (voiceState?.sessionId === session.sessionId) {
+         this.voiceManager.updateVoiceState({
+            userId: session.user.id,
+            sessionId: session.sessionId,
+            channelId: null,
+            guildId: null,
+            isAudioDeafened: false,
+            isAudioMuted: false,
+            isCameraOn: false,
+            isAudioStreaming: false,
+            isScreenSharing: false,
+         });
+      }
+   }
 
    public async onMessage(session: ClientSession, data: GatewayPayload) {
       log(
