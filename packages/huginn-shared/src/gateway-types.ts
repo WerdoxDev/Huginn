@@ -13,7 +13,7 @@ import type {
 } from "./api-types";
 import type { Snowflake } from "./snowflake";
 
-export type GatewayStatus = "disconnected" | "connecting" | "connected" | "authenticated" | "reconnecting" | "none" | "opening";
+export type GatewayStatus = "disconnected" | "connecting" | "connected" | "authenticated" | "idle" | "helloed";
 
 export enum GatewayOperations {
    HELLO = 0,
@@ -38,11 +38,6 @@ export type GatewayOperationTypes = {
 };
 
 export type GatewayWebsocketEvents = {
-   message: GatewayPayload;
-   send: GatewayPayload;
-   open: undefined;
-   close: number;
-   status_changed: GatewayStatus;
    hello: GatewayHelloData;
    identify: GatewayIdentifyData;
    ready: GatewayReadyData;
