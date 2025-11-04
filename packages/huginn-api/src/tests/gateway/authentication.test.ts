@@ -8,18 +8,18 @@ describe("Gateway Authentication", () => {
 
       const promise = client.gateway.authenticate();
       expect(promise).rejects.toThrow("never connected");
-   })
+   });
 
    test("should fail to authenticate when client is connected but not logged in", async () => {
       const client = getClient();
       client.gateway.connect();
 
-      await client.gateway.waitForEvents(["open"]);
+      await client.gateway.waitForEvents(["connected"]);
       expect(client.gateway.status).toBe("connecting");
 
       const result = await client.gateway.authenticate();
       expect(result).toStrictEqual({ authenticated: false, retryable: false });
-   })
+   });
 
    test("should fail authentication when invalid credentials was used", async () => {
       const client = await getConnectedClient(false);
@@ -27,7 +27,7 @@ describe("Gateway Authentication", () => {
 
       const result = await client.gateway.authenticate();
       expect(result).toStrictEqual({ authenticated: false, retryable: false });
-   })
+   });
 
    test("should fail authentication when socket is closed while authenticating (other than invalid token)", async () => {
       const client = await getConnectedClient(true);
@@ -37,13 +37,13 @@ describe("Gateway Authentication", () => {
             setTimeout(() => {
                client.gateway.close();
                unlisten();
-            }, 0)
+            }, 0);
          }
-      })
+      });
 
       const result = await client.gateway.authenticate();
       expect(result).toStrictEqual({ authenticated: false, retryable: true });
-   })
+   });
 
    test("should authenticate when client is logged in and connected", async () => {
       const client = await getConnectedClient(true);
@@ -52,44 +52,44 @@ describe("Gateway Authentication", () => {
 
       expect(client.gateway.status).toBe("authenticated");
       expect(result).toStrictEqual({ authenticated: true, retryable: true });
-      expect(client.user).toBeDefined();
-   })
+      expect(client.currentUser).toBeDefined();
+   });
 
    test("should not fail authentication when client is already authenticated", async () => {
       const { client } = await getAuthenticatedClient();
 
       const result = await client.gateway.authenticate();
       expect(result).toStrictEqual({ authenticated: true, retryable: true });
-      expect(client.user).toBeDefined();
-   })
+      expect(client.currentUser).toBeDefined();
+   });
 
    test("should authenticate when client is logged in but still connecting", async () => {
       const client = getClient();
       await loginClient(client);
 
       client.gateway.connect();
-      await client.gateway.waitForEvents(["open"]);
+      await client.gateway.waitForEvents(["connected"]);
       expect(client.gateway.status).toBe("connecting");
 
       const result = await client.gateway.authenticate();
       expect(result).toStrictEqual({ authenticated: true, retryable: true });
-      expect(client.user).toBeDefined();
-   })
+      expect(client.currentUser).toBeDefined();
+   });
 
    test("should authenticate when client logged in but was disconnected", async (done) => {
       const client = await getConnectedClient(true);
 
-      const unlisten = client.gateway.listen("close", async () => {
+      const unlisten = client.gateway.listen("disconnected", async () => {
          expect(client.gateway.status).toBe("disconnected");
 
          const result = await client.gateway.authenticate();
          expect(result).toStrictEqual({ authenticated: true, retryable: true });
-         expect(client.user).toBeDefined();
+         expect(client.currentUser).toBeDefined();
 
          unlisten();
          done();
-      })
+      });
 
       client.gateway.socket?.close();
-   })
-})
+   });
+});

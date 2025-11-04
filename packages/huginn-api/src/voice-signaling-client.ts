@@ -75,10 +75,8 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
    public connect(token: string, channelId: Snowflake, guildId: Snowflake | null): void {
       log("api:voice-signaling", "default", "connect", "cid:", channelId, "gid:", guildId);
 
-      // If ready state is CONNECTING(0),OPEN(1),CLOSING(2), we cannot connect
-      if (this.socket && [0, 1, 2].includes(this.socket.readyState)) {
-         error("api:voice-signaling", "Already connected");
-         return;
+      if (this.socket && (this.status === "idle" || this.status === "connecting")) {
+         throw new Error("Socket is already connected or is connecting");
       }
 
       this.intentionalClose = false;
@@ -191,7 +189,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       this.setStatus("helloed");
       this.startHeartbeatInterval(data.heartbeatInterval);
 
-      if (!this.client.user || !this.connectionData) throw new Error("Tried to identify websocket either without user or connection data");
+      if (!this.client.currentUser || !this.connectionData) throw new Error("Tried to identify websocket either without user or connection data");
 
       const identify: VoiceIdentify = {
          op: VoiceOperations.IDENTIFY,
@@ -207,19 +205,20 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
 
    private async onReady(data: VoiceReadyData) {
       this.setStatus("authenticated");
-      this.emit("ready", data);
       this.sendPing();
+      this.emit("ready", data);
    }
 
    private onPong() {
       const rtt = Date.now() - (this.lastPingStart ?? 0);
-      this.emit("pong", { rtt });
 
       log("api:voice-signaling", "ping", "pong", "now:", Date.now(), "rtt:", rtt);
 
       this.pingTimeout = setTimeout(() => {
          this.sendPing();
       }, constants.VOICE_CLIENT_PING_INTERVAL);
+
+      this.emit("pong", { rtt });
    }
 
    private startHeartbeatInterval(interval: number) {
@@ -234,8 +233,10 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
    }
 
    private setStatus(newStatus: SignalingClientStatus) {
-      this._status = newStatus;
-      this.emit("status_changed", newStatus);
+      if (this._status !== newStatus) {
+         this._status = newStatus;
+         this.emit("status_changed", newStatus);
+      }
    }
 
    private send(data: VoicePayload): void {
@@ -258,9 +259,9 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
    public softReset(emitEvent = true): void {
       if (this.socket && this.socket.readyState === WebSocket.OPEN) {
          this.socket.close();
-         this.socket = undefined;
       }
 
+      this.socket = undefined;
       clearInterval(this.heartbeatInterval);
       clearInterval(this.pingTimeout);
       this.sequence = undefined;

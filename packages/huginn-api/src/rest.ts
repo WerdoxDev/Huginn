@@ -102,7 +102,6 @@ export class REST {
          // If we receive this status code, it means the token is not valid.
          if (status === 401 && requestData.auth) {
             this.client.tokenHandler.token = undefined;
-            this.client.user = undefined;
          }
 
          const data = (await parseResponse(response)) as HuginnErrorData;

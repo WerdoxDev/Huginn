@@ -9,7 +9,7 @@ describe("Gateway Connection", () => {
       client.gateway.connect();
       expect(client.gateway.socket).toBeDefined();
 
-      const unlisten = client.gateway.listen("open", () => {
+      const unlisten = client.gateway.listen("connected", () => {
          expect(client.gateway.status).toBe("connecting");
          unlisten();
          done();
@@ -23,10 +23,10 @@ describe("Gateway Connection", () => {
 
       const unlisten = client.gateway.listen("hello", () => {
          expect(client.gateway.status).toBe("connected");
-         unlisten()
+         unlisten();
          done();
-      })
-   })
+      });
+   });
 
    test("should set status to 'disconnected' when connection is closed (any reason)", async (done) => {
       const client = getClient();
@@ -34,16 +34,16 @@ describe("Gateway Connection", () => {
       client.gateway.connect();
       const unlisten = client.gateway.listen("hello", () => {
          expect(client.gateway.status).not.toBe("disconnected");
-         const unlisten2 = client.gateway.listen("close", () => {
+         const unlisten2 = client.gateway.listen("disconnected", () => {
             expect(client.gateway.status).toBe("disconnected");
             unlisten();
-            unlisten2()
+            unlisten2();
             done();
-         })
+         });
 
          client.gateway.close();
-      })
-   })
+      });
+   });
 
    test("should set status to 'reconnecting' when disconnected without intentional reason", async (done) => {
       const client = getClient();
@@ -57,7 +57,7 @@ describe("Gateway Connection", () => {
          unlisten();
          done();
       });
-   })
+   });
 
    test("should reset everything when socket was closed with code 4010 or 4009 (INTENTIONAL_CLOSE,INVALID_SESSION)", async (done) => {
       const tryDone = multiDone(done, 2);
@@ -69,7 +69,7 @@ describe("Gateway Connection", () => {
          expect(client.gateway.sequence).toBeDefined();
          expect(client.gateway.sessionId).toBeDefined();
 
-         const unlisten = client.gateway.listen("close", () => {
+         const unlisten = client.gateway.listen("disconnected", () => {
             setTimeout(() => {
                // @ts-ignore
                expect(client.gateway.sequence).toBeUndefined();
@@ -77,10 +77,10 @@ describe("Gateway Connection", () => {
 
                unlisten();
                tryDone();
-            }, 0)
-         })
+            }, 0);
+         });
 
          client.gateway.socket?.close(i === 0 ? GatewayCode.INTENTIONAL_CLOSE : GatewayCode.INVALID_SESSION);
       }
-   })
-})
+   });
+});

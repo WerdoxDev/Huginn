@@ -1,4 +1,5 @@
 import type {
+   APIUser,
    GatewayPayload,
    GatewayStatus,
    GatewayUpdatePresenceData,
@@ -7,25 +8,24 @@ import type {
    GatewayVoiceStateFlags,
    Snowflake,
 } from "@huginn/shared";
-import {
-   error,
-   GatewayCode,
-   type GatewayWebsocketEvents,
-   type GatewayHeartbeat,
-   type GatewayHello,
-   type GatewayIdentify,
-   GatewayOperations,
-   type GatewayReadyData,
-   type GatewayResume,
-   log,
-} from "@huginn/shared";
+import { error, GatewayCode, type GatewayWebsocketEvents, type GatewayHello, GatewayOperations, type GatewayReadyData, log } from "@huginn/shared";
 import { type HuginnClient } from ".";
 import type { GatewayOptions } from "./types";
 import { defaultClientOptions } from "./utils";
 import { SharedWebsocket } from "./websocket";
 
+type AuthenticationResult = {
+   authenticated: boolean;
+   retryable: boolean;
+};
+
 type Events = {
    reconnected: undefined;
+   message: GatewayPayload;
+   send: GatewayPayload;
+   connected: undefined;
+   disconnected: number;
+   status_changed: GatewayStatus;
 } & GatewayWebsocketEvents;
 
 export class Gateway extends SharedWebsocket<Events> {
@@ -34,19 +34,13 @@ export class Gateway extends SharedWebsocket<Events> {
 
    public socket?: WebSocket;
    public sessionId?: Snowflake;
-
    private heartbeatInterval?: ReturnType<typeof setInterval>;
+   private reconnectTimeout?: ReturnType<typeof setTimeout>;
    private sequence?: number;
+   private intentionalClose = false;
 
-   private _status: GatewayStatus = "none";
-   private set status(newStatus: GatewayStatus) {
-      this._status = newStatus;
-      this.emit("status_changed", newStatus);
-   }
-
-   public get status() {
-      return this._status;
-   }
+   private _status: GatewayStatus = "idle";
+   private _user?: APIUser;
 
    public constructor(client: HuginnClient, options?: Partial<GatewayOptions>) {
       super();
@@ -54,253 +48,223 @@ export class Gateway extends SharedWebsocket<Events> {
       this.client = client;
    }
 
-   public connect(): void {
-      if (this.status === "opening" || this.socket) {
-         return;
+   private setStatus(newStatus: GatewayStatus) {
+      if (this._status !== newStatus) {
+         this._status = newStatus;
+         this.emit("status_changed", newStatus);
       }
+   }
 
+   public get status(): GatewayStatus {
+      return this._status;
+   }
+
+   public get user(): APIUser | undefined {
+      return this._user;
+   }
+
+   private setUser(user: APIUser | undefined): void {
+      this._user = user;
+   }
+
+   public get isConnected(): boolean {
+      return this._status === "helloed" || this._status === "authenticated";
+   }
+
+   public get isAuthenticated(): boolean {
+      return this._status === "authenticated";
+   }
+
+   public get canResume(): boolean {
+      return !!this.sessionId && this.sequence !== undefined && this._status !== "authenticated" && !!this._user;
+   }
+
+   // ============================================================
+   // Public API - Connection Management
+   // ============================================================
+
+   public connect(): void {
       log("api:gateway", "default", "connect");
 
-      this.socket = this.options.createSocket(this.options.url);
-      this.startListening();
+      if (this.socket && (this.status === "idle" || this.status === "connecting")) {
+         throw new Error("Socket is already connected or is connecting");
+      }
 
-      this.status = "opening";
+      this.intentionalClose = false;
+      this.setStatus("connecting");
+      this.socket = this.options.createSocket(this.options.url);
+
+      this.socket.onopen = () => this.onOpen();
+      this.socket.onclose = (e) => this.onClose(e);
+      this.socket.onmessage = (e) => this.onMessage(e);
+      this.socket.onerror = (e) => {
+         error("api:gateway", "websocket error:", e);
+      };
    }
 
    public close(): void {
       log("api:gateway", "default", "intentional close");
 
+      this.intentionalClose = true;
       this.socket?.close(GatewayCode.INTENTIONAL_CLOSE);
    }
 
-   private onOpen(_e: Event) {
+   public async authenticate(): Promise<AuthenticationResult> {
+      log("api:gateway", "default", "authenticate");
+
+      if (this.isAuthenticated) {
+         return { authenticated: true, retryable: true };
+      }
+
+      if (!this.isConnected) {
+         await this.ensureConnected();
+      }
+
+      if (this.canResume) {
+         this.sendResume();
+      } else {
+         this.sendIdentify();
+      }
+
+      return this.waitForAuthentication();
+   }
+
+   // ============================================================
+   // Private - Connection Lifecycle
+   // ============================================================
+
+   private onOpen() {
       log("api:gateway", "default", "connected");
 
-      this.status = "connecting";
-      this.emit("open", undefined);
+      this.setStatus("connected");
+      this.emit("connected", undefined);
    }
 
    private onClose(e: CloseEvent) {
       log("api:gateway", "default", "closed", "c:", e.code, "r:", e.reason);
 
-      this.status = "disconnected";
-      this.socket = undefined;
-      this.stopHeartbeat();
-      this.emit("close", e.code);
+      this.cleanup();
+      this.setStatus("disconnected");
+      this.emit("disconnected", e.code);
 
       // Completely reset if it was intentionally closed or session was invalid
-      if (e.code === GatewayCode.INTENTIONAL_CLOSE || e.code === GatewayCode.INVALID_SESSION) {
-         this.sequence = undefined;
-         this.sessionId = undefined;
+      if (this.shouldReset(e.code)) {
+         this.reset();
       }
 
       // Don't reconnect if it was intentionally closed
-      if (e.code !== GatewayCode.INTENTIONAL_CLOSE) {
-         this.tryReconnect();
+      if (!this.intentionalClose) {
+         this.scheduleReconnect();
       }
    }
 
-   private async tryReconnect() {
-      setTimeout(async () => {
-         log("api:gateway", "default", "try reconnect");
+   // ============================================================
+   // Private - Message Processing
+   // ============================================================
 
-         this.status = "reconnecting";
+   private async onMessage(e: MessageEvent) {
+      const data: GatewayPayload = JSON.parse(e.data);
 
-         this.connect();
+      if (data.op === GatewayOperations.DISPATCH) {
+         log("api:gateway", "recv", "op:", data.op, "t:", data.t);
+         log("api:gateway", "recv-detail", "op:", data.op, "t:", data.t, "d:", data.d);
+      } else {
+         log("api:gateway", "recv", "op:", data.op);
+      }
 
-         if (this.client.user) {
-            // Only authenticate if session was closed (can't resume) and it was previously authenticated
-            if (this.sessionId === undefined) {
-               await this.authenticate();
-            } else {
-               await this.waitForEvents(["resumed"]);
+      switch (data.op) {
+         case GatewayOperations.HELLO: {
+            await this.handleHello(data);
+            break;
+         }
+         case GatewayOperations.DISPATCH: {
+            this.sequence = data.s;
+
+            switch (data.t) {
+               case "ready":
+                  this.handleReady(data.d);
+                  break;
+               case "resumed":
+                  this.handleResumed();
+                  break;
             }
-            // await this.tryReconnectVoice();
-         }
 
-         this.emit("reconnected", undefined);
-      }, 2000);
+            this.emit(data.t, data.d);
+         }
+      }
+
+      this.emit("message", data);
    }
 
-   // private async tryReconnectVoice() {
-   //    log("api:gateway", "default", "try reconnect voice");
+   private async handleHello(data: GatewayHello) {
+      this.setStatus("helloed");
 
-   //    // If we were not connected to a voice channel do nothing
-   //    if (!this.client.voice.connectionInfo || this.client.voice.status !== "rtc_ready") {
-   //       return;
-   //    }
+      this.startHeartbeat(data.d.heartbeatInterval);
 
-   //    if (this.status !== "connected") {
-   //       await this.waitForEvents(["hello"]);
-   //    }
-
-   //    // We need to make a copy because the server will send a null voice state when we disconnect and we don't want that to disconnect us
-   //    const connectionInfo = { ...this.client.voice.connectionInfo };
-
-   //    let callStillExists = true;
-   //    if (this.status !== "authenticated") {
-   //       // If we are about to reconnect, check for any call_delete from the resumed messages
-   //       if (this.sequence !== undefined && this.sessionId) {
-   //          const unlisten = this.listen("call_delete", (d) => {
-   //             if (d.channelId === connectionInfo.channelId) {
-   //                unlisten();
-   //                callStillExists = false;
-   //             }
-   //          });
-
-   //          await this.waitForEvents(["resumed"]);
-   //          unlisten();
-   //       } else {
-   //          await this.waitForEvents(["ready"]);
-   //       }
-   //    }
-
-   //    // If the call was removed since we disconnected, do nothing
-   //    if (!callStillExists) {
-   //       await this.disconnectVoice();
-   //       return;
-   //    }
-
-   //    await this.connectVoice(connectionInfo.guildId, connectionInfo.channelId, {
-   //       isAudioDeafened: this.client.voice.localVoiceState.isAudioDeafened,
-   //       isAudioMuted: this.client.voice.localVoiceState.isAudioMuted,
-   //    });
-   // }
-
-   public async authenticate(): Promise<{ authenticated: boolean; retryable: boolean }> {
-      log("api:gateway", "default", "authenticate");
-
-      // Already authenticated
-      if (this.status === "authenticated") {
-         return { authenticated: true, retryable: true };
+      // If new connection, store session id
+      if (!this.sessionId) {
+         this.sessionId = data.d.sessionId;
       }
 
-      // Socket is opened or is opening after a disconnect, but haven't gotten "hello" yet
-      if (this.status === "connecting" || this.status === "disconnected" || this.status === "reconnecting" || this.status === "opening") {
-         await this.waitForEvents(["hello"]);
-         this.sendIdentify();
-      }
-      // "hello" is already received
-      else if (this.status === "connected") {
-         this.sendIdentify();
-      }
-
-      // Not even opened once
-      if (this.status === "none") {
-         throw new Error("Gateway is never connected");
-      }
-
-      const results = await this.waitForEvents(["ready", "close"], true);
-
-      if (results.event === "close" && typeof results.data === "number") {
-         if (results.data === GatewayCode.AUTHENTICATION_FAILED) {
-            return { authenticated: false, retryable: false };
-         }
-
-         return { authenticated: false, retryable: true };
-      }
-
-      return { authenticated: true, retryable: true };
+      this.emit("hello", data.d);
    }
+
+   private handleResumed() {
+      this.setStatus("authenticated");
+   }
+
+   private handleReady(data: GatewayReadyData) {
+      this.setStatus("authenticated");
+      this.setUser(data.user);
+   }
+
+   // ============================================================
+   // Public API - Voice State Management
+   // ============================================================
 
    public async getVoiceToken(guildId: Snowflake | null, channelId: Snowflake, voiceState?: GatewayVoiceStateFlags): Promise<string | undefined> {
-      const updateVoiceStateData: GatewayUpdateVoiceState = {
-         op: GatewayOperations.VOICE_STATE_UPDATE,
-         d: {
-            guildId: guildId,
-            channelId: channelId,
-            isAudioDeafened: false,
-            isAudioMuted: false,
-            isCameraOn: false,
-            isAudioStreaming: false,
-            isScreenSharing: false,
-            ...voiceState,
-         },
-      };
-
-      this.send(updateVoiceStateData);
-
-      const promise1 = new Promise<string>((r) => {
-         const unlisten = this.listen("voice_server_update", (d) => {
-            unlisten();
-            r(d.token);
-         });
+      this.sendVoiceStateUpdate({
+         guildId,
+         channelId,
+         isAudioDeafened: false,
+         isAudioMuted: false,
+         isCameraOn: false,
+         isAudioStreaming: false,
+         isScreenSharing: false,
+         ...voiceState,
       });
 
-      const promise2 = new Promise<void>((r) => {
-         const unlisten2 = this.listen("voice_state_update", (d) => {
-            if (d.userId === this.client.user?.id && d.channelId) {
-               unlisten2();
-               r();
-            }
-         });
-      });
+      const [tokenResult, _voiceStateResult] = await Promise.allSettled([this.waitForVoiceServerUpdate(), this.waitForVoiceStateUpdate(channelId)]);
 
-      const [token, _] = await Promise.allSettled([promise1, promise2]);
-
-      if (token.status === "fulfilled") {
-         return token.value;
-      }
-
-      return undefined;
+      return tokenResult.status === "fulfilled" ? tokenResult.value : undefined;
    }
 
    public async sendDefaultVoiceState(): Promise<void> {
       log("api:gateway", "default", "send default voice state");
 
-      const updateVoiceStateData: GatewayUpdateVoiceState = {
-         op: GatewayOperations.VOICE_STATE_UPDATE,
-         d: {
-            channelId: null,
-            guildId: null,
-            isAudioDeafened: false,
-            isAudioMuted: false,
-            isAudioStreaming: false,
-            isScreenSharing: false,
-            isCameraOn: false,
-         },
-      };
-
-      this.send(updateVoiceStateData);
-
-      await new Promise<void>((r) => {
-         const unlisten = this.listen("voice_state_update", (d) => {
-            if (d.userId === this.client.user?.id) {
-               unlisten();
-               r();
-            }
-         });
+      this.sendVoiceStateUpdate({
+         channelId: null,
+         guildId: null,
+         isAudioDeafened: false,
+         isAudioMuted: false,
+         isAudioStreaming: false,
+         isScreenSharing: false,
+         isCameraOn: false,
       });
+
+      this.waitForVoiceStateUpdate(null);
    }
 
-   public async sendUpdateVoiceState(options: GatewayVoiceStateFlags, channelId: Snowflake, guildId: Snowflake | null): Promise<GatewayVoiceState> {
+   public async updateVoiceState(options: GatewayVoiceStateFlags, channelId: Snowflake, guildId: Snowflake | null): Promise<GatewayVoiceState> {
       log("api:gateway", "default", "update voice state", "opts:", JSON.stringify(options));
 
-      // // If we are not ready to update voice state yet, just set the local voice state and return
-      // if (!this.client.voice.connectionInfo || this.client.voice.status !== "rtc_ready" || this.status !== "authenticated") {
-      //    this.client.voice.updateLocalVoiceState({ ...options });
-      //    return;
-      // }
-
-      const updateVoiceStateData: GatewayPayload = {
-         op: GatewayOperations.VOICE_STATE_UPDATE,
-         d: { channelId, guildId, ...options },
-      };
-
-      log("api:gateway", "send", "update voice state", "opts:", JSON.stringify(updateVoiceStateData.d));
-      this.send(updateVoiceStateData);
-
-      const confirmed = await new Promise<GatewayVoiceState>((r) => {
-         const unlisten = this.listen("voice_state_update", (d) => {
-            if (d.userId === this.client.user?.id) {
-               unlisten();
-               r(d);
-            }
-         });
-      });
-
-      return confirmed;
+      this.sendVoiceStateUpdate({ channelId, guildId, ...options });
+      return this.waitForVoiceStateUpdate(channelId);
    }
+
+   // ============================================================
+   // Public API - Presence Management
+   // ============================================================
 
    public updatePresence(options: GatewayUpdatePresenceData): void {
       log("api:gateway", "default", "update presence", "sts:", options.status);
@@ -314,148 +278,188 @@ export class Gateway extends SharedWebsocket<Events> {
          d: { status: options.status, activities: options.activities },
       };
 
-      log("api:gateway", "send", "update presence", "sts:", options.status);
       this.send(updatePresenceData);
    }
 
-   private startListening() {
-      log("api:gateway", "default", "start listening");
+   // ============================================================
+   // Private - Authentication
+   // ============================================================
 
-      this.socket?.removeEventListener("open", this.onOpen);
-      this.socket?.removeEventListener("close", this.onClose);
-      this.socket?.removeEventListener("message", this.onMessage);
-
-      this.socket?.addEventListener("open", this.onOpen.bind(this));
-      this.socket?.addEventListener("close", this.onClose.bind(this));
-      this.socket?.addEventListener("message", this.onMessage.bind(this));
-   }
-
-   private async onMessage(e: MessageEvent) {
-      if (typeof e.data !== "string") {
-         error("api:gateway", "Non string messages are not yet supported");
-         return;
+   private async ensureConnected(): Promise<void> {
+      if (this.status === "idle") {
+         this.connect();
       }
 
-      const data: GatewayPayload = JSON.parse(e.data);
+      if (this.status === "connecting" || this.status === "connected") {
+         const result = await this.waitForEvents(["hello", "disconnected"], true);
 
-      log(
-         "api:gateway",
-         "recv-detail",
-         "op:",
-         data.op,
-         "t:",
-         "t" in data && data.t,
-         "seq:",
-         "s" in data && data.s,
-         "d:",
-         "d" in data && JSON.stringify(data.d),
-      );
-
-      switch (data.op) {
-         case GatewayOperations.HELLO: {
-            log("api:gateway", "recv", "hello", "intrvl:", data.d.heartbeatInterval);
-
-            await this.handleHello(data);
-            this.emit("hello", data.d);
-            break;
-         }
-         case GatewayOperations.DISPATCH: {
-            log("api:gateway", "dispatch", "t:", data.t, "seq:", data.s);
-
-            this.sequence = data.s;
-
-            switch (data.t) {
-               case "ready":
-                  this.handleReady(data.d);
-                  break;
-               case "resumed":
-                  this.handleResumed();
-                  break;
-            }
-
-            // Maybe the server or we sent an update to disconnect from the voice. We should close voice websocket just in case
-            // We also check if we are authenticated. so any disconnects from resuming shouldn't count
-            // if (data.t === "voice_state_update" && this.status === "authenticated") {
-            //    if (!data.d.channelId && data.d.userId === this.client.user?.id) {
-            //       log("api:gateway", "default", "server voice state update says close voice");
-            //       this.client.voice.signaling.close();
-            //    }
-            // }
-
-            this.emit(data.t, data.d);
+         if (result.event === "disconnected") {
+            throw new Error("Gateway disconnected during connection attempt");
          }
       }
-
-      this.emit("message", data);
    }
 
-   private async handleHello(data: GatewayHello) {
-      this.status = "connected";
+   private async waitForAuthentication(): Promise<AuthenticationResult> {
+      const result = await this.waitForEvents(["ready", "resumed", "disconnected"], true);
 
-      this.startHeartbeat(data.d.heartbeatInterval);
-
-      // We already had a session so we try to resume it
-      if (this.sequence !== undefined && this.sessionId) {
-         const resumeData: GatewayResume = {
-            op: GatewayOperations.RESUME,
-            d: {
-               token: this.client.tokenHandler.token ?? "",
-               seq: this.sequence,
-               sessionId: this.sessionId ?? "",
-            },
-         };
-
-         log("api:gateway", "send", "resume", resumeData.d.seq);
-         this.send(resumeData);
-      } else {
-         // No session so set the session id
-         this.sessionId = data.d.sessionId;
+      switch (result.event) {
+         case "ready":
+         case "resumed":
+            return { authenticated: true, retryable: true };
+         case "disconnected":
+            return { authenticated: false, retryable: result.data !== GatewayCode.AUTHENTICATION_FAILED };
+         default:
+            return { authenticated: false, retryable: false };
       }
    }
 
-   private handleResumed() {
-      this.status = "authenticated";
-   }
+   private sendResume(): void {
+      const token = this.client.tokenHandler.token;
+      if (!token || !this.sessionId || this.sequence === undefined) {
+         throw new Error("Cannot resume: missing token, session or sequence");
+      }
 
-   private handleReady(data: GatewayReadyData) {
-      this.status = "authenticated";
-      this.client.user = data.user;
+      this.send({ op: GatewayOperations.RESUME, d: { token, sessionId: this.sessionId, seq: this.sequence } });
    }
 
    private sendIdentify() {
-      const identifyData: GatewayIdentify = {
+      const token = this.client.tokenHandler.token;
+      if (!token) throw new Error("Cannot identify: no token");
+
+      this.send({
          op: GatewayOperations.IDENTIFY,
          d: {
-            token: this.client.tokenHandler.token ?? "",
+            token,
             intents: this.options.intents,
             properties: { os: "windows", browser: "idk", device: "idk" },
          },
-      };
-
-      log("api:gateway", "send", "identify");
-      this.send(identifyData);
+      });
    }
 
+   // ============================================================
+   // Private - Voice State Helpers
+   // ============================================================
+
+   private sendVoiceStateUpdate(state: GatewayUpdateVoiceState["d"]): void {
+      this.send({
+         op: GatewayOperations.VOICE_STATE_UPDATE,
+         d: state,
+      });
+   }
+
+   private waitForVoiceServerUpdate(): Promise<string> {
+      return new Promise((resolve) => {
+         const unlisten = this.listen("voice_server_update", (data) => {
+            unlisten();
+            resolve(data.token);
+         });
+      });
+   }
+
+   private waitForVoiceStateUpdate(targetChannelId: Snowflake | null): Promise<GatewayVoiceState> {
+      return new Promise((resolve) => {
+         const unlisten = this.listen("voice_state_update", (data) => {
+            if (data.userId === this.user?.id && data.channelId === targetChannelId) {
+               unlisten();
+               resolve(data);
+            }
+         });
+      });
+   }
+
+   // ============================================================
+   // Private - Heartbeat
+   // ============================================================
+
    private startHeartbeat(interval: number) {
-      log("api:gateway", "heartbeat", "start heartbeat");
+      log("api:gateway", "heartbeat", "start");
+
+      this.stopHeartbeat();
 
       this.heartbeatInterval = setInterval(() => {
-         const data: GatewayHeartbeat = { op: GatewayOperations.HEARTBEAT, d: this.sequence };
          log("api:gateway", "heartbeat", "heartbeat");
-         this.send(data);
+         this.send({ op: GatewayOperations.HEARTBEAT, d: this.sequence });
       }, interval);
    }
 
    private stopHeartbeat() {
-      log("api:gateway", "heartbeat", "stop heartbeat");
-
-      clearInterval(this.heartbeatInterval);
+      if (this.heartbeatInterval) {
+         log("api:gateway", "heartbeat", "stop");
+         clearInterval(this.heartbeatInterval);
+         this.heartbeatInterval = undefined;
+      }
    }
 
-   public send(data: unknown): void {
-      log("api:gateway", "send-detail", "d:", JSON.stringify(data));
+   // ============================================================
+   // Private - Reconnection
+   // ============================================================
 
-      this.emit("send", data as GatewayPayload);
+   private scheduleReconnect(): void {
+      this.clearReconnectTimeout();
+
+      log("api:gateway", "default", "schedule reconnect");
+
+      this.reconnectTimeout = setTimeout(() => {
+         this.attemptReconnect();
+      }, 2000);
+   }
+
+   private async attemptReconnect() {
+      log("api:gateway", "default", "attempt reconnect");
+
+      this.connect();
+
+      // If we had a user, re-authenticate
+      if (this.user) {
+         try {
+            await this.authenticate();
+            this.emit("reconnected", undefined);
+         } catch (e) {
+            error("api:gateway", "reconnect failed", e);
+         }
+      }
+   }
+
+   private clearReconnectTimeout(): void {
+      if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = undefined;
+   }
+
+   // ============================================================
+   // Private - Cleanup
+   // ============================================================
+
+   private cleanup() {
+      if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+         this.socket.close();
+      }
+
+      this.socket = undefined;
+      this.stopHeartbeat();
+   }
+
+   private reset(): void {
+      log("api:gateway", "default", "reset session");
+      this.sequence = undefined;
+      this.sessionId = undefined;
+   }
+
+   private shouldReset(closeCode: number): boolean {
+      return this.intentionalClose || closeCode === GatewayCode.INVALID_SESSION || closeCode === GatewayCode.AUTHENTICATION_FAILED;
+   }
+
+   // ============================================================
+   // Private - Utilities
+   // ============================================================
+
+   private send(data: GatewayPayload): void {
       this.socket?.send(JSON.stringify(data));
+      this.emit("send", data as GatewayPayload);
+      if (data.op === GatewayOperations.DISPATCH) {
+         log("api:voice-signaling", "send", "op:", data.op, "t:", data.t);
+         log("api:voice-signaling", "send-detail", "op:", data.op, "t:", data.t, "d:", data.d);
+      } else {
+         log("api:voice-signaling", "send", "op:", data.op);
+      }
    }
 }

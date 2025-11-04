@@ -17,23 +17,38 @@ import { ApplicationAPI } from "./rest-apis/application";
 import { Voice } from "./voice";
 import { VoiceManager } from "./voice-manager";
 
+export type InitializationResult = "success" | "timeout" | "network_error" | "invalid_tokens" | "authentication_failed";
+
+export type InitializationStatus = {
+   success: boolean;
+   result: InitializationResult;
+   retryable: boolean;
+};
+
+type ConnectOptions = {
+   tokens?: Partial<Tokens>;
+   timeout?: number;
+};
+
 export class HuginnClient<V extends Voice = Voice> {
    public readonly options: ClientOptions<V>;
-   private rest: REST;
-   public cdn: CDN;
-   public tokenHandler: TokenHandler;
-   public users: UserAPI;
-   public relationships: RelationshipAPI;
-   public auth: AuthAPI;
-   public channels: ChannelAPI;
-   public oauth: OAuthAPI;
-   public applications: ApplicationAPI;
-   public common: CommonAPI;
-   public gateway: Gateway;
-   public voice: V;
-   public voiceManager: VoiceManager;
 
-   public user?: APIUser;
+   private readonly rest: REST;
+   public readonly cdn: CDN;
+   public readonly tokenHandler: TokenHandler;
+   public readonly gateway: Gateway;
+   public readonly voice: V;
+   public readonly voiceManager: VoiceManager;
+
+   public readonly users: UserAPI;
+   public readonly relationships: RelationshipAPI;
+   public readonly auth: AuthAPI;
+   public readonly channels: ChannelAPI;
+   public readonly oauth: OAuthAPI;
+   public readonly applications: ApplicationAPI;
+   public readonly common: CommonAPI;
+
+   private _user?: APIUser;
 
    constructor(options?: Partial<ClientOptions<V>>) {
       this.options = {
@@ -44,6 +59,11 @@ export class HuginnClient<V extends Voice = Voice> {
       this.tokenHandler = new TokenHandler(this);
       this.rest = new REST(this, this.options.rest);
       this.cdn = new CDN(this.options.cdn);
+      this.gateway = new Gateway(this, this.options.gateway);
+
+      const VoiceClass = options?.voice?.class ?? (Voice as VoiceConstructor<V>);
+      this.voice = new VoiceClass(this, this.options.voice);
+      this.voiceManager = new VoiceManager<V>(this.gateway, this.voice);
 
       this.auth = new AuthAPI(this.rest);
       this.users = new UserAPI(this.rest);
@@ -51,76 +71,131 @@ export class HuginnClient<V extends Voice = Voice> {
       this.relationships = new RelationshipAPI(this.rest);
       this.applications = new ApplicationAPI(this.rest);
       this.common = new CommonAPI(this.rest);
-      this.gateway = new Gateway(this, this.options.gateway);
-
-      const VoiceClass = options?.voice?.class ?? (Voice as VoiceConstructor<V>);
-      this.voice = new VoiceClass(this, this.options.voice);
-
-      this.voiceManager = new VoiceManager<V>(this.gateway, this.voice);
-
       this.oauth = new OAuthAPI(this.rest, this.gateway);
+
+      this.gateway.connect();
    }
 
-   /**
-    * Validates and sets tokens in the tokenHandler class instance
-    * @param tokens An object with access and refresh tokens
-    * @returns An status object indicating if initialization was successful with the provided tokens and wether or not it can be retried in case of a failure
-    */
-   async initializeWithToken(tokens: Partial<Tokens>): Promise<{ status: boolean; retryable: boolean }> {
-      let tokenValid = false;
-      let refreshTokenValid = false;
+   public get currentUser(): APIUser | undefined {
+      return this._user;
+   }
 
+   private setUser(user: APIUser | undefined): void {
+      this._user = user;
+   }
+
+   public async connect(options: ConnectOptions = {}): Promise<InitializationStatus> {
+      const { tokens, timeout = 10000 } = options;
       try {
-         if (tokens.token) {
-            // decodeJwt can throw by it self. We don't want that to return a false status immediately
-            try {
-               const expireDate = (decodeJwt(tokens.token).exp ?? 0) * 1000;
+         if (tokens?.token || tokens?.refreshToken) {
+            const tokenResult = await this.restoreSession(tokens);
 
-               // Token expired
-               tokenValid = expireDate >= Date.now();
+            if (tokenResult === "invalid_tokens") {
+               return { result: tokenResult, retryable: false, success: false };
+            }
 
-               if (tokenValid) {
-                  this.tokenHandler.token = tokens.token;
-               }
-               // oxlint-disable-next-line no-unused-vars
-            } catch (e) {
-               tokenValid = false;
+            if (tokenResult === "network_error") {
+               return { result: tokenResult, retryable: true, success: false };
             }
          }
 
-         if (tokens.refreshToken) {
-            const newTokens = await this.auth.refreshToken({ refreshToken: tokens.refreshToken });
-            this.tokenHandler.refreshToken = newTokens.refreshToken;
-            this.tokenHandler.token = newTokens.token;
-            refreshTokenValid = true;
+         const authResult = await this.authenticate(timeout);
+
+         if (!authResult.success) {
+            return authResult;
          }
 
-         // No tokens was passed or some validation went wrong
-         if (!tokenValid && !refreshTokenValid) {
-            return { status: false, retryable: false };
-         }
+         this.setUser(this.gateway.user);
 
-         return { status: true, retryable: true };
-      } catch (e) {
-         this.user = undefined;
-         this.tokenHandler.refreshToken = undefined;
-
-         // If the error is network related. Like not having network. "Failed to connect..."
-         if (e instanceof TypeError && e.message.toLowerCase().includes("fail")) {
-            // A network error can happen almost with no delay. So having this little delay helps with not having 9999 requests a second
-            await new Promise((r) => setTimeout(r, 1000));
-            return { status: false, retryable: true };
-         }
-
-         // If only refresh token failed, You can still use the access token
-         if (tokenValid) {
-            return { status: true, retryable: true };
-         }
-
-         this.tokenHandler.token = undefined;
-
-         return { status: false, retryable: false };
+         return { success: true, result: "success", retryable: false };
+      } catch {
+         return { result: "authentication_failed", retryable: false, success: false };
       }
+   }
+
+   private async authenticate(timeout: number): Promise<InitializationStatus> {
+      const result = await Promise.race([
+         this.gateway.authenticate(),
+         new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), timeout)),
+      ]);
+
+      if (!result) {
+         return { result: "timeout", success: false, retryable: true };
+      }
+
+      if (!result.authenticated) {
+         return { result: "authentication_failed", retryable: result.retryable ?? true, success: false };
+      }
+
+      return { success: true, result: "success", retryable: false };
+   }
+
+   private async restoreSession(tokens: Partial<Tokens>): Promise<InitializationResult> {
+      try {
+         const accessTokenValid = await this.validateAccessToken(tokens.token);
+
+         if (!accessTokenValid && tokens.refreshToken) {
+            const refreshSuccess = await this.refreshSession(tokens.refreshToken);
+            if (refreshSuccess) {
+               return "success";
+            }
+         }
+
+         if (accessTokenValid) {
+            return "success";
+         }
+
+         return "invalid_tokens";
+      } catch (e) {
+         if (e instanceof TypeError && e.message.toLocaleLowerCase().includes("fail")) {
+            await new Promise((r) => setTimeout(r, 1000));
+            return "network_error";
+         }
+
+         this.clearSession();
+         return "invalid_tokens";
+      }
+   }
+
+   private async validateAccessToken(token?: string): Promise<boolean> {
+      if (!token) return false;
+
+      try {
+         const expireDate = (decodeJwt(token).exp ?? 0) * 1000;
+         const isValid = expireDate >= Date.now();
+
+         if (isValid) {
+            this.tokenHandler.token = token;
+         }
+
+         return isValid;
+      } catch (e) {
+         console.log(e);
+         return false;
+      }
+   }
+
+   private async refreshSession(refreshToken: string): Promise<boolean> {
+      try {
+         const newTokens = await this.auth.refreshToken({ refreshToken });
+         this.tokenHandler.token = newTokens.token;
+         this.tokenHandler.refreshToken = newTokens.refreshToken;
+         return true;
+      } catch {
+         return false;
+      }
+   }
+
+   public clearSession(): void {
+      this.tokenHandler.token = undefined;
+      this.tokenHandler.refreshToken = undefined;
+      this.setUser(undefined);
+   }
+
+   private cleanup(): void {
+      this.clearSession();
+      this.voice.signaling.close();
+      this.gateway.close();
    }
 
    public async login(credentials: LoginCredentials): Promise<APIPostLoginResult> {
@@ -128,6 +203,7 @@ export class HuginnClient<V extends Voice = Voice> {
 
       this.tokenHandler.token = result.token;
       this.tokenHandler.refreshToken = result.refreshToken;
+      // this.setUser(result.);
 
       return result;
    }
@@ -137,20 +213,16 @@ export class HuginnClient<V extends Voice = Voice> {
 
       this.tokenHandler.token = result.token;
       this.tokenHandler.refreshToken = result.refreshToken;
+      // this.setUser(result);
 
       return result;
    }
 
    public async logout(): Promise<void> {
-      await this.auth.logout();
-
-      this.tokenHandler.token = undefined;
-      this.tokenHandler.refreshToken = undefined;
-      this.user = undefined;
-      this.voice.signaling.close();
-      if (this.gateway.status !== "disconnected" && this.gateway.status !== "none" && this.gateway.status !== "reconnecting") {
-         this.gateway.close();
-         await this.gateway.waitForEvents(["close"]);
+      try {
+         await this.auth.logout();
+      } finally {
+         this.cleanup();
       }
    }
 
@@ -160,7 +232,7 @@ export class HuginnClient<V extends Voice = Voice> {
    }
 
    public checkUser(): asserts this is this & { user: APIUser } {
-      if (!this.user) {
+      if (!this.currentUser) {
          throw new Error("Client user is null");
       }
    }

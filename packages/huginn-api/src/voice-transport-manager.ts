@@ -178,7 +178,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       const producer = await this.sendTransport.produce<MediasoupAppData>({
          codecOptions: options?.codecOptions,
          encodings: options?.encodings,
-         appData: { mediaKind: kind, userId: this.client.user!.id },
+         appData: { mediaKind: kind, userId: this.client.currentUser!.id },
          track,
       });
       this.producers.set(kind, producer);

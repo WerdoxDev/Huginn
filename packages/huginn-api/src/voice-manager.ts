@@ -23,7 +23,7 @@ export class VoiceManager<V extends Voice = Voice> {
          if (this.voice.status === "ready") {
             this.voice.signaling.checkStatus();
             const connectionData = this.voice.signaling.connectionData;
-            await this.gateway.sendUpdateVoiceState(this.voiceState.gatewayVoiceState, connectionData.channelId, connectionData.guildId);
+            await this.gateway.updateVoiceState(this.voiceState.gatewayVoiceState, connectionData.channelId, connectionData.guildId);
          }
       });
    }
@@ -34,7 +34,7 @@ export class VoiceManager<V extends Voice = Voice> {
          try {
             this.voice.signaling.checkStatus();
             const connectionData = this.voice.signaling.connectionData;
-            const { isAudioDeafened, isAudioMuted, isAudioStreaming, isScreenSharing, isCameraOn } = await this.gateway.sendUpdateVoiceState(
+            const { isAudioDeafened, isAudioMuted, isAudioStreaming, isScreenSharing, isCameraOn } = await this.gateway.updateVoiceState(
                d.voiceState,
                connectionData.channelId,
                connectionData.guildId,
@@ -140,6 +140,8 @@ export class VoiceManager<V extends Voice = Voice> {
             }
          });
       });
+
+      console.log("FINISHED");
 
       this.isConnecting = false;
    }
