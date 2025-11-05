@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.14.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.13.0...cdn@v0.14.0) (2025-11-05)
+
+
+### Features
+
+* a complete voice refactor that I don't want to split in smaller commits ([69c76bc](https://github.com/WerdoxDev/Huginn/commit/69c76bc831bfea4fd3a9429ab2c62287d21e82a8))
+* **cdn:** migrate all routes to ElysiaJS ([5d5f8ea](https://github.com/WerdoxDev/Huginn/commit/5d5f8ea9288ad9bc73b6f1c5d2957d3cc8898ecf))
+
+
+### Bug Fixes
+
+* **cdn:** file body is incorrectly handled ([93f3b9d](https://github.com/WerdoxDev/Huginn/commit/93f3b9d6f47b23eedfaa2b4a58d9ed9886d80d03))
+* **cdn:** little change in application icon handling ([3e4ae23](https://github.com/WerdoxDev/Huginn/commit/3e4ae23308b91b3f6c012f00e96159c61afcb424))
+
 ## [0.13.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.12.0...cdn@v0.13.0) (2025-09-14)
 
 

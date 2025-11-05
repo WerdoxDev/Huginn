@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.11.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.10.3...voice@v0.11.0) (2025-11-05)
+
+
+### Features
+
+* a complete voice refactor that I don't want to split in smaller commits ([69c76bc](https://github.com/WerdoxDev/Huginn/commit/69c76bc831bfea4fd3a9429ab2c62287d21e82a8))
+* **voice:** remove unnecessary http server for a websocket only server ([4146808](https://github.com/WerdoxDev/Huginn/commit/414680877d7ce4e60ce95926da040d76171c3f7e))
+
 ## [0.10.3](https://github.com/WerdoxDev/Huginn/compare/voice@v0.10.2...voice@v0.10.3) (2025-09-06)
 
 

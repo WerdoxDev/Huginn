@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.61.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.60.3...app@v0.61.0) (2025-11-05)
+
+
+### Features
+
+* a complete voice refactor that I don't want to split in smaller commits ([69c76bc](https://github.com/WerdoxDev/Huginn/commit/69c76bc831bfea4fd3a9429ab2c62287d21e82a8))
+* **app:** use new huginn client initialization method ([bab910e](https://github.com/WerdoxDev/Huginn/commit/bab910e61fa09e586261fa74d5f45da6a13f6f39))
+
+
+### Bug Fixes
+
+* **app:** speaking state is not set using correct user id ([f69c2f9](https://github.com/WerdoxDev/Huginn/commit/f69c2f9a7e3f7d1ba3e966d53a4688c0965904c0))
+* **app:** voice enter and exit sound is not correct ([3addfa8](https://github.com/WerdoxDev/Huginn/commit/3addfa8381aa36dfdcba81e70b092332b5ecd741))
+
 ## [0.60.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.60.2...app@v0.60.3) (2025-09-26)
 
 
