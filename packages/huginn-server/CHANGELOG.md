@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.32.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.31.0...server@v0.32.0) (2025-11-05)
+
+
+### Features
+
+* a complete voice refactor that I don't want to split in smaller commits ([69c76bc](https://github.com/WerdoxDev/Huginn/commit/69c76bc831bfea4fd3a9429ab2c62287d21e82a8))
+* **server:** add activities to presence tests ([4f2833d](https://github.com/WerdoxDev/Huginn/commit/4f2833d8ff5a958143fcd30cec977872b3ca1e3b))
+* **server:** add experimental delayed voice state nullifying ([dd9f305](https://github.com/WerdoxDev/Huginn/commit/dd9f305529893b60fe1d99fe6ee10e5cce86fc30))
+* **server:** migrate all routes to ElysiaJS ([9d9a268](https://github.com/WerdoxDev/Huginn/commit/9d9a268f7959fb126a72d0bcc1a3f006df98ed5b))
+
+
+### Bug Fixes
+
+* **server:** much better "wait until" handling ([cea49a5](https://github.com/WerdoxDev/Huginn/commit/cea49a580c964d90e1c1c4326c7ae89382154c58))
+
 ## [0.31.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.30.0...server@v0.31.0) (2025-09-24)
 
 

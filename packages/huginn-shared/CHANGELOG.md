@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.29.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.28.0...shared@v0.29.0) (2025-11-05)
+
+
+### Features
+
+* a complete voice refactor that I don't want to split in smaller commits ([69c76bc](https://github.com/WerdoxDev/Huginn/commit/69c76bc831bfea4fd3a9429ab2c62287d21e82a8))
+
+
+### Bug Fixes
+
+* **shared:** change ' to " for an error ([3c44303](https://github.com/WerdoxDev/Huginn/commit/3c44303cec47b8c13fd79ef66380a18ac40d1059))
+
 ## [0.28.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.27.0...shared@v0.28.0) (2025-09-24)
 
 

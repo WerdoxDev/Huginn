@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.28.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.27.0...api@v0.28.0) (2025-11-05)
+
+
+### Features
+
+* a complete voice refactor that I don't want to split in smaller commits ([69c76bc](https://github.com/WerdoxDev/Huginn/commit/69c76bc831bfea4fd3a9429ab2c62287d21e82a8))
+* **api:** refactor gateway + complete client initialization rewrite ([5612512](https://github.com/WerdoxDev/Huginn/commit/5612512604288ab2c6ae189b0357e5f32af9d2f8))
+
+
+### Bug Fixes
+
+* **api:** add experimental reconnecting after transport disconnect ([4364273](https://github.com/WerdoxDev/Huginn/commit/4364273cd175a44d657c7655a379780933207f07))
+
 ## [0.27.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.26.0...api@v0.27.0) (2025-09-14)
 
 
