@@ -231,7 +231,7 @@ export class HuginnClient<V extends Voice = Voice> {
       return nonce;
    }
 
-   public checkUser(): asserts this is this & { user: APIUser } {
+   public checkUser(): asserts this is this & { currentUser: APIUser } {
       if (!this.currentUser) {
          throw new Error("Client user is null");
       }

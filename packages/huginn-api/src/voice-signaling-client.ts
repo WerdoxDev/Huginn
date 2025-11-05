@@ -285,7 +285,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       }
    }
 
-   public sendCreateTransports(): void {
+   public sendCreateSendTransport(): void {
       this.checkStatus();
 
       const createSendTransportData: VoicePayload = {
@@ -294,13 +294,17 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
          d: { channelId: this.connectionData.channelId, direction: "send" },
       };
 
+      this.send(createSendTransportData);
+   }
+   public sendCreateRecvTransport(): void {
+      this.checkStatus();
+
       const createRecvTransportData: VoicePayload = {
          op: VoiceOperations.DISPATCH,
          t: "create_transport",
          d: { channelId: this.connectionData?.channelId, direction: "recv" },
       };
 
-      this.send(createSendTransportData);
       this.send(createRecvTransportData);
    }
 

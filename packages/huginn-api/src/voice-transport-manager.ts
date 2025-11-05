@@ -52,6 +52,8 @@ type Events = {
    consumer_created: Consumer<MediasoupAppData>;
    consumer_closed: { id: string; kind: HMediaKind };
 
+   transport_disconnected: { direction: "send" | "recv" };
+
    status_changed: TransportManagerStatus;
    reset: undefined;
 };
@@ -77,10 +79,6 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       this.client = client;
    }
 
-   private onProducerUpdated(id: string, kind: HMediaKind, newTrack: MediaStreamTrack | null) {
-      this.emit("producer_updated", { id, kind, track: newTrack });
-   }
-
    private setStatus(newStatus: TransportManagerStatus) {
       this._status = newStatus;
       this.emit("status_changed", newStatus);
@@ -88,13 +86,19 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
    private checkAndSetStatus() {
       if (this.recvTransport && this.sendTransport) {
-         this.setStatus("ready");
+         const sendStatus = this.sendTransport.connectionState;
+         const recvStatus = this.recvTransport.connectionState;
+
+         if ((sendStatus === "new" || sendStatus === "connected") && (recvStatus === "new" || recvStatus === "connected")) {
+            this.setStatus("ready");
+         }
       }
    }
 
-   private onTransportStateChanged(state: ConnectionState) {
-      if (state === "disconnected") {
+   private onTransportStateChanged(state: ConnectionState, direction: "send" | "recv") {
+      if (state === "disconnected" || state === "failed" || state === "closed") {
          this.setStatus("disconnected");
+         this.emit("transport_disconnected", { direction });
       }
    }
 
@@ -141,8 +145,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          this.emit("create_producer", { kind, transportId: transport.id, rtpParameters, callback: (id) => callback({ id }) });
       });
 
-      transport.on("connectionstatechange", (d) => this.onTransportStateChanged(d));
-
+      transport.on("connectionstatechange", (d) => this.onTransportStateChanged(d, transport.direction));
       this.checkAndSetStatus();
    }
 
@@ -159,8 +162,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          this.emit("connect_transport", { transportId: transport.id, dtlsParameters, callback });
       });
 
-      transport.on("connectionstatechange", (d) => this.onTransportStateChanged(d));
-
+      transport.on("connectionstatechange", (d) => this.onTransportStateChanged(d, transport.direction));
       this.checkAndSetStatus();
    }
 

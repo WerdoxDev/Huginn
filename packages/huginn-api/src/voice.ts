@@ -5,6 +5,7 @@ import { VoiceTransportManager } from "./voice-transport-manager";
 import { EventEmitter } from "./event-emitter";
 import { VoiceDeviceManager } from "./voice-device-manager";
 import { VoiceStreamManager } from "./voice-stream-manager";
+import { log } from "@huginn/shared";
 
 type Events = {
    status_changed: VoiceStatus;
@@ -51,7 +52,8 @@ export class Voice extends EventEmitter<Events> {
 
       this.signaling.on("ready", async (d) => {
          await this.transport.initializeDevice(d.rtpCapabilities);
-         this.signaling.sendCreateTransports();
+         this.signaling.sendCreateSendTransport();
+         this.signaling.sendCreateRecvTransport();
 
          for (const producer of d.producers) {
             this.transport.remoteProducers.set(producer.producerId, producer);
@@ -81,17 +83,7 @@ export class Voice extends EventEmitter<Events> {
    }
 
    private listenTransportEvents() {
-      this.transport.on("status_changed", (status) => {
-         this.recalculateStatus();
-
-         // When any transport is disconnected, the best thing we can do is to reconnect entirely from ground up
-         // if (status === "disconnected") {
-         //    this.signaling.checkStatus();
-         //    const connectionData = { ...this.signaling.connectionData };
-         //    this.signaling.hardReset();
-         //    this.client.voiceManager.connectVoice(connectionData.guildId ?? null, connectionData.channelId, connectionData.token);
-         // }
-      });
+      this.transport.on("status_changed", () => this.recalculateStatus());
 
       this.transport.on("connect_transport", async (d) => {
          await this.signaling.sendConnectTransport(d.transportId, d.dtlsParameters);
@@ -121,6 +113,15 @@ export class Voice extends EventEmitter<Events> {
       this.transport.on("close_consumer", async (d) => {
          await this.signaling.sendCloseConsumer(d.id);
          d.callback();
+      });
+
+      this.transport.on("transport_disconnected", async (d) => {
+         log("api:voice", "default", "transport disconnected");
+         this.signaling.checkStatus();
+         const connectionData = { ...this.signaling.connectionData };
+         this.signaling.hardReset();
+         await this.client.voiceManager.connectVoice(connectionData.guildId ?? null, connectionData.channelId, connectionData.token);
+         log("api:voice", "default", "voice recovery successful");
       });
    }
 
