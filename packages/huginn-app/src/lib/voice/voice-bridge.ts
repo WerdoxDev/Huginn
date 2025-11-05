@@ -63,7 +63,7 @@ export class VoiceBridge extends Voice {
       if (consumer.kind === "audio") {
          let audioLevel: AudioLevelChecker | undefined;
          if (consumer.appData.mediaKind === "microphone") {
-            audioLevel = await this.startAudioLevelChecker(new MediaStream([consumer.track]), consumer.producerId);
+            audioLevel = await AudioLevelChecker.startAudioLevel(new MediaStream([consumer.track]), consumer.appData.userId);
          }
 
          consumer.observer.on("close", () => {
@@ -156,22 +156,6 @@ export class VoiceBridge extends Voice {
             player.setSinkId(difference.outputDeviceId);
          }
       }
-   }
-
-   private async startAudioLevelChecker(stream: MediaStream, producerId: string) {
-      log("app:voice-bridge", "default", "start audio level checker", "pid:", producerId);
-
-      const store = voiceStore.getState();
-
-      const audioLevel = new AudioLevelChecker();
-      await audioLevel.startChecking(stream);
-      audioLevel.on("audio-level", (db: number) => {
-         // not -100 because it sometimes start at ~ -98
-         const speaking = db > -95;
-         store.updateSpeakingState(producerId, speaking);
-      });
-
-      return audioLevel;
    }
 
    private refreshConsumerAudioPlayers(consumers: Consumer<ConsumerAppData>[], voicePreferences: VoicePreference[], outputVolumePercent: number) {

@@ -7,8 +7,8 @@ export class AudioLevelChecker extends EventEmitter<{ "audio-level": number }> {
    private volumeNode: AudioWorkletNode | undefined;
    private isStopped = false;
 
-   public static async startAudioLevel(stream: MediaStream, producerId: string) {
-      log("app:audio-level-checker", "default", "start audio level checker", "pid:", producerId);
+   public static async startAudioLevel(stream: MediaStream, userId: string) {
+      log("app:audio-level-checker", "default", "start audio level checker", "uid:", userId);
 
       const store = voiceStore.getState();
 
@@ -17,7 +17,7 @@ export class AudioLevelChecker extends EventEmitter<{ "audio-level": number }> {
       audioLevel.on("audio-level", (db: number) => {
          // not -100 because it sometimes start at ~ -98
          const speaking = db > -95;
-         store.updateSpeakingState(producerId, speaking);
+         store.updateSpeakingState(userId, speaking);
       });
 
       return audioLevel;
