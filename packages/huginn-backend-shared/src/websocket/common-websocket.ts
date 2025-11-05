@@ -17,7 +17,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
    public abstract onOpen(session: ClientSession): Promise<void> | void;
    public abstract onClose(session: ClientSession, event: { code?: number; reason?: string }): Promise<void> | void;
    public abstract onMessage(session: ClientSession, data: Payload): Promise<void> | void;
-   public abstract onDeleteSession?(session: ClientSession): Promise<void> | void;
+   public onDeleteSession?(session: ClientSession): Promise<void> | void;
 
    public constructor(options: WebsocketOptions, clientSessionConstructor: ClientSessionConstructor<ClientSession>) {
       this.options = options;
