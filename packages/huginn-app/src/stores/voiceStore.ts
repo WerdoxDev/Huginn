@@ -136,7 +136,6 @@ export function initializeVoice() {
    unlisteners.push(
       client.gateway.listen("voice_state_update", (d) => {
          log("app:voice-store", "gateway-recv", "voice state update", "opts:", JSON.stringify(d));
-
          const thisStore = store.getState();
 
          //TODO: A BETTER WAY IS TO NOT SET USER VC STATUS TI DISCONNECT DIRECTLY AFTER GATEWAY DISCONNECT
@@ -149,25 +148,29 @@ export function initializeVoice() {
             store.setState({ voiceConnection: { channelId: d.channelId, guildId: d.guildId, sessionId: d.sessionId, userId: d.userId } });
          }
 
+         // CAPTURE THE OLD STATE BEFORE UPDATING
+         const lastState = thisStore.voiceStates.find((x) => x.userId === d.userId);
+
+         // NOW UPDATE THE STORE
          if (d.channelId) {
             thisStore.updateVoiceState(d);
          } else {
             thisStore.removeVoiceState(d.userId);
          }
 
-         const lastState = thisStore.voiceStates.find((x) => x.userId === d.userId);
+         // GET THE NEW STATE AFTER UPDATING
          const currentStore = voiceStore.getState();
+         const ourChannelId = currentStore.voiceStates.find((x) => x.userId === client.currentUser?.id)?.channelId;
          const currentState = currentStore.voiceStates.find((x) => x.userId === d.userId);
 
-         // User was not here and just joined the call
-         if (!lastState || lastState.channelId !== currentState?.channelId) {
+         console.log("ourChannelId:", ourChannelId, "lastState:", lastState, "currentState:", currentState);
+
+         // User just joined our voice channel
+         if (currentState?.channelId && lastState?.channelId !== currentState.channelId && currentState.channelId === ourChannelId) {
             playAudio("voice-enter");
          }
-         // User is no longer here but was here before
-         else if (
-            (!currentState || currentState.channelId !== lastState?.channelId) &&
-            (lastState?.channelId === currentState.channelId || (d.userId === client?.currentUser?.id && d.sessionId === client.gateway.sessionId))
-         ) {
+         // User left our voice channel
+         else if (lastState?.channelId && lastState.channelId !== currentState?.channelId) {
             playAudio("voice-leave");
          }
       }),
