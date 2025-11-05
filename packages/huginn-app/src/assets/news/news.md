@@ -1,9 +1,5 @@
-### ↩️ **Message Replying!**
+### ↩️ **Voice Version 2**!!!
 
-- Added reply button to message right click menu
-- Replying may slow the app down. Fixes coming soon!
-
-### 🎲 **ACTIVITIES**
-
-- Added Activity detection
-- Added Activity submission system
+- Voice has been rewritten to be A LOT more reliable
+- You may initially see some bugs or glitches but they will be fixed with time
+- Voice animations are removed. Although they looked cool, no one cares and it causes a lot of dev headache :p
