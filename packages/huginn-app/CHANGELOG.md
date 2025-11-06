@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.61.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.61.0...app@v0.61.1) (2025-11-06)
+
+
+### Bug Fixes
+
+* **app:** make bun use hoisted install for electron-builder ([1908146](https://github.com/WerdoxDev/Huginn/commit/1908146df06602b1204010c6808ace156445005a))
+
 ## [0.61.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.60.3...app@v0.61.0) (2025-11-05)
 
 
