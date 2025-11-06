@@ -2,7 +2,7 @@ import { useUser } from "@hooks/api-hooks/userHooks";
 import type { GatewayVoiceState, Snowflake } from "@huginn/shared";
 import clsx from "clsx";
 
-export function VoiceLabel(props: { isGridView?: boolean; userId: Snowflake; voiceState?: GatewayVoiceState }) {
+export function VoiceLabel(props: { isGridView?: boolean; userId: Snowflake; voiceState?: GatewayVoiceState; type: "normal" | "stream" }) {
    const user = useUser(props.userId);
 
    return (
@@ -19,9 +19,9 @@ export function VoiceLabel(props: { isGridView?: boolean; userId: Snowflake; voi
             </div>
             {props.isGridView && (
                <div className="bg-surface-deep flex items-center justify-center gap-x-2 rounded-lg px-2 py-1 text-white opacity-0 transition-opacity group-hover/wrapper:opacity-100">
-                  {props.voiceState?.isScreenSharing ? (
+                  {props.type === "stream" && props.voiceState?.isScreenSharing ? (
                      <IconMingcuteMonitorFill className="size-5" />
-                  ) : props.voiceState?.isAudioStreaming ? (
+                  ) : props.type === "stream" && props.voiceState?.isAudioStreaming ? (
                      <IconMingcuteVolumeFill className="size-5" />
                   ) : (
                      props.voiceState?.isCameraOn && <IconMingcuteCamera2Fill className="size-5" />

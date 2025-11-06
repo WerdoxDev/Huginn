@@ -1,5 +1,13 @@
 import { HuginnClient, Voice, type VoiceOptions } from "@huginn/api";
-import { diff, log, type MediasoupAppData, type ProducerData, type Snowflake, type VoiceProducerClosedData } from "@huginn/shared";
+import {
+   diff,
+   log,
+   type GatewayVoiceStateFlags,
+   type MediasoupAppData,
+   type ProducerData,
+   type Snowflake,
+   type VoiceProducerClosedData,
+} from "@huginn/shared";
 import { storageStore } from "@stores/storageStore";
 import { voiceStore } from "@stores/voiceStore";
 import { AudioLevelChecker } from "./audio-level-checker";
@@ -21,12 +29,12 @@ export class VoiceBridge extends Voice {
       this.inputDevice = new VoiceInputDevice(this.client);
 
       this.on("ready", async () => await this.onReady());
-      this.on("disconnected", async () => await this.onDisconnected());
       this.on("reset", async () => await this.onReset());
       this.transport.on("consumer_created", async (d) => await this.onConsumerCreated(d));
       this.transport.on("producer_created", (d) => this.onProducerCreated(d));
       this.signaling.on("producer_closed", async (d) => await this.onProducerClosed(d));
       this.signaling.on("new_producer", async (d) => await this.onNewProducer(d));
+      // this.client.voiceManager.voiceState.on("gateway_voice_state_updated", (d) => this.onGatewayVoiceStateUpdated(d))
       storageStore.subscribe(
          (state) => state.cache,
          (current, old) => this.onStorageUpdated(current["settings"], old["settings"]),
@@ -44,15 +52,12 @@ export class VoiceBridge extends Voice {
       }
    }
 
-   private async onDisconnected() {
-      const voice = voiceStore.getState();
-      voice.clearSpeakingStates();
-
-      this.stopAudioLoopback();
-   }
-
    private async onReset() {
       this.inputDevice.close();
+      this.stopAudioLoopback();
+
+      const voice = voiceStore.getState();
+      voice.clearSpeakingStates();
    }
 
    private async onConsumerCreated(consumer: Consumer<ConsumerAppData>) {
@@ -61,9 +66,16 @@ export class VoiceBridge extends Voice {
       const settings = storage.getCachedValue("settings");
 
       if (consumer.kind === "audio") {
+         const store = voiceStore.getState();
          let audioLevel: AudioLevelChecker | undefined;
          if (consumer.appData.mediaKind === "microphone") {
-            audioLevel = await AudioLevelChecker.startAudioLevel(new MediaStream([consumer.track]), consumer.appData.userId);
+            audioLevel = new AudioLevelChecker();
+            await audioLevel.startChecking(new MediaStream([consumer.track]));
+            audioLevel.on("audio-level", (db: number) => {
+               // not -100 because it sometimes start at ~ -98
+               const speaking = db > -95;
+               store.updateSpeakingState(consumer.appData.userId, speaking);
+            });
          }
 
          consumer.observer.on("close", () => {

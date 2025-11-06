@@ -1,27 +1,10 @@
 import { EventEmitter } from "@huginn/api/src/event-emitter";
 import { log } from "@huginn/shared";
-import { voiceStore } from "@stores/voiceStore";
 
 export class AudioLevelChecker extends EventEmitter<{ "audio-level": number }> {
    private audioContext: AudioContext | undefined;
    private volumeNode: AudioWorkletNode | undefined;
    private isStopped = false;
-
-   public static async startAudioLevel(stream: MediaStream, userId: string) {
-      log("app:audio-level-checker", "default", "start audio level checker", "uid:", userId);
-
-      const store = voiceStore.getState();
-
-      const audioLevel = new AudioLevelChecker();
-      await audioLevel.startChecking(stream);
-      audioLevel.on("audio-level", (db: number) => {
-         // not -100 because it sometimes start at ~ -98
-         const speaking = db > -95;
-         store.updateSpeakingState(userId, speaking);
-      });
-
-      return audioLevel;
-   }
 
    public async startChecking(stream: MediaStream) {
       log("app:audio-level-checker", "default", "start checking");
@@ -43,7 +26,9 @@ export class AudioLevelChecker extends EventEmitter<{ "audio-level": number }> {
       source.connect(this.volumeNode).connect(this.audioContext.destination);
 
       this.volumeNode.port.onmessage = (event: MessageEvent<{ db: number }>) => {
-         this.emit("audio-level", event.data.db);
+         if (!this.isStopped) {
+            this.emit("audio-level", event.data.db);
+         }
       };
    }
 

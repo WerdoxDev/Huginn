@@ -32,29 +32,23 @@ export function useVoiceUtils() {
 
    async function openScreenShare() {
       async function open(videoTrack: MediaStreamTrack, audioTrack?: MediaStreamTrack) {
-         // We have a audio track to use
-         if (audioTrack) {
-            // Stream already has audio, so replace it
-            if (client?.voice.transport.getProducer("stream_audio")) {
-               await client.voice.stream.replaceStreamAudioTrack(audioTrack);
-            }
-            // Stream didn't have audio, so add it
-            else {
-               await client?.voice.stream.openStream(undefined, audioTrack);
-            }
-         }
-         // We don't have an audio track but stream had audio, so close it
-         else if (client?.voice.transport.getProducer("stream_audio")) {
-            await client.voice.stream.closeStreamAudio();
-         }
-
-         // We have a new video track, so replace it
+         // Video is already open, replace it
          if (client?.voice.transport.getProducer("stream_video")) {
             await client.voice.stream.replaceStreamVideoTrack(videoTrack);
          }
-         // We never started screen sharing, so start it.
+         // If video is not there, audio is also not there. So start a stream
          else {
             await client?.voice.stream.openStream(videoTrack, audioTrack);
+            return;
+         }
+
+         // Audio is already open and audio track is given, replace it
+         if (client?.voice.transport.getProducer("stream_audio") && audioTrack) {
+            await client.voice.stream.replaceStreamAudioTrack(audioTrack);
+         }
+         // Audio track is not given but it exists, so remove it.
+         else if (client?.voice.transport.getProducer("stream_audio") && !audioTrack) {
+            await client.voice.stream.closeStreamAudio();
          }
       }
 

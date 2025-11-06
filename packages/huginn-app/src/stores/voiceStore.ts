@@ -163,8 +163,6 @@ export function initializeVoice() {
          const ourChannelId = currentStore.voiceStates.find((x) => x.userId === client.currentUser?.id)?.channelId;
          const currentState = currentStore.voiceStates.find((x) => x.userId === d.userId);
 
-         console.log("ourChannelId:", ourChannelId, "lastState:", lastState, "currentState:", currentState);
-
          // User just joined our voice channel
          if (currentState?.channelId && lastState?.channelId !== currentState.channelId && currentState.channelId === ourChannelId) {
             playAudio("voice-enter");

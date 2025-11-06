@@ -103,23 +103,44 @@ export class VoiceInputDevice {
       await audioLevel.startChecking(stream);
       audioLevel.offAll("audio-level");
       audioLevel.on("audio-level", (db) => onLocalAudioLevel(this.client, db));
-
       const tolerance = 0;
       let timeout: number | undefined;
       let lastState = true;
+      let lastMuteState = false;
+
       function onLocalAudioLevel(client: HuginnClient, db: number) {
          const settings = storageStore.getState().getCachedValue("settings");
-
          const userId = client?.currentUser?.id ?? "";
+         const voice = voiceStore.getState();
+         const isMuted = client?.voiceManager.voiceState.gatewayVoiceState.isAudioMuted ?? false;
+
+         // Handle mute state changes
+         if (isMuted !== lastMuteState) {
+            lastMuteState = isMuted;
+            if (isMuted) {
+               // User just muted - pause audio and stop speaking state
+               client.voiceManager.voiceState.updateLocalVoiceState({ isAudioPaused: true });
+               voice.updateSpeakingState(userId, false);
+               clearTimeout(timeout);
+               timeout = undefined;
+            } else if (db > settings.inputThreshold) {
+               // User just unmuted while speaking - unpause audio
+               client.voiceManager.voiceState.updateLocalVoiceState({ isAudioPaused: false });
+               voice.updateSpeakingState(userId, true);
+            }
+            return;
+         }
+
+         // Don't process audio levels if muted
+         if (isMuted) {
+            return;
+         }
+
          if (db > settings.inputThreshold) {
-            const voice = voiceStore.getState();
-
             lastState = true;
-
             if (timeout) {
                return;
             }
-
             clearTimeout(timeout);
             timeout = window.setTimeout(() => {
                if (!lastState) {
@@ -128,13 +149,9 @@ export class VoiceInputDevice {
                }
                timeout = undefined;
             }, 700);
-
             if (client?.voiceManager.voiceState.localVoiceState.isAudioPaused) {
                client.voiceManager.voiceState.updateLocalVoiceState({ isAudioPaused: false });
-
-               if (!client.voiceManager.voiceState.gatewayVoiceState.isAudioMuted) {
-                  voice.updateSpeakingState(userId, true);
-               }
+               voice.updateSpeakingState(userId, true);
             }
          } else if (db <= settings.inputThreshold - tolerance) {
             lastState = false;

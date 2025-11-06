@@ -145,7 +145,7 @@ export default function VoiceElement(props: {
                track={props.mediaSource?.track ?? undefined}
             />
          )}
-         <VoiceLabel userId={props.userId} isGridView={props.isGridView} voiceState={props.voiceState} />
+         <VoiceLabel userId={props.userId} isGridView={props.isGridView} voiceState={props.voiceState} type={props.type} />
          {isLoadingStream ? (
             <div className="absolute inset-0 flex items-center justify-center bg-black/60">
                <LoadingIcon className="size-12" />
