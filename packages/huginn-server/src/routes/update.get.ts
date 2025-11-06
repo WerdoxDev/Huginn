@@ -21,7 +21,7 @@ export const getUpdate = new Elysia().get(
          const release = await octokit.rest.repos.getReleaseByTag({ owner: envs.REPO_OWNER, repo: envs.REPO, tag });
 
          const asset = release.data.assets.find((x) => x.name === file);
-         redirect(asset?.browser_download_url ?? "");
+         return redirect(asset?.browser_download_url ?? "");
       }
 
       const [latestTag] = tags
@@ -46,5 +46,7 @@ export const getUpdate = new Elysia().get(
          return status("OK", latestInfo);
       }
    },
-   { params: paramSchema },
+   {
+      params: paramSchema,
+   },
 );
