@@ -130,7 +130,6 @@ export class VoiceBridge extends Voice {
          this.audioSourcePlayers[audioPlayerIndex].stop();
          this.audioSourcePlayers.splice(audioPlayerIndex, 1);
       }
-      this.audioSourcePlayers.splice(audioPlayerIndex, 1);
    }
 
    private onProducerCreated(producer: Producer<MediasoupAppData>) {
