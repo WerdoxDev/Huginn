@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.28.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.28.0...api@v0.28.1) (2025-11-06)
+
+
+### Bug Fixes
+
+* **api:** closing in the middle of connecting introduces a bad state bug ([077453b](https://github.com/WerdoxDev/Huginn/commit/077453b01d0d2042e821f55b58154004b9f03349))
+
 ## [0.28.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.27.0...api@v0.28.0) (2025-11-05)
 
 

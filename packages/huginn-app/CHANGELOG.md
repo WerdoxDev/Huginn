@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.61.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.61.2...app@v0.61.3) (2025-11-06)
+
+
+### Bug Fixes
+
+* **app:** bunch of visual bugs ([5dfdd68](https://github.com/WerdoxDev/Huginn/commit/5dfdd6884b5caa14ecf251c477452cb1cdb5353d))
+
 ## [0.61.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.61.1...app@v0.61.2) (2025-11-06)
 
 
