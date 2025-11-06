@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.32.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.32.0...server@v0.32.1) (2025-11-06)
+
+
+### Bug Fixes
+
+* **server:** server is not correctly redirecting ([391a86b](https://github.com/WerdoxDev/Huginn/commit/391a86b6345d507e21ce3588d4261822c85b704a))
+
 ## [0.32.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.31.0...server@v0.32.0) (2025-11-05)
 
 
