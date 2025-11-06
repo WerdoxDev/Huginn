@@ -2,7 +2,6 @@ import type { MediaSource } from "@/types";
 import LoadingIcon from "@components/LoadingIcon";
 import VoiceControls from "@components/VoiceControls";
 import VoiceElement from "@components/voice/VoiceElement";
-import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useFullscreen } from "@hooks/useFullscreen";
 import { useHover } from "@hooks/useHover";
 import { useLookup } from "@hooks/useLookup";

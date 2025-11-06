@@ -1,2 +1,4 @@
 [install]
 saveTextLockfile = true
+# Linker has to be hoisted because electron-builder does not support isolated linker
+linker = "hoisted"

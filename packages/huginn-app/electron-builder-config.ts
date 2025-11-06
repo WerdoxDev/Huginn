@@ -19,11 +19,13 @@ export default {
    files: [
       "dist/**/*",
       "!dist/electron",
-      "!node_modules",
-      "node_modules/application-loopback/**/*",
-      "node_modules/sharp/**/*",
-      "node_modules/@img/**/*",
-      "node_modules/native-addon/**/*",
+      "node_modules/**/*",
+      // "!node_modules",
+      // "node_modules/@huginn/**/*",
+      // "node_modules/application-loopback/**/*",
+      // "node_modules/sharp/**/*",
+      // "node_modules/@img/**/*",
+      // "node_modules/native-addon/**/*",
       // "node_modules/file-uri-to-path/**/*",
       // "node_modules/bindings/**/*",
       ".electron/**/*",
@@ -31,6 +33,7 @@ export default {
    directories: {
       output: "dist/electron",
    },
+   asarUnpack: "**/*",
    icon: "assets/icon.ico",
    extraResources: ["assets"],
 } as Configuration;

@@ -8,7 +8,7 @@ WORKDIR /src
 # this will cache them and speed up future builds
 FROM base AS install
 RUN mkdir -p /temp/deps
-COPY package.json bun.lock .npmrc /temp/deps/
+COPY package.json bun.lock bunfig.toml .npmrc /temp/deps/
 COPY packages/huginn-backend-shared/package.json /temp/deps/packages/huginn-backend-shared/package.json
 COPY packages/huginn-shared/package.json /temp/deps/packages/huginn-shared/package.json
 COPY packages/huginn-cdn/package.json /temp/deps/packages/huginn-cdn/package.json

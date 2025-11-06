@@ -2,5 +2,5 @@
    "cSpell.enabledFileTypes": {
       "cpp": false
    },
-   "cmake.sourceDirectory": "E:/JS/huginn-monorepo/packages/huginn-app/dist/electron/win-unpacked/resources/app.asar/node_modules/native-addon"
+   "cmake.sourceDirectory": "E:/JS/huginn-monorepo/packages/native-addon"
 }
