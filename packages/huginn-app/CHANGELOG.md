@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.61.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.61.1...app@v0.61.2) (2025-11-06)
+
+
+### Bug Fixes
+
+* **app:** builder config is not correct ([e7e7f23](https://github.com/WerdoxDev/Huginn/commit/e7e7f2386f4f81226cd23888b0d975f42f53ca53))
+
 ## [0.61.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.61.0...app@v0.61.1) (2025-11-06)
 
 
