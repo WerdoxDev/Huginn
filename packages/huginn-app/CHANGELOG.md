@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.61.4](https://github.com/WerdoxDev/Huginn/compare/app@v0.61.3...app@v0.61.4) (2025-11-06)
+
+
+### Bug Fixes
+
+* **app:** audio player is getting removed twice without stopping one of them ([2cc3adc](https://github.com/WerdoxDev/Huginn/commit/2cc3adcef78d06aefb451bea017396569e212dc0))
+
 ## [0.61.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.61.2...app@v0.61.3) (2025-11-06)
 
 
