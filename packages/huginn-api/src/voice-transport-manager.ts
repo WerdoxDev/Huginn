@@ -185,9 +185,9 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       });
       this.producers.set(kind, producer);
 
-      // track.onended = () => {
-      //    this.closeProducer(kind);
-      // };
+      track.onended = () => {
+         this.closeProducer(kind);
+      };
 
       this.emit("producer_created", producer);
 

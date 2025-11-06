@@ -113,37 +113,36 @@ export class VoiceManager<V extends Voice = Voice> {
 
       this.isConnecting = true;
 
-      if (this.voice.status !== "idle") {
-         this.voice.signaling.close();
-      }
+      try {
+         if (this.voice.status !== "idle") {
+            this.voice.signaling.close();
+         }
 
-      let voiceToken: string | undefined;
-      if (token) {
-         voiceToken = token;
-      } else {
-         voiceToken = await this.gateway.getVoiceToken(guildId, channelId, this.voiceState.gatewayVoiceState);
-      }
+         let voiceToken: string | undefined;
+         if (token) {
+            voiceToken = token;
+         } else {
+            voiceToken = await this.gateway.getVoiceToken(guildId, channelId, this.voiceState.gatewayVoiceState);
+         }
 
-      if (!voiceToken) {
-         error("api:voice-manager", "Couldn't get a token for voice");
-         return;
-      }
+         if (!voiceToken) throw new Error("Couldn't get a token for voice");
 
-      this.voice.signaling.connect(voiceToken, channelId, guildId);
+         this.voice.signaling.connect(voiceToken, channelId, guildId);
 
-      // Wait for ready
-      await new Promise<void>((r) => {
-         const unlisten = this.voice.listen("status_changed", (d) => {
-            if (d === "ready") {
-               unlisten();
-               r();
-            }
+         // Wait for ready
+         await new Promise<void>((r) => {
+            const unlisten = this.voice.listen("status_changed", (d) => {
+               if (d === "ready") {
+                  unlisten();
+                  r();
+               }
+            });
          });
-      });
 
-      console.log("FINISHED");
-
-      this.isConnecting = false;
+         console.log("FINISHED");
+      } finally {
+         this.isConnecting = false;
+      }
    }
 
    public async disconnectVoice(): Promise<void> {
@@ -151,5 +150,6 @@ export class VoiceManager<V extends Voice = Voice> {
 
       await this.gateway.sendDefaultVoiceState();
       this.voice.signaling.close();
+      this.isConnecting = false;
    }
 }
