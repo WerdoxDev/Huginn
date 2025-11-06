@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.18.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.17.0...backend-shared@v0.18.0) (2025-11-05)
+
+
+### Features
+
+* a complete voice refactor that I don't want to split in smaller commits ([69c76bc](https://github.com/WerdoxDev/Huginn/commit/69c76bc831bfea4fd3a9429ab2c62287d21e82a8))
+
+
+### Bug Fixes
+
+* **cdn:** little change in application icon handling ([3e4ae23](https://github.com/WerdoxDev/Huginn/commit/3e4ae23308b91b3f6c012f00e96159c61afcb424))
+
 ## [0.17.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.16.1...backend-shared@v0.17.0) (2025-09-18)
 
 
