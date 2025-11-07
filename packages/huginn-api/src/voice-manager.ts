@@ -138,8 +138,6 @@ export class VoiceManager<V extends Voice = Voice> {
                }
             });
          });
-
-         console.log("FINISHED");
       } finally {
          this.isConnecting = false;
       }
