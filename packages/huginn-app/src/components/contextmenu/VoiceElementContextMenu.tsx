@@ -11,7 +11,7 @@ export default function VoiceElementContextMenu() {
    const client = useClient();
    const { consumeStream } = useVoiceUtils();
 
-   const { saveFromCachedValue: setFromCachedValue } = useStorageStore();
+   const { saveFromCachedValue } = useStorageStore();
    const voicePreferences = useStorage("voice-preferences");
 
    const preference = useMemo(() => voicePreferences.find((x) => x.userId === data?.user.id), [voicePreferences]);
@@ -46,7 +46,7 @@ export default function VoiceElementContextMenu() {
 
    useEffect(() => {
       return () => {
-         setFromCachedValue("voice-preferences");
+         saveFromCachedValue("voice-preferences");
       };
    }, []);
 

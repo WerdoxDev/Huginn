@@ -10,12 +10,14 @@ import type { MediaSource } from "@/types";
 import VoiceAudioVisualizer from "./VoiceAudioVisualizer";
 import { VoiceLabel } from "./VoiceLabel";
 import VoiceVideoStats from "./VoiceVideoStats";
-import { useClientStore } from "@stores/clientStore";
+import { useClient, useClientStore } from "@stores/clientStore";
 import Tooltip from "@components/tooltip/Tooltip";
+import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 
 export default function VoiceElement(props: {
    userId: Snowflake;
    channelId: Snowflake;
+   guildId: Snowflake | null;
    mediaSource?: MediaSource;
    secondMediaSource?: MediaSource;
    gridElementWidth: number;
@@ -29,18 +31,17 @@ export default function VoiceElement(props: {
    isSpeaking?: boolean;
    voiceState?: GatewayVoiceState;
    onClick?: (producerId: string) => void;
-   onConsume?: (userId: Snowflake) => void;
    ref?: RefObject<HTMLDivElement>;
 }) {
    const { open: openContextMenu } = useContextMenu("voice_element");
-   // const { remoteSources } = useVoiceStore();
+   const { consumeStream } = useVoiceUtils();
    const { voiceStatus } = useClientStore();
    const videoRef = useRef<HTMLVideoElement>(null);
    const { user: thisUser } = useThisUser();
    const user = useUser(props.userId);
+   const client = useClient();
 
-   const [isVideoMetaLoaded, setIsVideoMetaLoaded] = useState(false);
-   // const consumeState = useMutationLatestState("consume-stream", ({ state: { variables } }) => variables?.userId === props.userId);
+   const [isLoadingStream, setIsLoadingStream] = useState(false);
 
    const hasScreenShareAudio = useMemo(() => props.secondMediaSource?.kind === "stream_audio", [props.secondMediaSource]);
 
@@ -57,15 +58,17 @@ export default function VoiceElement(props: {
       [voiceStatus, props.mediaSource],
    );
 
-   // const isLoadingStream = useMemo(
-   //    () => consumeState && (isScreenShare || isAudioStream) && (consumeState.status === "pending" || (isCamera && !isVideoMetaLoaded)),
-   //    [consumeState?.status, isVideoMetaLoaded, isScreenShare, isAudioStream],
-   // );
-   const isLoadingStream = useMemo(() => false, []);
-
-   function consume(e: MouseEvent) {
+   async function consume(e: MouseEvent) {
       e.stopPropagation();
-      props.onConsume?.(props.userId);
+
+      setIsLoadingStream(true);
+
+      if (client?.voice.status !== "ready") {
+         await client?.voiceManager.connectVoice(props.guildId, props.channelId);
+      }
+
+      await consumeStream(props.userId);
+      setIsLoadingStream(false);
    }
 
    function onContextMenu(e: MouseEvent<HTMLDivElement>) {
@@ -73,6 +76,7 @@ export default function VoiceElement(props: {
          return;
       }
 
+      console.log(user, props.mediaSource);
       openContextMenu(
          {
             user: user,
@@ -86,11 +90,6 @@ export default function VoiceElement(props: {
 
    useEffect(() => {
       if (videoRef.current) {
-         setIsVideoMetaLoaded(false);
-         videoRef.current.onloadedmetadata = () => {
-            setIsVideoMetaLoaded(true);
-         };
-
          // Check if track is actually different
          const currentTrack = (videoRef.current.srcObject as MediaStream | undefined)?.getVideoTracks()[0];
          if (currentTrack?.id === props.mediaSource?.track?.id) {

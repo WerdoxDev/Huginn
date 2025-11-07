@@ -55,23 +55,21 @@ export default function ActionMessage() {
             !isNextAction && !isUnread && "mb-1.5",
          )}
       >
-         {type === MessageType.RECIPIENT_REMOVE && <IconMingcuteArrowLeftFill className="text-negative-100 mr-4 size-5" />}
-         {type === MessageType.RECIPIENT_ADD && <IconMingcuteArrowRightFill className="text-positive-100 mr-4 size-5" />}
-         {type === MessageType.CHANNEL_NAME_CHANGED && <IconMingcuteEdit2Fill className="text-text/80 mr-4 size-5" />}
-         {type === MessageType.CHANNEL_ICON_CHANGED && <IconMingcutePic2Fill className="text-text/80 mr-4 size-5" />}
-         {type === MessageType.CHANNEL_OWNER_CHANGED && <IconMingcuteTransfer3Fill className="text-primary-500 mr-4 size-5" />}
-         {type === MessageType.CALL && <IconMingcutePhoneFill className="text-positive-100 mr-4 size-5" />}
-         <div>
+         {type === MessageType.RECIPIENT_REMOVE && <IconMingcuteArrowLeftFill className="text-negative-100 mr-4 size-5 shrink-0" />}
+         {type === MessageType.RECIPIENT_ADD && <IconMingcuteArrowRightFill className="text-positive-100 mr-4 size-5 shrink-0" />}
+         {type === MessageType.CHANNEL_NAME_CHANGED && <IconMingcuteEdit2Fill className="text-text/80 mr-4 size-5 shrink-0" />}
+         {type === MessageType.CHANNEL_ICON_CHANGED && <IconMingcutePic2Fill className="text-text/80 mr-4 size-5 shrink-0" />}
+         {type === MessageType.CHANNEL_OWNER_CHANGED && <IconMingcuteTransfer3Fill className="text-primary-500 mr-4 size-5 shrink-0" />}
+         {type === MessageType.CALL && <IconMingcutePhoneFill className="text-positive-100 mr-4 size-5 shrink-0" />}
+         <div className="flex gap-x-1">
             <span className="font-bold">{authorName}</span>
             {type === MessageType.CALL && (
                <Tooltip>
-                  <Tooltip.Trigger className="ml-1 !cursor-default">
-                     <span className="text-text/50">
-                        started a call{call?.endedTimestamp ? ` that lasted ${formatCallDuration()}` : ""}.
-                     </span>
+                  <Tooltip.Trigger className="cursor-default! text-left">
+                     <span className="text-text/50">started a call{call?.endedTimestamp ? ` that lasted ${formatCallDuration()}` : ""}.</span>
                   </Tooltip.Trigger>
                   {call?.endedTimestamp && call.participants.length !== 0 && (
-                     <Tooltip.Content className="!px-1.5 !py-1.5">
+                     <Tooltip.Content className="px-1.5! py-1.5!">
                         <div className="flex gap-x-1.5">
                            {callParticipants.map((x) => (
                               <div key={x.id} className="bg-surface rounded-sm px-1">
