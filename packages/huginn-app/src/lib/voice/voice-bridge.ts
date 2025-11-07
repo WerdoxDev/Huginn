@@ -275,7 +275,7 @@ export class VoiceBridge extends Voice {
       }
    }
 
-   public async updateVoicePreference(userId: Snowflake, options: { microphoneVolume?: number; streamVolume?: number }) {
+   public updateVoicePreference(userId: Snowflake, options: { microphoneVolume?: number; streamVolume?: number }) {
       log("app:voice-bridge", "voice-preference", "update", "uid:", userId, "opts:", JSON.stringify(options));
 
       const voicePreferences = storageStore.getState().getCachedValue("voice-preferences");
@@ -299,8 +299,8 @@ export class VoiceBridge extends Voice {
       storageStore.getState().setCachedValue("voice-preferences", updatedVoicePreferences);
 
       const userPreference = updatedVoicePreferences.find((x) => x.userId === userId);
-      const microphonePlayer = this.audioSourcePlayers.find((x) => x.kind === "microphone");
-      const streamAudioPlayer = this.audioSourcePlayers.find((x) => x.kind === "stream_audio");
+      const microphonePlayer = this.audioSourcePlayers.find((x) => x.kind === "microphone" && x.userId === userId);
+      const streamAudioPlayer = this.audioSourcePlayers.find((x) => x.kind === "stream_audio" && x.userId === userId);
 
       if (!userPreference) throw new Error(`User preference for user ${userId} was not found`);
 

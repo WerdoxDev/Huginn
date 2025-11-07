@@ -54,7 +54,7 @@ export class AudioSourcePlayer {
    }
 
    public setGain(globalGainPercent: number | undefined, localGainPercent: number | undefined) {
-      log("app:audio-source-player", "default", "set gain", "gg:", globalGainPercent, "lg:", localGainPercent);
+      log("app:audio-source-player", "default", "set gain", "uid:", this.userId, "gg:", globalGainPercent, "lg:", localGainPercent);
 
       if (globalGainPercent) {
          this.globalGain = (globalGainPercent / 100) ** 2.3219;
