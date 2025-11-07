@@ -6,34 +6,31 @@ import { fileDefaults } from "../shared/file-defaults";
 import { error, log } from "@huginn/shared";
 import { exists } from "./utils";
 
-export function listenToEvents(controller: FileController) {
-   ipcMain.handle("file:load", async (_, type: FileType) => {
-      return await controller.loadFile(type);
-   });
-
-   ipcMain.handle("file:save", async (_, type: FileType, data: FileMap[FileType]) => {
-      return await controller.saveFile(type, data);
-   });
-
-   // ipcMain.handle("file:exists", async (_, name: string) => {
-   //    log("app:electron", "recv", "file exists", "n:", name);
-
-   //    return await fileExists(getPath(name));
-   // });
-}
-
 export class FileController {
    private basePath: string;
    private defaultContents: FileMap;
+   private prefix: string;
 
-   constructor() {
+   constructor(prefix: string = "") {
       this.basePath = app.getPath("userData");
+      this.prefix = prefix;
 
       this.defaultContents = { ...fileDefaults };
+      this.eventListeners();
+   }
+
+   private eventListeners() {
+      ipcMain.handle("file:load", async (_, type: FileType) => {
+         return await this.loadFile(type);
+      });
+
+      ipcMain.handle("file:save", async (_, type: FileType, data: FileMap[FileType]) => {
+         return await this.saveFile(type, data);
+      });
    }
 
    private getFilePath(type: FileType) {
-      return path.join(this.basePath, type);
+      return path.join(this.basePath, this.prefix ? `${this.prefix}_${type}` : type);
    }
 
    public async loadFile<K extends FileType>(type: K): Promise<LoadFileResult<K>> {

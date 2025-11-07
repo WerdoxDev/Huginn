@@ -5,33 +5,40 @@ import { exists } from "./utils";
 import { mkdir } from "node:fs/promises";
 import { writeFile, readdir } from "node:fs/promises";
 
-export const cacheDir = path.join(app.getPath("userData"), "web-cache");
-const cachedKeys = new Set<string>();
+export class CacheController {
+   public cacheDir = path.join(app.getPath("userData"), "web-cache");
+   private cachedKeys: Set<string>;
 
-export async function listenToEvents() {
-   const files = await readdir(cacheDir);
-   for (const file of files) {
-      const key = file.replace(/\.[^/.]+$/, "");
-      cachedKeys.add(key);
+   public constructor() {
+      this.cachedKeys = new Set();
+      this.eventListeners();
    }
 
-   ipcMain.handle("cache:save-image", async (_, url: string, key: string) => {
-      log("app:electron", "recv", "cache save image", "url:", url, "key:", key);
-
-      if (cachedKeys.has(key)) {
-         return;
+   private async eventListeners() {
+      const files = await readdir(this.cacheDir);
+      for (const file of files) {
+         const key = file.replace(/\.[^/.]+$/, "");
+         this.cachedKeys.add(key);
       }
 
-      const filePath = path.join(cacheDir, `${key}.png`);
+      ipcMain.handle("cache:save-image", async (_, url: string, key: string) => {
+         log("app:electron", "recv", "cache save image", "url:", url, "key:", key);
 
-      await mkdir(cacheDir, { recursive: true });
-      if (await exists(filePath)) {
-         return;
-      }
+         if (this.cachedKeys.has(key)) {
+            return;
+         }
 
-      const buffer = await (await fetch(url)).arrayBuffer();
-      await writeFile(filePath, Buffer.from(buffer));
+         const filePath = path.join(this.cacheDir, `${key}.png`);
 
-      cachedKeys.add(key);
-   });
+         await mkdir(this.cacheDir, { recursive: true });
+         if (await exists(filePath)) {
+            return;
+         }
+
+         const buffer = await (await fetch(url)).arrayBuffer();
+         await writeFile(filePath, Buffer.from(buffer));
+
+         this.cachedKeys.add(key);
+      });
+   }
 }

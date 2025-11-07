@@ -1,0 +1,347 @@
+import path from "node:path";
+import { BaseWindow } from "./base-window";
+import { app, desktopCapturer, ipcMain, nativeImage, Notification, session, shell, type BrowserWindow } from "electron";
+import { CacheStorage, error, findClosestString, log } from "@huginn/shared";
+import electronUpdater, { CancellationToken } from "electron-updater";
+import type { AudioSource, DisplaySource } from "@/types";
+import { getActiveWindowProcessIds, startAudioCapture, stopAudioCapture } from "application-loopback";
+import * as keybindsController from "./keybinds-controller";
+import native, { type AppInfo } from "native-addon";
+import type { CacheController } from "./cache-controller";
+const { autoUpdater } = electronUpdater;
+
+export class MainWindow extends BaseWindow {
+   private selectedSourceId?: string;
+   private previousProcessId: string | undefined;
+   private cacheController: CacheController;
+
+   public constructor(cacheController: CacheController) {
+      super("main", {
+         minWidth: 850,
+         minHeight: 380,
+         width: 1200,
+         height: 670,
+         fullscreen: false,
+         frame: false,
+         titleBarStyle: "hidden",
+         webPreferences: {
+            contextIsolation: true,
+            nodeIntegration: true,
+            preload: path.join(import.meta.dirname, "preload.mjs"),
+            backgroundThrottling: false,
+         },
+         show: false,
+      });
+
+      this.cacheController = cacheController;
+   }
+
+   public eventListeners(window: BrowserWindow): void {
+      keybindsController.listenToEvents(window);
+
+      this.windowEvents(window);
+      this.windowCategoryEvents(window);
+      this.updateCategoryEvents(window);
+      this.shellCategoryEvents();
+      this.audioCategoryEvents(window);
+      this.notificationCategoryEvents(window);
+      this.nativeCategoryEvents();
+      this.sessionEvents();
+   }
+
+   private sessionEvents() {
+      session.defaultSession.setDisplayMediaRequestHandler(async (request, callback) => {
+         const sources = await desktopCapturer.getSources({
+            types: ["screen", "window"],
+            thumbnailSize: { height: 0, width: 0 },
+            fetchWindowIcons: false,
+         });
+         const source = sources.find((x) => x.id === this.selectedSourceId);
+
+         const audio = request.audioRequested && source?.id.includes("screen") ? "loopback" : undefined;
+         callback({ video: source, ...(audio ? { audio: audio } : {}), enableLocalEcho: false });
+      });
+   }
+
+   private windowEvents(window: BrowserWindow) {
+      window.on("close", (e) => {
+         log("app:electron", "recv", "close");
+
+         e.preventDefault();
+         window.hide();
+      });
+
+      window.on("maximize", () => {
+         log("app:electron", "recv", "maximize");
+
+         log("app:electron", "send", "window is maximized", true);
+         window.webContents.send("window:is-maximized", true);
+      });
+
+      window.on("unmaximize", () => {
+         log("app:electron", "recv", "unmaximize");
+
+         log("app:electron", "send", "window is maximized", false);
+         window.webContents.send("window:is-maximized", false);
+      });
+
+      window.on("restore", () => {
+         log("app:electron", "recv", "restore");
+
+         log("app:electron", "send", "window is maximized", false);
+         window.webContents.send("window:is-maximized", false);
+      });
+
+      window.on("enter-full-screen", () => {
+         log("app:electron", "recv", "enter full screen");
+
+         log("app:electron", "send", "window is maximized", true);
+         window.webContents.send("window:is-maximized", true);
+
+         log("app:electron", "send", "window is fullscreen", true);
+         window.webContents.send("window:is-fullscreen", true);
+      });
+
+      window.on("leave-full-screen", () => {
+         log("app:electron", "recv", "leave full screen");
+
+         log("app:electron", "send", "window is maximized", false);
+         window.webContents.send("window:is-maximized", false);
+
+         log("app:electron", "send", "window is fullscreen", false);
+         window.webContents.send("window:is-fullscreen", false);
+      });
+   }
+
+   private windowCategoryEvents(window: BrowserWindow) {
+      ipcMain.handle("window:version", () => {
+         log("app:electron", "recv", "window version");
+
+         return app.getVersion();
+      });
+
+      ipcMain.on("window:set-fullscreen", (_, fullscreen: boolean) => {
+         log("app:electron", "recv", "window set fullscreen");
+
+         window.setFullScreen(fullscreen);
+      });
+
+      ipcMain.on("window:show-main", () => {
+         log("app:electron", "recv", "window show main");
+
+         window.show();
+      });
+
+      ipcMain.on("window:hide-main", () => {
+         log("app:electron", "recv", "window hide main");
+
+         window.hide();
+      });
+
+      ipcMain.on("window:focus-main", () => {
+         log("app:electron", "recv", "window focus main");
+
+         window.focus();
+      });
+
+      ipcMain.on("window:minimize", () => {
+         log("app:electron", "recv", "window minimize");
+
+         window.minimize();
+      });
+
+      ipcMain.on("window:toggle-maximize", () => {
+         log("app:electron", "recv", "window toggle maximize");
+
+         if (window.isMaximized()) {
+            window.restore();
+         } else {
+            window.maximize();
+         }
+      });
+
+      ipcMain.handle("window:get-display-sources", async () => {
+         log("app:electron", "recv", "window get display sources");
+
+         const sources = await desktopCapturer.getSources({
+            types: ["screen", "window"],
+            fetchWindowIcons: true,
+            thumbnailSize: { width: 300, height: 300 },
+         });
+         return sources
+            .filter((x) => !x.thumbnail.isEmpty())
+            .map((x) => ({ thumbnail: x.thumbnail.toDataURL(), id: x.id, name: x.name, appIcon: x.appIcon?.toDataURL() }) as DisplaySource);
+      });
+
+      ipcMain.handle("window:get-audio-sources", async () => {
+         log("app:electron", "recv", "window get audio sources");
+
+         const sources = await desktopCapturer.getSources({
+            types: ["window"],
+            fetchWindowIcons: true,
+            thumbnailSize: { width: 300, height: 300 },
+         });
+         const processes = await getActiveWindowProcessIds();
+
+         return sources
+            .map((source) => {
+               const bestTitleMatch = findClosestString(
+                  source.name,
+                  processes.map((x) => x.title),
+               );
+               const process = processes.find((x) => x.title === bestTitleMatch.match);
+               return process
+                  ? {
+                       processId: process.processId,
+                       name: source.name,
+                       appIcon: source.appIcon?.toDataURL(),
+                    }
+                  : null;
+            })
+            .filter((x) => x !== null && !sources[0].thumbnail.isEmpty()) as AudioSource[];
+      });
+
+      ipcMain.on("window:set-selected-display-source", (_, sourceId: string) => {
+         log("app:electron", "recv", "window set selected display source", "sid:", sourceId);
+
+         this.selectedSourceId = sourceId;
+      });
+
+      ipcMain.on("window:relaunch", () => {
+         log("app:electron", "recv", "relaunch");
+
+         if (app.isPackaged) {
+            app.relaunch({ args: process.argv.filter((x) => !x.includes("silent")) });
+            app.exit();
+         } else {
+            window.webContents.reload();
+         }
+      });
+   }
+
+   private updateCategoryEvents(window: BrowserWindow) {
+      ipcMain.handle("update:check", async () => {
+         log("app:electron", "recv", "update check");
+
+         const result = await autoUpdater.checkForUpdates();
+         return result?.updateInfo;
+      });
+
+      ipcMain.on("update:download", async () => {
+         log("app:electron", "recv", "update download");
+
+         const cancel = new CancellationToken();
+         await autoUpdater.downloadUpdate(cancel);
+      });
+
+      ipcMain.on("update:set-url", (_, url: string) => {
+         log("app:electron", "updater", "set url", "u:", url);
+
+         autoUpdater.setFeedURL({ provider: "generic", url, useMultipleRangeRequest: false });
+      });
+
+      autoUpdater.on("download-progress", (e) => {
+         log("app:electron", "updater", "download progress");
+
+         window.webContents.send("update:progress", e);
+      });
+   }
+
+   private shellCategoryEvents() {
+      ipcMain.on("shell:open-external", (_, url: string) => {
+         log("app:electron", "recv", "shell open external", "url:", url);
+
+         shell.openExternal(url);
+      });
+   }
+
+   private notificationCategoryEvents(window: BrowserWindow) {
+      ipcMain.on("notification:send", (_, data: { title: string; body: string; payload?: string; icon?: string }) => {
+         log("app:electron", "recv", "notification send", "title:", data.title, "body:", data.body, "pld:", data.payload);
+
+         const icon = data.icon
+            ? nativeImage.createFromPath(path.join(this.cacheController.cacheDir, `${data.icon}.png`))
+            : app.isPackaged
+              ? path.join(process.resourcesPath, "assets", "icon.ico")
+              : "./assets/icon.ico";
+
+         const notification = new Notification({
+            title: data.title,
+            body: data.body,
+            icon: icon,
+
+            silent: true,
+         });
+
+         notification.on("click", () => {
+            log("app:electron", "send", "notification clicked", "pld:", data.payload);
+
+            window.webContents.send("notification:clicked", data.payload);
+         });
+
+         notification.show();
+      });
+   }
+
+   private audioCategoryEvents(window: BrowserWindow) {
+      ipcMain.handle("audio:start-loopback", async (_, processTitle?: string, processId?: string) => {
+         log("app:electron", "recv", "audio start loopback", "ptit:", processTitle, "pid:", processId);
+
+         let foundProcessId: string | undefined;
+         if (processTitle) {
+            const processIds = await getActiveWindowProcessIds();
+            const bestTitleMatch = findClosestString(
+               processTitle,
+               processIds.map((x) => x.title),
+            );
+            foundProcessId = processIds.find((x) => x.title === bestTitleMatch.match)?.processId;
+         } else if (processId) {
+            foundProcessId = processId;
+         }
+
+         if (foundProcessId) {
+            log("app:electron", "loopback", "start", "pid:", foundProcessId);
+
+            startAudioCapture(foundProcessId, {
+               onData(data) {
+                  window.webContents.send("audio:loopback-data", data);
+               },
+            });
+
+            this.previousProcessId = foundProcessId;
+            return true;
+         } else {
+            error("app:electron", `Couldn't find process with title: ${processTitle}`);
+
+            return false;
+         }
+      });
+
+      ipcMain.handle("audio:stop-loopback", () => {
+         log("app:electron", "recv", "audio stop loopback", "pid:", this.previousProcessId);
+
+         if (this.previousProcessId) {
+            log("app:electron", "loopback", "stop", "pid:", this.previousProcessId);
+            stopAudioCapture(this.previousProcessId);
+         }
+      });
+   }
+
+   private nativeCategoryEvents() {
+      ipcMain.handle("native:get-open-applications", () => {
+         log("app:electron", "recv", "native get open applications");
+
+         const applications = native.getOpenApplications();
+
+         return applications;
+      });
+
+      const applicationIconCache = new CacheStorage<number, AppInfo>(600);
+      ipcMain.handle("native:get-application-info", async (_, exePath: string, processId: number) => {
+         log("app:electron", "recv", "native get application info", "exp:", exePath, "pid:", processId);
+
+         const info = await applicationIconCache.cacheOrGet(processId, async () => await native.getApplicationInfo(exePath, processId));
+         return info;
+      });
+   }
+}
