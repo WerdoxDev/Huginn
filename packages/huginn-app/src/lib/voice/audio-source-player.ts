@@ -78,5 +78,8 @@ export class AudioSourcePlayer {
       log("app:audio-source-player", "default", "set sink id", "did:", deviceId);
 
       this.audioContext.setSinkId(deviceId);
+      if (this.audioContext.state === "suspended") {
+         this.audioContext.resume();
+      }
    }
 }
