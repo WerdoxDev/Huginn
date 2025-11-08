@@ -7,23 +7,17 @@ import { clamp, remap } from "@huginn/shared";
 import { AudioLevelChecker } from "@lib/voice/audio-level-checker";
 import { VoiceInputDevice } from "@lib/voice/voice-input-device";
 import { useStorage } from "@stores/storageStore";
-import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { DropdownItem, SettingsTabProps } from "@/types";
 import HuginnCheckbox from "@components/HuginnCheckbox";
 import { useClient } from "@stores/clientStore";
+import { useDevice } from "@stores/deviceStore";
 
 export default function SettingsVoiceTab(props: SettingsTabProps) {
-   const { data } = useQuery({
-      queryFn: async () => await navigator.mediaDevices.enumerateDevices(),
-      queryKey: ["media-devices"],
-   });
+   const { cameraDevices, inputDevices, outputDevices } = useDevice();
+
    const settings = useStorage("settings");
    const client = useClient();
-
-   const inputDevices = useMemo(() => data?.filter((x) => x.kind === "audioinput"), [data]);
-   const outputDevices = useMemo(() => data?.filter((x) => x.kind === "audiooutput"), [data]);
-   const cameraDevices = useMemo(() => data?.filter((x) => x.kind === "videoinput"), [data]);
 
    const inputDeviceOptions = useMemo<DropdownItem[]>(() => inputDevices?.map((x) => ({ text: x.label, value: x.deviceId })) ?? [], [inputDevices]);
    const outputDeviceOptions = useMemo<DropdownItem[]>(
@@ -44,9 +38,10 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
 
    const [inputDb, setInputDb] = useState(0);
 
-   const [selectedInput, setSelectedInput] = useState<MediaDeviceInfo>();
-   const [selectedOutput, setSelectedOutput] = useState<MediaDeviceInfo>();
-   const [selectedCamera, setSelectedCamera] = useState<MediaDeviceInfo>();
+   const selectedInput = useMemo(() => inputDevices.find((x) => x.deviceId === settings.inputDeviceId), [inputDevices, settings.inputDeviceId]);
+   const selectedOutput = useMemo(() => outputDevices.find((x) => x.deviceId === settings.outputDeviceId), [outputDevices, settings.outputDeviceId]);
+   const selectedCamera = useMemo(() => cameraDevices.find((x) => x.deviceId === settings.cameraDeviceId), [cameraDevices, settings.cameraDeviceId]);
+
    const [noiseSuppression, setNoiseSuppression] = useState(settings.noiseSuppression);
    const [isTestingCamera, setIsTestingVideo] = useState(false);
 
@@ -62,7 +57,7 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
          }
 
          audioLevel.current = new AudioLevelChecker();
-         const stream = await inputDevice.current.getStream(selectedInput?.deviceId, settings.inputVolume, noiseSuppression);
+         const stream = await inputDevice.current.getStream(selectedInput.deviceId, settings.inputVolume, noiseSuppression);
          // This is an async function so the component will probably unmount before it knows
          if (cancelled) {
             return;
@@ -72,7 +67,8 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
          audioLevel.current.offAll("audio-level");
          audioLevel.current.on("audio-level", onAudioLevel);
       }
-      runAudioChecker();
+
+      runAudioChecker().catch(console.error);
 
       const interval = setInterval(() => {
          setInputDb(_inputDb.current);
@@ -91,38 +87,6 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
    }, [settings.inputVolume]);
 
    useEffect(() => {
-      if (!data || !inputDevices || !outputDevices || !cameraDevices) {
-         return;
-      }
-
-      setSelectedInput(inputDevices?.find((x) => x.deviceId === settings.inputDeviceId) ?? inputDevices[0]);
-      setSelectedOutput(outputDevices?.find((x) => x.deviceId === settings.outputDeviceId) ?? outputDevices[0]);
-      setSelectedCamera(cameraDevices?.find((x) => x.deviceId === settings.cameraDeviceId) ?? cameraDevices[0]);
-   }, [data]);
-
-   useEffect(() => {
-      if (selectedInput) {
-         props.onChange?.({ inputDeviceId: selectedInput?.deviceId });
-      }
-   }, [selectedInput]);
-
-   useEffect(() => {
-      if (selectedOutput) {
-         props.onChange?.({ outputDeviceId: selectedOutput?.deviceId });
-      }
-   }, [selectedOutput]);
-
-   useEffect(() => {
-      if (selectedOutput) {
-         props.onChange?.({ cameraDeviceId: selectedCamera?.deviceId });
-
-         if (isTestingCamera) {
-            startCameraTest();
-         }
-      }
-   }, [selectedCamera]);
-
-   useEffect(() => {
       props.onChange?.({ noiseSuppression: noiseSuppression });
    }, [noiseSuppression]);
 
@@ -136,16 +100,16 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
       _inputDb.current = clamp(db, -100, 100);
    }
 
-   function onInputChange(value: DropdownItem) {
-      setSelectedInput(inputDevices?.find((x) => x.deviceId === value.value));
+   function onInputChange(item: DropdownItem) {
+      props.onChange?.({ inputDeviceId: item.value });
    }
 
-   function onOutputChange(value: DropdownItem) {
-      setSelectedOutput(outputDevices?.find((x) => x.deviceId === value.value));
+   function onOutputChange(item: DropdownItem) {
+      props.onChange?.({ outputDeviceId: item.value });
    }
 
-   function onCameraChange(value: DropdownItem) {
-      setSelectedCamera(cameraDevices?.find((x) => x.deviceId === value.value));
+   function onCameraChange(item: DropdownItem) {
+      props.onChange?.({ cameraDeviceId: item.value });
    }
 
    function onInputVolumeChange(value: number) {
@@ -193,12 +157,9 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
       };
    }
 
-   if (!data || !selectedInput || !selectedOutput) {
+   if (!selectedInput || !selectedOutput) {
       return;
    }
-   // if (!data) {
-   // 	return;
-   // }
 
    return (
       <div className="flex flex-col">

@@ -34,10 +34,9 @@ export class VoiceBridge extends Voice {
       this.transport.on("producer_created", (d) => this.onProducerCreated(d));
       this.signaling.on("producer_closed", async (d) => await this.onProducerClosed(d));
       this.signaling.on("new_producer", async (d) => await this.onNewProducer(d));
-      // this.client.voiceManager.voiceState.on("gateway_voice_state_updated", (d) => this.onGatewayVoiceStateUpdated(d))
       storageStore.subscribe(
-         (state) => state.cache,
-         (current, old) => this.onStorageUpdated(current["settings"], old["settings"]),
+         (state) => state.cache.settings,
+         (current, old) => this.onStorageUpdated(current, old),
       );
    }
 
@@ -45,7 +44,7 @@ export class VoiceBridge extends Voice {
       const settings = storageStore.getState().getCachedValue("settings");
 
       // Initialize the actual audio sending stream
-      await this.openMicrophone(settings.inputDeviceId, settings.inputVolume, settings.noiseSuppression);
+      await this.openOrReplaceMicrophone(settings.inputDeviceId, settings.inputVolume, settings.noiseSuppression);
 
       for (const producer of this.transport.getRemoteProducers()) {
          this.onNewProducer(producer);
@@ -144,6 +143,10 @@ export class VoiceBridge extends Voice {
    }
 
    private onStorageUpdated(current: AppSettings, previous: AppSettings) {
+      if (this.status !== "ready") {
+         return;
+      }
+
       const difference = diff(current, previous);
 
       if (difference.outputVolume) {
@@ -158,7 +161,7 @@ export class VoiceBridge extends Voice {
 
       // Start streaming with new input device
       if (difference.inputDeviceId || difference.noiseSuppression) {
-         this.openMicrophone(current.inputDeviceId, current.inputVolume, current.noiseSuppression);
+         this.openOrReplaceMicrophone(current.inputDeviceId, current.inputVolume, current.noiseSuppression);
       }
 
       // Change sink id of audio players
@@ -205,7 +208,7 @@ export class VoiceBridge extends Voice {
       }
    }
 
-   private async openMicrophone(microphoneDeviceId: string, microphoneVolume: number, noiseSuppression: boolean) {
+   private async openOrReplaceMicrophone(microphoneDeviceId: string, microphoneVolume: number, noiseSuppression: boolean) {
       log("app:voice-bridge", "default", "open microphone", "did:", microphoneDeviceId, "vol:", microphoneVolume, "ns:", noiseSuppression);
 
       const otherStream = await this.inputDevice.getStream(microphoneDeviceId, microphoneVolume, noiseSuppression);

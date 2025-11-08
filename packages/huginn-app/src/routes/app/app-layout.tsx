@@ -23,6 +23,7 @@ import { Outlet } from "react-router";
 import KeybindsProvider from "@contexts/KeybindsProvider";
 import SettingsProvider from "@contexts/SettingsProvider";
 import { initializeStorage2 } from "@stores/storageStore";
+import { initializeDevice } from "@stores/deviceStore";
 
 export default function AppLayout() {
    const authBackground = useStartBackground();
@@ -40,6 +41,7 @@ export default function AppLayout() {
          unlisteners.push(initializePresence());
          unlisteners.push(initializeTyping());
          unlisteners.push(initializeVoice());
+         unlisteners.push(initializeDevice());
 
          return () => {
             for (const unlisten of unlisteners) {

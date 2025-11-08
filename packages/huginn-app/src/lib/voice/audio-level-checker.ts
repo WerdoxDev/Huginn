@@ -7,10 +7,10 @@ export class AudioLevelChecker extends EventEmitter<{ "audio-level": number }> {
    private isStopped = false;
 
    public async startChecking(stream: MediaStream) {
-      log("app:audio-level-checker", "default", "start checking");
-
       this.stopChecking();
       this.isStopped = false;
+
+      log("app:audio-level-checker", "default", "start checking");
 
       this.audioContext = new AudioContext();
       await this.audioContext.audioWorklet.addModule(new URL("volume-processor.js", import.meta.url));

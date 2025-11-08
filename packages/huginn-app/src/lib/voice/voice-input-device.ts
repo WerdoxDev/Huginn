@@ -38,6 +38,11 @@ export class VoiceInputDevice {
          this.source?.disconnect();
          this.audioContext?.close();
 
+         this.audioContext = undefined;
+         this.destination = undefined;
+         this.gainNode = undefined;
+         this.source = undefined;
+
          const track = this.currentStream.getAudioTracks()[0];
          track.stop();
       }

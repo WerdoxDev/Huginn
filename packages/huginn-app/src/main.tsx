@@ -25,7 +25,7 @@ window.addEventListener("unhandledrejection", (d) => {
 
 logger.enableLogs({
    // "api:voice": ["default", "send", "recv", "heartbeat"],
-   "app:audio-source-player": ["default"],
+   // "app:audio-level-checker": ["default"],
    "api:voice": ["default"],
    "api:voice-manager": ["default"],
    "api:voice-device": ["default"],
@@ -56,21 +56,5 @@ if (window.electronAPI) {
    // oxlint-disable-next-line no-import-assign
    _remoteLogger = new RemoteLogger(logger, endpoint, clientInfo.id);
 }
-
-// setInterval(async () => {
-//    if (logs.length !== 0) {
-//       await clientStore.getState().client?.log.sendLog(logs);
-//       logs.splice(0, logs.length);
-//    }
-// }, 5000);
-
-// let lastTime = performance.now();
-// let count = 0;
-// setInterval(() => {
-// 	const currentTime = performance.now();
-// 	console.log(count, currentTime - lastTime);
-// 	count++;
-// 	lastTime = currentTime;
-// }, 1000);
 
 createRoot(document.getElementById("root")!).render(<RouterProvider router={router} />);

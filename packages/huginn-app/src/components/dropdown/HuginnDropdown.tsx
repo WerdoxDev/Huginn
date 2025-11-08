@@ -1,7 +1,7 @@
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import { snowflake, WorkerID } from "@huginn/shared";
 import clsx from "clsx";
-import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
+import { createContext, type ReactNode, useContext, useState } from "react";
 import type { DropdownItem } from "@/types";
 
 const DropdownContext = createContext<{
@@ -20,16 +20,10 @@ export default function HuginnDropdown(props: {
    onChange?: (value: DropdownItem) => void;
 }) {
    const [id, _setId] = useState(() => snowflake.generateString(WorkerID.APP));
-   // const [selected, setSelected] = useState<DropdownItem | undefined>(props.value);
 
    function onChange(value: DropdownItem) {
-      // setSelected(value);
       props.onChange?.(value);
    }
-
-   useEffect(() => {
-      // setSelected(props.value);
-   }, [props.value]);
 
    return (
       <DropdownContext.Provider value={{ id: id, selected: props.value, onChange: onChange, defaultValue: props.value }}>
@@ -79,7 +73,7 @@ function ItemsWrapper(props: { className?: string; children?: ReactNode }) {
          anchor="bottom"
          transition
          className={clsx(
-            "scroll-alternative2 bg-surface-alt outline-primary-800 data-closed:translate-y-5 data-closed:opacity-0 flex flex-col gap-y-0.5 !overflow-y-scroll rounded-lg p-1 pr-0 outline transition [--anchor-gap:0.25rem] [--anchor-padding:1rem]",
+            "scroll-alternative2 bg-surface-alt outline-primary-800 data-closed:translate-y-5 data-closed:opacity-0 overflow-y-scroll! flex flex-col gap-y-0.5 rounded-lg p-1 pr-0 outline transition [--anchor-gap:0.25rem] [--anchor-padding:1rem]",
             props.className,
          )}
       >
