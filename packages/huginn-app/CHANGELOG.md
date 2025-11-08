@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.61.5](https://github.com/WerdoxDev/Huginn/compare/app@v0.61.4...app@v0.61.5) (2025-11-08)
+
+
+### Bug Fixes
+
+* **app:** add audio & video device recovery upon disconnect/reconnect ([f73f4e3](https://github.com/WerdoxDev/Huginn/commit/f73f4e3e1368f9c6eb1d5accaeefaec67b8c17d6))
+* **app:** add stream loading indicator+ watch stream button not working when not connected ([b485da1](https://github.com/WerdoxDev/Huginn/commit/b485da15b3a83483c0829cb176b0bd023f36d622))
+* **app:** the wrong audio source is being changed ([42e31ed](https://github.com/WerdoxDev/Huginn/commit/42e31ed911e4648b29f591ce96277598a012b904))
+
 ## [0.61.4](https://github.com/WerdoxDev/Huginn/compare/app@v0.61.3...app@v0.61.4) (2025-11-06)
 
 
