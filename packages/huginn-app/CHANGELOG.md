@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.61.6](https://github.com/WerdoxDev/Huginn/compare/app@v0.61.5...app@v0.61.6) (2025-11-08)
+
+
+### Bug Fixes
+
+* **app:** source player is suspended when device is changed ([78c435f](https://github.com/WerdoxDev/Huginn/commit/78c435f4ee16168a12c607ebd6f331de7e67f50a))
+
 ## [0.61.5](https://github.com/WerdoxDev/Huginn/compare/app@v0.61.4...app@v0.61.5) (2025-11-08)
 
 
