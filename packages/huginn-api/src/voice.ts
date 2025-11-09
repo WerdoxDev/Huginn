@@ -72,12 +72,12 @@ export class Voice extends EventEmitter<Events> {
          }
       });
 
-      this.signaling.on("producer_closed", (d) => {
+      this.signaling.on("producer_closed", async (d) => {
          this.transport.remoteProducers.delete(d.producerId);
 
          const consumer = this.transport.getConsumer(d.userId, d.kind);
          if (consumer) {
-            this.transport.closeConsumer(consumer.id);
+            await this.transport.closeConsumer(consumer.id);
          }
       });
    }
@@ -115,7 +115,7 @@ export class Voice extends EventEmitter<Events> {
          d.callback();
       });
 
-      this.transport.on("transport_disconnected", async (d) => {
+      this.transport.on("transport_disconnected", async () => {
          log("api:voice", "default", "transport disconnected");
          this.signaling.checkStatus();
          const connectionData = { ...this.signaling.connectionData };

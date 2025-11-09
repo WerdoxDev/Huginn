@@ -1,5 +1,6 @@
 import {
    convertToMediaKind,
+   error,
    log,
    type GatewayVoiceStateFlags,
    type HMediaKind,
@@ -212,10 +213,10 @@ export class VoiceTransportManager extends EventEmitter<Events> {
    public async createConsumer(userId: Snowflake, kind: HMediaKind): Promise<void> {
       this.checkTransports();
 
-      log("api:voice-transport", "default", "create consumer", "uid:", userId, "knd:", kind);
-
       const remoteProducer = this.getRemoteProducers().find((x) => x.userId === userId && x.kind === kind);
       if (!remoteProducer) throw new Error(`Remote producer from user ${userId} and kind of ${kind} doesn't exist`);
+
+      log("api:voice-transport", "default", "create consumer", "uid:", userId, "knd:", kind, "pid:", remoteProducer.producerId);
 
       const result = await new Promise<VoiceConsumerCreatedData>((r) => {
          this.emit("create_consumer", {
@@ -241,7 +242,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       });
 
       this.emit("consumer_created", consumer);
-      log("api:voice-transport", "default", "consumer created", "uid:", userId, "knd:", kind);
+      log("api:voice-transport", "default", "consumer created", "uid:", userId, "knd:", kind, "pid:", remoteProducer.producerId);
    }
 
    public async closeConsumer(consumerId: string): Promise<void> {
@@ -342,27 +343,30 @@ export class VoiceTransportManager extends EventEmitter<Events> {
    }
 
    public reset(): void {
-      this.remoteProducers.clear();
+      try {
+         for (const producer of this.producers.values()) {
+            producer.close();
+         }
 
-      for (const producer of this.producers.values()) {
-         producer.close();
+         for (const consumer of this.consumers.values()) {
+            consumer.close();
+         }
+
+         this.sendTransport?.close();
+         this.recvTransport?.close();
+      } catch (e) {
+         error("api:voice-transport", "Something went wrong trying to reset transport", e);
+      } finally {
+         this.device = undefined;
+         this.sendTransport = undefined;
+         this.recvTransport = undefined;
+
+         this.remoteProducers.clear();
+         this.producers.clear();
+         this.consumers.clear();
+
+         this.setStatus("idle");
+         this.emit("reset", undefined);
       }
-
-      for (const consumer of this.consumers.values()) {
-         consumer.close();
-      }
-
-      this.sendTransport?.close();
-      this.recvTransport?.close();
-
-      this.producers.clear();
-      this.consumers.clear();
-
-      this.device = undefined;
-
-      this.sendTransport = undefined;
-      this.recvTransport = undefined;
-      this.setStatus("idle");
-      this.emit("reset", undefined);
    }
 }
