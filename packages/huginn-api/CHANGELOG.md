@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.28.2](https://github.com/WerdoxDev/Huginn/compare/api@v0.28.1...api@v0.28.2) (2025-11-09)
+
+
+### Bug Fixes
+
+* **api:** more graceful reset ([6d7bbd8](https://github.com/WerdoxDev/Huginn/commit/6d7bbd8aafaf9c667d6f4d1b26ca154c618247e3))
+
 ## [0.28.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.28.0...api@v0.28.1) (2025-11-06)
 
 
