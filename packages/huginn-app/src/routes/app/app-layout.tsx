@@ -41,7 +41,7 @@ export default function AppLayout() {
          unlisteners.push(initializePresence());
          unlisteners.push(initializeTyping());
          unlisteners.push(initializeVoice());
-         unlisteners.push(initializeDevice());
+         initializeDevice().then((x) => unlisteners.push(x));
 
          return () => {
             for (const unlisten of unlisteners) {

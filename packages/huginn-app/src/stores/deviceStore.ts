@@ -19,8 +19,9 @@ const store = createStore(
    })),
 );
 
-export function initializeDevice() {
-   setDevices();
+export async function initializeDevice() {
+   await setDevices();
+   checkDevices();
 
    const controller = new AbortController();
    navigator.mediaDevices.addEventListener(

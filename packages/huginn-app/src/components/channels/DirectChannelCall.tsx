@@ -295,9 +295,16 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
                <LoadingIcon className="size-16" />
             ) : (
                <>
-                  {/* Watchable Streams whens not connected */}
+                  {/* Consumable or consuming streams */}
                   {thisVoiceStates
-                     .filter((x) => x.isAudioStreaming || x.isScreenSharing)
+                     .filter(
+                        (x) =>
+                           (x.isAudioStreaming || x.isScreenSharing) &&
+                           (maximizedSource
+                              ? x.userId === maximizedSource.userId &&
+                                (maximizedSource.kind === "stream_video" || maximizedSource.kind === "stream_audio")
+                              : true),
+                     )
                      .map((x) => (
                         <VoiceElement
                            type="stream"
@@ -319,11 +326,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
                      ))}
                   {/* Normals user / cameras */}
                   {thisVoiceStates
-                     .filter((x) =>
-                        maximizedSource
-                           ? mediaSources.some((y) => y.userId === x.userId && y.kind === "camera" && maximizedSource.kind === "camera")
-                           : true,
-                     )
+                     .filter((x) => (maximizedSource ? x.userId === maximizedSource.userId && maximizedSource.kind === "camera" : true))
                      .map((x) => (
                         <VoiceElement
                            type="normal"
@@ -331,6 +334,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
                            gridElementWidth={gridSize?.elementWidth ?? 0}
                            gridElementHeight={gridSize?.elementHeight ?? 0}
                            mediaSource={cameraSources[x.userId] ?? microphoneSources[x.userId]}
+                           secondMediaSource={cameraSources[x.userId] !== undefined ? microphoneSources[x.userId] : undefined}
                            userId={x.userId}
                            channelId={props.channelId}
                            guildId={null}

@@ -45,7 +45,7 @@ export default function VoiceElement(props: {
 
    const hasScreenShareAudio = useMemo(() => props.secondMediaSource?.kind === "stream_audio", [props.secondMediaSource]);
 
-   const isCamera = useMemo(() => props.voiceState?.isCameraOn, [props.voiceState]);
+   const isCamera = useMemo(() => props.type === "normal" && props.voiceState?.isCameraOn, [props.voiceState]);
    const isAudioStream = useMemo(() => props.type === "stream" && props.voiceState?.isAudioStreaming, [props.mediaSource]);
    const isScreenShare = useMemo(() => props.type === "stream" && props.voiceState?.isScreenSharing, [props.mediaSource]);
    const isPreview = useMemo(
@@ -76,7 +76,6 @@ export default function VoiceElement(props: {
          return;
       }
 
-      console.log(user, props.mediaSource);
       openContextMenu(
          {
             user: user,
@@ -156,7 +155,7 @@ export default function VoiceElement(props: {
                      "group/watch flex h-full w-full cursor-pointer items-center justify-center bg-black/80 transition-colors",
                      !isCamera && "hover:bg-black/60",
                   )}
-                  onClick={consume}
+                  onClick={!isCamera ? consume : undefined}
                   type="button"
                >
                   {isCamera ? (

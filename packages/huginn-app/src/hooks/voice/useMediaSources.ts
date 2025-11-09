@@ -11,6 +11,7 @@ export function useMediaSources() {
       }
 
       const sources: MediaSource[] = [];
+      console.log(client.voice.transport.getConsumers());
 
       for (const consumer of client.voice.transport.getConsumers()) {
          sources.push({
@@ -52,7 +53,7 @@ export function useMediaSources() {
       return sources;
    }, []);
 
-   const [mediaSources, setMediaSources] = useState<MediaSource[]>(gatherMediaSources());
+   const [mediaSources, setMediaSources] = useState<MediaSource[]>(() => gatherMediaSources());
 
    useEffect(() => {
       const unlisten = client?.voice.transport.listen("producer_created", () => setMediaSources(gatherMediaSources()));

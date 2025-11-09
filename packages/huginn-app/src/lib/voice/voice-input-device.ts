@@ -13,6 +13,7 @@ export class VoiceInputDevice {
    private source?: MediaStreamAudioSourceNode;
    private options?: { deviceId: string; volumePercentage: number; noiseSuppression: boolean };
    private client: HuginnClient;
+   private audioLevel?: AudioLevelChecker;
 
    public constructor(client: HuginnClient) {
       this.client = client;
@@ -104,16 +105,20 @@ export class VoiceInputDevice {
 
       const stream = await this.dummyInput.getStream(this.options!.deviceId, this.options!.volumePercentage, this.options!.noiseSuppression);
 
-      const audioLevel = new AudioLevelChecker();
-      await audioLevel.startChecking(stream);
-      audioLevel.offAll("audio-level");
-      audioLevel.on("audio-level", (db) => onLocalAudioLevel(this.client, db));
+      if (this.audioLevel) {
+         this.audioLevel.stopChecking();
+         this.audioLevel.offAll("audio-level");
+      }
+
+      this.audioLevel = new AudioLevelChecker();
+      this.audioLevel.startChecking(stream);
+      this.audioLevel.on("audio-level", (db) => onAudioLevel(this.client, db));
       const tolerance = 0;
       let timeout: number | undefined;
       let lastState = true;
       let lastMuteState = false;
 
-      function onLocalAudioLevel(client: HuginnClient, db: number) {
+      function onAudioLevel(client: HuginnClient, db: number) {
          const settings = storageStore.getState().getCachedValue("settings");
          const userId = client?.currentUser?.id ?? "";
          const voice = voiceStore.getState();
@@ -163,6 +168,6 @@ export class VoiceInputDevice {
          }
       }
 
-      return { audioLevel, stream };
+      return { audioLevel: this.audioLevel, stream };
    }
 }

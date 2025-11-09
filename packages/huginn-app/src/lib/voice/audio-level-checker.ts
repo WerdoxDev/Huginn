@@ -38,6 +38,7 @@ export class AudioLevelChecker extends EventEmitter<{ "audio-level": number }> {
       this.isStopped = true;
       this.volumeNode?.disconnect();
       this.audioContext?.close();
+
       this.volumeNode = undefined;
       this.audioContext = undefined;
    }

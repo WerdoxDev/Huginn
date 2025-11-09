@@ -1,17 +1,9 @@
 import { HuginnClient, Voice, type VoiceOptions } from "@huginn/api";
-import {
-   diff,
-   log,
-   type GatewayVoiceStateFlags,
-   type MediasoupAppData,
-   type ProducerData,
-   type Snowflake,
-   type VoiceProducerClosedData,
-} from "@huginn/shared";
+import { diff, log, type MediasoupAppData, type ProducerData, type Snowflake, type VoiceProducerClosedData } from "@huginn/shared";
 import { storageStore } from "@stores/storageStore";
 import { voiceStore } from "@stores/voiceStore";
 import { AudioLevelChecker } from "./audio-level-checker";
-import type { AppSettings, ConsumerAppData, VoicePreference } from "@/types";
+import type { AppSettings, VoicePreference } from "@/types";
 import { AudioSourcePlayer } from "./audio-source-player";
 import { VoiceInputDevice } from "./voice-input-device";
 import type { Consumer, Producer } from "mediasoup-client/types";
@@ -19,12 +11,14 @@ import { produce } from "immer";
 
 export class VoiceBridge extends Voice {
    private audioSourcePlayers: AudioSourcePlayer[];
+   private audioLevelCheckers: Map<Snowflake, AudioLevelChecker>;
    private inputDevice: VoiceInputDevice;
    private loopbackDataUnlisten?: () => void;
 
    public constructor(client: HuginnClient, options?: Partial<VoiceOptions>) {
       super(client, options);
 
+      this.audioLevelCheckers = new Map();
       this.audioSourcePlayers = [];
       this.inputDevice = new VoiceInputDevice(this.client);
 
@@ -57,31 +51,31 @@ export class VoiceBridge extends Voice {
 
       const voice = voiceStore.getState();
       voice.clearSpeakingStates();
+
+      for (const audioLevel of this.audioLevelCheckers.values()) {
+         audioLevel.stopChecking();
+      }
+
+      this.audioLevelCheckers.clear();
    }
 
-   private async onConsumerCreated(consumer: Consumer<ConsumerAppData>) {
+   private async onConsumerCreated(consumer: Consumer<MediasoupAppData>) {
       const storage = storageStore.getState();
       const voicePreferences = storage.getCachedValue("voice-preferences");
       const settings = storage.getCachedValue("settings");
 
-      if (consumer.kind === "audio") {
+      if (consumer.appData.mediaKind === "microphone") {
          const store = voiceStore.getState();
-         let audioLevel: AudioLevelChecker | undefined;
-         if (consumer.appData.mediaKind === "microphone") {
-            audioLevel = new AudioLevelChecker();
-            await audioLevel.startChecking(new MediaStream([consumer.track]));
-            audioLevel.on("audio-level", (db: number) => {
-               // not -100 because it sometimes start at ~ -98
-               const speaking = db > -95;
-               store.updateSpeakingState(consumer.appData.userId, speaking);
-            });
-         }
 
-         consumer.observer.on("close", () => {
-            audioLevel?.stopChecking();
+         const audioLevel = new AudioLevelChecker();
+         this.audioLevelCheckers.set(consumer.appData.userId, audioLevel);
+
+         await audioLevel.startChecking(new MediaStream([consumer.track]));
+         audioLevel.on("audio-level", (db: number) => {
+            // not -100 because it sometimes start at ~ -98
+            const speaking = db > -95;
+            store.updateSpeakingState(consumer.appData.userId, speaking);
          });
-
-         consumer.appData.audioLevel = audioLevel;
       }
 
       // refresh consumer audio players
@@ -116,6 +110,10 @@ export class VoiceBridge extends Voice {
       const voice = voiceStore.getState();
 
       if (data.kind === "microphone") {
+         const audioLevel = this.audioLevelCheckers.get(data.userId);
+         audioLevel?.stopChecking();
+         this.audioLevelCheckers.delete(data.userId);
+
          voice.removeSpeakingState(data.userId);
       }
 
@@ -172,7 +170,7 @@ export class VoiceBridge extends Voice {
       }
    }
 
-   private refreshConsumerAudioPlayers(consumers: Consumer<ConsumerAppData>[], voicePreferences: VoicePreference[], outputVolumePercent: number) {
+   private refreshConsumerAudioPlayers(consumers: Consumer<MediasoupAppData>[], voicePreferences: VoicePreference[], outputVolumePercent: number) {
       log("app:voice-bridge", "default", "refresh consumer audio players", "ovol:", outputVolumePercent, "ncons:", consumers.length);
 
       // Remove old players

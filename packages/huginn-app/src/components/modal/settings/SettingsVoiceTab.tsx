@@ -28,7 +28,6 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
       () => cameraDevices?.map((x) => ({ text: x.label, value: x.deviceId })) ?? [],
       [cameraDevices],
    );
-   // const selectedInputDevice
 
    const audioLevel = useRef<AudioLevelChecker>(null);
    const inputDevice = useRef<VoiceInputDevice>(null);
@@ -155,10 +154,6 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
       video.onended = () => {
          stopCameraTest();
       };
-   }
-
-   if (!selectedInput || !selectedOutput) {
-      return;
    }
 
    return (

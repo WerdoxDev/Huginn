@@ -397,8 +397,6 @@ export type SaveFileResult = {
    error?: string;
 };
 
-export type ConsumerAppData = MediasoupAppData & { audioLevel?: AudioLevelChecker };
-
 export type MediaSource = {
    consumerId?: string;
    producerId?: string;
