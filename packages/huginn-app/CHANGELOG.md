@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.61.7](https://github.com/WerdoxDev/Huginn/compare/app@v0.61.6...app@v0.61.7) (2025-11-09)
+
+
+### Bug Fixes
+
+* **app:** more visual bugs fix + audio level checker deduplication ([d117b3c](https://github.com/WerdoxDev/Huginn/commit/d117b3cfacc6ca5c42d02a220ef4c5eb13a1a1be))
+
 ## [0.61.6](https://github.com/WerdoxDev/Huginn/compare/app@v0.61.5...app@v0.61.6) (2025-11-08)
 
 
