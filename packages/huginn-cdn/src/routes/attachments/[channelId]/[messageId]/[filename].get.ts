@@ -17,17 +17,10 @@ const querySchema = t.Object({
 
 export const getMessageAttachment = new Elysia().use(globalPlugin).get(
    "/cdn/attachments/:channelId/:messageId/:filename",
-   async ({
-      query: { ex, hm, format, height, quality, width },
-      status,
-      path,
-      params: { channelId, filename, messageId },
-      headers,
-      global,
-   }) => {
+   async ({ query: { ex, hm, format, height, quality, width }, status, path, params: { channelId, filename, messageId }, headers, global }) => {
       const hasher = new Bun.CryptoHasher("sha256", envs.CDN_HMAC_SECRET);
 
-      const hashPath = path.replace("/cdn/", "");
+      const hashPath = decodeURIComponent(path.replace("/cdn/", ""));
       hasher.update(`${hashPath}:${ex}`);
       const expectedSignature = hasher.digest("hex");
 
