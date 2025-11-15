@@ -7,7 +7,7 @@ export default {
    compression: "maximum",
    win: {
       target: { target: "nsis", arch: ["x64"] },
-      icon: "assets/icon.ico",
+      icon: "electron-assets/icon.ico",
       publish: {
          provider: "generic",
          url: "https://midgard.huginn.dev/api/update/${os}",
@@ -29,6 +29,6 @@ export default {
    directories: {
       output: "dist/electron",
    },
-   icon: "assets/icon.ico",
-   extraResources: ["assets"],
+   icon: "electron-assets/icon.ico",
+   extraResources: ["electron-assets"],
 } as Configuration;

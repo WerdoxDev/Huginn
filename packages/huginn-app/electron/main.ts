@@ -32,7 +32,7 @@ try {
       app.exit();
    }
 } catch (e) {
-   error("app:electron", "Default protocol registeration or single instance lock failed:", e);
+   error("app:electron", "Default protocol registration or single instance lock failed:", e);
 }
 
 // application-loopback executable path when packaged
@@ -167,7 +167,8 @@ class HuginnApp {
    private configureTray() {
       log("app:electron", "default", "configure tray");
 
-      const tray = new Tray(app.isPackaged ? path.join(process.resourcesPath, "assets", "icon.ico") : "./assets/icon.ico");
+      const iconName = "icon.ico";
+      const tray = new Tray(app.isPackaged ? path.join(process.resourcesPath, "electron-assets", iconName) : `./electron-assets/${iconName}`);
       const contextMenu = Menu.buildFromTemplate([
          {
             label: "Quit",
