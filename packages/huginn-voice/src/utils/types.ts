@@ -1,5 +1,5 @@
 import type { APIUser, MediasoupAppData, Snowflake } from "@huginn/shared";
-import type { Consumer, Producer, Router, Transport } from "mediasoup/node/lib/types";
+import type { Consumer, Producer, Router, Transport } from "mediasoup/types";
 
 export type ClientSessionProperties = {
    token: string;
@@ -16,7 +16,7 @@ export type RTCPeer = {
    consumers: Map<string, Consumer<MediasoupAppData>>;
 };
 
-export type RouterType = {
+export type RouterData = {
    channelId: string;
    router: Router;
    peers: Map<Snowflake, RTCPeer>;

@@ -12,18 +12,14 @@ import {
    type VoiceConnectTransportData,
    type VoiceConsumeData,
    type VoiceCreateTransportData,
-   type VoiceHeartbeatAck,
-   type VoiceHello,
    type VoiceIdentifyData,
    VoiceOperations,
    type VoicePayload,
-   type VoicePong,
    type VoiceProduceData,
    type VoiceResumeConsumerData,
    WorkerID,
 } from "@huginn/shared";
-import { ws } from "#index";
-import { createRouter, createTransport, routers, verifyPeer } from "#mediasoup";
+import { createRouter, createTransport, getRouterProducers, routers, verifyPeer } from "#mediasoup";
 import type { RTCPeer } from "#utils/types";
 import { ClientSession } from "./client-session";
 
@@ -33,8 +29,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
    }
 
    public onOpen(session: ClientSession) {
-      const helloData: VoiceHello = { op: VoiceOperations.HELLO, d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL } };
-      this.send(session.peer, helloData);
+      this.send(session.peer, { op: VoiceOperations.HELLO, d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL } });
    }
 
    public async onClose(session: ClientSession, _event: { code?: number; reason?: string }) {
@@ -52,20 +47,35 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          }
 
          // Send producer_closed for all of the user producers
-         for (const producer of rtcPeer.producers.values()) {
-            this.handleCloseProducer(session, { channelId: router.channelId, producerId: producer.id });
-         }
+         // for (const producer of rtcPeer.producers.values()) {
+         //    this.onCloseProducer(session, { channelId: router.channelId, producerId: producer.id });
+         // }
 
          router.peers.delete(session.sessionId);
          const producerIds = Array.from(rtcPeer.producers.values().map((x) => x.id));
-         for (const [otherPeerId] of router.peers) {
-            const peerLeftData: VoicePayload = {
+         const consumerIds = Array.from(rtcPeer.consumers.values().map((x) => x.id));
+
+         // Close all producers of this peer plus any consumers consuming this peer's producers
+         for (const producer of rtcPeer.producers.values()) {
+            producer.close();
+
+            for (const otherPeer of router.peers.values()) {
+               for (const consumer of otherPeer.consumers.values().filter((x) => x.producerId === producer.id)) {
+                  consumer.close();
+               }
+            }
+         }
+
+         for (const [otherSessionId] of router.peers) {
+            const otherSession = this.getSessionBySessionId(otherSessionId);
+            if (!otherSession) continue;
+
+            this.send(otherSession.peer, {
                op: VoiceOperations.DISPATCH,
                t: "peer_left",
-               d: { sessionId: session.sessionId, producerIds, userId: rtcPeer.userId },
-               s: session.getIncreasedSequence(),
-            };
-            ws.publish(otherPeerId, JSON.stringify(peerLeftData));
+               d: { sessionId: session.sessionId, producerIds, consumerIds, userId: rtcPeer.userId },
+               s: otherSession.getIncreasedSequence(),
+            });
          }
 
          // If room is empty, close it
@@ -79,43 +89,43 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
    public async onMessage(session: ClientSession, data: VoicePayload) {
       switch (data.op) {
          case VoiceOperations.PING:
-            this.handlePing(session);
+            this.onPing(session);
             break;
          case VoiceOperations.HEARTBEAT:
-            this.handleHeartbeat(session);
+            this.onHeartbeat(session);
             break;
          case VoiceOperations.IDENTIFY:
-            await this.handleIdentify(session, data.d);
+            await this.onIdentify(session, data.d);
             break;
          case VoiceOperations.DISPATCH:
             switch (data.t) {
                case "create_transport":
-                  await this.handleCreateTransport(session, data.d);
+                  await this.onCreateTransport(session, data.d);
                   break;
                case "connect_transport":
-                  await this.handleConnectTransport(session, data.d);
+                  await this.onConnectTransport(session, data.d);
                   break;
                case "produce":
-                  await this.handleProduce(session, data.d);
+                  await this.onProduce(session, data.d);
                   break;
                case "consume":
-                  await this.handleConsume(session, data.d);
+                  await this.onConsume(session, data.d);
                   break;
                case "resume_consumer":
-                  await this.handleResumeConsumer(session, data.d);
+                  await this.onResumeConsumer(session, data.d);
                   break;
                case "close_producer":
-                  this.handleCloseProducer(session, data.d);
+                  this.onCloseProducer(session, data.d);
                   break;
                case "close_consumer":
-                  this.handleCloseConsumer(session, data.d);
+                  this.onCloseConsumer(session, data.d);
                   break;
             }
             break;
       }
    }
 
-   private async handleResumeConsumer(session: ClientSession, data: VoiceResumeConsumerData) {
+   private async onResumeConsumer(session: ClientSession, data: VoiceResumeConsumerData) {
       const router = routers.get(data.channelId);
 
       if (!verifyPeer(router, session, data.channelId)) {
@@ -131,17 +141,15 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
 
       await consumer.resume();
 
-      const consumerResumedData: VoicePayload = {
+      this.send(session.peer, {
          op: VoiceOperations.DISPATCH,
          t: "consumer_resumed",
          d: { consumerId: data.consumerId },
          s: session.getIncreasedSequence(),
-      };
-
-      this.send(session.peer, consumerResumedData);
+      });
    }
 
-   private async handleConsume(session: ClientSession, data: VoiceConsumeData) {
+   private async onConsume(session: ClientSession, data: VoiceConsumeData) {
       const router = routers.get(data.channelId);
 
       if (!verifyPeer(router, session, data.channelId)) {
@@ -150,9 +158,10 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
 
       const rtcPeer = router.peers.get(session.sessionId);
       const producerPeer = router.peers.values().find((x) => x.producers.values().find((y) => y.id === data.producerId));
+      const producer = producerPeer?.producers.get(data.producerId);
       const transportData = rtcPeer?.transports.get(data.transportId);
 
-      if (!rtcPeer || !producerPeer) {
+      if (!rtcPeer || !producerPeer || !producer) {
          return;
       }
 
@@ -169,13 +178,13 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       const consumer = await transportData.transport.consume<MediasoupAppData>({
          producerId: data.producerId,
          rtpCapabilities: data.rtpCapabilities,
-         appData: producerPeer.producers.get(data.producerId)?.appData ?? { mediaKind: "unknown", userId: rtcPeer.userId },
+         appData: { mediaKind: producer.appData.mediaKind, userId: rtcPeer.userId },
          paused: true,
       });
 
       rtcPeer?.consumers.set(consumer.id, consumer);
 
-      const consumerCreatedData: VoicePayload = {
+      this.send(session.peer, {
          op: VoiceOperations.DISPATCH,
          t: "consumer_created",
          d: {
@@ -186,12 +195,24 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             producerUserId: producerPeer.userId,
          },
          s: session.getIncreasedSequence(),
-      };
+      });
 
-      this.send(session.peer, consumerCreatedData);
+      for (const [otherSessionId] of router.peers) {
+         const otherSession = this.getSessionBySessionId(otherSessionId);
+         if (!otherSession) continue;
+
+         if (otherSessionId !== session.sessionId) {
+            this.send(otherSession.peer, {
+               op: VoiceOperations.DISPATCH,
+               t: "new_consumer",
+               d: { kind: consumer.appData.mediaKind, consumerId: consumer.id, producerId: producer.id, userId: rtcPeer.userId },
+               s: otherSession.getIncreasedSequence(),
+            });
+         }
+      }
    }
 
-   private async handleProduce(session: ClientSession, data: VoiceProduceData) {
+   private async onProduce(session: ClientSession, data: VoiceProduceData) {
       const router = routers.get(data.channelId);
 
       if (!verifyPeer(router, session, data.channelId)) {
@@ -215,29 +236,29 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
 
       rtcPeer?.producers.set(producer.id, producer);
 
-      for (const [otherSessionId] of router.peers) {
-         if (otherSessionId !== session.sessionId) {
-            const newProducerData: VoicePayload = {
-               op: VoiceOperations.DISPATCH,
-               t: "new_producer",
-               d: { kind: data.kind, producerId: producer.id, userId: rtcPeer.userId },
-               s: session.getIncreasedSequence(),
-            };
-            ws.publish(otherSessionId, JSON.stringify(newProducerData));
-         }
-      }
-
-      const producerCreatedData: VoicePayload = {
+      this.send(session.peer, {
          op: VoiceOperations.DISPATCH,
          t: "producer_created",
          d: { producerId: producer.id, kind: producer.appData.mediaKind },
          s: session.getIncreasedSequence(),
-      };
+      });
 
-      this.send(session.peer, producerCreatedData);
+      for (const [otherSessionId] of router.peers) {
+         const otherSession = this.getSessionBySessionId(otherSessionId);
+         if (!otherSession) continue;
+
+         if (otherSessionId !== session.sessionId) {
+            this.send(otherSession.peer, {
+               op: VoiceOperations.DISPATCH,
+               t: "new_producer",
+               d: { kind: data.kind, producerId: producer.id, userId: rtcPeer.userId },
+               s: otherSession.getIncreasedSequence(),
+            });
+         }
+      }
    }
 
-   private async handleConnectTransport(session: ClientSession, data: VoiceConnectTransportData) {
+   private async onConnectTransport(session: ClientSession, data: VoiceConnectTransportData) {
       const router = routers.get(data.channelId);
 
       if (!verifyPeer(router, session, data.channelId)) {
@@ -253,17 +274,15 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
 
       await transportData.transport.connect({ dtlsParameters: data.dtlsParameters });
 
-      const transportConnectedData: VoicePayload = {
+      this.send(session.peer, {
          op: VoiceOperations.DISPATCH,
          t: "transport_connected",
          d: { transportId: transportData.transport.id },
          s: session.getIncreasedSequence(),
-      };
-
-      this.send(session.peer, transportConnectedData);
+      });
    }
 
-   private async handleCreateTransport(session: ClientSession, data: VoiceCreateTransportData) {
+   private async onCreateTransport(session: ClientSession, data: VoiceCreateTransportData) {
       const router = routers.get(data.channelId);
 
       if (!verifyPeer(router, session, data.channelId)) {
@@ -274,7 +293,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       const rtcPeer = router.peers.get(session.sessionId);
       rtcPeer?.transports.set(transport.id, { transport, direction: data.direction });
 
-      const transportCreatedData: VoicePayload = {
+      this.send(session.peer, {
          op: VoiceOperations.DISPATCH,
          t: "transport_created",
          d: {
@@ -288,12 +307,10 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             },
          },
          s: session.getIncreasedSequence(),
-      };
-
-      this.send(session.peer, transportCreatedData);
+      });
    }
 
-   private handleCloseProducer(session: ClientSession, data: VoiceCloseProducerData) {
+   private onCloseProducer(session: ClientSession, data: VoiceCloseProducerData) {
       const router = routers.get(data.channelId);
 
       if (!verifyPeer(router, session, data.channelId)) {
@@ -310,28 +327,26 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       producer.close();
       rtcPeer.producers.delete(producer.id);
 
-      const producerClosedData: VoicePayload = {
-         op: VoiceOperations.DISPATCH,
-         t: "producer_closed",
-         d: { producerId: producer.id, userId: rtcPeer.userId, kind: producer.appData.mediaKind },
-         s: session.getIncreasedSequence(),
-      };
-
-      for (const [otherPeerId, otherPeer] of router.peers) {
-         ws.publish(otherPeerId, JSON.stringify(producerClosedData));
-
-         for (const consumer of otherPeer.consumers.values().filter((x) => x.producerId === data.producerId)) {
-            const otherSession = this.sessions.get(otherPeer.sessionId);
-            if (!otherSession) {
-               continue;
-            }
-
-            this.handleCloseConsumer(otherSession, { channelId: data.channelId, consumerId: consumer.id });
+      for (const [otherSessionId, otherPeer] of router.peers) {
+         // See if any consumers of this peer was consuming the deleted producer
+         for (const consumer of otherPeer.consumers.values().filter((x) => x.producerId === producer.id)) {
+            consumer.close();
+            otherPeer.consumers.delete(consumer.id);
          }
+
+         const otherSession = this.getSessionBySessionId(otherSessionId);
+         if (!otherSession) continue;
+
+         this.send(otherSession.peer, {
+            op: VoiceOperations.DISPATCH,
+            t: "producer_closed",
+            d: { producerId: producer.id, userId: rtcPeer.userId, kind: producer.appData.mediaKind },
+            s: otherSession.getIncreasedSequence(),
+         });
       }
    }
 
-   private handleCloseConsumer(session: ClientSession, data: VoiceCloseConsumerData) {
+   private onCloseConsumer(session: ClientSession, data: VoiceCloseConsumerData) {
       const router = routers.get(data.channelId);
 
       if (!verifyPeer(router, session, data.channelId)) {
@@ -348,17 +363,20 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       consumer?.close();
       rtcPeer.consumers.delete(consumer?.id);
 
-      const consumerClosedData: VoicePayload = {
-         op: VoiceOperations.DISPATCH,
-         t: "consumer_closed",
-         d: { consumerId: consumer.id, producerId: consumer.producerId, userId: rtcPeer.userId },
-         s: session.getIncreasedSequence(),
-      };
+      for (const [otherSessionId] of router.peers) {
+         const otherSession = this.getSessionBySessionId(otherSessionId);
+         if (!otherSession) continue;
 
-      this.send(session.peer, consumerClosedData);
+         this.send(otherSession.peer, {
+            op: VoiceOperations.DISPATCH,
+            t: "consumer_closed",
+            d: { producerId: consumer.producerId, userId: rtcPeer.userId, consumerId: consumer.id, kind: consumer.appData.mediaKind },
+            s: otherSession.getIncreasedSequence(),
+         });
+      }
    }
 
-   private async handleIdentify(session: ClientSession, data: VoiceIdentifyData) {
+   private async onIdentify(session: ClientSession, data: VoiceIdentifyData) {
       const { valid, payload } = await verifyToken("voice", data.token);
 
       if (!valid || !payload) {
@@ -381,32 +399,30 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       };
       router.peers.set(session.sessionId, rtcPeer);
 
-      const producers = Array.from(
-         router.peers
-            .values()
-            .map((x) =>
-               Array.from(x.producers.values().map((y) => ({ producerId: y.id, userId: x.userId, kind: y.appData.mediaKind }) as ProducerData)),
-            ),
-      ).flat();
+      const producers = getRouterProducers(router).map((x) => {
+         const producer: ProducerData = {
+            userId: x.appData.userId,
+            kind: x.appData.mediaKind,
+            producerId: x.id,
+         };
 
-      const readyData: VoicePayload = {
+         return producer;
+      });
+
+      this.send(session.peer, {
          op: VoiceOperations.DISPATCH,
          t: "ready",
          d: { rtpCapabilities: router.router.rtpCapabilities, producers },
          s: session.getIncreasedSequence(),
-      };
-
-      this.send(session.peer, readyData);
+      });
    }
 
-   private handleHeartbeat(session: ClientSession) {
+   private onHeartbeat(session: ClientSession) {
       session.resetHeartbeatTimeout();
-      const heartbeatAckData: VoiceHeartbeatAck = { op: VoiceOperations.HEARTBEAT_ACK };
-      this.send(session.peer, heartbeatAckData);
+      this.send(session.peer, { op: VoiceOperations.HEARTBEAT_ACK });
    }
 
-   private handlePing(session: ClientSession) {
-      const pongData: VoicePong = { op: VoiceOperations.PONG };
-      this.send(session.peer, pongData);
+   private onPing(session: ClientSession) {
+      this.send(session.peer, { op: VoiceOperations.PONG });
    }
 }
