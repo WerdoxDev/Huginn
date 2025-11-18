@@ -90,11 +90,51 @@ declare global {
 
    interface AudioContext {
       setSinkId: (sinkId: string) => Promise<void>;
+      sinkId: string;
       // setSinkId is undefined on FireFox by default
    }
 
    interface AudioContextOptions {
       sinkId?: string;
    }
-   // 	// }
+
+   interface RTCIceCandidateStats {
+      address?: string;
+      candidateType: string;
+      deleted: boolean;
+      foundation?: string;
+      port?: number;
+      priority?: number;
+      protocol?: "tcp" | "udp";
+      relayProtocol: string;
+      transportId: string;
+      url?: string;
+      usernameFragment?: string;
+   }
+
+   interface RTCCodecStats {
+      channels?: number;
+      clockRate?: number;
+      mimeType: string;
+      payloadType: number;
+      sdpFmtpLine?: string;
+      transportId: string;
+   }
+
+   interface RTCAudioSourceStats {
+      audioLevel?: number;
+      totalAudioEnergy?: number;
+      totalSamplesDuration?: number;
+      trackIdentifier: string;
+      kind: "audio";
+   }
+
+   interface RTCVideoSourceStats {
+      frames?: number;
+      framesPerSecond?: number;
+      height?: number;
+      width: string;
+      trackIdentifier: string;
+      kind: "video";
+   }
 }

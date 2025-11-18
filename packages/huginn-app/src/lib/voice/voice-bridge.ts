@@ -1,5 +1,5 @@
 import { HuginnClient, Voice, type VoiceOptions } from "@huginn/api";
-import { diff, log, type MediasoupAppData, type ProducerData, type Snowflake, type VoiceProducerClosedData } from "@huginn/shared";
+import { diff, log, type MediasoupAppData, type ProducerData, type Snowflake } from "@huginn/shared";
 import { storageStore } from "@stores/storageStore";
 import { voiceStore } from "@stores/voiceStore";
 import { AudioLevelChecker } from "./audio-level-checker";
@@ -8,26 +8,34 @@ import { AudioSourcePlayer } from "./audio-source-player";
 import { VoiceInputDevice } from "./voice-input-device";
 import type { Consumer, Producer } from "mediasoup-client/types";
 import { produce } from "immer";
+import { VoiceDebugger } from "./voice-debugger";
 
 export class VoiceBridge extends Voice {
-   private audioSourcePlayers: AudioSourcePlayer[];
-   private audioLevelCheckers: Map<Snowflake, AudioLevelChecker>;
-   private inputDevice: VoiceInputDevice;
+   public readonly audioSourcePlayers: AudioSourcePlayer[];
+   public readonly audioLevelCheckers: Map<Snowflake, AudioLevelChecker>;
+   public readonly inputDevice: VoiceInputDevice;
    private loopbackDataUnlisten?: () => void;
+   public readonly debugger: VoiceDebugger;
 
-   public constructor(client: HuginnClient, options?: Partial<VoiceOptions>) {
+   public constructor(client: HuginnClient<VoiceBridge>, options?: Partial<VoiceOptions>) {
       super(client, options);
 
       this.audioLevelCheckers = new Map();
       this.audioSourcePlayers = [];
-      this.inputDevice = new VoiceInputDevice(this.client);
+      this.inputDevice = new VoiceInputDevice(client);
+      this.debugger = new VoiceDebugger(client);
 
       this.on("ready", async () => await this.onReady());
       this.on("reset", async () => await this.onReset());
+
       this.transport.on("consumer_created", async (d) => await this.onConsumerCreated(d));
+
       this.transport.on("producer_created", (d) => this.onProducerCreated(d));
-      this.signaling.on("producer_closed", async (d) => await this.onProducerClosed(d));
-      this.signaling.on("new_producer", async (d) => await this.onNewProducer(d));
+      this.transport.on("remote_producer_created", async (d) => await this.onRemoteProducerCreated(d));
+
+      this.transport.on("producer_closed", async (d) => await this.onAnyProducerClosed(d));
+      this.transport.on("remote_producer_closed", async (d) => await this.onAnyProducerClosed(d));
+
       storageStore.subscribe(
          (state) => state.cache.settings,
          (current, old) => this.onStorageUpdated(current, old),
@@ -39,13 +47,10 @@ export class VoiceBridge extends Voice {
 
       // Initialize the actual audio sending stream
       await this.openOrReplaceMicrophone(settings.inputDeviceId, settings.inputVolume, settings.noiseSuppression);
-
-      for (const producer of this.transport.getRemoteProducers()) {
-         this.onNewProducer(producer);
-      }
    }
 
    private async onReset() {
+      // this.debugger.closeDebugger();
       this.inputDevice.close();
       this.stopAudioLoopback();
 
@@ -56,6 +61,11 @@ export class VoiceBridge extends Voice {
          audioLevel.stopChecking();
       }
 
+      for (const audioPlayer of this.audioSourcePlayers) {
+         audioPlayer.stop();
+      }
+
+      this.audioSourcePlayers.splice(0, this.audioSourcePlayers.length);
       this.audioLevelCheckers.clear();
    }
 
@@ -67,7 +77,7 @@ export class VoiceBridge extends Voice {
       if (consumer.appData.mediaKind === "microphone") {
          const store = voiceStore.getState();
 
-         const audioLevel = new AudioLevelChecker();
+         const audioLevel = new AudioLevelChecker(consumer.id, consumer.appData.userId, consumer.appData.mediaKind);
          this.audioLevelCheckers.set(consumer.appData.userId, audioLevel);
 
          await audioLevel.startChecking(new MediaStream([consumer.track]));
@@ -82,7 +92,7 @@ export class VoiceBridge extends Voice {
       this.refreshConsumerAudioPlayers(this.transport.getConsumers(), voicePreferences, settings.outputVolume);
    }
 
-   private async onNewProducer(data: ProducerData): Promise<void> {
+   private async onRemoteProducerCreated(data: ProducerData): Promise<void> {
       if (data.kind === "camera" || data.kind === "microphone") {
          await this.transport.createConsumer(data.userId, data.kind);
       }
@@ -106,7 +116,7 @@ export class VoiceBridge extends Voice {
       }
    }
 
-   private async onProducerClosed(data: VoiceProducerClosedData) {
+   private async onAnyProducerClosed(data: ProducerData) {
       const voice = voiceStore.getState();
 
       if (data.kind === "microphone") {

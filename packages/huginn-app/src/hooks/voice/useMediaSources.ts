@@ -11,7 +11,6 @@ export function useMediaSources() {
       }
 
       const sources: MediaSource[] = [];
-      console.log(client.voice.transport.getConsumers());
 
       for (const consumer of client.voice.transport.getConsumers()) {
          sources.push({

@@ -2,18 +2,19 @@ import { type HMediaKind, log, type Snowflake } from "@huginn/shared";
 import { storageStore } from "@stores/storageStore";
 
 export class AudioSourcePlayer {
-   private gainNode: GainNode;
-   private audioContext: AudioContext;
+   public readonly gainNode: GainNode;
+   public readonly audioContext: AudioContext;
    private audioElement: HTMLAudioElement;
    private abortController: AbortController;
-   public producerId: string;
-   public userId: Snowflake;
-   public kind: HMediaKind;
+   public readonly producerId: string;
+   public readonly userId: Snowflake;
+   public readonly kind: HMediaKind;
+   public readonly stream: MediaStream;
 
-   private globalGain?: number;
-   private localGain?: number;
+   public globalGain: number = 1;
+   public localGain: number = 1;
 
-   public constructor(srcObject: MediaProvider, producerId: string, userId: Snowflake, kind: HMediaKind) {
+   public constructor(stream: MediaStream, producerId: string, userId: Snowflake, kind: HMediaKind) {
       log("app:audio-source-player", "default", "initializing", "pid:", producerId, "uid:", userId, "mk:", kind);
 
       this.producerId = producerId;
@@ -21,9 +22,10 @@ export class AudioSourcePlayer {
       this.kind = kind;
       this.abortController = new AbortController();
 
+      this.stream = stream;
       this.audioElement = document.createElement("audio");
       this.audioElement.autoplay = false;
-      this.audioElement.srcObject = srcObject;
+      this.audioElement.srcObject = stream;
 
       this.audioContext = new AudioContext({ sinkId: storageStore.getState().getCachedValue("settings").outputDeviceId });
       this.gainNode = this.audioContext.createGain();
@@ -56,20 +58,20 @@ export class AudioSourcePlayer {
    public setGain(globalGainPercent: number | undefined, localGainPercent: number | undefined) {
       log("app:audio-source-player", "default", "set gain", "uid:", this.userId, "gg:", globalGainPercent, "lg:", localGainPercent);
 
-      if (globalGainPercent) {
+      if (globalGainPercent !== undefined) {
          this.globalGain = (globalGainPercent / 100) ** 2.3219;
       }
       if (localGainPercent !== undefined) {
          this.localGain = (localGainPercent / 100) ** 2.3219;
       }
 
-      if (this.localGain === undefined) {
-         this.localGain = 1;
-      }
+      // if (this.localGain === undefined) {
+      //    this.localGain = 1;
+      // }
 
-      if (this.globalGain === undefined) {
-         this.globalGain = 1;
-      }
+      // if (this.globalGain === undefined) {
+      //    this.globalGain = 1;
+      //
 
       this.gainNode.gain.value = this.globalGain * this.localGain;
    }

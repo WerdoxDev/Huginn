@@ -10,7 +10,7 @@ import type { HMediaKind } from "@huginn/shared";
 export default function VoiceElementContextMenu() {
    const { data } = useContextMenu("voice_element");
    const client = useClient();
-   const { consumeStream } = useVoiceUtils();
+   const { consumeStream, unconsumeStream } = useVoiceUtils();
 
    const { saveFromCachedValue } = useStorageStore();
    const voicePreferences = useStorage("voice-preferences");
@@ -47,6 +47,14 @@ export default function VoiceElementContextMenu() {
       await consumeStream(data.user.id);
    }
 
+   async function unconsume() {
+      if (!data) {
+         return;
+      }
+
+      await unconsumeStream(data.user.id);
+   }
+
    useEffect(() => {
       return () => {
          saveFromCachedValue("voice-preferences");
@@ -72,7 +80,7 @@ export default function VoiceElementContextMenu() {
                   <ContextMenu.Item
                      label={mediaSources.some((x) => x?.kind === "stream_video") ? "Stop Watching" : "Stop Listening"}
                      color="negative"
-                     onClick={() => client?.voice.transport.closeConsumer(data.mediaSource.consumerId!)}
+                     onClick={unconsume}
                   />
                ) : (
                   <ContextMenu.Item label={mediaSources.some((x) => x?.kind === "stream_video") ? "Watch" : "Listen"} onClick={consume} />

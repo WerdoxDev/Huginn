@@ -8,13 +8,17 @@ import type {
    APICallMessage,
    APIDefaultMessage,
    APIGetKnownApplicationsResult,
+   APIPublicUser,
    APIRelationshipWithoutOwner,
    APIReplyMessage,
+   ConsumerData,
    DeepPartial,
    DirectChannel,
+   GatewayVoiceState,
    HMediaKind,
    MediasoupAppData,
    PresenceUser,
+   ProducerData,
    RelationshipType,
    Snowflake,
    UserPresence,
@@ -404,4 +408,172 @@ export type MediaSource = {
    kind: HMediaKind;
    userId: Snowflake;
    type: "consuming" | "consumable" | "producing";
+};
+
+export type ALCData = {
+   consumerId: string;
+   currentDb: number;
+   userId: Snowflake;
+   kind: HMediaKind;
+   isStopped: boolean;
+   context?: AudioContextData;
+   stream?: StreamData;
+};
+
+export type ASPData = {
+   context?: AudioContextData;
+   stream?: StreamData;
+   gain: number;
+   globalGain: number;
+   localGain: number;
+   producerId: string;
+   userId: Snowflake;
+   kind: HMediaKind;
+};
+
+export type AudioContextData = {
+   baseLatency: number;
+   outputLatency: number;
+   state: AudioContextState;
+   sinkId: string;
+};
+
+export type StreamData = {
+   id: string;
+   audioTracks: Array<TrackData>;
+   videoTracks: Array<TrackData>;
+};
+
+export type TrackData = {
+   id: string;
+   kind: string;
+   readyState: MediaStreamTrackState;
+   enabled: boolean;
+   label: string;
+   muted: boolean;
+   settings: MediaTrackSettings;
+};
+
+export type CandidateData = {
+   address?: string;
+   port?: number;
+   protocol?: "tcp" | "udp";
+};
+
+export type ConsumerStats = {
+   connection?: {
+      rtt?: number;
+      availableOutgoingBitrate?: number;
+      availableIncomingBitrate?: number;
+      localCandidate?: CandidateData;
+      remoteCandidate?: CandidateData;
+   };
+   transport?: {
+      bytesReceived?: number;
+      bytesSent?: number;
+      packetsReceived?: number;
+      packetsSent?: number;
+      iceState?: string;
+      dtlsState: string;
+   };
+   codec?: {
+      channels?: number;
+      clockRate?: number;
+      mimeType: string;
+   };
+   audioInbound?: {
+      bitrate: number;
+      jitter?: number;
+      audioLevel?: number;
+      packetsLost?: number;
+      concealedSamples?: number;
+      silentConcealedSamples?: number;
+   };
+   videoInbound?: {
+      bitrate: number;
+      width?: number;
+      height?: number;
+      fps?: number;
+      jitter?: number;
+      packetsLost?: number;
+      framesDropped?: number;
+   };
+};
+
+export type ProducerStats = {
+   connection?: {
+      rtt?: number;
+      availableOutgoingBitrate?: number;
+      availableIncomingBitrate?: number;
+      localCandidate?: CandidateData;
+      remoteCandidate?: CandidateData;
+   };
+   transport?: {
+      bytesReceived?: number;
+      bytesSent?: number;
+      packetsReceived?: number;
+      packetsSent?: number;
+      iceState?: string;
+      dtlsState: string;
+   };
+   codec?: {
+      channels?: number;
+      clockRate?: number;
+      mimeType: string;
+   };
+   audioOutbound?: {
+      bitrate: number;
+      audioLevel?: number;
+      packetsSent?: number;
+      totalAudioEnergy?: number;
+      targetBitrate?: number;
+   };
+   videoOutbound?: {
+      bitrate: number;
+      width?: number;
+      height?: number;
+      fps?: number;
+      packetsSent?: number;
+      scalabilityMode?: string;
+      targetBitrate?: number;
+   };
+};
+
+export type ConsumerDebugData = {
+   type: "local" | "remote";
+   id: string;
+   producerId: string;
+   userId: Snowflake;
+   track?: TrackData;
+   kind?: string;
+   mediaKind: HMediaKind;
+   stats?: ConsumerStats;
+};
+
+export type ProducerDebugData = {
+   type: "local" | "remote";
+   id: string;
+   userId: Snowflake;
+   track?: TrackData;
+   kind?: string;
+   mediaKind: HMediaKind;
+   stats?: ProducerStats;
+};
+
+export type StatsParserData = { id: string; type: "consumer" | "producer" };
+
+export type VoiceStatesDebugData = {
+   speaking?: boolean;
+} & GatewayVoiceState;
+
+export type UsersDebugData = AppUser;
+
+export type VoiceDebugData = {
+   alcData: Array<ALCData>;
+   aspData: Array<ASPData>;
+   consumersData: Array<ConsumerDebugData>;
+   producersData: Array<ProducerDebugData>;
+   statsParsersData: Array<StatsParserData>;
+   voiceStatesData: Array<VoiceStatesDebugData>;
+   usersData: Array<UsersDebugData>;
 };

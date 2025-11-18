@@ -15,14 +15,6 @@ import { DropdownMenu } from "@components/dropdown/DropdownMenu";
 import type { VoiceStatus } from "@huginn/api";
 
 const statuses: Record<VoiceStatus, { text: string; color?: string }> = {
-   // // connected: { text: "RTC Signalling...", color: "!text-caution-100" },
-   // authenticated: { text: "RTC Signalling...", color: "!text-caution-100" },
-   // connecting: { text: "RTC Signalling...", color: "!text-caution-100" },
-   // reconnecting: { text: "Reconnecting...", color: "!text-negative-100" },
-   // disconnected: { text: "Disconnected", color: "!text-negative-100" },
-   // opening: { text: "Connecting...", color: "!text-caution-100" },
-   // none: { text: "Connecting...", color: "!text-caution-100" },
-   // rtc_ready: { text: "Connected" },
    disconnected: { text: "Disconnected", color: "!text-negative-100" },
    idle: { text: "Connecting...", color: "!text-caution-100" },
    connecting: { text: "Connecting...", color: "!text-caution-100" },
@@ -74,6 +66,10 @@ export default function VoiceStatus() {
       await client?.voiceManager.disconnectVoice();
    }
 
+   function onDebug() {
+      client?.voice.debugger.openDebugger();
+   }
+
    if (!user || !voiceConnection.channelId) {
       return;
    }
@@ -106,6 +102,9 @@ export default function VoiceStatus() {
                   </NavLink>
                </div>
                <div className="ml-auto flex gap-x-1">
+                  <UserActionButton tooltip="Debug" onClick={onDebug} hoverColor="surface-alt" innerClassName="group-hover:rotate-0">
+                     <IconMingcuteBugFill className="size-5" />
+                  </UserActionButton>
                   <UserActionButton tooltip="Disconnect" onClick={onDisconnect} hoverColor="negative">
                      <IconMingcutePhoneBlockFill className="size-5" />
                   </UserActionButton>

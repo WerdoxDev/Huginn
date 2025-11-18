@@ -165,6 +165,30 @@ export function useVoiceUtils() {
       }
    }
 
+   async function unconsumeStream(userId: Snowflake) {
+      try {
+         const videoConsumer = client?.voice.transport.getConsumer(userId, "stream_video");
+         const audioConsumer = client?.voice.transport.getConsumer(userId, "stream_audio");
+
+         if (videoConsumer) {
+            await client?.voice.transport.closeConsumer(videoConsumer.id);
+         }
+         if (audioConsumer) {
+            await client?.voice.transport.closeConsumer(audioConsumer.id);
+         }
+      } catch (e) {
+         console.error(e);
+         updateModals({
+            info: {
+               status: "error",
+               title: "Unwatching/Unlistening Stream Failed",
+               text: "An unexpected error occurred. Please try again.",
+               isOpen: true,
+            },
+         });
+      }
+   }
+
    function changeStream() {
       const audioProducer = client?.voice.transport.getProducer("stream_audio");
       const videoProducer = client?.voice.transport.getProducer("stream_video");
@@ -212,6 +236,7 @@ export function useVoiceUtils() {
       openScreenShare,
       changeStream,
       consumeStream,
+      unconsumeStream,
       closeStream,
       closeCamera,
       toggleDeafen,

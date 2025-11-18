@@ -13,6 +13,7 @@ import Login from "./routes/app/start/login";
 import OauthRedirect from "./routes/app/start/oauth-redirect";
 import Register from "./routes/app/start/register";
 import StartLayout from "./routes/app/start/start-layout";
+import VoiceDebug from "./routes/voice-debug";
 
 async function mainLoader({ request }: LoaderFunctionArgs) {
    const url = new URL(request.url);
@@ -105,6 +106,7 @@ const router = createHashRouter([
                },
             ],
          },
+         { Component: VoiceDebug, path: "/voice-debug" },
       ],
    },
 ]);
