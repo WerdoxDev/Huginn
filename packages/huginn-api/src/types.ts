@@ -1,7 +1,7 @@
 import type { ResponseLike, Snowflake } from "@huginn/shared";
 import type { Voice } from "./voice";
 
-export type ClientOptions<V extends Voice> = {
+export type ClientOptions<V extends Voice = Voice> = {
    rest?: Partial<RESTOptions>;
    cdn?: Partial<CDNOptions>;
    gateway?: Partial<GatewayOptions>;

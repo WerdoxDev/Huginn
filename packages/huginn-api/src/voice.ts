@@ -56,12 +56,16 @@ export class Voice extends EventEmitter<Events> {
          this.signaling.sendCreateRecvTransport();
 
          for (const producer of d.producers) {
-            this.transport.remoteProducers.set(producer.producerId, producer);
+            this.transport.addRemoteProducer(producer);
          }
       });
 
       this.signaling.on("new_producer", (d) => {
-         this.transport.remoteProducers.set(d.producerId, d);
+         this.transport.addRemoteProducer(d);
+      });
+
+      this.signaling.on("new_consumer", (d) => {
+         this.transport.addRemoteConsumer(d);
       });
 
       this.signaling.on("transport_created", (d) => {
@@ -73,11 +77,44 @@ export class Voice extends EventEmitter<Events> {
       });
 
       this.signaling.on("producer_closed", async (d) => {
-         this.transport.remoteProducers.delete(d.producerId);
+         this.transport.removeRemoteProducer(d.producerId);
+
+         // Remove any remote consumers that are consuming this producer
+         const remoteConsumerId = this.transport.getRemoteConsumers().find((x) => x.producerId === d.producerId)?.consumerId;
+         if (remoteConsumerId) {
+            this.transport.removeRemoteConsumer(remoteConsumerId);
+         }
 
          const consumer = this.transport.getConsumer(d.userId, d.kind);
          if (consumer) {
-            await this.transport.closeConsumer(consumer.id);
+            await this.transport.closeConsumer(consumer.id, true);
+         }
+      });
+
+      this.signaling.on("consumer_closed", (d) => {
+         this.transport.removeRemoteConsumer(d.consumerId);
+      });
+
+      this.signaling.on("peer_left", async (d) => {
+         for (const producerId of d.producerIds) {
+            this.transport.removeRemoteProducer(producerId);
+
+            const consumers = this.transport.getConsumers().filter((x) => x.producerId === producerId);
+            for (const consumer of consumers) {
+               await this.transport.closeConsumer(consumer.id, true);
+            }
+         }
+
+         // Remove the user's consumers
+         for (const consumerId of d.consumerIds) {
+            this.transport.removeRemoteConsumer(consumerId);
+         }
+
+         // Remove remote consumers of the left peer's producers
+         for (const consumer of this.transport.remoteConsumers.values()) {
+            if (d.producerIds.includes(consumer.producerId)) {
+               this.transport.removeRemoteConsumer(consumer.consumerId);
+            }
          }
       });
    }

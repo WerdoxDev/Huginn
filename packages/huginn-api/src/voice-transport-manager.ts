@@ -2,6 +2,7 @@ import {
    convertToMediaKind,
    error,
    log,
+   type ConsumerData,
    type GatewayVoiceStateFlags,
    type HMediaKind,
    type LocalVoiceState,
@@ -40,7 +41,9 @@ type Events = {
    close_producer: { id: string; callback: () => void };
    producer_updated: { id: string; kind: HMediaKind; track: MediaStreamTrack | null };
    producer_created: Producer<MediasoupAppData>;
-   producer_closed: { id: string; kind: HMediaKind };
+   producer_closed: ProducerData;
+   remote_producer_created: ProducerData;
+   remote_producer_closed: ProducerData;
 
    create_consumer: {
       producerId: string;
@@ -51,7 +54,9 @@ type Events = {
    resume_consumer: { id: string; callback: () => void };
    close_consumer: { id: string; callback: () => void };
    consumer_created: Consumer<MediasoupAppData>;
-   consumer_closed: { id: string; kind: HMediaKind };
+   consumer_closed: ConsumerData;
+   remote_consumer_created: ConsumerData;
+   remote_consumer_closed: ConsumerData;
 
    transport_disconnected: { direction: "send" | "recv" };
 
@@ -67,8 +72,11 @@ export class VoiceTransportManager extends EventEmitter<Events> {
    public sendTransport?: Transport<MediasoupAppData>;
    public recvTransport?: Transport;
    public remoteProducers: Map<string, ProducerData> = new Map();
+   public remoteConsumers: Map<string, ConsumerData> = new Map();
    public producers: Map<HMediaKind, Producer<MediasoupAppData>> = new Map();
    public consumers: Map<string, Consumer<MediasoupAppData>> = new Map();
+
+   private pendingRemoteProducers: Map<string, ProducerData> = new Map();
 
    private _status: TransportManagerStatus = "idle";
    public get status(): TransportManagerStatus {
@@ -92,6 +100,12 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
          if ((sendStatus === "new" || sendStatus === "connected") && (recvStatus === "new" || recvStatus === "connected")) {
             this.setStatus("ready");
+
+            // When transports are not connected and a remote producer is added, it gets into a pending list which then gets flushed here
+            if (this.pendingRemoteProducers.size !== 0) {
+               for (const tempProducer of this.pendingRemoteProducers.values()) this.addRemoteProducer(tempProducer);
+               this.pendingRemoteProducers.clear();
+            }
          }
       }
    }
@@ -207,7 +221,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
       producer.close();
       this.producers.delete(producer.appData.mediaKind);
-      this.emit("producer_closed", { id: producer.id, kind: producer.appData.mediaKind });
+      this.emit("producer_closed", { producerId: producer.id, kind: producer.appData.mediaKind, userId: producer.appData.userId });
    }
 
    public async createConsumer(userId: Snowflake, kind: HMediaKind): Promise<void> {
@@ -237,15 +251,15 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
       this.consumers.set(consumer.id, consumer);
 
+      this.emit("consumer_created", consumer);
+      log("api:voice-transport", "default", "consumer created", "cid:", consumer.id, "uid:", userId, "knd:", kind, "pid:", remoteProducer.producerId);
+
       await new Promise<void>((r) => {
          this.emit("resume_consumer", { id: consumer.id, callback: r });
       });
-
-      this.emit("consumer_created", consumer);
-      log("api:voice-transport", "default", "consumer created", "uid:", userId, "knd:", kind, "pid:", remoteProducer.producerId);
    }
 
-   public async closeConsumer(consumerId: string): Promise<void> {
+   public async closeConsumer(consumerId: string, skipWebsocket: boolean = false): Promise<void> {
       this.checkDevice();
 
       log("api:voice-transport", "default", "close consumer", "cid:", consumerId);
@@ -253,13 +267,20 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       const consumer = this.consumers.get(consumerId);
       if (!consumer) throw new Error(`Consumer with id ${consumerId} doesn't exist`);
 
-      await new Promise<void>((r) => {
-         this.emit("close_consumer", { id: consumerId, callback: r });
-      });
+      if (!skipWebsocket) {
+         await new Promise<void>((r) => {
+            this.emit("close_consumer", { id: consumerId, callback: r });
+         });
+      }
 
       consumer.close();
       this.consumers.delete(consumer.id);
-      this.emit("consumer_closed", { id: consumer.id, kind: consumer.appData.mediaKind });
+      this.emit("consumer_closed", {
+         consumerId: consumer.id,
+         kind: consumer.appData.mediaKind,
+         producerId: consumer.producerId,
+         userId: consumer.appData.userId,
+      });
       log("api:voice-transport", "default", "consumer closed", "cid:", consumerId);
    }
 
@@ -342,6 +363,41 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       return Array.from(this.remoteProducers.values());
    }
 
+   public getRemoteConsumers(): ConsumerData[] {
+      return Array.from(this.remoteConsumers.values());
+   }
+
+   public addRemoteProducer(producer: ProducerData): void {
+      if (!this.recvTransport) {
+         this.pendingRemoteProducers?.set(producer.producerId, producer);
+         return;
+      }
+
+      this.remoteProducers.set(producer.producerId, producer);
+      this.emit("remote_producer_created", producer);
+   }
+
+   public addRemoteConsumer(consumer: ConsumerData): void {
+      this.remoteConsumers.set(consumer.consumerId, consumer);
+      this.emit("remote_consumer_created", consumer);
+   }
+
+   public removeRemoteProducer(producerId: string): void {
+      const producer = this.remoteProducers.get(producerId);
+      if (!producer) return;
+
+      this.remoteProducers.delete(producerId);
+      this.emit("remote_producer_closed", producer);
+   }
+
+   public removeRemoteConsumer(consumerId: string): void {
+      const consumer = this.remoteConsumers.get(consumerId);
+      if (!consumer) return;
+
+      this.remoteConsumers.delete(consumerId);
+      this.emit("remote_consumer_closed", consumer);
+   }
+
    public reset(): void {
       try {
          for (const producer of this.producers.values()) {
@@ -362,6 +418,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          this.recvTransport = undefined;
 
          this.remoteProducers.clear();
+         this.remoteConsumers.clear();
          this.producers.clear();
          this.consumers.clear();
 

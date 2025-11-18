@@ -6,20 +6,15 @@ import {
    VoiceOperations,
    type HMediaKind,
    type Snowflake,
-   type VoiceConsumerClosedData,
    type VoiceConsumerCreatedData,
-   type VoiceConsumerResumedData,
    type VoiceHeartbeat,
    type VoiceHelloData,
    type VoiceIdentify,
-   type VoiceNewProducerData,
    type VoicePayload,
    type VoicePing,
-   type VoiceProducerClosedData,
    type VoiceProducerCreatedData,
    type VoiceReadyData,
-   type VoiceTransportConnectedData,
-   type VoiceTransportCreatedData,
+   type VoiceWebsocketEvents,
 } from "@huginn/shared";
 import { EventEmitter } from "./event-emitter";
 import type { HuginnClient, VoiceConnectionData, VoiceOptions } from ".";
@@ -28,25 +23,14 @@ import type { DtlsParameters, RtpCapabilities, RtpParameters } from "mediasoup-c
 type SignalingClientStatus = "connecting" | "connected" | "helloed" | "authenticated" | "disconnected" | "idle";
 
 type Events = {
-   ready: VoiceReadyData;
-   transport_created: VoiceTransportCreatedData;
-   transport_connected: VoiceTransportConnectedData;
-
    connected: undefined;
    disconnected: undefined;
    status_changed: SignalingClientStatus;
+
    pong: { rtt: number };
 
-   producer_created: VoiceProducerCreatedData;
-   new_producer: VoiceNewProducerData;
-   producer_closed: VoiceProducerClosedData;
-
-   consumer_created: VoiceConsumerCreatedData;
-   consumer_resumed: VoiceConsumerResumedData;
-   consumer_closed: VoiceConsumerClosedData;
-
    reset: { hard: boolean };
-};
+} & VoiceWebsocketEvents;
 
 export class VoiceSignalingClient extends EventEmitter<Events> {
    private client: HuginnClient;
@@ -172,6 +156,13 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                   break;
                case "consumer_closed":
                   this.emit("consumer_closed", data.d);
+                  break;
+               case "new_consumer":
+                  this.emit("new_consumer", data.d);
+                  break;
+
+               case "peer_left":
+                  this.emit("peer_left", data.d);
                   break;
             }
 

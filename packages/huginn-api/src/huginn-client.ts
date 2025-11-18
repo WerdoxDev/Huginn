@@ -169,21 +169,16 @@ export class HuginnClient<V extends Voice = Voice> {
          }
 
          return isValid;
-      } catch (e) {
-         console.log(e);
+      } catch {
          return false;
       }
    }
 
    private async refreshSession(refreshToken: string): Promise<boolean> {
-      try {
-         const newTokens = await this.auth.refreshToken({ refreshToken });
-         this.tokenHandler.token = newTokens.token;
-         this.tokenHandler.refreshToken = newTokens.refreshToken;
-         return true;
-      } catch {
-         return false;
-      }
+      const newTokens = await this.auth.refreshToken({ refreshToken });
+      this.tokenHandler.token = newTokens.token;
+      this.tokenHandler.refreshToken = newTokens.refreshToken;
+      return true;
    }
 
    public clearSession(): void {
@@ -221,6 +216,8 @@ export class HuginnClient<V extends Voice = Voice> {
    public async logout(): Promise<void> {
       try {
          await this.auth.logout();
+      } catch {
+         console.warn("logout failed");
       } finally {
          this.cleanup();
       }
