@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.62.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.61.7...app@v0.62.0) (2025-11-18)
+
+
+### Features
+
+* **app:** add debug window for voice ([a19a72b](https://github.com/WerdoxDev/Huginn/commit/a19a72b62c7a6db8a3833ce86bca000192d58eba))
+
 ## [0.61.7](https://github.com/WerdoxDev/Huginn/compare/app@v0.61.6...app@v0.61.7) (2025-11-09)
 
 
