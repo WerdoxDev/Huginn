@@ -110,12 +110,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
    }
 
    public getSessionBySessionId(sessionId: string) {
-      for (const session of this.sessions.values()) {
-         if (session.sessionId === sessionId) {
-            return session;
-         }
-      }
-      return undefined;
+      return this.sessions.get(sessionId);
    }
 
    public sendToTopic(topic: string, data: Payload) {
@@ -196,7 +191,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
       return session;
    }
 
-   public send(peer: Peer, data: unknown) {
+   public send(peer: Peer, data: Payload) {
       peer.send(JSON.stringify(data));
    }
 }
