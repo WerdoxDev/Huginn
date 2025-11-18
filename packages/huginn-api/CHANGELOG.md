@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.29.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.28.2...api@v0.29.0) (2025-11-18)
+
+
+### Features
+
+* **api:** saving remote consumers + better tests for gateway ([4c7d2bd](https://github.com/WerdoxDev/Huginn/commit/4c7d2bd039a6aa3dad691be9d423e9d939c4b3f7))
+
 ## [0.28.2](https://github.com/WerdoxDev/Huginn/compare/api@v0.28.1...api@v0.28.2) (2025-11-09)
 
 

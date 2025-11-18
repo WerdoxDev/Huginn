@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.11.0...voice@v0.12.0) (2025-11-18)
+
+
+### Features
+
+* **voice:** remove redundant messages that should be handles on client ([514a8b7](https://github.com/WerdoxDev/Huginn/commit/514a8b755dbb6f0d26690cf6bfb49d3fc7d59336))
+
 ## [0.11.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.10.3...voice@v0.11.0) (2025-11-05)
 
 
