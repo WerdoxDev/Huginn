@@ -18,10 +18,9 @@ export abstract class BaseWindow {
          this._window.loadURL(url);
       } else {
          const filePath = path.join(import.meta.dirname, "../dist/index.html");
-         const url = `${filePath}/#/${startPath}`;
 
-         log("app:electron", "default", `${this.name}`, "url:", url);
-         this._window.loadFile(url);
+         log("app:electron", "default", `${this.name}`, "url:", `${filePath}/#/${startPath}`);
+         this._window.loadFile(filePath, { hash: startPath });
       }
 
       this.eventListeners?.(this._window);
