@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.1](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.14.0...cdn@v0.14.1) (2025-11-18)
+
+
+### Bug Fixes
+
+* **cdn:** attachment path is not correctly decoded ([27b5284](https://github.com/WerdoxDev/Huginn/commit/27b5284ef9ff74f6b86b9676071e77df3d86a18e))
+
 ## [0.14.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.13.0...cdn@v0.14.0) (2025-11-05)
 
 

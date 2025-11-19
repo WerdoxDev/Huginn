@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.18.0...backend-shared@v0.18.1) (2025-11-18)
+
+
+### Bug Fixes
+
+* **backend-shared:** fix unnecessary long function for getting session with id ([1a41b6d](https://github.com/WerdoxDev/Huginn/commit/1a41b6d6f32468cc628ccc393644b3bc1c19e5d5))
+
 ## [0.18.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.17.0...backend-shared@v0.18.0) (2025-11-05)
 
 
