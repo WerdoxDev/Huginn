@@ -8,12 +8,14 @@ import { getActiveWindowProcessIds, startAudioCapture, stopAudioCapture } from "
 import * as keybindsController from "./keybinds-controller";
 import native, { type AppInfo } from "native-addon";
 import type { CacheController } from "./cache-controller";
+import { VoiceDebugWindow } from "./voice-debug-window";
 const { autoUpdater } = electronUpdater;
 
 export class MainWindow extends BaseWindow {
    private selectedSourceId?: string;
    private previousProcessId: string | undefined;
    private cacheController: CacheController;
+   private voiceDebugWindow?: VoiceDebugWindow;
 
    public constructor(cacheController: CacheController) {
       super("main", {
@@ -36,7 +38,7 @@ export class MainWindow extends BaseWindow {
       this.cacheController = cacheController;
    }
 
-   public eventListeners(window: BrowserWindow): void {
+   public override eventListeners(window: BrowserWindow): void {
       keybindsController.listenToEvents(window);
 
       this.windowEvents(window);
@@ -47,6 +49,7 @@ export class MainWindow extends BaseWindow {
       this.notificationCategoryEvents(window);
       this.nativeCategoryEvents();
       this.sessionEvents();
+      this.voiceDebugCategoryEvents();
    }
 
    private sessionEvents() {
@@ -342,6 +345,34 @@ export class MainWindow extends BaseWindow {
 
          const info = await applicationIconCache.cacheOrGet(processId, async () => await native.getApplicationInfo(exePath, processId));
          return info;
+      });
+   }
+
+   private voiceDebugCategoryEvents() {
+      ipcMain.on("voice-debug:open", () => {
+         log("app:electron", "recv", "open voice debug");
+
+         if (this.voiceDebugWindow) {
+            this.voiceDebugWindow.window.destroy();
+         }
+         this.voiceDebugWindow = new VoiceDebugWindow();
+
+         this.voiceDebugWindow.window.on("close", () => {
+            this.voiceDebugWindow = undefined;
+         });
+      });
+
+      ipcMain.on("voice-debug:close", () => {
+         log("app:electron", "recv", "close voice debug");
+
+         if (this.voiceDebugWindow) {
+            this.voiceDebugWindow.window.destroy();
+            this.voiceDebugWindow = undefined;
+         }
+      });
+
+      ipcMain.handle("voice-debug:is-open", () => {
+         return this.voiceDebugWindow && this.voiceDebugWindow.window.isVisible();
       });
    }
 }

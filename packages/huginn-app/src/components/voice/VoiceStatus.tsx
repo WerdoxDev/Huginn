@@ -66,8 +66,8 @@ export default function VoiceStatus() {
       await client?.voiceManager.disconnectVoice();
    }
 
-   function onDebug() {
-      client?.voice.debugger.openDebugger();
+   async function onDebug() {
+      await client?.voice.debugger.openDebugger();
    }
 
    if (!user || !voiceConnection.channelId) {

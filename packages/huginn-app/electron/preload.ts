@@ -88,6 +88,11 @@ export const electronAPI = {
    getOpenApplications: () => ipcRenderer.invoke("native:get-open-applications") as Promise<ProcessInfo[]>,
    getApplicationInfo: (exePath: string, processId: number) =>
       ipcRenderer.invoke("native:get-application-info", exePath, processId) as Promise<AppInfo>,
+
+   // Voice debug
+   openVoiceDebug: () => ipcRenderer.send("voice-debug:open"),
+   closeVoiceDebug: () => ipcRenderer.send("voice-debug:close"),
+   isVoiceDebugOpen: () => ipcRenderer.invoke("voice-debug:is-open") as Promise<boolean>,
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

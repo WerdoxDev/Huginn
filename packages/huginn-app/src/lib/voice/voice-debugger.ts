@@ -10,6 +10,7 @@ import type {
    VoiceDebugData,
    AppUser,
    UsersDebugData,
+   Environment,
 } from "@/types";
 import type { HuginnClient } from "@huginn/api";
 import type { VoiceBridge } from "./voice-bridge";
@@ -17,57 +18,68 @@ import { WebRTCStatsParser } from "./stats-parser";
 import { voiceStore } from "@stores/voiceStore";
 import { queryClient } from "@/root";
 import type { Snowflake } from "@huginn/shared";
+import { windowStore } from "@stores/windowStore";
 
 export class VoiceDebugger {
    private client: HuginnClient<VoiceBridge>;
-   private window?: Window | null;
+   private browserWindow?: Window | null;
    private dataInterval?: ReturnType<typeof setInterval>;
    private channel?: BroadcastChannel;
    private statsParsers: Map<string, WebRTCStatsParser> = new Map();
+   private environment: Environment;
 
    public constructor(client: HuginnClient<VoiceBridge>) {
       this.client = client;
+      this.environment = windowStore.getState().environment;
    }
 
-   public get isDebuggerOpen() {
-      return !!this.window && !!this.dataInterval;
+   private async isDebuggerOpen() {
+      if (this.environment === "desktop") {
+         return await window.electronAPI.isVoiceDebugOpen();
+      } else {
+         return this.browserWindow && !this.browserWindow.closed;
+      }
    }
 
-   public openDebugger() {
-      if (this.isDebuggerOpen) {
-         return;
-      }
+   public async openDebugger() {
+      if (await this.isDebuggerOpen()) return;
 
-      this.window = window.open("/#voice-debug", "debug", "width=500,height=600");
-      if (!this.window) {
-         throw new Error("Debugger window was not opened");
-      }
-
-      // Checking if the window is closed
-      const interval = setInterval(() => {
-         if (this.window?.closed) {
-            this.closeDebugger();
-            clearInterval(interval);
+      if (this.environment === "desktop") {
+         window.electronAPI.openVoiceDebug();
+      } else {
+         this.browserWindow = window.open("/#/voice-debug", "debug", "width=500,height=600");
+         if (!this.browserWindow) {
+            throw new Error("Debugger window was not opened");
          }
-      }, 100);
+      }
 
       this.startDataInterval();
    }
 
    public closeDebugger() {
-      if (this.window && !this.window.closed) {
-         this.window.close();
+      const store = windowStore.getState();
+
+      if (store.environment === "desktop") {
+         window.electronAPI.closeVoiceDebug();
+      } else {
+         if (this.browserWindow && !this.browserWindow.closed) {
+            this.browserWindow.close();
+         }
+         this.browserWindow = undefined;
       }
 
       this.stopDataInterval();
-      this.channel?.close();
-      this.window = undefined;
    }
 
    private startDataInterval() {
       this.channel = new BroadcastChannel("voice-debug");
 
       this.dataInterval = setInterval(async () => {
+         if (!(await this.isDebuggerOpen())) {
+            this.stopDataInterval();
+            return;
+         }
+
          const alcData = Array.from(
             this.client.voice.audioLevelCheckers.values().map((x) => {
                const streamData: ALCData["stream"] = x.stream
@@ -235,6 +247,7 @@ export class VoiceDebugger {
       if (this.dataInterval) {
          clearInterval(this.dataInterval);
          this.dataInterval = undefined;
+         this.channel?.close();
       }
    }
 

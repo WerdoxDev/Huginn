@@ -577,3 +577,5 @@ export type VoiceDebugData = {
    voiceStatesData: Array<VoiceStatesDebugData>;
    usersData: Array<UsersDebugData>;
 };
+
+export type Environment = "desktop" | "browser";
