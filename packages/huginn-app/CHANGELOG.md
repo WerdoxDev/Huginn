@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.62.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.62.0...app@v0.62.1) (2025-11-19)
+
+
+### Bug Fixes
+
+* **app:** fix voice debug window not opening in electron ([c075226](https://github.com/WerdoxDev/Huginn/commit/c075226828ffcd6ca403549d6cf8c27012df6ee4))
+
 ## [0.62.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.61.7...app@v0.62.0) (2025-11-18)
 
 
