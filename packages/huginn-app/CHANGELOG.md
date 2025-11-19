@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.62.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.62.1...app@v0.62.2) (2025-11-19)
+
+
+### Bug Fixes
+
+* **app:** window file url with hash is opened incorrectly ([99c969d](https://github.com/WerdoxDev/Huginn/commit/99c969d1a9b619b30efecf64abc322cea1186dab))
+
 ## [0.62.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.62.0...app@v0.62.1) (2025-11-19)
 
 
