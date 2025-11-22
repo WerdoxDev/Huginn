@@ -58,6 +58,10 @@ export class Voice extends EventEmitter<Events> {
          for (const producer of d.producers) {
             this.transport.addRemoteProducer(producer);
          }
+
+         for (const consumer of d.consumers) {
+            this.transport.addRemoteConsumer(consumer);
+         }
       });
 
       this.signaling.on("new_producer", (d) => {
