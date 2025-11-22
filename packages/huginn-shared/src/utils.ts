@@ -1,4 +1,4 @@
-import type { MediaKind } from "mediasoup/node/lib/types";
+import type { MediaKind } from "mediasoup/types";
 import { sha256 } from "ohash";
 import { fileTypes } from "./cdn-types";
 import type { GatewayOperationTypes } from "./gateway-types";

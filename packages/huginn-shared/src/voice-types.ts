@@ -143,6 +143,7 @@ export type VoicePong = {
 export type VoiceReadyData = {
    rtpCapabilities: types.RtpCapabilities;
    producers: ProducerData[];
+   consumers: ConsumerData[];
 };
 
 export type VoiceCreateTransportData = {
