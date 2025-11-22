@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.12.0...voice@v0.12.1) (2025-11-22)
+
+
+### Bug Fixes
+
+* **voice:** call consumers should be sent on "identify" just like producers ([9f66e48](https://github.com/WerdoxDev/Huginn/commit/9f66e48b19b1f425a1ee7eed313d483cd87cb2d8))
+
 ## [0.12.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.11.0...voice@v0.12.0) (2025-11-18)
 
 

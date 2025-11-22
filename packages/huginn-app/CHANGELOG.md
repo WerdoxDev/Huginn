@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.63.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.62.2...app@v0.63.0) (2025-11-22)
+
+
+### Features
+
+* **app:** add stream participants indicator ([f18dabe](https://github.com/WerdoxDev/Huginn/commit/f18dabe2927ae5f0f3154a57fa3f644076e938bc))
+
 ## [0.62.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.62.1...app@v0.62.2) (2025-11-19)
 
 
