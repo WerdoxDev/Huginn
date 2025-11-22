@@ -3,6 +3,7 @@ import { prisma } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
 import {
    constants,
+   type ConsumerData,
    convertToMediaKind,
    GatewayCode,
    type MediasoupAppData,
@@ -19,7 +20,7 @@ import {
    type VoiceResumeConsumerData,
    WorkerID,
 } from "@huginn/shared";
-import { createRouter, createTransport, getRouterProducers, routers, verifyPeer } from "#mediasoup";
+import { createRouter, createTransport, getRouterConsumers, getRouterProducers, routers, verifyPeer } from "#mediasoup";
 import type { RTCPeer } from "#utils/types";
 import { ClientSession } from "./client-session";
 
@@ -409,10 +410,21 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          return producer;
       });
 
+      const consumers = getRouterConsumers(router).map((x) => {
+         const consumer: ConsumerData = {
+            userId: x.appData.userId,
+            kind: x.appData.mediaKind,
+            consumerId: x.id,
+            producerId: x.producerId,
+         };
+
+         return consumer;
+      });
+
       this.send(session.peer, {
          op: VoiceOperations.DISPATCH,
          t: "ready",
-         d: { rtpCapabilities: router.router.rtpCapabilities, producers },
+         d: { rtpCapabilities: router.router.rtpCapabilities, producers, consumers },
          s: session.getIncreasedSequence(),
       });
    }
