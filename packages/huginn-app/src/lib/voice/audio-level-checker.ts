@@ -5,13 +5,13 @@ export class AudioLevelChecker extends EventEmitter<{ "audio-level": number }> {
    private volumeNode: AudioWorkletNode | undefined;
    public audioContext: AudioContext | undefined;
    public stream?: MediaStream;
-   public readonly consumerId: string;
-   public readonly userId: string;
-   public readonly kind: HMediaKind;
+   public readonly consumerId?: string;
+   public readonly userId?: string;
+   public readonly kind?: HMediaKind;
    public isStopped = false;
    public currentDb = 0;
 
-   public constructor(consumerId: string, userId: string, kind: HMediaKind) {
+   public constructor(consumerId?: string, userId?: string, kind?: HMediaKind) {
       super();
       this.consumerId = consumerId;
       this.userId = userId;

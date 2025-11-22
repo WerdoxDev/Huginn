@@ -13,6 +13,7 @@ import VoiceVideoStats from "./VoiceVideoStats";
 import { useClient, useClientStore } from "@stores/clientStore";
 import Tooltip from "@components/tooltip/Tooltip";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
+import { VoiceStreamParticipants } from "./VoiceStreamParticipants";
 
 export default function VoiceElement(props: {
    userId: Snowflake;
@@ -143,6 +144,7 @@ export default function VoiceElement(props: {
                track={props.mediaSource?.track ?? undefined}
             />
          )}
+         {(isAudioStream || isScreenShare) && <VoiceStreamParticipants mediaSource={props.mediaSource} />}
          <VoiceLabel userId={props.userId} isGridView={props.isGridView} voiceState={props.voiceState} type={props.type} />
          {isLoadingStream ? (
             <div className="absolute inset-0 flex items-center justify-center bg-black/60">

@@ -130,13 +130,13 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 
    useEffect(() => {
       const unlisten = client?.voice.transport.listen("producer_closed", (d) => {
-         if (d.id === maximizedSource?.producerId) {
+         if (d.producerId === maximizedSource?.producerId) {
             setMaximizedSource(undefined);
          }
       });
 
       const unlisten2 = client?.voice.transport.listen("consumer_closed", (d) => {
-         if (d.id === maximizedSource?.producerId) {
+         if (d.producerId === maximizedSource?.producerId) {
             setMaximizedSource(undefined);
          }
       });

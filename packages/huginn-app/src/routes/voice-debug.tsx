@@ -13,16 +13,14 @@ import type {
 } from "@/types";
 import { Disclosure, DisclosureButton, DisclosurePanel, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { useLookup } from "@hooks/useLookup";
-import type { Snowflake } from "@huginn/shared";
 import clsx from "clsx";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 export default function VoiceDebug() {
    const [data, setData] = useState<VoiceDebugData>();
 
    const usersLookup = useLookup(data?.usersData, (x) => x.id);
    const producersLookup = useLookup(data?.producersData, (x) => x.id);
-   const consumersLookup = useLookup(data?.producersData, (x) => x.id);
 
    useEffect(() => {
       const channel = new BroadcastChannel("voice-debug");
@@ -73,7 +71,7 @@ export default function VoiceDebug() {
                {/* ALCs */}
                <TabPanel className="flex w-full flex-col gap-y-2">
                   {data?.alcData.map((x, index) => (
-                     <ALCViewer data={x} user={usersLookup[x.userId]} index={index} />
+                     <ALCViewer data={x} user={x.userId ? usersLookup[x.userId] : undefined} index={index} />
                   ))}
                </TabPanel>
 
@@ -310,12 +308,12 @@ function ProducerViewer(props: { data: ProducerDebugData; user: UsersDebugData; 
    );
 }
 
-function ALCViewer(props: { data: ALCData; user: UsersDebugData; index: number }) {
+function ALCViewer(props: { data: ALCData; user?: UsersDebugData; index: number }) {
    return (
       <div className="bg-surface flex flex-col p-1">
          <Section text={`Audio Level Checker ${props.index}`}>
             <Field text="Consumer ID" value={props.data.consumerId} />
-            <Field text="User ID" value={`${props.data.userId} (${props.user.username})`} />
+            <Field text="User ID" value={`${props.data.userId} (${props.user?.username})`} />
             <Field text="Current DB" value={props.data.currentDb} />
             <Field text="Kind" value={props.data.kind} />
             <Field text="Stopped" value={props.data.isStopped} />

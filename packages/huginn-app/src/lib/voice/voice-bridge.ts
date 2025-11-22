@@ -17,13 +17,13 @@ export class VoiceBridge extends Voice {
    private loopbackDataUnlisten?: () => void;
    public readonly debugger: VoiceDebugger;
 
-   public constructor(client: HuginnClient<VoiceBridge>, options?: Partial<VoiceOptions>) {
+   public constructor(client: HuginnClient, options?: Partial<VoiceOptions>) {
       super(client, options);
 
       this.audioLevelCheckers = new Map();
       this.audioSourcePlayers = [];
       this.inputDevice = new VoiceInputDevice(client);
-      this.debugger = new VoiceDebugger(client);
+      this.debugger = new VoiceDebugger(client as HuginnClient<VoiceBridge>);
 
       this.on("ready", async () => await this.onReady());
       this.on("reset", async () => await this.onReset());

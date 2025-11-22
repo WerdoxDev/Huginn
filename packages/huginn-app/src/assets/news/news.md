@@ -1,5 +1,4 @@
-### ↩️ **Voice Version 2**!!!
+### **Stream Participants**
 
-- Voice has been rewritten to be A LOT more reliable
-- You may initially see some bugs or glitches but they will be fixed with time
-- Voice animations are removed. Although they looked cool, no one cares and it causes a lot of dev headache :p
+- You can now see who is watching / listening to a stream!
+- A new debug button has been added for any nerds who want to see what's going on!

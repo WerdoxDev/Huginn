@@ -12,14 +12,14 @@ export default function VoiceVideoStats(props: {
    const { estimateFps, height } = useVideoDetails(props.videoRef, srcObject);
 
    return (
-      <div className="bg-surface-deep absolute right-2 top-2 z-10 flex gap-x-2 rounded-lg px-2 py-1 italic opacity-0 transition-opacity group-hover/element:opacity-100">
+      <div className="bg-surface-deep absolute right-2 top-2 z-10 flex items-center justify-center gap-x-1 rounded-lg px-2 py-1 italic opacity-0 transition-opacity group-hover/element:opacity-100">
          {props.kind === "stream_video" &&
             (props.hasAudio ? (
-               <IconMingcuteVolumeFill className="text-positive-100" />
+               <IconMingcuteVolumeFill className="text-positive-100 size-4" />
             ) : (
-               <IconMingcuteVolumeOffFill className="text-negative-100 size-5" />
+               <IconMingcuteVolumeOffFill className="text-negative-100 size-4" />
             ))}
-         <div className="text-sm font-bold text-white/90">
+         <div className="text-xs font-bold text-white/90">
             {height}
             <span className="text-white/60">P</span> {estimateFps}
             <span className="text-white/60"> FPS</span>

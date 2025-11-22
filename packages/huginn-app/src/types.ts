@@ -404,6 +404,7 @@ export type SaveFileResult = {
 export type MediaSource = {
    consumerId?: string;
    producerId?: string;
+   consumerUserIds: string[];
    track?: MediaStreamTrack | null;
    kind: HMediaKind;
    userId: Snowflake;
@@ -411,10 +412,10 @@ export type MediaSource = {
 };
 
 export type ALCData = {
-   consumerId: string;
+   consumerId?: string;
    currentDb: number;
-   userId: Snowflake;
-   kind: HMediaKind;
+   userId?: Snowflake;
+   kind?: HMediaKind;
    isStopped: boolean;
    context?: AudioContextData;
    stream?: StreamData;
