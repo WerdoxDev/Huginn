@@ -117,7 +117,10 @@ export class Gateway extends SharedWebsocket<Events> {
       }
 
       if (!this.isConnected) {
-         await this.ensureConnected();
+         const result = await this.ensureConnected();
+         if (!result) {
+            return { authenticated: false, retryable: true };
+         }
       }
 
       if (this.canResume) {
@@ -285,7 +288,7 @@ export class Gateway extends SharedWebsocket<Events> {
    // Private - Authentication
    // ============================================================
 
-   private async ensureConnected(): Promise<void> {
+   private async ensureConnected(): Promise<boolean> {
       if (this.status === "idle") {
          this.connect();
       }
@@ -294,9 +297,11 @@ export class Gateway extends SharedWebsocket<Events> {
          const result = await this.waitForEvents(["hello", "disconnected"], true);
 
          if (result.event === "disconnected") {
-            throw new Error("Gateway disconnected during connection attempt");
+            return false;
          }
       }
+
+      return true;
    }
 
    private async waitForAuthentication(): Promise<AuthenticationResult> {

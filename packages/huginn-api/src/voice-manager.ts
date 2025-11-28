@@ -1,4 +1,4 @@
-import { type Snowflake, log, error } from "@huginn/shared";
+import { type Snowflake, log } from "@huginn/shared";
 import type { Gateway } from "./gateway";
 import type { Voice } from ".";
 import { VoiceState } from "./voice-state";
