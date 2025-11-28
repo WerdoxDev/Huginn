@@ -93,6 +93,7 @@ export function initializePresence() {
       unlisten();
       unlisten2();
       unlisten3();
+      unlisten4();
    };
 }
 

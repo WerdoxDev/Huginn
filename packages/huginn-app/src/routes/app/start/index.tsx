@@ -79,21 +79,6 @@ export default function Index() {
       } else {
          await navigate({ pathname: "/login", search: `?${search.toString()}` }, { replace: true, viewTransition: true });
       }
-
-      // await tryLogin({
-      //    async onError() {
-      //       await navigate({ pathname: "/login", search: `?${search.toString()}` }, { viewTransition: true });
-      //    },
-      //    onFound() {
-      //       startBackground.setState(1);
-      //       dispatch({ type: "SET", step: "login", text: "Logging in..." });
-      //    },
-      //    async onNotFound() {
-      //       await navigate({ pathname: "/login", search: `?${search.toString()}` }, { viewTransition: true });
-      //    },
-      //    async onSuccessful() {},
-      //    navigatePath: { pathname: search.get("redirect") ?? "/channels/@me" },
-      // });
    }
 
    function setCheckUpdate() {

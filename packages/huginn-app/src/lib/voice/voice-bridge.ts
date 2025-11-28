@@ -70,10 +70,6 @@ export class VoiceBridge extends Voice {
    }
 
    private async onConsumerCreated(consumer: Consumer<MediasoupAppData>) {
-      const storage = storageStore.getState();
-      const voicePreferences = storage.getCachedValue("voice-preferences");
-      const settings = storage.getCachedValue("settings");
-
       if (consumer.appData.mediaKind === "microphone") {
          const store = voiceStore.getState();
 
@@ -88,8 +84,12 @@ export class VoiceBridge extends Voice {
          });
       }
 
-      // refresh consumer audio players
-      this.refreshConsumerAudioPlayers(this.transport.getConsumers(), voicePreferences, settings.outputVolume);
+      // Just a little side check because when a new user joins, the consumer will start playing even if i'm deafened
+      if (this.client.voiceManager.voiceState.gatewayVoiceState.isAudioDeafened) {
+         consumer.pause();
+      }
+
+      this.refreshConsumerAudioPlayers();
    }
 
    private async onRemoteProducerCreated(data: ProducerData): Promise<void> {
@@ -180,8 +180,13 @@ export class VoiceBridge extends Voice {
       }
    }
 
-   private refreshConsumerAudioPlayers(consumers: Consumer<MediasoupAppData>[], voicePreferences: VoicePreference[], outputVolumePercent: number) {
-      log("app:voice-bridge", "default", "refresh consumer audio players", "ovol:", outputVolumePercent, "ncons:", consumers.length);
+   private refreshConsumerAudioPlayers() {
+      const consumers = this.transport.getConsumers();
+      const storage = storageStore.getState();
+      const voicePreferences = storage.getCachedValue("voice-preferences");
+      const settings = storage.getCachedValue("settings");
+
+      log("app:voice-bridge", "default", "refresh consumer audio players", "ovol:", settings.outputVolume, "ncons:", consumers.length);
 
       // Remove old players
       for (const player of this.audioSourcePlayers) {
@@ -201,7 +206,7 @@ export class VoiceBridge extends Voice {
             consumer.appData.userId,
             consumer.appData.mediaKind,
          );
-         sourcePlayer.setGain(outputVolumePercent, undefined);
+         sourcePlayer.setGain(settings.outputVolume, undefined);
 
          this.audioSourcePlayers.push(sourcePlayer);
 

@@ -90,7 +90,7 @@ export async function updateKnownApplications() {
       store.getState().setValue("known-applications", knownApplications);
    } else {
       const finalFile = { ...value.data };
-      const result = await client?.applications.getKnown(new Date(finalFile.lastUpdated ?? ""));
+      const result = await client?.applications.getKnown(finalFile.lastUpdated ? new Date(finalFile.lastUpdated) : undefined);
 
       for (const application of result.applications) {
          const existingIndex = finalFile.applications.findIndex((x) => x.id === application.id);
