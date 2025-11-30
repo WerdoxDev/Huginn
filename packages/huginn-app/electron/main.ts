@@ -24,7 +24,7 @@ try {
       app.setAsDefaultProtocolClient("huginn");
    }
 
-   allowedToRun = app.requestSingleInstanceLock() || !app.isPackaged;
+   allowedToRun = app.requestSingleInstanceLock();
 
    if (!allowedToRun) {
       log("app:electron", "default", "exit because of lock");
