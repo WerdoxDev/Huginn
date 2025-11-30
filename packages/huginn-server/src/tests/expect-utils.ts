@@ -5,12 +5,14 @@ import {
    type APIChannelUser,
    type APIEmbed,
    type APIMessage,
+   type APIMessageReference,
    type APIMessageUser,
    type APIPostDMChannelResult,
    type APIPublicUser,
    type APIReadState,
    type APIRelationshipWithoutOwner,
    type APIRelationUser,
+   type APIReplyMessage,
    type APIThumbnail,
    type APIVideo,
    ChannelType,
@@ -142,6 +144,7 @@ export function expectMessageExactSchema(
    author?: Omit<APIMessageUser, "id"> & { id: bigint },
    content?: string,
    mentions?: (Omit<APIMessageUser, "id"> & { id: bigint })[],
+   messageReference?: APIMessageReference,
 ) {
    expect(message).toHaveProperty("type", type);
 
@@ -158,6 +161,7 @@ export function expectMessageExactSchema(
          MessageType.CHANNEL_ICON_CHANGED,
          MessageType.CHANNEL_NAME_CHANGED,
          MessageType.CHANNEL_OWNER_CHANGED,
+         MessageType.REPLY,
       ].includes(type)
    ) {
       expect(Object.keys(message).sort()).toStrictEqual(
@@ -175,6 +179,7 @@ export function expectMessageExactSchema(
             "mentions",
             "reactions",
             "flags",
+            ...(type === MessageType.REPLY ? ["messageReference", "referencedMessage"] : []),
          ].sort(),
       );
 
@@ -193,6 +198,9 @@ export function expectMessageExactSchema(
          expect(castedMessage.mentions.sort()).toStrictEqual(
             mentions.map((x) => ({ id: x.id.toString(), avatar: x.avatar, displayName: x.displayName, flags: x.flags, username: x.username })).sort(),
          );
+      }
+      if (messageReference) {
+         expect((castedMessage as APIReplyMessage).messageReference).toStrictEqual(messageReference);
       }
       expect(Object.keys(castedMessage.author).sort()).toStrictEqual(["id", "username", "displayName", "flags", "avatar"].sort());
 

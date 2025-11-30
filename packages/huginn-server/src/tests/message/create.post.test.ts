@@ -1,9 +1,17 @@
 import { describe, expect, test } from "bun:test";
 import { testHandler } from "@huginn/backend-shared";
-import { type APIPostMessageJSONBody, type APIPostMessageResult, ChannelType, MessageType } from "@huginn/shared";
+import {
+   type APIMessageReference,
+   type APIPostMessageJSONBody,
+   type APIPostMessageResult,
+   type APIReplyMessage,
+   ChannelType,
+   MessageReferenceType,
+   MessageType,
+} from "@huginn/shared";
 import { resolve } from "pathe";
 import { expectAttachmentExactSchema, expectEmbedExactSchema, expectMessageExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestUsers, getReadyWebSocket, isCDNRunning, testIsDispatch } from "#tests/utils";
+import { authHeader, createTestChannel, createTestMessages, createTestUsers, getReadyWebSocket, isCDNRunning, testIsDispatch } from "#tests/utils";
 
 describe("POST /api/channels/:channelId/messages", () => {
    test(
@@ -43,7 +51,7 @@ describe("POST /api/channels/:channelId/messages", () => {
       expect(result2).rejects.toThrow("Missing Access");
    });
 
-   test.only("should create a message in the channel when the request is successful", async () => {
+   test("should create a message in the channel when the request is successful", async () => {
       const [user, user2] = await createTestUsers(2);
 
       const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
@@ -55,7 +63,7 @@ describe("POST /api/channels/:channelId/messages", () => {
       expectMessageExactSchema(result, MessageType.DEFAULT, undefined, channel.id, user, "test");
    });
 
-   test.only(
+   test(
       "should return 'Invalid Form Body' when embed constrains are not met",
       async () => {
          const [user, user2] = await createTestUsers(2);
@@ -67,31 +75,31 @@ describe("POST /api/channels/:channelId/messages", () => {
          });
          expect(result).rejects.toThrow("Invalid Form Body");
 
-         // // rich type timestamp requires either title or description or thumbnail
-         // const result2 = testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", {
-         //    embeds: [{ timestamp: new Date().toISOString(), type: "rich" }],
-         // });
-         // expect(result2).rejects.toThrow("Invalid Form Body");
+         // rich type timestamp requires either title or description or thumbnail
+         const result2 = testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", {
+            embeds: [{ timestamp: new Date().toISOString(), type: "rich" }],
+         });
+         expect(result2).rejects.toThrow("Invalid Form Body");
 
-         // // image type requires url and thumbnail url
-         // const result3 = testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", {
-         //    embeds: [{ type: "image", url: "https://huginn.dev/huginn-meta.png" }],
-         // });
-         // expect(result3).rejects.toThrow("Invalid Form Body");
-         // const result4 = testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", {
-         //    embeds: [{ type: "image", thumbnail: { url: "https://huginn.dev/huginn-meta.png" } }],
-         // });
-         // expect(result4).rejects.toThrow("Invalid Form Body");
+         // image type requires url and thumbnail url
+         const result3 = testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", {
+            embeds: [{ type: "image", url: "https://huginn.dev/huginn-meta.png" }],
+         });
+         expect(result3).rejects.toThrow("Invalid Form Body");
+         const result4 = testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", {
+            embeds: [{ type: "image", thumbnail: { url: "https://huginn.dev/huginn-meta.png" } }],
+         });
+         expect(result4).rejects.toThrow("Invalid Form Body");
 
-         // // video type requires url and video url
-         // const result5 = testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", {
-         //    embeds: [{ type: "video", url: "https://huginn.dev/huginn-meta.png" }],
-         // });
-         // expect(result5).rejects.toThrow("Invalid Form Body");
-         // const result6 = testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", {
-         //    embeds: [{ type: "video", video: { url: "https://huginn.dev/huginn-meta.png" } }],
-         // });
-         // expect(result6).rejects.toThrow("Invalid Form Body");
+         // video type requires url and video url
+         const result5 = testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", {
+            embeds: [{ type: "video", url: "https://huginn.dev/huginn-meta.png" }],
+         });
+         expect(result5).rejects.toThrow("Invalid Form Body");
+         const result6 = testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", {
+            embeds: [{ type: "video", video: { url: "https://huginn.dev/huginn-meta.png" } }],
+         });
+         expect(result6).rejects.toThrow("Invalid Form Body");
       },
       { timeout: 10000 },
    );
@@ -147,12 +155,7 @@ describe("POST /api/channels/:channelId/messages", () => {
       body.append("files[0]", new Blob([await Bun.file(resolve(__dirname, "../pixel.png")).arrayBuffer()]), "pixel.png");
       body.append("payload_json", JSON.stringify({ attachments: [{ id: 0, filename: "pixel.png", description: "test" }] }));
 
-      const result = (await testHandler(
-         `/api/channels/${channel.id}/messages`,
-         authHeader(user.accessToken),
-         "POST",
-         body,
-      )) as APIPostMessageResult;
+      const result = (await testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", body)) as APIPostMessageResult;
 
       expect(result.attachments).toBeArray();
       expect(result.attachments).toHaveLength(1);
@@ -176,12 +179,7 @@ describe("POST /api/channels/:channelId/messages", () => {
          }),
       );
 
-      const result = (await testHandler(
-         `/api/channels/${channel.id}/messages`,
-         authHeader(user.accessToken),
-         "POST",
-         body,
-      )) as APIPostMessageResult;
+      const result = (await testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", body)) as APIPostMessageResult;
 
       expect(result.attachments).toBeArray();
       expect(result.attachments).toHaveLength(2);
@@ -240,5 +238,26 @@ describe("POST /api/channels/:channelId/messages", () => {
          width: 1150,
          height: 609,
       });
+   });
+
+   test("should create a message with type 9 (REPLY) in the channel when the request is successful", async () => {
+      const [user, user2] = await createTestUsers(2);
+
+      const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
+      const [message] = await createTestMessages(channel.id, user.id, 1);
+
+      const reference: APIMessageReference = {
+         channelId: channel.id.toString(),
+         messageId: message.id.toString(),
+         type: MessageReferenceType.DEFAULT,
+      };
+      const body: APIPostMessageJSONBody = {
+         content: "test",
+         messageReference: reference,
+      };
+
+      const result = (await testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", body)) as APIReplyMessage;
+
+      expectMessageExactSchema(result, MessageType.REPLY, undefined, channel.id, user, "test", undefined, reference);
    });
 });
