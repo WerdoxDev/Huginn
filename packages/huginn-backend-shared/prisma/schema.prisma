@@ -188,7 +188,7 @@ model MessageReference {
    id   BigInt @id
    type Int
 
-   referrerMessage   Message @relation("message_referrer", fields: [referrerMessageId], references: [id])
+   referrerMessage   Message @relation("message_referrer", fields: [referrerMessageId], references: [id], onDelete: Cascade)
    referrerMessageId BigInt  @unique
 
    message   Message? @relation("message_reference", fields: [messageId], references: [id])

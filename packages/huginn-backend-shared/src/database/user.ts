@@ -25,9 +25,11 @@ export const userExtension = Prisma.defineExtension({
          },
          async findByCredentials(options: APIPostLoginJSONBody) {
             const methodName = "user.findByCredentials";
+
+            const passwordHash = await Bun.password.hash(options.password);
             const user = await prisma.user.findFirst({
                where: {
-                  AND: [{ password: options.password }, { OR: [{ email: options.email }, { username: options.username?.toLowerCase() }] }],
+                  AND: [{ password: passwordHash }, { OR: [{ email: options.email }, { username: options.username?.toLowerCase() }] }],
                },
                select: selectPrivateUser,
             });
@@ -38,19 +40,28 @@ export const userExtension = Prisma.defineExtension({
          async edit<Args extends UserArgs>(id: Snowflake, editedUser: APIPatchCurrentUserJSONBody, args?: Args) {
             const methodName = "user.edit";
             assertId(methodName, id);
-            const updatedUser = await prisma.user.update({ where: { id: BigInt(id) }, data: { ...editedUser }, ...args });
+
+            // Hash new password
+            if (editedUser.newPassword) {
+               editedUser.newPassword = await Bun.password.hash(editedUser.newPassword);
+            }
+
+            const passwordHash = editedUser.password ? await Bun.password.hash(editedUser.password) : undefined;
+            const updatedUser = await prisma.user.update({ where: { id: BigInt(id), password: passwordHash }, data: { ...editedUser }, ...args });
 
             assertObj(methodName, updatedUser, DBErrorType.NULL_USER, id);
             return idFix(updatedUser) as UserPayload<Args>;
          },
          async createOne(options: APIPostRegisterJSONBody) {
             const methodName = "user.createOne";
+
+            const passwordHash = await Bun.password.hash(options.password);
             const newUser = await prisma.user.create({
                data: {
                   id: snowflake.generate(WorkerID.AUTH),
                   username: options.username.toLowerCase(),
                   displayName: !options.displayName ? null : options.displayName,
-                  password: options.password,
+                  password: passwordHash,
                   avatar: null,
                   email: options.email,
                   flags: UserFlags.NONE,
