@@ -31,7 +31,6 @@ async function getApplicationInfo(exePath: string, processId: number): Promise<A
 
    // It's a windows packaged application
    if (packagePath) {
-      console.log(packagePath);
       const appManifest = path.join(packagePath, "appxmanifest.xml");
       const content = await fs.readFile(appManifest, "utf8");
       const parser = new XMLParser({ ignoreAttributes: false });
