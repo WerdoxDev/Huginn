@@ -12,7 +12,7 @@ const querySchema = t.Object({
 
 export const getGoogle = new Elysia().get(
    "/api/auth/google",
-   async ({ query: { flow, state, redirect_url, session_id }, status, redirect, cookie: { oauth } }) => {
+   async ({ query: { flow, state, redirect_url, session_id }, status, redirect, cookie: { oauth }, headers, request }) => {
       if (!envs.GOOGLE_CLIENT_ID || !envs.SESSION_PASSWORD) {
          return status("Not Implemented");
       }
@@ -37,13 +37,15 @@ export const getGoogle = new Elysia().get(
          return forbidden(status);
       }
 
-      oauth.value = { state, redirect_url, flow, session_id };
+      const url = new URL(request.url);
+      const host = `${url.protocol}//${url.hostname}`;
+
+      oauth.value = { state, redirect_url, flow, session_id, used_redirect_url: host };
 
       if (flow === "websocket" && session_id) {
          gateway.getSessionBySessionId(session_id)?.subscribe(state);
       }
 
-      const host = envs.REDIRECT_HOST;
       const authEndpoint = new URL("https://accounts.google.com/o/oauth2/v2/auth");
       authEndpoint.searchParams.set("client_id", envs.GOOGLE_CLIENT_ID);
       authEndpoint.searchParams.set("redirect_uri", `${host}/api/auth/callback/google`);

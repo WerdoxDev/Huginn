@@ -10,7 +10,13 @@ import Elysia, { t } from "elysia";
 
 const querySchema = t.Object({ code: t.Optional(t.String()), error: t.Optional(t.String()), state: t.Optional(t.String()) });
 const cookieSchema = t.Cookie({
-   oauth: t.Object({ redirect_url: t.Optional(t.String()), state: t.String(), flow: t.String(), session_id: t.Optional(t.String()) }),
+   oauth: t.Object({
+      redirect_url: t.Optional(t.String()),
+      state: t.String(),
+      flow: t.String(),
+      session_id: t.Optional(t.String()),
+      used_redirect_url: t.Optional(t.String()),
+   }),
 });
 
 type GoogleOAuth2Response =
@@ -34,14 +40,12 @@ export const getGoogleCallback = new Elysia().get(
          return status("Not Implemented");
       }
 
-      const { flow, redirect_url, session_id, state: cookie_state } = cookie.oauth.value;
+      const { flow, redirect_url, session_id, state: cookie_state, used_redirect_url } = cookie.oauth.value;
 
       if (cookie_state !== state || !state) {
          consola.info("Cookie state mismatch");
          return forbidden(status);
       }
-
-      const host = envs.REDIRECT_HOST;
 
       // Code from google oauth
       if (code) {
@@ -50,7 +54,7 @@ export const getGoogleCallback = new Elysia().get(
             client_secret: envs.GOOGLE_CLIENT_SECRET,
             code: code,
             grant_type: "authorization_code",
-            redirect_uri: `${host}/api/auth/callback/google`,
+            redirect_uri: `${used_redirect_url}/api/auth/callback/google`,
          });
 
          // Get a token using the code
@@ -79,11 +83,7 @@ export const getGoogleCallback = new Elysia().get(
                { id: identityProvider.userId.toString(), isOAuth: true },
                constants.ACCESS_TOKEN_EXPIRE_TIME,
             );
-            const refreshToken = await createToken(
-               "user-refresh",
-               { id: identityProvider.userId.toString() },
-               constants.REFRESH_TOKEN_EXPIRE_TIME,
-            );
+            const refreshToken = await createToken("user-refresh", { id: identityProvider.userId.toString() }, constants.REFRESH_TOKEN_EXPIRE_TIME);
 
             // Dispatch to whoever is subbed to the state topic of this authentication
             dispatchToTopic(state, "oauth_redirect", { access_token: accessToken, refresh_token: refreshToken });
@@ -92,7 +92,7 @@ export const getGoogleCallback = new Elysia().get(
             }
 
             const searchParam = new URLSearchParams({ flow, access_token: accessToken, refresh_token: refreshToken });
-            const redirectUrl = `${flow === "browser" ? redirect_url : `${host}/redirect.html`}?${searchParam.toString()}`;
+            const redirectUrl = `${flow === "browser" ? redirect_url : `${used_redirect_url}/redirect.html`}?${searchParam.toString()}`;
 
             return redirect(redirectUrl.toString(), 302);
          }
@@ -115,9 +115,9 @@ export const getGoogleCallback = new Elysia().get(
          if (googleUser.picture) {
             const avatarData = await (await fetch(googleUser.picture.replace("s96-c", "s256-c"))).arrayBuffer();
             avatarHash = getFileHash(avatarData);
-            avatarHash = (
-               await cdnUpload<string>(CDNRoutes.uploadAvatar(googleUser.id), { files: [{ data: avatarData, name: avatarHash }] })
-            ).split(".")[0];
+            avatarHash = (await cdnUpload<string>(CDNRoutes.uploadAvatar(googleUser.id), { files: [{ data: avatarData, name: avatarHash }] })).split(
+               ".",
+            )[0];
          }
 
          // Create an oauth token
@@ -140,14 +140,14 @@ export const getGoogleCallback = new Elysia().get(
          }
 
          const searchParam = new URLSearchParams({ flow, token });
-         const redirectUrl = `${flow === "browser" ? redirect_url : `${host}/redirect.html`}?${searchParam.toString()}`;
+         const redirectUrl = `${flow === "browser" ? redirect_url : `${used_redirect_url}/redirect.html`}?${searchParam.toString()}`;
 
          return redirect(redirectUrl.toString(), 302);
       }
 
       // User clicked "Cancel"
       if (error === "access_denied") {
-         const redirectUrl = new URL(flow === "browser" ? new URL(redirect_url!).origin : `${host}/redirect.html`);
+         const redirectUrl = new URL(flow === "browser" ? new URL(redirect_url!).origin : `${used_redirect_url}/redirect.html`);
          redirectUrl.searchParams.set("flow", flow);
          redirectUrl.searchParams.set("error", OAuthCode.CANCELLED);
 

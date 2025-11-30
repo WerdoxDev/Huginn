@@ -26,7 +26,6 @@ export const envs = readEnv([
    "GOOGLE_CLIENT_SECRET",
    "SESSION_PASSWORD",
    "ALLOWED_ORIGINS",
-   "REDIRECT_HOST",
    "CDN_HMAC_SECRET",
    { key: "FFMPEG_TEMP_DIR", default: "./ffmpeg" },
    "IGDB_CLIENT_ID",

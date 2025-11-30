@@ -18,7 +18,6 @@ services:
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT=3004
       - ALLOWED_ORIGINS=http://localhost:5173/,https://app.huginn.dev/,https://dev.huginn.dev/
-      - REDIRECT_HOST=https://midgard.huginn.dev
       # - CDN_PUBLIC_URL=https://midgard.huginn.dev/cdn
       # - CDN_PUBLIC_URL=http://192.168.178.62:3000/cdn
       - CDN_LOCAL_URL=http://cdn:3002/cdn
