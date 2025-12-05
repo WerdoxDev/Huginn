@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.29.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.29.0...api@v0.29.1) (2025-12-05)
+
+
+### Bug Fixes
+
+* **api:** better auth error handling ([3bb99c6](https://github.com/WerdoxDev/Huginn/commit/3bb99c67d32fba0ba8fa2a2b85c8945d94c5b877))
+* **api:** potential fix for turn servers ([33285ff](https://github.com/WerdoxDev/Huginn/commit/33285ff3f92f2f765aa23ff288c8b9aff3782433))
+
 ## [0.29.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.28.2...api@v0.29.0) (2025-11-18)
 
 
