@@ -11,6 +11,7 @@ import type {
 } from "@/types";
 import {
    type APIMessage,
+   type APIPostMessageReferenceJSONBody,
    type APIRelationshipWithoutOwner,
    ChannelType,
    type DirectChannel,
@@ -21,14 +22,19 @@ import {
    MessageType,
    type PresenceStatus,
    type PresenceUser,
+   type Snowflake,
    type UserPresence,
+   WorkerID,
    changeUrlBase,
    omit,
+   snowflake,
 } from "@huginn/shared";
 import type { JSXElementConstructor, ReactNode } from "react";
 import { Children, isValidElement } from "react";
 import { APIMessages } from "./error-messages";
 import { clientStore } from "@stores/clientStore";
+import { getMessage } from "./query-utils";
+import type { QueryClient } from "@tanstack/react-query";
 
 export const requiredFieldError: InputStatus = { code: "error", text: "Required" };
 
@@ -225,4 +231,31 @@ export function getMediaErrorMessage(e: unknown, type: "camera" | "screen") {
       default:
          return "An unexpected error occurred. Please try again.";
    }
+}
+
+export function createPreviewMessage(
+   queryClient: QueryClient,
+   data: {
+      content: string;
+      channelId: Snowflake;
+      authorId: Snowflake;
+      nonce: Snowflake;
+      messageReference?: APIPostMessageReferenceJSONBody;
+   },
+) {
+   const referencedMessage = getMessage(data.channelId, data.messageReference?.messageId, queryClient);
+
+   const previewMessage: AppMessage = {
+      isPreview: true,
+      id: snowflake.generateString(WorkerID.APP),
+      timestamp: new Date().toISOString(),
+      content: data.content,
+      channelId: data.channelId,
+      authorId: data.authorId,
+      nonce: data.nonce,
+      referencedMessage: referencedMessage,
+      abortController: new AbortController(),
+   };
+
+   return previewMessage;
 }

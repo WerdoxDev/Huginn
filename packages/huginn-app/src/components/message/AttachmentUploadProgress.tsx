@@ -11,10 +11,10 @@ export default function AttachmentUploadProgress(props: { progress: UploadProgre
                <div className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm text-white">
                   {props.progress.percentage === 100 ? (
                      <span className="italic">Processing...</span>
-                  ) : props.progress.filenames.length === 1 ? (
+                  ) : props.progress.filenames?.length === 1 ? (
                      `Uploading ${props.progress.filenames[0]}`
                   ) : (
-                     `Uploading ${props.progress.filenames.length} files`
+                     `Uploading ${props.progress.filenames?.length} files`
                   )}{" "}
                </div>
                {props.progress.percentage !== 100 && (

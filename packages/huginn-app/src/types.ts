@@ -8,22 +8,17 @@ import type {
    APICallMessage,
    APIDefaultMessage,
    APIGetKnownApplicationsResult,
-   APIPublicUser,
    APIRelationshipWithoutOwner,
    APIReplyMessage,
-   ConsumerData,
    DeepPartial,
    DirectChannel,
    GatewayVoiceState,
    HMediaKind,
-   MediasoupAppData,
    PresenceUser,
-   ProducerData,
    RelationshipType,
    Snowflake,
    UserPresence,
 } from "@huginn/shared";
-import type { AudioLevelChecker } from "@lib/voice/audio-level-checker";
 import type { ChangeEvent, HTMLInputTypeAttribute, ReactNode, RefObject } from "react";
 
 export type StatusCode = "none" | "default" | "error" | "success";
@@ -249,7 +244,11 @@ export type AppUser = PresenceUser & { displayName?: string; originalDisplayName
 
 export type AppPresence = Omit<UserPresence, "user"> & { userId: Snowflake };
 
-type PreviewAppMessage = {
+export enum MessageErrorType {
+   FAILED_TO_SEND = 0,
+}
+
+export type PreviewAppMessage = {
    isPreview: true;
    id: Snowflake;
    timestamp: string;
@@ -258,9 +257,11 @@ type PreviewAppMessage = {
    content: string;
    channelId: Snowflake;
    referencedMessage?: AppMessage | null;
+   error?: MessageErrorType;
+   abortController?: AbortController;
 };
 
-type ProcessedAppMessage = {
+export type ProcessedAppMessage = {
    isPreview: false;
    authorId: Snowflake;
    mentions: Snowflake[];
@@ -324,7 +325,7 @@ export type ProgressBarProps = {
 
 export type UploadProgress = {
    messageId: Snowflake;
-   filenames: string[];
+   filenames?: string[];
    percentage: number;
    total: number;
    onAbort?: () => void;

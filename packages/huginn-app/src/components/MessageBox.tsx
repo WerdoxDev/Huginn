@@ -16,6 +16,9 @@ import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
 import { useEditMessage } from "@hooks/mutations/useEditMessage";
 import { useThisUser } from "@stores/userStore";
 import ReplyingPreview from "./ReplyingPreview";
+import { createPreviewMessage } from "@lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
+import { useClient } from "@stores/clientStore";
 
 type AttachmentInputType = { name: string; type: string; arrayBuffer: () => Promise<ArrayBuffer> };
 
@@ -32,14 +35,15 @@ const initialValue: Descendant[] = [
 
 export default function MessageBox(props: { messages: AppMessage[] }) {
    const params = useParams();
+   const queryClient = useQueryClient();
+   const client = useClient();
    const editorRef = useRef<HTMLDivElement>(null);
    const containerRef = useRef<HTMLDivElement>(null);
    const currentChannel = useCurrentChannel();
    const [attachments, setAttachments] = useState<AttachmentType[]>([]);
    const [dragging, setDragging] = useState(false);
    const [_isPending, startTransition] = useTransition();
-   const { setEditingMessageId, currentEditingMessageId, setReplyingMessageId, currentReplyingMessageId, setMessageBoxHeight } =
-      useChannelStore();
+   const { setEditingMessageId, currentEditingMessageId, setReplyingMessageId, currentReplyingMessageId, setMessageBoxHeight } = useChannelStore();
    const { decorate, editor, renderElement, renderLeaf } = usePreviewMessageRenderer();
    const { user } = useThisUser();
 
@@ -50,9 +54,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    function onEditorKeyDown(event: KeyboardEvent) {
       // Edit
       if (event.key === "ArrowUp" && editor.string([]) === "") {
-         const lastEditableMessage = props.messages.findLast(
-            (x) => x.authorId === user?.id && !x.isPreview && x.type === MessageType.DEFAULT,
-         );
+         const lastEditableMessage = props.messages.findLast((x) => x.authorId === user?.id && !x.isPreview && x.type === MessageType.DEFAULT);
          setEditingMessageId(lastEditableMessage?.id);
          event.preventDefault();
       }
@@ -128,14 +130,27 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 
    function sendMessage(flags: MessageFlags) {
       const content = serialize(editor.children);
-      if (!content && !attachments.length) {
-         return;
-      }
+      const channelId = params.channelId;
 
-      const channelId = params.channelId ?? "";
+      if (!content && !attachments.length) return;
+      if (!user || !channelId || !client) return;
+
+      const messageReference = currentReplyingMessageId
+         ? { messageId: currentReplyingMessageId, channelId: channelId, type: MessageReferenceType.DEFAULT }
+         : undefined;
+
+      const nonce = client.generateNonce();
+      const previewMessage = createPreviewMessage(queryClient, {
+         authorId: user.id,
+         channelId,
+         content,
+         nonce,
+         messageReference,
+      });
 
       sendMessageMutation.mutate({
-         channelId: channelId,
+         previewMessage,
+         channelId,
          content,
          flags,
          attachments: attachments.map((x) => ({
@@ -145,9 +160,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
             filename: x.filename,
             description: x.description,
          })),
-         messageReference: currentReplyingMessageId
-            ? { messageId: currentReplyingMessageId, channelId: channelId, type: MessageReferenceType.DEFAULT }
-            : undefined,
+         messageReference,
       });
 
       if (currentReplyingMessageId) {
@@ -387,10 +400,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                <IconMingcuteEdit2Fill />
                <div>Editing</div>
                <div className="text-sm text-white/50">(ESC to cancel)</div>
-               <button
-                  className="bg-negative-100 hover:bg-negative-200 ml-auto cursor-pointer rounded-full p-1"
-                  onClick={cancelEditMessage}
-               >
+               <button className="bg-negative-100 hover:bg-negative-200 ml-auto cursor-pointer rounded-full p-1" onClick={cancelEditMessage}>
                   <IconMingcuteCloseFill className="size-4" />
                </button>
             </div>
@@ -426,7 +436,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                         ref={editorRef}
                         placeholder={`Message ${currentChannel?.name}`}
                         className={clsx(
-                           "outline-hidden h-full whitespace-break-spaces py-3 font-light leading-[24px] text-white caret-white",
+                           "outline-hidden h-full whitespace-break-spaces py-3 font-light leading-6 text-white caret-white",
                            currentEditingMessageId && "pl-3",
                         )}
                         renderLeaf={renderLeaf}
@@ -441,11 +451,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                <div className="ml-2 flex h-8 gap-x-2 p-2">
                   <div className="bg-surface h-8 w-8 rounded-full" />
                   <div className="bg-surface h-8 w-8 rounded-full" />
-                  <button
-                     className="bg-primary-700 h-8 w-8 rounded-full p-0.5"
-                     type="button"
-                     onClick={() => sendMessage(MessageFlags.NONE)}
-                  >
+                  <button className="bg-primary-700 h-8 w-8 rounded-full p-0.5" type="button" onClick={() => sendMessage(MessageFlags.NONE)}>
                      <IconLetsIconsSendHorFill className="text-text size-full" />
                   </button>
                </div>

@@ -24,18 +24,17 @@ export default function DefaultMessage() {
    const isSelf = author?.id === user?.id;
 
    const referencedMessage =
-      (context.message.isPreview && context.message.referencedMessage) ||
-      (!context.message.isPreview && context.message.type === MessageType.REPLY)
+      (context.message.isPreview && context.message.referencedMessage) || (!context.message.isPreview && context.message.type === MessageType.REPLY)
          ? context.message.referencedMessage
          : undefined;
 
    const isLastAction = context.lastMessage?.isActionType === true;
-   const isSeparate =
-      context.message.hasNewAuthor || context.message.hasNewMinute || context.message.hasNewDate || context.message.isReplyType;
+   const isSeparate = context.message.hasNewAuthor || context.message.hasNewMinute || context.message.hasNewDate || context.message.isReplyType;
    const isEditing = context.message.isEditing;
    const isReplying = context.message.isReplying;
    const isEdited = !context.message.isPreview && context.message.editedTimestamp !== null;
    const isPreview = context.message.isPreview;
+   const error = isPreview ? context.message.error : undefined;
    const isNextPreview = context.nextMessage?.isPreview;
    const isNextSeparate =
       !context.nextMessage ||
@@ -72,14 +71,13 @@ export default function DefaultMessage() {
             isSeparate && !isNewDate && !isUnread && "mt-1.5",
          )}
       >
+         {error}
          {referencedMessage && <ReplyRenderer referencedMessage={referencedMessage} />}
          {(isSeparate || isLastAction) && (
             <div className="flex items-center gap-x-2">
                <UserAvatar userId={context.message.authorId} avatarHash={author?.avatar} statusSize="0.5rem" size="1.75rem" />
                <div className="text-text text-sm">{isSelf ? "You" : author?.displayName}</div>
-               {!context.message.isPreview &&
-               context.message.flags &&
-               hasFlag(context.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
+               {!context.message.isPreview && context.message.flags && hasFlag(context.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
                   <IconMingcuteNotificationOffFill className="text-text size-4" />
                ) : null}
                <div className="text-text/50 text-xs">{formattedFullTime}</div>
@@ -105,9 +103,7 @@ export default function DefaultMessage() {
                      </div>
                   ))}
                {isEdited && <div className="text-xs text-white/50">(edited)</div>}
-               {!isSeparate && !isLastAction && (
-                  <div className="text-text/50 text-xs opacity-0 group-hover:opacity-100">{formattedTime}</div>
-               )}
+               {!isSeparate && !isLastAction && <div className="text-text/50 text-xs opacity-0 group-hover:opacity-100">{formattedTime}</div>}
             </div>
          </div>
       </div>
@@ -181,9 +177,7 @@ function DefaultRenderer(props: {
                <div
                   className={clsx(
                      "h-full w-full overflow-hidden transition-[border-radius]",
-                     props.isSelf
-                        ? "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-primary-800))]"
-                        : "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-surface))]",
+                     props.isSelf ? "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-primary-800))]" : "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-surface))]",
                   )}
                   style={{
                      borderTopLeftRadius: props.isPreview ? "0px" : `${clamp((props.widths.lastWidth - props.widths.width) / 2, 0, 12)}px`,
@@ -196,14 +190,10 @@ function DefaultRenderer(props: {
                <div
                   className={clsx(
                      "h-full w-full overflow-hidden transition-[border-radius]",
-                     props.isSelf
-                        ? "[box-shadow:0_20px_0_0_rgb(var(--tcolor-primary-800))]"
-                        : "[box-shadow:0_20px_0_0_rgb(var(--tcolor-surface))]",
+                     props.isSelf ? "[box-shadow:0_20px_0_0_rgb(var(--tcolor-primary-800))]" : "[box-shadow:0_20px_0_0_rgb(var(--tcolor-surface))]",
                   )}
                   style={{
-                     borderBottomLeftRadius: props.isNextPreview
-                        ? "0px"
-                        : `${clamp((props.widths.nextWidth - props.widths.width) / 2, 0, 12)}px`,
+                     borderBottomLeftRadius: props.isNextPreview ? "0px" : `${clamp((props.widths.nextWidth - props.widths.width) / 2, 0, 12)}px`,
                   }}
                />
             </div>

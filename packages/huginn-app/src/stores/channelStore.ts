@@ -36,9 +36,9 @@ export const useChannelStore = create(
             produce((draft: StoreType) => {
                const existingIndex = draft.messageUploadProgresses.findIndex((x) => x.messageId === progress.messageId);
                if (existingIndex !== -1) {
-                  draft.messageUploadProgresses[existingIndex] = progress;
+                  const existing = draft.messageUploadProgresses[existingIndex];
+                  draft.messageUploadProgresses[existingIndex] = { ...existing, ...progress };
                } else {
-                  console.log("adding", progress);
                   draft.messageUploadProgresses.push(progress);
                }
             }),

@@ -1,92 +1,54 @@
-import { type APIPostMessageReferenceJSONBody, type MessageFlags, type Snowflake, snowflake, WorkerID } from "@huginn/shared";
+import { type APIPostMessageReferenceJSONBody, type MessageFlags, type Snowflake } from "@huginn/shared";
 import { dispatchEvent } from "@lib/event-handler";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
-import { type InfiniteData, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { AppAttachment, AppMessage } from "@/types";
-import { findChannel, getChannels, getMessage } from "@lib/query-utils";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { MessageErrorType, type AppAttachment, type PreviewAppMessage } from "@/types";
+import { appendAppMessage, deleteAppMessage, findChannel, getChannels, updateAppMessage } from "@lib/query-utils";
+import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 
 export function useSendMessage() {
    const client = useClient();
    const { user } = useThisUser();
    const queryClient = useQueryClient();
+   const currentChannel = useCurrentChannel();
    const { updateMessageUploadProgress } = useChannelStore();
 
    const mutation = useMutation({
       mutationKey: ["send-message"],
-      async mutationFn(data: {
+      onMutate: async (data: {
+         previewMessage: PreviewAppMessage;
          channelId: Snowflake;
          content: string;
          flags: MessageFlags;
          attachments: AppAttachment[];
          messageReference?: APIPostMessageReferenceJSONBody;
-      }) {
+      }) => {
          if (!user) return;
-
-         const nonce = client?.generateNonce();
-
-         const referencedMessage = getMessage(data.channelId, data.messageReference?.messageId, queryClient);
-
-         const previewMessage: AppMessage = {
-            isPreview: true,
-            id: snowflake.generateString(WorkerID.APP),
-            timestamp: new Date(Date.now()).toISOString(),
-            content: data.content,
-            channelId: data.channelId,
-            authorId: user.id,
-            nonce: nonce,
-            referencedMessage,
-         };
 
          const filenames = data.attachments.map((x) => x.filename);
 
-         const abortController = new AbortController();
+         const onAbort = () => {
+            data.previewMessage.abortController?.abort();
+            deleteAppMessage(queryClient, data.channelId, data.previewMessage.id);
+         };
 
-         function onAbort() {
-            abortController.abort();
-
-            queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", data.channelId], (old) => {
-               if (!old) return undefined;
-
-               const lastPage = old.pages[old.pages.length - 1];
-
-               return {
-                  ...old,
-                  pages: old.pages.toSpliced(
-                     old.pages.length - 1,
-                     1,
-                     lastPage.filter((x) => x.id !== previewMessage.id),
-                  ),
-               };
+         if (data.attachments.length) {
+            updateMessageUploadProgress({
+               messageId: data.previewMessage.id,
+               percentage: 0,
+               total: 0,
+               filenames,
+               onAbort,
             });
          }
 
-         if (data.attachments.length) {
-            updateMessageUploadProgress({ messageId: previewMessage.id, percentage: 0, filenames, total: 0, onAbort });
-         }
-
          const targetChannel = findChannel(getChannels(undefined, queryClient), data.channelId);
-
-         // Add Preview Message
-         queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", data.channelId], (old) => {
-            if (!old) return undefined;
-
-            const lastPage = old.pages[old.pages.length - 1];
-            const lastParams = old.pageParams[old.pageParams.length - 1];
-
-            if (!lastParams.before && (!lastParams.after || lastPage.some((x) => x.id === targetChannel?.lastMessageId))) {
-               return {
-                  ...old,
-                  pages: old.pages.toSpliced(old.pages.length - 1, 1, [...lastPage, previewMessage]),
-               };
-            }
-
-            return old;
-         });
+         appendAppMessage(queryClient, data.channelId, data.previewMessage, targetChannel, currentChannel);
 
          dispatchEvent("message_added", {
-            message: previewMessage,
+            message: data.previewMessage,
             inLoadedQueryPage: true,
             visible: true,
             self: true,
@@ -94,31 +56,56 @@ export function useSendMessage() {
          });
 
          return {
-            previewMessage,
-            message: await client?.channels.createMessage(
-               data.channelId,
-               {
-                  attachments: data.attachments.map((x) => ({ id: x.id, filename: x.filename, description: x.description })),
-                  content: data.content,
-                  flags: data.flags,
-                  nonce: nonce,
-                  messageReference: data.messageReference,
-               },
-               data.attachments.map((x) => ({ data: x.data, name: x.filename, contentType: x.contentType })),
-               data.attachments.length
-                  ? (event) =>
-                       updateMessageUploadProgress({
-                          messageId: previewMessage.id,
-                          percentage: (event.loaded / event.total) * 100,
-                          filenames,
-                          total: event.total,
-                          onAbort,
-                       })
-                  : undefined,
-               abortController.signal,
-            ),
+            filenames,
          };
       },
+
+      mutationFn: async (data) => {
+         const { previewMessage } = data;
+
+         const message = await client!.channels.createMessage(
+            data.channelId,
+            {
+               attachments: data.attachments.map((x) => ({
+                  id: x.id,
+                  filename: x.filename,
+                  description: x.description,
+               })),
+               content: data.content,
+               flags: data.flags,
+               nonce: previewMessage.nonce,
+               messageReference: data.messageReference,
+            },
+            data.attachments.map((x) => ({
+               data: x.data,
+               name: x.filename,
+               contentType: x.contentType,
+            })),
+            data.attachments.length
+               ? (event) =>
+                    updateMessageUploadProgress({
+                       messageId: previewMessage.id,
+                       percentage: (event.loaded / event.total) * 100,
+                       total: event.total,
+                    })
+               : undefined,
+            previewMessage.abortController?.signal,
+         );
+
+         return { message };
+      },
+      onError(_error, data) {
+         const targetChannel = findChannel(getChannels(undefined, queryClient), data.channelId);
+         updateAppMessage(
+            queryClient,
+            data.channelId,
+            data.previewMessage.id,
+            (old) => ({ ...old, error: MessageErrorType.FAILED_TO_SEND }),
+            targetChannel,
+            currentChannel,
+         );
+      },
+      networkMode: "always",
    });
 
    return mutation;
