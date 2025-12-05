@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.63.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.63.0...app@v0.63.1) (2025-12-05)
+
+
+### Bug Fixes
+
+* **app:** better message query management through helper functions ([feb8693](https://github.com/WerdoxDev/Huginn/commit/feb8693d8005f750002eb377648a810a0fbddb73))
+* **app:** few voice visual and audio fixes ([77452ab](https://github.com/WerdoxDev/Huginn/commit/77452abcf13226be5801a697dd0e4e82c7703d02))
+* **app:** multi instance should not be allowed even locally ([53f86e8](https://github.com/WerdoxDev/Huginn/commit/53f86e82dc37c24f1780bde218dca40599a3d1b7))
+
 ## [0.63.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.62.2...app@v0.63.0) (2025-11-22)
 
 
