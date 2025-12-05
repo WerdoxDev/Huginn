@@ -141,12 +141,14 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       await this.device.load({ routerRtpCapabilities: rtpCapabilities });
    }
 
-   public createSendTransport(options: TransportOptions<MediasoupAppData>): void {
+   public async createSendTransport(options: TransportOptions<MediasoupAppData>): Promise<void> {
       this.checkDevice();
 
       log("api:voice-transport", "default", "create send transport");
 
-      const transport = this.device.createSendTransport(options);
+      const iceServers = await this.fetchTurnCredentials();
+      console.log(iceServers);
+      const transport = this.device.createSendTransport({ ...options, iceServers });
       this.sendTransport = transport;
       this.emit("send_transport_ready", undefined);
 
@@ -164,12 +166,13 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       this.checkAndSetStatus();
    }
 
-   public createRecvTransport(options: TransportOptions<MediasoupAppData>): void {
+   public async createRecvTransport(options: TransportOptions<MediasoupAppData>): Promise<void> {
       this.checkDevice();
 
       log("api:voice-transport", "default", "create recv transport");
 
-      const transport = this.device.createRecvTransport(options);
+      const iceServers = await this.fetchTurnCredentials();
+      const transport = this.device.createRecvTransport({ ...options, iceServers });
       this.recvTransport = transport;
       this.emit("recv_transport_ready", undefined);
 
@@ -179,6 +182,20 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
       transport.on("connectionstatechange", (d) => this.onTransportStateChanged(d, transport.direction));
       this.checkAndSetStatus();
+   }
+
+   private async fetchTurnCredentials(): Promise<RTCIceServer[]> {
+      const id = "8f839ebc728aa6fd50e1b27903ecd17c";
+      const token = "71228e8dff18a80dc8d912d81e9dd9da8e9d90fcb3dac7135a2375873a8afd3b";
+      const data = { ttl: 86400 };
+
+      const response = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${id}/credentials/generate-ice-servers`, {
+         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+         body: JSON.stringify(data),
+         method: "POST",
+      });
+
+      return (await response.json()).iceServers;
    }
 
    public async createProducer(

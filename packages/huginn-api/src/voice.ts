@@ -72,11 +72,11 @@ export class Voice extends EventEmitter<Events> {
          this.transport.addRemoteConsumer(d);
       });
 
-      this.signaling.on("transport_created", (d) => {
+      this.signaling.on("transport_created", async (d) => {
          if (d.direction === "send") {
-            this.transport.createSendTransport(d.params);
+            await this.transport.createSendTransport(d.params);
          } else if (d.direction === "recv") {
-            this.transport.createRecvTransport(d.params);
+            await this.transport.createRecvTransport(d.params);
          }
       });
 
