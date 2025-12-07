@@ -26,7 +26,7 @@ export function assertId(methodName: string, ...ids: (Snowflake | undefined)[]) 
    }
 }
 
-export function assertObj(methodName: string, obj: unknown, errorType: DBErrorType, cause?: string) {
+export function assertObj<T>(methodName: string, obj: T, errorType: DBErrorType, cause?: string): asserts obj is NonNullable<T> {
    if (obj === null || typeof obj !== "object") {
       throw new DBError(methodName, errorType, cause);
    }

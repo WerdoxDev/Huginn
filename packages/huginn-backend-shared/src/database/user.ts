@@ -1,8 +1,8 @@
 import { DBErrorType } from "@huginn/backend-shared/types";
-import { idFix, snowflake, UserFlags, WorkerID, type APIPatchCurrentUserJSONBody } from "@huginn/shared";
+import { idFix, omit, snowflake, UserFlags, WorkerID, type APIPatchCurrentUserJSONBody } from "@huginn/shared";
 import type { APIPostLoginJSONBody, APIPostRegisterJSONBody, BigIntToString, Snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
-import { assertId, assertObj, prisma, selectPrivateUser, type UserArgs, type UserPayload } from ".";
+import { assertCondition, assertId, assertObj, prisma, selectPrivateUser, type UserArgs, type UserPayload } from ".";
 
 export const userExtension = Prisma.defineExtension({
    model: {
@@ -26,15 +26,16 @@ export const userExtension = Prisma.defineExtension({
          async findByCredentials(options: APIPostLoginJSONBody) {
             const methodName = "user.findByCredentials";
 
-            const passwordHash = await Bun.password.hash(options.password);
             const user = await prisma.user.findFirst({
-               where: {
-                  AND: [{ password: passwordHash }, { OR: [{ email: options.email }, { username: options.username?.toLowerCase() }] }],
-               },
+               where: { OR: [{ email: options.email }, { username: options.username?.toLowerCase() }], password: { not: null } },
                select: selectPrivateUser,
             });
 
             assertObj(methodName, user, DBErrorType.NULL_USER);
+
+            const passwordValid = await Bun.password.verify(options.password, user.password!);
+            assertCondition(methodName, !passwordValid, DBErrorType.NULL_USER);
+
             return idFix(user) as BigIntToString<NonNullable<typeof user>>;
          },
          async edit<Args extends UserArgs>(id: Snowflake, editedUser: APIPatchCurrentUserJSONBody, args?: Args) {
@@ -46,8 +47,11 @@ export const userExtension = Prisma.defineExtension({
                editedUser.newPassword = await Bun.password.hash(editedUser.newPassword);
             }
 
-            const passwordHash = editedUser.password ? await Bun.password.hash(editedUser.password) : undefined;
-            const updatedUser = await prisma.user.update({ where: { id: BigInt(id), password: passwordHash }, data: { ...editedUser }, ...args });
+            const updatedUser = await prisma.user.update({
+               where: { id: BigInt(id) },
+               data: { ...omit(editedUser, ["newPassword", "password"]), password: editedUser.newPassword },
+               ...args,
+            });
 
             assertObj(methodName, updatedUser, DBErrorType.NULL_USER, id);
             return idFix(updatedUser) as UserPayload<Args>;

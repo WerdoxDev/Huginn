@@ -32,7 +32,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
       peer.context.sessionId = sessionId;
       const session = this.createSession(peer, sessionId);
 
-      session.enqueue(() => this.onOpen(session));
+      await session.enqueue(() => this.onOpen(session));
    }
 
    public async _internalOnClose(peer: Peer, event: { code?: number; reason?: string }) {
@@ -71,7 +71,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
             return;
          }
 
-         session.enqueue(() => this.onMessage(session, data));
+         await session.enqueue(() => this.onMessage(session, data));
          // oxlint-disable-next-line no-unused-vars
       } catch (e) {
          error("shared:websocket", "Error in onMessage:", e);
@@ -109,7 +109,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
       return this.sessions.size;
    }
 
-   public getSessionBySessionId(sessionId: string) {
+   public getSession(sessionId: string) {
       return this.sessions.get(sessionId);
    }
 
