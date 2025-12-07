@@ -88,7 +88,7 @@ export const getGoogleCallback = new Elysia().get(
             // Dispatch to whoever is subbed to the state topic of this authentication
             dispatchToTopic(state, "oauth_redirect", { access_token: accessToken, refresh_token: refreshToken });
             if (session_id) {
-               gateway.getSessionBySessionId(session_id)?.unsubscribe(state);
+               gateway.getSession(session_id)?.unsubscribe(state);
             }
 
             const searchParam = new URLSearchParams({ flow, access_token: accessToken, refresh_token: refreshToken });
@@ -136,7 +136,7 @@ export const getGoogleCallback = new Elysia().get(
 
          dispatchToTopic(state, "oauth_redirect", { token: token });
          if (session_id) {
-            gateway.getSessionBySessionId(session_id)?.unsubscribe(state);
+            gateway.getSession(session_id)?.unsubscribe(state);
          }
 
          const searchParam = new URLSearchParams({ flow, token });

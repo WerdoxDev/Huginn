@@ -22,7 +22,7 @@ for (const user of users) {
             flags: UserFlags.NONE,
             username: user,
             displayName: user,
-            password: user,
+            password: await Bun.password.hash(user),
          },
       }),
    );
@@ -63,7 +63,7 @@ for (const user of internalUsers) {
             flags: UserFlags.NONE,
             username: user,
             displayName: user,
-            password: user,
+            password: await Bun.password.hash(user),
             system: true,
          },
       }),

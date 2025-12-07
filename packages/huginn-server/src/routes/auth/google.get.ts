@@ -43,7 +43,7 @@ export const getGoogle = new Elysia().get(
       oauth.value = { state, redirect_url, flow, session_id, used_redirect_url: host };
 
       if (flow === "websocket" && session_id) {
-         gateway.getSessionBySessionId(session_id)?.subscribe(state);
+         gateway.getSession(session_id)?.subscribe(state);
       }
 
       const authEndpoint = new URL("https://accounts.google.com/o/oauth2/v2/auth");

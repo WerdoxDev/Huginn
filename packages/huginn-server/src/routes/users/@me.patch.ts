@@ -46,7 +46,7 @@ export const patchMe = new Elysia().use(verifyJwt()).patch(
       const databaseError = createErrorFactory(Errors.invalidFormBody());
 
       const user = await prisma.user.getById(tokenPayload.id, { select: { id: true, password: true } });
-      validateCorrectPassword(body.password, user.password, databaseError);
+      await validateCorrectPassword(body.password, user.password, databaseError);
 
       await validateUsernameUnique(body.username, databaseError);
       await validateEmailUnique(body.email, databaseError);
