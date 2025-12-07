@@ -23,7 +23,7 @@ export const defaultClientOptions = {
    } as RESTOptions,
    cdn: { url: "https://midgard.huginn.dev" } as CDNOptions,
    gateway: { url: "wss://midgard.huginn.dev/gateway", intents: 0 } as GatewayOptions,
-   voice: { url: "wss://midgard.huginn.dev/voice" } as VoiceOptions,
+   voice: { url: "wss://midgard.huginn.dev/voice-gateway" } as VoiceOptions,
 } as const;
 
 export async function defaultMakeRequest(url: string, init: RequestInit): Promise<ResponseLike> {

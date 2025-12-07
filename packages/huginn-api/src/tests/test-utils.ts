@@ -14,15 +14,15 @@ export function getClient(): HuginnClient {
          createSocket(url) {
             return new WebSocket(url);
          },
-         url: "http://192.168.178.51:3003/voice",
+         url: "http://192.168.178.51:3003/voice-gateway",
       },
-      rest: { api: "http://localhost:3004/api" }
+      rest: { api: "http://localhost:3004/api" },
    });
 
    return client;
 }
 
-export async function loginClient(client: HuginnClient): Promise<{ token: string, refreshToken: string }> {
+export async function loginClient(client: HuginnClient): Promise<{ token: string; refreshToken: string }> {
    await client.login({ username: "internal", password: "internal" });
    return { token: client.tokenHandler.token!, refreshToken: client.tokenHandler.refreshToken! };
 }
@@ -31,7 +31,7 @@ export async function connectVoice(client: HuginnClient, readyData?: GatewayRead
    const channel = readyData?.privateChannels[0];
    expect(channel).toBeDefined();
 
-   const result = await client.gateway.connectVoice(null, channel!.id);
+   const result = await client.voiceManager.connectVoice(null, channel!.id);
    expect(result).toBeTrue();
 }
 
@@ -50,14 +50,14 @@ export async function getConnectedClient(login: boolean): Promise<HuginnClient> 
    return client;
 }
 
-export async function getAuthenticatedClient(): Promise<{ client: HuginnClient, readyData?: GatewayReadyData }> {
+export async function getAuthenticatedClient(): Promise<{ client: HuginnClient; readyData?: GatewayReadyData }> {
    const client = await getConnectedClient(true);
    let readyData: GatewayReadyData | undefined;
 
    const unlisten = client.gateway.listen("ready", (d) => {
       readyData = d;
       unlisten();
-   })
+   });
 
    await client.gateway.authenticate();
 

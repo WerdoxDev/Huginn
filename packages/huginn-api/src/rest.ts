@@ -141,7 +141,7 @@ export class REST {
 
       xhr.send(init.body as XMLHttpRequestBodyInit);
 
-      const result = await new Promise<ResponseLike>((resolve) => {
+      const result = new Promise<ResponseLike>((resolve, reject) => {
          xhr.onload = () => {
             const headers = xhr.getAllResponseHeaders();
             const array = headers.trim().split(/[\r\n]+/);
@@ -173,6 +173,10 @@ export class REST {
                   throw Error("Arraybuffer response is not available with XHR requests");
                },
             });
+         };
+
+         xhr.onerror = (e) => {
+            reject(e);
          };
       });
 
