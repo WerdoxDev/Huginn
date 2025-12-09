@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.18.1...backend-shared@v0.19.0) (2025-12-05)
+
+
+### Features
+
+* **backend-shared:** passwords now save as hash ([5e432b7](https://github.com/WerdoxDev/Huginn/commit/5e432b7fbf1f2769150d1ebecfd34f13435d6a8a))
+
 ## [0.18.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.18.0...backend-shared@v0.18.1) (2025-11-18)
 
 

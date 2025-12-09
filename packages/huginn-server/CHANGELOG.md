@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.32.2](https://github.com/WerdoxDev/Huginn/compare/server@v0.32.1...server@v0.32.2) (2025-12-05)
+
+
+### Bug Fixes
+
+* **server:** oauth should redirect user to the url they accessed server from ([7430042](https://github.com/WerdoxDev/Huginn/commit/74300422821846908f5fec32438f6fee5a291a60))
+
 ## [0.32.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.32.0...server@v0.32.1) (2025-11-06)
 
 
