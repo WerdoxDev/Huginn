@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.30.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.29.0...shared@v0.30.0) (2025-12-09)
+
+
+### Features
+
+* **shared:** name changes for new voice error handlings ([c572644](https://github.com/WerdoxDev/Huginn/commit/c572644e6f091e15e505d9e8d4abac40c34f14fe))
+
 ## [0.29.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.28.0...shared@v0.29.0) (2025-11-05)
 
 
