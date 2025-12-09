@@ -9,7 +9,7 @@ import {
    type MediasoupAppData,
    type ProducerData,
    type Snowflake,
-   type VoiceConsumerCreatedData,
+   type VoiceConsumeResultData,
 } from "@huginn/shared";
 import * as mediasoupClient from "mediasoup-client";
 import type {
@@ -49,7 +49,8 @@ type Events = {
       producerId: string;
       transportId: string;
       rtpCapabilities: RtpCapabilities;
-      callback: (d: VoiceConsumerCreatedData) => void;
+      callback: (d: VoiceConsumeResultData) => void;
+      errback: (d: VoiceConsumeResultData) => void;
    };
    resume_consumer: { id: string; callback: () => void };
    close_consumer: { id: string; callback: () => void };
@@ -76,7 +77,8 @@ export class VoiceTransportManager extends EventEmitter<Events> {
    public producers: Map<HMediaKind, Producer<MediasoupAppData>> = new Map();
    public consumers: Map<string, Consumer<MediasoupAppData>> = new Map();
 
-   private pendingRemoteProducers: Map<string, ProducerData> = new Map();
+   private pendingRemoteProducers = new Map<string, ProducerData>();
+   private pendingValidRemoteProducers = new Set<string>();
 
    private _status: TransportManagerStatus = "idle";
    public get status(): TransportManagerStatus {
@@ -146,8 +148,8 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
       log("api:voice-transport", "default", "create send transport");
 
+      console.log(this.device);
       const iceServers = await this.fetchTurnCredentials();
-      console.log(iceServers);
       const transport = this.device.createSendTransport({ ...options, iceServers });
       this.sendTransport = transport;
       this.emit("send_transport_ready", undefined);
@@ -184,18 +186,23 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       this.checkAndSetStatus();
    }
 
-   private async fetchTurnCredentials(): Promise<RTCIceServer[]> {
-      const id = "8f839ebc728aa6fd50e1b27903ecd17c";
-      const token = "71228e8dff18a80dc8d912d81e9dd9da8e9d90fcb3dac7135a2375873a8afd3b";
-      const data = { ttl: 86400 };
+   private async fetchTurnCredentials(): Promise<RTCIceServer[] | undefined> {
+      try {
+         const id = "8f839ebc728aa6fd50e1b27903ecd17c";
+         const token = "71228e8dff18a80dc8d912d81e9dd9da8e9d90fcb3dac7135a2375873a8afd3b";
+         const data = { ttl: 86400 };
 
-      const response = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${id}/credentials/generate-ice-servers`, {
-         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-         body: JSON.stringify(data),
-         method: "POST",
-      });
+         const response = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${id}/credentials/generate-ice-servers`, {
+            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+            method: "POST",
+         });
 
-      return (await response.json()).iceServers;
+         return (await response.json()).iceServers;
+      } catch (e) {
+         error("api:voice-transport", "fetching TURN credentials failed:", e);
+         return undefined;
+      }
    }
 
    public async createProducer(
@@ -249,12 +256,13 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
       log("api:voice-transport", "default", "create consumer", "uid:", userId, "knd:", kind, "pid:", remoteProducer.producerId);
 
-      const result = await new Promise<VoiceConsumerCreatedData>((r) => {
+      const result = await new Promise<VoiceConsumeResultData>((res, rej) => {
          this.emit("create_consumer", {
             producerId: remoteProducer.producerId,
             rtpCapabilities: this.device.rtpCapabilities,
             transportId: this.recvTransport.id,
-            callback: r,
+            callback: res,
+            errback: rej,
          });
       });
 
@@ -265,6 +273,12 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          rtpParameters: result.rtpParameters,
          kind: convertToMediaKind(result.kind),
       });
+
+      // To avoid a race condition that could happen when consumer is created and right after that the producer is removed
+      if (!this.remoteProducers.has(remoteProducer.producerId)) {
+         consumer.close();
+         throw new Error(`Remote producer with id ${remoteProducer.producerId} was deleted`);
+      }
 
       this.consumers.set(consumer.id, consumer);
 

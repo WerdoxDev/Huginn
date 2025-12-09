@@ -5,7 +5,7 @@ import { VoiceTransportManager } from "./voice-transport-manager";
 import { EventEmitter } from "./event-emitter";
 import { VoiceDeviceManager } from "./voice-device-manager";
 import { VoiceStreamManager } from "./voice-stream-manager";
-import { log } from "@huginn/shared";
+import { error, log } from "@huginn/shared";
 
 type Events = {
    status_changed: VoiceStatus;
@@ -72,7 +72,12 @@ export class Voice extends EventEmitter<Events> {
          this.transport.addRemoteConsumer(d);
       });
 
-      this.signaling.on("transport_created", async (d) => {
+      this.signaling.on("create_transport_result", async (d) => {
+         if ("error" in d) {
+            error("api:voice", "create transport failed:", d.error);
+            return;
+         }
+
          if (d.direction === "send") {
             await this.transport.createSendTransport(d.params);
          } else if (d.direction === "recv") {
@@ -80,7 +85,12 @@ export class Voice extends EventEmitter<Events> {
          }
       });
 
-      this.signaling.on("producer_closed", async (d) => {
+      this.signaling.on("close_producer_result", async (d) => {
+         if ("error" in d) {
+            error("api:voice", "close producer failed:", d.error);
+            return;
+         }
+
          this.transport.removeRemoteProducer(d.producerId);
 
          // Remove any remote consumers that are consuming this producer
@@ -95,16 +105,23 @@ export class Voice extends EventEmitter<Events> {
          }
       });
 
-      this.signaling.on("consumer_closed", (d) => {
+      this.signaling.on("close_consumer_result", (d) => {
+         if ("error" in d) {
+            error("api:voice", "close consumer failed:", d.error);
+            return;
+         }
+
          this.transport.removeRemoteConsumer(d.consumerId);
       });
 
       this.signaling.on("peer_left", async (d) => {
          for (const producerId of d.producerIds) {
+            console.log("LEFT", producerId);
             this.transport.removeRemoteProducer(producerId);
 
             const consumers = this.transport.getConsumers().filter((x) => x.producerId === producerId);
             for (const consumer of consumers) {
+               console.log(consumer.producerId);
                await this.transport.closeConsumer(consumer.id, true);
             }
          }
