@@ -12,7 +12,7 @@ const querySchema = t.Object({
 
 export const getGoogle = new Elysia().get(
    "/api/auth/google",
-   async ({ query: { flow, state, redirect_url, session_id }, status, redirect, cookie: { oauth }, headers, request }) => {
+   async ({ query: { flow, state, redirect_url, session_id }, status, redirect, cookie: { oauth }, request }) => {
       if (!envs.GOOGLE_CLIENT_ID || !envs.SESSION_PASSWORD) {
          return status("Not Implemented");
       }
