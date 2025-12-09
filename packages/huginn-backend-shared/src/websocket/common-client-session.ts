@@ -26,6 +26,10 @@ export abstract class CommonClientSession<Payload, Properties = undefined> {
       this.resetHeartbeatTimeout();
    }
 
+   public send(data: Payload) {
+      this.peer.send(JSON.stringify(data));
+   }
+
    public async initialize(user: APIUser, properties: Properties) {
       log("shared:client-session", "default", "initialize", "uid:", user.id);
 

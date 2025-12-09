@@ -118,7 +118,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
          if (session.isSubscribed(topic)) {
             const newData = { ...data, s: session.getIncreasedSequence() };
             session.addMessage(newData.s, newData);
-            this.send(session.peer, newData);
+            session.send(newData);
          }
       }
    }
@@ -171,7 +171,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
             continue;
          }
 
-         this.send(oldSession.peer, _data);
+         oldSession.send(_data);
       }
 
       return { oldSession, user };
@@ -191,7 +191,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
       return session;
    }
 
-   public send(peer: Peer, data: Payload) {
-      peer.send(JSON.stringify(data));
-   }
+   // public send(peer: Peer, data: Payload) {
+   //    peer.send(JSON.stringify(data));
+   // }
 }
