@@ -18,10 +18,11 @@ import {
    type VoicePayload,
    type VoiceProduceData,
    type VoiceResumeConsumerData,
+   VoiceSignallingError,
    WorkerID,
 } from "@huginn/shared";
 import { createRouter, createTransport, getRouterConsumers, getRouterProducers, routers, verifyPeer } from "#mediasoup";
-import type { RTCPeer } from "#utils/types";
+import type { RouterData, RTCPeer } from "#utils/types";
 import { ClientSession } from "./client-session";
 
 export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload> {
@@ -30,7 +31,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
    }
 
    public onOpen(session: ClientSession) {
-      this.send(session.peer, { op: VoiceOperations.HELLO, d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL } });
+      session.send({ op: VoiceOperations.HELLO, d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL } });
    }
 
    public async onClose(session: ClientSession, _event: { code?: number; reason?: string }) {
@@ -59,25 +60,21 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          // Close all producers of this peer plus any consumers consuming this peer's producers
          for (const producer of rtcPeer.producers.values()) {
             producer.close();
+            console.log("CLOSED", producer.id);
 
             for (const otherPeer of router.peers.values()) {
                for (const consumer of otherPeer.consumers.values().filter((x) => x.producerId === producer.id)) {
                   consumer.close();
+                  otherPeer.consumers.delete(consumer.id);
                }
             }
          }
 
-         for (const [otherSessionId] of router.peers) {
-            const otherSession = this.getSessionBySessionId(otherSessionId);
-            if (!otherSession) continue;
-
-            this.send(otherSession.peer, {
-               op: VoiceOperations.DISPATCH,
-               t: "peer_left",
-               d: { sessionId: session.sessionId, producerIds, consumerIds, userId: rtcPeer.userId },
-               s: otherSession.getIncreasedSequence(),
-            });
-         }
+         this.broadcastToRouter(router, {
+            op: VoiceOperations.DISPATCH,
+            t: "peer_left",
+            d: { sessionId: session.sessionId, producerIds, consumerIds, userId: rtcPeer.userId },
+         });
 
          // If room is empty, close it
          if (router.peers.size === 0) {
@@ -127,252 +124,347 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
    }
 
    private async onResumeConsumer(session: ClientSession, data: VoiceResumeConsumerData) {
-      const router = routers.get(data.channelId);
+      try {
+         const router = routers.get(data.channelId);
 
-      if (!verifyPeer(router, session, data.channelId)) {
-         return;
+         if (!verifyPeer(router, session, data.channelId)) return;
+
+         const rtcPeer = router.peers.get(session.sessionId)!;
+         const consumer = rtcPeer?.consumers.get(data.consumerId);
+
+         if (!consumer) {
+            session.send({
+               op: VoiceOperations.DISPATCH,
+               t: "resume_consumer_result",
+               d: { error: VoiceSignallingError.UNKNOWN_CONSUMER, nonce: data.nonce },
+            });
+            return;
+         }
+
+         await consumer.resume();
+
+         session.send({
+            op: VoiceOperations.DISPATCH,
+            t: "resume_consumer_result",
+            d: { consumerId: data.consumerId, nonce: data.nonce },
+         });
+      } catch {
+         session.send({
+            op: VoiceOperations.DISPATCH,
+            t: "resume_consumer_result",
+            d: { error: VoiceSignallingError.UNKNOWN_ERROR, nonce: data.nonce },
+         });
       }
-
-      const rtcPeer = router.peers.get(session.sessionId);
-      const consumer = rtcPeer?.consumers.get(data.consumerId);
-
-      if (!consumer) {
-         return;
-      }
-
-      await consumer.resume();
-
-      this.send(session.peer, {
-         op: VoiceOperations.DISPATCH,
-         t: "consumer_resumed",
-         d: { consumerId: data.consumerId },
-         s: session.getIncreasedSequence(),
-      });
    }
 
    private async onConsume(session: ClientSession, data: VoiceConsumeData) {
-      const router = routers.get(data.channelId);
+      try {
+         const router = routers.get(data.channelId);
 
-      if (!verifyPeer(router, session, data.channelId)) {
-         return;
-      }
+         if (!verifyPeer(router, session, data.channelId)) return;
 
-      const rtcPeer = router.peers.get(session.sessionId);
-      const producerPeer = router.peers.values().find((x) => x.producers.values().find((y) => y.id === data.producerId));
-      const producer = producerPeer?.producers.get(data.producerId);
-      const transportData = rtcPeer?.transports.get(data.transportId);
+         const rtcPeer = router.peers.get(session.sessionId)!;
+         const producerPeer = router.peers.values().find((x) => x.producers.values().find((y) => y.id === data.producerId));
+         const producer = producerPeer?.producers.get(data.producerId);
+         const transportData = rtcPeer?.transports.get(data.transportId);
 
-      if (!rtcPeer || !producerPeer || !producer) {
-         return;
-      }
+         if (!producerPeer || !producer) {
+            session.send({
+               op: VoiceOperations.DISPATCH,
+               t: "consume_result",
+               d: { error: VoiceSignallingError.UNKNOWN_PRODUCER, nonce: data.nonce },
+            });
+            return;
+         }
 
-      if (!transportData || transportData.direction !== "recv") {
-         console.log("transport null or wrong type");
-         return;
-      }
+         if (!transportData) {
+            session.send({
+               op: VoiceOperations.DISPATCH,
+               t: "consume_result",
+               d: { error: VoiceSignallingError.UNKNOWN_TRANSPORT, nonce: data.nonce },
+            });
+            return;
+         }
 
-      if (!router.router.canConsume({ producerId: data.producerId, rtpCapabilities: data.rtpCapabilities })) {
-         console.log("router cant consume");
-         return;
-      }
+         if (transportData.direction !== "recv") {
+            session.send({
+               op: VoiceOperations.DISPATCH,
+               t: "consume_result",
+               d: { error: VoiceSignallingError.WRONG_TRANSPORT_DIRECTION, nonce: data.nonce },
+            });
+            return;
+         }
 
-      const consumer = await transportData.transport.consume<MediasoupAppData>({
-         producerId: data.producerId,
-         rtpCapabilities: data.rtpCapabilities,
-         appData: { mediaKind: producer.appData.mediaKind, userId: rtcPeer.userId },
-         paused: true,
-      });
+         if (!router.router.canConsume({ producerId: data.producerId, rtpCapabilities: data.rtpCapabilities })) {
+            session.send({
+               op: VoiceOperations.DISPATCH,
+               t: "consume_result",
+               d: { error: VoiceSignallingError.ROUTER_CANT_CONSUME, nonce: data.nonce },
+            });
+            return;
+         }
 
-      rtcPeer?.consumers.set(consumer.id, consumer);
-
-      this.send(session.peer, {
-         op: VoiceOperations.DISPATCH,
-         t: "consumer_created",
-         d: {
-            consumerId: consumer.id,
+         const consumer = await transportData.transport.consume<MediasoupAppData>({
             producerId: data.producerId,
-            kind: consumer.appData.mediaKind,
-            rtpParameters: consumer.rtpParameters,
-            producerUserId: producerPeer.userId,
-         },
-         s: session.getIncreasedSequence(),
-      });
+            rtpCapabilities: data.rtpCapabilities,
+            appData: { mediaKind: producer.appData.mediaKind, userId: rtcPeer.userId },
+            paused: true,
+         });
 
-      for (const [otherSessionId] of router.peers) {
-         const otherSession = this.getSessionBySessionId(otherSessionId);
-         if (!otherSession) continue;
+         console.log("CONSUMED", consumer.producerId);
+         rtcPeer?.consumers.set(consumer.id, consumer);
 
-         if (otherSessionId !== session.sessionId) {
-            this.send(otherSession.peer, {
+         session.send({
+            op: VoiceOperations.DISPATCH,
+            t: "consume_result",
+            d: {
+               consumerId: consumer.id,
+               producerId: data.producerId,
+               kind: consumer.appData.mediaKind,
+               rtpParameters: consumer.rtpParameters,
+               producerUserId: producerPeer.userId,
+               nonce: data.nonce,
+            },
+         });
+
+         this.broadcastToRouter(
+            router,
+            {
                op: VoiceOperations.DISPATCH,
                t: "new_consumer",
                d: { kind: consumer.appData.mediaKind, consumerId: consumer.id, producerId: producer.id, userId: rtcPeer.userId },
-               s: otherSession.getIncreasedSequence(),
-            });
-         }
+            },
+            session,
+         );
+      } catch {
+         session.send({
+            op: VoiceOperations.DISPATCH,
+            t: "consume_result",
+            d: { error: VoiceSignallingError.UNKNOWN_ERROR, nonce: data.nonce },
+         });
       }
    }
 
    private async onProduce(session: ClientSession, data: VoiceProduceData) {
-      const router = routers.get(data.channelId);
+      try {
+         const router = routers.get(data.channelId);
 
-      if (!verifyPeer(router, session, data.channelId)) {
-         return;
-      }
+         if (!verifyPeer(router, session, data.channelId)) return;
 
-      const rtcPeer = router.peers.get(session.sessionId);
-      const transportData = rtcPeer?.transports.get(data.transportId);
-      const producerMediaKind = convertToMediaKind(data.kind);
+         const rtcPeer = router.peers.get(session.sessionId)!;
+         const transportData = rtcPeer?.transports.get(data.transportId);
+         const producerMediaKind = convertToMediaKind(data.kind);
 
-      if (!transportData || transportData.direction !== "send" || !rtcPeer || !producerMediaKind) {
-         console.log("Can't produce");
-         return;
-      }
+         if (!producerMediaKind) {
+            session.send({
+               op: VoiceOperations.DISPATCH,
+               t: "produce_result",
+               d: { error: VoiceSignallingError.UNKNOWN_MEDIA_KIND, nonce: data.nonce },
+            });
+            return;
+         }
 
-      const producer = await transportData.transport.produce<MediasoupAppData>({
-         kind: producerMediaKind,
-         rtpParameters: data.rtpParameters,
-         appData: { mediaKind: data.kind, userId: rtcPeer.userId },
-      });
+         if (!transportData) {
+            session.send({
+               op: VoiceOperations.DISPATCH,
+               t: "produce_result",
+               d: { error: VoiceSignallingError.UNKNOWN_TRANSPORT, nonce: data.nonce },
+            });
+            return;
+         }
 
-      rtcPeer?.producers.set(producer.id, producer);
+         if (transportData.direction !== "send") {
+            session.send({
+               op: VoiceOperations.DISPATCH,
+               t: "produce_result",
+               d: { error: VoiceSignallingError.WRONG_TRANSPORT_DIRECTION, nonce: data.nonce },
+            });
+            return;
+         }
 
-      this.send(session.peer, {
-         op: VoiceOperations.DISPATCH,
-         t: "producer_created",
-         d: { producerId: producer.id, kind: producer.appData.mediaKind },
-         s: session.getIncreasedSequence(),
-      });
+         const producer = await transportData.transport.produce<MediasoupAppData>({
+            kind: producerMediaKind,
+            rtpParameters: data.rtpParameters,
+            appData: { mediaKind: data.kind, userId: rtcPeer.userId },
+         });
 
-      for (const [otherSessionId] of router.peers) {
-         const otherSession = this.getSessionBySessionId(otherSessionId);
-         if (!otherSession) continue;
+         rtcPeer.producers.set(producer.id, producer);
 
-         if (otherSessionId !== session.sessionId) {
-            this.send(otherSession.peer, {
+         session.send({
+            op: VoiceOperations.DISPATCH,
+            t: "produce_result",
+            d: { producerId: producer.id, kind: producer.appData.mediaKind, nonce: data.nonce },
+         });
+
+         this.broadcastToRouter(
+            router,
+            {
                op: VoiceOperations.DISPATCH,
                t: "new_producer",
                d: { kind: data.kind, producerId: producer.id, userId: rtcPeer.userId },
-               s: otherSession.getIncreasedSequence(),
-            });
-         }
+            },
+            session,
+         );
+      } catch {
+         session.send({
+            op: VoiceOperations.DISPATCH,
+            t: "produce_result",
+            d: { error: VoiceSignallingError.UNKNOWN_ERROR, nonce: data.nonce },
+         });
       }
    }
 
    private async onConnectTransport(session: ClientSession, data: VoiceConnectTransportData) {
-      const router = routers.get(data.channelId);
+      try {
+         const router = routers.get(data.channelId);
 
-      if (!verifyPeer(router, session, data.channelId)) {
-         return;
+         if (!verifyPeer(router, session, data.channelId)) return;
+
+         const rtcPeer = router.peers.get(session.sessionId)!;
+         const transportData = rtcPeer.transports.get(data.transportId);
+
+         if (!transportData) {
+            session.send({
+               op: VoiceOperations.DISPATCH,
+               t: "connect_transport_result",
+               d: { error: VoiceSignallingError.UNKNOWN_TRANSPORT, nonce: data.nonce },
+            });
+            return;
+         }
+
+         await transportData.transport.connect({ dtlsParameters: data.dtlsParameters });
+
+         session.send({
+            op: VoiceOperations.DISPATCH,
+            t: "connect_transport_result",
+            d: { transportId: transportData.transport.id, nonce: data.nonce },
+         });
+      } catch {
+         session.send({
+            op: VoiceOperations.DISPATCH,
+            t: "connect_transport_result",
+            d: { error: VoiceSignallingError.UNKNOWN_ERROR, nonce: data.nonce },
+         });
       }
-
-      const rtcPeer = router.peers.get(session.sessionId);
-      const transportData = rtcPeer?.transports.get(data.transportId);
-
-      if (!transportData) {
-         return;
-      }
-
-      await transportData.transport.connect({ dtlsParameters: data.dtlsParameters });
-
-      this.send(session.peer, {
-         op: VoiceOperations.DISPATCH,
-         t: "transport_connected",
-         d: { transportId: transportData.transport.id },
-         s: session.getIncreasedSequence(),
-      });
    }
 
    private async onCreateTransport(session: ClientSession, data: VoiceCreateTransportData) {
-      const router = routers.get(data.channelId);
+      try {
+         const router = routers.get(data.channelId);
 
-      if (!verifyPeer(router, session, data.channelId)) {
-         return;
-      }
+         if (!verifyPeer(router, session, data.channelId)) return;
 
-      const transport = await createTransport(router.router);
-      const rtcPeer = router.peers.get(session.sessionId);
-      rtcPeer?.transports.set(transport.id, { transport, direction: data.direction });
+         const transport = await createTransport(router.router);
+         const rtcPeer = router.peers.get(session.sessionId);
+         rtcPeer?.transports.set(transport.id, { transport, direction: data.direction });
 
-      this.send(session.peer, {
-         op: VoiceOperations.DISPATCH,
-         t: "transport_created",
-         d: {
-            transportId: transport.id,
-            direction: data.direction,
-            params: {
-               id: transport.id,
-               iceParameters: transport.iceParameters,
-               iceCandidates: transport.iceCandidates,
-               dtlsParameters: transport.dtlsParameters,
+         session.send({
+            op: VoiceOperations.DISPATCH,
+            t: "create_transport_result",
+            d: {
+               transportId: transport.id,
+               direction: data.direction,
+               params: {
+                  id: transport.id,
+                  iceParameters: transport.iceParameters,
+                  iceCandidates: transport.iceCandidates,
+                  dtlsParameters: transport.dtlsParameters,
+               },
+               nonce: data.nonce,
             },
-         },
-         s: session.getIncreasedSequence(),
-      });
+         });
+      } catch {
+         session.send({
+            op: VoiceOperations.DISPATCH,
+            t: "create_transport_result",
+            d: { error: VoiceSignallingError.UNKNOWN_ERROR, nonce: data.nonce },
+         });
+      }
    }
 
    private onCloseProducer(session: ClientSession, data: VoiceCloseProducerData) {
-      const router = routers.get(data.channelId);
+      try {
+         const router = routers.get(data.channelId);
 
-      if (!verifyPeer(router, session, data.channelId)) {
-         return;
-      }
+         if (!verifyPeer(router, session, data.channelId)) return;
 
-      const rtcPeer = router.peers.get(session.sessionId);
-      const producer = rtcPeer?.producers.get(data.producerId);
+         const rtcPeer = router.peers.get(session.sessionId)!;
+         const producer = rtcPeer?.producers.get(data.producerId);
 
-      if (!producer || !rtcPeer) {
-         return;
-      }
-
-      producer.close();
-      rtcPeer.producers.delete(producer.id);
-
-      for (const [otherSessionId, otherPeer] of router.peers) {
-         // See if any consumers of this peer was consuming the deleted producer
-         for (const consumer of otherPeer.consumers.values().filter((x) => x.producerId === producer.id)) {
-            consumer.close();
-            otherPeer.consumers.delete(consumer.id);
+         if (!producer) {
+            session.send({
+               op: VoiceOperations.DISPATCH,
+               t: "close_producer_result",
+               d: { error: VoiceSignallingError.UNKNOWN_PRODUCER, nonce: data.nonce },
+            });
+            return;
          }
 
-         const otherSession = this.getSessionBySessionId(otherSessionId);
-         if (!otherSession) continue;
+         producer.close();
+         rtcPeer.producers.delete(producer.id);
 
-         this.send(otherSession.peer, {
+         for (const [otherSessionId, otherPeer] of router.peers) {
+            // See if any consumers of this peer was consuming the deleted producer
+            for (const consumer of otherPeer.consumers.values().filter((x) => x.producerId === producer.id)) {
+               consumer.close();
+               otherPeer.consumers.delete(consumer.id);
+            }
+
+            const otherSession = this.getSession(otherSessionId);
+            if (!otherSession) continue;
+
+            otherSession.send({
+               op: VoiceOperations.DISPATCH,
+               t: "close_producer_result",
+               d: { producerId: producer.id, userId: rtcPeer.userId, kind: producer.appData.mediaKind },
+            });
+         }
+      } catch {
+         session.send({
             op: VoiceOperations.DISPATCH,
-            t: "producer_closed",
-            d: { producerId: producer.id, userId: rtcPeer.userId, kind: producer.appData.mediaKind },
-            s: otherSession.getIncreasedSequence(),
+            t: "close_producer_result",
+            d: { error: VoiceSignallingError.UNKNOWN_ERROR, nonce: data.nonce },
          });
       }
    }
 
    private onCloseConsumer(session: ClientSession, data: VoiceCloseConsumerData) {
-      const router = routers.get(data.channelId);
+      try {
+         const router = routers.get(data.channelId);
 
-      if (!verifyPeer(router, session, data.channelId)) {
-         return;
-      }
+         if (!verifyPeer(router, session, data.channelId)) return;
 
-      const rtcPeer = router.peers.get(session.sessionId);
-      const consumer = rtcPeer?.consumers.get(data.consumerId);
+         const rtcPeer = router.peers.get(session.sessionId)!;
+         const consumer = rtcPeer?.consumers.get(data.consumerId);
 
-      if (!consumer || !rtcPeer) {
-         return;
-      }
+         if (!consumer) {
+            session.send({
+               op: VoiceOperations.DISPATCH,
+               t: "close_consumer_result",
+               d: { error: VoiceSignallingError.UNKNOWN_CONSUMER, nonce: data.nonce },
+            });
+            return;
+         }
 
-      consumer?.close();
-      rtcPeer.consumers.delete(consumer?.id);
+         consumer.close();
+         rtcPeer.consumers.delete(consumer?.id);
 
-      for (const [otherSessionId] of router.peers) {
-         const otherSession = this.getSessionBySessionId(otherSessionId);
-         if (!otherSession) continue;
-
-         this.send(otherSession.peer, {
+         this.broadcastToRouter(router, {
             op: VoiceOperations.DISPATCH,
-            t: "consumer_closed",
-            d: { producerId: consumer.producerId, userId: rtcPeer.userId, consumerId: consumer.id, kind: consumer.appData.mediaKind },
-            s: otherSession.getIncreasedSequence(),
+            t: "close_consumer_result",
+            d: {
+               producerId: consumer.producerId,
+               userId: rtcPeer.userId,
+               consumerId: consumer.id,
+               kind: consumer.appData.mediaKind,
+               nonce: data.nonce,
+            },
+         });
+      } catch {
+         session.send({
+            op: VoiceOperations.DISPATCH,
+            t: "close_consumer_result",
+            d: { error: VoiceSignallingError.UNKNOWN_CONSUMER, nonce: data.nonce },
          });
       }
    }
@@ -417,24 +509,35 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             consumerId: x.id,
             producerId: x.producerId,
          };
+         console.log(x.closed);
 
          return consumer;
       });
 
-      this.send(session.peer, {
+      session.send({
          op: VoiceOperations.DISPATCH,
          t: "ready",
          d: { rtpCapabilities: router.router.rtpCapabilities, producers, consumers },
-         s: session.getIncreasedSequence(),
       });
    }
 
    private onHeartbeat(session: ClientSession) {
       session.resetHeartbeatTimeout();
-      this.send(session.peer, { op: VoiceOperations.HEARTBEAT_ACK });
+      session.send({ op: VoiceOperations.HEARTBEAT_ACK });
    }
 
    private onPing(session: ClientSession) {
-      this.send(session.peer, { op: VoiceOperations.PONG });
+      session.send({ op: VoiceOperations.PONG });
+   }
+
+   private broadcastToRouter(router: RouterData, data: VoicePayload, excludeSession?: ClientSession) {
+      for (const [otherSessionId] of router.peers) {
+         if (otherSessionId === excludeSession?.sessionId) continue;
+
+         const otherSession = this.getSession(otherSessionId);
+         if (!otherSession) continue;
+
+         otherSession.send(data);
+      }
    }
 }

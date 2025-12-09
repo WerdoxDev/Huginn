@@ -1,13 +1,13 @@
 import { GatewayCode, type Snowflake } from "@huginn/shared";
 import mediasoup from "mediasoup";
-import type { Router, RouterRtpCodecCapability, WebRtcServer, Worker } from "mediasoup/types";
+import type { Router, RouterRtpCodecCapability, TransportProtocol, WebRtcServer, Worker } from "mediasoup/types";
 import type { ClientSession } from "#client-session";
 import { envs } from "#index";
-import type { RouterData, RTCPeer } from "#utils/types";
+import type { RouterData } from "#utils/types";
 
 export const routers = new Map<string, RouterData>();
 
-const mediaCodecs: RouterRtpCodecCapability[] = [
+export const mediaCodecs: RouterRtpCodecCapability[] = [
    {
       kind: "audio",
       mimeType: "audio/opus",
@@ -29,12 +29,17 @@ export async function runMediasoupWorker() {
       logLevel: "warn",
    });
 
-   const announcedHostnames = envs.MEDIA_ANNOUNCED_HOSTNAMES?.split(",").map((x) => x.trim());
+   const listenInfos = envs.MEDIA_LISTEN_INFOS?.trim()
+      .split(";")
+      .map((x) => {
+         const split = x.trim().split(":");
+         return { protocol: split[0] as TransportProtocol, port: Number(split[1]), ip: split[2], announcedAddress: split[3] };
+      });
+
+   if (!listenInfos) throw new Error("MEDIA_LISTEN_INFOS was undefined");
 
    webRtcServer = await worker.createWebRtcServer({
-      listenInfos: announcedHostnames
-         ? announcedHostnames?.map((x) => ({ ip: envs.MEDIA_IP ?? "", announcedAddress: x, protocol: "udp", port: Number(envs.MEDIA_PORT) }))
-         : [{ ip: envs.MEDIA_IP ?? "", protocol: "udp", port: Number(envs.MEDIA_PORT) }],
+      listenInfos: listenInfos,
    });
 
    console.log("mediasoup worker created");
@@ -67,7 +72,7 @@ export async function createTransport(router: Router) {
    const transport = await router.createWebRtcTransport({
       webRtcServer: webRtcServer,
       enableUdp: true,
-      enableTcp: false,
+      enableTcp: true,
       preferUdp: true,
    });
 
@@ -76,6 +81,7 @@ export async function createTransport(router: Router) {
 
 export function verifyPeer(router: RouterData | undefined, session: ClientSession, channelId: Snowflake): router is RouterData {
    if (!router || router.channelId !== channelId) {
+      session.peer.close(GatewayCode.NOT_AUTHORIZED, "NOT_AUTHORIZED");
       return false;
    }
 
