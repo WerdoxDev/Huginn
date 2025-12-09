@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.12.1...voice@v0.13.0) (2025-12-09)
+
+
+### Features
+
+* **voice:** add error handling for every message ([4540b47](https://github.com/WerdoxDev/Huginn/commit/4540b479cde59fbd0d16cbe286d2474db9a90a07))
+
 ## [0.12.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.12.0...voice@v0.12.1) (2025-11-22)
 
 

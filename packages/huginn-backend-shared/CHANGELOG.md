@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.20.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.19.0...backend-shared@v0.20.0) (2025-12-09)
+
+
+### Features
+
+* **backend-shared:** add better direct session message sending ([2a86107](https://github.com/WerdoxDev/Huginn/commit/2a8610724071c9c9836e3bbfca7b5dcffb00ae9c))
+
+
+### Bug Fixes
+
+* **backend-shared:** fix incorrect password hashing ([073dfc9](https://github.com/WerdoxDev/Huginn/commit/073dfc9c10af41599fb4726fb76f2a99f8c9f68d))
+
 ## [0.19.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.18.1...backend-shared@v0.19.0) (2025-12-05)
 
 
