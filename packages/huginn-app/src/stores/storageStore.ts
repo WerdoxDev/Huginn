@@ -1,13 +1,13 @@
 import { createStore, useStore } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
-import type { AppSettings, ClientInfo, FileMap, FileType } from "@/types";
+import type { AppSettings, ClientInfo, StorageMap, FileType } from "@/types";
 import { clientStore } from "./clientStore";
 import { StorageController } from "@lib/storage-controller";
 
 const storage = new StorageController(window.electronAPI ? "electron" : "web");
 const initialStore = () => ({
    storage: storage,
-   cache: {} as FileMap,
+   cache: {} as StorageMap,
 });
 
 type StoreType = ReturnType<typeof initialStore>;
@@ -18,14 +18,14 @@ const store = createStore(
          getValue: async <K extends FileType>(type: K) => {
             const value = await storage.loadFile(type);
             set((state) => ({ cache: { ...state.cache, [type]: value.data } }));
-            return value.data as FileMap[K];
+            return value.data as StorageMap[K];
          },
-         getCachedValue: <K extends FileType>(type: K) => get().cache[type] as FileMap[K],
-         setValue: async <K extends FileType>(type: K, data: FileMap[K]) => {
+         getCachedValue: <K extends FileType>(type: K) => get().cache[type] as StorageMap[K],
+         setValue: async <K extends FileType>(type: K, data: StorageMap[K]) => {
             await storage.saveFile(type, data);
             set((state) => ({ cache: { ...state.cache, [type]: data } }));
          },
-         setCachedValue: <K extends FileType>(type: K, data: FileMap[K]) => {
+         setCachedValue: <K extends FileType>(type: K, data: StorageMap[K]) => {
             set((state) => ({ cache: { ...state.cache, [type]: data } }));
          },
          saveFromCachedValue: async (type: FileType) => {
@@ -42,7 +42,7 @@ const store = createStore(
 
 export async function initializeStorage() {
    const keys: FileType[] = ["client-info", "custom-applications", "keybinds", "settings", "voice-preferences"];
-   const cache = {} as FileMap;
+   const cache = {} as StorageMap;
 
    for (const key of keys) {
       const value = await storage.loadFile(key);
@@ -55,7 +55,7 @@ export async function initializeStorage() {
       }
 
       if (value.success) {
-         (cache[key] as FileMap[FileType]) = value.data;
+         (cache[key] as StorageMap[FileType]) = value.data;
       }
    }
 
@@ -124,7 +124,7 @@ export function useStorageStore() {
 }
 
 export function useStorage<K extends FileType>(type: K) {
-   return useStore(store, (state) => state.cache[type] as FileMap[K]);
+   return useStore(store, (state) => state.cache[type] as StorageMap[K]);
 }
 
 export type StorageStoreType = ReturnType<typeof useStorageStore>;

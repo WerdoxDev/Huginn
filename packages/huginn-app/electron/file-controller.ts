@@ -1,21 +1,21 @@
 import path from "node:path";
 import { app, ipcMain } from "electron";
-import type { FileType, FileMap, LoadFileResult, SaveFileResult } from "@/types";
+import type { FileType, StorageMap, LoadFileResult, SaveFileResult } from "@/types";
 import fs from "node:fs/promises";
-import { fileDefaults } from "../shared/file-defaults";
+import { storageDefaults } from "../shared/storage-defaults";
 import { error, log } from "@huginn/shared";
 import { exists } from "./utils";
 
 export class FileController {
    private basePath: string;
-   private defaultContents: FileMap;
+   private defaultContents: StorageMap;
    private prefix: string;
 
    constructor(prefix: string = "") {
       this.basePath = app.getPath("userData");
       this.prefix = prefix;
 
-      this.defaultContents = { ...fileDefaults };
+      this.defaultContents = { ...storageDefaults };
       this.eventListeners();
    }
 
@@ -24,7 +24,7 @@ export class FileController {
          return await this.loadFile(type);
       });
 
-      ipcMain.handle("file:save", async (_, type: FileType, data: FileMap[FileType]) => {
+      ipcMain.handle("file:save", async (_, type: FileType, data: StorageMap[FileType]) => {
          return await this.saveFile(type, data);
       });
    }
@@ -56,7 +56,7 @@ export class FileController {
       }
    }
 
-   public async saveFile<K extends FileType>(type: K, data: FileMap[K]): Promise<SaveFileResult> {
+   public async saveFile<K extends FileType>(type: K, data: StorageMap[K]): Promise<SaveFileResult> {
       try {
          const filePath = this.getFilePath(type);
 
@@ -78,7 +78,7 @@ export class FileController {
       try {
          log("app:electron", "file-controller", "trying migration");
 
-         const keys = Object.keys(fileDefaults) as FileType[];
+         const keys = Object.keys(storageDefaults) as FileType[];
 
          for (const key of keys) {
             const newPath = this.getFilePath(key);

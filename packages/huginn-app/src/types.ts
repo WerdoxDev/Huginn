@@ -350,6 +350,7 @@ export type AppSettings = {
    apiHostname: string;
    cdnHostname: string;
    voiceHostname: string;
+   analyticsHostname: string;
    externalHostnamesUrl: string;
    hostnameSource: "manual" | "external";
    theme: ThemeType;
@@ -380,7 +381,7 @@ export type ClientInfo = {
    id: string;
 };
 
-export type FileMap = {
+export type StorageMap = {
    settings: AppSettings;
    "voice-preferences": VoicePreference[];
    keybinds: Keybind[];
@@ -388,11 +389,11 @@ export type FileMap = {
    "custom-applications": CustomApplication[];
    "client-info": ClientInfo;
 };
-export type FileType = keyof FileMap;
+export type FileType = keyof StorageMap;
 
 export type LoadFileResult<K extends FileType> = {
    success: boolean;
-   data: FileMap[K];
+   data: StorageMap[K];
    created: boolean;
    error?: string;
 };

@@ -33,7 +33,5 @@ export default function SettingsProvider(props: { children?: ReactNode }) {
       }
    }, [userSettings]);
 
-   useEffect(() => {});
-
    return props.children;
 }

@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { ProgressInfo, UpdateInfo } from "electron-updater";
-import type { AudioSource, DisplaySource, FileMap, FileType, KeybindType, LoadFileResult, SaveFileResult } from "@/types";
+import type { AudioSource, DisplaySource, StorageMap, FileType, KeybindType, LoadFileResult, SaveFileResult } from "@/types";
 import type { AppInfo, ProcessInfo } from "native-addon";
 import type { LogArgs } from "@huginn/shared";
 
@@ -14,7 +14,7 @@ export const electronAPI = {
 
    // File management
    loadFile: <K extends FileType>(type: K) => ipcRenderer.invoke("file:load", type) as Promise<LoadFileResult<K>>,
-   saveFile: <K extends FileType>(type: K, data: FileMap[K]) => ipcRenderer.invoke("file:save", type, data) as Promise<SaveFileResult>,
+   saveFile: <K extends FileType>(type: K, data: StorageMap[K]) => ipcRenderer.invoke("file:save", type, data) as Promise<SaveFileResult>,
    // fileExists: (name: string) => ipcRenderer.invoke("file:exists", name) as Promise<boolean>,
 
    // Logger

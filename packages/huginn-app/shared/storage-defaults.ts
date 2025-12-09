@@ -1,10 +1,11 @@
-import type { FileMap } from "../src/types";
+import type { StorageMap } from "../src/types";
 
-export const fileDefaults: FileMap = {
+export const storageDefaults: StorageMap = {
    settings: {
       apiHostname: "https://midgard.huginn.dev",
       cdnHostname: "https://midgard.huginn.dev",
       voiceHostname: "https://midgard.huginn.dev",
+      analyticsHostname: "https://e.huginn.dev",
       hostnameSource: "manual",
       externalHostnamesUrl: "",
       theme: "pine green",

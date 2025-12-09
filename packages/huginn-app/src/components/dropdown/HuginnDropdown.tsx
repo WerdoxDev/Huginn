@@ -73,7 +73,7 @@ function ItemsWrapper(props: { className?: string; children?: ReactNode }) {
          anchor="bottom"
          transition
          className={clsx(
-            "scroll-alternative2 bg-surface-alt outline-primary-800 data-closed:translate-y-5 data-closed:opacity-0 overflow-y-scroll! flex flex-col gap-y-0.5 rounded-lg p-1 pr-0 outline transition [--anchor-gap:0.25rem] [--anchor-padding:1rem]",
+            "scroll-alternative2 bg-surface-alt outline-primary-800 data-closed:translate-y-5 data-closed:opacity-0 overflow-y-auto! flex flex-col gap-y-0.5 rounded-lg p-1 outline transition [--anchor-gap:0.25rem] [--anchor-padding:1rem]",
             props.className,
          )}
       >

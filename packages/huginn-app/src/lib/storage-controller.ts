@@ -1,4 +1,4 @@
-import type { FileMap, FileType, LoadFileResult, SaveFileResult } from "@/types";
+import type { StorageMap, FileType, LoadFileResult, SaveFileResult } from "@/types";
 import { LocalStorageController } from "./local-storage-controller";
 
 export class StorageController {
@@ -21,7 +21,7 @@ export class StorageController {
       }
    }
 
-   public async saveFile<K extends FileType>(type: K, data: FileMap[K]): Promise<SaveFileResult> {
+   public async saveFile<K extends FileType>(type: K, data: StorageMap[K]): Promise<SaveFileResult> {
       if (this.storageType === "electron") {
          return await window.electronAPI.saveFile(type, data);
       } else {

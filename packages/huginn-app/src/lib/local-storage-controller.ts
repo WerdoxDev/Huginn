@@ -1,11 +1,11 @@
-import type { FileMap, FileType, LoadFileResult, SaveFileResult } from "@/types";
-import { fileDefaults } from "../../shared/file-defaults";
+import type { StorageMap, FileType, LoadFileResult, SaveFileResult } from "@/types";
+import { storageDefaults } from "../../shared/storage-defaults";
 
 export class LocalStorageController {
-   private defaultContents: FileMap;
+   private defaultContents: StorageMap;
 
    constructor() {
-      this.defaultContents = { ...fileDefaults };
+      this.defaultContents = { ...storageDefaults };
    }
 
    public loadItem<K extends FileType>(type: K): LoadFileResult<K> {
@@ -27,7 +27,7 @@ export class LocalStorageController {
       }
    }
 
-   public saveItem<K extends FileType>(type: K, data: FileMap[K]): SaveFileResult {
+   public saveItem<K extends FileType>(type: K, data: StorageMap[K]): SaveFileResult {
       try {
          localStorage.setItem(type, JSON.stringify(data));
          return { success: true };
