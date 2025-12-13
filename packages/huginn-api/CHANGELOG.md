@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.29.2](https://github.com/WerdoxDev/Huginn/compare/api@v0.29.1...api@v0.29.2) (2025-12-09)
+
+
+### Bug Fixes
+
+* **api:** some fixes regarding race conditions and new message error handlings ([f9fec6e](https://github.com/WerdoxDev/Huginn/commit/f9fec6eafa66e851e2e2e178d5fcd297bbd351a2))
+* **api:** XHR request should throw the error when failed ([c084968](https://github.com/WerdoxDev/Huginn/commit/c08496812d2dcc8e29eb37bd8912d7e495d01c42))
+
 ## [0.29.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.29.0...api@v0.29.1) (2025-12-05)
 
 

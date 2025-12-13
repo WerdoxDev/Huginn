@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.32.3](https://github.com/WerdoxDev/Huginn/compare/server@v0.32.2...server@v0.32.3) (2025-12-09)
+
+
+### Bug Fixes
+
+* **server:** fix incorrect password hashing ([c4a3412](https://github.com/WerdoxDev/Huginn/commit/c4a3412198cef8e12f371f9d47f7cc7f75bfa6d4))
+
 ## [0.32.2](https://github.com/WerdoxDev/Huginn/compare/server@v0.32.1...server@v0.32.2) (2025-12-05)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.63.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.63.1...app@v0.63.2) (2025-12-09)
+
+
+### Bug Fixes
+
+* **app:** some name changes and force release for api changes ([b83e609](https://github.com/WerdoxDev/Huginn/commit/b83e60957617c7052843dd6c8464ceac2800a73e))
+
 ## [0.63.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.63.0...app@v0.63.1) (2025-12-05)
 
 
