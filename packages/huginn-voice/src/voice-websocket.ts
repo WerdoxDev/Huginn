@@ -60,7 +60,6 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          // Close all producers of this peer plus any consumers consuming this peer's producers
          for (const producer of rtcPeer.producers.values()) {
             producer.close();
-            console.log("CLOSED", producer.id);
 
             for (const otherPeer of router.peers.values()) {
                for (const consumer of otherPeer.consumers.values().filter((x) => x.producerId === producer.id)) {
@@ -148,7 +147,8 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             t: "resume_consumer_result",
             d: { consumerId: data.consumerId, nonce: data.nonce },
          });
-      } catch {
+      } catch (e) {
+         console.error(e);
          session.send({
             op: VoiceOperations.DISPATCH,
             t: "resume_consumer_result",
@@ -204,6 +204,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             return;
          }
 
+         // console.log(JSON.stringify(data, null, 2));
          const consumer = await transportData.transport.consume<MediasoupAppData>({
             producerId: data.producerId,
             rtpCapabilities: data.rtpCapabilities,
@@ -211,7 +212,6 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             paused: true,
          });
 
-         console.log("CONSUMED", consumer.producerId);
          rtcPeer?.consumers.set(consumer.id, consumer);
 
          session.send({
@@ -236,7 +236,8 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             },
             session,
          );
-      } catch {
+      } catch (e) {
+         console.error(e);
          session.send({
             op: VoiceOperations.DISPATCH,
             t: "consume_result",
@@ -305,7 +306,8 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             },
             session,
          );
-      } catch {
+      } catch (e) {
+         console.error(e);
          session.send({
             op: VoiceOperations.DISPATCH,
             t: "produce_result",
@@ -339,7 +341,8 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             t: "connect_transport_result",
             d: { transportId: transportData.transport.id, nonce: data.nonce },
          });
-      } catch {
+      } catch (e) {
+         console.error(e);
          session.send({
             op: VoiceOperations.DISPATCH,
             t: "connect_transport_result",
@@ -373,7 +376,8 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                nonce: data.nonce,
             },
          });
-      } catch {
+      } catch (e) {
+         console.error(e);
          session.send({
             op: VoiceOperations.DISPATCH,
             t: "create_transport_result",
@@ -416,10 +420,11 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             otherSession.send({
                op: VoiceOperations.DISPATCH,
                t: "close_producer_result",
-               d: { producerId: producer.id, userId: rtcPeer.userId, kind: producer.appData.mediaKind },
+               d: { producerId: producer.id, userId: rtcPeer.userId, kind: producer.appData.mediaKind, nonce: data.nonce },
             });
          }
-      } catch {
+      } catch (e) {
+         console.error(e);
          session.send({
             op: VoiceOperations.DISPATCH,
             t: "close_producer_result",
@@ -460,7 +465,8 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                nonce: data.nonce,
             },
          });
-      } catch {
+      } catch (e) {
+         console.error(e);
          session.send({
             op: VoiceOperations.DISPATCH,
             t: "close_consumer_result",
@@ -492,27 +498,30 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       };
       router.peers.set(session.sessionId, rtcPeer);
 
-      const producers = getRouterProducers(router).map((x) => {
-         const producer: ProducerData = {
-            userId: x.appData.userId,
-            kind: x.appData.mediaKind,
-            producerId: x.id,
-         };
+      const producers = getRouterProducers(router)
+         .filter((x) => x.appData.userId !== user.id)
+         .map((x) => {
+            const producer: ProducerData = {
+               userId: x.appData.userId,
+               kind: x.appData.mediaKind,
+               producerId: x.id,
+            };
 
-         return producer;
-      });
+            return producer;
+         });
 
-      const consumers = getRouterConsumers(router).map((x) => {
-         const consumer: ConsumerData = {
-            userId: x.appData.userId,
-            kind: x.appData.mediaKind,
-            consumerId: x.id,
-            producerId: x.producerId,
-         };
-         console.log(x.closed);
+      const consumers = getRouterConsumers(router)
+         .filter((x) => x.appData.userId !== user.id)
+         .map((x) => {
+            const consumer: ConsumerData = {
+               userId: x.appData.userId,
+               kind: x.appData.mediaKind,
+               consumerId: x.id,
+               producerId: x.producerId,
+            };
 
-         return consumer;
-      });
+            return consumer;
+         });
 
       session.send({
          op: VoiceOperations.DISPATCH,
