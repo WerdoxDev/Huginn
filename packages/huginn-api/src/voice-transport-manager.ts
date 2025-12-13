@@ -23,6 +23,7 @@ import type {
    TransportOptions,
    RtpEncodingParameters,
    ConnectionState,
+   RtpCodecCapability,
 } from "mediasoup-client/types";
 import { EventEmitter } from "./event-emitter";
 import type { HuginnClient } from ".";
@@ -78,7 +79,6 @@ export class VoiceTransportManager extends EventEmitter<Events> {
    public consumers: Map<string, Consumer<MediasoupAppData>> = new Map();
 
    private pendingRemoteProducers = new Map<string, ProducerData>();
-   private pendingValidRemoteProducers = new Set<string>();
 
    private _status: TransportManagerStatus = "idle";
    public get status(): TransportManagerStatus {
@@ -148,7 +148,6 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
       log("api:voice-transport", "default", "create send transport");
 
-      console.log(this.device);
       const iceServers = await this.fetchTurnCredentials();
       const transport = this.device.createSendTransport({ ...options, iceServers });
       this.sendTransport = transport;
@@ -188,8 +187,8 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
    private async fetchTurnCredentials(): Promise<RTCIceServer[] | undefined> {
       try {
-         const id = "8f839ebc728aa6fd50e1b27903ecd17c";
-         const token = "71228e8dff18a80dc8d912d81e9dd9da8e9d90fcb3dac7135a2375873a8afd3b";
+         const id = import.meta.env.VITE_PUBLIC_CLOUDFLARE_TURN_ID;
+         const token = import.meta.env.VITE_PUBLIC_CLOUDFLARE_TURN_TOKEN;
          const data = { ttl: 86400 };
 
          const response = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${id}/credentials/generate-ice-servers`, {

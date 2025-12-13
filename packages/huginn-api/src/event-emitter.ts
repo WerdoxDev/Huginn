@@ -45,10 +45,10 @@ export class EventEmitter<Events> {
             try {
                const result = listener(eventArg);
                if (result instanceof Promise) {
-                  result.catch((err) => console.error(err));
+                  result.catch((err) => console.error(`Error when emitting ${eventName as string}:`, err));
                }
             } catch (e) {
-               console.error(e);
+               console.error(`Error when emitting ${eventName as string}:`, e);
             }
          }
       }

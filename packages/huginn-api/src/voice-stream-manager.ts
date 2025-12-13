@@ -1,5 +1,7 @@
 import { log } from "@huginn/shared";
 import type { VoiceTransportManager } from "./voice-transport-manager";
+import type { RtpEncodingParameters } from "mediasoup-client/types";
+import type { VoiceStreamOptions } from ".";
 
 export class VoiceStreamManager {
    private transport: VoiceTransportManager;
@@ -8,19 +10,34 @@ export class VoiceStreamManager {
       this.transport = transport;
    }
 
-   public async openStream(videoTrack?: MediaStreamTrack, audioTrack?: MediaStreamTrack): Promise<void> {
+   public async openStream(videoTrack?: MediaStreamTrack, audioTrack?: MediaStreamTrack, options?: VoiceStreamOptions): Promise<void> {
       log("api:voice-screen-share", "default", "open stream");
 
+      const maxBitrate = options?.maxVideoBitrate ?? 2000000;
+      const scalabilityMode = "L1T3";
+      const useSimulcast = options?.useSimulcast ?? true;
+
       if (videoTrack) {
-         await this.transport.createProducer("stream_video", videoTrack, {
-            encodings: [{ scalabilityMode: "L1T3" }],
-            codecOptions: { videoGoogleStartBitrate: 1000000, videoGoogleMinBitrate: 10000, videoGoogleMaxBitrate: 3000000 },
-         });
+         // ENCODING ORDERING MATTERS FOR SIMULCAST
+         const encodings: RtpEncodingParameters[] = useSimulcast
+            ? [
+                 { scaleResolutionDownBy: 4, maxBitrate, scalabilityMode },
+                 { scaleResolutionDownBy: 2, maxBitrate, scalabilityMode },
+                 { scaleResolutionDownBy: 1, maxBitrate, scalabilityMode },
+              ]
+            : [{ maxBitrate, scalabilityMode }];
+
+         const videoSettings = videoTrack.getSettings();
+         if (videoSettings.height && videoSettings.height < 576 && useSimulcast) {
+            encodings.shift();
+         }
+
+         await this.transport.createProducer("stream_video", videoTrack, { encodings });
       }
 
       if (audioTrack) {
          await this.transport.createProducer("stream_audio", audioTrack, {
-            codecOptions: { opusStereo: true, opusMaxAverageBitrate: 1000000 },
+            codecOptions: { opusStereo: true, opusMaxAverageBitrate: 400000 },
          });
       }
    }

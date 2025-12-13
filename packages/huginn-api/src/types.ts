@@ -35,3 +35,5 @@ export type VoiceOptions<V extends Voice = Voice> = {
 
 export type VoiceConnectionData = { token: string; channelId: Snowflake; guildId: Snowflake | null };
 export type VoiceStatus = "idle" | "connecting" | "signaling" | "disconnected" | "ready";
+
+export type VoiceStreamOptions = { useSimulcast?: boolean; maxVideoBitrate?: number };
