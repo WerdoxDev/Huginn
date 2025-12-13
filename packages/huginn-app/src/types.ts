@@ -361,9 +361,10 @@ export type AppSettings = {
    outputVolume: number;
    inputThreshold: number;
    noiseSuppression: boolean;
-   screenShareFramerate: number;
-   screenShareQuality: number;
+   screenShareFramerate: string;
+   screenShareQuality: string;
    screenShareAudio: boolean;
+   screenShareSimulcast: boolean;
 };
 
 export type Keybind = { type: KeybindType; combination: string[]; isEnabled: boolean };
@@ -524,14 +525,14 @@ export type ProducerStats = {
       clockRate?: number;
       mimeType: string;
    };
-   audioOutbound?: {
+   audioOutbound?: Array<{
       bitrate: number;
       audioLevel?: number;
       packetsSent?: number;
       totalAudioEnergy?: number;
       targetBitrate?: number;
-   };
-   videoOutbound?: {
+   }>;
+   videoOutbound?: Array<{
       bitrate: number;
       width?: number;
       height?: number;
@@ -539,7 +540,7 @@ export type ProducerStats = {
       packetsSent?: number;
       scalabilityMode?: string;
       targetBitrate?: number;
-   };
+   }>;
 };
 
 export type ConsumerDebugData = {

@@ -1,5 +1,6 @@
 import type { StorageMap, FileType, LoadFileResult, SaveFileResult } from "@/types";
 import { LocalStorageController } from "./local-storage-controller";
+import { storageDefaults } from "../../shared/storage-defaults";
 
 export class StorageController {
    private storageType: "electron" | "web";
@@ -10,6 +11,21 @@ export class StorageController {
 
       if (storageType === "web") {
          this.localStorageController = new LocalStorageController();
+      }
+   }
+
+   public async checkFiles() {
+      for (const [type, defaultContent] of Object.entries(storageDefaults)) {
+         if (Array.isArray(defaultContent)) continue;
+
+         const file = (await this.loadFile(type as FileType)) || {};
+         const merged = { ...defaultContent, ...file.data };
+         console.log(file.data, merged);
+
+         // Only save if there were missing keys
+         if (Object.keys(merged).length !== Object.keys(file).length) {
+            await this.saveFile(type as FileType, merged);
+         }
       }
    }
 

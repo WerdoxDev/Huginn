@@ -47,7 +47,6 @@ export default function FriendItem(props: {
    // );
 
    return (
-      // biome-ignore lint/a11y/noStaticElementInteractions: there is an inner button
       <div
          className="hover:bg-surface-alt group relative flex cursor-pointer items-center justify-between overflow-hidden rounded-xl p-3"
          onContextMenu={(e: MouseEvent<HTMLDivElement>) => {

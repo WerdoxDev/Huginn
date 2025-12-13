@@ -16,9 +16,10 @@ export const storageDefaults: StorageMap = {
       inputVolume: 100,
       outputVolume: 100,
       noiseSuppression: true,
-      screenShareFramerate: 0,
-      screenShareQuality: 0,
+      screenShareFramerate: "30",
+      screenShareQuality: "medium",
       screenShareAudio: false,
+      screenShareSimulcast: true,
    },
    keybinds: [
       { type: "toggle_deafen", combination: [], isEnabled: true },

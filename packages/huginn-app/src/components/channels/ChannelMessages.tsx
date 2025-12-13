@@ -101,8 +101,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       const value = messages.map((message, i) => {
          const lastMessage: AppMessage | undefined = props.messages[i - 1];
 
-         const hasNewDate =
-            (lastMessage && !moment(message.timestamp).isSame(lastMessage?.timestamp, "date")) || (!lastMessage && !hasPreviousPage);
+         const hasNewDate = (lastMessage && !moment(message.timestamp).isSame(lastMessage?.timestamp, "date")) || (!lastMessage && !hasPreviousPage);
          const hasNewMinute = !lastMessage || moment(message.timestamp).diff(moment(lastMessage.timestamp), "minutes") >= 5;
          const hasNewAuthor = message.authorId !== lastMessage?.authorId;
          const isActionType = message.isPreview
@@ -162,8 +161,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       foundMessageElement.scrollIntoView({ behavior: "instant", block: lastDirection.current === "up" ? "start" : "end" });
       const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
       scrollRef.current.scrollTop +=
-         (lastDirection.current === "up" ? lastSeenElement.current.distanceToTop : -lastSeenElement.current.distanceToBottom) +
-         heightDifference;
+         (lastDirection.current === "up" ? lastSeenElement.current.distanceToTop : -lastSeenElement.current.distanceToBottom) + heightDifference;
 
       shouldScrollToLastSeen.current = false;
    }

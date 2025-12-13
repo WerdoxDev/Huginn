@@ -1,55 +1,55 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @theme {
-  --font-*: initial;
-  --font-noto: Noto Sans, sans-serif;
-  --font-ubuntu: Ubuntu Mono, monospace;
+   --font-*: initial;
+   --font-noto: Noto Sans, sans-serif;
+   --font-ubuntu: Ubuntu Mono, monospace;
 }
 
 @theme inline {
-  --color-surface: rgb(var(--tcolor-surface));
-  --color-surface-alt: rgb(var(--tcolor-surface-alt));
-  --color-surface-deep: rgb(var(--tcolor-surface-deep));
+   --color-surface: rgb(var(--tcolor-surface));
+   --color-surface-alt: rgb(var(--tcolor-surface-alt));
+   --color-surface-deep: rgb(var(--tcolor-surface-deep));
 
-  --color-primary-300: rgb(var(--tcolor-primary-300));
-  --color-primary-400: rgb(var(--tcolor-primary-400));
-  --color-primary-500: rgb(var(--tcolor-primary-500));
-  --color-primary-600: rgb(var(--tcolor-primary-600));
-  --color-primary-700: rgb(var(--tcolor-primary-700));
-  --color-primary-800: rgb(var(--tcolor-primary-800));
-  --color-primary-900: rgb(var(--tcolor-primary-900));
+   --color-primary-300: rgb(var(--tcolor-primary-300));
+   --color-primary-400: rgb(var(--tcolor-primary-400));
+   --color-primary-500: rgb(var(--tcolor-primary-500));
+   --color-primary-600: rgb(var(--tcolor-primary-600));
+   --color-primary-700: rgb(var(--tcolor-primary-700));
+   --color-primary-800: rgb(var(--tcolor-primary-800));
+   --color-primary-900: rgb(var(--tcolor-primary-900));
 
-  --color-positive-100: rgb(var(--tcolor-positive-100));
-  --color-positive-200: rgb(var(--tcolor-positive-200));
-  --color-positive-300: rgb(var(--tcolor-positive-300));
-  --color-positive-400: rgb(var(--tcolor-positive-400));
-  --color-positive-500: rgb(var(--tcolor-positive-500));
-  --color-positive-600: rgb(var(--tcolor-positive-600));
-  --color-positive-700: rgb(var(--tcolor-positive-700));
-  --color-positive-800: rgb(var(--tcolor-positive-800));
-  --color-positive-900: rgb(var(--tcolor-positive-900));
+   --color-positive-100: rgb(var(--tcolor-positive-100));
+   --color-positive-200: rgb(var(--tcolor-positive-200));
+   --color-positive-300: rgb(var(--tcolor-positive-300));
+   --color-positive-400: rgb(var(--tcolor-positive-400));
+   --color-positive-500: rgb(var(--tcolor-positive-500));
+   --color-positive-600: rgb(var(--tcolor-positive-600));
+   --color-positive-700: rgb(var(--tcolor-positive-700));
+   --color-positive-800: rgb(var(--tcolor-positive-800));
+   --color-positive-900: rgb(var(--tcolor-positive-900));
 
-  --color-negative-100: rgb(var(--tcolor-negative-100));
-  --color-negative-200: rgb(var(--tcolor-negative-200));
-  --color-negative-300: rgb(var(--tcolor-negative-300));
-  --color-negative-400: rgb(var(--tcolor-negative-400));
-  --color-negative-500: rgb(var(--tcolor-negative-500));
-  --color-negative-600: rgb(var(--tcolor-negative-600));
-  --color-negative-700: rgb(var(--tcolor-negative-700));
-  --color-negative-800: rgb(var(--tcolor-negative-800));
-  --color-negative-900: rgb(var(--tcolor-negative-900));
+   --color-negative-100: rgb(var(--tcolor-negative-100));
+   --color-negative-200: rgb(var(--tcolor-negative-200));
+   --color-negative-300: rgb(var(--tcolor-negative-300));
+   --color-negative-400: rgb(var(--tcolor-negative-400));
+   --color-negative-500: rgb(var(--tcolor-negative-500));
+   --color-negative-600: rgb(var(--tcolor-negative-600));
+   --color-negative-700: rgb(var(--tcolor-negative-700));
+   --color-negative-800: rgb(var(--tcolor-negative-800));
+   --color-negative-900: rgb(var(--tcolor-negative-900));
 
-  --color-caution-100: rgb(var(--tcolor-caution-100));
-  --color-caution-200: rgb(var(--tcolor-caution-200));
-  --color-caution-300: rgb(var(--tcolor-caution-300));
-  --color-caution-400: rgb(var(--tcolor-caution-400));
-  --color-caution-500: rgb(var(--tcolor-caution-500));
-  --color-caution-600: rgb(var(--tcolor-caution-600));
-  --color-caution-700: rgb(var(--tcolor-caution-700));
-  --color-caution-800: rgb(var(--tcolor-caution-800));
-  --color-caution-900: rgb(var(--tcolor-caution-900));
+   --color-caution-100: rgb(var(--tcolor-caution-100));
+   --color-caution-200: rgb(var(--tcolor-caution-200));
+   --color-caution-300: rgb(var(--tcolor-caution-300));
+   --color-caution-400: rgb(var(--tcolor-caution-400));
+   --color-caution-500: rgb(var(--tcolor-caution-500));
+   --color-caution-600: rgb(var(--tcolor-caution-600));
+   --color-caution-700: rgb(var(--tcolor-caution-700));
+   --color-caution-800: rgb(var(--tcolor-caution-800));
+   --color-caution-900: rgb(var(--tcolor-caution-900));
 
-  --color-text: rgb(var(--tcolor-text));
+   --color-text: rgb(var(--tcolor-text));
 }
 
 /*
@@ -61,403 +61,415 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
-  }
+   *,
+   ::after,
+   ::before,
+   ::backdrop,
+   ::file-selector-button {
+      border-color: var(--color-gray-200, currentcolor);
+   }
 }
 
 @font-face {
-	font-family: "Noto Sans";
-	src: url("assets/NotoSans.ttf") format("TrueType");
-	font-style: normal;
+   font-family: "Noto Sans";
+   src: url("assets/NotoSans.ttf") format("TrueType");
+   font-style: normal;
 }
 
 @font-face {
-	font-family: "Noto Sans";
-	src: url("assets/NotoSansItalic.ttf") format("TrueType");
-	font-style: italic;
+   font-family: "Noto Sans";
+   src: url("assets/NotoSansItalic.ttf") format("TrueType");
+   font-style: italic;
 }
 
 @font-face {
-	font-family: "Noto Sans Arabic";
-	src: url("assets/NotoSansArabic.ttf") format("TrueType");
+   font-family: "Noto Sans Arabic";
+   src: url("assets/NotoSansArabic.ttf") format("TrueType");
 }
 
 @font-face {
-	font-family: "Ubuntu Mono";
-	src: url("assets/UbuntuMono-Regular.ttf") format("TrueType");
-	font-style: normal;
+   font-family: "Ubuntu Mono";
+   src: url("assets/UbuntuMono-Regular.ttf") format("TrueType");
+   font-style: normal;
 }
 
 @font-face {
-	font-family: "Ubuntu Mono";
-	src: url("assets/UbuntuMono-Bold.ttf") format("TrueType");
-	font-weight: bold;
+   font-family: "Ubuntu Mono";
+   src: url("assets/UbuntuMono-Bold.ttf") format("TrueType");
+   font-weight: bold;
 }
 
 @font-face {
-	font-family: "Ubuntu Mono";
-	src: url("assets/UbuntuMono-Italic.ttf") format("TrueType");
-	font-style: italic;
+   font-family: "Ubuntu Mono";
+   src: url("assets/UbuntuMono-Italic.ttf") format("TrueType");
+   font-style: italic;
 }
 
 @font-face {
-	font-family: "Ubuntu Mono";
-	src: url("assets/UbuntuMono-BoldItalic.ttf") format("TrueType");
-	font-weight: bold;
-	font-style: italic;
+   font-family: "Ubuntu Mono";
+   src: url("assets/UbuntuMono-BoldItalic.ttf") format("TrueType");
+   font-weight: bold;
+   font-style: italic;
 }
 
 :root {
-	font-family: "Noto Sans", "Noto Sans Arabic", sans-serif;
-	-webkit-font-smoothing: none;
-	font-synthesis: none;
-	text-rendering: optimizeLegibility;
+   font-family: "Noto Sans", "Noto Sans Arabic", sans-serif;
+   -webkit-font-smoothing: none;
+   font-synthesis: none;
+   text-rendering: optimizeLegibility;
    interpolate-size: allow-keywords;
 }
 
 html,
 body,
 #root {
-	/* background-color: #060606; */
-	@apply h-full overscroll-none bg-surface-alt overflow-hidden;
+   /* background-color: #060606; */
+   @apply bg-surface-alt h-full overflow-hidden overscroll-none;
 }
 
 @keyframes blink {
-	50% {
-		background-color: transparent;
-	}
+   50% {
+      background-color: transparent;
+   }
 }
 .loading-dot {
-	animation: 1s blink infinite;
+   animation: 1s blink infinite;
 }
 .loading-dot:nth-child(2) {
-	animation-delay: 250ms;
+   animation-delay: 250ms;
 }
 .loading-dot:nth-child(3) {
-	animation-delay: 500ms;
+   animation-delay: 500ms;
 }
 
 @keyframes loading {
-	25% {
-		transform: translate(-10px, -10px) rotateY(180deg);
-	}
-	50% {
-		transform: translate(0, 0) rotateY(180deg);
-	}
-	75% {
-		transform: translate(10px, -10px);
-	}
-	100% {
-		transform: translate(0, 0);
-	}
+   25% {
+      transform: translate(-10px, -10px) rotateY(180deg);
+   }
+   50% {
+      transform: translate(0, 0) rotateY(180deg);
+   }
+   75% {
+      transform: translate(10px, -10px);
+   }
+   100% {
+      transform: translate(0, 0);
+   }
 }
 
 .animate-loading {
-	animation: loading 1s infinite linear;
+   animation: loading 1s infinite linear;
 }
 
 .drag-region {
-	app-region: drag;
+   app-region: drag;
 }
 
 .no-drag-region {
-	app-region: no-drag;
+   app-region: no-drag;
 }
 
 video::-webkit-media-controls {
-	display: none !important;
+   display: none !important;
 }
 
 ::-webkit-scrollbar {
-	@apply w-4 h-4;
+   @apply h-3.5 w-3.5;
 }
 
 ::-webkit-scrollbar-track {
-	@apply bg-surface rounded-full border-4 border-transparent border-solid bg-clip-padding;
+   @apply bg-transparent;
 }
 
-::-webkit-scrollbar-thumb {
-	@apply bg-surface-alt rounded-full border-4 border-transparent border-solid bg-clip-padding;
+/* ::-webkit-scrollbar-track:hover {
+   @apply bg-black;
+} */
+
+*:hover::-webkit-scrollbar-thumb {
+   @apply bg-surface rounded-full border-4 border-solid border-transparent bg-clip-padding;
 }
 
-.scroll-alternative::-webkit-scrollbar-track {
-	@apply bg-surface-alt/70;
+.scroll-surface-alt:hover::-webkit-scrollbar-thumb {
+   @apply bg-surface-alt;
 }
 
-.scroll-alternative::-webkit-scrollbar-thumb {
-	@apply bg-surface-deep;
+.scroll-surface-deep:hover::-webkit-scrollbar-thumb {
+   @apply bg-surface-deep;
 }
 
-.scroll-alternative2::-webkit-scrollbar-track {
-	@apply bg-surface/70;
+.scroll-thin::-webkit-scrollbar {
+   @apply h-2.5 w-2.5;
 }
 
-.scroll-alternative2::-webkit-scrollbar-thumb {
-	@apply bg-surface-deep;
+.scroll-thin:hover::-webkit-scrollbar-thumb {
+   @apply border-3;
+}
+
+.scroll-super-thin::-webkit-scrollbar {
+   @apply h-2 w-2;
+}
+
+.scroll-super-thin:hover::-webkit-scrollbar-thumb {
+   @apply border-2;
 }
 
 input[type="range"] {
-	appearance: none;
-	background: transparent;
-	cursor: pointer;
+   appearance: none;
+   background: transparent;
+   cursor: pointer;
 }
 
 input[type="range"]::-webkit-slider-runnable-track {
-	@apply h-1.5 bg-primary-500/50 hover:scale-y-125 transition-transform;
+   @apply bg-primary-500/50 h-1.5 transition-transform hover:scale-y-125;
 }
 
 input[type="range"]::-moz-range-track {
-	background: #053a5f;
-	height: 0.5rem;
+   background: #053a5f;
+   height: 0.5rem;
 }
 
 input::-ms-reveal,
 input::-ms-clear {
-	display: none;
+   display: none;
 }
 
 .cropper-view-box {
-	border-radius: 100%;
-	outline: none !important;
-	border: 4px solid white;
-	pointer-events: none;
+   border-radius: 100%;
+   outline: none !important;
+   border: 4px solid white;
+   pointer-events: none;
 }
 
 .cropper-crop-box {
-	border-radius: 100%;
+   border-radius: 100%;
 }
 
 .cropper-face {
-	border-radius: 100%;
+   border-radius: 100%;
 }
 
 .cropper-move {
-	cursor: grab !important;
+   cursor: grab !important;
 }
 
 .cropper-line {
-	visibility: hidden;
+   visibility: hidden;
 }
 
 .cropper-point {
-	z-index: 100;
+   z-index: 100;
 }
 
 .cropper-wrap-box {
-	border-radius: 0.5rem;
+   border-radius: 0.5rem;
 }
 
 @keyframes fade-in {
-	from {
-		opacity: 0;
-	}
+   from {
+      opacity: 0;
+   }
 }
 
 @keyframes fade-out {
-	to {
-		opacity: 0;
-	}
+   to {
+      opacity: 0;
+   }
 }
 
 @keyframes scale-down {
-	to {
-		transform: scale(0.75, 0.75);
-	}
+   to {
+      transform: scale(0.75, 0.75);
+   }
 }
 
 @keyframes scale-up {
-	from {
-		transform: scale(0.75, 0.75);
-	}
+   from {
+      transform: scale(0.75, 0.75);
+   }
 }
 
 @keyframes slide-to-right {
-	to {
-		transform: translateX(100%);
-	}
+   to {
+      transform: translateX(100%);
+   }
 }
 
 @keyframes slide-to-left {
-	to {
-		transform: translateX(-100%);
-	}
+   to {
+      transform: translateX(-100%);
+   }
 }
 
 @keyframes scale-up-large {
-	to {
-		transform: scale(10, 10);
-	}
+   to {
+      transform: scale(10, 10);
+   }
 }
 
 @keyframes scale-down-large {
-	from {
-		transform: scale(10, 10);
-	}
+   from {
+      transform: scale(10, 10);
+   }
 }
 
 ::view-transition-old(start) {
-	animation: fade-out 500ms both;
-	mix-blend-mode: plus-lighter;
+   animation: fade-out 500ms both;
+   mix-blend-mode: plus-lighter;
 }
 
 ::view-transition-new(start) {
-	animation: fade-in 500ms both;
-	mix-blend-mode: plus-lighter;
+   animation: fade-in 500ms both;
+   mix-blend-mode: plus-lighter;
 }
 
 ::view-transition-old(start-surface) {
-	display: none;
+   display: none;
 }
 ::view-transition-new(start-surface) {
-	animation: none;
+   animation: none;
 }
 
 #start-form {
-	animation:
-		fade-in 350ms both,
-		scale-up 350ms both;
+   animation:
+      fade-in 350ms both,
+      scale-up 350ms both;
 }
 
 html::view-transition-group(root),
 html::view-transition-new(root),
 html::view-transition-old(root) {
-	animation: none;
+   animation: none;
 }
 
 ::view-transition-new(start-login),
 ::view-transition-new(start-register),
 ::view-transition-new(start-oauth-redirect) {
-	animation:
-		fade-in 350ms both,
-		scale-up 350ms both;
+   animation:
+      fade-in 350ms both,
+      scale-up 350ms both;
 }
 
 ::view-transition-old(start-login),
 ::view-transition-old(start-register),
 ::view-transition-old(start-oauth-redirect) {
-	animation:
-		fade-out 250ms both,
-		scale-down 250ms both;
+   animation:
+      fade-out 250ms both,
+      scale-down 250ms both;
 }
 
 ::view-transition-new(start-index) {
-	animation:
-		fade-in 350ms both,
-		scale-up 350ms both;
+   animation:
+      fade-in 350ms both,
+      scale-up 350ms both;
 }
 
 ::view-transition-old(start-index) {
-	animation:
-		fade-out 250ms both,
-		scale-down 250ms both;
+   animation:
+      fade-out 250ms both,
+      scale-down 250ms both;
 }
 
 .hljs-comment {
-	font-style: italic;
+   font-style: italic;
 }
 
 .hljs-keyword {
-	font-style: italic;
+   font-style: italic;
 }
 
 .hljs-emphasis {
-	font-style: italic;
+   font-style: italic;
 }
 
 .range-container {
-	width: 300px;
-	margin: 50px auto;
-	text-align: center;
+   width: 300px;
+   margin: 50px auto;
+   text-align: center;
 }
 
 .range {
-	position: relative;
-	width: 100%;
-	height: 10px;
-	background-color: #eee;
-	border-radius: 5px;
-	cursor: pointer;
+   position: relative;
+   width: 100%;
+   height: 10px;
+   background-color: #eee;
+   border-radius: 5px;
+   cursor: pointer;
 }
 
 .range-track {
-	position: absolute;
-	left: 0;
-	top: 0;
-	height: 100%;
-	width: 50%; /* Initial value */
-	background-color: #4caf50;
-	border-radius: 5px;
+   position: absolute;
+   left: 0;
+   top: 0;
+   height: 100%;
+   width: 50%; /* Initial value */
+   background-color: #4caf50;
+   border-radius: 5px;
 }
 
 .range-thumb {
-	position: absolute;
-	top: 50%;
-	width: 20px;
-	height: 20px;
-	background-color: #fff;
-	border: 2px solid #4caf50;
-	border-radius: 50%;
-	transform: translate(-50%, -50%);
-	z-index: 1;
+   position: absolute;
+   top: 50%;
+   width: 20px;
+   height: 20px;
+   background-color: #fff;
+   border: 2px solid #4caf50;
+   border-radius: 50%;
+   transform: translate(-50%, -50%);
+   z-index: 1;
 }
 
 .range-value {
-	margin-top: 10px;
-	font-size: 16px;
+   margin-top: 10px;
+   font-size: 16px;
 }
 
 .news-markdown {
-	@apply text-text/80;
+   @apply text-text/80;
 }
 .news-markdown h1 {
-	@apply text-2xl;
+   @apply text-2xl;
 }
 .news-markdown h2 {
-	@apply text-xl;
+   @apply text-xl;
 }
 .news-markdown h3 {
-	@apply text-lg;
+   @apply text-lg;
 }
 
 .news-markdown h1,
 .news-markdown h2,
 .news-markdown h3 {
-	@apply text-positive-100 flex items-center whitespace-nowrap uppercase;
+   @apply text-positive-100 flex items-center whitespace-nowrap uppercase;
 }
 
 .news-markdown h1::after,
 .news-markdown h2::after,
 .news-markdown h3::after {
-	content: "";
-	@apply h-0.5 w-full ml-2 bg-positive-100;
+   content: "";
+   @apply bg-positive-100 ml-2 h-0.5 w-full;
 }
 
 .news-markdown img {
-	@apply rounded-lg shadow-md border-2 border-dashed border-white/50;
+   @apply rounded-lg border-2 border-dashed border-white/50 shadow-md;
 }
 
 .news-markdown ul {
-	@apply ml-2;
-	list-style-type: disc;
+   @apply ml-2;
+   list-style-type: disc;
 }
 
 .news-markdown li {
-	@apply ml-6;
+   @apply ml-6;
 }
 
 .news-markdown li::marker {
-	@apply text-white/50 text-xl;
+   @apply text-xl text-white/50;
 }
 
 .news-markdown p:has(img) + h3 {
-	@apply mt-5;
+   @apply mt-5;
 }
 
 div[data-floating-ui-portal] {
-	position: absolute;
+   position: absolute;
 }

@@ -43,9 +43,7 @@ export default function SettingsKeybindsTab() {
                />
             ))}
          </div>
-         <div className="text-text mt-2 select-none text-xs font-medium italic opacity-70">
-            *Keybinds are disabled while you are in this page
-         </div>
+         <div className="text-text mt-2 select-none text-xs font-medium italic opacity-70">*Keybinds are disabled while you are in this page</div>
       </div>
    );
 }
@@ -170,10 +168,12 @@ function KeybindDisplay(props: {
             <Tooltip.Content>Enable or disable this keybind</Tooltip.Content>
             <Tooltip.Trigger>
                <HuginnCheckbox
-                  className="ml-3 size-8"
+                  className="ml-3"
                   checked={props.isEnabled}
                   onChange={() => props.onChange(props.type, props.combination, !props.isEnabled)}
-               />
+               >
+                  <HuginnCheckbox.Toggle />
+               </HuginnCheckbox>
             </Tooltip.Trigger>
          </Tooltip>
       </div>

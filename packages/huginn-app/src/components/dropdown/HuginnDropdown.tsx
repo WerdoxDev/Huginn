@@ -1,4 +1,4 @@
-import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions, type ListboxOptionsProps } from "@headlessui/react";
 import { snowflake, WorkerID } from "@huginn/shared";
 import clsx from "clsx";
 import { createContext, type ReactNode, useContext, useState } from "react";
@@ -66,14 +66,14 @@ function List(props: { className?: string; children?: ReactNode; onClick?: () =>
    );
 }
 
-function ItemsWrapper(props: { className?: string; children?: ReactNode }) {
+function ItemsWrapper(props: { className?: string; children?: ReactNode; anchor?: ListboxOptionsProps["anchor"] }) {
    return (
       <ListboxOptions
          modal={false}
-         anchor="bottom"
+         anchor={props.anchor ?? "bottom"}
          transition
          className={clsx(
-            "scroll-alternative2 bg-surface-alt outline-primary-800 data-closed:translate-y-5 data-closed:opacity-0 overflow-y-auto! flex flex-col gap-y-0.5 rounded-lg p-1 outline transition [--anchor-gap:0.25rem] [--anchor-padding:1rem]",
+            "scroll-surface scroll-super-thin bg-surface-alt outline-primary-800 data-closed:translate-y-5 data-closed:opacity-0 flex flex-col overflow-y-auto rounded-lg outline transition [--anchor-gap:0.25rem] [--anchor-padding:1rem]",
             props.className,
          )}
       >
@@ -86,7 +86,7 @@ function Item(props: { item: DropdownItem; children?: ReactNode }) {
    return (
       <ListboxOption
          value={props.item}
-         className="data-focus:bg-surface data-selected:bg-surface/50 group flex cursor-pointer items-center gap-x-2 rounded-md p-1.5 text-white"
+         className="data-focus:bg-surface data-selected:bg-surface/50 data-selected:text-white group flex cursor-pointer items-center gap-x-2 px-2 py-2 text-white/70"
       >
          {props.item.icon}
          <span className="wrap-anywhere">{props.item.text}</span>

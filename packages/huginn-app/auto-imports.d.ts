@@ -76,6 +76,7 @@ declare global {
   const IconMingcuteUpFill: typeof import('~icons/mingcute/up-fill.jsx')['default']
   const IconMingcuteUpLine: typeof import('~icons/mingcute/up-line.jsx')['default']
   const IconMingcuteUser3Fill: typeof import('~icons/mingcute/user3-fill.jsx')['default']
+  const IconMingcuteVideoCamera2Fill: typeof import('~icons/mingcute/video-camera2-fill.jsx')['default']
   const IconMingcuteVolumeFill: typeof import('~icons/mingcute/volume-fill.jsx')['default']
   const IconMingcuteVolumeMuteFill: typeof import('~icons/mingcute/volume-mute-fill.jsx')['default']
   const IconMingcuteVolumeOffFill: typeof import('~icons/mingcute/volume-off-fill.jsx')['default']

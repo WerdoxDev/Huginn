@@ -229,8 +229,8 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
                      </div>
                   </div>
                   <div className="mt-5 flex">
-                     <HuginnCheckbox checked={noiseSuppression} onChange={setNoiseSuppression}>
-                        Noise Suppression
+                     <HuginnCheckbox checked={noiseSuppression} onChange={setNoiseSuppression} className="w-45!">
+                        <HuginnCheckbox.Toggle innerClassName="bg-surface-alt">Noise Suppression</HuginnCheckbox.Toggle>
                      </HuginnCheckbox>
                   </div>
                </HuginnTab.TabPanel>

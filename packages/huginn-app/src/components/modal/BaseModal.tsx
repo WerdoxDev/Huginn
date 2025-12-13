@@ -17,7 +17,7 @@ export default function BaseModal(props: {
          <Dialog open={props.modal.isOpen} transition onClose={props.onClose} className="data-closed:opacity-0 relative z-10 transition duration-200">
             <ModalBackground className={props.backgroundClassName} />
             <div className={clsx("fixed inset-0", huginnWindow.environment === "desktop" && "top-6")}>
-               <div className="flex h-full w-full items-center justify-center">{props.renderChildren}</div>
+               <div className="flex h-full w-full items-center justify-center py-10">{props.renderChildren}</div>
             </div>
          </Dialog>
       </Suspense>

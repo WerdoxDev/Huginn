@@ -47,7 +47,7 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
             </div>
          </div>
          <div className="h-0.5 shrink-0 bg-white/10" />
-         <div className="mx-3.5 mb-3.5 mt-6 flex shrink-0 items-center justify-between text-xs">
+         <div className="mx-3.5 mb-3 mt-6 flex shrink-0 items-center justify-between text-xs">
             <div className="text-text/70 hover:text-text font-medium uppercase">Direct Messages</div>
             <Tooltip>
                <Tooltip.Trigger onClick={() => updateModals({ createDM: { isOpen: true } })}>
@@ -56,7 +56,7 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
                <Tooltip.Content>Create DM</Tooltip.Content>
             </Tooltip>
          </div>
-         <ul className="scroll-alternative2 flex h-full flex-col gap-y-0.5 overflow-x-hidden overflow-y-scroll px-2 pb-2">
+         <ul className="scroll-alternative2 scroll-super-thin flex h-full flex-col gap-y-0.5 overflow-x-hidden overflow-y-scroll pb-2 pl-2 pr-1 pt-0.5">
             {sortedChannels?.map((channel) => (
                <DirectMessageChannel key={channel.id} channel={channel} />
             ))}

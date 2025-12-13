@@ -2,7 +2,7 @@ import { queryClient } from "@/root";
 import { QueryClientProvider } from "@tanstack/react-query";
 import ContextMenusRenderer from "@components/contextmenu/ContextMenusRenderer";
 import ModalsRenderer from "@components/modal/ModalsRenderer";
-import PHProvider from "@contexts/PHProvider";
+import PHProvider, { initializePosthog } from "@contexts/PHProvider";
 import StartBackgroundSvg from "@components/StartBackgroundSvg";
 import TitleBar from "@components/TitleBar";
 import { useStartBackground } from "@contexts/authBackgroundContext";
@@ -41,6 +41,7 @@ export default function AppLayout() {
          unlisteners.push(initializePresence());
          unlisteners.push(initializeTyping());
          unlisteners.push(initializeVoice());
+         initializePosthog();
          initializeDevice().then((x) => unlisteners.push(x));
 
          return () => {

@@ -26,7 +26,8 @@ export class WebRTCStatsParser {
       const byteDiff = bytes - prev.bytes;
       if (timeDiff <= 0 || byteDiff < 0) return 0;
 
-      return Math.floor((byteDiff * 8 * 1000) / timeDiff); // bits per second
+      const bitsPerSecond = Math.floor((byteDiff * 8 * 1000) / timeDiff);
+      return bitsPerSecond;
    }
 
    public parseConsumer(report: RTCStatsReport) {
@@ -149,17 +150,23 @@ export class WebRTCStatsParser {
             };
          } else if (type === "outbound-rtp") {
             const data = stat as RTCOutboundRtpStreamStats;
+
             if (data.kind === "audio") {
                const track: RTCAudioSourceStats = data.mediaSourceId ? byId[data.mediaSourceId] : undefined;
-               stats.audioOutbound = {
+
+               if (!stats.audioOutbound) stats.audioOutbound = [];
+
+               stats.audioOutbound.push({
                   bitrate: this.computeBitrate(id, data.bytesSent ?? 0, timestamp),
                   targetBitrate: data.targetBitrate,
                   packetsSent: data.packetsSent,
                   audioLevel: track.audioLevel,
                   totalAudioEnergy: track.totalAudioEnergy,
-               };
+               });
             } else if (data.kind === "video") {
-               stats.videoOutbound = {
+               if (!stats.videoOutbound) stats.videoOutbound = [];
+
+               stats.videoOutbound.push({
                   bitrate: this.computeBitrate(id, data.bytesSent ?? 0, timestamp),
                   targetBitrate: data.targetBitrate,
                   fps: data.framesPerSecond,
@@ -167,7 +174,7 @@ export class WebRTCStatsParser {
                   height: data.frameHeight,
                   scalabilityMode: data.scalabilityMode,
                   packetsSent: data.packetsSent,
-               };
+               });
             }
          }
       }

@@ -106,7 +106,7 @@ export default function SettingsModal() {
    }
 
    return (
-      <div className="h-full w-full p-10">
+      <div className="h-full w-full px-10">
          <DialogPanel
             transition
             className="border-primary-800 bg-surface data-closed:scale-90 relative h-full transform rounded-xl border-2 transition-[opacity_transform] duration-200"
@@ -136,23 +136,21 @@ function SettingsTabs() {
    const client = useClient();
 
    return (
-      <div className="flex h-full w-full flex-col gap-y-1 overflow-y-auto">
+      <div className="scroll-surface-alt scroll-thin flex h-full w-full flex-col gap-y-1 overflow-y-scroll">
          {tabs.map(
             (tab, i) =>
                (client?.gateway.status === "authenticated" || !tab.auth) && (
                   <Fragment key={tab.name}>
-                     <div className={clsx("text-text/50 mb-1 w-full px-2.5 text-left text-xs uppercase", i === 0 ? "mt-2" : "mt-4")}>
-                        {tab.text}
-                     </div>
+                     <div className={clsx("text-text/50 mb-1 w-full px-4 text-left text-xs uppercase", i === 0 ? "mt-2" : "mt-4")}>{tab.text}</div>
                      {tab.children?.map((child) => (
-                        <div className="w-full px-2" key={child.name}>
+                        <div className="w-full pl-2.5" key={child.name}>
                            <Tab as={Fragment}>
                               {({ selected }) => (
                                  <button
                                     type="button"
                                     className={clsx(
                                        "text-text outline-hidden flex w-full cursor-pointer items-center gap-x-2 whitespace-nowrap rounded-md px-2 py-1.5 text-left text-base",
-                                       selected ? "text-text/100 bg-white/20" : "text-text/70 hover:text-text/100 hover:bg-white/10",
+                                       selected ? "text-text bg-white/20" : "text-text/70 hover:text-text hover:bg-white/10",
                                     )}
                                  >
                                     <div className="shrink-0">{child.icon}</div>
@@ -187,7 +185,7 @@ function SettingsPanels(props: { currentTab: string; onChange: (value: DeepParti
       <TabPanels className="flex w-full flex-col">
          <div className="text-text mb-5 ml-5 mt-5 shrink-0 select-none text-xl">{props.currentTab}</div>
          {flatTabs.map((tab) => (
-            <TabPanel key={tab?.name} className="scroll-alternative h-full overflow-x-visible overflow-y-scroll pb-5 pr-3">
+            <TabPanel key={tab?.name} className="scroll-surface-deep h-full overflow-x-visible overflow-y-scroll pb-5 pr-3">
                <div className="ml-5">
                   {tab?.component ? (
                      <TabComponent onChange={props.onChange} onSave={props.onSave} component={tab.component} />

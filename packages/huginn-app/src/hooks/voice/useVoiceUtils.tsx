@@ -6,6 +6,7 @@ import { useStorage } from "@stores/storageStore";
 import { useThisUser } from "@stores/userStore";
 import { getMediaErrorMessage } from "@lib/utils";
 import type { Snowflake } from "@huginn/shared";
+import type { VoiceStreamOptions } from "@huginn/api";
 
 export function useVoiceUtils() {
    const { user } = useThisUser();
@@ -31,14 +32,14 @@ export function useVoiceUtils() {
    }
 
    async function openScreenShare() {
-      async function open(videoTrack: MediaStreamTrack, audioTrack?: MediaStreamTrack) {
+      async function open(videoTrack: MediaStreamTrack, audioTrack?: MediaStreamTrack, options?: VoiceStreamOptions) {
          // Video is already open, replace it
          if (client?.voice.transport.getProducer("stream_video")) {
             await client.voice.stream.replaceStreamVideoTrack(videoTrack);
          }
          // If video is not there, audio is also not there. So start a stream
          else {
-            await client?.voice.stream.openStream(videoTrack, audioTrack);
+            await client?.voice.stream.openStream(videoTrack, audioTrack, options);
             return;
          }
 
@@ -70,17 +71,17 @@ export function useVoiceUtils() {
             updateModals({
                screenShare: {
                   isOpen: true,
-                  callback: async (stream: MediaStream, shareAudio: boolean, sourceName: string) => {
+                  callback: async (stream: MediaStream, isAudioEnabled: boolean, isSimulcastEnabled: boolean, sourceName: string) => {
                      // Reset loopback even if we want to start a new one / end the last one
                      await client?.voice.stopAudioLoopback();
 
                      let audioTrack: MediaStreamTrack | undefined = stream.getAudioTracks()[0];
-                     if (!audioTrack && shareAudio) {
+                     if (!audioTrack && isAudioEnabled) {
                         audioTrack = await client?.voice.startAudioLoopback(sourceName);
                      }
 
                      const videoTrack = stream.getVideoTracks()[0];
-                     await open(videoTrack, audioTrack);
+                     await open(videoTrack, audioTrack, { useSimulcast: isSimulcastEnabled });
                   },
                },
             });

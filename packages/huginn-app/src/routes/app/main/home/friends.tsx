@@ -73,7 +73,7 @@ export default function Friends() {
                </TabList>
             </div>
             <div className="h-0.5 shrink-0 bg-white/10" />
-            <TabPanels className="h-full overflow-y-scroll p-5">
+            <TabPanels className="h-full overflow-y-scroll p-5 pr-2">
                <FriendsTab friends={onlineFriends} presences={presences} text="Online" />
                <FriendsTab friends={allFriends} presences={presences} text="All Friends" />
                <PendingFriendsTab friends={friends} />

@@ -1,234 +1,199 @@
-import HuginnButton from "@components/button/HuginnButton";
-import LoadingButton from "@components/button/LoadingButton";
-import ModalCloseButton from "@components/button/ModalCloseButton";
-import { ScreenshareModalButton } from "@components/button/ScreenshareModalButton";
 import DisplayPreview from "@components/DisplayPreview";
 import HuginnTab from "@components/HuginnTab";
 import LoadingIcon from "@components/LoadingIcon";
-import { Checkbox, DialogPanel } from "@headlessui/react";
+import { Checkbox, DialogPanel, Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, useTransition } from "react";
-import type { DisplaySource } from "@/types";
+import type { DisplaySource, DropdownItem } from "@/types";
+import HuginnDropdown from "@components/dropdown/HuginnDropdown";
+import HuginnCheckbox from "@components/HuginnCheckbox";
+
+const qualities: DropdownItem[] = [
+   { text: "Low (480p)", value: "low" },
+   { text: "Medium (720p)", value: "medium" },
+   { text: "High (1080p)", value: "high" },
+   { text: "Ultra (1440p)", value: "ultra" },
+];
+
+const frameRates: DropdownItem[] = [
+   { text: "5 fps", value: "5" },
+   { text: "15 fps", value: "15" },
+   { text: "30 fps", value: "30" },
+   { text: "60 fps", value: "60" },
+];
+
+const qualityToResolution = {
+   ultra: { width: 2560, height: 1440 },
+   high: { width: 1920, height: 1080 },
+   medium: { width: 1280, height: 720 },
+   low: { width: 854, height: 480 },
+};
 
 export default function ScreenShareModal() {
    const client = useClient();
    const { screenShare: modal, updateModals } = useModals();
-   const { data, isFetching, isLoading, refetch } = useQuery({
+   const { data, isLoading, refetch } = useQuery({
       queryKey: ["display-sources"],
       queryFn: async () => await window.electronAPI.getDisplaySources(),
       enabled: modal.isOpen,
+      // refetchOnMount: true,
    });
 
    const settings = useStorage("settings");
    const { setValue } = useStorageStore();
 
-   const [selectedSource, setSelectedSource] = useState<DisplaySource | undefined>();
-   const [selectedQuality, setSelectedQuality] = useState(settings.screenShareQuality);
-   const [selectedFramerate, setSelectedFramerate] = useState(settings.screenShareFramerate);
-   const [shareAudio, setShareAudio] = useState(settings.screenShareAudio);
+   const [selectedQuality, setSelectedQuality] = useState<DropdownItem>(
+      qualities.find((x) => x.value === settings.screenShareQuality) ?? qualities[0],
+   );
+   const [selectedFramerate, setSelectedFramerate] = useState<DropdownItem>(
+      frameRates.find((x) => x.value === settings.screenShareFramerate) ?? frameRates[0],
+   );
+   const [isAudioEnabled, setIsAudioEnabled] = useState(settings.screenShareAudio);
+   const [isSimulcastEnabled, setIsSimulcastEnabled] = useState(settings.screenShareSimulcast);
    const [screenSharePending, startTransition] = useTransition();
 
    const screens = useMemo(() => data?.filter((x) => x.id.includes("screen")), [data]);
    const applications = useMemo(() => data?.filter((x) => x.id.includes("window")), [data]);
 
    useEffect(() => {
-      if (modal.isOpen) {
-         setSelectedQuality(settings.screenShareQuality);
-         setSelectedFramerate(settings.screenShareFramerate);
-         setShareAudio(settings.screenShareAudio);
-         refetch();
-      }
+      refetch();
+   }, []);
 
+   useEffect(() => {
       if (!modal.isOpen) {
          setValue("settings", {
             ...settings,
-            screenShareQuality: selectedQuality,
-            screenShareFramerate: selectedFramerate,
-            screenShareAudio: shareAudio,
+            screenShareQuality: selectedQuality!.value,
+            screenShareFramerate: selectedFramerate!.value,
+            screenShareAudio: isAudioEnabled,
          });
       }
    }, [modal.isOpen]);
-
-   function onSourceSelected(source: DisplaySource) {
-      setSelectedSource(source);
-   }
 
    function close() {
       updateModals({ screenShare: { isOpen: false, callback: undefined } });
    }
 
-   async function start() {
-      if (!selectedSource) {
+   async function start(source: DisplaySource) {
+      if (!source || !selectedFramerate || !selectedQuality) {
          return;
       }
 
-      window.electronAPI.setSelectedDisplaySource(selectedSource?.id);
+      window.electronAPI.setSelectedDisplaySource(source.id);
 
-      const framerate = selectedFramerate === 0 ? 15 : selectedFramerate === 1 ? 30 : selectedFramerate === 2 ? 60 : 15;
-      const width = selectedQuality === 0 ? 640 : selectedQuality === 1 ? 1280 : selectedQuality === 2 ? 1920 : selectedQuality === 3 ? 2560 : 1280;
-      const height = selectedQuality === 0 ? 480 : selectedQuality === 1 ? 720 : selectedQuality === 2 ? 1080 : selectedQuality === 3 ? 1440 : 720;
+      const framerate = Number(selectedFramerate?.value);
+      const { width, height } = qualityToResolution[selectedQuality.value as keyof typeof qualityToResolution];
 
       startTransition(async () => {
+         close();
          // This is to prevent Electron from giving the same video track back
          const producer = client?.voice.transport.getProducer("stream_video");
          producer?.track?.stop();
          await new Promise((r) => setTimeout(r, 1000));
 
          const stream = await navigator.mediaDevices.getDisplayMedia({
-            audio: shareAudio,
+            audio: isAudioEnabled,
             video: {
                frameRate: { ideal: framerate },
                width: { ideal: width },
                height: { ideal: height },
-               aspectRatio: { ideal: 16 / 9 },
+               // aspectRatio: { ideal: 16 / 9 },
             },
          });
 
-         modal.callback?.(stream, shareAudio, selectedSource.name);
-         close();
+         modal.callback?.(stream, isAudioEnabled, isSimulcastEnabled, source.name);
       });
    }
 
    return (
       <DialogPanel
          transition
-         className="border-primary-800 bg-surface data-closed:scale-90 relative w-full max-w-lg transform select-none overflow-hidden rounded-xl border-2 py-5 pb-0 transition-[opacity_transform] duration-200"
+         className="border-primary-800 bg-surface data-closed:scale-90 max-h-160 relative flex h-full w-full max-w-3xl transform select-none overflow-hidden rounded-xl border-2 transition-[opacity_transform] duration-200"
       >
-         <div className="flex flex-col gap-y-3 pb-5">
-            <div className="text-text text-center text-2xl font-bold">Share Screen</div>
-            <div className="text-text/80 px-2 text-center">
-               {selectedSource
-                  ? "Choose a quality and framerate. The higher the quality, the higher the usage of internet"
-                  : "Choose a screen or a specific application to share with others"}
-            </div>
-            {!selectedSource ? (
-               <HuginnTab>
-                  <HuginnTab.TabList className="mx-3" tabClassName="w-full py-1">
-                     <HuginnTab.Tab>
-                        <IconMingcuteMonitorFill className="size-5" />
-                        <div>Screens</div>
-                     </HuginnTab.Tab>
-                     <HuginnTab.Tab>
-                        <IconMingcuteWebFill className="size-5" />
-                        <div>Applications</div>
-                     </HuginnTab.Tab>
-                  </HuginnTab.TabList>
-                  <HuginnTab.TabPanels
-                     className="scroll-alternative mt-3 h-80 overflow-x-hidden overflow-y-scroll px-5 py-1 pr-1.5"
-                     panelClassName="grid grid-cols-2 gap-5"
-                  >
-                     {isLoading ? (
-                        <div className="flex h-full w-full items-center justify-center">
-                           <LoadingIcon className="size-16" />
-                        </div>
-                     ) : (
-                        <>
-                           <HuginnTab.TabPanel>
-                              {screens?.map((x) => (
-                                 <DisplayPreview key={x.id} source={x} onSelect={onSourceSelected} />
-                              ))}
-                           </HuginnTab.TabPanel>
-                           <HuginnTab.TabPanel>
-                              {applications?.map((x) => (
-                                 <DisplayPreview key={x.id} source={x} onSelect={onSourceSelected} />
-                              ))}
-                           </HuginnTab.TabPanel>
-                        </>
-                     )}
-                  </HuginnTab.TabPanels>
-               </HuginnTab>
-            ) : (
-               <div className="border-primary-700 mx-5 mt-5 flex flex-col gap-y-4 rounded-lg border p-5">
-                  <div className="text-text flex flex-col gap-y-1.5">
-                     <div className="">Streaming</div>
-                     <div className="bg-surface-deep flex w-full items-center rounded-lg p-2 px-2">
-                        {selectedSource.id.includes("window") ? (
-                           <IconMingcuteWebFill className="text-text/80 mr-2 size-7 shrink-0" />
-                        ) : (
-                           <IconMingcuteMonitorFill className="text-text/80 mr-2 size-7 shrink-0" />
-                        )}
-                        <div className="mr-2 overflow-hidden text-ellipsis whitespace-nowrap text-white">{selectedSource.name}</div>
-                        <button
-                           className="bg-surface ml-auto shrink-0 rounded-md px-3 py-1 text-sm transition-colors hover:bg-white/20"
-                           type="button"
-                           onClick={() => setSelectedSource(undefined)}
-                        >
-                           Change
-                        </button>
+         <div className="mt-5 flex w-full flex-col gap-y-3 overflow-hidden">
+            <HuginnTab className="flex h-full flex-col">
+               <HuginnTab.TabList className="mx-5" tabClassName="w-full py-1">
+                  <HuginnTab.Tab>
+                     <IconMingcuteMonitorFill className="size-5" />
+                     <div>Screens</div>
+                  </HuginnTab.Tab>
+                  <HuginnTab.Tab>
+                     <IconMingcuteWebFill className="size-5" />
+                     <div>Applications</div>
+                  </HuginnTab.Tab>
+                  <HuginnTab.Tab>
+                     <IconMingcuteVideoCamera2Fill className="size-5" />
+                     <div>Devices</div>
+                  </HuginnTab.Tab>
+               </HuginnTab.TabList>
+               <HuginnTab.TabPanels
+                  className="scroll-surface-alt mt-4 h-full overflow-y-scroll pb-5 pl-5 pr-1.5 pt-1"
+                  panelClassName="grid grid-cols-2 gap-5"
+               >
+                  {isLoading ? (
+                     <div className="flex h-full w-full items-center justify-center">
+                        <LoadingIcon className="size-16" />
                      </div>
-                  </div>
-                  <div className="flex flex-col gap-y-1.5">
-                     <div className="text-text">Quality</div>
-                     <div className="bg-surface-deep flex w-max justify-center gap-x-1 overflow-hidden rounded-md p-1 text-sm">
-                        <ScreenshareModalButton onClick={() => setSelectedQuality(0)} selected={selectedQuality === 0}>
-                           480
-                        </ScreenshareModalButton>
-                        <div className="w-0.5 bg-white/10" />
-                        <ScreenshareModalButton onClick={() => setSelectedQuality(1)} selected={selectedQuality === 1}>
-                           720
-                        </ScreenshareModalButton>
-                        <div className="w-0.5 bg-white/10" />
-                        <ScreenshareModalButton onClick={() => setSelectedQuality(2)} selected={selectedQuality === 2}>
-                           1080
-                        </ScreenshareModalButton>
-                        <div className="w-0.5 bg-white/10" />
-                        <ScreenshareModalButton onClick={() => setSelectedQuality(3)} selected={selectedQuality === 3}>
-                           1440
-                        </ScreenshareModalButton>
-                     </div>
-                  </div>
-                  <div className="flex flex-col gap-y-1.5">
-                     <div className="text-text">Framerate</div>
-                     <div className="bg-surface-deep flex w-max justify-center gap-x-1 overflow-hidden rounded-md p-1 text-sm">
-                        <ScreenshareModalButton onClick={() => setSelectedFramerate(0)} selected={selectedFramerate === 0}>
-                           15
-                        </ScreenshareModalButton>
-                        <div className="w-0.5 bg-white/10" />
-                        <ScreenshareModalButton onClick={() => setSelectedFramerate(1)} selected={selectedFramerate === 1}>
-                           30
-                        </ScreenshareModalButton>
-                        <div className="w-0.5 bg-white/10" />
-                        <ScreenshareModalButton onClick={() => setSelectedFramerate(2)} selected={selectedFramerate === 2}>
-                           60
-                        </ScreenshareModalButton>
-                     </div>
-                  </div>
-                  <div className="mt-1 flex">
-                     <Checkbox
-                        checked={shareAudio}
-                        onChange={setShareAudio}
-                        className="group flex cursor-pointer items-center justify-center gap-x-2.5"
-                     >
-                        <div className="bg-surface-alt group-hover:bg-surface-deep group-data-checked:bg-primary-700 group-data-checked:ring-0 flex size-6 items-center justify-center rounded-md p-1 ring-1 ring-white/20">
-                           <IconMingcuteCheckFill className="group-data-checked:opacity-100 text-white opacity-0" />
-                        </div>
-                        <div className="text-text">Share Audio</div>
-                     </Checkbox>
-                  </div>
-               </div>
-            )}
+                  ) : (
+                     <>
+                        <HuginnTab.TabPanel>
+                           {screens?.map((x) => (
+                              <DisplayPreview key={x.id} source={x} onSelect={start} />
+                           ))}
+                        </HuginnTab.TabPanel>
+                        <HuginnTab.TabPanel>
+                           {applications?.map((x) => (
+                              <DisplayPreview key={x.id} source={x} onSelect={start} />
+                           ))}
+                        </HuginnTab.TabPanel>
+                     </>
+                  )}
+               </HuginnTab.TabPanels>
+            </HuginnTab>
          </div>
-         <div className="bg-surface-alt flex w-full items-center gap-x-2 p-5">
-            {selectedSource ? (
-               <HuginnButton className="h-10 w-24" color="surface" onClick={() => setSelectedSource(undefined)}>
-                  Back
-               </HuginnButton>
-            ) : (
-               <LoadingButton className="h-10 w-24" color="surface" onClick={refetch} loading={isFetching}>
-                  Refresh
-               </LoadingButton>
-            )}
-            <HuginnButton className="ml-auto h-10 w-20 decoration-white hover:underline" onClick={close}>
-               Cancel
-            </HuginnButton>
-            <LoadingButton loading={screenSharePending} className="h-10 w-24" color="primary" onClick={start} disabled={selectedSource === undefined}>
-               Go Live
-            </LoadingButton>
+         <div className="bg-surface-alt flex shrink-0 flex-col gap-y-5 p-5">
+            <HuginnDropdown value={selectedQuality} onChange={setSelectedQuality}>
+               <HuginnDropdown.Label>Quality</HuginnDropdown.Label>
+               <HuginnDropdown.List className="bg-surface! w-40!">
+                  <HuginnDropdown.ItemsWrapper anchor="bottom start">
+                     {qualities.map((x) => (
+                        <HuginnDropdown.Item key={x.value} item={x} />
+                     ))}
+                  </HuginnDropdown.ItemsWrapper>
+               </HuginnDropdown.List>
+            </HuginnDropdown>
+            <HuginnDropdown value={selectedFramerate} onChange={setSelectedFramerate}>
+               <HuginnDropdown.Label>Frame Rate</HuginnDropdown.Label>
+               <HuginnDropdown.List className="bg-surface! w-30!">
+                  <HuginnDropdown.ItemsWrapper anchor="bottom start">
+                     {frameRates.map((x) => (
+                        <HuginnDropdown.Item key={x.value} item={x} />
+                     ))}
+                  </HuginnDropdown.ItemsWrapper>
+               </HuginnDropdown.List>
+            </HuginnDropdown>
+
+            <HuginnCheckbox checked={isAudioEnabled} onChange={setIsAudioEnabled}>
+               <HuginnCheckbox.Toggle>Share Audio</HuginnCheckbox.Toggle>
+            </HuginnCheckbox>
+            <div className="bg-surface h-px w-full px-0" />
+            <Disclosure>
+               <DisclosureButton className="hover:text-primary-500 group flex cursor-pointer items-center text-white transition-colors">
+                  <span>Advanced</span>
+                  <IconMingcuteDownFill className="group-data-open:rotate-180 ml-auto h-4 w-4 shrink-0 transition-transform" />
+               </DisclosureButton>
+               <DisclosurePanel transition className="data-closed:-translate-y-5 data-closed:opacity-0 origin-top transition">
+                  <HuginnCheckbox checked={isSimulcastEnabled} onChange={setIsSimulcastEnabled}>
+                     <HuginnCheckbox.Toggle>Use Simulcast</HuginnCheckbox.Toggle>
+                     <div className="mt-1 max-w-40 text-xs text-white/40">Requires more bandwidth. Provides better experience for others</div>
+                  </HuginnCheckbox>
+               </DisclosurePanel>
+            </Disclosure>
          </div>
-         <ModalCloseButton onClick={close} />
+         {/* <ModalCloseButton onClick={close} /> */}
       </DialogPanel>
    );
 }

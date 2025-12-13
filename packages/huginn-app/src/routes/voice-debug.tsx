@@ -157,6 +157,7 @@ function ConsumerViewer(props: {
    producer?: ProducerDebugData;
    index: number;
 }) {
+   const bitrate = (props.data.stats?.videoInbound ?? props.data.stats?.audioInbound)?.bitrate ?? 0;
    return (
       <div className="bg-surface flex flex-col p-1">
          <Section text={`${props.data.type === "local" ? "Local" : "Remote"} Consumer ${props.index}`}>
@@ -168,6 +169,9 @@ function ConsumerViewer(props: {
             <Field text="User ID" value={`${props.data.userId} (${props.usersLookup[props.data.userId]?.username})`} />
             <Field text="Kind" value={props.data.kind} />
             <Field text="Media Kind" value={props.data.mediaKind} />
+            {props.data.type === "local" && (
+               <Field text="Bitrate" value={`${bitrate} Bps | ${(bitrate / 8_000_000).toFixed(3)} MB/s | ${(bitrate / 1_000_000).toFixed(3)} Mbps`} />
+            )}
 
             {props.data.track && <TrackViewer data={props.data.track} index={0} />}
             {props.data.stats && (
@@ -235,6 +239,7 @@ function ConsumerViewer(props: {
 }
 
 function ProducerViewer(props: { data: ProducerDebugData; user: UsersDebugData; index: number }) {
+   const totalBitrate = (props.data.stats?.videoOutbound ?? props.data.stats?.audioOutbound)?.reduce((a, b) => a + b.bitrate, 0) ?? 0;
    return (
       <div className="bg-surface flex flex-col p-1">
          <Section text={`${props.data.type === "local" ? "Local" : "Remote"} Producer ${props.index}`}>
@@ -242,6 +247,10 @@ function ProducerViewer(props: { data: ProducerDebugData; user: UsersDebugData; 
             <Field text="User ID" value={`${props.data.userId} (${props.user.username})`} />
             <Field text="Kind" value={props.data.kind} />
             <Field text="Media Kind" value={props.data.mediaKind} />
+            <Field
+               text="Bitrate"
+               value={`${totalBitrate} Bps | ${(totalBitrate / 8_000_000).toFixed(3)} MB/s | ${(totalBitrate / 1_000_000).toFixed(3)} Mbps`}
+            />
 
             {props.data.track && <TrackViewer data={props.data.track} index={0} />}
 
@@ -283,22 +292,30 @@ function ProducerViewer(props: { data: ProducerDebugData; user: UsersDebugData; 
                   )}
                   {props.data.stats.audioOutbound && (
                      <Section text="Audio Inbound" collapsable className="mt-2">
-                        <Field text="Bitrate" value={props.data.stats.audioOutbound.bitrate} />
-                        <Field text="Target Bitrate" value={props.data.stats.audioOutbound.targetBitrate} />
-                        <Field text="Audio Level" value={props.data.stats.audioOutbound.audioLevel} />
-                        <Field text="Packets Sent" value={props.data.stats.audioOutbound.packetsSent} />
-                        <Field text="Total Audio Energy" value={props.data.stats.audioOutbound.totalAudioEnergy} />
+                        {props.data.stats.audioOutbound.map((x, i) => (
+                           <Section text={`Audio ${i}`}>
+                              <Field text="Bitrate" value={x.bitrate} />
+                              <Field text="Target Bitrate" value={x.targetBitrate} />
+                              <Field text="Audio Level" value={x.audioLevel} />
+                              <Field text="Packets Sent" value={x.packetsSent} />
+                              <Field text="Total Audio Energy" value={x.totalAudioEnergy} />
+                           </Section>
+                        ))}
                      </Section>
                   )}
                   {props.data.stats.videoOutbound && (
                      <Section text="Video Inbound" collapsable className="mt-2">
-                        <Field text="Bitrate" value={props.data.stats.videoOutbound.bitrate} />
-                        <Field text="Target Bitrate" value={props.data.stats.videoOutbound.targetBitrate} />
-                        <Field text="Width" value={props.data.stats.videoOutbound.width} />
-                        <Field text="Height" value={props.data.stats.videoOutbound.height} />
-                        <Field text="Packets Sent" value={props.data.stats.videoOutbound.packetsSent} />
-                        <Field text="FPS" value={props.data.stats.videoOutbound.fps} />
-                        <Field text="Scalability Mode" value={props.data.stats.videoOutbound.scalabilityMode} />
+                        {props.data.stats.videoOutbound.map((x, i) => (
+                           <Section text={`Video ${i}`}>
+                              <Field text="Bitrate" value={x.bitrate} />
+                              <Field text="Target Bitrate" value={x.targetBitrate} />
+                              <Field text="Width" value={x.width} />
+                              <Field text="Height" value={x.height} />
+                              <Field text="Packets Sent" value={x.packetsSent} />
+                              <Field text="FPS" value={x.fps} />
+                              <Field text="Scalability Mode" value={x.scalabilityMode} />
+                           </Section>
+                        ))}
                      </Section>
                   )}
                </Section>

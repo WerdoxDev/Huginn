@@ -44,6 +44,8 @@ export async function initializeStorage() {
    const keys: FileType[] = ["client-info", "custom-applications", "keybinds", "settings", "voice-preferences"];
    const cache = {} as StorageMap;
 
+   await storage.checkFiles();
+
    for (const key of keys) {
       const value = await storage.loadFile(key);
 

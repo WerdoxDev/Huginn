@@ -198,7 +198,7 @@ function Menu(props: ContextMenuProps & HTMLProps<HTMLButtonElement>) {
                         <FloatingFocusManager context={context} modal={false} initialFocus={isNested ? -1 : 0} returnFocus={!isNested}>
                            <div
                               ref={refs.setFloating}
-                              className="outline-hidden z-998 scroll-alternative2 flex min-w-28 flex-col overflow-y-auto rounded-lg bg-zinc-900 p-2 shadow-lg"
+                              className="outline-hidden z-998 scroll-surface scroll-super-thin flex min-w-28 flex-col overflow-y-scroll rounded-lg bg-zinc-900 p-2 pr-0 shadow-lg"
                               style={floatingStyles}
                               {...getFloatingProps()}
                            >
