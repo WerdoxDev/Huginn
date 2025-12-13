@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.13.0...voice@v0.13.1) (2025-12-13)
+
+
+### Bug Fixes
+
+* **voice:** only allow vp8 + rare bug fix ([ab3c52a](https://github.com/WerdoxDev/Huginn/commit/ab3c52aaeb014adb1643ec31c079c7f681fc5b03))
+
 ## [0.13.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.12.1...voice@v0.13.0) (2025-12-09)
 
 
