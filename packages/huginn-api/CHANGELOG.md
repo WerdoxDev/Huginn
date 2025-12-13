@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.30.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.29.2...api@v0.30.0) (2025-12-13)
+
+
+### Features
+
+* **api:** add better error message for event emitter + simulcast encoder options ([cb3c809](https://github.com/WerdoxDev/Huginn/commit/cb3c8092af8aacd8401061d04b8aa33059c2bf94))
+
 ## [0.29.2](https://github.com/WerdoxDev/Huginn/compare/api@v0.29.1...api@v0.29.2) (2025-12-09)
 
 
