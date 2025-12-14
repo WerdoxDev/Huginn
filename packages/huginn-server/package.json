@@ -1,6 +1,6 @@
 {
    "name": "@huginn/server",
-   "version": "0.32.3",
+   "version": "0.32.4",
    "type": "module",
    "scripts": {
       "dev": "bun --hot src/index.ts",

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.65.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.64.0...app@v0.65.0) (2025-12-14)
+
+
+### Features
+
+* **app:** modularize range input + device streaming in screen share ([0aa987d](https://github.com/WerdoxDev/Huginn/commit/0aa987dcf795910abe1f4d4c6c681a15a15bcd0f))
+
 ## [0.64.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.63.2...app@v0.64.0) (2025-12-13)
 
 
