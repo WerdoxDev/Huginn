@@ -41,7 +41,15 @@ const initialStore = () => ({
    },
    news: { isOpen: false, html: "" } as DefaultModal & { html: string },
    screenShare: { isOpen: false, callback: undefined } as DefaultModal & {
-      callback?: (stream: MediaStream, isAudioEnabled: boolean, isSimulcastEnabled: boolean, sourceName: string) => void;
+      callback?: (options: {
+         type: "display" | "device";
+         stream: MediaStream;
+         maxAudioBitrate: number;
+         maxVideoBitrate: number;
+         isAudioEnabled: boolean;
+         isSimulcastEnabled: boolean;
+         sourceName?: string;
+      }) => Promise<void>;
    },
    streamAudio: { isOpen: false, callback: undefined } as DefaultModal & { callback?: (sourceProcessId: string) => void },
 });

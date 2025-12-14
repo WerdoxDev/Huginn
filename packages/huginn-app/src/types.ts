@@ -365,6 +365,8 @@ export type AppSettings = {
    screenShareQuality: string;
    screenShareAudio: boolean;
    screenShareSimulcast: boolean;
+   screenShareVideoBitrate: number;
+   screenShareAudioBitrate: number;
 };
 
 export type Keybind = { type: KeybindType; combination: string[]; isEnabled: boolean };

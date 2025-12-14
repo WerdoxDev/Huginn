@@ -1,4 +1,4 @@
-import RangeInput from "@components/input/RangeInput";
+import HuginnRange from "@components/input/HuginnRange";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useEffect, useMemo } from "react";
 import ContextMenu from "./ContextMenu";
@@ -71,7 +71,15 @@ export default function VoiceElementContextMenu() {
                className="items-start! focus:bg-inherit! mt-1 min-w-40 cursor-default flex-col gap-y-1 px-1"
                preventClose
             >
-               <RangeInput minValue={0} maxValue={200} defaultValue={preference?.microphoneVolume} onChange={onChange} />
+               <HuginnRange
+                  minValue={0}
+                  maxValue={200}
+                  defaultValue={preference?.microphoneVolume}
+                  onChange={onChange}
+                  getTooltipText={(v) => `${v}%`}
+               >
+                  <HuginnRange.Input />
+               </HuginnRange>
             </ContextMenu.Item>
          )}
          {mediaSources.some((x) => x?.kind === "stream_video" || x?.kind === "stream_audio") && (
@@ -91,7 +99,15 @@ export default function VoiceElementContextMenu() {
                      className="items-start! focus:bg-inherit! mt-1 min-w-40 cursor-default flex-col gap-y-1 px-1"
                      preventClose
                   >
-                     <RangeInput minValue={0} maxValue={200} defaultValue={preference?.streamVolume} onChange={onChange} />
+                     <HuginnRange
+                        minValue={0}
+                        maxValue={200}
+                        defaultValue={preference?.streamVolume}
+                        onChange={onChange}
+                        getTooltipText={(v) => `${v}%`}
+                     >
+                        <HuginnRange.Input />
+                     </HuginnRange>
                   </ContextMenu.Item>
                )}
             </>

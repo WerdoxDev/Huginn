@@ -33,9 +33,12 @@ export function useVoiceUtils() {
 
    async function openScreenShare() {
       async function open(videoTrack: MediaStreamTrack, audioTrack?: MediaStreamTrack, options?: VoiceStreamOptions) {
+         const videoProducer = client?.voice.transport.getProducer("stream_video");
+         const audioProducer = client?.voice.transport.getProducer("stream_audio");
+
          // Video is already open, replace it
-         if (client?.voice.transport.getProducer("stream_video")) {
-            await client.voice.stream.replaceStreamVideoTrack(videoTrack);
+         if (videoProducer) {
+            await client?.voice.stream.replaceStreamVideoTrack(videoTrack);
          }
          // If video is not there, audio is also not there. So start a stream
          else {
@@ -44,12 +47,16 @@ export function useVoiceUtils() {
          }
 
          // Audio is already open and audio track is given, replace it
-         if (client?.voice.transport.getProducer("stream_audio") && audioTrack) {
-            await client.voice.stream.replaceStreamAudioTrack(audioTrack);
+         if (audioProducer && audioTrack) {
+            await client?.voice.stream.replaceStreamAudioTrack(audioTrack);
          }
          // Audio track is not given but it exists, so remove it.
-         else if (client?.voice.transport.getProducer("stream_audio") && !audioTrack) {
-            await client.voice.stream.closeStreamAudio();
+         else if (audioProducer && !audioTrack) {
+            await client?.voice.stream.closeStreamAudio();
+         }
+         // Audio is not open but track is given, so open audio
+         else if (!audioProducer && audioTrack) {
+            await client?.voice.stream.openStream(undefined, audioTrack, options);
          }
       }
 
@@ -71,17 +78,21 @@ export function useVoiceUtils() {
             updateModals({
                screenShare: {
                   isOpen: true,
-                  callback: async (stream: MediaStream, isAudioEnabled: boolean, isSimulcastEnabled: boolean, sourceName: string) => {
+                  callback: async (options) => {
                      // Reset loopback even if we want to start a new one / end the last one
                      await client?.voice.stopAudioLoopback();
 
-                     let audioTrack: MediaStreamTrack | undefined = stream.getAudioTracks()[0];
-                     if (!audioTrack && isAudioEnabled) {
-                        audioTrack = await client?.voice.startAudioLoopback(sourceName);
+                     let audioTrack: MediaStreamTrack | undefined = options.stream.getAudioTracks()[0];
+                     if (!audioTrack && options.isAudioEnabled && options.type === "display") {
+                        audioTrack = await client?.voice.startAudioLoopback(options.sourceName);
                      }
 
-                     const videoTrack = stream.getVideoTracks()[0];
-                     await open(videoTrack, audioTrack, { useSimulcast: isSimulcastEnabled });
+                     const videoTrack = options.stream.getVideoTracks()[0];
+                     await open(videoTrack, audioTrack, {
+                        useSimulcast: options.isSimulcastEnabled,
+                        maxAudioBitrate: options.maxAudioBitrate,
+                        maxVideoBitrate: options.maxVideoBitrate,
+                     });
                   },
                },
             });

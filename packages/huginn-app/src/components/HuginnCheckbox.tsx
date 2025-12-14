@@ -24,10 +24,6 @@ export default function HuginnCheckbox(props: { checked: boolean; onChange?: (ch
 
 function Toggle(props: { className?: string; children?: ReactNode; innerClassName?: string }) {
    const checkboxContext = useContext(CheckboxContext);
-
-   useEffect(() => {
-      console.log(checkboxContext);
-   }, []);
    return (
       <Checkbox
          checked={checkboxContext.checked}

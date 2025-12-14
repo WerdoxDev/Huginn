@@ -2,7 +2,7 @@ import HuginnButton from "@components/button/HuginnButton";
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
 import HuginnTab from "@components/HuginnTab";
 import GenericLabel from "@components/input/GenericLabel";
-import RangeInput from "@components/input/RangeInput";
+import HuginnRange from "@components/input/HuginnRange";
 import { clamp, remap } from "@huginn/shared";
 import { AudioLevelChecker } from "@lib/voice/audio-level-checker";
 import { VoiceInputDevice } from "@lib/voice/voice-input-device";
@@ -170,7 +170,7 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
                </HuginnTab.Tab>
             </HuginnTab.TabList>
             <HuginnTab.TabPanels className="mt-5">
-               <HuginnTab.TabPanel>
+               <HuginnTab.TabPanel className="flex flex-col gap-y-5">
                   <div className="flex gap-x-5">
                      <HuginnDropdown
                         className="w-full max-w-xs"
@@ -201,34 +201,37 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
                         </HuginnDropdown.List>
                      </HuginnDropdown>
                   </div>
-                  <div className="mt-5 flex gap-x-5">
-                     <div className="w-full max-w-xs">
-                        <GenericLabel>Input Volume</GenericLabel>
-                        <RangeInput onChange={onInputVolumeChange} defaultValue={settings.inputVolume} />
-                     </div>
-                     <div className="w-full max-w-xs">
-                        <GenericLabel>Output Volume</GenericLabel>
-                        <RangeInput onChange={onOutputVolumeChange} defaultValue={settings.outputVolume} maxValue={200} />
-                     </div>
+                  <div className="flex gap-x-5">
+                     <HuginnRange onChange={onInputVolumeChange} defaultValue={settings.inputVolume} className="max-w-xs">
+                        <HuginnRange.Label>Input Volume</HuginnRange.Label>
+                        <HuginnRange.Input />
+                     </HuginnRange>
+                     <HuginnRange
+                        onChange={onOutputVolumeChange}
+                        defaultValue={settings.outputVolume}
+                        maxValue={200}
+                        className="max-w-xs"
+                        getTooltipText={(v) => `${v}%`}
+                     >
+                        <HuginnRange.Label>Output Volume</HuginnRange.Label>
+                        <HuginnRange.Input />
+                     </HuginnRange>
                   </div>
-                  <div className="mt-5 flex">
-                     <div className="max-w-165 w-full">
-                        <GenericLabel>Input Threshold</GenericLabel>
-                        <RangeInput
-                           onChange={onInputThresholdChange}
-                           backgroundClassName="bg-positive-400!"
-                           fillClassName="bg-negative-100!"
-                           defaultValue={remap(settings.inputThreshold ?? -100, -100, 0, 0, 100)}
-                           getTooltipText={(percentage) => `${remap(percentage, 0, 100, -100, 0)}db`}
-                        >
-                           <div
-                              className="bg-surface-alt/50 absolute left-0 top-0 h-full transition-all duration-100"
-                              style={{ width: `${remap(inputDb, -100, 0, 0, 100)}%` }}
-                           />
-                        </RangeInput>
-                     </div>
-                  </div>
-                  <div className="mt-5 flex">
+                  <HuginnRange
+                     className="max-w-165"
+                     onChange={onInputThresholdChange}
+                     defaultValue={remap(settings.inputThreshold ?? -100, -100, 0, 0, 100)}
+                     getTooltipText={(percentage) => `${remap(percentage, 0, 100, -100, 0)}db`}
+                  >
+                     <HuginnRange.Label>Input Threshold</HuginnRange.Label>
+                     <HuginnRange.Input backgroundClassName="bg-positive-400!" fillClassName="bg-negative-100!">
+                        <div
+                           className="bg-surface-alt/50 absolute left-0 top-0 h-full transition-all duration-100"
+                           style={{ width: `${remap(inputDb, -100, 0, 0, 100)}%` }}
+                        />
+                     </HuginnRange.Input>
+                  </HuginnRange>
+                  <div className="flex">
                      <HuginnCheckbox checked={noiseSuppression} onChange={setNoiseSuppression} className="w-45!">
                         <HuginnCheckbox.Toggle innerClassName="bg-surface-alt">Noise Suppression</HuginnCheckbox.Toggle>
                      </HuginnCheckbox>

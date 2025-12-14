@@ -1,3 +1,4 @@
+import { constants } from "@huginn/shared";
 import type { StorageMap } from "../src/types";
 
 export const storageDefaults: StorageMap = {
@@ -20,6 +21,8 @@ export const storageDefaults: StorageMap = {
       screenShareQuality: "medium",
       screenShareAudio: false,
       screenShareSimulcast: true,
+      screenShareAudioBitrate: constants.DEFAULT_AUDIO_BITRATE,
+      screenShareVideoBitrate: constants.DEFAULT_VIDEO_BITRATE,
    },
    keybinds: [
       { type: "toggle_deafen", combination: [], isEnabled: true },

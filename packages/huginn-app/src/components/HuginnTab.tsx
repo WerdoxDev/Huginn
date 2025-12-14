@@ -5,9 +5,9 @@ import { createContext, type ReactNode, useContext } from "react";
 const TabContext = createContext<string | undefined>("");
 const TabPanelContext = createContext<string | undefined>("");
 
-export default function HuginnTab(props: { children?: ReactNode; onChange?: (index: number) => void; className?: string }) {
+export default function HuginnTab(props: { children?: ReactNode; onChange?: (index: number) => void; selectedIndex?: number; className?: string }) {
    return (
-      <TabGroup onChange={props.onChange} className={props.className}>
+      <TabGroup onChange={props.onChange} className={props.className} selectedIndex={props.selectedIndex}>
          {props.children}
       </TabGroup>
    );
