@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.2](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.14.1...cdn@v0.14.2) (2025-12-14)
+
+
+### Bug Fixes
+
+* **cdn:** fix potential static routes ([6ca665b](https://github.com/WerdoxDev/Huginn/commit/6ca665b6dfd563f219e9dd43fa322dce903019d0))
+
 ## [0.14.1](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.14.0...cdn@v0.14.1) (2025-11-18)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.31.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.30.0...api@v0.31.0) (2025-12-14)
+
+
+### Features
+
+* **api:** add max bitrate options for audio and video when screen sharing ([56424ad](https://github.com/WerdoxDev/Huginn/commit/56424ad10b5b5a975606afa0f325861899553c2d))
+
 ## [0.30.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.29.2...api@v0.30.0) (2025-12-13)
 
 
