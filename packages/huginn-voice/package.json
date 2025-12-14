@@ -8,18 +8,18 @@
       "bun-dev": "bun ./src/index.ts"
    },
    "dependencies": {
-      "@dotenvx/dotenvx": "^1.51.1",
+      "@dotenvx/dotenvx": "^1.51.2",
       "@elysiajs/node": "^1.4.2",
       "@huginn/backend-shared": "workspace:*",
       "@huginn/shared": "workspace:*",
       "crossws": "^0.4.1",
-      "elysia": "^1.4.18",
-      "mediasoup": "^3.19.13",
+      "elysia": "^1.4.19",
+      "mediasoup": "^3.19.14",
       "memoirist": "^0.4.0",
-      "srvx": "^0.9.7"
+      "srvx": "^0.9.8"
    },
    "devDependencies": {
-      "@types/node": "^20.19.25",
+      "@types/node": "^20.19.27",
       "tsx": "^4.21.0"
    },
    "imports": {
