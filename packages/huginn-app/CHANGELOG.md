@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.64.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.63.2...app@v0.64.0) (2025-12-13)
+
+
+### Features
+
+* **app:** bunch of visual fixes + better toggle + reworked screen share design ([8822dd7](https://github.com/WerdoxDev/Huginn/commit/8822dd7e857ae98e7d1149970d65a998df58d0d6))
+
 ## [0.63.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.63.1...app@v0.63.2) (2025-12-09)
 
 
