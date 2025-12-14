@@ -1,7 +1,6 @@
 import { afterAll, afterEach, beforeAll } from "bun:test";
 import { disconnectWebSockets, removeChannels, removeUsers, timeSpent } from "./utils";
 import { prepareServer } from "@huginn/backend-shared";
-import { main } from "#elysia";
 
 beforeAll(async () => {
    await prepareServer("http://localhost:3004");

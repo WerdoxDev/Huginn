@@ -35,15 +35,16 @@ type GoogleUserResponse = {
 
 export const getGoogleCallback = new Elysia().get(
    "/api/auth/callback/google",
-   async ({ cookie, status, query: { code, error, state }, redirect }) => {
+   async ({ cookie: { oauth }, status, query: { code, error, state }, redirect }) => {
       if (!envs.GOOGLE_CLIENT_ID || !envs.GOOGLE_CLIENT_SECRET || !envs.SESSION_PASSWORD) {
          return status("Not Implemented");
       }
 
-      const { flow, redirect_url, session_id, state: cookie_state, used_redirect_url } = cookie.oauth.value;
+      const cookieValue = (typeof oauth.value === "string" ? JSON.parse(oauth.value) : oauth.value) as typeof oauth.value;
+      const { flow, redirect_url, session_id, state: cookie_state, used_redirect_url } = cookieValue;
 
       if (cookie_state !== state || !state) {
-         consola.info("Cookie state mismatch");
+         consola.info("Cookie state mismatch", "cookie:", cookie_state, "state:", state);
          return forbidden(status);
       }
 

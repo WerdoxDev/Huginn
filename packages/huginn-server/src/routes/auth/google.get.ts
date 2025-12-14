@@ -27,7 +27,7 @@ export const getGoogle = new Elysia().get(
          return forbidden(status);
       }
 
-      // If timestamp is not within a 5 minute window
+      // If timestamp is not within a 5 minute window.
       if (Date.now() - Number(timestamp) > 5 * 60 * 1000) {
          return forbidden(status);
       }
@@ -38,7 +38,7 @@ export const getGoogle = new Elysia().get(
       }
 
       const url = new URL(request.url);
-      const host = `${url.protocol}//${url.hostname}`;
+      const host = `${url.protocol}//${url.hostname}${url.port ? `:${url.port}` : ""}`;
 
       oauth.value = { state, redirect_url, flow, session_id, used_redirect_url: host };
 
