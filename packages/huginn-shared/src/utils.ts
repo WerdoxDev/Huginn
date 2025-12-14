@@ -338,7 +338,15 @@ export function convertToMediaKind(hMediaKind: HMediaKind): MediaKind | undefine
    }
 }
 
-export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
+export type DeepPartial<T> = T extends (...args: any[]) => any
+   ? T
+   : T extends Array<infer U>
+     ? Array<DeepPartial<U>>
+     : T extends ReadonlyArray<infer U>
+       ? ReadonlyArray<DeepPartial<U>>
+       : T extends object
+         ? { [P in keyof T]?: DeepPartial<T[P]> }
+         : T;
 
 function levenshteinDistance(a: string, b: string): number {
    const dp = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
