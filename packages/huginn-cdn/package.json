@@ -10,12 +10,12 @@
 		"@elysiajs/cors": "^1.4.0",
 		"@huginn/backend-shared": "workspace:*",
 		"@huginn/shared": "workspace:*",
-		"consola": "^3.4.0",
-		"elysia": "^1.4.10",
-		"p-queue": "^8.1.0",
+		"consola": "^3.4.2",
+		"elysia": "^1.4.19",
+		"p-queue": "^8.1.1",
 		"pathe": "^1.1.2",
 		"sharp": "^0.33.5",
-		"zod": "^3.24.2"
+		"zod": "^3.25.76"
 	},
 	"devDependencies": {
 		"@types/bun": "latest"
