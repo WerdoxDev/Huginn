@@ -1,4 +1,4 @@
-import { log } from "@huginn/shared";
+import { clamp, constants, log } from "@huginn/shared";
 import type { VoiceTransportManager } from "./voice-transport-manager";
 import type { RtpEncodingParameters } from "mediasoup-client/types";
 import type { VoiceStreamOptions } from ".";
@@ -13,7 +13,16 @@ export class VoiceStreamManager {
    public async openStream(videoTrack?: MediaStreamTrack, audioTrack?: MediaStreamTrack, options?: VoiceStreamOptions): Promise<void> {
       log("api:voice-screen-share", "default", "open stream");
 
-      const maxBitrate = options?.maxVideoBitrate ?? 2000000;
+      const maxVideoBitrate = clamp(
+         options?.maxVideoBitrate ?? constants.DEFAULT_VIDEO_BITRATE,
+         constants.MIN_VIDEO_BITRATE,
+         constants.MAX_VIDEO_BITRATE,
+      );
+      const maxAudioBitrate = clamp(
+         options?.maxAudioBitrate ?? constants.DEFAULT_AUDIO_BITRATE,
+         constants.MIN_AUDIO_BITRATE,
+         constants.MAX_AUDIO_BITRATE,
+      );
       const scalabilityMode = "L1T3";
       const useSimulcast = options?.useSimulcast ?? true;
 
@@ -21,11 +30,11 @@ export class VoiceStreamManager {
          // ENCODING ORDERING MATTERS FOR SIMULCAST
          const encodings: RtpEncodingParameters[] = useSimulcast
             ? [
-                 { scaleResolutionDownBy: 4, maxBitrate, scalabilityMode },
-                 { scaleResolutionDownBy: 2, maxBitrate, scalabilityMode },
-                 { scaleResolutionDownBy: 1, maxBitrate, scalabilityMode },
+                 { scaleResolutionDownBy: 4, maxBitrate: maxVideoBitrate / 4, scalabilityMode },
+                 { scaleResolutionDownBy: 2, maxBitrate: maxVideoBitrate / 2, scalabilityMode },
+                 { scaleResolutionDownBy: 1, maxBitrate: maxVideoBitrate, scalabilityMode },
               ]
-            : [{ maxBitrate, scalabilityMode }];
+            : [{ maxBitrate: maxVideoBitrate, scalabilityMode }];
 
          const videoSettings = videoTrack.getSettings();
          if (videoSettings.height && videoSettings.height < 576 && useSimulcast) {
@@ -37,7 +46,7 @@ export class VoiceStreamManager {
 
       if (audioTrack) {
          await this.transport.createProducer("stream_audio", audioTrack, {
-            codecOptions: { opusStereo: true, opusMaxAverageBitrate: 400000 },
+            codecOptions: { opusStereo: true, opusMaxAverageBitrate: maxAudioBitrate },
          });
       }
    }
