@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.32.4](https://github.com/WerdoxDev/Huginn/compare/server@v0.32.3...server@v0.32.4) (2025-12-14)
+
+
+### Bug Fixes
+
+* **server:** fix static routes ([e2bb70f](https://github.com/WerdoxDev/Huginn/commit/e2bb70fa2d422550a64d39d9df0064affe92aeb2))
+
 ## [0.32.3](https://github.com/WerdoxDev/Huginn/compare/server@v0.32.2...server@v0.32.3) (2025-12-09)
 
 
