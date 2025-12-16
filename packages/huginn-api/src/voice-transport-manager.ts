@@ -23,7 +23,6 @@ import type {
    TransportOptions,
    RtpEncodingParameters,
    ConnectionState,
-   RtpCodecCapability,
 } from "mediasoup-client/types";
 import { EventEmitter } from "./event-emitter";
 import type { HuginnClient } from ".";

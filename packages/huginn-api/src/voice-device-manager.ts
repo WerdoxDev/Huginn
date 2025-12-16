@@ -29,7 +29,10 @@ export class VoiceDeviceManager {
    public async openCamera(track: MediaStreamTrack): Promise<void> {
       log("api:voice-device", "default", "open camera");
 
-      await this.transport.createProducer("camera", track);
+      await this.transport.createProducer("camera", track, {
+         encodings: [{ scalabilityMode: "L1T3", scaleResolutionDownBy: 1 }],
+         codecOptions: { videoGoogleStartBitrate: 1000 },
+      });
    }
 
    public async replaceCameraTrack(track: MediaStreamTrack): Promise<void> {

@@ -105,6 +105,7 @@ export class VoiceManager<V extends Voice = Voice> {
    public async connectVoice(guildId: Snowflake | null, channelId: Snowflake, token?: string): Promise<void> {
       log("api:voice-manager", "default", "connect to voice");
 
+      if (this.gateway.status !== "authenticated") throw new Error(`Gateway is not in the correct state: ${this.gateway.status}`);
       if (this.isConnecting) throw new Error("Already trying to connect to a voice channel");
 
       if (this.voice.signaling.connectionData?.channelId === channelId && this.voice.signaling.connectionData.guildId === guildId) {

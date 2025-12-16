@@ -30,23 +30,23 @@ export class VoiceStreamManager {
          // ENCODING ORDERING MATTERS FOR SIMULCAST
          const encodings: RtpEncodingParameters[] = useSimulcast
             ? [
-                 { scaleResolutionDownBy: 4, maxBitrate: maxVideoBitrate / 4, scalabilityMode },
-                 { scaleResolutionDownBy: 2, maxBitrate: maxVideoBitrate / 2, scalabilityMode },
+                 { scaleResolutionDownBy: 3, maxBitrate: maxVideoBitrate / 3, scalabilityMode },
                  { scaleResolutionDownBy: 1, maxBitrate: maxVideoBitrate, scalabilityMode },
               ]
-            : [{ maxBitrate: maxVideoBitrate, scalabilityMode }];
+            : [{ scaleResolutionDownBy: 1, maxBitrate: maxVideoBitrate, scalabilityMode }];
 
-         const videoSettings = videoTrack.getSettings();
-         if (videoSettings.height && videoSettings.height < 576 && useSimulcast) {
-            encodings.shift();
+         const p = await this.transport.createProducer("stream_video", videoTrack, { encodings, codecOptions: { videoGoogleStartBitrate: 1000 } });
+         const params = p?.rtpSender?.getParameters();
+         if (params) {
+            params.encodings[0].maxBitrate = 10000;
+            await p?.rtpSender?.setParameters(params);
          }
-
-         await this.transport.createProducer("stream_video", videoTrack, { encodings });
       }
 
       if (audioTrack) {
          await this.transport.createProducer("stream_audio", audioTrack, {
-            codecOptions: { opusStereo: true, opusMaxAverageBitrate: maxAudioBitrate },
+            encodings: [{ maxBitrate: maxAudioBitrate }],
+            codecOptions: { opusStereo: true },
          });
       }
    }
