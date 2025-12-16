@@ -158,6 +158,8 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
       oldSession.peer = session.peer;
       oldSession.peer.context.sessionId = oldSession.sessionId;
       oldSession.isStale = false;
+      // Reset the old session's timeout when resumed
+      oldSession.resetHeartbeatTimeout();
       await oldSession.initialize(user, { ...oldSession.properties });
 
       // This session is initialized for the peer right at connection. We need to delete it.
