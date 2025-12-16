@@ -247,10 +247,12 @@ function ProducerViewer(props: { data: ProducerDebugData; user: UsersDebugData; 
             <Field text="User ID" value={`${props.data.userId} (${props.user.username})`} />
             <Field text="Kind" value={props.data.kind} />
             <Field text="Media Kind" value={props.data.mediaKind} />
-            <Field
-               text="Bitrate"
-               value={`${totalBitrate} Bps | ${(totalBitrate / 8_000_000).toFixed(3)} MB/s | ${(totalBitrate / 1_000_000).toFixed(3)} Mbps`}
-            />
+            {props.data.type === "local" && (
+               <Field
+                  text="Bitrate"
+                  value={`${totalBitrate} Bps | ${(totalBitrate / 8_000_000).toFixed(3)} MB/s | ${(totalBitrate / 1_000_000).toFixed(3)} Mbps`}
+               />
+            )}
 
             {props.data.track && <TrackViewer data={props.data.track} index={0} />}
 
@@ -294,11 +296,14 @@ function ProducerViewer(props: { data: ProducerDebugData; user: UsersDebugData; 
                      <Section text="Audio Inbound" collapsable className="mt-2">
                         {props.data.stats.audioOutbound.map((x, i) => (
                            <Section text={`Audio ${i}`}>
+                              <Field text="Active" value={x.active} />
                               <Field text="Bitrate" value={x.bitrate} />
                               <Field text="Target Bitrate" value={x.targetBitrate} />
                               <Field text="Audio Level" value={x.audioLevel} />
                               <Field text="Packets Sent" value={x.packetsSent} />
                               <Field text="Total Audio Energy" value={x.totalAudioEnergy} />
+                              <Field text="SSRC" value={x.ssrc} />
+                              <Field text="RID" value={x.rid} />
                            </Section>
                         ))}
                      </Section>
@@ -307,6 +312,7 @@ function ProducerViewer(props: { data: ProducerDebugData; user: UsersDebugData; 
                      <Section text="Video Inbound" collapsable className="mt-2">
                         {props.data.stats.videoOutbound.map((x, i) => (
                            <Section text={`Video ${i}`}>
+                              <Field text="Active" value={x.active} />
                               <Field text="Bitrate" value={x.bitrate} />
                               <Field text="Target Bitrate" value={x.targetBitrate} />
                               <Field text="Width" value={x.width} />
@@ -314,6 +320,8 @@ function ProducerViewer(props: { data: ProducerDebugData; user: UsersDebugData; 
                               <Field text="Packets Sent" value={x.packetsSent} />
                               <Field text="FPS" value={x.fps} />
                               <Field text="Scalability Mode" value={x.scalabilityMode} />
+                              <Field text="SSRC" value={x.ssrc} />
+                              <Field text="RID" value={x.rid} />
                            </Section>
                         ))}
                      </Section>
@@ -329,6 +337,7 @@ function ALCViewer(props: { data: ALCData; user?: UsersDebugData; index: number 
    return (
       <div className="bg-surface flex flex-col p-1">
          <Section text={`Audio Level Checker ${props.index}`}>
+            <Field text="Producer ID" value={props.data.producerId} />
             <Field text="Consumer ID" value={props.data.consumerId} />
             <Field text="User ID" value={`${props.data.userId} (${props.user?.username})`} />
             <Field text="Current DB" value={props.data.currentDb} />

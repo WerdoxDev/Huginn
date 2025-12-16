@@ -1,18 +1,20 @@
-import { EventEmitter } from "@huginn/api/src/event-emitter";
 import { log, type HMediaKind } from "@huginn/shared";
 
-export class AudioLevelChecker extends EventEmitter<{ "audio-level": number }> {
+export class AudioLevelChecker {
    private volumeNode: AudioWorkletNode | undefined;
    public audioContext: AudioContext | undefined;
    public stream?: MediaStream;
+   public readonly producerId?: string;
    public readonly consumerId?: string;
    public readonly userId?: string;
    public readonly kind?: HMediaKind;
    public isStopped = false;
    public currentDb = 0;
 
-   public constructor(consumerId?: string, userId?: string, kind?: HMediaKind) {
-      super();
+   public onAudioLevel?: (db: number) => void;
+
+   public constructor(producerId?: string, consumerId?: string, userId?: string, kind?: HMediaKind) {
+      this.producerId = producerId;
       this.consumerId = consumerId;
       this.userId = userId;
       this.kind = kind;
@@ -41,7 +43,7 @@ export class AudioLevelChecker extends EventEmitter<{ "audio-level": number }> {
       this.volumeNode.port.onmessage = (event: MessageEvent<{ db: number }>) => {
          if (!this.isStopped) {
             this.currentDb = event.data.db;
-            this.emit("audio-level", event.data.db);
+            this.onAudioLevel?.(event.data.db);
          }
       };
    }
@@ -50,6 +52,8 @@ export class AudioLevelChecker extends EventEmitter<{ "audio-level": number }> {
       log("app:audio-level-checker", "default", "stop checking");
 
       this.isStopped = true;
+      this.onAudioLevel = undefined;
+      this.volumeNode?.port.close();
       this.volumeNode?.disconnect();
       this.audioContext?.close();
 

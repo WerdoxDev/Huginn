@@ -1,4 +1,4 @@
-import type { Snowflake } from "@huginn/shared";
+import { error, type Snowflake } from "@huginn/shared";
 import clsx from "clsx";
 import Tooltip from "./tooltip/Tooltip";
 import VoiceControlButton from "./button/VoiceControlButton";
@@ -9,6 +9,7 @@ import { DropdownMenu } from "./dropdown/DropdownMenu";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 import { useVoiceStore } from "@stores/voiceStore";
 import { useClient } from "@stores/clientStore";
+import { useModals } from "@stores/modalsStore";
 
 export default function VoiceControls(props: {
    show: boolean;
@@ -23,6 +24,7 @@ export default function VoiceControls(props: {
    const [ref, isHovering] = useHover<HTMLDivElement>();
    const { toggleDeafen, toggleMute, closeCamera, changeStream, openCamera, openAudioStream, closeStream, openScreenShare } = useVoiceUtils();
    const { voiceState } = useVoiceStore();
+   const { updateModals } = useModals();
 
    useEffect(() => {
       const controller = new AbortController();
@@ -50,8 +52,18 @@ export default function VoiceControls(props: {
       setForceShow(isOpen);
    }
 
-   async function onConnect() {
-      await client?.voiceManager.connectVoice(null, props.channelId);
+   function onConnect() {
+      client?.voiceManager.connectVoice(null, props.channelId).catch((e) => {
+         error("app:general", "Connecting to voice failed:", e);
+         updateModals({
+            info: {
+               isOpen: true,
+               status: "error",
+               title: "Connecting To Voice Failed",
+               text: "Make sure you have an internet connection and try again.",
+            },
+         });
+      });
    }
 
    async function onDisconnect() {

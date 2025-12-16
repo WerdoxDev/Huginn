@@ -107,12 +107,11 @@ export class VoiceInputDevice {
 
       if (this.audioLevel) {
          this.audioLevel.stopChecking();
-         this.audioLevel.offAll("audio-level");
       }
 
       this.audioLevel = new AudioLevelChecker();
       this.audioLevel.startChecking(stream);
-      this.audioLevel.on("audio-level", (db) => onAudioLevel(this.client, db));
+      this.audioLevel.onAudioLevel = (db) => onAudioLevel(this.client, db);
       const tolerance = 0;
       let timeout: number | undefined;
       let lastState = true;

@@ -157,16 +157,20 @@ export class WebRTCStatsParser {
                if (!stats.audioOutbound) stats.audioOutbound = [];
 
                stats.audioOutbound.push({
+                  active: data.active,
                   bitrate: this.computeBitrate(id, data.bytesSent ?? 0, timestamp),
                   targetBitrate: data.targetBitrate,
                   packetsSent: data.packetsSent,
                   audioLevel: track.audioLevel,
                   totalAudioEnergy: track.totalAudioEnergy,
+                  rid: data.rid,
+                  ssrc: data.ssrc,
                });
             } else if (data.kind === "video") {
                if (!stats.videoOutbound) stats.videoOutbound = [];
 
                stats.videoOutbound.push({
+                  active: data.active,
                   bitrate: this.computeBitrate(id, data.bytesSent ?? 0, timestamp),
                   targetBitrate: data.targetBitrate,
                   fps: data.framesPerSecond,
@@ -174,6 +178,8 @@ export class WebRTCStatsParser {
                   height: data.frameHeight,
                   scalabilityMode: data.scalabilityMode,
                   packetsSent: data.packetsSent,
+                  rid: data.rid,
+                  ssrc: data.ssrc,
                });
             }
          }

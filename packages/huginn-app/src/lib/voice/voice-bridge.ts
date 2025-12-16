@@ -3,7 +3,7 @@ import { diff, log, type MediasoupAppData, type ProducerData, type Snowflake } f
 import { storageStore } from "@stores/storageStore";
 import { voiceStore } from "@stores/voiceStore";
 import { AudioLevelChecker } from "./audio-level-checker";
-import type { AppSettings, VoicePreference } from "@/types";
+import type { AppSettings } from "@/types";
 import { AudioSourcePlayer } from "./audio-source-player";
 import { VoiceInputDevice } from "./voice-input-device";
 import type { Consumer, Producer } from "mediasoup-client/types";
@@ -11,8 +11,9 @@ import { produce } from "immer";
 import { VoiceDebugger } from "./voice-debugger";
 
 export class VoiceBridge extends Voice {
-   public readonly audioSourcePlayers: AudioSourcePlayer[];
-   public readonly audioLevelCheckers: Map<Snowflake, AudioLevelChecker>;
+   public readonly audioSourcePlayers: AudioSourcePlayer[] = [];
+   // Map<producerId, ALC>
+   public readonly audioLevelCheckers = new Map<string, AudioLevelChecker>();
    public readonly inputDevice: VoiceInputDevice;
    private loopbackDataUnlisten?: () => void;
    public readonly debugger: VoiceDebugger;
@@ -20,8 +21,6 @@ export class VoiceBridge extends Voice {
    public constructor(client: HuginnClient, options?: Partial<VoiceOptions>) {
       super(client, options);
 
-      this.audioLevelCheckers = new Map();
-      this.audioSourcePlayers = [];
       this.inputDevice = new VoiceInputDevice(client);
       this.debugger = new VoiceDebugger(client as HuginnClient<VoiceBridge>);
 
@@ -73,15 +72,17 @@ export class VoiceBridge extends Voice {
       if (consumer.appData.mediaKind === "microphone") {
          const store = voiceStore.getState();
 
-         const audioLevel = new AudioLevelChecker(consumer.id, consumer.appData.userId, consumer.appData.mediaKind);
-         this.audioLevelCheckers.set(consumer.appData.userId, audioLevel);
+         const { userId, mediaKind } = consumer.appData;
+
+         const audioLevel = new AudioLevelChecker(consumer.producerId, consumer.id, userId, mediaKind);
+         this.audioLevelCheckers.set(consumer.producerId, audioLevel);
 
          await audioLevel.startChecking(new MediaStream([consumer.track]));
-         audioLevel.on("audio-level", (db: number) => {
+         audioLevel.onAudioLevel = (db: number) => {
             // not -100 because it sometimes start at ~ -98
             const speaking = db > -95;
-            store.updateSpeakingState(consumer.appData.userId, speaking);
-         });
+            store.updateSpeakingState(userId, speaking);
+         };
       }
 
       // Just a little side check because when a new user joins, the consumer will start playing even if i'm deafened
@@ -120,9 +121,9 @@ export class VoiceBridge extends Voice {
       const voice = voiceStore.getState();
 
       if (data.kind === "microphone") {
-         const audioLevel = this.audioLevelCheckers.get(data.userId);
+         const audioLevel = this.audioLevelCheckers.get(data.producerId);
          audioLevel?.stopChecking();
-         this.audioLevelCheckers.delete(data.userId);
+         this.audioLevelCheckers.delete(data.producerId);
 
          voice.removeSpeakingState(data.userId);
       }

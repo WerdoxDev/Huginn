@@ -417,6 +417,7 @@ export type MediaSource = {
 };
 
 export type ALCData = {
+   producerId?: string;
    consumerId?: string;
    currentDb: number;
    userId?: Snowflake;
@@ -528,13 +529,17 @@ export type ProducerStats = {
       mimeType: string;
    };
    audioOutbound?: Array<{
+      active?: boolean;
       bitrate: number;
       audioLevel?: number;
       packetsSent?: number;
       totalAudioEnergy?: number;
       targetBitrate?: number;
+      rid?: string;
+      ssrc: number;
    }>;
    videoOutbound?: Array<{
+      active?: boolean;
       bitrate: number;
       width?: number;
       height?: number;
@@ -542,6 +547,8 @@ export type ProducerStats = {
       packetsSent?: number;
       scalabilityMode?: string;
       targetBitrate?: number;
+      rid?: string;
+      ssrc: number;
    }>;
 };
 

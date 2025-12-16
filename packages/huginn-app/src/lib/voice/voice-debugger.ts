@@ -109,6 +109,7 @@ export class VoiceDebugger {
                const contextData = this.getAudioContextData(x.audioContext);
 
                const data: ALCData = {
+                  producerId: x.producerId,
                   consumerId: x.consumerId,
                   currentDb: x.currentDb,
                   userId: x.userId,

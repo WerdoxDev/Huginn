@@ -63,8 +63,7 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
          }
 
          audioLevel.current.startChecking(stream);
-         audioLevel.current.offAll("audio-level");
-         audioLevel.current.on("audio-level", onAudioLevel);
+         audioLevel.current.onAudioLevel = onAudioLevel;
       }
 
       runAudioChecker().catch(console.error);
@@ -77,7 +76,6 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
          cancelled = true;
          clearInterval(interval);
          audioLevel.current?.stopChecking();
-         audioLevel.current?.off("audio-level", onAudioLevel);
       };
    }, [selectedInput, noiseSuppression]);
 
