@@ -16,7 +16,7 @@ export const mediaCodecs: RouterRtpCodecCapability[] = [
    },
    {
       kind: "video",
-      mimeType: "video/vp8",
+      mimeType: "video/H264",
       clockRate: 90000,
    },
 ];
