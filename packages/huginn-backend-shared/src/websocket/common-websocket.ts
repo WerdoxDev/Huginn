@@ -8,11 +8,11 @@ import type { CommonClientSession } from "./common-client-session";
 type ClientSessionConstructor<T> = new (peer: Peer, sessionId: Snowflake) => T;
 
 export abstract class CommonWebsocket<ClientSession extends CommonClientSession<Payload, unknown>, Payload> {
-   public sessions: Map<Snowflake, ClientSession>;
+   public readonly sessions = new Map<Snowflake, ClientSession>();
+   private readonly sessionDeleteTimeouts = new Map<Snowflake, ReturnType<typeof setTimeout>>();
 
    private clientSessionConstructor: ClientSessionConstructor<ClientSession>;
    private options: WebsocketOptions;
-   // private clientSessionClass: new () => ClientSession;
 
    public abstract onOpen(session: ClientSession): Promise<void> | void;
    public abstract onClose(session: ClientSession, event: { code?: number; reason?: string }): Promise<void> | void;
@@ -22,8 +22,6 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
    public constructor(options: WebsocketOptions, clientSessionConstructor: ClientSessionConstructor<ClientSession>) {
       this.options = options;
       this.clientSessionConstructor = clientSessionConstructor;
-
-      this.sessions = new Map();
    }
 
    public async _internalOnOpen(peer: Peer) {
@@ -126,7 +124,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
    private queueSessionDelete(sessionId: Snowflake) {
       log("shared:websocket", "default", "queue session delete", "wid:", this.options.workerId, "sid:", sessionId);
 
-      setTimeout(async () => {
+      const timeout = setTimeout(async () => {
          const session = this.sessions.get(sessionId);
 
          if (!session || !session.isStale) {
@@ -136,6 +134,16 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
          await this.onDeleteSession?.(session);
          this.deleteSession(sessionId);
       }, this.options.sessionDeleteTimeout);
+
+      this.sessionDeleteTimeouts.set(sessionId, timeout);
+   }
+
+   public cancelSessionDelete(sessionId: Snowflake) {
+      const timeout = this.sessionDeleteTimeouts.get(sessionId);
+      if (timeout) {
+         clearTimeout(timeout);
+         this.sessionDeleteTimeouts.delete(sessionId);
+      }
    }
 
    public async resumeSession(session: ClientSession, oldSessionId: Snowflake, lastSequence: number, userId: Snowflake) {
@@ -160,6 +168,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
       oldSession.isStale = false;
       // Reset the old session's timeout when resumed
       oldSession.resetHeartbeatTimeout();
+      this.cancelSessionDelete(oldSession.sessionId);
       await oldSession.initialize(user, { ...oldSession.properties });
 
       // This session is initialized for the peer right at connection. We need to delete it.
