@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.65.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.65.0...app@v0.65.1) (2025-12-18)
+
+
+### Bug Fixes
+
+* **app:** potential fixes for acl duplication fix + few more stats for debug ([719a5db](https://github.com/WerdoxDev/Huginn/commit/719a5db2ac8bf6ef9788d55046a92c4a69d93d65))
+
 ## [0.65.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.64.0...app@v0.65.0) (2025-12-14)
 
 
