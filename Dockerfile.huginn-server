@@ -13,12 +13,12 @@ COPY packages/huginn-backend-shared/package.json /temp/deps/packages/huginn-back
 COPY packages/huginn-shared/package.json /temp/deps/packages/huginn-shared/package.json
 COPY packages/huginn-server/package.json /temp/deps/packages/huginn-server/package.json
 RUN cd /temp/deps && bun install
-RUN apk add --no-cache ffmpeg
 # RUN ls -lah /temp/deps && tree /temp/deps
 
 # copy node_modules from temp directory
 # then copy all (non-ignored) project files into the image
 FROM base AS prerelease
+RUN apk add --no-cache ffmpeg
 COPY --from=install /temp/deps/node_modules node_modules
 # COPY --from=install /temp/deps/packages/huginn-backend-shared/node_modules packages/huginn-backend-shared/node_modules
 # COPY --from=install /temp/deps/packages/huginn-shared/node_modules packages/huginn-shared/node_modules

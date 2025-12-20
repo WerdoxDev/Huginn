@@ -51,7 +51,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
          };
 
          log("server:gateway", "send", "hello", "intrvl:", helloData.d.heartbeatInterval, "sid:", session.sessionId);
-         session.send(helloData);
+         session.send(helloData, false, false);
          // oxlint-disable-next-line no-unused-vars
       } catch (e) {
          session.peer.close(GatewayCode.UNKNOWN, "UNKNOWN");
@@ -160,7 +160,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
 
       session.resetHeartbeatTimeout();
       const heartbeatAckData: GatewayHeartbeatAck = { op: GatewayOperations.HEARTBEAT_ACK };
-      session.send(heartbeatAckData);
+      session.send(heartbeatAckData, false, true);
    }
 
    private async handleIdentify(session: ClientSession, data: GatewayIdentifyData) {
@@ -229,10 +229,9 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             voiceStates: this.voiceManager.getVoiceStates(userChannels.map((x) => x.id)),
          },
          t: "ready",
-         s: session.getIncreasedSequence(),
       };
 
-      session.send(readyData);
+      session.send(readyData, true, false);
       this.presenceManager.setUserPresence(user.id, session, settings);
 
       log("server:gateway", "detail-identify", "end", "sid:", session.sessionId);
@@ -258,12 +257,11 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
          t: "resumed",
          op: GatewayOperations.DISPATCH,
          d: undefined,
-         s: result.oldSession.getIncreasedSequence(),
       };
 
       const settings = await prisma.settings.getOrCreateSettings(result.user.id);
 
-      result.oldSession.send(resumedData);
+      result.oldSession.send(resumedData, true, false);
       this.presenceManager.setUserPresence(result.user.id, result.oldSession, settings);
    }
 
