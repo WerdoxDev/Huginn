@@ -1,4 +1,4 @@
-import { logFileNotFound, logGetFile, logWriteFile } from "@huginn/backend-shared";
+import { logFileNotFound, logGetFile, logWriteFile } from "@huginn/runtime-shared";
 import { S3Client, type S3Stats } from "bun";
 import { join } from "pathe";
 import { envs } from "#setup";

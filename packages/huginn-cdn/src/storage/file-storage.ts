@@ -1,4 +1,4 @@
-import { logFileNotFound, logGetFile, logWriteFile } from "@huginn/backend-shared";
+import { logFileNotFound, logGetFile, logWriteFile } from "@huginn/runtime-shared";
 import { join } from "pathe";
 import { Storage } from "#storage/storage";
 import type { FileCategory } from "#utils/types";
