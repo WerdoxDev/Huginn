@@ -1,0 +1,20 @@
+{
+   "name": "@huginn/runtime-shared",
+   "version": "0.1.0",
+   "type": "module",
+   "dependencies": {
+      "@huginn/shared": "workspace:*",
+      "consola": "^3.4.2",
+      "pathe": "^2.0.3"
+   },
+   "exports": {
+      ".": "./src/index.ts",
+      "./*": "./src/*.ts"
+   },
+   "devDependencies": {
+      "@types/bun": "latest"
+   },
+   "imports": {
+      "#*": "./src/*.ts"
+   }
+}
