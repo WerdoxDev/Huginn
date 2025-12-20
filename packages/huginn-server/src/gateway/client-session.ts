@@ -1,6 +1,5 @@
 import { CommonClientSession } from "@huginn/backend-shared";
-import { prisma } from "@huginn/backend-shared/database";
-import { selectRelationshipUser } from "@huginn/backend-shared/database/common";
+import { prisma, selectRelationshipUser } from "@huginn/backend-shared/database";
 import type { GatewayIdentifyProperties, GatewayPayload } from "@huginn/shared";
 import { ChannelType, RelationshipType } from "@huginn/shared";
 

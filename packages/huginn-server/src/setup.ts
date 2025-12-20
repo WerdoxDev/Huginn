@@ -1,5 +1,5 @@
 import { S3Client } from "@aws-sdk/client-s3";
-import { readEnv } from "@huginn/backend-shared";
+import { readEnv } from "@huginn/runtime-shared";
 import { Octokit } from "octokit";
 import { ServerGateway } from "#gateway/server-gateway";
 import { logger } from "@huginn/shared";

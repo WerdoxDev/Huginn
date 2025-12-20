@@ -15,6 +15,7 @@
       "@elysiajs/opentelemetry": "^1.4.9",
       "@elysiajs/static": "^1.4.7",
       "@huginn/backend-shared": "workspace:*",
+      "@huginn/runtime-shared": "workspace:*",
       "@huginn/shared": "workspace:*",
       "@opentelemetry/exporter-trace-otlp-proto": "^0.207.0",
       "@opentelemetry/sdk-trace-node": "^2.2.0",
