@@ -58,8 +58,8 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
    public connect(token: string, channelId: Snowflake, guildId: Snowflake | null): void {
       log("api:voice-signaling", "default", "connect", "cid:", channelId, "gid:", guildId);
 
-      if (this.socket && (this.status === "idle" || this.status === "connecting")) {
-         throw new Error("Socket is already connected or is connecting");
+      if (this.status !== "idle" && this.status !== "disconnected") {
+         throw new Error("Voice socket is already connected or is connecting");
       }
 
       this.intentionalClose = false;
@@ -118,6 +118,9 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
          log("api:voice-signaling", "recv-detail", "op:", data.op, "t:", data.t, "d:", data.d);
       } else {
          log("api:voice-signaling", "recv", "op:", data.op);
+         if ("d" in data) {
+            log("api:voice-signaling", "recv-detail", "op:", data.op, "d:", data.d);
+         }
       }
 
       switch (data.op) {
@@ -125,6 +128,8 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
             this.onHello(data.d);
             break;
          case VoiceOperations.DISPATCH:
+            this.sequence = data.s;
+
             switch (data.t) {
                case "ready":
                   await this.onReady(data.d);
@@ -215,9 +220,9 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       log("api:voice-signaling", "heartbeat", "start heartbeat");
 
       this.heartbeatInterval = setInterval(() => {
-         const data: VoiceHeartbeat = { op: VoiceOperations.HEARTBEAT, d: this.sequence };
+         log("api:voice-signaling", "heartbeat", "sent", "seq:", this.sequence);
 
-         log("api:voice-signaling", "heartbeat", "heartbeat", "seq:", this.sequence);
+         const data: VoiceHeartbeat = { op: VoiceOperations.HEARTBEAT, d: this.sequence };
          this.send(data);
       }, interval);
    }

@@ -86,8 +86,8 @@ export class Gateway extends SharedWebsocket<Events> {
    public connect(): void {
       log("api:gateway", "default", "connect");
 
-      if (this.socket && (this.status === "idle" || this.status === "connecting")) {
-         throw new Error("Socket is already connected or is connecting");
+      if (this.status !== "idle" && this.status !== "disconnected") {
+         throw new Error("Gateway socket is already connected or is connecting");
       }
 
       this.intentionalClose = false;
@@ -382,7 +382,7 @@ export class Gateway extends SharedWebsocket<Events> {
       this.stopHeartbeat();
 
       this.heartbeatInterval = setInterval(() => {
-         log("api:gateway", "heartbeat", "heartbeat");
+         log("api:gateway", "heartbeat", "sent", "s:", this.sequence);
          this.send({ op: GatewayOperations.HEARTBEAT, d: this.sequence });
       }, interval);
    }
