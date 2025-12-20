@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.65.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.65.1...app@v0.65.2) (2025-12-20)
+
+
+### Bug Fixes
+
+* **app:** add a log for better debugging ([9c7b0c2](https://github.com/WerdoxDev/Huginn/commit/9c7b0c2c2f7a1f749b232e34e2735679274cf61c))
+
 ## [0.65.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.65.0...app@v0.65.1) (2025-12-18)
 
 
