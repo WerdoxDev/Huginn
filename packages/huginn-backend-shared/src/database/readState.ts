@@ -1,4 +1,4 @@
-import { DBErrorType } from "@huginn/backend-shared/types";
+import { DBErrorType } from "#types";
 import { type BigIntToString, idFix, type Snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";

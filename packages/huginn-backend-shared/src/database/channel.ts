@@ -1,4 +1,4 @@
-import { DBErrorType } from "@huginn/backend-shared/types";
+import { DBErrorType } from "#types";
 import { ChannelType, type Snowflake, WorkerID, idFix, snowflake } from "@huginn/shared";
 import { assertExists, Prisma, prisma, type ChannelArgs, type ChannelPayload } from ".";
 import { assertId, assertObj } from "./error";
@@ -80,13 +80,7 @@ export const channelExtension = Prisma.defineExtension({
                throw e;
             }
          },
-         async editDM<Args extends ChannelArgs>(
-            channelId: Snowflake,
-            name?: string | null,
-            icon?: string | null,
-            owner?: Snowflake,
-            args?: Args,
-         ) {
+         async editDM<Args extends ChannelArgs>(channelId: Snowflake, name?: string | null, icon?: string | null, owner?: Snowflake, args?: Args) {
             const methodName = "channel.editDM";
             assertId(methodName, channelId);
             try {

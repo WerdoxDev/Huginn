@@ -25,13 +25,7 @@ export const messagesExtension = Prisma.defineExtension({
                throw e;
             }
          },
-         async getMessages<Args extends MessageArgs>(
-            channelId: Snowflake,
-            limit: number,
-            before?: Snowflake,
-            after?: Snowflake,
-            args?: Args,
-         ) {
+         async getMessages<Args extends MessageArgs>(channelId: Snowflake, limit: number, before?: Snowflake, after?: Snowflake, args?: Args) {
             const methodName = "message.getMessages";
             assertId(methodName, channelId);
             try {

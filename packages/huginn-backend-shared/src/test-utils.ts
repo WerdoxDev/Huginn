@@ -1,5 +1,4 @@
 import { HTTPError, HuginnAPIError, type HuginnErrorData } from "@huginn/shared";
-import type { BodyInit } from "bun";
 import { join } from "pathe";
 
 let _hostname = "";
