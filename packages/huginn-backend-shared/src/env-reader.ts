@@ -19,21 +19,21 @@ type EnvReadable = string | { key: string; default?: string };
 
 // Helper type to generate the output type based on the input array
 type EnvResult<T extends readonly EnvReadable[]> = {
-	[K in T[number] as K extends string ? K : K extends { key: string } ? K["key"] : never]: K extends { default: string }
-		? string
-		: string | undefined;
+   [K in T[number] as K extends string ? K : K extends { key: string } ? K["key"] : never]: K extends { default: string }
+      ? string
+      : string | undefined;
 };
 
 export function readEnv<T extends readonly EnvReadable[]>(envs: T): EnvResult<T> {
-	const result: Record<string, string | undefined> = {};
+   const result: Record<string, string | undefined> = {};
 
-	for (const env of envs) {
-		if (typeof env === "string") {
-			result[env] = process.env[env];
-		} else {
-			result[env.key] = process.env[env.key] ?? env.default;
-		}
-	}
+   for (const env of envs) {
+      if (typeof env === "string") {
+         result[env] = process.env[env];
+      } else {
+         result[env.key] = process.env[env.key] ?? env.default;
+      }
+   }
 
-	return result as EnvResult<T>;
+   return result as EnvResult<T>;
 }
