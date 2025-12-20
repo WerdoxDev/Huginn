@@ -79,7 +79,7 @@ export type GatewayPayload<Event extends keyof GatewayWebsocketEvents | undefine
      }[keyof GatewayOperationTypes]
    : {
         op: GatewayOperations.DISPATCH;
-        s: number;
+        s?: number;
         d: GatewayWebsocketEvents[Extract<Event, keyof GatewayWebsocketEvents>];
         t: Event;
      };
@@ -87,7 +87,7 @@ export type GatewayPayload<Event extends keyof GatewayWebsocketEvents | undefine
 export type GatewayDispatch = {
    [K in keyof GatewayWebsocketEvents]: {
       op: GatewayOperations.DISPATCH;
-      s: number;
+      s?: number;
       t: K;
       d: GatewayWebsocketEvents[K];
    };
