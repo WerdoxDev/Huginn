@@ -38,6 +38,13 @@ export type WebsocketOptions = {
    sessionDeleteTimeout: number;
 };
 
+export type CommonPayload = {
+   op: number;
+   d?: unknown;
+   t?: string;
+   s?: number;
+};
+
 declare module "crossws" {
    interface PeerContext {
       sessionId: Snowflake;
