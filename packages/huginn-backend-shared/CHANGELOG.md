@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.20.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.20.0...backend-shared@v0.20.1) (2025-12-18)
+
+
+### Bug Fixes
+
+* **backend-shared:** add cancellation for session delete timeout ([cde0921](https://github.com/WerdoxDev/Huginn/commit/cde09217aa61c4dfb38a7ff4380393d90755cf87))
+* **backend-shared:** resumed session should reset its timeout ([cb631de](https://github.com/WerdoxDev/Huginn/commit/cb631dede70801705e0fb0fb795e6211d5752a14))
+
 ## [0.20.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.19.0...backend-shared@v0.20.0) (2025-12-09)
 
 

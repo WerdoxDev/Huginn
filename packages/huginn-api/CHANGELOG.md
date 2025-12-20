@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.31.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.31.0...api@v0.31.1) (2025-12-18)
+
+
+### Bug Fixes
+
+* **api:** add videoGoogleStartBitrate to turn of auto bitrate estimation ([bb88593](https://github.com/WerdoxDev/Huginn/commit/bb88593614768501270714a2ccab58132e5d7004))
+
 ## [0.31.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.30.0...api@v0.31.0) (2025-12-14)
 
 
