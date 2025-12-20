@@ -29,7 +29,7 @@ logger.enableLogs({
    "api:voice": ["default"],
    "api:voice-manager": ["default"],
    "api:voice-device": ["default"],
-   "api:voice-signaling": ["heartbeat"],
+   "api:voice-signaling": ["heartbeat", "default"],
    "api:voice-transport": ["default"],
    "app:voice-store": ["remote-sources", "default"],
    "app:voice-client": ["voice-recv", "default"],
