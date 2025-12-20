@@ -2,6 +2,7 @@
 logs
 *.log
 npm-debug.log*
+test-logs
 
 packages/hayat-poshti-proxy
 packages/huginn-app-bindings

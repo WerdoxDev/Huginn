@@ -1,56 +1,60 @@
 {
-	"folders": [
-		{
-			"name": "ROOT",
-			"path": "."
-		},
-		{
-			"name": "huginn-voice",
-			"path": "packages/huginn-voice"
-		},
-		{
-			"name": "huginn-server",
-			"path": "packages/huginn-server"
-		},
-		{
-			"name": "huginn-cdn",
-			"path": "packages/huginn-cdn"
-		},
-		{
-			"name": "huginn-backend-shared",
-			"path": "packages/huginn-backend-shared"
-		},
-		{
-			"name": "huginn-api",
-			"path": "packages/huginn-api"
-		},
-		{
-			"name": "huginn-app",
-			"path": "packages/huginn-app"
-		},
+   "folders": [
       {
-			"name": "native-addon",
-			"path": "packages/native-addon"
-		},
-		{
-			"name": "huginn-shared",
-			"path": "packages/huginn-shared"
-		},
-		{
-			"name": "huginn-website",
-			"path": "packages/huginn-website"
-		}
-	],
-	"settings": {
-		"files.exclude": {
-			"packages/": true
-		},
-		"workbench.editorAssociations": {
-			"*.md": "vscode.markdown.preview.editor"
-		},
-		"deno.enable": false,
-		"typescript.tsdk": "ROOT\\node_modules\\typescript\\lib",
-		"github-actions.workflows.pinned.workflows": ["ROOT/.github/workflows/release.yml"],
+         "name": "ROOT",
+         "path": ".",
+      },
+      {
+         "name": "huginn-tui",
+         "path": "packages/huginn-tui",
+      },
+      {
+         "name": "huginn-voice",
+         "path": "packages/huginn-voice",
+      },
+      {
+         "name": "huginn-server",
+         "path": "packages/huginn-server",
+      },
+      {
+         "name": "huginn-cdn",
+         "path": "packages/huginn-cdn",
+      },
+      {
+         "name": "huginn-backend-shared",
+         "path": "packages/huginn-backend-shared",
+      },
+      {
+         "name": "huginn-api",
+         "path": "packages/huginn-api",
+      },
+      {
+         "name": "huginn-app",
+         "path": "packages/huginn-app",
+      },
+      {
+         "name": "native-addon",
+         "path": "packages/native-addon",
+      },
+      {
+         "name": "huginn-shared",
+         "path": "packages/huginn-shared",
+      },
+      {
+         "name": "huginn-website",
+         "path": "packages/huginn-website",
+      },
+   ],
+   "settings": {
+      "files.exclude": {
+         "packages/": true,
+      },
+      "workbench.editorAssociations": {
+         "*.md": "vscode.markdown.preview.editor",
+      },
+      "deno.enable": false,
+      "typescript.tsdk": "ROOT\\node_modules\\typescript\\lib",
+      "github-actions.workflows.pinned.workflows": ["ROOT/.github/workflows/release.yml"],
       "oxc.enable": true,
       "files.associations": {
          "iostream": "cpp",
@@ -134,7 +138,7 @@
          "xmemory": "cpp",
          "xstddef": "cpp",
          "xtr1common": "cpp",
-         "xutility": "cpp"
-      }
-	}
+         "xutility": "cpp",
+      },
+   },
 }
