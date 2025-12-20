@@ -1,7 +1,8 @@
+import type { CommonPayload } from "#types";
 import { type APIUser, constants, error, GatewayCode, log, type Snowflake } from "@huginn/shared";
 import type { Peer } from "crossws";
 
-export abstract class CommonClientSession<Payload, Properties = undefined> {
+export abstract class CommonClientSession<Payload extends CommonPayload, Properties = undefined> {
    public sessionId: Snowflake;
    public peer: Peer;
    public properties?: Properties;
@@ -26,7 +27,15 @@ export abstract class CommonClientSession<Payload, Properties = undefined> {
       this.resetHeartbeatTimeout();
    }
 
-   public send(data: Payload) {
+   public send(data: Payload, increaseSequence: boolean, resumable: boolean) {
+      if (increaseSequence) {
+         data.s = this.getIncreasedSequence();
+      }
+
+      if (resumable && data.s) {
+         this.sentMessages.set(data.s, data);
+      }
+
       this.peer.send(JSON.stringify(data));
    }
 
@@ -64,9 +73,9 @@ export abstract class CommonClientSession<Payload, Properties = undefined> {
       return this.sequence;
    }
 
-   public addMessage(sequence: number, data: Payload) {
-      this.sentMessages.set(sequence, data);
-   }
+   // public addMessage(sequence: number, data: Payload) {
+   //    this.sentMessages.set(sequence, data);
+   // }
 
    public getMessages() {
       return this.sentMessages;

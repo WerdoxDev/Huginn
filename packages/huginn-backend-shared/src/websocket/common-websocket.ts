@@ -2,12 +2,12 @@ import { error, GatewayCode, log, type Snowflake, snowflake, validateGatewayData
 import type { Message, Peer } from "crossws";
 import { prisma } from "#database";
 import { selectPrivateUser } from "#database/common";
-import type { WebsocketOptions } from "#types";
+import type { CommonPayload, WebsocketOptions } from "#types";
 import type { CommonClientSession } from "./common-client-session";
 
 type ClientSessionConstructor<T> = new (peer: Peer, sessionId: Snowflake) => T;
 
-export abstract class CommonWebsocket<ClientSession extends CommonClientSession<Payload, unknown>, Payload> {
+export abstract class CommonWebsocket<ClientSession extends CommonClientSession<Payload, unknown>, Payload extends CommonPayload> {
    public readonly sessions = new Map<Snowflake, ClientSession>();
    private readonly sessionDeleteTimeouts = new Map<Snowflake, ReturnType<typeof setTimeout>>();
 
@@ -44,7 +44,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
 
       session.stopHeartbeatTimeout();
 
-      if (session.authenticated && event.code === GatewayCode.INVALID_SESSION) {
+      if ((session.authenticated && event.code === GatewayCode.INVALID_SESSION) || event.code === GatewayCode.INTENTIONAL_CLOSE) {
          this.deleteSession(session.sessionId);
       } else if (session.authenticated) {
          session.isStale = true;
@@ -114,9 +114,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
    public sendToTopic(topic: string, data: Payload) {
       for (const session of this.sessions.values()) {
          if (session.isSubscribed(topic)) {
-            const newData = { ...data, s: session.getIncreasedSequence() };
-            session.addMessage(newData.s, newData);
-            session.send(newData);
+            session.send(data, true, true);
          }
       }
    }
@@ -182,7 +180,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
             continue;
          }
 
-         oldSession.send(_data);
+         oldSession.send(_data, false, false);
       }
 
       return { oldSession, user };
