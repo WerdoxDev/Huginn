@@ -1,38 +1,43 @@
+export const LOG_VALUES_MAP = {
+   "api:voice": ["default"],
+   "api:voice-signaling": ["default", "recv", "recv-detail", "send", "send-detail", "ping", "heartbeat"],
+   "api:voice-transport": ["default", "voice-state"],
+   "api:voice-device": ["default"],
+   "api:voice-screen-share": ["default"],
+   "api:gateway": ["send", "send-detail", "default", "recv", "recv-detail", "dispatch", "heartbeat"],
+   "api:gateway-voice": ["default"],
+   "api:voice-manager": ["default"],
+   "api:client": ["ready-state"],
+   "app:client-store": ["default"],
+   "app:voice-bridge": ["default", "voice-preference"],
+   "app:voice-store": [
+      "remote-sources",
+      "speaking-state",
+      "voice-state",
+      "call-state",
+      "default",
+      "gateway-recv",
+      "voice-recv",
+      "available-producers",
+   ],
+   "app:general": ["messages"],
+   "app:presence-store": ["default"],
+   "app:audio-source-player": ["default"],
+   "app:audio-level-checker": ["default"],
+   "app:voice-input-device": ["default"],
+   "app:electron": ["default", "send", "recv", "updater", "loopback-send", "loopback", "file-controller"],
+   "server:gateway": ["default", "send", "recv", "heartbeat", "detail-identify"],
+   "server:presence-manager": ["default", "send", "detail"],
+   "voice:websocket": ["default", "recv"],
+   "shared:websocket": ["default", "subscriptions"],
+   "shared:client-session": ["default", "subscriptions", "heartbeat"],
+} as const;
+
+// Derive the type from the const
 type LogValuesMap = {
-   "api:voice": "default";
-   "api:voice-signaling": "default" | "recv" | "recv-detail" | "send" | "send-detail" | "ping" | "heartbeat";
-   "api:voice-transport": "default" | "voice-state";
-   "api:voice-device": "default";
-   "api:voice-screen-share": "default";
-   "api:gateway": "send" | "send-detail" | "default" | "recv" | "recv-detail" | "dispatch" | "heartbeat";
-   "api:gateway-voice": "default";
-   "api:voice-manager": "default";
-   "api:client": "ready-state";
-   "app:client-store": "default";
-   "app:voice-bridge": "default" | "voice-preference";
-   "app:voice-store":
-      | "remote-sources"
-      | "speaking-state"
-      | "voice-state"
-      | "call-state"
-      | "default"
-      | "gateway-recv"
-      | "voice-recv"
-      | "available-producers";
-   "app:general": "messages";
-   "app:presence-store": "default";
-   "app:audio-source-player": "default";
-   "app:audio-level-checker": "default";
-   "app:voice-input-device": "default";
-   "app:electron": "default" | "send" | "recv" | "updater" | "loopback-send" | "loopback" | "file-controller";
-   "server:gateway": "default" | "send" | "recv" | "heartbeat" | "detail-identify";
-   "server:presence-manager": "default" | "send" | "detail";
-   "voice:websocket": "default" | "recv";
-   "shared:websocket": "default" | "subscriptions";
-   "shared:client-session": "default" | "subscriptions" | "heartbeat";
+   [K in keyof typeof LOG_VALUES_MAP]: (typeof LOG_VALUES_MAP)[K][number];
 };
 
-// type Logs = typeof logs;
 type LogKeys = keyof LogValuesMap;
 type LogValuesFor<K extends LogKeys> = LogValuesMap[K];
 export type LogArgs = string | number | boolean | null | undefined | unknown;
