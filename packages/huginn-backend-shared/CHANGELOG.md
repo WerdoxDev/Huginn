@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.20.2](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.20.1...backend-shared@v0.20.2) (2025-12-20)
+
+
+### Bug Fixes
+
+* **backend-shared:** better sequence and sent message management ([5d1bd00](https://github.com/WerdoxDev/Huginn/commit/5d1bd00a48dc6b42c2d717e68c895a983c86491f))
+
 ## [0.20.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.20.0...backend-shared@v0.20.1) (2025-12-18)
 
 

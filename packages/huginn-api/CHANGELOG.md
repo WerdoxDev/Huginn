@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.31.2](https://github.com/WerdoxDev/Huginn/compare/api@v0.31.1...api@v0.31.2) (2025-12-20)
+
+
+### Bug Fixes
+
+* **api:** potential fix for multi-socket connection issue ([83e3a11](https://github.com/WerdoxDev/Huginn/commit/83e3a114c2824a95741b9ccf07d24fa524d0dc04))
+
 ## [0.31.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.31.0...api@v0.31.1) (2025-12-18)
 
 
