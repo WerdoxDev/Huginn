@@ -11,6 +11,7 @@
       "@dotenvx/dotenvx": "^1.51.2",
       "@elysiajs/node": "^1.4.2",
       "@huginn/backend-shared": "workspace:*",
+      "@huginn/runtime-shared": "workspace:*",
       "@huginn/shared": "workspace:*",
       "crossws": "^0.4.1",
       "elysia": "^1.4.19",
