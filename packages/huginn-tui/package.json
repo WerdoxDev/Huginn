@@ -1,0 +1,25 @@
+{
+   "name": "huginn-tui",
+   "version": "0.1.0",
+   "module": "src/index.tsx",
+   "type": "module",
+   "scripts": {
+      "dev": "bun run --watch src/index.tsx",
+      "build": "bun build --compile --target=bun-linux-x64 src/index.tsx --outfile=huginn-tui"
+   },
+   "devDependencies": {
+      "@types/bun": "latest"
+   },
+   "peerDependencies": {
+      "typescript": "^5"
+   },
+   "dependencies": {
+      "@huginn/backend-shared": "workspace:*",
+      "@huginn/shared": "workspace:*",
+      "@opentui/core": "^0.1.57",
+      "@opentui/core-linux-x64": "^0.1.62",
+      "@opentui/react": "^0.1.57",
+      "moment": "^2.30.1",
+      "react": "^19.1.1"
+   }
+}
