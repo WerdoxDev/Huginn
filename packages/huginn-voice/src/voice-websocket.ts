@@ -18,6 +18,7 @@ import {
    type VoicePayload,
    type VoiceProduceData,
    type VoiceResumeConsumerData,
+   type VoiceResumeData,
    VoiceSignallingError,
    WorkerID,
 } from "@huginn/shared";
@@ -31,10 +32,14 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
    }
 
    public onOpen(session: ClientSession) {
-      session.send({ op: VoiceOperations.HELLO, d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL } }, false, false);
+      session.send({ op: VoiceOperations.HELLO, d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL, sessionId: session.sessionId } }, false, false);
    }
 
-   public async onClose(session: ClientSession, _event: { code?: number; reason?: string }) {
+   public onClose(session: ClientSession, event: { code?: number; reason?: string }): Promise<void> | void {}
+
+   public async onDeleteSession(session: ClientSession) {
+      if (!session.authenticated) return;
+
       const router = Array.from(routers.values()).find((x) => x.peers.has(session.sessionId));
 
       if (router) {
@@ -93,6 +98,9 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             break;
          case VoiceOperations.IDENTIFY:
             await this.onIdentify(session, data.d);
+            break;
+         case VoiceOperations.RESUME:
+            await this.onResume(session, data.d);
             break;
          case VoiceOperations.DISPATCH:
             switch (data.t) {
@@ -581,6 +589,13 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
 
       const user = await prisma.user.getById(payload.userId, { select: selectPrivateUser });
 
+      // If another session with this user's id is available, close that
+      const conflictingSession = this.sessions.values().find((x) => x.authenticated && x.user?.id === user.id);
+      if (conflictingSession) {
+         conflictingSession.peer.close(GatewayCode.INTENTIONAL_CLOSE, "INTENTIONAL_CLOSE");
+         await this.deleteSession(conflictingSession.sessionId);
+      }
+
       await session.initialize(user, { token: data.token, user, channelId: data.channelId, guildId: data.guildId });
 
       const router = await createRouter(data.channelId);
@@ -628,6 +643,20 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          true,
          false,
       );
+   }
+
+   private async onResume(session: ClientSession, data: VoiceResumeData) {
+      const { valid, payload } = await verifyToken("voice", data.token);
+
+      if (!valid || !payload) {
+         session.peer.close(GatewayCode.AUTHENTICATION_FAILED, "AUTHENTICATION_FAILED");
+         return;
+      }
+
+      const result = await this.resumeSession(session, data.sessionId, data.seq, payload.userId);
+      if (!result) return;
+
+      result.oldSession.send({ op: VoiceOperations.DISPATCH, t: "resumed", d: undefined }, true, false);
    }
 
    private onHeartbeat(session: ClientSession) {
