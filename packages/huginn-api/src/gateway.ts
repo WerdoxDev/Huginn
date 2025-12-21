@@ -173,6 +173,9 @@ export class Gateway extends SharedWebsocket<Events> {
          log("api:gateway", "recv-detail", "op:", data.op, "t:", data.t, "d:", data.d);
       } else {
          log("api:gateway", "recv", "op:", data.op);
+         if ("d" in data) {
+            log("api:gateway", "recv-detail", "op:", data.op, "d:", data.d);
+         }
       }
 
       switch (data.op) {
@@ -204,7 +207,6 @@ export class Gateway extends SharedWebsocket<Events> {
 
       this.startHeartbeat(data.d.heartbeatInterval);
 
-      // If new connection, store session id
       if (!this.sessionId) {
          this.sessionId = data.d.sessionId;
       }

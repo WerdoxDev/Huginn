@@ -1,4 +1,4 @@
-import type { HuginnClient, VoiceOptions, VoiceStatus } from ".";
+import type { HuginnClient, VoiceOptions, VoiceSignallingResetType, VoiceStatus } from ".";
 import { defaultClientOptions } from "./utils";
 import { VoiceSignalingClient } from "./voice-signaling-client";
 import { VoiceTransportManager } from "./voice-transport-manager";
@@ -45,9 +45,11 @@ export class Voice extends EventEmitter<Events> {
    private listenSignalingEvents() {
       this.signaling.on("status_changed", () => this.recalculateStatus());
 
-      this.signaling.on("reset", () => {
-         this.transport.reset();
-         this.emit("reset", undefined);
+      this.signaling.on("reset", ({ type }) => {
+         if (type === "hard" || type === "session") {
+            this.transport.reset();
+            this.emit("reset", undefined);
+         }
       });
 
       this.signaling.on("ready", async (d) => {

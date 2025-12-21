@@ -16,10 +16,10 @@ import {
    type VoiceWebsocketEvents,
 } from "@huginn/shared";
 import { EventEmitter } from "./event-emitter";
-import type { HuginnClient, VoiceConnectionData, VoiceOptions } from ".";
+import type { HuginnClient, VoiceConnectionData, VoiceOptions, VoiceSignallingResetType } from ".";
 import type { DtlsParameters, RtpCapabilities, RtpParameters } from "mediasoup-client/types";
 
-type SignalingClientStatus = "connecting" | "connected" | "helloed" | "authenticated" | "disconnected" | "idle";
+type SignalingClientStatus = "connecting" | "connected" | "helloed" | "authenticated" | "resuming" | "disconnected" | "idle";
 
 type Events = {
    connected: undefined;
@@ -28,7 +28,7 @@ type Events = {
 
    pong: { rtt: number };
 
-   reset: { hard: boolean };
+   reset: { type: VoiceSignallingResetType };
 } & VoiceWebsocketEvents;
 
 export class VoiceSignalingClient extends EventEmitter<Events> {
@@ -42,11 +42,16 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
    private pingTimeout?: ReturnType<typeof setTimeout>;
 
    private sequence?: number;
+   private sessionId?: Snowflake;
    private lastPingStart?: number;
 
    private _status: SignalingClientStatus = "idle";
    public get status(): SignalingClientStatus {
       return this._status;
+   }
+
+   public get canResume(): boolean {
+      return !!this.connectionData && !!this.sessionId && this.sequence !== undefined;
    }
 
    public constructor(client: HuginnClient, options: VoiceOptions) {
@@ -94,7 +99,12 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       log("api:voice-signaling", "default", "closed", "c:", e.code, "r:", e.reason);
 
       if (!this.intentionalClose) {
-         this.softReset();
+         if (e.code === GatewayCode.INVALID_SESSION || e.code === GatewayCode.AUTHENTICATION_FAILED) {
+            this.resetSession();
+         } else {
+            this.softReset();
+         }
+
          this.setStatus("disconnected");
          this.emit("disconnected", undefined);
 
@@ -133,6 +143,9 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
             switch (data.t) {
                case "ready":
                   await this.onReady(data.d);
+                  break;
+               case "resumed":
+                  await this.onResumed();
                   break;
 
                case "create_transport_result":
@@ -184,24 +197,45 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       this.setStatus("helloed");
       this.startHeartbeatInterval(data.heartbeatInterval);
 
-      if (!this.client.currentUser || !this.connectionData) throw new Error("Tried to identify websocket either without user or connection data");
+      if (!this.sessionId) {
+         this.sessionId = data.sessionId;
+      }
 
-      const identify: VoiceIdentify = {
-         op: VoiceOperations.IDENTIFY,
-         d: {
-            token: this.connectionData.token,
-            channelId: this.connectionData.channelId,
-            guildId: this.connectionData.guildId,
-         },
-      };
+      if (!this.client.currentUser || !this.connectionData) {
+         throw new Error("Tried to identify/resume voice websocket either without user or connection data");
+      }
 
-      this.send(identify);
+      if (this.canResume) {
+         this.setStatus("resuming");
+         this.send({
+            op: VoiceOperations.RESUME,
+            d: {
+               token: this.connectionData.token,
+               sessionId: this.sessionId!,
+               seq: this.sequence!,
+            },
+         });
+      } else {
+         this.send({
+            op: VoiceOperations.IDENTIFY,
+            d: {
+               token: this.connectionData.token,
+               channelId: this.connectionData.channelId,
+               guildId: this.connectionData.guildId,
+            },
+         });
+      }
    }
 
    private async onReady(data: VoiceReadyData) {
       this.setStatus("authenticated");
       this.sendPing();
       this.emit("ready", data);
+   }
+
+   private async onResumed() {
+      this.setStatus("authenticated");
+      this.sendPing();
    }
 
    private onPong() {
@@ -259,23 +293,28 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       this.socket = undefined;
       clearInterval(this.heartbeatInterval);
       clearInterval(this.pingTimeout);
-      this.sequence = undefined;
 
-      if (emitEvent) {
-         this.emit("reset", { hard: false });
-      }
+      if (emitEvent) this.emit("reset", { type: "soft" });
    }
 
    public hardReset(): void {
       this.softReset(false);
+      this.resetSession(false);
       this.connectionData = undefined;
       this.setStatus("idle");
 
-      this.emit("reset", { hard: true });
+      this.emit("reset", { type: "hard" });
+   }
+
+   private resetSession(emitEvent = true): void {
+      this.sessionId = undefined;
+      this.sequence = undefined;
+
+      if (emitEvent) this.emit("reset", { type: "session" });
    }
 
    public checkStatus(): asserts this is this & { connectionData: VoiceConnectionData } {
-      if (!this.connectionData || this.status !== "authenticated") {
+      if (!this.connectionData || (this.status !== "authenticated" && this.status && this.status !== "resuming")) {
          throw new Error("Voice signaling is not fully initialized");
       }
    }
