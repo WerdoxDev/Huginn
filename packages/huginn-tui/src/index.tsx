@@ -4,7 +4,7 @@ import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { useState } from "react";
 import DateSelector from "./DateSelector";
-import type { ClientFile, ClientFileWithUser, DateDirectory } from "./types";
+import type { ClientFileWithUser, DateDirectory } from "./types";
 import ClientSelector from "./ClientSelector";
 import { readEnv } from "@huginn/backend-shared";
 import { LogViewer } from "./LogViewer";
