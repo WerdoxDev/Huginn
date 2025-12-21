@@ -49,7 +49,6 @@ export class VoiceBridge extends Voice {
    }
 
    private async onReset() {
-      // this.debugger.closeDebugger();
       this.inputDevice.close();
       this.stopAudioLoopback();
 
