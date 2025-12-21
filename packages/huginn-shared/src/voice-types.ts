@@ -10,6 +10,7 @@ export enum VoiceOperations {
    DISPATCH = 4,
    PING = 5,
    PONG = 6,
+   RESUME = 7,
 }
 
 export type VoiceOperationTypes = {
@@ -20,6 +21,7 @@ export type VoiceOperationTypes = {
    [VoiceOperations.DISPATCH]: VoiceDispatch;
    [VoiceOperations.PING]: VoicePing;
    [VoiceOperations.PONG]: VoicePong;
+   [VoiceOperations.RESUME]: VoiceResume;
 };
 
 export type VoiceEvents = {
@@ -35,6 +37,7 @@ export type VoiceWebsocketEvents = {
    hello: VoiceHelloData;
    identify: VoiceIdentifyData;
    ready: VoiceReadyData;
+   resumed: undefined;
 
    create_transport: VoiceCreateTransportData;
    create_transport_result: VoiceCreateTransportResult;
@@ -128,6 +131,7 @@ export type VoiceHello = {
 
 export type VoiceHelloData = {
    heartbeatInterval: number;
+   sessionId: Snowflake;
 };
 
 export type VoiceIdentify = {
@@ -153,6 +157,17 @@ export type VoiceReadyData = {
    rtpCapabilities: types.RtpCapabilities;
    producers: ProducerData[];
    consumers: ConsumerData[];
+};
+
+export type VoiceResume = {
+   op: VoiceOperations.RESUME;
+   d: VoiceResumeData;
+};
+
+export type VoiceResumeData = {
+   token: string;
+   sessionId: Snowflake;
+   seq: number;
 };
 
 export type VoiceCreateTransportData = {

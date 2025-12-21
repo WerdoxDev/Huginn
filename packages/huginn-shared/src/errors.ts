@@ -73,6 +73,7 @@ export enum JsonCode {
 }
 
 export enum GatewayCode {
+   GOING_AWAY = 1001,
    UNKNOWN = 4000,
    UNKNOWN_OPCODE = 4001,
    DECODE_ERROR = 4002,
