@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.65.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.65.2...app@v0.65.3) (2025-12-21)
+
+
+### Bug Fixes
+
+* **app:** force an app release ([77cbd1a](https://github.com/WerdoxDev/Huginn/commit/77cbd1a40b787cdb7161e52e5c688efb5b7d68e4))
+
 ## [0.65.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.65.1...app@v0.65.2) (2025-12-20)
 
 
