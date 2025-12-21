@@ -44,7 +44,10 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
 
       session.stopHeartbeatTimeout();
 
-      if ((session.authenticated && event.code === GatewayCode.INVALID_SESSION) || event.code === GatewayCode.INTENTIONAL_CLOSE) {
+      if (
+         session.authenticated &&
+         (event.code === GatewayCode.INVALID_SESSION || event.code === GatewayCode.INTENTIONAL_CLOSE || event.code === GatewayCode.GOING_AWAY)
+      ) {
          this.deleteSession(session.sessionId);
       } else if (session.authenticated) {
          session.isStale = true;
@@ -129,7 +132,6 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
             return;
          }
 
-         await this.onDeleteSession?.(session);
          this.deleteSession(sessionId);
       }, this.options.sessionDeleteTimeout);
 
@@ -186,9 +188,13 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
       return { oldSession, user };
    }
 
-   public deleteSession(sessionId: Snowflake) {
+   public async deleteSession(sessionId: Snowflake) {
       log("shared:websocket", "default", "delete session", "sid:", sessionId);
-      this.sessions.delete(sessionId);
+      const session = this.sessions.get(sessionId);
+      if (session) {
+         await this.onDeleteSession?.(session);
+         this.sessions.delete(sessionId);
+      }
    }
 
    private createSession(peer: Peer, sessionId: Snowflake) {
