@@ -1,10 +1,10 @@
 import ffmpeg from "fluent-ffmpeg";
 import sharp from "sharp";
-import { verifyToken, type TokenPayload, type TokenType } from "#token-factory";
 import { prisma } from "#database";
 import type { UserTokenPayload } from "@huginn/shared";
 import Elysia from "elysia";
-import { unauthorized } from "#index";
+import { verifyToken, type TokenPayload, type TokenType } from "#token-factory";
+import { unauthorized } from "#elysia-errors";
 
 export async function tryCatch<T>(fn: (() => Promise<T>) | (() => T)): Promise<[Error, null] | [null, T]> {
    try {

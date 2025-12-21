@@ -28,6 +28,9 @@
       "packages/huginn-backend-shared": {
          "package-name": "backend-shared"
       },
+      "packages/huginn-runtime-shared": {
+         "package-name": "runtime-shared"
+      },
       "packages/huginn-app": {
          "package-name": "app"
       },

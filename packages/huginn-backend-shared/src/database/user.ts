@@ -1,4 +1,4 @@
-import { DBErrorType } from "@huginn/backend-shared/types";
+import { DBErrorType } from "#types";
 import { idFix, omit, snowflake, UserFlags, WorkerID, type APIPatchCurrentUserJSONBody } from "@huginn/shared";
 import type { APIPostLoginJSONBody, APIPostRegisterJSONBody, BigIntToString, Snowflake } from "@huginn/shared";
 import { Prisma } from "@prisma/client";

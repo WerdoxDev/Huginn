@@ -1,4 +1,4 @@
-import { readEnv } from "@huginn/backend-shared";
+import { readEnv } from "@huginn/runtime-shared";
 import pathe from "pathe";
 import { FileStorage } from "#storage/file-storage";
 import { S3Storage } from "#storage/s3-storage";

@@ -1,0 +1,18 @@
+{
+   "extends": "../../tsconfig.json",
+   "compilerOptions": {
+      "lib": ["ESNext"],
+      "baseUrl": "./"
+      // "isolatedDeclarations": true
+   },
+   "include": [
+      "src",
+      "../huginn-backend-native/src/route-utils.ts",
+      "../huginn-backend-native/src/websocket",
+      "../huginn-backend-native/src/elysia-errors.ts",
+      "../huginn-backend-native/src/error-factory.ts",
+      "../huginn-backend-native/src/route-importer.ts",
+      "../huginn-backend-native/src/token-factory.ts",
+      "../huginn-backend-native/src/test-utils.ts"
+   ]
+}

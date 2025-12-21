@@ -6,7 +6,7 @@ import { useState } from "react";
 import DateSelector from "./DateSelector";
 import type { ClientFileWithUser, DateDirectory } from "./types";
 import ClientSelector from "./ClientSelector";
-import { readEnv } from "@huginn/backend-shared";
+import { readEnv } from "@huginn/runtime-shared";
 import { LogViewer } from "./LogViewer";
 
 export const envs = readEnv(["POSTHOG_PROJECT_ID", "POSTHOG_PERSONAL_API_KEY"] as const);

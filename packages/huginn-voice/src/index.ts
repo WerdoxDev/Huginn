@@ -1,4 +1,4 @@
-import { readEnv } from "@huginn/backend-shared/env-reader";
+import { readEnv } from "@huginn/runtime-shared";
 import { serve } from "crossws/server";
 import { defineHooks } from "crossws";
 import { VoiceWebsocket } from "./voice-websocket";

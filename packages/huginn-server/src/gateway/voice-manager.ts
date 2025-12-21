@@ -1,7 +1,6 @@
 import { type GatewayCallState, type GatewayVoiceState, type Snowflake } from "@huginn/shared";
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { prisma } from "@huginn/backend-shared/database/index";
-import { selectAllMessage } from "@huginn/backend-shared/database/common";
+import { prisma, selectAllMessage } from "@huginn/backend-shared/database";
 import { filterMessage } from "#utils/helpers";
 
 export class VoiceManager {

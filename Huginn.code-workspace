@@ -25,6 +25,10 @@
          "path": "packages/huginn-backend-shared",
       },
       {
+         "name": "huginn-runtime-shared",
+         "path": "packages/huginn-runtime-shared",
+      },
+      {
          "name": "huginn-api",
          "path": "packages/huginn-api",
       },
