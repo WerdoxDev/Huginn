@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.31.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.30.0...shared@v0.31.0) (2025-12-21)
+
+
+### Features
+
+* **shared:** add resume types ([efa99e4](https://github.com/WerdoxDev/Huginn/commit/efa99e408271bcf563a9cdf5c1feffc68fb7e094))
+
 ## [0.30.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.29.0...shared@v0.30.0) (2025-12-09)
 
 

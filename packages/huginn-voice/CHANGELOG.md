@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.13.1...voice@v0.14.0) (2025-12-21)
+
+
+### Features
+
+* **voice:** add resuming logic ([7aa8c27](https://github.com/WerdoxDev/Huginn/commit/7aa8c2749cb9e88b7bd5efd61265feb8a74c4c37))
+
 ## [0.13.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.13.0...voice@v0.13.1) (2025-12-13)
 
 
