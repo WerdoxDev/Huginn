@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.32.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.31.2...api@v0.32.0) (2025-12-21)
+
+
+### Features
+
+* **api:** add voice resuming logic ([d8dc213](https://github.com/WerdoxDev/Huginn/commit/d8dc21349c43576bf24671559b2f79ed30e8c641))
+
 ## [0.31.2](https://github.com/WerdoxDev/Huginn/compare/api@v0.31.1...api@v0.31.2) (2025-12-20)
 
 

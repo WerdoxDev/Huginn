@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.20.3](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.20.2...backend-shared@v0.20.3) (2025-12-21)
+
+
+### Bug Fixes
+
+* **backend-shared:** better session cleanup logic ([4cae7ac](https://github.com/WerdoxDev/Huginn/commit/4cae7ac96a9df08fdda1ec4081978c65efcffffd))
+
 ## [0.20.2](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.20.1...backend-shared@v0.20.2) (2025-12-20)
 
 
