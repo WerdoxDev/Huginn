@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.32.5](https://github.com/WerdoxDev/Huginn/compare/server@v0.32.4...server@v0.32.5) (2025-12-22)
+
+
+### Bug Fixes
+
+* **server:** remove ffmpeg and use the new util function from backend-shared ([a16b1c7](https://github.com/WerdoxDev/Huginn/commit/a16b1c7ae4d210a7cc673058bc56f927b57c5dd2))
+* **server:** users added to a channel should be informed of voice states and call states ([243a6b4](https://github.com/WerdoxDev/Huginn/commit/243a6b48b44c472e40a24138ac2a6adeed2498b2))
+
 ## [0.32.4](https://github.com/WerdoxDev/Huginn/compare/server@v0.32.3...server@v0.32.4) (2025-12-14)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.32.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.32.0...api@v0.32.1) (2025-12-22)
+
+
+### Bug Fixes
+
+* **api:** voice signalling should hard reset when closed from server side ([634af24](https://github.com/WerdoxDev/Huginn/commit/634af24e8cc01b1439b3a231c83acb9d63352d22))
+
 ## [0.32.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.31.2...api@v0.32.0) (2025-12-21)
 
 

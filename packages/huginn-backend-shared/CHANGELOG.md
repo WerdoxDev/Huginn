@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.20.3...backend-shared@v0.21.0) (2025-12-22)
+
+
+### Features
+
+* **backend-shared:** use mediabunny instead of ffmpeg for probing video ([87c0f28](https://github.com/WerdoxDev/Huginn/commit/87c0f28fd1b21436cedb40eac8ed93a3fa6a48bb))
+
 ## [0.20.3](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.20.2...backend-shared@v0.20.3) (2025-12-21)
 
 

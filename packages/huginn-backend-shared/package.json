@@ -1,6 +1,6 @@
 {
    "name": "@huginn/backend-shared",
-   "version": "0.20.3",
+   "version": "0.21.0",
    "type": "module",
    "dependencies": {
       "@elysiajs/bearer": "^1.4.1",
