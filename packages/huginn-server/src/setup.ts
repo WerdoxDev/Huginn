@@ -27,7 +27,6 @@ export const envs = readEnv([
    "SESSION_PASSWORD",
    "ALLOWED_ORIGINS",
    "CDN_HMAC_SECRET",
-   { key: "FFMPEG_TEMP_DIR", default: "./ffmpeg" },
    "IGDB_CLIENT_ID",
    "IGDB_CLIENT_SECRET",
    "AXIOM_TOKEN",

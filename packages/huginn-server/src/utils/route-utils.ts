@@ -11,7 +11,6 @@ import {
 import type { Endpoints } from "@octokit/types";
 import { JSDOM } from "jsdom";
 import markdownit from "markdown-it";
-import { join } from "pathe";
 import * as semver from "semver";
 import { octokit } from "#setup";
 import { envs } from "#setup";
@@ -171,7 +170,7 @@ export async function generateEmbedsFromContent(content?: string) {
       }
 
       if (contentType && isVideoMediaType(contentType)) {
-         const videoData = await getVideoData(join(envs.FFMPEG_TEMP_DIR, "output"), await response.arrayBuffer());
+         const videoData = await getVideoData(await response.arrayBuffer());
          embeds.push({
             type: "video",
             url: response.url,
@@ -200,9 +199,7 @@ export async function generateEmbedsFromContent(content?: string) {
             title: metadata.title,
             url: metadata.url,
             description: metadata.description,
-            thumbnail: thumbnailData
-               ? { url: metadata.image, width: thumbnailData.width ?? 0, height: thumbnailData.height ?? 0 }
-               : undefined,
+            thumbnail: thumbnailData ? { url: metadata.image, width: thumbnailData.width ?? 0, height: thumbnailData.height ?? 0 } : undefined,
          });
       }
    }
@@ -261,7 +258,7 @@ export async function processAttachments(
             dimensions = await getImageData(fileArrayBuffer);
          }
          if (isVideoMediaType(file.type)) {
-            dimensions = await getVideoData(join(envs.FFMPEG_TEMP_DIR, file.name), fileArrayBuffer);
+            dimensions = await getVideoData(fileArrayBuffer);
          }
 
          processedAttachments.push({
