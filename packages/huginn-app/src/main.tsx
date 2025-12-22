@@ -53,7 +53,6 @@ if (window.electronAPI) {
    const settings = thisStore.getCachedValue("settings");
    const clientInfo = thisStore.getCachedValue("client-info");
    const endpoint = new URL("/api/log", settings.apiHostname).toString();
-   // oxlint-disable-next-line no-import-assign
    _remoteLogger = new RemoteLogger(logger, endpoint, clientInfo.id);
 }
 
