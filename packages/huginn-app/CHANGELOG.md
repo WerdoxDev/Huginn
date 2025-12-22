@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.65.4](https://github.com/WerdoxDev/Huginn/compare/app@v0.65.3...app@v0.65.4) (2025-12-22)
+
+
+### Bug Fixes
+
+* **app:** failed consume stream message is sometimes not showing ([fc6cb72](https://github.com/WerdoxDev/Huginn/commit/fc6cb72e0aae5798525471086c28337eb64eb8a1))
+* **app:** implement slightly better VAD and another potential fix for ALC ([55b082f](https://github.com/WerdoxDev/Huginn/commit/55b082f51bd9f9c380c5f6bbeacd67d73a2788ac))
+* **app:** much better video progress and volume slider ([bb29433](https://github.com/WerdoxDev/Huginn/commit/bb2943373b8ab7d4790749e4fe0913f227d08509))
+* **app:** remote unnecessary check in voice store + update news.md ([2343c29](https://github.com/WerdoxDev/Huginn/commit/2343c296bd7220cc450a183cfb3b34cb658cce87))
+* **app:** trigger app release [#1](https://github.com/WerdoxDev/Huginn/issues/1) ([bff2e87](https://github.com/WerdoxDev/Huginn/commit/bff2e87d66b1ef1550c8169e42ecb8c9ec76b676))
+
 ## [0.65.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.65.2...app@v0.65.3) (2025-12-21)
 
 ### Bug Fixes
