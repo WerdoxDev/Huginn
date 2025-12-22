@@ -50,3 +50,13 @@ declare module "crossws" {
       sessionId: Snowflake;
    }
 }
+
+export type VideoData = {
+   width: number;
+   height: number;
+};
+
+export type ImageData = {
+   width: number;
+   height: number;
+};

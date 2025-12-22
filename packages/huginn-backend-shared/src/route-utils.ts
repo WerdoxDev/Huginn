@@ -1,10 +1,11 @@
-import ffmpeg from "fluent-ffmpeg";
 import sharp from "sharp";
 import { prisma } from "#database";
-import type { UserTokenPayload } from "@huginn/shared";
+import { error, type UserTokenPayload } from "@huginn/shared";
 import Elysia from "elysia";
 import { verifyToken, type TokenPayload, type TokenType } from "#token-factory";
 import { unauthorized } from "#elysia-errors";
+import { ALL_FORMATS, BufferSource, Input } from "mediabunny";
+import type { ImageData, VideoData } from "#types";
 
 export async function tryCatch<T>(fn: (() => Promise<T>) | (() => T)): Promise<[Error, null] | [null, T]> {
    try {
@@ -14,7 +15,7 @@ export async function tryCatch<T>(fn: (() => Promise<T>) | (() => T)): Promise<[
    }
 }
 
-export async function getImageData(source: string | ArrayBuffer) {
+export async function getImageData(source: string | ArrayBuffer): Promise<ImageData | undefined> {
    try {
       let arrayBuffer: ArrayBuffer;
       if (typeof source === "string") {
@@ -24,40 +25,23 @@ export async function getImageData(source: string | ArrayBuffer) {
       }
 
       const metadata = await sharp(arrayBuffer).metadata();
-      // const newDimensions = constrainImageSize(metadata.width ?? 0, metadata.height ?? 0, maxWidth, maxHeight, true);
 
       return { width: metadata.width ?? 0, height: metadata.height ?? 0 };
    } catch (e) {
-      console.error("Error fetching image data:", e);
+      error("backend-shared:route-utils", "Getting image data failed:", e);
       return undefined;
    }
 }
 
-export async function getVideoData(filePath: string, source: ArrayBuffer) {
+export async function getVideoData(source: ArrayBuffer): Promise<VideoData | undefined> {
    try {
-      const file = Bun.file(filePath);
-      await file.write(source);
+      const input = new Input({ source: new BufferSource(source), formats: ALL_FORMATS });
+      const video = await input.getPrimaryVideoTrack();
 
-      const result = await new Promise<{ width: number; height: number }>((res, rej) => {
-         ffmpeg.ffprobe(filePath, (err, data) => {
-            if (err) {
-               rej(err);
-            }
-
-            const stream = data.streams[0];
-            if (!stream) {
-               rej();
-            }
-
-            res({ width: stream.width ?? 0, height: stream.height ?? 0 });
-         });
-      });
-
-      await file.delete();
-
-      return result;
+      return { width: video?.displayWidth ?? 0, height: video?.displayHeight ?? 0 };
    } catch (e) {
-      console.log(e);
+      error("backend-shared:route-utils", "Getting video data failed:", e);
+      return undefined;
    }
 }
 
