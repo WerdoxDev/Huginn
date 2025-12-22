@@ -31,6 +31,7 @@ export const LOG_VALUES_MAP = {
    "voice:websocket": ["default", "recv"],
    "shared:websocket": ["default", "subscriptions"],
    "shared:client-session": ["default", "subscriptions", "heartbeat"],
+   "backend-shared:route-utils": ["default"],
 } as const;
 
 // Derive the type from the const
