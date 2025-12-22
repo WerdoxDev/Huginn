@@ -98,7 +98,12 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
    private onClose(e: CloseEvent): void {
       log("api:voice-signaling", "default", "closed", "c:", e.code, "r:", e.reason);
 
-      if (!this.intentionalClose) {
+      // Server told us to disconnect but we didn't intentionally disconnect
+      if (!this.intentionalClose && e.code === GatewayCode.INTENTIONAL_CLOSE) {
+         this.hardReset();
+      }
+
+      if (!this.intentionalClose && e.code !== GatewayCode.INTENTIONAL_CLOSE) {
          if (e.code === GatewayCode.INVALID_SESSION || e.code === GatewayCode.AUTHENTICATION_FAILED) {
             this.resetSession();
          } else {
