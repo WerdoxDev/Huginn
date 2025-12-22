@@ -17,6 +17,7 @@ FROM base AS install
 RUN mkdir -p /temp/deps
 COPY package.json bun.lock bunfig.toml .npmrc /temp/deps/
 COPY packages/huginn-backend-shared/package.json /temp/deps/packages/huginn-backend-shared/package.json
+COPY packages/huginn-runtime-shared/package.json /temp/deps/packages/huginn-runtime-shared/package.json
 COPY packages/huginn-shared/package.json /temp/deps/packages/huginn-shared/package.json
 COPY packages/huginn-voice/package.json /temp/deps/packages/huginn-voice/package.json
 RUN cd /temp/deps && bun install
