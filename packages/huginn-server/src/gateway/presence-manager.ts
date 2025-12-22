@@ -110,12 +110,12 @@ export class PresenceManager {
       return this.presences.get(userId);
    }
 
-   public sendToUser(whomToSendId: Snowflake, targetId: Snowflake, offlineStatus?: boolean) {
+   public sendToUser(whomToSendId: Snowflake, userId: Snowflake, offlineStatus?: boolean) {
       const presence: ServerUserPresence | undefined = offlineStatus
-         ? { userId: targetId, status: "offline", activeSessions: [], activities: [] }
-         : this.presences.get(targetId);
+         ? { userId: userId, status: "offline", activeSessions: [], activities: [] }
+         : this.presences.get(userId);
       if (presence) {
-         this.sendPresenceUpdate(whomToSendId, presence, { id: targetId });
+         this.sendPresenceUpdate(whomToSendId, presence, { id: userId });
       }
    }
 

@@ -124,7 +124,7 @@ describe("Connection", () => {
 
       const resumeData: GatewayResume = {
          op: GatewayOperations.RESUME,
-         d: { sessionId: readyData.sessionId, token: user.accessToken, seq: 11 },
+         d: { sessionId: readyData.sessionId, token: user.accessToken, seq: 99 },
       };
 
       ws2.onclose = ({ code }) => {
@@ -163,12 +163,12 @@ describe("Connection", () => {
    });
 
    test("should resume the websocket when it is disconnected and has not received some messages", async (done) => {
-      const { ws, readyData, user } = await getReadyWebSocket();
+      const { ws, readyData, user, sessionId } = await getReadyWebSocket();
       ws.close();
 
       for (let i = 0; i < 10; i++) {
          // @ts-ignore
-         gateway.sendToTopic(user.id.toString(), { op: GatewayOperations.DISPATCH, s: 0, d: i });
+         gateway.sendToTopic(user.id.toString(), { op: GatewayOperations.DISPATCH, s: 0, t: "test", d: i });
       }
 
       const ws2 = await getWebSocket();
@@ -190,9 +190,12 @@ describe("Connection", () => {
          }
 
          const data = JSON.parse(event.data);
-         if (testIsOpcode(event.data, GatewayOperations.DISPATCH)) {
-            expect(data.d).toBe(received);
-            received++;
+         if (testIsOpcode(data, GatewayOperations.DISPATCH)) {
+            // @ts-ignore
+            if (data.t === "test") {
+               expect((data as { d: number }).d).toBe(received);
+               received++;
+            }
          }
       };
    });

@@ -46,5 +46,7 @@ export const putChannelRecipient = new Elysia()
          flags: MessageFlags.NONE,
       });
 
+      gateway.voiceManager.sendCallStateToUser(channelId, recipientId);
+
       return status("No Content");
    });

@@ -11,13 +11,13 @@ afterEach(() => {
 });
 
 afterAll(async () => {
-   console.log("START CLEANUP");
+   // console.log("START CLEANUP");
    try {
       await removeChannels();
       await removeUsers();
    } catch (e) {
       console.error(e);
    }
-   console.log("END CLEANUP");
-   console.log(timeSpent);
+   // console.log("END CLEANUP");
+   // console.log(timeSpent);
 });

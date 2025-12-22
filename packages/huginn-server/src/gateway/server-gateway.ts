@@ -216,8 +216,9 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       // Settings
       const settings = await prisma.settings.getOrCreateSettings(user.id);
 
-      const readyData: GatewayPayload<"ready"> = {
+      const readyData: GatewayPayload = {
          op: GatewayOperations.DISPATCH,
+         t: "ready",
          d: {
             user,
             privateChannels: userChannels.map((x) => filterChannel(x)),
@@ -228,7 +229,6 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             callStates: this.voiceManager.getCallStates(userChannels.map((x) => x.id)),
             voiceStates: this.voiceManager.getVoiceStates(userChannels.map((x) => x.id)),
          },
-         t: "ready",
       };
 
       session.send(readyData, true, false);

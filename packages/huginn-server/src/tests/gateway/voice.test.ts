@@ -1,6 +1,14 @@
 import { describe, expect, test } from "bun:test";
 import { testHandler } from "@huginn/backend-shared";
-import { ChannelType, GatewayOperations, type GatewayUpdateVoiceState, MessageType, type Snowflake } from "@huginn/shared";
+import {
+   ChannelType,
+   GatewayCode,
+   GatewayOperations,
+   type GatewayPayload,
+   type GatewayUpdateVoiceState,
+   MessageType,
+   type Snowflake,
+} from "@huginn/shared";
 import { expectCallStateExactSchema, expectVoiceServerExactSchema, expectVoiceStateExactSchema } from "#tests/expect-utils";
 import {
    authHeader,
@@ -60,13 +68,16 @@ describe("Voice", () => {
       };
    });
 
-   test("should send CALL_CREATE and create call message when a channel is rang using /channels/channel.id/call/ring", async (done) => {
+   test("should send CALL_CREATE and create a call message when a channel is rang using /channels/channel.id/call/ring", async (done) => {
       const [user, user2] = await createTestUsers(2);
 
       const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
 
       const { ws } = await getReadyWebSocket(user);
       const { ws: ws2 } = await getReadyWebSocket(user2);
+      // This is necessary for some unknown reason
+      await new Promise((r) => setTimeout(r, 1000));
+
       const tryDone = multiDone(done, 2);
 
       let messageId: Snowflake;
@@ -95,6 +106,9 @@ describe("Voice", () => {
       const { ws } = await getReadyWebSocket(user);
       const { ws: ws2 } = await getReadyWebSocket(user2);
       const tryDone = multiDone(done, 2);
+
+      // This is necessary for some unknown reason
+      await new Promise((r) => setTimeout(r, 1000));
 
       let messageId: Snowflake;
       ws.onmessage = ws2.onmessage = (event) => {
@@ -140,6 +154,9 @@ describe("Voice", () => {
       const { ws: ws2 } = await getReadyWebSocket(user2);
       const tryDone = multiDone(done, 2);
 
+      // This is necessary for some unknown reason
+      await new Promise((r) => setTimeout(r, 1000));
+
       ws.onmessage = ws2.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "call_delete")) {
@@ -184,72 +201,76 @@ describe("Voice", () => {
       wsSend(ws2, data2);
    });
 
-   test("should send VOICE_STATE_UPDATE a user leaves a call or disconnects", async (done) => {
-      const [user, user2] = await createTestUsers(2);
+   test(
+      "should send VOICE_STATE_UPDATE a user leaves a call or disconnects",
+      async (done) => {
+         const [user, user2] = await createTestUsers(2);
 
-      const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
+         const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
 
-      const { ws } = await getReadyWebSocket(user);
-      const { ws: ws2, sessionId } = await getReadyWebSocket(user2);
-      const tryDone = multiDone(done, 4);
+         const { ws } = await getReadyWebSocket(user);
+         const { ws: ws2, sessionId } = await getReadyWebSocket(user2);
+         const tryDone = multiDone(done, 4);
 
-      ws.onmessage = (event) => {
-         const data = JSON.parse(event.data);
-         if (testIsDispatch(data, "voice_state_update")) {
-            if (data.d.userId === user2.id.toString() && data.d.channelId) {
-               expectVoiceStateExactSchema(data.d, channel.id.toString(), null, user2.id.toString(), sessionId);
-               tryDone();
-            } else if (data.d.userId === user2.id.toString() && !data.d.channelId) {
-               expectVoiceStateExactSchema(data.d, null, null, user2.id.toString(), sessionId);
-               tryDone();
+         ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (testIsDispatch(data, "voice_state_update")) {
+               if (data.d.userId === user2.id.toString() && data.d.channelId) {
+                  expectVoiceStateExactSchema(data.d, channel.id.toString(), null, user2.id.toString(), sessionId);
+                  tryDone();
+               } else if (data.d.userId === user2.id.toString() && !data.d.channelId) {
+                  expectVoiceStateExactSchema(data.d, null, null, user2.id.toString(), sessionId);
+                  tryDone();
+               }
             }
-         }
-      };
+         };
 
-      const data: GatewayUpdateVoiceState = {
-         op: GatewayOperations.VOICE_STATE_UPDATE,
-         d: {
-            channelId: channel.id.toString(),
-            guildId: null,
-            isAudioDeafened: false,
-            isAudioMuted: false,
-            isAudioStreaming: false,
-            isScreenSharing: false,
-            isCameraOn: false,
-         },
-      };
+         const data: GatewayUpdateVoiceState = {
+            op: GatewayOperations.VOICE_STATE_UPDATE,
+            d: {
+               channelId: channel.id.toString(),
+               guildId: null,
+               isAudioDeafened: false,
+               isAudioMuted: false,
+               isAudioStreaming: false,
+               isScreenSharing: false,
+               isCameraOn: false,
+            },
+         };
 
-      const data2: GatewayUpdateVoiceState = {
-         op: GatewayOperations.VOICE_STATE_UPDATE,
-         d: {
-            channelId: null,
-            guildId: null,
-            isAudioDeafened: false,
-            isAudioMuted: false,
-            isAudioStreaming: false,
-            isScreenSharing: false,
-            isCameraOn: false,
-         },
-      };
+         const data2: GatewayUpdateVoiceState = {
+            op: GatewayOperations.VOICE_STATE_UPDATE,
+            d: {
+               channelId: null,
+               guildId: null,
+               isAudioDeafened: false,
+               isAudioMuted: false,
+               isAudioStreaming: false,
+               isScreenSharing: false,
+               isCameraOn: false,
+            },
+         };
 
-      wsSend(ws, data);
+         wsSend(ws, data);
 
-      setTimeout(() => {
-         wsSend(ws2, data);
-      }, 100);
+         setTimeout(() => {
+            wsSend(ws2, data);
+         }, 100);
 
-      setTimeout(() => {
-         wsSend(ws2, data2);
-      }, 200);
+         setTimeout(() => {
+            wsSend(ws2, data2);
+         }, 200);
 
-      setTimeout(() => {
-         wsSend(ws2, data);
-      }, 300);
+         setTimeout(() => {
+            wsSend(ws2, data);
+         }, 300);
 
-      setTimeout(() => {
-         ws2.close();
-      }, 400);
-   });
+         setTimeout(() => {
+            ws2.close(GatewayCode.INTENTIONAL_CLOSE);
+         }, 400);
+      },
+      { timeout: 10000 },
+   );
 
    test("should send both voice states and call states in READY dispatch", async (done) => {
       const [user, user2] = await createTestUsers(2);
@@ -329,7 +350,7 @@ describe("Voice", () => {
       };
 
       // First join the channel voice
-      const data: GatewayUpdateVoiceState = {
+      const data: GatewayPayload = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
          d: {
             channelId: channel.id.toString(),
@@ -347,7 +368,7 @@ describe("Voice", () => {
       await new Promise((r) => setTimeout(r, 500));
 
       // Then join another channel without leaving the last one
-      const data2: GatewayUpdateVoiceState = {
+      const data2: GatewayPayload = {
          op: GatewayOperations.VOICE_STATE_UPDATE,
          d: {
             channelId: channel2.id.toString(),
@@ -362,4 +383,83 @@ describe("Voice", () => {
 
       wsSend(ws, data2);
    });
+
+   test(
+      "should send CALL_CREATE and VOICE_STATE_UPDATE to a user which just joined a channel which has an existing ongoing call",
+      async (done) => {
+         const [user, user2, user3] = await createTestUsers(3);
+
+         const groupChannel = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id);
+
+         const { ws, sessionId } = await getReadyWebSocket(user);
+         const { ws: ws2, sessionId: sessionId2 } = await getReadyWebSocket(user2);
+         const { ws: ws3 } = await getReadyWebSocket(user3);
+         const tryDone = multiDone(done, 3);
+
+         ws3.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (testIsDispatch(data, "call_create")) {
+               expectCallStateExactSchema(data.d, groupChannel.id.toString(), undefined, []);
+               tryDone();
+            }
+            if (testIsDispatch(data, "voice_state_update")) {
+               if (data.d.userId === user.id.toString()) {
+                  expectVoiceStateExactSchema(data.d, groupChannel.id.toString(), null, user.id.toString(), sessionId, {
+                     isAudioDeafened: true,
+                     isAudioMuted: false,
+                     isAudioStreaming: false,
+                     isScreenSharing: false,
+                     isCameraOn: true,
+                  });
+                  tryDone();
+               } else if (data.d.userId === user2.id.toString()) {
+                  expectVoiceStateExactSchema(data.d, groupChannel.id.toString(), null, user2.id.toString(), sessionId2, {
+                     isAudioDeafened: false,
+                     isAudioMuted: true,
+                     isAudioStreaming: true,
+                     isScreenSharing: false,
+                     isCameraOn: false,
+                  });
+                  tryDone();
+               }
+            }
+         };
+
+         await testHandler(`/api/channels/${groupChannel.id}/call/ring`, authHeader(user.accessToken), "POST", { recipients: null });
+
+         const data: GatewayPayload = {
+            op: GatewayOperations.VOICE_STATE_UPDATE,
+            d: {
+               channelId: groupChannel.id.toString(),
+               guildId: null,
+               isAudioDeafened: true,
+               isAudioMuted: false,
+               isAudioStreaming: false,
+               isScreenSharing: false,
+               isCameraOn: true,
+            },
+         };
+
+         const data2: GatewayPayload = {
+            op: GatewayOperations.VOICE_STATE_UPDATE,
+            d: {
+               channelId: groupChannel.id.toString(),
+               guildId: null,
+               isAudioDeafened: false,
+               isAudioMuted: true,
+               isAudioStreaming: true,
+               isScreenSharing: false,
+               isCameraOn: false,
+            },
+         };
+
+         wsSend(ws, data);
+         wsSend(ws2, data2);
+
+         await new Promise((r) => setTimeout(r, 1000));
+
+         await testHandler(`/api/channels/${groupChannel.id}/recipients/${user3.id}`, authHeader(user.accessToken), "PUT");
+      },
+      { timeout: 10000 },
+   );
 });

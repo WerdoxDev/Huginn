@@ -48,7 +48,7 @@ import { getIndex } from "./routes";
 import { staticPlugin } from "@elysiajs/static";
 import { cors } from "@elysiajs/cors";
 
-console.log(envs.AXIOM_DATASET, envs.AXIOM_TOKEN);
+// console.log(envs.AXIOM_DATASET, envs.AXIOM_TOKEN);
 
 new Elysia({
    cookie: { secrets: envs.SESSION_PASSWORD, sign: ["oauth"], httpOnly: true, secure: true, path: "/", maxAge: 60 * 5 },

@@ -22,6 +22,20 @@ export class VoiceManager {
       dispatchToTopic(channelId, "call_create", callState);
    }
 
+   public sendCallStateToUser(channelId: Snowflake, userId: Snowflake) {
+      const callState = this.callStates.get(channelId);
+      if (callState) {
+         dispatchToTopic(userId, "call_create", callState);
+
+         // Send all voice states for users in this call
+         for (const voiceState of this.voiceStates.values()) {
+            if (voiceState.channelId === channelId && voiceState.userId !== userId) {
+               dispatchToTopic(userId, "voice_state_update", voiceState);
+            }
+         }
+      }
+   }
+
    public updateCall(channelId: Snowflake, ringing: Snowflake[]) {
       const callState = this.callStates.get(channelId);
       if (callState) {

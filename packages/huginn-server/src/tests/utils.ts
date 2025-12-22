@@ -265,6 +265,10 @@ export async function createTestChannel(ownerId: bigint | undefined, type: Chann
 
    await prisma.readState.createMany({ data: recipients.map((x) => ({ userId: x, channelId: channel.id })) });
 
+   for (const recipient of recipients) {
+      gateway.subscribeSessionsToTopic(recipient.toString(), channel.id.toString());
+   }
+
    const t1 = performance.now();
    timeSpent.createChannels += t1 - t0;
 

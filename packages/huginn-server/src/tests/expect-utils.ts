@@ -23,6 +23,7 @@ import {
    type GatewaySessionUpdateData,
    type GatewayTypingStartData,
    type GatewayVoiceState,
+   type GatewayVoiceStateFlags,
    MessageType,
    type PresenceStatus,
    RelationshipType,
@@ -367,6 +368,7 @@ export function expectVoiceStateExactSchema(
    guildId: Snowflake | null,
    userId: Snowflake,
    sessionId: Snowflake,
+   flags?: Partial<GatewayVoiceStateFlags>,
 ) {
    const parsedVoiceState = voiceState as GatewayVoiceState;
 
@@ -375,20 +377,20 @@ export function expectVoiceStateExactSchema(
       guildId,
       userId,
       sessionId,
-      isAudioDeafened: parsedVoiceState.isAudioDeafened,
-      isAudioMuted: parsedVoiceState.isAudioMuted,
-      isScreenSharing: parsedVoiceState.isScreenSharing,
-      isAudioStreaming: parsedVoiceState.isAudioStreaming,
-      isCameraOn: parsedVoiceState.isCameraOn,
+      isAudioDeafened: flags?.isAudioDeafened ?? parsedVoiceState.isAudioDeafened,
+      isAudioMuted: flags?.isAudioMuted ?? parsedVoiceState.isAudioMuted,
+      isScreenSharing: flags?.isScreenSharing ?? parsedVoiceState.isScreenSharing,
+      isAudioStreaming: flags?.isAudioStreaming ?? parsedVoiceState.isAudioStreaming,
+      isCameraOn: flags?.isCameraOn ?? parsedVoiceState.isCameraOn,
    });
 }
 
-export function expectCallStateExactSchema(callState: object, channelId: Snowflake, messageId: Snowflake, ringing: Snowflake[]) {
+export function expectCallStateExactSchema(callState: object, channelId: Snowflake, messageId: Snowflake | undefined, ringing: Snowflake[]) {
    const parsedCallState = callState as GatewayCallState;
 
    expect(parsedCallState).toStrictEqual({
       channelId,
-      messageId,
+      messageId: messageId ?? parsedCallState.messageId,
       ringing,
    });
 }
