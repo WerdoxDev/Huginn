@@ -307,20 +307,13 @@ export type AttachmentType = {
    contentType: string;
 };
 
-export type ProgressBarProps = {
-   id?: string;
-   orientation: "horizontal" | "vertical";
-   percentage: number;
-   bufferPercentage?: number;
-   dragging: boolean;
-   setPercentage: (percentage: number) => void;
-   setBufferPercentage?: (bufferPercentage: number) => void;
-   setDragging: (dragging: boolean) => void;
-   onPercentageChange?: (percentage: number) => void;
-   startOffset?: number;
-   endOffset?: number;
-   mouseOffset?: number;
-   className?: string;
+export type SliderProps = {
+   currentPercent: number;
+   bufferedPercent?: number;
+   onHoverChanged?: (isHovering: boolean) => void;
+   onDragChanged?: (isDragging: boolean) => void;
+   onChange: (percent: number) => void;
+   orientation?: "horizontal" | "vertical";
 };
 
 export type UploadProgress = {

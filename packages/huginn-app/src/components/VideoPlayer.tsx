@@ -2,167 +2,166 @@ import { Transition } from "@headlessui/react";
 import { useFullscreen } from "@hooks/useFullscreen";
 import { useProgressBar } from "@hooks/useProgressBar";
 import { formatSeconds } from "@huginn/shared";
-// import { getCurrentWindow } from "@tauri-apps/api/window";
 import clsx from "clsx";
 import { type MouseEvent, useEffect, useRef, useState } from "react";
 import LoadingIcon from "./LoadingIcon";
-import ProgressBar from "./ProgressBar";
-import VolumeBar from "./VolumeBar";
+import Slider from "./Slider";
+import VolumeSlider from "./VolumeSlider";
+
+const VIDEO_TIMESTAMP_REQUIRED_WIDTH = 500;
 
 export default function VideoPlayer(props: { url: string; width: number; height: number }) {
-	const containerRef = useRef<HTMLDivElement>(null);
-	const videoRef = useRef<HTMLVideoElement>(null);
-	const [playing, setPlaying] = useState(false);
-	const videoProgress = useProgressBar({ startOffset: 2, endOffset: 0, mouseOffset: 5 });
-	const audioProgress = useProgressBar({ startOffset: 10, endOffset: 0, mouseOffset: 5, defaultValue: 100 });
-	const [videoDuration, setVideoDuration] = useState(0);
-	const [videoTime, setVideoTime] = useState(0);
-	const [loaded, setLoaded] = useState(false);
-	const [errored, setErrored] = useState(false);
-	const mouseDownElement = useRef<HTMLDivElement>(null);
-	const { isFullscreen, toggleFullscreen } = useFullscreen(containerRef);
+   const containerRef = useRef<HTMLDivElement>(null);
+   const videoRef = useRef<HTMLVideoElement>(null);
+   const [playing, setPlaying] = useState(false);
 
-	useEffect(() => {
-		const controller = new AbortController();
+   const [currentVideoPercent, setCurrentVideoPercent] = useState(0);
+   const [currentAudioPercent, setCurrentAudioPercent] = useState(0);
+   const [bufferedPercent, setBufferedPercent] = useState(0);
+   const [currentTime, setCurrentTime] = useState(0);
+   // const [bufferedTime, setBufferedTime] = useState(0);
+   // const videoProgress = useProgressBar({ startOffset: 2, endOffset: 0, mouseOffset: 5 });
+   // const audioProgress = useProgressBar({ startOffset: 10, endOffset: 0, mouseOffset: 5, defaultValue: 100 });
+   const [videoDuration, setVideoDuration] = useState(0);
+   // const [videoTime, setVideoTime] = useState(0);
+   const [loaded, setLoaded] = useState(false);
+   const [errored, setErrored] = useState(false);
+   const { isFullscreen, toggleFullscreen } = useFullscreen(containerRef);
 
-		videoRef.current?.addEventListener(
-			"play",
-			() => {
-				setPlaying(true);
-			},
-			{ signal: controller.signal },
-		);
+   useEffect(() => {
+      const controller = new AbortController();
 
-		videoRef.current?.addEventListener(
-			"pause",
-			() => {
-				setPlaying(false);
-			},
-			{ signal: controller.signal },
-		);
+      videoRef.current?.addEventListener(
+         "play",
+         () => {
+            setPlaying(true);
+         },
+         { signal: controller.signal },
+      );
 
-		videoRef.current?.addEventListener("loadedmetadata", () => {
-			setVideoDuration(videoRef.current?.duration ?? 0);
-		});
+      videoRef.current?.addEventListener(
+         "pause",
+         () => {
+            setPlaying(false);
+         },
+         { signal: controller.signal },
+      );
 
-		videoRef.current?.addEventListener(
-			"timeupdate",
-			() => {
-				const current = videoRef.current?.currentTime ?? 0;
-				const duration = videoRef.current?.duration ?? 0;
-				setVideoTime(current);
+      videoRef.current?.addEventListener("loadedmetadata", () => {
+         setVideoDuration(videoRef.current?.duration ?? 0);
+      });
 
-				const percentage = (current / duration) * 100;
-				videoProgress.setPercentage(videoProgress.getVisualPercentage(percentage));
-			},
-			{ signal: controller.signal },
-		);
+      videoRef.current?.addEventListener(
+         "timeupdate",
+         () => {
+            const current = videoRef.current?.currentTime ?? 0;
+            const duration = videoRef.current?.duration ?? 0;
+            setCurrentTime(current);
 
-		videoRef.current?.addEventListener(
-			"progress",
-			() => {
-				const buffered = videoRef.current?.buffered;
+            const percentage = (current / duration) * 100;
+            setCurrentVideoPercent(percentage);
+         },
+         { signal: controller.signal },
+      );
 
-				if (buffered && buffered.length > 0) {
-					const end = buffered.end(buffered.length - 1); // Get the end time of the first (and typically only) buffered range
-					const duration = videoRef.current?.duration ?? 0;
+      videoRef.current?.addEventListener(
+         "progress",
+         () => {
+            const buffered = videoRef.current?.buffered;
 
-					if (duration > 0) {
-						const percentage = (end / duration) * 100;
-						videoProgress.setBufferPercentage(videoProgress.getVisualPercentage(percentage));
-					}
-				}
-			},
-			{ signal: controller.signal },
-		);
+            if (buffered && buffered.length > 0) {
+               const end = buffered.end(buffered.length - 1); // Get the end time of the first (and typically only) buffered range
+               const duration = videoRef.current?.duration ?? 0;
 
-		return () => {
-			controller.abort();
-		};
-	}, []);
+               if (duration > 0) {
+                  const percentage = (end / duration) * 100;
+                  setBufferedPercent(percentage);
+               }
+            }
+         },
+         { signal: controller.signal },
+      );
 
-	function setVideoPercentage(percentage: number) {
-		if (videoRef.current) {
-			const duration = videoRef.current?.duration ?? 0;
-			const time = (duration / 100) * percentage;
-			videoRef.current.currentTime = time;
-			setVideoTime(time);
-		}
-	}
+      return () => {
+         controller.abort();
+      };
+   }, []);
 
-	function setAudioPercentage(percentage: number) {
-		if (videoRef.current) {
-			videoRef.current.volume = percentage / 100;
-		}
-	}
+   function updateCurrentVideoPercent(percent: number) {
+      if (videoRef.current) {
+         const duration = videoRef.current?.duration ?? 0;
+         const time = (duration / 100) * percent;
+         videoRef.current.currentTime = time;
+         setCurrentTime(time);
+      }
+   }
 
-	function togglePlaying(e: MouseEvent) {
-		if (audioProgress.dragging || videoProgress.dragging || e.button !== 0) {
-			return;
-		}
+   function updateCurrentAudioPercent(percent: number) {
+      setCurrentAudioPercent(percent);
+      if (videoRef.current) {
+         videoRef.current.volume = percent / 100;
+      }
+   }
 
-		if (playing) {
-			videoRef.current?.pause();
-		} else {
-			videoRef.current?.play();
-		}
-	}
+   function togglePlaying(e: MouseEvent) {
+      if (playing) {
+         videoRef.current?.pause();
+      } else {
+         videoRef.current?.play();
+      }
+   }
 
-	return (
-		// biome-ignore lint/a11y/noStaticElementInteractions: This is only mouseup
-		<div
-			ref={containerRef}
-			style={{ width: `${props.width}px`, height: `${props.height}px` }}
-			className={clsx("group/video relative flex overflow-hidden rounded-md")}
-			onMouseUp={togglePlaying}
-		>
-			<video
-				width={isFullscreen ? undefined : props.width}
-				height={isFullscreen ? undefined : props.height}
-				style={isFullscreen ? undefined : { width: `${props.width}px`, height: `${props.height}px` }}
-				src={props.url}
-				ref={videoRef}
-				onLoadedData={() => setLoaded(true)}
-				onError={() => setErrored(true)}
-			/>
-			<Transition show={!loaded || errored}>
-				<div
-					className={clsx(!errored && "absolute inset-0", "flex items-center justify-center bg-surface/40 duration-200 data-closed:opacity-0")}
-					style={{ width: `${props.width}px`, height: `${props.height}px` }}
-				>
-					{!loaded && !errored && <LoadingIcon className="size-16" />}
-					{errored && <IconMingcuteWarningFill className="size-16 text-negative-100" />}
-				</div>
-			</Transition>
-			{/** biome-ignore lint/a11y/noStaticElementInteractions: This is not interactive*/}
-			<div
-				className={clsx(
-					"absolute inset-x-0 bottom-0 flex items-center gap-x-4 bg-surface-deep/90 px-2 py-2 transition-[opacity,transform]",
-					playing && "translate-y-full opacity-0 group-hover/video:translate-y-0 group-hover/video:opacity-100",
-				)}
-				onMouseUp={(e) => {
-					const closest = mouseDownElement.current?.closest("#allow-click");
-					if (!closest) {
-						e.stopPropagation();
-					}
-					mouseDownElement.current = null;
-				}}
-				onMouseDown={(e) => {
-					mouseDownElement.current = e.target as HTMLDivElement;
-				}}
-			>
-				<button type="button" onClick={togglePlaying} className="shrink-0 text-white/80 hover:text-white">
-					{playing ? <IconMingcutePauseFill className="size-6" /> : <IconMingcutePlayFill className="size-6" />}
-				</button>
-				<div className="shrink-0 text-sm">
-					{formatSeconds(videoTime)} / {formatSeconds(videoDuration)}
-				</div>
-				<ProgressBar id="allow-click" {...videoProgress} orientation="horizontal" onPercentageChange={setVideoPercentage} />
-				<VolumeBar id="allow-click" {...audioProgress} onPercentageChange={setAudioPercentage} />
-				<button type="button" className="shrink-0 text-white/80 hover:text-white" onClick={toggleFullscreen}>
-					{isFullscreen ? <IconMingcuteFullscreenExitFill className="size-6" /> : <IconMingcuteFullscreenFill className="size-6" />}
-				</button>
-			</div>
-		</div>
-	);
+   return (
+      <div
+         ref={containerRef}
+         style={{ width: `${props.width}px`, height: `${props.height}px` }}
+         className={clsx("group/video relative flex overflow-hidden rounded-md")}
+         onClick={togglePlaying}
+      >
+         <video
+            width={isFullscreen ? undefined : props.width}
+            height={isFullscreen ? undefined : props.height}
+            style={isFullscreen ? undefined : { width: `${props.width}px`, height: `${props.height}px` }}
+            src={props.url}
+            ref={videoRef}
+            onLoadedData={() => setLoaded(true)}
+            onError={() => setErrored(true)}
+         />
+         <Transition show={!loaded || errored}>
+            <div
+               className={clsx(!errored && "absolute inset-0", "bg-surface/40 data-closed:opacity-0 flex items-center justify-center duration-200")}
+               style={{ width: `${props.width}px`, height: `${props.height}px` }}
+            >
+               {!loaded && !errored && <LoadingIcon className="size-16" />}
+               {errored && <IconMingcuteWarningFill className="text-negative-100 size-16" />}
+            </div>
+         </Transition>
+         <div
+            onClick={(e) => e.stopPropagation()}
+            className={clsx(
+               "bg-surface-deep/90 absolute inset-x-0 bottom-0 flex items-center gap-x-4 px-2 py-2 transition-[translate]",
+               playing && "translate-y-full group-hover/video:translate-y-0",
+            )}
+         >
+            <button type="button" onClick={togglePlaying} className="shrink-0 cursor-pointer text-white/80 hover:text-white">
+               {playing ? <IconMingcutePauseFill className="size-6" /> : <IconMingcutePlayFill className="size-6" />}
+            </button>
+            {(isFullscreen || props.width >= VIDEO_TIMESTAMP_REQUIRED_WIDTH) && (
+               <div className="shrink-0 text-sm">
+                  {formatSeconds(currentTime)} / {formatSeconds(videoDuration)}
+               </div>
+            )}
+            <Slider
+               orientation="horizontal"
+               currentPercent={currentVideoPercent}
+               bufferedPercent={bufferedPercent}
+               onChange={updateCurrentVideoPercent}
+            />
+            <VolumeSlider currentPercent={currentAudioPercent} onChange={updateCurrentAudioPercent} />
+            <button type="button" className="shrink-0 cursor-pointer text-white/80 hover:text-white" onClick={toggleFullscreen}>
+               {isFullscreen ? <IconMingcuteFullscreenExitFill className="size-6" /> : <IconMingcuteFullscreenFill className="size-6" />}
+            </button>
+         </div>
+      </div>
+   );
 }
