@@ -1,1 +1,3 @@
-### **Voice Reliability 99% -- WE ARE ALMOST THERE!**
+### **Voice Reliability 98% -- OK FOR REAL!!**
+
+- Slightly better VAD

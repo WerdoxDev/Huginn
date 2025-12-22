@@ -139,9 +139,9 @@ export function initializeVoice() {
          const thisStore = store.getState();
 
          //TODO: A BETTER WAY IS TO NOT SET USER VC STATUS TI DISCONNECT DIRECTLY AFTER GATEWAY DISCONNECT
-         if (d.userId === client.currentUser?.id && client.gateway.status !== "authenticated" && d.sessionId === client.gateway.sessionId) {
-            return;
-         }
+         // if (d.userId === client.currentUser?.id && client.gateway.status !== "authenticated" && d.sessionId === client.gateway.sessionId) {
+         //    return;
+         // }
 
          // our user's voice state update
          if (d.userId === client?.currentUser?.id && d.sessionId === client.gateway.sessionId) {
