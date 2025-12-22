@@ -10,8 +10,9 @@ export class AudioLevelChecker {
    public readonly kind?: HMediaKind;
    public isStopped = false;
    public currentDb = 0;
-
    public onAudioLevel?: (db: number) => void;
+
+   private messageHandler?: (event: MessageEvent<number>) => void;
 
    public constructor(producerId?: string, consumerId?: string, userId?: string, kind?: HMediaKind) {
       this.producerId = producerId;
@@ -28,6 +29,7 @@ export class AudioLevelChecker {
 
       this.stream = stream;
       this.audioContext = new AudioContext();
+
       await this.audioContext.audioWorklet.addModule(new URL("volume-processor.js", import.meta.url));
 
       if (this.isStopped) {
@@ -37,27 +39,42 @@ export class AudioLevelChecker {
 
       const source = this.audioContext.createMediaStreamSource(stream);
       this.volumeNode = new AudioWorkletNode(this.audioContext, "volume-processor");
-
       source.connect(this.volumeNode).connect(this.audioContext.destination);
 
-      this.volumeNode.port.onmessage = (event: MessageEvent<{ db: number }>) => {
-         if (!this.isStopped) {
-            this.currentDb = event.data.db;
-            this.onAudioLevel?.(event.data.db);
+      const random = Math.random();
+      let last = 0;
+
+      this.messageHandler = (event: MessageEvent<number>) => {
+         if (this.isStopped) return;
+
+         if (performance.now() - last > 1000) {
+            console.log(this.userId, this.kind, this.producerId, this.consumerId, random, event.data);
+            last = performance.now();
          }
+         this.currentDb = event.data;
+         this.onAudioLevel?.(event.data);
       };
+
+      this.volumeNode.port.onmessage = this.messageHandler;
    }
 
    public stopChecking() {
       log("app:audio-level-checker", "default", "stop checking");
-
       this.isStopped = true;
+
+      if (this.volumeNode?.port && this.messageHandler) {
+         this.volumeNode.port.onmessage = null;
+      }
+
       this.onAudioLevel = undefined;
+      this.messageHandler = undefined;
+
       this.volumeNode?.port.close();
       this.volumeNode?.disconnect();
       this.audioContext?.close();
 
       this.volumeNode = undefined;
       this.audioContext = undefined;
+      this.stream = undefined;
    }
 }

@@ -13,7 +13,7 @@ import { VoiceDebugger } from "./voice-debugger";
 export class VoiceBridge extends Voice {
    public readonly audioSourcePlayers: AudioSourcePlayer[] = [];
    // Map<producerId, ALC>
-   public readonly audioLevelCheckers = new Map<string, AudioLevelChecker>();
+   public readonly audioLevelCheckers = new Map<Snowflake, AudioLevelChecker>();
    public readonly inputDevice: VoiceInputDevice;
    private loopbackDataUnlisten?: () => void;
    public readonly debugger: VoiceDebugger;
@@ -73,8 +73,14 @@ export class VoiceBridge extends Voice {
 
          const { userId, mediaKind } = consumer.appData;
 
+         const existingAudioLevel = this.audioLevelCheckers.get(userId);
+         if (existingAudioLevel) {
+            existingAudioLevel.stopChecking();
+            this.audioLevelCheckers.delete(userId);
+         }
+
          const audioLevel = new AudioLevelChecker(consumer.producerId, consumer.id, userId, mediaKind);
-         this.audioLevelCheckers.set(consumer.producerId, audioLevel);
+         this.audioLevelCheckers.set(userId, audioLevel);
 
          await audioLevel.startChecking(new MediaStream([consumer.track]));
          audioLevel.onAudioLevel = (db: number) => {
@@ -120,9 +126,9 @@ export class VoiceBridge extends Voice {
       const voice = voiceStore.getState();
 
       if (data.kind === "microphone") {
-         const audioLevel = this.audioLevelCheckers.get(data.producerId);
+         const audioLevel = this.audioLevelCheckers.get(data.userId);
          audioLevel?.stopChecking();
-         this.audioLevelCheckers.delete(data.producerId);
+         this.audioLevelCheckers.delete(data.userId);
 
          voice.removeSpeakingState(data.userId);
       }

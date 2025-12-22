@@ -112,58 +112,62 @@ export class VoiceInputDevice {
       this.audioLevel = new AudioLevelChecker();
       this.audioLevel.startChecking(stream);
       this.audioLevel.onAudioLevel = (db) => onAudioLevel(this.client, db);
-      const tolerance = 0;
-      let timeout: number | undefined;
-      let lastState = true;
+
+      let speaking = false;
+      let hangoverUntil = 0;
       let lastMuteState = false;
+
+      function setSpeaking(client: HuginnClient, voice: ReturnType<typeof voiceStore.getState>, userId: string, value: boolean) {
+         if (speaking === value) return;
+
+         speaking = value;
+         client.voiceManager.voiceState.updateLocalVoiceState({
+            isAudioPaused: !value,
+         });
+         voice.updateSpeakingState(userId, value);
+      }
 
       function onAudioLevel(client: HuginnClient, db: number) {
          const settings = storageStore.getState().getCachedValue("settings");
-         const userId = client?.currentUser?.id ?? "";
+
+         const OPEN_DB = settings.inputThreshold;
+         const CLOSE_DB = settings.inputThreshold - 10; // hysteresis gap
+         const HANGOVER_MS = 50;
+
          const voice = voiceStore.getState();
+         const userId = client?.currentUser?.id ?? "";
          const isMuted = client?.voiceManager.voiceState.gatewayVoiceState.isAudioMuted ?? false;
 
-         // Handle mute state changes
+         const now = performance.now();
+
+         /* ---------------- MUTE HANDLING ---------------- */
+
          if (isMuted !== lastMuteState) {
             lastMuteState = isMuted;
+
             if (isMuted) {
-               // User just muted - pause audio and stop speaking state
-               client.voiceManager.voiceState.updateLocalVoiceState({ isAudioPaused: true });
-               voice.updateSpeakingState(userId, false);
-               clearTimeout(timeout);
-               timeout = undefined;
-            } else if (db > settings.inputThreshold) {
-               // User just unmuted while speaking - unpause audio
-               client.voiceManager.voiceState.updateLocalVoiceState({ isAudioPaused: false });
-               voice.updateSpeakingState(userId, true);
+               setSpeaking(client, voice, userId, false);
             }
             return;
          }
 
-         // Don't process audio levels if muted
-         if (isMuted) {
-            return;
-         }
+         if (isMuted) return;
 
-         if (db > settings.inputThreshold) {
-            lastState = true;
-            if (timeout) {
-               return;
+         /* ---------------- VAD LOGIC ---------------- */
+
+         if (!speaking) {
+            // SILENT → VOICE
+            if (db >= OPEN_DB) {
+               hangoverUntil = now + HANGOVER_MS;
+               setSpeaking(client, voice, userId, true);
             }
-            clearTimeout(timeout);
-            timeout = window.setTimeout(() => {
-               if (!lastState) {
-                  client.voiceManager.voiceState.updateLocalVoiceState({ isAudioPaused: true });
-                  voice.updateSpeakingState(userId, false);
-               }
-               timeout = undefined;
-            }, 700);
-            if (client?.voiceManager.voiceState.localVoiceState.isAudioPaused) {
-               client.voiceManager.voiceState.updateLocalVoiceState({ isAudioPaused: false });
-               voice.updateSpeakingState(userId, true);
+         } else {
+            // VOICE → SILENT (with hysteresis + hangover)
+            if (db >= CLOSE_DB) {
+               hangoverUntil = now + HANGOVER_MS;
+            } else if (now > hangoverUntil) {
+               setSpeaking(client, voice, userId, false);
             }
-         } else if (db <= settings.inputThreshold - tolerance) {
-            lastState = false;
          }
       }
 
