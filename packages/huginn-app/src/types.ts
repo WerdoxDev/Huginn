@@ -207,7 +207,13 @@ export type DropdownMenuItemProps = {
 export type ContextMenuRelationship = { user: AppUser; type: RelationshipType };
 export type ContextMenuDMChannel = AppDirectChannel;
 export type ContextMenuDMChannelRecipient = { channelId: Snowflake; recipient: AppUser };
-export type ContextMenuVoiceElement = { user: AppUser; channelId: Snowflake; mediaSource: MediaSource; secondMediaSource?: MediaSource };
+export type ContextMenuVoiceElement = {
+   user: AppUser;
+   guildId: Snowflake | null;
+   channelId: Snowflake;
+   mediaSource: MediaSource;
+   secondMediaSource?: MediaSource;
+};
 export type ContextMenuMessage = { message: AppMessage; url?: string; imgRef?: RefObject<HTMLImageElement | null> };
 
 export type ProcessedMessage = AppMessage & {

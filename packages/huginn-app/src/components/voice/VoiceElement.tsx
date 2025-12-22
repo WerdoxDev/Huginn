@@ -63,12 +63,7 @@ export default function VoiceElement(props: {
       e.stopPropagation();
 
       setIsLoadingStream(true);
-
-      if (client?.voice.status !== "ready") {
-         await client?.voiceManager.connectVoice(props.guildId, props.channelId);
-      }
-
-      await consumeStream(props.userId);
+      await consumeStream(props.userId, props.guildId, props.channelId);
       setIsLoadingStream(false);
    }
 
@@ -82,6 +77,7 @@ export default function VoiceElement(props: {
             user: user,
             mediaSource: props.mediaSource,
             secondMediaSource: props.secondMediaSource,
+            guildId: props.guildId,
             channelId: props.channelId,
          },
          e,

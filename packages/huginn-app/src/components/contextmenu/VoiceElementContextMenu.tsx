@@ -44,7 +44,7 @@ export default function VoiceElementContextMenu() {
          return;
       }
 
-      await consumeStream(data.user.id);
+      await consumeStream(data.user.id, data.guildId, data.channelId);
    }
 
    async function unconsume() {

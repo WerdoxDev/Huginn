@@ -5,7 +5,7 @@ import { useModals } from "@stores/modalsStore";
 import { useStorage } from "@stores/storageStore";
 import { useThisUser } from "@stores/userStore";
 import { getMediaErrorMessage } from "@lib/utils";
-import type { Snowflake } from "@huginn/shared";
+import { error, type Snowflake } from "@huginn/shared";
 import type { VoiceStreamOptions } from "@huginn/api";
 
 export function useVoiceUtils() {
@@ -98,7 +98,7 @@ export function useVoiceUtils() {
             });
          }
       } catch (e) {
-         console.error(e);
+         error("app:hooks", "Open screen share failed", e);
          updateModals({
             info: { status: "error", title: "Screen Sharing Failed", text: getMediaErrorMessage(e, "screen"), isOpen: true },
          });
@@ -147,15 +147,21 @@ export function useVoiceUtils() {
             await client?.voice.device.openCamera(track);
          }
       } catch (e) {
-         console.error(e);
+         error("app:hooks", "Open camera failed", e);
          updateModals({
             info: { status: "error", title: "Opening Camera Failed", text: getMediaErrorMessage(e, "camera"), isOpen: true },
          });
       }
    }
 
-   async function consumeStream(userId: Snowflake) {
+   async function consumeStream(userId: Snowflake, guildId: Snowflake | null, channelId: Snowflake) {
       try {
+         if (client?.voice.status === "disconnected") throw new Error("Voice is disconnected");
+
+         if (client?.voice.status !== "ready") {
+            await client?.voiceManager.connectVoice(guildId, channelId);
+         }
+
          const remoteProducers = client?.voice.transport.getRemoteProducers();
 
          if (remoteProducers?.some((x) => x.kind === "stream_video" && x.userId === userId)) {
@@ -165,7 +171,7 @@ export function useVoiceUtils() {
             await client?.voice.transport.createConsumer(userId, "stream_audio");
          }
       } catch (e) {
-         console.error(e);
+         error("app:hooks", "Consume stream failed", e);
          updateModals({
             info: {
                status: "error",
@@ -189,7 +195,7 @@ export function useVoiceUtils() {
             await client?.voice.transport.closeConsumer(audioConsumer.id);
          }
       } catch (e) {
-         console.error(e);
+         error("app:hooks", "Unconsume stream failed", e);
          updateModals({
             info: {
                status: "error",
@@ -219,7 +225,7 @@ export function useVoiceUtils() {
       try {
          await client?.voice.stream.closeStream();
       } catch (e) {
-         console.error(e);
+         error("app:hooks", "Close stream failed", e);
          updateModals({
             info: {
                status: "error",
@@ -235,7 +241,7 @@ export function useVoiceUtils() {
       try {
          await client?.voice.device.closeCamera();
       } catch (e) {
-         console.error(e);
+         error("app:hooks", "Close camera failed", e);
          updateModals({
             info: { status: "error", title: "Closing Camera Failed", text: getMediaErrorMessage(e, "camera"), isOpen: true },
          });
