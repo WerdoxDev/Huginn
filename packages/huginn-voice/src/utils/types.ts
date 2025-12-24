@@ -1,5 +1,5 @@
 import type { APIUser, MediasoupAppData, Snowflake } from "@huginn/shared";
-import type { Consumer, Producer, Router, Transport } from "mediasoup/types";
+import type { Consumer, Producer, Router, Transport, WebRtcTransport } from "mediasoup/types";
 
 export type ClientSessionProperties = {
    token: string;
@@ -11,7 +11,7 @@ export type ClientSessionProperties = {
 export type RTCPeer = {
    sessionId: Snowflake;
    userId: Snowflake;
-   transports: Map<string, { transport: Transport; direction: "send" | "recv" }>;
+   transports: Map<string, { transport: WebRtcTransport; direction: "send" | "recv" }>;
    producers: Map<string, Producer<MediasoupAppData>>;
    consumers: Map<string, Consumer<MediasoupAppData>>;
 };

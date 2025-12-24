@@ -17,6 +17,7 @@ import {
    VoiceOperations,
    type VoicePayload,
    type VoiceProduceData,
+   type VoiceRestartIceData,
    type VoiceResumeConsumerData,
    type VoiceResumeData,
    VoiceSignallingError,
@@ -110,17 +111,22 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                case "connect_transport":
                   await this.onConnectTransport(session, data.d);
                   break;
+               case "restart_ice":
+                  await this.onRestartIce(session, data.d);
+                  break;
+
                case "produce":
                   await this.onProduce(session, data.d);
                   break;
+               case "close_producer":
+                  this.onCloseProducer(session, data.d);
+                  break;
+
                case "consume":
                   await this.onConsume(session, data.d);
                   break;
                case "resume_consumer":
                   await this.onResumeConsumer(session, data.d);
-                  break;
-               case "close_producer":
-                  this.onCloseProducer(session, data.d);
                   break;
                case "close_consumer":
                   this.onCloseConsumer(session, data.d);
@@ -271,10 +277,10 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             router,
             {
                op: VoiceOperations.DISPATCH,
-               t: "new_consumer",
+               t: "consumer_created",
                d: { kind: consumer.appData.mediaKind, consumerId: consumer.id, producerId: producer.id, userId: rtcPeer.userId },
             },
-            session,
+            { excludeSession: session },
          );
       } catch (e) {
          console.error(e);
@@ -361,10 +367,10 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             router,
             {
                op: VoiceOperations.DISPATCH,
-               t: "new_producer",
+               t: "producer_created",
                d: { kind: data.kind, producerId: producer.id, userId: rtcPeer.userId },
             },
-            session,
+            { excludeSession: session },
          );
       } catch (e) {
          console.error(e);
@@ -470,6 +476,45 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       }
    }
 
+   private async onRestartIce(session: ClientSession, data: VoiceRestartIceData) {
+      try {
+         const router = routers.get(data.channelId);
+
+         if (!verifyPeer(router, session, data.channelId)) return;
+
+         const rtcPeer = router.peers.get(session.sessionId)!;
+         const transportData = rtcPeer.transports.get(data.transportId);
+
+         if (!transportData) {
+            session.send(
+               {
+                  op: VoiceOperations.DISPATCH,
+                  t: "restart_ice_result",
+                  d: { error: VoiceSignallingError.UNKNOWN_TRANSPORT, nonce: data.nonce },
+               },
+               true,
+               true,
+            );
+            return;
+         }
+
+         const iceParameters = await transportData.transport.restartIce();
+
+         session.send({ op: VoiceOperations.DISPATCH, t: "restart_ice_result", d: { iceParameters, nonce: data.nonce } }, true, true);
+      } catch (e) {
+         console.error(e);
+         session.send(
+            {
+               op: VoiceOperations.DISPATCH,
+               t: "restart_ice_result",
+               d: { error: VoiceSignallingError.UNKNOWN_ERROR, nonce: data.nonce },
+            },
+            true,
+            true,
+         );
+      }
+   }
+
    private onCloseProducer(session: ClientSession, data: VoiceCloseProducerData) {
       try {
          const router = routers.get(data.channelId);
@@ -495,26 +540,33 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          producer.close();
          rtcPeer.producers.delete(producer.id);
 
-         for (const [otherSessionId, otherPeer] of router.peers) {
-            // See if any consumers of this peer was consuming the deleted producer
+         session.send(
+            {
+               op: VoiceOperations.DISPATCH,
+               t: "close_producer_result",
+               d: { producerId: producer.id, userId: rtcPeer.userId, kind: producer.appData.mediaKind, nonce: data.nonce },
+            },
+            true,
+            true,
+         );
+
+         // See if any consumers of this peer was consuming the deleted producer
+         for (const otherPeer of router.peers.values()) {
             for (const consumer of otherPeer.consumers.values().filter((x) => x.producerId === producer.id)) {
                consumer.close();
                otherPeer.consumers.delete(consumer.id);
             }
-
-            const otherSession = this.getSession(otherSessionId);
-            if (!otherSession) continue;
-
-            otherSession.send(
-               {
-                  op: VoiceOperations.DISPATCH,
-                  t: "close_producer_result",
-                  d: { producerId: producer.id, userId: rtcPeer.userId, kind: producer.appData.mediaKind, nonce: data.nonce },
-               },
-               true,
-               true,
-            );
          }
+
+         this.broadcastToRouter(
+            router,
+            {
+               op: VoiceOperations.DISPATCH,
+               t: "producer_closed",
+               d: { producerId: producer.id, userId: rtcPeer.userId, kind: producer.appData.mediaKind },
+            },
+            { excludeSession: session },
+         );
       } catch (e) {
          console.error(e);
          session.send(
@@ -554,17 +606,31 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          consumer.close();
          rtcPeer.consumers.delete(consumer?.id);
 
-         this.broadcastToRouter(router, {
-            op: VoiceOperations.DISPATCH,
-            t: "close_consumer_result",
-            d: {
-               producerId: consumer.producerId,
-               userId: rtcPeer.userId,
-               consumerId: consumer.id,
-               kind: consumer.appData.mediaKind,
-               nonce: data.nonce,
+         session.send(
+            {
+               op: VoiceOperations.DISPATCH,
+               t: "consumer_closed",
+               d: { consumerId: consumer.id, kind: consumer.appData.mediaKind, producerId: consumer.producerId, userId: rtcPeer.userId },
             },
-         });
+            true,
+            true,
+         );
+
+         this.broadcastToRouter(
+            router,
+            {
+               op: VoiceOperations.DISPATCH,
+               t: "close_consumer_result",
+               d: {
+                  producerId: consumer.producerId,
+                  userId: rtcPeer.userId,
+                  consumerId: consumer.id,
+                  kind: consumer.appData.mediaKind,
+                  nonce: data.nonce,
+               },
+            },
+            { excludeSession: session },
+         );
       } catch (e) {
          console.error(e);
          session.send(
@@ -668,9 +734,9 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       session.send({ op: VoiceOperations.PONG }, false, true);
    }
 
-   private broadcastToRouter(router: RouterData, data: VoicePayload, excludeSession?: ClientSession) {
+   private broadcastToRouter(router: RouterData, data: VoicePayload, options?: { excludeSession?: ClientSession }) {
       for (const [otherSessionId] of router.peers) {
-         if (otherSessionId === excludeSession?.sessionId) continue;
+         if (otherSessionId === options?.excludeSession?.sessionId) continue;
 
          const otherSession = this.getSession(otherSessionId);
          if (!otherSession) continue;
