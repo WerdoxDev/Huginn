@@ -4,15 +4,23 @@ import {
    GatewayCode,
    log,
    VoiceOperations,
+   VoiceSignallingError,
    type HMediaKind,
    type Snowflake,
+   type VoiceCloseConsumerResult,
+   type VoiceCloseProducerResult,
+   type VoiceConnectTransportResult,
    type VoiceConsumeResultData,
+   type VoiceCreateTransportData,
+   type VoiceCreateTransportResult,
+   type VoiceError,
    type VoiceHeartbeat,
    type VoiceHelloData,
-   type VoiceIdentify,
    type VoicePayload,
    type VoicePing,
+   type VoiceProduceResult,
    type VoiceReadyData,
+   type VoiceResumeConsumerResult,
    type VoiceWebsocketEvents,
 } from "@huginn/shared";
 import { EventEmitter } from "./event-emitter";
@@ -77,6 +85,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       this.socket.onmessage = (e) => this.onMessage(e);
       this.socket.onerror = (e) => {
          error("api:voice-signaling", "websocket error:", e);
+         throw new Error(`Voice websocket encountered an error: ${e}`);
       };
    }
 
@@ -166,8 +175,12 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                case "close_producer_result":
                   this.emit("close_producer_result", data.d);
                   break;
-               case "new_producer":
-                  this.emit("new_producer", data.d);
+
+               case "producer_created":
+                  this.emit("producer_created", data.d);
+                  break;
+               case "producer_closed":
+                  this.emit("producer_closed", data.d);
                   break;
 
                case "consume_result":
@@ -179,8 +192,12 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                case "close_consumer_result":
                   this.emit("close_consumer_result", data.d);
                   break;
-               case "new_consumer":
-                  this.emit("new_consumer", data.d);
+
+               case "consumer_created":
+                  this.emit("consumer_created", data.d);
+                  break;
+               case "consumer_closed":
+                  this.emit("consumer_closed", data.d);
                   break;
 
                case "peer_left":
@@ -188,13 +205,10 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                   break;
             }
 
-            // this.emit(data.t, data.d);
-
             break;
          case VoiceOperations.PONG:
             this.onPong();
             break;
-         // case VoiceOperations.PING:
       }
    }
 
@@ -324,30 +338,23 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       }
    }
 
-   public sendCreateSendTransport(): void {
+   public async sendCreateTransport(direction: "send" | "recv"): Promise<VoiceCreateTransportResult> {
       this.checkStatus();
 
-      const createSendTransportData: VoicePayload = {
-         op: VoiceOperations.DISPATCH,
-         t: "create_transport",
-         d: { channelId: this.connectionData.channelId, direction: "send" },
-      };
+      const nonce = this.client.generateNonce();
+      this.send({ op: VoiceOperations.DISPATCH, t: "create_transport", d: { channelId: this.connectionData.channelId, direction, nonce } });
 
-      this.send(createSendTransportData);
-   }
-   public sendCreateRecvTransport(): void {
-      this.checkStatus();
-
-      const createRecvTransportData: VoicePayload = {
-         op: VoiceOperations.DISPATCH,
-         t: "create_transport",
-         d: { channelId: this.connectionData?.channelId, direction: "recv" },
-      };
-
-      this.send(createRecvTransportData);
+      return await new Promise<VoiceCreateTransportResult>((res) => {
+         const unlisten = this.listen("create_transport_result", (d) => {
+            if (d.nonce === nonce) {
+               unlisten();
+               res(d);
+            }
+         });
+      });
    }
 
-   public async sendConnectTransport(transportId: string, dtlsParameters: DtlsParameters): Promise<void> {
+   public async sendConnectTransport(transportId: string, dtlsParameters: DtlsParameters): Promise<VoiceConnectTransportResult> {
       this.checkStatus();
       const channelId = this.connectionData?.channelId;
 
@@ -363,19 +370,17 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       this.send(connectTransportData);
 
       // Wait for the transport to get connected
-      await new Promise<void>((res, rej) => {
+      return await new Promise<VoiceConnectTransportResult>((res) => {
          const unlisten = this.listen("connect_transport_result", (d) => {
             if (d.nonce === nonce) {
                unlisten();
-
-               if ("error" in d) rej(d.error);
-               else res();
+               res(d);
             }
          });
       });
    }
 
-   public async sendCreateProducer(kind: HMediaKind, transportId: string, rtpParameters: RtpParameters): Promise<string> {
+   public async sendCreateProducer(kind: HMediaKind, transportId: string, rtpParameters: RtpParameters): Promise<VoiceProduceResult> {
       this.checkStatus();
       const channelId = this.connectionData?.channelId;
 
@@ -391,21 +396,17 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       this.send(produceData);
 
       // Wait for the producer to be created
-      const producerId = await new Promise<string>((res, rej) => {
+      return await new Promise<VoiceProduceResult>((res) => {
          const unlisten = this.listen("produce_result", (d) => {
             if (d.nonce === nonce) {
                unlisten();
-
-               if ("error" in d) rej(d.error);
-               else res(d.producerId);
+               res(d);
             }
          });
       });
-
-      return producerId;
    }
 
-   public async sendCloseProducer(producerId: string): Promise<void> {
+   public async sendCloseProducer(producerId: string): Promise<VoiceCloseProducerResult> {
       this.checkStatus();
       const channelId = this.connectionData?.channelId;
 
@@ -415,18 +416,16 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       const closeProducerData: VoicePayload = {
          op: VoiceOperations.DISPATCH,
          t: "close_producer",
-         d: { channelId, producerId, nonce },
+         d: { producerId, channelId, nonce },
       };
 
       this.send(closeProducerData);
 
-      await new Promise<void>((res, rej) => {
+      return await new Promise<VoiceCloseProducerResult>((res) => {
          const unlisten = this.listen("close_producer_result", (d) => {
             if (d.nonce === nonce) {
                unlisten();
-
-               if ("error" in d) rej(d.error);
-               else res();
+               res(d);
             }
          });
       });
@@ -448,7 +447,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       this.send(consumeData);
 
       // Wait for the consumer to be created
-      const result = await new Promise<VoiceConsumeResultData>((res, rej) => {
+      return await new Promise<VoiceConsumeResultData>((res, rej) => {
          const unlisten = this.listen("consume_result", (d) => {
             if (d.nonce === nonce) {
                unlisten();
@@ -458,11 +457,9 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
             }
          });
       });
-
-      return result;
    }
 
-   public async sendResumeConsumer(consumerId: string): Promise<void> {
+   public async sendResumeConsumer(consumerId: string): Promise<VoiceResumeConsumerResult> {
       this.checkStatus();
       const channelId = this.connectionData.channelId;
 
@@ -477,19 +474,17 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
 
       this.send(resumeConsumerData);
 
-      await new Promise<void>((res, rej) => {
+      return await new Promise<VoiceResumeConsumerResult>((res) => {
          const unlisten = this.listen("resume_consumer_result", (d) => {
             if (d.nonce === nonce) {
                unlisten();
-
-               if ("error" in d) rej(d.error);
-               else res();
+               res(d);
             }
          });
       });
    }
 
-   public async sendCloseConsumer(consumerId: string): Promise<void> {
+   public async sendCloseConsumer(consumerId: string): Promise<VoiceCloseConsumerResult> {
       this.checkStatus();
       const channelId = this.connectionData.channelId;
 
@@ -504,13 +499,11 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
 
       this.send(closeConsumerData);
 
-      await new Promise<void>((res, rej) => {
+      return await new Promise<VoiceCloseConsumerResult>((res) => {
          const unlisten = this.listen("close_consumer_result", (d) => {
             if (d.nonce === nonce) {
                unlisten();
-
-               if ("error" in d) rej(d.error);
-               else res();
+               res(d);
             }
          });
       });

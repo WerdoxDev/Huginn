@@ -54,8 +54,21 @@ export class Voice extends EventEmitter<Events> {
 
       this.signaling.on("ready", async (d) => {
          await this.transport.initializeDevice(d.rtpCapabilities);
-         this.signaling.sendCreateSendTransport();
-         this.signaling.sendCreateRecvTransport();
+         const sendResult = await this.signaling.sendCreateTransport("send");
+         const recvResult = await this.signaling.sendCreateTransport("recv");
+
+         if ("error" in sendResult) {
+            error("api:voice", "creating send transport failed:", sendResult.error);
+            return;
+         }
+
+         if ("error" in recvResult) {
+            error("api:voice", "creating receive transport failed:", recvResult.error);
+            return;
+         }
+
+         await this.transport.createSendTransport(sendResult.params);
+         await this.transport.createRecvTransport(recvResult.params);
 
          for (const producer of d.producers) {
             this.transport.addRemoteProducer(producer);
@@ -66,33 +79,15 @@ export class Voice extends EventEmitter<Events> {
          }
       });
 
-      this.signaling.on("new_producer", (d) => {
+      this.signaling.on("producer_created", (d) => {
          this.transport.addRemoteProducer(d);
       });
 
-      this.signaling.on("new_consumer", (d) => {
+      this.signaling.on("consumer_created", (d) => {
          this.transport.addRemoteConsumer(d);
       });
 
-      this.signaling.on("create_transport_result", async (d) => {
-         if ("error" in d) {
-            error("api:voice", "create transport failed:", d.error);
-            return;
-         }
-
-         if (d.direction === "send") {
-            await this.transport.createSendTransport(d.params);
-         } else if (d.direction === "recv") {
-            await this.transport.createRecvTransport(d.params);
-         }
-      });
-
-      this.signaling.on("close_producer_result", async (d) => {
-         if ("error" in d) {
-            error("api:voice", "close producer failed:", d.error);
-            return;
-         }
-
+      this.signaling.on("producer_closed", async (d) => {
          this.transport.removeRemoteProducer(d.producerId);
 
          // Remove any remote consumers that are consuming this producer
@@ -107,23 +102,16 @@ export class Voice extends EventEmitter<Events> {
          }
       });
 
-      this.signaling.on("close_consumer_result", (d) => {
-         if ("error" in d) {
-            error("api:voice", "close consumer failed:", d.error);
-            return;
-         }
-
+      this.signaling.on("consumer_closed", (d) => {
          this.transport.removeRemoteConsumer(d.consumerId);
       });
 
       this.signaling.on("peer_left", async (d) => {
          for (const producerId of d.producerIds) {
-            console.log("LEFT", producerId);
             this.transport.removeRemoteProducer(producerId);
 
             const consumers = this.transport.getConsumers().filter((x) => x.producerId === producerId);
             for (const consumer of consumers) {
-               console.log(consumer.producerId);
                await this.transport.closeConsumer(consumer.id, true);
             }
          }
@@ -146,18 +134,19 @@ export class Voice extends EventEmitter<Events> {
       this.transport.on("status_changed", () => this.recalculateStatus());
 
       this.transport.on("connect_transport", async (d) => {
-         await this.signaling.sendConnectTransport(d.transportId, d.dtlsParameters);
-         d.callback();
+         const result = await this.signaling.sendConnectTransport(d.transportId, d.dtlsParameters);
+         console.log(result);
+         d.callback(result);
       });
 
       this.transport.on("create_producer", async (d) => {
-         const id = await this.signaling.sendCreateProducer(d.kind, d.transportId, d.rtpParameters);
-         d.callback(id);
+         const result = await this.signaling.sendCreateProducer(d.kind, d.transportId, d.rtpParameters);
+         d.callback(result);
       });
 
       this.transport.on("close_producer", async (d) => {
-         await this.signaling.sendCloseProducer(d.id);
-         d.callback();
+         const result = await this.signaling.sendCloseProducer(d.id);
+         d.callback(result);
       });
 
       this.transport.on("create_consumer", async (d) => {
@@ -166,22 +155,21 @@ export class Voice extends EventEmitter<Events> {
       });
 
       this.transport.on("resume_consumer", async (d) => {
-         await this.signaling.sendResumeConsumer(d.id);
-         d.callback();
+         const result = await this.signaling.sendResumeConsumer(d.id);
+         d.callback(result);
       });
 
       this.transport.on("close_consumer", async (d) => {
-         await this.signaling.sendCloseConsumer(d.id);
-         d.callback();
+         const result = await this.signaling.sendCloseConsumer(d.id);
+         d.callback(result);
       });
 
       this.transport.on("transport_disconnected", async () => {
-         log("api:voice", "default", "transport disconnected");
-         this.signaling.checkStatus();
-         const connectionData = { ...this.signaling.connectionData };
-         this.signaling.hardReset();
-         await this.client.voiceManager.connectVoice(connectionData.guildId ?? null, connectionData.channelId, connectionData.token);
-         log("api:voice", "default", "voice recovery successful");
+         // this.signaling.checkStatus();
+         // const connectionData = { ...this.signaling.connectionData };
+         // this.signaling.hardReset();
+         // await this.client.voiceManager.connectVoice(connectionData.guildId ?? null, connectionData.channelId, connectionData.token);
+         // log("api:voice", "default", "voice recovery successful");
       });
    }
 
@@ -205,7 +193,7 @@ export class Voice extends EventEmitter<Events> {
          finalStatus = "idle";
       }
 
-      console.log(transportStatus, signalingStatus, finalStatus);
+      log("api:voice", "default", "status changed", "ts:", transportStatus, "ss:", signalingStatus, "fs:", finalStatus);
 
       if (finalStatus !== this._status) {
          this.setStatus(finalStatus);

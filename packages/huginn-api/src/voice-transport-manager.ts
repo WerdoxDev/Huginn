@@ -9,7 +9,14 @@ import {
    type MediasoupAppData,
    type ProducerData,
    type Snowflake,
+   type VoiceCloseConsumerResult,
+   type VoiceCloseProducerResult,
+   type VoiceConnectTransportResult,
+   type VoiceConsumeResult,
    type VoiceConsumeResultData,
+   type VoiceProduceResult,
+   type VoiceRestartIceResult,
+   type VoiceResumeConsumerResult,
 } from "@huginn/shared";
 import * as mediasoupClient from "mediasoup-client";
 import type {
@@ -30,15 +37,16 @@ import type { HuginnClient } from ".";
 type Events = {
    send_transport_ready: undefined;
    recv_transport_ready: undefined;
-   connect_transport: { transportId: string; dtlsParameters: DtlsParameters; callback: () => void };
+   connect_transport: { transportId: string; dtlsParameters: DtlsParameters; callback: (d: VoiceConnectTransportResult) => void };
+   restart_ice: { transportId: string; callback: (d: VoiceRestartIceResult) => void };
 
    create_producer: {
       kind: HMediaKind;
       transportId: string;
       rtpParameters: RtpParameters;
-      callback: (id: string) => void;
+      callback: (d: VoiceProduceResult) => void;
    };
-   close_producer: { id: string; callback: () => void };
+   close_producer: { id: string; callback: (d: VoiceCloseProducerResult) => void };
    producer_updated: { id: string; kind: HMediaKind; track: MediaStreamTrack | null };
    producer_created: Producer<MediasoupAppData>;
    producer_closed: ProducerData;
@@ -50,10 +58,10 @@ type Events = {
       transportId: string;
       rtpCapabilities: RtpCapabilities;
       callback: (d: VoiceConsumeResultData) => void;
-      errback: (d: VoiceConsumeResultData) => void;
+      // errback: (d: VoiceConsumeResultData) => void;
    };
-   resume_consumer: { id: string; callback: () => void };
-   close_consumer: { id: string; callback: () => void };
+   resume_consumer: { id: string; callback: (d: VoiceResumeConsumerResult) => void };
+   close_consumer: { id: string; callback: (d: VoiceCloseConsumerResult) => void };
    consumer_created: Consumer<MediasoupAppData>;
    consumer_closed: ConsumerData;
    remote_consumer_created: ConsumerData;
@@ -111,10 +119,25 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       }
    }
 
-   private onTransportStateChanged(state: ConnectionState, direction: "send" | "recv") {
+   private async onTransportStateChanged(state: ConnectionState, direction: "send" | "recv") {
       if (state === "disconnected" || state === "failed" || state === "closed") {
+         log("api:voice-transport", "default", "transport disconnected", "dir:", direction);
+
          this.setStatus("disconnected");
          this.emit("transport_disconnected", { direction });
+
+         this.checkTransports();
+         const transport = direction === "send" ? this.sendTransport : this.recvTransport;
+
+         const result = await new Promise<VoiceRestartIceResult>((res) => {
+            this.emit("restart_ice", { transportId: transport.id, callback: res });
+         });
+
+         if ("error" in result) {
+            throw new Error(`Failed to restart ice server for ${direction} transport: ${result.error}`);
+         }
+
+         await transport.restartIce({ iceParameters: result.iceParameters });
       }
    }
 
@@ -152,17 +175,39 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       this.sendTransport = transport;
       this.emit("send_transport_ready", undefined);
 
-      transport.on("connect", ({ dtlsParameters }, callback) => {
-         this.emit("connect_transport", { transportId: transport.id, dtlsParameters, callback });
+      transport.on("connect", ({ dtlsParameters }, callback, errback) => {
+         this.emit("connect_transport", {
+            transportId: transport.id,
+            dtlsParameters,
+            callback: (d) => {
+               if ("error" in d) {
+                  errback(new Error(`Failed to connect send transport: ${d.error}`));
+                  return;
+               }
+               callback();
+            },
+         });
       });
 
-      transport.on("produce", async ({ rtpParameters, appData }, callback) => {
+      transport.on("produce", async ({ rtpParameters, appData }, callback, errback) => {
          const kind = (appData as MediasoupAppData).mediaKind;
 
-         this.emit("create_producer", { kind, transportId: transport.id, rtpParameters, callback: (id) => callback({ id }) });
+         this.emit("create_producer", {
+            kind,
+            transportId: transport.id,
+            rtpParameters,
+            callback: (d) => {
+               if ("error" in d) {
+                  errback(new Error(`Failed to create producer: ${d.error}`));
+                  return;
+               }
+
+               callback({ id: d.producerId });
+            },
+         });
       });
 
-      transport.on("connectionstatechange", (d) => this.onTransportStateChanged(d, transport.direction));
+      transport.on("connectionstatechange", async (d) => await this.onTransportStateChanged(d, transport.direction));
       this.checkAndSetStatus();
    }
 
@@ -176,11 +221,21 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       this.recvTransport = transport;
       this.emit("recv_transport_ready", undefined);
 
-      transport.on("connect", async ({ dtlsParameters }, callback) => {
-         this.emit("connect_transport", { transportId: transport.id, dtlsParameters, callback });
+      transport.on("connect", async ({ dtlsParameters }, callback, errback) => {
+         this.emit("connect_transport", {
+            transportId: transport.id,
+            dtlsParameters,
+            callback: (d) => {
+               if ("error" in d) {
+                  errback(new Error(`Failed to connect receive transport: ${d.error}`));
+                  return;
+               }
+               callback();
+            },
+         });
       });
 
-      transport.on("connectionstatechange", (d) => this.onTransportStateChanged(d, transport.direction));
+      transport.on("connectionstatechange", async (d) => await this.onTransportStateChanged(d, transport.direction));
       this.checkAndSetStatus();
    }
 
@@ -220,6 +275,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          appData: { mediaKind: kind, userId: this.client.currentUser!.id },
          track,
       });
+
       this.producers.set(kind, producer);
 
       track.onended = () => {
@@ -237,9 +293,13 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       const producer = this.producers.get(kind);
       if (!producer) throw new Error(`Producer of kind ${kind} doesn't exist`);
 
-      await new Promise<void>((r) => {
-         this.emit("close_producer", { id: producer.id, callback: r });
+      const result = await new Promise<VoiceCloseProducerResult>((res) => {
+         this.emit("close_producer", { id: producer.id, callback: res });
       });
+
+      if ("error" in result) {
+         throw new Error(`Failed to close producer: ${result.error}`);
+      }
 
       producer.close();
       this.producers.delete(producer.appData.mediaKind);
@@ -254,22 +314,25 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
       log("api:voice-transport", "default", "create consumer", "uid:", userId, "knd:", kind, "pid:", remoteProducer.producerId);
 
-      const result = await new Promise<VoiceConsumeResultData>((res, rej) => {
+      const createResult = await new Promise<VoiceConsumeResult>((res, rej) => {
          this.emit("create_consumer", {
             producerId: remoteProducer.producerId,
             rtpCapabilities: this.device.rtpCapabilities,
             transportId: this.recvTransport.id,
             callback: res,
-            errback: rej,
          });
       });
 
+      if ("error" in createResult) {
+         throw new Error(`Failed to create consumer: ${createResult.error}`);
+      }
+
       const consumer = await this.recvTransport.consume({
-         id: result.consumerId,
-         producerId: result.producerId,
-         appData: { mediaKind: result.kind, userId: result.producerUserId },
-         rtpParameters: result.rtpParameters,
-         kind: convertToMediaKind(result.kind),
+         id: createResult.consumerId,
+         producerId: createResult.producerId,
+         appData: { mediaKind: createResult.kind, userId: createResult.producerUserId },
+         rtpParameters: createResult.rtpParameters,
+         kind: convertToMediaKind(createResult.kind),
       });
 
       // To avoid a race condition that could happen when consumer is created and right after that the producer is removed
@@ -283,12 +346,16 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       this.emit("consumer_created", consumer);
       log("api:voice-transport", "default", "consumer created", "cid:", consumer.id, "uid:", userId, "knd:", kind, "pid:", remoteProducer.producerId);
 
-      await new Promise<void>((r) => {
-         this.emit("resume_consumer", { id: consumer.id, callback: r });
+      const resumeResult = await new Promise<VoiceResumeConsumerResult>((res) => {
+         this.emit("resume_consumer", { id: consumer.id, callback: res });
       });
+
+      if ("error" in resumeResult) {
+         throw new Error(`Failed to resume consumer ${resumeResult.error}`);
+      }
    }
 
-   public async closeConsumer(consumerId: string, skipWebsocket: boolean = false): Promise<void> {
+   public async closeConsumer(consumerId: string, skipSignalling: boolean = false): Promise<void> {
       this.checkDevice();
 
       log("api:voice-transport", "default", "close consumer", "cid:", consumerId);
@@ -296,10 +363,14 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       const consumer = this.consumers.get(consumerId);
       if (!consumer) throw new Error(`Consumer with id ${consumerId} doesn't exist`);
 
-      if (!skipWebsocket) {
-         await new Promise<void>((r) => {
-            this.emit("close_consumer", { id: consumerId, callback: r });
+      if (!skipSignalling) {
+         const result = await new Promise<VoiceCloseConsumerResult>((res) => {
+            this.emit("close_consumer", { id: consumerId, callback: res });
          });
+
+         if ("error" in result) {
+            throw new Error(`Failed to close consumer: ${result.error}`);
+         }
       }
 
       consumer.close();
