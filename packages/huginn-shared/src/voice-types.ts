@@ -1,5 +1,5 @@
 import type { types } from "mediasoup";
-import type { DtlsParameters, IceCandidate, IceParameters, RtpCapabilities, RtpParameters } from "mediasoup/types";
+import type { DtlsParameters, IceCandidate, IceParameters, ProducerType, RtpCapabilities, RtpParameters } from "mediasoup/types";
 import type { Snowflake } from "./snowflake";
 
 export enum VoiceOperations {
@@ -44,11 +44,14 @@ export type VoiceWebsocketEvents = {
 
    connect_transport: VoiceConnectTransportData;
    connect_transport_result: VoiceConnectTransportResult;
+   restart_ice: VoiceRestartIceData;
+   restart_ice_result: VoiceRestartIceResult;
 
    produce: VoiceProduceData;
    produce_result: VoiceProduceResult;
 
-   new_producer: VoiceNewProducerData;
+   producer_created: VoiceProducerCreatedData;
+   producer_closed: VoiceProducerClosedData;
 
    close_producer: VoiceCloseProducerData;
    close_producer_result: VoiceCloseProducerResult;
@@ -62,7 +65,8 @@ export type VoiceWebsocketEvents = {
    close_consumer: VoiceCloseConsumerData;
    close_consumer_result: VoiceCloseConsumerResult;
 
-   new_consumer: VoiceNewConsumerData;
+   consumer_created: VoiceConsumerCreatedData;
+   consumer_closed: VoiceConsumerClosedData;
 
    peer_left: VoicePeerLeftData;
 };
@@ -97,7 +101,7 @@ export type MediasoupAppData = { mediaKind: HMediaKind; userId: Snowflake };
 
 export type HMediaKind = "microphone" | "stream_audio" | "stream_video" | "camera" | "unknown";
 
-type Error = { error: number; nonce?: Snowflake };
+export type VoiceError = { error: number; nonce?: Snowflake };
 // type OkStatus = { status: "ok" };
 
 export type ProducerData = {
@@ -176,7 +180,7 @@ export type VoiceCreateTransportData = {
    nonce?: Snowflake;
 };
 
-export type VoiceCreateTransportResult = Error | VoiceCreateTransportResultData;
+export type VoiceCreateTransportResult = VoiceError | VoiceCreateTransportResultData;
 export type VoiceCreateTransportResultData = {
    nonce?: Snowflake;
    direction: "send" | "recv";
@@ -196,7 +200,7 @@ export type VoiceConnectTransportData = {
    nonce?: Snowflake;
 };
 
-export type VoiceConnectTransportResult = Error | VoiceConnectTransportResultData;
+export type VoiceConnectTransportResult = VoiceError | VoiceConnectTransportResultData;
 export type VoiceConnectTransportResultData = {
    transportId: string;
    nonce?: Snowflake;
@@ -210,15 +214,18 @@ export type VoiceProduceData = {
    nonce?: Snowflake;
 };
 
-export type VoiceProduceResult = Error | VoiceProduceResultData;
+export type VoiceProduceResult = VoiceError | VoiceProduceResultData;
 export type VoiceProduceResultData = {
    producerId: string;
    kind: HMediaKind;
    nonce?: Snowflake;
 };
 
-export type VoiceNewProducerData = { nonce?: Snowflake } & ProducerData;
-export type VoiceNewConsumerData = { nonce?: Snowflake } & ConsumerData;
+export type VoiceProducerCreatedData = ProducerData;
+export type VoiceProducerClosedData = ProducerData;
+
+export type VoiceConsumerCreatedData = ConsumerData;
+export type VoiceConsumerClosedData = ConsumerData;
 
 export type VoiceConsumeData = {
    channelId: Snowflake;
@@ -228,7 +235,7 @@ export type VoiceConsumeData = {
    nonce?: Snowflake;
 };
 
-export type VoiceConsumeResult = Error | VoiceConsumeResultData;
+export type VoiceConsumeResult = VoiceError | VoiceConsumeResultData;
 export type VoiceConsumeResultData = {
    consumerId: string;
    producerId: string;
@@ -244,7 +251,7 @@ export type VoiceResumeConsumerData = {
    nonce?: Snowflake;
 };
 
-export type VoiceResumeConsumerResult = Error | VoiceResumeConsumerResultData;
+export type VoiceResumeConsumerResult = VoiceError | VoiceResumeConsumerResultData;
 export type VoiceResumeConsumerResultData = {
    consumerId: string;
    nonce?: Snowflake;
@@ -263,7 +270,7 @@ export type VoiceCloseProducerData = {
    nonce?: Snowflake;
 };
 
-export type VoiceCloseProducerResult = Error | VoiceCloseProducerResultData;
+export type VoiceCloseProducerResult = VoiceError | VoiceCloseProducerResultData;
 export type VoiceCloseProducerResultData = { nonce?: Snowflake } & ProducerData;
 
 export type VoiceCloseConsumerData = {
@@ -272,17 +279,20 @@ export type VoiceCloseConsumerData = {
    nonce?: Snowflake;
 };
 
-export type VoiceCloseConsumerResult = Error | VoiceCloseConsumerResultData;
+export type VoiceCloseConsumerResult = VoiceError | VoiceCloseConsumerResultData;
 export type VoiceCloseConsumerResultData = { nonce?: Snowflake } & ConsumerData;
+
+export type VoiceRestartIceData = {
+   channelId: Snowflake;
+   transportId: string;
+   nonce?: Snowflake;
+};
+
+export type VoiceRestartIceResult = VoiceError | VoiceRestartIceResultData;
+export type VoiceRestartIceResultData = {
+   iceParameters: IceParameters;
+};
 
 export type LocalVoiceState = {
    isAudioPaused: boolean;
 };
-
-// export type LocalVoiceState = {
-//    isAudioPaused: boolean;
-//    isAudioMuted: boolean;
-//    isAudioDeafened: boolean;
-//    isStreaming: boolean;
-//    isCameraOn: boolean;
-// };
