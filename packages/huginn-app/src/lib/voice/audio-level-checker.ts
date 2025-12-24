@@ -48,7 +48,7 @@ export class AudioLevelChecker {
          if (this.isStopped) return;
 
          if (performance.now() - last > 1000) {
-            console.log(this.userId, this.kind, this.producerId, this.consumerId, random, event.data);
+            // console.log(this.userId, this.kind, this.producerId, this.consumerId, random, event.data);
             last = performance.now();
          }
          this.currentDb = event.data;

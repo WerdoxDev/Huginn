@@ -233,14 +233,19 @@ export class VoiceBridge extends Voice {
       const otherStream = await this.inputDevice.getStream(microphoneDeviceId, microphoneVolume, noiseSuppression);
       const audioTrack = otherStream.getAudioTracks()[0];
 
-      if (this.transport.getProducer("microphone")) {
-         await this.device.replaceMicrophoneTrack(audioTrack);
-      } else {
-         await this.device.openMicrophone(audioTrack);
-      }
+      try {
+         if (this.transport.getProducer("microphone")) {
+            await this.device.replaceMicrophoneTrack(audioTrack);
+         } else {
+            await this.device.openMicrophone(audioTrack);
+         }
 
-      // Initialize audio level checking with a dummy stream to avoid causing an infinite mute on the actual "send" mic stream
-      await this.inputDevice.initializeAudioLevel();
+         // Initialize audio level checking with a dummy stream to avoid causing an infinite mute on the actual "send" mic stream
+         await this.inputDevice.initializeAudioLevel();
+      } catch (e) {
+         this.inputDevice.close();
+         throw e;
+      }
    }
 
    public async startAudioLoopback(processTitle?: string, processId?: string) {

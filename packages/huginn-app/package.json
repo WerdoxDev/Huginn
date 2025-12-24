@@ -35,6 +35,7 @@
       "@std/encoding": "npm:@jsr/std__encoding",
       "@tanstack/react-query": "^5.90.5",
       "@uidotdev/usehooks": "^2.4.1",
+      "@vitejs/plugin-basic-ssl": "^2.1.0",
       "application-loopback": "1.1.5",
       "clsx": "^2.1.1",
       "confbox": "^0.1.8",
