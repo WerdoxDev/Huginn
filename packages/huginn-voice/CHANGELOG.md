@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.14.0...voice@v0.15.0) (2025-12-24)
+
+
+### Features
+
+* **voice:** add restart ice message + separate messages for broadcast and targeted producers and consumers ([87a098c](https://github.com/WerdoxDev/Huginn/commit/87a098c07bb1f893381d512dd386cb225f9edee6))
+
 ## [0.14.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.13.1...voice@v0.14.0) (2025-12-21)
 
 

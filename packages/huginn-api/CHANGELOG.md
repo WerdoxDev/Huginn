@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.32.2](https://github.com/WerdoxDev/Huginn/compare/api@v0.32.1...api@v0.32.2) (2025-12-24)
+
+
+### Bug Fixes
+
+* **api:** much better error throwing and handling + restart ice ([858b86d](https://github.com/WerdoxDev/Huginn/commit/858b86d09868d992a67127bbf2f5962051c3653b))
+
 ## [0.32.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.32.0...api@v0.32.1) (2025-12-22)
 
 
