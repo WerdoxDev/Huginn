@@ -1,6 +1,5 @@
 import type { Snowflake } from "@huginn/shared";
-import { Prisma } from "@prisma/client";
-import { prisma } from "#database";
+import { Prisma, prisma } from "#database";
 import { DBErrorType } from "#types";
 import { DBError, isDBError } from "#elysia-errors";
 

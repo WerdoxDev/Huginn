@@ -1,7 +1,6 @@
 import { DBErrorType } from "#types";
 import { RelationshipType, type Snowflake, WorkerID, idFix, snowflake } from "@huginn/shared";
-import { Prisma } from "@prisma/client";
-import { assertExists, assertId, assertObj, prisma, type RelationshipArgs, type RelationshipPayload } from ".";
+import { assertExists, assertId, assertObj, prisma, type RelationshipArgs, type RelationshipPayload, Prisma } from "#database";
 
 export const relationshipExtension = Prisma.defineExtension({
    model: {

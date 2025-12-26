@@ -1,9 +1,9 @@
 import type { APIPostMessageReferenceJSONBody, BigIntToString, Snowflake } from "@huginn/shared";
 import { WorkerID, idFix, snowflake } from "@huginn/shared";
 import { MessageType } from "@huginn/shared";
-import { type Attachment, type Embed, Prisma } from "@prisma/client";
+import { type Attachment, type Embed } from "#prisma/client";
 import { type DBAttachment, type DBCall, type DBEmbed, DBErrorType } from "#types";
-import { assertExists, assertId, assertObj, prisma, type MessageArgs, type MessagePayload } from ".";
+import { assertExists, assertId, assertObj, prisma, type MessageArgs, type MessagePayload, Prisma } from "#database";
 
 export const messagesExtension = Prisma.defineExtension({
    model: {

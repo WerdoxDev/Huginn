@@ -1,9 +1,10 @@
 {
-	"extends": "../../tsconfig.json",
-	"compilerOptions": {
-		"lib": ["ESNext"],
-		"baseUrl": "./"
-		// "isolatedDeclarations": true
-	},
-	"include": ["src"]
+   "extends": "../../tsconfig.json",
+   "compilerOptions": {
+      "lib": ["ESNext"],
+      "baseUrl": "./",
+      "esModuleInterop": true
+      // "isolatedDeclarations": true
+   },
+   "include": ["src", "prisma"]
 }

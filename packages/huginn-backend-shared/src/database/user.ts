@@ -1,8 +1,17 @@
 import { DBErrorType } from "#types";
-import { idFix, omit, snowflake, UserFlags, WorkerID, type APIPatchCurrentUserJSONBody } from "@huginn/shared";
-import type { APIPostLoginJSONBody, APIPostRegisterJSONBody, BigIntToString, Snowflake } from "@huginn/shared";
-import { Prisma } from "@prisma/client";
-import { assertCondition, assertId, assertObj, prisma, selectPrivateUser, type UserArgs, type UserPayload } from ".";
+import {
+   idFix,
+   omit,
+   snowflake,
+   UserFlags,
+   WorkerID,
+   type APIPatchCurrentUserJSONBody,
+   type APIPostLoginJSONBody,
+   type APIPostRegisterJSONBody,
+   type BigIntToString,
+   type Snowflake,
+} from "@huginn/shared";
+import { assertCondition, assertId, assertObj, prisma, selectPrivateUser, type UserArgs, type UserPayload, Prisma } from "#database";
 
 export const userExtension = Prisma.defineExtension({
    model: {

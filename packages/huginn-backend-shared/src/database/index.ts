@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient, type Message } from "@prisma/client";
+import { Prisma, PrismaClient, type Message } from "#prisma/client";
 import { withOptimize } from "@prisma/extension-optimize";
 import { assertExtension } from "./assert";
 import { attachmentExtension } from "./attachment";
@@ -10,9 +10,12 @@ import { relationshipExtension } from "./relationship";
 import { userExtension } from "./user";
 import { settingsExtension } from "./settings";
 import { knownApplicationExtension } from "./knownApplication";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 // export const prismaBase = new PrismaClient({ omit: { user: { password: true } } }).$extends({
-export const prismaBase = new PrismaClient().$extends(withOptimize({ apiKey: process.env.OPTIMIZE_API_KEY ?? "", enable: false }));
+const adapter = new PrismaPg({ connectionString: process.env.POSTGRESQL_URL });
+// export const prismaBase = new PrismaClient({ adapter }).$extends(withOptimize({ apiKey: process.env.OPTIMIZE_API_KEY ?? "", enable: false }));
+export const prismaBase = new PrismaClient({ adapter });
 
 export const prisma = prismaBase
    .$extends({

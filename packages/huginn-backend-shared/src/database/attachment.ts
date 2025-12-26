@@ -1,6 +1,5 @@
 import { WorkerID, snowflake } from "@huginn/shared";
-import { Prisma } from "@prisma/client";
-import { prisma } from "#database";
+import { Prisma, prisma } from ".";
 
 export const attachmentExtension = Prisma.defineExtension({
    model: {

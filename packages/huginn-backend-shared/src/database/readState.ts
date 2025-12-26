@@ -1,9 +1,8 @@
 import { DBErrorType } from "#types";
-import { type BigIntToString, idFix, type Snowflake } from "@huginn/shared";
-import { Prisma } from "@prisma/client";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { idFix, type Snowflake } from "@huginn/shared";
+import { PrismaClientKnownRequestError } from "#prisma/internal/prismaNamespace";
 import consola from "consola";
-import { assertExists, assertId, assertObj, prisma, type ReadStatePayload } from "#database";
+import { assertExists, assertId, assertObj, prisma, type ReadStatePayload, Prisma } from "#database";
 
 export const readStateExtension = Prisma.defineExtension({
    model: {

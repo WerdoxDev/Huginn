@@ -1,4 +1,5 @@
 import { HTTPError, HuginnAPIError, type HuginnErrorData } from "@huginn/shared";
+import type Elysia from "elysia";
 import { join } from "pathe";
 
 let _hostname = "";
@@ -9,6 +10,7 @@ export async function prepareServer(hostname: string) {
 }
 
 export async function testHandler(
+   // app: Elysia,
    path: string,
    headers: Record<string, string>,
    method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
@@ -27,6 +29,8 @@ export async function testHandler(
       }
    }
 
+   await new Promise((r) => setImmediate(r));
+
    const response = await fetch(new URL(path, _hostname), {
       headers: finalHeaders,
       method,
@@ -34,6 +38,10 @@ export async function testHandler(
       body: finalBody as BodyInit,
       redirect: "manual",
    });
+
+   // const response: Response = await app.handle(
+   //    new Request(new URL(path, "http://localhost"), { headers: finalHeaders, method, body: finalBody as BodyInit, redirect: "manual" }),
+   // );
 
    let responseBody: unknown;
    const headersMap = new Map(response.headers);

@@ -1,4 +1,4 @@
-import { Prisma } from "#database";
+import type { Prisma } from "#database";
 import { type BigIntToString, type Snowflake } from "@huginn/shared";
 
 export type UserArgs = Prisma.UserDefaultArgs;
@@ -23,19 +23,17 @@ export type ReadStateArgs = Prisma.ReadStateDefaultArgs;
 export type ReadStatePayload<Args extends ReadStateArgs | undefined> = BigIntToString<Prisma.ReadStateGetPayload<Args>>;
 
 export type KnownApplicationArgs = Prisma.KnownApplicationDefaultArgs;
-export type KnownApplicationPayload<Args extends KnownApplicationArgs | undefined> = BigIntToString<
-   Prisma.KnownApplicationGetPayload<Args>
->;
+export type KnownApplicationPayload<Args extends KnownApplicationArgs | undefined> = BigIntToString<Prisma.KnownApplicationGetPayload<Args>>;
 
-export const selectPublicUser = Prisma.validator<Prisma.UserSelect>()({
+export const selectPublicUser = {
    id: true,
    avatar: true,
    displayName: true,
    flags: true,
    username: true,
-});
+} satisfies Prisma.UserSelect;
 
-export const selectPrivateUser = Prisma.validator<Prisma.UserSelect>()({
+export const selectPrivateUser = {
    id: true,
    avatar: true,
    displayName: true,
@@ -43,16 +41,15 @@ export const selectPrivateUser = Prisma.validator<Prisma.UserSelect>()({
    username: true,
    email: true,
    password: true,
-});
+} satisfies Prisma.UserSelect;
 
-export const selectChannelRecipients = Prisma.validator<Prisma.ChannelSelect>()({
+export const selectChannelRecipients = {
    recipients: { select: { id: true, avatar: true, displayName: true, flags: true, username: true } },
-});
+} satisfies Prisma.ChannelSelect;
 
-export const omitChannelRecipient = (id: Snowflake) =>
-   Prisma.validator<Prisma.ChannelSelect>()({ recipients: { where: { id: { not: BigInt(id) } } } });
+export const omitChannelRecipient = (id: Snowflake) => ({ recipients: { where: { id: { not: BigInt(id) } } } }) satisfies Prisma.ChannelSelect;
 
-export const selectChannelDefaults = Prisma.validator<Prisma.ChannelSelect>()({
+export const selectChannelDefaults = {
    ...selectChannelRecipients,
    id: true,
    type: true,
@@ -60,17 +57,17 @@ export const selectChannelDefaults = Prisma.validator<Prisma.ChannelSelect>()({
    name: true,
    ownerId: true,
    lastMessageId: true,
-});
+} satisfies Prisma.ChannelSelect;
 
-export const selectMessageAuthor = Prisma.validator<Prisma.MessageSelect>()({
+export const selectMessageAuthor = {
    author: { select: selectPublicUser },
-});
+} satisfies Prisma.MessageSelect;
 
-export const selectMessageMentions = Prisma.validator<Prisma.MessageSelect>()({
+export const selectMessageMentions = {
    mentions: { select: selectPublicUser },
-});
+} satisfies Prisma.MessageSelect;
 
-export const selectMessageEmbeds = Prisma.validator<Prisma.MessageSelect>()({
+export const selectMessageEmbeds = {
    embeds: {
       select: {
          description: true,
@@ -81,9 +78,9 @@ export const selectMessageEmbeds = Prisma.validator<Prisma.MessageSelect>()({
          video: { select: { url: true, height: true, width: true } },
       },
    },
-});
+} satisfies Prisma.MessageSelect;
 
-export const selectMessageAttachments = Prisma.validator<Prisma.MessageSelect>()({
+export const selectMessageAttachments = {
    attachments: {
       select: {
          id: true,
@@ -97,13 +94,13 @@ export const selectMessageAttachments = Prisma.validator<Prisma.MessageSelect>()
          width: true,
       },
    },
-});
+} satisfies Prisma.MessageSelect;
 
-export const selectMessageCall = Prisma.validator<Prisma.MessageSelect>()({
+export const selectMessageCall = {
    call: { select: { participants: { select: { id: true } }, endedTimestamp: true } },
-});
+} satisfies Prisma.MessageSelect;
 
-export const selectMessageDefaults = Prisma.validator<Prisma.MessageSelect>()({
+export const selectMessageDefaults = {
    channelId: true,
    content: true,
    timestamp: true,
@@ -114,9 +111,9 @@ export const selectMessageDefaults = Prisma.validator<Prisma.MessageSelect>()({
    reactions: true,
    flags: true,
    deletedTimestamp: false,
-});
+} satisfies Prisma.MessageSelect;
 
-export const selectMessageReference = Prisma.validator<Prisma.MessageSelect>()({
+export const selectMessageReference = {
    messageReference: {
       select: {
          channelId: true,
@@ -135,9 +132,9 @@ export const selectMessageReference = Prisma.validator<Prisma.MessageSelect>()({
          },
       },
    },
-});
+} satisfies Prisma.MessageSelect;
 
-export const selectAllMessage = Prisma.validator<Prisma.MessageSelect>()({
+export const selectAllMessage = {
    ...selectMessageAuthor,
    ...selectMessageMentions,
    ...selectMessageEmbeds,
@@ -145,18 +142,18 @@ export const selectAllMessage = Prisma.validator<Prisma.MessageSelect>()({
    ...selectMessageCall,
    ...selectMessageReference,
    ...selectMessageDefaults,
-});
+} satisfies Prisma.MessageSelect;
 
 // export const selectAllMessage = { ...selectMessageDefaults, ...selectMessageCall };
 
-export const selectRelationshipUser = Prisma.validator<Prisma.RelationshipSelect>()({
+export const selectRelationshipUser = {
    user: { select: selectPublicUser },
-});
+} satisfies Prisma.RelationshipSelect;
 
-export const omitMessageAuthorId = Prisma.validator<Prisma.MessageOmit>()({ authorId: true });
-export const omitRelationshipUserIds = Prisma.validator<Prisma.RelationshipOmit>()({ userId: true, ownerId: true });
+export const omitMessageAuthorId = { authorId: true } satisfies Prisma.MessageOmit;
+export const omitRelationshipUserIds = { userId: true, ownerId: true } satisfies Prisma.RelationshipOmit;
 
-export const selectKnownApplication = Prisma.validator<Prisma.KnownApplicationSelect>()({
+export const selectKnownApplication = {
    id: true,
    createdAt: true,
    deletedAt: true,
@@ -166,4 +163,4 @@ export const selectKnownApplication = Prisma.validator<Prisma.KnownApplicationSe
    contributorId: true,
    igdbId: true,
    commandLinePatterns: true,
-});
+} satisfies Prisma.KnownApplicationSelect;
