@@ -35,12 +35,7 @@ export class VoiceStreamManager {
               ]
             : [{ scaleResolutionDownBy: 1, maxBitrate: maxVideoBitrate, scalabilityMode }];
 
-         const p = await this.transport.createProducer("stream_video", videoTrack, { encodings, codecOptions: { videoGoogleStartBitrate: 1000 } });
-         const params = p?.rtpSender?.getParameters();
-         if (params) {
-            params.encodings[0].maxBitrate = 10000;
-            await p?.rtpSender?.setParameters(params);
-         }
+         await this.transport.createProducer("stream_video", videoTrack, { encodings, codecOptions: { videoGoogleStartBitrate: 1000 } });
       }
 
       if (audioTrack) {

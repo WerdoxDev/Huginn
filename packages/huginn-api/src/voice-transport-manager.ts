@@ -73,7 +73,7 @@ type Events = {
    reset: undefined;
 };
 
-type TransportManagerStatus = "idle" | "disconnected" | "ready";
+type TransportManagerStatus = "idle" | "disconnected" | "ready" | "restarting";
 
 export class VoiceTransportManager extends EventEmitter<Events> {
    private client: HuginnClient;
@@ -120,24 +120,23 @@ export class VoiceTransportManager extends EventEmitter<Events> {
    }
 
    private async onTransportStateChanged(state: ConnectionState, direction: "send" | "recv") {
-      if (state === "disconnected" || state === "failed" || state === "closed") {
+      if ((state === "disconnected" || state === "failed") && this.status !== "restarting") {
          log("api:voice-transport", "default", "transport disconnected", "dir:", direction);
 
          this.setStatus("disconnected");
-         this.emit("transport_disconnected", { direction });
+      } else {
+         this.checkAndSetStatus();
+      }
+   }
 
-         this.checkTransports();
-         const transport = direction === "send" ? this.sendTransport : this.recvTransport;
+   public async checkAndRestartIce(): Promise<void> {
+      this.checkTransports();
+      const sendStatus = this.sendTransport.connectionState;
+      const recvStatus = this.recvTransport.connectionState;
 
-         const result = await new Promise<VoiceRestartIceResult>((res) => {
-            this.emit("restart_ice", { transportId: transport.id, callback: res });
-         });
-
-         if ("error" in result) {
-            throw new Error(`Failed to restart ice server for ${direction} transport: ${result.error}`);
-         }
-
-         await transport.restartIce({ iceParameters: result.iceParameters });
+      if (sendStatus === "disconnected" || sendStatus === "failed" || recvStatus === "disconnected" || recvStatus === "failed") {
+         await this.restartIce("send");
+         await this.restartIce("recv");
       }
    }
 
@@ -306,7 +305,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       this.emit("producer_closed", { producerId: producer.id, kind: producer.appData.mediaKind, userId: producer.appData.userId });
    }
 
-   public async createConsumer(userId: Snowflake, kind: HMediaKind): Promise<void> {
+   public async createConsumer(userId: Snowflake, kind: HMediaKind): Promise<Consumer<MediasoupAppData>> {
       this.checkTransports();
 
       const remoteProducer = this.getRemoteProducers().find((x) => x.userId === userId && x.kind === kind);
@@ -314,7 +313,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
       log("api:voice-transport", "default", "create consumer", "uid:", userId, "knd:", kind, "pid:", remoteProducer.producerId);
 
-      const createResult = await new Promise<VoiceConsumeResult>((res, rej) => {
+      const createResult = await new Promise<VoiceConsumeResult>((res) => {
          this.emit("create_consumer", {
             producerId: remoteProducer.producerId,
             rtpCapabilities: this.device.rtpCapabilities,
@@ -353,6 +352,8 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       if ("error" in resumeResult) {
          throw new Error(`Failed to resume consumer ${resumeResult.error}`);
       }
+
+      return consumer;
    }
 
    public async closeConsumer(consumerId: string, skipSignalling: boolean = false): Promise<void> {
@@ -381,7 +382,25 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          producerId: consumer.producerId,
          userId: consumer.appData.userId,
       });
+
       log("api:voice-transport", "default", "consumer closed", "cid:", consumerId);
+   }
+
+   public async restartIce(direction: "send" | "recv"): Promise<void> {
+      this.checkTransports();
+      const transport = direction === "send" ? this.sendTransport : this.recvTransport;
+
+      this.setStatus("restarting");
+
+      const result = await new Promise<VoiceRestartIceResult>((res) => {
+         this.emit("restart_ice", { transportId: transport.id, callback: res });
+      });
+
+      if ("error" in result) {
+         throw new Error(`Failed to restart ice server for ${direction} transport: ${result.error}`);
+      }
+
+      await transport.restartIce({ iceParameters: result.iceParameters });
    }
 
    public applyVoiceState(gatewayVoiceState: GatewayVoiceStateFlags, localVoiceState: LocalVoiceState): void {

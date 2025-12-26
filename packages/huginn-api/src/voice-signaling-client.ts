@@ -20,6 +20,7 @@ import {
    type VoicePing,
    type VoiceProduceResult,
    type VoiceReadyData,
+   type VoiceRestartIceResult,
    type VoiceResumeConsumerResult,
    type VoiceWebsocketEvents,
 } from "@huginn/shared";
@@ -84,7 +85,6 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       this.socket.onclose = (e) => this.onClose(e);
       this.socket.onmessage = (e) => this.onMessage(e);
       this.socket.onerror = (e) => {
-         error("api:voice-signaling", "websocket error:", e);
          throw new Error(`Voice websocket encountered an error: ${e}`);
       };
    }
@@ -167,6 +167,9 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                   break;
                case "connect_transport_result":
                   this.emit("connect_transport_result", data.d);
+                  break;
+               case "restart_ice_result":
+                  this.emit("restart_ice_result", data.d);
                   break;
 
                case "produce_result":
@@ -275,8 +278,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       this.heartbeatInterval = setInterval(() => {
          log("api:voice-signaling", "heartbeat", "sent", "seq:", this.sequence);
 
-         const data: VoiceHeartbeat = { op: VoiceOperations.HEARTBEAT, d: this.sequence };
-         this.send(data);
+         this.send({ op: VoiceOperations.HEARTBEAT, d: this.sequence });
       }, interval);
    }
 
@@ -298,10 +300,8 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
    }
 
    private sendPing() {
-      const pingData: VoicePing = { op: VoiceOperations.PING };
       this.lastPingStart = Date.now();
-
-      this.send(pingData);
+      this.send({ op: VoiceOperations.PING });
    }
 
    public softReset(emitEvent = true): void {
@@ -361,13 +361,11 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       log("api:voice-signaling", "default", "connect transport", "tid:", transportId, "cid:", channelId);
 
       const nonce = this.client.generateNonce();
-      const connectTransportData: VoicePayload = {
+      this.send({
          op: VoiceOperations.DISPATCH,
          t: "connect_transport",
          d: { channelId, transportId, dtlsParameters, nonce },
-      };
-
-      this.send(connectTransportData);
+      });
 
       // Wait for the transport to get connected
       return await new Promise<VoiceConnectTransportResult>((res) => {
@@ -387,13 +385,11 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       log("api:voice-signaling", "default", "create producer", "knd:", kind, "tid:", transportId, "cid:", channelId);
 
       const nonce = this.client.generateNonce();
-      const produceData: VoicePayload = {
+      this.send({
          op: VoiceOperations.DISPATCH,
          t: "produce",
          d: { channelId, transportId, kind, rtpParameters, nonce },
-      };
-
-      this.send(produceData);
+      });
 
       // Wait for the producer to be created
       return await new Promise<VoiceProduceResult>((res) => {
@@ -413,13 +409,11 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       log("api:voice-signaling", "default", "close producer", "pid:", producerId, "cid:", channelId);
 
       const nonce = this.client.generateNonce();
-      const closeProducerData: VoicePayload = {
+      this.send({
          op: VoiceOperations.DISPATCH,
          t: "close_producer",
          d: { producerId, channelId, nonce },
-      };
-
-      this.send(closeProducerData);
+      });
 
       return await new Promise<VoiceCloseProducerResult>((res) => {
          const unlisten = this.listen("close_producer_result", (d) => {
@@ -438,13 +432,11 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       log("api:voice-signaling", "default", "create consumer", "pid:", producerId, "tid:", transportId, "cid:", channelId);
 
       const nonce = this.client.generateNonce();
-      const consumeData: VoicePayload = {
+      this.send({
          op: VoiceOperations.DISPATCH,
          t: "consume",
          d: { channelId, producerId, rtpCapabilities, transportId, nonce },
-      };
-
-      this.send(consumeData);
+      });
 
       // Wait for the consumer to be created
       return await new Promise<VoiceConsumeResultData>((res, rej) => {
@@ -466,13 +458,11 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       log("api:voice-signaling", "default", "resume consumer", "cid:", consumerId);
 
       const nonce = this.client.generateNonce();
-      const resumeConsumerData: VoicePayload = {
+      this.send({
          op: VoiceOperations.DISPATCH,
          t: "resume_consumer",
          d: { channelId, consumerId, nonce },
-      };
-
-      this.send(resumeConsumerData);
+      });
 
       return await new Promise<VoiceResumeConsumerResult>((res) => {
          const unlisten = this.listen("resume_consumer_result", (d) => {
@@ -491,16 +481,33 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       log("api:voice-signaling", "default", "close consumer", "cid:", consumerId);
 
       const nonce = this.client.generateNonce();
-      const closeConsumerData: VoicePayload = {
+      this.send({
          op: VoiceOperations.DISPATCH,
          t: "close_consumer",
          d: { channelId, consumerId, nonce },
-      };
-
-      this.send(closeConsumerData);
+      });
 
       return await new Promise<VoiceCloseConsumerResult>((res) => {
          const unlisten = this.listen("close_consumer_result", (d) => {
+            if (d.nonce === nonce) {
+               unlisten();
+               res(d);
+            }
+         });
+      });
+   }
+
+   public async sendRestartIce(transportId: string): Promise<VoiceRestartIceResult> {
+      this.checkStatus();
+      const channelId = this.connectionData.channelId;
+
+      log("api:voice-signaling", "default", "restart ice", "tid:", transportId);
+
+      const nonce = this.client.generateNonce();
+      this.send({ op: VoiceOperations.DISPATCH, t: "restart_ice", d: { channelId, transportId, nonce } });
+
+      return await new Promise<VoiceRestartIceResult>((res) => {
+         const unlisten = this.listen("restart_ice_result", (d) => {
             if (d.nonce === nonce) {
                unlisten();
                res(d);

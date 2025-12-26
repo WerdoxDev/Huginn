@@ -43,7 +43,13 @@ export class Voice extends EventEmitter<Events> {
    }
 
    private listenSignalingEvents() {
-      this.signaling.on("status_changed", () => this.recalculateStatus());
+      this.signaling.on("status_changed", async (d) => {
+         this.recalculateStatus();
+
+         if (d === "authenticated" && this.transport.status === "disconnected") {
+            await this.transport.checkAndRestartIce();
+         }
+      });
 
       this.signaling.on("reset", ({ type }) => {
          if (type === "hard" || type === "session") {
@@ -131,7 +137,13 @@ export class Voice extends EventEmitter<Events> {
    }
 
    private listenTransportEvents() {
-      this.transport.on("status_changed", () => this.recalculateStatus());
+      this.transport.on("status_changed", async (d) => {
+         this.recalculateStatus();
+
+         if (this.signaling.status === "authenticated" && d === "disconnected") {
+            await this.transport.checkAndRestartIce();
+         }
+      });
 
       this.transport.on("connect_transport", async (d) => {
          const result = await this.signaling.sendConnectTransport(d.transportId, d.dtlsParameters);
@@ -164,13 +176,18 @@ export class Voice extends EventEmitter<Events> {
          d.callback(result);
       });
 
-      this.transport.on("transport_disconnected", async () => {
-         // this.signaling.checkStatus();
-         // const connectionData = { ...this.signaling.connectionData };
-         // this.signaling.hardReset();
-         // await this.client.voiceManager.connectVoice(connectionData.guildId ?? null, connectionData.channelId, connectionData.token);
-         // log("api:voice", "default", "voice recovery successful");
+      this.transport.on("restart_ice", async (d) => {
+         const result = await this.signaling.sendRestartIce(d.transportId);
+         d.callback(result);
       });
+
+      // this.transport.on("transport_disconnected", async () => {
+      //    // this.signaling.checkStatus();
+      //    // const connectionData = { ...this.signaling.connectionData };
+      //    // this.signaling.hardReset();
+      //    // await this.client.voiceManager.connectVoice(connectionData.guildId ?? null, connectionData.channelId, connectionData.token);
+      //    // log("api:voice", "default", "voice recovery successful");
+      // });
    }
 
    private recalculateStatus() {
