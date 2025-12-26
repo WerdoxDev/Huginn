@@ -137,7 +137,7 @@ export default function ScreenShareModal() {
             });
          }
 
-         modal.callback?.({
+         await modal.callback?.({
             type: source ? "display" : "device",
             stream,
             isAudioEnabled,

@@ -79,29 +79,40 @@ export function useVoiceUtils() {
                screenShare: {
                   isOpen: true,
                   callback: async (options) => {
-                     // Reset loopback even if we want to start a new one / end the last one
-                     await client?.voice.stopAudioLoopback();
+                     try {
+                        // Reset loopback even if we want to start a new one / end the last one
+                        await client?.voice.stopAudioLoopback();
 
-                     let audioTrack: MediaStreamTrack | undefined = options.stream.getAudioTracks()[0];
-                     if (!audioTrack && options.isAudioEnabled && options.type === "display") {
-                        audioTrack = await client?.voice.startAudioLoopback(options.sourceName);
+                        let audioTrack: MediaStreamTrack | undefined = options.stream.getAudioTracks()[0];
+                        if (!audioTrack && options.isAudioEnabled && options.type === "display") {
+                           audioTrack = await client?.voice.startAudioLoopback(options.sourceName);
+                        }
+
+                        const videoTrack = options.stream.getVideoTracks()[0];
+                        await open(videoTrack, audioTrack, {
+                           useSimulcast: options.isSimulcastEnabled,
+                           maxAudioBitrate: options.maxAudioBitrate,
+                           maxVideoBitrate: options.maxVideoBitrate,
+                        });
+                     } catch (e) {
+                        error("app:hooks", "open screen share failed", e);
+                        updateModals({
+                           info: { status: "error", title: "Screen Sharing Failed", text: getMediaErrorMessage(e, "screen"), isOpen: true },
+                        });
+
+                        await closeStream();
                      }
-
-                     const videoTrack = options.stream.getVideoTracks()[0];
-                     await open(videoTrack, audioTrack, {
-                        useSimulcast: options.isSimulcastEnabled,
-                        maxAudioBitrate: options.maxAudioBitrate,
-                        maxVideoBitrate: options.maxVideoBitrate,
-                     });
                   },
                },
             });
          }
       } catch (e) {
-         error("app:hooks", "Open screen share failed", e);
+         error("app:hooks", "open screen share failed", e);
          updateModals({
             info: { status: "error", title: "Screen Sharing Failed", text: getMediaErrorMessage(e, "screen"), isOpen: true },
          });
+
+         await closeStream();
       }
    }
 
@@ -118,16 +129,25 @@ export function useVoiceUtils() {
          streamAudio: {
             isOpen: true,
             callback: async (sourceProcessId: string) => {
-               // Reset loopback even if we want to start a new one / end the last one
-               await client?.voice.stopAudioLoopback();
-               const audioTrack = await client?.voice.startAudioLoopback(undefined, sourceProcessId);
+               try {
+                  // Reset loopback even if we want to start a new one / end the last one
+                  await client?.voice.stopAudioLoopback();
+                  const audioTrack = await client?.voice.startAudioLoopback(undefined, sourceProcessId);
 
-               if (!audioTrack) throw new Error("Audio track was null when opening audio stream");
+                  if (!audioTrack) throw new Error("Audio track was null when opening audio stream");
 
-               if (client?.voice.transport.getProducer("stream_audio")) {
-                  await client?.voice.stream.replaceStreamAudioTrack(audioTrack);
-               } else {
-                  await client?.voice.stream.openStream(undefined, audioTrack);
+                  if (client?.voice.transport.getProducer("stream_audio")) {
+                     await client?.voice.stream.replaceStreamAudioTrack(audioTrack);
+                  } else {
+                     await client?.voice.stream.openStream(undefined, audioTrack);
+                  }
+               } catch (e) {
+                  error("app:hooks", "open audio stream failed", e);
+                  updateModals({
+                     info: { status: "error", title: "Audio Stream Failed", text: "An unexpected error occurred. Please try again.", isOpen: true },
+                  });
+
+                  await closeStream();
                }
             },
          },
@@ -147,10 +167,12 @@ export function useVoiceUtils() {
             await client?.voice.device.openCamera(track);
          }
       } catch (e) {
-         error("app:hooks", "Open camera failed", e);
+         error("app:hooks", "open camera failed", e);
          updateModals({
             info: { status: "error", title: "Opening Camera Failed", text: getMediaErrorMessage(e, "camera"), isOpen: true },
          });
+
+         await closeCamera();
       }
    }
 
@@ -171,7 +193,7 @@ export function useVoiceUtils() {
             await client?.voice.transport.createConsumer(userId, "stream_audio");
          }
       } catch (e) {
-         error("app:hooks", "Consume stream failed", e);
+         error("app:hooks", "consume stream failed", e);
          updateModals({
             info: {
                status: "error",
@@ -180,6 +202,8 @@ export function useVoiceUtils() {
                isOpen: true,
             },
          });
+
+         await unconsumeStream(userId);
       }
    }
 
@@ -195,7 +219,7 @@ export function useVoiceUtils() {
             await client?.voice.transport.closeConsumer(audioConsumer.id);
          }
       } catch (e) {
-         error("app:hooks", "Unconsume stream failed", e);
+         error("app:hooks", "unconsume stream failed", e);
          updateModals({
             info: {
                status: "error",
@@ -207,7 +231,7 @@ export function useVoiceUtils() {
       }
    }
 
-   function changeStream() {
+   async function changeStream() {
       const audioProducer = client?.voice.transport.getProducer("stream_audio");
       const videoProducer = client?.voice.transport.getProducer("stream_video");
 
@@ -217,7 +241,7 @@ export function useVoiceUtils() {
       }
       // Screen Share
       else {
-         openScreenShare();
+         await openScreenShare();
       }
    }
 
@@ -225,7 +249,7 @@ export function useVoiceUtils() {
       try {
          await client?.voice.stream.closeStream();
       } catch (e) {
-         error("app:hooks", "Close stream failed", e);
+         error("app:hooks", "close stream failed", e);
          updateModals({
             info: {
                status: "error",
@@ -241,7 +265,7 @@ export function useVoiceUtils() {
       try {
          await client?.voice.device.closeCamera();
       } catch (e) {
-         error("app:hooks", "Close camera failed", e);
+         error("app:hooks", "close camera failed", e);
          updateModals({
             info: { status: "error", title: "Closing Camera Failed", text: getMediaErrorMessage(e, "camera"), isOpen: true },
          });

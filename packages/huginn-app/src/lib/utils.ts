@@ -208,8 +208,9 @@ export const presenceStatuses: Record<PresenceStatus, { text: string; color: str
 } as const;
 
 export function getMediaErrorMessage(e: unknown, type: "camera" | "screen") {
+   const defaultError = "An unexpected error occurred. Please try again.";
    if (!(e instanceof DOMException)) {
-      return "An unexpected error occurred. Please try again.";
+      return defaultError;
    }
 
    switch (e.name) {
@@ -229,7 +230,7 @@ export function getMediaErrorMessage(e: unknown, type: "camera" | "screen") {
          return "Your browser blocked this action for security reasons. Try restarting your browser.";
 
       default:
-         return "An unexpected error occurred. Please try again.";
+         return defaultError;
    }
 }
 
