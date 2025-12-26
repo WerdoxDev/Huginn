@@ -291,6 +291,7 @@ export type VoiceRestartIceData = {
 export type VoiceRestartIceResult = VoiceError | VoiceRestartIceResultData;
 export type VoiceRestartIceResultData = {
    iceParameters: IceParameters;
+   nonce?: Snowflake;
 };
 
 export type LocalVoiceState = {
