@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.65.6](https://github.com/WerdoxDev/Huginn/compare/app@v0.65.5...app@v0.65.6) (2025-12-26)
+
+
+### Bug Fixes
+
+* **app:** add missing error handling in some places ([a857adf](https://github.com/WerdoxDev/Huginn/commit/a857adf348e9f20182b63f401b800a5dbe4f5466))
+
 ## [0.65.5](https://github.com/WerdoxDev/Huginn/compare/app@v0.65.4...app@v0.65.5) (2025-12-24)
 
 
