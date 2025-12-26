@@ -50,7 +50,7 @@ import { cors } from "@elysiajs/cors";
 
 // console.log(envs.AXIOM_DATASET, envs.AXIOM_TOKEN);
 
-new Elysia({
+export const app = new Elysia({
    cookie: { secrets: envs.SESSION_PASSWORD, sign: ["oauth"], httpOnly: true, secure: true, path: "/", maxAge: 60 * 5 },
 })
    .use(cors())

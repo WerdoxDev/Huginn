@@ -198,6 +198,8 @@ export async function createTestUsers(amount: number) {
    const t1 = performance.now();
    timeSpent.createUsers += t1 - t0;
 
+   await new Promise((r) => setImmediate(r));
+
    return await Promise.all(
       createdUsers.map(async (x) => {
          const accessToken = await createToken("user-access", { id: x.id.toString(), isOAuth: false }, constants.ACCESS_TOKEN_EXPIRE_TIME);
@@ -241,6 +243,8 @@ export async function createTestRelationships(userId: bigint, user2Id: bigint, f
    const t1 = performance.now();
    timeSpent.createRelationships += t1 - t0;
 
+   await new Promise((r) => setImmediate(r));
+
    return [userRelationship, user2Relationship];
 }
 
@@ -272,6 +276,8 @@ export async function createTestChannel(ownerId: bigint | undefined, type: Chann
    const t1 = performance.now();
    timeSpent.createChannels += t1 - t0;
 
+   await new Promise((r) => setImmediate(r));
+
    return channel;
 }
 
@@ -298,6 +304,8 @@ export async function createTestMessages(channelId: bigint, authorId: bigint, am
 
    const t1 = performance.now();
    timeSpent.createMessages += t1 - t0;
+
+   await new Promise((r) => setImmediate(r));
 
    return createdMessages;
 }
