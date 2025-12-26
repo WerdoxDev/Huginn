@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.65.5](https://github.com/WerdoxDev/Huginn/compare/app@v0.65.4...app@v0.65.5) (2025-12-24)
+
+
+### Bug Fixes
+
+* **app:** adapt to the new voice error throwing ([63c5676](https://github.com/WerdoxDev/Huginn/commit/63c5676a7e408653beca5651aff272bd85706d7f))
+* **app:** trigger app release [#1](https://github.com/WerdoxDev/Huginn/issues/1) ([bff2e87](https://github.com/WerdoxDev/Huginn/commit/bff2e87d66b1ef1550c8169e42ecb8c9ec76b676))
+
 ## [0.65.4](https://github.com/WerdoxDev/Huginn/compare/app@v0.65.3...app@v0.65.4) (2025-12-22)
 
 
