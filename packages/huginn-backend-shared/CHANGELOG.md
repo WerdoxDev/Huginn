@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.21.0...backend-shared@v0.22.0) (2025-12-26)
+
+
+### Features
+
+* **backend-shared:** migrate to prisma v7 ([792a28a](https://github.com/WerdoxDev/Huginn/commit/792a28ab86a85cb4b35cac90d2b67f4630b25975))
+
 ## [0.21.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.20.3...backend-shared@v0.21.0) (2025-12-22)
 
 

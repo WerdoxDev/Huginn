@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.32.6](https://github.com/WerdoxDev/Huginn/compare/server@v0.32.5...server@v0.32.6) (2025-12-26)
+
+
+### Bug Fixes
+
+* **server:** fix timeout issues with prisma v7 ([4d263fb](https://github.com/WerdoxDev/Huginn/commit/4d263fbaeb923b2526ff7bfc93d1afeaa08592ec))
+
 ## [0.32.5](https://github.com/WerdoxDev/Huginn/compare/server@v0.32.4...server@v0.32.5) (2025-12-22)
 
 

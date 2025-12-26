@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.32.3](https://github.com/WerdoxDev/Huginn/compare/api@v0.32.2...api@v0.32.3) (2025-12-26)
+
+
+### Bug Fixes
+
+* **api:** add missing implementation for restart ice ([9c7e34e](https://github.com/WerdoxDev/Huginn/commit/9c7e34ea3c0b3dd0d4a3ae47cc14a1efd5344c68))
+
 ## [0.32.2](https://github.com/WerdoxDev/Huginn/compare/api@v0.32.1...api@v0.32.2) (2025-12-24)
 
 
