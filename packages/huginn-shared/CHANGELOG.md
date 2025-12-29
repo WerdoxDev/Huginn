@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.31.1](https://github.com/WerdoxDev/Huginn/compare/shared@v0.31.0...shared@v0.31.1) (2025-12-26)
+
+
+### Bug Fixes
+
+* **shared:** missing nonce for restart ice result ([2239ef2](https://github.com/WerdoxDev/Huginn/commit/2239ef29499977d85833daa00a894c3183f5eb2e))
+
 ## [0.31.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.30.0...shared@v0.31.0) (2025-12-21)
 
 
