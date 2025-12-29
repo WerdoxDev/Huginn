@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.33.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.32.3...api@v0.33.0) (2025-12-29)
+
+
+### Features
+
+* **api:** add update video and audio stream settings ([780798d](https://github.com/WerdoxDev/Huginn/commit/780798d1d202e62cc8d97b77c6cd4662601b1289))
+
 ## [0.32.3](https://github.com/WerdoxDev/Huginn/compare/api@v0.32.2...api@v0.32.3) (2025-12-26)
 
 
