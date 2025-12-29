@@ -14,27 +14,32 @@ import HuginnRange from "@components/input/HuginnRange";
 import { constants } from "@huginn/shared";
 import { useDevice } from "@stores/deviceStore";
 import LoadingButton from "@components/button/LoadingButton";
+import { screenShareFrameRates, screenShareQualities } from "@lib/constants";
+import { useMediaSources } from "@hooks/voice/useMediaSources";
 
-const qualities: DropdownItem[] = [
-   { text: "Low (480p)", value: "low" },
-   { text: "Medium (720p)", value: "medium" },
-   { text: "High (1080p)", value: "high" },
-   { text: "Ultra (1440p)", value: "ultra" },
-];
+// const qualities: DropdownItem[] = [
+//    { text: "Low (480p)", value: "low" },
+//    { text: "Medium (720p)", value: "medium" },
+//    { text: "High (1080p)", value: "high" },
+//    { text: "Ultra (1440p)", value: "ultra" },
+// ];
 
-const framerates: DropdownItem[] = [
-   { text: "5 fps", value: "5" },
-   { text: "15 fps", value: "15" },
-   { text: "30 fps", value: "30" },
-   { text: "60 fps", value: "60" },
-];
+const qualityOptions: DropdownItem[] = screenShareQualities.map((x) => ({ text: `${x.name} ${x.height}p`, value: x.value }));
+const frameRateOptions: DropdownItem[] = screenShareFrameRates.map((x) => ({ text: `${x} fps`, value: x.toString() }));
 
-const qualityToResolution = {
-   ultra: { width: 2560, height: 1440 },
-   high: { width: 1920, height: 1080 },
-   medium: { width: 1280, height: 720 },
-   low: { width: 854, height: 480 },
-};
+// const framerates: DropdownItem[] = [
+//    { text: "5 fps", value: "5" },
+//    { text: "15 fps", value: "15" },
+//    { text: "30 fps", value: "30" },
+//    { text: "60 fps", value: "60" },
+// ];
+
+// const qualityToResolution = {
+//    ultra: { width: 2560, height: 1440 },
+//    high: { width: 1920, height: 1080 },
+//    medium: { width: 1280, height: 720 },
+//    low: { width: 854, height: 480 },
+// };
 
 export default function ScreenShareModal() {
    const client = useClient();
@@ -46,6 +51,15 @@ export default function ScreenShareModal() {
       // refetchOnMount: true,
    });
    const { inputDevices, cameraDevices } = useDevice();
+   const mediaSources = useMediaSources();
+   const videoProducer = useMemo(
+      () => (modal.type === "change" ? mediaSources.find((x) => x.kind === "stream_video" && x.type === "producing") : undefined),
+      [mediaSources, modal],
+   );
+   const audioProducer = useMemo(
+      () => (modal.type === "change" ? mediaSources.find((x) => x.kind === "stream_audio" && x.type === "producing") : undefined),
+      [mediaSources, modal],
+   );
 
    const settings = useStorage("settings");
    const { setValue } = useStorageStore();
@@ -53,14 +67,22 @@ export default function ScreenShareModal() {
    const inputDeviceOptions = useMemo<DropdownItem[]>(() => inputDevices?.map((x) => ({ text: x.label, value: x.deviceId })) ?? [], [inputDevices]);
 
    const [selectedQuality, setSelectedQuality] = useState<DropdownItem>(
-      qualities.find((x) => x.value === settings.screenShareQuality) ?? qualities[0],
+      qualityOptions.find((x) =>
+         videoProducer?.trackSettings
+            ? screenShareQualities.find((y) => videoProducer.trackSettings?.height === y.height)?.value === x.value
+            : x.value === settings.screenShareQuality,
+      ) ?? qualityOptions[0],
    );
    const [selectedFramerate, setSelectedFramerate] = useState<DropdownItem>(
-      framerates.find((x) => x.value === settings.screenShareFramerate) ?? framerates[0],
+      frameRateOptions.find((x) =>
+         videoProducer?.trackSettings
+            ? screenShareFrameRates.find((y) => videoProducer.trackSettings?.frameRate === y) === Number(x.value)
+            : x.value === settings.screenShareFramerate,
+      ) ?? frameRateOptions[0],
    );
    const [selectedInput, setSelectedInput] = useState<DropdownItem>(inputDeviceOptions[0]);
-   const [maxVideoBitrate, setMaxVideoBitrate] = useState<number>(settings.screenShareVideoBitrate);
-   const [maxAudioBitrate, setMaxAudioBitrate] = useState<number>(settings.screenShareAudioBitrate);
+   const [maxVideoBitrate, setMaxVideoBitrate] = useState<number>(videoProducer?.maxBitrate ?? settings.screenShareVideoBitrate);
+   const [maxAudioBitrate, setMaxAudioBitrate] = useState<number>(audioProducer?.maxBitrate ?? settings.screenShareAudioBitrate);
    const [isAudioEnabled, setIsAudioEnabled] = useState(settings.screenShareAudio);
    const [isSimulcastEnabled, setIsSimulcastEnabled] = useState(settings.screenShareSimulcast);
 
@@ -101,8 +123,8 @@ export default function ScreenShareModal() {
          window.electronAPI.setSelectedDisplaySource(source.id);
       }
 
-      const framerate = Number(selectedFramerate?.value);
-      const { width, height } = qualityToResolution[selectedQuality.value as keyof typeof qualityToResolution];
+      const frameRate = Number(selectedFramerate?.value);
+      const { width, height } = screenShareQualities.find((x) => x.value === selectedQuality.value)!;
 
       startTransition(async () => {
          close();
@@ -116,7 +138,7 @@ export default function ScreenShareModal() {
             stream = await navigator.mediaDevices.getDisplayMedia({
                audio: isAudioEnabled,
                video: {
-                  frameRate: { ideal: framerate },
+                  frameRate: { ideal: frameRate },
                   width: { ideal: width },
                   height: { ideal: height },
                },
@@ -133,7 +155,7 @@ export default function ScreenShareModal() {
                        autoGainControl: false,
                     }
                   : false,
-               video: { frameRate: { ideal: framerate }, width: { ideal: width }, height: { ideal: height } },
+               video: { frameRate: { ideal: frameRate }, width: { ideal: width }, height: { ideal: height } },
             });
          }
 
@@ -215,7 +237,7 @@ export default function ScreenShareModal() {
                <HuginnDropdown.Label>Quality</HuginnDropdown.Label>
                <HuginnDropdown.List className="bg-surface! w-40!">
                   <HuginnDropdown.ItemsWrapper anchor="bottom start">
-                     {qualities.map((x) => (
+                     {qualityOptions.map((x) => (
                         <HuginnDropdown.Item key={x.value} item={x} />
                      ))}
                   </HuginnDropdown.ItemsWrapper>
@@ -225,7 +247,7 @@ export default function ScreenShareModal() {
                <HuginnDropdown.Label>Frame Rate</HuginnDropdown.Label>
                <HuginnDropdown.List className="bg-surface! w-30!">
                   <HuginnDropdown.ItemsWrapper anchor="bottom start">
-                     {framerates.map((x) => (
+                     {frameRateOptions.map((x) => (
                         <HuginnDropdown.Item key={x.value} item={x} />
                      ))}
                   </HuginnDropdown.ItemsWrapper>
@@ -255,10 +277,12 @@ export default function ScreenShareModal() {
                   <IconMingcuteDownFill className="group-data-open:rotate-180 ml-auto h-4 w-4 shrink-0 transition-transform" />
                </DisclosureButton>
                <DisclosurePanel transition className="data-closed:-translate-y-5 data-closed:opacity-0 flex origin-top flex-col gap-y-3 transition">
-                  <HuginnCheckbox checked={isSimulcastEnabled} onChange={setIsSimulcastEnabled} className="flex-col">
-                     <HuginnCheckbox.Toggle>Use Simulcast</HuginnCheckbox.Toggle>
-                     <div className="mt-1 max-w-40 text-xs text-white/40">Requires more bandwidth. Provides better experience for others</div>
-                  </HuginnCheckbox>
+                  {modal.type === "create" && (
+                     <HuginnCheckbox checked={isSimulcastEnabled} onChange={setIsSimulcastEnabled} className="flex-col">
+                        <HuginnCheckbox.Toggle>Use Simulcast</HuginnCheckbox.Toggle>
+                        <div className="mt-1 max-w-40 text-xs text-white/40">Requires more bandwidth. Provides better experience for others</div>
+                     </HuginnCheckbox>
+                  )}
                   <HuginnRange
                      defaultValue={maxVideoBitrate}
                      onChange={setMaxVideoBitrate}

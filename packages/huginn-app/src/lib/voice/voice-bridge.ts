@@ -45,6 +45,7 @@ export class VoiceBridge extends Voice {
       const settings = storageStore.getState().getCachedValue("settings");
 
       // Initialize the actual audio sending stream
+      console.log("READY");
       await this.openOrReplaceMicrophone(settings.inputDeviceId, settings.inputVolume, settings.noiseSuppression);
    }
 

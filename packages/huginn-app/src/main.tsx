@@ -31,6 +31,7 @@ logger.enableLogs({
    "api:voice-device": ["default"],
    "api:voice-signaling": ["heartbeat", "default"],
    "api:voice-transport": ["default"],
+   "api:voice-stream": ["default"],
    "app:voice-store": ["remote-sources", "default"],
    "app:voice-client": ["voice-recv", "default"],
    "api:gateway": ["default", "recv", "heartbeat"],

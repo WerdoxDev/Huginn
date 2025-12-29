@@ -50,6 +50,7 @@ const initialStore = () => ({
          isSimulcastEnabled: boolean;
          sourceName?: string;
       }) => Promise<void>;
+      type: "create" | "change";
    },
    streamAudio: { isOpen: false, callback: undefined } as DefaultModal & { callback?: (sourceProcessId: string) => void },
 });

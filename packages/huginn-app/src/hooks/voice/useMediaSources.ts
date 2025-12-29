@@ -23,6 +23,7 @@ export function useMediaSources() {
             consumerId: consumer.id,
             producerId: consumer.producerId,
             track: consumer.track,
+            trackSettings: consumer.track.getSettings(),
             type: "consuming",
          });
       }
@@ -35,6 +36,8 @@ export function useMediaSources() {
             consumerId: undefined,
             producerId: producer.id,
             track: producer.track,
+            trackSettings: producer.track?.getSettings(),
+            maxBitrate: producer.rtpSender?.getParameters().encodings?.at(-1)?.maxBitrate,
             type: "producing",
          });
       }
@@ -72,6 +75,9 @@ export function useMediaSources() {
       unlisteners.push(client?.voice.transport.listen("remote_consumer_closed", () => setMediaSources(gatherMediaSources())));
       unlisteners.push(client?.voice.transport.listen("remote_producer_closed", () => setMediaSources(gatherMediaSources())));
       unlisteners.push(client?.voice.transport.listen("reset", () => setMediaSources(gatherMediaSources())));
+      unlisteners.push(client?.voice.stream.listen("video_constraints_updated", () => setMediaSources(gatherMediaSources())));
+      unlisteners.push(client?.voice.stream.listen("video_bitrate_updated", () => setMediaSources(gatherMediaSources())));
+      unlisteners.push(client?.voice.stream.listen("audio_bitrate_updated", () => setMediaSources(gatherMediaSources())));
 
       return () => {
          for (const unlisten of unlisteners) {

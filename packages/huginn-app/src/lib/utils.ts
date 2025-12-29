@@ -4,6 +4,7 @@ import type {
    AppPresence,
    AppRelationship,
    AppUser,
+   DropdownItem,
    InputStatus,
    InputStatuses,
    InputValue,

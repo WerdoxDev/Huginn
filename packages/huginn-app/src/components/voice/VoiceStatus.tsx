@@ -25,7 +25,7 @@ const statuses: Record<VoiceStatus, { text: string; color?: string }> = {
 export default function VoiceStatus() {
    const { voiceConnection } = useVoiceStore();
    const { voiceStatus } = useClientStore();
-   const { changeStream, openCamera, closeStream, openAudioStream, openScreenShare, closeCamera } = useVoiceUtils();
+   const { updateStream: changeStream, openCamera, closeStream, openAudioStream, openScreenShare, closeCamera } = useVoiceUtils();
    const client = useClient();
    const { user } = useThisUser();
    const channel = useChannel(voiceConnection.channelId ?? undefined);

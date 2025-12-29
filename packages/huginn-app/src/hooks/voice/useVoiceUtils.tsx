@@ -32,13 +32,16 @@ export function useVoiceUtils() {
    }
 
    async function openScreenShare() {
-      async function open(videoTrack: MediaStreamTrack, audioTrack?: MediaStreamTrack, options?: VoiceStreamOptions) {
-         const videoProducer = client?.voice.transport.getProducer("stream_video");
-         const audioProducer = client?.voice.transport.getProducer("stream_audio");
+      const videoProducer = client?.voice.transport.getProducer("stream_video");
+      const audioProducer = client?.voice.transport.getProducer("stream_audio");
 
+      async function open(videoTrack: MediaStreamTrack, audioTrack?: MediaStreamTrack, options?: VoiceStreamOptions) {
          // Video is already open, replace it
          if (videoProducer) {
             await client?.voice.stream.replaceStreamVideoTrack(videoTrack);
+            if (options?.maxVideoBitrate) {
+               await client?.voice.stream.updateVideoBitrate(options?.maxVideoBitrate);
+            }
          }
          // If video is not there, audio is also not there. So start a stream
          else {
@@ -49,6 +52,9 @@ export function useVoiceUtils() {
          // Audio is already open and audio track is given, replace it
          if (audioProducer && audioTrack) {
             await client?.voice.stream.replaceStreamAudioTrack(audioTrack);
+            if (options?.maxAudioBitrate) {
+               await client?.voice.stream.updateAudioBitrate(options.maxAudioBitrate);
+            }
          }
          // Audio track is not given but it exists, so remove it.
          else if (audioProducer && !audioTrack) {
@@ -78,6 +84,7 @@ export function useVoiceUtils() {
             updateModals({
                screenShare: {
                   isOpen: true,
+                  type: videoProducer ? "change" : "create",
                   callback: async (options) => {
                      try {
                         // Reset loopback even if we want to start a new one / end the last one
@@ -245,6 +252,23 @@ export function useVoiceUtils() {
       }
    }
 
+   async function updateStream(
+      video?: { width?: number; height?: number; frameRate?: number; maxBitrate?: number },
+      audio?: { maxBitrate?: number },
+   ) {
+      try {
+         if (video) {
+            await client?.voice.stream.updateVideoParameters(video);
+         }
+
+         if (audio && audio.maxBitrate) {
+            await client?.voice.stream.updateAudioBitrate(audio.maxBitrate);
+         }
+      } catch (e) {
+         error("app:hooks", "update stream failed", e);
+      }
+   }
+
    async function closeStream() {
       try {
          await client?.voice.stream.closeStream();
@@ -277,6 +301,7 @@ export function useVoiceUtils() {
       openAudioStream,
       openScreenShare,
       changeStream,
+      updateStream,
       consumeStream,
       unconsumeStream,
       closeStream,

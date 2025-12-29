@@ -20,7 +20,6 @@ export class StorageController {
 
          const file = (await this.loadFile(type as FileType)) || {};
          const merged = { ...defaultContent, ...file.data };
-         console.log(file.data, merged);
 
          // Only save if there were missing keys
          if (Object.keys(merged).length !== Object.keys(file).length) {

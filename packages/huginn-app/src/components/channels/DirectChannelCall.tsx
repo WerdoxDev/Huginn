@@ -373,6 +373,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
                isFullscreen={isFullscreen}
                isInVoice={voiceConnection.channelId === props.channelId}
                channelId={props.channelId}
+               mediaSources={mediaSources}
                onToggleFullscreen={toggleFullscreen}
             />
          )}

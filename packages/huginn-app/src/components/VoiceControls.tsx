@@ -10,21 +10,27 @@ import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 import { useVoiceStore } from "@stores/voiceStore";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
+import type { MediaSource, ScreenShareFrameRate, ScreenShareQuality } from "@/types";
+import { screenShareQualities } from "@lib/constants";
 
 export default function VoiceControls(props: {
    show: boolean;
    isInVoice: boolean;
    isFullscreen: boolean;
    channelId: Snowflake;
+   mediaSources: MediaSource[];
    onToggleFullscreen: () => Promise<void>;
 }) {
    const client = useClient();
    const [forceShow, setForceShow] = useState(false);
    const [isMoving, setIsMoving] = useState(false);
    const [ref, isHovering] = useHover<HTMLDivElement>();
-   const { toggleDeafen, toggleMute, closeCamera, changeStream, openCamera, openAudioStream, closeStream, openScreenShare } = useVoiceUtils();
+   const { toggleDeafen, toggleMute, closeCamera, changeStream, updateStream, openCamera, openAudioStream, closeStream, openScreenShare } =
+      useVoiceUtils();
    const { voiceState } = useVoiceStore();
    const { updateModals } = useModals();
+
+   const videoSource = props.mediaSources.find((x) => x.kind === "stream_video" && x.type === "producing");
 
    useEffect(() => {
       const controller = new AbortController();
@@ -50,6 +56,15 @@ export default function VoiceControls(props: {
 
    function onStreamButtonOpenChanged(isOpen: boolean) {
       setForceShow(isOpen);
+   }
+
+   async function onUpdateStream(video?: { quality?: ScreenShareQuality; frameRate?: ScreenShareFrameRate }) {
+      if (video?.quality) {
+         const { width, height } = screenShareQualities.find((x) => x.value === video?.quality)!;
+         await updateStream({ width, height });
+      } else if (video?.frameRate) {
+         await updateStream({ frameRate: video.frameRate });
+      }
    }
 
    function onConnect() {
@@ -105,10 +120,12 @@ export default function VoiceControls(props: {
                   <div className="flex gap-x-1">
                      <StreamButton
                         voiceState={voiceState}
+                        videoSource={videoSource}
                         onOpenScreenShare={openScreenShare}
                         onOpenAudioStream={openAudioStream}
                         onCloseStream={closeStream}
                         onChangeStream={changeStream}
+                        onUpdateStream={onUpdateStream}
                         onOpenChanged={onStreamButtonOpenChanged}
                         anchor={{ placement: "top", gap: 12 }}
                      >

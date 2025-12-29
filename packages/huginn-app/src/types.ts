@@ -19,6 +19,7 @@ import type {
    Snowflake,
    UserPresence,
 } from "@huginn/shared";
+import type { screenShareFrameRates, screenShareQualities } from "@lib/constants";
 import type { ChangeEvent, HTMLInputTypeAttribute, ReactNode, RefObject } from "react";
 
 export type StatusCode = "none" | "default" | "error" | "success";
@@ -410,6 +411,8 @@ export type MediaSource = {
    producerId?: string;
    consumerUserIds: string[];
    track?: MediaStreamTrack | null;
+   trackSettings?: MediaTrackSettings;
+   maxBitrate?: number;
    kind: HMediaKind;
    userId: Snowflake;
    type: "consuming" | "consumable" | "producing";
@@ -591,3 +594,6 @@ export type VoiceDebugData = {
 };
 
 export type Environment = "desktop" | "browser";
+
+export type ScreenShareQuality = (typeof screenShareQualities)[number]["value"];
+export type ScreenShareFrameRate = (typeof screenShareFrameRates)[number];

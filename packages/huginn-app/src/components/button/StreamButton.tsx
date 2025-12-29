@@ -1,5 +1,7 @@
+import type { MediaSource, ScreenShareFrameRate, ScreenShareQuality } from "@/types";
 import { DropdownMenu, type DropdownAnchor } from "@components/dropdown/DropdownMenu";
 import type { GatewayVoiceStateFlags } from "@huginn/shared";
+import { screenShareFrameRates, screenShareQualities } from "@lib/constants";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { useMemo, type ReactNode } from "react";
@@ -8,16 +10,20 @@ export default function StreamButton(props: {
    children?: ReactNode;
    className?: string;
    voiceState: GatewayVoiceStateFlags;
+   videoSource?: MediaSource;
    onOpenScreenShare?: () => void;
    onOpenAudioStream?: () => void;
    onCloseStream?: () => void;
    onChangeStream?: () => void;
+   onUpdateStream?: (video?: { quality?: ScreenShareQuality; frameRate?: ScreenShareFrameRate }) => void;
    onOpenChanged?: (isOpen: boolean) => void;
    hideArrow?: boolean;
    anchor?: DropdownAnchor;
 }) {
    const isStreaming = useMemo(() => props.voiceState.isScreenSharing || props.voiceState.isAudioStreaming, [props.voiceState]);
    const huginnWindow = useHuginnWindow();
+
+   const videoSettings = useMemo(() => props.videoSource?.trackSettings, [props.videoSource]);
 
    return isStreaming ? (
       <DropdownMenu anchor={props.anchor} onOpenChanged={props.onOpenChanged} className={clsx("flex", props.className)}>
@@ -34,6 +40,30 @@ export default function StreamButton(props: {
             <DropdownMenu.Item label="Change Stream" onClick={props.onChangeStream}>
                <IconMingcuteTransfer3Fill />
             </DropdownMenu.Item>
+            <DropdownMenu>
+               <DropdownMenu.Item label="Resolution" isNested>
+                  <span className="text-white/60">{videoSettings?.height ? `${videoSettings.height}p` : "Unknown"}</span>
+               </DropdownMenu.Item>
+               <DropdownMenu.Items>
+                  {screenShareQualities.map((x) => (
+                     <DropdownMenu.Item label={`${x.height}p`} onClick={() => props.onUpdateStream?.({ quality: x.value })}>
+                        {videoSettings?.height === x.height && <IconMingcuteCheckFill className="text-positive-300" />}
+                     </DropdownMenu.Item>
+                  ))}
+               </DropdownMenu.Items>
+            </DropdownMenu>
+            <DropdownMenu>
+               <DropdownMenu.Item label="Frame Rate" isNested>
+                  <span className="text-white/60">{videoSettings?.frameRate ? `${videoSettings.frameRate} fps` : "Unknown"}</span>
+               </DropdownMenu.Item>
+               <DropdownMenu.Items>
+                  {screenShareFrameRates.map((x) => (
+                     <DropdownMenu.Item label={`${x} fps`} onClick={() => props.onUpdateStream?.({ frameRate: x })}>
+                        {videoSettings?.frameRate === x && <IconMingcuteCheckFill className="text-positive-300" />}
+                     </DropdownMenu.Item>
+                  ))}
+               </DropdownMenu.Items>
+            </DropdownMenu>
          </DropdownMenu.Items>
       </DropdownMenu>
    ) : (
