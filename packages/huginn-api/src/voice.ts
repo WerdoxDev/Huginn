@@ -22,6 +22,7 @@ export class Voice extends EventEmitter<Events> {
    public stream: VoiceStreamManager;
 
    private options: VoiceOptions;
+   private wasReady = false;
 
    private _status: VoiceStatus = "idle";
    public get status(): VoiceStatus {
@@ -55,6 +56,7 @@ export class Voice extends EventEmitter<Events> {
          if (type === "hard" || type === "session") {
             this.transport.reset();
             this.emit("reset", undefined);
+            this.wasReady = false;
          }
       });
 
@@ -225,7 +227,10 @@ export class Voice extends EventEmitter<Events> {
          // case "idle":
          // case "signaling":
          case "ready":
-            this.emit("ready", undefined);
+            if (!this.wasReady) {
+               this.emit("ready", undefined);
+               this.wasReady = true;
+            }
             break;
          case "disconnected":
             this.emit("disconnected", undefined);
