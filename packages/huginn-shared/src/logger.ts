@@ -3,7 +3,7 @@ export const LOG_VALUES_MAP = {
    "api:voice-signaling": ["default", "recv", "recv-detail", "send", "send-detail", "ping", "heartbeat"],
    "api:voice-transport": ["default", "voice-state"],
    "api:voice-device": ["default"],
-   "api:voice-screen-share": ["default"],
+   "api:voice-stream": ["default"],
    "api:gateway": ["send", "send-detail", "default", "recv", "recv-detail", "dispatch", "heartbeat"],
    "api:gateway-voice": ["default"],
    "api:voice-manager": ["default"],
