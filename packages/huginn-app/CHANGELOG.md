@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.66.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.65.6...app@v0.66.0) (2025-12-29)
+
+
+### Features
+
+* **app:** add update stream feature ([1785e19](https://github.com/WerdoxDev/Huginn/commit/1785e1991737c33411733832927ee2604bc05741))
+
 ## [0.65.6](https://github.com/WerdoxDev/Huginn/compare/app@v0.65.5...app@v0.65.6) (2025-12-26)
 
 
