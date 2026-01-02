@@ -46,7 +46,7 @@ export default function StreamButton(props: {
                </DropdownMenu.Item>
                <DropdownMenu.Items>
                   {screenShareQualities.map((x) => (
-                     <DropdownMenu.Item label={`${x.height}p`} onClick={() => props.onUpdateStream?.({ quality: x.value })}>
+                     <DropdownMenu.Item key={x.value} label={`${x.height}p`} onClick={() => props.onUpdateStream?.({ quality: x.value })}>
                         {videoSettings?.height === x.height && <IconMingcuteCheckFill className="text-positive-300" />}
                      </DropdownMenu.Item>
                   ))}
@@ -58,7 +58,7 @@ export default function StreamButton(props: {
                </DropdownMenu.Item>
                <DropdownMenu.Items>
                   {screenShareFrameRates.map((x) => (
-                     <DropdownMenu.Item label={`${x} fps`} onClick={() => props.onUpdateStream?.({ frameRate: x })}>
+                     <DropdownMenu.Item key={x} label={`${x} fps`} onClick={() => props.onUpdateStream?.({ frameRate: x })}>
                         {videoSettings?.frameRate === x && <IconMingcuteCheckFill className="text-positive-300" />}
                      </DropdownMenu.Item>
                   ))}
