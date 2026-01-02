@@ -2,10 +2,9 @@ import type { HuginnClient, VoiceOptions, VoiceSignallingResetType, VoiceStatus 
 import { defaultClientOptions } from "./utils";
 import { VoiceSignalingClient } from "./voice-signaling-client";
 import { VoiceTransportManager } from "./voice-transport-manager";
-import { EventEmitter } from "./event-emitter";
 import { VoiceDeviceManager } from "./voice-device-manager";
 import { VoiceStreamManager } from "./voice-stream-manager";
-import { error, log } from "@huginn/shared";
+import { error, EventEmitter, log } from "@huginn/shared";
 
 type Events = {
    status_changed: VoiceStatus;

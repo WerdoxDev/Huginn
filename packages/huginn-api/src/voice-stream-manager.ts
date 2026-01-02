@@ -1,8 +1,7 @@
-import { clamp, constants, log } from "@huginn/shared";
+import { clamp, constants, EventEmitter, log } from "@huginn/shared";
 import type { VoiceTransportManager } from "./voice-transport-manager";
 import type { RtpEncodingParameters } from "mediasoup-client/types";
 import type { VoiceStreamOptions } from ".";
-import { EventEmitter } from "./event-emitter";
 
 type Events = {
    video_constraints_updated: { width?: number; height?: number; frameRate?: number };

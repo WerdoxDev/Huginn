@@ -1,6 +1,7 @@
 import {
    convertToMediaKind,
    error,
+   EventEmitter,
    log,
    type ConsumerData,
    type GatewayVoiceStateFlags,
@@ -31,7 +32,6 @@ import type {
    RtpEncodingParameters,
    ConnectionState,
 } from "mediasoup-client/types";
-import { EventEmitter } from "./event-emitter";
 import type { HuginnClient } from ".";
 
 type Events = {

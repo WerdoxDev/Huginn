@@ -1,6 +1,7 @@
 import {
    constants,
    error,
+   EventEmitter,
    GatewayCode,
    log,
    VoiceOperations,
@@ -24,7 +25,6 @@ import {
    type VoiceResumeConsumerResult,
    type VoiceWebsocketEvents,
 } from "@huginn/shared";
-import { EventEmitter } from "./event-emitter";
 import type { HuginnClient, VoiceConnectionData, VoiceOptions, VoiceSignallingResetType } from ".";
 import type { DtlsParameters, RtpCapabilities, RtpParameters } from "mediasoup-client/types";
 
@@ -85,7 +85,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       this.socket.onclose = (e) => this.onClose(e);
       this.socket.onmessage = (e) => this.onMessage(e);
       this.socket.onerror = (e) => {
-         throw new Error(`Voice websocket encountered an error: ${e}`);
+         error("api:gateway", "voice websocket encountered an error");
       };
    }
 

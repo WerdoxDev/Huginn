@@ -1,5 +1,4 @@
-import { error, log, type GatewayVoiceStateFlags, type LocalVoiceState } from "@huginn/shared";
-import { EventEmitter } from "./event-emitter";
+import { error, EventEmitter, log, type GatewayVoiceStateFlags, type LocalVoiceState } from "@huginn/shared";
 
 type Events = {
    update_gateway_voice_state: { voiceState: GatewayVoiceStateFlags; callback: (flags: GatewayVoiceStateFlags | undefined) => void };

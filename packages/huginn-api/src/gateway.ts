@@ -98,7 +98,7 @@ export class Gateway extends SharedWebsocket<Events> {
       this.socket.onclose = (e) => this.onClose(e);
       this.socket.onmessage = (e) => this.onMessage(e);
       this.socket.onerror = (e) => {
-         error("api:gateway", "websocket error:", e);
+         error("api:gateway", "gateway websocket encountered an error");
       };
    }
 
