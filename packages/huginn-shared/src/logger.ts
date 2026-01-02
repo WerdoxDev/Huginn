@@ -1,3 +1,5 @@
+import { EventEmitter } from "./event-emitter";
+
 export const LOG_VALUES_MAP = {
    "api:voice": ["default"],
    "api:voice-signaling": ["default", "recv", "recv-detail", "send", "send-detail", "ping", "heartbeat"],
@@ -65,13 +67,15 @@ export function error(section: LogKeys, ...args: LogArgs[]): void {
    logger.error(section, ...args);
 }
 
-export class Logger {
+type Events = {
+   error: { section: string; args: LogArgs[] };
+   log: { section: string; level: string; args: LogArgs[] };
+};
+
+export class Logger extends EventEmitter<Events> {
    private enabledLogs = new Map<LogKeys, Set<LogValuesMap[LogKeys]>>();
    private excludedEventLogs = new Map<LogKeys, Set<LogValuesMap[LogKeys]>>();
    private isRaw = false;
-
-   private onLog: ((section: string, level: string, ...args: LogArgs[]) => void) | undefined;
-   private onError: ((section: string, ...args: LogArgs[]) => void) | undefined;
 
    public enableLogs<T extends Partial<{ [K in LogKeys]: LogValuesMap[K][] }>>(sections: T): void {
       for (const [section, levels] of Object.entries(sections) as [LogKeys, string[]][]) {
@@ -123,18 +127,10 @@ export class Logger {
       this.isRaw = isRaw;
    }
 
-   public setOnLog(func: typeof this.onLog): void {
-      this.onLog = func;
-   }
-
-   public setOnError(func: typeof this.onError): void {
-      this.onError = func;
-   }
-
    public log<K extends LogKeys>(section: K, level: LogValuesFor<K>, ...args: LogArgs[]): void {
       const excludedSections = this.excludedEventLogs.get(section);
       if (!excludedSections || !excludedSections.has(level)) {
-         this.onLog?.(section, level, ...args);
+         this.emit("log", { section, level, args });
       }
 
       const existingSections = this.enabledLogs.get(section);
@@ -156,7 +152,7 @@ export class Logger {
    }
 
    public error(section: LogKeys, ...args: LogArgs[]): void {
-      this.onError?.(section, ...args);
+      this.emit("error", { section, args });
 
       const levelStyle = levelStyles.default;
       const sectionStyle = sectionStyles[section] ?? sectionStyles.error;
