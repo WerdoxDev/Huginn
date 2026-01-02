@@ -19,8 +19,8 @@ export class RemoteLogger {
 
       this.logBuffer = [];
 
-      this.logger.setOnLog((section, level, ...args) => this.addToBuffer("log", section, level, ...args));
-      this.logger.setOnError((section, ...args) => this.addToBuffer("error", section, undefined, ...args));
+      this.logger.on("log", ({ section, level, args }) => this.addToBuffer("log", section, level, ...args));
+      this.logger.on("error", ({ section, args }) => this.addToBuffer("error", section, undefined, ...args));
 
       setInterval(() => this.flush(), this.flushInterval);
 

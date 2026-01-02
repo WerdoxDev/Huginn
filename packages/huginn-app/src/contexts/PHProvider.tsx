@@ -1,3 +1,4 @@
+import { logger } from "@huginn/shared";
 import { storageStore } from "@stores/storageStore";
 import posthog, { type CaptureResult } from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
@@ -24,6 +25,12 @@ export function initializePosthog() {
          }
          return event;
       },
+      capture_performance: true,
+      error_tracking: { captureExtensionExceptions: true },
+   });
+
+   logger.on("error", ({ section, args }) => {
+      posthog.captureException(`${section}: ${args.map((x) => (typeof x === "object" ? JSON.stringify(x) : x)).join(" ")}`);
    });
 }
 

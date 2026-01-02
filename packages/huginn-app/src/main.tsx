@@ -47,8 +47,8 @@ let _remoteLogger: RemoteLogger;
 await initializeStorage();
 
 if (window.electronAPI) {
-   logger.setOnLog((section, level, ...args) => window.electronAPI.addToLogBuffer("log", section, level, ...args));
-   logger.setOnError((section, ...args) => window.electronAPI.addToLogBuffer("error", section, undefined, ...args));
+   logger.on("log", ({ section, level, args }) => window.electronAPI.addToLogBuffer("log", section, level, ...args));
+   logger.on("error", ({ section, args }) => window.electronAPI.addToLogBuffer("error", section, undefined, ...args));
 } else {
    const thisStore = storageStore.getState();
    const settings = thisStore.getCachedValue("settings");
