@@ -15,6 +15,7 @@ const reactCompilerConfig = { target: "19" };
 // https://vitejs.dev/config/
 export default defineConfig({
    base: "./",
+   publicDir: "public",
    plugins: [
       // basicSsl(),
       // reactRouterDevTools(),
@@ -32,9 +33,29 @@ export default defineConfig({
       tailwindcss(),
       VitePWA({
          registerType: "autoUpdate",
-         workbox: { maximumFileSizeToCacheInBytes: 4194304 },
-         manifest: { name: "Huginn", short_name: "Huginn", theme_color: "#EBEBD3" },
-         strategies: "generateSW",
+         injectRegister: false,
+
+         pwaAssets: {
+            disabled: false,
+            config: true,
+         },
+         workbox: {
+            maximumFileSizeToCacheInBytes: 4194304,
+            globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
+            cleanupOutdatedCaches: true,
+            clientsClaim: true,
+         },
+         manifest: {
+            name: "Huginn",
+            short_name: "Huginn",
+            theme_color: "#EBEBD3",
+         },
+         devOptions: {
+            enabled: false,
+            navigateFallback: "index.html",
+            suppressWarnings: true,
+            type: "module",
+         },
       }),
    ],
 

@@ -59,7 +59,7 @@ function checkDevices() {
       thisStore.setUnavailableInputDevice(undefined);
    }
    if (!thisStore.unavailableInputDeviceId && !thisStore.inputDevices.some((x) => x.deviceId === settings.inputDeviceId)) {
-      storage.updateSettings({ inputDeviceId: thisStore.inputDevices[0].deviceId });
+      storage.updateSettings({ inputDeviceId: thisStore.inputDevices[0]?.deviceId });
       thisStore.setUnavailableInputDevice(settings.inputDeviceId);
    }
 
@@ -69,7 +69,7 @@ function checkDevices() {
       thisStore.setUnavailableOutputDevice(undefined);
    }
    if (!thisStore.unavailableOutputDeviceId && !thisStore.outputDevices.some((x) => x.deviceId === settings.outputDeviceId)) {
-      storage.updateSettings({ outputDeviceId: thisStore.outputDevices[0].deviceId });
+      storage.updateSettings({ outputDeviceId: thisStore.outputDevices[0]?.deviceId });
       thisStore.setUnavailableOutputDevice(settings.outputDeviceId);
    }
 
@@ -79,7 +79,7 @@ function checkDevices() {
       thisStore.setUnavailableCameraDevice(undefined);
    }
    if (!thisStore.unavailableCameraDeviceId && !thisStore.cameraDevices.some((x) => x.deviceId === settings.cameraDeviceId)) {
-      storage.updateSettings({ cameraDeviceId: thisStore.cameraDevices[0].deviceId });
+      storage.updateSettings({ cameraDeviceId: thisStore.cameraDevices[0]?.deviceId });
       thisStore.setUnavailableCameraDevice(settings.cameraDeviceId);
    }
 }
