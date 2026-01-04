@@ -5,7 +5,9 @@ import react from "@vitejs/plugin-react";
 import AutoImport from "unplugin-auto-import/vite";
 import IconsResolver from "unplugin-icons/resolver";
 import Icons from "unplugin-icons/vite";
+import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig } from "vite";
+import basicSsl from "@vitejs/plugin-basic-ssl";
 import { version } from "./package.json";
 
 const reactCompilerConfig = { target: "19" };
@@ -14,6 +16,7 @@ const reactCompilerConfig = { target: "19" };
 export default defineConfig({
    base: "./",
    plugins: [
+      // basicSsl(),
       // reactRouterDevTools(),
       react({
          jsxRuntime: "automatic",
@@ -27,6 +30,12 @@ export default defineConfig({
          resolvers: [IconsResolver({ prefix: "Icon", extension: "jsx" })],
       }),
       tailwindcss(),
+      VitePWA({
+         registerType: "autoUpdate",
+         workbox: { maximumFileSizeToCacheInBytes: 4194304 },
+         manifest: { name: "Huginn", short_name: "Huginn", theme_color: "#EBEBD3" },
+         strategies: "generateSW",
+      }),
    ],
 
    define: {
