@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.66.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.66.0...app@v0.66.1) (2026-01-04)
+
+
+### Bug Fixes
+
+* **app:** add key to stream button change options ([b09583b](https://github.com/WerdoxDev/Huginn/commit/b09583bc79606ac20f0735232744d5e0bcd01796))
+* **app:** errors should be also sent to posthog as exceptions ([ba136ea](https://github.com/WerdoxDev/Huginn/commit/ba136ea5525ce18820790570966c6e903fa8ec9f))
+
 ## [0.66.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.65.6...app@v0.66.0) (2025-12-29)
 
 
