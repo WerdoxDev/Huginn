@@ -140,6 +140,10 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       }
    }
 
+   public cancelRestartIce(): void {
+      this.setStatus("disconnected");
+   }
+
    public checkDevice(): asserts this is this & {
       device: mediasoupClient.Device;
    } {
@@ -388,6 +392,11 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
    public async restartIce(direction: "send" | "recv"): Promise<void> {
       this.checkTransports();
+
+      // It could happen that restarting a transport causes the other one to also reconnect
+      this.checkAndSetStatus();
+      if (this.status === "ready") return;
+
       const transport = direction === "send" ? this.sendTransport : this.recvTransport;
 
       this.setStatus("restarting");

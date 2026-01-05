@@ -46,6 +46,11 @@ export class Voice extends EventEmitter<Events> {
       this.signaling.on("status_changed", async (d) => {
          this.recalculateStatus();
 
+         // If transport is restarting ice and voice gets disconnected, cancel ice restart and it should be restarted again when voice gets connected again
+         if (d === "disconnected" && this.transport.status === "restarting") {
+            this.transport.cancelRestartIce();
+         }
+
          if (d === "authenticated" && this.transport.status === "disconnected") {
             await this.transport.checkAndRestartIce();
          }
