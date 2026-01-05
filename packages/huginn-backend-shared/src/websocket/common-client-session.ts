@@ -40,7 +40,7 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
    }
 
    public async initialize(user: APIUser, properties: Properties) {
-      log("shared:client-session", "default", "initialize", "uid:", user.id);
+      log("backend-shared:client-session", "default", "initialize", "uid:", user.id);
 
       this.user = user;
       this.properties = properties;
@@ -49,13 +49,13 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
    }
 
    public subscribe(topic: string) {
-      log("shared:client-session", "subscriptions", "subscribe", topic);
+      log("backend-shared:client-session", "subscriptions", "subscribe", topic);
 
       this.peer.subscribe(topic);
    }
 
    public unsubscribe(topic: string) {
-      log("shared:client-session", "subscriptions", "unsubscribe", topic);
+      log("backend-shared:client-session", "subscriptions", "unsubscribe", topic);
 
       this.peer.unsubscribe(topic);
    }
@@ -72,10 +72,6 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
       this.sequence = this.sequence !== undefined ? this.sequence + 1 : 0;
       return this.sequence;
    }
-
-   // public addMessage(sequence: number, data: Payload) {
-   //    this.sentMessages.set(sequence, data);
-   // }
 
    public getMessages() {
       return this.sentMessages;
@@ -97,10 +93,10 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
    }
 
    public async subscribeToTopics() {
-      log("shared:client-session", "subscriptions", "subscribe to defaults", "sid:", this.sessionId);
+      log("backend-shared:client-session", "subscriptions", "subscribe to defaults", "sid:", this.sessionId);
 
       if (!this.authenticated || !this.user) {
-         error("shared:client-session", "Client session is not authenticated");
+         error("backend-shared:client-session", "Client session is not authenticated");
          return;
       }
 
@@ -117,7 +113,7 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
    public enqueue(fn: () => Promise<void> | void, onError?: (e: any) => void) {
       const result = this.queue.then(() => fn());
       this.queue = result.catch((e) => {
-         error("shared:client-session", "Error in enqueued function: ", e);
+         error("backend-shared:client-session", "error in enqueued function: ", e);
          onError?.(e);
       });
 
