@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.33.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.33.0...api@v0.33.1) (2026-01-04)
+
+
+### Bug Fixes
+
+* **api:** move event emitter to shared ([da24df2](https://github.com/WerdoxDev/Huginn/commit/da24df2af6316671e3a7b66f932093997342e623))
+
 ## [0.33.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.32.3...api@v0.33.0) (2025-12-29)
 
 

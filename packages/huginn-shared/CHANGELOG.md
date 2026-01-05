@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.32.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.31.1...shared@v0.32.0) (2026-01-04)
+
+
+### Features
+
+* **shared:** add event-emitter from api + add events to logger instead of manual ones ([6e9d486](https://github.com/WerdoxDev/Huginn/commit/6e9d48691d7e2381de38edbc6376461c16a4a1ec))
+
 ## [0.31.1](https://github.com/WerdoxDev/Huginn/compare/shared@v0.31.0...shared@v0.31.1) (2025-12-26)
 
 
