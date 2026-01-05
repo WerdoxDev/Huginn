@@ -32,6 +32,9 @@ export default defineConfig({
       }),
       tailwindcss(),
       VitePWA({
+         strategies: "injectManifest",
+         srcDir: "src",
+         filename: "sw.ts",
          registerType: "autoUpdate",
          injectRegister: false,
 
@@ -45,10 +48,15 @@ export default defineConfig({
             cleanupOutdatedCaches: true,
             clientsClaim: true,
          },
+         injectManifest: {
+            maximumFileSizeToCacheInBytes: 4194304,
+            globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
+         },
          manifest: {
             name: "Huginn",
             short_name: "Huginn",
             theme_color: "#EBEBD3",
+            background_color: "#EBEBD3",
          },
          devOptions: {
             enabled: false,
