@@ -4,8 +4,8 @@ import { Octokit } from "octokit";
 import { ServerGateway } from "#gateway/server-gateway";
 import { logger } from "@huginn/shared";
 
-// enableLogs({ "server:gateway": ["recv"] })
 // logger.enableLogs({ "server:gateway": ["default", "detail-identify"], "server:presence-manager": ["default", "detail"] });
+logger.enableLogs({ "backend-shared:websocket": ["default"] });
 
 export const envs = readEnv([
    "CDN_LOCAL_URL",
