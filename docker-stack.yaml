@@ -1,3 +1,5 @@
+version: "3.8"
+
 networks:
    caddy:
       external: true
@@ -10,6 +12,9 @@ services:
            target: /etc/caddy/Caddyfile
       networks:
          - caddy
+      deploy:
+         restart_policy:
+            condition: on-failure
 
    server:
       image: ghcr.io/werdoxdev/huginn-server:latest
@@ -17,14 +22,10 @@ services:
          - SERVER_HOST=0.0.0.0
          - SERVER_PORT=3004
          - ALLOWED_ORIGINS=http://localhost:5173/,https://app.huginn.dev/,https://dev.huginn.dev/
-         # - CDN_PUBLIC_URL=https://midgard.huginn.dev/cdn
-         # - CDN_PUBLIC_URL=http://192.168.178.62:3000/cdn
          - CDN_LOCAL_URL=http://cdn:3002/cdn
       secrets:
          - backend_secrets
       networks:
-         - caddy
-      depends_on:
          - caddy
       volumes:
          - type: bind
@@ -35,6 +36,11 @@ services:
             limits:
                memory: 2g
                cpus: "2.0"
+         restart_policy:
+            condition: on-failure
+            delay: 5s
+            max_attempts: 3
+
    cdn:
       image: ghcr.io/werdoxdev/huginn-cdn:latest
       environment:
@@ -44,44 +50,48 @@ services:
          - backend_secrets
       networks:
          - caddy
-      depends_on:
-         - caddy
       deploy:
          resources:
             limits:
                memory: 2g
                cpus: "2.0"
+         restart_policy:
+            condition: on-failure
+            delay: 5s
+            max_attempts: 3
+
    voice:
       image: ghcr.io/werdoxdev/huginn-voice:latest
       environment:
          - VOICE_HOST=0.0.0.0
          - VOICE_PORT=3003
          - MEDIA_LISTEN_INFOS=udp:44444:0.0.0.0:midgard.huginn.dev
-         # - MEDIA_IP=0.0.0.0
-         # - MEDIA_ANNOUNCED_HOSTNAMES=midgard.huginn.dev,huginn.werdox.com
-         # - MEDIA_PORT=44444
       ports:
-         - "44444:44444/udp"
-         - "44444:44444/tcp"
+         - target: 44444
+           published: 44444
+           protocol: udp
+           mode: host
+         - target: 44444
+           published: 44444
+           protocol: tcp
+           mode: host
       secrets:
          - backend_secrets
       networks:
-         - caddy
-      depends_on:
          - caddy
       deploy:
          resources:
             limits:
                memory: 2g
                cpus: "2.0"
+         restart_policy:
+            condition: on-failure
+            delay: 5s
+            max_attempts: 3
 
 configs:
    caddy_config:
       external: true
-
-volumes:
-   caddy_data:
-   caddy_config:
 
 secrets:
    backend_secrets:
