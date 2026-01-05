@@ -31,9 +31,9 @@ export const LOG_VALUES_MAP = {
    "server:gateway": ["default", "send", "recv", "heartbeat", "detail-identify"],
    "server:presence-manager": ["default", "send", "detail"],
    "voice:websocket": ["default", "recv"],
-   "shared:websocket": ["default", "subscriptions"],
-   "shared:client-session": ["default", "subscriptions", "heartbeat"],
+   "backend-shared:client-session": ["default", "subscriptions", "heartbeat"],
    "backend-shared:route-utils": ["default"],
+   "backend-shared:websocket": ["default", "subscriptions"],
    "app:hooks": ["voice-utils"],
 } as const;
 
