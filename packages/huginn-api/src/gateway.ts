@@ -156,7 +156,7 @@ export class Gateway extends SharedWebsocket<Events> {
       }
 
       // Don't reconnect if it was intentionally closed
-      if (!this.intentionalClose) {
+      if (!this.intentionalClose && e.code !== GatewayCode.SWITCHING_CONNECTION) {
          this.scheduleReconnect();
       }
    }
@@ -452,7 +452,12 @@ export class Gateway extends SharedWebsocket<Events> {
    }
 
    private shouldReset(closeCode: number): boolean {
-      return this.intentionalClose || closeCode === GatewayCode.INVALID_SESSION || closeCode === GatewayCode.AUTHENTICATION_FAILED;
+      return (
+         this.intentionalClose ||
+         closeCode === GatewayCode.INVALID_SESSION ||
+         closeCode === GatewayCode.AUTHENTICATION_FAILED ||
+         closeCode === GatewayCode.SWITCHING_CONNECTION
+      );
    }
 
    // ============================================================
