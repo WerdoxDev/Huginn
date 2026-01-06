@@ -51,7 +51,7 @@ export function initializePresence() {
          userId: d.user.id,
          status: d.userSettings.status || "online",
          activities: [],
-         activeSessions: [client.gateway.sessionId!],
+         activeSessions: [{ sessionId: client.gateway.sessionId! }],
       };
 
       thisStore.updatePresence(d.user.id, presence);
@@ -123,9 +123,11 @@ function startCheckingForActivity() {
          const knownMatch = detectKnownApplication(openApplications, knownApplications);
          const customMatch = detectCustomApplication(openApplications, customApplications);
 
+         const ourActivities = presence.activities.filter((x) => x.sessionId === client.gateway.sessionId);
+
          if (!knownMatch && !customMatch) {
             // Nothing detected -> clear presence if it was set before
-            if (presence.activities.length !== 0) {
+            if (ourActivities.length !== 0) {
                client.gateway.updatePresence({
                   activities: [],
                   status: presence.status,
@@ -137,13 +139,13 @@ function startCheckingForActivity() {
          const match: { detected: ProcessInfo; custom?: CustomApplication; known?: APIKnownApplication } = knownMatch ?? customMatch;
 
          // Skip if we already have the activity
-         if (presence.activities[0]) {
+         if (ourActivities[0]) {
             if (match.known) {
-               if (match.known.id === presence.activities[0].applicationId) {
+               if (match.known.id === ourActivities[0].applicationId) {
                   return;
                }
             } else if (match.custom) {
-               if (match.custom.title === presence.activities[0].name) {
+               if (match.custom.title === ourActivities[0].name) {
                   return;
                }
             }
