@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.33.2](https://github.com/WerdoxDev/Huginn/compare/api@v0.33.1...api@v0.33.2) (2026-01-06)
+
+
+### Bug Fixes
+
+* **api:** disconnected voice mid restart ice is not trying again ([8da0f32](https://github.com/WerdoxDev/Huginn/commit/8da0f329974c72cead084c4125fddc1cc102103d))
+* **api:** gateway should not reconnect on 4012 ([97f6ea0](https://github.com/WerdoxDev/Huginn/commit/97f6ea0d1cda739c0208afa24ccf6f6e680b9866))
+
 ## [0.33.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.33.0...api@v0.33.1) (2026-01-04)
 
 
