@@ -1,3 +1,3 @@
-### **Voice Reliability 98% -- OK FOR REAL!!**
+### Bug Fixes...
 
-- Slightly better VAD
+- Just a few bug fixes related to activities
