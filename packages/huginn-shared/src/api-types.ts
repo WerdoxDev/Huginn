@@ -363,7 +363,7 @@ export type UserPresence = {
    user: PresenceUser;
    status: PresenceStatus;
    activities: Activity[];
-   activeSessions: Snowflake[];
+   activeSessions: ActiveSession[];
 };
 
 export type PresenceUser = Partial<APIPublicUser> & { id: Snowflake };
@@ -371,6 +371,10 @@ export type PresenceUser = Partial<APIPublicUser> & { id: Snowflake };
 export type UserSettings = {
    theme?: "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal" | "scarlet";
    status: PresenceStatus;
+};
+
+export type ActiveSession = {
+   sessionId: Snowflake;
 };
 
 export enum ActivityType {
@@ -385,7 +389,10 @@ export type Activity = {
    startedAt?: number;
    applicationId?: number;
    iconUrl?: string;
+   sessionId: Snowflake;
 };
+
+export type ActivityWithoutSessionId = Omit<Activity, "sessionId">;
 
 export type OAuthType = "google" | "github";
 export type OAuthFlow = "browser" | "websocket";

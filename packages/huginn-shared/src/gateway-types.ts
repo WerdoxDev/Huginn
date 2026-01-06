@@ -1,5 +1,7 @@
 import type {
+   ActiveSession,
    Activity,
+   ActivityWithoutSessionId,
    APIChannelUser,
    APIMessage,
    APIReadStateWithoutUser,
@@ -242,7 +244,7 @@ export type GatewayUpdatePresence = {
 
 export type GatewayUpdatePresenceData = {
    status: PresenceStatus;
-   activities: Activity[];
+   activities: ActivityWithoutSessionId[];
 };
 
 export type GatewaySettingsUpdateData = Partial<UserSettings>;
@@ -250,5 +252,5 @@ export type GatewaySettingsUpdateData = Partial<UserSettings>;
 export type GatewaySessionUpdateData = {
    status: PresenceStatus;
    activities: Activity[];
-   activeSessions: Snowflake[];
+   activeSessions: ActiveSession[];
 };
