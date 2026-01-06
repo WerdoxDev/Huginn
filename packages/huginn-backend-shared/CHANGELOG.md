@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.22.0...backend-shared@v0.22.1) (2026-01-06)
+
+
+### Bug Fixes
+
+* **backend-shared:** a rare bug that caused resumed session to be deleted ([781b5c4](https://github.com/WerdoxDev/Huginn/commit/781b5c480229a55280dbf0be6e1fe0e654348c08))
+
 ## [0.22.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.21.0...backend-shared@v0.22.0) (2025-12-26)
 
 
