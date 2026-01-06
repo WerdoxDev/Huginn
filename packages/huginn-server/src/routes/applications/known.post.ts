@@ -15,7 +15,7 @@ export const postKnownApplication = new Elysia().use(verifyJwt()).post(
       const exeName = body.exePath.split(/[/\\]+/).pop();
 
       let title = body.windowTitle.trim();
-      title = title.replace(/[\u00A9\u00AE\u2120\u2122\u2117\u1F12E\u1F12F]/g, "");
+      title = title.replace(/[\u00A9\u00AE\u2120\u2122\u2117]/g, "");
 
       if (!exeName) {
          return invalidBody(status);

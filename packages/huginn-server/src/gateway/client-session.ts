@@ -37,6 +37,10 @@ export class ClientSession extends CommonClientSession<GatewayPayload, GatewayId
       presenceUserIds.delete(userId);
       publicUserIds.delete(userId);
 
+      for (const channel of channels) {
+         this.subscribe(channel.id);
+      }
+
       // Users from Relationships
       for (const userId of publicUserIds) {
          this.subscribe(`${userId}_public`);
