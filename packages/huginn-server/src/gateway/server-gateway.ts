@@ -60,25 +60,6 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
 
    public async onClose(session: ClientSession, event: { code?: number; reason?: string }) {
       log("server:gateway", "default", "close", "sid:", session.sessionId, "auth:", session.authenticated, "code:", event.code, "res:", event.reason);
-
-      if (session.authenticated && session.user) {
-         this.presenceManager.removeUserPresence(session.user.id, session);
-
-         // const voiceState = this.voiceManager.getVoiceState(session.user.id);
-         // if (voiceState?.sessionId === session.sessionId) {
-         //    this.voiceManager.updateVoiceState({
-         //       userId: session.user.id,
-         //       sessionId: session.sessionId,
-         //       channelId: null,
-         //       guildId: null,
-         //       isAudioDeafened: false,
-         //       isAudioMuted: false,
-         //       isCameraOn: false,
-         //       isAudioStreaming: false,
-         //       isScreenSharing: false,
-         //    });
-         // }
-      }
    }
 
    public onDeleteSession(session: ClientSession): Promise<void> | void {
@@ -86,6 +67,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
          return;
       }
 
+      this.presenceManager.removeUserPresence(session.user.id, session);
       const voiceState = this.voiceManager.getVoiceState(session.user.id);
       if (voiceState?.sessionId === session.sessionId) {
          this.voiceManager.updateVoiceState({
@@ -289,7 +271,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       log("server:gateway", "recv", "update presence", "sid:", session.sessionId, "uid:", userId, "sts:", data.status);
 
       if (userId) {
-         this.presenceManager.updateUserPresence(userId, undefined, data.status, data.activities);
+         this.presenceManager.updateUserPresence(userId, session, undefined, data.status, data.activities);
       }
    }
 }

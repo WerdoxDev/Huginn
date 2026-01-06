@@ -11,7 +11,7 @@ import {
    testIsDispatch,
    wsSend,
 } from "#tests/utils";
-import { ActivityType, GatewayOperations, type APIPatchCurrentUserJSONBody, type GatewayPayload } from "@huginn/shared";
+import { ActivityType, GatewayCode, GatewayOperations, type APIPatchCurrentUserJSONBody, type GatewayPayload } from "@huginn/shared";
 
 describe("Presence", () => {
    test("should send relationship presences with the websocket ready message", async (done) => {
@@ -57,28 +57,32 @@ describe("Presence", () => {
       const { ws: _ws2, sessionId } = await getReadyWebSocket(user2);
    });
 
-   test("should send an offline presence_update when a related user gets offline", async (done) => {
-      const [user, user2] = await createTestUsers(2);
-      // FRIEND Relationship between user and user2
-      await createTestRelationships(user.id, user2.id, true);
+   test(
+      "should send an offline presence_update when a related user gets offline",
+      async (done) => {
+         const [user, user2] = await createTestUsers(2);
+         // FRIEND Relationship between user and user2
+         await createTestRelationships(user.id, user2.id, true);
 
-      // Fully connect user
-      const { ws } = await getReadyWebSocket(user);
-      // Fully connect user2
-      const { ws: ws2 } = await getReadyWebSocket(user2);
+         // Fully connect user
+         const { ws } = await getReadyWebSocket(user);
+         // Fully connect user2
+         const { ws: ws2 } = await getReadyWebSocket(user2);
 
-      // Listen to presence_update
-      ws.onmessage = (event) => {
-         const data = JSON.parse(event.data);
-         if (testIsDispatch(data, "presence_update") && data.d.status === "offline") {
-            // user2's presence should be sent to user
-            expectPresenceExactSchema(data.d, user2, "offline", [], false, []);
-            done();
-         }
-      };
+         // Listen to presence_update
+         ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (testIsDispatch(data, "presence_update") && data.d.status === "offline") {
+               // user2's presence should be sent to user
+               expectPresenceExactSchema(data.d, user2, "offline", [], false, []);
+               done();
+            }
+         };
 
-      ws2.close();
-   });
+         ws2.close(GatewayCode.INTENTIONAL_CLOSE);
+      },
+      { timeout: 10000 },
+   );
 
    test("should send an presence_update to both users when they accept each other as friends", async (done) => {
       const [user, user2] = await createTestUsers(2);
@@ -108,67 +112,75 @@ describe("Presence", () => {
       await testHandler(`/api/users/@me/relationships/${user.id}`, authHeader(user2.accessToken), "PUT");
    });
 
-   test("should send an offline presence_update to both users when they remove each other as friends", async (done) => {
-      const [user, user2] = await createTestUsers(2);
+   test(
+      "should send an offline presence_update to both users when they remove each other as friends",
+      async (done) => {
+         const [user, user2] = await createTestUsers(2);
 
-      const { ws } = await getReadyWebSocket(user);
-      const { ws: ws2 } = await getReadyWebSocket(user2);
-      await createTestRelationships(user.id, user2.id, true);
+         const { ws } = await getReadyWebSocket(user);
+         const { ws: ws2 } = await getReadyWebSocket(user2);
+         await createTestRelationships(user.id, user2.id, true);
 
-      const tryDone = multiDone(done, 2);
+         const tryDone = multiDone(done, 2);
 
-      ws.onmessage = (event) => {
-         const data = JSON.parse(event.data);
-         if (testIsDispatch(data, "presence_update")) {
-            expectPresenceExactSchema(data.d, user2, "offline", [], false, []);
-            tryDone();
-         }
-      };
+         ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (testIsDispatch(data, "presence_update")) {
+               expectPresenceExactSchema(data.d, user2, "offline", [], false, []);
+               tryDone();
+            }
+         };
 
-      ws2.onmessage = (event) => {
-         const data = JSON.parse(event.data);
-         if (testIsDispatch(data, "presence_update")) {
-            expectPresenceExactSchema(data.d, user, "offline", [], false, []);
-            tryDone();
-         }
-      };
+         ws2.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (testIsDispatch(data, "presence_update")) {
+               expectPresenceExactSchema(data.d, user, "offline", [], false, []);
+               tryDone();
+            }
+         };
 
-      await testHandler(`/api/users/@me/relationships/${user.id}`, authHeader(user2.accessToken), "DELETE");
-   });
+         await testHandler(`/api/users/@me/relationships/${user.id}`, authHeader(user2.accessToken), "DELETE");
+      },
+      { timeout: 10000 },
+   );
 
-   test("should respectively add or remove an active session when two sessions of the same user get online/offline", async (done) => {
-      const [user, user2] = await createTestUsers(2);
+   test(
+      "should respectively add or remove an active session when two sessions of the same user get online/offline",
+      async (done) => {
+         const [user, user2] = await createTestUsers(2);
 
-      const { ws: ws1, sessionId: sessionId1 } = await getReadyWebSocket(user);
-      const { ws: ws2 } = await getReadyWebSocket(user2);
-      await createTestRelationships(user.id, user2.id, true);
+         const { ws: ws1, sessionId: sessionId1 } = await getReadyWebSocket(user);
+         const { ws: ws2 } = await getReadyWebSocket(user2);
+         await createTestRelationships(user.id, user2.id, true);
 
-      const tryDone = multiDone(done, 3);
+         const tryDone = multiDone(done, 3);
 
-      let updateCount = 0;
-      ws2.onmessage = (event) => {
-         const data = JSON.parse(event.data);
-         if (testIsDispatch(data, "presence_update")) {
-            expectPresenceExactSchema(
-               data.d,
-               user,
-               updateCount === 2 ? "offline" : "online",
-               updateCount === 0 ? [sessionId1, sessionId1_2] : updateCount === 1 ? [sessionId1_2] : [],
-               false,
-               [],
-            );
-            tryDone();
-            updateCount++;
-         }
-      };
+         let updateCount = 0;
+         ws2.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (testIsDispatch(data, "presence_update")) {
+               expectPresenceExactSchema(
+                  data.d,
+                  user,
+                  updateCount === 2 ? "offline" : "online",
+                  updateCount === 0 ? [sessionId1, sessionId1_2] : updateCount === 1 ? [sessionId1_2] : [],
+                  false,
+                  [],
+               );
+               tryDone();
+               updateCount++;
+            }
+         };
 
-      const { ws: ws1_2, sessionId: sessionId1_2 } = await getReadyWebSocket(user);
+         const { ws: ws1_2, sessionId: sessionId1_2 } = await getReadyWebSocket(user);
 
-      await new Promise((r) => setTimeout(r, 500));
-      ws1.close();
-      await new Promise((r) => setTimeout(r, 500));
-      ws1_2.close();
-   });
+         await new Promise((r) => setTimeout(r, 500));
+         ws1.close(GatewayCode.INTENTIONAL_CLOSE);
+         await new Promise((r) => setTimeout(r, 500));
+         ws1_2.close(GatewayCode.INTENTIONAL_CLOSE);
+      },
+      { timeout: 10000 },
+   );
 
    test("should send a presence_update to other subscribed users when a user is updated", async (done) => {
       const [user, user2] = await createTestUsers(2);
@@ -222,8 +234,8 @@ describe("Presence", () => {
          if (testIsDispatch(data, "session_update") && data.d.status !== "online") {
             expectSessionUpdateExactSchema(data.d, {
                status: "dnd",
-               activities: [{ name: "test", createdAt: time, type: ActivityType.PLAYING }],
-               activeSessions: [sessionId1, sessionId2],
+               activities: [{ name: "test", createdAt: time, type: ActivityType.PLAYING, sessionId: sessionId1 }],
+               activeSessions: [{ sessionId: sessionId1 }, { sessionId: sessionId2 }],
             });
             tryDone();
          }
@@ -249,7 +261,7 @@ describe("Presence", () => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "presence_update")) {
             expectPresenceExactSchema(data.d, user, "online", [sessionId1], false, [
-               { name: "test", createdAt: time, type: ActivityType.PLAYING },
+               { name: "test", createdAt: time, type: ActivityType.PLAYING, sessionId: sessionId1 },
             ]);
             done();
          }

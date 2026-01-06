@@ -92,7 +92,7 @@ export const patchMe = new Elysia().use(verifyJwt()).patch(
       // TODO: When guilds are a thing, this should send an update to users that are viewing that guild
       dispatchToTopic(tokenPayload.id, "user_update", { ...updatedUser, token: accessToken, refreshToken });
 
-      gateway.presenceManager.updateUserPresence(tokenPayload.id, updatedUser);
+      gateway.presenceManager.updateUserPresence(tokenPayload.id, undefined, updatedUser);
 
       const json: APIPatchCurrentUserResult = { ...updatedUser, token: accessToken, refreshToken };
       return status("OK", json);

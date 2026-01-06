@@ -22,23 +22,20 @@ export class ClientSession extends CommonClientSession<GatewayPayload, GatewayId
       });
 
       // public users include any user that we can see
-      const publicUserIds = [...new Set([...relationships.map((x) => x.user.id), ...channels.flatMap((x) => x.recipients).map((x) => x.id)])];
+      const publicUserIds = new Set([...relationships.map((x) => x.user.id), ...channels.flatMap((x) => x.recipients).map((x) => x.id)]);
 
       // TODO: CHANGE WHEN GUILDS ARE A THING
       // presence users include users that we can fully see their presence. This include group dms, friends, and later guilds
-      const presenceUserIds = [
-         ...new Set([
-            ...relationships.filter((x) => x.type === RelationshipType.FRIEND).map((x) => x.user.id),
-            ...channels
-               .filter((x) => x.type === ChannelType.GROUP_DM)
-               .flatMap((x) => x.recipients)
-               .map((x) => x.id),
-         ]),
-      ];
+      const presenceUserIds = new Set([
+         ...relationships.filter((x) => x.type === RelationshipType.FRIEND).map((x) => x.user.id),
+         ...channels
+            .filter((x) => x.type === ChannelType.GROUP_DM)
+            .flatMap((x) => x.recipients)
+            .map((x) => x.id),
+      ]);
 
-      for (const channel of channels) {
-         this.subscribe(channel.id);
-      }
+      presenceUserIds.delete(userId);
+      publicUserIds.delete(userId);
 
       // Users from Relationships
       for (const userId of publicUserIds) {

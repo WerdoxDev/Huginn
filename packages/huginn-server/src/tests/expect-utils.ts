@@ -1,5 +1,6 @@
 import { expect } from "bun:test";
 import {
+   type ActiveSession,
    type Activity,
    type APIAttachment,
    type APIChannelUser,
@@ -249,13 +250,14 @@ export function expectPresenceExactSchema(
    presence: object,
    user: TestUser,
    status: PresenceStatus,
-   activeSessions: Snowflake[],
+   activeSessionIds: Snowflake[],
    expectFullUser: boolean,
    activities: Activity[],
 ) {
    const castedPresence = presence as UserPresence;
    expect(castedPresence.status).toBe(status);
    // expect(castedPresence.activeSessions).toBe(activeSessions);
+   const activeSessions: ActiveSession[] = activeSessionIds.map((x) => ({ sessionId: x }));
 
    if (status === "offline") {
       expect(presence).toStrictEqual({ user: { id: user.id.toString() }, status: "offline", activeSessions, activities: [] });
@@ -265,7 +267,12 @@ export function expectPresenceExactSchema(
    if (expectFullUser) {
       expectUserExactSchema(castedPresence.user, user.id, user.username, user.displayName, user.avatar, user.flags);
    } else {
-      expect(presence).toStrictEqual({ user: { id: user.id.toString() }, status: castedPresence.status, activeSessions, activities });
+      expect(presence).toStrictEqual({
+         user: { id: user.id.toString() },
+         status: castedPresence.status,
+         activeSessions,
+         activities,
+      });
    }
 }
 

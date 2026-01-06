@@ -1,5 +1,6 @@
 import {
    type Activity,
+   type ActivityWithoutSessionId,
    type PresenceStatus,
    type PresenceUser,
    type Snowflake,
@@ -28,11 +29,14 @@ export class PresenceManager {
       const presence: ServerUserPresence = {
          userId: userId,
          status: existingPresence?.status ?? settings.status,
-         activities: [],
-         activeSessions: [...(existingPresence?.activeSessions ?? []).filter((x) => x !== session.sessionId), session.sessionId],
+         activities: existingPresence?.activities ?? [],
+         activeSessions: [
+            ...(existingPresence?.activeSessions ?? []).filter((x) => x.sessionId !== session.sessionId),
+            { sessionId: session.sessionId },
+         ],
       };
 
-      log("server:presence-manager", "detail", "active sessions", "uid:", userId, presence.activeSessions.join(", "));
+      log("server:presence-manager", "detail", "active sessions", "uid:", userId, presence.activeSessions.map((s) => s.sessionId).join(", "));
 
       this.presences.set(userId, presence);
 
@@ -43,19 +47,45 @@ export class PresenceManager {
       this.sendSessionUpdate(userId, presence);
    }
 
-   public updateUserPresence(userId: Snowflake, user?: PresenceUser, status?: PresenceStatus, activities?: Activity[]) {
+   public updateUserPresence(
+      userId: Snowflake,
+      session?: ClientSession,
+      user?: PresenceUser,
+      status?: PresenceStatus,
+      activities?: ActivityWithoutSessionId[],
+   ) {
       log("server:presence-manager", "default", "update", "uid:", userId);
+
+      if (activities && !session) {
+         throw new Error("A new activity was provided but no session");
+      }
 
       const existingPresence = this.presences.get(userId);
       if (existingPresence) {
+         let finalActivities = existingPresence.activities;
+
+         // If activities are provided, merge them with existing activities from other sessions
+         if (activities && session) {
+            // Remove all activities from the current session
+            const otherSessionActivities = existingPresence.activities.filter((activity) => activity.sessionId !== session.sessionId);
+
+            // Add the new activities with the session ID
+            const newSessionActivities = activities.map((activity) => ({
+               ...activity,
+               sessionId: session.sessionId,
+            }));
+
+            finalActivities = [...otherSessionActivities, ...newSessionActivities];
+         }
+
          const newPresence: ServerUserPresence = {
             ...existingPresence,
             userId: userId,
             status: status ?? existingPresence.status,
-            activities: activities ? activities : existingPresence.activities,
+            activities: finalActivities,
          };
-         this.presences.set(userId, newPresence);
 
+         this.presences.set(userId, newPresence);
          this.sendPresenceUpdate(`${userId}_presence`, newPresence, user ?? { id: userId });
          this.sendSessionUpdate(userId, newPresence);
       }
@@ -65,17 +95,15 @@ export class PresenceManager {
       log("server:presence-manager", "default", "remove", "uid:", userId, "sid:", session.sessionId);
 
       const presence = this.presences.get(userId);
+      if (!presence) return;
 
-      if (!presence) {
-         return;
-      }
-
-      const newActiveSessions = presence.activeSessions.filter((x) => x !== session.sessionId);
+      const newActiveSessions = presence.activeSessions.filter((x) => x.sessionId !== session.sessionId);
+      const newActivities = presence.activities.filter((x) => x.sessionId !== session.sessionId);
       const newStatus = newActiveSessions.length === 0 ? "offline" : presence.status;
 
       // Only send the user presence to others if it's not already set to offline. This is to keep a user who set their status to offline to be no different than an actual offline user
       if (presence.status !== "offline") {
-         const newPresence: ServerUserPresence = { userId, status: newStatus, activeSessions: newActiveSessions, activities: [] };
+         const newPresence: ServerUserPresence = { userId, status: newStatus, activeSessions: newActiveSessions, activities: newActivities };
          this.sendPresenceUpdate(`${userId}_presence`, newPresence, { id: userId });
       }
 
@@ -85,12 +113,22 @@ export class PresenceManager {
       }
       // Otherwise update the active sessions
       else {
-         const newPresence: ServerUserPresence = { ...presence, activeSessions: newActiveSessions };
+         const newPresence: ServerUserPresence = { ...presence, activeSessions: newActiveSessions, activities: newActivities };
          this.presences.set(userId, newPresence);
          this.sendSessionUpdate(userId, newPresence);
       }
 
-      log("server:presence-manager", "detail", "active sessions", "uid:", userId, this.presences.get(userId)?.activeSessions.join(", "));
+      log(
+         "server:presence-manager",
+         "detail",
+         "active sessions",
+         "uid:",
+         userId,
+         this.presences
+            .get(userId)
+            ?.activeSessions.map((s) => s.sessionId)
+            .join(", "),
+      );
    }
 
    public getUserPresences(session: ClientSession) {
