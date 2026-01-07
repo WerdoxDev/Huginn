@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.66.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.66.1...app@v0.66.2) (2026-01-06)
+
+
+### Bug Fixes
+
+* **app:** multi session activities fight each other ([6917a1a](https://github.com/WerdoxDev/Huginn/commit/6917a1a25dae275e7319c2d06a13a869f7b87ab8))
+
 ## [0.66.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.66.0...app@v0.66.1) (2026-01-04)
 
 

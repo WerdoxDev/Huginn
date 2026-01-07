@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.32.7](https://github.com/WerdoxDev/Huginn/compare/server@v0.32.6...server@v0.32.7) (2026-01-06)
+
+
+### Bug Fixes
+
+* **server:** activities of a session should not effect other sessions ([0bfef59](https://github.com/WerdoxDev/Huginn/commit/0bfef5984dda13a0e16a3bb1be4fb9967b504221))
+
 ## [0.32.6](https://github.com/WerdoxDev/Huginn/compare/server@v0.32.5...server@v0.32.6) (2025-12-26)
 
 
