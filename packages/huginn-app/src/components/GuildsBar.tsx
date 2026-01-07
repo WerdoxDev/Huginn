@@ -41,7 +41,7 @@ export default function GuildsBar() {
    };
 
    return (
-      <nav className="w-19 bg-surface flex h-full shrink-0 flex-col p-3.5">
+      <nav className="bg-surface flex h-full w-16 shrink-0 flex-col p-2">
          <HomeButton />
          <div className="flex flex-col items-center justify-center">
             <AnimatePresence mode="popLayout">
@@ -52,7 +52,7 @@ export default function GuildsBar() {
                ))}
             </AnimatePresence>
          </div>
-         <motion.div layout className="mx-4 my-3.5 h-0.5 bg-white/20" />
+         <motion.div layout className="mx-4 my-2 h-0.5 bg-white/20" />
          <motion.div layout className="flex flex-col items-center gap-3">
             <GuildButton />
             <GuildButton />

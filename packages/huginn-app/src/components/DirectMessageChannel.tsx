@@ -1,10 +1,7 @@
 import { useSafeDeleteDMChannel } from "@hooks/api-hooks/channelHooks";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { ChannelType } from "@huginn/shared";
-import { getMessagesOptions } from "@lib/queries";
-import { useClient } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useMemo } from "react";
 import { NavLink, useParams } from "react-router";
@@ -15,10 +12,7 @@ import UserAvatar from "./UserAvatar";
 import { usePresence } from "@stores/presenceStore";
 import ActivityPreview from "./ActivityPreview";
 
-export default function DirectMessageChannel(props: { channel: AppDirectChannel; onSelected?: () => void }) {
-   const client = useClient();
-   const queryClient = useQueryClient();
-   const { isLoading } = useInfiniteQuery(getMessagesOptions(queryClient, client!, props.channel.id, false));
+export default function DirectMessageChannel(props: { channel: AppDirectChannel }) {
    const { open: openContextMenu } = useContextMenu("dm_channel");
 
    const recipients = useUsers(props.channel.recipientIds);
@@ -30,52 +24,53 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
 
    return (
       <li
-         onContextMenu={(e) => {
-            openContextMenu(props.channel, e);
-         }}
-         className={clsx(
-            "hover:bg-surface group relative -mr-1 flex cursor-pointer rounded-md active:bg-white/10",
-            selected && "bg-white/10",
-         )}
-         onClick={props.onSelected}
+         onContextMenu={(e) => openContextMenu(props.channel, e)}
+         className={clsx("group relative -mr-1 flex cursor-pointer overflow-hidden rounded-md")}
       >
-         <NavLink prefetch="intent" className="flex w-full min-w-0 shrink items-center p-1.5" to={`/channels/@me/${props.channel.id}`}>
-            {props.channel.type === ChannelType.DM ? (
-               <UserAvatar userId={recipients[0].id} avatarHash={recipients[0]?.avatar} className="mr-3" />
-            ) : (
-               <ChannelIcon channelId={props.channel?.id} iconHash={props.channel?.icon} className="mr-3" />
-            )}
-            <div className="flex w-full flex-col justify-center overflow-hidden">
-               <div
-                  className={clsx(
-                     "text-text mr-8 overflow-hidden text-ellipsis text-nowrap text-sm group-hover:opacity-100",
-                     selected ? "opacity-100" : "opacity-70",
+         <NavLink
+            prefetch="intent"
+            className={({ isActive, isPending }) =>
+               clsx("hover:bg-surface flex w-full min-w-0 shrink items-center p-1.5", (isPending || isActive) && "bg-white/10!")
+            }
+            to={`/channels/@me/${props.channel.id}`}
+         >
+            {({ isPending }) => (
+               <>
+                  {props.channel.type === ChannelType.DM ? (
+                     <UserAvatar userId={recipients[0].id} avatarHash={recipients[0]?.avatar} className="mr-3" />
+                  ) : (
+                     <ChannelIcon channelId={props.channel?.id} iconHash={props.channel?.icon} className="mr-3" />
                   )}
-               >
-                  {props.channel.name}
-               </div>
-               {props.channel.type === ChannelType.GROUP_DM && (
-                  <div className={clsx("text-text text-xs group-hover:opacity-100", selected ? "opacity-100" : "opacity-50")}>
-                     {recipients.length + 1} Members
+                  <div className="flex w-full flex-col justify-center overflow-hidden">
+                     <div
+                        className={clsx(
+                           "text-text mr-8 overflow-hidden text-ellipsis text-nowrap text-sm group-hover:opacity-100",
+                           selected ? "opacity-100" : "opacity-70",
+                        )}
+                     >
+                        {props.channel.name}
+                     </div>
+                     {props.channel.type === ChannelType.GROUP_DM && (
+                        <div className={clsx("text-text text-xs group-hover:opacity-100", selected ? "opacity-100" : "opacity-50")}>
+                           {recipients.length + 1} Members
+                        </div>
+                     )}
+                     {props.channel.type === ChannelType.DM && (
+                        <ActivityPreview presence={presence} className={clsx("group-hover:opacity-100", selected ? "opacity-100" : "opacity-50")} />
+                     )}
                   </div>
-               )}
-               {props.channel.type === ChannelType.DM && (
-                  <ActivityPreview
-                     presence={presence}
-                     className={clsx("group-hover:opacity-100", selected ? "opacity-100" : "opacity-50")}
-                  />
-               )}
-            </div>
+                  {!isPending ? (
+                     <button type="button" className="group/close mr-2 hidden shrink-0 cursor-pointer group-hover:block" onClick={tryMutate}>
+                        <IconMingcuteCloseFill className="text-text/50 group-hover/close:text-text" />
+                     </button>
+                  ) : (
+                     <div className="mr-2 flex shrink-0 items-center justify-center">
+                        <LoadingIcon className="size-7" />
+                     </div>
+                  )}
+               </>
+            )}
          </NavLink>
-         {!isLoading ? (
-            <button type="button" className="group/close mr-2 hidden shrink-0 cursor-pointer group-hover:block" onClick={tryMutate}>
-               <IconMingcuteCloseFill className="text-text/50 group-hover/close:text-text" />
-            </button>
-         ) : (
-            <div className="mr-2 flex shrink-0 items-center justify-center">
-               <LoadingIcon className="size-7" />
-            </div>
-         )}
       </li>
    );
 }

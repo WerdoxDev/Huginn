@@ -6,7 +6,7 @@ import { produce } from "immer";
 import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
-import { sendNotification } from "../contexts/notificationContext";
+import { sendNotification } from "../contexts/NotificationContext";
 import { clientStore } from "./clientStore";
 import { findChannel, getChannels, getCurrentPageMessages, getUser, getUsers } from "@lib/query-utils";
 import { playAudio } from "@lib/audio-player";

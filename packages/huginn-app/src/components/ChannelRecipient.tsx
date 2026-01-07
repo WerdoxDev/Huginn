@@ -8,14 +8,22 @@ import Tooltip from "./tooltip/Tooltip";
 import UserAvatar from "./UserAvatar";
 import type { AppUser } from "@/types";
 import ActivityPreview from "./ActivityPreview";
+import { useIsMobile } from "@hooks/useIsMobile";
+import type { MouseEvent } from "react";
 
 export default function ChannelRecipient(props: { channelId: Snowflake; isOwner: boolean; recipient: AppUser }) {
    const presence = usePresence(props.recipient.id);
    const { open: openContextMenu } = useContextMenu("dm_channel_recipient");
    const state = useMutationLatestState("create-dm-channel_recipient");
+   const isMobile = useIsMobile();
+
+   function open(e: MouseEvent<HTMLDivElement>) {
+      openContextMenu({ channelId: props.channelId, recipient: props.recipient }, e);
+   }
    return (
       <div
-         onContextMenu={(e) => openContextMenu({ channelId: props.channelId, recipient: props.recipient }, e)}
+         onContextMenu={open}
+         onClick={isMobile ? open : undefined}
          className="group/recipient hover:bg-surface relative flex cursor-pointer items-center gap-x-3 rounded-lg p-1.5"
       >
          <UserAvatar

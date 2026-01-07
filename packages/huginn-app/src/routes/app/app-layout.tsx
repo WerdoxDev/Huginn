@@ -5,8 +5,8 @@ import ModalsRenderer from "@components/modal/ModalsRenderer";
 import PHProvider, { initializePosthog } from "@contexts/PHProvider";
 import StartBackgroundSvg from "@components/StartBackgroundSvg";
 import TitleBar from "@components/TitleBar";
-import { useStartBackground } from "@contexts/authBackgroundContext";
-import { NotificationProvider } from "@contexts/notificationContext";
+import { useStartBackground } from "@stores/startBackgroundStore";
+import { NotificationProvider } from "@contexts/NotificationContext";
 import { useMainViewTransitionState } from "@hooks/useMainViewTransitionState";
 import { dispatchEvent } from "@lib/event-handler";
 import { useClientStore } from "@stores/clientStore";
@@ -60,10 +60,7 @@ export default function AppLayout() {
                   <NotificationProvider>
                      <MainRenderer>
                         <div
-                           className={clsx(
-                              "bg-surface-alt absolute inset-0",
-                              huginnWindow.environment === "desktop" && !huginnWindow.fullscreen && "top-6",
-                           )}
+                           className={clsx("bg-surface-alt absolute inset-0", !huginnWindow.fullscreen && "top-6")}
                            style={isMainTransitioning ? { viewTransitionName: "start" } : undefined}
                         >
                            <StartBackgroundSvg state={authBackground.state} />
@@ -108,7 +105,7 @@ function MainRenderer(props: { children: ReactNode }) {
 
    return (
       <div className={clsx("flex h-full flex-col overflow-hidden" /*, huginnWindow.maximized ? "rounded-none" : "rounded-lg"*/)}>
-         {window.location.pathname !== "/splashscreen" && huginnWindow.environment === "desktop" && <TitleBar />}
+         {window.location.pathname !== "/splashscreen" && <TitleBar />}
          <div className="relative h-full w-full">
             {props.children}
             {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}

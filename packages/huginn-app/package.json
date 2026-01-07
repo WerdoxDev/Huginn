@@ -16,7 +16,7 @@
       "dev": "bun ./scripts/dev.ts",
       "preview": "vite preview",
       "build": "bun run vite:build && bun run electron:build",
-      "vite:dev": "vite",
+      "vite:dev": "vite --host",
       "vite:build": "vite build",
       "electron:build": "bun ./scripts/build.ts --prod && electron-builder --config ./electron-builder-config.ts",
       "electron:run": "bun ./scripts/build.ts && electron .",

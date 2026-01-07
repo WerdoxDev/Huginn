@@ -4,10 +4,13 @@ import {
    FloatingFocusManager,
    FloatingList,
    FloatingNode,
+   FloatingPortal,
    FloatingTree,
+   limitShift,
    offset,
    safePolygon,
    shift,
+   size,
    useClick,
    useDismiss,
    useFloating,
@@ -24,7 +27,7 @@ import {
    type FloatingContext,
    type Placement,
 } from "@floating-ui/react";
-import { Portal, Transition } from "@headlessui/react";
+import { Portal, Transition, TransitionChild } from "@headlessui/react";
 import { omit } from "@huginn/shared";
 import clsx from "clsx";
 import {
@@ -105,9 +108,29 @@ function Main(props: DropdownMenuProps) {
       onOpenChange: setIsOpen,
       placement: props.anchor?.placement ? props.anchor.placement : isNested ? "right-start" : "bottom-start",
       middleware: [
-         offset({ mainAxis: isNested ? 12 : (props.anchor?.gap ?? 4), alignmentAxis: isNested ? -8 : (props.anchor?.gap ?? 0) }),
-         flip(),
-         shift(),
+         offset({
+            mainAxis: isNested ? 12 : (props.anchor?.gap ?? 4),
+            alignmentAxis: isNested ? -8 : (props.anchor?.gap ?? 0),
+         }),
+         flip({
+            fallbackAxisSideDirection: "start",
+            // This allows nested menus to flip to left when no space on right
+            crossAxis: isNested,
+         }),
+         shift({
+            padding: 8, // Keep menu 8px away from viewport edges
+            limiter: limitShift(), // Prevents menu from shifting too much
+         }),
+         // Optional: Add size middleware to prevent overflow
+         // size({
+         //    apply({ availableHeight, elements }) {
+         //       Object.assign(elements.floating.style, {
+         //          maxHeight: `${availableHeight}px`,
+         //          overflow: "auto",
+         //       });
+         //    },
+         //    padding: 8,
+         // }),
       ],
       whileElementsMounted: autoUpdate,
    });
@@ -248,24 +271,26 @@ function Items(props: { children?: ReactNode; className?: string }) {
    const { floatingProps, isNested, context } = useContext(DropdownContext);
 
    return (
-      <Portal>
-         <div {...floatingProps} className="z-998 relative outline-none">
-            <Transition show={menu.isOpen}>
-               <div
-                  className={clsx(
-                     props.className,
-                     "outline-hidden data-closed:scale-95 data-closed:opacity-0 flex min-w-28 flex-col rounded-lg bg-zinc-900 p-2 shadow-lg transition-[opacity,scale]",
-                  )}
-               >
-                  <FloatingList elementsRef={menu.elementsRef} labelsRef={menu.labelsRef}>
-                     <FloatingFocusManager context={context} modal={false} initialFocus={isNested ? -1 : 0} returnFocus={!isNested}>
-                        {props.children as ReactElement}
-                     </FloatingFocusManager>
-                  </FloatingList>
-               </div>
-            </Transition>
-         </div>
-      </Portal>
+      <Transition show={menu.isOpen}>
+         <Portal>
+            <div {...floatingProps} className="z-998 outline-none">
+               <TransitionChild>
+                  <div
+                     className={clsx(
+                        props.className,
+                        "outline-hidden data-closed:scale-95 data-closed:opacity-0 flex min-w-28 flex-col rounded-lg bg-zinc-900 p-2 shadow-lg transition-[opacity,scale]",
+                     )}
+                  >
+                     <FloatingList elementsRef={menu.elementsRef} labelsRef={menu.labelsRef}>
+                        <FloatingFocusManager context={context} modal={false} initialFocus={isNested ? -1 : 0} returnFocus={!isNested}>
+                           {props.children as ReactElement}
+                        </FloatingFocusManager>
+                     </FloatingList>
+                  </div>
+               </TransitionChild>
+            </div>
+         </Portal>
+      </Transition>
    );
 }
 

@@ -35,7 +35,7 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
             huginnWindow.environment === "browser" && "rounded-tl-none",
          )}
       >
-         <div className="h-19 flex shrink-0 items-center px-6">
+         <div className="flex h-16 shrink-0 items-center px-6">
             <div className="text-text text-xl font-bold">Home</div>
             <div className="relative ml-6">
                <RingLinkButton prefetch="intent" to="/friends" className="px-2.5 py-1 text-xs font-medium">

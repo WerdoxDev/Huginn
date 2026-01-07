@@ -6,7 +6,13 @@ type TooltipContextType = ReturnType<typeof useTooltip> | null;
 
 export const TooltipContext = createContext<TooltipContextType>(null);
 
-export function useTooltip({ initialOpen = false, placement = "top", open: controlledOpen, onOpenChange: setControlledOpen }: TooltipOptions = {}) {
+export function useTooltip({
+   initialOpen = false,
+   placement = "top",
+   open: controlledOpen,
+   onOpenChange: setControlledOpen,
+   hideOnMobile = false,
+}: TooltipOptions = {}) {
    const [uncontrolledOpen, setUncontrolledOpen] = useState(initialOpen);
 
    const open = controlledOpen ?? uncontrolledOpen;
@@ -45,7 +51,7 @@ export function useTooltip({ initialOpen = false, placement = "top", open: contr
 
    const interactions = useInteractions([hover, focus, dismiss, role]);
 
-   return { open, setOpen, ...interactions, ...data, arrowRef };
+   return { open, setOpen, ...interactions, ...data, arrowRef, hideOnMobile };
 }
 
 export function useTooltipContext() {

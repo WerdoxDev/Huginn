@@ -40,9 +40,9 @@ export default function UserInfo(props: { user: AppUser }) {
    }
 
    return (
-      <div className="flex h-16 w-64 shrink-0 items-center">
+      <div className="w-62 flex h-16 shrink-0 items-center lg:w-64">
          <DropdownMenu className="flex w-full items-center justify-center">
-            <DropdownMenu.Button className="flex w-full cursor-pointer items-center rounded-xl px-2 py-1 hover:bg-white/5">
+            <DropdownMenu.Button className="flex w-full cursor-pointer items-center rounded-xl px-2 py-1 hover:bg-white/5 active:bg-white/5">
                <UserAvatar userId={props.user.id} avatarHash={props.user.avatar} className="mr-3 shrink-0" />
 
                <div className="flex w-full flex-col items-start gap-y-0.5">

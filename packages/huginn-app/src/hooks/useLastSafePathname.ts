@@ -1,17 +1,17 @@
-import { useHistory } from "@contexts/historyContext";
+import { useHistory } from "@contexts/HistoryContext";
 import { useLocation, useNavigate } from "react-router";
 
 export function useSafePathname() {
-	const navigate = useNavigate();
-	const location = useLocation();
-	const history = useHistory();
+   const navigate = useNavigate();
+   const location = useLocation();
+   const history = useHistory();
 
-	async function navigateBack() {
-		const safePathname = history.lastPathname?.includes(location.pathname) ? "/channels/@me" : history.lastPathname;
+   async function navigateBack() {
+      const safePathname = history.lastPathname?.includes(location.pathname) ? "/channels/@me" : history.lastPathname;
 
-		console.log("NAV");
-		await navigate(safePathname ?? "/");
-	}
+      console.log("NAV");
+      await navigate(safePathname ?? "/");
+   }
 
-	return { navigateBack };
+   return { navigateBack };
 }

@@ -64,7 +64,11 @@ function Menu(props: ContextMenuProps & HTMLProps<HTMLButtonElement>) {
       placement: isNested ? "right-start" : "bottom-start",
       middleware: [
          offset({ mainAxis: isNested ? 12 : 0, alignmentAxis: 0 }),
-         flip(),
+         flip({
+            fallbackAxisSideDirection: "start",
+            // This allows nested menus to flip to left when no space on right
+            crossAxis: isNested,
+         }),
          shift({ padding: 10 }),
          size({
             apply({ availableWidth, availableHeight, elements }) {

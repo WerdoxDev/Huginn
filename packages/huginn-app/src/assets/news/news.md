@@ -1,3 +1,3 @@
-### Bug Fixes...
+### Minimal Mobile Support
 
-- Just a few bug fixes related to activities
+- Layout has been modified to very minimally support mobile. Still very WIP

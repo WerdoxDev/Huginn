@@ -4,7 +4,7 @@ import LoadingButton from "@components/button/LoadingButton";
 import HuginnInput from "@components/input/HuginnInput";
 import PasswordInput from "@components/input/PasswordInput";
 import StartWrapper from "@components/StartWrapper";
-import { useStartBackground } from "@contexts/authBackgroundContext";
+import { useStartBackground } from "@stores/startBackgroundStore";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useInputs } from "@hooks/useInputs";

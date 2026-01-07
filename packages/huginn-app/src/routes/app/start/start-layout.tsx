@@ -1,4 +1,4 @@
-import { useStartBackground } from "@contexts/authBackgroundContext";
+import { useStartBackground } from "@stores/startBackgroundStore";
 import { useModals } from "@stores/modalsStore";
 import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";

@@ -1,5 +1,9 @@
 import HuginnIcon from "@components/HuginnIcon";
+import TopBar from "@components/TopBar";
+import HuginnButton from "@components/button/HuginnButton";
+import MobileMenuButton from "@components/button/MobileMenuButton";
 import QuickActionButton from "@components/button/QuickActionButton";
+import { useMobileMenuStore } from "@stores/mobileMenuStore";
 import { useModals } from "@stores/modalsStore";
 import { NavLink, useNavigate } from "react-router";
 
@@ -9,14 +13,13 @@ export default function ChannelMe() {
 
    return (
       <div className="flex h-full flex-col">
+         <TopBar>
+            <MobileMenuButton />
+         </TopBar>
          <div className="flex h-full flex-col items-center justify-center gap-y-5">
             <div className="text-text flex max-w-md flex-col items-center text-center">
                <div className="bg-surface mb-2.5 rounded-xl p-5 shadow-lg">
-                  <HuginnIcon
-                     outlined
-                     // overrideTheme="text"
-                     className="text-primary-500 size-20 transition-transform hover:-rotate-12 hover:scale-105 active:rotate-6"
-                  />
+                  <HuginnIcon outlined className="text-primary-500 size-20 transition-transform hover:-rotate-12 hover:scale-105 active:rotate-6" />
                </div>
                <div className="mb-2.5 text-2xl font-bold">Welcome to Huginn</div>
                <div>

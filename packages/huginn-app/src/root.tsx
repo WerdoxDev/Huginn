@@ -1,4 +1,4 @@
-import { HistoryProvider } from "@contexts/historyContext";
+import { HistoryProvider } from "@contexts/HistoryContext";
 import { ThemeProvider } from "@stores/themeStore";
 import { initializeWindow } from "@stores/windowStore";
 import { useEffect, useState } from "react";

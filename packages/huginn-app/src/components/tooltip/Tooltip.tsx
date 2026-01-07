@@ -1,10 +1,11 @@
-import { TooltipContext, useTooltip, useTooltipContext } from "@contexts/tooltipContext";
+import { TooltipContext, useTooltip, useTooltipContext } from "@contexts/TooltipContext";
 import { useMergeRefs } from "@floating-ui/react";
 import { Portal, Transition } from "@headlessui/react";
 import { omit } from "@huginn/shared";
 import clsx from "clsx";
 import { cloneElement, type HTMLProps, isValidElement, type ReactNode, useMemo } from "react";
 import type { TooltipOptions } from "@/types";
+import { useIsMobile } from "@hooks/useIsMobile";
 
 export default function Tooltip({ children, ...options }: { children: ReactNode } & TooltipOptions) {
    // This can accept any props as options, e.g. `placement`,
@@ -63,9 +64,11 @@ function Content(props: { arrowClassName?: string; extraStyle?: React.CSSPropert
       [context.placement],
    );
 
+   const isMobile = useIsMobile();
+
    return (
       <Transition
-         show={context.open}
+         show={context.open && (!isMobile || !context.hideOnMobile)}
          enter="transition-opacity duration-100"
          enterFrom="opacity-0"
          enterTo="opacity-100"

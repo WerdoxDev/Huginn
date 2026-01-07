@@ -1,27 +1,19 @@
+import MobileMenuButton from "@components/button/MobileMenuButton";
 import AddFriendTab from "@components/friends/AddFriendTab";
 import FriendsTab from "@components/friends/FriendsTab";
 import FriendsTabItem from "@components/friends/FriendsTabItem";
 import PendingFriendsTab from "@components/friends/PendingFriendsTab";
+import TopBar from "@components/TopBar";
 import { Tab, TabGroup, TabList, TabPanels } from "@headlessui/react";
 import { RelationshipType } from "@huginn/shared";
 import { getRelationshipsOptions } from "@lib/queries";
-import { clientStore, useClient } from "@stores/clientStore";
+import { useClient } from "@stores/clientStore";
 import { usePresences } from "@stores/presenceStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
 import { useMemo } from "react";
 import { Fragment } from "react/jsx-runtime";
-import { queryClient } from "@/root";
-
-export async function clientLoader() {
-   const client = clientStore.getState().client;
-   if (!client) {
-      return;
-   }
-
-   return await queryClient.ensureQueryData(getRelationshipsOptions(client));
-}
 
 const tabs = ["Online", "All", "Pending"];
 
@@ -44,7 +36,9 @@ export default function Friends() {
    return (
       <div className="flex h-full flex-col">
          <TabGroup as={Fragment} defaultIndex={friends.length === 0 ? 3 : 0} onChange={onTabChange}>
-            <div className="h-19 bg-surface-deep flex shrink-0 items-center px-6">
+            <TopBar>
+               <MobileMenuButton className="mr-3" />
+               {/* <div className="h-19 bg-surface-deep flex shrink-0 items-center px-6"> */}
                <TabList className="mr-5 flex justify-center gap-x-5">
                   <div className="text-text flex items-center justify-center gap-x-2.5">
                      <IconMingcuteGroup2Fill className="size-6" />
@@ -71,8 +65,8 @@ export default function Friends() {
                      )}
                   </Tab>
                </TabList>
-            </div>
-            <div className="h-0.5 shrink-0 bg-white/10" />
+               {/* </div> */}
+            </TopBar>
             <TabPanels className="h-full overflow-y-scroll p-5 pr-2">
                <FriendsTab friends={onlineFriends} presences={presences} text="Online" />
                <FriendsTab friends={allFriends} presences={presences} text="All Friends" />

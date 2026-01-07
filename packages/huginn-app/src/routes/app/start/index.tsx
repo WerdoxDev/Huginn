@@ -2,7 +2,7 @@ import HuginnButton from "@components/button/HuginnButton";
 import HuginnIcon from "@components/HuginnIcon";
 import LoadingIcon from "@components/LoadingIcon";
 import StartWrapper from "@components/StartWrapper";
-import { useStartBackground } from "@contexts/authBackgroundContext";
+import { useStartBackground } from "@stores/startBackgroundStore";
 import { useConnect } from "@hooks/useConnect";
 import { useUpdater } from "@hooks/useUpdater";
 import { initializeClient, setHostnamesFromExternal, setHostnamesFromSettings, useClient } from "@stores/clientStore";

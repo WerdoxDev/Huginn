@@ -19,6 +19,7 @@ import ReplyingPreview from "./ReplyingPreview";
 import { createPreviewMessage } from "@lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { useClient } from "@stores/clientStore";
+import { useIsMobile } from "@hooks/useIsMobile";
 
 type AttachmentInputType = { name: string; type: string; arrayBuffer: () => Promise<ArrayBuffer> };
 
@@ -46,6 +47,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    const { setEditingMessageId, currentEditingMessageId, setReplyingMessageId, currentReplyingMessageId, setMessageBoxHeight } = useChannelStore();
    const { decorate, editor, renderElement, renderLeaf } = usePreviewMessageRenderer();
    const { user } = useThisUser();
+   const isMobile = useIsMobile();
 
    const sendMessageMutation = useSendMessage();
    const editMessageMutation = useEditMessage();
@@ -270,10 +272,10 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 
    // Focus on the message box when we change channel
    useEffect(() => {
-      editorRef.current?.focus();
+      if (!isMobile) editorRef.current?.focus();
       setReplyingMessageId(undefined);
       setEditingMessageId(undefined);
-   }, [currentChannel?.id]);
+   }, [currentChannel]);
 
    useEffect(() => {
       if (!containerRef.current) return;
@@ -394,7 +396,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    });
 
    return (
-      <div className="bottom-0 z-10 flex-col px-5 py-1.5" ref={containerRef}>
+      <div className="bottom-0 z-10 flex-col px-1.5 py-1.5 lg:px-5" ref={containerRef}>
          {currentEditingMessageId && (
             <div className="bg-primary-900 border-surface flex items-center gap-x-2 rounded-t-lg border-2 border-b-0 px-2 py-2 text-white">
                <IconMingcuteEdit2Fill />

@@ -168,6 +168,7 @@ export type ThemeType = "cerulean" | "pine green" | "eggplant" | "coffee" | "cha
 
 export type TooltipOptions = {
    initialOpen?: boolean;
+   hideOnMobile?: boolean;
    placement?: Placement;
    open?: boolean;
    onOpenChange?: (open: boolean) => void;
