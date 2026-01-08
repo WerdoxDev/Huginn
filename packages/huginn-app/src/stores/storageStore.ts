@@ -44,17 +44,18 @@ export async function initializeStorage() {
    const keys: FileType[] = ["client-info", "custom-applications", "keybinds", "settings", "voice-preferences"];
    const cache = {} as StorageMap;
 
+   // Setup client info when needed
+   const value = await storage.loadFile("client-info");
+   if (value.created) {
+      const data = value.data as ClientInfo;
+      data.id = window.crypto.randomUUID();
+      await storage.saveFile("client-info", data);
+   }
+
    await storage.checkFiles();
 
    for (const key of keys) {
       const value = await storage.loadFile(key);
-
-      // Setup client info when needed
-      if (key === "client-info" && value.created) {
-         const data = value.data as ClientInfo;
-         data.id = window.crypto.randomUUID();
-         await storage.saveFile("client-info", data);
-      }
 
       if (value.success) {
          (cache[key] as StorageMap[FileType]) = value.data;
