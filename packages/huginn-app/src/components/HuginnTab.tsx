@@ -31,7 +31,7 @@ function Tab(props: { className?: string; children?: ReactNode }) {
          className={clsx(
             tabClassName,
             props.className,
-            "hover:bg-primary-900/20 data-selected:bg-primary-900 data-selected:text-white flex cursor-pointer items-center justify-center gap-x-2 rounded-md text-white/70",
+            "hover:bg-primary-900/20 data-selected:bg-primary-900 data-selected:transition-colors data-selected:duration-300 data-selected:text-white flex cursor-pointer items-center justify-center gap-x-2 rounded-md text-white/70",
          )}
       >
          {props.children}

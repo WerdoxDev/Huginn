@@ -59,7 +59,7 @@ function Input(props: { className?: string; backgroundClassName?: string; fillCl
    const lastValue = useRef(value);
 
    // Calculate percentage for display (0-100)
-   const percentage = ((value - minValue) / (maxValue - minValue)) * 100;
+   const percentage = Math.floor(((value - minValue) / (maxValue - minValue)) * 100);
 
    useEffect(() => {
       if (lastValue.current !== value) {
@@ -150,6 +150,7 @@ function Input(props: { className?: string; backgroundClassName?: string; fillCl
 
       // Clamp to min/max bounds
       const clampedValue = Math.max(minValue, Math.min(maxValue, steppedValue));
+      console.log(clampedValue);
 
       setValue(clampedValue);
    }

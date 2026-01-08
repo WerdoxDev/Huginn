@@ -1,17 +1,15 @@
 import ChannelMessages from "@components/channels/ChannelMessages";
 import DirectChannelCall from "@components/channels/DirectChannelCall";
 import ChannelTopBar from "@components/channels/ChannelTopBar";
-import RecipientsSidebar from "@components/channels/RecipientsSidebar";
 import MessageBox from "@components/MessageBox";
 import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useSafePathname } from "@hooks/useLastSafePathname";
-import { ChannelType } from "@huginn/shared";
 import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useState } from "react";
-import { Outlet, useParams } from "react-router";
+import { useParams } from "react-router";
 import { useMobileMenuStore } from "@stores/mobileMenuStore";
 
 export default function ChannelWithId() {

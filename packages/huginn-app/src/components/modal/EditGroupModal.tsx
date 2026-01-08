@@ -3,7 +3,7 @@ import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import ImageSelector from "@components/ImageSelector";
 import HuginnInput from "@components/input/HuginnInput";
-import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
+import { Description, DialogTitle } from "@headlessui/react";
 import { usePatchDMChannel } from "@hooks/mutations/usePatchDMChannel";
 import { useInputs } from "@hooks/useInputs";
 import { listenEvent } from "@lib/event-handler";
@@ -12,6 +12,7 @@ import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import BaseDialogPanel from "./BaseDialogPanel";
 
 export default function EditGroupModal() {
    const client = useClient();
@@ -71,10 +72,7 @@ export default function EditGroupModal() {
    }
 
    return (
-      <DialogPanel
-         transition
-         className="border-primary-700 bg-surface data-closed:scale-90 relative w-full max-w-lg transform overflow-hidden rounded-xl border-2 transition-[opacity_transform] duration-200"
-      >
+      <BaseDialogPanel className="max-w-lg">
          <DialogTitle className="mt-5 flex items-center justify-center gap-x-1.5">
             <div className="text-text text-2xl font-medium">Edit Group</div>
          </DialogTitle>
@@ -97,6 +95,6 @@ export default function EditGroupModal() {
             </LoadingButton>
          </div>
          <ModalCloseButton onClick={close} />
-      </DialogPanel>
+      </BaseDialogPanel>
    );
 }

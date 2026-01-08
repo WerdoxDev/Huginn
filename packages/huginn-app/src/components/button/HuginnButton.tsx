@@ -1,5 +1,4 @@
 import clsx from "clsx";
-import { useMemo } from "react";
 import type { HuginnButtonProps } from "@/types";
 
 const colors = {
@@ -38,7 +37,7 @@ export default function HuginnButton(props: HuginnButtonProps) {
          disabled={props.disabled}
          onClick={props.onClick}
       >
-         <div className={clsx("text-text opacity-100", props.innerClassName)}>{props.children}</div>
+         <div className={clsx("text-white opacity-100", props.innerClassName)}>{props.children}</div>
       </button>
    );
 }

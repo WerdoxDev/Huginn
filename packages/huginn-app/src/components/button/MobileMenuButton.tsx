@@ -6,7 +6,7 @@ export default function MobileMenuButton(props: { className?: string }) {
 
    return (
       <button className={clsx("cursor-pointer lg:hidden", props.className)} onClick={openLeft}>
-         <IconMingcuteMenuFill className="size-7 text-white" />
+         <IconMingcuteMenuFill className="text-text size-7" />
       </button>
    );
 }

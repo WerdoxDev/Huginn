@@ -1,11 +1,12 @@
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
-import { Description, DialogPanel, DialogTitle } from "@headlessui/react";
+import { Description, DialogTitle } from "@headlessui/react";
 import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
 import { useEffect, useMemo } from "react";
+import BaseDialogPanel from "./BaseDialogPanel";
 // import { usePostHog } from "posthog-js/react";
 
 export default function InfoModal() {
@@ -17,11 +18,11 @@ export default function InfoModal() {
    const innerColor = useMemo(
       () =>
          modal.status === "info"
-            ? "bg-caution-200"
+            ? "bg-caution-200!"
             : modal.status === "error"
-              ? "bg-negative-200"
+              ? "bg-negative-200!"
               : modal.status === "success"
-                ? "bg-positive-400"
+                ? "bg-positive-400!"
                 : "",
       [modal],
    );
@@ -29,11 +30,11 @@ export default function InfoModal() {
    const backgroundColor = useMemo(
       () =>
          modal.status === "info"
-            ? "bg-caution-600"
+            ? "bg-caution-600!"
             : modal.status === "error"
-              ? "bg-negative-600"
+              ? "bg-negative-600!"
               : modal.status === "success"
-                ? "bg-positive-800"
+                ? "bg-positive-800!"
                 : "",
       [modal],
    );
@@ -41,12 +42,12 @@ export default function InfoModal() {
    const borderColor = useMemo(
       () =>
          modal.status === "info"
-            ? "border-caution-300"
+            ? "border-caution-300!"
             : modal.status === "error"
-              ? "border-negative-300"
+              ? "border-negative-300!"
               : modal.status === "success"
-                ? "border-positive-500"
-                : "border-primary-800",
+                ? "border-positive-500!"
+                : "border-primary-800!",
       [modal],
    );
 
@@ -65,13 +66,7 @@ export default function InfoModal() {
    }, [modal.isOpen]);
 
    return (
-      <DialogPanel
-         transition
-         className={clsx(
-            "bg-surface data-closed:scale-90 relative w-full max-w-xs transform overflow-hidden rounded-xl border-2 p-5 transition-[opacity_transform] duration-200",
-            borderColor,
-         )}
-      >
+      <BaseDialogPanel className={clsx("p-5 lg:max-w-xs", borderColor)}>
          <DialogTitle as="div" className="flex w-full flex-col items-center justify-center gap-y-5">
             <div className={clsx("rounded-full p-3", backgroundColor)}>
                <div className={clsx("rounded-full p-3", innerColor)}>
@@ -123,6 +118,6 @@ export default function InfoModal() {
                }}
             />
          )}
-      </DialogPanel>
+      </BaseDialogPanel>
    );
 }

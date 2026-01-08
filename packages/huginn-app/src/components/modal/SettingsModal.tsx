@@ -1,21 +1,23 @@
 import ModalCloseButton from "@components/button/ModalCloseButton";
-import { DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import { DialogTitle, Transition } from "@headlessui/react";
 import type { DeepPartial } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
 import clsx from "clsx";
 // import { usePostHog } from "posthog-js/react";
-import { Fragment, memo, useEffect, useState } from "react";
+import { Fragment, memo, useEffect, useMemo, useState } from "react";
 import type { AppSettings, SettingsTab, SettingsTabProps } from "@/types";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
 import SettingsVoiceTab from "./settings/SettingsVoiceTab";
-import SettingsKeybindsTab from "./settings/SettingsKeybindsTab";
 import SettingsSubmissionTab from "./settings/SettingsSubmissionTab";
 import SettingsCustomTab from "./settings/SettingsCustomTab";
+import BaseDialogPanel from "./BaseDialogPanel";
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@components/Tab";
+import { useIsMobile } from "@hooks/useIsMobile";
 
 const tabs: SettingsTab[] = [
    {
@@ -31,7 +33,7 @@ const tabs: SettingsTab[] = [
          { name: "theme", text: "Theme", icon: <IconMingcuteColorPickerFill />, component: SettingsThemeTab },
          { name: "notification", text: "Notification", icon: <IconMingcuteNotificationFill /> },
          { name: "voice", text: "Audio & Video", icon: <IconMingcuteSpeakerFill />, component: SettingsVoiceTab },
-         { name: "keybind", text: "Keybinds", icon: <IconMingcuteHotkeyFill />, component: SettingsKeybindsTab },
+         // { name: "keybind", text: "Keybinds", icon: <IconMingcuteHotkeyFill />, component: SettingsKeybindsTab },
          { name: "advanced", text: "Advanced", icon: <IconMingcuteServerFill />, component: SettingsAdvancedTab },
       ],
    },
@@ -51,8 +53,6 @@ const tabs: SettingsTab[] = [
    },
 ];
 
-const defaultTabIndex = 0;
-
 function useFlatTabs() {
    const client = useClient();
 
@@ -61,73 +61,92 @@ function useFlatTabs() {
 
 export default function SettingsModal() {
    const { settings: modal, updateModals } = useModals();
-   // const posthog = usePostHog();
-
    const flatTabs = useFlatTabs();
-   const [currentTab, setCurrentTab] = useState(() => flatTabs[defaultTabIndex]?.text ?? "");
+   const [selectedIndex, setSelectedIndex] = useState<number | null>(0);
+   const currentTab = useMemo(() => (selectedIndex !== null ? (flatTabs[selectedIndex]?.text ?? "") : null), [selectedIndex]);
+   const [showContent, setShowContent] = useState(false);
+   const isMobile = useIsMobile();
 
    const settings = useStorage("settings");
    const { setValue, updateSettings } = useStorageStore();
    const [_settingsValid, setSettingsValid] = useState(false);
-   // const [modifiedSettings, setModifiedSettings] = useState<DeepPartial<AppSettings> | undefined>(undefined);
 
    useEffect(() => {
       if (modal.isOpen) {
-         // setModifiedSettings({ ...settings });
-         setCurrentTab(flatTabs[defaultTabIndex]?.text ?? "");
          setSettingsValid(true);
-         // currentSettings.current = { ...settingsStore.getState() };
-         // posthog.capture("settings_modal_opened");
+         if (!isMobile) setShowContent(true);
+         if (isMobile) setSelectedIndex(null);
       } else {
          onSave();
-         // posthog.capture("settings_modal_closed");
       }
    }, [modal.isOpen]);
+
+   useEffect(() => {
+      console.log(isMobile, showContent, selectedIndex);
+   }, [isMobile, showContent, selectedIndex]);
 
    useEffect(() => {
       onSave();
    }, [currentTab]);
 
    async function onSave() {
-      // TODO: THIS IS NOT CORRECTLY CHECKING
-      // if (modifiedSettings && modifiedSettings !== settings) {
-      // await settings.setSettings(modifiedSettings);
       setValue("settings", settings);
-      // await files.saveSettings();
-      // }
    }
 
-   function onTabChanged(index: number) {
-      setCurrentTab(flatTabs[index]?.text ?? "");
+   function onTabChanged(index: number | null) {
+      setSelectedIndex(index);
+      setShowContent(true);
    }
 
    function onSettingsChanged(value: DeepPartial<AppSettings>) {
       updateSettings(value);
    }
 
+   function handleBackClick() {
+      setShowContent(false);
+   }
+
    return (
-      <div className="h-full w-full px-10">
-         <DialogPanel
-            transition
-            className="border-primary-800 bg-surface data-closed:scale-90 relative h-full transform rounded-xl border-2 transition-[opacity_transform] duration-200"
-         >
-            <TabGroup className="flex h-full w-full" vertical defaultIndex={defaultTabIndex} onChange={onTabChanged}>
-               <div className="bg-surface-alt/50 h-full rounded-l-xl">
-                  <TabList className="flex h-full select-none flex-col py-2">
+      <div className="flex h-full w-full items-center justify-center pt-20 lg:px-10 lg:pt-0">
+         <BaseDialogPanel className="h-full w-full max-w-6xl">
+            <TabGroup className="flex h-full w-full" selectedIndex={selectedIndex} onChange={onTabChanged}>
+               {/* Mobile: Show tabs or content based on state */}
+               <div className={clsx("bg-surface-alt h-full rounded-l-xl lg:block", "block w-full rounded-r-xl lg:w-auto lg:rounded-r-none")}>
+                  <TabList className="flex h-full select-none flex-col pt-2">
                      <DialogTitle className="mx-5 my-3 flex items-center justify-start gap-x-1.5">
                         <div className="text-text text-2xl font-medium">Settings</div>
                      </DialogTitle>
                      <SettingsTabs />
                   </TabList>
                </div>
-               {<SettingsPanels currentTab={currentTab} onChange={onSettingsChanged} onSave={onSave} />}
+
+               {/* Mobile: Content with back button */}
+               <Transition show={showContent} afterLeave={() => setSelectedIndex(null)}>
+                  <div
+                     className={clsx(
+                        "lg:data-closed:translate-none data-closed:opacity-0 lg:data-closed:opacity-100 data-closed:translate-x-full bg-surface absolute inset-0 flex w-full flex-col transition-[transform_opacity] lg:relative lg:flex",
+                     )}
+                  >
+                     {/* Back button - only visible on mobile when content is shown */}
+                     <div className="bg-surface-alt flex items-center gap-x-2 border-b border-white/10 px-3 py-4 lg:hidden">
+                        <button onClick={handleBackClick} className="active:bg-surface flex items-center gap-x-2 rounded-md p-1 text-white">
+                           <IconMingcuteLeftFill className="size-5" />
+                           <span>Back</span>
+                        </button>
+                     </div>
+
+                     <SettingsPanels currentTab={currentTab} onChange={onSettingsChanged} onSave={onSave} />
+                  </div>
+               </Transition>
             </TabGroup>
+
             <ModalCloseButton
+               className="bg-surface! right-4 top-4"
                onClick={() => {
                   updateModals({ settings: { isOpen: false } });
                }}
             />
-         </DialogPanel>
+         </BaseDialogPanel>
       </div>
    );
 }
@@ -136,30 +155,38 @@ function SettingsTabs() {
    const client = useClient();
 
    return (
-      <div className="scroll-surface-alt scroll-thin flex h-full w-full flex-col gap-y-1 overflow-y-scroll">
+      <div className="scroll-surface scroll-thin flex h-full w-full flex-col overflow-y-scroll pb-2 lg:w-52">
          {tabs.map(
             (tab, i) =>
                (client?.gateway.status === "authenticated" || !tab.auth) && (
                   <Fragment key={tab.name}>
-                     <div className={clsx("text-text/50 mb-1 w-full px-4 text-left text-xs uppercase", i === 0 ? "mt-2" : "mt-4")}>{tab.text}</div>
-                     {tab.children?.map((child) => (
-                        <div className="w-full pl-2.5" key={child.name}>
-                           <Tab as={Fragment}>
-                              {({ selected }) => (
-                                 <button
-                                    type="button"
-                                    className={clsx(
-                                       "text-text outline-hidden flex w-full cursor-pointer items-center gap-x-2 whitespace-nowrap rounded-md px-2 py-1.5 text-left text-base",
-                                       selected ? "text-text bg-white/20" : "text-text/70 hover:text-text hover:bg-white/10",
-                                    )}
-                                 >
-                                    <div className="shrink-0">{child.icon}</div>
-                                    <span>{child.text}</span>
-                                 </button>
-                              )}
-                           </Tab>
-                        </div>
-                     ))}
+                     {i !== 0 && <div className="bg-surface my-3 ml-3 mr-0.5 hidden h-px shrink-0 lg:my-2 lg:block" />}
+                     <div className={clsx("mb-2 w-full px-4 text-left text-sm text-white/50 lg:mb-1", i === 0 ? "mt-2" : "mt-4 lg:mt-1.5")}>
+                        {tab.text}
+                     </div>
+                     <div className="bg-surface ml-2.5 flex flex-col gap-y-1 rounded-lg p-2.5 lg:gap-y-0.5 lg:bg-transparent lg:p-0">
+                        {tab.children?.map((child) => (
+                           <div className="w-full" key={child.name}>
+                              <Tab>
+                                 {({ selected }) => (
+                                    <button
+                                       type="button"
+                                       className={clsx(
+                                          "text-text outline-hidden lg:active:bg-white/3 flex w-full cursor-pointer items-center gap-x-2 whitespace-nowrap rounded-md px-2 py-2 text-left text-base active:bg-white/10 active:text-white lg:py-1.5 lg:active:text-white",
+                                          selected
+                                             ? "bg-white/10 text-white transition-colors duration-300"
+                                             : "hover:bg-white/3 text-white/80 hover:text-white lg:text-white/50",
+                                       )}
+                                    >
+                                       <div className="shrink-0">{child.icon}</div>
+                                       <span>{child.text}</span>
+                                       <IconMingcuteRightFill className="ml-auto lg:hidden" />
+                                    </button>
+                                 )}
+                              </Tab>
+                           </div>
+                        ))}
+                     </div>
                   </Fragment>
                ),
          )}
@@ -178,23 +205,25 @@ const TabComponent = memo(
    },
 );
 
-function SettingsPanels(props: { currentTab: string; onChange: (value: DeepPartial<AppSettings>) => void; onSave: () => Promise<void> }) {
+function SettingsPanels(props: { currentTab: string | null; onChange: (value: DeepPartial<AppSettings>) => void; onSave: () => Promise<void> }) {
    const flatTabs = useFlatTabs();
 
    return (
-      <TabPanels className="flex w-full flex-col">
-         <div className="text-text mb-5 ml-5 mt-5 shrink-0 select-none text-xl">{props.currentTab}</div>
-         {flatTabs.map((tab) => (
-            <TabPanel key={tab?.name} className="scroll-surface-deep h-full overflow-x-visible overflow-y-scroll pb-5 pr-3">
-               <div className="ml-5">
-                  {tab?.component ? (
-                     <TabComponent onChange={props.onChange} onSave={props.onSave} component={tab.component} />
-                  ) : (
-                     <span className="text-text/50 text-base italic">{tab?.name} (Soon...)</span>
-                  )}
-               </div>
-            </TabPanel>
-         ))}
-      </TabPanels>
+      props.currentTab && (
+         <TabPanels className="flex w-full flex-col overflow-hidden">
+            <div className="text-text mb-5 ml-5 mt-5 shrink-0 select-none text-xl">{props.currentTab}</div>
+            {flatTabs.map((tab) => (
+               <TabPanel key={tab?.name} className="scroll-surface-deep h-full overflow-x-visible overflow-y-scroll pb-5 pr-3">
+                  <div className="ml-5">
+                     {tab?.component ? (
+                        <TabComponent onChange={props.onChange} onSave={props.onSave} component={tab.component} />
+                     ) : (
+                        <span className="text-text/50 text-base italic">{tab?.name} (Soon...)</span>
+                     )}
+                  </div>
+               </TabPanel>
+            ))}
+         </TabPanels>
+      )
    );
 }

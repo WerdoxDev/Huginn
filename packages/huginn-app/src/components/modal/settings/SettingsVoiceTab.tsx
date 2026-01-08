@@ -1,7 +1,6 @@
 import HuginnButton from "@components/button/HuginnButton";
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
 import HuginnTab from "@components/HuginnTab";
-import GenericLabel from "@components/input/GenericLabel";
 import HuginnRange from "@components/input/HuginnRange";
 import { clamp, remap } from "@huginn/shared";
 import { AudioLevelChecker } from "@lib/voice/audio-level-checker";
@@ -236,6 +235,75 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
                   </div>
                </HuginnTab.TabPanel>
                <HuginnTab.TabPanel className="flex flex-col gap-y-5">
+                  <HuginnDropdown
+                     className="w-full max-w-xs"
+                     onChange={onCameraChange}
+                     value={cameraDeviceOptions.find((x) => x.value === selectedCamera?.deviceId)}
+                  >
+                     <HuginnDropdown.Label>Video Device</HuginnDropdown.Label>
+                     <HuginnDropdown.List className="w-full">
+                        <HuginnDropdown.ItemsWrapper className="w-80">
+                           {cameraDeviceOptions?.map((x) => (
+                              <HuginnDropdown.Item key={x.value} item={x} />
+                           ))}
+                        </HuginnDropdown.ItemsWrapper>
+                     </HuginnDropdown.List>
+                  </HuginnDropdown>
+                  <div className="bg-surface-deep relative flex aspect-video max-w-md items-center justify-center overflow-hidden rounded-lg shadow-lg">
+                     {!isTestingCamera && (
+                        <HuginnButton color="primary" className="absolute px-4 py-2" onClick={startCameraTest}>
+                           Test Camera
+                        </HuginnButton>
+                     )}
+
+                     <video ref={videoRef} autoPlay playsInline muted className="w-full" />
+                  </div>
+                  <HuginnDropdown
+                     className="w-full max-w-xs"
+                     onChange={onCameraChange}
+                     value={cameraDeviceOptions.find((x) => x.value === selectedCamera?.deviceId)}
+                  >
+                     <HuginnDropdown.Label>Video Device</HuginnDropdown.Label>
+                     <HuginnDropdown.List className="w-full">
+                        <HuginnDropdown.ItemsWrapper className="w-80">
+                           {cameraDeviceOptions?.map((x) => (
+                              <HuginnDropdown.Item key={x.value} item={x} />
+                           ))}
+                        </HuginnDropdown.ItemsWrapper>
+                     </HuginnDropdown.List>
+                  </HuginnDropdown>
+                  <div className="bg-surface-deep relative flex aspect-video max-w-md items-center justify-center overflow-hidden rounded-lg shadow-lg">
+                     {!isTestingCamera && (
+                        <HuginnButton color="primary" className="absolute px-4 py-2" onClick={startCameraTest}>
+                           Test Camera
+                        </HuginnButton>
+                     )}
+
+                     <video ref={videoRef} autoPlay playsInline muted className="w-full" />
+                  </div>
+                  <HuginnDropdown
+                     className="w-full max-w-xs"
+                     onChange={onCameraChange}
+                     value={cameraDeviceOptions.find((x) => x.value === selectedCamera?.deviceId)}
+                  >
+                     <HuginnDropdown.Label>Video Device</HuginnDropdown.Label>
+                     <HuginnDropdown.List className="w-full">
+                        <HuginnDropdown.ItemsWrapper className="w-80">
+                           {cameraDeviceOptions?.map((x) => (
+                              <HuginnDropdown.Item key={x.value} item={x} />
+                           ))}
+                        </HuginnDropdown.ItemsWrapper>
+                     </HuginnDropdown.List>
+                  </HuginnDropdown>
+                  <div className="bg-surface-deep relative flex aspect-video max-w-md items-center justify-center overflow-hidden rounded-lg shadow-lg">
+                     {!isTestingCamera && (
+                        <HuginnButton color="primary" className="absolute px-4 py-2" onClick={startCameraTest}>
+                           Test Camera
+                        </HuginnButton>
+                     )}
+
+                     <video ref={videoRef} autoPlay playsInline muted className="w-full" />
+                  </div>
                   <HuginnDropdown
                      className="w-full max-w-xs"
                      onChange={onCameraChange}

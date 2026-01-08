@@ -1,5 +1,4 @@
 import HuginnButton from "@components/button/HuginnButton";
-import { DialogPanel } from "@headlessui/react";
 import { dispatchEvent } from "@lib/event-handler";
 import { useModals } from "@stores/modalsStore";
 import "../../cropper.css";
@@ -7,6 +6,7 @@ import { useEffect, useRef } from "react";
 // import { usePostHog } from "posthog-js/react";
 import Cropper, { type ReactCropperElement } from "react-cropper";
 import { SuperImageCropper } from "super-image-cropper";
+import BaseDialogPanel from "./BaseDialogPanel";
 
 export default function ImageCropModal() {
    const { imageCrop: modal, updateModals } = useModals();
@@ -44,16 +44,13 @@ export default function ImageCropModal() {
    }, [modal.isOpen]);
 
    return (
-      <DialogPanel
-         transition
-         className="border-primary-800 bg-surface data-closed:scale-90 flex transform flex-col overflow-hidden rounded-xl border-2 transition-[opacity_transform] duration-200"
-      >
-         <div className="h-120 w-120 m-5 mb-0 flex items-center justify-center rounded-lg bg-black/50">
+      <BaseDialogPanel>
+         <div className="max-w-120 m-5 mb-0 flex aspect-square items-center justify-center rounded-lg bg-black/50">
             <Cropper
                ref={cropperRef}
                src={modal.originalImageData}
                initialAspectRatio={1}
-               className="h-120 w-120"
+               className="max-w-120 aspect-square"
                aspectRatio={1}
                movable={true}
                unselectable="off"
@@ -82,6 +79,6 @@ export default function ImageCropModal() {
                Confirm
             </HuginnButton>
          </div>
-      </DialogPanel>
+      </BaseDialogPanel>
    );
 }

@@ -2,17 +2,15 @@ import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import LoadingIcon from "@components/LoadingIcon";
-import { DialogPanel } from "@headlessui/react";
-import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 // import { voiceClient } from "@stores/voiceStore";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useEffect, useState, useTransition } from "react";
 import type { AudioSource } from "@/types";
+import BaseDialogPanel from "./BaseDialogPanel";
 
 export default function StreamAudioModal() {
-   const client = useClient();
    const { streamAudio: modal, updateModals } = useModals();
    const { data, isFetching, isLoading, refetch } = useQuery({
       queryKey: ["audio-sources"],
@@ -46,11 +44,8 @@ export default function StreamAudioModal() {
    }
 
    return (
-      <DialogPanel
-         transition
-         className="border-primary-800 bg-surface data-closed:scale-90 relative w-full max-w-lg transform select-none overflow-hidden rounded-xl border-2 py-5 pb-0 transition-[opacity_transform] duration-200"
-      >
-         <div className="flex flex-col gap-y-3 pb-5">
+      <BaseDialogPanel className="w-full max-w-lg select-none pt-5">
+         <div className="flex flex-col gap-y-3">
             <div className="text-text text-center text-2xl font-bold">Stream Audio</div>
             <div className="text-text/80 px-2 text-center">Choose an application to share it's audio with others</div>
             <div className="scroll-alternative border-primary-700 mx-5 mt-5 flex h-72 flex-col gap-y-2 overflow-y-scroll rounded-lg border p-2.5 pr-1.5">
@@ -76,7 +71,7 @@ export default function StreamAudioModal() {
                )}
             </div>
          </div>
-         <div className="bg-surface-alt flex w-full items-center gap-x-2 p-5">
+         <div className="bg-surface-alt mt-5 flex w-full items-center gap-x-2 p-5">
             <LoadingButton className="h-10 w-24" color="surface" onClick={refetch} loading={isFetching}>
                Refresh
             </LoadingButton>
@@ -94,6 +89,6 @@ export default function StreamAudioModal() {
             </LoadingButton>
          </div>
          <ModalCloseButton onClick={close} />
-      </DialogPanel>
+      </BaseDialogPanel>
    );
 }

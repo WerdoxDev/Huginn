@@ -1,7 +1,7 @@
 import DisplayPreview from "@components/DisplayPreview";
 import HuginnTab from "@components/HuginnTab";
 import LoadingIcon from "@components/LoadingIcon";
-import { DialogPanel, Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
+import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
@@ -16,6 +16,7 @@ import { useDevice } from "@stores/deviceStore";
 import LoadingButton from "@components/button/LoadingButton";
 import { screenShareFrameRates, screenShareQualities } from "@lib/constants";
 import { useMediaSources } from "@hooks/voice/useMediaSources";
+import BaseDialogPanel from "./BaseDialogPanel";
 
 // const qualities: DropdownItem[] = [
 //    { text: "Low (480p)", value: "low" },
@@ -172,10 +173,7 @@ export default function ScreenShareModal() {
    }
 
    return (
-      <DialogPanel
-         transition
-         className="border-primary-800 bg-surface data-closed:scale-90 max-h-160 relative flex h-full w-full max-w-3xl transform select-none overflow-hidden rounded-xl border-2 transition-[opacity_transform] duration-200"
-      >
+      <BaseDialogPanel className="max-h-160 flex h-full w-full max-w-3xl select-none">
          <div className="mt-5 flex w-full flex-col gap-y-3 overflow-hidden">
             <HuginnTab className="flex h-full flex-col" onChange={setTabIndex} selectedIndex={tabIndex}>
                <HuginnTab.TabList className="mx-5" tabClassName="w-full py-1">
@@ -308,6 +306,6 @@ export default function ScreenShareModal() {
                </DisclosurePanel>
             </Disclosure>
          </div>
-      </DialogPanel>
+      </BaseDialogPanel>
    );
 }
