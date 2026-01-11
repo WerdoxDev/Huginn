@@ -13,7 +13,7 @@ import type { MouseEvent } from "react";
 
 export default function ChannelRecipient(props: { channelId: Snowflake; isOwner: boolean; recipient: AppUser }) {
    const presence = usePresence(props.recipient.id);
-   const { open: openContextMenu } = useContextMenu("dm_channel_recipient");
+   const { open: openContextMenu, data, context } = useContextMenu("dm_channel_recipient");
    const state = useMutationLatestState("create-dm-channel_recipient");
    const isMobile = useIsMobile();
 
@@ -24,32 +24,38 @@ export default function ChannelRecipient(props: { channelId: Snowflake; isOwner:
       <div
          onContextMenu={open}
          onClick={isMobile ? open : undefined}
-         className="group/recipient hover:bg-surface relative flex cursor-pointer items-center gap-x-3 rounded-lg p-1.5"
+         className={clsx(
+            "group/recipient hover:bg-surface active:bg-surface data-context:bg-surface relative flex cursor-pointer items-center gap-x-3 rounded-lg p-1.5",
+         )}
+         data-context={context?.isOpen && data?.recipient.id === props.recipient.id ? true : undefined}
       >
          <UserAvatar
             userId={props.recipient.id}
             avatarHash={props.recipient.avatar}
-            className={clsx((!presence || presence?.status === "offline") && "opacity-30", "group-hover/recipient:opacity-100")}
+            className={clsx(
+               (!presence || presence?.status === "offline") && "opacity-30",
+               "group-hover/recipient:opacity-100 group-data-context/recipient:opacity-100",
+            )}
          />
          <div className="flex flex-col overflow-hidden">
             <div
                className={clsx(
                   presence && presence.status !== "offline" ? "text-text/70" : "text-text/30",
-                  "group-hover/recipient:text-text text-sm",
+                  "group-hover/recipient:text-text group-data-context/recipient:text-text text-sm",
                )}
             >
                {props.recipient.displayName}
             </div>
-            <ActivityPreview presence={presence} className="opacity-50 group-hover/recipient:opacity-100" />
+            <ActivityPreview presence={presence} className="opacity-50 group-hover/recipient:opacity-100 group-data-context/recipient:opacity-100" />
          </div>
          {state?.status === "pending" && state?.variables?.recipients.some((x) => x === props.recipient.id) ? (
-            <div className="absolute bottom-3.5 right-2 top-3.5 flex shrink-0 items-center justify-center">
+            <div className="absolute top-3.5 right-2 bottom-3.5 flex shrink-0 items-center justify-center">
                <LoadingIcon className="size-7" />
             </div>
          ) : (
             props.isOwner && (
                <Tooltip>
-                  <Tooltip.Trigger className="text-positive-100 ml-auto mr-2">
+                  <Tooltip.Trigger className="text-positive-100 mr-2 ml-auto">
                      <IconSolarSledgehammerBold className="size-5" />
                   </Tooltip.Trigger>
                   <Tooltip.Content>Channel Owner</Tooltip.Content>

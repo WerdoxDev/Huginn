@@ -11,9 +11,10 @@ import LoadingIcon from "./LoadingIcon";
 import UserAvatar from "./UserAvatar";
 import { usePresence } from "@stores/presenceStore";
 import ActivityPreview from "./ActivityPreview";
+import { useIsMobile } from "@hooks/useIsMobile";
 
 export default function DirectMessageChannel(props: { channel: AppDirectChannel }) {
-   const { open: openContextMenu } = useContextMenu("dm_channel");
+   const { open: openContextMenu, context, data } = useContextMenu("dm_channel");
 
    const recipients = useUsers(props.channel.recipientIds);
    const presence = usePresence(recipients[0]?.id);
@@ -26,11 +27,15 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel 
       <li
          onContextMenu={(e) => openContextMenu(props.channel, e)}
          className={clsx("group relative -mr-1 flex shrink-0 cursor-pointer overflow-hidden rounded-md")}
+         data-context={context?.isOpen && data?.id === props.channel.id ? true : undefined}
       >
          <NavLink
             prefetch="intent"
             className={({ isActive, isPending }) =>
-               clsx("hover:bg-surface flex w-full min-w-0 shrink items-center p-1.5", (isPending || isActive) && "bg-white/10!")
+               clsx(
+                  "hover:bg-surface active:bg-surface group-data-context:bg-surface flex w-full min-w-0 shrink items-center p-1.5",
+                  (isPending || isActive) && "bg-white/10!",
+               )
             }
             to={`/channels/@me/${props.channel.id}`}
          >
@@ -44,19 +49,30 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel 
                   <div className="flex w-full flex-col justify-center overflow-hidden">
                      <div
                         className={clsx(
-                           "text-text mr-8 overflow-hidden text-sm text-nowrap text-ellipsis group-hover:opacity-100",
+                           "text-text mr-8 overflow-hidden text-sm text-nowrap text-ellipsis group-hover:opacity-100 group-active:opacity-100 group-data-context:opacity-100",
                            selected ? "opacity-100" : "opacity-70",
                         )}
                      >
                         {props.channel.name}
                      </div>
                      {props.channel.type === ChannelType.GROUP_DM && (
-                        <div className={clsx("text-text text-xs group-hover:opacity-100", selected ? "opacity-100" : "opacity-50")}>
+                        <div
+                           className={clsx(
+                              "text-text text-xs group-hover:opacity-100 group-active:opacity-100 group-data-context:opacity-100",
+                              selected ? "opacity-100" : "opacity-50",
+                           )}
+                        >
                            {recipients.length + 1} Members
                         </div>
                      )}
                      {props.channel.type === ChannelType.DM && (
-                        <ActivityPreview presence={presence} className={clsx("group-hover:opacity-100", selected ? "opacity-100" : "opacity-50")} />
+                        <ActivityPreview
+                           presence={presence}
+                           className={clsx(
+                              "group-hover:opacity-100 group-active:opacity-100 group-data-context:opacity-100",
+                              selected ? "opacity-100" : "opacity-50",
+                           )}
+                        />
                      )}
                   </div>
                   {!isPending ? (
