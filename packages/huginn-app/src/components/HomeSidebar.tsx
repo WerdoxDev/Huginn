@@ -11,7 +11,6 @@ import Tooltip from "./tooltip/Tooltip";
 import VoiceStatus from "./voice/VoiceStatus";
 
 export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
-   const huginnWindow = useHuginnWindow();
    const { updateModals } = useModals();
    const { friendsNotificationsCount } = useReadStates();
 
@@ -29,12 +28,7 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
    );
 
    return (
-      <nav
-         className={clsx(
-            "bg-surface-alt flex h-full flex-col overflow-hidden rounded-l-xl",
-            huginnWindow.environment === "browser" && "rounded-tl-none",
-         )}
-      >
+      <nav className={clsx("bg-surface-alt flex h-full flex-col overflow-hidden rounded-l-xl")}>
          <div className="flex h-16 shrink-0 items-center px-6">
             <div className="text-text text-xl font-bold">Home</div>
             <div className="relative ml-6">
@@ -42,12 +36,12 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
                   Friends
                </RingLinkButton>
                {friendsNotificationsCount !== 0 && (
-                  <AttentionIndicator className="-bottom-3 -right-2.5">{friendsNotificationsCount}</AttentionIndicator>
+                  <AttentionIndicator className="-right-2.5 -bottom-3">{friendsNotificationsCount}</AttentionIndicator>
                )}
             </div>
          </div>
          <div className="h-0.5 shrink-0 bg-white/10" />
-         <div className="mx-3.5 mb-3 mt-6 flex shrink-0 items-center justify-between text-xs">
+         <div className="mx-3.5 mt-6 mb-3 flex shrink-0 items-center justify-between text-xs">
             <div className="text-text/70 hover:text-text font-medium uppercase">Direct Messages</div>
             <Tooltip>
                <Tooltip.Trigger onClick={() => updateModals({ createDM: { isOpen: true } })}>
@@ -56,7 +50,7 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
                <Tooltip.Content>Create DM</Tooltip.Content>
             </Tooltip>
          </div>
-         <ul className="scroll-alternative2 scroll-super-thin flex h-full flex-col gap-y-0.5 overflow-x-hidden overflow-y-scroll pb-2 pl-2 pr-1 pt-0.5">
+         <ul className="scroll-alternative2 scroll-super-thin flex h-full flex-col gap-y-0.5 overflow-x-hidden overflow-y-scroll pt-0.5 pr-1 pb-2 pl-2">
             {sortedChannels?.map((channel) => (
                <DirectMessageChannel key={channel.id} channel={channel} />
             ))}

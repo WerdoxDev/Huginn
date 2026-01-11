@@ -29,11 +29,11 @@ export function useOAuth() {
       listenOAuth();
       const url = client.oauth.getOAuthURL(
          type,
-         huginnWindow.environment === "browser" ? "browser" : "websocket",
+         huginnWindow.environment !== "desktop" ? "browser" : "websocket",
          `${window.origin}/#/oauth-redirect`,
       );
 
-      if (huginnWindow.environment === "browser") {
+      if (huginnWindow.environment !== "desktop") {
          window.open(url, "_self");
       } else {
          updateModals({

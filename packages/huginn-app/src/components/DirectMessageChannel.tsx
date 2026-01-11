@@ -25,7 +25,7 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel 
    return (
       <li
          onContextMenu={(e) => openContextMenu(props.channel, e)}
-         className={clsx("group relative -mr-1 flex cursor-pointer overflow-hidden rounded-md")}
+         className={clsx("group relative -mr-1 flex shrink-0 cursor-pointer overflow-hidden rounded-md")}
       >
          <NavLink
             prefetch="intent"
@@ -44,7 +44,7 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel 
                   <div className="flex w-full flex-col justify-center overflow-hidden">
                      <div
                         className={clsx(
-                           "text-text mr-8 overflow-hidden text-ellipsis text-nowrap text-sm group-hover:opacity-100",
+                           "text-text mr-8 overflow-hidden text-sm text-nowrap text-ellipsis group-hover:opacity-100",
                            selected ? "opacity-100" : "opacity-70",
                         )}
                      >

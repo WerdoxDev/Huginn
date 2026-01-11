@@ -1,4 +1,5 @@
 import type { Environment } from "@/types";
+import { dispatchEvent } from "@lib/event-handler";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 
@@ -7,6 +8,7 @@ const store = createStore(
       {
          maximized: false,
          fullscreen: false,
+         browserFullscreen: false,
          focused: false,
          environment: (window.electronAPI ? "desktop" : "browser") as Environment,
          args: [] as string[],
@@ -15,6 +17,7 @@ const store = createStore(
       (set) => ({
          setMaximized: (isMaximized: boolean) => set({ maximized: isMaximized }),
          setFullscreen: (isFullscreen: boolean) => set({ fullscreen: isFullscreen }),
+         setBrowserFullscreen: (isFullscreen: boolean) => set({ browserFullscreen: isFullscreen }),
       }),
    ),
 );
@@ -23,38 +26,55 @@ export async function initializeWindow() {
    store.setState({
       maximized: false,
       fullscreen: false,
+      browserFullscreen: false,
       focused: document.hasFocus(),
       args: window.electronAPI ? await window.electronAPI.getArgs() : undefined,
       version: window.electronAPI ? await window.electronAPI.getVersion() : __APP_VERSION__,
    });
 
+   const controller = new AbortController();
+
    function onFocusChange(event: FocusEvent) {
       store.setState({ focused: event.type === "focus" });
    }
 
-   window.addEventListener("focus", onFocusChange);
-   window.addEventListener("blur", onFocusChange);
+   window.addEventListener("focus", onFocusChange, { signal: controller.signal });
+   window.addEventListener("blur", onFocusChange, { signal: controller.signal });
 
-   //TODO: MIGRATION
-   // let unlisten: UnlistenFn;
-   // let unlisten2: UnlistenFn;
-   // if (store.getState().environment === "desktop") {
-   // 	const appWindow = getCurrentWebviewWindow();
-   // 	unlisten = await appWindow.onResized(async () => {
-   // 		const appMaximized = await appWindow.isMaximized();
-   // 		store.setState({ maximized: appMaximized });
-   // 	});
+   document.addEventListener(
+      "fullscreenchange",
+      () => {
+         store.setState({ browserFullscreen: document.fullscreenElement !== null });
+      },
+      { signal: controller.signal },
+   );
 
-   // 	unlisten2 = await listen("tray-clicked", () => {
-   // 		invoke("open_and_focus_main");
-   // 	});
-   // }
+   const unlisteners: Array<(() => void) | undefined> = [];
+   if (store.getState().environment === "desktop") {
+      unlisteners.push(
+         window.electronAPI.onDeepLink((_, cmd) => {
+            dispatchEvent("deep_link", cmd);
+         }),
+      );
+
+      unlisteners.push(
+         window.electronAPI.onMaximizedChanged((_, isMaximized) => {
+            store.setState({ maximized: isMaximized });
+         }),
+      );
+
+      unlisteners.push(
+         window.electronAPI.onFullscreenChanged((_, isFullscreen) => {
+            store.setState({ fullscreen: isFullscreen });
+         }),
+      );
+   }
 
    return () => {
-      // unlisten();
-      // unlisten2();
-      window.removeEventListener("focus", onFocusChange);
-      window.removeEventListener("blur", onFocusChange);
+      controller.abort();
+      for (const unlisten of unlisteners) {
+         unlisten?.();
+      }
    };
 }
 

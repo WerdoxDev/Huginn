@@ -28,14 +28,6 @@ export default function ChannelIcon(props: { channelId: Snowflake; iconHash?: st
       } else {
          setIsLoaded(false);
       }
-
-      // if (huginnWindow.environment !== "desktop") {
-      //    return;
-      // }
-
-      // if (icon && props.iconHash) {
-      //    window.electronAPI.saveHashImageToCache(icon, props.iconHash);
-      // }
    }, [props.iconHash]);
 
    const { size = "2.25rem", className } = props;
@@ -59,9 +51,7 @@ export default function ChannelIcon(props: { channelId: Snowflake; iconHash?: st
          ) : !hasError && !props.iconHash && !isLoaded ? (
             <div className="bg-primary-700 h-full w-full rounded-full" />
          ) : (
-            hasError && (
-               <div className="bg-negative-400 text-text flex h-full w-full items-center justify-center rounded-full font-bold">!</div>
-            )
+            hasError && <div className="bg-negative-400 text-text flex h-full w-full items-center justify-center rounded-full font-bold">!</div>
          )}
       </div>
    );

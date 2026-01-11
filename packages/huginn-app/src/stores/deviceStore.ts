@@ -20,6 +20,8 @@ const store = createStore(
 );
 
 export async function initializeDevice() {
+   if (!window.isSecureContext) return;
+
    await setDevices();
    checkDevices();
 

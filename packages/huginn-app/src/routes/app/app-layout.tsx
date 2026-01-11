@@ -60,7 +60,7 @@ export default function AppLayout() {
                   <NotificationProvider>
                      <MainRenderer>
                         <div
-                           className={clsx("bg-surface-alt absolute inset-0", !huginnWindow.fullscreen && "top-6")}
+                           className={clsx("bg-surface-alt absolute inset-0", !huginnWindow.browserFullscreen && "top-6")}
                            style={isMainTransitioning ? { viewTransitionName: "start" } : undefined}
                         >
                            <StartBackgroundSvg state={authBackground.state} />
@@ -81,31 +81,9 @@ export default function AppLayout() {
 function MainRenderer(props: { children: ReactNode }) {
    const huginnWindow = useHuginnWindow();
 
-   useEffect(() => {
-      if (huginnWindow.environment === "desktop") {
-         const unlisten = window.electronAPI.onDeepLink((_, cmd) => {
-            dispatchEvent("deep_link", cmd);
-         });
-
-         const unlisten2 = window.electronAPI.onMaximizedChanged((_, isMaximized) => {
-            huginnWindow.setMaximized(isMaximized);
-         });
-
-         const unlisten3 = window.electronAPI.onFullscreenChanged((_, isFullscreen) => {
-            huginnWindow.setFullscreen(isFullscreen);
-         });
-
-         return () => {
-            unlisten();
-            unlisten2();
-            unlisten3();
-         };
-      }
-   }, []);
-
    return (
-      <div className={clsx("flex h-full flex-col overflow-hidden" /*, huginnWindow.maximized ? "rounded-none" : "rounded-lg"*/)}>
-         {window.location.pathname !== "/splashscreen" && <TitleBar />}
+      <div className={clsx("flex h-full flex-col overflow-hidden")}>
+         {window.location.pathname !== "/splashscreen" && !huginnWindow.browserFullscreen && <TitleBar />}
          <div className="relative h-full w-full">
             {props.children}
             {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}

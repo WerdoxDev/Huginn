@@ -17,7 +17,7 @@ export default defineConfig({
    base: "./",
    publicDir: "public",
    plugins: [
-      // basicSsl(),
+      basicSsl(),
       // reactRouterDevTools(),
       react({
          jsxRuntime: "automatic",

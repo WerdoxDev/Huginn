@@ -18,7 +18,9 @@ export function useFullscreen(element?: RefObject<HTMLDivElement | null>) {
       document.addEventListener(
          "fullscreenchange",
          () => {
-            setFullscreen(document.fullscreenElement !== null);
+            const isFullscreen = document.fullscreenElement !== null;
+            setFullscreen(isFullscreen);
+            huginnWindow.setFullscreen(isFullscreen);
          },
          { signal: controller.signal },
       );

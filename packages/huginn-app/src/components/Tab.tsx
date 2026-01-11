@@ -1,8 +1,8 @@
-import { usePrevious } from "@hooks/usePrevious";
 import { createContext, useContext, useState, type ReactNode, useRef } from "react";
 
 type TabContextValue = {
    selectedIndex: number | null;
+   displayIndex?: number;
    onChange?: (index: number | null) => void;
 };
 
@@ -17,9 +17,15 @@ function useTabContext() {
    return context;
 }
 
-function TabGroup(props: { children: ReactNode; selectedIndex: number | null; onChange?: (index: number | null) => void; className?: string }) {
+function TabGroup(props: {
+   children: ReactNode;
+   selectedIndex: number | null;
+   displayIndex?: number;
+   onChange?: (index: number | null) => void;
+   className?: string;
+}) {
    return (
-      <TabContext.Provider value={{ onChange: props.onChange, selectedIndex: props.selectedIndex }}>
+      <TabContext.Provider value={{ onChange: props.onChange, selectedIndex: props.selectedIndex, displayIndex: props.displayIndex }}>
          <div className={props.className}>{props.children}</div>
       </TabContext.Provider>
    );
@@ -66,15 +72,16 @@ function TabPanels(props: { children: ReactNode; className?: string }) {
 }
 
 function TabPanel(props: { children: ReactNode; className?: string }) {
-   const { selectedIndex } = useTabContext();
+   const { selectedIndex, displayIndex } = useTabContext();
 
    const panelIndexRef = useContext(PanelIndexContext);
    if (!panelIndexRef) throw new Error("TabPanel must be used within TabPanels");
 
    const [currentIndex] = useState(() => panelIndexRef.current++);
 
-   if (selectedIndex !== currentIndex) return null;
-   return <div className={props.className}>{props.children}</div>;
+   if ((selectedIndex === currentIndex && displayIndex === undefined) || displayIndex === currentIndex) {
+      return <div className={props.className}>{props.children}</div>;
+   }
 }
 
 export { Tab, TabPanel, TabPanels, TabGroup, TabList };

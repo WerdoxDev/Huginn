@@ -63,7 +63,11 @@ export default function SettingsModal() {
    const { settings: modal, updateModals } = useModals();
    const flatTabs = useFlatTabs();
    const [selectedIndex, setSelectedIndex] = useState<number | null>(0);
-   const currentTab = useMemo(() => (selectedIndex !== null ? (flatTabs[selectedIndex]?.text ?? "") : null), [selectedIndex]);
+   const [displayIndex, setDisplayIndex] = useState<number | null>(0);
+   const currentTabText = useMemo(
+      () => (displayIndex !== null ? flatTabs[displayIndex] : selectedIndex !== null ? flatTabs[selectedIndex] : null)?.text ?? "",
+      [selectedIndex],
+   );
    const [showContent, setShowContent] = useState(false);
    const isMobile = useIsMobile();
 
@@ -87,7 +91,7 @@ export default function SettingsModal() {
 
    useEffect(() => {
       onSave();
-   }, [currentTab]);
+   }, [currentTabText]);
 
    async function onSave() {
       setValue("settings", settings);
@@ -95,6 +99,7 @@ export default function SettingsModal() {
 
    function onTabChanged(index: number | null) {
       setSelectedIndex(index);
+      setDisplayIndex(null);
       setShowContent(true);
    }
 
@@ -104,15 +109,26 @@ export default function SettingsModal() {
 
    function handleBackClick() {
       setShowContent(false);
+      setDisplayIndex(selectedIndex);
+      setSelectedIndex(null);
+   }
+
+   function handleAfterLeave() {
+      setDisplayIndex(null);
    }
 
    return (
       <div className="flex h-full w-full items-center justify-center pt-20 lg:px-10 lg:pt-0">
          <BaseDialogPanel className="h-full w-full max-w-6xl">
-            <TabGroup className="flex h-full w-full" selectedIndex={selectedIndex} onChange={onTabChanged}>
+            <TabGroup
+               className="flex h-full w-full"
+               selectedIndex={selectedIndex}
+               displayIndex={displayIndex !== null ? displayIndex : undefined}
+               onChange={onTabChanged}
+            >
                {/* Mobile: Show tabs or content based on state */}
                <div className={clsx("bg-surface-alt h-full rounded-l-xl lg:block", "block w-full rounded-r-xl lg:w-auto lg:rounded-r-none")}>
-                  <TabList className="flex h-full select-none flex-col pt-2">
+                  <TabList className="flex h-full flex-col pt-2 select-none">
                      <DialogTitle className="mx-5 my-3 flex items-center justify-start gap-x-1.5">
                         <div className="text-text text-2xl font-medium">Settings</div>
                      </DialogTitle>
@@ -121,10 +137,10 @@ export default function SettingsModal() {
                </div>
 
                {/* Mobile: Content with back button */}
-               <Transition show={showContent} afterLeave={() => setSelectedIndex(null)}>
+               <Transition show={showContent} afterLeave={handleAfterLeave}>
                   <div
                      className={clsx(
-                        "lg:data-closed:translate-none data-closed:opacity-0 lg:data-closed:opacity-100 data-closed:translate-x-full bg-surface absolute inset-0 flex w-full flex-col transition-[transform_opacity] lg:relative lg:flex",
+                        "bg-surface absolute inset-0 flex w-full flex-col transition-[transform_opacity] duration-300 data-closed:translate-x-1/2 data-closed:opacity-0 lg:relative lg:flex lg:data-closed:translate-none lg:data-closed:opacity-100",
                      )}
                   >
                      {/* Back button - only visible on mobile when content is shown */}
@@ -135,13 +151,13 @@ export default function SettingsModal() {
                         </button>
                      </div>
 
-                     <SettingsPanels currentTab={currentTab} onChange={onSettingsChanged} onSave={onSave} />
+                     <SettingsPanels currentTabText={currentTabText} onChange={onSettingsChanged} onSave={onSave} />
                   </div>
                </Transition>
             </TabGroup>
 
             <ModalCloseButton
-               className="bg-surface! right-4 top-4"
+               className="bg-surface! top-4 right-4"
                onClick={() => {
                   updateModals({ settings: { isOpen: false } });
                }}
@@ -160,7 +176,7 @@ function SettingsTabs() {
             (tab, i) =>
                (client?.gateway.status === "authenticated" || !tab.auth) && (
                   <Fragment key={tab.name}>
-                     {i !== 0 && <div className="bg-surface my-3 ml-3 mr-0.5 hidden h-px shrink-0 lg:my-2 lg:block" />}
+                     {i !== 0 && <div className="bg-surface my-3 mr-0.5 ml-3 hidden h-px shrink-0 lg:my-2 lg:block" />}
                      <div className={clsx("mb-2 w-full px-4 text-left text-sm text-white/50 lg:mb-1", i === 0 ? "mt-2" : "mt-4 lg:mt-1.5")}>
                         {tab.text}
                      </div>
@@ -172,10 +188,10 @@ function SettingsTabs() {
                                     <button
                                        type="button"
                                        className={clsx(
-                                          "text-text outline-hidden lg:active:bg-white/3 flex w-full cursor-pointer items-center gap-x-2 whitespace-nowrap rounded-md px-2 py-2 text-left text-base active:bg-white/10 active:text-white lg:py-1.5 lg:active:text-white",
+                                          "text-text flex w-full cursor-pointer items-center gap-x-2 rounded-md px-2 py-2 text-left text-base whitespace-nowrap outline-hidden active:bg-white/10 active:text-white lg:py-1.5 lg:active:bg-white/3 lg:active:text-white",
                                           selected
                                              ? "bg-white/10 text-white transition-colors duration-300"
-                                             : "hover:bg-white/3 text-white/80 hover:text-white lg:text-white/50",
+                                             : "text-white/80 hover:bg-white/3 hover:text-white lg:text-white/50",
                                        )}
                                     >
                                        <div className="shrink-0">{child.icon}</div>
@@ -205,15 +221,15 @@ const TabComponent = memo(
    },
 );
 
-function SettingsPanels(props: { currentTab: string | null; onChange: (value: DeepPartial<AppSettings>) => void; onSave: () => Promise<void> }) {
+function SettingsPanels(props: { currentTabText: string | null; onChange: (value: DeepPartial<AppSettings>) => void; onSave: () => Promise<void> }) {
    const flatTabs = useFlatTabs();
 
    return (
-      props.currentTab && (
+      props.currentTabText && (
          <TabPanels className="flex w-full flex-col overflow-hidden">
-            <div className="text-text mb-5 ml-5 mt-5 shrink-0 select-none text-xl">{props.currentTab}</div>
+            <div className="text-text mt-5 mb-5 ml-5 shrink-0 text-xl select-none">{props.currentTabText}</div>
             {flatTabs.map((tab) => (
-               <TabPanel key={tab?.name} className="scroll-surface-deep h-full overflow-x-visible overflow-y-scroll pb-5 pr-3">
+               <TabPanel key={tab?.name} className="scroll-surface-deep h-full overflow-x-visible overflow-y-scroll pr-3 pb-5">
                   <div className="ml-5">
                      {tab?.component ? (
                         <TabComponent onChange={props.onChange} onSave={props.onSave} component={tab.component} />

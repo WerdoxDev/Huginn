@@ -51,13 +51,11 @@ export default function HomeLayout() {
       if (!isDragging || !isMobile) return;
 
       const currentX = e.touches[0].clientX;
-      const diffX = currentX - startX;
       const currentY = e.touches[0].clientY;
+      const diffX = currentX - startX;
       const diffY = currentY - startY;
 
-      console.log(diffX, diffY);
-
-      if (Math.abs(diffY) > Math.abs(diffX) && leftOffset === 0 && rightOffset === 0) {
+      if (Math.abs(diffY) > Math.abs(diffX) && (currentPanel === "left" || leftOffset === 0) && (currentPanel === "right" || rightOffset === 0)) {
          setIsDragging(false);
          return;
       }
@@ -113,7 +111,7 @@ export default function HomeLayout() {
 
    return (
       <div
-         className="bg-surface relative flex h-full w-full select-none overflow-hidden"
+         className="bg-surface relative flex h-full w-full overflow-hidden select-none"
          ref={containerRef}
          onTouchStart={handleTouchStart}
          onTouchMove={handleTouchMove}
@@ -129,7 +127,7 @@ export default function HomeLayout() {
 
          <div
             className={clsx(
-               "fixed bottom-0 top-6 z-20 flex lg:relative lg:bottom-0 lg:top-0 lg:z-auto lg:h-full",
+               "fixed top-6 bottom-0 z-20 flex lg:relative lg:top-0 lg:bottom-0 lg:z-auto lg:h-full",
                !isDragging && "transition-transform",
             )}
             style={{
@@ -152,7 +150,7 @@ export default function HomeLayout() {
          {hasRightPanel && (
             <div
                className={clsx(
-                  "border-surface fixed bottom-0 right-0 top-6 z-20 shrink-0 border-l-2 bg-white lg:relative lg:bottom-0 lg:top-0 lg:h-full",
+                  "border-surface fixed top-6 right-0 bottom-0 z-20 shrink-0 border-l-2 bg-white lg:relative lg:top-0 lg:bottom-0 lg:h-full",
                   isMobile && !isDragging && "transition-transform",
                   !isMobile && "transition-[width]",
                   // isRightOpen ? "translate-x-0 lg:w-56" : "translate-x-full lg:w-0",
