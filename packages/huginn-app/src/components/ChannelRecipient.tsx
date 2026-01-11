@@ -34,19 +34,22 @@ export default function ChannelRecipient(props: { channelId: Snowflake; isOwner:
             avatarHash={props.recipient.avatar}
             className={clsx(
                (!presence || presence?.status === "offline") && "opacity-30",
-               "group-hover/recipient:opacity-100 group-data-context/recipient:opacity-100",
+               "group-hover/recipient:opacity-100 group-active/recipient:opacity-100 group-data-context/recipient:opacity-100",
             )}
          />
          <div className="flex flex-col overflow-hidden">
             <div
                className={clsx(
                   presence && presence.status !== "offline" ? "text-text/70" : "text-text/30",
-                  "group-hover/recipient:text-text group-data-context/recipient:text-text text-sm",
+                  "group-hover/recipient:text-text group-active/recipient:text-text group-data-context/recipient:text-text text-sm",
                )}
             >
                {props.recipient.displayName}
             </div>
-            <ActivityPreview presence={presence} className="opacity-50 group-hover/recipient:opacity-100 group-data-context/recipient:opacity-100" />
+            <ActivityPreview
+               presence={presence}
+               className="opacity-50 group-hover/recipient:opacity-100 group-active/recipient:opacity-100 group-data-context/recipient:opacity-100"
+            />
          </div>
          {state?.status === "pending" && state?.variables?.recipients.some((x) => x === props.recipient.id) ? (
             <div className="absolute top-3.5 right-2 bottom-3.5 flex shrink-0 items-center justify-center">
