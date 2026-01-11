@@ -153,7 +153,6 @@ export class Voice extends EventEmitter<Events> {
 
       this.transport.on("connect_transport", async (d) => {
          const result = await this.signaling.sendConnectTransport(d.transportId, d.dtlsParameters);
-         console.log(result);
          d.callback(result);
       });
 
