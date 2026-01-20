@@ -13,77 +13,83 @@ import { version } from "./package.json";
 const reactCompilerConfig = { target: "19" };
 
 // https://vitejs.dev/config/
-export default defineConfig({
-   base: "./",
-   publicDir: "public",
-   plugins: [
-      // basicSsl(),
-      // reactRouterDevTools(),
-      tailwindcss(),
-      react({
-         jsxRuntime: "automatic",
-         babel: {
-            presets: ["@babel/preset-typescript"],
-            plugins: [["babel-plugin-react-compiler", reactCompilerConfig], "@babel/plugin-syntax-jsx"],
-         },
-      }),
-      Icons({ compiler: "jsx" }),
-      AutoImport({
-         resolvers: [IconsResolver({ prefix: "Icon", extension: "jsx" })],
-      }),
-      VitePWA({
-         strategies: "injectManifest",
-         srcDir: "src",
-         filename: "sw.ts",
-         registerType: "autoUpdate",
-         injectRegister: false,
+export default defineConfig(({ command }) => {
+   const base = command === "build" ? "./" : "/app";
+   return {
+      base: base,
+      publicDir: "public",
 
-         pwaAssets: {
-            disabled: false,
-            config: true,
-         },
-         workbox: {
-            maximumFileSizeToCacheInBytes: 4194304,
-            globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
-            cleanupOutdatedCaches: true,
-            clientsClaim: true,
-         },
-         injectManifest: {
-            maximumFileSizeToCacheInBytes: 4194304,
-            globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
-         },
-         manifest: {
-            name: "Huginn",
-            short_name: "Huginn",
-            theme_color: "#EBEBD3",
-            background_color: "#EBEBD3",
-         },
-         devOptions: {
-            enabled: false,
-            navigateFallback: "index.html",
-            suppressWarnings: true,
-            type: "module",
-         },
-      }),
-   ],
+      plugins: [
+         // basicSsl(),
+         // reactRouterDevTools(),
+         tailwindcss(),
+         react({
+            jsxRuntime: "automatic",
+            babel: {
+               presets: ["@babel/preset-typescript"],
+               plugins: [["babel-plugin-react-compiler", reactCompilerConfig], "@babel/plugin-syntax-jsx"],
+            },
+         }),
+         Icons({ compiler: "jsx" }),
+         AutoImport({
+            resolvers: [IconsResolver({ prefix: "Icon", extension: "jsx" })],
+         }),
+         VitePWA({
+            strategies: "injectManifest",
+            srcDir: "src",
+            filename: "sw.ts",
+            registerType: "autoUpdate",
+            injectRegister: false,
 
-   define: {
-      __APP_VERSION__: JSON.stringify(version.toString()),
-   },
+            pwaAssets: {
+               disabled: false,
+               config: true,
+            },
+            workbox: {
+               maximumFileSizeToCacheInBytes: 4194304,
+               globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
+               globIgnores: ["**/electron/**"],
+               cleanupOutdatedCaches: true,
+               clientsClaim: true,
+            },
+            injectManifest: {
+               maximumFileSizeToCacheInBytes: 4194304,
+               globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
+               globIgnores: ["**/electron/**"],
+            },
+            manifest: {
+               name: "Huginn",
+               short_name: "Huginn",
+               theme_color: "#EBEBD3",
+               background_color: "#EBEBD3",
+            },
+            devOptions: {
+               enabled: false,
+               navigateFallback: "index.html",
+               suppressWarnings: true,
+               type: "module",
+            },
+         }),
+      ],
 
-   resolve: {
-      alias: {
-         "@": path.join(__dirname, "./src"),
-         "@lib": path.join(__dirname, "./src/lib"),
-         "@hooks": path.join(__dirname, "./src/hooks"),
-         "@contexts": path.join(__dirname, "./src/contexts"),
-         "@components": path.join(__dirname, "./src/components"),
-         "@stores": path.join(__dirname, "./src/stores"),
+      define: {
+         __APP_VERSION__: JSON.stringify(version.toString()),
       },
-   },
-   clearScreen: false,
-   build: {
-      target: "esnext",
-      outDir: "./dist",
-   },
+
+      resolve: {
+         alias: {
+            "@": path.join(__dirname, "./src"),
+            "@lib": path.join(__dirname, "./src/lib"),
+            "@hooks": path.join(__dirname, "./src/hooks"),
+            "@contexts": path.join(__dirname, "./src/contexts"),
+            "@components": path.join(__dirname, "./src/components"),
+            "@stores": path.join(__dirname, "./src/stores"),
+         },
+      },
+      clearScreen: false,
+      build: {
+         target: "esnext",
+         outDir: "./dist",
+      },
+   };
 });
