@@ -366,7 +366,7 @@ export type UserPresence = {
    activeSessions: ActiveSession[];
 };
 
-export type PresenceUser = Partial<APIPublicUser> & { id: Snowflake };
+export type PresenceUser<U extends APIBaseUser = APIPublicUser> = Partial<U> & { id: Snowflake };
 
 export type UserSettings = {
    theme?: "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal" | "scarlet";

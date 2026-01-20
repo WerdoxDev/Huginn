@@ -214,6 +214,10 @@ export function arrayEqual(a1: unknown[] | undefined, a2: unknown[] | undefined)
    return JSON.stringify(a1) === JSON.stringify(a2);
 }
 
+export function objectEqual(o1: unknown, o2: unknown): boolean {
+   return JSON.stringify(o1) === JSON.stringify(o2);
+}
+
 export function isImageMediaType(type: string): boolean {
    if (type === fileTypes.gif || type === fileTypes.jpeg || type === fileTypes.jpg || type === fileTypes.png || type === fileTypes.webp) {
       return true;
@@ -335,6 +339,8 @@ export function convertToMediaKind(hMediaKind: HMediaKind): MediaKind | undefine
          return "audio";
       case "stream_video":
          return "video";
+      default:
+         return "audio"
    }
 }
 
