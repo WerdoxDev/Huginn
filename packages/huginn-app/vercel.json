@@ -1,7 +1,7 @@
 {
    "headers": [
       {
-         "source": "/(.*).html",
+         "source": "/app/(.*).html",
          "headers": [
             {
                "key": "Cache-Control",
@@ -10,7 +10,7 @@
          ]
       },
       {
-         "source": "/sw.js",
+         "source": "/app/sw.js",
          "headers": [
             {
                "key": "Cache-Control",
@@ -19,7 +19,7 @@
          ]
       },
       {
-         "source": "/manifest.webmanifest",
+         "source": "/app/manifest.webmanifest",
          "headers": [
             {
                "key": "Content-Type",
@@ -28,7 +28,7 @@
          ]
       },
       {
-         "source": "/assets/(.*)",
+         "source": "/app/assets/(.*)",
          "headers": [
             {
                "key": "Cache-Control",
@@ -37,7 +37,7 @@
          ]
       },
       {
-         "source": "/(.*)",
+         "source": "/app/(.*)",
          "headers": [
             {
                "key": "X-Content-Type-Options",
@@ -56,8 +56,8 @@
    ],
    "rewrites": [
       {
-         "source": "/(.*)",
-         "destination": "/index.html"
+         "source": "/app/(.*)",
+         "destination": "/app/index.html"
       }
    ]
 }
