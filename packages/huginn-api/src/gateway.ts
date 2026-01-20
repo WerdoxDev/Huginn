@@ -467,11 +467,8 @@ export class Gateway extends SharedWebsocket<Events> {
    private send(data: GatewayPayload): void {
       this.socket?.send(JSON.stringify(data));
       this.emit("send", data as GatewayPayload);
-      if (data.op === GatewayOperations.DISPATCH) {
-         log("api:voice-signaling", "send", "op:", data.op, "t:", data.t);
-         log("api:voice-signaling", "send-detail", "op:", data.op, "t:", data.t, "d:", data.d);
-      } else {
-         log("api:voice-signaling", "send", "op:", data.op);
-      }
+
+      log("api:gateway", "send", "op:", data.op, "t:", "t" in data ? data.t : "_");
+      log("api:gateway", "send-detail", "op:", data.op, "t:", "t" in data ? data.t : "_", "d:", "d" in data ? data.d : "_");
    }
 }
