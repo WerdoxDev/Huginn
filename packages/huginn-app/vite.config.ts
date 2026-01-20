@@ -17,7 +17,7 @@ export default defineConfig(({ command }) => {
    const isElectron = process.env.BUILD_TARGET === "electron";
    const base = isElectron ? "./" : "/app";
    return {
-      base: base,
+      base: "/app/",
       publicDir: "public",
 
       plugins: [
