@@ -6,13 +6,14 @@
 #include <vector>
 #include <windows.h>
 #include <filesystem>
+
 #pragma comment(lib, "crypt32.lib")
 
 namespace fs = std::filesystem;
 
 namespace file_util
 {
-   std::string GetFileSHA256(const std::wstring &filepath)
+   std::string GetFileSHA256(const std::string &filepath)
    {
       std::ifstream file(filepath, std::ios::binary);
       if (!file.is_open())
@@ -76,38 +77,5 @@ namespace file_util
       file.close();
 
       return ss.str();
-   }
-
-   std::vector<fs::path> FindFiles(const fs::path &baseDir, std::vector<std::string> &searchFileNames)
-   {
-      std::vector<fs::path> results;
-
-      if (!fs::exists(baseDir) || !fs::is_directory(baseDir))
-      {
-         return results;
-      }
-
-      auto options = fs::directory_options::skip_permission_denied;
-
-      auto it = fs::recursive_directory_iterator(baseDir, options);
-
-      for (auto const &entry : it)
-      {
-         if (!entry.is_regular_file())
-         {
-            continue;
-         }
-
-         auto fileName = entry.path().filename().string();
-         for (const auto &searchName : searchFileNames)
-         {
-            if (_stricmp(fileName.c_str(), searchName.c_str()) == 0)
-            {
-               results.push_back(entry.path());
-            }
-         }
-      }
-
-      return results;
    }
 }

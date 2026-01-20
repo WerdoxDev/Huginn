@@ -93,4 +93,4 @@ async function exists(path: string) {
    }
 }
 
-export default { getApplicationInfo, getOpenApplications: addon.getOpenApplications };
+export default { getApplicationInfo, ...addon };

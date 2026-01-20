@@ -1,11 +1,13 @@
 #include <napi.h>
 #include <string>
-#include <windows.h>
 #include <iostream>
 #include <map>
 #include "file_util.h"
+
+#if _WIN32
 #include "window_util.h"
 #include "icon_util.h"
+#endif
 
 Napi::Value GetFileSHA256(const Napi::CallbackInfo &info)
 {
@@ -23,14 +25,16 @@ Napi::Value GetFileSHA256(const Napi::CallbackInfo &info)
       return env.Null();
    }
 
-   const std::u16string filepath_u16 = info[0].As<Napi::String>().Utf16Value();
-   std::wstring filepath(filepath_u16.begin(), filepath_u16.end());
+   const std::string filepath = info[0].As<Napi::String>().Utf8Value();
+   // const std::u16string filepath_u16 = info[0].As<Napi::String>().Utf16Value();
+   // std::wstring filepath(filepath_u16.begin(), filepath_u16.end());
 
    std::string hash = file_util::GetFileSHA256(filepath);
 
    return Napi::String::New(env, hash);
 }
 
+#if _WIN32
 Napi::Value GetExeIconBase64(const Napi::CallbackInfo &info)
 {
    Napi::Env env = info.Env();
@@ -149,15 +153,18 @@ Napi::Value GetPngFileBase64(const Napi::CallbackInfo &info)
 
    return Napi::String::New(env, base64);
 }
+#endif
 
 Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
    exports.Set(Napi::String::New(env, "getFileSha256"), Napi::Function::New(env, GetFileSHA256));
+#if _WIN32
    exports.Set(Napi::String::New(env, "getExeIconBase64"), Napi::Function::New(env, GetExeIconBase64));
    exports.Set(Napi::String::New(env, "getProcessIconBase64"), Napi::Function::New(env, GetProcessIconBase64));
    exports.Set(Napi::String::New(env, "getOpenApplications"), Napi::Function::New(env, GetOpenApplications));
    exports.Set(Napi::String::New(env, "getPackagePath"), Napi::Function::New(env, GetPackagePath));
    exports.Set(Napi::String::New(env, "getPngFileBase64"), Napi::Function::New(env, GetPngFileBase64));
+#endif
    return exports;
 }
 
