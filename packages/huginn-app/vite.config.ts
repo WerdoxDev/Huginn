@@ -14,7 +14,8 @@ const reactCompilerConfig = { target: "19" };
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
-   const base = command === "build" ? "./" : "/app";
+   const isElectron = process.env.BUILD_TARGET === "electron";
+   const base = isElectron ? "./" : "/app";
    return {
       base: base,
       publicDir: "public",
