@@ -17,7 +17,7 @@ export const postLogin = new Elysia().post(
 
       if (assertError(error, DBErrorType.NULL_USER)) {
          return status(
-            402,
+            "Bad Request",
             createErrorFactory(Errors.invalidFormBody())
                .addError("login", Fields.invalidLogin())
                .addError("password", Fields.invalidLogin())
