@@ -1,13 +1,24 @@
 {
-   "cleanUrls": true,
-   "routes": [
+   "rewrites": [
       {
-         "src": "/app",
-         "dest": "/index.html"
+         "source": "/app/assets/(.*)",
+         "destination": "/assets/$1"
       },
       {
-         "src": "/app/(.*)",
-         "dest": "/index.html"
+         "source": "/app/favicon.ico",
+         "destination": "/favicon.ico"
+      },
+      {
+         "source": "/app/(.*\\.(png|jpg|jpeg|gif|svg|ico|css|js))",
+         "destination": "/$1"
+      },
+      {
+         "source": "/app",
+         "destination": "/index.html"
+      },
+      {
+         "source": "/app/(.*)",
+         "destination": "/index.html"
       }
    ]
 }
