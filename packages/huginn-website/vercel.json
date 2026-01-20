@@ -1,12 +1,16 @@
 {
    "rewrites": [
       {
-         "source": "/(.*)",
-         "destination": "/"
+         "source": "/app/:path*",
+         "destination": "https://project-b.vercel.app/:path*"
       },
       {
-         "source": "/app/:path*",
-         "destination": "https://app.huginn.dev/:path*"
+         "source": "/app",
+         "destination": "https://project-b.vercel.app/"
+      },
+      {
+         "source": "/((?!app).*)",
+         "destination": "/"
       }
    ]
 }
