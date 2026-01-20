@@ -1,9 +1,5 @@
-import AnimatedMessage from "@components/AnimatedMessage";
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
-import ImageSelector from "@components/ImageSelector";
-import HuginnInput from "@components/input/HuginnInput";
-import PasswordInput from "@components/input/PasswordInput";
 import { Transition } from "@headlessui/react";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useInputs } from "@hooks/useInputs";
@@ -126,14 +122,43 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
    return (
       <>
          <div className="flex items-start gap-x-5">
-            <ImageSelector data={avatarData} onDelete={onDelete} onSelected={onSelected} className="p-4" buttonsClassName="mt-4">
+            {/* <ImageSelector data={avatarData} onDelete={onDelete} onSelected={onSelected} className="p-4" buttonsClassName="mt-4">
                <div className="text-text mb-4 font-semibold">Profile Picture</div>
-            </ImageSelector>
-            <div className="flex w-full max-w-xs flex-col gap-y-2">
+            </ImageSelector> */}
+            <div className="w-full max-w-xs">
+               <div className="text-text mb-2 text-lg font-semibold">Details</div>
                <div className="bg-surface-alt rounded-lg p-4">
-                  <div className="text-text mb-4 font-semibold">Personal Information</div>
-                  <div className="flex flex-col gap-y-5">
-                     <HuginnInput {...inputsProps.username} onFocusChanged={onFocusChanged}>
+                  <div className="flex flex-col">
+                     <div className="flex items-center justify-between gap-x-2">
+                        <div className="flex flex-col items-start justify-center">
+                           <div className="text-text text-xs font-medium uppercase opacity-90 select-none">Username</div>
+                           <div className="text-white">{user?.username}</div>
+                        </div>
+                        <HuginnButton className="px-2 py-1" color="primary">
+                           Change
+                        </HuginnButton>
+                     </div>
+                     <div className="bg-surface my-4 h-px w-full"></div>
+                     <div className="flex items-center justify-between gap-x-2">
+                        <div className="flex flex-col items-start justify-center">
+                           <div className="text-text text-xs font-medium uppercase opacity-90 select-none">Display Name</div>
+                           <div className="text-white">{user?.displayName}</div>
+                        </div>
+                        <HuginnButton className="px-2 py-1" color="primary">
+                           Change
+                        </HuginnButton>
+                     </div>
+                     <div className="bg-surface my-4 h-px w-full"></div>
+                     <div className="flex items-center justify-between gap-x-2">
+                        <div className="flex flex-col items-start justify-center">
+                           <div className="text-text text-xs font-medium uppercase opacity-90 select-none">Email</div>
+                           <div className="text-white">{user?.email}</div>
+                        </div>
+                        <HuginnButton className="px-2 py-1" color="primary">
+                           Change
+                        </HuginnButton>
+                     </div>
+                     {/* <HuginnInput {...inputsProps.username} onFocusChanged={onFocusChanged}>
                         <HuginnInput.Label text="Username" className="mb-2" />
                         <HuginnInput.Wrapper className="bg-surface!" border="left">
                            <HuginnInput.Input />
@@ -146,11 +171,11 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
                         <HuginnInput.Wrapper className="bg-surface!" border="left">
                            <HuginnInput.Input />
                         </HuginnInput.Wrapper>
-                     </HuginnInput>
+                     </HuginnInput> */}
                   </div>
                </div>
             </div>
-            {!tokenPayload?.isOAuth && (
+            {/* {!tokenPayload?.isOAuth && (
                <div className="flex w-full max-w-xs flex-col gap-y-2">
                   <div className="bg-surface-alt rounded-lg p-4">
                      <div className="text-text mb-4 font-semibold">Security</div>
@@ -172,10 +197,10 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
                      </div>
                   </div>
                </div>
-            )}
+            )} */}
          </div>
          <Transition show={modified || avatarModified}>
-            <div className="left-53 border-primary-800 bg-surface-alt shadow-xs data-closed:translate-y-10 data-closed:opacity-0 absolute bottom-5 right-9 flex transform justify-end gap-x-2 rounded-xl border-2 p-2 transition">
+            <div className="border-primary-800 bg-surface-alt absolute right-9 bottom-5 left-53 flex transform justify-end gap-x-2 rounded-xl border-2 p-2 shadow-xs transition data-closed:translate-y-10 data-closed:opacity-0">
                <div className="text-text ml-2 w-full self-center">You have unsaved changes!</div>
                <HuginnButton onClick={revert} className="w-20 shrink-0 py-2 decoration-white hover:underline">
                   Revert
@@ -184,7 +209,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
                   loading={mutation.isPending}
                   disabled={!modified && !avatarModified}
                   onClick={edit}
-                  className="w-36 shrink-0 !rounded-lg"
+                  className="w-36 shrink-0 rounded-lg!"
                   color="primary"
                >
                   Save changes

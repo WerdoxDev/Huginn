@@ -29,20 +29,20 @@ export default function AddRecipientInput(props: {
       <ComboboxInput
          onSelectionChange={selectionChanged}
          selection={selectedUsers}
-         status={{ code: "none", text: "" }}
+         message={{ status: "none", text: "" }}
          onChange={(e) => setQuery(e.target.value)}
       >
          <HuginnInput.Label className="mb-2" text={props.label ?? "Members"} />
-         <HuginnInput.Wrapper border="left" className="items-start! flex-col">
+         <HuginnInput.Wrapper className="flex-col items-start!">
             <ComboboxInput.SelectionDisplay>
                {({ toggleSelection }) => (
-                  <div className="mx-2 mt-2 flex select-none flex-wrap gap-1">
+                  <div className="mx-2 mt-2 flex flex-wrap gap-1 select-none">
                      {toAddUsers?.map((user) => (
                         <button
                            type="button"
                            onClick={() => toggleSelection(user.id)}
                            key={user.id}
-                           className="rounded-xs bg-primary-700 text-text px-2"
+                           className="bg-primary-700 text-text rounded-xs px-2"
                         >
                            {user.displayName}
                         </button>
@@ -63,7 +63,7 @@ export default function AddRecipientInput(props: {
             {filteredUsers?.map((x) => (
                <ComboboxInput.Option value={x.id} key={x.id}>
                   <UserAvatar userId={x.id} avatarHash={x.avatar} />
-                  <div className="text-text overflow-hidden text-ellipsis text-nowrap">{x.displayName}</div>
+                  <div className="text-text overflow-hidden text-nowrap text-ellipsis">{x.displayName}</div>
                   <div className="text-text/70 text-sm">{x.username}</div>
                   <Checkbox
                      checked={selectedUsers?.includes(x.id) ?? false}

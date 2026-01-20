@@ -1,19 +1,25 @@
 import { type HuginnErrorData, omit } from "@huginn/shared";
 import { doStatusesHaveErrors, getEmptyStatuses, getInputCurrentStatus, getInputsStatusesFromError, getInputsValidatedStatuses } from "@lib/utils";
-import { useMemo, useState } from "react";
-import type { InputOptions, InputProps, InputStatus, InputStatuses, InputValues } from "@/types";
+import { useCallback, useMemo, useState } from "react";
+import type { InputOptions, InputProps, InputMessage, InputStatuses, InputValues } from "@/types";
 
 export function useInputs(inputsOptions: InputOptions[]) {
-   const newValues: InputValues = {};
-   const newStatuses: InputStatuses = {};
+   const [values, setValues] = useState<InputValues>(() => {
+      const newValues: InputValues = {};
+      for (const x of inputsOptions) {
+         newValues[x.name] = { value: x.default ?? "", required: x.required };
+      }
+      return newValues;
+   });
 
-   for (const x of inputsOptions) {
-      newValues[x.name] = { value: x.default ?? "", required: x.required };
-      newStatuses[x.name] = { code: "none", text: "" };
-   }
+   const [statuses, setStatuses] = useState<InputStatuses>(() => {
+      const newStatuses: InputStatuses = {};
+      for (const x of inputsOptions) {
+         newStatuses[x.name] = { code: "none", text: "" };
+      }
+      return newStatuses;
+   });
 
-   const [values, setValues] = useState<InputValues>(newValues);
-   const [statuses, setStatuses] = useState<InputStatuses>(newStatuses);
    const [errorStatuses, setErrorStatuses] = useState<InputStatuses>({});
 
    const inputsProps = useMemo<InputProps>(() => {
@@ -36,8 +42,9 @@ export function useInputs(inputsOptions: InputOptions[]) {
       }
 
       return newInputsProps;
-   }, [values, statuses]);
+   }, [values, statuses, inputsOptions]);
 
+   // const setValue = useCallback
    function setValue(inputName: string, value: string | null) {
       const updatedValues = { ...values };
       const updatedStatuses = { ...statuses };
@@ -71,7 +78,7 @@ export function useInputs(inputsOptions: InputOptions[]) {
       setErrorStatuses({ ...newStatuses });
    }
 
-   function setStatus(inputName: string, status: InputStatus) {
+   function setStatus(inputName: string, status: InputMessage) {
       const newStatuses = { ...statuses };
       newStatuses[inputName] = status;
 

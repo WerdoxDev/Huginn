@@ -3,9 +3,18 @@ import HuginnInput from "@components/input/HuginnInput";
 import { useInputs } from "@hooks/useInputs";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useEffectEvent, useRef, useState } from "react";
 import type { DropdownItem, SettingsTabProps } from "@/types";
 import { useHuginnWindow } from "@stores/windowStore";
+import { useHuginnForm } from "@hooks/useHuginnForm";
+
+type Inputs = {
+   apiHostname: string;
+   cdnHostname: string;
+   voiceHostname: string;
+   analyticsHostname: string;
+   externalUrl: string;
+};
 
 const hostnameSources: DropdownItem[] = [
    { text: "Manual", value: "manual", icon: <IconMingcuteText2Fill className="text-text size-6" /> },
@@ -17,56 +26,92 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
    const huginnWindow = useHuginnWindow();
    const { setValue: setStorageValue } = useStorageStore();
 
-   const { values, validateValues, inputsProps, setValue } = useInputs([
-      { name: "apiHostname", required: false, default: settings.apiHostname },
-      { name: "cdnHostname", required: false, default: settings.cdnHostname },
-      { name: "voiceHostname", required: false, default: settings.voiceHostname },
-      { name: "analyticsHostname", required: false, default: settings.analyticsHostname },
-      { name: "externalUrl", required: false, default: settings.externalHostnamesUrl },
-   ]);
+   // const { values, validateValues, inputsProps, setValue } = useInputs([
+   //    { name: "apiHostname", required: false, default: settings.apiHostname },
+   //    { name: "cdnHostname", required: false, default: settings.cdnHostname },
+   //    { name: "voiceHostname", required: false, default: settings.voiceHostname },
+   //    { name: "analyticsHostname", required: false, default: settings.analyticsHostname },
+   //    { name: "externalUrl", required: false, default: settings.externalHostnamesUrl },
+   // ]);
+
+   const { register, values, setValue } = useHuginnForm<Inputs>({
+      defaultValues: {
+         voiceHostname: settings.voiceHostname,
+         analyticsHostname: settings.analyticsHostname,
+         apiHostname: settings.apiHostname,
+         cdnHostname: settings.cdnHostname,
+         externalUrl: settings.externalHostnamesUrl,
+      },
+   });
 
    const [hostnameSource, setHostnameMode] = useState<typeof settings.hostnameSource>(settings.hostnameSource);
    const _hostnameSource = useRef(hostnameSource);
    const { updateModals } = useModals();
 
-   function focusChanged(isFocused: boolean) {
-      if (isFocused) {
-         return;
-      }
-
-      const apiHostname = values.apiHostname.value;
-      const cdnHostname = values.cdnHostname.value;
-      const voiceHostname = values.voiceHostname.value;
-      const analyticsHostname = values.analyticsHostname.value;
-
-      if (apiHostname.endsWith("/")) {
-         setValue("apiHostname", apiHostname.slice(0, -1));
-      }
-      if (cdnHostname.endsWith("/")) {
-         setValue("cdnHostname", cdnHostname.slice(0, -1));
-      }
-      if (voiceHostname.endsWith("/")) {
-         setValue("voiceHostname", voiceHostname.slice(0, -1));
-      }
-      if (analyticsHostname.endsWith("/")) {
-         setValue("analyticsHostname", analyticsHostname.slice(0, -1));
-      }
+   function validateHostnames() {
+      if (values.apiHostname.endsWith("/")) setValue("apiHostname", values.apiHostname.slice(0, -1));
+      if (values.cdnHostname.endsWith("/")) setValue("cdnHostname", values.cdnHostname.slice(0, -1));
+      if (values.voiceHostname.endsWith("/")) setValue("voiceHostname", values.voiceHostname.slice(0, -1));
+      if (values.analyticsHostname.endsWith("/")) setValue("analyticsHostname", values.analyticsHostname.slice(0, -1));
    }
+
+   // function focusChanged(isFocused: boolean) {
+   //    if (isFocused) {
+   //       return;
+   //    }
+
+   //    const apiHostname = values.apiHostname.value;
+   //    const cdnHostname = values.cdnHostname.value;
+   //    const voiceHostname = values.voiceHostname.value;
+   //    const analyticsHostname = values.analyticsHostname.value;
+
+   //    if (apiHostname.endsWith("/")) {
+   //       setValue("apiHostname", apiHostname.slice(0, -1));
+   //    }
+   //    if (cdnHostname.endsWith("/")) {
+   //       setValue("cdnHostname", cdnHostname.slice(0, -1));
+   //    }
+   //    if (voiceHostname.endsWith("/")) {
+   //       setValue("voiceHostname", voiceHostname.slice(0, -1));
+   //    }
+   //    if (analyticsHostname.endsWith("/")) {
+   //       setValue("analyticsHostname", analyticsHostname.slice(0, -1));
+   //    }
+   // }
 
    function hostnameModeChanged(item: DropdownItem) {
       setHostnameMode(item.value as typeof settings.hostnameSource);
    }
 
-   function shouldRestart() {
+   const shouldRestart = useEffectEvent(() => {
       return (
-         (values.apiHostname.value && settings.apiHostname !== values.apiHostname.value) ||
-         (values.cdnHostname.value && settings.cdnHostname !== values.cdnHostname.value) ||
-         (values.voiceHostname.value && settings.voiceHostname !== values.voiceHostname.value) ||
-         (values.analyticsHostname.value && settings.analyticsHostname !== values.analyticsHostname.value) ||
-         (values.externalUrl.value && settings.externalHostnamesUrl !== values.externalUrl.value) ||
+         (values.apiHostname && settings.apiHostname !== values.apiHostname) ||
+         (values.cdnHostname && settings.cdnHostname !== values.cdnHostname) ||
+         (values.voiceHostname && settings.voiceHostname !== values.voiceHostname) ||
+         (values.analyticsHostname && settings.analyticsHostname !== values.analyticsHostname) ||
+         (values.externalUrl && settings.externalHostnamesUrl !== values.externalUrl) ||
          _hostnameSource.current !== settings.hostnameSource
       );
-   }
+   });
+
+   const handleModalCallback = useEffectEvent(async () => {
+      await setStorageValue("settings", {
+         ...settings,
+         cdnHostname: values.cdnHostname,
+         apiHostname: values.apiHostname,
+         voiceHostname: values.voiceHostname,
+         analyticsHostname: values.analyticsHostname,
+         externalHostnamesUrl: values.externalUrl,
+         hostnameSource: _hostnameSource.current,
+      });
+      updateModals({ info: { isOpen: false } });
+
+      if (huginnWindow.environment === "desktop") {
+         window.electronAPI.relaunch();
+      } else {
+         location.reload();
+      }
+   });
 
    useEffect(() => {
       _hostnameSource.current = hostnameSource;
@@ -74,7 +119,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 
    useEffect(() => {
       return () => {
-         if (validateValues() && props.onChange && shouldRestart()) {
+         if (props.onChange && shouldRestart()) {
             updateModals({
                info: {
                   isOpen: true,
@@ -84,24 +129,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
                   action: {
                      confirm: {
                         text: "Restart",
-                        callback: async () => {
-                           await setStorageValue("settings", {
-                              ...settings,
-                              cdnHostname: values.cdnHostname.value,
-                              apiHostname: values.apiHostname.value,
-                              voiceHostname: values.voiceHostname.value,
-                              analyticsHostname: values.analyticsHostname.value,
-                              externalHostnamesUrl: values.externalUrl.value,
-                              hostnameSource: _hostnameSource.current,
-                           });
-                           updateModals({ info: { isOpen: false } });
-
-                           if (huginnWindow.environment === "desktop") {
-                              window.electronAPI.relaunch();
-                           } else {
-                              location.reload();
-                           }
-                        },
+                        callback: handleModalCallback,
                      },
                      cancel: {
                         text: "Revert",
@@ -131,26 +159,41 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
          </HuginnDropdown>
          {hostnameSource === "manual" ? (
             <div>
-               <div className="text-text mb-2 select-none text-xs font-medium uppercase opacity-90">Server Hostnames</div>
-               <HuginnInput className="w-100" type="text" {...inputsProps.apiHostname} onFocusChanged={focusChanged}>
+               <div className="text-text mb-2 text-xs font-medium uppercase opacity-90 select-none">Hostnames</div>
+               <HuginnInput className="w-100" type="text" {...register("apiHostname", { required: true, onBlur: validateHostnames })} hideMessage>
                   <HuginnInput.Wrapper className="rounded-b-none">
                      <InputTag>api</InputTag>
                      <HuginnInput.Input />
                   </HuginnInput.Wrapper>
                </HuginnInput>
-               <HuginnInput className="w-100 mt-px" type="text" {...inputsProps.cdnHostname} onFocusChanged={focusChanged}>
-                  <HuginnInput.Wrapper className="rounded-b-none rounded-t-none">
+               <HuginnInput
+                  className="mt-px w-100"
+                  type="text"
+                  {...register("cdnHostname", { required: true, onBlur: validateHostnames })}
+                  hideMessage
+               >
+                  <HuginnInput.Wrapper className="rounded-t-none rounded-b-none">
                      <InputTag>cdn</InputTag>
                      <HuginnInput.Input />
                   </HuginnInput.Wrapper>
                </HuginnInput>
-               <HuginnInput className="w-100 mt-px" type="text" {...inputsProps.voiceHostname} onFocusChanged={focusChanged}>
-                  <HuginnInput.Wrapper className="rounded-b-none rounded-t-none">
+               <HuginnInput
+                  className="mt-px w-100"
+                  type="text"
+                  {...register("voiceHostname", { required: true, onBlur: validateHostnames })}
+                  hideMessage
+               >
+                  <HuginnInput.Wrapper className="rounded-t-none rounded-b-none">
                      <InputTag>voice</InputTag>
                      <HuginnInput.Input />
                   </HuginnInput.Wrapper>
                </HuginnInput>
-               <HuginnInput className="w-100 mt-px" type="text" {...inputsProps.analyticsHostname} onFocusChanged={focusChanged}>
+               <HuginnInput
+                  className="mt-px w-100"
+                  type="text"
+                  {...register("analyticsHostname", { required: true, onBlur: validateHostnames })}
+                  hideMessage
+               >
                   <HuginnInput.Wrapper className="rounded-t-none">
                      <InputTag>analytics</InputTag>
                      <HuginnInput.Input />
@@ -159,7 +202,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
             </div>
          ) : (
             <div>
-               <HuginnInput className="w-md" type="text" {...inputsProps.externalUrl}>
+               <HuginnInput className="w-md" type="text" {...register("externalUrl", { required: true, onBlur: validateHostnames })}>
                   <HuginnInput.Label className="mb-2" text="External Hostnames URL" />
                   <div className="flex items-center">
                      <HuginnInput.Wrapper>
@@ -178,7 +221,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 
 function InputTag(props: { children?: ReactNode }) {
    return (
-      <div className="bg-surface-deep text-text ml-2 w-20 shrink-0 select-none rounded-sm p-1 px-1.5 text-center text-xs uppercase">
+      <div className="bg-surface-deep text-text ml-2 w-20 shrink-0 rounded-sm p-1 px-1.5 text-center text-xs uppercase select-none">
          {props.children}
       </div>
    );

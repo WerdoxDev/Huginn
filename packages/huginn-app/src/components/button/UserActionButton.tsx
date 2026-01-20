@@ -11,11 +11,11 @@ const colors = {
 
 const hoverColors = {
    none: "",
-   surface: "hover:bg-surface",
-   "surface-alt": "hover:bg-surface-alt",
-   negative: "hover:bg-negative-300",
-   primary: "hover:bg-primary-600",
-   positive: "hover:bg-positive-300",
+   surface: "hover:bg-surface active:bg-surface",
+   "surface-alt": "hover:bg-surface-alt active:bg-surface-alt",
+   negative: "hover:bg-negative-300 active:bg-negative-300",
+   primary: "hover:bg-primary-600 active:bg-primary-600",
+   positive: "hover:bg-positive-300 active:bg-positive-300",
 } as const;
 
 type Colors = keyof typeof colors;
@@ -55,7 +55,7 @@ export default function UserActionButton(props: {
          >
             <div
                className={clsx(
-                  "transition-[transform_color] group-hover:-rotate-12 group-hover:text-white",
+                  "transition-[transform_color] group-hover:-rotate-12 group-hover:text-white group-active:-rotate-12 group-active:text-white",
                   props.isActive ? "text-white" : "text-white/80",
                   props.innerClassName,
                )}

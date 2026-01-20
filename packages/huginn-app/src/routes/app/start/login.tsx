@@ -7,13 +7,18 @@ import StartWrapper from "@components/StartWrapper";
 import { useStartBackground } from "@stores/startBackgroundStore";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
-import { useInputs } from "@hooks/useInputs";
 import { useOAuth } from "@hooks/useOAuth";
 import type { APIPostLoginJSONBody } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
 import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
+import { useHuginnForm } from "@hooks/useHuginnForm";
 // import { usePostHog } from "posthog-js/react";
+
+type Inputs = {
+   login: string;
+   password: string;
+};
 
 export default function Login() {
    const posthog = usePostHog();
@@ -22,18 +27,7 @@ export default function Login() {
    const startBackground = useStartBackground();
    const startOAuth = useOAuth();
 
-   const { inputsProps, values, resetStatuses, handleErrors, validateValues } = useInputs([
-      {
-         name: "login",
-         required: true,
-         default: undefined,
-      },
-      {
-         name: "password",
-         required: true,
-         default: undefined,
-      },
-   ]);
+   const { register, handleSubmit, handleErrors, formState } = useHuginnForm<Inputs>();
 
    const mutation = useHuginnMutation(
       {
@@ -59,25 +53,19 @@ export default function Login() {
       startBackground.setState(0);
    }, []);
 
-   async function login() {
+   async function login(data: Inputs) {
       posthog.capture("login:login_button_click");
 
-      if (!validateValues()) {
-         return;
-      }
-
       await mutation.mutateAsync({
-         username: values.login.value,
-         email: values.login.value,
-         password: values.password.value,
+         username: data.login,
+         email: data.login,
+         password: data.password,
       });
-
-      resetStatuses();
    }
 
    return (
-      <StartWrapper onSubmit={login} transitionName="start-login">
-         <div className="flex w-full select-none flex-col items-center">
+      <StartWrapper onSubmit={handleSubmit(login)} transitionName="start-login">
+         <div className="flex w-full flex-col items-center select-none">
             <div className="text-text mb-1 text-2xl font-medium">Welcome back!</div>
             <div className="text-text/70">It's very good to see you again!</div>
          </div>
@@ -102,20 +90,20 @@ export default function Login() {
                <span>GitHub</span>
             </HuginnButton>
          </div>
-         <div className="border-t-text/25 text-text/70 my-7 flex h-0 w-full select-none items-center justify-center border-t text-center text-xs font-semibold">
+         <div className="border-t-text/25 text-text/70 my-7 flex h-0 w-full items-center justify-center border-t text-center text-xs font-semibold select-none">
             <span className="bg-surface px-2">or</span>
          </div>
          <div className="w-full">
-            <HuginnInput className="mb-5" {...inputsProps.login}>
+            <HuginnInput className="mb-5" {...register("login", { required: true })}>
                <HuginnInput.Label className="mb-2" text="Email or Username" />
-               <HuginnInput.Wrapper border="left">
-                  <HuginnInput.Input className="lowercase" />
+               <HuginnInput.Wrapper>
+                  <HuginnInput.Input />
                </HuginnInput.Wrapper>
             </HuginnInput>
 
-            <PasswordInput {...inputsProps.password}>
+            <PasswordInput {...register("password", { required: true })}>
                <HuginnInput.Label className="mb-2" text="Password" />
-               <HuginnInput.Wrapper border="left">
+               <HuginnInput.Wrapper>
                   <HuginnInput.Input />
                   <PasswordInput.ToggleButton />
                </HuginnInput.Wrapper>
@@ -123,11 +111,11 @@ export default function Login() {
 
             {/* <LinkButton className="mt-1 mb-5 text-sm">Forgot your password?</LinkButton> */}
 
-            <LoadingButton loading={!mutation.isIdle && mutation.isPending} className="mt-5 h-10 w-full" color="primary" type="submit">
+            <LoadingButton loading={formState.isSubmitting} className="mt-5 h-10 w-full" color="primary" type="submit">
                Login
             </LoadingButton>
 
-            <div className="mt-3 flex select-none items-center">
+            <div className="mt-3 flex items-center select-none">
                <span className="text-text text-sm opacity-70"> Don't have an account? </span>
                <LinkButton to="/register" className="ml-1 text-sm" viewTransition>
                   Register

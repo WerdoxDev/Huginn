@@ -1,137 +1,152 @@
-import { useInputBorder } from "@hooks/useInputBorder";
 import { snowflake, WorkerID } from "@huginn/shared";
 import clsx from "clsx";
 import {
-	type ChangeEvent,
-	createContext,
-	type HTMLInputTypeAttribute,
-	type ReactNode,
-	type RefObject,
-	useContext,
-	useLayoutEffect,
-	useRef,
-	useState,
+   type ChangeEvent,
+   createContext,
+   type FocusEvent,
+   type HTMLInputTypeAttribute,
+   type ReactNode,
+   type RefCallback,
+   type RefObject,
+   useContext,
+   useRef,
+   useState,
 } from "react";
-import type { HuginnInputProps, InputStatus } from "@/types";
+import type { HuginnInputProps, InputMessage, StatusType } from "@/types";
+import StatusMessage from "@components/StatusMessage";
 
 const InputContext = createContext<{
-	id: string;
-	status: InputStatus;
-	value?: string;
-	required?: boolean;
-	placeholder?: string;
-	type?: HTMLInputTypeAttribute;
-	inputRef?: RefObject<HTMLInputElement | null>;
-	disabled?: boolean;
-	onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
-	onFocusChange?: (focused: boolean) => void;
+   id: string;
+   message: InputMessage;
+   value?: string;
+   required?: boolean;
+   placeholder?: string;
+   type?: HTMLInputTypeAttribute;
+   ref?: RefCallback<HTMLInputElement | null> | RefObject<HTMLInputElement | null>;
+   disabled?: boolean;
+   name?: string;
+   onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+   onBlur?: (e: FocusEvent) => void;
+   onFocus?: (e: FocusEvent) => void;
 }>({
-	id: "",
-	status: { code: "none", text: "" },
+   id: "",
+   message: { status: "none", text: "" },
 });
 
 export default function HuginnInput(props: HuginnInputProps) {
-	const [id, _setId] = useState(() => snowflake.generateString(WorkerID.APP));
-	const inputRef = useRef<HTMLInputElement>(null);
+   const [id, _setId] = useState(() => snowflake.generateString(WorkerID.APP));
+   const inputRef = useRef<HTMLInputElement>(null);
 
-	return (
-		<InputContext.Provider
-			value={{
-				id: id,
-				value: props.value,
-				required: props.required,
-				status: props.status,
-				placeholder: props.placeholder,
-				type: props.type,
-				inputRef: inputRef,
-				disabled: props.disabled,
-				onChange: props.onChange,
-				onFocusChange: props.onFocusChanged,
-			}}
-		>
-			<div className={clsx(!props.headless && "flex flex-col", props.className)}>{props.children}</div>
-		</InputContext.Provider>
-	);
+   return (
+      <InputContext.Provider
+         value={{
+            id: id,
+            value: props.value,
+            required: props.required,
+            message: props.message,
+            placeholder: props.placeholder,
+            type: props.type,
+            ref: props.ref ?? inputRef,
+            disabled: props.disabled,
+            name: props.name,
+            onChange: props.onChange,
+            onBlur: props.onBlur,
+            onFocus: props.onFocus,
+         }}
+      >
+         <div className={clsx(!props.headless && "flex flex-col", props.className)}>
+            {props.children}
+            {!props.hideMessage && (
+               <StatusMessage status={props.message.status} text={props.message.text} visible={props.message.status !== "none"} className="mt-1" />
+            )}
+         </div>
+      </InputContext.Provider>
+   );
 }
 
 function Input(props: { headless?: boolean; className?: string; lowercase?: boolean }) {
-	const inputContext = useContext(InputContext);
-	const [cursor, setCursor] = useState<number | null>(null);
+   const inputContext = useContext(InputContext);
+   // const [cursor, setCursor] = useState<number | null>(null);
 
-	function onChange(e: ChangeEvent<HTMLInputElement>) {
-		setCursor(e.target.selectionStart);
-		inputContext.onChange?.(e);
-	}
-	useLayoutEffect(() => {
-		inputContext.inputRef?.current?.setSelectionRange(cursor, cursor);
-	}, [inputContext.value, cursor]);
+   function onChange(e: ChangeEvent<HTMLInputElement>) {
+      if (props.lowercase) {
+         e.target.value = e.target.value.toLowerCase();
+      }
+      inputContext.onChange?.(e);
+   }
+   // useLayoutEffect(() => {
+   //    // if("current")
+   //    inputContext.ref?.current?.setSelectionRange(cursor, cursor);
+   // }, [inputContext.value, cursor]);
 
-	return (
-		<input
-			spellCheck={false}
-			id={inputContext.id}
-			value={inputContext.value}
-			ref={inputContext.inputRef}
-			className={clsx(
-				!props.headless && "w-full bg-transparent p-2 text-white placeholder-text/60 outline-hidden disabled:cursor-not-allowed",
-				props.className,
-			)}
-			disabled={inputContext.disabled}
-			type={inputContext.type ?? "text"}
-			autoComplete="new-password"
-			placeholder={inputContext.placeholder}
-			onChange={onChange}
-			onFocus={() => inputContext.onFocusChange?.(true)}
-			onBlur={() => inputContext.onFocusChange?.(false)}
-		/>
-	);
+   return (
+      <input
+         spellCheck={false}
+         id={inputContext.id}
+         value={inputContext.value}
+         ref={inputContext.ref}
+         className={clsx(
+            !props.headless && "placeholder-text/60 w-full bg-transparent p-2 text-white outline-hidden disabled:cursor-not-allowed",
+            props.className,
+         )}
+         disabled={inputContext.disabled}
+         type={inputContext.type ?? "text"}
+         autoComplete="new-password"
+         placeholder={inputContext.placeholder}
+         onChange={onChange}
+         onFocus={inputContext.onFocus}
+         onBlur={inputContext.onBlur}
+         name={inputContext.name}
+      />
+   );
 }
 
-function Wrapper(props: { className?: string; headless?: boolean; border?: "left" | "right" | "top" | "bottom"; children?: ReactNode }) {
-	const inputContext = useContext(InputContext);
-	const { hasBorder, borderColor } = useInputBorder(inputContext.status);
+const STATUS_RING_COLORS: Record<StatusType, string> = {
+   none: "",
+   default: "ring-primary-700",
+   error: "ring-negative-100",
+   success: "ring-positive-100",
+};
 
-	return (
-		<div
-			className={clsx(
-				props.className,
-				!props.headless && "flex w-full items-center rounded-md bg-surface-alt",
-				hasBorder &&
-					((props.border === "top" && "border-t-4") ||
-						(props.border === "bottom" && "border-b-4") ||
-						(props.border === "left" && "border-l-4") ||
-						(props.border === "right" && "border-r-4")),
-				hasBorder && props.border && borderColor,
-			)}
-		>
-			{props.children}
-		</div>
-	);
+function Wrapper(props: { className?: string; headless?: boolean; children?: ReactNode }) {
+   const inputContext = useContext(InputContext);
+
+   return (
+      <div
+         className={clsx(
+            props.className,
+            !props.headless && "bg-surface-alt flex w-full items-center rounded-md",
+            !["none", "default"].includes(inputContext.message.status) && ["ring", STATUS_RING_COLORS[inputContext.message.status]],
+         )}
+      >
+         {props.children}
+      </div>
+   );
 }
 
 function Label(props: { children?: ReactNode; headless?: boolean; className?: string; text: string; hideStatus?: boolean }) {
-	const inputContext = useContext(InputContext);
-	return (
-		<label
-			htmlFor={inputContext.id}
-			className={clsx(
-				!props.headless && "select-none font-medium text-xs uppercase opacity-90",
-				inputContext.status.code === "none" ? "text-text" : "text-negative-100",
-				props.className,
-			)}
-		>
-			{props.text}
-			{!props.hideStatus &&
-				(inputContext.status.text ? (
-					<span className={clsx("text-negative-100", inputContext.status.text && "font-normal normal-case italic")}>
-						<span className="px-0.5">-</span>
-						{inputContext.status.text}
-					</span>
-				) : (
-					inputContext.required && <span className="pl-0.5 text-negative-100">*</span>
-				))}
-		</label>
-	);
+   const inputContext = useContext(InputContext);
+   return (
+      <label
+         htmlFor={inputContext.id}
+         className={clsx(
+            !props.headless && "text-text text-xs font-medium uppercase opacity-90 select-none",
+            // inputContext.status.code === "none" ? "text-text" : "text-negative-100",
+            props.className,
+         )}
+      >
+         {props.text}
+         {!props.hideStatus &&
+            // (inputContext.status.text ? (
+            //    <span className={clsx("text-negative-100", inputContext.status.text && "font-normal normal-case italic")}>
+            //       <span className="px-0.5">-</span>
+            //       {inputContext.status.text}
+            //    </span>
+            // ) : (
+            // ))}
+            inputContext.required && <span className="text-negative-100 pl-0.5">*</span>}
+      </label>
+   );
 }
 
 HuginnInput.Label = Label;

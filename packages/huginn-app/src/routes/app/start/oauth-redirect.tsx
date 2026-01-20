@@ -1,4 +1,4 @@
-import AnimatedMessage from "@components/AnimatedMessage";
+import AnimatedMessage from "@components/StatusMessage";
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import ImageSelector from "@components/ImageSelector";
@@ -20,6 +20,12 @@ import * as jose from "jose";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
+import { useHuginnForm } from "@hooks/useHuginnForm";
+
+type Inputs = {
+   username: string;
+   displayName?: string;
+};
 
 export default function OauthRedirect() {
    const client = useClient();
@@ -33,15 +39,16 @@ export default function OauthRedirect() {
 
    const decodedToken = useMemo(() => (search.get("token") ? (jose.decodeJwt(search.get("token") ?? "") as OAuthTokenPayload) : undefined), [search]);
 
-   const { inputsProps, values, handleErrors, resetInput } = useInputs([
-      { name: "username", required: true, default: decodedToken?.username },
-      { name: "displayName", required: false, default: decodedToken?.fullName },
-   ]);
+   const { register, handleErrors, handleSubmit, formState } = useHuginnForm<Inputs>();
+   // const { inputsProps, values, handleErrors, resetInput } = useInputs([
+   //    { name: "username", required: true, default: decodedToken?.username },
+   //    { name: "displayName", required: false, default: decodedToken?.fullName },
+   // ]);
 
    const [shouldRender, setShouldRender] = useState(false);
    const { data: originalAvatar } = useQuery(getUserAvatarOptions(decodedToken?.providerUserId, decodedToken?.avatarHash, client));
    const [avatarData, setAvatarData] = useState<string | null>(null);
-   const { message: usernameMessageDetail, onFocusChanged } = useUniqueUsernameMessage(values, resetInput, "username");
+   const { validate } = useUniqueUsernameMessage();
 
    const mutation = useHuginnMutation(
       {
@@ -106,22 +113,22 @@ export default function OauthRedirect() {
       await navigate(history.lastPathname ?? "/", { viewTransition: true });
    }
 
-   async function confirm() {
+   async function onSubmit(data: Inputs) {
       posthog.capture("oauth:confirm_button_click");
 
       await mutation.mutateAsync({
          avatar: avatarData,
-         displayName: values.displayName.value,
-         username: values.username.value,
+         displayName: data.displayName ?? null,
+         username: data.username,
       });
    }
 
    return (
       shouldRender && (
-         <StartWrapper transitionName="start-oauth-redirect">
+         <StartWrapper transitionName="start-oauth-redirect" onSubmit={handleSubmit(onSubmit)}>
             {search.has("token") && (
                <>
-                  <div className="flex w-full select-none flex-col items-center">
+                  <div className="flex w-full flex-col items-center select-none">
                      <div className="text-text mb-1 text-2xl font-medium">Almost there!</div>
                      <div className="text-text text-center opacity-70">Finish creating your account and enjoy Huginn!</div>
                   </div>
@@ -136,32 +143,25 @@ export default function OauthRedirect() {
                      />
                   </div>
                   <div className="mt-5 flex w-full flex-col">
-                     <HuginnInput {...inputsProps.username} onFocusChanged={onFocusChanged} className="mb-5">
+                     <HuginnInput {...register("username", { required: true, validate })} className="mb-5">
                         <HuginnInput.Label text="Username" className="mb-2" />
-                        <HuginnInput.Wrapper border="left">
-                           <HuginnInput.Input className="lowercase" />
+                        <HuginnInput.Wrapper>
+                           <HuginnInput.Input lowercase />
                         </HuginnInput.Wrapper>
-                        <AnimatedMessage className="mt-1" {...usernameMessageDetail} />
                      </HuginnInput>
 
-                     <HuginnInput placeholder={decodedToken?.username} {...inputsProps.displayName}>
+                     <HuginnInput placeholder={decodedToken?.username} {...register("displayName")}>
                         <HuginnInput.Label text="Display Name" className="mb-2" />
-                        <HuginnInput.Wrapper border="left">
+                        <HuginnInput.Wrapper>
                            <HuginnInput.Input />
                         </HuginnInput.Wrapper>
                      </HuginnInput>
                   </div>
                   <div className="mt-5 flex w-full gap-x-2">
-                     <HuginnButton className="w-full" color="surface-alt" onClick={abort}>
+                     <HuginnButton className="w-full" color="surface-alt" onClick={abort} type="button">
                         Abort
                      </HuginnButton>
-                     <LoadingButton
-                        onClick={confirm}
-                        loading={!mutation.isIdle && mutation.isPending}
-                        className="h-10 w-full"
-                        color="primary"
-                        type="submit"
-                     >
+                     <LoadingButton loading={formState.isSubmitting} className="h-10 w-full" color="primary" type="submit">
                         Confirm
                      </LoadingButton>
                   </div>

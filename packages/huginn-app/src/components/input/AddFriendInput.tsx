@@ -1,42 +1,32 @@
 import LoadingButton from "@components/button/LoadingButton";
 import clsx from "clsx";
-import type { HuginnButtonProps, HuginnInputProps } from "@/types";
+import type { HuginnButtonProps, HuginnInputProps, HuginnLoadingButtonProps } from "@/types";
+import HuginnInput from "./HuginnInput";
 
-export default function AddFriendInput(
-	props: HuginnInputProps & { onClick?: () => void; disabled?: boolean; buttonProps?: HuginnButtonProps; loading: boolean },
-) {
-	return (
-		<>
-			<div
-				className={clsx(
-					"flex w-full gap-x-2.5 overflow-hidden rounded-lg bg-surface-alt py-2.5 pr-2.5 pl-4 ring-1",
-					props.className,
-					props.status.code === "error"
-						? "ring-negative-100"
-						: props.status.code === "success"
-							? "ring-positive-100"
-							: "ring-transparent has-focus:ring-primary-700",
-				)}
-			>
-				<input
-					className="w-full bg-surface-alt text-text placeholder-text/50 outline-hidden"
-					placeholder="e.g: Werdox"
-					onChange={props.onChange}
-				/>
-				<LoadingButton
-					iconClassName="!size-6"
-					loading={props.loading}
-					className="h-8 w-64 whitespace-nowrap rounded-md font-medium text-sm"
-					color="primary"
-					disabled={props.disabled}
-					onClick={() => props.onClick?.()}
-				>
-					Send Friend Request
-				</LoadingButton>
-			</div>
-			{props.status.text && (
-				<div className={`mt-2 text-sm ${props.status.code === "error" ? "text-negative-100" : "text-positive-100"}`}>{props.status.text}</div>
-			)}
-		</>
-	);
+export default function AddFriendInput(props: {
+   className?: string;
+   onClick?: () => void;
+   disabled?: boolean;
+   buttonProps?: HuginnButtonProps;
+   inputProps: HuginnInputProps;
+   loading: boolean;
+}) {
+   return (
+      <HuginnInput {...props.inputProps} className={clsx(props.inputProps.className, "w-full", props.className)} placeholder="e.g: Werdox">
+         <HuginnInput.Wrapper className="gap-x-5 rounded-lg! px-3 pl-5">
+            <HuginnInput.Input className="px-0 py-5" />
+            <LoadingButton
+               {...props.buttonProps}
+               iconClassName="size-6!"
+               loading={props.loading}
+               className="h-10 w-44 shrink-0 rounded-md px-2 py-2 text-sm font-medium whitespace-nowrap"
+               color="primary"
+               disabled={props.disabled}
+               onClick={() => props.onClick?.()}
+            >
+               Send Friend Request
+            </LoadingButton>
+         </HuginnInput.Wrapper>
+      </HuginnInput>
+   );
 }

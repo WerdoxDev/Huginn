@@ -74,7 +74,7 @@ export default function UserInfo(props: { user: AppUser }) {
                         <IconMingcuteVolumeFill className="size-5" />
                      )}
                   </UserActionButton>
-                  <UserActionButton tooltip="Settings" onClick={openSettings} innerClassName="group-hover:rotate-60">
+                  <UserActionButton tooltip="Settings" onClick={openSettings} innerClassName="group-hover:rotate-60 group-active:rotate-60">
                      <IconMingcuteSettings5Fill className="size-6 transition-all" />
                   </UserActionButton>
                </div>

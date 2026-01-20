@@ -1,6 +1,6 @@
 import RouteErrorComponent from "@components/RouteErrorComponent";
 import { clientStore } from "@stores/clientStore";
-import { createHashRouter, type LoaderFunctionArgs, redirect } from "react-router";
+import { createHashRouter, type LoaderFunctionArgs, type MiddlewareFunction, redirect } from "react-router";
 import Root, { queryClient } from "./root";
 import AppLayout from "./routes/app/app-layout";
 import ChannelMe from "./routes/app/main/home/channels.@me";
@@ -15,32 +15,6 @@ import Register from "./routes/app/start/register";
 import StartLayout from "./routes/app/start/start-layout";
 import VoiceDebug from "./routes/voice-debug";
 import { getChannelsOptions, getMessagesOptions, getRelationshipsOptions } from "@lib/queries";
-
-async function mainLoader({ request }: LoaderFunctionArgs) {
-   const url = new URL(request.url);
-   const pathname = url.pathname;
-
-   const search = new URLSearchParams({ redirect: pathname });
-
-   const client = clientStore.getState().client;
-   if (!client || client?.gateway.status !== "authenticated") {
-      throw redirect(`/?${search}`);
-   }
-}
-
-async function startLoader({ request }: LoaderFunctionArgs) {
-   const url = new URL(request.url);
-   const pathname = url.pathname;
-
-   const client = clientStore.getState().client;
-   if (client?.gateway.status === "authenticated") {
-      throw redirect("/channels/@me");
-   }
-
-   if (!client && pathname !== "/" && pathname !== "/oauth-redirect") {
-      throw redirect("/");
-   }
-}
 
 async function homeLoader() {
    const client = clientStore.getState().client;
@@ -63,6 +37,34 @@ async function channelWithIdLoader({ params }: LoaderFunctionArgs) {
    return queryClient.ensureInfiniteQueryData(getMessagesOptions(queryClient, client, params.channelId as string));
 }
 
+const mainMiddleware: MiddlewareFunction = async ({ request }) => {
+   const url = new URL(request.url);
+   const pathname = url.pathname;
+
+   const search = new URLSearchParams({ redirect: pathname, requireAuth: "1" });
+
+   const client = clientStore.getState().client;
+   if (!client || client?.gateway.status !== "authenticated") {
+      throw redirect(`/?${search}`);
+   }
+};
+
+const startMiddleware: MiddlewareFunction = async ({ request }) => {
+   const url = new URL(request.url);
+   const pathname = url.pathname;
+
+   const client = clientStore.getState().client;
+   if (client?.gateway.status === "authenticated") {
+      throw redirect("/channels/@me");
+   }
+
+   const search = new URLSearchParams({ redirect: url.toString(), requireAuth: "0" });
+
+   if (!client && pathname !== "/") {
+      throw redirect(`/?${search}`);
+   }
+};
+
 const router = createHashRouter([
    {
       Component: Root,
@@ -73,7 +75,7 @@ const router = createHashRouter([
             children: [
                {
                   Component: StartLayout,
-                  loader: startLoader,
+                  middleware: [startMiddleware],
                   children: [
                      {
                         path: "/",
@@ -95,7 +97,7 @@ const router = createHashRouter([
                },
                {
                   Component: MainLayout,
-                  loader: mainLoader,
+                  middleware: [mainMiddleware],
                   children: [
                      {
                         Component: HomeLayout,

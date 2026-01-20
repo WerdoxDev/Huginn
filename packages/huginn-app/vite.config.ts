@@ -17,8 +17,9 @@ export default defineConfig({
    base: "./",
    publicDir: "public",
    plugins: [
-      basicSsl(),
+      // basicSsl(),
       // reactRouterDevTools(),
+      tailwindcss(),
       react({
          jsxRuntime: "automatic",
          babel: {
@@ -30,7 +31,6 @@ export default defineConfig({
       AutoImport({
          resolvers: [IconsResolver({ prefix: "Icon", extension: "jsx" })],
       }),
-      tailwindcss(),
       VitePWA({
          strategies: "injectManifest",
          srcDir: "src",

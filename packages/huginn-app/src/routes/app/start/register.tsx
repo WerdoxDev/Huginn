@@ -1,4 +1,4 @@
-import AnimatedMessage from "@components/AnimatedMessage";
+import AnimatedMessage from "@components/StatusMessage";
 import HuginnButton from "@components/button/HuginnButton";
 import LinkButton from "@components/button/LinkButton";
 import LoadingButton from "@components/button/LoadingButton";
@@ -8,14 +8,22 @@ import StartWrapper from "@components/StartWrapper";
 import { useStartBackground } from "@stores/startBackgroundStore";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
-import { useInputs } from "@hooks/useInputs";
 import { useOAuth } from "@hooks/useOAuth";
-import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import type { APIPostRegisterJSONBody } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
 import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
+import { useHuginnForm } from "@hooks/useHuginnForm";
+import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
+import { useFormState } from "react-hook-form";
 // import { usePostHog } from "posthog-js/react";
+
+type Inputs = {
+   email: string;
+   displayName?: string;
+   username: string;
+   password: string;
+};
 
 export default function Register() {
    const client = useClient();
@@ -24,14 +32,8 @@ export default function Register() {
    const initializeClient = useInitializeClient();
    const startOAuth = useOAuth();
 
-   const { inputsProps, values, resetStatuses, handleErrors, validateValues, resetInput } = useInputs([
-      { name: "email", required: true },
-      { name: "displayName", required: false },
-      { name: "username", required: true, lowercase: true },
-      { name: "password", required: true },
-   ]);
-
-   const { message: usernameMessageDetail, onFocusChanged } = useUniqueUsernameMessage(values, resetInput, "username");
+   const { register, handleErrors, handleSubmit, formState } = useHuginnForm<Inputs>();
+   const { validate } = useUniqueUsernameMessage();
 
    const mutation = useHuginnMutation(
       {
@@ -55,26 +57,20 @@ export default function Register() {
       startBackground.setState(0);
    }, []);
 
-   async function register() {
+   async function onSubmit(data: Inputs) {
       posthog.capture("register:register_button_click");
 
-      if (!validateValues()) {
-         return;
-      }
-
       await mutation.mutateAsync({
-         email: values.email.value,
-         displayName: values.displayName.value,
-         username: values.username.value,
-         password: values.password.value,
+         email: data.email,
+         displayName: data.displayName ?? null,
+         username: data.username,
+         password: data.password,
       });
-
-      resetStatuses();
    }
 
    return (
-      <StartWrapper onSubmit={register} transitionName="start-register">
-         <div className="flex w-full select-none flex-col items-center">
+      <StartWrapper onSubmit={handleSubmit(onSubmit)} transitionName="start-register">
+         <div className="flex w-full flex-col items-center select-none">
             <div className="text-text mb-1 text-2xl font-medium">Welcome to Huginn!</div>
             <div className="text-text opacity-70">We are very happy to have you here!</div>
          </div>
@@ -97,46 +93,51 @@ export default function Register() {
                <span>GitHub</span>
             </HuginnButton>
          </div>
-         <div className="border-t-text/25 text-text/70 my-7 flex h-0 w-full select-none items-center justify-center border-t text-center text-xs font-semibold">
+         <div className="border-t-text/25 text-text/70 my-7 flex h-0 w-full items-center justify-center border-t text-center text-xs font-semibold select-none">
             <span className="bg-surface px-2">or</span>
          </div>
          <div className="w-full">
-            <div className="flex items-end justify-center gap-x-2">
-               <HuginnInput onFocusChanged={onFocusChanged} {...inputsProps.username} className="w-1/2">
+            <div className="mb-5 flex flex-col gap-y-5">
+               <HuginnInput
+                  {...register("username", {
+                     required: true,
+                     validate,
+                  })}
+               >
                   <HuginnInput.Label text="Username" className="mb-2" />
-                  <HuginnInput.Wrapper border="left">
-                     <HuginnInput.Input className="lowercase" />
+                  <HuginnInput.Wrapper>
+                     <HuginnInput.Input lowercase />
                   </HuginnInput.Wrapper>
                </HuginnInput>
-               <HuginnInput {...inputsProps.displayName} className="w-1/2">
+
+               <HuginnInput {...register("displayName")}>
                   <HuginnInput.Label text="Display Name" className="mb-2" />
-                  <HuginnInput.Wrapper border="left">
+                  <HuginnInput.Wrapper>
                      <HuginnInput.Input />
                   </HuginnInput.Wrapper>
                </HuginnInput>
+
+               <HuginnInput {...register("email", { required: true })}>
+                  <HuginnInput.Label text="Email" className="mb-2" />
+                  <HuginnInput.Wrapper>
+                     <HuginnInput.Input />
+                  </HuginnInput.Wrapper>
+               </HuginnInput>
+
+               <PasswordInput {...register("password", { required: true })}>
+                  <HuginnInput.Label text="Password" className="mb-2" />
+                  <HuginnInput.Wrapper>
+                     <HuginnInput.Input />
+                     <PasswordInput.ToggleButton />
+                  </HuginnInput.Wrapper>
+               </PasswordInput>
             </div>
-            <AnimatedMessage className="mt-1" {...usernameMessageDetail} />
 
-            <HuginnInput className="mb-5 mt-5" {...inputsProps.email}>
-               <HuginnInput.Label text="Email" className="mb-2" />
-               <HuginnInput.Wrapper border="left">
-                  <HuginnInput.Input />
-               </HuginnInput.Wrapper>
-            </HuginnInput>
-
-            <PasswordInput className="mb-5" {...inputsProps.password}>
-               <HuginnInput.Label text="Password" className="mb-2" />
-               <HuginnInput.Wrapper border="left">
-                  <HuginnInput.Input />
-                  <PasswordInput.ToggleButton />
-               </HuginnInput.Wrapper>
-            </PasswordInput>
-
-            <LoadingButton loading={!mutation.isIdle && mutation.isPending} className="h-10 w-full" color="primary" type="submit">
+            <LoadingButton loading={formState.isSubmitting} className="h-10 w-full" color="primary" type="submit">
                Register
             </LoadingButton>
 
-            <div className="mt-3 flex select-none items-center">
+            <div className="mt-3 flex items-center select-none">
                <span className="text-text text-sm opacity-70">Already have an account? </span>
                <LinkButton viewTransition to="/login" className="ml-1 text-sm">
                   Login

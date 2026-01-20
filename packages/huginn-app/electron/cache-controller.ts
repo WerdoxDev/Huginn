@@ -15,6 +15,7 @@ export class CacheController {
    }
 
    private async eventListeners() {
+      await this.ensureCacheDir();
       const files = await readdir(this.cacheDir);
       for (const file of files) {
          const key = file.replace(/\.[^/.]+$/, "");
@@ -40,5 +41,11 @@ export class CacheController {
 
          this.cachedKeys.add(key);
       });
+   }
+
+   private async ensureCacheDir() {
+      if (!(await exists(this.cacheDir))) {
+         await mkdir(this.cacheDir);
+      }
    }
 }

@@ -11,9 +11,9 @@ import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useReducer } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { useLocation, useNavigate, useNavigation, useSearchParams } from "react-router";
 
-type Step = "none" | "fetch_hostnames" | "check_update" | "connect" | "update" | "welcome";
+type Step = "none" | "fetch_hostnames" | "check_update" | "initialize" | "update" | "welcome";
 
 type State = {
    current: Step;
@@ -47,11 +47,12 @@ export default function Index() {
    const startBackground = useStartBackground();
    const posthog = usePostHog();
    const navigate = useNavigate();
+   const location = useLocation();
    const connect = useConnect();
 
    const { checkAndDownload, updateInfo, progress, contentLength, downloaded } = useUpdater({
       async onNotAvailable() {
-         await setConnect();
+         await setInitialize();
       },
       onError() {
          dispatch({ type: "FAIL", error: "Could not check for updates" });
@@ -67,7 +68,16 @@ export default function Index() {
       return `${(downloaded.current / 1024 / 1024).toFixed(2)}MB / ${(contentLength.current / 1024 / 1024).toFixed(2)}MB (${Math.ceil(progress)}%)`;
    }, [progress]);
 
-   async function tryConnect() {
+   async function initialize() {
+      const redirect = search.get("redirect");
+      const requiresAuth = search.get("requireAuth") === "1" ? true : false;
+      const redirectUrl = new URL(redirect ?? "/login", window.location.origin);
+
+      if (!requiresAuth) {
+         await navigate({ pathname: redirectUrl.pathname, search: redirectUrl.search }, { replace: true, viewTransition: true });
+         return;
+      }
+
       startBackground.setState(1);
       const result = await connect();
       if (result.success) {
@@ -77,7 +87,7 @@ export default function Index() {
          dispatch({ type: "FAIL", error: "Failed to connect..." });
          startBackground.setState(0);
       } else {
-         await navigate({ pathname: "/login", search: `?${search.toString()}` }, { replace: true, viewTransition: true });
+         await navigate({ pathname: redirectUrl.pathname, search: `?${search.toString()}` }, { replace: true, viewTransition: true });
       }
    }
 
@@ -89,8 +99,8 @@ export default function Index() {
       dispatch({ type: "SET", step: "fetch_hostnames", text: "Fetching external hostnames..." });
    }
 
-   async function setConnect() {
-      dispatch({ type: "SET", step: "connect", text: "Connecting..." });
+   async function setInitialize() {
+      dispatch({ type: "SET", step: "initialize", text: "Connecting..." });
    }
 
    async function retry() {
@@ -100,8 +110,8 @@ export default function Index() {
          setFetchHostnames();
       } else if (state.current === "check_update") {
          setCheckUpdate();
-      } else if (state.current === "connect") {
-         setConnect();
+      } else if (state.current === "initialize") {
+         setInitialize();
       }
    }
 
@@ -119,7 +129,7 @@ export default function Index() {
                } else {
                   setHostnamesFromSettings();
                   initializeClient();
-                  await setConnect();
+                  await setInitialize();
                }
                break;
 
@@ -131,7 +141,7 @@ export default function Index() {
                   initializeClient();
 
                   if (huginnWindow.environment !== "desktop") {
-                     await setConnect();
+                     await setInitialize();
                   } else {
                      setCheckUpdate();
                   }
@@ -145,8 +155,8 @@ export default function Index() {
                }
                await checkAndDownload();
                break;
-            case "connect":
-               await tryConnect();
+            case "initialize":
+               await initialize();
                break;
          }
       }
@@ -164,7 +174,7 @@ export default function Index() {
 
    return (
       <StartWrapper transitionName="start-index" className="w-auto! bg-transparent! p-0! shadow-none!">
-         <div className="flex w-full select-none flex-col items-center">
+         <div className="flex w-full flex-col items-center select-none">
             {state.status === "error" ? (
                <div className="bg-negative-600 rounded-full p-3">
                   <div className="bg-negative-200 rounded-full p-3">
@@ -175,7 +185,7 @@ export default function Index() {
                <HuginnIcon
                   outlined
                   className={clsx(
-                     "text-primary-500 size-20 animate-pulse drop-shadow-[0px_0px_25px_rgb(var(--color-primary-700))] transition-all hover:-rotate-12 hover:scale-105 active:rotate-6",
+                     "text-primary-500 size-20 animate-pulse drop-shadow-[0px_0px_25px_rgb(var(--color-primary-700))] transition-all hover:scale-105 hover:-rotate-12 active:rotate-6",
                   )}
                />
             )}
@@ -189,7 +199,7 @@ export default function Index() {
                   {/* {state.status === "error" && <IconMingcuteAlertFill className="size-6 text-negative-100" />} */}
                   {(state.current === "check_update" ||
                      state.current === "update" ||
-                     state.current === "connect" ||
+                     state.current === "initialize" ||
                      state.current === "fetch_hostnames") &&
                      state.status !== "error" &&
                      progress === 0 && <LoadingIcon className="size-6" />}
@@ -201,7 +211,7 @@ export default function Index() {
                      Retry
                   </HuginnButton>
                   {state.current === "check_update" && (
-                     <HuginnButton color="surface-deep" type="button" className="w-32 rounded-md py-1" onClick={setConnect}>
+                     <HuginnButton color="surface-deep" type="button" className="w-32 rounded-md py-1" onClick={setInitialize}>
                         Continue
                      </HuginnButton>
                   )}
@@ -210,7 +220,7 @@ export default function Index() {
             {state.current === "update" && progress !== 0 && (
                <div className="bg-surface-deep relative mt-3 h-6 w-56 rounded-md">
                   <div className="bg-primary-500 h-full rounded-md" style={{ width: `${progress}%` }} />
-                  <div className="absolute left-0 right-0 flex items-center justify-center">
+                  <div className="absolute right-0 left-0 flex items-center justify-center">
                      <div className="bg-surface-alt text-text/50 rounded-b-md px-2 py-1 text-xs">{updateProgressText}</div>
                   </div>
                </div>

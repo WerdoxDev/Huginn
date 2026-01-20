@@ -1,4 +1,4 @@
-import type { APIUser, UserTokenPayload } from "@huginn/shared";
+import type { APIUser, PresenceUser, UserTokenPayload } from "@huginn/shared";
 import * as jose from "jose";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
@@ -9,11 +9,11 @@ import { convertToAppUser } from "@lib/utils";
 const store = createStore(
    combine(
       {
-         user: undefined as AppUser | undefined,
+         user: undefined as AppUser<PresenceUser<APIUser>> | undefined,
          tokenPayload: undefined as UserTokenPayload | undefined,
       },
       (set) => ({
-         setUser: (user?: APIUser) => set({ user: user ? convertToAppUser(user) : undefined }),
+         setUser: (user?: AppUser<PresenceUser<APIUser>>) => set({ user: user ? convertToAppUser<PresenceUser<APIUser>>(user) : undefined }),
       }),
    ),
 );

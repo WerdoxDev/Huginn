@@ -168,7 +168,9 @@ class HuginnApp {
       log("app:electron", "default", "configure tray");
 
       const iconName = "icon.ico";
-      const tray = new Tray(app.isPackaged ? path.join(process.resourcesPath, "electron-assets", iconName) : `./electron-assets/${iconName}`);
+      const tray = new Tray(
+         app.isPackaged ? path.join(process.resourcesPath, "electron-assets", iconName) : path.join(__dirname, "../", "electron-assets", iconName),
+      );
       const contextMenu = Menu.buildFromTemplate([
          {
             label: "Quit",

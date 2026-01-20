@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
 
 export default function GenericLabel(props: { children?: ReactNode }) {
-	return <div className="mb-2 select-none font-medium text-text text-xs uppercase opacity-90">{props.children}</div>;
+   return <div className="text-text mb-2 text-xs font-medium uppercase opacity-90 select-none">{props.children}</div>;
 }

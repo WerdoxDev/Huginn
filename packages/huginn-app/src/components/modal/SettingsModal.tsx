@@ -86,10 +86,6 @@ export default function SettingsModal() {
    }, [modal.isOpen]);
 
    useEffect(() => {
-      console.log(isMobile, showContent, selectedIndex);
-   }, [isMobile, showContent, selectedIndex]);
-
-   useEffect(() => {
       onSave();
    }, [currentTabText]);
 

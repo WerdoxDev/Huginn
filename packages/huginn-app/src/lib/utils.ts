@@ -5,7 +5,7 @@ import type {
    AppRelationship,
    AppUser,
    DropdownItem,
-   InputStatus,
+   InputMessage,
    InputStatuses,
    InputValue,
    InputValues,
@@ -37,10 +37,10 @@ import { clientStore } from "@stores/clientStore";
 import { getMessage } from "./query-utils";
 import type { QueryClient } from "@tanstack/react-query";
 
-export const requiredFieldError: InputStatus = { code: "error", text: "Required" };
+export const requiredFieldError: InputMessage = { status: "error", text: "Required" } as const;
 
-export function getInputCurrentStatus(field: InputValue, fieldName: string, errorStatuses: InputStatuses): InputStatus {
-   const newStatus: InputStatus = !field.value && field.required ? requiredFieldError : errorStatuses[fieldName] || { code: "none", text: "" };
+export function getInputCurrentStatus(field: InputValue, fieldName: string, errorStatuses: InputStatuses): InputMessage {
+   const newStatus: InputMessage = !field.value && field.required ? requiredFieldError : errorStatuses[fieldName] || { status: "none", text: "" };
 
    return newStatus;
 }
@@ -57,14 +57,14 @@ export function getInputsValidatedStatuses(fields: InputValues, statuses: InputS
    return newStatues;
 }
 
-export function getInputsStatusesFromError(statuses: InputStatuses, error: HuginnErrorData, field?: string) {
+export function getInputsStatusesFromError(statuses: InputStatuses, error: HuginnErrorData) {
    const newStatuses = { ...statuses };
 
    for (const key of Object.keys(newStatuses)) {
       if (!error.errors) {
          const apiMessage = Object.entries(APIMessages).find(([code]) => code === error.code.toString())?.[1];
          newStatuses[key] = { code: "error", text: apiMessage ?? error.message };
-      } else if (((field && key === field) ?? !field) && error.errors[key]) {
+      } else if (error.errors[key]) {
          newStatuses[key] = {
             code: "error",
             text: (error.errors[key] as HuginnErrorGroupWrapper)._errors[0].message,
@@ -191,8 +191,8 @@ export function convertToAppMessage(message: APIMessage, source: "websocket" | "
    };
 }
 
-export function convertToAppUser(user: PresenceUser): AppUser {
-   return { ...user, displayName: user?.displayName ?? user?.username, originalDisplayName: user.displayName };
+export function convertToAppUser<U extends PresenceUser = PresenceUser>(user: U): AppUser<U> {
+   return { ...user, displayName: user?.displayName ?? user?.username ?? null, originalDisplayName: user.displayName };
 }
 
 export function convertToAppPresence(presence: UserPresence): AppPresence {

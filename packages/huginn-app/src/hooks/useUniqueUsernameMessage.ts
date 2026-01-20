@@ -1,47 +1,27 @@
 import { constants, Fields } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
-import { useThisUser } from "@stores/userStore";
-import { useEffect, useRef, useState } from "react";
-import type { InputValues, MessageDetail, StatusCode } from "@/types";
+import type { InputMessage } from "@/types";
+import { useDebouncer } from "./useDebouncer";
 
-export function useUniqueUsernameMessage(values: InputValues, resetInput: (inputName: string) => void, usernameField: string) {
+export function useUniqueUsernameMessage() {
    const client = useClient();
-   const { user } = useThisUser();
 
-   const defaultMessage = "Please only use numbers, letters, _ or .";
-   const [message, setMessage] = useState<MessageDetail>({ text: defaultMessage, status: "default", visible: false });
+   async function checkForUniqueUsername(value: string): Promise<InputMessage | null> {
+      if (!client || !value) return null;
 
-   const usernameTimeout = useRef<number>(undefined);
-   const lastFocus = useRef<boolean>(false);
-   const prevUsername = useRef(values[usernameField].value);
-
-   useEffect(() => {
-      if (prevUsername.current === values[usernameField].value) {
-         return;
+      if (!validateLength(value)) {
+         return { text: Fields.wrongLength(constants.USERNAME_MIN_LENGTH, constants.USERNAME_MAX_LENGTH)[0], status: "error" };
       }
 
-      onChanged(values[usernameField].value, user?.username);
-      prevUsername.current = values[usernameField].value;
-   }, [values, user]);
-
-   function set(message: string, status: StatusCode, visible: boolean) {
-      setMessage({ text: message, status: status, visible });
-      if (status === "success") {
-         resetInput(usernameField);
-      }
-   }
-
-   async function checkForUniqueUsername(value: string) {
-      if (!client) {
-         return;
+      if (!validateRegex(value)) {
+         return { text: Fields.usernameInvalid()[0], status: "error" };
       }
 
       const result = await client.common.uniqueUsername({ username: value });
-
       if (result.taken) {
-         set("Username is taken. Try adding numbers, letters, underlines _ or fullstops .", "error", true);
+         return { text: Fields.usernameTaken()[0], status: "error" };
       } else {
-         set("Username is available!", "success", true);
+         return { text: "Username is available!", status: "success" };
       }
    }
 
@@ -53,39 +33,16 @@ export function useUniqueUsernameMessage(values: InputValues, resetInput: (input
       return value.match(constants.USERNAME_REGEX);
    }
 
-   function onChanged(value: string, username?: string) {
-      window.clearTimeout(usernameTimeout.current);
+   const { debouncedFunction, cancel } = useDebouncer(checkForUniqueUsername, 1000);
 
-      if (!value || value === username) {
-         set(defaultMessage, "default", lastFocus.current);
-         // clearTimeout(usernameTimeout.current);
-         return;
+   async function validate(value: string) {
+      cancel();
+      const result = await debouncedFunction(value);
+      console.log("VALIDATE", value, result);
+      if (result?.status === "error") {
+         return result.text;
       }
-
-      if (!validateLength(value)) {
-         set(Fields.wrongLength(constants.USERNAME_MIN_LENGTH, constants.USERNAME_MAX_LENGTH)[0], "error", true);
-         return;
-      }
-
-      if (!validateRegex(value)) {
-         set(Fields.usernameInvalid()[0], "error", true);
-         return;
-      }
-
-      if (usernameTimeout.current) {
-         window.clearTimeout(usernameTimeout.current);
-      }
-
-      usernameTimeout.current = window.setTimeout(async () => {
-         await checkForUniqueUsername(value);
-         onFocusChanged(lastFocus.current);
-      }, 1000);
    }
 
-   function onFocusChanged(isFocused: boolean) {
-      lastFocus.current = isFocused;
-      setMessage((prev) => ({ text: prev.text, status: prev.status, visible: prev.status === "error" ? true : isFocused }));
-   }
-
-   return { message, onFocusChanged, onChanged };
+   return { validate };
 }

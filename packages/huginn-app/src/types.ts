@@ -20,58 +20,34 @@ import type {
    UserPresence,
 } from "@huginn/shared";
 import type { screenShareFrameRates, screenShareQualities } from "@lib/constants";
-import type { ChangeEvent, HTMLInputTypeAttribute, ReactNode, RefObject } from "react";
+import type { ChangeEvent, FocusEvent, HTMLInputTypeAttribute, ReactNode, RefCallback, RefObject } from "react";
+import type { FieldPath, FieldValues } from "react-hook-form";
 
-export type StatusCode = "none" | "default" | "error" | "success";
+export type StatusType = "none" | "default" | "error" | "success";
 
 export type LoadingState = "none" | "loading" | "checking_update" | "checking_update_failed" | "updating" | "test";
 
-export type InputStatus = {
-   code: StatusCode;
+export type InputMessage = {
+   status: StatusType;
    text: string;
-};
-
-export type InputValue = {
-   required: boolean;
-   value: string;
-};
-
-export type InputOptions = {
-   name: string;
-   required: boolean;
-   default?: string | null;
-   lowercase?: boolean;
-};
-
-export type InputProp = {
-   status: InputStatus;
-   value: string;
-   required: boolean;
-   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-};
-
-export type InputStatuses = Record<string, InputStatus>;
-export type InputValues = Record<string, InputValue>;
-export type InputProps = Record<string, InputProp>;
-
-export type MessageDetail = {
-   status: StatusCode;
-   text: string;
-   visible: boolean;
 };
 
 export type HuginnInputProps = {
    children?: ReactNode;
    headless?: boolean;
    className?: string;
-   status: InputStatus;
+   message: InputMessage;
+   hideMessage?: boolean;
    required?: boolean;
    disabled?: boolean;
    value?: string;
    placeholder?: string;
    type?: HTMLInputTypeAttribute;
+   ref?: RefCallback<HTMLInputElement | null>;
+   name?: string;
    onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
-   onFocusChanged?: (focused: boolean) => void;
+   onBlur?: (e: FocusEvent) => void;
+   onFocus?: (e: FocusEvent) => void;
 };
 
 export type HuginnButtonProps = {
@@ -84,12 +60,14 @@ export type HuginnButtonProps = {
    onClick?: () => void;
 };
 
+export type HuginnLoadingButtonProps = HuginnButtonProps & { loading: boolean; iconClassName?: string };
+
 export type ModalState = {
    isOpen: boolean;
 };
 
 export type InfoModalState = {
-   state: StatusCode;
+   state: StatusType;
    text: string;
 } & ModalState;
 
@@ -248,7 +226,7 @@ export type MutationKinds = {
    "remove-relationship": Snowflake;
 };
 
-export type AppUser = PresenceUser & { displayName?: string; originalDisplayName?: string | null };
+export type AppUser<U = PresenceUser> = U & { displayName: string | null; originalDisplayName?: string | null };
 
 export type AppPresence = Omit<UserPresence, "user"> & { userId: Snowflake };
 
@@ -598,3 +576,8 @@ export type Environment = "desktop" | "browser";
 
 export type ScreenShareQuality = (typeof screenShareQualities)[number]["value"];
 export type ScreenShareFrameRate = (typeof screenShareFrameRates)[number];
+
+export type UseHuginnFormSetCustomMessage<TFieldValues extends FieldValues> = <TFieldName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>>(
+   name: TFieldName,
+   message: InputMessage | null,
+) => void;
