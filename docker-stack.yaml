@@ -39,7 +39,6 @@ services:
          restart_policy:
             condition: on-failure
             delay: 5s
-            max_attempts: 3
 
    cdn:
       image: ghcr.io/werdoxdev/huginn-cdn:latest
@@ -58,7 +57,6 @@ services:
          restart_policy:
             condition: on-failure
             delay: 5s
-            max_attempts: 3
 
    voice:
       image: ghcr.io/werdoxdev/huginn-voice:latest
@@ -87,7 +85,6 @@ services:
          restart_policy:
             condition: on-failure
             delay: 5s
-            max_attempts: 3
 
 configs:
    caddy_config:

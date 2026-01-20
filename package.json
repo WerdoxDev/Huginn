@@ -26,5 +26,8 @@
     "prisma",
     "sharp",
     "wrtc"
-  ]
+  ],
+  "dependencies": {
+    "slate-dom": "^0.123.0"
+  }
 }
