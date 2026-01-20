@@ -52,9 +52,8 @@ export const userExtension = Prisma.defineExtension({
             assertId(methodName, id);
 
             // Hash new password
-            if (editedUser.newPassword) {
-               editedUser.newPassword = await Bun.password.hash(editedUser.newPassword);
-            }
+            if (editedUser.newPassword) editedUser.newPassword = await Bun.password.hash(editedUser.newPassword);
+            if (editedUser.displayName) editedUser.displayName = editedUser.displayName.trim();
 
             const updatedUser = await prisma.user.update({
                where: { id: BigInt(id) },
@@ -68,12 +67,14 @@ export const userExtension = Prisma.defineExtension({
          async createOne(options: APIPostRegisterJSONBody) {
             const methodName = "user.createOne";
 
+            if (options.displayName) options.displayName = options.displayName.trim();
+
             const passwordHash = await Bun.password.hash(options.password);
             const newUser = await prisma.user.create({
                data: {
                   id: snowflake.generate(WorkerID.AUTH),
                   username: options.username.toLowerCase(),
-                  displayName: !options.displayName ? null : options.displayName,
+                  displayName: options.displayName ? options.displayName : null,
                   password: passwordHash,
                   avatar: null,
                   email: options.email,
