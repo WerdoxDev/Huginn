@@ -2,11 +2,7 @@
    "rewrites": [
       {
          "source": "/app/:path*",
-         "destination": "https:///app.huginn.dev/app/:path*"
-      },
-      {
-         "source": "/app",
-         "destination": "https://app.huginn.dev/app"
+         "destination": "https://app.huginn.dev/:path*"
       },
       {
          "source": "/((?!app).*)",
