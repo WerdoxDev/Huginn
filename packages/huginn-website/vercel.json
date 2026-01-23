@@ -5,6 +5,10 @@
          "destination": "https://app.huginn.dev/:path*"
       },
       {
+         "source": "/app/",
+         "destination": "https://app.huginn.dev/"
+      },
+      {
          "source": "/((?!app).*)",
          "destination": "/"
       }
