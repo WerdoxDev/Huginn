@@ -84,7 +84,7 @@ export const patchMe = new Elysia().use(verifyJwt()).patch(
 
       const accessToken = await createToken(
          "user-access",
-         { id: tokenPayload.id, isOAuth: tokenPayload.isOAuth },
+         { id: tokenPayload.id, authType: tokenPayload.authType },
          constants.ACCESS_TOKEN_EXPIRE_TIME,
       );
       const refreshToken = await createToken("user-refresh", { id: tokenPayload.id }, constants.REFRESH_TOKEN_EXPIRE_TIME);

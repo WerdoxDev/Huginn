@@ -202,7 +202,7 @@ export async function createTestUsers(amount: number) {
 
    return await Promise.all(
       createdUsers.map(async (x) => {
-         const accessToken = await createToken("user-access", { id: x.id.toString(), isOAuth: false }, constants.ACCESS_TOKEN_EXPIRE_TIME);
+         const accessToken = await createToken("user-access", { id: x.id.toString(), authType: "password" }, constants.ACCESS_TOKEN_EXPIRE_TIME);
          const refreshToken = await createToken("user-refresh", { id: x.id.toString() }, constants.REFRESH_TOKEN_EXPIRE_TIME);
 
          removeUserLater(x);

@@ -46,7 +46,7 @@ export const postRegister = new Elysia().post(
 
       const user = await prisma.user.createOne(body);
 
-      const accessToken = await createToken("user-access", { id: user.id, isOAuth: false }, constants.ACCESS_TOKEN_EXPIRE_TIME);
+      const accessToken = await createToken("user-access", { id: user.id, authType: "password" }, constants.ACCESS_TOKEN_EXPIRE_TIME);
       const refreshToken = await createToken("user-refresh", { id: user.id }, constants.REFRESH_TOKEN_EXPIRE_TIME);
 
       const json: APIPostRegisterResult = { ...user, token: accessToken, refreshToken: refreshToken };

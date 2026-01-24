@@ -83,7 +83,7 @@ export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
          data: { userId: BigInt(user.id), completed: true },
       });
 
-      const accessToken = await createToken("user-access", { id: user.id, isOAuth: true }, constants.ACCESS_TOKEN_EXPIRE_TIME);
+      const accessToken = await createToken("user-access", { id: user.id, authType: "oauth" }, constants.ACCESS_TOKEN_EXPIRE_TIME);
       const refreshToken = await createToken("user-refresh", { id: user.id }, constants.REFRESH_TOKEN_EXPIRE_TIME);
 
       const json: APIPostOAuthConfirmResult = { ...user, token: accessToken, refreshToken: refreshToken };
