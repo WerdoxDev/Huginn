@@ -45,6 +45,7 @@ jobs:
          VITE_PUBLIC_POSTHOG_KEY: ${{secrets.VITE_PUBLIC_POSTHOG_KEY}}
          VITE_PUBLIC_CLOUDFLARE_TURN_ID: ${{secrets.VITE_PUBLIC_CLOUDFLARE_TURN_ID}}
          VITE_PUBLIC_CLOUDFLARE_TURN_TOKEN: ${{secrets.VITE_PUBLIC_CLOUDFLARE_TURN_TOKEN}}
+         VITE_PUBLIC_OAUTH_REDIRECT: ${{secrets.VITE_PUBLIC_OAUTH_REDIRECT}}
 
       steps:
          - uses: actions/checkout@v4

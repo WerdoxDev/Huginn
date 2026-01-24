@@ -21,7 +21,7 @@ services:
       environment:
          - SERVER_HOST=0.0.0.0
          - SERVER_PORT=3004
-         - ALLOWED_ORIGINS=http://localhost:5173/,https://app.huginn.dev/,https://dev.huginn.dev/
+         - ALLOWED_ORIGINS=http://localhost:5173/,https://app.huginn.dev/,https://dev.huginn.dev/,https://huginn.dev
          - CDN_LOCAL_URL=http://cdn:3002/cdn
       secrets:
          - backend_secrets
