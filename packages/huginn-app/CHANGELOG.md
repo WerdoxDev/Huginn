@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.67.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.66.2...app@v0.67.0) (2026-01-24)
+
+
+### Features
+
+* **app:** add mobile support settings modal tabs ([1c5571b](https://github.com/WerdoxDev/Huginn/commit/1c5571bf168fea18abe851e3c8874e179f7403bb))
+* **app:** complete overhaul of input system (wip) ([0f467f5](https://github.com/WerdoxDev/Huginn/commit/0f467f582c245de86d20880a78ab686ed6842c2c))
+* **app:** use updated oauth flow ([671cd7c](https://github.com/WerdoxDev/Huginn/commit/671cd7cff60f9510df193306e1d0b121344eced3))
+* **app:** very wip mobile layout support ([deda383](https://github.com/WerdoxDev/Huginn/commit/deda3830c0e7a29b89ce6e7ea824e78fdaa2a90f))
+
+
+### Bug Fixes
+
+* **app:** base should only be set for web build ([8e45599](https://github.com/WerdoxDev/Huginn/commit/8e45599c0b262f9abfb98d47b5ad0069f22ada01))
+* **app:** better pwa icons ([f4652a6](https://github.com/WerdoxDev/Huginn/commit/f4652a6ae39a87695c4aeefdee822eeca78fe43b))
+* **app:** context menus should keep the element selected ([a26ec64](https://github.com/WerdoxDev/Huginn/commit/a26ec645bb09aa2d656bf2aabe00436d3bbe1947))
+* **app:** incorrect rewrites [#2](https://github.com/WerdoxDev/Huginn/issues/2) ([84b90c5](https://github.com/WerdoxDev/Huginn/commit/84b90c5db6a386696a47291d38e70923378a34d6))
+* **app:** incorrect rewrites [#3](https://github.com/WerdoxDev/Huginn/issues/3) ([a0cd2fd](https://github.com/WerdoxDev/Huginn/commit/a0cd2fd82dde6698d560f500b74e35e06b35b979))
+* **app:** incorrect vercel rewrites ([943ed8e](https://github.com/WerdoxDev/Huginn/commit/943ed8e863f2e63858791895e4649d012a136a5a))
+* **app:** missing channel recipient active state ([2e92386](https://github.com/WerdoxDev/Huginn/commit/2e9238634deeca09d7eba448f798f620aa5fab53))
+* **app:** some mobile and secure context fixes + better settings modal mobile state ([2372377](https://github.com/WerdoxDev/Huginn/commit/2372377c8ab74825d3942c7aaea72ca7867611fa))
+* **app:** storage check files should happen after client id creation ([3ef0557](https://github.com/WerdoxDev/Huginn/commit/3ef0557b7263c0f6b8a274aeabc80aa19f7b63ac))
+* **app:** vercel multiroot fix [#1](https://github.com/WerdoxDev/Huginn/issues/1) ([fecb7df](https://github.com/WerdoxDev/Huginn/commit/fecb7df57a0cf36d2f64456c85edd69685298602))
+* **app:** vercel multiroot fix [#2](https://github.com/WerdoxDev/Huginn/issues/2) ([ccd5b50](https://github.com/WerdoxDev/Huginn/commit/ccd5b50a9f5a024c4f6054658b2d05a5890111c2))
+* **app:** vercel multiroot fix [#3](https://github.com/WerdoxDev/Huginn/issues/3) ([59f6015](https://github.com/WerdoxDev/Huginn/commit/59f6015bef962d7aa6289400f9e5f67ba9740190))
+* **app:** vercel multiroot fix [#4](https://github.com/WerdoxDev/Huginn/issues/4) ([3a00d1e](https://github.com/WerdoxDev/Huginn/commit/3a00d1e9cecd43d7702d3f20a212aaee0a083ec7))
+* **website:** app's base dir should be app ([b13d366](https://github.com/WerdoxDev/Huginn/commit/b13d3667a8f362ae227d1391c34f62352999ab80))
+
 ## [0.66.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.66.1...app@v0.66.2) (2026-01-06)
 
 

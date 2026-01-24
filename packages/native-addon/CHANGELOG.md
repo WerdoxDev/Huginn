@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.1.2...native-addon@v0.2.0) (2026-01-24)
+
+
+### Features
+
+* **native-addon:** add linux partial compatibility ([7475016](https://github.com/WerdoxDev/Huginn/commit/74750163961218f6bcad7c5a32551b000876803b))
+
 ## [0.1.2](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.1.1...native-addon@v0.1.2) (2025-09-24)
 
 
