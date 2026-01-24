@@ -37,13 +37,12 @@ export default function OauthRedirect() {
    const posthog = usePostHog();
    const history = useHistory();
 
-   const decodedToken = useMemo(() => (search.get("token") ? (jose.decodeJwt(search.get("token") ?? "") as OAuthTokenPayload) : undefined), [search]);
+   const decodedToken = useMemo(
+      () => (search.get("oauth_token") ? (jose.decodeJwt(search.get("oauth_token")!) as OAuthTokenPayload) : undefined),
+      [search],
+   );
 
    const { register, handleErrors, handleSubmit, formState } = useHuginnForm<Inputs>();
-   // const { inputsProps, values, handleErrors, resetInput } = useInputs([
-   //    { name: "username", required: true, default: decodedToken?.username },
-   //    { name: "displayName", required: false, default: decodedToken?.fullName },
-   // ]);
 
    const [shouldRender, setShouldRender] = useState(false);
    const { data: originalAvatar } = useQuery(getUserAvatarOptions(decodedToken?.providerUserId, decodedToken?.avatarHash, client));
@@ -53,8 +52,8 @@ export default function OauthRedirect() {
    const mutation = useHuginnMutation(
       {
          async mutationFn(body: APIPostOAuthConfirmJSONBody) {
-            if (search.get("token")) {
-               return await client?.oauth.confirmOAuth(body, search.get("token") ?? "");
+            if (search.get("oauth_token")) {
+               return await client?.oauth.confirmOAuth(body, search.get("oauth_token") ?? "");
             }
          },
          async onSuccess(data) {
@@ -66,11 +65,10 @@ export default function OauthRedirect() {
 
    useEffect(() => {
       async function tryAuthorize() {
-         if (search.has("access_token") || search.has("refresh_token")) {
-            localStorage.setItem("access-token", search.get("access_token") ?? "");
-            localStorage.setItem("refresh-token", search.get("refresh_token") ?? "");
+         if (search.has("access_token") && search.has("refresh_token")) {
+            localStorage.setItem("access-token", search.get("access_token")!);
+            localStorage.setItem("refresh-token", search.get("refresh_token")!);
 
-            console.log("YES");
             await navigate("/");
          } else {
             setShouldRender(true);
@@ -82,7 +80,6 @@ export default function OauthRedirect() {
          setAvatarData(e.croppedImageData);
       });
 
-      updateModals({ info: { isOpen: false } });
       tryAuthorize();
 
       return () => {
@@ -126,7 +123,7 @@ export default function OauthRedirect() {
    return (
       shouldRender && (
          <StartWrapper transitionName="start-oauth-redirect" onSubmit={handleSubmit(onSubmit)}>
-            {search.has("token") && (
+            {search.has("oauth_token") && (
                <>
                   <div className="flex w-full flex-col items-center select-none">
                      <div className="text-text mb-1 text-2xl font-medium">Almost there!</div>

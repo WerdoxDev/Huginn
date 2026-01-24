@@ -71,9 +71,10 @@ export default function Index() {
    async function initialize() {
       const redirect = search.get("redirect");
       const requiresAuth = search.get("requireAuth") === "1" ? true : false;
-      const redirectUrl = new URL(redirect ?? "/login", window.location.origin);
+      const redirectUrl = redirect ? new URL(redirect, window.location.origin) : undefined;
 
-      if (!requiresAuth) {
+      console.log(requiresAuth, redirectUrl);
+      if (!requiresAuth && redirectUrl) {
          await navigate({ pathname: redirectUrl.pathname, search: redirectUrl.search }, { replace: true, viewTransition: true });
          return;
       }
@@ -87,7 +88,7 @@ export default function Index() {
          dispatch({ type: "FAIL", error: "Failed to connect..." });
          startBackground.setState(0);
       } else {
-         await navigate({ pathname: redirectUrl.pathname, search: `?${search.toString()}` }, { replace: true, viewTransition: true });
+         await navigate({ pathname: "/login", search: `?${search.toString()}` }, { replace: true, viewTransition: true });
       }
    }
 

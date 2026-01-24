@@ -8,7 +8,6 @@ import TitleBar from "@components/TitleBar";
 import { useStartBackground } from "@stores/startBackgroundStore";
 import { NotificationProvider } from "@contexts/NotificationContext";
 import { useMainViewTransitionState } from "@hooks/useMainViewTransitionState";
-import { dispatchEvent } from "@lib/event-handler";
 import { useClientStore } from "@stores/clientStore";
 import { ContextMenuProvider } from "@stores/contextMenuStore";
 import { initializePresence } from "@stores/presenceStore";

@@ -12,7 +12,7 @@ try {
             stdin: "inherit",
             stdout: "inherit",
             cwd: process.cwd(),
-            env: { ...(process.env as Record<string, string>), VITE_DEV_SERVER_URL: "http://localhost:5173" },
+            env: { ...(process.env as Record<string, string>), VITE_DEV_SERVER_URL: "http://localhost:5174" },
          });
       }
    }

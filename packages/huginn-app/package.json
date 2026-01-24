@@ -16,13 +16,13 @@
       "dev": "bun ./scripts/dev.ts",
       "preview": "vite preview",
       "build": "BUILD_TARGET=electron bun run vite:build && bun run electron:build",
-      "vite:dev": "vite --host",
+      "vite:dev": "vite --host --port 5174",
       "vite:build": "vite build",
       "electron:build": "bun ./scripts/build.ts --prod && electron-builder --config ./electron-builder-config.ts",
       "electron:run": "bun ./scripts/build.ts && electron .",
       "build:fast": "bun run vite:build && bun ./scripts/build.ts && electron-builder --config ./electron-builder-config.ts -c.compression=store",
       "test": "playwright test",
-      "test-gen": "playwright codegen localhost:5173",
+      "test-gen": "playwright codegen localhost:5174",
       "electron:rebuild": "electron-rebuild -f -v 36.3.2 -m native-addon"
    },
    "dependencies": {

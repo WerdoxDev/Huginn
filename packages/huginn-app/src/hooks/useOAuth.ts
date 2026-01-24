@@ -1,4 +1,4 @@
-import type { GatewayOAuthRedirectData, OAuthType } from "@huginn/shared";
+import type { OAuthFlow, OAuthResult, OAuthType } from "@huginn/shared";
 import { listenEvent } from "@lib/event-handler";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
@@ -14,81 +14,72 @@ export function useOAuth() {
    const { updateModals } = useModals();
    const posthog = usePostHog();
 
-   const unlisten = useRef<() => void>(null);
-   // let unlisten: () => void;
-
-   // Websocket
-
-   function startOAuth(type: OAuthType) {
+   async function startOAuth(type: OAuthType) {
       if (!client) {
          return;
       }
 
       posthog.capture("oauth:oauth_flow_start", { type: type });
 
-      listenOAuth();
-      const url = client.oauth.getOAuthURL(
-         type,
-         huginnWindow.environment !== "desktop" ? "browser" : "websocket",
-         `${window.origin}/#/oauth-redirect`,
-      );
+      const redirectUrl = import.meta.env.VITE_PUBLIC_OAUTH_REDIRECT;
+      const url = client.oauth.getOAuthURL(type, huginnWindow.environment === "desktop" ? "desktop" : "browser", `${redirectUrl}`);
+      console.log(url);
 
-      if (huginnWindow.environment !== "desktop") {
-         window.open(url, "_self");
-      } else {
-         updateModals({
-            info: {
-               status: "info",
-               isOpen: true,
-               title: "Check your browser!",
-               text: "Please check your browser and continue there",
-               isClosable: false,
-               action: {
-                  cancel: {
-                     text: "Cancel",
-                     callback: () => {
-                        updateModals({ info: { isOpen: false } });
-                        unlistenOAuth();
-                     },
+      updateModals({
+         info: {
+            status: "info",
+            isOpen: true,
+            title: "Check your browser!",
+            text: "Please check your browser and continue there",
+            isClosable: false,
+            action: {
+               cancel: {
+                  text: "Cancel",
+                  callback: () => {
+                     updateModals({ info: { isOpen: false } });
                   },
                },
             },
-         });
-         // openExternal
+         },
+      });
+
+      if (huginnWindow.environment !== "desktop") {
+         window.open(url, "_blank");
+      } else {
          window.electronAPI.openExternal(url);
       }
+
+      return await waitForOauth();
    }
 
-   async function onOAuthRedirect(d: GatewayOAuthRedirectData) {
-      window.electronAPI.showMain();
-      window.electronAPI.focusMain();
-      await navigate(`/oauth-redirect?${new URLSearchParams({ ...d }).toString()}`, { viewTransition: true });
-      unlistenOAuth();
-   }
-
-   function listenOAuth() {
-      unlistenOAuth();
-      client?.gateway.on("oauth_redirect", onOAuthRedirect);
-
-      // Url scheme
-      unlisten.current = listenEvent("deep_link", async (url) => {
+   async function waitForOauth() {
+      const unlisten = listenEvent("deep_link", async (url) => {
          const actualUrl = new URL(url);
-         //TODO: MIGRATION
-         // await getCurrentWindow().requestUserAttention(UserAttentionType.Critical);
-         await navigate(`/oauth-redirect?${actualUrl.searchParams.toString()}`, { viewTransition: true });
-         unlistenOAuth();
+         if (actualUrl.host !== "oauth-confirm") return;
+         const flow = actualUrl.searchParams.get("flow")! as OAuthFlow;
+         const oauth_token = actualUrl.searchParams.get("oauth_token") ?? undefined;
+         const access_token = actualUrl.searchParams.get("access_token") ?? undefined;
+         const refresh_token = actualUrl.searchParams.get("refresh_token") ?? undefined;
+         localStorage.setItem("oauth-confirm", JSON.stringify({ flow, oauth_token, access_token, refresh_token } satisfies OAuthResult));
+
+         unlisten();
       });
-   }
 
-   useEffect(() => {
-      return () => {
-         unlistenOAuth();
-      };
-   }, []);
+      const result = await new Promise<OAuthResult>((res) => {
+         const interval = window.setInterval(() => {
+            const oauth = localStorage.getItem("oauth-confirm");
+            if (oauth) {
+               localStorage.removeItem("oauth-confirm");
+               clearInterval(interval);
+               updateModals({ info: { isOpen: false } });
 
-   function unlistenOAuth() {
-      unlisten.current?.();
-      client?.gateway.off("oauth_redirect", onOAuthRedirect);
+               const value = JSON.parse(oauth);
+               res(value);
+            }
+         }, 500);
+      });
+
+      return result;
    }
 
    return startOAuth;
