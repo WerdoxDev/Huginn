@@ -30,12 +30,7 @@ export class OAuthAPI {
          const state = encodeBase64(`${Date.now()}:${generateRandomString(16)}`);
          url.searchParams.set("state", state);
          url.searchParams.set("flow", flow);
-         if (flow === "browser" && redirectUrl) {
-            url.searchParams.set("redirect_url", redirectUrl);
-         }
-         if (flow === "websocket") {
-            url.searchParams.set("session_id", this.gateway.sessionId ?? "");
-         }
+         url.searchParams.set("redirect_url", redirectUrl);
 
          return url.toString();
       }
