@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.15.0...voice@v0.15.1) (2026-01-24)
+
+
+### Bug Fixes
+
+* **voice:** incorrect media codec parameters for h264 ([cf72108](https://github.com/WerdoxDev/Huginn/commit/cf72108c484038227a0829772668045dab4ae993))
+
 ## [0.15.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.14.0...voice@v0.15.0) (2025-12-24)
 
 
