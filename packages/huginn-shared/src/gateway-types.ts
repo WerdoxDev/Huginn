@@ -58,7 +58,6 @@ export type GatewayWebsocketEvents = {
    channel_recipient_remove: GatewayDMCannelRecipientRemoveData;
    user_update: GatewayUserUpdateData;
    presence_update: GatewayPresenceUpdateData;
-   oauth_redirect: GatewayOAuthRedirectData;
    voice_state_update: GatewayVoiceStateUpdateData;
    voice_server_update: GatewayVoiceServerUpdateData;
    call_create: GatewayCallCreateData;
@@ -190,13 +189,6 @@ export type GatewayDMChannelRecipientAddData = { user: APIChannelUser; channelId
 export type GatewayDMCannelRecipientRemoveData = { user: APIChannelUser; channelId: Snowflake };
 export type GatewayUserUpdateData = APIUser & Tokens;
 export type GatewayPresenceUpdateData = UserPresence;
-
-export type GatewayOAuthRedirectData = {
-   access_token?: string;
-   refresh_token?: string;
-   token?: string;
-   error?: string;
-};
 
 export type GatewayTypingStartData = {
    channelId: Snowflake;

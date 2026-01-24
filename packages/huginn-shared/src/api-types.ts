@@ -5,10 +5,11 @@ export type LoginCredentials = APIPostLoginJSONBody;
 export type RegisterUser = APIPostRegisterJSONBody;
 
 export type DirectChannel = Merge<APIDMChannel, APIGroupDMChannel>;
+export type AuthType = "password" | "oauth";
 
 export type UserTokenPayload = {
    id: Snowflake;
-   isOAuth: boolean;
+   authType: AuthType;
 };
 
 export type OAuthTokenPayload = {
@@ -395,7 +396,8 @@ export type Activity = {
 export type ActivityWithoutSessionId = Omit<Activity, "sessionId">;
 
 export type OAuthType = "google" | "github";
-export type OAuthFlow = "browser" | "websocket";
+export type OAuthFlow = "browser" | "desktop";
+export type OAuthResult = { flow: OAuthFlow; access_token?: string; refresh_token?: string; oauth_token?: string };
 
 export type APIReadState = {
    userId: Snowflake;
