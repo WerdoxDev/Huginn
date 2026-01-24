@@ -8,14 +8,17 @@ datasource db {
 }
 
 model User {
-   id                      BigInt             @id
-   username                String             @unique
-   displayName             String?
-   email                   String             @unique
-   avatar                  String?
-   password                String?
-   flags                   Int                @db.SmallInt
-   system                  Boolean            @default(false)
+   id          BigInt    @id
+   username    String    @unique
+   displayName String?
+   email       String    @unique
+   avatar      String?
+   password    String?
+   flags       Int       @db.SmallInt
+   system      Boolean   @default(false)
+   createdAt   DateTime  @default(now())
+   updatedAt   DateTime? @updatedAt
+
    includedChannels        Channel[]          @relation("channel_recipients")
    ownedChannels           Channel[]          @relation("channel_owner")
    tempDeletedChannels     Channel[]          @relation("channel_temp_deleted")
@@ -30,35 +33,46 @@ model User {
    contributedApplications KnownApplication[]
 }
 
+model IdentityProvider {
+   id             BigInt  @id
+   providerUserId String  @unique
+   userId         BigInt?
+   completed      Boolean
+   providerType   String
+   refreshToken   String
+
+   user User? @relation(fields: [userId], references: [id])
+}
+
 model Channel {
-   id                 BigInt             @id
-   icon               String?
-   lastMessageId      BigInt?
-   lastMessage        Message?           @relation("channel_last_message", fields: [lastMessageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-   name               String?
-   owner              User?              @relation("channel_owner", fields: [ownerId], references: [id])
-   ownerId            BigInt?
-   recipients         User[]             @relation("channel_recipients")
-   messages           Message[]
-   type               Int
-   tempDeletedByUsers User[]             @relation("channel_temp_deleted")
-   readStates         ReadState[]
-   messageReferences  MessageReference[]
+   id                BigInt             @id
+   icon              String?
+   lastMessageId     BigInt?
+   name              String?
+   ownerId           BigInt?
+   type              Int
+   messages          Message[]
+   readStates        ReadState[]
+   messageReferences MessageReference[]
+   createdAt         DateTime           @default(now())
+   updatedAt         DateTime?          @updatedAt
+
+   lastMessage        Message? @relation("channel_last_message", fields: [lastMessageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+   owner              User?    @relation("channel_owner", fields: [ownerId], references: [id])
+   recipients         User[]   @relation("channel_recipients")
+   tempDeletedByUsers User[]   @relation("channel_temp_deleted")
 
    @@index([type])
 }
 
 model Message {
    id                  BigInt       @id
-   author              User         @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    authorId            BigInt
-   channel             Channel      @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    channelId           BigInt
    content             String
    timestamp           DateTime
    editedTimestamp     DateTime?
    deletedTimestamp    DateTime?
-   mentions            User[]       @relation("message_mentions")
    embeds              Embed[]
    attachments         Attachment[]
    reactions           String[]
@@ -69,6 +83,9 @@ model Message {
    lastReadMessages    ReadState[]
    lastMessageChannels Channel[]    @relation("channel_last_message")
 
+   author            User               @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+   channel           Channel            @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+   mentions          User[]             @relation("message_mentions")
    messageReference  MessageReference?  @relation("message_referrer")
    referringMessages MessageReference[] @relation("message_reference")
 
@@ -77,42 +94,37 @@ model Message {
 
 model Call {
    id             BigInt    @id
-   message        Message   @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    messageId      BigInt    @unique
-   participants   User[]    @relation("participated_calls")
    endedTimestamp DateTime?
+
+   message      Message @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+   participants User[]  @relation("participated_calls")
 }
 
 model Relationship {
-   id       BigInt    @id
-   type     Int       @db.SmallInt
-   nickname String
-   since    DateTime?
-   owner    User      @relation("relation_owner", fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-   ownerId  BigInt
-   user     User      @relation("relation_user", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-   userId   BigInt
+   id        BigInt    @id
+   type      Int       @db.SmallInt
+   nickname  String
+   since     DateTime?
+   ownerId   BigInt
+   userId    BigInt
+   createdAt DateTime  @default(now())
+   updatedAt DateTime? @updatedAt
+
+   owner User @relation("relation_owner", fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+   user  User @relation("relation_user", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
    @@index([ownerId])
 }
 
-model IdentityProvider {
-   id             BigInt  @id
-   providerUserId String  @unique
-   userId         BigInt?
-   user           User?   @relation(fields: [userId], references: [id])
-   completed      Boolean
-   providerType   String
-   refreshToken   String
-}
-
 model ReadState {
-   channel           Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    channelId         BigInt
-   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    userId            BigInt
-   lastReadMessage   Message? @relation(fields: [lastReadMessageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
    lastReadMessageId BigInt?
+
+   channel         Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+   lastReadMessage Message? @relation(fields: [lastReadMessageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
    @@id([channelId, userId])
 }
@@ -124,10 +136,11 @@ model Embed {
    description String?
    url         String?
    timestamp   DateTime?
-   message     Message?   @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    messageId   BigInt?
    thumbnail   Thumbnail?
    video       Video?
+
+   message Message? @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Thumbnail {
@@ -135,8 +148,9 @@ model Thumbnail {
    width   Int
    height  Int
    url     String
-   embed   Embed  @relation(fields: [embedId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    embedId BigInt @unique
+
+   embed Embed @relation(fields: [embedId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Video {
@@ -144,12 +158,13 @@ model Video {
    width   Int
    height  Int
    url     String
-   embed   Embed  @relation(fields: [embedId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    embedId BigInt @unique
+
+   embed Embed @relation(fields: [embedId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Attachment {
-   id          BigInt   @id
+   id          BigInt  @id
    filename    String
    description String?
    contentType String
@@ -157,15 +172,17 @@ model Attachment {
    url         String
    width       Int?
    height      Int?
-   flags       Int      @db.SmallInt
-   message     Message? @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+   flags       Int     @db.SmallInt
    messageId   BigInt?
+
+   message Message? @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Settings {
-   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    userId BigInt @id @unique
    json   Json
+
+   user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model KnownApplication {
@@ -173,7 +190,6 @@ model KnownApplication {
    names               String[]
    exeName             String
    igdbId              Int?
-   contributor         User?     @relation(fields: [contributorId], references: [id])
    contributorId       BigInt?
    createdAt           DateTime  @default(now())
    updatedAt           DateTime? @updatedAt
@@ -181,21 +197,21 @@ model KnownApplication {
    commandLinePatterns String[]
    active              Boolean   @default(false)
 
+   contributor User? @relation(fields: [contributorId], references: [id])
+
    @@index([names])
 }
 
 model MessageReference {
-   id   BigInt @id
-   type Int
-
-   referrerMessage   Message @relation("message_referrer", fields: [referrerMessageId], references: [id], onDelete: Cascade)
+   id                BigInt  @id
+   type              Int
    referrerMessageId BigInt  @unique
+   messageId         BigInt?
+   channelId         BigInt
 
-   message   Message? @relation("message_reference", fields: [messageId], references: [id])
-   messageId BigInt?
-
-   channel   Channel @relation(fields: [channelId], references: [id])
-   channelId BigInt
+   referrerMessage Message  @relation("message_referrer", fields: [referrerMessageId], references: [id], onDelete: Cascade)
+   message         Message? @relation("message_reference", fields: [messageId], references: [id])
+   channel         Channel  @relation(fields: [channelId], references: [id])
 
    @@index([referrerMessageId])
 }
