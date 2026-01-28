@@ -1,12 +1,19 @@
 import { useMobileMenuStore } from "@stores/mobileMenuStore";
-import clsx from "clsx";
+import type { MouseEvent } from "react";
+import TopBarButton from "./TopBarButton";
 
-export default function MobileMenuButton(props: { className?: string }) {
-   const { openLeft } = useMobileMenuStore();
+export default function MobileMenuButton() {
+   const { openLeft, closeRight } = useMobileMenuStore();
+
+   function handleClick(e: MouseEvent) {
+      e.stopPropagation();
+      openLeft();
+      closeRight();
+   }
 
    return (
-      <button className={clsx("cursor-pointer lg:hidden", props.className)} onClick={openLeft}>
-         <IconMingcuteMenuFill className="text-text size-7" />
-      </button>
+      <TopBarButton className="mr-3" onClick={handleClick}>
+         <IconMingcuteMenuFill className="size-topbar-icon" />
+      </TopBarButton>
    );
 }

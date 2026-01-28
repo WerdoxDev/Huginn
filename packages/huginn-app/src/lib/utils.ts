@@ -1,15 +1,4 @@
-import type {
-   AppDirectChannel,
-   AppMessage,
-   AppPresence,
-   AppRelationship,
-   AppUser,
-   DropdownItem,
-   InputMessage,
-   InputStatuses,
-   InputValue,
-   InputValues,
-} from "@/types";
+import type { AppDirectChannel, AppMessage, AppPresence, AppRelationship, AppUser, InputMessage } from "@/types";
 import {
    type APIMessage,
    type APIPostMessageReferenceJSONBody,
@@ -18,8 +7,6 @@ import {
    type DirectChannel,
    HuginnAPIError,
    type HuginnError,
-   type HuginnErrorData,
-   type HuginnErrorGroupWrapper,
    MessageType,
    type PresenceStatus,
    type PresenceUser,
@@ -38,59 +25,6 @@ import { getMessage } from "./query-utils";
 import type { QueryClient } from "@tanstack/react-query";
 
 export const requiredFieldError: InputMessage = { status: "error", text: "Required" } as const;
-
-export function getInputCurrentStatus(field: InputValue, fieldName: string, errorStatuses: InputStatuses): InputMessage {
-   const newStatus: InputMessage = !field.value && field.required ? requiredFieldError : errorStatuses[fieldName] || { status: "none", text: "" };
-
-   return newStatus;
-}
-
-export function getInputsValidatedStatuses(fields: InputValues, statuses: InputStatuses) {
-   const newStatues = { ...statuses };
-
-   for (const key of Object.keys(fields)) {
-      if (!fields[key].value && fields[key].required) {
-         newStatues[key] = requiredFieldError;
-      }
-   }
-
-   return newStatues;
-}
-
-export function getInputsStatusesFromError(statuses: InputStatuses, error: HuginnErrorData) {
-   const newStatuses = { ...statuses };
-
-   for (const key of Object.keys(newStatuses)) {
-      if (!error.errors) {
-         const apiMessage = Object.entries(APIMessages).find(([code]) => code === error.code.toString())?.[1];
-         newStatuses[key] = { code: "error", text: apiMessage ?? error.message };
-      } else if (error.errors[key]) {
-         newStatuses[key] = {
-            code: "error",
-            text: (error.errors[key] as HuginnErrorGroupWrapper)._errors[0].message,
-         };
-      } else {
-         newStatuses[key] = { code: "none", text: "" };
-      }
-   }
-
-   return newStatuses;
-}
-
-export function getEmptyStatuses(states: InputStatuses) {
-   const newStatuses = { ...states };
-
-   for (const key of Object.keys(newStatuses)) {
-      newStatuses[key] = { code: "none", text: "" };
-   }
-
-   return newStatuses;
-}
-
-export function doStatusesHaveErrors(statuses: InputStatuses, exclude?: InputStatuses) {
-   const excludeValues = Object.values(exclude ?? {});
-   return Object.values(statuses).filter((x) => x.code === "error" && !excludeValues.includes(x)).length !== 0;
-}
 
 export function filterChildrenOfType(children: ReactNode, type: JSXElementConstructor<never>) {
    return Children.toArray(children).filter((child) => isValidElement(child) && typeof child.type === "function" && child.type.name === type.name);

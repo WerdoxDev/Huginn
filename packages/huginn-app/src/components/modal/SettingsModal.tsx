@@ -168,40 +168,39 @@ function SettingsTabs() {
 
    return (
       <div className="scroll-surface scroll-thin flex h-full w-full flex-col overflow-y-scroll pb-2 lg:w-52">
-         {tabs.map(
-            (tab, i) =>
-               (client?.gateway.status === "authenticated" || !tab.auth) && (
-                  <Fragment key={tab.name}>
-                     {i !== 0 && <div className="bg-surface my-3 mr-0.5 ml-3 hidden h-px shrink-0 lg:my-2 lg:block" />}
-                     <div className={clsx("mb-2 w-full px-4 text-left text-sm text-white/50 lg:mb-1", i === 0 ? "mt-2" : "mt-4 lg:mt-1.5")}>
-                        {tab.text}
-                     </div>
-                     <div className="bg-surface ml-2.5 flex flex-col gap-y-1 rounded-lg p-2.5 lg:gap-y-0.5 lg:bg-transparent lg:p-0">
-                        {tab.children?.map((child) => (
-                           <div className="w-full" key={child.name}>
-                              <Tab>
-                                 {({ selected }) => (
-                                    <button
-                                       type="button"
-                                       className={clsx(
-                                          "text-text flex w-full cursor-pointer items-center gap-x-2 rounded-md px-2 py-2 text-left text-base whitespace-nowrap outline-hidden active:bg-white/10 active:text-white lg:py-1.5 lg:active:bg-white/3 lg:active:text-white",
-                                          selected
-                                             ? "bg-white/10 text-white transition-colors duration-300"
-                                             : "text-white/80 hover:bg-white/3 hover:text-white lg:text-white/50",
-                                       )}
-                                    >
-                                       <div className="shrink-0">{child.icon}</div>
-                                       <span>{child.text}</span>
-                                       <IconMingcuteRightFill className="ml-auto lg:hidden" />
-                                    </button>
-                                 )}
-                              </Tab>
-                           </div>
-                        ))}
-                     </div>
-                  </Fragment>
-               ),
-         )}
+         {tabs
+            .filter((x) => client?.gateway.status === "authenticated" || !x.auth)
+            .map((tab, i) => (
+               <Fragment key={tab.name}>
+                  {i !== 0 && <div className="bg-surface my-3 mr-0.5 ml-3 hidden h-px shrink-0 lg:my-2 lg:block" />}
+                  <div className={clsx("pr-2 pb-2 pl-4 text-left text-sm text-white/50 lg:pb-1", i === 0 ? "pt-2" : "pt-4 lg:pt-1.5")}>
+                     {tab.text}
+                  </div>
+                  <div className="bg-surface ml-2.5 flex flex-col gap-y-1 rounded-lg p-2.5 lg:bg-transparent lg:p-0">
+                     {tab.children?.map((child) => (
+                        <div className="w-full" key={child.name}>
+                           <Tab>
+                              {({ selected }) => (
+                                 <button
+                                    type="button"
+                                    className={clsx(
+                                       "text-text flex w-full cursor-pointer items-center gap-x-2 rounded-md px-2 py-2 text-left text-base whitespace-nowrap outline-hidden active:bg-white/10 active:text-white lg:active:bg-white/3",
+                                       selected
+                                          ? "bg-white/10 text-white transition-colors duration-300"
+                                          : "text-white/70 hover:bg-white/3 hover:text-white",
+                                    )}
+                                 >
+                                    <div className="shrink-0">{child.icon}</div>
+                                    <span>{child.text}</span>
+                                    <IconMingcuteRightFill className="ml-auto lg:hidden" />
+                                 </button>
+                              )}
+                           </Tab>
+                        </div>
+                     ))}
+                  </div>
+               </Fragment>
+            ))}
       </div>
    );
 }

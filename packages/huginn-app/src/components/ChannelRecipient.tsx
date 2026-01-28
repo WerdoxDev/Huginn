@@ -25,7 +25,7 @@ export default function ChannelRecipient(props: { channelId: Snowflake; isOwner:
          onContextMenu={open}
          onClick={isMobile ? open : undefined}
          className={clsx(
-            "group/recipient hover:bg-surface active:bg-surface data-context:bg-surface relative flex cursor-pointer items-center gap-x-3 rounded-lg p-1.5",
+            "group/recipient hover:bg-surface active:bg-surface data-context:bg-surface relative flex cursor-pointer items-center gap-x-3 rounded-md p-1.5",
          )}
          data-context={context?.isOpen && data?.recipient.id === props.recipient.id ? true : undefined}
       >

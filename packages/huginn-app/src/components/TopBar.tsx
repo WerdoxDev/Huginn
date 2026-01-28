@@ -1,9 +1,9 @@
-import type { ReactNode } from "react";
+import type { MouseEvent, ReactNode } from "react";
 
-export default function TopBar(props: { children?: ReactNode }) {
+export default function TopBar(props: { children?: ReactNode; onClick?: (e: MouseEvent) => void }) {
    return (
-      <div>
-         <div className="bg-surface-deep flex h-16 shrink-0 items-center px-3">
+      <div onClick={props.onClick}>
+         <div className="bg-surface-deep h-topbar flex shrink-0 items-center px-3">
             <div className="flex w-full items-center">{props.children}</div>
          </div>
          <div className="h-0.5 shrink-0 bg-white/10" />

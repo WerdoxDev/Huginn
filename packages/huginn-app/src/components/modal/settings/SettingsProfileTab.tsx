@@ -2,7 +2,6 @@ import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import { Transition } from "@headlessui/react";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
-import { useInputs } from "@hooks/useInputs";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import { omit } from "@huginn/shared";
 import { listenEvent } from "@lib/event-handler";
@@ -19,42 +18,42 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
    const { user, setUser, tokenPayload } = useThisUser();
    const { updateModals } = useModals();
 
-   const { inputsProps, values, handleErrors, resetStatuses, resetInput, setValue } = useInputs([
-      { name: "username", required: true, default: user?.username, lowercase: true },
-      { name: "displayName", required: false, default: user?.originalDisplayName },
-      { name: "password", required: false },
-      { name: "newPassword", required: false },
-   ]);
+   // const { inputsProps, values, handleErrors, resetStatuses, resetInput, setValue } = useInputs([
+   //    { name: "username", required: true, default: user?.username, lowercase: true },
+   //    { name: "displayName", required: false, default: user?.originalDisplayName },
+   //    { name: "password", required: false },
+   //    { name: "newPassword", required: false },
+   // ]);
 
    const { data: originalAvatar } = useQuery(getUserAvatarOptions(user?.id, user?.avatar, client));
    const [avatarData, setAvatarData] = useState<string | null | undefined>(() => originalAvatar);
 
-   const { message: usernameMessageDetail, onFocusChanged, onChanged } = useUniqueUsernameMessage(values, resetInput, "username");
+   // const { message: usernameMessageDetail, onFocusChanged, onChanged } = useUniqueUsernameMessage(values, resetInput, "username");
 
-   const mutation = usePatchUser((result) => {
-      if (!client) {
-         return;
-      }
+   // const mutation = usePatchUser((result) => {
+   //    if (!client) {
+   //       return;
+   //    }
 
-      client.tokenHandler.token = result.token;
-      client.tokenHandler.refreshToken = result.refreshToken;
-      setUser(omit(result, ["refreshToken", "token"]));
+   //    client.tokenHandler.token = result.token;
+   //    client.tokenHandler.refreshToken = result.refreshToken;
+   //    setUser(omit(result, ["refreshToken", "token"]));
 
-      setValue("password", "");
-      setValue("newPassword", "");
-      resetStatuses();
+   //    setValue("password", "");
+   //    setValue("newPassword", "");
+   //    resetStatuses();
 
-      onChanged(values.username.value, result.username);
-      onFocusChanged(false);
-   }, handleErrors);
+   //    // onChanged(values.username.value, result.username);
+   //    // onFocusChanged(false);
+   // }, handleErrors);
 
    const [avatarModified, setAvatarModified] = useState(false);
    const [modified, setModified] = useState(false);
 
-   useMemo(() => {
-      const displayName = !user?.originalDisplayName ? "" : user.originalDisplayName;
-      setModified(values.username.value !== user?.username || values.displayName.value !== displayName || values.newPassword.value !== "");
-   }, [values, user]);
+   // useMemo(() => {
+   //    const displayName = !user?.originalDisplayName ? "" : user.originalDisplayName;
+   //    setModified(values.username.value !== user?.username || values.displayName.value !== displayName || values.newPassword.value !== "");
+   // }, [values, user]);
 
    useEffect(() => {
       if (originalAvatar) {
@@ -92,13 +91,13 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
    }
 
    function edit() {
-      mutation.mutate({
-         displayName: values.displayName.value,
-         username: values.username.value === user?.username ? undefined : values.username.value,
-         password: values.password.value,
-         newPassword: values.newPassword.value,
-         avatar: originalAvatar && !avatarData ? null : originalAvatar === avatarData ? undefined : avatarData,
-      });
+      // mutation.mutate({
+      //    displayName: values.displayName.value,
+      //    username: values.username.value === user?.username ? undefined : values.username.value,
+      //    password: values.password.value,
+      //    newPassword: values.newPassword.value,
+      //    avatar: originalAvatar && !avatarData ? null : originalAvatar === avatarData ? undefined : avatarData,
+      // });
    }
 
    function revert() {
@@ -106,14 +105,14 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
          return;
       }
 
-      setAvatarData(originalAvatar);
-      setValue("username", user.username);
-      setValue("displayName", user.originalDisplayName);
-      setValue("password", "");
-      setValue("newPassword", "");
-      resetStatuses();
+      // setAvatarData(originalAvatar);
+      // setValue("username", user.username);
+      // setValue("displayName", user.originalDisplayName);
+      // setValue("password", "");
+      // setValue("newPassword", "");
+      // resetStatuses();
 
-      onFocusChanged(false);
+      // onFocusChanged(false);
 
       setAvatarModified(false);
       setModified(false);
@@ -206,7 +205,8 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
                   Revert
                </HuginnButton>
                <LoadingButton
-                  loading={mutation.isPending}
+                  // loading={mutation.isPending}
+                  loading={false}
                   disabled={!modified && !avatarModified}
                   onClick={edit}
                   className="w-36 shrink-0 rounded-lg!"

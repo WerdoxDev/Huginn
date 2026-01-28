@@ -37,7 +37,7 @@ export default function Friends() {
       <div className="flex h-full flex-col">
          <TabGroup as={Fragment} defaultIndex={friends.length === 0 ? 3 : 0} onChange={onTabChange}>
             <TopBar>
-               <MobileMenuButton className="mr-3" />
+               <MobileMenuButton />
                {/* <div className="h-19 bg-surface-deep flex shrink-0 items-center px-6"> */}
                <TabList className="mr-5 flex justify-center gap-x-5">
                   <div className="text-text flex items-center justify-center gap-x-2.5">
@@ -54,7 +54,7 @@ export default function Friends() {
                         <button
                            type="button"
                            className={clsx(
-                              "outline-hidden cursor-pointer rounded-md px-2",
+                              "cursor-pointer rounded-md px-2 outline-hidden",
                               selected
                                  ? "bg-primary-700 text-text pointer-events-none"
                                  : "text-text ring-primary-700 hover:bg-primary-700 hover:text-text ring-1 hover:ring-0",

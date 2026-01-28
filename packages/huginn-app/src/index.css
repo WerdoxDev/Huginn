@@ -4,6 +4,10 @@
    --font-*: initial;
    --font-noto: Noto Sans, sans-serif;
    --font-ubuntu: Ubuntu Mono, monospace;
+
+   --spacing-topbar-icon: 1.5rem;
+   --spacing-topbar: 4rem;
+   --spacing-topbar-separator: calc(var(--spacing-topbar) + 0.125rem);
 }
 
 @theme inline {

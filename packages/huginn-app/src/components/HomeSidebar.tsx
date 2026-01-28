@@ -9,6 +9,7 @@ import RingLinkButton from "./button/RingLinkButton";
 import DirectMessageChannel from "./DirectMessageChannel";
 import Tooltip from "./tooltip/Tooltip";
 import VoiceStatus from "./voice/VoiceStatus";
+import HuginnButton from "./button/HuginnButton";
 
 export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
    const { updateModals } = useModals();
@@ -29,7 +30,7 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
 
    return (
       <nav className={clsx("bg-surface-alt flex h-full flex-col overflow-hidden rounded-l-xl")}>
-         <div className="flex h-16 shrink-0 items-center px-6">
+         <div className="h-topbar flex shrink-0 items-center px-6">
             <div className="text-text text-xl font-bold">Home</div>
             <div className="relative ml-6">
                <RingLinkButton prefetch="intent" to="/friends" className="px-2.5 py-1 text-xs font-medium">
@@ -41,7 +42,7 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
             </div>
          </div>
          <div className="h-0.5 shrink-0 bg-white/10" />
-         <div className="mx-3.5 mt-6 mb-3 flex shrink-0 items-center justify-between text-xs">
+         {/* <div className="mx-3.5 mt-6 mb-3 flex shrink-0 items-center justify-between text-xs">
             <div className="text-text/70 hover:text-text font-medium uppercase">Direct Messages</div>
             <Tooltip>
                <Tooltip.Trigger onClick={() => updateModals({ createDM: { isOpen: true } })}>
@@ -49,11 +50,19 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
                </Tooltip.Trigger>
                <Tooltip.Content>Create DM</Tooltip.Content>
             </Tooltip>
-         </div>
-         <ul className="scroll-alternative2 scroll-super-thin flex h-full flex-col gap-y-0.5 overflow-x-hidden overflow-y-scroll pt-0.5 pr-1 pb-2 pl-2">
+         </div> */}
+         <ul className="scroll-alternative2 scroll-super-thin flex h-full flex-col gap-y-0.5 overflow-x-hidden overflow-y-scroll pt-2 pr-1 pb-2 pl-2">
             {sortedChannels?.map((channel) => (
                <DirectMessageChannel key={channel.id} channel={channel} />
             ))}
+            <HuginnButton
+               onClick={() => updateModals({ createDM: { isOpen: true } })}
+               className="group/add border-positive-600 hover:border-positive-100 active:hover:border-positive-100 hover:bg-positive-800 active:bg-positive-800 mt-1.5 h-12 w-full border-2 border-dashed"
+               innerClassName="flex items-center justify-center opacity-60! gap-x-2 transition-opacity group-hover/add:opacity-100! group-active/add:opacity-100!"
+            >
+               <div>Create Channel</div>
+               <IconMingcuteAddFill />
+            </HuginnButton>
          </ul>
          <VoiceStatus />
       </nav>

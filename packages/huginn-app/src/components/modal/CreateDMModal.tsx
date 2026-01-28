@@ -13,7 +13,12 @@ import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import BaseDialogPanel from "./BaseDialogPanel";
+import { useHuginnForm } from "@hooks/useHuginnForm";
 // import { usePostHog } from "posthog-js/react";
+
+type Input = {
+   name?: string;
+};
 
 export default function CreateDMModal() {
    const { createDM: modal, updateModals } = useModals();
@@ -23,7 +28,8 @@ export default function CreateDMModal() {
    const { data } = useQuery(getRelationshipsOptions(client!));
 
    const [selectedUsers, setSelectedUsers] = useState<AppUser[]>([]);
-   const { inputsProps, setValue, values, validateValues, handleErrors } = useInputs([{ name: "name", required: false }]);
+   // const { inputsProps, setValue, values, validateValues, handleErrors } = useInputs([{ name: "name", required: false }]);
+   const { handleErrors, setValue, register, values } = useHuginnForm<Input>();
 
    const mutation = useCreateDMChannel("create-dm-channel_other", handleErrors);
 
@@ -53,11 +59,7 @@ export default function CreateDMModal() {
    }
 
    async function findOrCreate() {
-      if (!validateValues()) {
-         return;
-      }
-
-      await mutation.mutateAsync({ recipients: selectedUsers?.map((x) => x.id), name: values.name.value });
+      await mutation.mutateAsync({ recipients: selectedUsers?.map((x) => x.id), name: values.name });
       close();
    }
    return (
@@ -68,7 +70,7 @@ export default function CreateDMModal() {
          <Description className="text-text/70 mx-5 mt-1 text-center">Select your fellow warrior(s) to share a tale with!</Description>
          <div className="flex flex-col gap-y-5 p-6">
             <HuginnInput
-               {...inputsProps.name}
+               {...register("name")}
                placeholder={selectedUsers.length > 1 ? placeholderName : "Select 2 or more members"}
                disabled={selectedUsers.length < 2}
             >
