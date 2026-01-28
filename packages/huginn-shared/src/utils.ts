@@ -329,7 +329,7 @@ export function remap(value: number, fromMin: number, fromMax: number, toMin = 0
    return ((value - fromMin) * (toMax - toMin)) / (fromMax - fromMin) + toMin;
 }
 
-export function convertToMediaKind(hMediaKind: HMediaKind): MediaKind | undefined {
+export function convertToMediaKind(hMediaKind: HMediaKind): MediaKind {
    switch (hMediaKind) {
       case "camera":
          return "video";
@@ -340,7 +340,7 @@ export function convertToMediaKind(hMediaKind: HMediaKind): MediaKind | undefine
       case "stream_video":
          return "video";
       default:
-         return "audio"
+         return "audio";
    }
 }
 
