@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.2](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.22.1...backend-shared@v0.22.2) (2026-01-24)
+
+
+### Bug Fixes
+
+* **backend-shared:** trim username ([50a145f](https://github.com/WerdoxDev/Huginn/commit/50a145f144f72e25fa31427e42d8344fc4aa6798))
+
 ## [0.22.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.22.0...backend-shared@v0.22.1) (2026-01-06)
 
 

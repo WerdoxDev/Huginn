@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.33.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.32.7...server@v0.33.0) (2026-01-24)
+
+
+### Features
+
+* **server:** new oauth flow + update old icon ([2f1ed80](https://github.com/WerdoxDev/Huginn/commit/2f1ed80c68bcf2d8078a509c7e78965b2a605204))
+
+
+### Bug Fixes
+
+* **server:** missing channel sub + wrong known application trademark replace regex ([d7c2d67](https://github.com/WerdoxDev/Huginn/commit/d7c2d6705094944e7a36d99f36b3cba11d7dc9b2))
+* **server:** wrong code for failed login ([ec208f8](https://github.com/WerdoxDev/Huginn/commit/ec208f893bc5956a1d34f4b7551d0ec22e755e53))
+
 ## [0.32.7](https://github.com/WerdoxDev/Huginn/compare/server@v0.32.6...server@v0.32.7) (2026-01-06)
 
 

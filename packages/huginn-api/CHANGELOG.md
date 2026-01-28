@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.33.3](https://github.com/WerdoxDev/Huginn/compare/api@v0.33.2...api@v0.33.3) (2026-01-24)
+
+
+### Bug Fixes
+
+* **api:** gateway wrong log section ([1f9752d](https://github.com/WerdoxDev/Huginn/commit/1f9752d732885b5dd6ab2d01cbb513b13166a0b7))
+
 ## [0.33.2](https://github.com/WerdoxDev/Huginn/compare/api@v0.33.1...api@v0.33.2) (2026-01-06)
 
 
