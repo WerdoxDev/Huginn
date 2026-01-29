@@ -4,7 +4,7 @@ import TopBar from "@components/TopBar";
 export default function ChannelTopBar() {
    return (
       <TopBar>
-         <MobileMenuButton className="mr-3" />
+         <MobileMenuButton />
       </TopBar>
    );
 }

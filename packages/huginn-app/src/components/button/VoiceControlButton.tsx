@@ -34,7 +34,6 @@ export default function VoiceControlButton(props: {
    className?: string;
    children?: ReactNode;
    tooltip: string;
-   innerClassName?: string;
    asChild?: boolean;
 }) {
    return (

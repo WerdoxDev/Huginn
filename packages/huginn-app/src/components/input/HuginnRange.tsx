@@ -1,3 +1,4 @@
+import HuginnLabel from "@components/HuginnLabel";
 import Tooltip from "@components/tooltip/Tooltip";
 import { snowflake, WorkerID } from "@huginn/shared";
 import clsx from "clsx";
@@ -163,7 +164,7 @@ function Input(props: { className?: string; backgroundClassName?: string; fillCl
                props.backgroundClassName,
             )}
          >
-            <div className={clsx("bg-surface-alt relative left-0 top-0 h-full w-full", props.backgroundClassName)} ref={rangeTrackRef}>
+            <div className={clsx("bg-surface-alt relative top-0 left-0 h-full w-full", props.backgroundClassName)} ref={rangeTrackRef}>
                <div className={clsx("bg-primary-500 h-full", props.fillClassName)} style={{ width: `${percentage}%` }} />
             </div>
             {props.children}
@@ -185,12 +186,7 @@ function Input(props: { className?: string; backgroundClassName?: string; fillCl
 
 function Label(props: { children?: ReactNode }) {
    const rangeContext = useContext(RangeContext);
-
-   return (
-      <label htmlFor={rangeContext.id} className="text-text mb-2 select-none text-xs font-medium uppercase opacity-90">
-         {props.children}
-      </label>
-   );
+   return <HuginnLabel htmlFor={rangeContext.id}>{props.children}</HuginnLabel>;
 }
 
 HuginnRange.Input = Input;

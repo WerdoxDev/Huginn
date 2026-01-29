@@ -6,7 +6,6 @@ import HuginnInput from "@components/input/HuginnInput";
 import { Description, DialogTitle } from "@headlessui/react";
 import { useChannelNamePlaceholder } from "@hooks/api-hooks/channelHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
-import { useInputs } from "@hooks/useInputs";
 import { getRelationshipsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
@@ -74,7 +73,7 @@ export default function CreateDMModal() {
                placeholder={selectedUsers.length > 1 ? placeholderName : "Select 2 or more members"}
                disabled={selectedUsers.length < 2}
             >
-               <HuginnInput.Label className="mb-2" text="Group Name" />
+               <HuginnInput.Label>Group Name</HuginnInput.Label>
                <HuginnInput.Wrapper>
                   <HuginnInput.Input />
                </HuginnInput.Wrapper>

@@ -1,16 +1,13 @@
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import { Transition } from "@headlessui/react";
-import { usePatchUser } from "@hooks/mutations/usePatchUser";
-import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
-import { omit } from "@huginn/shared";
 import { listenEvent } from "@lib/event-handler";
 import { getUserAvatarOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { SettingsTabProps } from "@/types";
 
 export default function SettingsProfileTab(_props: SettingsTabProps) {

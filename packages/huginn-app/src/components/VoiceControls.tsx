@@ -132,7 +132,7 @@ export default function VoiceControls(props: {
                         <VoiceControlButton
                            className={clsx(
                               "flex h-full items-center justify-center",
-                              voiceState.isAudioStreaming || voiceState.isScreenSharing ? "p-0! w-[38px] rounded-r-none" : "w-16",
+                              voiceState.isAudioStreaming || voiceState.isScreenSharing ? "w-9.5 rounded-r-none p-0!" : "w-16",
                            )}
                            activeHoverColor="negative"
                            activeColor="primary"
@@ -179,7 +179,7 @@ export default function VoiceControls(props: {
             </VoiceControlButton>
          )}
          <Tooltip>
-            <Tooltip.Trigger onClick={props.onToggleFullscreen} className="text-text/60 hover:text-text absolute bottom-1 right-3 size-7">
+            <Tooltip.Trigger onClick={props.onToggleFullscreen} className="text-text/60 hover:text-text absolute right-3 bottom-1 size-7">
                {!props.isFullscreen ? <IconMingcuteFullscreenFill className="size-7" /> : <IconMingcuteFullscreenExitFill className="size-7" />}
             </Tooltip.Trigger>
             <Tooltip.Content>{props.isFullscreen ? "Exit fullscreen" : "Fullscreen"}</Tooltip.Content>

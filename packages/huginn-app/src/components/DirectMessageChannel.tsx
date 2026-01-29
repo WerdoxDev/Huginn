@@ -26,7 +26,7 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel 
    return (
       <li
          onContextMenu={(e) => openContextMenu(props.channel, e)}
-         className={clsx("group relative -mr-1 flex shrink-0 cursor-pointer overflow-hidden rounded-md")}
+         className={clsx("group relative flex shrink-0 cursor-pointer overflow-hidden rounded-md")}
          data-context={context?.isOpen && data?.id === props.channel.id ? true : undefined}
       >
          <NavLink

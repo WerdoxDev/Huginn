@@ -1,6 +1,6 @@
 import LoadingButton from "@components/button/LoadingButton";
 import clsx from "clsx";
-import type { HuginnButtonProps, HuginnInputProps, HuginnLoadingButtonProps } from "@/types";
+import type { HuginnButtonProps, HuginnInputProps } from "@/types";
 import HuginnInput from "./HuginnInput";
 
 export default function AddFriendInput(props: {

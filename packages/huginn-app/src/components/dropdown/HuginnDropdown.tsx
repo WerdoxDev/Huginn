@@ -3,6 +3,7 @@ import { snowflake, WorkerID } from "@huginn/shared";
 import clsx from "clsx";
 import { createContext, type ReactNode, useContext, useState } from "react";
 import type { DropdownItem } from "@/types";
+import HuginnLabel from "@components/HuginnLabel";
 
 const DropdownContext = createContext<{
    id: string;
@@ -52,10 +53,10 @@ function List(props: { className?: string; children?: ReactNode; onClick?: () =>
                <div>
                   <ListboxButton
                      onClick={props.onClick}
-                     className="outline-hidden relative flex w-full cursor-pointer select-none items-center gap-x-1.5 overflow-hidden p-2 text-white"
+                     className="relative flex w-full cursor-pointer items-center gap-x-1.5 overflow-hidden p-2 text-white outline-hidden select-none"
                   >
                      {value?.icon}
-                     <span className="overflow-hidden text-ellipsis whitespace-nowrap text-left">{value?.text}</span>
+                     <span className="overflow-hidden text-left text-ellipsis whitespace-nowrap">{value?.text}</span>
                      <IconMingcuteDownFill className={clsx("text-primary-500 ml-auto h-6 w-6 shrink-0 transition-transform", open && "rotate-180")} />
                   </ListboxButton>
                   {props.children}
@@ -73,7 +74,7 @@ function ItemsWrapper(props: { className?: string; children?: ReactNode; anchor?
          anchor={props.anchor ?? "bottom"}
          transition
          className={clsx(
-            "scroll-surface scroll-super-thin bg-surface-alt outline-primary-800 data-closed:translate-y-5 data-closed:opacity-0 flex flex-col overflow-y-auto rounded-lg outline transition [--anchor-gap:0.25rem] [--anchor-padding:1rem]",
+            "scroll-surface scroll-super-thin bg-surface-alt outline-primary-800 flex flex-col overflow-y-auto rounded-lg outline transition [--anchor-gap:0.25rem] [--anchor-padding:1rem] data-closed:translate-y-5 data-closed:opacity-0",
             props.className,
          )}
       >
@@ -86,24 +87,19 @@ function Item(props: { item: DropdownItem; children?: ReactNode }) {
    return (
       <ListboxOption
          value={props.item}
-         className="data-focus:bg-surface data-selected:bg-surface/50 data-selected:text-white group flex cursor-pointer items-center gap-x-2 px-2 py-2 text-white/70"
+         className="data-focus:bg-surface data-selected:bg-surface/50 group flex cursor-pointer items-center gap-x-2 px-2 py-2 text-white/70 data-selected:text-white"
       >
          {props.item.icon}
          <span className="wrap-anywhere">{props.item.text}</span>
          {props.children}
-         <IconMingcuteCheckFill className="text-primary-500 group-data-selected:visible invisible ml-auto size-5 shrink-0" />
+         <IconMingcuteCheckFill className="text-primary-500 invisible ml-auto size-5 shrink-0 group-data-selected:visible" />
       </ListboxOption>
    );
 }
 
 function Label(props: { children?: ReactNode }) {
    const dropdownContext = useContext(DropdownContext);
-
-   return (
-      <label htmlFor={dropdownContext.id} className="text-text mb-2 select-none text-xs font-medium uppercase opacity-90">
-         {props.children}
-      </label>
-   );
+   return <HuginnLabel htmlFor={dropdownContext.id}>{props.children}</HuginnLabel>;
 }
 
 HuginnDropdown.Label = Label;

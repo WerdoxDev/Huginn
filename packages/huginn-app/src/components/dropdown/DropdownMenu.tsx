@@ -4,13 +4,11 @@ import {
    FloatingFocusManager,
    FloatingList,
    FloatingNode,
-   FloatingPortal,
    FloatingTree,
    limitShift,
    offset,
    safePolygon,
    shift,
-   size,
    useClick,
    useDismiss,
    useFloating,
@@ -278,7 +276,7 @@ function Items(props: { children?: ReactNode; className?: string }) {
                   <div
                      className={clsx(
                         props.className,
-                        "outline-hidden data-closed:scale-95 data-closed:opacity-0 flex min-w-28 flex-col rounded-lg bg-zinc-900 p-2 shadow-lg transition-[opacity,scale]",
+                        "flex min-w-28 flex-col rounded-lg bg-zinc-900 p-2 shadow-lg outline-hidden transition-[opacity,scale] data-closed:scale-95 data-closed:opacity-0",
                      )}
                   >
                      <FloatingList elementsRef={menu.elementsRef} labelsRef={menu.labelsRef}>
@@ -310,7 +308,7 @@ function Item(props: HTMLProps<HTMLButtonElement> & { label: string; color?: "de
          ref={props.isNested ? useMergeRefs([triggerProps.ref, props.ref]) : useMergeRefs([item.ref, props.ref])}
          type="button"
          className={clsx(
-            "disabled:hover:bg-transparent! flex cursor-pointer items-center justify-between gap-x-5 text-nowrap rounded-sm px-2 py-2 text-start text-sm outline-none disabled:cursor-not-allowed",
+            "flex cursor-pointer items-center justify-between gap-x-5 rounded-sm px-2 py-2 text-start text-sm text-nowrap outline-none disabled:cursor-not-allowed disabled:hover:bg-transparent!",
             !props.color || props.color === "default"
                ? "hover:enabled:bg-surface-alt text-white/90 disabled:text-white/50"
                : props.color === "negative" && "text-negative-100 hover:enabled:bg-negative-100/10 disabled:text-negative-100/50",

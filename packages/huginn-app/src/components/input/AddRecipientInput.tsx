@@ -32,7 +32,7 @@ export default function AddRecipientInput(props: {
          message={{ status: "none", text: "" }}
          onChange={(e) => setQuery(e.target.value)}
       >
-         <HuginnInput.Label className="mb-2" text={props.label ?? "Members"} />
+         <HuginnInput.Label>{props.label ?? "Members"}</HuginnInput.Label>
          <HuginnInput.Wrapper className="flex-col items-start!">
             <ComboboxInput.SelectionDisplay>
                {({ toggleSelection }) => (

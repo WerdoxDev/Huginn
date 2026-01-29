@@ -55,7 +55,6 @@ export type HuginnButtonProps = {
    type?: "submit" | "reset" | "button" | undefined;
    className?: string;
    disabled?: boolean;
-   innerClassName?: string;
    color?: "primary" | "surface-deep" | "surface-alt" | "surface" | "positive";
    onClick?: () => void;
 };

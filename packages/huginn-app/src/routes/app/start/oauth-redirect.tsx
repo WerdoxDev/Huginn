@@ -1,4 +1,3 @@
-import AnimatedMessage from "@components/StatusMessage";
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import ImageSelector from "@components/ImageSelector";
@@ -8,7 +7,6 @@ import { useStartBackground } from "@stores/startBackgroundStore";
 import { useHistory } from "@contexts/HistoryContext";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
-import { useInputs } from "@hooks/useInputs";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import type { APIPostOAuthConfirmJSONBody, OAuthTokenPayload } from "@huginn/shared";
 import { listenEvent } from "@lib/event-handler";
@@ -141,14 +139,14 @@ export default function OauthRedirect() {
                   </div>
                   <div className="mt-5 flex w-full flex-col">
                      <HuginnInput {...register("username", { required: true, validate })} className="mb-5">
-                        <HuginnInput.Label text="Username" className="mb-2" />
+                        <HuginnInput.Label>Username</HuginnInput.Label>
                         <HuginnInput.Wrapper>
                            <HuginnInput.Input lowercase />
                         </HuginnInput.Wrapper>
                      </HuginnInput>
 
                      <HuginnInput placeholder={decodedToken?.username} {...register("displayName")}>
-                        <HuginnInput.Label text="Display Name" className="mb-2" />
+                        <HuginnInput.Label>Display Name</HuginnInput.Label>
                         <HuginnInput.Wrapper>
                            <HuginnInput.Input />
                         </HuginnInput.Wrapper>

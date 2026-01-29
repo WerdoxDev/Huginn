@@ -14,7 +14,7 @@ export default function ChannelMe() {
          <TopBar>
             <MobileMenuButton />
          </TopBar>
-         <div className="flex h-full flex-col items-center justify-center gap-y-5">
+         <div className="flex h-full flex-col items-center justify-center gap-y-5 px-2">
             <div className="text-text flex max-w-md flex-col items-center text-center">
                <div className="bg-surface mb-2.5 rounded-xl p-5 shadow-lg">
                   <HuginnIcon outlined className="text-primary-500 size-20 transition-transform hover:scale-105 hover:-rotate-12 active:rotate-6" />
@@ -28,7 +28,7 @@ export default function ChannelMe() {
                   section or select one of these <span className="text-text/80 font-semibold">Quick Actions</span>!
                </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex w-full flex-wrap items-center justify-center gap-2 lg:flex-nowrap">
                <QuickActionButton onClick={() => updateModals({ createDM: { isOpen: true } })}>Create Direct Message</QuickActionButton>
                <QuickActionButton onClick={() => navigate("/friends")}>Add a Friend</QuickActionButton>
             </div>

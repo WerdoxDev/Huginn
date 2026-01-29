@@ -1,6 +1,5 @@
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
 import HuginnInput from "@components/input/HuginnInput";
-import { useInputs } from "@hooks/useInputs";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
 import { type ReactNode, useEffect, useEffectEvent, useRef, useState } from "react";
@@ -203,7 +202,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
          ) : (
             <div>
                <HuginnInput className="w-md" type="text" {...register("externalUrl", { required: true, onBlur: validateHostnames })}>
-                  <HuginnInput.Label className="mb-2" text="External Hostnames URL" />
+                  <HuginnInput.Label>External Hostnames URL</HuginnInput.Label>
                   <div className="flex items-center">
                      <HuginnInput.Wrapper>
                         <HuginnInput.Input />

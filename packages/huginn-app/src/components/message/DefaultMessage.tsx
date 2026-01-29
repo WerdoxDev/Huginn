@@ -94,7 +94,7 @@ export default function DefaultMessage() {
                isNextPreview={isNextPreview}
                widths={widths}
             />
-            <div className="ml-2.5 mt-2.5 flex h-full shrink-0 select-none items-center justify-center gap-x-2">
+            <div className="mt-2.5 ml-2.5 flex h-full shrink-0 items-center justify-center gap-x-2 select-none">
                {isEditing ||
                   (isReplying && (
                      <div className="text-positive-100 text-xs font-semibold uppercase">
@@ -127,7 +127,7 @@ function ReplyRenderer(props: { referencedMessage: AppMessage }) {
    }
 
    return (
-      <div className="group/reply flex w-full cursor-pointer select-none items-center gap-x-1 pl-2">
+      <div className="group/reply flex w-full cursor-pointer items-center gap-x-1 pl-2 select-none">
          <IconMingcuteCornerUpRightLine className="size-7 shrink-0 text-white/50 group-hover/reply:text-white" />
          <div className="mb-2 flex items-center gap-x-2 overflow-hidden">
             <div className="flex items-center gap-x-1">
@@ -161,11 +161,11 @@ function DefaultRenderer(props: {
    return (
       <div
          className={clsx(
-            "wrap-anywhere relative whitespace-break-spaces px-2.5 py-1.5 font-normal text-white transition-[background-color] group-hover:shadow-sm",
+            "relative px-2.5 py-1.5 font-normal wrap-anywhere whitespace-break-spaces text-white transition-[background-color] group-hover:shadow-sm",
             props.isPreview ? "bg-surface text-white/50" : props.isSelf ? "bg-primary-800" : "bg-surface",
-            props.isUnread && !props.isSeparate && "!rounded-t-none",
-            (props.isSeparate || props.isLastAction) && "!rounded-t-xl",
-            props.isNextSeparate && "!rounded-b-xl",
+            props.isUnread && !props.isSeparate && "rounded-t-none!",
+            (props.isSeparate || props.isLastAction) && "rounded-t-xl!",
+            props.isNextSeparate && "rounded-b-xl!",
          )}
          style={{
             borderBottomRightRadius: `${clamp((props.widths.width - props.widths.nextWidth) / 2, 0, 12)}px`,
@@ -173,7 +173,7 @@ function DefaultRenderer(props: {
          }}
       >
          {!props.isSeparate && props.widths.lastWidth > props.widths.width && (
-            <div className="absolute -right-10 top-0 h-10 w-10 overflow-hidden">
+            <div className="absolute top-0 -right-10 h-10 w-10 overflow-hidden">
                <div
                   className={clsx(
                      "h-full w-full overflow-hidden transition-[border-radius]",

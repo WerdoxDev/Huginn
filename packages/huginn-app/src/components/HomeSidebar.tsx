@@ -28,6 +28,10 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
       [props.channels],
    );
 
+   function handleCreateChannel() {
+      updateModals({ createDM: { isOpen: true } });
+   }
+
    return (
       <nav className={clsx("bg-surface-alt flex h-full flex-col overflow-hidden rounded-l-xl")}>
          <div className="h-topbar flex shrink-0 items-center px-6">
@@ -42,27 +46,20 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
             </div>
          </div>
          <div className="h-0.5 shrink-0 bg-white/10" />
-         {/* <div className="mx-3.5 mt-6 mb-3 flex shrink-0 items-center justify-between text-xs">
-            <div className="text-text/70 hover:text-text font-medium uppercase">Direct Messages</div>
-            <Tooltip>
-               <Tooltip.Trigger onClick={() => updateModals({ createDM: { isOpen: true } })}>
-                  <IconMingcuteAddFill className="text-text/80 hover:text-text size-4" />
-               </Tooltip.Trigger>
-               <Tooltip.Content>Create DM</Tooltip.Content>
-            </Tooltip>
-         </div> */}
-         <ul className="scroll-alternative2 scroll-super-thin flex h-full flex-col gap-y-0.5 overflow-x-hidden overflow-y-scroll pt-2 pr-1 pb-2 pl-2">
-            {sortedChannels?.map((channel) => (
-               <DirectMessageChannel key={channel.id} channel={channel} />
-            ))}
+         <ul className="scroll-super-thin flex h-full flex-col overflow-x-hidden overflow-y-scroll">
+            <div className="text-text/70 pt-4 pr-2 pb-2 pl-4 text-xs uppercase">Direct Messages</div>
             <HuginnButton
-               onClick={() => updateModals({ createDM: { isOpen: true } })}
-               className="group/add border-positive-600 hover:border-positive-100 active:hover:border-positive-100 hover:bg-positive-800 active:bg-positive-800 mt-1.5 h-12 w-full border-2 border-dashed"
-               innerClassName="flex items-center justify-center opacity-60! gap-x-2 transition-opacity group-hover/add:opacity-100! group-active/add:opacity-100!"
+               onClick={handleCreateChannel}
+               className="border-primary-800 hover:bg-primary-800 active:bg-primary-800 mb-2 ml-2 flex items-center gap-x-3 border p-1.5 text-left text-white/70 hover:text-white active:text-white"
             >
+               <div className="bg-primary-700 h-9 w-9 rounded-full" />
                <div>Create Channel</div>
-               <IconMingcuteAddFill />
             </HuginnButton>
+            <div className="flex flex-col gap-y-0.5 rounded-lg p-0 pl-2">
+               {sortedChannels?.map((channel) => (
+                  <DirectMessageChannel key={channel.id} channel={channel} />
+               ))}
+            </div>
          </ul>
          <VoiceStatus />
       </nav>

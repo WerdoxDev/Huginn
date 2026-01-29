@@ -80,7 +80,7 @@ export default function EditGroupModal() {
          <div className="flex gap-x-5 p-5">
             <ImageSelector data={iconData} onSelected={onSelected} onDelete={onDelete} />
             <HuginnInput {...inputsProps.name} className="mt-2 w-full" placeholder={modal.channel?.name}>
-               <HuginnInput.Label className="mb-2" text="Group Name" />
+               <HuginnInput.Label>Group Name</HuginnInput.Label>
                <HuginnInput.Wrapper>
                   <HuginnInput.Input />
                </HuginnInput.Wrapper>

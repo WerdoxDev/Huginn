@@ -1,6 +1,6 @@
 import type { HuginnInputProps } from "@/types";
 import clsx from "clsx";
-import { type ReactNode, createContext, useContext } from "react";
+import { type ReactNode, type RefObject, createContext, useContext } from "react";
 import HuginnInput from "./HuginnInput";
 
 const ComboboxContext = createContext<{ selection: unknown[]; toggleSelection: (value: unknown) => void } | undefined>(undefined);
@@ -53,12 +53,13 @@ function Item(props: { value: unknown; children?: ReactNode; className?: string 
    return (
       <div
          className={clsx(
-            "outline-hidden hover:bg-surface flex cursor-pointer select-none items-center gap-x-2 rounded-sm px-2 py-1",
+            "hover:bg-surface flex cursor-pointer items-center gap-x-2 rounded-sm px-2 py-1 outline-hidden select-none",
             props.className,
          )}
          onClick={() => {
             comboboxContext?.toggleSelection(props.value);
-            inputContext.inputRef?.current?.focus();
+            const ref = inputContext.ref as RefObject<HTMLInputElement>;
+            ref?.current.focus();
          }}
       >
          {props.children}

@@ -75,7 +75,7 @@ export default function Login() {
          search = new URLSearchParams({ oauth_token: result.oauth_token });
       }
 
-      console.log(search, result);
+      // console.log(search, result);
 
       await navigate(`/oauth-redirect?${search!.toString()}`, { viewTransition: true });
    }
@@ -90,8 +90,7 @@ export default function Login() {
             <HuginnButton
                onClick={() => handleOAuth("google")}
                type="button"
-               innerClassName="flex items-center justify-center gap-x-2"
-               className="border-primary-700 text-text w-full rounded-lg border-2 py-2 transition-all hover:shadow-lg"
+               className="border-primary-700 text-text flex w-full items-center justify-center gap-x-2 rounded-lg border-2 py-2 transition-all hover:shadow-lg"
                color="surface-alt"
             >
                <IconLogosGoogleIcon className="size-5" />
@@ -99,8 +98,7 @@ export default function Login() {
             </HuginnButton>
             <HuginnButton
                type="button"
-               innerClassName="flex items-center justify-center gap-x-2"
-               className="border-primary-700 text-text w-full rounded-lg border-2 py-2 transition-all hover:shadow-lg"
+               className="border-primary-700 text-text flex w-full items-center justify-center gap-x-2 rounded-lg border-2 py-2 transition-all hover:shadow-lg"
                color="surface-alt"
             >
                <IconLogosGithubIcon className="size-5 text-white [&>path]:fill-white" />
@@ -112,14 +110,14 @@ export default function Login() {
          </div>
          <div className="w-full">
             <HuginnInput className="mb-5" {...register("login", { required: true })}>
-               <HuginnInput.Label className="mb-2" text="Email or Username" />
+               <HuginnInput.Label>Email or Username</HuginnInput.Label>
                <HuginnInput.Wrapper>
                   <HuginnInput.Input />
                </HuginnInput.Wrapper>
             </HuginnInput>
 
             <PasswordInput {...register("password", { required: true })}>
-               <HuginnInput.Label className="mb-2" text="Password" />
+               <HuginnInput.Label>Password</HuginnInput.Label>
                <HuginnInput.Wrapper>
                   <HuginnInput.Input />
                   <PasswordInput.ToggleButton />

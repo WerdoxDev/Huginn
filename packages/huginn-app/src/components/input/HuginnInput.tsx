@@ -14,6 +14,7 @@ import {
 } from "react";
 import type { HuginnInputProps, InputMessage, StatusType } from "@/types";
 import StatusMessage from "@components/StatusMessage";
+import HuginnLabel from "@components/HuginnLabel";
 
 const InputContext = createContext<{
    id: string;
@@ -124,28 +125,13 @@ function Wrapper(props: { className?: string; headless?: boolean; children?: Rea
    );
 }
 
-function Label(props: { children?: ReactNode; headless?: boolean; className?: string; text: string; hideStatus?: boolean }) {
+function Label(props: { children?: ReactNode; className?: string }) {
    const inputContext = useContext(InputContext);
    return (
-      <label
-         htmlFor={inputContext.id}
-         className={clsx(
-            !props.headless && "text-text text-xs font-medium uppercase opacity-90 select-none",
-            // inputContext.status.code === "none" ? "text-text" : "text-negative-100",
-            props.className,
-         )}
-      >
-         {props.text}
-         {!props.hideStatus &&
-            // (inputContext.status.text ? (
-            //    <span className={clsx("text-negative-100", inputContext.status.text && "font-normal normal-case italic")}>
-            //       <span className="px-0.5">-</span>
-            //       {inputContext.status.text}
-            //    </span>
-            // ) : (
-            // ))}
-            inputContext.required && <span className="text-negative-100 pl-0.5">*</span>}
-      </label>
+      <HuginnLabel htmlFor={inputContext.id} className={props.className}>
+         {props.children}
+         {inputContext.required && <span className="text-negative-100 pl-0.5">*</span>}
+      </HuginnLabel>
    );
 }
 
