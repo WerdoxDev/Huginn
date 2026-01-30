@@ -73,9 +73,11 @@ export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
                   </div>
                   <HuginnButton
                      onClick={handleAddMember}
-                     className="border-primary-800 hover:bg-primary-800 active:bg-primary-800 mt-2 ml-2 flex items-center gap-x-3 border p-1.5 text-left text-white/70 hover:text-white active:text-white"
+                     className="border-primary-800 group/button hover:bg-primary-800 active:bg-primary-800 mt-1 ml-2 flex items-center gap-x-2 border border-dashed p-1.5 text-left text-sm text-white/70 hover:text-white active:text-white"
                   >
-                     <div className="bg-primary-700 h-9 w-9 rounded-full" />
+                     <div className="bg-primary-800 group-hover/button:bg-primary-700 group-active/button:bg-primary-700 flex h-7 w-7 items-center justify-center rounded-full transition-colors">
+                        <IconMingcuteAddFill />
+                     </div>
                      <div>Add Member</div>
                   </HuginnButton>
                   {loading && (
