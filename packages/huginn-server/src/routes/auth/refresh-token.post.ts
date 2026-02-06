@@ -16,12 +16,8 @@ export const postRefreshToken = new Elysia().post(
 
       const user = await prisma.user.getById(payload.id, { select: { id: true } });
 
-      const accessToken = await createToken(
-         "user-access",
-         { id: user.id, authType: (await prisma.identityProvider.exists({ userId: BigInt(user.id) })) ? "oauth" : "password" },
-         constants.ACCESS_TOKEN_EXPIRE_TIME,
-      );
-      const refreshToken = await createToken("user-refresh", { id: user.id }, constants.REFRESH_TOKEN_EXPIRE_TIME);
+      const accessToken = await createToken("user-access", { id: user.id, authType: payload.authType }, constants.ACCESS_TOKEN_EXPIRE_TIME);
+      const refreshToken = await createToken("user-refresh", { id: user.id, authType: payload.authType }, constants.REFRESH_TOKEN_EXPIRE_TIME);
 
       const json: APIPostRefreshTokenResult = { token: accessToken, refreshToken };
       return status("OK", json);

@@ -12,6 +12,7 @@ import {
    idFix,
    snowflake,
    toArrayBuffer,
+   type OAuthType,
 } from "@huginn/shared";
 import { cdnUpload } from "#utils/server-request";
 // import { createTokens } from "#utils/token-factory";
@@ -78,13 +79,18 @@ export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
          }),
       );
 
-      await prisma.identityProvider.update({
+      const result = await prisma.identityProvider.update({
          where: { providerUserId: tokenPayload.providerUserId },
          data: { userId: BigInt(user.id), completed: true },
+         select: { providerType: true },
       });
 
-      const accessToken = await createToken("user-access", { id: user.id, authType: "oauth" }, constants.ACCESS_TOKEN_EXPIRE_TIME);
-      const refreshToken = await createToken("user-refresh", { id: user.id }, constants.REFRESH_TOKEN_EXPIRE_TIME);
+      const accessToken = await createToken(
+         "user-access",
+         { id: user.id, authType: result.providerType as OAuthType },
+         constants.ACCESS_TOKEN_EXPIRE_TIME,
+      );
+      const refreshToken = await createToken("user-refresh", { id: user.id, authType: "password" }, constants.REFRESH_TOKEN_EXPIRE_TIME);
 
       const json: APIPostOAuthConfirmResult = { ...user, token: accessToken, refreshToken: refreshToken };
       return status("Created", json);

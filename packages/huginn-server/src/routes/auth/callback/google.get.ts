@@ -79,10 +79,14 @@ export const getGoogleCallback = new Elysia().get(
          if (identityProvider?.completed && identityProvider?.userId) {
             const accessToken = await createToken(
                "user-access",
-               { id: identityProvider.userId.toString(), authType: "oauth" },
+               { id: identityProvider.userId.toString(), authType: "google" },
                constants.ACCESS_TOKEN_EXPIRE_TIME,
             );
-            const refreshToken = await createToken("user-refresh", { id: identityProvider.userId.toString() }, constants.REFRESH_TOKEN_EXPIRE_TIME);
+            const refreshToken = await createToken(
+               "user-refresh",
+               { id: identityProvider.userId.toString(), authType: "google" },
+               constants.REFRESH_TOKEN_EXPIRE_TIME,
+            );
 
             const searchParam = new URLSearchParams({ flow, access_token: accessToken, refresh_token: refreshToken });
             const redirectUrl = `${redirect_url}?${searchParam.toString()}`;

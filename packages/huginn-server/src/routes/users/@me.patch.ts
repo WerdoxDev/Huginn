@@ -87,7 +87,11 @@ export const patchMe = new Elysia().use(verifyJwt()).patch(
          { id: tokenPayload.id, authType: tokenPayload.authType },
          constants.ACCESS_TOKEN_EXPIRE_TIME,
       );
-      const refreshToken = await createToken("user-refresh", { id: tokenPayload.id }, constants.REFRESH_TOKEN_EXPIRE_TIME);
+      const refreshToken = await createToken(
+         "user-refresh",
+         { id: tokenPayload.id, authType: tokenPayload.authType },
+         constants.REFRESH_TOKEN_EXPIRE_TIME,
+      );
 
       // TODO: When guilds are a thing, this should send an update to users that are viewing that guild
       dispatchToTopic(tokenPayload.id, "user_update", { ...updatedUser, token: accessToken, refreshToken });
