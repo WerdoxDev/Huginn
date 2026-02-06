@@ -5,9 +5,14 @@ export type LoginCredentials = APIPostLoginJSONBody;
 export type RegisterUser = APIPostRegisterJSONBody;
 
 export type DirectChannel = Merge<APIDMChannel, APIGroupDMChannel>;
-export type AuthType = "password" | "oauth";
+export type AuthType = "password" | OAuthType;
 
 export type UserTokenPayload = {
+   id: Snowflake;
+   authType: AuthType;
+};
+
+export type UserRefreshTokenPayload = {
    id: Snowflake;
    authType: AuthType;
 };
