@@ -130,13 +130,13 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
       <div className="flex flex-col gap-y-5">
          {huginnWindow.environment === "desktop" && (
             <div className="flex max-w-md flex-col">
-               <div className="text-text/90 mb-2 select-none text-xs font-medium uppercase">Activity Submission</div>
+               <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Activity Submission</div>
                <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3">
                   <div className="text-text/80 text-sm">
                      Not seeing what you're doing? Try adding it here. And if your application gets verified, We'll show your contribution!
                   </div>
                   <HuginnDropdown onChange={onApplicationChanged} value={selectedApplication}>
-                     <HuginnDropdown.List className="bg-surface-deep rounded-md! w-full" placeholder="Select an application">
+                     <HuginnDropdown.List className="bg-surface-deep w-full rounded-md!" placeholder="Select an application">
                         <HuginnDropdown.ItemsWrapper className="w-(--button-width)">
                            {applicationOptions.map((x) => (
                               <HuginnDropdown.Item key={x.value} item={x} />
@@ -144,14 +144,20 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
                         </HuginnDropdown.ItemsWrapper>
                      </HuginnDropdown.List>
                   </HuginnDropdown>
-                  <LoadingButton loading={submitMutation.isPending} onClick={submit} color="primary" className="h-8" disabled={!selectedApplication}>
+                  <LoadingButton
+                     isLoading={submitMutation.isPending}
+                     onClick={submit}
+                     color="primary"
+                     className="h-8"
+                     disabled={!selectedApplication}
+                  >
                      Submit
                   </LoadingButton>
                </div>
             </div>
          )}
          <div className="flex max-w-sm flex-col">
-            <div className="text-text/90 mb-2 select-none text-xs font-medium uppercase">Your Contributions</div>
+            <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Your Contributions</div>
             <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3">
                {contributedApplications.length === 0 ? (
                   <div className="text-text/80">No applications contributed...</div>

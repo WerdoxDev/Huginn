@@ -16,12 +16,12 @@ const initialStore = () => ({
       action?: {
          cancel?: {
             text?: string;
-            callback: () => void;
+            callback: () => void | Promise<void>;
          };
          confirm?: {
             text: string;
             mutationKey?: keyof MutationKinds;
-            callback: () => void;
+            callback: () => void | Promise<void>;
          };
       };
       isClosable: boolean;
@@ -53,6 +53,7 @@ const initialStore = () => ({
       type: "create" | "change";
    },
    streamAudio: { isOpen: false, callback: undefined } as DefaultModal & { callback?: (sourceProcessId: string) => void },
+   changeUsername: { isOpen: false } as DefaultModal,
 });
 
 type StoreType = ReturnType<typeof initialStore>;

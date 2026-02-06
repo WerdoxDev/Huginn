@@ -120,7 +120,7 @@ export default function VoiceElement(props: {
          {isDisconnected && (
             <Tooltip>
                <Tooltip.Content>Disconnected</Tooltip.Content>
-               <Tooltip.Trigger className="absolute left-0.5 top-0.5">
+               <Tooltip.Trigger className="absolute top-0.5 left-0.5">
                   <IconMingcuteWifiOffLine className="text-caution-100 size-7" />
                </Tooltip.Trigger>
             </Tooltip>

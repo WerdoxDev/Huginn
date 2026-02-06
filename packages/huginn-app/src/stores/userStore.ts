@@ -24,13 +24,18 @@ export function initializeUser() {
       return;
    }
 
-   const unlisten = client.gateway.listen("user_update", (d) => {
+   const unlisten = client.gateway.listen("ready", () => {
+      store.setState({ tokenPayload: client?.tokenHandler.token ? (jose.decodeJwt(client?.tokenHandler.token) as UserTokenPayload) : undefined });
+   });
+
+   const unlisten2 = client.gateway.listen("user_update", (d) => {
       store.getState().setUser(d);
       store.setState({ tokenPayload: client?.tokenHandler.token ? (jose.decodeJwt(client?.tokenHandler.token) as UserTokenPayload) : undefined });
    });
 
    return () => {
       unlisten?.();
+      unlisten2?.();
    };
 }
 

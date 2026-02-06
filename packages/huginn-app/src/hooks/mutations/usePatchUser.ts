@@ -14,12 +14,13 @@ export function usePatchUser(onSuccess?: (result: APIPatchCurrentUserResult) => 
             return await client?.users.edit(data);
          },
          onSuccess(result) {
-            if (!result) {
-               return;
-            }
+            if (!result || !client) return;
 
             onSuccess?.(result);
             const data = omit(result, ["token", "refreshToken"]);
+
+            client.tokenHandler.token = result.token;
+            client.tokenHandler.refreshToken = result.refreshToken;
 
             setUser(data);
          },

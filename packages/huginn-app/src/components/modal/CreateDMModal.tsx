@@ -11,8 +11,11 @@ import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import BaseDialogPanel from "./BaseDialogPanel";
+import HuginnDialogPanel from "./HuginnDialogPanel";
 import { useHuginnForm } from "@hooks/useHuginnForm";
+import DialogBody from "@components/DialogBody";
+import DialogActions from "@components/DialogActions";
+import HuginnDialogTitle from "@components/HuginnDialogTitle";
 // import { usePostHog } from "posthog-js/react";
 
 type Input = {
@@ -62,12 +65,9 @@ export default function CreateDMModal() {
       close();
    }
    return (
-      <BaseDialogPanel className="max-w-md">
-         <DialogTitle className="flex items-center justify-center gap-x-1.5">
-            <div className="text-text mt-5 text-2xl font-medium">Create Direct Message</div>
-         </DialogTitle>
-         <Description className="text-text/70 mx-5 mt-1 text-center">Select your fellow warrior(s) to share a tale with!</Description>
-         <div className="flex flex-col gap-y-5 p-6">
+      <HuginnDialogPanel className="max-w-md">
+         <DialogBody>
+            <HuginnDialogTitle title="Create Direct Message" description="Select your fellow warrior(s) to share a tale with!" />
             <HuginnInput
                {...register("name")}
                placeholder={selectedUsers.length > 1 ? placeholderName : "Select 2 or more members"}
@@ -80,10 +80,10 @@ export default function CreateDMModal() {
             </HuginnInput>
 
             <AddRecipientInput relationships={data} onSelectionChanged={onSelectionChanged} />
-         </div>
-         <div className="bg-surface-alt p-5">
+         </DialogBody>
+         <DialogActions>
             <LoadingButton
-               loading={mutation.isPending}
+               isLoading={mutation.isPending}
                className="h-10 w-full"
                color="primary"
                onClick={findOrCreate}
@@ -91,8 +91,8 @@ export default function CreateDMModal() {
             >
                Find or Create
             </LoadingButton>
-         </div>
+         </DialogActions>
          <ModalCloseButton onClick={close} />
-      </BaseDialogPanel>
+      </HuginnDialogPanel>
    );
 }

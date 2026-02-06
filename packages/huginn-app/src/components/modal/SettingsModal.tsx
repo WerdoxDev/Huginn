@@ -15,7 +15,7 @@ import SettingsThemeTab from "./settings/SettingsThemeTab";
 import SettingsVoiceTab from "./settings/SettingsVoiceTab";
 import SettingsSubmissionTab from "./settings/SettingsSubmissionTab";
 import SettingsCustomTab from "./settings/SettingsCustomTab";
-import BaseDialogPanel from "./BaseDialogPanel";
+import HuginnDialogPanel from "./HuginnDialogPanel";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@components/Tab";
 import { useIsMobile } from "@hooks/useIsMobile";
 
@@ -114,52 +114,50 @@ export default function SettingsModal() {
    }
 
    return (
-      <div className="flex h-full w-full items-center justify-center pt-20 lg:px-10 lg:pt-0">
-         <BaseDialogPanel className="h-full w-full max-w-6xl">
-            <TabGroup
-               className="flex h-full w-full"
-               selectedIndex={selectedIndex}
-               displayIndex={displayIndex !== null ? displayIndex : undefined}
-               onChange={onTabChanged}
-            >
-               {/* Mobile: Show tabs or content based on state */}
-               <div className={clsx("bg-surface-alt h-full rounded-l-xl lg:block", "block w-full rounded-r-xl lg:w-auto lg:rounded-r-none")}>
-                  <TabList className="flex h-full flex-col pt-2 select-none">
-                     <DialogTitle className="mx-5 my-3 flex items-center justify-start gap-x-1.5">
-                        <div className="text-text text-2xl font-medium">Settings</div>
-                     </DialogTitle>
-                     <SettingsTabs />
-                  </TabList>
-               </div>
+      // <div className="flex h-full w-full items-center justify-center pt-20 lg:px-10 lg:pt-0">
+      <HuginnDialogPanel className="h-full w-full max-w-6xl lg:mx-10">
+         <TabGroup
+            className="flex h-full w-full"
+            selectedIndex={selectedIndex}
+            displayIndex={displayIndex !== null ? displayIndex : undefined}
+            onChange={onTabChanged}
+         >
+            {/* Mobile: Show tabs or content based on state */}
+            <div className={clsx("bg-surface-alt h-full rounded-l-xl lg:block", "block w-full rounded-r-xl lg:w-auto lg:rounded-r-none")}>
+               <TabList className="flex h-full flex-col select-none">
+                  <DialogTitle className="text-text p-5 text-2xl font-bold">Settings</DialogTitle>
+                  <SettingsTabs />
+               </TabList>
+            </div>
 
-               {/* Mobile: Content with back button */}
-               <Transition show={showContent} afterLeave={handleAfterLeave}>
-                  <div
-                     className={clsx(
-                        "bg-surface absolute inset-0 flex w-full flex-col transition-[transform_opacity] duration-300 data-closed:translate-x-1/2 data-closed:opacity-0 lg:relative lg:flex lg:data-closed:translate-none lg:data-closed:opacity-100",
-                     )}
-                  >
-                     {/* Back button - only visible on mobile when content is shown */}
-                     <div className="bg-surface-alt flex items-center gap-x-2 border-b border-white/10 px-3 py-4 lg:hidden">
-                        <button onClick={handleBackClick} className="active:bg-surface flex items-center gap-x-2 rounded-md p-1 text-white">
-                           <IconMingcuteLeftFill className="size-5" />
-                           <span>Back</span>
-                        </button>
-                     </div>
-
-                     <SettingsPanels currentTabText={currentTabText} onChange={onSettingsChanged} onSave={onSave} />
+            {/* Mobile: Content with back button */}
+            <Transition show={showContent} afterLeave={handleAfterLeave}>
+               <div
+                  className={clsx(
+                     "bg-surface absolute inset-0 flex w-full flex-col transition-[transform_opacity] duration-300 data-closed:translate-x-1/2 data-closed:opacity-0 lg:relative lg:flex lg:data-closed:translate-none lg:data-closed:opacity-100",
+                  )}
+               >
+                  {/* Back button - only visible on mobile when content is shown */}
+                  <div className="bg-surface-alt flex items-center gap-x-2 border-b border-white/10 px-3 py-4 lg:hidden">
+                     <button onClick={handleBackClick} className="active:bg-surface flex items-center gap-x-2 rounded-md p-1 text-white">
+                        <IconMingcuteLeftFill className="size-5" />
+                        <span>Back</span>
+                     </button>
                   </div>
-               </Transition>
-            </TabGroup>
 
-            <ModalCloseButton
-               className="bg-surface! top-4 right-4"
-               onClick={() => {
-                  updateModals({ settings: { isOpen: false } });
-               }}
-            />
-         </BaseDialogPanel>
-      </div>
+                  <SettingsPanels currentTabText={currentTabText} onChange={onSettingsChanged} onSave={onSave} />
+               </div>
+            </Transition>
+         </TabGroup>
+
+         <ModalCloseButton
+            className="bg-surface! top-4 right-4"
+            onClick={() => {
+               updateModals({ settings: { isOpen: false } });
+            }}
+         />
+      </HuginnDialogPanel>
+      // </div>
    );
 }
 
@@ -173,7 +171,7 @@ function SettingsTabs() {
             .map((tab, i) => (
                <Fragment key={tab.name}>
                   {i !== 0 && <div className="bg-surface my-3 mr-0.5 ml-3 hidden h-px shrink-0 lg:my-2 lg:block" />}
-                  <div className={clsx("pr-2 pb-2 pl-4 text-left text-sm text-white/50 lg:pb-1", i === 0 ? "pt-2" : "pt-4 lg:pt-1.5")}>
+                  <div className={clsx("pr-2 pb-2 pl-4 text-left text-sm text-white/50 lg:pb-1", i === 0 ? "pt-0" : "pt-4 lg:pt-1.5")}>
                      {tab.text}
                   </div>
                   <div className="bg-surface ml-2.5 flex flex-col gap-y-1 rounded-lg p-2.5 lg:bg-transparent lg:p-0">

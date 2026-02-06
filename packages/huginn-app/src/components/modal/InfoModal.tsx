@@ -6,7 +6,9 @@ import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
 import { useEffect, useMemo } from "react";
-import BaseDialogPanel from "./BaseDialogPanel";
+import HuginnDialogPanel from "./HuginnDialogPanel";
+import DialogActions from "@components/DialogActions";
+import DialogBody from "@components/DialogBody";
 // import { usePostHog } from "posthog-js/react";
 
 export default function InfoModal() {
@@ -66,28 +68,29 @@ export default function InfoModal() {
    }, [modal.isOpen]);
 
    return (
-      <BaseDialogPanel className={clsx("p-5 lg:max-w-xs", borderColor)}>
-         <DialogTitle as="div" className="flex w-full flex-col items-center justify-center gap-y-5">
-            <div className={clsx("rounded-full p-3", backgroundColor)}>
-               <div className={clsx("rounded-full p-3", innerColor)}>
-                  {modal.status === "error" && <IconMingcuteAlertLine className="h-8 w-8 text-white" />}
-                  {modal.status === "info" && <IconMingcuteInformationLine className="h-8 w-8 text-white" />}
-                  {modal.status === "success" && <IconMingcuteCheckFill className="h-8 w-8 text-white" />}
+      <HuginnDialogPanel className={clsx("lg:max-w-xs", borderColor)}>
+         <DialogBody className="gap-y-0!">
+            <DialogTitle as="div" className="flex w-full flex-col items-center justify-center gap-y-5">
+               <div className={clsx("rounded-full p-3", backgroundColor)}>
+                  <div className={clsx("rounded-full p-3", innerColor)}>
+                     {modal.status === "error" && <IconMingcuteAlertLine className="h-8 w-8 text-white" />}
+                     {modal.status === "info" && <IconMingcuteInformationLine className="h-8 w-8 text-white" />}
+                     {modal.status === "success" && <IconMingcuteCheckFill className="h-8 w-8 text-white" />}
+                  </div>
                </div>
-            </div>
-            <div className="text-center text-lg font-medium text-white">{modal.title}</div>
-         </DialogTitle>
-         <Description className="mt-1 flex items-center justify-center" as="div">
-            <div className="text-text/90 text-center">
-               {formattedText}
-               {errorCode && <span className="text-negative-100 text-nowrap italic opacity-90">{errorCode}</span>}
-            </div>
-         </Description>
-
-         <div className="mt-5 flex items-center justify-end gap-x-2">
+               <div className="text-center text-lg font-bold text-white">{modal.title}</div>
+            </DialogTitle>
+            <Description className="mt-1 flex items-center justify-center" as="div">
+               <div className="text-text/90 text-center">
+                  {formattedText}
+                  {errorCode && <span className="text-negative-100 text-nowrap italic opacity-90">{errorCode}</span>}
+               </div>
+            </Description>
+         </DialogBody>
+         <DialogActions>
             <HuginnButton
                className="h-10 w-full"
-               color="surface-alt"
+               color="surface"
                onClick={() => {
                   if (!modal.action?.cancel?.callback) updateModals({ info: { isOpen: false } });
                   else modal.action.cancel.callback();
@@ -98,7 +101,7 @@ export default function InfoModal() {
 
             {modal.action?.confirm && (
                <LoadingButton
-                  loading={mutationState?.status === "pending"}
+                  isLoading={mutationState?.status === "pending"}
                   className="text-text h-10 w-full"
                   color="primary"
                   onClick={() => {
@@ -108,7 +111,7 @@ export default function InfoModal() {
                   {modal.action.confirm.text}
                </LoadingButton>
             )}
-         </div>
+         </DialogActions>
 
          {modal.isClosable && (
             <ModalCloseButton
@@ -118,6 +121,6 @@ export default function InfoModal() {
                }}
             />
          )}
-      </BaseDialogPanel>
+      </HuginnDialogPanel>
    );
 }

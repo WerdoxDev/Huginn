@@ -6,7 +6,8 @@ import { useEffect, useRef } from "react";
 // import { usePostHog } from "posthog-js/react";
 import Cropper, { type ReactCropperElement } from "react-cropper";
 import { SuperImageCropper } from "super-image-cropper";
-import BaseDialogPanel from "./BaseDialogPanel";
+import HuginnDialogPanel from "./HuginnDialogPanel";
+import DialogActions from "@components/DialogActions";
 
 export default function ImageCropModal() {
    const { imageCrop: modal, updateModals } = useModals();
@@ -44,13 +45,13 @@ export default function ImageCropModal() {
    }, [modal.isOpen]);
 
    return (
-      <BaseDialogPanel>
-         <div className="max-w-120 m-5 mb-0 flex aspect-square items-center justify-center rounded-lg bg-black/50">
+      <HuginnDialogPanel>
+         <div className="m-5 mb-0 flex aspect-square max-w-120 items-center justify-center rounded-lg bg-black/50">
             <Cropper
                ref={cropperRef}
                src={modal.originalImageData}
                initialAspectRatio={1}
-               className="max-w-120 aspect-square"
+               className="aspect-square max-w-120"
                aspectRatio={1}
                movable={true}
                unselectable="off"
@@ -68,7 +69,7 @@ export default function ImageCropModal() {
             />
          </div>
          <div className="text-text/60 mx-5 my-1 italic">NOTE: zoom with scroll wheel</div>
-         <div className="bg-surface-alt flex w-full justify-end gap-x-2 p-5">
+         <DialogActions>
             <HuginnButton
                onClick={() => updateModals({ imageCrop: { isOpen: false } })}
                className="h-10 w-20 shrink-0 decoration-white hover:underline"
@@ -78,7 +79,7 @@ export default function ImageCropModal() {
             <HuginnButton onClick={confirm} className="text-text h-10 w-36" color="primary">
                Confirm
             </HuginnButton>
-         </div>
-      </BaseDialogPanel>
+         </DialogActions>
+      </HuginnDialogPanel>
    );
 }

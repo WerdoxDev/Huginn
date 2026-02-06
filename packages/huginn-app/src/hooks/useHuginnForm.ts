@@ -2,7 +2,7 @@ import type { HuginnInputProps, InputMessage } from "@/types";
 import { type HuginnErrorData, type HuginnErrorGroupWrapper } from "@huginn/shared";
 import { APIMessages } from "@lib/error-messages";
 import { requiredFieldError } from "@lib/utils";
-import { useEffect, useState, type FocusEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FocusEvent } from "react";
 import {
    useForm,
    type ChangeHandler,
@@ -16,7 +16,7 @@ import {
 
 export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?: DefaultValues<I> }) {
    const {
-      reset,
+      reset: hookReset,
       setValue,
       setError,
       getValues,
@@ -25,6 +25,7 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
       watch,
       getFieldState,
       formState,
+      control,
    } = useForm<I>({ reValidateMode: "onChange", mode: "onChange", defaultValues: options?.defaultValues });
 
    const values = watch();
@@ -33,6 +34,14 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
    const [customMessages, setCustomMessages] = useState<{ [k: string]: InputMessage }>({});
    const [huginnError, setHuginnError] = useState<HuginnErrorData | null>(null);
    const [focusedInput, setFocusedInput] = useState<FieldPath<I> | null>(null);
+   const [clearedFields, setClearedFields] = useState<Set<string>>(new Set());
+
+   function handleChange(e: any, name: FieldPath<I>, hookChange: ChangeHandler) {
+      console.log("CHANGE", name);
+      hookChange(e);
+      // Mark this field as cleared by the user
+      setClearedFields((prev) => new Set(prev).add(name));
+   }
 
    function handleBlur(e: FocusEvent, name: FieldPath<I>, hookBlur: ChangeHandler) {
       hookBlur(e);
@@ -46,34 +55,34 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
    const register = <TFieldName extends FieldPath<I> = FieldPath<I>>(
       name: TFieldName,
       options?: RegisterOptions<I, TFieldName>,
-   ): Omit<UseFormRegisterReturn<TFieldName>, "onBlur"> & HuginnInputProps => {
+   ): Omit<UseFormRegisterReturn<TFieldName>, "onBlur" | "onChange"> & HuginnInputProps => {
       const hookRegisterValue = hookRegister(name, options);
       return {
-         ...hookRegister(name, options),
+         ...hookRegisterValue,
          message: inputMessages[name] ?? { status: "none", text: "" },
          required: options?.required as boolean,
          onFocus: (e) => handleFocus(e, name),
          onBlur: (e) => handleBlur(e, name, hookRegisterValue.onBlur),
+         onChange: (e) => handleChange(e, name, hookRegisterValue.onChange),
       };
    };
 
-   const handleSubmit: UseFormHandleSubmit<I> = (onValid, onInvalid) => {
-      // const ourOnValid: SubmitHandler<I> = (data, e) => {
-      //    setHuginnError(null);
-      //    return onValid(data, e);
-      // };
+   function reset() {
+      hookReset();
+      setInputMessages({});
+      setCustomMessages({});
+      setHuginnError(null);
+      setClearedFields(new Set());
+   }
 
-      // const ourOnInvalid: SubmitErrorHandler<I> = (errors, e) => {
-      //    console.log("INVALID");
-      //    setCustomMessages({});
-      //    return onInvalid?.(errors, e);
-      // };
+   const handleSubmit: UseFormHandleSubmit<I> = (onValid, onInvalid) => {
       return hookHandleSubmit(onValid, onInvalid);
    };
 
    function handleErrors(error: HuginnErrorData) {
       setCustomMessages({});
       setHuginnError(error);
+      setClearedFields(new Set()); // Reset cleared fields on new server error
    }
 
    function setCustomMessage(name: FieldPath<I>, message: InputMessage | null) {
@@ -89,6 +98,7 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
       if (formState.isSubmitting) {
          setCustomMessages({});
          setHuginnError(null);
+         setClearedFields(new Set()); // Reset on new submission
       }
 
       if (!formState.isValid) {
@@ -102,17 +112,18 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
       if (huginnError && (isValid || Object.keys(errors).length === 0)) {
          setInputMessages(() => {
             const newMessages: { [k: string]: InputMessage } = {};
-
             // All fields should get the same error
             if (!huginnError.errors) {
                const values = getValues();
                for (const name of Object.keys(values)) {
-                  newMessages[name] = { status: "error", text: APIMessages[huginnError.code] };
+                  if (!clearedFields.has(name)) {
+                     newMessages[name] = { status: "error", text: APIMessages[huginnError.code] ?? huginnError.message };
+                  }
                }
                return newMessages;
             }
             for (const name of Object.keys(huginnError.errors)) {
-               if (huginnError.errors[name]) {
+               if (huginnError.errors[name] && !clearedFields.has(name)) {
                   newMessages[name] = {
                      status: "error",
                      text: (huginnError.errors[name] as HuginnErrorGroupWrapper)._errors[0].message,
@@ -128,9 +139,13 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
          return;
       }
 
+      console.log(huginnError);
+
       setInputMessages(() => {
          const newMessages: { [k: string]: InputMessage } = { ...customMessages };
          for (const name of Object.keys(errors)) {
+            // if (clearedFields.has(name)) continue; // Skip fields the user has already changed
+
             const error = errors[name]!;
 
             if (error.type === "validate") {
@@ -142,7 +157,7 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
 
          return newMessages;
       });
-   }, [formState, huginnError, customMessages]);
+   }, [formState, huginnError, customMessages, clearedFields]);
 
    return {
       register,
@@ -157,5 +172,6 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
       focusedInput,
       setCustomMessage,
       getFieldState,
+      control,
    };
 }

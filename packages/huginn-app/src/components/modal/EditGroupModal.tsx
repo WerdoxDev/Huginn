@@ -11,8 +11,11 @@ import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import BaseDialogPanel from "./BaseDialogPanel";
+import HuginnDialogPanel from "./HuginnDialogPanel";
 import { useHuginnForm } from "@hooks/useHuginnForm";
+import DialogActions from "@components/DialogActions";
+import DialogBody from "@components/DialogBody";
+import HuginnDialogTitle from "@components/HuginnDialogTitle";
 
 type Input = {
    name?: string;
@@ -74,31 +77,30 @@ export default function EditGroupModal() {
    }
 
    return (
-      <BaseDialogPanel className="max-w-lg">
+      <HuginnDialogPanel className="max-w-lg">
          <form onSubmit={handleSubmit(edit)}>
-            <DialogTitle className="mt-5 flex items-center justify-center gap-x-1.5">
-               <div className="text-text text-2xl font-medium">Edit Group</div>
-            </DialogTitle>
-            <Description className="text-text/70 mx-5 mt-1 text-center">Modify this group to exactly fit your needs!</Description>
-            <div className="flex gap-x-5 p-5">
-               <ImageSelector data={iconData} onSelected={onSelected} onDelete={onDelete} />
-               <HuginnInput {...register("name")} className="mt-2 w-full" placeholder={modal.channel?.name}>
-                  <HuginnInput.Label>Group Name</HuginnInput.Label>
-                  <HuginnInput.Wrapper>
-                     <HuginnInput.Input />
-                  </HuginnInput.Wrapper>
-               </HuginnInput>
-            </div>
-            <div className="bg-surface-alt flex w-full items-center justify-end gap-x-2 p-5">
+            <DialogBody>
+               <HuginnDialogTitle title="Edit Group" />
+               <div className="flex gap-x-5">
+                  <ImageSelector data={iconData} onSelected={onSelected} onDelete={onDelete} />
+                  <HuginnInput {...register("name")} className="mt-2 w-full" placeholder={modal.channel?.name}>
+                     <HuginnInput.Label>Group Name</HuginnInput.Label>
+                     <HuginnInput.Wrapper>
+                        <HuginnInput.Input />
+                     </HuginnInput.Wrapper>
+                  </HuginnInput>
+               </div>
+            </DialogBody>
+            <DialogActions>
                <HuginnButton className="h-10 w-20 decoration-white hover:underline" onClick={close} type="button">
                   Cancel
                </HuginnButton>
-               <LoadingButton loading={mutation.isPending} className="h-10 w-36" color="primary" type="submit">
+               <LoadingButton isLoading={mutation.isPending} className="h-10 w-20" color="primary" type="submit">
                   Save
                </LoadingButton>
-            </div>
+            </DialogActions>
             <ModalCloseButton onClick={close} />
          </form>
-      </BaseDialogPanel>
+      </HuginnDialogPanel>
    );
 }

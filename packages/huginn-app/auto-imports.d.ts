@@ -20,7 +20,9 @@ declare global {
   const IconMingcuteCheckFill: typeof import('~icons/mingcute/check-fill.jsx').default
   const IconMingcuteChecksFill: typeof import('~icons/mingcute/checks-fill.jsx').default
   const IconMingcuteClapperboardFill: typeof import('~icons/mingcute/clapperboard-fill.jsx')['default']
+  const IconMingcuteClose2Fill: typeof import('~icons/mingcute/close2-fill.jsx').default
   const IconMingcuteCloseFill: typeof import('~icons/mingcute/close-fill.jsx').default
+  const IconMingcuteCloseFill2: typeof import('~icons/mingcute/close-fill2.jsx').default
   const IconMingcuteColorPickerFill: typeof import('~icons/mingcute/color-picker-fill.jsx').default
   const IconMingcuteCopy2Fill: typeof import('~icons/mingcute/copy2-fill.jsx').default
   const IconMingcuteCornerUpLeftFill: typeof import('~icons/mingcute/corner-up-left-fill.jsx').default

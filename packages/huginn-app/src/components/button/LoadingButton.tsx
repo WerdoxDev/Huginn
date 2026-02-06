@@ -7,10 +7,10 @@ export default function LoadingButton(props: HuginnLoadingButtonProps) {
    return (
       <HuginnButton
          className={clsx("flex items-center justify-center", props.className)}
-         disabled={props.loading || props.disabled}
+         disabled={props.isLoading || props.disabled}
          {...omit(props, ["disabled", "className"])}
       >
-         {props.loading ? (
+         {props.isLoading ? (
             <IconMingcuteLoading3Fill className={clsx("text-text size-7 animate-spin", props.iconClassName)} />
          ) : (
             <div>{props.children}</div>

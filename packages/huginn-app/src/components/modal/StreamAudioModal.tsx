@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useEffect, useState, useTransition } from "react";
 import type { AudioSource } from "@/types";
-import BaseDialogPanel from "./BaseDialogPanel";
+import HuginnDialogPanel from "./HuginnDialogPanel";
 
 export default function StreamAudioModal() {
    const { streamAudio: modal, updateModals } = useModals();
@@ -44,7 +44,7 @@ export default function StreamAudioModal() {
    }
 
    return (
-      <BaseDialogPanel className="w-full max-w-lg select-none pt-5">
+      <HuginnDialogPanel className="w-full max-w-lg pt-5 select-none">
          <div className="flex flex-col gap-y-3">
             <div className="text-text text-center text-2xl font-bold">Stream Audio</div>
             <div className="text-text/80 px-2 text-center">Choose an application to share it's audio with others</div>
@@ -72,14 +72,14 @@ export default function StreamAudioModal() {
             </div>
          </div>
          <div className="bg-surface-alt mt-5 flex w-full items-center gap-x-2 p-5">
-            <LoadingButton className="h-10 w-24" color="surface" onClick={refetch} loading={isFetching}>
+            <LoadingButton className="h-10 w-24" color="surface" onClick={refetch} isLoading={isFetching}>
                Refresh
             </LoadingButton>
             <HuginnButton className="ml-auto h-10 w-20 decoration-white hover:underline" onClick={close}>
                Cancel
             </HuginnButton>
             <LoadingButton
-               loading={streamAudioPending}
+               isLoading={streamAudioPending}
                className="h-10 w-24"
                color="primary"
                onClick={stream}
@@ -89,6 +89,6 @@ export default function StreamAudioModal() {
             </LoadingButton>
          </div>
          <ModalCloseButton onClick={close} />
-      </BaseDialogPanel>
+      </HuginnDialogPanel>
    );
 }

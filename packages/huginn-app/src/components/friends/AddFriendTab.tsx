@@ -14,7 +14,6 @@ export default function AddFriendTab() {
    const [disabled, setDisabled] = useState(false);
 
    const mutation = useCreateRelationship(({ username }) => {
-      console.log("YAY");
       setCustomMessage("username", { status: "success", text: `Friend request sent to ${username}!` });
    }, handleErrors);
 

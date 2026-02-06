@@ -18,7 +18,7 @@ export default function AddFriendInput(props: {
             <LoadingButton
                {...props.buttonProps}
                iconClassName="size-6!"
-               loading={props.loading}
+               isLoading={props.loading}
                className="h-10 w-44 shrink-0 rounded-md px-2 py-2 text-sm font-medium whitespace-nowrap"
                color="primary"
                disabled={props.disabled}

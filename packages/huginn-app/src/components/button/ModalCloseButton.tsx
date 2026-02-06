@@ -5,13 +5,13 @@ export default function ModalCloseButton(props: { children?: ReactNode; onClick:
    return (
       <button
          className={clsx(
-            "bg-surface-alt hover:bg-surface-deep absolute right-2 top-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-md",
+            "bg-surface-alt hover:bg-surface-deep group absolute top-3 right-3 flex h-9 w-9 cursor-pointer items-center justify-center rounded-md text-white/50 transition-colors hover:text-white/80",
             props.className,
          )}
          onClick={props.onClick}
          type="button"
       >
-         <IconMingcuteCloseFill className="text-negative-100 h-5 w-5" />
+         <IconMingcuteCloseFill className="h-6 w-6" />
          {props.children}
       </button>
    );

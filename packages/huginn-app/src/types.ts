@@ -59,7 +59,7 @@ export type HuginnButtonProps = {
    onClick?: () => void;
 };
 
-export type HuginnLoadingButtonProps = HuginnButtonProps & { loading: boolean; iconClassName?: string };
+export type HuginnLoadingButtonProps = HuginnButtonProps & { isLoading: boolean; iconClassName?: string };
 
 export type ModalState = {
    isOpen: boolean;

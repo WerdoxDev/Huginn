@@ -16,9 +16,24 @@ const MagnifiedImageModal = lazy(() => import("./MagnifiedImageModal"));
 const NewsModal = lazy(() => import("./NewsModal"));
 const ScreenShareModal = lazy(() => import("./ScreenShareModal"));
 
+const ChangeUsernameModal = lazy(() => import("./profile/ChangeUsernameModal"));
+
 export default function ModalsRenderer() {
    const { user } = useThisUser();
-   const { createDM, addRecipient, editGroup, imageCrop, info, settings, magnifiedImage, news, screenShare, streamAudio, updateModals } = useModals();
+   const {
+      createDM,
+      addRecipient,
+      editGroup,
+      imageCrop,
+      info,
+      settings,
+      magnifiedImage,
+      news,
+      screenShare,
+      streamAudio,
+      updateModals,
+      changeUsername,
+   } = useModals();
 
    return (
       <>
@@ -42,6 +57,11 @@ export default function ModalsRenderer() {
                <>
                   <BaseModal renderChildren={<CreateDMModal />} onClose={() => updateModals({ createDM: { isOpen: false } })} modal={createDM} />
                   <BaseModal renderChildren={<EditGroupModal />} modal={editGroup} onClose={() => updateModals({ editGroup: { isOpen: false } })} />
+                  <BaseModal
+                     renderChildren={<ChangeUsernameModal />}
+                     modal={changeUsername}
+                     onClose={() => updateModals({ changeUsername: { isOpen: false } })}
+                  />
                   <BaseModal
                      renderChildren={<AddRecipientModal />}
                      modal={addRecipient}

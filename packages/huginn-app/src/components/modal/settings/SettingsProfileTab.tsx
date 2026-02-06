@@ -1,6 +1,5 @@
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
-import { Transition } from "@headlessui/react";
 import { listenEvent } from "@lib/event-handler";
 import { getUserAvatarOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
@@ -9,48 +8,48 @@ import { useThisUser } from "@stores/userStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import type { SettingsTabProps } from "@/types";
+import HuginnLabel from "@components/HuginnLabel";
+import { useHuginnForm } from "@hooks/useHuginnForm";
+import HuginnInput from "@components/input/HuginnInput";
+import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
+import { usePatchUser } from "@hooks/mutations/usePatchUser";
+import { omit, type OAuthType } from "@huginn/shared";
+import { useOAuth } from "@hooks/useOAuth";
+
+type Inputs = {
+   username: string;
+   displayName?: string;
+   email: string;
+};
+
+type EditingField = "username" | "displayName" | "email" | null;
 
 export default function SettingsProfileTab(_props: SettingsTabProps) {
    const client = useClient();
    const { user, setUser, tokenPayload } = useThisUser();
    const { updateModals } = useModals();
+   const [editingField, setEditingField] = useState<EditingField>(null);
 
-   // const { inputsProps, values, handleErrors, resetStatuses, resetInput, setValue } = useInputs([
-   //    { name: "username", required: true, default: user?.username, lowercase: true },
-   //    { name: "displayName", required: false, default: user?.originalDisplayName },
-   //    { name: "password", required: false },
-   //    { name: "newPassword", required: false },
-   // ]);
+   const { register, values, setValue, handleErrors, reset } = useHuginnForm<Inputs>({
+      defaultValues: { username: user?.username, displayName: user?.originalDisplayName ?? undefined, email: user?.email },
+   });
+
+   const startOAuth = useOAuth();
 
    const { data: originalAvatar } = useQuery(getUserAvatarOptions(user?.id, user?.avatar, client));
    const [avatarData, setAvatarData] = useState<string | null | undefined>(() => originalAvatar);
 
-   // const { message: usernameMessageDetail, onFocusChanged, onChanged } = useUniqueUsernameMessage(values, resetInput, "username");
+   // const { validate } = useUniqueUsernameMessage(user?.username);
 
-   // const mutation = usePatchUser((result) => {
-   //    if (!client) {
-   //       return;
-   //    }
+   const mutation = usePatchUser((result) => {
+      if (!client) {
+         return;
+      }
 
-   //    client.tokenHandler.token = result.token;
-   //    client.tokenHandler.refreshToken = result.refreshToken;
-   //    setUser(omit(result, ["refreshToken", "token"]));
+      setEditingField(null);
+   }, handleErrors);
 
-   //    setValue("password", "");
-   //    setValue("newPassword", "");
-   //    resetStatuses();
-
-   //    // onChanged(values.username.value, result.username);
-   //    // onFocusChanged(false);
-   // }, handleErrors);
-
-   const [avatarModified, setAvatarModified] = useState(false);
-   const [modified, setModified] = useState(false);
-
-   // useMemo(() => {
-   //    const displayName = !user?.originalDisplayName ? "" : user.originalDisplayName;
-   //    setModified(values.username.value !== user?.username || values.displayName.value !== displayName || values.newPassword.value !== "");
-   // }, [values, user]);
+   const [isAvatarModified, setIsAvatarModified] = useState(false);
 
    useEffect(() => {
       if (originalAvatar) {
@@ -61,13 +60,13 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
    useEffect(() => {
       const unlisten = client?.gateway.listen("user_update", (_e) => {
          console.log("CHANGED");
-         setModified(false);
-         setAvatarModified(false);
+         // setIsModified(false);
+         setIsAvatarModified(false);
       });
 
       const unlisten2 = listenEvent("image_cropper_done", (e) => {
          setAvatarData(e.croppedImageData);
-         setAvatarModified(true);
+         setIsAvatarModified(true);
       });
 
       return () => {
@@ -79,7 +78,7 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
    function onDelete() {
       if (avatarData) {
          setAvatarData(null);
-         setAvatarModified(true);
+         setIsAvatarModified(true);
       }
    }
 
@@ -87,74 +86,94 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
       updateModals({ imageCrop: { isOpen: true, originalImageData: data, mimeType: mimeType } });
    }
 
-   function edit() {
-      // mutation.mutate({
-      //    displayName: values.displayName.value,
-      //    username: values.username.value === user?.username ? undefined : values.username.value,
-      //    password: values.password.value,
-      //    newPassword: values.newPassword.value,
-      //    avatar: originalAvatar && !avatarData ? null : originalAvatar === avatarData ? undefined : avatarData,
-      // });
+   async function handleEditField(field: EditingField) {
+      if (field === "username") {
+         updateModals({ changeUsername: { isOpen: true } });
+         // updateModals({
+         //    info: {
+         //       isOpen: true,
+         //       title: "Re-Authentication Required",
+         //       text: "In order to change your username, you need to re-authenticate!",
+         //       status: "info",
+         //       action: {
+         //          confirm: {
+         //             async callback() {
+         //                console.log(tokenPayload);
+         //                if (!tokenPayload) return;
+         //                if (tokenPayload.authType === "password") {
+         //                }
+         //                const result = await startOAuth(tokenPayload!.authType as OAuthType);
+         //                console.log(result);
+         //             },
+         //             text: "Confirm",
+         //          },
+         //       },
+         //    },
+         // });
+         return;
+      }
+      setEditingField(field);
+   }
+
+   function handleCancelEdit() {
+      revert();
+      reset();
+   }
+
+   async function handleSave() {
+      if (!editingField) return;
+
+      await mutation.mutateAsync({ [editingField]: values[editingField] });
    }
 
    function revert() {
-      if (!user?.originalDisplayName || !user.username) {
-         return;
-      }
+      if (!user) return;
 
       // setAvatarData(originalAvatar);
-      // setValue("username", user.username);
-      // setValue("displayName", user.originalDisplayName);
-      // setValue("password", "");
-      // setValue("newPassword", "");
-      // resetStatuses();
+      setEditingField(null);
+      setValue("username", user.username!);
+      setValue("displayName", user.originalDisplayName!);
+      if (tokenPayload?.authType === "password") {
+         setValue("email", user.email!);
+      }
 
-      // onFocusChanged(false);
-
-      setAvatarModified(false);
-      setModified(false);
+      setIsAvatarModified(false);
    }
 
    return (
-      <>
-         <div className="flex items-start gap-x-5">
-            {/* <ImageSelector data={avatarData} onDelete={onDelete} onSelected={onSelected} className="p-4" buttonsClassName="mt-4">
+      <div className="flex items-start gap-x-5">
+         {/* <ImageSelector data={avatarData} onDelete={onDelete} onSelected={onSelected} className="p-4" buttonsClassName="mt-4">
                <div className="text-text mb-4 font-semibold">Profile Picture</div>
             </ImageSelector> */}
-            <div className="w-full max-w-xs">
-               <div className="text-text mb-2 text-lg font-semibold">Details</div>
-               <div className="bg-surface-alt rounded-lg p-4">
-                  <div className="flex flex-col">
-                     <div className="flex items-center justify-between gap-x-2">
-                        <div className="flex flex-col items-start justify-center">
-                           <div className="text-text text-xs font-medium uppercase opacity-90 select-none">Username</div>
-                           <div className="text-white">{user?.username}</div>
-                        </div>
-                        <HuginnButton className="px-2 py-1" color="primary">
-                           Change
-                        </HuginnButton>
+         <div className="w-full max-w-md">
+            <div className="text-text mb-2 text-lg font-semibold">Details</div>
+            <div className="bg-surface-alt rounded-lg p-4">
+               <div className="flex flex-col">
+                  <div className="flex w-full items-center justify-between gap-x-2">
+                     <div className="flex w-full flex-col items-start justify-center">
+                        <HuginnLabel className="mb-0!">Username</HuginnLabel>
+                        {/* <div className="text-text/90 text-xs font-medium uppercase select-none">Username</div> */}
+                        <div className="text-white">{user?.username}</div>
                      </div>
-                     <div className="bg-surface my-4 h-px w-full"></div>
-                     <div className="flex items-center justify-between gap-x-2">
-                        <div className="flex flex-col items-start justify-center">
-                           <div className="text-text text-xs font-medium uppercase opacity-90 select-none">Display Name</div>
-                           <div className="text-white">{user?.displayName}</div>
-                        </div>
-                        <HuginnButton className="px-2 py-1" color="primary">
-                           Change
-                        </HuginnButton>
+                     <ChangeButton onClick={() => handleEditField("username")} />
+                  </div>
+                  <div className="bg-surface my-4 h-px w-full"></div>
+                  <div className="flex w-full items-center justify-between gap-x-2">
+                     <div className="flex w-full flex-col items-start justify-center">
+                        <HuginnLabel className="mb-0!">Display Name</HuginnLabel>
+                        <div className="text-white">{user?.displayName}</div>
                      </div>
-                     <div className="bg-surface my-4 h-px w-full"></div>
-                     <div className="flex items-center justify-between gap-x-2">
-                        <div className="flex flex-col items-start justify-center">
-                           <div className="text-text text-xs font-medium uppercase opacity-90 select-none">Email</div>
-                           <div className="text-white">{user?.email}</div>
-                        </div>
-                        <HuginnButton className="px-2 py-1" color="primary">
-                           Change
-                        </HuginnButton>
+                     <ChangeButton onClick={() => handleEditField("displayName")} />
+                  </div>
+                  <div className="bg-surface my-4 h-px w-full"></div>
+                  <div className="flex w-full items-center justify-between gap-x-2">
+                     <div className="flex w-full flex-col items-start justify-center">
+                        <HuginnLabel className="mb-0!">Email</HuginnLabel>
+                        <div className="text-white">{user?.email}</div>
                      </div>
-                     {/* <HuginnInput {...inputsProps.username} onFocusChanged={onFocusChanged}>
+                     <ChangeButton onClick={() => handleEditField("email")} />
+                  </div>
+                  {/* <HuginnInput {...inputsProps.username} onFocusChanged={onFocusChanged}>
                         <HuginnInput.Label text="Username" className="mb-2" />
                         <HuginnInput.Wrapper className="bg-surface!" border="left">
                            <HuginnInput.Input />
@@ -168,10 +187,10 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
                            <HuginnInput.Input />
                         </HuginnInput.Wrapper>
                      </HuginnInput> */}
-                  </div>
                </div>
             </div>
-            {/* {!tokenPayload?.isOAuth && (
+         </div>
+         {/* {!tokenPayload?.isOAuth && (
                <div className="flex w-full max-w-xs flex-col gap-y-2">
                   <div className="bg-surface-alt rounded-lg p-4">
                      <div className="text-text mb-4 font-semibold">Security</div>
@@ -194,25 +213,27 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
                   </div>
                </div>
             )} */}
-         </div>
-         <Transition show={modified || avatarModified}>
-            <div className="border-primary-800 bg-surface-alt absolute right-9 bottom-5 left-53 flex transform justify-end gap-x-2 rounded-xl border-2 p-2 shadow-xs transition data-closed:translate-y-10 data-closed:opacity-0">
-               <div className="text-text ml-2 w-full self-center">You have unsaved changes!</div>
-               <HuginnButton onClick={revert} className="w-20 shrink-0 py-2 decoration-white hover:underline">
-                  Revert
-               </HuginnButton>
-               <LoadingButton
-                  // loading={mutation.isPending}
-                  loading={false}
-                  disabled={!modified && !avatarModified}
-                  onClick={edit}
-                  className="w-36 shrink-0 rounded-lg!"
-                  color="primary"
-               >
-                  Save changes
-               </LoadingButton>
-            </div>
-         </Transition>
-      </>
+      </div>
+   );
+}
+
+function ChangeButton(props: { onClick?: () => void }) {
+   return (
+      <HuginnButton className="px-3 py-1.5" color="surface" onClick={props.onClick}>
+         Change
+      </HuginnButton>
+   );
+}
+
+function EditActions(props: { onSave?: () => void; onCancel?: () => void; isLoading: boolean; saveText?: string }) {
+   return (
+      <div className="flex h-10 items-center gap-x-2">
+         <LoadingButton isLoading={props.isLoading} iconClassName="size-6!" color="primary" className="h-9 w-16" onClick={props.onSave}>
+            {props.saveText ?? "Save"}
+         </LoadingButton>
+         <HuginnButton color="surface" className="h-9 w-20" onClick={props.onCancel}>
+            Cancel
+         </HuginnButton>
+      </div>
    );
 }

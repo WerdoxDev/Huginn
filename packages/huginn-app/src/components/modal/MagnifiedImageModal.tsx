@@ -4,7 +4,7 @@ import { constrainImageSize } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
 import { useEffect, useMemo, useRef, useState } from "react";
 import LoadingIcon from "../LoadingIcon";
-import BaseDialogPanel from "./BaseDialogPanel";
+import HuginnDialogPanel from "./HuginnDialogPanel";
 
 export default function MagnifiedImageModal() {
    const { magnifiedImage: modal } = useModals();
@@ -23,7 +23,7 @@ export default function MagnifiedImageModal() {
    }, []);
 
    return (
-      <BaseDialogPanel className="flex select-none flex-col items-center justify-center" headless>
+      <HuginnDialogPanel className="flex flex-col items-center justify-center select-none" headless>
          <div className="relative flex items-center justify-center" style={{ width: `${dimensions.width}px`, height: `${dimensions.height}px` }}>
             <img
                src={`${modal.url}`}
@@ -38,7 +38,7 @@ export default function MagnifiedImageModal() {
                }}
             />
             <Transition show={!loaded}>
-               <div className="bg-surface/40 data-closed:opacity-0 absolute inset-0 flex items-center justify-center rounded-lg duration-200">
+               <div className="bg-surface/40 absolute inset-0 flex items-center justify-center rounded-lg duration-200 data-closed:opacity-0">
                   <LoadingIcon className="size-16" />
                </div>
             </Transition>
@@ -46,6 +46,6 @@ export default function MagnifiedImageModal() {
          <button type="button" className="text-text mt-1 cursor-pointer hover:underline" onClick={() => openUrl(modal.url)}>
             Open original
          </button>
-      </BaseDialogPanel>
+      </HuginnDialogPanel>
    );
 }

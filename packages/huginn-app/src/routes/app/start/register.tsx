@@ -32,8 +32,8 @@ export default function Register() {
    const initializeClient = useInitializeClient();
    const startOAuth = useOAuth();
 
-   const { register, handleErrors, handleSubmit, formState } = useHuginnForm<Inputs>();
-   const { validate } = useUniqueUsernameMessage();
+   const { register, handleErrors, handleSubmit, formState, control } = useHuginnForm<Inputs>();
+   const { validate } = useUniqueUsernameMessage(control);
 
    const mutation = useHuginnMutation(
       {
@@ -131,7 +131,7 @@ export default function Register() {
                </PasswordInput>
             </div>
 
-            <LoadingButton loading={formState.isSubmitting} className="h-10 w-full" color="primary" type="submit">
+            <LoadingButton isLoading={formState.isSubmitting} className="h-10 w-full" color="primary" type="submit">
                Register
             </LoadingButton>
 

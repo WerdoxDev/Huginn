@@ -16,7 +16,7 @@ import { useDevice } from "@stores/deviceStore";
 import LoadingButton from "@components/button/LoadingButton";
 import { screenShareFrameRates, screenShareQualities } from "@lib/constants";
 import { useMediaSources } from "@hooks/voice/useMediaSources";
-import BaseDialogPanel from "./BaseDialogPanel";
+import HuginnDialogPanel from "./HuginnDialogPanel";
 
 // const qualities: DropdownItem[] = [
 //    { text: "Low (480p)", value: "low" },
@@ -173,7 +173,7 @@ export default function ScreenShareModal() {
    }
 
    return (
-      <BaseDialogPanel className="max-h-160 flex h-full w-full max-w-3xl select-none">
+      <HuginnDialogPanel className="flex h-full max-h-160 w-full max-w-3xl select-none">
          <div className="mt-5 flex w-full flex-col gap-y-3 overflow-hidden">
             <HuginnTab className="flex h-full flex-col" onChange={setTabIndex} selectedIndex={tabIndex}>
                <HuginnTab.TabList className="mx-5" tabClassName="w-full py-1">
@@ -191,7 +191,7 @@ export default function ScreenShareModal() {
                   </HuginnTab.Tab>
                </HuginnTab.TabList>
                <HuginnTab.TabPanels
-                  className="scroll-surface-alt mt-4 h-full overflow-y-scroll pb-5 pl-5 pr-1.5 pt-1"
+                  className="scroll-surface-alt mt-4 h-full overflow-y-scroll pt-1 pr-1.5 pb-5 pl-5"
                   panelClassName="grid grid-cols-2 gap-5"
                >
                   {isLoading ? (
@@ -225,9 +225,9 @@ export default function ScreenShareModal() {
                className="group absolute bottom-2 left-2 flex size-10 items-center justify-center"
                color="primary"
                onClick={refetch}
-               loading={isFetching}
+               isLoading={isFetching}
             >
-               <IconMingcuteRefresh3Fill className="group-hover:rotate-30 size-5 transition-transform" />
+               <IconMingcuteRefresh3Fill className="size-5 transition-transform group-hover:rotate-30" />
             </LoadingButton>
          )}
          <div className="bg-surface-alt flex shrink-0 flex-col gap-y-5 p-5">
@@ -272,9 +272,9 @@ export default function ScreenShareModal() {
             <Disclosure>
                <DisclosureButton className="hover:text-primary-500 group flex cursor-pointer items-center text-white transition-colors">
                   <span>Advanced</span>
-                  <IconMingcuteDownFill className="group-data-open:rotate-180 ml-auto h-4 w-4 shrink-0 transition-transform" />
+                  <IconMingcuteDownFill className="ml-auto h-4 w-4 shrink-0 transition-transform group-data-open:rotate-180" />
                </DisclosureButton>
-               <DisclosurePanel transition className="data-closed:-translate-y-5 data-closed:opacity-0 flex origin-top flex-col gap-y-3 transition">
+               <DisclosurePanel transition className="flex origin-top flex-col gap-y-3 transition data-closed:-translate-y-5 data-closed:opacity-0">
                   {modal.type === "create" && (
                      <HuginnCheckbox checked={isSimulcastEnabled} onChange={setIsSimulcastEnabled} className="flex-col">
                         <HuginnCheckbox.Toggle>Use Simulcast</HuginnCheckbox.Toggle>
@@ -306,6 +306,6 @@ export default function ScreenShareModal() {
                </DisclosurePanel>
             </Disclosure>
          </div>
-      </BaseDialogPanel>
+      </HuginnDialogPanel>
    );
 }

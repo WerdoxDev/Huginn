@@ -126,7 +126,7 @@ export default function Login() {
 
             {/* <LinkButton className="mt-1 mb-5 text-sm">Forgot your password?</LinkButton> */}
 
-            <LoadingButton loading={formState.isSubmitting} className="mt-5 h-10 w-full" color="primary" type="submit">
+            <LoadingButton isLoading={formState.isSubmitting} className="mt-5 h-10 w-full" color="primary" type="submit">
                Login
             </LoadingButton>
 

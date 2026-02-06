@@ -40,12 +40,12 @@ export default function OauthRedirect() {
       [search],
    );
 
-   const { register, handleErrors, handleSubmit, formState } = useHuginnForm<Inputs>();
+   const { register, handleErrors, handleSubmit, formState, control } = useHuginnForm<Inputs>();
 
    const [shouldRender, setShouldRender] = useState(false);
    const { data: originalAvatar } = useQuery(getUserAvatarOptions(decodedToken?.providerUserId, decodedToken?.avatarHash, client));
    const [avatarData, setAvatarData] = useState<string | null>(null);
-   const { validate } = useUniqueUsernameMessage();
+   const { validate } = useUniqueUsernameMessage(control);
 
    const mutation = useHuginnMutation(
       {
@@ -156,7 +156,7 @@ export default function OauthRedirect() {
                      <HuginnButton className="w-full" color="surface-alt" onClick={abort} type="button">
                         Abort
                      </HuginnButton>
-                     <LoadingButton loading={formState.isSubmitting} className="h-10 w-full" color="primary" type="submit">
+                     <LoadingButton isLoading={formState.isSubmitting} className="h-10 w-full" color="primary" type="submit">
                         Confirm
                      </LoadingButton>
                   </div>
