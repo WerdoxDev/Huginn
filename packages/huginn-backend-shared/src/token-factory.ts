@@ -1,4 +1,4 @@
-import type { OAuthTokenPayload, Snowflake, UserTokenPayload } from "@huginn/shared";
+import type { OAuthTokenPayload, Snowflake, UserRefreshTokenPayload, UserTokenPayload } from "@huginn/shared";
 import * as jose from "jose";
 
 export const ACCESS_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.ACCESS_TOKEN_SECRET ?? "");
@@ -11,7 +11,7 @@ export type TokenType = "user-access" | "user-refresh" | "oauth" | "cdn" | "voic
 export type TokenPayload<Type extends TokenType> = Type extends "user-access"
    ? UserTokenPayload
    : Type extends "user-refresh"
-     ? { id: Snowflake }
+     ? UserRefreshTokenPayload
      : Type extends "oauth"
        ? OAuthTokenPayload
        : Type extends "voice"
