@@ -26,6 +26,7 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
       getFieldState,
       formState,
       control,
+      setFocus,
    } = useForm<I>({ reValidateMode: "onChange", mode: "onChange", defaultValues: options?.defaultValues });
 
    const values = watch();
@@ -168,5 +169,6 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
       setCustomMessage,
       getFieldState,
       control,
+      setFocus,
    };
 }

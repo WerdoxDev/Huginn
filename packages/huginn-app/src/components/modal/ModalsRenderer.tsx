@@ -17,6 +17,7 @@ const NewsModal = lazy(() => import("./NewsModal"));
 const ScreenShareModal = lazy(() => import("./ScreenShareModal"));
 
 const ChangeUsernameModal = lazy(() => import("./profile/ChangeUsernameModal"));
+const ChangeDisplayNameModal = lazy(() => import("./profile/ChangeDisplayNameModal"));
 
 export default function ModalsRenderer() {
    const { user } = useThisUser();
@@ -33,6 +34,7 @@ export default function ModalsRenderer() {
       streamAudio,
       updateModals,
       changeUsername,
+      changeDisplayName,
    } = useModals();
 
    return (
@@ -61,6 +63,11 @@ export default function ModalsRenderer() {
                      renderChildren={<ChangeUsernameModal />}
                      modal={changeUsername}
                      onClose={() => updateModals({ changeUsername: { isOpen: false } })}
+                  />
+                  <BaseModal
+                     renderChildren={<ChangeDisplayNameModal />}
+                     modal={changeDisplayName}
+                     onClose={() => updateModals({ changeDisplayName: { isOpen: false } })}
                   />
                   <BaseModal
                      renderChildren={<AddRecipientModal />}

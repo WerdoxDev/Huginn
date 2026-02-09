@@ -20,10 +20,12 @@ type Inputs = {
 };
 
 export default function ChangeUsernameModal() {
-   const { register, handleSubmit, values, formState, handleErrors, control } = useHuginnForm<Inputs>();
    const { tokenPayload, user } = useThisUser();
+   const { register, handleSubmit, formState, handleErrors, control, setFocus } = useHuginnForm<Inputs>({
+      defaultValues: { username: user?.username },
+   });
    const { validate } = useUniqueUsernameMessage(control, user?.username);
-   const { updateModals } = useModals();
+   const { updateModals, changeUsername: modal } = useModals();
    const mutation = usePatchUser(() => {
       updateModals({ changeUsername: { isOpen: false } });
    }, onError);
@@ -31,19 +33,20 @@ export default function ChangeUsernameModal() {
 
    const isOAuth = tokenPayload?.authType === "github" || tokenPayload?.authType === "google";
 
-   async function onSubmit() {
-      // if (isOAuth) {
-      //    await startOAuth(tokenPayload.authType as OAuthType);
-      // }
-      await mutation.mutateAsync({ username: values.username, password: values.password });
+   useEffect(() => {
+      if (modal.isOpen) {
+         setFocus("username");
+      }
+   }, [modal]);
+
+   async function onSubmit(data: Inputs) {
+      await mutation.mutateAsync({ username: data.username, password: data.password });
    }
 
    async function onError(error: HuginnErrorData) {
       if (error.code === JsonCode.REAUTHENTICATION_REQUIRED) {
          const result = await startOAuth(tokenPayload?.authType as OAuthType);
-         if (result) {
-            await onSubmit();
-         }
+         if (result) await handleSubmit(onSubmit)();
       } else handleErrors(error);
    }
 

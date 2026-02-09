@@ -87,32 +87,8 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
    }
 
    async function handleEditField(field: EditingField) {
-      if (field === "username") {
-         updateModals({ changeUsername: { isOpen: true } });
-         // updateModals({
-         //    info: {
-         //       isOpen: true,
-         //       title: "Re-Authentication Required",
-         //       text: "In order to change your username, you need to re-authenticate!",
-         //       status: "info",
-         //       action: {
-         //          confirm: {
-         //             async callback() {
-         //                console.log(tokenPayload);
-         //                if (!tokenPayload) return;
-         //                if (tokenPayload.authType === "password") {
-         //                }
-         //                const result = await startOAuth(tokenPayload!.authType as OAuthType);
-         //                console.log(result);
-         //             },
-         //             text: "Confirm",
-         //          },
-         //       },
-         //    },
-         // });
-         return;
-      }
-      setEditingField(field);
+      if (field === "username") updateModals({ changeUsername: { isOpen: true } });
+      if (field === "displayName") updateModals({ changeDisplayName: { isOpen: true } });
    }
 
    function handleCancelEdit() {
