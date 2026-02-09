@@ -63,10 +63,14 @@ services:
       environment:
          - VOICE_HOST=0.0.0.0
          - VOICE_PORT=3003
-         - MEDIA_LISTEN_INFOS=udp:44444:0.0.0.0:midgard.huginn.dev
+         - MEDIA_LISTEN_INFOS=udp:44443:0.0.0.0:monolith.werdox.com;udp:44444:0.0.0.0:midgard.huginn.dev
       ports:
          - target: 44444
            published: 44444
+           protocol: udp
+           mode: host
+         - target: 44443
+           published: 44443
            protocol: udp
            mode: host
          - target: 44444
