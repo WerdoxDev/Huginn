@@ -66,6 +66,7 @@ export enum JsonCode {
    INVALID_CHANNEL_TYPE = 2004,
    INVALID_RECIPIENT = 2005,
    INVALID_ID = 2006,
+   REAUTHENTICATION_REQUIRED = 2007,
    USERNAME_NOT_FOUND = 3001,
    RELATION_SELF_REQUEST = 3002,
    RELATION_EXISTS = 3003,
@@ -215,5 +216,8 @@ export const Errors = {
    },
    knownApplicationExists(): [string, JsonCode] {
       return ["Known application with the specified name already exists", JsonCode.KNOWN_APPLICATION_EXISTS];
+   },
+   requireReauthentication(): [string, JsonCode] {
+      return ["This action requires recent authentication. Please log in again.", JsonCode.REAUTHENTICATION_REQUIRED];
    },
 };

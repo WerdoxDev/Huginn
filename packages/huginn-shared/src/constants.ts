@@ -34,6 +34,8 @@ export const constants = {
    MAX_AUDIO_BITRATE: 1000000,
    MIN_AUDIO_BITRATE: 10000,
    DEFAULT_AUDIO_BITRATE: 100000,
+   OAUTH_SENSITIVE_REAUTH_WINDOW: 60 * 60 * 1000, // 1 hour
+   // OAUTH_SENSITIVE_REAUTH_WINDOW: 1000, // 1 second
 };
 
 export const defaultServerSettings: UserSettings = {
