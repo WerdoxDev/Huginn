@@ -35,19 +35,30 @@ export const patchMe = new Elysia().use(verifyJwt()).patch(
       validateEmail(body.email, formError);
       validatePassword(body.newPassword, formError, "newPassword");
 
-      if (body.newPassword && !body.password) {
+      const sensitiveFieldChanged = body.username || body.newPassword || body.email;
+      const passwordRequired = tokenPayload.authType === "password" && sensitiveFieldChanged;
+      const oauthReauthRequired =
+         (tokenPayload.authType === "github" || tokenPayload.authType === "google") &&
+         sensitiveFieldChanged &&
+         Date.now() - tokenPayload.lastAuthenticatedAt > constants.OAUTH_SENSITIVE_REAUTH_WINDOW;
+
+      if (passwordRequired && !body.password) {
          formError.addError("password", Fields.required());
+      }
+
+      if (oauthReauthRequired) {
+         return status("Forbidden", createErrorFactory(Errors.requireReauthentication()).toObject());
       }
 
       if (formError.hasErrors()) {
          return createHuginnError(formError, status);
       }
 
+      const user = await prisma.user.getById(tokenPayload.id, { select: { id: true, password: true } });
+
       const databaseError = createErrorFactory(Errors.invalidFormBody());
 
-      const user = await prisma.user.getById(tokenPayload.id, { select: { id: true, password: true } });
-      await validateCorrectPassword(body.password, user.password, databaseError);
-
+      if (passwordRequired) await validateCorrectPassword(body.password, user.password, databaseError);
       await validateUsernameUnique(body.username, databaseError);
       await validateEmailUnique(body.email, databaseError);
 
@@ -82,14 +93,15 @@ export const patchMe = new Elysia().use(verifyJwt()).patch(
          { select: selectPrivateUser },
       );
 
+      const lastAuthenticatedAt = Date.now();
       const accessToken = await createToken(
          "user-access",
-         { id: tokenPayload.id, authType: tokenPayload.authType },
+         { id: tokenPayload.id, authType: tokenPayload.authType, lastAuthenticatedAt },
          constants.ACCESS_TOKEN_EXPIRE_TIME,
       );
       const refreshToken = await createToken(
          "user-refresh",
-         { id: tokenPayload.id, authType: tokenPayload.authType },
+         { id: tokenPayload.id, authType: tokenPayload.authType, lastAuthenticatedAt },
          constants.REFRESH_TOKEN_EXPIRE_TIME,
       );
 
