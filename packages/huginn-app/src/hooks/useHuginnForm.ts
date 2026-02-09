@@ -2,7 +2,7 @@ import type { HuginnInputProps, InputMessage } from "@/types";
 import { type HuginnErrorData, type HuginnErrorGroupWrapper } from "@huginn/shared";
 import { APIMessages } from "@lib/error-messages";
 import { requiredFieldError } from "@lib/utils";
-import { useEffect, useState, type ChangeEvent, type FocusEvent } from "react";
+import { useEffect, useState, type FocusEvent } from "react";
 import {
    useForm,
    type ChangeHandler,
@@ -100,14 +100,11 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
          setHuginnError(null);
          setClearedFields(new Set()); // Reset on new submission
       }
-
-      if (!formState.isValid) {
-         setHuginnError(null);
-      }
    }, [formState]);
 
    useEffect(() => {
       const { errors, isValid } = formState;
+      console.log("ERROR", huginnError);
 
       if (huginnError && (isValid || Object.keys(errors).length === 0)) {
          setInputMessages(() => {
@@ -138,8 +135,6 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
 
          return;
       }
-
-      console.log(huginnError);
 
       setInputMessages(() => {
          const newMessages: { [k: string]: InputMessage } = { ...customMessages };

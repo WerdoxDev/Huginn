@@ -5,7 +5,7 @@ import { useErrorHandler } from "./useErrorHandler";
 
 export function useHuginnMutation<TData = unknown, TVariables = void, TContext = unknown>(
    options: UseMutationOptions<TData, Error, TVariables, TContext>,
-   handleErrors?: (errors: HuginnErrorData) => void,
+   handleErrors?: (errors: HuginnErrorData) => Promise<void> | void,
    queryClient?: QueryClient,
 ): UseMutationResult<TData, Error, TVariables, TContext> {
    const handleServerError = useErrorHandler();
@@ -13,9 +13,9 @@ export function useHuginnMutation<TData = unknown, TVariables = void, TContext =
    return useMutation(
       {
          ...options,
-         onError(error) {
+         async onError(error) {
             if (isWorthyHuginnError(error)) {
-               handleErrors?.(error.rawError);
+               await handleErrors?.(error.rawError);
             } else {
                handleServerError(error);
             }
