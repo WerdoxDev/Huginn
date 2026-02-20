@@ -106,7 +106,7 @@ export type APIPostOAuthConfirmJSONBody = {
 
 export type APIPostLoginResult = APIUser & Tokens;
 export type APIPostRegisterResult = APIUser & Tokens;
-export type APIPatchCurrentUserResult = APIUser & Tokens;
+export type APIPatchCurrentUserResult = APIUser & Tokens & { pendingEmail?: string };
 export type APIPostOAuthConfirmResult = APIUser & Tokens;
 
 export type APIPostUniqueUsernameJSONBody = {
@@ -448,3 +448,10 @@ export type APIPostKnownApplicationJSONBody = {
 export type APIPostApplicationIconResult = string;
 
 export type APIPostKnownApplicationResult = APIKnownApplication;
+
+// export type APIEmailVerification =
+
+export type APIPostVerifyEmailJSONBody = {
+   code: string;
+};
+export type APIPostVerifyEmailResult = APIUser;

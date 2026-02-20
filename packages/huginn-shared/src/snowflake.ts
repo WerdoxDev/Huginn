@@ -36,4 +36,5 @@ export enum WorkerID {
    CALL = 12,
    VOICE = 13,
    MESSAGE_REFERENCE = 14,
+   EMAIL_VERIFICATION = 15,
 }

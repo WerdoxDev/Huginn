@@ -71,6 +71,8 @@ export enum JsonCode {
    RELATION_SELF_REQUEST = 3002,
    RELATION_EXISTS = 3003,
    KNOWN_APPLICATION_EXISTS = 3004,
+   EMAIL_VERIFICATION_EXPIRED = 3005,
+   EMAIL_VERIFICATION_WRONG = 3006,
 }
 
 export enum GatewayCode {
@@ -219,5 +221,11 @@ export const Errors = {
    },
    requireReauthentication(): [string, JsonCode] {
       return ["This action requires recent authentication. Please log in again.", JsonCode.REAUTHENTICATION_REQUIRED];
+   },
+   emailVerificationExpired(): [string, JsonCode] {
+      return ["Verification Expired", JsonCode.EMAIL_VERIFICATION_EXPIRED];
+   },
+   emailVerificationWrong(): [string, JsonCode] {
+      return ["Verification code invalid", JsonCode.EMAIL_VERIFICATION_WRONG];
    },
 };
