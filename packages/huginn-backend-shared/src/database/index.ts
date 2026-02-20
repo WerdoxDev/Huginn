@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient, type Message } from "#prisma/client";
+import { Prisma, PrismaClient, type Message, type EmailVerification } from "#prisma/client";
 import { withOptimize } from "@prisma/extension-optimize";
 import { assertExtension } from "./assert";
 import { attachmentExtension } from "./attachment";
@@ -11,6 +11,7 @@ import { userExtension } from "./user";
 import { settingsExtension } from "./settings";
 import { knownApplicationExtension } from "./knownApplication";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { emailVerificationExtension } from "./emailVerification";
 
 // export const prismaBase = new PrismaClient({ omit: { user: { password: true } } }).$extends({
 const adapter = new PrismaPg({ connectionString: process.env.POSTGRESQL_URL });
@@ -39,7 +40,8 @@ export const prisma = prismaBase
    .$extends(embedExtension)
    .$extends(attachmentExtension)
    .$extends(settingsExtension)
-   .$extends(knownApplicationExtension);
+   .$extends(knownApplicationExtension)
+   .$extends(emailVerificationExtension);
 
 // let longest = 0;
 // prismaBase.$on("query", (e) => {
@@ -54,4 +56,4 @@ export const prisma = prismaBase
 
 export * from "./error";
 export * from "./common";
-export { Prisma, type Message };
+export { Prisma, type Message, type EmailVerification };
