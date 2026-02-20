@@ -1,4 +1,4 @@
-import { createErrorFactory, createHuginnError, DBErrorType, singleError, tryCatch, verifyJwt } from "@huginn/backend-shared";
+import { DBErrorType, singleError, tryCatch, verifyJwt } from "@huginn/backend-shared";
 import { assertError, prisma, selectPrivateUser } from "@huginn/backend-shared/database/index";
 import { Errors, type APIPostVerifyEmailResult } from "@huginn/shared";
 import Elysia, { t } from "elysia";
@@ -15,7 +15,7 @@ export const postVerifyEmail = new Elysia().use(verifyJwt()).post(
       }
 
       if (emailVerification?.code !== body.code) {
-         return singleError(Errors.emailVerificationWrong(), status, "Bad Request");
+         return singleError(Errors.emailVerificationInvalid(), status, "Bad Request");
       }
 
       const updatedUser = await prisma.user.edit(tokenPayload.id, { email: emailVerification.newEmail }, { select: selectPrivateUser });

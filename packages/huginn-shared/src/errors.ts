@@ -72,7 +72,7 @@ export enum JsonCode {
    RELATION_EXISTS = 3003,
    KNOWN_APPLICATION_EXISTS = 3004,
    EMAIL_VERIFICATION_EXPIRED = 3005,
-   EMAIL_VERIFICATION_WRONG = 3006,
+   EMAIL_VERIFICATION_INVALID = 3006,
 }
 
 export enum GatewayCode {
@@ -225,7 +225,7 @@ export const Errors = {
    emailVerificationExpired(): [string, JsonCode] {
       return ["Verification Expired", JsonCode.EMAIL_VERIFICATION_EXPIRED];
    },
-   emailVerificationWrong(): [string, JsonCode] {
-      return ["Verification code invalid", JsonCode.EMAIL_VERIFICATION_WRONG];
+   emailVerificationInvalid(): [string, JsonCode] {
+      return ["Verification Code Invalid", JsonCode.EMAIL_VERIFICATION_INVALID];
    },
 };

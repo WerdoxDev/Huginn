@@ -11,8 +11,9 @@ export const emailVerificationExtension = Prisma.defineExtension({
             const methodName = "emailVerification.getByUserId";
 
             assertId(userId);
+            console.log(new Date());
             const emailVerification = await prisma.emailVerification.findFirst({
-               where: { AND: [{ userId: BigInt(userId) }, { expiresAt: { lt: new Date() } }] },
+               where: { AND: [{ userId: BigInt(userId) }, { expiresAt: { gt: new Date() } }] },
             });
             assertObj(methodName, emailVerification, DBErrorType.NULL_EMAIL_VERIFICATION, userId);
 
