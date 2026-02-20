@@ -3,6 +3,7 @@ import { readEnv } from "@huginn/runtime-shared";
 import { Octokit } from "octokit";
 import { ServerGateway } from "#gateway/server-gateway";
 import { logger } from "@huginn/shared";
+import { startCronJobs } from "#cron-jobs";
 
 // logger.enableLogs({ "server:gateway": ["default", "detail-identify"], "server:presence-manager": ["default", "detail"] });
 logger.enableLogs({ "backend-shared:websocket": ["default"] });
@@ -42,3 +43,5 @@ export const s3 = new S3Client({
    region: envs.AWS_REGION,
    credentials: { accessKeyId: envs.AWS_KEY_ID ?? "", secretAccessKey: envs.AWS_SECRET_KEY ?? "" },
 });
+
+startCronJobs();
