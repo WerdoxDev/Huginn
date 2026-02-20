@@ -14,7 +14,7 @@ type Inputs = {
    displayName?: string;
 };
 
-export default function ChangeUsernameModal() {
+export default function ChangeDisplayNameModal() {
    const { user } = useThisUser();
    const { register, handleSubmit, formState, handleErrors, setFocus } = useHuginnForm<Inputs>({
       defaultValues: { displayName: user?.displayName === user?.username ? undefined : (user?.displayName ?? undefined) },
@@ -38,7 +38,7 @@ export default function ChangeUsernameModal() {
       <HuginnDialogPanel className="w-full max-w-xs">
          <form onSubmit={handleSubmit(onSubmit)}>
             <DialogBody>
-               <HuginnDialogTitle title="Change Username" />
+               <HuginnDialogTitle title="Change Display Name" />
                <HuginnInput {...register("displayName")} placeholder={user?.username}>
                   <HuginnInput.Label>Display Name</HuginnInput.Label>
                   <HuginnInput.Wrapper>

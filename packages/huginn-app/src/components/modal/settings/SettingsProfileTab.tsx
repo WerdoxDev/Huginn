@@ -88,7 +88,8 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
 
    async function handleEditField(field: EditingField) {
       if (field === "username") updateModals({ changeUsername: { isOpen: true } });
-      if (field === "displayName") updateModals({ changeDisplayName: { isOpen: true } });
+      else if (field === "displayName") updateModals({ changeDisplayName: { isOpen: true } });
+      else if (field === "email") updateModals({ changeEmail: { isOpen: true } });
    }
 
    function handleCancelEdit() {

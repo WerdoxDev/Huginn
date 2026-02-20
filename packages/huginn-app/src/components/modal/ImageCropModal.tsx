@@ -32,8 +32,12 @@ export default function ImageCropModal() {
          dispatchEvent("image_cropper_done", {
             croppedImageData: data,
          });
-         updateModals({ imageCrop: { isOpen: false } });
+         close();
       }
+   }
+
+   function close() {
+      updateModals({ imageCrop: { isOpen: false } });
    }
 
    useEffect(() => {
@@ -70,13 +74,10 @@ export default function ImageCropModal() {
          </div>
          <div className="text-text/60 mx-5 my-1 italic">NOTE: zoom with scroll wheel</div>
          <DialogActions>
-            <HuginnButton
-               onClick={() => updateModals({ imageCrop: { isOpen: false } })}
-               className="h-10 w-20 shrink-0 decoration-white hover:underline"
-            >
+            <HuginnButton onClick={close} className="h-10 w-full" color="surface">
                Cancel
             </HuginnButton>
-            <HuginnButton onClick={confirm} className="text-text h-10 w-36" color="primary">
+            <HuginnButton onClick={confirm} className="h-10 w-full" color="primary">
                Confirm
             </HuginnButton>
          </DialogActions>

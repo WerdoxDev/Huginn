@@ -151,7 +151,6 @@ export default function SettingsModal() {
          </TabGroup>
 
          <ModalCloseButton
-            className="bg-surface! top-4 right-4"
             onClick={() => {
                updateModals({ settings: { isOpen: false } });
             }}

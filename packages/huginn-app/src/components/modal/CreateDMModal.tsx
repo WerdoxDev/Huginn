@@ -16,6 +16,7 @@ import { useHuginnForm } from "@hooks/useHuginnForm";
 import DialogBody from "@components/DialogBody";
 import DialogActions from "@components/DialogActions";
 import HuginnDialogTitle from "@components/HuginnDialogTitle";
+import HuginnButton from "@components/button/HuginnButton";
 // import { usePostHog } from "posthog-js/react";
 
 type Input = {
@@ -82,6 +83,9 @@ export default function CreateDMModal() {
             <AddRecipientInput relationships={data} onSelectionChanged={onSelectionChanged} />
          </DialogBody>
          <DialogActions>
+            <HuginnButton color="surface" className="w-full" onClick={close}>
+               Cancel
+            </HuginnButton>
             <LoadingButton
                isLoading={mutation.isPending}
                className="h-10 w-full"
@@ -92,7 +96,6 @@ export default function CreateDMModal() {
                Find or Create
             </LoadingButton>
          </DialogActions>
-         <ModalCloseButton onClick={close} />
       </HuginnDialogPanel>
    );
 }
