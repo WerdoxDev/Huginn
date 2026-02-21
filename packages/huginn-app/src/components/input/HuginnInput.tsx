@@ -26,6 +26,7 @@ const InputContext = createContext<{
    ref?: RefCallback<HTMLInputElement | null> | RefObject<HTMLInputElement | null>;
    disabled?: boolean;
    name?: string;
+   autoFocus?: boolean;
    onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
    onBlur?: (e: FocusEvent) => void;
    onFocus?: (e: FocusEvent) => void;
@@ -53,6 +54,7 @@ export default function HuginnInput(props: HuginnInputProps) {
             onChange: props.onChange,
             onBlur: props.onBlur,
             onFocus: props.onFocus,
+            autoFocus: props.autoFocus,
          }}
       >
          <div className={clsx(!props.headless && "flex flex-col", props.className)}>
@@ -92,6 +94,7 @@ function Input(props: { headless?: boolean; className?: string; lowercase?: bool
          )}
          disabled={inputContext.disabled}
          type={inputContext.type ?? "text"}
+         autoFocus={inputContext.autoFocus}
          autoComplete="new-password"
          placeholder={inputContext.placeholder}
          onChange={onChange}
@@ -139,3 +142,4 @@ HuginnInput.Label = Label;
 HuginnInput.Wrapper = Wrapper;
 HuginnInput.Input = Input;
 HuginnInput.InputContext = InputContext;
+HuginnInput.STATUS_RING_COLORS = STATUS_RING_COLORS;

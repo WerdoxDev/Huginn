@@ -38,9 +38,7 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
    const [clearedFields, setClearedFields] = useState<Set<string>>(new Set());
 
    function handleChange(e: any, name: FieldPath<I>, hookChange: ChangeHandler) {
-      console.log("CHANGE", name);
       hookChange(e);
-      // Mark this field as cleared by the user
       setClearedFields((prev) => new Set(prev).add(name));
    }
 
@@ -105,7 +103,6 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
 
    useEffect(() => {
       const { errors, isValid } = formState;
-      console.log("ERROR", huginnError);
 
       if (huginnError && (isValid || Object.keys(errors).length === 0)) {
          setInputMessages(() => {
@@ -140,8 +137,6 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
       setInputMessages(() => {
          const newMessages: { [k: string]: InputMessage } = { ...customMessages };
          for (const name of Object.keys(errors)) {
-            // if (clearedFields.has(name)) continue; // Skip fields the user has already changed
-
             const error = errors[name]!;
 
             if (error.type === "validate") {
