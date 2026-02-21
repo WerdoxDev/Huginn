@@ -15,7 +15,7 @@ import {
    validateUsernameUnique,
 } from "#utils/validation";
 import Elysia, { t } from "elysia";
-import { generateVerificationCode } from "#utils/route-utils";
+import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";
 
 const schema = t.Object({
    email: t.Optional(t.String()),
@@ -126,7 +126,8 @@ export const patchMe = new Elysia()
 
          if (pendingEmailVerification) {
             global.waitUntil(async () => {
-               console.log(pendingEmailVerification.code);
+               // console.log(pendingEmailVerification.code);
+               await sendVerificationEmail(pendingEmailVerification.newEmail, pendingEmailVerification.code);
             });
          }
 

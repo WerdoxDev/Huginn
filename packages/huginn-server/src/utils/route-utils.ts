@@ -12,7 +12,7 @@ import type { Endpoints } from "@octokit/types";
 import { JSDOM } from "jsdom";
 import markdownit from "markdown-it";
 import * as semver from "semver";
-import { octokit } from "#setup";
+import { octokit, resend } from "#setup";
 import { envs } from "#setup";
 import { cdnUpload } from "./server-request";
 
@@ -279,4 +279,13 @@ export async function processAttachments(
 
 export function generateVerificationCode() {
    return Math.floor(100000 + Math.random() * 900000).toString(); // 6 digits
+}
+
+export async function sendVerificationEmail(receiverEmail: string, code: string) {
+   await resend.emails.send({
+      to: receiverEmail,
+      from: "Huginn <noreply@mail.huginn.dev>",
+      subject: "Email Verification",
+      template: { id: "email-verification", variables: { VERIFICATION_CODE: code } },
+   });
 }
