@@ -1,0 +1,25 @@
+{
+   "name": "@huginn/transactional",
+   "version": "0.0.0",
+   "type": "module",
+   "private": true,
+   "scripts": {
+      "dev": "email dev"
+   },
+   "devDependencies": {
+      "@types/bun": "latest",
+      "react-email": "5.2.8"
+   },
+   "peerDependencies": {
+      "typescript": "^5"
+   },
+   "dependencies": {
+      "@react-email/components": "1.0.8",
+      "@react-email/preview-server": "https://pkg.pr.new/resend/react-email/@react-email/preview-server@2969",
+      "react": "19.2.4",
+      "react-dom": "19.2.4"
+   },
+   "resolutions": {
+      "esbuild": "0.25.10"
+   }
+}

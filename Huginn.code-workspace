@@ -2,52 +2,56 @@
    "folders": [
       {
          "name": "ROOT",
-         "path": ".",
+         "path": "."
       },
       {
          "name": "huginn-tui",
-         "path": "packages/huginn-tui",
+         "path": "packages/huginn-tui"
       },
       {
          "name": "huginn-voice",
-         "path": "packages/huginn-voice",
+         "path": "packages/huginn-voice"
       },
       {
          "name": "huginn-server",
-         "path": "packages/huginn-server",
+         "path": "packages/huginn-server"
       },
       {
          "name": "huginn-cdn",
-         "path": "packages/huginn-cdn",
+         "path": "packages/huginn-cdn"
       },
       {
          "name": "huginn-backend-shared",
-         "path": "packages/huginn-backend-shared",
+         "path": "packages/huginn-backend-shared"
       },
       {
          "name": "huginn-runtime-shared",
-         "path": "packages/huginn-runtime-shared",
+         "path": "packages/huginn-runtime-shared"
       },
       {
          "name": "huginn-api",
-         "path": "packages/huginn-api",
+         "path": "packages/huginn-api"
       },
       {
          "name": "huginn-app",
-         "path": "packages/huginn-app",
+         "path": "packages/huginn-app"
       },
       {
          "name": "native-addon",
-         "path": "packages/native-addon",
+         "path": "packages/native-addon"
       },
       {
          "name": "huginn-shared",
-         "path": "packages/huginn-shared",
+         "path": "packages/huginn-shared"
       },
       {
          "name": "huginn-website",
-         "path": "packages/huginn-website",
+         "path": "packages/huginn-website"
       },
+      {
+         "name": "transactional",
+         "path": "packages/transactional"
+      }
    ],
    "settings": {
       "files.exclude": {
