@@ -19,18 +19,29 @@ model User {
    createdAt   DateTime  @default(now())
    updatedAt   DateTime? @updatedAt
 
-   includedChannels        Channel[]          @relation("channel_recipients")
-   ownedChannels           Channel[]          @relation("channel_owner")
-   tempDeletedChannels     Channel[]          @relation("channel_temp_deleted")
+   includedChannels        Channel[]           @relation("channel_recipients")
+   ownedChannels           Channel[]           @relation("channel_owner")
+   tempDeletedChannels     Channel[]           @relation("channel_temp_deleted")
    messages                Message[]
-   mentionedMessages       Message[]          @relation("message_mentions")
-   relationships           Relationship[]     @relation("relation_owner")
-   relatedRelationships    Relationship[]     @relation("relation_user")
+   mentionedMessages       Message[]           @relation("message_mentions")
+   relationships           Relationship[]      @relation("relation_owner")
+   relatedRelationships    Relationship[]      @relation("relation_user")
    identityProvider        IdentityProvider[]
    readStates              ReadState[]
-   participatedCalls       Call[]             @relation("participated_calls")
+   participatedCalls       Call[]              @relation("participated_calls")
    settings                Settings?
    contributedApplications KnownApplication[]
+   emailVerifications      EmailVerification[]
+}
+
+model EmailVerification {
+   id        BigInt   @id
+   user      User     @relation(fields: [userId], references: [id])
+   userId    BigInt   @unique
+   newEmail  String
+   code      String
+   expiresAt DateTime
+   createdAt DateTime @default(now())
 }
 
 model IdentityProvider {

@@ -178,6 +178,22 @@ export const Routes = {
    applicationIcon() {
       return "/applications/icon" as const;
    },
+
+   /**
+    * Route for:
+    * - POST '/users/@me/verify-email'
+    */
+   verifyEmail() {
+      return `/users/@me/verify-email` as const;
+   },
+
+   /**
+    * Route for:
+    * - POST `/users/@me/resend-verification-email`
+    */
+   resendVerificationEmail() {
+      return `/users/@me/resend-verification-email` as const;
+   },
 };
 
 export const CDNRoutes = {

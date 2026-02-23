@@ -64,19 +64,26 @@ export const userExtension = Prisma.defineExtension({
             assertObj(methodName, updatedUser, DBErrorType.NULL_USER, id);
             return idFix(updatedUser) as UserPayload<Args>;
          },
-         async createOne(options: APIPostRegisterJSONBody) {
+         async createOne(options: {
+            id?: bigint;
+            username: string;
+            displayName?: string | null;
+            password?: string | null;
+            email: string;
+            avatar?: string | null;
+         }) {
             const methodName = "user.createOne";
 
             if (options.displayName) options.displayName = options.displayName.trim();
 
-            const passwordHash = await Bun.password.hash(options.password);
+            const passwordHash = options.password ? await Bun.password.hash(options.password) : null;
             const newUser = await prisma.user.create({
                data: {
-                  id: snowflake.generate(WorkerID.AUTH),
+                  id: options.id ?? snowflake.generate(WorkerID.AUTH),
                   username: options.username.toLowerCase(),
                   displayName: options.displayName ? options.displayName : null,
                   password: passwordHash,
-                  avatar: null,
+                  avatar: options.avatar,
                   email: options.email,
                   flags: UserFlags.NONE,
                   system: false,

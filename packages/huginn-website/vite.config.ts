@@ -9,6 +9,7 @@ export default defineConfig({
          "/app": {
             target: "http://localhost:5174", // your React app's local port
             changeOrigin: true,
+            ws: true,
             // rewrite: (path) => path.replace(/^\/app/, ""),
          },
       },

@@ -62,22 +62,13 @@ export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
          avatarHash = null;
       }
 
-      //TODO: PUT THIS IN USER MODEL UTILS
-      const user = idFix(
-         await prisma.user.create({
-            data: {
-               id: BigInt(newUserId),
-               email: tokenPayload.email,
-               username: body.username,
-               displayName: body.displayName,
-               avatar: avatarHash,
-               flags: UserFlags.NONE,
-               password: null,
-               system: false,
-            },
-            select: selectPrivateUser,
-         }),
-      );
+      const user = await prisma.user.createOne({
+         email: tokenPayload.email,
+         username: body.username,
+         displayName: body.displayName,
+         avatar: avatarHash,
+         id: BigInt(newUserId),
+      });
 
       const result = await prisma.identityProvider.update({
          where: { providerUserId: tokenPayload.providerUserId },
@@ -85,12 +76,17 @@ export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
          select: { providerType: true },
       });
 
+      const lastAuthenticatedAt = Date.now();
       const accessToken = await createToken(
          "user-access",
-         { id: user.id, authType: result.providerType as OAuthType },
+         { id: user.id, authType: result.providerType as OAuthType, lastAuthenticatedAt },
          constants.ACCESS_TOKEN_EXPIRE_TIME,
       );
-      const refreshToken = await createToken("user-refresh", { id: user.id, authType: "password" }, constants.REFRESH_TOKEN_EXPIRE_TIME);
+      const refreshToken = await createToken(
+         "user-refresh",
+         { id: user.id, authType: "password", lastAuthenticatedAt },
+         constants.REFRESH_TOKEN_EXPIRE_TIME,
+      );
 
       const json: APIPostOAuthConfirmResult = { ...user, token: accessToken, refreshToken: refreshToken };
       return status("Created", json);

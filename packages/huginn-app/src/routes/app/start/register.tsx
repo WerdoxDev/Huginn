@@ -9,13 +9,13 @@ import { useStartBackground } from "@stores/startBackgroundStore";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useOAuth } from "@hooks/useOAuth";
-import type { APIPostRegisterJSONBody } from "@huginn/shared";
+import type { APIPostRegisterJSONBody, OAuthType } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
 import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
-import { useFormState } from "react-hook-form";
+import { useNavigate } from "react-router";
 // import { usePostHog } from "posthog-js/react";
 
 type Inputs = {
@@ -31,6 +31,7 @@ export default function Register() {
    const startBackground = useStartBackground();
    const initializeClient = useInitializeClient();
    const startOAuth = useOAuth();
+   const navigate = useNavigate();
 
    const { register, handleErrors, handleSubmit, formState, control } = useHuginnForm<Inputs>();
    const { validate } = useUniqueUsernameMessage(control);
@@ -68,6 +69,21 @@ export default function Register() {
       });
    }
 
+   async function handleOAuth(type: OAuthType) {
+      const result = await startOAuth(type);
+      let search: URLSearchParams | undefined;
+
+      if (result?.access_token && result.refresh_token) {
+         search = new URLSearchParams({ access_token: result.access_token, refresh_token: result.refresh_token });
+      } else if (result?.oauth_token) {
+         search = new URLSearchParams({ oauth_token: result.oauth_token });
+      }
+
+      if (result && search) {
+         await navigate(`/oauth-redirect?${search!.toString()}`, { viewTransition: true });
+      }
+   }
+
    return (
       <StartWrapper onSubmit={handleSubmit(onSubmit)} transitionName="start-register">
          <div className="flex w-full flex-col items-center select-none">
@@ -76,7 +92,7 @@ export default function Register() {
          </div>
          <div className="mt-5 flex w-full gap-x-2">
             <HuginnButton
-               onClick={() => startOAuth("google")}
+               onClick={() => handleOAuth("google")}
                type="button"
                className="border-primary-700 bg-surface-alt text-text flex w-full items-center justify-center gap-x-2 rounded-lg border-2 py-2 transition-all hover:shadow-lg"
             >

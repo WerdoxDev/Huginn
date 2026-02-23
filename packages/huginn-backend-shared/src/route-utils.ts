@@ -6,6 +6,7 @@ import { verifyToken, type TokenPayload, type TokenType } from "#token-factory";
 import { unauthorized } from "#elysia-errors";
 import { ALL_FORMATS, BufferSource, Input } from "mediabunny";
 import type { ImageData, VideoData } from "#types";
+import { rateLimit } from "elysia-rate-limit";
 
 export async function tryCatch<T>(fn: (() => Promise<T>) | (() => T)): Promise<[Error, null] | [null, T]> {
    try {
@@ -88,3 +89,19 @@ class GlobalElysia {
 export const globalPlugin = new Elysia({ name: "global-plugin" }).derive({ as: "scoped" }, () => {
    return { global: new GlobalElysia() };
 });
+
+export function hRateLimit(options: { duration?: number; max?: number }) {
+   return rateLimit({
+      duration: options.duration,
+      max: options.max,
+      generator: (req, server) => {
+         const ip = req.headers.get("x-real-ip");
+         return ip ?? server?.requestIP(req)?.address ?? "";
+      },
+      errorResponse: new Response(JSON.stringify({ message: "You are being limited" }), {
+         status: 429,
+         headers: { "Content-Type": "application/json" },
+      }),
+      scoping: "scoped",
+   });
+}

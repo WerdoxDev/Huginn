@@ -17,6 +17,8 @@ const NewsModal = lazy(() => import("./NewsModal"));
 const ScreenShareModal = lazy(() => import("./ScreenShareModal"));
 
 const ChangeUsernameModal = lazy(() => import("./profile/ChangeUsernameModal"));
+const ChangeDisplayNameModal = lazy(() => import("./profile/ChangeDisplayNameModal"));
+const ChangeEmailModal = lazy(() => import("./profile/ChangeEmailModal"));
 
 export default function ModalsRenderer() {
    const { user } = useThisUser();
@@ -33,6 +35,8 @@ export default function ModalsRenderer() {
       streamAudio,
       updateModals,
       changeUsername,
+      changeDisplayName,
+      changeEmail,
    } = useModals();
 
    return (
@@ -58,14 +62,24 @@ export default function ModalsRenderer() {
                   <BaseModal renderChildren={<CreateDMModal />} onClose={() => updateModals({ createDM: { isOpen: false } })} modal={createDM} />
                   <BaseModal renderChildren={<EditGroupModal />} modal={editGroup} onClose={() => updateModals({ editGroup: { isOpen: false } })} />
                   <BaseModal
+                     renderChildren={<AddRecipientModal />}
+                     modal={addRecipient}
+                     onClose={() => updateModals({ addRecipient: { isOpen: false } })}
+                  />
+                  <BaseModal
                      renderChildren={<ChangeUsernameModal />}
                      modal={changeUsername}
                      onClose={() => updateModals({ changeUsername: { isOpen: false } })}
                   />
                   <BaseModal
-                     renderChildren={<AddRecipientModal />}
-                     modal={addRecipient}
-                     onClose={() => updateModals({ addRecipient: { isOpen: false } })}
+                     renderChildren={<ChangeDisplayNameModal />}
+                     modal={changeDisplayName}
+                     onClose={() => updateModals({ changeDisplayName: { isOpen: false } })}
+                  />
+                  <BaseModal
+                     renderChildren={<ChangeEmailModal />}
+                     modal={changeEmail}
+                     onClose={() => updateModals({ changeEmail: { isOpen: false } })}
                   />
                </>
             )}

@@ -3,6 +3,8 @@ import { readEnv } from "@huginn/runtime-shared";
 import { Octokit } from "octokit";
 import { ServerGateway } from "#gateway/server-gateway";
 import { logger } from "@huginn/shared";
+import { startCronJobs } from "#cron-jobs";
+import { Resend } from "resend";
 
 // logger.enableLogs({ "server:gateway": ["default", "detail-identify"], "server:presence-manager": ["default", "detail"] });
 logger.enableLogs({ "backend-shared:websocket": ["default"] });
@@ -31,6 +33,7 @@ export const envs = readEnv([
    "IGDB_CLIENT_SECRET",
    "AXIOM_TOKEN",
    "AXIOM_DATASET",
+   "RESEND_API_KEY",
 ] as const);
 
 export const CERT_FILE = envs.CERTIFICATE_PATH && Bun.file(envs.CERTIFICATE_PATH);
@@ -42,3 +45,6 @@ export const s3 = new S3Client({
    region: envs.AWS_REGION,
    credentials: { accessKeyId: envs.AWS_KEY_ID ?? "", secretAccessKey: envs.AWS_SECRET_KEY ?? "" },
 });
+export const resend = new Resend(envs.RESEND_API_KEY);
+
+startCronJobs();

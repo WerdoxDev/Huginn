@@ -13,11 +13,11 @@ export function useOAuth() {
    const huginnWindow = useHuginnWindow();
    const { updateModals } = useModals();
    const posthog = usePostHog();
+   const canceled = useRef(false);
 
    async function startOAuth(type: OAuthType) {
-      if (!client) {
-         return;
-      }
+      if (!client) return;
+      canceled.current = false;
 
       posthog.capture("oauth:oauth_flow_start", { type: type });
 
@@ -36,6 +36,7 @@ export function useOAuth() {
                cancel: {
                   text: "Cancel",
                   callback: () => {
+                     canceled.current = true;
                      updateModals({ info: { isOpen: false } });
                   },
                },
@@ -49,7 +50,14 @@ export function useOAuth() {
          window.electronAPI.openExternal(url);
       }
 
-      return await waitForOauth();
+      const result = await waitForOauth();
+      // If client has already authenticated once, just set the tokens to the new ones.
+      if (client.currentUser) {
+         if (result && result.access_token) client.tokenHandler.token = result?.access_token;
+         if (result && result.refresh_token) client.tokenHandler.refreshToken = result?.refresh_token;
+      }
+
+      return result;
    }
 
    async function waitForOauth() {
@@ -65,8 +73,13 @@ export function useOAuth() {
          unlisten();
       });
 
-      const result = await new Promise<OAuthResult>((res) => {
+      const result = await new Promise<OAuthResult | null>((res) => {
          const interval = window.setInterval(() => {
+            if (canceled.current === true) {
+               clearInterval(interval);
+               res(null);
+            }
+
             const oauth = localStorage.getItem("oauth-confirm");
             if (oauth) {
                localStorage.removeItem("oauth-confirm");

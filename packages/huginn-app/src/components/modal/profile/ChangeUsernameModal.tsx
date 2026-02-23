@@ -11,7 +11,8 @@ import { useOAuth } from "@hooks/useOAuth";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import LoadingButton from "@components/button/LoadingButton";
 import { useEffect } from "react";
-import type { OAuthType } from "@huginn/shared";
+import { JsonCode, type OAuthType, type HuginnErrorData } from "@huginn/shared";
+import { useModals } from "@stores/modalsStore";
 
 type Inputs = {
    username: string;
@@ -19,19 +20,34 @@ type Inputs = {
 };
 
 export default function ChangeUsernameModal() {
-   const { register, handleSubmit, values, formState, handleErrors, control } = useHuginnForm<Inputs>();
    const { tokenPayload, user } = useThisUser();
+   const { register, handleSubmit, formState, handleErrors, control, setFocus } = useHuginnForm<Inputs>({
+      defaultValues: { username: user?.username },
+   });
    const { validate } = useUniqueUsernameMessage(control, user?.username);
-   const mutation = usePatchUser(undefined, handleErrors);
+   const { updateModals, changeUsername: modal } = useModals();
+   const mutation = usePatchUser(() => {
+      updateModals({ changeUsername: { isOpen: false } });
+   }, onError);
    const startOAuth = useOAuth();
 
    const isOAuth = tokenPayload?.authType === "github" || tokenPayload?.authType === "google";
 
-   async function onSubmit() {
-      if (isOAuth) {
-         await startOAuth(tokenPayload.authType as OAuthType);
+   useEffect(() => {
+      if (modal.isOpen) {
+         setFocus("username");
       }
-      await mutation.mutateAsync({ username: values.username, password: values.password });
+   }, [modal]);
+
+   async function onSubmit(data: Inputs) {
+      await mutation.mutateAsync({ username: data.username, password: data.password });
+   }
+
+   async function onError(error: HuginnErrorData) {
+      if (error.code === JsonCode.REAUTHENTICATION_REQUIRED) {
+         const result = await startOAuth(tokenPayload?.authType as OAuthType);
+         if (result) await handleSubmit(onSubmit)();
+      } else handleErrors(error);
    }
 
    return (
@@ -46,7 +62,7 @@ export default function ChangeUsernameModal() {
                   </HuginnInput.Wrapper>
                </HuginnInput>
                {!isOAuth && (
-                  <HuginnInput {...register("password")} type="password">
+                  <HuginnInput {...register("password", { required: true })} type="password">
                      <HuginnInput.Label>Password</HuginnInput.Label>
                      <HuginnInput.Wrapper>
                         <HuginnInput.Input />

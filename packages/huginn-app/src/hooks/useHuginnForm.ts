@@ -2,7 +2,7 @@ import type { HuginnInputProps, InputMessage } from "@/types";
 import { type HuginnErrorData, type HuginnErrorGroupWrapper } from "@huginn/shared";
 import { APIMessages } from "@lib/error-messages";
 import { requiredFieldError } from "@lib/utils";
-import { useEffect, useState, type ChangeEvent, type FocusEvent } from "react";
+import { useEffect, useState, type FocusEvent } from "react";
 import {
    useForm,
    type ChangeHandler,
@@ -26,6 +26,7 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
       getFieldState,
       formState,
       control,
+      setFocus,
    } = useForm<I>({ reValidateMode: "onChange", mode: "onChange", defaultValues: options?.defaultValues });
 
    const values = watch();
@@ -37,9 +38,7 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
    const [clearedFields, setClearedFields] = useState<Set<string>>(new Set());
 
    function handleChange(e: any, name: FieldPath<I>, hookChange: ChangeHandler) {
-      console.log("CHANGE", name);
       hookChange(e);
-      // Mark this field as cleared by the user
       setClearedFields((prev) => new Set(prev).add(name));
    }
 
@@ -100,10 +99,6 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
          setHuginnError(null);
          setClearedFields(new Set()); // Reset on new submission
       }
-
-      if (!formState.isValid) {
-         setHuginnError(null);
-      }
    }, [formState]);
 
    useEffect(() => {
@@ -139,13 +134,9 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
          return;
       }
 
-      console.log(huginnError);
-
       setInputMessages(() => {
          const newMessages: { [k: string]: InputMessage } = { ...customMessages };
          for (const name of Object.keys(errors)) {
-            // if (clearedFields.has(name)) continue; // Skip fields the user has already changed
-
             const error = errors[name]!;
 
             if (error.type === "validate") {
@@ -173,5 +164,6 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
       setCustomMessage,
       getFieldState,
       control,
+      setFocus,
    };
 }

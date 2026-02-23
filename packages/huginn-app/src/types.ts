@@ -45,6 +45,7 @@ export type HuginnInputProps = {
    type?: HTMLInputTypeAttribute;
    ref?: RefCallback<HTMLInputElement | null>;
    name?: string;
+   autoFocus?: boolean;
    onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
    onBlur?: (e: FocusEvent) => void;
    onFocus?: (e: FocusEvent) => void;

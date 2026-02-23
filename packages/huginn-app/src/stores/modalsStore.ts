@@ -54,6 +54,8 @@ const initialStore = () => ({
    },
    streamAudio: { isOpen: false, callback: undefined } as DefaultModal & { callback?: (sourceProcessId: string) => void },
    changeUsername: { isOpen: false } as DefaultModal,
+   changeDisplayName: { isOpen: false } as DefaultModal,
+   changeEmail: { isOpen: false } as DefaultModal,
 });
 
 type StoreType = ReturnType<typeof initialStore>;

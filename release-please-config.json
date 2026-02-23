@@ -39,6 +39,9 @@
       },
       "packages/huginn-tui": {
          "package-name": "tui"
+      },
+      "packages/transactional": {
+         "package-name": "transactional"
       }
    }
 }

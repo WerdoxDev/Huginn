@@ -28,8 +28,18 @@ export const postLogin = new Elysia().post(
          throw error;
       }
 
-      const accessToken = await createToken("user-access", { id: user.id, authType: "password" }, constants.ACCESS_TOKEN_EXPIRE_TIME);
-      const refreshToken = await createToken("user-refresh", { id: user.id, authType: "password" }, constants.REFRESH_TOKEN_EXPIRE_TIME);
+      const lastAuthenticatedAt = Date.now();
+
+      const accessToken = await createToken(
+         "user-access",
+         { id: user.id, authType: "password", lastAuthenticatedAt },
+         constants.ACCESS_TOKEN_EXPIRE_TIME,
+      );
+      const refreshToken = await createToken(
+         "user-refresh",
+         { id: user.id, authType: "password", lastAuthenticatedAt },
+         constants.REFRESH_TOKEN_EXPIRE_TIME,
+      );
 
       const json: APIPostLoginResult = { ...user, token: accessToken, refreshToken: refreshToken };
       return status(200, json);

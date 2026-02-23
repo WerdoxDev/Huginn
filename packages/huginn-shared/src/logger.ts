@@ -30,6 +30,7 @@ export const LOG_VALUES_MAP = {
    "app:electron": ["default", "send", "recv", "updater", "loopback-send", "loopback", "file-controller"],
    "server:gateway": ["default", "send", "recv", "heartbeat", "detail-identify"],
    "server:presence-manager": ["default", "send", "detail"],
+   "server:cron": ["default"],
    "voice:websocket": ["default", "recv"],
    "backend-shared:client-session": ["default", "subscriptions", "heartbeat"],
    "backend-shared:route-utils": ["default"],

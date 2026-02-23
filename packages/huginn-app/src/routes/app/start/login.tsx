@@ -67,7 +67,7 @@ export default function Login() {
 
    async function handleOAuth(type: OAuthType) {
       const result = await startOAuth(type);
-      let search: URLSearchParams;
+      let search: URLSearchParams | undefined;
 
       if (result?.access_token && result.refresh_token) {
          search = new URLSearchParams({ access_token: result.access_token, refresh_token: result.refresh_token });
@@ -75,9 +75,9 @@ export default function Login() {
          search = new URLSearchParams({ oauth_token: result.oauth_token });
       }
 
-      // console.log(search, result);
-
-      await navigate(`/oauth-redirect?${search!.toString()}`, { viewTransition: true });
+      if (result && search) {
+         await navigate(`/oauth-redirect?${search!.toString()}`, { viewTransition: true });
+      }
    }
 
    return (

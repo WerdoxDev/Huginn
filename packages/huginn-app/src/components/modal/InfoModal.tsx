@@ -112,15 +112,6 @@ export default function InfoModal() {
                </LoadingButton>
             )}
          </DialogActions>
-
-         {modal.isClosable && (
-            <ModalCloseButton
-               onClick={() => {
-                  if (!modal.action?.cancel?.callback) updateModals({ info: { isOpen: false } });
-                  else modal.action.cancel.callback();
-               }}
-            />
-         )}
       </HuginnDialogPanel>
    );
 }

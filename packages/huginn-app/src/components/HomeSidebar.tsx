@@ -57,7 +57,7 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
                </div>
                <div>Create Channel</div>
             </HuginnButton>
-            <div className="flex flex-col gap-y-0.5 rounded-lg p-0 pl-2">
+            <div className="flex flex-col gap-y-0.5 rounded-lg pb-2 pl-2">
                {sortedChannels?.map((channel) => (
                   <DirectMessageChannel key={channel.id} channel={channel} />
                ))}

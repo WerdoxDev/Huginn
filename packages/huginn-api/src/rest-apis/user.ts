@@ -5,6 +5,8 @@ import {
    type APIPatchCurrentUserResult,
    type APIPatchUserSettingsJSONBody,
    type APIPatchUserSettingsResult,
+   type APIPostVerifyEmailJSONBody,
+   type APIPostVerifyEmailResult,
    Routes,
    type Snowflake,
    resolveImage,
@@ -33,5 +35,13 @@ export class UserAPI {
 
    public async editSettings(body: APIPatchUserSettingsJSONBody): Promise<APIPatchUserSettingsResult> {
       return this.rest.patch(Routes.userSettings(), { body, auth: true }) as Promise<APIPatchUserSettingsResult>;
+   }
+
+   public async verifyEmail(body: APIPostVerifyEmailJSONBody): Promise<APIPostVerifyEmailResult> {
+      return this.rest.post(Routes.verifyEmail(), { body, auth: true }) as Promise<APIPostVerifyEmailResult>;
+   }
+
+   public async resendVerificationEmail(): Promise<void> {
+      return this.rest.post(Routes.resendVerificationEmail(), { auth: true }) as Promise<void>;
    }
 }

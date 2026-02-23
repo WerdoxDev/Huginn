@@ -66,10 +66,14 @@ export enum JsonCode {
    INVALID_CHANNEL_TYPE = 2004,
    INVALID_RECIPIENT = 2005,
    INVALID_ID = 2006,
+   REAUTHENTICATION_REQUIRED = 2007,
    USERNAME_NOT_FOUND = 3001,
    RELATION_SELF_REQUEST = 3002,
    RELATION_EXISTS = 3003,
    KNOWN_APPLICATION_EXISTS = 3004,
+   EMAIL_VERIFICATION_EXPIRED = 3005,
+   EMAIL_VERIFICATION_INVALID = 3006,
+   EMAIL_VERIFICATION_NOT_FOUND = 3007,
 }
 
 export enum GatewayCode {
@@ -215,5 +219,17 @@ export const Errors = {
    },
    knownApplicationExists(): [string, JsonCode] {
       return ["Known application with the specified name already exists", JsonCode.KNOWN_APPLICATION_EXISTS];
+   },
+   requireReauthentication(): [string, JsonCode] {
+      return ["This action requires recent authentication. Please log in again.", JsonCode.REAUTHENTICATION_REQUIRED];
+   },
+   emailVerificationExpired(): [string, JsonCode] {
+      return ["Verification is expired", JsonCode.EMAIL_VERIFICATION_EXPIRED];
+   },
+   emailVerificationInvalid(): [string, JsonCode] {
+      return ["Verification code is invalid", JsonCode.EMAIL_VERIFICATION_INVALID];
+   },
+   emailVerificationNotFound(): [string, JsonCode] {
+      return ["No pending email verification found", JsonCode.EMAIL_VERIFICATION_NOT_FOUND];
    },
 };

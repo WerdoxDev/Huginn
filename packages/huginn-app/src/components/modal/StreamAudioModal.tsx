@@ -88,7 +88,6 @@ export default function StreamAudioModal() {
                Go Live
             </LoadingButton>
          </div>
-         <ModalCloseButton onClick={close} />
       </HuginnDialogPanel>
    );
 }

@@ -92,14 +92,13 @@ export default function EditGroupModal() {
                </div>
             </DialogBody>
             <DialogActions>
-               <HuginnButton className="h-10 w-20 decoration-white hover:underline" onClick={close} type="button">
+               <HuginnButton className="h-10 w-full" color="surface" onClick={close} type="button">
                   Cancel
                </HuginnButton>
-               <LoadingButton isLoading={mutation.isPending} className="h-10 w-20" color="primary" type="submit">
+               <LoadingButton isLoading={mutation.isPending} className="h-10 w-full" color="primary" type="submit">
                   Save
                </LoadingButton>
             </DialogActions>
-            <ModalCloseButton onClick={close} />
          </form>
       </HuginnDialogPanel>
    );
