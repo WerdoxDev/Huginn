@@ -12,8 +12,10 @@ import { useVerifyEmail } from "@hooks/mutations/useVerifyEmail";
 import LoadingButton from "@components/button/LoadingButton";
 import HuginnButton from "@components/button/HuginnButton";
 import { useEffect, useState } from "react";
-import { JsonCode, type OAuthType, type HuginnErrorData } from "@huginn/shared";
+import { JsonCode, type OAuthType, type HuginnErrorData, constants } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
+import { useResendVerificationEmail } from "@hooks/mutations/useResendVerificationEmail";
+import { useCountdown } from "@hooks/useCountdown";
 
 type Inputs = {
    email: string;
@@ -26,8 +28,8 @@ export default function ChangeEmailModal() {
    const { register, handleSubmit, formState, handleErrors, setFocus } = useHuginnForm<Inputs>();
    const { updateModals, changeEmail: modal } = useModals();
    const [isVerifying, setIsVerifying] = useState(false);
-   const [lastSubmittedData, setLastSubmittedData] = useState<{ email: string; password?: string } | null>(null);
    const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+   const { countdown, startCountdown } = useCountdown();
 
    const patchMutation = usePatchUser(() => {
       setIsVerifying(true);
@@ -37,6 +39,12 @@ export default function ChangeEmailModal() {
    const verificationMutation = useVerifyEmail(() => {
       updateModals({ changeEmail: { isOpen: false } });
    }, handleErrors);
+
+   const resendMutation = useResendVerificationEmail(() => {
+      setFocus("verificationCode");
+   });
+
+   const canResend = countdown === 0;
 
    const startOAuth = useOAuth();
 
@@ -53,15 +61,14 @@ export default function ChangeEmailModal() {
       if (isVerifying) {
          await verificationMutation.mutateAsync({ code: data.verificationCode || "" });
       } else {
-         setLastSubmittedData({ email: data.email, password: data.password });
          const result = await patchMutation.mutateAsync({ email: data.email, password: data.password });
          setPendingEmail(result?.pendingEmail ?? null);
+         startCountdown(constants.EMAIL_VERIFICATION_RESEND_COOLDOWN / 1000);
       }
    }
 
-   async function onResendCode() {
-      if (!lastSubmittedData) return;
-      await patchMutation.mutateAsync({ email: lastSubmittedData.email, password: lastSubmittedData.password });
+   async function onResend() {
+      await resendMutation.mutateAsync();
    }
 
    async function onError(error: HuginnErrorData) {
@@ -106,10 +113,17 @@ export default function ChangeEmailModal() {
                )}
             </DialogBody>
             <DialogActions>
-               {isVerifying && (
-                  <HuginnButton type="button" color="surface" onClick={onResendCode} disabled={patchMutation.isPending} className="h-10 w-full">
-                     Resend Code
-                  </HuginnButton>
+               {!isVerifying && (
+                  <LoadingButton
+                     isLoading={resendMutation.isPending}
+                     type="button"
+                     color="surface"
+                     onClick={onResend}
+                     disabled={!canResend || patchMutation.isPending}
+                     className="h-10 w-full"
+                  >
+                     Resend Code {!canResend && <span className="text-sm text-white/80">({countdown}s)</span>}
+                  </LoadingButton>
                )}
                <LoadingButton
                   isLoading={isVerifying ? verificationMutation.isPending : formState.isSubmitting}
