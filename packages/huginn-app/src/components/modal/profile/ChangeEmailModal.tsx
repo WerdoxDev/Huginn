@@ -113,7 +113,7 @@ export default function ChangeEmailModal() {
                )}
             </DialogBody>
             <DialogActions>
-               {!isVerifying && (
+               {isVerifying && (
                   <LoadingButton
                      isLoading={resendMutation.isPending}
                      type="button"

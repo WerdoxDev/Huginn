@@ -12,6 +12,7 @@ await build({
    format: ["esm"],
 
    external: external,
+   inlineOnly: false,
    outDir: ".electron",
    fixedExtension: true,
    target: "es2022",
