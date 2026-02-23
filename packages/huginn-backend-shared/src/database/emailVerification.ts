@@ -1,21 +1,17 @@
 import { Prisma } from "#prisma/client";
 import { idFix, snowflake, WorkerID, type Snowflake } from "@huginn/shared";
 import { assertId } from "./error";
-import { assertExists, assertObj, prisma } from "#database";
+import { assertExists, prisma } from "#database";
 import { DBErrorType } from "#types";
 
 export const emailVerificationExtension = Prisma.defineExtension({
    model: {
       emailVerification: {
          async getByUserId(userId: Snowflake) {
-            const methodName = "emailVerification.getByUserId";
-
             assertId(userId);
-            console.log(new Date());
             const emailVerification = await prisma.emailVerification.findFirst({
-               where: { AND: [{ userId: BigInt(userId) }, { expiresAt: { gt: new Date() } }] },
+               where: { userId: BigInt(userId) },
             });
-            assertObj(methodName, emailVerification, DBErrorType.NULL_EMAIL_VERIFICATION, userId);
 
             return idFix(emailVerification);
          },
