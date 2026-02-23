@@ -48,6 +48,7 @@ import { getIndex } from "./routes";
 import { staticPlugin } from "@elysiajs/static";
 import { cors } from "@elysiajs/cors";
 import { postVerifyEmail } from "#routes/users/@me/verify-email.post";
+import { postResendVerificationEmail } from "#routes/users/@me/resend-verification-email";
 
 // console.log(envs.AXIOM_DATASET, envs.AXIOM_TOKEN);
 
@@ -107,6 +108,7 @@ export const app = new Elysia({
    .use(getUserRelationship)
    .use(putUserRelationship)
    .use(postVerifyEmail)
+   .use(postResendVerificationEmail)
 
    // channel
    .use(postChannelMessage)

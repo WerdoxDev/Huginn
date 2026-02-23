@@ -186,6 +186,14 @@ export const Routes = {
    verifyEmail() {
       return `/users/@me/verify-email` as const;
    },
+
+   /**
+    * Route for:
+    * - POST `/users/@me/resend-verification-email`
+    */
+   resendVerificationEmail() {
+      return `/users/@me/resend-verification-email` as const;
+   },
 };
 
 export const CDNRoutes = {

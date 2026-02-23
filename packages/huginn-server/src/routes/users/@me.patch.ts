@@ -97,7 +97,13 @@ export const patchMe = new Elysia()
          );
 
          let pendingEmailVerification: EmailVerification | undefined;
-         if (body.email) {
+         email_verification: if (body.email) {
+            // because we can't rate limit, we need to check the resend cooldown manually here
+            const existingVerification = await prisma.emailVerification.getByUserId(tokenPayload.id);
+            if (existingVerification && existingVerification.createdAt.getTime() > Date.now() - constants.EMAIL_VERIFICATION_RESEND_COOLDOWN) {
+               break email_verification;
+            }
+
             const expiresAt = Date.now() + constants.EMAIL_VERIFICATION_WINDOW;
             const code = generateVerificationCode();
             pendingEmailVerification = await prisma.emailVerification.createOrUpdate({
@@ -105,6 +111,9 @@ export const patchMe = new Elysia()
                newEmail: body.email,
                expiresAt,
                code,
+            });
+            global.waitUntil(async () => {
+               await sendVerificationEmail(pendingEmailVerification!.newEmail, pendingEmailVerification!.code);
             });
          }
 
@@ -123,13 +132,6 @@ export const patchMe = new Elysia()
          // TODO: When guilds are a thing, this should send an update to users that are viewing that guild
          dispatchToTopic(tokenPayload.id, "user_update", { ...updatedUser, token: accessToken, refreshToken });
          gateway.presenceManager.updateUserPresence(tokenPayload.id, undefined, updatedUser);
-
-         if (pendingEmailVerification) {
-            global.waitUntil(async () => {
-               // console.log(pendingEmailVerification.code);
-               await sendVerificationEmail(pendingEmailVerification.newEmail, pendingEmailVerification.code);
-            });
-         }
 
          const json: APIPatchCurrentUserResult = {
             ...updatedUser,

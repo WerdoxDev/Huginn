@@ -73,6 +73,7 @@ export enum JsonCode {
    KNOWN_APPLICATION_EXISTS = 3004,
    EMAIL_VERIFICATION_EXPIRED = 3005,
    EMAIL_VERIFICATION_INVALID = 3006,
+   EMAIL_VERIFICATION_NOT_FOUND = 3007,
 }
 
 export enum GatewayCode {
@@ -223,9 +224,12 @@ export const Errors = {
       return ["This action requires recent authentication. Please log in again.", JsonCode.REAUTHENTICATION_REQUIRED];
    },
    emailVerificationExpired(): [string, JsonCode] {
-      return ["Verification Expired", JsonCode.EMAIL_VERIFICATION_EXPIRED];
+      return ["Verification is expired", JsonCode.EMAIL_VERIFICATION_EXPIRED];
    },
    emailVerificationInvalid(): [string, JsonCode] {
-      return ["Verification Code Invalid", JsonCode.EMAIL_VERIFICATION_INVALID];
+      return ["Verification code is invalid", JsonCode.EMAIL_VERIFICATION_INVALID];
+   },
+   emailVerificationNotFound(): [string, JsonCode] {
+      return ["No pending email verification found", JsonCode.EMAIL_VERIFICATION_NOT_FOUND];
    },
 };

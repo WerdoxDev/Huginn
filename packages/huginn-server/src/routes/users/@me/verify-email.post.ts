@@ -8,9 +8,9 @@ const schema = t.Object({ code: t.String() });
 export const postVerifyEmail = new Elysia().use(verifyJwt()).post(
    "/api/users/@me/verify-email",
    async ({ body, tokenPayload, status }) => {
-      const [error, emailVerification] = await tryCatch(async () => await prisma.emailVerification.getByUserId(tokenPayload.id));
+      const emailVerification = await prisma.emailVerification.getByUserId(tokenPayload.id);
 
-      if (assertError(error, DBErrorType.NULL_EMAIL_VERIFICATION)) {
+      if (!emailVerification || emailVerification.expiresAt.getTime() < Date.now()) {
          return singleError(Errors.emailVerificationExpired(), status, "Bad Request");
       }
 
