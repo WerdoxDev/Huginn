@@ -1,49 +1,86 @@
 import { useMainViewTransitionState } from "@hooks/useMainViewTransitionState";
 import { useTheme } from "@stores/themeStore";
-import clsx from "clsx";
+import * as blobs2Animate from "blobs/v2/animate";
+import { useEffect, useRef, useState } from "react";
+import { useViewTransitionState } from "react-router";
+
+const animation = blobs2Animate.canvasPath();
+
+const blobSize = 700;
+// const blobFullSize = 1000
 
 export default function StartBackgroundSvg(props: { state: number }) {
-	const fillColor = useTheme();
-	const { isMainTransitioning } = useMainViewTransitionState();
+   const { theme } = useTheme();
+   const { isMainTransitioning, isStartTransitioning } = useMainViewTransitionState();
+   const canvas = useRef<HTMLCanvasElement | null>(null);
+   const [canvasSize, setCanvasSize] = useState(window.innerWidth);
 
-	const path1 = {
-		close: "M0 540.8C-100.8 530.3 -201.6 519.7 -270.4 468.4C-339.2 417 -376 324.9 -415.7 240C-455.4 155.1 -498.1 77.6 -540.8 0L0 0Z",
-		open: "M0 324.5C-55.6 314.6 -111.2 304.7 -161 278.9C-210.8 253.1 -254.7 211.4 -281 162.2C-307.3 113.1 -315.9 56.6 -324.5 0L0 0Z",
-		initial: "M0 0C0 0 0 0 0 0C0 0 0 0 0 0C0 0 0 0 0 0L0 0Z",
-	};
+   const isTransitioning = useViewTransitionState("/channels/*");
 
-	const path2 = {
-		close: "M 0 -540.8 C 101.2 -530.5 159 -510 231 -458 C 295 -410 343 -309 399 -226 C 445 -151 496.7 -76.8 540.8 0 L 0 0 Z",
-		open: "M0 -324.5C57 -316.2 114 -307.8 162.2 -281C210.4 -254.2 249.8 -208.9 275.4 -159C301 -109.1 312.7 -54.5 324.5 0L0 0Z",
-		initial: "M0 0C0 0 0 0 0 0C0 0 0 0 0 0C0 0 0 0 0 0L0 0Z",
-	};
+   useEffect(() => {
+      console.log(isTransitioning);
+   }, [isTransitioning]);
 
-	return (
-		<>
-			<svg
-				className={clsx("pointer-events-none absolute h-full w-full", props.state === 1 && "z-10")}
-				viewBox="0 0 960 540"
-				xmlns="http://www.w3.org/2000/svg"
-				version="1.1"
-				preserveAspectRatio="xMidYMid slice"
-				style={isMainTransitioning ? { viewTransitionName: "start-surface" } : undefined}
-			>
-				<title>animated-surface</title>
-				<g transform="translate(960, 0)">
-					<path
-						fill={fillColor.theme["primary-700"]}
-						className="transition-all duration-500"
-						d={props.state === 0 ? path1.open : props.state === 1 ? path1.close : path1.initial}
-					/>
-				</g>
-				<g transform="translate(0, 540)">
-					<path
-						fill={fillColor.theme["primary-700"]}
-						className="transition-all duration-500"
-						d={props.state === 0 ? path2.open : props.state === 1 ? path2.close : path2.initial}
-					/>
-				</g>
-			</svg>
-		</>
-	);
+   function loopAnimation(duration: number = 5000) {
+      animation.transition({
+         blobOptions: { seed: Math.random(), extraPoints: 10, randomness: 3, size: blobSize },
+         canvasOptions: { offsetX: canvasSize / 2 - blobSize / 2, offsetY: canvasSize / 2 - blobSize / 2 },
+         duration: duration,
+         timingFunction: "ease",
+         callback: loopAnimation,
+      });
+   }
+
+   useEffect(() => {
+      function handleResize() {
+         setCanvasSize(window.innerWidth);
+      }
+
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+   }, []);
+
+   useEffect(() => {
+      if (props.state === 2) {
+         const size = window.innerWidth * 2;
+         animation.transition({
+            blobOptions: { seed: Math.random(), extraPoints: 0, randomness: 0, size: size },
+            canvasOptions: { offsetX: canvasSize / 2 - size / 2, offsetY: canvasSize / 2 - size / 2 },
+            duration: 500,
+            timingFunction: "ease",
+         });
+      }
+      if (props.state === 0) {
+         loopAnimation(1000);
+      }
+   }, [props.state]);
+
+   useEffect(() => {
+      function renderAnimation() {
+         const context = canvas.current?.getContext("2d");
+         if (!context) return;
+
+         context.clearRect(0, 0, canvasSize, canvasSize);
+         context.fillStyle = theme["primary-700"];
+         context.fill(animation.renderFrame());
+         requestAnimationFrame(renderAnimation);
+      }
+
+      const animationFrame = requestAnimationFrame(renderAnimation);
+
+      // loopAnimation(0);
+
+      return () => {
+         cancelAnimationFrame(animationFrame);
+      };
+   }, [canvasSize, blobSize, theme]);
+
+   return (
+      <div
+         className="flex h-full w-full items-center justify-center"
+         style={isMainTransitioning ? { viewTransitionName: "start-surface" } : undefined}
+      >
+         <canvas ref={canvas} width={canvasSize} height={canvasSize} />
+      </div>
+   );
 }

@@ -1,4 +1,3 @@
-import AnimatedMessage from "@components/StatusMessage";
 import HuginnButton from "@components/button/HuginnButton";
 import LinkButton from "@components/button/LinkButton";
 import LoadingButton from "@components/button/LoadingButton";
@@ -112,24 +111,26 @@ export default function Register() {
          </div>
          <div className="w-full">
             <div className="mb-5 flex flex-col gap-y-5">
-               <HuginnInput
-                  {...register("username", {
-                     required: true,
-                     validate,
-                  })}
-               >
-                  <HuginnInput.Label>Username</HuginnInput.Label>
-                  <HuginnInput.Wrapper>
-                     <HuginnInput.Input lowercase />
-                  </HuginnInput.Wrapper>
-               </HuginnInput>
+               <div className="flex gap-x-5">
+                  <HuginnInput
+                     {...register("username", {
+                        required: true,
+                        validate,
+                     })}
+                  >
+                     <HuginnInput.Label>Username</HuginnInput.Label>
+                     <HuginnInput.Wrapper>
+                        <HuginnInput.Input lowercase />
+                     </HuginnInput.Wrapper>
+                  </HuginnInput>
 
-               <HuginnInput {...register("displayName")}>
-                  <HuginnInput.Label>Display Name</HuginnInput.Label>
-                  <HuginnInput.Wrapper>
-                     <HuginnInput.Input />
-                  </HuginnInput.Wrapper>
-               </HuginnInput>
+                  <HuginnInput {...register("displayName")}>
+                     <HuginnInput.Label>Display Name</HuginnInput.Label>
+                     <HuginnInput.Wrapper>
+                        <HuginnInput.Input />
+                     </HuginnInput.Wrapper>
+                  </HuginnInput>
+               </div>
 
                <HuginnInput {...register("email", { required: true })}>
                   <HuginnInput.Label>Email</HuginnInput.Label>

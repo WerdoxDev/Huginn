@@ -326,11 +326,20 @@ input::-ms-clear {
    mix-blend-mode: plus-lighter;
 }
 
-::view-transition-old(start-surface) {
+/* Transitioning to Main route (fade out old surface) */
+html[data-transition-target="main"]::view-transition-old(start-surface) {
+   animation: fade-out 500ms both;
+}
+html[data-transition-target="main"]::view-transition-new(start-surface) {
    display: none;
 }
-::view-transition-new(start-surface) {
-   animation: none;
+
+/* Transitioning to Start layout (no animation) */
+html[data-transition-target="start"]::view-transition-old(start-surface) {
+   display: none;
+}
+html[data-transition-target="start"]::view-transition-new(start-surface) {
+   animation: fade-in 500ms both;
 }
 
 #start-form {

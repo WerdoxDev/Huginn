@@ -19,6 +19,7 @@ export function useLogout() {
    async function logout() {
       localStorage.removeItem("refresh-token");
       localStorage.removeItem("access-token");
+      document.documentElement.setAttribute("data-transition-target", "start");
 
       if (client?.voice.status !== "idle") {
          await client?.voiceManager.disconnectVoice();
