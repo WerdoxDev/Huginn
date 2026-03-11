@@ -1,6 +1,6 @@
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useHuginnMutation } from "./useHuginnMutation";
 
 export function useLogout() {
@@ -19,14 +19,13 @@ export function useLogout() {
    async function logout() {
       localStorage.removeItem("refresh-token");
       localStorage.removeItem("access-token");
-      document.documentElement.setAttribute("data-transition-target", "start");
 
       if (client?.voice.status !== "idle") {
          await client?.voiceManager.disconnectVoice();
       }
 
       await mutation.mutateAsync();
-      await navigate("/login", { replace: true, viewTransition: true });
+      await navigate({ to: "/login", replace: true, viewTransition: { types: ["backwards"] } });
 
       resetScrolls();
    }

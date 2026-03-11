@@ -37,7 +37,7 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
          <div className="h-topbar flex shrink-0 items-center px-6">
             <div className="text-text text-xl font-bold">Home</div>
             <div className="relative ml-6">
-               <RingLinkButton prefetch="intent" to="/friends" className="px-2.5 py-1 text-xs font-medium">
+               <RingLinkButton preload="intent" to="/friends" className="px-2.5 py-1 text-xs font-medium">
                   Friends
                </RingLinkButton>
                {friendsNotificationsCount !== 0 && (

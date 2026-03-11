@@ -4,7 +4,6 @@ import { useSendTyping } from "@hooks/mutations/useSendTyping";
 import { isImageMediaType, MessageFlags, MessageReferenceType, MessageType } from "@huginn/shared";
 import clsx from "clsx";
 import { type ClipboardEvent, type KeyboardEvent, useEffect, useRef, useState, useTransition } from "react";
-import { useParams } from "react-router";
 import { type Descendant, Editor, Node } from "slate";
 import { Editable, Slate } from "slate-react";
 import type { AppMessage, AttachmentType } from "@/types";
@@ -20,6 +19,7 @@ import { createPreviewMessage } from "@lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { useClient } from "@stores/clientStore";
 import { useIsMobile } from "@hooks/useIsMobile";
+import { useParams } from "@tanstack/react-router";
 
 type AttachmentInputType = { name: string; type: string; arrayBuffer: () => Promise<ArrayBuffer> };
 
@@ -35,7 +35,7 @@ const initialValue: Descendant[] = [
 ];
 
 export default function MessageBox(props: { messages: AppMessage[] }) {
-   const params = useParams();
+   const params = useParams({ strict: false });
    const queryClient = useQueryClient();
    const client = useClient();
    const editorRef = useRef<HTMLDivElement>(null);
@@ -438,7 +438,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                         ref={editorRef}
                         placeholder={`Message ${currentChannel?.name}`}
                         className={clsx(
-                           "outline-hidden h-full whitespace-break-spaces py-3 font-light leading-6 text-white caret-white",
+                           "h-full py-3 leading-6 font-light whitespace-break-spaces text-white caret-white outline-hidden",
                            currentEditingMessageId && "pl-3",
                         )}
                         renderLeaf={renderLeaf}

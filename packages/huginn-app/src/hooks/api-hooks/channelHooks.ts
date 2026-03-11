@@ -3,12 +3,12 @@ import { ChannelType, type DirectChannel, type Snowflake } from "@huginn/shared"
 import { useModals } from "@stores/modalsStore";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { useNavigate, useParams } from "react-router";
 import { useUsers } from "./userHooks";
 import { findChannel } from "@lib/query-utils";
 import { getChannelsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import type { AppDirectChannel, AppUser } from "@/types";
+import { useNavigate, useParams } from "@tanstack/react-router";
 
 export function useChannel(channelId?: Snowflake, guildId = "@me") {
    const client = useClient();
@@ -36,23 +36,13 @@ export function useChannelRecipients(channelId?: Snowflake, _guildId?: Snowflake
 }
 
 export function useCurrentChannel() {
-   const { channelId } = useParams<{ channelId: string }>();
+   const { channelId } = useParams({ strict: false });
    const queryClient = useQueryClient();
 
    // TODO: CHANGE THIS WHEN GUILDS ARE A THING
    const channels = queryClient.getQueryData<AppDirectChannel[]>(["channels", "@me"]);
 
    return useMemo(() => channels?.find((channel) => channel.id === channelId), [channelId, channels]);
-}
-
-export default function useNavigateToChannel() {
-   const navigate = useNavigate();
-
-   async function navigateToChannel(guildId: Snowflake, channelId: Snowflake) {
-      await navigate(`/channels/${guildId}/${channelId}`);
-   }
-
-   return navigateToChannel;
 }
 
 export function useSafeDeleteDMChannel(channelId?: Snowflake, channelType?: DirectChannel["type"], channelName?: string) {

@@ -1,14 +1,11 @@
-import { useViewTransitionState } from "react-router";
-
-const startRoutes = ["/login", "/register", "/oauth-redirect", "/"];
-const mainRoutes = ["/channels/*", "/friends"];
-
+/**
+ * TanStack Router doesn't have built-in view transition state tracking.
+ * This hook is kept for compatibility but always returns false.
+ * View transitions can be triggered directly using the View Transitions API if needed.
+ */
 export function useMainViewTransitionState() {
-   const startRouteStates = startRoutes.map((x) => useViewTransitionState(x));
-   const mainRouteStates = mainRoutes.map((x) => useViewTransitionState(x));
-
-   const isStartTransitioning = startRouteStates.some((x) => x);
-   const isMainTransitioning = mainRouteStates.some((x) => x);
-
-   return { isStartTransitioning, isMainTransitioning };
+   return {
+      isStartTransitioning: false,
+      isMainTransitioning: false,
+   };
 }

@@ -14,7 +14,7 @@ import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
-import { useNavigate } from "react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 // import { usePostHog } from "posthog-js/react";
 
 type Inputs = {
@@ -24,7 +24,9 @@ type Inputs = {
    password: string;
 };
 
-export default function Register() {
+export const Route = createFileRoute("/_app/_start/register")({ component: RegisterComponent });
+
+function RegisterComponent() {
    const client = useClient();
    const posthog = usePostHog();
    const startBackground = useStartBackground();
@@ -79,7 +81,7 @@ export default function Register() {
       }
 
       if (result && search) {
-         await navigate(`/oauth-redirect?${search!.toString()}`, { viewTransition: true });
+         await navigate({ to: `/oauth-redirect?${search!.toString()}` });
       }
    }
 

@@ -11,7 +11,8 @@ import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useReducer } from "react";
-import { useLocation, useNavigate, useNavigation, useSearchParams } from "react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { z } from "zod";
 
 type Step = "none" | "fetch_hostnames" | "check_update" | "initialize" | "update" | "welcome";
 
@@ -39,15 +40,21 @@ function reducer(state: State, action: Action): State {
    }
 }
 
-export default function Index() {
+// const searchSchema = z.object({ requireAuth: z.optional(z.string()) });
+export const Route = createFileRoute("/_app/_start/")({
+   // validateSearch: searchSchema,
+   component: IndexComponent,
+});
+
+function IndexComponent() {
    const huginnWindow = useHuginnWindow();
    const client = useClient();
    const settings = useStorage("settings");
-   const [search] = useSearchParams();
+   // const search = Route.useSearch();
+
    const startBackground = useStartBackground();
    const posthog = usePostHog();
    const navigate = useNavigate();
-   const location = useLocation();
    const connect = useConnect();
 
    const { checkAndDownload, updateInfo, progress, contentLength, downloaded } = useUpdater({
@@ -69,13 +76,15 @@ export default function Index() {
    }, [progress]);
 
    async function initialize() {
-      const redirect = search.get("redirect");
-      const requiresAuth = search.get("requireAuth") === "1" ? true : false;
-      const redirectUrl = redirect ? new URL(redirect, window.location.origin) : undefined;
+      // await new Promise((r) => setTimeout(r, 1000));
+      // const redirect = search.redirect;
+      // const requiresAuth = search.requireAuth === "1" ? true : false;
+      const redirect = sessionStorage.getItem("redirect");
+      const redirectObj = redirect ? (JSON.parse(redirect) as { pathname: string; requiresAuth: boolean }) : null;
 
-      console.log(requiresAuth, redirectUrl);
-      if (!requiresAuth && redirectUrl) {
-         await navigate({ pathname: redirectUrl.pathname, search: redirectUrl.search }, { replace: true, viewTransition: true });
+      if (!redirectObj?.requiresAuth && redirectObj?.pathname) {
+         sessionStorage.removeItem("redirect");
+         await navigate({ to: redirectObj.pathname, replace: true, viewTransition: true });
          return;
       }
 
@@ -83,12 +92,13 @@ export default function Index() {
       const result = await connect();
       if (result.success) {
          dispatch({ type: "SET", step: "welcome", text: `Welcome ${client?.currentUser?.displayName ?? client?.currentUser?.username}!` });
-         await navigate({ pathname: search.get("redirect") ?? "/channels/@me" }, { replace: true, viewTransition: true });
+         sessionStorage.removeItem("redirect");
+         await navigate({ to: redirectObj?.pathname ?? "/channels/@me", replace: true, viewTransition: { types: ["forwards"] } });
       } else if (result.retryable) {
          dispatch({ type: "FAIL", error: "Failed to connect..." });
          startBackground.setState(0);
       } else {
-         await navigate({ pathname: "/login", search: `?${search.toString()}` }, { replace: true, viewTransition: true });
+         await navigate({ to: "/login", replace: true, viewTransition: { types: ["forwards"] } });
       }
    }
 
@@ -197,7 +207,7 @@ export default function Index() {
                      {state.error ?? state.text}
                      <span className="font-bold"> {state.current === "update" ? updateInfo?.version : ""}</span>
                   </span>
-                  {/* {state.status === "error" && <IconMingcuteAlertFill className="size-6 text-negative-100" />} */}
+                  {/* {state.status === "error" && <IconMingcuteAlertFill className="text-negative-100 size-6" />} */}
                   {(state.current === "check_update" ||
                      state.current === "update" ||
                      state.current === "initialize" ||
@@ -208,7 +218,7 @@ export default function Index() {
             </div>
             {state.status === "error" && (
                <div className="no-drag-region bottom-3 mt-4 flex w-full justify-center gap-x-2">
-                  <HuginnButton type="button" className="w-32 rounded-md py-1" color="primary" onClick={retry}>
+                  <HuginnButton type="button" className="w-32 rounded-md py-1" color="surface" onClick={retry}>
                      Retry
                   </HuginnButton>
                   {state.current === "check_update" && (

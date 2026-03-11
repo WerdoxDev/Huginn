@@ -4,20 +4,31 @@ import ChannelWithIdTopBar from "@components/channels/ChannelWithIdTopBar";
 import MessageBox from "@components/MessageBox";
 import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useSafePathname } from "@hooks/useLastSafePathname";
-import { getChannelsOptions, getMessagesOptions } from "@lib/queries";
-import { useClient } from "@stores/clientStore";
+import { getChannelsOptions, getMessagesOptions, queryClient } from "@lib/queries";
+import { clientStore, useClient } from "@stores/clientStore";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
-import { useParams } from "react-router";
 import { useMobileMenuStore } from "@stores/mobileMenuStore";
 import ChannelSidebar from "@components/channels/ChannelSidebar";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { ChannelType } from "@huginn/shared";
 import clsx from "clsx";
+import { createFileRoute, useParams } from "@tanstack/react-router";
 
-export default function ChannelWithId() {
-   const { channelId } = useParams() as { channelId: string };
+export const Route = createFileRoute("/_app/_main/_home/channels/@me/$channelId")({
+   component: ChannelWithIdComponent,
+   loader: async ({ params }) => {
+      const client = clientStore.getState().client;
+      if (!client) return;
+
+      // await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate loading time
+      return await queryClient.ensureInfiniteQueryData(getMessagesOptions(queryClient, client, params.channelId as string));
+   },
+});
+
+function ChannelWithIdComponent() {
+   const { channelId } = useParams({ strict: false }) as { channelId: string };
    const client = useClient();
    const queryClient = useQueryClient();
    const { error, data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, channelId));

@@ -3,9 +3,11 @@ import TopBar from "@components/TopBar";
 import MobileMenuButton from "@components/button/MobileMenuButton";
 import QuickActionButton from "@components/button/QuickActionButton";
 import { useModals } from "@stores/modalsStore";
-import { NavLink, useNavigate } from "react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 
-export default function ChannelMe() {
+export const Route = createFileRoute("/_app/_main/_home/channels/@me/")({ component: ChannelMeComponent });
+
+function ChannelMeComponent() {
    const { updateModals } = useModals();
    const navigate = useNavigate();
 
@@ -22,15 +24,15 @@ export default function ChannelMe() {
                <div className="mb-2.5 text-2xl font-bold">Welcome to Huginn</div>
                <div>
                   Start by adding your friends in the{" "}
-                  <NavLink to="/friends" className="text-primary-500 font-bold">
+                  <Link to="/friends" className="text-primary-500 font-bold">
                      FRIENDS
-                  </NavLink>{" "}
+                  </Link>{" "}
                   section or select one of these <span className="text-text/80 font-semibold">Quick Actions</span>!
                </div>
             </div>
             <div className="flex w-full flex-wrap items-center justify-center gap-2 lg:flex-nowrap">
                <QuickActionButton onClick={() => updateModals({ createDM: { isOpen: true } })}>Create Direct Message</QuickActionButton>
-               <QuickActionButton onClick={() => navigate("/friends")}>Add a Friend</QuickActionButton>
+               <QuickActionButton onClick={() => navigate({ to: "/friends" })}>Add a Friend</QuickActionButton>
             </div>
          </div>
          <div className="bg-surface flex h-16 w-full shrink-0" />

@@ -3,10 +3,25 @@ import { useModals } from "@stores/modalsStore";
 import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useEffect } from "react";
-import { Outlet } from "react-router";
-import StartBackgroundSvg from "@components/StartBackgroundSvg";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { clientStore } from "@stores/clientStore";
 
-export default function StartLayout() {
+export const Route = createFileRoute("/_app/_start")({
+   component: StartLayoutComponent,
+   beforeLoad: ({ location }) => {
+      const client = clientStore.getState().client;
+      if (client?.gateway.status === "authenticated") {
+         throw redirect({ to: "/channels/@me" });
+      }
+
+      if (!client && location.pathname !== "/") {
+         sessionStorage.setItem("redirect", JSON.stringify({ pathname: location.pathname, requiresAuth: false }));
+         throw redirect({ to: "/" });
+      }
+   },
+});
+
+function StartLayoutComponent() {
    const startBackground = useStartBackground();
 
    const { updateModals } = useModals();

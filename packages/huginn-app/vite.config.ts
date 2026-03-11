@@ -9,6 +9,7 @@ import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig } from "vite";
 import basicSsl from "@vitejs/plugin-basic-ssl";
 import { version } from "./package.json";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 
 const reactCompilerConfig = { target: "19" };
 
@@ -17,13 +18,13 @@ export default defineConfig(({ command }) => {
    const isElectron = process.env.BUILD_TARGET === "electron";
    const base = isElectron ? "./" : "/app";
    return {
-      base: base,
+      // base: base,
       publicDir: "public",
 
       plugins: [
          // basicSsl(),
          // reactRouterDevTools(),
-         tailwindcss(),
+         tanstackRouter({ target: "react", autoCodeSplitting: true }),
          react({
             jsxRuntime: "automatic",
             babel: {
@@ -31,9 +32,11 @@ export default defineConfig(({ command }) => {
                plugins: [["babel-plugin-react-compiler", reactCompilerConfig], "@babel/plugin-syntax-jsx"],
             },
          }),
+         tailwindcss(),
          Icons({ compiler: "jsx" }),
          AutoImport({
             resolvers: [IconsResolver({ prefix: "Icon", extension: "jsx" })],
+            include: [/\.[jt]sx?$/, /tsr-split/],
          }),
          VitePWA({
             strategies: "injectManifest",

@@ -1,8 +1,8 @@
 import { useMainViewTransitionState } from "@hooks/useMainViewTransitionState";
 import { useTheme } from "@stores/themeStore";
 import * as blobs2Animate from "blobs/v2/animate";
-import { useEffect, useRef, useState } from "react";
-import { useViewTransitionState } from "react-router";
+import { time } from "motion";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 const animation = blobs2Animate.canvasPath();
 
@@ -11,15 +11,10 @@ const blobSize = 700;
 
 export default function StartBackgroundSvg(props: { state: number }) {
    const { theme } = useTheme();
-   const { isMainTransitioning, isStartTransitioning } = useMainViewTransitionState();
+   const { isMainTransitioning } = useMainViewTransitionState();
    const canvas = useRef<HTMLCanvasElement | null>(null);
    const [canvasSize, setCanvasSize] = useState(window.innerWidth);
-
-   const isTransitioning = useViewTransitionState("/channels/*");
-
-   useEffect(() => {
-      console.log(isTransitioning);
-   }, [isTransitioning]);
+   const [isResizing, setIsResizing] = useState(false);
 
    function loopAnimation(duration: number = 5000) {
       animation.transition({
@@ -33,6 +28,7 @@ export default function StartBackgroundSvg(props: { state: number }) {
 
    useEffect(() => {
       function handleResize() {
+         setIsResizing(true);
          setCanvasSize(window.innerWidth);
       }
 
@@ -41,45 +37,61 @@ export default function StartBackgroundSvg(props: { state: number }) {
    }, []);
 
    useEffect(() => {
-      if (props.state === 2) {
-         const size = window.innerWidth * 2;
-         animation.transition({
-            blobOptions: { seed: Math.random(), extraPoints: 0, randomness: 0, size: size },
-            canvasOptions: { offsetX: canvasSize / 2 - size / 2, offsetY: canvasSize / 2 - size / 2 },
-            duration: 500,
-            timingFunction: "ease",
-         });
-      }
-      if (props.state === 0) {
-         loopAnimation(1000);
-      }
-   }, [props.state]);
+      // if (props.state === 2) {
+      //    const size = window.innerWidth * 2;
+      //    animation.transition({
+      //       blobOptions: { seed: Math.random(), extraPoints: 0, randomness: 0, size: size },
+      //       canvasOptions: { offsetX: canvasSize / 2 - size / 2, offsetY: canvasSize / 2 - size / 2 },
+      //       duration: 750,
+      //       timingFunction: "ease",
+      //    });
+      // }
+      // if (props.state === 0) {
+      //    loopAnimation(500);
+      // }
+      loopAnimation(0);
+   }, []);
+
+   const renderAnimation = useEffectEvent(() => {
+      const context = canvas.current?.getContext("2d");
+      if (!context || isResizing) return;
+
+      context.clearRect(0, 0, canvasSize, canvasSize);
+      context.fillStyle = theme["primary-700"];
+      context.fill(animation.renderFrame());
+      requestAnimationFrame(renderAnimation);
+   });
+
+   function clearCanvas() {
+      const context = canvas.current?.getContext("2d");
+      if (!context) return;
+
+      console.log("CLEARING");
+
+      context.clearRect(0, 0, canvasSize, canvasSize);
+   }
 
    useEffect(() => {
-      function renderAnimation() {
-         const context = canvas.current?.getContext("2d");
-         if (!context) return;
+      clearCanvas();
+      const timeout = setTimeout(() => {
+         setIsResizing(false);
+         loopAnimation(0);
+      }, 100);
+      return () => {
+         clearTimeout(timeout);
+      };
+   }, [canvasSize]);
 
-         context.clearRect(0, 0, canvasSize, canvasSize);
-         context.fillStyle = theme["primary-700"];
-         context.fill(animation.renderFrame());
-         requestAnimationFrame(renderAnimation);
-      }
-
+   useEffect(() => {
       const animationFrame = requestAnimationFrame(renderAnimation);
-
-      // loopAnimation(0);
 
       return () => {
          cancelAnimationFrame(animationFrame);
       };
-   }, [canvasSize, blobSize, theme]);
+   }, [canvasSize, blobSize, theme, isResizing]);
 
    return (
-      <div
-         className="flex h-full w-full items-center justify-center"
-         style={isMainTransitioning ? { viewTransitionName: "start-surface" } : undefined}
-      >
+      <div className="fixed flex h-full w-full items-center justify-center" style={{ viewTransitionName: "start-background" }}>
          <canvas ref={canvas} width={canvasSize} height={canvasSize} />
       </div>
    );

@@ -16,7 +16,7 @@ import type { HuginnClient } from "@huginn/api";
 import type { VoiceBridge } from "./voice-bridge";
 import { WebRTCStatsParser } from "./stats-parser";
 import { voiceStore } from "@stores/voiceStore";
-import { queryClient } from "@/root";
+import { queryClient } from "@/lib/queries";
 import type { Snowflake } from "@huginn/shared";
 import { windowStore } from "@stores/windowStore";
 

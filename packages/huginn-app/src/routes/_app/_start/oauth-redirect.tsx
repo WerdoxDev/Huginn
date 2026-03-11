@@ -17,17 +17,19 @@ import { useQuery } from "@tanstack/react-query";
 import * as jose from "jose";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router";
 import { useHuginnForm } from "@hooks/useHuginnForm";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 
 type Inputs = {
    username: string;
    displayName?: string;
 };
 
-export default function OauthRedirect() {
+export const Route = createFileRoute("/_app/_start/oauth-redirect")({ component: OauthRedirectComponent });
+
+function OauthRedirectComponent() {
    const client = useClient();
-   const [search] = useSearchParams();
+   const search = useSearch({ from: "/_app/_start/oauth-redirect" });
    const navigate = useNavigate();
    const authBackground = useStartBackground();
    const { updateModals } = useModals();
@@ -67,7 +69,7 @@ export default function OauthRedirect() {
             localStorage.setItem("access-token", search.get("access_token")!);
             localStorage.setItem("refresh-token", search.get("refresh_token")!);
 
-            await navigate("/");
+            await navigate({ to: "/" });
          } else {
             setShouldRender(true);
             authBackground.setState(0);
@@ -105,7 +107,7 @@ export default function OauthRedirect() {
 
    async function abort() {
       posthog.capture("oauth:abort_button_click");
-      await navigate(history.lastPathname ?? "/", { viewTransition: true });
+      await navigate({ to: history.lastPathname ?? "/", viewTransition: true });
    }
 
    async function onSubmit(data: Inputs) {

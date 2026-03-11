@@ -1,8 +1,8 @@
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import type { HuginnErrorData, Snowflake } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
-import { useNavigate } from "react-router";
 import type { MutationKinds } from "@/types";
+import { useNavigate } from "@tanstack/react-router";
 
 export type CreateDMChannelMutationVars = { recipients: Snowflake[]; name?: string; skipNavigation?: boolean };
 
@@ -20,7 +20,7 @@ export function useCreateDMChannel(
             return await client?.channels.createDM({ recipients: data.recipients, name: data.name });
          },
          async onSuccess(data, variables) {
-            if (!variables.skipNavigation) await navigate(`/channels/@me/${data?.id}`);
+            if (!variables.skipNavigation) await navigate({ to: `/channels/@me/$channelId`, params: { channelId: data?.id } });
          },
       },
       handleErrors,

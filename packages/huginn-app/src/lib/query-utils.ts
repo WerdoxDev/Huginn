@@ -1,4 +1,4 @@
-import { queryClient as client } from "@/root";
+import { queryClient as client } from "@/lib/queries";
 import type { AppDirectChannel, AppMessage, AppUser } from "@/types";
 import { MessageType, omit, type APIGetUserChannelsResult, type PresenceUser, type Snowflake } from "@huginn/shared";
 import { convertToAppUser } from "./utils";

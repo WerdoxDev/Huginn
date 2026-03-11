@@ -4,9 +4,9 @@ import { error, log } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
 import { useStorage } from "@stores/storageStore";
 import { useThisUser } from "@stores/userStore";
+import { useNavigate } from "@tanstack/react-router";
 import { usePostHog } from "posthog-js/react";
 import { useCallback } from "react";
-import { type To, useNavigate } from "react-router";
 
 export function useInitializeClient() {
    const client = useClient();
@@ -19,7 +19,7 @@ export function useInitializeClient() {
       async (options: {
          token?: string;
          refreshToken?: string;
-         navigatePath?: To;
+         navigatePath?: string;
          onSuccess?: () => Promise<void> | void;
       }): Promise<InitializationStatus> => {
          try {
@@ -55,7 +55,7 @@ export function useInitializeClient() {
             await options.onSuccess?.();
 
             if (options.navigatePath) {
-               await navigate(options.navigatePath, { viewTransition: true, replace: true });
+               await navigate({ to: options.navigatePath, viewTransition: { types: ["forwards"] }, replace: true });
             }
 
             log("app:client-store", "default", "initialize finished");

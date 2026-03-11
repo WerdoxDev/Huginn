@@ -1,4 +1,4 @@
-import { queryClient } from "@/root";
+import { queryClient } from "@/lib/queries";
 import { QueryClientProvider } from "@tanstack/react-query";
 import ContextMenusRenderer from "@components/contextmenu/ContextMenusRenderer";
 import ModalsRenderer from "@components/modal/ModalsRenderer";
@@ -18,13 +18,16 @@ import { initializeVoice } from "@stores/voiceStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { type ReactNode, useEffect } from "react";
-import { Outlet } from "react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import KeybindsProvider from "@contexts/KeybindsProvider";
 import SettingsProvider from "@contexts/SettingsProvider";
 import { initializeStorage2 } from "@stores/storageStore";
 import { initializeDevice } from "@stores/deviceStore";
+import { z } from "zod";
 
-export default function AppLayout() {
+export const Route = createFileRoute("/_app")({ component: AppLayoutComponent });
+
+function AppLayoutComponent() {
    const authBackground = useStartBackground();
    const clientStore = useClientStore();
    const huginnWindow = useHuginnWindow();

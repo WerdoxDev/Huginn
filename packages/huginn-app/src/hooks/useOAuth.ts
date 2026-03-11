@@ -3,9 +3,9 @@ import { listenEvent } from "@lib/event-handler";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
+import { useNavigate } from "@tanstack/react-router";
 import { usePostHog } from "posthog-js/react";
-import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router";
+import { useRef } from "react";
 
 export function useOAuth() {
    const client = useClient();

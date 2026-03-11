@@ -1,5 +1,5 @@
 import { useHistory } from "@contexts/HistoryContext";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation, useNavigate } from "@tanstack/react-router";
 
 export function useSafePathname() {
    const navigate = useNavigate();
@@ -9,8 +9,7 @@ export function useSafePathname() {
    async function navigateBack() {
       const safePathname = history.lastPathname?.includes(location.pathname) ? "/channels/@me" : history.lastPathname;
 
-      console.log("NAV");
-      await navigate(safePathname ?? "/");
+      await navigate({ to: safePathname ?? "/" });
    }
 
    return { navigateBack };

@@ -13,7 +13,7 @@ import { useClient } from "@stores/clientStore";
 import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
 import { useHuginnForm } from "@hooks/useHuginnForm";
-import { useNavigate } from "react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 // import { usePostHog } from "posthog-js/react";
 
 type Inputs = {
@@ -21,7 +21,9 @@ type Inputs = {
    password: string;
 };
 
-export default function Login() {
+export const Route = createFileRoute("/_app/_start/login")({ component: LoginComponent });
+
+function LoginComponent() {
    const posthog = usePostHog();
    const client = useClient();
    const initializeClient = useInitializeClient();
@@ -42,9 +44,7 @@ export default function Login() {
          },
          async onSuccess() {
             await initializeClient({
-               navigatePath: {
-                  pathname: "/channels/@me",
-               },
+               navigatePath: "/channels/@me",
             });
          },
       },
@@ -67,16 +67,16 @@ export default function Login() {
 
    async function handleOAuth(type: OAuthType) {
       const result = await startOAuth(type);
-      let search: URLSearchParams | undefined;
+      let search: { access_token: string; refresh_token: string } | { oauth_token: string } | undefined;
 
       if (result?.access_token && result.refresh_token) {
-         search = new URLSearchParams({ access_token: result.access_token, refresh_token: result.refresh_token });
+         search = { access_token: result.access_token, refresh_token: result.refresh_token };
       } else if (result?.oauth_token) {
-         search = new URLSearchParams({ oauth_token: result.oauth_token });
+         search = { oauth_token: result.oauth_token };
       }
 
       if (result && search) {
-         await navigate(`/oauth-redirect?${search!.toString()}`, { viewTransition: true });
+         await navigate({ to: `/oauth-redirect`, search: search });
       }
    }
 
@@ -132,7 +132,7 @@ export default function Login() {
 
             <div className="mt-3 flex items-center select-none">
                <span className="text-text text-sm opacity-70"> Don't have an account? </span>
-               <LinkButton to="/register" className="ml-1 text-sm" viewTransition>
+               <LinkButton to="/register" className="ml-1 text-sm" viewTransition={true}>
                   Register
                </LinkButton>
             </div>
