@@ -1,14 +1,17 @@
+import type { ProcessInfo } from "native-addon";
+
 import { ActivityType, error, log, type APIKnownApplication, type Snowflake } from "@huginn/shared";
+import { convertToAppPresence } from "@lib/utils";
 import { produce } from "immer";
 import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
-import { clientStore } from "./clientStore";
+
 import type { AppPresence, CustomApplication } from "@/types";
-import { convertToAppPresence } from "@lib/utils";
+
+import { clientStore } from "./clientStore";
 import { storageStore } from "./storageStore";
 import { windowStore } from "./windowStore";
-import type { ProcessInfo } from "native-addon";
 
 const initialStore = () => ({
    presences: [] as AppPresence[],
@@ -81,8 +84,17 @@ export function initializePresence() {
          activities: d.activities,
          status: d.status,
       });
-      store.setState((state) => ({ thisPresence: { ...state.thisPresence, status: presence.status, activities: presence.activities } }));
-      store.getState().updatePresence(client.currentUser.id, { status: presence.status, activities: presence.activities });
+      store.setState((state) => ({
+         thisPresence: {
+            ...state.thisPresence,
+            status: presence.status,
+            activities: presence.activities,
+         },
+      }));
+      store.getState().updatePresence(client.currentUser.id, {
+         status: presence.status,
+         activities: presence.activities,
+      });
    });
 
    const unlisten4 = client.gateway.listen("disconnected", () => {
@@ -136,7 +148,11 @@ function startCheckingForActivity() {
             return;
          }
 
-         const match: { detected: ProcessInfo; custom?: CustomApplication; known?: APIKnownApplication } = knownMatch ?? customMatch;
+         const match: {
+            detected: ProcessInfo;
+            custom?: CustomApplication;
+            known?: APIKnownApplication;
+         } = knownMatch ?? customMatch;
 
          // Skip if we already have the activity
          if (ourActivities[0]) {

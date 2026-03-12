@@ -1,10 +1,10 @@
+import { gateway } from "#setup";
+import { dispatchToTopic } from "#utils/gateway-utils";
 import { singleError, tryCatch, verifyJwt } from "@huginn/backend-shared";
 import { assertError, prisma } from "@huginn/backend-shared/database";
 import { selectRelationshipUser } from "@huginn/backend-shared/database/common";
 import { DBErrorType } from "@huginn/backend-shared/types";
 import { Errors, omit, RelationshipType, type Snowflake } from "@huginn/shared";
-import { gateway } from "#setup";
-import { dispatchToTopic } from "#utils/gateway-utils";
 import Elysia, { t } from "elysia";
 
 const schema = t.Object({ username: t.String({ minLength: 1 }) });
@@ -23,7 +23,13 @@ export const postUserRelationship = new Elysia().use(verifyJwt()).post(
          return singleError(Errors.relationshipSelfRequest(), status, "Bad Request");
       }
 
-      if (await prisma.relationship.exists({ ownerId: BigInt(tokenPayload.id), userId: BigInt(userId), type: RelationshipType.FRIEND })) {
+      if (
+         await prisma.relationship.exists({
+            ownerId: BigInt(tokenPayload.id),
+            userId: BigInt(userId),
+            type: RelationshipType.FRIEND,
+         })
+      ) {
          return singleError(Errors.relationshipExists(), status, "Bad Request");
       }
 

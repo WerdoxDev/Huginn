@@ -22,7 +22,7 @@ export class PCMPlayer {
       const view = new DataView(data.buffer);
 
       for (let i = 0; i < totalSamples; i++) {
-         const int16 = view.getInt16(i * bytesPerSample, true)
+         const int16 = view.getInt16(i * bytesPerSample, true);
          float32[i] = int16 / 32768;
       }
 

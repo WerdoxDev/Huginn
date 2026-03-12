@@ -1,4 +1,5 @@
 import type { HuginnErrorData } from "@huginn/shared";
+
 import { consola } from "consola";
 import { colors } from "consola/utils";
 

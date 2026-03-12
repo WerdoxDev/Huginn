@@ -1,5 +1,6 @@
-import clsx from "clsx";
 import type { RenderLeafProps } from "slate-react";
+
+import clsx from "clsx";
 
 export default function EditorLeaf(props: RenderLeafProps) {
    if (props.leaf.mark) {

@@ -19,13 +19,7 @@ export default function AttachmentElement(props: {
 }) {
    const { openUrl } = useOpen();
    const dimensions = useMemo(
-      () =>
-         constrainImageSize(
-            props.width ?? 0,
-            props.height ?? 0,
-            constants.ATTACHMENT_MEDIA_MAX_WIDTH,
-            constants.ATTACHMENT_MEDIA_MAX_HEIGHT,
-         ),
+      () => constrainImageSize(props.width ?? 0, props.height ?? 0, constants.ATTACHMENT_MEDIA_MAX_WIDTH, constants.ATTACHMENT_MEDIA_MAX_HEIGHT),
       [props.width, props.height],
    );
    const settings = useStorage("settings");
@@ -52,7 +46,7 @@ export default function AttachmentElement(props: {
                   <div className="flex w-full flex-col justify-center gap-y-0.5 overflow-hidden rounded-lg px-2.5">
                      <button
                         type="button"
-                        className="text-primary-500 cursor-pointer overflow-hidden text-ellipsis text-nowrap text-left text-sm hover:underline"
+                        className="text-primary-500 cursor-pointer overflow-hidden text-left text-sm text-nowrap text-ellipsis hover:underline"
                         onClick={() => openUrl(basedUrl)}
                      >
                         {props.filename}

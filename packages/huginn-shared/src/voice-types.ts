@@ -1,5 +1,6 @@
 import type { types } from "mediasoup";
 import type { DtlsParameters, IceCandidate, IceParameters, ProducerType, RtpCapabilities, RtpParameters } from "mediasoup/types";
+
 import type { Snowflake } from "./snowflake";
 
 export enum VoiceOperations {
@@ -27,7 +28,13 @@ export type VoiceOperationTypes = {
 export type VoiceEvents = {
    send_transport_ready: { channelId: Snowflake };
    recv_transport_ready: { channelId: Snowflake };
-   local_consumer_created: { consumerId: string; producerId: string; track: MediaStreamTrack; producerUserId: Snowflake; kind: HMediaKind };
+   local_consumer_created: {
+      consumerId: string;
+      producerId: string;
+      track: MediaStreamTrack;
+      producerUserId: Snowflake;
+      kind: HMediaKind;
+   };
    local_producer_created: { producerId: string; kind: HMediaKind; track: MediaStreamTrack };
    local_producer_changed: { producerId: string; kind: HMediaKind; track: MediaStreamTrack | null };
    local_voice_state_changed: LocalVoiceState;

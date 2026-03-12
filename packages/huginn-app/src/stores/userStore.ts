@@ -1,10 +1,13 @@
 import type { APIUser, PresenceUser, UserTokenPayload } from "@huginn/shared";
+
+import { convertToAppUser } from "@lib/utils";
 import * as jose from "jose";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
-import { clientStore } from "./clientStore";
+
 import type { AppUser } from "@/types";
-import { convertToAppUser } from "@lib/utils";
+
+import { clientStore } from "./clientStore";
 
 const store = createStore(
    combine(
@@ -25,12 +28,16 @@ export function initializeUser() {
    }
 
    const unlisten = client.gateway.listen("ready", () => {
-      store.setState({ tokenPayload: client?.tokenHandler.token ? (jose.decodeJwt(client?.tokenHandler.token) as UserTokenPayload) : undefined });
+      store.setState({
+         tokenPayload: client?.tokenHandler.token ? (jose.decodeJwt(client?.tokenHandler.token) as UserTokenPayload) : undefined,
+      });
    });
 
    const unlisten2 = client.gateway.listen("user_update", (d) => {
       store.getState().setUser(d);
-      store.setState({ tokenPayload: client?.tokenHandler.token ? (jose.decodeJwt(client?.tokenHandler.token) as UserTokenPayload) : undefined });
+      store.setState({
+         tokenPayload: client?.tokenHandler.token ? (jose.decodeJwt(client?.tokenHandler.token) as UserTokenPayload) : undefined,
+      });
    });
 
    return () => {

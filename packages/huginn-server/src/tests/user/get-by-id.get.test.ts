@@ -1,8 +1,8 @@
-import { describe, expect, test } from "bun:test";
-import { testHandler } from "@huginn/backend-shared";
-import { type APIGetUserByIdResult } from "@huginn/shared";
 import { expectUserExactSchema } from "#tests/expect-utils";
 import { authHeader, createTestUsers } from "#tests/utils";
+import { testHandler } from "@huginn/backend-shared";
+import { type APIGetUserByIdResult } from "@huginn/shared";
+import { describe, expect, test } from "bun:test";
 
 describe("GET /users/:userId", () => {
    test("should return 'Invalid Form Body' when id is invalid", async () => {

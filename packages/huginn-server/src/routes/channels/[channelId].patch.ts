@@ -1,10 +1,10 @@
+import { channelWithoutRecipient, dispatchChannel, dispatchMessage, filterChannel } from "#utils/helpers";
+import { cdnUpload } from "#utils/server-request";
+import { validateChannelName } from "#utils/validation";
 import { createErrorFactory, createHuginnError, missingPermission, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectChannelDefaults } from "@huginn/backend-shared/database/common";
 import { CDNRoutes, Errors, MessageFlags, MessageType, getFileHash, toArrayBuffer } from "@huginn/shared";
-import { channelWithoutRecipient, dispatchChannel, dispatchMessage, filterChannel } from "#utils/helpers";
-import { cdnUpload } from "#utils/server-request";
-import { validateChannelName } from "#utils/validation";
 import Elysia, { t } from "elysia";
 
 const schema = t.Object({
@@ -24,7 +24,9 @@ export const patchChannel = new Elysia().use(verifyJwt()).patch(
          return createHuginnError(formError, status);
       }
 
-      const channel = await prisma.channel.getById(channelId, { select: { name: true, icon: true, ownerId: true } });
+      const channel = await prisma.channel.getById(channelId, {
+         select: { name: true, icon: true, ownerId: true },
+      });
 
       if (body.owner && channel.ownerId !== tokenPayload.id) {
          return missingPermission(status);
@@ -63,7 +65,12 @@ export const patchChannel = new Elysia().use(verifyJwt()).patch(
       }
 
       if (channel.icon !== updatedChannel.icon) {
-         await dispatchMessage({ authorId: tokenPayload.id, channelId, type: MessageType.CHANNEL_ICON_CHANGED, flags: MessageFlags.NONE });
+         await dispatchMessage({
+            authorId: tokenPayload.id,
+            channelId,
+            type: MessageType.CHANNEL_ICON_CHANGED,
+            flags: MessageFlags.NONE,
+         });
       }
 
       if (channel.ownerId !== updatedChannel.ownerId) {

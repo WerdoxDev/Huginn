@@ -1,16 +1,18 @@
+import { gateway } from "#setup";
+import { dispatchToTopic } from "#utils/gateway-utils";
+import { dispatchChannel, dispatchMessage } from "#utils/helpers";
 import { missingAccess, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectChannelDefaults } from "@huginn/backend-shared/database/common";
 import { ChannelType, Errors, MessageFlags, MessageType } from "@huginn/shared";
-import { gateway } from "#setup";
-import { dispatchToTopic } from "#utils/gateway-utils";
-import { dispatchChannel, dispatchMessage } from "#utils/helpers";
 import { Elysia } from "elysia";
 
 export const putChannelRecipient = new Elysia()
    .use(verifyJwt())
    .put("/api/channels/:channelId/recipients/:recipientId", async ({ params: { channelId, recipientId }, status, tokenPayload }) => {
-      const channel = await prisma.channel.getById(channelId, { select: { type: true, recipients: { select: { id: true } } } });
+      const channel = await prisma.channel.getById(channelId, {
+         select: { type: true, recipients: { select: { id: true } } },
+      });
       if (channel.type !== ChannelType.GROUP_DM) {
          return singleError(Errors.invalidChannelType(), status, "Bad Request");
       }
@@ -23,7 +25,9 @@ export const putChannelRecipient = new Elysia()
          return status("No Content");
       }
 
-      const updatedChannel = await prisma.channel.addRecipient(channelId, recipientId, { select: selectChannelDefaults });
+      const updatedChannel = await prisma.channel.addRecipient(channelId, recipientId, {
+         select: selectChannelDefaults,
+      });
 
       // Create read state
       await prisma.readState.createState(recipientId, channelId);
@@ -31,7 +35,10 @@ export const putChannelRecipient = new Elysia()
       // Dispatch recipient add event
       const addedRecipient = updatedChannel.recipients.find((x) => x.id === recipientId);
       if (addedRecipient) {
-         dispatchToTopic(channelId, "channel_recipient_add", { channelId: channelId, user: addedRecipient });
+         dispatchToTopic(channelId, "channel_recipient_add", {
+            channelId: channelId,
+            user: addedRecipient,
+         });
       }
 
       // Dispatch channel create event

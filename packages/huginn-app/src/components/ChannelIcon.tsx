@@ -1,7 +1,9 @@
 import type { Snowflake } from "@huginn/shared";
+
 import { useClient } from "@stores/clientStore";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
+
 import LoadingIcon from "./LoadingIcon";
 
 export default function ChannelIcon(props: { channelId: Snowflake; iconHash?: string | null; size?: string; className?: string }) {

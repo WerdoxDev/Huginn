@@ -1,6 +1,8 @@
 import type { BrowserWindow } from "electron";
-import { BaseWindow } from "./base-window";
+
 import path from "node:path";
+
+import { BaseWindow } from "./base-window";
 
 export class VoiceDebugWindow extends BaseWindow {
    public constructor() {

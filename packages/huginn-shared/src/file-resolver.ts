@@ -1,4 +1,5 @@
 import { decodeBase64, encodeBase64 } from "@std/encoding";
+
 import type { ResolvedFile } from ".";
 
 /**
@@ -45,7 +46,10 @@ export async function resolveFile(resource: ArrayBuffer | string): Promise<Resol
          return undefined;
       }
 
-      return { data: await res.arrayBuffer(), contentType: res.headers.get("content-type") ?? undefined };
+      return {
+         data: await res.arrayBuffer(),
+         contentType: res.headers.get("content-type") ?? undefined,
+      };
    }
 
    if (typeof window === "undefined") {

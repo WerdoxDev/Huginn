@@ -1,9 +1,8 @@
-import { HistoryProvider } from "@contexts/HistoryContext";
 import { ThemeProvider } from "@stores/themeStore";
 import { initializeWindow } from "@stores/windowStore";
-import { useEffect, useState } from "react";
 import { QueryClient } from "@tanstack/react-query";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 
 export const Route = createRootRoute({
    component: RootComponent,
@@ -23,12 +22,10 @@ function RootComponent() {
       };
    }, []);
    return (
-      <HistoryProvider>
-         {loaded && (
-            <ThemeProvider>
-               <Outlet />
-            </ThemeProvider>
-         )}
-      </HistoryProvider>
+      loaded && (
+         <ThemeProvider>
+            <Outlet />
+         </ThemeProvider>
+      )
    );
 }

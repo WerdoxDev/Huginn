@@ -1,21 +1,22 @@
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
+import DialogActions from "@components/DialogActions";
+import DialogBody from "@components/DialogBody";
+import HuginnDialogTitle from "@components/HuginnDialogTitle";
 import ImageSelector from "@components/ImageSelector";
 import HuginnInput from "@components/input/HuginnInput";
 import { Description, DialogTitle } from "@headlessui/react";
 import { usePatchDMChannel } from "@hooks/mutations/usePatchDMChannel";
+import { useHuginnForm } from "@hooks/useHuginnForm";
 import { listenEvent } from "@lib/event-handler";
 import { getChannelIconOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+
 import HuginnDialogPanel from "./HuginnDialogPanel";
-import { useHuginnForm } from "@hooks/useHuginnForm";
-import DialogActions from "@components/DialogActions";
-import DialogBody from "@components/DialogBody";
-import HuginnDialogTitle from "@components/HuginnDialogTitle";
 
 type Input = {
    name?: string;

@@ -1,18 +1,18 @@
 {
-	"extends": "../../tsconfig.json",
-	"compilerOptions": {
-		"types": ["unplugin-icons/types/react", "@react-router/node", "vite/client"],
-		"jsx": "react-jsx",
+   "extends": "../../tsconfig.json",
+   "compilerOptions": {
+      "types": ["unplugin-icons/types/react", "@react-router/node", "vite/client"],
+      "jsx": "react-jsx",
 
-		"paths": {
-			"@stores/*": ["./src/stores/*"],
-			"@components/*": ["./src/components/*"],
-			"@contexts/*": ["./src/contexts/*"],
-			"@hooks/*": ["./src/hooks/*"],
-			"@lib/*": ["./src/lib/*"],
-			"@/*": ["./src/*"]
-		},
-		"rootDirs": [".", "./.react-router/types"]
-	},
-	"include": ["src", "auto-imports.d.ts", "electron", "src/index.d.ts", "shared/remote-logger.ts", "shared"]
+      "paths": {
+         "@stores/*": ["./src/stores/*"],
+         "@components/*": ["./src/components/*"],
+         "@contexts/*": ["./src/contexts/*"],
+         "@hooks/*": ["./src/hooks/*"],
+         "@lib/*": ["./src/lib/*"],
+         "@/*": ["./src/*"]
+      },
+      "rootDirs": [".", "./.react-router/types"]
+   },
+   "include": ["src", "auto-imports.d.ts", "electron", "src/index.d.ts", "shared/remote-logger.ts", "shared"]
 }

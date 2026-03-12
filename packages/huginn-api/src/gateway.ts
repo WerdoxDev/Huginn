@@ -8,9 +8,12 @@ import type {
    GatewayVoiceStateFlags,
    Snowflake,
 } from "@huginn/shared";
+
 import { error, GatewayCode, type GatewayWebsocketEvents, type GatewayHello, GatewayOperations, type GatewayReadyData, log } from "@huginn/shared";
-import { type HuginnClient } from ".";
+
 import type { GatewayOptions } from "./types";
+
+import { type HuginnClient } from ".";
 import { defaultClientOptions } from "./utils";
 import { SharedWebsocket } from "./websocket";
 
@@ -314,7 +317,10 @@ export class Gateway extends SharedWebsocket<Events> {
          case "resumed":
             return { authenticated: true, retryable: true };
          case "disconnected":
-            return { authenticated: false, retryable: result.data !== GatewayCode.AUTHENTICATION_FAILED };
+            return {
+               authenticated: false,
+               retryable: result.data !== GatewayCode.AUTHENTICATION_FAILED,
+            };
          default:
             return { authenticated: false, retryable: false };
       }
@@ -326,7 +332,10 @@ export class Gateway extends SharedWebsocket<Events> {
          throw new Error("Cannot resume: missing token, session or sequence");
       }
 
-      this.send({ op: GatewayOperations.RESUME, d: { token, sessionId: this.sessionId, seq: this.sequence } });
+      this.send({
+         op: GatewayOperations.RESUME,
+         d: { token, sessionId: this.sessionId, seq: this.sequence },
+      });
    }
 
    private sendIdentify() {

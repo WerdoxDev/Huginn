@@ -292,7 +292,13 @@ function Items(props: { children?: ReactNode; className?: string }) {
    );
 }
 
-function Item(props: HTMLProps<HTMLButtonElement> & { label: string; color?: "default" | "negative"; isNested?: boolean }) {
+function Item(
+   props: HTMLProps<HTMLButtonElement> & {
+      label: string;
+      color?: "default" | "negative";
+      isNested?: boolean;
+   },
+) {
    const menu = useContext(MenuContext);
    const { triggerProps } = useContext(DropdownContext);
    const item = useListItem({

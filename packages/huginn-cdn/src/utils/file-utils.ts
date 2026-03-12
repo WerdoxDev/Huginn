@@ -1,9 +1,10 @@
-import { Readable, Writable } from "node:stream";
+import { storage } from "#setup";
 import { CDNErrorType, CDNError } from "@huginn/backend-shared";
 import { type FileContentTypes, type ImageFormats, fileTypes } from "@huginn/shared";
+import { Readable, Writable } from "node:stream";
 import PQueue from "p-queue";
 import sharp from "sharp";
-import { storage } from "#setup";
+
 import type { FileCategory, FileInfo } from "./types";
 
 const queue = new PQueue({ concurrency: 1 });
@@ -33,7 +34,10 @@ export async function findImageByName(category: FileCategory, subDirectory: stri
       const exists = await storage.exists(category, subDirectory, filename);
 
       if (exists) {
-         foundFile = { file: (await storage.getFile(category, subDirectory, filename)) as ReadableStream, info: extractFileInfo(filename) };
+         foundFile = {
+            file: (await storage.getFile(category, subDirectory, filename)) as ReadableStream,
+            info: extractFileInfo(filename),
+         };
       }
    }
 

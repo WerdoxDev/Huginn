@@ -1,5 +1,6 @@
 import { createContext, type MouseEvent, type ReactNode, useContext, useMemo } from "react";
 import { createStore, useStore } from "zustand";
+
 import type {
    ContextMenuDMChannel,
    ContextMenuDMChannelRecipient,
@@ -34,7 +35,9 @@ export function useContextMenu<T extends keyof ContextMenuTypes>(type: T) {
    function open(data: NonNullable<ContextMenuTypes[T]>["contextData"], e: MouseEvent<HTMLElement>) {
       e.preventDefault();
       e.stopPropagation();
-      store.setState({ [type]: { isOpen: true, contextData: data, position: [e.clientX, e.clientY] } });
+      store.setState({
+         [type]: { isOpen: true, contextData: data, position: [e.clientX, e.clientY] },
+      });
    }
 
    function close() {

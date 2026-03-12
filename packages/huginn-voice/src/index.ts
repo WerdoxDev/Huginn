@@ -1,9 +1,10 @@
-import { readEnv } from "@huginn/runtime-shared";
-import { serve } from "crossws/server";
-import { defineHooks } from "crossws";
-import { VoiceWebsocket } from "./voice-websocket";
 import { runMediasoupWorker } from "#mediasoup";
+import { readEnv } from "@huginn/runtime-shared";
+import { defineHooks } from "crossws";
+import { serve } from "crossws/server";
 import Elysia from "elysia";
+
+import { VoiceWebsocket } from "./voice-websocket";
 
 export const envs = readEnv(["VOICE_HOST", "VOICE_PORT", "MEDIA_LISTEN_INFOS"] as const);
 

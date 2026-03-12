@@ -1,13 +1,16 @@
-import path from "node:path";
-import { BaseWindow } from "./base-window";
-import { app, desktopCapturer, ipcMain, nativeImage, Notification, session, shell, type BrowserWindow } from "electron";
 import { CacheStorage, error, findClosestString, log } from "@huginn/shared";
-import electronUpdater, { CancellationToken } from "electron-updater";
-import type { AudioSource, DisplaySource } from "@/types";
 import { getActiveWindowProcessIds, startAudioCapture, stopAudioCapture } from "application-loopback";
-import * as keybindsController from "./keybinds-controller";
+import { app, desktopCapturer, ipcMain, nativeImage, Notification, session, shell, type BrowserWindow } from "electron";
+import electronUpdater, { CancellationToken } from "electron-updater";
 import native, { type AppInfo } from "native-addon";
+import path from "node:path";
+
+import type { AudioSource, DisplaySource } from "@/types";
+
 import type { CacheController } from "./cache-controller";
+
+import { BaseWindow } from "./base-window";
+import * as keybindsController from "./keybinds-controller";
 import { VoiceDebugWindow } from "./voice-debug-window";
 const { autoUpdater } = electronUpdater;
 
@@ -173,7 +176,15 @@ export class MainWindow extends BaseWindow {
          });
          return sources
             .filter((x) => !x.thumbnail.isEmpty())
-            .map((x) => ({ thumbnail: x.thumbnail.toDataURL(), id: x.id, name: x.name, appIcon: x.appIcon?.toDataURL() }) as DisplaySource);
+            .map(
+               (x) =>
+                  ({
+                     thumbnail: x.thumbnail.toDataURL(),
+                     id: x.id,
+                     name: x.name,
+                     appIcon: x.appIcon?.toDataURL(),
+                  }) as DisplaySource,
+            );
       });
 
       ipcMain.handle("window:get-audio-sources", async () => {

@@ -1,6 +1,7 @@
+import { assertExists, Prisma, prisma, type ChannelArgs, type ChannelPayload } from "#database";
 import { DBErrorType } from "#types";
 import { ChannelType, type Snowflake, WorkerID, idFix, snowflake } from "@huginn/shared";
-import { assertExists, Prisma, prisma, type ChannelArgs, type ChannelPayload } from "#database";
+
 import { assertId, assertObj } from "./error";
 
 export const channelExtension = Prisma.defineExtension({
@@ -44,7 +45,9 @@ export const channelExtension = Prisma.defineExtension({
                // See if we got a channel where all recipients are either initiator or first recipient
                const existingChannel = await prisma.channel.findFirst({
                   where: {
-                     recipients: { every: { OR: [{ id: BigInt(recipients[0]) }, { id: BigInt(initiatorId) }] } },
+                     recipients: {
+                        every: { OR: [{ id: BigInt(recipients[0]) }, { id: BigInt(initiatorId) }] },
+                     },
                      type: ChannelType.DM,
                   },
                   select: { id: true },
@@ -86,7 +89,11 @@ export const channelExtension = Prisma.defineExtension({
             try {
                const updatedChannel = await prisma.channel.update({
                   where: { id: BigInt(channelId), type: ChannelType.GROUP_DM },
-                  data: { icon: icon, name: name, owner: owner ? { connect: { id: BigInt(owner) } } : undefined },
+                  data: {
+                     icon: icon,
+                     name: name,
+                     owner: owner ? { connect: { id: BigInt(owner) } } : undefined,
+                  },
                   ...args,
                });
 

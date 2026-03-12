@@ -1,9 +1,6 @@
-import { createErrorFactory, createHuginnError, createToken, globalPlugin, verifyJwt } from "@huginn/backend-shared";
-import { prisma, type EmailVerification } from "@huginn/backend-shared/database";
-import { selectPrivateUser } from "@huginn/backend-shared/database/common";
-import { type APIPatchCurrentUserResult, CDNRoutes, constants, Errors, Fields, getFileHash, toArrayBuffer } from "@huginn/shared";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
+import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";
 import { cdnUpload } from "#utils/server-request";
 import {
    validateCorrectPassword,
@@ -14,8 +11,11 @@ import {
    validateUsername,
    validateUsernameUnique,
 } from "#utils/validation";
+import { createErrorFactory, createHuginnError, createToken, globalPlugin, verifyJwt } from "@huginn/backend-shared";
+import { prisma, type EmailVerification } from "@huginn/backend-shared/database";
+import { selectPrivateUser } from "@huginn/backend-shared/database/common";
+import { type APIPatchCurrentUserResult, CDNRoutes, constants, Errors, Fields, getFileHash, toArrayBuffer } from "@huginn/shared";
 import Elysia, { t } from "elysia";
-import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";
 
 const schema = t.Object({
    email: t.Optional(t.String()),
@@ -58,7 +58,9 @@ export const patchMe = new Elysia()
             return createHuginnError(formError, status);
          }
 
-         const user = await prisma.user.getById(tokenPayload.id, { select: { id: true, password: true } });
+         const user = await prisma.user.getById(tokenPayload.id, {
+            select: { id: true, password: true },
+         });
 
          const databaseError = createErrorFactory(Errors.invalidFormBody());
 
@@ -130,7 +132,11 @@ export const patchMe = new Elysia()
          );
 
          // TODO: When guilds are a thing, this should send an update to users that are viewing that guild
-         dispatchToTopic(tokenPayload.id, "user_update", { ...updatedUser, token: accessToken, refreshToken });
+         dispatchToTopic(tokenPayload.id, "user_update", {
+            ...updatedUser,
+            token: accessToken,
+            refreshToken,
+         });
          gateway.presenceManager.updateUserPresence(tokenPayload.id, undefined, updatedUser);
 
          const json: APIPatchCurrentUserResult = {

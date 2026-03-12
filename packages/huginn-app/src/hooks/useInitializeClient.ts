@@ -1,5 +1,6 @@
 // import { usePostHog } from "posthog-js/react";
 import type { InitializationStatus } from "@huginn/api";
+
 import { error, log } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
 import { useStorage } from "@stores/storageStore";
@@ -27,7 +28,10 @@ export function useInitializeClient() {
 
             log("app:client-store", "default", "initialize start");
 
-            const result = await client.connect({ tokens: { token: options.token, refreshToken: options.refreshToken }, timeout: 10000 });
+            const result = await client.connect({
+               tokens: { token: options.token, refreshToken: options.refreshToken },
+               timeout: 10000,
+            });
 
             log("app:client-store", "default", "initialize result:", result?.result);
 
@@ -55,7 +59,11 @@ export function useInitializeClient() {
             await options.onSuccess?.();
 
             if (options.navigatePath) {
-               await navigate({ to: options.navigatePath, viewTransition: { types: ["forwards"] }, replace: true });
+               await navigate({
+                  to: options.navigatePath,
+                  viewTransition: { types: ["forwards"] },
+                  replace: true,
+               });
             }
 
             log("app:client-store", "default", "initialize finished");

@@ -1,3 +1,4 @@
+import { filterChannel } from "#utils/helpers";
 import { CommonWebsocket, createToken, verifyToken } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import {
@@ -24,11 +25,11 @@ import {
    merge,
    WorkerID,
 } from "@huginn/shared";
+
 import { dispatchToTopic } from "../utils/gateway-utils";
 import { ClientSession } from "./client-session";
 import { PresenceManager } from "./presence-manager";
 import { VoiceManager } from "./voice-manager";
-import { filterChannel } from "#utils/helpers";
 
 export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload> {
    public presenceManager: PresenceManager;

@@ -1,23 +1,23 @@
+import type { APIPostOAuthConfirmJSONBody, OAuthTokenPayload } from "@huginn/shared";
+
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import ImageSelector from "@components/ImageSelector";
 import HuginnInput from "@components/input/HuginnInput";
 import StartWrapper from "@components/StartWrapper";
-import { useHistory } from "@contexts/HistoryContext";
+import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
-import type { APIPostOAuthConfirmJSONBody, OAuthTokenPayload } from "@huginn/shared";
 import { listenEvent } from "@lib/event-handler";
 import { getUserAvatarOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, useNavigate, useRouter, useSearch } from "@tanstack/react-router";
 import * as jose from "jose";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useState } from "react";
-import { useHuginnForm } from "@hooks/useHuginnForm";
-import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { z } from "zod";
 
 type Inputs = {
@@ -25,9 +25,16 @@ type Inputs = {
    displayName?: string;
 };
 
-const searchSchema = z.object({ oauth_token: z.optional(z.string()), access_token: z.optional(z.string()), refresh_token: z.optional(z.string()) });
+const searchSchema = z.object({
+   oauth_token: z.optional(z.string()),
+   access_token: z.optional(z.string()),
+   refresh_token: z.optional(z.string()),
+});
 
-export const Route = createFileRoute("/_app/_start/oauth-redirect")({ component: OauthRedirectComponent, validateSearch: searchSchema });
+export const Route = createFileRoute("/_app/_start/oauth-redirect")({
+   component: OauthRedirectComponent,
+   validateSearch: searchSchema,
+});
 
 function OauthRedirectComponent() {
    const client = useClient();
@@ -36,7 +43,7 @@ function OauthRedirectComponent() {
    const { updateModals } = useModals();
    const initializeClient = useInitializeClient();
    const posthog = usePostHog();
-   const history = useHistory();
+   const router = useRouter();
 
    const decodedToken = useMemo(() => (search.oauth_token ? (jose.decodeJwt(search.oauth_token) as OAuthTokenPayload) : undefined), [search]);
 
@@ -55,7 +62,11 @@ function OauthRedirectComponent() {
             }
          },
          async onSuccess(data) {
-            await initializeClient({ token: data?.token, refreshToken: data?.refreshToken, navigatePath: "/channels/@me" });
+            await initializeClient({
+               token: data?.token,
+               refreshToken: data?.refreshToken,
+               navigatePath: "/channels/@me",
+            });
          },
       },
       handleErrors,
@@ -104,7 +115,11 @@ function OauthRedirectComponent() {
 
    async function abort() {
       posthog.capture("oauth:abort_button_click");
-      await navigate({ to: history.lastPathname ?? "/", viewTransition: true });
+      if (router.history.canGoBack()) {
+         router.history.back();
+      } else {
+         await navigate({ to: "/", viewTransition: true });
+      }
    }
 
    async function onSubmit(data: Inputs) {

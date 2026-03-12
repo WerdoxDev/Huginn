@@ -1,8 +1,8 @@
+import { filterMessage } from "#utils/helpers";
 import { missingAccess, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectAllMessage } from "@huginn/backend-shared/database/common";
 import { type APIGetMessageByIdResult } from "@huginn/shared";
-import { filterMessage } from "#utils/helpers";
 import Elysia from "elysia";
 
 export const getMessage = new Elysia()
@@ -12,7 +12,9 @@ export const getMessage = new Elysia()
          return missingAccess(status);
       }
 
-      const dbMessage = await prisma.message.getById(channelId, messageId, { select: selectAllMessage });
+      const dbMessage = await prisma.message.getById(channelId, messageId, {
+         select: selectAllMessage,
+      });
       const message: APIGetMessageByIdResult = filterMessage(dbMessage);
 
       return status("OK", message);

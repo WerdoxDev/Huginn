@@ -1,27 +1,28 @@
-import { queryClient } from "@/lib/queries";
-import { QueryClientProvider } from "@tanstack/react-query";
 import ContextMenusRenderer from "@components/contextmenu/ContextMenusRenderer";
 import ModalsRenderer from "@components/modal/ModalsRenderer";
-import PHProvider, { initializePosthog } from "@contexts/PHProvider";
+import StartBackground from "@components/StartBackgroundSvg";
 import TitleBar from "@components/TitleBar";
+import KeybindsProvider from "@contexts/KeybindsProvider";
 import { NotificationProvider } from "@contexts/NotificationContext";
+import PHProvider, { initializePosthog } from "@contexts/PHProvider";
+import SettingsProvider from "@contexts/SettingsProvider";
 import { useMainViewTransitionState } from "@hooks/useMainViewTransitionState";
 import { useClientStore } from "@stores/clientStore";
 import { ContextMenuProvider } from "@stores/contextMenuStore";
+import { initializeDevice } from "@stores/deviceStore";
 import { initializePresence } from "@stores/presenceStore";
 import { initializeReadStates } from "@stores/readStatesStore";
+import { initializeStorage2 } from "@stores/storageStore";
 import { initializeTyping } from "@stores/typingStore";
 import { initializeUser } from "@stores/userStore";
 import { initializeVoice } from "@stores/voiceStore";
 import { useHuginnWindow } from "@stores/windowStore";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import clsx from "clsx";
 import { type ReactNode, useEffect } from "react";
-import { createFileRoute, Outlet } from "@tanstack/react-router";
-import KeybindsProvider from "@contexts/KeybindsProvider";
-import SettingsProvider from "@contexts/SettingsProvider";
-import { initializeStorage2 } from "@stores/storageStore";
-import { initializeDevice } from "@stores/deviceStore";
-import StartBackground from "@components/StartBackgroundSvg";
+
+import { queryClient } from "@/lib/queries";
 
 export const Route = createFileRoute("/_app")({ component: AppLayoutComponent });
 

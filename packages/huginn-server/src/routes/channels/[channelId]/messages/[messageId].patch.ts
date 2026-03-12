@@ -1,3 +1,7 @@
+import { dispatchToTopic } from "#utils/gateway-utils";
+import { filterMessage } from "#utils/helpers";
+import { generateEmbedsFromContent, processEmbeds } from "#utils/route-utils";
+import { validateEmbeds } from "#utils/validation";
 import {
    createErrorFactory,
    createHuginnError,
@@ -10,10 +14,6 @@ import {
 import { prisma } from "@huginn/backend-shared/database";
 import { selectAllMessage } from "@huginn/backend-shared/database/common";
 import { type APIMessage, Errors } from "@huginn/shared";
-import { dispatchToTopic } from "#utils/gateway-utils";
-import { generateEmbedsFromContent, processEmbeds } from "#utils/route-utils";
-import { validateEmbeds } from "#utils/validation";
-import { filterMessage } from "#utils/helpers";
 import Elysia, { t } from "elysia";
 
 const schema = t.Object({
@@ -27,7 +27,13 @@ const schema = t.Object({
             url: t.Optional(t.String()),
             description: t.Optional(t.String()),
             timestamp: t.Optional(t.String()),
-            thumbnail: t.Optional(t.Object({ url: t.String(), width: t.Optional(t.Number()), height: t.Optional(t.Number()) })),
+            thumbnail: t.Optional(
+               t.Object({
+                  url: t.String(),
+                  width: t.Optional(t.Number()),
+                  height: t.Optional(t.Number()),
+               }),
+            ),
          }),
       ),
    ),
@@ -47,7 +53,9 @@ export const patchMessage = new Elysia()
             return missingAccess(status);
          }
 
-         const messageToCheck = await prisma.message.getById(channelId, messageId, { select: { author: { select: { id: true } } } });
+         const messageToCheck = await prisma.message.getById(channelId, messageId, {
+            select: { author: { select: { id: true } } },
+         });
          if (messageToCheck.author.id !== tokenPayload.id) {
             return missingPermission(status);
          }

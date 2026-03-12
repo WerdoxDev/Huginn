@@ -1,12 +1,13 @@
+import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { type APIPostMessageReferenceJSONBody, type MessageFlags, type Snowflake } from "@huginn/shared";
 import { dispatchEvent } from "@lib/event-handler";
+import { appendAppMessage, deleteAppMessage, findChannel, getChannels, updateAppMessage } from "@lib/query-utils";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { MessageErrorType, type AppAttachment, type PreviewAppMessage } from "@/types";
-import { appendAppMessage, deleteAppMessage, findChannel, getChannels, updateAppMessage } from "@lib/query-utils";
-import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 
 export function useSendMessage() {
    const client = useClient();

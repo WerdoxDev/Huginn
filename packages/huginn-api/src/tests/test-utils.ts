@@ -1,5 +1,7 @@
-import { expect } from "bun:test";
 import type { GatewayReadyData } from "@huginn/shared";
+
+import { expect } from "bun:test";
+
 import { HuginnClient } from "../huginn-client";
 
 export function getClient(): HuginnClient {
@@ -50,7 +52,10 @@ export async function getConnectedClient(login: boolean): Promise<HuginnClient> 
    return client;
 }
 
-export async function getAuthenticatedClient(): Promise<{ client: HuginnClient; readyData?: GatewayReadyData }> {
+export async function getAuthenticatedClient(): Promise<{
+   client: HuginnClient;
+   readyData?: GatewayReadyData;
+}> {
    const client = await getConnectedClient(true);
    let readyData: GatewayReadyData | undefined;
 

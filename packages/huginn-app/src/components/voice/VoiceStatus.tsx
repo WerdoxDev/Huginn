@@ -1,18 +1,20 @@
+import type { VoiceStatus } from "@huginn/api";
+
+import StreamButton from "@components/button/StreamButton";
+import UserActionButton from "@components/button/UserActionButton";
+import VoiceControlButton from "@components/button/VoiceControlButton";
+import { DropdownMenu } from "@components/dropdown/DropdownMenu";
+import { useChannel } from "@hooks/api-hooks/channelHooks";
+import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 import { useClient, useClientStore } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore } from "@stores/voiceStore";
+import { Link } from "@tanstack/react-router";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useState } from "react";
+
 import Tooltip from "../tooltip/Tooltip";
-import UserActionButton from "@components/button/UserActionButton";
-import StreamButton from "@components/button/StreamButton";
-import VoiceControlButton from "@components/button/VoiceControlButton";
-import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
-import { useChannel } from "@hooks/api-hooks/channelHooks";
-import { DropdownMenu } from "@components/dropdown/DropdownMenu";
-import type { VoiceStatus } from "@huginn/api";
-import { Link } from "@tanstack/react-router";
 
 const statuses: Record<VoiceStatus, { text: string; color?: string }> = {
    disconnected: { text: "Disconnected", color: "!text-negative-100" },

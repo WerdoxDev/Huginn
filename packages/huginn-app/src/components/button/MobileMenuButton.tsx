@@ -1,5 +1,7 @@
-import { useMobileMenuStore } from "@stores/mobileMenuStore";
 import type { MouseEvent } from "react";
+
+import { useMobileMenuStore } from "@stores/mobileMenuStore";
+
 import TopBarButton from "./TopBarButton";
 
 export default function MobileMenuButton() {

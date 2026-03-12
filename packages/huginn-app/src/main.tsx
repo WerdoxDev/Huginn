@@ -1,14 +1,16 @@
-import { createRoot } from "react-dom/client";
-import { createRouter, RouterProvider } from "@tanstack/react-router";
+import RouteErrorComponent from "@components/RouteErrorComponent";
+import { logger } from "@huginn/shared";
+
 import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
 import { clientStore } from "@stores/clientStore";
-import { logger } from "@huginn/shared";
-import { RemoteLogger } from "../shared/remote-logger";
 import { initializeStorage, storageStore } from "@stores/storageStore";
-import { routeTree } from "./routeTree.gen";
 import { QueryClient } from "@tanstack/react-query";
-import RouteErrorComponent from "@components/RouteErrorComponent";
+import { createRouter, RouterProvider } from "@tanstack/react-router";
+import { createRoot } from "react-dom/client";
+
+import { RemoteLogger } from "../shared/remote-logger";
+import { routeTree } from "./routeTree.gen";
 
 if (import.meta.env.DEV) {
    document.addEventListener("keypress", (e) => {

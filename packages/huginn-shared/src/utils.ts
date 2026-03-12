@@ -1,8 +1,11 @@
 import type { MediaKind } from "mediasoup/types";
+
 import { sha256 } from "ohash";
-import { fileTypes } from "./cdn-types";
+
 import type { GatewayOperationTypes } from "./gateway-types";
 import type { HMediaKind } from "./voice-types";
+
+import { fileTypes } from "./cdn-types";
 
 export function pick<Data extends object, Keys extends keyof Data>(data: Data, keys: Keys[]): Pick<Data, Keys> {
    const result = {} as Pick<Data, Keys>;

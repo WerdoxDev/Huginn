@@ -1,6 +1,6 @@
-import path from "node:path";
 import { log } from "@huginn/shared";
 import { BrowserWindow, type BrowserWindowConstructorOptions } from "electron";
+import path from "node:path";
 
 export abstract class BaseWindow {
    private readonly _window: BrowserWindow;

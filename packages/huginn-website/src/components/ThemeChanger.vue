@@ -1,61 +1,55 @@
 <script setup lang="ts">
-import { Icon } from '@iconify/vue/dist/iconify.js';
-import { ref } from 'vue';
-import { type ColorTheme, ceruleanTheme, charcoalTheme, coffeeTheme, eggplantTheme, pineGreenTheme, useChangeTheme } from '../scripts/useChangeTheme';
+import { Icon } from "@iconify/vue/dist/iconify.js";
+import { ref } from "vue";
 
-const isOpen = ref(false)
+import { type ColorTheme, ceruleanTheme, charcoalTheme, coffeeTheme, eggplantTheme, pineGreenTheme, useChangeTheme } from "../scripts/useChangeTheme";
+
+const isOpen = ref(false);
 
 function toggleMenu() {
-   isOpen.value = !isOpen.value
-   console.log(isOpen.value)
+   isOpen.value = !isOpen.value;
+   console.log(isOpen.value);
 }
 
 function chooseTheme(theme: ColorTheme) {
-   useChangeTheme(theme.type)
-   toggleMenu()
+   useChangeTheme(theme.type);
+   toggleMenu();
 }
-
 </script>
 
 <template>
    <div class="w-fit">
-      <button @click="toggleMenu"
-         class="rounded-full z-30 p-4 transition-all shadow-md hover:shadow-lg bg-tertiary shadow-4xl ">
+      <button @click="toggleMenu" class="shadow-4xl z-30 rounded-full bg-tertiary p-4 shadow-md transition-all hover:shadow-lg">
          <Icon icon="material-symbols:brush" class="size-7 text-accent" />
       </button>
 
       <Transition name="menu">
-         <div v-if="isOpen"
-            class="absolute p-3 gap-x-2 grid grid-cols-2 md:h-36 h-44 md:w-24 w-28 bg-tertiary outline outline-1 outline-primary shadow-2xl rounded-lg right-20 bottom-0">
-
-            <button @click="chooseTheme(coffeeTheme)"
-               class="rounded-full flex items-center justify-center bg-black/30 md:size-8 size-10 shrink-0">
-               <div class="rounded-full md:size-6 size-8 bg-[#D99A6C]"></div>
+         <div
+            v-if="isOpen"
+            class="absolute bottom-0 right-20 grid h-44 w-28 grid-cols-2 gap-x-2 rounded-lg bg-tertiary p-3 shadow-2xl outline outline-1 outline-primary md:h-36 md:w-24"
+         >
+            <button @click="chooseTheme(coffeeTheme)" class="flex size-10 shrink-0 items-center justify-center rounded-full bg-black/30 md:size-8">
+               <div class="size-8 rounded-full bg-[#D99A6C] md:size-6"></div>
             </button>
 
-            <button @click="chooseTheme(ceruleanTheme)"
-               class="rounded-full flex items-center justify-center bg-black/30 md:size-8 size-10 shrink-0">
-               <div class="rounded-full md:size-6 size-8 bg-[#00A7E3]"></div>
+            <button @click="chooseTheme(ceruleanTheme)" class="flex size-10 shrink-0 items-center justify-center rounded-full bg-black/30 md:size-8">
+               <div class="size-8 rounded-full bg-[#00A7E3] md:size-6"></div>
             </button>
 
-            <button @click="chooseTheme(pineGreenTheme)"
-               class="rounded-full flex items-center justify-center bg-black/30 md:size-8 size-10 shrink-0">
-               <div class="rounded-full md:size-6 size-8 bg-[#02CAB9]"></div>
+            <button @click="chooseTheme(pineGreenTheme)" class="flex size-10 shrink-0 items-center justify-center rounded-full bg-black/30 md:size-8">
+               <div class="size-8 rounded-full bg-[#02CAB9] md:size-6"></div>
             </button>
 
-            <button @click="chooseTheme(eggplantTheme)"
-               class="rounded-full flex items-center justify-center bg-black/30 md:size-8 size-10 shrink-0">
-               <div class="rounded-full md:size-6 size-8 bg-[#DC8B9A]"></div>
+            <button @click="chooseTheme(eggplantTheme)" class="flex size-10 shrink-0 items-center justify-center rounded-full bg-black/30 md:size-8">
+               <div class="size-8 rounded-full bg-[#DC8B9A] md:size-6"></div>
             </button>
 
-            <button @click="chooseTheme(charcoalTheme)"
-               class="rounded-full flex items-center justify-center bg-black/30 md:size-8 size-10 shrink-0">
-               <div class="rounded-full md:size-6 size-8 bg-[#9FB1BD]"></div>
+            <button @click="chooseTheme(charcoalTheme)" class="flex size-10 shrink-0 items-center justify-center rounded-full bg-black/30 md:size-8">
+               <div class="size-8 rounded-full bg-[#9FB1BD] md:size-6"></div>
             </button>
          </div>
       </Transition>
    </div>
-
 </template>
 
 <style>

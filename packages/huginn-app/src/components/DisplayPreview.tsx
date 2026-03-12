@@ -8,7 +8,7 @@ export default function DisplayPreview(props: {
    return (
       <button
          type="button"
-         className="group flex cursor-pointer select-none flex-col gap-y-2"
+         className="group flex cursor-pointer flex-col gap-y-2 select-none"
          draggable={false}
          onClick={() => props.onSelect(props.source, props.deviceInfo)}
       >
@@ -20,7 +20,7 @@ export default function DisplayPreview(props: {
             />
          )}
          {props.deviceInfo && (
-            <div className="from-primary-500 to-text bg-linear-to-r group-hover:ring-primary-700 aspect-video w-full rounded-lg transition-all group-hover:ring-2"></div>
+            <div className="from-primary-500 to-text group-hover:ring-primary-700 aspect-video w-full rounded-lg bg-linear-to-r transition-all group-hover:ring-2"></div>
          )}
          <div className="flex items-center gap-x-2">
             {props.source?.appIcon ? (
@@ -30,7 +30,7 @@ export default function DisplayPreview(props: {
             ) : (
                <IconMingcuteVideoCamera2Fill className="text-text size-5" />
             )}
-            <div className="overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm text-white">
+            <div className="overflow-hidden text-center text-sm text-ellipsis whitespace-nowrap text-white">
                {props.source?.name ?? props.deviceInfo?.label}
             </div>
          </div>

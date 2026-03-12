@@ -1,6 +1,7 @@
-import { describe, expect, test } from "bun:test";
 import { type HuginnErrorData, JsonCode, parseResponse, type RequestMethod, resolveImage, resolveRequest } from "@huginn/shared";
+import { describe, expect, test } from "bun:test";
 import pathe from "pathe";
+
 import { HuginnClient } from "../huginn-client";
 
 describe("REST", () => {
@@ -32,7 +33,15 @@ describe("REST", () => {
    });
 
    test("should throw when auth is true but no token is passed", async () => {
-      expect(resolveRequest({ fullRoute: "/test", method: "GET", auth: true, token: undefined, root: "https://test.com" })).rejects.toThrow();
+      expect(
+         resolveRequest({
+            fullRoute: "/test",
+            method: "GET",
+            auth: true,
+            token: undefined,
+            root: "https://test.com",
+         }),
+      ).rejects.toThrow();
    });
 
    test("should add a file to the body and correctly determine its contentType", async () => {
@@ -61,7 +70,9 @@ describe("REST", () => {
    });
 
    test("should correctly parse response", async () => {
-      const response = new Response(JSON.stringify({ test: 123 }), { headers: { "Content-Type": "application/json" } });
+      const response = new Response(JSON.stringify({ test: 123 }), {
+         headers: { "Content-Type": "application/json" },
+      });
 
       const parsed = await parseResponse(response);
 
@@ -70,14 +81,22 @@ describe("REST", () => {
 
    test("should correctly handle errors", async () => {
       const client = new HuginnClient();
-      const response = new Response(JSON.stringify({ code: JsonCode.INVALID_FORM_BODY, message: "Invalid Form Body" } satisfies HuginnErrorData), {
-         status: 400,
-         headers: { "Content-Type": "application/json" },
-      });
+      const response = new Response(
+         JSON.stringify({
+            code: JsonCode.INVALID_FORM_BODY,
+            message: "Invalid Form Body",
+         } satisfies HuginnErrorData),
+         {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+         },
+      );
 
       // @ts-ignore for testing
-      expect(client.rest.handleErrors(response, "POST", "https://test.com/test", { body: { test: 123 } })).rejects.toThrow(
-         "Invalid Form Body",
-      );
+      expect(
+         client.rest.handleErrors(response, "POST", "https://test.com/test", {
+            body: { test: 123 },
+         }),
+      ).rejects.toThrow("Invalid Form Body");
    });
 });

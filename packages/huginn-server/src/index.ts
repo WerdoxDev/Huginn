@@ -1,7 +1,3 @@
-import consola from "consola";
-import { ws } from "#routes/gateway";
-import { envs } from "#setup";
-
 import { getAllReleases } from "#routes/all-releases.get";
 import { postApplicationIcon } from "#routes/applications/icon.post";
 import { getKnownApplications } from "#routes/applications/known.get";
@@ -26,6 +22,7 @@ import { postAckMessage } from "#routes/channels/[channelId]/messages/[messageId
 import { deleteChannelRecipient } from "#routes/channels/[channelId]/recipients/[recipientId].delete";
 import { putChannelRecipient } from "#routes/channels/[channelId]/recipients/[recipientId].put";
 import { postTyping } from "#routes/channels/[channelId]/typing.post";
+import { ws } from "#routes/gateway";
 import { getLatestRelease } from "#routes/latest-release.get";
 import { postLog } from "#routes/log.post";
 import { getOnlineUsers } from "#routes/online-users.get";
@@ -40,20 +37,30 @@ import { postUserRelationship } from "#routes/users/@me/relationships.post";
 import { deleteUserRelationship } from "#routes/users/@me/relationships/[userId].delete";
 import { getUserRelationship } from "#routes/users/@me/relationships/[userId].get";
 import { putUserRelationship } from "#routes/users/@me/relationships/[userId].put";
-import { patchUserSettings } from "#routes/users/@me/settings.patch";
-import { getUser } from "#routes/users/[userId].get";
-import { globalPlugin, invalidBody, notFound, serverError, serverOnError } from "@huginn/backend-shared";
-import Elysia from "elysia";
-import { getIndex } from "./routes";
-import { staticPlugin } from "@elysiajs/static";
-import { cors } from "@elysiajs/cors";
-import { postVerifyEmail } from "#routes/users/@me/verify-email.post";
 import { postResendVerificationEmail } from "#routes/users/@me/resend-verification-email";
+import { patchUserSettings } from "#routes/users/@me/settings.patch";
+import { postVerifyEmail } from "#routes/users/@me/verify-email.post";
+import { getUser } from "#routes/users/[userId].get";
+import { envs } from "#setup";
+import { cors } from "@elysiajs/cors";
+import { staticPlugin } from "@elysiajs/static";
+import { globalPlugin, invalidBody, notFound, serverError, serverOnError } from "@huginn/backend-shared";
+import consola from "consola";
+import Elysia from "elysia";
+
+import { getIndex } from "./routes";
 
 // console.log(envs.AXIOM_DATASET, envs.AXIOM_TOKEN);
 
 export const app = new Elysia({
-   cookie: { secrets: envs.SESSION_PASSWORD, sign: ["oauth"], httpOnly: true, secure: true, path: "/", maxAge: 60 * 5 },
+   cookie: {
+      secrets: envs.SESSION_PASSWORD,
+      sign: ["oauth"],
+      httpOnly: true,
+      secure: true,
+      path: "/",
+      maxAge: 60 * 5,
+   },
 })
    .use(cors())
    .use(staticPlugin({ prefix: "", assets: "public", alwaysStatic: true }))
@@ -157,10 +164,18 @@ export const app = new Elysia({
          return ws.handleUpgrade(request, server);
       },
    })
-   .listen({ websocket: ws.websocket, hostname: envs.SERVER_HOST, port: envs.SERVER_PORT, idleTimeout: 40 }, (server) => {
-      if (process.env.TEST) {
-         console.log(`Listening on ${server.hostname}:${server.port}`);
-      } else {
-         consola.box(`Listening on ${server.hostname}:${server.port}`);
-      }
-   });
+   .listen(
+      {
+         websocket: ws.websocket,
+         hostname: envs.SERVER_HOST,
+         port: envs.SERVER_PORT,
+         idleTimeout: 40,
+      },
+      (server) => {
+         if (process.env.TEST) {
+            console.log(`Listening on ${server.hostname}:${server.port}`);
+         } else {
+            consola.box(`Listening on ${server.hostname}:${server.port}`);
+         }
+      },
+   );

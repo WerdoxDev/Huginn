@@ -1,7 +1,8 @@
+import type { Context, ElysiaCustomStatusResponse, InvertedStatusMap, StatusMap } from "elysia";
+
 import { createErrorFactory, type ErrorFactory } from "#error-factory";
 import { CDNErrorType, DBErrorType } from "#types";
 import { Errors, JsonCode, type HuginnErrorData } from "@huginn/shared";
-import type { Context, ElysiaCustomStatusResponse, InvertedStatusMap, StatusMap } from "elysia";
 
 export class DBError extends Error {
    public constructor(

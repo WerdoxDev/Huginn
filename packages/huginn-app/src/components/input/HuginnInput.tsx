@@ -1,3 +1,5 @@
+import HuginnLabel from "@components/HuginnLabel";
+import StatusMessage from "@components/StatusMessage";
 import { snowflake, WorkerID } from "@huginn/shared";
 import clsx from "clsx";
 import {
@@ -12,9 +14,8 @@ import {
    useRef,
    useState,
 } from "react";
+
 import type { HuginnInputProps, InputMessage, StatusType } from "@/types";
-import StatusMessage from "@components/StatusMessage";
-import HuginnLabel from "@components/HuginnLabel";
 
 const InputContext = createContext<{
    id: string;

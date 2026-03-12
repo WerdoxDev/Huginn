@@ -1,7 +1,7 @@
-import { type GatewayCallState, type GatewayVoiceState, type Snowflake } from "@huginn/shared";
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { prisma, selectAllMessage } from "@huginn/backend-shared/database";
 import { filterMessage } from "#utils/helpers";
+import { prisma, selectAllMessage } from "@huginn/backend-shared/database";
+import { type GatewayCallState, type GatewayVoiceState, type Snowflake } from "@huginn/shared";
 
 export class VoiceManager {
    private callStates: Map<Snowflake, GatewayCallState>;
@@ -99,12 +99,20 @@ export class VoiceManager {
       if (voiceState.channelId) {
          // The user is joining with a new session
          if (previousState && voiceState.sessionId !== previousState?.sessionId) {
-            dispatchToTopic(previousState.sessionId, "voice_state_update", { ...previousState, channelId: null, guildId: null });
+            dispatchToTopic(previousState.sessionId, "voice_state_update", {
+               ...previousState,
+               channelId: null,
+               guildId: null,
+            });
          }
 
          // If the user is entering a new channel, send a null state to the previous one
          if (previousChannelId && voiceState.channelId !== previousChannelId) {
-            dispatchToTopic(previousChannelId, "voice_state_update", { ...voiceState, channelId: null, guildId: null });
+            dispatchToTopic(previousChannelId, "voice_state_update", {
+               ...voiceState,
+               channelId: null,
+               guildId: null,
+            });
          }
 
          dispatchToTopic(voiceState.channelId, "voice_state_update", voiceState);

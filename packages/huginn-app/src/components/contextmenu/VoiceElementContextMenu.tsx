@@ -1,11 +1,13 @@
-import HuginnRange from "@components/input/HuginnRange";
-import { useContextMenu } from "@stores/contextMenuStore";
-import { useEffect, useMemo } from "react";
-import ContextMenu from "./ContextMenu";
-import { useStorage, useStorageStore } from "@stores/storageStore";
-import { useClient } from "@stores/clientStore";
-import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 import type { HMediaKind } from "@huginn/shared";
+
+import HuginnRange from "@components/input/HuginnRange";
+import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
+import { useClient } from "@stores/clientStore";
+import { useContextMenu } from "@stores/contextMenuStore";
+import { useStorage, useStorageStore } from "@stores/storageStore";
+import { useEffect, useMemo } from "react";
+
+import ContextMenu from "./ContextMenu";
 
 export default function VoiceElementContextMenu() {
    const { data } = useContextMenu("voice_element");
@@ -68,7 +70,7 @@ export default function VoiceElementContextMenu() {
          {mediaSources.some((x) => x?.kind === "microphone") && (
             <ContextMenu.Item
                label="Volume"
-               className="items-start! focus:bg-inherit! mt-1 min-w-40 cursor-default flex-col gap-y-1 px-1"
+               className="mt-1 min-w-40 cursor-default flex-col items-start! gap-y-1 px-1 focus:bg-inherit!"
                preventClose
             >
                <HuginnRange
@@ -96,7 +98,7 @@ export default function VoiceElementContextMenu() {
                {hasAudio && (
                   <ContextMenu.Item
                      label="Stream Volume"
-                     className="items-start! focus:bg-inherit! mt-1 min-w-40 cursor-default flex-col gap-y-1 px-1"
+                     className="mt-1 min-w-40 cursor-default flex-col items-start! gap-y-1 px-1 focus:bg-inherit!"
                      preventClose
                   >
                      <HuginnRange

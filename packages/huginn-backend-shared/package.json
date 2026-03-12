@@ -2,6 +2,18 @@
    "name": "@huginn/backend-shared",
    "version": "0.22.2",
    "type": "module",
+   "imports": {
+      "#database": "./src/database/index.ts",
+      "#*": "./src/*.ts",
+      "#types": "./src/types.ts",
+      "#prisma/*": "./prisma/generated/*.ts"
+   },
+   "exports": {
+      ".": "./src/index.ts",
+      "./*": "./src/*.ts",
+      "./database": "./src/database/index.ts",
+      "./types": "./src/types.ts"
+   },
    "dependencies": {
       "@elysiajs/bearer": "^1.4.1",
       "@huginn/shared": "workspace:*",
@@ -14,23 +26,11 @@
       "pg": "^8.16.3",
       "sharp": "^0.33.5"
    },
-   "exports": {
-      ".": "./src/index.ts",
-      "./*": "./src/*.ts",
-      "./database": "./src/database/index.ts",
-      "./types": "./src/types.ts"
-   },
    "devDependencies": {
       "@types/bun": "latest",
       "@types/pg": "^8.16.0",
       "crossws": "^0.4.1",
       "elysia": "^1.4.19",
       "prisma": "7"
-   },
-   "imports": {
-      "#database": "./src/database/index.ts",
-      "#*": "./src/*.ts",
-      "#types": "./src/types.ts",
-      "#prisma/*": "./prisma/generated/*.ts"
    }
 }

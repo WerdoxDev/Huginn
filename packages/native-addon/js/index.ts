@@ -1,10 +1,16 @@
 import binding from "bindings";
+import { XMLParser } from "fast-xml-parser";
 import fs from "node:fs/promises";
 import path from "path";
-import { XMLParser } from "fast-xml-parser";
+
 import { selectBestIcon } from "./icon-selector";
 
-export type ProcessInfo = { processId: number; windowTitle: string; cmdLine: string; exePath: string };
+export type ProcessInfo = {
+   processId: number;
+   windowTitle: string;
+   cmdLine: string;
+   exePath: string;
+};
 export type AppInfo = { displayName?: string; icon: string };
 
 export type Addon = {

@@ -1,15 +1,18 @@
-import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import type { Snowflake } from "@huginn/shared";
+import type { MouseEvent } from "react";
+
+import { useIsMobile } from "@hooks/useIsMobile";
+import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { usePresence } from "@stores/presenceStore";
 import clsx from "clsx";
+
+import type { AppUser } from "@/types";
+
+import ActivityPreview from "./ActivityPreview";
 import LoadingIcon from "./LoadingIcon";
 import Tooltip from "./tooltip/Tooltip";
 import UserAvatar from "./UserAvatar";
-import type { AppUser } from "@/types";
-import ActivityPreview from "./ActivityPreview";
-import { useIsMobile } from "@hooks/useIsMobile";
-import type { MouseEvent } from "react";
 
 export default function ChannelRecipient(props: { channelId: Snowflake; isOwner: boolean; recipient: AppUser }) {
    const presence = usePresence(props.recipient.id);

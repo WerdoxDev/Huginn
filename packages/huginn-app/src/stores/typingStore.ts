@@ -1,9 +1,11 @@
 import type { GatewayTypingStartData, Snowflake } from "@huginn/shared";
+
 import { listenEvent } from "@lib/event-handler";
 import { produce } from "immer";
 import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
+
 import { clientStore } from "./clientStore";
 
 const initialStore = () => ({
@@ -20,7 +22,11 @@ const store = createStore(
                const existingIndex = draft.typings.findIndex((x) => x.userId === d.userId && x.channelId === d.channelId);
                if (existingIndex !== -1) {
                   window.clearTimeout(draft.typings[existingIndex].timeout);
-                  draft.typings[existingIndex] = { ...draft.typings[existingIndex], ...d, timeout: startTimeout(d.userId, d.channelId) };
+                  draft.typings[existingIndex] = {
+                     ...draft.typings[existingIndex],
+                     ...d,
+                     timeout: startTimeout(d.userId, d.channelId),
+                  };
                } else {
                   draft.typings.push({ ...d, timeout: startTimeout(d.userId, d.channelId) });
                }

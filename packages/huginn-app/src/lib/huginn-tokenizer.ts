@@ -86,7 +86,11 @@ export function tokenize(text: string, skipTokens?: TokenType[]) {
       finalElementTokens.push(...elementTokens);
    }
 
-   caches.set(text, { tokens: finalTokens, elementTokens: finalElementTokens, skippedTokens: skipTokens });
+   caches.set(text, {
+      tokens: finalTokens,
+      elementTokens: finalElementTokens,
+      skippedTokens: skipTokens,
+   });
 
    return { tokens: finalTokens, elementTokens: finalElementTokens };
 }
@@ -182,7 +186,10 @@ function addRegexTokens(tokens: FinishedToken[], elementTokens: ElementToken[], 
 
          // Token does not exist
          if (!unfinishedToken) {
-            unfinishedTokens.push({ start: { index: match.index, text: match[0] }, typeFlags: typeFlag });
+            unfinishedTokens.push({
+               start: { index: match.index, text: match[0] },
+               typeFlags: typeFlag,
+            });
          } else if (unfinishedToken && !unfinishedToken.end) {
             unfinishedToken.end = { index: match.index, text: match[0] };
          }
@@ -202,12 +209,20 @@ function addRegexTokens(tokens: FinishedToken[], elementTokens: ElementToken[], 
                });
 
                if (hasFlag(unfinishedToken.typeFlags, TokenTypeFlag.SPOILER)) {
-                  elementTokens.push({ start: unfinishedToken.start.index, end: unfinishedToken.end.index, type: "spoiler", line });
+                  elementTokens.push({
+                     start: unfinishedToken.start.index,
+                     end: unfinishedToken.end.index,
+                     type: "spoiler",
+                     line,
+                  });
                }
             }
 
             if (!content) {
-               unfinishedTokens.push({ start: unfinishedToken.end, typeFlags: unfinishedToken.typeFlags });
+               unfinishedTokens.push({
+                  start: unfinishedToken.end,
+                  typeFlags: unfinishedToken.typeFlags,
+               });
             }
 
             if (unfinishedTokenIndex !== -1) {
@@ -270,11 +285,23 @@ function addGapTokens(tokens: FinishedToken[], text: string, line: number) {
       for (const token of tokens.toSorted((a, b) => a.start - b.start)) {
          // if this is not the first token and the last saved position is not directly before this token. so there is atleast a 1 character gap
          if (lastTokenEnd && token.start > lastTokenEnd + 1) {
-            tokens.push({ start: lastTokenEnd + 1, end: token.start - 1, content: text.slice(lastTokenEnd + 1, token.start), types: [], line });
+            tokens.push({
+               start: lastTokenEnd + 1,
+               end: token.start - 1,
+               content: text.slice(lastTokenEnd + 1, token.start),
+               types: [],
+               line,
+            });
          }
          // if this is the first token and it doesn't start from 0, add the text before it
          else if (!lastTokenEnd && token.start !== 0) {
-            tokens.push({ start: 0, end: token.start - 1, content: text.slice(0, token.start), types: [], line });
+            tokens.push({
+               start: 0,
+               end: token.start - 1,
+               content: text.slice(0, token.start),
+               types: [],
+               line,
+            });
          }
 
          if (token.end > (lastTokenEnd ?? 0)) {
@@ -283,7 +310,13 @@ function addGapTokens(tokens: FinishedToken[], text: string, line: number) {
       }
       // add the remaining end section of the text
       if (lastTokenEnd && lastTokenEnd !== text.length - 1) {
-         tokens.push({ start: lastTokenEnd + 1, end: text.length - 1, content: text.slice(lastTokenEnd + 1), types: [], line });
+         tokens.push({
+            start: lastTokenEnd + 1,
+            end: text.length - 1,
+            content: text.slice(lastTokenEnd + 1),
+            types: [],
+            line,
+         });
       }
    }
 }

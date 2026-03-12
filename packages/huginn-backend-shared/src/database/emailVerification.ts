@@ -1,8 +1,9 @@
-import { Prisma } from "#prisma/client";
-import { idFix, snowflake, WorkerID, type Snowflake } from "@huginn/shared";
-import { assertId } from "./error";
 import { assertExists, prisma } from "#database";
+import { Prisma } from "#prisma/client";
 import { DBErrorType } from "#types";
+import { idFix, snowflake, WorkerID, type Snowflake } from "@huginn/shared";
+
+import { assertId } from "./error";
 
 export const emailVerificationExtension = Prisma.defineExtension({
    model: {

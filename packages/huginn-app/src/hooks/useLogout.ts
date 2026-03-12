@@ -1,6 +1,7 @@
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
 import { useNavigate } from "@tanstack/react-router";
+
 import { useHuginnMutation } from "./useHuginnMutation";
 
 export function useLogout() {

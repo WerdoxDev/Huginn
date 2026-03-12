@@ -1,4 +1,5 @@
 import type { OAuthTokenPayload, Snowflake, UserRefreshTokenPayload, UserTokenPayload } from "@huginn/shared";
+
 import * as jose from "jose";
 
 export const ACCESS_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.ACCESS_TOKEN_SECRET ?? "");

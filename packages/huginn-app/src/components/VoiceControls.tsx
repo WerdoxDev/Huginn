@@ -1,17 +1,19 @@
-import { error, type Snowflake } from "@huginn/shared";
-import clsx from "clsx";
-import Tooltip from "./tooltip/Tooltip";
-import VoiceControlButton from "./button/VoiceControlButton";
-import StreamButton from "./button/StreamButton";
-import { useEffect, useState } from "react";
 import { useHover } from "@hooks/useHover";
-import { DropdownMenu } from "./dropdown/DropdownMenu";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
-import { useVoiceStore } from "@stores/voiceStore";
+import { error, type Snowflake } from "@huginn/shared";
+import { screenShareQualities } from "@lib/constants";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
+import { useVoiceStore } from "@stores/voiceStore";
+import clsx from "clsx";
+import { useEffect, useState } from "react";
+
 import type { MediaSource, ScreenShareFrameRate, ScreenShareQuality } from "@/types";
-import { screenShareQualities } from "@lib/constants";
+
+import StreamButton from "./button/StreamButton";
+import VoiceControlButton from "./button/VoiceControlButton";
+import { DropdownMenu } from "./dropdown/DropdownMenu";
+import Tooltip from "./tooltip/Tooltip";
 
 export default function VoiceControls(props: {
    show: boolean;

@@ -2,6 +2,9 @@
    "name": "@huginn/server",
    "version": "0.33.0",
    "type": "module",
+   "imports": {
+      "#*": "./src/*.ts"
+   },
    "scripts": {
       "dev": "bun --hot src/index.ts",
       "start": "bun src/index.ts",
@@ -48,8 +51,5 @@
    "devDependencies": {
       "@octokit/types": "^13.10.0",
       "@types/semver": "^7.7.1"
-   },
-   "imports": {
-      "#*": "./src/*.ts"
    }
 }

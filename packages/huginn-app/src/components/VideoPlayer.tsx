@@ -4,6 +4,7 @@ import { useProgressBar } from "@hooks/useProgressBar";
 import { formatSeconds } from "@huginn/shared";
 import clsx from "clsx";
 import { type MouseEvent, useEffect, useRef, useState } from "react";
+
 import LoadingIcon from "./LoadingIcon";
 import Slider from "./Slider";
 import VolumeSlider from "./VolumeSlider";
@@ -129,7 +130,7 @@ export default function VideoPlayer(props: { url: string; width: number; height:
          />
          <Transition show={!loaded || errored}>
             <div
-               className={clsx(!errored && "absolute inset-0", "bg-surface/40 data-closed:opacity-0 flex items-center justify-center duration-200")}
+               className={clsx(!errored && "absolute inset-0", "bg-surface/40 flex items-center justify-center duration-200 data-closed:opacity-0")}
                style={{ width: `${props.width}px`, height: `${props.height}px` }}
             >
                {!loaded && !errored && <LoadingIcon className="size-16" />}

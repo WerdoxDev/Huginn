@@ -7,10 +7,10 @@ import { useUpdater } from "@hooks/useUpdater";
 import { initializeClient, setHostnamesFromExternal, setHostnamesFromSettings, useClient } from "@stores/clientStore";
 import { useStorage } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useReducer } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 type Step = "none" | "fetch_hostnames" | "check_update" | "initialize" | "update" | "welcome";
 
@@ -66,7 +66,12 @@ function IndexComponent() {
       },
    });
 
-   const [state, dispatch] = useReducer(reducer, { current: "none", status: "none", error: undefined, text: "" });
+   const [state, dispatch] = useReducer(reducer, {
+      current: "none",
+      status: "none",
+      error: undefined,
+      text: "",
+   });
 
    const updateProgressText = useMemo(() => {
       return `${(downloaded.current / 1024 / 1024).toFixed(2)}MB / ${(contentLength.current / 1024 / 1024).toFixed(2)}MB (${Math.ceil(progress)}%)`;
@@ -88,9 +93,17 @@ function IndexComponent() {
       const result = await connect();
       console.log(result);
       if (result.success) {
-         dispatch({ type: "SET", step: "welcome", text: `Welcome ${client?.currentUser?.displayName ?? client?.currentUser?.username}!` });
+         dispatch({
+            type: "SET",
+            step: "welcome",
+            text: `Welcome ${client?.currentUser?.displayName ?? client?.currentUser?.username}!`,
+         });
          sessionStorage.removeItem("redirect");
-         await navigate({ to: redirectObj?.pathname ?? "/channels/@me", replace: true, viewTransition: { types: ["forwards"] } });
+         await navigate({
+            to: redirectObj?.pathname ?? "/channels/@me",
+            replace: true,
+            viewTransition: { types: ["forwards"] },
+         });
       } else if (result.retryable) {
          dispatch({ type: "FAIL", error: "Failed to connect..." });
       } else {

@@ -1,8 +1,10 @@
-import { describe, expect, test, mock, beforeEach, afterEach } from "bun:test";
-import { Gateway } from "../gateway";
 import { GatewayOperations, GatewayCode } from "@huginn/shared";
+import { describe, expect, test, mock, beforeEach, afterEach } from "bun:test";
+
 import type { HuginnClient } from "../";
 import type { GatewayOptions } from "../types";
+
+import { Gateway } from "../gateway";
 
 // Mock WebSocket
 class MockWebSocket {
@@ -310,7 +312,13 @@ describe("Gateway", () => {
 
          mockSocket.sentMessages = [];
          const updatePromise = gateway.updateVoiceState(
-            { isAudioMuted: true, isAudioDeafened: false, isAudioStreaming: false, isCameraOn: false, isScreenSharing: false },
+            {
+               isAudioMuted: true,
+               isAudioDeafened: false,
+               isAudioStreaming: false,
+               isCameraOn: false,
+               isScreenSharing: false,
+            },
             "channel-456",
             "guild-123",
          );

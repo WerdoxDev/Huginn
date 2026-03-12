@@ -1,8 +1,8 @@
+import { dispatchToTopic } from "#utils/gateway-utils";
 import { verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { omitChannelRecipient } from "@huginn/backend-shared/database/common";
 import { merge } from "@huginn/shared";
-import { dispatchToTopic } from "#utils/gateway-utils";
 import { Elysia } from "elysia";
 
 export const postTyping = new Elysia()
@@ -13,7 +13,11 @@ export const postTyping = new Elysia()
       });
 
       for (const recipient of channel.recipients) {
-         dispatchToTopic(recipient.id, "typing_start", { channelId, userId: tokenPayload.id, timestamp: Date.now() });
+         dispatchToTopic(recipient.id, "typing_start", {
+            channelId,
+            userId: tokenPayload.id,
+            timestamp: Date.now(),
+         });
       }
 
       return status("No Content");

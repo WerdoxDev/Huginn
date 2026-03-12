@@ -1,11 +1,13 @@
 import type { Snowflake } from "@huginn/shared";
+
+import { presenceStatuses } from "@lib/utils";
 import { useClient } from "@stores/clientStore";
 import { usePresence } from "@stores/presenceStore";
+import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
+
 import LoadingIcon from "./LoadingIcon";
-import { presenceStatuses } from "@lib/utils";
-import { useHuginnWindow } from "@stores/windowStore";
 
 export default function UserAvatar(props: {
    userId: Snowflake;
@@ -47,10 +49,7 @@ export default function UserAvatar(props: {
       }
 
       if (props.avatarHash && client) {
-         window.electronAPI.saveImageToCache(
-            client.cdn.avatar(props.userId, props.avatarHash, { size: 256, format: "png" }),
-            props.avatarHash,
-         );
+         window.electronAPI.saveImageToCache(client.cdn.avatar(props.userId, props.avatarHash, { size: 256, format: "png" }), props.avatarHash);
       }
    }, [props.avatarHash]);
 
@@ -75,14 +74,12 @@ export default function UserAvatar(props: {
          ) : !hasError && !props.avatarHash && !isLoaded ? (
             <div className="bg-primary-700 h-full w-full rounded-full" />
          ) : (
-            hasError && (
-               <div className="bg-negative-400 text-text flex h-full w-full items-center justify-center rounded-full font-bold">!</div>
-            )
+            hasError && <div className="bg-negative-400 text-text flex h-full w-full items-center justify-center rounded-full font-bold">!</div>
          )}
          {!props.hideStatus && (
             <div
                className={clsx(
-                  "absolute bottom-0 right-0 rounded-full",
+                  "absolute right-0 bottom-0 rounded-full",
                   presence?.status && presence.status !== "offline" ? presenceStatuses[presence.status].color : "bg-transparent",
                )}
                style={{ width: statusSize, height: statusSize }}

@@ -1,3 +1,5 @@
+import type { DtlsParameters, RtpCapabilities, RtpParameters } from "mediasoup-client/types";
+
 import {
    constants,
    error,
@@ -25,8 +27,8 @@ import {
    type VoiceResumeConsumerResult,
    type VoiceWebsocketEvents,
 } from "@huginn/shared";
+
 import type { HuginnClient, VoiceConnectionData, VoiceOptions, VoiceSignallingResetType } from ".";
-import type { DtlsParameters, RtpCapabilities, RtpParameters } from "mediasoup-client/types";
 
 type SignalingClientStatus = "connecting" | "connected" | "helloed" | "authenticated" | "resuming" | "disconnected" | "idle";
 
@@ -342,7 +344,11 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       this.checkStatus();
 
       const nonce = this.client.generateNonce();
-      this.send({ op: VoiceOperations.DISPATCH, t: "create_transport", d: { channelId: this.connectionData.channelId, direction, nonce } });
+      this.send({
+         op: VoiceOperations.DISPATCH,
+         t: "create_transport",
+         d: { channelId: this.connectionData.channelId, direction, nonce },
+      });
 
       return await new Promise<VoiceCreateTransportResult>((res) => {
          const unlisten = this.listen("create_transport_result", (d) => {
@@ -504,7 +510,11 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       log("api:voice-signaling", "default", "restart ice", "tid:", transportId);
 
       const nonce = this.client.generateNonce();
-      this.send({ op: VoiceOperations.DISPATCH, t: "restart_ice", d: { channelId, transportId, nonce } });
+      this.send({
+         op: VoiceOperations.DISPATCH,
+         t: "restart_ice",
+         d: { channelId, transportId, nonce },
+      });
 
       return await new Promise<VoiceRestartIceResult>((res) => {
          const unlisten = this.listen("restart_ice_result", (d) => {

@@ -1,22 +1,24 @@
-import type { AppUser } from "@/types";
+import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
+import DialogActions from "@components/DialogActions";
+import DialogBody from "@components/DialogBody";
+import HuginnDialogTitle from "@components/HuginnDialogTitle";
 import AddRecipientInput from "@components/input/AddRecipientInput";
 import HuginnInput from "@components/input/HuginnInput";
 import { Description, DialogTitle } from "@headlessui/react";
 import { useChannelNamePlaceholder } from "@hooks/api-hooks/channelHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
+import { useHuginnForm } from "@hooks/useHuginnForm";
 import { getRelationshipsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+
+import type { AppUser } from "@/types";
+
 import HuginnDialogPanel from "./HuginnDialogPanel";
-import { useHuginnForm } from "@hooks/useHuginnForm";
-import DialogBody from "@components/DialogBody";
-import DialogActions from "@components/DialogActions";
-import HuginnDialogTitle from "@components/HuginnDialogTitle";
-import HuginnButton from "@components/button/HuginnButton";
 // import { usePostHog } from "posthog-js/react";
 
 type Input = {
@@ -62,7 +64,10 @@ export default function CreateDMModal() {
    }
 
    async function findOrCreate() {
-      await mutation.mutateAsync({ recipients: selectedUsers?.map((x) => x.id), name: values.name });
+      await mutation.mutateAsync({
+         recipients: selectedUsers?.map((x) => x.id),
+         name: values.name,
+      });
       close();
    }
    return (

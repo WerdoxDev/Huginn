@@ -33,7 +33,11 @@ export function NotificationProvider(props: { children?: ReactNode }) {
    }, []);
 
    return (
-      <NotificationContext.Provider value={{ sendNotification: huginnWindow.environment === "desktop" ? sendNotification : () => {} }}>
+      <NotificationContext.Provider
+         value={{
+            sendNotification: huginnWindow.environment === "desktop" ? sendNotification : () => {},
+         }}
+      >
          {props.children}
       </NotificationContext.Provider>
    );

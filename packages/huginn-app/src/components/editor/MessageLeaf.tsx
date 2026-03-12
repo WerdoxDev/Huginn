@@ -1,6 +1,8 @@
-import type { FormattedText } from "@/index";
-import clsx from "clsx";
 import type { ReactNode } from "react";
+
+import clsx from "clsx";
+
+import type { FormattedText } from "@/index";
 
 export default function MessageLeaf(props: { children?: ReactNode } & FormattedText) {
    if (props.mark) {
@@ -8,9 +10,7 @@ export default function MessageLeaf(props: { children?: ReactNode } & FormattedT
    }
 
    if (props.bold || props.italic || props.underline) {
-      return (
-         <span className={clsx(props.bold && "font-bold", props.italic && "italic", props.underline && "underline")}>{props.children}</span>
-      );
+      return <span className={clsx(props.bold && "font-bold", props.italic && "italic", props.underline && "underline")}>{props.children}</span>;
    }
 
    return <span>{props.children}</span>;

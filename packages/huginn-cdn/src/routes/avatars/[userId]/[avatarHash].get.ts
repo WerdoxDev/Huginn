@@ -14,5 +14,8 @@ export const getUserAvatar = new Elysia()
          }
       });
 
-      return new Response(readable, { status: StatusMap["OK"], headers: { "content-type": mimeType } });
+      return new Response(readable, {
+         status: StatusMap["OK"],
+         headers: { "content-type": mimeType },
+      });
    });

@@ -1,6 +1,7 @@
 import type { CommonPayload } from "#types";
-import { type APIUser, constants, error, GatewayCode, log, type Snowflake } from "@huginn/shared";
 import type { Peer } from "crossws";
+
+import { type APIUser, constants, error, GatewayCode, log, type Snowflake } from "@huginn/shared";
 
 export abstract class CommonClientSession<Payload extends CommonPayload, Properties = undefined> {
    public sessionId: Snowflake;

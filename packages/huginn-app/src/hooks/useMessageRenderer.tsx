@@ -1,20 +1,22 @@
-import type { AppMessage, HuginnToken } from "@/types";
+import AttachmentElement from "@components/editor/AttachmentElement";
+import CodeElement from "@components/editor/CodeElement";
+import EmbedElement from "@components/editor/EmbedElement";
+import InlineCodeElement from "@components/editor/InlineCodeElement";
+import LinkElement from "@components/editor/LinkElement";
+import MessageLeaf from "@components/editor/MessageLeaf";
+import SpoilerElement from "@components/editor/SpoilerElement";
 import { markdownMainMessage } from "@lib/markdown-main";
 import { markdownSpoiler } from "@lib/markdown-spoiler";
 import { markdownUnderline } from "@lib/markdown-underline";
 import { organizeTokens, isElementOpenToken, isElementCloseToken, isOpenToken, isCloseToken, getSlateFormats } from "@lib/markdown-utils";
+import clsx from "clsx";
+import markdownit from "markdown-it";
 import { useMemo } from "react";
 import { Element, Text, type Descendant } from "slate";
+
+import type { AppMessage, HuginnToken } from "@/types";
+
 import type { CustomElement, ParagraphElement } from "..";
-import markdownit from "markdown-it";
-import MessageLeaf from "@components/editor/MessageLeaf";
-import EmbedElement from "@components/editor/EmbedElement";
-import SpoilerElement from "@components/editor/SpoilerElement";
-import LinkElement from "@components/editor/LinkElement";
-import CodeElement from "@components/editor/CodeElement";
-import AttachmentElement from "@components/editor/AttachmentElement";
-import InlineCodeElement from "@components/editor/InlineCodeElement";
-import clsx from "clsx";
 
 export function useMessageRenderer(message: AppMessage, excludeElements?: CustomElement["type"][], noWrapping?: boolean) {
    const md = useMemo(() => new markdownit({ linkify: true }).use(markdownSpoiler).use(markdownUnderline).use(markdownMainMessage), []);
@@ -117,11 +119,20 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
 
             if (isElementOpenToken(token)) {
                if (token.type === "link_open") {
-                  deepestNode.children.push({ type: "link", children: [], url: token.attrs?.[0][1] });
+                  deepestNode.children.push({
+                     type: "link",
+                     children: [],
+                     url: token.attrs?.[0][1],
+                  });
                } else if (token.type === "spoiler_open") {
                   deepestNode.children.push({ type: "spoiler", children: [] });
                } else if (token.type === "fence_open") {
-                  deepestNode.children.push({ type: "code", children: [{ text: "" }], code: token.content, language: token.info });
+                  deepestNode.children.push({
+                     type: "code",
+                     children: [{ text: "" }],
+                     code: token.content,
+                     language: token.info,
+                  });
                } else if (token.type === "code_open") {
                   deepestNode.children.push({ type: "code_inline", children: [] });
                }

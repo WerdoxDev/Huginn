@@ -1,5 +1,6 @@
-import { useUser } from "@hooks/api-hooks/userHooks";
 import type { GatewayVoiceState, Snowflake } from "@huginn/shared";
+
+import { useUser } from "@hooks/api-hooks/userHooks";
 import clsx from "clsx";
 
 export function VoiceLabel(props: { isGridView?: boolean; userId: Snowflake; voiceState?: GatewayVoiceState; type: "normal" | "stream" }) {
@@ -33,7 +34,7 @@ export function VoiceLabel(props: { isGridView?: boolean; userId: Snowflake; voi
          {!props.isGridView && (
             <div
                className={clsx(
-                  "text-text absolute -bottom-10 w-full overflow-hidden text-ellipsis text-nowrap text-center opacity-0 transition-opacity group-hover/element:opacity-100",
+                  "text-text absolute -bottom-10 w-full overflow-hidden text-center text-nowrap text-ellipsis opacity-0 transition-opacity group-hover/element:opacity-100",
                )}
             >
                {user?.displayName}

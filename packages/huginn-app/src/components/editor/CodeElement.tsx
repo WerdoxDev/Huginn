@@ -18,10 +18,10 @@ export default function CodeElement(props: { code: string; language?: string }) 
          {!isCopied ? (
             <IconMingcuteCopy2Fill
                onClick={copyToClipboard}
-               className="text-text/30 hover:text-text absolute right-1.5 top-2 size-4 cursor-pointer"
+               className="text-text/30 hover:text-text absolute top-2 right-1.5 size-4 cursor-pointer"
             />
          ) : (
-            <IconMingcuteCheckFill className="text-text absolute right-1.5 top-2 size-4 cursor-pointer" />
+            <IconMingcuteCheckFill className="text-text absolute top-2 right-1.5 size-4 cursor-pointer" />
          )}
 
          <div

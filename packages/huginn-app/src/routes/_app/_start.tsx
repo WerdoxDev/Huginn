@@ -1,8 +1,8 @@
+import { clientStore } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { clientStore } from "@stores/clientStore";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/_app/_start")({
    component: StartLayoutComponent,

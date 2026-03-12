@@ -1,12 +1,14 @@
-import HuginnIcon from "@components/HuginnIcon";
-import TopBar from "@components/TopBar";
 import MobileMenuButton from "@components/button/MobileMenuButton";
 import QuickActionButton from "@components/button/QuickActionButton";
+import HuginnIcon from "@components/HuginnIcon";
+import TopBar from "@components/TopBar";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useModals } from "@stores/modalsStore";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/_app/_main/_home/channels/@me/")({ component: ChannelMeComponent });
+export const Route = createFileRoute("/_app/_main/_home/channels/@me/")({
+   component: ChannelMeComponent,
+});
 
 function ChannelMeComponent() {
    const { updateModals } = useModals();

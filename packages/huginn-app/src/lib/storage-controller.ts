@@ -1,6 +1,7 @@
 import type { StorageMap, FileType, LoadFileResult, SaveFileResult } from "@/types";
-import { LocalStorageController } from "./local-storage-controller";
+
 import { storageDefaults } from "../../shared/storage-defaults";
+import { LocalStorageController } from "./local-storage-controller";
 
 export class StorageController {
    private storageType: "electron" | "web";

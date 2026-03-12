@@ -1,9 +1,10 @@
 import { log } from "@huginn/shared";
 import { app, ipcMain } from "electron";
-import path from "node:path";
-import { exists } from "./utils";
 import { mkdir } from "node:fs/promises";
 import { writeFile, readdir } from "node:fs/promises";
+import path from "node:path";
+
+import { exists } from "./utils";
 
 export class CacheController {
    public cacheDir = path.join(app.getPath("userData"), "web-cache");

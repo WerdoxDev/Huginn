@@ -1,12 +1,15 @@
-import { ChannelType } from "@huginn/shared";
-import type { AppDirectChannel } from "@/types";
-import MobileMenuButton from "@components/button/MobileMenuButton";
-import TopBar from "@components/TopBar";
-import ChannelName from "./ChannelName";
 import type { MouseEvent } from "react";
-import { useMobileMenuStore } from "@stores/mobileMenuStore";
-import { useIsMobile } from "@hooks/useIsMobile";
+
+import MobileMenuButton from "@components/button/MobileMenuButton";
 import TopBarButton from "@components/button/TopBarButton";
+import TopBar from "@components/TopBar";
+import { useIsMobile } from "@hooks/useIsMobile";
+import { ChannelType } from "@huginn/shared";
+import { useMobileMenuStore } from "@stores/mobileMenuStore";
+
+import type { AppDirectChannel } from "@/types";
+
+import ChannelName from "./ChannelName";
 
 export default function ChannelWithIdTopBar(props: {
    channel: AppDirectChannel;

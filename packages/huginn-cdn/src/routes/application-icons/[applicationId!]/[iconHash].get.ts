@@ -13,5 +13,8 @@ export const getApplicationIcon = new Elysia().get("/cdn/application-icons/:para
       return fileNotFound(status);
    }
 
-   return new Response(file, { status: StatusMap["OK"], headers: { "content-type": "image/webp" } });
+   return new Response(file, {
+      status: StatusMap["OK"],
+      headers: { "content-type": "image/webp" },
+   });
 });

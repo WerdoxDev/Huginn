@@ -1,9 +1,10 @@
+import HuginnLabel from "@components/HuginnLabel";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions, type ListboxOptionsProps } from "@headlessui/react";
 import { snowflake, WorkerID } from "@huginn/shared";
 import clsx from "clsx";
 import { createContext, type ReactNode, useContext, useState } from "react";
+
 import type { DropdownItem } from "@/types";
-import HuginnLabel from "@components/HuginnLabel";
 
 const DropdownContext = createContext<{
    id: string;
@@ -87,7 +88,7 @@ function Item(props: { item: DropdownItem; children?: ReactNode }) {
    return (
       <ListboxOption
          value={props.item}
-         className="data-focus:bg-surface data-selected:bg-surface/50 group flex cursor-pointer items-center gap-x-2 px-2 py-2 text-white/70 data-selected:text-white"
+         className="group data-focus:bg-surface data-selected:bg-surface/50 flex cursor-pointer items-center gap-x-2 px-2 py-2 text-white/70 data-selected:text-white"
       >
          {props.item.icon}
          <span className="wrap-anywhere">{props.item.text}</span>

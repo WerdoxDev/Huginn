@@ -1,3 +1,6 @@
+import { cdnUpload } from "#utils/server-request";
+// import { createTokens } from "#utils/token-factory";
+import { validateDisplayName, validateUsername, validateUsernameUnique } from "#utils/validation";
 import { createErrorFactory, createHuginnError, createToken, unauthorized, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
@@ -14,17 +17,20 @@ import {
    toArrayBuffer,
    type OAuthType,
 } from "@huginn/shared";
-import { cdnUpload } from "#utils/server-request";
-// import { createTokens } from "#utils/token-factory";
-import { validateDisplayName, validateUsername, validateUsernameUnique } from "#utils/validation";
 import Elysia, { t } from "elysia";
 
-const schema = t.Object({ username: t.String(), displayName: t.Nullable(t.String()), avatar: t.Nullable(t.String()) });
+const schema = t.Object({
+   username: t.String(),
+   displayName: t.Nullable(t.String()),
+   avatar: t.Nullable(t.String()),
+});
 
 export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
    "/api/auth/oauth-confirm",
    async ({ body, status, tokenPayload }) => {
-      const identityProvider = await prisma.identityProvider.findUnique({ where: { id: BigInt(tokenPayload.providerId) } });
+      const identityProvider = await prisma.identityProvider.findUnique({
+         where: { id: BigInt(tokenPayload.providerId) },
+      });
 
       if (!identityProvider) {
          return unauthorized(status);
@@ -88,7 +94,11 @@ export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
          constants.REFRESH_TOKEN_EXPIRE_TIME,
       );
 
-      const json: APIPostOAuthConfirmResult = { ...user, token: accessToken, refreshToken: refreshToken };
+      const json: APIPostOAuthConfirmResult = {
+         ...user,
+         token: accessToken,
+         refreshToken: refreshToken,
+      };
       return status("Created", json);
    },
    { body: schema },

@@ -1,9 +1,10 @@
 import { HuginnClient, type VoiceStatus } from "@huginn/api";
 import { type APIPublicUser, error, type GatewayReadyData, type GatewayStatus, log, type Snowflake, type UserSettings } from "@huginn/shared";
-import { createStore, useStore } from "zustand";
-import { storageStore } from "./storageStore";
 import { updateUser } from "@lib/query-utils";
 import { VoiceBridge } from "@lib/voice/voice-bridge";
+import { createStore, useStore } from "zustand";
+
+import { storageStore } from "./storageStore";
 
 const initialStore = () => ({
    hostnames: {
@@ -46,7 +47,11 @@ export function setHostnamesFromSettings() {
 
    const settings = storageStore.getState().getCachedValue("settings");
    store.setState({
-      hostnames: { api: settings.apiHostname, cdn: settings.cdnHostname, voice: settings.voiceHostname },
+      hostnames: {
+         api: settings.apiHostname,
+         cdn: settings.cdnHostname,
+         voice: settings.voiceHostname,
+      },
    });
 }
 
@@ -144,7 +149,9 @@ export function initializeClient() {
 
    unlisteners.push(
       thisStore.client?.gateway.listen("settings_update", (d) => {
-         store.setState((state) => ({ userSettings: state.userSettings ? { ...state.userSettings, ...d } : undefined }));
+         store.setState((state) => ({
+            userSettings: state.userSettings ? { ...state.userSettings, ...d } : undefined,
+         }));
       }),
    );
 

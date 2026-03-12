@@ -1,5 +1,6 @@
 import { useHuginnWindow } from "@stores/windowStore";
 import { createPortal } from "react-dom";
+
 import ConnectionStatus from "./ConnectionStatus";
 
 export default function TitleBar() {

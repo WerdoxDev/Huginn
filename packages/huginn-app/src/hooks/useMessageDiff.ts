@@ -1,8 +1,10 @@
-import type { ProcessedMessage } from "@/types";
-import { usePrevious } from "./usePrevious";
-import { useEffect } from "react";
 import { MessageType } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
+import { useEffect } from "react";
+
+import type { ProcessedMessage } from "@/types";
+
+import { usePrevious } from "./usePrevious";
 
 export type ChangeType = undefined | "edit" | "embed" | "attachment" | "content" | "call" | "preview";
 

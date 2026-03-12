@@ -18,7 +18,12 @@ export const useMobileMenuStore = create(
 
          resetToCenter: () => set({ isLeftOpen: false, isRightOpen: false, leftOffset: 0 }),
 
-         openLeft: () => set((state) => ({ isLeftOpen: true, isRightOpen: false, leftOffset: state.leftMenuWidth })),
+         openLeft: () =>
+            set((state) => ({
+               isLeftOpen: true,
+               isRightOpen: false,
+               leftOffset: state.leftMenuWidth,
+            })),
          closeLeft: () => set({ isLeftOpen: false, leftOffset: 0 }),
 
          openRight: () => set({ isLeftOpen: false, isRightOpen: true }),

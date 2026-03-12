@@ -1,15 +1,15 @@
 import GuildsBar from "@components/GuildsBar";
 import HomeSidebar from "@components/HomeSidebar";
 import UserInfo from "@components/UserInfo";
-import { useMobileMenuStore } from "@stores/mobileMenuStore";
+import { useIsMobile } from "@hooks/useIsMobile";
 import { getChannelsOptions, queryClient } from "@lib/queries";
 import { clientStore, useClient } from "@stores/clientStore";
+import { useMobileMenuStore } from "@stores/mobileMenuStore";
 import { useThisUser } from "@stores/userStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import clsx from "clsx";
 import { useRef, useState, type TouchEvent } from "react";
-import { useIsMobile } from "@hooks/useIsMobile";
-import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/_main/_home")({
    component: HomeLayoutComponent,

@@ -1,14 +1,16 @@
-import type { AppPresence, AppUser } from "@/types";
+import type { Snowflake } from "@huginn/shared";
+
 import ActivityPreview from "@components/ActivityPreview";
 import LoadingIcon from "@components/LoadingIcon";
 import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
 import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
-import type { Snowflake } from "@huginn/shared";
 import { RelationshipType } from "@huginn/shared";
 import { presenceStatuses } from "@lib/utils";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { type MouseEvent, useMemo } from "react";
+
+import type { AppPresence, AppUser } from "@/types";
 
 export default function FriendItem(props: {
    type: RelationshipType;
@@ -48,7 +50,7 @@ export default function FriendItem(props: {
 
    return (
       <div
-         className="hover:bg-surface-alt group relative flex cursor-pointer items-center justify-between overflow-hidden rounded-xl p-3"
+         className="group hover:bg-surface-alt relative flex cursor-pointer items-center justify-between overflow-hidden rounded-xl p-3"
          onContextMenu={(e: MouseEvent<HTMLDivElement>) => {
             openRelationship({ user: props.user, type: props.type }, e);
          }}
@@ -81,7 +83,7 @@ export default function FriendItem(props: {
                   {props.type === RelationshipType.PENDING_INCOMING && (
                      <Tooltip>
                         <Tooltip.Trigger
-                           className="bg-surface/50 text-text/80 hover:text-primary-700 group-hover:bg-surface rounded-full p-2"
+                           className="bg-surface/50 text-text/80 group-hover:bg-surface hover:text-primary-700 rounded-full p-2"
                            onClick={(e) => {
                               e.stopPropagation();
                               props.onAccept?.(props.user.id);
@@ -94,7 +96,7 @@ export default function FriendItem(props: {
                   )}
                   <Tooltip>
                      <Tooltip.Trigger
-                        className="bg-surface/50 text-text/80 hover:text-negative-100 group-hover:bg-surface rounded-full p-2"
+                        className="bg-surface/50 text-text/80 group-hover:bg-surface hover:text-negative-100 rounded-full p-2"
                         onClick={() => props.onDenyOrCancel?.(props.user.id)}
                      >
                         <IconMingcuteCloseFill className="size-5" />

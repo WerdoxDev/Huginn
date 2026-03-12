@@ -1,7 +1,10 @@
 import { error, EventEmitter, log, type GatewayVoiceStateFlags, type LocalVoiceState } from "@huginn/shared";
 
 type Events = {
-   update_gateway_voice_state: { voiceState: GatewayVoiceStateFlags; callback: (flags: GatewayVoiceStateFlags | undefined) => void };
+   update_gateway_voice_state: {
+      voiceState: GatewayVoiceStateFlags;
+      callback: (flags: GatewayVoiceStateFlags | undefined) => void;
+   };
    gateway_voice_state_updated: GatewayVoiceStateFlags;
    local_voice_state_updated: LocalVoiceState;
 };
@@ -35,7 +38,10 @@ export class VoiceState extends EventEmitter<Events> {
       this.emit("gateway_voice_state_updated", this.gatewayVoiceState);
 
       const confirmed = await new Promise<GatewayVoiceStateFlags | undefined>((r) => {
-         this.emit("update_gateway_voice_state", { voiceState: this.gatewayVoiceState, callback: r });
+         this.emit("update_gateway_voice_state", {
+            voiceState: this.gatewayVoiceState,
+            callback: r,
+         });
       });
 
       if (!confirmed) {

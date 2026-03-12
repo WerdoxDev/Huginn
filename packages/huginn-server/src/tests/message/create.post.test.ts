@@ -1,4 +1,5 @@
-import { describe, expect, test } from "bun:test";
+import { expectAttachmentExactSchema, expectEmbedExactSchema, expectMessageExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestChannel, createTestMessages, createTestUsers, getReadyWebSocket, isCDNRunning, testIsDispatch } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import {
    type APIMessageReference,
@@ -9,9 +10,8 @@ import {
    MessageReferenceType,
    MessageType,
 } from "@huginn/shared";
+import { describe, expect, test } from "bun:test";
 import { resolve } from "pathe";
-import { expectAttachmentExactSchema, expectEmbedExactSchema, expectMessageExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestMessages, createTestUsers, getReadyWebSocket, isCDNRunning, testIsDispatch } from "#tests/utils";
 
 describe("POST /api/channels/:channelId/messages", () => {
    test(
@@ -43,7 +43,9 @@ describe("POST /api/channels/:channelId/messages", () => {
       const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
 
       // No token
-      const result = testHandler(`/api/channels/${channel.id}/messages`, {}, "POST", { content: "test" });
+      const result = testHandler(`/api/channels/${channel.id}/messages`, {}, "POST", {
+         content: "test",
+      });
       expect(result).rejects.toThrow("Unauthorized");
 
       // User does not have the channel
@@ -117,7 +119,12 @@ describe("POST /api/channels/:channelId/messages", () => {
 
       // attachment files are not added
       const body2 = new FormData();
-      body2.append("payload_json", JSON.stringify({ attachments: [{ id: 0, description: "test", filename: "pixel.png" }] }));
+      body2.append(
+         "payload_json",
+         JSON.stringify({
+            attachments: [{ id: 0, description: "test", filename: "pixel.png" }],
+         }),
+      );
 
       const result2 = testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", body2);
       expect(result2).rejects.toThrow("Invalid Form Body");
@@ -125,7 +132,12 @@ describe("POST /api/channels/:channelId/messages", () => {
       // payload_json includes a filename that doesn't exist in attached files
       const body3 = new FormData();
       body3.append("files[0]", new Blob([await Bun.file(resolve(__dirname, "../pixel.png")).arrayBuffer()]), "pixel.png");
-      body3.append("payload_json", JSON.stringify({ attachments: [{ id: 0, description: "test", filename: "invalid.png" }] }));
+      body3.append(
+         "payload_json",
+         JSON.stringify({
+            attachments: [{ id: 0, description: "test", filename: "invalid.png" }],
+         }),
+      );
 
       const result3 = testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", body3);
       expect(result3).rejects.toThrow("Invalid Form Body");
@@ -133,7 +145,12 @@ describe("POST /api/channels/:channelId/messages", () => {
       // attachment with no filename
       const body4 = new FormData();
       body4.append("files[0]", new Blob([await Bun.file(resolve(__dirname, "../pixel.png")).arrayBuffer()]));
-      body4.append("payload_json", JSON.stringify({ attachments: [{ id: 0, description: "test", filename: "pixel.png" }] }));
+      body4.append(
+         "payload_json",
+         JSON.stringify({
+            attachments: [{ id: 0, description: "test", filename: "pixel.png" }],
+         }),
+      );
 
       const result4 = testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", body4);
       expect(result4).rejects.toThrow("Invalid Form Body");
@@ -141,7 +158,12 @@ describe("POST /api/channels/:channelId/messages", () => {
       // attachment non-existing index
       const body5 = new FormData();
       body5.append("files[0]", new Blob([await Bun.file(resolve(__dirname, "../pixel.png")).arrayBuffer()]), "pixel.png");
-      body5.append("payload_json", JSON.stringify({ attachments: [{ id: 1, description: "test", filename: "pixel.png" }] }));
+      body5.append(
+         "payload_json",
+         JSON.stringify({
+            attachments: [{ id: 1, description: "test", filename: "pixel.png" }],
+         }),
+      );
 
       const result5 = testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", body5);
       expect(result5).rejects.toThrow("Invalid Form Body");
@@ -153,7 +175,12 @@ describe("POST /api/channels/:channelId/messages", () => {
 
       const body = new FormData();
       body.append("files[0]", new Blob([await Bun.file(resolve(__dirname, "../pixel.png")).arrayBuffer()]), "pixel.png");
-      body.append("payload_json", JSON.stringify({ attachments: [{ id: 0, filename: "pixel.png", description: "test" }] }));
+      body.append(
+         "payload_json",
+         JSON.stringify({
+            attachments: [{ id: 0, filename: "pixel.png", description: "test" }],
+         }),
+      );
 
       const result = (await testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", body)) as APIPostMessageResult;
 
@@ -228,7 +255,13 @@ describe("POST /api/channels/:channelId/messages", () => {
       const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
 
       const result = (await testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", {
-         embeds: [{ url: "https://huginn.dev/huginn-meta.png", type: "image", thumbnail: { url: "https://huginn.dev/huginn-meta.png" } }],
+         embeds: [
+            {
+               url: "https://huginn.dev/huginn-meta.png",
+               type: "image",
+               thumbnail: { url: "https://huginn.dev/huginn-meta.png" },
+            },
+         ],
       } as APIPostMessageJSONBody)) as APIPostMessageResult;
 
       expect(result.embeds).toBeArray();

@@ -1,6 +1,7 @@
-import type { Keybind } from "@/types";
 import { error, log } from "@huginn/shared";
 import { globalShortcut, ipcMain, type BrowserWindow } from "electron";
+
+import type { Keybind } from "@/types";
 
 function normalizeCombination(combination: string[]) {
    const normalized = [];

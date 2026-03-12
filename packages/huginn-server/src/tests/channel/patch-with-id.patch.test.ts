@@ -1,10 +1,10 @@
-import { describe, expect, test } from "bun:test";
+import { expectChannelExactRecipients, expectChannelExactSchema, expectReadStatesExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestChannel, createTestUsers, isCDNRunning } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { type APIPatchDMChannelResult, ChannelType, getFileHash, resolveImage, toArrayBuffer } from "@huginn/shared";
+import { describe, expect, test } from "bun:test";
 import pathe from "pathe";
-import { expectChannelExactRecipients, expectChannelExactSchema, expectReadStatesExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestUsers, isCDNRunning } from "#tests/utils";
 
 describe("PATCH /channels/:channelId", () => {
    test(
@@ -49,7 +49,9 @@ describe("PATCH /channels/:channelId", () => {
 
          const channel = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
 
-         const result = testHandler(`/api/channels/${channel.id}`, {}, "PATCH", { name: "something_else" });
+         const result = testHandler(`/api/channels/${channel.id}`, {}, "PATCH", {
+            name: "something_else",
+         });
          expect(result).rejects.toThrow("Unauthorized");
 
          // User 4 does not have the channel and can't add a recipient to it.
@@ -79,7 +81,9 @@ describe("PATCH /channels/:channelId", () => {
          expect(result).resolves.toBe(undefined);
 
          // user4 should have a read state
-         const readStates = await prisma.readState.findMany({ where: { userId: BigInt(user4.id) } });
+         const readStates = await prisma.readState.findMany({
+            where: { userId: BigInt(user4.id) },
+         });
          expectReadStatesExactSchema(readStates, channel.id.toString(), [user4.id]);
 
          await new Promise((r) => setImmediate(r));
@@ -89,7 +93,9 @@ describe("PATCH /channels/:channelId", () => {
          expect(result2).resolves.toBe(undefined);
 
          // user5 should have a read state
-         const readStates2 = await prisma.readState.findMany({ where: { userId: BigInt(user5.id) } });
+         const readStates2 = await prisma.readState.findMany({
+            where: { userId: BigInt(user5.id) },
+         });
          expectReadStatesExactSchema(readStates2, channel.id.toString(), [user5.id]);
 
          await new Promise((r) => setImmediate(r));

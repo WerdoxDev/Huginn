@@ -1,14 +1,17 @@
+import type { Consumer, Producer } from "mediasoup-client/types";
+
 import { HuginnClient, Voice, type VoiceOptions } from "@huginn/api";
 import { diff, log, type MediasoupAppData, type ProducerData, type Snowflake } from "@huginn/shared";
 import { storageStore } from "@stores/storageStore";
 import { voiceStore } from "@stores/voiceStore";
-import { AudioLevelChecker } from "./audio-level-checker";
-import type { AppSettings } from "@/types";
-import { AudioSourcePlayer } from "./audio-source-player";
-import { VoiceInputDevice } from "./voice-input-device";
-import type { Consumer, Producer } from "mediasoup-client/types";
 import { produce } from "immer";
+
+import type { AppSettings } from "@/types";
+
+import { AudioLevelChecker } from "./audio-level-checker";
+import { AudioSourcePlayer } from "./audio-source-player";
 import { VoiceDebugger } from "./voice-debugger";
+import { VoiceInputDevice } from "./voice-input-device";
 
 export class VoiceBridge extends Voice {
    public readonly audioSourcePlayers: AudioSourcePlayer[] = [];

@@ -1,14 +1,16 @@
 import { useDeleteDMChannel } from "@hooks/mutations/useDeleteDMChannel";
 import { ChannelType, type DirectChannel, type Snowflake } from "@huginn/shared";
+import { getChannelsOptions } from "@lib/queries";
+import { findChannel } from "@lib/query-utils";
+import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
-import { useUsers } from "./userHooks";
-import { findChannel } from "@lib/query-utils";
-import { getChannelsOptions } from "@lib/queries";
-import { useClient } from "@stores/clientStore";
-import type { AppDirectChannel, AppUser } from "@/types";
 import { useNavigate, useParams } from "@tanstack/react-router";
+import { useMemo } from "react";
+
+import type { AppDirectChannel, AppUser } from "@/types";
+
+import { useUsers } from "./userHooks";
 
 export function useChannel(channelId?: Snowflake, guildId = "@me") {
    const client = useClient();
@@ -50,10 +52,7 @@ export function useSafeDeleteDMChannel(channelId?: Snowflake, channelType?: Dire
    const { updateModals } = useModals();
 
    function tryMutate() {
-      if (!channelId) {
-         return;
-      }
-
+      if (!channelId) return;
       if (channelType === ChannelType.GROUP_DM) {
          updateModals({
             info: {

@@ -1,7 +1,8 @@
 import type { Snowflake } from "@huginn/shared";
+
 import { Prisma, prisma } from "#database";
-import { DBErrorType } from "#types";
 import { DBError, isDBError } from "#elysia-errors";
+import { DBErrorType } from "#types";
 
 export function assertError(error: Error | null, type: DBErrorType) {
    // let actualError = error;

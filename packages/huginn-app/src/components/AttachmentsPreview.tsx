@@ -1,6 +1,8 @@
-import type { AttachmentType } from "@/types";
 import { Transition } from "@headlessui/react";
 import { AnimatePresence, type Variants, motion } from "motion/react";
+
+import type { AttachmentType } from "@/types";
+
 import Tooltip from "./tooltip/Tooltip";
 
 export default function AttachmentsPreview(props: { attachments: AttachmentType[]; onRemove: (id: number) => void }) {
@@ -16,8 +18,8 @@ export default function AttachmentsPreview(props: { attachments: AttachmentType[
 
    return (
       <Transition show={props.attachments.length !== 0}>
-         <div className="data border-surface bg-surface-deep data-closed:h-0 data-closed:py-0 data-closed:opacity-0 h-[238px] overflow-hidden rounded-xl rounded-b-none border-2 border-b-0 px-2.5 py-2.5 pb-0 duration-200">
-            <div className="scroll-alternative-x relative flex h-full gap-x-5 overflow-y-hidden overflow-x-scroll px-2.5 py-2.5 pb-0">
+         <div className="data border-surface bg-surface-deep h-[238px] overflow-hidden rounded-xl rounded-b-none border-2 border-b-0 px-2.5 py-2.5 pb-0 duration-200 data-closed:h-0 data-closed:py-0 data-closed:opacity-0">
+            <div className="scroll-alternative-x relative flex h-full gap-x-5 overflow-x-scroll overflow-y-hidden px-2.5 py-2.5 pb-0">
                <AnimatePresence mode="popLayout">
                   {props.attachments.map((x) => (
                      <motion.div
@@ -30,7 +32,7 @@ export default function AttachmentsPreview(props: { attachments: AttachmentType[
                         exit="exit"
                         className="bg-surface relative flex h-48 w-48 shrink-0 flex-col rounded-lg p-2"
                      >
-                        <div className="bg-surface absolute -right-2 -top-2 overflow-hidden rounded-md shadow-xl">
+                        <div className="bg-surface absolute -top-2 -right-2 overflow-hidden rounded-md shadow-xl">
                            <Tooltip>
                               <Tooltip.Trigger className="hover:bg-surface-alt/50 p-1.5">
                                  <IconMingcuteEdit2Fill className="text-text size-5" />

@@ -1,4 +1,5 @@
 import type { Prisma } from "#database";
+
 import { type BigIntToString, type Snowflake } from "@huginn/shared";
 
 export type UserArgs = Prisma.UserDefaultArgs;
@@ -44,7 +45,9 @@ export const selectPrivateUser = {
 } satisfies Prisma.UserSelect;
 
 export const selectChannelRecipients = {
-   recipients: { select: { id: true, avatar: true, displayName: true, flags: true, username: true } },
+   recipients: {
+      select: { id: true, avatar: true, displayName: true, flags: true, username: true },
+   },
 } satisfies Prisma.ChannelSelect;
 
 export const omitChannelRecipient = (id: Snowflake) => ({ recipients: { where: { id: { not: BigInt(id) } } } }) satisfies Prisma.ChannelSelect;
@@ -151,7 +154,10 @@ export const selectRelationshipUser = {
 } satisfies Prisma.RelationshipSelect;
 
 export const omitMessageAuthorId = { authorId: true } satisfies Prisma.MessageOmit;
-export const omitRelationshipUserIds = { userId: true, ownerId: true } satisfies Prisma.RelationshipOmit;
+export const omitRelationshipUserIds = {
+   userId: true,
+   ownerId: true,
+} satisfies Prisma.RelationshipOmit;
 
 export const selectKnownApplication = {
    id: true,

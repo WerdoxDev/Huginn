@@ -1,13 +1,28 @@
+import type { TwitchOAuthResult } from "#utils/types";
+
 import { envs } from "#setup";
 import { serverFetch } from "#utils/server-request";
-import type { TwitchOAuthResult } from "#utils/types";
 import { prisma } from "@huginn/backend-shared/database/index";
 
-const knownApplications = await prisma.knownApplication.findMany({ where: { igdbId: { not: null } } });
+const knownApplications = await prisma.knownApplication.findMany({
+   where: { igdbId: { not: null } },
+});
 
-type IGDBSearchResult = { id: number; name: string; rating: number; url: string; alternative_names?: Array<{ name: string }> };
-const search = new URLSearchParams({ client_id: envs.IGDB_CLIENT_ID!, client_secret: envs.IGDB_CLIENT_SECRET!, grant_type: "client_credentials" });
-const result: TwitchOAuthResult = await serverFetch("https://id.twitch.tv/oauth2/token", "POST", { query: search });
+type IGDBSearchResult = {
+   id: number;
+   name: string;
+   rating: number;
+   url: string;
+   alternative_names?: Array<{ name: string }>;
+};
+const search = new URLSearchParams({
+   client_id: envs.IGDB_CLIENT_ID!,
+   client_secret: envs.IGDB_CLIENT_SECRET!,
+   grant_type: "client_credentials",
+});
+const result: TwitchOAuthResult = await serverFetch("https://id.twitch.tv/oauth2/token", "POST", {
+   query: search,
+});
 const token = result.access_token;
 
 let searchResult: IGDBSearchResult[] = await serverFetch("https://api.igdb.com/v4/games", "POST", {

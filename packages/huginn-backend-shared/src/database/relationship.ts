@@ -1,6 +1,6 @@
+import { assertExists, assertId, assertObj, prisma, type RelationshipArgs, type RelationshipPayload, Prisma } from "#database";
 import { DBErrorType } from "#types";
 import { RelationshipType, type Snowflake, WorkerID, idFix, snowflake } from "@huginn/shared";
-import { assertExists, assertId, assertObj, prisma, type RelationshipArgs, type RelationshipPayload, Prisma } from "#database";
 
 export const relationshipExtension = Prisma.defineExtension({
    model: {
@@ -39,7 +39,9 @@ export const relationshipExtension = Prisma.defineExtension({
 
             assertId(methodName, ownerId, userId);
 
-            const relation = await prisma.relationship.findFirst({ where: { userId: BigInt(userId), ownerId: BigInt(ownerId) } });
+            const relation = await prisma.relationship.findFirst({
+               where: { userId: BigInt(userId), ownerId: BigInt(ownerId) },
+            });
             assertObj(methodName, relation, DBErrorType.NULL_RELATIONSHIP, `${ownerId}>${userId}`);
 
             const oppositeRelation = await prisma.relationship.findFirst({
@@ -48,7 +50,9 @@ export const relationshipExtension = Prisma.defineExtension({
             assertObj(methodName, oppositeRelation, DBErrorType.NULL_RELATIONSHIP, `${userId}>${ownerId}`);
 
             const deleteRelation = prisma.relationship.delete({ where: { id: relation?.id } });
-            const deleteOppositeRelation = prisma.relationship.delete({ where: { id: oppositeRelation?.id } });
+            const deleteOppositeRelation = prisma.relationship.delete({
+               where: { id: oppositeRelation?.id },
+            });
 
             await prisma.$transaction([deleteRelation, deleteOppositeRelation]);
          },

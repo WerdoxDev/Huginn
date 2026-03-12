@@ -1,10 +1,10 @@
 import GuildsBar from "@components/GuildsBar";
 import WebsocketProviders from "@components/websocket/WebsocketProviders";
+import { clientStore } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
-import { useEffect } from "react";
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
-import { clientStore } from "@stores/clientStore";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/_app/_main")({
    component: MainLayoutComponent,
@@ -12,6 +12,7 @@ export const Route = createFileRoute("/_app/_main")({
       const client = clientStore.getState().client;
       if (!client || client?.gateway.status !== "authenticated") {
          sessionStorage.setItem("redirect", JSON.stringify({ pathname: location.pathname, requiresAuth: true }));
+         console.log("TO /");
          throw redirect({ to: "/" });
       }
    },

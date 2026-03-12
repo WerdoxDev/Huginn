@@ -1,11 +1,14 @@
+import type { Snowflake } from "@huginn/shared";
+
 import { TabPanel } from "@headlessui/react";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
 import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship";
-import type { Snowflake } from "@huginn/shared";
 import { RelationshipType } from "@huginn/shared";
 import { useMemo } from "react";
+
 import type { AppRelationship, AppUser } from "@/types";
+
 import FriendItem from "./FriendItem";
 
 export default function PendingFriendsTab(props: { friends: AppRelationship[] }) {

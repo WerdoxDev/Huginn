@@ -1,7 +1,9 @@
-import { clamp, constants, EventEmitter, log } from "@huginn/shared";
-import type { VoiceTransportManager } from "./voice-transport-manager";
 import type { RtpEncodingParameters } from "mediasoup-client/types";
+
+import { clamp, constants, EventEmitter, log } from "@huginn/shared";
+
 import type { VoiceStreamOptions } from ".";
+import type { VoiceTransportManager } from "./voice-transport-manager";
 
 type Events = {
    video_constraints_updated: { width?: number; height?: number; frameRate?: number };
@@ -40,7 +42,10 @@ export class VoiceStreamManager extends EventEmitter<Events> {
                  { scaleResolutionDownBy: 1, maxBitrate: maxVideoBitrate, scalabilityMode },
               ]
             : [{ scaleResolutionDownBy: 1, maxBitrate: maxVideoBitrate, scalabilityMode }];
-         await this.transport.createProducer("stream_video", videoTrack, { encodings, codecOptions: { videoGoogleStartBitrate: 1000 } });
+         await this.transport.createProducer("stream_video", videoTrack, {
+            encodings,
+            codecOptions: { videoGoogleStartBitrate: 1000 },
+         });
       }
 
       if (audioTrack) {
@@ -84,7 +89,11 @@ export class VoiceStreamManager extends EventEmitter<Events> {
       log("api:voice-stream", "default", `video constraints updated: ${JSON.stringify(constraints)}`);
 
       const newSettings = track.getSettings();
-      this.emit("video_constraints_updated", { width: newSettings.width, height: newSettings.height, frameRate: newSettings.frameRate });
+      this.emit("video_constraints_updated", {
+         width: newSettings.width,
+         height: newSettings.height,
+         frameRate: newSettings.frameRate,
+      });
    }
 
    /**

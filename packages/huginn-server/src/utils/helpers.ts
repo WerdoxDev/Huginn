@@ -1,3 +1,4 @@
+import { envs } from "#setup";
 import { prisma } from "@huginn/backend-shared/database";
 import {
    selectChannelDefaults,
@@ -20,8 +21,8 @@ import {
    pick,
    type Snowflake,
 } from "@huginn/shared";
+
 import { dispatchToTopic } from "./gateway-utils";
-import { envs } from "#setup";
 
 export async function dispatchMessage(options: {
    authorId: Snowflake;
@@ -91,7 +92,10 @@ export function filterMessage<T extends MessagePayload<{ select: typeof selectAl
    return {
       ...omit(message, ["call", "messageReference"]),
       ...(message.call !== null && {
-         call: { endedTimestamp: message.call.endedTimestamp, participants: message.call.participants.map((x) => x.id) } as APIMessageCall,
+         call: {
+            endedTimestamp: message.call.endedTimestamp,
+            participants: message.call.participants.map((x) => x.id),
+         } as APIMessageCall,
       }),
       ...(message.messageReference !== null && {
          messageReference: omit(message.messageReference, ["message"]) as APIMessageReference,
@@ -119,7 +123,9 @@ export function filterChannel<T extends ChannelPayload<{ select: typeof selectCh
 export function filterKnownApplication<T extends KnownApplicationPayload<{ select: typeof selectKnownApplication }>>(knownApplication: T) {
    return {
       ...omit(knownApplication, ["igdbId", "contributorId"]),
-      ...(knownApplication.contributorId !== null && { contributorId: knownApplication.contributorId }),
+      ...(knownApplication.contributorId !== null && {
+         contributorId: knownApplication.contributorId,
+      }),
       ...(knownApplication.igdbId !== null && { igdbId: knownApplication.igdbId }),
    };
 }

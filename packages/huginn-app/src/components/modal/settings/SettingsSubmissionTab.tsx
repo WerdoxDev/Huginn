@@ -1,4 +1,5 @@
-import type { DropdownItem, SettingsTabProps } from "@/types";
+import type { ProcessInfo } from "native-addon";
+
 import LoadingButton from "@components/button/LoadingButton";
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
 import Tooltip from "@components/tooltip/Tooltip";
@@ -6,13 +7,14 @@ import { useSubmitKnownApplication } from "@hooks/mutations/useSubmitKnownApplic
 import { JsonCode } from "@huginn/shared";
 import { APIMessages } from "@lib/error-messages";
 import { isWorthyHuginnError } from "@lib/utils";
-import { useStorage } from "@stores/storageStore";
 import { useModals } from "@stores/modalsStore";
+import { useStorage } from "@stores/storageStore";
 import { useThisUser } from "@stores/userStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import moment from "moment";
-import type { ProcessInfo } from "native-addon";
 import { useEffect, useMemo, useState } from "react";
+
+import type { DropdownItem, SettingsTabProps } from "@/types";
 
 type OpenApplication = ProcessInfo & { displayName?: string; icon?: string };
 
@@ -108,7 +110,9 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
          });
       } catch (e) {
          if (isWorthyHuginnError(e) && e.code === JsonCode.KNOWN_APPLICATION_EXISTS) {
-            updateModals({ info: { status: "error", text: APIMessages[e.code], title: "Failed!", isOpen: true } });
+            updateModals({
+               info: { status: "error", text: APIMessages[e.code], title: "Failed!", isOpen: true },
+            });
          } else {
             updateModals({
                info: {

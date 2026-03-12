@@ -1,8 +1,8 @@
+import { gateway } from "#setup";
+import { dispatchCallMessage } from "#utils/helpers";
 import { missingAccess, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
 import { constants, Errors } from "@huginn/shared";
-import { gateway } from "#setup";
-import { dispatchCallMessage } from "#utils/helpers";
 import Elysia, { t } from "elysia";
 
 const schema = t.Object({ recipients: t.Nullable(t.Array(t.String())) });
@@ -11,7 +11,10 @@ export const postCallRing = new Elysia().use(verifyJwt()).post(
    "/api/channels/:channelId/call/ring",
    async ({ body, params: { channelId }, status, tokenPayload }) => {
       const channel = await prisma.channel.getById(channelId, {
-         select: { id: true, recipients: { where: { id: { not: BigInt(tokenPayload.id) } }, select: { id: true } } },
+         select: {
+            id: true,
+            recipients: { where: { id: { not: BigInt(tokenPayload.id) } }, select: { id: true } },
+         },
       });
 
       if (!(await prisma.user.hasChannel(tokenPayload.id, channelId))) {

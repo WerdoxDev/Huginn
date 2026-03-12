@@ -4,6 +4,7 @@ import { useReadStates } from "@stores/readStatesStore";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion, type Variants } from "motion/react";
 import { useMemo } from "react";
+
 import GuildButton from "./button/GuildButton";
 import HomeButton from "./button/HomeButton";
 import UnreadChannel from "./UnreadChannel";

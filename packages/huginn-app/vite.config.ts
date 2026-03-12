@@ -1,15 +1,15 @@
-import * as path from "node:path";
-// import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import tailwindcss from "@tailwindcss/vite";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import basicSsl from "@vitejs/plugin-basic-ssl";
 import react from "@vitejs/plugin-react";
+import * as path from "node:path";
 import AutoImport from "unplugin-auto-import/vite";
 import IconsResolver from "unplugin-icons/resolver";
 import Icons from "unplugin-icons/vite";
-import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig } from "vite";
-import basicSsl from "@vitejs/plugin-basic-ssl";
+import { VitePWA } from "vite-plugin-pwa";
+
 import { version } from "./package.json";
-import { tanstackRouter } from "@tanstack/router-plugin/vite";
 
 const reactCompilerConfig = { target: "19" };
 

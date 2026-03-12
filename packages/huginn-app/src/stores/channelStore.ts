@@ -1,12 +1,18 @@
-import type { UploadProgress } from "@/types";
 import type { Snowflake } from "@huginn/shared";
+
 import { produce } from "immer";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 
+import type { UploadProgress } from "@/types";
+
 const initialStore = () => ({
    savedScrolls: new Map<Snowflake, number>(),
-   currentVisibleMessages: [] as Array<{ messageId: Snowflake; messageTimestamp: number; channelId: Snowflake }>,
+   currentVisibleMessages: [] as Array<{
+      messageId: Snowflake;
+      messageTimestamp: number;
+      channelId: Snowflake;
+   }>,
    messageUploadProgresses: [] as UploadProgress[],
    currentEditingMessageId: undefined as Snowflake | undefined,
    currentReplyingMessageId: undefined as Snowflake | undefined,

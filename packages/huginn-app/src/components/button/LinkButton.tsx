@@ -1,6 +1,7 @@
-import clsx from "clsx";
 import type { MouseEventHandler, ReactNode } from "react";
+
 import { Link, type LinkProps } from "@tanstack/react-router";
+import clsx from "clsx";
 
 export default function LinkButton(
    props: LinkProps & {

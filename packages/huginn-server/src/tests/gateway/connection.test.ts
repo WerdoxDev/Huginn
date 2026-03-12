@@ -1,6 +1,11 @@
-import { describe, expect, test } from "bun:test";
-import { ChannelType, GatewayCode, type GatewayIdentify, GatewayOperations, type GatewayResume, RelationshipType } from "@huginn/shared";
 import { gateway } from "#setup";
+import {
+   expectChannelExactRecipients,
+   expectChannelExactSchema,
+   expectRelationshipExactSchema,
+   expectUserExactSchema,
+   expectUserSettingsExactSchema,
+} from "#tests/expect-utils";
 import {
    createTestChannel,
    createTestRelationships,
@@ -12,13 +17,8 @@ import {
    testIsOpcode,
    wsSend,
 } from "#tests/utils";
-import {
-   expectChannelExactRecipients,
-   expectChannelExactSchema,
-   expectRelationshipExactSchema,
-   expectUserExactSchema,
-   expectUserSettingsExactSchema,
-} from "#tests/expect-utils";
+import { ChannelType, GatewayCode, type GatewayIdentify, GatewayOperations, type GatewayResume, RelationshipType } from "@huginn/shared";
+import { describe, expect, test } from "bun:test";
 
 describe("Connection", () => {
    test("should close the websocket with code 4001 (UNKNOWN_OPCODE) when the sent message has an unknown op code", async (done) => {
@@ -168,7 +168,12 @@ describe("Connection", () => {
 
       for (let i = 0; i < 10; i++) {
          // @ts-ignore
-         gateway.sendToTopic(user.id.toString(), { op: GatewayOperations.DISPATCH, s: 0, t: "test", d: i });
+         gateway.sendToTopic(user.id.toString(), {
+            op: GatewayOperations.DISPATCH,
+            s: 0,
+            t: "test",
+            d: i,
+         });
       }
 
       const ws2 = await getWebSocket();

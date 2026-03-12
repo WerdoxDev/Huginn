@@ -2,7 +2,9 @@ import { useHuginnWindow } from "@stores/windowStore";
 import markdownit from "markdown-it";
 import moment from "moment";
 import { useMemo } from "react";
+
 import news from "@/assets/news/news.md?raw";
+
 import HuginnDialogPanel from "./HuginnDialogPanel";
 
 export default function NewsModal() {

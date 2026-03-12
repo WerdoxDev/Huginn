@@ -1,6 +1,7 @@
+import type { ReactNode } from "react";
+
 import Tooltip from "@components/tooltip/Tooltip";
 import clsx from "clsx";
-import type { ReactNode } from "react";
 
 const colors = {
    none: "",

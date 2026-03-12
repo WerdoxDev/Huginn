@@ -19,7 +19,12 @@ export function MultiSelect(props: {
    label: string;
    options: Record<string, string[]>;
    focused?: boolean;
-   style?: { focusedTextColor?: string; focusedHintTextColor?: string; selectedIndicatorColor?: string; selectedTextColor?: string };
+   style?: {
+      focusedTextColor?: string;
+      focusedHintTextColor?: string;
+      selectedIndicatorColor?: string;
+      selectedTextColor?: string;
+   };
    onChange?: (selected: Record<string, string[]>) => void;
 }) {
    const [isOpen, setIsOpen] = useState(false);
@@ -181,7 +186,14 @@ export function MultiSelect(props: {
    return (
       <multiselect style={{ flexDirection: "column", overflow: "hidden" }} ref={root} focused={props.focused} id={props.label}>
          <box style={{ flexDirection: "row", columnGap: 1 }}>
-            <text style={{ attributes: TextAttributes.BOLD, fg: props.focused ? props.style?.focusedTextColor : undefined }}>{props.label}:</text>
+            <text
+               style={{
+                  attributes: TextAttributes.BOLD,
+                  fg: props.focused ? props.style?.focusedTextColor : undefined,
+               }}
+            >
+               {props.label}:
+            </text>
             {props.focused && <text style={{ fg: props.style?.focusedHintTextColor }}>(press Enter to select)</text>}
          </box>
          <box style={{ width: 50, padding: 0 }}>
@@ -196,7 +208,13 @@ export function MultiSelect(props: {
                   {getSelectedText()}
                </text>
             ) : (
-               <box style={{ border: true, borderStyle: "rounded", borderColor: props.style?.focusedTextColor }}>
+               <box
+                  style={{
+                     border: true,
+                     borderStyle: "rounded",
+                     borderColor: props.style?.focusedTextColor,
+                  }}
+               >
                   {getDisplayItems().map((item, idx) => {
                      const isFocused =
                         item.option === keys[focusedPath.option] &&
@@ -226,7 +244,11 @@ export function MultiSelect(props: {
                               <text style={{ fg: props.style?.selectedIndicatorColor }}>{isSelected ? "x" : isPartiallySelected ? "-" : " "}</text>
                               <text>]</text>
                            </box>
-                           <text style={{ fg: isSelected ? props.style?.selectedTextColor : undefined }}>
+                           <text
+                              style={{
+                                 fg: isSelected ? props.style?.selectedTextColor : undefined,
+                              }}
+                           >
                               {" "}
                               {item.type === "sub" ? item.sub : item.option}
                            </text>

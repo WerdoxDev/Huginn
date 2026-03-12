@@ -1,6 +1,7 @@
 import type { Snowflake } from "@huginn/shared";
 import type { BaseEditor, BaseRange, Descendant } from "slate";
 import type { ReactEditor } from "slate-react";
+
 import type { electronAPI } from "../electron/preload";
 
 type CustomEditor = BaseEditor & ReactEditor;

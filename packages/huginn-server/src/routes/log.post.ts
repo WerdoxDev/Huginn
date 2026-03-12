@@ -1,7 +1,7 @@
-import fs from "node:fs/promises";
-import pathe from "pathe";
 import { CacheStorage } from "@huginn/shared";
 import Elysia, { t } from "elysia";
+import fs from "node:fs/promises";
+import pathe from "pathe";
 
 const schema = t.Object({
    clientId: t.String(),
@@ -26,7 +26,14 @@ const schema = t.Object({
    ),
 });
 
-type GeoData = { ip?: string; country?: string; city?: string; region?: string; timezone?: string; org?: string };
+type GeoData = {
+   ip?: string;
+   country?: string;
+   city?: string;
+   region?: string;
+   timezone?: string;
+   org?: string;
+};
 const ipCache = new CacheStorage<string, GeoData>(undefined);
 
 export const postLog = new Elysia().post(
@@ -39,7 +46,13 @@ export const postLog = new Elysia().post(
          geoData = await ipCache.cacheOrGet(ip, async () => {
             const data = await (await fetch(`https://ipapi.co/${ip}/json`)).json();
 
-            return { country: data?.country, city: data?.city, timezone: data?.timezone, region: data?.region, org: data?.org };
+            return {
+               country: data?.country,
+               city: data?.city,
+               timezone: data?.timezone,
+               region: data?.region,
+               org: data?.org,
+            };
          });
          geoData.ip = ip;
       }

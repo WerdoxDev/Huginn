@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
-import type { ClientFile, ClientFileWithUser, DateDirectory } from "./types";
 import { TextAttributes, type SelectOption } from "@opentui/core";
+import { useEffect, useMemo, useState } from "react";
+
+import type { ClientFile, ClientFileWithUser, DateDirectory } from "./types";
+
 import { fetchPosthogUserInfo } from "./api";
 
 // For separating client id from file number in a log file name
@@ -20,7 +22,11 @@ export default function ClientSelector(props: { dateDirectory: DateDirectory; on
                   const uuid = match[1];
                   if (!uuid) return acc;
 
-                  acc[uuid] ??= { clientId: uuid, numOfFiles: 0, directory: props.dateDirectory.name };
+                  acc[uuid] ??= {
+                     clientId: uuid,
+                     numOfFiles: 0,
+                     directory: props.dateDirectory.name,
+                  };
                   acc[uuid].numOfFiles++;
 
                   return acc;
@@ -40,7 +46,11 @@ export default function ClientSelector(props: { dateDirectory: DateDirectory; on
                const info = await fetchPosthogUserInfo(clientFile.clientId);
                return { ...clientFile, username: info.username, isLoading: false };
             } catch (e) {
-               return { ...clientFile, isLoading: false, error: e instanceof Error ? e.message : "Unknown Error" };
+               return {
+                  ...clientFile,
+                  isLoading: false,
+                  error: e instanceof Error ? e.message : "Unknown Error",
+               };
             }
          }),
       ).then((r) => setClientFilesWithUsers(r));
@@ -68,7 +78,15 @@ export default function ClientSelector(props: { dateDirectory: DateDirectory; on
 
    return (
       <box>
-         <text style={{ alignSelf: "flex-start", attributes: TextAttributes.BOLD | TextAttributes.DIM, marginTop: 3 }}>Choose a Client ID:</text>
+         <text
+            style={{
+               alignSelf: "flex-start",
+               attributes: TextAttributes.BOLD | TextAttributes.DIM,
+               marginTop: 3,
+            }}
+         >
+            Choose a Client ID:
+         </text>
          <box style={{ border: true, height: "100%", borderStyle: "rounded" }}>
             <select
                options={options}

@@ -1,7 +1,8 @@
-import type { MediaSource } from "@/types";
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useCallback, useEffect, useState } from "react";
+
+import type { MediaSource } from "@/types";
 
 export function useMediaSources() {
    const client = useClient();

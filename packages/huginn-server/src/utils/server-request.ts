@@ -1,4 +1,6 @@
+import { envs } from "#setup";
 import { createToken } from "@huginn/backend-shared";
+import { logCDNRequest } from "@huginn/runtime-shared";
 import {
    HTTPError,
    type InternalRequest,
@@ -9,8 +11,6 @@ import {
    parseResponse,
    resolveRequest,
 } from "@huginn/shared";
-import { envs } from "#setup";
-import { logCDNRequest } from "@huginn/runtime-shared";
 
 export async function cdnUpload<T>(fullRoute: RouteLike, options: RequestData = {}) {
    if (!envs.CDN_LOCAL_URL) {

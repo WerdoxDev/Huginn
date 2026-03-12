@@ -2,15 +2,17 @@ import { useSafeDeleteDMChannel } from "@hooks/api-hooks/channelHooks";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { ChannelType } from "@huginn/shared";
 import { useContextMenu } from "@stores/contextMenuStore";
+import { usePresence } from "@stores/presenceStore";
+import { Link, useParams, useRouter, useRouterState } from "@tanstack/react-router";
 import clsx from "clsx";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, type MouseEvent } from "react";
+
 import type { AppDirectChannel } from "@/types";
+
+import ActivityPreview from "./ActivityPreview";
 import ChannelIcon from "./ChannelIcon";
 import LoadingIcon from "./LoadingIcon";
 import UserAvatar from "./UserAvatar";
-import { usePresence } from "@stores/presenceStore";
-import ActivityPreview from "./ActivityPreview";
-import { Link, useParams, useRouter, useRouterState } from "@tanstack/react-router";
 
 export default function DirectMessageChannel(props: { channel: AppDirectChannel }) {
    const { open: openContextMenu, context, data } = useContextMenu("dm_channel");
@@ -25,6 +27,11 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel 
 
    const isLoading = state.isLoading && state.location.pathname === `/channels/@me/${props.channel.id}`;
 
+   function handleLeave(e: MouseEvent) {
+      e.preventDefault();
+      tryMutate();
+   }
+
    return (
       <li
          onContextMenu={(e) => openContextMenu(props.channel, e)}
@@ -34,7 +41,7 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel 
          <Link
             preload="intent"
             className={clsx(
-               "hover:bg-surface active:bg-surface group-data-context:bg-surface flex w-full min-w-0 shrink items-center p-1.5",
+               "group-data-context:bg-surface hover:bg-surface active:bg-surface flex w-full min-w-0 shrink items-center p-1.5",
                isLoading && "bg-white/10!",
             )}
             activeProps={{ className: "bg-white/10" }}
@@ -76,7 +83,7 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel 
                )}
             </div>
             {!isLoading ? (
-               <button type="button" className="group/close mr-2 hidden shrink-0 cursor-pointer group-hover:block" onClick={tryMutate}>
+               <button className="group/close mr-2 hidden shrink-0 cursor-pointer group-hover:block" onClick={handleLeave}>
                   <IconMingcuteCloseFill className="text-text/50 group-hover/close:text-text" />
                </button>
             ) : (

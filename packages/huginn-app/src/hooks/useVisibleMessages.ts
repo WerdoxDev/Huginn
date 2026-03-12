@@ -1,7 +1,9 @@
 import type { Snowflake } from "@huginn/shared";
+
 import { useChannelStore } from "@stores/channelStore";
 import moment from "moment";
 import { useCallback, useEffect } from "react";
+
 import type { AppMessage } from "@/types";
 
 export function useVisibleMessages(channelId: Snowflake, sortedMessages: AppMessage[]) {

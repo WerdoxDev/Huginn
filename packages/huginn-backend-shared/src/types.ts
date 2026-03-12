@@ -17,7 +17,10 @@ export enum CDNErrorType {
    INVALID_FILE_FORMAT = "INVALID_FILE_FORMAT",
 }
 
-export type DBEmbed = Omit<APIEmbed, "thumbnail" | "video"> & { thumbnail?: DBThumbnail; video?: DBVideo };
+export type DBEmbed = Omit<APIEmbed, "thumbnail" | "video"> & {
+   thumbnail?: DBThumbnail;
+   video?: DBVideo;
+};
 export type DBThumbnail = Required<APIThumbnail>;
 export type DBVideo = Required<APIVideo>;
 

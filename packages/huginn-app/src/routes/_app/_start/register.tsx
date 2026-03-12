@@ -1,19 +1,20 @@
+import type { APIPostRegisterJSONBody, OAuthType } from "@huginn/shared";
+
 import HuginnButton from "@components/button/HuginnButton";
 import LinkButton from "@components/button/LinkButton";
 import LoadingButton from "@components/button/LoadingButton";
 import HuginnInput from "@components/input/HuginnInput";
 import PasswordInput from "@components/input/PasswordInput";
 import StartWrapper from "@components/StartWrapper";
+import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useOAuth } from "@hooks/useOAuth";
-import type { APIPostRegisterJSONBody, OAuthType } from "@huginn/shared";
+import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import { useClient } from "@stores/clientStore";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
-import { useHuginnForm } from "@hooks/useHuginnForm";
-import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
 // import { usePostHog } from "posthog-js/react";
 
 type Inputs = {
@@ -73,7 +74,10 @@ function RegisterComponent() {
       let search: URLSearchParams | undefined;
 
       if (result?.access_token && result.refresh_token) {
-         search = new URLSearchParams({ access_token: result.access_token, refresh_token: result.refresh_token });
+         search = new URLSearchParams({
+            access_token: result.access_token,
+            refresh_token: result.refresh_token,
+         });
       } else if (result?.oauth_token) {
          search = new URLSearchParams({ oauth_token: result.oauth_token });
       }

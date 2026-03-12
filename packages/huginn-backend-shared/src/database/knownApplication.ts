@@ -9,7 +9,10 @@ export const knownApplicationExtension = Prisma.defineExtension({
             const methodName = "knownApplication.getAll";
             const knownApplications = await prisma.knownApplication.findMany({
                where: since
-                  ? { OR: [{ updatedAt: { gte: since } }, { createdAt: { gte: since } }, { deletedAt: { gte: since } }], active: true }
+                  ? {
+                       OR: [{ updatedAt: { gte: since } }, { createdAt: { gte: since } }, { deletedAt: { gte: since } }],
+                       active: true,
+                    }
                   : { deletedAt: null, active: true },
                ...args,
             });
@@ -18,7 +21,13 @@ export const knownApplicationExtension = Prisma.defineExtension({
             return idFix(knownApplications) as KnownApplicationPayload<Args>[];
          },
          async createOne<Args extends KnownApplicationArgs>(
-            options: { names: string[]; exeName: string; contributorId?: Snowflake; igdbId?: number; isActive: boolean },
+            options: {
+               names: string[];
+               exeName: string;
+               contributorId?: Snowflake;
+               igdbId?: number;
+               isActive: boolean;
+            },
             args?: Args,
          ) {
             const methodName = "knownApplication.createOne";

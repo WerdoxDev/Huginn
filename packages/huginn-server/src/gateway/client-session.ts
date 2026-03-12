@@ -1,6 +1,7 @@
+import type { GatewayIdentifyProperties, GatewayPayload } from "@huginn/shared";
+
 import { CommonClientSession } from "@huginn/backend-shared";
 import { prisma, selectRelationshipUser } from "@huginn/backend-shared/database";
-import type { GatewayIdentifyProperties, GatewayPayload } from "@huginn/shared";
 import { ChannelType, RelationshipType } from "@huginn/shared";
 
 export class ClientSession extends CommonClientSession<GatewayPayload, GatewayIdentifyProperties> {
@@ -16,7 +17,9 @@ export class ClientSession extends CommonClientSession<GatewayPayload, GatewayId
       const userId = this.user?.id;
       this.subscribe(userId);
 
-      const relationships = await prisma.relationship.getUserRelationships(userId, { select: { ...selectRelationshipUser, type: true } });
+      const relationships = await prisma.relationship.getUserRelationships(userId, {
+         select: { ...selectRelationshipUser, type: true },
+      });
       const channels = await prisma.channel.getUserChannels(userId, true, {
          select: { id: true, recipients: { select: { id: true } }, type: true },
       });

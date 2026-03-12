@@ -25,6 +25,7 @@ import {
 import { omit } from "@huginn/shared";
 import clsx from "clsx";
 import { createContext, type HTMLProps, type RefObject, Suspense, useContext, useEffect, useRef, useState } from "react";
+
 import type { ContextMenuItemProps, ContextMenuProps } from "@/types";
 
 const Context = createContext<{
@@ -168,7 +169,7 @@ function Menu(props: ContextMenuProps & HTMLProps<HTMLButtonElement>) {
                role="menuitem"
                data-open={isOpen ? "" : undefined}
                data-focus-inside={hasFocusInside ? "" : undefined}
-               className="rounded-xs outline-hidden focus:bg-primary-700 px-2 py-1 text-start text-sm text-white/90"
+               className="focus:bg-primary-700 rounded-xs px-2 py-1 text-start text-sm text-white/90 outline-hidden"
                {...getReferenceProps(
                   parent.getItemProps({
                      ...props,
@@ -202,7 +203,7 @@ function Menu(props: ContextMenuProps & HTMLProps<HTMLButtonElement>) {
                         <FloatingFocusManager context={context} modal={false} initialFocus={isNested ? -1 : 0} returnFocus={!isNested}>
                            <div
                               ref={refs.setFloating}
-                              className="outline-hidden z-998 scroll-surface scroll-super-thin flex min-w-28 flex-col overflow-y-scroll rounded-lg bg-zinc-900 p-2 pr-0 shadow-lg"
+                              className="scroll-surface scroll-super-thin z-998 flex min-w-28 flex-col overflow-y-scroll rounded-lg bg-zinc-900 p-2 pr-0 shadow-lg outline-hidden"
                               style={floatingStyles}
                               {...getFloatingProps()}
                            >
@@ -231,7 +232,7 @@ function Item(props: ContextMenuItemProps & React.ButtonHTMLAttributes<HTMLButto
          type="button"
          role="menuitem"
          className={clsx(
-            "outline-hidden flex shrink-0 cursor-pointer items-center justify-between gap-x-5 text-nowrap rounded-sm px-2 py-2 text-start text-sm disabled:cursor-not-allowed",
+            "flex shrink-0 cursor-pointer items-center justify-between gap-x-5 rounded-sm px-2 py-2 text-start text-sm text-nowrap outline-hidden disabled:cursor-not-allowed",
             !props.color || props.color === "default"
                ? "focus:bg-surface-alt text-white/90 disabled:text-white/50"
                : props.color === "negative" && "text-negative-100 focus:bg-negative-100/10 disabled:text-negative-100/50",

@@ -1,6 +1,8 @@
 import { type Snowflake, log } from "@huginn/shared";
-import type { Gateway } from "./gateway";
+
 import type { Voice } from ".";
+import type { Gateway } from "./gateway";
+
 import { VoiceState } from "./voice-state";
 
 export class VoiceManager<V extends Voice = Voice> {
@@ -39,7 +41,13 @@ export class VoiceManager<V extends Voice = Voice> {
                connectionData.channelId,
                connectionData.guildId,
             );
-            d.callback({ isAudioDeafened, isAudioMuted, isCameraOn, isAudioStreaming, isScreenSharing });
+            d.callback({
+               isAudioDeafened,
+               isAudioMuted,
+               isCameraOn,
+               isAudioStreaming,
+               isScreenSharing,
+            });
 
             // oxlint-disable-next-line no-unused-vars
          } catch (e) {
@@ -92,7 +100,11 @@ export class VoiceManager<V extends Voice = Voice> {
       });
 
       this.voice.transport.on("reset", async () => {
-         await this.voiceState.updateGatewayVoiceState({ isCameraOn: false, isAudioStreaming: false, isScreenSharing: false });
+         await this.voiceState.updateGatewayVoiceState({
+            isCameraOn: false,
+            isAudioStreaming: false,
+            isScreenSharing: false,
+         });
       });
    }
 

@@ -1,5 +1,6 @@
-import { HTTPError, HuginnAPIError, type HuginnErrorData } from "@huginn/shared";
 import type Elysia from "elysia";
+
+import { HTTPError, HuginnAPIError, type HuginnErrorData } from "@huginn/shared";
 import { join } from "pathe";
 
 let _hostname = "";
@@ -62,10 +63,14 @@ export async function testHandler(
       try {
          // console.log(responseBody);
          const errorData = responseBody as HuginnErrorData;
-         error = new HuginnAPIError(errorData, errorData.code, response.status, method, path, { body });
+         error = new HuginnAPIError(errorData, errorData.code, response.status, method, path, {
+            body,
+         });
          // oxlint-disable-next-line no-unused-vars
       } catch (e) {
-         throw new HTTPError(response.status, await response.clone().text(), method, path, { body });
+         throw new HTTPError(response.status, await response.clone().text(), method, path, {
+            body,
+         });
       }
 
       if (error) {

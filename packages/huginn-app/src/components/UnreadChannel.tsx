@@ -1,11 +1,13 @@
+import type { RefObject } from "react";
+
 import { useChannel, useChannelRecipients } from "@hooks/api-hooks/channelHooks";
 import { ChannelType, type Snowflake } from "@huginn/shared";
-import type { RefObject } from "react";
+import { Link } from "@tanstack/react-router";
+
 import AttentionIndicator from "./AttentionIndicator";
 import ChannelIcon from "./ChannelIcon";
-import UserAvatar from "./UserAvatar";
 import Tooltip from "./tooltip/Tooltip";
-import { Link } from "@tanstack/react-router";
+import UserAvatar from "./UserAvatar";
 
 export default function UnreadChannel(props: { channelId: Snowflake; unreadCount: number; className?: string; ref?: RefObject<HTMLDivElement> }) {
    const channel = useChannel(props.channelId);

@@ -7,6 +7,7 @@ import {
    Routes,
 } from "@huginn/shared";
 import { encodeBase64 } from "@std/encoding";
+
 import type { Gateway } from "../gateway";
 import type { REST } from "../rest";
 
@@ -20,7 +21,11 @@ export class OAuthAPI {
    }
 
    public async confirmOAuth(body: APIPostOAuthConfirmJSONBody, identityToken: string): Promise<APIPostOAuthConfirmResult> {
-      return this.rest.post(Routes.confirmOAuth(), { body, auth: true, token: identityToken }) as Promise<APIPostOAuthConfirmResult>;
+      return this.rest.post(Routes.confirmOAuth(), {
+         body,
+         auth: true,
+         token: identityToken,
+      }) as Promise<APIPostOAuthConfirmResult>;
    }
 
    public getOAuthURL(type: OAuthType, flow: OAuthFlow, redirectUrl: string): string {

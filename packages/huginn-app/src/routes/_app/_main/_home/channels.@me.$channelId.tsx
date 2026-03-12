@@ -1,19 +1,20 @@
 import ChannelMessages from "@components/channels/ChannelMessages";
-import DirectChannelCall from "@components/channels/DirectChannelCall";
-import ChannelWithIdTopBar from "@components/channels/ChannelWithIdTopBar";
-import MessageBox from "@components/MessageBox";
-import { useErrorHandler } from "@hooks/useErrorHandler";
-import { getChannelsOptions, getMessagesOptions, queryClient } from "@lib/queries";
-import { clientStore, useClient } from "@stores/clientStore";
-import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { usePostHog } from "posthog-js/react";
-import { useEffect, useMemo, useState, type MouseEvent } from "react";
-import { useMobileMenuStore } from "@stores/mobileMenuStore";
 import ChannelSidebar from "@components/channels/ChannelSidebar";
+import ChannelWithIdTopBar from "@components/channels/ChannelWithIdTopBar";
+import DirectChannelCall from "@components/channels/DirectChannelCall";
+import MessageBox from "@components/MessageBox";
+import RouteErrorComponent from "@components/RouteErrorComponent";
+import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { ChannelType } from "@huginn/shared";
-import clsx from "clsx";
+import { getChannelsOptions, getMessagesOptions, queryClient } from "@lib/queries";
+import { clientStore, useClient } from "@stores/clientStore";
+import { useMobileMenuStore } from "@stores/mobileMenuStore";
+import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useParams, useRouter } from "@tanstack/react-router";
+import clsx from "clsx";
+import { usePostHog } from "posthog-js/react";
+import { useEffect, useMemo, useState, type MouseEvent } from "react";
 
 export const Route = createFileRoute("/_app/_main/_home/channels/@me/$channelId")({
    component: ChannelWithIdComponent,
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/_app/_main/_home/channels/@me/$channelId"
       const client = clientStore.getState().client;
       if (!client) return;
 
+      // throw new Error("OOOPS");
       // await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate loading time
       return await queryClient.ensureInfiniteQueryData(getMessagesOptions(queryClient, client, params.channelId as string));
    },
@@ -30,13 +32,11 @@ function ChannelWithIdComponent() {
    const { channelId } = useParams({ strict: false }) as { channelId: string };
    const client = useClient();
    const queryClient = useQueryClient();
-   const { error, data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, channelId));
+   const { data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, channelId));
    const channel = useSuspenseQuery(getChannelsOptions(client!, "@me")).data?.find((x: { id: string }) => x.id === channelId);
    const posthog = usePostHog();
    const isMobile = useIsMobile();
    const router = useRouter();
-
-   const handleServerError = useErrorHandler();
 
    const [recipientsVisible, setRecipientsVisible] = useState(true);
    const { resetToCenter } = useMobileMenuStore();
@@ -58,16 +58,6 @@ function ChannelWithIdComponent() {
    );
 
    useEffect(() => {
-      if (!channel) {
-         router.history.back();
-         return;
-      }
-      if (error) {
-         handleServerError(error);
-      }
-   }, [error]);
-
-   useEffect(() => {
       resetToCenter();
    }, [channel]);
 
@@ -81,10 +71,7 @@ function ChannelWithIdComponent() {
 
    async function onCallClick(e: MouseEvent) {
       e.stopPropagation();
-
-      if (!channel) {
-         return;
-      }
+      if (!channel) return;
 
       await client?.voiceManager.connectVoice(null, channel.id);
       await client?.channels.ring(channel.id, null);
@@ -93,32 +80,36 @@ function ChannelWithIdComponent() {
    }
 
    return (
-      channel && (
-         <div className="flex h-full flex-col">
-            <ChannelWithIdTopBar
-               channel={channel}
-               onRecipientsClick={onRecipientsClick}
-               onCallClick={onCallClick}
-               onClick={isMobile && channel.type === ChannelType.GROUP_DM ? onRecipientsClick : undefined}
-            />
-            <div className="flex h-full w-full overflow-hidden">
-               <div className="relative flex h-full w-full flex-col overflow-hidden">
-                  <div
-                     className={clsx(
-                        "absolute inset-0 z-10 bg-black/50 transition-all lg:pointer-events-none lg:z-auto lg:opacity-0",
-                        isRightOpen ? "opacity-100" : "pointer-events-none opacity-0",
-                     )}
-                     onClick={resetToCenter}
-                  />
-                  <DirectChannelCall channelId={channelId} />
-                  <ChannelMessages channelId={channelId} messages={sortedMessages} />
-                  <MessageBox messages={sortedMessages} />
-               </div>
+      <div className="flex h-full flex-col">
+         {channel ? (
+            <>
+               <ChannelWithIdTopBar
+                  channel={channel}
+                  onRecipientsClick={onRecipientsClick}
+                  onCallClick={onCallClick}
+                  onClick={isMobile && channel.type === ChannelType.GROUP_DM ? onRecipientsClick : undefined}
+               />
+               <div className="flex h-full w-full overflow-hidden">
+                  <div className="relative flex h-full w-full flex-col overflow-hidden">
+                     <div
+                        className={clsx(
+                           "absolute inset-0 z-10 bg-black/50 transition-all lg:pointer-events-none lg:z-auto lg:opacity-0",
+                           isRightOpen ? "opacity-100" : "pointer-events-none opacity-0",
+                        )}
+                        onClick={resetToCenter}
+                     />
+                     <DirectChannelCall channelId={channelId} />
+                     <ChannelMessages channelId={channelId} messages={sortedMessages} />
+                     <MessageBox messages={sortedMessages} />
+                  </div>
 
-               <ChannelSidebar channel={channel} />
-            </div>
-            <div className="bg-surface absolute bottom-0 flex h-16 w-full shrink-0" />
-         </div>
-      )
+                  <ChannelSidebar channel={channel} />
+               </div>
+               <div className="bg-surface absolute bottom-0 flex h-16 w-full shrink-0" />
+            </>
+         ) : (
+            <RouteErrorComponent error="Channel not found" />
+         )}
+      </div>
    );
 }

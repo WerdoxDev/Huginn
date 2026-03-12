@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import addon from "../js/index";
 import path from "node:path";
+
+import addon from "../js/index";
 
 describe("file_util.h", () => {
    test("should successfully get the sha256 of a file", () => {

@@ -19,7 +19,10 @@ export const settingsExtension = Prisma.defineExtension({
                      select: { json: true },
                   });
                } else {
-                  settings = await prisma.settings.findUnique({ where: { userId: BigInt(userId) }, select: { json: true } });
+                  settings = await prisma.settings.findUnique({
+                     where: { userId: BigInt(userId) },
+                     select: { json: true },
+                  });
                }
 
                assertObj(methodName, settings, DBErrorType.NULL_SETTINGS);

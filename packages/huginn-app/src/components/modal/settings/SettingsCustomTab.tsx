@@ -1,15 +1,17 @@
-import type { DropdownItem, SettingsTabProps } from "@/types";
+import type { ProcessInfo } from "native-addon";
+
 import HuginnButton from "@components/button/HuginnButton";
 import CustomApplicationItem from "@components/CustomApplicationItem";
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
 import { useElapsedTime } from "@hooks/useElapsedTime";
-import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useModals } from "@stores/modalsStore";
 import { usePresenceStore } from "@stores/presenceStore";
+import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
-import type { ProcessInfo } from "native-addon";
 import { useEffect, useMemo, useState } from "react";
+
+import type { DropdownItem, SettingsTabProps } from "@/types";
 
 type OpenApplication = ProcessInfo & { displayName?: string; icon?: string };
 
@@ -78,7 +80,14 @@ export default function SettingsCustomTab(_props: SettingsTabProps) {
       }
 
       if (customApplications.some((x) => x.exePath === application.exePath)) {
-         updateModals({ info: { status: "error", title: "Failed!", text: "This application is already added!", isOpen: true } });
+         updateModals({
+            info: {
+               status: "error",
+               title: "Failed!",
+               text: "This application is already added!",
+               isOpen: true,
+            },
+         });
          return;
       }
 
@@ -110,7 +119,7 @@ export default function SettingsCustomTab(_props: SettingsTabProps) {
    return (
       <div className="flex flex-col gap-y-5">
          <div className="flex w-max flex-col">
-            <div className="text-text/90 mb-2 select-none text-xs font-medium uppercase">Current Activity</div>
+            <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Current Activity</div>
             <div className={clsx("rounded-lg p-3", targetActivity ? "bg-primary-700" : "bg-surface-alt")}>
                {!targetActivity ? (
                   <div className="text-text/80">No activities detected...</div>
@@ -130,11 +139,11 @@ export default function SettingsCustomTab(_props: SettingsTabProps) {
          </div>
          {huginnWindow.environment === "desktop" && (
             <div className="flex max-w-md flex-col">
-               <div className="text-text/90 mb-2 select-none text-xs font-medium uppercase">Add Application</div>
+               <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Add Application</div>
                <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3">
                   <div className="text-text/80 text-sm">Add a custom application to be shown on your profile as your activity</div>
                   <HuginnDropdown onChange={onApplicationChanged} value={selectedApplication}>
-                     <HuginnDropdown.List className="bg-surface-deep rounded-md! w-full" placeholder="Select an application">
+                     <HuginnDropdown.List className="bg-surface-deep w-full rounded-md!" placeholder="Select an application">
                         <HuginnDropdown.ItemsWrapper className="w-(--button-width)">
                            {applicationOptions.map((x) => (
                               <HuginnDropdown.Item key={x.value} item={x} />
@@ -149,7 +158,7 @@ export default function SettingsCustomTab(_props: SettingsTabProps) {
             </div>
          )}
          <div className="flex max-w-lg flex-col">
-            <div className="text-text/90 mb-2 select-none text-xs font-medium uppercase">Custom Applications</div>
+            <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Custom Applications</div>
             <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3 pl-2">
                {customApplications.length === 0 ? (
                   <div className="text-text/80">No custom applications registered...</div>

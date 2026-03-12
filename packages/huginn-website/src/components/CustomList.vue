@@ -24,13 +24,16 @@ const selectedOption = ref(optionsProps.options.find((x) => x.text.trim().toLowe
             <Icon icon="gridicons:dropdown" class="ml-auto" />
          </ListboxButton>
 
-         <ListboxOptions
-            class="ui-open:bg-secondary ui-open:rounded-md ui-open:shadow-lg absolute mt-1 w-full overflow-hidden">
-            <ListboxOption v-for="option in optionsProps.options" :key="option.text" :value="option"
+         <ListboxOptions class="absolute mt-1 w-full overflow-hidden ui-open:rounded-md ui-open:bg-secondary ui-open:shadow-lg">
+            <ListboxOption
+               v-for="option in optionsProps.options"
+               :key="option.text"
+               :value="option"
                :disabled="option.disabled"
                @click="!option.disabled && $emit('changed', option.text.trim().toLowerCase())"
-               class="ui-disabled:cursor-not-allowed ui-disabled:text-text/50 hover:ui-disabled:bg-black/30 flex cursor-pointer items-center px-2 py-1 pr-9 hover:bg-black/50"
-               :class="{ hidden: option.hidden }">
+               class="flex cursor-pointer items-center px-2 py-1 pr-9 hover:bg-black/50 ui-disabled:cursor-not-allowed ui-disabled:text-text/50 hover:ui-disabled:bg-black/30"
+               :class="{ hidden: option.hidden }"
+            >
                <Icon :icon="option.icon" class="mr-1" />
                {{ option.text }}
             </ListboxOption>

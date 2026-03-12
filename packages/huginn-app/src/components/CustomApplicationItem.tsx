@@ -1,7 +1,9 @@
-import type { CustomApplication } from "@/types";
 import moment from "moment";
-import Tooltip from "./tooltip/Tooltip";
 import { useState } from "react";
+
+import type { CustomApplication } from "@/types";
+
+import Tooltip from "./tooltip/Tooltip";
 
 export default function CustomApplicationItem(props: {
    application: CustomApplication;
@@ -29,15 +31,15 @@ export default function CustomApplicationItem(props: {
       <div className="flex items-center gap-x-2" key={props.application.exePath}>
          <div className="flex flex-col overflow-hidden">
             <input
-               className="focus:bg-surface hover:bg-surface overflow-hidden text-ellipsis whitespace-nowrap rounded-md px-1 py-0.5 text-white outline-none"
+               className="hover:bg-surface focus:bg-surface overflow-hidden rounded-md px-1 py-0.5 text-ellipsis whitespace-nowrap text-white outline-none"
                onFocus={onFocus}
                onBlur={onBlur}
                value={title}
                onChange={(e) => setTitle(e.currentTarget.value)}
             />
-            <div className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap text-sm text-white/50">{props.application.exePath}</div>
+            <div className="ml-1 overflow-hidden text-sm text-ellipsis whitespace-nowrap text-white/50">{props.application.exePath}</div>
             {props.application.lastOpened && (
-               <div className="ml-auto mt-1 text-white/50">
+               <div className="mt-1 ml-auto text-white/50">
                   Last opened: <span className="font-semibold">{moment.duration(props.application.lastOpened).humanize()} ago</span>
                </div>
             )}
@@ -46,7 +48,7 @@ export default function CustomApplicationItem(props: {
             <Tooltip>
                <Tooltip.Trigger
                   onClick={() => props.onDelete?.(props.application.exePath)}
-                  className="bg-negative-100/10 hover:bg-negative-400 group cursor-pointer rounded-md p-1"
+                  className="group bg-negative-100/10 hover:bg-negative-400 cursor-pointer rounded-md p-1"
                >
                   <IconMingcuteDelete3Fill className="text-negative-100 group-hover:text-white" />
                </Tooltip.Trigger>

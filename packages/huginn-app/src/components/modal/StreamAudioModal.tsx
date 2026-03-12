@@ -7,7 +7,9 @@ import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useEffect, useState, useTransition } from "react";
+
 import type { AudioSource } from "@/types";
+
 import HuginnDialogPanel from "./HuginnDialogPanel";
 
 export default function StreamAudioModal() {

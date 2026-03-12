@@ -1,3 +1,16 @@
+import type {
+   Consumer,
+   DtlsParameters,
+   Producer,
+   ProducerCodecOptions,
+   RtpCapabilities,
+   RtpParameters,
+   Transport,
+   TransportOptions,
+   RtpEncodingParameters,
+   ConnectionState,
+} from "mediasoup-client/types";
+
 import {
    convertToMediaKind,
    error,
@@ -20,24 +33,17 @@ import {
    type VoiceResumeConsumerResult,
 } from "@huginn/shared";
 import * as mediasoupClient from "mediasoup-client";
-import type {
-   Consumer,
-   DtlsParameters,
-   Producer,
-   ProducerCodecOptions,
-   RtpCapabilities,
-   RtpParameters,
-   Transport,
-   TransportOptions,
-   RtpEncodingParameters,
-   ConnectionState,
-} from "mediasoup-client/types";
+
 import type { HuginnClient } from ".";
 
 type Events = {
    send_transport_ready: undefined;
    recv_transport_ready: undefined;
-   connect_transport: { transportId: string; dtlsParameters: DtlsParameters; callback: (d: VoiceConnectTransportResult) => void };
+   connect_transport: {
+      transportId: string;
+      dtlsParameters: DtlsParameters;
+      callback: (d: VoiceConnectTransportResult) => void;
+   };
    restart_ice: { transportId: string; callback: (d: VoiceRestartIceResult) => void };
 
    create_producer: {
@@ -306,7 +312,11 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
       producer.close();
       this.producers.delete(producer.appData.mediaKind);
-      this.emit("producer_closed", { producerId: producer.id, kind: producer.appData.mediaKind, userId: producer.appData.userId });
+      this.emit("producer_closed", {
+         producerId: producer.id,
+         kind: producer.appData.mediaKind,
+         userId: producer.appData.userId,
+      });
    }
 
    public async createConsumer(userId: Snowflake, kind: HMediaKind): Promise<Consumer<MediasoupAppData>> {

@@ -1,7 +1,9 @@
 import type { HuginnClient } from "@huginn/api";
+
 import { type APIGetUserChannelsResult, resolveImage, type Snowflake } from "@huginn/shared";
 import { clientStore } from "@stores/clientStore";
 import { infiniteQueryOptions, QueryClient, queryOptions } from "@tanstack/react-query";
+
 import { convertToAppDirectChannel, convertToAppMessage, convertToAppRelationship, convertToAppUser } from "./utils";
 
 export const queryClient = new QueryClient({

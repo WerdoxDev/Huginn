@@ -1,8 +1,10 @@
 import { constants, Fields } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
-import type { InputMessage } from "@/types";
-import { useDebouncer } from "./useDebouncer";
 import { useFormState, type Control, type FieldValues } from "react-hook-form";
+
+import type { InputMessage } from "@/types";
+
+import { useDebouncer } from "./useDebouncer";
 
 export function useUniqueUsernameMessage<I extends FieldValues>(control: Control<I>, defaultUsername?: string) {
    // const fs = useFormState({ control });
@@ -12,7 +14,10 @@ export function useUniqueUsernameMessage<I extends FieldValues>(control: Control
       if (!client || !value) return null;
 
       if (!validateLength(value)) {
-         return { text: Fields.wrongLength(constants.USERNAME_MIN_LENGTH, constants.USERNAME_MAX_LENGTH)[0], status: "error" };
+         return {
+            text: Fields.wrongLength(constants.USERNAME_MIN_LENGTH, constants.USERNAME_MAX_LENGTH)[0],
+            status: "error",
+         };
       }
 
       if (!validateRegex(value)) {

@@ -1,7 +1,19 @@
 import { error, type LogArgs, type Logger } from "@huginn/shared";
 
-type LogEntry = { type: "log" | "error"; timestamp: string; section: string; level?: string; args: LogArgs[] };
-type SystemInfo = { platform: string; arch: string; version: string; appVersion: string; release: string };
+type LogEntry = {
+   type: "log" | "error";
+   timestamp: string;
+   section: string;
+   level?: string;
+   args: LogArgs[];
+};
+type SystemInfo = {
+   platform: string;
+   arch: string;
+   version: string;
+   appVersion: string;
+   release: string;
+};
 
 export class RemoteLogger {
    private logger: Logger;
@@ -64,7 +76,11 @@ export class RemoteLogger {
             logs: logsToSend,
             timestamp: new Date().toISOString(),
          };
-         await fetch(this.endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+         await fetch(this.endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+         });
       } catch (e) {
          error("app:general", "Remote logger failed to send logs:", e);
          this.logBuffer.unshift(...logsToSend);

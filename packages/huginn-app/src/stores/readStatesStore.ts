@@ -1,17 +1,23 @@
-import { ChannelType, MessageType, RelationshipType, type Snowflake } from "@huginn/shared";
-import { listenEvent } from "@lib/event-handler";
-import { windowStore } from "@stores/windowStore";
 import type { QueryClient } from "@tanstack/react-query";
+
+import { ChannelType, MessageType, RelationshipType, type Snowflake } from "@huginn/shared";
+import { playAudio } from "@lib/audio-player";
+import { listenEvent } from "@lib/event-handler";
+import { findChannel, getChannels, getCurrentPageMessages, getUser, getUsers } from "@lib/query-utils";
+import { windowStore } from "@stores/windowStore";
 import { produce } from "immer";
 import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
+
 import { sendNotification } from "../contexts/NotificationContext";
 import { clientStore } from "./clientStore";
-import { findChannel, getChannels, getCurrentPageMessages, getUser, getUsers } from "@lib/query-utils";
-import { playAudio } from "@lib/audio-player";
 
-export type ContextReadState = { channelId: Snowflake; lastReadMessageId?: Snowflake; unreadCount: number };
+export type ContextReadState = {
+   channelId: Snowflake;
+   lastReadMessageId?: Snowflake;
+   unreadCount: number;
+};
 
 const initialStore = () => ({
    readStates: [] as Array<ContextReadState>,
@@ -32,7 +38,11 @@ const store = createStore(
          set(
             produce((draft: StoreType) => {
                draft.readStates = draft.readStates.filter((x) => x.channelId !== channelId);
-               draft.readStates.push({ channelId, lastReadMessageId: messageId, unreadCount: unreadCount });
+               draft.readStates.push({
+                  channelId,
+                  lastReadMessageId: messageId,
+                  unreadCount: unreadCount,
+               });
             }),
          );
       },

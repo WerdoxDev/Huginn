@@ -18,7 +18,10 @@ export default function StartBackground() {
       const seed = Math.random();
       animation.transition({
          blobOptions: { seed: seed, extraPoints: 10, randomness: 3, size: blobSize },
-         canvasOptions: { offsetX: canvasSize / 2 - blobSize / 2, offsetY: canvasSize / 2 - blobSize / 2 },
+         canvasOptions: {
+            offsetX: canvasSize / 2 - blobSize / 2,
+            offsetY: canvasSize / 2 - blobSize / 2,
+         },
          duration: duration,
          timingFunction: "ease",
          callback: loopAnimation,

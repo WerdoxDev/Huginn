@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
+
 import type { SliderProps } from "@/types";
 
 const MIN_SIZE = 6;

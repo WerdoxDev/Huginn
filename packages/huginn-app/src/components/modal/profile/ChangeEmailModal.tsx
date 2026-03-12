@@ -1,21 +1,22 @@
+import HuginnButton from "@components/button/HuginnButton";
+import LoadingButton from "@components/button/LoadingButton";
+import DialogActions from "@components/DialogActions";
 import DialogBody from "@components/DialogBody";
-import HuginnDialogPanel from "../HuginnDialogPanel";
+import HuginnDialogTitle from "@components/HuginnDialogTitle";
 import HuginnInput from "@components/input/HuginnInput";
 import OTPInput from "@components/input/OTPInput";
-import { useHuginnForm } from "@hooks/useHuginnForm";
-import DialogActions from "@components/DialogActions";
-import HuginnDialogTitle from "@components/HuginnDialogTitle";
-import { useThisUser } from "@stores/userStore";
-import { useOAuth } from "@hooks/useOAuth";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
+import { useResendVerificationEmail } from "@hooks/mutations/useResendVerificationEmail";
 import { useVerifyEmail } from "@hooks/mutations/useVerifyEmail";
-import LoadingButton from "@components/button/LoadingButton";
-import HuginnButton from "@components/button/HuginnButton";
-import { useEffect, useState } from "react";
+import { useCountdown } from "@hooks/useCountdown";
+import { useHuginnForm } from "@hooks/useHuginnForm";
+import { useOAuth } from "@hooks/useOAuth";
 import { JsonCode, type OAuthType, type HuginnErrorData, constants } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
-import { useResendVerificationEmail } from "@hooks/mutations/useResendVerificationEmail";
-import { useCountdown } from "@hooks/useCountdown";
+import { useThisUser } from "@stores/userStore";
+import { useEffect, useState } from "react";
+
+import HuginnDialogPanel from "../HuginnDialogPanel";
 
 type Inputs = {
    email: string;
@@ -61,7 +62,10 @@ export default function ChangeEmailModal() {
       if (isVerifying) {
          await verificationMutation.mutateAsync({ code: data.verificationCode || "" });
       } else {
-         const result = await patchMutation.mutateAsync({ email: data.email, password: data.password });
+         const result = await patchMutation.mutateAsync({
+            email: data.email,
+            password: data.password,
+         });
          setPendingEmail(result?.pendingEmail ?? null);
          startCountdown(constants.EMAIL_VERIFICATION_RESEND_COOLDOWN / 1000);
       }

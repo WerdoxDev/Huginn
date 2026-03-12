@@ -1,4 +1,5 @@
 import { HuginnClient, Voice } from "@huginn/api";
+
 import "./index.css";
 
 class VoiceBridge extends Voice {

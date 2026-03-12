@@ -1,4 +1,5 @@
 import type { Snowflake } from "@huginn/shared";
+
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useMutation } from "@tanstack/react-query";
@@ -14,7 +15,9 @@ export function useEditMessage() {
             return;
          }
 
-         return await client?.channels.editMessage(data.channelId, data.messageId, { content: data.content });
+         return await client?.channels.editMessage(data.channelId, data.messageId, {
+            content: data.content,
+         });
       },
    });
 

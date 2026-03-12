@@ -1,9 +1,13 @@
-import { queryClient as client } from "@/lib/queries";
-import type { AppDirectChannel, AppMessage, AppUser } from "@/types";
-import { MessageType, omit, type APIGetUserChannelsResult, type PresenceUser, type Snowflake } from "@huginn/shared";
-import { convertToAppUser } from "./utils";
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
+
+import { MessageType, omit, type APIGetUserChannelsResult, type PresenceUser, type Snowflake } from "@huginn/shared";
 import { produce } from "immer";
+
+import type { AppDirectChannel, AppMessage, AppUser } from "@/types";
+
+import { queryClient as client } from "@/lib/queries";
+
+import { convertToAppUser } from "./utils";
 
 export function updateUser(user: PresenceUser, queryClient = client) {
    queryClient.setQueryData<AppUser>(["user", user.id], (old) => (old ? convertToAppUser({ ...old, ...user }) : convertToAppUser(user)));
