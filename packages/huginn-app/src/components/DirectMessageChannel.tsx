@@ -5,7 +5,7 @@ import { useContextMenu } from "@stores/contextMenuStore";
 import { usePresence } from "@stores/presenceStore";
 import { Link, useParams, useRouter, useRouterState } from "@tanstack/react-router";
 import clsx from "clsx";
-import { useEffect, useMemo, type MouseEvent } from "react";
+import { useEffect, useMemo, type MouseEvent, type Ref, type RefObject } from "react";
 
 import type { AppDirectChannel } from "@/types";
 
@@ -14,7 +14,7 @@ import ChannelIcon from "./ChannelIcon";
 import LoadingIcon from "./LoadingIcon";
 import UserAvatar from "./UserAvatar";
 
-export default function DirectMessageChannel(props: { channel: AppDirectChannel }) {
+export default function DirectMessageChannel(props: { channel: AppDirectChannel; ref: Ref<HTMLLIElement> }) {
    const { open: openContextMenu, context, data } = useContextMenu("dm_channel");
 
    const recipients = useUsers(props.channel.recipientIds);
@@ -34,6 +34,7 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel 
 
    return (
       <li
+         ref={props.ref}
          onContextMenu={(e) => openContextMenu(props.channel, e)}
          className={clsx("group relative flex shrink-0 cursor-pointer overflow-hidden rounded-md")}
          data-context={context?.isOpen && data?.id === props.channel.id ? true : undefined}
