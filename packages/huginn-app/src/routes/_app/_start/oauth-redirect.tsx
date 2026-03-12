@@ -3,7 +3,6 @@ import LoadingButton from "@components/button/LoadingButton";
 import ImageSelector from "@components/ImageSelector";
 import HuginnInput from "@components/input/HuginnInput";
 import StartWrapper from "@components/StartWrapper";
-import { useStartBackground } from "@stores/startBackgroundStore";
 import { useHistory } from "@contexts/HistoryContext";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
@@ -19,28 +18,27 @@ import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useState } from "react";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { z } from "zod";
 
 type Inputs = {
    username: string;
    displayName?: string;
 };
 
-export const Route = createFileRoute("/_app/_start/oauth-redirect")({ component: OauthRedirectComponent });
+const searchSchema = z.object({ oauth_token: z.optional(z.string()), access_token: z.optional(z.string()), refresh_token: z.optional(z.string()) });
+
+export const Route = createFileRoute("/_app/_start/oauth-redirect")({ component: OauthRedirectComponent, validateSearch: searchSchema });
 
 function OauthRedirectComponent() {
    const client = useClient();
    const search = useSearch({ from: "/_app/_start/oauth-redirect" });
    const navigate = useNavigate();
-   const authBackground = useStartBackground();
    const { updateModals } = useModals();
    const initializeClient = useInitializeClient();
    const posthog = usePostHog();
    const history = useHistory();
 
-   const decodedToken = useMemo(
-      () => (search.get("oauth_token") ? (jose.decodeJwt(search.get("oauth_token")!) as OAuthTokenPayload) : undefined),
-      [search],
-   );
+   const decodedToken = useMemo(() => (search.oauth_token ? (jose.decodeJwt(search.oauth_token) as OAuthTokenPayload) : undefined), [search]);
 
    const { register, handleErrors, handleSubmit, formState, control } = useHuginnForm<Inputs>();
 
@@ -52,8 +50,8 @@ function OauthRedirectComponent() {
    const mutation = useHuginnMutation(
       {
          async mutationFn(body: APIPostOAuthConfirmJSONBody) {
-            if (search.get("oauth_token")) {
-               return await client?.oauth.confirmOAuth(body, search.get("oauth_token") ?? "");
+            if (search.oauth_token) {
+               return await client?.oauth.confirmOAuth(body, search.oauth_token ?? "");
             }
          },
          async onSuccess(data) {
@@ -65,14 +63,13 @@ function OauthRedirectComponent() {
 
    useEffect(() => {
       async function tryAuthorize() {
-         if (search.has("access_token") && search.has("refresh_token")) {
-            localStorage.setItem("access-token", search.get("access_token")!);
-            localStorage.setItem("refresh-token", search.get("refresh_token")!);
+         if (search.access_token && search.refresh_token) {
+            localStorage.setItem("access-token", search.access_token);
+            localStorage.setItem("refresh-token", search.refresh_token);
 
             await navigate({ to: "/" });
          } else {
             setShouldRender(true);
-            authBackground.setState(0);
          }
       }
 
@@ -123,7 +120,7 @@ function OauthRedirectComponent() {
    return (
       shouldRender && (
          <StartWrapper transitionName="start-oauth-redirect" onSubmit={handleSubmit(onSubmit)}>
-            {search.has("oauth_token") && (
+            {search.oauth_token && (
                <>
                   <div className="flex w-full flex-col items-center select-none">
                      <div className="text-text mb-1 text-2xl font-medium">Almost there!</div>

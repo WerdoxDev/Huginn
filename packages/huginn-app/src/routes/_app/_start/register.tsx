@@ -4,7 +4,6 @@ import LoadingButton from "@components/button/LoadingButton";
 import HuginnInput from "@components/input/HuginnInput";
 import PasswordInput from "@components/input/PasswordInput";
 import StartWrapper from "@components/StartWrapper";
-import { useStartBackground } from "@stores/startBackgroundStore";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useOAuth } from "@hooks/useOAuth";
@@ -29,7 +28,6 @@ export const Route = createFileRoute("/_app/_start/register")({ component: Regis
 function RegisterComponent() {
    const client = useClient();
    const posthog = usePostHog();
-   const startBackground = useStartBackground();
    const initializeClient = useInitializeClient();
    const startOAuth = useOAuth();
    const navigate = useNavigate();
@@ -56,7 +54,7 @@ function RegisterComponent() {
    );
 
    useEffect(() => {
-      startBackground.setState(0);
+      // Component initialization
    }, []);
 
    async function onSubmit(data: Inputs) {

@@ -4,14 +4,12 @@ import LoadingButton from "@components/button/LoadingButton";
 import HuginnInput from "@components/input/HuginnInput";
 import PasswordInput from "@components/input/PasswordInput";
 import StartWrapper from "@components/StartWrapper";
-import { useStartBackground } from "@stores/startBackgroundStore";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useOAuth } from "@hooks/useOAuth";
 import type { APIPostLoginJSONBody, OAuthType } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
 import { usePostHog } from "posthog-js/react";
-import { useEffect } from "react";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 // import { usePostHog } from "posthog-js/react";
@@ -27,7 +25,6 @@ function LoginComponent() {
    const posthog = usePostHog();
    const client = useClient();
    const initializeClient = useInitializeClient();
-   const startBackground = useStartBackground();
    const startOAuth = useOAuth();
    const navigate = useNavigate();
 
@@ -50,10 +47,6 @@ function LoginComponent() {
       },
       handleErrors,
    );
-
-   useEffect(() => {
-      startBackground.setState(0);
-   }, []);
 
    async function login(data: Inputs) {
       posthog.capture("login:login_button_click");

@@ -3,9 +3,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import ContextMenusRenderer from "@components/contextmenu/ContextMenusRenderer";
 import ModalsRenderer from "@components/modal/ModalsRenderer";
 import PHProvider, { initializePosthog } from "@contexts/PHProvider";
-import StartBackgroundSvg from "@components/StartBackgroundSvg";
 import TitleBar from "@components/TitleBar";
-import { useStartBackground } from "@stores/startBackgroundStore";
 import { NotificationProvider } from "@contexts/NotificationContext";
 import { useMainViewTransitionState } from "@hooks/useMainViewTransitionState";
 import { useClientStore } from "@stores/clientStore";
@@ -23,15 +21,13 @@ import KeybindsProvider from "@contexts/KeybindsProvider";
 import SettingsProvider from "@contexts/SettingsProvider";
 import { initializeStorage2 } from "@stores/storageStore";
 import { initializeDevice } from "@stores/deviceStore";
-import { z } from "zod";
+import StartBackground from "@components/StartBackgroundSvg";
 
 export const Route = createFileRoute("/_app")({ component: AppLayoutComponent });
 
 function AppLayoutComponent() {
-   const authBackground = useStartBackground();
    const clientStore = useClientStore();
    const huginnWindow = useHuginnWindow();
-   const { isMainTransitioning } = useMainViewTransitionState();
 
    useEffect(() => {
       const unlisteners: Array<(() => void) | undefined> = [];
@@ -63,10 +59,9 @@ function AppLayoutComponent() {
                      <MainRenderer>
                         <div
                            className={clsx("bg-surface-alt absolute inset-0", !huginnWindow.browserFullscreen && "top-6")}
-                           style={isMainTransitioning ? { viewTransitionName: "start" } : undefined}
+                           style={{ viewTransitionName: "start" }}
                         >
-                           <StartBackgroundSvg state={authBackground.state} />
-
+                           <StartBackground />
                            <PHProvider>
                               <Outlet />
                            </PHProvider>

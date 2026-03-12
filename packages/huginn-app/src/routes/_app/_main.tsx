@@ -1,6 +1,5 @@
 import GuildsBar from "@components/GuildsBar";
 import WebsocketProviders from "@components/websocket/WebsocketProviders";
-import { useStartBackground } from "@stores/startBackgroundStore";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useEffect } from "react";
@@ -19,7 +18,6 @@ export const Route = createFileRoute("/_app/_main")({
 });
 
 function MainLayoutComponent() {
-   const authBackground = useStartBackground();
    const { updateModals } = useModals();
    const huginnWindow = useHuginnWindow();
    // const isTransitioning = useViewTransitionState("*");
@@ -35,10 +33,6 @@ function MainLayoutComponent() {
    //       localStorage.setItem("version", huginnWindow.version);
    //    }
    // }, [isTransitioning]);
-
-   useEffect(() => {
-      authBackground.setState(2);
-   }, []);
 
    return (
       <div className="absolute inset-0 overflow-hidden" style={{ viewTransitionName: "main" }}>

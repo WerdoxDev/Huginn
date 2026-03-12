@@ -2,7 +2,6 @@ import HuginnButton from "@components/button/HuginnButton";
 import HuginnIcon from "@components/HuginnIcon";
 import LoadingIcon from "@components/LoadingIcon";
 import StartWrapper from "@components/StartWrapper";
-import { useStartBackground } from "@stores/startBackgroundStore";
 import { useConnect } from "@hooks/useConnect";
 import { useUpdater } from "@hooks/useUpdater";
 import { initializeClient, setHostnamesFromExternal, setHostnamesFromSettings, useClient } from "@stores/clientStore";
@@ -12,7 +11,6 @@ import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useReducer } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { z } from "zod";
 
 type Step = "none" | "fetch_hostnames" | "check_update" | "initialize" | "update" | "welcome";
 
@@ -52,7 +50,6 @@ function IndexComponent() {
    const settings = useStorage("settings");
    // const search = Route.useSearch();
 
-   const startBackground = useStartBackground();
    const posthog = usePostHog();
    const navigate = useNavigate();
    const connect = useConnect();
@@ -88,15 +85,14 @@ function IndexComponent() {
          return;
       }
 
-      startBackground.setState(1);
       const result = await connect();
+      console.log(result);
       if (result.success) {
          dispatch({ type: "SET", step: "welcome", text: `Welcome ${client?.currentUser?.displayName ?? client?.currentUser?.username}!` });
          sessionStorage.removeItem("redirect");
          await navigate({ to: redirectObj?.pathname ?? "/channels/@me", replace: true, viewTransition: { types: ["forwards"] } });
       } else if (result.retryable) {
          dispatch({ type: "FAIL", error: "Failed to connect..." });
-         startBackground.setState(0);
       } else {
          await navigate({ to: "/login", replace: true, viewTransition: { types: ["forwards"] } });
       }
@@ -176,8 +172,6 @@ function IndexComponent() {
    }, [state]);
 
    useEffect(() => {
-      startBackground.setState(0);
-
       if (huginnWindow.environment === "desktop" && !huginnWindow.args.includes("--silent")) {
          window.electronAPI.showMain();
       }
@@ -229,10 +223,12 @@ function IndexComponent() {
                </div>
             )}
             {state.current === "update" && progress !== 0 && (
-               <div className="bg-surface-deep relative mt-3 h-6 w-56 rounded-md">
-                  <div className="bg-primary-500 h-full rounded-md" style={{ width: `${progress}%` }} />
-                  <div className="absolute right-0 left-0 flex items-center justify-center">
-                     <div className="bg-surface-alt text-text/50 rounded-b-md px-2 py-1 text-xs">{updateProgressText}</div>
+               <div className="mt-3 flex flex-col">
+                  <div className="bg-surface-deep relative h-6 w-56 rounded-md p-0.5">
+                     <div className="bg-positive-600 h-full rounded-sm" style={{ width: `50%` }} />
+                     <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-text px-2 py-1 text-xs">{updateProgressText}</div>
+                     </div>
                   </div>
                </div>
             )}

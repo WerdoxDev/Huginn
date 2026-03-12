@@ -3,7 +3,6 @@ import DirectChannelCall from "@components/channels/DirectChannelCall";
 import ChannelWithIdTopBar from "@components/channels/ChannelWithIdTopBar";
 import MessageBox from "@components/MessageBox";
 import { useErrorHandler } from "@hooks/useErrorHandler";
-import { useSafePathname } from "@hooks/useLastSafePathname";
 import { getChannelsOptions, getMessagesOptions, queryClient } from "@lib/queries";
 import { clientStore, useClient } from "@stores/clientStore";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
@@ -14,7 +13,7 @@ import ChannelSidebar from "@components/channels/ChannelSidebar";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { ChannelType } from "@huginn/shared";
 import clsx from "clsx";
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { createFileRoute, useParams, useRouter } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/_main/_home/channels/@me/$channelId")({
    component: ChannelWithIdComponent,
@@ -33,9 +32,9 @@ function ChannelWithIdComponent() {
    const queryClient = useQueryClient();
    const { error, data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, channelId));
    const channel = useSuspenseQuery(getChannelsOptions(client!, "@me")).data?.find((x: { id: string }) => x.id === channelId);
-   const { navigateBack } = useSafePathname();
    const posthog = usePostHog();
    const isMobile = useIsMobile();
+   const router = useRouter();
 
    const handleServerError = useErrorHandler();
 
@@ -60,7 +59,7 @@ function ChannelWithIdComponent() {
 
    useEffect(() => {
       if (!channel) {
-         navigateBack();
+         router.history.back();
          return;
       }
       if (error) {

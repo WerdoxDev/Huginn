@@ -1,7 +1,5 @@
-import { useStartBackground } from "@stores/startBackgroundStore";
 import { useModals } from "@stores/modalsStore";
 import { useQueryClient } from "@tanstack/react-query";
-import clsx from "clsx";
 import { useEffect } from "react";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { clientStore } from "@stores/clientStore";
@@ -22,8 +20,6 @@ export const Route = createFileRoute("/_app/_start")({
 });
 
 function StartLayoutComponent() {
-   const startBackground = useStartBackground();
-
    const { updateModals } = useModals();
    const queryClient = useQueryClient();
 
@@ -33,11 +29,10 @@ function StartLayoutComponent() {
       queryClient.removeQueries({ queryKey: ["relationships"] });
    }, []);
    return (
-      <div className={clsx("absolute inset-0", startBackground.state === 2 && "pointer-events-none")}>
+      <div className="absolute inset-0">
          <div className="absolute flex h-full w-full items-center justify-center">
             <Outlet />
          </div>
-         {/* <StartBackgroundSvg state={startBackground.state} /> */}
          <button
             type="button"
             className="hover:bg-surface absolute right-2.5 bottom-2.5 z-10 cursor-pointer rounded-lg p-1 transition-all"

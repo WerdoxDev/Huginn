@@ -10,7 +10,6 @@ export default function StartWrapper(props: {
 }) {
    return (
       <form
-         // id={!isStartTransitioning || isMainTransitioning ? (canPlay ? (props.shownId ?? "start-form") : "") : ""}
          onSubmit={props.onSubmit}
          className={clsx(
             "group/wrapper bg-surface relative flex w-96 flex-col items-start rounded-lg p-5 shadow-xl transition-shadow hover:shadow-2xl",

@@ -5,6 +5,7 @@ import FriendsTabItem from "@components/friends/FriendsTabItem";
 import PendingFriendsTab from "@components/friends/PendingFriendsTab";
 import TopBar from "@components/TopBar";
 import { Tab, TabGroup, TabList, TabPanels } from "@headlessui/react";
+import { useIsMobile } from "@hooks/useIsMobile";
 import { RelationshipType } from "@huginn/shared";
 import { getRelationshipsOptions, queryClient } from "@lib/queries";
 import { clientStore, useClient } from "@stores/clientStore";
@@ -32,6 +33,7 @@ function FriendsComponent() {
    const client = useClient();
    const { data: friends } = useSuspenseQuery(getRelationshipsOptions(client!));
    const posthog = usePostHog();
+   const isMobile = useIsMobile();
 
    const allFriends = useMemo(() => friends?.filter((x) => x.type === RelationshipType.FRIEND), [friends]);
    const { presences } = usePresences(allFriends?.map((x) => x.userId) ?? []);
@@ -48,7 +50,7 @@ function FriendsComponent() {
       <div className="flex h-full flex-col">
          <TabGroup as={Fragment} defaultIndex={friends.length === 0 ? 3 : 0} onChange={onTabChange}>
             <TopBar>
-               <MobileMenuButton />
+               {isMobile && <MobileMenuButton />}
                <TabList className="mr-5 flex justify-center gap-x-5">
                   <div className="text-text flex items-center justify-center gap-x-2.5">
                      <IconMingcuteGroup2Fill className="size-6" />

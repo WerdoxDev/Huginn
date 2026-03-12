@@ -2,6 +2,7 @@ import HuginnIcon from "@components/HuginnIcon";
 import TopBar from "@components/TopBar";
 import MobileMenuButton from "@components/button/MobileMenuButton";
 import QuickActionButton from "@components/button/QuickActionButton";
+import { useIsMobile } from "@hooks/useIsMobile";
 import { useModals } from "@stores/modalsStore";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 
@@ -10,12 +11,11 @@ export const Route = createFileRoute("/_app/_main/_home/channels/@me/")({ compon
 function ChannelMeComponent() {
    const { updateModals } = useModals();
    const navigate = useNavigate();
+   const isMobile = useIsMobile();
 
    return (
       <div className="flex h-full flex-col">
-         <TopBar>
-            <MobileMenuButton />
-         </TopBar>
+         <TopBar>{isMobile && <MobileMenuButton />}</TopBar>
          <div className="flex h-full flex-col items-center justify-center gap-y-5 px-2">
             <div className="text-text flex max-w-md flex-col items-center text-center">
                <div className="bg-surface mb-2.5 rounded-xl p-5 shadow-lg">
