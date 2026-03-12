@@ -7,9 +7,7 @@
    },
    "files": {
       "ignoreUnknown": false,
-      "includes": [
-         "**"
-      ]
+      "includes": ["**"]
    },
    "formatter": {
       "enabled": true,
@@ -17,10 +15,7 @@
       "lineWidth": 150,
       "indentWidth": 3,
       "lineEnding": "crlf",
-      "includes": [
-         "**",
-         "!**/packages/huginn-app/dist/**/*"
-      ]
+      "includes": ["**", "!**/packages/huginn-app/dist/**/*"]
    },
    "assist": {
       "actions": {
@@ -60,16 +55,11 @@
             "noUselessElse": "error"
          }
       },
-      "includes": [
-         "**",
-         "!**/packages/huginn-app/dist/**/*"
-      ]
+      "includes": ["**", "!**/packages/huginn-app/dist/**/*"]
    },
    "overrides": [
       {
-         "includes": [
-            "**/packages/huginn-api/src/tests/**/*"
-         ],
+         "includes": ["**/packages/huginn-api/src/tests/**/*"],
          "linter": {
             "rules": {
                "style": {
