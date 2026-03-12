@@ -1,12 +1,17 @@
 import { type GatewayCallState, type GatewayVoiceState, type GatewayVoiceStateFlags, log, type Snowflake } from "@huginn/shared";
+import { playAudio } from "@lib/audio-player";
 import { clientStore } from "@stores/clientStore";
 import { produce } from "immer";
 import { createStore, useStore } from "zustand";
 import { combine, devtools } from "zustand/middleware";
-import { playAudio } from "@lib/audio-player";
 
 const initialStore = () => ({
-   voiceConnection: {} as { userId: Snowflake; guildId: Snowflake | null; channelId: Snowflake | null; sessionId: Snowflake },
+   voiceConnection: {} as {
+      userId: Snowflake;
+      guildId: Snowflake | null;
+      channelId: Snowflake | null;
+      sessionId: Snowflake;
+   },
    voiceState: {} as GatewayVoiceStateFlags,
    voiceStates: [] as Array<GatewayVoiceState>,
    callStates: [] as Array<GatewayCallState>,
@@ -40,7 +45,9 @@ const store = createStore(
          removeVoiceState: (userId: Snowflake) => {
             log("app:voice-store", "voice-state", "remote", "uid:", userId);
 
-            return set((state) => ({ voiceStates: state.voiceStates.filter((x) => x.userId !== userId) }));
+            return set((state) => ({
+               voiceStates: state.voiceStates.filter((x) => x.userId !== userId),
+            }));
          },
          updateCallState: (channelId: Snowflake, messageId: Snowflake, ringing: Snowflake[]) => {
             log("app:voice-store", "call-state", "update", "cid:", channelId, "mid:", messageId, "ring:", ringing.join(","));
@@ -59,7 +66,9 @@ const store = createStore(
          removeCallState: (channelId: Snowflake) => {
             log("app:voice-store", "call-state", "remove", "cid:", channelId);
 
-            return set((state) => ({ callStates: state.callStates.filter((x) => x.channelId !== channelId) }));
+            return set((state) => ({
+               callStates: state.callStates.filter((x) => x.channelId !== channelId),
+            }));
          },
          updateSpeakingState: (userId: Snowflake, speaking: boolean) => {
             log("app:voice-store", "speaking-state", "update", "uid:", userId, "spk:", speaking);
@@ -78,7 +87,9 @@ const store = createStore(
          removeSpeakingState: (userId: Snowflake) => {
             log("app:voice-store", "speaking-state", "remove", "uid:", userId);
 
-            return set((state) => ({ speakingStates: state.speakingStates.filter((x) => x.userId !== userId) }));
+            return set((state) => ({
+               speakingStates: state.speakingStates.filter((x) => x.userId !== userId),
+            }));
          },
          clearSpeakingStates: () => {
             log("app:voice-store", "speaking-state", "clear");
@@ -145,7 +156,14 @@ export function initializeVoice() {
 
          // our user's voice state update
          if (d.userId === client?.currentUser?.id && d.sessionId === client.gateway.sessionId) {
-            store.setState({ voiceConnection: { channelId: d.channelId, guildId: d.guildId, sessionId: d.sessionId, userId: d.userId } });
+            store.setState({
+               voiceConnection: {
+                  channelId: d.channelId,
+                  guildId: d.guildId,
+                  sessionId: d.sessionId,
+                  userId: d.userId,
+               },
+            });
          }
 
          // CAPTURE THE OLD STATE BEFORE UPDATING

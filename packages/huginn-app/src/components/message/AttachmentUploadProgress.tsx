@@ -1,6 +1,7 @@
-import type { UploadProgress } from "@/types";
 import Tooltip from "@components/tooltip/Tooltip";
 import { getSizeText } from "@lib/utils";
+
+import type { UploadProgress } from "@/types";
 
 export default function AttachmentUploadProgress(props: { progress: UploadProgress }) {
    return (
@@ -8,7 +9,7 @@ export default function AttachmentUploadProgress(props: { progress: UploadProgre
          <IconMingcuteFileFill className="size-10 shrink-0 text-white/50" />
          <div className="flex w-full flex-col justify-center gap-y-2 overflow-hidden">
             <div className="flex gap-x-1">
-               <div className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm text-white">
+               <div className="w-full overflow-hidden text-sm text-ellipsis whitespace-nowrap text-white">
                   {props.progress.percentage === 100 ? (
                      <span className="italic">Processing...</span>
                   ) : props.progress.filenames?.length === 1 ? (

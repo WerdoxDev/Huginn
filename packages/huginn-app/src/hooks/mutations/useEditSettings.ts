@@ -1,4 +1,5 @@
 import type { UserSettings } from "@huginn/shared";
+
 import { useClient } from "@stores/clientStore";
 import { useMutation } from "@tanstack/react-query";
 

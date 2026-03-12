@@ -1,5 +1,7 @@
 import type { ResponseLike, UserTokenPayload } from "@huginn/shared";
+
 import * as jose from "jose";
+
 import type { CDNOptions, GatewayOptions, RESTOptions, VoiceOptions } from "./types";
 
 export function decodeToken(token: string): [boolean, (UserTokenPayload & jose.JWTPayload) | null] {

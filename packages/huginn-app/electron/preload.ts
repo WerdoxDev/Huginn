@@ -1,8 +1,10 @@
-import { contextBridge, ipcRenderer } from "electron";
-import type { ProgressInfo, UpdateInfo } from "electron-updater";
-import type { AudioSource, DisplaySource, StorageMap, FileType, KeybindType, LoadFileResult, SaveFileResult } from "@/types";
-import type { AppInfo, ProcessInfo } from "native-addon";
 import type { LogArgs } from "@huginn/shared";
+import type { ProgressInfo, UpdateInfo } from "electron-updater";
+import type { AppInfo, ProcessInfo } from "native-addon";
+
+import { contextBridge, ipcRenderer } from "electron";
+
+import type { AudioSource, DisplaySource, StorageMap, FileType, KeybindType, LoadFileResult, SaveFileResult } from "@/types";
 
 export const electronAPI = {
    // Window

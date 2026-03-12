@@ -1,5 +1,7 @@
-import clsx from "clsx";
 import type { ReactNode } from "react";
+
+import clsx from "clsx";
+
 import Tooltip from "./tooltip/Tooltip";
 
 export default function ImageSelector(props: {

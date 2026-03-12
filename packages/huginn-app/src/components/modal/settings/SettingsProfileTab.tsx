@@ -1,5 +1,12 @@
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
+import HuginnLabel from "@components/HuginnLabel";
+import HuginnInput from "@components/input/HuginnInput";
+import { usePatchUser } from "@hooks/mutations/usePatchUser";
+import { useHuginnForm } from "@hooks/useHuginnForm";
+import { useOAuth } from "@hooks/useOAuth";
+import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
+import { omit, type OAuthType } from "@huginn/shared";
 import { listenEvent } from "@lib/event-handler";
 import { getUserAvatarOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
@@ -7,14 +14,8 @@ import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+
 import type { SettingsTabProps } from "@/types";
-import HuginnLabel from "@components/HuginnLabel";
-import { useHuginnForm } from "@hooks/useHuginnForm";
-import HuginnInput from "@components/input/HuginnInput";
-import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
-import { usePatchUser } from "@hooks/mutations/usePatchUser";
-import { omit, type OAuthType } from "@huginn/shared";
-import { useOAuth } from "@hooks/useOAuth";
 
 type Inputs = {
    username: string;
@@ -31,7 +32,11 @@ export default function SettingsProfileTab(_props: SettingsTabProps) {
    const [editingField, setEditingField] = useState<EditingField>(null);
 
    const { register, values, setValue, handleErrors, reset } = useHuginnForm<Inputs>({
-      defaultValues: { username: user?.username, displayName: user?.originalDisplayName ?? undefined, email: user?.email },
+      defaultValues: {
+         username: user?.username,
+         displayName: user?.originalDisplayName ?? undefined,
+         email: user?.email,
+      },
    });
 
    const startOAuth = useOAuth();

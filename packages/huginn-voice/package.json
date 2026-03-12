@@ -2,6 +2,9 @@
    "name": "@huginn/voice",
    "version": "0.15.1",
    "type": "module",
+   "imports": {
+      "#*": "./src/*.ts"
+   },
    "scripts": {
       "start": "dotenvx run -- tsx ./src/index.ts",
       "dev": "dotenvx run -- tsx watch ./src/index.ts",
@@ -22,9 +25,6 @@
    "devDependencies": {
       "@types/node": "^20.19.27",
       "tsx": "^4.21.0"
-   },
-   "imports": {
-      "#*": "./src/*.ts"
    },
    "trustedDependencies": [
       "mediasoup"

@@ -1,9 +1,10 @@
-import { fileNotFound, globalPlugin } from "@huginn/backend-shared";
-import { type ImageFormats, fileTypes, isImageMediaType, isVideoMediaType } from "@huginn/shared";
 import type { S3Stats } from "bun";
+
 import { cacheStorage, envs, storage } from "#setup";
 import { extractFileInfo, transformImage } from "#utils/file-utils";
 import { getCacheDir } from "#utils/route-utils";
+import { fileNotFound, globalPlugin } from "@huginn/backend-shared";
+import { type ImageFormats, fileTypes, isImageMediaType, isVideoMediaType } from "@huginn/shared";
 import Elysia, { StatusMap, t } from "elysia";
 
 const querySchema = t.Object({
@@ -71,7 +72,10 @@ export const getMessageAttachment = new Elysia().use(globalPlugin).get(
          const cachedFile = await cacheStorage.getFile("attachments", `${channelId}/${messageId}/${cacheDir}`, filename);
 
          if (cachedFile) {
-            return new Response(cachedFile, { status: StatusMap["OK"], headers: { "content-type": mimeType } });
+            return new Response(cachedFile, {
+               status: StatusMap["OK"],
+               headers: { "content-type": mimeType },
+            });
          }
       }
 

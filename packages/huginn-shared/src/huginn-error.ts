@@ -1,10 +1,6 @@
-import {
-   type HuginnError,
-   type HuginnErrorData,
-   type HuginnErrorGroupWrapper,
-   type RequestBody, isErrorResponse
-} from "./errors";
 import type { InternalRequest } from "./rest-types";
+
+import { type HuginnError, type HuginnErrorData, type HuginnErrorGroupWrapper, type RequestBody, isErrorResponse } from "./errors";
 
 export class HuginnAPIError extends Error {
    public requestBody: RequestBody;
@@ -54,10 +50,10 @@ export class HuginnAPIError extends Error {
          const nextKey = otherKey.startsWith("_")
             ? key
             : key
-               ? Number.isNaN(Number(otherKey))
-                  ? `${key}.${otherKey}`
-                  : `${key}[${otherKey}]`
-               : otherKey;
+              ? Number.isNaN(Number(otherKey))
+                 ? `${key}.${otherKey}`
+                 : `${key}[${otherKey}]`
+              : otherKey;
 
          if (typeof val === "string") {
             yield val;

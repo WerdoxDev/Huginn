@@ -1,18 +1,21 @@
-import { useLogout } from "@hooks/useLogout";
-import { useModals } from "@stores/modalsStore";
-import { useMutation } from "@tanstack/react-query";
-import UserAvatar from "./UserAvatar";
-import UserActionButton from "./button/UserActionButton";
-import { useVoiceStore } from "@stores/voiceStore";
-import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
-import type { AppUser } from "@/types";
-import { DropdownMenu } from "./dropdown/DropdownMenu";
 import type { PresenceStatus } from "@huginn/shared";
-import { useClient } from "@stores/clientStore";
-import { presenceStatuses } from "@lib/utils";
-import clsx from "clsx";
-import { usePresence, usePresenceStore } from "@stores/presenceStore";
+
 import { useEditSettings } from "@hooks/mutations/useEditSettings";
+import { useLogout } from "@hooks/useLogout";
+import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
+import { presenceStatuses } from "@lib/utils";
+import { useClient } from "@stores/clientStore";
+import { useModals } from "@stores/modalsStore";
+import { usePresence, usePresenceStore } from "@stores/presenceStore";
+import { useVoiceStore } from "@stores/voiceStore";
+import { useMutation } from "@tanstack/react-query";
+import clsx from "clsx";
+
+import type { AppUser } from "@/types";
+
+import UserActionButton from "./button/UserActionButton";
+import { DropdownMenu } from "./dropdown/DropdownMenu";
+import UserAvatar from "./UserAvatar";
 
 export default function UserInfo(props: { user: AppUser }) {
    const { updateModals } = useModals();

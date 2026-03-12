@@ -1,5 +1,6 @@
 import { useHuginnWindow } from "@stores/windowStore";
 import { createPortal } from "react-dom";
+
 import ConnectionStatus from "./ConnectionStatus";
 
 export default function TitleBar() {
@@ -18,7 +19,10 @@ export default function TitleBar() {
    }
 
    return createPortal(
-      <div className="drag-region bg-surface fixed top-0 right-0 left-0 z-40 flex h-6 shrink-0 items-center overflow-hidden select-none">
+      <div
+         className="drag-region bg-surface fixed top-0 right-0 left-0 z-40 flex h-6 shrink-0 items-center overflow-hidden select-none"
+         style={{ viewTransitionName: "title-bar" }}
+      >
          <div className="text-text pointer-events-none mx-2 shrink-0 text-xs font-medium uppercase">Huginn</div>
          <ConnectionStatus />
          {huginnWindow.environment === "desktop" && (

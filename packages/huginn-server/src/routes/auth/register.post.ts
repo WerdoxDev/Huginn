@@ -1,7 +1,3 @@
-import { createHuginnError, createToken } from "@huginn/backend-shared";
-import { createErrorFactory } from "@huginn/backend-shared";
-import { prisma } from "@huginn/backend-shared/database";
-import { constants, type APIPostRegisterResult, Errors } from "@huginn/shared";
 import {
    validateDisplayName,
    validateEmail,
@@ -10,6 +6,10 @@ import {
    validateUsername,
    validateUsernameUnique,
 } from "#utils/validation";
+import { createHuginnError, createToken } from "@huginn/backend-shared";
+import { createErrorFactory } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
+import { constants, type APIPostRegisterResult, Errors } from "@huginn/shared";
 import Elysia, { t } from "elysia";
 
 const schema = t.Object({
@@ -58,7 +58,11 @@ export const postRegister = new Elysia().post(
          constants.REFRESH_TOKEN_EXPIRE_TIME,
       );
 
-      const json: APIPostRegisterResult = { ...user, token: accessToken, refreshToken: refreshToken };
+      const json: APIPostRegisterResult = {
+         ...user,
+         token: accessToken,
+         refreshToken: refreshToken,
+      };
 
       return status("Created", json);
    },

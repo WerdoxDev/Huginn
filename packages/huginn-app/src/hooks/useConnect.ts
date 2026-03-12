@@ -1,6 +1,8 @@
-import { useCallback } from "react";
-import { useInitializeClient } from "./useInitializeClient";
 import type { InitializationStatus } from "@huginn/api";
+
+import { useCallback } from "react";
+
+import { useInitializeClient } from "./useInitializeClient";
 
 export function useConnect() {
    const initialize = useInitializeClient();
@@ -10,10 +12,17 @@ export function useConnect() {
       const refreshToken = localStorage.getItem("refresh-token") ?? undefined;
 
       if (!token && !refreshToken) {
-         return { success: false, result: "invalid_tokens", retryable: false } as InitializationStatus;
+         return {
+            success: false,
+            result: "invalid_tokens",
+            retryable: false,
+         } as InitializationStatus;
       }
 
-      const result = await initialize({ token: token ?? undefined, refreshToken: refreshToken ?? undefined });
+      const result = await initialize({
+         token: token ?? undefined,
+         refreshToken: refreshToken ?? undefined,
+      });
 
       if (!result.retryable && !result.success) {
          localStorage.removeItem("refresh-token");

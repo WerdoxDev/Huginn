@@ -1,8 +1,8 @@
+import { filterMessage } from "#utils/helpers";
 import { missingAccess, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectAllMessage } from "@huginn/backend-shared/database/common";
 import { type APIGetChannelMessagesResult } from "@huginn/shared";
-import { filterMessage } from "#utils/helpers";
 import Elysia, { t } from "elysia";
 
 export const getChannelMessages = new Elysia().use(verifyJwt()).get(
@@ -23,5 +23,11 @@ export const getChannelMessages = new Elysia().use(verifyJwt()).get(
 
       return status("OK", messages);
    },
-   { query: t.Object({ limit: t.Optional(t.Number()), before: t.Optional(t.String()), after: t.Optional(t.String()) }) },
+   {
+      query: t.Object({
+         limit: t.Optional(t.Number()),
+         before: t.Optional(t.String()),
+         after: t.Optional(t.String()),
+      }),
+   },
 );

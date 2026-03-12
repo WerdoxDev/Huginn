@@ -1,18 +1,19 @@
-import DialogBody from "@components/DialogBody";
-import HuginnDialogPanel from "../HuginnDialogPanel";
-import HuginnInput from "@components/input/HuginnInput";
-import { useHuginnForm } from "@hooks/useHuginnForm";
-import DialogActions from "@components/DialogActions";
 import HuginnButton from "@components/button/HuginnButton";
-import HuginnDialogTitle from "@components/HuginnDialogTitle";
-import { useThisUser } from "@stores/userStore";
-import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
-import { useOAuth } from "@hooks/useOAuth";
-import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import LoadingButton from "@components/button/LoadingButton";
-import { useEffect } from "react";
+import DialogActions from "@components/DialogActions";
+import DialogBody from "@components/DialogBody";
+import HuginnDialogTitle from "@components/HuginnDialogTitle";
+import HuginnInput from "@components/input/HuginnInput";
+import { usePatchUser } from "@hooks/mutations/usePatchUser";
+import { useHuginnForm } from "@hooks/useHuginnForm";
+import { useOAuth } from "@hooks/useOAuth";
+import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import { JsonCode, type OAuthType, type HuginnErrorData } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
+import { useThisUser } from "@stores/userStore";
+import { useEffect } from "react";
+
+import HuginnDialogPanel from "../HuginnDialogPanel";
 
 type Inputs = {
    username: string;

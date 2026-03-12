@@ -1,13 +1,17 @@
+import { envs } from "#setup";
+import { cdnUpload, serverFetch } from "#utils/server-request";
 import { createToken, forbidden } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { CDNRoutes, constants, getFileHash, OAuthCode, snowflake, WorkerID } from "@huginn/shared";
 import { toSnakeCase } from "@std/text";
 import consola from "consola";
-import { envs } from "#setup";
-import { cdnUpload, serverFetch } from "#utils/server-request";
 import Elysia, { t } from "elysia";
 
-const querySchema = t.Object({ code: t.Optional(t.String()), error: t.Optional(t.String()), state: t.Optional(t.String()) });
+const querySchema = t.Object({
+   code: t.Optional(t.String()),
+   error: t.Optional(t.String()),
+   state: t.Optional(t.String()),
+});
 const cookieSchema = t.Cookie({
    oauth: t.Object({
       state: t.String(),
@@ -19,7 +23,14 @@ const cookieSchema = t.Cookie({
 
 type GoogleOAuth2Response =
    | { error: string }
-   | { access_token: string; expires_in: number; refresh_token: string; scope: string; token_type: string; id_token: string };
+   | {
+        access_token: string;
+        expires_in: number;
+        refresh_token: string;
+        scope: string;
+        token_type: string;
+        id_token: string;
+     };
 
 type GoogleUserResponse = {
    id: string;
@@ -73,7 +84,9 @@ export const getGoogleCallback = new Elysia().get(
             token: response.access_token,
          });
 
-         const identityProvider = await prisma.identityProvider.findUnique({ where: { providerUserId: googleUser.id } });
+         const identityProvider = await prisma.identityProvider.findUnique({
+            where: { providerUserId: googleUser.id },
+         });
 
          // Identity provider exists and is completed
          if (identityProvider?.completed && identityProvider?.userId) {
@@ -88,7 +101,11 @@ export const getGoogleCallback = new Elysia().get(
                constants.REFRESH_TOKEN_EXPIRE_TIME,
             );
 
-            const searchParam = new URLSearchParams({ flow, access_token: accessToken, refresh_token: refreshToken });
+            const searchParam = new URLSearchParams({
+               flow,
+               access_token: accessToken,
+               refresh_token: refreshToken,
+            });
             const redirectUrl = `${redirect_url}?${searchParam.toString()}`;
 
             return redirect(redirectUrl.toString(), 302);
@@ -112,9 +129,11 @@ export const getGoogleCallback = new Elysia().get(
          if (googleUser.picture) {
             const avatarData = await (await fetch(googleUser.picture.replace("s96-c", "s256-c"))).arrayBuffer();
             avatarHash = getFileHash(avatarData);
-            avatarHash = (await cdnUpload<string>(CDNRoutes.uploadAvatar(googleUser.id), { files: [{ data: avatarData, name: avatarHash }] })).split(
-               ".",
-            )[0];
+            avatarHash = (
+               await cdnUpload<string>(CDNRoutes.uploadAvatar(googleUser.id), {
+                  files: [{ data: avatarData, name: avatarHash }],
+               })
+            ).split(".")[0];
          }
 
          // Create an oauth token

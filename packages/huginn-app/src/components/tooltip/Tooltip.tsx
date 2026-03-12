@@ -1,11 +1,12 @@
 import { TooltipContext, useTooltip, useTooltipContext } from "@contexts/TooltipContext";
 import { useMergeRefs } from "@floating-ui/react";
 import { Portal, Transition } from "@headlessui/react";
+import { useIsMobile } from "@hooks/useIsMobile";
 import { omit } from "@huginn/shared";
 import clsx from "clsx";
 import { cloneElement, type HTMLProps, isValidElement, type ReactNode, useMemo } from "react";
+
 import type { TooltipOptions } from "@/types";
-import { useIsMobile } from "@hooks/useIsMobile";
 
 export default function Tooltip({ children, ...options }: { children: ReactNode } & TooltipOptions) {
    // This can accept any props as options, e.g. `placement`,
@@ -79,7 +80,7 @@ function Content(props: { arrowClassName?: string; extraStyle?: React.CSSPropert
          <Portal>
             <div
                className={clsx(
-                  "z-999 border-surface absolute whitespace-nowrap rounded-md border bg-zinc-900 px-2.5 py-1.5 text-base text-white/80 shadow-lg",
+                  "border-surface absolute z-999 rounded-md border bg-zinc-900 px-2.5 py-1.5 text-base whitespace-nowrap text-white/80 shadow-lg",
                   props.className,
                )}
                ref={ref}
@@ -92,11 +93,15 @@ function Content(props: { arrowClassName?: string; extraStyle?: React.CSSPropert
             >
                {context.getFloatingProps(props).children as ReactNode}
                <div
-                  style={{ left: context.middlewareData.arrow?.x, top: context.middlewareData.arrow?.y, [staticSide]: "-5px" }}
+                  style={{
+                     left: context.middlewareData.arrow?.x,
+                     top: context.middlewareData.arrow?.y,
+                     [staticSide]: "-5px",
+                  }}
                   ref={context.arrowRef}
                   className={clsx(
                      props.arrowClassName,
-                     "border-surface absolute h-2.5 w-2.5 border-l border-t bg-zinc-900",
+                     "border-surface absolute h-2.5 w-2.5 border-t border-l bg-zinc-900",
                      context.placement.includes("bottom") && "rotate-45",
                      context.placement.includes("top") && "rotate-[-135deg]",
                      context.placement.includes("left") && "-rotate-225",

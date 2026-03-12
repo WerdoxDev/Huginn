@@ -1,14 +1,17 @@
-import { createErrorFactory, createHuginnError, verifyJwt } from "@huginn/backend-shared";
-import { prisma } from "@huginn/backend-shared/database";
-import { selectChannelDefaults } from "@huginn/backend-shared/database/common";
-import { type APIPostDMChannelResult, ChannelType, Errors } from "@huginn/shared";
 import { gateway } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { channelWithoutRecipient, filterChannel } from "#utils/helpers";
 import { validateChannelName } from "#utils/validation";
+import { createErrorFactory, createHuginnError, verifyJwt } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
+import { selectChannelDefaults } from "@huginn/backend-shared/database/common";
+import { type APIPostDMChannelResult, ChannelType, Errors } from "@huginn/shared";
 import Elysia, { t } from "elysia";
 
-const schema = t.Object({ name: t.Optional(t.String()), recipients: t.Array(t.String(), { minItems: 1 }) });
+const schema = t.Object({
+   name: t.Optional(t.String()),
+   recipients: t.Array(t.String(), { minItems: 1 }),
+});
 
 export const postUserChannel = new Elysia().use(verifyJwt()).post(
    "/api/users/@me/channels",

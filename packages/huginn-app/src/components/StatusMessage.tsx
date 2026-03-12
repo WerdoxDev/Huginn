@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import type { StatusType } from "@/types";
 import clsx from "clsx";
+import { useEffect, useRef, useState } from "react";
+
+import type { StatusType } from "@/types";
 
 const STATUS_TEXT_COLORS: Record<StatusType, string> = {
    none: "",

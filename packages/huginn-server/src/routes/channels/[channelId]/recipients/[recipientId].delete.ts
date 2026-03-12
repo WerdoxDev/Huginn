@@ -1,10 +1,10 @@
+import { gateway } from "#setup";
+import { dispatchToTopic } from "#utils/gateway-utils";
+import { dispatchMessage } from "#utils/helpers";
 import { missingAccess, missingPermission, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectChannelRecipients } from "@huginn/backend-shared/database/common";
 import { ChannelType, Errors, MessageFlags, MessageType } from "@huginn/shared";
-import { gateway } from "#setup";
-import { dispatchToTopic } from "#utils/gateway-utils";
-import { dispatchMessage } from "#utils/helpers";
 import { Elysia } from "elysia";
 
 export const deleteChannelRecipient = new Elysia()
@@ -12,7 +12,9 @@ export const deleteChannelRecipient = new Elysia()
    .delete("/api/channels/:channelId/recipients/:recipientId", async ({ params: { channelId, recipientId }, status, tokenPayload }) => {
       await prisma.user.assertUsersExist("/channels/:channelId/recipients/:recipientId", [recipientId]);
 
-      const channel = await prisma.channel.getById(channelId, { select: { ...selectChannelRecipients, type: true, ownerId: true } });
+      const channel = await prisma.channel.getById(channelId, {
+         select: { ...selectChannelRecipients, type: true, ownerId: true },
+      });
       if (!channel.recipients.find((x) => x.id === tokenPayload.id)) {
          return missingAccess(status);
       }

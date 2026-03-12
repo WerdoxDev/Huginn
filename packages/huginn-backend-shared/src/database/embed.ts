@@ -1,6 +1,7 @@
-import { WorkerID, snowflake } from "@huginn/shared";
-import { Prisma, prisma } from "#database";
 import type { DBThumbnail, DBVideo } from "#types";
+
+import { Prisma, prisma } from "#database";
+import { WorkerID, snowflake } from "@huginn/shared";
 
 export const embedExtension = Prisma.defineExtension({
    model: {
@@ -15,7 +16,14 @@ export const embedExtension = Prisma.defineExtension({
             video?: DBVideo,
          ) {
             const embed = await prisma.embed.create({
-               data: { id: snowflake.generate(WorkerID.EMBED), title, description, url, type, timestamp },
+               data: {
+                  id: snowflake.generate(WorkerID.EMBED),
+                  title,
+                  description,
+                  url,
+                  type,
+                  timestamp,
+               },
             });
 
             if (thumbnail) {

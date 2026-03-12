@@ -1,5 +1,5 @@
-import { type APIPostUniqueUsernameResult } from "@huginn/shared";
 import { validateUsernameUnique } from "#utils/validation";
+import { type APIPostUniqueUsernameResult } from "@huginn/shared";
 import Elysia, { t } from "elysia";
 
 const schema = t.Object({ username: t.String() });

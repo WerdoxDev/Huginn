@@ -1,7 +1,8 @@
-import type { Environment } from "@/types";
 import { dispatchEvent } from "@lib/event-handler";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
+
+import type { Environment } from "@/types";
 
 const store = createStore(
    combine(

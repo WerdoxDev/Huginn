@@ -1,15 +1,23 @@
 import type { DeepPartial, Snowflake } from "@huginn/shared";
+import type { ReactNode } from "react";
+
 import { produce } from "immer";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
+
 import type { AppDirectChannel, MutationKinds } from "@/types";
-import type { ReactNode } from "react";
 
 type DefaultModal = { isOpen: boolean };
 
 const initialStore = () => ({
    settings: { isOpen: false, isClosable: true } as DefaultModal & { isClosable: boolean },
-   info: { isOpen: false, status: "none", title: "", text: "", isClosable: true } as DefaultModal & {
+   info: {
+      isOpen: false,
+      status: "none",
+      title: "",
+      text: "",
+      isClosable: true,
+   } as DefaultModal & {
       status: "info" | "success" | "error" | "none";
       text: ReactNode;
       title: string;
@@ -52,7 +60,9 @@ const initialStore = () => ({
       }) => Promise<void>;
       type: "create" | "change";
    },
-   streamAudio: { isOpen: false, callback: undefined } as DefaultModal & { callback?: (sourceProcessId: string) => void },
+   streamAudio: { isOpen: false, callback: undefined } as DefaultModal & {
+      callback?: (sourceProcessId: string) => void;
+   },
    changeUsername: { isOpen: false } as DefaultModal,
    changeDisplayName: { isOpen: false } as DefaultModal,
    changeEmail: { isOpen: false } as DefaultModal,

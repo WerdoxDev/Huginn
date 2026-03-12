@@ -1,8 +1,8 @@
-import { describe, expect, test } from "bun:test";
-import { testHandler } from "@huginn/backend-shared";
-import { type APIPatchMessageResult, type APIPostMessageResult, ChannelType, MessageType } from "@huginn/shared";
 import { expectMessageExactSchema } from "#tests/expect-utils";
 import { authHeader, createTestChannel, createTestMessages, createTestUsers, getReadyWebSocket, testIsDispatch } from "#tests/utils";
+import { testHandler } from "@huginn/backend-shared";
+import { type APIPatchMessageResult, type APIPostMessageResult, ChannelType, MessageType } from "@huginn/shared";
+import { describe, expect, test } from "bun:test";
 
 describe("PATCH /api/channels/:channelId/messages/:messageId", () => {
    test("should return 'Invalid Form Body' when id is invalid or body constrains are not met", async () => {
@@ -31,7 +31,9 @@ describe("PATCH /api/channels/:channelId/messages/:messageId", () => {
       const [message] = await createTestMessages(channel.id, user2.id, 1);
 
       // No token
-      const result = testHandler(`/api/channels/${channel.id}/messages/${message.id}`, {}, "PATCH", { content: "test" });
+      const result = testHandler(`/api/channels/${channel.id}/messages/${message.id}`, {}, "PATCH", {
+         content: "test",
+      });
       expect(result).rejects.toThrow("Unauthorized");
 
       // User does not have the channel
@@ -83,14 +85,9 @@ describe("PATCH /api/channels/:channelId/messages/:messageId", () => {
                expect(data.d.embeds).toHaveLength(1);
 
                isDone = true;
-               const result2 = (await testHandler(
-                  `/api/channels/${channel.id}/messages/${data.d.id}`,
-                  authHeader(user.accessToken),
-                  "PATCH",
-                  {
-                     embeds: [],
-                  },
-               )) as APIPatchMessageResult;
+               const result2 = (await testHandler(`/api/channels/${channel.id}/messages/${data.d.id}`, authHeader(user.accessToken), "PATCH", {
+                  embeds: [],
+               })) as APIPatchMessageResult;
 
                expect(result2.embeds).toBeArray();
                expect(result2.embeds).toHaveLength(0);

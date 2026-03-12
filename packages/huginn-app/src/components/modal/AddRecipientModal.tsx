@@ -1,6 +1,8 @@
-import type { AppUser } from "@/types";
 import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
+import DialogActions from "@components/DialogActions";
+import DialogBody from "@components/DialogBody";
+import HuginnDialogTitle from "@components/HuginnDialogTitle";
 import AddRecipientInput from "@components/input/AddRecipientInput";
 import { Description, DialogTitle } from "@headlessui/react";
 import { useChannelRecipients } from "@hooks/api-hooks/channelHooks";
@@ -10,10 +12,10 @@ import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+
+import type { AppUser } from "@/types";
+
 import HuginnDialogPanel from "./HuginnDialogPanel";
-import DialogBody from "@components/DialogBody";
-import DialogActions from "@components/DialogActions";
-import HuginnDialogTitle from "@components/HuginnDialogTitle";
 // import { usePostHog } from "posthog-js/react";
 
 export default function AddRecipientModal() {

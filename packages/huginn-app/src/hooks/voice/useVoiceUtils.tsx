@@ -1,12 +1,13 @@
-import { useClient } from "@stores/clientStore";
+import type { VoiceStreamOptions } from "@huginn/api";
+
 import { useFullscreen } from "@hooks/useFullscreen";
-import { useHuginnWindow } from "@stores/windowStore";
+import { error, type Snowflake } from "@huginn/shared";
+import { getMediaErrorMessage } from "@lib/utils";
+import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useStorage } from "@stores/storageStore";
 import { useThisUser } from "@stores/userStore";
-import { getMediaErrorMessage } from "@lib/utils";
-import { error, type Snowflake } from "@huginn/shared";
-import type { VoiceStreamOptions } from "@huginn/api";
+import { useHuginnWindow } from "@stores/windowStore";
 
 export function useVoiceUtils() {
    const { user } = useThisUser();
@@ -20,7 +21,9 @@ export function useVoiceUtils() {
 
    async function toggleMute() {
       const voiceState = client?.voiceManager.voiceState.gatewayVoiceState;
-      await client?.voiceManager.voiceState.updateGatewayVoiceState({ isAudioMuted: !(voiceState?.isAudioMuted ?? false) });
+      await client?.voiceManager.voiceState.updateGatewayVoiceState({
+         isAudioMuted: !(voiceState?.isAudioMuted ?? false),
+      });
    }
 
    async function toggleDeafen() {
@@ -104,7 +107,12 @@ export function useVoiceUtils() {
                      } catch (e) {
                         error("app:hooks", "open screen share failed", e);
                         updateModals({
-                           info: { status: "error", title: "Screen Sharing Failed", text: getMediaErrorMessage(e, "screen"), isOpen: true },
+                           info: {
+                              status: "error",
+                              title: "Screen Sharing Failed",
+                              text: getMediaErrorMessage(e, "screen"),
+                              isOpen: true,
+                           },
                         });
 
                         await closeStream();
@@ -116,7 +124,12 @@ export function useVoiceUtils() {
       } catch (e) {
          error("app:hooks", "open screen share failed", e);
          updateModals({
-            info: { status: "error", title: "Screen Sharing Failed", text: getMediaErrorMessage(e, "screen"), isOpen: true },
+            info: {
+               status: "error",
+               title: "Screen Sharing Failed",
+               text: getMediaErrorMessage(e, "screen"),
+               isOpen: true,
+            },
          });
 
          await closeStream();
@@ -151,7 +164,12 @@ export function useVoiceUtils() {
                } catch (e) {
                   error("app:hooks", "open audio stream failed", e);
                   updateModals({
-                     info: { status: "error", title: "Audio Stream Failed", text: "An unexpected error occurred. Please try again.", isOpen: true },
+                     info: {
+                        status: "error",
+                        title: "Audio Stream Failed",
+                        text: "An unexpected error occurred. Please try again.",
+                        isOpen: true,
+                     },
                   });
 
                   await closeStream();
@@ -176,7 +194,12 @@ export function useVoiceUtils() {
       } catch (e) {
          error("app:hooks", "open camera failed", e);
          updateModals({
-            info: { status: "error", title: "Opening Camera Failed", text: getMediaErrorMessage(e, "camera"), isOpen: true },
+            info: {
+               status: "error",
+               title: "Opening Camera Failed",
+               text: getMediaErrorMessage(e, "camera"),
+               isOpen: true,
+            },
          });
 
          await closeCamera();
@@ -291,7 +314,12 @@ export function useVoiceUtils() {
       } catch (e) {
          error("app:hooks", "close camera failed", e);
          updateModals({
-            info: { status: "error", title: "Closing Camera Failed", text: getMediaErrorMessage(e, "camera"), isOpen: true },
+            info: {
+               status: "error",
+               title: "Closing Camera Failed",
+               text: getMediaErrorMessage(e, "camera"),
+               isOpen: true,
+            },
          });
       }
    }

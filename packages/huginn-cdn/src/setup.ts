@@ -1,8 +1,9 @@
-import { readEnv } from "@huginn/runtime-shared";
-import pathe from "pathe";
+import type { Storage } from "#storage/storage";
+
 import { FileStorage } from "#storage/file-storage";
 import { S3Storage } from "#storage/s3-storage";
-import type { Storage } from "#storage/storage";
+import { readEnv } from "@huginn/runtime-shared";
+import pathe from "pathe";
 
 export const envs = readEnv([
    "CDN_HOST",

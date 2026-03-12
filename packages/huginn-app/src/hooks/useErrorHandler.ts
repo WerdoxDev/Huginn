@@ -8,16 +8,29 @@ export function useErrorHandler(action?: ReturnType<typeof useModals>["info"]["a
    function handleError(error: unknown) {
       if (error instanceof HTTPError) {
          if (error.status === 500) {
-            updateModals({ info: { isOpen: true, ...messages.serverError(), status: "error", action: action } });
+            updateModals({
+               info: { isOpen: true, ...messages.serverError(), status: "error", action: action },
+            });
          }
       } else if (error instanceof TypeError) {
          if (error.message.toLowerCase() === "failed to fetch") {
-            updateModals({ info: { isOpen: true, ...messages.connectionLostError(), status: "error", action: action } });
+            updateModals({
+               info: {
+                  isOpen: true,
+                  ...messages.connectionLostError(),
+                  status: "error",
+                  action: action,
+               },
+            });
          } else {
-            updateModals({ info: { isOpen: true, ...messages.appError(), status: "error", action: action } });
+            updateModals({
+               info: { isOpen: true, ...messages.appError(), status: "error", action: action },
+            });
          }
       } else if (error instanceof Error) {
-         updateModals({ info: { isOpen: true, ...messages.appError(), status: "error", action: action } });
+         updateModals({
+            info: { isOpen: true, ...messages.appError(), status: "error", action: action },
+         });
       }
    }
 

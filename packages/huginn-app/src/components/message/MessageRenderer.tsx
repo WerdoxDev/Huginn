@@ -2,6 +2,7 @@ import { MessageContext } from "@contexts/MessageProvider";
 import { useIsInView } from "@hooks/useIsInView";
 import { MessageType } from "@huginn/shared";
 import { useContext, useEffect } from "react";
+
 import ActionMessage from "./ActionMessage";
 import DefaultMessage from "./DefaultMessage";
 

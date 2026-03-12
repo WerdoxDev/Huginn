@@ -1,14 +1,31 @@
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
 import { useStorage } from "@stores/storageStore";
 import { ceruleanTheme, charcoalTheme, coffeeTheme, eggplantTheme, pineGreenTheme, scarletTheme } from "@stores/themeStore";
+
 import type { DropdownItem, SettingsTabProps, ThemeType } from "@/types";
 
 const themes: DropdownItem[] = [
-   { text: "Pine Green", value: "pine green", icon: <ThemeIcon color={pineGreenTheme["primary-500"]} /> },
-   { text: "Cerulean", value: "cerulean", icon: <ThemeIcon color={ceruleanTheme["primary-500"]} /> },
-   { text: "Eggplant", value: "eggplant", icon: <ThemeIcon color={eggplantTheme["primary-500"]} /> },
+   {
+      text: "Pine Green",
+      value: "pine green",
+      icon: <ThemeIcon color={pineGreenTheme["primary-500"]} />,
+   },
+   {
+      text: "Cerulean",
+      value: "cerulean",
+      icon: <ThemeIcon color={ceruleanTheme["primary-500"]} />,
+   },
+   {
+      text: "Eggplant",
+      value: "eggplant",
+      icon: <ThemeIcon color={eggplantTheme["primary-500"]} />,
+   },
    { text: "Coffee", value: "coffee", icon: <ThemeIcon color={coffeeTheme["primary-500"]} /> },
-   { text: "Charcoal", value: "charcoal", icon: <ThemeIcon color={charcoalTheme["primary-500"]} /> },
+   {
+      text: "Charcoal",
+      value: "charcoal",
+      icon: <ThemeIcon color={charcoalTheme["primary-500"]} />,
+   },
    { text: "Scarlet", value: "scarlet", icon: <ThemeIcon color={scarletTheme["primary-500"]} /> },
 ];
 

@@ -1,4 +1,5 @@
 import { constants } from "@huginn/shared";
+
 import type { StorageMap } from "../src/types";
 
 export const storageDefaults: StorageMap = {

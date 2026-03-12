@@ -25,7 +25,13 @@ function TabGroup(props: {
    className?: string;
 }) {
    return (
-      <TabContext.Provider value={{ onChange: props.onChange, selectedIndex: props.selectedIndex, displayIndex: props.displayIndex }}>
+      <TabContext.Provider
+         value={{
+            onChange: props.onChange,
+            selectedIndex: props.selectedIndex,
+            displayIndex: props.displayIndex,
+         }}
+      >
          <div className={props.className}>{props.children}</div>
       </TabContext.Provider>
    );

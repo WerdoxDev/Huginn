@@ -1,8 +1,10 @@
+import type { HuginnClient } from "@huginn/api";
+
 import { log } from "@huginn/shared";
-import { AudioLevelChecker } from "./audio-level-checker";
 import { storageStore } from "@stores/storageStore";
 import { voiceStore } from "@stores/voiceStore";
-import type { HuginnClient } from "@huginn/api";
+
+import { AudioLevelChecker } from "./audio-level-checker";
 
 export class VoiceInputDevice {
    public currentStream?: MediaStream;

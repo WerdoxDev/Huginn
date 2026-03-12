@@ -2,6 +2,7 @@ import { useSafeDeleteDMChannel } from "@hooks/api-hooks/channelHooks";
 import { ChannelType } from "@huginn/shared";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
+
 import ContextMenu from "./ContextMenu";
 
 export default function ChannelsContextMenu() {

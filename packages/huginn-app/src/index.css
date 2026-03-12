@@ -268,6 +268,15 @@ input::-ms-clear {
    border-radius: 0.5rem;
 }
 
+@keyframes rotating {
+   from {
+      transform: rotate(0deg);
+   }
+   to {
+      transform: rotate(360deg);
+   }
+}
+
 @keyframes fade-in {
    from {
       opacity: 0;
@@ -282,13 +291,25 @@ input::-ms-clear {
 
 @keyframes scale-down {
    to {
-      transform: scale(0.75, 0.75);
+      transform: scale(0, 0);
    }
 }
 
 @keyframes scale-up {
    from {
-      transform: scale(0.75, 0.75);
+      transform: scale(0, 0);
+   }
+}
+
+@keyframes slide-from-right {
+   from {
+      transform: translateX(100%);
+   }
+}
+
+@keyframes slide-from-left {
+   from {
+      transform: translateX(-100%);
    }
 }
 
@@ -304,6 +325,24 @@ input::-ms-clear {
    }
 }
 
+@keyframes slide-to-top {
+   to {
+      transform: translateY(-100%);
+   }
+}
+
+@keyframes slide-from-top {
+   from {
+      transform: translateY(-100%);
+   }
+}
+
+@keyframes slide-from-bottom {
+   from {
+      transform: translateY(100%);
+   }
+}
+
 @keyframes scale-up-large {
    to {
       transform: scale(10, 10);
@@ -316,61 +355,144 @@ input::-ms-clear {
    }
 }
 
-::view-transition-old(start) {
-   animation: fade-out 500ms both;
-   mix-blend-mode: plus-lighter;
+@keyframes background-forwards {
+   to {
+      transform: scale(5);
+      filter: blur(10px);
+   }
 }
 
-::view-transition-new(start) {
-   animation: fade-in 500ms both;
-   mix-blend-mode: plus-lighter;
+@keyframes background-backwards {
+   from {
+      opacity: 0;
+      filter: blur(10px);
+      transform: scale(2);
+   }
+   to {
+      opacity: 1;
+   }
 }
 
-::view-transition-old(start-surface) {
-   display: none;
-}
-::view-transition-new(start-surface) {
-   animation: none;
+@keyframes start-enter {
+   0% {
+      transform: scale(0.8);
+      filter: blur(10px);
+      opacity: 0;
+   }
+   75% {
+      filter: blur(0px);
+      opacity: 1;
+   }
+   100% {
+      transform: scale(1);
+   }
 }
 
-#start-form {
-   animation:
-      fade-in 350ms both,
-      scale-up 350ms both;
+@keyframes start-leave {
+   100% {
+      opacity: 0;
+      transform: scale(0.8);
+      filter: blur(50px) grayscale(1);
+   }
 }
 
-html::view-transition-group(root),
-html::view-transition-new(root),
-html::view-transition-old(root) {
-   animation: none;
+@keyframes main-enter {
+   0% {
+      opacity: 0;
+      transform: scale(0.9);
+      filter: blur(10px);
+   }
+   50% {
+      opacity: 1;
+   }
+}
+
+@keyframes main-leave {
+   0% {
+      opacity: 1;
+   }
+   50% {
+      transform: scale(0.9);
+   }
+   100% {
+      opacity: 0;
+      transform: scale(0.9);
+      filter: blur(50px);
+   }
 }
 
 ::view-transition-new(start-login),
 ::view-transition-new(start-register),
 ::view-transition-new(start-oauth-redirect) {
-   animation:
-      fade-in 350ms both,
-      scale-up 350ms both;
+   animation: start-enter 500ms both ease-in-out;
 }
 
 ::view-transition-old(start-login),
 ::view-transition-old(start-register),
 ::view-transition-old(start-oauth-redirect) {
-   animation:
-      fade-out 250ms both,
-      scale-down 250ms both;
+   animation: start-leave 500ms both ease-in-out;
 }
 
 ::view-transition-new(start-index) {
-   animation:
-      fade-in 350ms both,
-      scale-up 350ms both;
+   animation: fade-in 250ms both;
+   /* scale-up 250ms both; */
 }
 
 ::view-transition-old(start-index) {
-   animation:
-      fade-out 250ms both,
-      scale-down 250ms both;
+   /* z-index: 999; */
+   /* position: fixed; */
+   animation: fade-out 250ms both;
+   /* scale-down 250ms both; */
+}
+
+::view-transition-group(start-login),
+::view-transition-group(start-register),
+::view-transition-group(start-oauth-redirect),
+::view-transition-group(start-index) {
+   z-index: 100;
+}
+
+::view-transition-new(main) {
+   animation: main-enter 1500ms both 500ms;
+}
+
+::view-transition-old(main) {
+   animation: main-leave 2000ms both;
+}
+
+html:active-view-transition-type(forwards) {
+   /* &::view-transition-new(start-login),
+   &::view-transition-new(start-register),
+   &::view-transition-new(start-oauth-redirect),
+   &::view-transition-new(start-index) {
+      animation-delay: 1000ms;
+   } */
+
+   &::view-transition-new(start-background) {
+      animation: background-forwards 1500ms both 250ms;
+   }
+
+   &::view-transition-old(start-background) {
+      display: none;
+   }
+}
+
+html:active-view-transition-type(backwards) {
+   &::view-transition-new(start-login),
+   &::view-transition-new(start-register),
+   &::view-transition-new(start-oauth-redirect),
+   &::view-transition-new(start-index) {
+      animation-delay: 1000ms;
+   }
+
+   &::view-transition-new(start-background) {
+      opacity: 0;
+      animation: background-backwards 750ms both 500ms;
+   }
+
+   &::view-transition-old(start-background) {
+      display: none;
+   }
 }
 
 .hljs-comment {

@@ -1,21 +1,23 @@
+import LoadingButton from "@components/button/LoadingButton";
 import DisplayPreview from "@components/DisplayPreview";
+import HuginnDropdown from "@components/dropdown/HuginnDropdown";
+import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnTab from "@components/HuginnTab";
+import HuginnRange from "@components/input/HuginnRange";
 import LoadingIcon from "@components/LoadingIcon";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
+import { useMediaSources } from "@hooks/voice/useMediaSources";
+import { constants } from "@huginn/shared";
+import { screenShareFrameRates, screenShareQualities } from "@lib/constants";
 import { useClient } from "@stores/clientStore";
+import { useDevice } from "@stores/deviceStore";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, useTransition } from "react";
+
 import type { DisplaySource, DropdownItem } from "@/types";
-import HuginnDropdown from "@components/dropdown/HuginnDropdown";
-import HuginnCheckbox from "@components/HuginnCheckbox";
-import HuginnRange from "@components/input/HuginnRange";
-import { constants } from "@huginn/shared";
-import { useDevice } from "@stores/deviceStore";
-import LoadingButton from "@components/button/LoadingButton";
-import { screenShareFrameRates, screenShareQualities } from "@lib/constants";
-import { useMediaSources } from "@hooks/voice/useMediaSources";
+
 import HuginnDialogPanel from "./HuginnDialogPanel";
 
 // const qualities: DropdownItem[] = [
@@ -25,8 +27,14 @@ import HuginnDialogPanel from "./HuginnDialogPanel";
 //    { text: "Ultra (1440p)", value: "ultra" },
 // ];
 
-const qualityOptions: DropdownItem[] = screenShareQualities.map((x) => ({ text: `${x.name} ${x.height}p`, value: x.value }));
-const frameRateOptions: DropdownItem[] = screenShareFrameRates.map((x) => ({ text: `${x} fps`, value: x.toString() }));
+const qualityOptions: DropdownItem[] = screenShareQualities.map((x) => ({
+   text: `${x.name} ${x.height}p`,
+   value: x.value,
+}));
+const frameRateOptions: DropdownItem[] = screenShareFrameRates.map((x) => ({
+   text: `${x} fps`,
+   value: x.toString(),
+}));
 
 // const framerates: DropdownItem[] = [
 //    { text: "5 fps", value: "5" },
@@ -156,7 +164,11 @@ export default function ScreenShareModal() {
                        autoGainControl: false,
                     }
                   : false,
-               video: { frameRate: { ideal: frameRate }, width: { ideal: width }, height: { ideal: height } },
+               video: {
+                  frameRate: { ideal: frameRate },
+                  width: { ideal: width },
+                  height: { ideal: height },
+               },
             });
          }
 
@@ -270,7 +282,7 @@ export default function ScreenShareModal() {
             )}
             <div className="bg-surface h-px w-full px-0" />
             <Disclosure>
-               <DisclosureButton className="hover:text-primary-500 group flex cursor-pointer items-center text-white transition-colors">
+               <DisclosureButton className="group hover:text-primary-500 flex cursor-pointer items-center text-white transition-colors">
                   <span>Advanced</span>
                   <IconMingcuteDownFill className="ml-auto h-4 w-4 shrink-0 transition-transform group-data-open:rotate-180" />
                </DisclosureButton>

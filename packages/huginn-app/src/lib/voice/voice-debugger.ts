@@ -1,3 +1,9 @@
+import type { HuginnClient } from "@huginn/api";
+import type { Snowflake } from "@huginn/shared";
+
+import { voiceStore } from "@stores/voiceStore";
+import { windowStore } from "@stores/windowStore";
+
 import type {
    ALCData,
    ASPData,
@@ -12,13 +18,12 @@ import type {
    UsersDebugData,
    Environment,
 } from "@/types";
-import type { HuginnClient } from "@huginn/api";
+
+import { queryClient } from "@/lib/queries";
+
 import type { VoiceBridge } from "./voice-bridge";
+
 import { WebRTCStatsParser } from "./stats-parser";
-import { voiceStore } from "@stores/voiceStore";
-import { queryClient } from "@/root";
-import type { Snowflake } from "@huginn/shared";
-import { windowStore } from "@stores/windowStore";
 
 export class VoiceDebugger {
    private client: HuginnClient<VoiceBridge>;
@@ -207,12 +212,19 @@ export class VoiceDebugger {
 
          const statsParsersData: Array<StatsParserData> = Array.from(this.statsParsers.values().map((x) => ({ id: x.id, type: x.type })));
 
-         const remoteConsumersData: Array<ConsumerDebugData> = this.client.voice.transport
-            .getRemoteConsumers()
-            .map((x) => ({ id: x.consumerId, producerId: x.producerId, mediaKind: x.kind, type: "remote", userId: x.userId }));
-         const remoteProducersData: Array<ProducerDebugData> = this.client.voice.transport
-            .getRemoteProducers()
-            .map((x) => ({ id: x.producerId, mediaKind: x.kind, type: "remote", userId: x.userId }));
+         const remoteConsumersData: Array<ConsumerDebugData> = this.client.voice.transport.getRemoteConsumers().map((x) => ({
+            id: x.consumerId,
+            producerId: x.producerId,
+            mediaKind: x.kind,
+            type: "remote",
+            userId: x.userId,
+         }));
+         const remoteProducersData: Array<ProducerDebugData> = this.client.voice.transport.getRemoteProducers().map((x) => ({
+            id: x.producerId,
+            mediaKind: x.kind,
+            type: "remote",
+            userId: x.userId,
+         }));
 
          const store = voiceStore.getState();
          const voiceStatesData: Array<VoiceStatesDebugData> = store.voiceStates.map((x) => ({

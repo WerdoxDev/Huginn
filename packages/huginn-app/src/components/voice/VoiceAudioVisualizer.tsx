@@ -1,7 +1,7 @@
-import { hexToRgbObject, useTheme } from "@stores/themeStore";
-import { useEffect, useMemo, useRef, useState } from "react";
-import clsx from "clsx";
 import { remap } from "@huginn/shared";
+import { hexToRgbObject, useTheme } from "@stores/themeStore";
+import clsx from "clsx";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export default function VoiceAudioVisualizer(props: { track?: MediaStreamTrack }) {
    const canvasRef = useRef<HTMLCanvasElement>(null);

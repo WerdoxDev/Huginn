@@ -1,7 +1,8 @@
+import type { TwitchOAuthResult, IGDBSearchResult } from "#utils/types";
+
 import { envs } from "#setup";
 import { filterKnownApplication } from "#utils/helpers";
 import { serverFetch } from "#utils/server-request";
-import type { TwitchOAuthResult, IGDBSearchResult } from "#utils/types";
 import { invalidBody, notFound, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma, selectKnownApplication } from "@huginn/backend-shared/database/index";
 import { constants, Errors, findClosestString, type APIPostKnownApplicationResult } from "@huginn/shared";
@@ -49,7 +50,12 @@ export const postKnownApplication = new Elysia().use(verifyJwt()).post(
          }
       }
 
-      if (await prisma.knownApplication.exists({ names: { hasSome: searchableNames.map((x) => x.name) }, exeName: exeName })) {
+      if (
+         await prisma.knownApplication.exists({
+            names: { hasSome: searchableNames.map((x) => x.name) },
+            exeName: exeName,
+         })
+      ) {
          return singleError(Errors.knownApplicationExists(), status);
       }
 
@@ -64,7 +70,13 @@ export const postKnownApplication = new Elysia().use(verifyJwt()).post(
          const names = searchableNames.filter((x) => x.id === resultMatch?.id).map((x) => x.name);
 
          const createdKnownApplication = await prisma.knownApplication.createOne(
-            { names, exeName, contributorId: tokenPayload.id, igdbId: resultMatch?.id, isActive: true },
+            {
+               names,
+               exeName,
+               contributorId: tokenPayload.id,
+               igdbId: resultMatch?.id,
+               isActive: true,
+            },
             { select: selectKnownApplication },
          );
 
@@ -73,7 +85,12 @@ export const postKnownApplication = new Elysia().use(verifyJwt()).post(
       } else {
          // Create an inactive field just to have user submissions recorded
          await prisma.knownApplication.createOne(
-            { names: [title], exeName: exeName ?? "", contributorId: tokenPayload.id, isActive: false },
+            {
+               names: [title],
+               exeName: exeName ?? "",
+               contributorId: tokenPayload.id,
+               isActive: false,
+            },
             { select: selectKnownApplication },
          );
       }

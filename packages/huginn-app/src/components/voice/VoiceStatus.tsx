@@ -1,18 +1,20 @@
+import type { VoiceStatus } from "@huginn/api";
+
+import StreamButton from "@components/button/StreamButton";
+import UserActionButton from "@components/button/UserActionButton";
+import VoiceControlButton from "@components/button/VoiceControlButton";
+import { DropdownMenu } from "@components/dropdown/DropdownMenu";
+import { useChannel } from "@hooks/api-hooks/channelHooks";
+import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 import { useClient, useClientStore } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore } from "@stores/voiceStore";
+import { Link } from "@tanstack/react-router";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useState } from "react";
-import { NavLink } from "react-router";
+
 import Tooltip from "../tooltip/Tooltip";
-import UserActionButton from "@components/button/UserActionButton";
-import StreamButton from "@components/button/StreamButton";
-import VoiceControlButton from "@components/button/VoiceControlButton";
-import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
-import { useChannel } from "@hooks/api-hooks/channelHooks";
-import { DropdownMenu } from "@components/dropdown/DropdownMenu";
-import type { VoiceStatus } from "@huginn/api";
 
 const statuses: Record<VoiceStatus, { text: string; color?: string }> = {
    disconnected: { text: "Disconnected", color: "!text-negative-100" },
@@ -97,9 +99,9 @@ export default function VoiceStatus() {
                         {statuses[voiceStatus ?? "idle"].text}
                      </div>
                   </div>
-                  <NavLink prefetch="intent" to={`/channels/@me/${voiceConnection.channelId}`} className="text-text/70 ml-7 text-xs hover:underline">
+                  <Link preload="intent" to={`/channels/@me/${voiceConnection.channelId}`} className="text-text/70 ml-7 text-xs hover:underline">
                      {channel?.name}
-                  </NavLink>
+                  </Link>
                </div>
                <div className="ml-auto flex gap-x-1">
                   <UserActionButton tooltip="Debug" onClick={onDebug} hoverColor="surface-alt" innerClassName="group-hover:rotate-0">
@@ -129,7 +131,7 @@ export default function VoiceStatus() {
                      isActive={voiceState.isAudioStreaming || voiceState.isScreenSharing}
                      asChild
                      tooltip={voiceState.isAudioStreaming || voiceState.isScreenSharing ? "Stream Options" : "Start Stream"}
-                     className={clsx("px-0! flex h-9 w-full items-center justify-center rounded-md")}
+                     className={clsx("flex h-9 w-full items-center justify-center rounded-md px-0!")}
                   >
                      <DropdownMenu.Button>
                         <IconMingcuteMonitorFill className="size-5 shrink-0" />
@@ -146,7 +148,7 @@ export default function VoiceStatus() {
                   isActive={voiceState.isCameraOn}
                   onClick={() => (voiceState.isCameraOn ? closeCamera() : openCamera())}
                   tooltip={voiceState.isCameraOn ? "Turn off camera" : "Turn on camera"}
-                  className={clsx("px-0! flex h-9 w-full items-center justify-center rounded-md")}
+                  className={clsx("flex h-9 w-full items-center justify-center rounded-md px-0!")}
                >
                   <IconMingcuteCamera2Fill className="size-6" />
                </VoiceControlButton>

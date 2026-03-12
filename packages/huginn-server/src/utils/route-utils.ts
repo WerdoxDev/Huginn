@@ -1,3 +1,7 @@
+import type { Endpoints } from "@octokit/types";
+
+import { octokit, resend } from "#setup";
+import { envs } from "#setup";
 import { type DBAttachment, type DBEmbed, getImageData, getVideoData } from "@huginn/backend-shared";
 import {
    type APIEmbed,
@@ -8,12 +12,10 @@ import {
    isImageMediaType,
    isVideoMediaType,
 } from "@huginn/shared";
-import type { Endpoints } from "@octokit/types";
 import { JSDOM } from "jsdom";
 import markdownit from "markdown-it";
 import * as semver from "semver";
-import { octokit, resend } from "#setup";
-import { envs } from "#setup";
+
 import { cdnUpload } from "./server-request";
 
 export function getWindowsAssetUrl(release?: Unpacked<Endpoints["GET /repos/{owner}/{repo}/releases"]["response"]["data"]>) {
@@ -164,7 +166,11 @@ export async function generateEmbedsFromContent(content?: string) {
          embeds.push({
             type: "image",
             url: response.url,
-            thumbnail: { width: thumbnailData?.width ?? 0, height: thumbnailData?.height ?? 0, url: response.url },
+            thumbnail: {
+               width: thumbnailData?.width ?? 0,
+               height: thumbnailData?.height ?? 0,
+               url: response.url,
+            },
          });
          continue;
       }
@@ -174,7 +180,11 @@ export async function generateEmbedsFromContent(content?: string) {
          embeds.push({
             type: "video",
             url: response.url,
-            video: { width: videoData?.width ?? 0, height: videoData?.height ?? 0, url: response.url },
+            video: {
+               width: videoData?.width ?? 0,
+               height: videoData?.height ?? 0,
+               url: response.url,
+            },
          });
          continue;
       }
@@ -199,7 +209,13 @@ export async function generateEmbedsFromContent(content?: string) {
             title: metadata.title,
             url: metadata.url,
             description: metadata.description,
-            thumbnail: thumbnailData ? { url: metadata.image, width: thumbnailData.width ?? 0, height: thumbnailData.height ?? 0 } : undefined,
+            thumbnail: thumbnailData
+               ? {
+                    url: metadata.image,
+                    width: thumbnailData.width ?? 0,
+                    height: thumbnailData.height ?? 0,
+                 }
+               : undefined,
          });
       }
    }

@@ -66,7 +66,10 @@ export default function ActionMessage() {
             {type === MessageType.CALL && (
                <Tooltip>
                   <Tooltip.Trigger className="cursor-default! text-left">
-                     <span className="text-text/50">started a call{call?.endedTimestamp ? ` that lasted ${formatCallDuration()}` : ""}.</span>
+                     <span className="text-text/50">
+                        started a call
+                        {call?.endedTimestamp ? ` that lasted ${formatCallDuration()}` : ""}.
+                     </span>
                   </Tooltip.Trigger>
                   {call?.endedTimestamp && call.participants.length !== 0 && (
                      <Tooltip.Content className="px-1.5! py-1.5!">

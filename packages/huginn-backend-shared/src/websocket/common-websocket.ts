@@ -1,8 +1,10 @@
-import { error, GatewayCode, log, type Snowflake, snowflake, validateGatewayData } from "@huginn/shared";
-import type { Message, Peer } from "crossws";
 import type { CommonPayload, WebsocketOptions } from "#types";
-import type { CommonClientSession } from "./common-client-session";
+import type { Message, Peer } from "crossws";
+
 import { prisma, selectPrivateUser } from "#database";
+import { error, GatewayCode, log, type Snowflake, snowflake, validateGatewayData } from "@huginn/shared";
+
+import type { CommonClientSession } from "./common-client-session";
 
 type ClientSessionConstructor<T> = new (peer: Peer, sessionId: Snowflake) => T;
 

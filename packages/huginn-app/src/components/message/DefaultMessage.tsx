@@ -1,16 +1,18 @@
 import UserAvatar from "@components/UserAvatar";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useUser } from "@hooks/api-hooks/userHooks";
+import { useMessageRenderer } from "@hooks/useMessageRenderer";
 import { clamp, hasFlag, MessageFlags, MessageType } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
+import { useContextMenu } from "@stores/contextMenuStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import moment from "moment";
 import { useContext, useLayoutEffect, useMemo, useState } from "react";
-import AttachmentUploadProgress from "./AttachmentUploadProgress";
-import { useContextMenu } from "@stores/contextMenuStore";
+
 import type { AppMessage } from "@/types";
-import { useMessageRenderer } from "@hooks/useMessageRenderer";
+
+import AttachmentUploadProgress from "./AttachmentUploadProgress";
 
 export default function DefaultMessage() {
    const { user } = useThisUser();
@@ -48,7 +50,11 @@ export default function DefaultMessage() {
 
    const isUnread = context.message.isUnread;
 
-   const [widths, setWidths] = useState<{ width: number; lastWidth: number; nextWidth: number }>({ width: 0, lastWidth: 0, nextWidth: 0 });
+   const [widths, setWidths] = useState<{ width: number; lastWidth: number; nextWidth: number }>({
+      width: 0,
+      lastWidth: 0,
+      nextWidth: 0,
+   });
 
    useLayoutEffect(() => {
       const width = document.getElementById(`${context.message.id}_inner`)?.clientWidth || 0;

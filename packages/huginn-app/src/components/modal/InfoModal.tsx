@@ -1,14 +1,15 @@
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
+import DialogActions from "@components/DialogActions";
+import DialogBody from "@components/DialogBody";
 import { Description, DialogTitle } from "@headlessui/react";
 import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
 import { useEffect, useMemo } from "react";
+
 import HuginnDialogPanel from "./HuginnDialogPanel";
-import DialogActions from "@components/DialogActions";
-import DialogBody from "@components/DialogBody";
 // import { usePostHog } from "posthog-js/react";
 
 export default function InfoModal() {

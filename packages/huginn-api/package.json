@@ -1,19 +1,19 @@
 {
-	"name": "@huginn/api",
-	"main": "./src/index.ts",
-	"version": "0.33.3",
-	"type": "module",
-	"scripts": {
-		"start": "bun --watch ./src/index.ts"
-	},
-	"dependencies": {
-		"@huginn/shared": "workspace:*",
-		"@std/encoding": "npm:@jsr/std__encoding",
-		"jose": "^5.10.0",
-		"mediasoup-client": "^3.17.1",
-		"pathe": "^1.1.2"
-	},
-	"devDependencies": {
-		"@types/bun": "^1.3.1"
-	}
+   "name": "@huginn/api",
+   "version": "0.33.3",
+   "type": "module",
+   "main": "./src/index.ts",
+   "scripts": {
+      "start": "bun --watch ./src/index.ts"
+   },
+   "dependencies": {
+      "@huginn/shared": "workspace:*",
+      "@std/encoding": "npm:@jsr/std__encoding",
+      "jose": "^5.10.0",
+      "mediasoup-client": "^3.17.1",
+      "pathe": "^1.1.2"
+   },
+   "devDependencies": {
+      "@types/bun": "^1.3.1"
+   }
 }

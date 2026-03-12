@@ -1,4 +1,5 @@
 import type { StorageMap, FileType, LoadFileResult, SaveFileResult } from "@/types";
+
 import { storageDefaults } from "../../shared/storage-defaults";
 
 export class LocalStorageController {
@@ -23,7 +24,12 @@ export class LocalStorageController {
 
          return { created: false, data: data, success: true };
       } catch (e) {
-         return { created: false, data: this.defaultContents[type], success: false, error: (e as Error).message };
+         return {
+            created: false,
+            data: this.defaultContents[type],
+            success: false,
+            error: (e as Error).message,
+         };
       }
    }
 

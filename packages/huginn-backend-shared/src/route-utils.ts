@@ -1,12 +1,13 @@
-import sharp from "sharp";
+import type { ImageData, VideoData } from "#types";
+
 import { prisma } from "#database";
+import { unauthorized } from "#elysia-errors";
+import { verifyToken, type TokenPayload, type TokenType } from "#token-factory";
 import { error, type UserTokenPayload } from "@huginn/shared";
 import Elysia from "elysia";
-import { verifyToken, type TokenPayload, type TokenType } from "#token-factory";
-import { unauthorized } from "#elysia-errors";
-import { ALL_FORMATS, BufferSource, Input } from "mediabunny";
-import type { ImageData, VideoData } from "#types";
 import { rateLimit } from "elysia-rate-limit";
+import { ALL_FORMATS, BufferSource, Input } from "mediabunny";
+import sharp from "sharp";
 
 export async function tryCatch<T>(fn: (() => Promise<T>) | (() => T)): Promise<[Error, null] | [null, T]> {
    try {

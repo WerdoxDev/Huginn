@@ -1,3 +1,4 @@
+import { assertCondition, assertId, assertObj, prisma, selectPrivateUser, type UserArgs, type UserPayload, Prisma } from "#database";
 import { DBErrorType } from "#types";
 import {
    idFix,
@@ -11,7 +12,6 @@ import {
    type BigIntToString,
    type Snowflake,
 } from "@huginn/shared";
-import { assertCondition, assertId, assertObj, prisma, selectPrivateUser, type UserArgs, type UserPayload, Prisma } from "#database";
 
 export const userExtension = Prisma.defineExtension({
    model: {
@@ -36,7 +36,10 @@ export const userExtension = Prisma.defineExtension({
             const methodName = "user.findByCredentials";
 
             const user = await prisma.user.findFirst({
-               where: { OR: [{ email: options.email }, { username: options.username?.toLowerCase() }], password: { not: null } },
+               where: {
+                  OR: [{ email: options.email }, { username: options.username?.toLowerCase() }],
+                  password: { not: null },
+               },
                select: selectPrivateUser,
             });
 
@@ -57,7 +60,10 @@ export const userExtension = Prisma.defineExtension({
 
             const updatedUser = await prisma.user.update({
                where: { id: BigInt(id) },
-               data: { ...omit(editedUser, ["newPassword", "password"]), password: editedUser.newPassword },
+               data: {
+                  ...omit(editedUser, ["newPassword", "password"]),
+                  password: editedUser.newPassword,
+               },
                ...args,
             });
 

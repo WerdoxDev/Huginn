@@ -1,6 +1,6 @@
+import { envs } from "#setup";
 import { forbidden, tryCatch } from "@huginn/backend-shared";
 import { decodeBase64 } from "@std/encoding";
-import { envs } from "#setup";
 import Elysia, { t } from "elysia";
 
 const querySchema = t.Object({

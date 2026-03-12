@@ -1,14 +1,15 @@
-import DialogBody from "@components/DialogBody";
-import HuginnDialogPanel from "../HuginnDialogPanel";
-import HuginnInput from "@components/input/HuginnInput";
-import { useHuginnForm } from "@hooks/useHuginnForm";
-import DialogActions from "@components/DialogActions";
-import HuginnDialogTitle from "@components/HuginnDialogTitle";
-import { useThisUser } from "@stores/userStore";
-import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import LoadingButton from "@components/button/LoadingButton";
+import DialogActions from "@components/DialogActions";
+import DialogBody from "@components/DialogBody";
+import HuginnDialogTitle from "@components/HuginnDialogTitle";
+import HuginnInput from "@components/input/HuginnInput";
+import { usePatchUser } from "@hooks/mutations/usePatchUser";
+import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useModals } from "@stores/modalsStore";
+import { useThisUser } from "@stores/userStore";
 import { useEffect } from "react";
+
+import HuginnDialogPanel from "../HuginnDialogPanel";
 
 type Inputs = {
    displayName?: string;
@@ -17,7 +18,9 @@ type Inputs = {
 export default function ChangeDisplayNameModal() {
    const { user } = useThisUser();
    const { register, handleSubmit, formState, handleErrors, setFocus } = useHuginnForm<Inputs>({
-      defaultValues: { displayName: user?.displayName === user?.username ? undefined : (user?.displayName ?? undefined) },
+      defaultValues: {
+         displayName: user?.displayName === user?.username ? undefined : (user?.displayName ?? undefined),
+      },
    });
    const { updateModals, changeDisplayName: modal } = useModals();
    const mutation = usePatchUser(() => {

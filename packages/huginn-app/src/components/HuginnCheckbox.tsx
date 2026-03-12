@@ -30,14 +30,14 @@ function Toggle(props: { className?: string; children?: ReactNode; innerClassNam
          onChange={checkboxContext.onChange}
          className={clsx("group flex w-full cursor-pointer items-center justify-between", props.className)}
       >
-         <div className="text-text select-none text-xs font-medium uppercase opacity-90">{props.children}</div>
+         <div className="text-text text-xs font-medium uppercase opacity-90 select-none">{props.children}</div>
          <div
             className={clsx(
                "bg-surface group-data-checked:bg-primary-700 relative flex h-7 w-12 items-center justify-center rounded-full p-1 ring-white/20 transition-colors",
                props.innerClassName,
             )}
          >
-            <div className="group-data-checked:translate-x-5.5 absolute left-0.5 size-5 translate-x-0.5 rounded-full bg-white transition-transform"></div>
+            <div className="absolute left-0.5 size-5 translate-x-0.5 rounded-full bg-white transition-transform group-data-checked:translate-x-5.5"></div>
          </div>
       </Checkbox>
    );

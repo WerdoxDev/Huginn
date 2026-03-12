@@ -6,6 +6,7 @@ import {
    type APIPostKnownApplicationJSONBody,
    type APIPostKnownApplicationResult,
 } from "@huginn/shared";
+
 import type { REST } from "../rest";
 
 export class ApplicationAPI {
@@ -23,10 +24,16 @@ export class ApplicationAPI {
    }
 
    public async submitKnown(body: APIPostKnownApplicationJSONBody): Promise<APIPostKnownApplicationResult> {
-      return this.rest.post(Routes.knownApplications(), { auth: true, body }) as Promise<APIPostKnownApplicationResult>;
+      return this.rest.post(Routes.knownApplications(), {
+         auth: true,
+         body,
+      }) as Promise<APIPostKnownApplicationResult>;
    }
 
    public async uploadIcon(body: APIPostApplicationIconJSONBody): Promise<APIPostApplicationIconResult> {
-      return this.rest.post(Routes.applicationIcon(), { auth: true, body }) as Promise<APIPostApplicationIconResult>;
+      return this.rest.post(Routes.applicationIcon(), {
+         auth: true,
+         body,
+      }) as Promise<APIPostApplicationIconResult>;
    }
 }

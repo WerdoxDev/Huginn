@@ -1,10 +1,14 @@
 import type { APIPostLoginResult, APIPostRegisterResult, APIUser, LoginCredentials, RegisterUser, Tokens } from "@huginn/shared";
+
 import { type Snowflake, snowflake, WorkerID } from "@huginn/shared";
 import { decodeJwt } from "jose";
+
 import type { ClientOptions, VoiceConstructor } from ".";
+
 import { CDN } from "./cdn";
 import { Gateway } from "./gateway";
 import { REST } from "./rest";
+import { ApplicationAPI } from "./rest-apis/application";
 import { AuthAPI } from "./rest-apis/auth";
 import { ChannelAPI } from "./rest-apis/channel";
 import { CommonAPI } from "./rest-apis/common";
@@ -13,7 +17,6 @@ import { RelationshipAPI } from "./rest-apis/relationship";
 import { UserAPI } from "./rest-apis/user";
 import { TokenHandler } from "./token-handler";
 import { defaultClientOptions } from "./utils";
-import { ApplicationAPI } from "./rest-apis/application";
 import { Voice } from "./voice";
 import { VoiceManager } from "./voice-manager";
 
@@ -124,7 +127,11 @@ export class HuginnClient<V extends Voice = Voice> {
       }
 
       if (!result.authenticated) {
-         return { result: "authentication_failed", retryable: result.retryable ?? true, success: false };
+         return {
+            result: "authentication_failed",
+            retryable: result.retryable ?? true,
+            success: false,
+         };
       }
 
       return { success: true, result: "success", retryable: false };

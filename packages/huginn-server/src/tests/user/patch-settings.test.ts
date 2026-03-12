@@ -10,13 +10,22 @@ describe("PATCH /users/@me/settings", () => {
       const result = testHandler("/api/users/@me/settings", authHeader(user.accessToken), "PATCH", {});
       expect(result).rejects.toThrow("Invalid Form Body");
 
-      const result2 = testHandler("/api/users/@me/settings", authHeader(user.accessToken), "PATCH", { status: "", theme: "" });
+      const result2 = testHandler("/api/users/@me/settings", authHeader(user.accessToken), "PATCH", {
+         status: "",
+         theme: "",
+      });
       expect(result2).rejects.toThrow("Invalid Form Body");
 
-      const result3 = testHandler("/api/users/@me/settings", authHeader(user.accessToken), "PATCH", { status: "invalid", theme: "cerulean" });
+      const result3 = testHandler("/api/users/@me/settings", authHeader(user.accessToken), "PATCH", {
+         status: "invalid",
+         theme: "cerulean",
+      });
       expect(result3).rejects.toThrow("Invalid Form Body");
 
-      const result4 = testHandler("/api/users/@me/settings", authHeader(user.accessToken), "PATCH", { status: "online", theme: "invalid" });
+      const result4 = testHandler("/api/users/@me/settings", authHeader(user.accessToken), "PATCH", {
+         status: "online",
+         theme: "invalid",
+      });
       expect(result4).rejects.toThrow("Invalid Form Body");
    });
 
@@ -42,7 +51,10 @@ describe("PATCH /users/@me/settings", () => {
          }
       };
 
-      const result = await testHandler("/api/users/@me/settings", authHeader(user.accessToken), "PATCH", { status: "offline", theme: "pine green" });
+      const result = await testHandler("/api/users/@me/settings", authHeader(user.accessToken), "PATCH", {
+         status: "offline",
+         theme: "pine green",
+      });
       expect(result).toStrictEqual({ status: "offline", theme: "pine green" });
       tryDone();
    });

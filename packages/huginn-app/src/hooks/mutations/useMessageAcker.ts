@@ -6,6 +6,7 @@ import { useThisUser } from "@stores/userStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+
 import type { AppMessage } from "@/types";
 
 export function useMessageAcker(channelId: Snowflake, messages: AppMessage[]) {
@@ -52,7 +53,10 @@ export function useMessageAcker(channelId: Snowflake, messages: AppMessage[]) {
             user?.id !== latestVisibleMessage.authorId
          ) {
             setLatestReadMessage(channelId, latestVisibleMessage.id, queryClient);
-            await mutation.mutateAsync({ channelId: channelId, messageId: latestVisibleMessage.id });
+            await mutation.mutateAsync({
+               channelId: channelId,
+               messageId: latestVisibleMessage.id,
+            });
          }
       }
 

@@ -14,7 +14,10 @@ export type AppVersionInfo = {
    notes: string;
 };
 
-export type DBEmbed = Omit<APIEmbed, "thumbnail" | "video"> & { thumbnail?: DBThumbnail; video?: DBVideo };
+export type DBEmbed = Omit<APIEmbed, "thumbnail" | "video"> & {
+   thumbnail?: DBThumbnail;
+   video?: DBVideo;
+};
 export type DBThumbnail = Required<APIThumbnail>;
 export type DBVideo = Required<APIVideo>;
 
@@ -28,7 +31,13 @@ export type DBAttachment = Omit<APIPostAttachmentJSONBody, "id"> & {
 };
 
 export type TwitchOAuthResult = { access_token: string; expires_in: number };
-export type IGDBSearchResult = { id: number; name: string; rating: number; url: string; alternative_names?: Array<{ name: string }> };
+export type IGDBSearchResult = {
+   id: number;
+   name: string;
+   rating: number;
+   url: string;
+   alternative_names?: Array<{ name: string }>;
+};
 
 declare module "crossws" {
    interface PeerContext {

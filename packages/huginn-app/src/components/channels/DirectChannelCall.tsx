@@ -1,18 +1,20 @@
-import type { MediaSource } from "@/types";
+import type { Snowflake, Unpacked } from "@huginn/shared";
+
 import LoadingIcon from "@components/LoadingIcon";
-import VoiceControls from "@components/VoiceControls";
 import VoiceElement from "@components/voice/VoiceElement";
+import VoiceControls from "@components/VoiceControls";
 import { useFullscreen } from "@hooks/useFullscreen";
 import { useHover } from "@hooks/useHover";
 import { useLookup } from "@hooks/useLookup";
 import { useMediaSources } from "@hooks/voice/useMediaSources";
-import type { Snowflake, Unpacked } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore, voiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+
+import type { MediaSource } from "@/types";
 
 const minHeight = 250;
 const maxHeightPercentage = 60;
@@ -276,8 +278,8 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    return (
       <div
          className={clsx(
-            "group/wrapper shadow-surface-deep/50 z-10 flex shrink-0 select-none flex-col gap-y-3 overflow-hidden shadow-lg",
-            isFullscreen ? "bg-surface-deep z-997 fixed inset-0 rounded-none" : "ring-primary-800 relative m-2 mb-0 rounded-xl bg-black/50 ring-2",
+            "group/wrapper shadow-surface-deep/50 z-10 flex shrink-0 flex-col gap-y-3 overflow-hidden shadow-lg select-none",
+            isFullscreen ? "bg-surface-deep fixed inset-0 z-997 rounded-none" : "ring-primary-800 relative m-2 mb-0 rounded-xl bg-black/50 ring-2",
          )}
          ref={containerRef}
       >

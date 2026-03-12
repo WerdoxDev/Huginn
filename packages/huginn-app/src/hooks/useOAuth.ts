@@ -1,11 +1,12 @@
 import type { OAuthFlow, OAuthResult, OAuthType } from "@huginn/shared";
+
 import { listenEvent } from "@lib/event-handler";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
+import { useNavigate } from "@tanstack/react-router";
 import { usePostHog } from "posthog-js/react";
-import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router";
+import { useRef } from "react";
 
 export function useOAuth() {
    const client = useClient();
@@ -68,7 +69,15 @@ export function useOAuth() {
          const oauth_token = actualUrl.searchParams.get("oauth_token") ?? undefined;
          const access_token = actualUrl.searchParams.get("access_token") ?? undefined;
          const refresh_token = actualUrl.searchParams.get("refresh_token") ?? undefined;
-         localStorage.setItem("oauth-confirm", JSON.stringify({ flow, oauth_token, access_token, refresh_token } satisfies OAuthResult));
+         localStorage.setItem(
+            "oauth-confirm",
+            JSON.stringify({
+               flow,
+               oauth_token,
+               access_token,
+               refresh_token,
+            } satisfies OAuthResult),
+         );
 
          unlisten();
       });

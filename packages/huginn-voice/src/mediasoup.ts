@@ -1,9 +1,10 @@
+import type { ClientSession } from "#client-session";
+import type { RouterData } from "#utils/types";
+import type { Router, RouterRtpCodecCapability, TransportProtocol, WebRtcServer, Worker } from "mediasoup/types";
+
+import { envs } from "#index";
 import { GatewayCode, type Snowflake } from "@huginn/shared";
 import mediasoup from "mediasoup";
-import type { Router, RouterRtpCodecCapability, TransportProtocol, WebRtcServer, Worker } from "mediasoup/types";
-import type { ClientSession } from "#client-session";
-import { envs } from "#index";
-import type { RouterData } from "#utils/types";
 
 export const routers = new Map<string, RouterData>();
 
@@ -39,7 +40,12 @@ export async function runMediasoupWorker() {
       .split(";")
       .map((x) => {
          const split = x.trim().split(":");
-         return { protocol: split[0] as TransportProtocol, port: Number(split[1]), ip: split[2], announcedAddress: split[3] };
+         return {
+            protocol: split[0] as TransportProtocol,
+            port: Number(split[1]),
+            ip: split[2],
+            announcedAddress: split[3],
+         };
       });
 
    if (!listenInfos) throw new Error("MEDIA_LISTEN_INFOS was undefined");

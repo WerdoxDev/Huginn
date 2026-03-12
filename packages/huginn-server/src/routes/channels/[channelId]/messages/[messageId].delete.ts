@@ -12,13 +12,20 @@ export const deleteMessage = new Elysia()
          return missingAccess(status);
       }
 
-      const messageToCheck = await prisma.message.getById(channelId, messageId, { select: { author: { select: { id: true } } } });
+      const messageToCheck = await prisma.message.getById(channelId, messageId, {
+         select: { author: { select: { id: true } } },
+      });
       if (messageToCheck.author.id !== tokenPayload.id) {
          return missingPermission(status);
       }
 
-      const deletedMessage = await prisma.message.deleteById(messageId, channelId, { select: { id: true, channelId: true } });
-      dispatchToTopic(channelId, "message_delete", { id: deletedMessage.id, channelId: deletedMessage.channelId });
+      const deletedMessage = await prisma.message.deleteById(messageId, channelId, {
+         select: { id: true, channelId: true },
+      });
+      dispatchToTopic(channelId, "message_delete", {
+         id: deletedMessage.id,
+         channelId: deletedMessage.channelId,
+      });
 
       return status("No Content");
    });

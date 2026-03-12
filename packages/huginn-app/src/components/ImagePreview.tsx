@@ -1,10 +1,11 @@
+import { MessageContext } from "@contexts/MessageProvider";
 import { Transition } from "@headlessui/react";
+import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
 import { useContext, useEffect, useRef, useState } from "react";
+
 import LoadingIcon from "./LoadingIcon";
-import { useContextMenu } from "@stores/contextMenuStore";
-import { MessageContext } from "@contexts/MessageProvider";
 
 export default function ImagePreview(props: {
    url: string;
@@ -68,7 +69,7 @@ export default function ImagePreview(props: {
             <div
                className={clsx(
                   !hasError && "absolute inset-0",
-                  "bg-surface/40 data-closed:opacity-0 flex items-center justify-center rounded-md duration-200",
+                  "bg-surface/40 flex items-center justify-center rounded-md duration-200 data-closed:opacity-0",
                )}
                style={{ width: `${props.width}px`, height: `${props.height}px` }}
             >

@@ -1,9 +1,10 @@
+import type { FileCategory } from "#utils/types";
+
+import { envs } from "#setup";
+import { Storage } from "#storage/storage";
 import { logFileNotFound, logGetFile, logWriteFile } from "@huginn/runtime-shared";
 import { S3Client, type S3Stats } from "bun";
 import { join } from "pathe";
-import { envs } from "#setup";
-import { Storage } from "#storage/storage";
-import type { FileCategory } from "#utils/types";
 
 export class S3Storage extends Storage {
    private s3: S3Client;
@@ -27,7 +28,9 @@ export class S3Storage extends Storage {
       end?: number,
    ): Promise<ReadableStream | undefined> {
       try {
-         let file = this.s3.file(join(category, ...subDirectory.split("/"), name), { partSize: 5 * 1024 * 1024 });
+         let file = this.s3.file(join(category, ...subDirectory.split("/"), name), {
+            partSize: 5 * 1024 * 1024,
+         });
          if (start || end) {
             file = file.slice(start, end);
          }

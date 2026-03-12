@@ -15,7 +15,9 @@ import type {
    RawFile,
    Snowflake,
 } from "@huginn/shared";
+
 import { Routes, resolveImage } from "@huginn/shared";
+
 import type { REST } from "../rest";
 
 export class ChannelAPI {
@@ -26,15 +28,21 @@ export class ChannelAPI {
    }
 
    public async get(channelId: Snowflake): Promise<APIGetChannelByIdResult> {
-      return this.rest.get(Routes.channel(channelId), { auth: true }) as Promise<APIGetChannelByIdResult>;
+      return this.rest.get(Routes.channel(channelId), {
+         auth: true,
+      }) as Promise<APIGetChannelByIdResult>;
    }
 
    public async getAll(): Promise<APIGetUserChannelsResult> {
-      return this.rest.get(Routes.userChannels(), { auth: true }) as Promise<APIGetUserChannelsResult>;
+      return this.rest.get(Routes.userChannels(), {
+         auth: true,
+      }) as Promise<APIGetUserChannelsResult>;
    }
 
    public async getMessage(channelId: Snowflake, messageId: Snowflake): Promise<APIGetMessageByIdResult> {
-      return this.rest.get(Routes.channelMessage(channelId, messageId), { auth: true }) as Promise<APIGetMessageByIdResult>;
+      return this.rest.get(Routes.channelMessage(channelId, messageId), {
+         auth: true,
+      }) as Promise<APIGetMessageByIdResult>;
    }
 
    public async getMessages(channelId: Snowflake, limit?: number, before?: Snowflake, after?: Snowflake): Promise<APIGetChannelMessagesResult> {
@@ -49,12 +57,21 @@ export class ChannelAPI {
    }
 
    public async createDM(body: APIPostDMChannelJSONBody): Promise<APIPostDMChannelResult> {
-      return this.rest.post(Routes.userChannels(), { body, auth: true }) as Promise<APIPostDMChannelResult>;
+      return this.rest.post(Routes.userChannels(), {
+         body,
+         auth: true,
+      }) as Promise<APIPostDMChannelResult>;
    }
 
    public async editDM(channelId: Snowflake, body: APIPatchDMChannelJSONBody): Promise<APIPatchDMChannelResult> {
-      const resolvedBody: APIPatchDMChannelJSONBody = { ...body, icon: body.icon && (await resolveImage(body.icon)) };
-      return this.rest.patch(Routes.channel(channelId), { body: resolvedBody, auth: true }) as Promise<APIPatchDMChannelResult>;
+      const resolvedBody: APIPatchDMChannelJSONBody = {
+         ...body,
+         icon: body.icon && (await resolveImage(body.icon)),
+      };
+      return this.rest.patch(Routes.channel(channelId), {
+         body: resolvedBody,
+         auth: true,
+      }) as Promise<APIPatchDMChannelResult>;
    }
 
    public async addRecipient(channelId: Snowflake, recipientId: Snowflake): Promise<unknown> {
@@ -66,7 +83,9 @@ export class ChannelAPI {
    }
 
    public async deleteDM(channelId: Snowflake): Promise<APIDeleteDMChannelResult> {
-      return this.rest.delete(Routes.channel(channelId), { auth: true }) as Promise<APIDeleteDMChannelResult>;
+      return this.rest.delete(Routes.channel(channelId), {
+         auth: true,
+      }) as Promise<APIDeleteDMChannelResult>;
    }
 
    public async createMessage(
@@ -85,7 +104,10 @@ export class ChannelAPI {
    }
 
    public async editMessage(channelId: Snowflake, messageId: Snowflake, body: APIPatchMessageJSONBody): Promise<APIPatchMessageResult> {
-      return this.rest.patch(Routes.channelMessage(channelId, messageId), { body, auth: true }) as Promise<APIPatchMessageResult>;
+      return this.rest.patch(Routes.channelMessage(channelId, messageId), {
+         body,
+         auth: true,
+      }) as Promise<APIPatchMessageResult>;
    }
 
    public async deleteMessage(channelId: Snowflake, messageId: Snowflake): Promise<unknown> {
@@ -104,6 +126,9 @@ export class ChannelAPI {
     * @param recipients the individual recipients to ring. passing `null` will ring all recipients
     */
    public async ring(channelId: Snowflake, recipients: Snowflake[] | null): Promise<unknown> {
-      return this.rest.post(Routes.channelRing(channelId), { auth: true, body: { recipients: recipients ?? null } });
+      return this.rest.post(Routes.channelRing(channelId), {
+         auth: true,
+         body: { recipients: recipients ?? null },
+      });
    }
 }

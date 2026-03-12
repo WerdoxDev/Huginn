@@ -1,8 +1,7 @@
-import { describe, expect, test } from "bun:test";
+import { testHandler } from "@huginn/backend-shared";
 import { generateRandomString } from "@huginn/shared";
 import { encodeBase64 } from "@std/encoding";
-
-import { testHandler } from "@huginn/backend-shared";
+import { describe, expect, test } from "bun:test";
 
 describe("GET /auth/google", () => {
    test("should return '404' when query params are not correct", async () => {

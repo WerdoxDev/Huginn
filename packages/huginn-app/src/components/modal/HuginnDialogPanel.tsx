@@ -1,6 +1,7 @@
+import type { ReactNode } from "react";
+
 import { DialogPanel } from "@headlessui/react";
 import clsx from "clsx";
-import type { ReactNode } from "react";
 
 export default function HuginnDialogPanel(props: { className?: string; children?: ReactNode; headless?: boolean }) {
    return (

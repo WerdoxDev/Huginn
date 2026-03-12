@@ -1,4 +1,3 @@
-import { expect } from "bun:test";
 import {
    type ActiveSession,
    type Activity,
@@ -32,6 +31,8 @@ import {
    type UserPresence,
    type UserSettings,
 } from "@huginn/shared";
+import { expect } from "bun:test";
+
 import { containsId, type TestUser } from "./utils";
 
 export function expectPrivateUserExactSchema(user: object) {
@@ -198,7 +199,15 @@ export function expectMessageExactSchema(
       }
       if (mentions) {
          expect(castedMessage.mentions.sort()).toStrictEqual(
-            mentions.map((x) => ({ id: x.id.toString(), avatar: x.avatar, displayName: x.displayName, flags: x.flags, username: x.username })).sort(),
+            mentions
+               .map((x) => ({
+                  id: x.id.toString(),
+                  avatar: x.avatar,
+                  displayName: x.displayName,
+                  flags: x.flags,
+                  username: x.username,
+               }))
+               .sort(),
          );
       }
       if (messageReference) {
@@ -260,7 +269,12 @@ export function expectPresenceExactSchema(
    const activeSessions: ActiveSession[] = activeSessionIds.map((x) => ({ sessionId: x }));
 
    if (status === "offline") {
-      expect(presence).toStrictEqual({ user: { id: user.id.toString() }, status: "offline", activeSessions, activities: [] });
+      expect(presence).toStrictEqual({
+         user: { id: user.id.toString() },
+         status: "offline",
+         activeSessions,
+         activities: [],
+      });
       return;
    }
 

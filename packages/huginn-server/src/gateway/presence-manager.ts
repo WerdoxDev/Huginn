@@ -1,3 +1,6 @@
+import type { ServerUserPresence } from "@huginn/backend-shared";
+
+import { dispatchToTopic } from "#utils/gateway-utils";
 import {
    type Activity,
    type ActivityWithoutSessionId,
@@ -10,9 +13,8 @@ import {
    omit,
    pick,
 } from "@huginn/shared";
-import { dispatchToTopic } from "#utils/gateway-utils";
+
 import type { ClientSession } from "./client-session";
-import type { ServerUserPresence } from "@huginn/backend-shared";
 
 export class PresenceManager {
    private presences: Map<Snowflake, ServerUserPresence>;
@@ -103,7 +105,12 @@ export class PresenceManager {
 
       // Only send the user presence to others if it's not already set to offline. This is to keep a user who set their status to offline to be no different than an actual offline user
       if (presence.status !== "offline") {
-         const newPresence: ServerUserPresence = { userId, status: newStatus, activeSessions: newActiveSessions, activities: newActivities };
+         const newPresence: ServerUserPresence = {
+            userId,
+            status: newStatus,
+            activeSessions: newActiveSessions,
+            activities: newActivities,
+         };
          this.sendPresenceUpdate(`${userId}_presence`, newPresence, { id: userId });
       }
 
@@ -113,7 +120,11 @@ export class PresenceManager {
       }
       // Otherwise update the active sessions
       else {
-         const newPresence: ServerUserPresence = { ...presence, activeSessions: newActiveSessions, activities: newActivities };
+         const newPresence: ServerUserPresence = {
+            ...presence,
+            activeSessions: newActiveSessions,
+            activities: newActivities,
+         };
          this.presences.set(userId, newPresence);
          this.sendSessionUpdate(userId, newPresence);
       }
@@ -158,7 +169,10 @@ export class PresenceManager {
    }
 
    public convertToGatewayPresence(presence: ServerUserPresence, user: PresenceUser): UserPresence {
-      return { ...omit(presence, ["userId"]), user: pick(user, ["id", "avatar", "displayName", "flags", "username"]) };
+      return {
+         ...omit(presence, ["userId"]),
+         user: pick(user, ["id", "avatar", "displayName", "flags", "username"]),
+      };
    }
 
    private sendPresenceUpdate(topic: string, presence: ServerUserPresence, user: PresenceUser) {

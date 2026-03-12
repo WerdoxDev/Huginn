@@ -1,9 +1,10 @@
+import type { UpdateInfo } from "electron-updater";
+
 import { useHuginnWindow } from "@stores/windowStore";
 import { useMutation } from "@tanstack/react-query";
-import type { UpdateInfo } from "electron-updater";
 import { useEffect, useRef, useState } from "react";
 
-export function useUpdater(options: { onNotAvailable?: () => void | Promise<void>, onError?: () => void, onUpdating?: () => void }) {
+export function useUpdater(options: { onNotAvailable?: () => void | Promise<void>; onError?: () => void; onUpdating?: () => void }) {
    const huginnWindow = useHuginnWindow();
    const [progress, setProgress] = useState(0);
    const [updateInfo, setUpdateInfo] = useState<UpdateInfo>();

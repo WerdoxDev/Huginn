@@ -1,5 +1,6 @@
-import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import type { APIPatchDMChannelJSONBody, HuginnErrorData } from "@huginn/shared";
+
+import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useClient } from "@stores/clientStore";
 
 export type PatchDMChannelMutationVars = { channelId: string } & APIPatchDMChannelJSONBody;
@@ -11,7 +12,11 @@ export function usePatchDMChannel(handleErrors?: (errors: HuginnErrorData) => vo
       {
          mutationKey: ["patch-dm-channel"],
          async mutationFn(data: PatchDMChannelMutationVars) {
-            return await client?.channels.editDM(data.channelId, { name: data.name, icon: data.icon, owner: data.owner });
+            return await client?.channels.editDM(data.channelId, {
+               name: data.name,
+               icon: data.icon,
+               owner: data.owner,
+            });
          },
       },
       handleErrors,

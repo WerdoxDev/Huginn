@@ -1,11 +1,11 @@
+import { dispatchToTopic } from "#utils/gateway-utils";
+import { filterMessage } from "#utils/helpers";
+import { generateEmbedsFromContent, processAttachments, processEmbeds } from "#utils/route-utils";
+import { validateEmbeds } from "#utils/validation";
 import { createErrorFactory, createHuginnError, globalPlugin, invalidBody, missingAccess, tryCatch, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectAllMessage } from "@huginn/backend-shared/database/common";
 import { type APIMessage, Errors, MessageType, WorkerID, snowflake } from "@huginn/shared";
-import { dispatchToTopic } from "#utils/gateway-utils";
-import { generateEmbedsFromContent, processAttachments, processEmbeds } from "#utils/route-utils";
-import { validateEmbeds } from "#utils/validation";
-import { filterMessage } from "#utils/helpers";
 import Elysia, { t } from "elysia";
 
 const schema = t.Object({
@@ -19,7 +19,13 @@ const schema = t.Object({
             url: t.Optional(t.String()),
             description: t.Optional(t.String()),
             timestamp: t.Optional(t.String()),
-            thumbnail: t.Optional(t.Object({ url: t.String(), width: t.Optional(t.Number()), height: t.Optional(t.Number()) })),
+            thumbnail: t.Optional(
+               t.Object({
+                  url: t.String(),
+                  width: t.Optional(t.Number()),
+                  height: t.Optional(t.Number()),
+               }),
+            ),
          }),
       ),
    ),

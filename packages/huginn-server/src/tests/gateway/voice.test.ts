@@ -1,14 +1,3 @@
-import { describe, expect, test } from "bun:test";
-import { testHandler } from "@huginn/backend-shared";
-import {
-   ChannelType,
-   GatewayCode,
-   GatewayOperations,
-   type GatewayPayload,
-   type GatewayUpdateVoiceState,
-   MessageType,
-   type Snowflake,
-} from "@huginn/shared";
 import { expectCallStateExactSchema, expectVoiceServerExactSchema, expectVoiceStateExactSchema } from "#tests/expect-utils";
 import {
    authHeader,
@@ -20,6 +9,17 @@ import {
    testIsDispatch,
    wsSend,
 } from "#tests/utils";
+import { testHandler } from "@huginn/backend-shared";
+import {
+   ChannelType,
+   GatewayCode,
+   GatewayOperations,
+   type GatewayPayload,
+   type GatewayUpdateVoiceState,
+   MessageType,
+   type Snowflake,
+} from "@huginn/shared";
+import { describe, expect, test } from "bun:test";
 
 describe("Voice", () => {
    test("should receive both VOICE_SERVER_UPDATE and VOICE_STATE_UPDATE after sending OP 6", async (done) => {

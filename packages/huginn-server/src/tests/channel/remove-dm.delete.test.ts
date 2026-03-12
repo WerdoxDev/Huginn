@@ -1,9 +1,9 @@
-import { describe, expect, test } from "bun:test";
+import { expectChannelExactRecipients, expectChannelExactSchema, expectReadStatesExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestChannel, createTestUsers } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { type APIDeleteDMChannelResult, type APIPostDMChannelResult, ChannelType } from "@huginn/shared";
-import { expectChannelExactRecipients, expectChannelExactSchema, expectReadStatesExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestUsers } from "#tests/utils";
+import { describe, expect, test } from "bun:test";
 
 describe("DELETE /channels/:channelId", () => {
    test("should return 'Invalid Form Body' when id is invalid", async () => {
@@ -48,7 +48,10 @@ describe("DELETE /channels/:channelId", () => {
          // The deleted channel should not include deleted user
          expectChannelExactRecipients(result, [user2]);
 
-         const exists = await prisma.readState.exists({ userId: BigInt(user.id), channelId: channel.id });
+         const exists = await prisma.readState.exists({
+            userId: BigInt(user.id),
+            channelId: channel.id,
+         });
          expect(exists).toBeFalse();
 
          // Non owner leaves group channel
@@ -57,7 +60,10 @@ describe("DELETE /channels/:channelId", () => {
          // The deleted channel should not include deleted user
          expectChannelExactRecipients(result2, [user, user3]);
 
-         const exists2 = await prisma.readState.exists({ userId: BigInt(user2.id), channelId: groupChannel.id });
+         const exists2 = await prisma.readState.exists({
+            userId: BigInt(user2.id),
+            channelId: groupChannel.id,
+         });
          expect(exists2).toBeFalse();
 
          // Owner leaves group channel
@@ -66,11 +72,17 @@ describe("DELETE /channels/:channelId", () => {
          // The deleted channel should not include deleted user
          expectChannelExactRecipients(result3, [user3]);
 
-         const exists3 = await prisma.readState.exists({ userId: BigInt(user.id), channelId: groupChannel.id });
+         const exists3 = await prisma.readState.exists({
+            userId: BigInt(user.id),
+            channelId: groupChannel.id,
+         });
          expect(exists3).toBeFalse();
 
          // Because owner left the channel, someone else now has to be the owner
-         const exists4 = await prisma.channel.exists({ id: groupChannel.id, ownerId: { in: [user3.id] } });
+         const exists4 = await prisma.channel.exists({
+            id: groupChannel.id,
+            ownerId: { in: [user3.id] },
+         });
          expect(exists4).toBeTrue(); // Expect all read states to be created
 
          //TODO: CHECK USER CHANNELS TO MAKE SURE IT IS DELETED

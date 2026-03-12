@@ -14,7 +14,10 @@ export const messages = {
       };
    },
    appError() {
-      return { title: "App Failure", text: "A raven brings ill news: our app has encountered a fearsome error. (OdinBeard)" };
+      return {
+         title: "App Failure",
+         text: "A raven brings ill news: our app has encountered a fearsome error. (OdinBeard)",
+      };
    },
 };
 

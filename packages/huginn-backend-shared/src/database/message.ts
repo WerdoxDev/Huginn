@@ -1,9 +1,10 @@
 import type { APIPostMessageReferenceJSONBody, BigIntToString, Snowflake } from "@huginn/shared";
-import { WorkerID, idFix, snowflake } from "@huginn/shared";
-import { MessageType } from "@huginn/shared";
+
+import { assertExists, assertId, assertObj, prisma, type MessageArgs, type MessagePayload, Prisma } from "#database";
 import { type Attachment, type Embed } from "#prisma/client";
 import { type DBAttachment, type DBCall, type DBEmbed, DBErrorType } from "#types";
-import { assertExists, assertId, assertObj, prisma, type MessageArgs, type MessagePayload, Prisma } from "#database";
+import { WorkerID, idFix, snowflake } from "@huginn/shared";
+import { MessageType } from "@huginn/shared";
 
 export const messagesExtension = Prisma.defineExtension({
    model: {
@@ -13,7 +14,11 @@ export const messagesExtension = Prisma.defineExtension({
             assertId(methodName, channelId, messageId);
             try {
                const message = await prisma.message.findUnique({
-                  where: { channelId: BigInt(channelId), id: BigInt(messageId), deletedTimestamp: null },
+                  where: {
+                     channelId: BigInt(channelId),
+                     id: BigInt(messageId),
+                     deletedTimestamp: null,
+                  },
                   ...args,
                });
 
@@ -77,7 +82,9 @@ export const messagesExtension = Prisma.defineExtension({
             try {
                const createdEmbeds: Embed[] = [];
                const createdAttachments: Attachment[] = [];
-               const participantsConnect = options.call?.participants?.map((x) => ({ id: BigInt(x) }));
+               const participantsConnect = options.call?.participants?.map((x) => ({
+                  id: BigInt(x),
+               }));
 
                if (options.embeds) {
                   for (const embed of options.embeds) {
@@ -188,7 +195,9 @@ export const messagesExtension = Prisma.defineExtension({
             assertId(methodName, id);
             try {
                const createdEmbeds: Embed[] = [];
-               const participantsConnect = options.call?.participants.map((x) => ({ id: BigInt(x) }));
+               const participantsConnect = options.call?.participants.map((x) => ({
+                  id: BigInt(x),
+               }));
 
                if (options.embeds) {
                   for (const embed of options.embeds) {
@@ -238,10 +247,16 @@ export const messagesExtension = Prisma.defineExtension({
                let deletedMessage: Prisma.MessageGetPayload<Args> | undefined;
 
                await prisma.$transaction(async (tx) => {
-                  const channel = await tx.channel.getById(channelId, { select: { lastMessageId: true } });
+                  const channel = await tx.channel.getById(channelId, {
+                     select: { lastMessageId: true },
+                  });
                   if (channel.lastMessageId === id) {
                      const lastMessage = await tx.message.findFirst({
-                        where: { channelId: BigInt(channelId), id: { not: BigInt(id) }, deletedTimestamp: null },
+                        where: {
+                           channelId: BigInt(channelId),
+                           id: { not: BigInt(id) },
+                           deletedTimestamp: null,
+                        },
                         orderBy: { id: "desc" },
                         select: { id: true },
                      });
@@ -261,7 +276,11 @@ export const messagesExtension = Prisma.defineExtension({
                   }
 
                   deletedMessage = (await tx.message.update({
-                     where: { id: BigInt(id), channelId: BigInt(channelId), deletedTimestamp: null },
+                     where: {
+                        id: BigInt(id),
+                        channelId: BigInt(channelId),
+                        deletedTimestamp: null,
+                     },
                      data: { deletedTimestamp: new Date() },
                      ...args,
                   })) as Prisma.MessageGetPayload<Args>;

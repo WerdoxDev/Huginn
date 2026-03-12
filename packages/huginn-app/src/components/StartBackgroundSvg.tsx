@@ -1,49 +1,109 @@
-import { useMainViewTransitionState } from "@hooks/useMainViewTransitionState";
+import { interpolateColor } from "@huginn/shared";
 import { useTheme } from "@stores/themeStore";
-import clsx from "clsx";
+import * as blobs2Animate from "blobs/v2/animate";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 
-export default function StartBackgroundSvg(props: { state: number }) {
-	const fillColor = useTheme();
-	const { isMainTransitioning } = useMainViewTransitionState();
+const animation = blobs2Animate.canvasPath();
 
-	const path1 = {
-		close: "M0 540.8C-100.8 530.3 -201.6 519.7 -270.4 468.4C-339.2 417 -376 324.9 -415.7 240C-455.4 155.1 -498.1 77.6 -540.8 0L0 0Z",
-		open: "M0 324.5C-55.6 314.6 -111.2 304.7 -161 278.9C-210.8 253.1 -254.7 211.4 -281 162.2C-307.3 113.1 -315.9 56.6 -324.5 0L0 0Z",
-		initial: "M0 0C0 0 0 0 0 0C0 0 0 0 0 0C0 0 0 0 0 0L0 0Z",
-	};
+const blobSize = 700;
 
-	const path2 = {
-		close: "M 0 -540.8 C 101.2 -530.5 159 -510 231 -458 C 295 -410 343 -309 399 -226 C 445 -151 496.7 -76.8 540.8 0 L 0 0 Z",
-		open: "M0 -324.5C57 -316.2 114 -307.8 162.2 -281C210.4 -254.2 249.8 -208.9 275.4 -159C301 -109.1 312.7 -54.5 324.5 0L0 0Z",
-		initial: "M0 0C0 0 0 0 0 0C0 0 0 0 0 0C0 0 0 0 0 0L0 0Z",
-	};
+export default function StartBackground() {
+   const { theme } = useTheme();
+   const canvas = useRef<HTMLCanvasElement | null>(null);
+   const [canvasSize, setCanvasSize] = useState(window.innerWidth);
+   const [isResizing, setIsResizing] = useState(false);
+   const animationStartRef = useRef<number>(Date.now());
 
-	return (
-		<>
-			<svg
-				className={clsx("pointer-events-none absolute h-full w-full", props.state === 1 && "z-10")}
-				viewBox="0 0 960 540"
-				xmlns="http://www.w3.org/2000/svg"
-				version="1.1"
-				preserveAspectRatio="xMidYMid slice"
-				style={isMainTransitioning ? { viewTransitionName: "start-surface" } : undefined}
-			>
-				<title>animated-surface</title>
-				<g transform="translate(960, 0)">
-					<path
-						fill={fillColor.theme["primary-700"]}
-						className="transition-all duration-500"
-						d={props.state === 0 ? path1.open : props.state === 1 ? path1.close : path1.initial}
-					/>
-				</g>
-				<g transform="translate(0, 540)">
-					<path
-						fill={fillColor.theme["primary-700"]}
-						className="transition-all duration-500"
-						d={props.state === 0 ? path2.open : props.state === 1 ? path2.close : path2.initial}
-					/>
-				</g>
-			</svg>
-		</>
-	);
+   function loopAnimation(duration: number = 5000) {
+      const seed = Math.random();
+      animation.transition({
+         blobOptions: { seed: seed, extraPoints: 10, randomness: 3, size: blobSize },
+         canvasOptions: {
+            offsetX: canvasSize / 2 - blobSize / 2,
+            offsetY: canvasSize / 2 - blobSize / 2,
+         },
+         duration: duration,
+         timingFunction: "ease",
+         callback: loopAnimation,
+      });
+   }
+
+   useEffect(() => {
+      function handleResize() {
+         setIsResizing(true);
+         setCanvasSize(window.innerWidth);
+      }
+
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+   }, []);
+
+   useEffect(() => {
+      loopAnimation(0);
+   }, []);
+
+   const renderAnimation = useEffectEvent(() => {
+      const context = canvas.current?.getContext("2d");
+      if (!context || isResizing) return;
+
+      const cycle = 10000;
+      const elapsedMs = (Date.now() - animationStartRef.current) % cycle;
+      const colorProgress = elapsedMs / cycle;
+
+      // Create color animation between theme colors
+      const colors = [theme["primary-700"], theme["primary-800"], theme["primary-700"]];
+
+      let fillColor1 = theme["primary-900"];
+      let fillColor2 = theme["primary-700"];
+      if (colors.length > 1) {
+         const segment = 1 / (colors.length - 1);
+         const segmentIndex = Math.floor(colorProgress / segment);
+         const nextSegmentIndex = (segmentIndex + 1) % colors.length;
+         const segmentProgress = (colorProgress - segmentIndex * segment) / segment;
+         fillColor2 = interpolateColor(colors[segmentIndex], colors[nextSegmentIndex], segmentProgress);
+         // fillColor2 = interpolateColor(colors[(segmentIndex + 1) % colors.length], colors[(segmentIndex + 2) % colors.length], segmentProgress);
+      }
+
+      context.clearRect(0, 0, canvasSize, canvasSize);
+
+      const gradient = context.createRadialGradient(canvasSize / 2, canvasSize / 2, 0, canvasSize / 2, canvasSize / 2, canvasSize / 2);
+      gradient.addColorStop(0, fillColor1);
+      gradient.addColorStop(1, fillColor2);
+      context.fillStyle = gradient;
+
+      context.fill(animation.renderFrame());
+      requestAnimationFrame(renderAnimation);
+   });
+
+   function clearCanvas() {
+      const context = canvas.current?.getContext("2d");
+      if (!context) return;
+
+      context.clearRect(0, 0, canvasSize, canvasSize);
+   }
+
+   useEffect(() => {
+      clearCanvas();
+      const timeout = setTimeout(() => {
+         setIsResizing(false);
+         loopAnimation(0);
+      }, 100);
+      return () => {
+         clearTimeout(timeout);
+      };
+   }, [canvasSize]);
+
+   useEffect(() => {
+      const animationFrame = requestAnimationFrame(renderAnimation);
+
+      return () => {
+         cancelAnimationFrame(animationFrame);
+      };
+   }, [canvasSize, blobSize, theme, isResizing]);
+
+   return (
+      <div className="fixed flex h-full w-full items-center justify-center" style={{ viewTransitionName: "start-background" }}>
+         <canvas ref={canvas} width={canvasSize} height={canvasSize} className="absolute" />
+      </div>
+   );
 }

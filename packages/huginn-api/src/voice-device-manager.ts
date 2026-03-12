@@ -1,4 +1,5 @@
 import { log } from "@huginn/shared";
+
 import type { VoiceTransportManager } from "./voice-transport-manager";
 
 export class VoiceDeviceManager {

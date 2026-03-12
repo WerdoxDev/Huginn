@@ -1,3 +1,5 @@
+import { envs, gateway } from "#setup";
+import { createToken } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import {
    constants,
@@ -17,11 +19,13 @@ import {
    isOpcode,
    snowflake,
 } from "@huginn/shared";
-import { envs, gateway } from "#setup";
-import { createToken } from "@huginn/backend-shared";
 
 export const isCDNRunning = await checkCDNRunning();
-export type TestUser = Omit<APIUser, "id"> & { id: bigint; accessToken: string; refreshToken: string };
+export type TestUser = Omit<APIUser, "id"> & {
+   id: bigint;
+   accessToken: string;
+   refreshToken: string;
+};
 
 const connectedWebsockets: WebSocket[] = [];
 const currentIndexes = { users: 0, channels: 0, relationships: 0, messages: 0 };
@@ -267,7 +271,9 @@ export async function createTestChannel(ownerId: bigint | undefined, type: Chann
       })
       .then(removeChannelLater);
 
-   await prisma.readState.createMany({ data: recipients.map((x) => ({ userId: x, channelId: channel.id })) });
+   await prisma.readState.createMany({
+      data: recipients.map((x) => ({ userId: x, channelId: channel.id })),
+   });
 
    for (const recipient of recipients) {
       gateway.subscribeSessionsToTopic(recipient.toString(), channel.id.toString());

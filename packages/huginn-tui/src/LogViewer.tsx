@@ -1,18 +1,33 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { ClientFileWithUser } from "./types";
-import path from "node:path";
-import { baseDir } from ".";
 import { LOG_VALUES_MAP, type LogArgs } from "@huginn/shared";
 import { TextAttributes, type ScrollBoxRenderable } from "@opentui/core";
 import { useKeyboard } from "@opentui/react";
-import MultiSelect from "./MultiSelect";
 import moment from "moment";
+import path from "node:path";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+import type { ClientFileWithUser } from "./types";
+
+import { baseDir } from ".";
+import MultiSelect from "./MultiSelect";
 
 type LogHeader = {
    clientId: string;
    timestamp: string;
-   systemInfo: { platform: string; arch: string; version: string; release: string; appVersion: string };
-   geoData: { country: string; city: string; timezone: string; region: string; org: string; ip: string };
+   systemInfo: {
+      platform: string;
+      arch: string;
+      version: string;
+      release: string;
+      appVersion: string;
+   };
+   geoData: {
+      country: string;
+      city: string;
+      timezone: string;
+      region: string;
+      org: string;
+      ip: string;
+   };
    logs: Array<LogEntry>;
    headerIndex: number; // Index of this header in the headers array
 };
@@ -220,8 +235,23 @@ export function LogViewer(props: { clientFile: ClientFileWithUser }) {
    const visibleLogs = filteredLogEntries.slice(page.start, page.end);
 
    return (
-      <box style={{ width: "100%", height: "100%", border: false, marginTop: 3, flexDirection: "row" }}>
-         <box style={{ border: true, flexShrink: 0, borderStyle: "rounded", borderColor: panelIndex === 0 ? "#00dabd" : undefined }}>
+      <box
+         style={{
+            width: "100%",
+            height: "100%",
+            border: false,
+            marginTop: 3,
+            flexDirection: "row",
+         }}
+      >
+         <box
+            style={{
+               border: true,
+               flexShrink: 0,
+               borderStyle: "rounded",
+               borderColor: panelIndex === 0 ? "#00dabd" : undefined,
+            }}
+         >
             <MultiSelect
                style={{
                   focusedTextColor: "#00dabd",

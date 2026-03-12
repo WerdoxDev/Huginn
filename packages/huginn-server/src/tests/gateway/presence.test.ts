@@ -1,5 +1,3 @@
-import { describe, expect, test } from "bun:test";
-import { testHandler } from "@huginn/backend-shared";
 import { expectPresenceExactSchema, expectSessionUpdateExactSchema } from "#tests/expect-utils";
 import {
    authHeader,
@@ -11,7 +9,9 @@ import {
    testIsDispatch,
    wsSend,
 } from "#tests/utils";
+import { testHandler } from "@huginn/backend-shared";
 import { ActivityType, GatewayCode, GatewayOperations, type APIPatchCurrentUserJSONBody, type GatewayPayload } from "@huginn/shared";
+import { describe, expect, test } from "bun:test";
 
 describe("Presence", () => {
    test("should send relationship presences with the websocket ready message", async (done) => {
@@ -216,7 +216,10 @@ describe("Presence", () => {
          }
       };
 
-      const updateData: GatewayPayload = { op: GatewayOperations.PRESENCE_UPDATE, d: { status: "dnd", activities: [] } };
+      const updateData: GatewayPayload = {
+         op: GatewayOperations.PRESENCE_UPDATE,
+         d: { status: "dnd", activities: [] },
+      };
       wsSend(ws1, updateData);
    });
 
@@ -234,7 +237,14 @@ describe("Presence", () => {
          if (testIsDispatch(data, "session_update") && data.d.status !== "online") {
             expectSessionUpdateExactSchema(data.d, {
                status: "dnd",
-               activities: [{ name: "test", createdAt: time, type: ActivityType.PLAYING, sessionId: sessionId1 }],
+               activities: [
+                  {
+                     name: "test",
+                     createdAt: time,
+                     type: ActivityType.PLAYING,
+                     sessionId: sessionId1,
+                  },
+               ],
                activeSessions: [{ sessionId: sessionId1 }, { sessionId: sessionId2 }],
             });
             tryDone();
@@ -243,7 +253,10 @@ describe("Presence", () => {
 
       const updateData: GatewayPayload = {
          op: GatewayOperations.PRESENCE_UPDATE,
-         d: { status: "dnd", activities: [{ name: "test", createdAt: time, type: ActivityType.PLAYING }] },
+         d: {
+            status: "dnd",
+            activities: [{ name: "test", createdAt: time, type: ActivityType.PLAYING }],
+         },
       };
       wsSend(ws1, updateData);
    });
@@ -269,7 +282,10 @@ describe("Presence", () => {
 
       const updateData: GatewayPayload = {
          op: GatewayOperations.PRESENCE_UPDATE,
-         d: { status: "online", activities: [{ name: "test", createdAt: time, type: ActivityType.PLAYING }] },
+         d: {
+            status: "online",
+            activities: [{ name: "test", createdAt: time, type: ActivityType.PLAYING }],
+         },
       };
       wsSend(ws1, updateData);
    });

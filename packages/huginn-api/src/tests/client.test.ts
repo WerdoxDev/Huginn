@@ -1,7 +1,9 @@
-import { describe, expect, test, beforeEach, afterEach, mock, spyOn } from "bun:test";
-import { HuginnClient } from "../";
-import * as jose from "jose";
 import type { APIUser, LoginCredentials, RegisterUser } from "@huginn/shared";
+
+import { describe, expect, test, beforeEach, afterEach, mock, spyOn } from "bun:test";
+import * as jose from "jose";
+
+import { HuginnClient } from "../";
 
 // Mock dependencies
 const mockGateway = {

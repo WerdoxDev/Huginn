@@ -1,6 +1,8 @@
-import type { SliderProps } from "@/types";
 import { useTimeout } from "@hooks/useTimeout";
 import { type MouseEvent, useRef, useState } from "react";
+
+import type { SliderProps } from "@/types";
+
 import Slider from "./Slider";
 
 export default function VolumeSlider(props: Omit<SliderProps, "orientation">) {
@@ -41,7 +43,7 @@ export default function VolumeSlider(props: Omit<SliderProps, "orientation">) {
    }
 
    return (
-      <div className="relative flex select-none items-center justify-center">
+      <div className="relative flex items-center justify-center select-none">
          <button
             type="button"
             className="shrink-0 cursor-pointer text-white/80 transition-transform hover:text-white active:scale-90"

@@ -1,19 +1,22 @@
+import type { GatewayVoiceState, Snowflake } from "@huginn/shared";
+
 import LoadingIcon from "@components/LoadingIcon";
+import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
 import { useUser } from "@hooks/api-hooks/userHooks";
-import type { GatewayVoiceState, Snowflake } from "@huginn/shared";
+import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
+import { useClient, useClientStore } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import { type MouseEvent, type RefObject, useEffect, useMemo, useRef, useState } from "react";
+
 import type { MediaSource } from "@/types";
+
 import VoiceAudioVisualizer from "./VoiceAudioVisualizer";
 import { VoiceLabel } from "./VoiceLabel";
-import VoiceVideoStats from "./VoiceVideoStats";
-import { useClient, useClientStore } from "@stores/clientStore";
-import Tooltip from "@components/tooltip/Tooltip";
-import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 import { VoiceStreamParticipants } from "./VoiceStreamParticipants";
+import VoiceVideoStats from "./VoiceVideoStats";
 
 export default function VoiceElement(props: {
    userId: Snowflake;

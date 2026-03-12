@@ -5,14 +5,16 @@ import type {
    GatewayDMChannelRecipientAddData,
    GatewayDMChannelUpdateData,
 } from "@huginn/shared";
+
+import { getChannelComputedName } from "@lib/query-utils";
 import { convertToAppDirectChannel } from "@lib/utils";
 import { useClient } from "@stores/clientStore";
 import { useReadStates } from "@stores/readStatesStore";
 import { useQueryClient } from "@tanstack/react-query";
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import { type ReactNode, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router";
+
 import type { AppDirectChannel } from "@/types";
-import { getChannelComputedName } from "@lib/query-utils";
 
 export default function ChannelsProvider(props: { children?: ReactNode }) {
    const client = useClient();
@@ -32,7 +34,7 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
       queryClient.setQueryData<AppDirectChannel[]>(["channels", "@me"], (old) => old?.filter((x) => x.id !== d.id));
 
       if (location.pathname.includes(d.id)) {
-         navigate("/channels/@me", { replace: true, flushSync: true });
+         navigate({ to: "/channels/@me", replace: true });
       }
 
       removeChannelFromReadStates(d.id);
@@ -71,7 +73,11 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
             }
 
             const recipientIds = channel.recipientIds.filter((x) => x !== d.user.id);
-            return { ...channel, recipientIds, name: getChannelComputedName(channel, recipientIds) ?? "" };
+            return {
+               ...channel,
+               recipientIds,
+               name: getChannelComputedName(channel, recipientIds) ?? "",
+            };
          }),
       );
    }

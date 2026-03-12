@@ -7,16 +7,17 @@ import {
    type GatewayMessageUpdateData,
 } from "@huginn/shared";
 import { dispatchEvent } from "@lib/event-handler";
+import { appendAppMessage, deleteAppMessage, findChannel, getChannels, updateAppMessage, updateChannelLastMessageId } from "@lib/query-utils";
 import { convertToAppMessage } from "@lib/utils";
 import { useChannelStore } from "@stores/channelStore";
+import { useClient } from "@stores/clientStore";
 import { useReadStates } from "@stores/readStatesStore";
 import { useThisUser } from "@stores/userStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { type InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useEffect } from "react";
+
 import type { AppMessage } from "@/types";
-import { useClient } from "@stores/clientStore";
-import { appendAppMessage, deleteAppMessage, findChannel, getChannels, updateAppMessage, updateChannelLastMessageId } from "@lib/query-utils";
 
 export default function MessageWebsocketProvider(props: { children?: ReactNode }) {
    const queryClient = useQueryClient();

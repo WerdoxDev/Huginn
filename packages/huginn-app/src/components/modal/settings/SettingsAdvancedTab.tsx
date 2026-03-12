@@ -1,11 +1,12 @@
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
 import HuginnInput from "@components/input/HuginnInput";
+import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
-import { type ReactNode, useEffect, useEffectEvent, useRef, useState } from "react";
-import type { DropdownItem, SettingsTabProps } from "@/types";
 import { useHuginnWindow } from "@stores/windowStore";
-import { useHuginnForm } from "@hooks/useHuginnForm";
+import { type ReactNode, useEffect, useEffectEvent, useRef, useState } from "react";
+
+import type { DropdownItem, SettingsTabProps } from "@/types";
 
 type Inputs = {
    apiHostname: string;
@@ -16,8 +17,16 @@ type Inputs = {
 };
 
 const hostnameSources: DropdownItem[] = [
-   { text: "Manual", value: "manual", icon: <IconMingcuteText2Fill className="text-text size-6" /> },
-   { text: "External", value: "external", icon: <IconMingcuteWifiFill className="text-text size-6" /> },
+   {
+      text: "Manual",
+      value: "manual",
+      icon: <IconMingcuteText2Fill className="text-text size-6" />,
+   },
+   {
+      text: "External",
+      value: "external",
+      icon: <IconMingcuteWifiFill className="text-text size-6" />,
+   },
 ] as const;
 
 export default function SettingsAdvancedTab(props: SettingsTabProps) {

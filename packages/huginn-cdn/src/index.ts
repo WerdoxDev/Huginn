@@ -1,4 +1,3 @@
-import { envs } from "#setup";
 import { postApplicationIcon } from "#routes/application-icons/[applicationId!].post";
 import { getApplicationIcon } from "#routes/application-icons/[applicationId!]/[iconHash].get";
 import { postMessageAttachment } from "#routes/attachments/[channelId]/[messageId].post";
@@ -7,10 +6,12 @@ import { postUserAvatar } from "#routes/avatars/[userId].post";
 import { getUserAvatar } from "#routes/avatars/[userId]/[avatarHash].get";
 import { postChannelIcon } from "#routes/channel-icons/[channelId].post";
 import { getChannelIcon } from "#routes/channel-icons/[channelId]/[iconHash].get";
+import { envs } from "#setup";
 import cors from "@elysiajs/cors";
 import { cdnOnError, globalPlugin, invalidBody, notFound, serverError } from "@huginn/backend-shared";
 import consola from "consola";
 import Elysia from "elysia";
+
 import { getIndex } from "./routes";
 
 export const main = new Elysia()

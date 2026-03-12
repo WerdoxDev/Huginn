@@ -1,4 +1,6 @@
-import type { AppDirectChannel, AppMessage, AppPresence, AppRelationship, AppUser, InputMessage } from "@/types";
+import type { QueryClient } from "@tanstack/react-query";
+import type { JSXElementConstructor, ReactNode } from "react";
+
 import {
    type APIMessage,
    type APIPostMessageReferenceJSONBody,
@@ -17,12 +19,13 @@ import {
    omit,
    snowflake,
 } from "@huginn/shared";
-import type { JSXElementConstructor, ReactNode } from "react";
-import { Children, isValidElement } from "react";
-import { APIMessages } from "./error-messages";
 import { clientStore } from "@stores/clientStore";
+import { Children, isValidElement } from "react";
+
+import type { AppDirectChannel, AppMessage, AppPresence, AppRelationship, AppUser, InputMessage } from "@/types";
+
+import { APIMessages } from "./error-messages";
 import { getMessage } from "./query-utils";
-import type { QueryClient } from "@tanstack/react-query";
 
 export const requiredFieldError: InputMessage = { status: "error", text: "Required" } as const;
 
@@ -40,7 +43,14 @@ export function isWorthyHuginnError(error: unknown): error is HuginnAPIError {
 export function createSingleEntryError(error: HuginnAPIError, name: string): HuginnError {
    const apiMessage = Object.entries(APIMessages).find(([code]) => code === error.rawError.code.toString());
    return {
-      [name]: { _errors: [{ code: error.rawError.code.toString(), message: apiMessage ? apiMessage[1] : error.rawError.message }] },
+      [name]: {
+         _errors: [
+            {
+               code: error.rawError.code.toString(),
+               message: apiMessage ? apiMessage[1] : error.rawError.message,
+            },
+         ],
+      },
    };
 }
 
@@ -116,7 +126,9 @@ export function convertToAppMessage(message: APIMessage, source: "websocket" | "
    return {
       ...(message.type === MessageType.REPLY ? omit(message, ["referencedMessage", "author", "mentions"]) : rest),
       ...(message.type === MessageType.REPLY
-         ? { referencedMessage: message.referencedMessage ? convertToAppMessage(message.referencedMessage, source) : undefined }
+         ? {
+              referencedMessage: message.referencedMessage ? convertToAppMessage(message.referencedMessage, source) : undefined,
+           }
          : {}),
       authorId: message.author.id,
       mentions: message.mentions.map((x) => x.id),
@@ -126,12 +138,19 @@ export function convertToAppMessage(message: APIMessage, source: "websocket" | "
 }
 
 export function convertToAppUser<U extends PresenceUser = PresenceUser>(user: U): AppUser<U> {
-   return { ...user, displayName: user?.displayName ?? user?.username ?? null, originalDisplayName: user.displayName };
+   return {
+      ...user,
+      displayName: user?.displayName ?? user?.username ?? null,
+      originalDisplayName: user.displayName,
+   };
 }
 
 export function convertToAppPresence(presence: UserPresence): AppPresence {
    const cdn = `${clientStore.getState().hostnames.cdn}/cdn`;
-   const activities = presence.activities.map((x) => ({ ...x, iconUrl: x.iconUrl ? changeUrlBase(x.iconUrl, cdn) : undefined }));
+   const activities = presence.activities.map((x) => ({
+      ...x,
+      iconUrl: x.iconUrl ? changeUrlBase(x.iconUrl, cdn) : undefined,
+   }));
    return { ...omit(presence, ["user"]), userId: presence.user.id, activities };
 }
 

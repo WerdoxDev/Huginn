@@ -1,8 +1,9 @@
+import type { ReactNode } from "react";
+
 import { logger } from "@huginn/shared";
 import { storageStore } from "@stores/storageStore";
 import posthog, { type CaptureResult } from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
-import type { ReactNode } from "react";
 
 export function initializePosthog() {
    const settings = storageStore.getState().cache["settings"];

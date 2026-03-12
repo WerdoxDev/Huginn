@@ -1,6 +1,3 @@
-import { describe, test } from "bun:test";
-import { testHandler } from "@huginn/backend-shared";
-import { ChannelType } from "@huginn/shared";
 import { expectChannelExactRecipients, expectChannelExactSchema, expectRecipientModifyExactSchema } from "#tests/expect-utils";
 import {
    authHeader,
@@ -12,6 +9,9 @@ import {
    removeChannelLater,
    testIsDispatch,
 } from "#tests/utils";
+import { testHandler } from "@huginn/backend-shared";
+import { ChannelType } from "@huginn/shared";
+import { describe, test } from "bun:test";
 
 describe("Channel", () => {
    test(
@@ -33,9 +33,9 @@ describe("Channel", () => {
             }
          };
 
-         await testHandler("/api/users/@me/channels", authHeader(user.accessToken), "POST", { recipients: [user2.id.toString()] }).then(
-            removeChannelLater,
-         );
+         await testHandler("/api/users/@me/channels", authHeader(user.accessToken), "POST", {
+            recipients: [user2.id.toString()],
+         }).then(removeChannelLater);
       },
       { timeout: 10000 },
    );

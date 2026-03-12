@@ -60,7 +60,10 @@ export type HuginnButtonProps = {
    onClick?: () => void;
 };
 
-export type HuginnLoadingButtonProps = HuginnButtonProps & { isLoading: boolean; iconClassName?: string };
+export type HuginnLoadingButtonProps = HuginnButtonProps & {
+   isLoading: boolean;
+   iconClassName?: string;
+};
 
 export type ModalState = {
    isOpen: boolean;
@@ -194,7 +197,11 @@ export type ContextMenuVoiceElement = {
    mediaSource: MediaSource;
    secondMediaSource?: MediaSource;
 };
-export type ContextMenuMessage = { message: AppMessage; url?: string; imgRef?: RefObject<HTMLImageElement | null> };
+export type ContextMenuMessage = {
+   message: AppMessage;
+   url?: string;
+   imgRef?: RefObject<HTMLImageElement | null>;
+};
 
 export type ProcessedMessage = AppMessage & {
    hasNewMinute: boolean;
@@ -226,7 +233,10 @@ export type MutationKinds = {
    "remove-relationship": Snowflake;
 };
 
-export type AppUser<U = PresenceUser> = U & { displayName: string | null; originalDisplayName?: string | null };
+export type AppUser<U = PresenceUser> = U & {
+   displayName: string | null;
+   originalDisplayName?: string | null;
+};
 
 export type AppPresence = Omit<UserPresence, "user"> & { userId: Snowflake };
 
@@ -255,7 +265,9 @@ export type ProcessedAppMessage = {
 } & (
    | Omit<APICallMessage, "author" | "mentions">
    | Omit<APIDefaultMessage, "author" | "mentions">
-   | (Omit<APIReplyMessage, "author" | "mentions" | "referencedMessage"> & { referencedMessage?: AppMessage | null })
+   | (Omit<APIReplyMessage, "author" | "mentions" | "referencedMessage"> & {
+        referencedMessage?: AppMessage | null;
+     })
 );
 
 export type AppMessage = PreviewAppMessage | ProcessedAppMessage;

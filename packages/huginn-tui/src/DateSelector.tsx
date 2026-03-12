@@ -1,6 +1,7 @@
 import { TextAttributes, type SelectOption } from "@opentui/core";
-import type { DateDirectory } from "./types";
 import { useMemo } from "react";
+
+import type { DateDirectory } from "./types";
 
 export default function DateSelector(props: { dateDirectories: DateDirectory[]; onSelect: (index: number, option: SelectOption | null) => void }) {
    const options = useMemo<SelectOption[]>(
@@ -15,7 +16,15 @@ export default function DateSelector(props: { dateDirectories: DateDirectory[]; 
 
    return (
       <box>
-         <text style={{ alignSelf: "flex-start", attributes: TextAttributes.BOLD | TextAttributes.DIM, marginTop: 3 }}>Choose a Date:</text>
+         <text
+            style={{
+               alignSelf: "flex-start",
+               attributes: TextAttributes.BOLD | TextAttributes.DIM,
+               marginTop: 3,
+            }}
+         >
+            Choose a Date:
+         </text>
          <box style={{ border: true, height: "100%", borderStyle: "rounded" }}>
             <select
                options={options}

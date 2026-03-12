@@ -3,13 +3,15 @@ import { useReadStates } from "@stores/readStatesStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { useMemo } from "react";
+
 import type { AppDirectChannel } from "@/types";
+
 import AttentionIndicator from "./AttentionIndicator";
+import HuginnButton from "./button/HuginnButton";
 import RingLinkButton from "./button/RingLinkButton";
 import DirectMessageChannel from "./DirectMessageChannel";
 import Tooltip from "./tooltip/Tooltip";
 import VoiceStatus from "./voice/VoiceStatus";
-import HuginnButton from "./button/HuginnButton";
 
 export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
    const { updateModals } = useModals();
@@ -37,7 +39,7 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
          <div className="h-topbar flex shrink-0 items-center px-6">
             <div className="text-text text-xl font-bold">Home</div>
             <div className="relative ml-6">
-               <RingLinkButton prefetch="intent" to="/friends" className="px-2.5 py-1 text-xs font-medium">
+               <RingLinkButton preload="intent" to="/friends" className="px-2.5 py-1 text-xs font-medium">
                   Friends
                </RingLinkButton>
                {friendsNotificationsCount !== 0 && (
@@ -50,7 +52,7 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
             <div className="text-text/70 pt-4 pr-2 pb-2 pl-4 text-xs uppercase">Direct Messages</div>
             <HuginnButton
                onClick={handleCreateChannel}
-               className="border-primary-800 group/button hover:bg-primary-800 active:bg-primary-800 mb-1 ml-2 flex items-center gap-x-2 border border-dashed p-1.5 text-left text-sm text-white/70 hover:text-white active:text-white"
+               className="group/button border-primary-800 hover:bg-primary-800 active:bg-primary-800 mb-1 ml-2 flex items-center gap-x-2 border border-dashed p-1.5 text-left text-sm text-white/70 hover:text-white active:text-white"
             >
                <div className="bg-primary-800 group-hover/button:bg-primary-700 group-active/button:bg-primary-700 flex h-7 w-7 items-center justify-center rounded-full transition-colors">
                   <IconMingcuteAddFill />

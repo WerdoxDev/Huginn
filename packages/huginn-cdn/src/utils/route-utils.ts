@@ -1,6 +1,8 @@
-import { type ImageFormats } from "@huginn/shared";
-import { storage } from "#setup";
 import type { FileCategory } from "#utils/types";
+
+import { storage } from "#setup";
+import { type ImageFormats } from "@huginn/shared";
+
 import { extractFileInfo, findImageByName, transformImage } from "./file-utils";
 
 export async function tryResolveImage(category: FileCategory, subDirectory: string, hash: string) {

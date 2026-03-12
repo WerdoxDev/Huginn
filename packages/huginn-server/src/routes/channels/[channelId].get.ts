@@ -5,17 +5,15 @@ import { omitChannelRecipient, selectChannelDefaults } from "@huginn/backend-sha
 import { type APIGetChannelByIdResult, merge } from "@huginn/shared";
 import Elysia from "elysia";
 
-export const getChannel = new Elysia()
-   .use(verifyJwt())
-   .get("/api/channels/:channelId", async ({ status, params: { channelId }, tokenPayload }) => {
-      const channel = await prisma.channel.getById(channelId, {
-         select: merge(selectChannelDefaults, omitChannelRecipient(tokenPayload.id)),
-      });
-
-      if (!(await prisma.user.hasChannel(tokenPayload.id, channelId))) {
-         return missingAccess(status);
-      }
-
-      const json: APIGetChannelByIdResult = filterChannel(channel);
-      return status("OK", json);
+export const getChannel = new Elysia().use(verifyJwt()).get("/api/channels/:channelId", async ({ status, params: { channelId }, tokenPayload }) => {
+   const channel = await prisma.channel.getById(channelId, {
+      select: merge(selectChannelDefaults, omitChannelRecipient(tokenPayload.id)),
    });
+
+   if (!(await prisma.user.hasChannel(tokenPayload.id, channelId))) {
+      return missingAccess(status);
+   }
+
+   const json: APIGetChannelByIdResult = filterChannel(channel);
+   return status("OK", json);
+});

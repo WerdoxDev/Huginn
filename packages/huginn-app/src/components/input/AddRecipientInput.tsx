@@ -1,9 +1,11 @@
-import type { AppRelationship, AppUser } from "@/types";
 import UserAvatar from "@components/UserAvatar";
 import { Checkbox } from "@headlessui/react";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { RelationshipType, type Snowflake } from "@huginn/shared";
 import { useMemo, useState } from "react";
+
+import type { AppRelationship, AppUser } from "@/types";
+
 import ComboboxInput from "./ComboboxInput";
 import HuginnInput from "./HuginnInput";
 

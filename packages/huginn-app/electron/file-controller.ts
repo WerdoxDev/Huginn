@@ -1,9 +1,11 @@
-import path from "node:path";
-import { app, ipcMain } from "electron";
-import type { FileType, StorageMap, LoadFileResult, SaveFileResult } from "@/types";
-import fs from "node:fs/promises";
-import { storageDefaults } from "../shared/storage-defaults";
 import { error, log } from "@huginn/shared";
+import { app, ipcMain } from "electron";
+import fs from "node:fs/promises";
+import path from "node:path";
+
+import type { FileType, StorageMap, LoadFileResult, SaveFileResult } from "@/types";
+
+import { storageDefaults } from "../shared/storage-defaults";
 import { exists } from "./utils";
 
 export class FileController {
@@ -52,7 +54,12 @@ export class FileController {
 
          return { created: false, data: data, success: true };
       } catch (e) {
-         return { created: false, data: this.defaultContents[type], success: false, error: (e as Error).message };
+         return {
+            created: false,
+            data: this.defaultContents[type],
+            success: false,
+            error: (e as Error).message,
+         };
       }
    }
 

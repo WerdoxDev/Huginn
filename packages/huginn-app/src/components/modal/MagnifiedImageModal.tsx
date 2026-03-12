@@ -3,6 +3,7 @@ import { useOpen } from "@hooks/useOpen";
 import { constrainImageSize } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
 import { useEffect, useMemo, useRef, useState } from "react";
+
 import LoadingIcon from "../LoadingIcon";
 import HuginnDialogPanel from "./HuginnDialogPanel";
 

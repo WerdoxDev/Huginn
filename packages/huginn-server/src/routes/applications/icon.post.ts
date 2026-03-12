@@ -14,7 +14,9 @@ export const postApplicationIcon = new Elysia().use(verifyJwt()).post(
 
       const data = toArrayBuffer(body.icon);
       const hash = getFileHash(data);
-      await cdnUpload(CDNRoutes.uploadApplicationIcon(body.applicationId), { files: [{ data: data, name: hash }] });
+      await cdnUpload(CDNRoutes.uploadApplicationIcon(body.applicationId), {
+         files: [{ data: data, name: hash }],
+      });
 
       return status("Created", hash as APIPostApplicationIconResult);
    },

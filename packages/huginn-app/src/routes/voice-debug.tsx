@@ -1,3 +1,9 @@
+import { Disclosure, DisclosureButton, DisclosurePanel, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import { useLookup } from "@hooks/useLookup";
+import { createFileRoute } from "@tanstack/react-router";
+import clsx from "clsx";
+import { useEffect, useState, type ReactNode } from "react";
+
 import type {
    ALCData,
    ASPData,
@@ -11,12 +17,10 @@ import type {
    VoiceDebugData,
    UsersDebugData,
 } from "@/types";
-import { Disclosure, DisclosureButton, DisclosurePanel, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import { useLookup } from "@hooks/useLookup";
-import clsx from "clsx";
-import { useEffect, useState, type ReactNode } from "react";
 
-export default function VoiceDebug() {
+export const Route = createFileRoute("/voice-debug")({ component: VoiceDebugComponent });
+
+function VoiceDebugComponent() {
    const [data, setData] = useState<VoiceDebugData>();
 
    const usersLookup = useLookup(data?.usersData, (x) => x.id);

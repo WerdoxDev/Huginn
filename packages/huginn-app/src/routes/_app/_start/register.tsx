@@ -1,21 +1,20 @@
-import AnimatedMessage from "@components/StatusMessage";
+import type { APIPostRegisterJSONBody, OAuthType } from "@huginn/shared";
+
 import HuginnButton from "@components/button/HuginnButton";
 import LinkButton from "@components/button/LinkButton";
 import LoadingButton from "@components/button/LoadingButton";
 import HuginnInput from "@components/input/HuginnInput";
 import PasswordInput from "@components/input/PasswordInput";
 import StartWrapper from "@components/StartWrapper";
-import { useStartBackground } from "@stores/startBackgroundStore";
+import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useOAuth } from "@hooks/useOAuth";
-import type { APIPostRegisterJSONBody, OAuthType } from "@huginn/shared";
+import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import { useClient } from "@stores/clientStore";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
-import { useHuginnForm } from "@hooks/useHuginnForm";
-import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
-import { useNavigate } from "react-router";
 // import { usePostHog } from "posthog-js/react";
 
 type Inputs = {
@@ -25,10 +24,11 @@ type Inputs = {
    password: string;
 };
 
-export default function Register() {
+export const Route = createFileRoute("/_app/_start/register")({ component: RegisterComponent });
+
+function RegisterComponent() {
    const client = useClient();
    const posthog = usePostHog();
-   const startBackground = useStartBackground();
    const initializeClient = useInitializeClient();
    const startOAuth = useOAuth();
    const navigate = useNavigate();
@@ -55,7 +55,7 @@ export default function Register() {
    );
 
    useEffect(() => {
-      startBackground.setState(0);
+      // Component initialization
    }, []);
 
    async function onSubmit(data: Inputs) {
@@ -74,13 +74,16 @@ export default function Register() {
       let search: URLSearchParams | undefined;
 
       if (result?.access_token && result.refresh_token) {
-         search = new URLSearchParams({ access_token: result.access_token, refresh_token: result.refresh_token });
+         search = new URLSearchParams({
+            access_token: result.access_token,
+            refresh_token: result.refresh_token,
+         });
       } else if (result?.oauth_token) {
          search = new URLSearchParams({ oauth_token: result.oauth_token });
       }
 
       if (result && search) {
-         await navigate(`/oauth-redirect?${search!.toString()}`, { viewTransition: true });
+         await navigate({ to: `/oauth-redirect?${search!.toString()}` });
       }
    }
 
@@ -112,24 +115,26 @@ export default function Register() {
          </div>
          <div className="w-full">
             <div className="mb-5 flex flex-col gap-y-5">
-               <HuginnInput
-                  {...register("username", {
-                     required: true,
-                     validate,
-                  })}
-               >
-                  <HuginnInput.Label>Username</HuginnInput.Label>
-                  <HuginnInput.Wrapper>
-                     <HuginnInput.Input lowercase />
-                  </HuginnInput.Wrapper>
-               </HuginnInput>
+               <div className="flex gap-x-5">
+                  <HuginnInput
+                     {...register("username", {
+                        required: true,
+                        validate,
+                     })}
+                  >
+                     <HuginnInput.Label>Username</HuginnInput.Label>
+                     <HuginnInput.Wrapper>
+                        <HuginnInput.Input lowercase />
+                     </HuginnInput.Wrapper>
+                  </HuginnInput>
 
-               <HuginnInput {...register("displayName")}>
-                  <HuginnInput.Label>Display Name</HuginnInput.Label>
-                  <HuginnInput.Wrapper>
-                     <HuginnInput.Input />
-                  </HuginnInput.Wrapper>
-               </HuginnInput>
+                  <HuginnInput {...register("displayName")}>
+                     <HuginnInput.Label>Display Name</HuginnInput.Label>
+                     <HuginnInput.Wrapper>
+                        <HuginnInput.Input />
+                     </HuginnInput.Wrapper>
+                  </HuginnInput>
+               </div>
 
                <HuginnInput {...register("email", { required: true })}>
                   <HuginnInput.Label>Email</HuginnInput.Label>

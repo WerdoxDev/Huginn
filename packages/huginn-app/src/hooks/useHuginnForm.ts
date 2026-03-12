@@ -1,4 +1,3 @@
-import type { HuginnInputProps, InputMessage } from "@/types";
 import { type HuginnErrorData, type HuginnErrorGroupWrapper } from "@huginn/shared";
 import { APIMessages } from "@lib/error-messages";
 import { requiredFieldError } from "@lib/utils";
@@ -14,6 +13,8 @@ import {
    type UseFormRegisterReturn,
 } from "react-hook-form";
 
+import type { HuginnInputProps, InputMessage } from "@/types";
+
 export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?: DefaultValues<I> }) {
    const {
       reset: hookReset,
@@ -27,7 +28,11 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
       formState,
       control,
       setFocus,
-   } = useForm<I>({ reValidateMode: "onChange", mode: "onChange", defaultValues: options?.defaultValues });
+   } = useForm<I>({
+      reValidateMode: "onChange",
+      mode: "onChange",
+      defaultValues: options?.defaultValues,
+   });
 
    const values = watch();
 
@@ -112,7 +117,10 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
                const values = getValues();
                for (const name of Object.keys(values)) {
                   if (!clearedFields.has(name)) {
-                     newMessages[name] = { status: "error", text: APIMessages[huginnError.code] ?? huginnError.message };
+                     newMessages[name] = {
+                        status: "error",
+                        text: APIMessages[huginnError.code] ?? huginnError.message,
+                     };
                   }
                }
                return newMessages;

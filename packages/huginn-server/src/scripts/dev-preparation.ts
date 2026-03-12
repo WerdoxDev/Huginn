@@ -9,7 +9,9 @@ await prisma.readState.deleteMany({ where: { user: { username: { in: users } } }
 await prisma.channel.deleteMany({ where: { recipients: { every: { username: { in: users } } } } });
 await prisma.user.deleteMany({ where: { username: { in: users } } });
 
-await prisma.channel.deleteMany({ where: { recipients: { every: { username: { in: internalUsers } } } } });
+await prisma.channel.deleteMany({
+   where: { recipients: { every: { username: { in: internalUsers } } } },
+});
 await prisma.user.deleteMany({ where: { username: { in: internalUsers } } });
 
 const createdUsers: Awaited<ReturnType<typeof prisma.user.create>>[] = [];
@@ -71,7 +73,11 @@ for (const user of internalUsers) {
 }
 
 await prisma.channel.create({
-   data: { id: snowflake.generate(WorkerID.TESTING), type: ChannelType.DM, recipients: { connect: createdInternalUsers.map((x) => ({ id: x.id })) } },
+   data: {
+      id: snowflake.generate(WorkerID.TESTING),
+      type: ChannelType.DM,
+      recipients: { connect: createdInternalUsers.map((x) => ({ id: x.id })) },
+   },
 });
 
 const userIds = createdUsers.map((x) => x.id.toString());
@@ -178,7 +184,10 @@ const testMessages: Parameters<typeof prisma.message.createOne>[0][] = [
       type: MessageType.CALL,
       content: "", // Call messages typically don't have content
       timestamp: new Date(2025, 0, 1, 11, 0), // 11:00 AM (30+ min gap)
-      call: { participants: [userIds[0], userIds[1], userIds[2]], endedTimestamp: new Date(2025, 0, 1, 11, 0, 15) }, // 15 seconds
+      call: {
+         participants: [userIds[0], userIds[1], userIds[2]],
+         endedTimestamp: new Date(2025, 0, 1, 11, 0, 15),
+      }, // 15 seconds
    },
    {
       authorId: userIds[0],
@@ -186,7 +195,10 @@ const testMessages: Parameters<typeof prisma.message.createOne>[0][] = [
       type: MessageType.CALL,
       content: "", // Call messages typically don't have content
       timestamp: new Date(2025, 0, 1, 11, 0), // 11:00 AM (30+ min gap)
-      call: { participants: [userIds[0], userIds[1], userIds[2]], endedTimestamp: new Date(2025, 0, 1, 11, 30) }, // 30 minutes
+      call: {
+         participants: [userIds[0], userIds[1], userIds[2]],
+         endedTimestamp: new Date(2025, 0, 1, 11, 30),
+      }, // 30 minutes
    },
    {
       authorId: userIds[0],
@@ -194,7 +206,10 @@ const testMessages: Parameters<typeof prisma.message.createOne>[0][] = [
       type: MessageType.CALL,
       content: "", // Call messages typically don't have content
       timestamp: new Date(2025, 0, 1, 11, 0), // 11:00 AM (30+ min gap)
-      call: { participants: [userIds[0], userIds[1], userIds[2]], endedTimestamp: new Date(2025, 0, 1, 13, 0) }, // 2 hours
+      call: {
+         participants: [userIds[0], userIds[1], userIds[2]],
+         endedTimestamp: new Date(2025, 0, 1, 13, 0),
+      }, // 2 hours
    },
    {
       authorId: userIds[0],

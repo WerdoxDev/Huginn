@@ -1,13 +1,14 @@
-import path from "node:path";
 import { error, log, logger, type LogArgs } from "@huginn/shared";
 import { setExecutablesRoot } from "application-loopback";
 import { app, ipcMain, Menu, Tray } from "electron";
 import updater from "electron-updater";
-import { RemoteLogger } from "../shared/remote-logger";
 import { randomUUID } from "node:crypto";
-import { MainWindow } from "./main-window";
-import { FileController } from "./file-controller";
+import path from "node:path";
+
+import { RemoteLogger } from "../shared/remote-logger";
 import { CacheController } from "./cache-controller";
+import { FileController } from "./file-controller";
+import { MainWindow } from "./main-window";
 
 const { autoUpdater } = updater;
 
@@ -126,7 +127,9 @@ class HuginnApp {
 
          const { data: info } = await this.fileController.loadFile("client-info");
          const endpoint = new URL("/api/log", apiHostname).toString();
-         logger.enableLogs({ "app:electron": ["default", "loopback", "recv", "send", "updater", "file-controller"] });
+         logger.enableLogs({
+            "app:electron": ["default", "loopback", "recv", "send", "updater", "file-controller"],
+         });
          this.remoteLogger = new RemoteLogger(logger, endpoint, info.id);
       } catch (e) {
          error("app:electron", "logger setup failed:", e);

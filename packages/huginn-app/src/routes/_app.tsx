@@ -1,34 +1,34 @@
-import { queryClient } from "@/root";
-import { QueryClientProvider } from "@tanstack/react-query";
 import ContextMenusRenderer from "@components/contextmenu/ContextMenusRenderer";
 import ModalsRenderer from "@components/modal/ModalsRenderer";
-import PHProvider, { initializePosthog } from "@contexts/PHProvider";
-import StartBackgroundSvg from "@components/StartBackgroundSvg";
+import StartBackground from "@components/StartBackgroundSvg";
 import TitleBar from "@components/TitleBar";
-import { useStartBackground } from "@stores/startBackgroundStore";
+import KeybindsProvider from "@contexts/KeybindsProvider";
 import { NotificationProvider } from "@contexts/NotificationContext";
+import PHProvider, { initializePosthog } from "@contexts/PHProvider";
+import SettingsProvider from "@contexts/SettingsProvider";
 import { useMainViewTransitionState } from "@hooks/useMainViewTransitionState";
 import { useClientStore } from "@stores/clientStore";
 import { ContextMenuProvider } from "@stores/contextMenuStore";
+import { initializeDevice } from "@stores/deviceStore";
 import { initializePresence } from "@stores/presenceStore";
 import { initializeReadStates } from "@stores/readStatesStore";
+import { initializeStorage2 } from "@stores/storageStore";
 import { initializeTyping } from "@stores/typingStore";
 import { initializeUser } from "@stores/userStore";
 import { initializeVoice } from "@stores/voiceStore";
 import { useHuginnWindow } from "@stores/windowStore";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import clsx from "clsx";
 import { type ReactNode, useEffect } from "react";
-import { Outlet } from "react-router";
-import KeybindsProvider from "@contexts/KeybindsProvider";
-import SettingsProvider from "@contexts/SettingsProvider";
-import { initializeStorage2 } from "@stores/storageStore";
-import { initializeDevice } from "@stores/deviceStore";
 
-export default function AppLayout() {
-   const authBackground = useStartBackground();
+import { queryClient } from "@/lib/queries";
+
+export const Route = createFileRoute("/_app")({ component: AppLayoutComponent });
+
+function AppLayoutComponent() {
    const clientStore = useClientStore();
    const huginnWindow = useHuginnWindow();
-   const { isMainTransitioning } = useMainViewTransitionState();
 
    useEffect(() => {
       const unlisteners: Array<(() => void) | undefined> = [];
@@ -60,10 +60,9 @@ export default function AppLayout() {
                      <MainRenderer>
                         <div
                            className={clsx("bg-surface-alt absolute inset-0", !huginnWindow.browserFullscreen && "top-6")}
-                           style={isMainTransitioning ? { viewTransitionName: "start" } : undefined}
+                           style={{ viewTransitionName: "start" }}
                         >
-                           <StartBackgroundSvg state={authBackground.state} />
-
+                           <StartBackground />
                            <PHProvider>
                               <Outlet />
                            </PHProvider>

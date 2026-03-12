@@ -1,9 +1,22 @@
 import type { Snowflake } from "@huginn/shared";
+
 import type { AppMessage } from "@/types";
 
 type EventTypes = {
-   message_added: { message: AppMessage; inLoadedQueryPage: boolean; inVisibleQueryPage: boolean; visible: boolean; self: boolean };
-   message_updated: { message: AppMessage; inLoadedQueryPage: boolean; inVisibleQueryPage: boolean; visible: boolean; self: boolean };
+   message_added: {
+      message: AppMessage;
+      inLoadedQueryPage: boolean;
+      inVisibleQueryPage: boolean;
+      visible: boolean;
+      self: boolean;
+   };
+   message_updated: {
+      message: AppMessage;
+      inLoadedQueryPage: boolean;
+      inVisibleQueryPage: boolean;
+      visible: boolean;
+      self: boolean;
+   };
    image_cropper_done: { croppedImageData: string };
    deep_link: string;
    voice_preference_changed: { userId: Snowflake };

@@ -1,4 +1,5 @@
 import { fileTypeFromBuffer } from "file-type";
+
 import type { InternalRequest, RequestHeaders, ResolvedRequest, ResponseLike } from "./rest-types";
 
 export function parseResponse(response: ResponseLike): Promise<unknown> {

@@ -1,12 +1,13 @@
-import { useContextMenu } from "@stores/contextMenuStore";
-import ContextMenu from "./ContextMenu";
+import { useDeleteMessage } from "@hooks/mutations/useDeleteMessage";
 import { useOpen } from "@hooks/useOpen";
-import { useModals } from "@stores/modalsStore";
 import { error } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
+import { useContextMenu } from "@stores/contextMenuStore";
+import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
-import { useDeleteMessage } from "@hooks/mutations/useDeleteMessage";
 import { useMemo } from "react";
+
+import ContextMenu from "./ContextMenu";
 
 export default function MessageContextMenu() {
    const { data } = useContextMenu("message");
@@ -59,7 +60,10 @@ export default function MessageContextMenu() {
          return;
       }
 
-      deleteMessageMutation.mutate({ channelId: data.message.channelId, messageId: data.message.id });
+      deleteMessageMutation.mutate({
+         channelId: data.message.channelId,
+         messageId: data.message.id,
+      });
    }
 
    if (!data) {

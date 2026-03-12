@@ -1,4 +1,5 @@
 import type { ResponseLike, Snowflake } from "@huginn/shared";
+
 import type { Voice } from "./voice";
 
 export type ClientOptions<V extends Voice = Voice> = {
@@ -35,7 +36,15 @@ export type VoiceOptions<V extends Voice = Voice> = {
 
 export type VoiceSignallingResetType = "hard" | "soft" | "session";
 
-export type VoiceConnectionData = { token: string; channelId: Snowflake; guildId: Snowflake | null };
+export type VoiceConnectionData = {
+   token: string;
+   channelId: Snowflake;
+   guildId: Snowflake | null;
+};
 export type VoiceStatus = "idle" | "connecting" | "signaling" | "disconnected" | "ready";
 
-export type VoiceStreamOptions = { useSimulcast?: boolean; maxVideoBitrate?: number; maxAudioBitrate?: number };
+export type VoiceStreamOptions = {
+   useSimulcast?: boolean;
+   maxVideoBitrate?: number;
+   maxAudioBitrate?: number;
+};

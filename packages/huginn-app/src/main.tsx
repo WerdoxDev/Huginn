@@ -1,12 +1,16 @@
-import { createRoot } from "react-dom/client";
-import { RouterProvider } from "react-router";
+import RouteErrorComponent from "@components/RouteErrorComponent";
+import { logger } from "@huginn/shared";
+
 import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
 import { clientStore } from "@stores/clientStore";
-import router from "./routes";
-import { logger } from "@huginn/shared";
-import { RemoteLogger } from "../shared/remote-logger";
 import { initializeStorage, storageStore } from "@stores/storageStore";
+import { QueryClient } from "@tanstack/react-query";
+import { createRouter, RouterProvider } from "@tanstack/react-router";
+import { createRoot } from "react-dom/client";
+
+import { RemoteLogger } from "../shared/remote-logger";
+import { routeTree } from "./routeTree.gen";
 
 if (import.meta.env.DEV) {
    document.addEventListener("keypress", (e) => {
@@ -57,4 +61,23 @@ if (window.electronAPI) {
    _remoteLogger = new RemoteLogger(logger, endpoint, clientInfo.id);
 }
 
-createRoot(document.getElementById("root")!).render(<RouterProvider router={router} />);
+const router = createRouter({
+   routeTree: routeTree,
+   basepath: "app",
+   defaultErrorComponent: RouteErrorComponent,
+   defaultPendingMinMs: 0,
+   defaultPendingMs: 0,
+});
+
+declare module "@tanstack/react-router" {
+   interface Register {
+      router: typeof router;
+   }
+}
+
+const rootElement = document.getElementById("root")!;
+
+if (!rootElement.innerHTML) {
+   const root = createRoot(rootElement);
+   root.render(<RouterProvider router={router} />);
+}

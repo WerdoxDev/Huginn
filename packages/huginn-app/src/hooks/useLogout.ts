@@ -1,6 +1,7 @@
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@tanstack/react-router";
+
 import { useHuginnMutation } from "./useHuginnMutation";
 
 export function useLogout() {
@@ -25,7 +26,7 @@ export function useLogout() {
       }
 
       await mutation.mutateAsync();
-      await navigate("/login", { replace: true, viewTransition: true });
+      await navigate({ to: "/login", replace: true, viewTransition: { types: ["backwards"] } });
 
       resetScrolls();
    }

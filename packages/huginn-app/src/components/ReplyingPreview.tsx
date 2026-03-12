@@ -1,6 +1,7 @@
+import type { Snowflake } from "@huginn/shared";
+
 import { useMessage } from "@hooks/api-hooks/messageHooks";
 import { useUser } from "@hooks/api-hooks/userHooks";
-import type { Snowflake } from "@huginn/shared";
 import { useMemo } from "react";
 
 export default function ReplyingPreview(props: { onCancel?: () => void; channelId: Snowflake; messageId: Snowflake }) {
@@ -10,7 +11,7 @@ export default function ReplyingPreview(props: { onCancel?: () => void; channelI
    const author = useUser(message?.authorId);
 
    return (
-      <div className="bg-primary-900 border-surface flex items-center gap-x-2 rounded-t-lg border-2 border-b-0 px-2 py-2 text-white">
+      <div className="border-surface bg-primary-900 flex items-center gap-x-2 rounded-t-lg border-2 border-b-0 px-2 py-2 text-white">
          <IconMingcuteCornerUpLeftFill />
          <div>
             Replying to <span className="font-semibold">{author.displayName}</span>

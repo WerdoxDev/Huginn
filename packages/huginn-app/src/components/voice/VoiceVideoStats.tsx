@@ -1,6 +1,8 @@
-import { useVideoDetails } from "../../hooks/useVideoDetails";
 import type { HMediaKind } from "@huginn/shared";
+
 import { useMemo, type RefObject } from "react";
+
+import { useVideoDetails } from "../../hooks/useVideoDetails";
 
 export default function VoiceVideoStats(props: {
    kind?: HMediaKind;
@@ -12,7 +14,7 @@ export default function VoiceVideoStats(props: {
    const { estimateFps, height } = useVideoDetails(props.videoRef, srcObject);
 
    return (
-      <div className="bg-surface-deep absolute right-2 top-2 z-10 flex items-center justify-center gap-x-1 rounded-lg px-2 py-1 italic opacity-0 transition-opacity group-hover/element:opacity-100">
+      <div className="bg-surface-deep absolute top-2 right-2 z-10 flex items-center justify-center gap-x-1 rounded-lg px-2 py-1 italic opacity-0 transition-opacity group-hover/element:opacity-100">
          {props.kind === "stream_video" &&
             (props.hasAudio ? (
                <IconMingcuteVolumeFill className="text-positive-100 size-4" />

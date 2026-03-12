@@ -11,7 +11,9 @@ export const getKnownApplications = new Elysia().use(verifyJwt()).get(
    "/api/applications/known",
    async ({ status, query: { since } }) => {
       const sinceDate = since ? new Date(since) : undefined;
-      const knownApplications = await prisma.knownApplication.getAll(sinceDate, { select: selectKnownApplication });
+      const knownApplications = await prisma.knownApplication.getAll(sinceDate, {
+         select: selectKnownApplication,
+      });
 
       const json: APIGetKnownApplicationsResult = {
          lastUpdated: new Date().toISOString(),

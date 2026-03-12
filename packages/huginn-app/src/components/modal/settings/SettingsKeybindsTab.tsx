@@ -1,10 +1,11 @@
-import type { KeybindType } from "@/types";
 import HuginnCheckbox from "@components/HuginnCheckbox";
 import Tooltip from "@components/tooltip/Tooltip";
-import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useModals } from "@stores/modalsStore";
+import { useStorage, useStorageStore } from "@stores/storageStore";
 import clsx from "clsx";
 import { useEffect, useMemo, useState } from "react";
+
+import type { KeybindType } from "@/types";
 
 const keybindsTexts: Record<KeybindType, string> = {
    toggle_deafen: "Toggle Deafen",
@@ -31,7 +32,7 @@ export default function SettingsKeybindsTab() {
 
    return (
       <div className="flex flex-col">
-         <div className="w-sm flex flex-col gap-y-2">
+         <div className="flex w-sm flex-col gap-y-2">
             {sortedKeybinds.map((x) => (
                <KeybindDisplay
                   key={x.type}
@@ -43,7 +44,7 @@ export default function SettingsKeybindsTab() {
                />
             ))}
          </div>
-         <div className="text-text mt-2 select-none text-xs font-medium italic opacity-70">*Keybinds are disabled while you are in this page</div>
+         <div className="text-text mt-2 text-xs font-medium italic opacity-70 select-none">*Keybinds are disabled while you are in this page</div>
       </div>
    );
 }
@@ -158,7 +159,7 @@ function KeybindDisplay(props: {
                </Tooltip>
             ) : (
                <div className="flex gap-x-2">
-                  <div className="bg-surface-deep border-negative-300 rounded-md border border-b-2 px-2 py-1 text-white/50">
+                  <div className="border-negative-300 bg-surface-deep rounded-md border border-b-2 px-2 py-1 text-white/50">
                      {displayCombination === "" ? "Listening for input..." : displayCombination}
                   </div>
                </div>

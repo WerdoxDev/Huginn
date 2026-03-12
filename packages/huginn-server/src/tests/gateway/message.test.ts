@@ -1,7 +1,3 @@
-import { describe, expect, test } from "bun:test";
-import { testHandler } from "@huginn/backend-shared";
-import { ChannelType, MessageType, resolveImage } from "@huginn/shared";
-import pathe from "pathe";
 import { expectMessageExactSchema } from "#tests/expect-utils";
 import {
    authHeader,
@@ -14,6 +10,10 @@ import {
    multiDone,
    testIsDispatch,
 } from "#tests/utils";
+import { testHandler } from "@huginn/backend-shared";
+import { ChannelType, MessageType, resolveImage } from "@huginn/shared";
+import { describe, expect, test } from "bun:test";
+import pathe from "pathe";
 
 describe("Message", () => {
    test(
@@ -290,13 +290,14 @@ describe("Message", () => {
       ws.onmessage = ws2.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "message_delete")) {
-            expect(data.d).toStrictEqual({ id: message.id.toString(), channelId: channel.id.toString() });
+            expect(data.d).toStrictEqual({
+               id: message.id.toString(),
+               channelId: channel.id.toString(),
+            });
             tryDone();
          }
       };
 
       await testHandler(`/api/channels/${channel.id}/messages/${message.id}`, authHeader(user.accessToken), "DELETE");
    });
-
-   
 });

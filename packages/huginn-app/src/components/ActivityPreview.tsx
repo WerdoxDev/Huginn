@@ -1,6 +1,8 @@
-import type { AppPresence } from "@/types";
 import { ActivityType } from "@huginn/shared";
 import clsx from "clsx";
+
+import type { AppPresence } from "@/types";
+
 import Tooltip from "./tooltip/Tooltip";
 
 export default function ActivityPreview(props: { presence?: AppPresence; className?: string }) {

@@ -1,10 +1,13 @@
-import type { AppPresence, AppRelationship } from "@/types";
+import type { Snowflake } from "@huginn/shared";
+
 import { TabPanel } from "@headlessui/react";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useLookup } from "@hooks/useLookup";
-import type { Snowflake } from "@huginn/shared";
 import { useMemo } from "react";
+
+import type { AppPresence, AppRelationship } from "@/types";
+
 import FriendItem from "./FriendItem";
 
 export default function FriendsTab(props: { friends: AppRelationship[] | null; presences: AppPresence[]; text: string }) {

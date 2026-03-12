@@ -1,5 +1,5 @@
-import crossws from "crossws/adapters/bun";
 import { gateway } from "#setup";
+import crossws from "crossws/adapters/bun";
 
 const ws = crossws({
    hooks: {

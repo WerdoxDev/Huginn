@@ -1,44 +1,51 @@
+import type { APIPostOAuthConfirmJSONBody, OAuthTokenPayload } from "@huginn/shared";
+
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import ImageSelector from "@components/ImageSelector";
 import HuginnInput from "@components/input/HuginnInput";
 import StartWrapper from "@components/StartWrapper";
-import { useStartBackground } from "@stores/startBackgroundStore";
-import { useHistory } from "@contexts/HistoryContext";
+import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
-import type { APIPostOAuthConfirmJSONBody, OAuthTokenPayload } from "@huginn/shared";
 import { listenEvent } from "@lib/event-handler";
 import { getUserAvatarOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, useNavigate, useRouter, useSearch } from "@tanstack/react-router";
 import * as jose from "jose";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router";
-import { useHuginnForm } from "@hooks/useHuginnForm";
+import { z } from "zod";
 
 type Inputs = {
    username: string;
    displayName?: string;
 };
 
-export default function OauthRedirect() {
+const searchSchema = z.object({
+   oauth_token: z.optional(z.string()),
+   access_token: z.optional(z.string()),
+   refresh_token: z.optional(z.string()),
+});
+
+export const Route = createFileRoute("/_app/_start/oauth-redirect")({
+   component: OauthRedirectComponent,
+   validateSearch: searchSchema,
+});
+
+function OauthRedirectComponent() {
    const client = useClient();
-   const [search] = useSearchParams();
+   const search = useSearch({ from: "/_app/_start/oauth-redirect" });
    const navigate = useNavigate();
-   const authBackground = useStartBackground();
    const { updateModals } = useModals();
    const initializeClient = useInitializeClient();
    const posthog = usePostHog();
-   const history = useHistory();
+   const router = useRouter();
 
-   const decodedToken = useMemo(
-      () => (search.get("oauth_token") ? (jose.decodeJwt(search.get("oauth_token")!) as OAuthTokenPayload) : undefined),
-      [search],
-   );
+   const decodedToken = useMemo(() => (search.oauth_token ? (jose.decodeJwt(search.oauth_token) as OAuthTokenPayload) : undefined), [search]);
 
    const { register, handleErrors, handleSubmit, formState, control } = useHuginnForm<Inputs>();
 
@@ -50,12 +57,16 @@ export default function OauthRedirect() {
    const mutation = useHuginnMutation(
       {
          async mutationFn(body: APIPostOAuthConfirmJSONBody) {
-            if (search.get("oauth_token")) {
-               return await client?.oauth.confirmOAuth(body, search.get("oauth_token") ?? "");
+            if (search.oauth_token) {
+               return await client?.oauth.confirmOAuth(body, search.oauth_token ?? "");
             }
          },
          async onSuccess(data) {
-            await initializeClient({ token: data?.token, refreshToken: data?.refreshToken, navigatePath: "/channels/@me" });
+            await initializeClient({
+               token: data?.token,
+               refreshToken: data?.refreshToken,
+               navigatePath: "/channels/@me",
+            });
          },
       },
       handleErrors,
@@ -63,14 +74,13 @@ export default function OauthRedirect() {
 
    useEffect(() => {
       async function tryAuthorize() {
-         if (search.has("access_token") && search.has("refresh_token")) {
-            localStorage.setItem("access-token", search.get("access_token")!);
-            localStorage.setItem("refresh-token", search.get("refresh_token")!);
+         if (search.access_token && search.refresh_token) {
+            localStorage.setItem("access-token", search.access_token);
+            localStorage.setItem("refresh-token", search.refresh_token);
 
-            await navigate("/");
+            await navigate({ to: "/" });
          } else {
             setShouldRender(true);
-            authBackground.setState(0);
          }
       }
 
@@ -105,7 +115,11 @@ export default function OauthRedirect() {
 
    async function abort() {
       posthog.capture("oauth:abort_button_click");
-      await navigate(history.lastPathname ?? "/", { viewTransition: true });
+      if (router.history.canGoBack()) {
+         router.history.back();
+      } else {
+         await navigate({ to: "/", viewTransition: true });
+      }
    }
 
    async function onSubmit(data: Inputs) {
@@ -121,7 +135,7 @@ export default function OauthRedirect() {
    return (
       shouldRender && (
          <StartWrapper transitionName="start-oauth-redirect" onSubmit={handleSubmit(onSubmit)}>
-            {search.has("oauth_token") && (
+            {search.oauth_token && (
                <>
                   <div className="flex w-full flex-col items-center select-none">
                      <div className="text-text mb-1 text-2xl font-medium">Almost there!</div>

@@ -2,6 +2,9 @@
    "name": "@huginn/cdn",
    "version": "0.14.2",
    "type": "module",
+   "imports": {
+      "#*": "./src/*.ts"
+   },
    "scripts": {
       "start": "bun src/index.ts",
       "dev": "bun --hot src/index.ts"
@@ -20,8 +23,5 @@
    },
    "devDependencies": {
       "@types/bun": "latest"
-   },
-   "imports": {
-      "#*": "./src/*.ts"
    }
 }

@@ -15,12 +15,18 @@ export async function fetchPosthogUserInfo(clientId: string) {
    const response = await fetch(`https://eu.posthog.com/api/projects/${envs.POSTHOG_PROJECT_ID}/query`, {
       method: "POST",
       body: JSON.stringify(body),
-      headers: { Authorization: `Bearer ${envs.POSTHOG_PERSONAL_API_KEY}`, "Content-Type": "application/json" },
+      headers: {
+         Authorization: `Bearer ${envs.POSTHOG_PERSONAL_API_KEY}`,
+         "Content-Type": "application/json",
+      },
    });
 
    const data = await response.json();
 
    console.log(data);
    const results = data.results;
-   return { clientId: results[0]?.[0] as string | undefined, username: results[0]?.[1] as string | undefined };
+   return {
+      clientId: results[0]?.[0] as string | undefined,
+      username: results[0]?.[1] as string | undefined,
+   };
 }

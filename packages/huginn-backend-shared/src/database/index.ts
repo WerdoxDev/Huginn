@@ -1,17 +1,18 @@
 import { Prisma, PrismaClient, type Message, type EmailVerification } from "#prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { withOptimize } from "@prisma/extension-optimize";
+
 import { assertExtension } from "./assert";
 import { attachmentExtension } from "./attachment";
 import { channelExtension } from "./channel";
+import { emailVerificationExtension } from "./emailVerification";
 import { embedExtension } from "./embed";
+import { knownApplicationExtension } from "./knownApplication";
 import { messagesExtension } from "./message";
 import { readStateExtension } from "./readState";
 import { relationshipExtension } from "./relationship";
-import { userExtension } from "./user";
 import { settingsExtension } from "./settings";
-import { knownApplicationExtension } from "./knownApplication";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { emailVerificationExtension } from "./emailVerification";
+import { userExtension } from "./user";
 
 // export const prismaBase = new PrismaClient({ omit: { user: { password: true } } }).$extends({
 const adapter = new PrismaPg({ connectionString: process.env.POSTGRESQL_URL });

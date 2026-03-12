@@ -1,8 +1,8 @@
+import { assertExists, assertId, assertObj, prisma, type ReadStatePayload, Prisma } from "#database";
+import { PrismaClientKnownRequestError } from "#prisma/internal/prismaNamespace";
 import { DBErrorType } from "#types";
 import { idFix, type Snowflake } from "@huginn/shared";
-import { PrismaClientKnownRequestError } from "#prisma/internal/prismaNamespace";
 import consola from "consola";
-import { assertExists, assertId, assertObj, prisma, type ReadStatePayload, Prisma } from "#database";
 
 export const readStateExtension = Prisma.defineExtension({
    model: {
@@ -12,7 +12,9 @@ export const readStateExtension = Prisma.defineExtension({
             assertId(methodName, userId, channelId);
 
             const readState = await prisma.readState.findUnique({
-               where: { channelId_userId: { userId: BigInt(userId), channelId: BigInt(channelId) } },
+               where: {
+                  channelId_userId: { userId: BigInt(userId), channelId: BigInt(channelId) },
+               },
             });
 
             assertObj(methodName, readState, DBErrorType.NULL_READ_STATE, `${userId}:${channelId}`);
@@ -22,7 +24,9 @@ export const readStateExtension = Prisma.defineExtension({
             const methodName = "readState.getUserStates";
             assertId(methodName, userId);
 
-            const readStates = await prisma.readState.findMany({ where: { userId: BigInt(userId) } });
+            const readStates = await prisma.readState.findMany({
+               where: { userId: BigInt(userId) },
+            });
             assertObj(methodName, readStates, DBErrorType.NULL_READ_STATE);
 
             return idFix(readStates);
@@ -33,14 +37,18 @@ export const readStateExtension = Prisma.defineExtension({
                assertId(methodName, userId, channelId);
 
                const existing = await prisma.readState.findUnique({
-                  where: { channelId_userId: { userId: BigInt(userId), channelId: BigInt(channelId) } },
+                  where: {
+                     channelId_userId: { userId: BigInt(userId), channelId: BigInt(channelId) },
+                  },
                });
 
                if (existing) {
                   return existing;
                }
 
-               const readState = await prisma.readState.create({ data: { userId: BigInt(userId), channelId: BigInt(channelId) } });
+               const readState = await prisma.readState.create({
+                  data: { userId: BigInt(userId), channelId: BigInt(channelId) },
+               });
                assertObj(methodName, readState, DBErrorType.NULL_READ_STATE);
 
                return idFix(readState);
@@ -56,7 +64,9 @@ export const readStateExtension = Prisma.defineExtension({
                assertId(methodName, userId, channelId);
 
                const deletedReadState = await prisma.readState.delete({
-                  where: { channelId_userId: { userId: BigInt(userId), channelId: BigInt(channelId) } },
+                  where: {
+                     channelId_userId: { userId: BigInt(userId), channelId: BigInt(channelId) },
+                  },
                });
 
                assertObj(methodName, deletedReadState, DBErrorType.NULL_READ_STATE);

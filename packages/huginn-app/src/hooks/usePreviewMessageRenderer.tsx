@@ -1,4 +1,3 @@
-import type { HuginnToken } from "@/types";
 import EditorLeaf from "@components/editor/EditorLeaf";
 import { markdownMainEditor } from "@lib/markdown-main";
 import { markdownSpoiler } from "@lib/markdown-spoiler";
@@ -19,6 +18,8 @@ import markdownit from "markdown-it";
 import { useCallback, useMemo } from "react";
 import { createEditor, Editor, Element, Node, Path, Range } from "slate";
 import { DefaultElement, withReact, type RenderElementProps, type RenderLeafProps } from "slate-react";
+
+import type { HuginnToken } from "@/types";
 
 let cache: { text: string; decorations: Record<number, Range[]> } | undefined;
 
@@ -74,16 +75,16 @@ export function usePreviewMessageRenderer() {
 
          for (const token of lineTokens) {
             if (token.type === "fence" && token.map) {
-               const highlighted = hljs.highlight(token.content, { language: getCodeLanguage(token.info) ?? "md" });
+               const highlighted = hljs.highlight(token.content, {
+                  language: getCodeLanguage(token.info) ?? "md",
+               });
                const parser = new DOMParser();
 
                const doc = parser.parseFromString(highlighted.value, "text/html");
 
                let tokens: Array<{ type: string; content: string | null }> = [];
 
-               function parseNode(
-                  node: ChildNode,
-               ): Array<{ type: string; content: string | null }> | { type: string; content: string | null } {
+               function parseNode(node: ChildNode): Array<{ type: string; content: string | null }> | { type: string; content: string | null } {
                   if (node.nodeType === window.Node.ELEMENT_NODE) {
                      const tokenType = (node as HTMLElement)?.className; // e.g., "hljs-keyword", "hljs-string"
 

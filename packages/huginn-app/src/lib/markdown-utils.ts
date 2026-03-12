@@ -1,4 +1,5 @@
 import type Token from "markdown-it/lib/token.mjs";
+
 import type { HuginnToken } from "@/types";
 
 export function hasMarkup(markup: string) {
@@ -69,7 +70,14 @@ export function organizeTokens(tokens: Token[]) {
 
       if (token.type === "fence" && token.map) {
          lines.push([
-            { content: token.content, type: "fence_open", info: token.info, markup: token.markup, map: token.map, attrs: token.attrs },
+            {
+               content: token.content,
+               type: "fence_open",
+               info: token.info,
+               markup: token.markup,
+               map: token.map,
+               attrs: token.attrs,
+            },
          ]);
          const numberOfNewLines = (token.content.match(/\n/g) ?? []).length;
          const hasHangingNewLine = token.content.lastIndexOf("\n") + 1 === token.content.length;
@@ -77,13 +85,27 @@ export function organizeTokens(tokens: Token[]) {
 
          for (let i = 0; i < contentLength; i++) {
             lines.push([
-               { content: token.content, markup: token.markup, type: token.type, info: token.info, map: token.map, attrs: token.attrs },
+               {
+                  content: token.content,
+                  markup: token.markup,
+                  type: token.type,
+                  info: token.info,
+                  map: token.map,
+                  attrs: token.attrs,
+               },
             ]);
          }
 
          if (hasHangingNewLine) {
             lines.push([
-               { content: token.content, type: "fence_close", info: token.info, markup: token.markup, map: token.map, attrs: token.attrs },
+               {
+                  content: token.content,
+                  type: "fence_close",
+                  info: token.info,
+                  markup: token.markup,
+                  map: token.map,
+                  attrs: token.attrs,
+               },
             ]);
          }
       }
@@ -105,7 +127,14 @@ export function organizeTokens(tokens: Token[]) {
                   map: null,
                   attrs: null,
                });
-               currentLine.push({ type: "text", content: inlineToken.content, attrs: null, info: "", map: null, markup: "" });
+               currentLine.push({
+                  type: "text",
+                  content: inlineToken.content,
+                  attrs: null,
+                  info: "",
+                  map: null,
+                  markup: "",
+               });
                currentLine.push({
                   type: "code_close",
                   content: "",

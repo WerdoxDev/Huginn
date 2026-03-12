@@ -1,40 +1,66 @@
-import ModalCloseButton from "@components/button/ModalCloseButton";
-import { DialogTitle, Transition } from "@headlessui/react";
 import type { DeepPartial } from "@huginn/shared";
+
+import ModalCloseButton from "@components/button/ModalCloseButton";
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@components/Tab";
+import { DialogTitle, Transition } from "@headlessui/react";
+import { useIsMobile } from "@hooks/useIsMobile";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
 import clsx from "clsx";
 // import { usePostHog } from "posthog-js/react";
 import { Fragment, memo, useEffect, useMemo, useState } from "react";
+
 import type { AppSettings, SettingsTab, SettingsTabProps } from "@/types";
+
+import HuginnDialogPanel from "./HuginnDialogPanel";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
+import SettingsCustomTab from "./settings/SettingsCustomTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
+import SettingsSubmissionTab from "./settings/SettingsSubmissionTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
 import SettingsVoiceTab from "./settings/SettingsVoiceTab";
-import SettingsSubmissionTab from "./settings/SettingsSubmissionTab";
-import SettingsCustomTab from "./settings/SettingsCustomTab";
-import HuginnDialogPanel from "./HuginnDialogPanel";
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@components/Tab";
-import { useIsMobile } from "@hooks/useIsMobile";
 
 const tabs: SettingsTab[] = [
    {
       name: "profile",
       text: "Profile",
       auth: true,
-      children: [{ name: "my-account", text: "My Account", auth: true, icon: <IconMingcuteUser3Fill />, component: SettingsProfileTab }],
+      children: [
+         {
+            name: "my-account",
+            text: "My Account",
+            auth: true,
+            icon: <IconMingcuteUser3Fill />,
+            component: SettingsProfileTab,
+         },
+      ],
    },
    {
       name: "app-settings",
       text: "App Settings",
       children: [
-         { name: "theme", text: "Theme", icon: <IconMingcuteColorPickerFill />, component: SettingsThemeTab },
+         {
+            name: "theme",
+            text: "Theme",
+            icon: <IconMingcuteColorPickerFill />,
+            component: SettingsThemeTab,
+         },
          { name: "notification", text: "Notification", icon: <IconMingcuteNotificationFill /> },
-         { name: "voice", text: "Audio & Video", icon: <IconMingcuteSpeakerFill />, component: SettingsVoiceTab },
+         {
+            name: "voice",
+            text: "Audio & Video",
+            icon: <IconMingcuteSpeakerFill />,
+            component: SettingsVoiceTab,
+         },
          // { name: "keybind", text: "Keybinds", icon: <IconMingcuteHotkeyFill />, component: SettingsKeybindsTab },
-         { name: "advanced", text: "Advanced", icon: <IconMingcuteServerFill />, component: SettingsAdvancedTab },
+         {
+            name: "advanced",
+            text: "Advanced",
+            icon: <IconMingcuteServerFill />,
+            component: SettingsAdvancedTab,
+         },
       ],
    },
    {
@@ -42,14 +68,31 @@ const tabs: SettingsTab[] = [
       text: "Activity",
       auth: true,
       children: [
-         { name: "submissions", text: "Submission", icon: <IconMingcuteChecksFill />, component: SettingsSubmissionTab },
-         { name: "custom", text: "Custom", icon: <IconMingcuteEmptyBoxFill />, component: SettingsCustomTab },
+         {
+            name: "submissions",
+            text: "Submission",
+            icon: <IconMingcuteChecksFill />,
+            component: SettingsSubmissionTab,
+         },
+         {
+            name: "custom",
+            text: "Custom",
+            icon: <IconMingcuteEmptyBoxFill />,
+            component: SettingsCustomTab,
+         },
       ],
    },
    {
       name: "miscellaneous",
       text: "Miscellaneous",
-      children: [{ name: "about", text: "About", icon: <IconMingcuteBook2Fill />, component: SettingsAboutTab }],
+      children: [
+         {
+            name: "about",
+            text: "About",
+            icon: <IconMingcuteBook2Fill />,
+            component: SettingsAboutTab,
+         },
+      ],
    },
 ];
 

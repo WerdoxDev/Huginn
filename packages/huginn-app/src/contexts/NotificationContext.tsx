@@ -1,7 +1,7 @@
 import { presenceStore } from "@stores/presenceStore";
 import { useHuginnWindow } from "@stores/windowStore";
+import { useNavigate } from "@tanstack/react-router";
 import { type ReactNode, createContext, useContext, useEffect } from "react";
-import { useNavigate } from "react-router";
 
 type NotificationContextType = {
    sendNotification: (data: string, title: string, text: string, imagePath: string) => void;
@@ -24,7 +24,7 @@ export function NotificationProvider(props: { children?: ReactNode }) {
          window.electronAPI.showMain();
          window.electronAPI.focusMain();
          //TODO: THIS SHOULD CHANGE WHEN GUILDS ARE A THING
-         await navigate(`/channels/@me/${payload}`);
+         await navigate({ to: `/channels/@me/$channelId`, params: { channelId: payload } });
       });
 
       return () => {
@@ -33,7 +33,11 @@ export function NotificationProvider(props: { children?: ReactNode }) {
    }, []);
 
    return (
-      <NotificationContext.Provider value={{ sendNotification: huginnWindow.environment === "desktop" ? sendNotification : () => {} }}>
+      <NotificationContext.Provider
+         value={{
+            sendNotification: huginnWindow.environment === "desktop" ? sendNotification : () => {},
+         }}
+      >
          {props.children}
       </NotificationContext.Provider>
    );

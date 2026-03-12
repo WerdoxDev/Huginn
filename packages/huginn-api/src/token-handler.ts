@@ -1,4 +1,5 @@
 import type { HuginnClient } from ".";
+
 import { decodeToken } from "./utils";
 
 export class TokenHandler {
@@ -77,7 +78,9 @@ export class TokenHandler {
 
       this.timeoutPromise = new Promise<boolean>((resolve) => {
          this.tokenTimeout = setTimeout(async () => {
-            const newTokens = await this.client.auth.refreshToken({ refreshToken: this.refreshToken ?? "" });
+            const newTokens = await this.client.auth.refreshToken({
+               refreshToken: this.refreshToken ?? "",
+            });
 
             this.token = newTokens.token;
             this.refreshToken = newTokens.refreshToken;

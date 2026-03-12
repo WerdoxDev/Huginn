@@ -5,11 +5,13 @@ import FriendsTabItem from "@components/friends/FriendsTabItem";
 import PendingFriendsTab from "@components/friends/PendingFriendsTab";
 import TopBar from "@components/TopBar";
 import { Tab, TabGroup, TabList, TabPanels } from "@headlessui/react";
+import { useIsMobile } from "@hooks/useIsMobile";
 import { RelationshipType } from "@huginn/shared";
-import { getRelationshipsOptions } from "@lib/queries";
-import { useClient } from "@stores/clientStore";
+import { getRelationshipsOptions, queryClient } from "@lib/queries";
+import { clientStore, useClient } from "@stores/clientStore";
 import { usePresences } from "@stores/presenceStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
 import { useMemo } from "react";
@@ -17,10 +19,21 @@ import { Fragment } from "react/jsx-runtime";
 
 const tabs = ["Online", "All", "Pending"];
 
-export default function Friends() {
+export const Route = createFileRoute("/_app/_main/_home/friends")({
+   component: FriendsComponent,
+   loader: async () => {
+      const client = clientStore.getState().client;
+      if (!client) return;
+
+      return await queryClient.ensureQueryData(getRelationshipsOptions(client));
+   },
+});
+
+function FriendsComponent() {
    const client = useClient();
    const { data: friends } = useSuspenseQuery(getRelationshipsOptions(client!));
    const posthog = usePostHog();
+   const isMobile = useIsMobile();
 
    const allFriends = useMemo(() => friends?.filter((x) => x.type === RelationshipType.FRIEND), [friends]);
    const { presences } = usePresences(allFriends?.map((x) => x.userId) ?? []);
@@ -37,8 +50,7 @@ export default function Friends() {
       <div className="flex h-full flex-col">
          <TabGroup as={Fragment} defaultIndex={friends.length === 0 ? 3 : 0} onChange={onTabChange}>
             <TopBar>
-               <MobileMenuButton />
-               {/* <div className="h-19 bg-surface-deep flex shrink-0 items-center px-6"> */}
+               {isMobile && <MobileMenuButton />}
                <TabList className="mr-5 flex justify-center gap-x-5">
                   <div className="text-text flex items-center justify-center gap-x-2.5">
                      <IconMingcuteGroup2Fill className="size-6" />
@@ -65,7 +77,6 @@ export default function Friends() {
                      )}
                   </Tab>
                </TabList>
-               {/* </div> */}
             </TopBar>
             <TabPanels className="h-full overflow-y-scroll p-5 pr-2">
                <FriendsTab friends={onlineFriends} presences={presences} text="Online" />

@@ -3,21 +3,23 @@ import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useMessageAcker } from "@hooks/mutations/useMessageAcker";
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { useFirstUnreadMessage } from "@hooks/useFirstUnreadMessage";
+import { useMessageDiff, type ChangeType } from "@hooks/useMessageDiff";
+import { usePrevious } from "@hooks/usePrevious";
 import { useVisibleMessages } from "@hooks/useVisibleMessages";
 import { MessageType, type Snowflake } from "@huginn/shared";
 import { getMessagesOptions } from "@lib/queries";
 import { getFirstChildClosestToBottom, getFirstChildClosestToTop } from "@lib/utils";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
+import { useThisUser } from "@stores/userStore";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import moment from "moment";
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+
 import type { AppMessage, ProcessedMessage } from "@/types";
+
 import ChannelMessageLoadingIndicator from "./ChannelMessageLoadingIndicator";
 import ChannelTypingIndicator from "./ChannelTypingIndicator";
-import { useMessageDiff, type ChangeType } from "@hooks/useMessageDiff";
-import { useThisUser } from "@stores/userStore";
-import { usePrevious } from "@hooks/usePrevious";
 
 const topScrollOffset = 100;
 const bottomScrollOffset = 100;
@@ -61,7 +63,12 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    const lastChannelId = useRef<Snowflake>(undefined);
    const lastScrollTop = useRef<number>(undefined);
    const lastDistanceToBottom = useRef<number>(undefined);
-   const lastSeenElement = useRef<{ messageId: Snowflake; height: number; distanceToTop: number; distanceToBottom: number }>(null);
+   const lastSeenElement = useRef<{
+      messageId: Snowflake;
+      height: number;
+      distanceToTop: number;
+      distanceToBottom: number;
+   }>(null);
    const lastDirection = useRef<"up" | "down" | "none">("none");
    const isResizing = useRef(false);
    const currentChannel = useCurrentChannel();
@@ -121,7 +128,17 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
          const isEditing = currentEditingMessageId === message.id;
          const isReplying = currentReplyingMessageId === message.id;
 
-         return { ...message, hasNewMinute, hasNewDate, hasNewAuthor, isActionType, isUnread, isEditing, isReplyType, isReplying };
+         return {
+            ...message,
+            hasNewMinute,
+            hasNewDate,
+            hasNewAuthor,
+            isActionType,
+            isUnread,
+            isEditing,
+            isReplyType,
+            isReplying,
+         };
       });
 
       return value;
@@ -158,7 +175,10 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
       const foundMessageElement = [...listRef.current.children].find((x) => x.id === lastSeenElement.current?.messageId) as HTMLLIElement;
 
-      foundMessageElement.scrollIntoView({ behavior: "instant", block: lastDirection.current === "up" ? "start" : "end" });
+      foundMessageElement.scrollIntoView({
+         behavior: "instant",
+         block: lastDirection.current === "up" ? "start" : "end",
+      });
       const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
       scrollRef.current.scrollTop +=
          (lastDirection.current === "up" ? lastSeenElement.current.distanceToTop : -lastSeenElement.current.distanceToBottom) + heightDifference;
@@ -304,7 +324,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
          <ChannelTypingIndicator channelId={props.channelId} />
          <div className="h-full w-full overflow-x-hidden overflow-y-scroll [overflow-anchor:none]" ref={scrollRef} onScroll={onScroll}>
             <div className="flex min-h-full flex-col justify-end">
-               <ol className="min-h-0 overflow-hidden pb-7 pr-0" ref={listRef}>
+               <ol className="min-h-0 overflow-hidden pr-0 pb-7" ref={listRef}>
                   {props.messages.length === 0 && (
                      <div className="flex h-full w-full shrink-0 items-center justify-center">
                         <div className="bg-surface text-text flex items-center justify-center gap-x-2 rounded-lg p-2 pr-3 italic underline">

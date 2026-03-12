@@ -1,16 +1,17 @@
 import HuginnButton from "@components/button/HuginnButton";
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
+import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnTab from "@components/HuginnTab";
 import HuginnRange from "@components/input/HuginnRange";
 import { clamp, remap } from "@huginn/shared";
 import { AudioLevelChecker } from "@lib/voice/audio-level-checker";
 import { VoiceInputDevice } from "@lib/voice/voice-input-device";
-import { useStorage } from "@stores/storageStore";
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { DropdownItem, SettingsTabProps } from "@/types";
-import HuginnCheckbox from "@components/HuginnCheckbox";
 import { useClient } from "@stores/clientStore";
 import { useDevice } from "@stores/deviceStore";
+import { useStorage } from "@stores/storageStore";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+import type { DropdownItem, SettingsTabProps } from "@/types";
 
 export default function SettingsVoiceTab(props: SettingsTabProps) {
    const { cameraDevices, inputDevices, outputDevices } = useDevice();

@@ -1,16 +1,17 @@
-import { useIsMobile } from "@hooks/useIsMobile";
-import clsx from "clsx";
-import type { AppDirectChannel } from "@/types";
-import { useMobileMenuStore } from "@stores/mobileMenuStore";
-import { ChannelType } from "@huginn/shared";
-import { useUsers } from "@hooks/api-hooks/userHooks";
-import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
-import { useThisUser } from "@stores/userStore";
-import { useEffect, useMemo } from "react";
+import HuginnButton from "@components/button/HuginnButton";
 import ChannelRecipient from "@components/ChannelRecipient";
 import LoadingIcon from "@components/LoadingIcon";
-import HuginnButton from "@components/button/HuginnButton";
+import { useUsers } from "@hooks/api-hooks/userHooks";
+import { useIsMobile } from "@hooks/useIsMobile";
+import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
+import { ChannelType } from "@huginn/shared";
+import { useMobileMenuStore } from "@stores/mobileMenuStore";
 import { useModals } from "@stores/modalsStore";
+import { useThisUser } from "@stores/userStore";
+import clsx from "clsx";
+import { useEffect, useMemo } from "react";
+
+import type { AppDirectChannel } from "@/types";
 
 export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
    const { user } = useThisUser();
@@ -61,7 +62,7 @@ export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
       >
          <div className="absolute inset-0 flex" style={{ width: rightMenuWidth }}>
             <div className="bg-surface h-full w-0 shrink-0 overflow-hidden lg:w-0.5" />
-            <div className="bg-surface-alt group relative flex h-full w-full flex-col overflow-hidden">
+            <div className="group bg-surface-alt relative flex h-full w-full flex-col overflow-hidden">
                <div className="scroll-super-thin flex flex-col overflow-y-scroll">
                   <div className="text-text/70 pt-4 pr-2 pb-2 pl-4 text-xs uppercase">Members - {sortedRecipients.length}</div>
                   <div className="flex flex-col gap-y-0.5 rounded-lg p-0 pl-2">
@@ -73,7 +74,7 @@ export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
                   </div>
                   <HuginnButton
                      onClick={handleAddMember}
-                     className="border-primary-800 group/button hover:bg-primary-800 active:bg-primary-800 mt-1 ml-2 flex items-center gap-x-2 border border-dashed p-1.5 text-left text-sm text-white/70 hover:text-white active:text-white"
+                     className="group/button border-primary-800 hover:bg-primary-800 active:bg-primary-800 mt-1 ml-2 flex items-center gap-x-2 border border-dashed p-1.5 text-left text-sm text-white/70 hover:text-white active:text-white"
                   >
                      <div className="bg-primary-800 group-hover/button:bg-primary-700 group-active/button:bg-primary-700 flex h-7 w-7 items-center justify-center rounded-full transition-colors">
                         <IconMingcuteAddFill />

@@ -1,25 +1,27 @@
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
+import { useEditMessage } from "@hooks/mutations/useEditMessage";
 import { useSendMessage } from "@hooks/mutations/useSendMessage";
 import { useSendTyping } from "@hooks/mutations/useSendTyping";
+import { useIsMobile } from "@hooks/useIsMobile";
+import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
 import { isImageMediaType, MessageFlags, MessageReferenceType, MessageType } from "@huginn/shared";
+import { createPreviewMessage } from "@lib/utils";
+import { useChannelStore } from "@stores/channelStore";
+import { useClient } from "@stores/clientStore";
+import { useThisUser } from "@stores/userStore";
+import { useQueryClient } from "@tanstack/react-query";
+import { useParams } from "@tanstack/react-router";
 import clsx from "clsx";
 import { type ClipboardEvent, type KeyboardEvent, useEffect, useRef, useState, useTransition } from "react";
-import { useParams } from "react-router";
 import { type Descendant, Editor, Node } from "slate";
 import { Editable, Slate } from "slate-react";
+
 import type { AppMessage, AttachmentType } from "@/types";
+
 import AttachmentsPreview from "./AttachmentsPreview";
 import DraggingIndicator from "./DraggingIndicator";
-import Tooltip from "./tooltip/Tooltip";
-import { useChannelStore } from "@stores/channelStore";
-import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
-import { useEditMessage } from "@hooks/mutations/useEditMessage";
-import { useThisUser } from "@stores/userStore";
 import ReplyingPreview from "./ReplyingPreview";
-import { createPreviewMessage } from "@lib/utils";
-import { useQueryClient } from "@tanstack/react-query";
-import { useClient } from "@stores/clientStore";
-import { useIsMobile } from "@hooks/useIsMobile";
+import Tooltip from "./tooltip/Tooltip";
 
 type AttachmentInputType = { name: string; type: string; arrayBuffer: () => Promise<ArrayBuffer> };
 
@@ -35,7 +37,7 @@ const initialValue: Descendant[] = [
 ];
 
 export default function MessageBox(props: { messages: AppMessage[] }) {
-   const params = useParams();
+   const params = useParams({ strict: false });
    const queryClient = useQueryClient();
    const client = useClient();
    const editorRef = useRef<HTMLDivElement>(null);
@@ -123,8 +125,18 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
          const actualText = nodeText.slice(startOffset, endOffset);
          const guessText = nodeText.slice(Math.max(startOffset - markLength, 0), endOffset + markLength);
          if (guessText === `${mark}${actualText}${mark}`) {
-            editor.delete({ at: { anchor: { offset: startOffset - markLength, path: path }, focus: { offset: startOffset, path: path } } });
-            editor.delete({ at: { anchor: { offset: endOffset - markLength, path: path }, focus: { offset: endOffset, path: path } } });
+            editor.delete({
+               at: {
+                  anchor: { offset: startOffset - markLength, path: path },
+                  focus: { offset: startOffset, path: path },
+               },
+            });
+            editor.delete({
+               at: {
+                  anchor: { offset: endOffset - markLength, path: path },
+                  focus: { offset: endOffset, path: path },
+               },
+            });
             return;
          }
       }
@@ -138,7 +150,11 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       if (!user || !channelId || !client) return;
 
       const messageReference = currentReplyingMessageId
-         ? { messageId: currentReplyingMessageId, channelId: channelId, type: MessageReferenceType.DEFAULT }
+         ? {
+              messageId: currentReplyingMessageId,
+              channelId: channelId,
+              type: MessageReferenceType.DEFAULT,
+           }
          : undefined;
 
       const nonce = client.generateNonce();
@@ -179,7 +195,11 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
          return;
       }
 
-      editMessageMutation.mutate({ channelId: params.channelId ?? "", messageId: currentEditingMessageId, content });
+      editMessageMutation.mutate({
+         channelId: params.channelId ?? "",
+         messageId: currentEditingMessageId,
+         content,
+      });
 
       clearEditor();
       setEditingMessageId(undefined);
@@ -228,7 +248,13 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
          for (const [i, file] of input.entries()) {
             const arrayBuffer = await file.arrayBuffer();
             if (!isImageMediaType(file.type)) {
-               attachments.push({ id: i, arrayBuffer: arrayBuffer, dataUrl: undefined, filename: file.name, contentType: file.type });
+               attachments.push({
+                  id: i,
+                  arrayBuffer: arrayBuffer,
+                  dataUrl: undefined,
+                  filename: file.name,
+                  contentType: file.type,
+               });
                continue;
             }
 
@@ -248,7 +274,13 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                };
             });
 
-            attachments.push({ id: i, arrayBuffer: arrayBuffer, dataUrl: dataUrl, filename: file.name, contentType: file.type });
+            attachments.push({
+               id: i,
+               arrayBuffer: arrayBuffer,
+               dataUrl: dataUrl,
+               filename: file.name,
+               contentType: file.type,
+            });
          }
 
          setAttachments(attachments);
@@ -351,7 +383,11 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
             }
 
             for (const file of e.dataTransfer.files) {
-               files.push({ name: file.name, type: file.type, arrayBuffer: async () => await file.arrayBuffer() });
+               files.push({
+                  name: file.name,
+                  type: file.type,
+                  arrayBuffer: async () => await file.arrayBuffer(),
+               });
             }
 
             addAttachments(files);
@@ -398,7 +434,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    return (
       <div className="bottom-0 z-10 flex-col px-1.5 py-1.5 lg:px-5" ref={containerRef}>
          {currentEditingMessageId && (
-            <div className="bg-primary-900 border-surface flex items-center gap-x-2 rounded-t-lg border-2 border-b-0 px-2 py-2 text-white">
+            <div className="border-surface bg-primary-900 flex items-center gap-x-2 rounded-t-lg border-2 border-b-0 px-2 py-2 text-white">
                <IconMingcuteEdit2Fill />
                <div>Editing</div>
                <div className="text-sm text-white/50">(ESC to cancel)</div>
@@ -438,7 +474,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                         ref={editorRef}
                         placeholder={`Message ${currentChannel?.name}`}
                         className={clsx(
-                           "outline-hidden h-full whitespace-break-spaces py-3 font-light leading-6 text-white caret-white",
+                           "h-full py-3 leading-6 font-light whitespace-break-spaces text-white caret-white outline-hidden",
                            currentEditingMessageId && "pl-3",
                         )}
                         renderLeaf={renderLeaf}

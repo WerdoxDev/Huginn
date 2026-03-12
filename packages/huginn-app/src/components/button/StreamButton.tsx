@@ -1,10 +1,12 @@
-import type { MediaSource, ScreenShareFrameRate, ScreenShareQuality } from "@/types";
-import { DropdownMenu, type DropdownAnchor } from "@components/dropdown/DropdownMenu";
 import type { GatewayVoiceStateFlags } from "@huginn/shared";
+
+import { DropdownMenu, type DropdownAnchor } from "@components/dropdown/DropdownMenu";
 import { screenShareFrameRates, screenShareQualities } from "@lib/constants";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { useMemo, type ReactNode } from "react";
+
+import type { MediaSource, ScreenShareFrameRate, ScreenShareQuality } from "@/types";
 
 export default function StreamButton(props: {
    children?: ReactNode;

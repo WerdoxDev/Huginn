@@ -1,8 +1,9 @@
 import { singleError, verifyJwt } from "@huginn/backend-shared";
-import { createRelationship } from "../relationships.post";
-import Elysia from "elysia";
-import { Errors, RelationshipType } from "@huginn/shared";
 import { prisma } from "@huginn/backend-shared/database/index";
+import { Errors, RelationshipType } from "@huginn/shared";
+import Elysia from "elysia";
+
+import { createRelationship } from "../relationships.post";
 
 export const putUserRelationship = new Elysia()
    .use(verifyJwt())
@@ -11,7 +12,13 @@ export const putUserRelationship = new Elysia()
          return singleError(Errors.relationshipSelfRequest(), status, "Bad Request");
       }
 
-      if (await prisma.relationship.exists({ ownerId: BigInt(tokenPayload.id), userId: BigInt(userId), type: RelationshipType.FRIEND })) {
+      if (
+         await prisma.relationship.exists({
+            ownerId: BigInt(tokenPayload.id),
+            userId: BigInt(userId),
+            type: RelationshipType.FRIEND,
+         })
+      ) {
          return singleError(Errors.relationshipExists(), status, "Bad Request");
       }
 
