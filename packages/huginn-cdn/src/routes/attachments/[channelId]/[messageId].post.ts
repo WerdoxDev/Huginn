@@ -2,12 +2,12 @@ import { storage } from "#setup";
 import { invalidBody, verifyJwt } from "@huginn/backend-shared";
 import Elysia, { t } from "elysia";
 
-const schema = t.Record(t.String(), t.File());
+const schema = t.Object({ files: t.Array(t.File()) });
 
 export const postMessageAttachment = new Elysia().use(verifyJwt("cdn")).post(
    "/cdn/attachments/:channelId/:messageId",
    async ({ body, params: { channelId, messageId }, status }) => {
-      const file = body["files[0]"];
+      const file = body.files[0];
 
       if (!file) {
          return invalidBody(status);
@@ -17,5 +17,10 @@ export const postMessageAttachment = new Elysia().use(verifyJwt("cdn")).post(
 
       return status("Created", file.name);
    },
-   { body: schema },
+   {
+      body: schema,
+      transform(ctx) {
+         console.log(ctx.body);
+      },
+   },
 );
