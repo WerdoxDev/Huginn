@@ -3,7 +3,7 @@ import { type APIPatchCurrentUserJSONBody, type APIPatchCurrentUserResult, type 
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 
-export function usePatchUser(onSuccess?: (result: APIPatchCurrentUserResult) => void, handleErrors?: (errors: HuginnErrorData) => void) {
+export function usePatchUser(onSuccess?: (result: APIPatchCurrentUserResult) => void, handleErrors?: (errors: HuginnErrorData) => boolean | void) {
    const client = useClient();
    const { setUser } = useThisUser();
 

@@ -28,15 +28,15 @@ const initialStore = () => ({
          };
          confirm?: {
             text: string;
-            mutationKey?: keyof MutationKinds;
             callback: () => void | Promise<void>;
          };
       };
       isClosable: boolean;
    },
-   imageCrop: { isOpen: false, originalImageData: "", mimeType: "" } as DefaultModal & {
+   imageCrop: { isOpen: false, originalImageData: "", mimeType: "", callback: undefined } as DefaultModal & {
       originalImageData: string;
       mimeType: string;
+      callback?: (data: string) => Promise<void> | void;
    },
    createDM: { isOpen: false } as DefaultModal,
    editGroup: { isOpen: false } as DefaultModal & { channel?: AppDirectChannel },
@@ -66,6 +66,7 @@ const initialStore = () => ({
    changeUsername: { isOpen: false } as DefaultModal,
    changeDisplayName: { isOpen: false } as DefaultModal,
    changeEmail: { isOpen: false } as DefaultModal,
+   changePassword: { isOpen: false } as DefaultModal,
 });
 
 type StoreType = ReturnType<typeof initialStore>;

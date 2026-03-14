@@ -20,6 +20,7 @@ const ScreenShareModal = lazy(() => import("./ScreenShareModal"));
 const ChangeUsernameModal = lazy(() => import("./profile/ChangeUsernameModal"));
 const ChangeDisplayNameModal = lazy(() => import("./profile/ChangeDisplayNameModal"));
 const ChangeEmailModal = lazy(() => import("./profile/ChangeEmailModal"));
+const ChangePasswordModal = lazy(() => import("./profile/ChangePasswordModal"));
 
 export default function ModalsRenderer() {
    const { user } = useThisUser();
@@ -38,6 +39,7 @@ export default function ModalsRenderer() {
       changeUsername,
       changeDisplayName,
       changeEmail,
+      changePassword,
    } = useModals();
 
    return (
@@ -81,6 +83,11 @@ export default function ModalsRenderer() {
                      renderChildren={<ChangeEmailModal />}
                      modal={changeEmail}
                      onClose={() => updateModals({ changeEmail: { isOpen: false } })}
+                  />
+                  <BaseModal
+                     renderChildren={<ChangePasswordModal />}
+                     modal={changePassword}
+                     onClose={() => updateModals({ changePassword: { isOpen: false } })}
                   />
                </>
             )}

@@ -1,72 +1,62 @@
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
-import ModalCloseButton from "@components/button/ModalCloseButton";
 import DialogActions from "@components/DialogActions";
 import DialogBody from "@components/DialogBody";
 import { Description, DialogTitle } from "@headlessui/react";
-import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
-import { useEffect, useMemo } from "react";
+import { useState } from "react";
 
 import HuginnDialogPanel from "./HuginnDialogPanel";
 // import { usePostHog } from "posthog-js/react";
+
+const innerColorMap: Record<string, string> = {
+   info: "bg-caution-200!",
+   error: "bg-negative-200!",
+   success: "bg-positive-400!",
+};
+
+const backgroundColorMap: Record<string, string> = {
+   info: "bg-caution-600!",
+   error: "bg-negative-600!",
+   success: "bg-positive-800!",
+};
+
+const borderColorMap: Record<string, string> = {
+   info: "border-caution-300!",
+   error: "border-negative-300!",
+   success: "border-positive-500!",
+};
 
 export default function InfoModal() {
    const { info: modal, updateModals } = useModals();
    // const posthog = usePostHog();
 
-   const mutationState = useMutationLatestState(modal.action?.confirm?.mutationKey);
+   const [isLoading, setIsLoading] = useState(false);
 
-   const innerColor = useMemo(
-      () =>
-         modal.status === "info"
-            ? "bg-caution-200!"
-            : modal.status === "error"
-              ? "bg-negative-200!"
-              : modal.status === "success"
-                ? "bg-positive-400!"
-                : "",
-      [modal],
-   );
+   const innerColor = innerColorMap[modal.status] ?? "";
+   const backgroundColor = backgroundColorMap[modal.status] ?? "";
+   const borderColor = borderColorMap[modal.status] ?? "border-primary-800!";
 
-   const backgroundColor = useMemo(
-      () =>
-         modal.status === "info"
-            ? "bg-caution-600!"
-            : modal.status === "error"
-              ? "bg-negative-600!"
-              : modal.status === "success"
-                ? "bg-positive-800!"
-                : "",
-      [modal],
-   );
+   const errorCode = (typeof modal.text === "string" && modal.text.match(/\([A-Za-z0-9]+\)/g)?.[0]) ?? "";
+   const formattedText = typeof modal.text === "string" ? modal.text.replace(/\([A-Za-z0-9]+\)/g, "") : modal.text;
 
-   const borderColor = useMemo(
-      () =>
-         modal.status === "info"
-            ? "border-caution-300!"
-            : modal.status === "error"
-              ? "border-negative-300!"
-              : modal.status === "success"
-                ? "border-positive-500!"
-                : "border-primary-800!",
-      [modal],
-   );
+   function handleCancelClicked() {
+      if (!modal.action?.cancel?.callback) updateModals({ info: { isOpen: false } });
+      else modal.action.cancel.callback();
+   }
 
-   const errorCode = useMemo(() => (typeof modal.text === "string" && modal.text.match(/\([A-Za-z0-9]+\)/g)?.[0]) ?? "", [modal.text]);
-
-   const formattedText = useMemo(() => {
-      return typeof modal.text === "string" ? modal.text.replace(/\([A-Za-z0-9]+\)/g, "") : modal.text;
-   }, [modal.text]);
-
-   useEffect(() => {
-      if (modal.isOpen) {
-         // posthog.capture("info_modal_opened", { title: modal.title, text: modal.text, status: modal.status });
-      } else {
-         // posthog.capture("info_modal_closed");
+   async function handleConfirmClicked() {
+      const result = modal.action?.confirm?.callback();
+      if (result instanceof Promise) {
+         setIsLoading(true);
+         try {
+            await result;
+         } finally {
+            setIsLoading(false);
+         }
       }
-   }, [modal.isOpen]);
+   }
 
    return (
       <HuginnDialogPanel className={clsx("lg:max-w-xs", borderColor)}>
@@ -89,26 +79,12 @@ export default function InfoModal() {
             </Description>
          </DialogBody>
          <DialogActions>
-            <HuginnButton
-               className="h-10 w-full"
-               color="surface"
-               onClick={() => {
-                  if (!modal.action?.cancel?.callback) updateModals({ info: { isOpen: false } });
-                  else modal.action.cancel.callback();
-               }}
-            >
+            <HuginnButton className="h-10 w-full" color="surface" onClick={handleCancelClicked}>
                {modal.action?.cancel?.text ?? "Close"}
             </HuginnButton>
 
             {modal.action?.confirm && (
-               <LoadingButton
-                  isLoading={mutationState?.status === "pending"}
-                  className="text-text h-10 w-full"
-                  color="primary"
-                  onClick={() => {
-                     modal.action?.confirm?.callback();
-                  }}
-               >
+               <LoadingButton isLoading={isLoading} className="text-text h-10 w-full" color="primary" onClick={handleConfirmClicked}>
                   {modal.action.confirm.text}
                </LoadingButton>
             )}

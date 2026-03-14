@@ -8,6 +8,11 @@
    --spacing-topbar-icon: 1.5rem;
    --spacing-topbar: 4rem;
    --spacing-topbar-separator: calc(var(--spacing-topbar) + 0.125rem);
+
+   --text-tiny: 0.625rem;
+  /* --text-tiny--line-height: 1.5rem; */
+  /* --text-tiny--letter-spacing: 0.125rem; */
+  /* --text-tiny--font-weight: 500; */
 }
 
 @theme inline {

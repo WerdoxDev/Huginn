@@ -5,11 +5,13 @@ import DialogBody from "@components/DialogBody";
 import HuginnDialogTitle from "@components/HuginnDialogTitle";
 import HuginnInput from "@components/input/HuginnInput";
 import OTPInput from "@components/input/OTPInput";
+import PasswordInput from "@components/input/PasswordInput";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useResendVerificationEmail } from "@hooks/mutations/useResendVerificationEmail";
 import { useVerifyEmail } from "@hooks/mutations/useVerifyEmail";
 import { useCountdown } from "@hooks/useCountdown";
 import { useHuginnForm } from "@hooks/useHuginnForm";
+import { useIsOAuth } from "@hooks/useIsOauth";
 import { useOAuth } from "@hooks/useOAuth";
 import { JsonCode, type OAuthType, type HuginnErrorData, constants } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
@@ -32,6 +34,10 @@ export default function ChangeEmailModal() {
    const [pendingEmail, setPendingEmail] = useState<string | null>(null);
    const { countdown, startCountdown } = useCountdown();
 
+   const canResend = countdown === 0;
+   const startOAuth = useOAuth();
+   const isOAuth = useIsOAuth();
+
    const patchMutation = usePatchUser(() => {
       setIsVerifying(true);
       setFocus("verificationCode");
@@ -44,12 +50,6 @@ export default function ChangeEmailModal() {
    const resendMutation = useResendVerificationEmail(() => {
       setFocus("verificationCode");
    });
-
-   const canResend = countdown === 0;
-
-   const startOAuth = useOAuth();
-
-   const isOAuth = tokenPayload?.authType === "github" || tokenPayload?.authType === "google";
 
    useEffect(() => {
       if (modal.isOpen) {
@@ -96,12 +96,13 @@ export default function ChangeEmailModal() {
                         </HuginnInput.Wrapper>
                      </HuginnInput>
                      {!isOAuth && (
-                        <HuginnInput {...register("password", { required: true })} type="password">
+                        <PasswordInput {...register("password", { required: true })}>
                            <HuginnInput.Label>Password</HuginnInput.Label>
                            <HuginnInput.Wrapper>
                               <HuginnInput.Input />
+                              <PasswordInput.ToggleButton />
                            </HuginnInput.Wrapper>
-                        </HuginnInput>
+                        </PasswordInput>
                      )}
                   </>
                ) : (

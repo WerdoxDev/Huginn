@@ -1,10 +1,9 @@
 import HuginnButton from "@components/button/HuginnButton";
-import DialogActions from "@components/DialogActions";
-import { dispatchEvent } from "@lib/event-handler";
+import LoadingButton from "@components/button/LoadingButton";
 
 import "../../cropper.css";
 import { useModals } from "@stores/modalsStore";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 // import { usePostHog } from "posthog-js/react";
 import Cropper, { type ReactCropperElement } from "react-cropper";
 import { SuperImageCropper } from "super-image-cropper";
@@ -13,6 +12,7 @@ import HuginnDialogPanel from "./HuginnDialogPanel";
 
 export default function ImageCropModal() {
    const { imageCrop: modal, updateModals } = useModals();
+   const [isLoading, setIsLoading] = useState(false);
    // const posthog = usePostHog();
    const cropperRef = useRef<ReactCropperElement>(null);
 
@@ -31,14 +31,23 @@ export default function ImageCropModal() {
             })) as string;
          }
 
-         dispatchEvent("image_cropper_done", {
-            croppedImageData: data,
-         });
+         setIsLoading(true);
+         try {
+            await modal.callback?.(data);
+         } finally {
+            setIsLoading(false);
+         }
+         // dispatchEvent("image_cropper_done", {
+         //    croppedImageData: data,
+         // });
          close();
       }
    }
 
    function close() {
+      if (modal.originalImageData?.startsWith("blob:")) {
+         URL.revokeObjectURL(modal.originalImageData);
+      }
       updateModals({ imageCrop: { isOpen: false } });
    }
 
@@ -52,12 +61,13 @@ export default function ImageCropModal() {
 
    return (
       <HuginnDialogPanel>
-         <div className="m-5 mb-0 flex aspect-square max-w-120 items-center justify-center rounded-lg bg-black/50">
+         <div className="text-text/50 px-5 pt-4 pb-1 text-center text-sm italic">Scroll to zoom</div>
+         <div className="m-5 mt-1 flex max-h-[calc(100vh-12rem)] max-w-120 items-center justify-center overflow-hidden rounded-lg bg-black/50">
             <Cropper
                ref={cropperRef}
                src={modal.originalImageData}
                initialAspectRatio={1}
-               className="aspect-square max-w-120"
+               className="h-full max-h-[calc(100vh-12rem)] w-full max-w-120"
                aspectRatio={1}
                movable={true}
                unselectable="off"
@@ -74,15 +84,14 @@ export default function ImageCropModal() {
                toggleDragModeOnDblclick={false}
             />
          </div>
-         <div className="text-text/60 mx-5 my-1 italic">NOTE: zoom with scroll wheel</div>
-         <DialogActions>
-            <HuginnButton onClick={close} className="h-10 w-full" color="surface">
+         <div className="bg-surface-alt flex w-full gap-x-2 p-5">
+            <HuginnButton onClick={close} className="h-10 flex-1" color="surface">
                Cancel
             </HuginnButton>
-            <HuginnButton onClick={confirm} className="h-10 w-full" color="primary">
+            <LoadingButton onClick={confirm} className="h-10 flex-1" color="primary" isLoading={isLoading}>
                Confirm
-            </HuginnButton>
-         </DialogActions>
+            </LoadingButton>
+         </div>
       </HuginnDialogPanel>
    );
 }

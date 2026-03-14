@@ -56,7 +56,7 @@ export type HuginnButtonProps = {
    type?: "submit" | "reset" | "button" | undefined;
    className?: string;
    disabled?: boolean;
-   color?: "primary" | "surface-deep" | "surface-alt" | "surface" | "positive";
+   color?: "primary" | "surface-deep" | "surface-alt" | "surface" | "positive" | "negative";
    onClick?: () => void;
 };
 
@@ -231,6 +231,7 @@ export type MutationKinds = {
    "add-channel-recipient": AddChannelRecipientMutationVars;
    "create-relationship": CreateRelationshipMutationVars;
    "remove-relationship": Snowflake;
+   "patch-user": unknown;
 };
 
 export type AppUser<U = PresenceUser> = U & {

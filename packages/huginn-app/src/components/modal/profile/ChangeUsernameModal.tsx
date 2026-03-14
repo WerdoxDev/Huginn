@@ -4,8 +4,10 @@ import DialogActions from "@components/DialogActions";
 import DialogBody from "@components/DialogBody";
 import HuginnDialogTitle from "@components/HuginnDialogTitle";
 import HuginnInput from "@components/input/HuginnInput";
+import PasswordInput from "@components/input/PasswordInput";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useHuginnForm } from "@hooks/useHuginnForm";
+import { useIsOAuth } from "@hooks/useIsOauth";
 import { useOAuth } from "@hooks/useOAuth";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import { JsonCode, type OAuthType, type HuginnErrorData } from "@huginn/shared";
@@ -31,8 +33,7 @@ export default function ChangeUsernameModal() {
       updateModals({ changeUsername: { isOpen: false } });
    }, onError);
    const startOAuth = useOAuth();
-
-   const isOAuth = tokenPayload?.authType === "github" || tokenPayload?.authType === "google";
+   const isOAuth = useIsOAuth();
 
    useEffect(() => {
       if (modal.isOpen) {
@@ -63,12 +64,13 @@ export default function ChangeUsernameModal() {
                   </HuginnInput.Wrapper>
                </HuginnInput>
                {!isOAuth && (
-                  <HuginnInput {...register("password", { required: true })} type="password">
+                  <PasswordInput {...register("password", { required: true })}>
                      <HuginnInput.Label>Password</HuginnInput.Label>
                      <HuginnInput.Wrapper>
                         <HuginnInput.Input />
+                        <PasswordInput.ToggleButton />
                      </HuginnInput.Wrapper>
-                  </HuginnInput>
+                  </PasswordInput>
                )}
             </DialogBody>
             <DialogActions>

@@ -15,6 +15,8 @@ import RingLinkButton from "./button/RingLinkButton";
 import DirectMessageChannel from "./DirectMessageChannel";
 import VoiceStatus from "./voice/VoiceStatus";
 
+const INDICATOR_DURATION = 500;
+
 export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
    const { updateModals } = useModals();
    const { friendsNotificationsCount } = useReadStates();
@@ -38,7 +40,7 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
    );
 
    useEffect(() => {
-      animatable.current = createAnimatable(indicator.current!, { y: 0, height: 0, scaleY: 1, left: 0 });
+      animatable.current = createAnimatable(indicator.current!, { y: 0, height: 0, scaleY: 1, left: 0, ease: "outExpo" });
 
       return () => {
          animatable.current?.revert();
@@ -58,14 +60,14 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
             console.log(animatable.current.scaleY());
             animatable.current.y(offsetTop, 0);
          } else {
-            animatable.current.y(offsetTop, 200);
+            animatable.current.y(offsetTop, INDICATOR_DURATION);
          }
 
          setShowIndicator(true);
-         animatable.current.left(0, 200).height(height, 200);
+         animatable.current.left(0, INDICATOR_DURATION).height(height, INDICATOR_DURATION);
       } else {
          setShowIndicator(false);
-         animatable.current.left(-4, 200);
+         animatable.current.left(-4, INDICATOR_DURATION);
       }
    }, [channelId, sortedChannels]);
 
