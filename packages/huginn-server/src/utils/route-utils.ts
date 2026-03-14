@@ -255,14 +255,15 @@ export async function processEmbeds(embeds?: APIEmbed[]) {
 
 export async function processAttachments(
    attachments: APIPostAttachmentJSONBody[] | undefined,
-   files: Record<string, File> | undefined | null,
+   files: File[] | undefined | null,
    channelId: Snowflake,
    messageId: Snowflake,
 ) {
    const processedAttachments: DBAttachment[] = [];
+   console.log(files, attachments);
    if (attachments && files) {
       for (const attachment of attachments) {
-         const file = files[`files[${attachment.id}]`];
+         const file = files[attachment.id];
          const fileArrayBuffer = await file.arrayBuffer();
 
          const name = (await cdnUpload(CDNRoutes.uploadAttachment(channelId, messageId), {

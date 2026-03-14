@@ -11,7 +11,7 @@ import {
    validateUsername,
    validateUsernameUnique,
 } from "#utils/validation";
-import { createErrorFactory, createHuginnError, createToken, globalPlugin, verifyJwt } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, createToken, globalPlugin, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma, type EmailVerification } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
 import { type APIPatchCurrentUserResult, CDNRoutes, constants, Errors, Fields, getFileHash, toArrayBuffer } from "@huginn/shared";
@@ -76,11 +76,14 @@ export const patchMe = new Elysia()
          let avatarHash: string | undefined | null = undefined;
          if (body.avatar !== null && body.avatar !== undefined) {
             const data = toArrayBuffer(body.avatar);
-            avatarHash = getFileHash(data);
+            if (data.byteLength > constants.AVATAR_MAX_FILE_SIZE) {
+               return singleError(Errors.fileTooLarge(data.byteLength, constants.AVATAR_MAX_FILE_SIZE), status);
+            }
 
+            avatarHash = getFileHash(data);
             avatarHash = (
                await cdnUpload<string>(CDNRoutes.uploadAvatar(user.id), {
-                  files: [{ data: data, name: avatarHash }],
+                  files: [{ data: data, name: avatarHash, contentType: "image/png" }],
                })
             ).split(".")[0];
          } else if (body.avatar === null) {
@@ -93,7 +96,7 @@ export const patchMe = new Elysia()
                username: body.username?.toLowerCase(),
                displayName: !body.displayName && body.displayName !== undefined ? null : body.displayName,
                avatar: avatarHash,
-               password: body.newPassword ? body.newPassword : undefined,
+               newPassword: body.newPassword ? body.newPassword : undefined,
             },
             { select: selectPrivateUser },
          );
