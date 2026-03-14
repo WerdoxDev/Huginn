@@ -13,7 +13,7 @@ export default function BaseModal(props: {
 }) {
    return (
       <Suspense>
-         <Dialog open={props.modal.isOpen} transition onClose={props.onClose} className="relative z-30 transition duration-200 data-closed:opacity-0">
+         <Dialog open={props.modal.isOpen} transition onClose={props.onClose} className="relative z-30 transition">
             <ModalBackground className={props.backgroundClassName} />
             <div className={clsx("fixed inset-0 top-6")}>
                <div className="flex h-full w-full items-end justify-center lg:items-center lg:py-20">{props.renderChildren}</div>
