@@ -57,7 +57,6 @@ export const userExtension = Prisma.defineExtension({
             // Hash new password
             if (editedUser.newPassword) editedUser.newPassword = await Bun.password.hash(editedUser.newPassword);
             if (editedUser.displayName) editedUser.displayName = editedUser.displayName.trim();
-
             const updatedUser = await prisma.user.update({
                where: { id: BigInt(id) },
                data: {
