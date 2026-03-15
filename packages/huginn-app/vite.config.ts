@@ -14,11 +14,11 @@ import { version } from "./package.json";
 const reactCompilerConfig = { target: "19" };
 
 // https://vitejs.dev/config/
-export default defineConfig(({ command }) => {
-   const isElectron = process.env.BUILD_TARGET === "electron";
-   const base = isElectron ? "./" : "/app";
+export default defineConfig(({ mode }) => {
+   const isElectron = mode === "electron";
+   const base = isElectron ? "./" : "/";
    return {
-      // base: base,
+      base: base,
       publicDir: "public",
 
       plugins: [
@@ -78,6 +78,7 @@ export default defineConfig(({ command }) => {
 
       define: {
          __APP_VERSION__: JSON.stringify(version.toString()),
+         __IS_ELECTRON__: JSON.stringify(isElectron),
       },
 
       resolve: {

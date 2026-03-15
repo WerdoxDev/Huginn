@@ -6,7 +6,7 @@ import "highlight.js/styles/atom-one-dark.css";
 import { clientStore } from "@stores/clientStore";
 import { initializeStorage, storageStore } from "@stores/storageStore";
 import { QueryClient } from "@tanstack/react-query";
-import { createRouter, RouterProvider } from "@tanstack/react-router";
+import { createBrowserHistory, createHashHistory, createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
 import { createRoot } from "react-dom/client";
 
 import { RemoteLogger } from "../shared/remote-logger";
@@ -61,9 +61,12 @@ if (window.electronAPI) {
    _remoteLogger = new RemoteLogger(logger, endpoint, clientInfo.id);
 }
 
+const history = __IS_ELECTRON__ ? createHashHistory() : createBrowserHistory();
+
 const router = createRouter({
    routeTree: routeTree,
-   basepath: "app",
+   history: history,
+   basepath: !__IS_ELECTRON__ ? "app" : undefined,
    defaultErrorComponent: RouteErrorComponent,
    defaultPendingMinMs: 0,
    defaultPendingMs: 0,
