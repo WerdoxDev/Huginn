@@ -3,7 +3,7 @@ import type { Snowflake } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
 import { useReadStates } from "@stores/readStatesStore";
 import { useParams } from "@tanstack/react-router";
-import { animate, createAnimatable, createScope, Scope, type AnimatableObject } from "animejs";
+import { animate, createAnimatable, createScope, Scope, spring, type AnimatableObject } from "animejs";
 import clsx from "clsx";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
@@ -15,7 +15,7 @@ import RingLinkButton from "./button/RingLinkButton";
 import DirectMessageChannel from "./DirectMessageChannel";
 import VoiceStatus from "./voice/VoiceStatus";
 
-const INDICATOR_DURATION = 500;
+const INDICATOR_DURATION = 300;
 
 export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
    const { updateModals } = useModals();
@@ -40,7 +40,13 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
    );
 
    useEffect(() => {
-      animatable.current = createAnimatable(indicator.current!, { y: 0, height: 0, scaleY: 1, left: 0, ease: "outExpo" });
+      animatable.current = createAnimatable(indicator.current!, {
+         y: 0,
+         height: 0,
+         scaleY: 1,
+         left: 0,
+         ease: "inOutQuad",
+      });
 
       return () => {
          animatable.current?.revert();

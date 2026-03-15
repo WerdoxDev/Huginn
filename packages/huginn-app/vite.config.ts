@@ -16,7 +16,7 @@ const reactCompilerConfig = { target: "19" };
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
    const isElectron = mode === "electron";
-   const base = isElectron ? "./" : "/";
+   const base = isElectron ? "./" : "/app";
    return {
       base: base,
       publicDir: "public",
