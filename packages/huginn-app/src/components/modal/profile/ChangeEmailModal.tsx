@@ -11,7 +11,7 @@ import { useResendVerificationEmail } from "@hooks/mutations/useResendVerificati
 import { useVerifyEmail } from "@hooks/mutations/useVerifyEmail";
 import { useCountdown } from "@hooks/useCountdown";
 import { useHuginnForm } from "@hooks/useHuginnForm";
-import { useIsOAuth } from "@hooks/useIsOauth";
+import { useIsOAuth } from "@hooks/useIsOAuth";
 import { useOAuth } from "@hooks/useOAuth";
 import { JsonCode, type OAuthType, type HuginnErrorData, constants } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";

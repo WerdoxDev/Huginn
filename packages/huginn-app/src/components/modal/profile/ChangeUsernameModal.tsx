@@ -7,7 +7,7 @@ import HuginnInput from "@components/input/HuginnInput";
 import PasswordInput from "@components/input/PasswordInput";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useHuginnForm } from "@hooks/useHuginnForm";
-import { useIsOAuth } from "@hooks/useIsOauth";
+import { useIsOAuth } from "@hooks/useIsOAuth";
 import { useOAuth } from "@hooks/useOAuth";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import { JsonCode, type OAuthType, type HuginnErrorData } from "@huginn/shared";
