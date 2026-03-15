@@ -70,7 +70,7 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
          }
 
          setShowIndicator(true);
-         animatable.current.left(0, INDICATOR_DURATION).height(height, INDICATOR_DURATION);
+         animatable.current.left(0, INDICATOR_DURATION).height(height, 0);
       } else {
          setShowIndicator(false);
          animatable.current.left(-4, INDICATOR_DURATION);

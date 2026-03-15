@@ -9,7 +9,7 @@ export default function ModalBackground(props: { className?: string }) {
       <DialogBackdrop
          transition
          className={clsx(
-            "fixed inset-0 top-6 bg-black/50 backdrop-blur-xs transition-all duration-200 data-closed:opacity-0 data-closed:backdrop-blur-none",
+            "fixed inset-0 top-6 bg-black/50 transition-all duration-200 data-closed:opacity-0",
             !huginnWindow.maximized && "rounded-b-lg",
             props.className,
          )}

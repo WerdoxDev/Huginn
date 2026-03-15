@@ -1,7 +1,8 @@
 import { interpolateColor } from "@huginn/shared";
 import { useTheme } from "@stores/themeStore";
+import { useMatch } from "@tanstack/react-router";
 import * as blobs2Animate from "blobs/v2/animate";
-import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 const animation = blobs2Animate.canvasPath();
 
@@ -9,101 +10,119 @@ const blobSize = 700;
 
 export default function StartBackground() {
    const { theme } = useTheme();
-   const canvas = useRef<HTMLCanvasElement | null>(null);
-   const [canvasSize, setCanvasSize] = useState(window.innerWidth);
-   const [isResizing, setIsResizing] = useState(false);
+   const startMatch = useMatch({ from: "/_app/_start", shouldThrow: false });
+   const isActive = !!startMatch;
+   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+   const rafIdRef = useRef<number>(0);
    const animationStartRef = useRef<number>(Date.now());
+   const canvasSizeRef = useRef<number>(window.innerWidth);
+   const resizeTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+   const themeRef = useRef(theme);
+   themeRef.current = theme;
 
-   function loopAnimation(duration: number = 5000) {
+   const loopAnimation = useCallback((duration: number = 5000) => {
       const seed = Math.random();
+      const size = canvasSizeRef.current;
       animation.transition({
-         blobOptions: { seed: seed, extraPoints: 10, randomness: 3, size: blobSize },
+         blobOptions: { seed, extraPoints: 10, randomness: 3, size: blobSize },
          canvasOptions: {
-            offsetX: canvasSize / 2 - blobSize / 2,
-            offsetY: canvasSize / 2 - blobSize / 2,
+            offsetX: size / 2 - blobSize / 2,
+            offsetY: size / 2 - blobSize / 2,
          },
-         duration: duration,
+         duration,
          timingFunction: "ease",
          callback: loopAnimation,
       });
-   }
+   }, []);
 
-   useEffect(() => {
-      function handleResize() {
-         setIsResizing(true);
-         setCanvasSize(window.innerWidth);
+   const renderFrame = useCallback(() => {
+      const ctx = ctxRef.current;
+      if (!ctx) {
+         rafIdRef.current = requestAnimationFrame(renderFrame);
+         return;
       }
 
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-   }, []);
-
-   useEffect(() => {
-      loopAnimation(0);
-   }, []);
-
-   const renderAnimation = useEffectEvent(() => {
-      const context = canvas.current?.getContext("2d");
-      if (!context || isResizing) return;
-
+      const size = canvasSizeRef.current;
+      const t = themeRef.current;
       const cycle = 10000;
       const elapsedMs = (Date.now() - animationStartRef.current) % cycle;
       const colorProgress = elapsedMs / cycle;
 
-      // Create color animation between theme colors
-      const colors = [theme["primary-700"], theme["primary-800"], theme["primary-700"]];
+      const color1 = t["primary-700"];
+      const color2 = t["primary-800"];
 
-      let fillColor1 = theme["primary-900"];
-      let fillColor2 = theme["primary-700"];
-      if (colors.length > 1) {
-         const segment = 1 / (colors.length - 1);
-         const segmentIndex = Math.floor(colorProgress / segment);
-         const nextSegmentIndex = (segmentIndex + 1) % colors.length;
-         const segmentProgress = (colorProgress - segmentIndex * segment) / segment;
-         fillColor2 = interpolateColor(colors[segmentIndex], colors[nextSegmentIndex], segmentProgress);
-         // fillColor2 = interpolateColor(colors[(segmentIndex + 1) % colors.length], colors[(segmentIndex + 2) % colors.length], segmentProgress);
+      // Interpolate between [color1, color2, color1] based on progress
+      const segment = 0.5;
+      const segmentIndex = Math.min(Math.floor(colorProgress / segment), 1);
+      const segmentProgress = (colorProgress - segmentIndex * segment) / segment;
+      const from = segmentIndex === 0 ? color1 : color2;
+      const to = segmentIndex === 0 ? color2 : color1;
+
+      ctx.clearRect(0, 0, size, size);
+
+      const half = size / 2;
+      const gradient = ctx.createRadialGradient(half, half, 0, half, half, half);
+      gradient.addColorStop(0, t["primary-900"]);
+      gradient.addColorStop(1, interpolateColor(from, to, segmentProgress));
+      ctx.fillStyle = gradient;
+
+      ctx.fill(animation.renderFrame());
+      rafIdRef.current = requestAnimationFrame(renderFrame);
+   }, []);
+
+   // Initialize context and start/stop animation based on login state
+   useEffect(() => {
+      const cvs = canvasRef.current;
+      if (!cvs) return;
+
+      ctxRef.current = cvs.getContext("2d");
+
+      if (isActive) {
+         loopAnimation(0);
+         rafIdRef.current = requestAnimationFrame(renderFrame);
       }
 
-      context.clearRect(0, 0, canvasSize, canvasSize);
-
-      const gradient = context.createRadialGradient(canvasSize / 2, canvasSize / 2, 0, canvasSize / 2, canvasSize / 2, canvasSize / 2);
-      gradient.addColorStop(0, fillColor1);
-      gradient.addColorStop(1, fillColor2);
-      context.fillStyle = gradient;
-
-      context.fill(animation.renderFrame());
-      requestAnimationFrame(renderAnimation);
-   });
-
-   function clearCanvas() {
-      const context = canvas.current?.getContext("2d");
-      if (!context) return;
-
-      context.clearRect(0, 0, canvasSize, canvasSize);
-   }
-
-   useEffect(() => {
-      clearCanvas();
-      const timeout = setTimeout(() => {
-         setIsResizing(false);
-         loopAnimation(0);
-      }, 100);
       return () => {
-         clearTimeout(timeout);
+         cancelAnimationFrame(rafIdRef.current);
       };
-   }, [canvasSize]);
+   }, [loopAnimation, renderFrame, isActive]);
 
+   // Handle resize without triggering React re-renders
    useEffect(() => {
-      const animationFrame = requestAnimationFrame(renderAnimation);
+      if (!isActive) return;
 
+      function handleResize() {
+         if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+         cancelAnimationFrame(rafIdRef.current);
+
+         const newSize = window.innerWidth;
+         canvasSizeRef.current = newSize;
+
+         const cvs = canvasRef.current;
+         if (cvs) {
+            cvs.width = newSize;
+            cvs.height = newSize;
+         }
+
+         ctxRef.current?.clearRect(0, 0, newSize, newSize);
+
+         resizeTimerRef.current = setTimeout(() => {
+            loopAnimation(0);
+            rafIdRef.current = requestAnimationFrame(renderFrame);
+         }, 100);
+      }
+
+      window.addEventListener("resize", handleResize);
       return () => {
-         cancelAnimationFrame(animationFrame);
+         window.removeEventListener("resize", handleResize);
+         if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
       };
-   }, [canvasSize, blobSize, theme, isResizing]);
+   }, [loopAnimation, renderFrame, isActive]);
 
    return (
       <div className="fixed flex h-full w-full items-center justify-center" style={{ viewTransitionName: "start-background" }}>
-         <canvas ref={canvas} width={canvasSize} height={canvasSize} className="absolute" />
+         <canvas ref={canvasRef} width={canvasSizeRef.current} height={canvasSizeRef.current} className="absolute" />
       </div>
    );
 }
