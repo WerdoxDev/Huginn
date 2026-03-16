@@ -17,8 +17,10 @@ import { type HuginnClient } from ".";
 import { defaultClientOptions } from "./utils";
 import { SharedWebsocket } from "./websocket";
 
+export type AuthenticationStatus = "success" | "authentication_failed" | "network_error";
 type AuthenticationResult = {
    authenticated: boolean;
+   status: AuthenticationStatus;
    retryable: boolean;
 };
 
@@ -116,13 +118,13 @@ export class Gateway extends SharedWebsocket<Events> {
       log("api:gateway", "default", "authenticate");
 
       if (this.isAuthenticated) {
-         return { authenticated: true, retryable: true };
+         return { authenticated: true, retryable: true, status: "success" };
       }
 
       if (!this.isConnected) {
          const result = await this.ensureConnected();
          if (!result) {
-            return { authenticated: false, retryable: true };
+            return { authenticated: false, retryable: true, status: "network_error" };
          }
       }
 
@@ -315,14 +317,15 @@ export class Gateway extends SharedWebsocket<Events> {
       switch (result.event) {
          case "ready":
          case "resumed":
-            return { authenticated: true, retryable: true };
+            return { authenticated: true, retryable: true, status: "success" };
          case "disconnected":
             return {
                authenticated: false,
                retryable: result.data !== GatewayCode.AUTHENTICATION_FAILED,
+               status: result.data !== GatewayCode.AUTHENTICATION_FAILED ? "network_error" : "authentication_failed",
             };
          default:
-            return { authenticated: false, retryable: false };
+            return { authenticated: false, retryable: false, status: "authentication_failed" };
       }
    }
 

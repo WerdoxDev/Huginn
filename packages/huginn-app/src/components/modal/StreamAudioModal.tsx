@@ -1,6 +1,9 @@
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
+import DialogActions from "@components/DialogActions";
+import DialogBody from "@components/DialogBody";
+import HuginnDialogTitle from "@components/HuginnDialogTitle";
 import LoadingIcon from "@components/LoadingIcon";
 import { useModals } from "@stores/modalsStore";
 // import { voiceClient } from "@stores/voiceStore";
@@ -46,11 +49,10 @@ export default function StreamAudioModal() {
    }
 
    return (
-      <HuginnDialogPanel className="w-full max-w-lg pt-5 select-none">
-         <div className="flex flex-col gap-y-3">
-            <div className="text-text text-center text-2xl font-bold">Stream Audio</div>
-            <div className="text-text/80 px-2 text-center">Choose an application to share it's audio with others</div>
-            <div className="scroll-alternative border-primary-700 mx-5 mt-5 flex h-72 flex-col gap-y-2 overflow-y-scroll rounded-lg border p-2.5 pr-1.5">
+      <HuginnDialogPanel className="w-full max-w-lg select-none">
+         <DialogBody>
+            <HuginnDialogTitle title="Stream Audio" description="Choose an application to share its audio with others" />
+            <div className="scroll-thin scroll-surface-alt border-primary-700 p flex h-72 flex-col gap-y-2 overflow-y-scroll rounded-lg border p-2.5 pr-1">
                {isLoading ? (
                   <div className="flex h-full w-full items-center justify-center">
                      <LoadingIcon className="size-16" />
@@ -59,7 +61,7 @@ export default function StreamAudioModal() {
                   data?.map((x) => (
                      <button
                         className={clsx(
-                           "bg-surface-alt ring-primary-700 flex cursor-pointer items-start gap-x-2 rounded-md px-2 py-2 text-left transition-shadow",
+                           "bg-surface-alt ring-primary-700 flex cursor-pointer items-center gap-x-2 rounded-md px-2 py-3 text-left transition-shadow",
                            x === selectedSource ? "ring-2" : "hover:ring-2",
                         )}
                         key={`${x.processId}-${x.name}`}
@@ -72,8 +74,8 @@ export default function StreamAudioModal() {
                   ))
                )}
             </div>
-         </div>
-         <div className="bg-surface-alt mt-5 flex w-full items-center gap-x-2 p-5">
+         </DialogBody>
+         <DialogActions>
             <LoadingButton className="h-10 w-24" color="surface" onClick={refetch} isLoading={isFetching}>
                Refresh
             </LoadingButton>
@@ -89,7 +91,7 @@ export default function StreamAudioModal() {
             >
                Go Live
             </LoadingButton>
-         </div>
+         </DialogActions>
       </HuginnDialogPanel>
    );
 }

@@ -1,5 +1,5 @@
 // import { usePostHog } from "posthog-js/react";
-import type { InitializationStatus } from "@huginn/api";
+import type { InitializationResult } from "@huginn/api";
 
 import { error, log } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
@@ -22,7 +22,7 @@ export function useInitializeClient() {
          refreshToken?: string;
          navigatePath?: string;
          onSuccess?: () => Promise<void> | void;
-      }): Promise<InitializationStatus> => {
+      }): Promise<InitializationResult> => {
          try {
             if (!client) throw new Error("Client was undefined when initializing");
 
@@ -33,10 +33,10 @@ export function useInitializeClient() {
                timeout: 10000,
             });
 
-            log("app:client-store", "default", "initialize result:", result?.result);
+            log("app:client-store", "default", "initialize result:", result?.status);
 
             if (!result.success) {
-               log("app:client-store", "default", "initialize failed:", result?.result);
+               log("app:client-store", "default", "initialize failed:", result?.status);
                return result;
             }
 
@@ -70,7 +70,7 @@ export function useInitializeClient() {
             return result;
          } catch (e) {
             error("app:client-store", "Failed to initialize", e);
-            return { result: "authentication_failed", retryable: false, success: false };
+            return { status: "authentication_failed", retryable: false, success: false };
          }
       },
       [client, store, posthog, navigate, clientInfo.id],

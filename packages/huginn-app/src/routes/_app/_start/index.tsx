@@ -3,14 +3,16 @@ import HuginnIcon from "@components/HuginnIcon";
 import LoadingIcon from "@components/LoadingIcon";
 import StartWrapper from "@components/StartWrapper";
 import { useConnect } from "@hooks/useConnect";
+import { useCountdown } from "@hooks/useCountdown";
 import { useUpdater } from "@hooks/useUpdater";
 import { initializeClient, setHostnamesFromExternal, setHostnamesFromSettings, useClient } from "@stores/clientStore";
 import { useStorage } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { animate, createScope } from "animejs";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
-import { useEffect, useMemo, useReducer } from "react";
+import { useEffect, useMemo, useReducer, useRef } from "react";
 
 type Step = "none" | "fetch_hostnames" | "check_update" | "initialize" | "update" | "welcome";
 
@@ -21,7 +23,7 @@ type State = {
    error?: string;
 };
 
-type Action = { type: "SET"; step: Step; text: string } | { type: "FAIL"; error: string };
+type Action = { type: "SET"; step: Step; text: string } | { type: "FAIL"; error?: string };
 
 function reducer(state: State, action: Action): State {
    switch (action.type) {
@@ -58,8 +60,8 @@ function IndexComponent() {
       async onNotAvailable() {
          await setInitialize();
       },
-      onError() {
-         dispatch({ type: "FAIL", error: "Could not check for updates" });
+      onError(message) {
+         dispatch({ type: "FAIL", error: message });
       },
       onUpdating() {
          dispatch({ type: "SET", step: "update", text: "Updating to" });
@@ -73,9 +75,40 @@ function IndexComponent() {
       text: "",
    });
 
+   const { startCountdown, countdown } = useCountdown();
+
+   const iconRef = useRef<HTMLDivElement | null>(null);
+   const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
+
    const updateProgressText = useMemo(() => {
       return `${(downloaded.current / 1024 / 1024).toFixed(2)}MB / ${(contentLength.current / 1024 / 1024).toFixed(2)}MB (${Math.ceil(progress)}%)`;
    }, [progress]);
+
+   const { errorTitle, errorDescription } = useMemo(() => {
+      if (state.status !== "error") {
+         return { errorTitle: "Huginn", errorDescription: "" };
+      }
+
+      let title = "Couldn't start Huginn :(";
+      let description = "An unexpected error occurred while starting Huginn. You can try again in a moment.";
+
+      switch (state.current) {
+         case "fetch_hostnames":
+            description =
+               "We either couldn't reach the specified external hostname or the response was invalid. Please check your settings and internet connection, or try again.";
+            break;
+         case "check_update":
+            description = "We couldn't check for updates. You can retry, or continue using the current version.";
+            break;
+         case "initialize":
+            description = "We couldn't connect to Huginn. Make sure the server is reachable and your settings are correct, then retry.";
+            break;
+         default:
+            break;
+      }
+
+      return { errorTitle: title, errorDescription: description };
+   }, [state.status, state.current]);
 
    async function initialize() {
       // await new Promise((r) => setTimeout(r, 1000));
@@ -91,7 +124,7 @@ function IndexComponent() {
       }
 
       const result = await connect();
-      console.log(result);
+
       if (result.success) {
          dispatch({
             type: "SET",
@@ -105,7 +138,7 @@ function IndexComponent() {
             viewTransition: { types: ["forwards"] },
          });
       } else if (result.retryable) {
-         dispatch({ type: "FAIL", error: "Failed to connect..." });
+         dispatch({ type: "FAIL", error: result.status });
       } else {
          await navigate({ to: "/login", replace: true, viewTransition: { types: ["forwards"] } });
       }
@@ -136,9 +169,21 @@ function IndexComponent() {
    }
 
    useEffect(() => {
-      if (state.error) {
-         return;
+      if (state.status === "error") {
+         startCountdown(10);
       }
+   }, [state.status, startCountdown]);
+
+   useEffect(() => {
+      if (state.status !== "error") return;
+      if (countdown === 0) {
+         retry();
+      }
+   }, [countdown]);
+
+   useEffect(() => {
+      if (state.error) return;
+
       async function decideState() {
          switch (state.current) {
             case "none":
@@ -155,8 +200,8 @@ function IndexComponent() {
 
             case "fetch_hostnames":
                const result = await setHostnamesFromExternal();
-               if (!result) {
-                  dispatch({ type: "FAIL", error: "Failed to fetch external hostnames!" });
+               if (!result.success) {
+                  dispatch({ type: "FAIL", error: result.status });
                } else {
                   initializeClient();
 
@@ -185,6 +230,25 @@ function IndexComponent() {
    }, [state]);
 
    useEffect(() => {
+      if (state.status !== "error") return;
+      if (!iconRef.current) return;
+
+      scopeRef.current = createScope().add(() => {
+         animate(iconRef.current!, {
+            opacity: [0, 1],
+            scale: [0.8, 1],
+            duration: 500,
+            ease: "outCubic",
+            translateX: [0, -5, 5, -3, 3, 0],
+         });
+      });
+
+      return () => {
+         scopeRef.current?.revert();
+      };
+   }, [state.status]);
+
+   useEffect(() => {
       if (huginnWindow.environment === "desktop" && !huginnWindow.args.includes("--silent")) {
          window.electronAPI.showMain();
       }
@@ -194,9 +258,9 @@ function IndexComponent() {
       <StartWrapper transitionName="start-index" className="w-auto! bg-transparent! p-0! shadow-none!">
          <div className="flex w-full flex-col items-center select-none">
             {state.status === "error" ? (
-               <div className="bg-negative-600 rounded-full p-3">
-                  <div className="bg-negative-200 rounded-full p-3">
-                     <IconMingcuteAlertLine className="h-8 w-8 text-white" />
+               <div ref={iconRef} className="bg-negative-600 rounded-full p-2.5">
+                  <div className="bg-negative-200 rounded-full p-2.5">
+                     <IconMingcuteAlertLine className="size-7 text-white" />
                   </div>
                </div>
             ) : (
@@ -207,31 +271,48 @@ function IndexComponent() {
                   )}
                />
             )}
-            <div className="text-text mt-4 text-xl font-bold">{state.status === "error" ? "Something went wrong" : "Huginn"}</div>
-            <div className="text-text/80 mt-2">
-               <div className="flex items-center justify-center gap-x-2 text-center">
-                  <span className="text-lg">
-                     {state.error ?? state.text}
-                     <span className="font-bold"> {state.current === "update" ? updateInfo?.version : ""}</span>
-                  </span>
-                  {/* {state.status === "error" && <IconMingcuteAlertFill className="text-negative-100 size-6" />} */}
-                  {(state.current === "check_update" ||
-                     state.current === "update" ||
-                     state.current === "initialize" ||
-                     state.current === "fetch_hostnames") &&
-                     state.status !== "error" &&
-                     progress === 0 && <LoadingIcon className="size-6" />}
+            <div className="text-text mt-5 text-xl font-bold">{state.status === "error" ? errorTitle : "Huginn"}</div>
+            {state.status === "error" ? (
+               <>
+                  <div className="text-text/80 mt-5 max-w-md text-center text-sm">{errorDescription}</div>
+                  {state.error && (
+                     <div className="text-text/60 mt-5 text-center text-xs">
+                        <span className="uppercase">reason:</span>
+                        <span className="ml-1 font-semibold uppercase">{state.error}</span>
+                     </div>
+                  )}
+               </>
+            ) : (
+               <div className="text-text/80 mt-5">
+                  <div className="flex items-center justify-center gap-x-2 text-center">
+                     <div className="flex h-6 items-center justify-center gap-x-1 text-lg">
+                        <div>{state.text}</div>
+                        {state.current === "update" && <div className="font-bold"> {updateInfo?.version}</div>}
+                     </div>
+                     {(state.current === "check_update" ||
+                        state.current === "update" ||
+                        state.current === "initialize" ||
+                        state.current === "fetch_hostnames") &&
+                        progress === 0 && <LoadingIcon className="size-6" />}
+                  </div>
                </div>
-            </div>
+            )}
             {state.status === "error" && (
-               <div className="no-drag-region bottom-3 mt-4 flex w-full justify-center gap-x-2">
-                  <HuginnButton type="button" className="w-32 rounded-md py-1" color="surface" onClick={retry}>
-                     Retry
-                  </HuginnButton>
-                  {state.current === "check_update" && (
-                     <HuginnButton color="surface-deep" type="button" className="w-32 rounded-md py-1" onClick={setInitialize}>
-                        Continue
+               <div className="mt-5 flex w-full flex-col items-center justify-center gap-y-1">
+                  <div className="flex gap-x-2">
+                     <HuginnButton type="button" className="w-32 rounded-md py-2.5" color="surface" onClick={retry}>
+                        Retry
                      </HuginnButton>
+                     {state.current === "check_update" && (
+                        <HuginnButton color="surface-deep" type="button" className="w-32 rounded-md py-2.5" onClick={setInitialize}>
+                           Continue
+                        </HuginnButton>
+                     )}
+                  </div>
+                  {countdown > 0 && (
+                     <div className="text-text/60 text-xs">
+                        retrying in <span>{countdown}s</span>
+                     </div>
                   )}
                </div>
             )}

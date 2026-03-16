@@ -24,7 +24,13 @@ const initialStore = () => ({
 
 const store = createStore(() => initialStore());
 
-export async function setHostnamesFromExternal() {
+export type ExternalHostnameStatus = "network_error" | "invalid_response" | "success";
+export type ExternalHostnameResult = {
+   success: boolean;
+   status: ExternalHostnameStatus;
+};
+
+export async function setHostnamesFromExternal(): Promise<ExternalHostnameResult> {
    log("app:client-store", "default", "set hostnames from external");
 
    const settings = storageStore.getState().getCachedValue("settings");
@@ -32,13 +38,18 @@ export async function setHostnamesFromExternal() {
 
    try {
       response = await fetch(settings.externalHostnamesUrl, { cache: "no-cache" });
-      const json = await response?.json();
-      store.setState({ hostnames: { api: json.api, cdn: json.cdn, voice: json.voice } });
-      return true;
-   } catch (e) {
-      error("app:client-store", "Error fetching external hostnames", e);
+      const json = response.headers.get("content-type")?.includes("application/json") ? await response?.json() : undefined;
+      if (!response?.ok || !json || !json?.api || !json?.cdn || !json?.voice) {
+         error("app:client-store", "invalid response fetching external hostnames", response);
+         return { success: false, status: "invalid_response" } as ExternalHostnameResult;
+      }
 
-      return false;
+      store.setState({ hostnames: { api: json.api, cdn: json.cdn, voice: json.voice } });
+      return { success: true, status: "success" } as ExternalHostnameResult;
+   } catch (e) {
+      error("app:client-store", "error fetching external hostnames", e);
+
+      return { success: false, status: "network_error" } as ExternalHostnameResult;
    }
 }
 

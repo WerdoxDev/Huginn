@@ -16,11 +16,13 @@ const initialStore = () => ({
       status: "none",
       title: "",
       text: "",
+      errorCode: "",
       isClosable: true,
    } as DefaultModal & {
       status: "info" | "success" | "error" | "none";
       text: ReactNode;
       title: string;
+      errorCode?: string;
       action?: {
          cancel?: {
             text?: string;
@@ -82,8 +84,8 @@ const store = createStore(
                }
             }),
          ),
-      showError: (text: string) => {
-         store.getState().updateModals({ info: { status: "error", title: "Oops!", text, isOpen: true } });
+      showError: (text: string, errorCode?: string) => {
+         store.getState().updateModals({ info: { status: "error", title: "Oops!", text, errorCode, isOpen: true } });
       },
    })),
 );

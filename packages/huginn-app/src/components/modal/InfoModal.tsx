@@ -52,8 +52,7 @@ export default function InfoModal() {
    const borderColor = borderColorMap[modal.status] ?? "border-primary-800!";
    const glowShadow = glowShadowMap[modal.status] ?? "";
 
-   const errorCode = (typeof modal.text === "string" && modal.text.match(/\([A-Za-z0-9]+\)/g)?.[0]) ?? "";
-   const formattedText = typeof modal.text === "string" ? modal.text.replace(/\([A-Za-z0-9]+\)/g, "") : modal.text;
+   const errorCode = modal.errorCode ?? "";
 
    useEffect(() => {
       if (!iconRef.current || !titleRef.current || !descRef.current) return;
@@ -109,8 +108,8 @@ export default function InfoModal() {
 
    return (
       <HuginnDialogPanel className={clsx("lg:max-w-sm", borderColor)} style={{ boxShadow: glowShadow }}>
-         <DialogBody className="gap-y-0! px-6 pt-6 pb-4">
-            <DialogTitle as="div" className="flex w-full flex-col items-center justify-center gap-y-4">
+         <DialogBody className="gap-y-0! p-5">
+            <DialogTitle as="div" className="flex w-full flex-col items-center justify-center gap-y-5">
                <div ref={iconRef} style={{ opacity: 0 }} className={clsx("rounded-full p-2.5", backgroundColor)}>
                   <div className={clsx("rounded-full p-2.5", innerColor)}>
                      {modal.status === "error" && <IconMingcuteAlertLine className="size-7 text-white" />}
@@ -124,14 +123,19 @@ export default function InfoModal() {
                </div>
             </DialogTitle>
 
-            <Description className="mt-1.5" as="div">
+            <Description className="mt-5" as="div">
                <div ref={descRef} style={{ opacity: 0 }} className="text-text/80 text-center">
-                  {formattedText}
+                  <div>{modal.text}</div>
+                  {/* {errorCode && (
+                     <div className="bg-negative-700/50 border-negative-400 mt-2 inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-sm font-medium text-white/80">
+                        {errorCode}
+                     </div>
+                  )} */}
                   {errorCode && (
-                     <span className="bg-negative-700/50 border-negative-400/40 mt-2 inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium text-white/85">
-                        <IconMingcuteAlertLine className="size-3 shrink-0" />
-                        {errorCode.replace(/[()]/g, "")}
-                     </span>
+                     <div className="text-text/60 mt-5 text-center text-xs">
+                        <span className="uppercase">reason:</span>
+                        <span className="ml-1 font-semibold uppercase">{errorCode}</span>
+                     </div>
                   )}
                </div>
             </Description>

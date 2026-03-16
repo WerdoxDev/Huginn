@@ -141,7 +141,7 @@ describe("HuginnClient", () => {
          const result = await client.connect();
 
          expect(result.success).toBe(true);
-         expect(result.result).toBe("success");
+         expect(result.status).toBe("success");
          expect(result.retryable).toBe(false);
          expect(client.currentUser).not.toBeDefined();
       });
@@ -154,7 +154,7 @@ describe("HuginnClient", () => {
          const result = await client.connect({ timeout: 100 });
 
          expect(result.success).toBe(false);
-         expect(result.result).toBe("timeout");
+         expect(result.status).toBe("timeout");
          expect(result.retryable).toBe(true);
       });
 
@@ -164,7 +164,7 @@ describe("HuginnClient", () => {
          const result = await client.connect();
 
          expect(result.success).toBe(false);
-         expect(result.result).toBe("authentication_failed");
+         expect(result.status).toBe("authentication_failed");
          expect(result.retryable).toBe(false);
       });
 
@@ -181,7 +181,7 @@ describe("HuginnClient", () => {
          });
 
          expect(result.success).toBe(true);
-         expect(result.result).toBe("success");
+         expect(result.status).toBe("success");
          expect(client.tokenHandler.token).toBe(mockToken);
       });
 
@@ -221,7 +221,7 @@ describe("HuginnClient", () => {
          });
 
          expect(result.success).toBe(false);
-         expect(result.result).toBe("invalid_tokens");
+         expect(result.status).toBe("invalid_tokens");
          expect(result.retryable).toBe(false);
       });
 
@@ -233,7 +233,7 @@ describe("HuginnClient", () => {
          });
 
          expect(result.success).toBe(false);
-         expect(result.result).toBe("network_error");
+         expect(result.status).toBe("network_error");
          expect(result.retryable).toBe(true);
       });
    });

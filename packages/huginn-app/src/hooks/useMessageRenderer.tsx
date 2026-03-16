@@ -49,7 +49,10 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
          switch (node.type) {
             case "paragraph":
                return (
-                  <div key={key} className={clsx("w-full overflow-hidden text-ellipsis", noWrapping && "whitespace-nowrap")}>
+                  <div
+                     key={key}
+                     className={clsx("w-full overflow-hidden text-ellipsis [text-box-edge:text_text]!", noWrapping && "whitespace-nowrap")}
+                  >
                      {children}
                   </div>
                );

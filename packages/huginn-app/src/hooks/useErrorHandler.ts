@@ -1,5 +1,5 @@
 import { HTTPError, HuginnAPIError } from "@huginn/shared";
-import { messages } from "@lib/error-messages";
+import { ErrorMessages } from "@lib/error-messages";
 import { useModals } from "@stores/modalsStore";
 
 export function useErrorHandler(action?: ReturnType<typeof useModals>["info"]["action"]) {
@@ -13,7 +13,7 @@ export function useErrorHandler(action?: ReturnType<typeof useModals>["info"]["a
       } else if (error instanceof HTTPError) {
          if (error.status === 500) {
             updateModals({
-               info: { isOpen: true, ...messages.serverError(), status: "error", action: action },
+               info: { isOpen: true, ...ErrorMessages.serverError(), status: "error", action: action },
             });
          }
       } else if (error instanceof TypeError) {
@@ -21,19 +21,19 @@ export function useErrorHandler(action?: ReturnType<typeof useModals>["info"]["a
             updateModals({
                info: {
                   isOpen: true,
-                  ...messages.connectionLostError(),
+                  ...ErrorMessages.connectionLostError(),
                   status: "error",
                   action: action,
                },
             });
          } else {
             updateModals({
-               info: { isOpen: true, ...messages.appError(), status: "error", action: action },
+               info: { isOpen: true, ...ErrorMessages.appError(), status: "error", action: action },
             });
          }
       } else if (error instanceof Error) {
          updateModals({
-            info: { isOpen: true, ...messages.appError(), status: "error", action: action },
+            info: { isOpen: true, ...ErrorMessages.appError(), status: "error", action: action },
          });
       }
    }
