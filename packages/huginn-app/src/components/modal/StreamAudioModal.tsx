@@ -61,7 +61,7 @@ export default function StreamAudioModal() {
                   data?.map((x) => (
                      <button
                         className={clsx(
-                           "bg-surface-alt ring-primary-700 flex cursor-pointer items-center gap-x-2 rounded-md px-2 py-3 text-left transition-shadow",
+                           "bg-surface-alt ring-primary-700 flex cursor-pointer items-start gap-x-2 rounded-md px-2 py-2 text-left transition-shadow",
                            x === selectedSource ? "ring-2" : "hover:ring-2",
                         )}
                         key={`${x.processId}-${x.name}`}

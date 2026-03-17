@@ -108,8 +108,8 @@ export default function InfoModal() {
 
    return (
       <HuginnDialogPanel className={clsx("lg:max-w-sm", borderColor)} style={{ boxShadow: glowShadow }}>
-         <DialogBody className="gap-y-0! p-5">
-            <DialogTitle as="div" className="flex w-full flex-col items-center justify-center gap-y-5">
+         <DialogBody className="gap-y-0!">
+            <DialogTitle as="div" className="flex w-full flex-col items-center justify-center gap-y-3">
                <div ref={iconRef} style={{ opacity: 0 }} className={clsx("rounded-full p-2.5", backgroundColor)}>
                   <div className={clsx("rounded-full p-2.5", innerColor)}>
                      {modal.status === "error" && <IconMingcuteAlertLine className="size-7 text-white" />}
@@ -123,7 +123,7 @@ export default function InfoModal() {
                </div>
             </DialogTitle>
 
-            <Description className="mt-5" as="div">
+            <Description className="mt-1" as="div">
                <div ref={descRef} style={{ opacity: 0 }} className="text-text/80 text-center">
                   <div>{modal.text}</div>
                   {/* {errorCode && (
@@ -132,7 +132,7 @@ export default function InfoModal() {
                      </div>
                   )} */}
                   {errorCode && (
-                     <div className="text-text/60 mt-5 text-center text-xs">
+                     <div className="text-text/60 mt-3.5 text-center text-xs">
                         <span className="uppercase">reason:</span>
                         <span className="ml-1 font-semibold uppercase">{errorCode}</span>
                      </div>

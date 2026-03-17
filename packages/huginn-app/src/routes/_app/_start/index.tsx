@@ -271,21 +271,21 @@ function IndexComponent() {
                   )}
                />
             )}
-            <div className="text-text mt-5 text-xl font-bold">{state.status === "error" ? errorTitle : "Huginn"}</div>
+            <div className="mt-3.5 text-xl font-bold text-white">{state.status === "error" ? errorTitle : "Huginn"}</div>
             {state.status === "error" ? (
                <>
-                  <div className="text-text/80 mt-5 max-w-md text-center text-sm">{errorDescription}</div>
+                  <div className="text-text/80 mt-1 max-w-md text-center text-sm">{errorDescription}</div>
                   {state.error && (
-                     <div className="text-text/60 mt-5 text-center text-xs">
+                     <div className="text-text/60 mt-3.5 text-center text-xs">
                         <span className="uppercase">reason:</span>
                         <span className="ml-1 font-semibold uppercase">{state.error}</span>
                      </div>
                   )}
                </>
             ) : (
-               <div className="text-text/80 mt-5">
+               <div className="text-text/80 mt-1">
                   <div className="flex items-center justify-center gap-x-2 text-center">
-                     <div className="flex h-6 items-center justify-center gap-x-1 text-lg">
+                     <div className="flex items-center justify-center gap-x-1 text-lg">
                         <div>{state.text}</div>
                         {state.current === "update" && <div className="font-bold"> {updateInfo?.version}</div>}
                      </div>
@@ -300,11 +300,11 @@ function IndexComponent() {
             {state.status === "error" && (
                <div className="mt-5 flex w-full flex-col items-center justify-center gap-y-1">
                   <div className="flex gap-x-2">
-                     <HuginnButton type="button" className="w-32 rounded-md py-2.5" color="surface" onClick={retry}>
+                     <HuginnButton type="button" className="h-10 w-32 rounded-md" color="surface" onClick={retry}>
                         Retry
                      </HuginnButton>
                      {state.current === "check_update" && (
-                        <HuginnButton color="surface-deep" type="button" className="w-32 rounded-md py-2.5" onClick={setInitialize}>
+                        <HuginnButton color="surface-deep" type="button" className="h-10 w-32 rounded-md" onClick={setInitialize}>
                            Continue
                         </HuginnButton>
                      )}
