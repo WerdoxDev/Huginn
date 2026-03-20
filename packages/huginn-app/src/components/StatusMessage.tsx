@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { StatusType } from "@/types";
 
@@ -11,8 +11,6 @@ const STATUS_TEXT_COLORS: Record<StatusType, string> = {
 };
 
 export default function StatusMessage(props: { className?: string; status: StatusType; visible: boolean; text: string }) {
-   const textRef = useRef<HTMLDivElement>(null);
-   const [height, setHeight] = useState(0);
    const [displayText, setDisplayText] = useState(props.text);
    const [displayStatus, setDisplayStatus] = useState(props.status);
 
@@ -24,37 +22,21 @@ export default function StatusMessage(props: { className?: string; status: Statu
       }
    }, [props.text, props.status]);
 
-   // Update height when text or visibility changes
-   useEffect(() => {
-      if (textRef.current) {
-         setHeight(textRef.current.scrollHeight);
-      }
-   }, [props.text, props.visible]);
-
-   // Use ResizeObserver for more reliable height tracking
-   useEffect(() => {
-      const element = textRef.current;
-      if (!element) return;
-
-      const resizeObserver = new ResizeObserver((entries) => {
-         for (const entry of entries) {
-            setHeight(entry.target.scrollHeight);
-         }
-      });
-
-      resizeObserver.observe(element);
-      return () => resizeObserver.disconnect();
-   }, [displayText]);
-
    const textColor = STATUS_TEXT_COLORS[displayStatus];
 
    return (
       <div
-         className={clsx("overflow-hidden transition-[height] duration-150 ease-in-out select-none", props.className)}
-         style={{ height: props.visible ? `${height}px` : "0px" }}
+         className={clsx(
+            "grid transition-[grid-template-rows_margin] duration-150 ease-in-out select-none",
+            props.visible && "mt-1",
+            props.className,
+         )}
+         style={{ gridTemplateRows: props.visible ? "1fr" : "0fr" }}
       >
-         <div ref={textRef} className={clsx("text-sm transition-opacity duration-150", textColor, props.visible ? "opacity-90" : "opacity-0")}>
-            {displayText}
+         <div className="min-h-0 overflow-hidden">
+            <div className={clsx("text-sm transition-opacity duration-150", textColor, props.visible ? "opacity-90" : "opacity-0")}>
+               {displayText}
+            </div>
          </div>
       </div>
    );

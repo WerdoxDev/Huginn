@@ -4,12 +4,18 @@ import type { StorageMap } from "../src/types";
 
 export const storageDefaults: StorageMap = {
    settings: {
-      apiHostname: "https://midgard.huginn.dev",
-      cdnHostname: "https://midgard.huginn.dev",
-      voiceHostname: "https://midgard.huginn.dev",
-      analyticsHostname: "https://e.huginn.dev",
-      hostnameSource: "manual",
-      externalHostnamesUrl: "",
+      hostnamePresets: [
+         {
+            name: "Default",
+            hostnameSource: "manual",
+            apiHostname: "https://midgard.huginn.dev",
+            cdnHostname: "https://midgard.huginn.dev",
+            voiceHostname: "https://midgard.huginn.dev",
+            analyticsHostname: "https://e.huginn.dev",
+            externalHostnamesUrl: "",
+         },
+      ],
+      activePresetName: "Default",
       theme: "pine green",
       inputDeviceId: "",
       outputDeviceId: "",

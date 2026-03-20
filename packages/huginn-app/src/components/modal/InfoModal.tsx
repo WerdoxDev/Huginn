@@ -112,8 +112,8 @@ export default function InfoModal() {
             <DialogTitle as="div" className="flex w-full flex-col items-center justify-center gap-y-3">
                <div ref={iconRef} style={{ opacity: 0 }} className={clsx("rounded-full p-2.5", backgroundColor)}>
                   <div className={clsx("rounded-full p-2.5", innerColor)}>
-                     {modal.status === "error" && <IconMingcuteAlertLine className="size-7 text-white" />}
-                     {modal.status === "info" && <IconMingcuteInformationLine className="size-7 text-white" />}
+                     {modal.status === "error" && <IconMingcuteAlertFill className="size-7 text-white" />}
+                     {modal.status === "info" && <IconMingcuteInformationFill className="size-7 text-white" />}
                      {modal.status === "success" && <IconMingcuteCheckFill className="size-7 text-white" />}
                   </div>
                </div>

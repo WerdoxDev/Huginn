@@ -23,7 +23,8 @@ export default function AttachmentElement(props: {
       [props.width, props.height],
    );
    const settings = useStorage("settings");
-   const basedUrl = useMemo(() => changeUrlBase(props.url, `${settings.cdnHostname}/cdn`), [props.url]);
+   const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
+   const basedUrl = useMemo(() => changeUrlBase(props.url, `${activePreset?.cdnHostname ?? ""}/cdn`), [props.url, activePreset?.cdnHostname]);
 
    return (
       <div contentEditable={false}>

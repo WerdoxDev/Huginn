@@ -56,7 +56,7 @@ export type HuginnButtonProps = {
    type?: "submit" | "reset" | "button" | undefined;
    className?: string;
    disabled?: boolean;
-   color?: "primary" | "surface-deep" | "surface-alt" | "surface" | "positive" | "negative";
+   color?: "primary" | "surface-deep" | "surface-alt" | "surface" | "positive" | "negative" | "caution" | "ghost";
    onClick?: () => void;
 };
 
@@ -89,8 +89,7 @@ export type SettingsTab = {
 };
 
 export type SettingsTabProps = {
-   onChange?: (value: DeepPartial<AppSettings>) => void;
-   onSave?: () => Promise<void>;
+   onChange?: (value: Partial<AppSettings>) => void;
 };
 
 export type DropdownItem = {
@@ -338,13 +337,19 @@ export type AudioSource = {
 
 export type VoicePreference = { userId: Snowflake; microphoneVolume: number; streamVolume: number };
 
-export type AppSettings = {
+export type HostnamePreset = {
+   name: string;
+   hostnameSource: "manual" | "external";
    apiHostname: string;
    cdnHostname: string;
    voiceHostname: string;
    analyticsHostname: string;
    externalHostnamesUrl: string;
-   hostnameSource: "manual" | "external";
+};
+
+export type AppSettings = {
+   hostnamePresets: HostnamePreset[];
+   activePresetName: string | null;
    theme: ThemeType;
    inputDeviceId: string;
    outputDeviceId: string;

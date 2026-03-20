@@ -34,10 +34,10 @@ const store = createStore(
             const cache = get().cache[type];
             await storage.saveFile(type, cache);
          },
-         updateSettings: (update: Partial<AppSettings>) => {
-            const cache = get().cache["settings"];
-            set((state) => ({ cache: { ...state.cache, settings: { ...cache, ...update } } }));
-         },
+         // updateSettings: (update: Partial<AppSettings>) => {
+         //    const cache = get().cache["settings"];
+         //    set((state) => ({ cache: { ...state.cache, settings: { ...cache, ...update } } }));
+         // },
       })),
    ),
 );

@@ -7,9 +7,10 @@ import { PostHogProvider } from "posthog-js/react";
 
 export function initializePosthog() {
    const settings = storageStore.getState().cache["settings"];
+   const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
 
    posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_KEY, {
-      api_host: settings.analyticsHostname,
+      api_host: activePreset?.analyticsHostname ?? "",
       ui_host: "https://eu.posthog.com",
       defaults: "2025-05-24",
       capture_exceptions: true,

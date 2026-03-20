@@ -71,8 +71,8 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
       };
    };
 
-   function reset() {
-      hookReset();
+   function reset(values?: DefaultValues<I>) {
+      hookReset(values);
       setInputMessages({});
       setCustomMessages({});
       setHuginnError(null);

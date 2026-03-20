@@ -10,6 +10,7 @@ declare global {
   const IconLogosGithubIcon: typeof import('~icons/logos/github-icon.jsx').default
   const IconLogosGoogleIcon: typeof import('~icons/logos/google-icon.jsx').default
   const IconMingcuteAddFill: typeof import('~icons/mingcute/add-fill.jsx').default
+  const IconMingcuteAlertFill: typeof import('~icons/mingcute/alert-fill.jsx').default
   const IconMingcuteAlertLine: typeof import('~icons/mingcute/alert-line.jsx').default
   const IconMingcuteArrowLeftFill: typeof import('~icons/mingcute/arrow-left-fill.jsx').default
   const IconMingcuteArrowRightFill: typeof import('~icons/mingcute/arrow-right-fill.jsx').default
@@ -39,6 +40,7 @@ declare global {
   const IconMingcuteGame2Fill: typeof import('~icons/mingcute/game2-fill.jsx').default
   const IconMingcuteGroup2Fill: typeof import('~icons/mingcute/group2-fill.jsx').default
   const IconMingcuteIdcardFill: typeof import('~icons/mingcute/idcard-fill.jsx').default
+  const IconMingcuteInformationFill: typeof import('~icons/mingcute/information-fill.jsx').default
   const IconMingcuteInformationLine: typeof import('~icons/mingcute/information-line.jsx').default
   const IconMingcuteKeyholeFill: typeof import('~icons/mingcute/keyhole-fill.jsx').default
   const IconMingcuteLeftFill: typeof import('~icons/mingcute/left-fill.jsx').default
@@ -65,6 +67,8 @@ declare global {
   const IconMingcutePinFill: typeof import('~icons/mingcute/pin-fill.jsx').default
   const IconMingcutePlayFill: typeof import('~icons/mingcute/play-fill.jsx').default
   const IconMingcuteRefresh3Fill: typeof import('~icons/mingcute/refresh3-fill.jsx').default
+  const IconMingcuteRefreshAnticlockwise1Line: typeof import('~icons/mingcute/refresh-anticlockwise1-line.jsx').default
+  const IconMingcuteRefreshAnticlockwiseLine: typeof import('~icons/mingcute/refresh-anticlockwise-line.jsx').default
   const IconMingcuteRightFill: typeof import('~icons/mingcute/right-fill.jsx').default
   const IconMingcuteRightLine: typeof import('~icons/mingcute/right-line.jsx').default
   const IconMingcuteServerFill: typeof import('~icons/mingcute/server-fill.jsx').default

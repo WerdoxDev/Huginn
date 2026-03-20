@@ -26,6 +26,22 @@ export class StorageController {
          if (Object.keys(merged).length !== Object.keys(file).length) {
             await this.saveFile(type as FileType, merged);
          }
+
+         if (type === "settings") {
+            const parsedFile = file.data as StorageMap["settings"];
+            if (parsedFile.hostnamePresets.length === 0) {
+               await this.saveFile(type as FileType, {
+                  ...parsedFile,
+                  hostnamePresets: storageDefaults.settings.hostnamePresets,
+                  activePresetName: "Default",
+               });
+            } else if (parsedFile.activePresetName === "") {
+               await this.saveFile(type as FileType, {
+                  ...parsedFile,
+                  activePresetName: parsedFile.hostnamePresets[0]?.name ?? "Default",
+               });
+            }
+         }
       }
    }
 

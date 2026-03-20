@@ -186,8 +186,9 @@ function IndexComponent() {
 
       async function decideState() {
          switch (state.current) {
-            case "none":
-               if (settings.hostnameSource === "external") {
+            case "none": {
+               const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
+               if (activePreset?.hostnameSource === "external") {
                   setFetchHostnames();
                } else if (huginnWindow.environment === "desktop") {
                   setCheckUpdate();
@@ -197,6 +198,7 @@ function IndexComponent() {
                   await setInitialize();
                }
                break;
+            }
 
             case "fetch_hostnames":
                const result = await setHostnamesFromExternal();
@@ -271,7 +273,7 @@ function IndexComponent() {
                   )}
                />
             )}
-            <div className="mt-3.5 text-xl font-bold text-white">{state.status === "error" ? errorTitle : "Huginn"}</div>
+            <div className="mt-3 text-lg font-bold text-white">{state.status === "error" ? errorTitle : "Huginn"}</div>
             {state.status === "error" ? (
                <>
                   <div className="text-text/80 mt-1 max-w-md text-center text-sm">{errorDescription}</div>
@@ -285,7 +287,7 @@ function IndexComponent() {
             ) : (
                <div className="text-text/80 mt-1">
                   <div className="flex items-center justify-center gap-x-2 text-center">
-                     <div className="flex items-center justify-center gap-x-1 text-lg">
+                     <div className="flex items-center justify-center gap-x-1">
                         <div>{state.text}</div>
                         {state.current === "update" && <div className="font-bold"> {updateInfo?.version}</div>}
                      </div>

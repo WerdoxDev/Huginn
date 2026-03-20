@@ -61,7 +61,7 @@ export default function HuginnInput(props: HuginnInputProps) {
          <div className={clsx(!props.headless && "flex flex-col", props.className)}>
             {props.children}
             {!props.hideMessage && (
-               <StatusMessage status={props.message.status} text={props.message.text} visible={props.message.status !== "none"} className="mt-1" />
+               <StatusMessage status={props.message.status} text={props.message.text} visible={props.message.status !== "none"} />
             )}
          </div>
       </InputContext.Provider>
