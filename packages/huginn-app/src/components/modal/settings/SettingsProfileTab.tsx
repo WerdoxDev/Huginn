@@ -113,10 +113,9 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
       <div className="flex w-full items-center justify-center gap-x-5">
          <div className="w-full max-w-lg">
             <div className="bg-surface-alt relative mb-2 overflow-hidden rounded-lg">
-               <div className={clsx("relative transition-all", bannerColor ? "h-14" : "h-0")} style={{ backgroundColor: bannerColor || undefined }}>
-                  {bannerColor && <RoamingHuginnIcon />}
-               </div>
-               <div className={clsx("flex items-start gap-x-4 px-4 transition-[padding_height]", bannerColor ? "h-24 pt-0" : "py-2")}>
+               <div className={clsx("relative transition-all", bannerColor ? "h-14" : "h-0")} style={{ backgroundColor: bannerColor || undefined }} />
+               <RoamingHuginnIcon />
+               <div className={clsx("flex items-start gap-x-4 px-4 transition-[padding_height]", bannerColor ? "h-24 py-0" : "py-4")}>
                   <div className={clsx("group relative z-10 shrink-0 transition-[margin]", bannerColor ? "-mt-3" : "mt-0")}>
                      <div className="bg-surface-alt size-22 rounded-full p-1">
                         <div
@@ -149,7 +148,7 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
                   <div className="relative flex flex-col pt-2">
                      <div className="truncate text-lg font-semibold text-white">{user?.displayName}</div>
                      <div className="text-text truncate text-sm">{user?.username}</div>
-                     {/* {user && <ProfileBadges flags={UserFlags.BUG_HUNTER} />} */}
+                     {user && <ProfileBadges flags={user.flags ?? 0} />}
                   </div>
                   <div className="ml-auto flex shrink-0 flex-col items-end gap-y-1 pt-2">
                      <div className="mr-3 mb-1 flex items-center gap-x-1.5">
