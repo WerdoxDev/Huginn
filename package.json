@@ -1,5 +1,16 @@
 {
    "name": "monorepo",
+   "private": "true",
+   "workspaces": [
+      "packages/*"
+   ],
+   "type": "module",
+   "scripts": {
+      "bifrost": "cd packages/huginn-bifrost && bun start",
+      "server": "cd packages/huginn-server && bun start",
+      "cdn": "cd packages/huginn-cdn && bun start",
+      "voice": "cd packages/huginn-voice && npm run start"
+   },
    "devDependencies": {
       "@types/bun": "latest",
       "oxfmt": "^0.40.0",
@@ -7,21 +18,10 @@
       "release-please": "^16.18.0",
       "typescript": "^5.9.3"
    },
-   "private": "true",
-   "scripts": {
-      "bifrost": "cd packages/huginn-bifrost && bun start",
-      "server": "cd packages/huginn-server && bun start",
-      "cdn": "cd packages/huginn-cdn && bun start",
-      "voice": "cd packages/huginn-voice && npm run start"
-   },
    "trustedDependencies": [
       "electron",
       "prisma",
       "sharp",
       "wrtc"
-   ],
-   "type": "module",
-   "workspaces": [
-      "packages/*"
    ]
 }
