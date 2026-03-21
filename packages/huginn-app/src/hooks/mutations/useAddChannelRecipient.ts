@@ -17,3 +17,4 @@ export function useAddChannelRecipient() {
 
    return mutation;
 }
+

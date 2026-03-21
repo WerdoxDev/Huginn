@@ -3,9 +3,9 @@ import { useUsers } from "@hooks/api-hooks/userHooks";
 import { ChannelType } from "@huginn/shared";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { usePresence } from "@stores/presenceStore";
-import { Link, useParams, useRouter, useRouterState } from "@tanstack/react-router";
+import { Link, useParams, useRouterState } from "@tanstack/react-router";
 import clsx from "clsx";
-import { useEffect, useMemo, type MouseEvent, type Ref, type RefObject } from "react";
+import { useMemo, type MouseEvent, type Ref } from "react";
 
 import type { AppDirectChannel } from "@/types";
 

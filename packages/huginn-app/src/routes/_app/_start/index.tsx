@@ -273,19 +273,19 @@ function IndexComponent() {
                   )}
                />
             )}
-            <div className="mt-3 text-lg font-bold text-white">{state.status === "error" ? errorTitle : "Huginn"}</div>
+            <div className="mt-4 text-xl font-bold text-white">{state.status === "error" ? errorTitle : "Huginn"}</div>
             {state.status === "error" ? (
                <>
-                  <div className="text-text/80 mt-1 max-w-md text-center text-sm">{errorDescription}</div>
+                  <div className="text-text/80 mt-2 max-w-md text-center">{errorDescription}</div>
                   {state.error && (
-                     <div className="text-text/60 mt-3.5 text-center text-xs">
+                     <div className="text-text/60 mt-4 text-center text-sm">
                         <span className="uppercase">reason:</span>
                         <span className="ml-1 font-semibold uppercase">{state.error}</span>
                      </div>
                   )}
                </>
             ) : (
-               <div className="text-text/80 mt-1">
+               <div className="text-text/80 mt-2">
                   <div className="flex items-center justify-center gap-x-2 text-center">
                      <div className="flex items-center justify-center gap-x-1">
                         <div>{state.text}</div>
@@ -312,7 +312,7 @@ function IndexComponent() {
                      )}
                   </div>
                   {countdown > 0 && (
-                     <div className="text-text/60 text-xs">
+                     <div className="text-text/60 text-sm">
                         retrying in <span>{countdown}s</span>
                      </div>
                   )}

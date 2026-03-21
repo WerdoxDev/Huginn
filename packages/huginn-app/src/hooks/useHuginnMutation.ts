@@ -9,8 +9,9 @@ export function useHuginnMutation<TData = unknown, TVariables = void, TContext =
    options: UseMutationOptions<TData, Error, TVariables, TContext>,
    handleErrors?: (errors: HuginnErrorData) => Promise<boolean | void> | boolean | void,
    queryClient?: QueryClient,
+   alwaysFallback?: boolean,
 ): UseMutationResult<TData, Error, TVariables, TContext> {
-   const handleServerError = useErrorHandler();
+   const fallbackHandleError = useErrorHandler();
 
    return useMutation(
       {
@@ -19,9 +20,9 @@ export function useHuginnMutation<TData = unknown, TVariables = void, TContext =
             console.error("Mutation error:", error);
             if (isWorthyHuginnError(error) && handleErrors) {
                const handled = await handleErrors(error.rawError);
-               if (!handled) handleServerError(error);
+               if (!handled || alwaysFallback) fallbackHandleError(error);
             } else {
-               handleServerError(error);
+               fallbackHandleError(error);
             }
          },
       },

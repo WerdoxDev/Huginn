@@ -8,7 +8,7 @@ import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
-import { type ReactNode, useEffect, useEffectEvent, useState } from "react";
+import { type ReactNode, useEffect, useEffectEvent, useRef, useState } from "react";
 
 import type { DropdownItem, HostnamePreset, SettingsTabProps } from "@/types";
 
@@ -41,6 +41,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 
    const presets = settings.hostnamePresets ?? [];
    const activePreset = presets.find((p) => p.name === settings.activePresetName) ?? null;
+   const initialActivePreset = useRef(activePreset);
 
    const { register, values, setValue, handleSubmit, reset } = useHuginnForm<Inputs>({
       defaultValues: {
@@ -63,6 +64,18 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 
    const isNewPreset = pendingNewPresetName !== null && pendingNewPresetName === selectedPreset;
    const existingPreset = !isNewPreset ? presets.find((p) => p.name === selectedPreset) : null;
+
+   const activePresetModified =
+      activePreset !== null &&
+      initialActivePreset.current !== null &&
+      (activePreset.apiHostname !== initialActivePreset.current.apiHostname ||
+         activePreset.cdnHostname !== initialActivePreset.current.cdnHostname ||
+         activePreset.voiceHostname !== initialActivePreset.current.voiceHostname ||
+         activePreset.analyticsHostname !== initialActivePreset.current.analyticsHostname ||
+         activePreset.externalHostnamesUrl !== initialActivePreset.current.externalHostnamesUrl ||
+         activePreset.hostnameSource !== initialActivePreset.current.hostnameSource);
+
+   const needsRestart = (selectedPreset !== null && selectedPreset !== settings.activePresetName && !isNewPreset) || activePresetModified;
    const hasUnsavedChanges =
       selectedPreset !== null &&
       (isNewPreset ||
@@ -146,8 +159,10 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
          });
          setPendingNewPresetName(null);
       } else {
+         const isRenamingActive = selectedPreset === settings.activePresetName && name !== selectedPreset;
          await setStorageValue("settings", {
             ...settings,
+            ...(isRenamingActive && { activePresetName: name }),
             hostnamePresets: presets.map((p) => (p.name === selectedPreset ? preset : p)),
          });
       }
@@ -196,7 +211,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
    }
 
    const shouldRestart = useEffectEvent(() => {
-      return selectedPreset !== settings.activePresetName;
+      return selectedPreset !== settings.activePresetName || activePresetModified;
    });
 
    const handleApplyAndRestart = useEffectEvent(async () => {
@@ -213,11 +228,27 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
       }
    });
 
-   function handleRevertPreset() {
-      if (settings.activePresetName) {
+   const handleRevertPreset = useEffectEvent(async () => {
+      if (activePresetModified && initialActivePreset.current && settings.activePresetName) {
+         const original = initialActivePreset.current;
+         await setStorageValue("settings", {
+            ...settings,
+            activePresetName: original.name,
+            hostnamePresets: presets.map((p) => (p.name === settings.activePresetName ? original : p)),
+         });
+         reset();
+         setValue("presetName", original.name);
+         setValue("apiHostname", original.apiHostname);
+         setValue("cdnHostname", original.cdnHostname);
+         setValue("voiceHostname", original.voiceHostname);
+         setValue("analyticsHostname", original.analyticsHostname);
+         setValue("externalUrl", original.externalHostnamesUrl);
+         setHostnameMode(original.hostnameSource);
+         setSelectedPreset(original.name);
+      } else if (settings.activePresetName) {
          loadPreset(settings.activePresetName);
       }
-   }
+   });
 
    useEffect(() => {
       console.log("selected preset changed", selectedPreset);
@@ -240,6 +271,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
                      cancel: {
                         text: "Revert",
                         callback: () => {
+                           handleRevertPreset();
                            updateModals({ info: { isOpen: false } });
                         },
                      },
@@ -249,7 +281,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
             });
          }
       };
-   }, [settings]);
+   }, []);
 
    return (
       <div className="flex w-full flex-col items-center">
@@ -283,9 +315,9 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
                   )}
                </div>
             </div>
-            {selectedPreset !== null && selectedPreset !== settings.activePresetName && !isNewPreset && (
-               <div className="bg-surface-alt border-caution-500 text-text/80 flex w-100 items-center gap-x-2 rounded-md border px-3 py-2 text-xs">
-                  <IconMingcuteInformationFill className="text-caution-300 size-5 shrink-0" />
+            {needsRestart && (
+               <div className="bg-surface-alt border-caution-500 text-text/80 flex w-100 items-center gap-x-2 rounded-md border px-3 py-2 text-sm">
+                  <IconMingcuteInformationFill className="text-caution-300 size-6 shrink-0" />
                   <span className="flex-1">Changing the active preset requires a restart.</span>
                   <div className="flex shrink-0 gap-x-1.5">
                      <HuginnButton color="ghost" type="button" onClick={handleRevertPreset} className="cursor-pointer px-2 py-1">

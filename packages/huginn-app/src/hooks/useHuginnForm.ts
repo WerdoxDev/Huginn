@@ -87,6 +87,7 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
       setCustomMessages({});
       setHuginnError(error);
       setClearedFields(new Set()); // Reset cleared fields on new server error
+      return true;
    }
 
    function setCustomMessage(name: FieldPath<I>, message: InputMessage | null) {

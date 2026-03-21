@@ -1,6 +1,6 @@
 import { useTheme } from "@stores/themeStore";
 import clsx from "clsx";
-import { useMemo } from "react";
+import { useMemo, type Ref } from "react";
 
 import type { ThemeType } from "@/types";
 
@@ -31,9 +31,15 @@ const iconSources: Record<ModifiedThemeType, string[]> = {
    text: [textUrl, textOutlinedUrl],
 };
 
-export default function HuginnIcon(props: { className?: string; overrideTheme?: ModifiedThemeType; outlined?: boolean }) {
+export default function HuginnIcon(props: {
+   className?: string;
+   overrideTheme?: ModifiedThemeType;
+   outlined?: boolean;
+   ref?: Ref<HTMLImageElement>;
+   onClick?: () => void;
+}) {
    const theme = useTheme();
    const source = useMemo(() => iconSources[props.overrideTheme ?? theme.themeType], [props.overrideTheme, theme.themeType]);
 
-   return <img alt="huginn-icon" src={source[props.outlined ? 1 : 0]} className={clsx(props.className)} />;
+   return <img alt="huginn-icon" src={source[props.outlined ? 1 : 0]} className={clsx(props.className)} ref={props.ref} onClick={props.onClick} />;
 }
