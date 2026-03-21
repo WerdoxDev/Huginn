@@ -44,4 +44,5 @@ export const constants = {
 export const defaultServerSettings: UserSettings = {
    status: "online",
    theme: undefined,
+   bannerColor: undefined,
 };
