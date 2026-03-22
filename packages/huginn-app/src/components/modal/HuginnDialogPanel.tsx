@@ -10,8 +10,8 @@ export default function HuginnDialogPanel(props: { className?: string; style?: R
          transition
          style={props.style}
          className={clsx(
-            "relative transform overflow-hidden rounded-t-xl transition duration-200 data-closed:translate-y-1/2 data-closed:opacity-0 data-closed:blur-xl lg:data-closed:translate-none lg:data-closed:scale-90",
-            !props.headless && "border-primary-800 bg-surface border-t-2 lg:rounded-xl lg:border-2",
+            "relative transform overflow-hidden transition duration-200 data-closed:translate-y-1/2 data-closed:opacity-0 data-closed:blur-xl lg:data-closed:translate-none lg:data-closed:scale-90",
+            !props.headless && "border-primary-800 bg-surface rounded-t-xl border-t-2 lg:rounded-xl lg:border-2",
             props.className,
          )}
       >

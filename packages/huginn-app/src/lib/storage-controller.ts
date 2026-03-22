@@ -29,13 +29,13 @@ export class StorageController {
 
          if (type === "settings") {
             const parsedFile = file.data as StorageMap["settings"];
-            if (parsedFile.hostnamePresets.length === 0) {
+            if (!parsedFile.hostnamePresets || parsedFile.hostnamePresets.length === 0) {
                await this.saveFile(type as FileType, {
                   ...parsedFile,
                   hostnamePresets: storageDefaults.settings.hostnamePresets,
                   activePresetName: "Default",
                });
-            } else if (parsedFile.activePresetName === "") {
+            } else if (!parsedFile.activePresetName || parsedFile.activePresetName === "") {
                await this.saveFile(type as FileType, {
                   ...parsedFile,
                   activePresetName: parsedFile.hostnamePresets[0]?.name ?? "Default",

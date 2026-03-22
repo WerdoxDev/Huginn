@@ -2,7 +2,7 @@ import { StorageController } from "@lib/storage-controller";
 import { createStore, useStore } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
 
-import type { AppSettings, ClientInfo, StorageMap, FileType } from "@/types";
+import type { ClientInfo, StorageMap, FileType } from "@/types";
 
 import { clientStore } from "./clientStore";
 

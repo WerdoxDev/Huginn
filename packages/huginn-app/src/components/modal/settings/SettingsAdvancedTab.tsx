@@ -251,10 +251,6 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
    });
 
    useEffect(() => {
-      console.log("selected preset changed", selectedPreset);
-   }, [selectedPreset]);
-
-   useEffect(() => {
       return () => {
          if (props.onChange && shouldRestart()) {
             updateModals({
@@ -285,10 +281,10 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
 
    return (
       <div className="flex w-full flex-col items-center">
-         <div className="flex flex-col gap-y-5">
+         <div className="flex w-full max-w-100 flex-col gap-y-5">
             <div>
                <div className="text-text mb-2 text-xs font-medium uppercase opacity-90 select-none">Presets</div>
-               <div className="flex w-100 flex-wrap items-center gap-2">
+               <div className="flex flex-wrap items-center gap-2">
                   {presets.map((p) => (
                      <PresetItem
                         key={p.name}
@@ -316,7 +312,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
                </div>
             </div>
             {needsRestart && (
-               <div className="bg-surface-alt border-caution-500 text-text/80 flex w-100 items-center gap-x-2 rounded-md border px-3 py-2 text-sm">
+               <div className="bg-surface-alt border-caution-500 text-text/80 flex w-full items-center gap-x-2 rounded-md border px-3 py-2 text-sm">
                   <IconMingcuteInformationFill className="text-caution-300 size-6 shrink-0" />
                   <span className="flex-1">Changing the active preset requires a restart.</span>
                   <div className="flex shrink-0 gap-x-1.5">
@@ -332,7 +328,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
             <div className="bg-surface-alt h-px w-full" />
             <form className="flex flex-col gap-y-5" onSubmit={handleSubmit(handleSavePreset)}>
                {selectedPreset && (
-                  <HuginnInput className="w-100" type="text" {...register("presetName", { required: true })}>
+                  <HuginnInput className="w-full" type="text" {...register("presetName", { required: true })}>
                      <HuginnInput.Label>Preset Name</HuginnInput.Label>
                      <HuginnInput.Wrapper>
                         <HuginnInput.Input />
@@ -401,7 +397,7 @@ function ExternalHostnameInput(props: {
 
    return (
       <div>
-         <HuginnInput className="w-100" type="text" {...props.register("externalUrl", { required: true, onBlur: props.validateHostnames })}>
+         <HuginnInput className="w-full" type="text" {...props.register("externalUrl", { required: true, onBlur: props.validateHostnames })}>
             <HuginnInput.Label>External Hostnames URL</HuginnInput.Label>
             <HuginnInput.Wrapper>
                <HuginnInput.Input />
@@ -422,7 +418,7 @@ function HostnameInputs(props: { values: Inputs; register: ReturnType<typeof use
       <div>
          <HuginnLabel>Hostnames</HuginnLabel>
          <HuginnInput
-            className="w-100"
+            className="w-full"
             type="text"
             {...props.register("apiHostname", { required: true, onBlur: props.validateHostnames })}
             hideMessage
@@ -434,7 +430,7 @@ function HostnameInputs(props: { values: Inputs; register: ReturnType<typeof use
             </HuginnInput.Wrapper>
          </HuginnInput>
          <HuginnInput
-            className="mt-px w-100"
+            className="mt-px w-full"
             type="text"
             {...props.register("cdnHostname", { required: true, onBlur: props.validateHostnames })}
             hideMessage
@@ -446,7 +442,7 @@ function HostnameInputs(props: { values: Inputs; register: ReturnType<typeof use
             </HuginnInput.Wrapper>
          </HuginnInput>
          <HuginnInput
-            className="mt-px w-100"
+            className="mt-px w-full"
             type="text"
             {...props.register("voiceHostname", { required: true, onBlur: props.validateHostnames })}
             hideMessage
@@ -458,7 +454,7 @@ function HostnameInputs(props: { values: Inputs; register: ReturnType<typeof use
             </HuginnInput.Wrapper>
          </HuginnInput>
          <HuginnInput
-            className="mt-px w-100"
+            className="mt-px w-full"
             type="text"
             {...props.register("analyticsHostname", { required: true, onBlur: props.validateHostnames })}
             hideMessage

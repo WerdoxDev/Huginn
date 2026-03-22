@@ -1,25 +1,47 @@
 import type { Snowflake } from "@huginn/shared";
 
+import { Transition } from "@headlessui/react";
 import { useMessage } from "@hooks/api-hooks/messageHooks";
 import { useUser } from "@hooks/api-hooks/userHooks";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 
-export default function ReplyingPreview(props: { onCancel?: () => void; channelId: Snowflake; messageId: Snowflake }) {
-   // channel id isn't supposed to ever be changed in this component
+export default function ReplyingPreview(props: { onCancel?: () => void; channelId: Snowflake; messageId?: Snowflake; show: boolean }) {
    const channelId = useMemo(() => props.channelId, []);
-   const message = useMessage(channelId, props.messageId)!;
-   const author = useUser(message?.authorId);
+   const lastMessageId = useRef(props.messageId);
+
+   if (props.messageId) {
+      lastMessageId.current = props.messageId;
+   }
 
    return (
-      <div className="border-surface bg-primary-900 flex items-center gap-x-2 rounded-t-lg border-2 border-b-0 px-2 py-2 text-white">
-         <IconMingcuteCornerUpLeftFill />
-         <div>
-            Replying to <span className="font-semibold">{author.displayName}</span>
+      <Transition show={props.show}>
+         <div className="border-surface flex items-center gap-x-2 border-b py-2 pr-2 pl-4 text-sm duration-150 data-closed:h-0 data-closed:py-0 data-closed:opacity-0">
+            {lastMessageId.current && (
+               <ReplyingContent channelId={channelId} messageId={lastMessageId.current} onCancel={props.onCancel} />
+            )}
          </div>
-         <div className="text-sm text-white/50">(ESC to cancel)</div>
-         <button className="bg-negative-100 hover:bg-negative-200 ml-auto cursor-pointer rounded-full p-1" onClick={props.onCancel}>
-            <IconMingcuteCloseFill className="size-4" />
+      </Transition>
+   );
+}
+
+function ReplyingContent(props: { channelId: Snowflake; messageId: Snowflake; onCancel?: () => void }) {
+   const message = useMessage(props.channelId, props.messageId)!;
+   const author = useUser(message.authorId);
+
+   return (
+      <>
+         <IconMingcuteCornerUpLeftFill className="text-primary-400 size-4 shrink-0" />
+         <span className="text-white/80">
+            Replying to <span className="font-semibold">{author?.displayName}</span>
+         </span>
+         <span className="text-xs text-white/30 italic">escape to cancel</span>
+         <button
+            className="hover:bg-surface ml-auto cursor-pointer rounded-md p-1 text-white/70 transition-colors hover:text-white"
+            onClick={props.onCancel}
+            type="button"
+         >
+            <IconMingcuteCloseFill className="size-3.5" />
          </button>
-      </div>
+      </>
    );
 }

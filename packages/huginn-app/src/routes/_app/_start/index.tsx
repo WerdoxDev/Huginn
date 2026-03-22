@@ -257,7 +257,7 @@ function IndexComponent() {
    }, []);
 
    return (
-      <StartWrapper transitionName="start-index" className="w-auto! bg-transparent! p-0! shadow-none!">
+      <StartWrapper transitionName="start-index" className="mx-10 w-auto! bg-transparent! p-0! shadow-none!">
          <div className="flex w-full flex-col items-center select-none">
             {state.status === "error" ? (
                <div ref={iconRef} className="bg-negative-600 rounded-full p-2.5">

@@ -29,7 +29,7 @@ export default function CustomApplicationItem(props: {
 
    return (
       <div className="flex items-center gap-x-2" key={props.application.exePath}>
-         <div className="flex flex-col overflow-hidden">
+         <div className="flex w-full flex-col overflow-hidden">
             <input
                className="hover:bg-surface focus:bg-surface overflow-hidden rounded-md px-1 py-0.5 text-ellipsis whitespace-nowrap text-white outline-none"
                onFocus={onFocus}

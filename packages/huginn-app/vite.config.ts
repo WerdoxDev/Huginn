@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
       publicDir: "public",
 
       plugins: [
-         // basicSsl(),
+         // basicSsl({ domains: ["192.168.178.21"] }),
          // reactRouterDevTools(),
          tanstackRouter({ target: "react", autoCodeSplitting: true }),
          react({

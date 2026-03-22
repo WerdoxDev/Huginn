@@ -68,8 +68,8 @@ export default function DefaultMessage() {
       <div
          onContextMenu={(e) => open({ message: context.message }, e)}
          className={clsx(
-            "group flex flex-col items-start p-2 pl-4",
-            isEditing || isReplying ? "bg-primary-900/50" : "hover:bg-surface-alt",
+            "group relative flex flex-col items-start p-2 pl-4 transition-colors duration-150",
+            isEditing || isReplying ? (isEditing ? "bg-positive-800/30" : "bg-primary-800/30") : "hover:bg-surface-alt",
             (isSeparate || isLastAction) && "rounded-tr-lg",
             isNextSeparate && "rounded-br-lg",
             !isSeparate && !isLastAction && "py-0",
@@ -77,6 +77,13 @@ export default function DefaultMessage() {
             isSeparate && !isNewDate && !isUnread && "mt-1.5",
          )}
       >
+         <div
+            className={clsx(
+               "absolute inset-y-0 left-0 h-full transition-[colors_width]",
+               isEditing || isReplying ? "w-1" : "w-0",
+               isEditing ? "bg-positive-400" : isReplying ? "bg-primary-400" : undefined,
+            )}
+         ></div>
          {error}
          {referencedMessage && <ReplyRenderer referencedMessage={referencedMessage} />}
          {(isSeparate || isLastAction) && (
@@ -101,13 +108,15 @@ export default function DefaultMessage() {
                widths={widths}
             />
             <div className="mt-2.5 ml-2.5 flex h-full shrink-0 items-center justify-center gap-x-2 select-none">
-               {isEditing ||
-                  (isReplying && (
-                     <div className="text-positive-100 text-xs font-semibold uppercase">
-                        {isEditing && "editing"}
-                        {isReplying && "replying"}
-                     </div>
-                  ))}
+               {isEditing ? (
+                  <IconMingcuteEdit2Fill className="text-positive-100 size-4 shrink-0" />
+               ) : isReplying ? (
+                  <IconMingcuteCornerUpLeftFill className="text-primary-400 size-4 shrink-0" />
+               ) : null}
+               {/* {(isEditing || isReplying) && (
+                  <div className={clsx("")}>
+                  </div>
+               )} */}
                {isEdited && <div className="text-xs text-white/50">(edited)</div>}
                {!isSeparate && !isLastAction && <div className="text-text/50 text-xs opacity-0 group-hover:opacity-100">{formattedTime}</div>}
             </div>

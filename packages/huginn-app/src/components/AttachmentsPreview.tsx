@@ -18,7 +18,7 @@ export default function AttachmentsPreview(props: { attachments: AttachmentType[
 
    return (
       <Transition show={props.attachments.length !== 0}>
-         <div className="data border-surface bg-surface-deep h-[238px] overflow-hidden rounded-xl rounded-b-none border-2 border-b-0 px-2.5 py-2.5 pb-0 duration-200 data-closed:h-0 data-closed:py-0 data-closed:opacity-0">
+         <div className="data h-59.5 overflow-hidden border-b border-white/10 px-2.5 py-2.5 pb-0 duration-150 data-closed:h-0 data-closed:border-b-0 data-closed:py-0 data-closed:opacity-0">
             <div className="scroll-alternative-x relative flex h-full gap-x-5 overflow-x-scroll overflow-y-hidden px-2.5 py-2.5 pb-0">
                <AnimatePresence mode="popLayout">
                   {props.attachments.map((x) => (
