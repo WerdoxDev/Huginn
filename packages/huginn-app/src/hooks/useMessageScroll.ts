@@ -6,7 +6,7 @@ import { usePrevious } from "@hooks/usePrevious";
 import { getFirstChildClosestToBottom, getFirstChildClosestToTop } from "@lib/utils";
 import { useChannelStore, type SavedScrollState } from "@stores/channelStore";
 import { useThisUser } from "@stores/userStore";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { type RefObject, useEffect, useLayoutEffect, useRef } from "react";
 
 import type { AppMessage, ProcessedMessage } from "@/types";
 
@@ -24,6 +24,8 @@ interface UseMessageScrollOptions {
    isFetchingPreviousPage: boolean;
    hasNextPage: boolean;
    hasPreviousPage: boolean;
+   ghostTopRef: RefObject<HTMLDivElement | null>;
+   ghostBottomRef: RefObject<HTMLDivElement | null>;
 }
 
 export function useMessageScroll(options: UseMessageScrollOptions) {
@@ -44,6 +46,7 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
       height: number;
       distanceToTop: number;
       distanceToBottom: number;
+      viewportInGhosts: boolean;
    }>(null);
    const lastDirection = useRef<"up" | "down" | "none">("none");
    const isResizing = useRef(false);
@@ -80,11 +83,24 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
       ) as HTMLLIElement;
       if (!messageElement) return;
 
+      const ghostTopHeight = options.ghostTopRef.current?.offsetHeight ?? 0;
+      const ghostBottomHeight = options.ghostBottomRef.current?.offsetHeight ?? 0;
+
+      const viewportTop = scrollRef.current.scrollTop;
+      const viewportBottom = viewportTop + scrollRef.current.clientHeight;
+      const contentHeight = scrollRef.current.scrollHeight;
+
+      // When viewport is entirely inside ghost area, snap to the edge instead of using distance
+      const viewportInGhosts =
+         (lastDirection.current === "up" && viewportBottom <= ghostTopHeight) ||
+         (lastDirection.current === "down" && viewportTop >= contentHeight - ghostBottomHeight);
+
       lastSeenElement.current = {
          messageId: messageElement.id,
          height: messageElement.clientHeight,
-         distanceToTop: scrollRef.current.scrollTop,
-         distanceToBottom: scrollRef.current.scrollHeight - scrollRef.current.scrollTop - scrollRef.current.clientHeight - 28,
+         distanceToTop: scrollRef.current.scrollTop - ghostTopHeight,
+         distanceToBottom: scrollRef.current.scrollHeight - scrollRef.current.scrollTop - scrollRef.current.clientHeight - 28 - ghostBottomHeight,
+         viewportInGhosts,
       };
 
       shouldScrollToLastSeen.current = true;
@@ -95,13 +111,24 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
 
       const foundMessageElement = [...listRef.current.children].find((x) => x.id === lastSeenElement.current?.messageId) as HTMLLIElement;
 
-      foundMessageElement.scrollIntoView({
-         behavior: "instant",
-         block: lastDirection.current === "up" ? "start" : "end",
-      });
-      const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
-      scrollRef.current.scrollTop +=
-         (lastDirection.current === "up" ? lastSeenElement.current.distanceToTop : -lastSeenElement.current.distanceToBottom) + heightDifference;
+      if (lastSeenElement.current.viewportInGhosts) {
+         // Viewport was entirely in ghosts — snap reference message to the viewport edge
+         foundMessageElement.scrollIntoView({
+            behavior: "instant",
+            block: lastDirection.current === "up" ? "end" : "start",
+         });
+         const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
+         scrollRef.current.scrollTop +=
+            (lastDirection.current === "up" ? -lastSeenElement.current.height : lastSeenElement.current.height) - heightDifference;
+      } else {
+         foundMessageElement.scrollIntoView({
+            behavior: "instant",
+            block: lastDirection.current === "up" ? "start" : "end",
+         });
+         const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
+         scrollRef.current.scrollTop +=
+            (lastDirection.current === "up" ? lastSeenElement.current.distanceToTop : -lastSeenElement.current.distanceToBottom) + heightDifference;
+      }
 
       shouldScrollToLastSeen.current = false;
    }
@@ -125,12 +152,17 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
          isResizing.current = false;
       }
 
-      if (scrollRef.current.scrollTop <= TOP_SCROLL_OFFSET && !options.isFetchingPreviousPage && options.hasPreviousPage) {
+      const ghostTopHeight = options.ghostTopRef.current?.offsetHeight ?? 0;
+      const ghostBottomHeight = options.ghostBottomRef.current?.offsetHeight ?? 0;
+      // const ghostTopHeight = 0;
+      // const ghostBottomHeight = 0;
+
+      if (scrollRef.current.scrollTop <= TOP_SCROLL_OFFSET + ghostTopHeight && !options.isFetchingPreviousPage && options.hasPreviousPage) {
          lastDirection.current = "up";
          await options.fetchPreviousPage();
          saveLastSeenMessage();
       } else if (
-         scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop <= BOTTOM_SCROLL_OFFSET &&
+         scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop <= BOTTOM_SCROLL_OFFSET + ghostBottomHeight &&
          !options.isFetchingNextPage &&
          options.hasNextPage
       ) {
@@ -194,6 +226,15 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
       if (!lastSeenElement.current || !scrollRef.current || lastChannelId.current !== options.channelId) return;
       scrollToLastSeenMessage();
    }, [options.queryData]);
+
+   // Compensate scroll position when top ghost messages appear
+   // const prevIsFetchingPreviousPage = useRef(false);
+   // useLayoutEffect(() => {
+   //    if (options.isFetchingPreviousPage && !prevIsFetchingPreviousPage.current && options.ghostTopRef.current && scrollRef.current) {
+   //       scrollRef.current.scrollTop += options.ghostTopRef.current.offsetHeight;
+   //    }
+   //    prevIsFetchingPreviousPage.current = options.isFetchingPreviousPage;
+   // }, [options.isFetchingPreviousPage]);
 
    // Save scroll state when leaving a channel
    useEffect(() => {
