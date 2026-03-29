@@ -1,4 +1,4 @@
-import { constants, type ImageFormats, type ImageURLOptions, type Snowflake } from "@huginn/shared";
+import { CONSTANTS, type ImageFormats, type ImageURLOptions, type Snowflake } from "@huginn/shared";
 
 import type { CDNOptions } from "./types";
 
@@ -39,12 +39,12 @@ export class CDN {
    public makeURL(route: string, { format = "webp", size }: Readonly<ImageURLOptions> = {}): string {
       format = String(format).toLowerCase() as ImageFormats;
 
-      if (!constants.ALLOWED_IMAGE_FORMATS.includes(format)) {
-         throw new RangeError(`Invalid format provided: ${format}\nMust be one of: ${constants.ALLOWED_IMAGE_FORMATS.join(", ")}`);
+      if (!CONSTANTS.ALLOWED_IMAGE_FORMATS.includes(format)) {
+         throw new RangeError(`Invalid format provided: ${format}\nMust be one of: ${CONSTANTS.ALLOWED_IMAGE_FORMATS.join(", ")}`);
       }
 
-      if (size && !constants.ALLOWED_IMAGE_SIZES.includes(size)) {
-         throw new RangeError(`Invalid size provided: ${size}\nMust be one of: ${constants.ALLOWED_IMAGE_SIZES.join(", ")}`);
+      if (size && !CONSTANTS.ALLOWED_IMAGE_SIZES.includes(size)) {
+         throw new RangeError(`Invalid size provided: ${size}\nMust be one of: ${CONSTANTS.ALLOWED_IMAGE_SIZES.join(", ")}`);
       }
 
       const url = new URL(`${this.options.url}${route}.${format}`);

@@ -1,5 +1,6 @@
 import {
    type APIGetCurrentUserResult,
+   type APIGetProfileResult,
    type APIGetUserByIdResult,
    type APIPatchCurrentUserJSONBody,
    type APIPatchCurrentUserResult,
@@ -23,6 +24,10 @@ export class UserAPI {
 
    public async get(userId: Snowflake): Promise<APIGetUserByIdResult> {
       return this.rest.get(Routes.user(userId), { auth: true }) as Promise<APIGetUserByIdResult>;
+   }
+
+   public async getProfile(userId: Snowflake): Promise<APIGetProfileResult> {
+      return this.rest.get(Routes.userProfile(userId), { auth: true }) as Promise<APIGetProfileResult>;
    }
 
    public async getCurrent(): Promise<APIGetCurrentUserResult> {
