@@ -2,7 +2,7 @@ import { envs, gateway } from "#setup";
 import { createToken } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import {
-   constants,
+   CONSTANTS,
    type APIChannelUser,
    type APIUser,
    type ChannelType,
@@ -206,8 +206,8 @@ export async function createTestUsers(amount: number) {
 
    return await Promise.all(
       createdUsers.map(async (x) => {
-         const accessToken = await createToken("user-access", { id: x.id.toString(), authType: "password" }, constants.ACCESS_TOKEN_EXPIRE_TIME);
-         const refreshToken = await createToken("user-refresh", { id: x.id.toString(), authType: "password" }, constants.REFRESH_TOKEN_EXPIRE_TIME);
+         const accessToken = await createToken("user-access", { id: x.id.toString(), authType: "password" }, CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME);
+         const refreshToken = await createToken("user-refresh", { id: x.id.toString(), authType: "password" }, CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME);
 
          removeUserLater(x);
 

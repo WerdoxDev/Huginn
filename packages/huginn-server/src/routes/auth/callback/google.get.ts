@@ -2,7 +2,7 @@ import { envs } from "#setup";
 import { cdnUpload, serverFetch } from "#utils/server-request";
 import { createToken, forbidden } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { CDNRoutes, constants, getFileHash, OAuthCode, snowflake, WorkerID } from "@huginn/shared";
+import { CDNRoutes, CONSTANTS, getFileHash, OAuthCode, snowflake, WorkerID } from "@huginn/shared";
 import { toSnakeCase } from "@std/text";
 import consola from "consola";
 import Elysia, { t } from "elysia";
@@ -93,12 +93,12 @@ export const getGoogleCallback = new Elysia().get(
             const accessToken = await createToken(
                "user-access",
                { id: identityProvider.userId.toString(), authType: "google" },
-               constants.ACCESS_TOKEN_EXPIRE_TIME,
+               CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
             );
             const refreshToken = await createToken(
                "user-refresh",
                { id: identityProvider.userId.toString(), authType: "google" },
-               constants.REFRESH_TOKEN_EXPIRE_TIME,
+               CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME,
             );
 
             const searchParam = new URLSearchParams({
@@ -147,7 +147,7 @@ export const getGoogleCallback = new Elysia().get(
                fullName: googleUser.name,
                avatarHash: avatarHash,
             },
-            constants.OAUTH_TOKEN_EXPIRE_TIME,
+            CONSTANTS.OAUTH_TOKEN_EXPIRE_TIME,
          );
 
          const searchParam = new URLSearchParams({ flow, oauth_token: token });

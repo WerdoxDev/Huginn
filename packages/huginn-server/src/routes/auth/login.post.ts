@@ -3,7 +3,7 @@ import { createErrorFactory } from "@huginn/backend-shared";
 import { assertError } from "@huginn/backend-shared/database";
 import { prisma } from "@huginn/backend-shared/database";
 import { DBErrorType } from "@huginn/backend-shared/types";
-import { constants, type APIPostLoginResult, Errors, Fields } from "@huginn/shared";
+import { CONSTANTS, type APIPostLoginResult, Errors, Fields } from "@huginn/shared";
 import Elysia, { t } from "elysia";
 
 export const postLogin = new Elysia().post(
@@ -33,12 +33,12 @@ export const postLogin = new Elysia().post(
       const accessToken = await createToken(
          "user-access",
          { id: user.id, authType: "password", lastAuthenticatedAt },
-         constants.ACCESS_TOKEN_EXPIRE_TIME,
+         CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
       );
       const refreshToken = await createToken(
          "user-refresh",
          { id: user.id, authType: "password", lastAuthenticatedAt },
-         constants.REFRESH_TOKEN_EXPIRE_TIME,
+         CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME,
       );
 
       const json: APIPostLoginResult = { ...user, token: accessToken, refreshToken: refreshToken };

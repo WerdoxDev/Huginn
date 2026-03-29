@@ -9,7 +9,7 @@ import {
 import { createHuginnError, createToken } from "@huginn/backend-shared";
 import { createErrorFactory } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { constants, type APIPostRegisterResult, Errors } from "@huginn/shared";
+import { CONSTANTS, type APIPostRegisterResult, Errors } from "@huginn/shared";
 import Elysia, { t } from "elysia";
 
 const schema = t.Object({
@@ -50,12 +50,12 @@ export const postRegister = new Elysia().post(
       const accessToken = await createToken(
          "user-access",
          { id: user.id, authType: "password", lastAuthenticatedAt },
-         constants.ACCESS_TOKEN_EXPIRE_TIME,
+         CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
       );
       const refreshToken = await createToken(
          "user-refresh",
          { id: user.id, authType: "password", lastAuthenticatedAt },
-         constants.REFRESH_TOKEN_EXPIRE_TIME,
+         CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME,
       );
 
       const json: APIPostRegisterResult = {

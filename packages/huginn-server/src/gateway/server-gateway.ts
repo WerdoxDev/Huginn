@@ -10,7 +10,7 @@ import {
 } from "@huginn/backend-shared/database/common";
 import {
    type APIReadStateWithoutUser,
-   constants,
+   CONSTANTS,
    GatewayCode,
    type GatewayHeartbeatAck,
    type GatewayHeartbeatData,
@@ -48,7 +48,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       try {
          const helloData: GatewayHello = {
             op: GatewayOperations.HELLO,
-            d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL, sessionId: session.sessionId },
+            d: { heartbeatInterval: CONSTANTS.HEARTBEAT_INTERVAL, sessionId: session.sessionId },
          };
 
          log("server:gateway", "send", "hello", "intrvl:", helloData.d.heartbeatInterval, "sid:", session.sessionId);

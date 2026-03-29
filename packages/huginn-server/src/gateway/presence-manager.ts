@@ -171,7 +171,7 @@ export class PresenceManager {
    public convertToGatewayPresence(presence: ServerUserPresence, user: PresenceUser): UserPresence {
       return {
          ...omit(presence, ["userId"]),
-         user: pick(user, ["id", "avatar", "displayName", "flags", "username"]),
+         user: pick(user, ["id", "avatar", "displayName", "flags", "username", "bannerColor"]),
       };
    }
 

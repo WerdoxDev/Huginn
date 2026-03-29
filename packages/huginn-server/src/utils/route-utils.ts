@@ -3,17 +3,25 @@ import type { Endpoints } from "@octokit/types";
 import { octokit, resend } from "#setup";
 import { envs } from "#setup";
 import { type DBAttachment, type DBEmbed, getImageData, getVideoData } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database/index";
 import {
+   type APIBadge,
    type APIEmbed,
    type APIPostAttachmentJSONBody,
+   BADGES,
+   BADGE_COLORS,
    CDNRoutes,
+   FLAG_BADGE_MAP,
    type Snowflake,
    type Unpacked,
+   UserFlags,
+   hasFlag,
    isImageMediaType,
    isVideoMediaType,
 } from "@huginn/shared";
 import { JSDOM } from "jsdom";
 import markdownit from "markdown-it";
+import { has } from "markdown-it/lib/common/utils.mjs";
 import * as semver from "semver";
 
 import { cdnUpload } from "./server-request";
@@ -305,4 +313,20 @@ export async function sendVerificationEmail(receiverEmail: string, code: string)
       subject: "Email Verification",
       template: { id: "email-verification", variables: { VERIFICATION_CODE: code } },
    });
+}
+
+export async function getUserBadges(userId: Snowflake): Promise<APIBadge[]> {
+   const user = await prisma.user.getById(userId, { select: { flags: true } });
+   const badges: APIBadge[] = [];
+
+   for (const flag of Object.values(UserFlags)) {
+      if (hasFlag(user.flags, flag as number)) {
+         const flagBadgeType = FLAG_BADGE_MAP[flag as UserFlags];
+         if (flagBadgeType) {
+            badges.push(BADGES.find((x) => x.id === flagBadgeType)!);
+         }
+      }
+   }
+
+   return badges;
 }

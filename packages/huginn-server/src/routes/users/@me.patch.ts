@@ -14,7 +14,7 @@ import {
 import { createErrorFactory, createHuginnError, createToken, globalPlugin, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma, type EmailVerification } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
-import { type APIPatchCurrentUserResult, CDNRoutes, constants, Errors, Fields, getFileHash, toArrayBuffer } from "@huginn/shared";
+import { type APIPatchCurrentUserResult, CDNRoutes, CONSTANTS, Errors, Fields, getFileHash, toArrayBuffer } from "@huginn/shared";
 import Elysia, { t } from "elysia";
 
 const schema = t.Object({
@@ -22,6 +22,7 @@ const schema = t.Object({
    username: t.Optional(t.String()),
    displayName: t.Optional(t.Nullable(t.String())),
    avatar: t.Optional(t.Nullable(t.String())),
+   bannerColor: t.Optional(t.Nullable(t.String())),
    password: t.Optional(t.String()),
    newPassword: t.Optional(t.String()),
 });
@@ -44,7 +45,7 @@ export const patchMe = new Elysia()
          const oauthReauthRequired =
             (tokenPayload.authType === "github" || tokenPayload.authType === "google") &&
             sensitiveFieldChanged &&
-            Date.now() - tokenPayload.lastAuthenticatedAt > constants.OAUTH_SENSITIVE_REAUTH_WINDOW;
+            Date.now() - tokenPayload.lastAuthenticatedAt > CONSTANTS.OAUTH_SENSITIVE_REAUTH_WINDOW;
 
          if (passwordRequired && !body.password) {
             formError.addError("password", Fields.required());
@@ -76,8 +77,8 @@ export const patchMe = new Elysia()
          let avatarHash: string | undefined | null = undefined;
          if (body.avatar !== null && body.avatar !== undefined) {
             const data = toArrayBuffer(body.avatar);
-            if (data.byteLength > constants.AVATAR_MAX_FILE_SIZE) {
-               return singleError(Errors.fileTooLarge(data.byteLength, constants.AVATAR_MAX_FILE_SIZE), status);
+            if (data.byteLength > CONSTANTS.AVATAR_MAX_FILE_SIZE) {
+               return singleError(Errors.fileTooLarge(data.byteLength, CONSTANTS.AVATAR_MAX_FILE_SIZE), status);
             }
 
             avatarHash = getFileHash(data);
@@ -96,6 +97,7 @@ export const patchMe = new Elysia()
                username: body.username?.toLowerCase(),
                displayName: !body.displayName && body.displayName !== undefined ? null : body.displayName,
                avatar: avatarHash,
+               bannerColor: body.bannerColor,
                newPassword: body.newPassword ? body.newPassword : undefined,
             },
             { select: selectPrivateUser },
@@ -105,11 +107,11 @@ export const patchMe = new Elysia()
          email_verification: if (body.email) {
             // because we can't rate limit, we need to check the resend cooldown manually here
             const existingVerification = await prisma.emailVerification.getByUserId(tokenPayload.id);
-            if (existingVerification && existingVerification.createdAt.getTime() > Date.now() - constants.EMAIL_VERIFICATION_RESEND_COOLDOWN) {
+            if (existingVerification && existingVerification.createdAt.getTime() > Date.now() - CONSTANTS.EMAIL_VERIFICATION_RESEND_COOLDOWN) {
                break email_verification;
             }
 
-            const expiresAt = Date.now() + constants.EMAIL_VERIFICATION_WINDOW;
+            const expiresAt = Date.now() + CONSTANTS.EMAIL_VERIFICATION_WINDOW;
             const code = generateVerificationCode();
             pendingEmailVerification = await prisma.emailVerification.createOrUpdate({
                userId: user.id,
@@ -126,12 +128,12 @@ export const patchMe = new Elysia()
          const accessToken = await createToken(
             "user-access",
             { id: tokenPayload.id, authType: tokenPayload.authType, lastAuthenticatedAt },
-            constants.ACCESS_TOKEN_EXPIRE_TIME,
+            CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
          );
          const refreshToken = await createToken(
             "user-refresh",
             { id: tokenPayload.id, authType: tokenPayload.authType, lastAuthenticatedAt },
-            constants.REFRESH_TOKEN_EXPIRE_TIME,
+            CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME,
          );
 
          // TODO: When guilds are a thing, this should send an update to users that are viewing that guild

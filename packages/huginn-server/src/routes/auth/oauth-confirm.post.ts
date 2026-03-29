@@ -5,7 +5,7 @@ import { createErrorFactory, createHuginnError, createToken, unauthorized, verif
 import { prisma } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
 import {
-   constants,
+   CONSTANTS,
    type APIPostOAuthConfirmResult,
    CDNRoutes,
    Errors,
@@ -86,12 +86,12 @@ export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
       const accessToken = await createToken(
          "user-access",
          { id: user.id, authType: result.providerType as OAuthType, lastAuthenticatedAt },
-         constants.ACCESS_TOKEN_EXPIRE_TIME,
+         CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
       );
       const refreshToken = await createToken(
          "user-refresh",
          { id: user.id, authType: "password", lastAuthenticatedAt },
-         constants.REFRESH_TOKEN_EXPIRE_TIME,
+         CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME,
       );
 
       const json: APIPostOAuthConfirmResult = {
