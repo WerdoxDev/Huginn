@@ -44,6 +44,7 @@ export type APIUser = {
    username: string;
    displayName: string | null;
    avatar: string | null;
+   bannerColor?: string | null;
    system?: boolean;
    email: string;
    password?: string | null;
@@ -55,6 +56,7 @@ export type APIPublicUser = {
    username: string;
    displayName: string | null;
    avatar: string | null;
+   bannerColor?: string | null;
    flags: UserFlags;
 } & APIBaseUser;
 
@@ -94,6 +96,7 @@ export type APIPatchCurrentUserJSONBody = {
    displayName?: string | null;
    username?: string;
    avatar?: string | null;
+   bannerColor?: string | null;
    password?: string;
    newPassword?: string;
 };
@@ -379,7 +382,6 @@ export type PresenceUser<U extends APIBaseUser = APIPublicUser> = Partial<U> & {
 export type UserSettings = {
    theme?: "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal" | "scarlet";
    status: PresenceStatus;
-   bannerColor?: string | null;
 };
 
 export type ActiveSession = {
@@ -461,3 +463,18 @@ export type APIPostVerifyEmailJSONBody = {
    code: string;
 };
 export type APIPostVerifyEmailResult = APIUser;
+
+export type BadgeType = "staff" | "bug_hunter" | "early_supporter";
+export type APIBadge = {
+   id: BadgeType;
+   color: string;
+   description: string;
+   icon: string;
+};
+
+export type APIUserProfile = {
+   user: APIPublicUser;
+   badges: APIBadge[];
+};
+
+export type APIGetProfileResult = APIUserProfile;

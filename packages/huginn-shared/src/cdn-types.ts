@@ -1,8 +1,8 @@
-import type { constants } from "./constants";
+import type { CONSTANTS } from "./constants";
 
-export type ImageSize = (typeof constants.ALLOWED_IMAGE_SIZES)[number];
-export type ImageFormats = (typeof constants.ALLOWED_IMAGE_FORMATS)[number];
-export type VideoFormats = (typeof constants.ALLOWED_VIDEO_FORMATS)[number];
+export type ImageSize = (typeof CONSTANTS.ALLOWED_IMAGE_SIZES)[number];
+export type ImageFormats = (typeof CONSTANTS.ALLOWED_IMAGE_FORMATS)[number];
+export type VideoFormats = (typeof CONSTANTS.ALLOWED_VIDEO_FORMATS)[number];
 
 export type ImageURLOptions = {
    /**

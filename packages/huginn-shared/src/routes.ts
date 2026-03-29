@@ -91,6 +91,14 @@ export const Routes = {
 
    /**
     * Route for:
+    * - GET '/users/{user.id}/profile'
+    */
+   userProfile(id: Snowflake): `/users/${string}/profile` {
+      return `/users/${id}/profile` as const;
+   },
+
+   /**
+    * Route for:
     * - PATCH '/users/@me/settings'
     */
    userSettings() {
