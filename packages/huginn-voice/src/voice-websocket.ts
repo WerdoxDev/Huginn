@@ -5,7 +5,7 @@ import { CommonWebsocket, verifyToken } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
 import {
-   constants,
+   CONSTANTS,
    type ConsumerData,
    convertToMediaKind,
    GatewayCode,
@@ -38,7 +38,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       session.send(
          {
             op: VoiceOperations.HELLO,
-            d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL, sessionId: session.sessionId },
+            d: { heartbeatInterval: CONSTANTS.HEARTBEAT_INTERVAL, sessionId: session.sessionId },
          },
          false,
          false,
