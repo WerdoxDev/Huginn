@@ -4,6 +4,7 @@ import type { MouseEvent } from "react";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import { useContextMenu } from "@stores/contextMenuStore";
+import { useModals } from "@stores/modalsStore";
 import { usePresence } from "@stores/presenceStore";
 import clsx from "clsx";
 
@@ -19,14 +20,24 @@ export default function ChannelRecipient(props: { channelId: Snowflake; isOwner:
    const { open: openContextMenu, data, context } = useContextMenu("dm_channel_recipient");
    const state = useMutationLatestState("create-dm-channel_recipient");
    const isMobile = useIsMobile();
+   const { updateModals } = useModals();
+
+   function handleClick(e: MouseEvent<HTMLDivElement>) {
+      if (isMobile) {
+         open(e);
+      } else {
+         updateModals({ userProfile: { isOpen: true, userId: props.recipient.id } });
+      }
+   }
 
    function open(e: MouseEvent<HTMLDivElement>) {
       openContextMenu({ channelId: props.channelId, recipient: props.recipient }, e);
    }
+
    return (
       <div
          onContextMenu={open}
-         onClick={isMobile ? open : undefined}
+         onClick={handleClick}
          className={clsx(
             "group/recipient hover:bg-surface active:bg-surface data-context:bg-surface relative flex cursor-pointer items-center gap-x-3 rounded-md p-1.5",
          )}

@@ -13,7 +13,7 @@ import { useCountdown } from "@hooks/useCountdown";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useIsOAuth } from "@hooks/useIsOAuth";
 import { useOAuth } from "@hooks/useOAuth";
-import { JsonCode, type OAuthType, type HuginnErrorData, constants } from "@huginn/shared";
+import { JsonCode, type OAuthType, type HuginnErrorData, CONSTANTS } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import { useEffect, useState } from "react";
@@ -67,7 +67,7 @@ export default function ChangeEmailModal() {
             password: data.password,
          });
          setPendingEmail(result?.pendingEmail ?? null);
-         startCountdown(constants.EMAIL_VERIFICATION_RESEND_COOLDOWN / 1000);
+         startCountdown(CONSTANTS.EMAIL_VERIFICATION_RESEND_COOLDOWN / 1000);
       }
    }
 

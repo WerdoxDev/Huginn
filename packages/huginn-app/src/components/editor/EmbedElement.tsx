@@ -2,7 +2,7 @@ import ImagePreview from "@components/ImagePreview";
 import VideoPlayer from "@components/VideoPlayer";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useOpen } from "@hooks/useOpen";
-import { constants, constrainImageSize } from "@huginn/shared";
+import { CONSTANTS, constrainImageSize } from "@huginn/shared";
 import { useContextMenu } from "@stores/contextMenuStore";
 import clsx from "clsx";
 import { useContext, useMemo } from "react";
@@ -26,14 +26,14 @@ export default function EmbedElement(props: {
          constrainImageSize(
             props.thumbnail?.width ?? props.video?.width ?? 0,
             props.thumbnail?.height ?? props.video?.height ?? 0,
-            constants.EMBED_MEDIA_MAX_WIDTH,
-            constants.EMBED_MEDIA_MAX_HEIGHT,
+            CONSTANTS.EMBED_MEDIA_MAX_WIDTH,
+            CONSTANTS.EMBED_MEDIA_MAX_HEIGHT,
          ),
       [props.thumbnail, props.video],
    );
 
    return (
-      <div contentEditable={false} style={{ maxWidth: `${constants.EMBED_MEDIA_MAX_WIDTH + 16}px` }}>
+      <div contentEditable={false} style={{ maxWidth: `${CONSTANTS.EMBED_MEDIA_MAX_WIDTH + 16}px` }}>
          <div className={clsx("mt-1 mb-1 flex max-w-md flex-col items-start", !barebone && "bg-surface-deep rounded-lg p-2")}>
             {props.title && (
                <span

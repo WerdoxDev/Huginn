@@ -1,4 +1,4 @@
-import RouteErrorComponent from "@components/RouteErrorComponent";
+import ErrorComponent from "@components/ErrorComponent";
 import { logger } from "@huginn/shared";
 
 import "./index.css";
@@ -70,7 +70,7 @@ const router = createRouter({
    routeTree: routeTree,
    history: history,
    basepath: !__IS_ELECTRON__ ? "app" : undefined,
-   defaultErrorComponent: RouteErrorComponent,
+   defaultErrorComponent: ErrorComponent,
    defaultPendingMinMs: 0,
    defaultPendingMs: 0,
 });

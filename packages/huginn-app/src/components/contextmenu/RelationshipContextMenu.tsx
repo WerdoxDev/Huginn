@@ -1,6 +1,7 @@
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship";
 import { useContextMenu } from "@stores/contextMenuStore";
+import { useModals } from "@stores/modalsStore";
 
 import ContextMenu from "./ContextMenu";
 
@@ -8,11 +9,18 @@ export default function RelationshipContextMenu() {
    const { data } = useContextMenu("relationship");
    const removeMutation = useRemoveRelationship();
    const createMutation = useCreateDMChannel("create-dm-channel_other");
+   const { updateModals } = useModals();
 
    if (!data) return;
 
    return (
       <>
+         <ContextMenu.Item
+            label="View Profile"
+            onClick={() => {
+               updateModals({ userProfile: { isOpen: true, userId: data.user.id } });
+            }}
+         />
          <ContextMenu.Item
             label="Message"
             onClick={() => {

@@ -65,7 +65,6 @@ export default function MemberSince({ userId }: { userId: string }) {
             {formatted}
          </div>
          <div className="mt-1 flex items-center gap-x-1">
-            <div className="bg-positive-400 size-1.5 animate-pulse rounded-full" />
             <span className="text-positive-400 text-xs font-bold" ref={daysText}>
                {daysSince} days strong
             </span>

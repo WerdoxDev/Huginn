@@ -3,7 +3,7 @@ import type { PresenceStatus } from "@huginn/shared";
 import { useEditSettings } from "@hooks/mutations/useEditSettings";
 import { useLogout } from "@hooks/useLogout";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
-import { presenceStatuses } from "@lib/utils";
+import { PRESENCE_STATUS_MAP } from "@lib/utils";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { usePresence, usePresenceStore } from "@stores/presenceStore";
@@ -98,11 +98,11 @@ export default function UserInfo(props: { user: AppUser }) {
                   <IconMingcuteIdcardFill className="size-5" />
                </DropdownMenu.Item>
                <DropdownMenu>
-                  <DropdownMenu.Item label={presenceStatuses[presence?.status ?? "offline"].text} isNested>
-                     <div className={clsx("size-3 rounded-full", presenceStatuses[presence?.status ?? "offline"].color)} />
+                  <DropdownMenu.Item label={PRESENCE_STATUS_MAP[presence?.status ?? "offline"].text} isNested>
+                     <div className={clsx("size-3 rounded-full", PRESENCE_STATUS_MAP[presence?.status ?? "offline"].color)} />
                   </DropdownMenu.Item>
                   <DropdownMenu.Items>
-                     {Object.entries(presenceStatuses).map(([key, value]) => (
+                     {Object.entries(PRESENCE_STATUS_MAP).map(([key, value]) => (
                         <DropdownMenu.Item key={key} label={value.text} onClick={() => setStatus(key as PresenceStatus)}>
                            <div className={clsx("size-3 rounded-full", value.color)} />
                         </DropdownMenu.Item>

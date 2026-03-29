@@ -69,6 +69,7 @@ const initialStore = () => ({
    changeDisplayName: { isOpen: false } as DefaultModal,
    changeEmail: { isOpen: false } as DefaultModal,
    changePassword: { isOpen: false } as DefaultModal,
+   userProfile: { isOpen: false, userId: "" } as DefaultModal & { userId: Snowflake },
 });
 
 type StoreType = ReturnType<typeof initialStore>;

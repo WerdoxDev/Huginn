@@ -10,6 +10,7 @@ import type {
    APIGetKnownApplicationsResult,
    APIRelationshipWithoutOwner,
    APIReplyMessage,
+   APIUserProfile,
    DeepPartial,
    DirectChannel,
    GatewayVoiceState,
@@ -239,6 +240,7 @@ export type AppUser<U = PresenceUser> = U & {
 };
 
 export type AppPresence = Omit<UserPresence, "user"> & { userId: Snowflake };
+export type AppUserProfile = Omit<APIUserProfile, "user"> & { userId: Snowflake };
 
 export enum MessageErrorType {
    FAILED_TO_SEND = 0,

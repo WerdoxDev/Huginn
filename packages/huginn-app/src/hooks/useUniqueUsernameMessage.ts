@@ -1,4 +1,4 @@
-import { constants, Fields } from "@huginn/shared";
+import { CONSTANTS, Fields } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
 import { useFormState, type Control, type FieldValues } from "react-hook-form";
 
@@ -15,7 +15,7 @@ export function useUniqueUsernameMessage<I extends FieldValues>(control: Control
 
       if (!validateLength(value)) {
          return {
-            text: Fields.wrongLength(constants.USERNAME_MIN_LENGTH, constants.USERNAME_MAX_LENGTH)[0],
+            text: Fields.wrongLength(CONSTANTS.USERNAME_MIN_LENGTH, CONSTANTS.USERNAME_MAX_LENGTH)[0],
             status: "error",
          };
       }
@@ -33,11 +33,11 @@ export function useUniqueUsernameMessage<I extends FieldValues>(control: Control
    }
 
    function validateLength(value: string) {
-      return value.length >= constants.USERNAME_MIN_LENGTH && value.length <= constants.USERNAME_MAX_LENGTH;
+      return value.length >= CONSTANTS.USERNAME_MIN_LENGTH && value.length <= CONSTANTS.USERNAME_MAX_LENGTH;
    }
 
    function validateRegex(value: string) {
-      return value.match(constants.USERNAME_REGEX);
+      return value.match(CONSTANTS.USERNAME_REGEX);
    }
 
    const { debouncedFunction, cancel } = useDebouncer(checkForUniqueUsername, 1000);

@@ -10,6 +10,7 @@ export function useMessage(channelId: Snowflake, messageId?: Snowflake) {
    return useMemo<AppMessage | undefined>(() => {
       const messages = queryClient.getQueryData<InfiniteData<AppMessage[]>>(["messages", channelId]);
 
+      console.log("useMessage", { channelId, messageId, messages });
       if (!messages || !messageId) return undefined;
 
       for (const message of messages.pages.flatMap((x) => x)) {

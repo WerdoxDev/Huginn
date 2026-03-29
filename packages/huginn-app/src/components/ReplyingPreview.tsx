@@ -3,10 +3,9 @@ import type { Snowflake } from "@huginn/shared";
 import { Transition } from "@headlessui/react";
 import { useMessage } from "@hooks/api-hooks/messageHooks";
 import { useUser } from "@hooks/api-hooks/userHooks";
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 
 export default function ReplyingPreview(props: { onCancel?: () => void; channelId: Snowflake; messageId?: Snowflake; show: boolean }) {
-   const channelId = useMemo(() => props.channelId, []);
    const lastMessageId = useRef(props.messageId);
 
    if (props.messageId) {
@@ -16,9 +15,7 @@ export default function ReplyingPreview(props: { onCancel?: () => void; channelI
    return (
       <Transition show={props.show}>
          <div className="border-surface flex items-center gap-x-2 border-b py-2 pr-2 pl-4 text-sm duration-150 data-closed:h-0 data-closed:py-0 data-closed:opacity-0">
-            {lastMessageId.current && (
-               <ReplyingContent channelId={channelId} messageId={lastMessageId.current} onCancel={props.onCancel} />
-            )}
+            {lastMessageId.current && <ReplyingContent channelId={props.channelId} messageId={lastMessageId.current} onCancel={props.onCancel} />}
          </div>
       </Transition>
    );

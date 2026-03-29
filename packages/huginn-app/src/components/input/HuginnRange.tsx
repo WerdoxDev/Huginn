@@ -157,7 +157,7 @@ function Input(props: { className?: string; backgroundClassName?: string; fillCl
    }
 
    return (
-      <div className="group relative flex h-8 cursor-pointer items-center" ref={rangeRef} draggable={false}>
+      <div className="group relative flex h-4 cursor-pointer items-center" ref={rangeRef} draggable={false}>
          <div
             className={clsx(
                "bg-surface-alt absolute h-1 w-full overflow-hidden rounded-md transition-[height] group-hover:h-2",

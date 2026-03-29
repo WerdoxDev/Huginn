@@ -106,13 +106,13 @@ function GhostMessageGroup(props: { group: GhostGroupDef; addTopMargin: boolean 
                >
                   {isFirst && (
                      <div className="flex items-center gap-x-2">
-                        <div className="bg-text/10 size-7 shrink-0 animate-pulse rounded-full" />
-                        <div className="bg-text/10 h-3.5 w-20 animate-pulse rounded-md" />
-                        <div className="bg-text/10 h-2.5 w-14 animate-pulse rounded-md" />
+                        <div className="bg-text/10 size-7 shrink-0 rounded-full" />
+                        <div className="bg-text/10 h-3.5 w-20 rounded-md" />
+                        <div className="bg-text/10 h-2.5 w-14 rounded-md" />
                      </div>
                   )}
 
-                  <div className={clsx("flex w-full items-start", isFirst && "mt-2")}>
+                  <div className={clsx("flex w-full animate-pulse items-start", isFirst && "mt-2")}>
                      <div
                         ref={(el) => {
                            bubbleRefs.current[i] = el;
@@ -153,8 +153,8 @@ function GhostMessageGroup(props: { group: GhostGroupDef; addTopMargin: boolean 
                         )}
 
                         <div className="flex flex-col gap-y-1">
-                           {(line.type === "text" || line.type === "text-image") && <div className="bg-text/5 h-4 w-full animate-pulse rounded-md" />}
-                           {(line.type === "image" || line.type === "text-image") && <div className="bg-text/1 h-36 w-44 animate-pulse rounded-md" />}
+                           {(line.type === "text" || line.type === "text-image") && <div className="h-6 w-full animate-pulse rounded-md" />}
+                           {(line.type === "image" || line.type === "text-image") && <div className="h-36 w-44 animate-pulse rounded-md" />}
                         </div>
                      </div>
                   </div>

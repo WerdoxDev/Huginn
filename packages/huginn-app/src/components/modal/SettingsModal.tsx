@@ -30,8 +30,8 @@ const tabs: SettingsTab[] = [
       auth: true,
       children: [
          {
-            name: "my-account",
-            text: "My Account",
+            name: "my-profile",
+            text: "My Profile",
             auth: true,
             icon: <IconMingcuteUser3Fill />,
             component: SettingsProfileTab,

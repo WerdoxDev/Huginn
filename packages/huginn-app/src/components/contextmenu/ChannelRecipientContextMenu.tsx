@@ -3,6 +3,7 @@ import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { usePatchDMChannel } from "@hooks/mutations/usePatchDMChannel";
 import { useRemoveChannelRecipient } from "@hooks/mutations/useRemoveChannelRecipient";
 import { useContextMenu } from "@stores/contextMenuStore";
+import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 
 import ContextMenu from "./ContextMenu";
@@ -14,11 +15,18 @@ export default function ChannelRecipientContextMenu() {
    const createMutation = useCreateDMChannel("create-dm-channel_recipient");
    const editMutation = usePatchDMChannel();
    const { ownerId } = useChannelRecipients(data?.channelId, "@me");
+   const { updateModals } = useModals();
 
    if (!data || !user) return;
 
    return (
       <>
+         <ContextMenu.Item
+            label="View Profile"
+            onClick={() => {
+               updateModals({ userProfile: { isOpen: true, userId: data.recipient.id } });
+            }}
+         />
          {data.recipient.id !== user.id && (
             <>
                <ContextMenu.Item

@@ -16,7 +16,17 @@ export default function ModalErrorComponent(props: { error: unknown }) {
                createDM: { isOpen: false },
                editGroup: { isOpen: false },
                imageCrop: { isOpen: false },
+               userProfile: { isOpen: false },
+               changeDisplayName: { isOpen: false },
+               changeEmail: { isOpen: false },
+               changePassword: { isOpen: false },
+               changeUsername: { isOpen: false },
+               magnifiedImage: { isOpen: false },
+               news: { isOpen: false },
+               screenShare: { isOpen: false },
+               streamAudio: { isOpen: false },
             });
+            console.log("Error modal closed");
             resetBoundary();
          },
       },

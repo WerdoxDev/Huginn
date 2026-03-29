@@ -7,7 +7,7 @@ import HuginnRange from "@components/input/HuginnRange";
 import LoadingIcon from "@components/LoadingIcon";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
 import { useMediaSources } from "@hooks/voice/useMediaSources";
-import { constants } from "@huginn/shared";
+import { CONSTANTS } from "@huginn/shared";
 import { screenShareFrameRates, screenShareQualities } from "@lib/constants";
 import { useClient } from "@stores/clientStore";
 import { useDevice } from "@stores/deviceStore";
@@ -296,8 +296,8 @@ export default function ScreenShareModal() {
                   <HuginnRange
                      defaultValue={maxVideoBitrate}
                      onChange={setMaxVideoBitrate}
-                     maxValue={constants.MAX_VIDEO_BITRATE}
-                     minValue={constants.MIN_VIDEO_BITRATE}
+                     maxValue={CONSTANTS.MAX_VIDEO_BITRATE}
+                     minValue={CONSTANTS.MIN_VIDEO_BITRATE}
                      step={100000}
                      getTooltipText={(v) => `${v / 1000000} mbps`}
                   >
@@ -307,8 +307,8 @@ export default function ScreenShareModal() {
                   <HuginnRange
                      defaultValue={maxAudioBitrate}
                      onChange={setMaxAudioBitrate}
-                     maxValue={constants.MAX_AUDIO_BITRATE}
-                     minValue={constants.MIN_AUDIO_BITRATE}
+                     maxValue={CONSTANTS.MAX_AUDIO_BITRATE}
+                     minValue={CONSTANTS.MIN_AUDIO_BITRATE}
                      step={10000}
                      getTooltipText={(v) => `${v / 1000000} mbps`}
                   >

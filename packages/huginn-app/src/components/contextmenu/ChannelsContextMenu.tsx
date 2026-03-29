@@ -15,6 +15,17 @@ export default function ChannelsContextMenu() {
 
    return (
       <>
+         {data.type === ChannelType.DM && (
+            <>
+               <ContextMenu.Item
+                  label="View Profile"
+                  onClick={() => {
+                     updateModals({ userProfile: { isOpen: true, userId: data.recipientIds[0] } });
+                  }}
+               />
+               <ContextMenu.Divider />
+            </>
+         )}
          <ContextMenu.Item label={data.type === ChannelType.DM ? "Close DM" : "Leave Group"} onClick={tryMutate} color="negative" />
          {data.type === ChannelType.GROUP_DM && (
             <ContextMenu.Item label="Edit Channel" onClick={() => updateModals({ editGroup: { isOpen: true, channel: data } })}>

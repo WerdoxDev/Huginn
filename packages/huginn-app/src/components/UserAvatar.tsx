@@ -1,6 +1,6 @@
 import type { Snowflake } from "@huginn/shared";
 
-import { presenceStatuses } from "@lib/utils";
+import { PRESENCE_STATUS_MAP } from "@lib/utils";
 import { useClient } from "@stores/clientStore";
 import { usePresence } from "@stores/presenceStore";
 import { useHuginnWindow } from "@stores/windowStore";
@@ -80,7 +80,7 @@ export default function UserAvatar(props: {
             <div
                className={clsx(
                   "absolute right-0 bottom-0 rounded-full",
-                  presence?.status && presence.status !== "offline" ? presenceStatuses[presence.status].color : "bg-transparent",
+                  presence?.status && presence.status !== "offline" ? PRESENCE_STATUS_MAP[presence.status].color : "bg-transparent",
                )}
                style={{ width: statusSize, height: statusSize }}
             />

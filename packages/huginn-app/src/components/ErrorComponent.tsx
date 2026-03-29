@@ -3,10 +3,11 @@ import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useQueryErrorResetBoundary } from "@tanstack/react-query";
 import { Outlet, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { useErrorBoundary } from "react-error-boundary";
 
 import HuginnButton from "./button/HuginnButton";
 
-export default function RouteErrorComponent(props: { error: unknown }) {
+export default function ErrorComponent(props: { error: unknown }) {
    const router = useRouter();
    const navigate = useNavigate();
    const queryErrorResetBoundary = useQueryErrorResetBoundary();
@@ -20,7 +21,7 @@ export default function RouteErrorComponent(props: { error: unknown }) {
    }, [props.error]);
 
    function handleRetry() {
-      console.log(queryErrorResetBoundary.isReset);
+      console.log(queryErrorResetBoundary.isReset());
       router.invalidate();
    }
 

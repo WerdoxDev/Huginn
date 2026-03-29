@@ -77,7 +77,7 @@ export default function RoamingHuginnIcon() {
 
       setTimeout(() => {
          scope.current?.methods.appear();
-      }, Math.random() * 2000);
+      }, Math.random() * 60000);
 
       return () => {
          scope.current?.revert();

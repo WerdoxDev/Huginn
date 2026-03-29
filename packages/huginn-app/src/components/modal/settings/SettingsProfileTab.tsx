@@ -1,20 +1,19 @@
 import HuginnButton from "@components/button/HuginnButton";
 import HuginnLabel from "@components/HuginnLabel";
-import Tooltip from "@components/tooltip/Tooltip";
-import { useEditSettings } from "@hooks/mutations/useEditSettings";
+import ProfileBadges from "@components/ProfileBadges";
+import { useUserProfile } from "@hooks/api-hooks/userHooks";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useEffectSkipMount } from "@hooks/useEffectSkipMount";
 import { useFileDialog } from "@hooks/useFileDialog";
 import { useIsOAuth } from "@hooks/useIsOAuth";
 import { useThrottler } from "@hooks/useThrottler";
-import { UserFlags } from "@huginn/shared";
 import { getUserAvatarOptions } from "@lib/queries";
-import { useClient, useClientStore } from "@stores/clientStore";
+import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 import type { SettingsTabProps } from "@/types";
 
@@ -24,33 +23,30 @@ type EditingField = "username" | "displayName" | "email" | "password";
 
 export default function SettingsProfileTab(props: SettingsTabProps) {
    const client = useClient();
-   const { userSettings } = useClientStore();
    const { user, tokenPayload } = useThisUser();
    const { updateModals } = useModals();
    const isOAuth = useIsOAuth();
    const { openFileDialog } = useFileDialog("image/*");
 
    const { data: originalAvatar } = useQuery(getUserAvatarOptions(user?.id, user?.avatar, client));
-   const [bannerColor, setBannerColor] = useState(() => userSettings?.bannerColor ?? "");
-   const lastColorRef = useRef<string>(userSettings?.bannerColor || "#1abc9c");
-   const { throttledFunction: saveSettingsThrottled } = useThrottler(() => editSettings({ bannerColor: bannerColor || null }), 1000);
+   const [bannerColor, setBannerColor] = useState(() => user?.bannerColor ?? "");
+   const lastColorRef = useRef<string>(user?.bannerColor || "#1abc9c");
+   const { throttledFunction: updateBannerColorThrottled } = useThrottler(() => mutation.mutate({ bannerColor: bannerColor || null }), 1000);
 
    const mutation = usePatchUser(undefined, () => {
       updateModals({ imageCrop: { isOpen: false } });
       return false;
    });
 
-   const { mutate: editSettings } = useEditSettings();
-
    useEffect(() => {
-      if (userSettings?.bannerColor !== undefined) {
-         setBannerColor(userSettings.bannerColor ?? "");
+      if (user?.bannerColor !== undefined) {
+         setBannerColor(user.bannerColor ?? "");
       }
-   }, [userSettings?.bannerColor]);
+   }, [user?.bannerColor]);
 
    useEffectSkipMount(() => {
       if (bannerColor) lastColorRef.current = bannerColor;
-      saveSettingsThrottled();
+      updateBannerColorThrottled();
    }, [bannerColor]);
 
    function handleToggleBanner() {
@@ -115,13 +111,10 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
             <div className="bg-surface-alt relative mb-2 overflow-hidden rounded-lg">
                <div className={clsx("relative transition-all", bannerColor ? "h-14" : "h-0")} style={{ backgroundColor: bannerColor || undefined }} />
                <RoamingHuginnIcon />
-               <div className={clsx("flex items-start gap-x-4 px-4 transition-[padding_height]", bannerColor ? "h-24 py-0" : "py-4")}>
+               <div className={clsx("flex items-start gap-x-4 px-4 transition-[padding_height]", bannerColor ? "h-26 py-0" : "py-4")}>
                   <div className={clsx("group relative z-10 shrink-0 transition-[margin]", bannerColor ? "-mt-3" : "mt-0")}>
-                     <div className="bg-surface-alt size-22 rounded-full p-1">
-                        <div
-                           className="relative h-full w-full overflow-hidden rounded-full"
-                           style={{ boxShadow: "0 0 0 4px var(--tcolor-surface-alt)" }}
-                        >
+                     <div className="bg-surface-alt border-surface-alt rounded-full border-4">
+                        <div className="relative h-full w-full overflow-hidden rounded-full">
                            {originalAvatar ? (
                               <img alt="user-avatar" className="size-20 object-cover" src={originalAvatar} />
                            ) : (
@@ -148,7 +141,11 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
                   <div className="relative flex flex-col pt-2">
                      <div className="truncate text-lg font-semibold text-white">{user?.displayName}</div>
                      <div className="text-text truncate text-sm">{user?.username}</div>
-                     {user && <ProfileBadges flags={user.flags ?? 0} />}
+                     {user && (
+                        <Suspense>
+                           <CurrentUserBadges userId={user.id} />
+                        </Suspense>
+                     )}
                   </div>
                   <div className="ml-auto flex shrink-0 flex-col items-end gap-y-1 pt-2">
                      <div className="mr-3 mb-1 flex items-center gap-x-1.5">
@@ -242,45 +239,9 @@ function ChangeButton(props: { onClick?: () => void }) {
    );
 }
 
-const accentPresets = ["#00dabd", "#00bbea", "#9b59b6", "#e91e63", "#e74c3c", "#e67e22", "#f1c40f", "#a3804f", "#517889"];
-
-const flagBadges = [
-   {
-      flag: UserFlags.STAFF,
-      label: "Staff",
-      color: "bg-primary-700",
-      Icon: IconMingcuteSettings5Fill,
-   },
-   {
-      flag: UserFlags.BUG_HUNTER,
-      label: "Bug Hunter",
-      color: "bg-positive-700",
-      Icon: IconMingcuteBugFill,
-   },
-   {
-      flag: UserFlags.EARLY_HUGINN_SUPPORTER,
-      label: "Early Supporter",
-      color: "bg-caution-600",
-      Icon: IconMingcuteGame2Fill,
-   },
-] as const;
-
-function ProfileBadges({ flags }: { flags: number }) {
-   const activeBadges = flagBadges.filter((b) => (flags & b.flag) !== 0);
-   if (activeBadges.length === 0) return null;
-
-   return (
-      <div className="mt-1.5 flex gap-x-1.5">
-         {activeBadges.map((badge) => (
-            <Tooltip key={badge.flag}>
-               <Tooltip.Trigger>
-                  <div className={clsx(badge.color, "flex size-5.5 items-center justify-center rounded-md")}>
-                     <badge.Icon className="size-4 text-white" />
-                  </div>
-               </Tooltip.Trigger>
-               <Tooltip.Content>{badge.label}</Tooltip.Content>
-            </Tooltip>
-         ))}
-      </div>
-   );
+function CurrentUserBadges({ userId }: { userId: string }) {
+   const profile = useUserProfile(userId);
+   return <ProfileBadges badges={profile.badges} />;
 }
+
+const accentPresets = ["#00dabd", "#00bbea", "#9b59b6", "#e91e63", "#e74c3c", "#e67e22", "#f1c40f", "#a3804f", "#517889"];

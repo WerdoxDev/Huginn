@@ -155,113 +155,118 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
    }
 
    return (
-      <div className="flex flex-col">
-         <HuginnTab onChange={onTabChange}>
-            <HuginnTab.TabList className="w-max" tabClassName="px-5 py-1">
-               <HuginnTab.Tab>
-                  <IconMingcuteVolumeFill className="size-5" />
-                  <div>Audio</div>
-               </HuginnTab.Tab>
-               <HuginnTab.Tab>
-                  <IconMingcuteCamera2Fill className="size-5" />
-                  <div>Video</div>
-               </HuginnTab.Tab>
-            </HuginnTab.TabList>
-            <HuginnTab.TabPanels className="mt-5">
-               <HuginnTab.TabPanel className="flex flex-col gap-y-5">
-                  <div className="flex gap-x-5">
-                     <HuginnDropdown
-                        className="w-full max-w-xs"
-                        onChange={onInputChange}
-                        value={inputDeviceOptions.find((x) => x.value === selectedInput?.deviceId)}
-                     >
-                        <HuginnDropdown.Label>Input Device</HuginnDropdown.Label>
-                        <HuginnDropdown.List className="w-full">
-                           <HuginnDropdown.ItemsWrapper className="w-80">
-                              {inputDeviceOptions?.map((x) => (
-                                 <HuginnDropdown.Item key={x.value} item={x} />
-                              ))}
-                           </HuginnDropdown.ItemsWrapper>
-                        </HuginnDropdown.List>
-                     </HuginnDropdown>
-                     <HuginnDropdown
-                        className="w-full max-w-xs"
-                        onChange={onOutputChange}
-                        value={outputDeviceOptions.find((x) => x.value === selectedOutput?.deviceId)}
-                     >
-                        <HuginnDropdown.Label>Output Device</HuginnDropdown.Label>
-                        <HuginnDropdown.List className="w-full">
-                           <HuginnDropdown.ItemsWrapper className="w-80">
-                              {outputDeviceOptions?.map((x) => (
-                                 <HuginnDropdown.Item key={x.value} item={x} />
-                              ))}
-                           </HuginnDropdown.ItemsWrapper>
-                        </HuginnDropdown.List>
-                     </HuginnDropdown>
-                  </div>
-                  <div className="flex gap-x-5">
-                     <HuginnRange onChange={onInputVolumeChange} defaultValue={settings.inputVolume} className="max-w-xs">
-                        <HuginnRange.Label>Input Volume</HuginnRange.Label>
-                        <HuginnRange.Input />
-                     </HuginnRange>
-                     <HuginnRange
-                        onChange={onOutputVolumeChange}
-                        defaultValue={settings.outputVolume}
-                        maxValue={200}
-                        className="max-w-xs"
-                        getTooltipText={(v) => `${v}%`}
-                     >
-                        <HuginnRange.Label>Output Volume</HuginnRange.Label>
-                        <HuginnRange.Input />
-                     </HuginnRange>
-                  </div>
-                  <HuginnRange
-                     className="max-w-165"
-                     onChange={onInputThresholdChange}
-                     defaultValue={remap(settings.inputThreshold ?? -100, -100, 0, 0, 100)}
-                     getTooltipText={(percentage) => `${remap(percentage, 0, 100, -100, 0)}db`}
-                  >
-                     <HuginnRange.Label>Input Threshold</HuginnRange.Label>
-                     <HuginnRange.Input backgroundClassName="bg-positive-400!" fillClassName="bg-negative-100!">
-                        <div
-                           className="bg-surface-alt/50 absolute top-0 left-0 h-full transition-all duration-100"
-                           style={{ width: `${remap(inputDb, -100, 0, 0, 100)}%` }}
-                        />
-                     </HuginnRange.Input>
-                  </HuginnRange>
-                  <div className="flex">
-                     <HuginnCheckbox checked={noiseSuppression} onChange={setNoiseSuppression} className="w-45!">
-                        <HuginnCheckbox.Toggle innerClassName="bg-surface-alt">Noise Suppression</HuginnCheckbox.Toggle>
-                     </HuginnCheckbox>
-                  </div>
-               </HuginnTab.TabPanel>
-               <HuginnTab.TabPanel className="flex flex-col gap-y-5">
+      <div className="flex w-full flex-col items-center">
+         <div className="flex flex-col">
+            {/* <HuginnTab onChange={onTabChange}> */}
+            {/* <HuginnTab.TabList tabClassName="px-5 py-1">
+                  <HuginnTab.Tab className="w-full">
+                     <IconMingcuteVolumeFill className="size-5" />
+                     <div>Audio</div>
+                  </HuginnTab.Tab>
+                  <HuginnTab.Tab className="w-full">
+                     <IconMingcuteCamera2Fill className="size-5" />
+                     <div>Video</div>
+                  </HuginnTab.Tab>
+               </HuginnTab.TabList> */}
+            {/* <HuginnTab.TabPanels className="mt-5"> */}
+            {/* <HuginnTab.TabPanel className="flex flex-col gap-y-5"> */}
+            <div className="flex flex-col gap-y-5">
+               <div className="flex gap-x-5">
                   <HuginnDropdown
                      className="w-full max-w-xs"
-                     onChange={onCameraChange}
-                     value={cameraDeviceOptions.find((x) => x.value === selectedCamera?.deviceId)}
+                     onChange={onInputChange}
+                     value={inputDeviceOptions.find((x) => x.value === selectedInput?.deviceId)}
                   >
-                     <HuginnDropdown.Label>Video Device</HuginnDropdown.Label>
+                     <HuginnDropdown.Label>Input Device</HuginnDropdown.Label>
                      <HuginnDropdown.List className="w-full">
                         <HuginnDropdown.ItemsWrapper className="w-80">
-                           {cameraDeviceOptions?.map((x) => (
+                           {inputDeviceOptions?.map((x) => (
                               <HuginnDropdown.Item key={x.value} item={x} />
                            ))}
                         </HuginnDropdown.ItemsWrapper>
                      </HuginnDropdown.List>
                   </HuginnDropdown>
-                  <div className="bg-surface-deep relative flex aspect-video max-w-md items-center justify-center overflow-hidden rounded-lg shadow-lg">
-                     {!isTestingCamera && (
-                        <HuginnButton color="primary" className="absolute px-4 py-2" onClick={startCameraTest}>
-                           Test Camera
-                        </HuginnButton>
-                     )}
+                  <HuginnDropdown
+                     className="w-full max-w-xs"
+                     onChange={onOutputChange}
+                     value={outputDeviceOptions.find((x) => x.value === selectedOutput?.deviceId)}
+                  >
+                     <HuginnDropdown.Label>Output Device</HuginnDropdown.Label>
+                     <HuginnDropdown.List className="w-full">
+                        <HuginnDropdown.ItemsWrapper className="w-80">
+                           {outputDeviceOptions?.map((x) => (
+                              <HuginnDropdown.Item key={x.value} item={x} />
+                           ))}
+                        </HuginnDropdown.ItemsWrapper>
+                     </HuginnDropdown.List>
+                  </HuginnDropdown>
+               </div>
+               <div className="flex gap-x-5">
+                  <HuginnRange onChange={onInputVolumeChange} defaultValue={settings.inputVolume} className="max-w-xs">
+                     <HuginnRange.Label>Input Volume</HuginnRange.Label>
+                     <HuginnRange.Input />
+                  </HuginnRange>
+                  <HuginnRange
+                     onChange={onOutputVolumeChange}
+                     defaultValue={settings.outputVolume}
+                     maxValue={200}
+                     className="max-w-xs"
+                     getTooltipText={(v) => `${v}%`}
+                  >
+                     <HuginnRange.Label>Output Volume</HuginnRange.Label>
+                     <HuginnRange.Input />
+                  </HuginnRange>
+               </div>
+               <HuginnRange
+                  className="max-w-165"
+                  onChange={onInputThresholdChange}
+                  defaultValue={remap(settings.inputThreshold ?? -100, -100, 0, 0, 100)}
+                  getTooltipText={(percentage) => `${remap(percentage, 0, 100, -100, 0)}db`}
+               >
+                  <HuginnRange.Label>Input Threshold</HuginnRange.Label>
+                  <HuginnRange.Input backgroundClassName="bg-positive-400!" fillClassName="bg-negative-100!">
+                     <div
+                        className="bg-surface-alt/50 absolute top-0 left-0 h-full transition-all duration-100"
+                        style={{ width: `${remap(inputDb, -100, 0, 0, 100)}%` }}
+                     />
+                  </HuginnRange.Input>
+               </HuginnRange>
+               <div className="flex">
+                  <HuginnCheckbox checked={noiseSuppression} onChange={setNoiseSuppression} className="w-45!">
+                     <HuginnCheckbox.Toggle innerClassName="bg-surface-alt">Noise Suppression</HuginnCheckbox.Toggle>
+                  </HuginnCheckbox>
+               </div>
+               <div className="bg-surface-alt h-px w-full" />
+               {/* </HuginnTab.TabPanel> */}
+               {/* <HuginnTab.TabPanel className="flex flex-col gap-y-5"> */}  
+               <HuginnDropdown
+                  className="w-full max-w-xs"
+                  onChange={onCameraChange}
+                  value={cameraDeviceOptions.find((x) => x.value === selectedCamera?.deviceId)}
+               >
+                  <HuginnDropdown.Label>Video Device</HuginnDropdown.Label>
+                  <HuginnDropdown.List className="w-full">
+                     <HuginnDropdown.ItemsWrapper className="w-80">
+                        {cameraDeviceOptions?.map((x) => (
+                           <HuginnDropdown.Item key={x.value} item={x} />
+                        ))}
+                     </HuginnDropdown.ItemsWrapper>
+                  </HuginnDropdown.List>
+               </HuginnDropdown>
+               <div className="bg-surface-deep relative flex aspect-video max-w-md items-center justify-center overflow-hidden rounded-lg shadow-lg">
+                  {!isTestingCamera && (
+                     <HuginnButton color="primary" className="absolute px-4 py-2" onClick={startCameraTest}>
+                        Test Camera
+                     </HuginnButton>
+                  )}
 
-                     <video ref={videoRef} autoPlay playsInline muted className="w-full" />
-                  </div>
-               </HuginnTab.TabPanel>
-            </HuginnTab.TabPanels>
-         </HuginnTab>
+                  <video ref={videoRef} autoPlay playsInline muted className="w-full" />
+               </div>
+            </div>
+         </div>
+         {/* </HuginnTab.TabPanel> */}
+         {/* </HuginnTab.TabPanels> */}
+         {/* </HuginnTab> */}
       </div>
    );
 }

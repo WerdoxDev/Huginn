@@ -5,6 +5,7 @@ import { useMessageRenderer } from "@hooks/useMessageRenderer";
 import { clamp, hasFlag, MessageFlags, MessageType } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { useContextMenu } from "@stores/contextMenuStore";
+import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import moment from "moment";
@@ -18,6 +19,7 @@ export default function DefaultMessage() {
    const { user } = useThisUser();
    const context = useContext(MessageContext);
    const { open } = useContextMenu("message");
+   const { updateModals } = useModals();
 
    const formattedFullTime = useMemo(() => moment(context.message?.timestamp).format("DD.MM.YYYY HH:mm"), [context.message]);
    const formattedTime = useMemo(() => moment(context.message?.timestamp).format("HH:mm"), [context.message]);
@@ -88,8 +90,20 @@ export default function DefaultMessage() {
          {referencedMessage && <ReplyRenderer referencedMessage={referencedMessage} />}
          {(isSeparate || isLastAction) && (
             <div className="flex items-center gap-x-2">
-               <UserAvatar userId={context.message.authorId} avatarHash={author?.avatar} statusSize="0.5rem" size="1.75rem" />
-               <div className="text-text text-sm">{isSelf ? "You" : author?.displayName}</div>
+               <button
+                  type="button"
+                  className="cursor-pointer rounded-full"
+                  onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
+               >
+                  <UserAvatar userId={context.message.authorId} avatarHash={author?.avatar} statusSize="0.5rem" size="1.75rem" />
+               </button>
+               <button
+                  type="button"
+                  className="text-text cursor-pointer text-sm hover:underline"
+                  onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
+               >
+                  {isSelf ? "You" : author?.displayName}
+               </button>
                {!context.message.isPreview && context.message.flags && hasFlag(context.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
                   <IconMingcuteNotificationOffFill className="text-text size-4" />
                ) : null}

@@ -4,7 +4,7 @@ import { type APIGetUserChannelsResult, resolveImage, type Snowflake } from "@hu
 import { clientStore } from "@stores/clientStore";
 import { infiniteQueryOptions, QueryClient, queryOptions } from "@tanstack/react-query";
 
-import { convertToAppDirectChannel, convertToAppMessage, convertToAppRelationship, convertToAppUser } from "./utils";
+import { convertToAppDirectChannel, convertToAppMessage, convertToAppRelationship, convertToAppUser, convertToAppUserProfile } from "./utils";
 
 export const queryClient = new QueryClient({
    defaultOptions: {
@@ -21,6 +21,13 @@ export function getUserOptions(client: HuginnClient, userId: Snowflake) {
    return queryOptions({
       queryKey: ["user", userId],
       queryFn: async () => convertToAppUser(await client.users.get(userId)),
+   });
+}
+
+export function getUserProfileOptions(client: HuginnClient, userId: Snowflake) {
+   return queryOptions({
+      queryKey: ["user-profile", userId],
+      queryFn: async () => convertToAppUserProfile(await client.users.getProfile(userId)),
    });
 }
 

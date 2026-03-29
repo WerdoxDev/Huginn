@@ -4,6 +4,7 @@ import HuginnRange from "@components/input/HuginnRange";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 import { useClient } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
+import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useEffect, useMemo } from "react";
 
@@ -13,6 +14,7 @@ export default function VoiceElementContextMenu() {
    const { data } = useContextMenu("voice_element");
    const client = useClient();
    const { consumeStream, unconsumeStream } = useVoiceUtils();
+   const { updateModals } = useModals();
 
    const { saveFromCachedValue } = useStorageStore();
    const voicePreferences = useStorage("voice-preferences");
@@ -67,6 +69,12 @@ export default function VoiceElementContextMenu() {
 
    return (
       <>
+         <ContextMenu.Item
+            label="View Profile"
+            onClick={() => {
+               updateModals({ userProfile: { isOpen: true, userId: data.user.id } });
+            }}
+         />
          {mediaSources.some((x) => x?.kind === "microphone") && (
             <ContextMenu.Item
                label="Volume"
