@@ -13,6 +13,7 @@ model User {
    displayName String?
    email       String    @unique
    avatar      String?
+   bannerColor String?
    password    String?
    flags       Int       @db.SmallInt
    system      Boolean   @default(false)

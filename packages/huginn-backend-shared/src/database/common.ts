@@ -29,6 +29,7 @@ export type KnownApplicationPayload<Args extends KnownApplicationArgs | undefine
 export const selectPublicUser = {
    id: true,
    avatar: true,
+   bannerColor: true,
    displayName: true,
    flags: true,
    username: true,
@@ -37,6 +38,7 @@ export const selectPublicUser = {
 export const selectPrivateUser = {
    id: true,
    avatar: true,
+   bannerColor: true,
    displayName: true,
    flags: true,
    username: true,

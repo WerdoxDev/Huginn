@@ -16,19 +16,19 @@
    },
    "dependencies": {
       "@huginn/shared": "workspace:*",
-      "@prisma/adapter-pg": "^7.2.0",
-      "@prisma/client": "7",
+      "@prisma/adapter-pg": "^7.6.0",
+      "@prisma/client": "7.6.0",
       "@prisma/extension-optimize": "^2.0.1",
-      "elysia-rate-limit": "^4.5.0",
+      "elysia-rate-limit": "^4.5.1",
       "jose": "^6.1.3",
-      "mediabunny": "^1.27.1",
+      "mediabunny": "^1.40.1",
       "sharp": "^0.33.5"
    },
    "devDependencies": {
-      "@types/bun": "latest",
+      "@types/bun": "1.3.11",
       "@types/pg": "^8.16.0",
       "crossws": "^0.4.1",
-      "elysia": "^1.4.19",
-      "prisma": "7"
+      "elysia": "^1.4.28",
+      "prisma": "7.6.0"
    }
 }

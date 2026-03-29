@@ -1,6 +1,6 @@
 import { assertExists, assertId, assertObj, prisma, Prisma } from "#database";
 import { DBErrorType } from "#types";
-import { defaultServerSettings, type APIPatchUserSettingsJSONBody, type Snowflake, type UserSettings } from "@huginn/shared";
+import { DEFAULT_SERVER_SETTINGS, type APIPatchUserSettingsJSONBody, type Snowflake, type UserSettings } from "@huginn/shared";
 
 export const settingsExtension = Prisma.defineExtension({
    model: {
@@ -15,7 +15,7 @@ export const settingsExtension = Prisma.defineExtension({
                let settings;
                if (!exists) {
                   settings = await prisma.settings.create({
-                     data: { userId: BigInt(userId), json: defaultServerSettings },
+                     data: { userId: BigInt(userId), json: DEFAULT_SERVER_SETTINGS },
                      select: { json: true },
                   });
                } else {
