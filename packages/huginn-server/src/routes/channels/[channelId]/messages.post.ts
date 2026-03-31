@@ -97,6 +97,7 @@ export const postChannelMessage = new Elysia()
 
          global.waitUntil(async () => {
             await tryCatch(() => prisma.readState.updateLastRead(tokenPayload.id, channelId, message.id));
+            // dispatchToTopic(tokenPayload.id, "message_ack", { channelId, messageId: message.id });
 
             // Embed generation from urls inside the message content
             const embeds = await generateEmbedsFromContent(body.content);
