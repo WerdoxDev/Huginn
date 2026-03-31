@@ -22,7 +22,10 @@ const schema = t.Object({
    username: t.Optional(t.String()),
    displayName: t.Optional(t.Nullable(t.String())),
    avatar: t.Optional(t.Nullable(t.String())),
+   banner: t.Optional(t.Nullable(t.String())),
    bannerColor: t.Optional(t.Nullable(t.String())),
+   accentColor: t.Optional(t.Nullable(t.String())),
+   bio: t.Optional(t.Nullable(t.String())),
    password: t.Optional(t.String()),
    newPassword: t.Optional(t.String()),
 });
@@ -91,13 +94,33 @@ export const patchMe = new Elysia()
             avatarHash = null;
          }
 
+         let bannerHash: string | undefined | null = undefined;
+         if (body.banner !== null && body.banner !== undefined) {
+            const data = toArrayBuffer(body.banner);
+            if (data.byteLength > CONSTANTS.BANNER_MAX_FILE_SIZE) {
+               return singleError(Errors.fileTooLarge(data.byteLength, CONSTANTS.BANNER_MAX_FILE_SIZE), status);
+            }
+
+            bannerHash = getFileHash(data);
+            bannerHash = (
+               await cdnUpload<string>(CDNRoutes.uploadBanner(user.id), {
+                  files: [{ data: data, name: bannerHash, contentType: "image/png" }],
+               })
+            ).split(".")[0];
+         } else if (body.banner === null) {
+            bannerHash = null;
+         }
+
          const updatedUser = await prisma.user.edit(
             tokenPayload.id,
             {
                username: body.username?.toLowerCase(),
                displayName: !body.displayName && body.displayName !== undefined ? null : body.displayName,
                avatar: avatarHash,
+               banner: bannerHash,
                bannerColor: body.bannerColor,
+               accentColor: body.accentColor,
+               bio: body.bio,
                newPassword: body.newPassword ? body.newPassword : undefined,
             },
             { select: selectPrivateUser },
