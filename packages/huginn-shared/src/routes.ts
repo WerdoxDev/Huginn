@@ -215,6 +215,14 @@ export const CDNRoutes = {
 
    /**
     * Route for:
+    * - POST '/banners/{user.id}'
+    */
+   uploadBanner(userId: Snowflake): `/banners/${string}` {
+      return `/banners/${userId}` as const;
+   },
+
+   /**
+    * Route for:
     * - POST '/channel-icons/{channel.id}'
     */
    uploadChannelIcon(channelId: Snowflake): `/channel-icons/${string}` {

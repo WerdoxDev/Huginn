@@ -38,6 +38,8 @@ export const CONSTANTS = {
    EMAIL_VERIFICATION_WINDOW: (10 * 60 * 1000) as number, // 10 minutes
    EMAIL_VERIFICATION_RESEND_COOLDOWN: (30 * 1000) as number, // 30 seconds
    AVATAR_MAX_FILE_SIZE: (8 * 1024 * 1024) as number, // 8MB
+   BANNER_MAX_FILE_SIZE: (10 * 1024 * 1024) as number, // 10MB
+   BIO_MAX_LENGTH: 190,
    // OAUTH_SENSITIVE_REAUTH_WINDOW: 1000, // 1 second
 };
 
