@@ -4,6 +4,8 @@ import { postMessageAttachment } from "#routes/attachments/[channelId]/[messageI
 import { getMessageAttachment } from "#routes/attachments/[channelId]/[messageId]/[filename].get";
 import { postUserAvatar } from "#routes/avatars/[userId].post";
 import { getUserAvatar } from "#routes/avatars/[userId]/[avatarHash].get";
+import { postUserBanner } from "#routes/banners/[userId].post";
+import { getUserBanner } from "#routes/banners/[userId]/[bannerHash].get";
 import { postChannelIcon } from "#routes/channel-icons/[channelId].post";
 import { getChannelIcon } from "#routes/channel-icons/[channelId]/[iconHash].get";
 import { envs } from "#setup";
@@ -46,6 +48,8 @@ export const main = new Elysia()
    .use(postMessageAttachment)
    .use(getUserAvatar)
    .use(postUserAvatar)
+   .use(getUserBanner)
+   .use(postUserBanner)
    .use(getChannelIcon)
    .use(postChannelIcon)
    .listen({ hostname: envs.CDN_HOST, port: envs.CDN_PORT, idleTimeout: 40 }, (server) => {
