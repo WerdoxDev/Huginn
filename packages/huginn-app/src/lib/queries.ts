@@ -98,6 +98,20 @@ export function getUserAvatarOptions(userId: Snowflake | undefined, avatarHash: 
    });
 }
 
+export function getUserBannerOptions(userId: Snowflake | undefined, bannerHash: string | null | undefined, client?: HuginnClient) {
+   return queryOptions({
+      queryKey: ["banner", userId, bannerHash],
+      async queryFn() {
+         if (!userId || !bannerHash || !client) {
+            return null;
+         }
+
+         const data = await resolveImage(client.cdn.banner(userId, bannerHash));
+         return data ? data : null;
+      },
+   });
+}
+
 export function getChannelIconOptions(channelId: Snowflake | undefined, iconHash: string | null | undefined, client?: HuginnClient) {
    return queryOptions({
       queryKey: ["channel-icon", channelId, iconHash],

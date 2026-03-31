@@ -3,6 +3,7 @@ import LoadingButton from "@components/button/LoadingButton";
 
 import "../../cropper.css";
 import { useModals } from "@stores/modalsStore";
+import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
 // import { usePostHog } from "posthog-js/react";
 import Cropper, { type ReactCropperElement } from "react-cropper";
@@ -16,12 +17,15 @@ export default function ImageCropModal() {
    // const posthog = usePostHog();
    const cropperRef = useRef<ReactCropperElement>(null);
 
+   const isBanner = modal.cropType === "banner";
+
    async function confirm() {
       if (cropperRef.current) {
          let data: string;
 
          if (modal.mimeType !== "image/gif") {
-            data = cropperRef.current?.cropper.getCroppedCanvas({ width: 512, height: 512 }).toDataURL();
+            const canvasSize = isBanner ? { width: 444, height: 128 } : { width: 512, height: 512 };
+            data = cropperRef.current?.cropper.getCroppedCanvas(canvasSize).toDataURL();
          } else {
             const imageCropper = new SuperImageCropper();
             data = (await imageCropper.crop({
@@ -62,13 +66,15 @@ export default function ImageCropModal() {
    return (
       <HuginnDialogPanel>
          <div className="text-text/50 px-5 pt-4 pb-1 text-center text-sm italic">Scroll to zoom</div>
-         <div className="m-5 mt-1 flex max-h-[calc(100vh-12rem)] max-w-120 items-center justify-center overflow-hidden rounded-lg bg-black/50">
+         <div
+            className={`m-5 mt-1 flex max-h-[calc(100vh-12rem)] items-center justify-center overflow-hidden rounded-lg bg-black/50 ${isBanner ? "max-w-160" : "max-w-120"}`}
+         >
             <Cropper
                ref={cropperRef}
                src={modal.originalImageData}
-               initialAspectRatio={1}
-               className="h-full max-h-[calc(100vh-12rem)] w-full max-w-120"
-               aspectRatio={1}
+               initialAspectRatio={isBanner ? 444 / 128 : 1}
+               className={clsx("h-full max-h-[calc(100vh-12rem)] w-full", isBanner ? "banner-crop max-w-160" : "max-w-120")}
+               aspectRatio={isBanner ? 444 / 128 : 1}
                movable={true}
                unselectable="off"
                zoomable={true}

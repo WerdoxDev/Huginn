@@ -123,8 +123,10 @@
 
 :root {
    font-family: "Rubik", sans-serif;
+   /* font-family: "Cascadia Mono", sans-serif; */
    -webkit-font-smoothing: none;
    /* letter-spacing: 0.05rem; */
+   /* font-size: 17px; */
    font-synthesis: none;
    text-rendering: optimizeLegibility;
    interpolate-size: allow-keywords;
@@ -252,6 +254,18 @@ input::-ms-clear {
 
 .cropper-crop-box {
    border-radius: 100%;
+}
+
+.banner-crop .cropper-view-box {
+   border-radius: 0;
+}
+
+.banner-crop .cropper-crop-box {
+   border-radius: 0;
+}
+
+.banner-crop .cropper-face {
+   border-radius: 0;
 }
 
 .cropper-face {

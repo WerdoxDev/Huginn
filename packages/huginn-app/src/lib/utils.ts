@@ -101,6 +101,7 @@ export function getSizeText(size: number) {
 }
 
 export function convertToAppDirectChannel(channel: DirectChannel): AppDirectChannel {
+   console.log(channel);
    const name =
       channel.type === ChannelType.DM
          ? (channel.recipients[0].displayName ?? channel.recipients[0].username)

@@ -35,9 +35,10 @@ const initialStore = () => ({
       };
       isClosable: boolean;
    },
-   imageCrop: { isOpen: false, originalImageData: "", mimeType: "", callback: undefined } as DefaultModal & {
+   imageCrop: { isOpen: false, originalImageData: "", mimeType: "", cropType: "avatar", callback: undefined } as DefaultModal & {
       originalImageData: string;
       mimeType: string;
+      cropType?: "avatar" | "banner";
       callback?: (data: string) => Promise<void> | void;
    },
    createDM: { isOpen: false } as DefaultModal,
