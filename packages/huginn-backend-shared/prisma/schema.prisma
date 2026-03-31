@@ -13,7 +13,10 @@ model User {
    displayName String?
    email       String    @unique
    avatar      String?
+   banner      String?
    bannerColor String?
+   accentColor String?
+   bio         String?
    password    String?
    flags       Int       @db.SmallInt
    system      Boolean   @default(false)
