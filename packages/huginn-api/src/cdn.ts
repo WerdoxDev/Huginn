@@ -15,6 +15,10 @@ export class CDN {
       return this.dynamicMakeURL(`/avatars/${id}/${hash}`, hash, options);
    }
 
+   public banner(id: Snowflake, hash: string, options?: Readonly<ImageURLOptions>): string {
+      return this.dynamicMakeURL(`/banners/${id}/${hash}`, hash, options);
+   }
+
    public channelIcon(id: Snowflake, hash: string, options?: Readonly<ImageURLOptions>): string {
       return this.dynamicMakeURL(`/channel-icons/${id}/${hash}`, hash, options);
    }
