@@ -99,7 +99,7 @@ export default function MessageWebsocketProvider(props: { children?: ReactNode }
             updateChannelLastMessageId(d.channelId, lastMessageId, queryClient);
 
             if (readStates.some((x) => x.channelId === d.channelId && x.lastReadMessageId === d.id)) {
-               setLatestReadMessage(d.channelId, lastMessageId, queryClient);
+               setLatestReadMessage(d.channelId, lastMessageId, queryClient, user?.id);
             }
          }
       }
@@ -107,7 +107,7 @@ export default function MessageWebsocketProvider(props: { children?: ReactNode }
 
    function onMessageAck(d: GatewayMessageAckData) {
       if (currentChannel?.id !== d.channelId) {
-         setLatestReadMessage(d.channelId, d.messageId, queryClient);
+         setLatestReadMessage(d.channelId, d.messageId, queryClient, user?.id);
       }
    }
 
