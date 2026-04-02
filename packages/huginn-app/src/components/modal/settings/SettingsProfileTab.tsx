@@ -223,22 +223,24 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
                      <div className="h-full w-full bg-linear-to-r from-white/5 via-white/10 to-white/5" />
                   )}
                   {isEditing && (
-                     <>
-                        <button
-                           className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100"
+                     <div className={clsx("absolute top-2 right-2 flex gap-x-1 transition-opacity", !showBanner ? "opacity-0" : "opacity-100")}>
+                        <HuginnButton
+                           color="surface"
                            onClick={handleEditBanner}
+                           className="cursor-pointer rounded-full! p-2 shadow-md backdrop-blur-xs"
                         >
-                           <IconMingcuteEdit2Fill className="size-5 text-white" />
-                        </button>
+                           <IconMingcuteEdit2Fill className="size-4 text-white" />
+                        </HuginnButton>
                         {displayBanner && (
-                           <button
-                              className="hover:bg-negative-500 absolute bottom-5 left-1/2 -translate-x-1/2 cursor-pointer rounded-full px-1.5 py-1.5 opacity-0 transition-opacity group-hover:opacity-100"
+                           <HuginnButton
+                              color="negative"
                               onClick={handleDeleteBanner}
+                              className="cursor-pointer rounded-full! p-2 shadow-md backdrop-blur-xs"
                            >
-                              <IconMingcuteDelete3Fill className="size-3 text-white" />
-                           </button>
+                              <IconMingcuteDelete3Fill className="size-4 text-white" />
+                           </HuginnButton>
                         )}
-                     </>
+                     </div>
                   )}
                </div>
 
@@ -246,7 +248,7 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
 
                <div className={clsx("flex items-start gap-x-4 px-5 pb-5 transition-[padding]", showBanner ? "pt-0" : "pt-5")}>
                   <div className="flex flex-col gap-y-2">
-                     <div className={clsx("relative z-10 shrink-0 transition-[margin]", isEditing && "group", showBanner ? "-mt-11" : "mt-0")}>
+                     <div className={clsx("relative z-10 shrink-0 transition-[margin]", showBanner ? "-mt-11" : "mt-0")}>
                         <div className="border-surface-alt rounded-full border-4">
                            <div className="relative h-full w-full overflow-hidden rounded-full">
                               {displayAvatar ? (
@@ -254,24 +256,19 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
                               ) : (
                                  <div className="bg-primary-700 size-22" />
                               )}
-                              {isEditing && (
-                                 <button
-                                    type="button"
-                                    className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black/50 opacity-0 transition-opacity group-hover:opacity-100"
-                                    onClick={handleEditAvatar}
-                                 >
-                                    <IconMingcuteEdit2Fill className="size-5 text-white" />
-                                 </button>
-                              )}
                            </div>
                         </div>
-                        {isEditing && displayAvatar && (
-                           <button
-                              className="hover:bg-negative-500 absolute bottom-2 left-1/2 -translate-x-1/2 cursor-pointer rounded-full px-1.5 py-1.5 opacity-0 transition-opacity group-hover:opacity-100"
-                              onClick={handleDeleteAvatar}
-                           >
-                              <IconMingcuteDelete3Fill className="size-3 text-white" />
-                           </button>
+                        {isEditing && (
+                           <div className="absolute -right-2 -bottom-2 z-20 flex gap-x-1">
+                              <HuginnButton color="surface" onClick={handleEditAvatar} className="cursor-pointer rounded-full! p-2 shadow-md">
+                                 <IconMingcuteEdit2Fill className="size-4 text-white" />
+                              </HuginnButton>
+                              {displayAvatar && (
+                                 <HuginnButton color="negative" onClick={handleDeleteAvatar} className="cursor-pointer rounded-full! p-2 shadow-md">
+                                    <IconMingcuteDelete3Fill className="size-4 text-white" />
+                                 </HuginnButton>
+                              )}
+                           </div>
                         )}
                      </div>
                      <div className="relative flex min-w-0 flex-col pl-1">
@@ -299,7 +296,7 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
                         }
                      >
                         <textarea
-                           className="bg-surface-alt w-full resize-none rounded-md px-1.5 text-sm leading-relaxed text-white/80 outline-none placeholder:text-white/30"
+                           className="bg-surface-alt w-full resize-none rounded-md px-1.5 py-1 text-sm text-white/80 outline-none placeholder:text-white/30"
                            rows={3}
                            maxLength={CONSTANTS.BIO_MAX_LENGTH}
                            placeholder="Tell me who the f.. fu... FUNKY hell are you?"

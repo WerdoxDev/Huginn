@@ -120,7 +120,7 @@ function ProfileContent(props: { userId: string }) {
             <div className="flex flex-col gap-y-2">
                <div className={clsx("relative z-10 shrink-0", hasBanner ? "-mt-11" : "mt-0")}>
                   <div className="border-surface-alt rounded-full border-4">
-                     <UserAvatar userId={user?.id} avatarHash={user?.avatar} size="5.5rem" statusSize="1.25rem" />
+                  <UserAvatar userId={user?.id} avatarHash={user?.avatar} size="5.5rem" statusSize="1.25rem" />
                   </div>
                </div>
                <div className="relative flex min-w-0 flex-col pl-1">
