@@ -14,7 +14,7 @@ import ChannelIcon from "./ChannelIcon";
 import LoadingIcon from "./LoadingIcon";
 import UserAvatar from "./UserAvatar";
 
-export default function DirectMessageChannel(props: { channel: AppDirectChannel; ref: Ref<HTMLLIElement> }) {
+export default function DirectMessageChannel(props: { channel: AppDirectChannel; ref: Ref<HTMLLIElement>; pinned?: boolean }) {
    const { open: openContextMenu, context, data } = useContextMenu("dm_channel");
 
    const recipients = useUsers(props.channel.recipientIds);
@@ -57,7 +57,7 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
             <div className="flex w-full flex-col justify-center overflow-hidden">
                <div
                   className={clsx(
-                     "text-text mr-8 overflow-hidden text-sm text-nowrap text-ellipsis group-hover:opacity-100 group-active:opacity-100 group-data-context:opacity-100",
+                     "text-text mr-4 overflow-hidden text-sm text-nowrap text-ellipsis group-hover:opacity-100 group-active:opacity-100 group-data-context:opacity-100",
                      selected ? "opacity-100" : "opacity-70",
                   )}
                >
@@ -84,9 +84,12 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
                )}
             </div>
             {!isLoading ? (
-               <button className="group/close mr-2 hidden shrink-0 cursor-pointer group-hover:block" onClick={handleLeave}>
-                  <IconMingcuteCloseFill className="text-text/50 group-hover/close:text-text" />
-               </button>
+               <div className="mr-2 flex shrink-0 items-center gap-x-2">
+                  {props.pinned && <IconMingcutePinFill className="text-text/50 size-4 transition-opacity" />}
+                  <button className="group/close ml-auto hidden cursor-pointer group-hover:block" onClick={handleLeave}>
+                     <IconMingcuteCloseFill className="text-text/50 group-hover/close:text-text size-4" />
+                  </button>
+               </div>
             ) : (
                <div className="mr-2 flex shrink-0 items-center justify-center">
                   <LoadingIcon className="size-7" />

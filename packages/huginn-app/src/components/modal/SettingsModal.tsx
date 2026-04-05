@@ -134,7 +134,6 @@ export default function SettingsModal() {
    }
 
    const { throttledFunction } = useThrottler(async (value: Partial<AppSettings>) => {
-      console.log("SAVE");
       await setStorageValue("settings", { ...settings, ...value });
    }, 1000);
 

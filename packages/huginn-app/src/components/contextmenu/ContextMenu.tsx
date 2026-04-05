@@ -34,12 +34,14 @@ const Context = createContext<{
    setActiveIndex: React.Dispatch<React.SetStateAction<number | null>>;
    setHasFocusInside: React.Dispatch<React.SetStateAction<boolean>>;
    isOpen: boolean;
+   setBusy: (busy: boolean) => void;
 }>({
    getItemProps: () => ({}),
    activeIndex: null,
    setActiveIndex: () => {},
    setHasFocusInside: () => {},
    isOpen: false,
+   setBusy: () => {},
 });
 
 function Menu(props: ContextMenuProps & HTMLProps<HTMLButtonElement>) {
@@ -49,6 +51,7 @@ function Menu(props: ContextMenuProps & HTMLProps<HTMLButtonElement>) {
 
    const elementsRef = useRef<(HTMLButtonElement | null)[]>([]);
    const labelsRef = useRef<(string | null)[]>([]);
+   const busyRef = useRef(false);
    const parent = useContext(Context);
 
    const tree = useFloatingTree();
@@ -103,6 +106,7 @@ function Menu(props: ContextMenuProps & HTMLProps<HTMLButtonElement>) {
    const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions([hover, role, dismiss, listNavigation]);
 
    function setIsOpen(isOpen: boolean) {
+      if (!isOpen && busyRef.current) return;
       _setIsOpen(isOpen);
       if (!isOpen && props.close) props.close();
    }
@@ -194,6 +198,7 @@ function Menu(props: ContextMenuProps & HTMLProps<HTMLButtonElement>) {
                getItemProps,
                setHasFocusInside,
                isOpen,
+               setBusy: (busy) => { busyRef.current = busy; },
             }}
          >
             <FloatingList elementsRef={elementsRef} labelsRef={labelsRef}>
@@ -224,6 +229,7 @@ function Item(props: ContextMenuItemProps & React.ButtonHTMLAttributes<HTMLButto
    const item = useListItem({ label: props.disabled ? null : props.label });
    const tree = useFloatingTree();
    const isActive = item.index === menu.activeIndex;
+   const [isLoading, setIsLoading] = useState(false);
 
    return (
       <button
@@ -239,12 +245,22 @@ function Item(props: ContextMenuItemProps & React.ButtonHTMLAttributes<HTMLButto
             props.className,
          )}
          tabIndex={isActive ? 0 : -1}
-         disabled={props.disabled}
+         disabled={props.disabled || isLoading}
          {...menu.getItemProps({
             onClick(event: React.MouseEvent<HTMLButtonElement>) {
-               props.onClick?.(event);
+               const result = props.onClick?.(event) as unknown;
 
-               if (!props.preventClose) {
+               if (result instanceof Promise) {
+                  setIsLoading(true);
+                  menu.setBusy(true);
+                  result.finally(() => {
+                     setIsLoading(false);
+                     menu.setBusy(false);
+                     if (!props.preventClose) {
+                        tree?.events.emit("click");
+                     }
+                  });
+               } else if (!props.preventClose) {
                   tree?.events.emit("click");
                }
             },
@@ -255,7 +271,11 @@ function Item(props: ContextMenuItemProps & React.ButtonHTMLAttributes<HTMLButto
          })}
       >
          {props.label}
-         {props.children}
+         {isLoading ? (
+            <span className="inline-block size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+         ) : (
+            props.children
+         )}
       </button>
    );
 }

@@ -1,0 +1,26 @@
+import type { Snowflake } from "@huginn/shared";
+
+import { clientStore, useClient } from "@stores/clientStore";
+import { useCallback } from "react";
+import { useStore } from "zustand";
+
+export function usePinnedChannels(channelIds?: Snowflake[]) {
+   const pinnedChannelIds = useStore(clientStore, (state) => state.userSettings?.pinnedChannels);
+   const client = useClient();
+
+   const isPinned = useCallback((id: Snowflake) => pinnedChannelIds?.includes(id), [pinnedChannelIds]);
+
+   const togglePin = useCallback(
+      async (id: Snowflake) => {
+         const next = pinnedChannelIds?.includes(id) ? pinnedChannelIds.filter((x) => x !== id) : [...(pinnedChannelIds ?? []), id];
+
+         // Remove IDs that no longer correspond to an open channel
+         const cleaned = channelIds ? next.filter((x) => channelIds.includes(x)) : next;
+
+         await client?.users.editSettings({ pinnedChannels: cleaned });
+      },
+      [client, channelIds, pinnedChannelIds],
+   );
+
+   return { pinnedChannelIds, isPinned, togglePin };
+}

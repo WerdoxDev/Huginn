@@ -1,5 +1,6 @@
 import type { Snowflake } from "@huginn/shared";
 
+import { usePinnedChannels } from "@hooks/usePinnedChannels";
 import { useModals } from "@stores/modalsStore";
 import { useReadStates } from "@stores/readStatesStore";
 import { useParams } from "@tanstack/react-router";
@@ -27,17 +28,23 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
 
    const animatable = useRef<AnimatableObject>(null);
 
-   const sortedChannels = useMemo(
-      () =>
-         props.channels?.toSorted((a, b) => {
-            const aId = BigInt(a.lastMessageId || a.id);
-            const bId = BigInt(b.lastMessageId || b.id);
+   const channelIds = useMemo(() => props.channels?.map((c) => c.id), [props.channels]);
+   const { pinnedChannelIds, isPinned } = usePinnedChannels(channelIds);
 
-            // Sort in descending order (newest first)
-            return aId > bId ? -1 : aId < bId ? 1 : 0;
-         }),
-      [props.channels],
-   );
+   const { pinnedChannels, unpinnedChannels } = useMemo(() => {
+      const byRecency = props.channels?.toSorted((a, b) => {
+         const aId = BigInt(a.lastMessageId || a.id);
+         const bId = BigInt(b.lastMessageId || b.id);
+         return aId > bId ? -1 : aId < bId ? 1 : 0;
+      });
+
+      const pinned = byRecency?.filter((c) => pinnedChannelIds?.includes(c.id)) ?? [];
+      const unpinned = byRecency?.filter((c) => !pinnedChannelIds?.includes(c.id)) ?? [];
+
+      return { pinnedChannels: pinned, unpinnedChannels: unpinned };
+   }, [props.channels, pinnedChannelIds]);
+
+   const sortedChannels = useMemo(() => [...pinnedChannels, ...unpinnedChannels], [pinnedChannels, unpinnedChannels]);
 
    useEffect(() => {
       animatable.current = createAnimatable(indicator.current!, {
@@ -108,7 +115,7 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
                <div>Create Channel</div>
             </HuginnButton>
             <div className="flex flex-col gap-y-0.5 rounded-lg pb-2 pl-2">
-               {sortedChannels?.map((channel) => (
+               {sortedChannels.map((channel) => (
                   <DirectMessageChannel
                      key={channel.id}
                      ref={(el) => {
@@ -117,6 +124,7 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
                         }
                      }}
                      channel={channel}
+                     pinned={isPinned(channel.id)}
                   />
                ))}
             </div>

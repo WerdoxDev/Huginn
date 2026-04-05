@@ -39,4 +39,5 @@ export const storageDefaults: StorageMap = {
    "voice-preferences": [],
    "known-applications": { lastUpdated: "", applications: [] },
    "custom-applications": [],
+   "pinned-channels": [],
 };

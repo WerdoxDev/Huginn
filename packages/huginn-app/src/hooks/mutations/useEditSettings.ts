@@ -7,7 +7,7 @@ export function useEditSettings() {
    const client = useClient();
 
    const mutation = useMutation({
-      mutationKey: ["save-settings"],
+      mutationKey: ["edit-settings"],
       async mutationFn(settings: Partial<UserSettings>) {
          await client?.users.editSettings(settings);
       },
