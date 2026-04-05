@@ -26,6 +26,7 @@
       "electron:rebuild": "electron-rebuild -f -v 36.3.2 -m native-addon"
    },
    "dependencies": {
+      "@chenglou/pretext": "^0.0.4",
       "@floating-ui/react": "^0.27.19",
       "@headlessui/react": "^2.2.9",
       "@huginn/api": "workspace:*",

@@ -1,3 +1,4 @@
+import UserProfilePreview from "@components/profile/UserProfilePreview";
 import { useSafeDeleteDMChannel } from "@hooks/api-hooks/channelHooks";
 import { usePinnedChannels } from "@hooks/usePinnedChannels";
 import { ChannelType } from "@huginn/shared";
@@ -17,6 +18,12 @@ export default function ChannelsContextMenu() {
 
    return (
       <>
+         {data.type === ChannelType.DM && (
+            <>
+               <UserProfilePreview userId={data.recipientIds[0]} />
+               <ContextMenu.Divider />
+            </>
+         )}
          {data.type === ChannelType.DM && (
             <ContextMenu.Item
                label="View Profile"

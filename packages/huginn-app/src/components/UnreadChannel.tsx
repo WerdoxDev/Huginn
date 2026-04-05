@@ -27,7 +27,7 @@ export default function UnreadChannel(props: { channelId: Snowflake; unreadCount
                preload="intent"
             >
                {channel.type === ChannelType.DM ? (
-                  <UserAvatar userId={recipients[0]?.id} avatarHash={recipients[0]?.avatar} size="3rem" hideStatus />
+                  <UserAvatar userId={recipients[0]?.id} avatarHash={recipients[0]?.avatar} size={3} hideStatus />
                ) : (
                   <ChannelIcon channelId={channel?.id} iconHash={channel?.icon} size="3rem" />
                )}

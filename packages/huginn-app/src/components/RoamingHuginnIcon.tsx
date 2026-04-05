@@ -31,7 +31,7 @@ export default function RoamingHuginnIcon() {
                easing: "easeInOutSine",
                onComplete: () => {
                   currentPosRef.current = { x: targetX, y: targetY };
-                  scope.current?.methods.roam();
+                  scope.current?.methods?.roam?.();
                },
             });
          });
@@ -52,7 +52,7 @@ export default function RoamingHuginnIcon() {
                easing: "easeOutBack",
                onComplete: () => {
                   isHiddenRef.current = false;
-                  scope.current?.methods.roam();
+                  scope.current?.methods?.roam?.();
                },
             });
          });
@@ -68,7 +68,7 @@ export default function RoamingHuginnIcon() {
                rotate: ["+=0", "+=0", "+=20", "-=20", "+=20", "-=20", "+=20", "-=20"],
                onComplete: () => {
                   setTimeout(() => {
-                     scope.current?.methods.appear();
+                     scope.current?.methods?.appear?.();
                   }, 4000);
                },
             });
@@ -76,7 +76,7 @@ export default function RoamingHuginnIcon() {
       });
 
       setTimeout(() => {
-         scope.current?.methods.appear();
+         scope.current?.methods?.appear?.();
       }, Math.random() * 60000);
 
       return () => {
@@ -89,7 +89,7 @@ export default function RoamingHuginnIcon() {
       if (!el || isHiddenRef.current) return;
       isHiddenRef.current = true;
 
-      scope.current?.methods.disappear();
+      scope.current?.methods?.disappear?.();
    }
 
    return <HuginnIcon ref={iconRef} outlined className="absolute top-0 left-0 size-5 cursor-pointer opacity-0 select-none" onClick={handleClick} />;

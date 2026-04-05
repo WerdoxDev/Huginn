@@ -26,9 +26,12 @@ export function ProfileActivity(props: { type: string; name: string; iconUrl?: s
                   <IconMingcuteGame2Fill className="size-5" style={{ color: props.accentColor }} />
                </div>
             )}
-            <div className="flex min-w-0 flex-col">
-               <span className="truncate text-sm font-semibold text-white">{props.name}</span>
-               {props.elapsedText && <span className="text-text text-xs">{props.elapsedText} elapsed</span>}
+            <div className="flex flex-col">
+               <div className="truncate text-sm font-semibold text-white">{props.name}</div>
+               <div className="text-positive-100 flex items-center gap-x-1 text-xs">
+                  <IconMingcuteGame2Fill />
+                  <span>{props.elapsedText}</span>
+               </div>
             </div>
          </div>
       </div>

@@ -3,6 +3,7 @@ import HuginnLabel from "@components/HuginnLabel";
 import MemberSince from "@components/MemberSince";
 import { ProfileAboutMe, ProfileActivity } from "@components/profile/ProfileComponents";
 import ProfileBadges from "@components/ProfileBadges";
+import RoamingHuginnIcon from "@components/RoamingHuginnIcon";
 import Tooltip from "@components/tooltip/Tooltip";
 import { useUserProfile } from "@hooks/api-hooks/userHooks";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
@@ -15,11 +16,9 @@ import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { SettingsTabProps } from "@/types";
-
-import RoamingHuginnIcon from "../../RoamingHuginnIcon";
 
 type EditingField = "username" | "displayName" | "email" | "password";
 
@@ -33,7 +32,7 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
    const { data: originalAvatar } = useQuery(getUserAvatarOptions(user?.id, user?.avatar, client));
    const { data: originalBanner } = useQuery(getUserBannerOptions(user?.id, user?.banner, client));
    const [bannerColor, setBannerColor] = useState(() => user?.bannerColor ?? "");
-   const [accentColor, setAccentColor] = useState(() => user?.accentColor ?? "");
+   const [accentColor, setAccentColor] = useState(() => user?.accentColor ?? "transparent");
    const [bio, setBio] = useState(() => user?.bio ?? "");
    const [isEditing, setIsEditing] = useState(false);
    const [pendingAvatar, setPendingAvatar] = useState<string | null | undefined>(undefined);
@@ -224,22 +223,17 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
                   )}
                   {isEditing && (
                      <div className={clsx("absolute top-2 right-2 flex gap-x-1 transition-opacity", !showBanner ? "opacity-0" : "opacity-100")}>
-                        <HuginnButton
-                           color="surface"
-                           onClick={handleEditBanner}
-                           className="cursor-pointer rounded-full! p-2 shadow-md backdrop-blur-xs"
-                        >
-                           <IconMingcuteEdit2Fill className="size-4 text-white" />
-                        </HuginnButton>
                         {displayBanner && (
-                           <HuginnButton
-                              color="negative"
+                           <button
                               onClick={handleDeleteBanner}
-                              className="cursor-pointer rounded-full! p-2 shadow-md backdrop-blur-xs"
+                              className="bg-negative-500 hover:bg-negative-600 cursor-pointer rounded-full! p-2 shadow-md"
                            >
                               <IconMingcuteDelete3Fill className="size-4 text-white" />
-                           </HuginnButton>
+                           </button>
                         )}
+                        <button onClick={handleEditBanner} className="bg-surface hover:bg-surface-alt cursor-pointer rounded-full! p-2 shadow-md">
+                           <IconMingcuteEdit2Fill className="size-4 text-white" />
+                        </button>
                      </div>
                   )}
                </div>
@@ -248,7 +242,7 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
 
                <div className={clsx("flex items-start gap-x-4 px-5 pb-5 transition-[padding]", showBanner ? "pt-0" : "pt-5")}>
                   <div className="flex flex-col gap-y-2">
-                     <div className={clsx("relative z-10 shrink-0 transition-[margin]", showBanner ? "-mt-11" : "mt-0")}>
+                     <div className={clsx("relative z-10 w-max shrink-0 transition-[margin]", showBanner ? "-mt-11" : "mt-0")}>
                         <div className="border-surface-alt rounded-full border-4">
                            <div className="relative h-full w-full overflow-hidden rounded-full">
                               {displayAvatar ? (
@@ -259,21 +253,27 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
                            </div>
                         </div>
                         {isEditing && (
-                           <div className="absolute -right-2 -bottom-2 z-20 flex gap-x-1">
-                              <HuginnButton color="surface" onClick={handleEditAvatar} className="cursor-pointer rounded-full! p-2 shadow-md">
-                                 <IconMingcuteEdit2Fill className="size-4 text-white" />
-                              </HuginnButton>
+                           <div className="absolute -top-1 -right-1 z-20 flex gap-x-1">
                               {displayAvatar && (
-                                 <HuginnButton color="negative" onClick={handleDeleteAvatar} className="cursor-pointer rounded-full! p-2 shadow-md">
+                                 <button
+                                    onClick={handleDeleteAvatar}
+                                    className="bg-negative-500 hover:bg-negative-600 cursor-pointer rounded-full! p-2 shadow-md"
+                                 >
                                     <IconMingcuteDelete3Fill className="size-4 text-white" />
-                                 </HuginnButton>
+                                 </button>
                               )}
+                              <button
+                                 onClick={handleEditAvatar}
+                                 className="bg-surface hover:bg-surface-alt cursor-pointer rounded-full! p-2 shadow-md"
+                              >
+                                 <IconMingcuteEdit2Fill className="size-4 text-white" />
+                              </button>
                            </div>
                         )}
                      </div>
-                     <div className="relative flex min-w-0 flex-col pl-1">
-                        <div className="truncate text-lg font-semibold text-white">{user?.displayName}</div>
-                        <div className="text-text truncate text-sm">{user?.username}</div>
+                     <div className="flex max-w-60 flex-col pl-1">
+                        <div className="text-lg font-semibold wrap-break-word whitespace-break-spaces text-white">{user?.displayName}</div>
+                        <div className="text-sm wrap-break-word whitespace-break-spaces text-white">{user?.username}</div>
                         {/* {user && (
                            <Suspense>
                               <CurrentUserBadges userId={user.id} />
@@ -414,23 +414,6 @@ function ChangeButton(props: { onClick?: () => void }) {
 function CurrentUserBadges({ userId }: { userId: string }) {
    const profile = useUserProfile(userId);
    return <ProfileBadges badges={profile.badges} />;
-}
-
-function ExampleActivityCard({ accentColor }: { accentColor: string }) {
-   return (
-      <div className="rounded-md border border-l-3 bg-white/5 p-3" style={{ borderLeftColor: accentColor, borderColor: `${accentColor}33` }}>
-         <div className="text-text mb-1.5 text-[0.65rem] font-bold tracking-wider uppercase">Playing a Game</div>
-         <div className="flex items-center gap-x-3">
-            <div className="flex size-10 items-center justify-center rounded-lg" style={{ backgroundColor: `${accentColor}33` }}>
-               <IconMingcuteGame2Fill className="size-5" style={{ color: accentColor }} />
-            </div>
-            <div className="flex min-w-0 flex-col">
-               <span className="truncate text-sm font-semibold text-white">Huginn</span>
-               <span className="text-text text-xs">42m elapsed</span>
-            </div>
-         </div>
-      </div>
-   );
 }
 
 const COLOR_PRESETS = ["#00dabd", "#00bbea", "#9b59b6", "#e91e63", "#e74c3c", "#e67e22", "#f1c40f", "#a3804f", "#517889"];

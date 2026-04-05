@@ -25,7 +25,7 @@ export default function SettingsCustomTab(_props: SettingsTabProps) {
    const customApplications = useStorage("custom-applications");
    const { setValue } = useStorageStore();
 
-   const { getFormattedDuration } = useElapsedTime(targetActivity?.createdAt);
+   const { getFormattedDuration } = useElapsedTime(targetActivity?.startedAt);
 
    const applicationOptions = useMemo(
       () =>

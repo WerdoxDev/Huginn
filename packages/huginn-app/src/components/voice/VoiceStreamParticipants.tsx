@@ -16,7 +16,7 @@ export function VoiceStreamParticipants(props: { mediaSource?: MediaSource }) {
          {users.map((x) => (
             <Tooltip key={x.id}>
                <Tooltip.Trigger>
-                  <UserAvatar userId={x.id} avatarHash={x.avatar} hideStatus size="1rem" />
+                  <UserAvatar userId={x.id} avatarHash={x.avatar} hideStatus size={1} />
                </Tooltip.Trigger>
                <Tooltip.Content>{x.displayName}</Tooltip.Content>
             </Tooltip>

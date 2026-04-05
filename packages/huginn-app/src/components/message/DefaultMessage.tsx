@@ -95,7 +95,7 @@ export default function DefaultMessage() {
                   className="cursor-pointer rounded-full"
                   onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
                >
-                  <UserAvatar userId={context.message.authorId} avatarHash={author?.avatar} statusSize="0.5rem" size="1.75rem" />
+                  <UserAvatar userId={context.message.authorId} avatarHash={author?.avatar} size={1.75} />
                </button>
                <button
                   type="button"
@@ -160,7 +160,7 @@ function ReplyRenderer(props: { referencedMessage: AppMessage }) {
          <IconMingcuteCornerUpRightLine className="size-7 shrink-0 text-white/50 group-hover/reply:text-white" />
          <div className="mb-2 flex items-center gap-x-2 overflow-hidden">
             <div className="flex items-center gap-x-1">
-               <UserAvatar userId={user.id} avatarHash={user.avatar} size="1.25rem" hideStatus />
+               <UserAvatar userId={user.id} avatarHash={user.avatar} size={1.25} hideStatus />
                <div className="text-text/80 text-xs">{user.displayName}</div>
             </div>
             {props.referencedMessage.content && <div className="overflow-hidden text-sm text-white">{children}</div>}

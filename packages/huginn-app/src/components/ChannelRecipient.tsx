@@ -55,7 +55,7 @@ export default function ChannelRecipient(props: { channelId: Snowflake; isOwner:
             <div
                className={clsx(
                   presence && presence.status !== "offline" ? "text-text/70" : "text-text/30",
-                  "group-hover/recipient:text-text group-active/recipient:text-text group-data-context/recipient:text-text text-sm",
+                  "group-hover/recipient:text-text group-active/recipient:text-text group-data-context/recipient:text-text truncate text-sm",
                )}
             >
                {props.recipient.displayName}

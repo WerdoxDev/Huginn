@@ -11,6 +11,7 @@ import { useUser, useUserProfile } from "@hooks/api-hooks/userHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
 import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship";
+import { useElapsedTime } from "@hooks/useElapsedTime";
 import { ActivityType, RelationshipType } from "@huginn/shared";
 import { getRelationshipsOptions, getUserBannerOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
@@ -49,14 +50,21 @@ function ProfileBanner(props: { userId: string; banner?: string | null; bannerCo
 function ActivityCard(props: { userId: string; accentColor: string }) {
    const presence = usePresence(props.userId);
    const activity = presence?.activities?.[0];
+   const { getFormattedDuration } = useElapsedTime(activity?.startedAt);
 
    if (!activity) return null;
 
-   const elapsed = activity.startedAt ? Math.floor((Date.now() - activity.startedAt) / 60000) : undefined;
-   const elapsedText = elapsed !== undefined ? (elapsed < 60 ? `${elapsed}m` : `${Math.floor(elapsed / 60)}h ${elapsed % 60}m`) : undefined;
    const type = activity.type === ActivityType.PLAYING ? "Playing a Game" : "Listening";
 
-   return <ProfileActivity type={type} name={activity.name} iconUrl={activity.iconUrl} elapsedText={elapsedText} accentColor={props.accentColor} />;
+   return (
+      <ProfileActivity
+         type={type}
+         name={activity.name}
+         iconUrl={activity.iconUrl}
+         elapsedText={getFormattedDuration()}
+         accentColor={props.accentColor}
+      />
+   );
 }
 
 function ProfileContent(props: { userId: string }) {
@@ -73,7 +81,7 @@ function ProfileContent(props: { userId: string }) {
 
    const bannerColor = user.bannerColor;
    const hasBanner = !!user.banner || !!bannerColor;
-   const accentColor = user.accentColor ?? "";
+   const accentColor = user.accentColor ?? "transparent";
    const isSelf = client?.currentUser?.id === props.userId;
 
    const relationship = useMemo(() => relationships?.find((r) => r.userId === props.userId), [relationships, props.userId]);
@@ -118,14 +126,14 @@ function ProfileContent(props: { userId: string }) {
 
          <div className={clsx("flex items-start gap-x-4 px-5 pb-5", hasBanner ? "pt-0" : "pt-5")}>
             <div className="flex flex-col gap-y-2">
-               <div className={clsx("relative z-10 shrink-0", hasBanner ? "-mt-11" : "mt-0")}>
+               <div className={clsx("relative z-10 w-max shrink-0", hasBanner ? "-mt-11" : "mt-0")}>
                   <div className="border-surface-alt rounded-full border-4">
-                  <UserAvatar userId={user?.id} avatarHash={user?.avatar} size="5.5rem" statusSize="1.25rem" />
+                     <UserAvatar userId={user?.id} avatarHash={user?.avatar} size={5.5} />
                   </div>
                </div>
-               <div className="relative flex min-w-0 flex-col pl-1">
-                  <div className="truncate text-lg font-semibold text-white">{user?.displayName}</div>
-                  <div className="text-text truncate text-sm">{user?.username}</div>
+               <div className="flex max-w-60 flex-col pl-1">
+                  <div className="text-lg font-semibold wrap-break-word whitespace-break-spaces text-white">{user?.displayName}</div>
+                  <div className="text-sm wrap-break-word whitespace-break-spaces text-white">{user?.username}</div>
                   {/* {user && <ProfileBadges badges={profile.badges} />} */}
                </div>
             </div>

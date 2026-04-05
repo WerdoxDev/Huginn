@@ -20,6 +20,12 @@ export default function ChannelName() {
 
    const otherUsers = useMemo(() => recipients.filter((x) => x.id !== user?.id), [recipients]);
 
+   function handleClick() {
+      if (channel?.type === ChannelType.DM && otherUsers[0]) {
+         updateModals({ userProfile: { isOpen: true, userId: otherUsers[0].id } });
+      }
+   }
+
    if (!channel) return;
 
    const isDM = channel.type === ChannelType.DM;
@@ -27,11 +33,7 @@ export default function ChannelName() {
    return (
       <div className="flex items-center">
          {isDM ? (
-            <button
-               type="button"
-               className="cursor-pointer rounded-full"
-               onClick={() => otherUsers[0] && updateModals({ userProfile: { isOpen: true, userId: otherUsers[0].id } })}
-            >
+            <button type="button" className="cursor-pointer rounded-full" onClick={handleClick}>
                <UserAvatar userId={otherUsers[0]?.id} avatarHash={otherUsers[0]?.avatar} className="mr-3" />
             </button>
          ) : (
@@ -40,11 +42,7 @@ export default function ChannelName() {
          <Tooltip>
             <div className="flex flex-col justify-center">
                {isDM ? (
-                  <button
-                     type="button"
-                     className="text-text cursor-pointer hover:underline"
-                     onClick={() => otherUsers[0] && updateModals({ userProfile: { isOpen: true, userId: otherUsers[0].id } })}
-                  >
+                  <button type="button" className="text-text cursor-pointer hover:underline" onClick={handleClick}>
                      {channel.name}
                   </button>
                ) : (

@@ -1,3 +1,4 @@
+import UserProfilePreview from "@components/profile/UserProfilePreview";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship";
 import { useContextMenu } from "@stores/contextMenuStore";
@@ -15,6 +16,8 @@ export default function RelationshipContextMenu() {
 
    return (
       <>
+         <UserProfilePreview userId={data.user.id} />
+         <ContextMenu.Divider />
          <ContextMenu.Item
             label="View Profile"
             onClick={() => {

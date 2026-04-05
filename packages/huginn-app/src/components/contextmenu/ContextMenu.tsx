@@ -1,3 +1,4 @@
+import LoadingIcon from "@components/LoadingIcon";
 import {
    autoUpdate,
    FloatingFocusManager,
@@ -198,7 +199,9 @@ function Menu(props: ContextMenuProps & HTMLProps<HTMLButtonElement>) {
                getItemProps,
                setHasFocusInside,
                isOpen,
-               setBusy: (busy) => { busyRef.current = busy; },
+               setBusy: (busy) => {
+                  busyRef.current = busy;
+               },
             }}
          >
             <FloatingList elementsRef={elementsRef} labelsRef={labelsRef}>
@@ -271,11 +274,7 @@ function Item(props: ContextMenuItemProps & React.ButtonHTMLAttributes<HTMLButto
          })}
       >
          {props.label}
-         {isLoading ? (
-            <span className="inline-block size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-         ) : (
-            props.children
-         )}
+         {isLoading ? <LoadingIcon /> : props.children}
       </button>
    );
 }

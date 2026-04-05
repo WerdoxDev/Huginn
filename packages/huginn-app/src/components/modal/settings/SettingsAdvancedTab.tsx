@@ -365,7 +365,7 @@ function PresetItem(props: { name: string; isSelected: boolean; isPending?: bool
    return (
       <div
          className={clsx(
-            "flex overflow-hidden rounded-md",
+            "transition-ring flex overflow-hidden rounded-md",
             props.isSelected && (props.isPending ? "ring-caution-600 ring" : "ring-positive-600 ring"),
          )}
       >

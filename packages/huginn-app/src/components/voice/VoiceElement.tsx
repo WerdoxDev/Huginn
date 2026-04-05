@@ -131,7 +131,7 @@ export default function VoiceElement(props: {
          {!isCamera && !isAudioStream && !isScreenShare && !isPreview && (
             <div className={clsx("p-5", props.isRinging && "animate-pulse", props.isGridView && "w-max")}>
                <div>
-                  <UserAvatar userId={props.userId} avatarHash={user?.avatar} size={props.isGridView ? "5rem" : "4rem"} hideStatus />
+                  <UserAvatar userId={props.userId} avatarHash={user?.avatar} size={props.isGridView ? 5 : 4} hideStatus />
                </div>
             </div>
          )}

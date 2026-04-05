@@ -12,8 +12,7 @@ import LoadingIcon from "./LoadingIcon";
 export default function UserAvatar(props: {
    userId: Snowflake;
    avatarHash?: string | null;
-   size?: string;
-   statusSize?: string;
+   size?: number;
    className?: string;
    hideStatus?: boolean;
    test?: boolean;
@@ -53,36 +52,46 @@ export default function UserAvatar(props: {
       }
    }, [props.avatarHash]);
 
-   const { size = "2.25rem", statusSize = "0.75rem", className } = props;
+   const { size = 2.25, className } = props;
+   const statusSize = size / 4;
+   const statusCenter = statusSize / 2;
+   const cutoutRadius = statusCenter + size / 18;
+
+   // Radial gradient mask that punches a transparent hole where the status indicator sits
+   const maskGradient = `radial-gradient(circle ${cutoutRadius}rem at calc(100% - ${statusCenter}rem) calc(100% - ${statusCenter}rem), transparent 100%, black 100%)`;
+   const maskStyle = !props.hideStatus ? { maskImage: maskGradient, WebkitMaskImage: maskGradient } : undefined;
+
    return (
-      <div className={clsx("relative shrink-0", className)} style={{ width: size, height: size }}>
-         {!isLoaded && props.avatarHash && (
-            <div className="bg-primary-900 absolute inset-0 flex items-center justify-center rounded-full">
-               <LoadingIcon className="size-5" />
-            </div>
-         )}
-         {props.avatarHash ? (
-            <img
-               ref={imgRef}
-               onLoad={onLoad}
-               onError={onError}
-               alt="user-avatar"
-               src={client?.cdn.avatar(props.userId, props.avatarHash)}
-               loading="lazy"
-               className="h-full w-full rounded-full object-cover"
-            />
-         ) : !hasError && !props.avatarHash && !isLoaded ? (
-            <div className="bg-primary-700 h-full w-full rounded-full" />
-         ) : (
-            hasError && <div className="bg-negative-400 text-text flex h-full w-full items-center justify-center rounded-full font-bold">!</div>
-         )}
+      <div className={clsx("relative shrink-0", className)} style={{ width: `${size}rem`, height: `${size}rem` }}>
+         <div className="relative h-full w-full" style={presence && presence.status !== "offline" ? maskStyle : undefined}>
+            {!isLoaded && props.avatarHash && (
+               <div className="bg-primary-900 absolute inset-0 flex items-center justify-center rounded-full">
+                  <LoadingIcon className="size-5" />
+               </div>
+            )}
+            {props.avatarHash ? (
+               <img
+                  ref={imgRef}
+                  onLoad={onLoad}
+                  onError={onError}
+                  alt="user-avatar"
+                  src={client?.cdn.avatar(props.userId, props.avatarHash)}
+                  loading="lazy"
+                  className="h-full w-full rounded-full object-cover"
+               />
+            ) : !hasError && !props.avatarHash && !isLoaded ? (
+               <div className="bg-primary-700 h-full w-full rounded-full" />
+            ) : (
+               hasError && <div className="bg-negative-400 text-text flex h-full w-full items-center justify-center rounded-full font-bold">!</div>
+            )}
+         </div>
          {!props.hideStatus && (
             <div
                className={clsx(
                   "absolute right-0 bottom-0 rounded-full",
                   presence?.status && presence.status !== "offline" ? PRESENCE_STATUS_MAP[presence.status].color : "bg-transparent",
                )}
-               style={{ width: statusSize, height: statusSize }}
+               style={{ width: `${statusSize}rem`, height: `${statusSize}rem` }}
             />
          )}
       </div>
