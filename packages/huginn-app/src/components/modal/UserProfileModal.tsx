@@ -11,8 +11,7 @@ import { useUser, useUserProfile } from "@hooks/api-hooks/userHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
 import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship";
-import { useElapsedTime } from "@hooks/useElapsedTime";
-import { ActivityType, RelationshipType } from "@huginn/shared";
+import { RelationshipType } from "@huginn/shared";
 import { getRelationshipsOptions, getUserBannerOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
@@ -50,21 +49,10 @@ function ProfileBanner(props: { userId: string; banner?: string | null; bannerCo
 function ActivityCard(props: { userId: string; accentColor: string }) {
    const presence = usePresence(props.userId);
    const activity = presence?.activities?.[0];
-   const { getFormattedDuration } = useElapsedTime(activity?.startedAt);
 
    if (!activity) return null;
 
-   const type = activity.type === ActivityType.PLAYING ? "Playing a Game" : "Listening";
-
-   return (
-      <ProfileActivity
-         type={type}
-         name={activity.name}
-         iconUrl={activity.iconUrl}
-         elapsedText={getFormattedDuration()}
-         accentColor={props.accentColor}
-      />
-   );
+   return <ProfileActivity activity={activity} accentColor={props.accentColor} />;
 }
 
 function ProfileContent(props: { userId: string }) {

@@ -70,16 +70,16 @@ const tabs: SettingsTab[] = [
       auth: true,
       children: [
          {
-            name: "submissions",
-            text: "Submission",
-            icon: <IconMingcuteChecksFill />,
-            component: SettingsSubmissionTab,
-         },
-         {
-            name: "custom",
-            text: "Custom",
+            name: "registered-apps",
+            text: "Registered Apps",
             icon: <IconMingcuteEmptyBoxFill />,
             component: SettingsCustomTab,
+         },
+         {
+            name: "contributions",
+            text: "Contributions",
+            icon: <IconMingcuteChecksFill />,
+            component: SettingsSubmissionTab,
          },
       ],
    },

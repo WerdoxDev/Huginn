@@ -184,13 +184,38 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
       }
 
       if (presets.length === 1 && !pendingNewPresetName) return;
-      if (selectedPreset === name) {
-         loadPreset(presets.find((p) => p.name !== name)?.name ?? "");
-      }
 
-      await setStorageValue("settings", {
-         ...settings,
-         hostnamePresets: presets.filter((p) => p.name !== name),
+      updateModals({
+         info: {
+            isOpen: true,
+            status: "info",
+            title: "Delete Preset",
+            text: `Are you sure you want to delete "${name}"?`,
+            isClosable: true,
+            action: {
+               cancel: {
+                  text: "Cancel",
+                  callback: () => {
+                     updateModals({ info: { isOpen: false } });
+                  },
+               },
+               confirm: {
+                  text: "Delete",
+                  callback: async () => {
+                     if (selectedPreset === name) {
+                        loadPreset(presets.find((p) => p.name !== name)?.name ?? "");
+                     }
+
+                     await setStorageValue("settings", {
+                        ...settings,
+                        hostnamePresets: presets.filter((p) => p.name !== name),
+                     });
+
+                     updateModals({ info: { isOpen: false } });
+                  },
+               },
+            },
+         },
       });
    }
 

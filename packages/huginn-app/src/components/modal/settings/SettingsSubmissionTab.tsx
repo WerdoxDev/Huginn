@@ -2,12 +2,14 @@ import type { ProcessInfo } from "native-addon";
 
 import LoadingButton from "@components/button/LoadingButton";
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
+import { ProfileActivity } from "@components/profile/ProfileComponents";
 import Tooltip from "@components/tooltip/Tooltip";
 import { useSubmitKnownApplication } from "@hooks/mutations/useSubmitKnownApplication";
 import { JsonCode } from "@huginn/shared";
 import { APIMessages } from "@lib/error-messages";
 import { isWorthyHuginnError } from "@lib/utils";
 import { useModals } from "@stores/modalsStore";
+import { usePresenceStore } from "@stores/presenceStore";
 import { useStorage } from "@stores/storageStore";
 import { useThisUser } from "@stores/userStore";
 import { useHuginnWindow } from "@stores/windowStore";
@@ -24,8 +26,11 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
    const [selectedApplication, setSelectedApplication] = useState<DropdownItem>();
    const submitMutation = useSubmitKnownApplication();
    const { user } = useThisUser();
+   const { thisPresence } = usePresenceStore();
    const { updateModals } = useModals();
    const huginnWindow = useHuginnWindow();
+   const targetActivity = thisPresence.activities[0];
+   const accentColor = user?.accentColor ?? "transparent";
 
    const applicationOptions = useMemo(
       () =>
@@ -131,60 +136,76 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
    }
 
    return (
-      <div className="flex flex-col gap-y-5">
-         {huginnWindow.environment === "desktop" && (
-            <div className="flex max-w-md flex-col">
-               <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Activity Submission</div>
-               <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3">
-                  <div className="text-text/80 text-sm">
-                     Not seeing what you're doing? Try adding it here. And if your application gets verified, We'll show your contribution!
+      <div className="flex w-full flex-col items-center">
+         <div className="flex w-full max-w-md flex-col gap-y-5">
+            <div className="flex flex-col">
+               <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Current Activity</div>
+               {!targetActivity ? (
+                  <div className="bg-surface-alt rounded-lg p-3">
+                     <div className="text-text/80">No activities detected...</div>
                   </div>
-                  <HuginnDropdown onChange={onApplicationChanged} value={selectedApplication}>
-                     <HuginnDropdown.List className="bg-surface-deep w-full rounded-md!" placeholder="Select an application">
-                        <HuginnDropdown.ItemsWrapper className="w-(--button-width)">
-                           {applicationOptions.map((x) => (
-                              <HuginnDropdown.Item key={x.value} item={x} />
-                           ))}
-                        </HuginnDropdown.ItemsWrapper>
-                     </HuginnDropdown.List>
-                  </HuginnDropdown>
-                  <LoadingButton
-                     isLoading={submitMutation.isPending}
-                     onClick={submit}
-                     color="primary"
-                     className="h-8"
-                     disabled={!selectedApplication}
-                  >
-                     Submit
-                  </LoadingButton>
-               </div>
-            </div>
-         )}
-         <div className="flex max-w-sm flex-col">
-            <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Your Contributions</div>
-            <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3">
-               {contributedApplications.length === 0 ? (
-                  <div className="text-text/80">No applications contributed...</div>
                ) : (
-                  contributedApplications.map((x) => (
-                     <div className="flex items-center gap-x-2" key={x.id}>
-                        <div className="text-white">{x.names[0]}</div>
-                        {x.names.length > 1 && (
-                           <Tooltip>
-                              <Tooltip.Trigger className="bg-surface rounded-md p-1">
-                                 <IconMingcuteMore1Fill className="text-text size-5" />
-                              </Tooltip.Trigger>
-                              <Tooltip.Content>
-                                 {x.names.slice(1).map((y) => (
-                                    <div className="text-white">{y}</div>
-                                 ))}
-                              </Tooltip.Content>
-                           </Tooltip>
-                        )}
-                        <div className="ml-auto text-white/70">{moment(x.createdAt).format("DD.MM.YYYY")}</div>
-                     </div>
-                  ))
+                  <ProfileActivity
+                     activity={targetActivity}
+                     accentColor={accentColor}
+                     className="bg-surface-alt"
+                  />
                )}
+            </div>
+            {huginnWindow.environment === "desktop" && (
+               <div className="flex flex-col">
+                  <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Submit Application</div>
+                  <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3">
+                     <div className="text-text/80 text-sm">
+                        Not seeing what you're doing? Try adding it here. And if your application gets verified, we'll show your contribution!
+                     </div>
+                     <HuginnDropdown onChange={onApplicationChanged} value={selectedApplication}>
+                        <HuginnDropdown.List className="bg-surface-deep w-full rounded-md!" placeholder="Select an application">
+                           <HuginnDropdown.ItemsWrapper className="w-(--button-width)">
+                              {applicationOptions.map((x) => (
+                                 <HuginnDropdown.Item key={x.value} item={x} />
+                              ))}
+                           </HuginnDropdown.ItemsWrapper>
+                        </HuginnDropdown.List>
+                     </HuginnDropdown>
+                     <LoadingButton
+                        isLoading={submitMutation.isPending}
+                        onClick={submit}
+                        color="primary"
+                        className="h-8"
+                        disabled={!selectedApplication}
+                     >
+                        Submit
+                     </LoadingButton>
+                  </div>
+               </div>
+            )}
+            <div className="flex flex-col">
+               <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Your Contributions</div>
+               <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3">
+                  {contributedApplications.length === 0 ? (
+                     <div className="text-text/80">No applications contributed...</div>
+                  ) : (
+                     contributedApplications.map((x) => (
+                        <div className="flex items-center gap-x-2" key={x.id}>
+                           <div className="text-white">{x.names[0]}</div>
+                           {x.names.length > 1 && (
+                              <Tooltip>
+                                 <Tooltip.Trigger className="bg-surface rounded-md p-1">
+                                    <IconMingcuteMore1Fill className="text-text size-5" />
+                                 </Tooltip.Trigger>
+                                 <Tooltip.Content>
+                                    {x.names.slice(1).map((y) => (
+                                       <div className="text-white">{y}</div>
+                                    ))}
+                                 </Tooltip.Content>
+                              </Tooltip>
+                           )}
+                           <div className="ml-auto text-white/70">{moment(x.createdAt).format("DD.MM.YYYY")}</div>
+                        </div>
+                     ))
+                  )}
+               </div>
             </div>
          </div>
       </div>

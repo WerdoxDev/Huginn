@@ -1,6 +1,9 @@
 import type { ReactNode } from "react";
 
 import HuginnLabel from "@components/HuginnLabel";
+import { useElapsedTime } from "@hooks/useElapsedTime";
+import { type Activity, ActivityType } from "@huginn/shared";
+import clsx from "clsx";
 
 export function ProfileAboutMe(props: { accentColor: string; headerRight?: ReactNode; children: ReactNode }) {
    return (
@@ -14,23 +17,35 @@ export function ProfileAboutMe(props: { accentColor: string; headerRight?: React
    );
 }
 
-export function ProfileActivity(props: { type: string; name: string; iconUrl?: string | null; elapsedText?: string; accentColor: string }) {
+function getActivityTypeLabel(type: ActivityType): string {
+   return type === ActivityType.PLAYING ? "Playing a Game" : "Listening";
+}
+
+export function ProfileActivity(props: {
+   activity: Pick<Activity, "type" | "name" | "iconUrl" | "startedAt">;
+   accentColor: string;
+   className?: string;
+}) {
+   const { activity } = props;
+   const typeLabel = getActivityTypeLabel(activity.type);
+   const { getFormattedDuration } = useElapsedTime(activity.startedAt);
+
    return (
-      <div className="bg-surface rounded-md p-3" style={{ borderColor: props.accentColor }}>
-         <HuginnLabel className="text-tiny">{props.type}</HuginnLabel>
+      <div className={clsx("bg-surface rounded-md p-3", props.className)} style={{ borderColor: props.accentColor }}>
+         <HuginnLabel className="text-tiny">{typeLabel}</HuginnLabel>
          <div className="flex items-center gap-x-3">
-            {props.iconUrl ? (
-               <img src={props.iconUrl} className="size-10 rounded-lg" alt={props.name} />
+            {activity.iconUrl ? (
+               <img src={activity.iconUrl} className="size-10 rounded-lg" alt={activity.name} />
             ) : (
                <div className="flex size-10 items-center justify-center rounded-lg" style={{ backgroundColor: `${props.accentColor}33` }}>
                   <IconMingcuteGame2Fill className="size-5" style={{ color: props.accentColor }} />
                </div>
             )}
             <div className="flex flex-col">
-               <div className="truncate text-sm font-semibold text-white">{props.name}</div>
+               <div className="truncate text-sm font-semibold text-white">{activity.name}</div>
                <div className="text-positive-100 flex items-center gap-x-1 text-xs">
                   <IconMingcuteGame2Fill />
-                  <span>{props.elapsedText}</span>
+                  <span>{getFormattedDuration()}</span>
                </div>
             </div>
          </div>

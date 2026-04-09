@@ -9,7 +9,7 @@ import { useUserProfile } from "@hooks/api-hooks/userHooks";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useFileDialog } from "@hooks/useFileDialog";
 import { useIsOAuth } from "@hooks/useIsOAuth";
-import { CONSTANTS, type APIPatchCurrentUserJSONBody } from "@huginn/shared";
+import { CONSTANTS, ActivityType, type APIPatchCurrentUserJSONBody } from "@huginn/shared";
 import { getUserAvatarOptions, getUserBannerOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
@@ -312,7 +312,10 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
                      )
                   )}
 
-                  <ProfileActivity type="Playing a Game" name="Huginn" elapsedText="42m" accentColor={accentColor} />
+                  <ProfileActivity
+                     activity={{ type: ActivityType.PLAYING, name: "Huginn", startedAt: Date.now() - 42 * 60 * 1000 }}
+                     accentColor={accentColor}
+                  />
 
                   <div className="flex items-center gap-x-2">
                      {isEditing ? (
