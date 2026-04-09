@@ -6,7 +6,7 @@ import { usePrevious } from "@hooks/usePrevious";
 import { getFirstChildClosestToBottom, getFirstChildClosestToTop } from "@lib/utils";
 import { useChannelStore, type SavedScrollState } from "@stores/channelStore";
 import { useThisUser } from "@stores/userStore";
-import { type RefObject, useEffect, useLayoutEffect, useRef } from "react";
+import { type RefObject, useCallback, useEffect, useLayoutEffect, useRef } from "react";
 
 import type { AppMessage, ProcessedMessage } from "@/types";
 
@@ -50,30 +50,80 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
    }>(null);
    const lastDirection = useRef<"up" | "down" | "none">("none");
    const isResizing = useRef(false);
+   const suppressInfiniteFetchRef = useRef(false);
+   const smoothScrollCleanupRef = useRef<(() => void) | undefined>(undefined);
 
    function scrollDown() {
       if (!scrollRef.current) return;
       scrollRef.current.scrollTo(0, scrollRef.current.scrollHeight);
    }
 
-   function scrollIntoViewMinimal(element: HTMLElement) {
-      if (!scrollRef.current) return;
+   const startSmoothScrollFetchSuppression = useCallback(() => {
+      smoothScrollCleanupRef.current?.();
+      suppressInfiniteFetchRef.current = true;
 
-      const rect = element.getBoundingClientRect();
-      const containerRect = scrollRef.current.getBoundingClientRect();
-
-      if (rect.top < containerRect.top) {
-         scrollRef.current.scrollTo({
-            top: scrollRef.current.scrollTop + rect.top - containerRect.top - 10,
-            behavior: "instant",
-         });
-      } else if (rect.bottom > containerRect.bottom) {
-         scrollRef.current.scrollTo({
-            top: scrollRef.current.scrollTop + rect.bottom - containerRect.bottom + 10,
-            behavior: "instant",
-         });
+      const scroller = scrollRef.current;
+      if (!scroller) {
+         suppressInfiniteFetchRef.current = false;
+         return;
       }
-   }
+
+      let timeoutId: number | undefined;
+
+      const cleanup = () => {
+         if (timeoutId !== undefined) {
+            window.clearTimeout(timeoutId);
+         }
+
+         scroller.removeEventListener("scroll", onScrollSettling);
+         timeoutId = undefined;
+         suppressInfiniteFetchRef.current = false;
+
+         if (smoothScrollCleanupRef.current === cleanup) {
+            smoothScrollCleanupRef.current = undefined;
+         }
+      };
+
+      const onScrollSettling = () => {
+         if (timeoutId !== undefined) {
+            window.clearTimeout(timeoutId);
+         }
+         timeoutId = window.setTimeout(cleanup, 300);
+      };
+
+      smoothScrollCleanupRef.current = cleanup;
+      scroller.addEventListener("scroll", onScrollSettling, { passive: true });
+      onScrollSettling();
+   }, []);
+
+   const scrollToMessage = useCallback(
+      (messageId: Snowflake, behavior: ScrollBehavior = "smooth") => {
+         const messageElement = document.getElementById(messageId);
+         if (!messageElement) return false;
+
+         if (behavior === "smooth") {
+            startSmoothScrollFetchSuppression();
+         }
+
+         messageElement.scrollIntoView({ behavior, block: "center" });
+         return true;
+      },
+      [startSmoothScrollFetchSuppression],
+   );
+
+   const scrollToBottom = useCallback(
+      (behavior: ScrollBehavior = "smooth") => {
+         if (!scrollRef.current) return false;
+
+         if (behavior === "smooth") {
+            startSmoothScrollFetchSuppression();
+         }
+
+         scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior });
+         return true;
+      },
+      [startSmoothScrollFetchSuppression],
+   );
 
    function saveLastSeenMessage() {
       if (!scrollRef.current || !listRef.current) return;
@@ -156,6 +206,9 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
       const ghostBottomHeight = options.ghostBottomRef.current?.offsetHeight ?? 0;
       // const ghostTopHeight = 0;
       // const ghostBottomHeight = 0;
+      if (suppressInfiniteFetchRef.current) {
+         return;
+      }
 
       if (scrollRef.current.scrollTop <= TOP_SCROLL_OFFSET + ghostTopHeight && !options.isFetchingPreviousPage && options.hasPreviousPage) {
          lastDirection.current = "up";
@@ -294,5 +347,11 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
       };
    }, []);
 
-   return { scrollRef, listRef, setRef, onScroll };
+   useEffect(() => {
+      return () => {
+         smoothScrollCleanupRef.current?.();
+      };
+   }, []);
+
+   return { scrollRef, listRef, setRef, onScroll, scrollToMessage, scrollToBottom };
 }

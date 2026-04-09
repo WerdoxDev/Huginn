@@ -2,7 +2,7 @@ import UserAvatar from "@components/UserAvatar";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useUser } from "@hooks/api-hooks/userHooks";
 import { useMessageRenderer } from "@hooks/useMessageRenderer";
-import { clamp, hasFlag, MessageFlags, MessageType } from "@huginn/shared";
+import { clamp, hasFlag, MessageFlags, MessageType, type Snowflake } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
@@ -36,6 +36,7 @@ export default function DefaultMessage() {
    const isSeparate = context.message.hasNewAuthor || context.message.hasNewMinute || context.message.hasNewDate || context.message.isReplyType;
    const isEditing = context.message.isEditing;
    const isReplying = context.message.isReplying;
+   const isJumpHighlighted = context.message.isJumpHighlighted;
    const isEdited = !context.message.isPreview && context.message.editedTimestamp !== null;
    const isPreview = context.message.isPreview;
    const error = isPreview ? context.message.error : undefined;
@@ -71,7 +72,8 @@ export default function DefaultMessage() {
          onContextMenu={(e) => open({ message: context.message }, e)}
          className={clsx(
             "group relative flex flex-col items-start p-2 pl-4 transition-colors duration-150",
-            isEditing || isReplying ? (isEditing ? "bg-positive-800/30" : "bg-primary-800/30") : "hover:bg-surface-alt",
+            isEditing || isReplying || isJumpHighlighted ? (isEditing ? "bg-positive-800/30" : "bg-primary-800/30") : "hover:bg-surface-alt",
+            isJumpHighlighted && "animate-pulse",
             (isSeparate || isLastAction) && "rounded-tr-lg",
             isNextSeparate && "rounded-br-lg",
             !isSeparate && !isLastAction && "py-0",
@@ -82,12 +84,12 @@ export default function DefaultMessage() {
          <div
             className={clsx(
                "absolute inset-y-0 left-0 h-full transition-[colors_width]",
-               isEditing || isReplying ? "w-1" : "w-0",
-               isEditing ? "bg-positive-400" : isReplying ? "bg-primary-400" : undefined,
+               isEditing || isReplying || isJumpHighlighted ? "w-1" : "w-0",
+               isEditing ? "bg-positive-400" : isReplying || isJumpHighlighted ? "bg-primary-400" : undefined,
             )}
          ></div>
          {error}
-         {referencedMessage && <ReplyRenderer referencedMessage={referencedMessage} />}
+         {referencedMessage && <ReplyRenderer referencedMessage={referencedMessage} onClick={context.onReferencedMessageClick} />}
          {(isSeparate || isLastAction) && (
             <div className="flex items-center gap-x-2">
                <button
@@ -139,7 +141,7 @@ export default function DefaultMessage() {
    );
 }
 
-function ReplyRenderer(props: { referencedMessage: AppMessage }) {
+function ReplyRenderer(props: { referencedMessage: AppMessage; onClick: (messageId: Snowflake) => void }) {
    const message = useMemo<AppMessage>(
       () => ({
          ...props.referencedMessage,
@@ -156,7 +158,10 @@ function ReplyRenderer(props: { referencedMessage: AppMessage }) {
    }
 
    return (
-      <div className="group/reply flex w-full cursor-pointer items-center gap-x-1 pl-2 select-none">
+      <div
+         className="group/reply flex w-full cursor-pointer items-center gap-x-1 pl-2 select-none"
+         onClick={() => props.onClick(props.referencedMessage.id)}
+      >
          <IconMingcuteCornerUpRightLine className="size-7 shrink-0 text-white/50 group-hover/reply:text-white" />
          <div className="mb-2 flex items-center gap-x-2 overflow-hidden">
             <div className="flex items-center gap-x-1">

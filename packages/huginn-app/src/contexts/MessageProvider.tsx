@@ -12,6 +12,7 @@ export const MessageContext = createContext<{
    nextMessage?: ProcessedMessage;
    lastMessage?: ProcessedMessage;
    onVisibilityChanged: (messageId: Snowflake, visible: boolean) => void;
+   onReferencedMessageClick: (messageId: Snowflake) => void;
    ref: React.RefObject<HTMLLIElement | null>;
 }>(undefined!);
 

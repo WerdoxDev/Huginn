@@ -73,7 +73,7 @@ const GHOST_GROUPS: GhostGroupDef[] = [
    },
 ];
 
-function GhostMessageGroup(props: { group: GhostGroupDef; addTopMargin: boolean }) {
+function GhostMessageGroup(props: { group: GhostGroupDef; addTopMargin: boolean; addBottomMargin: boolean }) {
    const bubbleRefs = useRef<(HTMLDivElement | null)[]>([]);
    const [widths, setWidths] = useState<number[]>([]);
 
@@ -102,6 +102,7 @@ function GhostMessageGroup(props: { group: GhostGroupDef; addTopMargin: boolean 
                      !isFirst && "py-0",
                      !isLast && "pb-0",
                      isFirst && props.addTopMargin && "mt-1.5",
+                     isLast && props.addBottomMargin && "mb-4",
                   )}
                >
                   {isFirst && (
@@ -171,7 +172,7 @@ export default function GhostMessages(props: { position: "top" | "bottom" }) {
    return (
       <div className="pointer-events-none shrink-0">
          {groups.map((group, i) => (
-            <GhostMessageGroup key={i} group={group} addTopMargin={i > 0} />
+            <GhostMessageGroup key={i} group={group} addTopMargin={i > 0} addBottomMargin={i === groups.length - 1} />
          ))}
       </div>
    );

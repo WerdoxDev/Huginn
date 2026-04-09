@@ -6,11 +6,12 @@ import { useMessageScroll } from "@hooks/useMessageScroll";
 import { useVisibleMessages } from "@hooks/useVisibleMessages";
 import { MessageType, type Snowflake } from "@huginn/shared";
 import { getMessagesOptions } from "@lib/queries";
+import { convertToAppMessage } from "@lib/utils";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
-import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseInfiniteQuery, type InfiniteData } from "@tanstack/react-query";
 import moment from "moment";
-import { useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { AppMessage, ProcessedMessage } from "@/types";
 
@@ -33,6 +34,7 @@ function processMessages(
    firstUnreadMessageId?: Snowflake,
    currentEditingMessageId?: Snowflake,
    currentReplyingMessageId?: Snowflake,
+   highlightedMessageId?: Snowflake,
 ): ProcessedMessage[] {
    return messages.map((message, i) => {
       const lastMessage: AppMessage | undefined = messages[i - 1];
@@ -53,6 +55,7 @@ function processMessages(
          isUnread: firstUnreadMessageId === message.id,
          isEditing: currentEditingMessageId === message.id,
          isReplying: currentReplyingMessageId === message.id,
+         isJumpHighlighted: highlightedMessageId === message.id,
       };
    });
 }
@@ -67,19 +70,31 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
    const { currentEditingMessageId, currentReplyingMessageId } = useChannelStore();
    const { onMessageVisibilityChanged } = useVisibleMessages(props.channelId, props.messages);
+   const [highlightedMessageId, setHighlightedMessageId] = useState<Snowflake | undefined>(undefined);
 
    useMessageAcker(props.channelId, props.messages);
    const { firstUnreadMessageId } = useFirstUnreadMessage(props.channelId, props.messages);
 
    const processedMessages = useMemo<ProcessedMessage[]>(
-      () => processMessages(props.messages, hasPreviousPage, firstUnreadMessageId, currentEditingMessageId, currentReplyingMessageId),
-      [props.messages, props.channelId, firstUnreadMessageId, currentEditingMessageId, currentReplyingMessageId],
+      () =>
+         processMessages(
+            props.messages,
+            hasPreviousPage,
+            firstUnreadMessageId,
+            currentEditingMessageId,
+            currentReplyingMessageId,
+            highlightedMessageId,
+         ),
+      [props.messages, props.channelId, firstUnreadMessageId, currentEditingMessageId, currentReplyingMessageId, highlightedMessageId],
    );
 
    const ghostTopRef = useRef<HTMLDivElement>(null);
    const ghostBottomRef = useRef<HTMLDivElement>(null);
+   const pendingReferencedMessageId = useRef<Snowflake | undefined>(undefined);
+   const highlightTimeoutId = useRef<number | undefined>(undefined);
+   const pendingScrollToBottom = useRef(false);
 
-   const { scrollRef, listRef, setRef, onScroll } = useMessageScroll({
+   const { scrollRef, listRef, setRef, onScroll, scrollToMessage, scrollToBottom } = useMessageScroll({
       channelId: props.channelId,
       messages: props.messages,
       processedMessages,
@@ -93,6 +108,90 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       ghostTopRef,
       ghostBottomRef,
    });
+
+   const highlightMessage = useCallback((messageId: Snowflake) => {
+      if (highlightTimeoutId.current !== undefined) {
+         window.clearTimeout(highlightTimeoutId.current);
+      }
+
+      setHighlightedMessageId(messageId);
+      highlightTimeoutId.current = window.setTimeout(() => {
+         setHighlightedMessageId((current) => (current === messageId ? undefined : current));
+      }, 2000);
+   }, []);
+
+   const hasLatestMessageInList = useMemo(() => {
+      if (!currentChannel?.lastMessageId) {
+         return true;
+      }
+
+      return props.messages.some((message) => message.id === currentChannel.lastMessageId);
+   }, [currentChannel?.lastMessageId, props.messages]);
+
+   const onReferencedMessageClick = useCallback(
+      async (messageId: Snowflake) => {
+         if (scrollToMessage(messageId)) {
+            highlightMessage(messageId);
+            return;
+         }
+
+         pendingReferencedMessageId.current = messageId;
+
+         if (!client) {
+            pendingReferencedMessageId.current = undefined;
+            return;
+         }
+
+         const fetchedMessages = await client.channels.getMessages(props.channelId, 50, undefined, undefined, messageId);
+         const aroundMessages = fetchedMessages.map((message) => convertToAppMessage(message, "fetch"));
+
+         queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", props.channelId], {
+            pages: [aroundMessages],
+            pageParams: [{ before: "", after: "" }],
+         });
+      },
+      [client, highlightMessage, props.channelId, queryClient, scrollToMessage],
+   );
+
+   useEffect(() => {
+      const messageId = pendingReferencedMessageId.current;
+      if (!messageId) return;
+
+      if (scrollToMessage(messageId)) {
+         highlightMessage(messageId);
+      }
+      pendingReferencedMessageId.current = undefined;
+   }, [highlightMessage, props.messages, scrollToMessage]);
+
+   const onScrollToBottomClick = useCallback(async () => {
+      if (!client) {
+         return;
+      }
+
+      const latestMessages = await client.channels.getMessages(props.channelId, 50);
+      const convertedLatestMessages = latestMessages.map((message) => convertToAppMessage(message, "fetch"));
+
+      pendingScrollToBottom.current = true;
+      queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", props.channelId], {
+         pages: [convertedLatestMessages],
+         pageParams: [{ before: "", after: "" }],
+      });
+   }, [client, props.channelId, queryClient]);
+
+   useEffect(() => {
+      if (!pendingScrollToBottom.current) return;
+      if (!scrollToBottom()) return;
+
+      pendingScrollToBottom.current = false;
+   }, [props.messages, scrollToBottom]);
+
+   useEffect(() => {
+      return () => {
+         if (highlightTimeoutId.current !== undefined) {
+            window.clearTimeout(highlightTimeoutId.current);
+         }
+      };
+   }, []);
 
    return (
       <div className="relative h-full overflow-y-hidden">
@@ -128,6 +227,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
                         nextMessage={processedMessages[i + 1]}
                         lastMessage={processedMessages[i - 1]}
                         onVisibilityChanged={onMessageVisibilityChanged}
+                        onReferencedMessageClick={onReferencedMessageClick}
                      />
                   ))}
                </ol>
@@ -138,6 +238,15 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
                )}
             </div>
          </div>
+         {!hasLatestMessageInList && (
+            <button
+               type="button"
+               className="bg-surface-alt ring-primary-700 hover:bg-primary-800 hover:text-text text-text/80 absolute right-4 bottom-4 z-20 cursor-pointer rounded-full p-2 ring-1 transition-all"
+               onClick={onScrollToBottomClick}
+            >
+               <IconMingcuteDownFill className="size-5" />
+            </button>
+         )}
       </div>
    );
 }

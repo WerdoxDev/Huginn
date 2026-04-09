@@ -212,6 +212,7 @@ export type ProcessedMessage = AppMessage & {
    isUnread: boolean;
    isEditing: boolean;
    isReplying: boolean;
+   isJumpHighlighted: boolean;
 };
 
 export type MessageRendererProps = {
@@ -219,6 +220,7 @@ export type MessageRendererProps = {
    nextMessage?: ProcessedMessage;
    lastMessage?: ProcessedMessage;
    onVisibilityChanged: (messageId: Snowflake, visible: boolean) => void;
+   onReferencedMessageClick: (messageId: Snowflake) => void;
    ref: RefObject<HTMLLIElement | null>;
 };
 
