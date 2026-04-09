@@ -15,6 +15,7 @@ export default function BaseModal(props: {
    children?: ReactNode;
    renderChildren: ReactNode;
    backgroundClassName?: string;
+   headless?: boolean;
 }) {
    const { updateModals } = useModals();
 
@@ -38,7 +39,7 @@ export default function BaseModal(props: {
          <Dialog open={props.modal.isOpen} transition onClose={props.onClose} className="relative z-30 transition">
             <ModalBackground className={props.backgroundClassName} />
             <div className={clsx("fixed inset-0 top-6 z-10")}>
-               <div className="flex h-full w-full items-end justify-center pt-20 lg:items-center lg:py-20">
+               <div className={clsx("flex h-full w-full justify-center", !props.headless && "items-end pt-20 lg:items-center lg:py-20")}>
                   <ErrorBoundary fallback={null} onError={onError}>
                      {props.modal.isOpen && props.renderChildren}
                   </ErrorBoundary>
@@ -46,16 +47,5 @@ export default function BaseModal(props: {
             </div>
          </Dialog>
       </Suspense>
-   );
-}
-
-function ModalErrorComponent(props: { error: unknown }) {
-   const { resetBoundary } = useErrorBoundary();
-
-   // function handleClose() {}
-   return (
-      <div className="bg-surface rounded-lg p-10">
-         <ErrorComponent error={props.error} />
-      </div>
    );
 }

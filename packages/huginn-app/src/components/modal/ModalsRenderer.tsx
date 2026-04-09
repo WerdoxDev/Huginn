@@ -55,6 +55,7 @@ export default function ModalsRenderer() {
             modal={magnifiedImage}
             onClose={() => updateModals({ magnifiedImage: { isOpen: false } })}
             backgroundClassName="bg-black/70"
+            headless
          />
          <BaseModal renderChildren={<ScreenShareModal />} modal={screenShare} onClose={() => updateModals({ screenShare: { isOpen: false } })} />
          <BaseModal renderChildren={<StreamAudioModal />} modal={streamAudio} onClose={() => updateModals({ streamAudio: { isOpen: false } })} />
