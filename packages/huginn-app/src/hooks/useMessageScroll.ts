@@ -250,7 +250,13 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
 
    // Restore scroll position when entering a channel
    useLayoutEffect(() => {
-      if (options.messages.length === 0 || lastChannelId.current === options.channelId || !scrollRef.current) return;
+      if (lastChannelId.current === options.channelId || !scrollRef.current) return;
+
+      if (options.messages.length === 0) {
+         lastChannelId.current = options.channelId;
+         shouldAnchorToBottom.current = true;
+         return;
+      }
 
       const saved = savedScrolls.get(options.channelId);
       if (saved?.type === "position") {
