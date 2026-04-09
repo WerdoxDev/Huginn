@@ -30,10 +30,66 @@ export const messagesExtension = Prisma.defineExtension({
                throw e;
             }
          },
-         async getMessages<Args extends MessageArgs>(channelId: Snowflake, limit: number, before?: Snowflake, after?: Snowflake, args?: Args) {
+         async getMessages<Args extends MessageArgs>(
+            channelId: Snowflake,
+            limit: number,
+            before?: Snowflake,
+            after?: Snowflake,
+            around?: Snowflake,
+            args?: Args,
+         ) {
             const methodName = "message.getMessages";
             assertId(methodName, channelId);
             try {
+               if (around) {
+                  assertId(methodName, around);
+                  const aroundId = BigInt(around);
+                  const beforeCount = Math.max(Math.floor((limit - 1) / 2), 0);
+                  const afterCount = Math.max(limit - beforeCount - 1, 0);
+
+                  const beforeMessages =
+                     beforeCount === 0
+                        ? []
+                        : await prisma.message.findMany({
+                             where: {
+                                channelId: BigInt(channelId),
+                                deletedTimestamp: null,
+                                id: { lt: aroundId },
+                             },
+                             ...args,
+                             orderBy: { id: "desc" },
+                             take: beforeCount,
+                          });
+
+                  const aroundMessage = await prisma.message.findFirst({
+                     where: {
+                        channelId: BigInt(channelId),
+                        deletedTimestamp: null,
+                        id: aroundId,
+                     },
+                     ...args,
+                  });
+
+                  const afterMessages =
+                     afterCount === 0
+                        ? []
+                        : await prisma.message.findMany({
+                             where: {
+                                channelId: BigInt(channelId),
+                                deletedTimestamp: null,
+                                id: { gt: aroundId },
+                             },
+                             ...args,
+                             orderBy: { id: "asc" },
+                             take: afterCount,
+                          });
+
+                  const messages = [...beforeMessages.reverse(), ...(aroundMessage ? [aroundMessage] : []), ...afterMessages];
+
+                  assertObj(methodName, messages, DBErrorType.NULL_MESSAGE);
+                  return idFix(messages) as BigIntToString<Prisma.MessageGetPayload<Args>[]>;
+               }
+
                const cursor = after ?? before;
                const direction = after ? "forward" : before ? "backward" : "none";
 
