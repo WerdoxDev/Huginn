@@ -40,6 +40,7 @@ export const messagesExtension = Prisma.defineExtension({
          ) {
             const methodName = "message.getMessages";
             assertId(methodName, channelId);
+
             try {
                if (around) {
                   assertId(methodName, around);

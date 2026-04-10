@@ -185,14 +185,20 @@ export function updateAppMessage(
 }
 
 export function deleteAppMessage(queryClient: QueryClient, channelId: Snowflake, messageId: Snowflake) {
-   queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", channelId], (old) => {
-      if (!old) return undefined;
+   queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(
+      ["messages", channelId],
+      produce((draft) => {
+         if (!draft) return;
 
-      const newPages = old.pages.map((page) => page.filter((message) => message.id !== messageId));
+         for (const page of draft.pages) {
+            for (const message of page) {
+               if (!message.isPreview && message.type === MessageType.REPLY && message.referencedMessage?.id === messageId) {
+                  message.referencedMessage = null;
+               }
+            }
+         }
 
-      return {
-         ...old,
-         pages: newPages,
-      };
-   });
+         draft.pages = draft.pages.map((page) => page.filter((message) => message.id !== messageId));
+      }),
+   );
 }

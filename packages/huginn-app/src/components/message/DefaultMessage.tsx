@@ -12,7 +12,7 @@ import clsx from "clsx";
 import moment from "moment";
 import { useContext, useLayoutEffect, useMemo, useState } from "react";
 
-import type { AppMessage } from "@/types";
+import type { AppMessage, ProcessedAppMessage } from "@/types";
 
 import AttachmentUploadProgress from "./AttachmentUploadProgress";
 
@@ -51,7 +51,6 @@ export default function DefaultMessage() {
       context.nextMessage?.isReplyType;
 
    const isNewDate = context.message.hasNewDate || !context.lastMessage || context.message.hasNewDate;
-
    const isUnread = context.message.isUnread;
 
    const [widths, setWidths] = useState<{ width: number; lastWidth: number; nextWidth: number }>({
@@ -90,7 +89,7 @@ export default function DefaultMessage() {
             )}
          ></div>
          {error}
-         {referencedMessage && <ReplyRenderer referencedMessage={referencedMessage} onClick={context.onReferencedMessageClick} />}
+         {referencedMessage !== undefined && <ReplyRenderer referencedMessage={referencedMessage} onClick={context.onReferencedMessageClick} />}
          {(isSeparate || isLastAction) && (
             <div className="flex items-center gap-x-2">
                <button
@@ -130,10 +129,6 @@ export default function DefaultMessage() {
                ) : isReplying ? (
                   <IconMingcuteCornerUpLeftFill className="text-primary-400 size-4 shrink-0" />
                ) : null}
-               {/* {(isEditing || isReplying) && (
-                  <div className={clsx("")}>
-                  </div>
-               )} */}
                {isEdited && <div className="text-xs text-white/50">(edited)</div>}
                {!isSeparate && !isLastAction && <div className="text-text/50 text-xs opacity-0 group-hover:opacity-100">{formattedTime}</div>}
             </div>
@@ -142,15 +137,36 @@ export default function DefaultMessage() {
    );
 }
 
-function ReplyRenderer(props: { referencedMessage: AppMessage; onClick: (messageId: Snowflake) => Promise<void> }) {
+function ReplyRenderer(props: { referencedMessage: AppMessage | null; onClick: (messageId: Snowflake) => Promise<void> }) {
+   if (props.referencedMessage === null) {
+      return (
+         <div className="flex w-full items-center gap-x-1 pl-2 select-none">
+            <IconMingcuteCornerUpRightLine className="size-7 shrink-0 text-white/50" />
+            <div className="mb-2 text-xs text-white/50 italic">Original message was deleted</div>
+         </div>
+      );
+   }
+
+   if (props.referencedMessage.isPreview) {
+      return null;
+   }
+
+   return <ResolvedReplyRenderer referencedMessage={props.referencedMessage} onClick={props.onClick} />;
+}
+
+function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; onClick: (messageId: Snowflake) => Promise<void> }) {
    const [isLoading, setIsLoading] = useState(false);
-   const message = useMemo<AppMessage>(
+   const message = useMemo<ProcessedAppMessage>(
       () => ({
          ...props.referencedMessage,
          content: props.referencedMessage.content.replaceAll("\n", " ").replaceAll(/```(?:\S*)?/g, "`"),
       }),
       [props.referencedMessage],
    );
+
+   const hasAttachmentsOrEmbeds =
+      ("attachments" in props.referencedMessage && props.referencedMessage.attachments.length !== 0) ||
+      ("embeds" in props.referencedMessage && props.referencedMessage.embeds.length !== 0);
 
    const { children } = useMessageRenderer(message, ["attachment", "code", "embed"], true);
    const user = useUser(props.referencedMessage.authorId);
@@ -163,10 +179,6 @@ function ReplyRenderer(props: { referencedMessage: AppMessage; onClick: (message
       }
    }
 
-   if (props.referencedMessage.isPreview) {
-      return;
-   }
-
    return (
       <div className="group/reply flex w-full cursor-pointer items-center gap-x-1 pl-2 select-none" onClick={handleClick}>
          <IconMingcuteCornerUpRightLine className="size-7 shrink-0 text-white/50 transition-colors group-hover/reply:text-white" />
@@ -176,9 +188,7 @@ function ReplyRenderer(props: { referencedMessage: AppMessage; onClick: (message
                <div className="text-text/80 text-xs">{user.displayName}</div>
             </div>
             {props.referencedMessage.content && <div className="overflow-hidden text-sm text-white">{children}</div>}
-            {(props.referencedMessage.attachments.length !== 0 || props.referencedMessage.embeds.length !== 0) && (
-               <IconMingcutePhotoAlbum2Fill className="text-text" />
-            )}
+            {hasAttachmentsOrEmbeds && <IconMingcutePhotoAlbum2Fill className="text-text" />}
             {isLoading && <LoadingIcon className="shrink-0" />}
          </div>
       </div>

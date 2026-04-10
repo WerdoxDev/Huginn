@@ -129,7 +129,7 @@ export function convertToAppMessage(message: APIMessage, source: "websocket" | "
       ...(message.type === MessageType.REPLY ? omit(message, ["referencedMessage", "author", "mentions"]) : rest),
       ...(message.type === MessageType.REPLY
          ? {
-              referencedMessage: message.referencedMessage ? convertToAppMessage(message.referencedMessage, source) : undefined,
+              referencedMessage: message.referencedMessage ? convertToAppMessage(message.referencedMessage, source) : message.referencedMessage,
            }
          : {}),
       authorId: message.author.id,

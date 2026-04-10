@@ -131,6 +131,7 @@ export const selectMessageReference = {
          messageId: true,
          type: true,
          message: {
+            where: { deletedTimestamp: null },
             select: {
                ...selectMessageAuthor,
                ...selectMessageMentions,
