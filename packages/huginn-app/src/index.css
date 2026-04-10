@@ -135,7 +135,6 @@
 html,
 body,
 #root {
-   /* background-color: #060606; */
    @apply bg-surface-alt h-full overflow-hidden overscroll-none;
 }
 

@@ -1,3 +1,4 @@
+import LoadingIcon from "@components/LoadingIcon";
 import { MessageProvider } from "@contexts/MessageProvider";
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useMessageAcker } from "@hooks/mutations/useMessageAcker";
@@ -72,6 +73,8 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    const { onMessageVisibilityChanged } = useVisibleMessages(props.channelId, props.messages);
    const [highlightedMessageId, setHighlightedMessageId] = useState<Snowflake | undefined>(undefined);
 
+   const [isLoadingLatest, setIsLoadingLatest] = useState(false);
+
    useMessageAcker(props.channelId, props.messages);
    const { firstUnreadMessageId } = useFirstUnreadMessage(props.channelId, props.messages);
 
@@ -121,26 +124,21 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    }, []);
 
    const hasLatestMessageInList = useMemo(() => {
-      if (!currentChannel?.lastMessageId) {
-         return true;
-      }
+      if (!currentChannel?.lastMessageId) return true;
 
       return props.messages.some((message) => message.id === currentChannel.lastMessageId);
    }, [currentChannel?.lastMessageId, props.messages]);
 
-   const onReferencedMessageClick = useCallback(
+   const handleReferencedMessageClick = useCallback(
       async (messageId: Snowflake) => {
+         if (!client) return;
+
          if (scrollToMessage(messageId)) {
             highlightMessage(messageId);
             return;
          }
 
          pendingReferencedMessageId.current = messageId;
-
-         if (!client) {
-            pendingReferencedMessageId.current = undefined;
-            return;
-         }
 
          const fetchedMessages = await client.channels.getMessages(props.channelId, 50, undefined, undefined, messageId);
          const aroundMessages = fetchedMessages.map((message) => convertToAppMessage(message, "fetch"));
@@ -153,20 +151,8 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
       [client, highlightMessage, props.channelId, queryClient, scrollToMessage],
    );
 
-   useEffect(() => {
-      const messageId = pendingReferencedMessageId.current;
-      if (!messageId) return;
-
-      if (scrollToMessage(messageId)) {
-         highlightMessage(messageId);
-      }
-      pendingReferencedMessageId.current = undefined;
-   }, [highlightMessage, props.messages, scrollToMessage]);
-
-   const onScrollToBottomClick = useCallback(async () => {
-      if (!client) {
-         return;
-      }
+   const loadLatestMessages = useCallback(async () => {
+      if (!client) return;
 
       const latestMessages = await client.channels.getMessages(props.channelId, 50);
       const convertedLatestMessages = latestMessages.map((message) => convertToAppMessage(message, "fetch"));
@@ -177,6 +163,24 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
          pageParams: [{ before: "", after: "" }],
       });
    }, [client, props.channelId, queryClient]);
+
+   const handleLoadLatest = useCallback(() => {
+      setIsLoadingLatest(true);
+      loadLatestMessages().finally(() => {
+         setIsLoadingLatest(false);
+      });
+   }, [loadLatestMessages, setIsLoadingLatest]);
+
+   // Scroll to referenced message when it is loaded
+   useEffect(() => {
+      const messageId = pendingReferencedMessageId.current;
+      if (!messageId) return;
+
+      if (scrollToMessage(messageId)) {
+         highlightMessage(messageId);
+      }
+      pendingReferencedMessageId.current = undefined;
+   }, [highlightMessage, props.messages, scrollToMessage]);
 
    useEffect(() => {
       if (!pendingScrollToBottom.current) return;
@@ -227,7 +231,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
                         nextMessage={processedMessages[i + 1]}
                         lastMessage={processedMessages[i - 1]}
                         onVisibilityChanged={onMessageVisibilityChanged}
-                        onReferencedMessageClick={onReferencedMessageClick}
+                        onReferencedMessageClick={handleReferencedMessageClick}
                      />
                   ))}
                </ol>
@@ -242,9 +246,9 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
             <button
                type="button"
                className="bg-surface-alt ring-primary-700 hover:bg-primary-800 hover:text-text text-text/80 absolute right-4 bottom-4 z-20 cursor-pointer rounded-full p-2 ring-1 transition-all"
-               onClick={onScrollToBottomClick}
+               onClick={handleLoadLatest}
             >
-               <IconMingcuteDownFill className="size-5" />
+               {isLoadingLatest ? <LoadingIcon className="size-5" /> : <IconMingcuteDownFill className="size-5" />}
             </button>
          )}
       </div>

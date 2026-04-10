@@ -1,3 +1,4 @@
+import LoadingIcon from "@components/LoadingIcon";
 import UserAvatar from "@components/UserAvatar";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useUser } from "@hooks/api-hooks/userHooks";
@@ -104,7 +105,7 @@ export default function DefaultMessage() {
                   className="text-text cursor-pointer text-sm hover:underline"
                   onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
                >
-                  {isSelf ? "You" : author?.displayName}
+                  {author?.displayName}
                </button>
                {!context.message.isPreview && context.message.flags && hasFlag(context.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
                   <IconMingcuteNotificationOffFill className="text-text size-4" />
@@ -141,7 +142,8 @@ export default function DefaultMessage() {
    );
 }
 
-function ReplyRenderer(props: { referencedMessage: AppMessage; onClick: (messageId: Snowflake) => void }) {
+function ReplyRenderer(props: { referencedMessage: AppMessage; onClick: (messageId: Snowflake) => Promise<void> }) {
+   const [isLoading, setIsLoading] = useState(false);
    const message = useMemo<AppMessage>(
       () => ({
          ...props.referencedMessage,
@@ -153,16 +155,21 @@ function ReplyRenderer(props: { referencedMessage: AppMessage; onClick: (message
    const { children } = useMessageRenderer(message, ["attachment", "code", "embed"], true);
    const user = useUser(props.referencedMessage.authorId);
 
+   function handleClick() {
+      const result = props.onClick(props.referencedMessage.id);
+      if (result instanceof Promise) {
+         setIsLoading(true);
+         result.finally(() => setIsLoading(false));
+      }
+   }
+
    if (props.referencedMessage.isPreview) {
       return;
    }
 
    return (
-      <div
-         className="group/reply flex w-full cursor-pointer items-center gap-x-1 pl-2 select-none"
-         onClick={() => props.onClick(props.referencedMessage.id)}
-      >
-         <IconMingcuteCornerUpRightLine className="size-7 shrink-0 text-white/50 group-hover/reply:text-white" />
+      <div className="group/reply flex w-full cursor-pointer items-center gap-x-1 pl-2 select-none" onClick={handleClick}>
+         <IconMingcuteCornerUpRightLine className="size-7 shrink-0 text-white/50 transition-colors group-hover/reply:text-white" />
          <div className="mb-2 flex items-center gap-x-2 overflow-hidden">
             <div className="flex items-center gap-x-1">
                <UserAvatar userId={user.id} avatarHash={user.avatar} size={1.25} hideStatus />
@@ -172,6 +179,7 @@ function ReplyRenderer(props: { referencedMessage: AppMessage; onClick: (message
             {(props.referencedMessage.attachments.length !== 0 || props.referencedMessage.embeds.length !== 0) && (
                <IconMingcutePhotoAlbum2Fill className="text-text" />
             )}
+            {isLoading && <LoadingIcon className="shrink-0" />}
          </div>
       </div>
    );

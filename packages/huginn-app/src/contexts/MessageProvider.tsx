@@ -3,20 +3,22 @@ import type { Snowflake } from "@huginn/shared";
 import MessageRenderer from "@components/message/MessageRenderer";
 import clsx from "clsx";
 import moment from "moment";
-import { createContext } from "react";
+import { createContext, type RefObject } from "react";
 
-import type { MessageRendererProps, ProcessedMessage } from "@/types";
+import type { ProcessedMessage } from "@/types";
 
-export const MessageContext = createContext<{
+type MessageContextType = {
    message: ProcessedMessage;
    nextMessage?: ProcessedMessage;
    lastMessage?: ProcessedMessage;
    onVisibilityChanged: (messageId: Snowflake, visible: boolean) => void;
-   onReferencedMessageClick: (messageId: Snowflake) => void;
-   ref: React.RefObject<HTMLLIElement | null>;
-}>(undefined!);
+   onReferencedMessageClick: (messageId: Snowflake) => Promise<void>;
+   ref: RefObject<HTMLLIElement | null>;
+};
 
-export function MessageProvider(props: MessageRendererProps) {
+export const MessageContext = createContext<MessageContextType>(undefined!);
+
+export function MessageProvider(props: MessageContextType) {
    return (
       <MessageContext.Provider value={{ ...props }}>
          {props.message.isUnread && !props.message.hasNewDate && (

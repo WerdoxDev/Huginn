@@ -10,8 +10,8 @@ import { type RefObject, useCallback, useEffect, useLayoutEffect, useRef } from 
 
 import type { AppMessage, ProcessedMessage } from "@/types";
 
-const TOP_SCROLL_OFFSET = 100;
-const BOTTOM_SCROLL_OFFSET = 100;
+const TOP_SCROLL_OFFSET = 300;
+const BOTTOM_SCROLL_OFFSET = 300;
 
 interface UseMessageScrollOptions {
    channelId: Snowflake;

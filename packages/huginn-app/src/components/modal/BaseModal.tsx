@@ -36,12 +36,12 @@ export default function BaseModal(props: {
 
    return (
       <Suspense>
-         <Dialog open={props.modal.isOpen} transition onClose={props.onClose} className="relative z-30 transition">
+         <Dialog open={props.modal.isOpen} transition onClose={props.onClose} className="relative z-30">
             <ModalBackground className={props.backgroundClassName} />
             <div className={clsx("fixed inset-0 top-6 z-10")}>
-               <div className={clsx("flex h-full w-full justify-center", !props.headless && "items-end pt-20 lg:items-center lg:py-20")}>
+               <div className={clsx("flex h-full w-full justify-center", !props.headless && "items-end pt-20 lg:items-center lg:py-10")}>
                   <ErrorBoundary fallback={null} onError={onError}>
-                     {props.modal.isOpen && props.renderChildren}
+                     {props.renderChildren}
                   </ErrorBoundary>
                </div>
             </div>

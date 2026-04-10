@@ -215,15 +215,6 @@ export type ProcessedMessage = AppMessage & {
    isJumpHighlighted: boolean;
 };
 
-export type MessageRendererProps = {
-   message: ProcessedMessage;
-   nextMessage?: ProcessedMessage;
-   lastMessage?: ProcessedMessage;
-   onVisibilityChanged: (messageId: Snowflake, visible: boolean) => void;
-   onReferencedMessageClick: (messageId: Snowflake) => void;
-   ref: RefObject<HTMLLIElement | null>;
-};
-
 export type MutationKinds = {
    "create-dm-channel_recipient": CreateDMChannelMutationVars;
    "create-dm-channel_other": CreateDMChannelMutationVars;

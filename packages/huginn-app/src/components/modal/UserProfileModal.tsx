@@ -3,7 +3,6 @@ import DialogBody from "@components/DialogBody";
 import LoadingIcon from "@components/LoadingIcon";
 import MemberSince from "@components/MemberSince";
 import { ProfileAboutMe, ProfileActivity } from "@components/profile/ProfileComponents";
-import ProfileBadges from "@components/ProfileBadges";
 import RoamingHuginnIcon from "@components/RoamingHuginnIcon";
 import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
@@ -202,7 +201,9 @@ export default function UserProfileModal() {
                </div>
             }
          >
-            <DialogBody className="p-0!">{modal.isOpen && <ProfileContent userId={modal.userId} />}</DialogBody>
+            <DialogBody className="p-0!">
+               <ProfileContent userId={modal.userId} />
+            </DialogBody>
          </Suspense>
       </HuginnDialogPanel>
    );
