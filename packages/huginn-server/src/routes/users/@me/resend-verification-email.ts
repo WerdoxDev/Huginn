@@ -1,7 +1,7 @@
 import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";
-import { DBErrorType, globalPlugin, hRateLimit, singleError, tryCatch, verifyJwt } from "@huginn/backend-shared";
-import { assertError, prisma } from "@huginn/backend-shared/database/index";
-import { CONSTANTS, Errors } from "@huginn/shared";
+import { globalPlugin, hRateLimit, singleError, verifyJwt } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database/index";
+import { CONSTANTS, Errors, type EmailVerificationPurpose } from "@huginn/shared";
 import Elysia from "elysia";
 
 export const postResendVerificationEmail = new Elysia()
@@ -20,11 +20,12 @@ export const postResendVerificationEmail = new Elysia()
       await prisma.emailVerification.createOrUpdate({
          userId: tokenPayload.id,
          code: code,
-         newEmail: emailVerification.newEmail,
+         email: emailVerification.email,
          expiresAt: expiresAt,
+         purpose: emailVerification.purpose as EmailVerificationPurpose,
       });
 
-      global.waitUntil(async () => await sendVerificationEmail(emailVerification.newEmail, code));
+      global.waitUntil(async () => await sendVerificationEmail(emailVerification.email, code));
 
       return status("OK");
    });

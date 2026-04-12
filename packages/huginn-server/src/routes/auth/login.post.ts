@@ -1,4 +1,5 @@
-import { createToken, invalidBody, tryCatch } from "@huginn/backend-shared";
+import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";
+import { createToken, globalPlugin, invalidBody, tryCatch } from "@huginn/backend-shared";
 import { createErrorFactory } from "@huginn/backend-shared";
 import { assertError } from "@huginn/backend-shared/database";
 import { prisma } from "@huginn/backend-shared/database";
@@ -6,9 +7,9 @@ import { DBErrorType } from "@huginn/backend-shared/types";
 import { CONSTANTS, type APIPostLoginResult, Errors, Fields } from "@huginn/shared";
 import Elysia, { t } from "elysia";
 
-export const postLogin = new Elysia().post(
+export const postLogin = new Elysia().use(globalPlugin).post(
    "/api/auth/login",
-   async ({ body, status }) => {
+   async ({ body, status, global }) => {
       if (!body.email && !body.username) {
          return invalidBody(status);
       }
@@ -26,6 +27,26 @@ export const postLogin = new Elysia().post(
       }
       if (error) {
          throw error;
+      }
+
+      const userVerificationState = await prisma.user.getById(user.id, {
+         select: { emailVerifiedAt: true },
+      });
+
+      if (!userVerificationState.emailVerifiedAt) {
+         const code = generateVerificationCode();
+         await prisma.emailVerification.createOrUpdate({
+            userId: user.id,
+            email: user.email,
+            expiresAt: Date.now() + CONSTANTS.EMAIL_VERIFICATION_WINDOW,
+            code,
+            purpose: "registration",
+         });
+
+         global.waitUntil(async () => await sendVerificationEmail(user.email, code));
+
+         const json: APIPostLoginResult = { pendingEmail: user.email };
+         return status("Accepted", json);
       }
 
       const lastAuthenticatedAt = Date.now();

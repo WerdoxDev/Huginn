@@ -192,6 +192,7 @@ export async function createTestUsers(amount: number) {
          email: `test${index}@gmail.com`,
          password: `test${index}`,
          flags: 0,
+         emailVerifiedAt: new Date(),
       });
    }
 
@@ -206,8 +207,16 @@ export async function createTestUsers(amount: number) {
 
    return await Promise.all(
       createdUsers.map(async (x) => {
-         const accessToken = await createToken("user-access", { id: x.id.toString(), authType: "password" }, CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME);
-         const refreshToken = await createToken("user-refresh", { id: x.id.toString(), authType: "password" }, CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME);
+         const accessToken = await createToken(
+            "user-access",
+            { id: x.id.toString(), authType: "password", lastAuthenticatedAt: new Date().getTime() },
+            CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
+         );
+         const refreshToken = await createToken(
+            "user-refresh",
+            { id: x.id.toString(), authType: "password", lastAuthenticatedAt: new Date().getTime() },
+            CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME,
+         );
 
          removeUserLater(x);
 

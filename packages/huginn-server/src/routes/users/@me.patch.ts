@@ -138,12 +138,13 @@ export const patchMe = new Elysia()
             const code = generateVerificationCode();
             pendingEmailVerification = await prisma.emailVerification.createOrUpdate({
                userId: user.id,
-               newEmail: body.email,
+               email: body.email,
                expiresAt,
                code,
+               purpose: "email_change",
             });
             global.waitUntil(async () => {
-               await sendVerificationEmail(pendingEmailVerification!.newEmail, pendingEmailVerification!.code);
+               await sendVerificationEmail(pendingEmailVerification!.email, pendingEmailVerification!.code);
             });
          }
 
@@ -171,7 +172,7 @@ export const patchMe = new Elysia()
             ...updatedUser,
             token: accessToken,
             refreshToken,
-            pendingEmail: pendingEmailVerification?.newEmail,
+            pendingEmail: pendingEmailVerification?.email,
          };
          return status("OK", json);
       },

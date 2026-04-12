@@ -1,6 +1,5 @@
 import type { APIPostRegisterResult, RegisterUser } from "@huginn/shared";
 
-import { expectPrivateUserExactSchema } from "#tests/expect-utils";
 import { createTestUsers, removeUserLater } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { describe, expect, test } from "bun:test";
@@ -73,7 +72,29 @@ describe("POST /auth/register", () => {
          password: "test04",
       };
 
-      const result = (await testHandler("/api/auth/register", {}, "POST", user).then(removeUserLater)) as APIPostRegisterResult;
-      expectPrivateUserExactSchema(result);
+      const response = (await testHandler("/api/auth/register", {}, "POST", user, true)) as Response;
+      const result = (await response.json()) as APIPostRegisterResult;
+      removeUserLater(result);
+
+      expect(response.status).toBe(202);
+      expect(result.pendingEmail).toBe(user.email);
+      expect(Object.keys(result).sort()).toStrictEqual(
+         [
+            "id",
+            "username",
+            "displayName",
+            "password",
+            "email",
+            "avatar",
+            "flags",
+            "banner",
+            "bannerColor",
+            "bio",
+            "accentColor",
+            "pendingEmail",
+            "token",
+            "refreshToken",
+         ].sort(),
+      );
    });
 });

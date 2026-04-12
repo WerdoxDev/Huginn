@@ -9,7 +9,6 @@ import {
    type APIEmbed,
    type APIPostAttachmentJSONBody,
    BADGES,
-   BADGE_COLORS,
    CDNRoutes,
    FLAG_BADGE_MAP,
    type Snowflake,
@@ -21,7 +20,6 @@ import {
 } from "@huginn/shared";
 import { JSDOM } from "jsdom";
 import markdownit from "markdown-it";
-import { has } from "markdown-it/lib/common/utils.mjs";
 import * as semver from "semver";
 
 import { cdnUpload } from "./server-request";
