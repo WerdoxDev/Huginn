@@ -47,7 +47,7 @@ export async function testHandler(
    let responseBody: unknown;
    const headersMap = new Map(response.headers);
    if (headersMap.get("content-type")?.startsWith("application/json")) {
-      responseBody = await response.json();
+      responseBody = await response.clone().json();
    }
 
    if (response.status >= 200 && response.status < 300) {

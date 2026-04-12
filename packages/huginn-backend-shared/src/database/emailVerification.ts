@@ -1,7 +1,7 @@
 import { assertExists, prisma } from "#database";
 import { Prisma } from "#prisma/client";
 import { DBErrorType } from "#types";
-import { idFix, snowflake, WorkerID, type Snowflake } from "@huginn/shared";
+import { idFix, snowflake, WorkerID, type EmailVerificationPurpose, type Snowflake } from "@huginn/shared";
 
 import { assertId } from "./error";
 
@@ -16,7 +16,7 @@ export const emailVerificationExtension = Prisma.defineExtension({
 
             return idFix(emailVerification);
          },
-         async createOrUpdate(options: { userId: Snowflake; code: string; newEmail: string; expiresAt: number }) {
+         async createOrUpdate(options: { userId: Snowflake; code: string; email: string; expiresAt: number; purpose: EmailVerificationPurpose }) {
             const methodName = "emailVerification.createOne";
 
             try {
@@ -26,14 +26,16 @@ export const emailVerificationExtension = Prisma.defineExtension({
                   create: {
                      id: snowflake.generate(WorkerID.EMAIL_VERIFICATION),
                      expiresAt: new Date(options.expiresAt),
-                     newEmail: options.newEmail,
+                     email: options.email,
                      code: options.code,
                      userId: BigInt(options.userId),
+                     purpose: options.purpose,
                   },
                   update: {
                      expiresAt: new Date(options.expiresAt),
-                     newEmail: options.newEmail,
+                     email: options.email,
                      code: options.code,
+                     purpose: options.purpose,
                   },
                   where: { userId: BigInt(options.userId) },
                });

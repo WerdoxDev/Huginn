@@ -8,20 +8,21 @@ datasource db {
 }
 
 model User {
-   id          BigInt    @id
-   username    String    @unique
-   displayName String?
-   email       String    @unique
-   avatar      String?
-   banner      String?
-   bannerColor String?
-   accentColor String?
-   bio         String?
-   password    String?
-   flags       Int       @db.SmallInt
-   system      Boolean   @default(false)
-   createdAt   DateTime  @default(now())
-   updatedAt   DateTime? @updatedAt
+   id              BigInt    @id
+   username        String    @unique
+   displayName     String?
+   email           String    @unique
+   avatar          String?
+   banner          String?
+   bannerColor     String?
+   accentColor     String?
+   bio             String?
+   password        String?
+   flags           Int       @db.SmallInt
+   system          Boolean   @default(false)
+   createdAt       DateTime  @default(now())
+   updatedAt       DateTime? @updatedAt
+   emailVerifiedAt DateTime?
 
    includedChannels        Channel[]           @relation("channel_recipients")
    ownedChannels           Channel[]           @relation("channel_owner")
@@ -40,9 +41,10 @@ model User {
 
 model EmailVerification {
    id        BigInt   @id
-   user      User     @relation(fields: [userId], references: [id])
+   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    userId    BigInt   @unique
-   newEmail  String
+   purpose   String   @default("email_change")
+   email     String
    code      String
    expiresAt DateTime
    createdAt DateTime @default(now())
