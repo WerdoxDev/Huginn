@@ -1,4 +1,4 @@
-import type { InitializationStatus } from "@huginn/api";
+import type { InitializationResult } from "@huginn/api";
 
 import { useCallback } from "react";
 
@@ -14,9 +14,9 @@ export function useConnect() {
       if (!token && !refreshToken) {
          return {
             success: false,
-            result: "invalid_tokens",
+            status: "invalid_tokens",
             retryable: false,
-         } as InitializationStatus;
+         } as InitializationResult;
       }
 
       const result = await initialize({

@@ -17,7 +17,7 @@ type EventTypes = {
       visible: boolean;
       self: boolean;
    };
-   image_cropper_done: { croppedImageData: string };
+   // image_cropper_done: { croppedImageData: string };
    deep_link: string;
    voice_preference_changed: { userId: Snowflake };
 };

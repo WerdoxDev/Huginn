@@ -20,7 +20,9 @@ export default function ConnectionStatus() {
    return (
       <div className="pointer-events-none ml-2 flex items-center justify-center gap-x-2">
          <div className={clsx("h-2 w-2 rounded-full", statuses[gatewayStatus ?? "idle"].color)} />
-         <span className="text-text/80 text-xs font-medium uppercase">{gatewayStatus ? statuses[gatewayStatus].text : statuses["idle"].text}</span>
+         <span className="text-text/80 box-exact text-xs font-medium uppercase">
+            {gatewayStatus ? statuses[gatewayStatus].text : statuses["idle"].text}
+         </span>
          {clientStore.isInitialized && gatewayStatus === "connecting" && (
             <span className="text-text/80 text-xs font-medium uppercase">via {clientStore.hostnames.api}</span>
          )}

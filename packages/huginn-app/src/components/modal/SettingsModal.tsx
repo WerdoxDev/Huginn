@@ -4,6 +4,7 @@ import ModalCloseButton from "@components/button/ModalCloseButton";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@components/Tab";
 import { DialogTitle, Transition } from "@headlessui/react";
 import { useIsMobile } from "@hooks/useIsMobile";
+import { useThrottler } from "@hooks/useThrottler";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
@@ -29,8 +30,8 @@ const tabs: SettingsTab[] = [
       auth: true,
       children: [
          {
-            name: "my-account",
-            text: "My Account",
+            name: "my-profile",
+            text: "My Profile",
             auth: true,
             icon: <IconMingcuteUser3Fill />,
             component: SettingsProfileTab,
@@ -69,16 +70,16 @@ const tabs: SettingsTab[] = [
       auth: true,
       children: [
          {
-            name: "submissions",
-            text: "Submission",
-            icon: <IconMingcuteChecksFill />,
-            component: SettingsSubmissionTab,
-         },
-         {
-            name: "custom",
-            text: "Custom",
+            name: "registered-apps",
+            text: "Registered Apps",
             icon: <IconMingcuteEmptyBoxFill />,
             component: SettingsCustomTab,
+         },
+         {
+            name: "contributions",
+            text: "Contributions",
+            icon: <IconMingcuteChecksFill />,
+            component: SettingsSubmissionTab,
          },
       ],
    },
@@ -115,7 +116,7 @@ export default function SettingsModal() {
    const isMobile = useIsMobile();
 
    const settings = useStorage("settings");
-   const { setValue, updateSettings } = useStorageStore();
+   const { setValue: setStorageValue, setCachedValue } = useStorageStore();
    const [_settingsValid, setSettingsValid] = useState(false);
 
    useEffect(() => {
@@ -123,18 +124,8 @@ export default function SettingsModal() {
          setSettingsValid(true);
          if (!isMobile) setShowContent(true);
          if (isMobile) setSelectedIndex(null);
-      } else {
-         onSave();
       }
    }, [modal.isOpen]);
-
-   useEffect(() => {
-      onSave();
-   }, [currentTabText]);
-
-   async function onSave() {
-      setValue("settings", settings);
-   }
 
    function onTabChanged(index: number | null) {
       setSelectedIndex(index);
@@ -142,8 +133,13 @@ export default function SettingsModal() {
       setShowContent(true);
    }
 
-   function onSettingsChanged(value: DeepPartial<AppSettings>) {
-      updateSettings(value);
+   const { throttledFunction } = useThrottler(async (value: Partial<AppSettings>) => {
+      await setStorageValue("settings", { ...settings, ...value });
+   }, 1000);
+
+   function handleSettingsChanged(value: Partial<AppSettings>) {
+      setCachedValue("settings", { ...settings, ...value });
+      throttledFunction(value);
    }
 
    function handleBackClick() {
@@ -188,7 +184,7 @@ export default function SettingsModal() {
                      </button>
                   </div>
 
-                  <SettingsPanels currentTabText={currentTabText} onChange={onSettingsChanged} onSave={onSave} />
+                  <SettingsPanels currentTabText={currentTabText} onChange={handleSettingsChanged} />
                </div>
             </Transition>
          </TabGroup>
@@ -246,28 +242,24 @@ function SettingsTabs() {
 }
 
 const TabComponent = memo(
-   (props: {
-      component: (props: SettingsTabProps) => React.JSX.Element | undefined;
-      onChange: (value: DeepPartial<AppSettings>) => void;
-      onSave: () => Promise<void>;
-   }) => {
+   (props: { component: (props: SettingsTabProps) => React.JSX.Element | undefined; onChange: (value: Partial<AppSettings>) => void }) => {
       if (!props.component) return;
-      return <props.component onChange={props.onChange} onSave={props.onSave} />;
+      return <props.component onChange={props.onChange} />;
    },
 );
 
-function SettingsPanels(props: { currentTabText: string | null; onChange: (value: DeepPartial<AppSettings>) => void; onSave: () => Promise<void> }) {
+function SettingsPanels(props: { currentTabText: string | null; onChange: (value: Partial<AppSettings>) => void }) {
    const flatTabs = useFlatTabs();
 
    return (
       props.currentTabText && (
          <TabPanels className="flex w-full flex-col overflow-hidden">
-            <div className="text-text mt-5 mb-5 ml-5 shrink-0 text-xl select-none">{props.currentTabText}</div>
+            <div className="text-text mt-5 ml-5 shrink-0 text-xl select-none">{props.currentTabText}</div>
             {flatTabs.map((tab) => (
-               <TabPanel key={tab?.name} className="scroll-surface-deep h-full overflow-x-visible overflow-y-scroll pr-3 pb-5">
+               <TabPanel key={tab?.name} className="scroll-surface-deep h-full overflow-x-visible overflow-y-scroll pt-5 pr-3 pb-5">
                   <div className="ml-5">
                      {tab?.component ? (
-                        <TabComponent onChange={props.onChange} onSave={props.onSave} component={tab.component} />
+                        <TabComponent onChange={props.onChange} component={tab.component} />
                      ) : (
                         <span className="text-text/50 text-base italic">{tab?.name} (Soon...)</span>
                      )}

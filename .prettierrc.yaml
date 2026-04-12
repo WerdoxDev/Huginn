@@ -1,8 +1,0 @@
-plugins:
-  - "@prettier/plugin-oxc"
-  - "prettier-plugin-tailwindcss"
-tabWidth: 3
-printWidth: 150
-endOfLine: crlf
-singleQuote: false
-useTabs: false

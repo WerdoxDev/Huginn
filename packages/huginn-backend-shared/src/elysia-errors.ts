@@ -97,7 +97,7 @@ export function singleError<Code extends keyof InvertedStatusMap | keyof StatusM
    status: Context["status"],
    code?: Code,
 ) {
-   return createHuginnError(createErrorFactory(error), status, code ?? "OK") as ElysiaCustomStatusResponse<Code, HuginnErrorData>;
+   return createHuginnError(createErrorFactory(error), status, code ?? "Bad Request") as ElysiaCustomStatusResponse<Code, HuginnErrorData>;
 }
 
 export function serverOnError(error: Readonly<Error>, status: Context["status"]) {

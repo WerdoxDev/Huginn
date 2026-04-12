@@ -1,6 +1,6 @@
 import { createToken, unauthorized, verifyToken } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { constants, type APIPostRefreshTokenResult } from "@huginn/shared";
+import { CONSTANTS, type APIPostRefreshTokenResult } from "@huginn/shared";
 import Elysia, { t } from "elysia";
 
 const schema = t.Object({ refreshToken: t.String() });
@@ -23,7 +23,7 @@ export const postRefreshToken = new Elysia().post(
             authType: payload.authType,
             lastAuthenticatedAt: payload.lastAuthenticatedAt,
          },
-         constants.ACCESS_TOKEN_EXPIRE_TIME,
+         CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
       );
       const refreshToken = await createToken(
          "user-refresh",
@@ -32,7 +32,7 @@ export const postRefreshToken = new Elysia().post(
             authType: payload.authType,
             lastAuthenticatedAt: payload.lastAuthenticatedAt,
          },
-         constants.REFRESH_TOKEN_EXPIRE_TIME,
+         CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME,
       );
 
       const json: APIPostRefreshTokenResult = { token: accessToken, refreshToken };

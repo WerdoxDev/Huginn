@@ -4,7 +4,7 @@ import { type APIGetUserChannelsResult, resolveImage, type Snowflake } from "@hu
 import { clientStore } from "@stores/clientStore";
 import { infiniteQueryOptions, QueryClient, queryOptions } from "@tanstack/react-query";
 
-import { convertToAppDirectChannel, convertToAppMessage, convertToAppRelationship, convertToAppUser } from "./utils";
+import { convertToAppDirectChannel, convertToAppMessage, convertToAppRelationship, convertToAppUser, convertToAppUserProfile } from "./utils";
 
 export const queryClient = new QueryClient({
    defaultOptions: {
@@ -21,6 +21,13 @@ export function getUserOptions(client: HuginnClient, userId: Snowflake) {
    return queryOptions({
       queryKey: ["user", userId],
       queryFn: async () => convertToAppUser(await client.users.get(userId)),
+   });
+}
+
+export function getUserProfileOptions(client: HuginnClient, userId: Snowflake) {
+   return queryOptions({
+      queryKey: ["user-profile", userId],
+      queryFn: async () => convertToAppUserProfile(await client.users.getProfile(userId)),
    });
 }
 
@@ -86,6 +93,20 @@ export function getUserAvatarOptions(userId: Snowflake | undefined, avatarHash: 
          }
 
          const data = await resolveImage(client.cdn.avatar(userId, avatarHash));
+         return data ? data : null;
+      },
+   });
+}
+
+export function getUserBannerOptions(userId: Snowflake | undefined, bannerHash: string | null | undefined, client?: HuginnClient) {
+   return queryOptions({
+      queryKey: ["banner", userId, bannerHash],
+      async queryFn() {
+         if (!userId || !bannerHash || !client) {
+            return null;
+         }
+
+         const data = await resolveImage(client.cdn.banner(userId, bannerHash));
          return data ? data : null;
       },
    });

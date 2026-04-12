@@ -3,12 +3,18 @@ import type { Endpoints } from "@octokit/types";
 import { octokit, resend } from "#setup";
 import { envs } from "#setup";
 import { type DBAttachment, type DBEmbed, getImageData, getVideoData } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database/index";
 import {
+   type APIBadge,
    type APIEmbed,
    type APIPostAttachmentJSONBody,
+   BADGES,
    CDNRoutes,
+   FLAG_BADGE_MAP,
    type Snowflake,
    type Unpacked,
+   UserFlags,
+   hasFlag,
    isImageMediaType,
    isVideoMediaType,
 } from "@huginn/shared";
@@ -255,14 +261,15 @@ export async function processEmbeds(embeds?: APIEmbed[]) {
 
 export async function processAttachments(
    attachments: APIPostAttachmentJSONBody[] | undefined,
-   files: Record<string, File> | undefined | null,
+   files: File[] | undefined | null,
    channelId: Snowflake,
    messageId: Snowflake,
 ) {
    const processedAttachments: DBAttachment[] = [];
+   console.log(files, attachments);
    if (attachments && files) {
       for (const attachment of attachments) {
-         const file = files[`files[${attachment.id}]`];
+         const file = files[attachment.id];
          const fileArrayBuffer = await file.arrayBuffer();
 
          const name = (await cdnUpload(CDNRoutes.uploadAttachment(channelId, messageId), {
@@ -304,4 +311,20 @@ export async function sendVerificationEmail(receiverEmail: string, code: string)
       subject: "Email Verification",
       template: { id: "email-verification", variables: { VERIFICATION_CODE: code } },
    });
+}
+
+export async function getUserBadges(userId: Snowflake): Promise<APIBadge[]> {
+   const user = await prisma.user.getById(userId, { select: { flags: true } });
+   const badges: APIBadge[] = [];
+
+   for (const flag of Object.values(UserFlags)) {
+      if (hasFlag(user.flags, flag as number)) {
+         const flagBadgeType = FLAG_BADGE_MAP[flag as UserFlags];
+         if (flagBadgeType) {
+            badges.push(BADGES.find((x) => x.id === flagBadgeType)!);
+         }
+      }
+   }
+
+   return badges;
 }

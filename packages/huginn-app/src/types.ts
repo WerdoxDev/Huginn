@@ -10,6 +10,7 @@ import type {
    APIGetKnownApplicationsResult,
    APIRelationshipWithoutOwner,
    APIReplyMessage,
+   APIUserProfile,
    DeepPartial,
    DirectChannel,
    GatewayVoiceState,
@@ -56,7 +57,7 @@ export type HuginnButtonProps = {
    type?: "submit" | "reset" | "button" | undefined;
    className?: string;
    disabled?: boolean;
-   color?: "primary" | "surface-deep" | "surface-alt" | "surface" | "positive";
+   color?: "primary" | "surface-deep" | "surface-alt" | "surface" | "positive" | "negative" | "caution" | "ghost";
    onClick?: () => void;
 };
 
@@ -89,8 +90,7 @@ export type SettingsTab = {
 };
 
 export type SettingsTabProps = {
-   onChange?: (value: DeepPartial<AppSettings>) => void;
-   onSave?: () => Promise<void>;
+   onChange?: (value: Partial<AppSettings>) => void;
 };
 
 export type DropdownItem = {
@@ -212,14 +212,7 @@ export type ProcessedMessage = AppMessage & {
    isUnread: boolean;
    isEditing: boolean;
    isReplying: boolean;
-};
-
-export type MessageRendererProps = {
-   message: ProcessedMessage;
-   nextMessage?: ProcessedMessage;
-   lastMessage?: ProcessedMessage;
-   onVisibilityChanged: (messageId: Snowflake, visible: boolean) => void;
-   ref: RefObject<HTMLLIElement | null>;
+   isJumpHighlighted: boolean;
 };
 
 export type MutationKinds = {
@@ -231,6 +224,7 @@ export type MutationKinds = {
    "add-channel-recipient": AddChannelRecipientMutationVars;
    "create-relationship": CreateRelationshipMutationVars;
    "remove-relationship": Snowflake;
+   "patch-user": unknown;
 };
 
 export type AppUser<U = PresenceUser> = U & {
@@ -239,6 +233,7 @@ export type AppUser<U = PresenceUser> = U & {
 };
 
 export type AppPresence = Omit<UserPresence, "user"> & { userId: Snowflake };
+export type AppUserProfile = Omit<APIUserProfile, "user"> & { userId: Snowflake };
 
 export enum MessageErrorType {
    FAILED_TO_SEND = 0,
@@ -337,13 +332,19 @@ export type AudioSource = {
 
 export type VoicePreference = { userId: Snowflake; microphoneVolume: number; streamVolume: number };
 
-export type AppSettings = {
+export type HostnamePreset = {
+   name: string;
+   hostnameSource: "manual" | "external";
    apiHostname: string;
    cdnHostname: string;
    voiceHostname: string;
    analyticsHostname: string;
    externalHostnamesUrl: string;
-   hostnameSource: "manual" | "external";
+};
+
+export type AppSettings = {
+   hostnamePresets: HostnamePreset[];
+   activePresetName: string | null;
    theme: ThemeType;
    inputDeviceId: string;
    outputDeviceId: string;

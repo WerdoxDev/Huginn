@@ -1,114 +1,152 @@
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
-import ModalCloseButton from "@components/button/ModalCloseButton";
 import DialogActions from "@components/DialogActions";
 import DialogBody from "@components/DialogBody";
 import { Description, DialogTitle } from "@headlessui/react";
-import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import { useModals } from "@stores/modalsStore";
+import { animate, createScope } from "animejs";
 import clsx from "clsx";
-import { useEffect, useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import HuginnDialogPanel from "./HuginnDialogPanel";
 // import { usePostHog } from "posthog-js/react";
+
+const innerColorMap: Record<string, string> = {
+   info: "bg-caution-200!",
+   error: "bg-negative-200!",
+   success: "bg-positive-400!",
+};
+
+const backgroundColorMap: Record<string, string> = {
+   info: "bg-caution-600!",
+   error: "bg-negative-600!",
+   success: "bg-positive-800!",
+};
+
+const borderColorMap: Record<string, string> = {
+   info: "border-caution-300!",
+   error: "border-negative-300!",
+   success: "border-positive-500!",
+};
+
+const glowShadowMap: Record<string, string> = {
+   info: "0 0 16px 2px color-mix(in srgb, var(--color-caution-300) 15%, transparent), 0 0 40px 6px color-mix(in srgb, var(--color-caution-600) 8%, transparent)",
+   error: "0 0 16px 2px color-mix(in srgb, var(--color-negative-300) 15%, transparent), 0 0 40px 6px color-mix(in srgb, var(--color-negative-600) 8%, transparent)",
+   success:
+      "0 0 16px 2px color-mix(in srgb, var(--color-positive-400) 15%, transparent), 0 0 40px 6px color-mix(in srgb, var(--color-positive-700) 8%, transparent)",
+};
 
 export default function InfoModal() {
    const { info: modal, updateModals } = useModals();
    // const posthog = usePostHog();
 
-   const mutationState = useMutationLatestState(modal.action?.confirm?.mutationKey);
+   const [isLoading, setIsLoading] = useState(false);
 
-   const innerColor = useMemo(
-      () =>
-         modal.status === "info"
-            ? "bg-caution-200!"
-            : modal.status === "error"
-              ? "bg-negative-200!"
-              : modal.status === "success"
-                ? "bg-positive-400!"
-                : "",
-      [modal],
-   );
+   const iconRef = useRef<HTMLDivElement>(null);
+   const titleRef = useRef<HTMLDivElement>(null);
+   const descRef = useRef<HTMLDivElement>(null);
+   const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
 
-   const backgroundColor = useMemo(
-      () =>
-         modal.status === "info"
-            ? "bg-caution-600!"
-            : modal.status === "error"
-              ? "bg-negative-600!"
-              : modal.status === "success"
-                ? "bg-positive-800!"
-                : "",
-      [modal],
-   );
+   const innerColor = innerColorMap[modal.status] ?? "";
+   const backgroundColor = backgroundColorMap[modal.status] ?? "";
+   const borderColor = borderColorMap[modal.status] ?? "border-primary-800!";
+   const glowShadow = glowShadowMap[modal.status] ?? "";
 
-   const borderColor = useMemo(
-      () =>
-         modal.status === "info"
-            ? "border-caution-300!"
-            : modal.status === "error"
-              ? "border-negative-300!"
-              : modal.status === "success"
-                ? "border-positive-500!"
-                : "border-primary-800!",
-      [modal],
-   );
-
-   const errorCode = useMemo(() => (typeof modal.text === "string" && modal.text.match(/\([A-Za-z0-9]+\)/g)?.[0]) ?? "", [modal.text]);
-
-   const formattedText = useMemo(() => {
-      return typeof modal.text === "string" ? modal.text.replace(/\([A-Za-z0-9]+\)/g, "") : modal.text;
-   }, [modal.text]);
+   const errorCode = modal.errorCode ?? "";
 
    useEffect(() => {
-      if (modal.isOpen) {
-         // posthog.capture("info_modal_opened", { title: modal.title, text: modal.text, status: modal.status });
-      } else {
-         // posthog.capture("info_modal_closed");
+      if (!iconRef.current || !titleRef.current || !descRef.current) return;
+
+      scopeRef.current?.revert();
+      scopeRef.current = createScope().add(() => {
+         animate(iconRef.current!, {
+            opacity: [0, 1],
+            scale: [0.8, 1],
+            duration: 500,
+            ease: "outCubic",
+            ...(modal.status === "error" ? { translateX: [0, -5, 5, -3, 3, 0] } : modal.status === "success" ? { rotate: [0, 8, -5, 0] } : {}),
+         });
+
+         animate(titleRef.current!, {
+            opacity: [0, 1],
+            translateY: [5, 0],
+            duration: 500,
+            ease: "outCubic",
+            delay: 80,
+         });
+
+         animate(descRef.current!, {
+            opacity: [0, 1],
+            translateY: [5, 0],
+            duration: 500,
+            ease: "outCubic",
+            delay: 160,
+         });
+      });
+
+      return () => {
+         scopeRef.current?.revert();
+      };
+   }, [modal.status]);
+
+   function handleCancelClicked() {
+      if (!modal.action?.cancel?.callback) updateModals({ info: { isOpen: false } });
+      else modal.action.cancel.callback();
+   }
+
+   async function handleConfirmClicked() {
+      const result = modal.action?.confirm?.callback();
+      if (result instanceof Promise) {
+         setIsLoading(true);
+         try {
+            await result;
+         } finally {
+            setIsLoading(false);
+         }
       }
-   }, [modal.isOpen]);
+   }
 
    return (
-      <HuginnDialogPanel className={clsx("lg:max-w-xs", borderColor)}>
+      <HuginnDialogPanel className={clsx("lg:max-w-sm", borderColor)} style={{ boxShadow: glowShadow }}>
          <DialogBody className="gap-y-0!">
-            <DialogTitle as="div" className="flex w-full flex-col items-center justify-center gap-y-5">
-               <div className={clsx("rounded-full p-3", backgroundColor)}>
-                  <div className={clsx("rounded-full p-3", innerColor)}>
-                     {modal.status === "error" && <IconMingcuteAlertLine className="h-8 w-8 text-white" />}
-                     {modal.status === "info" && <IconMingcuteInformationLine className="h-8 w-8 text-white" />}
-                     {modal.status === "success" && <IconMingcuteCheckFill className="h-8 w-8 text-white" />}
+            <DialogTitle as="div" className="flex w-full flex-col items-center justify-center gap-y-3">
+               <div ref={iconRef} style={{ opacity: 0 }} className={clsx("rounded-full p-2.5", backgroundColor)}>
+                  <div className={clsx("rounded-full p-2.5", innerColor)}>
+                     {modal.status === "error" && <IconMingcuteAlertFill className="size-7 text-white" />}
+                     {modal.status === "info" && <IconMingcuteInformationFill className="size-7 text-white" />}
+                     {modal.status === "success" && <IconMingcuteCheckFill className="size-7 text-white" />}
                   </div>
                </div>
-               <div className="text-center text-lg font-bold text-white">{modal.title}</div>
+
+               <div ref={titleRef} style={{ opacity: 0 }} className="text-center text-lg font-semibold text-white">
+                  {modal.title}
+               </div>
             </DialogTitle>
-            <Description className="mt-1 flex items-center justify-center" as="div">
-               <div className="text-text/90 text-center">
-                  {formattedText}
-                  {errorCode && <span className="text-negative-100 text-nowrap italic opacity-90">{errorCode}</span>}
+
+            <Description className="mt-1" as="div">
+               <div ref={descRef} style={{ opacity: 0 }} className="text-text/80 text-center">
+                  <div>{modal.text}</div>
+                  {/* {errorCode && (
+                     <div className="bg-negative-700/50 border-negative-400 mt-2 inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-sm font-medium text-white/80">
+                        {errorCode}
+                     </div>
+                  )} */}
+                  {errorCode && (
+                     <div className="text-text/60 mt-3.5 text-center text-xs">
+                        <span className="uppercase">reason:</span>
+                        <span className="ml-1 font-semibold uppercase">{errorCode}</span>
+                     </div>
+                  )}
                </div>
             </Description>
          </DialogBody>
+
          <DialogActions>
-            <HuginnButton
-               className="h-10 w-full"
-               color="surface"
-               onClick={() => {
-                  if (!modal.action?.cancel?.callback) updateModals({ info: { isOpen: false } });
-                  else modal.action.cancel.callback();
-               }}
-            >
+            <HuginnButton className="h-10 w-full" color="surface" onClick={handleCancelClicked}>
                {modal.action?.cancel?.text ?? "Close"}
             </HuginnButton>
-
             {modal.action?.confirm && (
-               <LoadingButton
-                  isLoading={mutationState?.status === "pending"}
-                  className="text-text h-10 w-full"
-                  color="primary"
-                  onClick={() => {
-                     modal.action?.confirm?.callback();
-                  }}
-               >
+               <LoadingButton isLoading={isLoading} className="text-text h-10 w-full" color="primary" onClick={handleConfirmClicked}>
                   {modal.action.confirm.text}
                </LoadingButton>
             )}

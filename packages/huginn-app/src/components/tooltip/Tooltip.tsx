@@ -80,7 +80,7 @@ function Content(props: { arrowClassName?: string; extraStyle?: React.CSSPropert
          <Portal>
             <div
                className={clsx(
-                  "border-surface absolute z-999 rounded-md border bg-zinc-900 px-2.5 py-1.5 text-base whitespace-nowrap text-white/80 shadow-lg",
+                  "border-surface absolute z-999 rounded-md border bg-zinc-900 px-2.5 py-1 text-base whitespace-nowrap text-white/80 shadow-lg",
                   props.className,
                )}
                ref={ref}

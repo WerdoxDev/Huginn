@@ -32,8 +32,8 @@ const schema = t.Object({
    messageReference: t.Optional(t.Object({ type: t.Number(), messageId: t.String(), channelId: t.String() })),
    flags: t.Optional(t.Number()),
    nonce: t.Optional(t.String()),
-   payload_json: t.Optional(t.String({ minLength: 1 })),
-   files: t.Optional(t.Nullable(t.Record(t.String(), t.File()))),
+   payload_json: t.Optional(t.Union([t.String({ minLength: 1 }), t.Record(t.String(), t.Unknown())])),
+   files: t.Optional(t.Array(t.File())),
 });
 
 export const postChannelMessage = new Elysia()
@@ -60,9 +60,12 @@ export const postChannelMessage = new Elysia()
          }
 
          // Validate attachments
+         console.log(body.attachments, body.files);
          if (body.attachments && body.files) {
-            for (const [i, attachment] of body.attachments.entries()) {
-               if (!(`files[${attachment.id}]` in body.files) || body.files[`files[${i}]`]?.name !== attachment.filename) return invalidBody(status);
+            console.log(body.files);
+            for (const attachment of body.attachments) {
+               // console.log(body.files);
+               if (!body.files[attachment.id] || body.files[attachment.id]?.name !== attachment.filename) return invalidBody(status);
             }
          }
 
@@ -94,6 +97,7 @@ export const postChannelMessage = new Elysia()
 
          global.waitUntil(async () => {
             await tryCatch(() => prisma.readState.updateLastRead(tokenPayload.id, channelId, message.id));
+            // dispatchToTopic(tokenPayload.id, "message_ack", { channelId, messageId: message.id });
 
             // Embed generation from urls inside the message content
             const embeds = await generateEmbedsFromContent(body.content);
@@ -114,10 +118,9 @@ export const postChannelMessage = new Elysia()
          transform(ctx) {
             const contentType = ctx.headers["content-type"];
             if (contentType?.includes("multipart/form-data") && ctx.body.payload_json) {
-               const { payload_json, ...rest } = ctx.body;
-               const json = JSON.parse(payload_json);
-               const files = Object.keys(rest).length !== 0 ? { files: rest } : {};
-               ctx.body = { ...json, ...files };
+               const { payload_json, files } = ctx.body;
+               const json = typeof payload_json === "string" ? JSON.parse(payload_json) : payload_json;
+               ctx.body = { ...json, files };
             }
          },
       },

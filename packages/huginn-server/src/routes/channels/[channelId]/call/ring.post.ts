@@ -2,7 +2,7 @@ import { gateway } from "#setup";
 import { dispatchCallMessage } from "#utils/helpers";
 import { missingAccess, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
-import { constants, Errors } from "@huginn/shared";
+import { CONSTANTS, Errors } from "@huginn/shared";
 import Elysia, { t } from "elysia";
 
 const schema = t.Object({ recipients: t.Nullable(t.Array(t.String())) });
@@ -44,7 +44,7 @@ export const postCallRing = new Elysia().use(verifyJwt()).post(
    {
       body: schema,
       async afterResponse({ params: { channelId } }) {
-         await new Promise((r) => setTimeout(r, constants.CALL_RINGING_TIMEOUT));
+         await new Promise((r) => setTimeout(r, CONSTANTS.CALL_RINGING_TIMEOUT));
          gateway.voiceManager.updateCall(channelId, []);
       },
    },

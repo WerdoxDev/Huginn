@@ -6,7 +6,7 @@ import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
 import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import { RelationshipType } from "@huginn/shared";
-import { presenceStatuses } from "@lib/utils";
+import { PRESENCE_STATUS_MAP } from "@lib/utils";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { type MouseEvent, useMemo } from "react";
 
@@ -67,7 +67,7 @@ export default function FriendItem(props: {
                   {props.presence && props.presence?.activities.length !== 0 ? (
                      <ActivityPreview presence={props.presence} />
                   ) : (
-                     presenceStatuses[props.presence?.status ?? "offline"].text
+                     PRESENCE_STATUS_MAP[props.presence?.status ?? "offline"].text
                   )}
                </div>
             </div>

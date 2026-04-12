@@ -1,4 +1,4 @@
-import RouteErrorComponent from "@components/RouteErrorComponent";
+import ErrorComponent from "@components/ErrorComponent";
 import { logger } from "@huginn/shared";
 
 import "./index.css";
@@ -6,7 +6,7 @@ import "highlight.js/styles/atom-one-dark.css";
 import { clientStore } from "@stores/clientStore";
 import { initializeStorage, storageStore } from "@stores/storageStore";
 import { QueryClient } from "@tanstack/react-query";
-import { createRouter, RouterProvider } from "@tanstack/react-router";
+import { createBrowserHistory, createHashHistory, createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
 import { createRoot } from "react-dom/client";
 
 import { RemoteLogger } from "../shared/remote-logger";
@@ -57,14 +57,20 @@ if (window.electronAPI) {
    const thisStore = storageStore.getState();
    const settings = thisStore.getCachedValue("settings");
    const clientInfo = thisStore.getCachedValue("client-info");
-   const endpoint = new URL("/api/log", settings.apiHostname).toString();
-   _remoteLogger = new RemoteLogger(logger, endpoint, clientInfo.id);
+   const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
+   if (activePreset?.apiHostname) {
+      const endpoint = new URL("/api/log", activePreset.apiHostname).toString();
+      _remoteLogger = new RemoteLogger(logger, endpoint, clientInfo.id);
+   }
 }
+
+const history = __IS_ELECTRON__ ? createHashHistory() : createBrowserHistory();
 
 const router = createRouter({
    routeTree: routeTree,
-   basepath: "app",
-   defaultErrorComponent: RouteErrorComponent,
+   history: history,
+   basepath: !__IS_ELECTRON__ ? "app" : undefined,
+   defaultErrorComponent: ErrorComponent,
    defaultPendingMinMs: 0,
    defaultPendingMs: 0,
 });

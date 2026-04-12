@@ -4,7 +4,7 @@ import { useHuginnWindow } from "@stores/windowStore";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 
-export function useUpdater(options: { onNotAvailable?: () => void | Promise<void>; onError?: () => void; onUpdating?: () => void }) {
+export function useUpdater(options: { onNotAvailable?: () => void | Promise<void>; onError?: (message: string) => void; onUpdating?: () => void }) {
    const huginnWindow = useHuginnWindow();
    const [progress, setProgress] = useState(0);
    const [updateInfo, setUpdateInfo] = useState<UpdateInfo>();
@@ -32,7 +32,7 @@ export function useUpdater(options: { onNotAvailable?: () => void | Promise<void
       onError(error) {
          console.log(error);
          isChecking.current = false;
-         options.onError?.();
+         options.onError?.(error.message);
       },
       retry: 2,
       retryDelay: 3000,

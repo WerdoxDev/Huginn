@@ -2,12 +2,17 @@
 
 @theme {
    --font-*: initial;
-   --font-noto: Noto Sans, sans-serif;
+   /* --font-noto: Noto Sans, sans-serif; */
    --font-ubuntu: Ubuntu Mono, monospace;
 
    --spacing-topbar-icon: 1.5rem;
    --spacing-topbar: 4rem;
    --spacing-topbar-separator: calc(var(--spacing-topbar) + 0.125rem);
+
+   --text-tiny: 0.688rem;
+   /* --text-tiny--line-height: 1.5rem; */
+   /* --text-tiny--letter-spacing: 0.125rem; */
+   /* --text-tiny--font-weight: 500; */
 }
 
 @theme inline {
@@ -56,6 +61,11 @@
    --color-text: rgb(var(--tcolor-text));
 }
 
+@utility box-exact {
+   text-box-trim: trim-both;
+   text-box-edge: cap alphabetic;
+}
+
 /*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still
@@ -75,20 +85,15 @@
 }
 
 @font-face {
-   font-family: "Noto Sans";
-   src: url("assets/NotoSans.ttf") format("TrueType");
+   font-family: "Rubik";
+   src: url("assets/Rubik-VariableFont_wght.ttf") format("TrueType");
    font-style: normal;
 }
 
 @font-face {
-   font-family: "Noto Sans";
-   src: url("assets/NotoSansItalic.ttf") format("TrueType");
+   font-family: "Rubik";
+   src: url("assets/Rubik-Italic-VariableFont_wght.ttf") format("TrueType");
    font-style: italic;
-}
-
-@font-face {
-   font-family: "Noto Sans Arabic";
-   src: url("assets/NotoSansArabic.ttf") format("TrueType");
 }
 
 @font-face {
@@ -117,8 +122,11 @@
 }
 
 :root {
-   font-family: "Noto Sans", "Noto Sans Arabic", sans-serif;
+   font-family: "Rubik", sans-serif;
+   /* font-family: "Cascadia Mono", sans-serif; */
    -webkit-font-smoothing: none;
+   /* letter-spacing: 0.05rem; */
+   /* font-size: 17px; */
    font-synthesis: none;
    text-rendering: optimizeLegibility;
    interpolate-size: allow-keywords;
@@ -127,7 +135,6 @@
 html,
 body,
 #root {
-   /* background-color: #060606; */
    @apply bg-surface-alt h-full overflow-hidden overscroll-none;
 }
 
@@ -246,6 +253,18 @@ input::-ms-clear {
 
 .cropper-crop-box {
    border-radius: 100%;
+}
+
+.banner-crop .cropper-view-box {
+   border-radius: 0;
+}
+
+.banner-crop .cropper-crop-box {
+   border-radius: 0;
+}
+
+.banner-crop .cropper-face {
+   border-radius: 0;
 }
 
 .cropper-face {

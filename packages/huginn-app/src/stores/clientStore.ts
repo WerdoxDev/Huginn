@@ -24,21 +24,37 @@ const initialStore = () => ({
 
 const store = createStore(() => initialStore());
 
-export async function setHostnamesFromExternal() {
+export type ExternalHostnameStatus = "network_error" | "invalid_response" | "success";
+export type ExternalHostnameResult = {
+   success: boolean;
+   status: ExternalHostnameStatus;
+};
+
+export async function setHostnamesFromExternal(): Promise<ExternalHostnameResult> {
    log("app:client-store", "default", "set hostnames from external");
 
    const settings = storageStore.getState().getCachedValue("settings");
+   const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
    let response: Response | undefined;
 
-   try {
-      response = await fetch(settings.externalHostnamesUrl, { cache: "no-cache" });
-      const json = await response?.json();
-      store.setState({ hostnames: { api: json.api, cdn: json.cdn, voice: json.voice } });
-      return true;
-   } catch (e) {
-      error("app:client-store", "Error fetching external hostnames", e);
+   if (!activePreset) {
+      return { success: false, status: "invalid_response" } as ExternalHostnameResult;
+   }
 
-      return false;
+   try {
+      response = await fetch(activePreset.externalHostnamesUrl, { cache: "no-cache" });
+      const json = response.headers.get("content-type")?.includes("application/json") ? await response?.json() : undefined;
+      if (!response?.ok || !json || !json?.api || !json?.cdn || !json?.voice) {
+         error("app:client-store", "invalid response fetching external hostnames", response);
+         return { success: false, status: "invalid_response" } as ExternalHostnameResult;
+      }
+
+      store.setState({ hostnames: { api: json.api, cdn: json.cdn, voice: json.voice } });
+      return { success: true, status: "success" } as ExternalHostnameResult;
+   } catch (e) {
+      error("app:client-store", "error fetching external hostnames", e);
+
+      return { success: false, status: "network_error" } as ExternalHostnameResult;
    }
 }
 
@@ -46,11 +62,12 @@ export function setHostnamesFromSettings() {
    log("app:client-store", "default", "set hostnames from settings");
 
    const settings = storageStore.getState().getCachedValue("settings");
+   const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
    store.setState({
       hostnames: {
-         api: settings.apiHostname,
-         cdn: settings.cdnHostname,
-         voice: settings.voiceHostname,
+         api: activePreset?.apiHostname ?? "",
+         cdn: activePreset?.cdnHostname ?? "",
+         voice: activePreset?.voiceHostname ?? "",
       },
    });
 }

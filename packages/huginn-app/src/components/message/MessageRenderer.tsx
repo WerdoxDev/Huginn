@@ -18,7 +18,6 @@ function MessageRenderer() {
 
    return (
       <li className="group shrink-0 select-text" ref={context.ref} id={context.message.id}>
-         {/* {context.message.isEditing && <EditMessage />} */}
          {(context.message.isPreview || [MessageType.DEFAULT, MessageType.REPLY].includes(context.message.type)) && <DefaultMessage />}
          {!context.message.isPreview &&
             [

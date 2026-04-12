@@ -1,58 +1,173 @@
-import HuginnDropdown from "@components/dropdown/HuginnDropdown";
-import { useStorage } from "@stores/storageStore";
-import { ceruleanTheme, charcoalTheme, coffeeTheme, eggplantTheme, pineGreenTheme, scarletTheme } from "@stores/themeStore";
+import HuginnIcon from "@components/HuginnIcon";
+import HuginnLabel from "@components/HuginnLabel";
+import { hexToRgb } from "@huginn/shared";
+import { ceruleanTheme, charcoalTheme, coffeeTheme, eggplantTheme, pineGreenTheme, scarletTheme, useTheme } from "@stores/themeStore";
+import { animate, createDraggable, createScope, Draggable, utils, type Scope } from "animejs";
+import clsx from "clsx";
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 
-import type { DropdownItem, SettingsTabProps, ThemeType } from "@/types";
+import type { SettingsTabProps, ThemeType } from "@/types";
 
-const themes: DropdownItem[] = [
-   {
-      text: "Pine Green",
-      value: "pine green",
-      icon: <ThemeIcon color={pineGreenTheme["primary-500"]} />,
-   },
-   {
-      text: "Cerulean",
-      value: "cerulean",
-      icon: <ThemeIcon color={ceruleanTheme["primary-500"]} />,
-   },
-   {
-      text: "Eggplant",
-      value: "eggplant",
-      icon: <ThemeIcon color={eggplantTheme["primary-500"]} />,
-   },
-   { text: "Coffee", value: "coffee", icon: <ThemeIcon color={coffeeTheme["primary-500"]} /> },
-   {
-      text: "Charcoal",
-      value: "charcoal",
-      icon: <ThemeIcon color={charcoalTheme["primary-500"]} />,
-   },
-   { text: "Scarlet", value: "scarlet", icon: <ThemeIcon color={scarletTheme["primary-500"]} /> },
-];
+const primaryCorners = ["primary-300", "primary-700", "primary-500", "primary-900"] as const;
+
+const themeOptions = [
+   { type: "pine green" as ThemeType, label: "Pine Green", theme: pineGreenTheme },
+   { type: "cerulean" as ThemeType, label: "Cerulean", theme: ceruleanTheme },
+   { type: "eggplant" as ThemeType, label: "Eggplant", theme: eggplantTheme },
+   { type: "coffee" as ThemeType, label: "Coffee", theme: coffeeTheme },
+   { type: "charcoal" as ThemeType, label: "Charcoal", theme: charcoalTheme },
+   { type: "scarlet" as ThemeType, label: "Scarlet", theme: scarletTheme },
+] as const;
 
 export default function SettingsThemeTab(props: SettingsTabProps) {
-   const settings = useStorage("settings");
+   const scope = useRef<Scope>(null);
+   const dragRef = useRef<HTMLDivElement>(null);
+   const iconRef = useRef<HTMLDivElement>(null);
+   const bounceRef = useRef<HTMLDivElement>(null);
+   const boxRef = useRef<HTMLDivElement>(null);
+   const canvasRef = useRef<HTMLCanvasElement>(null);
+   const draggable = useRef<Draggable>(null);
+   const { themeType } = useTheme();
+   const [previewThemeType, setPreviewThemeType] = useState<ThemeType | null>(null);
 
-   function onThemeChange(item: DropdownItem) {
-      // setTheme(item.value as ThemeType);
-      props.onChange?.({ theme: item.value as ThemeType });
+   const activeTheme = useMemo(() => themeOptions.find((t) => t.type === (previewThemeType ?? themeType))!.theme, [themeType, previewThemeType]);
+
+   // Canvas renders the hovered preview theme, or the current theme
+   const canvasTheme = previewThemeType ? themeOptions.find((t) => t.type === previewThemeType)!.theme : activeTheme;
+   const canvasTl = useMemo(() => hexToRgb(canvasTheme[primaryCorners[0]]), [canvasTheme]);
+   const canvasTr = useMemo(() => hexToRgb(canvasTheme[primaryCorners[1]]), [canvasTheme]);
+   const canvasBl = useMemo(() => hexToRgb(canvasTheme[primaryCorners[2]]), [canvasTheme]);
+   const canvasBr = useMemo(() => hexToRgb(canvasTheme[primaryCorners[3]]), [canvasTheme]);
+
+   // Draggable glow tracks the current theme
+   const tl = useMemo(() => hexToRgb(activeTheme[primaryCorners[0]]), [activeTheme]);
+   const tr = useMemo(() => hexToRgb(activeTheme[primaryCorners[1]]), [activeTheme]);
+   const bl = useMemo(() => hexToRgb(activeTheme[primaryCorners[2]]), [activeTheme]);
+   const br = useMemo(() => hexToRgb(activeTheme[primaryCorners[3]]), [activeTheme]);
+
+   // Render 2D gradient to canvas (updates on preview hover too)
+   useEffect(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      const w = canvas.width;
+      const h = canvas.height;
+      const imageData = ctx.createImageData(w, h);
+      for (let y = 0; y < h; y++) {
+         const ny = y / (h - 1);
+         for (let x = 0; x < w; x++) {
+            const nx = x / (w - 1);
+            const r = utils.lerp(utils.lerp(canvasTl[0], canvasTr[0], nx), utils.lerp(canvasBl[0], canvasBr[0], nx), ny);
+            const g = utils.lerp(utils.lerp(canvasTl[1], canvasTr[1], nx), utils.lerp(canvasBl[1], canvasBr[1], nx), ny);
+            const b = utils.lerp(utils.lerp(canvasTl[2], canvasTr[2], nx), utils.lerp(canvasBl[2], canvasBr[2], nx), ny);
+            const i = (y * w + x) * 4;
+            imageData.data[i] = r;
+            imageData.data[i + 1] = g;
+            imageData.data[i + 2] = b;
+            imageData.data[i + 3] = 255;
+         }
+      }
+      ctx.putImageData(imageData, 0, 0);
+   }, [canvasTl, canvasTr, canvasBl, canvasBr]);
+
+   const updateColor = useEffectEvent(() => {
+      const drag = draggable.current;
+      if (!boxRef.current || !drag) return;
+
+      const maxX = boxRef.current.offsetWidth - drag.$target.offsetWidth;
+      const maxY = boxRef.current.offsetHeight - drag.$target.offsetHeight;
+      const nx = maxX > 0 ? Math.max(0, Math.min(drag.x / maxX, 1)) : 0;
+      const ny = maxY > 0 ? Math.max(0, Math.min(drag.y / maxY, 1)) : 0;
+
+      const r = Math.round(utils.lerp(utils.lerp(tl[0], tr[0], nx), utils.lerp(bl[0], br[0], nx), ny));
+      const g = Math.round(utils.lerp(utils.lerp(tl[1], tr[1], nx), utils.lerp(bl[1], br[1], nx), ny));
+      const b = Math.round(utils.lerp(utils.lerp(tl[2], tr[2], nx), utils.lerp(bl[2], br[2], nx), ny));
+
+      drag.$target.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+      drag.$target.style.boxShadow = `0 0 12px 2px rgba(${r}, ${g}, ${b}, 0.4)`;
+   });
+
+   // Setup draggable with physics
+   useEffect(() => {
+      scope.current = createScope().add(() => {
+         if (!dragRef.current || !boxRef.current) return;
+
+         let rotation = 0;
+
+         draggable.current = createDraggable(dragRef.current, {
+            container: boxRef.current,
+            velocityMultiplier: 5,
+            containerFriction: 0.6,
+            releaseStiffness: 50,
+            dragSpeed: 0.5,
+            onUpdate: (draggableInstance) => {
+               updateColor();
+               rotation += draggableInstance.deltaX * 10 + draggableInstance.deltaY * 10;
+               if (iconRef.current) iconRef.current.style.transform = `rotate(${rotation}deg)`;
+            },
+         });
+         updateColor();
+      });
+
+      return () => scope.current?.revert();
+   }, []);
+
+   const displayedLabel =
+      (previewThemeType ? themeOptions.find((t) => t.type === previewThemeType) : themeOptions.find((t) => t.type === themeType))?.label ?? "";
+
+   function handleIconClick() {
+      if (bounceRef.current) {
+         animate(bounceRef.current, {
+            scale: [1, 1.2, 1],
+            duration: 200,
+            ease: "easeInOut",
+         });
+      }
    }
 
+   useEffect(() => {
+      updateColor();
+   }, [previewThemeType, themeType]);
+
    return (
-      <div className="flex flex-col gap-y-6">
-         <HuginnDropdown onChange={onThemeChange} value={themes.find((x) => x.value === settings.theme)}>
-            <HuginnDropdown.Label>Color Theme</HuginnDropdown.Label>
-            <HuginnDropdown.List className="w-52">
-               <HuginnDropdown.ItemsWrapper className="w-52">
-                  {themes.map((x) => (
-                     <HuginnDropdown.Item key={x.value} item={x} />
-                  ))}
-               </HuginnDropdown.ItemsWrapper>
-            </HuginnDropdown.List>
-         </HuginnDropdown>
+      <div className="flex flex-col items-center">
+         <div className="flex flex-col">
+            <HuginnLabel>Color Theme</HuginnLabel>
+            <div className="flex flex-col items-start gap-y-2">
+               <div className="relative flex h-28 w-72 overflow-hidden rounded-md shadow-md select-none" ref={boxRef}>
+                  <canvas ref={canvasRef} width={288} height={112} className="pointer-events-none absolute inset-0 size-full rounded-md opacity-50" />
+                  <div className="flex size-10 items-center justify-center rounded-full" ref={dragRef} onClick={handleIconClick}>
+                     <div ref={iconRef}>
+                        <div ref={bounceRef}>
+                           <HuginnIcon className="size-7" overrideTheme={previewThemeType ?? themeType} />
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <div className="flex w-72 items-center justify-between">
+                  <div className="text-sm font-medium" style={{ color: activeTheme["primary-400"] }}>
+                     {displayedLabel}
+                  </div>
+                  <div className="flex items-center gap-x-2.5">
+                     {themeOptions.map((t) => (
+                        <button
+                           key={t.type}
+                           type="button"
+                           className={clsx(
+                              "size-6 cursor-pointer rounded-full transition-all",
+                              themeType === t.type ? "scale-125 shadow-md" : "opacity-50 hover:scale-110 hover:opacity-90",
+                           )}
+                           style={{ backgroundColor: t.theme["primary-500"] }}
+                           onClick={() => props.onChange?.({ theme: t.type })}
+                           onMouseEnter={() => setPreviewThemeType(t.type)}
+                           onMouseLeave={() => setPreviewThemeType(null)}
+                        />
+                     ))}
+                  </div>
+               </div>
+            </div>
+         </div>
       </div>
    );
-}
-
-function ThemeIcon(props: { color: string }) {
-   return <div className="h-6 w-6 rounded-md" style={{ background: props.color }} />;
 }

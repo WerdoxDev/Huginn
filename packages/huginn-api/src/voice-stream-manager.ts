@@ -1,6 +1,6 @@
 import type { RtpEncodingParameters } from "mediasoup-client/types";
 
-import { clamp, constants, EventEmitter, log } from "@huginn/shared";
+import { clamp, CONSTANTS, EventEmitter, log } from "@huginn/shared";
 
 import type { VoiceStreamOptions } from ".";
 import type { VoiceTransportManager } from "./voice-transport-manager";
@@ -22,14 +22,14 @@ export class VoiceStreamManager extends EventEmitter<Events> {
    public async openStream(videoTrack?: MediaStreamTrack, audioTrack?: MediaStreamTrack, options?: VoiceStreamOptions): Promise<void> {
       log("api:voice-stream", "default", "open stream");
       const maxVideoBitrate = clamp(
-         options?.maxVideoBitrate ?? constants.DEFAULT_VIDEO_BITRATE,
-         constants.MIN_VIDEO_BITRATE,
-         constants.MAX_VIDEO_BITRATE,
+         options?.maxVideoBitrate ?? CONSTANTS.DEFAULT_VIDEO_BITRATE,
+         CONSTANTS.MIN_VIDEO_BITRATE,
+         CONSTANTS.MAX_VIDEO_BITRATE,
       );
       const maxAudioBitrate = clamp(
-         options?.maxAudioBitrate ?? constants.DEFAULT_AUDIO_BITRATE,
-         constants.MIN_AUDIO_BITRATE,
-         constants.MAX_AUDIO_BITRATE,
+         options?.maxAudioBitrate ?? CONSTANTS.DEFAULT_AUDIO_BITRATE,
+         CONSTANTS.MIN_AUDIO_BITRATE,
+         CONSTANTS.MAX_AUDIO_BITRATE,
       );
       const scalabilityMode = "L1T3";
       const useSimulcast = options?.useSimulcast ?? true;
@@ -108,7 +108,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
          throw new Error("No video producer found");
       }
 
-      const clampedBitrate = clamp(maxBitrate, constants.MIN_VIDEO_BITRATE, constants.MAX_VIDEO_BITRATE);
+      const clampedBitrate = clamp(maxBitrate, CONSTANTS.MIN_VIDEO_BITRATE, CONSTANTS.MAX_VIDEO_BITRATE);
       const params = producer.rtpSender?.getParameters();
 
       if (!params) {
@@ -141,7 +141,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
          throw new Error("No audio producer found");
       }
 
-      const clampedBitrate = clamp(maxBitrate, constants.MIN_AUDIO_BITRATE, constants.MAX_AUDIO_BITRATE);
+      const clampedBitrate = clamp(maxBitrate, CONSTANTS.MIN_AUDIO_BITRATE, CONSTANTS.MAX_AUDIO_BITRATE);
       const params = producer.rtpSender?.getParameters();
 
       if (!params) {

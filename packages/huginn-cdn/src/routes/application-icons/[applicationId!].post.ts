@@ -3,12 +3,12 @@ import { extractFileInfo, transformImage } from "#utils/file-utils";
 import { invalidBody, verifyJwt } from "@huginn/backend-shared";
 import Elysia, { t } from "elysia";
 
-const schema = t.Record(t.String(), t.File());
+const schema = t.Object({ files: t.Array(t.File()) });
 
 export const postApplicationIcon = new Elysia().use(verifyJwt("cdn")).post(
    "/cdn/application-icons/:applicationId?",
    async ({ body, status, params: { applicationId } }) => {
-      const file = body["files[0]"];
+      const file = body.files[0];
 
       if (!file) {
          return invalidBody(status);

@@ -32,11 +32,11 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_app/_start/oauth-redirect")({
-   component: OauthRedirectComponent,
+   component: OAuthRedirectComponent,
    validateSearch: searchSchema,
 });
 
-function OauthRedirectComponent() {
+function OAuthRedirectComponent() {
    const client = useClient();
    const search = useSearch({ from: "/_app/_start/oauth-redirect" });
    const navigate = useNavigate();

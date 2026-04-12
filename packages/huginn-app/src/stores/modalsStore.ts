@@ -5,7 +5,7 @@ import { produce } from "immer";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 
-import type { AppDirectChannel, MutationKinds } from "@/types";
+import type { AppDirectChannel } from "@/types";
 
 type DefaultModal = { isOpen: boolean };
 
@@ -16,11 +16,13 @@ const initialStore = () => ({
       status: "none",
       title: "",
       text: "",
+      errorCode: "",
       isClosable: true,
    } as DefaultModal & {
       status: "info" | "success" | "error" | "none";
       text: ReactNode;
       title: string;
+      errorCode?: string;
       action?: {
          cancel?: {
             text?: string;
@@ -28,15 +30,16 @@ const initialStore = () => ({
          };
          confirm?: {
             text: string;
-            mutationKey?: keyof MutationKinds;
             callback: () => void | Promise<void>;
          };
       };
       isClosable: boolean;
    },
-   imageCrop: { isOpen: false, originalImageData: "", mimeType: "" } as DefaultModal & {
+   imageCrop: { isOpen: false, originalImageData: "", mimeType: "", cropType: "avatar", callback: undefined } as DefaultModal & {
       originalImageData: string;
       mimeType: string;
+      cropType?: "avatar" | "banner";
+      callback?: (data: string) => Promise<void> | void;
    },
    createDM: { isOpen: false } as DefaultModal,
    editGroup: { isOpen: false } as DefaultModal & { channel?: AppDirectChannel },
@@ -66,6 +69,12 @@ const initialStore = () => ({
    changeUsername: { isOpen: false } as DefaultModal,
    changeDisplayName: { isOpen: false } as DefaultModal,
    changeEmail: { isOpen: false } as DefaultModal,
+   verifyEmail: { isOpen: false, pendingEmail: null, onSuccess: undefined } as DefaultModal & {
+      pendingEmail: string | null;
+      onSuccess?: () => Promise<void> | void;
+   },
+   changePassword: { isOpen: false } as DefaultModal,
+   userProfile: { isOpen: false, userId: "" } as DefaultModal & { userId: Snowflake },
 });
 
 type StoreType = ReturnType<typeof initialStore>;
@@ -81,8 +90,8 @@ const store = createStore(
                }
             }),
          ),
-      showError: (text: string) => {
-         store.getState().updateModals({ info: { status: "error", title: "Oops!", text, isOpen: true } });
+      showError: (text: string, errorCode?: string) => {
+         store.getState().updateModals({ info: { status: "error", title: "Oops!", text, errorCode, isOpen: true } });
       },
    })),
 );

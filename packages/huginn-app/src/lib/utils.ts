@@ -5,6 +5,7 @@ import {
    type APIMessage,
    type APIPostMessageReferenceJSONBody,
    type APIRelationshipWithoutOwner,
+   type APIUserProfile,
    ChannelType,
    type DirectChannel,
    HuginnAPIError,
@@ -22,7 +23,7 @@ import {
 import { clientStore } from "@stores/clientStore";
 import { Children, isValidElement } from "react";
 
-import type { AppDirectChannel, AppMessage, AppPresence, AppRelationship, AppUser, InputMessage } from "@/types";
+import type { AppDirectChannel, AppMessage, AppPresence, AppRelationship, AppUser, AppUserProfile, InputMessage } from "@/types";
 
 import { APIMessages } from "./error-messages";
 import { getMessage } from "./query-utils";
@@ -100,6 +101,7 @@ export function getSizeText(size: number) {
 }
 
 export function convertToAppDirectChannel(channel: DirectChannel): AppDirectChannel {
+   console.log(channel);
    const name =
       channel.type === ChannelType.DM
          ? (channel.recipients[0].displayName ?? channel.recipients[0].username)
@@ -127,7 +129,7 @@ export function convertToAppMessage(message: APIMessage, source: "websocket" | "
       ...(message.type === MessageType.REPLY ? omit(message, ["referencedMessage", "author", "mentions"]) : rest),
       ...(message.type === MessageType.REPLY
          ? {
-              referencedMessage: message.referencedMessage ? convertToAppMessage(message.referencedMessage, source) : undefined,
+              referencedMessage: message.referencedMessage ? convertToAppMessage(message.referencedMessage, source) : message.referencedMessage,
            }
          : {}),
       authorId: message.author.id,
@@ -145,6 +147,13 @@ export function convertToAppUser<U extends PresenceUser = PresenceUser>(user: U)
    };
 }
 
+export function convertToAppUserProfile(profile: APIUserProfile): AppUserProfile {
+   return {
+      ...omit(profile, ["user"]),
+      userId: profile.user.id,
+   };
+}
+
 export function convertToAppPresence(presence: UserPresence): AppPresence {
    const cdn = `${clientStore.getState().hostnames.cdn}/cdn`;
    const activities = presence.activities.map((x) => ({
@@ -154,7 +163,7 @@ export function convertToAppPresence(presence: UserPresence): AppPresence {
    return { ...omit(presence, ["user"]), userId: presence.user.id, activities };
 }
 
-export const presenceStatuses: Record<PresenceStatus, { text: string; color: string }> = {
+export const PRESENCE_STATUS_MAP: Record<PresenceStatus, { text: string; color: string }> = {
    offline: { text: "Offline", color: "bg-white/50" },
    dnd: { text: "Do Not Disturb", color: "bg-negative-100" },
    idle: { text: "Idle", color: "bg-caution-100" },

@@ -29,11 +29,15 @@ type StoreType = ReturnType<typeof initialStore>;
 const store = createStore(
    combine(initialStore(), (set) => ({
       setFriendsNotificationsCount: (count: number) => set({ friendsNotificationsCount: count }),
-      setLatestReadMessage: (channelId: Snowflake, messageId: Snowflake, queryClient: QueryClient) => {
+      setLatestReadMessage: (channelId: Snowflake, messageId: Snowflake, queryClient: QueryClient, userId?: Snowflake) => {
          const messages = getCurrentPageMessages(channelId, queryClient);
-         if (!messages || !messages.some((x) => x.id === messageId)) return;
 
-         const unreadCount = messages.filter((x) => BigInt(x.id) > BigInt(messageId)).length;
+         // Always update lastReadMessageId. Compute unreadCount from cache when available,
+         // filtering out the current user's own messages (mirroring server-side countUnreadMessages).
+         // Fall back to 0 when messages aren't loaded — the server is authoritative on the next ready event.
+         const unreadCount = messages
+            ? messages.filter((x) => BigInt(x.id) > BigInt(messageId) && (!userId || x.authorId !== userId)).length
+            : 0;
 
          set(
             produce((draft: StoreType) => {
@@ -41,11 +45,20 @@ const store = createStore(
                draft.readStates.push({
                   channelId,
                   lastReadMessageId: messageId,
-                  unreadCount: unreadCount,
+                  unreadCount,
                });
             }),
          );
       },
+      setReadState: (readState: ContextReadState) =>
+         set(
+            produce((draft: StoreType) => {
+               const idx = draft.readStates.findIndex((x) => x.channelId === readState.channelId);
+               if (idx !== -1) {
+                  draft.readStates[idx] = readState;
+               }
+            }),
+         ),
       addChannelToReadStates: (channelId: Snowflake) =>
          set(
             produce((draft: StoreType) => {

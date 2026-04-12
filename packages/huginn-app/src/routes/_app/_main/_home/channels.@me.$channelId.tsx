@@ -2,8 +2,8 @@ import ChannelMessages from "@components/channels/ChannelMessages";
 import ChannelSidebar from "@components/channels/ChannelSidebar";
 import ChannelWithIdTopBar from "@components/channels/ChannelWithIdTopBar";
 import DirectChannelCall from "@components/channels/DirectChannelCall";
+import ErrorComponent from "@components/ErrorComponent";
 import MessageBox from "@components/MessageBox";
-import RouteErrorComponent from "@components/RouteErrorComponent";
 import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { ChannelType } from "@huginn/shared";
@@ -108,7 +108,7 @@ function ChannelWithIdComponent() {
                <div className="bg-surface absolute bottom-0 flex h-16 w-full shrink-0" />
             </>
          ) : (
-            <RouteErrorComponent error="Channel not found" />
+            <ErrorComponent error="Channel not found" />
          )}
       </div>
    );

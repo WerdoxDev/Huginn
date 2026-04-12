@@ -91,6 +91,14 @@ export const Routes = {
 
    /**
     * Route for:
+    * - GET '/users/{user.id}/profile'
+    */
+   userProfile(id: Snowflake): `/users/${string}/profile` {
+      return `/users/${id}/profile` as const;
+   },
+
+   /**
+    * Route for:
     * - PATCH '/users/@me/settings'
     */
    userSettings() {
@@ -203,6 +211,14 @@ export const CDNRoutes = {
     */
    uploadAvatar(userId: Snowflake): `/avatars/${string}` {
       return `/avatars/${userId}` as const;
+   },
+
+   /**
+    * Route for:
+    * - POST '/banners/{user.id}'
+    */
+   uploadBanner(userId: Snowflake): `/banners/${string}` {
+      return `/banners/${userId}` as const;
    },
 
    /**

@@ -7,7 +7,7 @@ import {
    type RequestData,
    type RequestMethod,
    type RouteLike,
-   constants,
+   CONSTANTS,
    parseResponse,
    resolveRequest,
 } from "@huginn/shared";
@@ -17,7 +17,7 @@ export async function cdnUpload<T>(fullRoute: RouteLike, options: RequestData = 
       throw new Error("CDN Root was not configured");
    }
 
-   const token = await createToken("cdn", undefined, constants.CDN_TOKEN_EXPIRE_TIME);
+   const token = await createToken("cdn", undefined, CONSTANTS.CDN_TOKEN_EXPIRE_TIME);
 
    logCDNRequest(fullRoute, "POST");
    return (await request({
@@ -45,7 +45,7 @@ export async function serverFetch<T>(url: string, method: RequestMethod, options
 
 export async function request(options: InternalRequest & { throw?: boolean }): Promise<unknown> {
    const { url, fetchOptions } = await resolveRequest(options);
-
+   console.log(fetchOptions);
    const response = await fetch(url, fetchOptions);
 
    if (response.ok || !options.throw) return parseResponse(response);

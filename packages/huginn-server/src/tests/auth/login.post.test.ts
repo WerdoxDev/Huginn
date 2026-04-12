@@ -1,7 +1,8 @@
 import type { APIPostLoginResult, LoginCredentials } from "@huginn/shared";
 
-import { createTestUsers } from "#tests/utils";
+import { createTestUsers, removeUserLater } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
 import { describe, expect, test } from "bun:test";
 
 describe("POST /auth/login", () => {
@@ -71,9 +72,39 @@ describe("POST /auth/login", () => {
             displayName: user.displayName,
             refreshToken: user.refreshToken,
             avatar: user.avatar,
+            banner: user.banner,
+            bannerColor: user.bannerColor,
+            accentColor: user.accentColor,
+            bio: user.bio,
             email: user.email,
             password: user.password,
          });
       }
+   });
+
+   test("should return 202 with pending email for unverified users", async () => {
+      const user = await prisma.user
+         .createOne({
+            username: "unverified_login_user",
+            displayName: "unverified login user",
+            email: "unverified-login-user@gmail.com",
+            password: "unverified-login-pass",
+         })
+         .then(removeUserLater);
+
+      const response = (await testHandler(
+         "/api/auth/login",
+         {},
+         "POST",
+         {
+            email: user.email,
+            password: "unverified-login-pass",
+         },
+         true,
+      )) as Response;
+      const result = (await response.json()) as { pendingEmail: string };
+
+      expect(response.status).toBe(202);
+      expect(result).toStrictEqual({ pendingEmail: user.email });
    });
 });

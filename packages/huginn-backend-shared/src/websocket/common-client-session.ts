@@ -1,7 +1,7 @@
 import type { CommonPayload } from "#types";
 import type { Peer } from "crossws";
 
-import { type APIUser, constants, error, GatewayCode, log, type Snowflake } from "@huginn/shared";
+import { type APIUser, CONSTANTS, error, GatewayCode, log, type Snowflake } from "@huginn/shared";
 
 export abstract class CommonClientSession<Payload extends CommonPayload, Properties = undefined> {
    public sessionId: Snowflake;
@@ -90,7 +90,7 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
       this.heartbeatTimeout = setTimeout(() => {
          this.peer.close(GatewayCode.SESSION_TIMEOUT, "SESSION_TIMEOUT");
          this.stopHeartbeatTimeout();
-      }, constants.HEARTBEAT_INTERVAL + constants.HEARTBEAT_TOLERANCE);
+      }, CONSTANTS.HEARTBEAT_INTERVAL + CONSTANTS.HEARTBEAT_TOLERANCE);
    }
 
    public async subscribeToTopics() {

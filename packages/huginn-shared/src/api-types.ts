@@ -44,6 +44,10 @@ export type APIUser = {
    username: string;
    displayName: string | null;
    avatar: string | null;
+   banner: string | null;
+   bannerColor?: string | null;
+   accentColor?: string | null;
+   bio: string | null;
    system?: boolean;
    email: string;
    password?: string | null;
@@ -55,6 +59,10 @@ export type APIPublicUser = {
    username: string;
    displayName: string | null;
    avatar: string | null;
+   banner: string | null;
+   bannerColor?: string | null;
+   accentColor?: string | null;
+   bio: string | null;
    flags: UserFlags;
 } & APIBaseUser;
 
@@ -89,11 +97,17 @@ export type APIPostRegisterJSONBody = {
    password: string;
 };
 
+export type EmailVerificationPurpose = "registration" | "email_change";
+
 export type APIPatchCurrentUserJSONBody = {
    email?: string;
    displayName?: string | null;
    username?: string;
    avatar?: string | null;
+   banner?: string | null;
+   bannerColor?: string | null;
+   accentColor?: string | null;
+   bio?: string | null;
    password?: string;
    newPassword?: string;
 };
@@ -104,8 +118,8 @@ export type APIPostOAuthConfirmJSONBody = {
    avatar: string | null;
 };
 
-export type APIPostLoginResult = APIUser & Tokens;
-export type APIPostRegisterResult = APIUser & Tokens;
+export type APIPostLoginResult = (APIUser & Tokens) | { pendingEmail: string };
+export type APIPostRegisterResult = APIUser & Partial<Tokens> & { pendingEmail?: string };
 export type APIPatchCurrentUserResult = APIUser & Tokens & { pendingEmail?: string };
 export type APIPostOAuthConfirmResult = APIUser & Tokens;
 
@@ -379,6 +393,7 @@ export type PresenceUser<U extends APIBaseUser = APIPublicUser> = Partial<U> & {
 export type UserSettings = {
    theme?: "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal" | "scarlet";
    status: PresenceStatus;
+   pinnedChannels?: Snowflake[];
 };
 
 export type ActiveSession = {
@@ -458,5 +473,21 @@ export type APIPostKnownApplicationResult = APIKnownApplication;
 
 export type APIPostVerifyEmailJSONBody = {
    code: string;
+   email: string;
 };
-export type APIPostVerifyEmailResult = APIUser;
+export type APIPostVerifyEmailResult = APIUser & Partial<Tokens>;
+
+export type BadgeType = "staff" | "bug_hunter" | "early_supporter";
+export type APIBadge = {
+   id: BadgeType;
+   color: string;
+   description: string;
+   icon: string;
+};
+
+export type APIUserProfile = {
+   user: APIPublicUser;
+   badges: APIBadge[];
+};
+
+export type APIGetProfileResult = APIUserProfile;

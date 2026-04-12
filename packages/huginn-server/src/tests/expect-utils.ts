@@ -37,7 +37,21 @@ import { containsId, type TestUser } from "./utils";
 
 export function expectPrivateUserExactSchema(user: object) {
    expect(Object.keys(user).sort()).toStrictEqual(
-      ["id", "username", "displayName", "password", "email", "avatar", "flags", "token", "refreshToken"].sort(),
+      [
+         "id",
+         "username",
+         "displayName",
+         "password",
+         "email",
+         "avatar",
+         "flags",
+         "token",
+         "refreshToken",
+         "bio",
+         "banner",
+         "bannerColor",
+         "accentColor",
+      ].sort(),
    );
 }
 
@@ -61,6 +75,10 @@ export function expectUserExactSchema(
          "displayName",
          "avatar",
          "flags",
+         "bio",
+         "banner",
+         "bannerColor",
+         "accentColor",
          ...(email ? ["email"] : []),
          ...(password ? ["password"] : []),
          ...(hasTokens ? ["token", "refreshToken"] : []),
@@ -195,8 +213,13 @@ export function expectMessageExactSchema(
             displayName: author.displayName,
             username: author.username,
             flags: author.flags,
+            banner: author.banner,
+            bannerColor: author.bannerColor,
+            accentColor: author.accentColor,
+            bio: author.bio,
          });
       }
+
       if (mentions) {
          expect(castedMessage.mentions.sort()).toStrictEqual(
             mentions
@@ -206,6 +229,10 @@ export function expectMessageExactSchema(
                   displayName: x.displayName,
                   flags: x.flags,
                   username: x.username,
+                  banner: x.banner,
+                  bannerColor: x.bannerColor,
+                  accentColor: x.accentColor,
+                  bio: x.bio,
                }))
                .sort(),
          );
@@ -246,6 +273,10 @@ export function expectRelationshipExactSchema(
             displayName: user.displayName,
             flags: user.flags,
             username: user.username,
+            banner: user.banner,
+            bannerColor: user.bannerColor,
+            accentColor: user.accentColor,
+            bio: user.bio,
          });
       }
 
@@ -310,6 +341,10 @@ export function expectRecipientModifyExactSchema(recipientModify: object, channe
          displayName: user.displayName,
          flags: user.flags,
          username: user.username,
+         banner: user.banner,
+         bannerColor: user.bannerColor,
+         accentColor: user.accentColor,
+         bio: user.bio,
       });
 }
 

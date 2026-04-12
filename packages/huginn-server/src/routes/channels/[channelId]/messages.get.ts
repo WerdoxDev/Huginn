@@ -7,7 +7,7 @@ import Elysia, { t } from "elysia";
 
 export const getChannelMessages = new Elysia().use(verifyJwt()).get(
    "/api/channels/:channelId/messages",
-   async ({ query: { after, before, limit }, params: { channelId }, tokenPayload, status }) => {
+   async ({ query: { after, before, limit, around }, params: { channelId }, tokenPayload, status }) => {
       const channel = await prisma.channel.getById(channelId, { select: { id: true } });
       limit = limit ?? 50;
 
@@ -15,7 +15,7 @@ export const getChannelMessages = new Elysia().use(verifyJwt()).get(
          return missingAccess(status);
       }
 
-      const dbMessages = await prisma.message.getMessages(channelId, limit, before, after, {
+      const dbMessages = await prisma.message.getMessages(channelId, limit, before, after, around, {
          select: selectAllMessage,
       });
 
@@ -28,6 +28,7 @@ export const getChannelMessages = new Elysia().use(verifyJwt()).get(
          limit: t.Optional(t.Number()),
          before: t.Optional(t.String()),
          after: t.Optional(t.String()),
+         around: t.Optional(t.String()),
       }),
    },
 );

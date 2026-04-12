@@ -6,8 +6,10 @@ import { combine } from "zustand/middleware";
 
 import type { UploadProgress } from "@/types";
 
+export type SavedScrollState = { type: "bottom" } | { type: "position"; scrollTop: number; messageBoxHeight: number };
+
 const initialStore = () => ({
-   savedScrolls: new Map<Snowflake, number>(),
+   savedScrolls: new Map<Snowflake, SavedScrollState>(),
    currentVisibleMessages: [] as Array<{
       messageId: Snowflake;
       messageTimestamp: number;
@@ -23,7 +25,8 @@ type StoreType = ReturnType<typeof initialStore>;
 
 export const useChannelStore = create(
    combine(initialStore(), (set) => ({
-      saveScroll: (channelId: Snowflake, scroll: number) => set((state) => ({ savedScrolls: new Map(state.savedScrolls).set(channelId, scroll) })),
+      saveScroll: (channelId: Snowflake, scroll: SavedScrollState) =>
+         set((state) => ({ savedScrolls: new Map(state.savedScrolls).set(channelId, scroll) })),
       resetScrolls: () => set({ savedScrolls: new Map() }),
       addVisibleMessage: (id: Snowflake, timestamp: number, channelId: Snowflake) =>
          set((state) => ({

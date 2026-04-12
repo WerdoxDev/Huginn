@@ -45,13 +45,20 @@ export class ChannelAPI {
       }) as Promise<APIGetMessageByIdResult>;
    }
 
-   public async getMessages(channelId: Snowflake, limit?: number, before?: Snowflake, after?: Snowflake): Promise<APIGetChannelMessagesResult> {
+   public async getMessages(
+      channelId: Snowflake,
+      limit?: number,
+      before?: Snowflake,
+      after?: Snowflake,
+      around?: Snowflake,
+   ): Promise<APIGetChannelMessagesResult> {
       return this.rest.get(Routes.channelMessages(channelId), {
          auth: true,
          query: new URLSearchParams({
             ...(limit && { limit: limit.toString() }),
             ...(before && { before: before.toString() }),
             ...(after && { after: after.toString() }),
+            ...(around && { around: around.toString() }),
          }),
       }) as Promise<APIGetChannelMessagesResult>;
    }

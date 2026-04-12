@@ -1,6 +1,6 @@
-import type { UserSettings } from ".";
+import { UserFlags, type APIBadge, type BadgeType, type UserSettings } from ".";
 
-export const constants = {
+export const CONSTANTS = {
    USERNAME_MIN_LENGTH: 4,
    USERNAME_MAX_LENGTH: 20,
    DISPLAY_NAME_MIN_LENGTH: 1,
@@ -34,13 +34,29 @@ export const constants = {
    MAX_AUDIO_BITRATE: 1000000,
    MIN_AUDIO_BITRATE: 10000,
    DEFAULT_AUDIO_BITRATE: 100000,
-   OAUTH_SENSITIVE_REAUTH_WINDOW: 60 * 60 * 1000, // 1 hour
-   EMAIL_VERIFICATION_WINDOW: 10 * 60 * 1000, // 10 minutes
-   EMAIL_VERIFICATION_RESEND_COOLDOWN: 30 * 1000, // 30 seconds
+   OAUTH_SENSITIVE_REAUTH_WINDOW: (60 * 60 * 1000) as number, // 1 hour
+   EMAIL_VERIFICATION_WINDOW: (10 * 60 * 1000) as number, // 10 minutes
+   EMAIL_VERIFICATION_RESEND_COOLDOWN: (30 * 1000) as number, // 30 seconds
+   AVATAR_MAX_FILE_SIZE: (8 * 1024 * 1024) as number, // 8MB
+   BANNER_MAX_FILE_SIZE: (10 * 1024 * 1024) as number, // 10MB
+   BIO_MAX_LENGTH: 190,
    // OAUTH_SENSITIVE_REAUTH_WINDOW: 1000, // 1 second
 };
 
-export const defaultServerSettings: UserSettings = {
+export const DEFAULT_SERVER_SETTINGS: UserSettings = {
    status: "online",
    theme: undefined,
+   pinnedChannels: [],
 };
+
+export const FLAG_BADGE_MAP: { [key in UserFlags]?: BadgeType } = {
+   [UserFlags.STAFF]: "staff",
+   [UserFlags.BUG_HUNTER]: "bug_hunter",
+   [UserFlags.EARLY_HUGINN_SUPPORTER]: "early_supporter",
+};
+
+export const BADGES: readonly APIBadge[] = [
+   { id: "staff", color: "#5865F2", description: "Huginn Staff", icon: "" },
+   { id: "bug_hunter", color: "#F04747", description: "Bug Hunter", icon: "" },
+   { id: "early_supporter", color: "#FAA61A", description: "Early Huginn Supporter", icon: "" },
+];

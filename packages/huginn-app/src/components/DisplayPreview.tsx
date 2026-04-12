@@ -30,9 +30,7 @@ export default function DisplayPreview(props: {
             ) : (
                <IconMingcuteVideoCamera2Fill className="text-text size-5" />
             )}
-            <div className="overflow-hidden text-center text-sm text-ellipsis whitespace-nowrap text-white">
-               {props.source?.name ?? props.deviceInfo?.label}
-            </div>
+            <div className="-mb-1 truncate pb-1 text-center text-sm text-white">{props.source?.name ?? props.deviceInfo?.label}</div>
          </div>
       </button>
    );

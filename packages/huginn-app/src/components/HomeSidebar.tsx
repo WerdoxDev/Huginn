@@ -1,8 +1,12 @@
+import type { Snowflake } from "@huginn/shared";
+
+import { usePinnedChannels } from "@hooks/usePinnedChannels";
 import { useModals } from "@stores/modalsStore";
 import { useReadStates } from "@stores/readStatesStore";
-import { useHuginnWindow } from "@stores/windowStore";
+import { useParams } from "@tanstack/react-router";
+import { animate, createAnimatable, createScope, Scope, spring, type AnimatableObject } from "animejs";
 import clsx from "clsx";
-import { useMemo } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import type { AppDirectChannel } from "@/types";
 
@@ -10,25 +14,75 @@ import AttentionIndicator from "./AttentionIndicator";
 import HuginnButton from "./button/HuginnButton";
 import RingLinkButton from "./button/RingLinkButton";
 import DirectMessageChannel from "./DirectMessageChannel";
-import Tooltip from "./tooltip/Tooltip";
 import VoiceStatus from "./voice/VoiceStatus";
+
+const INDICATOR_DURATION = 300;
 
 export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
    const { updateModals } = useModals();
    const { friendsNotificationsCount } = useReadStates();
+   const { channelId } = useParams({ strict: false }) as { channelId?: string };
+   const indicator = useRef<HTMLDivElement>(null);
+   const [showIndicator, setShowIndicator] = useState(false);
+   const channelRefs = useRef<Record<string, HTMLLIElement | null>>({});
 
-   const sortedChannels = useMemo(
-      () =>
-         props.channels?.toSorted((a, b) => {
-            const aId = BigInt(a.lastMessageId || a.id);
-            const bId = BigInt(b.lastMessageId || b.id);
+   const animatable = useRef<AnimatableObject>(null);
 
-            // Sort in descending order (newest first)
-            // For ascending order (oldest first), swap the comparison
-            return aId > bId ? -1 : aId < bId ? 1 : 0;
-         }),
-      [props.channels],
-   );
+   const channelIds = useMemo(() => props.channels?.map((c) => c.id), [props.channels]);
+   const { pinnedChannelIds, isPinned } = usePinnedChannels(channelIds);
+
+   const { pinnedChannels, unpinnedChannels } = useMemo(() => {
+      const byRecency = props.channels?.toSorted((a, b) => {
+         const aId = BigInt(a.lastMessageId || a.id);
+         const bId = BigInt(b.lastMessageId || b.id);
+         return aId > bId ? -1 : aId < bId ? 1 : 0;
+      });
+
+      const pinned = byRecency?.filter((c) => pinnedChannelIds?.includes(c.id)) ?? [];
+      const unpinned = byRecency?.filter((c) => !pinnedChannelIds?.includes(c.id)) ?? [];
+
+      return { pinnedChannels: pinned, unpinnedChannels: unpinned };
+   }, [props.channels, pinnedChannelIds]);
+
+   const sortedChannels = useMemo(() => [...pinnedChannels, ...unpinnedChannels], [pinnedChannels, unpinnedChannels]);
+
+   useEffect(() => {
+      animatable.current = createAnimatable(indicator.current!, {
+         y: 0,
+         height: 0,
+         scaleY: 1,
+         left: 0,
+         ease: "inOutQuad",
+      });
+
+      return () => {
+         animatable.current?.revert();
+      };
+   }, []);
+
+   // Update indicator position when selected channel changes
+   useEffect(() => {
+      if (!animatable.current) return;
+
+      if (channelId && channelRefs.current[channelId]) {
+         const element = channelRefs.current[channelId];
+         const offsetTop = element.offsetTop;
+         const height = element.offsetHeight;
+
+         if (!showIndicator) {
+            console.log(animatable.current.scaleY());
+            animatable.current.y(offsetTop, 0);
+         } else {
+            animatable.current.y(offsetTop, INDICATOR_DURATION);
+         }
+
+         setShowIndicator(true);
+         animatable.current.left(0, INDICATOR_DURATION).height(height, 0);
+      } else {
+         setShowIndicator(false);
+         animatable.current.left(-4, INDICATOR_DURATION);
+      }
+   }, [channelId, sortedChannels]);
 
    function handleCreateChannel() {
       updateModals({ createDM: { isOpen: true } });
@@ -48,7 +102,8 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
             </div>
          </div>
          <div className="h-0.5 shrink-0 bg-white/10" />
-         <ul className="scroll-super-thin flex h-full flex-col overflow-x-hidden overflow-y-scroll">
+         <ul className="scroll-super-thin relative flex h-full flex-col overflow-x-hidden overflow-y-scroll">
+            <div ref={indicator} className={clsx("bg-primary-600 pointer-events-none absolute left-0 w-1 origin-center rounded-r")} />
             <div className="text-text/70 pt-4 pr-2 pb-2 pl-4 text-xs uppercase">Direct Messages</div>
             <HuginnButton
                onClick={handleCreateChannel}
@@ -60,8 +115,17 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
                <div>Create Channel</div>
             </HuginnButton>
             <div className="flex flex-col gap-y-0.5 rounded-lg pb-2 pl-2">
-               {sortedChannels?.map((channel) => (
-                  <DirectMessageChannel key={channel.id} channel={channel} />
+               {sortedChannels.map((channel) => (
+                  <DirectMessageChannel
+                     key={channel.id}
+                     ref={(el) => {
+                        if (el) {
+                           channelRefs.current[channel.id] = el;
+                        }
+                     }}
+                     channel={channel}
+                     pinned={isPinned(channel.id)}
+                  />
                ))}
             </div>
          </ul>

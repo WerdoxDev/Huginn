@@ -1,6 +1,6 @@
 import type { Snowflake } from "@huginn/shared";
 
-import { getUserOptions } from "@lib/queries";
+import { getUserOptions, getUserProfileOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useSuspenseQueries, useSuspenseQuery } from "@tanstack/react-query";
 
@@ -18,4 +18,10 @@ export function useUsers(ids?: Snowflake[]) {
 
    const users = queries.map((x) => x.data);
    return users;
+}
+
+export function useUserProfile(id: Snowflake) {
+   const client = useClient();
+   const { data } = useSuspenseQuery(getUserProfileOptions(client!, id));
+   return data;
 }

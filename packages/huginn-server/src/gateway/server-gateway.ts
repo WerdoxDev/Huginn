@@ -9,8 +9,7 @@ import {
    selectRelationshipUser,
 } from "@huginn/backend-shared/database/common";
 import {
-   type APIReadStateWithoutUser,
-   constants,
+   CONSTANTS,
    GatewayCode,
    type GatewayHeartbeatAck,
    type GatewayHeartbeatData,
@@ -48,7 +47,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       try {
          const helloData: GatewayHello = {
             op: GatewayOperations.HELLO,
-            d: { heartbeatInterval: constants.HEARTBEAT_INTERVAL, sessionId: session.sessionId },
+            d: { heartbeatInterval: CONSTANTS.HEARTBEAT_INTERVAL, sessionId: session.sessionId },
          };
 
          log("server:gateway", "send", "hello", "intrvl:", helloData.d.heartbeatInterval, "sid:", session.sessionId);
@@ -184,17 +183,8 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       // Presences
       const presences = this.presenceManager.getUserPresences(session);
 
-      // Read states
-      const dbReadStates = await prisma.readState.getUserStates(user.id);
-      const finalReadStates: APIReadStateWithoutUser[] = [];
-
-      for (const readState of dbReadStates) {
-         finalReadStates.push({
-            channelId: readState.channelId,
-            lastReadMessageId: readState.lastReadMessageId,
-            unreadCount: await prisma.readState.countUnreadMessages(readState.userId, readState.channelId),
-         });
-      }
+      // Read states (single batched query instead of per-channel N+1)
+      const finalReadStates = await prisma.readState.getUserStatesWithUnreadCounts(user.id);
 
       // Settings
       const settings = await prisma.settings.getOrCreateSettings(user.id);

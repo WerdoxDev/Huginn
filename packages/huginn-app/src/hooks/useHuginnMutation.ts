@@ -7,19 +7,22 @@ import { useErrorHandler } from "./useErrorHandler";
 
 export function useHuginnMutation<TData = unknown, TVariables = void, TContext = unknown>(
    options: UseMutationOptions<TData, Error, TVariables, TContext>,
-   handleErrors?: (errors: HuginnErrorData) => Promise<void> | void,
+   handleErrors?: (errors: HuginnErrorData) => Promise<boolean | void> | boolean | void,
    queryClient?: QueryClient,
+   alwaysFallback?: boolean,
 ): UseMutationResult<TData, Error, TVariables, TContext> {
-   const handleServerError = useErrorHandler();
+   const fallbackHandleError = useErrorHandler();
 
    return useMutation(
       {
          ...options,
          async onError(error) {
-            if (isWorthyHuginnError(error)) {
-               await handleErrors?.(error.rawError);
+            console.error("Mutation error:", error);
+            if (isWorthyHuginnError(error) && handleErrors) {
+               const handled = await handleErrors(error.rawError);
+               if (!handled || alwaysFallback) fallbackHandleError(error);
             } else {
-               handleServerError(error);
+               fallbackHandleError(error);
             }
          },
       },

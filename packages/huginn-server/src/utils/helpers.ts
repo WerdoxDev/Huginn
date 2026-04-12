@@ -12,7 +12,7 @@ import {
    type APIMessageCall,
    type APIMessageReference,
    ChannelType,
-   constants,
+   CONSTANTS,
    type DirectChannel,
    type GatewayWebsocketEvents,
    MessageType,
@@ -78,7 +78,7 @@ export function dispatchChannel(
 }
 
 export function filterMessage<T extends MessagePayload<{ select: typeof selectAllMessage }>>(message: T) {
-   const ttlSeconds = constants.CDN_HMAC_EXPIRE_TIME;
+   const ttlSeconds = CONSTANTS.CDN_HMAC_EXPIRE_TIME;
    const expiry = Math.floor(Date.now() / 1000) + ttlSeconds;
 
    const signedAttachments = message.attachments.map((x) => {

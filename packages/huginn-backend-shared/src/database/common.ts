@@ -29,6 +29,10 @@ export type KnownApplicationPayload<Args extends KnownApplicationArgs | undefine
 export const selectPublicUser = {
    id: true,
    avatar: true,
+   banner: true,
+   bannerColor: true,
+   accentColor: true,
+   bio: true,
    displayName: true,
    flags: true,
    username: true,
@@ -37,6 +41,10 @@ export const selectPublicUser = {
 export const selectPrivateUser = {
    id: true,
    avatar: true,
+   banner: true,
+   bannerColor: true,
+   accentColor: true,
+   bio: true,
    displayName: true,
    flags: true,
    username: true,
@@ -123,6 +131,7 @@ export const selectMessageReference = {
          messageId: true,
          type: true,
          message: {
+            where: { deletedTimestamp: null },
             select: {
                ...selectMessageAuthor,
                ...selectMessageMentions,

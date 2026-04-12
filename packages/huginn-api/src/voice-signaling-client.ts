@@ -1,7 +1,7 @@
 import type { DtlsParameters, RtpCapabilities, RtpParameters } from "mediasoup-client/types";
 
 import {
-   constants,
+   CONSTANTS,
    error,
    EventEmitter,
    GatewayCode,
@@ -269,7 +269,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
 
       this.pingTimeout = setTimeout(() => {
          this.sendPing();
-      }, constants.VOICE_CLIENT_PING_INTERVAL);
+      }, CONSTANTS.VOICE_CLIENT_PING_INTERVAL);
 
       this.emit("pong", { rtt });
    }

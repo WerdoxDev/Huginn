@@ -1,15 +1,21 @@
-import { constants } from "@huginn/shared";
+import { CONSTANTS } from "@huginn/shared";
 
 import type { StorageMap } from "../src/types";
 
 export const storageDefaults: StorageMap = {
    settings: {
-      apiHostname: "https://midgard.huginn.dev",
-      cdnHostname: "https://midgard.huginn.dev",
-      voiceHostname: "https://midgard.huginn.dev",
-      analyticsHostname: "https://e.huginn.dev",
-      hostnameSource: "manual",
-      externalHostnamesUrl: "",
+      hostnamePresets: [
+         {
+            name: "Default",
+            hostnameSource: "manual",
+            apiHostname: "https://midgard.huginn.dev",
+            cdnHostname: "https://midgard.huginn.dev",
+            voiceHostname: "https://midgard.huginn.dev",
+            analyticsHostname: "https://e.huginn.dev",
+            externalHostnamesUrl: "",
+         },
+      ],
+      activePresetName: "Default",
       theme: "pine green",
       inputDeviceId: "",
       outputDeviceId: "",
@@ -22,8 +28,8 @@ export const storageDefaults: StorageMap = {
       screenShareQuality: "medium",
       screenShareAudio: false,
       screenShareSimulcast: true,
-      screenShareAudioBitrate: constants.DEFAULT_AUDIO_BITRATE,
-      screenShareVideoBitrate: constants.DEFAULT_VIDEO_BITRATE,
+      screenShareAudioBitrate: CONSTANTS.DEFAULT_AUDIO_BITRATE,
+      screenShareVideoBitrate: CONSTANTS.DEFAULT_VIDEO_BITRATE,
    },
    keybinds: [
       { type: "toggle_deafen", combination: [], isEnabled: true },
@@ -33,4 +39,5 @@ export const storageDefaults: StorageMap = {
    "voice-preferences": [],
    "known-applications": { lastUpdated: "", applications: [] },
    "custom-applications": [],
+   "pinned-channels": [],
 };

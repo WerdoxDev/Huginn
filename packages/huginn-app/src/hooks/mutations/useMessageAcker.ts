@@ -15,7 +15,7 @@ export function useMessageAcker(channelId: Snowflake, messages: AppMessage[]) {
    const { user } = useThisUser();
    const readState = useChannelReadState(channelId);
    const { currentVisibleMessages } = useChannelStore();
-   const { setLatestReadMessage } = useReadStates();
+   const { setLatestReadMessage, setReadState } = useReadStates();
    const huginnWindow = useHuginnWindow();
 
    const mutation = useMutation({
@@ -30,33 +30,37 @@ export function useMessageAcker(channelId: Snowflake, messages: AppMessage[]) {
       }
 
       async function trySendAck() {
-         const latestVisibleMessageId = currentVisibleMessages
-            .toSorted((a, b) => {
-               const x = BigInt(a.messageId);
-               const y = BigInt(b.messageId);
-               return x < y ? -1 : x > y ? 1 : 0;
-            })
-            .at(-1)?.messageId;
+         const sortedVisible = currentVisibleMessages.toSorted((a, b) => {
+            const x = BigInt(a.messageId);
+            const y = BigInt(b.messageId);
+            return x < y ? -1 : x > y ? 1 : 0;
+         });
 
-         if (!latestVisibleMessageId) {
+         // Find the latest visible message authored by someone other than the current user.
+         // Acking the user's own message would skip marking any preceding messages from others as read.
+         const latestVisibleOtherMessage = sortedVisible
+            .map((x) => messages.find((m) => m.id === x.messageId))
+            .filter((m): m is AppMessage => m !== undefined && m.authorId !== user?.id)
+            .at(-1);
+
+         if (!latestVisibleOtherMessage) {
             return;
          }
 
-         const latestVisibleMessage = messages.find((x) => x.id === latestVisibleMessageId);
-         if (!latestVisibleMessage) {
-            return;
-         }
-
-         // if the latest message is from the user or the message is older than the last read message, don't send an ack
-         if (
-            (!readState?.lastReadMessageId || BigInt(readState.lastReadMessageId) < BigInt(latestVisibleMessageId)) &&
-            user?.id !== latestVisibleMessage.authorId
-         ) {
-            setLatestReadMessage(channelId, latestVisibleMessage.id, queryClient);
-            await mutation.mutateAsync({
-               channelId: channelId,
-               messageId: latestVisibleMessage.id,
-            });
+         if (!readState?.lastReadMessageId || BigInt(readState.lastReadMessageId) < BigInt(latestVisibleOtherMessage.id)) {
+            const previousState = readState ? { ...readState } : undefined;
+            setLatestReadMessage(channelId, latestVisibleOtherMessage.id, queryClient, user?.id);
+            try {
+               await mutation.mutateAsync({
+                  channelId,
+                  messageId: latestVisibleOtherMessage.id,
+               });
+            } catch {
+               // Rollback optimistic update if the ack request fails
+               if (previousState) {
+                  setReadState(previousState);
+               }
+            }
          }
       }
 

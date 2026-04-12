@@ -34,10 +34,10 @@ export function VoiceLabel(props: { isGridView?: boolean; userId: Snowflake; voi
          {!props.isGridView && (
             <div
                className={clsx(
-                  "text-text absolute -bottom-10 w-full overflow-hidden text-center text-nowrap text-ellipsis opacity-0 transition-opacity group-hover/element:opacity-100",
+                  "text-text absolute -bottom-8 -mb-1 w-full truncate pb-1 text-center opacity-0 transition-opacity group-hover/element:opacity-100",
                )}
             >
-               {user?.displayName}
+               {user?.displayName} asd asdasdasd
             </div>
          )}
       </>

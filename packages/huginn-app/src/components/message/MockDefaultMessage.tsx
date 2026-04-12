@@ -23,7 +23,7 @@ export default function MockDefaultMessage(props: {
       >
          {props.separate && (
             <div className="flex items-center gap-x-2 overflow-hidden">
-               <UserAvatar userId="0" statusSize="0.5rem" size="1.75rem" />
+               <UserAvatar userId="0" size={1.75} />
                <div className="text-text text-sm">{props.self ? "You" : "ThorEnjoyer"}</div>
                <div className="text-text/50 text-xs">{props.self ? "27.12.2024 11:40" : "27.12.2024 11:41"}</div>
             </div>

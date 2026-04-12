@@ -5,7 +5,7 @@ import { findChannel } from "@lib/query-utils";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 
 import type { AppDirectChannel, AppUser } from "@/types";
@@ -64,7 +64,6 @@ export function useSafeDeleteDMChannel(channelId?: Snowflake, channelType?: Dire
                action: {
                   confirm: {
                      text: "Leave Group",
-                     mutationKey: "delete-dm-channel",
                      callback: async () => {
                         await mutation.mutateAsync(channelId);
                         updateModals({ info: { isOpen: false } });

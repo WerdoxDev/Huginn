@@ -3,7 +3,7 @@ import type { PresenceStatus } from "@huginn/shared";
 import { useEditSettings } from "@hooks/mutations/useEditSettings";
 import { useLogout } from "@hooks/useLogout";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
-import { presenceStatuses } from "@lib/utils";
+import { PRESENCE_STATUS_MAP } from "@lib/utils";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { usePresence, usePresenceStore } from "@stores/presenceStore";
@@ -15,6 +15,7 @@ import type { AppUser } from "@/types";
 
 import UserActionButton from "./button/UserActionButton";
 import { DropdownMenu } from "./dropdown/DropdownMenu";
+import UserProfilePreview from "./profile/UserProfilePreview";
 import UserAvatar from "./UserAvatar";
 
 export default function UserInfo(props: { user: AppUser }) {
@@ -37,6 +38,10 @@ export default function UserInfo(props: { user: AppUser }) {
       updateModals({ settings: { isOpen: true } });
    }
 
+   function handleViewProfile() {
+      updateModals({ userProfile: { isOpen: true, userId: props.user.id } });
+   }
+
    function setStatus(status: PresenceStatus) {
       client?.gateway.updatePresence({ status, activities: thisPresence.activities });
       editSettingsMutation.mutate({ status });
@@ -48,9 +53,9 @@ export default function UserInfo(props: { user: AppUser }) {
             <DropdownMenu.Button className="flex w-full cursor-pointer items-center rounded-xl px-2 py-1 hover:bg-white/5 active:bg-white/5">
                <UserAvatar userId={props.user.id} avatarHash={props.user.avatar} className="mr-3 shrink-0" />
 
-               <div className="flex w-full flex-col items-start gap-y-0.5">
-                  <div className="text-text text-sm">{props.user.displayName}</div>
-                  <div className="text-text/70 text-xs">{props.user.username}</div>
+               <div className="mr-1 flex w-full flex-col items-start gap-y-0.5 overflow-hidden">
+                  <div className="text-text w-full truncate text-sm">{props.user.displayName}</div>
+                  <div className="text-text/70 w-full truncate text-xs">{props.user.username}</div>
                </div>
                <div className="flex shrink-0 items-center gap-x-1">
                   <UserActionButton
@@ -84,6 +89,10 @@ export default function UserInfo(props: { user: AppUser }) {
             </DropdownMenu.Button>
 
             <DropdownMenu.Items className="w-60">
+               <UserProfilePreview userId={props.user.id} maxWidth={134} />
+               <DropdownMenu.Divider />
+               <DropdownMenu.Item label="View Profile" onClick={handleViewProfile} />
+               <DropdownMenu.Divider />
                <DropdownMenu.Item
                   label="Logout"
                   color="negative"
@@ -98,11 +107,11 @@ export default function UserInfo(props: { user: AppUser }) {
                   <IconMingcuteIdcardFill className="size-5" />
                </DropdownMenu.Item>
                <DropdownMenu>
-                  <DropdownMenu.Item label={presenceStatuses[presence?.status ?? "offline"].text} isNested>
-                     <div className={clsx("size-3 rounded-full", presenceStatuses[presence?.status ?? "offline"].color)} />
+                  <DropdownMenu.Item label={PRESENCE_STATUS_MAP[presence?.status ?? "offline"].text} isNested>
+                     <div className={clsx("size-3 rounded-full", PRESENCE_STATUS_MAP[presence?.status ?? "offline"].color)} />
                   </DropdownMenu.Item>
                   <DropdownMenu.Items>
-                     {Object.entries(presenceStatuses).map(([key, value]) => (
+                     {Object.entries(PRESENCE_STATUS_MAP).map(([key, value]) => (
                         <DropdownMenu.Item key={key} label={value.text} onClick={() => setStatus(key as PresenceStatus)}>
                            <div className={clsx("size-3 rounded-full", value.color)} />
                         </DropdownMenu.Item>

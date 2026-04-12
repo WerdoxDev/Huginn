@@ -29,7 +29,7 @@ export default function MockDefaultMessageCompact(props: {
          <div className="flex gap-2">
             {props.separate && (
                <div className="flex gap-x-2 overflow-hidden">
-                  <UserAvatar userId="0" statusSize="0.5rem" size="1.75rem" />
+                  <UserAvatar userId="0" size={1.75} />
                </div>
             )}
             <div className={clsx("overflow-hidden font-light text-white", !props.separate && "ml-9")}>

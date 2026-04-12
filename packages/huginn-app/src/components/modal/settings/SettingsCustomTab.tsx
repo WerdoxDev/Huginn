@@ -3,12 +3,12 @@ import type { ProcessInfo } from "native-addon";
 import HuginnButton from "@components/button/HuginnButton";
 import CustomApplicationItem from "@components/CustomApplicationItem";
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
-import { useElapsedTime } from "@hooks/useElapsedTime";
+import { ProfileActivity } from "@components/profile/ProfileComponents";
 import { useModals } from "@stores/modalsStore";
 import { usePresenceStore } from "@stores/presenceStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
+import { useThisUser } from "@stores/userStore";
 import { useHuginnWindow } from "@stores/windowStore";
-import clsx from "clsx";
 import { useEffect, useMemo, useState } from "react";
 
 import type { DropdownItem, SettingsTabProps } from "@/types";
@@ -17,6 +17,7 @@ type OpenApplication = ProcessInfo & { displayName?: string; icon?: string };
 
 export default function SettingsCustomTab(_props: SettingsTabProps) {
    const { thisPresence } = usePresenceStore();
+   const { user } = useThisUser();
    const [openApplications, setOpenApplications] = useState<OpenApplication[]>([]);
    const [selectedApplication, setSelectedApplication] = useState<DropdownItem>();
    const huginnWindow = useHuginnWindow();
@@ -24,8 +25,7 @@ export default function SettingsCustomTab(_props: SettingsTabProps) {
    const targetActivity = thisPresence.activities[0];
    const customApplications = useStorage("custom-applications");
    const { setValue } = useStorageStore();
-
-   const { getFormattedDuration } = useElapsedTime(targetActivity?.createdAt);
+   const accentColor = user?.accentColor ?? "transparent";
 
    const applicationOptions = useMemo(
       () =>
@@ -117,56 +117,53 @@ export default function SettingsCustomTab(_props: SettingsTabProps) {
    }
 
    return (
-      <div className="flex flex-col gap-y-5">
-         <div className="flex w-max flex-col">
-            <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Current Activity</div>
-            <div className={clsx("rounded-lg p-3", targetActivity ? "bg-primary-700" : "bg-surface-alt")}>
+      <div className="flex w-full flex-col items-center">
+         <div className="flex w-full max-w-md flex-col gap-y-5">
+            <div className="flex flex-col">
+               <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Current Activity</div>
                {!targetActivity ? (
-                  <div className="text-text/80">No activities detected...</div>
-               ) : (
-                  <div className="flex items-start gap-x-3">
-                     <img src={targetActivity.iconUrl} className="size-10 rounded-md" />
-                     <div className="flex flex-col">
-                        <div className="font-semibold text-white">{targetActivity.name}</div>
-                        <div className="text-positive-100 flex items-center gap-x-1 text-sm">
-                           <IconMingcuteGame2Fill />
-                           <div className="font-semibold">{getFormattedDuration()}</div>
-                        </div>
-                     </div>
+                  <div className="bg-surface-alt rounded-lg p-3">
+                     <div className="text-text/80">No activities detected...</div>
                   </div>
-               )}
-            </div>
-         </div>
-         {huginnWindow.environment === "desktop" && (
-            <div className="flex max-w-md flex-col">
-               <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Add Application</div>
-               <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3">
-                  <div className="text-text/80 text-sm">Add a custom application to be shown on your profile as your activity</div>
-                  <HuginnDropdown onChange={onApplicationChanged} value={selectedApplication}>
-                     <HuginnDropdown.List className="bg-surface-deep w-full rounded-md!" placeholder="Select an application">
-                        <HuginnDropdown.ItemsWrapper className="w-(--button-width)">
-                           {applicationOptions.map((x) => (
-                              <HuginnDropdown.Item key={x.value} item={x} />
-                           ))}
-                        </HuginnDropdown.ItemsWrapper>
-                     </HuginnDropdown.List>
-                  </HuginnDropdown>
-                  <HuginnButton onClick={add} color="primary" className="h-8" disabled={!selectedApplication}>
-                     Register
-                  </HuginnButton>
-               </div>
-            </div>
-         )}
-         <div className="flex max-w-lg flex-col">
-            <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Custom Applications</div>
-            <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3 pl-2">
-               {customApplications.length === 0 ? (
-                  <div className="text-text/80">No custom applications registered...</div>
                ) : (
-                  customApplications.map((x) => (
-                     <CustomApplicationItem key={x.exePath} application={x} onDelete={deleteApplication} onTitleChanged={editApplication} />
-                  ))
+                  <ProfileActivity
+                     activity={targetActivity}
+                     accentColor={accentColor}
+                     className="bg-surface-alt"
+                  />
                )}
+            </div>
+            {huginnWindow.environment === "desktop" && (
+               <div className="flex flex-col">
+                  <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Register Application</div>
+                  <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3">
+                     <div className="text-text/80 text-sm">Add a custom application to be shown on your profile as your activity</div>
+                     <HuginnDropdown onChange={onApplicationChanged} value={selectedApplication}>
+                        <HuginnDropdown.List className="bg-surface-deep w-full rounded-md!" placeholder="Select an application">
+                           <HuginnDropdown.ItemsWrapper className="w-(--button-width)">
+                              {applicationOptions.map((x) => (
+                                 <HuginnDropdown.Item key={x.value} item={x} />
+                              ))}
+                           </HuginnDropdown.ItemsWrapper>
+                        </HuginnDropdown.List>
+                     </HuginnDropdown>
+                     <HuginnButton onClick={add} color="primary" className="h-8" disabled={!selectedApplication}>
+                        Register
+                     </HuginnButton>
+                  </div>
+               </div>
+            )}
+            <div className="flex flex-col">
+               <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Registered Applications</div>
+               <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3 pl-2">
+                  {customApplications.length === 0 ? (
+                     <div className="text-text/80">No applications registered...</div>
+                  ) : (
+                     customApplications.map((x) => (
+                        <CustomApplicationItem key={x.exePath} application={x} onDelete={deleteApplication} onTitleChanged={editApplication} />
+                     ))
+                  )}
+               </div>
             </div>
          </div>
       </div>

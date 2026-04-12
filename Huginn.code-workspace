@@ -62,7 +62,9 @@
       },
       "deno.enable": false,
       "typescript.tsdk": "ROOT\\node_modules\\typescript\\lib",
-      "github-actions.workflows.pinned.workflows": ["ROOT/.github/workflows/release.yml"],
+      "github-actions.workflows.pinned.workflows": [
+         "ROOT/.github/workflows/release.yml"
+      ],
       "oxc.enable": true,
       "files.associations": {
          "iostream": "cpp",
@@ -148,5 +150,6 @@
          "xtr1common": "cpp",
          "xutility": "cpp",
       },
+      "oxc.enable.oxfmt": false,
    },
 }

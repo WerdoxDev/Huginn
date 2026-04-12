@@ -12,9 +12,9 @@ import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useOAuth } from "@hooks/useOAuth";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import { useClient } from "@stores/clientStore";
+import { useModals } from "@stores/modalsStore";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { usePostHog } from "posthog-js/react";
-import { useEffect } from "react";
 // import { usePostHog } from "posthog-js/react";
 
 type Inputs = {
@@ -32,6 +32,7 @@ function RegisterComponent() {
    const initializeClient = useInitializeClient();
    const startOAuth = useOAuth();
    const navigate = useNavigate();
+   const { updateModals } = useModals();
 
    const { register, handleErrors, handleSubmit, formState, control } = useHuginnForm<Inputs>();
    const { validate } = useUniqueUsernameMessage(control);
@@ -39,24 +40,33 @@ function RegisterComponent() {
    const mutation = useHuginnMutation(
       {
          async mutationFn(user: APIPostRegisterJSONBody) {
-            await client?.register({
+            return await client?.register({
                email: user.email,
                displayName: user.displayName,
                username: user.username,
                password: user.password,
             });
          },
-         async onSuccess() {
-            await initializeClient({ navigatePath: "/channels/@me" });
-            // posthog.capture("registered");
+         async onSuccess(result, variables) {
+            // we may skip email verification.
+            if (result?.token && result?.refreshToken) {
+               await initializeClient({ navigatePath: "/channels/@me" });
+               return;
+            }
+
+            updateModals({
+               verifyEmail: {
+                  isOpen: true,
+                  pendingEmail: result?.pendingEmail ?? variables.email,
+                  onSuccess: async () => {
+                     await initializeClient({ navigatePath: "/channels/@me" });
+                  },
+               },
+            });
          },
       },
       handleErrors,
    );
-
-   useEffect(() => {
-      // Component initialization
-   }, []);
 
    async function onSubmit(data: Inputs) {
       posthog.capture("register:register_button_click");

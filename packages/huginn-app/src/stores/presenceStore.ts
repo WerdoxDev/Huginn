@@ -193,6 +193,7 @@ function startCheckingForActivity() {
                   name: match.known?.names[0] ?? match.custom?.title ?? "Unknown",
                   type: ActivityType.PLAYING,
                   createdAt: new Date().getTime(),
+                  startedAt: new Date().getTime(),
                   iconUrl: iconHash ? `application-icons/${iconHash}.webp` : undefined,
                   applicationId: match.known?.id,
                },

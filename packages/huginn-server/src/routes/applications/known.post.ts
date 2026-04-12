@@ -5,7 +5,7 @@ import { filterKnownApplication } from "#utils/helpers";
 import { serverFetch } from "#utils/server-request";
 import { invalidBody, notFound, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma, selectKnownApplication } from "@huginn/backend-shared/database/index";
-import { constants, Errors, findClosestString, type APIPostKnownApplicationResult } from "@huginn/shared";
+import { CONSTANTS, Errors, findClosestString, type APIPostKnownApplicationResult } from "@huginn/shared";
 import Elysia, { t } from "elysia";
 
 const schema = t.Object({ windowTitle: t.String(), exePath: t.String() });
@@ -64,7 +64,7 @@ export const postKnownApplication = new Elysia().use(verifyJwt()).post(
          searchableNames.map((x) => x.name),
       );
 
-      if (bestMatch.similarity >= constants.KNOWN_APPLICATION_SIMILARITY_THRESHOLD) {
+      if (bestMatch.similarity >= CONSTANTS.KNOWN_APPLICATION_SIMILARITY_THRESHOLD) {
          const resultMatch = searchableNames.find((x) => x.name === bestMatch.match);
 
          const names = searchableNames.filter((x) => x.id === resultMatch?.id).map((x) => x.name);

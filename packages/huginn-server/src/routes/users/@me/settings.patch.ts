@@ -16,6 +16,7 @@ const schema = t.Object({
       ]),
    ),
    status: t.Optional(t.Union([t.Literal("offline"), t.Literal("online"), t.Literal("dnd"), t.Literal("idle")])),
+   pinnedChannels: t.Optional(t.Array(t.String())),
 });
 
 export const patchUserSettings = new Elysia().use(verifyJwt()).patch(

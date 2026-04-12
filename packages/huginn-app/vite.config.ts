@@ -14,15 +14,15 @@ import { version } from "./package.json";
 const reactCompilerConfig = { target: "19" };
 
 // https://vitejs.dev/config/
-export default defineConfig(({ command }) => {
-   const isElectron = process.env.BUILD_TARGET === "electron";
+export default defineConfig(({ mode }) => {
+   const isElectron = mode === "electron";
    const base = isElectron ? "./" : "/app";
    return {
-      // base: base,
+      base: base,
       publicDir: "public",
 
       plugins: [
-         // basicSsl(),
+         // basicSsl({ domains: ["192.168.178.21"] }),
          // reactRouterDevTools(),
          tanstackRouter({ target: "react", autoCodeSplitting: true }),
          react({
@@ -78,6 +78,7 @@ export default defineConfig(({ command }) => {
 
       define: {
          __APP_VERSION__: JSON.stringify(version.toString()),
+         __IS_ELECTRON__: JSON.stringify(isElectron),
       },
 
       resolve: {

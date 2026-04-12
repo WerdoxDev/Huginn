@@ -1,7 +1,7 @@
 import { assertExists, assertId, assertObj, prisma, type ReadStatePayload, Prisma } from "#database";
 import { PrismaClientKnownRequestError } from "#prisma/internal/prismaNamespace";
 import { DBErrorType } from "#types";
-import { idFix, type Snowflake } from "@huginn/shared";
+import { idFix, type APIReadStateWithoutUser, type Snowflake } from "@huginn/shared";
 import consola from "consola";
 
 export const readStateExtension = Prisma.defineExtension({
@@ -116,7 +116,7 @@ export const readStateExtension = Prisma.defineExtension({
             const readState = await prisma.readState.getByUserAndChannelId(userId, channelId);
 
             const potentialUnreadMessages = await prisma.message.findMany({
-               where: { channelId: BigInt(channelId) },
+               where: { channelId: BigInt(channelId), deletedTimestamp: null },
                skip: 1,
                cursor: readState.lastReadMessageId ? { id: BigInt(readState.lastReadMessageId) } : undefined,
                select: { id: true, authorId: true },
@@ -125,6 +125,32 @@ export const readStateExtension = Prisma.defineExtension({
             const unreadCount = potentialUnreadMessages.filter((x) => x.authorId !== BigInt(userId)).length;
 
             return unreadCount < 0 ? 0 : unreadCount;
+         },
+         async getUserStatesWithUnreadCounts(userId: Snowflake): Promise<APIReadStateWithoutUser[]> {
+            const methodName = "readState.getUserStatesWithUnreadCounts";
+            assertId(methodName, userId);
+
+            // Single aggregated query replacing the N+1 pattern (one countUnreadMessages per channel).
+            // COUNT returns bigint in PostgreSQL raw queries, so we convert to number.
+            const result = await prisma.$queryRaw<Array<{ channelId: bigint; lastReadMessageId: bigint | null; unreadCount: bigint }>>`
+               SELECT
+                  rs."channelId",
+                  rs."lastReadMessageId",
+                  COUNT(m."id") AS "unreadCount"
+               FROM "ReadState" rs
+               LEFT JOIN "Message" m ON m."channelId" = rs."channelId"
+                  AND m."authorId" != rs."userId"
+                  AND m."deletedTimestamp" IS NULL
+                  AND (rs."lastReadMessageId" IS NULL OR m."id" > rs."lastReadMessageId")
+               WHERE rs."userId" = ${BigInt(userId)}
+               GROUP BY rs."channelId", rs."lastReadMessageId"
+            `;
+
+            return result.map((x) => ({
+               channelId: x.channelId.toString() as Snowflake,
+               lastReadMessageId: (x.lastReadMessageId?.toString() ?? null) as Snowflake | null,
+               unreadCount: Number(x.unreadCount),
+            }));
          },
       },
    },

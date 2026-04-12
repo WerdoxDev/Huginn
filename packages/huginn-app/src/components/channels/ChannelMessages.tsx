@@ -1,329 +1,212 @@
+import LoadingIcon from "@components/LoadingIcon";
 import { MessageProvider } from "@contexts/MessageProvider";
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useMessageAcker } from "@hooks/mutations/useMessageAcker";
-import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { useFirstUnreadMessage } from "@hooks/useFirstUnreadMessage";
-import { useMessageDiff, type ChangeType } from "@hooks/useMessageDiff";
-import { usePrevious } from "@hooks/usePrevious";
+import { useMessageScroll } from "@hooks/useMessageScroll";
 import { useVisibleMessages } from "@hooks/useVisibleMessages";
 import { MessageType, type Snowflake } from "@huginn/shared";
 import { getMessagesOptions } from "@lib/queries";
-import { getFirstChildClosestToBottom, getFirstChildClosestToTop } from "@lib/utils";
+import { convertToAppMessage } from "@lib/utils";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
-import { useThisUser } from "@stores/userStore";
-import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseInfiniteQuery, type InfiniteData } from "@tanstack/react-query";
 import moment from "moment";
-import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { AppMessage, ProcessedMessage } from "@/types";
 
-import ChannelMessageLoadingIndicator from "./ChannelMessageLoadingIndicator";
 import ChannelTypingIndicator from "./ChannelTypingIndicator";
+import GhostMessages from "./GhostMessages";
 
-const topScrollOffset = 100;
-const bottomScrollOffset = 100;
+const ACTION_MESSAGE_TYPES: MessageType[] = [
+   MessageType.RECIPIENT_ADD,
+   MessageType.RECIPIENT_REMOVE,
+   MessageType.CHANNEL_ICON_CHANGED,
+   MessageType.CHANNEL_NAME_CHANGED,
+   MessageType.CHANNEL_OWNER_CHANGED,
+   MessageType.CHANNEL_PINNED_MESSAGE,
+   MessageType.CALL,
+];
+
+function processMessages(
+   messages: AppMessage[],
+   hasPreviousPage: boolean,
+   firstUnreadMessageId?: Snowflake,
+   currentEditingMessageId?: Snowflake,
+   currentReplyingMessageId?: Snowflake,
+   highlightedMessageId?: Snowflake,
+): ProcessedMessage[] {
+   return messages.map((message, i) => {
+      const lastMessage: AppMessage | undefined = messages[i - 1];
+
+      const hasNewDate = (lastMessage && !moment(message.timestamp).isSame(lastMessage.timestamp, "date")) || (!lastMessage && !hasPreviousPage);
+      const hasNewMinute = !lastMessage || moment(message.timestamp).diff(moment(lastMessage.timestamp), "minutes") >= 5;
+      const hasNewAuthor = message.authorId !== lastMessage?.authorId;
+      const isActionType = message.isPreview ? false : ACTION_MESSAGE_TYPES.includes(message.type);
+      const isReplyType = message.isPreview ? !!message.referencedMessage : message.type === MessageType.REPLY;
+
+      return {
+         ...message,
+         hasNewMinute,
+         hasNewDate,
+         hasNewAuthor,
+         isActionType,
+         isReplyType,
+         isUnread: firstUnreadMessageId === message.id,
+         isEditing: currentEditingMessageId === message.id,
+         isReplying: currentReplyingMessageId === message.id,
+         isJumpHighlighted: highlightedMessageId === message.id,
+      };
+   });
+}
 
 export default function ChannelMessages(props: { channelId: Snowflake; messages: AppMessage[] }) {
    const client = useClient();
    const queryClient = useQueryClient();
-   const { user } = useThisUser();
+   const currentChannel = useCurrentChannel();
 
    const { data, fetchNextPage, fetchPreviousPage, isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
       useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, props.channelId));
 
-   const {
-      savedScrolls,
-      saveScroll,
-      currentEditingMessageId,
-      currentReplyingMessageId,
-      messageBoxHeight,
-      currentVisibleMessages,
-      removeMessageUploadProgress,
-   } = useChannelStore();
-   const previousMessageBoxHeight = usePrevious(messageBoxHeight);
-
+   const { currentEditingMessageId, currentReplyingMessageId } = useChannelStore();
    const { onMessageVisibilityChanged } = useVisibleMessages(props.channelId, props.messages);
-   const { setRef, getRef } = useDynamicRefs<HTMLLIElement>();
+   const [highlightedMessageId, setHighlightedMessageId] = useState<Snowflake | undefined>(undefined);
+
+   const [isLoadingLatest, setIsLoadingLatest] = useState(false);
 
    useMessageAcker(props.channelId, props.messages);
    const { firstUnreadMessageId } = useFirstUnreadMessage(props.channelId, props.messages);
 
    const processedMessages = useMemo<ProcessedMessage[]>(
-      () => processMessages(props.messages),
-      [props.messages, props.channelId, firstUnreadMessageId, currentEditingMessageId, currentReplyingMessageId],
+      () =>
+         processMessages(
+            props.messages,
+            hasPreviousPage,
+            firstUnreadMessageId,
+            currentEditingMessageId,
+            currentReplyingMessageId,
+            highlightedMessageId,
+         ),
+      [props.messages, props.channelId, firstUnreadMessageId, currentEditingMessageId, currentReplyingMessageId, highlightedMessageId],
    );
 
-   useMessageDiff(processedMessages, { onMessageAdd, onMessageUpdate });
+   const ghostTopRef = useRef<HTMLDivElement>(null);
+   const ghostBottomRef = useRef<HTMLDivElement>(null);
+   const pendingReferencedMessageId = useRef<Snowflake | undefined>(undefined);
+   const highlightTimeoutId = useRef<number | undefined>(undefined);
+   const pendingScrollToBottom = useRef(false);
 
-   const scrollRef = useRef<HTMLDivElement>(null);
-   const listRef = useRef<HTMLOListElement>(null);
-   const shouldScrollToLastSeen = useRef(false);
-   const shouldAnchorToBottom = useRef(false);
-   const lastChannelId = useRef<Snowflake>(undefined);
-   const lastScrollTop = useRef<number>(undefined);
-   const lastDistanceToBottom = useRef<number>(undefined);
-   const lastSeenElement = useRef<{
-      messageId: Snowflake;
-      height: number;
-      distanceToTop: number;
-      distanceToBottom: number;
-   }>(null);
-   const lastDirection = useRef<"up" | "down" | "none">("none");
-   const isResizing = useRef(false);
-   const currentChannel = useCurrentChannel();
+   const { scrollRef, listRef, setRef, onScroll, scrollToMessage, scrollToBottom } = useMessageScroll({
+      channelId: props.channelId,
+      messages: props.messages,
+      processedMessages,
+      queryData: data,
+      fetchNextPage,
+      fetchPreviousPage,
+      isFetchingNextPage,
+      isFetchingPreviousPage,
+      hasNextPage,
+      hasPreviousPage,
+      ghostTopRef,
+      ghostBottomRef,
+   });
 
-   async function onScroll() {
-      if (!scrollRef.current || props.messages.length === 0) return;
-      lastScrollTop.current = scrollRef.current.scrollTop;
-
-      // This is to not reevaluate wether or not we are at the bottom when we scroll because of anchoring on resize
-      if (!isResizing.current) {
-         shouldAnchorToBottom.current = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop <= 20;
-      } else {
-         isResizing.current = false;
+   const highlightMessage = useCallback((messageId: Snowflake) => {
+      if (highlightTimeoutId.current !== undefined) {
+         window.clearTimeout(highlightTimeoutId.current);
       }
 
-      // Scrolling up
-      if (scrollRef.current.scrollTop <= topScrollOffset && !isFetchingPreviousPage && hasPreviousPage) {
-         lastDirection.current = "up";
-         await fetchPreviousPage();
+      setHighlightedMessageId(messageId);
+      highlightTimeoutId.current = window.setTimeout(() => {
+         setHighlightedMessageId((current) => (current === messageId ? undefined : current));
+      }, 2000);
+   }, []);
 
-         saveLastSeenMessage();
-      }
-      // Scrolling down
-      else if (
-         scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop <= bottomScrollOffset &&
-         !isFetchingNextPage &&
-         hasNextPage
-      ) {
-         lastDirection.current = "down";
-         await fetchNextPage();
+   const hasLatestMessageInList = useMemo(() => {
+      if (!currentChannel?.lastMessageId) return true;
 
-         saveLastSeenMessage();
-      }
-   }
+      return props.messages.some((message) => message.id === currentChannel.lastMessageId);
+   }, [currentChannel?.lastMessageId, props.messages]);
 
-   function processMessages(messages: AppMessage[]): ProcessedMessage[] {
-      const value = messages.map((message, i) => {
-         const lastMessage: AppMessage | undefined = props.messages[i - 1];
+   const handleReferencedMessageClick = useCallback(
+      async (messageId: Snowflake) => {
+         if (!client) return;
 
-         const hasNewDate = (lastMessage && !moment(message.timestamp).isSame(lastMessage?.timestamp, "date")) || (!lastMessage && !hasPreviousPage);
-         const hasNewMinute = !lastMessage || moment(message.timestamp).diff(moment(lastMessage.timestamp), "minutes") >= 5;
-         const hasNewAuthor = message.authorId !== lastMessage?.authorId;
-         const isActionType = message.isPreview
-            ? false
-            : [
-                 MessageType.RECIPIENT_ADD,
-                 MessageType.RECIPIENT_REMOVE,
-                 MessageType.CHANNEL_ICON_CHANGED,
-                 MessageType.CHANNEL_NAME_CHANGED,
-                 MessageType.CHANNEL_OWNER_CHANGED,
-                 MessageType.CHANNEL_PINNED_MESSAGE,
-                 MessageType.CALL,
-              ].includes(message.type);
-         const isReplyType =
-            (message.isPreview && message.referencedMessage) || (!message.isPreview && message.type === MessageType.REPLY) ? true : false;
-         const isUnread = firstUnreadMessageId === message.id;
-         const isEditing = currentEditingMessageId === message.id;
-         const isReplying = currentReplyingMessageId === message.id;
+         if (scrollToMessage(messageId)) {
+            highlightMessage(messageId);
+            return;
+         }
 
-         return {
-            ...message,
-            hasNewMinute,
-            hasNewDate,
-            hasNewAuthor,
-            isActionType,
-            isUnread,
-            isEditing,
-            isReplyType,
-            isReplying,
-         };
-      });
+         pendingReferencedMessageId.current = messageId;
 
-      return value;
-   }
+         const fetchedMessages = await client.channels.getMessages(props.channelId, 50, undefined, undefined, messageId);
+         const aroundMessages = fetchedMessages.map((message) => convertToAppMessage(message, "fetch"));
 
-   function scrollDown() {
-      if (!scrollRef.current) {
-         return;
-      }
-
-      scrollRef.current.scrollTo(0, scrollRef.current.scrollHeight);
-   }
-
-   function saveLastSeenMessage() {
-      if (!scrollRef.current || !listRef.current) return;
-
-      const messageElement = (
-         lastDirection.current === "up" ? getFirstChildClosestToTop(listRef.current) : getFirstChildClosestToBottom(listRef.current)
-      ) as HTMLLIElement;
-      if (!messageElement) return;
-
-      lastSeenElement.current = {
-         messageId: messageElement.id,
-         height: messageElement.clientHeight,
-         distanceToTop: scrollRef.current.scrollTop,
-         distanceToBottom: scrollRef.current.scrollHeight - scrollRef.current.scrollTop - scrollRef.current.clientHeight - 28,
-      };
-
-      shouldScrollToLastSeen.current = true;
-   }
-
-   function scrollToLastSeenMessage() {
-      if (!lastSeenElement.current || !scrollRef.current || !listRef.current || !shouldScrollToLastSeen.current) return;
-
-      const foundMessageElement = [...listRef.current.children].find((x) => x.id === lastSeenElement.current?.messageId) as HTMLLIElement;
-
-      foundMessageElement.scrollIntoView({
-         behavior: "instant",
-         block: lastDirection.current === "up" ? "start" : "end",
-      });
-      const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
-      scrollRef.current.scrollTop +=
-         (lastDirection.current === "up" ? lastSeenElement.current.distanceToTop : -lastSeenElement.current.distanceToBottom) + heightDifference;
-
-      shouldScrollToLastSeen.current = false;
-   }
-
-   function scrollIntoViewMinimal(element: HTMLElement) {
-      if (!scrollRef.current) {
-         return;
-      }
-
-      const rect = element.getBoundingClientRect();
-      const containerRect = scrollRef.current.getBoundingClientRect();
-
-      // Element is above visible area
-      if (rect.top < containerRect.top) {
-         const scrollTop = scrollRef.current.scrollTop;
-         const offset = rect.top - containerRect.top;
-         scrollRef.current.scrollTo({
-            top: scrollTop + offset - 10,
-            behavior: "instant",
+         queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", props.channelId], {
+            pages: [aroundMessages],
+            pageParams: [{ before: "", after: "" }],
          });
-      }
-      // Element is below visible area
-      else if (rect.bottom > containerRect.bottom) {
-         const scrollTop = scrollRef.current.scrollTop;
-         const offset = rect.bottom - containerRect.bottom;
-         scrollRef.current.scrollTo({
-            top: scrollTop + offset + 10,
-            behavior: "instant",
-         });
-      }
-   }
+      },
+      [client, highlightMessage, props.channelId, queryClient, scrollToMessage],
+   );
 
-   function onMessageAdd(message: ProcessedMessage) {
-      if (!scrollRef.current) return;
-      const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
-      const messageHeight = getRef(message.id)?.current?.clientHeight ?? 0;
+   const loadLatestMessages = useCallback(async () => {
+      if (!client) return;
 
-      if (message.authorId === user?.id || scrollOffset - messageHeight <= 50) {
-         scrollDown();
-      }
-   }
+      const latestMessages = await client.channels.getMessages(props.channelId, 50);
+      const convertedLatestMessages = latestMessages.map((message) => convertToAppMessage(message, "fetch"));
 
-   function onMessageUpdate(previousMessage: ProcessedMessage, message: ProcessedMessage, changeType: ChangeType, _isVisible: boolean) {
-      if (!scrollRef.current) return;
-      const messageRef = getRef(message.id)?.current;
-
-      if (changeType === "preview") {
-         removeMessageUploadProgress(previousMessage.id);
-      }
-
-      if (changeType === "edit" && messageRef) {
-         scrollIntoViewMinimal(messageRef);
-         return;
-      }
-
-      const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
-      const messageHeight = messageRef?.clientHeight ?? 0;
-
-      if (scrollOffset - messageHeight <= 50) {
-         scrollDown();
-      }
-   }
-
-   useEffect(() => {
-      if (!scrollRef.current) return;
-
-      if (scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop >= 1) {
-         scrollRef.current.scrollTop += messageBoxHeight - (previousMessageBoxHeight ?? 0);
-      }
-
-      // Try to keep the editing message in viewport if it's even slightly visible
-      if (currentEditingMessageId && currentVisibleMessages.some((x) => x.messageId === currentEditingMessageId)) {
-         const messageRef = getRef(currentEditingMessageId);
-         if (messageRef.current) {
-            scrollIntoViewMinimal(messageRef.current);
-         }
-      }
-   }, [messageBoxHeight]);
-
-   // Calculating scroll top position after an upward fetch
-   useLayoutEffect(() => {
-      if (!lastSeenElement.current || !scrollRef.current || lastChannelId.current !== props.channelId) {
-         return;
-      }
-
-      scrollToLastSeenMessage();
-   }, [data]);
-
-   useEffect(() => {
-      lastDistanceToBottom.current = undefined;
-      saveScroll(lastChannelId.current ?? props.channelId, lastScrollTop.current ?? 0);
-      lastDirection.current = "none";
-
-      return () => {
-         saveScroll(lastChannelId.current ?? props.channelId, lastScrollTop.current ?? 0);
-      };
-   }, [props.channelId]);
-
-   // Scrolling to saved scroll
-   useEffect(() => {
-      if (props.messages.length === 0) return;
-
-      if (lastChannelId.current !== props.channelId) {
-         if (savedScrolls.has(props.channelId) && scrollRef.current) {
-            const newScroll = savedScrolls.get(props.channelId) ?? 0;
-            scrollRef.current.scrollTop = newScroll;
-         } else {
-            scrollDown();
-         }
-         lastChannelId.current = props.channelId;
-      }
-   }, [props.messages]);
-
-   useEffect(() => {
-      if (!scrollRef.current) return;
-
-      const resizeObserver = new ResizeObserver((entries) => {
-         if (!scrollRef.current) return;
-         const scrollHeight = entries[0].target.scrollHeight;
-
-         // This is to not set "isResizing" when we are already at the bottom
-         const alreadyAtBottom = scrollRef.current.scrollTop + scrollRef.current.clientHeight >= scrollRef.current.scrollHeight;
-
-         if (shouldAnchorToBottom.current) {
-            isResizing.current = !alreadyAtBottom;
-            scrollRef.current.scrollTo(0, scrollHeight);
-         }
+      pendingScrollToBottom.current = true;
+      queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", props.channelId], {
+         pages: [convertedLatestMessages],
+         pageParams: [{ before: "", after: "" }],
       });
+   }, [client, props.channelId, queryClient]);
 
-      resizeObserver.observe(scrollRef.current);
+   const handleLoadLatest = useCallback(() => {
+      setIsLoadingLatest(true);
+      loadLatestMessages().finally(() => {
+         setIsLoadingLatest(false);
+      });
+   }, [loadLatestMessages, setIsLoadingLatest]);
 
+   // Scroll to referenced message when it is loaded
+   useEffect(() => {
+      const messageId = pendingReferencedMessageId.current;
+      if (!messageId) return;
+
+      if (scrollToMessage(messageId)) {
+         highlightMessage(messageId);
+      }
+      pendingReferencedMessageId.current = undefined;
+   }, [highlightMessage, props.messages, scrollToMessage]);
+
+   useEffect(() => {
+      if (!pendingScrollToBottom.current) return;
+      if (!scrollToBottom()) return;
+
+      pendingScrollToBottom.current = false;
+   }, [props.messages, scrollToBottom]);
+
+   useEffect(() => {
       return () => {
-         resizeObserver.disconnect();
+         if (highlightTimeoutId.current !== undefined) {
+            window.clearTimeout(highlightTimeoutId.current);
+         }
       };
    }, []);
 
    return (
       <div className="relative h-full overflow-y-hidden">
-         <ChannelMessageLoadingIndicator isFetchingNextPage={isFetchingNextPage} isFetchingPreviousPage={isFetchingPreviousPage} />
          <ChannelTypingIndicator channelId={props.channelId} />
          <div className="h-full w-full overflow-x-hidden overflow-y-scroll [overflow-anchor:none]" ref={scrollRef} onScroll={onScroll}>
             <div className="flex min-h-full flex-col justify-end">
+               {hasPreviousPage && (
+                  <div ref={ghostTopRef}>
+                     <GhostMessages position="top" />
+                  </div>
+               )}
                <ol className="min-h-0 overflow-hidden pr-0 pb-7" ref={listRef}>
                   {props.messages.length === 0 && (
                      <div className="flex h-full w-full shrink-0 items-center justify-center">
@@ -348,11 +231,26 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
                         nextMessage={processedMessages[i + 1]}
                         lastMessage={processedMessages[i - 1]}
                         onVisibilityChanged={onMessageVisibilityChanged}
+                        onReferencedMessageClick={handleReferencedMessageClick}
                      />
                   ))}
                </ol>
+               {hasNextPage && (
+                  <div ref={ghostBottomRef}>
+                     <GhostMessages position="bottom" />
+                  </div>
+               )}
             </div>
          </div>
+         {!hasLatestMessageInList && (
+            <button
+               type="button"
+               className="bg-surface-alt ring-primary-700 hover:bg-primary-800 hover:text-text text-text/80 absolute right-4 bottom-4 z-20 cursor-pointer rounded-full p-2 ring-1 transition-all"
+               onClick={handleLoadLatest}
+            >
+               {isLoadingLatest ? <LoadingIcon className="size-5" /> : <IconMingcuteDownFill className="size-5" />}
+            </button>
+         )}
       </div>
    );
 }

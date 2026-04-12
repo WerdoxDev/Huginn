@@ -41,6 +41,7 @@ import { postResendVerificationEmail } from "#routes/users/@me/resend-verificati
 import { patchUserSettings } from "#routes/users/@me/settings.patch";
 import { postVerifyEmail } from "#routes/users/@me/verify-email.post";
 import { getUser } from "#routes/users/[userId].get";
+import { getUserProfile } from "#routes/users/[userId]/profile.get";
 import { envs } from "#setup";
 import { cors } from "@elysiajs/cors";
 import { staticPlugin } from "@elysiajs/static";
@@ -116,6 +117,7 @@ export const app = new Elysia({
    .use(putUserRelationship)
    .use(postVerifyEmail)
    .use(postResendVerificationEmail)
+   .use(getUserProfile)
 
    // channel
    .use(postChannelMessage)

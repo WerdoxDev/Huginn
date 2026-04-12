@@ -19,12 +19,12 @@ function ChannelMeComponent() {
       <div className="flex h-full flex-col">
          <TopBar>{isMobile && <MobileMenuButton />}</TopBar>
          <div className="flex h-full flex-col items-center justify-center gap-y-5 px-2">
-            <div className="text-text flex max-w-md flex-col items-center text-center">
-               <div className="bg-surface mb-2.5 rounded-xl p-5 shadow-lg">
+            <div className="flex max-w-md flex-col items-center text-center">
+               <div className="bg-surface rounded-xl p-5 shadow-lg">
                   <HuginnIcon outlined className="text-primary-500 size-20 transition-transform hover:scale-105 hover:-rotate-12 active:rotate-6" />
                </div>
-               <div className="mb-2.5 text-2xl font-bold">Welcome to Huginn</div>
-               <div>
+               <div className="mt-5 text-2xl font-bold text-white">Welcome to Huginn</div>
+               <div className="text-text mt-2">
                   Start by adding your friends in the{" "}
                   <Link to="/friends" className="text-primary-500 font-bold">
                      FRIENDS
@@ -32,7 +32,7 @@ function ChannelMeComponent() {
                   section or select one of these <span className="text-text/80 font-semibold">Quick Actions</span>!
                </div>
             </div>
-            <div className="flex w-full flex-wrap items-center justify-center gap-2 lg:flex-nowrap">
+            <div className="flex w-full flex-wrap items-center justify-center gap-5 lg:flex-nowrap">
                <QuickActionButton onClick={() => updateModals({ createDM: { isOpen: true } })}>Create Direct Message</QuickActionButton>
                <QuickActionButton onClick={() => navigate({ to: "/friends" })}>Add a Friend</QuickActionButton>
             </div>

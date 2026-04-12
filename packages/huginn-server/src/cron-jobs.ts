@@ -1,5 +1,5 @@
 import { prisma } from "@huginn/backend-shared/database/index";
-import { constants, log } from "@huginn/shared";
+import { CONSTANTS, log } from "@huginn/shared";
 
 export function startCronJobs() {
    log("server:cron", "default", "starting cron jobs");
@@ -8,5 +8,5 @@ export function startCronJobs() {
    setInterval(async () => {
       log("server:cron", "default", "delete expired email verifications");
       await prisma.emailVerification.deleteMany({ where: { expiresAt: { lt: new Date() } } });
-   }, constants.EMAIL_VERIFICATION_WINDOW);
+   }, CONSTANTS.EMAIL_VERIFICATION_WINDOW);
 }

@@ -2,7 +2,7 @@ import ImagePreview from "@components/ImagePreview";
 import Tooltip from "@components/tooltip/Tooltip";
 import VideoPlayer from "@components/VideoPlayer";
 import { useOpen } from "@hooks/useOpen";
-import { changeUrlBase, constants, constrainImageSize, isImageMediaType, isVideoMediaType } from "@huginn/shared";
+import { changeUrlBase, CONSTANTS, constrainImageSize, isImageMediaType, isVideoMediaType } from "@huginn/shared";
 import { getSizeText } from "@lib/utils";
 import { useStorage } from "@stores/storageStore";
 import clsx from "clsx";
@@ -19,11 +19,12 @@ export default function AttachmentElement(props: {
 }) {
    const { openUrl } = useOpen();
    const dimensions = useMemo(
-      () => constrainImageSize(props.width ?? 0, props.height ?? 0, constants.ATTACHMENT_MEDIA_MAX_WIDTH, constants.ATTACHMENT_MEDIA_MAX_HEIGHT),
+      () => constrainImageSize(props.width ?? 0, props.height ?? 0, CONSTANTS.ATTACHMENT_MEDIA_MAX_WIDTH, CONSTANTS.ATTACHMENT_MEDIA_MAX_HEIGHT),
       [props.width, props.height],
    );
    const settings = useStorage("settings");
-   const basedUrl = useMemo(() => changeUrlBase(props.url, `${settings.cdnHostname}/cdn`), [props.url]);
+   const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
+   const basedUrl = useMemo(() => changeUrlBase(props.url, `${activePreset?.cdnHostname ?? ""}/cdn`), [props.url, activePreset?.cdnHostname]);
 
    return (
       <div contentEditable={false}>

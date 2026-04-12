@@ -67,6 +67,7 @@ export enum JsonCode {
    INVALID_RECIPIENT = 2005,
    INVALID_ID = 2006,
    REAUTHENTICATION_REQUIRED = 2007,
+   FILE_TOO_LARGE = 2008,
    USERNAME_NOT_FOUND = 3001,
    RELATION_SELF_REQUEST = 3002,
    RELATION_EXISTS = 3003,
@@ -231,5 +232,10 @@ export const Errors = {
    },
    emailVerificationNotFound(): [string, JsonCode] {
       return ["No pending email verification found", JsonCode.EMAIL_VERIFICATION_NOT_FOUND];
+   },
+   fileTooLarge(uploadedSize: number, maxSize: number): [string, JsonCode] {
+      const uploadedMB = (uploadedSize / (1024 * 1024)).toFixed(2);
+      const maxMB = (maxSize / (1024 * 1024)).toFixed(2);
+      return [`File size (${uploadedMB}MB) exceeds the maximum allowed size of ${maxMB}MB`, JsonCode.FILE_TOO_LARGE];
    },
 };

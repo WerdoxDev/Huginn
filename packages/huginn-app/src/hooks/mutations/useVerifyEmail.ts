@@ -16,6 +16,11 @@ export function useVerifyEmail(onSuccess?: (result: APIPostVerifyEmailResult) =>
          onSuccess(result) {
             if (!result) return;
 
+            if (result.token && result.refreshToken && client) {
+               client.tokenHandler.token = result.token;
+               client.tokenHandler.refreshToken = result.refreshToken;
+            }
+
             onSuccess?.(result);
             setUser(result);
          },

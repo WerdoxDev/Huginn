@@ -1,16 +1,18 @@
+import LoadingIcon from "@components/LoadingIcon";
 import UserAvatar from "@components/UserAvatar";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useUser } from "@hooks/api-hooks/userHooks";
 import { useMessageRenderer } from "@hooks/useMessageRenderer";
-import { clamp, hasFlag, MessageFlags, MessageType } from "@huginn/shared";
+import { clamp, hasFlag, MessageFlags, MessageType, type Snowflake } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { useContextMenu } from "@stores/contextMenuStore";
+import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import moment from "moment";
 import { useContext, useLayoutEffect, useMemo, useState } from "react";
 
-import type { AppMessage } from "@/types";
+import type { AppMessage, ProcessedAppMessage } from "@/types";
 
 import AttachmentUploadProgress from "./AttachmentUploadProgress";
 
@@ -18,6 +20,7 @@ export default function DefaultMessage() {
    const { user } = useThisUser();
    const context = useContext(MessageContext);
    const { open } = useContextMenu("message");
+   const { updateModals } = useModals();
 
    const formattedFullTime = useMemo(() => moment(context.message?.timestamp).format("DD.MM.YYYY HH:mm"), [context.message]);
    const formattedTime = useMemo(() => moment(context.message?.timestamp).format("HH:mm"), [context.message]);
@@ -34,6 +37,7 @@ export default function DefaultMessage() {
    const isSeparate = context.message.hasNewAuthor || context.message.hasNewMinute || context.message.hasNewDate || context.message.isReplyType;
    const isEditing = context.message.isEditing;
    const isReplying = context.message.isReplying;
+   const isJumpHighlighted = context.message.isJumpHighlighted;
    const isEdited = !context.message.isPreview && context.message.editedTimestamp !== null;
    const isPreview = context.message.isPreview;
    const error = isPreview ? context.message.error : undefined;
@@ -47,7 +51,6 @@ export default function DefaultMessage() {
       context.nextMessage?.isReplyType;
 
    const isNewDate = context.message.hasNewDate || !context.lastMessage || context.message.hasNewDate;
-
    const isUnread = context.message.isUnread;
 
    const [widths, setWidths] = useState<{ width: number; lastWidth: number; nextWidth: number }>({
@@ -68,8 +71,9 @@ export default function DefaultMessage() {
       <div
          onContextMenu={(e) => open({ message: context.message }, e)}
          className={clsx(
-            "group flex flex-col items-start p-2 pl-4",
-            isEditing || isReplying ? "bg-primary-900/50" : "hover:bg-surface-alt",
+            "group relative flex flex-col items-start p-2 pl-4 transition-colors duration-150",
+            isEditing || isReplying || isJumpHighlighted ? (isEditing ? "bg-positive-800/30" : "bg-primary-800/30") : "hover:bg-surface-alt",
+            isJumpHighlighted && "animate-pulse",
             (isSeparate || isLastAction) && "rounded-tr-lg",
             isNextSeparate && "rounded-br-lg",
             !isSeparate && !isLastAction && "py-0",
@@ -77,12 +81,31 @@ export default function DefaultMessage() {
             isSeparate && !isNewDate && !isUnread && "mt-1.5",
          )}
       >
+         <div
+            className={clsx(
+               "absolute inset-y-0 left-0 h-full transition-[colors_width]",
+               isEditing || isReplying || isJumpHighlighted ? "w-1" : "w-0",
+               isEditing ? "bg-positive-400" : isReplying || isJumpHighlighted ? "bg-primary-400" : undefined,
+            )}
+         ></div>
          {error}
-         {referencedMessage && <ReplyRenderer referencedMessage={referencedMessage} />}
+         {referencedMessage !== undefined && <ReplyRenderer referencedMessage={referencedMessage} onClick={context.onReferencedMessageClick} />}
          {(isSeparate || isLastAction) && (
             <div className="flex items-center gap-x-2">
-               <UserAvatar userId={context.message.authorId} avatarHash={author?.avatar} statusSize="0.5rem" size="1.75rem" />
-               <div className="text-text text-sm">{isSelf ? "You" : author?.displayName}</div>
+               <button
+                  type="button"
+                  className="cursor-pointer rounded-full"
+                  onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
+               >
+                  <UserAvatar userId={context.message.authorId} avatarHash={author?.avatar} size={1.75} />
+               </button>
+               <button
+                  type="button"
+                  className="text-text cursor-pointer text-sm hover:underline"
+                  onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
+               >
+                  {author?.displayName}
+               </button>
                {!context.message.isPreview && context.message.flags && hasFlag(context.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
                   <IconMingcuteNotificationOffFill className="text-text size-4" />
                ) : null}
@@ -101,13 +124,11 @@ export default function DefaultMessage() {
                widths={widths}
             />
             <div className="mt-2.5 ml-2.5 flex h-full shrink-0 items-center justify-center gap-x-2 select-none">
-               {isEditing ||
-                  (isReplying && (
-                     <div className="text-positive-100 text-xs font-semibold uppercase">
-                        {isEditing && "editing"}
-                        {isReplying && "replying"}
-                     </div>
-                  ))}
+               {isEditing ? (
+                  <IconMingcuteEdit2Fill className="text-positive-100 size-4 shrink-0" />
+               ) : isReplying ? (
+                  <IconMingcuteCornerUpLeftFill className="text-primary-400 size-4 shrink-0" />
+               ) : null}
                {isEdited && <div className="text-xs text-white/50">(edited)</div>}
                {!isSeparate && !isLastAction && <div className="text-text/50 text-xs opacity-0 group-hover:opacity-100">{formattedTime}</div>}
             </div>
@@ -116,8 +137,26 @@ export default function DefaultMessage() {
    );
 }
 
-function ReplyRenderer(props: { referencedMessage: AppMessage }) {
-   const message = useMemo<AppMessage>(
+function ReplyRenderer(props: { referencedMessage: AppMessage | null; onClick: (messageId: Snowflake) => Promise<void> }) {
+   if (props.referencedMessage === null) {
+      return (
+         <div className="flex w-full items-center gap-x-1 pl-2 select-none">
+            <IconMingcuteCornerUpRightLine className="size-7 shrink-0 text-white/50" />
+            <div className="mb-2 text-xs text-white/50 italic">Original message was deleted</div>
+         </div>
+      );
+   }
+
+   if (props.referencedMessage.isPreview) {
+      return null;
+   }
+
+   return <ResolvedReplyRenderer referencedMessage={props.referencedMessage} onClick={props.onClick} />;
+}
+
+function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; onClick: (messageId: Snowflake) => Promise<void> }) {
+   const [isLoading, setIsLoading] = useState(false);
+   const message = useMemo<ProcessedAppMessage>(
       () => ({
          ...props.referencedMessage,
          content: props.referencedMessage.content.replaceAll("\n", " ").replaceAll(/```(?:\S*)?/g, "`"),
@@ -125,25 +164,32 @@ function ReplyRenderer(props: { referencedMessage: AppMessage }) {
       [props.referencedMessage],
    );
 
+   const hasAttachmentsOrEmbeds =
+      ("attachments" in props.referencedMessage && props.referencedMessage.attachments.length !== 0) ||
+      ("embeds" in props.referencedMessage && props.referencedMessage.embeds.length !== 0);
+
    const { children } = useMessageRenderer(message, ["attachment", "code", "embed"], true);
    const user = useUser(props.referencedMessage.authorId);
 
-   if (props.referencedMessage.isPreview) {
-      return;
+   function handleClick() {
+      const result = props.onClick(props.referencedMessage.id);
+      if (result instanceof Promise) {
+         setIsLoading(true);
+         result.finally(() => setIsLoading(false));
+      }
    }
 
    return (
-      <div className="group/reply flex w-full cursor-pointer items-center gap-x-1 pl-2 select-none">
-         <IconMingcuteCornerUpRightLine className="size-7 shrink-0 text-white/50 group-hover/reply:text-white" />
+      <div className="group/reply flex w-full cursor-pointer items-center gap-x-1 pl-2 select-none" onClick={handleClick}>
+         <IconMingcuteCornerUpRightLine className="size-7 shrink-0 text-white/50 transition-colors group-hover/reply:text-white" />
          <div className="mb-2 flex items-center gap-x-2 overflow-hidden">
             <div className="flex items-center gap-x-1">
-               <UserAvatar userId={user.id} avatarHash={user.avatar} size="1.25rem" hideStatus />
+               <UserAvatar userId={user.id} avatarHash={user.avatar} size={1.25} hideStatus />
                <div className="text-text/80 text-xs">{user.displayName}</div>
             </div>
             {props.referencedMessage.content && <div className="overflow-hidden text-sm text-white">{children}</div>}
-            {(props.referencedMessage.attachments.length !== 0 || props.referencedMessage.embeds.length !== 0) && (
-               <IconMingcutePhotoAlbum2Fill className="text-text" />
-            )}
+            {hasAttachmentsOrEmbeds && <IconMingcutePhotoAlbum2Fill className="text-text" />}
+            {isLoading && <LoadingIcon className="shrink-0" />}
          </div>
       </div>
    );

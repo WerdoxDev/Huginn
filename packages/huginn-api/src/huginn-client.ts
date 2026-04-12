@@ -3,7 +3,7 @@ import type { APIPostLoginResult, APIPostRegisterResult, APIUser, LoginCredentia
 import { type Snowflake, snowflake, WorkerID } from "@huginn/shared";
 import { decodeJwt } from "jose";
 
-import type { ClientOptions, VoiceConstructor } from ".";
+import type { AuthenticationStatus, ClientOptions, VoiceConstructor } from ".";
 
 import { CDN } from "./cdn";
 import { Gateway } from "./gateway";
@@ -20,11 +20,11 @@ import { defaultClientOptions } from "./utils";
 import { Voice } from "./voice";
 import { VoiceManager } from "./voice-manager";
 
-export type InitializationResult = "success" | "timeout" | "network_error" | "invalid_tokens" | "authentication_failed";
+export type InitializationStatus = "success" | "timeout" | "network_error" | "invalid_tokens" | AuthenticationStatus;
 
-export type InitializationStatus = {
+export type InitializationResult = {
    success: boolean;
-   result: InitializationResult;
+   status: InitializationStatus;
    retryable: boolean;
 };
 
@@ -87,18 +87,18 @@ export class HuginnClient<V extends Voice = Voice> {
       this._user = user;
    }
 
-   public async connect(options: ConnectOptions = {}): Promise<InitializationStatus> {
+   public async connect(options: ConnectOptions = {}): Promise<InitializationResult> {
       const { tokens, timeout = 10000 } = options;
       try {
          if (tokens?.token || tokens?.refreshToken) {
             const tokenResult = await this.restoreSession(tokens);
 
             if (tokenResult === "invalid_tokens") {
-               return { result: tokenResult, retryable: false, success: false };
+               return { status: tokenResult, retryable: false, success: false };
             }
 
             if (tokenResult === "network_error") {
-               return { result: tokenResult, retryable: true, success: false };
+               return { status: tokenResult, retryable: true, success: false };
             }
          }
 
@@ -110,34 +110,34 @@ export class HuginnClient<V extends Voice = Voice> {
 
          this.setUser(this.gateway.user);
 
-         return { success: true, result: "success", retryable: false };
+         return { success: true, status: "success", retryable: false };
       } catch {
-         return { result: "authentication_failed", retryable: false, success: false };
+         return { status: "authentication_failed", retryable: false, success: false };
       }
    }
 
-   private async authenticate(timeout: number): Promise<InitializationStatus> {
+   private async authenticate(timeout: number): Promise<InitializationResult> {
       const result = await Promise.race([
          this.gateway.authenticate(),
          new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), timeout)),
       ]);
 
       if (!result) {
-         return { result: "timeout", success: false, retryable: true };
+         return { status: "timeout", success: false, retryable: true };
       }
 
       if (!result.authenticated) {
          return {
-            result: "authentication_failed",
+            status: result.status,
             retryable: result.retryable ?? true,
             success: false,
          };
       }
 
-      return { success: true, result: "success", retryable: false };
+      return { success: true, status: "success", retryable: false };
    }
 
-   private async restoreSession(tokens: Partial<Tokens>): Promise<InitializationResult> {
+   private async restoreSession(tokens: Partial<Tokens>): Promise<InitializationStatus> {
       try {
          const accessTokenValid = await this.validateAccessToken(tokens.token);
 
@@ -203,9 +203,10 @@ export class HuginnClient<V extends Voice = Voice> {
    public async login(credentials: LoginCredentials): Promise<APIPostLoginResult> {
       const result = await this.auth.login(credentials);
 
-      this.tokenHandler.token = result.token;
-      this.tokenHandler.refreshToken = result.refreshToken;
-      // this.setUser(result.);
+      if ("token" in result && "refreshToken" in result) {
+         this.tokenHandler.token = result.token;
+         this.tokenHandler.refreshToken = result.refreshToken;
+      }
 
       return result;
    }
@@ -213,9 +214,10 @@ export class HuginnClient<V extends Voice = Voice> {
    public async register(user: RegisterUser): Promise<APIPostRegisterResult> {
       const result = await this.auth.register(user);
 
-      this.tokenHandler.token = result.token;
-      this.tokenHandler.refreshToken = result.refreshToken;
-      // this.setUser(result);
+      if ("token" in result && "refreshToken" in result) {
+         this.tokenHandler.token = result.token;
+         this.tokenHandler.refreshToken = result.refreshToken;
+      }
 
       return result;
    }

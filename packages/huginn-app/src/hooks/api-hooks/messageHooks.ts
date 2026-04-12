@@ -4,15 +4,14 @@ import { useMemo } from "react";
 
 import type { AppMessage } from "@/types";
 
-export function useMessage(channelId: Snowflake, messageId: Snowflake) {
+export function useMessage(channelId: Snowflake, messageId?: Snowflake) {
    const queryClient = useQueryClient();
 
    return useMemo<AppMessage | undefined>(() => {
       const messages = queryClient.getQueryData<InfiniteData<AppMessage[]>>(["messages", channelId]);
 
-      if (!messages) {
-         return undefined;
-      }
+      console.log("useMessage", { channelId, messageId, messages });
+      if (!messages || !messageId) return undefined;
 
       for (const message of messages.pages.flatMap((x) => x)) {
          if (message.id === messageId) {

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import clsx from "clsx";
 
-export default function ModalCloseButton(props: { children?: ReactNode; onClick: () => void; className?: string }) {
+export default function ModalCloseButton(props: { children?: ReactNode; onClick: () => void; className?: string; iconClassName?: string }) {
    return (
       <button
          className={clsx(
@@ -12,7 +12,7 @@ export default function ModalCloseButton(props: { children?: ReactNode; onClick:
          onClick={props.onClick}
          type="button"
       >
-         <IconMingcuteCloseFill className="size-4" />
+         <IconMingcuteCloseFill className={clsx("size-4", props.iconClassName)} />
          {props.children}
       </button>
    );
