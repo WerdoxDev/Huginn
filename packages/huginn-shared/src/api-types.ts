@@ -97,6 +97,8 @@ export type APIPostRegisterJSONBody = {
    password: string;
 };
 
+export type EmailVerificationPurpose = "registration" | "email_change";
+
 export type APIPatchCurrentUserJSONBody = {
    email?: string;
    displayName?: string | null;
@@ -116,8 +118,8 @@ export type APIPostOAuthConfirmJSONBody = {
    avatar: string | null;
 };
 
-export type APIPostLoginResult = APIUser & Tokens;
-export type APIPostRegisterResult = APIUser & Tokens;
+export type APIPostLoginResult = (APIUser & Tokens) | { pendingEmail: string };
+export type APIPostRegisterResult = APIUser & Partial<Tokens> & { pendingEmail?: string };
 export type APIPatchCurrentUserResult = APIUser & Tokens & { pendingEmail?: string };
 export type APIPostOAuthConfirmResult = APIUser & Tokens;
 
@@ -471,8 +473,9 @@ export type APIPostKnownApplicationResult = APIKnownApplication;
 
 export type APIPostVerifyEmailJSONBody = {
    code: string;
+   email: string;
 };
-export type APIPostVerifyEmailResult = APIUser;
+export type APIPostVerifyEmailResult = APIUser & Partial<Tokens>;
 
 export type BadgeType = "staff" | "bug_hunter" | "early_supporter";
 export type APIBadge = {
