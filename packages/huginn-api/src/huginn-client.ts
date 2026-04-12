@@ -203,9 +203,10 @@ export class HuginnClient<V extends Voice = Voice> {
    public async login(credentials: LoginCredentials): Promise<APIPostLoginResult> {
       const result = await this.auth.login(credentials);
 
-      this.tokenHandler.token = result.token;
-      this.tokenHandler.refreshToken = result.refreshToken;
-      // this.setUser(result.);
+      if ("token" in result && "refreshToken" in result) {
+         this.tokenHandler.token = result.token;
+         this.tokenHandler.refreshToken = result.refreshToken;
+      }
 
       return result;
    }
@@ -213,9 +214,10 @@ export class HuginnClient<V extends Voice = Voice> {
    public async register(user: RegisterUser): Promise<APIPostRegisterResult> {
       const result = await this.auth.register(user);
 
-      this.tokenHandler.token = result.token;
-      this.tokenHandler.refreshToken = result.refreshToken;
-      // this.setUser(result);
+      if ("token" in result && "refreshToken" in result) {
+         this.tokenHandler.token = result.token;
+         this.tokenHandler.refreshToken = result.refreshToken;
+      }
 
       return result;
    }
