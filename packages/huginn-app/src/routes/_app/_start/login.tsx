@@ -11,6 +11,7 @@ import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useOAuth } from "@hooks/useOAuth";
 import { useClient } from "@stores/clientStore";
+import { useModals } from "@stores/modalsStore";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { usePostHog } from "posthog-js/react";
 // import { usePostHog } from "posthog-js/react";
@@ -28,19 +29,35 @@ function LoginComponent() {
    const initializeClient = useInitializeClient();
    const startOAuth = useOAuth();
    const navigate = useNavigate();
+   const { updateModals } = useModals();
 
    const { register, handleSubmit, handleErrors, formState } = useHuginnForm<Inputs>();
 
    const mutation = useHuginnMutation(
       {
          async mutationFn(credentials: APIPostLoginJSONBody) {
-            await client?.login({
+            return await client?.login({
                username: credentials.username,
                email: credentials.email,
                password: credentials.password,
             });
          },
-         async onSuccess() {
+         async onSuccess(result) {
+            const pendingEmail = result && "pendingEmail" in result ? result.pendingEmail : undefined;
+
+            if (pendingEmail) {
+               updateModals({
+                  verifyEmail: {
+                     isOpen: true,
+                     pendingEmail,
+                     onSuccess: async () => {
+                        await initializeClient({ navigatePath: "/channels/@me" });
+                     },
+                  },
+               });
+               return;
+            }
+
             await initializeClient({
                navigatePath: "/channels/@me",
             });

@@ -68,7 +68,7 @@ function ProfileContent(props: { userId: string }) {
 
    const bannerColor = user.bannerColor;
    const hasBanner = !!user.banner || !!bannerColor;
-   const accentColor = user.accentColor ?? "transparent";
+   const accentColor = user.accentColor ?? "";
    const isSelf = client?.currentUser?.id === props.userId;
 
    const relationship = useMemo(() => relationships?.find((r) => r.userId === props.userId), [relationships, props.userId]);
@@ -107,7 +107,10 @@ function ProfileContent(props: { userId: string }) {
    const hasLowerContent = !!user.bio || !!presence?.activities?.[0];
 
    return (
-      <div className="bg-surface-alt relative mb-2 flex flex-col overflow-hidden rounded-lg border-2" style={{ borderColor: accentColor }}>
+      <div
+         className="bg-surface-alt relative mb-2 flex flex-col overflow-hidden rounded-lg border-2"
+         style={{ borderColor: accentColor || "transparent" }}
+      >
          <ProfileBanner userId={user?.id} banner={user?.banner} bannerColor={bannerColor} />
          <RoamingHuginnIcon />
 
@@ -174,7 +177,7 @@ function ProfileContent(props: { userId: string }) {
 
          {hasLowerContent && (
             <>
-               <div className="mx-5 h-0.5" style={{ backgroundColor: `${accentColor}33` }} />
+               <div className="mx-5 h-0.5" style={{ backgroundColor: `color-mix(in srgb, ${accentColor || "white"} 20%, transparent)` }} />
                <div className="flex flex-col gap-y-5 p-5">
                   {user.bio && (
                      <ProfileAboutMe accentColor={accentColor}>

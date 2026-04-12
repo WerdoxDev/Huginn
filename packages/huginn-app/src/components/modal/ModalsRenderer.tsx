@@ -18,6 +18,7 @@ const ScreenShareModal = lazy(() => import("./ScreenShareModal"));
 const ChangeUsernameModal = lazy(() => import("./profile/ChangeUsernameModal"));
 const ChangeDisplayNameModal = lazy(() => import("./profile/ChangeDisplayNameModal"));
 const ChangeEmailModal = lazy(() => import("./profile/ChangeEmailModal"));
+const VerifyEmailModal = lazy(() => import("./profile/VerifyEmailModal"));
 const ChangePasswordModal = lazy(() => import("./profile/ChangePasswordModal"));
 const UserProfileModal = lazy(() => import("./UserProfileModal"));
 
@@ -38,6 +39,7 @@ export default function ModalsRenderer() {
       changeUsername,
       changeDisplayName,
       changeEmail,
+      verifyEmail,
       changePassword,
       userProfile,
    } = useModals();
@@ -60,6 +62,11 @@ export default function ModalsRenderer() {
          <BaseModal renderChildren={<ScreenShareModal />} modal={screenShare} onClose={() => updateModals({ screenShare: { isOpen: false } })} />
          <BaseModal renderChildren={<StreamAudioModal />} modal={streamAudio} onClose={() => updateModals({ streamAudio: { isOpen: false } })} />
          <BaseModal renderChildren={<NewsModal />} modal={news} onClose={() => updateModals({ news: { isOpen: false } })} />
+         <BaseModal
+            renderChildren={<VerifyEmailModal />}
+            modal={verifyEmail}
+            onClose={() => updateModals({ verifyEmail: { isOpen: false, pendingEmail: null, title: "Verify Email", onSuccess: undefined } })}
+         />
          {user && (
             <>
                <BaseModal renderChildren={<CreateDMModal />} onClose={() => updateModals({ createDM: { isOpen: false } })} modal={createDM} />

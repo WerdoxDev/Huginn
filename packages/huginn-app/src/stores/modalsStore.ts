@@ -5,7 +5,7 @@ import { produce } from "immer";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 
-import type { AppDirectChannel, MutationKinds } from "@/types";
+import type { AppDirectChannel } from "@/types";
 
 type DefaultModal = { isOpen: boolean };
 
@@ -69,6 +69,10 @@ const initialStore = () => ({
    changeUsername: { isOpen: false } as DefaultModal,
    changeDisplayName: { isOpen: false } as DefaultModal,
    changeEmail: { isOpen: false } as DefaultModal,
+   verifyEmail: { isOpen: false, pendingEmail: null, onSuccess: undefined } as DefaultModal & {
+      pendingEmail: string | null;
+      onSuccess?: () => Promise<void> | void;
+   },
    changePassword: { isOpen: false } as DefaultModal,
    userProfile: { isOpen: false, userId: "" } as DefaultModal & { userId: Snowflake },
 });

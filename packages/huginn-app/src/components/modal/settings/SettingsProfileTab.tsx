@@ -32,7 +32,7 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
    const { data: originalAvatar } = useQuery(getUserAvatarOptions(user?.id, user?.avatar, client));
    const { data: originalBanner } = useQuery(getUserBannerOptions(user?.id, user?.banner, client));
    const [bannerColor, setBannerColor] = useState(() => user?.bannerColor ?? "");
-   const [accentColor, setAccentColor] = useState(() => user?.accentColor ?? "transparent");
+   const [accentColor, setAccentColor] = useState(() => user?.accentColor ?? "");
    const [bio, setBio] = useState(() => user?.bio ?? "");
    const [isEditing, setIsEditing] = useState(false);
    const [pendingAvatar, setPendingAvatar] = useState<string | null | undefined>(undefined);
@@ -70,9 +70,10 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
 
    function handleToggleBannerVisibility() {
       setShowBanner(!showBanner);
-      if (!showBanner && !pendingBanner && !bannerColor) {
-         setBannerColor(COLOR_PRESETS[0]);
-      }
+   }
+
+   function handleResetAccentColor() {
+      setAccentColor("");
    }
 
    async function handleEditField(field: EditingField) {
@@ -195,31 +196,42 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
                      disabledReason="Remove banner image to use banner color."
                   />
                   <ColorSelector color={accentColor} onChange={handleAccentColorChange} label="accent" />
-                  <button
-                     type="button"
-                     className="flex cursor-pointer items-center gap-x-2 self-start rounded-md bg-white/10 px-3 py-1.5 text-xs font-medium text-white/80 transition-colors hover:bg-white/15 hover:text-white"
-                     onClick={handleToggleBannerVisibility}
-                  >
-                     {showBanner ? <IconMingcuteEyeLine className="size-3.5" /> : <IconMingcuteEyeCloseLine className="size-3.5" />}
-                     {showBanner ? "Hide Banner" : "Show Banner"}
-                  </button>
+                  <div className="flex items-center gap-x-2">
+                     <HuginnButton
+                        type="button"
+                        color="surface-alt"
+                        className="flex items-center gap-x-2 self-start rounded-md px-3 py-1.5 text-xs font-medium text-white/80 transition-colors"
+                        onClick={handleToggleBannerVisibility}
+                     >
+                        {showBanner ? <IconMingcuteEyeLine className="size-3.5" /> : <IconMingcuteEyeCloseLine className="size-3.5" />}
+                        {showBanner ? "Hide Banner" : "Show Banner"}
+                     </HuginnButton>
+                     <HuginnButton
+                        type="button"
+                        color="surface-alt"
+                        className="flex items-center gap-x-2 self-start rounded-md px-3 py-1.5 text-xs font-medium text-white/80 transition-colors"
+                        disabled={!accentColor}
+                        onClick={handleResetAccentColor}
+                     >
+                        <IconMingcuteRefresh3Fill className="size-3.5" />
+                        Reset Accent Color
+                     </HuginnButton>
+                  </div>
                </div>
             )}
 
-            <div className="bg-surface-alt relative mb-4 overflow-hidden rounded-lg border-2" style={{ borderColor: accentColor }}>
-               <div className={clsx("group relative transition-all", showBanner ? (displayBanner ? "h-32" : bannerColor ? "h-20" : "h-0") : "h-0")}>
+            <div className="bg-surface-alt relative mb-4 overflow-hidden rounded-lg border-2" style={{ borderColor: accentColor || "transparent" }}>
+               <div className={clsx("group relative transition-all", showBanner ? (displayBanner ? "h-32" : "h-20") : "h-0")}>
                   {displayBanner ? (
                      <>
                         <img alt="user-banner" className="h-full w-full object-cover" src={displayBanner} />
                         <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
                      </>
-                  ) : bannerColor ? (
+                  ) : (
                      <>
-                        <div className="h-full w-full" style={{ backgroundColor: bannerColor }} />
+                        <div className="h-full w-full" style={{ backgroundColor: bannerColor || "transparent" }} />
                         <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
                      </>
-                  ) : (
-                     <div className="h-full w-full bg-linear-to-r from-white/5 via-white/10 to-white/5" />
                   )}
                   {isEditing && (
                      <div className={clsx("absolute top-2 right-2 flex gap-x-1 transition-opacity", !showBanner ? "opacity-0" : "opacity-100")}>
@@ -284,7 +296,7 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
                   <div className="ml-auto flex h-full shrink-0 flex-col gap-y-1 pt-3">{user && <MemberSince userId={user.id} />}</div>
                </div>
 
-               <div className="mx-5 h-0.5" style={{ backgroundColor: `${accentColor}33` }} />
+               <div className="mx-5 h-0.5" style={{ backgroundColor: `color-mix(in srgb, ${accentColor || "white"} 20%, transparent)` }} />
                <div className="flex flex-col gap-y-5 p-5">
                   {isEditing ? (
                      <ProfileAboutMe
@@ -423,9 +435,9 @@ const COLOR_PRESETS = ["#00dabd", "#00bbea", "#9b59b6", "#e91e63", "#e74c3c", "#
 
 function ColorSelector(props: { onChange?: (color: string) => void; color: string; disabled?: boolean; label: string; disabledReason?: string }) {
    function handleHexInputChange(value: string) {
-      const cleaned = value.startsWith("#") ? value : `#${value}`;
-      console.log(cleaned);
-      props.onChange?.(cleaned);
+      // const cleaned = value.startsWith("#") ? value : `#${value}`;
+      // console.log(cleaned);
+      props.onChange?.(value);
    }
 
    return (
@@ -454,11 +466,11 @@ function ColorSelector(props: { onChange?: (color: string) => void; color: strin
          <input
             type="text"
             className={clsx(
-               "bg-surface-alt w-18 shrink-0 rounded-md px-2 py-0.5 text-xs text-white outline-none placeholder:text-white/30",
+               "bg-surface-alt w-24 shrink-0 rounded-md px-2 py-1 text-xs text-white outline-none placeholder:text-white/30",
                props.disabled && "pointer-events-none",
             )}
             placeholder="#000000"
-            maxLength={7}
+            maxLength={16}
             value={props.color}
             onChange={(e) => handleHexInputChange(e.currentTarget.value)}
          />
