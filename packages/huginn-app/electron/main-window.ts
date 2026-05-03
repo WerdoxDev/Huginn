@@ -4,6 +4,7 @@ import { app, desktopCapturer, ipcMain, nativeImage, Notification, session, shel
 import electronUpdater, { CancellationToken } from "electron-updater";
 import native, { type AppInfo } from "native-addon";
 import path from "node:path";
+import { electron } from "node:process";
 
 import type { AudioSource, DisplaySource } from "@/types";
 
@@ -230,6 +231,12 @@ export class MainWindow extends BaseWindow {
          } else {
             window.webContents.reload();
          }
+      });
+
+      ipcMain.handle("window:process-id", () => {
+         log("app:electron", "recv", "window process id");
+
+         return process.pid;
       });
    }
 

@@ -51,7 +51,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
                return (
                   <div
                      key={key}
-                     className={clsx("w-full overflow-hidden text-ellipsis [text-box-edge:text_text]!", noWrapping && "whitespace-nowrap")}
+                     className={clsx("[text-box-edge:text_text]!", noWrapping ? "w-full overflow-hidden text-ellipsis whitespace-nowrap" : "w-fit")}
                   >
                      {children}
                   </div>

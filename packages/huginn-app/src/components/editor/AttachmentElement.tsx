@@ -26,11 +26,17 @@ export default function AttachmentElement(props: {
    const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
    const basedUrl = useMemo(() => changeUrlBase(props.url, `${activePreset?.cdnHostname ?? ""}/cdn`), [props.url, activePreset?.cdnHostname]);
 
+   const isImage = isImageMediaType(props.contentType);
+   const isVideo = isVideoMediaType(props.contentType);
+
    return (
-      <div contentEditable={false}>
+      <div
+         contentEditable={false}
+         style={{ width: !isImage && !isVideo ? `max-content` : undefined, maxWidth: isImage || isVideo ? `${dimensions.width}px` : undefined }}
+      >
          <div className="relative my-1 flex flex-col items-start">
             {props.description && <span className={clsx("text-sm")}>{props.description}</span>}
-            {isImageMediaType(props.contentType) ? (
+            {isImage ? (
                <ImagePreview
                   filename={props.filename}
                   width={dimensions.width}
@@ -39,7 +45,7 @@ export default function AttachmentElement(props: {
                   originalHeight={props.height ?? 0}
                   url={basedUrl}
                />
-            ) : isVideoMediaType(props.contentType) ? (
+            ) : isVideo ? (
                <VideoPlayer url={basedUrl} width={dimensions.width} height={dimensions.height} />
             ) : (
                <div className="bg-surface-alt flex w-[24rem] items-center gap-x-2 rounded-lg px-2 py-3">

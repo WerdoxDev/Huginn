@@ -13,6 +13,7 @@ export const electronAPI = {
    hideMain: () => ipcRenderer.send("window:hide-main"),
    focusMain: () => ipcRenderer.send("window:focus-main"),
    relaunch: () => ipcRenderer.send("window:relaunch"),
+   processId: () => ipcRenderer.invoke("window:process-id") as Promise<number>,
 
    // File management
    loadFile: <K extends FileType>(type: K) => ipcRenderer.invoke("file:load", type) as Promise<LoadFileResult<K>>,
