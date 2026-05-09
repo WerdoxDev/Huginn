@@ -48,7 +48,7 @@ export default function UserActionButton(props: {
                e.stopPropagation();
             }}
             className={clsx(
-               "group rounded-lg p-1.5 text-white transition-colors",
+               "group rounded-lg p-1.5 text-white transition-colors outline-none",
                colors[(props.isActive && props.activeColor ? props.activeColor : props.color) ?? "none"],
                hoverColors[(props.isActive && props.activeHoverColor ? props.activeHoverColor : props.hoverColor) ?? "surface"],
                props.className,

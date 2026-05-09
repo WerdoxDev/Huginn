@@ -2,6 +2,7 @@ import type { ProcessInfo } from "native-addon";
 
 import LoadingButton from "@components/button/LoadingButton";
 import HuginnDropdown from "@components/dropdown/HuginnDropdown";
+import HuginnIcon from "@components/HuginnIcon";
 import { ProfileActivity } from "@components/profile/ProfileComponents";
 import Tooltip from "@components/tooltip/Tooltip";
 import { useSubmitKnownApplication } from "@hooks/mutations/useSubmitKnownApplication";
@@ -17,6 +18,8 @@ import moment from "moment";
 import { useEffect, useMemo, useState } from "react";
 
 import type { DropdownItem, SettingsTabProps } from "@/types";
+
+import huginnInHuginnUrl from "@/assets/huginn-in-huginn-meme.jpg";
 
 type OpenApplication = ProcessInfo & { displayName?: string; icon?: string };
 
@@ -85,7 +88,12 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
    async function submit() {
       const application = openApplications.find((x) => x.processId === Number(selectedApplication?.value));
 
-      if (!application) {
+      if (!application) return;
+
+      console.log(application.processId, huginnWindow.processId);
+
+      if (application.processId === huginnWindow.processId) {
+         updateModals({ info: { isOpen: true, title: "WHAT?!", text: <img src={huginnInHuginnUrl} />, status: "info" } });
          return;
       }
 
@@ -145,11 +153,7 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
                      <div className="text-text/80">No activities detected...</div>
                   </div>
                ) : (
-                  <ProfileActivity
-                     activity={targetActivity}
-                     accentColor={accentColor}
-                     className="bg-surface-alt"
-                  />
+                  <ProfileActivity activity={targetActivity} accentColor={accentColor} className="bg-surface-alt" />
                )}
             </div>
             {huginnWindow.environment === "desktop" && (

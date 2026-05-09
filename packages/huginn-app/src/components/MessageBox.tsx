@@ -78,64 +78,64 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    return (
       <div className="bottom-0 z-10 flex-col px-1.5 py-1.5 lg:px-5" ref={containerRef}>
          <DraggingIndicator isDragging={dragging} />
-         <form className="w-full">
-            <div
-               className={clsx(
-                  "border-surface bg-surface-deep overflow-hidden rounded-3xl border-2 transition-[border-radius]",
-                  hasAddon && "rounded-t-xl",
+         {/* <form className="w-full"> */}
+         <div
+            className={clsx(
+               "border-surface bg-surface-deep overflow-hidden rounded-3xl border-2 transition-[border-radius]",
+               hasAddon && "rounded-t-xl",
+            )}
+         >
+            {/* {currentEditingMessageId && <EditingPreview onCancel={cancelEditMessage} />} */}
+            <EditingPreview onCancel={cancelEditMessage} show={!!currentEditingMessageId} />
+            <ReplyingPreview
+               channelId={channelId!}
+               messageId={currentReplyingMessageId}
+               onCancel={cancelReplyMessage}
+               show={!!currentReplyingMessageId}
+            />
+            <AttachmentsPreview attachments={attachments} onRemove={removeAttachment} />
+            <div className="flex h-full items-start">
+               {!currentEditingMessageId && (
+                  <Tooltip>
+                     <Tooltip.Trigger
+                        onClick={addFiles}
+                        type="button"
+                        className="bg-surface m-2 mr-2 flex shrink-0 cursor-pointer items-center rounded-full p-1.5 transition-all hover:bg-white/20 enabled:hover:shadow-xl"
+                     >
+                        <IconMingcuteAddFill name="gravity-ui:plus" className="text-text size-5" />
+                     </Tooltip.Trigger>
+                     <Tooltip.Content>Upload Files</Tooltip.Content>
+                  </Tooltip>
                )}
-            >
-               {/* {currentEditingMessageId && <EditingPreview onCancel={cancelEditMessage} />} */}
-               <EditingPreview onCancel={cancelEditMessage} show={!!currentEditingMessageId} />
-               <ReplyingPreview
-                  channelId={channelId!}
-                  messageId={currentReplyingMessageId}
-                  onCancel={cancelReplyMessage}
-                  show={!!currentReplyingMessageId}
-               />
-               <AttachmentsPreview attachments={attachments} onRemove={removeAttachment} />
-               <div className="flex h-full items-start">
-                  {!currentEditingMessageId && (
-                     <Tooltip>
-                        <Tooltip.Trigger
-                           onClick={addFiles}
-                           type="button"
-                           className="bg-surface m-2 mr-2 flex shrink-0 cursor-pointer items-center rounded-full p-1.5 transition-all hover:bg-white/20 enabled:hover:shadow-xl"
-                        >
-                           <IconMingcuteAddFill name="gravity-ui:plus" className="text-text size-5" />
-                        </Tooltip.Trigger>
-                        <Tooltip.Content>Upload Files</Tooltip.Content>
-                     </Tooltip>
-                  )}
-                  <div className="h-full w-full overflow-hidden">
-                     <Slate editor={editor} initialValue={initialValue}>
-                        <Editable
-                           onPaste={onPaste}
-                           ref={editorRef}
-                           placeholder={`Message ${currentChannel?.name}`}
-                           className={clsx(
-                              "h-full py-3 leading-6 font-light whitespace-break-spaces text-white caret-white outline-hidden",
-                              currentEditingMessageId && "pl-3",
-                           )}
-                           renderLeaf={renderLeaf}
-                           renderElement={renderElement}
-                           decorate={decorate}
-                           onKeyDown={onEditorKeyDown}
-                           renderPlaceholder={({ children, attributes }) => <div {...attributes}>{children}</div>}
-                           disableDefaultStyles
-                        />
-                     </Slate>
-                  </div>
-                  <div className="ml-2 flex h-8 gap-x-2 p-2">
-                     <div className="bg-surface h-8 w-8 rounded-full" />
-                     <div className="bg-surface h-8 w-8 rounded-full" />
-                     <button className="bg-primary-700 h-8 w-8 rounded-full p-0.5" type="button" onClick={() => sendMessage(MessageFlags.NONE)}>
-                        <IconLetsIconsSendHorFill className="text-text size-full" />
-                     </button>
-                  </div>
+               <div className="h-full w-full overflow-hidden">
+                  <Slate editor={editor} initialValue={initialValue}>
+                     <Editable
+                        onPaste={onPaste}
+                        ref={editorRef}
+                        placeholder={`Message ${currentChannel?.name}`}
+                        className={clsx(
+                           "h-full py-3 leading-6 font-light whitespace-break-spaces text-white caret-white outline-hidden",
+                           currentEditingMessageId && "pl-3",
+                        )}
+                        renderLeaf={renderLeaf}
+                        renderElement={renderElement}
+                        decorate={decorate}
+                        onKeyDown={onEditorKeyDown}
+                        renderPlaceholder={({ children, attributes }) => <div {...attributes}>{children}</div>}
+                        disableDefaultStyles
+                     />
+                  </Slate>
+               </div>
+               <div className="ml-2 flex h-8 gap-x-2 p-2">
+                  <div className="bg-surface h-8 w-8 rounded-full" />
+                  <div className="bg-surface h-8 w-8 rounded-full" />
+                  <button className="bg-primary-700 h-8 w-8 rounded-full p-0.5" type="button" onClick={() => sendMessage(MessageFlags.NONE)}>
+                     <IconLetsIconsSendHorFill className="text-text size-full" />
+                  </button>
                </div>
             </div>
-         </form>
+         </div>
+         {/* </form> */}
       </div>
    );
 }

@@ -53,6 +53,7 @@ export default function InfoModal() {
    const glowShadow = glowShadowMap[modal.status] ?? "";
 
    const errorCode = modal.errorCode ?? "";
+   const isPlainBodyText = typeof modal.text === "string" || typeof modal.text === "number";
 
    useEffect(() => {
       if (!iconRef.current || !titleRef.current || !descRef.current) return;
@@ -125,7 +126,7 @@ export default function InfoModal() {
 
             <Description className="mt-1" as="div">
                <div ref={descRef} style={{ opacity: 0 }} className="text-text/80 text-center">
-                  <div>{modal.text}</div>
+                  {isPlainBodyText ? <div>{modal.text}</div> : modal.text}
                   {/* {errorCode && (
                      <div className="bg-negative-700/50 border-negative-400 mt-2 inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-sm font-medium text-white/80">
                         {errorCode}

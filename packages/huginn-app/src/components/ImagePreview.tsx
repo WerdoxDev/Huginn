@@ -23,6 +23,7 @@ export default function ImagePreview(props: {
    const { updateModals } = useModals();
    const { open } = useContextMenu("message");
    const context = useContext(MessageContext);
+   const aspectRatio = props.originalWidth && props.originalHeight ? props.originalWidth / props.originalHeight : 1;
 
    useEffect(() => {
       if (imgRef.current?.complete) {
@@ -63,7 +64,7 @@ export default function ImagePreview(props: {
                })
             }
             className={clsx("cursor-pointer overflow-hidden rounded-md object-contain", hasError && "hidden")}
-            style={{ width: `${props.width}px`, height: `${props.height}px` }}
+            style={{ width: `100%`, maxWidth: `${props.width}px`, height: `100%`, aspectRatio }}
          />
          <Transition show={!isLoaded || hasError}>
             <div
@@ -71,7 +72,7 @@ export default function ImagePreview(props: {
                   !hasError && "absolute inset-0",
                   "bg-surface/40 flex items-center justify-center rounded-md duration-200 data-closed:opacity-0",
                )}
-               style={{ width: `${props.width}px`, height: `${props.height}px` }}
+               style={{ width: `100%`, maxWidth: `${props.width}px`, height: `100%`, aspectRatio }}
             >
                {!isLoaded && !hasError && <LoadingIcon className="size-16" />}
                {hasError && <IconMingcuteWarningFill className="text-negative-100 size-16" />}

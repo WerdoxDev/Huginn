@@ -42,6 +42,7 @@ function Trigger(props: HTMLProps<HTMLButtonElement> & { asChild?: boolean }) {
          // The user can style the trigger based on the state
          data-state={context.open ? "open" : "closed"}
          {...omit(context.getReferenceProps(props), ["asChild"])}
+         type={props.type ?? "button"}
          className={clsx("cursor-pointer", context.getReferenceProps(props)?.className as string)}
       >
          {props.children}

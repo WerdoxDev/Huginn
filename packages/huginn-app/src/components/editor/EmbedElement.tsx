@@ -33,7 +33,10 @@ export default function EmbedElement(props: {
    );
 
    return (
-      <div contentEditable={false} style={{ maxWidth: `${CONSTANTS.EMBED_MEDIA_MAX_WIDTH + 16}px` }}>
+      <div
+         contentEditable={false}
+         style={{ maxWidth: barebone ? `${CONSTANTS.EMBED_MEDIA_MAX_WIDTH}px` : `${CONSTANTS.EMBED_MEDIA_MAX_WIDTH + 16}px` }}
+      >
          <div className={clsx("mt-1 mb-1 flex max-w-md flex-col items-start", !barebone && "bg-surface-deep rounded-lg p-2")}>
             {props.title && (
                <span
@@ -45,19 +48,19 @@ export default function EmbedElement(props: {
                </span>
             )}
             {props.description && <span className={clsx("text-sm", props.thumbnail && "mb-2")}>{props.description}</span>}
-            <div className="relative">
-               {props.thumbnail && (
-                  <ImagePreview
-                     width={dimensions.width}
-                     height={dimensions.height}
-                     originalWidth={props.thumbnail.width ?? 0}
-                     originalHeight={props.thumbnail.height ?? 0}
-                     url={props.thumbnail.url}
-                     disableQuery
-                  />
-               )}
-               {props.video && <VideoPlayer url={props.video.url} width={dimensions.width} height={dimensions.height} />}
-            </div>
+            {/* <div className="relative "> */}
+            {props.thumbnail && (
+               <ImagePreview
+                  width={dimensions.width}
+                  height={dimensions.height}
+                  originalWidth={props.thumbnail.width ?? 0}
+                  originalHeight={props.thumbnail.height ?? 0}
+                  url={props.thumbnail.url}
+                  disableQuery
+               />
+            )}
+            {props.video && <VideoPlayer url={props.video.url} width={dimensions.width} height={dimensions.height} />}
+            {/* </div> */}
          </div>
       </div>
    );

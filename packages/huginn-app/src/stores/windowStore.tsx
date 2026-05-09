@@ -14,6 +14,7 @@ const store = createStore(
          environment: (window.electronAPI ? "desktop" : "browser") as Environment,
          args: [] as string[],
          version: "",
+         processId: 0,
       },
       (set) => ({
          setMaximized: (isMaximized: boolean) => set({ maximized: isMaximized }),
@@ -31,6 +32,7 @@ export async function initializeWindow() {
       focused: document.hasFocus(),
       args: window.electronAPI ? await window.electronAPI.getArgs() : undefined,
       version: window.electronAPI ? await window.electronAPI.getVersion() : __APP_VERSION__,
+      processId: window.electronAPI ? await window.electronAPI.processId() : 0,
    });
 
    const controller = new AbortController();

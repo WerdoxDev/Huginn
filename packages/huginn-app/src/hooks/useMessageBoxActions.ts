@@ -92,6 +92,7 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       }
 
       resetTyping();
+      clearAttachments();
       clearEditor();
    }
 

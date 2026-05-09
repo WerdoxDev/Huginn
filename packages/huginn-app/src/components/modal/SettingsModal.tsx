@@ -254,16 +254,19 @@ function SettingsPanels(props: { currentTabText: string | null; onChange: (value
    return (
       props.currentTabText && (
          <TabPanels className="flex w-full flex-col overflow-hidden">
-            <div className="text-text mt-5 ml-5 shrink-0 text-xl select-none">{props.currentTabText}</div>
+            <div className="text-text mt-3 ml-3 shrink-0 text-xl select-none lg:mt-5 lg:ml-5">{props.currentTabText}</div>
             {flatTabs.map((tab) => (
-               <TabPanel key={tab?.name} className="scroll-surface-deep h-full overflow-x-visible overflow-y-scroll pt-5 pr-3 pb-5">
-                  <div className="ml-5">
-                     {tab?.component ? (
-                        <TabComponent onChange={props.onChange} component={tab.component} />
-                     ) : (
-                        <span className="text-text/50 text-base italic">{tab?.name} (Soon...)</span>
-                     )}
-                  </div>
+               <TabPanel
+                  key={tab?.name}
+                  className="scroll-surface-deep mt-3 h-full overflow-x-visible overflow-y-scroll pb-3 pl-3 lg:mt-5 lg:pr-1.5 lg:pb-5 lg:pl-5"
+               >
+                  {/* <div className="ml-5"> */}
+                  {tab?.component ? (
+                     <TabComponent onChange={props.onChange} component={tab.component} />
+                  ) : (
+                     <span className="text-text/50 text-base italic">{tab?.name} (Soon...)</span>
+                  )}
+                  {/* </div> */}
                </TabPanel>
             ))}
          </TabPanels>

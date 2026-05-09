@@ -20,14 +20,11 @@ export default function VideoPlayer(props: { url: string; width: number; height:
    const [currentAudioPercent, setCurrentAudioPercent] = useState(0);
    const [bufferedPercent, setBufferedPercent] = useState(0);
    const [currentTime, setCurrentTime] = useState(0);
-   // const [bufferedTime, setBufferedTime] = useState(0);
-   // const videoProgress = useProgressBar({ startOffset: 2, endOffset: 0, mouseOffset: 5 });
-   // const audioProgress = useProgressBar({ startOffset: 10, endOffset: 0, mouseOffset: 5, defaultValue: 100 });
    const [videoDuration, setVideoDuration] = useState(0);
-   // const [videoTime, setVideoTime] = useState(0);
-   const [loaded, setLoaded] = useState(false);
-   const [errored, setErrored] = useState(false);
+   const [isLoaded, setIsLoaded] = useState(false);
+   const [hasError, setHasError] = useState(false);
    const { isFullscreen, toggleFullscreen } = useFullscreen(containerRef);
+   const aspectRatio = props.width && props.height ? props.width / props.height : 1;
 
    useEffect(() => {
       const controller = new AbortController();
@@ -115,54 +112,55 @@ export default function VideoPlayer(props: { url: string; width: number; height:
    return (
       <div
          ref={containerRef}
-         style={{ width: `${props.width}px`, height: `${props.height}px` }}
-         className={clsx("group/video relative flex overflow-hidden rounded-md")}
+         className={clsx("group/video relative flex w-full overflow-hidden rounded-md")}
+         style={isFullscreen ? undefined : { width: `100%`, maxWidth: `${props.width}px`, height: `100%`, aspectRatio }}
          onClick={togglePlaying}
       >
          <video
             width={isFullscreen ? undefined : props.width}
             height={isFullscreen ? undefined : props.height}
-            style={isFullscreen ? undefined : { width: `${props.width}px`, height: `${props.height}px` }}
+            className="h-full w-full"
             src={props.url}
             ref={videoRef}
-            onLoadedData={() => setLoaded(true)}
-            onError={() => setErrored(true)}
+            onLoadedData={() => setIsLoaded(true)}
+            onError={() => setHasError(true)}
          />
-         <Transition show={!loaded || errored}>
+         <Transition show={!isLoaded || hasError}>
             <div
-               className={clsx(!errored && "absolute inset-0", "bg-surface/40 flex items-center justify-center duration-200 data-closed:opacity-0")}
-               style={{ width: `${props.width}px`, height: `${props.height}px` }}
+               className={clsx("absolute inset-0", "bg-surface/40 flex h-full w-full items-center justify-center duration-200 data-closed:opacity-0")}
             >
-               {!loaded && !errored && <LoadingIcon className="size-16" />}
-               {errored && <IconMingcuteWarningFill className="text-negative-100 size-16" />}
+               {!isLoaded && !hasError && <LoadingIcon className="size-16" />}
+               {hasError && <IconMingcuteWarningFill className="text-negative-100 size-16" />}
             </div>
          </Transition>
-         <div
-            onClick={(e) => e.stopPropagation()}
-            className={clsx(
-               "bg-surface-deep/90 absolute inset-x-0 bottom-0 flex items-center gap-x-4 px-2 py-2 transition-[translate]",
-               playing && "translate-y-full group-hover/video:translate-y-0",
-            )}
-         >
-            <button type="button" onClick={togglePlaying} className="shrink-0 cursor-pointer text-white/80 hover:text-white">
-               {playing ? <IconMingcutePauseFill className="size-6" /> : <IconMingcutePlayFill className="size-6" />}
-            </button>
-            {(isFullscreen || props.width >= VIDEO_TIMESTAMP_REQUIRED_WIDTH) && (
-               <div className="shrink-0 text-sm">
-                  {formatSeconds(currentTime)} / {formatSeconds(videoDuration)}
-               </div>
-            )}
-            <Slider
-               orientation="horizontal"
-               currentPercent={currentVideoPercent}
-               bufferedPercent={bufferedPercent}
-               onChange={updateCurrentVideoPercent}
-            />
-            <VolumeSlider currentPercent={currentAudioPercent} onChange={updateCurrentAudioPercent} />
-            <button type="button" className="shrink-0 cursor-pointer text-white/80 hover:text-white" onClick={toggleFullscreen}>
-               {isFullscreen ? <IconMingcuteFullscreenExitFill className="size-6" /> : <IconMingcuteFullscreenFill className="size-6" />}
-            </button>
-         </div>
+         {isLoaded && !hasError && (
+            <div
+               onClick={(e) => e.stopPropagation()}
+               className={clsx(
+                  "bg-surface-deep/90 absolute inset-x-0 bottom-0 flex items-center gap-x-4 px-2 py-2 transition-[translate]",
+                  playing && "translate-y-full group-hover/video:translate-y-0",
+               )}
+            >
+               <button type="button" onClick={togglePlaying} className="shrink-0 cursor-pointer text-white/80 hover:text-white">
+                  {playing ? <IconMingcutePauseFill className="size-6" /> : <IconMingcutePlayFill className="size-6" />}
+               </button>
+               {(isFullscreen || props.width >= VIDEO_TIMESTAMP_REQUIRED_WIDTH) && (
+                  <div className="shrink-0 text-sm">
+                     {formatSeconds(currentTime)} / {formatSeconds(videoDuration)}
+                  </div>
+               )}
+               <Slider
+                  orientation="horizontal"
+                  currentPercent={currentVideoPercent}
+                  bufferedPercent={bufferedPercent}
+                  onChange={updateCurrentVideoPercent}
+               />
+               <VolumeSlider currentPercent={currentAudioPercent} onChange={updateCurrentAudioPercent} />
+               <button type="button" className="shrink-0 cursor-pointer text-white/80 hover:text-white" onClick={toggleFullscreen}>
+                  {isFullscreen ? <IconMingcuteFullscreenExitFill className="size-6" /> : <IconMingcuteFullscreenFill className="size-6" />}
+               </button>
+            </div>
+         )}
       </div>
    );
 }
