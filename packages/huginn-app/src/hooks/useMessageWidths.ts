@@ -7,6 +7,7 @@ import type { ProcessedMessage } from "@/types";
 export function useMessageWidths(params: { message: ProcessedMessage; lastMessage?: ProcessedMessage; nextMessage?: ProcessedMessage }) {
    const { message, lastMessage, nextMessage } = params;
    const rootRef = useRef<HTMLDivElement>(null);
+   const extrasRef = useRef<HTMLDivElement>(null);
    const [widths, setWidths] = useState<{ width: number; lastWidth: number; nextWidth: number }>({
       width: 0,
       lastWidth: 0,
@@ -46,8 +47,16 @@ export function useMessageWidths(params: { message: ProcessedMessage; lastMessag
       const observer = new ResizeObserver(() => updateWidths());
       observer.observe(root);
 
-      return () => observer.disconnect();
+      const extrasObserver = new ResizeObserver(() => updateWidths());
+      if (extrasRef.current) {
+         extrasObserver.observe(extrasRef.current);
+      }
+
+      return () => {
+         observer.disconnect();
+         extrasObserver.disconnect();
+      };
    }, [message, lastMessage, nextMessage]);
 
-   return { rootRef, widths };
+   return { rootRef, extrasRef, widths };
 }

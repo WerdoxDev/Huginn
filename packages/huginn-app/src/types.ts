@@ -346,6 +346,7 @@ export type AppSettings = {
    hostnamePresets: HostnamePreset[];
    activePresetName: string | null;
    theme: ThemeType;
+   isChannelSidebarOpen: boolean;
    inputDeviceId: string;
    outputDeviceId: string;
    cameraDeviceId: string;
@@ -383,6 +384,7 @@ export type StorageMap = {
    "known-applications": APIGetKnownApplicationsResult;
    "custom-applications": CustomApplication[];
    "client-info": ClientInfo;
+   "pinned-channels": Snowflake[];
 };
 export type FileType = keyof StorageMap;
 

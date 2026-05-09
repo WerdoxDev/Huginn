@@ -11,7 +11,7 @@ import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import moment from "moment";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useMemo, useRef, useState } from "react";
 
 import type { AppMessage, ProcessedAppMessage } from "@/types";
 
@@ -22,7 +22,7 @@ export default function DefaultMessage() {
    const context = useContext(MessageContext);
    const { open } = useContextMenu("message");
    const { updateModals } = useModals();
-   const { rootRef, widths } = useMessageWidths({
+   const { rootRef, extrasRef, widths } = useMessageWidths({
       message: context.message,
       lastMessage: context.lastMessage,
       nextMessage: context.nextMessage,
@@ -114,15 +114,11 @@ export default function DefaultMessage() {
                isLastAction={isLastAction}
                isPreview={isPreview}
                isNextPreview={isNextPreview}
+               isEdited={isEdited}
+               extrasRef={extrasRef}
                widths={widths}
             />
             <div className="mt-2.5 ml-2.5 flex h-full shrink-0 items-center justify-center gap-x-2 select-none">
-               {isEditing ? (
-                  <IconMingcuteEdit2Fill className="text-positive-100 size-4 shrink-0" />
-               ) : isReplying ? (
-                  <IconMingcuteCornerUpLeftFill className="text-primary-400 size-4 shrink-0" />
-               ) : null}
-               {isEdited && <div className="text-xs text-white/50">(edited)</div>}
                {!isSeparate && !isLastAction && <div className="text-text/50 text-xs opacity-0 group-hover:opacity-100">{formattedTime}</div>}
             </div>
          </div>
@@ -197,6 +193,8 @@ function DefaultRenderer(props: {
    isNextSeparate: boolean;
    isLastAction: boolean;
    isPreview: boolean;
+   isEdited?: boolean;
+   extrasRef: React.RefObject<HTMLDivElement | null>;
 }) {
    const { messageUploadProgresses } = useChannelStore();
    const context = useContext(MessageContext);
@@ -209,58 +207,76 @@ function DefaultRenderer(props: {
    return (
       <div
          className={clsx(
-            "relative w-full px-2.5 py-1.5 font-normal wrap-anywhere whitespace-break-spaces text-white",
+            "group relative w-full px-2.5 py-1.5 font-normal wrap-anywhere whitespace-break-spaces text-white",
             props.isPreview && "text-white/50",
          )}
       >
-         <div style={{ width: `${props.widths.width + 20}px` }} className="absolute inset-y-0 left-0">
-            <div
-               className={clsx(
-                  "pointer-events-none z-0 h-full w-full transition-[background-color]",
-                  props.isPreview ? "bg-surface" : props.isSelf ? "bg-primary-800" : "bg-surface",
-                  props.isUnread && !props.isSeparate && "rounded-t-none!",
-                  (props.isSeparate || props.isLastAction) && "rounded-t-xl!",
-                  props.isNextSeparate && "rounded-b-xl!",
-               )}
-               style={{
-                  borderBottomRightRadius: `${clamp((props.widths.width - props.widths.nextWidth) / 2, 0, 12)}px`,
-                  borderTopRightRadius: `${clamp((props.widths.width - props.widths.lastWidth) / 2, 0, 12)}px`,
-               }}
-            >
-               {!props.isSeparate && props.widths.lastWidth > props.widths.width && (
-                  <div className="absolute top-0 -right-10 h-10 w-10 overflow-hidden">
+         <div className="absolute inset-y-0 left-0 flex">
+            <div style={{ width: `${props.widths.width + 20}px` }} className="shrink-0">
+               <div
+                  className={clsx(
+                     "pointer-events-none z-0 h-full w-full transition-[background-color_shadow] group-hover:shadow-sm",
+                     props.isPreview ? "bg-surface" : props.isSelf ? "bg-primary-800" : "bg-surface",
+                     props.isUnread && !props.isSeparate && "rounded-t-none!",
+                     (props.isSeparate || props.isLastAction) && "rounded-t-xl!",
+                     props.isNextSeparate && "rounded-b-xl!",
+                  )}
+                  style={{
+                     borderBottomRightRadius: `${clamp((props.widths.width - props.widths.nextWidth) / 2, 0, 12)}px`,
+                     borderTopRightRadius: `${clamp((props.widths.width - props.widths.lastWidth) / 2, 0, 12)}px`,
+                  }}
+               >
+                  {!props.isSeparate && props.widths.lastWidth > props.widths.width && (
+                     <div className="absolute top-0 h-10 w-10 overflow-hidden" style={{ left: props.widths.width + 20 }}>
+                        <div
+                           className={clsx(
+                              "h-full w-full overflow-hidden transition-[border-radius]",
+                              props.isSelf
+                                 ? "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-primary-800))]"
+                                 : "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-surface))]",
+                           )}
+                           style={{
+                              borderTopLeftRadius: props.isPreview ? "0px" : `${clamp((props.widths.lastWidth - props.widths.width) / 2, 0, 12)}px`,
+                           }}
+                        />
+                     </div>
+                  )}
+               </div>
+               {!props.isNextSeparate && props.widths.nextWidth > props.widths.width && (
+                  <div className="absolute bottom-0 h-10 w-10 overflow-hidden" style={{ left: props.widths.width + 20 }}>
                      <div
                         className={clsx(
                            "h-full w-full overflow-hidden transition-[border-radius]",
                            props.isSelf
-                              ? "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-primary-800))]"
-                              : "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-surface))]",
+                              ? "[box-shadow:0_20px_0_0_rgb(var(--tcolor-primary-800))]"
+                              : "[box-shadow:0_20px_0_0_rgb(var(--tcolor-surface))]",
                         )}
                         style={{
-                           borderTopLeftRadius: props.isPreview ? "0px" : `${clamp((props.widths.lastWidth - props.widths.width) / 2, 0, 12)}px`,
+                           borderBottomLeftRadius: props.isNextPreview
+                              ? "0px"
+                              : `${clamp((props.widths.nextWidth - props.widths.width) / 2, 0, 12)}px`,
                         }}
                      />
                   </div>
                )}
             </div>
-            {!props.isNextSeparate && props.widths.nextWidth > props.widths.width && (
-               <div className="absolute -right-10 bottom-0 h-10 w-10 overflow-hidden">
-                  <div
-                     className={clsx(
-                        "h-full w-full overflow-hidden transition-[border-radius]",
-                        props.isSelf
-                           ? "[box-shadow:0_20px_0_0_rgb(var(--tcolor-primary-800))]"
-                           : "[box-shadow:0_20px_0_0_rgb(var(--tcolor-surface))]",
-                     )}
-                     style={{
-                        borderBottomLeftRadius: props.isNextPreview ? "0px" : `${clamp((props.widths.nextWidth - props.widths.width) / 2, 0, 12)}px`,
-                     }}
-                  />
+            {(context.message.isEditing || context.message.isReplying || props.isEdited) && (
+               <div className={clsx("mt-2.5 flex h-max shrink-0 items-center gap-x-1", props.isSeparate ? "pl-2" : "px-2")} ref={props.extrasRef}>
+                  {context.message.isEditing ? (
+                     <IconMingcuteEdit2Fill className="text-positive-100 size-4" />
+                  ) : context.message.isReplying ? (
+                     <IconMingcuteCornerUpLeftFill className="text-primary-400 size-4" />
+                  ) : null}
+                  {props.isEdited && <div className="text-xs text-white/50">(edited)</div>}
                </div>
             )}
          </div>
 
-         <div id={`${context.message.id}_inner`} className="relative z-10 w-full">
+         <div
+            id={`${context.message.id}_inner`}
+            className="relative z-10"
+            style={{ width: `calc(100% - ${(props.extrasRef.current?.offsetWidth ?? 10) - 10}px)` }}
+         >
             {progress !== undefined && props.isPreview ? <AttachmentUploadProgress progress={progress} /> : children}
          </div>
       </div>

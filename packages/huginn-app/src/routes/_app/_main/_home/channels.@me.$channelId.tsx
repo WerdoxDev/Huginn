@@ -10,6 +10,7 @@ import { ChannelType } from "@huginn/shared";
 import { getChannelsOptions, getMessagesOptions, queryClient } from "@lib/queries";
 import { clientStore, useClient } from "@stores/clientStore";
 import { useMobileMenuStore } from "@stores/mobileMenuStore";
+import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useParams, useRouter } from "@tanstack/react-router";
 import clsx from "clsx";
@@ -33,14 +34,17 @@ function ChannelWithIdComponent() {
    const client = useClient();
    const queryClient = useQueryClient();
    const { data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, channelId));
-   const channel = useSuspenseQuery(getChannelsOptions(client!, "@me")).data?.find((x: { id: string }) => x.id === channelId);
+   const { data } = useSuspenseQuery(getChannelsOptions(client!, "@me"));
+   const channel = useMemo(() => data.find((x) => x.id === channelId), [channelId]);
    const posthog = usePostHog();
    const isMobile = useIsMobile();
    const router = useRouter();
+   const settings = useStorage("settings");
+   const { setValue } = useStorageStore();
 
    const [recipientsVisible, setRecipientsVisible] = useState(true);
    const { resetToCenter } = useMobileMenuStore();
-   const { toggleRight, closeLeft, isRightOpen } = useMobileMenuStore();
+   const { toggleRight, closeLeft, isRightOpen, openRight, closeRight } = useMobileMenuStore();
 
    const sortedMessages = useMemo(
       () =>
@@ -58,13 +62,31 @@ function ChannelWithIdComponent() {
    );
 
    useEffect(() => {
-      resetToCenter();
-   }, [channel]);
+      if (isMobile) {
+         resetToCenter();
+      }
+   }, [channelId, isMobile, resetToCenter]);
+
+   useEffect(() => {
+      if (isMobile || !settings) return;
+
+      if (settings.isChannelSidebarOpen) {
+         openRight();
+      } else {
+         closeRight();
+      }
+   }, [isMobile, settings?.isChannelSidebarOpen, openRight, closeRight]);
 
    function onRecipientsClick(e: MouseEvent) {
       e.stopPropagation();
       closeLeft();
       toggleRight();
+
+      if (!isMobile && settings) {
+         const nextOpen = !isRightOpen;
+         setValue("settings", { ...settings, isChannelSidebarOpen: nextOpen });
+      }
+
       setRecipientsVisible((prev) => !prev);
       posthog.capture("channel:recipients_button_click");
    }
@@ -93,7 +115,7 @@ function ChannelWithIdComponent() {
                   <div className="relative flex h-full w-full flex-col overflow-hidden">
                      <div
                         className={clsx(
-                           "absolute inset-0 z-10 bg-black/50 transition-all lg:pointer-events-none lg:z-auto lg:opacity-0",
+                           "absolute inset-0 z-20 bg-black/50 transition-all lg:pointer-events-none lg:z-auto lg:opacity-0",
                            isRightOpen ? "opacity-100" : "pointer-events-none opacity-0",
                         )}
                         onClick={resetToCenter}
