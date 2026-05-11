@@ -76,6 +76,19 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
    });
 }
 
+export function getPinnedMessagesOptions(client: HuginnClient, channelId: Snowflake, limit = 50) {
+   return queryOptions({
+      queryKey: ["pinned-messages", channelId, limit],
+      queryFn: async () => {
+         const pins = await client.channels.getPinnedMessages(channelId, limit);
+         return pins.map((pin) => ({
+            ...pin,
+            message: convertToAppMessage(pin.message, "fetch"),
+         }));
+      },
+   });
+}
+
 export function getRelationshipsOptions(client: HuginnClient) {
    return queryOptions({
       queryKey: ["relationships"],

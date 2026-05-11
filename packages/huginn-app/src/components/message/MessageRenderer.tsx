@@ -12,7 +12,7 @@ function MessageRenderer() {
 
    useEffect(() => {
       if (!context.message.isPreview) {
-         context.onVisibilityChanged(context.message.id, isInView);
+         context.onVisibilityChanged?.(context.message.id, isInView);
       }
    }, [isInView, context.message.isPreview]);
 

@@ -1,4 +1,6 @@
 import { useDeleteMessage } from "@hooks/mutations/useDeleteMessage";
+import { usePinMessage } from "@hooks/mutations/usePinMessage";
+import { useUnpinMessage } from "@hooks/mutations/useUnpinMessage";
 import { useOpen } from "@hooks/useOpen";
 import { error } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
@@ -16,8 +18,12 @@ export default function MessageContextMenu() {
    const { setEditingMessageId, setReplyingMessageId } = useChannelStore();
    const { user } = useThisUser();
    const deleteMessageMutation = useDeleteMessage();
+   const pinMessageMutation = usePinMessage();
+   const unpinMessageMutation = useUnpinMessage();
 
    const isAuthor = useMemo(() => data?.message.authorId === user?.id, [user, data]);
+   const isPinned = useMemo(() => data?.message.isPreview === false && data.message.pinned, [data]);
+   const isPinning = pinMessageMutation.isPending || unpinMessageMutation.isPending;
 
    function copyImage() {
       const img = data?.imgRef?.current;
@@ -66,6 +72,28 @@ export default function MessageContextMenu() {
       });
    }
 
+   function togglePin() {
+      if (!data) return;
+
+      if (isPinned) {
+         if (unpinMessageMutation.isPending) return;
+
+         unpinMessageMutation.mutate({
+            channelId: data.message.channelId,
+            messageId: data.message.id,
+         });
+
+         return;
+      }
+
+      if (pinMessageMutation.isPending) return;
+
+      pinMessageMutation.mutate({
+         channelId: data.message.channelId,
+         messageId: data.message.id,
+      });
+   }
+
    if (!data) {
       return;
    }
@@ -87,7 +115,7 @@ export default function MessageContextMenu() {
          <ContextMenu.Item label="Copy Message Link (soon)" disabled>
             <IconMingcuteLink2Fill />
          </ContextMenu.Item>
-         <ContextMenu.Item label="Pin Message (soon)" disabled>
+         <ContextMenu.Item label={isPinned ? "Unpin Message" : "Pin Message"} onClick={togglePin} disabled={isPinning}>
             <IconMingcutePinFill />
          </ContextMenu.Item>
          {isAuthor && (
