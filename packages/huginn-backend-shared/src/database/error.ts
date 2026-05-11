@@ -53,6 +53,8 @@ export async function assertExists(
       await prisma.channel.assertChannelsExist(methodName, normalIds);
    } else if (errorType === DBErrorType.NULL_MESSAGE) {
       await prisma.message.assertMessagesExist(methodName, normalIds);
+   } else if (errorType === DBErrorType.NULL_MESSAGE_PIN) {
+      await prisma.messagePin.assertMessagePinExist(methodName, normalIds);
    } else if (errorType === DBErrorType.NULL_RELATIONSHIP) {
       await prisma.relationship.assertRelationshipsExist(methodName, normalIds);
    } else if (errorType === DBErrorType.NULL_READ_STATE) {

@@ -42,6 +42,15 @@ export const assertExtension = Prisma.defineExtension({
             assertCondition(methodName, foundCount !== messageIds.length, DBErrorType.NULL_MESSAGE, messageIds.join(","));
          },
       },
+      messagePin: {
+         async assertMessagePinExist(methodName: string, messageIds: Snowflake[]) {
+            assertId(methodName, ...messageIds);
+            const foundCount = await prisma.messagePin.count({
+               where: { messageId: { in: messageIds.map((x) => BigInt(x)) } },
+            });
+            assertCondition(methodName, foundCount !== messageIds.length, DBErrorType.NULL_MESSAGE_PIN, messageIds.join(","));
+         },
+      },
       readState: {
          async assertReadStatesExist(methodName: string, idPairs: { userId: Snowflake; channelId: Snowflake }[]) {
             assertId(methodName, ...idPairs.flatMap((x) => [x.userId, x.channelId]));

@@ -37,6 +37,7 @@ model User {
    settings                Settings?
    contributedApplications KnownApplication[]
    emailVerifications      EmailVerification[]
+   pinnedMessages          MessagePin[]
 }
 
 model EmailVerification {
@@ -71,6 +72,7 @@ model Channel {
    messages          Message[]
    readStates        ReadState[]
    messageReferences MessageReference[]
+   pinnedMessages   MessagePin[]
    createdAt         DateTime           @default(now())
    updatedAt         DateTime?          @updatedAt
 
@@ -99,6 +101,7 @@ model Message {
    flags               Int          @db.SmallInt
    lastReadMessages    ReadState[]
    lastMessageChannels Channel[]    @relation("channel_last_message")
+   pin                 MessagePin?
 
    author            User               @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    channel           Channel            @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -107,6 +110,20 @@ model Message {
    referringMessages MessageReference[] @relation("message_reference")
 
    @@index([channelId])
+}
+
+model MessagePin {
+   messageId  BigInt   @id
+   channelId  BigInt
+   pinnedById BigInt
+   pinnedAt   DateTime @default(now())
+
+   channel  Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+   message  Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+   pinnedBy User    @relation(fields: [pinnedById], references: [id], onDelete: Cascade)
+
+   @@index([channelId])
+   @@index([pinnedById])
 }
 
 model Call {
