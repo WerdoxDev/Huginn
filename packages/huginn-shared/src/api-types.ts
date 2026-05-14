@@ -346,6 +346,13 @@ export type APIPatchMessageJSONBody = {
 
 export type APIGetMessageByIdResult = APIMessage;
 export type APIGetChannelMessagesResult = APIMessage[];
+export type APIMessagePin = {
+   pinnedAt: Date | string;
+   message: APIMessage;
+};
+
+export type APIGetChannelPinsResult = APIMessagePin[];
+export type APIPutChannelPinResult = APIMessagePin;
 export type APIRelease = {
    version: string;
    date: string;

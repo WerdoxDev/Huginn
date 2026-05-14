@@ -131,6 +131,22 @@ export const Routes = {
 
    /**
     * Route for:
+    * - GET '/channels/{channel.id}/messages/pins'
+    */
+   channelMessagePins(channelId: Snowflake): `/channels/${string}/messages/pins` {
+      return `/channels/${channelId}/messages/pins` as const;
+   },
+
+   /**
+    * Route for:
+    * - PUT '/channels/{channel.id}/messages/pins/{message.id}'
+    */
+   channelMessagePin(channelId: Snowflake, messageId: Snowflake): `/channels/${string}/messages/pins/${string}` {
+      return `/channels/${channelId}/messages/pins/${messageId}` as const;
+   },
+
+   /**
+    * Route for:
     * - PUT    '/channels/{channel.id}/recipients/{recipient.id}'
     * - DELETE '/channels/{channel.id}/recipients/{recipient.id}'
     */

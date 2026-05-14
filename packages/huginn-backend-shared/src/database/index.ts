@@ -9,6 +9,7 @@ import { emailVerificationExtension } from "./emailVerification";
 import { embedExtension } from "./embed";
 import { knownApplicationExtension } from "./knownApplication";
 import { messagesExtension } from "./message";
+import { messagePinExtension } from "./messagePin";
 import { readStateExtension } from "./readState";
 import { relationshipExtension } from "./relationship";
 import { settingsExtension } from "./settings";
@@ -36,6 +37,7 @@ export const prisma = prismaBase
    .$extends(userExtension)
    .$extends(channelExtension)
    .$extends(messagesExtension)
+   .$extends(messagePinExtension)
    .$extends(relationshipExtension)
    .$extends(readStateExtension)
    .$extends(embedExtension)

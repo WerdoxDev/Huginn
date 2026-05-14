@@ -175,6 +175,7 @@ export const timeSpent = {
    createChannels: 0,
    deleteChannels: 0,
    createMessages: 0,
+   createMessagePins: 0,
    deleteMessages: 0,
    deleteReadStates: 0,
 };
@@ -323,6 +324,24 @@ export async function createTestMessages(channelId: bigint, authorId: bigint, am
    await new Promise((r) => setImmediate(r));
 
    return createdMessages;
+}
+
+export async function createTestMessagePin(channelId: bigint, messageId: bigint, pinnedById: bigint) {
+   const t0 = performance.now();
+
+   const createdPin = await prisma.messagePin.createPin({
+      channelId: channelId.toString(),
+      messageId: messageId.toString(),
+      pinnedById: pinnedById.toString(),
+      pinnedAt: new Date(),
+   });
+
+   const t1 = performance.now();
+   timeSpent.createMessagePins += t1 - t0;
+
+   await new Promise((r) => setImmediate(r));
+
+   return createdPin;
 }
 
 export function removeUserLater<T>(user: T) {

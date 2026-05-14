@@ -118,6 +118,9 @@ export function serverOnError(error: Readonly<Error>, status: Context["status"])
    if (error.isErrorType(DBErrorType.NULL_MESSAGE)) {
       return createHuginnError(createErrorFactory(Errors.unknownMessage(error.cause)), status, "Not Found");
    }
+   if (error.isErrorType(DBErrorType.NULL_MESSAGE_PIN)) {
+      return createHuginnError(createErrorFactory(Errors.unknownMessagePin(error.cause)), status, "Not Found");
+   }
 
    return;
 }

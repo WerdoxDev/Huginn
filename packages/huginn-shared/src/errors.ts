@@ -60,6 +60,9 @@ export enum JsonCode {
    UNKNOWN_USER = 1004,
    UNKNOWN_CHANNEL = 1005,
    UNKNOWN_RELATIONSHIP = 1006,
+   UNKNOWN_MESSAGE_PIN = 1007,
+   UNKNOWN_READ_STATE = 1008,
+   UNKNOWN_KNOWN_APPLICATION = 1010,
    INVALID_FORM_BODY = 2001,
    MISSING_ACCESS = 2002,
    MISSING_PERMISSION = 2003,
@@ -190,6 +193,9 @@ export const Errors = {
    },
    unknownMessage(messageId?: Snowflake): [string, JsonCode] {
       return [`Unknown Message (${messageId})`, JsonCode.UNKNOWN_MESSAGE];
+   },
+   unknownMessagePin(messageId?: Snowflake): [string, JsonCode] {
+      return [`Unknown Message Pin (${messageId})`, JsonCode.UNKNOWN_MESSAGE_PIN];
    },
    unknownRelationship(relationshipId?: Snowflake): [string, JsonCode] {
       return [`Unknown Relationship (${relationshipId})`, JsonCode.UNKNOWN_RELATIONSHIP];

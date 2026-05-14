@@ -135,7 +135,7 @@
 html,
 body,
 #root {
-   @apply bg-surface-alt h-full overflow-hidden overscroll-none;
+   @apply bg-surface-alt isolate h-full overflow-hidden overscroll-none;
 }
 
 @keyframes blink {

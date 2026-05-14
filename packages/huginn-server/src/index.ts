@@ -19,6 +19,9 @@ import { deleteMessage } from "#routes/channels/[channelId]/messages/[messageId]
 import { getMessage } from "#routes/channels/[channelId]/messages/[messageId].get";
 import { patchMessage } from "#routes/channels/[channelId]/messages/[messageId].patch";
 import { postAckMessage } from "#routes/channels/[channelId]/messages/[messageId]/ack.post";
+import { getChannelMessagePins } from "#routes/channels/[channelId]/messages/pins.get";
+import { deleteChannelMessagePin } from "#routes/channels/[channelId]/messages/pins/[messageId].delete";
+import { putChannelMessagePin } from "#routes/channels/[channelId]/messages/pins/[messageId].put";
 import { deleteChannelRecipient } from "#routes/channels/[channelId]/recipients/[recipientId].delete";
 import { putChannelRecipient } from "#routes/channels/[channelId]/recipients/[recipientId].put";
 import { postTyping } from "#routes/channels/[channelId]/typing.post";
@@ -127,6 +130,9 @@ export const app = new Elysia({
    .use(patchChannel)
    .use(deleteChannelRecipient)
    .use(putChannelRecipient)
+   .use(getChannelMessagePins)
+   .use(putChannelMessagePin)
+   .use(deleteChannelMessagePin)
 
    // message
    .use(patchMessage)

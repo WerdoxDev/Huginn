@@ -12,12 +12,12 @@ function MessageRenderer() {
 
    useEffect(() => {
       if (!context.message.isPreview) {
-         context.onVisibilityChanged(context.message.id, isInView);
+         context.onVisibilityChanged?.((context.idPrefix ?? "") + context.message.id, isInView);
       }
    }, [isInView, context.message.isPreview]);
 
    return (
-      <li className="group shrink-0 select-text" ref={context.ref} id={context.message.id}>
+      <li className="group shrink-0 select-text" ref={context.ref} id={(context.idPrefix ?? "") + context.message.id}>
          {(context.message.isPreview || [MessageType.DEFAULT, MessageType.REPLY].includes(context.message.type)) && <DefaultMessage />}
          {!context.message.isPreview &&
             [

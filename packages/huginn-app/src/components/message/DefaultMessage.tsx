@@ -118,15 +118,17 @@ export default function DefaultMessage() {
                extrasRef={extrasRef}
                widths={widths}
             />
-            <div className="mt-2.5 ml-2.5 flex h-full shrink-0 items-center justify-center gap-x-2 select-none">
-               {!isSeparate && !isLastAction && <div className="text-text/50 text-xs opacity-0 group-hover:opacity-100">{formattedTime}</div>}
-            </div>
+            {!isSeparate && !isLastAction && (
+               <div className="mt-2.5 ml-2.5 flex h-full shrink-0 items-center justify-center gap-x-2 select-none">
+                  <div className="text-text/50 text-xs opacity-0 transition-opacity group-hover:opacity-100">{formattedTime}</div>
+               </div>
+            )}
          </div>
       </div>
    );
 }
 
-function ReplyRenderer(props: { referencedMessage: AppMessage | null; onClick: (messageId: Snowflake) => Promise<void> }) {
+function ReplyRenderer(props: { referencedMessage: AppMessage | null; onClick?: (messageId: Snowflake) => Promise<void> }) {
    if (props.referencedMessage === null) {
       return (
          <div className="flex w-full items-center gap-x-1 pl-2 select-none">
@@ -143,7 +145,7 @@ function ReplyRenderer(props: { referencedMessage: AppMessage | null; onClick: (
    return <ResolvedReplyRenderer referencedMessage={props.referencedMessage} onClick={props.onClick} />;
 }
 
-function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; onClick: (messageId: Snowflake) => Promise<void> }) {
+function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; onClick?: (messageId: Snowflake) => Promise<void> }) {
    const [isLoading, setIsLoading] = useState(false);
    const message = useMemo<ProcessedAppMessage>(
       () => ({
@@ -161,7 +163,7 @@ function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; 
    const user = useUser(props.referencedMessage.authorId);
 
    function handleClick() {
-      const result = props.onClick(props.referencedMessage.id);
+      const result = props.onClick?.(props.referencedMessage.id);
       if (result instanceof Promise) {
          setIsLoading(true);
          result.finally(() => setIsLoading(false));
@@ -261,7 +263,7 @@ function DefaultRenderer(props: {
                )}
             </div>
             {(context.message.isEditing || context.message.isReplying || props.isEdited) && (
-               <div className={clsx("mt-2.5 flex h-max shrink-0 items-center gap-x-1", props.isSeparate ? "pl-2" : "px-2")} ref={props.extrasRef}>
+               <div className={clsx("mt-2.5 flex h-max shrink-0 items-center gap-x-1", "px-2")} ref={props.extrasRef}>
                   {context.message.isEditing ? (
                      <IconMingcuteEdit2Fill className="text-positive-100 size-4" />
                   ) : context.message.isReplying ? (

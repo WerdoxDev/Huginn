@@ -11,8 +11,8 @@ type MessageContextType = {
    message: ProcessedMessage;
    nextMessage?: ProcessedMessage;
    lastMessage?: ProcessedMessage;
-   onVisibilityChanged: (messageId: Snowflake, visible: boolean) => void;
-   onReferencedMessageClick: (messageId: Snowflake) => Promise<void>;
+   onVisibilityChanged?: (messageId: Snowflake, visible: boolean) => void;
+   onReferencedMessageClick?: (messageId: Snowflake) => Promise<void>;
    ref: RefObject<HTMLLIElement | null>;
 };
 

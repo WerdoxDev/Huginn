@@ -14,6 +14,9 @@ export type ChannelPayload<Args extends ChannelArgs | undefined> = BigIntToStrin
 export type MessageArgs = Prisma.MessageDefaultArgs;
 export type MessagePayload<Args extends MessageArgs | undefined> = BigIntToString<Prisma.MessageGetPayload<Args>>;
 
+export type MessagePinArgs = Prisma.MessagePinDefaultArgs;
+export type MessagePinPayload<Args extends MessagePinArgs | undefined> = BigIntToString<Prisma.MessagePinGetPayload<Args>>;
+
 export type EmbedArgs = Prisma.EmbedDefaultArgs;
 export type EmbedPayload<Args extends EmbedArgs | undefined> = BigIntToString<Prisma.EmbedGetPayload<Args>>;
 
@@ -54,7 +57,17 @@ export const selectPrivateUser = {
 
 export const selectChannelRecipients = {
    recipients: {
-      select: { id: true, avatar: true, displayName: true, flags: true, username: true },
+      select: {
+         id: true,
+         avatar: true,
+         displayName: true,
+         flags: true,
+         username: true,
+         banner: true,
+         bannerColor: true,
+         accentColor: true,
+         bio: true,
+      },
    },
 } satisfies Prisma.ChannelSelect;
 
@@ -161,6 +174,11 @@ export const selectAllMessage = {
 export const selectRelationshipUser = {
    user: { select: selectPublicUser },
 } satisfies Prisma.RelationshipSelect;
+
+export const selectMessagePin = {
+   pinnedAt: true,
+   message: { select: selectAllMessage },
+} satisfies Prisma.MessagePinSelect;
 
 export const omitMessageAuthorId = { authorId: true } satisfies Prisma.MessageOmit;
 export const omitRelationshipUserIds = {

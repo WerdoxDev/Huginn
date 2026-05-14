@@ -2,6 +2,7 @@ import type {
    APIDeleteDMChannelResult,
    APIGetChannelByIdResult,
    APIGetChannelMessagesResult,
+   APIGetChannelPinsResult,
    APIGetMessageByIdResult,
    APIGetUserChannelsResult,
    APIPatchDMChannelJSONBody,
@@ -10,6 +11,7 @@ import type {
    APIPatchMessageResult,
    APIPostMessageJSONBody,
    APIPostMessageResult,
+   APIPutChannelPinResult,
    APIPostDMChannelJSONBody,
    APIPostDMChannelResult,
    RawFile,
@@ -61,6 +63,16 @@ export class ChannelAPI {
             ...(around && { around: around.toString() }),
          }),
       }) as Promise<APIGetChannelMessagesResult>;
+   }
+
+   public async getPinnedMessages(channelId: Snowflake, limit?: number, before?: Snowflake): Promise<APIGetChannelPinsResult> {
+      return this.rest.get(Routes.channelMessagePins(channelId), {
+         auth: true,
+         query: new URLSearchParams({
+            ...(limit && { limit: limit.toString() }),
+            ...(before && { before: before.toString() }),
+         }),
+      }) as Promise<APIGetChannelPinsResult>;
    }
 
    public async createDM(body: APIPostDMChannelJSONBody): Promise<APIPostDMChannelResult> {
@@ -119,6 +131,14 @@ export class ChannelAPI {
 
    public async deleteMessage(channelId: Snowflake, messageId: Snowflake): Promise<unknown> {
       return this.rest.delete(Routes.channelMessage(channelId, messageId), { auth: true });
+   }
+
+   public async pinMessage(channelId: Snowflake, messageId: Snowflake): Promise<APIPutChannelPinResult> {
+      return this.rest.put(Routes.channelMessagePin(channelId, messageId), { auth: true }) as Promise<APIPutChannelPinResult>;
+   }
+
+   public async unpinMessage(channelId: Snowflake, messageId: Snowflake): Promise<unknown> {
+      return this.rest.delete(Routes.channelMessagePin(channelId, messageId), { auth: true });
    }
 
    public async typing(channelId: Snowflake): Promise<unknown> {
