@@ -50,12 +50,18 @@ function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean }) {
    const processedMessages = useMemo(() => processMessages(pinnedMessages), [pinnedMessages]);
 
    return (
-      <HuginnPopover.Panel align="end" className="bg-surface-deep border-surface z-40 w-105 rounded-lg border shadow-xl" side="bottom" sideGap={16}>
-         <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-            <span className="text-text font-semibold">Pinned Messages</span>
-            <span className="text-text/50 text-sm">{pinnedMessages.length}</span>
+      <HuginnPopover.Panel
+         align="end"
+         className="bg-surface-deep border-surface z-40 w-105 overflow-hidden rounded-lg border shadow-xl"
+         side="bottom"
+         sideGap={16}
+      >
+         <div className="text-text flex items-center gap-x-2 px-4 py-4">
+            <IconMingcutePinFill className="size-5" />
+            <div className="text-lg font-bold">Pinned Messages</div>
          </div>
-         <div className="max-h-[70vh] overflow-y-auto py-3">
+         <div className="bg-surface h-0.5 w-full" />
+         <div className="bg-surface-deep max-h-[70vh] overflow-y-auto py-3">
             {isLoading && (
                <div className="text-text/70 flex items-center justify-center gap-x-2 py-6">
                   <LoadingIcon className="size-10" />
@@ -71,6 +77,7 @@ function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean }) {
                      <MessageContext.Provider
                         key={message.id}
                         value={{
+                           idPrefix: "pinned_",
                            message,
                            ref: setRef(message.id),
                            lastMessage: undefined,

@@ -18,7 +18,6 @@ function Trigger(props: BaseTooltip.Trigger.Props & { asChild?: boolean }) {
    const { asChild, children, className, ...rest } = props;
 
    if (asChild && isValidElement(children)) {
-      console.log("asChild trigger", children);
       return <BaseTooltip.Trigger {...rest} closeOnClick={false} className={clsx("cursor-pointer", className)} render={children} delay={0} />;
    }
 
@@ -43,8 +42,8 @@ function Content(
                className={clsx(
                   "border-surface rounded-md border bg-zinc-900 px-2.5 py-1 text-base whitespace-nowrap text-white/80 shadow-lg transition-opacity duration-100 data-ending-style:opacity-0 data-starting-style:opacity-0",
                )}
-               style={props.extraStyle}
-               {...props}
+               style={extraStyle}
+               {...rest}
             >
                {props.children}
                <BaseTooltip.Arrow className="border-surface flex h-2.5 w-2.5 border-t border-l bg-zinc-900 data-[side=bottom]:-top-1 data-[side=bottom]:rotate-45 data-[side=left]:-right-3.25 data-[side=left]:rotate-90 data-[side=right]:-left-3.25 data-[side=right]:-rotate-90 data-[side=top]:-bottom-1 data-[side=top]:-rotate-135" />
