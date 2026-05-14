@@ -8,6 +8,7 @@ import { createContext, type RefObject } from "react";
 import type { ProcessedMessage } from "@/types";
 
 type MessageContextType = {
+   idPrefix?: string;
    message: ProcessedMessage;
    nextMessage?: ProcessedMessage;
    lastMessage?: ProcessedMessage;

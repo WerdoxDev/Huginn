@@ -23,6 +23,7 @@ export default function DefaultMessage() {
    const { open } = useContextMenu("message");
    const { updateModals } = useModals();
    const { rootRef, extrasRef, widths } = useMessageWidths({
+      idPrefix: context.idPrefix,
       message: context.message,
       lastMessage: context.lastMessage,
       nextMessage: context.nextMessage,
@@ -275,7 +276,7 @@ function DefaultRenderer(props: {
          </div>
 
          <div
-            id={`${context.message.id}_inner`}
+            id={`${(context.idPrefix ?? "") + context.message.id}_inner`}
             className="relative z-10"
             style={{ width: `calc(100% - ${(props.extrasRef.current?.offsetWidth ?? 10) - 10}px)` }}
          >

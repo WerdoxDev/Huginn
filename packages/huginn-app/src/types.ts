@@ -20,7 +20,7 @@ import type {
    Snowflake,
    UserPresence,
 } from "@huginn/shared";
-import type { screenShareFrameRates, screenShareQualities } from "@lib/constants";
+import type { SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import type { ChangeEvent, FocusEvent, HTMLInputTypeAttribute, ReactNode, RefCallback, RefObject } from "react";
 import type { FieldPath, FieldValues } from "react-hook-form";
 
@@ -589,8 +589,8 @@ export type VoiceDebugData = {
 
 export type Environment = "desktop" | "browser";
 
-export type ScreenShareQuality = (typeof screenShareQualities)[number]["value"];
-export type ScreenShareFrameRate = (typeof screenShareFrameRates)[number];
+export type ScreenShareQuality = (typeof SCREEN_SHARE_QUALITIES)[number]["value"];
+export type ScreenShareFrameRate = (typeof SCREEN_SHARE_FRAME_RATES)[number];
 
 export type UseHuginnFormSetCustomMessage<TFieldValues extends FieldValues> = <TFieldName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>>(
    name: TFieldName,

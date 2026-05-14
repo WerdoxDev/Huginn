@@ -40,7 +40,7 @@ export default function VoiceControlButton(props: {
    return (
       <Tooltip>
          <Tooltip.Trigger
-            asChild={props.asChild ? true : undefined}
+            asChild={props.asChild}
             className={clsx(
                "group rounded-lg px-5 py-1.5 text-white transition-[border-radius_background-color]",
                colors[(props.isActive && props.activeColor ? props.activeColor : props.color) ?? "none"],

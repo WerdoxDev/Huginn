@@ -35,6 +35,7 @@ function Content(
       align?: BaseTooltip.Positioner.Props["align"];
    } & HTMLProps<HTMLDivElement>,
 ) {
+   const { extraStyle, ...rest } = props;
    return (
       <BaseTooltip.Portal keepMounted={false}>
          <BaseTooltip.Positioner side={props.side} align={props.align} sideOffset={8}>

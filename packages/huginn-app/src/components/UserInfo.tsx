@@ -1,5 +1,6 @@
 import type { PresenceStatus } from "@huginn/shared";
 
+import { DropdownMenu } from "@components/dropdown/DropdownMenu";
 import { useEditSettings } from "@hooks/mutations/useEditSettings";
 import { useLogout } from "@hooks/useLogout";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
@@ -14,7 +15,6 @@ import clsx from "clsx";
 import type { AppUser } from "@/types";
 
 import UserActionButton from "./button/UserActionButton";
-import { DropdownMenu } from "./dropdown/DropdownMenu";
 import UserProfilePreview from "./profile/UserProfilePreview";
 import UserAvatar from "./UserAvatar";
 
@@ -49,76 +49,83 @@ export default function UserInfo(props: { user: AppUser }) {
 
    return (
       <div className="flex h-16 w-62 shrink-0 items-center lg:w-64">
-         <DropdownMenu className="flex w-full items-center justify-center">
-            <DropdownMenu.Button className="flex w-full cursor-pointer items-center rounded-xl px-2 py-1 hover:bg-white/5 active:bg-white/5">
-               <UserAvatar userId={props.user.id} avatarHash={props.user.avatar} className="mr-3 shrink-0" />
+         <DropdownMenu>
+            <DropdownMenu.Trigger asChild>
+               <div className="flex w-full cursor-pointer items-center rounded-xl px-2 py-1 hover:bg-white/5 active:bg-white/5">
+                  <UserAvatar userId={props.user.id} avatarHash={props.user.avatar} className="mr-3 shrink-0" />
 
-               <div className="mr-1 flex w-full flex-col items-start gap-y-0.5 overflow-hidden">
-                  <div className="text-text w-full truncate text-sm">{props.user.displayName}</div>
-                  <div className="text-text/70 w-full truncate text-xs">{props.user.username}</div>
+                  <div className="mr-1 flex w-full flex-col items-start gap-y-0.5 overflow-hidden">
+                     <div className="text-text w-full truncate text-sm">{props.user.displayName}</div>
+                     <div className="text-text/70 w-full truncate text-xs">{props.user.username}</div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-x-1">
+                     <UserActionButton
+                        tooltip="Mute"
+                        onClick={toggleMute}
+                        hoverColor="surface"
+                        activeHoverColor="negative"
+                        activeColor="negative"
+                        isActive={localVoiceState.isAudioMuted}
+                     >
+                        {localVoiceState.isAudioMuted ? <IconMingcuteMicOffFill className="size-5" /> : <IconMingcuteMicFill className="size-5" />}
+                     </UserActionButton>
+                     <UserActionButton
+                        tooltip="Deafen"
+                        onClick={toggleDeafen}
+                        hoverColor="surface"
+                        activeHoverColor="negative"
+                        activeColor="negative"
+                        isActive={localVoiceState.isAudioDeafened}
+                     >
+                        {localVoiceState.isAudioDeafened ? (
+                           <IconMingcuteVolumeOffFill className="size-5" />
+                        ) : (
+                           <IconMingcuteVolumeFill className="size-5" />
+                        )}
+                     </UserActionButton>
+                     <UserActionButton tooltip="Settings" onClick={openSettings} innerClassName="group-hover:rotate-60 group-active:rotate-60">
+                        <IconMingcuteSettings5Fill className="size-6 transition-all" />
+                     </UserActionButton>
+                  </div>
                </div>
-               <div className="flex shrink-0 items-center gap-x-1">
-                  <UserActionButton
-                     tooltip="Mute"
-                     onClick={toggleMute}
-                     hoverColor="surface"
-                     activeHoverColor="negative"
-                     activeColor="negative"
-                     isActive={localVoiceState.isAudioMuted}
-                  >
-                     {localVoiceState.isAudioMuted ? <IconMingcuteMicOffFill className="size-5" /> : <IconMingcuteMicFill className="size-5" />}
-                  </UserActionButton>
-                  <UserActionButton
-                     tooltip="Deafen"
-                     onClick={toggleDeafen}
-                     hoverColor="surface"
-                     activeHoverColor="negative"
-                     activeColor="negative"
-                     isActive={localVoiceState.isAudioDeafened}
-                  >
-                     {localVoiceState.isAudioDeafened ? (
-                        <IconMingcuteVolumeOffFill className="size-5" />
-                     ) : (
-                        <IconMingcuteVolumeFill className="size-5" />
-                     )}
-                  </UserActionButton>
-                  <UserActionButton tooltip="Settings" onClick={openSettings} innerClassName="group-hover:rotate-60 group-active:rotate-60">
-                     <IconMingcuteSettings5Fill className="size-6 transition-all" />
-                  </UserActionButton>
-               </div>
-            </DropdownMenu.Button>
+            </DropdownMenu.Trigger>
 
-            <DropdownMenu.Items className="w-60">
+            <DropdownMenu.Content className="w-64" sideOffset={8}>
                <UserProfilePreview userId={props.user.id} maxWidth={134} />
-               <DropdownMenu.Divider />
-               <DropdownMenu.Item label="View Profile" onClick={handleViewProfile} />
-               <DropdownMenu.Divider />
+               <DropdownMenu.Separator />
+               <DropdownMenu.Item onClick={handleViewProfile}>View Profile</DropdownMenu.Item>
+               <DropdownMenu.Separator />
                <DropdownMenu.Item
-                  label="Logout"
                   color="negative"
+                  endSlot={<IconMingcuteExitFill className="size-5" />}
                   onClick={() => {
                      logoutMutation.mutate();
                   }}
                >
-                  <IconMingcuteExitFill className="size-5" />
+                  Logout
                </DropdownMenu.Item>
-               <DropdownMenu.Divider />
-               <DropdownMenu.Item onClick={() => navigator.clipboard.writeText(props.user.id)} label="Copy User ID">
-                  <IconMingcuteIdcardFill className="size-5" />
+               <DropdownMenu.Separator />
+               <DropdownMenu.Item
+                  onClick={() => navigator.clipboard.writeText(props.user.id)}
+                  endSlot={<IconMingcuteIdcardFill className="size-5" />}
+               >
+                  Copy User ID
                </DropdownMenu.Item>
-               <DropdownMenu>
-                  <DropdownMenu.Item label={PRESENCE_STATUS_MAP[presence?.status ?? "offline"].text} isNested>
-                     <div className={clsx("size-3 rounded-full", PRESENCE_STATUS_MAP[presence?.status ?? "offline"].color)} />
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Items>
-                     {Object.entries(PRESENCE_STATUS_MAP).map(([key, value]) => (
-                        <DropdownMenu.Item key={key} label={value.text} onClick={() => setStatus(key as PresenceStatus)}>
-                           <div className={clsx("size-3 rounded-full", value.color)} />
-                        </DropdownMenu.Item>
-                     ))}
-                  </DropdownMenu.Items>
-               </DropdownMenu>
-            </DropdownMenu.Items>
+               <DropdownMenu.Submenu
+                  label={PRESENCE_STATUS_MAP[presence?.status ?? "offline"].text}
+                  endSlot={<div className={clsx("size-3 rounded-full", PRESENCE_STATUS_MAP[presence?.status ?? "offline"].color)} />}
+               >
+                  {Object.entries(PRESENCE_STATUS_MAP).map(([key, value]) => (
+                     <DropdownMenu.Item
+                        key={key}
+                        onClick={() => setStatus(key as PresenceStatus)}
+                        endSlot={<div className={clsx("size-3 rounded-full", value.color)} />}
+                     >
+                        {value.text}
+                     </DropdownMenu.Item>
+                  ))}
+               </DropdownMenu.Submenu>
+            </DropdownMenu.Content>
          </DropdownMenu>
       </div>
    );

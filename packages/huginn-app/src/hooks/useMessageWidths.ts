@@ -4,8 +4,12 @@ import { useRef, useState, useLayoutEffect } from "react";
 
 import type { ProcessedMessage } from "@/types";
 
-export function useMessageWidths(params: { message: ProcessedMessage; lastMessage?: ProcessedMessage; nextMessage?: ProcessedMessage }) {
-   const { message, lastMessage, nextMessage } = params;
+export function useMessageWidths(options: {
+   idPrefix?: string;
+   message: ProcessedMessage;
+   lastMessage?: ProcessedMessage;
+   nextMessage?: ProcessedMessage;
+}) {
    const rootRef = useRef<HTMLDivElement>(null);
    const extrasRef = useRef<HTMLDivElement>(null);
    const [widths, setWidths] = useState<{ width: number; lastWidth: number; nextWidth: number }>({
@@ -18,7 +22,7 @@ export function useMessageWidths(params: { message: ProcessedMessage; lastMessag
       function getMaxChildWidth(messageId?: Snowflake) {
          if (!messageId) return 0;
 
-         const inner = document.getElementById(`${messageId}_inner`);
+         const inner = document.getElementById(`${(options.idPrefix ?? "") + messageId}_inner`);
          if (!inner) return 0;
 
          let maxWidth = 0;
@@ -30,9 +34,9 @@ export function useMessageWidths(params: { message: ProcessedMessage; lastMessag
       }
 
       function updateWidths() {
-         const width = getMaxChildWidth(message.id);
-         const lastWidth = getMaxChildWidth(lastMessage?.id);
-         const nextWidth = getMaxChildWidth(nextMessage?.id);
+         const width = getMaxChildWidth(options.message.id);
+         const lastWidth = getMaxChildWidth(options.lastMessage?.id);
+         const nextWidth = getMaxChildWidth(options.nextMessage?.id);
 
          setWidths({ width, lastWidth, nextWidth });
       }
@@ -56,7 +60,7 @@ export function useMessageWidths(params: { message: ProcessedMessage; lastMessag
          observer.disconnect();
          extrasObserver.disconnect();
       };
-   }, [message, lastMessage, nextMessage]);
+   }, [options.message, options.lastMessage, options.nextMessage]);
 
    return { rootRef, extrasRef, widths };
 }

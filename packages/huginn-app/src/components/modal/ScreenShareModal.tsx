@@ -8,7 +8,7 @@ import LoadingIcon from "@components/LoadingIcon";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
 import { useMediaSources } from "@hooks/voice/useMediaSources";
 import { CONSTANTS } from "@huginn/shared";
-import { screenShareFrameRates, screenShareQualities } from "@lib/constants";
+import { SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import { useClient } from "@stores/clientStore";
 import { useDevice } from "@stores/deviceStore";
 import { useModals } from "@stores/modalsStore";
@@ -27,11 +27,11 @@ import HuginnDialogPanel from "./HuginnDialogPanel";
 //    { text: "Ultra (1440p)", value: "ultra" },
 // ];
 
-const qualityOptions: DropdownItem[] = screenShareQualities.map((x) => ({
+const qualityOptions: DropdownItem[] = SCREEN_SHARE_QUALITIES.map((x) => ({
    text: `${x.name} ${x.height}p`,
    value: x.value,
 }));
-const frameRateOptions: DropdownItem[] = screenShareFrameRates.map((x) => ({
+const frameRateOptions: DropdownItem[] = SCREEN_SHARE_FRAME_RATES.map((x) => ({
    text: `${x} fps`,
    value: x.toString(),
 }));
@@ -78,14 +78,14 @@ export default function ScreenShareModal() {
    const [selectedQuality, setSelectedQuality] = useState<DropdownItem>(
       qualityOptions.find((x) =>
          videoProducer?.trackSettings
-            ? screenShareQualities.find((y) => videoProducer.trackSettings?.height === y.height)?.value === x.value
+            ? SCREEN_SHARE_QUALITIES.find((y) => videoProducer.trackSettings?.height === y.height)?.value === x.value
             : x.value === settings.screenShareQuality,
       ) ?? qualityOptions[0],
    );
    const [selectedFramerate, setSelectedFramerate] = useState<DropdownItem>(
       frameRateOptions.find((x) =>
          videoProducer?.trackSettings
-            ? screenShareFrameRates.find((y) => videoProducer.trackSettings?.frameRate === y) === Number(x.value)
+            ? SCREEN_SHARE_FRAME_RATES.find((y) => videoProducer.trackSettings?.frameRate === y) === Number(x.value)
             : x.value === settings.screenShareFramerate,
       ) ?? frameRateOptions[0],
    );
@@ -133,7 +133,7 @@ export default function ScreenShareModal() {
       }
 
       const frameRate = Number(selectedFramerate?.value);
-      const { width, height } = screenShareQualities.find((x) => x.value === selectedQuality.value)!;
+      const { width, height } = SCREEN_SHARE_QUALITIES.find((x) => x.value === selectedQuality.value)!;
 
       startTransition(async () => {
          close();
