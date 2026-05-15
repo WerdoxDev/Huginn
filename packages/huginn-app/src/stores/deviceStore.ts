@@ -58,31 +58,31 @@ function checkDevices() {
 
    // Input device recovery
    if (thisStore.unavailableInputDeviceId && thisStore.inputDevices.some((x) => x.deviceId === thisStore.unavailableInputDeviceId)) {
-      storage.updateSettings({ inputDeviceId: thisStore.unavailableInputDeviceId });
+      storage.setCachedValue("settings", { ...settings, inputDeviceId: thisStore.unavailableInputDeviceId });
       thisStore.setUnavailableInputDevice(undefined);
    }
    if (!thisStore.unavailableInputDeviceId && !thisStore.inputDevices.some((x) => x.deviceId === settings.inputDeviceId)) {
-      storage.updateSettings({ inputDeviceId: thisStore.inputDevices[0]?.deviceId });
+      storage.setCachedValue("settings", { ...settings, inputDeviceId: thisStore.inputDevices[0]?.deviceId });
       thisStore.setUnavailableInputDevice(settings.inputDeviceId);
    }
 
    // Output device recovery
    if (thisStore.unavailableOutputDeviceId && thisStore.outputDevices.some((x) => x.deviceId === thisStore.unavailableOutputDeviceId)) {
-      storage.updateSettings({ outputDeviceId: thisStore.unavailableOutputDeviceId });
+      storage.setCachedValue("settings", { ...settings, outputDeviceId: thisStore.unavailableOutputDeviceId });
       thisStore.setUnavailableOutputDevice(undefined);
    }
    if (!thisStore.unavailableOutputDeviceId && !thisStore.outputDevices.some((x) => x.deviceId === settings.outputDeviceId)) {
-      storage.updateSettings({ outputDeviceId: thisStore.outputDevices[0]?.deviceId });
+      storage.setCachedValue("settings", { ...settings, outputDeviceId: thisStore.outputDevices[0]?.deviceId });
       thisStore.setUnavailableOutputDevice(settings.outputDeviceId);
    }
 
    // Camera device recovery
    if (thisStore.unavailableCameraDeviceId && thisStore.cameraDevices.some((x) => x.deviceId === thisStore.unavailableCameraDeviceId)) {
-      storage.updateSettings({ cameraDeviceId: thisStore.unavailableCameraDeviceId });
+      storage.setCachedValue("settings", { ...settings, cameraDeviceId: thisStore.unavailableCameraDeviceId });
       thisStore.setUnavailableCameraDevice(undefined);
    }
    if (!thisStore.unavailableCameraDeviceId && !thisStore.cameraDevices.some((x) => x.deviceId === settings.cameraDeviceId)) {
-      storage.updateSettings({ cameraDeviceId: thisStore.cameraDevices[0]?.deviceId });
+      storage.setCachedValue("settings", { ...settings, cameraDeviceId: thisStore.cameraDevices[0]?.deviceId });
       thisStore.setUnavailableCameraDevice(settings.cameraDeviceId);
    }
 }

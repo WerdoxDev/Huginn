@@ -1,6 +1,6 @@
 import LoadingButton from "@components/button/LoadingButton";
 import DisplayPreview from "@components/DisplayPreview";
-import HuginnDropdown from "@components/dropdown/HuginnDropdown";
+import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnTab from "@components/HuginnTab";
 import HuginnRange from "@components/input/HuginnRange";
@@ -16,7 +16,7 @@ import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, useTransition } from "react";
 
-import type { DisplaySource, DropdownItem } from "@/types";
+import type { DisplaySource, SelectItem } from "@/types";
 
 import HuginnDialogPanel from "./HuginnDialogPanel";
 
@@ -27,11 +27,11 @@ import HuginnDialogPanel from "./HuginnDialogPanel";
 //    { text: "Ultra (1440p)", value: "ultra" },
 // ];
 
-const qualityOptions: DropdownItem[] = SCREEN_SHARE_QUALITIES.map((x) => ({
+const qualityOptions: SelectItem[] = SCREEN_SHARE_QUALITIES.map((x) => ({
    text: `${x.name} ${x.height}p`,
    value: x.value,
 }));
-const frameRateOptions: DropdownItem[] = SCREEN_SHARE_FRAME_RATES.map((x) => ({
+const frameRateOptions: SelectItem[] = SCREEN_SHARE_FRAME_RATES.map((x) => ({
    text: `${x} fps`,
    value: x.toString(),
 }));
@@ -73,23 +73,23 @@ export default function ScreenShareModal() {
    const settings = useStorage("settings");
    const { setValue } = useStorageStore();
 
-   const inputDeviceOptions = useMemo<DropdownItem[]>(() => inputDevices?.map((x) => ({ text: x.label, value: x.deviceId })) ?? [], [inputDevices]);
+   const inputDeviceOptions = useMemo<SelectItem[]>(() => inputDevices?.map((x) => ({ text: x.label, value: x.deviceId })) ?? [], [inputDevices]);
 
-   const [selectedQuality, setSelectedQuality] = useState<DropdownItem>(
+   const [selectedQuality, setSelectedQuality] = useState<SelectItem>(
       qualityOptions.find((x) =>
          videoProducer?.trackSettings
             ? SCREEN_SHARE_QUALITIES.find((y) => videoProducer.trackSettings?.height === y.height)?.value === x.value
             : x.value === settings.screenShareQuality,
       ) ?? qualityOptions[0],
    );
-   const [selectedFramerate, setSelectedFramerate] = useState<DropdownItem>(
+   const [selectedFramerate, setSelectedFramerate] = useState<SelectItem>(
       frameRateOptions.find((x) =>
          videoProducer?.trackSettings
             ? SCREEN_SHARE_FRAME_RATES.find((y) => videoProducer.trackSettings?.frameRate === y) === Number(x.value)
             : x.value === settings.screenShareFramerate,
       ) ?? frameRateOptions[0],
    );
-   const [selectedInput, setSelectedInput] = useState<DropdownItem>(inputDeviceOptions[0]);
+   const [selectedInput, setSelectedInput] = useState<SelectItem>(inputDeviceOptions[0]);
    const [maxVideoBitrate, setMaxVideoBitrate] = useState<number>(videoProducer?.maxBitrate ?? settings.screenShareVideoBitrate);
    const [maxAudioBitrate, setMaxAudioBitrate] = useState<number>(audioProducer?.maxBitrate ?? settings.screenShareAudioBitrate);
    const [isAudioEnabled, setIsAudioEnabled] = useState(settings.screenShareAudio);
@@ -243,42 +243,42 @@ export default function ScreenShareModal() {
             </LoadingButton>
          )}
          <div className="bg-surface-alt flex shrink-0 flex-col gap-y-5 p-5">
-            <HuginnDropdown value={selectedQuality} onChange={setSelectedQuality}>
-               <HuginnDropdown.Label>Quality</HuginnDropdown.Label>
-               <HuginnDropdown.List className="bg-surface! w-40!">
-                  <HuginnDropdown.ItemsWrapper anchor="bottom start">
+            <HuginnSelect selected={selectedQuality} onChange={setSelectedQuality}>
+               <HuginnSelect.Label>Quality</HuginnSelect.Label>
+               <HuginnSelect.List className="bg-surface! w-40!">
+                  <HuginnSelect.ItemsWrapper>
                      {qualityOptions.map((x) => (
-                        <HuginnDropdown.Item key={x.value} item={x} />
+                        <HuginnSelect.Item key={x.value} item={x} />
                      ))}
-                  </HuginnDropdown.ItemsWrapper>
-               </HuginnDropdown.List>
-            </HuginnDropdown>
-            <HuginnDropdown value={selectedFramerate} onChange={setSelectedFramerate}>
-               <HuginnDropdown.Label>Frame Rate</HuginnDropdown.Label>
-               <HuginnDropdown.List className="bg-surface! w-30!">
-                  <HuginnDropdown.ItemsWrapper anchor="bottom start">
+                  </HuginnSelect.ItemsWrapper>
+               </HuginnSelect.List>
+            </HuginnSelect>
+            <HuginnSelect selected={selectedFramerate} onChange={setSelectedFramerate}>
+               <HuginnSelect.Label>Frame Rate</HuginnSelect.Label>
+               <HuginnSelect.List className="bg-surface! w-30!">
+                  <HuginnSelect.ItemsWrapper>
                      {frameRateOptions.map((x) => (
-                        <HuginnDropdown.Item key={x.value} item={x} />
+                        <HuginnSelect.Item key={x.value} item={x} />
                      ))}
-                  </HuginnDropdown.ItemsWrapper>
-               </HuginnDropdown.List>
-            </HuginnDropdown>
+                  </HuginnSelect.ItemsWrapper>
+               </HuginnSelect.List>
+            </HuginnSelect>
 
             <HuginnCheckbox checked={isAudioEnabled} onChange={setIsAudioEnabled}>
                <HuginnCheckbox.Toggle>Share Audio</HuginnCheckbox.Toggle>
             </HuginnCheckbox>
 
             {isAudioEnabled && tabIndex === 2 && (
-               <HuginnDropdown className="w-full max-w-xs" onChange={setSelectedInput} value={selectedInput}>
-                  <HuginnDropdown.Label>Input Device</HuginnDropdown.Label>
-                  <HuginnDropdown.List className="bg-surface! w-40!">
-                     <HuginnDropdown.ItemsWrapper className="w-80">
+               <HuginnSelect className="w-full max-w-xs" onChange={setSelectedInput} selected={selectedInput}>
+                  <HuginnSelect.Label>Input Device</HuginnSelect.Label>
+                  <HuginnSelect.List className="bg-surface! w-40!">
+                     <HuginnSelect.ItemsWrapper className="w-80">
                         {inputDeviceOptions?.map((x) => (
-                           <HuginnDropdown.Item key={x.value} item={x} />
+                           <HuginnSelect.Item key={x.value} item={x} />
                         ))}
-                     </HuginnDropdown.ItemsWrapper>
-                  </HuginnDropdown.List>
-               </HuginnDropdown>
+                     </HuginnSelect.ItemsWrapper>
+                  </HuginnSelect.List>
+               </HuginnSelect>
             )}
             <div className="bg-surface h-px w-full px-0" />
             <Disclosure>

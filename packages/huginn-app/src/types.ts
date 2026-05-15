@@ -93,7 +93,7 @@ export type SettingsTabProps = {
    onChange?: (value: Partial<AppSettings>) => void;
 };
 
-export type DropdownItem = {
+export type SelectItem = {
    text: string;
    icon?: ReactNode;
    value: string;

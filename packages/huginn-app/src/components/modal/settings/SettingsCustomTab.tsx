@@ -2,7 +2,7 @@ import type { ProcessInfo } from "native-addon";
 
 import HuginnButton from "@components/button/HuginnButton";
 import CustomApplicationItem from "@components/CustomApplicationItem";
-import HuginnDropdown from "@components/dropdown/HuginnDropdown";
+import HuginnSelect from "@components/dropdown/HuginnSelect";
 import { ProfileActivity } from "@components/profile/ProfileComponents";
 import { useModals } from "@stores/modalsStore";
 import { usePresenceStore } from "@stores/presenceStore";
@@ -11,7 +11,7 @@ import { useThisUser } from "@stores/userStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useEffect, useMemo, useState } from "react";
 
-import type { DropdownItem, SettingsTabProps } from "@/types";
+import type { SelectItem, SettingsTabProps } from "@/types";
 
 type OpenApplication = ProcessInfo & { displayName?: string; icon?: string };
 
@@ -19,7 +19,7 @@ export default function SettingsCustomTab(_props: SettingsTabProps) {
    const { thisPresence } = usePresenceStore();
    const { user } = useThisUser();
    const [openApplications, setOpenApplications] = useState<OpenApplication[]>([]);
-   const [selectedApplication, setSelectedApplication] = useState<DropdownItem>();
+   const [selectedApplication, setSelectedApplication] = useState<SelectItem>();
    const huginnWindow = useHuginnWindow();
    const { updateModals } = useModals();
    const targetActivity = thisPresence.activities[0];
@@ -68,7 +68,7 @@ export default function SettingsCustomTab(_props: SettingsTabProps) {
       setOpenApplications(applications);
    }
 
-   function onApplicationChanged(value: DropdownItem) {
+   function onApplicationChanged(value: SelectItem) {
       setSelectedApplication(value);
    }
 
@@ -126,11 +126,7 @@ export default function SettingsCustomTab(_props: SettingsTabProps) {
                      <div className="text-text/80">No activities detected...</div>
                   </div>
                ) : (
-                  <ProfileActivity
-                     activity={targetActivity}
-                     accentColor={accentColor}
-                     className="bg-surface-alt"
-                  />
+                  <ProfileActivity activity={targetActivity} accentColor={accentColor} className="bg-surface-alt" />
                )}
             </div>
             {huginnWindow.environment === "desktop" && (
@@ -138,15 +134,15 @@ export default function SettingsCustomTab(_props: SettingsTabProps) {
                   <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Register Application</div>
                   <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3">
                      <div className="text-text/80 text-sm">Add a custom application to be shown on your profile as your activity</div>
-                     <HuginnDropdown onChange={onApplicationChanged} value={selectedApplication}>
-                        <HuginnDropdown.List className="bg-surface-deep w-full rounded-md!" placeholder="Select an application">
-                           <HuginnDropdown.ItemsWrapper className="w-(--button-width)">
+                     <HuginnSelect onChange={onApplicationChanged} selected={selectedApplication}>
+                        <HuginnSelect.List className="bg-surface-deep w-full rounded-md!" placeholder="Select an application">
+                           <HuginnSelect.ItemsWrapper className="w-(--button-width)">
                               {applicationOptions.map((x) => (
-                                 <HuginnDropdown.Item key={x.value} item={x} />
+                                 <HuginnSelect.Item key={x.value} item={x} />
                               ))}
-                           </HuginnDropdown.ItemsWrapper>
-                        </HuginnDropdown.List>
-                     </HuginnDropdown>
+                           </HuginnSelect.ItemsWrapper>
+                        </HuginnSelect.List>
+                     </HuginnSelect>
                      <HuginnButton onClick={add} color="primary" className="h-8" disabled={!selectedApplication}>
                         Register
                      </HuginnButton>
