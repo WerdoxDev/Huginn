@@ -1,6 +1,6 @@
 import type { PresenceStatus } from "@huginn/shared";
 
-import { DropdownMenu } from "@components/dropdown/DropdownMenu";
+import { HuginnMenu } from "@components/dropdown/HuginnMenu";
 import { useEditSettings } from "@hooks/mutations/useEditSettings";
 import { useLogout } from "@hooks/useLogout";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
@@ -49,8 +49,8 @@ export default function UserInfo(props: { user: AppUser }) {
 
    return (
       <div className="flex h-16 w-62 shrink-0 items-center lg:w-64">
-         <DropdownMenu>
-            <DropdownMenu.Trigger asChild>
+         <HuginnMenu>
+            <HuginnMenu.Trigger asChild>
                <div className="flex w-full cursor-pointer items-center rounded-xl px-2 py-1 hover:bg-white/5 active:bg-white/5">
                   <UserAvatar userId={props.user.id} avatarHash={props.user.avatar} className="mr-3 shrink-0" />
 
@@ -88,14 +88,14 @@ export default function UserInfo(props: { user: AppUser }) {
                      </UserActionButton>
                   </div>
                </div>
-            </DropdownMenu.Trigger>
+            </HuginnMenu.Trigger>
 
-            <DropdownMenu.Content className="w-64" sideOffset={8}>
+            <HuginnMenu.Content className="w-64" sideOffset={8}>
                <UserProfilePreview userId={props.user.id} maxWidth={134} />
-               <DropdownMenu.Separator />
-               <DropdownMenu.Item onClick={handleViewProfile}>View Profile</DropdownMenu.Item>
-               <DropdownMenu.Separator />
-               <DropdownMenu.Item
+               <HuginnMenu.Separator />
+               <HuginnMenu.Item onClick={handleViewProfile}>View Profile</HuginnMenu.Item>
+               <HuginnMenu.Separator />
+               <HuginnMenu.Item
                   color="negative"
                   endSlot={<IconMingcuteExitFill className="size-5" />}
                   onClick={() => {
@@ -103,30 +103,27 @@ export default function UserInfo(props: { user: AppUser }) {
                   }}
                >
                   Logout
-               </DropdownMenu.Item>
-               <DropdownMenu.Separator />
-               <DropdownMenu.Item
-                  onClick={() => navigator.clipboard.writeText(props.user.id)}
-                  endSlot={<IconMingcuteIdcardFill className="size-5" />}
-               >
+               </HuginnMenu.Item>
+               <HuginnMenu.Separator />
+               <HuginnMenu.Item onClick={() => navigator.clipboard.writeText(props.user.id)} endSlot={<IconMingcuteIdcardFill className="size-5" />}>
                   Copy User ID
-               </DropdownMenu.Item>
-               <DropdownMenu.Submenu
+               </HuginnMenu.Item>
+               <HuginnMenu.Submenu
                   label={PRESENCE_STATUS_MAP[presence?.status ?? "offline"].text}
                   endSlot={<div className={clsx("size-3 rounded-full", PRESENCE_STATUS_MAP[presence?.status ?? "offline"].color)} />}
                >
                   {Object.entries(PRESENCE_STATUS_MAP).map(([key, value]) => (
-                     <DropdownMenu.Item
+                     <HuginnMenu.Item
                         key={key}
                         onClick={() => setStatus(key as PresenceStatus)}
                         endSlot={<div className={clsx("size-3 rounded-full", value.color)} />}
                      >
                         {value.text}
-                     </DropdownMenu.Item>
+                     </HuginnMenu.Item>
                   ))}
-               </DropdownMenu.Submenu>
-            </DropdownMenu.Content>
-         </DropdownMenu>
+               </HuginnMenu.Submenu>
+            </HuginnMenu.Content>
+         </HuginnMenu>
       </div>
    );
 }

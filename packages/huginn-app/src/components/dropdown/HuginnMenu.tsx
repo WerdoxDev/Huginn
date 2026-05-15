@@ -4,25 +4,11 @@ import { isValidElement, type ReactNode } from "react";
 
 type Tone = "default" | "negative";
 
-// export type DropdownMenuSubmenuTriggerProps = ;
-
-// function mergeClassName<State>(base: string, className: ClassName) {
-//    if (typeof className === "function") {
-//       return (state: State) => clsx(base, className(state));
-//    }
-
-//    return clsx(base, className);
-// }
-
-export function DropdownMenu(props: Menu.Root.Props) {
+export function HuginnMenu(props: Menu.Root.Props) {
    return <Menu.Root modal={true} {...props} />;
 }
 
 function Trigger(props: Menu.Trigger.Props & { asChild?: boolean }) {
-   // const { asChild, children, className, nativeButton, ...rest } = props;
-   // const mergedClassName = mergeClassName<Menu.Trigger.State>("cursor-pointer", className);
-   // const resolvedNativeButton = props.asChild ? (nativeButton ?? false) : nativeButton;
-
    const { className, children, asChild, ...rest } = props;
 
    if (asChild && isValidElement(children)) {
@@ -42,13 +28,8 @@ function Content(
       align?: Menu.Positioner.Props["align"];
       sideOffset?: number;
       alignOffset?: number;
-      // keepMounted?: boolean;
-      // portalClassName?: string;
-      // positionerClassName?: string;
    },
 ) {
-   // const { side = "bottom", align = "start", sideOffset = 4, alignOffset = 0, className, children, ...popupProps } = props;
-
    return (
       <Menu.Portal keepMounted={false}>
          <Menu.Positioner side={props.side} align={props.align} sideOffset={props.sideOffset} alignOffset={props.alignOffset}>
@@ -74,9 +55,6 @@ function Item(props: {
    children?: ReactNode;
    disabled?: boolean;
 }) {
-   // const { tone = "default", endSlot, className, children, label, ...rest } = props;
-   // const resolvedLabel = label ?? (typeof children === "string" ? children : undefined);
-
    return (
       <Menu.Item
          onClick={props.onClick}
@@ -114,12 +92,8 @@ function SubmenuTrigger(props: {
    className?: string;
    children?: ReactNode;
 }) {
-   // const { tone = "default", endSlot, className, children, label, openOnHover = true, delay = 75, closeDelay = 100, ...rest } = props;
-   // const resolvedLabel = label ?? (typeof children === "string" ? children : undefined);
-
    return (
       <Menu.SubmenuTrigger
-         // {...rest}
          onClick={props.onClick}
          label={props.label}
          openOnHover={true}
@@ -140,7 +114,6 @@ function SubmenuTrigger(props: {
                <IconMingcuteRightLine className="size-5 text-white/80" />
             </span>
          </span>
-         {/* {content} */}
       </Menu.SubmenuTrigger>
    );
 }
@@ -163,10 +136,10 @@ function Submenu(props: { label: ReactNode; children?: ReactNode; color?: Tone; 
    );
 }
 
-DropdownMenu.Trigger = Trigger;
-DropdownMenu.Content = Content;
-DropdownMenu.Item = Item;
-DropdownMenu.Separator = Separator;
-DropdownMenu.SubmenuRoot = SubmenuRoot;
-DropdownMenu.SubmenuTrigger = SubmenuTrigger;
-DropdownMenu.Submenu = Submenu;
+HuginnMenu.Trigger = Trigger;
+HuginnMenu.Content = Content;
+HuginnMenu.Item = Item;
+HuginnMenu.Separator = Separator;
+HuginnMenu.SubmenuRoot = SubmenuRoot;
+HuginnMenu.SubmenuTrigger = SubmenuTrigger;
+HuginnMenu.Submenu = Submenu;

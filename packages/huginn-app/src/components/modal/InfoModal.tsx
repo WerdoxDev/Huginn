@@ -111,19 +111,24 @@ export default function InfoModal() {
    return (
       <HuginnDialogPanel className={clsx("lg:max-w-sm", borderColor)} style={{ boxShadow: glowShadow }}>
          <DialogBody className="gap-y-0!">
-            <Dialog.Title as="div" className="flex w-full flex-col items-center justify-center gap-y-3">
-               <div ref={iconRef} style={{ opacity: 0 }} className={clsx("rounded-full p-2.5", backgroundColor)}>
-                  <div className={clsx("rounded-full p-2.5", innerColor)}>
-                     {modal.status === "error" && <IconMingcuteAlertFill className="size-7 text-white" />}
-                     {modal.status === "info" && <IconMingcuteInformationFill className="size-7 text-white" />}
-                     {modal.status === "success" && <IconMingcuteCheckFill className="size-7 text-white" />}
-                  </div>
-               </div>
+            <Dialog.Title
+               className="flex w-full flex-col items-center justify-center gap-y-3"
+               render={() => (
+                  <>
+                     <div ref={iconRef} style={{ opacity: 0 }} className={clsx("rounded-full p-2.5", backgroundColor)}>
+                        <div className={clsx("rounded-full p-2.5", innerColor)}>
+                           {modal.status === "error" && <IconMingcuteAlertFill className="size-7 text-white" />}
+                           {modal.status === "info" && <IconMingcuteInformationFill className="size-7 text-white" />}
+                           {modal.status === "success" && <IconMingcuteCheckFill className="size-7 text-white" />}
+                        </div>
+                     </div>
 
-               <div ref={titleRef} style={{ opacity: 0 }} className="text-center text-lg font-semibold text-white">
-                  {modal.title}
-               </div>
-            </Dialog.Title>
+                     <div ref={titleRef} style={{ opacity: 0 }} className="text-center text-lg font-semibold text-white">
+                        {modal.title}
+                     </div>
+                  </>
+               )}
+            ></Dialog.Title>
 
             <Dialog.Description
                className="mt-1"

@@ -176,17 +176,6 @@ export type ContextMenuItemProps = {
    color?: "default" | "negative";
 };
 
-export type DropdownMenuProps = {
-   label: string;
-   nested?: boolean;
-   children?: ReactNode;
-};
-
-export type DropdownMenuItemProps = {
-   label: string;
-   disabled?: boolean;
-};
-
 export type ContextMenuRelationship = { user: AppUser; type: RelationshipType };
 export type ContextMenuDMChannel = AppDirectChannel;
 export type ContextMenuDMChannelRecipient = { channelId: Snowflake; recipient: AppUser };

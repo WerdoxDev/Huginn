@@ -7,7 +7,7 @@ import { useMemo, type ReactNode } from "react";
 
 import type { MediaSource, ScreenShareFrameRate, ScreenShareQuality } from "@/types";
 
-import { DropdownMenu } from "../dropdown/DropdownMenu";
+import { HuginnMenu } from "../dropdown/HuginnMenu";
 
 export default function StreamButton(props: {
    children?: ReactNode;
@@ -37,11 +37,11 @@ export default function StreamButton(props: {
    }
 
    return isStreaming ? (
-      <DropdownMenu onOpenChange={(open: boolean) => props.onOpenChanged?.(open)}>
+      <HuginnMenu onOpenChange={(open: boolean) => props.onOpenChanged?.(open)}>
          <div className={clsx("flex", props.className)}>
             {props.children}
             {!props.hideArrow && (
-               <DropdownMenu.Trigger
+               <HuginnMenu.Trigger
                   className="bg-primary-800 hover:bg-primary-600 ml-0.5 flex h-full items-center justify-center rounded-r-lg px-1 transition-colors"
                   render={(props, state) => (
                      <button {...props}>
@@ -51,62 +51,58 @@ export default function StreamButton(props: {
                />
             )}
          </div>
-         <DropdownMenu.Content sideOffset={8} className="border-surface border">
-            <DropdownMenu.Item color="negative" onClick={props.onCloseStream}>
+         <HuginnMenu.Content sideOffset={8} className="border-surface border">
+            <HuginnMenu.Item color="negative" onClick={props.onCloseStream}>
                End Stream
-            </DropdownMenu.Item>
-            <DropdownMenu.Item onClick={props.onChangeStream} endSlot={<IconMingcuteTransfer3Fill />}>
+            </HuginnMenu.Item>
+            <HuginnMenu.Item onClick={props.onChangeStream} endSlot={<IconMingcuteTransfer3Fill />}>
                Change Stream
-            </DropdownMenu.Item>
-            <DropdownMenu.Submenu
+            </HuginnMenu.Item>
+            <HuginnMenu.Submenu
                label="Resolution"
                endSlot={<span className="text-white/60">{videoSettings?.height ? `${videoSettings.height}p` : "Unknown"}</span>}
             >
                {SCREEN_SHARE_QUALITIES.map((x) => (
-                  <DropdownMenu.Item
+                  <HuginnMenu.Item
                      key={x.value}
                      onClick={() => handleUpdateStream({ quality: x.value })}
                      endSlot={videoSettings?.height === x.height ? <IconMingcuteCheckFill className="text-positive-300" /> : undefined}
                   >
                      {`${x.height}p`}
-                  </DropdownMenu.Item>
+                  </HuginnMenu.Item>
                ))}
-            </DropdownMenu.Submenu>
-            <DropdownMenu.Submenu
+            </HuginnMenu.Submenu>
+            <HuginnMenu.Submenu
                label="Frame Rate"
                endSlot={<span className="text-white/60">{videoSettings?.frameRate ? `${videoSettings.frameRate} fps` : "Unknown"}</span>}
             >
                {SCREEN_SHARE_FRAME_RATES.map((x) => (
-                  <DropdownMenu.Item
+                  <HuginnMenu.Item
                      key={x}
                      onClick={() => props.onUpdateStream?.({ frameRate: x })}
                      endSlot={videoSettings?.frameRate === x ? <IconMingcuteCheckFill className="text-positive-300" /> : undefined}
                   >
                      {`${x} fps`}
-                  </DropdownMenu.Item>
+                  </HuginnMenu.Item>
                ))}
-            </DropdownMenu.Submenu>
-         </DropdownMenu.Content>
-      </DropdownMenu>
+            </HuginnMenu.Submenu>
+         </HuginnMenu.Content>
+      </HuginnMenu>
    ) : (
-      <DropdownMenu onOpenChange={(open: boolean) => props.onOpenChanged?.(open)}>
+      <HuginnMenu onOpenChange={(open: boolean) => props.onOpenChanged?.(open)}>
          <div className={clsx("flex", props.className)}>
-            <DropdownMenu.Trigger asChild>
+            <HuginnMenu.Trigger asChild>
                <div className="flex w-full">{props.children}</div>
-            </DropdownMenu.Trigger>
+            </HuginnMenu.Trigger>
          </div>
-         <DropdownMenu.Content sideOffset={8} className="border-surface border">
-            <DropdownMenu.Item onClick={props.onOpenScreenShare} endSlot={<IconMingcuteMonitorFill />}>
+         <HuginnMenu.Content sideOffset={8} className="border-surface border">
+            <HuginnMenu.Item onClick={props.onOpenScreenShare} endSlot={<IconMingcuteMonitorFill />}>
                Screen Share
-            </DropdownMenu.Item>
-            <DropdownMenu.Item
-               onClick={props.onOpenAudioStream}
-               disabled={huginnWindow.environment !== "desktop"}
-               endSlot={<IconMingcuteVolumeFill />}
-            >
+            </HuginnMenu.Item>
+            <HuginnMenu.Item onClick={props.onOpenAudioStream} disabled={huginnWindow.environment !== "desktop"} endSlot={<IconMingcuteVolumeFill />}>
                Audio Stream
-            </DropdownMenu.Item>
-         </DropdownMenu.Content>
-      </DropdownMenu>
+            </HuginnMenu.Item>
+         </HuginnMenu.Content>
+      </HuginnMenu>
    );
 }
