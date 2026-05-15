@@ -1,5 +1,6 @@
 import type { DeepPartial } from "@huginn/shared";
 
+import { Dialog } from "@base-ui/react";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@components/Tab";
 import { DialogTitle, Transition } from "@headlessui/react";
@@ -164,7 +165,7 @@ export default function SettingsModal() {
             {/* Mobile: Show tabs or content based on state */}
             <div className={clsx("bg-surface-alt h-full rounded-l-xl lg:block", "block w-full rounded-r-xl lg:w-auto lg:rounded-r-none")}>
                <TabList className="flex h-full flex-col select-none">
-                  <DialogTitle className="text-text p-5 text-2xl font-bold">Settings</DialogTitle>
+                  <Dialog.Title className="text-text p-5 text-2xl font-bold">Settings</Dialog.Title>
                   <SettingsTabs />
                </TabList>
             </div>
