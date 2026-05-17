@@ -1,4 +1,3 @@
-import type { Placement } from "@floating-ui/react";
 import type { AddChannelRecipientMutationVars } from "@hooks/mutations/useAddChannelRecipient";
 import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMChannel";
 import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
@@ -146,14 +145,6 @@ export type ColorTheme = {
 };
 
 export type ThemeType = "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal" | "scarlet";
-
-export type TooltipOptions = {
-   initialOpen?: boolean;
-   hideOnMobile?: boolean;
-   placement?: Placement;
-   open?: boolean;
-   onOpenChange?: (open: boolean) => void;
-};
 
 export type ContextMenuProps = {
    label?: string;
