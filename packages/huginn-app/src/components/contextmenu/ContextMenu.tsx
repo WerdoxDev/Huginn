@@ -1,323 +1,156 @@
+import { ContextMenu as BaseContextMenu, Menu } from "@base-ui/react";
 import LoadingIcon from "@components/LoadingIcon";
-import {
-   autoUpdate,
-   FloatingFocusManager,
-   FloatingList,
-   FloatingNode,
-   FloatingPortal,
-   FloatingTree,
-   flip,
-   offset,
-   safePolygon,
-   shift,
-   useDismiss,
-   useFloating,
-   useFloatingNodeId,
-   useFloatingParentNodeId,
-   useFloatingTree,
-   useHover,
-   useInteractions,
-   useListItem,
-   useListNavigation,
-   useMergeRefs,
-   useRole,
-   size,
-} from "@floating-ui/react";
-import { omit } from "@huginn/shared";
 import clsx from "clsx";
-import { createContext, type HTMLProps, type RefObject, Suspense, useContext, useEffect, useRef, useState } from "react";
+import { type ReactNode, type RefObject, useMemo, useState } from "react";
 
 import type { ContextMenuItemProps, ContextMenuProps } from "@/types";
 
-const Context = createContext<{
-   getItemProps: (userProps?: React.HTMLProps<HTMLElement>) => Record<string, unknown>;
-   activeIndex: number | null;
-   setActiveIndex: React.Dispatch<React.SetStateAction<number | null>>;
-   setHasFocusInside: React.Dispatch<React.SetStateAction<boolean>>;
-   isOpen: boolean;
-   setBusy: (busy: boolean) => void;
-}>({
-   getItemProps: () => ({}),
-   activeIndex: null,
-   setActiveIndex: () => {},
-   setHasFocusInside: () => {},
-   isOpen: false,
-   setBusy: () => {},
-});
-
-function Menu(props: ContextMenuProps & HTMLProps<HTMLButtonElement>) {
-   const [isOpen, _setIsOpen] = useState(false);
-   const [hasFocusInside, setHasFocusInside] = useState(false);
-   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-
-   const elementsRef = useRef<(HTMLButtonElement | null)[]>([]);
-   const labelsRef = useRef<(string | null)[]>([]);
-   const busyRef = useRef(false);
-   const parent = useContext(Context);
-
-   const tree = useFloatingTree();
-   const nodeId = useFloatingNodeId();
-   const parentId = useFloatingParentNodeId();
-   const item = useListItem();
-
-   const isNested = parentId != null;
-
-   const { floatingStyles, refs, context } = useFloating<HTMLButtonElement>({
-      nodeId,
-      open: isOpen,
-      onOpenChange: setIsOpen,
-      placement: isNested ? "right-start" : "bottom-start",
-      middleware: [
-         offset({ mainAxis: isNested ? 12 : 0, alignmentAxis: 0 }),
-         flip({
-            fallbackAxisSideDirection: "start",
-            // This allows nested menus to flip to left when no space on right
-            crossAxis: isNested,
-         }),
-         shift({ padding: 10 }),
-         size({
-            apply({ availableWidth, availableHeight, elements }) {
-               Object.assign(elements.floating.style, {
-                  maxWidth: `${Math.max(0, availableWidth)}px`,
-                  maxHeight: `${Math.max(0, availableHeight)}px`,
-               });
-            },
-            padding: 5,
-         }),
-      ],
-      whileElementsMounted: autoUpdate,
-   });
-
-   const hover = useHover(context, {
-      enabled: isNested,
-      delay: { open: 75 },
-      handleClose: safePolygon({ blockPointerEvents: true }),
-   });
-   const role = useRole(context, { role: "menu" });
-   const dismiss = useDismiss(context, { bubbles: true });
-   const listNavigation = useListNavigation(context, {
-      listRef: elementsRef,
-      activeIndex,
-      nested: isNested,
-      onNavigate: setActiveIndex,
-   });
-
-   const mergedRefs = useMergeRefs([refs.setReference, item.ref, props.ref]);
-
-   const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions([hover, role, dismiss, listNavigation]);
-
-   function setIsOpen(isOpen: boolean) {
-      if (!isOpen && busyRef.current) return;
-      _setIsOpen(isOpen);
-      if (!isOpen && props.close) props.close();
-   }
-
-   useEffect(() => {
-      if (isNested) return;
-      if (!props.isOpen) return;
-
-      setIsOpen(true);
-
-      refs.setPositionReference({
-         getBoundingClientRect() {
-            return {
-               width: 0,
-               height: 0,
+export default function ContextMenu(props: ContextMenuProps) {
+   const anchor = useMemo(
+      () => ({
+         getBoundingClientRect: () =>
+            DOMRect.fromRect({
                x: props.position?.[0] ?? 0,
                y: props.position?.[1] ?? 0,
-               top: props.position?.[1] ?? 0,
-               right: props.position?.[0] ?? 0,
-               bottom: props.position?.[1] ?? 0,
-               left: props.position?.[0] ?? 0,
-            };
-         },
-      });
-   }, [props.isOpen]);
-
-   // Event emitter allows you to communicate across tree components.
-   // This effect closes all menus when an item gets clicked anywhere
-   // in the tree.
-   useEffect(() => {
-      if (!tree) return;
-
-      function handleTreeClick() {
-         setIsOpen(false);
-      }
-
-      function onSubMenuOpen(event: { nodeId: string; parentId: string }) {
-         if (event.nodeId !== nodeId && event.parentId === parentId) {
-            setIsOpen(false);
-         }
-      }
-
-      tree.events.on("click", handleTreeClick);
-      tree.events.on("menuopen", onSubMenuOpen);
-
-      return () => {
-         tree.events.off("click", handleTreeClick);
-         tree.events.off("menuopen", onSubMenuOpen);
-      };
-   }, [tree, nodeId, parentId]);
-
-   useEffect(() => {
-      if (isOpen && tree) {
-         tree.events.emit("menuopen", { parentId, nodeId });
-      }
-   }, [tree, isOpen, nodeId, parentId]);
+               width: 0,
+               height: 0,
+            }),
+      }),
+      [props.position],
+   );
 
    return (
-      <FloatingNode id={nodeId}>
-         {isNested && (
-            <button
-               ref={mergedRefs}
-               tabIndex={parent.activeIndex === item.index ? 0 : -1}
-               role="menuitem"
-               data-open={isOpen ? "" : undefined}
-               data-focus-inside={hasFocusInside ? "" : undefined}
-               className="focus:bg-primary-700 rounded-xs px-2 py-1 text-start text-sm text-white/90 outline-hidden"
-               {...getReferenceProps(
-                  parent.getItemProps({
-                     ...props,
-                     onFocus(event: React.FocusEvent<HTMLButtonElement>) {
-                        props.onFocus?.(event);
-                        setHasFocusInside(false);
-                        parent.setHasFocusInside(true);
-                     },
-                  }),
-               )}
-            >
-               {props.label}
-               <span aria-hidden style={{ marginLeft: 10, fontSize: 10 }}>
-                  ▶
-               </span>
-            </button>
-         )}
-         <Context.Provider
-            value={{
-               activeIndex,
-               setActiveIndex,
-               getItemProps,
-               setHasFocusInside,
-               isOpen,
-               setBusy: (busy) => {
-                  busyRef.current = busy;
-               },
-            }}
-         >
-            <FloatingList elementsRef={elementsRef} labelsRef={labelsRef}>
-               {isOpen && (
-                  <FloatingPortal root={props.parent ? props.parent : undefined}>
-                     <Suspense>
-                        <FloatingFocusManager context={context} modal={false} initialFocus={isNested ? -1 : 0} returnFocus={!isNested}>
-                           <div
-                              ref={refs.setFloating}
-                              className="scroll-surface scroll-super-thin z-998 flex min-w-28 flex-col overflow-y-scroll rounded-lg bg-zinc-900 p-2 pr-0 shadow-lg outline-hidden"
-                              style={floatingStyles}
-                              {...getFloatingProps()}
-                           >
-                              {props.renderChildren ?? props.children}
-                           </div>
-                        </FloatingFocusManager>
-                     </Suspense>
-                  </FloatingPortal>
-               )}
-            </FloatingList>
-         </Context.Provider>
-      </FloatingNode>
+      <BaseContextMenu.Root
+         open={props.isOpen ?? false}
+         onOpenChange={(open) => {
+            if (!open) props.close?.();
+         }}
+      >
+         <BaseContextMenu.Portal container={props.parent ?? undefined}>
+            <BaseContextMenu.Positioner anchor={anchor} sideOffset={0} alignOffset={0}>
+               <BaseContextMenu.Popup
+                  className={clsx(
+                     "z-998 flex min-w-28 flex-col rounded-lg bg-zinc-900 p-2 shadow-lg outline-hidden",
+                     "transition-opacity duration-100",
+                     "data-starting-style:opacity-0",
+                     "data-ending-style:opacity-0",
+                  )}
+               >
+                  {props.renderChildren ?? props.children}
+               </BaseContextMenu.Popup>
+            </BaseContextMenu.Positioner>
+         </BaseContextMenu.Portal>
+      </BaseContextMenu.Root>
    );
 }
 
-function Item(props: ContextMenuItemProps & React.ButtonHTMLAttributes<HTMLButtonElement> & { ref?: RefObject<HTMLButtonElement> }) {
-   const menu = useContext(Context);
-   const item = useListItem({ label: props.disabled ? null : props.label });
-   const tree = useFloatingTree();
-   const isActive = item.index === menu.activeIndex;
+function Item(
+   props: ContextMenuItemProps &
+      React.ButtonHTMLAttributes<HTMLButtonElement> & {
+         ref?: RefObject<HTMLButtonElement>;
+         preventClose?: boolean;
+         color?: "default" | "negative";
+      },
+) {
    const [isLoading, setIsLoading] = useState(false);
 
+   function handleClick() {
+      const result = props.onClick?.({} as React.MouseEvent<HTMLButtonElement>) as unknown;
+
+      if (result instanceof Promise) {
+         setIsLoading(true);
+         result.finally(() => {
+            setIsLoading(false);
+         });
+      }
+   }
+
    return (
-      <button
-         {...omit(props, ["preventClose"])}
-         ref={useMergeRefs([item.ref, props.ref])}
-         type="button"
-         role="menuitem"
+      <BaseContextMenu.Item
+         ref={props.ref}
+         label={props.label}
+         disabled={props.disabled || isLoading}
+         closeOnClick={!props.preventClose}
+         onClick={handleClick}
          className={clsx(
-            "flex shrink-0 cursor-pointer items-center justify-between gap-x-5 rounded-sm px-2 py-2 text-start text-sm text-nowrap outline-hidden disabled:cursor-not-allowed",
+            "flex shrink-0 cursor-pointer items-center justify-between gap-x-5 rounded-sm px-2 py-2 text-start text-sm text-nowrap outline-hidden",
+            "data-disabled:cursor-not-allowed",
             !props.color || props.color === "default"
-               ? "focus:bg-surface-alt text-white/90 disabled:text-white/50"
-               : props.color === "negative" && "text-negative-100 focus:bg-negative-100/10 disabled:text-negative-100/50",
+               ? "data-highlighted:bg-surface-alt text-white/90 data-disabled:text-white/50"
+               : props.color === "negative" && "text-negative-100 data-highlighted:bg-negative-100/10 data-disabled:text-negative-100/50",
             props.className,
          )}
-         tabIndex={isActive ? 0 : -1}
-         disabled={props.disabled || isLoading}
-         {...menu.getItemProps({
-            onClick(event: React.MouseEvent<HTMLButtonElement>) {
-               const result = props.onClick?.(event) as unknown;
-
-               if (result instanceof Promise) {
-                  setIsLoading(true);
-                  menu.setBusy(true);
-                  result.finally(() => {
-                     setIsLoading(false);
-                     menu.setBusy(false);
-                     if (!props.preventClose) {
-                        tree?.events.emit("click");
-                     }
-                  });
-               } else if (!props.preventClose) {
-                  tree?.events.emit("click");
-               }
-            },
-            onFocus(event: React.FocusEvent<HTMLButtonElement>) {
-               props.onFocus?.(event);
-               menu.setHasFocusInside(true);
-            },
-         })}
       >
          {props.label}
          {isLoading ? <LoadingIcon /> : props.children}
-      </button>
+      </BaseContextMenu.Item>
    );
 }
 
-export default function ContextMenu(props: ContextMenuProps) {
-   const parentId = useFloatingParentNodeId();
-
-   if (parentId === null) {
-      return (
-         <FloatingTree>
-            <Menu {...props} />
-         </FloatingTree>
-      );
-   }
-
-   return <Menu {...props} />;
+function SubmenuContent(
+   props: Menu.Popup.Props & {
+      side?: Menu.Positioner.Props["side"];
+      align?: Menu.Positioner.Props["align"];
+      sideOffset?: number;
+      alignOffset?: number;
+   },
+) {
+   return (
+      <Menu.Portal keepMounted={false}>
+         <Menu.Positioner side={props.side} align={props.align} sideOffset={props.sideOffset} alignOffset={props.alignOffset}>
+            <Menu.Popup
+               className={clsx(
+                  "z-998 flex min-w-28 flex-col rounded-lg bg-zinc-900 p-2 shadow-lg outline-hidden",
+                  "transition-opacity duration-100",
+                  "data-starting-style:opacity-0",
+                  "data-ending-style:opacity-0",
+                  props.className,
+               )}
+            >
+               {props.children}
+            </Menu.Popup>
+         </Menu.Positioner>
+      </Menu.Portal>
+   );
 }
 
-function Divider() {
-   return <div className="bg-surface mx-1 my-2 h-px shrink-0" />;
+function Submenu(props: { label: ReactNode; children?: ReactNode; color?: "default" | "negative"; disabled?: boolean; endSlot?: ReactNode }) {
+   return (
+      <Menu.SubmenuRoot>
+         <Menu.SubmenuTrigger
+            openOnHover
+            delay={0}
+            closeDelay={100}
+            disabled={props.disabled}
+            label={typeof props.label === "string" ? props.label : undefined}
+            className={clsx(
+               "flex min-w-28 cursor-pointer items-center justify-between gap-x-5 rounded-sm px-2 py-2 text-start text-sm text-nowrap outline-none",
+               "data-disabled:cursor-not-allowed data-disabled:text-white/50",
+               !props.color || props.color === "default"
+                  ? "data-highlighted:bg-surface-alt text-white/90"
+                  : "text-negative-100 data-highlighted:bg-negative-100/10",
+            )}
+         >
+            <span className="flex w-full items-center justify-between gap-x-3">
+               <span className="truncate">{props.label}</span>
+               <span className="flex items-center gap-x-1 text-white/70">
+                  {props.endSlot}
+                  <IconMingcuteRightLine className="size-5 text-white/80" />
+               </span>
+            </span>
+         </Menu.SubmenuTrigger>
+
+         <SubmenuContent side="right" align="start" sideOffset={12} alignOffset={-8}>
+            {props.children}
+         </SubmenuContent>
+      </Menu.SubmenuRoot>
+   );
+}
+
+function Divider(props: { className?: string }) {
+   return <BaseContextMenu.Separator className={clsx("bg-surface mx-1 my-2 h-px shrink-0", props.className)} />;
 }
 
 ContextMenu.Item = Item;
+ContextMenu.Submenu = Submenu;
 ContextMenu.Divider = Divider;
-
-// export function ContextMenu(){
-
-// }
-
-// <ContextMenu>
-//    <ContextMenu.Button>
-//       BUTTON
-//    </ContextMenu.Button>
-//
-//    <ContextMenu.Menu>
-//       <ContextMenu.Item>
-//          ITEM 1
-//       </ContextMenu.Item>
-//
-//       <ContextMenu.Menu>
-//          <ContextMenu.Item>
-//             ITEM 1
-//          </ContextMenu.Item>
-//       </ContextMenu.Menu>
-//    </ContextMenu.Menu>
-// </ContextMenu>

@@ -1,5 +1,5 @@
 import HuginnButton from "@components/button/HuginnButton";
-import HuginnDropdown from "@components/dropdown/HuginnDropdown";
+import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnLabel from "@components/HuginnLabel";
 import HuginnInput from "@components/input/HuginnInput";
 import { type ConnectionStatus, useConnectionStatus } from "@hooks/useConnectionStatus";
@@ -10,7 +10,7 @@ import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { type ReactNode, useEffect, useEffectEvent, useRef, useState } from "react";
 
-import type { DropdownItem, HostnamePreset, SettingsTabProps } from "@/types";
+import type { SelectItem, HostnamePreset, SettingsTabProps } from "@/types";
 
 type Inputs = {
    presetName: string;
@@ -21,7 +21,7 @@ type Inputs = {
    externalUrl: string;
 };
 
-const hostnameSources: DropdownItem[] = [
+const hostnameSources: SelectItem[] = [
    {
       text: "Manual",
       value: "manual",
@@ -95,7 +95,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
       if (values.analyticsHostname.endsWith("/")) setValue("analyticsHostname", values.analyticsHostname.slice(0, -1));
    }
 
-   function handleHostnameModeChanged(item: DropdownItem) {
+   function handleHostnameModeChanged(item: SelectItem) {
       setHostnameMode(item.value as "manual" | "external");
    }
 
@@ -360,16 +360,16 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
                      </HuginnInput.Wrapper>
                   </HuginnInput>
                )}
-               <HuginnDropdown onChange={handleHostnameModeChanged} value={hostnameSources.find((x) => x.value === hostnameSource)}>
-                  <HuginnDropdown.Label>Hostname Source</HuginnDropdown.Label>
-                  <HuginnDropdown.List>
-                     <HuginnDropdown.ItemsWrapper className="w-52">
+               <HuginnSelect onChange={handleHostnameModeChanged} selected={hostnameSources.find((x) => x.value === hostnameSource)}>
+                  <HuginnSelect.Label>Hostname Source</HuginnSelect.Label>
+                  <HuginnSelect.List>
+                     <HuginnSelect.ItemsWrapper className="w-52">
                         {hostnameSources.map((x) => (
-                           <HuginnDropdown.Item key={x.value} item={x} />
+                           <HuginnSelect.Item key={x.value} item={x} />
                         ))}
-                     </HuginnDropdown.ItemsWrapper>
-                  </HuginnDropdown.List>
-               </HuginnDropdown>
+                     </HuginnSelect.ItemsWrapper>
+                  </HuginnSelect.List>
+               </HuginnSelect>
                {hostnameSource === "manual" ? (
                   <HostnameInputs values={values} register={register} validateHostnames={validateHostnames} />
                ) : (

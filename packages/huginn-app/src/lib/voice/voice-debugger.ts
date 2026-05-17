@@ -52,7 +52,7 @@ export class VoiceDebugger {
       if (this.environment === "desktop") {
          window.electronAPI.openVoiceDebug();
       } else {
-         this.browserWindow = window.open("/#/voice-debug", "debug", "width=500,height=600");
+         this.browserWindow = window.open("/app/voice-debug", "debug", "width=500,height=600");
          if (!this.browserWindow) {
             throw new Error("Debugger window was not opened");
          }

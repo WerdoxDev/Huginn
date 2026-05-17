@@ -1,7 +1,7 @@
 import { useHover } from "@hooks/useHover";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 import { error, type Snowflake } from "@huginn/shared";
-import { screenShareQualities } from "@lib/constants";
+import { SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useVoiceStore } from "@stores/voiceStore";
@@ -12,7 +12,6 @@ import type { MediaSource, ScreenShareFrameRate, ScreenShareQuality } from "@/ty
 
 import StreamButton from "./button/StreamButton";
 import VoiceControlButton from "./button/VoiceControlButton";
-import { DropdownMenu } from "./dropdown/DropdownMenu";
 import Tooltip from "./tooltip/Tooltip";
 
 export default function VoiceControls(props: {
@@ -58,15 +57,6 @@ export default function VoiceControls(props: {
 
    function onStreamButtonOpenChanged(isOpen: boolean) {
       setForceShow(isOpen);
-   }
-
-   async function onUpdateStream(video?: { quality?: ScreenShareQuality; frameRate?: ScreenShareFrameRate }) {
-      if (video?.quality) {
-         const { width, height } = screenShareQualities.find((x) => x.value === video?.quality)!;
-         await updateStream({ width, height });
-      } else if (video?.frameRate) {
-         await updateStream({ frameRate: video.frameRate });
-      }
    }
 
    function onConnect() {
@@ -127,9 +117,9 @@ export default function VoiceControls(props: {
                         onOpenAudioStream={openAudioStream}
                         onCloseStream={closeStream}
                         onChangeStream={changeStream}
-                        onUpdateStream={onUpdateStream}
+                        onUpdateStream={updateStream}
                         onOpenChanged={onStreamButtonOpenChanged}
-                        anchor={{ placement: "top", gap: 12 }}
+                        // menu={{ side: "top", align: "center", sideOffset: 12 }}
                      >
                         <VoiceControlButton
                            className={clsx(
@@ -141,16 +131,15 @@ export default function VoiceControls(props: {
                            isActive={voiceState.isAudioStreaming || voiceState.isScreenSharing}
                            tooltip={voiceState.isAudioStreaming || voiceState.isScreenSharing ? "End Stream" : "Start Stream"}
                            onClick={voiceState.isAudioStreaming || voiceState.isScreenSharing ? closeStream : undefined}
-                           asChild={!voiceState.isAudioStreaming && !voiceState.isScreenSharing}
                         >
                            {voiceState.isAudioStreaming || voiceState.isScreenSharing ? (
                               <IconMingcuteCloseFill className="size-6" />
                            ) : (
-                              <DropdownMenu.Button>
+                              <div className="flex items-center gap-x-1">
                                  <IconMingcuteMonitorFill className="size-5 shrink-0" />
                                  <div className="text-sm text-white/50">/</div>
                                  <IconMingcuteVolumeFill className="size-5 shrink-0" />
-                              </DropdownMenu.Button>
+                              </div>
                            )}
                         </VoiceControlButton>
                      </StreamButton>

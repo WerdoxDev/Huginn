@@ -1,7 +1,7 @@
 import type { ProcessInfo } from "native-addon";
 
 import LoadingButton from "@components/button/LoadingButton";
-import HuginnDropdown from "@components/dropdown/HuginnDropdown";
+import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnIcon from "@components/HuginnIcon";
 import { ProfileActivity } from "@components/profile/ProfileComponents";
 import Tooltip from "@components/tooltip/Tooltip";
@@ -17,7 +17,7 @@ import { useHuginnWindow } from "@stores/windowStore";
 import moment from "moment";
 import { useEffect, useMemo, useState } from "react";
 
-import type { DropdownItem, SettingsTabProps } from "@/types";
+import type { SelectItem, SettingsTabProps } from "@/types";
 
 import huginnInHuginnUrl from "@/assets/huginn-in-huginn-meme.jpg";
 
@@ -26,7 +26,7 @@ type OpenApplication = ProcessInfo & { displayName?: string; icon?: string };
 export default function SettingsSubmissionTab(_props: SettingsTabProps) {
    const [openApplications, setOpenApplications] = useState<OpenApplication[]>([]);
    const knownApplications = useStorage("known-applications");
-   const [selectedApplication, setSelectedApplication] = useState<DropdownItem>();
+   const [selectedApplication, setSelectedApplication] = useState<SelectItem>();
    const submitMutation = useSubmitKnownApplication();
    const { user } = useThisUser();
    const { thisPresence } = usePresenceStore();
@@ -81,7 +81,7 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
       setOpenApplications(applications);
    }
 
-   function onApplicationChanged(value: DropdownItem) {
+   function onApplicationChanged(value: SelectItem) {
       setSelectedApplication(value);
    }
 
@@ -163,15 +163,15 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
                      <div className="text-text/80 text-sm">
                         Not seeing what you're doing? Try adding it here. And if your application gets verified, we'll show your contribution!
                      </div>
-                     <HuginnDropdown onChange={onApplicationChanged} value={selectedApplication}>
-                        <HuginnDropdown.List className="bg-surface-deep w-full rounded-md!" placeholder="Select an application">
-                           <HuginnDropdown.ItemsWrapper className="w-(--button-width)">
+                     <HuginnSelect onChange={onApplicationChanged} selected={selectedApplication}>
+                        <HuginnSelect.List className="bg-surface-deep w-full rounded-md!" placeholder="Select an application">
+                           <HuginnSelect.ItemsWrapper className="w-(--button-width)">
                               {applicationOptions.map((x) => (
-                                 <HuginnDropdown.Item key={x.value} item={x} />
+                                 <HuginnSelect.Item key={x.value} item={x} />
                               ))}
-                           </HuginnDropdown.ItemsWrapper>
-                        </HuginnDropdown.List>
-                     </HuginnDropdown>
+                           </HuginnSelect.ItemsWrapper>
+                        </HuginnSelect.List>
+                     </HuginnSelect>
                      <LoadingButton
                         isLoading={submitMutation.isPending}
                         onClick={submit}

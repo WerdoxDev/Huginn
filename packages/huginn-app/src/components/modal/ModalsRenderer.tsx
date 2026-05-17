@@ -65,7 +65,7 @@ export default function ModalsRenderer() {
          <BaseModal
             renderChildren={<VerifyEmailModal />}
             modal={verifyEmail}
-            onClose={() => updateModals({ verifyEmail: { isOpen: false, pendingEmail: null, title: "Verify Email", onSuccess: undefined } })}
+            onClose={() => updateModals({ verifyEmail: { isOpen: false, pendingEmail: null, onSuccess: undefined } })}
          />
          {user && (
             <>

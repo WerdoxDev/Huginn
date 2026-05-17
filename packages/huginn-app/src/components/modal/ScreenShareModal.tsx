@@ -1,14 +1,14 @@
+import { Accordion } from "@base-ui/react";
 import LoadingButton from "@components/button/LoadingButton";
 import DisplayPreview from "@components/DisplayPreview";
-import HuginnDropdown from "@components/dropdown/HuginnDropdown";
-import HuginnCheckbox from "@components/HuginnCheckbox";
+import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnTab from "@components/HuginnTab";
-import HuginnRange from "@components/input/HuginnRange";
+import HuginnCheckbox from "@components/HuginnToggle";
+import HuginnSlider from "@components/input/HuginnSlider";
 import LoadingIcon from "@components/LoadingIcon";
-import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
 import { useMediaSources } from "@hooks/voice/useMediaSources";
 import { CONSTANTS } from "@huginn/shared";
-import { screenShareFrameRates, screenShareQualities } from "@lib/constants";
+import { SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import { useClient } from "@stores/clientStore";
 import { useDevice } from "@stores/deviceStore";
 import { useModals } from "@stores/modalsStore";
@@ -16,7 +16,7 @@ import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, useTransition } from "react";
 
-import type { DisplaySource, DropdownItem } from "@/types";
+import type { DisplaySource, SelectItem } from "@/types";
 
 import HuginnDialogPanel from "./HuginnDialogPanel";
 
@@ -27,11 +27,11 @@ import HuginnDialogPanel from "./HuginnDialogPanel";
 //    { text: "Ultra (1440p)", value: "ultra" },
 // ];
 
-const qualityOptions: DropdownItem[] = screenShareQualities.map((x) => ({
+const qualityOptions: SelectItem[] = SCREEN_SHARE_QUALITIES.map((x) => ({
    text: `${x.name} ${x.height}p`,
    value: x.value,
 }));
-const frameRateOptions: DropdownItem[] = screenShareFrameRates.map((x) => ({
+const frameRateOptions: SelectItem[] = SCREEN_SHARE_FRAME_RATES.map((x) => ({
    text: `${x} fps`,
    value: x.toString(),
 }));
@@ -73,29 +73,29 @@ export default function ScreenShareModal() {
    const settings = useStorage("settings");
    const { setValue } = useStorageStore();
 
-   const inputDeviceOptions = useMemo<DropdownItem[]>(() => inputDevices?.map((x) => ({ text: x.label, value: x.deviceId })) ?? [], [inputDevices]);
+   const inputDeviceOptions = useMemo<SelectItem[]>(() => inputDevices?.map((x) => ({ text: x.label, value: x.deviceId })) ?? [], [inputDevices]);
 
-   const [selectedQuality, setSelectedQuality] = useState<DropdownItem>(
+   const [selectedQuality, setSelectedQuality] = useState<SelectItem>(
       qualityOptions.find((x) =>
          videoProducer?.trackSettings
-            ? screenShareQualities.find((y) => videoProducer.trackSettings?.height === y.height)?.value === x.value
+            ? SCREEN_SHARE_QUALITIES.find((y) => videoProducer.trackSettings?.height === y.height)?.value === x.value
             : x.value === settings.screenShareQuality,
       ) ?? qualityOptions[0],
    );
-   const [selectedFramerate, setSelectedFramerate] = useState<DropdownItem>(
+   const [selectedFramerate, setSelectedFramerate] = useState<SelectItem>(
       frameRateOptions.find((x) =>
          videoProducer?.trackSettings
-            ? screenShareFrameRates.find((y) => videoProducer.trackSettings?.frameRate === y) === Number(x.value)
+            ? SCREEN_SHARE_FRAME_RATES.find((y) => videoProducer.trackSettings?.frameRate === y) === Number(x.value)
             : x.value === settings.screenShareFramerate,
       ) ?? frameRateOptions[0],
    );
-   const [selectedInput, setSelectedInput] = useState<DropdownItem>(inputDeviceOptions[0]);
+   const [selectedInput, setSelectedInput] = useState<SelectItem>(inputDeviceOptions[0]);
    const [maxVideoBitrate, setMaxVideoBitrate] = useState<number>(videoProducer?.maxBitrate ?? settings.screenShareVideoBitrate);
    const [maxAudioBitrate, setMaxAudioBitrate] = useState<number>(audioProducer?.maxBitrate ?? settings.screenShareAudioBitrate);
    const [isAudioEnabled, setIsAudioEnabled] = useState(settings.screenShareAudio);
    const [isSimulcastEnabled, setIsSimulcastEnabled] = useState(settings.screenShareSimulcast);
 
-   const [tabIndex, setTabIndex] = useState(0);
+   const [activeTab, setActiveTab] = useState("screens");
    const [_screenSharePending, startTransition] = useTransition();
 
    const screens = useMemo(() => data?.filter((x) => x.id.includes("screen")), [data]);
@@ -133,7 +133,7 @@ export default function ScreenShareModal() {
       }
 
       const frameRate = Number(selectedFramerate?.value);
-      const { width, height } = screenShareQualities.find((x) => x.value === selectedQuality.value)!;
+      const { width, height } = SCREEN_SHARE_QUALITIES.find((x) => x.value === selectedQuality.value)!;
 
       startTransition(async () => {
          close();
@@ -187,17 +187,17 @@ export default function ScreenShareModal() {
    return (
       <HuginnDialogPanel className="flex h-full max-h-160 w-full max-w-3xl select-none">
          <div className="mt-5 flex w-full flex-col gap-y-3 overflow-hidden">
-            <HuginnTab className="flex h-full flex-col" onChange={setTabIndex} selectedIndex={tabIndex}>
+            <HuginnTab className="flex h-full flex-col" onChange={setActiveTab}>
                <HuginnTab.TabList className="mx-5" tabClassName="w-full py-1">
-                  <HuginnTab.Tab>
+                  <HuginnTab.Tab value="screens">
                      <IconMingcuteMonitorFill className="size-5" />
                      <div>Screens</div>
                   </HuginnTab.Tab>
-                  <HuginnTab.Tab>
+                  <HuginnTab.Tab value="applications">
                      <IconMingcuteWebFill className="size-5" />
                      <div>Applications</div>
                   </HuginnTab.Tab>
-                  <HuginnTab.Tab>
+                  <HuginnTab.Tab value="devices">
                      <IconMingcuteVideoCamera2Fill className="size-5" />
                      <div>Devices</div>
                   </HuginnTab.Tab>
@@ -212,17 +212,17 @@ export default function ScreenShareModal() {
                      </div>
                   ) : (
                      <>
-                        <HuginnTab.TabPanel>
+                        <HuginnTab.TabPanel value="screens">
                            {screens?.map((x) => (
                               <DisplayPreview key={x.id} source={x} onSelect={start} />
                            ))}
                         </HuginnTab.TabPanel>
-                        <HuginnTab.TabPanel>
+                        <HuginnTab.TabPanel value="applications">
                            {applications?.map((x) => (
                               <DisplayPreview key={x.id} source={x} onSelect={start} />
                            ))}
                         </HuginnTab.TabPanel>
-                        <HuginnTab.TabPanel>
+                        <HuginnTab.TabPanel value="devices">
                            {cameraDevices?.map((x) => (
                               <DisplayPreview key={x.deviceId} deviceInfo={x} onSelect={start} />
                            ))}
@@ -232,7 +232,7 @@ export default function ScreenShareModal() {
                </HuginnTab.TabPanels>
             </HuginnTab>
          </div>
-         {tabIndex !== 2 && (
+         {activeTab !== "devices" && (
             <LoadingButton
                className="group absolute bottom-2 left-2 flex size-10 items-center justify-center"
                color="primary"
@@ -243,80 +243,84 @@ export default function ScreenShareModal() {
             </LoadingButton>
          )}
          <div className="bg-surface-alt flex shrink-0 flex-col gap-y-5 p-5">
-            <HuginnDropdown value={selectedQuality} onChange={setSelectedQuality}>
-               <HuginnDropdown.Label>Quality</HuginnDropdown.Label>
-               <HuginnDropdown.List className="bg-surface! w-40!">
-                  <HuginnDropdown.ItemsWrapper anchor="bottom start">
+            <HuginnSelect selected={selectedQuality} onChange={setSelectedQuality}>
+               <HuginnSelect.Label>Quality</HuginnSelect.Label>
+               <HuginnSelect.List className="bg-surface! w-40!">
+                  <HuginnSelect.ItemsWrapper>
                      {qualityOptions.map((x) => (
-                        <HuginnDropdown.Item key={x.value} item={x} />
+                        <HuginnSelect.Item key={x.value} item={x} />
                      ))}
-                  </HuginnDropdown.ItemsWrapper>
-               </HuginnDropdown.List>
-            </HuginnDropdown>
-            <HuginnDropdown value={selectedFramerate} onChange={setSelectedFramerate}>
-               <HuginnDropdown.Label>Frame Rate</HuginnDropdown.Label>
-               <HuginnDropdown.List className="bg-surface! w-30!">
-                  <HuginnDropdown.ItemsWrapper anchor="bottom start">
+                  </HuginnSelect.ItemsWrapper>
+               </HuginnSelect.List>
+            </HuginnSelect>
+            <HuginnSelect selected={selectedFramerate} onChange={setSelectedFramerate}>
+               <HuginnSelect.Label>Frame Rate</HuginnSelect.Label>
+               <HuginnSelect.List className="bg-surface! w-30!">
+                  <HuginnSelect.ItemsWrapper>
                      {frameRateOptions.map((x) => (
-                        <HuginnDropdown.Item key={x.value} item={x} />
+                        <HuginnSelect.Item key={x.value} item={x} />
                      ))}
-                  </HuginnDropdown.ItemsWrapper>
-               </HuginnDropdown.List>
-            </HuginnDropdown>
+                  </HuginnSelect.ItemsWrapper>
+               </HuginnSelect.List>
+            </HuginnSelect>
 
             <HuginnCheckbox checked={isAudioEnabled} onChange={setIsAudioEnabled}>
                <HuginnCheckbox.Toggle>Share Audio</HuginnCheckbox.Toggle>
             </HuginnCheckbox>
 
-            {isAudioEnabled && tabIndex === 2 && (
-               <HuginnDropdown className="w-full max-w-xs" onChange={setSelectedInput} value={selectedInput}>
-                  <HuginnDropdown.Label>Input Device</HuginnDropdown.Label>
-                  <HuginnDropdown.List className="bg-surface! w-40!">
-                     <HuginnDropdown.ItemsWrapper className="w-80">
+            {isAudioEnabled && activeTab === "devices" && (
+               <HuginnSelect className="w-full max-w-xs" onChange={setSelectedInput} selected={selectedInput}>
+                  <HuginnSelect.Label>Input Device</HuginnSelect.Label>
+                  <HuginnSelect.List className="bg-surface! w-40!">
+                     <HuginnSelect.ItemsWrapper className="w-80">
                         {inputDeviceOptions?.map((x) => (
-                           <HuginnDropdown.Item key={x.value} item={x} />
+                           <HuginnSelect.Item key={x.value} item={x} />
                         ))}
-                     </HuginnDropdown.ItemsWrapper>
-                  </HuginnDropdown.List>
-               </HuginnDropdown>
+                     </HuginnSelect.ItemsWrapper>
+                  </HuginnSelect.List>
+               </HuginnSelect>
             )}
             <div className="bg-surface h-px w-full px-0" />
-            <Disclosure>
-               <DisclosureButton className="group hover:text-primary-500 flex cursor-pointer items-center text-white transition-colors">
-                  <span>Advanced</span>
-                  <IconMingcuteDownFill className="ml-auto h-4 w-4 shrink-0 transition-transform group-data-open:rotate-180" />
-               </DisclosureButton>
-               <DisclosurePanel transition className="flex origin-top flex-col gap-y-3 transition data-closed:-translate-y-5 data-closed:opacity-0">
-                  {modal.type === "create" && (
-                     <HuginnCheckbox checked={isSimulcastEnabled} onChange={setIsSimulcastEnabled} className="flex-col">
-                        <HuginnCheckbox.Toggle>Use Simulcast</HuginnCheckbox.Toggle>
-                        <div className="mt-1 max-w-40 text-xs text-white/40">Requires more bandwidth. Provides better experience for others</div>
-                     </HuginnCheckbox>
-                  )}
-                  <HuginnRange
-                     defaultValue={maxVideoBitrate}
-                     onChange={setMaxVideoBitrate}
-                     maxValue={CONSTANTS.MAX_VIDEO_BITRATE}
-                     minValue={CONSTANTS.MIN_VIDEO_BITRATE}
-                     step={100000}
-                     getTooltipText={(v) => `${v / 1000000} mbps`}
-                  >
-                     <HuginnRange.Label>Video Bitrate: {maxVideoBitrate / 1000000} mbps</HuginnRange.Label>
-                     <HuginnRange.Input backgroundClassName="bg-surface-deep" />
-                  </HuginnRange>
-                  <HuginnRange
-                     defaultValue={maxAudioBitrate}
-                     onChange={setMaxAudioBitrate}
-                     maxValue={CONSTANTS.MAX_AUDIO_BITRATE}
-                     minValue={CONSTANTS.MIN_AUDIO_BITRATE}
-                     step={10000}
-                     getTooltipText={(v) => `${v / 1000000} mbps`}
-                  >
-                     <HuginnRange.Label>Audio Bitrate: {maxAudioBitrate / 1000000} mbps</HuginnRange.Label>
-                     <HuginnRange.Input backgroundClassName="bg-surface-deep" />
-                  </HuginnRange>
-               </DisclosurePanel>
-            </Disclosure>
+            <Accordion.Root>
+               <Accordion.Item className="flex flex-col gap-y-2.5">
+                  <Accordion.Header>
+                     <Accordion.Trigger className="group hover:text-primary-500 flex w-full cursor-pointer items-center text-white transition-colors">
+                        <span>Advanced</span>
+                        <IconMingcuteDownFill className="ml-auto h-4 w-4 shrink-0 transition-transform group-data-panel-open:rotate-180" />
+                     </Accordion.Trigger>
+                  </Accordion.Header>
+                  <Accordion.Panel className="flex origin-top flex-col gap-y-5 transition duration-200 data-ending-style:-translate-y-5 data-ending-style:opacity-0 data-starting-style:-translate-y-5 data-starting-style:opacity-0">
+                     {modal.type === "create" && (
+                        <HuginnCheckbox checked={isSimulcastEnabled} onChange={setIsSimulcastEnabled} className="flex-col">
+                           <HuginnCheckbox.Toggle>Use Simulcast</HuginnCheckbox.Toggle>
+                           <div className="mt-1 max-w-40 text-xs text-white/40">Requires more bandwidth. Provides better experience for others</div>
+                        </HuginnCheckbox>
+                     )}
+                     <HuginnSlider
+                        defaultValue={maxVideoBitrate}
+                        onChange={setMaxVideoBitrate}
+                        maxValue={CONSTANTS.MAX_VIDEO_BITRATE}
+                        minValue={CONSTANTS.MIN_VIDEO_BITRATE}
+                        step={100000}
+                        getTooltipText={(v) => `${v / 1000000} mbps`}
+                     >
+                        <HuginnSlider.Label>Video Bitrate: {maxVideoBitrate / 1000000} mbps</HuginnSlider.Label>
+                        <HuginnSlider.Input backgroundClassName="bg-surface-deep" />
+                     </HuginnSlider>
+                     <HuginnSlider
+                        defaultValue={maxAudioBitrate}
+                        onChange={setMaxAudioBitrate}
+                        maxValue={CONSTANTS.MAX_AUDIO_BITRATE}
+                        minValue={CONSTANTS.MIN_AUDIO_BITRATE}
+                        step={10000}
+                        getTooltipText={(v) => `${v / 1000000} mbps`}
+                     >
+                        <HuginnSlider.Label>Audio Bitrate: {maxAudioBitrate / 1000000} mbps</HuginnSlider.Label>
+                        <HuginnSlider.Input backgroundClassName="bg-surface-deep" />
+                     </HuginnSlider>
+                  </Accordion.Panel>
+               </Accordion.Item>
+            </Accordion.Root>
          </div>
       </HuginnDialogPanel>
    );

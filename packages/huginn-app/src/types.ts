@@ -1,4 +1,3 @@
-import type { Placement } from "@floating-ui/react";
 import type { AddChannelRecipientMutationVars } from "@hooks/mutations/useAddChannelRecipient";
 import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMChannel";
 import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
@@ -20,7 +19,7 @@ import type {
    Snowflake,
    UserPresence,
 } from "@huginn/shared";
-import type { screenShareFrameRates, screenShareQualities } from "@lib/constants";
+import type { SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import type { ChangeEvent, FocusEvent, HTMLInputTypeAttribute, ReactNode, RefCallback, RefObject } from "react";
 import type { FieldPath, FieldValues } from "react-hook-form";
 
@@ -80,11 +79,11 @@ export type UpdaterProgress = {
    contentLength: number;
 };
 
-export type SettingsTab = {
+export type SettingsTabType = {
    name: string;
    text: string;
    auth?: boolean;
-   children?: Omit<SettingsTab, "children">[];
+   children?: Omit<SettingsTabType, "children">[];
    icon?: ReactNode;
    component?: (props: SettingsTabProps) => React.JSX.Element | undefined;
 };
@@ -93,7 +92,7 @@ export type SettingsTabProps = {
    onChange?: (value: Partial<AppSettings>) => void;
 };
 
-export type DropdownItem = {
+export type SelectItem = {
    text: string;
    icon?: ReactNode;
    value: string;
@@ -147,14 +146,6 @@ export type ColorTheme = {
 
 export type ThemeType = "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal" | "scarlet";
 
-export type TooltipOptions = {
-   initialOpen?: boolean;
-   hideOnMobile?: boolean;
-   placement?: Placement;
-   open?: boolean;
-   onOpenChange?: (open: boolean) => void;
-};
-
 export type ContextMenuProps = {
    label?: string;
    renderChildren?: ReactNode;
@@ -174,17 +165,6 @@ export type ContextMenuItemProps = {
    disabled?: boolean;
    preventClose?: boolean;
    color?: "default" | "negative";
-};
-
-export type DropdownMenuProps = {
-   label: string;
-   nested?: boolean;
-   children?: ReactNode;
-};
-
-export type DropdownMenuItemProps = {
-   label: string;
-   disabled?: boolean;
 };
 
 export type ContextMenuRelationship = { user: AppUser; type: RelationshipType };
@@ -303,8 +283,6 @@ export type AttachmentType = {
 export type SliderProps = {
    currentPercent: number;
    bufferedPercent?: number;
-   onHoverChanged?: (isHovering: boolean) => void;
-   onDragChanged?: (isDragging: boolean) => void;
    onChange: (percent: number) => void;
    orientation?: "horizontal" | "vertical";
 };
@@ -589,8 +567,8 @@ export type VoiceDebugData = {
 
 export type Environment = "desktop" | "browser";
 
-export type ScreenShareQuality = (typeof screenShareQualities)[number]["value"];
-export type ScreenShareFrameRate = (typeof screenShareFrameRates)[number];
+export type ScreenShareQuality = (typeof SCREEN_SHARE_QUALITIES)[number]["value"];
+export type ScreenShareFrameRate = (typeof SCREEN_SHARE_FRAME_RATES)[number];
 
 export type UseHuginnFormSetCustomMessage<TFieldValues extends FieldValues> = <TFieldName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>>(
    name: TFieldName,

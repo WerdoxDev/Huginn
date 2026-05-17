@@ -1,5 +1,5 @@
+import { Tabs } from "@base-ui/react";
 import AddFriendInput from "@components/input/AddFriendInput";
-import { TabPanel } from "@headlessui/react";
 import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useEffect, useState } from "react";
@@ -29,7 +29,7 @@ export default function AddFriendTab() {
    }
 
    return (
-      <TabPanel>
+      <Tabs.Panel value="add-friend">
          <div className="text-text text-lg font-medium uppercase">Add Friend</div>
          <div className="text-text/70 mt-1 text-sm">You can add your friends using their Huginn username</div>
          <form onSubmit={handleSubmit(onSubmit)}>
@@ -41,6 +41,6 @@ export default function AddFriendTab() {
                disabled={disabled}
             />
          </form>
-      </TabPanel>
+      </Tabs.Panel>
    );
 }

@@ -1,12 +1,10 @@
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
-import ModalCloseButton from "@components/button/ModalCloseButton";
 import DialogActions from "@components/DialogActions";
 import DialogBody from "@components/DialogBody";
 import HuginnDialogTitle from "@components/HuginnDialogTitle";
 import ImageSelector from "@components/ImageSelector";
 import HuginnInput from "@components/input/HuginnInput";
-import { Description, DialogTitle } from "@headlessui/react";
 import { usePatchDMChannel } from "@hooks/mutations/usePatchDMChannel";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { listenEvent } from "@lib/event-handler";

@@ -1,8 +1,8 @@
+import { Dialog } from "@base-ui/react";
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import DialogActions from "@components/DialogActions";
 import DialogBody from "@components/DialogBody";
-import { Description, DialogTitle } from "@headlessui/react";
 import { useModals } from "@stores/modalsStore";
 import { animate, createScope } from "animejs";
 import clsx from "clsx";
@@ -110,7 +110,7 @@ export default function InfoModal() {
    return (
       <HuginnDialogPanel className={clsx("lg:max-w-sm", borderColor)} style={{ boxShadow: glowShadow }}>
          <DialogBody className="gap-y-0!">
-            <DialogTitle as="div" className="flex w-full flex-col items-center justify-center gap-y-3">
+            <Dialog.Title className="flex w-full flex-col items-center justify-center gap-y-3" render={<div></div>}>
                <div ref={iconRef} style={{ opacity: 0 }} className={clsx("rounded-full p-2.5", backgroundColor)}>
                   <div className={clsx("rounded-full p-2.5", innerColor)}>
                      {modal.status === "error" && <IconMingcuteAlertFill className="size-7 text-white" />}
@@ -122,24 +122,27 @@ export default function InfoModal() {
                <div ref={titleRef} style={{ opacity: 0 }} className="text-center text-lg font-semibold text-white">
                   {modal.title}
                </div>
-            </DialogTitle>
+            </Dialog.Title>
 
-            <Description className="mt-1" as="div">
-               <div ref={descRef} style={{ opacity: 0 }} className="text-text/80 text-center">
-                  {isPlainBodyText ? <div>{modal.text}</div> : modal.text}
-                  {/* {errorCode && (
+            <Dialog.Description
+               className="mt-1"
+               render={() => (
+                  <div ref={descRef} style={{ opacity: 0 }} className="text-text/80 text-center">
+                     {isPlainBodyText ? <div>{modal.text}</div> : modal.text}
+                     {/* {errorCode && (
                      <div className="bg-negative-700/50 border-negative-400 mt-2 inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-sm font-medium text-white/80">
                         {errorCode}
                      </div>
                   )} */}
-                  {errorCode && (
-                     <div className="text-text/60 mt-3.5 text-center text-xs">
-                        <span className="uppercase">reason:</span>
-                        <span className="ml-1 font-semibold uppercase">{errorCode}</span>
-                     </div>
-                  )}
-               </div>
-            </Description>
+                     {errorCode && (
+                        <div className="text-text/60 mt-3.5 text-center text-xs">
+                           <span className="uppercase">reason:</span>
+                           <span className="ml-1 font-semibold uppercase">{errorCode}</span>
+                        </div>
+                     )}
+                  </div>
+               )}
+            ></Dialog.Description>
          </DialogBody>
 
          <DialogActions>

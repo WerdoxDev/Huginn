@@ -3,8 +3,9 @@ import type { VoiceStatus } from "@huginn/api";
 import StreamButton from "@components/button/StreamButton";
 import UserActionButton from "@components/button/UserActionButton";
 import VoiceControlButton from "@components/button/VoiceControlButton";
-import { DropdownMenu } from "@components/dropdown/DropdownMenu";
+import { HuginnMenu } from "@components/dropdown/HuginnMenu";
 import { useChannel } from "@hooks/api-hooks/channelHooks";
+import { useMediaSources } from "@hooks/voice/useMediaSources";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 import { useClient, useClientStore } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
@@ -25,15 +26,17 @@ const statuses: Record<VoiceStatus, { text: string; color?: string }> = {
 };
 
 export default function VoiceStatus() {
-   const { voiceConnection } = useVoiceStore();
+   const { voiceConnection, voiceState } = useVoiceStore();
    const { voiceStatus } = useClientStore();
-   const { updateStream: changeStream, openCamera, closeStream, openAudioStream, openScreenShare, closeCamera } = useVoiceUtils();
+   const { changeStream, updateStream, openCamera, closeStream, openAudioStream, openScreenShare, closeCamera } = useVoiceUtils();
    const client = useClient();
    const { user } = useThisUser();
    const channel = useChannel(voiceConnection.channelId ?? undefined);
    const [rtt, setRtt] = useState(0);
    const posthog = usePostHog();
-   const { voiceState } = useVoiceStore();
+
+   const mediaSources = useMediaSources();
+   const videoSource = mediaSources.find((x) => x.kind === "stream_video" && x.type === "producing");
 
    const latencyColor = useMemo(() => {
       const minPing = 100;
@@ -99,7 +102,12 @@ export default function VoiceStatus() {
                         {statuses[voiceStatus ?? "idle"].text}
                      </div>
                   </div>
-                  <Link preload="intent" to={`/channels/@me/${voiceConnection.channelId}`} className="text-text/70 ml-7 text-xs hover:underline">
+                  <Link
+                     preload="intent"
+                     to="/channels/@me/$channelId"
+                     params={{ channelId: voiceConnection.channelId }}
+                     className="text-text/70 ml-7 text-xs hover:underline"
+                  >
                      {channel?.name}
                   </Link>
                </div>
@@ -115,7 +123,10 @@ export default function VoiceStatus() {
             <div className="flex w-full gap-x-2">
                <StreamButton
                   voiceState={voiceState}
-                  anchor={{ placement: "top", gap: 4 }}
+                  videoSource={videoSource}
+                  onUpdateStream={updateStream}
+                  // onUpdateStream={}
+                  // menu={{ side: "top", align: "center", sideOffset: 4 }}
                   onChangeStream={changeStream}
                   onCloseStream={closeStream}
                   onOpenAudioStream={openAudioStream}
@@ -129,15 +140,15 @@ export default function VoiceStatus() {
                      activeHoverColor="primary"
                      hoverColor="surface-deep"
                      isActive={voiceState.isAudioStreaming || voiceState.isScreenSharing}
-                     asChild
                      tooltip={voiceState.isAudioStreaming || voiceState.isScreenSharing ? "Stream Options" : "Start Stream"}
+                     asChild
                      className={clsx("flex h-9 w-full items-center justify-center rounded-md px-0!")}
                   >
-                     <DropdownMenu.Button>
+                     <HuginnMenu.Trigger className="flex items-center gap-x-1">
                         <IconMingcuteMonitorFill className="size-5 shrink-0" />
                         <div className="text-sm text-white/50">/</div>
                         <IconMingcuteVolumeFill className="size-5 shrink-0" />
-                     </DropdownMenu.Button>
+                     </HuginnMenu.Trigger>
                   </VoiceControlButton>
                </StreamButton>
                <VoiceControlButton
