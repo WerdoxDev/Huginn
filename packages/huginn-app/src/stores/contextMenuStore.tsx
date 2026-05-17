@@ -41,7 +41,7 @@ export function useContextMenu<T extends keyof ContextMenuTypes>(type: T) {
    }
 
    function close() {
-      store.setState({ [type]: { isOpen: false, contextData: undefined } });
+      store.setState((state) => ({ ...state, [type]: { ...state[type], isOpen: false } }));
    }
 
    return {

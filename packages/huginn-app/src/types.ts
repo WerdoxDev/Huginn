@@ -80,11 +80,11 @@ export type UpdaterProgress = {
    contentLength: number;
 };
 
-export type SettingsTab = {
+export type SettingsTabType = {
    name: string;
    text: string;
    auth?: boolean;
-   children?: Omit<SettingsTab, "children">[];
+   children?: Omit<SettingsTabType, "children">[];
    icon?: ReactNode;
    component?: (props: SettingsTabProps) => React.JSX.Element | undefined;
 };

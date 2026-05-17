@@ -1,6 +1,6 @@
 import { Dialog } from "@base-ui/react";
 import ModalCloseButton from "@components/button/ModalCloseButton";
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@components/Tab";
+import SettingsTab from "@components/SettingsTab";
 import { Transition } from "@headlessui/react";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useThrottler } from "@hooks/useThrottler";
@@ -11,7 +11,7 @@ import clsx from "clsx";
 // import { usePostHog } from "posthog-js/react";
 import { Fragment, memo, useEffect, useMemo, useState } from "react";
 
-import type { AppSettings, SettingsTab, SettingsTabProps } from "@/types";
+import type { AppSettings, SettingsTabType, SettingsTabProps } from "@/types";
 
 import HuginnDialogPanel from "./HuginnDialogPanel";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
@@ -22,7 +22,7 @@ import SettingsSubmissionTab from "./settings/SettingsSubmissionTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
 import SettingsVoiceTab from "./settings/SettingsVoiceTab";
 
-const tabs: SettingsTab[] = [
+const tabs: SettingsTabType[] = [
    {
       name: "profile",
       text: "Profile",
@@ -154,7 +154,7 @@ export default function SettingsModal() {
    return (
       // <div className="flex h-full w-full items-center justify-center pt-20 lg:px-10 lg:pt-0">
       <HuginnDialogPanel className="h-full w-full max-w-6xl lg:mx-10">
-         <TabGroup
+         <SettingsTab
             className="flex h-full w-full"
             selectedIndex={selectedIndex}
             displayIndex={displayIndex !== null ? displayIndex : undefined}
@@ -162,10 +162,10 @@ export default function SettingsModal() {
          >
             {/* Mobile: Show tabs or content based on state */}
             <div className={clsx("bg-surface-alt h-full rounded-l-xl lg:block", "block w-full rounded-r-xl lg:w-auto lg:rounded-r-none")}>
-               <TabList className="flex h-full flex-col select-none">
+               <SettingsTab.List className="flex h-full flex-col select-none">
                   <Dialog.Title className="text-text p-5 text-2xl font-bold">Settings</Dialog.Title>
                   <SettingsTabs />
-               </TabList>
+               </SettingsTab.List>
             </div>
 
             {/* Mobile: Content with back button */}
@@ -186,7 +186,7 @@ export default function SettingsModal() {
                   <SettingsPanels currentTabText={currentTabText} onChange={handleSettingsChanged} />
                </div>
             </Transition>
-         </TabGroup>
+         </SettingsTab>
 
          <ModalCloseButton
             onClick={() => {
@@ -214,7 +214,7 @@ function SettingsTabs() {
                   <div className="bg-surface ml-2.5 flex flex-col gap-y-1 rounded-lg p-2.5 lg:bg-transparent lg:p-0">
                      {tab.children?.map((child) => (
                         <div className="w-full" key={child.name}>
-                           <Tab>
+                           <SettingsTab.Tab>
                               {({ selected }) => (
                                  <button
                                     type="button"
@@ -230,7 +230,7 @@ function SettingsTabs() {
                                     <IconMingcuteRightFill className="ml-auto lg:hidden" />
                                  </button>
                               )}
-                           </Tab>
+                           </SettingsTab.Tab>
                         </div>
                      ))}
                   </div>
@@ -252,10 +252,10 @@ function SettingsPanels(props: { currentTabText: string | null; onChange: (value
 
    return (
       props.currentTabText && (
-         <TabPanels className="flex w-full flex-col overflow-hidden">
+         <SettingsTab.Panels className="flex w-full flex-col overflow-hidden">
             <div className="text-text mt-3 ml-3 shrink-0 text-xl select-none lg:mt-5 lg:ml-5">{props.currentTabText}</div>
             {flatTabs.map((tab) => (
-               <TabPanel
+               <SettingsTab.Panel
                   key={tab?.name}
                   className="scroll-surface-deep mt-3 h-full overflow-x-visible overflow-y-scroll pb-3 pl-3 lg:mt-5 lg:pr-1.5 lg:pb-5 lg:pl-5"
                >
@@ -266,9 +266,9 @@ function SettingsPanels(props: { currentTabText: string | null; onChange: (value
                      <span className="text-text/50 text-base italic">{tab?.name} (Soon...)</span>
                   )}
                   {/* </div> */}
-               </TabPanel>
+               </SettingsTab.Panel>
             ))}
-         </TabPanels>
+         </SettingsTab.Panels>
       )
    );
 }

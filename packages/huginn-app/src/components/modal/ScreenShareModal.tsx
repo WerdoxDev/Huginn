@@ -95,7 +95,7 @@ export default function ScreenShareModal() {
    const [isAudioEnabled, setIsAudioEnabled] = useState(settings.screenShareAudio);
    const [isSimulcastEnabled, setIsSimulcastEnabled] = useState(settings.screenShareSimulcast);
 
-   const [tabIndex, setTabIndex] = useState(0);
+   const [activeTab, setActiveTab] = useState("screens");
    const [_screenSharePending, startTransition] = useTransition();
 
    const screens = useMemo(() => data?.filter((x) => x.id.includes("screen")), [data]);
@@ -187,17 +187,17 @@ export default function ScreenShareModal() {
    return (
       <HuginnDialogPanel className="flex h-full max-h-160 w-full max-w-3xl select-none">
          <div className="mt-5 flex w-full flex-col gap-y-3 overflow-hidden">
-            <HuginnTab className="flex h-full flex-col" onChange={setTabIndex} selectedIndex={tabIndex}>
+            <HuginnTab className="flex h-full flex-col" onChange={setActiveTab}>
                <HuginnTab.TabList className="mx-5" tabClassName="w-full py-1">
-                  <HuginnTab.Tab>
+                  <HuginnTab.Tab value="screens">
                      <IconMingcuteMonitorFill className="size-5" />
                      <div>Screens</div>
                   </HuginnTab.Tab>
-                  <HuginnTab.Tab>
+                  <HuginnTab.Tab value="applications">
                      <IconMingcuteWebFill className="size-5" />
                      <div>Applications</div>
                   </HuginnTab.Tab>
-                  <HuginnTab.Tab>
+                  <HuginnTab.Tab value="devices">
                      <IconMingcuteVideoCamera2Fill className="size-5" />
                      <div>Devices</div>
                   </HuginnTab.Tab>
@@ -212,17 +212,17 @@ export default function ScreenShareModal() {
                      </div>
                   ) : (
                      <>
-                        <HuginnTab.TabPanel>
+                        <HuginnTab.TabPanel value="screens">
                            {screens?.map((x) => (
                               <DisplayPreview key={x.id} source={x} onSelect={start} />
                            ))}
                         </HuginnTab.TabPanel>
-                        <HuginnTab.TabPanel>
+                        <HuginnTab.TabPanel value="applications">
                            {applications?.map((x) => (
                               <DisplayPreview key={x.id} source={x} onSelect={start} />
                            ))}
                         </HuginnTab.TabPanel>
-                        <HuginnTab.TabPanel>
+                        <HuginnTab.TabPanel value="devices">
                            {cameraDevices?.map((x) => (
                               <DisplayPreview key={x.deviceId} deviceInfo={x} onSelect={start} />
                            ))}
@@ -232,7 +232,7 @@ export default function ScreenShareModal() {
                </HuginnTab.TabPanels>
             </HuginnTab>
          </div>
-         {tabIndex !== 2 && (
+         {activeTab !== "devices" && (
             <LoadingButton
                className="group absolute bottom-2 left-2 flex size-10 items-center justify-center"
                color="primary"
@@ -268,7 +268,7 @@ export default function ScreenShareModal() {
                <HuginnCheckbox.Toggle>Share Audio</HuginnCheckbox.Toggle>
             </HuginnCheckbox>
 
-            {isAudioEnabled && tabIndex === 2 && (
+            {isAudioEnabled && activeTab === "devices" && (
                <HuginnSelect className="w-full max-w-xs" onChange={setSelectedInput} selected={selectedInput}>
                   <HuginnSelect.Label>Input Device</HuginnSelect.Label>
                   <HuginnSelect.List className="bg-surface! w-40!">

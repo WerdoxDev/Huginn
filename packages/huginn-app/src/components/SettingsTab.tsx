@@ -17,7 +17,7 @@ function useTabContext() {
    return context;
 }
 
-function TabGroup(props: {
+export default function SettingsTab(props: {
    children: ReactNode;
    selectedIndex: number | null;
    displayIndex?: number;
@@ -37,7 +37,7 @@ function TabGroup(props: {
    );
 }
 
-function TabList(props: { children: ReactNode; className?: string }) {
+function List(props: { children: ReactNode; className?: string }) {
    const tabIndexRef = useRef(0);
 
    return (
@@ -51,7 +51,7 @@ function Tab(props: { children: (props: { selected: boolean }) => ReactNode }) {
    const { selectedIndex, onChange } = useTabContext();
 
    const tabIndexRef = useContext(TabIndexContext);
-   if (!tabIndexRef) throw new Error("Tab must be used within TabList");
+   if (!tabIndexRef) throw new Error("Tab must be used within List");
 
    const [currentIndex] = useState(() => tabIndexRef.current++);
    const selected = selectedIndex === currentIndex;
@@ -67,7 +67,7 @@ function Tab(props: { children: (props: { selected: boolean }) => ReactNode }) {
    );
 }
 
-function TabPanels(props: { children: ReactNode; className?: string }) {
+function Panels(props: { children: ReactNode; className?: string }) {
    const panelIndexRef = useRef(0);
 
    return (
@@ -77,11 +77,11 @@ function TabPanels(props: { children: ReactNode; className?: string }) {
    );
 }
 
-function TabPanel(props: { children: ReactNode; className?: string }) {
+function Panel(props: { children: ReactNode; className?: string }) {
    const { selectedIndex, displayIndex } = useTabContext();
 
    const panelIndexRef = useContext(PanelIndexContext);
-   if (!panelIndexRef) throw new Error("TabPanel must be used within TabPanels");
+   if (!panelIndexRef) throw new Error("TabPanel must be used within Panels");
 
    const [currentIndex] = useState(() => panelIndexRef.current++);
 
@@ -90,4 +90,7 @@ function TabPanel(props: { children: ReactNode; className?: string }) {
    }
 }
 
-export { Tab, TabPanel, TabPanels, TabGroup, TabList };
+SettingsTab.Tab = Tab;
+SettingsTab.List = List;
+SettingsTab.Panels = Panels;
+SettingsTab.Panel = Panel;
