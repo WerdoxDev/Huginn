@@ -1,7 +1,7 @@
 import HuginnButton from "@components/button/HuginnButton";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
-import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnTab from "@components/HuginnTab";
+import HuginnCheckbox from "@components/HuginnToggle";
 import HuginnRange from "@components/input/HuginnRange";
 import { clamp, remap } from "@huginn/shared";
 import { AudioLevelChecker } from "@lib/voice/audio-level-checker";
@@ -113,10 +113,6 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
 
    function onInputThresholdChange(value: number) {
       props.onChange?.({ inputThreshold: value - 100 });
-   }
-
-   function onTabChange(_index: number) {
-      stopCameraTest();
    }
 
    function stopCameraTest() {

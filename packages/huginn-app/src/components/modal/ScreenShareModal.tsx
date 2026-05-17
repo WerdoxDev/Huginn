@@ -1,11 +1,11 @@
+import { Accordion } from "@base-ui/react";
 import LoadingButton from "@components/button/LoadingButton";
 import DisplayPreview from "@components/DisplayPreview";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
-import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnTab from "@components/HuginnTab";
+import HuginnCheckbox from "@components/HuginnToggle";
 import HuginnRange from "@components/input/HuginnRange";
 import LoadingIcon from "@components/LoadingIcon";
-import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
 import { useMediaSources } from "@hooks/voice/useMediaSources";
 import { CONSTANTS } from "@huginn/shared";
 import { SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
@@ -281,42 +281,46 @@ export default function ScreenShareModal() {
                </HuginnSelect>
             )}
             <div className="bg-surface h-px w-full px-0" />
-            <Disclosure>
-               <DisclosureButton className="group hover:text-primary-500 flex cursor-pointer items-center text-white transition-colors">
-                  <span>Advanced</span>
-                  <IconMingcuteDownFill className="ml-auto h-4 w-4 shrink-0 transition-transform group-data-open:rotate-180" />
-               </DisclosureButton>
-               <DisclosurePanel transition className="flex origin-top flex-col gap-y-3 transition data-closed:-translate-y-5 data-closed:opacity-0">
-                  {modal.type === "create" && (
-                     <HuginnCheckbox checked={isSimulcastEnabled} onChange={setIsSimulcastEnabled} className="flex-col">
-                        <HuginnCheckbox.Toggle>Use Simulcast</HuginnCheckbox.Toggle>
-                        <div className="mt-1 max-w-40 text-xs text-white/40">Requires more bandwidth. Provides better experience for others</div>
-                     </HuginnCheckbox>
-                  )}
-                  <HuginnRange
-                     defaultValue={maxVideoBitrate}
-                     onChange={setMaxVideoBitrate}
-                     maxValue={CONSTANTS.MAX_VIDEO_BITRATE}
-                     minValue={CONSTANTS.MIN_VIDEO_BITRATE}
-                     step={100000}
-                     getTooltipText={(v) => `${v / 1000000} mbps`}
-                  >
-                     <HuginnRange.Label>Video Bitrate: {maxVideoBitrate / 1000000} mbps</HuginnRange.Label>
-                     <HuginnRange.Input backgroundClassName="bg-surface-deep" />
-                  </HuginnRange>
-                  <HuginnRange
-                     defaultValue={maxAudioBitrate}
-                     onChange={setMaxAudioBitrate}
-                     maxValue={CONSTANTS.MAX_AUDIO_BITRATE}
-                     minValue={CONSTANTS.MIN_AUDIO_BITRATE}
-                     step={10000}
-                     getTooltipText={(v) => `${v / 1000000} mbps`}
-                  >
-                     <HuginnRange.Label>Audio Bitrate: {maxAudioBitrate / 1000000} mbps</HuginnRange.Label>
-                     <HuginnRange.Input backgroundClassName="bg-surface-deep" />
-                  </HuginnRange>
-               </DisclosurePanel>
-            </Disclosure>
+            <Accordion.Root>
+               <Accordion.Item className="flex flex-col gap-y-2.5">
+                  <Accordion.Header>
+                     <Accordion.Trigger className="group hover:text-primary-500 flex w-full cursor-pointer items-center text-white transition-colors">
+                        <span>Advanced</span>
+                        <IconMingcuteDownFill className="ml-auto h-4 w-4 shrink-0 transition-transform group-data-panel-open:rotate-180" />
+                     </Accordion.Trigger>
+                  </Accordion.Header>
+                  <Accordion.Panel className="flex origin-top flex-col gap-y-5 transition duration-200 data-ending-style:-translate-y-5 data-ending-style:opacity-0 data-starting-style:-translate-y-5 data-starting-style:opacity-0">
+                     {modal.type === "create" && (
+                        <HuginnCheckbox checked={isSimulcastEnabled} onChange={setIsSimulcastEnabled} className="flex-col">
+                           <HuginnCheckbox.Toggle>Use Simulcast</HuginnCheckbox.Toggle>
+                           <div className="mt-1 max-w-40 text-xs text-white/40">Requires more bandwidth. Provides better experience for others</div>
+                        </HuginnCheckbox>
+                     )}
+                     <HuginnRange
+                        defaultValue={maxVideoBitrate}
+                        onChange={setMaxVideoBitrate}
+                        maxValue={CONSTANTS.MAX_VIDEO_BITRATE}
+                        minValue={CONSTANTS.MIN_VIDEO_BITRATE}
+                        step={100000}
+                        getTooltipText={(v) => `${v / 1000000} mbps`}
+                     >
+                        <HuginnRange.Label>Video Bitrate: {maxVideoBitrate / 1000000} mbps</HuginnRange.Label>
+                        <HuginnRange.Input backgroundClassName="bg-surface-deep" />
+                     </HuginnRange>
+                     <HuginnRange
+                        defaultValue={maxAudioBitrate}
+                        onChange={setMaxAudioBitrate}
+                        maxValue={CONSTANTS.MAX_AUDIO_BITRATE}
+                        minValue={CONSTANTS.MIN_AUDIO_BITRATE}
+                        step={10000}
+                        getTooltipText={(v) => `${v / 1000000} mbps`}
+                     >
+                        <HuginnRange.Label>Audio Bitrate: {maxAudioBitrate / 1000000} mbps</HuginnRange.Label>
+                        <HuginnRange.Input backgroundClassName="bg-surface-deep" />
+                     </HuginnRange>
+                  </Accordion.Panel>
+               </Accordion.Item>
+            </Accordion.Root>
          </div>
       </HuginnDialogPanel>
    );

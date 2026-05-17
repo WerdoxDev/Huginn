@@ -1,4 +1,4 @@
-import { Disclosure, DisclosureButton, DisclosurePanel, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import { Tabs, Accordion } from "@base-ui/react";
 import { useLookup } from "@hooks/useLookup";
 import { createFileRoute } from "@tanstack/react-router";
 import clsx from "clsx";
@@ -17,6 +17,16 @@ import type {
    VoiceDebugData,
    UsersDebugData,
 } from "@/types";
+
+const debugTabs = [
+   { value: "users", label: "Users" },
+   { value: "voice-states", label: "Voice States" },
+   { value: "asps", label: "ASPs" },
+   { value: "alcs", label: "ALCs" },
+   { value: "consumers", label: "Consumers" },
+   { value: "producers", label: "Producers" },
+   { value: "stats-parsers", label: "Stats Parsers" },
+] as const;
 
 export const Route = createFileRoute("/voice-debug")({ component: VoiceDebugComponent });
 
@@ -40,73 +50,82 @@ function VoiceDebugComponent() {
 
    return (
       <div className="h-full overflow-hidden p-1 leading-4 text-white">
-         <TabGroup className="flex h-full flex-col gap-y-5">
-            <TabList className="flex flex-wrap gap-2">
-               <DebugTab>Users</DebugTab>
-               <DebugTab>Voice States</DebugTab>
-               <DebugTab>ASPs</DebugTab>
-               <DebugTab>ALCs</DebugTab>
-               <DebugTab>Consumers</DebugTab>
-               <DebugTab>Producers</DebugTab>
-               <DebugTab>Stats Parsers</DebugTab>
-            </TabList>
-            <TabPanels className="scroll-alternative2 flex h-full w-full overflow-y-auto">
-               {/* Users */}
-               <TabPanel className="flex w-full flex-col gap-y-2">
+         <Tabs.Root className="flex h-full flex-col gap-y-5" defaultValue="users">
+            <Tabs.List className="flex flex-wrap gap-2">
+               {debugTabs.map((tab) => (
+                  <DebugTab key={tab.value} value={tab.value}>
+                     {tab.label}
+                  </DebugTab>
+               ))}
+            </Tabs.List>
+            <div className="scroll-alternative2 flex h-full w-full overflow-y-auto">
+               <Tabs.Panel value="users" className="flex w-full flex-col gap-y-2">
                   {data?.usersData.map((x, index) => (
-                     <UserViewer data={x} index={index} />
+                     <UserViewer key={x.id} data={x} index={index} />
                   ))}
-               </TabPanel>
+               </Tabs.Panel>
 
-               {/* Voice States */}
-               <TabPanel className="flex w-full flex-col gap-y-2">
+               <Tabs.Panel value="voice-states" className="flex w-full flex-col gap-y-2">
                   {data?.voiceStatesData.map((x, index) => (
-                     <VoiceStateViewer data={x} user={usersLookup[x.userId]} index={index} />
+                     <VoiceStateViewer key={`${x.userId}-${x.sessionId}-${index}`} data={x} user={usersLookup[x.userId]} index={index} />
                   ))}
-               </TabPanel>
+               </Tabs.Panel>
 
-               {/* ASPs */}
-               <TabPanel className="flex w-full flex-col gap-y-2">
+               <Tabs.Panel value="asps" className="flex w-full flex-col gap-y-2">
                   {data?.aspData.map((x, index) => (
-                     <ASPViewer data={x} user={usersLookup[x.userId]} index={index} />
+                     <ASPViewer key={x.producerId ?? index} data={x} user={usersLookup[x.userId]} index={index} />
                   ))}
-               </TabPanel>
+               </Tabs.Panel>
 
-               {/* ALCs */}
-               <TabPanel className="flex w-full flex-col gap-y-2">
+               <Tabs.Panel value="alcs" className="flex w-full flex-col gap-y-2">
                   {data?.alcData.map((x, index) => (
-                     <ALCViewer data={x} user={x.userId ? usersLookup[x.userId] : undefined} index={index} />
+                     <ALCViewer
+                        key={`${x.producerId}-${x.consumerId}-${index}`}
+                        data={x}
+                        user={x.userId ? usersLookup[x.userId] : undefined}
+                        index={index}
+                     />
                   ))}
-               </TabPanel>
+               </Tabs.Panel>
 
-               {/* Consumers */}
-               <TabPanel className="flex w-full flex-col gap-y-2">
+               <Tabs.Panel value="consumers" className="flex w-full flex-col gap-y-2">
                   {data?.consumersData.map((x, index) => (
-                     <ConsumerViewer data={x} usersLookup={usersLookup} producer={producersLookup[x.producerId]} index={index} />
+                     <ConsumerViewer key={x.id} data={x} usersLookup={usersLookup} producer={producersLookup[x.producerId]} index={index} />
                   ))}
-               </TabPanel>
+               </Tabs.Panel>
 
-               {/* Producers */}
-               <TabPanel className="flex w-full flex-col gap-y-2">
+               <Tabs.Panel value="producers" className="flex w-full flex-col gap-y-2">
                   {data?.producersData.map((x, index) => (
-                     <ProducerViewer data={x} user={usersLookup[x.userId]} index={index} />
+                     <ProducerViewer key={x.id} data={x} user={usersLookup[x.userId]} index={index} />
                   ))}
-               </TabPanel>
+               </Tabs.Panel>
 
-               {/* Stats Parsers */}
-               <TabPanel className="flex w-full flex-col gap-y-2">
+               <Tabs.Panel value="stats-parsers" className="flex w-full flex-col gap-y-2">
                   {data?.statsParsersData.map((x, index) => (
-                     <StatsParserViewer data={x} index={index} />
+                     <StatsParserViewer key={x.id} data={x} index={index} />
                   ))}
-               </TabPanel>
-            </TabPanels>
-         </TabGroup>
+               </Tabs.Panel>
+            </div>
+         </Tabs.Root>
       </div>
    );
 }
 
-function DebugTab(props: { children?: ReactNode }) {
-   return <Tab className="bg-surface data-selected:bg-primary-600 shrink-0 cursor-pointer px-2 py-1 outline-none">{props.children}</Tab>;
+function DebugTab(props: { children?: ReactNode; value: string }) {
+   return (
+      <Tabs.Tab
+         type="button"
+         value={props.value}
+         className={({ active }) =>
+            clsx(
+               "bg-surface shrink-0 cursor-pointer px-2 py-1 outline-none",
+               active ? "bg-primary-600 text-white" : "text-white/70 hover:bg-white/5 hover:text-white",
+            )
+         }
+      >
+         {props.children}
+      </Tabs.Tab>
+   );
 }
 
 function UserViewer(props: { data: UsersDebugData; index: number }) {
@@ -457,14 +476,23 @@ function Field(props: { text: string; value?: string | number | boolean | null; 
 }
 
 function Section(props: { text: string; children?: ReactNode; className?: string; containerClassName?: string; collapsable?: boolean }) {
+   if (props.collapsable) {
+      return (
+         <Accordion.Root>
+            <Accordion.Item className={props.className}>
+               <Accordion.Header>
+                  <Accordion.Trigger className="font-semibold">{props.text}:</Accordion.Trigger>
+               </Accordion.Header>
+               <Accordion.Panel className={clsx("ml-2 flex flex-col", props.containerClassName)}>{props.children}</Accordion.Panel>
+            </Accordion.Item>
+         </Accordion.Root>
+      );
+   }
+
    return (
-      <Disclosure defaultOpen={!props.collapsable}>
-         <div className={props.className}>
-            <DisclosureButton className="font-semibold" disabled={!props.collapsable}>
-               {props.text}:
-            </DisclosureButton>
-            <DisclosurePanel className={clsx("ml-2 flex flex-col", props.containerClassName)}>{props.children}</DisclosurePanel>
-         </div>
-      </Disclosure>
+      <div className={props.className}>
+         <div className="font-semibold">{props.text}:</div>
+         <div className={clsx("ml-2 flex flex-col", props.containerClassName)}>{props.children}</div>
+      </div>
    );
 }

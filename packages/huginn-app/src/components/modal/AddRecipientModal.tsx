@@ -4,7 +4,6 @@ import DialogActions from "@components/DialogActions";
 import DialogBody from "@components/DialogBody";
 import HuginnDialogTitle from "@components/HuginnDialogTitle";
 import AddRecipientInput from "@components/input/AddRecipientInput";
-import { Description, DialogTitle } from "@headlessui/react";
 import { useChannelRecipients } from "@hooks/api-hooks/channelHooks";
 import { useAddChannelRecipient } from "@hooks/mutations/useAddChannelRecipient";
 import { getRelationshipsOptions } from "@lib/queries";

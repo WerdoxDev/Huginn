@@ -1,6 +1,6 @@
 import type { Snowflake } from "@huginn/shared";
 
-import { TabPanel } from "@headlessui/react";
+import { Tabs } from "@base-ui/react";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useLookup } from "@hooks/useLookup";
@@ -10,7 +10,7 @@ import type { AppPresence, AppRelationship } from "@/types";
 
 import FriendItem from "./FriendItem";
 
-export default function FriendsTab(props: { friends: AppRelationship[] | null; presences: AppPresence[]; text: string }) {
+export default function FriendsTab(props: { friends: AppRelationship[] | null; presences: AppPresence[]; text: string; tabValue: string }) {
    const mutation = useCreateDMChannel("create-dm-channel_other");
 
    const users = useUsers(props.friends?.map((x) => x.userId));
@@ -26,7 +26,7 @@ export default function FriendsTab(props: { friends: AppRelationship[] | null; p
    }
 
    return (
-      <TabPanel>
+      <Tabs.Panel value={props.tabValue}>
          <div className="text-text/70 ml-2.5 text-xs font-medium uppercase">
             {props.text} - {amount}
          </div>
@@ -41,6 +41,6 @@ export default function FriendsTab(props: { friends: AppRelationship[] | null; p
                />
             ))}
          </div>
-      </TabPanel>
+      </Tabs.Panel>
    );
 }

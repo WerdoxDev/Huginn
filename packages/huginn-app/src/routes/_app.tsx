@@ -6,7 +6,6 @@ import KeybindsProvider from "@contexts/KeybindsProvider";
 import { NotificationProvider } from "@contexts/NotificationContext";
 import PHProvider, { initializePosthog } from "@contexts/PHProvider";
 import SettingsProvider from "@contexts/SettingsProvider";
-import { useMainViewTransitionState } from "@hooks/useMainViewTransitionState";
 import { useClientStore } from "@stores/clientStore";
 import { ContextMenuProvider } from "@stores/contextMenuStore";
 import { initializeDevice } from "@stores/deviceStore";
@@ -81,7 +80,7 @@ function MainRenderer(props: { children: ReactNode }) {
 
    return (
       <div className={clsx("flex h-full flex-col overflow-hidden")}>
-         {window.location.pathname !== "/splashscreen" && !huginnWindow.browserFullscreen && <TitleBar />}
+         {!huginnWindow.browserFullscreen && <TitleBar />}
          <div className="relative h-full w-full">
             {props.children}
             {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}

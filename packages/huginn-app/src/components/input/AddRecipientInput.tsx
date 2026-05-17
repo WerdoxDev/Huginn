@@ -1,5 +1,5 @@
+import { Checkbox } from "@base-ui/react";
 import UserAvatar from "@components/UserAvatar";
-import { Checkbox } from "@headlessui/react";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { RelationshipType, type Snowflake } from "@huginn/shared";
 import { useMemo, useState } from "react";
@@ -67,7 +67,7 @@ export default function AddRecipientInput(props: {
                   <UserAvatar userId={x.id} avatarHash={x.avatar} />
                   <div className="text-text overflow-hidden text-nowrap text-ellipsis">{x.displayName}</div>
                   <div className="text-text/70 text-sm">{x.username}</div>
-                  <Checkbox
+                  <Checkbox.Root
                      checked={selectedUsers?.includes(x.id) ?? false}
                      className="border-primary-500 data-checked:bg-primary-500 ml-auto size-6 shrink-0 rounded-md border"
                   />

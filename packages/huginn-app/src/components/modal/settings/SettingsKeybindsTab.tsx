@@ -1,4 +1,4 @@
-import HuginnCheckbox from "@components/HuginnCheckbox";
+import HuginnCheckbox from "@components/HuginnToggle";
 import Tooltip from "@components/tooltip/Tooltip";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";

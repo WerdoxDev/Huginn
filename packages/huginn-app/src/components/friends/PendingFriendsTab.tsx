@@ -1,6 +1,6 @@
 import type { Snowflake } from "@huginn/shared";
 
-import { TabPanel } from "@headlessui/react";
+import { Tabs } from "@base-ui/react";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
 import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship";
@@ -35,7 +35,7 @@ export default function PendingFriendsTab(props: { friends: AppRelationship[] })
       createMutation.mutate({ userId });
    }
    return (
-      <TabPanel>
+      <Tabs.Panel value="pending">
          <div className="text-text/70 ml-2.5 text-xs font-medium uppercase">Pending - {pendingAmount}</div>
          <div className="mt-5 flex flex-col justify-center gap-y-1">
             {pendingFriends.map((friend) => (
@@ -48,6 +48,6 @@ export default function PendingFriendsTab(props: { friends: AppRelationship[] })
                />
             ))}
          </div>
-      </TabPanel>
+      </Tabs.Panel>
    );
 }

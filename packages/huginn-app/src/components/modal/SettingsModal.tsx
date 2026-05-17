@@ -1,9 +1,7 @@
-import type { DeepPartial } from "@huginn/shared";
-
 import { Dialog } from "@base-ui/react";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@components/Tab";
-import { DialogTitle, Transition } from "@headlessui/react";
+import { Transition } from "@headlessui/react";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useThrottler } from "@hooks/useThrottler";
 import { useClient } from "@stores/clientStore";

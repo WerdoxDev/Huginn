@@ -3,7 +3,6 @@ import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import DialogActions from "@components/DialogActions";
 import DialogBody from "@components/DialogBody";
-import { Description, DialogTitle } from "@headlessui/react";
 import { useModals } from "@stores/modalsStore";
 import { animate, createScope } from "animejs";
 import clsx from "clsx";
