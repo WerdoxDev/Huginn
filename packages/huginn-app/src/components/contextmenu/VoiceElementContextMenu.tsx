@@ -1,6 +1,6 @@
 import type { HMediaKind } from "@huginn/shared";
 
-import HuginnRange from "@components/input/HuginnRange";
+import HuginnSlider from "@components/input/HuginnSlider";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 import { useClient } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
@@ -81,15 +81,15 @@ export default function VoiceElementContextMenu() {
                className="mt-1 min-w-40 cursor-default flex-col items-start! gap-y-1 px-1 focus:bg-inherit!"
                preventClose
             >
-               <HuginnRange
+               <HuginnSlider
                   minValue={0}
                   maxValue={200}
                   defaultValue={preference?.microphoneVolume}
                   onChange={onChange}
                   getTooltipText={(v) => `${v}%`}
                >
-                  <HuginnRange.Input />
-               </HuginnRange>
+                  <HuginnSlider.Input />
+               </HuginnSlider>
             </ContextMenu.Item>
          )}
          {mediaSources.some((x) => x?.kind === "stream_video" || x?.kind === "stream_audio") && (
@@ -109,15 +109,15 @@ export default function VoiceElementContextMenu() {
                      className="mt-1 min-w-40 cursor-default flex-col items-start! gap-y-1 px-1 focus:bg-inherit!"
                      preventClose
                   >
-                     <HuginnRange
+                     <HuginnSlider
                         minValue={0}
                         maxValue={200}
                         defaultValue={preference?.streamVolume}
                         onChange={onChange}
                         getTooltipText={(v) => `${v}%`}
                      >
-                        <HuginnRange.Input />
-                     </HuginnRange>
+                        <HuginnSlider.Input />
+                     </HuginnSlider>
                   </ContextMenu.Item>
                )}
             </>

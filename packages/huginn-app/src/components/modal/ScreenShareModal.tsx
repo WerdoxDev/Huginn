@@ -4,7 +4,7 @@ import DisplayPreview from "@components/DisplayPreview";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnTab from "@components/HuginnTab";
 import HuginnCheckbox from "@components/HuginnToggle";
-import HuginnRange from "@components/input/HuginnRange";
+import HuginnSlider from "@components/input/HuginnSlider";
 import LoadingIcon from "@components/LoadingIcon";
 import { useMediaSources } from "@hooks/voice/useMediaSources";
 import { CONSTANTS } from "@huginn/shared";
@@ -296,7 +296,7 @@ export default function ScreenShareModal() {
                            <div className="mt-1 max-w-40 text-xs text-white/40">Requires more bandwidth. Provides better experience for others</div>
                         </HuginnCheckbox>
                      )}
-                     <HuginnRange
+                     <HuginnSlider
                         defaultValue={maxVideoBitrate}
                         onChange={setMaxVideoBitrate}
                         maxValue={CONSTANTS.MAX_VIDEO_BITRATE}
@@ -304,10 +304,10 @@ export default function ScreenShareModal() {
                         step={100000}
                         getTooltipText={(v) => `${v / 1000000} mbps`}
                      >
-                        <HuginnRange.Label>Video Bitrate: {maxVideoBitrate / 1000000} mbps</HuginnRange.Label>
-                        <HuginnRange.Input backgroundClassName="bg-surface-deep" />
-                     </HuginnRange>
-                     <HuginnRange
+                        <HuginnSlider.Label>Video Bitrate: {maxVideoBitrate / 1000000} mbps</HuginnSlider.Label>
+                        <HuginnSlider.Input backgroundClassName="bg-surface-deep" />
+                     </HuginnSlider>
+                     <HuginnSlider
                         defaultValue={maxAudioBitrate}
                         onChange={setMaxAudioBitrate}
                         maxValue={CONSTANTS.MAX_AUDIO_BITRATE}
@@ -315,9 +315,9 @@ export default function ScreenShareModal() {
                         step={10000}
                         getTooltipText={(v) => `${v / 1000000} mbps`}
                      >
-                        <HuginnRange.Label>Audio Bitrate: {maxAudioBitrate / 1000000} mbps</HuginnRange.Label>
-                        <HuginnRange.Input backgroundClassName="bg-surface-deep" />
-                     </HuginnRange>
+                        <HuginnSlider.Label>Audio Bitrate: {maxAudioBitrate / 1000000} mbps</HuginnSlider.Label>
+                        <HuginnSlider.Input backgroundClassName="bg-surface-deep" />
+                     </HuginnSlider>
                   </Accordion.Panel>
                </Accordion.Item>
             </Accordion.Root>

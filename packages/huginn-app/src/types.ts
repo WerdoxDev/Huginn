@@ -292,8 +292,6 @@ export type AttachmentType = {
 export type SliderProps = {
    currentPercent: number;
    bufferedPercent?: number;
-   onHoverChanged?: (isHovering: boolean) => void;
-   onDragChanged?: (isDragging: boolean) => void;
    onChange: (percent: number) => void;
    orientation?: "horizontal" | "vertical";
 };

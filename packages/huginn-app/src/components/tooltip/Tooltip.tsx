@@ -3,12 +3,12 @@ import { useIsMobile } from "@hooks/useIsMobile";
 import clsx from "clsx";
 import { type CSSProperties, type HTMLProps, isValidElement, type ReactNode } from "react";
 
-export default function Tooltip(props: { hideOnMobile?: boolean; children?: ReactNode }) {
+export default function Tooltip(props: { hideOnMobile?: boolean; children?: ReactNode; open?: boolean }) {
    const isMobile = useIsMobile();
    const disabled = props.hideOnMobile && isMobile;
 
    return (
-      <BaseTooltip.Root disableHoverablePopup disabled={disabled}>
+      <BaseTooltip.Root disableHoverablePopup disabled={disabled} open={props.open}>
          {props.children}
       </BaseTooltip.Root>
    );
@@ -38,7 +38,7 @@ function Content(
    const { extraStyle, ...rest } = props;
    return (
       <BaseTooltip.Portal keepMounted={false}>
-         <BaseTooltip.Positioner side={props.side} align={props.align} sideOffset={8}>
+         <BaseTooltip.Positioner side={props.side} align={props.align} sideOffset={8} className="z-50">
             <BaseTooltip.Popup
                {...rest}
                className={clsx(

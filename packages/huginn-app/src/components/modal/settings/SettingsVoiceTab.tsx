@@ -2,7 +2,7 @@ import HuginnButton from "@components/button/HuginnButton";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnTab from "@components/HuginnTab";
 import HuginnCheckbox from "@components/HuginnToggle";
-import HuginnRange from "@components/input/HuginnRange";
+import HuginnSlider from "@components/input/HuginnSlider";
 import { clamp, remap } from "@huginn/shared";
 import { AudioLevelChecker } from "@lib/voice/audio-level-checker";
 import { VoiceInputDevice } from "@lib/voice/voice-input-device";
@@ -179,35 +179,40 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
                   </HuginnSelect>
                </div>
                <div className="flex gap-x-5">
-                  <HuginnRange onChange={onInputVolumeChange} defaultValue={settings.inputVolume} className="max-w-xs">
-                     <HuginnRange.Label>Input Volume</HuginnRange.Label>
-                     <HuginnRange.Input />
-                  </HuginnRange>
-                  <HuginnRange
+                  <HuginnSlider
+                     onChange={onInputVolumeChange}
+                     defaultValue={settings.inputVolume}
+                     className="max-w-xs"
+                     getTooltipText={(v) => `${v}%`}
+                  >
+                     <HuginnSlider.Label>Input Volume</HuginnSlider.Label>
+                     <HuginnSlider.Input />
+                  </HuginnSlider>
+                  <HuginnSlider
                      onChange={onOutputVolumeChange}
                      defaultValue={settings.outputVolume}
                      maxValue={200}
                      className="max-w-xs"
                      getTooltipText={(v) => `${v}%`}
                   >
-                     <HuginnRange.Label>Output Volume</HuginnRange.Label>
-                     <HuginnRange.Input />
-                  </HuginnRange>
+                     <HuginnSlider.Label>Output Volume</HuginnSlider.Label>
+                     <HuginnSlider.Input />
+                  </HuginnSlider>
                </div>
-               <HuginnRange
+               <HuginnSlider
                   className="max-w-165"
                   onChange={onInputThresholdChange}
                   defaultValue={remap(settings.inputThreshold ?? -100, -100, 0, 0, 100)}
                   getTooltipText={(percentage) => `${remap(percentage, 0, 100, -100, 0)}db`}
                >
-                  <HuginnRange.Label>Input Threshold</HuginnRange.Label>
-                  <HuginnRange.Input backgroundClassName="bg-positive-400!" fillClassName="bg-negative-100!">
+                  <HuginnSlider.Label>Input Threshold</HuginnSlider.Label>
+                  <HuginnSlider.Input backgroundClassName="bg-positive-400!" fillClassName="bg-negative-100!">
                      <div
                         className="bg-surface-alt/50 absolute top-0 left-0 h-full transition-all duration-100"
                         style={{ width: `${remap(inputDb, -100, 0, 0, 100)}%` }}
                      />
-                  </HuginnRange.Input>
-               </HuginnRange>
+                  </HuginnSlider.Input>
+               </HuginnSlider>
                <div className="flex">
                   <HuginnCheckbox checked={noiseSuppression} onChange={setNoiseSuppression} className="w-45!">
                      <HuginnCheckbox.Toggle innerClassName="bg-surface-alt">Noise Suppression</HuginnCheckbox.Toggle>

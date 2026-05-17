@@ -3,12 +3,11 @@ import { type MouseEvent, useRef, useState } from "react";
 
 import type { SliderProps } from "@/types";
 
-import Slider from "./Slider";
+import HuginnMediaSlider from "./HuginnMediaSlider";
 
 export default function VolumeSlider(props: Omit<SliderProps, "orientation">) {
    const [audioHovering, setAudioHovering] = useState(false);
    const [isMuted, setIsMuted] = useState(false);
-   const [isDragging, setIsDragging] = useState(false);
    const previousPercent = useRef(0);
    const { cancel: cancelTimeout, start: startTimeout } = useTimeout(() => setAudioHovering(false), 1000);
 
@@ -53,13 +52,13 @@ export default function VolumeSlider(props: Omit<SliderProps, "orientation">) {
          >
             {isMuted ? <IconMingcuteVolumeMuteFill className="size-6" /> : <IconMingcuteVolumeFill className="size-6" />}
          </button>
-         {(audioHovering || isDragging) && (
+         {audioHovering && (
             <div
-               className="bg-surface-deep/90 absolute bottom-10 h-24 w-4 rounded-lg p-1 py-1.5"
+               className="bg-surface-deep/90 absolute bottom-10 h-24 w-4 rounded-lg p-1 py-1"
                onMouseEnter={cancelAudioHoverTimeout}
                onMouseLeave={startAudioHoverTimeout}
             >
-               <Slider orientation="vertical" currentPercent={props.currentPercent} onChange={updateCurrentPercent} onDragChanged={setIsDragging} />
+               <HuginnMediaSlider orientation="vertical" currentPercent={props.currentPercent} onChange={updateCurrentPercent} />
             </div>
          )}
       </div>

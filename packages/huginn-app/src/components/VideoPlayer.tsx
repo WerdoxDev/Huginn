@@ -1,12 +1,11 @@
 import { Transition } from "@headlessui/react";
 import { useFullscreen } from "@hooks/useFullscreen";
-import { useProgressBar } from "@hooks/useProgressBar";
 import { formatSeconds } from "@huginn/shared";
 import clsx from "clsx";
 import { type MouseEvent, useEffect, useRef, useState } from "react";
 
+import HuginnMediaSlider from "./HuginnMediaSlider";
 import LoadingIcon from "./LoadingIcon";
-import Slider from "./Slider";
 import VolumeSlider from "./VolumeSlider";
 
 const VIDEO_TIMESTAMP_REQUIRED_WIDTH = 500;
@@ -145,11 +144,11 @@ export default function VideoPlayer(props: { url: string; width: number; height:
                   {playing ? <IconMingcutePauseFill className="size-6" /> : <IconMingcutePlayFill className="size-6" />}
                </button>
                {(isFullscreen || props.width >= VIDEO_TIMESTAMP_REQUIRED_WIDTH) && (
-                  <div className="shrink-0 text-sm">
+                  <div className="font-ubuntu shrink-0 text-sm">
                      {formatSeconds(currentTime)} / {formatSeconds(videoDuration)}
                   </div>
                )}
-               <Slider
+               <HuginnMediaSlider
                   orientation="horizontal"
                   currentPercent={currentVideoPercent}
                   bufferedPercent={bufferedPercent}
