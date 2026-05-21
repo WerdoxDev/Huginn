@@ -10,20 +10,19 @@ export abstract class BaseWindow {
    public constructor(name: string, options: BrowserWindowConstructorOptions, startPath: string = "") {
       this.name = name;
       this._window = new BrowserWindow(options);
-      const hashPath = startPath ? `/${startPath}` : "/";
 
       const baseUrl = process.env.VITE_DEV_SERVER_URL;
       if (baseUrl) {
-         const url = `${baseUrl}/app${hashPath}`;
+         const url = `${baseUrl}/app/${startPath}`;
 
          log("app:electron", "default", `${this.name}`, "url:", url);
          this._window.loadURL(url);
       } else {
          const filePath = path.join(import.meta.dirname, "../dist/index.html");
-         const url = `${pathToFileURL(filePath).toString()}/app${hashPath}`;
+         const url = `${filePath}/#/${startPath}`;
 
          log("app:electron", "default", `${this.name}`, "url:", url);
-         this._window.loadURL(url);
+         this._window.loadFile(filePath, { hash: `/${startPath}` });
       }
 
       this.eventListeners?.(this._window);
