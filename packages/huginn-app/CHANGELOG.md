@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.68.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.68.0...app@v0.68.1) (2026-05-21)
+
+
+### Bug Fixes
+
+* **app:** electron should load with hash ([2628c23](https://github.com/WerdoxDev/Huginn/commit/2628c23542a3df17bf277526eed90937336bf079))
+* **app:** electron should load with hash ([79b6a61](https://github.com/WerdoxDev/Huginn/commit/79b6a616b1d043ba028166de91096bf4a9ff30e1))
+
 ## [0.68.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.67.0...app@v0.68.0) (2026-05-21)
 
 

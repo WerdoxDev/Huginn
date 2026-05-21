@@ -6,7 +6,7 @@
    "packages/huginn-shared": "0.33.0",
    "packages/huginn-backend-shared": "0.23.0",
    "packages/huginn-runtime-shared": "0.2.0",
-   "packages/huginn-app": "0.68.0",
+   "packages/huginn-app": "0.68.1",
    "packages/huginn-voice": "0.16.0",
    "packages/native-addon": "0.3.0",
    "packages/huginn-tui": "0.3.0",
