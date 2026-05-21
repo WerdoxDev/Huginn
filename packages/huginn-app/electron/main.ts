@@ -121,9 +121,8 @@ class HuginnApp {
 
    async initializeLogger() {
       try {
-         const {
-            data: { apiHostname },
-         } = await this.fileController.loadFile("settings");
+         const { data } = await this.fileController.loadFile("settings");
+         const apiHostname = data.hostnamePresets.find((x) => x.name === data.activePresetName)?.apiHostname;
 
          const { data: info } = await this.fileController.loadFile("client-info");
          const endpoint = new URL("/api/log", apiHostname).toString();

@@ -150,7 +150,7 @@ export type ContextMenuProps = {
    label?: string;
    renderChildren?: ReactNode;
    children?: ReactNode;
-   close?: () => void;
+   onClose?: () => void;
 } & ContextMenuStateProps;
 
 export type ContextMenuStateProps<T = unknown> = {
@@ -322,7 +322,7 @@ export type HostnamePreset = {
 
 export type AppSettings = {
    hostnamePresets: HostnamePreset[];
-   activePresetName: string | null;
+   activePresetName: string;
    theme: ThemeType;
    isChannelSidebarOpen: boolean;
    inputDeviceId: string;

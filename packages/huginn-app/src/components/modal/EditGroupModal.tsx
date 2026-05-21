@@ -3,11 +3,11 @@ import LoadingButton from "@components/button/LoadingButton";
 import DialogActions from "@components/DialogActions";
 import DialogBody from "@components/DialogBody";
 import HuginnDialogTitle from "@components/HuginnDialogTitle";
-import ImageSelector from "@components/ImageSelector";
+import { ImagePicker } from "@components/ImagePicker";
 import HuginnInput from "@components/input/HuginnInput";
 import { usePatchDMChannel } from "@hooks/mutations/usePatchDMChannel";
+import { useFileDialog } from "@hooks/useFileDialog";
 import { useHuginnForm } from "@hooks/useHuginnForm";
-import { listenEvent } from "@lib/event-handler";
 import { getChannelIconOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
@@ -23,6 +23,7 @@ type Input = {
 export default function EditGroupModal() {
    const client = useClient();
    const { editGroup: modal, updateModals } = useModals();
+   const { openFileDialog } = useFileDialog("image/*");
 
    const { setValue, handleErrors, register, handleSubmit } = useHuginnForm<Input>();
 
@@ -38,23 +39,27 @@ export default function EditGroupModal() {
 
       setValue("name", modal.channel.name);
       setIconData(originalIcon);
-   }, [modal]);
+   }, [modal.channel?.name, originalIcon, setValue]);
 
-   useEffect(() => {
-      const unlisten = listenEvent("image_cropper_done", (e) => {
-         setIconData(e.croppedImageData);
+   async function handleEditIcon() {
+      const result = await openFileDialog();
+      if (!result) return;
+
+      updateModals({
+         imageCrop: {
+            isOpen: true,
+            originalImageData: result.dataUrl,
+            mimeType: result.mimeType,
+            cropType: "avatar",
+            callback: (data) => {
+               setIconData(data);
+               updateModals({ imageCrop: { isOpen: false } });
+            },
+         },
       });
-
-      return () => {
-         unlisten();
-      };
-   }, []);
-
-   function onSelected(data: string, mimeType: string) {
-      updateModals({ imageCrop: { isOpen: true, originalImageData: data, mimeType: mimeType } });
    }
 
-   function onDelete() {
+   function handleDeleteIcon() {
       if (iconData) {
          setIconData(null);
       }
@@ -81,7 +86,7 @@ export default function EditGroupModal() {
             <DialogBody>
                <HuginnDialogTitle title="Edit Group" />
                <div className="flex gap-x-5">
-                  <ImageSelector data={iconData} onSelected={onSelected} onDelete={onDelete} />
+                  <ImagePicker data={iconData} editButtonColor="surface-alt" onDelete={handleDeleteIcon} onEdit={handleEditIcon} />
                   <HuginnInput {...register("name")} className="mt-2 w-full" placeholder={modal.channel?.name}>
                      <HuginnInput.Label>Group Name</HuginnInput.Label>
                      <HuginnInput.Wrapper>

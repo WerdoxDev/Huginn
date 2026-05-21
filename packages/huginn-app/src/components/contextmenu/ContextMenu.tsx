@@ -1,5 +1,9 @@
 import { ContextMenu as BaseContextMenu, Menu } from "@base-ui/react";
+import { HuginnErrorBoundary } from "@components/HuginnErrorBoundary";
 import LoadingIcon from "@components/LoadingIcon";
+import { useErrorHandler } from "@hooks/useErrorHandler";
+import { useModals } from "@stores/modalsStore";
+import { useQueryErrorResetBoundary } from "@tanstack/react-query";
 import clsx from "clsx";
 import { type ReactNode, type RefObject, useMemo, useState } from "react";
 
@@ -19,28 +23,49 @@ export default function ContextMenu(props: ContextMenuProps) {
       [props.position],
    );
 
+   const { updateModals } = useModals();
+   const [key, setKey] = useState(0);
+
+   const queryErrorResetBoundary = useQueryErrorResetBoundary();
+   const handleError = useErrorHandler({
+      cancel: {
+         callback() {
+            queryErrorResetBoundary.reset();
+            setKey((k) => k + 1);
+            updateModals({ info: { isOpen: false } });
+         },
+      },
+   });
+
+   function onError(e: unknown) {
+      props.onClose?.();
+      handleError(e);
+   }
+
    return (
-      <BaseContextMenu.Root
-         open={props.isOpen ?? false}
-         onOpenChange={(open) => {
-            if (!open) props.close?.();
-         }}
-      >
-         <BaseContextMenu.Portal container={props.parent ?? undefined}>
-            <BaseContextMenu.Positioner anchor={anchor} sideOffset={0} alignOffset={0}>
-               <BaseContextMenu.Popup
-                  className={clsx(
-                     "z-998 flex min-w-28 flex-col rounded-lg bg-zinc-900 p-2 shadow-lg outline-hidden",
-                     "transition-opacity duration-100",
-                     "data-starting-style:opacity-0",
-                     "data-ending-style:opacity-0",
-                  )}
-               >
-                  {props.renderChildren ?? props.children}
-               </BaseContextMenu.Popup>
-            </BaseContextMenu.Positioner>
-         </BaseContextMenu.Portal>
-      </BaseContextMenu.Root>
+      <HuginnErrorBoundary onError={onError} resetKey={key}>
+         <BaseContextMenu.Root
+            open={props.isOpen ?? false}
+            onOpenChange={(open) => {
+               if (!open) props.onClose?.();
+            }}
+         >
+            <BaseContextMenu.Portal container={props.parent ?? undefined}>
+               <BaseContextMenu.Positioner anchor={anchor} sideOffset={0} alignOffset={0}>
+                  <BaseContextMenu.Popup
+                     className={clsx(
+                        "z-998 flex min-w-28 flex-col rounded-lg bg-zinc-900 p-2 shadow-lg outline-hidden",
+                        "transition-opacity duration-100",
+                        "data-starting-style:opacity-0",
+                        "data-ending-style:opacity-0",
+                     )}
+                  >
+                     {props.renderChildren ?? props.children}
+                  </BaseContextMenu.Popup>
+               </BaseContextMenu.Positioner>
+            </BaseContextMenu.Portal>
+         </BaseContextMenu.Root>
+      </HuginnErrorBoundary>
    );
 }
 
