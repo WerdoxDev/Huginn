@@ -2,7 +2,7 @@ import clsx from "clsx";
 
 import { ImagePickerDeleteButton, ImagePickerEditButton } from "./button/ImagePickerButtons";
 
-export function ImagePicker(props: {
+export default function ImagePicker(props: {
    className?: string;
    data?: string | null;
    onDelete?: () => void;

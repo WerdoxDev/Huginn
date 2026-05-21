@@ -3,7 +3,7 @@ import LoadingButton from "@components/button/LoadingButton";
 import DialogActions from "@components/DialogActions";
 import DialogBody from "@components/DialogBody";
 import HuginnDialogTitle from "@components/HuginnDialogTitle";
-import { ImagePicker } from "@components/ImagePicker";
+import ImagePicker from "@components/ImagePicker";
 import HuginnInput from "@components/input/HuginnInput";
 import { usePatchDMChannel } from "@hooks/mutations/usePatchDMChannel";
 import { useFileDialog } from "@hooks/useFileDialog";
