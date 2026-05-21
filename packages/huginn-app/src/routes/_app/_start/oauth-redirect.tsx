@@ -2,9 +2,10 @@ import type { APIPostOAuthConfirmJSONBody, OAuthTokenPayload } from "@huginn/sha
 
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
-import ImageSelector from "@components/ImagePicker";
+import ImagePicker from "@components/ImagePicker";
 import HuginnInput from "@components/input/HuginnInput";
 import StartWrapper from "@components/StartWrapper";
+import { useFileDialog } from "@hooks/useFileDialog";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
@@ -42,6 +43,7 @@ function OAuthRedirectComponent() {
    const navigate = useNavigate();
    const { updateModals } = useModals();
    const initializeClient = useInitializeClient();
+   const { openFileDialog } = useFileDialog("image/*");
    const posthog = usePostHog();
    const router = useRouter();
 
@@ -74,6 +76,11 @@ function OAuthRedirectComponent() {
 
    useEffect(() => {
       async function tryAuthorize() {
+         if (!search.access_token && !search.refresh_token && !search.oauth_token) {
+            await navigate({ to: "/" });
+            return;
+         }
+
          if (search.access_token && search.refresh_token) {
             localStorage.setItem("access-token", search.access_token);
             localStorage.setItem("refresh-token", search.refresh_token);
@@ -84,15 +91,7 @@ function OAuthRedirectComponent() {
          }
       }
 
-      const unlisten = listenEvent("image_cropper_done", (e) => {
-         setAvatarData(e.croppedImageData);
-      });
-
       tryAuthorize();
-
-      return () => {
-         unlisten();
-      };
    }, []);
 
    useEffect(() => {
@@ -101,15 +100,27 @@ function OAuthRedirectComponent() {
       }
    }, [originalAvatar]);
 
-   function onDelete() {
+   function handleDeleteAvatar() {
       if (avatarData) {
          setAvatarData(null);
       }
    }
 
-   function onSelected(data: string, mimeType: string) {
+   async function handleEditAvatar() {
+      const result = await openFileDialog();
+      if (!result) return;
+
       updateModals({
-         imageCrop: { isOpen: true, originalImageData: data, mimeType: mimeType },
+         imageCrop: {
+            isOpen: true,
+            originalImageData: result.dataUrl,
+            mimeType: result.mimeType,
+            cropType: "avatar",
+            callback: (data) => {
+               setAvatarData(data);
+               updateModals({ imageCrop: { isOpen: false } });
+            },
+         },
       });
    }
 
@@ -142,14 +153,17 @@ function OAuthRedirectComponent() {
                      <div className="text-text text-center opacity-70">Finish creating your account and enjoy Huginn!</div>
                   </div>
                   <div className="absolute inset-y-0 -left-40 flex items-center">
-                     <ImageSelector
+                     <div className="bg-surface h-max rounded-lg p-5 group-hover/wrapper:shadow-2xl">
+                        <ImagePicker data={avatarData} editButtonColor="surface-alt" onDelete={handleDeleteAvatar} onEdit={handleEditAvatar} />
+                     </div>
+                     {/* <ImageSelector
                         data={avatarData}
                         onDelete={onDelete}
                         onSelected={onSelected}
                         size="7.5rem"
                         className="bg-surface! shadow-xl transition-shadow group-hover/wrapper:shadow-2xl"
                         editButtonClassName="bg-surface-alt"
-                     />
+                     /> */}
                   </div>
                   <div className="mt-5 flex w-full flex-col">
                      <HuginnInput {...register("username", { required: true, validate })} className="mb-5">
