@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.34.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.33.0...server@v0.34.0) (2026-05-21)
+
+
+### Features
+
+* migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
+* **server:** add banner image upload ([db55706](https://github.com/WerdoxDev/Huginn/commit/db5570668b46240dd68f633db099a8180c26853d))
+* **server:** add bannerColor to server settings ([8bba25b](https://github.com/WerdoxDev/Huginn/commit/8bba25b9b8d1e281137b39dc01d2940f73f65d81))
+* **server:** add email verification requirement for login and register ([a834f60](https://github.com/WerdoxDev/Huginn/commit/a834f608e399d23e575d42235b63f93a5dc551c9))
+* **server:** add pinnedChannels to server settigns ([717ef87](https://github.com/WerdoxDev/Huginn/commit/717ef877964bf7387475180124cd7a5431895944))
+* **server:** add user profile route + constants var rename ([63bd096](https://github.com/WerdoxDev/Huginn/commit/63bd0968d557c51fe6b1be399f16e389e86fc1b7))
+
+
+### Bug Fixes
+
+* **server:** new file schema handling + avatar max size ([acc327f](https://github.com/WerdoxDev/Huginn/commit/acc327f1acd430992407b8299ef225635889713b))
+* **server:** set appropriate auth type for access and refresh token ([6944653](https://github.com/WerdoxDev/Huginn/commit/69446539b9a2cb361a81dc3592c5d8a982f85c33))
+* **server:** use optimized unread readstate calculation ([3293e5b](https://github.com/WerdoxDev/Huginn/commit/3293e5b698adb89eb8aa9ecb7ca4558f5a4a1fc0))
+
 ## [0.33.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.32.7...server@v0.33.0) (2026-01-24)
 
 ### Features

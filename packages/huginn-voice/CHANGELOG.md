@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.15.1...voice@v0.16.0) (2026-05-21)
+
+
+### Features
+
+* migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
+
 ## [0.15.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.15.0...voice@v0.15.1) (2026-01-24)
 
 ### Bug Fixes
