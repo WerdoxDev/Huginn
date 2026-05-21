@@ -15,7 +15,6 @@ import type { AppDirectChannel } from "@/types";
 
 export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
    const { user } = useThisUser();
-   const patchState = useMutationLatestState("patch-dm-channel");
    const addState = useMutationLatestState("add-channel-recipient");
    const removeState = useMutationLatestState("remove-channel-recipient");
    const { updateModals } = useModals();
@@ -29,10 +28,9 @@ export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
 
    const loading = useMemo(
       () =>
-         (patchState?.variables?.channelId === props.channel.id && patchState?.status === "pending") ||
          (addState?.variables?.channelId === props.channel.id && addState?.status === "pending") ||
          (removeState?.variables?.channelId === props.channel.id && removeState?.status === "pending"),
-      [patchState, addState, removeState],
+      [addState, removeState],
    );
 
    const recipients = useUsers(props.channel?.recipientIds);

@@ -5,8 +5,7 @@ import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
 import { clientStore } from "@stores/clientStore";
 import { initializeStorage, storageStore } from "@stores/storageStore";
-import { QueryClient } from "@tanstack/react-query";
-import { createBrowserHistory, createHashHistory, createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
+import { createBrowserHistory, createHashHistory, createRouter, RouterProvider } from "@tanstack/react-router";
 import { createRoot } from "react-dom/client";
 
 import { RemoteLogger } from "../shared/remote-logger";

@@ -31,11 +31,11 @@ export function ProfileActivity(props: {
    const { getFormattedDuration } = useElapsedTime(activity.startedAt);
 
    return (
-      <div className={clsx("bg-surface rounded-md p-3", props.className)}>
+      <div className={clsx("bg-surface overflow-hidden rounded-md p-3", props.className)}>
          <HuginnLabel className="text-tiny">{typeLabel}</HuginnLabel>
          <div className="flex items-center gap-x-3">
             <div
-               className="flex size-14 items-center justify-center rounded-lg"
+               className="flex size-14 shrink-0 items-center justify-center rounded-lg"
                style={{ backgroundColor: `color-mix(in srgb, ${props.accentColor || "white"} 20%, transparent)` }}
             >
                {activity.iconUrl ? (
@@ -44,7 +44,7 @@ export function ProfileActivity(props: {
                   <IconMingcuteGame2Fill className="size-7" style={{ color: props.accentColor || "white" }} />
                )}
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col truncate">
                <div className="truncate text-sm font-semibold text-white">{activity.name}</div>
                <div className="text-positive-100 flex items-center gap-x-1 text-xs">
                   <IconMingcuteGame2Fill />

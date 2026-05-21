@@ -150,7 +150,7 @@ export type ContextMenuProps = {
    label?: string;
    renderChildren?: ReactNode;
    children?: ReactNode;
-   close?: () => void;
+   onClose?: () => void;
 } & ContextMenuStateProps;
 
 export type ContextMenuStateProps<T = unknown> = {

@@ -15,7 +15,7 @@ import type { SelectItem, SettingsTabProps } from "@/types";
 
 type OpenApplication = ProcessInfo & { displayName?: string; icon?: string };
 
-export default function SettingsCustomTab(_props: SettingsTabProps) {
+export default function SettingsRegisterTab(_props: SettingsTabProps) {
    const { thisPresence } = usePresenceStore();
    const { user } = useThisUser();
    const [openApplications, setOpenApplications] = useState<OpenApplication[]>([]);

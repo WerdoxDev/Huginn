@@ -1,11 +1,10 @@
 import HuginnButton from "@components/button/HuginnButton";
+import { ImagePickerDeleteButton, ImagePickerEditButton } from "@components/button/ImagePickerButtons";
 import HuginnLabel from "@components/HuginnLabel";
 import MemberSince from "@components/MemberSince";
 import { ProfileAboutMe, ProfileActivity } from "@components/profile/ProfileComponents";
-import ProfileBadges from "@components/ProfileBadges";
 import RoamingHuginnIcon from "@components/RoamingHuginnIcon";
 import Tooltip from "@components/tooltip/Tooltip";
-import { useUserProfile } from "@hooks/api-hooks/userHooks";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useFileDialog } from "@hooks/useFileDialog";
 import { useIsOAuth } from "@hooks/useIsOAuth";
@@ -18,11 +17,9 @@ import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 
-import type { SettingsTabProps } from "@/types";
-
 type EditingField = "username" | "displayName" | "email" | "password";
 
-export default function SettingsProfileTab(props: SettingsTabProps) {
+export default function SettingsProfileTab() {
    const client = useClient();
    const { user, tokenPayload } = useThisUser();
    const { updateModals } = useModals();
@@ -235,17 +232,8 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
                   )}
                   {isEditing && (
                      <div className={clsx("absolute top-2 right-2 flex gap-x-1 transition-opacity", !showBanner ? "opacity-0" : "opacity-100")}>
-                        {displayBanner && (
-                           <button
-                              onClick={handleDeleteBanner}
-                              className="bg-negative-500 hover:bg-negative-600 cursor-pointer rounded-full! p-2 shadow-md"
-                           >
-                              <IconMingcuteDelete3Fill className="size-4 text-white" />
-                           </button>
-                        )}
-                        <button onClick={handleEditBanner} className="bg-surface hover:bg-surface-alt cursor-pointer rounded-full! p-2 shadow-md">
-                           <IconMingcuteEdit2Fill className="size-4 text-white" />
-                        </button>
+                        {displayBanner && <ImagePickerDeleteButton onClick={handleDeleteBanner} />}
+                        <ImagePickerEditButton onClick={handleEditBanner} />
                      </div>
                   )}
                </div>
@@ -266,20 +254,8 @@ export default function SettingsProfileTab(props: SettingsTabProps) {
                         </div>
                         {isEditing && (
                            <div className="absolute -top-1 -right-1 z-20 flex gap-x-1">
-                              {displayAvatar && (
-                                 <button
-                                    onClick={handleDeleteAvatar}
-                                    className="bg-negative-500 hover:bg-negative-600 cursor-pointer rounded-full! p-2 shadow-md"
-                                 >
-                                    <IconMingcuteDelete3Fill className="size-4 text-white" />
-                                 </button>
-                              )}
-                              <button
-                                 onClick={handleEditAvatar}
-                                 className="bg-surface hover:bg-surface-alt cursor-pointer rounded-full! p-2 shadow-md"
-                              >
-                                 <IconMingcuteEdit2Fill className="size-4 text-white" />
-                              </button>
+                              {displayAvatar && <ImagePickerDeleteButton onClick={handleDeleteAvatar} />}
+                              <ImagePickerEditButton onClick={handleEditAvatar} />
                            </div>
                         )}
                      </div>
@@ -426,10 +402,10 @@ function ChangeButton(props: { onClick?: () => void }) {
    );
 }
 
-function CurrentUserBadges({ userId }: { userId: string }) {
-   const profile = useUserProfile(userId);
-   return <ProfileBadges badges={profile.badges} />;
-}
+// function CurrentUserBadges({ userId }: { userId: string }) {
+//    const profile = useUserProfile(userId);
+//    return <ProfileBadges badges={profile.badges} />;
+// }
 
 const COLOR_PRESETS = ["#00dabd", "#00bbea", "#9b59b6", "#e91e63", "#e74c3c", "#e67e22", "#f1c40f", "#a3804f", "#517889"];
 

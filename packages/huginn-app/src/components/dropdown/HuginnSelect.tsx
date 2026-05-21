@@ -44,12 +44,16 @@ function List(props: { className?: string; children?: ReactNode; onClick?: () =>
             className="relative flex w-full cursor-pointer items-center gap-x-1.5 p-2 text-white outline-hidden select-none"
          >
             <Select.Value className="flex shrink items-center gap-x-2 overflow-hidden" placeholder={props.placeholder} render={<div></div>}>
-               {(value: SelectItem) => (
-                  <>
-                     {value.icon}
-                     <span className="truncate">{value.text}</span>
-                  </>
-               )}
+               {(value?: SelectItem) =>
+                  value ? (
+                     <>
+                        {value.icon}
+                        <span className="truncate">{value.text}</span>
+                     </>
+                  ) : (
+                     <span className="text-text/80">{props.placeholder}</span>
+                  )
+               }
             </Select.Value>
             <Select.Icon
                className={(state) =>

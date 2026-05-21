@@ -2,7 +2,7 @@ import type { APIPostOAuthConfirmJSONBody, OAuthTokenPayload } from "@huginn/sha
 
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
-import ImageSelector from "@components/ImageSelector";
+import ImageSelector from "@components/ImagePicker";
 import HuginnInput from "@components/input/HuginnInput";
 import StartWrapper from "@components/StartWrapper";
 import { useHuginnForm } from "@hooks/useHuginnForm";
