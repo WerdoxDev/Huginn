@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_app/_main")({
       if (!client || client?.gateway.status !== "authenticated") {
          sessionStorage.setItem("redirect", JSON.stringify({ pathname: location.pathname, requiresAuth: true }));
          console.log("TO /");
-         throw redirect({ to: "/" });
+         throw redirect({ to: "/", viewTransition: true });
       }
    },
 });

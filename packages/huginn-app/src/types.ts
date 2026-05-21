@@ -322,7 +322,7 @@ export type HostnamePreset = {
 
 export type AppSettings = {
    hostnamePresets: HostnamePreset[];
-   activePresetName: string | null;
+   activePresetName: string;
    theme: ThemeType;
    isChannelSidebarOpen: boolean;
    inputDeviceId: string;

@@ -140,7 +140,8 @@ function IndexComponent() {
       } else if (result.retryable) {
          dispatch({ type: "FAIL", error: result.status });
       } else {
-         await navigate({ to: "/login", replace: true, viewTransition: { types: ["forwards"] } });
+         console.log("navigate to login due to", result.status);
+         await navigate({ to: "/login", replace: true, viewTransition: true });
       }
    }
 
