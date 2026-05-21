@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.34.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.33.3...api@v0.34.0) (2026-05-21)
+
+
+### Features
+
+* **api:** add around property to message fetching ([812f9d5](https://github.com/WerdoxDev/Huginn/commit/812f9d5d9322ec287b8e499d0b593968b63c4431))
+* **api:** new route for cdn banner image upload ([8541fe3](https://github.com/WerdoxDev/Huginn/commit/8541fe39cf6ef4a6d9e00af678a4000ade3d601a))
+* **api:** user profile endpoints ([895a709](https://github.com/WerdoxDev/Huginn/commit/895a709188cde1f3b01bc08bb70d1dd3ade588aa))
+* **app:** make text have exact visible height using new css property + ui info and index ui reworks ([50115cd](https://github.com/WerdoxDev/Huginn/commit/50115cde379e2bc5e3bc8e575ddfaa4ad79f304d))
+* migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
+
+
+### Bug Fixes
+
+* **api:** handle login with pending email ([c6ad357](https://github.com/WerdoxDev/Huginn/commit/c6ad357879b3102097ff4f28650de54776fa17b4))
+
 ## [0.33.3](https://github.com/WerdoxDev/Huginn/compare/api@v0.33.2...api@v0.33.3) (2026-01-24)
 
 ### Bug Fixes

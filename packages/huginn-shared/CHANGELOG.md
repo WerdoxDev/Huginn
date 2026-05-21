@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.33.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.32.0...shared@v0.33.0) (2026-05-21)
+
+
+### Features
+
+* migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
+* **shared:** add bannerColor to types ([762be07](https://github.com/WerdoxDev/Huginn/commit/762be076965c669e299dddc223430370c9746454))
+* **shared:** add types for pinned channels ([35029fb](https://github.com/WerdoxDev/Huginn/commit/35029fb488d477f2c2d176babd0b0053a2c93804))
+* **shared:** new types and constants for badges and profile ([c1313aa](https://github.com/WerdoxDev/Huginn/commit/c1313aa656ff0d9246d3c52fa5e3291cc7c868c7))
+* **shared:** new types for banner image and bio ([280a02f](https://github.com/WerdoxDev/Huginn/commit/280a02fca0c451b0ed7b19b48cd5673fdac1d8ef))
+
 ## [0.32.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.31.1...shared@v0.32.0) (2026-01-04)
 
 ### Features

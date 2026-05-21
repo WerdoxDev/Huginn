@@ -1,6 +1,6 @@
 {
    "name": "@huginn/cdn",
-   "version": "0.14.2",
+   "version": "0.15.0",
    "type": "module",
    "imports": {
       "#*": "./src/*.ts"

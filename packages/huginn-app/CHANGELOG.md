@@ -1,5 +1,49 @@
 # Changelog
 
+## [0.68.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.67.0...app@v0.68.0) (2026-05-21)
+
+
+### Features
+
+* **app:** a small indicator next to channels to indicate current selected channel ([309b858](https://github.com/WerdoxDev/Huginn/commit/309b858595436575520012f99c3587f39a9de4bd))
+* **app:** add ghost messages instead of loading text ([84b7107](https://github.com/WerdoxDev/Huginn/commit/84b7107786f41102d537bcdce1bb78461b5d5bb8))
+* **app:** add jumping to replied message + highlighting ([00c16a9](https://github.com/WerdoxDev/Huginn/commit/00c16a99ceb6d183d1141ef5631d85079560ea99))
+* **app:** add pinned channels with context menu ([5b058ca](https://github.com/WerdoxDev/Huginn/commit/5b058cae4c3d40f94f284fde08c9a540ca97901d))
+* **app:** add profile preview in context menu ([b9a975f](https://github.com/WerdoxDev/Huginn/commit/b9a975f520c0a6dfc39005b30e21ac916d2a7fe4))
+* **app:** backdrop blur for modals ([4cb01ba](https://github.com/WerdoxDev/Huginn/commit/4cb01ba0164df79d9ccb33a8b7a0b31b9da9cd87))
+* **app:** better magnified image modal ([f97d1d3](https://github.com/WerdoxDev/Huginn/commit/f97d1d3686d2ba9ffef139c0f92d59f08dd08f9a))
+* **app:** better settings profile redesign with banner color ([daf7abd](https://github.com/WerdoxDev/Huginn/commit/daf7abd38c3cc566552e658d5e893e29aba738e8))
+* **app:** changed font + settings advanced tab complete rework with presets ([4d4604a](https://github.com/WerdoxDev/Huginn/commit/4d4604a69de763f4298696d22f79933d8259578c))
+* **app:** cleaned up ChannelMessage & MessageBox + much better replying and editing UI design ([33f9ca3](https://github.com/WerdoxDev/Huginn/commit/33f9ca3fb54a43f429a6a5cbe071b73af3a1e627))
+* **app:** complete profile settings ([137769e](https://github.com/WerdoxDev/Huginn/commit/137769e9e8f465e44073140494032ece9fbbea92))
+* **app:** first wip implementation of user profile ui ([8ef3cb8](https://github.com/WerdoxDev/Huginn/commit/8ef3cb8d53f56fe05fe570abdd33feaae0c0e774))
+* **app:** handle login and register with email verification + changes on profile coloring ([ba5ce73](https://github.com/WerdoxDev/Huginn/commit/ba5ce737ec5c4e986d6f288a916c214bc85d1283))
+* **app:** improved modal design + wip profile settings ([958ca50](https://github.com/WerdoxDev/Huginn/commit/958ca50ba319a2e20614025ad82a0da6d23dd9cf))
+* **app:** make text have exact visible height using new css property + ui info and index ui reworks ([50115cd](https://github.com/WerdoxDev/Huginn/commit/50115cde379e2bc5e3bc8e575ddfaa4ad79f304d))
+* **app:** modify activity registration and submission layout ([c781f7b](https://github.com/WerdoxDev/Huginn/commit/c781f7b10f611cd996f4d35f899b3dc74124a804))
+* **app:** much better channel sidebar menu for both mobile and desktop ([140eabe](https://github.com/WerdoxDev/Huginn/commit/140eabe67d58a0af44139419f555033c1f275cf9))
+* **app:** progress on profile implementation ([8712e26](https://github.com/WerdoxDev/Huginn/commit/8712e261d42a6356b36c7d6eb354b3d89abc654c))
+* **app:** try new font + revert exact text box sizing ([1e9b778](https://github.com/WerdoxDev/Huginn/commit/1e9b7782fdd3e4162ecb8fe64aa3a329477cd7f1))
+* migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
+
+
+### Bug Fixes
+
+* **app:** better edit and delete buttons for profile settings ([107b7e3](https://github.com/WerdoxDev/Huginn/commit/107b7e3181dbbc1677723a8bd31c0d5defaad304))
+* **app:** build issues related to tanstack router ([7d653e9](https://github.com/WerdoxDev/Huginn/commit/7d653e955d7ce4de41b1a914ad6943a8416c47e0))
+* **app:** change to empty channel causes bad scroll ([8528018](https://github.com/WerdoxDev/Huginn/commit/8528018ce9333d44fb01cde4cb83d268a837915f))
+* **app:** fix build errors ([25061ca](https://github.com/WerdoxDev/Huginn/commit/25061ca87e2c854e7198dcf4dda23521389c12f8))
+* **app:** fixes related to read state being unreliable ([6b587de](https://github.com/WerdoxDev/Huginn/commit/6b587de2f768cdf6fa0c4f28f2a8659d56d62a7c))
+* **app:** handle when replied message is deleted ([8065d1d](https://github.com/WerdoxDev/Huginn/commit/8065d1dd929f2645bf75259abd90c8f1c3758eb8))
+* **app:** image-size-issue ([#240](https://github.com/WerdoxDev/Huginn/issues/240)) ([5cabf19](https://github.com/WerdoxDev/Huginn/commit/5cabf1907eef07e7f380614af8d5437b743c089e))
+* **app:** leftover renames ([b3fcb0b](https://github.com/WerdoxDev/Huginn/commit/b3fcb0bf90cac47dba12a2d4669c2d21719b20ad))
+* **app:** margin issue on message new date indicator ([d343c72](https://github.com/WerdoxDev/Huginn/commit/d343c721d39d9aadae5229367f3d403f7939e20c))
+* **app:** more fixes on build ([47d6ca6](https://github.com/WerdoxDev/Huginn/commit/47d6ca68f904636201e71afd698e441ed3453c7d))
+* **app:** oauth redirect picker fix ([#245](https://github.com/WerdoxDev/Huginn/issues/245)) ([ac6e15b](https://github.com/WerdoxDev/Huginn/commit/ac6e15be6adb7a693857b1662a8b1da0cdd742f1))
+* **app:** performance problem with canvas + backdrop filter ([997f883](https://github.com/WerdoxDev/Huginn/commit/997f883e896528cbdf44eb4b2c62d5c868ab9656))
+* **app:** remove duplicated label usage + better HuginnButton + create channel and add member buttons ([0719f55](https://github.com/WerdoxDev/Huginn/commit/0719f55ba7428cd833b3633fb6d64464768836e1))
+* **app:** spacing issue on profile settings ([b82d6e1](https://github.com/WerdoxDev/Huginn/commit/b82d6e1616b86d58445f1013184cbb31dc7804af))
+
 ## [0.67.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.66.2...app@v0.67.0) (2026-01-24)
 
 ### Features

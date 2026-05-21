@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.15.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.14.2...cdn@v0.15.0) (2026-05-21)
+
+
+### Features
+
+* **cdn:** add banner image upload ([a121f00](https://github.com/WerdoxDev/Huginn/commit/a121f00d53a1a0d1ab994049497e5c987b384043))
+* migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
+
+
+### Bug Fixes
+
+* **cdn:** new way of file schema handling ([3ca3ca7](https://github.com/WerdoxDev/Huginn/commit/3ca3ca7bce44316650162b82d5f67b07f3f555b8))
+
 ## [0.14.2](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.14.1...cdn@v0.14.2) (2025-12-14)
 
 ### Bug Fixes

@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.23.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.22.2...backend-shared@v0.23.0) (2026-05-21)
+
+
+### Features
+
+* **backend-shared:** add around message functionality ([c27f9b8](https://github.com/WerdoxDev/Huginn/commit/c27f9b8a7730440ed2fb2b8e591b8a560f6f2420))
+* **backend-shared:** add profile banner and bio to user table ([e01b9cf](https://github.com/WerdoxDev/Huginn/commit/e01b9cff42b74b18808705350b6b985f8d770614))
+* **backend-shared:** add purpose and date to email verification ([27498fc](https://github.com/WerdoxDev/Huginn/commit/27498fcdbdaeb42722f035e463432c792d3acadd))
+* migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
+
+
+### Bug Fixes
+
+* **app:** handle when replied message is deleted ([8065d1d](https://github.com/WerdoxDev/Huginn/commit/8065d1dd929f2645bf75259abd90c8f1c3758eb8))
+* **backend-shared:** singleError needs a Bad Request defautlt code ([ec6f115](https://github.com/WerdoxDev/Huginn/commit/ec6f11534828fca3f9618e65c73d1572d22e6b0b))
+
 ## [0.22.2](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.22.1...backend-shared@v0.22.2) (2026-01-24)
 
 ### Bug Fixes
