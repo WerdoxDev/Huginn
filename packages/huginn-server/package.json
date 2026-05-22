@@ -12,6 +12,7 @@
    },
    "dependencies": {
       "@aws-sdk/client-s3": "^3.1008.0",
+      "@elysia/openapi": "^1.4.15",
       "@elysiajs/cors": "^1.4.1",
       "@elysiajs/opentelemetry": "^1.4.10",
       "@elysiajs/static": "^1.4.7",

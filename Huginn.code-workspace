@@ -49,6 +49,10 @@
          "path": "packages/huginn-website"
       },
       {
+         "name": "huginn-docs",
+         "path": "packages/huginn-docs"
+      },
+      {
          "name": "transactional",
          "path": "packages/transactional"
       }
