@@ -29,14 +29,16 @@ export function getChannels(guildId = "@me", queryClient = client) {
    return channels;
 }
 
-export function getChannelComputedName(channel: AppDirectChannel, recipientIds: Snowflake[], queryClient = client) {
-   const recipients = getUsers(recipientIds, queryClient);
+export function getGroupChannelName(channel: AppDirectChannel, queryClient = client) {
+   const recipients = getUsers(channel.recipientIds, queryClient);
 
-   return channel.originalName === undefined
-      ? undefined
-      : channel.originalName === null
-        ? recipients.map((x) => x.displayName).join(", ")
-        : channel.originalName;
+   return recipients.map((x) => x.displayName).join(", ");
+}
+
+export function getChannelComputedName(channel: AppDirectChannel, recipientIds: Snowflake[], queryClient = client) {
+   const groupName = getGroupChannelName(channel, queryClient);
+
+   return channel.originalName === undefined ? channel.name : channel.originalName === null ? groupName : channel.originalName;
 }
 
 export function findChannel(channels: AppDirectChannel[] | undefined, channelId: Snowflake | undefined) {

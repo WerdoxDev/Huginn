@@ -59,7 +59,7 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
                ...channel,
                recipientIds,
                // This may not always work due to the new user "possibly" not being added to the list just yet
-               name: getChannelComputedName(channel, recipientIds) ?? "",
+               name: getChannelComputedName(channel, recipientIds) ?? "unknown",
             };
          }),
       );
@@ -76,7 +76,7 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
             return {
                ...channel,
                recipientIds,
-               name: getChannelComputedName(channel, recipientIds) ?? "",
+               name: getChannelComputedName(channel, recipientIds) ?? "unknown",
             };
          }),
       );
@@ -96,7 +96,7 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
          client?.gateway.off("channel_recipient_add", onChannelRecipientAdded);
          client?.gateway.off("channel_recipient_remove", onChannelRecipientRemoved);
       };
-   }, [location]);
+   }, [location.href]);
 
    return props.children;
 }

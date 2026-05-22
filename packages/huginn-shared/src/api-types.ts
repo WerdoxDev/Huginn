@@ -4,7 +4,7 @@ import type { Snowflake } from "./snowflake";
 export type LoginCredentials = APIPostLoginJSONBody;
 export type RegisterUser = APIPostRegisterJSONBody;
 
-export type DirectChannel = Merge<APIDMChannel, APIGroupDMChannel>;
+export type DirectChannel = APIDMChannel | APIGroupDMChannel;
 export type AuthType = "password" | OAuthType;
 
 export type UserTokenPayload = {
@@ -166,14 +166,6 @@ type APIBaseChannel = {
    type: ChannelType;
 };
 
-export type APIChannel = {
-   name?: string | null;
-   ownerId?: Snowflake | null;
-   icon?: string | null;
-   lastMessageId?: Snowflake | null;
-   recipients?: APIChannelUser[];
-} & APIBaseChannel;
-
 export type APIDMChannel = {
    type: ChannelType.DM;
    lastMessageId: Snowflake | null;
@@ -215,7 +207,7 @@ export type APIPatchDMChannelJSONBody = {
    owner?: string;
 };
 
-export type APIGetChannelByIdResult = APIChannel;
+export type APIGetChannelByIdResult = DirectChannel;
 export type APIPostDMChannelResult = DirectChannel;
 export type APIPatchDMChannelResult = DirectChannel;
 export type APIDeleteDMChannelResult = DirectChannel;

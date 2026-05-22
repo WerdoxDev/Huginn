@@ -35,7 +35,7 @@ function ChannelWithIdComponent() {
    const queryClient = useQueryClient();
    const { data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, channelId));
    const { data } = useSuspenseQuery(getChannelsOptions(client!, "@me"));
-   const channel = useMemo(() => data.find((x) => x.id === channelId), [channelId]);
+   const channel = useMemo(() => data.find((x) => x.id === channelId), [channelId, data]);
    const posthog = usePostHog();
    const isMobile = useIsMobile();
    const router = useRouter();

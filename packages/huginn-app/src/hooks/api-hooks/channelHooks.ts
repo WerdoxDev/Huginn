@@ -34,7 +34,7 @@ export function useChannelRecipients(channelId?: Snowflake, _guildId?: Snowflake
    const channel = useChannel(channelId);
    const recipients = useUsers(channel?.recipientIds);
 
-   return { recipients, ownerId: channel?.ownerId };
+   return { recipients, ownerId: channel?.type === ChannelType.GROUP_DM ? channel?.ownerId : undefined };
 }
 
 export function useCurrentChannel() {

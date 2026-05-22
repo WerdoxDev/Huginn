@@ -1,3 +1,4 @@
+import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import basicSsl from "@vitejs/plugin-basic-ssl";
@@ -20,17 +21,15 @@ export default defineConfig(({ mode }) => {
    return {
       base: base,
       publicDir: "public",
-
+      // optimizeDeps: ["@huginn/shared"],
       plugins: [
          // basicSsl({ domains: ["192.168.178.21"] }),
          // reactRouterDevTools(),
          tanstackRouter({ target: "react", autoCodeSplitting: true }),
-         react({
-            jsxRuntime: "automatic",
-            babel: {
-               presets: ["@babel/preset-typescript"],
-               plugins: [["babel-plugin-react-compiler", reactCompilerConfig], "@babel/plugin-syntax-jsx"],
-            },
+         react({ jsxRuntime: "automatic" }),
+         babel({
+            presets: ["@babel/preset-typescript"],
+            plugins: [["babel-plugin-react-compiler", reactCompilerConfig], "@babel/plugin-syntax-jsx"],
          }),
          tailwindcss(),
          Icons({ compiler: "jsx" }),

@@ -1,7 +1,7 @@
 {
    "extends": "../../tsconfig.json",
    "compilerOptions": {
-      "types": ["unplugin-icons/types/react", "@react-router/node", "vite/client"],
+      "types": ["unplugin-icons/types/react", "vite/client"],
       "jsx": "react-jsx",
 
       "paths": {
@@ -12,7 +12,7 @@
          "@lib/*": ["./src/lib/*"],
          "@/*": ["./src/*"]
       },
-      "rootDirs": [".", "./.react-router/types"]
+      "rootDirs": ["."]
    },
    "include": ["src", "auto-imports.d.ts", "electron", "src/index.d.ts", "shared/remote-logger.ts", "shared"]
 }
