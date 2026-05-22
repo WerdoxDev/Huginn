@@ -87,7 +87,7 @@ export class HuginnClient<V extends Voice = Voice> {
       this._user = user;
    }
 
-   public async connect(options: ConnectOptions = {}): Promise<InitializationResult> {
+   public async initialize(options: ConnectOptions = {}): Promise<InitializationResult> {
       const { tokens, timeout = 10000 } = options;
       try {
          if (tokens?.token || tokens?.refreshToken) {
