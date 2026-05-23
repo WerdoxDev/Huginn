@@ -5,11 +5,12 @@ import { useIsMobile } from "@hooks/useIsMobile";
 import { getChannelsOptions, queryClient } from "@lib/queries";
 import { clientStore, useClient } from "@stores/clientStore";
 import { useMobileMenuStore } from "@stores/mobileMenuStore";
+import { useStorage } from "@stores/storageStore";
 import { useThisUser } from "@stores/userStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import clsx from "clsx";
-import { useRef, useState, type TouchEvent } from "react";
+import { useEffect, useRef, useState, type TouchEvent } from "react";
 
 export const Route = createFileRoute("/_app/_main/_home")({
    component: HomeLayoutComponent,
@@ -26,8 +27,21 @@ function HomeLayoutComponent() {
    const { data } = useSuspenseQuery(getChannelsOptions(client!, "@me"));
 
    const { user } = useThisUser();
-   const { isLeftOpen, isRightOpen, leftOffset, openLeft, setLeftOffset, leftMenuWidth, resetToCenter, isDragging, setIsDragging } =
-      useMobileMenuStore();
+   const {
+      isLeftOpen,
+      isRightOpen,
+      leftOffset,
+      openLeft,
+      setLeftOffset,
+      leftMenuWidth,
+      resetToCenter,
+      isDragging,
+      setIsDragging,
+      openRight,
+      closeRight,
+   } = useMobileMenuStore();
+
+   const settings = useStorage("settings");
 
    const isMobile = useIsMobile();
    const [startX, setStartX] = useState(0);
@@ -88,6 +102,16 @@ function HomeLayoutComponent() {
          }
       }
    }
+
+   useEffect(() => {
+      if (isMobile || !settings) return;
+
+      if (settings.isChannelSidebarOpen) {
+         openRight();
+      } else {
+         closeRight();
+      }
+   }, [isMobile, settings?.isChannelSidebarOpen, openRight, closeRight]);
 
    return (
       <div
