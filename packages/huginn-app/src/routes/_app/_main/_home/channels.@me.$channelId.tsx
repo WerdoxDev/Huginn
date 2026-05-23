@@ -4,7 +4,6 @@ import ChannelWithIdTopBar from "@components/channels/ChannelWithIdTopBar";
 import DirectChannelCall from "@components/channels/DirectChannelCall";
 import ErrorComponent from "@components/ErrorComponent";
 import MessageBox from "@components/MessageBox";
-import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { ChannelType } from "@huginn/shared";
 import { getChannelsOptions, getMessagesOptions, queryClient } from "@lib/queries";
@@ -12,10 +11,10 @@ import { clientStore, useClient } from "@stores/clientStore";
 import { useMobileMenuStore } from "@stores/mobileMenuStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, useParams, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useParams } from "@tanstack/react-router";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
-import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import { useEffect, useMemo, type MouseEvent } from "react";
 
 export const Route = createFileRoute("/_app/_main/_home/channels/@me/$channelId")({
    component: ChannelWithIdComponent,
@@ -37,13 +36,11 @@ function ChannelWithIdComponent() {
    const channel = useMemo(() => data.find((x) => x.id === channelId), [channelId, data]);
    const posthog = usePostHog();
    const isMobile = useIsMobile();
-   const router = useRouter();
    const settings = useStorage("settings");
    const { setValue } = useStorageStore();
 
-   const [recipientsVisible, setRecipientsVisible] = useState(true);
    const { resetToCenter } = useMobileMenuStore();
-   const { toggleRight, closeLeft, isRightOpen, openRight, closeRight } = useMobileMenuStore();
+   const { toggleRight, closeLeft, isRightOpen } = useMobileMenuStore();
 
    const sortedMessages = useMemo(
       () =>
@@ -66,16 +63,6 @@ function ChannelWithIdComponent() {
       }
    }, [channelId, isMobile, resetToCenter]);
 
-   useEffect(() => {
-      if (isMobile || !settings) return;
-
-      if (settings.isChannelSidebarOpen) {
-         openRight();
-      } else {
-         closeRight();
-      }
-   }, [isMobile, settings?.isChannelSidebarOpen, openRight, closeRight]);
-
    function onRecipientsClick(e: MouseEvent) {
       e.stopPropagation();
       closeLeft();
@@ -86,7 +73,6 @@ function ChannelWithIdComponent() {
          setValue("settings", { ...settings, isChannelSidebarOpen: nextOpen });
       }
 
-      setRecipientsVisible((prev) => !prev);
       posthog.capture("channel:recipients_button_click");
    }
 

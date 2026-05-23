@@ -56,7 +56,7 @@ export function sendNotification(payload: string, title: string, text: string, i
    canSend = false;
    setTimeout(() => {
       canSend = true;
-   }, 2000);
+   }, 3000);
 }
 
 export function useNotification() {

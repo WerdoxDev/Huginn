@@ -57,19 +57,11 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       clearAttachments();
       resetState();
 
-      if (!isMobile) {
-         // Prefer Slate's ReactEditor.focus for reliability. If editor isn't ready
-         // yet, fall back to focusing the DOM node. Use requestAnimationFrame
-         // to ensure the editor mounting/updating has completed.
-         if (editor) {
-            requestAnimationFrame(() => {
-               console.log("Focusing editor for channel", channelId);
-               if (editor.children.length !== 0) ReactEditor.focus(editor);
-            });
-         } else {
-            setTimeout(() => editorRef.current?.focus(), 0);
-         }
-      }
+      if (isMobile || !editor) return;
+
+      requestAnimationFrame(() => {
+         if (editor.children.length !== 0) ReactEditor.focus(editor);
+      });
    }, [currentChannel, isMobile]);
 
    // Track message box height for scroll calculations

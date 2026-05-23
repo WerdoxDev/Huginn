@@ -29,14 +29,20 @@ export class StorageController {
 
          if (type === "settings") {
             const parsedFile = file.data as StorageMap["settings"];
+
+            //@ts-ignore - handle old theme naming
+            if (parsedFile.theme === "pine green") {
+               await this.saveFile(type, { ...parsedFile, theme: "pine-green" });
+            }
+
             if (!parsedFile.hostnamePresets || parsedFile.hostnamePresets.length === 0) {
-               await this.saveFile(type as FileType, {
+               await this.saveFile(type, {
                   ...parsedFile,
                   hostnamePresets: storageDefaults.settings.hostnamePresets,
                   activePresetName: "Default",
                });
             } else if (!parsedFile.activePresetName || parsedFile.activePresetName === "") {
-               await this.saveFile(type as FileType, {
+               await this.saveFile(type, {
                   ...parsedFile,
                   activePresetName: parsedFile.hostnamePresets[0]?.name ?? "Default",
                });

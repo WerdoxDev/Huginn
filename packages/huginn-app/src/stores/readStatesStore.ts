@@ -12,6 +12,7 @@ import { combine } from "zustand/middleware";
 
 import { sendNotification } from "../contexts/NotificationContext";
 import { clientStore } from "./clientStore";
+import { themeStore } from "./themeStore";
 
 export type ContextReadState = {
    channelId: Snowflake;
@@ -35,9 +36,7 @@ const store = createStore(
          // Always update lastReadMessageId. Compute unreadCount from cache when available,
          // filtering out the current user's own messages (mirroring server-side countUnreadMessages).
          // Fall back to 0 when messages aren't loaded — the server is authoritative on the next ready event.
-         const unreadCount = messages
-            ? messages.filter((x) => BigInt(x.id) > BigInt(messageId) && (!userId || x.authorId !== userId)).length
-            : 0;
+         const unreadCount = messages ? messages.filter((x) => BigInt(x.id) > BigInt(messageId) && (!userId || x.authorId !== userId)).length : 0;
 
          set(
             produce((draft: StoreType) => {
@@ -111,7 +110,7 @@ export function initializeReadStates() {
          if (windowStore.getState().environment === "desktop") {
             let content;
             const username = author?.displayName ?? "Unknown User";
-            const title = username + (channel?.type === ChannelType.GROUP_DM ? ` - ${channel.name}` : "");
+            const title = username + (channel?.type === ChannelType.GROUP_DM ? `- (${channel.name})` : "");
 
             switch (data.message.type) {
                case MessageType.DEFAULT:
@@ -141,7 +140,9 @@ export function initializeReadStates() {
                   break;
             }
 
-            sendNotification(data.message.channelId, title, content ?? "", author?.avatar ?? channel?.icon ?? undefined);
+            const theme = themeStore.getState().themeType;
+
+            sendNotification(data.message.channelId, title, content ?? "", author?.avatar ?? theme ?? undefined);
          }
 
          playAudio("notification", true);
