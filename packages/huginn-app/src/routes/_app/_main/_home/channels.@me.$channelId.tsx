@@ -23,7 +23,6 @@ export const Route = createFileRoute("/_app/_main/_home/channels/@me/$channelId"
       const client = clientStore.getState().client;
       if (!client) return;
 
-      // throw new Error("OOOPS");
       // await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate loading time
       return await queryClient.ensureInfiniteQueryData(getMessagesOptions(queryClient, client, params.channelId as string));
    },
