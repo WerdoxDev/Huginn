@@ -390,7 +390,7 @@ export type UserPresence = {
 export type PresenceUser<U extends APIBaseUser = APIPublicUser> = Partial<U> & { id: Snowflake };
 
 export type UserSettings = {
-   theme?: "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal" | "scarlet";
+   theme?: "cerulean" | "pine-green" | "eggplant" | "coffee" | "charcoal" | "scarlet";
    status: PresenceStatus;
    pinnedChannels?: Snowflake[];
 };
