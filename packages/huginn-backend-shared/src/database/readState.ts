@@ -116,7 +116,7 @@ export const readStateExtension = Prisma.defineExtension({
             const readState = await prisma.readState.getByUserAndChannelId(userId, channelId);
 
             const potentialUnreadMessages = await prisma.message.findMany({
-               where: { channelId: BigInt(channelId), deletedTimestamp: null },
+               where: { channelId: BigInt(channelId) },
                skip: 1,
                cursor: readState.lastReadMessageId ? { id: BigInt(readState.lastReadMessageId) } : undefined,
                select: { id: true, authorId: true },
@@ -140,7 +140,6 @@ export const readStateExtension = Prisma.defineExtension({
                FROM "ReadState" rs
                LEFT JOIN "Message" m ON m."channelId" = rs."channelId"
                   AND m."authorId" != rs."userId"
-                  AND m."deletedTimestamp" IS NULL
                   AND (rs."lastReadMessageId" IS NULL OR m."id" > rs."lastReadMessageId")
                WHERE rs."userId" = ${BigInt(userId)}
                GROUP BY rs."channelId", rs."lastReadMessageId"

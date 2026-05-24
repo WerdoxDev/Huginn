@@ -17,7 +17,6 @@ export const messagesExtension = Prisma.defineExtension({
                   where: {
                      channelId: BigInt(channelId),
                      id: BigInt(messageId),
-                     deletedTimestamp: null,
                   },
                   ...args,
                });
@@ -54,7 +53,6 @@ export const messagesExtension = Prisma.defineExtension({
                         : await prisma.message.findMany({
                              where: {
                                 channelId: BigInt(channelId),
-                                deletedTimestamp: null,
                                 id: { lt: aroundId },
                              },
                              ...args,
@@ -65,7 +63,6 @@ export const messagesExtension = Prisma.defineExtension({
                   const aroundMessage = await prisma.message.findFirst({
                      where: {
                         channelId: BigInt(channelId),
-                        deletedTimestamp: null,
                         id: aroundId,
                      },
                      ...args,
@@ -77,7 +74,6 @@ export const messagesExtension = Prisma.defineExtension({
                         : await prisma.message.findMany({
                              where: {
                                 channelId: BigInt(channelId),
-                                deletedTimestamp: null,
                                 id: { gt: aroundId },
                              },
                              ...args,
@@ -95,7 +91,7 @@ export const messagesExtension = Prisma.defineExtension({
                const direction = after ? "forward" : before ? "backward" : "none";
 
                const messages = await prisma.message.findMany({
-                  where: { channelId: BigInt(channelId), deletedTimestamp: null },
+                  where: { channelId: BigInt(channelId) },
                   ...args,
                   orderBy: { id: "asc" },
                   cursor: cursor ? { id: BigInt(cursor) } : undefined,
@@ -273,7 +269,7 @@ export const messagesExtension = Prisma.defineExtension({
                }
 
                const message = await prisma.message.update({
-                  where: { id: BigInt(id), deletedTimestamp: null },
+                  where: { id: BigInt(id) },
                   data: {
                      content: options.content,
                      embeds: options.embeds ? { set: createdEmbeds.map((x) => ({ id: x.id })) } : { set: [] },
@@ -301,47 +297,43 @@ export const messagesExtension = Prisma.defineExtension({
             const methodName = "message.deleteById";
             assertId(methodName, id, channelId);
             try {
-               let deletedMessage: Prisma.MessageGetPayload<Args> | undefined;
-
-               await prisma.$transaction(async (tx) => {
-                  const channel = await tx.channel.getById(channelId, {
-                     select: { lastMessageId: true },
-                  });
-                  if (channel.lastMessageId === id) {
-                     const lastMessage = await tx.message.findFirst({
-                        where: {
-                           channelId: BigInt(channelId),
-                           id: { not: BigInt(id) },
-                           deletedTimestamp: null,
-                        },
-                        orderBy: { id: "desc" },
-                        select: { id: true },
-                     });
-
-                     // If this is null it means the channel has no messages anymore
-                     if (lastMessage) {
-                        await tx.channel.update({
-                           where: { id: BigInt(channelId) },
-                           data: { lastMessageId: lastMessage.id },
-                        });
-
-                        await tx.readState.updateMany({
-                           where: { channelId: BigInt(channelId), lastReadMessageId: BigInt(id) },
-                           data: { lastReadMessageId: lastMessage.id },
-                        });
-                     }
-                  }
-
-                  deletedMessage = (await tx.message.update({
-                     where: {
-                        id: BigInt(id),
-                        channelId: BigInt(channelId),
-                        deletedTimestamp: null,
-                     },
-                     data: { deletedTimestamp: new Date() },
-                     ...args,
-                  })) as Prisma.MessageGetPayload<Args>;
+               const channel = await prisma.channel.getById(channelId, {
+                  select: { lastMessageId: true },
                });
+
+               const deletePromise = prisma.message.delete({ where: { id: BigInt(id), channelId: BigInt(channelId) }, ...args });
+
+               let deletedMessage;
+               // If this is null it means the channel has no messages anymore
+               label: if (channel.lastMessageId === id) {
+                  const lastMessage = await prisma.message.findFirst({
+                     where: {
+                        channelId: BigInt(channelId),
+                        id: { not: BigInt(id) },
+                     },
+                     orderBy: { id: "desc" },
+                     select: { id: true },
+                  });
+
+                  if (!lastMessage) break label;
+
+                  const [, , message] = await prisma.$transaction([
+                     prisma.channel.update({
+                        where: { id: BigInt(channelId) },
+                        data: { lastMessageId: lastMessage.id },
+                     }),
+
+                     prisma.readState.updateMany({
+                        where: { channelId: BigInt(channelId), lastReadMessageId: BigInt(id) },
+                        data: { lastReadMessageId: lastMessage.id },
+                     }),
+                     deletePromise,
+                  ]);
+
+                  deletedMessage = message;
+               } else {
+                  deletedMessage = await deletePromise;
+               }
 
                assertObj(methodName, deletedMessage, DBErrorType.NULL_MESSAGE);
                return idFix(deletedMessage) as MessagePayload<Args>;

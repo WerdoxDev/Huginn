@@ -72,7 +72,7 @@ model Channel {
    messages          Message[]
    readStates        ReadState[]
    messageReferences MessageReference[]
-   pinnedMessages   MessagePin[]
+   pinnedMessages    MessagePin[]
    createdAt         DateTime           @default(now())
    updatedAt         DateTime?          @updatedAt
 
@@ -91,7 +91,7 @@ model Message {
    content             String
    timestamp           DateTime
    editedTimestamp     DateTime?
-   deletedTimestamp    DateTime?
+   // deletedTimestamp    DateTime?
    embeds              Embed[]
    attachments         Attachment[]
    reactions           String[]

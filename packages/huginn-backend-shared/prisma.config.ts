@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { defineConfig, env } from "prisma/config";
 
 export default defineConfig({
@@ -6,6 +7,6 @@ export default defineConfig({
       path: "prisma/migrations",
    },
    datasource: {
-      url: process.env.POSTGRESQL_URL,
+      url: process.env.POSTGRESQL_URL ?? env("POSTGRESQL_URL"),
    },
 });
