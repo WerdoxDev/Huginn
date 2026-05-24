@@ -176,9 +176,10 @@ export const messagesExtension = Prisma.defineExtension({
                   }
                }
 
+               const messageId = options.id ?? snowflake.generate(WorkerID.MESSAGE);
                const message = await prisma.message.create({
                   data: {
-                     id: options.id ?? snowflake.generate(WorkerID.MESSAGE),
+                     id: messageId,
                      type: options.type,
                      channelId: BigInt(options.channelId),
                      content: options.content ?? "",
@@ -217,10 +218,9 @@ export const messagesExtension = Prisma.defineExtension({
                });
 
                // Has select none with {id : true}
-               await prisma.channel.update({
-                  where: { id: BigInt(options.channelId) },
-                  data: { lastMessageId: message.id },
-                  select: { id: true },
+               await prisma.channel.updateMany({
+                  where: { id: BigInt(options.channelId), OR: [{ lastMessageId: null }, { lastMessageId: { lt: messageId } }] },
+                  data: { lastMessageId: messageId },
                });
 
                assertObj(methodName, message, DBErrorType.NULL_MESSAGE);

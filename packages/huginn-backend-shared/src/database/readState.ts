@@ -103,10 +103,10 @@ export const readStateExtension = Prisma.defineExtension({
 
                return idFix(updatedReadState);
             } catch (e) {
-               if (e instanceof PrismaClientKnownRequestError && e.code === "P2025") {
-                  consola.info("Rare error due to fast updates, ignoring");
-                  return;
-               }
+               // if (e instanceof PrismaClientKnownRequestError && e.code === "P2025") {
+               //    consola.info("Rare error due to fast updates, ignoring");
+               //    return;
+               // }
                await assertExists(e, methodName, DBErrorType.NULL_MESSAGE, [lastReadMessageId]);
                await assertExists(e, methodName, DBErrorType.NULL_READ_STATE, [{ userId, channelId }]);
                throw e;
