@@ -19,7 +19,7 @@ export const deleteChannel = new Elysia()
       }
 
       // Delete or leave the DM
-      const deletedChannel = await prisma.channel.deleteDM(channelId, tokenPayload.id, {
+      const deletedChannel = await prisma.channel.deleteDirect(channelId, tokenPayload.id, {
          select: merge(selectChannelDefaults, omitChannelRecipient(tokenPayload.id)),
       });
       const filteredChannel: APIDeleteDMChannelResult = filterChannel(deletedChannel);
@@ -51,7 +51,7 @@ export const deleteChannel = new Elysia()
 
       // Transfer the old owner to a new one alphabetically
       if (channel.ownerId === tokenPayload.id) {
-         const updatedChannel = await prisma.channel.editDM(
+         const updatedChannel = await prisma.channel.editDirect(
             channelId,
             undefined,
             undefined,

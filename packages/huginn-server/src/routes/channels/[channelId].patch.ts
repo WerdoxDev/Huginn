@@ -46,7 +46,7 @@ export const patchChannel = new Elysia().use(verifyJwt()).patch(
          channelIconHash = null;
       }
 
-      const updatedChannel = await prisma.channel.editDM(channelId, body.name, channelIconHash, body.owner, {
+      const updatedChannel = await prisma.channel.editDirect(channelId, body.name, channelIconHash, body.owner, {
          select: selectChannelDefaults,
       });
 

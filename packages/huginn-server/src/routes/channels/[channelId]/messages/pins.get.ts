@@ -22,7 +22,6 @@ export const getChannelMessagePins = new Elysia().use(verifyJwt()).get(
       }
 
       const dbPins = await prisma.messagePin.getChannelPins(channelId, limit, before, {
-         where: { message: { deletedTimestamp: null } },
          orderBy: { messageId: "desc" },
          select: selectMessagePin,
       });
