@@ -261,7 +261,8 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
 
       log("server:gateway", "recv", "update presence", "sid:", session.sessionId, "uid:", userId, "sts:", data.status);
 
-      if (userId) {
+      // Make sure the status is valid.
+      if (["offline", "online", "dnd", "idle"].includes(data.status) && userId) {
          this.presenceManager.updateUserPresence(userId, session, undefined, data.status, data.activities);
       }
    }
