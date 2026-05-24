@@ -36,7 +36,6 @@ export default function ChannelWithIdTopBar(props: {
                <MobileMenuButton />
             ))}
          <ChannelName />
-         {props.channel.lastMessageId}
          {/* {(!isMobile || !isRightOpen) && ( */}
          <div className="ml-auto flex shrink-0 gap-x-5">
             <TopBarButton tooltip="Start Call" onClick={props.onCallClick}>
