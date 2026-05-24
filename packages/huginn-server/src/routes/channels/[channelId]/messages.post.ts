@@ -60,11 +60,8 @@ export const postChannelMessage = new Elysia()
          }
 
          // Validate attachments
-         console.log(body.attachments, body.files);
          if (body.attachments && body.files) {
-            console.log(body.files);
             for (const attachment of body.attachments) {
-               // console.log(body.files);
                if (!body.files[attachment.id] || body.files[attachment.id]?.name !== attachment.filename) return invalidBody(status);
             }
          }
