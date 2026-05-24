@@ -174,13 +174,13 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
          scrollRef.current.scrollTop +=
             (lastDirection.current === "up" ? -lastSeenElement.current.height : lastSeenElement.current.height) - heightDifference;
       } else {
-         foundMessageElement.scrollIntoView({
-            behavior: "instant",
-            block: lastDirection.current === "up" ? "start" : "end",
-         });
-         const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
-         scrollRef.current.scrollTop +=
-            (lastDirection.current === "up" ? lastSeenElement.current.distanceToTop : -lastSeenElement.current.distanceToBottom) + heightDifference;
+         // foundMessageElement.scrollIntoView({
+         //    behavior: "instant",
+         //    block: lastDirection.current === "up" ? "start" : "end",
+         // });
+         // const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
+         // scrollRef.current.scrollTop +=
+         //    (lastDirection.current === "up" ? lastSeenElement.current.distanceToTop : -lastSeenElement.current.distanceToBottom) + heightDifference;
       }
 
       shouldScrollToLastSeen.current = false;

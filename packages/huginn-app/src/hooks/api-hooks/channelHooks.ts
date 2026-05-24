@@ -42,8 +42,6 @@ export function useCurrentChannel() {
 
    const channel = useChannel(channelId);
    return channel;
-
-   // return useMemo(() => channels?.find((channel) => channel.id === channelId), [channelId, channels]);
 }
 
 export function useSafeDeleteDMChannel(channelId?: Snowflake, channelType?: DirectChannel["type"], channelName?: string) {

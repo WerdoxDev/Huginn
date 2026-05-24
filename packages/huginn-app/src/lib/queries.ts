@@ -64,11 +64,15 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
          const channels: APIGetUserChannelsResult | undefined = queryClient.getQueryData(["channels", "@me"]);
          const targetChannel = channels?.find((x) => x.id === channelId);
 
-         const latestMessage = last.at(-1)!;
+         const latestMessage = last.at(-1);
 
-         return !latestMessage.isPreview && last.some((message) => message.id === targetChannel?.lastMessageId)
-            ? undefined
-            : { before: "", after: latestMessage.id };
+         return !latestMessage?.isPreview && latestMessage && !last.some((message) => message.id === targetChannel?.lastMessageId)
+            ? { before: "", after: latestMessage.id }
+            : undefined;
+
+         // return !latestMessage?.isPreview && latestMessage && (!targetChannel || targetChannel.lastMessageId !== latestMessage.id)
+         // ? { after: latestMessage.id, before: "" }
+         // : undefined;
       },
       maxPages: 2,
       retry: false,

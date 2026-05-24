@@ -7,11 +7,11 @@ import MessageBox from "@components/MessageBox";
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { ChannelType } from "@huginn/shared";
-import { getChannelsOptions, getMessagesOptions, queryClient } from "@lib/queries";
+import { getMessagesOptions, queryClient } from "@lib/queries";
 import { clientStore, useClient } from "@stores/clientStore";
 import { useMobileMenuStore } from "@stores/mobileMenuStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
-import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
@@ -33,8 +33,6 @@ function ChannelWithIdComponent() {
    const client = useClient();
    const queryClient = useQueryClient();
    const { data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, channelId));
-   // const { data } = useSuspenseQuery(getChannelsOptions(client!, "@me"));
-   // const channel = useMemo(() => data.find((x) => x.id === channelId), [channelId, data]);
    const channel = useCurrentChannel();
    const posthog = usePostHog();
    const isMobile = useIsMobile();
@@ -108,7 +106,7 @@ function ChannelWithIdComponent() {
                         onClick={resetToCenter}
                      />
                      <DirectChannelCall channelId={channelId} />
-                     <ChannelMessages channelId={channelId} messages={sortedMessages} channel={channel} />
+                     <ChannelMessages messages={sortedMessages} channel={channel} />
                      <MessageBox messages={sortedMessages} />
                   </div>
 
