@@ -52,14 +52,27 @@ export function getChannelRecipients(channelId: Snowflake, queryClient = client)
    return recipients ?? [];
 }
 
-export function updateChannelLastMessageId(channelId: Snowflake, messageId: Snowflake, queryClient = client) {
+export function updateChannelLastMessageId(channelId: Snowflake, messageId: Snowflake, queryClient = client, options?: { allowLower?: boolean }) {
    queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (data) => {
       if (!data) return undefined;
 
-      const channel = data.find((x) => x.id === channelId);
-      if (!channel) return data;
+      const channelIndex = data.findIndex((x) => x.id === channelId);
+      if (channelIndex === -1) return data;
 
-      return [{ ...channel, lastMessageId: messageId }, ...data.filter((x) => x.id !== channelId)];
+      const channel = data[channelIndex];
+      const isNewer = !channel.lastMessageId || BigInt(channel.lastMessageId) < BigInt(messageId);
+
+      if (!isNewer && !options?.allowLower) {
+         return data;
+      }
+
+      const updatedChannel = { ...channel, lastMessageId: messageId };
+
+      if (isNewer) {
+         return [updatedChannel, ...data.filter((x) => x.id !== channelId)];
+      }
+
+      return data.map((x) => (x.id === channelId ? updatedChannel : x));
    });
 }
 

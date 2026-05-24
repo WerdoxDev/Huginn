@@ -14,7 +14,7 @@ import { useClient } from "@stores/clientStore";
 import { useReadStates } from "@stores/readStatesStore";
 import { useThisUser } from "@stores/userStore";
 import { useHuginnWindow } from "@stores/windowStore";
-import { type InfiniteData, useQueryClient } from "@tanstack/react-query";
+import { type InfiniteData, notifyManager, useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useEffect } from "react";
 
 import type { AppMessage } from "@/types";
@@ -46,18 +46,20 @@ export default function MessageWebsocketProvider(props: { children?: ReactNode }
          return;
       }
 
-      const { inLoadedQueryPage, inVisibleQueryPage } = appendAppMessage(queryClient, d.channelId, newMessage, targetChannel, currentChannel);
-      updateChannelLastMessageId(d.channelId, d.id, queryClient);
+      notifyManager.batch(() => {
+         const { inLoadedQueryPage, inVisibleQueryPage } = appendAppMessage(queryClient, d.channelId, newMessage, targetChannel, currentChannel);
+         updateChannelLastMessageId(d.channelId, d.id, queryClient);
 
-      dispatchEvent("message_added", {
-         message: newMessage,
-         visible:
-            currentChannel?.id === d.channelId &&
-            currentVisibleMessages.some((x) => x.messageId === currentChannel.lastMessageId) &&
-            huginnWindow.focused,
-         inLoadedQueryPage: inLoadedQueryPage,
-         inVisibleQueryPage: inVisibleQueryPage,
-         self: d.author.id === user?.id,
+         dispatchEvent("message_added", {
+            message: newMessage,
+            visible:
+               currentChannel?.id === d.channelId &&
+               currentVisibleMessages.some((x) => x.messageId === currentChannel.lastMessageId) &&
+               huginnWindow.focused,
+            inLoadedQueryPage: inLoadedQueryPage,
+            inVisibleQueryPage: inVisibleQueryPage,
+            self: d.author.id === user?.id,
+         });
       });
    }
 
@@ -96,7 +98,7 @@ export default function MessageWebsocketProvider(props: { children?: ReactNode }
          const lastMessageId = queryClient.getQueryData<InfiniteData<AppMessage[]>>(["messages", d.channelId])?.pages.at(-1)?.at(-1)?.id;
 
          if (lastMessageId) {
-            updateChannelLastMessageId(d.channelId, lastMessageId, queryClient);
+            updateChannelLastMessageId(d.channelId, lastMessageId, queryClient, { allowLower: true });
 
             if (readStates.some((x) => x.channelId === d.channelId && x.lastReadMessageId === d.id)) {
                setLatestReadMessage(d.channelId, lastMessageId, queryClient, user?.id);

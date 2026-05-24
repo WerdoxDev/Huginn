@@ -4,6 +4,7 @@ import ChannelWithIdTopBar from "@components/channels/ChannelWithIdTopBar";
 import DirectChannelCall from "@components/channels/DirectChannelCall";
 import ErrorComponent from "@components/ErrorComponent";
 import MessageBox from "@components/MessageBox";
+import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { ChannelType } from "@huginn/shared";
 import { getChannelsOptions, getMessagesOptions, queryClient } from "@lib/queries";
@@ -32,8 +33,9 @@ function ChannelWithIdComponent() {
    const client = useClient();
    const queryClient = useQueryClient();
    const { data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, channelId));
-   const { data } = useSuspenseQuery(getChannelsOptions(client!, "@me"));
-   const channel = useMemo(() => data.find((x) => x.id === channelId), [channelId, data]);
+   // const { data } = useSuspenseQuery(getChannelsOptions(client!, "@me"));
+   // const channel = useMemo(() => data.find((x) => x.id === channelId), [channelId, data]);
+   const channel = useCurrentChannel();
    const posthog = usePostHog();
    const isMobile = useIsMobile();
    const settings = useStorage("settings");
@@ -106,7 +108,7 @@ function ChannelWithIdComponent() {
                         onClick={resetToCenter}
                      />
                      <DirectChannelCall channelId={channelId} />
-                     <ChannelMessages channelId={channelId} messages={sortedMessages} />
+                     <ChannelMessages channelId={channelId} messages={sortedMessages} channel={channel} />
                      <MessageBox messages={sortedMessages} />
                   </div>
 
