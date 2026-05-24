@@ -16,19 +16,19 @@ export default function StartBackground() {
    const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
    const rafIdRef = useRef<number>(0);
    const animationStartRef = useRef<number>(Date.now());
-   const canvasSizeRef = useRef<number>(window.innerWidth);
+   const canvasSizeRef = useRef({ width: window.innerWidth, height: window.innerHeight });
    const resizeTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
    const themeRef = useRef(theme);
    themeRef.current = theme;
 
    const loopAnimation = useCallback((duration: number = 5000) => {
       const seed = Math.random();
-      const size = canvasSizeRef.current;
+      const { width, height } = canvasSizeRef.current;
       animation.transition({
          blobOptions: { seed, extraPoints: 10, randomness: 3, size: blobSize },
          canvasOptions: {
-            offsetX: size / 2 - blobSize / 2,
-            offsetY: size / 2 - blobSize / 2,
+            offsetX: width / 2 - blobSize / 2,
+            offsetY: height / 2 - blobSize / 2,
          },
          duration,
          timingFunction: "ease",
@@ -43,7 +43,7 @@ export default function StartBackground() {
          return;
       }
 
-      const size = canvasSizeRef.current;
+      const { width, height } = canvasSizeRef.current;
       const t = themeRef.current;
       const cycle = 10000;
       const elapsedMs = (Date.now() - animationStartRef.current) % cycle;
@@ -59,10 +59,11 @@ export default function StartBackground() {
       const from = segmentIndex === 0 ? color1 : color2;
       const to = segmentIndex === 0 ? color2 : color1;
 
-      ctx.clearRect(0, 0, size, size);
+      ctx.clearRect(0, 0, width, height);
 
-      const half = size / 2;
-      const gradient = ctx.createRadialGradient(half, half, 0, half, half, half);
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.max(width, height) / 2);
       gradient.addColorStop(0, t["primary-900"]);
       gradient.addColorStop(1, interpolateColor(from, to, segmentProgress));
       ctx.fillStyle = gradient;
@@ -77,6 +78,10 @@ export default function StartBackground() {
       if (!cvs) return;
 
       ctxRef.current = cvs.getContext("2d");
+
+      const { width, height } = canvasSizeRef.current;
+      cvs.width = width;
+      cvs.height = height;
 
       if (isActive) {
          loopAnimation(0);
@@ -96,16 +101,17 @@ export default function StartBackground() {
          if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
          cancelAnimationFrame(rafIdRef.current);
 
-         const newSize = window.innerWidth;
-         canvasSizeRef.current = newSize;
+         const width = window.innerWidth;
+         const height = window.innerHeight;
+         canvasSizeRef.current = { width, height };
 
          const cvs = canvasRef.current;
          if (cvs) {
-            cvs.width = newSize;
-            cvs.height = newSize;
+            cvs.width = width;
+            cvs.height = height;
          }
 
-         ctxRef.current?.clearRect(0, 0, newSize, newSize);
+         ctxRef.current?.clearRect(0, 0, width, height);
 
          resizeTimerRef.current = setTimeout(() => {
             loopAnimation(0);
@@ -122,7 +128,7 @@ export default function StartBackground() {
 
    return (
       <div className="fixed flex h-full w-full items-center justify-center" style={{ viewTransitionName: "start-background" }}>
-         <canvas ref={canvasRef} width={canvasSizeRef.current} height={canvasSizeRef.current} className="absolute" />
+         <canvas ref={canvasRef} width={canvasSizeRef.current.width} height={canvasSizeRef.current.height} className="absolute" />
       </div>
    );
 }
