@@ -1,17 +1,25 @@
 import { prisma } from "@huginn/backend-shared/database/index";
-import { CONSTANTS, log } from "@huginn/shared";
+import { ChannelType, log } from "@huginn/shared";
 
-export function startCronJobs() {
-   log("server:cron", "default", "starting cron jobs");
+export async function startCronJobs() {
+   log("server:cron", "default", "scheduling cron jobs");
 
-   // expired email verifications
-   setInterval(async () => {
-      log("server:cron", "default", "delete expired email verifications");
-   }, CONSTANTS.EMAIL_VERIFICATION_WINDOW);
-   setTimeout(async () => {
-      console.log("Running initial cleanup of expired email verifications...");
-      await new Promise((r) => setImmediate(r));
-      const result = await prisma.channel.count({});
-      log("server:cron", "default", `deleted ${result.count} expired email verifications`);
-   }, 5000);
+   await removeEmptyChannels();
+   Bun.cron("@hourly", async () => await removeExpiredEmailVerifications());
+}
+
+async function removeExpiredEmailVerifications() {
+   log("server:cron", "default", "delete expired email verifications");
+
+   const result = await prisma.emailVerification.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+
+   log("server:cron", "default", "finished deleting expired email verifications, c:", result.count);
+}
+
+async function removeEmptyChannels() {
+   log("server:cron", "default", "delete empty channels");
+
+   const result = await prisma.channel.deleteMany({ where: { type: ChannelType.DM, recipients: { none: {} } } });
+
+   log("server:cron", "default", "finished deleting empty channels, c:", result.count);
 }

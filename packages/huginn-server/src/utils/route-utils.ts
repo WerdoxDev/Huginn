@@ -1,4 +1,5 @@
 import type { Endpoints } from "@octokit/types";
+import type { Octokit } from "octokit";
 
 import { octokit, resend } from "#setup";
 import { envs } from "#setup";
@@ -10,6 +11,7 @@ import {
    type APIPostAttachmentJSONBody,
    BADGES,
    CDNRoutes,
+   CacheStorage,
    FLAG_BADGE_MAP,
    type Snowflake,
    type Unpacked,
@@ -32,12 +34,19 @@ export function getAppPackageVersion(tagName: string) {
    return tagName.replace("app@", "");
 }
 
+const allReleasesCache = new CacheStorage<string, Endpoints["GET /repos/{owner}/{repo}/releases"]["response"]["data"]>(1000 * 60 * 60); // Cache for 1 hour
+
 export async function getAllAppReleases() {
-   const releases = (await octokit.rest.repos.listReleases({ owner: envs.REPO_OWNER, repo: envs.REPO })).data
-      .filter((x) => x.tag_name.includes("app@"))
-      .sort((v1, v2) => semver.rcompare(getAppPackageVersion(v1.tag_name), getAppPackageVersion(v2.tag_name)));
+   const releases = await allReleasesCache.cacheOrGet("releases", async () => {
+      const fetchedReleases = (await octokit.rest.repos.listReleases({ owner: envs.REPO_OWNER, repo: envs.REPO })).data
+         .filter((x) => x.tag_name.includes("app@"))
+         .sort((v1, v2) => semver.rcompare(getAppPackageVersion(v1.tag_name), getAppPackageVersion(v2.tag_name)));
+      return fetchedReleases;
+   });
    return releases;
 }
+
+const tagsCache = new CacheStorage<string, Endpoints["GET /repos/{owner}/{repo}/tags"]["response"]["data"]>(1000 * 60 * 60); // Cache for 1 hour
 
 export async function getAllTags() {
    let page = 1;
@@ -45,21 +54,39 @@ export async function getAllTags() {
    let hasNextPage = true;
 
    while (hasNextPage) {
-      const response = await octokit.rest.repos.listTags({
-         owner: envs.REPO_OWNER,
-         repo: envs.REPO,
-         per_page: 100,
-         page,
+      const response = await tagsCache.cacheOrGet(`page-${page}`, async () => {
+         return (
+            await octokit.rest.repos.listTags({
+               owner: envs.REPO_OWNER,
+               repo: envs.REPO,
+               per_page: 100,
+               page,
+            })
+         ).data;
       });
 
-      allTags = allTags.concat(response.data);
+      allTags = allTags.concat(response);
 
       // Check if we received 100 tags—if so, there might be another page
-      hasNextPage = response.data.length === 100;
+      hasNextPage = response.length === 100;
       page++;
    }
 
    return allTags;
+}
+
+const releaseCache = new CacheStorage<string, Endpoints["GET /repos/{owner}/{repo}/releases/tags/{tag}"]["response"]["data"]>(1000 * 60 * 60); // Cache for 1 hour
+
+export async function getReleaseByTag(tag: string) {
+   const release = await releaseCache.cacheOrGet(tag, async () => {
+      const response = await octokit.rest.repos.getReleaseByTag({
+         owner: envs.REPO_OWNER,
+         repo: envs.REPO,
+         tag,
+      });
+      return response.data;
+   });
+   return release;
 }
 
 export function extractLinks(input?: string): string[] {
