@@ -1,4 +1,3 @@
-import GuildsBar from "@components/GuildsBar";
 import WebsocketProviders from "@components/websocket/WebsocketProviders";
 import { clientStore } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
@@ -23,17 +22,15 @@ function MainLayoutComponent() {
    const huginnWindow = useHuginnWindow();
    // const isTransitioning = useViewTransitionState("*");
 
-   // useEffect(() => {
-   //    // updateModals({ news: { isOpen: true } });
-
-   //    const version = localStorage.getItem("version");
-   //    if (version && !isTransitioning && huginnWindow.version !== version) {
-   //       updateModals({ news: { isOpen: true } });
-   //       localStorage.setItem("version", huginnWindow.version);
-   //    } else if (!version) {
-   //       localStorage.setItem("version", huginnWindow.version);
-   //    }
-   // }, [isTransitioning]);
+   useEffect(() => {
+      const lastVersion = localStorage.getItem("last-version") ?? undefined;
+      setTimeout(() => {
+         updateModals({ news: { isOpen: true, lastVersion } });
+      }, 1000);
+      if (huginnWindow.version !== lastVersion) {
+         localStorage.setItem("last-version", huginnWindow.version);
+      }
+   }, []);
 
    return (
       <div className="absolute inset-0 overflow-hidden" style={{ viewTransitionName: "main" }}>
