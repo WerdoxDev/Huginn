@@ -1,8 +1,8 @@
-import { ref } from "vue";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 const themeStorageKey = "theme-type";
 
-export type ThemeType = "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal";
+export type ThemeType = "cerulean" | "pine-green" | "eggplant" | "coffee" | "charcoal";
 
 export type ColorTheme = {
    type: ThemeType;
@@ -41,7 +41,7 @@ export const ceruleanTheme: ColorTheme = {
 };
 
 export const pineGreenTheme: ColorTheme = {
-   type: "pine green",
+   type: "pine-green",
 
    background: "#303030",
    secondary: "#262626",
@@ -112,63 +112,77 @@ export const charcoalTheme: ColorTheme = {
    logoOutline: "charcoal_outline_thick.png",
 };
 
-export let currentTheme = ref(coffeeTheme);
+type ThemeContextValue = {
+   currentTheme: ColorTheme;
+   setThemeType: (type: ThemeType) => void;
+};
 
-export function loadTheme() {
-   let loadedTheme: ThemeType = localStorage.getItem(themeStorageKey) as ThemeType;
+const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
-   if (loadedTheme === null) {
-      loadedTheme = "coffee";
-   }
+export function ThemeProvider({ children }: { children: ReactNode }) {
+   const [currentTheme, setCurrentTheme] = useState<ColorTheme>(coffeeTheme);
 
-   useChangeTheme(loadedTheme);
+   const setThemeType = useCallback((type: ThemeType) => {
+      const theme = getColorTheme(type);
+      setCurrentTheme(theme);
+      setColorProperty(theme);
+      localStorage.setItem(themeStorageKey, type);
+   }, []);
+
+   useEffect(() => {
+      const storedTheme = localStorage.getItem(themeStorageKey) as ThemeType | null;
+      setThemeType(storedTheme ?? "coffee");
+   }, [setThemeType]);
+
+   const value = useMemo(() => ({ currentTheme, setThemeType }), [currentTheme, setThemeType]);
+
+   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
-export function useChangeTheme(theme: ThemeType) {
-   currentTheme.value = getColorTheme(theme);
-   setColorProperty(currentTheme.value);
+export function useTheme() {
+   const context = useContext(ThemeContext);
+   if (!context) {
+      throw new Error("useTheme must be used within ThemeProvider");
+   }
 
-   localStorage.setItem(themeStorageKey, theme);
+   return context;
 }
 
 function getColorTheme(type: ThemeType): ColorTheme {
-   let theme: ColorTheme;
-
    switch (type) {
       case "cerulean":
-         theme = ceruleanTheme;
-         break;
-      case "pine green":
-         theme = pineGreenTheme;
-         break;
+         return ceruleanTheme;
+      case "pine-green":
+         return pineGreenTheme;
       case "eggplant":
-         theme = eggplantTheme;
-         break;
+         return eggplantTheme;
       case "coffee":
-         theme = coffeeTheme;
-         break;
+         return coffeeTheme;
       case "charcoal":
-         theme = charcoalTheme;
-         break;
+         return charcoalTheme;
       default:
-         theme = coffeeTheme;
+         return coffeeTheme;
    }
-
-   return theme;
 }
 
 function setColorProperty(theme: ColorTheme) {
    const style = document.documentElement.style;
-   style.setProperty("--background", hexToRgb(theme.background));
-   style.setProperty("--secondary", hexToRgb(theme.secondary));
-   style.setProperty("--tertiary", hexToRgb(theme.tertiary));
-   style.setProperty("--primary", hexToRgb(theme.primary));
-   style.setProperty("--accent", hexToRgb(theme.accent));
-   style.setProperty("--accent2", hexToRgb(theme.accent2));
-   style.setProperty("--success", hexToRgb(theme.success));
-   style.setProperty("--text", hexToRgb(theme.text));
-   style.setProperty("--error", hexToRgb(theme.error));
-   style.setProperty("--warning", hexToRgb(theme.warning));
+   setColorVar(style, "--background", theme.background);
+   setColorVar(style, "--secondary", theme.secondary);
+   setColorVar(style, "--tertiary", theme.tertiary);
+   setColorVar(style, "--primary", theme.primary);
+   setColorVar(style, "--accent", theme.accent);
+   setColorVar(style, "--accent2", theme.accent2);
+   setColorVar(style, "--success", theme.success);
+   setColorVar(style, "--text", theme.text);
+   setColorVar(style, "--error", theme.error);
+   setColorVar(style, "--warning", theme.warning);
+}
+
+function setColorVar(style: CSSStyleDeclaration, name: string, value: string) {
+   const rgb = hexToRgb(value);
+   if (!rgb) return;
+   style.setProperty(name, rgb);
 }
 
 function hexToRgb(hex: string) {

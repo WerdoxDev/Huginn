@@ -47,6 +47,7 @@ import { postVerifyEmail } from "#routes/users/@me/verify-email.post";
 import { getUser } from "#routes/users/[userId].get";
 import { getUserProfile } from "#routes/users/[userId]/profile.get";
 import { envs } from "#setup";
+import { fromTypes, openapi } from "@elysia/openapi";
 import { cors } from "@elysiajs/cors";
 import { staticPlugin } from "@elysiajs/static";
 import { globalPlugin, invalidBody, notFound, serverError, serverOnError } from "@huginn/backend-shared";
@@ -70,6 +71,7 @@ export const app = new Elysia({
    .use(cors())
    .use(staticPlugin({ prefix: "", assets: "public", alwaysStatic: true }))
    .use(globalPlugin)
+   // .use(openapi({ references: fromTypes("src/index.ts") }))
    // .use(
    //    opentelemetry({
    //       spanProcessors: [
