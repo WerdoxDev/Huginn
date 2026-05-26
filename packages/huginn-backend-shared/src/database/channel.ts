@@ -66,7 +66,7 @@ export const channelExtension = Prisma.defineExtension({
                         type: isGroup ? ChannelType.GROUP_DM : ChannelType.DM,
                         lastMessageId: null,
                         icon: null,
-                        name: isGroup ? name : null,
+                        name: isGroup ? (name === "" ? null : name) : null,
                         ownerId: isGroup ? BigInt(initiatorId) : undefined,
                         recipients: {
                            connect: recipientsConnect,
@@ -97,7 +97,7 @@ export const channelExtension = Prisma.defineExtension({
                   where: { id: BigInt(channelId), type: ChannelType.GROUP_DM },
                   data: {
                      icon: icon,
-                     name: name,
+                     name: name === "" ? null : name,
                      owner: owner ? { connect: { id: BigInt(owner) } } : undefined,
                   },
                   ...args,
