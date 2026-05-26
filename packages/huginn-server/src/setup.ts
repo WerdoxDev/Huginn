@@ -3,6 +3,8 @@ import { ServerGateway } from "#gateway/server-gateway";
 import { S3Client } from "@aws-sdk/client-s3";
 import { readEnv } from "@huginn/runtime-shared";
 import { logger } from "@huginn/shared";
+import { Client } from "@notionhq/client";
+import { NotionConverter } from "notion-to-md";
 import { Octokit } from "octokit";
 import { Resend } from "resend";
 
@@ -34,6 +36,7 @@ export const envs = readEnv([
    "AXIOM_TOKEN",
    "AXIOM_DATASET",
    "RESEND_API_KEY",
+   "NOTION_TOKEN",
 ] as const);
 
 export const CERT_FILE = envs.CERTIFICATE_PATH && Bun.file(envs.CERTIFICATE_PATH);
@@ -46,5 +49,7 @@ export const s3 = new S3Client({
    credentials: { accessKeyId: envs.AWS_KEY_ID ?? "", secretAccessKey: envs.AWS_SECRET_KEY ?? "" },
 });
 export const resend = new Resend(envs.RESEND_API_KEY);
+export const notion = new Client({ auth: envs.NOTION_TOKEN, notionVersion: "2026-03-11" });
+export const n2m = new NotionConverter(notion);
 
 startCronJobs();

@@ -7,17 +7,16 @@
       "dev": "email dev"
    },
    "dependencies": {
-      "@react-email/components": "1.0.8",
-      "@react-email/preview-server": "https://pkg.pr.new/resend/react-email/@react-email/preview-server@2969",
-      "react": "19.2.4",
-      "react-dom": "19.2.4"
+      "react": "19.2.6",
+      "react-dom": "19.2.6",
+      "react-email": "6.3.3"
    },
    "devDependencies": {
-      "@types/bun": "latest",
-      "react-email": "5.2.8"
+      "@react-email/ui": "6.3.3",
+      "@types/bun": "latest"
    },
    "peerDependencies": {
-      "typescript": "^5"
+      "typescript": "^6.0.3"
    },
    "resolutions": {
       "esbuild": "0.25.10"

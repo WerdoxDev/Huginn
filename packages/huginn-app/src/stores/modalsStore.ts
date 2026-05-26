@@ -50,7 +50,7 @@ const initialStore = () => ({
       height: number;
       filename?: string;
    },
-   news: { isOpen: false, html: "" } as DefaultModal & { html: string },
+   news: { isOpen: false, lastVersion: undefined } as DefaultModal & { lastVersion?: string },
    screenShare: { isOpen: false, callback: undefined } as DefaultModal & {
       callback?: (options: {
          type: "display" | "device";

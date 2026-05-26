@@ -1,4 +1,4 @@
-import type { APIPostUniqueUsernameJSONBody, APIPostUniqueUsernameResult } from "@huginn/shared";
+import type { APIGetChangelogResult, APIPostUniqueUsernameJSONBody, APIPostUniqueUsernameResult } from "@huginn/shared";
 
 import { Routes } from "@huginn/shared";
 
@@ -15,5 +15,12 @@ export class CommonAPI {
       return this.rest.post(Routes.uniqueUsername(), {
          body,
       }) as Promise<APIPostUniqueUsernameResult>;
+   }
+
+   public async changelog(version: string, since?: string): Promise<APIGetChangelogResult> {
+      const queryParams = new URLSearchParams({ current: version });
+      if (since) queryParams.set("since", since);
+
+      return this.rest.get(Routes.changelog(), { query: queryParams }) as Promise<APIGetChangelogResult>;
    }
 }

@@ -578,6 +578,10 @@ html:active-view-transition-type(backwards) {
    @apply text-lg;
 }
 
+.news-markdown a {
+   @apply text-primary-500 hover:underline;
+}
+
 .news-markdown h1,
 .news-markdown h2,
 .news-markdown h3 {
@@ -596,8 +600,7 @@ html:active-view-transition-type(backwards) {
 }
 
 .news-markdown ul {
-   @apply ml-2;
-   list-style-type: disc;
+   @apply list-disc;
 }
 
 .news-markdown li {

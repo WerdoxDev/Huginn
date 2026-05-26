@@ -17,9 +17,9 @@ export function useUpdater(options: { onNotAvailable?: () => void | Promise<void
          // options.onTry?.();
 
          const result = await window.electronAPI.checkUpdate();
-         if (result) {
-            localStorage.setItem("release-date", result?.releaseDate);
-         }
+         // if (result) {
+         //    localStorage.setItem("update-release-date", result?.releaseDate);
+         // }
 
          if (!result || result.version === huginnWindow.version) {
             await options.onNotAvailable?.();

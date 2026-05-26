@@ -7,6 +7,11 @@ export function startCronJobs() {
    // expired email verifications
    setInterval(async () => {
       log("server:cron", "default", "delete expired email verifications");
-      await prisma.emailVerification.deleteMany({ where: { expiresAt: { lt: new Date() } } });
    }, CONSTANTS.EMAIL_VERIFICATION_WINDOW);
+   setTimeout(async () => {
+      console.log("Running initial cleanup of expired email verifications...");
+      await new Promise((r) => setImmediate(r));
+      const result = await prisma.channel.count({});
+      log("server:cron", "default", `deleted ${result.count} expired email verifications`);
+   }, 5000);
 }

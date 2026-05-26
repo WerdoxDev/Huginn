@@ -142,3 +142,10 @@ export function getChannelIconOptions(channelId: Snowflake | undefined, iconHash
       },
    });
 }
+
+export function getChangelogOptions(client: HuginnClient, version: string, since?: string) {
+   return queryOptions({
+      queryKey: ["changelog", version, since],
+      queryFn: async () => await client.common.changelog(version, since),
+   });
+}

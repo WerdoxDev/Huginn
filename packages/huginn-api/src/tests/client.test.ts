@@ -138,7 +138,7 @@ describe("HuginnClient", () => {
          mockGateway.user = { id: "123", username: "testuser" } as APIUser;
          mockGateway.authenticate.mockResolvedValue({ authenticated: true, retryable: true });
 
-         const result = await client.connect();
+         const result = await client.initialize();
 
          expect(result.success).toBe(true);
          expect(result.status).toBe("success");
@@ -151,7 +151,7 @@ describe("HuginnClient", () => {
             () => new Promise((resolve) => setTimeout(() => resolve({ authenticated: true, retryable: true }), 15000)),
          );
 
-         const result = await client.connect({ timeout: 100 });
+         const result = await client.initialize({ timeout: 100 });
 
          expect(result.success).toBe(false);
          expect(result.status).toBe("timeout");
@@ -161,7 +161,7 @@ describe("HuginnClient", () => {
       test("should handle authentication failure", async () => {
          mockGateway.authenticate.mockResolvedValue({ authenticated: false, retryable: false });
 
-         const result = await client.connect();
+         const result = await client.initialize();
 
          expect(result.success).toBe(false);
          expect(result.status).toBe("authentication_failed");
@@ -176,7 +176,7 @@ describe("HuginnClient", () => {
          mockGateway.user = { id: "123", username: "testuser" } as APIUser;
          mockGateway.authenticate.mockResolvedValue({ authenticated: true, retryable: true });
 
-         const result = await client.connect({
+         const result = await client.initialize({
             tokens: { token: mockToken },
          });
 
@@ -200,7 +200,7 @@ describe("HuginnClient", () => {
          mockGateway.user = { id: "123", username: "testuser" } as APIUser;
          mockGateway.authenticate.mockResolvedValue({ authenticated: true, retryable: true });
 
-         const result = await client.connect({
+         const result = await client.initialize({
             tokens: { token: expiredToken, refreshToken: "old_refresh_token" },
          });
 
@@ -216,7 +216,7 @@ describe("HuginnClient", () => {
             throw new Error("Invalid token");
          });
 
-         const result = await client.connect({
+         const result = await client.initialize({
             tokens: { token: "invalid_token" },
          });
 
@@ -228,7 +228,7 @@ describe("HuginnClient", () => {
       test("should handle network errors during token restoration", async () => {
          mockAuthAPI.refreshToken.mockRejectedValue(new TypeError("Network request failed"));
 
-         const result = await client.connect({
+         const result = await client.initialize({
             tokens: { refreshToken: "some_token" },
          });
 
@@ -252,6 +252,7 @@ describe("HuginnClient", () => {
          const result = await client.login(credentials);
 
          expect(mockAuthAPI.login).toHaveBeenCalledWith(credentials);
+         expect(result.pendingEmail).toBeFalse();
          expect(result.token).toBe("mock_token");
          expect(result.refreshToken).toBe("mock_refresh_token");
          expect(client.tokenHandler.token).toBe("mock_token");

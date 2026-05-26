@@ -218,6 +218,14 @@ export const Routes = {
    resendVerificationEmail() {
       return `/users/@me/resend-verification-email` as const;
    },
+
+   /**
+    * Route for:
+    * - GET '/changelog'
+    */
+   changelog() {
+      return "/changelog" as const;
+   },
 };
 
 export const CDNRoutes = {
