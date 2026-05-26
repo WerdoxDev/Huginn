@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.69.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.69.1...app@v0.69.2) (2026-05-26)
+
+
+### Bug Fixes
+
+* attempt to fix release please ([d399a05](https://github.com/WerdoxDev/Huginn/commit/d399a051483c3d898d96a904dc8d0ad625798408))
+* attempt to fix release please ([dd2ba53](https://github.com/WerdoxDev/Huginn/commit/dd2ba53317d207b26eabeef1c6503e2e13ef7780))
+
 ## [0.69.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.69.0...app@v0.69.1) (2026-05-26)
 
 
