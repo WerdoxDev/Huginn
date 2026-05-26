@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.24.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.23.0...backend-shared@v0.24.0) (2026-05-26)
+
+
+### Features
+
+* **backend-shared:** remove deletedTimestamp from channels ([fc561a1](https://github.com/WerdoxDev/Huginn/commit/fc561a1966e62d9ff66456acc25a4e0d79b5fff9))
+
+
+### Bug Fixes
+
+* **backend-shared:** channel last message id update newer id validation ([49e1594](https://github.com/WerdoxDev/Huginn/commit/49e15948a36521319b61fa8809ace31a04e0289d))
+
 ## [0.23.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.22.2...backend-shared@v0.23.0) (2026-05-21)
 
 

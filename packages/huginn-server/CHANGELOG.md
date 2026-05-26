@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.35.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.34.0...server@v0.35.0) (2026-05-26)
+
+
+### Features
+
+* initialize docs package + start website react rewrite ([aa5b1fa](https://github.com/WerdoxDev/Huginn/commit/aa5b1fad11159143c5f0514e651bc86474a7ec20))
+* **server:** add changelog route with notion renderer ([117fbe9](https://github.com/WerdoxDev/Huginn/commit/117fbe9ad936c9888ec580f2fa0ac0ea53beb2b1))
+* **server:** remove deletedTimestamp from messages ([ad68b3e](https://github.com/WerdoxDev/Huginn/commit/ad68b3eed882744bfbc0e6d671a644a9821a7af3))
+
+
+### Bug Fixes
+
+* **server:** server shouldn't accept empty name for channel ([03a352b](https://github.com/WerdoxDev/Huginn/commit/03a352bb9417c825ff76130510bc17b90def46bb))
+* **server:** validate gateway update presence status ([ded7618](https://github.com/WerdoxDev/Huginn/commit/ded7618c87680d790a5dff26c005b148aca0485e))
+
 ## [0.34.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.33.0...server@v0.34.0) (2026-05-21)
 
 

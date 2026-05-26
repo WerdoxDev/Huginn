@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.34.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.33.0...shared@v0.34.0) (2026-05-26)
+
+
+### Features
+
+* **shared:** add new changelog types ([174e98c](https://github.com/WerdoxDev/Huginn/commit/174e98cba042cad0e11086d41788194d8f949b68))
+
+
+### Bug Fixes
+
+* **app:** channel recipient and name bug fixes + vite 8 update ([bb8b04e](https://github.com/WerdoxDev/Huginn/commit/bb8b04e85d6571183e4b28dd7ce751a997fbefea))
+
 ## [0.33.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.32.0...shared@v0.33.0) (2026-05-21)
 
 
