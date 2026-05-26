@@ -6,6 +6,7 @@
    "separate-pull-requests": false,
    "commit-search-depth": 100,
    "initial-version": "0.1.0",
+   "pull-request-title-pattern": "chore: release-please on ${branch}",
    "packages": {
       "packages/huginn-api": {
          "package-name": "api"
