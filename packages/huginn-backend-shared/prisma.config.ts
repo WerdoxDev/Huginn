@@ -7,6 +7,6 @@ export default defineConfig({
       path: "prisma/migrations",
    },
    datasource: {
-      url: process.env.POSTGRESQL_URL ?? env("POSTGRESQL_URL"),
+      url: process.env.POSTGRESQL_URL,
    },
 });

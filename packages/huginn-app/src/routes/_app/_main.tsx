@@ -11,7 +11,6 @@ export const Route = createFileRoute("/_app/_main")({
       const client = clientStore.getState().client;
       if (!client || client?.gateway.status !== "authenticated") {
          sessionStorage.setItem("redirect", JSON.stringify({ pathname: location.pathname, requiresAuth: true }));
-         console.log("TO /");
          throw redirect({ to: "/" });
       }
    },
@@ -24,10 +23,10 @@ function MainLayoutComponent() {
 
    useEffect(() => {
       const lastVersion = localStorage.getItem("last-version") ?? undefined;
-      setTimeout(() => {
-         updateModals({ news: { isOpen: true, lastVersion } });
-      }, 1000);
       if (huginnWindow.version !== lastVersion) {
+         setTimeout(() => {
+            updateModals({ news: { isOpen: true, lastVersion } });
+         }, 1000);
          localStorage.setItem("last-version", huginnWindow.version);
       }
    }, []);
