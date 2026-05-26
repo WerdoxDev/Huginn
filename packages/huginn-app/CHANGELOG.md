@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.69.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.69.0...app@v0.69.1) (2026-05-26)
+
+
+### Bug Fixes
+
+* **app:** changelog modal shouldn't be opened all the time ([96c0d7b](https://github.com/WerdoxDev/Huginn/commit/96c0d7bb2ecfe5a7ab566094818eb08ea0100b8c))
+* **app:** few fugs related new users appearing from message author or mentions + vercel skip build ([1c3226d](https://github.com/WerdoxDev/Huginn/commit/1c3226d16ac250bfd4b98d313ae442f211905e8b))
+* **app:** incorrect release branch name ([5e312c4](https://github.com/WerdoxDev/Huginn/commit/5e312c48a36e69f9e999c60db471e25431721e77))
+* **app:** incorrect release branch name ([f44be4d](https://github.com/WerdoxDev/Huginn/commit/f44be4d80a073f45895d51023e103b133ed2678e))
+
 ## [0.69.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.68.1...app@v0.69.0) (2026-05-26)
 
 
