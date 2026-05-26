@@ -125,7 +125,6 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
       if (!props.channel?.lastMessageId) return true;
 
       const result = props.messages.some((message) => message.id === props.channel.lastMessageId);
-      console.log("hasLatestMessageInList", result, "lastMessage:", props.channel.lastMessageId, "message count:", props.messages.length);
       return result;
    }, [props.channel?.lastMessageId, props.messages]);
 

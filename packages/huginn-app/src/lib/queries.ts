@@ -4,6 +4,7 @@ import { type APIGetUserChannelsResult, resolveImage, type Snowflake } from "@hu
 import { clientStore } from "@stores/clientStore";
 import { infiniteQueryOptions, QueryClient, queryOptions } from "@tanstack/react-query";
 
+import { updateUser } from "./query-utils";
 import { convertToAppDirectChannel, convertToAppMessage, convertToAppRelationship, convertToAppUser, convertToAppUserProfile } from "./utils";
 
 export const queryClient = new QueryClient({
@@ -54,6 +55,14 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
             pageParam.before.toString() || undefined,
             pageParam.after.toString() || undefined,
          );
+
+         for (const message of messages) {
+            updateUser(message.author, queryClient);
+            for (const mention of message.mentions) {
+               updateUser(mention, queryClient);
+            }
+         }
+
          return messages.map((x) => convertToAppMessage(x, "fetch"));
       },
       getPreviousPageParam(first) {

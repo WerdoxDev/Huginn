@@ -2,7 +2,6 @@ import type { Snowflake } from "@huginn/shared";
 
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { useMessageDiff, type ChangeType } from "@hooks/useMessageDiff";
-import { usePrevious } from "@hooks/usePrevious";
 import { getFirstChildClosestToBottom, getFirstChildClosestToTop } from "@lib/utils";
 import { useChannelStore, type SavedScrollState } from "@stores/channelStore";
 import { useThisUser } from "@stores/userStore";
@@ -30,9 +29,7 @@ interface UseMessageScrollOptions {
 
 export function useMessageScroll(options: UseMessageScrollOptions) {
    const { user } = useThisUser();
-   const { savedScrolls, saveScroll, currentEditingMessageId, messageBoxHeight, currentVisibleMessages, removeMessageUploadProgress } =
-      useChannelStore();
-   const previousMessageBoxHeight = usePrevious(messageBoxHeight);
+   const { savedScrolls, saveScroll, messageBoxHeight, removeMessageUploadProgress } = useChannelStore();
    const { setRef, getRef } = useDynamicRefs<HTMLLIElement>();
 
    const scrollRef = useRef<HTMLDivElement>(null);
@@ -174,13 +171,13 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
          scrollRef.current.scrollTop +=
             (lastDirection.current === "up" ? -lastSeenElement.current.height : lastSeenElement.current.height) - heightDifference;
       } else {
-         // foundMessageElement.scrollIntoView({
-         //    behavior: "instant",
-         //    block: lastDirection.current === "up" ? "start" : "end",
-         // });
-         // const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
-         // scrollRef.current.scrollTop +=
-         //    (lastDirection.current === "up" ? lastSeenElement.current.distanceToTop : -lastSeenElement.current.distanceToBottom) + heightDifference;
+         foundMessageElement.scrollIntoView({
+            behavior: "instant",
+            block: lastDirection.current === "up" ? "start" : "end",
+         });
+         const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
+         scrollRef.current.scrollTop +=
+            (lastDirection.current === "up" ? lastSeenElement.current.distanceToTop : -lastSeenElement.current.distanceToBottom) + heightDifference;
       }
 
       shouldScrollToLastSeen.current = false;
@@ -261,36 +258,11 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
 
    useMessageDiff(options.processedMessages, { onMessageAdd, onMessageUpdate });
 
-   // Adjust scroll when message box height changes
-   // useEffect(() => {
-   //    if (!scrollRef.current) return;
-
-   //    if (scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop >= 1) {
-   //       scrollRef.current.scrollTop += messageBoxHeight - (previousMessageBoxHeight ?? 0);
-   //    }
-
-   //    if (currentEditingMessageId && currentVisibleMessages.some((x) => x.messageId === currentEditingMessageId)) {
-   //       const messageRef = getRef(currentEditingMessageId);
-   //       if (messageRef.current) {
-   //          scrollIntoViewMinimal(messageRef.current);
-   //       }
-   //    }
-   // }, [messageBoxHeight]);
-
    // Restore scroll position after fetching
    useLayoutEffect(() => {
       if (!lastSeenElement.current || !scrollRef.current || lastChannelId.current !== options.channelId) return;
       scrollToLastSeenMessage();
    }, [options.queryData]);
-
-   // Compensate scroll position when top ghost messages appear
-   // const prevIsFetchingPreviousPage = useRef(false);
-   // useLayoutEffect(() => {
-   //    if (options.isFetchingPreviousPage && !prevIsFetchingPreviousPage.current && options.ghostTopRef.current && scrollRef.current) {
-   //       scrollRef.current.scrollTop += options.ghostTopRef.current.offsetHeight;
-   //    }
-   //    prevIsFetchingPreviousPage.current = options.isFetchingPreviousPage;
-   // }, [options.isFetchingPreviousPage]);
 
    // Save scroll state when leaving a channel
    useEffect(() => {
