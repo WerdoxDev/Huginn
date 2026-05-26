@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.24.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.24.0...backend-shared@v0.24.1) (2026-05-26)
+
+
+### Bug Fixes
+
+* **backend-shared:** remove env() from prisma config ([b63ecdd](https://github.com/WerdoxDev/Huginn/commit/b63ecddd922ee953aab1f29d8ada14c2322c163d))
+
 ## [0.24.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.23.0...backend-shared@v0.24.0) (2026-05-26)
 
 
