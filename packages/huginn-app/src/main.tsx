@@ -14,7 +14,11 @@ import { routeTree } from "./routeTree.gen";
 if (import.meta.env.DEV) {
    document.addEventListener("keypress", (e) => {
       if (e.key === "\\") {
-         clientStore.getState().client?.gateway.socket?.close();
+         clientStore.getState().client?.gateway.close();
+         setTimeout(async () => {
+            clientStore.getState().client?.gateway.connect();
+            await clientStore.getState().client?.gateway.authenticate();
+         }, 2000);
       }
       if (e.key === "]") {
          clientStore.getState().client?.voice.signaling.socket?.close();

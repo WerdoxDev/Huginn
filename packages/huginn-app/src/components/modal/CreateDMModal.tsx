@@ -31,7 +31,6 @@ export default function CreateDMModal() {
    const { data } = useQuery(getRelationshipsOptions(client!));
 
    const [selectedUsers, setSelectedUsers] = useState<AppUser[]>([]);
-   // const { inputsProps, setValue, values, validateValues, handleErrors } = useInputs([{ name: "name", required: false }]);
    const { handleErrors, setValue, register, values } = useHuginnForm<Input>();
 
    const mutation = useCreateDMChannel("create-dm-channel_other", handleErrors);

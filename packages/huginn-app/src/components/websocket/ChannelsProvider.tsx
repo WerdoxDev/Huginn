@@ -83,18 +83,18 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
    }
 
    useEffect(() => {
-      client?.gateway.on("channel_create", onChannelCreated);
-      client?.gateway.on("channel_update", onChannelUpdated);
-      client?.gateway.on("channel_delete", onChannelDeleted);
-      client?.gateway.on("channel_recipient_add", onChannelRecipientAdded);
-      client?.gateway.on("channel_recipient_remove", onChannelRecipientRemoved);
+      const unlisteners: Array<(() => void) | undefined> = [];
+
+      unlisteners.push(client?.gateway.listen("channel_create", onChannelCreated));
+      unlisteners.push(client?.gateway.listen("channel_update", onChannelUpdated));
+      unlisteners.push(client?.gateway.listen("channel_delete", onChannelDeleted));
+      unlisteners.push(client?.gateway.listen("channel_recipient_add", onChannelRecipientAdded));
+      unlisteners.push(client?.gateway.listen("channel_recipient_remove", onChannelRecipientRemoved));
 
       return () => {
-         client?.gateway.off("channel_create", onChannelCreated);
-         client?.gateway.off("channel_update", onChannelUpdated);
-         client?.gateway.off("channel_delete", onChannelDeleted);
-         client?.gateway.off("channel_recipient_add", onChannelRecipientAdded);
-         client?.gateway.off("channel_recipient_remove", onChannelRecipientRemoved);
+         for (const unlisten of unlisteners) {
+            unlisten?.();
+         }
       };
    }, [location.href]);
 
