@@ -9,6 +9,7 @@ import { postLogout } from "#routes/auth/logout.post";
 import { postOauthConfirm } from "#routes/auth/oauth-confirm.post";
 import { postRefreshToken } from "#routes/auth/refresh-token.post";
 import { postRegister } from "#routes/auth/register.post";
+import { getChangelog } from "#routes/changelog.get";
 import { deleteChannel } from "#routes/channels/[channelId].delete";
 import { getChannel } from "#routes/channels/[channelId].get";
 import { patchChannel } from "#routes/channels/[channelId].patch";
@@ -166,6 +167,7 @@ export const app = new Elysia({
    .use(getUpdate)
    .use(postLog)
    .use(getIndex)
+   .use(getChangelog)
 
    .ws("/gateway", {
       upgrade({ request, server }) {
