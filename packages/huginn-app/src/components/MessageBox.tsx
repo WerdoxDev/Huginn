@@ -9,7 +9,7 @@ import { MessageFlags } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
 import clsx from "clsx";
 import { useEffect, useRef } from "react";
-import { Editable, Slate } from "slate-react";
+import { Editable, Slate, ReactEditor } from "slate-react";
 
 import type { AppMessage } from "@/types";
 
@@ -53,12 +53,16 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 
    // Focus on the message box when we change channel
    useEffect(() => {
-      if (!isMobile) editorRef.current?.focus();
-      // setTimeout(() => {
+      // Clear attachments and reset local state for new channel
       clearAttachments();
-      // }, 500);
       resetState();
-   }, [currentChannel]);
+
+      if (isMobile || !editor) return;
+
+      requestAnimationFrame(() => {
+         if (editor.children.length !== 0) ReactEditor.focus(editor);
+      });
+   }, [currentChannel, isMobile]);
 
    // Track message box height for scroll calculations
    useEffect(() => {
@@ -121,7 +125,11 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                         renderElement={renderElement}
                         decorate={decorate}
                         onKeyDown={onEditorKeyDown}
-                        renderPlaceholder={({ children, attributes }) => <div {...attributes}>{children}</div>}
+                        renderPlaceholder={({ children, attributes }) => (
+                           <div {...attributes} className="truncate">
+                              {children}
+                           </div>
+                        )}
                         disableDefaultStyles
                      />
                   </Slate>

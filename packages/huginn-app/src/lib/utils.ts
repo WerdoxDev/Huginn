@@ -101,21 +101,21 @@ export function getSizeText(size: number) {
 }
 
 export function convertToAppDirectChannel(channel: DirectChannel): AppDirectChannel {
-   console.log(channel);
    const name =
       channel.type === ChannelType.DM
          ? (channel.recipients[0].displayName ?? channel.recipients[0].username)
          : channel.type === ChannelType.GROUP_DM
-           ? !channel.name
+           ? channel.name === null
               ? channel.recipients.map((x) => x.displayName ?? x.username).join(", ")
               : channel.name
-           : "";
+           : "unknown";
 
+   const { recipients: _, ...rest } = channel;
    return {
-      ...omit(channel, ["recipients"]),
+      ...rest,
       recipientIds: channel.recipients.map((x) => x.id),
       name,
-      originalName: channel.name,
+      originalName: channel.type === ChannelType.GROUP_DM ? channel.name : undefined,
    };
 }
 

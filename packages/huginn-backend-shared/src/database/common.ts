@@ -134,7 +134,6 @@ export const selectMessageDefaults = {
    id: true,
    reactions: true,
    flags: true,
-   deletedTimestamp: false,
 } satisfies Prisma.MessageSelect;
 
 export const selectMessageReference = {
@@ -144,7 +143,6 @@ export const selectMessageReference = {
          messageId: true,
          type: true,
          message: {
-            where: { deletedTimestamp: null },
             select: {
                ...selectMessageAuthor,
                ...selectMessageMentions,

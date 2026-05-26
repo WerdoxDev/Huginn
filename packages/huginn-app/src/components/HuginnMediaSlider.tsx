@@ -22,7 +22,7 @@ export default function HuginnMediaSlider(props: SliderProps) {
                      style={isVertical ? { height: `${props.bufferedPercent}%` } : { width: `${props.bufferedPercent}%` }}
                   />
                )}
-               <BaseSlider.Indicator className="bg-primary-500 rounded-full select-none" />
+               <BaseSlider.Indicator className={clsx("bg-primary-500 select-none", isVertical ? "rounded-b-full" : "rounded-l-full")} />
                <BaseSlider.Thumb className="relative size-2">
                   <div className="absolute size-2 scale-100 rounded-full bg-white transition-transform group-hover/slider:scale-150"></div>
                </BaseSlider.Thumb>

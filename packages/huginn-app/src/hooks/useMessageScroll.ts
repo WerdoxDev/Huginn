@@ -50,14 +50,17 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
    }>(null);
    const lastDirection = useRef<"up" | "down" | "none">("none");
    const isResizing = useRef(false);
+   const lastScrollOffsetRef = useRef(0);
    const suppressInfiniteFetchRef = useRef(false);
    const smoothScrollCleanupRef = useRef<(() => void) | undefined>(undefined);
 
    function scrollDown() {
       if (!scrollRef.current) return;
       scrollRef.current.scrollTo(0, scrollRef.current.scrollHeight);
+      lastScrollOffsetRef.current = 0;
    }
 
+   // When smooth scrolling, we should temporarily disable the fetching query or it will fail to scroll correctly.
    const startSmoothScrollFetchSuppression = useCallback(() => {
       smoothScrollCleanupRef.current?.();
       suppressInfiniteFetchRef.current = true;
@@ -171,13 +174,13 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
          scrollRef.current.scrollTop +=
             (lastDirection.current === "up" ? -lastSeenElement.current.height : lastSeenElement.current.height) - heightDifference;
       } else {
-         foundMessageElement.scrollIntoView({
-            behavior: "instant",
-            block: lastDirection.current === "up" ? "start" : "end",
-         });
-         const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
-         scrollRef.current.scrollTop +=
-            (lastDirection.current === "up" ? lastSeenElement.current.distanceToTop : -lastSeenElement.current.distanceToBottom) + heightDifference;
+         // foundMessageElement.scrollIntoView({
+         //    behavior: "instant",
+         //    block: lastDirection.current === "up" ? "start" : "end",
+         // });
+         // const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
+         // scrollRef.current.scrollTop +=
+         //    (lastDirection.current === "up" ? lastSeenElement.current.distanceToTop : -lastSeenElement.current.distanceToBottom) + heightDifference;
       }
 
       shouldScrollToLastSeen.current = false;
@@ -187,7 +190,9 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
       if (!scrollRef.current || options.messages.length === 0) return;
 
       const { scrollHeight, scrollTop, clientHeight } = scrollRef.current;
-      const isAtBottom = scrollHeight - clientHeight - scrollTop <= 20;
+      const scrollOffset = scrollHeight - clientHeight - scrollTop;
+      lastScrollOffsetRef.current = scrollOffset;
+      const isAtBottom = scrollOffset <= 20;
 
       if (isAtBottom) {
          lastScrollState.current = { type: "bottom" };
@@ -227,10 +232,9 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
 
    function onMessageAdd(message: ProcessedMessage) {
       if (!scrollRef.current) return;
-      const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
-      const messageHeight = getRef(message.id)?.current?.clientHeight ?? 0;
+      const previousScrollOffset = lastScrollOffsetRef.current;
 
-      if (message.authorId === user?.id || scrollOffset - messageHeight <= 50) {
+      if (message.authorId === user?.id || previousScrollOffset <= 50) {
          scrollDown();
       }
    }
@@ -248,10 +252,9 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
          return;
       }
 
-      const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
-      const messageHeight = messageRef?.clientHeight ?? 0;
+      const previousScrollOffset = lastScrollOffsetRef.current;
 
-      if (scrollOffset - messageHeight <= 50) {
+      if (previousScrollOffset <= 50) {
          scrollDown();
       }
    }

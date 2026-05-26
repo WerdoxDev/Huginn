@@ -11,13 +11,17 @@ await build({
    entry: ["./electron/main.ts", "./electron/preload.ts"],
    format: ["esm"],
 
-   external: external,
-   inlineOnly: false,
+   deps: {
+      neverBundle: external,
+      alwaysBundle: isProd ? noExternal : ["@huginn/shared", "native-addon"],
+
+      onlyBundle: false,
+   },
+   dts: false,
    outDir: ".electron",
    fixedExtension: true,
    target: "es2022",
    minify: false,
    clean: true,
    shims: true,
-   noExternal: isProd ? noExternal : ["@huginn/shared", "native-addon"],
 });

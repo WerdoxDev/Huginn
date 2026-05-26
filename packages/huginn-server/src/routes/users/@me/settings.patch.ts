@@ -9,7 +9,7 @@ const schema = t.Object({
       t.Union([
          t.Literal("eggplant"),
          t.Literal("cerulean"),
-         t.Literal("pine green"),
+         t.Literal("pine-green"),
          t.Literal("coffee"),
          t.Literal("charcoal"),
          t.Literal("scarlet"),

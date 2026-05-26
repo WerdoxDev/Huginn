@@ -31,22 +31,22 @@ export default function ChannelName() {
    const isDM = channel.type === ChannelType.DM;
 
    return (
-      <div className="flex items-center">
+      <div className="flex items-center overflow-hidden">
          {isDM ? (
             <button type="button" className="cursor-pointer rounded-full" onClick={handleClick}>
                <UserAvatar userId={otherUsers[0]?.id} avatarHash={otherUsers[0]?.avatar} className="mr-3" />
             </button>
-         ) : (
+         ) : channel.type === ChannelType.GROUP_DM ? (
             <ChannelIcon channelId={channel?.id} iconHash={channel?.icon} className="mr-3" />
-         )}
+         ) : null}
          <Tooltip>
-            <div className="flex flex-col justify-center">
+            <div className="flex flex-col justify-center overflow-hidden">
                {isDM ? (
-                  <button type="button" className="text-text cursor-pointer hover:underline" onClick={handleClick}>
+                  <button type="button" className="text-text cursor-pointer truncate text-left hover:underline" onClick={handleClick}>
                      {channel.name}
                   </button>
                ) : (
-                  <Tooltip.Trigger className="text-text">{channel.name}</Tooltip.Trigger>
+                  <Tooltip.Trigger className="text-text truncate text-left">{channel.name}</Tooltip.Trigger>
                )}
                {channel.type === ChannelType.GROUP_DM && (
                   <div className="text-text/50 text-xs">{presences.filter((x) => x.status === "online").length} Online</div>

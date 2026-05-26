@@ -1,6 +1,5 @@
 import LoadingIcon from "@components/LoadingIcon";
 import { MessageProvider } from "@contexts/MessageProvider";
-import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useMessageAcker } from "@hooks/mutations/useMessageAcker";
 import { useFirstUnreadMessage } from "@hooks/useFirstUnreadMessage";
 import { useMessageScroll } from "@hooks/useMessageScroll";
@@ -14,7 +13,7 @@ import { useQueryClient, useSuspenseInfiniteQuery, type InfiniteData } from "@ta
 import moment from "moment";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { AppMessage, ProcessedMessage } from "@/types";
+import type { AppDirectChannel, AppMessage, ProcessedMessage } from "@/types";
 
 import ChannelTypingIndicator from "./ChannelTypingIndicator";
 import GhostMessages from "./GhostMessages";
@@ -61,22 +60,21 @@ function processMessages(
    });
 }
 
-export default function ChannelMessages(props: { channelId: Snowflake; messages: AppMessage[] }) {
+export default function ChannelMessages(props: { messages: AppMessage[]; channel: AppDirectChannel }) {
    const client = useClient();
    const queryClient = useQueryClient();
-   const currentChannel = useCurrentChannel();
 
    const { data, fetchNextPage, fetchPreviousPage, isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
-      useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, props.channelId));
+      useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, props.channel.id));
 
    const { currentEditingMessageId, currentReplyingMessageId } = useChannelStore();
-   const { onMessageVisibilityChanged } = useVisibleMessages(props.channelId, props.messages);
+   const { onMessageVisibilityChanged } = useVisibleMessages(props.channel.id, props.messages);
    const [highlightedMessageId, setHighlightedMessageId] = useState<Snowflake | undefined>(undefined);
 
    const [isLoadingLatest, setIsLoadingLatest] = useState(false);
 
-   useMessageAcker(props.channelId, props.messages);
-   const { firstUnreadMessageId } = useFirstUnreadMessage(props.channelId, props.messages);
+   useMessageAcker(props.channel.id, props.messages);
+   const { firstUnreadMessageId } = useFirstUnreadMessage(props.channel.id, props.messages);
 
    const processedMessages = useMemo<ProcessedMessage[]>(
       () =>
@@ -88,7 +86,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
             currentReplyingMessageId,
             highlightedMessageId,
          ),
-      [props.messages, props.channelId, firstUnreadMessageId, currentEditingMessageId, currentReplyingMessageId, highlightedMessageId],
+      [props.messages, props.channel.id, firstUnreadMessageId, currentEditingMessageId, currentReplyingMessageId, highlightedMessageId],
    );
 
    const ghostTopRef = useRef<HTMLDivElement>(null);
@@ -98,7 +96,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    const pendingScrollToBottom = useRef(false);
 
    const { scrollRef, listRef, setRef, onScroll, scrollToMessage, scrollToBottom } = useMessageScroll({
-      channelId: props.channelId,
+      channelId: props.channel.id,
       messages: props.messages,
       processedMessages,
       queryData: data,
@@ -124,10 +122,12 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
    }, []);
 
    const hasLatestMessageInList = useMemo(() => {
-      if (!currentChannel?.lastMessageId) return true;
+      if (!props.channel?.lastMessageId) return true;
 
-      return props.messages.some((message) => message.id === currentChannel.lastMessageId);
-   }, [currentChannel?.lastMessageId, props.messages]);
+      const result = props.messages.some((message) => message.id === props.channel.lastMessageId);
+      console.log("hasLatestMessageInList", result, "lastMessage:", props.channel.lastMessageId, "message count:", props.messages.length);
+      return result;
+   }, [props.channel?.lastMessageId, props.messages]);
 
    const handleReferencedMessageClick = useCallback(
       async (messageId: Snowflake) => {
@@ -140,29 +140,30 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
          pendingReferencedMessageId.current = messageId;
 
-         const fetchedMessages = await client.channels.getMessages(props.channelId, 50, undefined, undefined, messageId);
+         const fetchedMessages = await client.channels.getMessages(props.channel.id, 50, undefined, undefined, messageId);
          const aroundMessages = fetchedMessages.map((message) => convertToAppMessage(message, "fetch"));
 
-         queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", props.channelId], {
+         queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", props.channel.id], {
             pages: [aroundMessages],
             pageParams: [{ before: "", after: "" }],
          });
       },
-      [client, highlightMessage, props.channelId, queryClient, scrollToMessage],
+      [client, highlightMessage, props.channel.id, queryClient, scrollToMessage],
    );
 
    const loadLatestMessages = useCallback(async () => {
       if (!client) return;
 
-      const latestMessages = await client.channels.getMessages(props.channelId, 50);
+      const latestMessages = await client.channels.getMessages(props.channel.id, 50);
       const convertedLatestMessages = latestMessages.map((message) => convertToAppMessage(message, "fetch"));
 
       pendingScrollToBottom.current = true;
-      queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", props.channelId], {
+      queryClient.setQueryData<InfiniteData<AppMessage[], { before: string; after: string }>>(["messages", props.channel.id], {
          pages: [convertedLatestMessages],
          pageParams: [{ before: "", after: "" }],
       });
-   }, [client, props.channelId, queryClient]);
+      console.log("HERE");
+   }, [client, props.channel.id, queryClient]);
 
    const handleLoadLatest = useCallback(() => {
       setIsLoadingLatest(true);
@@ -199,7 +200,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
 
    return (
       <div className="relative h-full overflow-y-hidden">
-         <ChannelTypingIndicator channelId={props.channelId} />
+         <ChannelTypingIndicator channelId={props.channel.id} />
          <div className="h-full w-full overflow-x-hidden overflow-y-scroll [overflow-anchor:none]" ref={scrollRef} onScroll={onScroll}>
             <div className="flex min-h-full flex-col justify-end">
                {hasPreviousPage && (
@@ -219,7 +220,7 @@ export default function ChannelMessages(props: { channelId: Snowflake; messages:
                   {!hasPreviousPage && props.messages.length !== 0 && (
                      <div className="flex h-20 shrink-0 flex-col justify-center">
                         <div className="text-text/70 ml-10">
-                           The beginning of your chat with <span className="text-text font-bold">{currentChannel?.name}</span>
+                           The beginning of your chat with <span className="text-text font-bold">{props.channel?.name}</span>
                         </div>
                      </div>
                   )}

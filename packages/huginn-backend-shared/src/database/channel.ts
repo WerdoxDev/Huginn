@@ -83,8 +83,14 @@ export const channelExtension = Prisma.defineExtension({
                throw e;
             }
          },
-         async editDM<Args extends ChannelArgs>(channelId: Snowflake, name?: string | null, icon?: string | null, owner?: Snowflake, args?: Args) {
-            const methodName = "channel.editDM";
+         async editDirect<Args extends ChannelArgs>(
+            channelId: Snowflake,
+            name?: string | null,
+            icon?: string | null,
+            owner?: Snowflake,
+            args?: Args,
+         ) {
+            const methodName = "channel.editDirect";
             assertId(methodName, channelId);
             try {
                const updatedChannel = await prisma.channel.update({
@@ -142,8 +148,8 @@ export const channelExtension = Prisma.defineExtension({
                throw e;
             }
          },
-         async deleteDM<Args extends ChannelArgs>(channelId: Snowflake, userId: Snowflake, args?: Args) {
-            const methodName = "channel.deleteDM";
+         async deleteDirect<Args extends ChannelArgs>(channelId: Snowflake, userId: Snowflake, args?: Args) {
+            const methodName = "channel.deleteDirect";
             assertId(methodName, channelId);
             try {
                const channel = await prisma.channel.getById(channelId, { select: { type: true } });

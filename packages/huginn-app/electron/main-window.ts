@@ -1,10 +1,9 @@
 import { CacheStorage, error, findClosestString, log } from "@huginn/shared";
 import { getActiveWindowProcessIds, startAudioCapture, stopAudioCapture } from "application-loopback";
-import { app, desktopCapturer, ipcMain, nativeImage, Notification, session, shell, type BrowserWindow } from "electron";
+import { app, desktopCapturer, ipcMain, nativeImage, session, shell, type BrowserWindow } from "electron";
 import electronUpdater, { CancellationToken } from "electron-updater";
 import native, { type AppInfo } from "native-addon";
 import path from "node:path";
-import { electron } from "node:process";
 
 import type { AudioSource, DisplaySource } from "@/types";
 
@@ -12,6 +11,7 @@ import type { CacheController } from "./cache-controller";
 
 import { BaseWindow } from "./base-window";
 import * as keybindsController from "./keybinds-controller";
+import { NotificationController } from "./notification-controller";
 import { VoiceDebugWindow } from "./voice-debug-window";
 const { autoUpdater } = electronUpdater;
 
@@ -19,6 +19,7 @@ export class MainWindow extends BaseWindow {
    private selectedSourceId?: string;
    private previousProcessId: string | undefined;
    private cacheController: CacheController;
+   private notificationController: NotificationController;
    private voiceDebugWindow?: VoiceDebugWindow;
 
    public constructor(cacheController: CacheController) {
@@ -40,6 +41,7 @@ export class MainWindow extends BaseWindow {
       });
 
       this.cacheController = cacheController;
+      this.notificationController = new NotificationController();
    }
 
    public override eventListeners(window: BrowserWindow): void {
@@ -283,24 +285,22 @@ export class MainWindow extends BaseWindow {
          const icon = data.icon
             ? nativeImage.createFromPath(path.join(this.cacheController.cacheDir, `${data.icon}.png`))
             : app.isPackaged
-              ? path.join(process.resourcesPath, "assets", "icon.ico")
-              : "./assets/icon.ico";
+              ? path.join(process.resourcesPath, "electron-assets", "icon.ico")
+              : "./electron-assets/icon.ico";
 
-         const notification = new Notification({
-            title: data.title,
-            body: data.body,
-            icon: icon,
+         this.notificationController.sendNotification(
+            {
+               title: data.title,
+               body: data.body,
+               icon: icon,
+               silent: true,
+            },
+            () => {
+               log("app:electron", "send", "notification clicked", "pld:", data.payload);
 
-            silent: true,
-         });
-
-         notification.on("click", () => {
-            log("app:electron", "send", "notification clicked", "pld:", data.payload);
-
-            window.webContents.send("notification:clicked", data.payload);
-         });
-
-         notification.show();
+               window.webContents.send("notification:clicked", data.payload);
+            },
+         );
       });
    }
 

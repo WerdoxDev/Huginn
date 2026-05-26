@@ -22,10 +22,6 @@ export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
    const { isRightOpen, isDragging, rightMenuWidth } = useMobileMenuStore();
    const isMobile = useIsMobile();
 
-   useEffect(() => {
-      console.log(isRightOpen);
-   }, [isRightOpen]);
-
    const loading = useMemo(
       () =>
          (addState?.variables?.channelId === props.channel.id && addState?.status === "pending") ||
@@ -40,11 +36,16 @@ export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
       [user, props.channel.recipientIds],
    );
 
+   useEffect(() => {
+      console.log(recipients);
+   }, [props.channel]);
+
    function handleAddMember() {
       updateModals({ addRecipient: { isOpen: true, channelId: props.channel.id } });
    }
 
-   if (props.channel.type !== ChannelType.GROUP_DM) return;
+   const { channel } = props;
+   if (channel.type !== ChannelType.GROUP_DM) return;
 
    return (
       <div
@@ -67,7 +68,7 @@ export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
                      {sortedRecipients
                         .filter((x) => x !== undefined)
                         .map((x) => (
-                           <ChannelRecipient isOwner={x.id === props.channel.ownerId} key={x.id} recipient={x} channelId={props.channel.id} />
+                           <ChannelRecipient isOwner={x.id === channel.ownerId} key={x.id} recipient={x} channelId={props.channel.id} />
                         ))}
                   </div>
                   <HuginnButton

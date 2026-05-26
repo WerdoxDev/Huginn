@@ -82,7 +82,7 @@ export class RemoteLogger {
             body: JSON.stringify(body),
          });
       } catch (e) {
-         error("app:general", "Remote logger failed to send logs:", e);
+         error("app:general", "remote logger failed to send logs:", e);
          this.logBuffer.unshift(...logsToSend);
       }
    }

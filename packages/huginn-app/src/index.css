@@ -476,27 +476,20 @@ input::-ms-clear {
 }
 
 ::view-transition-new(main) {
-   animation: main-enter 1500ms both 500ms;
+   animation: main-enter 500ms both 500ms;
 }
 
 ::view-transition-old(main) {
-   animation: main-leave 2000ms both;
+   animation: main-leave 500ms both;
 }
 
 html:active-view-transition-type(forwards) {
-   /* &::view-transition-new(start-login),
-   &::view-transition-new(start-register),
-   &::view-transition-new(start-oauth-redirect),
-   &::view-transition-new(start-index) {
-      animation-delay: 1000ms;
-   } */
-
    &::view-transition-new(start-background) {
-      animation: background-forwards 1500ms both 250ms;
+      animation: background-forwards 1000ms both 250ms;
    }
 
    &::view-transition-old(start-background) {
-      display: none;
+      animation: background-forwards 1000ms both 250ms;
    }
 }
 
@@ -505,12 +498,12 @@ html:active-view-transition-type(backwards) {
    &::view-transition-new(start-register),
    &::view-transition-new(start-oauth-redirect),
    &::view-transition-new(start-index) {
-      animation-delay: 1000ms;
+      animation-delay: 500ms;
    }
 
    &::view-transition-new(start-background) {
       opacity: 0;
-      animation: background-backwards 750ms both 500ms;
+      animation: background-backwards 500ms both 250ms;
    }
 
    &::view-transition-old(start-background) {

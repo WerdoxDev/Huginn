@@ -4,7 +4,7 @@ import { getChannelsOptions } from "@lib/queries";
 import { findChannel } from "@lib/query-utils";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 
@@ -34,17 +34,14 @@ export function useChannelRecipients(channelId?: Snowflake, _guildId?: Snowflake
    const channel = useChannel(channelId);
    const recipients = useUsers(channel?.recipientIds);
 
-   return { recipients, ownerId: channel?.ownerId };
+   return { recipients, ownerId: channel?.type === ChannelType.GROUP_DM ? channel?.ownerId : undefined };
 }
 
 export function useCurrentChannel() {
    const { channelId } = useParams({ strict: false });
-   const queryClient = useQueryClient();
 
-   // TODO: CHANGE THIS WHEN GUILDS ARE A THING
-   const channels = queryClient.getQueryData<AppDirectChannel[]>(["channels", "@me"]);
-
-   return useMemo(() => channels?.find((channel) => channel.id === channelId), [channelId, channels]);
+   const channel = useChannel(channelId);
+   return channel;
 }
 
 export function useSafeDeleteDMChannel(channelId?: Snowflake, channelType?: DirectChannel["type"], channelName?: string) {

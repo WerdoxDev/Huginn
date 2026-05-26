@@ -4,18 +4,18 @@ import ChannelWithIdTopBar from "@components/channels/ChannelWithIdTopBar";
 import DirectChannelCall from "@components/channels/DirectChannelCall";
 import ErrorComponent from "@components/ErrorComponent";
 import MessageBox from "@components/MessageBox";
-import { useErrorHandler } from "@hooks/useErrorHandler";
+import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { ChannelType } from "@huginn/shared";
-import { getChannelsOptions, getMessagesOptions, queryClient } from "@lib/queries";
+import { getMessagesOptions, queryClient } from "@lib/queries";
 import { clientStore, useClient } from "@stores/clientStore";
 import { useMobileMenuStore } from "@stores/mobileMenuStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
-import { useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, useParams, useRouter } from "@tanstack/react-router";
+import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import { createFileRoute, useParams } from "@tanstack/react-router";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
-import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import { useEffect, useMemo, type MouseEvent } from "react";
 
 export const Route = createFileRoute("/_app/_main/_home/channels/@me/$channelId")({
    component: ChannelWithIdComponent,
@@ -23,7 +23,6 @@ export const Route = createFileRoute("/_app/_main/_home/channels/@me/$channelId"
       const client = clientStore.getState().client;
       if (!client) return;
 
-      // throw new Error("OOOPS");
       // await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate loading time
       return await queryClient.ensureInfiniteQueryData(getMessagesOptions(queryClient, client, params.channelId as string));
    },
@@ -34,17 +33,14 @@ function ChannelWithIdComponent() {
    const client = useClient();
    const queryClient = useQueryClient();
    const { data: messages } = useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, channelId));
-   const { data } = useSuspenseQuery(getChannelsOptions(client!, "@me"));
-   const channel = useMemo(() => data.find((x) => x.id === channelId), [channelId]);
+   const channel = useCurrentChannel();
    const posthog = usePostHog();
    const isMobile = useIsMobile();
-   const router = useRouter();
    const settings = useStorage("settings");
    const { setValue } = useStorageStore();
 
-   const [recipientsVisible, setRecipientsVisible] = useState(true);
    const { resetToCenter } = useMobileMenuStore();
-   const { toggleRight, closeLeft, isRightOpen, openRight, closeRight } = useMobileMenuStore();
+   const { toggleRight, closeLeft, isRightOpen } = useMobileMenuStore();
 
    const sortedMessages = useMemo(
       () =>
@@ -67,16 +63,6 @@ function ChannelWithIdComponent() {
       }
    }, [channelId, isMobile, resetToCenter]);
 
-   useEffect(() => {
-      if (isMobile || !settings) return;
-
-      if (settings.isChannelSidebarOpen) {
-         openRight();
-      } else {
-         closeRight();
-      }
-   }, [isMobile, settings?.isChannelSidebarOpen, openRight, closeRight]);
-
    function onRecipientsClick(e: MouseEvent) {
       e.stopPropagation();
       closeLeft();
@@ -87,7 +73,6 @@ function ChannelWithIdComponent() {
          setValue("settings", { ...settings, isChannelSidebarOpen: nextOpen });
       }
 
-      setRecipientsVisible((prev) => !prev);
       posthog.capture("channel:recipients_button_click");
    }
 
@@ -121,7 +106,7 @@ function ChannelWithIdComponent() {
                         onClick={resetToCenter}
                      />
                      <DirectChannelCall channelId={channelId} />
-                     <ChannelMessages channelId={channelId} messages={sortedMessages} />
+                     <ChannelMessages messages={sortedMessages} channel={channel} />
                      <MessageBox messages={sortedMessages} />
                   </div>
 

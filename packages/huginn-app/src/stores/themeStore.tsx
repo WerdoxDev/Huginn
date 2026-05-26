@@ -254,7 +254,7 @@ export const scarletTheme: ColorTheme = {
 const store = createStore(
    combine(
       {
-         themeType: "pine green" as ThemeType,
+         themeType: "pine-green" as ThemeType,
          theme: pineGreenTheme as ColorTheme,
       },
       (set) => ({
@@ -265,7 +265,7 @@ const store = createStore(
                   case "cerulean":
                      theme = ceruleanTheme;
                      break;
-                  case "pine green":
+                  case "pine-green":
                      theme = pineGreenTheme;
                      break;
                   case "eggplant":
@@ -368,6 +368,8 @@ export function hexToRgbObject(hex: string) {
 export function useTheme() {
    return useStore(store);
 }
+
+export const themeStore = store;
 
 // export function useThemeStore() {
 // 	console.log(ThemeContext);

@@ -23,7 +23,7 @@ type ModifiedThemeType = ThemeType | "text";
 
 const iconSources: Record<ModifiedThemeType, string[]> = {
    cerulean: [ceruleanUrl, ceruleanOutlinedUrl],
-   "pine green": [pinegreenUrl, pinegreenOutlinedUrl],
+   "pine-green": [pinegreenUrl, pinegreenOutlinedUrl],
    eggplant: [eggplantUrl, eggplantOutlinedUrl],
    coffee: [coffeeUrl, coffeeOutlinedUrl],
    charcoal: [charcoalUrl, charcoalOutlinedUrl],
@@ -41,5 +41,5 @@ export default function HuginnIcon(props: {
    const theme = useTheme();
    const source = useMemo(() => iconSources[props.overrideTheme ?? theme.themeType], [props.overrideTheme, theme.themeType]);
 
-   return <img alt="huginn-icon" src={source[props.outlined ? 1 : 0]} className={clsx(props.className)} ref={props.ref} onClick={props.onClick} />;
+   return <img alt="huginn-icon" src={source?.[props.outlined ? 1 : 0]} className={clsx(props.className)} ref={props.ref} onClick={props.onClick} />;
 }

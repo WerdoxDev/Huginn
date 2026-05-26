@@ -10,16 +10,11 @@ export const messagePinExtension = Prisma.defineExtension({
             assertId(methodName, channelId);
 
             try {
-               const where = {
-                  channelId: BigInt(channelId),
-                  ...(before ? { messageId: { lt: BigInt(before) } } : {}),
-               };
-
                const pins = await prisma.messagePin.findMany({
-                  ...args,
-                  where,
+                  where: { channelId: BigInt(channelId), ...(before ? { messageId: { lt: BigInt(before) } } : {}) },
                   orderBy: { messageId: "desc" },
                   take: limit,
+                  ...args,
                });
 
                assertObj(methodName, pins, DBErrorType.NULL_MESSAGE_PIN);

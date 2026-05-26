@@ -66,9 +66,13 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
 
          const latestMessage = last.at(-1);
 
-         return !latestMessage?.isPreview && latestMessage && (!targetChannel || targetChannel.lastMessageId !== latestMessage.id)
-            ? { after: latestMessage.id, before: "" }
+         return !latestMessage?.isPreview && latestMessage && !last.some((message) => message.id === targetChannel?.lastMessageId)
+            ? { before: "", after: latestMessage.id }
             : undefined;
+
+         // return !latestMessage?.isPreview && latestMessage && (!targetChannel || targetChannel.lastMessageId !== latestMessage.id)
+         // ? { after: latestMessage.id, before: "" }
+         // : undefined;
       },
       maxPages: 2,
       retry: false,

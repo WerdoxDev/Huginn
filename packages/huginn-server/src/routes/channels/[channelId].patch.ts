@@ -8,7 +8,7 @@ import { CDNRoutes, Errors, MessageFlags, MessageType, getFileHash, toArrayBuffe
 import Elysia, { t } from "elysia";
 
 const schema = t.Object({
-   name: t.Optional(t.Nullable(t.String())),
+   name: t.Optional(t.Nullable(t.String({ minLength: 1 }))),
    icon: t.Optional(t.Nullable(t.String())),
    owner: t.Optional(t.String()),
 });
@@ -46,7 +46,7 @@ export const patchChannel = new Elysia().use(verifyJwt()).patch(
          channelIconHash = null;
       }
 
-      const updatedChannel = await prisma.channel.editDM(channelId, body.name, channelIconHash, body.owner, {
+      const updatedChannel = await prisma.channel.editDirect(channelId, body.name, channelIconHash, body.owner, {
          select: selectChannelDefaults,
       });
 

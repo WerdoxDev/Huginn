@@ -7,6 +7,27 @@ import type { AppMessage, AttachmentType } from "@/types";
 
 type AttachmentInputType = { name: string; type: string; arrayBuffer: () => Promise<ArrayBuffer> };
 
+function getUniqueFilename(name: string, used: Set<string>) {
+   if (!used.has(name)) {
+      used.add(name);
+      return name;
+   }
+
+   const dotIndex = name.lastIndexOf(".");
+   const baseName = dotIndex >= 0 ? name.slice(0, dotIndex) : name;
+   const extension = dotIndex >= 0 ? name.slice(dotIndex) : "";
+
+   let counter = 1;
+   let candidate = `${baseName} ${counter}${extension}`;
+   while (used.has(candidate)) {
+      counter++;
+      candidate = `${baseName} ${counter}${extension}`;
+   }
+
+   used.add(candidate);
+   return candidate;
+}
+
 export function useMessageBoxAttachments(editorRef: React.RefObject<HTMLDivElement | null>, messages: AppMessage[]) {
    const [attachments, setAttachments] = useState<AttachmentType[]>([]);
    const [dragging, setDragging] = useState(false);
@@ -14,15 +35,17 @@ export function useMessageBoxAttachments(editorRef: React.RefObject<HTMLDivEleme
 
    async function addAttachments(input: AttachmentInputType[]) {
       startTransition(async () => {
-         const newAttachments: AttachmentType[] = [];
+         const usedNames = new Set(attachments.map((attachment) => attachment.filename));
+         const newAttachments: AttachmentType[] = [...attachments];
          for (const [i, file] of input.entries()) {
             const arrayBuffer = await file.arrayBuffer();
+            const filename = getUniqueFilename(file.name, usedNames);
             if (!isImageMediaType(file.type)) {
                newAttachments.push({
                   id: i,
                   arrayBuffer: arrayBuffer,
                   dataUrl: undefined,
-                  filename: file.name,
+                  filename: filename,
                   contentType: file.type,
                });
                continue;
@@ -48,7 +71,7 @@ export function useMessageBoxAttachments(editorRef: React.RefObject<HTMLDivEleme
                id: i,
                arrayBuffer: arrayBuffer,
                dataUrl: dataUrl,
-               filename: file.name,
+               filename: filename,
                contentType: file.type,
             });
          }

@@ -1,8 +1,12 @@
 import { presenceStore } from "@stores/presenceStore";
 
-import notificationUrl from "@/assets/sounds/notification.wav";
-import voiceEnterUrl from "@/assets/sounds/voice-enter.wav";
-import voiceLeaveUrl from "@/assets/sounds/voice-leave.wav";
+// import notificationUrl from "@/assets/sounds/notification.wav";
+// import voiceEnterUrl from "@/assets/sounds/voice-enter.wav";
+// import voiceLeaveUrl from "@/assets/sounds/voice-leave.wav";
+
+const notificationUrl = new URL("@/assets/sounds/notification.wav", import.meta.url).href;
+const voiceEnterUrl = new URL("@/assets/sounds/voice-enter.wav", import.meta.url).href;
+const voiceLeaveUrl = new URL("@/assets/sounds/voice-leave.wav", import.meta.url).href;
 
 export type AudioType = "notification" | "voice-enter" | "voice-leave";
 

@@ -10,8 +10,8 @@ import type {
    APIRelationshipWithoutOwner,
    APIReplyMessage,
    APIUserProfile,
-   DeepPartial,
-   DirectChannel,
+   APIDMChannel,
+   APIGroupDMChannel,
    GatewayVoiceState,
    HMediaKind,
    PresenceUser,
@@ -144,7 +144,7 @@ export type ColorTheme = {
    text: string;
 };
 
-export type ThemeType = "cerulean" | "pine green" | "eggplant" | "coffee" | "charcoal" | "scarlet";
+export type ThemeType = "cerulean" | "pine-green" | "eggplant" | "coffee" | "charcoal" | "scarlet";
 
 export type ContextMenuProps = {
    label?: string;
@@ -247,11 +247,13 @@ export type ProcessedAppMessage = {
 
 export type AppMessage = PreviewAppMessage | ProcessedAppMessage;
 
-export type AppDirectChannel = Omit<DirectChannel, "recipients"> & {
+type AppChannelBuilder<T> = Omit<T, "recipients"> & {
    recipientIds: Snowflake[];
    name: string;
    originalName?: string | null;
 };
+
+export type AppDirectChannel = AppChannelBuilder<APIDMChannel> | AppChannelBuilder<APIGroupDMChannel>;
 export type AppRelationship = Omit<APIRelationshipWithoutOwner, "user"> & { userId: Snowflake };
 
 export type AppAttachment = {

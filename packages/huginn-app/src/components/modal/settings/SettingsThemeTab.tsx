@@ -11,7 +11,7 @@ import type { SettingsTabProps, ThemeType } from "@/types";
 const primaryCorners = ["primary-300", "primary-700", "primary-500", "primary-900"] as const;
 
 const themeOptions = [
-   { type: "pine green" as ThemeType, label: "Pine Green", theme: pineGreenTheme },
+   { type: "pine-green" as ThemeType, label: "Pine Green", theme: pineGreenTheme },
    { type: "cerulean" as ThemeType, label: "Cerulean", theme: ceruleanTheme },
    { type: "eggplant" as ThemeType, label: "Eggplant", theme: eggplantTheme },
    { type: "coffee" as ThemeType, label: "Coffee", theme: coffeeTheme },
@@ -34,6 +34,7 @@ export default function SettingsThemeTab(props: SettingsTabProps) {
 
    // Canvas renders the hovered preview theme, or the current theme
    const canvasTheme = previewThemeType ? themeOptions.find((t) => t.type === previewThemeType)!.theme : activeTheme;
+
    const canvasTl = useMemo(() => hexToRgb(canvasTheme[primaryCorners[0]]), [canvasTheme]);
    const canvasTr = useMemo(() => hexToRgb(canvasTheme[primaryCorners[1]]), [canvasTheme]);
    const canvasBl = useMemo(() => hexToRgb(canvasTheme[primaryCorners[2]]), [canvasTheme]);

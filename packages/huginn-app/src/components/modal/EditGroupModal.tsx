@@ -8,7 +8,9 @@ import HuginnInput from "@components/input/HuginnInput";
 import { usePatchDMChannel } from "@hooks/mutations/usePatchDMChannel";
 import { useFileDialog } from "@hooks/useFileDialog";
 import { useHuginnForm } from "@hooks/useHuginnForm";
+import { ChannelType } from "@huginn/shared";
 import { getChannelIconOptions } from "@lib/queries";
+import { getChannelComputedName, getGroupChannelName } from "@lib/query-utils";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
@@ -23,11 +25,17 @@ type Input = {
 export default function EditGroupModal() {
    const client = useClient();
    const { editGroup: modal, updateModals } = useModals();
+
    const { openFileDialog } = useFileDialog("image/*");
 
    const { setValue, handleErrors, register, handleSubmit } = useHuginnForm<Input>();
 
-   const { data: originalIcon } = useQuery(getChannelIconOptions(modal.channel?.id, modal.channel?.icon, client));
+   const { data: originalIcon } = useQuery(
+      getChannelIconOptions(modal.channel?.id, modal.channel?.type === ChannelType.GROUP_DM ? modal.channel?.icon : undefined, client),
+   );
+
+   const placeholder = modal.channel && getGroupChannelName(modal.channel);
+
    const mutation = usePatchDMChannel(handleErrors);
 
    const [iconData, setIconData] = useState<string | null | undefined>();
@@ -37,7 +45,7 @@ export default function EditGroupModal() {
          return;
       }
 
-      setValue("name", modal.channel.name);
+      setValue("name", modal.channel.originalName ?? "");
       setIconData(originalIcon);
    }, [modal.channel?.name, originalIcon, setValue]);
 
@@ -68,9 +76,10 @@ export default function EditGroupModal() {
    async function edit(data: Input) {
       if (!modal.channel) return;
 
+      console.log("Submitting edit with data:", data, modal.channel.name);
       await mutation.mutateAsync({
          channelId: modal.channel.id,
-         name: modal.channel.name === data?.name ? undefined : data.name,
+         name: data?.name === modal.channel.name ? undefined : !data.name ? null : data.name,
          icon: originalIcon && !iconData ? null : originalIcon === iconData ? undefined : iconData,
       });
       updateModals({ editGroup: { isOpen: false, channel: undefined } });
@@ -87,7 +96,7 @@ export default function EditGroupModal() {
                <HuginnDialogTitle title="Edit Group" />
                <div className="flex gap-x-5">
                   <ImagePicker data={iconData} editButtonColor="surface-alt" onDelete={handleDeleteIcon} onEdit={handleEditIcon} />
-                  <HuginnInput {...register("name")} className="mt-2 w-full" placeholder={modal.channel?.name}>
+                  <HuginnInput {...register("name")} className="mt-2 w-full" placeholder={placeholder}>
                      <HuginnInput.Label>Group Name</HuginnInput.Label>
                      <HuginnInput.Wrapper>
                         <HuginnInput.Input />

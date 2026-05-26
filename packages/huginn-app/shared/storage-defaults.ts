@@ -16,7 +16,7 @@ export const storageDefaults: StorageMap = {
          },
       ],
       activePresetName: "Default",
-      theme: "pine green",
+      theme: "pine-green",
       isChannelSidebarOpen: true,
       inputDeviceId: "",
       outputDeviceId: "",
