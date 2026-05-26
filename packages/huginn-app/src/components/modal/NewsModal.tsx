@@ -29,8 +29,6 @@ export default function NewsModal() {
          },
          {} as Record<string, { html: string; date: string; title: string }>,
       );
-      // const md = new markdownit("default");
-      // return md.render(data[0].content);
    }, [data]);
 
    function close() {
