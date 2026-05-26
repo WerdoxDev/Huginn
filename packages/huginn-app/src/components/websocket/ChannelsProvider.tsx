@@ -6,6 +6,7 @@ import type {
    GatewayDMChannelUpdateData,
 } from "@huginn/shared";
 
+import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { getChannelComputedName } from "@lib/query-utils";
 import { convertToAppDirectChannel } from "@lib/utils";
 import { useClient } from "@stores/clientStore";
@@ -19,6 +20,7 @@ import type { AppDirectChannel } from "@/types";
 export default function ChannelsProvider(props: { children?: ReactNode }) {
    const client = useClient();
    const queryClient = useQueryClient();
+   const currentChannel = useCurrentChannel();
    const navigate = useNavigate();
    const location = useLocation();
    const { addChannelToReadStates, removeChannelFromReadStates } = useReadStates();
@@ -30,11 +32,11 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
       addChannelToReadStates(d.id);
    }
 
-   function onChannelDeleted(d: GatewayDMChannelDeleteData) {
+   async function onChannelDeleted(d: GatewayDMChannelDeleteData) {
       queryClient.setQueryData<AppDirectChannel[]>(["channels", "@me"], (old) => old?.filter((x) => x.id !== d.id));
 
-      if (location.pathname.includes(d.id)) {
-         navigate({ to: "/channels/@me", replace: true });
+      if (currentChannel?.id === d.id) {
+         await navigate({ to: "/channels/@me", replace: true });
       }
 
       removeChannelFromReadStates(d.id);

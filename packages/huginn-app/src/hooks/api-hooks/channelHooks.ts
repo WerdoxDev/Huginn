@@ -4,11 +4,11 @@ import { getChannelsOptions } from "@lib/queries";
 import { findChannel } from "@lib/query-utils";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
-import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useParams } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 
-import type { AppDirectChannel, AppUser } from "@/types";
+import type { AppUser } from "@/types";
 
 import { useUsers } from "./userHooks";
 
@@ -18,13 +18,6 @@ export function useChannel(channelId?: Snowflake, guildId = "@me") {
 
    return useMemo(() => findChannel(data, channelId), [data, channelId]);
 }
-
-// export function useChannelName(channelId?: Snowflake): string {
-//    const channel = useChannel(channelId);
-//    const recipients = useUsers(channel?.recipientIds);
-
-//    return useMemo(() => getChannelName(channel?.name, recipients), [channelId, recipients, channel]);
-// }
 
 export function useChannelNamePlaceholder(recipients: AppUser[]) {
    return useMemo(() => recipients.map((x) => x.displayName).join(", "), [recipients]);
@@ -46,6 +39,8 @@ export function useCurrentChannel() {
 
 export function useSafeDeleteDMChannel(channelId?: Snowflake, channelType?: DirectChannel["type"], channelName?: string) {
    const mutation = useDeleteDMChannel();
+   const currentChannel = useCurrentChannel();
+   const navigate = useNavigate();
    const { updateModals } = useModals();
 
    function tryMutate() {
@@ -62,6 +57,10 @@ export function useSafeDeleteDMChannel(channelId?: Snowflake, channelType?: Dire
                   confirm: {
                      text: "Leave Group",
                      callback: async () => {
+                        if (currentChannel?.id === channelId) {
+                           await navigate({ to: "/channels/@me", replace: true });
+                        }
+
                         await mutation.mutateAsync(channelId);
                         updateModals({ info: { isOpen: false } });
                      },
