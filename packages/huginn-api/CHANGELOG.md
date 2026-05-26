@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.35.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.34.0...api@v0.35.0) (2026-05-26)
+
+
+### Features
+
+* **api:** add changelog route to common api ([6dada5d](https://github.com/WerdoxDev/Huginn/commit/6dada5de627bde5ea4061139121d08b13f97add2))
+
 ## [0.34.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.33.3...api@v0.34.0) (2026-05-21)
 
 

@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.69.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.68.1...app@v0.69.0) (2026-05-26)
+
+
+### Features
+
+* **app:** implement changelog fetching and UI ([14b88e5](https://github.com/WerdoxDev/Huginn/commit/14b88e5c51a6c2ee1887c41ca2476f88c30130c2))
+
+
+### Bug Fixes
+
+* **app:** add experimental label on pins ([ba18b15](https://github.com/WerdoxDev/Huginn/commit/ba18b15775e624b03da6fc741245b7267601906f))
+* **app:** background svg cropped on mobile ([7d303ff](https://github.com/WerdoxDev/Huginn/commit/7d303ffde11e75474b176c521c3df7ec903a0c12))
+* **app:** channel recipient and name bug fixes + vite 8 update ([bb8b04e](https://github.com/WerdoxDev/Huginn/commit/bb8b04e85d6571183e4b28dd7ce751a997fbefea))
+* **app:** few read-state & scrolling & lastMessageId desync bugs ([9d3e2fa](https://github.com/WerdoxDev/Huginn/commit/9d3e2fa2a5ef2fcc4a2b332544950109aad2e25f))
+* **app:** fix delayed notifications + default user notification icon ([c77b3d9](https://github.com/WerdoxDev/Huginn/commit/c77b3d95d9c277478b91fc5e9688e735ccb174ee))
+* **app:** misstyped condition on getNextParams ([38c5d62](https://github.com/WerdoxDev/Huginn/commit/38c5d62cf310cdbc0792cd0509c19bc41a26a015))
+* **app:** much better message box editor focusing + overflowing placeholder text ([4384837](https://github.com/WerdoxDev/Huginn/commit/43848376a1f2bb5082b7a531768ed49ed8cacf8a))
+
 ## [0.68.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.68.0...app@v0.68.1) (2026-05-21)
 
 
