@@ -171,6 +171,8 @@ function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; 
       }
    }
 
+   if (!user) return;
+
    return (
       <div className="group/reply flex w-full cursor-pointer items-center gap-x-1 pl-2 select-none" onClick={handleClick}>
          <IconMingcuteCornerUpRightLine className="size-7 shrink-0 text-white/50 transition-colors group-hover/reply:text-white" />
