@@ -49,6 +49,10 @@ export const deleteChannel = new Elysia()
          });
       }
 
+      if (channel.recipients.length === 1) {
+         // TODO: WE SHOULD DELETE THE ENTIRE CHANNEL HERE
+      }
+
       // Transfer the old owner to a new one alphabetically
       if (channel.ownerId === tokenPayload.id) {
          const updatedChannel = await prisma.channel.editDirect(

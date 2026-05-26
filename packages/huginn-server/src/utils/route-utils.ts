@@ -266,7 +266,6 @@ export async function processAttachments(
    messageId: Snowflake,
 ) {
    const processedAttachments: DBAttachment[] = [];
-   console.log(files, attachments);
    if (attachments && files) {
       for (const attachment of attachments) {
          const file = files[attachment.id];
