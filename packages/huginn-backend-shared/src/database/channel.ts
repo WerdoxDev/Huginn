@@ -148,8 +148,8 @@ export const channelExtension = Prisma.defineExtension({
                throw e;
             }
          },
-         async deleteDirect<Args extends ChannelArgs>(channelId: Snowflake, userId: Snowflake, args?: Args) {
-            const methodName = "channel.deleteDirect";
+         async leaveDirect<Args extends ChannelArgs>(channelId: Snowflake, userId: Snowflake, args?: Args) {
+            const methodName = "channel.leaveDirect";
             assertId(methodName, channelId);
             try {
                const channel = await prisma.channel.getById(channelId, { select: { type: true } });
@@ -175,6 +175,20 @@ export const channelExtension = Prisma.defineExtension({
             } catch (e) {
                await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                await assertExists(e, methodName, DBErrorType.NULL_USER, [userId]);
+               throw e;
+            }
+         },
+         async deleteGroupDirect<Args extends ChannelArgs>(channelId: Snowflake, args?: Args) {
+            const methodName = "channel.deleteGroupDirect";
+            assertId(methodName, channelId);
+
+            try {
+               const deletedChannel = await prisma.channel.delete({ where: { id: BigInt(channelId), type: ChannelType.GROUP_DM }, ...args });
+
+               assertObj(methodName, deletedChannel, DBErrorType.NULL_CHANNEL);
+               return idFix(deletedChannel) as ChannelPayload<Args>;
+            } catch (e) {
+               await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                throw e;
             }
          },
