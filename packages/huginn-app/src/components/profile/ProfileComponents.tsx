@@ -6,6 +6,7 @@ import { type Activity, ActivityType } from "@huginn/shared";
 import clsx from "clsx";
 
 export function ProfileAboutMe(props: { accentColor: string; headerRight?: ReactNode; children: ReactNode }) {
+   console.log(props.children);
    return (
       <div className="bg-surface rounded-md px-3 py-2.5">
          <div className="mb-1 flex items-center justify-between">

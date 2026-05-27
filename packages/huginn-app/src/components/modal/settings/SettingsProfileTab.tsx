@@ -295,7 +295,11 @@ export default function SettingsProfileTab() {
                   ) : (
                      user?.bio && (
                         <ProfileAboutMe accentColor={accentColor}>
-                           <div className="text-sm text-white/80">{user.bio}</div>
+                           <div className="text-sm text-white/80">
+                              {user.bio.split("\n").map((line, i) => (
+                                 <div key={i}>{line}</div>
+                              ))}
+                           </div>
                         </ProfileAboutMe>
                      )
                   )}
