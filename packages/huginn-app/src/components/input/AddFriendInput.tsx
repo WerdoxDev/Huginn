@@ -21,7 +21,7 @@ export default function AddFriendInput(props: {
                {...props.buttonProps}
                iconClassName="size-6!"
                isLoading={props.loading}
-               className="h-10 w-44 shrink-0 rounded-md px-2 py-2 text-sm font-medium whitespace-nowrap"
+               className="h-10 shrink-0 rounded-md px-4 text-sm font-medium whitespace-nowrap"
                color="primary"
                disabled={props.disabled}
                onClick={() => props.onClick?.()}

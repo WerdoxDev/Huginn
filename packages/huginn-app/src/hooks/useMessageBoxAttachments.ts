@@ -122,6 +122,7 @@ export function useMessageBoxAttachments(editorRef: React.RefObject<HTMLDivEleme
 
    function clearAttachments() {
       setAttachments([]);
+      nextAttachmentIdRef.current = 0;
    }
 
    function onPaste(e: ClipboardEvent) {
