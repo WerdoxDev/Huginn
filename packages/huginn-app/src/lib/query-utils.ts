@@ -3,7 +3,7 @@ import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import { MessageType, omit, type APIGetUserChannelsResult, type PresenceUser, type Snowflake } from "@huginn/shared";
 import { produce } from "immer";
 
-import type { AppDirectChannel, AppMessage, AppUser } from "@/types";
+import type { AppDirectChannel, AppMessage, AppUser, MessageErrorType } from "@/types";
 
 import { queryClient as client } from "@/lib/queries";
 
@@ -11,6 +11,46 @@ import { convertToAppUser } from "./utils";
 
 export function updateUser(user: PresenceUser, queryClient = client) {
    queryClient.setQueryData<AppUser>(["user", user.id], (old) => (old ? convertToAppUser({ ...old, ...user }) : convertToAppUser(user)));
+}
+
+function resolveReplyReference(updatedMessage: AppMessage) {
+   if (!updatedMessage.isPreview && updatedMessage.type === MessageType.REPLY) {
+      return omit(updatedMessage, ["referencedMessage"]);
+   }
+
+   return updatedMessage;
+}
+
+function updateMessageInPages<T>(
+   options: {
+      pages: T[][];
+      getMessage: (item: T) => AppMessage;
+      setMessage: (page: T[], index: number, message: AppMessage) => void;
+      targetMessageId: Snowflake;
+      updater: (old: AppMessage) => AppMessage;
+   },
+   // updatedMessage: AppMessage,
+) {
+   let found = false;
+
+   for (const page of options.pages) {
+      for (let i = 0; i < page.length; i++) {
+         const item = page[i];
+         const message = options.getMessage(item);
+
+         if (message.id === options.targetMessageId) {
+            found = true;
+            options.setMessage(page, i, options.updater(message));
+         }
+
+         if (!message.isPreview && message.type === MessageType.REPLY && message.referencedMessage?.id === options.targetMessageId) {
+            const resolvedReference = resolveReplyReference(options.updater(message.referencedMessage));
+            message.referencedMessage = resolvedReference;
+         }
+      }
+   }
+
+   return found;
 }
 
 export function getUser(userId: Snowflake, queryClient = client) {
@@ -148,51 +188,71 @@ export function appendAppMessage(
    return { inLoadedQueryPage, inVisibleQueryPage };
 }
 
-export function updateAppMessage(
-   queryClient: QueryClient,
-   channelId: Snowflake,
-   messageId: Snowflake,
-   updater: (old: AppMessage) => AppMessage,
-   targetChannel?: AppDirectChannel,
-   currentChannel?: AppDirectChannel,
-) {
+type UpdateAppMessageOptions = {
+   channelId: Snowflake;
+   messageId: Snowflake;
+   targetChannel?: AppDirectChannel;
+   currentChannel?: AppDirectChannel;
+} & ({ message: AppMessage; patch?: never } | { patch: Partial<AppMessage>; message?: never });
+
+export function updateAppMessage(queryClient: QueryClient, options: UpdateAppMessageOptions) {
    let inLoadedQueryPage = false;
-   let inVisibleQueryPage = false;
+   let inVisibleQueryPage = options.targetChannel?.id === options.currentChannel?.id;
+   // let updatedMessage: AppMessage | undefined;
+
+   const applyUpdate = (message: AppMessage): AppMessage => {
+      if (options.message) {
+         return options.message;
+      }
+
+      return { ...message, ...options.patch } as AppMessage;
+   };
 
    queryClient.setQueryData<InfiniteData<AppMessage[]>>(
-      ["messages", channelId],
+      ["messages", options.channelId],
       produce((draft) => {
          if (!draft) return;
 
-         const targetPageIndex = draft.pages.findIndex((x) => x.find((y) => y.id === messageId));
-         if (targetPageIndex === -1) {
-            return;
+         inLoadedQueryPage = updateMessageInPages({
+            pages: draft.pages,
+            getMessage: (item) => item,
+            setMessage: (page, index, message) => {
+               page[index] = message;
+            },
+            targetMessageId: options.messageId,
+            updater: applyUpdate,
+         });
+      }),
+   );
+
+   queryClient.setQueryData<InfiniteData<Array<{ message: AppMessage; pinnedAt: string | Date }>>>(
+      ["pinned-messages", options.channelId],
+      produce((draft) => {
+         if (!draft) return;
+
+         // let updatedPinnedMessage: AppMessage | undefined;
+
+         const found = updateMessageInPages({
+            pages: draft.pages,
+            getMessage: (pin) => pin.message,
+            setMessage: (page, index, next) => {
+               page[index].message = next;
+            },
+            targetMessageId: options.messageId,
+            updater: applyUpdate,
+         });
+
+         if (options.patch || options.message.isPreview) return;
+
+         // Message is pinned and not added to pins
+         if (options.message.pinned && !found) {
+            const newPin = { pinnedAt: new Date().toISOString(), message: options.message };
+            draft.pages[0].unshift(newPin);
          }
-
-         inLoadedQueryPage = true;
-         if (currentChannel?.id === targetChannel?.id) {
-            inVisibleQueryPage = true;
+         // Message is unpinned and still in pins
+         else if (options.message.pinned === false && found) {
+            draft.pages = draft.pages.map((page) => page.filter((pin) => pin.message.id !== options.messageId));
          }
-
-         const foundMessage = draft.pages.map((x) => x.find((y) => y.id === messageId)).filter((x) => !!x)[0];
-         if (!foundMessage) return;
-
-         const updatedMessage = updater(foundMessage);
-
-         for (const page of draft.pages) {
-            for (const message of page) {
-               if (!message.isPreview && message.type === MessageType.REPLY && message.referencedMessage?.id === updatedMessage.id) {
-                  if (!updatedMessage.isPreview && updatedMessage.type === MessageType.REPLY) {
-                     message.referencedMessage = omit(updatedMessage, ["referencedMessage"]);
-                  } else {
-                     message.referencedMessage = updatedMessage;
-                  }
-               }
-            }
-         }
-
-         const targetMessageIndex = draft.pages[targetPageIndex].findIndex((x) => x.id === updatedMessage.id);
-         draft.pages[targetPageIndex][targetMessageIndex] = updatedMessage;
       }),
    );
 

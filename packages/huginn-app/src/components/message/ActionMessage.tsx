@@ -1,7 +1,7 @@
 import Tooltip from "@components/tooltip/Tooltip";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useUser, useUsers } from "@hooks/api-hooks/userHooks";
-import { MessageType } from "@huginn/shared";
+import { MessageType, type Snowflake } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
 import moment from "moment";
@@ -23,11 +23,20 @@ export default function ActionMessage() {
 
    const type = useMemo(() => !message.isPreview && message.type, [context.message]);
    const call = useMemo(() => (!message.isPreview && message.type === MessageType.CALL ? message.call : undefined), [message]);
+   const reference = useMemo(
+      () => (!message.isPreview && message.type === MessageType.CHANNEL_PINNED_MESSAGE ? message.messageReference : undefined),
+      [message],
+   );
 
    const callParticipants = useUsers(call?.participants);
 
    function openUserProfile(userId: string) {
       updateModals({ userProfile: { isOpen: true, userId } });
+   }
+
+   function highlightMessage(messageId?: Snowflake) {
+      if (!messageId) return;
+      context.onReferencedMessageClick?.(messageId);
    }
 
    function formatCallDuration() {
@@ -67,6 +76,7 @@ export default function ActionMessage() {
          {type === MessageType.CHANNEL_ICON_CHANGED && <IconMingcutePic2Fill className="text-text/80 mr-4 size-5 shrink-0" />}
          {type === MessageType.CHANNEL_OWNER_CHANGED && <IconMingcuteTransfer3Fill className="text-primary-500 mr-4 size-5 shrink-0" />}
          {type === MessageType.CALL && <IconMingcutePhoneFill className="text-positive-100 mr-4 size-5 shrink-0" />}
+         {type === MessageType.CHANNEL_PINNED_MESSAGE && <IconMingcutePinFill className="text-primary-500 mr-4 size-5 shrink-0" />}
          <div className="flex gap-x-1">
             <button type="button" className="cursor-pointer text-left font-bold hover:underline" onClick={() => openUserProfile(author.id)}>
                {authorName}
@@ -97,10 +107,22 @@ export default function ActionMessage() {
                   )}
                </Tooltip>
             )}
+            {type === MessageType.CHANNEL_PINNED_MESSAGE && (
+               <>
+                  <span className="text-text/50"> pinned a </span>
+                  <button
+                     type="button"
+                     className="cursor-pointer text-left font-bold hover:underline"
+                     onClick={() => highlightMessage(reference?.messageId)}
+                  >
+                     message
+                  </button>
+               </>
+            )}
             {type === MessageType.CHANNEL_ICON_CHANGED && <span className="text-text/50"> changed the channel icon.</span>}
             {type === MessageType.CHANNEL_NAME_CHANGED &&
                (!context.message.content ? (
-                  <span className="text-text/50"> removed the channel name.</span>
+                  <span className="text-text/50"> removed the channel name</span>
                ) : (
                   <>
                      <span className="text-text/50"> changed the chanel name: </span>

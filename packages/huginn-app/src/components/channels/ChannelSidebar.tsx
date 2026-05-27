@@ -62,7 +62,7 @@ export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
          <div className="absolute inset-0 flex" style={{ width: rightMenuWidth }}>
             <div className="bg-surface h-full w-0 shrink-0 overflow-hidden lg:w-0.5" />
             <div className="group bg-surface-alt relative flex h-full w-full flex-col overflow-hidden">
-               <div className="scroll-super-thin flex flex-col overflow-y-scroll">
+               <div className="scroll-super-thin flex flex-col overflow-y-scroll pb-2">
                   <div className="text-text/70 pt-4 pr-2 pb-2 pl-4 text-xs uppercase">Members - {sortedRecipients.length}</div>
                   <div className="flex flex-col gap-y-0.5 rounded-lg p-0 pl-2">
                      {sortedRecipients

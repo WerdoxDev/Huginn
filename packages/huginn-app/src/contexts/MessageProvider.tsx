@@ -8,12 +8,16 @@ import { createContext, type RefObject } from "react";
 import type { ProcessedMessage } from "@/types";
 
 type MessageContextType = {
-   idPrefix?: string;
    message: ProcessedMessage;
    nextMessage?: ProcessedMessage;
    lastMessage?: ProcessedMessage;
    onVisibilityChanged?: (messageId: Snowflake, visible: boolean) => void;
    onReferencedMessageClick?: (messageId: Snowflake) => Promise<void>;
+   options?: {
+      idPrefix?: string;
+      hideBackground?: boolean;
+      disableContextMenu?: boolean;
+   };
    ref: RefObject<HTMLLIElement | null>;
 };
 

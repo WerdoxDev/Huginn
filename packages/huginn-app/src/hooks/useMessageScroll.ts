@@ -2,6 +2,7 @@ import type { Snowflake } from "@huginn/shared";
 
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { useMessageDiff, type ChangeType } from "@hooks/useMessageDiff";
+import { usePrevious } from "@hooks/usePrevious";
 import { getFirstChildClosestToBottom, getFirstChildClosestToTop } from "@lib/utils";
 import { useChannelStore, type SavedScrollState } from "@stores/channelStore";
 import { useThisUser } from "@stores/userStore";
@@ -29,7 +30,9 @@ interface UseMessageScrollOptions {
 
 export function useMessageScroll(options: UseMessageScrollOptions) {
    const { user } = useThisUser();
-   const { savedScrolls, saveScroll, messageBoxHeight, removeMessageUploadProgress } = useChannelStore();
+   const { savedScrolls, saveScroll, currentEditingMessageId, messageBoxHeight, currentVisibleMessages, removeMessageUploadProgress } =
+      useChannelStore();
+   const previousMessageBoxHeight = usePrevious(messageBoxHeight);
    const { setRef, getRef } = useDynamicRefs<HTMLLIElement>();
 
    const scrollRef = useRef<HTMLDivElement>(null);
@@ -47,17 +50,14 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
    }>(null);
    const lastDirection = useRef<"up" | "down" | "none">("none");
    const isResizing = useRef(false);
-   const lastScrollOffsetRef = useRef(0);
    const suppressInfiniteFetchRef = useRef(false);
    const smoothScrollCleanupRef = useRef<(() => void) | undefined>(undefined);
 
    function scrollDown() {
       if (!scrollRef.current) return;
       scrollRef.current.scrollTo(0, scrollRef.current.scrollHeight);
-      lastScrollOffsetRef.current = 0;
    }
 
-   // When smooth scrolling, we should temporarily disable the fetching query or it will fail to scroll correctly.
    const startSmoothScrollFetchSuppression = useCallback(() => {
       smoothScrollCleanupRef.current?.();
       suppressInfiniteFetchRef.current = true;
@@ -187,9 +187,7 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
       if (!scrollRef.current || options.messages.length === 0) return;
 
       const { scrollHeight, scrollTop, clientHeight } = scrollRef.current;
-      const scrollOffset = scrollHeight - clientHeight - scrollTop;
-      lastScrollOffsetRef.current = scrollOffset;
-      const isAtBottom = scrollOffset <= 20;
+      const isAtBottom = scrollHeight - clientHeight - scrollTop <= 20;
 
       if (isAtBottom) {
          lastScrollState.current = { type: "bottom" };
@@ -229,9 +227,10 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
 
    function onMessageAdd(message: ProcessedMessage) {
       if (!scrollRef.current) return;
-      const previousScrollOffset = lastScrollOffsetRef.current;
+      const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
+      const messageHeight = getRef(message.id)?.current?.clientHeight ?? 0;
 
-      if (message.authorId === user?.id || previousScrollOffset <= 50) {
+      if (message.authorId === user?.id || scrollOffset - messageHeight <= 50) {
          scrollDown();
       }
    }
@@ -249,20 +248,46 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
          return;
       }
 
-      const previousScrollOffset = lastScrollOffsetRef.current;
+      const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
+      const messageHeight = messageRef?.clientHeight ?? 0;
 
-      if (previousScrollOffset <= 50) {
+      if (scrollOffset - messageHeight <= 50) {
          scrollDown();
       }
    }
 
    useMessageDiff(options.processedMessages, { onMessageAdd, onMessageUpdate });
 
+   // Adjust scroll when message box height changes
+   // useEffect(() => {
+   //    if (!scrollRef.current) return;
+
+   //    if (scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop >= 1) {
+   //       scrollRef.current.scrollTop += messageBoxHeight - (previousMessageBoxHeight ?? 0);
+   //    }
+
+   //    if (currentEditingMessageId && currentVisibleMessages.some((x) => x.messageId === currentEditingMessageId)) {
+   //       const messageRef = getRef(currentEditingMessageId);
+   //       if (messageRef.current) {
+   //          scrollIntoViewMinimal(messageRef.current);
+   //       }
+   //    }
+   // }, [messageBoxHeight]);
+
    // Restore scroll position after fetching
    useLayoutEffect(() => {
       if (!lastSeenElement.current || !scrollRef.current || lastChannelId.current !== options.channelId) return;
       scrollToLastSeenMessage();
    }, [options.queryData]);
+
+   // Compensate scroll position when top ghost messages appear
+   // const prevIsFetchingPreviousPage = useRef(false);
+   // useLayoutEffect(() => {
+   //    if (options.isFetchingPreviousPage && !prevIsFetchingPreviousPage.current && options.ghostTopRef.current && scrollRef.current) {
+   //       scrollRef.current.scrollTop += options.ghostTopRef.current.offsetHeight;
+   //    }
+   //    prevIsFetchingPreviousPage.current = options.isFetchingPreviousPage;
+   // }, [options.isFetchingPreviousPage]);
 
    // Save scroll state when leaving a channel
    useEffect(() => {

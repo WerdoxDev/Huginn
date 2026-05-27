@@ -105,7 +105,7 @@ function FriendsComponent() {
                )}
             </Tabs.List>
          </TopBar>
-         <div className="h-full overflow-y-scroll p-5 pr-2">
+         <div className="scroll-thin h-full overflow-y-scroll p-5 pr-2.5">
             <FriendsTab friends={onlineFriends} presences={presences} text="Online" tabValue="online" />
             <FriendsTab friends={allFriends} presences={presences} text="All Friends" tabValue="all" />
             <PendingFriendsTab friends={friends} />

@@ -40,6 +40,15 @@ export default function FriendsTab(props: { friends: AppRelationship[] | null; p
                   type={friend.type}
                />
             ))}
+            {props.friends?.map((friend) => (
+               <FriendItem
+                  onMessage={onMessage}
+                  presence={presenceLookup[friend.userId]}
+                  user={userLookup[friend.userId]}
+                  key={friend.id}
+                  type={friend.type}
+               />
+            ))}
          </div>
       </Tabs.Panel>
    );

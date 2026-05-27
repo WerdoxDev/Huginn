@@ -97,14 +97,13 @@ export function useSendMessage() {
       },
       onError(_error, data) {
          const targetChannel = findChannel(getChannels(undefined, queryClient), data.channelId);
-         updateAppMessage(
-            queryClient,
-            data.channelId,
-            data.previewMessage.id,
-            (old) => ({ ...old, error: MessageErrorType.FAILED_TO_SEND }),
+         updateAppMessage(queryClient, {
+            channelId: data.channelId,
+            messageId: data.previewMessage.id,
+            patch: { error: MessageErrorType.FAILED_TO_SEND },
             targetChannel,
             currentChannel,
-         );
+         });
       },
       networkMode: "always",
    });

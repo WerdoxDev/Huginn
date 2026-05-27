@@ -61,24 +61,24 @@ export default function MessageContextMenu() {
       }
    }
 
-   function deleteMessage() {
+   async function deleteMessage() {
       if (deleteMessageMutation.isPending || !data) {
          return;
       }
 
-      deleteMessageMutation.mutate({
+      await deleteMessageMutation.mutateAsync({
          channelId: data.message.channelId,
          messageId: data.message.id,
       });
    }
 
-   function togglePin() {
+   async function togglePin() {
       if (!data) return;
 
       if (isPinned) {
          if (unpinMessageMutation.isPending) return;
 
-         unpinMessageMutation.mutate({
+         await unpinMessageMutation.mutateAsync({
             channelId: data.message.channelId,
             messageId: data.message.id,
          });
@@ -88,7 +88,7 @@ export default function MessageContextMenu() {
 
       if (pinMessageMutation.isPending) return;
 
-      pinMessageMutation.mutate({
+      await pinMessageMutation.mutateAsync({
          channelId: data.message.channelId,
          messageId: data.message.id,
       });

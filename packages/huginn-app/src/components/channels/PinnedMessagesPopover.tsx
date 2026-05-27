@@ -6,7 +6,7 @@ import { MessageContext } from "@contexts/MessageProvider";
 import { usePinnedMessages } from "@hooks/api-hooks/messageHooks";
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { type Snowflake } from "@huginn/shared";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import type { AppMessage, ProcessedMessage } from "@/types";
 
@@ -28,7 +28,7 @@ function processMessages(messages: AppMessage[]): ProcessedMessage[] {
 export default function PinnedMessagesPopover(props: { channelId: Snowflake }) {
    const [isOpen, setIsOpen] = useState(false);
    return (
-      <HuginnPopover open={isOpen} onOpenChange={setIsOpen}>
+      <HuginnPopover open={isOpen} onOpenChange={setIsOpen} modal>
          <Tooltip hideOnMobile>
             <Tooltip.Trigger asChild>
                <HuginnPopover.Trigger className="text-text/80 hover:text-text h-full">
@@ -43,16 +43,31 @@ export default function PinnedMessagesPopover(props: { channelId: Snowflake }) {
 }
 
 function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean }) {
-   const { data, isLoading, isError } = usePinnedMessages(props.channelId, { enabled: props.isOpen });
+   const { data, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage } = usePinnedMessages(props.channelId, {
+      enabled: props.isOpen,
+   });
    const { setRef } = useDynamicRefs<HTMLLIElement>();
 
-   const pinnedMessages = useMemo(() => data?.map((pin) => pin.message) ?? [], [data]);
+   const allPins = useMemo(() => data?.pages.flatMap((page) => page) ?? [], [data]);
+
+   const pinnedMessages = useMemo(() => allPins.map((pin) => pin.message), [allPins]);
    const processedMessages = useMemo(() => processMessages(pinnedMessages), [pinnedMessages]);
+
+   const onScroll = useCallback(
+      async (event: React.UIEvent<HTMLDivElement>) => {
+         const scroller = event.currentTarget;
+         const isAtBottom = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight <= 20;
+
+         if (!isAtBottom || isFetchingNextPage || !hasNextPage) return;
+         await fetchNextPage();
+      },
+      [fetchNextPage, hasNextPage, isFetchingNextPage],
+   );
 
    return (
       <HuginnPopover.Panel
          align="end"
-         className="bg-surface-deep border-surface z-40 w-105 overflow-hidden rounded-lg border shadow-xl"
+         className="bg-surface-deep border-surface z-40 w-105 overflow-hidden rounded-lg border shadow-xl outline-none"
          side="bottom"
          sideGap={16}
       >
@@ -61,33 +76,40 @@ function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean }) {
             <div className="text-lg font-bold">Pinned Messages</div>
          </div>
          <div className="bg-surface h-0.5 w-full" />
-         <div className="bg-surface-deep max-h-[70vh] overflow-y-auto py-3">
+         <div className="bg-surface-deep scroll-super-thin max-h-[70vh] overflow-y-scroll py-2 pl-2" onScroll={onScroll}>
             {isLoading && (
-               <div className="text-text/70 flex items-center justify-center gap-x-2 py-6">
+               <div className="text-text/70 flex h-20 items-center justify-center gap-x-2">
                   <LoadingIcon className="size-10" />
                </div>
             )}
             {isError && !isLoading && <div className="text-text/70 flex items-center justify-center py-6">Failed to load pinned messages.</div>}
             {!isLoading && !isError && pinnedMessages.length === 0 && (
-               <div className="text-text/70 flex items-center justify-center py-6">No pinned messages yet.</div>
+               <div className="text-text/70 flex h-20 items-center justify-center">No pinned messages yet.</div>
             )}
             {!isLoading && !isError && pinnedMessages.length > 0 && (
-               <ol className="min-h-0 space-y-1 overflow-hidden pr-0 pb-2">
+               <ol className="flex flex-col gap-y-2 overflow-hidden">
                   {processedMessages.map((message) => (
-                     <MessageContext.Provider
-                        key={message.id}
-                        value={{
-                           idPrefix: "pinned_",
-                           message,
-                           ref: setRef(message.id),
-                           lastMessage: undefined,
-                           nextMessage: undefined,
-                        }}
-                     >
-                        <MessageRenderer />
-                     </MessageContext.Provider>
+                     <div className="bg-surface-alt rounded-lg" key={message.id}>
+                        <MessageContext.Provider
+                           key={message.id}
+                           value={{
+                              message,
+                              ref: setRef(message.id),
+                              lastMessage: undefined,
+                              nextMessage: undefined,
+                              options: { hideBackground: true, disableContextMenu: true, idPrefix: "pinned_" },
+                           }}
+                        >
+                           <MessageRenderer />
+                        </MessageContext.Provider>
+                     </div>
                   ))}
                </ol>
+            )}
+            {isFetchingNextPage && (
+               <div className="flex items-center justify-center py-2">
+                  <LoadingIcon className="size-10" />
+               </div>
             )}
          </div>
       </HuginnPopover.Panel>

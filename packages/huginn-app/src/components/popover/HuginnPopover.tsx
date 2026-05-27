@@ -1,4 +1,5 @@
 import { Popover } from "@base-ui/react";
+import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
 import { useState, type HTMLProps, type ReactNode } from "react";
 
@@ -9,8 +10,15 @@ export default function HuginnPopover(props: {
    modal?: Popover.Root.Props["modal"];
 }) {
    const [open, setOpen] = useState(false);
+   const modals = useModals();
+
+   function isAnyModalOpen() {
+      return Object.values(modals).some((modal) => "isOpen" in modal && modal.isOpen);
+   }
 
    function handleOpenChange(newOpen: boolean) {
+      if (!newOpen && isAnyModalOpen()) return;
+
       if (props.open !== undefined) {
          props.onOpenChange?.(newOpen);
          return;

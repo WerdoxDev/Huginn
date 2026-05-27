@@ -10,7 +10,7 @@ export default function LinkElement(props: { children?: ReactNode; url?: string 
 
    return (
       <span
-         onContextMenu={(e) => open({ message: context.message, url: props.url }, e)}
+         onContextMenu={(e) => (context.options?.disableContextMenu ? undefined : open({ message: context.message, url: props.url }, e))}
          className="relative inline-block cursor-pointer underline"
          onClick={() => (props.url ? openUrl(props.url) : undefined)}
          title={props.url}

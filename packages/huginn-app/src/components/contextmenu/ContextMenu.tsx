@@ -5,7 +5,7 @@ import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useModals } from "@stores/modalsStore";
 import { useQueryErrorResetBoundary } from "@tanstack/react-query";
 import clsx from "clsx";
-import { type ReactNode, type RefObject, useMemo, useState } from "react";
+import { createContext, type ReactNode, type RefObject, useContext, useMemo, useState } from "react";
 
 import type { ContextMenuItemProps, ContextMenuProps } from "@/types";
 
@@ -60,7 +60,9 @@ export default function ContextMenu(props: ContextMenuProps) {
                         "data-ending-style:opacity-0",
                      )}
                   >
-                     {props.renderChildren ?? props.children}
+                     <ContextMenuCloseContext.Provider value={props.onClose ?? null}>
+                        {props.renderChildren ?? props.children}
+                     </ContextMenuCloseContext.Provider>
                   </BaseContextMenu.Popup>
                </BaseContextMenu.Positioner>
             </BaseContextMenu.Portal>
@@ -68,6 +70,8 @@ export default function ContextMenu(props: ContextMenuProps) {
       </HuginnErrorBoundary>
    );
 }
+
+const ContextMenuCloseContext = createContext<(() => void) | null>(null);
 
 function Item(
    props: ContextMenuItemProps &
@@ -78,6 +82,7 @@ function Item(
       },
 ) {
    const [isLoading, setIsLoading] = useState(false);
+   const closeMenu = useContext(ContextMenuCloseContext);
 
    function handleClick() {
       const result = props.onClick?.({} as React.MouseEvent<HTMLButtonElement>) as unknown;
@@ -86,7 +91,15 @@ function Item(
          setIsLoading(true);
          result.finally(() => {
             setIsLoading(false);
+            if (!props.preventClose) {
+               closeMenu?.();
+            }
          });
+         return;
+      }
+
+      if (!props.preventClose) {
+         closeMenu?.();
       }
    }
 
@@ -95,7 +108,7 @@ function Item(
          ref={props.ref}
          label={props.label}
          disabled={props.disabled || isLoading}
-         closeOnClick={!props.preventClose}
+         closeOnClick={false}
          onClick={handleClick}
          className={clsx(
             "flex shrink-0 cursor-pointer items-center justify-between gap-x-5 rounded-sm px-2 py-2 text-start text-sm text-nowrap outline-hidden",
