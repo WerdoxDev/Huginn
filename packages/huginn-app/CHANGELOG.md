@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.69.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.69.2...app@v0.69.3) (2026-05-27)
+
+
+### Bug Fixes
+
+* **app:** better mobile friends tab layout + non nullable active preset + 3 letter username ([c8a4ac0](https://github.com/WerdoxDev/Huginn/commit/c8a4ac08b09be916d171f289ff18af807d0fb6fa))
+* **app:** fix desync issue when gateway is reset + clickable action message users ([92ad6ff](https://github.com/WerdoxDev/Huginn/commit/92ad6ffafd9df49965ec64462bec968b32a112ed))
+* **app:** message actions resetting when someone sends + multiple image uploads not working ([0f87a08](https://github.com/WerdoxDev/Huginn/commit/0f87a086604a942d9fdf6c8bb6081d074cd823ac))
+* **app:** multiline bio is not shown ([26c4f72](https://github.com/WerdoxDev/Huginn/commit/26c4f72c108b3148bd2f08f002330d3cd1d715e4))
+* **app:** safe navigation before deleting channel ([350ec15](https://github.com/WerdoxDev/Huginn/commit/350ec15b0699aa03bb765f81d7eddfd405e66046))
+
 ## [0.69.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.69.1...app@v0.69.2) (2026-05-26)
 
 
