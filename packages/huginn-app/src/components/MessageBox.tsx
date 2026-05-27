@@ -56,13 +56,14 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       // Clear attachments and reset local state for new channel
       clearAttachments();
       resetState();
+      console.log("RESET");
 
       if (isMobile || !editor) return;
 
       requestAnimationFrame(() => {
          if (editor.children.length !== 0) ReactEditor.focus(editor);
       });
-   }, [currentChannel, isMobile]);
+   }, [currentChannel?.id, isMobile]);
 
    // Track message box height for scroll calculations
    useEffect(() => {

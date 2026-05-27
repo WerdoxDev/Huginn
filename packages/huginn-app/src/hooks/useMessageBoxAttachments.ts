@@ -1,7 +1,7 @@
 import type { ClipboardEvent } from "react";
 
 import { isImageMediaType } from "@huginn/shared";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import type { AppMessage, AttachmentType } from "@/types";
 
@@ -28,24 +28,28 @@ function getUniqueFilename(name: string, used: Set<string>) {
    return candidate;
 }
 
-export function useMessageBoxAttachments(editorRef: React.RefObject<HTMLDivElement | null>, messages: AppMessage[]) {
+export function useMessageBoxAttachments(editorRef: React.RefObject<HTMLDivElement | null>, _messages: AppMessage[]) {
    const [attachments, setAttachments] = useState<AttachmentType[]>([]);
    const [dragging, setDragging] = useState(false);
+   const nextAttachmentIdRef = useRef(0);
    const [_isPending, startTransition] = useTransition();
 
    async function addAttachments(input: AttachmentInputType[]) {
       startTransition(async () => {
-         const usedNames = new Set(attachments.map((attachment) => attachment.filename));
-         const newAttachments: AttachmentType[] = [...attachments];
-         for (const [i, file] of input.entries()) {
+         const pendingAttachments: Array<{
+            name: string;
+            arrayBuffer: ArrayBuffer;
+            dataUrl: string | undefined;
+            contentType: string;
+         }> = [];
+
+         for (const file of input) {
             const arrayBuffer = await file.arrayBuffer();
-            const filename = getUniqueFilename(file.name, usedNames);
             if (!isImageMediaType(file.type)) {
-               newAttachments.push({
-                  id: i,
-                  arrayBuffer: arrayBuffer,
+               pendingAttachments.push({
+                  name: file.name,
+                  arrayBuffer,
                   dataUrl: undefined,
-                  filename: filename,
                   contentType: file.type,
                });
                continue;
@@ -67,16 +71,32 @@ export function useMessageBoxAttachments(editorRef: React.RefObject<HTMLDivEleme
                };
             });
 
-            newAttachments.push({
-               id: i,
-               arrayBuffer: arrayBuffer,
-               dataUrl: dataUrl,
-               filename: filename,
+            pendingAttachments.push({
+               name: file.name,
+               arrayBuffer,
+               dataUrl,
                contentType: file.type,
             });
          }
 
-         setAttachments(newAttachments);
+         setAttachments((currentAttachments) => {
+            const usedNames = new Set(currentAttachments.map((attachment) => attachment.filename));
+            const newAttachments: AttachmentType[] = [...currentAttachments];
+
+            for (const pendingAttachment of pendingAttachments) {
+               const filename = getUniqueFilename(pendingAttachment.name, usedNames);
+               newAttachments.push({
+                  id: nextAttachmentIdRef.current++,
+                  arrayBuffer: pendingAttachment.arrayBuffer,
+                  dataUrl: pendingAttachment.dataUrl,
+                  filename,
+                  contentType: pendingAttachment.contentType,
+               });
+            }
+
+            return newAttachments;
+         });
+
          editorRef.current?.focus();
       });
    }
