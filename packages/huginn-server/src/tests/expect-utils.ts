@@ -12,7 +12,7 @@ import {
    type APIReadState,
    type APIRelationshipWithoutOwner,
    type APIRelationUser,
-   type APIReplyMessage,
+   type APIReferenceMessage,
    type APIThumbnail,
    type APIVideo,
    ChannelType,
@@ -238,7 +238,7 @@ export function expectMessageExactSchema(
          );
       }
       if (messageReference) {
-         expect((castedMessage as APIReplyMessage).messageReference).toStrictEqual(messageReference);
+         expect((castedMessage as APIReferenceMessage).messageReference).toStrictEqual(messageReference);
       }
       expect(Object.keys(castedMessage.author).sort()).toStrictEqual(
          ["id", "username", "displayName", "flags", "avatar", "banner", "bannerColor", "accentColor", "bio"].sort(),

@@ -15,6 +15,7 @@ import {
    CONSTANTS,
    type DirectChannel,
    type GatewayWebsocketEvents,
+   MessageReferenceType,
    MessageType,
    nullToUndefined,
    omit,
@@ -30,6 +31,7 @@ export async function dispatchMessage(options: {
    type: MessageType;
    content?: string;
    mentions?: Snowflake[];
+   messageReferenceId?: string;
    flags?: number;
 }) {
    const message = await prisma.message.createOne(
@@ -39,6 +41,9 @@ export async function dispatchMessage(options: {
          type: options.type,
          content: options.content,
          mentions: options.mentions,
+         messageReference: options.messageReferenceId
+            ? { channelId: options.channelId, messageId: options.messageReferenceId, type: MessageReferenceType.DEFAULT }
+            : undefined,
          flags: options.flags,
       },
       { select: selectAllMessage },

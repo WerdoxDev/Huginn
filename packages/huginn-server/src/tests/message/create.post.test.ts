@@ -5,7 +5,7 @@ import {
    type APIMessageReference,
    type APIPostMessageJSONBody,
    type APIPostMessageResult,
-   type APIReplyMessage,
+   type APIReferenceMessage,
    ChannelType,
    MessageReferenceType,
    MessageType,
@@ -289,7 +289,7 @@ describe("POST /api/channels/:channelId/messages", () => {
          messageReference: reference,
       };
 
-      const result = (await testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", body)) as APIReplyMessage;
+      const result = (await testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", body)) as APIReferenceMessage;
 
       expectMessageExactSchema(result, MessageType.REPLY, undefined, channel.id, user, "test", undefined, reference);
    });

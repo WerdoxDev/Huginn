@@ -1,9 +1,9 @@
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { filterMessage } from "#utils/helpers";
+import { dispatchMessage, filterMessage } from "#utils/helpers";
 import { missingAccess, tryCatch, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectMessagePin } from "@huginn/backend-shared/database/common";
-import { type APIPutChannelPinResult } from "@huginn/shared";
+import { MessageFlags, MessageType, type APIPutChannelPinResult } from "@huginn/shared";
 import Elysia from "elysia";
 
 export const putChannelMessagePin = new Elysia()
@@ -47,6 +47,13 @@ export const putChannelMessagePin = new Elysia()
       };
 
       dispatchToTopic(channelId, "message_update", result.message);
+      await dispatchMessage({
+         authorId: tokenPayload.id,
+         channelId,
+         type: MessageType.CHANNEL_PINNED_MESSAGE,
+         messageReferenceId: messageId,
+         flags: MessageFlags.NONE,
+      });
 
       return status("Created", result);
    });
