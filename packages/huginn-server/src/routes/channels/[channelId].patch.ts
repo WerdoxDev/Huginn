@@ -8,7 +8,7 @@ import { CDNRoutes, Errors, MessageFlags, MessageType, getFileHash, toArrayBuffe
 import Elysia, { t } from "elysia";
 
 const schema = t.Object({
-   name: t.Optional(t.Nullable(t.String({ minLength: 1 }))),
+   name: t.Optional(t.Nullable(t.String())),
    icon: t.Optional(t.Nullable(t.String())),
    owner: t.Optional(t.String()),
 });

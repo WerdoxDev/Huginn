@@ -18,6 +18,14 @@ export const queryClient = new QueryClient({
    },
 });
 
+export function getInitialChannels() {
+   return clientStore.getState().readyData?.privateChannels.map((x) => convertToAppDirectChannel(x));
+}
+
+export function getInitialRelationships() {
+   return clientStore.getState().readyData?.relationships.map((x) => convertToAppRelationship(x));
+}
+
 export function getUserOptions(client: HuginnClient, userId: Snowflake) {
    return queryOptions({
       queryKey: ["user", userId],
@@ -40,7 +48,7 @@ export function getChannelsOptions(client: HuginnClient, guildId: Snowflake) {
          // if (guildId !== "@me") return undefined;
          (await client.channels.getAll()).map((x) => convertToAppDirectChannel(x)),
 
-      initialData: () => clientStore.getState().readyData?.privateChannels.map((x) => convertToAppDirectChannel(x)),
+      initialData: () => getInitialChannels(),
    });
 }
 
@@ -106,7 +114,7 @@ export function getRelationshipsOptions(client: HuginnClient) {
    return queryOptions({
       queryKey: ["relationships"],
       queryFn: async () => (await client.relationships.getAll()).map((x) => convertToAppRelationship(x)),
-      initialData: () => clientStore.getState().readyData?.relationships.map((x) => convertToAppRelationship(x)),
+      initialData: () => getInitialRelationships(),
    });
 }
 

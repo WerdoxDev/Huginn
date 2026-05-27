@@ -9,7 +9,7 @@ import { Octokit } from "octokit";
 import { Resend } from "resend";
 
 // logger.enableLogs({ "server:gateway": ["default", "detail-identify"], "server:presence-manager": ["default", "detail"] });
-logger.enableLogs({ "backend-shared:websocket": ["default"] });
+logger.enableLogs({ "backend-shared:websocket": ["default"], "server:cron": ["default"] });
 
 export const envs = readEnv([
    "CDN_LOCAL_URL",
@@ -52,4 +52,4 @@ export const resend = new Resend(envs.RESEND_API_KEY);
 export const notion = new Client({ auth: envs.NOTION_TOKEN, notionVersion: "2026-03-11" });
 export const n2m = new NotionConverter(notion);
 
-startCronJobs();
+await startCronJobs();

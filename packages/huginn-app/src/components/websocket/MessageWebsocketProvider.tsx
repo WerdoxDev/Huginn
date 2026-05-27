@@ -114,16 +114,17 @@ export default function MessageWebsocketProvider(props: { children?: ReactNode }
    }
 
    useEffect(() => {
-      client?.gateway.on("message_create", onMessageCreated);
-      client?.gateway.on("message_update", onMessageUpdated);
-      client?.gateway.on("message_delete", onMessageDeleted);
-      client?.gateway.on("message_ack", onMessageAck);
+      const unlisteners: Array<(() => void) | undefined> = [];
+
+      unlisteners.push(client?.gateway.listen("message_create", onMessageCreated));
+      unlisteners.push(client?.gateway.listen("message_update", onMessageUpdated));
+      unlisteners.push(client?.gateway.listen("message_delete", onMessageDeleted));
+      unlisteners.push(client?.gateway.listen("message_ack", onMessageAck));
 
       return () => {
-         client?.gateway.off("message_create", onMessageCreated);
-         client?.gateway.off("message_update", onMessageUpdated);
-         client?.gateway.off("message_delete", onMessageDeleted);
-         client?.gateway.off("message_ack", onMessageAck);
+         for (const unlisten of unlisteners) {
+            unlisten?.();
+         }
       };
    }, [currentChannel, user, currentVisibleMessages, huginnWindow.focused, readStates]);
 

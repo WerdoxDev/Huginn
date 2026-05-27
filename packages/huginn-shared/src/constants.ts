@@ -1,7 +1,7 @@
 import { UserFlags, type APIBadge, type BadgeType, type UserSettings } from ".";
 
 export const CONSTANTS = {
-   USERNAME_MIN_LENGTH: 4,
+   USERNAME_MIN_LENGTH: 3,
    USERNAME_MAX_LENGTH: 20,
    DISPLAY_NAME_MIN_LENGTH: 1,
    DISPLAY_NAME_MAX_LENGTH: 32,

@@ -6,6 +6,7 @@ import type {
    GatewayDMChannelUpdateData,
 } from "@huginn/shared";
 
+import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { getChannelComputedName } from "@lib/query-utils";
 import { convertToAppDirectChannel } from "@lib/utils";
 import { useClient } from "@stores/clientStore";
@@ -19,6 +20,7 @@ import type { AppDirectChannel } from "@/types";
 export default function ChannelsProvider(props: { children?: ReactNode }) {
    const client = useClient();
    const queryClient = useQueryClient();
+   const currentChannel = useCurrentChannel();
    const navigate = useNavigate();
    const location = useLocation();
    const { addChannelToReadStates, removeChannelFromReadStates } = useReadStates();
@@ -30,11 +32,11 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
       addChannelToReadStates(d.id);
    }
 
-   function onChannelDeleted(d: GatewayDMChannelDeleteData) {
+   async function onChannelDeleted(d: GatewayDMChannelDeleteData) {
       queryClient.setQueryData<AppDirectChannel[]>(["channels", "@me"], (old) => old?.filter((x) => x.id !== d.id));
 
-      if (location.pathname.includes(d.id)) {
-         navigate({ to: "/channels/@me", replace: true });
+      if (currentChannel?.id === d.id) {
+         await navigate({ to: "/channels/@me", replace: true });
       }
 
       removeChannelFromReadStates(d.id);
@@ -83,18 +85,18 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
    }
 
    useEffect(() => {
-      client?.gateway.on("channel_create", onChannelCreated);
-      client?.gateway.on("channel_update", onChannelUpdated);
-      client?.gateway.on("channel_delete", onChannelDeleted);
-      client?.gateway.on("channel_recipient_add", onChannelRecipientAdded);
-      client?.gateway.on("channel_recipient_remove", onChannelRecipientRemoved);
+      const unlisteners: Array<(() => void) | undefined> = [];
+
+      unlisteners.push(client?.gateway.listen("channel_create", onChannelCreated));
+      unlisteners.push(client?.gateway.listen("channel_update", onChannelUpdated));
+      unlisteners.push(client?.gateway.listen("channel_delete", onChannelDeleted));
+      unlisteners.push(client?.gateway.listen("channel_recipient_add", onChannelRecipientAdded));
+      unlisteners.push(client?.gateway.listen("channel_recipient_remove", onChannelRecipientRemoved));
 
       return () => {
-         client?.gateway.off("channel_create", onChannelCreated);
-         client?.gateway.off("channel_update", onChannelUpdated);
-         client?.gateway.off("channel_delete", onChannelDeleted);
-         client?.gateway.off("channel_recipient_add", onChannelRecipientAdded);
-         client?.gateway.off("channel_recipient_remove", onChannelRecipientRemoved);
+         for (const unlisten of unlisteners) {
+            unlisten?.();
+         }
       };
    }, [location.href]);
 

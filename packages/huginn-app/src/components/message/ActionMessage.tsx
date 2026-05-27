@@ -2,12 +2,14 @@ import Tooltip from "@components/tooltip/Tooltip";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useUser, useUsers } from "@hooks/api-hooks/userHooks";
 import { MessageType } from "@huginn/shared";
+import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
 import moment from "moment";
 import { useContext, useMemo } from "react";
 
 export default function ActionMessage() {
    const context = useContext(MessageContext);
+   const { updateModals } = useModals();
 
    const message = useMemo(() => context.message, [context.message]);
    const author = useUser(message.authorId);
@@ -23,6 +25,10 @@ export default function ActionMessage() {
    const call = useMemo(() => (!message.isPreview && message.type === MessageType.CALL ? message.call : undefined), [message]);
 
    const callParticipants = useUsers(call?.participants);
+
+   function openUserProfile(userId: string) {
+      updateModals({ userProfile: { isOpen: true, userId } });
+   }
 
    function formatCallDuration() {
       if (context.message.isPreview || context.message.type !== MessageType.CALL) {
@@ -62,7 +68,9 @@ export default function ActionMessage() {
          {type === MessageType.CHANNEL_OWNER_CHANGED && <IconMingcuteTransfer3Fill className="text-primary-500 mr-4 size-5 shrink-0" />}
          {type === MessageType.CALL && <IconMingcutePhoneFill className="text-positive-100 mr-4 size-5 shrink-0" />}
          <div className="flex gap-x-1">
-            <span className="font-bold">{authorName}</span>
+            <button type="button" className="cursor-pointer text-left font-bold hover:underline" onClick={() => openUserProfile(author.id)}>
+               {authorName}
+            </button>
             {type === MessageType.CALL && (
                <Tooltip>
                   <Tooltip.Trigger className="cursor-default! text-left">
@@ -75,9 +83,14 @@ export default function ActionMessage() {
                      <Tooltip.Content className="px-1.5! py-1.5!">
                         <div className="flex gap-x-1.5">
                            {callParticipants.map((x) => (
-                              <div key={x.id} className="bg-surface rounded-sm px-1">
+                              <button
+                                 key={x.id}
+                                 type="button"
+                                 className="bg-surface hover:bg-surface-alt rounded-sm px-1 text-left"
+                                 onClick={() => openUserProfile(x.id)}
+                              >
                                  {x.displayName}
-                              </div>
+                              </button>
                            ))}
                         </div>
                      </Tooltip.Content>
@@ -99,7 +112,13 @@ export default function ActionMessage() {
                   {type === MessageType.RECIPIENT_ADD && <span className="text-text/50"> added </span>}
                   {type === MessageType.RECIPIENT_REMOVE && <span className="text-text/50"> removed </span>}
                   {type === MessageType.CHANNEL_OWNER_CHANGED && <span className="text-text/50"> promoted </span>}
-                  <span className="font-bold">{mentionUsers[0].displayName}</span>
+                  <button
+                     type="button"
+                     className="cursor-pointer text-left font-bold hover:underline"
+                     onClick={() => openUserProfile(mentionUsers[0].id)}
+                  >
+                     {mentionUsers[0].displayName}
+                  </button>
                   {type === MessageType.CHANNEL_OWNER_CHANGED && (
                      <span className="text-text/50">
                         {" "}

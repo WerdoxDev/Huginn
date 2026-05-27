@@ -181,7 +181,11 @@ function ProfileContent(props: { userId: string }) {
                <div className="flex flex-col gap-y-5 p-5">
                   {user.bio && (
                      <ProfileAboutMe accentColor={accentColor}>
-                        <div className="text-sm leading-relaxed text-white/80">{user.bio}</div>
+                        <div className="text-sm leading-relaxed text-white/80">
+                           {user.bio.split("\n").map((line, i) => (
+                              <div key={i}>{line}</div>
+                           ))}
+                        </div>
                      </ProfileAboutMe>
                   )}
                   <ActivityCard userId={props.userId} accentColor={accentColor} />

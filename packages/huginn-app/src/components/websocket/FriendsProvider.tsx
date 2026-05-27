@@ -39,17 +39,15 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
    }
 
    useEffect(() => {
-      client?.gateway.on("relationship_add", onRelationshipCreated);
-      client?.gateway.on("relationship_remove", onRelationshipDeleted);
+      const unlisteners: Array<(() => void) | undefined> = [];
 
-      queryClient.setQueryData<AppRelationship[]>(
-         ["relationships"],
-         api.readyData?.relationships.map((x) => convertToAppRelationship(x)),
-      );
+      unlisteners.push(client?.gateway.listen("relationship_add", onRelationshipCreated));
+      unlisteners.push(client?.gateway.listen("relationship_remove", onRelationshipDeleted));
 
       return () => {
-         client?.gateway.off("relationship_add", onRelationshipCreated);
-         client?.gateway.off("relationship_remove", onRelationshipDeleted);
+         for (const unlisten of unlisteners) {
+            unlisten?.();
+         }
       };
    }, []);
 

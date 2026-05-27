@@ -107,6 +107,9 @@ export class Gateway extends SharedWebsocket<Events> {
       };
    }
 
+   /**
+    * Intentionally closes the connection and prevents automatic reconnection. This should be used when the user explicitly wants to disconnect, such as logging out or switching accounts.
+    */
    public close(): void {
       log("api:gateway", "default", "intentional close");
 
@@ -448,6 +451,9 @@ export class Gateway extends SharedWebsocket<Events> {
    // Private - Cleanup
    // ============================================================
 
+   /**
+    * This is called when socket is closed to cleanup heartbeat and socket instance.
+    */
    private cleanup() {
       if (this.socket && this.socket.readyState === WebSocket.OPEN) {
          this.socket.close();
@@ -457,7 +463,10 @@ export class Gateway extends SharedWebsocket<Events> {
       this.stopHeartbeat();
    }
 
-   private reset(): void {
+   /**
+    * This is called when we determine that the session is invalid and we need to reset everything, including sequence and session ID.
+    */
+   public reset(): void {
       log("api:gateway", "default", "reset session");
       this.sequence = undefined;
       this.sessionId = undefined;

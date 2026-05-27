@@ -3,7 +3,6 @@ import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useUsers } from "@hooks/api-hooks/userHooks";
-import { useIsMobile } from "@hooks/useIsMobile";
 import { ChannelType } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
 import { usePresences } from "@stores/presenceStore";
@@ -14,7 +13,6 @@ export default function ChannelName() {
    const channel = useCurrentChannel();
    const { user } = useThisUser();
    const recipients = useUsers(channel?.recipientIds);
-   const isMobile = useIsMobile();
    const { presences } = usePresences([...(channel?.recipientIds ?? []), user!.id]);
    const { updateModals } = useModals();
 
@@ -40,7 +38,7 @@ export default function ChannelName() {
             <ChannelIcon channelId={channel?.id} iconHash={channel?.icon} className="mr-3" />
          ) : null}
          <Tooltip>
-            <div className="flex flex-col justify-center overflow-hidden">
+            <div className="mr-2 flex flex-col justify-center overflow-hidden">
                {isDM ? (
                   <button type="button" className="text-text cursor-pointer truncate text-left hover:underline" onClick={handleClick}>
                      {channel.name}

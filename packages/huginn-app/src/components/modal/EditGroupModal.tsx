@@ -79,7 +79,7 @@ export default function EditGroupModal() {
       console.log("Submitting edit with data:", data, modal.channel.name);
       await mutation.mutateAsync({
          channelId: modal.channel.id,
-         name: data?.name === modal.channel.name ? undefined : !data.name ? null : data.name,
+         name: data?.name === modal.channel.name ? undefined : data.name,
          icon: originalIcon && !iconData ? null : originalIcon === iconData ? undefined : iconData,
       });
       updateModals({ editGroup: { isOpen: false, channel: undefined } });

@@ -1,5 +1,6 @@
 import { HuginnClient, type VoiceStatus } from "@huginn/api";
 import { type APIPublicUser, error, type GatewayReadyData, type GatewayStatus, log, type Snowflake, type UserSettings } from "@huginn/shared";
+import { getInitialChannels, getInitialRelationships, queryClient } from "@lib/queries";
 import { updateUser } from "@lib/query-utils";
 import { VoiceBridge } from "@lib/voice/voice-bridge";
 import { createStore, useStore } from "zustand";
@@ -18,6 +19,7 @@ const initialStore = () => ({
    isInitialized: false,
    userSettings: undefined as UserSettings | undefined,
    client: undefined as HuginnClient<VoiceBridge> | undefined,
+   readyCount: 0,
 });
 
 // type StoreType = ReturnType<typeof initialStore>;
@@ -72,6 +74,26 @@ export function setHostnamesFromSettings() {
    });
 }
 
+function updateUsersFromReadyData(d: GatewayReadyData) {
+   store.setState({ readyData: d, userSettings: d.userSettings });
+
+   const channelUsers = d.privateChannels.flatMap((x) => x.recipients);
+   const relationUsers = d.relationships.map((x) => x.user);
+
+   const userSources = [channelUsers, relationUsers].flat();
+   const userMap = new Map<Snowflake, APIPublicUser>();
+
+   for (const user of userSources) {
+      userMap.set(user.id, { ...userMap.get(user.id), ...user });
+   }
+
+   userMap.set(d.user.id, d.user);
+
+   for (const [_userId, user] of userMap) {
+      updateUser(user);
+   }
+}
+
 export function initializeClient() {
    log("app:client-store", "default", "initialize client");
 
@@ -110,25 +132,16 @@ export function initializeClient() {
    const unlisteners: Array<(() => void) | undefined> = [];
 
    unlisteners.push(
-      thisStore.client?.gateway.listen("ready", (d) => {
-         store.setState({ readyData: d, userSettings: d.userSettings });
+      thisStore.client?.gateway.listen("ready", async (d) => {
+         updateUsersFromReadyData(d);
 
-         const channelUsers = d.privateChannels.flatMap((x) => x.recipients);
-         const relationUsers = d.relationships.map((x) => x.user);
-         // const presenceUsers = d.presences.map((x) => x.user);
+         store.setState((state) => ({ readyCount: state.readyCount + 1 }));
+         if (store.getState().readyCount === 1) return;
 
-         const userSources = [channelUsers, relationUsers].flat();
-         const userMap = new Map<Snowflake, APIPublicUser>();
-
-         for (const user of userSources) {
-            userMap.set(user.id, { ...userMap.get(user.id), ...user });
-         }
-
-         userMap.set(d.user.id, d.user);
-
-         for (const [_userId, user] of userMap) {
-            updateUser(user);
-         }
+         // queries need to be reinitialized when client receives ready again which means a complete reset.
+         await queryClient.invalidateQueries({ queryKey: ["messages"] });
+         queryClient.setQueryData(["relationships"], getInitialRelationships());
+         queryClient.setQueryData(["channels", "@me"], getInitialChannels());
       }),
    );
 

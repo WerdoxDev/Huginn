@@ -58,7 +58,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
    // const _hostnameSource = useRef(hostnameSource);
    const { updateModals } = useModals();
 
-   const [selectedPreset, setSelectedPreset] = useState<string | null>(settings.activePresetName ?? null);
+   const [selectedPreset, setSelectedPreset] = useState<string>(settings.activePresetName ?? presets[0]?.name ?? "");
    // const pendingActivePreset = useRef<string | null>(settings.activePresetName ?? null);
    const [pendingNewPresetName, setPendingNewPresetName] = useState<string | null>(null);
 
@@ -75,18 +75,17 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
          activePreset.externalHostnamesUrl !== initialActivePreset.current.externalHostnamesUrl ||
          activePreset.hostnameSource !== initialActivePreset.current.hostnameSource);
 
-   const needsRestart = (selectedPreset !== null && selectedPreset !== settings.activePresetName && !isNewPreset) || activePresetModified;
+   const needsRestart = (selectedPreset !== settings.activePresetName && !isNewPreset) || activePresetModified;
    const hasUnsavedChanges =
-      selectedPreset !== null &&
-      (isNewPreset ||
-         (existingPreset != null &&
-            (existingPreset.name !== values.presetName ||
-               existingPreset.apiHostname !== values.apiHostname ||
-               existingPreset.cdnHostname !== values.cdnHostname ||
-               existingPreset.voiceHostname !== values.voiceHostname ||
-               existingPreset.analyticsHostname !== values.analyticsHostname ||
-               existingPreset.externalHostnamesUrl !== values.externalUrl ||
-               existingPreset.hostnameSource !== hostnameSource)));
+      isNewPreset ||
+      (existingPreset != null &&
+         (existingPreset.name !== values.presetName ||
+            existingPreset.apiHostname !== values.apiHostname ||
+            existingPreset.cdnHostname !== values.cdnHostname ||
+            existingPreset.voiceHostname !== values.voiceHostname ||
+            existingPreset.analyticsHostname !== values.analyticsHostname ||
+            existingPreset.externalHostnamesUrl !== values.externalUrl ||
+            existingPreset.hostnameSource !== hostnameSource));
 
    function validateHostnames() {
       if (values.apiHostname.endsWith("/")) setValue("apiHostname", values.apiHostname.slice(0, -1));
@@ -177,7 +176,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
             if (firstPreset) {
                loadPreset(firstPreset.name);
             } else {
-               setSelectedPreset(null);
+               setSelectedPreset(settings.activePresetName ?? "");
             }
          }
          return;
@@ -220,7 +219,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
    }
 
    function handleSelectPendingPreset() {
-      if (selectedPreset === pendingNewPresetName) return;
+      if (!pendingNewPresetName || selectedPreset === pendingNewPresetName) return;
       setSelectedPreset(pendingNewPresetName);
       setValue("presetName", pendingNewPresetName ?? "");
       setValue("apiHostname", "");
