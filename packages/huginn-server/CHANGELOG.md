@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.35.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.35.0...server@v0.35.1) (2026-05-27)
+
+
+### Bug Fixes
+
+* **server:** allow empty string again on channel name because it's handled on db level ([0a715ba](https://github.com/WerdoxDev/Huginn/commit/0a715ba0be7cb1204738703bb39cc66d3cc870a6))
+* **server:** use bun.cron + delete empty channel ([29554aa](https://github.com/WerdoxDev/Huginn/commit/29554aa42d43d8e0ab5f1647bf883b62acd2750f))
+
 ## [0.35.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.34.0...server@v0.35.0) (2026-05-26)
 
 

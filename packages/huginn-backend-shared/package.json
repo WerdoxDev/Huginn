@@ -1,6 +1,6 @@
 {
    "name": "@huginn/backend-shared",
-   "version": "0.24.1",
+   "version": "0.25.0",
    "type": "module",
    "imports": {
       "#database": "./src/database/index.ts",

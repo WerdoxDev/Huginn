@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.34.1](https://github.com/WerdoxDev/Huginn/compare/shared@v0.34.0...shared@v0.34.1) (2026-05-27)
+
+
+### Bug Fixes
+
+* **app:** better mobile friends tab layout + non nullable active preset + 3 letter username ([c8a4ac0](https://github.com/WerdoxDev/Huginn/commit/c8a4ac08b09be916d171f289ff18af807d0fb6fa))
+
 ## [0.34.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.33.0...shared@v0.34.0) (2026-05-26)
 
 

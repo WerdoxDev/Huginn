@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.25.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.24.1...backend-shared@v0.25.0) (2026-05-27)
+
+
+### Features
+
+* **backend-shared:** add permanentt channel delete function ([76a75be](https://github.com/WerdoxDev/Huginn/commit/76a75becfcc16f33f1602218e993cf683de5fcab))
+
+
+### Bug Fixes
+
+* **backend-shared:** never allow empty string for channel name ([cc9728f](https://github.com/WerdoxDev/Huginn/commit/cc9728f03e821f2916e8f0d80c3b6ba842150a41))
+
 ## [0.24.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.24.0...backend-shared@v0.24.1) (2026-05-26)
 
 
