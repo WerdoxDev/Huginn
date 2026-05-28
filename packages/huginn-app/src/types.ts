@@ -568,7 +568,7 @@ export type VoiceDebugData = {
    usersData: Array<UsersDebugData>;
 };
 
-export type Environment = "desktop" | "browser";
+export type Environment = "desktop" | "browser" | "android";
 
 export type ScreenShareQuality = (typeof SCREEN_SHARE_QUALITIES)[number]["value"];
 export type ScreenShareFrameRate = (typeof SCREEN_SHARE_FRAME_RATES)[number];
