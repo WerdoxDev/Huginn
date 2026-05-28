@@ -115,7 +115,7 @@ export default function MessageContextMenu() {
          <ContextMenu.Item label="Copy Message Link (soon)" disabled>
             <IconMingcuteLink2Fill />
          </ContextMenu.Item>
-         <ContextMenu.Item label={isPinned ? "Unpin Message (Experimental)" : "Pin Message (Experimental)"} onClick={togglePin} disabled={isPinning}>
+         <ContextMenu.Item label={isPinned ? "Unpin Message" : "Pin Message"} onClick={togglePin} disabled={isPinning}>
             <IconMingcutePinFill />
          </ContextMenu.Item>
          {isAuthor && (
