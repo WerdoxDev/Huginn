@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.70.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.69.3...app@v0.70.0) (2026-05-28)
+
+
+### Features
+
+* **app:** add delete pin message ([f85b858](https://github.com/WerdoxDev/Huginn/commit/f85b8583066c2cc306db4a6c734f6b9dd3f42e0c))
+* **app:** add much better message updating functionality + pins layout and updating ([1000726](https://github.com/WerdoxDev/Huginn/commit/1000726c9fdbb372983fc8233d9571c8ba946efb))
+
+
+### Bug Fixes
+
+* **app:** clicking pinned message should jump to message ([6b7499a](https://github.com/WerdoxDev/Huginn/commit/6b7499ad350d949017c1c0f7d76e56f000c00f66))
+* **app:** remove double friends + component renames ([e520fb3](https://github.com/WerdoxDev/Huginn/commit/e520fb3bdbf1815911f8ff685ab3d5d7341c7a39))
+
 ## [0.69.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.69.2...app@v0.69.3) (2026-05-27)
 
 
