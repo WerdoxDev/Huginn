@@ -64,7 +64,8 @@ export function useOAuth() {
    async function waitForOauth() {
       const unlisten = listenEvent("deep_link", async (url) => {
          const actualUrl = new URL(url);
-         if (actualUrl.host !== "oauth-confirm") return;
+         console.log("Received deep link:", actualUrl);
+         if (actualUrl.host !== "oauth-confirm" && actualUrl.pathname !== "/redirect") return;
          const flow = actualUrl.searchParams.get("flow")! as OAuthFlow;
          const oauth_token = actualUrl.searchParams.get("oauth_token") ?? undefined;
          const access_token = actualUrl.searchParams.get("access_token") ?? undefined;

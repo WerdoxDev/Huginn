@@ -1,8 +1,8 @@
 import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
-import basicSsl from "@vitejs/plugin-basic-ssl";
 import react from "@vitejs/plugin-react";
+import * as fs from "node:fs";
 import * as path from "node:path";
 import AutoImport from "unplugin-auto-import/vite";
 import IconsResolver from "unplugin-icons/resolver";
@@ -14,13 +14,20 @@ import { version } from "./package.json";
 
 const reactCompilerConfig = { target: "19" };
 
+const isLan = process.env.VITE_LAN_HTTPS === "true";
+
+const keyFile = fs.readFileSync("./certs/key.pem");
+const certFile = fs.readFileSync("./certs/cert.pem");
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
    const isElectron = mode === "electron";
-   const base = isElectron ? "./" : "/app";
+   const isCapacitor = mode === "capacitor";
+   const base = isElectron ? "./" : isCapacitor ? "/" : "/app";
    return {
-      base: base,
+      base,
       publicDir: "public",
+
       // optimizeDeps: ["@huginn/shared"],
       plugins: [
          // basicSsl({ domains: ["192.168.178.21"] }),
@@ -74,6 +81,14 @@ export default defineConfig(({ mode }) => {
             },
          }),
       ],
+      server: {
+         https: isLan
+            ? {
+                 key: keyFile,
+                 cert: certFile,
+              }
+            : undefined,
+      },
 
       define: {
          __APP_VERSION__: JSON.stringify(version.toString()),

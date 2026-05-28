@@ -69,7 +69,7 @@ if (window.electronAPI) {
 
 const history = __IS_ELECTRON__ ? createHashHistory() : createBrowserHistory();
 
-const router = createRouter({
+export const router = createRouter({
    routeTree: routeTree,
    history: history,
    basepath: !__IS_ELECTRON__ ? "app" : undefined,

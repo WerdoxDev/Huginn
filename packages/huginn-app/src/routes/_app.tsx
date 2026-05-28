@@ -1,3 +1,4 @@
+import { App } from "@capacitor/app";
 import ContextMenusRenderer from "@components/contextmenu/ContextMenusRenderer";
 import ModalsRenderer from "@components/modal/ModalsRenderer";
 import StartBackground from "@components/StartBackgroundSvg";
@@ -17,7 +18,7 @@ import { initializeUser } from "@stores/userStore";
 import { initializeVoice } from "@stores/voiceStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import clsx from "clsx";
 import { type ReactNode, useEffect } from "react";
 
@@ -86,7 +87,21 @@ function MainRenderer(props: { children: ReactNode }) {
             {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
             <ModalsRenderer />
             <ContextMenusRenderer />
+            <CapUrlListener />
          </div>
       </div>
    );
+}
+
+function CapUrlListener() {
+   const navigate = useNavigate();
+
+   useEffect(() => {
+      App.addListener("appUrlOpen", (event) => {
+         const slug = event.url.split(".app").pop();
+         console.log(slug);
+      });
+   }, []);
+
+   return null;
 }

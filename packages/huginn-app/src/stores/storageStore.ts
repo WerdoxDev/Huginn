@@ -50,7 +50,7 @@ export async function initializeStorage() {
    const value = await storage.loadFile("client-info");
    if (value.created || !value.data.id) {
       const data = value.data as ClientInfo;
-      data.id = window.crypto.randomUUID();
+      if (window.isSecureContext) data.id = window.crypto.randomUUID();
       await storage.saveFile("client-info", data);
    }
 

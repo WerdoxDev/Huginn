@@ -1,8 +1,12 @@
+import { App } from "@capacitor/app";
+import { Capacitor } from "@capacitor/core";
 import { dispatchEvent } from "@lib/event-handler";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 
 import type { Environment } from "@/types";
+
+import { router } from "@/main";
 
 const store = createStore(
    combine(
@@ -11,7 +15,7 @@ const store = createStore(
          fullscreen: false,
          browserFullscreen: false,
          focused: false,
-         environment: (window.electronAPI ? "desktop" : "browser") as Environment,
+         environment: (window.electronAPI ? "desktop" : Capacitor.getPlatform() === "android" ? "android" : "browser") as Environment,
          args: [] as string[],
          version: "",
          processId: 0,
@@ -35,6 +39,8 @@ export async function initializeWindow() {
       processId: window.electronAPI ? await window.electronAPI.processId() : 0,
    });
 
+   console.log("Environment:", store.getState().environment);
+
    const controller = new AbortController();
 
    function onFocusChange(event: FocusEvent) {
@@ -53,7 +59,8 @@ export async function initializeWindow() {
    );
 
    const unlisteners: Array<(() => void) | undefined> = [];
-   if (store.getState().environment === "desktop") {
+   const thisStore = store.getState();
+   if (thisStore.environment === "desktop") {
       unlisteners.push(
          window.electronAPI.onDeepLink((_, cmd) => {
             dispatchEvent("deep_link", cmd);
@@ -70,6 +77,17 @@ export async function initializeWindow() {
          window.electronAPI.onFullscreenChanged((_, isFullscreen) => {
             store.setState({ fullscreen: isFullscreen });
          }),
+      );
+   }
+
+   if (thisStore.environment === "android") {
+      unlisteners.push(
+         (
+            await App.addListener("appUrlOpen", (event) => {
+               console.log("Received deep link:", event.url);
+               dispatchEvent("deep_link", event.url);
+            })
+         ).remove,
       );
    }
 
