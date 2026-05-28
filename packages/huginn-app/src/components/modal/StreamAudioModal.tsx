@@ -1,4 +1,4 @@
-import ModalCloseButton from "@components/button/CloseButton";
+import ModalCloseButton from "@components/button/ModalCloseButton";
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import DialogActions from "@components/DialogActions";

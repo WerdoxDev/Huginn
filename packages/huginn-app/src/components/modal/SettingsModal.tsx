@@ -1,5 +1,5 @@
 import { Dialog } from "@base-ui/react";
-import ModalCloseButton from "@components/button/CloseButton";
+import ModalCloseButton from "@components/button/ModalCloseButton";
 import SettingsTab from "@components/SettingsTab";
 import { Transition } from "@headlessui/react";
 import { useIsMobile } from "@hooks/useIsMobile";

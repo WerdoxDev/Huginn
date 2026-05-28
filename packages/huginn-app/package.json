@@ -18,16 +18,25 @@
       "build": "bun run vite:build --mode electron && bun run electron:build",
       "vite:dev": "vite --host --port 5174",
       "vite:build": "vite build",
+      "vite:build-cap": "vite build --mode capacitor && cap sync",
       "electron:build": "bun ./scripts/build.ts --prod && electron-builder --config ./electron-builder-config.ts",
       "electron:run": "bun ./scripts/build.ts && electron .",
       "build:fast": "bun run vite:build && bun ./scripts/build.ts && electron-builder --config ./electron-builder-config.ts -c.compression=store",
       "test": "playwright test",
       "test-gen": "playwright codegen localhost:5174",
-      "electron:rebuild": "electron-rebuild -f -v 42.2.0 -m native-addon"
+      "electron:rebuild": "electron-rebuild -f -v 42.2.0 -m native-addon",
+      "vite:cap": "vite --host --port 5174 --mode capacitor",
+      "cap:release-build": "bun run vite:build-cap && cd android && ./gradlew assembleRelease",
+      "cap:debug-build": "bun run vite:build-cap && cd android && ./gradlew assembleDebug",
+      "cap:run": "cap run android",
+      "cap:live": "cap run android --live-reload --port 5174 --host 192.168.178.21",
+      "cap:open": "cap open android",
+      "cap:dev": "bun run --parallel vite:cap cap:live"
    },
    "dependencies": {
       "@base-ui/react": "^1.5.0",
-      "@capacitor/cli": "^8.3.4",
+      "@capacitor/android": "^8.3.4",
+      "@capacitor/app": "^8.1.0",
       "@capacitor/core": "^8.3.4",
       "@chenglou/pretext": "^0.0.7",
       "@headlessui/react": "^2.2.9",
@@ -64,6 +73,7 @@
       "zustand": "^5.0.13"
    },
    "devDependencies": {
+      "@capacitor/cli": "^8.3.4",
       "@babel/plugin-syntax-jsx": "^7.27.1",
       "@babel/preset-typescript": "^7.28.5",
       "@electron/rebuild": "^4.0.4",
