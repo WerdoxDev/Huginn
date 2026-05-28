@@ -27,6 +27,8 @@
    },
    "dependencies": {
       "@base-ui/react": "^1.5.0",
+      "@capacitor/cli": "^8.3.4",
+      "@capacitor/core": "^8.3.4",
       "@chenglou/pretext": "^0.0.7",
       "@headlessui/react": "^2.2.9",
       "@huginn/api": "workspace:*",

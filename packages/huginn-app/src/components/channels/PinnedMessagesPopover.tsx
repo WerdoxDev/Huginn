@@ -1,11 +1,11 @@
 import LoadingIcon from "@components/LoadingIcon";
-import MessageRenderer from "@components/message/MessageRenderer";
 import HuginnPopover from "@components/popover/HuginnPopover";
 import Tooltip from "@components/tooltip/Tooltip";
-import { MessageContext } from "@contexts/MessageProvider";
+import { MessageProvider } from "@contexts/MessageProvider";
 import { usePinnedMessages } from "@hooks/api-hooks/messageHooks";
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { type Snowflake } from "@huginn/shared";
+import { useChannelStore } from "@stores/channelStore";
 import { useCallback, useMemo, useState } from "react";
 
 import type { AppMessage, ProcessedMessage } from "@/types";
@@ -27,6 +27,16 @@ function processMessages(messages: AppMessage[]): ProcessedMessage[] {
 
 export default function PinnedMessagesPopover(props: { channelId: Snowflake }) {
    const [isOpen, setIsOpen] = useState(false);
+   const { requestJumpToMessage } = useChannelStore();
+
+   const handleMessageClick = useCallback(
+      (messageId: Snowflake) => {
+         requestJumpToMessage(props.channelId, messageId);
+         setIsOpen(false);
+      },
+      [props.channelId, requestJumpToMessage],
+   );
+
    return (
       <HuginnPopover open={isOpen} onOpenChange={setIsOpen} modal>
          <Tooltip hideOnMobile>
@@ -37,12 +47,12 @@ export default function PinnedMessagesPopover(props: { channelId: Snowflake }) {
             </Tooltip.Trigger>
             <Tooltip.Content>Pinned Messages</Tooltip.Content>
          </Tooltip>
-         <PinnedMessagesPanel channelId={props.channelId} isOpen={isOpen} />
+         <PinnedMessagesPanel channelId={props.channelId} isOpen={isOpen} onMessageClick={handleMessageClick} />
       </HuginnPopover>
    );
 }
 
-function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean }) {
+function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean; onMessageClick: (messageId: Snowflake) => void }) {
    const { data, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage } = usePinnedMessages(props.channelId, {
       enabled: props.isOpen,
    });
@@ -65,12 +75,7 @@ function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean }) {
    );
 
    return (
-      <HuginnPopover.Panel
-         align="end"
-         className="bg-surface-deep border-surface z-40 w-105 overflow-hidden rounded-lg border shadow-xl outline-none"
-         side="bottom"
-         sideGap={16}
-      >
+      <HuginnPopover.Panel align="end" className="w-105 overflow-hidden" side="bottom" sideGap={16}>
          <div className="text-text flex items-center gap-x-2 px-4 py-4">
             <IconMingcutePinFill className="size-5" />
             <div className="text-lg font-bold">Pinned Messages</div>
@@ -88,20 +93,29 @@ function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean }) {
             )}
             {!isLoading && !isError && pinnedMessages.length > 0 && (
                <ol className="flex flex-col gap-y-2 overflow-hidden">
-                  {processedMessages.map((message) => (
-                     <div className="bg-surface-alt rounded-lg" key={message.id}>
-                        <MessageContext.Provider
+                  {processedMessages.map((message, index) => (
+                     <div
+                        className="bg-surface-alt hover:bg-surface cursor-pointer rounded-lg transition-colors"
+                        key={message.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => props.onMessageClick(message.id)}
+                        onKeyDown={(event) => {
+                           if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              props.onMessageClick(message.id);
+                           }
+                        }}
+                     >
+                        <MessageProvider
                            key={message.id}
-                           value={{
-                              message,
-                              ref: setRef(message.id),
-                              lastMessage: undefined,
-                              nextMessage: undefined,
-                              options: { hideBackground: true, disableContextMenu: true, idPrefix: "pinned_" },
-                           }}
-                        >
-                           <MessageRenderer />
-                        </MessageContext.Provider>
+                           channelId={props.channelId}
+                           message={message}
+                           ref={setRef(message.id)}
+                           lastMessage={processedMessages[index - 1]}
+                           nextMessage={processedMessages[index + 1]}
+                           options={{ hideBackground: true, disableContextMenu: true, idPrefix: "pinned_" }}
+                        />
                      </div>
                   ))}
                </ol>
