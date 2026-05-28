@@ -192,24 +192,32 @@ video::-webkit-media-controls {
    @apply h-3.5 w-3.5;
 }
 
-::-webkit-scrollbar-track {
-   @apply bg-transparent;
+/* Default: thumb is invisible */
+* {
+   --scrollbar-thumb-color: transparent;
 }
 
-/* ::-webkit-scrollbar-track:hover {
-   @apply bg-black;
-} */
-
-*:hover::-webkit-scrollbar-thumb {
-   @apply bg-surface rounded-full border-4 border-solid border-transparent bg-clip-padding;
+/* On hover: reveal the thumb */
+*:hover {
+   --scrollbar-thumb-color: var(--color-surface);
 }
 
-.scroll-surface-alt:hover::-webkit-scrollbar-thumb {
-   @apply bg-surface-alt;
+/* Thumb always "exists" but is transparent until hover */
+::-webkit-scrollbar-thumb {
+   @apply rounded-full border-4 border-solid border-transparent bg-clip-padding;
+   background-color: var(--scrollbar-thumb-color);
 }
 
-.scroll-surface-deep:hover::-webkit-scrollbar-thumb {
-   @apply bg-surface-deep;
+/* Color variants override the variable */
+.scroll-surface-alt {
+   --scrollbar-thumb-color-hover: var(--color-surface-alt);
+}
+.scroll-surface-deep {
+   --scrollbar-thumb-color-hover: var(--color-surface-deep);
+}
+.scroll-surface-alt:hover,
+.scroll-surface-deep:hover {
+   --scrollbar-thumb-color: var(--scrollbar-thumb-color-hover);
 }
 
 .scroll-thin::-webkit-scrollbar {

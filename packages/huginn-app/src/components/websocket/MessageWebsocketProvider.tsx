@@ -71,14 +71,13 @@ export default function MessageWebsocketProvider(props: { children?: ReactNode }
          return;
       }
 
-      const { inLoadedQueryPage, inVisibleQueryPage } = updateAppMessage(
-         queryClient,
-         d.channelId,
-         d.id,
-         () => updatedMessage,
+      const { inLoadedQueryPage, inVisibleQueryPage } = updateAppMessage(queryClient, {
+         channelId: d.channelId,
+         messageId: d.id,
+         message: updatedMessage,
          targetChannel,
          currentChannel,
-      );
+      });
 
       dispatchEvent("message_updated", {
          message: updatedMessage,

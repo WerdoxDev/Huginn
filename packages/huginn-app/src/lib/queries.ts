@@ -97,15 +97,21 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
    });
 }
 
-export function getPinnedMessagesOptions(client: HuginnClient, channelId: Snowflake, limit = 50) {
-   return queryOptions({
-      queryKey: ["pinned-messages", channelId, limit],
-      queryFn: async () => {
-         const pins = await client.channels.getPinnedMessages(channelId, limit);
+export function getPinnedMessagesOptions(client: HuginnClient, channelId: Snowflake, limit = 10) {
+   return infiniteQueryOptions({
+      queryKey: ["pinned-messages", channelId],
+      queryFn: async ({ pageParam }) => {
+         new Promise((resolve) => setTimeout(resolve, 3000)); // Artificial delay to prevent hitting rate limits when scrolling fast
+         const pins = await client.channels.getPinnedMessages(channelId, limit, pageParam || undefined);
          return pins.map((pin) => ({
             ...pin,
             message: convertToAppMessage(pin.message, "fetch"),
          }));
+      },
+      initialPageParam: "",
+      getNextPageParam: (lastPage) => {
+         if (lastPage.length < limit) return undefined;
+         return lastPage[lastPage.length - 1].message.id;
       },
    });
 }

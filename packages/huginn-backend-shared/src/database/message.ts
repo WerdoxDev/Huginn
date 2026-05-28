@@ -199,7 +199,7 @@ export const messagesExtension = Prisma.defineExtension({
                              }
                            : undefined,
                      messageReference:
-                        options.messageReference && options.type === MessageType.REPLY
+                        options.messageReference && (options.type === MessageType.REPLY || options.type === MessageType.CHANNEL_PINNED_MESSAGE)
                            ? {
                                 create: {
                                    id: snowflake.generate(WorkerID.MESSAGE_REFERENCE),

@@ -1,5 +1,5 @@
-import LoadingButton from "@components/button/LoadingButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
+import LoadingButton from "@components/button/LoadingButton";
 import DialogActions from "@components/DialogActions";
 import DialogBody from "@components/DialogBody";
 import HuginnDialogTitle from "@components/HuginnDialogTitle";

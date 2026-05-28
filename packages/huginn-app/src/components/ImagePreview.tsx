@@ -41,6 +41,19 @@ export default function ImagePreview(props: {
       setUseCors(true);
    }
 
+   function onClick(e: React.MouseEvent) {
+      e.stopPropagation();
+      updateModals({
+         magnifiedImage: {
+            isOpen: true,
+            url: props.url,
+            width: props.originalWidth,
+            height: props.originalHeight,
+            filename: props.filename,
+         },
+      });
+   }
+
    return (
       <>
          <img
@@ -52,17 +65,7 @@ export default function ImagePreview(props: {
             ref={imgRef}
             src={`${props.url}${!props.disableQuery ? `&${new URLSearchParams({ format: "webp", width: props.width.toString(), height: props.height.toString() }).toString()}` : ""}`}
             alt={props.filename}
-            onClick={() =>
-               updateModals({
-                  magnifiedImage: {
-                     isOpen: true,
-                     url: props.url,
-                     width: props.originalWidth,
-                     height: props.originalHeight,
-                     filename: props.filename,
-                  },
-               })
-            }
+            onClick={onClick}
             className={clsx("cursor-pointer overflow-hidden rounded-md object-contain", hasError && "hidden")}
             style={{ width: `100%`, maxWidth: `${props.width}px`, height: `100%`, aspectRatio }}
          />

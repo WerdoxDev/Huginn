@@ -1,5 +1,5 @@
-import HuginnButton from "@components/button/HuginnButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
+import HuginnButton from "@components/button/HuginnButton";
 import { Transition } from "@headlessui/react";
 import { useOpen } from "@hooks/useOpen";
 import { clamp, constrainImageSize } from "@huginn/shared";

@@ -67,7 +67,7 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
    const { data, fetchNextPage, fetchPreviousPage, isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
       useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, props.channel.id));
 
-   const { currentEditingMessageId, currentReplyingMessageId } = useChannelStore();
+   const { currentEditingMessageId, currentReplyingMessageId, jumpToMessageRequest, clearJumpToMessageRequest } = useChannelStore();
    const { onMessageVisibilityChanged } = useVisibleMessages(props.channel.id, props.messages);
    const [highlightedMessageId, setHighlightedMessageId] = useState<Snowflake | undefined>(undefined);
 
@@ -161,7 +161,6 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
          pages: [convertedLatestMessages],
          pageParams: [{ before: "", after: "" }],
       });
-      console.log("HERE");
    }, [client, props.channel.id, queryClient]);
 
    const handleLoadLatest = useCallback(() => {
@@ -170,6 +169,14 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
          setIsLoadingLatest(false);
       });
    }, [loadLatestMessages, setIsLoadingLatest]);
+
+   useEffect(() => {
+      if (!jumpToMessageRequest) return;
+      if (jumpToMessageRequest.channelId !== props.channel.id) return;
+
+      void handleReferencedMessageClick(jumpToMessageRequest.messageId);
+      clearJumpToMessageRequest();
+   }, [clearJumpToMessageRequest, handleReferencedMessageClick, jumpToMessageRequest, props.channel.id]);
 
    // Scroll to referenced message when it is loaded
    useEffect(() => {
@@ -190,12 +197,16 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
    }, [props.messages, scrollToBottom]);
 
    useEffect(() => {
+      if (highlightTimeoutId.current !== undefined) {
+         window.clearTimeout(highlightTimeoutId.current);
+      }
+
       return () => {
          if (highlightTimeoutId.current !== undefined) {
             window.clearTimeout(highlightTimeoutId.current);
          }
       };
-   }, []);
+   }, [props.channel.id]);
 
    return (
       <div className="relative h-full overflow-y-hidden">
@@ -231,7 +242,7 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
                         nextMessage={processedMessages[i + 1]}
                         lastMessage={processedMessages[i - 1]}
                         onVisibilityChanged={onMessageVisibilityChanged}
-                        onReferencedMessageClick={handleReferencedMessageClick}
+                        channelId={props.channel.id}
                      />
                   ))}
                </ol>

@@ -247,13 +247,13 @@ export type APICallMessage = APIBaseMessage & {
    call: APIMessageCall;
 };
 
-export type APIReplyMessage = APIBaseMessage & {
-   type: MessageType.REPLY;
+export type APIReferenceMessage = APIBaseMessage & {
+   type: MessageType.REPLY | MessageType.CHANNEL_PINNED_MESSAGE;
    messageReference: APIMessageReference;
    referencedMessage?: APIMessage | null;
 };
 
-export type APIMessage = APICallMessage | APIDefaultMessage | APIReplyMessage;
+export type APIMessage = APICallMessage | APIDefaultMessage | APIReferenceMessage;
 
 export enum MessageFlags {
    NONE = 0,

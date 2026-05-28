@@ -10,6 +10,13 @@ export type SavedScrollState = { type: "bottom" } | { type: "position"; scrollTo
 
 const initialStore = () => ({
    savedScrolls: new Map<Snowflake, SavedScrollState>(),
+   jumpToMessageRequest: undefined as
+      | {
+           channelId: Snowflake;
+           messageId: Snowflake;
+           requestId: number;
+        }
+      | undefined,
    currentVisibleMessages: [] as Array<{
       messageId: Snowflake;
       messageTimestamp: number;
@@ -59,5 +66,14 @@ export const useChannelStore = create(
       setEditingMessageId: (messageId: Snowflake | undefined) => set({ currentEditingMessageId: messageId }),
       setReplyingMessageId: (messageId: Snowflake | undefined) => set({ currentReplyingMessageId: messageId }),
       setMessageBoxHeight: (height: number) => set({ messageBoxHeight: height }),
+      requestJumpToMessage: (channelId: Snowflake, messageId: Snowflake) =>
+         set((state) => ({
+            jumpToMessageRequest: {
+               channelId,
+               messageId,
+               requestId: (state.jumpToMessageRequest?.requestId ?? 0) + 1,
+            },
+         })),
+      clearJumpToMessageRequest: () => set({ jumpToMessageRequest: undefined }),
    })),
 );

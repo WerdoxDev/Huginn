@@ -8,7 +8,7 @@ import type {
    APIDefaultMessage,
    APIGetKnownApplicationsResult,
    APIRelationshipWithoutOwner,
-   APIReplyMessage,
+   APIReferenceMessage,
    APIUserProfile,
    APIDMChannel,
    APIGroupDMChannel,
@@ -240,7 +240,7 @@ export type ProcessedAppMessage = {
 } & (
    | Omit<APICallMessage, "author" | "mentions">
    | Omit<APIDefaultMessage, "author" | "mentions">
-   | (Omit<APIReplyMessage, "author" | "mentions" | "referencedMessage"> & {
+   | (Omit<APIReferenceMessage, "author" | "mentions" | "referencedMessage"> & {
         referencedMessage?: AppMessage | null;
      })
 );
@@ -355,6 +355,7 @@ export type CustomApplication = {
 
 export type ClientInfo = {
    id: string;
+   lastVersion?: string;
 };
 
 export type StorageMap = {

@@ -38,7 +38,7 @@ export default function BaseModal(props: {
    return (
       <Suspense fallback={null}>
          <HuginnErrorBoundary onError={onError} resetKey={key}>
-            <Dialog.Root open={props.modal.isOpen} onOpenChange={(open) => !open && props.onClose()}>
+            <Dialog.Root open={props.modal.isOpen} modal onOpenChange={(open) => !open && props.onClose()}>
                <Dialog.Portal>
                   <ModalBackground className={props.backgroundClassName} />
                   <div className={clsx("fixed inset-0 top-6 z-10")}>

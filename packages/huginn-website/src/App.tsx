@@ -85,24 +85,24 @@ export default function App() {
 
             <div className="border-tertiary bg-secondary relative flex shrink-0 flex-col border-t bg-linear-to-t px-5 py-3 md:flex-row md:px-12">
                <div className="ml-7 hidden md:block">
-                  Huginn made by
+                  Huginn made by{" "}
                   <a href="https://github.com/WerdoxDev" target="_blank" rel="noreferrer" className="text-accent underline">
                      Matin Tat
-                  </a>
-                  / Website made by
+                  </a>{" "}
+                  / Website made by{" "}
                   <a href="https://github.com/VoiD-ev" target="_blank" rel="noreferrer" className="text-accent underline">
                      Mahziyar Farahmandian
                   </a>
                </div>
 
                <div className="text-sm md:hidden">
-                  Huginn made by
+                  Huginn made by{" "}
                   <a href="https://github.com/WerdoxDev" target="_blank" rel="noreferrer" className="text-accent underline">
                      Matin Tat
                   </a>
                </div>
                <div className="mt-1 text-sm md:hidden">
-                  Website made by
+                  Website made by{" "}
                   <a href="https://github.com/VoiD-ev" target="_blank" rel="noreferrer" className="text-accent underline">
                      Mahziyar Farahmandian
                   </a>

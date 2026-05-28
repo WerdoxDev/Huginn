@@ -20,10 +20,10 @@ import AttachmentUploadProgress from "./AttachmentUploadProgress";
 export default function DefaultMessage() {
    const { user } = useThisUser();
    const context = useContext(MessageContext);
-   const { open } = useContextMenu("message");
+   const { open, context: contextMenu } = useContextMenu("message");
    const { updateModals } = useModals();
    const { rootRef, extrasRef, widths } = useMessageWidths({
-      idPrefix: context.idPrefix,
+      idPrefix: context.options?.idPrefix,
       message: context.message,
       lastMessage: context.lastMessage,
       nextMessage: context.nextMessage,
@@ -63,10 +63,13 @@ export default function DefaultMessage() {
    return (
       <div
          ref={rootRef}
-         onContextMenu={(e) => open({ message: context.message }, e)}
+         onContextMenu={context.options?.disableContextMenu ? undefined : (e) => open({ message: context.message }, e)}
+         data-context={contextMenu?.isOpen && contextMenu.contextData?.message.id === context.message.id ? true : undefined}
          className={clsx(
-            "group relative flex flex-col items-start p-2 pl-4 transition-colors duration-150",
-            isEditing || isReplying || isJumpHighlighted ? (isEditing ? "bg-positive-800/30" : "bg-primary-800/30") : "hover:bg-surface-alt",
+            "group relative flex flex-col items-start p-2 pr-0 pl-4 transition-colors duration-150",
+            !context.options?.hideBackground && "data-context:bg-surface-alt",
+            !context.options?.hideBackground &&
+               (isEditing || isReplying || isJumpHighlighted ? (isEditing ? "bg-positive-800/30" : "bg-primary-800/30") : "hover:bg-surface-alt"),
             isJumpHighlighted && "animate-pulse",
             (isSeparate || isLastAction) && "rounded-tr-lg",
             isNextSeparate && "rounded-br-lg",
@@ -120,7 +123,7 @@ export default function DefaultMessage() {
                widths={widths}
             />
             {!isSeparate && !isLastAction && (
-               <div className="mt-2.5 ml-2.5 flex h-full shrink-0 items-center justify-center gap-x-2 select-none">
+               <div className="mx-2.5 mt-2.5 flex h-full shrink-0 items-center justify-center gap-x-2 select-none">
                   <div className="text-text/50 text-xs opacity-0 transition-opacity group-hover:opacity-100">{formattedTime}</div>
                </div>
             )}
@@ -278,9 +281,9 @@ function DefaultRenderer(props: {
          </div>
 
          <div
-            id={`${(context.idPrefix ?? "") + context.message.id}_inner`}
+            id={`${(context.options?.idPrefix ?? "") + context.message.id}_inner`}
             className="relative z-10"
-            style={{ width: `calc(100% - ${(props.extrasRef.current?.offsetWidth ?? 10) - 10}px)` }}
+            style={{ width: `calc(100% - ${props.extrasRef.current?.offsetWidth ?? 10}px)` }}
          >
             {progress !== undefined && props.isPreview ? <AttachmentUploadProgress progress={progress} /> : children}
          </div>

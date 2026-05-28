@@ -1,6 +1,7 @@
 import WebsocketProviders from "@components/websocket/WebsocketProviders";
 import { clientStore } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
+import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect } from "react";
@@ -19,15 +20,16 @@ export const Route = createFileRoute("/_app/_main")({
 function MainLayoutComponent() {
    const { updateModals } = useModals();
    const huginnWindow = useHuginnWindow();
-   // const isTransitioning = useViewTransitionState("*");
+   const clientInfo = useStorage("client-info");
+   const { setValue } = useStorageStore();
 
    useEffect(() => {
-      const lastVersion = localStorage.getItem("last-version") ?? undefined;
+      const lastVersion = clientInfo?.lastVersion ?? undefined;
       if (huginnWindow.version !== lastVersion) {
          setTimeout(() => {
             updateModals({ news: { isOpen: true, lastVersion } });
          }, 1000);
-         localStorage.setItem("last-version", huginnWindow.version);
+         setValue("client-info", { ...clientInfo, lastVersion: huginnWindow.version });
       }
    }, []);
 

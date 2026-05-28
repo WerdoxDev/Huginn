@@ -1,4 +1,5 @@
 import { Popover } from "@base-ui/react";
+import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
 import { useState, type HTMLProps, type ReactNode } from "react";
 
@@ -9,8 +10,15 @@ export default function HuginnPopover(props: {
    modal?: Popover.Root.Props["modal"];
 }) {
    const [open, setOpen] = useState(false);
+   const modals = useModals();
+
+   function isAnyModalOpen() {
+      return Object.values(modals).some((modal) => "isOpen" in modal && modal.isOpen);
+   }
 
    function handleOpenChange(newOpen: boolean) {
+      if (!newOpen && isAnyModalOpen()) return;
+
       if (props.open !== undefined) {
          props.onOpenChange?.(newOpen);
          return;
@@ -48,7 +56,7 @@ function Panel(props: {
             <Popover.Popup
                className={clsx(
                   props.className,
-                  "transition-[opacity_transform] duration-200 data-ending-style:scale-90 data-ending-style:opacity-0 data-ending-style:blur-xl data-starting-style:scale-90 data-starting-style:opacity-0 data-starting-style:blur-xl",
+                  "border-surface bg-surface-deep z-40 rounded-lg border shadow-xl transition-[opacity_transform] duration-200 outline-none data-ending-style:scale-90 data-ending-style:opacity-0 data-ending-style:blur-xl data-starting-style:scale-90 data-starting-style:opacity-0 data-starting-style:blur-xl",
                )}
             >
                {props.children}

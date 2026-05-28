@@ -40,7 +40,7 @@ export default function EmbedElement(props: {
          <div className={clsx("mt-1 mb-1 flex max-w-md flex-col items-start", !barebone && "bg-surface-deep rounded-lg p-2")}>
             {props.title && (
                <span
-                  onContextMenu={(e) => open({ message: context.message, url: props.url }, e)}
+                  onContextMenu={(e) => (context.options?.disableContextMenu ? undefined : open({ message: context.message, url: props.url }, e))}
                   className={clsx(props.url && "text-primary-500 cursor-pointer hover:underline", props.description ? "mb-1" : "mb-2")}
                   onClick={props.url ? () => openUrl(props.url!) : undefined}
                >
