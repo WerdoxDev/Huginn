@@ -11,6 +11,7 @@ uploads
 cache
 builds
 target
+certs
 
 *.env
 
