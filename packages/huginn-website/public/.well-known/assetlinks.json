@@ -1,0 +1,14 @@
+[
+   {
+      "relation": [
+         "delegate_permission/common.handle_all_urls"
+      ],
+      "target": {
+         "namespace": "android_app",
+         "package_name": "dev.werdox",
+         "sha256_cert_fingerprints": [
+            "00:51:2B:AD:66:F8:C9:1C:A0:BD:62:B7:69:D0:62:9B:08:75:7A:02:2B:BB:D4:52:D6:AB:95:4C:99:A5:40:69"
+         ]
+      }
+   }
+]
