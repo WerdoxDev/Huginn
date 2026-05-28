@@ -1,4 +1,4 @@
-import ModalCloseButton from "@components/button/ModalCloseButton";
+import ModalCloseButton from "@components/button/CloseButton";
 import HuginnDialogTitle from "@components/HuginnDialogTitle";
 import LoadingIcon from "@components/LoadingIcon";
 import { getChangelogOptions } from "@lib/queries";
