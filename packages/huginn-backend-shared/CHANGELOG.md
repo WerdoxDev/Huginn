@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.25.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.25.0...backend-shared@v0.25.1) (2026-05-28)
+
+
+### Bug Fixes
+
+* **backend-shared:** add other reference message type ([4aa64f5](https://github.com/WerdoxDev/Huginn/commit/4aa64f56931662ec2f1cde80efeb1c3209ea9e0b))
+
 ## [0.25.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.24.1...backend-shared@v0.25.0) (2026-05-27)
 
 

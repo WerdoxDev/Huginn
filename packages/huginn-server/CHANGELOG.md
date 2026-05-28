@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.35.2](https://github.com/WerdoxDev/Huginn/compare/server@v0.35.1...server@v0.35.2) (2026-05-28)
+
+
+### Bug Fixes
+
+* **server:** send message when a message is pinned ([979b0a3](https://github.com/WerdoxDev/Huginn/commit/979b0a32af7319249b870c00a2879b8bf90605df))
+
 ## [0.35.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.35.0...server@v0.35.1) (2026-05-27)
 
 
