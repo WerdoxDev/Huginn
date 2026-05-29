@@ -14,10 +14,10 @@ import { version } from "./package.json";
 
 const reactCompilerConfig = { target: "19" };
 
-const isLan = process.env.VITE_LAN_HTTPS === "true";
+const isHttps = process.env.VITE_LAN_HTTPS === "true";
 
-const keyFile = fs.readFileSync("./certs/key.pem");
-const certFile = fs.readFileSync("./certs/cert.pem");
+const keyFile = isHttps ? fs.readFileSync("./certs/key.pem") : undefined;
+const certFile = isHttps ? fs.readFileSync("./certs/cert.pem") : undefined;
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -82,7 +82,7 @@ export default defineConfig(({ mode }) => {
          }),
       ],
       server: {
-         https: isLan
+         https: isHttps
             ? {
                  key: keyFile,
                  cert: certFile,
