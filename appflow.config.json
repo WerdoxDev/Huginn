@@ -1,9 +1,9 @@
 {
    "apps": [
       {
-         "appId": "huginn",
+         "appId": "2656ce90",
          "root": "packages/huginn-app",
-         "dependencyInstallCommand": "cd ../../ && pnpm install --filter huginn-app-react",
+         "dependencyInstallCommand": "cd ../../ && npm i -g pnpm && pnpm i --filter huginn-app-react",
          "webBuildCommand": "pnpm vite:build-cap",
          "androidPath": "android"
       }
