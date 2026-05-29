@@ -1,9 +1,6 @@
 {
    "name": "monorepo",
    "private": "true",
-   "workspaces": [
-      "packages/*"
-   ],
    "type": "module",
    "scripts": {
       "bifrost": "cd packages/huginn-bifrost && bun start",

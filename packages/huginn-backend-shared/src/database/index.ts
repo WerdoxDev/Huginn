@@ -1,6 +1,5 @@
 import { Prisma, PrismaClient, type Message, type EmailVerification } from "#prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { withOptimize } from "@prisma/extension-optimize";
 
 import { assertExtension } from "./assert";
 import { attachmentExtension } from "./attachment";

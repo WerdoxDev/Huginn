@@ -8,11 +8,13 @@ const path4 = "C:\\Program Files\\WindowsApps\\Microsoft.WindowsStore_22507.1401
 const path5 =
    "C:\\Users\\matin\\AppData\\Local\\Packages\\Microsoft.4297127D64EC6_8wekyb3d8bbwe\\LocalCache\\Local\\runtime\\java-runtime-delta\\windows-x64\\java-runtime-delta\\bin\\javaw.exe";
 const path6 = "C:\\Program Files\\WindowsApps\\SpotifyAB.SpotifyMusic_1.272.438.0_x64__zpdnekdrzrea0\\Spotify.exe";
+const path7 = "D:\\Xbox\\Forza Horizon 6\\Content\\forzahorizon6.exe";
+
 // const hash = addon.getFileSha256(path);
 
 // const apps = addon.getOpenApplications();
 // console.log(apps);
-const info = addon.getApplicationInfo(path6, 15284).then((x) => {
+const info = addon.getApplicationInfo(path7, 6512).then((x) => {
    const t1 = performance.now();
    console.log(t1 - t0, x);
 });

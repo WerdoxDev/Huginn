@@ -22,21 +22,21 @@
       "@notionhq/client": "^5.22.0",
       "@std/encoding": "npm:@jsr/std__encoding",
       "@std/text": "npm:@jsr/std__text",
-      "@types/jsdom": "^21.1.7",
+      "@types/jsdom": "^28.0.3",
       "@types/markdown-it": "^14.1.2",
       "consola": "^3.4.2",
       "crossws": "^0.4.4",
       "elysia": "^1.4.27",
-      "jsdom": "^25.0.1",
+      "jsdom": "^29.1.1",
       "markdown-it": "^14.1.1",
       "notion-to-md": "^4.0.0-alpha.7",
-      "octokit": "^4.1.4",
-      "pathe": "^1.1.2",
+      "octokit": "^5.0.5",
+      "pathe": "^2.0.3",
       "resend": "^6.9.3",
       "semver": "^7.7.4"
    },
    "devDependencies": {
-      "@octokit/types": "^13.10.0",
+      "@octokit/types": "^16.0.0",
       "@types/semver": "^7.7.1"
    }
 }
