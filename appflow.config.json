@@ -3,7 +3,7 @@
       {
          "appId": "2656ce90",
          "root": "packages/huginn-app",
-         "dependencyInstallCommand": "cd ../../ && pnpm i --filter huginn-app-react",
+         "dependencyInstallCommand": "cd ../../ && pnpm i --filter huginn-app-react --filter @huginn/shared --filter @huginn/api",
          "webBuildCommand": "pnpm vite:build-cap",
          "androidPath": "android"
       }
