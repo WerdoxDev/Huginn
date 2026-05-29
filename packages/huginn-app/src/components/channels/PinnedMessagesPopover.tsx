@@ -88,6 +88,7 @@ function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean; onM
             isOpen: true,
             title: "Unpin Message",
             text: "Are you sure you want to unpin this message?",
+            status: "info",
             action: {
                confirm: {
                   text: "Unpin",

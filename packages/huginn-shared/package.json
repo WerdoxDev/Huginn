@@ -6,7 +6,7 @@
    "dependencies": {
       "@sapphire/snowflake": "^3.5.3",
       "@std/encoding": "npm:@jsr/std__encoding",
-      "file-type": "^19.5.0",
+      "file-type": "^22.0.1",
       "ohash": "^1.1.4"
    },
    "devDependencies": {

@@ -1,0 +1,11 @@
+packages:
+  - "packages/*"
+allowBuilds:
+  '@prisma/engines': false
+  core-js: false
+  electron-winstaller: false
+  esbuild: false
+  mediasoup: true
+  prisma: true
+  protobufjs: true
+  sharp: true

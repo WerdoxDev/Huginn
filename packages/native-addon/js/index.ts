@@ -79,7 +79,7 @@ async function findMatchingFiles(filePath: string) {
       const files = await fs.readdir(dir);
       const matchingFiles = files.filter((file) => {
          const fileBaseName = path.basename(file, path.extname(file));
-         return fileBaseName.startsWith(baseName) && file.endsWith(ext);
+         return fileBaseName.toLowerCase().startsWith(baseName.toLowerCase()) && file.toLowerCase().endsWith(ext.toLowerCase());
       });
 
       return matchingFiles.map((file) => path.join(dir, file));
