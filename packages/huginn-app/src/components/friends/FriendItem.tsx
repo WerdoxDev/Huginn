@@ -8,7 +8,7 @@ import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
 import { RelationshipType } from "@huginn/shared";
 import { PRESENCE_STATUS_MAP } from "@lib/utils";
 import { useContextMenu } from "@stores/contextMenuStore";
-import { type MouseEvent, useMemo } from "react";
+import { type MouseEvent, useMemo, useState } from "react";
 
 import type { AppPresence, AppUser } from "@/types";
 
@@ -33,6 +33,7 @@ export default function FriendItem(props: {
          (createChannelState?.status === "pending" && createChannelState?.variables?.recipients.some((x) => x === props.user.id)),
       [createChannelState, createRelationshipState, removeRelationshipState],
    );
+   const [isHovered, setIsHovered] = useState(false);
 
    // const presenceText = useMemo(
    //    () =>
@@ -54,13 +55,15 @@ export default function FriendItem(props: {
          onContextMenu={(e: MouseEvent<HTMLDivElement>) => {
             openRelationship({ user: props.user, type: props.type }, e);
          }}
+         onMouseEnter={() => setIsHovered(true)}
+         onMouseLeave={() => setIsHovered(false)}
          onClick={(e) => {
             e.stopPropagation();
             props.onMessage?.(props.user.id);
          }}
       >
          <div className="flex">
-            <UserAvatar userId={props.user.id} avatarHash={props.user.avatar} className="mr-3" />
+            <UserAvatar userId={props.user.id} avatarHash={props.user.avatar} className="mr-3" animatedMode="hover" hovered={isHovered} />
             <div className="flex flex-col overflow-hidden">
                <div className="text-text font-semibold">{props.user.displayName}</div>
                <div className="text-text/50 text-sm">

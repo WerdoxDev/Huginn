@@ -6,11 +6,12 @@ import MemberSince from "@components/MemberSince";
 import { ProfileAboutMe, ProfileActivity } from "@components/profile/ProfileComponents";
 import RoamingHuginnIcon from "@components/RoamingHuginnIcon";
 import Tooltip from "@components/tooltip/Tooltip";
+import UserAvatar from "@components/UserAvatar";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useFileDialog } from "@hooks/useFileDialog";
 import { useIsOAuth } from "@hooks/useIsOAuth";
 import { CONSTANTS, ActivityType, type APIPatchCurrentUserJSONBody } from "@huginn/shared";
-import { getUserAvatarOptions, getUserBannerOptions } from "@lib/queries";
+import { getUserBannerOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
@@ -27,7 +28,6 @@ export default function SettingsProfileTab() {
    const isOAuth = useIsOAuth();
    const { openFileDialog } = useFileDialog("image/*");
 
-   const { data: originalAvatar } = useQuery(getUserAvatarOptions(user?.id, user?.avatar, 128, client));
    const { data: originalBanner, isLoading: isBannerLoading } = useQuery(getUserBannerOptions(user?.id, user?.banner, client));
    const [bannerColor, setBannerColor] = useState(() => user?.bannerColor ?? "");
    const [accentColor, setAccentColor] = useState(() => user?.accentColor ?? "");
@@ -172,7 +172,8 @@ export default function SettingsProfileTab() {
       setIsEditing(false);
    }
 
-   const displayAvatar = pendingAvatar !== undefined ? pendingAvatar : originalAvatar;
+   const avatarOverride = pendingAvatar !== undefined ? pendingAvatar : undefined;
+   const hasAvatarPreview = pendingAvatar !== undefined ? !!pendingAvatar : !!user?.avatar;
    const displayBanner = pendingBanner !== undefined ? pendingBanner : originalBanner;
    const isImageBannerLoading = showBanner && isBannerLoading && pendingBanner === undefined && !!user?.banner;
    const isBannerTall = !!displayBanner || isImageBannerLoading;
@@ -229,7 +230,7 @@ export default function SettingsProfileTab() {
                      </>
                   ) : isImageBannerLoading ? (
                      <div className="bg-surface/40 flex h-full w-full items-center justify-center">
-                        <LoadingIcon className="size-10" />
+                        <LoadingIcon className="size-16" />
                      </div>
                   ) : (
                      <>
@@ -251,17 +252,18 @@ export default function SettingsProfileTab() {
                   <div className="flex flex-col gap-y-2">
                      <div className={clsx("relative z-10 w-max shrink-0 transition-[margin]", showBanner ? "-mt-11" : "mt-0")}>
                         <div className="border-surface-alt rounded-full border-4">
-                           <div className="relative h-full w-full overflow-hidden rounded-full">
-                              {displayAvatar ? (
-                                 <img alt="user-avatar" className="size-22 object-cover" src={displayAvatar} />
-                              ) : (
-                                 <div className="bg-primary-700 size-22" />
-                              )}
-                           </div>
+                           <UserAvatar
+                              userId={user?.id}
+                              avatarHash={user?.avatar}
+                              imageSrc={avatarOverride}
+                              size={5.5}
+                              hideStatus
+                              animatedMode="always"
+                           />
                         </div>
                         {isEditing && (
                            <div className="absolute -top-1 -right-1 z-20 flex gap-x-1">
-                              {displayAvatar && <ImagePickerDeleteButton onClick={handleDeleteAvatar} />}
+                              {hasAvatarPreview && <ImagePickerDeleteButton onClick={handleDeleteAvatar} />}
                               <ImagePickerEditButton onClick={handleEditAvatar} />
                            </div>
                         )}

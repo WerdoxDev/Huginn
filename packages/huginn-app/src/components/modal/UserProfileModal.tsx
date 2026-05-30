@@ -48,17 +48,12 @@ function ProfileBanner(props: { userId: string; banner?: string | null; bannerCo
                onError={onError}
             />
             <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
-            <Transition show={!isLoaded || hasError}>
-               <div
-                  className={clsx(
-                     !hasError && "absolute inset-0",
-                     "bg-surface/40 flex h-full w-full items-center justify-center rounded-md duration-200 data-closed:opacity-0",
-                  )}
-               >
-                  {!isLoaded && !hasError && <LoadingIcon className="size-10" />}
-                  {hasError && <IconMingcuteWarningFill className="text-negative-100 size-10" />}
+            {(!isLoaded || hasError) && (
+               <div className={clsx(!hasError && "absolute inset-0", "bg-surface/40 flex h-full w-full items-center justify-center rounded-md")}>
+                  {!isLoaded && !hasError && <LoadingIcon className="size-16" />}
+                  {hasError && <IconMingcuteWarningFill className="text-negative-100 size-16" />}
                </div>
-            </Transition>
+            )}
          </div>
       );
    }
@@ -147,7 +142,7 @@ function ProfileContent(props: { userId: string }) {
             <div className="flex flex-col gap-y-2">
                <div className={clsx("relative z-10 w-max shrink-0", hasBanner ? "-mt-11" : "mt-0")}>
                   <div className="border-surface-alt rounded-full border-4">
-                     <UserAvatar userId={user?.id} avatarHash={user?.avatar} size={5.5} cdnSize={128} />
+                     <UserAvatar userId={user?.id} avatarHash={user?.avatar} size={5.5} cdnSize={128} animatedMode="always" />
                   </div>
                </div>
                <div className="flex max-w-60 flex-col pl-1">
