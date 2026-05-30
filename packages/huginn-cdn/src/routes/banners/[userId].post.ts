@@ -13,7 +13,7 @@ export const postUserBanner = new Elysia().use(verifyJwt("cdn")).post(
          return invalidBody(status);
       }
 
-      await storage.writeFile("banners", userId, file.name, file.stream());
+      await storage.writeFile("banners", userId, file.name, file);
 
       return status("Created", file.name);
    },

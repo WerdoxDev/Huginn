@@ -13,14 +13,11 @@ export const postMessageAttachment = new Elysia().use(verifyJwt("cdn")).post(
          return invalidBody(status);
       }
 
-      await storage.writeFile("attachments", `${channelId}/${messageId}`, file.name, file.stream());
+      await storage.writeFile("attachments", `${channelId}/${messageId}`, file.name, file);
 
       return status("Created", file.name);
    },
    {
       body: schema,
-      transform(ctx) {
-         console.log(ctx.body);
-      },
    },
 );

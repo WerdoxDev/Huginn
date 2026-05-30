@@ -20,23 +20,23 @@ export class S3Storage extends Storage {
       });
    }
 
-   public async getFile(
-      category: FileCategory,
-      subDirectory: string,
-      name: string,
-      start?: number,
-      end?: number,
-   ): Promise<ReadableStream | undefined> {
+   public async getFile(category: FileCategory, subDirectory: string, name: string, start?: number, end?: number): Promise<Blob | undefined> {
       try {
+         if (!(await this.exists(category, subDirectory, name))) {
+            logFileNotFound(category, subDirectory, name);
+            return undefined;
+         }
+
          let file = this.s3.file(join(category, ...subDirectory.split("/"), name), {
             partSize: 5 * 1024 * 1024,
          });
+
          if (start || end) {
             file = file.slice(start, end);
          }
 
          logGetFile(category, subDirectory, name);
-         return file.stream();
+         return file;
          // oxlint-disable-next-line no-unused-vars
       } catch (e) {
          logFileNotFound(category, subDirectory, name);
@@ -44,11 +44,11 @@ export class S3Storage extends Storage {
       }
    }
 
-   public async writeFile(category: FileCategory, subDirectory: string, name: string, data: ReadableStream): Promise<boolean> {
+   public async writeFile(category: FileCategory, subDirectory: string, name: string, data: Blob): Promise<boolean> {
       logWriteFile(category, subDirectory, name);
       try {
          const file = this.s3.file(join(category, ...subDirectory.split("/"), name));
-         await file.write(new Response(data));
+         await file.write(data);
          return true;
       } catch (e) {
          console.error(this.name, "writeFile", e);

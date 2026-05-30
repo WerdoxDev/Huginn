@@ -5,44 +5,45 @@ import { type ImageFormats } from "@huginn/shared";
 
 import { extractFileInfo, findImageByName, transformImage } from "./file-utils";
 
-export async function tryResolveImage(category: FileCategory, subDirectory: string, hash: string) {
-   const { name, format, mimeType } = extractFileInfo(hash);
+export async function tryResolveImage(
+   category: FileCategory,
+   subDirectory: string,
+   imageName: string,
+   options?: { width?: number; height?: number; quality?: number; format?: ImageFormats },
+) {
+   const { name, format } = extractFileInfo(imageName);
+   if (!options?.format) options = { ...options, format: format as ImageFormats };
 
-   const exists = await storage.exists(category, subDirectory, `${name}.${format}`);
+   const key = getCacheKey(name, format, options);
+   const existingFile = await storage.getFile(category, subDirectory, key);
 
    // Best scenario, file already exists and ready to serve
-   if (exists) {
-      const file = await storage.getFile(category, subDirectory, `${name}.${format}`);
-      return { readable: file, mimeType };
-      // return c.body(file as ReadableStream, HttpCode.OK, { "Content-Type": mimeType });
+   if (existingFile) {
+      return { file: new Blob([existingFile]), transformation: undefined };
    }
 
-   // File doesn't exist so we have to see if another format exists
+   // console.log(otherFile.name);
+   // File/transformation doesn't exist so we have to see if another format exists
    const { file: otherFile } = await findImageByName(category, subDirectory, name, format);
 
-   const { readable, writable } = new TransformStream();
-
-   await transformImage(otherFile, writable, format as ImageFormats);
-   const [readable1, readable2] = readable.tee();
-
-   return { readable: readable1, cacheReadable: readable2, mimeType };
+   const transformedFile = await transformImage(otherFile, options ?? {});
+   return { file: transformedFile, transformation: { key } };
 }
 
-export function getCacheDir(format?: string, quality?: number, width?: number, height?: number) {
-   const modifiers = [];
+export function getCacheKey(name: string, format: string, options?: { width?: number; height?: number; quality?: number; format?: ImageFormats }) {
+   const keys = [];
 
-   if (format) {
-      modifiers.push(`format_${format}`);
+   keys.push(name);
+
+   if (options && options.width) {
+      keys.push(`w${options.width}`);
    }
-   if (quality && !Number.isNaN(quality)) {
-      modifiers.push(`quality_${quality}`);
+   if (options && options.height) {
+      keys.push(`h${options.height}`);
    }
-   if (width && !Number.isNaN(width)) {
-      modifiers.push(`width_${width}`);
-   }
-   if (height && !Number.isNaN(height)) {
-      modifiers.push(`height_${height}`);
+   if (options && options.quality) {
+      keys.push(`q${options.quality}`);
    }
 
-   return modifiers.join(",");
+   return keys.join("_") + `.${format}`;
 }

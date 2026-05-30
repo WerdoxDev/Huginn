@@ -16,7 +16,7 @@ import Elysia from "elysia";
 
 import { getIndex } from "./routes";
 
-export const main = new Elysia()
+export const main = new Elysia({})
    .use(cors())
    .use(globalPlugin)
    .onError(({ error, code, status, path, request }) => {
@@ -37,21 +37,34 @@ export const main = new Elysia()
       return serverError(status);
    })
    .onAfterResponse(async ({ global }) => {
-      if (global.waitUntilPromises) {
+      if (global?.waitUntilPromises) {
          await Promise.allSettled(global.waitUntilPromises.map((x) => x()) ?? []);
       }
    })
-   .use(getIndex)
+
+   // Uncached routes
    .use(getApplicationIcon)
    .use(postApplicationIcon)
    .use(getMessageAttachment)
    .use(postMessageAttachment)
+   .use(getIndex)
+
+   // Cached routes
+   .onAfterHandle(({ request, set }) => {
+      const url = new URL(request.url);
+
+      if (/\.(jpg|jpeg|png|webp|gif|svg|ico|woff2|js|css)$/i.test(url.pathname)) {
+         set.headers["Vary"] = "Accept-Encoding";
+         set.headers["Cache-Control"] = "private, max-age=31536000";
+      }
+   })
    .use(getUserAvatar)
    .use(postUserAvatar)
    .use(getUserBanner)
    .use(postUserBanner)
    .use(getChannelIcon)
    .use(postChannelIcon)
+
    .listen({ hostname: envs.CDN_HOST, port: envs.CDN_PORT, idleTimeout: 40 }, (server) => {
       consola.box(`Listening on ${server.hostname}:${server.port}`);
    });
