@@ -6,7 +6,6 @@ import { ProfileAboutMe, ProfileActivity } from "@components/profile/ProfileComp
 import RoamingHuginnIcon from "@components/RoamingHuginnIcon";
 import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
-import { Transition } from "@headlessui/react";
 import { useUser, useUserProfile } from "@hooks/api-hooks/userHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";

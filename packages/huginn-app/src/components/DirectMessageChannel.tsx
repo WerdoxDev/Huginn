@@ -55,7 +55,7 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
             {props.channel.type === ChannelType.DM ? (
                <UserAvatar userId={recipients[0].id} avatarHash={recipients[0]?.avatar} className="mr-3" animatedMode="hover" hovered={isHovered} />
             ) : (
-               <ChannelIcon channelId={props.channel?.id} iconHash={props.channel?.icon} className="mr-3" />
+               <ChannelIcon channelId={props.channel?.id} iconHash={props.channel?.icon} className="mr-3" animatedMode="hover" hovered={isHovered} />
             )}
             <div className="flex w-full flex-col justify-center overflow-hidden">
                <div

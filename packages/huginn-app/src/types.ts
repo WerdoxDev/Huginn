@@ -577,3 +577,5 @@ export type UseHuginnFormSetCustomMessage<TFieldValues extends FieldValues> = <T
    name: TFieldName,
    message: InputMessage | null,
 ) => void;
+
+export type AnimatedMode = "hover" | "always" | "never";

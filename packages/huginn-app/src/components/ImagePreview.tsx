@@ -2,8 +2,9 @@ import { MessageContext } from "@contexts/MessageProvider";
 import { Transition } from "@headlessui/react";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
+import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import LoadingIcon from "./LoadingIcon";
 
@@ -15,6 +16,7 @@ export default function ImagePreview(props: {
    originalHeight: number;
    filename?: string;
    disableQuery?: boolean;
+   contentType?: string;
 }) {
    const [isLoaded, setIsLoaded] = useState(false);
    const [hasError, setHasError] = useState(false);
@@ -24,6 +26,12 @@ export default function ImagePreview(props: {
    const { open } = useContextMenu("message");
    const context = useContext(MessageContext);
    const aspectRatio = props.originalWidth && props.originalHeight ? props.originalWidth / props.originalHeight : 1;
+   const huginnWindow = useHuginnWindow();
+
+   const src = useMemo(() => {
+      if (props.contentType === "image/gif" && huginnWindow.focused) return props.url;
+      return `${props.url}${!props.disableQuery ? `&${new URLSearchParams({ format: "webp", width: props.width.toString(), height: props.height.toString() }).toString()}` : ""}`;
+   }, [props.url, props.width, props.height, props.disableQuery, huginnWindow.focused]);
 
    useEffect(() => {
       if (imgRef.current?.complete) {
@@ -63,7 +71,7 @@ export default function ImagePreview(props: {
             loading="lazy"
             onLoad={onLoad}
             ref={imgRef}
-            src={`${props.url}${!props.disableQuery ? `&${new URLSearchParams({ format: "webp", width: props.width.toString(), height: props.height.toString() }).toString()}` : ""}`}
+            src={src}
             alt={props.filename}
             onClick={onClick}
             className={clsx("cursor-pointer overflow-hidden rounded-md object-contain", hasError && "hidden")}

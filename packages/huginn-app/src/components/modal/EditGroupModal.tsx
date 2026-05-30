@@ -31,7 +31,7 @@ export default function EditGroupModal() {
    const { setValue, handleErrors, register, handleSubmit } = useHuginnForm<Input>();
 
    const { data: originalIcon } = useQuery(
-      getChannelIconOptions(modal.channel?.id, modal.channel?.type === ChannelType.GROUP_DM ? modal.channel?.icon : undefined, 128, client),
+      getChannelIconOptions(modal.channel?.id, modal.channel?.type === ChannelType.GROUP_DM ? modal.channel?.icon : undefined, undefined, client),
    );
 
    const placeholder = modal.channel && getGroupChannelName(modal.channel);
